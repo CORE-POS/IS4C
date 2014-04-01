@@ -5,7 +5,7 @@
 <body>
 <div style="text-align:center;">
 <h1>Import Vendor Pricing</h1>
-<a href="#change_log">Revised: 3Dec2013</a>
+<a href="#change_log">Revised: 4Jan2014</a>
 </div>
 
 <p> 
@@ -37,6 +37,17 @@ one CSV option, look for one mentioning Windows to get correct
 line-endings). If the file is larger than a couple MBs, you may
 need to compress it to avoid upload limits. Use the utility of your
 choose to zip it.
+<p />
+After selecting the file, you'll see a preview of the first five
+rows of data with drop down boxes to indicate what kind of data
+the different columns contain. The following fields are required:
+UPC, Description, Case Qty, Case Cost*. The Brand, SKU, SRP, and
+Unit Size fields are optional. SRP and Cost fields may include dollar
+signs. UPCs may contain spaces and dashes. If UPCs in the spreadsheet
+include check digits, make sure the Remove Check Digits box is checked.
+<p />
+* If a vendor only provides unit cost and no case information, you
+can add a column containing ones to use as Case Qty. 
 
 <h2>Step 3: Upload the file</h2>
 Select Sales Batches =&gt; <i>Vendor Pricing</i> from Fannie's left
@@ -54,6 +65,8 @@ dumping all info and rebuilding essentially doubles execution time</i>.
 
 <a name="change_log">Change Log:</a>
 
+ 4Jan14 AT Added information about required/optional fields and
+           acceptable formatting.
  3Dec13 AT Revised for accuracy with newer, standardized Fannie
            uploads interface. Moved pricing into separate document
  2Sep12 EL Fix link to departments page and add note about it.

@@ -190,6 +190,11 @@ function SetMargins($left,$top,$right=-1)
 	$this->rMargin=$right;
 }
 
+function GetMargins()
+{
+    return array('left'=>$this->lMargin, 'right'=>$this->rMargin, 'top'=>$this->topMargin);
+}
+
 function SetLeftMargin($margin)
 {
 	//Set left margin

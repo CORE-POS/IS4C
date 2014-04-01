@@ -10,8 +10,8 @@ Columns:
 
 Depends on:
 	ar_history (table)
-	 unpaid_ar_balances (view of t.ar_history)
-	memIouToday (view of t.dtransactions via v.dlog)
+	unpaid_ar_balances (view of t.ar_history)
+	ar_history_today_sum (view of t.dtransactions via v.dlog)
 
 Depended on by:
   cron/LanePush/UpdateUnpaidAR.php

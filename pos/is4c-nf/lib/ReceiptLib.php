@@ -1298,12 +1298,17 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 	/* --------------------------------------------------------------
 	  print store copy of charge slip regardless of receipt print setting - apbw 2/14/05 
 	  ---------------------------------------------------------------- */
-	if ($CORE_LOCAL->get("chargeTotal") != 0 && (($CORE_LOCAL->get("End") == 1 && !$second) || $reprint)) {
-		if (is_array($receipt))
-			$receipt['print'] .= self::printChargeFooterStore($dateTimeStamp, $ref);
-		else
-			$receipt .= self::printChargeFooterStore($dateTimeStamp, $ref);
-	}		
+    $tmap = $CORE_LOCAL->get('TenderMap');
+    // skip signature slips if using electronic signature capture (unless it's a reprint)
+    if ((is_array($tmap) && isset($tmap['MI']) && $tmap['MI'] != 'SignedStoreChargeTender') || $reprint) {
+        if ($CORE_LOCAL->get("chargeTotal") != 0 && (($CORE_LOCAL->get("End") == 1 && !$second) || $reprint)) {
+            if (is_array($receipt)) {
+                $receipt['print'] .= self::printChargeFooterStore($dateTimeStamp, $ref);
+            } else {
+                $receipt .= self::printChargeFooterStore($dateTimeStamp, $ref);
+            }
+        }
+    }
 			
 	if (is_array($receipt)){
 		if ($second){
@@ -1516,6 +1521,17 @@ static public function equityNotification($trans_num=''){
 	$CORE_LOCAL->set("equityNoticeAmt",$row[0]);
 
 	return $slip;
+}
+
+static public function shutdownFunction()
+{
+    $error = error_get_last(); 
+    if ($error !== null && $error['type'] == 1) {
+        // fatal error occurred
+        ob_end_clean();
+
+        echo '{ "error" : "Printer is not responding" }';
+    }
 }
 
 }

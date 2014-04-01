@@ -53,4 +53,4 @@ class WfcHtMenuPage extends FanniePage
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();

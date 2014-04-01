@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class CapSalesIndexPage extends FanniePage {
 	protected $title = "Fannie - CAP sales";
@@ -40,8 +40,6 @@ class CapSalesIndexPage extends FanniePage {
 	}
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new CapSalesIndexPage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+
 ?>

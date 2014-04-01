@@ -151,5 +151,5 @@ class UploadPluMapPage extends FannieUploadPage {
 	}
 }
 
-$obj = new UploadPluMapPage();
-$obj->draw_page();
+FannieDispatch::conditionalExec(false);
+

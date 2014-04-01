@@ -130,21 +130,6 @@ $descript = $sql->escape($descript);
 
 $stamp = date("Y-m-d H:i:s");
 
-$query1 = "INSERT INTO prodUpdate 
-        VALUES(?, ?,
-        ?, ?,
-        ?, ?, ?,
-        ?,
-        ?,
-        ?,
-        ?,
-        ?,
-        ?)
-        ";
-//echo $query1;
-$result1 = $sql->execute($query1, array($upc, $descript, $price, $dept, $tax, $FS, $Scale, $likeCode, $stamp, $uid, $QtyFrc, $NoDesc, $inUse));
-
-
 $query99 = $sql->prepare("INSERT INTO products (upc,description,normal_price,pricemethod,groupprice,quantity,
 	special_price,specialpricemethod,specialgroupprice,specialquantity,start_date,end_date,
 	department,size,tax,foodstamp,scale,scaleprice,mixmatchcode,modified,advertised,tareweight,discount,
@@ -158,6 +143,10 @@ $resultI = $sql->execute($query99, array($upc, $descript, $price, $dept, $tax, $
 $model = new ProductsModel($sql);
 $model->upc($upc);
 $model->pushToLanes();
+
+$prodUpdate = new ProdUpdateModel($sql);
+$prodUpdate->upc($upc);
+$prodUpdate->logUpdate(ProdUpdateModel::UPDATE_EDIT);
 
 if (empty($manufacturer))
 	$manufacturer = '';

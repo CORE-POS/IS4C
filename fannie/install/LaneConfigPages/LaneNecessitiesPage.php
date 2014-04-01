@@ -288,8 +288,6 @@ confsave('mDatabase',"'".$CORE_LOCAL->get('mDatabase')."'");
 // LaneNecessitiesPage  
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
-	$obj = new LaneNecessitiesPage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+
 ?>

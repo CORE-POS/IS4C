@@ -78,5 +78,5 @@ class WfcHtEditPage extends FanniePage
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 

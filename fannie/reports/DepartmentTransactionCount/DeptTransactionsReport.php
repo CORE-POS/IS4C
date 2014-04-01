@@ -32,25 +32,7 @@ class DeptTransactionsReport extends FannieReportPage
     protected $title = "Fannie : Department Transactions Report";
     protected $header = "Department Transactions";
 
-	public function preprocess()
-    {
-		$this->report_cache = 'none';
-
-		if (isset($_REQUEST['date1'])){
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-		
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-				$this->report_format = 'xls';
-			} elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-				$this->report_format = 'csv';
-            }
-		}
-		else 
-			$this->add_script("../../src/CalendarControl.js");
-
-		return true;
-	}
+    protected $required_fields = array('date1', 'date2');
 
     public function fetch_report_data()
     {
@@ -213,6 +195,6 @@ function swap(src,dst){
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

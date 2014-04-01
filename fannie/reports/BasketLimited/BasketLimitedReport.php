@@ -29,29 +29,10 @@ class BasketLimitedReport extends FannieReportPage {
     protected $report_headers = array('UPC', 'Description', '# Trans', 'Qty', '$');
     protected $sort_column = 2;
     protected $sort_direction = 1;
-
-
-	public function preprocess()
-    {
-		$this->report_cache = 'day';
-		$this->title = "Fannie : Basket Limited Report";
-		$this->header = "Basket Limited Report Report";
-
-		if (isset($_REQUEST['date1'])){
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-		
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-				$this->report_format = 'xls';
-			} elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-				$this->report_format = 'csv';
-            }
-		}
-		else 
-			$this->add_script("../../src/CalendarControl.js");
-
-		return true;
-	}
+    protected $report_cache = 'day';
+    protected $title = "Fannie : Basket Limited Report";
+    protected $header = "Basket Limited Report Report";
+    protected $required_fields = array('date1', 'date2');
 
 	public function fetch_report_data()
     {
@@ -152,6 +133,6 @@ class BasketLimitedReport extends FannieReportPage {
 	}
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

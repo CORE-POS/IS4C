@@ -32,28 +32,17 @@ class SalePerformanceReport extends FannieReportPage
 
     protected $report_headers = array('Week Start', 'Week End', 'Batch', 'Qty', '$');
 
+    protected $required_fields = array('ids');
+
     public function preprocess()
     {
+        // custom: ajax lookup up feeds into form fields
         if (FormLib::get('lookup') !== '') {
             echo $this->ajaxCallback();
             return false;
-        } else if (FormLib::get('ids') !== '') {
-			$this->content_function = "report_content";
-			$this->has_menus(False);
+        } 
 
-			/**
-			  Check if a non-html format has been requested
-			*/
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-				$this->report_format = 'xls';
-			} elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-				$this->report_format = 'csv';
-            }
-        } else {
-            $this->add_script('../../src/jquery/jquery.tablesorter.js');
-        }
-
-        return true;
+        return parent::preprocess();
     }
 
     private function ajaxCallback()
@@ -195,6 +184,6 @@ for ($i=1;$i<=12;$i++) {
 
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

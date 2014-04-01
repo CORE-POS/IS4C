@@ -27,7 +27,7 @@
 class EquityLiveBalanceModel extends BasicModel 
 {
 
-    protected $name = "newBalanceStockToday_test";
+    protected $name = "equity_live_balance";
 
     protected $columns = array(
     'memnum' => array('type'=>'INT','primary_key'=>True),

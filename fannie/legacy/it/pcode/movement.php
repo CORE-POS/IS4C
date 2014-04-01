@@ -57,7 +57,7 @@ if (isset($_GET['salesCode1'])){
 	$query = $sql->prepare("SELECT DISTINCT t.upc,p.description, SUM(t.quantity),SUM(t.total),
 				d.salesCode
 			  FROM $dlog as t LEFT JOIN Products as p on t.upc = p.upc
-			  LEFT JOIN deptSalesCodes as d on d.dept_ID = t.department WHERE 
+			  LEFT JOIN departments as d on d.dept_no = t.department WHERE 
 			  d.salesCode BETWEEN ? AND ?
 			  AND tdate BETWEEN ? AND ?' GROUP BY t.upc,p.description,
 			  d.salesCode ORDER BY t.upc");

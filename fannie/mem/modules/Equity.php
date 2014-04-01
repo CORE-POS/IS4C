@@ -30,7 +30,7 @@ class Equity extends MemberModule {
 		$trans = $FANNIE_TRANS_DB.$dbc->sep();
 		
 		$infoQ = $dbc->prepare_statement("SELECT payments
-				FROM {$trans}newBalanceStockToday_test
+				FROM {$trans}equity_live_balance
 				WHERE memnum=?");
 		$infoR = $dbc->exec_statement($infoQ,array($memNum));
 		$equity = 0;

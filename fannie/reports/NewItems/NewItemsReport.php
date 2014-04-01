@@ -31,26 +31,7 @@ class NewItemsReport extends FannieReportPage
     protected $header = "New Items Report";
 
     protected $report_headers = array('Added', 'UPC', 'Desc', 'Dept#', 'Dept');
-
-	public function preprocess()
-    {
-		$this->report_cache = 'none';
-
-		if (isset($_REQUEST['date1'])){
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-		
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-				$this->report_format = 'xls';
-			} elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-				$this->report_format = 'csv';
-            }
-		}
-		else 
-			$this->add_script("../../src/CalendarControl.js");
-
-		return true;
-	}
+    protected $required_fields = array('date1', 'date2');
 
     public function report_description_content()
     {
@@ -230,6 +211,6 @@ function swap(src,dst){
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

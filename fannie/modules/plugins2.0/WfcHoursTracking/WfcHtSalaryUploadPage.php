@@ -84,5 +84,5 @@ class WfcHtSalaryUploadPage extends FanniePage
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 

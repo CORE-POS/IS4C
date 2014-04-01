@@ -27,40 +27,19 @@ include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 class ProductMovementModular extends FannieReportPage 
 {
 
+    protected $title = "Fannie : Product Movement";
+    protected $header = "Product Movement Report";
+    protected $report_headers = array('Date','UPC','Description','Qty','$');
+    protected $required_fields = array('date1', 'date2');
+
 	function preprocess()
     {
-		/**
-		  Set the page header and title, enable caching
-		*/
-		$this->title = "Fannie : Product Movement";
-		$this->header = "Product Movement Report";
-		$this->report_cache = 'none';
-
-		if (isset($_REQUEST['date1'])) {
-			/**
-			  Form submission occurred
-
-			  Change content function, turn off the menus,
-			  set up headers
-			*/
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-			$this->report_headers = array('Date','UPC','Description','Qty','$');
-		
-			/**
-			  Check if a non-html format has been requested
-			*/
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-				$this->report_format = 'xls';
-			} elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-				$this->report_format = 'csv';
-            } else {
-                $this->add_script('../../src/d3.js/d3.v3.min.js');
-                $this->add_script('../../src/d3.js/charts/singleline/singleline.js');
-                $this->add_css_file('../../src/d3.js/charts/singleline/singleline.css');
-            }
-		} else  {
-			$this->add_script("../../src/CalendarControl.js");
+        parent::preprocess();
+        // custom: needs graphing JS/CSS
+        if ($this->content_function == 'report_content' && $this->report_format == 'html') {
+            $this->add_script('../../src/d3.js/d3.v3.min.js');
+            $this->add_script('../../src/d3.js/charts/singleline/singleline.js');
+            $this->add_css_file('../../src/d3.js/charts/singleline/singleline.css');
         }
 
 		return true;
@@ -261,6 +240,6 @@ function showGraph() {
 	}
 }
 
-$obj = new ProductMovementModular();
-$obj->draw_page();
+FannieDispatch::conditionalExec(false);
+
 ?>

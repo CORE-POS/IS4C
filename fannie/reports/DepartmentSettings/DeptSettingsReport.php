@@ -28,29 +28,22 @@ class DeptSettingsReport extends FannieReportPage
 {
 
     protected $report_headers = array('Dept #', 'Dept Name', 'Sales Code', 'Margin', 'Tax', 'FS');
+    protected $title = "Fannie : Department Settings";
+    protected $header = "Department Settings";
+    protected $required_fields = array('submit');
 
-	public function preprocess()
+    public function readinessCheck()
     {
-		$this->report_cache = 'none';
-		$this->title = "Fannie : Department Settings";
-		$this->header = "Department Settings";
+        global $FANNIE_OP_DB;
+        // Check added 22Jan14
+        if (!$this->tableHasColumnReadinessCheck($FANNIE_OP_DB, 'departments', 'margin')) {
+            return false;
+        } else if (!$this->tableHasColumnReadinessCheck($FANNIE_OP_DB, 'departments', 'salesCode')) {
+            return false;
+        } 
 
-		if (FormLib::get('submit') !== '') {
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-		
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-				$this->report_format = 'xls';
-			} elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-				$this->report_format = 'csv';
-            }
-		}
-		else  {
-			$this->add_script("../../src/CalendarControl.js");
-        }
-
-		return true;
-	}
+        return true;
+    }
 
     public function fetch_report_data()
     {
@@ -76,13 +69,12 @@ class DeptSettingsReport extends FannieReportPage
             $args = array($d1,$d2);
         }
 
-        $query = $dbc->prepare_statement("SELECT d.dept_no,d.dept_name,c.salesCode,m.margin,
+        $query = $dbc->prepare_statement("SELECT d.dept_no,d.dept_name,d.salesCode,d.margin,
             CASE WHEN d.dept_tax=0 THEN 'NoTax' ELSE t.description END as tax,
             CASE WHEN d.dept_fs=1 THEN 'Yes' ELSE 'No' END as fs
             FROM departments AS d LEFT JOIN taxrates AS t
-            ON d.dept_tax = t.id LEFT JOIN deptSalesCodes AS c
-            ON d.dept_no=c.dept_ID LEFT JOIN deptMargin AS m
-            ON d.dept_no=m.dept_ID $join
+            ON d.dept_tax = t.id 
+            $join
             WHERE $where
             ORDER BY d.dept_no");
         $result = $dbc->exec_statement($query,$args);
@@ -149,6 +141,6 @@ class DeptSettingsReport extends FannieReportPage
 
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

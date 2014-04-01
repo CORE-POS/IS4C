@@ -26,27 +26,9 @@ include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class VendorMovementReport extends FannieReportPage 
 {
-
-	function preprocess()
-    {
-		$this->report_cache = 'none';
-		$this->title = "Fannie : Vendor Movement";
-		$this->header = "Vendor Movement Report";
-
-		if (isset($_REQUEST['date1'])){
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-		
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls')
-				$this->report_format = 'xls';
-			elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv')
-				$this->report_format = 'csv';
-		}
-		else 
-			$this->add_script("../../src/CalendarControl.js");
-
-		return True;
-	}
+    protected $title = "Fannie : Vendor Movement";
+    protected $header = "Vendor Movement Report";
+    protected $required_fields = array('date1', 'date2');
 
 	function fetch_report_data()
     {
@@ -204,6 +186,6 @@ class VendorMovementReport extends FannieReportPage
 	}
 }
 
-$obj = new VendorMovementReport();
-$obj->draw_page();
+FannieDispatch::conditionalExec(false);
+
 ?>

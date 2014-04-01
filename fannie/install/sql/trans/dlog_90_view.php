@@ -20,6 +20,9 @@ Columns:
 	ItemQtty double
 	card_no int
 	trans_id int
+    pos_row_id int
+    store_row_id int
+    trans_num varchar
 
 Depends on:
 	transarchive (table)
@@ -74,6 +77,8 @@ $CREATE['trans.dlog_90_view'] = "
 		charflag,
 		card_no,
 		trans_id,
+        pos_row_id,
+        store_row_id,
 		".$con->concat(
 			$con->convert('emp_no','char'),"'-'",
 			$con->convert('register_no','char'),"'-'",

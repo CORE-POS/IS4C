@@ -126,5 +126,5 @@ class WfcHtSyncPage extends FanniePage
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 

@@ -26,31 +26,13 @@ include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class CorrelatedMovementReport extends FannieReportPage 
 {
+    protected $report_cache = 'day';
+    protected $title = "Fannie : Correlated Movement Report";
+    protected $header = "Correlated Movement Report";
     protected $report_headers = array('UPC', 'Desc', 'Dept', 'Qty');
     protected $sort_column = 3;
     protected $sort_direction = 1;
-
-    public function preprocess()
-    {
-		$this->report_cache = 'day';
-		$this->title = "Fannie : Correlated Movement Report";
-		$this->header = "Correlated Movement Report";
-
-		if (isset($_REQUEST['date1'])){
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-		
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-				$this->report_format = 'xls';
-			} elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-				$this->report_format = 'csv';
-            }
-		}
-		else 
-			$this->add_script("../../src/CalendarControl.js");
-
-        return true;
-    }
+    protected $required_fields = array('date1', 'date2');
 
     public function fetch_report_data()
     {
@@ -288,6 +270,6 @@ function flipover(opt){
 
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

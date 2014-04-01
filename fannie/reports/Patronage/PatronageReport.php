@@ -35,13 +35,7 @@ class PatronageReport extends FannieReportPage
 
 	public function preprocess()
     {
-        if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-            $this->report_format = 'xls';
-            $this->has_menus(False);
-        } elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-            $this->report_format = 'csv';
-            $this->has_menus(False);
-		}
+        $this->formatCheck();
 
 		return true;
 	}
@@ -115,6 +109,6 @@ class PatronageReport extends FannieReportPage
 
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

@@ -69,6 +69,17 @@ class Steering extends Parser {
             $CORE_LOCAL->set("pvsearch","$pvsearch");
             $this->ret['main_frame'] = $my_url."gui-modules/productlist.php";
             return True;
+        case "MSTG":
+            if ($CORE_LOCAL->get('memType') == 1 || $CORE_LOCAL->get('memType') == 2) {
+                // could this be $CORE_LOCAL->get('isMember') == 1
+                // to avoid relying on specific memTypes?
+				$this->ret['output'] = DisplayLib::boxMsg("Cannot UNset a member status");
+			} else if ($CORE_LOCAL->get("SecuritySR") > 20){
+            	$this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=MemStatusAdminLogin";
+			} else {
+				$this->ret['output'] = DisplayLib::boxMsg("You must be an admin to do this.");
+			}
+            return True;
         /*
         case "PV2":
             $CORE_LOCAL->set("pvsearch","");
@@ -87,8 +98,9 @@ class Steering extends Parser {
                 $this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=UndoAdminLogin";
             }
             return True;
+        case 'SK':
         case "DDD":
-            $this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=DDDAdminLogin";
+            $this->ret['main_frame'] = $my_url."gui-modules/DDDReason.php";
             return True;
         case 'MG':
             if ($CORE_LOCAL->get("SecuritySR") > 20){
@@ -135,13 +147,22 @@ class Steering extends Parser {
         case 'SO':
             // sign off and suspend shift are identical except for
             // drawer behavior
-            if ($CORE_LOCAL->get("LastID") != 0) 
+            if ($CORE_LOCAL->get("LastID") != 0) {
                 $this->ret['output'] = DisplayLib::boxMsg(_("Transaction in Progress"));
-            else {
+            } else {
                 Database::setglobalvalue("LoggedIn", 0);
                 $CORE_LOCAL->set("LoggedIn",0);
                 $CORE_LOCAL->set("training",0);
                 $CORE_LOCAL->set("gui-scale","no");
+                /**
+                  An empty transaction may still contain
+                  invisible, logging records. Rotate those
+                  out of localtemptrans to ensure sequential
+                  trans_id values
+                */
+                if (Database::rotateTempData()) {
+                    Database::clearTempTables();
+                }
                 if ($str == 'SO'){
                     if (session_id() != '')
                         session_write_close();
@@ -165,6 +186,10 @@ class Steering extends Parser {
             $CORE_LOCAL->set("msgrepeat",0);
             $this->ret['main_frame'] = $my_url."gui-modules/giftcardlist.php";
             return True;
+        case 'IC':
+            $CORE_LOCAL->set("msgrepeat",0);
+            $this->ret['main_frame'] = $my_url."gui-modules/HouseCouponList.php";
+            return true;
         /*
         case 'CCM':
             $CORE_LOCAL->set("msgrepeat",0);
@@ -268,6 +293,12 @@ class Steering extends Parser {
             <tr>
                 <td>CN</td>
                 <td>Cancel transaction</td>
+            </tr>
+            <tr>
+                <td>SK or DDD</td>
+                <td>Similar to cancelling a transaction, but marks all
+                the items as unsellable (shrink), for the
+                user-provided reason.</td>
             </tr>
             </table>";
     }

@@ -26,28 +26,7 @@ include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class ManufacturerMovementReport extends FannieReportPage 
 {
-
-	function preprocess()
-    {
-		$this->report_cache = 'day';
-		$this->title = "Fannie : Manufacturer Movement";
-		$this->header = "Manufacturer Movement Report";
-
-		if (isset($_REQUEST['date1'])){
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-		
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-				$this->report_format = 'xls';
-			} elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-				$this->report_format = 'csv';
-            }
-		}
-		else 
-			$this->add_script("../../src/CalendarControl.js");
-
-		return True;
-	}
+    protected $required_fields = array('date1', 'date2');
 
 	function fetch_report_data()
     {
@@ -164,13 +143,16 @@ class ManufacturerMovementReport extends FannieReportPage
 		}
 	}
 
-	function form_content(){
+	function form_content()
+    {
+        $this->title = _("Fannie") . " : " . _("Manufacturer Movement Report");
+        $this->header = _("Manufacturer Movement Report");
 ?>
 <div id=main>	
 <form method = "get" action="ManufacturerMovementReport.php">
 	<table border="0" cellspacing="0" cellpadding="5">
 		<tr> 
-			<th>Manufacturer</th>
+			<th><?php echo _("Manufacturer"); ?></th>
 			<td>
 			<input type=text name=manu id=manu  />
 			</td>
@@ -216,6 +198,6 @@ class ManufacturerMovementReport extends FannieReportPage
 	}
 }
 
-$obj = new ManufacturerMovementReport();
-$obj->draw_page();
+FannieDispatch::conditionalExec(false);
+
 ?>

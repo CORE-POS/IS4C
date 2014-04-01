@@ -63,6 +63,6 @@ input[type="submit"] {
 	}
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

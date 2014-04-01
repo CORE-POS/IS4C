@@ -26,34 +26,15 @@ include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class GeneralDayReport extends FannieReportPage 
 {
+    protected $title = "Fannie : General Day Report";
+    protected $header = "General Day Report";
+    protected $report_cache = 'none';
+    protected $grandTTL = 1;
+    protected $multi_report_mode = True;
+    protected $sortable = False;
 
-	function preprocess()
-    {
-		$this->title = "Fannie : General Day Report";
-		$this->header = "General Day Report";
-		$this->report_cache = 'none';
-		$this->grandTTL = 1;
-		$this->multi_report_mode = True;
-		$this->sortable = False;
-
-		if (isset($_REQUEST['date1'])){
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-			$this->report_headers = array('Desc','Qty','Amount');
-
-			/**
-			  Check if a non-html format has been requested
-			*/
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls')
-				$this->report_format = 'xls';
-			elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv')
-				$this->report_format = 'csv';
-		}
-		else 
-			$this->add_script("../../src/CalendarControl.js");
-
-		return True;
-	}
+    protected $report_headers = array('Desc','Qty','Amount');
+    protected $required_fields = array('date1');
 
 	function fetch_report_data()
     {
@@ -247,6 +228,6 @@ class GeneralDayReport extends FannieReportPage
 
 }
 
-$obj = new GeneralDayReport();
-$obj->draw_page();
+FannieDispatch::conditionalExec(false);
+
 ?>

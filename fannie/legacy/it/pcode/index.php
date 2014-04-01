@@ -21,8 +21,7 @@ $cur_dept = "-1";
 
 $deptQ = "select dept_no,superID,dept_name,dept_tax,dept_fs,salesCode from departments 
 	as d LEFT JOIN MasterSuperDepts AS m on d.dept_no=m.dept_ID
-	LEFT JOIN deptSalesCodes AS s ON d.dept_no=s.dept_ID order by
-	  superID,dept_no";
+	order by superID,dept_no";
 $deptR = $sql->query($deptQ);
 
 while ($row = $sql->fetch_row($deptR)){

@@ -29,27 +29,15 @@ class ArReport extends FannieReportPage
 
     protected $report_headers = array('Date', 'Receipt', 'Amount', 'Type');
     protected $sort_direction = 1;
+    protected $title = "Fannie : AR Activity Report";
+    protected $header = "AR Activity Report";
+    protected $required_fields = array('memNum');
 
 	public function preprocess()
     {
-		$this->report_cache = 'none';
-		$this->title = "Fannie : AR Activity Report";
-		$this->header = "AR Activity Report";
-
         $this->card_no = FormLib::get('memNum','');
-        if ($this->card_no !== '') {
-			$this->content_function = "report_content";
 
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-				$this->report_format = 'xls';
-                $this->has_menus(false);
-			} elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-				$this->report_format = 'csv';
-                $this->has_menus(false);
-            }
-        }
-
-        return True;
+        return parent::preprocess();
     }
 
     public function report_description_content()
@@ -96,5 +84,5 @@ class ArReport extends FannieReportPage
 
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 

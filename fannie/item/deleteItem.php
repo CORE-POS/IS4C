@@ -75,14 +75,19 @@ if (isset($_REQUEST['upc']) && !isset($_REQUEST['deny'])){
 		}
 	}
 	else if (isset($_REQUEST['confirm'])){
-		$plu = substr($upc,3,4);
+        $update = new ProdUpdateModel($dbc);
+        $update->upc($upc);
+        $update->logUpdate(ProdUpdateModel::UPDATE_DELETE);
+
 		ProductsModel::staticDelete($upc);
+
 		$delxQ = $dbc->prepare_statement("DELETE FROM prodExtra WHERE upc=?");
 		$dbc->exec_statement($delxQ,array($upc));
 		if ($dbc->table_exists("scaleItems")){
 			$scaleQ = $dbc->prepare_statement("DELETE FROM scaleItems WHERE plu=?");
 			$dbc->exec_statement($scaleQ,array($upc));
 			include('hobartcsv/parse.php');
+            $plu = substr($upc,3,4);
 			deleteitem($plu);
 		}
 

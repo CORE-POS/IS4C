@@ -161,7 +161,7 @@ class MemArTransferTool extends FanniePage {
 		$ret = "<form action=\"MemArTransferTool.php\" method=\"post\">";
 		$ret .= "<b>Confirm transfer</b>";
 		$ret .= "<p style=\"font-size:120%\">";
-		$ret .= printf("\$%.2f %s will be moved from %d (%s) to %d (%s)",
+		$ret .= sprintf("\$%.2f %s will be moved from %d (%s) to %d (%s)",
 			$this->amount,$this->depts[$this->dept],
 			$this->cn1,$this->name1,$this->cn2,$this->name2);
 		$ret .= "</p><p>";
@@ -298,7 +298,12 @@ class MemArTransferTool extends FanniePage {
 		else {
 			$nameP = $dbc->prepare_statement("SELECT dept_name FROM {$OP}departments WHERE dept_no=?");
 			$nameR = $dbc->exec_statement($nameP,$department);
-			$defaults['description'] = array_pop($dbc->fetch_row($nameR));
+            if ($dbc->num_rows($nameR) == 0) {
+                $defaults['description'] = 'CORRECTIONS';
+            } else {
+                $nameW = $dbc->fetch_row($nameR);
+                $defaults['description'] = $nameW['dept_name'];
+            }
 		}
 
 		$q = $dbc->prepare_statement("SELECT memType,Staff FROM {$OP}custdata WHERE CardNo=?");
@@ -322,9 +327,6 @@ class MemArTransferTool extends FanniePage {
 	}
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new MemArTransferTool();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
 
 ?>

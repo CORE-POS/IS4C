@@ -30,7 +30,7 @@ foreach($FANNIE_LANES as $lane) {
 			$lane['user'],$lane['pw']);
 	if ($dbc->connections[$lane['op']] !== false) {
 
-        $dbc->query("DELETE FROM custdata WHERE type IN ('TERM')", $lane['op']);
+        $dbc->query("DELETE FROM custdata WHERE type IN ('TERM','INACT2')", $lane['op']);
 	}
 }
 

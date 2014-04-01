@@ -308,9 +308,6 @@ echo "<br />id $id";
 // SalesAndTaxTodayReport
 }
 
-// This construct lets the rest of the file be included for extension.
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
-	$obj = new SalesAndTaxTodayReport();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+
 ?>

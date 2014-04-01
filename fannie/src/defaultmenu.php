@@ -70,7 +70,8 @@ array('label'=>'Item Maintenance','url'=>'item/ItemEditorPage.php','subheading'=
 		)
 	),
 	array('label'=>'Manage Likcodes','url'=>'item/likecodes/'),
-	array('label'=>'Manage Vendors','url'=>'item/vendors/')
+	array('label'=>'Manage Vendors','url'=>'item/vendors/'),
+	array('label'=>'Store Coupons','url'=>'modules/plugins2.0/HouseCoupon/')
 	)
 ),
 array('label'=>'Sales Batches','url'=>'batches/','subheading'=>'Create automated sales & price changes',
@@ -87,7 +88,7 @@ array('label'=>'Reports','url'=>'reports/','subheading'=>'Custom reporting tools
 	array('label'=>'Movement >>','url'=>'reports/',
 		'submenu'=>array(
 			array('label'=>'Department Movement','url'=>'reports/DepartmentMovement/'),
-			array('label'=>'Manufacturer Movement','url'=>'reports/ManufacturerMovement/'),
+			array('label'=>_('Manufacturer Movement'),'url'=>'reports/ManufacturerMovement/'),
 			array('label'=>'Item Movement','url'=>'reports/ProductMovement/'),
 			array('label'=>'Correlated Movement','url'=>'reports/Correlated/'),
 			array('label'=>'Non Movement','url'=>'reports/NonMovement/'),

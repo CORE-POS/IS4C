@@ -30,6 +30,13 @@
 class DefaultReceiptSort 
 {
 
+    private $BLANK_LINE = array(
+        'upc' => 'BLANKLINE',
+        'description' => '',
+        'trans_type' => '0',
+        'total' => 0,
+    );
+
 	/**
 	  Sorting function
 	  @param $rowset an array of records
@@ -97,6 +104,9 @@ class DefaultReceiptSort
 			}
 		}
 
+        // blank line between items & totals
+        $returnset[] = $this->BLANK_LINE;
+
 		// then discount, subtotal, tax, total
 		if ($discount !== false) {
 			$returnset[] = $discount;
@@ -110,6 +120,9 @@ class DefaultReceiptSort
 		if ($total !== false) {
 			$returnset[] = $total;
         }
+
+        // blank line between totals & tenders
+        $returnset[] = $this->BLANK_LINE;
 
 		// finally tenders
 		if(count($tenders) > 0) {

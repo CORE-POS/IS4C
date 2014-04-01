@@ -610,6 +610,28 @@ static public function termdisplaymsg()
 }
 
 /**
+  Use the right side of the screen to show various
+  notifications
+*/
+static public function drawNotifications()
+{
+    global $CORE_LOCAL;
+    if (!is_array($CORE_LOCAL->get('Notifiers'))) {
+        $CORE_LOCAL->set('Notifiers', array());
+    }
+
+    $ret = '';
+    foreach($CORE_LOCAL->get('Notifiers') as $class) {
+        if (!class_exists($class)) continue;
+
+        $obj = new $class();
+        $ret .= $obj->draw();
+    }
+
+    return $ret;
+}
+
+/**
   Get the items currently on screen
   @param $top_item is trans_id (localtemptrans)
    of the first item to display
@@ -623,6 +645,11 @@ static public function termdisplaymsg()
 static public function listItems($top_item, $highlight) 
 {
 	global $CORE_LOCAL;
+
+    $lines = $CORE_LOCAL->get('screenLines');
+    if (!$lines === '' || !is_numeric($lines)) {
+        $lines = 11;
+    }
 
 	Database::getsubtotals();
 	$LastID = $CORE_LOCAL->get("LastID");
@@ -642,8 +669,8 @@ static public function listItems($top_item, $highlight)
 		$top_item = $highlight;
 	}
 
-	if ($highlight > ($top_item + 11)) {
-		$top_item = ($highlight - 11);
+	if ($highlight > ($top_item + $lines)) {
+		$top_item = ($highlight - $lines);
 	}
 
 	$CORE_LOCAL->set("currenttopid",$top_item);
@@ -653,7 +680,7 @@ static public function listItems($top_item, $highlight)
 
 	$CORE_LOCAL->set("currentid",$highlight);
 
-	return self::drawItems($top_item, 11, $highlight);
+	return self::drawItems($top_item, $lines, $highlight);
 }
 
 
@@ -782,7 +809,13 @@ static public function drawItems($top_item, $rows, $highlight)
 		}
 	}
 
-	$td = SigCapture::term_object();
+    /** 11Mar14 Andy
+        Ancient idea about displaying transaction line-items
+        on credit card terminal screen. Current terminal
+        does not even support this functionality.
+
+        I'm leaving the "get last relevant line" implementation
+        for reference.
 	if (is_object($td) && !empty($last_item)) {
 		$due = sprintf('%.2f',$CORE_LOCAL->get("amtdue"));
 		$dueline = 'Subtotal'
@@ -800,6 +833,7 @@ static public function drawItems($top_item, $rows, $highlight)
         }
 		$td->WriteToScale("display:".$last_item.":".$dueline);
 	}
+    */
 
 	return $ret;
 }
@@ -818,22 +852,27 @@ static public function lastpage($readOnly=False)
 {
 	global $CORE_LOCAL;
 
+    $lines = $CORE_LOCAL->get('screenLines');
+    if (!$lines === '' || !is_numeric($lines)) {
+        $lines = 11;
+    }
+
 	if (!$readOnly) {
 		Database::getsubtotals();
 	}
 	$last_id = $CORE_LOCAL->get("LastID");
 
-	if (($last_id - 11) < 0) {
+	if (($last_id - $lines) < 0) {
 		$top_id = 1;
 	} else {
-		$top_id = $last_id - 11;
+		$top_id = $last_id - $lines;
 	}
 	
 	if (!$readOnly) {
 		$CORE_LOCAL->set("currentid",$last_id);
 		$CORE_LOCAL->set("currenttopid",$top_id);
 	}
-	return self::drawItems($top_id, 11, $last_id);
+	return self::drawItems($top_id, $lines, $last_id);
 }
 
 } // end class DisplayLib

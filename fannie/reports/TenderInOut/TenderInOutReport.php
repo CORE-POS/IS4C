@@ -30,22 +30,7 @@ class TenderInOutReport extends FannieReportPage
     protected $header = "Tender Usage Report";
 
     protected $report_headers = array('Date', 'Receipt#', 'Employee', 'Register', 'Amount');
-
-	public function preprocess()
-    {
-        if (FormLib::get('date1') !== '') {
-            $this->has_menus(False);
-            $this->content_function = 'report_content';
-
-            if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-                $this->report_format = 'xls';
-            } elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-                $this->report_format = 'csv';
-            }
-        }
-
-        return true;
-    }
+    protected $required_fields = array('date1', 'date2');
 
     public function report_description_content()
     {
@@ -165,6 +150,6 @@ class TenderInOutReport extends FannieReportPage
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

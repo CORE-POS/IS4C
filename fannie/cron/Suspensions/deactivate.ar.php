@@ -33,7 +33,7 @@ include($FANNIE_ROOT.'src/SQLManager.php');
 
    This script de-activates members with store-charge account (ar)
     in arrears, i.e.
-   AR_EOM_Summary.twoMonthBalance <= newBalanceToday_cust.balance
+   AR_EOM_Summary.twoMonthBalance <= ar_live_balance.balance
 
    When/how-often can/should it be run? Daily?
 
@@ -93,10 +93,10 @@ $sql->query($histQ);
 
 $custQ = "UPDATE custdata AS c
 	LEFT JOIN suspensions AS s ON c.CardNo=s.cardno
-	SET c.type='INACT',memType=0,c.Discount=0,ChargeLimit=0,MemDiscountLimit=0
+	SET c.type='INACT',memType=0,c.Discount=0,c.ChargeLimit=0,MemDiscountLimit=0
 	WHERE c.type='PC' AND s.cardno is not null";
 if (!isset($custdata['ChargeLimit'])) {
-    $custQ = str_replace('ChargeLimit=0,', '', $custQ);
+    $custQ = str_replace('c.ChargeLimit=0,', '', $custQ);
 }
 $sql->query($custQ);
 

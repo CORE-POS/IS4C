@@ -21,9 +21,18 @@
 
 *********************************************************************************/
 
+/**
+  @deprecated 11Mar14 Andy
+
+  Related to Ingenico i6550 driver. Never finished.
+  No references to this class should remain elsewhere
+  in the codebase.
+*/
 class SigCapture {
 
 static public function term_object(){
+    return false;
+    /**
 	global $CORE_LOCAL;
 	$termDriver = $CORE_LOCAL->get("SigCapture");
 	$td = 0;
@@ -34,6 +43,7 @@ static public function term_object(){
 	}
 	if (is_object($td)) return $td;
 	return False;
+    */
 }
 
 }

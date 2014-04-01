@@ -26,29 +26,10 @@ include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class CouponsReport extends FannieReportPage {
 
+    protected $title = "Fannie : Coupons Report";
+    protected $header = "Coupons Report";
     protected $report_headers = array('UPC', 'Qty', '$ Total');
-
-	public function preprocess()
-    {
-		$this->report_cache = 'none';
-		$this->title = "Fannie : Coupons Report";
-		$this->header = "Coupons Report";
-
-		if (isset($_REQUEST['date1'])){
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-		
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-				$this->report_format = 'xls';
-			} elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-				$this->report_format = 'csv';
-            }
-		}
-		else 
-			$this->add_script("../../src/CalendarControl.js");
-
-		return true;
-	}
+    protected $required_fields = array('date1', 'date2');
 
     public function calculate_footers($data)
     {
@@ -134,6 +115,6 @@ class CouponsReport extends FannieReportPage {
 
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

@@ -75,10 +75,11 @@ class BaseItemModule extends ItemModule {
 			  fields for the new item
 			*/
 			$vendorP = "SELECT description,brand as manufacturer,cost,
-				vendorName as distributor,margin,i.vendorID
+				vendorName as distributor,margin,i.vendorID,srp
 				FROM vendorItems AS i LEFT JOIN vendors AS v ON i.vendorID=v.vendorID
 				LEFT JOIN vendorDepartments AS d ON i.vendorDept=d.deptID
-				WHERE upc=?";
+                LEFT JOIN vendorSRPs AS s ON s.upc=i.upc AND s.vendorID=i.vendorID
+				WHERE i.upc=?";
 			$args = array($upc);
 			$vID = FormLib::get_form_value('vid','');
 			if ($vID !== ''){
@@ -96,6 +97,7 @@ class BaseItemModule extends ItemModule {
 				$rowItem['manufacturer'] = $v['manufacturer'];
 				$rowItem['cost'] = $v['cost'];
 				$rowItem['distributor'] = $v['distributor'];
+                $rowItem['normal_price'] = $v['srp'];
 
 				while($v = $dbc->fetch_row($vendorR)){
 					printf('This product is also in <a href="?searchupc=%s&vid=%d">%s</a><br />',
@@ -216,16 +218,16 @@ class BaseItemModule extends ItemModule {
 		$p = $dbc->prepare_statement('SELECT dept_no,dept_name,subdept_no,subdept_name,dept_ID 
 				FROM departments AS d
 				LEFT JOIN subdepts AS s ON d.dept_no=s.dept_ID
-				ORDER BY d.dept_no');
+				ORDER BY d.dept_no, s.subdept_name');
 		$r = $dbc->exec_statement($p);
 		while($w = $dbc->fetch_row($r)){
 			if (!isset($depts[$w['dept_no']])) $depts[$w['dept_no']] = $w['dept_name'];
 			if ($w['subdept_no'] == '') continue;
 			if (!isset($subs[$w['dept_ID']]))
 				$subs[$w['dept_ID']] = '';
-			$subs[$w['deptID']] = sprintf('<option %s value="%d">%s</option>',
+			$subs[$w['dept_ID']] .= sprintf('<option %s value="%d">%d %s</option>',
 					($w['subdept_no'] == $rowItem['subdept'] ? 'selected':''),
-					$w['subdept_no'],$w['subdept_name']);
+					$w['subdept_no'],$w['subdept_no'],$w['subdept_name']);
 		}
 
 		$json = count($subs) == 0 ? '{}' : JsonLib::array_to_json($subs);
@@ -312,42 +314,39 @@ class BaseItemModule extends ItemModule {
 		$upc = BarcodeLib::padUPC($upc);
 		$dbc = $this->db();
 
-		$up_array = array();
-		$up_array['tax'] = FormLib::get_form_value('tax',0);
-		$up_array['foodstamp'] = FormLib::get_form_value('FS',0);
-		$up_array['scale'] = FormLib::get_form_value('Scale',0);
-		$up_array['qttyEnforced'] = FormLib::get_form_value('QtyFrc',0);
-		$up_array['discount'] = FormLib::get_form_value('NoDisc',1);
-		$up_array['normal_price'] = FormLib::get_form_value('price',0.00);
-		$up_array['description'] = FormLib::get_form_value('descript','');
-		$up_array['pricemethod'] = 0;
-		$up_array['groupprice'] = 0.00;
-		$up_array['quantity'] = 0;
-		$up_array['department'] = FormLib::get_form_value('department',0);
-		$up_array['size'] = FormLib::get_form_value('size','');
-		$up_array['scaleprice'] = 0.00;
-		$up_array['modified'] = $dbc->now();
-		$up_array['advertised'] = 1;
-		$up_array['tareweight'] = 0;
-		$up_array['unitofmeasure'] = FormLib::get_form_value('unitm','');
-		$up_array['wicable'] = 0;
-		$up_array['idEnforced'] = 0;
-		$up_array['subdept'] = FormLib::get_form_value('subdepartment',0);
-		$up_array['store_id'] = 0;
+        $model = new ProductsModel($dbc);
+        $model->upc($upc);
+		$model->tax(FormLib::get_form_value('tax',0));
+		$model->foodstamp(FormLib::get_form_value('FS',0));
+		$model->scale(FormLib::get_form_value('Scale',0));
+		$model->qttyEnforced(FormLib::get_form_value('QtyFrc',0));
+		$model->discount(FormLib::get_form_value('NoDisc',1));
+		$model->normal_price(FormLib::get_form_value('price',0.00));
+		$model->description(FormLib::get_form_value('descript',''));
+		$model->pricemethod(0);
+		$model->groupprice(0.00);
+		$model->quantity(0);
+		$model->department(FormLib::get_form_value('department',0));
+		$model->size(FormLib::get_form_value('size',''));
+		$model->modified(date('Y-m-d H:i:s'));
+		$model->unitofmeasure(FormLib::get_form_value('unitm',''));
+		$model->subdept(FormLib::get_form_value('subdepartment',0));
 
 		/* turn on volume pricing if specified, but don't
 		   alter pricemethod if it's already non-zero */
 		$doVol = FormLib::get_form_value('doVolume',False);
 		$vprice = FormLib::get_form_value('vol_price','');
 		$vqty = FormLib::get_form_value('vol_qtty','');
-		if ($doVol !== False && is_numeric($vprice) && is_numeric($vqty)){
-			$up_array['pricemethod'] = FormLib::get_form_value('pricemethod',0);
-			if ($up_array['pricemethod']==0) $up_array['pricemethod']=2;
-			$up_array['groupprice'] = $vprice;
-			$up_array['quantity'] = $vqty;
+		if ($doVol !== false && is_numeric($vprice) && is_numeric($vqty)) {
+			$model->pricemethod(FormLib::get_form_value('pricemethod',0));
+			if ($model->pricemethod() == 0) {
+                $model->pricemethod(2);
+            }
+			$model->groupprice($vprice);
+			$model->quantity($vqty);
 		}
 
-		ProductsModel::update($upc, $up_array);
+        $model->save();
 
 		if ($dbc->table_exists('prodExtra')){
 			$arr = array();

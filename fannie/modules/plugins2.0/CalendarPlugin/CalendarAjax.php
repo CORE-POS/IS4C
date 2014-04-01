@@ -22,9 +22,8 @@
 *********************************************************************************/
 
 include(dirname(__FILE__).'/../../../config.php');
+if(!class_exists("FannieAPI")) include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 if(!class_exists("CalendarPluginDB")) include(dirname(__FILE__).'/CalendarPluginDB.php');
-if(!class_exists("FannieWebService")) include($FANNIE_ROOT.'classlib2.0/FannieWebService.php');
-if(!class_exists("FormLib")) include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
 
 class CalendarAjax extends FannieWebService {
 
@@ -37,11 +36,40 @@ class CalendarAjax extends FannieWebService {
 	}	
 
 	function run(){
+        global $FANNIE_URL;
 		$data = array();
 		$action = FormLib::get_form_value('action');
 		if ($action !== ''){
 			$data[] = $action;
 			switch($action){
+            case 'save_or_add_event':
+                $calID = FormLib::get('id', 0);
+                $text = FormLib::get('text');
+
+				$db = CalendarPluginDB::get();
+                $event = new MonthviewEventsModel($db);
+
+                $eventID = FormLib::get('eventID', false);
+                if ($eventID !== false) {
+                    $event->eventID($eventID);
+                    $event->eventText($text);
+                    if (!empty($text)) {
+                        $event->save();
+                    } else {
+                        $event->delete();
+                    }
+                } else {
+                    $date = FormLib::get('datestr');
+                    $uid = FormLib::get('uid');
+                    $event->eventDate($date);
+                    $event->calendarID($calID);
+                    $event->uid($uid);
+                    $event->eventText($text);
+                    if (!empty($text)) {
+                        $event->save();
+                    }
+                }
+                break;
 			case 'monthview_save':
 				$date = FormLib::get_form_value('date');
 				$id = FormLib::get_form_value('id',0);
@@ -53,7 +81,8 @@ class CalendarAjax extends FannieWebService {
 						WHERE eventDate=? and uid=? and calendarID=?");
 				$rowCheck = $db->exec_statement($chkP,array($date,$uid,$id));
 				if ($db->num_rows($rowCheck) <= 0 && $text != ""){
-					$insP = $db->prepare_statement("INSERT INTO monthview_events VALUES (?,?,?,?)");
+					$insP = $db->prepare_statement("INSERT INTO monthview_events 
+                                                    (calendarID, eventDate, eventText, uid) VALUES (?,?,?,?)");
 					$db->exec_statement($insP,array($id,$date,$text,$uid));
 				}
 				else if ($text == ""){
@@ -99,7 +128,7 @@ class CalendarAjax extends FannieWebService {
 
 				$p = $db->prepare_statement("DELETE FROM permissions WHERE calendarID=? and classID < 4");
 				$db->exec_statement($p,array($calID));
-				$insP = $db->prepare_statement("INSERT INTO permissions VALUES (?,?,?)");
+				$insP = $db->prepare_statement("INSERT INTO permissions (calendarID,uid,classID) VALUES (?,?,?)");
 				if ($viewers != ""){
 					foreach(explode(",",$viewers) as $v){
 						$db->exec_statement($insP,array($calID,$v,1));
@@ -111,6 +140,39 @@ class CalendarAjax extends FannieWebService {
 					}
 				}
 				break;
+            case 'weekview_save':
+				$timestamp = FormLib::get_form_value('ts');
+                $date = date('Y-m-d H:i:00', $timestamp);
+				$calID = FormLib::get_form_value('id',0);
+				$text = trim(FormLib::get_form_value('text'));
+                $eID = FormLib::get('eventID', false);
+				$uid = FannieAuth::getUID(FannieAuth::checkLogin());
+
+                $pat = '/#(\d+)/';
+                $rep = '<a href="' . $FANNIE_URL . 'modules/plugins2.0/PIKiller/PIMemberPage.php?id=${1}" onclick="noBubble(event);">#${1}</a>';
+                $text = preg_replace($pat, $rep, $text);
+
+				$db = CalendarPluginDB::get();
+                $model = new MonthviewEventsModel($db);
+                if ($eID) {
+                    $model->eventID($eID);
+                }
+                if (empty($text) && $eID) {
+                    // delete empty event
+                    // no eID implies event doesn't exist
+                    // just opened/closed w/o content
+                    $model->delete();
+                } else if (!empty($text)) {
+                    $model->uid($uid);
+                    $model->eventDate($date);
+                    $model->eventText($text);
+                    $model->calendarID($calID);
+                    $newID = $model->save();
+                    if (!$eID) {
+                        $data[] = $newID;
+                    }
+                }
+                break;
 			}
 		}
 		return $data;

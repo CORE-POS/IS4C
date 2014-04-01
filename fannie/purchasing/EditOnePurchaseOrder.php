@@ -258,6 +258,6 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
 	}
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

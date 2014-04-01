@@ -88,11 +88,13 @@ class GCReceiptMessage extends ReceiptMessage {
 			}
 			$slip .= ReceiptLib::centerString("................................................")."\n";
 
+            /* not correct behavior? print all slips regardless?
 			if ($sigSlip){
 				// Cut is added automatically by printing process
 				//$slip .= "\n\n\n\n".chr(27).chr(105);
 				break;
 			}
+            */
 		}
 
 		return $slip;

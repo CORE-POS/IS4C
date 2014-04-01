@@ -1137,8 +1137,6 @@ class BeerXMLParser {
 
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new Brewventory();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+
 ?>

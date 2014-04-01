@@ -251,5 +251,5 @@ class WfcHtViewEmpPage extends FanniePage
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 

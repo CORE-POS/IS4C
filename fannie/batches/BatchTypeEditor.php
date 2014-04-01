@@ -140,9 +140,6 @@ function saveType(val,bid){
 	}
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
-	$obj = new BatchTypeEditor();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
 
 ?>

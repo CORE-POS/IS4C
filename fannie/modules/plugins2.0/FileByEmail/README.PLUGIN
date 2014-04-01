@@ -1,0 +1,65 @@
+=======================
+FileByEmail Plugin
+=======================
+Extract attachments from emails and provide
+a user interface to rename the files and save
+them elsewhere as appropriate.
+
+=======================
+1. Email delivery
+=======================
+First, you need an email server running on
+Fannie and an intranet or internet path to
+send it messages. That's really beyond the
+scope of this guide, but it's pretty easy
+in most linux distros.
+
+Next, you need to configure the email server
+to deliver messages to this plugin. With postfix,
+aliases can pipe messages to a given address
+to a program. Other MTAs probably have similar
+options. The postfix alias entry would look like this:
+
+filebyemail: "|/usr/bin/php /path/to/FileByEmailPipe.php"
+
+Messages to filebyemail@yourhost should be piped into
+the script.
+
+=======================
+2. Plugin configuration
+=======================
+The plugin has two settings.
+
+* Mime Types - what type of attachments to accept. The default is application/pdf.
+               Additional types can be added. Separate by spaces or commas or
+               whatever (anything that isn't a letter, number, or slash should work).
+* Burst PDFs - this option will split multipage PDFs so there's a separate file
+               for each page. You have to provide the actual command you want to
+               use (but not the arguments). ImageMagick and pdftk are both supported;
+               pdftk usually yields higher quality. I typically put "nice" in front
+               of the command so very large files don't bog down the server. e.g.:
+               /bin/nice -n 19 /usr/bin/pdftk
+               
+=======================
+3. Environment configuration
+=======================
+Accepted attachments will be saved in the "noauto/queue" directory. This directory
+must be writable, at minimum, by the webserver user and the user
+postfix uses for piped messages (often "nobody"). Note that piped message
+commands may NOT have fully expanded permissions which can lead to
+problems. 777 is easiest, otherwise put the webserver user in the
+PRIMARY group of the piped message user.
+
+The "noauto/save-paths" directory provides options for where to save
+queued files. Add symlinks to whatever directory or directories where
+the files should ultimately be saved. These directories will need
+to be writable by the webserver user, too.
+
+=======================
+4. Usage
+=======================
+Incoming attachments of the configured type are stored in the
+"noauto/queue" directory. The FbeProcessQueuePage displays one queued
+file at a time so the user can provide a proper filename and
+save-path. When saved, files are removed from the queue directory
+and saved to the specified path and name.

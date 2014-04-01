@@ -87,9 +87,6 @@ class BatchShelfTags extends FanniePage {
 	}
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new BatchShelfTags();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
 
 ?>

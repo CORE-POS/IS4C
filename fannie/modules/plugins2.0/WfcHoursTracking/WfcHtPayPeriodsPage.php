@@ -173,5 +173,5 @@ class WfcHtPayPeriodsPage extends FanniePage
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 

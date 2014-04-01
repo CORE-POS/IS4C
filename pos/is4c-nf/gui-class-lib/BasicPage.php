@@ -244,10 +244,10 @@ class BasicPage {
 				     ."<img alt=\"standalone\" src='{$my_url}graphics/REDDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
 			if ($CORE_LOCAL->get("receiptToggle")==1){
-				echo "<img alt=\"receipt\" src='{$my_url}graphics/receipt.gif'>&nbsp;&nbsp;&nbsp;";
+				echo "<img id=\"receipticon\" alt=\"receipt\" src='{$my_url}graphics/receipt.gif'>&nbsp;&nbsp;&nbsp;";
 			}
 			else {
-				echo "<img alt=\"no receipt\" src='{$my_url}graphics/noreceipt.gif'>&nbsp;&nbsp;&nbsp;";
+				echo "<img id=\"receipticon\" alt=\"no receipt\" src='{$my_url}graphics/noreceipt.gif'>&nbsp;&nbsp;&nbsp;";
 			}
 			if($CORE_LOCAL->get("CCintegrate") == 1 && 
 				$CORE_LOCAL->get("ccLive") == 1 && $CORE_LOCAL->get("training") == 0){
@@ -370,7 +370,7 @@ class BasicPage {
 			<?php echo DisplayLib::scaledisplaymsg(); ?>	
 			</div>
 			<div id="scaleIconBox">
-			<?php echo DisplayLib::termdisplaymsg(); ?>
+			<?php echo DisplayLib::drawNotifications(); ?>
 			</div>
 		</div>
 		<?php
@@ -429,12 +429,42 @@ class BasicPage {
 			header("Location: ".$url);
 	}
 
+    /**
+      Callback for javascript scanner-scale polling
+      This one sends scan input to a form field on the
+      page and other inputs through the normal parser
+    */
 	function default_parsewrapper_js($input="reginput",$form="formlocal"){
 	?>
+    <script type="text/javascript" src="<?php echo $this->page_url; ?>js/ajax-parser.js"></script>
 	<script type="text/javascript">
-	function parseWrapper(str){
-		$('#<?php echo $input; ?>').val(str);
-		$('#<?php echo $form; ?>').submit();
+	function parseWrapper(str) {
+        if (/^\d+$/.test(str)) {
+            $('#<?php echo $input; ?>').val(str);
+            $('#<?php echo $form; ?>').submit();
+        } else {
+            runParser(str, '<?php echo $this->page_url; ?>');
+        }
+	}
+	</script>
+	<?php
+	}
+
+    /**
+      Callback for javascript scanner-scale polling
+      This one ignores scan input and runs anything
+      else through the parser
+    */
+	function noscan_parsewrapper_js() {
+	?>
+    <script type="text/javascript" src="<?php echo $this->page_url; ?>js/ajax-parser.js"></script>
+	<script type="text/javascript">
+	function parseWrapper(str) {
+        if (/^\d+$/.test(str)) {
+            // do nothing
+        } else {
+            runParser(str, '<?php echo $this->page_url; ?>');
+        }
 	}
 	</script>
 	<?php

@@ -64,8 +64,8 @@ elseif (isset($_REQUEST['deleteComment'])){
 elseif (isset($_REQUEST['delEntry'])){
 	$entryID = sprintf("%d",$_REQUEST['delEntry']);
 	$empID = sprintf("%d",$_REQUEST['empID']);
-	$q = $db->prepare("DELETE FROM evalScores WHERE id=? AND empID=?");
 	$db = hours_dbconnect();
+	$q = $db->prepare("DELETE FROM evalScores WHERE id=? AND empID=?");
 	$db->execute($q, array($entryID, $empID));
 
 	echo getHistory($empID);
@@ -78,7 +78,7 @@ elseif (isset($_REQUEST['saveInfo'])){
 	$pos = $_REQUEST['pos'];
 	$date = "null";
 	if (!empty($month) && !empty($year)){
-		$date = "'".$year."-".str_pad($month,2,'0',STR_PAD_LEFT)."-01'";
+		$date = $year."-".str_pad($month,2,'0',STR_PAD_LEFT)."-01";
 	}
 	$db = hours_dbconnect();
 	$hire = isset($_REQUEST['hire'])?$_REQUEST['hire']:'';
@@ -89,7 +89,6 @@ elseif (isset($_REQUEST['saveInfo'])){
 		else
 			$hire = '';
 	}
-	$hire = !empty($hire)?"'".mysql_real_escape_string($hire)."'":"null";
 	$etype = $_REQUEST['etype'];
 	
 	$delQ = $db->prepare("DELETE FROM evalInfo WHERE empID=?");

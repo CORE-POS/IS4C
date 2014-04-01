@@ -1,0 +1,27 @@
+If you're using this font under Microsoft Windows, I can't help you.
+
+If you're using it under a Linux-y operating system, there are documents
+available which do a better job than I ever would at explaining how to
+install them.
+
+In general, take a look at the Font-HOWTO, available from
+http://www.linuxdoc.org/HOWTO/Font-HOWTO.html particularly
+
+"Making Fonts Available To X"
+http://www.linuxdoc.org/HOWTO/Font-HOWTO-4.html
+
+and
+
+"Making Fonts Available to GhostScript"
+http://www.linuxdoc.org/HOWTO/Font-HOWTO-5.html
+
+I have included a test PostScript(tm) file called "test.ps" that you can
+fire up in GhostScript to see if you have that set up correctly.
+
+I have also included a file, "symbols.png" to show you which characters
+you need to type to get the various MICR symbols.
+
+Note that to function in the MICR readers, this font must be sized
+exactly right.  GnuMICR is designed to be used at 12 point size.
+
+Good luck!

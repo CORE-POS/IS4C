@@ -27,38 +27,25 @@ include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 class GeneralSalesReport extends FannieReportPage 
 {
 
-	private $grandTTL;
+	private $grandTTL = 1;
+    protected $title = "Fannie : General Sales Report";
+    protected $header = "General Sales Report";
+    protected $report_cache = 'day';
+    protected $multi_report_mode = false;
+    protected $sortable = false;
+    protected $no_sort_but_style = true;
+    protected $chart_data_columns = array(1);
+    protected $report_headers = array('','Sales','Quantity','% Sales','Dept %');
+    protected $required_fields = array('date1', 'date2');
 
 	public function preprocess()
     {
-		$this->title = "Fannie : General Sales Report";
-		$this->header = "General Sales Report";
-		$this->report_cache = 'day';
-		$this->grandTTL = 1;
-		$this->multi_report_mode = false;
-		$this->sortable = false;
-        $this->no_sort_but_style = true;
-        $this->chart_data_columns = array(1);
-
-		if (isset($_REQUEST['date1'])){
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-			$this->report_headers = array('','Sales','Quantity','% Sales','Dept %');
-
-			/**
-			  Check if a non-html format has been requested
-			*/
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls')
-				$this->report_format = 'xls';
-			elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv')
-				$this->report_format = 'csv';
-            else
-                $this->add_script('../../src/d3.js/d3.v3.min.js');
+        parent::preprocess();
+        if ($this->content_function == 'report_content' && $this->report_format == 'html') {
+            $this->add_script('../../src/d3.js/d3.v3.min.js');
 		}
-		else 
-			$this->add_script("../../src/CalendarControl.js");
 
-		return True;
+		return true;
 	}
 
 	public function fetch_report_data()
@@ -299,7 +286,6 @@ function drawPieChart()
 
 }
 
-$obj = new GeneralSalesReport();
-$obj->draw_page();
+FannieDispatch::conditionalExec(false);
 
 ?>

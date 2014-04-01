@@ -39,7 +39,7 @@ $CREATE['trans.ar_history_today'] = "
 			MAX(tdate) AS tdate,
 			trans_num
 		FROM dlog
-			WHERE trans_subtype='MI' OR department IN $dlist
+			WHERE (trans_subtype='MI' OR department IN {$dlist})
 				AND ".$con->datediff($con->now(),'tdate')."=0
 		GROUP BY card_no,trans_num
 ";

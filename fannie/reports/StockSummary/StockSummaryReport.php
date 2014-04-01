@@ -34,21 +34,6 @@ class StockSummaryReport extends FannieReportPage
     protected $report_headers = array('Mem#', 'Name', 'Status', 'A', 'B', 'Unknown');
     protected $report_cache = 'day';
 
-    public function preprocess() 
-    {
-
-        $this->content_function = "report_content";
-        $this->has_menus(False);
-
-        if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-            $this->report_format = 'xls';
-        } elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-            $this->report_format = 'csv';
-        }
-
-        return true;
-    }
-
     public function fetch_report_data()
     {
         global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
@@ -91,9 +76,5 @@ class StockSummaryReport extends FannieReportPage
     }
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
-    //FannieDispatch::go();
-    $obj = new StockSummaryReport();
-    $obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
 

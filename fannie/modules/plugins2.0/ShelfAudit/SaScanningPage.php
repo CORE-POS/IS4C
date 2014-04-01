@@ -199,7 +199,5 @@ function readinput() {
 	}
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new SaScanningPage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+

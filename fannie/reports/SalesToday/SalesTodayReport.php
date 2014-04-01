@@ -281,10 +281,6 @@ function drawLineGraph(data, xrange, yrange)
 // SalesTodayReport
 }
 
-// This construct lets the rest of the file be included for extension.
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
-	$obj = new SalesTodayReport();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
 
 ?>

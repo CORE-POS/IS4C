@@ -105,6 +105,7 @@ class MercuryGift extends BasicCCModule {
 		case PaycardLib::PAYCARD_MODE_AUTH:
 			$CORE_LOCAL->set("paycard_amount",$CORE_LOCAL->get("amtdue"));
 			$CORE_LOCAL->set("paycard_id",$CORE_LOCAL->get("LastID")+1); // kind of a hack to anticipate it this way..
+            $CORE_LOCAL->set('CacheCardType', 'GIFT');
 			$plugin_info = new Paycards();
 			$json['main_frame'] = $plugin_info->plugin_url().'/gui/paycardboxMsgAuth.php';
 			return $json;
@@ -113,12 +114,14 @@ class MercuryGift extends BasicCCModule {
 		case PaycardLib::PAYCARD_MODE_ADDVALUE:
 			$CORE_LOCAL->set("paycard_amount",0);
 			$CORE_LOCAL->set("paycard_id",$CORE_LOCAL->get("LastID")+1); // kind of a hack to anticipate it this way..
+            $CORE_LOCAL->set('CacheCardType', 'GIFT');
 			$plugin_info = new Paycards();
 			$json['main_frame'] = $plugin_info->plugin_url().'/gui/paycardboxMsgGift.php';
 			return $json;
 	
 		case PaycardLib::PAYCARD_MODE_BALANCE:
 			$plugin_info = new Paycards();
+            $CORE_LOCAL->set('CacheCardType', 'GIFT');
 			$json['main_frame'] = $plugin_info->plugin_url().'/gui/paycardboxMsgBalance.php';
 			return $json;
 		} // switch mode
@@ -181,7 +184,6 @@ class MercuryGift extends BasicCCModule {
 			$CORE_LOCAL->set("boxMsg","<b>Success</b><font size=-1><p>New card balance: $".$resp["Balance"]);
 				// reminder to void everything on testgift2, so that it remains inactive to test activations
 			$CORE_LOCAL->set("boxMsg",$CORE_LOCAL->get("boxMsg")."<p>[enter] to continue<br>\"rp\" to reprint slip</font>");
-			$json['receipt'] = 'gcSlip';
 			break;
 		case PaycardLib::PAYCARD_MODE_AUTH:
 			$CORE_LOCAL->set("autoReprint",1);
@@ -193,7 +195,6 @@ class MercuryGift extends BasicCCModule {
 			if( !strcasecmp($CORE_LOCAL->get("paycard_PAN"),"7018525757980004481")) // == doesn't work because the string is numeric and very large, so PHP has trouble turning it into an (int) for comparison
 				$CORE_LOCAL->set("boxMsg",$CORE_LOCAL->get("boxMsg")."<br><b>REMEMBER TO VOID THIS</b><br>(ask IT for details)");
 			$CORE_LOCAL->set("boxMsg",$CORE_LOCAL->get("boxMsg")."<p>[enter] to continue<br>\"rp\" to reprint slip<br>[clear] to cancel and void</font>");
-			$json['receipt'] = 'gcSlip';
 			break;
 		case PaycardLib::PAYCARD_MODE_VOID:
 		case PaycardLib::PAYCARD_MODE_VOIDITEM:

@@ -27,42 +27,11 @@ include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 class RecallReport extends FannieReportPage 
 {
     protected $report_headers = array('Mem#', 'Name', 'Address', 'City', 'State', 'Zip', 'Phone', 'Alt. Phone', 'Email', 'Qty', 'Amt');
+    protected $title = "Fannie : Recall Movement";
+    protected $header = "Recall Report";
+    protected $required_fields = array('date1', 'date2');
 
     protected $sort_column = 1;
-
-	public function preprocess()
-    {
-		/**
-		  Set the page header and title, enable caching
-		*/
-		$this->title = "Fannie : Recall Movement";
-		$this->header = "Recall Report";
-		$this->report_cache = 'none';
-
-		if (isset($_REQUEST['date1'])){
-			/**
-			  Form submission occurred
-
-			  Change content function, turn off the menus,
-			  set up headers
-			*/
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-		
-			/**
-			  Check if a non-html format has been requested
-			*/
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-				$this->report_format = 'xls';
-			} elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-				$this->report_format = 'csv';
-            }
-		} else  {
-			$this->add_script("../../src/CalendarControl.js");
-        }
-
-       return true;
-    }
 
     public function report_description_content()
     {
@@ -146,6 +115,6 @@ class RecallReport extends FannieReportPage
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

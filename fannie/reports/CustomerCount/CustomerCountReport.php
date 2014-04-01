@@ -41,52 +41,26 @@ include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 class CustomerCountReport extends FannieReportPage {
 
 	private $memtypes;
+    protected $title = "Fannie : Customer Report";
+    protected $header = "Customer Report";
+    protected $report_cache = 'day';
+    protected $required_fields = array('date1', 'date2');
 
 	function preprocess(){
-		global $FANNIE_OP_DB, $FANNIE_WINDOW_DRESSING;
+		global $FANNIE_OP_DB;
+        // dynamic column headers
         $dbc = FannieDB::get($FANNIE_OP_DB);
-		/**
-		  Set the page header and title, enable caching
-		*/
-		$this->title = "Fannie : Customer Report";
-		$this->header = "Customer Report";
-		$this->report_cache = 'day';
+        $typeQ = $dbc->prepare_statement("SELECT memtype,memDesc FROM memtype ORDER BY memtype");
+        $typeR = $dbc->exec_statement($typeQ);
+        $this->memtypes = array();
+        $this->report_headers = array('Date');
+        while($typeW = $dbc->fetch_row($typeR)){
+            $this->report_headers[] = $typeW['memDesc'];
+            $this->memtypes[$typeW['memtype']] = $typeW['memDesc'];
+        }
+        $this->report_headers[] = 'Total';
 
-		if (isset($_REQUEST['date1'])){
-			/**
-			  Form submission occurred
-
-			  Change content function, turn off the menus unless wanted,
-			  set up headers
-			*/
-			$this->content_function = "report_content";
-			if (isset($FANNIE_WINDOW_DRESSING) && $FANNIE_WINDOW_DRESSING === True)
-				$this->has_menus(True);
-			else
-				$this->has_menus(False);
-
-			$typeQ = $dbc->prepare_statement("SELECT memtype,memDesc FROM memtype ORDER BY memtype");
-			$typeR = $dbc->exec_statement($typeQ);
-			$this->memtypes = array();
-			$this->report_headers = array('Date');
-			while($typeW = $dbc->fetch_row($typeR)){
-				$this->report_headers[] = $typeW['memDesc'];
-				$this->memtypes[$typeW['memtype']] = $typeW['memDesc'];
-			}
-			$this->report_headers[] = 'Total';
-		
-			/**
-			  Check if a non-html format has been requested
-			*/
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls')
-				$this->report_format = 'xls';
-			elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv')
-				$this->report_format = 'csv';
-		}
-		else 
-			$this->add_script("../../src/CalendarControl.js");
-
-		return True;
+        return parent::preprocess();
 	}
 
 	function fetch_report_data()
@@ -186,6 +160,6 @@ class CustomerCountReport extends FannieReportPage {
 	}
 }
 
-$obj = new CustomerCountReport();
-$obj->draw_page();
+FannieDispatch::conditionalExec(false);
+
 ?>

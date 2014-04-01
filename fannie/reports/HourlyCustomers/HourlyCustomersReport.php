@@ -32,21 +32,7 @@ class HourlyCustomersReport extends FannieReportPage
 
     protected $content_function = 'both_content';
     protected $report_headers = array('Hour', 'Transactions');
-
-	public function preprocess()
-    {
-        if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-            $this->report_format = 'xls';
-            $this->has_menus(False);
-        } elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-            $this->report_format = 'csv';
-            $this->has_menus(False);
-		} else  {
-			$this->add_script("../../src/CalendarControl.js");
-        }
-
-		return true;
-	}
+    protected $required_fields = array('date');
 
     public function form_content()
     {
@@ -101,6 +87,6 @@ Get transactions per hour for what date (YYYY-MM-DD)?<br />
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

@@ -27,25 +27,14 @@ include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 class MonthOverMonthReport extends FannieReportPage {
 
 	private $months;
+    $title = "Fannie : Month Over Month Movement";
+    $header = "Month Over Month Movement";
+    protected $required_fields = array('month1', 'month2');
 	
 	function preprocess()
     {
-		/**
-		  Set the page header and title, enable caching
-		*/
-		$this->title = "Fannie : Month Over Month Movement";
-		$this->header = "Month Over Month Movement";
-		$this->report_cache = 'none';
-
-		if (isset($_REQUEST['month1'])){
-			/**
-			  Form submission occurred
-
-			  Change content function, turn off the menus,
-			  set up headers
-			*/
-			$this->content_function = "report_content";
-			$this->has_menus(False);
+        parent::preprocess();
+        if ($this->content_function = 'report_content') {
 			$this->report_headers = array('#','Description');
 			// build headers and keys off span of months
 			$this->months = array();
@@ -56,22 +45,9 @@ class MonthOverMonthReport extends FannieReportPage {
 				$this->months[] = date('Y-n',$stamp1);
 				$stamp1 = mktime(0,0,0,date('n',$stamp1)+1,1,date('Y',$stamp1));
 			}
-		
-		
-			/**
-			  Check if a non-html format has been requested
-			*/
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls')
-				$this->report_format = 'xls';
-			elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv')
-				$this->report_format = 'csv';
-		}
-		else {
-			$this->add_script("../../src/CalendarControl.js");
-			$this->add_script("../../src/jquery/jquery.js");
 		}
 
-		return True;
+		return true;
 	}
 
 	function fetch_report_data(){
@@ -205,6 +181,6 @@ class MonthOverMonthReport extends FannieReportPage {
 	}
 }
 
-$obj = new MonthOverMonthReport();
-$obj->draw_page();
+FannieDispatch::conditionalExec(false);
+
 ?>

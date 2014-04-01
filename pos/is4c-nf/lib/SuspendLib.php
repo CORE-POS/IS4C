@@ -77,10 +77,10 @@ static public function checksuspended()
 {
 	global $CORE_LOCAL;
 
-	//Database::testremote();
-
 	$db_a = Database::tDataConnect();
-	$query_local = "select * from suspendedtoday";
+	$query_local = "SELECT upc 
+                    FROM suspended
+                    WHERE datetime >= " . date("'Y-m-d 00:00:00'");
 		
 	$result = "";
 	if ($CORE_LOCAL->get("standalone") == 1) {

@@ -43,9 +43,11 @@ class FannieDB
     */
     public static function get($db_name)
     {
-        if (self::$db == null) {
+        if (!self::dbIsConfigured()) {
+            return false;
+        } else if (self::$db == null) {
             self::newDB($db_name);
-        } elseif (!isset(self::$db->connections[$db_name])) {
+        } else if (!isset(self::$db->connections[$db_name])) {
             self::addDB($db_name);
         }
 
@@ -53,6 +55,16 @@ class FannieDB
         self::$db->query('use '.$db_name);
         $info = debug_backtrace();
         return self::$db;
+    }
+
+    private static function dbIsConfigured()
+    {
+        include(dirname(__FILE__).'/../../config.php');
+        if (!isset($FANNIE_SERVER) || !isset($FANNIE_SERVER_DBMS) || !isset($FANNIE_SERVER_USER) || !isset($FANNIE_SERVER_PW)) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
     private static function newDB($db_name)

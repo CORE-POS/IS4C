@@ -447,7 +447,7 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
                 }
 	   if ($logged_in || (preg_match("/^002/",$rowItem[0]) && $row3[1] == 3)){
            	echo "</td></tr><tr><td colspan=4><input type='submit' name='submit' value='submit'> ";
-		echo " <a href=../../item/deleteItem.php?upc=$upc>Delete this item</a> | ";
+		echo " <a href=../../item/deleteItem.php?submit=submit&upc=$upc>Delete this item</a> | ";
            }
            else {
            	echo "</td></tr><tr><td colspan=4>Please <a href=/auth/ui/loginform.php?redirect=/queries/productTest.php?upc=$upc>";

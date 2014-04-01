@@ -21,14 +21,6 @@
 
 *********************************************************************************/
 
-/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-	13Feb2013 Andy Theuninck visitingMem support for memdiscountadd
-	13Jan2013 Eric Lee New omtr_ttl() based on ttl() for Ontario Meal Tax Rebate.
-	18Sep2012 Eric Lee In setMember support for not displaying subtotal.
-
-*/
-
 /**
   @class PrehLib
   A horrible, horrible catch-all clutter of functions
@@ -47,6 +39,8 @@ static public function clearMember()
 	$db = Database::tDataConnect();
 	$db->query("UPDATE localtemptrans SET card_no=0,percentDiscount=NULL");
 	$CORE_LOCAL->set("ttlflag",0);	
+	$opts = array('upc'=>'DEL_MEMENTRY');
+	TransRecord::add_log_record($opts);
 }
 
 /**
@@ -98,10 +92,14 @@ static public function memberID($member_number)
 		$ret['main_frame'] = MiscLib::baseURL()."gui-modules/requestInfo.php?class=PrehLib";
 	}
 
+    /** This is a bad idea. If the search is
+        cancelled, these fields won't be refreshed
+        with new data
 	$CORE_LOCAL->set("memberID","0");
 	$CORE_LOCAL->set("memType",0);
 	$CORE_LOCAL->set("percentDiscount",0);
 	$CORE_LOCAL->set("memMsg","");
+    */
 
 	if (empty($ret['output']) && $ret['main_frame'] == false) {
 		$ret['main_frame'] = MiscLib::base_url()."gui-modules/memlist.php?idSearch=".$member_number;
@@ -152,17 +150,32 @@ static public function setMember($member, $personNumber, $row)
     }
 	$CORE_LOCAL->set("memMsg",$memMsg);
 
+	$CORE_LOCAL->set("memberID",$member);
 	$chargeOk = self::chargeOk();
 	if ($CORE_LOCAL->get("balance") != 0 && $member != $CORE_LOCAL->get("defaultNonMem")) {
-	      $CORE_LOCAL->set("memMsg",$CORE_LOCAL->get("memMsg")." AR");
+	      $CORE_LOCAL->set("memMsg",$CORE_LOCAL->get("memMsg") . _(" AR"));
     }
       
-	$CORE_LOCAL->set("memberID",$member);
 	$CORE_LOCAL->set("memType",$row["memType"]);
 	$CORE_LOCAL->set("lname",$row["LastName"]);
 	$CORE_LOCAL->set("fname",$row["FirstName"]);
 	$CORE_LOCAL->set("Type",$row["Type"]);
 	$CORE_LOCAL->set("percentDiscount",$row["Discount"]);
+	$CORE_LOCAL->set("isStaff",$row["staff"]);
+	$CORE_LOCAL->set("SSI",$row["SSI"]);
+
+    if ($CORE_LOCAL->get('useMemtypeTable') == 1 && $conn->table_exists('memtype')) {
+        $prep = $conn->prepare('SELECT discount, staff, ssi 
+                                 FROM memtype
+                                 WHERE memtype=?');
+        $res = $conn->execute($prep, array((int)$CORE_LOCAL->get('memType')));
+        if ($conn->num_rows($res) > 0) {
+            $mt_row = $conn->fetch_row($res);
+            $CORE_LOCAL->set('percentDiscount', $mt_row['discount']);
+            $CORE_LOCAL->set('isStaff', $mt_row['staff']);
+            $CORE_LOCAL->set('SSI', $mt_row['ssi']);
+        }
+    }
 
 	/**
 	  Use discount module to calculate modified percentDiscount
@@ -172,7 +185,7 @@ static public function setMember($member, $personNumber, $row)
 	elseif (!class_exists($handler_class)) $handler_class = 'DiscountModule';
 	if (class_exists($handler_class)){
 		$module = new $handler_class();
-		$CORE_LOCAL->set('percentDiscount', $module->percentage($row['Discount']));
+		$CORE_LOCAL->set('percentDiscount', $module->percentage($CORE_LOCAL->get('percentDiscount')));
 	}
 
 	if ($CORE_LOCAL->get("Type") == "PC") {
@@ -180,9 +193,6 @@ static public function setMember($member, $personNumber, $row)
 	} else {
         $CORE_LOCAL->set("isMember",0);
 	}
-
-	$CORE_LOCAL->set("isStaff",$row["staff"]);
-	$CORE_LOCAL->set("SSI",$row["SSI"]);
 
 	if ($CORE_LOCAL->get("SSI") == 1) {
 		$CORE_LOCAL->set("memMsg",$CORE_LOCAL->get("memMsg")." #");
@@ -224,7 +234,7 @@ static public function setMember($member, $personNumber, $row)
 		$noop = "";
 	} else {
 		self::ttl();
-	}
+	} 
 }
 
 /**
@@ -377,6 +387,15 @@ static public function tender($right, $strl)
 	$cents = ((int)substr($strl,-2))/100.0;
 	$strl = (double)($dollars+round($cents,2));
 	$strl *= $mult;
+
+    if ($CORE_LOCAL->get('RepeatAgain')) {
+        // the default tender prompt utilizes boxMsg2.php to
+        // repeat the previous input, plus amount, on confirmation
+        // the tender's preReqCheck methods will need to pretend
+        // this is the first input rather than a repeat
+        $CORE_LOCAL->set('msgrepeat', 0);
+        $CORE_LOCAL->set('RepeatAgain', false);
+    }
 
 	/**
 	  First use base module to check for error
@@ -699,10 +718,10 @@ static public function ttl()
 
 		$CORE_LOCAL->set("ttlflag",1);
 		Database::setglobalvalue("TTLFlag", 1);
-		
-		// if total is called before records have been added to the transaction
-		// Database::getsubtotals will zero out the discount
-		$savePD = $CORE_LOCAL->get('percentDiscount');
+
+        // if total is called before records have been added to the transaction,
+        // Database::getsubtotals will zero out the discount
+        $savePD = $CORE_LOCAL->get('percentDiscount');
 
 		// Refresh totals after staff and member discounts.
 		Database::getsubtotals();
@@ -710,7 +729,7 @@ static public function ttl()
         $ttlHooks = $CORE_LOCAL->get('TotalActions');
         if (is_array($ttlHooks)) {
             foreach($ttlHooks as $ttl_class) {
-				if (!class_exists($ttl_class)) continue;
+                if (!class_exists($ttl_class)) continue;
                 $mod = new $ttl_class();
                 $result = $mod->apply();
                 if ($result !== true && is_string($result)) {
@@ -721,9 +740,9 @@ static public function ttl()
 
 		// Refresh totals after total actions
 		Database::getsubtotals();
-		
-		$CORE_LOCAL->set('percentDiscount', $savePD);
-		
+
+        $CORE_LOCAL->set('percentDiscount', $savePD);
+
 		if ($CORE_LOCAL->get("percentDiscount") > 0) {
 			if ($CORE_LOCAL->get("member_subtotal") === false) {
 				TransRecord::addItem("", "Subtotal", "", "", "D", 0, 0, MiscLib::truncate2($CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("subtotal")), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7);
@@ -1041,9 +1060,15 @@ static public function chargeOk()
 	Database::getsubtotals();
 
 	$conn = Database::pDataConnect();
-	$query = "select m.availBal,m.balance,c.ChargeOk from memchargebalance as m
-		left join custdata AS c ON m.CardNo=c.CardNo AND c.personNum=1
-		where m.CardNo = '".$CORE_LOCAL->get("memberID")."'";
+	$query = "SELECT c.ChargeLimit - c.Balance AS availBal,
+        c.Balance, c.ChargeOk
+		FROM custdata AS c 
+		WHERE c.personNum=1 AND c.CardNo = " . ((int)$CORE_LOCAL->get("memberID"));
+    $table_def = $conn->table_definition('custdata');
+    // 3Jan14 schema may not have been updated
+    if (!isset($table_def['ChargeLimit'])) {
+        $query = str_replace('c.ChargeLimit', 'c.MemDiscountLimit', $query);
+    }
 
 	$result = $conn->query($query);
 	$num_rows = $conn->num_rows($result);
@@ -1051,7 +1076,7 @@ static public function chargeOk()
 
 	$availBal = $row["availBal"] + $CORE_LOCAL->get("memChargeTotal");
 	
-	$CORE_LOCAL->set("balance",$row["balance"]);
+	$CORE_LOCAL->set("balance",$row["Balance"]);
 	$CORE_LOCAL->set("availBal",number_format($availBal,2,'.',''));	
 	
 	$chargeOk = 1;

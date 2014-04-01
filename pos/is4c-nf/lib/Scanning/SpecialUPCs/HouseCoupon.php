@@ -35,7 +35,6 @@
 class HouseCoupon extends SpecialUPC 
 {
 
-
     public function isSpecial($upc)
     {
         global $CORE_LOCAL;
@@ -72,7 +71,7 @@ class HouseCoupon extends SpecialUPC
 
         $add = $this->getValue($coupID);
         if ($add['value'] != 0) {
-            TransRecord::addhousecoupon($upc, $add['department'], -1 * $add['value']);
+            TransRecord::addhousecoupon($upc, $add['department'], -1 * $add['value'], $add['description']);
         }
         $json['output'] = DisplayLib::lastpage();
         $json['udpmsg'] = 'goodBeep';
@@ -87,6 +86,7 @@ class HouseCoupon extends SpecialUPC
     private function lookupCoupon($id)
     {
         $db = Database::pDataConnect();
+        $hctable = $db->table_definition('houseCoupons');
         $infoQ = "select endDate," . $db->identifier_escape('limit') .
             ",discountType, department,
             discountValue, minType, minValue, memberOnly, 
@@ -94,6 +94,9 @@ class HouseCoupon extends SpecialUPC
             ". $db->datediff('endDate', $db->now()) . " end as expired
             from
             houseCoupons WHERE coupID=" . ((int)$id);
+        if (isset($hctable['description'])) {
+            $infoQ = str_replace('as expired', 'as expired, description', $infoQ);
+        }
         $infoR = $db->query($infoQ);
         if ($db->num_rows($infoR) == 0) {
             return false;
@@ -123,7 +126,15 @@ class HouseCoupon extends SpecialUPC
 
         /* check for member-only, longer use tracking
            available with member coupons */
-        if ($infoW["memberOnly"] == 1 && ($CORE_LOCAL->get("memberID") == "0" || $CORE_LOCAL->get("isMember") != 1)) {
+        $is_mem = false;
+        if ($CORE_LOCAL->get('isMember') == 1) {
+            $is_mem = true;
+        } else if ($CORE_LOCAL->get('memberID') == $CORE_LOCAL->get('visitingMem')) {
+            $is_mem = true;
+        } else if ($CORE_LOCAL->get('memberID') == '0') {
+            $is_mem = false;
+        }
+        if ($infoW["memberOnly"] == 1 && !$is_mem) {
             return DisplayLib::boxMsg(_("Member only coupon") . "<br />" .
                         _("Apply member number first"));
         }
@@ -262,14 +273,14 @@ class HouseCoupon extends SpecialUPC
         if ($infoW === false) {
             return DisplayLib::boxMsg(_("coupon not found"));
         }
-		
-		$prefix = $CORE_LOCAL->get('houseCouponPrefix');
-		if ($prefix == '') {
-			$prefix = '00499999';
-		}
-		$upc = $prefix . str_pad($id, 5, '0', STR_PAD_LEFT);
-        
-		/* check the number of times this coupon
+
+        $prefix = $CORE_LOCAL->get('houseCouponPrefix');
+        if ($prefix == '') {
+            $prefix = '00499999';
+        }
+        $upc = $prefix . str_pad($id, 5, '0', STR_PAD_LEFT);
+
+        /* check the number of times this coupon
          * has been used in this transaction
          * against the limit */
         $transDB = Database::tDataConnect();
@@ -287,14 +298,14 @@ class HouseCoupon extends SpecialUPC
           For members, enforce limits against longer
           transaction history
         */
-        if ($infoW["memberOnly"] == 1 && $CORE_LOCAL->get("standalone")==0) {
+        if ($infoW["memberOnly"] == 1 && $CORE_LOCAL->get("standalone")==0 && $CORE_LOCAL->get('memberID') != $CORE_LOCAL->get('visitingMem')) {
             $mDB = Database::mDataConnect();
             $mR = $mDB->query("SELECT quantity FROM houseCouponThisMonth
                 WHERE card_no=" . $CORE_LOCAL->get("memberID") . " and
                 upc='$upc'");
             if ($mDB->num_rows($mR) > 0) {
                 $uses = array_pop($mDB->fetch_row($mR));
-                if ($infoW["limit"] >= $uses) {
+                if ($uses >= $infoW["limit"]) {
                     return DisplayLib::boxMsg(_("Coupon already used")
                                 ."<br />"
                                 ._("on this membership"));
@@ -312,13 +323,14 @@ class HouseCoupon extends SpecialUPC
       @return array with keys:
         value => [float] coupon value
         department => [int] department number for the coupon
+        description => [string] description for coupon
     */
     public function getValue($id)
     {
         global $CORE_LOCAL;
         $infoW = $this->lookupCoupon($id);
         if ($infoW === false) {
-            return array('value' => 0, 'department' => 0);;
+            return array('value' => 0, 'department' => 0, 'description' => '');
         }
 
         $transDB = Database::tDataConnect();
@@ -327,6 +339,7 @@ class HouseCoupon extends SpecialUPC
          */
         $value = 0;
         $coupID = $id;
+        $description = isset($infoW['description']) ? $infoW['description'] : '';
         switch($infoW["discountType"]) {
             case "Q": // quantity discount
                 // discount = coupon's discountValue
@@ -421,6 +434,22 @@ class HouseCoupon extends SpecialUPC
             case "F": // completely flat; no scaling for weight
                 $value = $infoW["discountValue"];
                 break;
+            case "%C": // capped percent discount
+                /**
+                  This is a little messy to cram two different values
+                  into one number. The decimal portion is the discount
+                  percentage; the integer portion is the maximum 
+                  discountable total. The latter is the discount cap
+                  expressed in a way that will be an integer more often.
+
+                  Example:
+                  A 5 percent discount capped at $2.50 => 50.05
+                */
+                Database::getsubtotals();
+                $max = floor($infoW['discountValue']);
+                $percentage = $infoW['discountValue'] - $max;
+                $amount = $CORE_LOCAL->get('discountableTotal') > $max ? $max : $CORE_LOCAL->get('discountableTotal');
+                $value = $percentage * $amount;
             case "%": // percent discount on all items
                 Database::getsubtotals();
                 $value = $infoW["discountValue"] * $CORE_LOCAL->get("discountableTotal");
@@ -461,17 +490,17 @@ class HouseCoupon extends SpecialUPC
                 $ttlPD += $couponPD;
                 // apply new discount to session & transaction
                 $CORE_LOCAL->set('percentDiscount', $ttlPD);
-				$transDB = Database::tDataConnect();
+                $transDB = Database::tDataConnect();
                 $transDB->query(sprintf('UPDATE localtemptrans SET percentDiscount=%f',$ttlPD));
 
                 // still need to add a line-item with the coupon UPC to the
                 // transaction to track usage
                 $value = 0;
+                $description = $ttlPD . ' % Discount Coupon';
                 break;
         }
 
-        return array('value' => $value, 'department' => $infoW['department']);
+        return array('value' => $value, 'department' => $infoW['department'], 'description' => $description);
     }
-
 }
 

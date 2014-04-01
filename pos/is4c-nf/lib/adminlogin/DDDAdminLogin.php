@@ -24,12 +24,12 @@
 /**
   @class DDDAdminLogin
   adminlogin callback for marking current
-  items as DDD (dropped, dented, damaged)
+  items as shrink (DDD in WFC parlance [dropped, dented, damaged])
 */
 class DDDAdminLogin 
 {
 
-    public static $adminLoginMsg = 'DDD these items?';
+    public static $adminLoginMsg = 'Mark these items as shrink/unsellable?';
     
     public static $adminLoginLevel = 10;
 

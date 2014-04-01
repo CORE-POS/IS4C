@@ -52,10 +52,16 @@ $susQ = "INSERT INTO suspensions
 	c.ChargeLimit,4
 	from meminfo as m left join
 	custdata as c on c.CardNo=m.card_no and c.personNum=1
-	left join {$TRANS}newBalanceStockToday_test as n on m.card_no=n.memnum
+	left join {$TRANS}equity_live_balance as n on m.card_no=n.memnum
 	left join memDates AS d ON m.card_no=d.card_no
 	WHERE 
-	DATE_ADD(d.start_date, INTERVAL 2 YEAR) < '$dStr'
+	( 
+        (DATE_ADD(d.start_date, INTERVAL 2 YEAR) < '$dStr'
+         AND YEAR(d.start_date) < 2013) 
+        OR
+        (DATE_ADD(d.start_date, INTERVAL 1 YEAR) < '$dStr'
+         AND YEAR(d.start_date) >= 2013) 
+    )
 	and c.Type='PC' and n.payments < 100
 	and c.memType in (1,3)
 	and NOT EXISTS(SELECT NULL FROM suspensions as s
@@ -70,10 +76,16 @@ $histQ = "INSERT INTO suspension_history
 	    m.card_no,4
 	    from meminfo as m left join
 	    custdata as c on c.CardNo=m.card_no and c.personNum=1
-	    left join {$TRANS}newBalanceStockToday_test as n on m.card_no=n.memnum
+	    left join {$TRANS}equity_live_balance as n on m.card_no=n.memnum
 	    left join memDates AS d ON m.card_no=d.card_no
 	    WHERE
-	    DATE_ADD(d.start_date, INTERVAL 2 YEAR) < '$dStr'
+        ( 
+            (DATE_ADD(d.start_date, INTERVAL 2 YEAR) < '$dStr'
+             AND YEAR(d.start_date) < 2013) 
+            OR
+            (DATE_ADD(d.start_date, INTERVAL 1 YEAR) < '$dStr'
+             AND YEAR(d.start_date) >= 2013) 
+        )
 	    and c.Type='PC' and n.payments < 100
 	    and c.memType in (1,3)
 	    and NOT EXISTS(SELECT NULL FROM suspensions as s
@@ -83,10 +95,10 @@ $sql->query($histQ);
 $custQ = "UPDATE custdata as c LEFT JOIN
 	    suspensions as s on c.CardNo=s.cardno
 	    SET c.type='INACT',memType=0,c.Discount=0,
-	    ChargeLimit=0,MemDiscountLimit=0
+	    c.ChargeLimit=0,MemDiscountLimit=0
 	    where c.type='PC' and s.cardno is not null";
 if (!isset($custdata['ChargeLimit'])) {
-    $custQ = str_replace('ChargeLimit=0,', '', $custQ);
+    $custQ = str_replace('c.ChargeLimit=0,', '', $custQ);
 }
 $sql->query($custQ);
 

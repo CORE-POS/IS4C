@@ -30,7 +30,7 @@ if (isset($_REQUEST['t_mod']) && isset($_REQUEST['emp_no'])){
 	echo '</pre>';
 
 	if (isset($_REQUEST['print']) && $_REQUEST['print'] == 1){
-		ReceiptLib::writeLine($text);
+		ReceiptLib::writeLine($report);
 	}
 }
 ?>

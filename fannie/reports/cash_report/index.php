@@ -65,9 +65,10 @@ $query = "select
 	  SUM(CASE WHEN transinterval = 0 then 1 when transinterval > 600 then 600 else transinterval END) / count(emp_no)  / 60 as minutes,
 	  SUM(Cancels) / count(emp_no) as cancels,
 	  MIN(proc_date)
-	  from CashPerformDay_cache
+	  from CashPerformDay
 	  GROUP BY emp_no,".$dbc->weekdiff($dbc->now(),'proc_date').",year(proc_date)
 	  ORDER BY year(proc_date) desc,".$dbc->weekdiff($dbc->now(),'proc_date')." asc";
+
 }
 else {
 $query = "select
@@ -80,11 +81,14 @@ $query = "select
           SUM(CASE WHEN transInterval = 0 THEN 1 when transInterval > 600 then 600 ELSE transInterval END)/60 as minutes,
           SUM(cancels)as cancels,
           MIN(proc_date)
-          FROM CashPerformDay_cache
+          FROM CashPerformDay
           WHERE emp_no = ?
 	  GROUP BY emp_no,".$dbc->weekdiff($dbc->now(),'proc_date').",year(proc_date)
 	  ORDER BY year(proc_date) desc,".$dbc->weekdiff($dbc->now(),'proc_date')." asc";
 $args = array($emp_no);
+}
+if ($dbc->isView('CashPerformDay') && $dbc->tableExists('CashPerformDay_cache')) {
+    $query = str_replace('CashPerformDay', 'CashPerformDay_cache', $query);
 }
 $result = $dbc->exec_statement($query,$args);
 

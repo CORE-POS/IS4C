@@ -23,7 +23,7 @@
 
 /* configuration for your module - Important */
 include("../../config.php");
-include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class VendorPricingIndex extends FanniePage {
 	/* html header, including navbar */
@@ -54,7 +54,6 @@ class VendorPricingIndex extends FanniePage {
 
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new VendorPricingIndex();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+
+?>

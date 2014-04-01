@@ -154,6 +154,8 @@ class InstallUpdatesPage extends InstallPage {
 			}
 
 			if ($changes > 0){
+                $reflector = new ReflectionClass($class);
+                $model_file = $reflector->getFileName();
 				printf(' <a href="" onclick="$(\'#mDetails%s\').toggle();return false;"
 					>Details</a><br /><pre style="display:none;" id="mDetails%s">%s</pre><br />
 					To apply changes <a href="InstallUpdatesPage.php?mupdate=%s">Click Here</a>
@@ -161,7 +163,7 @@ class InstallUpdatesPage extends InstallPage {
 					<pre>php %s --update %s %s</pre>
 					</li>',
 					$class, $class, $details, $class,
-					$cmd, $db_name, $class
+					$cmd, $db_name, $model_file
 					);
 			}
 			else if ($changes < 0 || $changes === False){
@@ -322,8 +324,6 @@ class InstallUpdatesPage extends InstallPage {
 // InstallUpdatesPage
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
-	$obj = new InstallUpdatesPage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+
 ?>

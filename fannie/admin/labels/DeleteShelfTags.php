@@ -24,7 +24,8 @@
 require('../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-class DeleteShelfTags extends FanniePage {
+class DeleteShelfTags extends FanniePage 
+{
 
 	protected $title = 'Fannie - Clear Shelf Tags';
 	protected $header = 'Clear Shelf Tags';
@@ -33,7 +34,8 @@ class DeleteShelfTags extends FanniePage {
 
 	private $messages = '';
 
-	function preprocess(){
+	function preprocess()
+    {
 		global $FANNIE_OP_DB;
 		$id = FormLib::get_form_value('id',0);
 
@@ -42,37 +44,57 @@ class DeleteShelfTags extends FanniePage {
 		$checkNoR = $dbc->exec_statement($checkNoQ,array($id));
 
 		$checkNoN = $dbc->num_rows($checkNoR);
-		if($checkNoN == 0){
+		if($checkNoN == 0) {
 			$this->messages = "Barcode table is already empty. <a href='ShelfTagIndex.php'>Click here to continue</a>";
-			return True;
+			return true;
 		}
 
-		if(FormLib::get_form_value('submit',False) === '1'){
-			$deleteQ = "UPDATE shelftags SET id=-1*id WHERE id=?";
-			if ($id == 0)
-			      $deleteQ = "UPDATE shelftags SET id=-999 WHERE id=?";
+		if(FormLib::get_form_value('submit', false) === '1') {
+            /**
+              Shelftags are not actually delete immediately
+              Instead, the id field is negated so they disappear
+              from view but can be manually retreived by IT if 
+              someone comes complaining that they accidentally
+              delete their shelftags (not that such a thing would
+              ever occur). They're properly deleted by the 
+              nightly.clipboard cron job.
+
+              If the same user deletes the same UPC from shelftags
+              multiple times in a day, the above procedure creates
+              a primary key conflict. So any negative-id records
+              that will create conflicts must be removed first.
+            */
+            $new_id = -1*$id;
+            if ($id == 0) {
+                $new_id = -999;
+            }
+            $problemQ = 'SELECT upc FROM shelftags WHERE id=? AND upc IN (SELECT upc FROM shelftags WHERE id=?)';
+            $problemP = $dbc->prepare($problemQ);
+            $problemR = $dbc->execute($problemP, array($new_id, $id));
+            $clearP = $dbc->prepare('DELETE FROM shelftags WHERE id=? AND upc=?');
+            while($problemW = $dbc->fetch_row($problemR)) {
+               $dbc->execute($clearP, array($new_id, $problemW['upc'])); 
+            }
+			$deleteQ = "UPDATE shelftags SET id=? WHERE id=?";
 			$prep = $dbc->prepare_statement($deleteQ);
-			$deleteR = $dbc->exec_statement($prep, array($id));
+			$deleteR = $dbc->exec_statement($prep, array($new_id, $id));
 			$this->messages = "Barcode table cleared <a href='ShelfTagIndex.php'>Click here to continue</a>";
-			return True;
-		}
-		else{
+
+			return true;
+		} else {
 			$this->messages = "<span style=\"color:red;\"><a href='DeleteShelfTags.php?id=$id&submit=1'>Click 
 				here to clear barcodes</a></span>";
-			return True;
+			return true;
 		}
 
-		return True;
+		return true;
 	}
 
-	function body_content(){
+	function body_content()
+    {
 		return $this->messages;
 	}
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new DeleteShelfTags();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
 
-?>

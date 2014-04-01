@@ -2,8 +2,6 @@
 require_once(dirname(__FILE__).'/../../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-$ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
-
 class TimesheetExport extends FannieReportPage {
 
 	function preprocess(){
@@ -34,7 +32,9 @@ class TimesheetExport extends FannieReportPage {
 	}
 
 	function form_content(){
-		global $ts_db, $FANNIE_OP_DB, $FANNIE_PLUGIN_SETTINGS;
+		global $FANNIE_OP_DB, $FANNIE_PLUGIN_SETTINGS;
+        $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
+
 		include('./includes/header.html');
 
 		echo "<form action='".$_SERVER['PHP_SELF']."' method=GET>";
@@ -63,7 +63,8 @@ class TimesheetExport extends FannieReportPage {
 	}
 
 	function fetch_report_data(){
-		global $ts_db, $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
+		global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
+        $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
 		$periodID = FormLib::get_form_value('period',0);
 		$_SESSION['periodID'] = $periodID;
 		$perDatesQ = $ts_db->prepare_statement("SELECT * FROM ".
@@ -181,9 +182,6 @@ class TimesheetExport extends FannieReportPage {
 	}
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new TimesheetExport();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
 
 ?>

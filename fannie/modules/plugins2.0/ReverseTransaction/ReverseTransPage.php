@@ -234,6 +234,6 @@ class ReverseTransPage extends FannieRESTfulPage {
 
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

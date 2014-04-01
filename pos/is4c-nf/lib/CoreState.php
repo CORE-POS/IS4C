@@ -322,6 +322,14 @@ static public function transReset()
 	*/
 	$CORE_LOCAL->set("msgrepeat",0);
 
+    /**
+      @var lastRepeat
+      [Optional] Reason for the last repeated message
+      Useful to set & check in situations where multiple
+      confirmations may be required.
+    */
+    $CORE_LOCAL->set('lastRepeat', '');
+
 	/**
 	  @var boxMsg
 	  Message string to display on the boxMsg2.php page
@@ -458,11 +466,21 @@ static public function transReset()
         $CORE_LOCAL->set('PluginList', array());
     }
 
-	foreach($CORE_LOCAL->get('PluginList') as $p){
-		if (!class_exists($p)) continue;
-		$obj = new $p();
-		$obj->plugin_transaction_reset();
-	}
+    if (is_array($CORE_LOCAL->get('PluginList'))) {
+        foreach($CORE_LOCAL->get('PluginList') as $p) {
+            if (!class_exists($p)) continue;
+            $obj = new $p();
+            $obj->plugin_transaction_reset();
+        }
+    }
+
+    if (is_array($CORE_LOCAL->get('Notifiers'))) {
+        foreach($CORE_LOCAL->get('Notifiers') as $n) {
+            if (!class_exists($n)) continue;
+            $obj = new $n();
+            $obj->transactionReset();
+        }
+    }
 }
 
 /**
@@ -768,9 +786,9 @@ static public function loadParams(){
                 }
                 $value = $tmp;
             }
-        } else if (strtoupper($value === 'TRUE')) {
+        } else if (strtoupper($value) === 'TRUE') {
             $value = true;
-        } else if (strtoupper($value === 'FALSE')) {
+        } else if (strtoupper($value) === 'FALSE') {
             $value = false;
         }
 

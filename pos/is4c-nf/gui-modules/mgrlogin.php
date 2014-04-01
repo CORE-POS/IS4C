@@ -27,8 +27,6 @@ class mgrlogin extends NoInputPage {
 
 	function preprocess(){
 		if (isset($_REQUEST['input'])){
-			if (isset($_REQUEST['beep']) && $_REQUEST['beep'] == 'yes')
-				UdpComm::udpSend('goodBeep');
 			$arr = $this->mgrauthenticate($_REQUEST['input']);
 			echo JsonLib::array_to_json($arr);
 			return False;
@@ -41,14 +39,12 @@ class mgrlogin extends NoInputPage {
 		<script type="text/javascript">
 		function submitWrapper(){
 			var passwd = $('#reginput').val();
-			var beep = 'yes';
 			if (passwd == ''){
 				passwd = $('#userPassword').val();
-				beep = 'no';
 			}
 			$.ajax({
 				url: '<?php echo $_SERVER['PHP_SELF']; ?>',
-				data: 'input='+passwd+'&beep='+beep,
+				data: 'input='+passwd,
 				type: 'get',
 				cache: false,
 				dataType: 'json',
@@ -139,7 +135,14 @@ class mgrlogin extends NoInputPage {
 		if ($num_rows != 0) {
 			$this->cancelorder();
 			$ret['cancelOrder'] = true;
-		}
+            if ($CORE_LOCAL->get('LoudLogins') == 1) {
+                UdpComm::udpSend('goodBeep');
+            }
+		} else {
+            if ($CORE_LOCAL->get('LoudLogins') == 1) {
+                UdpComm::udpSend('twoPairs');
+            }
+        }
 
 		return $ret;
 	}

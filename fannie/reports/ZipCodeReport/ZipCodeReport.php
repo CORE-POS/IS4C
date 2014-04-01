@@ -26,32 +26,9 @@ include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class ZipCodeReport extends FannieReportPage {
 
-	function preprocess(){
-		$this->report_cache = 'none';
-		$this->title = "Fannie : Zip Code Report";
-		$this->header = "Zip Code Report";
-
-		if (isset($_REQUEST['date1'])){
-			/**
-			  Form submission occurred
-
-			  Change content function, turn off the menus,
-			  set up headers
-			*/
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-		
-			/**
-			  Check if a non-html format has been requested
-			*/
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls')
-				$this->report_format = 'xls';
-			elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv')
-				$this->report_format = 'csv';
-		}
-
-		return True;
-	}
+    protected $title = "Fannie : Zip Code Report";
+    protected $header = "Zip Code Report";
+    protected $required_fields = array('date1', 'date2');
 
 	function fetch_report_data(){
 		global $FANNIE_OP_DB, $FANNIE_PLUGIN_SETTINGS;
@@ -175,6 +152,6 @@ class ZipCodeReport extends FannieReportPage {
 
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>
