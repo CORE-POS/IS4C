@@ -22,10 +22,15 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class GeneralSalesReport extends FannieReportPage 
 {
+
+    public $description = '[General Sales Report] shows total sales per department for a given date range in dollars as well as a percentage of store-wide sales.';
+    public $report_set = 'Sales Reports';
 
 	private $grandTTL = 1;
     protected $title = "Fannie : General Sales Report";

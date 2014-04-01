@@ -22,7 +22,9 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class TrendsReport extends FannieReportPage
 {
@@ -30,6 +32,9 @@ class TrendsReport extends FannieReportPage
 	protected $header = "Trend Report";
 
     protected $required_fields = array('date1', 'date2');
+
+    public $description = '[Trends] shows daily sales totals for items over a given date range. Items can be included by UPC, department, or manufacturer.';
+    public $report_set = 'Movement Reports';
 
     public function report_description_content()
     {

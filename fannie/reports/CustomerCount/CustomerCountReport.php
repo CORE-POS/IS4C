@@ -36,7 +36,9 @@
 */
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class CustomerCountReport extends FannieReportPage {
 
@@ -45,6 +47,8 @@ class CustomerCountReport extends FannieReportPage {
     protected $header = "Customer Report";
     protected $report_cache = 'day';
     protected $required_fields = array('date1', 'date2');
+
+    public $description = '[Customer Count] lists the number of customers per day, separated by membership type.';
 
 	function preprocess(){
 		global $FANNIE_OP_DB;

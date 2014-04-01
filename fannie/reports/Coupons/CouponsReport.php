@@ -22,9 +22,13 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class CouponsReport extends FannieReportPage {
+
+    public $description = '[Manufacturer Coupons] lists coupons totals by UPC for a given date range.';
 
     protected $title = "Fannie : Coupons Report";
     protected $header = "Coupons Report";

@@ -22,9 +22,14 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class BasketLimitedReport extends FannieReportPage {
+
+    public $description = '[Small Basket Report] lists sales for transactions containing a limited
+    number of items - i.e., what do people buy when they\'re only purchasing one or two things?';
 
     protected $report_headers = array('UPC', 'Description', '# Trans', 'Qty', '$');
     protected $sort_column = 2;

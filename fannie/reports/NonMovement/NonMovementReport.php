@@ -22,7 +22,9 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class NonMovementReport extends FannieReportPage {
 
@@ -30,6 +32,9 @@ class NonMovementReport extends FannieReportPage {
     protected $header = "Non-Movement Report";
 
     protected $required_fields = array('date1', 'date2');
+
+    public $description = '[Non-Movement] shows items in a department or group of departments that have no sales over a given date range. This is mostly for finding discontinued or mis-entered products.';
+    public $report_set = 'Movement Reports';
 
 	function preprocess()
     {

@@ -22,10 +22,13 @@
 *********************************************************************************/
 
 include('../../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class PercentageOfSalesReport extends FannieReportPage 
 {
+    public $discoverable = false; // not directly runnable; must start from search
 
     protected $title = "Fannie : Percentage Sales Report";
     protected $header = "Percentages Sales Report";

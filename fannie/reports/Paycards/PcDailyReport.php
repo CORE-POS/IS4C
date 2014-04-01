@@ -22,10 +22,14 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class PcDailyReport extends FannieReportPage 
 {
+    public $description = '[Integrated Card Reports] lists all integrated payment card transactions for a given day.';
+    public $report_set = 'Tenders';
 
     protected $report_headers = array('Processor', 'Transaction Type', 
                                     'Sales (#)', 'Sales ($)', 

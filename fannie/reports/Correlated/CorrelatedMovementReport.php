@@ -22,7 +22,9 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class CorrelatedMovementReport extends FannieReportPage 
 {
@@ -33,6 +35,9 @@ class CorrelatedMovementReport extends FannieReportPage
     protected $sort_column = 3;
     protected $sort_direction = 1;
     protected $required_fields = array('date1', 'date2');
+
+    public $description = '[Correlated Movement] shows what items purchasers from a certain department or group of departments also buy. Optionally, results can be filtered by department too. This may be clearer with an example: among transactions that include a sandwich, what do sales from the beverages department look like?';
+    public $report_set = 'Movement Reports';
 
     public function fetch_report_data()
     {

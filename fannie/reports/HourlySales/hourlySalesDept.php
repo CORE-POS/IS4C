@@ -22,8 +22,16 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include($FANNIE_ROOT.'auth/login.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+if (!function_exists('validateUserQuiet')) {
+    include($FANNIE_ROOT.'auth/login.php');
+}
+if (!isset($_REQUEST['startDate']) || !isset($_REQUEST['endDate'])) {
+    return;
+}
+
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 $dbconn = ($FANNIE_SERVER_DBMS=='MSSQL')?'.dbo.':'.';

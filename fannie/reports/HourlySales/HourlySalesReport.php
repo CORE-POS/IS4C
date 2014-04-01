@@ -22,10 +22,14 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class HourlySalesReport extends FannieReportPage 
 {
+    public $description = '[Hourly Sales] lists sales per hour over a given date range.';
+    public $report_set = 'Sales Reports';
 
     protected $title = "Fannie : Hourly Sales Report";
     protected $header = "Hourly Sales";

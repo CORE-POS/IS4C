@@ -22,10 +22,15 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class RecallReport extends FannieReportPage 
 {
+    public $description = '[Recall Report] lists names and contact information for everyone who
+        purchased a given product. Hopefully rarely used.';
+
     protected $report_headers = array('Mem#', 'Name', 'Address', 'City', 'State', 'Zip', 'Phone', 'Alt. Phone', 'Email', 'Qty', 'Amt');
     protected $title = "Fannie : Recall Movement";
     protected $header = "Recall Report";

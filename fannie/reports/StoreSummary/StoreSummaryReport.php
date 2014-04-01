@@ -25,9 +25,14 @@
  * 22Jul13 EL Attempt to use dlog views must wait until they include cost.
 */
 include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class StoreSummaryReport extends FannieReportPage2 {
+
+    public $discoverable = false; // I'd like to replace this with StoreSummaryAlt
+                                  // and eliminate FannieReportPage2
 
 	private $grandTTL;
 	private $grandCostsTotal;

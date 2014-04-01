@@ -22,10 +22,13 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class ProductHistoryReport extends FannieReportPage 
 {
+    public $description = '[Product History] lists changes made to a given item over time.';
 
     protected $title = "Fannie : Product History";
     protected $header = "Product History Report";

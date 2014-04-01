@@ -63,7 +63,7 @@ class WfcVcTask extends FannieTask
                                     AND tdate BETWEEN ? AND ?
                                 GROUP BY card_no
                                 HAVING SUM(total) <> 0");
-        $usageR = $dbc->execuate($usageP, array($start . ' 00:00:00', $end . ' 23:59:59'));
+        $usageR = $dbc->execute($usageP, array($start . ' 00:00:00', $end . ' 23:59:59'));
 
         // remove coupon from members that have used it
         $removeP = $dbc->prepare('UPDATE custdata AS c SET memCoupons=0 WHERE CardNo=?');
@@ -82,7 +82,7 @@ class WfcVcTask extends FannieTask
         );
 
         // set member blueLine based on number of coupons
-        $dbc->query("UPDATE custdata AS c SET blueLine=$blueLine WHERE Type='PC'");
+        $dbc->query("UPDATE custdata AS c SET blueLine=$coupon_blueline WHERE Type='PC'");
     }
 }
 

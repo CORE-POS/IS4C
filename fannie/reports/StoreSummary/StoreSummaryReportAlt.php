@@ -36,7 +36,9 @@
  * 22Jul13 EL Attempt to use dlog views must wait until they include cost.
 */
 include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class StoreSummaryReportAlt extends FannieReportPage {
 
@@ -46,6 +48,9 @@ class StoreSummaryReportAlt extends FannieReportPage {
     protected $report_headers = array('','Qty','Costs','% Costs','DeptC%','Sales','% Sales','DeptS %',
 				'Margin %','GST','HST');
     protected $required_fields = array('date1', 'date2');
+
+    public $description = '[Store Summary Report] shows total sales, costs and taxes per department for a given date range in dollars as well as a percentage of store-wide sales and costs. It uses actual item cost if known and estimates cost from price and department margin if not; relies on department margins being accurate.';
+    public $report_set = 'Sales Reports';
 
 	function preprocess()
     {

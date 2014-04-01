@@ -22,10 +22,13 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class DDDReport extends FannieReportPage 
 {
+    public $description = '[Shrink Reports] lists items marked as DDD/shrink at the registers.';
 
     protected $title = "Fannie : DDD Report";
     protected $header = "DDD Report";

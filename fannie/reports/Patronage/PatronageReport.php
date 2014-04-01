@@ -22,10 +22,16 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class PatronageReport extends FannieReportPage 
 {
+    public $description = '[Patronage] show per-member patronage information by fiscal year. Note this is
+    calculated and entered annually, not assembled on the fly from transaction information.';
+    public $report_set = 'Membership';
+
     protected $header = "Patronage Report";
     protected $title = "Fannie : Patronage Report";
 

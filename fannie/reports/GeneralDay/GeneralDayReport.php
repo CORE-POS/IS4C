@@ -22,10 +22,17 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class GeneralDayReport extends FannieReportPage 
 {
+    public $description = '[General Day Report] lists tenders, sales, discounts, and taxes for a given day
+        (should net to zero). Also listed are transaction count &amp; size information by member type and
+        equity sales for the day.'; 
+    public $report_set = 'Sales Reports';
+
     protected $title = "Fannie : General Day Report";
     protected $header = "General Day Report";
     protected $report_cache = 'none';

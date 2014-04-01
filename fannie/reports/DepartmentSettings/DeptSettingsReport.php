@@ -22,10 +22,13 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class DeptSettingsReport extends FannieReportPage 
 {
+    public $description = '[Department Settings] provides a quick overview of current department settings for margin, tax, and foodstamp status.';
 
     protected $report_headers = array('Dept #', 'Dept Name', 'Sales Code', 'Margin', 'Tax', 'FS');
     protected $title = "Fannie : Department Settings";

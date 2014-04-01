@@ -112,7 +112,10 @@ class SaReportPage extends FanniePage {
 			s.upc,
 			s.quantity,
 			s.section,
-			CASE WHEN p.description IS NULL THEN \'Not in POS\' ELSE p.description END as description,
+			CASE 
+                WHEN p.description IS NULL AND v.description IS NULL THEN \'Not in POS\' 
+                WHEN p.description IS NULL AND v.description IS NOT NULL THEN v.description
+                ELSE p.description END as description,
 			CASE WHEN d.dept_name IS NULL THEN \'Unknown\' ELSE d.dept_name END as dept_name,
 			CASE WHEN d.dept_no IS NULL THEN \'n/a\' ELSE d.dept_no END as dept_no,
 			CASE WHEN d.salesCode IS NULL THEN \'n/a\' ELSE d.salesCode END as salesCode,
@@ -127,7 +130,9 @@ class SaReportPage extends FanniePage {
 			$FANNIE_OP_DB.$dbc->sep().'products AS p
 			ON s.upc=p.upc LEFT JOIN '.
 			$FANNIE_OP_DB.$dbc->sep().'departments AS d
-			ON p.department=d.dept_no 
+			ON p.department=d.dept_no LEFT JOIN '.
+			$FANNIE_OP_DB.$dbc->sep().'vendorItems AS v
+            ON s.upc=v.upc AND v.vendorID=1
 			WHERE clear!=1
 			ORDER BY '.$order);
 		$r=$dbc->exec_statement($q);

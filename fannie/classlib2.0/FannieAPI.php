@@ -147,6 +147,12 @@ class FannieAPI
             case 'BasicModelHook':
                 $directories[] = dirname(__FILE__).'/data/hooks/';
                 break;
+            case 'FannieReportPage':
+                $directories[] = dirname(__FILE__).'/../reports/';
+                break;
+            case 'FannieReportTool':
+                $directories[] = dirname(__FILE__).'/../reports/';
+                break;
         }
 
         // recursive search
@@ -159,6 +165,7 @@ class FannieAPI
                 while( ($file=readdir($dh)) !== false) {
                     if ($file == '.' || $file == '..') continue;
                     if ($file == 'noauto') continue;
+                    if ($file == 'Store-Specific') continue;
                     $ret = array_merge($ret, $search($path.'/'.$file));
                 }
                 return $ret;

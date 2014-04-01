@@ -22,10 +22,15 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class ItemLastQuarterReport extends FannieReportPage 
 {
+    public $description = '[Item Last Quarter] shows an item\'s weekly sales for the previous 13 weeks
+        as both raw totals and as a percentage of overall store sales.';
+    public $report_set = 'Movement Reports';
 
     protected $title = "Fannie : Item Last Quarter Report";
     protected $header = "Item Last Quarter Report";

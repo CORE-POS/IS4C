@@ -34,9 +34,19 @@ class FannieReportPage extends FanniePage
 
     public $required = True;
 
+    /**
+      Description of the report
+    */
     public $description = "
     Base class for creating reports.
     ";
+
+    /**
+      Assign report to a "set" of reports
+    */
+    public $report_set = '';
+
+    public $discoverable = true;
 
     /*
     */

@@ -34,6 +34,9 @@ class DepartmentMovementReport extends FannieReportPage
 
     protected $required_fields = array('date1', 'date2');
 
+    public $description = '[Department Movement] lists sales for a department or group of departments over a given date range.';
+    public $report_set = 'Movement Reports';
+
     /**
       Add a javascript function for the form
       This could probably be re-done in jQuery and

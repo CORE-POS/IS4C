@@ -22,7 +22,9 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class BatchReport extends FannieReportPage 
 {
@@ -31,6 +33,8 @@ class BatchReport extends FannieReportPage
     protected $report_cache = 'day';
     protected $report_headers = array('UPC','Description','$','Qty');
     protected $required_fields = array('batchID');
+
+    public $description = '[Batch Report] lists sales for items in a sales batch (or group of sales batches).';
 
     public function readinessCheck()
     {

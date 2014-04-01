@@ -30,7 +30,9 @@ if (!function_exists('login'))
 include_once($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
 include_once($FANNIE_ROOT.'src/ReportConvert/ArrayToCsv.php');
 
-class ProductListPage extends FanniePage {
+class ProductListPage extends FannieReportTool 
+{
+    public $description = '[Product List] is a cross between a report and a tool. It lists current item prices and status flags for a department or set of departments but also allows editing.';
 
 	protected $title = 'Fannie - Product List';
 	protected $header = 'Product List';

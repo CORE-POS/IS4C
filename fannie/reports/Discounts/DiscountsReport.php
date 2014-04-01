@@ -22,9 +22,15 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class DiscountsReport extends FannieReportPage {
+
+    public $description = '[Discounts Reports] lists member percentage discounts by member type for a
+        a given date range.';
+    public $report_set = 'Membership';
 
     protected $report_headers = array('Type', 'Total');
     protected $title = "Fannie : Discounts Report";

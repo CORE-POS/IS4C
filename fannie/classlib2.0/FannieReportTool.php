@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2010 Whole Foods Co-op, Duluth, MN
+    Copyright 2014 Whole Foods Co-op
 
     This file is part of Fannie.
 
@@ -20,30 +20,34 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-include('../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-class MemberIndexPage extends FanniePage {
+/**
+  @class FannieReportTool
 
-	protected $title = "Fannie :: Member Tools";
-	protected $header = "Member Tools";
+  This class behaves identically to FanniePage.
+  It exists only for categorization purposes
+  so pages that provide report-esque data but not
+  in the standard, tabular format can be 
+  discovered automatically.
+*/
+class FannieReportTool extends FanniePage 
+{
 
-	function body_content(){
-		ob_start();
-		?>
-		<ul>
-		<li><a href="MemberSearchPage.php">View/Edit Members</a></li>
-		<li><a href="MemberTypeEditor.php">Manage Member Types</a></li>
-		<li><a href="NewMemberTool.php">Create New Members</a></li>
-		<li><a href="numbers/index.php">Print Member Stickers</a></li>
-		<li><a href="MemCorrectionIndex.php ">Equity, AR, &amp; Patronage Corrections</a></li>
-		<li><a href="import/">Import Data</a></li>
-		</ul>
-		<?php
-		return ob_get_clean();
-	}
+    public $required = True;
+
+    /**
+      Description of the report
+    */
+    public $description = "
+    Base class for hybrid report/tool pages
+    ";
+
+    /**
+      Assign report to a "set" of reports
+    */
+    public $report_set = '';
+
+    public $discoverable = true;
+
 }
 
-FannieDispatch::conditionalExec(false);
-
-?>

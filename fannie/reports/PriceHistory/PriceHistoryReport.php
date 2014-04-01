@@ -22,7 +22,9 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class PriceHistoryReport extends FannieReportPage
 {
@@ -32,6 +34,8 @@ class PriceHistoryReport extends FannieReportPage
     protected $report_headers = array('UPC', 'Description', 'Price', 'Date');
 
     protected $required_fields = array();
+
+    public $description = '[Price History] shows what prices an item as been assigned over a given time period.';
 
     /**
       Report has variable inputs so change
