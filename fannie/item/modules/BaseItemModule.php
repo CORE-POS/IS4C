@@ -337,6 +337,19 @@ class BaseItemModule extends ItemModule {
 
         $model = new ProductsModel($dbc);
         $model->upc($upc);
+        if (!$model->load()) {
+            // fully init new record
+            $model->special_price(0);
+            $model->specialpricemethod(0);
+            $model->specialquantity(0);
+            $model->specialgroupprice(0);
+            $model->advertised(0);
+            $model->tareweight(0);
+            $model->start_date('');
+            $model->end_date('');
+            $model->discounttype(0);
+            $model->wicable(0);
+        }
 		$model->tax(FormLib::get_form_value('tax',0));
 		$model->foodstamp(FormLib::get_form_value('FS',0));
 		$model->scale(FormLib::get_form_value('Scale',0));
