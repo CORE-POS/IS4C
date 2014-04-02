@@ -32,8 +32,8 @@ if (isset($_GET['action'])){
 	case 'newBatch':
 		$type = $_GET['type'];
 		$name = str_replace("'","''",$_GET['name']);
-		$startdate = $_GET['startdate']." 00:00:00.00";
-		$enddate = $_GET['enddate']." 00:00:00.00";
+		$startdate = $_GET['startdate']." 00:00:00";
+		$enddate = $_GET['enddate']." 23:59:59";
 		$owner = $_GET['owner'];
 		
 		$infoQ = $sql->prepare("select discType from batchType where batchTypeID=?");
