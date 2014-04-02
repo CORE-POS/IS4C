@@ -82,7 +82,7 @@ class TenderModule
 
         if ($CORE_LOCAL->get("LastID") == 0) {
             return DisplayLib::boxMsg(_("no transaction in progress"));
-        } else if ($this->amount > 9999.99) {
+        } else if ($this->amount > 99999.99) {
             return DisplayLib::boxMsg(
                       _("tender amount of") . " " . $this->amount . "<br />"
                     . _("exceeds allowable limit")
