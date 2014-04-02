@@ -43,6 +43,8 @@ include('../db.php');
 
 extract($_POST);
 
+$upc = str_pad($upc, 13, '0', STR_PAD_LEFT);
+
 $price = trim($price);
 if (!is_numeric($price))
 	$price = 0;
@@ -130,23 +132,46 @@ $descript = $sql->escape($descript);
 
 $stamp = date("Y-m-d H:i:s");
 
-$query99 = $sql->prepare("INSERT INTO products (upc,description,normal_price,pricemethod,groupprice,quantity,
-	special_price,specialpricemethod,specialgroupprice,specialquantity,start_date,end_date,
-	department,size,tax,foodstamp,scale,scaleprice,mixmatchcode,modified,advertised,tareweight,discount,
-	discounttype,unitofmeasure,wicable,qttyEnforced,idEnforced,cost,inUse,numflag,subdept,
-	deposit,local)
-	VALUES(?,?,?,0,0.00,0,0.00,0,0.00,0,'','',?,0,?,?,?,0,0,?,0,0,?,0,0,0,0,0,0.00,1,
-	0,0,0.00,?)");
-//echo $query99;
-$resultI = $sql->execute($query99, array($upc, $descript, $price, $dept, $tax, $FS, $Scale, $stamp, $NoDisc, $local));
-
+// use model instead of raw INSERT query
 $model = new ProductsModel($sql);
 $model->upc($upc);
-$model->pushToLanes();
+$model->description($descript);
+$model->normal_price($price);
+$model->pricemethod(0);
+$model->groupprice(0.00);
+$model->quantity(0);
+$model->special_price(0.00);
+$model->specialpricemethod(0);
+$model->specialgroupprice(0.00);
+$model->special_quantity(0);
+$model->start_date('');
+$model->end_date('');
+$model->department($dept);
+$model->size(0);
+$model->tax($tax);
+$model->foodstamp($FS);
+$model->scale($Scale);
+$model->scaleprice(0);
+$model->mixmatchcode(0);
+$model->modified($stamp);
+$model->advertised(0);
+$model->tareweight(0);
+$model->discount($NoDisc);
+$model->discounttype(0);
+$model->unitofmeasure(0);
+$model->wicable(0);
+$model->qttyEnforced(0);
+$model->idEnforced(0);
+$model->cost(0.00);
+$model->inUse(1);
+$model->numflag(0);
+$model->subdept(0);
+$model->deposit(0.00);
+$model->local($local);
+$model->save();
 
-$prodUpdate = new ProdUpdateModel($sql);
-$prodUpdate->upc($upc);
-$prodUpdate->logUpdate(ProdUpdateModel::UPDATE_EDIT);
+$model->upc($upc);
+$model->pushToLanes();
 
 if (empty($manufacturer))
 	$manufacturer = '';

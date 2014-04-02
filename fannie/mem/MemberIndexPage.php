@@ -36,6 +36,7 @@ class MemberIndexPage extends FanniePage {
 		<li><a href="MemberTypeEditor.php">Manage Member Types</a></li>
 		<li><a href="NewMemberTool.php">Create New Members</a></li>
 		<li><a href="numbers/index.php">Print Member Stickers</a></li>
+		<li><a href="MemCorrectionIndex.php ">Equity, AR, &amp; Patronage Corrections</a></li>
 		<li><a href="import/">Import Data</a></li>
 		</ul>
 		<?php

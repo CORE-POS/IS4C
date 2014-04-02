@@ -82,7 +82,7 @@ class SaHandheldPage extends FanniePage {
 			$q = 'SELECT p.description,v.brand,s.quantity,v.units FROM
 				products AS p LEFT JOIN vendorItems AS v ON p.upc=v.upc
 				LEFT JOIN '.$FANNIE_PLUGIN_SETTINGS['ShelfAuditDB'].$dbc->sep().
-				'sa_inventory AS s ON p.upc=s.upc
+				'sa_inventory AS s ON p.upc=s.upc AND s.clear=0
 				WHERE p.upc=? ORDER BY v.vendorID';
 			$p = $dbc->prepare_statement($q);
 			$r = $dbc->exec_statement($p,array($upc));
@@ -91,7 +91,7 @@ class SaHandheldPage extends FanniePage {
 				$q = 'SELECT v.description,v.brand,s.quantity,v.units FROM
 					vendorItems AS v 
 					LEFT JOIN '.$FANNIE_PLUGIN_SETTINGS['ShelfAuditDB'].$dbc->sep().
-					'sa_inventory AS s ON s.upc=v.upc
+					'sa_inventory AS s ON s.upc=v.upc AND s.clear=0
 					WHERE v.upc=? ORDER BY v.vendorID';
 				$p = $dbc->prepare_statement($q);
 				$r = $dbc->exec_statement($p,array($upc));
@@ -250,7 +250,10 @@ ScannerDevice.registerListener(Device);
 		if (isset($this->current_item_data['upc']) && isset($this->current_item_data['desc'])) $elem = '#cur_qty';
 		?>
 <html>
-<head><title>Scan Inventory</title></head>
+<head>
+    <title>Scan Inventory</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
 <body onload="$('<?php echo $elem; ?>').focus();">
 <form action="SaHandheldPage.php" method="get" id="upcScanForm">
 <div style="float: left;">

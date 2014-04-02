@@ -151,6 +151,7 @@ class PIMemberPage extends PIKillerPage {
 			$custdata->memType(FormLib::get_form_value('memType'));
 			$custdata->MemDiscountLimit(FormLib::get_form_value('chargelimit'));
 			$custdata->ChargeLimit(FormLib::get_form_value('chargelimit'));
+            $custdata->ChargeOk( FormLib::get('chargelimit') == 0 ? 0 : 1 );
 
 			$default = $this->get_model($dbc, 'MemtypeModel', array('memtype'=>$custdata->memType()));
 			$custdata->Type($default->custdataType());

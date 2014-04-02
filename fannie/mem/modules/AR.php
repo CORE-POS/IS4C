@@ -83,6 +83,7 @@ class AR extends MemberModule
         foreach($model->find() as $obj) {
             $obj->MemDiscountLimit($limit);
             $obj->ChargeLimit($limit);
+            $obj->ChargeOk( $limit == 0 ? 0 : 1 );
             $test = $obj->save();
         }
 		

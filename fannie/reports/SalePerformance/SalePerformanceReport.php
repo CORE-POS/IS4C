@@ -22,10 +22,13 @@
 *********************************************************************************/
 
 require('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class SalePerformanceReport extends FannieReportPage
 {
+    public $description = '[Batch Performance] lists weekly sales totals for a batch.';
 
     protected $title = "Fannie : Sale Performance";
     protected $header = "Sale Performance";

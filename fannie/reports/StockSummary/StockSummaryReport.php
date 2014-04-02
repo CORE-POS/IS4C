@@ -21,13 +21,15 @@
 
 *********************************************************************************/
 
-
-
 require('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class StockSummaryReport extends FannieReportPage
 {
+    public $discoverable = false; // probably belongs in WFC specific
+
     protected $header = 'Stock Summary';
     protected $title = 'Fannie : Stock Summary';
 

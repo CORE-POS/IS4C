@@ -63,7 +63,7 @@ class FannieTask
 
 if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
 
-    if ($argc != 2) {
+    if ($argc < 2) {
         echo "Usage: php FannieTask.php <Task Class Name>\n";    
         exit;
     }

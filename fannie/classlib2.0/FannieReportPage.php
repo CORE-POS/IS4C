@@ -34,9 +34,19 @@ class FannieReportPage extends FanniePage
 
     public $required = True;
 
+    /**
+      Description of the report
+    */
     public $description = "
     Base class for creating reports.
     ";
+
+    /**
+      Assign report to a "set" of reports
+    */
+    public $report_set = '';
+
+    public $discoverable = true;
 
     /*
     */
@@ -591,8 +601,8 @@ class FannieReportPage extends FanniePage
                 $row[$i] = '&nbsp;';
             } elseif (is_numeric($row[$i]) && strlen($row[$i]) == 13) {
                 // auto-link UPCs to edit tool
-                $row[$i] = sprintf('<a href="%sitem/itemMaint.php?upc=%s">%s</a>',
-                    $FANNIE_URL,$row[$i],$row[$i]);
+                $row[$i] = sprintf('<a target="_new%s" href="%sitem/itemMaint.php?upc=%s">%s</a>',
+                    $row[$i],$FANNIE_URL,$row[$i],$row[$i]);
             }
             $align = '';
             if (is_numeric($row[$i])) {
@@ -713,9 +723,21 @@ class FannieReportPage extends FanniePage
     */
     function drawPage()
     {
+        global $FANNIE_WINDOW_DRESSING;
+
         if (!$this->checkAuth() && $this->must_authenticate) {
             $this->loginRedirect();
         } elseif ($this->preprocess()) {
+
+            /**
+              Global setting overrides default behavior
+              to force the menu to appear.
+              Unlike normal pages, the override is only applied
+              when the output format is HTML.
+            */
+            if (isset($FANNIE_WINDOW_DRESSING) && $FANNIE_WINDOW_DRESSING && $this->report_format == 'html') {
+                $this->window_dressing = true;
+            }
             
             if ($this->window_dressing) {
                 echo $this->getHeader();
@@ -729,7 +751,10 @@ class FannieReportPage extends FanniePage
             }
 
             if ($this->window_dressing) {
-                echo $this->getFooter();
+                $footer = $this->getFooter();
+                $footer = str_ireplace('</html>','',$footer);
+                $footer = str_ireplace('</body>','',$footer);
+                echo $footer;
             }
 
             foreach($this->scripts as $s_url => $s_type) {
@@ -767,7 +792,7 @@ class FannieReportPage extends FanniePage
             }
         }
 
-    // draw_page()
+    // drawPage()
     }
 }
 

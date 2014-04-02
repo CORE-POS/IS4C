@@ -22,10 +22,13 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class HourlyCustomersReport extends FannieReportPage 
 {
+    public $description = '[Hourly Customers] lists number of customers per hour for a given day.';
 
     protected $header = "Customers per Hour";
     protected $title = "Fannie : Customers per Hour";

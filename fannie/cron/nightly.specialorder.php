@@ -74,7 +74,7 @@ if (strlen($cwIDs) > 2){
 }
 // end auto-close
 
-// auto-close all after 60 days
+// auto-close all after 90 days
 $subquery = "select p.order_id from PendingSpecialOrder as p
 	left join SpecialOrderStatus as s
 	on p.order_id=s.order_id

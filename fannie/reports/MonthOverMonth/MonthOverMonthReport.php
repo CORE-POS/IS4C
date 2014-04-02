@@ -22,14 +22,19 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class MonthOverMonthReport extends FannieReportPage {
 
 	private $months;
-    $title = "Fannie : Month Over Month Movement";
-    $header = "Month Over Month Movement";
+    protected $title = "Fannie : Month Over Month Movement";
+    protected $header = "Month Over Month Movement";
     protected $required_fields = array('month1', 'month2');
+
+    public $description = '[Monthly Movement] shows monthly sales totals for items or departments.';
+    public $report_set = 'Movement Reports';
 	
 	function preprocess()
     {

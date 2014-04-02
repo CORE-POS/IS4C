@@ -22,10 +22,14 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class CashierRecordsReport extends FannieReportPage 
 {
+    public $description = '[Cashier Records] shows per-cashier sales and transaction totals
+        over a given date range. "Records" here should be interpretted like "Record Sales Day".';
 
     protected $report_headers = array('Emp#', 'Date', '$', '# of Trans');
     protected $sort_column = 3;

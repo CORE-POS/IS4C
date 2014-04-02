@@ -22,10 +22,14 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class NewItemsReport extends FannieReportPage 
 {
+    public $description = '[New Items] shows products recently added to POS. This is more
+        approximate than definitive.';
 
     protected $title = "Fannie : New Items Report";
     protected $header = "New Items Report";
@@ -86,7 +90,7 @@ class NewItemsReport extends FannieReportPage
 
         $query = "SELECT MIN(CASE WHEN a.modified IS NULL THEN p.modified ELSE a.modified END) AS entryDate, 
             a.upc, p.description, p.department, d.dept_name
-            FROM products AS p INNER JOIN prodUpdateArchive AS a ON a.upc=p.upc
+            FROM products AS p INNER JOIN prodUpdate AS a ON a.upc=p.upc
             LEFT JOIN departments AS d ON d.dept_no=p.department ";
         // join only needed with specific buyer
         if ($buyer !== '' && $buyer > -1) {

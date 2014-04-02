@@ -26,6 +26,9 @@ include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class CWDemographicsReport extends FannieReportPage {
 
+    public $description = '[Demographics Report] lists information about customer participation.
+        Requires CoreWarehouse plugin.';
+
 	protected $multi_report_mode = True;
 
 	protected $sortable = False;

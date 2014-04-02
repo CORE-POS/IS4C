@@ -22,10 +22,14 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class ArReport extends FannieReportPage 
 {
+    public $description = '[AR/Store Charge] lists all AR/Store Charge transactions for a given member';
+    public $report_set = 'Membership';
 
     protected $report_headers = array('Date', 'Receipt', 'Amount', 'Type');
     protected $sort_direction = 1;

@@ -22,8 +22,7 @@
 *********************************************************************************/
 
 include_once(dirname(__FILE__).'/../../config.php');
-include_once(dirname(__FILE__).'/../../classlib2.0/item/ItemModule.php');
-include_once(dirname(__FILE__).'/../../classlib2.0/lib/FormLib.php');
+include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
 include_once(dirname(__FILE__).'/../../src/JsonLib.php');
 
 class ItemMarginModule extends ItemModule {

@@ -26,6 +26,10 @@ include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class ZipCodeReport extends FannieReportPage {
 
+    public $description = '[Zip Code Report] lists number of customers and sales total by postal code
+        for a given date range.';
+    public $report_set = 'Membership';
+
     protected $title = "Fannie : Zip Code Report";
     protected $header = "Zip Code Report";
     protected $required_fields = array('date1', 'date2');
@@ -129,11 +133,12 @@ class ZipCodeReport extends FannieReportPage {
 			<table>
 			<tr>
 				<th>Start Date</th>
-				<td><input type="text" name="date1" onclick="showCalendarControl(this);" /></td>	
+				<td><input type="text" name="date1" id="date1" onclick="showCalendarControl(this);" /></td>	
+                <td rowspan="4">' . FormLib::dateRangePicker() . '</td>
 			</tr>
 			<tr>
 				<th>End Date</th>
-				<td><input type="text" name="date2" onclick="showCalendarControl(this);" /></td>	
+				<td><input type="text" name="date2" id="date2" onclick="showCalendarControl(this);" /></td>	
 			</tr>
 			<tr>
 				<th>Based on</th>

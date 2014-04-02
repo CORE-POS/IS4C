@@ -22,10 +22,13 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class OpenRingsReport extends FannieReportPage 
 {
+    public $description = '[Open Rings] shows UPC-less sales for a department or group of departments over a given date range.';
 
     protected $title = "Fannie : Open Rings Report";
     protected $header = "Open Rings Report";

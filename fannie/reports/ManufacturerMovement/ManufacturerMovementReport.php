@@ -22,11 +22,16 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class ManufacturerMovementReport extends FannieReportPage 
 {
     protected $required_fields = array('date1', 'date2');
+
+    public $description = '[Brand Movement] lists sales for products from a specific brand over a given date range. Brand is given either by name or as a UPC prefix.';
+    public $report_set = 'Movement Reports';
 
 	function fetch_report_data()
     {

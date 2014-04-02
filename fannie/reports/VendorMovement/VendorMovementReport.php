@@ -22,10 +22,15 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class VendorMovementReport extends FannieReportPage 
 {
+    public $description = '[Vendor Movement] lists item sales for a particular vendor';
+    public $report_set = 'Movement Reports';
+
     protected $title = "Fannie : Vendor Movement";
     protected $header = "Vendor Movement Report";
     protected $required_fields = array('date1', 'date2');

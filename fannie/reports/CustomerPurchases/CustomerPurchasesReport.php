@@ -22,10 +22,15 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class CustomerPurchasesReport extends FannieReportPage 
 {
+    public $description = '[Member Purchases] lists items purchased by a given member in a given date range.';
+    public $report_set = 'Membership';
+
     protected $title = "Fannie : What Did I Buy?";
     protected $header = "What Did I Buy? Report";
     protected $report_headers = array('Date','UPC','Description','Dept','Cat','Qty','$');

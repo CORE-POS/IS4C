@@ -42,9 +42,12 @@
 include('../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-class SalesAndTaxTodayReport extends FanniePage {
+class SalesAndTaxTodayReport extends FannieReportTool 
+{
 
 	//protected $auth_classes = array('salesbyhour');
+    public $description = '[Today\'s Sales and Tax] shows current day totals by hour and tax totals for the day.';
+    public $report_set = 'Sales Reports';
 
 	protected $selected;
 	protected $name = "";

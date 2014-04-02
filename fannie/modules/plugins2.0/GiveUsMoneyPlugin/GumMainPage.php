@@ -388,6 +388,8 @@ class GumMainPage extends FannieRESTfulPage
         $ret .= '<a href="reports/GumReportIndex.php">Reporting</a>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
         $ret .= '<a href="../CalendarPlugin/CalendarMainPage.php?calID=69&view=week">Weekly Schedule</a>';
+        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+        $ret .= sprintf('<a href="../PIKiller/PIDocumentsPage.php?id=%d">Reference</a>', $this->id);
 
         $ret .= '<hr />';
 

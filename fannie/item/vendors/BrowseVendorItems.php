@@ -230,14 +230,15 @@ class BrowseVendorItems extends FanniePage {
 		$dinfo = $dbc->exec_statement($p,array($dept));
 		$dinfo = $dbc->fetch_row($dinfo);
 		
-		ProductsModel::update($upc,array(
-			'description' => $vinfo['description'],
-			'normal_price' => $price,
-			'department' => $dept,
-			'tax' => $dinfo['dept_tax'],
-			'foodstamp' => $dinfo['dept_fs'],
-			'cost' => $vinfo['cost']
-		));
+        $model = new ProductsModel($dbc);
+        $model->upc(BarcodeLib::padUPC($upc));
+        $model->description($vinfo['description']);
+        $model->normal_price($price);
+        $model->department($dept);
+        $model->tax($dinfo['dept_tax']);
+        $model->foodstamp($dinfo['dept_fs']);
+        $model->cost($vinfo['cost']);
+        $model->save();
 
 		$xInsQ = $dbc->prepare_statement("INSERT INTO prodExtra (upc,distributor,manufacturer,cost,margin,variable_pricing,location,
 				case_quantity,case_cost,case_info) VALUES

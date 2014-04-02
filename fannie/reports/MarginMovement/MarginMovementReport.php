@@ -22,10 +22,14 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class MarginMovementReport extends FannieReportPage 
 {
+    public $description = '[Margin Movement] lists item movement with margin information.';
+    public $report_set = 'Movement Reports';
 
     protected $title = "Fannie : Margin Movement Report";
     protected $header = "Margin Movement Report";

@@ -535,7 +535,13 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1)
 		ORDER BY i.vendorID");
 	$caseR = $dbc->exec_statement($caseP, array($upc,$upc,$sku,'0'.$sku));
 	if ($dbc->num_rows($caseR) > 0) {
-		list($caseSize,$vendor,$vendor_desc,$srp,$vendor_upc,$skuMatch) = $dbc->fetch_row($caseR);
+        $row = $dbc->fetch_row($caseR);
+        $caseSize = $row['units'];
+        $vendor = $row['vendorName'];
+        $vendor_desc = $row['description'];
+        $srp = $row['srp'];
+        $vendor_upc = $row['upc'];
+        $skuMatch = $row['skuMatch'];
     }
 	if (!empty($vendor_upc)) $ins_array['upc'] = "'$vendor_upc'";
 	if ($skuMatch == 1) {
@@ -899,7 +905,7 @@ function genericRow($orderID)
 
 function getCustomerForm($orderID,$memNum="0")
 {
-	global $FANNIE_OP_DB, $TRANS, $FANNIE_TRANS_DB;
+	global $FANNIE_OP_DB, $TRANS, $FANNIE_TRANS_DB, $canEdit;
     $dbc = FannieDB::get($FANNIE_OP_DB);
 
 	if (empty($orderID)) $orderID = createEmptyOrder();
@@ -1090,6 +1096,25 @@ function getCustomerForm($orderID,$memNum="0")
 		list($orderDate,$callback,$user) = $dbc->fetch_row($r);
     }
 
+    $status = array(
+        0 => "New, No Call",
+        3 => "New, Call",
+        1 => "Called/waiting",
+        2 => "Pending",
+        4 => "Placed",
+        5 => "Arrived"
+    );
+    $sP = $dbc->prepare("SELECT status_flag 
+                         FROM {$TRANS}SpecialOrderStatus
+                         WHERE order_id=?");
+    $sR = $dbc->execute($sP, array($orderID));
+    $order_status = $dbc->fetch_row($sR);
+    if ($order_status) {
+        $order_status = $order_status['status_flag'];
+    } else {
+        $order_status = 0;
+    }
+
 	$ret = "";
 	$ret .= '<table width="95%" cellpadding="4" cellspacing=4" border="0">';
 	$ret .= '<tr><td align="left" valign="top">';
@@ -1106,7 +1131,20 @@ function getCustomerForm($orderID,$memNum="0")
 		$ret .= '<b>Account status</b>: '.$status_row['status'];
 		$ret .= '<br />';
 	}
-	$ret .= '</td><td align="right" valign="top">';
+	$ret .= '</td>';
+
+    if ($canEdit) {
+        $ret .= '<td valign="top"><b>Status</b>: ';
+        $ret .= sprintf('<select id="orderStatus" onchange="updateStatus(%d, this.value);">', $orderID);
+        foreach($status as $k => $v) {
+            $ret .= sprintf('<option %s value="%d">%s</option>',
+                        ($k == $order_status ? 'selected' : ''),
+                        $k, $v);
+        }
+        $ret .= '</select></td>';
+    }
+
+    $ret .= '<td align="right" valign="top">';
 	$ret .= "<input type=\"submit\" value=\"Done\"
 		onclick=\"validateAndHome();return false;\" />";
 	$username = checkLogin();

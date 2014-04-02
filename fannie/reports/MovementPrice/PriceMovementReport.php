@@ -22,7 +22,9 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class PriceMovementReport extends FannieReportPage 
 {
@@ -32,6 +34,9 @@ class PriceMovementReport extends FannieReportPage
 
     protected $report_headers = array('UPC', 'Desc', 'Dept#', 'Dept', 'Price', 'Qty', 'Sales');
     protected $required_fields = array('date1', 'date2');
+
+    public $description = '[Movement by Price] lists item sales with a separate line for each price point. If an item was sold at more than one price in the given date range, sales from each price are listed separately.';
+    public $report_set = 'Movement Reports';
 
     public function report_description_content()
     {

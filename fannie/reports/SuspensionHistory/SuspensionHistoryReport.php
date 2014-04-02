@@ -22,10 +22,15 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class SuspensionHistoryReport extends FannieReportPage 
 {
+    public $description = '[Suspension History] lists when a membership was deactivated &amp; reactivated.';
+    public $report_set = 'Membership';
+
     protected $title = "Fannie : Suspension History";
     protected $header = "Suspension History";
     protected $sort_direction = 1;

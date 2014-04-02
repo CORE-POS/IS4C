@@ -22,7 +22,9 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class ProductMovementModular extends FannieReportPage 
 {
@@ -31,6 +33,9 @@ class ProductMovementModular extends FannieReportPage
     protected $header = "Product Movement Report";
     protected $report_headers = array('Date','UPC','Description','Qty','$');
     protected $required_fields = array('date1', 'date2');
+
+    public $description = '[Product Movement] lists sales for a specific UPC over a given date range.';
+    public $report_set = 'Movement Reports';
 
 	function preprocess()
     {

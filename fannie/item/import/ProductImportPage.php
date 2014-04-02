@@ -27,7 +27,8 @@
 include('../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-class ProductImportPage extends FannieUploadPage {
+class ProductImportPage extends FannieUploadPage 
+{
 	protected $title = "Fannie :: Product Tools";
 	protected $header = "Import Products";
 
@@ -36,29 +37,30 @@ class ProductImportPage extends FannieUploadPage {
 			'name' => 'upc',
 			'display_name' => 'UPC',
 			'default' => 0,
-			'required' => True
+			'required' => true
 		),
 		'desc' => array(
 			'name' => 'desc',
 			'display_name' => 'Description',
 			'default' => 1,
-			'required' => True
+			'required' => true
 		),
 		'price' => array(
 			'name' => 'price',
 			'display_name' => 'Price',
 			'default' => 2,
-			'required' => True
+			'required' => true
 		),
 		'dept' => array(
 			'name' => 'dept',
 			'display_name' => 'Department #',
 			'default' => 3,
-			'required' => False
+			'required' => false
 		)
 	);
 
-	function process_file($linedata){
+	function process_file($linedata)
+    {
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 		$defaults_table = array();
@@ -77,19 +79,20 @@ class ProductImportPage extends FannieUploadPage {
 		$price_index = $this->get_column_index('price');
 		$dept_index = $this->get_column_index('dept');
 
-		$ret = True;
-		$checks = (FormLib::get_form_value('checks')=='yes') ? True : False;
-		foreach($linedata as $line){
+		$ret = true;
+		$checks = (FormLib::get_form_value('checks')=='yes') ? true : false;
+        $model = new ProductsModel($dbc);
+		foreach($linedata as $line) {
 			// get info from file and member-type default settings
 			// if applicable
 			$upc = $line[$upc_index];
 			$desc = $line[$desc_index];
 			$price =  $line[$price_index];	
-			$dept = ($dept_index !== False) ? $line[$dept_index] : 0;
+			$dept = ($dept_index !== false) ? $line[$dept_index] : 0;
 			$tax = 0;
 			$fs = 0;
 			$discount = 1;
-			if ($dept_index !== False){
+			if ($dept_index !== false){
 				if (isset($defaults_table[$dept]['tax']))
 					$tax = $defaults_table[$dept]['tax'];
 				if (isset($defaults_table[$dept]['discount']))
@@ -103,29 +106,33 @@ class ProductImportPage extends FannieUploadPage {
 			$upc = str_replace("-","",$upc);
 			if (!is_numeric($upc)) continue; // skip header(s) or blank rows
 
-			if ($checks)
+			if ($checks) {
 				$upc = substr($upc,0,strlen($upc)-1);
+            }
             $upc = BarcodeLib::padUPC($upc);
 
 			if (strlen($desc) > 35) $desc = substr($desc,0,35);		
 
-			$try = ProductsModel::update($upc,array(
-				'description' => $desc,
-				'normal_price' => $price,
-				'department' => $dept,
-				'tax' => $tax,
-				'foodstamp' => $fs,
-				'discount' => $discount
-			));
-			if ($try === False){
-				$ret = False;
+            $model->reset();
+            $model->description($desc);
+            $model->normal_price($price);
+            $model->department($dept);
+            $model->tax($tax);
+            $model->foodstamp($fs);
+            $model->discount($discount);
+            $try = $model->save();
+
+			if ($try === false) {
+				$ret = false;
 				$this->error_details = 'There was an error importing UPC '.$upc;
 			}
 		}
+
 		return $ret;
 	}
 
-	function form_content(){
+	function form_content()
+    {
 		return '<fieldset><legend>Instructions</legend>
 		Upload a CSV or XLS file containing product UPCs, descriptions, prices,
 		and optional department numbers
@@ -134,12 +141,14 @@ class ProductImportPage extends FannieUploadPage {
 		</fieldset><br />';
 	}
 
-	function preview_content(){
+	function preview_content()
+    {
 		return '<input type="checkbox" name="checks" value="yes" />
 			Remove check digits from UPCs';
 	}
 
-	function results_content(){
+	function results_content()
+    {
 		return 'Import completed successfully';
 	}
 }

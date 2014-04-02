@@ -30,6 +30,9 @@ if (!class_exists('FannieAPI')) {
 */
 class GumLoanReport extends FannieReportPage 
 {
+    public $discoverable = false; // access is very restricted; no need to list
+                                  // as an available report
+
     protected $must_authenticate = true;
     protected $auth_classes = array('GiveUsMoney');
 

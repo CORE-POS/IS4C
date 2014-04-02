@@ -22,10 +22,14 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class EquityAllReport extends FannieReportPage 
 {
+    public $description = '[Equity Balances] lists current or near-current equity totals for all members';
+    public $report_set = 'Membership';
 
     protected $report_headers = array('Mem #', 'Last Name', 'First Name', 'Equity', 'Due Date');
     protected $title = "Fannie : All Equity Report";
@@ -54,14 +58,20 @@ class EquityAllReport extends FannieReportPage
         if (FormLib::get('owed',1) == 2) {
             $equity_restrict = "(n.payments > 0 AND n.payments < 100)";
         }
+        $table = 'equity_history_sum';
+        $num = 'n.card_no';
+        if (FormLib::get('grain', 1) == 2) {
+            $table = 'equity_live_balance';
+            $num = 'n.memnum';
+        }
 
-        $q = "SELECT n.memnum,c.LastName,c.FirstName,n.payments,m.end_date
+        $q = "SELECT $num as memnum,c.LastName,c.FirstName,n.payments,m.end_date
             FROM custdata AS c LEFT JOIN "
-            .$FANNIE_TRANS_DB.$dbc->sep()."equity_live_balance as n ON
-            n.memnum=c.CardNo AND c.personNum=1
-            LEFT JOIN memDates as m ON n.memnum=m.card_no
+            . $FANNIE_TRANS_DB . $dbc->sep() . $table . " as n ON
+            $num=c.CardNo AND c.personNum=1
+            LEFT JOIN memDates as m ON $num=m.card_no
             WHERE $type_restrict AND $equity_restrict
-            ORDER BY n.memnum";
+            ORDER BY $num";
 
         $p = $dbc->prepare_statement($q);
 
@@ -100,6 +110,12 @@ class EquityAllReport extends FannieReportPage
 <select name="owed">
 	<option value=1>Any balance</option>
 	<option value=2>less than $100</option>
+</select>
+<br /><br />
+<b>As of</b>:
+<select name="grain">
+    <option value=1>Yesterday</option>
+    <option value=2>Right this Second (slower)</option>
 </select>
 <br /><br />
 <input type="submit" name="submit" value="Get Report" />
