@@ -250,7 +250,10 @@ class UPC extends Parser {
 			$peek = PrehLib::peekItem();
 			if (strstr($peek,"** Tare Weight") === False)
 				TransRecord::addTare($row['tareweight']*100);
-		}
+		} elseif ($row['scale'] != 0 && !$CORE_LOCAL->get("tare") && Plugin::isEnabled('PromptForTare')) {
+            $ret['main_frame'] = $my_url.'plugins/PropmtForTare/TarePropmtInputPage.php?class=UPC&item='.$entered;
+			return $ret;
+        }
 
 		/* sanity check - ridiculous price 
 		   (can break db column if it doesn't fit
@@ -562,6 +565,17 @@ class UPC extends Parser {
 			return True;
 		}
 		return False;
+	}
+
+	public static $requestTareHeader = 'Enter Tare';
+	public static $requestTareMsg = 'Type tare weight or eneter for default';
+	public static function requestTareCallback($tare, $in_item) {
+        if (is_numeric($tare)) {
+            TransRecord::addTare($tare);
+            $ret_url = '../../gui-modules/pos2.php?reginput='.$in_item;
+            return $ret_url;
+        }
+        return False;
 	}
 
 	function doc(){
