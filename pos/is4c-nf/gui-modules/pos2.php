@@ -47,6 +47,7 @@ class pos2 extends BasicPage {
 
 		if ($CORE_LOCAL->get("msgrepeat") == 1 && $entered != "CL") {
 			$entered = $CORE_LOCAL->get("strRemembered");
+            $CORE_LOCAL->set('strRemembered', '');
 		}
 		$CORE_LOCAL->set("strEntered",$entered);
 
