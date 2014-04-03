@@ -102,15 +102,33 @@ class UPC extends Parser {
            002 or 02.
         */
         $scalePrefix = '002';
+        $scaleStickerItem = false;
+        $scaleCheckDigits = false;
         if ($CORE_LOCAL->get('UpcIncludeCheckDigits') == 1) {
             $scalePrefix = '02';
+            $scaleCheckDigits = true;
         }
 		$scalepriceUPC = 0;
 		$scalepriceEAN = 0;
+        // prefix indicates it is a scale-sticker
 		if (substr($upc, 0, strlen($scalePrefix)) == $scalePrefix) {
-			$scalepriceUPC = MiscLib::truncate2(substr($upc, -4)/100);
-			$scalepriceEAN = MiscLib::truncate2(substr($upc, -5)/100);
-			$upc = substr($upc, 0, 8)."00000";
+            $scaleStickerItem = true;
+            // extract price portion of the barcode
+            // position varies depending whether a check
+            // digit is present in the upc
+            if ($scaleCheckDigits) {
+                $scalepriceUPC = MiscLib::truncate2(substr($upc, 8, 4)/100);
+                $scalepriceEAN = MiscLib::truncate2(substr($upc, 7, 5)/100);
+            } else {
+                $scalepriceUPC = MiscLib::truncate2(substr($upc, -4)/100);
+                $scalepriceEAN = MiscLib::truncate2(substr($upc, -5)/100);
+            }
+            $rewrite_class = $CORE_LOCAL->get('VariableWeightReWriter');
+            if ($rewrite_class === '' || !class_exists($rewrite_class)) {
+                $rewrite_class = 'ZeroedPriceReWrite';
+            }
+            $rewriter = new $rewrite_class();
+            $upc = $rewriter->translate($upc, $scaleCheckDigits);
             // I think this is WFC special casing; needs revising.
 			if ($upc == "0020006000000" || $upc == "0020010000000") $scalepriceUPC *= -1;
 		}
@@ -191,7 +209,7 @@ class UPC extends Parser {
 		if ($num_rows > 0 && $row['scale'] == 1 
 			&& $CORE_LOCAL->get("lastWeight") > 0 && $CORE_LOCAL->get("weight") > 0
 			&& abs($CORE_LOCAL->get("weight") - $CORE_LOCAL->get("lastWeight")) < 0.0005
-			&& substr($upc,0,strlen($scalePrefix)) != $scalePrefix && abs($row['normal_price']) > 0.01){
+			&& !$scaleStickerItem && abs($row['normal_price']) > 0.01){
 			if ($CORE_LOCAL->get('msgrepeat') == 0){
 				$CORE_LOCAL->set("strEntered",$row["upc"]);
 				$CORE_LOCAL->set("boxMsg","<b>Same weight as last item</b>
@@ -264,14 +282,16 @@ class UPC extends Parser {
 		}
 
 		$scale = ($row["scale"] == 0) ? 0 : 1;
-		/* get correct scale price */
+		/* use scaleprice bit column to indicate 
+           whether values should be interpretted as 
+           UPC or EAN */ 
 		$scaleprice = ($row['scaleprice'] == 0) ? $scalepriceUPC : $scalepriceEAN;
 
 		/* need a weight with this item
 		   retry the UPC in a few milliseconds and see
 		*/
 		if ($scale != 0 && $CORE_LOCAL->get("weight") == 0 && 
-			$CORE_LOCAL->get("quantity") == 0 && substr($upc,0,strlen($scalePrefix)) != $scalePrefix) {
+			$CORE_LOCAL->get("quantity") == 0 && !$scaleStickerItem) {
 
 			$CORE_LOCAL->set("SNR",$CORE_LOCAL->get('strEntered'));
 			$ret['output'] = DisplayLib::boxMsg(_("please put item on scale"),'',True);
@@ -282,7 +302,7 @@ class UPC extends Parser {
 
 		/* got a scale weight, make sure the tare
 		   is valid */
-		if ($scale != 0 and substr($upc,0,strlen($scalePrefix)) != $scalePrefix){
+		if ($scale != 0 && !$scaleStickerItem) {
 			$quantity = $CORE_LOCAL->get("weight") - $CORE_LOCAL->get("tare");
 			if ($CORE_LOCAL->get("quantity") != 0) 
 				$quantity = $CORE_LOCAL->get("quantity") - $CORE_LOCAL->get("tare");
@@ -400,7 +420,7 @@ class UPC extends Parser {
            quantity and items that do not have a normal_price
            assigned cannot calculate a proper quantity.
 		*/
-		if (substr($upc,0,strlen($scalePrefix)) == $scalePrefix) {
+		if ($scaleStickerItem) {
 			if ($DiscountObject->isSale() && $scale == 1 && $row['normal_price'] != 0) {
 				$quantity = MiscLib::truncate2($scaleprice / $row["normal_price"]);
             } else if ($scale == 1 && $row['normal_price'] != 0) {
