@@ -592,6 +592,7 @@ class FannieReportPage extends FanniePage
             }
         }
 
+        $date = false;
         for($i=0;$i<count($row);$i) {
             $span = 1;
             while(array_key_exists($i+$span,$row) && $row[$i+$span] === null && ($i+$span)<count($row)) {
@@ -603,6 +604,16 @@ class FannieReportPage extends FanniePage
                 // auto-link UPCs to edit tool
                 $row[$i] = sprintf('<a target="_new%s" href="%sitem/itemMaint.php?upc=%s">%s</a>',
                     $row[$i],$FANNIE_URL,$row[$i],$row[$i]);
+            } else if (preg_match('/^\d\d\d\d-\d\d-\d\d$/', $row[$i])) {
+                // row contains a date column
+                $date = $row[$i];
+            } else if ($date && preg_match('/^\d+-\d+-\d+$/', $row[$i])) {
+                // row contains a trans_num column & a date column
+                // auto-link to reprint receipt
+                $row[$i] = sprintf('<a href="%sadmin/LookupReceipt/RenderReceiptPage.php?date=%s&receipt=%s"
+                                       target="_rp_%s_%s">%s</a>',
+                                    $FANNIE_URL, $date, $row[$i],
+                                    $date, $row[$i], $row[$i]);
             }
             $align = '';
             if (is_numeric($row[$i])) {
