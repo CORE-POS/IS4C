@@ -247,7 +247,7 @@ class FannieReportPage extends FanniePage
             $xlsdata = array();
             foreach($data as $report_data) {
                 if (!empty($this->report_headers)) {
-                    $xlsdata[] = $this->report_headers();
+                    $xlsdata[] = $this->report_headers;
                 }
                 foreach($report_data as $line) {
                     $xlsdata[] = $line;
