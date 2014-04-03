@@ -28,10 +28,12 @@ if (!class_exists('FannieAPI')) {
 
 /**
 */
-class GumLoanReport extends FannieReportPage 
+class GumBothReport extends FannieReportPage 
 {
     public $discoverable = false; // access is very restricted; no need to list
                                   // as an available report
+
+    protected $multi_report_mode = true;
 
     protected $must_authenticate = true;
     protected $auth_classes = array('GiveUsMoney');
@@ -64,7 +66,7 @@ class GumLoanReport extends FannieReportPage
                   ORDER BY termInMonths';
         $result = $dbc->query($query);
 
-        $data = array();
+        $report1 = array();
         while($row = $dbc->fetch_row($result)) {
             $record = array(
                $row['termInMonths'],
@@ -74,22 +76,55 @@ class GumLoanReport extends FannieReportPage
                date('Y-m-d', strtotime($row['nearest'])),
                date('Y-m-d', strtotime($row['farthest'])),
             );
-            $data[] = $record;
+            $report1[] = $record;
         }
 
-        return $data;
+        // compound interest calculation is MySQL-specific
+        $query = 'SELECT 
+                    CASE WHEN shares > 0 THEN \'PURCHASE\' ELSE \'PAYOFF\' END as stype,
+                    SUM(shares) AS totalS,
+                    SUM(value) AS totalV
+                  FROM GumEquityShares
+                  GROUP BY CASE WHEN shares > 0 THEN \'PURCHASE\' ELSE \'PAYOFF\' END 
+                  ORDER BY CASE WHEN shares > 0 THEN \'PURCHASE\' ELSE \'PAYOFF\' END DESC';
+        $result = $dbc->query($query);
+
+        $report2 = array();
+        while($row = $dbc->fetch_row($result)) {
+            $record = array(
+               $row['stype'],
+               sprintf('%d', $row['totalS']), 
+               sprintf('%.2f', $row['totalV']), 
+            );
+            $report2[] = $record;
+        }
+
+        return array($report1, $report2);
     }
 
     public function calculate_footers($data)
     {
-        $sum = 0.0;
-        $due = 0.0;
-        foreach($data as $row) {
-            $sum += $row[1];
-            $due += $row[3];
-        }
+        if ($this->multi_counter == 1) {
+            $sum = 0.0;
+            $due = 0.0;
+            foreach($data as $row) {
+                $sum += $row[1];
+                $due += $row[3];
+            }
+            $this->report_headers = array('Term (Months)', 'Total Principal', 'Avg. Rate (%)', 'Approx. Maturity Value', 'Nearest Due Date', 'Farthest Due Date');
 
-        return array('Total', sprintf('%.2f', $sum), '', sprintf('%.2f', $due), '', '');
+            return array('Total', sprintf('%.2f', $sum), '', sprintf('%.2f', $due), '', '');
+        } else {
+            $sumS = 0;
+            $sumV = 0;
+            foreach($data as $row) {
+                $sumS += $row[1];
+                $sumV += $row[2];
+            }
+            $this->report_headers = array('Type', '# of Shares', 'Value');
+
+            return array('Balance', $sumS, sprintf('%.2f', $sumV));
+        }
     }
 
 
