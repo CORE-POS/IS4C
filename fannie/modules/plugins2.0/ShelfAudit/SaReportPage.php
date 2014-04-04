@@ -61,7 +61,7 @@ class SaReportPage extends FanniePage {
 			} else {
 				$this->sql_actions='Unable to clear old scans, try again. <!-- '.$query.' -->';
 			}
-		} else if ($_GET['change']=='yes') {
+		} else if (FormLib::get('change')=='yes') {
 		}
 
 		if (FormLib::get_form_value('view') == 'dept'){

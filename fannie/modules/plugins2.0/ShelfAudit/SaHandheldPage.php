@@ -48,7 +48,9 @@ class SaHandheldPage extends FanniePage {
 		/**
 		  Store session in browser section.
 		*/
-		@session_start();
+        if (ini_get('session.auto_start')==0 && !headers_sent() && php_sapi_name() != 'cli') {
+            @session_start();
+        }
 		if (!isset($_SESSION['SaPluginSection']))
 			$_SESSION['SaPluginSection'] = 0;
 		$this->section = $_SESSION['SaPluginSection'];
