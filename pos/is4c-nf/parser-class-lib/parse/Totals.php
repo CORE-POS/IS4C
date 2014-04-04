@@ -96,6 +96,11 @@ class Totals extends Parser {
 				<td>TL</td>
 				<td>Re-calculate total</td>
 			</tr>
+			<tr>
+				<td>MTL</td>
+				<td>Ontario (Canada) Meal Tax Rebate
+				<br />Remove Provincial tax on food up to \$4 to this point in the transaction.</td>
+			</tr>
 			</table>";
 	}
 }
