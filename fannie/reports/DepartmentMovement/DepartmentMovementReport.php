@@ -149,7 +149,8 @@ class DepartmentMovementReport extends FannieReportPage
             case 'Date':
                 $query =  "SELECT year(tdate),month(tdate),day(tdate),"
                     . DTrans::sumQuantity('t')." as qty,
-                    SUM(total) as Sales 
+                    SUM(total) as Sales ,
+                    MAX(" . $dbc->dayofweek('tdate') . ") AS dow
                     FROM $dlog as t "
                     . DTrans::joinDepartments()
                     . "LEFT JOIN $superTable AS s ON s.dept_ID = t.department
@@ -195,6 +196,7 @@ class DepartmentMovementReport extends FannieReportPage
             $record = array();
             if ($groupby == "Date") {
                 $record[] = $row[1]."/".$row[2]."/".$row[0];
+                $record[] = date('l', strtotime($record[0]));
                 $record[] = $row[3];
                 $record[] = $row[4];
             } else {
@@ -252,6 +254,10 @@ class DepartmentMovementReport extends FannieReportPage
                     $this->report_headers = array('Day','Day','Qty','$');
                     $this->sort_column = 0;
                     $this->sort_direction = 0;
+                } elseif (FormLib::get_form_value('sort')=='Date') {
+                    $this->report_headers = array('Date','Day','Qty','$');
+                    $this->sort_column = 0;
+                    $this->sort_direction = 0;
                 } else {
                     $this->report_headers = array('Dept#','Department','Qty','$');
                     $this->sort_column = 3;
@@ -265,17 +271,6 @@ class DepartmentMovementReport extends FannieReportPage
                 }
 
                 return array('Total',null,$sumQty,$sumSales);
-                break;
-            case 3:
-                $this->report_headers = array('Date','Qty','$');
-                $sumQty = 0.0;
-                $sumSales = 0.0;
-                foreach($data as $row) {
-                    $sumQty += $row[1];
-                    $sumSales += $row[2];
-                }
-                
-                return array('Total',$sumQty,$sumSales);
                 break;
         }
     }
