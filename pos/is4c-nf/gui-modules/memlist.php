@@ -23,6 +23,8 @@
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+	* 24Oct2013 Eric Lee Defeated:
+	*                    + A WEFC_Toronto-only textbox for collecting Member Card#
 	*  5Oct2012 Eric Lee Added:
 	*                    + A WEFC_Toronto-only chunk for collecting Member Card#
 	*                    + A general facility for displaying an error encountered in preprocess()
@@ -287,7 +289,7 @@ class memlist extends NoInputPage {
 				."<div class=\"clear\"></div>";
 
 			// A textbox for the Member Card number, to be added to the db for the selected member.
-			if ( $CORE_LOCAL->get('store') == "WEFC_Toronto" ) {
+			if ( False && $CORE_LOCAL->get('store') == "WEFC_Toronto" ) {
 				echo "<div style='text-align:left; margin-top: 0.5em;'>
 				<p style='margin: 0.2em 0em 0.2em 0em; font-size:0.8em;'>To link the member chosen above to a Member Card:</p>";
 				echo "<span style='font-weight:bold;'>Member Card#:</span> <input name='memberCard' id='memberCard' width='20' title='The digits after 01229, no leading zeroes, not the final, small check-digit' />";

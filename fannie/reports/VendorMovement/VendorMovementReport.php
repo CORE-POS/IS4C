@@ -167,7 +167,7 @@ class VendorMovementReport extends FannieReportPage
 			<option value="date">Date</option>
 			<option value="dept">Department</option>
 			</select></td>
-			<th>End</th>	
+			<th>Date End</th>	
 			<td>
 			<input type=text size=14 id=date2 name=date2 onfocus="this.value='';showCalendarControl(this);">
 			</td>

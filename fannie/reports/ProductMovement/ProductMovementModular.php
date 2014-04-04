@@ -39,7 +39,7 @@ class ProductMovementModular extends FannieReportPage
 
 	function preprocess()
     {
-        parent::preprocess();
+        $ret = parent::preprocess();
         // custom: needs graphing JS/CSS
         if ($this->content_function == 'report_content' && $this->report_format == 'html') {
             $this->add_script('../../src/d3.js/d3.v3.min.js');
@@ -47,7 +47,7 @@ class ProductMovementModular extends FannieReportPage
             $this->add_css_file('../../src/d3.js/charts/singleline/singleline.css');
         }
 
-		return true;
+		return $ret;
 	}
 
     public function report_content() {
@@ -228,7 +228,7 @@ function showGraph() {
 			</td>
 		</tr>
 		<tr>
-			<th>End</th>
+			<th>Date End</th>
 			<td>
 		                <input type=text size=14 id=date2 name=date2 onfocus="this.value='';showCalendarControl(this);">
 		       </td>

@@ -145,6 +145,12 @@ class BatchReport extends FannieReportPage
 		return array('Total',null,$sumSales,$sumQty);
 	}
 
+	function error_content()
+	{
+		echo "<H2>Problem</H2>";
+		echo "<p>" . $this->error_text . "</p>";
+	}
+
 	function form_content()
     {
 		global $FANNIE_OP_DB;

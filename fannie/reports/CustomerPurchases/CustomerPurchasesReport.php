@@ -50,9 +50,9 @@ class CustomerPurchasesReport extends FannieReportPage
 			  t.department,d.dept_name,m.super_name,
 			  sum(t.quantity) as qty,
 			  sum(t.total) as ttl from
-			  $dlog as t left join products as p on t.upc = p.upc 
-			  left join departments AS d ON t.department=d.dept_no
-			  left join MasterSuperDepts AS m ON t.department=m.dept_ID
+			  $dlog as t left join {$FANNIE_OP_DB}.products as p on t.upc = p.upc 
+			  left join {$FANNIE_OP_DB}.departments AS d ON t.department=d.dept_no
+			  left join {$FANNIE_OP_DB}.MasterSuperDepts AS m ON t.department=m.dept_ID
 			  where t.card_no = ? AND
 			  trans_type IN ('I','D') AND
 			  tdate BETWEEN ? AND ?
