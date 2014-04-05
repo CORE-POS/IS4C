@@ -102,22 +102,21 @@ class ReprintReceiptPage extends FanniePage
 			}
 			$tender_clause .= ")";
 
-			$or_clause = "( ";
-			if ($tender_clause != "( 1=1)") {
-                $or_clause .= $tender_clause;
-            }
+            $or_clause = '(' . $tender_clause;
 			if ($department != "") {
-				if ($or_clause != '( ') {
-                    $or_clause .= " OR ";
-                }
-				$or_clause .= " department=? ";
+				$or_clause .= " OR department=? ";
 				$args[] = $department;
 			}
-			$or_clause .= ")";
 
-			if ($or_clause != "( )") {
-				$query .= ' AND '.$or_clause;
-			}
+            if (FormLib::get('is_refund', 0) == 1) {
+                $or_clause .= ' OR trans_status=\'R\' ';
+            }
+            if (FormLib::get('mem_discount', 0) == 1) {
+                $or_clause .= ' OR upc=\'DISCOUNT\' ';
+            }
+
+			$or_clause .= ")";
+            $query .= ' AND '.$or_clause;
 
 			$query .= " GROUP BY year(tdate),month(tdate),day(tdate),emp_no,register_no,trans_no ";
 			$query .= " ORDER BY year(tdate),month(tdate),day(tdate),emp_no,register_no,trans_no ";
@@ -200,6 +199,10 @@ Receipt Search - Fill in any information available
 	<th>Lane #</th><td><input type=text name=register_no size=6 /></td>
 </tr>
 <tr>
+    <th>Refund</th><td><input type="checkbox" name="is_refund" value="1" /></td>
+    <th>Mem Discount</th><td><input type="checkbox" name="mem_discount" value="1" /></td>
+</tr>
+<tr>
 	<th>Tender type</th><td colspan=2><select name=trans_subtype>
         <option value="">Select one...</option>
 		<?php
@@ -221,9 +224,11 @@ Receipt Search - Fill in any information available
 </table>
 <i>* If no date is given, all matching receipts from the past 15 days will be returned</i><br />
 <b>Tips</b>:<br />
+<ul>
 <li>A date and a receipt number is sufficient to find any receipt</li>
 <li>If you have a receipt number, you don't need to specify a lane or cashier number</li>
 <li>ALL fields are optional. You can specify a tender type without an amount (or vice versa)</li>
+</ul>
 </form>
 		<?php
 		return ob_get_clean();
