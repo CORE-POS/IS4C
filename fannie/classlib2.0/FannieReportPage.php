@@ -505,6 +505,9 @@ class FannieReportPage extends FanniePage
         if (!empty($headers)) {
             //EL first headers.
             $headers1 = $this->select_headers();
+            if (!$this->multi_report_mode) {
+                $this->multi_counter++;
+            }
             switch(strtolower($format)) {
                 case 'html':
                     $ret .= '<thead>';
@@ -669,8 +672,9 @@ class FannieReportPage extends FanniePage
         if (($meta & self::META_BLANK) != 0) {
             $ret = '</tbody><tbody><tr>';
             $row = array();
+            $header1 = $this->select_headers();
             // just using headers as a column count
-            foreach($this->report_headers as $h) {
+            foreach($header1 as $h) {
                 $row[] = null;
             }
         }
@@ -678,9 +682,11 @@ class FannieReportPage extends FanniePage
             $ret = '</tbody><tbody><tr>';
             $tag = 'th';
             $row = array();
-            foreach($this->report_headers as $h) {
+            $header1 = $this->select_headers();
+            foreach($header1 as $h) {
                 $row[] = $h;
             }
+            $this->multi_counter++;
         }
 
         $date = false;
@@ -766,6 +772,7 @@ class FannieReportPage extends FanniePage
             foreach($header1 as $h) {
                 $row[] = $h;
             }
+            $this->multi_counter++;
         }
         $ret = "";
         foreach($row as $item) {
@@ -907,5 +914,12 @@ class FannieReportPage extends FanniePage
 
     // drawPage()
     }
+
+     // 5Apr14 EL This is what FannieDispatch::go() uses.
+    function draw_page ()
+    {
+        $this->drawPage();
+    }
+
 }
 
