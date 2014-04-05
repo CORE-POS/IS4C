@@ -238,7 +238,11 @@ class FannieReportPage extends FanniePage
                 $footers = $this->calculate_footers($report_data);
                 $output .= $this->render_data($report_data,$headers,
                         $footers,$this->report_format);
-                $output .= '<br />';
+                if ($this->report_format == 'html') {
+                    $output .= '<br />';
+                } elseif ($this->report_format == 'csv') {
+                    $output .= "\r\n";
+                }
             }
         } elseif ($this->multi_report_mode && $this->report_format == 'xls') {
             /**
@@ -248,8 +252,8 @@ class FannieReportPage extends FanniePage
             $xlsdata = array();
             foreach($data as $report_data) {
                 if (!empty($this->report_headers)) {
-                    $headers = $this->select_headers();
-                    $xlsdata[] = $headers;
+                    $headers1 = $this->select_headers();
+                    $xlsdata[] = $headers1;
                 }
                 foreach($report_data as $line) {
                     $xlsdata[] = $line;
@@ -592,7 +596,8 @@ class FannieReportPage extends FanniePage
             case 'xls':
                 $xlsdata = $data;
                 if (!empty($headers)) {
-                    array_unshift($xlsdata,$headers);
+                    $headers1 = $this->select_headers();
+                    array_unshift($xlsdata,$headers1);
                 }
                 if (!empty($footers)) {
                     // A single footer row
@@ -606,10 +611,10 @@ class FannieReportPage extends FanniePage
                     }
                 }
                 foreach($this->report_end_content() as $line) {
-                    array_push($xlsdata, array($line));
+                    array_push($xlsdata, array(strip_tags($line)));
                 }
                 foreach($this->report_description_content() as $line) {
-                    array_unshift($xlsdata,array($line));
+                    array_unshift($xlsdata,array(strip_tags($line)));
                 }
                 if (!function_exists('ArrayToXls')) {
                     include_once($FANNIE_ROOT.'src/ReportConvert/ArrayToXls.php');
