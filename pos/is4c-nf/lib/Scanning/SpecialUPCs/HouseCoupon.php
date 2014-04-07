@@ -94,7 +94,7 @@ class HouseCoupon extends SpecialUPC
             ". $db->datediff('endDate', $db->now()) . " end as expired
             from
             houseCoupons WHERE coupID=" . ((int)$id);
-        if (isset($hctable['definition'])) {
+        if (isset($hctable['description'])) {
             $infoQ = str_replace('as expired', 'as expired, description', $infoQ);
         }
         $infoR = $db->query($infoQ);
@@ -450,6 +450,7 @@ class HouseCoupon extends SpecialUPC
                 $percentage = $infoW['discountValue'] - $max;
                 $amount = $CORE_LOCAL->get('discountableTotal') > $max ? $max : $CORE_LOCAL->get('discountableTotal');
                 $value = $percentage * $amount;
+                break;
             case "%": // percent discount on all items
                 Database::getsubtotals();
                 $value = $infoW["discountValue"] * $CORE_LOCAL->get("discountableTotal");

@@ -21,26 +21,25 @@
 
 *********************************************************************************/
 
-/**
-  @class DDDAdminLogin
-  adminlogin callback for marking current
-  items as shrink (DDD in WFC parlance [dropped, dented, damaged])
-*/
-class DDDAdminLogin 
+class PaidOutDept extends SpecialDept
 {
-
-    public static $adminLoginMsg = 'Mark these items as shrink/unsellable?';
-    
-    public static $adminLoginLevel = 10;
-
-    public static function adminLoginCallback($success)
+    public function handle($deptID,$amount,$json)
     {
-        if ($success) {
-            return MiscLib::base_url().'ajax-callbacks/ddd.php';
-        } else {
-            return false;
+        global $CORE_LOCAL;
+        if ($CORE_LOCAL->get('msgrepeat') == 0) { // invert has not happened yet
+            $CORE_LOCAL->set('strEntered', (100*$amount * -1).'DP'.$deptID);
+            $CORE_LOCAL->set('msgrepeat', 1);
+           // $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php?autoconfirm=1';
+            $json['main_frame'] = MiscLib::base_url().'gui-modules/PaidOutComment.php';
+            $CORE_LOCAL->set("refundComment",$CORE_LOCAL->get("strEntered"));
         }
+
+        //if ($CORE_LOCAL->get("refundComment") == ""){
+            
+            //$json['main_frame'] = MiscLib::base_url().'gui-modules/PaidOutComment.php';
+            //$CORE_LOCAL->set("refundComment",$CORE_LOCAL->get("strEntered"));
+        //}
+
+        return $json;
     }
-
 }
-

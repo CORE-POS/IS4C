@@ -38,8 +38,8 @@ class OtherReceiptFormat extends DefaultReceiptFormat
     {
 		if ($row['trans_type'] == '0') {
 			// tare
-			$description = strtolower($description);
-			$description = str_replace('**',' =',$description);
+			$description = strtolower($row['description']);
+			$description = str_replace('**',' =', $description);
 			return $description;
 		} else if ($row['trans_type'] == 'H' && $row['description'] != '') {
 			$this->is_bold = True;

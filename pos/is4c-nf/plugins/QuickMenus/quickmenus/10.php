@@ -7,6 +7,7 @@ $my_menu = array(
 	"Positively 3rd Street" => "*15003",
 	"Red Mug Bakeshop" => "*150004",
 	"St Paul Bagelry" => "*15005",
+	"Starlite Kitchen" => "*15007",
 	"Turtle Bread" => "*15006",
 	"Biscotti" => "7011",
 	"Single Bagel" => "99DP1500",

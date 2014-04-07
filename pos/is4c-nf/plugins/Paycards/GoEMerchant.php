@@ -507,7 +507,11 @@ class GoEMerchant extends BasicCCModule {
 			$t_type = 'CC';
 			if ($CORE_LOCAL->get('paycard_issuer') == 'American Express')
 				$t_type = 'AX';
-			TransRecord::addtender("Credit Card", $t_type, $amt);
+            // if the transaction has a non-zero efsnetRequestID,
+            // include it in the tender line
+            $record_id = $this->last_req_id;
+            $charflag = ($record_id != 0) ? 'RQ' : '';
+			TransRecord::addFlaggedTender("Credit Card", $t_type, $amt, $record_id, $charflag);
 			$CORE_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>Please verify cardholder signature<p>[enter] to continue<br>\"rp\" to reprint slip<br>[void] to cancel and void</font>");
 			if ($CORE_LOCAL->get("paycard_amount") <= $CORE_LOCAL->get("CCSigLimit") && $CORE_LOCAL->get("paycard_amount") >= 0) {
 				$CORE_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>No signature required<p>[enter] to continue<br>[void] to cancel and void</font>");
@@ -571,6 +575,7 @@ class GoEMerchant extends BasicCCModule {
 		$cardTr3 = $CORE_LOCAL->get("paycard_tr3");
 		$cardName = $CORE_LOCAL->get("paycard_name");
 		$refNum = $this->refnum($transID);
+        $this->last_ref_num = $refNum;
 		$live = 1;
 		$cvv2 = $CORE_LOCAL->get("paycard_cvv2");
 
@@ -796,7 +801,7 @@ class GoEMerchant extends BasicCCModule {
             $password = "password";
             $gatewayID = "a91c38c3-7d7f-4d29-acc7-927b4dca0dbe";
         }
-        $dateStr = date('Y-m-d');
+        $dateStr = date('mdy');
 
         $xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
         $xml .= "<TRANSACTION>";
@@ -840,7 +845,7 @@ class GoEMerchant extends BasicCCModule {
             $status = 'NOTFOUND';
             $directions = 'Press [enter] to try again, [clear] to stop';
             $query_string = 'id=' . ($local ? '_l' : '') . $ref . '&mode=' . $mode;
-            $resp['confirm_dest'] = $url_stem . '/gui/PaycardLookupPage.php?id=' . $query_string;
+            $resp['confirm_dest'] = $url_stem . '/gui/PaycardTransLookupPage.php?' . $query_string;
         } else {
             $responseCode = $xml_resp->get_first('TRANS_STATUS1');;
             $resultCode = $responseCode;
@@ -881,7 +886,7 @@ class GoEMerchant extends BasicCCModule {
                                 commErr=0,
                                 httpCode=200
                                 WHERE refNum='%s'
-                                AND trans_id=%d",
+                                AND transID=%d",
                                 $responseCode,
                                 $resultCode,
                                 $db->escape($rMsg),
@@ -891,7 +896,7 @@ class GoEMerchant extends BasicCCModule {
                                 $CORE_LOCAL->get('paycard_id'));
                 $upR = $db->query($upQ);
 
-                if ($status == 'Approved') {
+                if ($status == 'APPROVED') {
                     PaycardLib::paycard_wipe_pan();
                     $this->cleanup(array());
                     $resp['confirm_dest'] = $url_stem . '/gui/paycardSuccess.php';
@@ -906,9 +911,9 @@ class GoEMerchant extends BasicCCModule {
         switch(strtoupper($status)) {
             case 'APPROVED':
                 $line1 = $status;
-                $line2 = 'Amount: ' . sprintf('%.2f', $xml->get_first('AMOUNT1'));
+                $line2 = 'Amount: ' . sprintf('%.2f', $xml_resp->get_first('AMOUNT1'));
                 $line3 = 'Type: CREDIT';
-                $voided = $xml->get_first('CREDIT_VOID1');
+                $voided = $xml_resp->get_first('CREDIT_VOID1');
                 $line4 = 'Voided: ' . (strtoupper($voided) == 'VOID' ? 'Yes' : 'No');
                 $resp['output'] = DisplayLib::boxMsg($line1.'<br />'.$line2.'<br />'.$line3.'<br />'.$line4.'<br />'.$directions, '', true);
                 break;

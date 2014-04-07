@@ -21,31 +21,32 @@
 
 *********************************************************************************/
 
-class WFCFixup extends PreParser {
-	var $remainder;
-	
+class CoopCredCheck extends Parser {
 	function check($str){
-		global $CORE_LOCAL;
-		if (substr($str,-3) == "QK9"){
-			$this->remainder = str_replace("QK9","QM9",$str);
+		if ($str == "CQ")
 			return True;
-		} else if (substr($str,-4) == "QK10"){
-			$this->remainder = str_replace("QK10","QM10",$str);
-			return True;
-		} else if (strstr($str, '59070000087') || strstr($str, '59070000087') || strstr($str, '59070000087')) {
-            // stupid Herb Pharm coupon. Expires 30Apr14
-            $this->remainder = '59070099287';
-            return true;
-        } else if ($str == 'MA' || $str == 'OB') {
-            // re-write old WFC quarterly coupon as houseCoupon UPC
-            $this->remainder = '0049999900001';
-            return true;
-        }
 		return False;
 	}
 
 	function parse($str){
-		return $this->remainder;
+		global $CORE_LOCAL;
+		$ret = $this->default_json();
+        // Sets $balance and $availBal.
+		$chargeOk = PrehLib::chargeOk();
+        // $memChargeCommitted isn't used here.
+		$memChargeCommitted=$CORE_LOCAL->get("availBal") - $CORE_LOCAL->get("memChargeTotal");
+        $message = "<p style='font-weight:bold; text-align:center; margin: 0em 0em 0em -1.0em;'>".
+            _("Member")." #". $CORE_LOCAL->get("memberID")."<br />";
+        if ($chargeOk) {
+            $message .= _("Available Coop Cred") . "<br />" .
+            _("Balance is:") . "<br />" .
+            "<span style='font-size:1.4em;'>" . " ".$CORE_LOCAL->get("availBal") . "</span>";
+        } else {
+            $message .= _("Is not authorized to use") . "<br />" . _("Coop Cred");
+        }
+        $message .= "</p>";
+        $ret['output'] = DisplayLib::boxMsg("$message","",True);
+		return $ret;
 	}
 
 	function doc(){
@@ -54,16 +55,13 @@ class WFCFixup extends PreParser {
 				<th>Input</th><th>Result</th>
 			</tr>
 			<tr>
-				<td><i>discount</i>DI<i>item</i></td>
-				<td>Set a percent discount <i>discount</i>
-				for just one item <i>item</i></td>
-			</tr>
-			<tr>
-				<td><i>discount</i>PD<i>item</i></td>
-				<td>Same as DI above</td>
+				<td>CQ</td>
+				<td>Display Coop Cred balance for
+				currently entered member</td>
 			</tr>
 			</table>";
 	}
+
 }
 
 ?>

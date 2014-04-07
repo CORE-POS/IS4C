@@ -192,6 +192,9 @@ purchase as opposed to current status.
 
 numflag and charflag are generic status indicators. As far
 as I know, there's no uniform usage across implementations.
+Also used by the shrink/DDD module to indicate the reason 
+the product has been marked as unsellable, for which 
+trans_status = 'Z'.
 
 card_no is the customer number from core_op.custdata.
 */

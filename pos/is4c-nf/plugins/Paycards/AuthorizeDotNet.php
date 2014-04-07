@@ -479,7 +479,14 @@ class AuthorizeDotNet extends BasicCCModule {
 			// cast to string. tender function expects string input
 			// numeric input screws up parsing on negative values > $0.99
 			$amt = "".($CORE_LOCAL->get("paycard_amount")*100);
-			PrehLib::tender("CC", $amt);
+			$t_type = 'CC';
+			if ($CORE_LOCAL->get('paycard_issuer') == 'American Express')
+				$t_type = 'AX';
+            // if the transaction has a non-zero efsnetRequestID,
+            // include it in the tender line
+            $record_id = $this->last_req_id;
+            $charflag = ($record_id != 0) ? 'RQ' : '';
+			TransRecord::addFlaggedTender("Credit Card", $t_type, $amt, $record_id, $charflag);
 			$CORE_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>Please verify cardholder signature<p>[enter] to continue<br>\"rp\" to reprint slip<br>[clear] to cancel and void</font>");
             if ($CORE_LOCAL->get("paycard_amount") <= $CORE_LOCAL->get("CCSigLimit") && $CORE_LOCAL->get("paycard_amount") >= 0) {
                 $CORE_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>No signature required<p>[enter] to continue<br>[void] to cancel and void</font>");

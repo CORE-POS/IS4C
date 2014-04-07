@@ -105,8 +105,8 @@ class adminlogin extends NoInputPage {
 				if ($num_rows != 0) {
 					$row = $db->fetch_row($result);
 					TransRecord::add_log_record(array(
-						'upc' => $passwd,
-						'description' => substr($class::$adminLoginMsg,0,30),
+						'upc' => $row['emp_no'],
+						'description' => substr($class::$adminLoginMsg . ' ' . $row['FirstName'],0,30),
 						'charflag' => 'PW',
 						'num_flag' => $row['emp_no']
 					));

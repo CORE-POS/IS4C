@@ -82,16 +82,36 @@ class UPC extends Parser {
 
 		/* make sure upc length is 13 */
 		$upc = "";
-		if (strlen($entered) == 13 && substr($entered, 0, 1) != 0) $upc = "0".substr($entered, 0, 12);
-		else $upc = substr("0000000000000".$entered, -13);
+        if ($CORE_LOCAL->get('EanIncludeCheckDigits') != 1) {
+            /** 
+              If EANs do not include check digits, the value is 13 digits long,
+              and the value does not begin with a zero, it most likely
+              represented a hand-keyed EAN13 value w/ check digit. In this configuration
+              it's probably a miskey so trim the last digit.
+            */
+            if (strlen($entered) == 13 && substr($entered, 0, 1) != 0) {
+                $upc = "0".substr($entered, 0, 12);
+            }
+        }
+        // pad value to 13 digits
+		$upc = substr("0000000000000".$entered, -13);
 
-		/* extract scale-sticker prices */
+		/* extract scale-sticker prices 
+           Mixed check digit settings do not work here. 
+           Scale UPCs and EANs must uniformly start w/
+           002 or 02.
+        */
+        $scalePrefix = '002';
+        if ($CORE_LOCAL->get('UpcIncludeCheckDigits') == 1) {
+            $scalePrefix = '02';
+        }
 		$scalepriceUPC = 0;
 		$scalepriceEAN = 0;
-		if (substr($upc, 0, 3) == "002") {
+		if (substr($upc, 0, strlen($scalePrefix)) == $scalePrefix) {
 			$scalepriceUPC = MiscLib::truncate2(substr($upc, -4)/100);
 			$scalepriceEAN = MiscLib::truncate2(substr($upc, -5)/100);
 			$upc = substr($upc, 0, 8)."00000";
+            // I think this is WFC special casing; needs revising.
 			if ($upc == "0020006000000" || $upc == "0020010000000") $scalepriceUPC *= -1;
 		}
 
@@ -171,7 +191,7 @@ class UPC extends Parser {
 		if ($num_rows > 0 && $row['scale'] == 1 
 			&& $CORE_LOCAL->get("lastWeight") > 0 && $CORE_LOCAL->get("weight") > 0
 			&& abs($CORE_LOCAL->get("weight") - $CORE_LOCAL->get("lastWeight")) < 0.0005
-			&& substr($upc,0,3) != "002" && abs($row['normal_price']) > 0.01){
+			&& substr($upc,0,strlen($scalePrefix)) != $scalePrefix && abs($row['normal_price']) > 0.01){
 			if ($CORE_LOCAL->get('msgrepeat') == 0){
 				$CORE_LOCAL->set("strEntered",$row["upc"]);
 				$CORE_LOCAL->set("boxMsg","<b>Same weight as last item</b>
@@ -230,7 +250,10 @@ class UPC extends Parser {
 			$peek = PrehLib::peekItem();
 			if (strstr($peek,"** Tare Weight") === False)
 				TransRecord::addTare($row['tareweight']*100);
-		}
+		} elseif ($row['scale'] != 0 && !$CORE_LOCAL->get("tare") && Plugin::isEnabled('PromptForTare')) {
+            $ret['main_frame'] = $my_url.'plugins/PropmtForTare/TarePropmtInputPage.php?class=UPC&item='.$entered;
+			return $ret;
+        }
 
 		/* sanity check - ridiculous price 
 		   (can break db column if it doesn't fit
@@ -248,7 +271,7 @@ class UPC extends Parser {
 		   retry the UPC in a few milliseconds and see
 		*/
 		if ($scale != 0 && $CORE_LOCAL->get("weight") == 0 && 
-			$CORE_LOCAL->get("quantity") == 0 && substr($upc,0,3) != "002") {
+			$CORE_LOCAL->get("quantity") == 0 && substr($upc,0,strlen($scalePrefix)) != $scalePrefix) {
 
 			$CORE_LOCAL->set("SNR",$CORE_LOCAL->get('strEntered'));
 			$ret['output'] = DisplayLib::boxMsg(_("please put item on scale"),'',True);
@@ -259,7 +282,7 @@ class UPC extends Parser {
 
 		/* got a scale weight, make sure the tare
 		   is valid */
-		if ($scale != 0 and substr($upc,0,3) != "002"){
+		if ($scale != 0 and substr($upc,0,strlen($scalePrefix)) != $scalePrefix){
 			$quantity = $CORE_LOCAL->get("weight") - $CORE_LOCAL->get("tare");
 			if ($CORE_LOCAL->get("quantity") != 0) 
 				$quantity = $CORE_LOCAL->get("quantity") - $CORE_LOCAL->get("tare");
@@ -377,7 +400,7 @@ class UPC extends Parser {
            quantity and items that do not have a normal_price
            assigned cannot calculate a proper quantity.
 		*/
-		if (substr($upc,0,3) == "002") {
+		if (substr($upc,0,strlen($scalePrefix)) == $scalePrefix) {
 			if ($DiscountObject->isSale() && $scale == 1 && $row['normal_price'] != 0) {
 				$quantity = MiscLib::truncate2($scaleprice / $row["normal_price"]);
             } else if ($scale == 1 && $row['normal_price'] != 0) {
@@ -542,6 +565,17 @@ class UPC extends Parser {
 			return True;
 		}
 		return False;
+	}
+
+	public static $requestTareHeader = 'Enter Tare';
+	public static $requestTareMsg = 'Type tare weight or eneter for default';
+	public static function requestTareCallback($tare, $in_item) {
+        if (is_numeric($tare)) {
+            TransRecord::addTare($tare);
+            $ret_url = '../../gui-modules/pos2.php?reginput='.$in_item;
+            return $ret_url;
+        }
+        return False;
 	}
 
 	function doc(){

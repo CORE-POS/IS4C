@@ -471,6 +471,8 @@ function create_op_dbs($db,$type){
 
     InstallUtilities::createIfNeeded($db, $type, $name, 'autoCoupons', 'op', $errors);
 
+    InstallUtilities::createIfNeeded($db, $type, $name, 'ShrinkReasons', 'op', $errors);
+
     /**
       @deprecated 3Jan14
       Only used in PrehLib::chargeOk()

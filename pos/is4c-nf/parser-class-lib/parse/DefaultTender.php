@@ -47,7 +47,7 @@ class DefaultTender extends Parser {
         if ($CORE_LOCAL->get('PaycardsBlockTenders') == 1) {
             $tender_code = strtoupper(substr($str, -2));
             $exceptions = strtoupper($CORE_LOCAL->get('PaycardsBlockExceptions'));
-            $except_array = preg_split('/[A-Z]+/', $exceptions, 0, PREG_SPLIT_NO_EMPTY);
+            $except_array = preg_split('/[^A-Z]+/', $exceptions, 0, PREG_SPLIT_NO_EMPTY);
             if ($CORE_LOCAL->get('ccTermState') == 'ready' && !in_array($tender_code, $except_array)) {
                 $CORE_LOCAL->set('boxMsg', _('Tender Customer Card First') 
                                         . '<br />'

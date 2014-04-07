@@ -114,12 +114,14 @@ class MercuryGift extends BasicCCModule {
 		case PaycardLib::PAYCARD_MODE_ADDVALUE:
 			$CORE_LOCAL->set("paycard_amount",0);
 			$CORE_LOCAL->set("paycard_id",$CORE_LOCAL->get("LastID")+1); // kind of a hack to anticipate it this way..
+            $CORE_LOCAL->set('CacheCardType', 'GIFT');
 			$plugin_info = new Paycards();
 			$json['main_frame'] = $plugin_info->plugin_url().'/gui/paycardboxMsgGift.php';
 			return $json;
 	
 		case PaycardLib::PAYCARD_MODE_BALANCE:
 			$plugin_info = new Paycards();
+            $CORE_LOCAL->set('CacheCardType', 'GIFT');
 			$json['main_frame'] = $plugin_info->plugin_url().'/gui/paycardboxMsgBalance.php';
 			return $json;
 		} // switch mode
