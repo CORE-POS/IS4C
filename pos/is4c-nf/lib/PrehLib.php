@@ -222,6 +222,7 @@ static public function setMember($member, $personNumber, $row)
 
 	$conn2->query($memquery);
 
+	$CORE_LOCAL->set("memberID",$member);
 	$opts = array('upc'=>'MEMENTRY','description'=>'CARDNO IN NUMFLAG','numflag'=>$member);
 	TransRecord::add_log_record($opts);
 
@@ -1056,8 +1057,6 @@ static public function percentDiscount($strl,$json=array())
 static public function chargeOk() 
 {
 	global $CORE_LOCAL;
-
-	Database::getsubtotals();
 
 	$conn = Database::pDataConnect();
 	$query = "SELECT c.ChargeLimit - c.Balance AS availBal,
