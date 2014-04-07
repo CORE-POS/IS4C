@@ -97,7 +97,7 @@ class FanniePage
     }
     public function get_header()
     {
-        $this->getHeader();
+        return $this->getHeader();
     }
 
     /**
@@ -114,7 +114,7 @@ class FanniePage
     }
     public function get_footer()
     {
-        $this->getFooter();
+        return $this->getFooter();
     }
 
     /**
@@ -259,7 +259,7 @@ class FanniePage
 
     public function check_auth()
     {
-        $this->checkAuth();
+        return $this->checkAuth();
     }
 
     public function draw_page()
@@ -388,7 +388,6 @@ class FanniePage
                 echo "\n";
             }
             
-            // 22May13 Eric Lee  Moved after css_files so these take precedence.
             $page_css = $this->css_content();
             if (!empty($page_css)) {
                 echo '<style type="text/css">';

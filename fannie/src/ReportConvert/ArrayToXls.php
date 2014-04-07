@@ -15,12 +15,16 @@ function ArrayToXls($array){
 
 	for($i=0;$i<count($array);$i++){
 		for($j=0;$j<count($array[$i]);$j++){
-			if ( ($pos = strpos($array[$i][$j],chr(0))) !== False){
-				$val = substr($array[$i][$j],0,$pos);
-				$worksheet->write($i,$j,$val,$format_bold);
+			// 5Apr14 EL Added the isset test for StoreSummaryReport.php with multiple header sets.
+			//            Why should it be needed?
+			if (isset($array[$i][$j])) {
+				if ( ($pos = strpos($array[$i][$j],chr(0))) !== False){
+					$val = substr($array[$i][$j],0,$pos);
+					$worksheet->write($i,$j,$val,$format_bold);
+				} else  {
+					$worksheet->write($i,$j,$array[$i][$j]);
+				}
 			}
-			else 
-				$worksheet->write($i,$j,$array[$i][$j]);
 		}
 	}
 
