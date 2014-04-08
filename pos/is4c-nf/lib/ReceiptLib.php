@@ -85,6 +85,12 @@ static public function center($text, $linewidth) {
 
 // -------------------------------------------------------------
 static public function drawerKick() {
+    // do not open drawer on non-local requests
+    // this may not work on all web servers or 
+    // network configurations
+    if (isset($_SERVER) && isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] != '127.0.0.1') {
+        return;
+    }
 	$pin = self::currentDrawer();
 	if ($pin == 1)
 		self::writeLine(chr(27).chr(112).chr(0).chr(48)."0");
