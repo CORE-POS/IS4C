@@ -298,11 +298,13 @@ class HouseCoupon extends SpecialUPC
           For members, enforce limits against longer
           transaction history
         */
-        if ($infoW["memberOnly"] == 1 && $CORE_LOCAL->get("standalone")==0 && $CORE_LOCAL->get('memberID') != $CORE_LOCAL->get('visitingMem')) {
+        if ($infoW["memberOnly"] == 1 && $CORE_LOCAL->get("standalone")==0 
+            && $CORE_LOCAL->get('memberID') != $CORE_LOCAL->get('visitingMem')) {
             $mDB = Database::mDataConnect();
-            $mR = $mDB->query("SELECT quantity FROM houseCouponThisMonth
-                WHERE card_no=" . $CORE_LOCAL->get("memberID") . " and
-                upc='$upc'");
+            $mR = $mDB->query("SELECT quantity 
+                               FROM houseCouponThisMonth
+                               WHERE card_no=" . $CORE_LOCAL->get("memberID") . " and
+                               upc='$upc'");
             if ($mDB->num_rows($mR) > 0) {
                 $uses = array_pop($mDB->fetch_row($mR));
                 if ($uses >= $infoW["limit"]) {
