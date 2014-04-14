@@ -143,7 +143,7 @@ $model->quantity(0);
 $model->special_price(0.00);
 $model->specialpricemethod(0);
 $model->specialgroupprice(0.00);
-$model->special_quantity(0);
+$model->specialquantity(0);
 $model->start_date('');
 $model->end_date('');
 $model->department($dept);
