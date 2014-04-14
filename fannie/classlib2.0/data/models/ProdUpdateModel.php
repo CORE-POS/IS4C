@@ -110,11 +110,13 @@ class ProdUpdateModel extends BasicModel
         $this->user($user);
 
         $likecode = 0;
-        $upcQ = $this->connection->prepare('SELECT likeCode FROM upcLike WHERE upc=?');
-        $upcR = $this->connection->execute($upcQ, array($this->upc()));
-        if ($this->connection->num_rows($upcR) > 0) {
-            $upcW = $this->connection->fetch_row($upcR);
-            $this->likeCode($upcW['likeCode']);
+        if ($this->connection->table_exists('upcLike')) {
+            $upcQ = $this->connection->prepare('SELECT likeCode FROM upcLike WHERE upc=?');
+            $upcR = $this->connection->execute($upcQ, array($this->upc()));
+            if ($this->connection->num_rows($upcR) > 0) {
+                $upcW = $this->connection->fetch_row($upcR);
+                $this->likeCode($upcW['likeCode']);
+            }
         }
 
         $this->save();
