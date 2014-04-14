@@ -598,11 +598,8 @@ class ProductListPage extends FannieReportTool
 			<input type=text size= 5 id=deptEnd name=deptEnd value=1>
 			</p></td>
 		</tr>
-		<tr class=manu id=manu style="display:none;">
+		<tr class=manu id=manu style="display:none;" valign="top">
 			<td><p><b><?php echo _('Manufacturer'); ?></b></p>
-		<tr class=manu id=manu style="display:none;" valign=top>
-			<td style="text-align:top;"><p><b>Manufacturer</b></p>
-			<p></p></td>
 			<td><p>
 			<input type=text name=manufacturer />
 			</p>
