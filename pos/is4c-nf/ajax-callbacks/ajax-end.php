@@ -186,13 +186,9 @@ function truncateTempTables()
 {
     $connection = Database::tDataConnect();
     $query1 = "truncate table localtemptrans";
-    // @deprecated
-    //$query2 = "truncate table activitytemplog";
     $query3 = "truncate table couponApplied";
 
     $connection->query($query1);
-    // @deprecated
-    //$connection->query($query2);
     $connection->query($query3);
 }
 
@@ -222,12 +218,5 @@ function moveTempData()
     }
     $cols = Database::localMatchingColumns($connection, 'dtransactions', 'localtemptrans');
     $connection->query("insert into dtransactions ($cols) select $cols from localtemptrans");
-
-    /** 
-    alog and its variants are never used.
-    @deprecated
-    $connection->query("insert into activitylog select * from activitytemplog");
-    $connection->query("insert into alog select * from activitytemplog");
-    */
 }
 

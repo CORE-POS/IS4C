@@ -645,53 +645,6 @@ static public function addCashDrop($amt)
 }
 
 /**
-  Add an activity record to activitytemplog
-  @param $activity identifier
-
-  @deprecated
-  No one really uses activity logging currently.
-  Use TransRecord::addLogRecord instead.
-*/
-static public function addactivity($activity) 
-{
-    /*
-	global $CORE_LOCAL;
-
-	$timeNow = time();
-
-	if ($CORE_LOCAL->get("CashierNo") > 0 && $CORE_LOCAL->get("CashierNo") < 256) {
-		$intcashier = $CORE_LOCAL->get("CashierNo");
-	} else {
-		$intcashier = 0;
-	}
-
-	$db = Database::tDataConnect();
-	$strqtime = "select max(datetime) as maxDateTime, ".$db->now()." as rightNow from activitytemplog";
-	$result = $db->query($strqtime);
-
-	$row = $db->fetch_array($result);
-
-	if (!$row || !$row[0]) {
-		$interval = 0;
-	} else {
-		$interval = strtotime($row["rightNow"]) - strtotime($row["maxDateTime"]);
-	}
-
-	$datetimestamp = strftime("%Y-%m-%d %H:%M:%S", $timeNow);
-
-	$values = array(
-		'datetime'	=> MiscLib::nullwrap($datetimestamp),
-		'LaneNo'	=> MiscLib::nullwrap($CORE_LOCAL->get("laneno")),
-		'CashierNo'	=> MiscLib::nullwrap($intcashier),
-		'TransNo'	=> MiscLib::nullwrap($CORE_LOCAL->get("transno")),
-		'Activity'	=> MiscLib::nullwrap($activity),
-		'Interval'	=> MiscLib::nullwrap($interval)
-		);
-	$result = $db->smart_insert("activitytemplog",$values);
-    */
-}
-
-/**
   Add a log entry to the transaction table.
   Log records do not appear onscreen or on receipts.
 
