@@ -21,6 +21,7 @@ $CREATE['op.productUser'] = "
 		photo varchar(255),
 		long_text text,
 		enableOnline tinyint,
+        soldOut TINYINT DEFAULT 0,
 		PRIMARY KEY(upc)
 	)
 "; 
