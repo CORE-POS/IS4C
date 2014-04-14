@@ -236,6 +236,7 @@ class FannieReportPage extends FanniePage
             foreach($data as $report_data) {
                 $headers = $this->select_headers();
                 $footers = $this->calculate_footers($report_data);
+                $report_data = $this->format($report_data);
                 $output .= $this->render_data($report_data,$headers,
                         $footers,$this->report_format);
                 if ($this->report_format == 'html') {
@@ -255,6 +256,7 @@ class FannieReportPage extends FanniePage
                     $headers1 = $this->select_headers();
                     $xlsdata[] = $headers1;
                 }
+                $report_data = $this->format($report_data);
                 foreach($report_data as $line) {
                     $xlsdata[] = $line;
                 }
@@ -279,6 +281,7 @@ class FannieReportPage extends FanniePage
             $footers = $this->calculate_footers($data);
             // $data may contain REPEAT_HEADERS calls
             // if the headers should be different then report_headers will need two dimensions.
+            $report_data = $this->format($report_data);
             $output = $this->render_data($data,$this->report_headers,
                     $footers,$this->report_format);
         }
@@ -352,6 +355,18 @@ class FannieReportPage extends FanniePage
         }
 
         return $headers;
+    }
+
+    /**
+      Apply formatting to data. This method can be used to
+      add markup to records - e.g., links to other content.
+
+      @param $data two-dimensional array of report data
+      @return two-dimensional array of report data
+    */
+    protected function format($data)
+    {
+        return $data;
     }
 
     /**
