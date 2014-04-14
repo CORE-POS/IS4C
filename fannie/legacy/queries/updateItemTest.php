@@ -112,11 +112,26 @@ if (empty($vol_qtty) || $vol_qtty == 0){
 $descript = str_replace("'","",$descript);
 $descript = str_replace("\"","",$descript);
 $descript = $sql->escape($descript);
+if (empty($manufacturer))
+	$manufacturer = '';
+if (empty($distributor))
+	$distributor = '';
+$manufacturer = str_replace("'","",$manufacturer);
+$distributor = str_replace("'","",$distributor);
+// lookup vendorID by name
+$vendorID = 0;
+$vendor = new VendorsModel($sql);
+$vendor->vendorName($distributor);
+foreach($vendor->find('vendorID') as $obj) {
+    $vendorID = $obj->vendorID();
+    break;
+}
 
 $stamp = date("Y-m-d H:i:s");
 $model = new ProductsModel($sql);
 $model->upc($upc);
 $model->description($descript);
+$model->brand($manufacturer);
 $model->normal_price($price);
 $model->tax($tax);
 $model->scale($Scale);
@@ -130,14 +145,9 @@ $model->pricemethod($price_method);
 $model->groupprice($vol_price);
 $model->quantity($vol_qtty);
 $model->local($local);
+$model->default_vendor_id($vendorID);
 $model->save();
 
-if (empty($manufacturer))
-	$manufacturer = '';
-if (empty($distributor))
-	$distributor = '';
-$manufacturer = str_replace("'","",$manufacturer);
-$distributor = str_replace("'","",$distributor);
 $checkP = $sql->prepare("SELECT upc FROM prodExtra WHERE upc=?");
 $checkR = $sql->execute($checkP, array($upc));
 if ($sql->num_rows($checkR) == 0){

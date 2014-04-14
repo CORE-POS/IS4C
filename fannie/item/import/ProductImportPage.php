@@ -120,6 +120,18 @@ class ProductImportPage extends FannieUploadPage
             $model->tax($tax);
             $model->foodstamp($fs);
             $model->discount($discount);
+            // fully init new record
+            $model->pricemethod(0);
+            $model->special_price(0);
+            $model->specialpricemethod(0);
+            $model->specialquantity(0);
+            $model->specialgroupprice(0);
+            $model->advertised(0);
+            $model->tareweight(0);
+            $model->start_date('');
+            $model->end_date('');
+            $model->discounttype(0);
+            $model->wicable(0);
             $try = $model->save();
 
 			if ($try === false) {

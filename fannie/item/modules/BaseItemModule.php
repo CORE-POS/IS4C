@@ -357,6 +357,7 @@ class BaseItemModule extends ItemModule {
 		$model->discount(FormLib::get_form_value('NoDisc',1));
 		$model->normal_price(FormLib::get_form_value('price',0.00));
 		$model->description(FormLib::get_form_value('descript',''));
+        $model->brand(FormLib::get('manufacturer', ''));
 		$model->pricemethod(0);
 		$model->groupprice(0.00);
 		$model->quantity(0);
@@ -379,6 +380,16 @@ class BaseItemModule extends ItemModule {
 			$model->groupprice($vprice);
 			$model->quantity($vqty);
 		}
+
+        // lookup vendorID by name
+        $vendorID = 0;
+        $vendor = new VendorsModel($dbc);
+        $vendor->vendorName(FormLib::get('distributor'));
+        foreach($vendor->find('vendorID') as $obj) {
+            $vendorID = $obj->vendorID();
+            break;
+        }
+        $model->default_vendor_id($vendorID);
 
         $model->save();
 
