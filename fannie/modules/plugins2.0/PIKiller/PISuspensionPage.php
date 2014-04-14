@@ -268,9 +268,9 @@ class PISuspensionPage extends PIKillerPage {
                 $cas_model->reasonCode($code);
                 $cas_model->username($this->current_user);
                 $cas_model->tdate(date('Y-m-d H:i:s'));
-                $model->suspensionTypeID($m_status);
+                $cas_model->suspensionTypeID($m_status);
 
-                $current_id = $model->save();
+                $current_id = $cas_model->save();
             }
 
 			$cdP = $dbc->prepare_statement('UPDATE custdata SET Type=?
