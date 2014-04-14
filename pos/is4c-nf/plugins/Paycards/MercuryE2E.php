@@ -623,12 +623,25 @@ class MercuryE2E extends BasicCCModule {
             $isCredit = ($CORE_LOCAL->get('CacheCardType') == 'CREDIT' || $CORE_LOCAL->get('CacheCardType') == '') ? true : false;
             $needSig = ($CORE_LOCAL->get('paycard_amount') > $CORE_LOCAL->get('CCSigLimit') || $CORE_LOCAL->get('paycard_amount') < 0) ? true : false;
             if ($isCredit && $needSig) {
-                $CORE_LOCAL->set("boxMsg","<b>$appr_type</b><font size=-1><p>Please verify cardholder signature<p>[enter] to continue<br>\"rp\" to reprint slip<br>[void] to cancel and void</font>");
+                $CORE_LOCAL->set("boxMsg",
+                        "<b>$appr_type</b>
+                        <font size=-1>
+                        <p>Please verify cardholder signature
+                        <p>[enter] to continue
+                        <br>\"rp\" to reprint slip
+                        <br>[void] " . _('to reverse the charge') . "
+                        </font>");
                 if ($CORE_LOCAL->get('PaycardsSigCapture') != 1) {
                     $json['receipt'] = 'ccSlip';
                 }
             } else {
-				$CORE_LOCAL->set("boxMsg","<b>$appr_type</b><font size=-1><p>No signature required<p>[enter] to continue<br>[void] to cancel and void</font>");
+				$CORE_LOCAL->set("boxMsg",
+                        "<b>$appr_type</b>
+                        <font size=-1>
+                        <p>No signature required
+                        <p>[enter] to continue
+                        <br>[void] " . _('to reverse the charge') . "
+                        </font>");
 			} 
 			break;
 		case PaycardLib::PAYCARD_MODE_VOID:
