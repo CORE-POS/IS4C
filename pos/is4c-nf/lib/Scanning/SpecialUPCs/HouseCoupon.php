@@ -301,12 +301,42 @@ class HouseCoupon extends SpecialUPC
         if ($infoW["memberOnly"] == 1 && $CORE_LOCAL->get("standalone")==0 
             && $CORE_LOCAL->get('memberID') != $CORE_LOCAL->get('visitingMem')) {
             $mDB = Database::mDataConnect();
+
+            // Lookup usage of this coupon by this member
+            // Subquery is to combine today (dlog)
+            // with previous days (dlog_90_view)
+            // Potential replacement for houseCouponThisMonth
+            $monthStart = date('Y-m-01 00:00:00');
+            $altQ = "SELECT SUM(s.quantity AS quantity)
+                     FROM (
+                        SELECT upc, card_no, quantity
+                        FROM dlog
+                        WHERE
+                            trans_type='T'
+                            AND trans_subtype='IC'
+                            AND upc='$upc'
+                            AND card_no=" . ((int)$CORE_LOCAL->get('memberID')) . "
+    
+                        UNION ALL
+
+                        SELECT upc, card_no, quantity
+                        FROM dlog_90_view
+                        WHERE
+                            trans_type='T'
+                            AND trans_subtype='IC'
+                            AND upc='$upc'
+                            AND card_no=" . ((int)$CORE_LOCAL->get('memberID')) . "
+                            AND tdate >= '$monthStart'
+                     ) AS s
+                     GROUP BY s.upc, s.card_no";
+
             $mR = $mDB->query("SELECT quantity 
                                FROM houseCouponThisMonth
                                WHERE card_no=" . $CORE_LOCAL->get("memberID") . " and
                                upc='$upc'");
             if ($mDB->num_rows($mR) > 0) {
-                $uses = array_pop($mDB->fetch_row($mR));
+                $mW = $mDB->fetch_row($mR);
+                $uses = $mW['quantity'];
                 if ($uses >= $infoW["limit"]) {
                     return DisplayLib::boxMsg(_("Coupon already used")
                                 ."<br />"
