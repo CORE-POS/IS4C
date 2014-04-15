@@ -281,7 +281,7 @@ class FannieReportPage extends FanniePage
             $footers = $this->calculate_footers($data);
             // $data may contain REPEAT_HEADERS calls
             // if the headers should be different then report_headers will need two dimensions.
-            $report_data = $this->format($report_data);
+            $data = $this->format($data);
             $output = $this->render_data($data,$this->report_headers,
                     $footers,$this->report_format);
         }
