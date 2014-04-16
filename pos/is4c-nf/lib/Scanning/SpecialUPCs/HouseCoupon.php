@@ -87,16 +87,34 @@ class HouseCoupon extends SpecialUPC
     {
         $db = Database::pDataConnect();
         $hctable = $db->table_definition('houseCoupons');
-        $infoQ = "select endDate," . $db->identifier_escape('limit') .
-            ",discountType, department,
-            discountValue, minType, minValue, memberOnly, 
-            case when endDate is NULL then 0 else 
-            ". $db->datediff('endDate', $db->now()) . " end as expired
-            from
-            houseCoupons WHERE coupID=" . ((int)$id);
+        $infoQ = "SELECT endDate," 
+                    . $db->identifier_escape('limit') . ",
+                    discountType, 
+                    department,
+                    discountValue, 
+                    minType, 
+                    minValue, 
+                    memberOnly, 
+                    CASE 
+                        WHEN endDate IS NULL THEN 0 
+                        ELSE ". $db->datediff('endDate', $db->now()) . " 
+                    END AS expired";
+        // new(ish) columns 16apr14
         if (isset($hctable['description'])) {
-            $infoQ = str_replace('as expired', 'as expired, description', $infoQ);
+            $infoQ .= ', description';
+        } else {
+            $infoQ .= ', \'\' AS description';
         }
+        if (isset($hctable['startDate'])) {
+            $infoQ .= ", CASE 
+                          WHEN startDate IS NULL THEN 0 
+                          ELSE ". $db->datediff('startDate', $db->now()) . " 
+                        END as preStart";
+        } else {
+            $infoQ .= ', 0 AS preStart';
+        }
+        $infoQ .= " FROM  houseCoupons 
+                    WHERE coupID=" . ((int)$id);
         $infoR = $db->query($infoQ);
         if ($db->num_rows($infoR) == 0) {
             return false;
@@ -122,6 +140,8 @@ class HouseCoupon extends SpecialUPC
         if ($infoW["expired"] < 0) {
             $expired = substr($infoW["endDate"], 0, strrpos($infoW["endDate"], " "));
             return DisplayLib::boxMsg(_("coupon expired") . " " . $expired);
+        } else if ($infoW['preStart'] > 0) {
+            return DisplayLib::boxMsg(_("coupon not available yet"));
         }
 
         /* check for member-only, longer use tracking
