@@ -180,6 +180,16 @@ class UPC extends Parser {
 		*/
 		$row = $db->fetch_array($result);
 
+        /**
+          If formatted_name is present, copy it directly over
+          products.description. This way nothing further down
+          the process has to worry about the distinction between
+          two potential naming fields.
+        */
+        if ($row['formatted_name'] != '') {
+            $row['description'] = $row['formatted_name'];
+        }
+
 		/* Implementation of inUse flag
 		 *   if the flag is not set, display a warning dialog noting this
 		 *   and allowing the sale to be confirmed or canceled

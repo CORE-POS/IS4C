@@ -25,23 +25,43 @@
   @class DefaultProductSearch
   Look up products in the database
 */
-class DefaultProductSearch extends ProductSearch {
+class DefaultProductSearch extends ProductSearch 
+{
 
-	public function search($str){
+	public function search($str)
+    {
 		$ret = array();
 		$sql = Database::pDataConnect();
-		$query = "select upc, description, normal_price, special_price, "
-			."advertised, scale from products where "
-			."description like '%".$str."%' "
-			. "and upc LIKE ('0000000%') "
-			. "and inUse='1' "
-			."order by description";
+        $safestr = $sql->escape($str);
+        $table = $sql->table_definition('products');
+        $string_search = "(description LIKE '%$safestr%')";
+        // new coluumns 16Apr14
+        // search in products.brand and products.formatted_name
+        // if those columns are available
+        if (isset($table['brand']) && isset($table['formatted_name'])) {
+            $string_search = "(
+                                description LIKE '%$safestr%'
+                                OR brand LIKE '%$safestr%'
+                                OR formatted_name LIKE '%$safestr%'
+                              )";
+        }
+		$query = "SELECT upc, 
+                    description, 
+                    normal_price, 
+                    special_price,
+        			advertised, 
+                    scale 
+                  FROM products 
+                  WHERE $string_search
+                    AND upc LIKE '0000000%'
+                    AND inUse=1
+			      ORDER BY description";
 		$result = $sql->query($query);
 		while($row = $sql->fetch_row($result)){
 			$ret[$row['upc']] = $row;
 		}
+
 		return $ret;
 	}
 }
 
-?>
