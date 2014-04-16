@@ -62,6 +62,12 @@ static public function suspendorder()
 
 	$CORE_LOCAL->set("plainmsg",_("transaction suspended"));
 	$recall_line = $CORE_LOCAL->get("standalone")." ".$CORE_LOCAL->get("laneno")." ".$cashier_no." ".$trans_no;
+    /**
+      If the transaction is marked as complete but somehow did not
+      actually finish, this will prevent the suspended receipt from
+      adding tax/discount lines to the transaction
+    */
+    $CORE_LOCAL->set('End', 0);
 }
 
 /**
