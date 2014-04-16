@@ -134,12 +134,25 @@ class UPC extends Parser {
 		}
 
 		$db = Database::pDataConnect();
-		$query = "select inUse,upc,description,normal_price,scale,deposit,
+        $table = $db->table_definition('products');
+		$query = "SELECT inUse,upc,description,normal_price,scale,deposit,
 			qttyEnforced,department,local,cost,tax,foodstamp,discount,
 			discounttype,specialpricemethod,special_price,groupprice,
 			pricemethod,quantity,specialgroupprice,specialquantity,
-			mixmatchcode,idEnforced,tareweight,scaleprice
-		       	from products where upc = '".$upc."'";
+			mixmatchcode,idEnforced,tareweight,scaleprice";
+        // New column 16Apr14
+        if (isset($table['line_item_discountable'])) {
+            $query .= ', line_item_discountable';
+        } else {
+            $query .= ', 1 AS line_item_discountable';
+        }
+        // New column 16Apr14
+        if (isset($table['formatted_name'])) {
+            $query .= ', formatted_name';
+        } else {
+            $query .= ', \'\' AS formatted_name';
+        }
+		$query .= " FROM products WHERE upc = '".$upc."'";
 		$result = $db->query($query);
 		$num_rows = $db->num_rows($result);
 
