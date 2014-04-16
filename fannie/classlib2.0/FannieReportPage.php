@@ -91,6 +91,7 @@ class FannieReportPage extends FanniePage
     */
     protected $multi_report_mode = False;
     protected $multi_counter = 1;
+    protected $header_index = 0;
 
     /**
       Option to enable/disable javascript sorting
@@ -232,56 +233,65 @@ class FannieReportPage extends FanniePage
             $this->freshenCache($data);
         }
         $output = '';
-        if ($this->multi_report_mode && $this->report_format != 'xls') {
-            foreach($data as $report_data) {
-                $headers = $this->select_headers();
-                $footers = $this->calculate_footers($report_data);
-                $report_data = $this->format($report_data);
-                $output .= $this->render_data($report_data,$headers,
-                        $footers,$this->report_format);
-                if ($this->report_format == 'html') {
-                    $output .= '<br />';
-                } elseif ($this->report_format == 'csv') {
-                    $output .= "\r\n";
-                }
-            }
-        } elseif ($this->multi_report_mode && $this->report_format == 'xls') {
-            /**
-              For XLS ouput, re-assemble multiple reports into a single
-              long dataset.
-            */
-            $xlsdata = array();
-            foreach($data as $report_data) {
-                if (!empty($this->report_headers)) {
-                    $headers1 = $this->select_headers();
-                    $xlsdata[] = $headers1;
-                }
-                $report_data = $this->format($report_data);
-                foreach($report_data as $line) {
-                    $xlsdata[] = $line;
-                }
-                $footers = $this->calculate_footers($report_data);
-                if (!empty($footers)) {
-                    $xlsdata[] = $footers;
-                    // A single footer row
-                    if (!is_array($footers[0])) {
-                        $xlsdata[] = $footers;
-                    // More than one footer row
-                    } else {
-                        foreach ($footers as $footer) {
-                            $xlsdata[] = $footer;
-                        }
+        if ($this->multi_report_mode) {
+            if ($this->report_format != 'xls') {
+                foreach($data as $report_data) {
+                    $this->assign_headers();
+                    // calculate_footers() here because it can affect headers.
+                    $footers = $this->calculate_footers($report_data);
+                    $headers = $this->report_headers;
+                    $this->header_index = 0;
+                    $output .= $this->render_data($report_data,$headers,
+                                $footers,$this->report_format);
+                    if ($this->report_format == 'html') {
+                        $output .= '<br />';
+                    } elseif ($this->report_format == 'csv') {
+                        $output .= "\r\n";
                     }
                 }
-                $xlsdata[] = array('');
+            } else {
+                /**
+                  For XLS multi-report ouput, re-assemble the reports into a single
+                  long array of rows (dataset).
+                */
+                $xlsdata = array();
+                foreach($data as $report_data) {
+                    $this->assign_headers();
+                    // calculate_footers() here because it can affect headers.
+                    $footers = $this->calculate_footers($report_data);
+                    $this->header_index = 0;
+                    if (!empty($this->report_headers)) {
+                        $headers1 = $this->select_headers(True);
+                        $xlsdata[] = $headers1;
+                    }
+                    $report_data = $this->xlsMeta($report_data);
+                    foreach($report_data as $line) {
+                        $xlsdata[] = $line;
+                    }
+                    if (!empty($footers)) {
+                        // A single footer row
+                        if (!is_array($footers[0])) {
+                            $xlsdata[] = $footers;
+                        // More than one footer row
+                        } else {
+                            foreach ($footers as $footer) {
+                                $xlsdata[] = $footer;
+                            }
+                        }
+                    }
+                    $xlsdata[] = array('');
+                    $this->multi_counter++;
+                }
+                $output = $this->render_data($xlsdata,array(),array(),'xls');
             }
-            $output = $this->render_data($xlsdata,array(),array(),'xls');
         } else {
             // NOT multi_report_mode
+            $this->assign_headers();
             $footers = $this->calculate_footers($data);
-            // $data may contain REPEAT_HEADERS calls
-            // if the headers should be different then report_headers will need two dimensions.
-            $data = $this->format($data);
+            /* $data may contain REPEAT_HEADERS calls
+             * If the 2nd+ headers should be different then report_headers
+             *  has two dimensions.
+             */
             $output = $this->render_data($data,$this->report_headers,
                     $footers,$this->report_format);
         }
@@ -327,20 +337,30 @@ class FannieReportPage extends FanniePage
     }
 
     /**
+     * Assign new values to $report_headers,
+     *  which is intially assigned in the report,
+     *  usually for 2nd+ reports in multi_report_mode.
+     */
+    public function assign_headers()
+    {
+
+    }
+
+    /**
       * Return a single-dimension array of headers (column-heads).
       @param
       @return array of header values
       *
       * Allow for but not require different headers on each report.
       * Input may be one- or two-dimensional.
-      *  If the latter index is (multi_counter-1).
+      *  If the latter, index is header_index.
       *  If headers[x] doesn't exist use the last one that does exist
       *   or empty if none exists.
     */
-    public function select_headers() 
+    public function select_headers($incrIndex=False) 
     {
         $headers = array();
-        $h = ($this->multi_counter - 1);
+        $h = $this->header_index;
         if (is_array($this->report_headers[0])) {
             if (isset($this->report_headers[$h])) {
                 $headers = $this->report_headers[$h];
@@ -349,6 +369,9 @@ class FannieReportPage extends FanniePage
                 if ($h >= 0) {
                     $headers = $this->report_headers[$h];
                 }
+            }
+            if ($incrIndex) {
+                $this->header_index++;
             }
         } else {
             $headers = $this->report_headers;
@@ -501,7 +524,7 @@ class FannieReportPage extends FanniePage
                         (strstr($_SERVER['REQUEST_URI'],'?') ===False ? '?' : '&')
                     );
                     foreach($this->report_description_content() as $line) {
-                        $ret .= '<br />'.$line;
+                        $ret .= (substr($line,0,1)=='<'?'':'<br />').$line;
                     }
                 }
                 $class = 'mySortableTable';
@@ -522,10 +545,9 @@ class FannieReportPage extends FanniePage
         }
 
         if (!empty($headers)) {
-            //EL first headers.
-            $headers1 = $this->select_headers();
-            if (!$this->multi_report_mode) {
-                $this->multi_counter++;
+            $headers1 = $this->select_headers(False);
+            if (!$this->multi_report_mode && strtolower($format) != 'xls') {
+                $this->header_index++;
             }
             switch(strtolower($format)) {
                 case 'html':
@@ -593,7 +615,6 @@ class FannieReportPage extends FanniePage
                 foreach($this->report_end_content() as $line) {
                     $ret .= (substr($line,0,1)=='<'?'':'<br />').$line;
                 }
-                $ret .= '</body></html>';
                 $this->add_script($FANNIE_URL.'src/jquery/js/jquery.js');
                 $this->add_script($FANNIE_URL.'src/jquery/jquery.tablesorter.js');
                 $sort = sprintf('[[%d,%d]]',$this->sort_column,$this->sort_direction);
@@ -609,11 +630,23 @@ class FannieReportPage extends FanniePage
                 }
                 break;
             case 'xls':
-                $xlsdata = $data;
+                // headers empty in multi-report-mode
                 if (!empty($headers)) {
-                    $headers1 = $this->select_headers();
-                    array_unshift($xlsdata,$headers1);
+                    $headers1 = $this->select_headers(True);
+                    array_unshift($data,$headers1);
                 }
+                if (!$this->multi_report_mode) {
+                    $data = $this->xlsMeta($data);
+                }
+                for ($i=0;$i<count($data);$i++) {
+                    for ($j=0;$j<count($data[$i]);$j++) {
+                        if (isset($data[$i][$j])) {
+                            $data[$i][$j] = $this->excelFormat($data[$i][$j]);
+                        }
+                    }
+                }
+                $xlsdata = $data;
+                // footers empty in multi-report-mode
                 if (!empty($footers)) {
                     // A single footer row
                     if (!is_array($footers[0])) {
@@ -641,6 +674,7 @@ class FannieReportPage extends FanniePage
         }
 
         $this->multi_counter++;
+        $this->header_index++;
         return $ret;
     }
 
@@ -692,7 +726,7 @@ class FannieReportPage extends FanniePage
         if (($meta & self::META_BLANK) != 0) {
             $ret = '</tbody><tbody><tr>';
             $row = array();
-            $header1 = $this->select_headers();
+            $header1 = $this->select_headers(False);
             // just using headers as a column count
             foreach($header1 as $h) {
                 $row[] = null;
@@ -702,19 +736,29 @@ class FannieReportPage extends FanniePage
             $ret = '</tbody><tbody><tr>';
             $tag = 'th';
             $row = array();
-            $header1 = $this->select_headers();
+            $header1 = $this->select_headers(True);
             foreach($header1 as $h) {
                 $row[] = $h;
             }
-            $this->multi_counter++;
         }
 
         $date = false;
+        /* After removing HTML, the cell will be seen as a number
+         *  and aligned right if it matches this pattern:
+         * Optional leading $, optionally with space(s) after
+         * Optional - sign
+         * A digit
+         * Possibly more decimal points, commas or digits
+         * Optionally trailing %, optionally with space(s) before
+         */
+        $numberPattern = '/^(\$ *)?(-)?(\d)([.,\d]*)( *%)?$/';
         for($i=0;$i<count($row);$i) {
             $span = 1;
             while(array_key_exists($i+$span,$row) && $row[$i+$span] === null && ($i+$span)<count($row)) {
                 $span++;
             }
+            $align = '';
+            $date = '';
             if ($row[$i] === "" || $row[$i] === null) {
                 $row[$i] = '&nbsp;';
             } elseif (is_numeric($row[$i]) && strlen($row[$i]) == 13) {
@@ -722,7 +766,7 @@ class FannieReportPage extends FanniePage
                 $row[$i] = sprintf('<a target="_new%s" href="%sitem/itemMaint.php?upc=%s">%s</a>',
                     $row[$i],$FANNIE_URL,$row[$i],$row[$i]);
             } else if (preg_match('/^\d\d\d\d-\d\d-\d\d$/', $row[$i])) {
-                // row contains a date column
+                // cell contains a date column
                 $date = $row[$i];
             } else if ($date && preg_match('/^\d+-\d+-\d+$/', $row[$i])) {
                 // row contains a trans_num column & a date column
@@ -731,17 +775,10 @@ class FannieReportPage extends FanniePage
                                        target="_rp_%s_%s">%s</a>',
                                     $FANNIE_URL, $date, $row[$i],
                                     $date, $row[$i], $row[$i]);
-            }
-            $align = '';
-            if (is_numeric($row[$i])) {
-                // number
-                $align = ' align="right" ';
-            } else if (strlen($row[$i]) > 1 && substr($row[$i], -1) == '%' && is_numeric(substr($row[$i],0,strlen($row[$i])-1))) {
-                // number followed by % sign
-                $align = ' align="right" ';
-            } else if (strlen($row[$i]) > 1 && substr($row[$i], 0, 1) == '$' && is_numeric(substr($row[$i],1))) {
-                // number preceded by $ sign
-                $align = ' align="right" ';
+            } else {
+                if (preg_match($numberPattern, strip_tags($row[$i]))) {
+                    $align = ' align="right" ';
+                }
             }
 
             $class = 'class="reportColumn'.$i;
@@ -780,7 +817,7 @@ class FannieReportPage extends FanniePage
         }
         if (($meta & self::META_BLANK) != 0) {
             $row = array();
-            $header1 = $this->select_headers();
+            $header1 = $this->select_headers(False);
             // just using headers as a column count
             foreach($header1 as $h) {
                 $row[] = null;
@@ -788,27 +825,41 @@ class FannieReportPage extends FanniePage
         }
         if (($meta & self::META_REPEAT_HEADERS) != 0) {
             $row = array();
-            $header1 = $this->select_headers();
+            $header1 = $this->select_headers(True);
             foreach($header1 as $h) {
-                $row[] = $h;
+                $row[] = strip_tags($h);
             }
-            $this->multi_counter++;
         }
         $ret = "";
         foreach($row as $item) {
-            $item = str_replace('"','',$item);
-            // '$ 12.39' -> '12.39' or '$ -12.39' -> '-12.39'
-            $item = preg_replace('/^\$ *(\d|-)/',"$1",$item);
-            // '12.39 %' -> '12.39'
-            // should this divide by 100 when stripping the % sign?
-            $item = preg_replace("/(\d) *%$/","$1",$item);
-            // 1,000 -> 1000
-            $item = preg_replace("/(\d),(\d\d\d)/","$1$2",$item);
+            $item = $this->excelFormat($item);
             $ret .= '"'.$item.'",';
         }
         $ret = substr($ret,0,strlen($ret)-1)."\r\n";
 
         return $ret;
+    }
+
+    /**
+     * Remove formatting from cell contents for Excel formats
+    */
+    public function excelFormat($item, $style='')
+    {
+        if ($style == '' && strpos('csv|xls',$this->report_format) !== False) {
+            $style = $this->report_format;
+        }
+        $item = strip_tags($item);
+        if ($style == 'csv') {
+            $item = str_replace('"','',$item);
+        }
+        // '$ 12.39' -> '12.39' or '$ -12.39' -> '-12.39'
+        $item = preg_replace('/^\$ *(\d|-)/',"$1",$item);
+        // '12.39 %' -> '12.39'
+        // should this divide by 100 when stripping the % sign?
+        $item = preg_replace("/(\d) *%$/","$1",$item);
+        // 1,000 -> 1000
+        $item = preg_replace("/(\d),(\d\d\d)/","$1$2",$item);
+        return $item;
     }
 
     /**
@@ -825,7 +876,7 @@ class FannieReportPage extends FanniePage
             }
             if (($meta & self::META_BLANK) != 0) {
                 $row = array();
-                $header1 = $this->select_headers();
+                $header1 = $this->select_headers(False);
                 // just using headers as a column count
                 foreach($header1 as $h) {
                     $row[] = null;
@@ -833,9 +884,9 @@ class FannieReportPage extends FanniePage
             }
             if (($meta & self::META_REPEAT_HEADERS) != 0) {
                 $row = array();
-                $header1 = $this->select_headers();
+                $header1 = $this->select_headers(True);
                 foreach($header1 as $h) {
-                    $row[] = $h;
+                    $row[] = strip_tags($h);
                 }
             }
             $fixup[] = $row;
@@ -875,7 +926,8 @@ class FannieReportPage extends FanniePage
               Unlike normal pages, the override is only applied
               when the output format is HTML.
             */
-            if (isset($FANNIE_WINDOW_DRESSING) && $FANNIE_WINDOW_DRESSING && $this->report_format == 'html') {
+            if (isset($FANNIE_WINDOW_DRESSING) && $FANNIE_WINDOW_DRESSING &&
+                $this->report_format == 'html') {
                 $this->window_dressing = true;
             }
             
@@ -897,37 +949,39 @@ class FannieReportPage extends FanniePage
                 echo $footer;
             }
 
-            foreach($this->scripts as $s_url => $s_type) {
-                printf('<script type="%s" src="%s"></script>',
-                    $s_type, $s_url);
-                echo "\n";
-            }
-            
-            $js_content = $this->javascriptContent();
-            if (!empty($js_content) || !empty($this->onload_commands)) {
-                echo '<script type="text/javascript">';
-                echo $js_content;
-                echo "\n\$(document).ready(function(){\n";
-                foreach($this->onload_commands as $oc)
-                    echo $oc."\n";
-                echo "});\n";
-                echo '</script>';
+            if ($this->report_format == 'html') {
+                foreach($this->scripts as $s_url => $s_type) {
+                    printf('<script type="%s" src="%s"></script>',
+                        $s_type, $s_url);
+                    echo "\n";
+                }
+                
+                $js_content = $this->javascriptContent();
+                if (!empty($js_content) || !empty($this->onload_commands)) {
+                    echo '<script type="text/javascript">';
+                    echo $js_content;
+                    echo "\n\$(document).ready(function(){\n";
+                    foreach($this->onload_commands as $oc)
+                        echo $oc."\n";
+                    echo "});\n";
+                    echo '</script>';
+                }
+
+                $page_css = $this->cssContent();
+                if (!empty($page_css)) {
+                    echo '<style type="text/css">';
+                    echo $page_css;
+                    echo '</style>';
+                }
+
+                foreach($this->css_files as $css_url) {
+                    printf('<link rel="stylesheet" type="text/css" href="%s">',
+                        $css_url);
+                    echo "\n";
+                }
             }
 
-            $page_css = $this->cssContent();
-            if (!empty($page_css)) {
-                echo '<style type="text/css">';
-                echo $page_css;
-                echo '</style>';
-            }
-
-            foreach($this->css_files as $css_url) {
-                printf('<link rel="stylesheet" type="text/css" href="%s">',
-                    $css_url);
-                echo "\n";
-            }
-
-            if ($this->window_dressing) {
+            if ($this->window_dressing || $this->report_format == 'html') {
                 echo '</body></html>';
             }
         }
@@ -935,7 +989,6 @@ class FannieReportPage extends FanniePage
     // drawPage()
     }
 
-     // 5Apr14 EL This is what FannieDispatch::go() uses.
     function draw_page ()
     {
         $this->drawPage();
