@@ -33,6 +33,7 @@ class HouseCouponsModel extends BasicModel
     protected $columns = array(
     'coupID' => array('type'=>'INT', 'primary_key'=>true),
     'description' => array('type'=>'VARCHAR(30)'),
+    'startDate' => array('type'=>'DATETIME'),
     'endDate' => array('type'=>'DATETIME'),
     'limit' => array('type'=>'SMALLINT'),
     'memberOnly' => array('type'=>'SMALLINT'),
@@ -82,6 +83,26 @@ class HouseCouponsModel extends BasicModel
                 }
             }
             $this->instance["description"] = func_get_arg(0);
+        }
+    }
+
+    public function startDate()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["startDate"])) {
+                return $this->instance["startDate"];
+            } else if (isset($this->columns["startDate"]["default"])) {
+                return $this->columns["startDate"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["startDate"]) || $this->instance["startDate"] != func_get_args(0)) {
+                if (!isset($this->columns["startDate"]["ignore_updates"]) || $this->columns["startDate"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["startDate"] = func_get_arg(0);
         }
     }
 
