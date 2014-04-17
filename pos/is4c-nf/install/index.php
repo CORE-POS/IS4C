@@ -1017,6 +1017,8 @@ function create_trans_dbs($db,$type){
         InstallUtilities::dbStructureModify($db,'rp_receipt',$rprV,$errors);
     }
 
+    InstallUtilities::createIfNeeded($db, $type, $name, 'PaycardTransactions', 'trans', $errors);
+
     InstallUtilities::createIfNeeded($db, $type, $name, 'efsnetRequest', 'trans', $errors);
 
     InstallUtilities::createIfNeeded($db, $type, $name, 'efsnetRequestMod', 'trans', $errors);
