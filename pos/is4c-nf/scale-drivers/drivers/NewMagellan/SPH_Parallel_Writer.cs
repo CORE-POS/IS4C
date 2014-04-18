@@ -91,27 +91,30 @@ public class SPH_Parallel_Writer : SerialPortHandler {
 
             int bytes_read;
             Byte[] bytes = new Byte[512];
-            String msg = "";
             Byte[] ack = System.Text.Encoding.ASCII.GetBytes("ACK");
+            bool etx = false;
             while((bytes_read = stream.Read(bytes, 0, bytes.Length))!=0) {
 
-                if (bytes_read == 1 && bytes[0] == 0x3) {
-                    break; // ETX byte
-                } else if (bytes_read == 2 && bytes[0] == 0xd && bytes[1] == 0xa) {
-                    break; // received \r\n
+                if (bytes[bytes_read-1] == 0x3) {
+                    // exclude ETX from message content
+                    etx = true;
+                    bytes_read--;
                 }
 
-                msg += System.Text.Encoding.ASCII.GetString(bytes, 0, bytes_read);
+                lp_fs.Write(bytes, 0, bytes_read);
+
+                if (verbose_mode > 0) {
+                    foreach(Byte b in bytes) {
+                        System.Console.Write(b + " ");
+                    }
+                    System.Console.WriteLine();
+                }
+
+                if (etx) break;
             }
             
-            Byte[] encoded_output = System.Text.Encoding.ASCII.GetBytes(msg);
-            lp_fs.Write(encoded_output, 0, encoded_output.Length);
             lp_fs.Flush();
             stream.Write(ack, 0, ack.Length);
-
-            if (this.verbose_mode > 0) {
-                System.Console.WriteLine(msg);
-            }
 
             client.Close();
 

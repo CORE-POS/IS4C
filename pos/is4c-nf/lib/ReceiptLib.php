@@ -47,7 +47,7 @@ static public function writeLine($text) {
 
         $printer_port = $CORE_LOCAL->get('printerPort');
         if (substr($printer_port, 0, 6) == "tcp://") {
-            self::printToServer(substr($printer_port, 6));
+            self::printToServer(substr($printer_port, 6), $text);
         } else {
             /* check fails on LTP1: in PHP4
                suppress open errors and check result
@@ -70,13 +70,13 @@ static public function writeLine($text) {
    - [int]  0 => problem sending text
    - [int] -1 => sent but no response. printer might be stuck/blocked
 */
-static public function printToServer($print_server, $text)
+static public function printToServer($printer_server, $text)
 {
     $port = 9450;
     if (strstr($printer_server, ':')) {
         list($printer_server, $port) = explode(':', $printer_server, 2);
     }
-    if (function_exists('socket_create')) {
+    if (!function_exists('socket_create')) {
         return 0;
     }
 
@@ -85,9 +85,9 @@ static public function printToServer($print_server, $text)
         return 0;
     }
 
-    socket_set_block($sock);
-    socket_set_option($sock, SOL_SOCKET, SO_SNDTIMEO, array('sec' => 1, 'usec' => 0)); 
-    socket_set_option($sock, SOL_SOCKET, SO_RCVTIMEO, array('sec' => 2, 'usec' => 0)); 
+    socket_set_block($socket);
+    socket_set_option($socket, SOL_SOCKET, SO_SNDTIMEO, array('sec' => 1, 'usec' => 0)); 
+    socket_set_option($socket, SOL_SOCKET, SO_RCVTIMEO, array('sec' => 2, 'usec' => 0)); 
     if (!socket_connect($socket, $printer_server, $port)) {
         return false;
     }
@@ -104,7 +104,7 @@ static public function printToServer($print_server, $text)
         if ($num_written >= strlen($text)) {
             // whole message has been sent
             // send ETX to signal message complete
-            socket_write($socket, 0x3);
+            socket_write($socket, chr(0x3));
             break;
         } else {
             $text = substr($text, $num_written);
