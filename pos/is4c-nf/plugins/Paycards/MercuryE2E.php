@@ -870,7 +870,11 @@ class MercuryE2E extends BasicCCModule {
                         ($amountText+$cashbackText), $cardPANmasked,
                         $cardIssuer, $fixedName, $manual, $now);
             $insR = $dbTrans->query($insQ);
-            $this->last_paycard_transaction_id = $dbTrans->insert_id();
+            if ($insR) {
+                $this->last_paycard_transaction_id = $dbTrans->insert_id();
+            } else {
+                $this->last_paycard_transaction_id = 0;
+            }
         }
 
 		// weird string concat here so vim's color highlighting
@@ -1074,7 +1078,11 @@ class MercuryE2E extends BasicCCModule {
                         AND transNo=" . $transNo . "
                         AND transID=" . $transID;
             $initR = $dbTrans->query($initQ);
-            $this->last_paycard_transaction_id = $dbTrans->insert_id();
+            if ($initR) {
+                $this->last_paycard_transaction_id = $dbTrans->insert_id();
+            } else {
+                $this->last_paycard_transaction_id = 0;
+            }
         }
 
 		$type = 'Credit';
