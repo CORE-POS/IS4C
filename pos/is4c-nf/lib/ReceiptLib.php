@@ -44,15 +44,83 @@ static public function writeLine($text) {
 	global $CORE_LOCAL;
 
 	if ($CORE_LOCAL->get("print") != 0) {
-		/* check fails on LTP1: in PHP4
-		   suppress open errors and check result
-		   instead 
-		*/
-		//if (is_writable($CORE_LOCAL->get("printerPort"))){
-		$fp = fopen($CORE_LOCAL->get("printerPort"), "w");
-		fwrite($fp, $text);
-		fclose($fp);
+
+        $printer_port = $CORE_LOCAL->get('printerPort');
+        if (substr($printer_port, 0, 6) == "tcp://") {
+            self::printToServer(substr($printer_port, 6));
+        } else {
+            /* check fails on LTP1: in PHP4
+               suppress open errors and check result
+               instead 
+            */
+            //if (is_writable($CORE_LOCAL->get("printerPort"))){
+            $fp = fopen($CORE_LOCAL->get("printerPort"), "w");
+            fwrite($fp, $text);
+            fclose($fp);
+        }
 	}
+}
+
+/**
+  Write text to server via TCP socket
+  @param $print_server [string] host or host:port
+  @param $text [string] text to print
+  @return
+   - [int]  1 => success
+   - [int]  0 => problem sending text
+   - [int] -1 => sent but no response. printer might be stuck/blocked
+*/
+static public function printToServer($print_server, $text)
+{
+    $port = 9450;
+    if (strstr($printer_server, ':')) {
+        list($printer_server, $port) = explode(':', $printer_server, 2);
+    }
+    if (function_exists('socket_create')) {
+        return 0;
+    }
+
+    $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+    if ($socket === false) {
+        return 0;
+    }
+
+    socket_set_block($sock);
+    socket_set_option($sock, SOL_SOCKET, SO_SNDTIMEO, array('sec' => 1, 'usec' => 0)); 
+    socket_set_option($sock, SOL_SOCKET, SO_RCVTIMEO, array('sec' => 2, 'usec' => 0)); 
+    if (!socket_connect($socket, $printer_server, $port)) {
+        return false;
+    }
+
+    $send_failed = false;
+    while(true) {
+        $num_written = socket_write($socket, $text);
+        if ($num_written === false) {
+            // error occurred
+            $send_failed = true;
+            break; 
+        }
+
+        if ($num_written >= strlen($text)) {
+            // whole message has been sent
+            // send ETX to signal message complete
+            socket_write($socket, 0x3);
+            break;
+        } else {
+            $text = substr($text, $num_written);
+        }
+    }
+
+    $ack = socket_read($socket, 3);
+    socket_close($socket);
+
+    if ($send_failed) {
+        return 0;
+    } else if ($ack === false) {
+        return -1;
+    } else {
+        return 1;
+    }
 }
 // --------------------------------------------------------------
 static public function center_check($text) {
