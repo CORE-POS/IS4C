@@ -168,14 +168,15 @@ $q = "SELECT min(datetime) as orderDate,p.order_id,sum(total) as value,
 	MIN(CASE WHEN trans_type='I' THEN charflag ELSE 'ZZZZ' END) as charflag,
 	MAX(p.card_no) AS card_no
 	FROM {$TRANS}PendingSpecialOrder as p
-	LEFT JOIN {$TRANS}SpecialOrderStatus as s ON p.order_id=s.order_id
-	LEFT JOIN {$TRANS}SpecialOrderNotes as n ON n.order_id=p.order_id
-	LEFT JOIN custdata AS c ON c.CardNo=p.card_no AND personNum=p.voided
-	LEFT JOIN {$TRANS}SpecialOrderContact as t on t.card_no=p.order_id
+        LEFT JOIN {$TRANS}SpecialOrderStatus as s ON p.order_id=s.order_id
+        LEFT JOIN custdata AS c ON c.CardNo=p.card_no AND personNum=p.voided
+        LEFT JOIN {$TRANS}SpecialOrderContact as t on t.card_no=p.order_id
+        LEFT JOIN {$TRANS}SpecialOrders AS o ON p.order_id=o.specialOrderID
 	$filterstring
 	GROUP BY p.order_id,status_flag,sub_status
-	HAVING count(*) > 1 OR
-	SUM(CASE WHEN notes LIKE '' THEN 0 ELSE 1 END) > 0
+	HAVING 
+        count(*) > 1 OR
+        SUM(CASE WHEN o.notes LIKE '' THEN 0 ELSE 1 END) > 0
 	ORDER BY $order";
 $r = $dbc->query($q);
 
@@ -187,11 +188,11 @@ while($w = $dbc->fetch_row($r)){
 }
 
 if ($f2 !== '' || $f3 !== ''){
-	$filter2 = ($f2!==''?sprintf("AND (m.superID IN (%s) OR n.superID IN (%s))",$f2,$f2):'');
+	$filter2 = ($f2!==''?sprintf("AND (m.superID IN (%s) OR o.noteSuperID IN (%s))",$f2,$f2):'');
 	$filter3 = ($f3!==''?sprintf("AND p.mixMatch=%s",$dbc->escape($f3)):'');
 	$q = "SELECT p.order_id FROM {$TRANS}PendingSpecialOrder AS p
 		LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
-		LEFT JOIN {$TRANS}SpecialOrderNotes AS n ON p.order_id=n.order_id
+		LEFT JOIN {$TRANS}SpecialOrders AS o ON p.order_id=o.specialOrderID
 		WHERE 1=1 $filter2 $filter3
 		GROUP BY p.order_id";
 	$r = $dbc->query($q);
@@ -200,14 +201,14 @@ if ($f2 !== '' || $f3 !== ''){
 		$valid_ids[$w['order_id']] = True;
 
 	if ($f2 !== '' && $f3 === ''){
-		$q2 = sprintf("SELECT s.order_id FROM {$TRANS}SpecialOrderNotes AS s
-				INNER JOIN {$TRANS}PendingSpecialOrder AS p
-				ON p.order_id=s.order_id
-				WHERE s.superID IN (%s)
-				GROUP BY s.order_id",$f2);
+		$q2 = sprintf("SELECT o.specialOrderID 
+                       FROM {$TRANS}SpecialOrders AS o
+                        INNER JOIN {$TRANS}PendingSpecialOrder AS p ON p.order_id=o.specialOrderID
+                       WHERE o.noteSuperID IN (%d)
+                       GROUP BY o.specialOrderID", $f2);
 		$r2 = $dbc->query($q2);
 		while($w2 = $dbc->fetch_row($r2))
-			$valid_ids[$w2['order_id']] = True;
+			$valid_ids[$w2['specialOrderID']] = True;
 	}
 }
 

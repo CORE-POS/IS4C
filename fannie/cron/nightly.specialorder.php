@@ -162,21 +162,24 @@ if (count($todo) > 0){
 }
 
 // remove "empty" orders from pending
-$cleanupQ = sprintf("SELECT p.order_id FROM PendingSpecialOrder 
-		AS p LEFT JOIN SpecialOrderNotes AS n
-		ON p.order_id=n.order_id
-		LEFT JOIN SpecialOrderStatus AS s
-		ON p.order_id=s.order_id
-		WHERE (n.order_id IS NULL
-		OR %s(n.notes)=0)
+$cleanupQ = sprintf("
+    SELECT p.order_id 
+    FROM PendingSpecialOrder AS p 
+        LEFT JOIN SpecialOrders AS o ON p.order_id=o.specialOrderID
+		LEFT JOIN SpecialOrderStatus AS s ON p.order_id=s.order_id
+    WHERE 
+        (
+            o.specialOrderID IS NULL
+		    OR %s(o.notes)=0
+        )
 		OR p.order_id IN (
-		SELECT order_id FROM CompleteSpecialOrder
-		WHERE trans_id=0
-		GROUP BY order_id
+            SELECT order_id FROM CompleteSpecialOrder
+            WHERE trans_id=0
+            GROUP BY order_id
 		)
-		GROUP BY p.order_id
-		HAVING MAX(trans_id)=0",
-		($FANNIE_SERVER_DBMS=="MSSQL" ? 'datalength' : 'length'));
+    GROUP BY p.order_id
+    HAVING MAX(trans_id)=0",
+($FANNIE_SERVER_DBMS=="MSSQL" ? 'datalength' : 'length'));
 $cleanupR = $sql->query($cleanupQ);
 $empty = "(";
 $clean=0;
