@@ -181,7 +181,7 @@ class QMDisplay extends NoInputPage {
         }
 
 		echo '<br /><br />';
-		echo '<select name="ddQKselect" id="ddQKselect" style="width:200px;" size="10"
+		echo '<select name="ddQKselect" id="ddQKselect" style="width:380px;" size="10"
 			onblur="$(\'#ddQKselect\').focus();" >';
 		$i=1;
 		foreach($my_menu as $label => $value){
@@ -191,7 +191,6 @@ class QMDisplay extends NoInputPage {
 		}
 		echo '</select>';
 
-		echo "</div>";
 		echo "<input type=\"hidden\" value=\"0\" name=\"clear\" id=\"doClear\" />";	
 		echo "</form>";
 		echo "</div>";
