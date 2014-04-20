@@ -15,18 +15,20 @@
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - -
 
- 23Jun12EL Added COMMENTS, FUNCTIONALITY comment blocks.
-           Added intro to Contents page.
-           Fix "core_log" should be "core_trans".
-           Option to display each page in a new tab (target=).
+ 12Mar14 EL Cloned from $FANNIE/install/sql for lane tables.
+ 23Jun12 EL Added COMMENTS, FUNCTIONALITY comment blocks.
+            Added intro to Contents page.
+            Fix "core_log" should be "core_trans".
+            Option to display each page in a new tab (target=).
 */
 
 /* If no argument display a list of links */
 if (!isset($_REQUEST['fn'])){
 
-	echo "<h3>Links to Fannie per-table Help</H3>
+	echo "<h3>Links to IS4C (Lane) per-table Help</H3>
 <p>Each link displays the current contents of the comment block
-<br>in the PHP script at <i>docroot</i>/IS4C/fannie/install/sql/op|trans/<i>tablename</i>.php
+<br>in the PHP script at
+<i>docroot</i>/IS4C/pos/is4c-nf/install/sql/op|trans/<i>tablename</i>.php
 <br>that creates the table.
 </p>
 ";
@@ -34,7 +36,7 @@ if (!isset($_REQUEST['fn'])){
 	 /* Option to display each page in a new tab (target=). 1=do, 0=don't */
 	$new_tab = 1;
 
-	echo "<h3>core_op</h3>";
+	echo "<h3>opdata</h3>";
 	echo "This database contains relatively static information
 		related to operations, such as products and employees";
 	echo "<ul>";
@@ -62,7 +64,7 @@ if (!isset($_REQUEST['fn'])){
 	}
 	echo "</ul>";
 
-	echo "<h3>core_trans</h3>";
+	echo "<h3>translog</h3>";
 	echo "This database contains changing information,
 		primarily transaction related";
 	echo "<ul>";
