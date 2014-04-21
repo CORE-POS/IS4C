@@ -192,11 +192,11 @@ class BaseItemModule extends ItemModule {
 		$ret .= '<b>Unit of measure</b> <input type="text" name="unitm" size="4"
 				value="'.(isset($rowItem['unitofmeasure'])?$rowItem['unitofmeasure']:'').'" /></td>';
 		$ret .= '<td style="color:darkmagenta;">Last modified</td>
-			<td style="color:darkmagenta;">'.$rowItem['modified'].'</td>';
+			<td style="color:darkmagenta;">'. (isset($rowItem['modified']) ? $rowItem['modified'] : '') . '</td>';
 		$ret .= '</tr>';
 
 		$ret .= '<tr><td><b>Long Desc.</b><td colspan="2"><input type="text" size="60" name="puser_description"
-				value="'.$rowItem['ldesc'].'" /></td><td>&nbsp;</td></tr>';
+				value="'. (isset($rowItem['ldesc']) ? $rowItem['ldesc'] : '') . '" /></td><td>&nbsp;</td></tr>';
 
 		$ret .="<td align=right><b>Brand</b></td><td><input type=text name=manufacturer size=30 value=\""
 			.(isset($rowItem['manufacturer'])?$rowItem['manufacturer']:"")
