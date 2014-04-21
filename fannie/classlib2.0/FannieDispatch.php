@@ -231,7 +231,12 @@ class FannieDispatch
         $bt = debug_backtrace();
         // conditionalExec() is the only function on the stack
         if (count($bt) == 1) {
+
+            // log PHP errors local to Fannie
+            $elog = realpath(dirname(__FILE__).'/../logs/').'/php-errors.log';
+            ini_set('error_log', $elog);
     
+            // use stack traces if desired
             include(dirname(__FILE__).'/../config.php');
             if (isset($FANNIE_CUSTOM_ERRORS) && $FANNIE_CUSTOM_ERRORS) {
                 set_error_handler(array('FannieDispatch','errorHandler'));
@@ -239,9 +244,12 @@ class FannieDispatch
                 register_shutdown_function(array('FannieDispatch','catchFatal'));
             }
 
+            // initialize locale & gettext
             self::i18n();
+            // write URL log
             self::logUsage();
 
+            // draw current page
             $page = basename($_SERVER['PHP_SELF']);
             $class = substr($page,0,strlen($page)-4);
             if ($class != 'index' && class_exists($class)) {

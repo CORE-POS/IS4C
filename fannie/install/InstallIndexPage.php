@@ -538,6 +538,8 @@ class InstallIndexPage extends InstallPage {
 		<ul>
 		<li><?php check_writeable('../logs/queries.log'); ?>
 		<ul><li>Contains failed database queries</li></ul>	
+		<li><?php check_writeable('../logs/php-errors.log'); ?>
+		<ul><li>Contains PHP notices, warnings, and errors</li></ul>
 		<li><?php check_writeable('../logs/dayend.log'); ?>
 		<ul><li>Contains output from scheduled tasks</li></ul>	
 		</ul>
