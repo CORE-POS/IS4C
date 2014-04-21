@@ -164,13 +164,12 @@ else $order = 'min(datetime)';
 
 $q = "SELECT min(datetime) as orderDate,p.order_id,sum(total) as value,
 	count(*)-1 as items,status_flag,sub_status,
-	CASE WHEN MAX(p.card_no)=0 THEN MAX(t.last_name) ELSE MAX(c.LastName) END as name,
+	CASE WHEN MAX(p.card_no)=0 THEN MAX(o.lastName) ELSE MAX(c.LastName) END as name,
 	MIN(CASE WHEN trans_type='I' THEN charflag ELSE 'ZZZZ' END) as charflag,
 	MAX(p.card_no) AS card_no
 	FROM {$TRANS}PendingSpecialOrder as p
         LEFT JOIN {$TRANS}SpecialOrderStatus as s ON p.order_id=s.order_id
         LEFT JOIN custdata AS c ON c.CardNo=p.card_no AND personNum=p.voided
-        LEFT JOIN {$TRANS}SpecialOrderContact as t on t.card_no=p.order_id
         LEFT JOIN {$TRANS}SpecialOrders AS o ON p.order_id=o.specialOrderID
 	$filterstring
 	GROUP BY p.order_id,status_flag,sub_status
@@ -272,7 +271,7 @@ $ret .= sprintf('<table cellspacing="0" cellpadding="4" border="1">
 	<th><a href="" onclick="resort(\'%s\');return false;">Status</a></th>
 	<th>Printed</th>',
 	base64_encode("min(datetime)"),
-	base64_encode("CASE WHEN MAX(p.card_no)=0 THEN MAX(t.last_name) ELSE MAX(c.LastName) END"),
+	base64_encode("CASE WHEN MAX(p.card_no)=0 THEN MAX(o.lastName) ELSE MAX(c.LastName) END"),
 	base64_encode("sum(total)"),
 	base64_encode("count(*)-1"),
 	base64_encode("status_flag")

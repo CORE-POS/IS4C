@@ -44,9 +44,9 @@ $OP = $FANNIE_OP_DB . ($FANNIE_SERVER_DBMS == "MSSQL" ? 'dbo.' : '.');
 
 $q = "
 select s.order_id,description,datetime,
-case when c.last_name ='' then b.LastName else c.last_name END as name
+case when c.lastName ='' then b.LastName else c.lastName END as name
 from PendingSpecialOrder
-as s left join SpecialOrderContact as c on s.order_id=c.card_no
+as s left join SpecialOrders as c on s.order_id=c.specialOrderID
 left join {$OP}custdata as b on s.card_no=b.CardNo and s.voided=b.personNum
 where s.order_id in (
 select p.order_id from PendingSpecialOrder as p
