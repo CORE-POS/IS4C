@@ -29,6 +29,7 @@ class HouseCouponsModel extends BasicModel
 
     protected $name = "houseCoupons";
     protected $preferred_db = 'op';
+    protected $normalize_lanes = true;
 
     protected $columns = array(
     'coupID' => array('type'=>'INT', 'primary_key'=>true),
@@ -42,6 +43,7 @@ class HouseCouponsModel extends BasicModel
     'minType' => array('type'=>'VARCHAR(2)'),
     'minValue' => array('type'=>'MONEY'),
     'department' => array('type'=>'INT'),
+    'auto' => array('type'=>'TINYINT', 'default'=>0),
 	);
 
     /* START ACCESSOR FUNCTIONS */
@@ -263,6 +265,26 @@ class HouseCouponsModel extends BasicModel
                 }
             }
             $this->instance["department"] = func_get_arg(0);
+        }
+    }
+
+    public function auto()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["auto"])) {
+                return $this->instance["auto"];
+            } else if (isset($this->columns["auto"]["default"])) {
+                return $this->columns["auto"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["auto"]) || $this->instance["auto"] != func_get_args(0)) {
+                if (!isset($this->columns["auto"]["ignore_updates"]) || $this->columns["auto"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["auto"] = func_get_arg(0);
         }
     }
     /* END ACCESSOR FUNCTIONS */

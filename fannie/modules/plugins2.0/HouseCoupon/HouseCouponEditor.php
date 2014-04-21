@@ -85,9 +85,12 @@ class HouseCouponEditor extends FanniePage
 			$mtype = FormLib::get_form_value('mtype','Q');
 			$mval = FormLib::get_form_value('mval',0);
 			$descript = FormLib::get_form_value('description',0);
+            $auto = FormLib::get('autoapply', 0);
+            $starts = FormLib::get('starts');
 
             $model = new HouseCouponsModel($dbc);
             $model->coupID($this->coupon_id);
+            $model->startDate($starts);
             $model->endDate($expires);
             $model->limit($limit);
             $model->discountType($dtype);
@@ -97,6 +100,7 @@ class HouseCouponEditor extends FanniePage
             $model->department($dept);
             $model->description($descript);
             $model->memberOnly($mem);
+            $model->auto($auto);
             $model->save();
 
 			$this->display_function = 'edit_coupon';
@@ -198,9 +202,14 @@ class HouseCouponEditor extends FanniePage
         $model->coupID($cid);
         $model->load();
 
+		$starts = $model->startDate();
+		if (strstr($starts,' ')) {
+			list($starts, $time) = explode(' ',$starts, 2);
+        }
 		$expires = $model->endDate();
-		if (strstr($expires,' '))
-			$expires = array_shift(explode(' ',$expires));
+		if (strstr($expires,' ')) {
+			list($expires, $time) = explode(' ',$expires, 2);
+        }
 		$limit = $model->limit();
 		$mem = $model->memberOnly();
 		$dType = $model->discountType();
@@ -209,22 +218,48 @@ class HouseCouponEditor extends FanniePage
 		$mVal = $model->minValue();
 		$dept = $model->department();
         $description = $model->description();
+        $auto = $model->auto();
 
 		$ret .= '<form action="HouseCouponEditor.php" method="post">';
 		$ret .= '<input type="hidden" name="cid" value="'.$cid.'" />';
 
-		$ret .= sprintf('<table cellspacing=0 cellpadding=4><tr>
-			<th>Coupon ID#</th><td>%s</td><th>UPC</th>
-			<td>%s</td></tr><tr><tr><th>Label</th><td colspan=2>
-			<input type=text name=description value="%s" size=30 /></td></tr>
-			<th>Expires</th><td><input type=text name=expires value="%s" size=12 
-			onclick="showCalendarControl(this);" />
-			</td><th>Limit</th><td><input type=text name=limit size=3
-			value="%s" /></td></tr><tr><th>Member-only</th><td>
-			<input type=checkbox name=memberonly value="1" %s /></td><th>
-			Department</th><td><select name=dept>',
+		$ret .= sprintf('<table cellspacing=0 cellpadding=4 border=0>
+            <tr>
+			    <th>Coupon ID#</th>
+                <td colspan="3">%s</td>
+                <th>UPC</th>
+			    <td>%s</td>
+            </tr>
+            <tr>
+                <th>Label</th>
+                <td colspan=3><input type=text name=description value="%s" size=30 /></td>
+                <th>Limit</th>
+                <td><input type=text name=limit size=3 value="%s" /></td>
+            </tr>
+            <tr>
+    			<th>Begins</th>
+                <td colspan="3">
+                    <input type=text name=starts value="%s" size=12 
+                        onclick="showCalendarControl(this);" />
+                </td>
+			    <th>Expires</th>
+                <td>
+                    <input type=text name=expires value="%s" size=12 
+        			    onclick="showCalendarControl(this);" />
+			    </td>
+            </tr>
+            <tr>
+                <th><label for="memberonly">Member-only</label></th>
+                <td><input type=checkbox name=memberonly id=memberonly value="1" %s /></td>
+                <th align="right"><label for="autoapply">Auto-apply</label></th>
+                <td><input type=checkbox name=autoapply id=autoapply value="1" %s /></td>
+                <th>Department</th><td><select name=dept>',
 			$cid,"00499999".str_pad($cid,5,'0',STR_PAD_LEFT),$description,
-			$expires,$limit,($mem==1?'checked':'') );
+            $limit,
+			$starts, $expires,
+            ($mem==1?'checked':''),
+            ($auto==1?'checked':'') 
+        );
 		foreach($depts as $k=>$v){
 			$ret .= "<option value=\"$k\"";
 			if ($k == $dept) $ret .= " selected";
@@ -244,7 +279,7 @@ class HouseCouponEditor extends FanniePage
             '%C'=>'Percent Discount (Capped)',
 			'AD'=>'All Discount (Department)',
 		);
-		$ret .= "<tr><th>Discount Type</th><td>
+		$ret .= "<tr><th>Discount Type</th><td colspan=3>
 			<select name=dtype>";
 		foreach($dts as $k=>$v){
 			$ret .= "<option value=\"$k\"";
@@ -265,7 +300,7 @@ class HouseCouponEditor extends FanniePage
 			'$+'=>'Total (more than $)',
 			''=>'No minimum'
 		);
-		$ret .= "<tr><th>Minimum Type</th><td>
+		$ret .= "<tr><th>Minimum Type</th><td colspan=3>
 			<select name=mtype>";
 		foreach($mts as $k=>$v){
 			$ret .= "<option value=\"$k\"";
