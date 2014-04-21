@@ -119,7 +119,11 @@ function ldap_login($name,$passwd){
 	if (!$search_result) return false;
 
 	$ldap_info = ldap_get_entries($conn,$search_result);
-	if (!$ldap_info) return false;
+	if (!$ldap_info) {
+        return false;
+    } else if ($ldap_info['count'] == 0) {
+        return false;
+    }
 
 	$user_dn = $ldap_info[0]["dn"];
 	$uid = $ldap_info[0][$FANNIE_LDAP_UID_FIELD][0];
