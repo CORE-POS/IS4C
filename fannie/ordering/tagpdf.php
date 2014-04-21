@@ -174,7 +174,7 @@ else {
 		CASE WHEN MAX(p.card_no)=0 THEN MAX(o.lastName) ELSE MAX(c.LastName) END as name
 		FROM {$TRANS}PendingSpecialOrder AS p
 		LEFT JOIN custdata AS c ON c.CardNo=p.card_no AND personNum=p.voided
-		LEFT JOIN {$TRANS}SpecialOrders AS t ON o.specialOrderID=p.order_id	
+		LEFT JOIN {$TRANS}SpecialOrders AS o ON o.specialOrderID=p.order_id	
 		WHERE p.order_id=?");
 	$itemP = $dbc->prepare_statement("SELECT description,department,quantity,ItemQtty,total,trans_id
 		FROM {$TRANS}PendingSpecialOrder WHERE order_id=? AND trans_id > 0");
