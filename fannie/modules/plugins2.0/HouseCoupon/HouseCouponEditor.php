@@ -220,7 +220,7 @@ class HouseCouponEditor extends FanniePage
         $description = $model->description();
         $auto = $model->auto();
 
-		$ret .= '<form action="HouseCouponEditor.php" method="post">';
+		$ret = '<form action="HouseCouponEditor.php" method="post">';
 		$ret .= '<input type="hidden" name="cid" value="'.$cid.'" />';
 
 		$ret .= sprintf('<table cellspacing=0 cellpadding=4 border=0>
