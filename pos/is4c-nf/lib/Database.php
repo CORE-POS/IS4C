@@ -580,6 +580,22 @@ static public function uploadCCdata()
         }
     }
 
+    // newer paycard transactions table
+    if ($sql->table_exists('PaycardTransactions')) {
+        $ptrans_cols = self::getMatchingColumns($sql, 'PaycardTransactions');
+        $ptrans_success = $sql->transfer($CORE_LOCAL->get('tDatabase'),
+                                         "SELECT {$ptrans_cols} FROM PaycardTransactions",
+                                         $CORE_LOCAL->get('mDatabase'),
+                                         "INSERT INTO PaycardTransactions ($ptrans_cols)"
+        );
+        if ($ptrans_success) {
+            $sql->query('DELETE FROM PaycardTransactions', $CORE_LOCAL->get('tDatabase'));
+        } else {
+            // transfer failure
+            $ret = false;
+        }
+    }
+
     return $ret;
 }
 
