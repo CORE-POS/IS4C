@@ -78,6 +78,9 @@ switch ($_REQUEST['action']) {
             echo getItemForm($orderID);
         }
         break;
+    case 'loadHistory':
+        echo getOrderHistory($orderID);
+        break;
     case 'newUPC':
         $qty = is_numeric($_REQUEST['cases'])?(int)$_REQUEST['cases']:1;
         $result = addUPC($orderID,$_REQUEST['memNum'],$_REQUEST['upc'],$qty);
@@ -355,8 +358,10 @@ switch ($_REQUEST['action']) {
         $dbc->exec_statement($p,array($_REQUEST['val'],$orderID));
         break;
     case 'confirmOrder':
-        $p = $dbc->prepare_statement("INSERT INTO {$TRANS}SpecialOrderHistory VALUES
-            (?,'CONFIRMED',".$dbc->now().",'')");
+        $p = $dbc->prepare_statement("INSERT INTO {$TRANS}SpecialOrderHistory 
+                                        (order_id, entry_type, entry_date, entry_value)
+                                        VALUES
+                                        (?,'CONFIRMED',".$dbc->now().",'')");
         $dbc->exec_statement($p,array($_REQUEST['orderID']));
         echo date("M j Y g:ia");
         break;
@@ -1681,5 +1686,47 @@ function reprice($oid,$tid,$reg=false)
 		'regPrice'=>sprintf("%.2f",$regPrice),
 		'total'=>sprintf("%.2f",$total)
 	);
+}
+
+function getOrderHistory($orderID)
+{
+    global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
+
+    $dbc = FannieDB::get($FANNIE_OP_DB);
+    $history = $FANNIE_TRANS_DB . $dbc->sep() . 'SpecialOrderHistory';
+
+    $prep = $dbc->prepare("SELECT entry_date, entry_type, entry_value
+                           FROM {$history}
+                           WHERE order_id = ?
+                            AND entry_type IN ('AUTOCLOSE', 'PURCHASED')
+                           ORDER BY entry_date");
+    $result = $dbc->execute($prep, array($orderID));
+
+    $ret = '<table cellpadding="4" cellspacing="0" border="1">';
+    $ret .= '<tr>
+                <th>Date</th>
+                <th>Action</th>
+                <th>Details</th>
+             </tr>';
+    while($row = $dbc->fetch_row($result)) {
+        if ($row['entry_type'] == 'PURCHASED') {
+            $trans_num = $row['entry_value'];
+            $tdate = date('Y-m-d', strtotime($row['entry_date']));
+            $link = '../admin/LookupReceipt/RenderReceiptPage.php?date=' . $tdate . '&receipt=' . $trans_num;
+            $row['entry_value'] = sprintf('<a href="%s" target="_%s">%s</a>', $link, $trans_num, $trans_num);
+        }
+        $ret .= sprintf('<tr>
+                            <td>%s</td>
+                            <td>%s</td>
+                            <td>%s</td>
+                         </tr>',
+                            $row['entry_date'],
+                            $row['entry_type'],
+                            $row['entry_value']
+        );
+    }
+    $ret .= '</table>';
+
+    return $ret;
 }
 

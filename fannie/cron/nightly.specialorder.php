@@ -64,9 +64,24 @@ while($w = $sql->fetch_row($r)){
 }
 $cwIDs = rtrim($cwIDs,",").")";
 if (strlen($cwIDs) > 2){
+    // transfer to completed orders
 	$copyQ = "INSERT INTO CompleteSpecialOrder
 		SELECT p.* FROM PendingSpecialOrder AS p
 		WHERE p.order_id IN $cwIDs";
+
+    // make note in history table
+    $historyQ = "INSERT INTO SpecialOrderHistory
+                (order_id, entry_date, entry_type, entry_value)
+                SELECT p.order_id,
+                    " . $sql->now() . ",
+                    'AUTOCLOSE',
+                    'Call/Waiting 30',
+                FROM PendingSpecialOrder AS p
+                WHERE p.order_id IN $cwIDs
+                GROUP BY p.order_id";
+    $sql->query($historyQ);
+
+    // clear from pending
 	$sql->query($copyQ);
 	$delQ = "DELETE FROM PendingSpecialOrder
 		WHERE order_id IN $cwIDs";
@@ -87,29 +102,72 @@ while($w = $sql->fetch_row($r)){
 }
 $allIDs = rtrim($allIDs,",").")";
 if (strlen($allIDs) > 2){
+    // copy to completed orders
 	$copyQ = "INSERT INTO CompleteSpecialOrder
 		SELECT p.* FROM PendingSpecialOrder AS p
 		WHERE p.order_id IN $allIDs";
 	$sql->query($copyQ);
+
+    // make note in history table
+    $historyQ = "INSERT INTO SpecialOrderHistory
+                (order_id, entry_date, entry_type, entry_value)
+                SELECT p.order_id,
+                    " . $sql->now() . ",
+                    'AUTOCLOSE',
+                    '90 Days',
+                FROM PendingSpecialOrder AS p
+                WHERE p.order_id IN $allIDs
+                GROUP BY p.order_id";
+
+    // remove from pending orders
 	$delQ = "DELETE FROM PendingSpecialOrder
 		WHERE order_id IN $allIDs";
 	$sql->query($delQ);
 }
 // end auto-close
 
-$query = "SELECT mixMatch,matched FROM transarchive
-	WHERE charflag='SO' AND emp_no <> 9999 AND
-	register_no <> 99 AND trans_status NOT IN ('X','Z')
-	GROUP BY mixMatch,matched
-	HAVING sum(total) <> 0";
-	//AND ".$sql->datediff($sql->now(),"datetime")."=1
+$query = "SELECT mixMatch,
+            matched,
+            MAX(datetime) as tdate,
+            MAX(emp_no) as emp,
+            MAX(register_no) AS reg,
+            MAX(trans_no) AS trans 
+          FROM transarchive
+          WHERE charflag='SO' 
+            AND emp_no <> 9999 
+            AND register_no <> 99 
+            AND trans_status NOT IN ('X','Z')
+	      GROUP BY mixMatch,matched
+	      HAVING sum(total) <> 0";
 $result = $sql->query($query);
+
+$checkP = $sql->prepare("SELECT order_id
+                         FROM SpecialOrderHistory
+                         WHERE order_id=?
+                            AND entry_type='PURCHASED'
+                            AND entry_date=?
+                            AND entry_value=?");
+$historyP = $sql->prepare("INSERT INTO SpecialOrderHistory
+                            (order_id, entry_date, entry_type, entry_value)
+                           VALUES
+                            (?, ?, 'PURCHASED', ?)");
 
 $order_ids = array();
 $trans_ids = array();
-while($row = $sql->fetch_row($result)){
+while($row = $sql->fetch_row($result)) {
 	$order_ids[] = (int)$row['mixMatch'];
 	$trans_ids[] = (int)$row['matched'];
+
+    // log to history if entry doesn't already exist
+    $args = array(
+        (int)$row['mixMatch'],
+        $row['tdate'],
+        $row['emp'] . '-' . $row['reg'] . '-' . $row['trans'],
+    );
+    $checkR = $sql->execute($checkP, $args);
+    if ($checkR && $sql->num_rows($checkR) == 0) {
+        $sql->execute($historyP, $args);
+    }
 }
 
 $where = "( ";
