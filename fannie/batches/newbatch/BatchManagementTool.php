@@ -615,7 +615,7 @@ class BatchManagementTool extends FanniePage
      */
     function newBatchInput()
     {
-        global $FANNIE_URL, $FANNIE_STORE_ID;
+        global $FANNIE_URL;
 
         $ret = "<form onsubmit=\"newBatch(); return false;\">";
         $ret .= "<table>";
@@ -636,8 +636,8 @@ class BatchManagementTool extends FanniePage
         }
         $ret .= "</select></td>";
         $ret .= "<td><select id=\"newBatchPriority\">";
-        $ret .= sprintf('<option value="%d">Default</option>',($FANNIE_STORE_ID!=0?10:0));
-        $ret .= sprintf('<option value="%d">Override</option>',($FANNIE_STORE_ID==0?15:5));
+        $ret .= sprintf('<option value="%d">Default</option>', 0);
+        $ret .= sprintf('<option value="%d">Override</option>', 5);
         $ret .= "</select></td>";
         $ret .= "<td><input type=submit value=Add /></td>";
         $ret .= "</tr></table></form><br />";

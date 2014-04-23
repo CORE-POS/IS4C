@@ -205,6 +205,7 @@ card_no is the customer number from core_op.custdata.
 $CREATE['trans.dtransactions'] = "
 	CREATE TABLE dtransactions (
 	  `datetime` datetime default NULL,
+	  `store_id` smallint(6) default NULL,
 	  `register_no` smallint(6) default NULL,
 	  `emp_no` smallint(6) default NULL,
 	  `trans_no` int(11) default NULL,
@@ -242,18 +243,20 @@ $CREATE['trans.dtransactions'] = "
 	  `trans_id` int(11) default NULL,
       `pos_row_id` BIGINT UNSIGNED,
       `store_row_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-      PRIMARY KEY(`store_row_id`),
+      INDEX(`store_row_id`),
 	  INDEX(`datetime`),
 	  INDEX(`upc`),
 	  INDEX(`department`),
 	  INDEX(`card_no`),
-	  INDEX(`trans_type`)
+	  INDEX(`trans_type`),
+      INDEX(`store_id`)
 	)
 ";
 
 if ($dbms == "MSSQL"){
 	$CREATE['trans.dtransactions'] = "
 		CREATE TABLE dtransactions ([datetime] [datetime] NOT NULL ,
+			[store_id] [smallint] NOT NULL ,
 			[register_no] [smallint] NOT NULL ,
 			[emp_no] [smallint] NOT NULL ,
 			[trans_no] [int] NOT NULL ,

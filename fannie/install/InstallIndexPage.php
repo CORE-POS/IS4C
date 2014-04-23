@@ -1081,6 +1081,9 @@ class InstallIndexPage extends InstallPage {
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'ShrinkReasons','op');
 
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+				'Stores','op');
+
 		return $ret;
 
 	// create_op_dbs()
@@ -1526,8 +1529,6 @@ class InstallIndexPage extends InstallPage {
 			// create the first partition if needed
 			if ($FANNIE_ARCHIVE_METHOD == "partitions"){
                 $con->query('ALTER TABLE bigArchive CHANGE COLUMN store_row_id store_row_id BIGINT UNSIGNED');
-                $noPkQ = 'ALTER TABLE bigArchive DROP PRIMARY KEY';
-                $con->query($noPkQ, $FANNIE_ARCHIVE_DB);
 				$p = "p".date("Ym");
 				$limit = date("Y-m-d",mktime(0,0,0,date("n")+1,1,date("Y")));
 				$partQ = sprintf("ALTER TABLE `bigArchive` 
