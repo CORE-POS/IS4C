@@ -512,8 +512,13 @@ class FannieReportPage extends FanniePage
             case 'html':
                 if ($this->multi_counter == 1) {
                     $this->add_css_file($FANNIE_URL.'src/jquery/themes/blue/style.css');
-                    $ret .= sprintf('<html><head></head><body>
-                        <a href="%s%sexcel=xls">Download Excel</a>
+                    if (!$this->window_dressing) {
+                        $ret .= '<!DOCTYPE html><html><head>' .
+                        '<meta http-equiv="Content-Type" ' .
+                            'content="text/html; charset=iso-8859-1">' .
+                        '</head><body>';
+                    }
+                    $ret .= sprintf('<a href="%s%sexcel=xls">Download Excel</a>
                         &nbsp;&nbsp;&nbsp;&nbsp;
                         <a href="%s%sexcel=csv">Download CSV</a>
                         &nbsp;&nbsp;&nbsp;&nbsp;
@@ -721,6 +726,7 @@ class FannieReportPage extends FanniePage
         $tag = $header ? 'th' : 'td';
 
         if (($meta & self::META_BOLD) != 0) {
+            $ret = '</tbody><tbody><tr>';
             $tag = 'th';
         }
         if (($meta & self::META_BLANK) != 0) {
@@ -733,7 +739,7 @@ class FannieReportPage extends FanniePage
             }
         }
         if (($meta & self::META_REPEAT_HEADERS) != 0) {
-            $ret = '</tbody><tbody><tr>';
+            $ret = '<thead><tr>';
             $tag = 'th';
             $row = array();
             $header1 = $this->select_headers(True);
@@ -771,13 +777,13 @@ class FannieReportPage extends FanniePage
             } else if ($date && preg_match('/^\d+-\d+-\d+$/', $row[$i])) {
                 // row contains a trans_num column & a date column
                 // auto-link to reprint receipt
-                $row[$i] = sprintf('<a href="%sadmin/LookupReceipt/RenderReceiptPage.php?date=%s&receipt=%s"
+                $row[$i] = sprintf('<a href="%sadmin/LookupReceipt/RenderReceiptPage.php?date=%s&amp;receipt=%s"
                                        target="_rp_%s_%s">%s</a>',
                                     $FANNIE_URL, $date, $row[$i],
                                     $date, $row[$i], $row[$i]);
             } else {
                 if (preg_match($numberPattern, strip_tags($row[$i]))) {
-                    $align = ' align="right" ';
+                    $align = ' style="text-align:right;" ';
                 }
             }
 
@@ -786,7 +792,9 @@ class FannieReportPage extends FanniePage
                 if ($i == $this->chart_label_column) {
                     $class .= ' d3Label ';
                 } else if (is_array($this->chart_data_columns) && 
-                          (count($this->chart_data_columns) == 0 || in_array($i, $this->chart_data_columns))) {
+                    (count($this->chart_data_columns) == 0 ||
+                    in_array($i, $this->chart_data_columns))
+                ) {
                     $class .= ' d3Data ';
                 }
             }
@@ -796,11 +804,14 @@ class FannieReportPage extends FanniePage
             $i += $span;
         }
         $ret .= '</tr>';
-        if (($meta & self::META_REPEAT_HEADERS) != 0 || ($meta & self::META_BLANK) != 0) {
-            $ret .= '</tbody><tbody>';
+        if (($meta & self::META_REPEAT_HEADERS) != 0) {
+            $ret .= '</thead>';
+        } elseif (($meta & self::META_BLANK) != 0) {
+            $ret .= '</tbody>';
         }
 
         return $ret;
+
     }
 
     /**

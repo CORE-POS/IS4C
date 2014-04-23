@@ -38,10 +38,6 @@ class DiscountApplied extends Parser {
 				$this->ret['output'] = DisplayLib::boxMsg(_("discount exceeds maximum"));
 			elseif ($strl <= 0) 
 				$this->ret['output'] = DisplayLib::boxMsg(_("discount must be greater than zero"));
-			elseif ($strl == 15 && $CORE_LOCAL->get("isStaff") == 0 && (substr($CORE_LOCAL->get("memberID"), 0, 1) != "9" || strlen($CORE_LOCAL->get("memberID")) != 6)) 
-				$this->ret['output'] = DisplayLib::boxMsg(_("Staff discount not applicable"));
-			elseif ($strl == 10 && $CORE_LOCAL->get("isMember") == 0) 
-				$this->ret['output'] = DisplayLib::boxMsg(_("Member discount not applicable"));
 			elseif ($strl <= 50 and $strl > 0) 
 				$this->ret = PrehLib::percentDiscount($strl,$this->ret);
 			else 
