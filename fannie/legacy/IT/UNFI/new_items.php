@@ -72,7 +72,7 @@ if (isset($_GET['cat'])){
 	}
 	$depts .= "</select>";
 
-	$dataQ = $sql->prepare("SELECT v.upc,brand,v.description,v.vendorDept,
+	$dataQ = $sql->prepare("SELECT v.upc,v.brand,v.description,v.vendorDept,
 		s.srp,v.cost, 
 		v.size,v.units,v.sku FROM vendorItems AS v 
 		LEFT JOIN products AS p ON v.upc = p.upc 
