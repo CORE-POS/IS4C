@@ -73,7 +73,8 @@ class PullRemoteTransactionsTask extends FannieTask
             } else if ($dbc->num_rows($dtransMax) > 0) {
                 $row = $dbc->fetch_row($dtransMax);
                 $lowerBound = $row['done'];
-            } else {
+            } 
+            if ($lowerBound == 0) {
                 $transarchiveMax = $dbc->execute($max2, array($remoteID));
                 if ($transarchiveMax === false) {
                     echo $this->cronMsg('Polling problem: cannot lookup info in transarchive');
@@ -94,6 +95,8 @@ class PullRemoteTransactionsTask extends FannieTask
                         FROM dtransactions
                         WHERE store_id = ' . ((int)$store->storeID()) . '
                             AND store_row_id > ' . ((int)$lowerBound);
+            echo $this->cronMsg($selectQ);
+            break;
             $insertQ = 'INSERT INTO ' . $local_dtrans . ' (' . $columns . ')';
             
             // note:
