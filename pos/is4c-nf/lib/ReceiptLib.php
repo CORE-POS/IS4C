@@ -292,6 +292,11 @@ static public function printChargeFooterCust($dateTimeStamp, $ref, $program="cha
 	$date = self::build_time($dateTimeStamp);
 
 	/* Where should the label values come from, be entered?
+
+       24Apr14 Andy
+       Implementing these as ReceiptMessage subclasses might work
+       better. Plugins could provide their own ReceiptMessage subclass
+       with the proper labels (or config settings for the labels)
 	*/
 	$labels = array();
 	$labels['charge'] = array("CUSTOMER CHARGE ACCOUNT\n", "Charge Amount:");
@@ -303,7 +308,6 @@ static public function printChargeFooterCust($dateTimeStamp, $ref, $program="cha
 		if isset($plugin['printChargeFooterCustLabels']
 			$labels[]=$plugin['printChargeFooterCustLabels']
 	*/
-
 
 	$receipt = chr(27).chr(33).chr(5)."\n\n\n".self::centerString("C U S T O M E R   C O P Y")."\n"
 		   .self::centerString("................................................")."\n"
@@ -333,6 +337,11 @@ static public function printChargeFooterStore($dateTimeStamp, $ref, $program="ch
 	$date = self::build_time($dateTimeStamp);
 
 	/* Where should the label values come from, be entered?
+
+       24Apr14 Andy
+       Implementing these as ReceiptMessage subclasses might work
+       better. Plugins could provide their own ReceiptMessage subclass
+       with the proper labels (or config settings for the labels)
 	*/
 	$labels = array();
 	$labels['charge'] = array("CUSTOMER CHARGE ACCOUNT\n"
