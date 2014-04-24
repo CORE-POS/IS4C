@@ -356,8 +356,8 @@ class BaseItemModule extends ItemModule {
 		$model->qttyEnforced(FormLib::get_form_value('QtyFrc',0));
 		$model->discount(FormLib::get_form_value('NoDisc',1));
 		$model->normal_price(FormLib::get_form_value('price',0.00));
-		$model->description(FormLib::get_form_value('descript',''));
-        $model->brand(FormLib::get('manufacturer', ''));
+		$model->description(str_replace("'", '', FormLib::get_form_value('descript','')));
+        $model->brand(str_replace("'", '', FormLib::get('manufacturer', '')));
 		$model->pricemethod(0);
 		$model->groupprice(0.00);
 		$model->quantity(0);
@@ -395,8 +395,8 @@ class BaseItemModule extends ItemModule {
 
 		if ($dbc->table_exists('prodExtra')){
 			$arr = array();
-			$arr['manufacturer'] = $dbc->escape(FormLib::get_form_value('manufacturer'));
-			$arr['distributor'] = $dbc->escape(FormLib::get_form_value('distributor'));
+			$arr['manufacturer'] = $dbc->escape(str_replace("'",'',FormLib::get_form_value('manufacturer')));
+			$arr['distributor'] = $dbc->escape(str_replace("'",'',FormLib::get_form_value('distributor')));
 			$arr['location'] = 0;
 
 			$checkP = $dbc->prepare_statement('SELECT upc FROM prodExtra WHERE upc=?');
