@@ -811,8 +811,6 @@ class GoEMerchant extends BasicCCModule {
 		$cardIssuer = $CORE_LOCAL->get("paycard_issuer");
 		$cardExM = substr($CORE_LOCAL->get("paycard_exp"),0,2);
 		$cardExY = substr($CORE_LOCAL->get("paycard_exp"),2,2);
-		$cardTr1 = $this->trans_pan['tr1'];
-		$cardTr2 = $this->trans_pan['tr2'];
 		$cardName = $CORE_LOCAL->get("paycard_name");
 		$refNum = $this->refnum($transID);
 		$live = 1;

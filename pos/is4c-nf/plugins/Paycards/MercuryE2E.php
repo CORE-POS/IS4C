@@ -373,7 +373,8 @@ class MercuryE2E extends BasicCCModule {
 		$xTransID = $xml->get("REFNO");
 		if ($xTransID){
 			$sqlColumns .= ",xTransactionID";
-			$sqlValues .= sprintf(",'%s'",substr($xTransID,0,12));
+            $xTransID = substr($xTransID, 0, 12);
+			$sqlValues .= sprintf(",'%s'", $xTransID);
 		}
 		else $validResponse = -3;
 		$apprNumber = $xml->get("AUTHCODE");

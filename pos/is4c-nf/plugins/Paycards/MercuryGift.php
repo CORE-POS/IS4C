@@ -170,6 +170,7 @@ class MercuryGift extends BasicCCModule {
 	 */
 	function cleanup($json){
 		global $CORE_LOCAL;
+        $CORE_LOCAL->set('CacheCardType', 'GIFT');
 		switch($CORE_LOCAL->get("paycard_mode")){
 		case PaycardLib::PAYCARD_MODE_BALANCE:
 			$resp = $CORE_LOCAL->get("paycard_response");
@@ -534,7 +535,6 @@ class MercuryGift extends BasicCCModule {
                 $this->last_paycard_transaction_id = 0;
             }
         }
-		
 
 		$msgXml = "<?xml version=\"1.0\"".'?'.">
 			<TStream>
@@ -717,7 +717,7 @@ class MercuryGift extends BasicCCModule {
             $finishQ = sprintf("UPDATE PaycardTransactions SET
                                     responseDatetime='%s',
                                     seconds=%f,
-                                    curlErr=%d,
+                                    commErr=%d,
                                     httpCode=%d,
                                     validResponse=%d,
                                     xResultCode=%d,
@@ -777,7 +777,7 @@ class MercuryGift extends BasicCCModule {
 		  it correctly.
 		*/
 		if ($xml->get_first("AUTHORIZE")){
-			$CORE_LOCAL->set("paycard_amount",$xml->get_first("AUTHORIZE"));
+            $CORE_LOCAL->set("paycard_amount",$xml->get_first("AUTHORIZE"));
 			if ($xml->get_first('TRANCODE') && $xml->get_first('TRANCODE') == 'Return')
 				$CORE_LOCAL->set("paycard_amount",-1*$xml->get_first("AUTHORIZE"));
 			$correctionQ = sprintf("UPDATE valutecRequest SET amount=%f WHERE
