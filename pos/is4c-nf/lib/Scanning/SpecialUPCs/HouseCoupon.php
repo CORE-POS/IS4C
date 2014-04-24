@@ -500,7 +500,10 @@ class HouseCoupon extends SpecialUPC
                 Database::getsubtotals();
                 $max = floor($infoW['discountValue']);
                 $percentage = $infoW['discountValue'] - $max;
-                $amount = $CORE_LOCAL->get('discountableTotal') > $max ? $max : $CORE_LOCAL->get('discountableTotal');
+                // because the overall value is capped, I'm using
+                // the actual transaction total rather than discountableTotal
+                $total = $CORE_LOCAL->get('runningTotal') - $CORE_LOCAL->get('transDiscount');
+                $amount = $total > $max ? $max : $total;
                 $value = $percentage * $amount;
                 break;
             case "%": // percent discount on all items
