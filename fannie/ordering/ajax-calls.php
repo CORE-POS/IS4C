@@ -714,19 +714,6 @@ function duplicateOrder($old_id,$from='CompleteSpecialOrder')
 		FROM {$TRANS}$from WHERE order_id=?");
 	$dbc->exec_statement($copyQ, array($new_id,$old_id));
 
-    $dbc = FannieDB::get($FANNIE_TRANS_DB);
-    // load values from old order
-    $soModel = new SpecialOrdersModel($dbc);
-    $soModel->specialOrderID($old_id);
-    $soModel->load();
-    // update ID, status
-    $soModel->specialOrderID($new_id);
-    $soModel->statusFlag( ($st == 1) ? 3 : 0 );
-    $soModel->subStatus($timestamp);
-    // save with the new ID
-    $soModel->save();
-    $dbc = FannieDB::get($FANNIE_OP_DB);
-
 	$delP = $dbc->prepare_statement("DELETE FROM {$TRANS}SpecialOrderContact WHERE card_no=?");
 	$dbc->exec_statement($delP,array($new_id));
 	$contactQ = $dbc->prepare_statement("INSERT INTO {$TRANS}SpecialOrderContact
@@ -753,6 +740,20 @@ function duplicateOrder($old_id,$from='CompleteSpecialOrder')
 	$statusW = $dbc->fetch_row($statusR);
     $st = $statusW['numflag'];
     $timestamp = time();
+
+    $dbc = FannieDB::get($FANNIE_TRANS_DB);
+    // load values from old order
+    $soModel = new SpecialOrdersModel($dbc);
+    $soModel->specialOrderID($old_id);
+    $soModel->load();
+    // update ID, status
+    $soModel->specialOrderID($new_id);
+    $soModel->statusFlag( ($st == 1) ? 3 : 0 );
+    $soModel->subStatus($timestamp);
+    // save with the new ID
+    $soModel->save();
+    $dbc = FannieDB::get($FANNIE_OP_DB);
+
 	$stP = $dbc->prepare_statement("UPDATE {$TRANS}SpecialOrderStatus SET status_flag=?,sub_status=?
 		WHERE order_id=?");
 	if ($st == 1) {
@@ -774,6 +775,10 @@ function createEmptyOrder()
 	$dbc->query('INSERT ' . $TRANS . 'SpecialOrders ' . $values);
 	$orderID = $dbc->insert_id();
 
+    /**
+      @deprecated 24Apr14
+      New SpecialOrders table is standard now
+    */
     $soP = $dbc->prepare('INSERT INTO ' . $TRANS . 'SpecialOrderID (id) VALUES (?)');
     $soR = $dbc->execute($soP, array($orderID));
 
