@@ -136,5 +136,43 @@ class FormLib
         return self::dateRangePicker($one, $two, $week_start);
     }
 
+    /**
+      Get <select> box for the store ID
+      @param $field_name [string] select.name (default 'store')
+      @return keyed [array]
+        - html => [string] select box
+        - names => [array] store names
+    */
+    public static function storePicker($field_name='store')
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB, $previous);
+
+        $stores = new StoresModel($dbc);
+        $current = FormLib::get($field_name, 0);
+        $labels = array(0 => _('All Stores'));
+        $ret = '<select name="' . $field_name . '">';
+        $ret .= '<option value="0">' . $labels[0] . '</option>';
+        foreach($stores->find('storeID') as $store) {
+            $ret .= sprintf('<option %s value="%d">%s</option>',
+                    ($store->storeID() == $current ? 'selected' : ''),
+                    $store->storeID(),
+                    $store->description()
+            );
+            $labels[$store->storeID()] = $store->description();
+        }
+        $ret .= '</select>';
+
+        // restore previous selected database
+        if ($previous != $FANNIE_OP_DB) {
+            FannieDB::get($previous);
+        }
+
+        return array(
+            'html' => $ret,
+            'names' => $labels, 
+        );
+    }
+
 }
 

@@ -167,6 +167,24 @@ class DTrans
     }
 
     /**
+      Get SQL condition to select transactions with
+      the given store ID. Store ID must be passed to the
+      resulting prepared statement as an argument
+    */
+    public static function isStoreID($store_id, $prefix='')
+    {
+        if (!empty($prefix)) {
+            $prefix = $prefix . '.';
+        }
+        
+        if ($store_id == 0) {
+            return ' (0 = ?) ';    
+        } else {
+            return ' (' . $prefix . 'store_id = ?) ';
+        }
+    }
+
+    /**
       Get standard quantity sum. Member-discount line items
       are excluded and quasi-scalabe items with a unitPrice
       of a penny are counted as one instead of whatever value
