@@ -61,6 +61,9 @@ class PullRemoteTransactionsTask extends FannieTask
             if ($store->dbHost() == $FANNIE_SERVER) {
                 // that's me! just continue.
                 continue;
+            } else if ($store->pull() == 0) {
+                // configured not to pull from this store
+                continue;
             }
 
             $remoteID = $store->storeID();
@@ -95,8 +98,6 @@ class PullRemoteTransactionsTask extends FannieTask
                         FROM dtransactions
                         WHERE store_id = ' . ((int)$store->storeID()) . '
                             AND store_row_id > ' . ((int)$lowerBound);
-            echo $this->cronMsg($selectQ);
-            break;
             $insertQ = 'INSERT INTO ' . $local_dtrans . ' (' . $columns . ')';
             
             // note:

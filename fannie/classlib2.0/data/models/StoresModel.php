@@ -38,6 +38,8 @@ class StoresModel extends BasicModel
     'dbPassword' => array('type'=>'VARCHAR(25)'),
     'transDB' => array('type'=>'VARCHAR(20)'),
     'opDB' => array('type'=>'VARCHAR(20)'),
+    'push' => array('type'=>'TINYINT', 'default'=>1),
+    'pull' => array('type'=>'TINYINT', 'default'=>1),
 	);
 
     /* START ACCESSOR FUNCTIONS */
@@ -199,6 +201,46 @@ class StoresModel extends BasicModel
                 }
             }
             $this->instance["opDB"] = func_get_arg(0);
+        }
+    }
+
+    public function push()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["push"])) {
+                return $this->instance["push"];
+            } else if (isset($this->columns["push"]["default"])) {
+                return $this->columns["push"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["push"]) || $this->instance["push"] != func_get_args(0)) {
+                if (!isset($this->columns["push"]["ignore_updates"]) || $this->columns["push"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["push"] = func_get_arg(0);
+        }
+    }
+
+    public function pull()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["pull"])) {
+                return $this->instance["pull"];
+            } else if (isset($this->columns["pull"]["default"])) {
+                return $this->columns["pull"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["pull"]) || $this->instance["pull"] != func_get_args(0)) {
+                if (!isset($this->columns["pull"]["ignore_updates"]) || $this->columns["pull"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["pull"] = func_get_arg(0);
         }
     }
     /* END ACCESSOR FUNCTIONS */

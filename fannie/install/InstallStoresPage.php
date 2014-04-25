@@ -74,6 +74,8 @@ class InstallStoresPage extends InstallPage {
             $passwords = FormLib::get('storePass', array());
             $op_dbs = FormLib::get('storeOp', array());
             $trans_dbs = FormLib::get('storeTrans', array());
+            $push = FormLib::get('storePush', array());
+            $pull = FormLib::get('storePull', array());
 
             for($i=0; $i<count($ids); $i++) {
                 $model->reset();
@@ -85,6 +87,8 @@ class InstallStoresPage extends InstallPage {
                 $model->dbPassword( isset($passwords[$i]) ? $passwords[$i] : '' );
                 $model->opDB( isset($op_dbs[$i]) ? $op_dbs[$i] : '' );
                 $model->transDB( isset($trans_dbs[$i]) ? $trans_dbs[$i] : '' );
+                $model->push( in_array($ids[$i], $push) ? 1 : 0 );
+                $model->pull( in_array($ids[$i], $pull) ? 1 : 0 );
                 $model->save();
             }
 
@@ -186,6 +190,8 @@ if (extension_loaded('mssql'))
     <th>Driver</th><th>Username</th><th>Password</th>
     <th>Operational DB</th>
     <th>Transaction DB</th>
+    <th>Push</th>
+    <th>Pull</th>
     <th>Delete Entry</th>
 </tr>
 <?php foreach($model->find('storeID') as $store) {
@@ -209,12 +215,16 @@ if (extension_loaded('mssql'))
             <td><input type="password" size="10" name="storePass[]" value="%s" /></td>
             <td><input type="text" size="10" name="storeOp[]" value="%s" /></td>
             <td><input type="text" size="10" name="storeTrans[]" value="%s" /></td>
+            <td><input type="checkbox" name="storePush[]" value="%d" %s /></td>
+            <td><input type="checkbox" name="storePull[]" value="%d" %s /></td>
             <td><input type="checkbox" name="storeDelete[]" value="%d" /></td>
             </tr>',
             $store->dbUser(),
             $store->dbPassword(),
             $store->opDB(),
             $store->transDB(),
+            $store->storeID(), ($store->push() ? 'checked' : ''),
+            $store->storeID(), ($store->pull() ? 'checked' : ''),
             $store->storeID()
     );
 

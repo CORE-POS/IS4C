@@ -11,6 +11,8 @@ Columns:
     dbPassword VARCHAR(25)
     transDB VARCHAR(20)
     opDB VARCHAR(20)
+    push int
+    pull int
 
 Depends on:
     none
@@ -39,6 +41,8 @@ $CREATE['op.Stores'] = "
         dbPassword VARCHAR(25),
         transDB VARCHAR(20),
         opDB VARCHAR(20),
+        push TINYINT DEFAULT 1,
+        pull TINYINT DEFAULT 1,
 		PRIMARY KEY (storeID)
 	)
 ";
