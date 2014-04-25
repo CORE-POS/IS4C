@@ -214,7 +214,7 @@ class FannieRESTfulPage extends FanniePage {
       Draw default page for unknown HTTP method
       @return HTML string
     */
-    protected function unknownRquestView()
+    protected function unknownRequestView()
     {
         return 'HTTP 400 - Bad Request';
     }
