@@ -388,6 +388,28 @@ class MercuryGift extends BasicCCModule {
 			return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); // internal error, nothing sent (ok to retry)
 		}
 
+		// assemble and send request
+		$authMethod = "";
+        $logged_mode = $mode;
+		switch( $mode) {
+            case 'tender':
+                $authMethod = 'NoNSFSale';  
+                $logged_mode = 'Sale';
+                break;
+            case 'refund':
+                $authMethod = 'Return';
+                $logged_mode = 'Return';
+                break;
+            case 'addvalue':
+                $authMethod = 'Reload';
+                $logged_mode = 'Reload';
+                break;
+            case 'activate':
+                $authMethod = 'Issue';
+                $logged_mode = 'Issue';
+                break;
+		}
+
         /**
           Log transaction in newer table
         */
@@ -401,7 +423,7 @@ class MercuryGift extends BasicCCModule {
                         '%s',     '%s',    %d,   '%s',     '%s',
                         %.2f,  '%s', '%s',  '%s',  %d,     '%s')",
                         $today, $cashierNo, $laneNo, $transNo, $transID,
-                        'MercuryGift', $identifier, $live, 'Gift', $mode,
+                        'MercuryGift', $identifier, $live, 'Gift', $logged_mode,
                         $amountText, $cardPAN,
                         'Mercury', 'Cardholder', $manual, $now);
             $insR = $dbTrans->query($insQ);
@@ -411,15 +433,6 @@ class MercuryGift extends BasicCCModule {
                 $this->last_paycard_transaction_id = 0;
             }
         }
-                
-		// assemble and send request
-		$authMethod = "";
-		switch( $mode) {
-		case 'tender':    $authMethod = 'NoNSFSale';  break;
-		case 'refund':	  $authMethod = 'Return'; break;
-		case 'addvalue':  $authMethod = 'Reload';  break;
-		case 'activate':  $authMethod = 'Issue';  break;
-		}
 
 		$msgXml = "<?xml version=\"1.0\"".'?'.">
 			<TStream>

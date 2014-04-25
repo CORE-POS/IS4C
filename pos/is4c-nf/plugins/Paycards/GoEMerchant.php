@@ -35,9 +35,6 @@ if (!class_exists("AutoLoader")) include_once(realpath(dirname(__FILE__).'/../..
 define('GOEMERCH_ID','');
 define('GOEMERCH_PASSWD','');
 define('GOEMERCH_GATEWAY_ID','');
-// True - settle transactions immediately
-// False - just get authorizations. MUST SETTLE MANUALLY LATER!
-define('GOEMERCH_SETTLE_IMMEDIATE',True);
 
 /* test credentials 
 define('GOEMERCH_ID','1264');
@@ -645,8 +642,8 @@ class GoEMerchant extends BasicCCModule {
 		$amount = $CORE_LOCAL->get("paycard_amount");
 		$amountText = number_format(abs($amount), 2, '.', '');
 		$mode = (($amount < 0) ? 'retail_alone_credit' : 'retail_sale');
-		if ($mode == 'retail_sale' && !GOEMERCH_SETTLE_IMMEDIATE)
-			$mode = 'retail_auth';
+        // standardize transaction type for PaycardTransactions
+        $logged_mode = ($mode == 'retail_sale') ? 'Sale' : 'Return';
 		$manual = ($CORE_LOCAL->get("paycard_manual") ? 1 : 0);
 		$this->trans_pan['pan'] = $CORE_LOCAL->get("paycard_PAN");
 		$cardPAN = $this->trans_pan['pan'];
@@ -741,7 +738,7 @@ class GoEMerchant extends BasicCCModule {
                         '%s',     '%s',    %d,   '%s',     '%s',
                         %.2f,  '%s', '%s',  '%s',  %d,     '%s')",
                         $today, $cashierNo, $laneNo, $transNo, $transID,
-                        'GoEMerchant', $refNum, $live, 'Credit', $mode,
+                        'GoEMerchant', $refNum, $live, 'Credit', $logged_mode,
                         $amountText, $cardPANmasked,
                         $cardIssuer, $fixedName, $manual, $now);
             $insR = $dbTrans->query($insQ);

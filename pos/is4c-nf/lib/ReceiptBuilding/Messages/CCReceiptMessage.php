@@ -68,6 +68,30 @@ class CCReceiptMessage extends ReceiptMessage {
 			." and cashierNo = ".$emp." and laneNo = ".$reg
 			." and transNo = ".$trans ." ".$idclause
 			." order by datetime $sort, transID DESC";
+
+        if ($db->table_exists('PaycardTransactions')) {
+            $trans_type = $db->concat('p.cardType', "' '", 'p.transType', '');
+
+            $query = "SELECT $trans_type AS transType,
+                        CASE WHEN p.transType = 'Return' THEN -1*p.amount ELSE p.amount END as amount,
+                        p.PAN,
+                        CASE WHEN p.manual=1 THEN 'Manual' ELSE 'Swiped' END as entryMethod,
+                        p.issuer,
+                        p.xResultMessage,
+                        p.xApprovalNumber,
+                        p.xTransactionID,
+                        p.name,
+                        p.requestDatetime AS datetime
+                      FROM PaycardTransactions AS p
+                      WHERE dateID=" . date('Ymd') . "
+                        AND empNo=" . $emp . "
+                        AND registerNo=" . $reg . "
+                        AND transNo=" . $trans . $idclause . "
+                        AND p.validResponse=1
+                        AND (p.xResultMessage LIKE '%APPROVE%' OR p.xResultMessage LIKE '%PENDING%')
+                      ORDER BY p.requestDatetime";
+        }
+
 		$result = $db->query($query);
 		
 		while($row = $db->fetch_array($result)){
