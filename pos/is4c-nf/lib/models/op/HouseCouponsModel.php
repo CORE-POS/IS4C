@@ -33,6 +33,7 @@ class HouseCouponsModel extends BasicModel
     protected $columns = array(
     'coupID' => array('type'=>'INT', 'primary_key'=>true),
     'description' => array('type'=>'VARCHAR(30)'),
+    'startDate' => array('type'=>'DATETIME'),
     'endDate' => array('type'=>'DATETIME'),
     'limit' => array('type'=>'SMALLINT'),
     'memberOnly' => array('type'=>'SMALLINT'),
@@ -41,6 +42,7 @@ class HouseCouponsModel extends BasicModel
     'minType' => array('type'=>'VARCHAR(2)'),
     'minValue' => array('type'=>'MONEY'),
     'department' => array('type'=>'INT'),
+    'auto' => array('type'=>'TINYINT', 'default'=>0),
 	);
 
     /* START ACCESSOR FUNCTIONS */
@@ -57,6 +59,36 @@ class HouseCouponsModel extends BasicModel
             }
         } else {
             $this->instance["coupID"] = func_get_arg(0);
+        }
+    }
+
+    public function description()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["description"])) {
+                return $this->instance["description"];
+            } elseif(isset($this->columns["description"]["default"])) {
+                return $this->columns["description"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["description"] = func_get_arg(0);
+        }
+    }
+
+    public function startDate()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["startDate"])) {
+                return $this->instance["startDate"];
+            } elseif(isset($this->columns["startDate"]["default"])) {
+                return $this->columns["startDate"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["startDate"] = func_get_arg(0);
         }
     }
 
@@ -177,6 +209,21 @@ class HouseCouponsModel extends BasicModel
             }
         } else {
             $this->instance["department"] = func_get_arg(0);
+        }
+    }
+
+    public function auto()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["auto"])) {
+                return $this->instance["auto"];
+            } elseif(isset($this->columns["auto"]["default"])) {
+                return $this->columns["auto"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["auto"] = func_get_arg(0);
         }
     }
     /* END ACCESSOR FUNCTIONS */

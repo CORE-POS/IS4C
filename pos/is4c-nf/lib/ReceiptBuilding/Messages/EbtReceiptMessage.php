@@ -63,6 +63,35 @@ class EbtReceiptMessage extends ReceiptMessage {
                         AND q.date=" . date('Ymd') . "
                         AND q.transNo=" . ((int)$trans) . "
                     ORDER BY q.refNum, q.datetime";;
+
+        /**
+          Temp disabled 30Apr14
+          Not tested yet but I don't want to delay the next release
+          Andy
+        */
+        if (false && $db->table_exists('PaycardTransactions')) {
+            $trans_type = $db->concat('p.cardType', "' '", 'p.transType', '');
+
+            $query = "SELECT p.amount,
+                        p.name,
+                        p.PAN,
+                        p.refNum,
+                        $trans_type AS ebtMode,
+                        p.xResultMessage,
+                        p.xTransactionID,
+                        p.xBalance,
+                        p.requestDatetime AS datetime
+                      FROM PaycardTransactions AS p
+                      WHERE dateID=" . date('Ymd') . "
+                        AND empNo=" . $emp . "
+                        AND registerNo=" . $reg . "
+                        AND transNo=" . $trans . "
+                        AND p.validResponse=1
+                        AND p.xResultMessage LIKE '%APPROVE%'
+                        AND p.cardType LIKE 'EBT%'
+                      ORDER BY p.requestDatetime";
+        }
+
 		$result = $db->query($query);
         $prevRefNum = false;
 		while($row = $db->fetch_row($result)) {

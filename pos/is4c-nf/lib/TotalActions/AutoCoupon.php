@@ -39,15 +39,30 @@ class AutoCoupon extends TotalAction
     {
         global $CORE_LOCAL;
         $db = Database::pDataConnect();
-        $coupons = $db->query('SELECT coupID, description FROM autoCoupons');
+
+        $coupons = array();
+        $hc_table = $db->table_definition('houseCoupons');
+        if ($db->table_exists('autoCoupons')) {
+            $autoR = $db->query('SELECT coupID, description FROM autoCoupons');
+            while($autoW = $db->fetch_row($autoR)) {
+                $coupons[$autoW['coupID']] = $autoW['description'];
+            }
+        }
+        if (isset($hc_table['description']) && isset($hc_table['auto'])) {
+            $autoR = $db->query('SELECT coupID, description FROM houseCoupons WHERE auto=1');
+            while($autoW = $db->fetch_row($autoR)) {
+                $coupons[$autoW['coupID']] = $autoW['description'];
+            }
+        }
+
         $hc = new HouseCoupon();
         $prefix = $CORE_LOCAL->get('houseCouponPrefix');
         if ($prefix == '') {
             $prefix = '00499999';
         }
 
-        while($coupon = $db->fetch_row($coupons)) {
-            $id = $coupon['coupID'];
+        foreach($coupons as $id => $description) {
+
             if ($hc->checkQualifications($id) !== true) {
                 // member or transaction does not meet requirements
                 // for auto-coupon purposes, this isn't really an 
@@ -76,7 +91,7 @@ class AutoCoupon extends TotalAction
                 continue;
             }
 
-            TransRecord::addhousecoupon($upc, $add['department'], -1 * $next_val, $coupon['description']);
+            TransRecord::addhousecoupon($upc, $add['department'], -1 * $next_val, $description);
         }
 
         return true;

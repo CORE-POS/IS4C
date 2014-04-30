@@ -344,11 +344,12 @@ static public function testremote()
   Copy tables from the lane to the remote server
   The following tables are copied:
    - dtransactions
-   - alog
    - suspended
    - efsnetRequest
    - efsnetResponse
    - efsnetRequestMod
+   - efsnetTokens
+   - CapturedSignature
 
   On success the local tables are truncated. The efsnet tables
   are copied in the uploadCCdata() function but that gets called 
@@ -390,26 +391,6 @@ static public function uploadtoServer()
         $connect->query("DELETE FROM dtransactions",
             $CORE_LOCAL->get("tDatabase"));
 
-        /* alog deprecated
-        $al_matches = self::getMatchingColumns($connect,"alog");
-        // interval is a mysql reserved word
-        // so it needs to be escaped
-        $local_columns = str_replace('Interval',
-                    $connect->identifier_escape('Interval',$CORE_LOCAL->get('tDatabase')),
-                    $al_matches);
-        $server_columns = str_replace('Interval',
-                    $connect->identifier_escape('Interval',$CORE_LOCAL->get('mDatabase')),
-                    $al_matches);
-        $al_success = $connect->transfer($CORE_LOCAL->get("tDatabase"),
-            "select $local_columns FROM alog",
-            $CORE_LOCAL->get("mDatabase"),
-            "insert into alog ($server_columns)");
-        if ($al_success) {
-            $connect->query("truncate table alog",
-                $CORE_LOCAL->get("tDatabase"));
-        }
-        */
-
         $su_matches = self::getMatchingColumns($connect,"suspended");
         $su_success = $connect->transfer($CORE_LOCAL->get("tDatabase"),
             "select {$su_matches} from suspended",
@@ -419,18 +400,22 @@ static public function uploadtoServer()
         if ($su_success) {
             $connect->query("truncate table suspended",
                 $CORE_LOCAL->get("tDatabase"));
+            $uploaded = 1;
+            $CORE_LOCAL->set("standalone",0);
+        } else {
+            $uploaded = 0;
+            $CORE_LOCAL->set("standalone",1);
         }
 
-        $uploaded = 1;
-        $CORE_LOCAL->set("standalone",0);
     } else {
         $uploaded = 0;
         $CORE_LOCAL->set("standalone",1);
     }
 
-    $connect->close($CORE_LOCAL->get("mDatabase"),True);
-
-    self::uploadCCdata();
+    if (!self::uploadCCdata()) {
+        $uploaded = 0;
+        $CORE_LOCAL->set("standalone",1);
+    }
 
     return $uploaded;
 }
@@ -577,7 +562,7 @@ static public function uploadCCdata()
         // if integrated card processing is not in use,
         // this is not an important enough error to go
         // to standalone. 
-        $ret = false;
+        $ret = true;
     }
 
     if ($sql->table_exists('CapturedSignature')) {
@@ -589,6 +574,25 @@ static public function uploadCCdata()
         if ($sig_success) {
             $sql->query("truncate table CapturedSignature",
                 $CORE_LOCAL->get("tDatabase"));
+        } else {
+            // transfer failure
+            $ret = false;
+        }
+    }
+
+    // newer paycard transactions table
+    if ($sql->table_exists('PaycardTransactions')) {
+        $ptrans_cols = self::getMatchingColumns($sql, 'PaycardTransactions');
+        $ptrans_success = $sql->transfer($CORE_LOCAL->get('tDatabase'),
+                                         "SELECT {$ptrans_cols} FROM PaycardTransactions",
+                                         $CORE_LOCAL->get('mDatabase'),
+                                         "INSERT INTO PaycardTransactions ($ptrans_cols)"
+        );
+        if ($ptrans_success) {
+            $sql->query('DELETE FROM PaycardTransactions', $CORE_LOCAL->get('tDatabase'));
+        } else {
+            // transfer failure
+            $ret = false;
         }
     }
 

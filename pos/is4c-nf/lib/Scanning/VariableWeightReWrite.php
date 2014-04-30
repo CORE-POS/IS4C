@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2012 Whole Foods Co-op
+    Copyright 2014 Whole Foods Co-op
 
     This file is part of IT CORE.
 
@@ -22,39 +22,18 @@
 *********************************************************************************/
 
 /**
-  @class WFC_Kicker
-  Opens drawer for cash, credit card over $25,
-  credit card refunds, and stamp sales
+  @class VariableWeightReWrite
+
+  This class is for handling variable weight
+  items (UPC prefix '2') that need to be mapped
+  back to a single product record
+
 */
-class WFC_Kicker extends Kicker 
+class VariableWeightReWrite 
 {
-
-    public function doKick()
+    public function translate($upc, $includes_check_digit=false)
     {
-        global $CORE_LOCAL;
-        $db = Database::tDataConnect();
-
-        $query = "select trans_id from localtemptrans where 
-            (trans_subtype = 'CA' and total <> 0) or 
-            upc='0000000001065'";
-
-        $result = $db->query($query);
-        $num_rows = $db->num_rows($result);
-
-        $ret = ($num_rows > 0) ? true : false;
-
-        // use session to override default behavior
-        // based on specific cashier actions rather
-        // than transaction state
-        $override = $CORE_LOCAL->get('kickOverride');
-        $CORE_LOCAL->set('kickOverride',false);
-        if ($override === true) $ret = true;
-
-        return $ret;
-    }
-
-    public function kickOnSignIn() {
-        return false;
+        return $upc;
     }
 }
 

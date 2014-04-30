@@ -36,20 +36,8 @@ class CreditCardTender extends TenderModule
     {
         global $CORE_LOCAL;
         
-        //force negative entered value when the total is negative.
-        if ($CORE_LOCAL->get("amtdue") <0 && $this->amount >= 0){
-            $this->amount = -1 * $this->amount;
-        }
-
-        if (($this->amount > ($CORE_LOCAL->get("amtdue") + 0.005)) && $CORE_LOCAL->get("amtdue") >= 0){ 
+        if (($this->amount > ($CORE_LOCAL->get("amtdue") + 0.005)) && $CORE_LOCAL->get("amtdue") >= 0) { 
             return DisplayLib::xboxMsg(_("tender cannot exceed purchase amount"));
-        } elseif ((($this->amount < ($CORE_LOCAL->get("amtdue") - 0.005)) || ($this->amount > ($CORE_LOCAL->get("amtdue") + 0.005)))
-                     && $CORE_LOCAL->get("amtdue") < 0 
-                     && $this->amount !=0) {
-            // the return tender needs to be exact because the transaction state can get weird.
-            return DisplayLib::xboxMsg(_("return tender must be exact"));
-        } elseif($CORE_LOCAL->get("amtdue")>0 && $this->amount < 0) {
-            return DisplayLib::xboxMsg(_("Why are you useing a negative number?"));
         }
 
         return true;

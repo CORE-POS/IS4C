@@ -322,7 +322,8 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         SendReport(BuildCommand(LcdTextColor(0,0,0)));
         SendReport(BuildCommand(LcdTextBackgroundColor(0xff,0xff,0xff)));
         SendReport(BuildCommand(LcdTextBackgroundMode(false)));
-        SendReport(BuildCommand(LcdDrawText("approved",75,100)));
+        SendReport(BuildCommand(LcdDrawText("approved",95,80)));
+        SendReport(BuildCommand(LcdDrawText("thank you",90,120)));
     }
 
     private void SetStateGetSignature(){
@@ -343,6 +344,14 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         SendReport(BuildCommand(LcdStartCapture(5)));
 
         current_state = STATE_GET_SIGNATURE;
+    }
+
+    private void RemoveSignatureButtons(){
+        SendReport(BuildCommand(LcdFillColor(0xff,0xff,0xff)));
+        SendReport(BuildCommand(LcdFillRectangle(0,145,LCD_X_RES-1,LCD_Y_RES-1)));
+        SendReport(BuildCommand(LcdTextFont(3,12,14)));
+        SendReport(BuildCommand(LcdTextColor(0,0,0)));
+        SendReport(BuildCommand(LcdDrawText("approved - thank you",40,155)));
     }
 
     private void SetStateGetManualPan(){
@@ -627,13 +636,13 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
                     SendReport(BuildCommand(LcdClearSignature()));
                 }
                 else if (msg[1] == BUTTON_SIG_ACCEPT){
+                    RemoveSignatureButtons();
                     SendReport(BuildCommand(LcdGetBitmapSig()));
                 }
             }
             else if (msg.Length > 1024){
                 BitmapOutput(msg);
                 sig_message = "";
-                SetStateStart();
             }
             break;
         case STATE_MANUAL_PAN:

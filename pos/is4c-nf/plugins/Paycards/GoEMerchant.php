@@ -35,9 +35,6 @@ if (!class_exists("AutoLoader")) include_once(realpath(dirname(__FILE__).'/../..
 define('GOEMERCH_ID','');
 define('GOEMERCH_PASSWD','');
 define('GOEMERCH_GATEWAY_ID','');
-// True - settle transactions immediately
-// False - just get authorizations. MUST SETTLE MANUALLY LATER!
-define('GOEMERCH_SETTLE_IMMEDIATE',True);
 
 /* test credentials 
 define('GOEMERCH_ID','1264');
@@ -379,6 +376,45 @@ class GoEMerchant extends BasicCCModule {
 		$sql = "INSERT INTO efsnetResponse (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
 		PaycardLib::paycard_db_query($sql, $dbTrans);
 
+        /**
+          Log transaction in newer table
+        */
+        if ($dbTrans->table_exists('PaycardTransactions')) {
+            $normalized = ($validResponse == 0) ? 4 : 0;
+            if ($resultCode == 1) {
+                $normalized = 1;
+            } else if ($resultCode == 2) {
+                $normalized = 2;
+            } else if ($resultCode == 0) {
+                $normalized = 3;
+            }
+            $finishQ = sprintf("UPDATE PaycardTransactions
+                                SET responseDatetime='%s',
+                                    seconds=%f,
+                                    commErr=%d,
+                                    httpCode=%d,
+                                    validResponse=%d,
+                                    xResultCode=%d,
+                                    xApprovalNumber='%s',
+                                    xResponseCode=%d,
+                                    xResultMessage='%s',
+                                    xTransactionID='%s'
+                                WHERE paycardTransactionID=%d",
+                                $now,
+                                $authResult['curlTime'],
+                                $authResult['curlErr'],
+                                $authResult['curlHTTP'],
+                                $normalized,
+                                $responseCode,
+                                $apprNumber,
+                                $resultCode,
+                                $rMsg,
+                                $xTransID,
+                                $this->last_paycard_transaction_id
+            );
+            $dbTrans->query($finishQ);
+        }
+
 		if( $authResult['curlErr'] != CURLE_OK || $authResult['curlHTTP'] != 200){
 			TransRecord::addcomment("");	
 			if ($authResult['curlHTTP'] == '0'){
@@ -471,6 +507,38 @@ class GoEMerchant extends BasicCCModule {
 		$sql = "INSERT INTO efsnetRequestMod (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
 		PaycardLib::paycard_db_query($sql, $dbTrans);
 
+        if ($dbTrans->table_exists('PaycardTransactions')) {
+            $normalized = ($validResponse == 0) ? 4 : 0;
+            if ($resultCode == 1) {
+                $normalized = 1;
+            } else if ($resultCode == 2) {
+                $normalized = 2;
+            } else if ($resultCode == 0) {
+                $normalized = 3;
+            }
+            $finishQ = sprintf("UPDATE PaycardTransactions
+                                SET responseDatetime='%s',
+                                    seconds=%f,
+                                    commErr=%d,
+                                    httpCode=%d,
+                                    validResponse=%d,
+                                    xResultCode=%d,
+                                    xResponseCode=%d,
+                                    xResultMessage='%s'
+                                WHERE paycardTransactionID=%d",
+                                $now,
+                                $authResult['curlTime'],
+                                $authResult['curlErr'],
+                                $authResult['curlHTTP'],
+                                $normalized,
+                                $responseCode,
+                                $resultCode,
+                                $rMsg,
+                                $this->last_paycard_transaction_id
+            );
+            $dbTrans->query($finishQ);
+        }
+
 		if( $authResult['curlErr'] != CURLE_OK || $authResult['curlHTTP'] != 200){
 			if ($authResult['curlHTTP'] == '0'){
 				$CORE_LOCAL->set("boxMsg","No response from processor<br />
@@ -512,9 +580,22 @@ class GoEMerchant extends BasicCCModule {
             $record_id = $this->last_req_id;
             $charflag = ($record_id != 0) ? 'RQ' : '';
 			TransRecord::addFlaggedTender("Credit Card", $t_type, $amt, $record_id, $charflag);
-			$CORE_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>Please verify cardholder signature<p>[enter] to continue<br>\"rp\" to reprint slip<br>[void] to cancel and void</font>");
+            $CORE_LOCAL->set("boxMsg",
+                    "<b>Approved</b>
+                    <font size=-1>
+                    <p>Please verify cardholder signature
+                    <p>[enter] to continue
+                    <br>\"rp\" to reprint slip
+                    <br>[void] " . _('to reverse the charge') . "
+                    </font>");
 			if ($CORE_LOCAL->get("paycard_amount") <= $CORE_LOCAL->get("CCSigLimit") && $CORE_LOCAL->get("paycard_amount") >= 0) {
-				$CORE_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>No signature required<p>[enter] to continue<br>[void] to cancel and void</font>");
+				$CORE_LOCAL->set("boxMsg",
+                        "<b>Approved</b>
+                        <font size=-1>
+                        <p>No signature required
+                        <p>[enter] to continue
+                        <br>[void] " . _('to reverse the charge') . "
+                        </font>");
             } else if ($CORE_LOCAL->get('PaycardsSigCapture') != 1) {
                 $json['receipt'] = 'ccSlip';
             }
@@ -561,8 +642,8 @@ class GoEMerchant extends BasicCCModule {
 		$amount = $CORE_LOCAL->get("paycard_amount");
 		$amountText = number_format(abs($amount), 2, '.', '');
 		$mode = (($amount < 0) ? 'retail_alone_credit' : 'retail_sale');
-		if ($mode == 'retail_sale' && !GOEMERCH_SETTLE_IMMEDIATE)
-			$mode = 'retail_auth';
+        // standardize transaction type for PaycardTransactions
+        $logged_mode = ($mode == 'retail_sale') ? 'Sale' : 'Return';
 		$manual = ($CORE_LOCAL->get("paycard_manual") ? 1 : 0);
 		$this->trans_pan['pan'] = $CORE_LOCAL->get("paycard_PAN");
 		$cardPAN = $this->trans_pan['pan'];
@@ -644,6 +725,30 @@ class GoEMerchant extends BasicCCModule {
             $this->last_req_id = $dbTrans->insert_id();
         }
 
+        /**
+          Log transaction in newer table
+        */
+        if ($dbTrans->table_exists('PaycardTransactions')) {
+            $insQ = sprintf("INSERT INTO PaycardTransactions (
+                        dateID, empNo, registerNo, transNo, transID,
+                        processor, refNum, live, cardType, transType,
+                        amount, PAN, issuer, name, manual, requestDateTime)
+                     VALUES (
+                        %d,     %d,    %d,         %d,      %d,
+                        '%s',     '%s',    %d,   '%s',     '%s',
+                        %.2f,  '%s', '%s',  '%s',  %d,     '%s')",
+                        $today, $cashierNo, $laneNo, $transNo, $transID,
+                        'GoEMerchant', $refNum, $live, 'Credit', $logged_mode,
+                        $amountText, $cardPANmasked,
+                        $cardIssuer, $fixedName, $manual, $now);
+            $insR = $dbTrans->query($insQ);
+            if ($insR) {
+                $this->last_paycard_transaction_id = $dbTrans->insert_id();
+            } else {
+                $this->last_paycard_transaction_id = 0;
+            }
+        }
+
 		$xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 		$xml .= "<TRANSACTION>";
 		$xml .= "<FIELDS>";
@@ -703,8 +808,6 @@ class GoEMerchant extends BasicCCModule {
 		$cardIssuer = $CORE_LOCAL->get("paycard_issuer");
 		$cardExM = substr($CORE_LOCAL->get("paycard_exp"),0,2);
 		$cardExY = substr($CORE_LOCAL->get("paycard_exp"),2,2);
-		$cardTr1 = $this->trans_pan['tr1'];
-		$cardTr2 = $this->trans_pan['tr2'];
 		$cardName = $CORE_LOCAL->get("paycard_name");
 		$refNum = $this->refnum($transID);
 		$live = 1;
@@ -742,6 +845,34 @@ class GoEMerchant extends BasicCCModule {
 		}
 		$res = PaycardLib::paycard_db_fetch_row($result);
 		$TransactionID = $res['xTransactionID'];
+
+        /**
+          populate a void record in PaycardTransactions
+        */
+        if ($dbTrans->table_exists('PaycardTransactions')) {
+            $initQ = "INSERT INTO PaycardTransactions (
+                        dateID, empNo, registerNo, transNo, transID,
+                        previousPaycardTransactionID, processor, refNum,
+                        live, cardType, transType, amount, PAN, issuer,
+                        name, manual, requestDateTime)
+                      SELECT dateID, empNo, registerNo, transNo, transID,
+                        paycardTransactionID, processor, refNum,
+                        live, cardType, 'VOID', amount, PAN, issuer,
+                        name, manual, " . $dbTrans->now() . "
+                      FROM PaycardTransactions
+                      WHERE
+                        dateID=" . $today . "
+                        AND empNo=" . $cashierNo . "
+                        AND registerNo=" . $laneNo . "
+                        AND transNo=" . $transNo . "
+                        AND transID=" . $transID;
+            $initR = $dbTrans->query($initQ);
+            if ($initR) {
+                $this->last_paycard_transaction_id = $dbTrans->insert_id();
+            } else {
+                $this->last_paycard_transaction_id = 0;
+            }
+        }
 
 		$xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 		$xml .= "<TRANSACTION>";

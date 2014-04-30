@@ -1405,7 +1405,7 @@ class SQLManager
         }
         switch($this->db_types[$which_connection]) {
             case $this->TYPE_MYSQL:
-                return mysql_real_escape_string($str);
+                return mysql_real_escape_string($str,$this->connections[$which_connection]);
             case $this->TYPE_MSSQL:
                 return str_replace("'","''",$str);
             case $this->TYPE_PDOMY:

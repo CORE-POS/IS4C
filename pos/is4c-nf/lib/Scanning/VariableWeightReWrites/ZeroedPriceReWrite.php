@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2012 Whole Foods Co-op
+    Copyright 2014 Whole Foods Co-op
 
     This file is part of IT CORE.
 
@@ -22,39 +22,29 @@
 *********************************************************************************/
 
 /**
-  @class WFC_Kicker
-  Opens drawer for cash, credit card over $25,
-  credit card refunds, and stamp sales
+  @class ZeroedPriceReWrite
+
+  Replaces the price portion of the UPC
+  with zeros.
+
+  Ex:
+  0021234500199 beomces 0021234500000
+
+  Note: if using check digits, the check digit
+  is also zeroed out rather than re-calculating
+  the correct value for the zero-price UPC.
 */
-class WFC_Kicker extends Kicker 
+class ZeroedPriceReWrite extends VariableWeightReWrite 
 {
-
-    public function doKick()
+    public function translate($upc, $includes_check_digit=false)
     {
-        global $CORE_LOCAL;
-        $db = Database::tDataConnect();
-
-        $query = "select trans_id from localtemptrans where 
-            (trans_subtype = 'CA' and total <> 0) or 
-            upc='0000000001065'";
-
-        $result = $db->query($query);
-        $num_rows = $db->num_rows($result);
-
-        $ret = ($num_rows > 0) ? true : false;
-
-        // use session to override default behavior
-        // based on specific cashier actions rather
-        // than transaction state
-        $override = $CORE_LOCAL->get('kickOverride');
-        $CORE_LOCAL->set('kickOverride',false);
-        if ($override === true) $ret = true;
-
-        return $ret;
-    }
-
-    public function kickOnSignIn() {
-        return false;
+        if ($includes_check_digit) {
+            // 02 + 5 digit item number + 000000
+            return substr($upc, 0, 7) . '000000';
+        } else {
+            // 002 + 5 digit item number + 00000
+            return substr($upc, 0, 8) . '00000';
+        }
     }
 }
 

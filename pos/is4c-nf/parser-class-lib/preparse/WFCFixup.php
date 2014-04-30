@@ -26,6 +26,7 @@ class WFCFixup extends PreParser {
 	
 	function check($str){
 		global $CORE_LOCAL;
+        $as_upc = str_pad($str, 13, '0', STR_PAD_LEFT);
 		if (substr($str,-3) == "QK9"){
 			$this->remainder = str_replace("QK9","QM9",$str);
 			return True;
@@ -39,6 +40,9 @@ class WFCFixup extends PreParser {
         } else if ($str == 'MA' || $str == 'OB') {
             // re-write old WFC quarterly coupon as houseCoupon UPC
             $this->remainder = '0049999900001';
+            return true;
+        } else if (($as_upc == '0000000001112' || $as_upc == '0000000001113') && $CORE_LOCAL->get('msgrepeat') == 0) {
+            $this->remainder = 'QM708';
             return true;
         }
 		return False;

@@ -52,6 +52,7 @@ class BasicCCModule {
 
     public $last_ref_num = '';
     public $last_req_id = 0;
+    public $last_paycard_transaction_id = 0;
 
 	/** 
 	  Constructor
