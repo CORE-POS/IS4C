@@ -69,7 +69,12 @@ class CCReceiptMessage extends ReceiptMessage {
 			." and transNo = ".$trans ." ".$idclause
 			." order by datetime $sort, transID DESC";
 
-        if ($db->table_exists('PaycardTransactions')) {
+        /**
+          Temp disabled 30Apr14
+          Not tested yet but I don't want to delay the next release
+          Andy
+        */
+        if (false && $db->table_exists('PaycardTransactions')) {
             $trans_type = $db->concat('p.cardType', "' '", 'p.transType', '');
 
             $query = "SELECT $trans_type AS transType,

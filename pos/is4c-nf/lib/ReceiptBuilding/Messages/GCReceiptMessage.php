@@ -52,7 +52,12 @@ class GCReceiptMessage extends ReceiptMessage {
 		$sql = "SELECT * FROM gcReceiptView WHERE ".$where." ORDER BY "
 			.$db->identifier_escape('datetime')." $order, sortorder $order";
 
-        if ($db->table_exists('PaycardTransactions')) {
+        /**
+          Temp disabled 30Apr14
+          Not tested yet but I don't want to delay the next release
+          Andy
+        */
+        if (false && $db->table_exists('PaycardTransactions')) {
             $trans_type = $db->concat('p.cardType', "' '", 'p.transType', '');
 
             $sql = "SELECT $trans_type AS transType,
