@@ -50,11 +50,11 @@ as s left join SpecialOrders as c on s.order_id=c.specialOrderID
 left join {$OP}custdata as b on s.card_no=b.CardNo and s.voided=b.personNum
 where s.order_id in (
 select p.order_id from PendingSpecialOrder as p
-left join SpecialOrderNotes as n
-on p.order_id=n.order_id
+left join SpecialOrders as n
+on p.order_id=n.specialOrderID
 where notes LIKE ''
 group by p.order_id
-having max(department)=0 and max(superID)=0
+having max(department)=0 and max(noteSuperID)=0
 and max(trans_id) > 0
 )
 and trans_id > 0

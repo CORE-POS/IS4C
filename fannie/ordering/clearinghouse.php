@@ -108,7 +108,7 @@ $f3 = (isset($_REQUEST['f3']) && $_REQUEST['f3'] !== '')?$_REQUEST['f3']:'';
 
 $filterstring = "";
 if ($f1 !== ''){
-	$filterstring = sprintf("WHERE status_flag=%d",$f1);
+	$filterstring = sprintf("WHERE statusFlag=%d",$f1);
 }
 
 echo '<a href="index.php">Main Menu</a>';
@@ -163,16 +163,17 @@ if ($order !== '') $order = base64_decode($order);
 else $order = 'min(datetime)';
 
 $q = "SELECT min(datetime) as orderDate,p.order_id,sum(total) as value,
-	count(*)-1 as items,status_flag,sub_status,
+	count(*)-1 as items,
+    o.statusFlag AS status_flag,
+    o.subStatus AS sub_status,
 	CASE WHEN MAX(p.card_no)=0 THEN MAX(o.lastName) ELSE MAX(c.LastName) END as name,
 	MIN(CASE WHEN trans_type='I' THEN charflag ELSE 'ZZZZ' END) as charflag,
 	MAX(p.card_no) AS card_no
 	FROM {$TRANS}PendingSpecialOrder as p
-        LEFT JOIN {$TRANS}SpecialOrderStatus as s ON p.order_id=s.order_id
         LEFT JOIN custdata AS c ON c.CardNo=p.card_no AND personNum=p.voided
         LEFT JOIN {$TRANS}SpecialOrders AS o ON p.order_id=o.specialOrderID
 	$filterstring
-	GROUP BY p.order_id,status_flag,sub_status
+	GROUP BY p.order_id,statusFlag,subStatus
 	HAVING 
         count(*) > 1 OR
         SUM(CASE WHEN o.notes LIKE '' THEN 0 ELSE 1 END) > 0
@@ -274,7 +275,7 @@ $ret .= sprintf('<table cellspacing="0" cellpadding="4" border="1">
 	base64_encode("CASE WHEN MAX(p.card_no)=0 THEN MAX(o.lastName) ELSE MAX(c.LastName) END"),
 	base64_encode("sum(total)"),
 	base64_encode("count(*)-1"),
-	base64_encode("status_flag")
+	base64_encode("statusFlag")
 );
 $ret .= sprintf('<td><img src="%s" alt="Print" 
 		onclick="$(\'#pdfform\').submit();" /></td>',

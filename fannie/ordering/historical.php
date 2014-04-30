@@ -96,7 +96,7 @@ $f3 = (isset($_REQUEST['f3']) && $_REQUEST['f3'] !== '')?$_REQUEST['f3']:'';
 $filterstring = "";
 $filterargs = array();
 if ($f1 !== ''){
-	$filterstring = 'WHERE status_flag=?';
+	$filterstring = 'WHERE statusFlag=?';
 	$filterargs[] = $f1;
 }
 
@@ -159,19 +159,20 @@ elseif($order === 'ttl')
 elseif($order === 'qty')
 	$orderby = "count(*)-1";
 elseif($order === 'status')
-	$orderby = "status_flag";
+	$orderby = "statusFlag";
 
 $p = $dbc->prepare_statement("SELECT min(datetime) as orderDate,p.order_id,sum(total) as value,
-	count(*)-1 as items,status_flag,sub_status,
+	count(*)-1 as items,
+    statusFlag AS status_flag,
+    subStatus AS sub_status,
 	CASE WHEN MAX(p.card_no)=0 THEN MAX(o.lastName) ELSE MAX(c.LastName) END as name,
 	MIN(CASE WHEN trans_type='I' THEN charflag ELSE 'ZZZZ' END) as charflag,
 	MAX(p.card_no) AS card_no
 	FROM {$TRANS}CompleteSpecialOrder as p
-	LEFT JOIN {$TRANS}SpecialOrderStatus as s ON p.order_id=s.order_id
 	LEFT JOIN custdata AS c ON c.CardNo=p.card_no AND personNum=p.voided
     LEFT JOIN {$TRANS}SpecialOrders AS o ON p.order_id=o.specialOrderID
 	$filterstring
-	GROUP BY p.order_id,status_flag,sub_status
+	GROUP BY p.order_id,statusFlag,subStatus
 	HAVING (count(*) > 1 OR
 		SUM(CASE WHEN o.notes LIKE '' THEN 0 ELSE 1 END) > 0
 		)

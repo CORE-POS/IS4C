@@ -22,7 +22,7 @@
 *********************************************************************************/
 include('../config.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-$dbc = FannieDB::get($FANNIE_OP_DB);
+$dbc = FannieDB::get($FANNIE_TRANS_DB);
 
 $page_title = "Fannie :: Special Order Receiving";
 $header = "Special Order Receiving";
@@ -79,7 +79,7 @@ printf('<input type="hidden" id="orderSetting" value="%s" />',$order);
 $where = "p.trans_type = 'I'";
 $args = array();
 if (!empty($filter)){
-	$where .= " AND s.status_flag=? ";
+	$where .= " AND s.statusFlag=? ";
 	$args[] = ((int)$filter);
 }
 if (!empty($supp)){
@@ -93,13 +93,13 @@ elseif($order == 'description')
 	$sql_order = 'description,upc';
 elseif($order == 'ItemQtty')
 	$sql_order = 'ItemQtty,upc';
-elseif($order == 'sub_status')
-	$sql_order = 'sub_status,upc';
+elseif($order == 'subStatus')
+	$sql_order = 'subStatus,upc';
 
-$q = "SELECT upc,description,ItemQtty,mixMatch,sub_status
+$q = "SELECT upc,description,ItemQtty,mixMatch,subStatus
 	FROM PendingSpecialOrder AS p
-	LEFT JOIN SpecialOrderStatus as s
-	ON p.order_id=s.order_id
+	LEFT JOIN SpecialOrders as s
+	ON p.order_id=s.specialOrderID
 	WHERE $where
 	ORDER BY $sql_order";
 $p = $dbc->prepare_statement($q);
@@ -109,12 +109,12 @@ echo '<th><a href="" onclick="resort(\'upc\');return false;">UPC</a></td>';
 echo '<th><a href="" onclick="resort(\'description\');return false;">Desc.</a></td>';
 echo '<th><a href="" onclick="resort(\'ItemQtty\');return false;"># Cases</a></td>';
 echo '<th><a href="" onclick="resort(\'mixMatch\');return false;">Supplier</a></td>';
-echo '<th><a href="" onclick="resort(\'sub_status\');return false;">Status Updated</a></td>';
+echo '<th><a href="" onclick="resort(\'subStatus\');return false;">Status Updated</a></td>';
 echo '</tr>';
 while ($w = $dbc->fetch_row($r)){
 	printf('<tr><td>%s</td><td>%s</td><td>%d</td><td>%s</td><td>%s</td></tr>',
 		$w['upc'],$w['description'],$w['ItemQtty'],$w['mixMatch'],
-		($w['sub_status']==0?'Unknown':date('m/d/Y',$w['sub_status'])));
+		($w['subStatus']==0?'Unknown':date('m/d/Y',$w['subStatus'])));
 }
 echo '</table>';
 

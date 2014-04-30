@@ -53,9 +53,9 @@ $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 
 // auto-close called/waiting after 30 days
 $subquery = "select p.order_id from PendingSpecialOrder as p
-	left join SpecialOrderStatus as s
-	on p.order_id=s.order_id
-	where p.trans_id=0 and s.status_flag=1
+	left join SpecialOrders as s
+	on p.order_id=s.specialOrderID
+	where p.trans_id=0 and s.statusFlag=1
 	and ".$sql->datediff($sql->now(),'datetime')." > 30";
 $cwIDs = "(";
 $r = $sql->query($subquery);
@@ -91,8 +91,8 @@ if (strlen($cwIDs) > 2){
 
 // auto-close all after 90 days
 $subquery = "select p.order_id from PendingSpecialOrder as p
-	left join SpecialOrderStatus as s
-	on p.order_id=s.order_id
+	left join SpecialOrders as s
+	on p.order_id=s.specialOrderID
 	where p.trans_id=0 
 	and ".$sql->datediff($sql->now(),'datetime')." > 90";
 $allIDs = "(";
@@ -224,7 +224,6 @@ $cleanupQ = sprintf("
     SELECT p.order_id 
     FROM PendingSpecialOrder AS p 
         LEFT JOIN SpecialOrders AS o ON p.order_id=o.specialOrderID
-		LEFT JOIN SpecialOrderStatus AS s ON p.order_id=s.order_id
     WHERE 
         (
             o.specialOrderID IS NULL
@@ -257,8 +256,8 @@ if (strlen($empty) > 2){
 
 /* blueLine flagging disabled
 $q = "SELECT card_no,count(*) FROM PendingSpecialOrder as p LEFT JOIN
-	SpecialOrderStatus AS s ON p.order_id=s.order_id
-	WHERE s.status_flag=5 AND trans_id > 0 
+	SpecialOrders AS s ON p.order_id=s.specialOrderID
+	WHERE s.statusFlag=5 AND trans_id > 0 
 	GROUP BY card_no";
 $r = $sql->query($q);
 while($w = $sql->fetch_row($r)){
