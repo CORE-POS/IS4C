@@ -145,7 +145,7 @@ $CREATE['trans.PaycardTransactions'] = "
 		validResponse SMALLINT ,
 		xResultCode VARCHAR (8), 
 		xApprovalNumber VARCHAR (20),
-		xResponseCode VARCHAR (4),
+		xResponseCode VARCHAR (8),
 		xResultMessage VARCHAR (100),
 		xTransactionID VARCHAR (12),
 		xBalance VARCHAR(8),
