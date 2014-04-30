@@ -124,6 +124,16 @@ class MemberEditor extends FanniePage {
 					$this->msgs .= $instance->SaveFormData($this->memNum);
 				}
 
+                $dbc = FannieDB::get($FANNIE_OP_DB);
+                $custdata = new CustdataModel($dbc);
+                $custdata->CardNo($this->memNum);
+                $members = $custdata->find();
+                if (is_array($members)) {
+                    foreach($members as $m) {
+                        $m->pushToLanes();
+                    }
+                }
+
 				if (!empty($this->msgs)){
 					// implies: errors occurred
 					// stay on this page
