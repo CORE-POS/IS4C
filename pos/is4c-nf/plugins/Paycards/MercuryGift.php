@@ -72,8 +72,12 @@ class MercuryGift extends BasicCCModule {
 			$cashier = $CORE_LOCAL->get("CashierNo");
 			$lane = $CORE_LOCAL->get("laneno");
 			$trans = $CORE_LOCAL->get("transno");
-			$sql = "SELECT transID FROM valutecRequest WHERE ".$dbTrans->identifier_escape('date')."=".$today." AND PAN='".$pan."' " .
-				"AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans;
+			$sql = "SELECT transID FROM PaycardTransactions WHERE dateID=".$today." AND PAN='".$pan."' " .
+				"AND empNo=".$cashier." AND registerNo=".$lane." AND transNo=".$trans;
+            if (!$dbTrans->table_exists('PaycardTransactions')) {
+                $sql = "SELECT transID FROM valutecRequest WHERE ".$dbTrans->identifier_escape('date')."=".$today." AND PAN='".$pan."' " .
+                    "AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans;
+            }
 			$search = $dbTrans->query($sql);
 			$num = $dbTrans->num_rows($search);
 			if( $num < 1) {
@@ -231,8 +235,12 @@ class MercuryGift extends BasicCCModule {
 		$trans = $CORE_LOCAL->get("transno");
 
 		// look up the request using transID (within this transaction)
-		$sql = "SELECT live,PAN,mode,amount FROM valutecRequest WHERE ".$dbTrans->identifier_escape('date')."=".$today
-			." AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
+		$sql = "SELECT live,PAN,transType AS mode,amount FROM PaycardTransactions WHERE dateID=".$today
+			." AND empNo=".$cashier." AND registerNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
+        if (!$dbTrans->table_exists('PaycardTransactions')) {
+            $sql = "SELECT live,PAN,mode,amount FROM valutecRequest WHERE ".$dbTrans->identifier_escape('date')."=".$today
+                ." AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
+        }
 		$search = $dbTrans->query($sql);
 		$num = $dbTrans->num_rows($search);
 		if( $num < 1) {
@@ -247,9 +255,14 @@ class MercuryGift extends BasicCCModule {
 		$request = $dbTrans->fetch_array($search);
 
 		// look up the response
-		$sql = "SELECT commErr,httpCode,validResponse,xAuthorized,
-			xAuthorizationCode FROM valutecResponse WHERE ".$dbTrans->identifier_escape('date')."=".$today." 
-			AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
+		$sql = "SELECT commErr,httpCode,validResponse,xResultMessage,,
+			xApprovalNumber FROM PaycardTransactions WHERE dateID=".$today." 
+			AND empNo=".$cashier." AND registerNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
+        if (!$dbTrans->table_exists('PaycardTransactions')) {
+            $sql = "SELECT commErr,httpCode,validResponse,xAuthorized,
+                xAuthorizationCode FROM valutecResponse WHERE ".$dbTrans->identifier_escape('date')."=".$today." 
+                AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
+        }
 		$search = $dbTrans->query($sql);
 		$num = $dbTrans->num_rows($search);
 		if( $num < 1) {
@@ -264,10 +277,16 @@ class MercuryGift extends BasicCCModule {
 		$response = $dbTrans->fetch_array($search);
 
 		// look up any previous successful voids
-		$sql = "SELECT transID FROM valutecRequestMod WHERE ".$dbTrans->identifier_escape('date')."=".$today
-			." AND cashierNo=".$cashier." AND laneNo=".$lane
-			." AND transNo=".$trans." AND transID=".$transID
-			." AND mode='void' AND (xAuthorized='true' or xAuthorized='Appro')";
+        $sql = "SELECT transID FROM PaycardTransactions WHERE dateID=".$today
+            ." AND empNo=".$cashier." AND cashierNo=".$lane
+            ." AND transNo=".$trans." AND transID=".$transID
+            ." AND transType='VOID' AND xResultCode=1";
+        if (!$dbTrans->table_exists('PaycardTransactions')) {
+            $sql = "SELECT transID FROM valutecRequestMod WHERE ".$dbTrans->identifier_escape('date')."=".$today
+                ." AND cashierNo=".$cashier." AND laneNo=".$lane
+                ." AND transNo=".$trans." AND transID=".$transID
+                ." AND mode='void' AND (xAuthorized='true' or xAuthorized='Appro')";
+        }
 		$search = $dbTrans->query($sql);
 		$voided = $dbTrans->num_rows($search);
 		// look up the transaction tender line-item
@@ -493,10 +512,16 @@ class MercuryGift extends BasicCCModule {
 
 		// look up the auth code from the original response 
 		// (card number and amount should already be in session vars)
-		$sql = "SELECT xAuthorizationCode FROM valutecResponse WHERE "
-			.$dbTrans->identifier_escape('date')."='".$today."'" .
-			" AND cashierNo=".$cashierNo." AND laneNo=".$laneNo." AND 
+		$sql = "SELECT xApprovalNumber AS xAuthorizationCode FROM PaycardTransactions WHERE "
+			."dateID='".$today."'" .
+			" AND empNo=".$cashierNo." AND registerNo=".$laneNo." AND 
 			transNo=".$transNo." AND transID=".$transID;
+        if (!$dbTrans->table_exists('PaycardTransactions')) {
+            $sql = "SELECT xAuthorizationCode FROM valutecResponse WHERE "
+                .$dbTrans->identifier_escape('date')."='".$today."'" .
+                " AND cashierNo=".$cashierNo." AND laneNo=".$laneNo." AND 
+                transNo=".$transNo." AND transID=".$transID;
+        }
 		$search = $dbTrans->query($sql);
 		if( !$search || $dbTrans->num_rows($search) != 1)
 			return PaycardLib::PAYCARD_ERR_NOSEND; // database error, nothing sent (ok to retry)
@@ -505,20 +530,38 @@ class MercuryGift extends BasicCCModule {
 		$this->temp = $authcode;
 		
 		// look up original transaction type
-		$sql = "SELECT mode FROM valutecRequest WHERE "
-			.$dbTrans->identifier_escape('date')."='".$today."'" .
-			" AND cashierNo=".$cashierNo." AND laneNo=".$laneNo." AND 
-			transNo=".$transNo." AND transID=".$transID;
+        $sql = "SELECT transType AS mode FROM PaycardTransactions WHERE "
+            ."dateID='".$today."'" .
+            " AND empNo=".$cashierNo." AND registerNo=".$laneNo." AND 
+            transNo=".$transNo." AND transID=".$transID;
+        if (!$dbTrans->table_exists('PaycardTransactions')) {
+            $sql = "SELECT mode FROM valutecRequest WHERE "
+                .$dbTrans->identifier_escape('date')."='".$today."'" .
+                " AND cashierNo=".$cashierNo." AND laneNo=".$laneNo." AND 
+                transNo=".$transNo." AND transID=".$transID;
+        }
 		$search = $dbTrans->query($sql);
 		if( !$search || $dbTrans->num_rows($search) != 1)
 			return PaycardLib::PAYCARD_ERR_NOSEND; // database error, nothing sent (ok to retry)
 		$row = $dbTrans->fetch_array($search);
 		$vdMethod = "";
-		switch($row[0]){
-		case 'tender': $vdMethod='VoidSale'; break;
-		case 'refund': $vdMethod='VoidReturn'; break;
-		case 'addvalue': $vdMethod='VoidReload'; break;
-		case 'activate': $vdMethod='VoidIssue'; break;
+		switch($row[0]) {
+            case 'tender':
+            case 'Sale':
+                $vdMethod='VoidSale';
+                break;
+            case 'refund':
+            case 'Return':
+                $vdMethod='VoidReturn';
+                break;
+            case 'addvalue':
+            case 'Reload':
+                $vdMethod='VoidReload';
+                break;
+            case 'activate':
+            case 'Issue':
+                $vdMethod='VoidIssue';
+                break;
 		}
 
         /**
@@ -795,6 +838,10 @@ class MercuryGift extends BasicCCModule {
 				$CORE_LOCAL->set("paycard_amount",-1*$xml->get_first("AUTHORIZE"));
 			$correctionQ = sprintf("UPDATE valutecRequest SET amount=%f WHERE
 				date=%s AND identifier='%s'",
+				$xml->get_first("AUTHORIZE"),date("Ymd"),$identifier);
+			$dbTrans->query($correctionQ);
+			$correctionQ = sprintf("UPDATE PaycardTransactions SET amount=%f WHERE
+				dateID=%s AND refNum='%s'",
 				$xml->get_first("AUTHORIZE"),date("Ymd"),$identifier);
 			$dbTrans->query($correctionQ);
 		}
