@@ -216,7 +216,7 @@ class FannieUploadPage extends FanniePage
 
         $tmpfile = $_FILES[$this->upload_field_name]['tmp_name'];
         $path_parts = pathinfo($_FILES[$this->upload_field_name]['name']);
-        $extension = strtolower($path_parts['extension']);
+        $extension = isset($path_parts['extension']) ? strtolower($path_parts['extension']) : '';
         $zip = false;
         if ($_FILES[$this->upload_field_name]['error'] != UPLOAD_ERR_OK) {
             $msg = '';
