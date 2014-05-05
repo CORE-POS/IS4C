@@ -76,7 +76,6 @@ $custQ = "UPDATE custdata AS c LEFT JOIN {$TRANS}ar_live_balance AS s
         c.ChargeLimit=p.chargelimit,
 	    c.memType=p.memtype1,c.Type=p.memtype2,chargeOk=1
 	    WHERE c.Type = 'INACT' and p.reasoncode IN (1)
-	    AND c.personNum=1
 	    AND s.balance < a.twoMonthBalance";
 if (!isset($custdata['ChargeLimit'])) {
     $custQ = str_replace('c.ChargeLimit=p.chargelimit,', '', $custQ);
