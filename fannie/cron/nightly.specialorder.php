@@ -75,7 +75,7 @@ if (strlen($cwIDs) > 2){
                 SELECT p.order_id,
                     " . $sql->now() . ",
                     'AUTOCLOSE',
-                    'Call/Waiting 30',
+                    'Call/Waiting 30'
                 FROM PendingSpecialOrder AS p
                 WHERE p.order_id IN $cwIDs
                 GROUP BY p.order_id";
@@ -114,7 +114,7 @@ if (strlen($allIDs) > 2){
                 SELECT p.order_id,
                     " . $sql->now() . ",
                     'AUTOCLOSE',
-                    '90 Days',
+                    '90 Days'
                 FROM PendingSpecialOrder AS p
                 WHERE p.order_id IN $allIDs
                 GROUP BY p.order_id";
