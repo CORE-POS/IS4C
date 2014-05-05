@@ -37,7 +37,7 @@ class GumPeopleReport extends FannieReportPage
     protected $auth_classes = array('GiveUsMoney');
 
     protected $required_fields = array();
-    protected $report_headers = array('Mem#', 'First Name', 'Last Name', 'Loan Date', 'Principal', 'Interest Rate', 'Term (Months)'); 
+    protected $report_headers = array('Mem#', 'First Name', 'Last Name', 'Loan Date', 'Principal', 'Interest Rate', 'Term (Months)', 'C Shares'); 
 
     public function preprocess()
     {
@@ -53,16 +53,23 @@ class GumPeopleReport extends FannieReportPage
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB']);
 
         // compound interest calculation is MySQL-specific
-        $query = 'SELECT l.card_no,
+        $query = 'SELECT c.CardNo AS card_no,
                     c.FirstName, 
                     c.LastName,
                     l.loanDate,
-                    l.principal,
-                    l.termInMonths,
-                    l.interestRate
-                  FROM GumLoanAccounts AS l
-                    LEFT JOIN ' . $FANNIE_OP_DB . $dbc->sep() . 'custdata AS c
-                        ON l.card_no=c.CardNo AND c.personNum=1
+                    CASE WHEN l.principal IS NULL THEN 0 ELSE l.principal END as principal,
+                    CASE WHEN l.termInMonths IS NULL THEN 0 ELSE l.termInMonths END as termInMonths,
+                    CASE WHEN l.interestRate IS NULL THEN 0 ELSE l.interestRate END as interestRate,
+                    CASE WHEN e.shares IS NULL THEN 0 ELSE e.shares END as shares
+                  FROM ' . $FANNIE_OP_DB . $dbc->sep() . 'custdata AS c
+                        LEFT JOIN GumLoanAccounts AS l 
+                            ON l.card_no=c.CardNo AND c.personNum=1
+                        LEFT JOIN (
+                            SELECT card_no, SUM(shares) as shares
+                            FROM GumEquityShares
+                            GROUP BY card_no
+                        ) AS e ON c.cardNo=e.card_no AND c.personNum=1
+                  WHERE l.card_no IS NOT NULL OR e.card_no IS NOT NULL
                   ORDER BY l.card_no, l.loanDate';
         $result = $dbc->query($query);
 
@@ -72,10 +79,11 @@ class GumPeopleReport extends FannieReportPage
                $row['card_no'],
                $row['LastName'],
                $row['FirstName'],
-               date('Y-m-d', strtotime($row['loanDate'])),
+               ($row['loanDate'] == '' ? 'n/a' : date('Y-m-d', strtotime($row['loanDate']))),
                sprintf('%.2f', $row['principal']), 
                sprintf('%.2f', $row['interestRate'] * 100), 
                $row['termInMonths'],
+               $row['shares'],
             );
             $data[] = $record;
         }
@@ -86,11 +94,13 @@ class GumPeopleReport extends FannieReportPage
     public function calculate_footers($data)
     {
         $sum = 0.0;
+        $c = 0.0;
         foreach($data as $row) {
             $sum += $row[4];
+            $c += $row[7];
         }
 
-        return array('Total', '', '', '', sprintf('%.2f', $sum), '', '', );
+        return array('Total', '', '', '', sprintf('%.2f', $sum), '', '', sprintf('%.2f', $c));
     }
 
 
