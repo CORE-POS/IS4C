@@ -1027,12 +1027,6 @@ function create_trans_dbs($db,$type){
 
     InstallUtilities::createIfNeeded($db, $type, $name, 'efsnetTokens', 'trans', $errors);
 
-    InstallUtilities::createIfNeeded($db, $type, $name, 'valutecRequest', 'trans', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'valutecRequestMod', 'trans', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'valutecResponse', 'trans', $errors);
-
     $ccV = "CREATE view ccReceiptView 
         AS 
         select
@@ -1109,66 +1103,6 @@ function create_trans_dbs($db,$type){
           and m.mode='void'";
     if(!$db->table_exists('ccReceiptView',$name)){
         InstallUtilities::dbStructureModify($db,'ccReceiptView',$ccV,$errors);
-    }
-
-    $gcV = "CREATE VIEW gcReceiptView
-        AS
-        select
-          (case mode
-            when 'tender' then 'Gift Card Purchase'
-            when 'refund' then 'Gift Card Refund'
-            when 'addvalue' then 'Gift Card Add Value'
-            when 'activate' then 'Gift Card Activation'
-            else 'Gift Card Transaction'
-          end) as tranType,
-          (case mode when 'refund' then -1*r.amount else r.amount end) as amount, 
-          terminalID,
-          PAN,
-          (case manual when 1 then 'Manual' else 'Swiped' end) as entryMethod,
-          xAuthorizationCode,
-          xBalance,
-          '' as xVoidCode,
-          r.date, r.cashierNo, r.laneNo, r.transNo, r.transID, r.datetime,
-          0 as sortorder
-        from valutecRequest r
-        join valutecResponse s
-          on s.date=r.date
-          and s.cashierNo=r.cashierNo
-          and s.laneNo=r.laneNo
-          and s.transNo=r.transNo
-          and s.transID=r.transID
-        where s.validResponse=1 and (s.xAuthorized='true' or s.xAuthorized='Appro')
-
-        union all
-
-        select
-          (case r.mode
-            when 'tender' then 'Gift Card Purchase CANCELED'
-            when 'refund' then 'Gift Card Refund CANCELED'
-            when 'addvalue' then 'Gift Card Add Value CANCELED'
-            when 'activate' then 'Gift Card Activation CANCELED'
-            else 'Gift Card Transaction CANCELED'
-          end) as tranType,
-          (case r.mode when 'refund' then r.amount else -1*r.amount end) as amount,  
-          terminalID,
-          PAN,
-          (case manual when 1 then 'Manual' else 'Swiped' end) as entryMethod,
-          origAuthCode as xAuthorizationCode,
-          xBalance,
-          xAuthorizationCode as xVoidCode,
-          r.date, r.cashierNo, r.laneNo, r.transNo, r.transID, m.datetime,
-          1 as sortorder
-        from valutecRequestMod as m
-        join valutecRequest as r
-          on r.date=m.date
-          and r.cashierNo=m.cashierNo
-          and r.laneNo=m.laneNo
-          and r.transNo=m.transNo
-          and r.transID=m.transID
-        where m.validResponse=1 and (m.xAuthorized='true' 
-        or m.xAuthorized='Appro') and m.mode='void'";
-    if(!$db->table_exists('gcReceiptView',$name)){
-        InstallUtilities::dbStructureModify($db,'gcReceiptView',$gcV,$errors);
     }
 
     $sigCaptureTable = "CREATE TABLE CapturedSignature (

@@ -563,8 +563,11 @@ class MercuryGift extends BasicCCModule
             sprintf("'%s','%s','%s',%d,", $now, $identifier, $termID, $live) .
             sprintf("'%s',%s,'%s',%d",    $mode, $amountText, $cardPAN, $manual);
         $sql = "INSERT INTO valutecRequest (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
-        if (!$dbTrans->query($sql)) {
-            return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); // internal error, nothing sent (ok to retry)
+        // @deprecated table 5May15
+        if ($dbTrans->table_exists('valutecRequest')) {
+            if (!$dbTrans->query($sql)) {
+                return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); // internal error, nothing sent (ok to retry)
+            }
         }
 
         /**
@@ -899,8 +902,11 @@ class MercuryGift extends BasicCCModule
          // finish storing the response in the database before reacting to it
         $sqlColumns .= ",validResponse";
         $sqlValues .= ",".$validResponse;
-        $sql = "INSERT INTO valutecResponse (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
-        $dbTrans->query($sql);
+        // @deprecated table 5May15
+        if ($dbTrans->table_exists('valutecResponse')) {
+            $sql = "INSERT INTO valutecResponse (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
+            $dbTrans->query($sql);
+        }
 
         $normalized = ($validResponse == 0) ? 4 : 0;
         $status = $xml->get('CMDSTATUS');
@@ -989,14 +995,16 @@ class MercuryGift extends BasicCCModule
             if ($xml->get_first('TRANCODE') && $xml->get_first('TRANCODE') == 'Return') {
                 $CORE_LOCAL->set("paycard_amount",-1*$xml->get_first("AUTHORIZE"));
             }
-            $correctionQ = sprintf("UPDATE valutecRequest SET amount=%f WHERE
-                date=%s AND identifier='%s'",
-                $xml->get_first("AUTHORIZE"),date("Ymd"),$identifier);
-            $dbTrans->query($correctionQ);
             $correctionQ = sprintf("UPDATE PaycardTransactions SET amount=%f WHERE
                 dateID=%s AND refNum='%s'",
                 $xml->get_first("AUTHORIZE"),date("Ymd"),$identifier);
             $dbTrans->query($correctionQ);
+            if ($dbTrans->table_exists('valutecRequest')) {
+                $correctionQ = sprintf("UPDATE valutecRequest SET amount=%f WHERE
+                    date=%s AND identifier='%s'",
+                    $xml->get_first("AUTHORIZE"),date("Ymd"),$identifier);
+                $dbTrans->query($correctionQ);
+            }
         }
 
         // comm successful, check the Authorized, AuthorizationCode and ErrorMsg fields
@@ -1066,8 +1074,11 @@ class MercuryGift extends BasicCCModule
         // finish storing the request and response in the database before reacting to it
         $sqlColumns .= ",validResponse";
         $sqlValues .= ",".$validResponse;
-        $sql = "INSERT INTO valutecRequestMod (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
-        $dbTrans->query($sql);
+        // @deprecated table 5May15
+        if ($dbTrans->table_exists('valutecRequestMod')) {
+            $sql = "INSERT INTO valutecRequestMod (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
+            $dbTrans->query($sql);
+        }
 
         $normalized = ($validResponse == 0) ? 4 : 0;
         $status = $xml->get('CMDSTATUS');

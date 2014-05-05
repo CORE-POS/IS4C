@@ -52,35 +52,36 @@ class GCReceiptMessage extends ReceiptMessage
         if ($reprint) {
             $db = Database::mDataConnect();
         }
-        $order = "";
-        $where = $db->identifier_escape('date')."=".date('Ymd')
-            ." AND cashierNo=".$emp." AND laneNo=".$reg." AND transNo=".$trans;
+
         $order = ($sigSlip) ? 'DESC' : 'ASC';
-        $sql = "SELECT * FROM gcReceiptView WHERE ".$where." ORDER BY "
-            .$db->identifier_escape('datetime')." $order, sortorder $order";
+        $trans_type = $db->concat('p.cardType', "' '", 'p.transType', '');
 
-        if ($db->table_exists('PaycardTransactions')) {
-            $trans_type = $db->concat('p.cardType', "' '", 'p.transType', '');
-
-            $sql = "SELECT $trans_type AS transType,
-                        CASE WHEN p.transType = 'Return' THEN -1*p.amount ELSE p.amount END as amount,
-                        p.registerNo as terminalID,
-                        p.PAN,
-                        CASE WHEN p.manual=1 THEN 'Manual' ELSE 'Swiped' END as entryMethod,
-                        CASE WHEN transType='VOID' THEN '' ELSE p.xApprovalNumber END AS xAuthorizationCode,
-                        p.xBalance,
-                        CASE WHEN transType='VOID' THEN p.xApprovalNumber ELSE '' END AS xVoidCode,
-                        p.transID,
-                        p.requestDatetime AS datetime
-                    FROM PaycardTransactions AS p
-                    WHERE dateID=" . date('Ymd') . "
-                        AND empNo=" . $emp . "
-                        AND registerNo=" . $reg . "
-                        AND transNo=" . $trans . "
-                        AND p.validResponse=1
-                        AND p.xResultMessage LIKE '%Appro%'
-                        AND p.cardType = 'Gift'
-                    ORDER BY p.requestDatetime " . $order;
+        $sql = "SELECT $trans_type AS transType,
+                    CASE WHEN p.transType = 'Return' THEN -1*p.amount ELSE p.amount END as amount,
+                    p.registerNo as terminalID,
+                    p.PAN,
+                    CASE WHEN p.manual=1 THEN 'Manual' ELSE 'Swiped' END as entryMethod,
+                    CASE WHEN transType='VOID' THEN '' ELSE p.xApprovalNumber END AS xAuthorizationCode,
+                    p.xBalance,
+                    CASE WHEN transType='VOID' THEN p.xApprovalNumber ELSE '' END AS xVoidCode,
+                    p.transID,
+                    p.requestDatetime AS datetime
+                FROM PaycardTransactions AS p
+                WHERE dateID=" . date('Ymd') . "
+                    AND empNo=" . $emp . "
+                    AND registerNo=" . $reg . "
+                    AND transNo=" . $trans . "
+                    AND p.validResponse=1
+                    AND p.xResultMessage LIKE '%Appro%'
+                    AND p.cardType = 'Gift'
+                ORDER BY p.requestDatetime " . $order;
+        if (!$db->table_exists('PaycardTransactions')) {
+            // gcReceiptView is lane-local only, if still present
+            $db = Database::tDataConnect();
+            $where = $db->identifier_escape('date')."=".date('Ymd')
+                ." AND cashierNo=".$emp." AND laneNo=".$reg." AND transNo=".$trans;
+            $sql = "SELECT * FROM gcReceiptView WHERE ".$where." ORDER BY "
+                .$db->identifier_escape('datetime')." $order, sortorder $order";
         }
 
         $result = $db->query($sql);
