@@ -219,7 +219,9 @@ class Valutec extends BasicCCModule
                 break;
             case PaycardLib::PAYCARD_MODE_AUTH:
                 $CORE_LOCAL->set("autoReprint",1);
-                PrehLib::tender("GD", ($CORE_LOCAL->get("paycard_amount")*100));
+                $record_id = $this->last_paycard_transaction_id;
+                $charflag = ($record_id != 0) ? 'PT' : '';
+                TransRecord::addFlaggedTender("Gift Card", "GD", $amt, $record_id, $charflag);
                 $resp = $CORE_LOCAL->get("paycard_response");
                 $CORE_LOCAL->set("boxMsg","<b>Approved</b><font size=-1>
                                            <p>Used: $" . $CORE_LOCAL->get("paycard_amount") . "
