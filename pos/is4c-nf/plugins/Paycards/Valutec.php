@@ -68,11 +68,6 @@ class Valutec extends BasicCCModule {
 			$trans = $CORE_LOCAL->get("transno");
 			$sql = "SELECT transID FROM PaycardTransactions WHERE dateID=".$today." AND PAN='".$pan."' " .
 				"AND empNo=".$cashier." AND registerNo=".$lane." AND transNo=".$trans;
-            if (!$dbTrans->table_exists('PaycardTransactions')) {
-                $sql = "SELECT transID FROM valutecRequest WHERE "
-                    .$dbTrans->identifier_escape('date')."=".$today." AND PAN='".$pan."' " .
-                    "AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans;
-            }
 			$search = $dbTrans->query($sql);
 			$num = $dbTrans->num_rows($search);
 			if( $num < 1) {
@@ -235,11 +230,6 @@ class Valutec extends BasicCCModule {
 		// look up the request using transID (within this transaction)
 		$sql = "SELECT live,PAN,transType AS mode,amount FROM PaycardTransactions WHERE dateID=".$today
 			." AND empNo=".$cashier." AND registerNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
-        if (!$dbTrans->table_exists('PaycardTransactions')) {
-            $sql = "SELECT live,PAN,mode,amount FROM valutecRequest WHERE "
-                .$dbTrans->identifier_escape('date')."=".$today." AND cashierNo="
-                .$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
-        }
 		$search = $dbTrans->query($sql);
 		$num = $dbTrans->num_rows($search);
 		if( $num < 1) {
@@ -257,12 +247,6 @@ class Valutec extends BasicCCModule {
 		$sql = "SELECT commErr,httpCode,validResponse,xResultMessage,,
 			xApprovalNumber FROM PaycardTransactions WHERE dateID=".$today." 
 			AND empNo=".$cashier." AND registerNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
-        if (!$dbTrans->table_exists('PaycardTransactions')) {
-            $sql = "SELECT commErr,httpCode,validResponse,xAuthorized,
-                xAuthorizationCode FROM valutecResponse WHERE "
-                .$dbTrans->identifier_escape('date')."=".$today." 
-                AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
-        }
 		$search = $dbTrans->query($sql);
 		$num = $dbTrans->num_rows($search);
 		if( $num < 1) {
@@ -281,12 +265,6 @@ class Valutec extends BasicCCModule {
             ." AND empNo=".$cashier." AND cashierNo=".$lane
             ." AND transNo=".$trans." AND transID=".$transID
             ." AND transType='VOID' AND xResultCode=1";
-        if (!$dbTrans->table_exists('PaycardTransactions')) {
-            $sql = "SELECT transID FROM valutecRequestMod WHERE "
-                .$dbTrans->identifier_escape('date')."=".$today." AND cashierNo="
-                .$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID="
-                .$transID." AND mode='void' AND xAuthorized='true'";
-        }
 		$search = $dbTrans->query($sql);
 		$voided = $dbTrans->num_rows($search);
 		// look up the transaction tender line-item
@@ -402,42 +380,26 @@ class Valutec extends BasicCCModule {
 		$cardTr2 = $this->getTrack2();
 		$identifier = $this->valutec_identifier($transID); // valutec allows 10 digits; this uses lanenum-transnum-transid since we send cashiernum in another field
 		
-		// store request in the database before sending it
-		$sqlColumns =
-			$dbTrans->identifier_escape('date').",cashierNo,laneNo,transNo,transID," .
-			$dbTrans->identifier_escape('datetime').",identifier,terminalID,live," . 
-			"mode,amount,PAN,manual";
-		$sqlValues =
-			sprintf("%d,%d,%d,%d,%d,",    $today, $cashierNo, $laneNo, $transNo, $transID) .
-			sprintf("'%s','%s','%s',%d,", $now, $identifier, $termID, $live) .
-			sprintf("'%s',%s,'%s',%d",    $mode, $amountText, $cardPAN, $manual);
-		$sql = "INSERT INTO valutecRequest (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
-		if( !$dbTrans->query($sql)){
-			return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); // internal error, nothing sent (ok to retry)
-		}
-
         /**
-          Log transaction in newer table
+          Log transaction before sending request
         */
-        if ($dbTrans->table_exists('PaycardTransactions')) {
-            $insQ = sprintf("INSERT INTO PaycardTransactions (
-                        dateID, empNo, registerNo, transNo, transID,
-                        processor, refNum, live, cardType, transType,
-                        amount, PAN, issuer, name, manual, requestDateTime)
-                     VALUES (
-                        %d,     %d,    %d,         %d,      %d,
-                        '%s',     '%s',    %d,   '%s',     '%s',
-                        %.2f,  '%s', '%s',  '%s',  %d,     '%s')",
-                        $today, $cashierNo, $laneNo, $transNo, $transID,
-                        'Valutec', $identifier, $live, 'Gift', $logged_mode,
-                        $amountText, $cardPAN,
-                        'Valutec', 'Cardholder', $manual, $now);
-            $insR = $dbTrans->query($insQ);
-            if ($insR) {
-                $this->last_paycard_transaction_id = $dbTrans->insert_id();
-            } else {
-                $this->last_paycard_transaction_id = 0;
-            }
+        $insQ = sprintf("INSERT INTO PaycardTransactions (
+                    dateID, empNo, registerNo, transNo, transID,
+                    processor, refNum, live, cardType, transType,
+                    amount, PAN, issuer, name, manual, requestDateTime)
+                 VALUES (
+                    %d,     %d,    %d,         %d,      %d,
+                    '%s',     '%s',    %d,   '%s',     '%s',
+                    %.2f,  '%s', '%s',  '%s',  %d,     '%s')",
+                    $today, $cashierNo, $laneNo, $transNo, $transID,
+                    'Valutec', $identifier, $live, 'Gift', $logged_mode,
+                    $amountText, $cardPAN,
+                    'Valutec', 'Cardholder', $manual, $now);
+        $insR = $dbTrans->query($insQ);
+        if ($insR) {
+            $this->last_paycard_transaction_id = $dbTrans->insert_id();
+        } else {
+			return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); // internal error, nothing sent (ok to retry)
         }
                 
 		// assemble and send request
@@ -495,12 +457,6 @@ class Valutec extends BasicCCModule {
 			."dateID='".$today."'" .
 			" AND empNo=".$cashierNo." AND registerNo=".$laneNo." AND 
 			transNo=".$transNo." AND transID=".$transID;
-        if (!$dbTrans->table_exists('PaycardTransactions')) {
-            $sql = "SELECT xAuthorizationCode FROM valutecResponse WHERE "
-                .$dbTrans->identifier_escape('date')."='".$today."'" .
-                " AND cashierNo=".$cashierNo." AND laneNo=".$laneNo." AND 
-                transNo=".$transNo." AND transID=".$transID;
-        }
 		$search = $dbTrans->query($sql);
 		if( !$search || $dbTrans->num_rows($search) != 1)
 			return PaycardLib::PAYCARD_ERR_NOSEND; // database error, nothing sent (ok to retry)
@@ -621,21 +577,11 @@ class Valutec extends BasicCCModule {
 		$program = 'Gift';
 		$identifier = $this->valutec_identifier($transID); // valutec allows 10 digits; this uses lanenum-transnum-transid since we send cashiernum in another field
 
-		// prepare some fields to store the parsed response; we'll add more as we verify it
-		$sqlColumns =
-			$dbTrans->identifier_escape('date').",cashierNo,laneNo,transNo,transID," .
-			$dbTrans->identifier_escape('datetime').",identifier," .
-			"seconds,commErr,httpCode";
-		$sqlValues =
-			sprintf("%d,%d,%d,%d,%d,",  $today, $cashierNo, $laneNo, $transNo, $transID) .
-			sprintf("'%s','%s',",       $now, $identifier) .
-			sprintf("%f,%d,%d",         $authResult['curlTime'], $authResult['curlErr'], $authResult['curlHTTP']);
-
 		$validResponse = ($xml->isValid()) ? 1 : 0;
 		$errorMsg = $xml->get_first("ERRORMSG");
 		$balance = $xml->get("BALANCE");
 
-		if ($validResponse){
+		if ($validResponse) {
 			/*
 			tendering more than the available balance returns an "NSF" error message, 
 			but no Balance field however, the available balance is buried in the 
@@ -664,64 +610,50 @@ class Valutec extends BasicCCModule {
 			if( $xml->get('TRANSACTIONTYPE') && $xml->get('TRANSACTIONTYPE') == $program
 				&& $xml->get('IDENTIFIER') && $xml->get('IDENTIFIER') == $identifier
 				&& $xml->get('AUTHORIZED')
-			)
+			) {
 				$validResponse = 1; // response was parsed normally, echo'd fields match, and other required fields are present
-			else
-				$validResponse = -2; // response was parsed as XML but fields didn't match
-
-			$sqlColumns .= ",xAuthorized,xAuthorizationCode,xBalance,xErrorMsg";
-			$sqlValues .= ",'".$xml->get("AUTHORIZED")."'";
-			$sqlValues .= ",'".$xml->get("AUTHORIZATIONCODE")."'";
-			$sqlValues .= ",'".$balance."'";
-			$sqlValues .= ",'".str_replace("'","",$errorMsg)."'";
+			} else {
+				$validResponse = 4; // response was parsed as XML but fields didn't match
+            }
 		}
 
-		 // finish storing the response in the database before reacting to it
-		$sqlColumns .= ",validResponse";
-		$sqlValues .= ",".$validResponse;
-		$sql = "INSERT INTO valutecResponse (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
-		$dbTrans->query($sql);
-
-        if ($dbTrans->table_exists('PaycardTransactions')) {
-            $normalized = ($validResponse == 0) ? 4 : 0;
-            $resultCode = 0;
-            $apprNumber = $xml->get('AUTHORIZATIONCODE');
-            $rMsg = '';
-            if ($apprNumber != '' && $xml->get('AUTHORIZED') == 'true') {
-                $normalized = 1;
-                $resultCode = 1;
-                $rMsg = 'Approved';
-            } else {
-                $rMsg = substr($xml->get_first('ERRORMSG'), 0, 100);
-            }
-            $finishQ = sprintf("UPDATE PaycardTransactions SET
-                                    responseDatetime='%s',
-                                    seconds=%f,
-                                    commErr=%d,
-                                    httpCode=%d,
-                                    validResponse=%d,
-                                    xResultCode=%d,
-                                    xApprovalNumber='%s',
-                                    xResponseCode=%d,
-                                    xResultMessage='%s',
-                                    xTransactionID='%s',
-                                    xBalance=%.2f
-                                WHERE paycardTransactionID=%d",
-                                    $now,
-                                    $authResult['curlTime'],
-                                    $authResult['curlErr'],
-                                    $authResult['curlHTTP'],
-                                    $normalized,
-                                    $resultCode,
-                                    $apprNumber,
-                                    $resultCode,
-                                    $rMsg,
-                                    $apprNumber,
-                                    $balance,
-                                    $this->last_paycard_transaction_id
-            );
-            $dbTrans->query($finishQ);
+        $resultCode = 0;
+        $apprNumber = $xml->get('AUTHORIZATIONCODE');
+        $rMsg = '';
+        if ($apprNumber != '' && $xml->get('AUTHORIZED') == 'true') {
+            $validResponse = 1;
+            $resultCode = 1;
+            $rMsg = 'Approved';
+        } else {
+            $rMsg = substr($xml->get_first('ERRORMSG'), 0, 100);
         }
+        $finishQ = sprintf("UPDATE PaycardTransactions SET
+                                responseDatetime='%s',
+                                seconds=%f,
+                                commErr=%d,
+                                httpCode=%d,
+                                validResponse=%d,
+                                xResultCode=%d,
+                                xApprovalNumber='%s',
+                                xResponseCode=%d,
+                                xResultMessage='%s',
+                                xTransactionID='%s',
+                                xBalance=%.2f
+                            WHERE paycardTransactionID=%d",
+                                $now,
+                                $authResult['curlTime'],
+                                $authResult['curlErr'],
+                                $authResult['curlHTTP'],
+                                $normalized,
+                                $resultCode,
+                                $apprNumber,
+                                $resultCode,
+                                $rMsg,
+                                $apprNumber,
+                                $balance,
+                                $this->last_paycard_transaction_id
+        );
+        $dbTrans->query($finishQ);
 
 		// check for communication errors (any cURL error or any HTTP code besides 200)
 		if( $authResult['curlErr'] != CURLE_OK || $authResult['curlHTTP'] != 200){
@@ -741,13 +673,10 @@ class Valutec extends BasicCCModule {
 		$amtUsed = $xml->get('CARDAMOUNTUSED');
 		if ($amtUsed){
 			$CORE_LOCAL->set("paycard_amount",$amtUsed);
-			$amtFixQ = "UPDATE valutecRequest SET amount=$amtUsed WHERE 
-				identifier='$identifier' AND "
-                ." AND datetime >= " . $dbTrans->curdate();
-			$dbTrans->query($amtFixQ);
 			$correctionQ = sprintf("UPDATE PaycardTransactions SET amount=%f WHERE
 				dateID=%s AND refNum='%s'",
 				$amtUsed,date("Ymd"),$identifier);
+			$dbTrans->query($correctQ);
 		}
 
 		// put the parsed response into $CORE_LOCAL so the caller, receipt printer, etc can get the data they need
@@ -790,78 +719,55 @@ class Valutec extends BasicCCModule {
 		$authcode = $this->temp;
 		$program = "Gift";
 
-		$sqlColumns =
-			$dbTrans->identifier_escape('date').",cashierNo,laneNo,transNo,transID," .
-			$dbTrans->identifier_escape('datetime').",mode,origAuthCode," .
-			"seconds,commErr,httpCode";
-		$sqlValues =
-			sprintf("%d,%d,%d,%d,%d,'%s',", $today, $cashierNo, $laneNo, $transNo, $transID, $now) .
-			sprintf("'%s','%s',",           $mode, $authcode) .
-			sprintf("%f,%d,%d",             $vdResult['curlTime'], $vdResult['curlErr'], $vdResult['curlHTTP']);
-
 		$validResponse = 0;
 		// verify that echo'd fields match our request
-                if( $xml->get('TRANSACTIONTYPE') && $xml->get('TRANSACTIONTYPE') == $program
-                        && $xml->get('AUTHORIZED')
-                        && $xml->get('AUTHORIZATIONCODE')
-                        && $xml->get('BALANCE')
-                )
-                        $validResponse = 1; // response was parsed normally, echo'd fields match, and other required fields are present
-                else
-                        $validResponse = -2; // response was parsed as XML but fields didn't match
-
-		$sqlColumns .= ",xAuthorized,xAuthorizationCode,xBalance,xErrorMsg";
-		$sqlValues .= ",'".$xml->get("AUTHORIZED")."'";
-		$sqlValues .= ",'".$xml->get("AUTHORIZATIONCODE")."'";
-		$sqlValues .= ",'".$xml->get("BALANCE")."'";
-		$sqlValues .= ",'".$xml->get_first("ERRORMSG")."'";
-		
-		// finish storing the request and response in the database before reacting to it
-		$sqlColumns .= ",validResponse";
-		$sqlValues .= ",".$validResponse;
-		$sql = "INSERT INTO valutecRequestMod (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
-		$dbTrans->query($sql);
-
-        if ($dbTrans->table_exists('PaycardTransactions')) {
-            $normalized = ($validResponse == 0) ? 4 : 0;
-            $resultCode = 0;
-            $apprNumber = $xml->get('AUTHORIZATIONCODE');
-            $rMsg = '';
-            if ($apprNumber != '' && $xml->get('AUTHORIZED') == 'true') {
-                $normalized = 1;
-                $resultCode = 1;
-                $rMsg = 'Voided';
-            } else {
-                $rMsg = substr($xml->get_first('ERRORMSG'), 0, 100);
-            }
-            $finishQ = sprintf("UPDATE PaycardTransactions SET
-                                    responseDatetime='%s',
-                                    seconds=%f,
-                                    commErr=%d,
-                                    httpCode=%d,
-                                    validResponse=%d,
-                                    xResultCode=%d,
-                                    xApprovalNumber='%s',
-                                    xResponseCode=%d,
-                                    xResultMessage='%s',
-                                    xTransactionID='%s',
-                                    xBalance=%.2f
-                                WHERE paycardTransactionID=%d",
-                                    $now,
-                                    $authResult['curlTime'],
-                                    $authResult['curlErr'],
-                                    $authResult['curlHTTP'],
-                                    $normalized,
-                                    $resultCode,
-                                    $apprNumber,
-                                    $resultCode,
-                                    $rMsg,
-                                    $apprNumber,
-                                    $xml->get('BALANCE'),
-                                    $this->last_paycard_transaction_id
-            );
-            $dbTrans->query($finishQ);
+        if( $xml->get('TRANSACTIONTYPE') && $xml->get('TRANSACTIONTYPE') == $program
+                && $xml->get('AUTHORIZED')
+                && $xml->get('AUTHORIZATIONCODE')
+                && $xml->get('BALANCE')
+        ) {
+            $validResponse = 1; // response was parsed normally, echo'd fields match, and other required fields are present
+        } else {
+            $validResponse = 4; // response was parsed as XML but fields didn't match
         }
+
+        $resultCode = 0;
+        $apprNumber = $xml->get('AUTHORIZATIONCODE');
+        $rMsg = '';
+        if ($apprNumber != '' && $xml->get('AUTHORIZED') == 'true') {
+            $validResponse = 1;
+            $resultCode = 1;
+            $rMsg = 'Voided';
+        } else {
+            $rMsg = substr($xml->get_first('ERRORMSG'), 0, 100);
+        }
+        $finishQ = sprintf("UPDATE PaycardTransactions SET
+                                responseDatetime='%s',
+                                seconds=%f,
+                                commErr=%d,
+                                httpCode=%d,
+                                validResponse=%d,
+                                xResultCode=%d,
+                                xApprovalNumber='%s',
+                                xResponseCode=%d,
+                                xResultMessage='%s',
+                                xTransactionID='%s',
+                                xBalance=%.2f
+                            WHERE paycardTransactionID=%d",
+                                $now,
+                                $authResult['curlTime'],
+                                $authResult['curlErr'],
+                                $authResult['curlHTTP'],
+                                $validResponse,
+                                $resultCode,
+                                $apprNumber,
+                                $resultCode,
+                                $rMsg,
+                                $apprNumber,
+                                $xml->get('BALANCE'),
+                                $this->last_paycard_transaction_id
+        );
+        $dbTrans->query($finishQ);
 
 		if( $vdResult['curlErr'] != CURLE_OK || $vdResult['curlHTTP'] != 200) {
 			if ($authResult['curlHTTP'] == '0'){
