@@ -45,6 +45,9 @@ class GCReceiptMessage extends ReceiptMessage {
 
 		// query database for gc receipt info 
 		$db = Database::tDataConnect();
+        if ($reprint) {
+            $db = Database::mDataConnect();
+        }
 		$order = "";
 		$where = $db->identifier_escape('date')."=".date('Ymd')
 			." AND cashierNo=".$emp." AND laneNo=".$reg." AND transNo=".$trans;
@@ -57,7 +60,7 @@ class GCReceiptMessage extends ReceiptMessage {
           Not tested yet but I don't want to delay the next release
           Andy
         */
-        if (false && $db->table_exists('PaycardTransactions')) {
+        if ($db->table_exists('PaycardTransactions')) {
             $trans_type = $db->concat('p.cardType', "' '", 'p.transType', '');
 
             $sql = "SELECT $trans_type AS transType,
@@ -67,7 +70,7 @@ class GCReceiptMessage extends ReceiptMessage {
                         CASE WHEN p.manual=1 THEN 'Manual' ELSE 'Swiped' END as entryMethod,
                         CASE WHEN transType='VOID' THEN '' ELSE p.xApprovalNumber END AS xAuthorizationCode,
                         p.xBalance,
-                        CASE WHEN transType='VOID' THEN  p.xApprovalNumber ELSE '' END AS xVoidCode,
+                        CASE WHEN transType='VOID' THEN p.xApprovalNumber ELSE '' END AS xVoidCode,
                         p.transID,
                         p.requestDatetime AS datetime
                       FROM PaycardTransactions AS p
@@ -78,7 +81,7 @@ class GCReceiptMessage extends ReceiptMessage {
                         AND p.validResponse=1
                         AND p.xResultMessage LIKE '%Appro%'
                         AND p.cardType = 'Gift'
-                      ORDER BY p.requestDatetime";
+                      ORDER BY p.requestDatetime " . $order;
         }
 
 		$result = $db->query($sql);
@@ -112,7 +115,7 @@ class GCReceiptMessage extends ReceiptMessage {
 			$slip .= ReceiptLib::twoColumns($col1, $col2);
 
 			// name/phone on activation only
-			if( $row['tranType'] == 'Gift Card Activation' && $sigSlip) {
+			if (($row['tranType'] == 'Gift Card Activation' || $row['transType'] == 'Gift Card Issue') && $sigSlip) {
 				$slip .= "\n".ReceiptLib::centerString("Name:  ___________________________________")."\n"
 						."\n".ReceiptLib::centerString("Phone: ___________________________________")."\n";
 			}

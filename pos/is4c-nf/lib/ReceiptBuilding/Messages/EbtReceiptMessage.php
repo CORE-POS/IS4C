@@ -39,8 +39,12 @@ class EbtReceiptMessage extends ReceiptMessage {
 		list($emp, $reg, $trans) = explode('-',$ref);
 		$slip = '';
 
-		// query database for gc receipt info 
+		// query database for receipt info 
 		$db = Database::tDataConnect();
+        if ($reprint) {
+            $db = Database::mDataConnect();
+        }
+
         $query = "SELECT q.amount, q.name, q.PAN, q.refNum,
                     CASE 
                         WHEN q.mode = 'EBTFOOD_Sale' THEN 'Ebt FS Sale'
@@ -69,7 +73,7 @@ class EbtReceiptMessage extends ReceiptMessage {
           Not tested yet but I don't want to delay the next release
           Andy
         */
-        if (false && $db->table_exists('PaycardTransactions')) {
+        if ($db->table_exists('PaycardTransactions')) {
             $trans_type = $db->concat('p.cardType', "' '", 'p.transType', '');
 
             $query = "SELECT p.amount,
