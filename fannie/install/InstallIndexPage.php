@@ -1117,15 +1117,6 @@ class InstallIndexPage extends InstallPage {
 				'ccReceiptView','trans');
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-				'valutecRequest','trans');
-
-		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-				'valutecResponse','trans');
-
-		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-				'valutecRequestMod','trans');
-
-		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 				'voidTransHistory','trans');
 
 		/* invoice stuff is very beta; not documented yet */
