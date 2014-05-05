@@ -554,7 +554,19 @@ static public function deptkey($price, $dept,$ret=array())
 				$ret['output'] = DisplayLib::boxMsg(_("coupon amount greater than department total"));
 				$ret['udpmsg'] = 'errorBeep';
 			} else {
-				TransRecord::addItem("", $row["dept_name"]." Coupon", "I", "CP", "C", $dept, 1, -1 * $price, -1 * $price, -1 * $price, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, $intvoided);
+                TransRecord::addRecord(array(
+                    'description' => $row['dept_name'] . ' Coupon',
+                    'trans_type' => 'I',
+                    'trans_subtype' => 'CP',
+                    'trans_status' => 'C',
+                    'department' => $dept,
+                    'quantity' => 1,
+                    'ItemQtty' => 1,
+                    'unitPrice' => -1 * $price,
+                    'total' => -1 * $price,
+                    'regPrice' => -1 * $price,
+                    'voided' => $intvoided,
+                ));
 				$CORE_LOCAL->set("ttlflag",0);
 				$ret['output'] = DisplayLib::lastpage();
 				$ret['redraw_footer'] = True;
@@ -658,7 +670,21 @@ static public function deptkey($price, $dept,$ret=array())
 				$total = $price * $CORE_LOCAL->get("quantity");
 			}
 
-			TransRecord::addItem($price."DP".$dept, $row["dept_name"], "D", " ", " ", $dept, $CORE_LOCAL->get("quantity"), $price, $total, $price, 0 ,$tax, $foodstamp, 0, 0, $deptDiscount, 0, $CORE_LOCAL->get("quantity"), 0, 0, 0, 0, 0, $intvoided);
+            TransRecord::addRecord(array(
+                'upc' => $price . 'DP' . $dept,
+                'description' => $row['dept_name'],
+                'trans_type' => 'D',
+                'department' => $dept,
+                'quantity' => $CORE_LOCAL->get('quantity'),
+                'ItemQtty' => $CORE_LOCAL->get('quantity'),
+                'unitPrice' => $price,
+                'total' => $price,
+                'regPrice' => $price,
+                'tax' => $tax,
+                'foodstamp' => $foodstamp,
+                'discountable' => $deptDiscount,
+                'voided' => $intvoided,
+            ));
 			$CORE_LOCAL->set("ttlflag",0);
 			//$CORE_LOCAL->set("ttlrequested",0);
 			$ret['output'] = DisplayLib::lastpage();
@@ -746,10 +772,25 @@ static public function ttl()
 
 		if ($CORE_LOCAL->get("percentDiscount") > 0) {
 			if ($CORE_LOCAL->get("member_subtotal") === false) {
-				TransRecord::addItem("", "Subtotal", "", "", "D", 0, 0, MiscLib::truncate2($CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("subtotal")), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7);
+                // 5May14 Andy
+                // Why is this different trans_type & voided from
+                // the other Subtotal record generated farther down?
+                TransRecord::addRecord(array(
+                    'description' => 'Subtotal',
+                    'trans_type' => '',
+                    'trans_status' => 'D',
+                    'unitPrice' => MiscLib::truncate2($CORE_LOCAL->get('transDiscount') + $CORE_LOCAL->get('subtotal')),
+                    'voided' => 7,
+                ));
 			}
 			TransRecord::discountnotify($CORE_LOCAL->get("percentDiscount"));
-			TransRecord::addItem("", $CORE_LOCAL->get("percentDiscount")."% Discount", "C", "", "D", 0, 0, MiscLib::truncate2(-1 * $CORE_LOCAL->get("transDiscount")), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5);
+            TransRecord::addRecord(array(
+                'description' => $CORE_LOCAL->get('percentDiscount') . '% Discount',
+                'trans_type' => 'C',
+                'trans_status' => 'D',
+                'unitPrice' => MiscLib::truncate2(-1 * $CORE_LOCAL->get('transDiscount')),
+                'voided' => 5,
+            ));
 		}
 
 		$temp = self::chargeOk();
@@ -767,18 +808,8 @@ static public function ttl()
 
 		$amtDue = str_replace(",", "", $CORE_LOCAL->get("amtdue"));
 
-		// check in case something else like an
-		// approval code is already being sent
-		// to the cc terminal
-		//if ($CORE_LOCAL->get("ccTermOut")=="idle"){
 		$CORE_LOCAL->set("ccTermOut","total:".
 			str_replace(".","",sprintf("%.2f",$amtDue)));
-		/*
-		$st = sigTermObject();
-		if (is_object($st))
-			$st->WriteToScale($CORE_LOCAL->get("ccTermOut"));
-		*/
-		//}
 		$memline = "";
 		if($CORE_LOCAL->get("memberID") != $CORE_LOCAL->get("defaultNonMem")) {
 			$memline = " #" . $CORE_LOCAL->get("memberID");
@@ -788,11 +819,27 @@ static public function ttl()
 		if ($CORE_LOCAL->get("store") == "wfc") $memline="";
 		$peek = self::peekItem();
 		if (true || substr($peek,0,9) != "Subtotal ") {
-			TransRecord::addItem("", "Subtotal ".MiscLib::truncate2($CORE_LOCAL->get("subtotal")).", Tax ".MiscLib::truncate2($CORE_LOCAL->get("taxTotal")).$memline, "C", "", "D", 0, 0, $amtDue, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3);
+            TransRecord::addRecord(array(
+                'description' => 'Subtotal ' 
+                                 . MiscLib::truncate2($CORE_LOCAL->get('subtotal')) 
+                                 . ', Tax' 
+                                 . MiscLib::truncate2($CORE_LOCAL->get('taxTotal')) 
+                                 . $memline,
+                'trans_type' => 'C',
+                'trans_status' => 'D',
+                'unitPrice' => $amtDue,
+                'voided' => 3,
+            ));
 		}
 	
 		if ($CORE_LOCAL->get("fntlflag") == 1) {
-			TransRecord::addItem("", "Foodstamps Eligible", "", "", "D", 0, 0, MiscLib::truncate2($CORE_LOCAL->get("fsEligible")), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7);
+            TransRecord::addRecord(array(
+                'description' => 'Foodstamps Eligible',
+                'trans_type' => '',
+                'trans_status' => 'D',
+                'unitPrice' => MiscLib::truncate2($CORE_LOCAL->get('fsEligible')),
+                'voided' => 7,
+            ));
 		}
 
 	}
@@ -900,25 +947,19 @@ static public function omtr_ttl()
 
 		// Display discount.
 		if ($CORE_LOCAL->get("percentDiscount") > 0) {
-			TransRecord::addItem("", $CORE_LOCAL->get("percentDiscount")."% Discount", "C", "", "D", 0, 0, MiscLib::truncate2(-1 * $CORE_LOCAL->get("transDiscount")), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5);
+            TransRecord::addRecord(array(
+                'description' => $CORE_LOCAL->get('percentDiscount') . '% Discount',
+                'trans_type' => 'C',
+                'trans_status' => 'D',
+                'unitPrice' => MiscLib::truncate2(-1 * $CORE_LOCAL->get('transDiscount')),
+                'voided' => 5,
+            ));
 		}
 
 		$amtDue = str_replace(",", "", $CORE_LOCAL->get("amtdue"));
 
-		// check in case something else like an
-		// approval code is already being sent
-		// to the cc terminal
-		//if ($CORE_LOCAL->get("ccTermOut")=="idle"){
-
 		$CORE_LOCAL->set("ccTermOut","total:".
 			str_replace(".","",sprintf("%.2f",$amtDue)));
-
-		/*
-		$st = sigTermObject();
-		if (is_object($st))
-			$st->WriteToScale($CORE_LOCAL->get("ccTermOut"));
-		*/
-		//}
 
 		// Compose the member ID string for the description.
 		if($CORE_LOCAL->get("memberID") != $CORE_LOCAL->get("defaultNonMem")) {
@@ -931,11 +972,27 @@ static public function omtr_ttl()
 		// Put out the Subtotal line.
 		$peek = self::peekItem();
 		if (True || substr($peek,0,9) != "Subtotal "){
-			TransRecord::addItem("", "Subtotal ".MiscLib::truncate2($CORE_LOCAL->get("subtotal")).", Tax ".MiscLib::truncate2($CORE_LOCAL->get("taxTotal")).$memline, "C", "", "D", 0, 0, $amtDue, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3);
+            TransRecord::addRecord(array(
+                'description' => 'Subtotal ' 
+                                 . MiscLib::truncate2($CORE_LOCAL->get('subtotal')) 
+                                 . ', Tax' 
+                                 . MiscLib::truncate2($CORE_LOCAL->get('taxTotal')) 
+                                 . $memline,
+                'trans_type' => 'C',
+                'trans_status' => 'D',
+                'unitPrice' => $amtDue,
+                'voided' => 3,
+            ));
 		}
 	
 		if ($CORE_LOCAL->get("fntlflag") == 1) {
-			TransRecord::addItem("", "Foodstamps Eligible", "", "", "D", 0, 0, MiscLib::truncate2($CORE_LOCAL->get("fsEligible")), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7);
+            TransRecord::addRecord(array(
+                'description' => 'Foodstamps Eligible',
+                'trans_type' => '',
+                'trans_status' => 'D',
+                'unitPrice' => MiscLib::truncate2($CORE_LOCAL->get('fsEligible')),
+                'voided' => 7,
+            ));
 		}
 
 	}
@@ -969,18 +1026,44 @@ static public function finalttl()
 {
 	global $CORE_LOCAL;
 	if ($CORE_LOCAL->get("percentDiscount") > 0) {
-		TransRecord::addItem("", "Discount", "C", "", "D", 0, 0, MiscLib::truncate2(-1 * $CORE_LOCAL->get("transDiscount")), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5);
+        TransRecord::addRecord(array(
+            'description' => 'Discount',
+            'trans_type' => 'C',
+            'trans_status' => 'D',
+            'unitPrice' => MiscLib::truncate2(-1 * $CORE_LOCAL->get('transDiscount')),
+            'voided' => 5,
+        ));
 	}
 
-	TransRecord::addItem("Subtotal", "Subtotal", "C", "", "D", 0, 0, MiscLib::truncate2($CORE_LOCAL->get("taxTotal") - $CORE_LOCAL->get("fsTaxExempt")), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11);
+    TransRecord::addRecord(array(
+        'upc' => 'Subtotal',
+        'description' => 'Subtotal',
+        'trans_type' => 'C',
+        'trans_status' => 'D',
+        'unitPrice' => MiscLib::truncate2($CORE_LOCAL->get('taxTotal') - $CORE_LOCAL->get('fsTaxExempt')),
+        'voided' => 11,
+    ));
 
 
 	if ($CORE_LOCAL->get("fsTaxExempt")  != 0) {
-		TransRecord::addItem("Tax", "FS Taxable", "C", "", "D", 0, 0, MiscLib::truncate2($CORE_LOCAL->get("fsTaxExempt")), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7);
+        TransRecord::addRecord(array(
+            'upc' => 'Tax',
+            'description' => 'FS Taxable',
+            'trans_type' => 'C',
+            'trans_status' => 'D',
+            'unitPrice' => MiscLib::truncate2($CORE_LOCAL->get('fsTaxExempt')),
+            'voided' => 7,
+        ));
 	}
 
-	TransRecord::addItem("Total", "Total", "C", "", "D", 0, 0, MiscLib::truncate2($CORE_LOCAL->get("amtdue")), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11);
-
+    TransRecord::addRecord(array(
+        'upc' => 'Total',
+        'description' => 'Total',
+        'trans_type' => 'C',
+        'trans_status' => 'D',
+        'unitPrice' => MiscLib::truncate2($CORE_LOCAL->get('amtdue')),
+        'voided' => 11,
+    ));
 }
 
 /**
@@ -996,8 +1079,17 @@ static public function fsEligible()
 	} else {
 		$CORE_LOCAL->set("fntlflag",1);
 		Database::setglobalvalue("FntlFlag", 1);
-		if ($CORE_LOCAL->get("ttlflag") != 1) return self::ttl();
-		else TransRecord::addItem("", "Foodstamps Eligible", "" , "", "D", 0, 0, MiscLib::truncate2($CORE_LOCAL->get("fsEligible")), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7);
+		if ($CORE_LOCAL->get("ttlflag") != 1) {
+            return self::ttl();
+		} else {
+            TransRecord::addRecord(array(
+                'description' => 'Foodstamps Eligible',
+                'trans_type' => '',
+                'trans_status' => 'D',
+                'unitPrice' => MiscLib::truncate2($CORE_LOCAL->get('fsEligible')),
+                'voided' => 7,
+            ));
+        }
 
 		return true;
 	}
