@@ -56,7 +56,7 @@ class GCReceiptMessage extends ReceiptMessage
         $order = ($sigSlip) ? 'DESC' : 'ASC';
         $trans_type = $db->concat('p.cardType', "' '", 'p.transType', '');
 
-        $sql = "SELECT $trans_type AS transType,
+        $sql = "SELECT $trans_type AS tranType,
                     CASE WHEN p.transType = 'Return' THEN -1*p.amount ELSE p.amount END as amount,
                     p.registerNo as terminalID,
                     p.PAN,
