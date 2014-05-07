@@ -37,7 +37,6 @@ $UNFI_USERNAME = $FANNIE_PLUGIN_SETTINGS['UnfiInvoiceUser'];
 $UNFI_PASSWORD = $FANNIE_PLUGIN_SETTINGS['UnfiInvoicePass'];
 
 $LOGIN_URL = 'https://customers.unfi.com/_login/LoginPage/Login.aspx';
-$LOGIN_POSTBACK = $LOGIN_URL . '?ReturnUrl=%2f_layouts%2f15%2fAuthenticate.aspx%3fSource%3d%252F&amp;Source=%2f';
 $IFRAME_DOMAIN = 'https://stsuser.unfi.com';
 $HOME_URL = 'https://customers.unfi.com/_trust/pages/home.aspx';
 $SESSION_URL = 'https://stsuser.unfi.com/default.aspx/GetSessionValue';
@@ -256,6 +255,7 @@ foreach($dates as $date) {
     );
 
     // not sure if this is actually needed
+    // browser ends up with this cookie
     $fp = fopen($cookies, 'a');
     fwrite($fp, "customers.unfi.com\tFALSE\t/\tFALSE\t0]\tWSS_FullScreenMode\tfalse\n");
     fclose($fp);
@@ -303,9 +303,8 @@ foreach($dates as $date) {
         $invoice_file = curl_exec($ch);
         curl_close($ch);
         fclose($fp);
-        continue;
 
-        echo "Importing invoices for $date\n";
+        echo "Importing invoices for " . $date->Text . "\n";
         if (UIGLib::import($filename, $repeat) === true) {
             unlink($filename);
         } else {
