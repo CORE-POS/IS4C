@@ -1,6 +1,9 @@
 <?php
 
 include('../../../config.php');
+header("Location: {$FANNIE_URL}item/likecodes/LikeCodePriceUploadPage.php");
+exit;
+
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 require($FANNIE_ROOT.'src/SQLManager.php');
 include('../../db.php');
@@ -56,6 +59,7 @@ if (isset($_POST["MAX_FILE_SIZE"])){
 
 }
 else if (isset($_POST['likecode'])){
+    set_time_limit(0);
 	$likecodes = $_POST['likecode'];
 	$prices = $_POST['price'];
 	//$scales = $_POST['scale'];
@@ -64,18 +68,21 @@ else if (isset($_POST['likecode'])){
         SET normal_price=?, modified=".$sql->now()."
         where u.likeCode=?");
     $q2 = $sql->prepare("SELECT upc FROM upcLike WHERE likeCode=?");
+    $model = new ProductsModel($sql);
+    echo '<html><body><p>';
 	echo "<b>Peforming updates</b><br />";
 	for ($i = 0; $i < count($likecodes); $i++){
 		echo "Setting likecode #".$likecodes[$i]." to $".$prices[$i]."<br />";
+        flush();
 		$sql->execute($q, array(trim($prices[$i],' $'), $likecodes[$i]));
 
 		$r2 = $sql->execute($q2, array($likecodes[$i]));
 		while($w2 = $sql->fetch_row($r2)) {
-            $model = new ProductsModel($sql);
             $model->upc($w2['upc']);
             $model->pushToLanes();
         }
 	}
+    echo '</p></body></html>';
 }
 else{
 ?>

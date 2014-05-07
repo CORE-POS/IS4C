@@ -2,8 +2,6 @@
 require_once(dirname(__FILE__).'/../../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-$ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
-
 class PayrollSummaryPage extends FanniePage {
 
 	public function preprocess(){
@@ -34,7 +32,9 @@ class PayrollSummaryPage extends FanniePage {
 
 
 	function body_content(){
-		global $ts_db, $FANNIE_OP_DB, $FANNIE_PLUGIN_SETTINGS;
+		global $FANNIE_OP_DB, $FANNIE_PLUGIN_SETTINGS;
+        $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
+
 		include ('./includes/header.html');
 		$submitted = FormLib::get_form_value('submitted','');
 		$periodID = FormLib::get_form_value('period','');
@@ -320,9 +320,6 @@ class PayrollSummaryPage extends FanniePage {
 
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new PayrollSummaryPage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
 
 ?>

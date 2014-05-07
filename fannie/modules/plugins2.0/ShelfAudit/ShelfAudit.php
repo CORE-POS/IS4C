@@ -34,11 +34,14 @@ class ShelfAudit extends FanniePlugin {
 	  written to ini.php
 	*/
 	public $plugin_settings = array(
-	'ShelfAuditDB' => array('default'=>'core_shelfaudit','label'=>'Database',
-			'description'=>'Database to store inventory information. Can
-					be one of the default CORE databases or a 
-					separate one.')
+	'ShelfAuditDB' => array(
+			'label'=>'Database',
+			'default'=>'core_shelfaudit',
+			'description'=>'Database to store plugin-specific inventory tables.
+				Can be one of the default CORE databases or a separate one.'
+		)
 	);
+
 
 	public $plugin_description = 'Plugin for scanning items on hand';
 

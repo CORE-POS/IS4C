@@ -1,7 +1,6 @@
 <?php
 /*
 	COPY / RENAME TO ini.php
-	MOSTLY SANE DEFAULTS
 */
 
 /*******************************************************************************
@@ -25,104 +24,13 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-if (!isset($CORE_LOCAL))
-
+if (!isset($CORE_LOCAL)) {
 	require_once(realpath(dirname(__FILE__)."/lib/LocalStorage/conf.php"));
+}
 
 
 /************************************************************************************
 General Settings
 ************************************************************************************/
 
-$CORE_LOCAL->set("OS",'other', True);
-$CORE_LOCAL->set("browserOnly",1, True);
-$CORE_LOCAL->set("store",'NewPI', True);
-$CORE_LOCAL->set("laneno",1, True);
-
-/************************************************************************************
-Data Connection Settings
-************************************************************************************/
-$CORE_LOCAL->set("mServer",'localhost', True);
-$CORE_LOCAL->set("mDatabase",'COREserver', True);
-$CORE_LOCAL->set("mDBMS",'mysql', True);
-				// Options: mssql, mysql, pgsql
-$CORE_LOCAL->set("mUser",'', True);
-$CORE_LOCAL->set("mPass",'', True);
-
-$CORE_LOCAL->set("DBMS",'mysql', True);
-$CORE_LOCAL->set("tDatabase",'translog', True);
-$CORE_LOCAL->set("pDatabase",'opdata', True);
-$CORE_LOCAL->set("localhost",'10.0.1.120', True);
-$CORE_LOCAL->set("localUser",'', True);
-$CORE_LOCAL->set("localPass",'', True);
-
-/***********************************************************************************
-Receipt & Printer Settings
-************************************************************************************/
-
-$CORE_LOCAL->set("print",1, True);
-$CORE_LOCAL->set("newReceipt",1, True);
-
-//$CORE_LOCAL->set("printerPort","LPT1:", True);
-//$CORE_LOCAL->set("printerPort","/dev/lp0", True);
-$CORE_LOCAL->set("printerPort",'fakereceipt.txt', True);
-
-$CORE_LOCAL->set("receiptHeaderCount",0, True);
-$CORE_LOCAL->set("receiptFooterCount",0, True);
-$CORE_LOCAL->set("ckEndorseCount",0, True);
-$CORE_LOCAL->set("chargeSlipCount",0, True);
-
-/***********************************************************************************
-Screen Message Settings
-************************************************************************************/
-
-$CORE_LOCAL->set("welcomeMsgCount",0, True);
-$CORE_LOCAL->set("trainingMsgCount",0, True);
-$CORE_LOCAL->set("farewellMsgCount",0, True);
-
-$CORE_LOCAL->set("alertBar",'New Pi - Alert', True);
-
-/***********************************************************************************
-Credit Card
-************************************************************************************/
-
-$CORE_LOCAL->set("CCintegrate",1, True);
-$CORE_LOCAL->set("gcIntegrate",1, True);
-$CORE_LOCAL->set("ccLive",0, True);
-$CORE_LOCAL->set("RegisteredPaycardClasses",array('MercuryGift','GoEMerchant'), True);
-
-/***********************************************************************************
-Other Settings
-************************************************************************************/
-
-$CORE_LOCAL->set("discountEnforced",1, True);
-$CORE_LOCAL->set("lockScreen",1, True);
-
-$CORE_LOCAL->set("memlistNonMember",0, True);
-$CORE_LOCAL->set("cashOverLimit",1, True);
-$CORE_LOCAL->set("dollarOver",50, True);
-$CORE_LOCAL->set("defaultNonMem",'11', True);
-
-$CORE_LOCAL->set("CustomerDisplay",0, True);
-$CORE_LOCAL->set("touchscreen",False, True);
-
-//$CORE_LOCAL->set("SigCapture",'COM1', True);
-$CORE_LOCAL->set("SigCapture",'', True);
-$CORE_LOCAL->set("visitingMem",'', True);
-$CORE_LOCAL->set("scalePort",'', True);
-$CORE_LOCAL->set("scaleDriver",'', True);
-$CORE_LOCAL->set("CCSigLimit",0, True);
-$CORE_LOCAL->set("SpecialUpcClasses",array(), True);
-$CORE_LOCAL->set("DiscountTypeCount",5, True);
-$CORE_LOCAL->set("DiscountTypeClasses",array('NormalPricing','EveryoneSale','MemberSale','CaseDiscount','StaffSale'), True);
-$CORE_LOCAL->set("PriceMethodCount",3, True);
-$CORE_LOCAL->set("PriceMethodClasses",array('BasicPM','GroupPM','QttyEnforcedGroupPM'), True);
-$CORE_LOCAL->set("enableFranking",0, True);
-$CORE_LOCAL->set("BottleReturnDept",'', True);
-$CORE_LOCAL->set("ReceiptHeaderImage",'', True);
-$CORE_LOCAL->set("timeout",180000, True);
-$CORE_LOCAL->set("TRDesiredTenders",array(), True);
-$CORE_LOCAL->set("DrawerKickMedia", array(), True);
-
-@include_once(dirname(__FILE__).'/ini-local.php');
 ?>

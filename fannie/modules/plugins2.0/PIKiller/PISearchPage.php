@@ -132,4 +132,4 @@ class PISearchPage extends PIKillerPage {
 	}
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();

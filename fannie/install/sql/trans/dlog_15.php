@@ -20,6 +20,9 @@ Columns:
 	ItemQtty double
 	card_no int
 	trans_id int
+    pos_row_id int
+    store_row_id int
+    trans_num
 
 Depends on:
 	dlog_90_view (view)
@@ -72,12 +75,14 @@ $CREATE['trans.dlog_15'] = "
           `VolSpecial` double default NULL,
           `mixMatch` VARCHAR(13) default NULL,
           `matched` tinyint(4) default NULL,
-	  `memType` tinyint(2) default NULL,
-	  `staff` tinyint(4) default NULL,
-	  `numflag` int(11) default 0 NULL,
-	  `charflag` varchar(2) default '' NULL,
+        `memType` tinyint(2) default NULL,
+        `staff` tinyint(4) default NULL,
+        `numflag` int(11) default 0 NULL,
+        `charflag` varchar(2) default '' NULL,
           `card_no` varchar(255) default NULL,
           `trans_id` int(11) default NULL,
+          `pos_row_id` bigint unsigned,
+          `store_row_id` bigint unsigned,
           `trans_num` varchar(25) default NULL
 	 )";
 
@@ -119,6 +124,8 @@ if ($dbms == "MSSQL"){
 			[charflag] [nvarchar] (2) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
                         [card_no] [nvarchar] (6) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
                         [trans_id] [int] NOT NULL ,
+                        [pos_row_id [bigint] ,
+                        [store_row_id] [bigint] ,
                         [trans_num] [nvarchar] (25) COLLATE SQL_Latin1_General_CP1_CI_AS NULL 
 		)
 	";

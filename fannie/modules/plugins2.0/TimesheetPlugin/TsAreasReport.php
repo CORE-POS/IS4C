@@ -2,8 +2,6 @@
 require_once(dirname(__FILE__).'/../../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-$ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
-
 class TsAreasReport extends FanniePage {
 
 	function preprocess(){
@@ -13,7 +11,9 @@ class TsAreasReport extends FanniePage {
 	}
 
 	function body_content(){
-		global $ts_db, $FANNIE_OP_DB, $FANNIE_PLUGIN_SETTINGS;
+		global $FANNIE_OP_DB, $FANNIE_PLUGIN_SETTINGS;
+        $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
+
 		include('./includes/header.html');
 
 		echo "<form action='".$_SERVER['PHP_SELF']."' method=GET>";
@@ -87,10 +87,6 @@ class TsAreasReport extends FanniePage {
 	}
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new TsAreasReport();
-	$obj->draw_page();
-}
-
+FannieDispatch::conditionalExec(false);
 
 ?>

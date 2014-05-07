@@ -151,12 +151,15 @@ class PIMemberPage extends PIKillerPage {
 			$custdata->memType(FormLib::get_form_value('memType'));
 			$custdata->MemDiscountLimit(FormLib::get_form_value('chargelimit'));
 			$custdata->ChargeLimit(FormLib::get_form_value('chargelimit'));
+            $custdata->ChargeOk( FormLib::get('chargelimit') == 0 ? 0 : 1 );
 
-			$default = $this->get_model($dbc, 'MemdefaultsModel', array('memtype'=>$custdata->memType()));
-			$custdata->Type($default->cd_type());
+			$default = $this->get_model($dbc, 'MemtypeModel', array('memtype'=>$custdata->memType()));
+            if ($custdata->Type() == 'PC' || $custdata->Type() == 'REG') {
+                $custdata->Type($default->custdataType());
+            }
 			$custdata->Discount($default->discount());
 			$custdata->staff($default->staff());
-			$custdata->SSI($default->SSI());
+			$custdata->SSI($default->ssi());
 		}
 
 		$custdata->save();
@@ -221,6 +224,10 @@ class PIMemberPage extends PIKillerPage {
 		echo "<tr>";
 		echo "<td class=\"greenbg yellowtxt\">Owner Num</td>";
 		echo "<td class=\"greenbg yellowtxt\">".$this->card_no."</td>";
+
+        if (!isset($this->__models['custdata'][0])) {
+            $this->__models['custdata'][0] = new CustdataModel($dbc);
+        }
 		
 		$status = $this->__models['custdata'][0]->Type();
 		if($status == 'PC') $status='ACTIVE';
@@ -254,6 +261,9 @@ class PIMemberPage extends PIKillerPage {
 		}
 		echo '</td>';
 		echo "<td><a href=\"{$FANNIE_URL}ordering/clearinghouse.php?card_no=".$this->card_no."\">Special Orders</a></td>";
+        if (FannieAuth::validateUserQuiet('GiveUsMoney')) {
+            echo "<td><a href=\"{$FANNIE_URL}modules/plugins2.0/GiveUsMoneyPlugin/GumMainPage.php?id=".$this->card_no."\">Owner Loans</a></td>";
+        }
 		echo "</tr>";
 
 		echo "<tr>";
@@ -371,7 +381,7 @@ class PIMemberPage extends PIKillerPage {
 		echo '</tr>';
 
 		echo '<tr>';
-		echo '<td>';
+		echo '<td colspan="3">';
 		if (FormLib::get_form_value('edit',False) === False){
 			if ($this->current_user){
 				echo '<input type="hidden" name="edit" />';
@@ -381,6 +391,10 @@ class PIMemberPage extends PIKillerPage {
 				echo '<input type="hidden" name="login" />';
 				echo '<input type="submit" value="Log In" />';
 			}
+            echo '&nbsp;&nbsp;';
+            echo '<a href="PIMemberPage.php?id=' . ($this->card_no - 1) . '">Prev Mem</a>';
+            echo '&nbsp;&nbsp;';
+            echo '<a href="PIMemberPage.php?id=' . ($this->card_no + 1) . '">Next Mem</a>';
 		}
 		else
 			echo '<input type="submit" value="Save Member" />';
@@ -485,6 +499,6 @@ class PIMemberPage extends PIKillerPage {
 	}
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

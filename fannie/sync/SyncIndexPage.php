@@ -28,7 +28,7 @@
 */
 
 include('../config.php');
-include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class SyncIndexPage extends FanniePage {
 
@@ -60,9 +60,6 @@ class SyncIndexPage extends FanniePage {
 	}
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
-	$obj = new SyncIndexPage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
 
 ?>

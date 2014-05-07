@@ -23,12 +23,23 @@
 
 include(dirname(__FILE__).'/../../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-$dbc = FannieDB::get($FANNIE_OP_DB);
 
 class OverShortDayPage extends FanniePage {
 	
+	// 10Nov13 EL Added title and header
+	protected $title = 'Over/Short Whole Day';
+ 	protected $header = 'Over/Short Whole Day';
 	protected $window_dressing = False;
 	protected $auth_classes = array('overshorts');
+
+	// 10Nov13 EL Added constructor
+	public function __construct() {
+		global $FANNIE_WINDOW_DRESSING;
+		// To set authentication.
+		parent::__construct();
+		if (isset($FANNIE_WINDOW_DRESSING))
+			$this->has_menus($FANNIE_WINDOW_DRESSING);
+	}
 
 	function preprocess(){
 		$action = FormLib::get_form_value('action',False);
@@ -68,7 +79,7 @@ class OverShortDayPage extends FanniePage {
 			$empsR = null;
 			if (FormLib::get_form_value('emp_no') !== ''){
 				/* get info for single employee */
-				$empsQ = "SELECT e.firstname,e.emp_no FROM "
+				$empsQ = "SELECT e.firstname, e.emp_no FROM "
 					.$FANNIE_OP_DB.$dbc->sep()."employees AS e
 					WHERE emp_no=?";
 				$empsP = $dbc->prepare_statement($empsQ);
@@ -78,6 +89,7 @@ class OverShortDayPage extends FanniePage {
 				/* determine who worked that day (and their first names) */
 				$empsQ = "select e.firstname,d.emp_no from $dlog as d,$FANNIE_OP_DB".$dbc->sep()."employees as e where
 				      d.tdate BETWEEN ? AND ? and trans_type='T' and d.emp_no = e.emp_no
+                      AND d.upc <> '0049999900001'
 				      group by d.emp_no,e.firstname order by e.firstname";
 				$empsP = $dbc->prepare_statement($empsQ);
 				$empsR=$dbc->exec_statement($empsP,array($date.' 00:00:00',$date.' 23:59:59'));
@@ -537,7 +549,10 @@ function save(){
 }
 
 a {
-  color: blue;
+	<?php
+  if (!$this->window_dressing)
+		echo "color: blue;";
+	?>
 }
 
 body, table, td, th {
@@ -554,15 +569,17 @@ body, table, td, th {
 		$this->add_script($FANNIE_URL.'src/jquery/jquery.js');
         $user = FannieAuth::checkLogin();
 		ob_start();
+		if (!$this->window_dressing) {
+			echo "<html>";
+			echo "<head><title>{$this->title}</title>";
+			echo "</head>";
+			echo "<body>";
+		}
 		?>
-		<html>
-		<head><title>Overshorts</title>
-		</head>
-		<body>
-		<form onsubmit="setdate(); return false;" >
+		<form style='margin-top:1.0em;' onsubmit="setdate(); return false;" >
 		<b>Date</b>:<input type=text id=date onfocus="showCalendarControl(this);" />
 		<input type=submit value="Set" />
-		<input type=hidden id=user value="<?php echo $user ?>" />
+		<input type=hidden id=user value="<?php if(isset($user)) echo $user ?>" />
 		</form>
 
 		<div id="forms">
@@ -574,7 +591,5 @@ body, table, td, th {
 
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
-	$obj = new OverShortDayPage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+

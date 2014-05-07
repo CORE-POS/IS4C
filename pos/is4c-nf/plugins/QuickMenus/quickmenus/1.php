@@ -1,7 +1,11 @@
 <?php
 
 $my_menu = array(
-	"Bards Gluten Free Sorghum Beer" => "1000",
+	"Charge Available Card" => "CCFROMCACHE",
+	"Reset Terminal (Quick)" => "TERMRESET",
+	"Tender External CC" => "MANUALCC",
+    "Lookup Transaction" => "PCLOOKUP",
+	"Reboot Terminal (Slow)" => "TERMREBOOT",
 );
 
 ?>

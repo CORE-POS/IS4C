@@ -138,17 +138,34 @@ function qualified_names(){
 	return $ret;
 }
 
-function loaddata($sql, $table){
+function loaddata($sql, $table) 
+{
 	global $FANNIE_ROOT, $FANNIE_SERVER;
+    $loaded = 0;
+    $success = true;
 	if (file_exists("{$FANNIE_ROOT}install/sample_data/$table.sql")){
+        echo " from $table.sql<br>\n";
 		$fp = fopen("{$FANNIE_ROOT}install/sample_data/$table.sql","r");
 		while($line = fgets($fp)){
 			$prep = $sql->prepare_statement("INSERT INTO $table VALUES $line");
-			$sql->exec_statement($prep);
+			$try = $sql->exec_statement($prep);
+            if ($try === false) {
+                $error = $sql->error();
+                $success = false;
+                echo "<br><small style='color:red;'>"
+                    . (strlen($error)? $error : 'Unknown error')
+                    . " executing:<br><code>{$query}</code></small><br>\n";
+            } else {
+                if (++$loaded % 100 === 0) {
+                    echo "<br>\n";
+                    flush();
+                }
+                echo ".";
+            }
 		}
 		fclose($fp);
-	}
-	else if (file_exists("{$FANNIE_ROOT}install/sample_data/$table.csv")){
+	} else if (file_exists("{$FANNIE_ROOT}install/sample_data/$table.csv")) {
+        echo " from $table.csv ";
 		$LOCAL = 'LOCAL';
 		if ($FANNIE_SERVER == '127.0.0.1' || $FANNIE_SERVER == 'localhost')
 			$LOCAL = '';
@@ -160,12 +177,22 @@ function loaddata($sql, $table){
 			OPTIONALLY ENCLOSED BY '\"'
 			LINES TERMINATED BY '\\r\\n'");
 		$try = $sql->exec_statement($prep);
+        if ($try === false) {
+            $error = $sql->error();
+            echo "<br><span style='color:red;'>"
+                . (strlen($error)? $error : 'Unknown error')
+                . " executing:<br><code>{$query}</code><br></span><br>\n";
+        }
 		/** alternate implementation
 		    for non-mysql and/or LOAD DATA LOCAL
 		    not allowed */
-		if ($try === False){
+        if ($try !== false) {
+            echo " succeeded!<br>\n";
+            $loaded = 'All';
+        } else {
+            echo " line-by-line<br>\n";
 			$fp = fopen("{$FANNIE_ROOT}install/sample_data/$table.csv",'r');
-			$stmt = False;
+			$stmt = false;
 			while(!feof($fp)){
 				$line = fgetcsv($fp);
 				if (!is_array($line)) continue;
@@ -177,10 +204,33 @@ function loaddata($sql, $table){
 					$stmt = $sql->prepare_statement($query);
 				}
 				$sql->exec_statement($stmt, $line);
-			}
+                if ($try === false) {
+                    $error = $sql->error();
+                    $success = false;
+                    echo "<br><span style='color:red;'>"
+                        . (strlen($error)? $error : 'Unknown error')
+                        . " executing:<br><code>{$query}</code><br>("
+                        . "'" . join("', '", $line) . "')"
+                        . ' [' . count($line) . ' operands]'
+                        . "</span><br>\n";
+                } else {
+                    if (++$loaded % 100 === 0) {
+                        echo "<br>\n";
+                        flush();
+                    }
+                    echo ".";
+                }
+            }
 			fclose($fp);
 		}
-	}
+	} else {
+        echo "<br><span style='color:red;'>Table data not found in either {$table}.sql or {$table}.csv</span><br>\n";
+    }
+
+    echo ($success? ' success!' : "<br>\n'$table' load " . ($loaded? 'partial success;' : 'failed;'))
+        . " $loaded " . ($loaded == 1? 'record was' : 'records were') . " loaded.<br>\n";
+
+    return $success;
 }
 
 ?>

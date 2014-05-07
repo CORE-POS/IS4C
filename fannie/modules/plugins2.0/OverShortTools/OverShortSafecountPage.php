@@ -23,7 +23,6 @@
 
 include(dirname(__FILE__).'/../../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-$dbc = FannieDB::get($FANNIE_OP_DB);
 
 class OverShortSafecountPage extends FanniePage {
 
@@ -539,9 +538,6 @@ class OverShortSafecountPage extends FanniePage {
 
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
-	$obj = new OverShortSafecountPage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
 
 ?>

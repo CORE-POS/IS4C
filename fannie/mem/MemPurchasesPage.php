@@ -111,5 +111,5 @@ class MemPurchasesPage extends FannieRESTfulPage
 
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 

@@ -412,6 +412,8 @@ function create_op_dbs($db,$type){
 
     InstallUtilities::createIfNeeded($db, $type, $name, 'custdata', 'op', $errors);
 
+    InstallUtilities::createIfNeeded($db, $type, $name, 'memtype', 'op', $errors);
+
     InstallUtilities::createIfNeeded($db, $type, $name, 'memberCards', 'op', $errors);
 
     InstallUtilities::createIfNeeded($db, $type, $name, 'custPreferences', 'op', $errors);
@@ -469,7 +471,14 @@ function create_op_dbs($db,$type){
 
     InstallUtilities::createIfNeeded($db, $type, $name, 'autoCoupons', 'op', $errors);
 
-    InstallUtilities::createIfNeeded($db, $type, $name, 'memchargebalance', 'op', $errors);
+    InstallUtilities::createIfNeeded($db, $type, $name, 'ShrinkReasons', 'op', $errors);
+
+    /**
+      @deprecated 3Jan14
+      Only used in PrehLib::chargeOk()
+      Not really necessary to have a dedicated view
+    */
+    //InstallUtilities::createIfNeeded($db, $type, $name, 'memchargebalance', 'op', $errors);
 
     InstallUtilities::createIfNeeded($db, $type, $name, 'unpaid_ar_today', 'op', $errors);
 
@@ -490,18 +499,6 @@ function create_trans_dbs($db,$type){
     global $CORE_LOCAL;
     $name = $CORE_LOCAL->get('tDatabase');
     $errors = array();
-
-    /**
-    alog and its variants are never used.
-    @deprecated
-    InstallUtilities::createIfNeeded($db, $type, $name, 'activities', 'trans', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'alog', 'trans', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'activitylog', 'trans', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'activitytemplog', 'trans', $errors);
-    */
 
     InstallUtilities::createIfNeeded($db, $type, $name, 'dtransactions', 'trans', $errors);
 
@@ -533,7 +530,11 @@ function create_trans_dbs($db,$type){
 
     InstallUtilities::createIfNeeded($db, $type, $name, 'staffdiscountremove', 'trans', $errors);
 
+    /**
+     @deprecated 10Mar14 by Andy
+     View layer isn't necessary; can query suspended table directly
     InstallUtilities::createIfNeeded($db, $type, $name, 'suspendedtoday', 'trans', $errors);
+    */
 
     InstallUtilities::createIfNeeded($db, $type, $name, 'couponApplied', 'trans', $errors);
 
@@ -1015,6 +1016,8 @@ function create_trans_dbs($db,$type){
     if(!$db->table_exists('rp_receipt',$name)){
         InstallUtilities::dbStructureModify($db,'rp_receipt',$rprV,$errors);
     }
+
+    InstallUtilities::createIfNeeded($db, $type, $name, 'PaycardTransactions', 'trans', $errors);
 
     InstallUtilities::createIfNeeded($db, $type, $name, 'efsnetRequest', 'trans', $errors);
 
@@ -2520,30 +2523,6 @@ function create_min_server($db,$type){
         AND emp_no <> 9999 and register_no <> 99";
     if(!$db->table_exists("dlog",$name)){
         $errors = InstallUtilities::dbStructureModify($db,'dlog',$dlogQ,$errors);
-    }
-
-    
-
-    $alogQ = "CREATE TABLE alog (
-        `datetime` datetime,
-        LaneNo smallint,
-        CashierNo smallint,
-        TransNo int,
-        Activity tinyint,
-        `Interval` real)";
-    if ($type == 'mssql'){
-        $alogQ = str_replace("`datetime`","[datetime]",$alogQ);
-        $alogQ = str_replace("`","",$alogQ);
-    }
-    if(!$db->table_exists("alog",$name)){
-        InstallUtilities::dbStructureModify($db,'alog',$alogQ,$errors);
-    }
-
-    $susToday = "CREATE VIEW suspendedtoday AS
-        SELECT * FROM suspended 
-        WHERE datetime >= " . $db->curdate();
-    if (!$db->table_exists("suspendedtoday",$name)){
-        InstallUtilities::dbStructureModify($db,'suspendedtoday',$susToday,$errors);
     }
 
     $efsrq = "CREATE TABLE efsnetRequest (

@@ -19,6 +19,25 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
      */
     $logged_in = checkLogin();
 
+    $p_columns = '
+        p.upc,
+        p.description,
+        p.normal_price,
+        p.pricemethod,
+        p.quantity,
+        p.groupprice,
+        p.special_price,
+        p.end_date,
+        p.department,
+        p.tax,
+        p.foodstamp,
+        p.scale,
+        p.qttyEnforced,
+        p.discount,
+        p.modified,
+        p.local
+    '; // last comma omitted on purpose
+
     $savedUPC="";
     $queryItem = "";
     $args = array();
@@ -28,7 +47,7 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
 	case 'UPC':
 		$upc = str_pad($upc,13,0,STR_PAD_LEFT);
 		$savedUPC = $upc;
-		$queryItem = "SELECT p.*,x.distributor,x.manufacturer,
+		$queryItem = "SELECT {$p_columns},x.distributor,x.manufacturer,
 				u.brand,u.description as udesc,u.sizing,u.photo,
 				u.long_text,u.enableOnline,e.expires
 				FROM products as p left join 
@@ -40,7 +59,7 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
                 $args = array($upc, $upc);
 		break;
 	case 'SKU':
-		$queryItem = "SELECT p.*,x.distributor,x.manufacturer,
+		$queryItem = "SELECT {$p_columns},x.distributor,x.manufacturer,
 				u.brand,u.description as udesc,u.sizing,u.photo,
 				u.long_text,u.enableOnline,e.expires
 				FROM products as p inner join 
@@ -53,7 +72,7 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
                 $args = array($upc);
 		break;
 	case 'Brand Prefix':
-	      $queryItem = "SELECT p.*,x.distributor,x.manufacturer ,
+		$queryItem = "SELECT {$p_columns},x.distributor,x.manufacturer,
 				u.brand,u.description as udesc,u.sizing,u.photo,
 				u.long_text,u.enableOnline,e.expires
 			FROM products as p 
@@ -67,7 +86,7 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
 	}
     }
     else{
-        $queryItem = "SELECT p.*,x.distributor,x.manufacturer ,
+		$queryItem = "SELECT {$p_columns},x.distributor,x.manufacturer,
 			u.brand,u.description as udesc,u.sizing,u.photo,
 				u.long_text,u.enableOnline,e.expires
 			FROM products as p left join 
@@ -229,7 +248,7 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
 	$upc = $rowItem['upc'];
 
 	
-	$currentDepartment = $rowItem[12];
+	$currentDepartment = $rowItem['department'];
 	$prev = $next = 0;
 	$modified = $rowItem['modified'];
 	deptPrevNext($currentDepartment,$upc,$prev,$next);
@@ -239,31 +258,30 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
 	if(!empty($likeCodeRow[1]))
 		$likecode = $likeCodeRow[1];
 
-	//echo $rowItem['upc'] . " - " . $rowItem['description'] . "<br>";
 	        echo "<head><title>Update Item</title></head>";
         echo "<BODY onLoad='putFocus(0,2);'>";
 	printMods($savedUPC);
         echo "<form action=updateItemTest.php method=post>";
         echo "<table>";
-        echo "<tr><td align=right><b>UPC</b></td><td><font color='red'>".$rowItem[0]."</font><input type=hidden value='$rowItem[0]' name=upc>";
+        echo "<tr><td align=right><b>UPC</b></td><td><font color='red'>".$rowItem['upc']."</font><input type=hidden value='{$rowItem['upc']}' name=upc>";
         if ($prev != -1)
         		echo	"&nbsp;&nbsp;<a href=productTest.php?upc=$prev>Previous</a>";
         	if ($next != -1)
         		echo "&nbsp;&nbsp;<a href=productTest.php?upc=$next>Next</a>";
 	    echo "</td>";
-        echo "</tr><tr><td><b>Description</b></td><td><input type=text size=35 maxlength=30 value=\"$rowItem[1]\" name=descript></td>";
-        echo "<td><b>Price</b></td><td>$<input type=text value='$rowItem[2]' name=price></td></tr>";
+        echo "</tr><tr><td><b>Description</b></td><td><input type=text size=35 maxlength=30 value=\"{$rowItem['description']}\" name=descript></td>";
+        echo "<td><b>Price</b></td><td>$<input type=text value='{$rowItem['normal_price']}' name=price></td></tr>";
 	echo "<tr><td colspan=2 align=right><b>Enable Volume Price</b> <input type=checkbox name=doVolume ";
-	echo ($rowItem[4] != 0 ? "checked" : "")." /></td><td colspan=2>";
-	echo "<input type=hidden name=pricemethod value=\"$rowItem[4]\">";
-	echo "<input type=text size=4 name=vol_qtty value=".($rowItem[5] != 0 ? $rowItem[5] : "\"\"")." />";
-	echo " for $<input type=text size=4 name=vol_price value=".($rowItem[4] != 0 ? $rowItem[4] : "\"\"")." /></td></tr>";
+	echo ($rowItem['pricemethod'] != 0 ? "checked" : "")." /></td><td colspan=2>";
+	echo "<input type=hidden name=pricemethod value=\"{$rowItem['pricemethod']}\">";
+	echo "<input type=text size=4 name=vol_qtty value=".($rowItem['quantity'] != 0 ? $rowItem['quantity'] : "\"\"")." />";
+	echo " for $<input type=text size=4 name=vol_price value=".($rowItem['groupprice'] != 0 ? $rowItem['groupprice'] : "\"\"")." /></td></tr>";
         echo "<tr><td><b>Manufacturer</b></td><td><input type=text size=35 value=\"{$rowItem['manufacturer']}\" name=manufacturer /></td>";
         echo "<td><b>Distributor</b></td><td>&nbsp;<input type=text value=\"{$rowItem['distributor']}\" name=distributor /></td></tr>";
-        echo "<a href=/git/fannie/reports/PriceHistory/?upc=$rowItem[0] target=blank>Click for Price History</a>";
-        if($rowItem[6] <> 0){
-           echo "<tr><td><font size=+1 color=green><b>Sale Price:</b></font></td><td><font size=+1 color=green>$rowItem[6]</font>";
-           echo "<td colspan=2><font size=+1 color=green>End Date: $rowItem[11]</font></td><tr>";
+        echo "<a href=/git/fannie/reports/PriceHistory/?upc={$rowItem['upc']} target=blank>Click for Price History</a>";
+        if($rowItem['special_price'] <> 0){
+           echo "<tr><td><font size=+1 color=green><b>Sale Price:</b></font></td><td><font size=+1 color=green>{$rowItem['special_price']}</font>";
+           echo "<td colspan=2><font size=+1 color=green>End Date: {$rowItem['end_date']}</font></td><tr>";
 	   $findBatchQ = $sql->prepare("select batchName from batches as b, batchList as l
 			  where b.batchID = l.batchID and l.upc like ?
 			  and ".$sql->curdate()." BETWEEN b.startDate AND b.endDate");
@@ -296,7 +314,7 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
 				WHERE dept_no = ?");
                         $result3 = $sql->execute($query3, $rowItem['department']);
                         $row3 = $sql->fetch_array($result3);
-                echo '<select name="drop">';
+                echo '<select name="dept">';
                 $result2 = $sql->query($query2);
                 while($row2 = $sql->fetch_row($result2)) {
                     printf('<option %s value="%d">%d %s</option>',
@@ -307,34 +325,34 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
                 echo " </td>";
                 echo "<td align=right>Reg ";
                 echo "<input type=radio name=tax value=1";
-                        if($rowItem[14]==1){
+                        if($rowItem['tax']==1){
                                 echo " checked";
                         }
                 echo "><br>Deli <input type=radio name=tax value=2";
-                        if($rowItem[14]==2){
+                        if($rowItem['tax']==2){
                                 echo " checked";
                         }
                 echo "><br>NoTax <input type=radio name=tax value=0";
-                        if($rowItem[14]==0){
+                        if($rowItem['tax']==0){
                                 echo " checked";
                         }
                 echo "></td><td align=center><input type=checkbox value=1 name=FS";
-                        if($rowItem[15]==1){
+                        if($rowItem['foodstamp']==1){
                                 echo " checked";
                         }
                 echo "></td><td align=center><input type=checkbox value=1 name=Scale";
-                        if($rowItem[16]==1){
+                        if($rowItem['scale']==1){
                                 echo " checked";
                         }
                 echo "></td><td align=center><input type=checkbox value=1 name=QtyFrc";
-                        if($rowItem[26]==1){
+                        if($rowItem['qttyEnforced']==1){
                                 echo " checked";
                         }
                 echo "></td><td align=center><input type=checkbox value=0 name=NoDisc";
-                        if($rowItem[22]==0){
+                        if($rowItem['discount']==0){
                                 echo " checked";
                         }
-                echo ">"./*what".$rowItem[21].*/"</td><input type=hidden value=1 name=inUse";
+                echo ">" . "</td><input type=hidden value=1 name=inUse";
                 echo "></td><td align=center><select name=local>";
 			printf("<option value=0 %s>No</option>",($rowItem['local']==0?'selected':''));
 			printf("<option value=1 %s>SC</option>",($rowItem['local']==1?'selected':''));
@@ -365,20 +383,20 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
 		echo "<tr><td colspan=4>";
 		// kick out a scale input for upcs starting with 002
 		// pass variables with prefix s_
-		if (preg_match("/^002/",$rowItem[0]) && $row3[1] == 3){
-		   $scaleQuery = $sql->prepare("select * from scaleItems where plu=?'");
-		   $scaleRes = $sql->execute($scaleQuery, array($rowItem['upc']));
+		if (preg_match("/^002/",$rowItem['upc']) && $row3[1] == 3){
+		   $scaleQuery = $sql->prepare("select * from scaleItems where plu=?");
+		   $scaleRes = $sql->execute($scaleQuery, array($upc));
 		   $scaleRow = $sql->fetch_row($scaleRes);
 		   echo "<table border=1 cellspacing=0 cellpadding=7><tr>";
 		   echo "<td bgcolor=\"#FFFFCC\">";
 		   echo "Scale Information:<br />";
-		   echo "UPC: <font color=red>{$rowItem[0]}</font><p />";
-		   echo "<input type=hidden name=s_plu value={$rowItem[0]}>";
+		   echo "UPC: <font color=red>{$rowItem['upc']}</font><p />";
+		   echo "<input type=hidden name=s_plu value={$rowItem['upc']}>";
 		   // update:  some items might need a longer description
 		   echo "Longer description:";
 		   // only show a longer description if the description differs
 		   echo "&nbsp;&nbsp;<input type=text name=s_longdesc size=40 maxlength=100";
-		   if ($rowItem[1] != $scaleRow[2]){
+		   if ($rowItem['description'] != $scaleRow[2]){
 		     echo " value='{$scaleRow[2]}'";
 		   }
 		   echo ">";
@@ -387,7 +405,7 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
 		   //   Unnecessary to users but expected by csv package
 		   echo "<input type=hidden name=s_exception value=0.00>";
 		   echo "<table border=1 cellspacing=0 cellpadding=7><tr>";
-		   echo "<th>Weight</th><th>By Count</th><th>Tare</th><th>Shelf Life</th><th>Label</th><th>Safehandling</th>";
+		   echo "<th>Weight</th><th>By Count</th><th>Tare</th><th>Shelf Life</th><th>Net Wt (oz)</th><th>Label</th><th>Safehandling</th>";
 		   echo "</tr><tr><td>";
 		   echo "<input type=radio name=s_type value=\"Random Weight\"";
 		   if ($scaleRow[4] == 0){
@@ -405,36 +423,38 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
 		   }
 		   echo "</td><td align=center>";
 		   echo "<input type=checkbox name=s_bycount";
-		   if ($scaleRow[5] == 1){
+		   if ($scaleRow['bycount'] == 1){
 		      echo " checked>";
 		   }
 		   else {
 		      echo ">";
 		   }
 		   echo "</td><td>";
-		   echo "<input type=text name=s_tare size=5 value={$scaleRow[6]}>";
+		   echo "<input type=text name=s_tare size=5 value={$scaleRow['tare']}>";
 		   echo "</td><td>";
-		   echo "<input type=text name=s_shelflife size=5 value={$scaleRow[7]}>";
+		   echo "<input type=text name=s_shelflife size=5 value={$scaleRow['shelflife']}>";
+		   echo "</td><td>";
+		   echo "<input type=text name=s_netwt size=5 value={$scaleRow['netWeight']}>";
 		   echo "</td><td>";
 		   echo "<select name=s_label size=2>";
-		   if ($scaleRow[10] == 133 || $scaleRow[10] == 63)
+		   if ($scaleRow['label'] == 133 || $scaleRow['label'] == 63)
 		   		echo "<option value=horizontal selected>Horizontal</option>";
 		   else
 		   		echo "<option value=horizontal>Horizontal</option>";
-		   if ($scaleRow[10] == 103 || $scaleRow[10] == 53 || $scaleRow[10] == 23)
+		   if ($scaleRow['label'] == 103 || $scaleRow['label'] == 53 || $scaleRow['label'] == 23)
 		   		echo "<option value=vertical selected>Vertical</option>";
 		   else
 		   		echo "<option value=vertical>Vertical</option>";
 		   echo "</select>";
 		   echo "</td><td align=center>";
-		   if ($scaleRow[11] == 0)
+		   if ($scaleRow['graphics'] == 0)
 		     echo "<input type=checkbox name=s_graphics />";
 		   else
 		     echo "<input type=checkbox name=s_graphics checked />";
 		   echo "</td>";
 		   echo "</td></tr></table><br />";
 		   echo "<p />Expanded text:<br /><textarea name=s_text rows=4
-		   cols=40>{$scaleRow[8]}</textarea>";
+		   cols=40>{$scaleRow['text']}</textarea>";
 
 		   echo "<p /></td></tr></table>";
 		}
@@ -445,9 +465,9 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
                         likedtotable($selLikeQ,$likeCodeRow[0],0,'FFFFCC');
 			echo"<td valign=top colspan=3><a href=/git/fannie/reports/PriceHistory/?likecode=$likeCodeRow[1] target=lc_hist>Click for Like Code History</a></td>";
                 }
-	   if ($logged_in || (preg_match("/^002/",$rowItem[0]) && $row3[1] == 3)){
+	   if ($logged_in || (preg_match("/^002/",$rowItem['upc']) && $row3[1] == 3)){
            	echo "</td></tr><tr><td colspan=4><input type='submit' name='submit' value='submit'> ";
-		echo " <a href=../../item/deleteItem.php?upc=$upc>Delete this item</a> | ";
+		echo " <a href=../../item/deleteItem.php?submit=submit&upc=$upc>Delete this item</a> | ";
            }
            else {
            	echo "</td></tr><tr><td colspan=4>Please <a href=/auth/ui/loginform.php?redirect=/queries/productTest.php?upc=$upc>";

@@ -48,11 +48,12 @@ class RenderReceiptPage extends FanniePage {
 		if ($date1 !== '' && $transNum !== ''){
 			$ret .= $this->receiptHeader($date1,$transNum);
 			$ret .= $this->ccInfo($date1, $transNum);
+            $ret .= $this->signatures($date1, $transNum);
 		}
 		return $ret;
 	}
 
-	function receiptHeader($date,$trans){
+	function receiptHeader($date,$trans) {
 		global $FANNIE_ARCHIVE_DB, $FANNIE_TRANS_DB, $FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_METHOD;
 		$dbconn = ($FANNIE_SERVER_DBMS=='MSSQL')?'.dbo.':'.';
 
@@ -252,18 +253,52 @@ class RenderReceiptPage extends FanniePage {
 			$ret .= "Authorization: ".$row['xResultMessage'].'<br />';
 			$ret .= '<b>Amount</b>: '.sprintf('$%.2f',$row['amount']).'<br />';
 			if ($row['mode'] == 'VOID'){}
-			elseif(strstr($row['mode'],'Credit'))
-				$ret .= 'MERCURY<br />';
-			else
+			elseif(strstr($row['mode'],'retail_'))
 				$ret .= 'FAPS<br />';
+			else
+				$ret .= 'MERCURY<br />';
 			$pRef = $row['refNum'];
 		}
 		return $ret;
 	}
+
+    private function signatures($tdate, $transNum)
+    {
+        global $FANNIE_TRANS_DB;
+        if (strstr($tdate, ' ')) {
+            list($tdate, $time) = explode(' ', $tdate, 2);
+        }
+		list($emp,$reg,$trans) = explode('-', $transNum);
+
+		$dbc = FannieDB::get($FANNIE_TRANS_DB);
+        $lookupQ = 'SELECT capturedSignatureID 
+                    FROM CapturedSignature
+                    WHERE tdate BETWEEN ? AND ?
+                        AND emp_no=?
+                        AND register_no=?
+                        AND trans_no=?';
+        $lookupP = $dbc->prepare($lookupQ);
+        $args = array(
+            $tdate . ' 00:00:00',
+            $tdate . ' 23:59:59',
+            $emp,
+            $reg,
+            $trans,
+        );
+        $lookupR = $dbc->execute($lookupP, $args);
+        $ret = '';
+        while($row = $dbc->fetch_row($lookupR)) {
+            $ret .= sprintf('<img style="border: solid 1px black; padding: 5px;"
+                                alt="Signature Image"
+                                src="SigImage.php?id=%d" />',
+                                $row['capturedSignatureID']
+            );
+        }
+
+        return $ret;
+    }
+
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new RenderReceiptPage();
-	$obj->draw_page();
-}
-?>
+FannieDispatch::conditionalExec(false);
+

@@ -21,39 +21,31 @@
 
 *********************************************************************************/
 
-require('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class SalePerformanceReport extends FannieReportPage
 {
+    public $description = '[Batch Performance] lists weekly sales totals for a batch.';
 
     protected $title = "Fannie : Sale Performance";
     protected $header = "Sale Performance";
 
     protected $report_headers = array('Week Start', 'Week End', 'Batch', 'Qty', '$');
 
+    protected $required_fields = array('ids');
+
     public function preprocess()
     {
+        // custom: ajax lookup up feeds into form fields
         if (FormLib::get('lookup') !== '') {
             echo $this->ajaxCallback();
             return false;
-        } else if (FormLib::get('ids') !== '') {
-			$this->content_function = "report_content";
-			$this->has_menus(False);
+        } 
 
-			/**
-			  Check if a non-html format has been requested
-			*/
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-				$this->report_format = 'xls';
-			} elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-				$this->report_format = 'csv';
-            }
-        } else {
-            $this->add_script('../../src/jquery/jquery.tablesorter.js');
-        }
-
-        return true;
+        return parent::preprocess();
     }
 
     private function ajaxCallback()
@@ -195,6 +187,6 @@ for ($i=1;$i<=12;$i++) {
 
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

@@ -190,6 +190,11 @@ function SetMargins($left,$top,$right=-1)
 	$this->rMargin=$right;
 }
 
+function GetMargins()
+{
+    return array('left'=>$this->lMargin, 'right'=>$this->rMargin, 'top'=>$this->topMargin);
+}
+
 function SetLeftMargin($margin)
 {
 	//Set left margin
@@ -1011,8 +1016,10 @@ function Output($name='',$dest='')
 	{
 		case 'I':
 			//Send to standard output
-			if(ob_get_contents())
-				$this->Error('Some data has already been output, can\'t send PDF file');
+			if(ob_get_contents()){
+				$j2 = ob_clean();
+				//$this->Error('Some data has already been output, can\'t send PDF file');
+			}
 			if(php_sapi_name()!='cli')
 			{
 				//We send to a browser

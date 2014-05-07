@@ -21,55 +21,54 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class GeneralDayReport extends FannieReportPage 
 {
+    public $description = '[General Day Report] lists tenders, sales, discounts, and taxes for a given day
+        (should net to zero). Also listed are transaction count &amp; size information by member type and
+        equity sales for the day.'; 
+    public $report_set = 'Sales Reports';
 
-	function preprocess()
-    {
-		$this->title = "Fannie : General Day Report";
-		$this->header = "General Day Report";
-		$this->report_cache = 'none';
-		$this->grandTTL = 1;
-		$this->multi_report_mode = True;
-		$this->sortable = False;
+    protected $title = "Fannie : General Day Report";
+    protected $header = "General Day Report";
+    protected $report_cache = 'none';
+    protected $grandTTL = 1;
+    protected $multi_report_mode = True;
+    protected $sortable = False;
 
-		if (isset($_REQUEST['date1'])){
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-			$this->report_headers = array('Desc','Qty','Amount');
+    protected $report_headers = array('Desc','Qty','Amount');
+    protected $required_fields = array('date1');
 
-			/**
-			  Check if a non-html format has been requested
-			*/
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls')
-				$this->report_format = 'xls';
-			elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv')
-				$this->report_format = 'csv';
-		}
-		else 
-			$this->add_script("../../src/CalendarControl.js");
-
-		return True;
+	function report_description_content() {
+		return(array('&nbsp;'));
 	}
 
 	function fetch_report_data()
     {
-		global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB, $FANNIE_EQUITY_DEPARTMENTS;
+		global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB, $FANNIE_EQUITY_DEPARTMENTS,
+			$FANNIE_COOP_ID;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 		$d1 = FormLib::get_form_value('date1',date('Y-m-d'));
 		$dates = array($d1.' 00:00:00',$d1.' 23:59:59');
 		$data = array();
 
+		if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' )
+			$shrinkageUsers = " AND d.card_no not between 99900 and 99998";
+		else
+			$shrinkageUsers = "";
+
 		$dlog = DTransactionsModel::selectDlog($d1);
 		$tenderQ = $dbc->prepare_statement("SELECT 
 			TenderName,count(d.total),sum(d.total) as total
-			FROM $dlog as d , tenders as t 
+			FROM $dlog as d,
+				{$FANNIE_OP_DB}.tenders as t 
 			WHERE d.tdate BETWEEN ? AND ?
-			AND d.trans_subtype = t.TenderCode
-			and d.total <> 0
+				AND d.trans_subtype = t.TenderCode
+				AND d.total <> 0{$shrinkageUsers}
 			GROUP BY t.TenderName ORDER BY TenderName");
 		$tenderR = $dbc->exec_statement($tenderQ,$dates);
 		$report = array();
@@ -81,10 +80,11 @@ class GeneralDayReport extends FannieReportPage
 		$data[] = $report;
 
 		$salesQ = $dbc->prepare_statement("SELECT m.super_name,sum(d.quantity) as qty,
-				sum(d.total) as total FROM $dlog AS d LEFT JOIN
-				MasterSuperDepts AS m ON d.department=m.dept_ID
+				sum(d.total) as total
+				FROM $dlog AS d LEFT JOIN
+				{$FANNIE_OP_DB}.MasterSuperDepts AS m ON d.department=m.dept_ID
 				WHERE d.tdate BETWEEN ? AND ?
-				AND d.department <> 0 AND d.trans_type <> 'T'
+					AND d.department <> 0 AND d.trans_type <> 'T'{$shrinkageUsers}
 				GROUP BY m.super_name ORDER BY m.super_name");
 		$salesR = $dbc->exec_statement($salesQ,$dates);
 		$report = array();
@@ -102,8 +102,8 @@ class GeneralDayReport extends FannieReportPage
 				INNER JOIN
 			      memtype m ON c.memType = m.memtype
 				WHERE d.tdate BETWEEN ? AND ?
-			       AND d.upc = 'DISCOUNT'
-				and total <> 0
+			       AND d.upc = 'DISCOUNT'{$shrinkageUsers}
+				AND total <> 0
 				GROUP BY m.memDesc ORDER BY m.memDesc");
 		$discR = $dbc->exec_statement($discQ,$dates);
 		$report = array();
@@ -116,7 +116,7 @@ class GeneralDayReport extends FannieReportPage
 		$taxSumQ = $dbc->prepare_statement("SELECT  sum(total) as tax_collected
 			FROM $dlog as d 
 			WHERE d.tdate BETWEEN ? AND ?
-			AND (d.upc = 'tax')
+				AND (d.upc = 'tax'){$shrinkageUsers}
 			GROUP BY d.upc");
 		$taxR = $dbc->exec_statement($taxSumQ,$dates);
 		$report = array();
@@ -134,9 +134,9 @@ class GeneralDayReport extends FannieReportPage
 			left join custdata as c on d.card_no = c.cardno
 			left join memtype as m on c.memtype = m.memtype
 			WHERE d.tdate BETWEEN ? AND ?
-			AND trans_type in ('I','D')
-			and upc <> 'RRR'
-			and c.personNum=1
+				AND trans_type in ('I','D')
+				AND upc <> 'RRR'{$shrinkageUsers}
+				AND c.personNum=1
 			) as q 
 			group by q.trans_num,q.transaction_type");
 		$transR = $dbc->exec_statement($transQ,$dates);
@@ -178,9 +178,10 @@ class GeneralDayReport extends FannieReportPage
 			$dlist = substr($dlist,0,strlen($dlist)-1).")";
 
 			$equityQ = $dbc->prepare_statement("SELECT d.card_no,t.dept_name, sum(total) as total 
-				FROM $dlog as d left join departments as t ON d.department = t.dept_no
+				FROM $dlog as d
+				LEFT JOIN {$FANNIE_OP_DB}.departments as t ON d.department = t.dept_no
 				WHERE d.tdate BETWEEN ? AND ?
-				AND d.department IN $dlist
+					AND d.department IN $dlist{$shrinkageUsers}
 				GROUP BY d.card_no, t.dept_name ORDER BY d.card_no, t.dept_name");
 			$equityR = $dbc->exec_statement($equityQ,$dates);
 			$report = array();
@@ -247,6 +248,6 @@ class GeneralDayReport extends FannieReportPage
 
 }
 
-$obj = new GeneralDayReport();
-$obj->draw_page();
+FannieDispatch::conditionalExec(false);
+
 ?>

@@ -23,11 +23,13 @@
 
 $PLUGIN_CREATE['monthview_events'] = "
 	CREATE TABLE monthview_events (
+    eventID INT NOT NULL AUTO_INCREMENT,
 	calendarID INT,
 	eventDate DATETIME,
 	eventText TEXT,
 	uid INT,
-	PRIMARY KEY (calendarID, eventDate, uid)
+    attendeeLimit SMALLINT DEFAULT 0,
+	PRIMARY KEY (eventID)
 	)
 ";
 

@@ -137,9 +137,6 @@ function goToPage(the_id){
 	}
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new ShelfTagIndex();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
 
 ?>

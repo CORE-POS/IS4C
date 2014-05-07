@@ -66,10 +66,20 @@ function parserHandler(data,status_str,xml_ro){
 			data: 'receiptType='+data.receipt,
 			dataType: 'json',
 			cache: false,
+            error: function() {
+                var icon = $('#receipticon').attr('src');
+                var newicon = icon.replace(/(.*graphics)\/.*/, "$1/deadreceipt.gif");
+                $('#receipticon').attr('src', newicon);
+            },
 			success: function(data){
 				if (data.sync){
 					ajaxTransactionSync(CORE_JS_PREFIX);
 				}
+                if (data.error) {
+                    var icon = $('#receipticon').attr('src');
+                    var newicon = icon.replace(/(.*graphics)\/.*/, "$1/deadreceipt.gif");
+                    $('#receipticon').attr('src', newicon);
+                }
 			}
 		});
 	}

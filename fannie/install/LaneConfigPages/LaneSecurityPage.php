@@ -194,8 +194,6 @@ confsave('VoidLimit',"'".$CORE_LOCAL->get('VoidLimit')."'");
 // LaneSecurityPage  
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
-	$obj = new LaneSecurityPage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+
 ?>

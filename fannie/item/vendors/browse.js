@@ -26,11 +26,12 @@ function addToPos(upc){
 	var vid = $('#vendorID').val();
 	var price = $('#price'+upc).val();
 	var dept = $('#dept'+upc).val();
+    var tags = $('#shelftags').val();
 	$.ajax({
 		url: 'BrowseVendorItems.php',
 		type: 'POST',
 		timeout: 5000,
-		data: 'upc='+upc+'&vid='+vid+'&price='+price+'&dept='+dept+'&action=addPosItem',
+		data: 'upc='+upc+'&vid='+vid+'&price='+price+'&dept='+dept+'&tags='+tags+'&action=addPosItem',
 		error: function(){
 		alert('Error loading XML document');
 		},
@@ -57,11 +58,17 @@ function brandchange() {
 			url: 'BrowseVendorItems.php',
 			type: 'post',
 			data: 'vid='+vid+'&deptID='+did+'&brand='+brand+'&action=showCategoryItems',
+            dataType: 'json',
 			error: function(e1,e2){
 				alert('Error loading XML document');
 			},
 			success: function(resp){
-				$('#contentarea').html(resp);
+                if (resp.items) {
+                    $('#contentarea').html(resp.items);
+                }
+                if (resp.tags && resp.tags != -999) {
+                    $('#shelftags').val(resp.tags);
+                }
 			}
 		});
 	}

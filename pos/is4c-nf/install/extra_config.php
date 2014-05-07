@@ -14,7 +14,7 @@ include('InstallUtilities.php');
 <body>
 <?php include('tabs.php'); ?>
 <div id="wrapper">	
-<h2>IT CORE Lane Installation: Additional Configuration</h2>
+<h2>IT CORE Lane Installation: Additional Configuration (Extras)</h2>
 
 <div class="alert"><?php InstallUtilities::checkWritable('../ini.php', False, 'PHP'); ?></div>
 <div class="alert"><?php InstallUtilities::checkWritable('../ini-local.php', True, 'PHP'); ?></div>
@@ -105,7 +105,8 @@ printf("<input type=text name=LD_NONMEM value=\"%f\" />",$CORE_LOCAL->get('LineI
 InstallUtilities::paramSave('LineItemDiscountNonMem',$CORE_LOCAL->get('LineItemDiscountNonMem'));
 ?>
 (percentage; 0.05 =&gt; 5%)
-</td></tr><tr><td>
+</td></tr>
+<tr><td>
 <b>Default Non-member #</b>: </td><td>
 <?php
 if(isset($_REQUEST['NONMEM'])) $CORE_LOCAL->set('defaultNonMem',$_REQUEST['NONMEM']);
@@ -114,7 +115,27 @@ InstallUtilities::paramSave('defaultNonMem',$CORE_LOCAL->get('defaultNonMem'));
 ?>
 <span class='noteTxt'>Normally a single account number is used for most if not all non-member
 transactions. Specify that account number here.</span>
-</td></tr><tr><td>
+</td></tr>
+<tr><td>
+<b>Default Non-member behavior</b>: </td><td>
+<?php
+if(isset($_REQUEST['NONMEMBEHAVIOR'])) $CORE_LOCAL->set('RestrictDefaultNonMem', $_REQUEST['NONMEMBEHAVIOR']);
+if ($CORE_LOCAL->get('RestrictDefaultNonMem') === '') $CORE_LOCAL->set('RestrictDefaultNonMem', 0);
+echo '<select name="NONMEMBEHAVIOR">';
+if ($CORE_LOCAL->get('RestrictDefaultNonMem') == 0) {
+    echo '<option value="0" selected>No different than other accounts</option>';
+    echo '<option value="1" >Cannot override other accounts</option>';
+} else {
+    echo '<option value="0" >No different than other accounts</option>';
+    echo '<option value="1" selected>Cannot override other accounts</option>';
+}
+echo '</selected>';
+InstallUtilities::paramSave('RestrictDefaultNonMem',$CORE_LOCAL->get('RestrictDefaultNonMem'));
+?>
+<span class='noteTxt'>Normally a single account number is used for most if not all non-member
+transactions. Specify that account number here.</span>
+</td></tr>
+<tr><td>
 <b>Visiting Member #</b>: </td><td>
 <?php
 if(isset($_REQUEST['VISMEM'])) $CORE_LOCAL->set('visitingMem',$_REQUEST['VISMEM']);
@@ -123,7 +144,8 @@ InstallUtilities::paramSave('visitingMem',$CORE_LOCAL->get('visitingMem'));
 ?>
 <span class='noteTxt'>This account provides members of other co-ops with member pricing
 but no other benefits. Leave blank to disable.</span>
-</td></tr><tr><td></td><td>
+</td></tr>
+<tr><td></td><td>
 <?php
 if (isset($_REQUEST['SHOW_NONMEM'])) $CORE_LOCAL->set('memlistNonMember',1);
 elseif (isset($_REQUEST['esubmit'])) $CORE_LOCAL->set('memlistNonMember',0);
@@ -136,7 +158,23 @@ echo " />\n<label for='shownonmem' onclick=''>Show non-member: </label>\n
 InstallUtilities::paramSave('memlistNonMember',$CORE_LOCAL->get('memlistNonMember'));
 ?>
 <span class='noteTxt'>Display non-member acct. in member searches?</span>
-</td></tr><tr><td>
+</td></tr>
+<tr><td></td><td>
+<?php
+if (isset($_REQUEST['NORMALIZE_MEM'])) $CORE_LOCAL->set('useMemTypeTable', 1);
+elseif (isset($_REQUEST['esubmit'])) $CORE_LOCAL->set('useMemTypeTable', 0);
+elseif ($CORE_LOCAL->get('useMemTypeTable')==='') $CORE_LOCAL->set('useMemTypeTable', 0);
+echo "<fieldset class='toggle'>\n<input type='checkbox' name='NORMALIZE_MEM' id='normalize_mem'";
+if ($CORE_LOCAL->get("useMemTypeTable") == 1) echo " value='1' checked";
+else echo " value='0'";
+echo " />\n<label for='normalize_mem' onclick=''>Use memtype table: </label>\n
+	<span class='toggle-button'></span></fieldset>";
+InstallUtilities::paramSave('useMemTypeTable',$CORE_LOCAL->get('useMemTypeTable'));
+?>
+<span class='noteTxt'>Use memtype table when applicable. This forces all memberships of a given
+type to have the same discount, among other things.</span>
+</td></tr>
+<tr><td>
 <b>Bottle Return Department number</b>: </td><td>
 <?php
 if(isset($_REQUEST['BOTTLE_RET'])) $CORE_LOCAL->set('BottleReturnDept',$_REQUEST['BOTTLE_RET']);
@@ -149,30 +187,72 @@ InstallUtilities::paramSave('BottleReturnDept',$CORE_LOCAL->get('BottleReturnDep
 
 <tr><td colspan=2 class="tblHeader">
 <h3>Hardware Settings</h3></td></tr>
-<tr><td>
-<b>Printer port</b>:<br />
-<?php
-if(isset($_REQUEST['PPORT'])) $CORE_LOCAL->set('printerPort',$_REQUEST['PPORT']);
 
+<?php
+// 28Jan14 EL There's an inch or so of whitespace at the bottom of this row.
+// I don't know what causes it.
 ?>
-</td><td>
-
+<tr><td><b>Printer port</b>:
+</td><td><?php
+// If values entered on the form are being saved, set CORE_LOCAL
+//  and flag type of port choice: "other" or not.
+if (isset($_REQUEST['PPORT'])) {
+    if ($_REQUEST['PPORT'] == 'other' &&
+        isset($_REQUEST['otherpport']) &&
+        $_REQUEST['otherpport'] != '') {
+        $CORE_LOCAL->set('printerPort',trim($_REQUEST['otherpport']));
+        $otherpport = True;
+        $otherpportValue = trim($_REQUEST['otherpport']);
+    } else {
+        $CORE_LOCAL->set('printerPort',$_REQUEST['PPORT']);
+        $otherpport = False;
+        $otherpportValue = "";
+    }
+} else {
+    $pport = $CORE_LOCAL->get('printerPort');
+    if (isset($pport) && $pport !== False && $pport != "") {
+        $pports = array("/dev/lp0","/dev/usb/lp0","LPT1:","fakereceipt.txt");
+        if (in_array($pport,$pports)) {
+            $otherpport = False;
+            $otherpportValue = "";
+        } else {
+            $otherpport = True;
+            $otherpportValue = "$pport";
+        }
+    } else {
+        $otherpport = False;
+        $otherpportValue = "";
+    }
+}
+?>
 <input type="radio" name=PPORT value="/dev/lp0" id="div-lp0"
-	<?php if($CORE_LOCAL->get('printerPort')=="/dev/lp0") echo "checked"; ?> /><label for="div-lp0">/dev/lp0 (*nix)</label><br />
+    <?php if (!$otherpport && $CORE_LOCAL->get('printerPort')=="/dev/lp0")
+            echo "checked";
+    ?> /><label for="div-lp0">/dev/lp0 (*nix)</label><br />
 <input type="radio" name=PPORT value="/dev/usb/lp0" id="div-usb-lp0"
-	<?php if($CORE_LOCAL->get('printerPort')=="/dev/usb/lp0") echo "checked"; ?> /><label for="div-usb-lp0">/dev/usb/lp0 (*nix)</label><br />
+    <?php if (!$otherpport && $CORE_LOCAL->get('printerPort')=="/dev/usb/lp0")
+            echo "checked"; ?> /><label for="div-usb-lp0">/dev/usb/lp0 (*nix)</label><br />
 <input type="radio" name=PPORT value="LPT1:" id="lpt1-"
-	<?php if($CORE_LOCAL->get('printerPort')=="LPT:") echo "checked"; ?> /><label for="lpt1-">LPT1: (windows)</label><br />
+    <?php if (!$otherpport && $CORE_LOCAL->get('printerPort')=="LPT1:")
+                echo "checked"; ?> /><label for="lpt1-">LPT1: (windows)</label><br />
 <input type="radio" name=PPORT value="fakereceipt.txt" id="fakercpt"
-	<?php if($CORE_LOCAL->get('printerPort')=="fakereceipt.txt") echo "checked"; ?> /><label for="fakercpt">fakereceipt.txt</label><br />
-<input type="radio" name=PPORT value="other" /><input type=text name="otherpport"></input><br />
-
+    <?php if (!$otherpport && $CORE_LOCAL->get('printerPort')=="fakereceipt.txt")
+                echo "checked";
+    ?> /><label for="fakercpt">fakereceipt.txt</label><br />
+<input type="radio" name=PPORT value="other"
+    <?php if ($otherpport)
+                echo "checked";
+?> /> <input type=text name="otherpport"
+    value="<?php echo "$otherpportValue"; ?>"><br />
+<span class='noteTxt' style="top:-110px;"> <?php printf("<p>Current value: <span class='pre'>%s</span></p>",$CORE_LOCAL->get('printerPort')); ?>
+Path to the printer. Select from common values, or enter a custom path.
+Some ubuntu distros might put your USB printer at /dev/usblp0</span>
+</td></tr>
 <?php
+// Write to database.
 InstallUtilities::paramSave('printerPort',$CORE_LOCAL->get('printerPort'));
 ?>
-<span class='noteTxt' style="top:-120px;"> <?php printf("<p>Current value: <span class='pre'>%s</span></p>",$CORE_LOCAL->get('printerPort')); ?>
-<br />Path to the printer. Select from common values, or enter a custom path.  Some ubuntu distros might put your USB printer at /dev/usblp0</span>
-</td></tr>
+
 <tr><td></td><td>
 <?php
 if (isset($_REQUEST['FRANK'])) $CORE_LOCAL->set('enableFranking',1);
@@ -251,6 +331,22 @@ if ($CORE_LOCAL->get("scaleDriver") != ""){
 
 <tr><td colspan=2 class="tblHeader">
 <h3>Display Settings</h3></td></tr><tr><td>
+<tr><td>
+<b>Screen Height</b>:</td><td>
+<?php
+if(isset($_REQUEST['VLINES'])) $CORE_LOCAL->set('screenLines',$_REQUEST['VLINES']);
+elseif ($CORE_LOCAL->get('screenLines')==='') $CORE_LOCAL->set('screenLines', 11);
+echo '<select name="VLINES">';
+for($i=9; $i<20; $i++) {
+    printf('<option %s value="%d">%d items</option>',
+        ($i == $CORE_LOCAL->get('screenLines') ? 'selected' : ''), $i, $i+1);
+}
+echo '</select>';
+InstallUtilities::paramSave('screenLines', $CORE_LOCAL->get('screenLines'));
+?>
+<span class='noteTxt'>Number of items to display at once</span>
+</td></tr>
+<tr><td>
 <b>Alert Bar</b>:</td><td>
 <?php
 if (isset($_REQUEST['ALERT'])) $CORE_LOCAL->set('alertBar',$_REQUEST['ALERT']);
@@ -315,7 +411,30 @@ foreach($current_mods as $m)
 $saveStr = rtrim($saveStr,",").")";
 InstallUtilities::paramSave('FooterModules',$current_mods);
 ?>
-</td></tr><tr><td>
+</td></tr>
+<tr><td>
+<b>Notifier Modules</b>:</td><td>
+<?php
+// get current settings
+$current_mods = $CORE_LOCAL->get("notifiers");
+// replace w/ form post if needed
+// fill in defaults if missing
+if (isset($_REQUEST['NOTIFIERS'])) $current_mods = $_REQUEST['NOTIFIERS'];
+elseif(!is_array($current_mods)) {
+	$current_mods = array();
+}
+$notifiers = AutoLoader::listModules('Notifier');
+echo '<select name="NOTIFIERS[]" size="5" multiple>';
+foreach($notifiers as $nm){
+    printf('<option %s>%s</option>',
+        (in_array($nm, $current_mods)?'selected':''),$nm);
+}
+echo '</select><br />';
+InstallUtilities::paramSave('Notifiers',$current_mods);
+?>
+<span class='noteTxt'>Notifiers are displayed on the right below the scale weight</span>
+</td></tr>
+<tr><td>
 <b>Enable onscreen keys</b>:</td><td> <select name=SCREENKEYS>
 <?php
 if(isset($_REQUEST['SCREENKEYS'])){
@@ -589,13 +708,7 @@ if ($CORE_LOCAL->get('CCSigLimit')=="") $CORE_LOCAL->set('CCSigLimit',0.00);
 printf(" \$<input size=4 type=text name=CCSigLimit value=\"%s\" />",$CORE_LOCAL->get('CCSigLimit'));
 InstallUtilities::paramSave('CCSigLimit',$CORE_LOCAL->get('CCSigLimit'));
 ?>
-</td></tr><tr><td><b>Signature Capture Device</b>:</td><td>
-<?php
-if (isset($_REQUEST['SigCapture'])) $CORE_LOCAL->set('SigCapture',$_REQUEST['SigCapture']);
-printf("<br /><input size=4 type=text name=SigCapture value=\"%s\" />",$CORE_LOCAL->get('SigCapture'));
-InstallUtilities::paramSave('SigCapture',$CORE_LOCAL->get('SigCapture'));
-?>
-<i>(blank for none)</i></td></tr>
+</td></tr>
 <!--
 <tr><td colspan=2 class="tblHeader">
 <h3>Various</h3>

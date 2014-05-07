@@ -57,6 +57,6 @@ class PINoteHistoryPage extends PIKillerPage {
 	}
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

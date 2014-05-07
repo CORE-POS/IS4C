@@ -53,7 +53,9 @@ class PaycardLib {
 	const PAYCARD_ERR_TIMEOUT   	=-3;
 	const PAYCARD_ERR_DATA      	=-4;
 	const PAYCARD_ERR_PROC      	=-5;
-	const PAYCARD_ERR_CONTINUE	=-6;
+	const PAYCARD_ERR_CONTINUE	    =-6;
+	const PAYCARD_ERR_NSF_RETRY	    =-7;
+	const PAYCARD_ERR_TRY_VERIFY    =-8;
 
 // identify payment card type, issuer and acceptance based on card number
 // individual functions are based on this one
@@ -65,6 +67,21 @@ class PaycardLib {
    - 'issuer' Vista, MasterCard, etc
    - 'accepted' boolean, whether card is accepted
    - 'test' boolean, whether number is a testing card
+
+   EBT-Specific Notes:
+   EBT BINs added 20Mar14 by Andy
+   Based on NACHA document; that document claims to be current
+   as of 30Sep10.
+
+   Issuer is normally give as EBT (XX) where XX is the
+   two character state postal abbreviation. GUAM is Guam
+   and USVI is US Virgin Islands. A few states list both
+   a state BIN number and a federal BIN number. In these
+   cases there's an asterisk after the postal abbreviation.
+   Maine listed both a state and federal BIN but they're 
+   identical so I don't know how to distinguish. The PAN
+   length is not listed for Wyoming. I guessed 16 since 
+   that's most common.
 */
 static public function paycard_info($pan) {
 	$len = strlen($pan);
@@ -72,6 +89,7 @@ static public function paycard_info($pan) {
 	$issuer = "Unknown";
 	$type = self::PAYCARD_TYPE_UNKNOWN;
 	$accepted = false;
+    $ebt_accept = true;
 	$test = false;
 	if( $len >= 13 && $len <= 16) {
 		$type = self::PAYCARD_TYPE_CREDIT;
@@ -86,6 +104,62 @@ static public function paycard_info($pan) {
 		else if( $iin>=6011000 && $iin<=6011999) { $issuer="Discover";   $accepted=true; }
 		else if( $iin>=6221260 && $iin<=6229259) { $issuer="UnionPay";   $accepted=true; } // China UnionPay, accepted via Discover
 		else if( $iin>=6500000 && $iin<=6599999) { $issuer="Discover";   $accepted=true; }
+		else if( $iin>=6500000 && $iin<=6599999) { $issuer="Discover";   $accepted=true; }
+		else if( $iin>=5076800 && $iin<=5076809) { $issuer="EBT (AL)";   $accepted=$ebt_accept; }
+		else if( $iin>=5076840 && $iin<=5076849) { $issuer="EBT (AL*)";   $accepted=$ebt_accept; }
+		else if( $iin>=5076950 && $iin<=5076959) { $issuer="EBT (AK)";   $accepted=$ebt_accept; }
+		else if( $iin>=5077060 && $iin<=5077069) { $issuer="EBT (AZ)";   $accepted=$ebt_accept; }
+		else if( $iin>=6100930 && $iin<=6100939) { $issuer="EBT (AR)";   $accepted=$ebt_accept; }
+		else if( $iin>=5076850 && $iin<=5076859) { $issuer="EBT (AR*)";   $accepted=$ebt_accept; }
+		else if( $iin>=5077190 && $iin<=5077199) { $issuer="EBT (CA)";   $accepted=$ebt_accept; }
+		else if( $iin>=5076810 && $iin<=5076819) { $issuer="EBT (CO)";   $accepted=$ebt_accept; }
+		else if( $iin>=5077130 && $iin<=5077139) { $issuer="EBT (DE)";   $accepted=$ebt_accept; }
+		else if( $iin>=5077070 && $iin<=5077079) { $issuer="EBT (DC)";   $accepted=$ebt_accept; }
+		else if( $iin>=5081390 && $iin<=5081399) { $issuer="EBT (FL)";   $accepted=$ebt_accept; }
+		else if( $iin>=5076860 && $iin<=5076869) { $issuer="EBT (FL*)";   $accepted=$ebt_accept; }
+		else if( $iin>=5081480 && $iin<=5081489) { $issuer="EBT (GA)";   $accepted=$ebt_accept; }
+		else if( $iin>=5076870 && $iin<=5076879) { $issuer="EBT (GA*)";   $accepted=$ebt_accept; }
+		else if( $iin>=5780360 && $iin<=5780369) { $issuer="EBT (GUAM)";   $accepted=$ebt_accept; }
+		else if( $iin>=5076980 && $iin<=5076989) { $issuer="EBT (HI)";   $accepted=$ebt_accept; }
+		else if( $iin>=5076920 && $iin<=5076929) { $issuer="EBT (ID)";   $accepted=$ebt_accept; }
+		else if( $iin>=5077040 && $iin<=5077049) { $issuer="EBT (IN)";   $accepted=$ebt_accept; }
+		else if( $iin>=6014130 && $iin<=6014139) { $issuer="EBT (KS)";   $accepted=$ebt_accept; }
+		else if( $iin>=5077090 && $iin<=5077099) { $issuer="EBT (KY)";   $accepted=$ebt_accept; }
+		else if( $iin>=5076880 && $iin<=5076889) { $issuer="EBT (KY*)";   $accepted=$ebt_accept; }
+		else if( $iin>=5044760 && $iin<=5044769) { $issuer="EBT (LA)";   $accepted=$ebt_accept; }
+		else if( $iin>=6005280 && $iin<=6005289) { $issuer="EBT (MD)";   $accepted=$ebt_accept; }
+		else if( $iin>=5077110 && $iin<=5077119) { $issuer="EBT (MI)";   $accepted=$ebt_accept; }
+		else if( $iin>=6104230 && $iin<=6104239) { $issuer="EBT (MN)";   $accepted=$ebt_accept; }
+		else if( $iin>=5077180 && $iin<=5077189) { $issuer="EBT (MS)";   $accepted=$ebt_accept; }
+		else if( $iin>=5076830 && $iin<=5076839) { $issuer="EBT (MO)";   $accepted=$ebt_accept; }
+		else if( $iin>=5076890 && $iin<=5076899) { $issuer="EBT (MO*)";   $accepted=$ebt_accept; }
+		else if( $iin>=5077140 && $iin<=5077149) { $issuer="EBT (MT)";   $accepted=$ebt_accept; }
+		else if( $iin>=5077160 && $iin<=5077169) { $issuer="EBT (NE)";   $accepted=$ebt_accept; }
+		else if( $iin>=5077150 && $iin<=5077159) { $issuer="EBT (NV)";   $accepted=$ebt_accept; }
+		else if( $iin>=5077010 && $iin<=5077019) { $issuer="EBT (NH)";   $accepted=$ebt_accept; }
+		else if( $iin>=6104340 && $iin<=6104349) { $issuer="EBT (NJ)";   $accepted=$ebt_accept; }
+		else if( $iin>=5866160 && $iin<=5866169) { $issuer="EBT (NM)";   $accepted=$ebt_accept; }
+		else if( $iin>=5081610 && $iin<=5081619) { $issuer="EBT (NC)";   $accepted=$ebt_accept; }
+		else if( $iin>=5076900 && $iin<=5076909) { $issuer="EBT (NC*)";   $accepted=$ebt_accept; }
+		else if( $iin>=5081320 && $iin<=5081329) { $issuer="EBT (ND)";   $accepted=$ebt_accept; }
+		else if( $iin>=5077000 && $iin<=5077009) { $issuer="EBT (OH)";   $accepted=$ebt_accept; }
+		else if( $iin>=5081470 && $iin<=5081479) { $issuer="EBT (OK)";   $accepted=$ebt_accept; }
+		else if( $iin>=5076930 && $iin<=5076939) { $issuer="EBT (OR)";   $accepted=$ebt_accept; }
+		else if( $iin>=5076820 && $iin<=5076829) { $issuer="EBT (RI)";   $accepted=$ebt_accept; }
+		else if( $iin>=5081320 && $iin<=5081329) { $issuer="EBT (SD)";   $accepted=$ebt_accept; }
+		else if( $iin>=5077020 && $iin<=5077029) { $issuer="EBT (TN)";   $accepted=$ebt_accept; }
+		else if( $iin>=5076910 && $iin<=5076919) { $issuer="EBT (TN*)";   $accepted=$ebt_accept; }
+		else if( $iin>=5077210 && $iin<=5077219) { $issuer="EBT (USVI)";   $accepted=$ebt_accept; }
+		else if( $iin>=6010360 && $iin<=6010369) { $issuer="EBT (UT)";   $accepted=$ebt_accept; }
+		else if( $iin>=5077050 && $iin<=5077059) { $issuer="EBT (VT)";   $accepted=$ebt_accept; }
+		else if( $iin>=6220440 && $iin<=6220449) { $issuer="EBT (VA)";   $accepted=$ebt_accept; }
+		else if( $iin>=5077100 && $iin<=5077109) { $issuer="EBT (WA)";   $accepted=$ebt_accept; }
+		else if( $iin>=5077200 && $iin<=5077209) { $issuer="EBT (WV)";   $accepted=$ebt_accept; }
+		else if( $iin>=5077080 && $iin<=5077089) { $issuer="EBT (WI)";   $accepted=$ebt_accept; }
+		else if( $iin>=5053490 && $iin<=5053499) { $issuer="EBT (WY)";   $accepted=$ebt_accept; }
+	} else if( $len == 18) {
+		if(      $iin>=6008900 && $iin<=6008909) { $issuer="EBT (CT)";   $accepted=$ebt_accept; }
+		else if( $iin>=6008750 && $iin<=6008759) { $issuer="EBT (MA)";   $accepted=$ebt_accept; }
 	} else if( $len == 19) {
 		$type = self::PAYCARD_TYPE_GIFT;
 		if(      $iin>=7019208 && $iin<=7019208) { $issuer="Co-op Gift"; $accepted=true; } // NCGA gift cards
@@ -93,6 +167,13 @@ static public function paycard_info($pan) {
 		else if ($iin>=6050110 && $iin<=6050110) {
 			$issuer="Co-Plus Gift Card"; $accepted=true;
 		}
+		else if( $iin>=6014530 && $iin<=6014539) { $issuer="EBT (IL)";   $accepted=$ebt_accept; }
+		else if( $iin>=6274850 && $iin<=6274859) { $issuer="EBT (IA)";   $accepted=$ebt_accept; }
+		else if( $iin>=5077030 && $iin<=5077039) { $issuer="EBT (ME)";   $accepted=$ebt_accept; }
+		else if( $iin>=6004860 && $iin<=6004869) { $issuer="EBT (NY)";   $accepted=$ebt_accept; }
+		else if( $iin>=6007600 && $iin<=6007609) { $issuer="EBT (PA)";   $accepted=$ebt_accept; }
+		else if( $iin>=6104700 && $iin<=6104709) { $issuer="EBT (SC)";   $accepted=$ebt_accept; }
+		else if( $iin>=6100980 && $iin<=6100989) { $issuer="EBT (TX)";   $accepted=$ebt_accept; }
 	}
 	else if (substr($pan,0,8) == "02E60080"){
 		$type = self::PAYCARD_TYPE_ENCRYPTED;
@@ -201,6 +282,7 @@ static public function paycard_reset() {
 	$CORE_LOCAL->set("paycard_response",array());
 	$CORE_LOCAL->set("paycard_trans",'');
 	$CORE_LOCAL->set("paycard_cvv2",'');
+    $CORE_LOCAL->set('PaycardRetryBalanceLimit', 0);
 } // paycard_reset()
 
 /**

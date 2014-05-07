@@ -22,8 +22,7 @@
 *********************************************************************************/
 
 include_once(dirname(__FILE__).'/../../config.php');
-include_once(dirname(__FILE__).'/../../classlib2.0/item/ItemModule.php');
-include_once(dirname(__FILE__).'/../../classlib2.0/lib/FormLib.php');
+include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
 include_once(dirname(__FILE__).'/../../src/JsonLib.php');
 
 class ItemMarginModule extends ItemModule {
@@ -38,7 +37,7 @@ class ItemMarginModule extends ItemModule {
 		$ret = '<fieldset id="ItemMarginFieldset">';
 		$ret .= '<legend>Margin</legend>';
 		$ret .= '<div id="ItemMarginContents">';
-		$ret .= $this->CalculateMargin($vals[0],$vals[1],$vals[2]);
+		$ret .= $this->calculateMargin($vals[0],$vals[1],$vals[2]);
 		$ret .= '</div>';
 		$ret .= '</fieldset>';
 		$ret .= $this->js();
@@ -53,15 +52,25 @@ class ItemMarginModule extends ItemModule {
 		return $srp;
 	}
 
-	private function CalculateMargin($price,$cost,$dept){
+	private function calculateMargin($price,$cost,$deptID)
+    {
 		$dbc = $this->db();
 
-		$dmP = $dbc->prepare_statement("SELECT margin FROM deptMargin WHERE dept_ID=?");
-		$dmR = $dbc->exec_statement($dmP,array($dept));
-		$dm = "Unknown";
-		if ($dbc->num_rows($dmR) > 0){
-			$dm = sprintf('%.2f',array_pop($dbc->fetch_row($dmR))*100);
-		}
+        $dm = 'Unknown';
+        $dept = new DepartmentsModel($dbc);
+        $dept->dept_no($deptID);
+        if ($dept->load()) {
+            $dm = $dept->margin() * 100;
+        }
+
+        if ((empty($dm) || $dm == 'Unknown') && $dbc->tableExists('deptMargin')) {
+            $dmP = $dbc->prepare_statement("SELECT margin FROM deptMargin WHERE dept_ID=?");
+            $dmR = $dbc->exec_statement($dmP,array($deptID));
+            if ($dbc->num_rows($dmR) > 0){
+                $row = $dbc->fetch_row($dmR);
+                $dm = sprintf('%.2f',$row['margin']*100);
+            }
+        }
 
 		$ret = "Desired margin on this department is ".$dm."%";
 		$ret .= "<br />";

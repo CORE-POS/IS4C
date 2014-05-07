@@ -292,8 +292,6 @@ confsave('PriceMethodClasses',$CORE_LOCAL->get('PriceMethodClasses'));
 // LaneScanningPage  
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
-	$obj = new LaneScanningPage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+
 ?>

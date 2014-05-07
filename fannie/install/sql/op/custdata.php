@@ -50,7 +50,18 @@ across stores.
    a member.
 - blueLine is displayed on the checkout screen when the member's number is entered.
 - id just provides a guaranteed-unique row identifier.
-
+[20Feb2014 Use of these fields is becoming more general]
+- ChargeOk=1 if member may run a store charge balance; =0 may not.
+- MemDiscountLimit is their store charge account limit.
+  (Deprecated in favour of ChargeLimit)
+- ChargeLimit is their store charge account limit.
+- Balance is a store charge balance as of the start of the day,
+   if the person has one.
+	 Some records are for organizations, esp vendors,
+	 that have charge accounts.
+	 Is updated from ar_live_balance by cronjob arbalance.sanitycheck.php
+	  and by its replacement cron/tasks/ArHistoryTask.php
+	  
 [Probably] Just For Organizing:
 The register is mostly unaware of these settings,
 but they can be used on the backend for consistency checks
@@ -62,14 +73,6 @@ e.g., make sure all staff members have the appropriate percent discount
   (Sounds like it is obsolete or at least not used.)
 
 WFC Specific:
-- ChargeOk=1 if member may run a store charge balance; =0 may not.
-- MemDiscountLimit is their store charge account limit.
-- ChargeLimit is their store charge account limit.
-- Balance is a store charge balance as of the start of the day,
-   if the person has one.
-	 Some records are for organizations, esp vendors,
-	 that have charge accounts.
-	 Is updated from newBalanceToday_cust by cronjob arbalance.sanitycheck.php
 - memCoupons indicates how many virtual coupons (tender MA) are available.
 
 [Probably] Ignored:
@@ -85,7 +88,7 @@ Maintenance:
 - Single edit: fannie/mem/search.php
 - Single add: fannie/mem/new.php
 - Batch import: fannie/mem/import/*.php
-- custdata.Balance is updated from newBalanceToday_cust by cronjob arbalance.sanitycheck.php
+- custdata.Balance is updated from ar_live_balance by cronjob arbalance.sanitycheck.php
 
 */
 /*--COMMENTS - - - - - - - - - - - - - - - - - - - -
@@ -111,7 +114,7 @@ $CREATE['op.custdata'] = "
 	  `Discount` smallint(6) default NULL,
 	  `MemDiscountLimit` double NOT NULL default '0',
 	  `ChargeLimit` double NOT NULL default '0',
-	  `ChargeOk` tinyint(4) NOT NULL default '1',
+	  `ChargeOk` tinyint(4) NOT NULL default '0',
 	  `WriteChecks` tinyint(4) NOT NULL default '1',
 	  `StoreCoupons` tinyint(4) NOT NULL default '1',
 	  `Type` varchar(10) NOT NULL default 'pc',

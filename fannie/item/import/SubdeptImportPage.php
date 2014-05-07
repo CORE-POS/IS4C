@@ -95,8 +95,5 @@ class SubdeptImportPage extends FannieUploadPage {
 	}
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new SubdeptImportPage();
-	$obj->draw_page();
-}
-?>
+FannieDispatch::conditionalExec(false);
+

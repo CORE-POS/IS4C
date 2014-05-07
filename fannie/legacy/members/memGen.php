@@ -15,27 +15,25 @@ include('memAddress.php');
 include('header.html');
 
 $memID = -1; // better failure
-if(isset($_GET['memNum'])){
-	$memID = $_GET['memNum'];
-}elseif(isset($_POST['memNum'])){
-	$memID = $_POST['memNum'];
+if(isset($_REQUEST['memNum'])){
+	$memID = $_REQUEST['memNum'];
 }
 
-if(isset($_GET['memID'])){
-	$memID = $_GET['memID'];
+if(isset($_REQUEST['memID'])){
+	$memID = $_REQUEST['memID'];
 }
 
-if(isset($_GET['submit2'])){
+if(isset($_REQUEST['submit2'])){
    //echo $_GET['memName'];
-   $memID = $_GET['memName'];
+   $memID = $_REQUEST['memName'];
    //echo "I am here: $memID";
 }
 $lName = "";
-if (isset($_POST['lastName']))
-	$lName = $_POST['lastName'];
+if (isset($_REQUEST['lastName']))
+	$lName = $_REQUEST['lastName'];
 $fName = "";
-if (isset($_POST['firstName']))
-	$fName = $_POST['firstName'];
+if (isset($_REQUEST['firstName']))
+	$fName = $_REQUEST['firstName'];
 
 /********************************************************************
  * prefetch result: 

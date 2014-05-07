@@ -68,7 +68,7 @@ elseif(FormLib::get_form_value('saveMin',False) !== False){
 	}
 }
 elseif(FormLib::get_form_value('saveMax',False) !== False){
-	$min = FormLib::get_form_value('saveMax');
+	$max = FormLib::get_form_value('saveMax');
 	if (!is_numeric($max))
 		echo "Error: Maximum must be a number";
 	else {

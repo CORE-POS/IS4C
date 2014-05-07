@@ -21,29 +21,20 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class TrendsReport extends FannieReportPage
 {
 	protected $title = "Fannie : Trends";
 	protected $header = "Trend Report";
 
-	public function preprocess()
-    {
-        if (FormLib::get('date1') !== '') {
-            $this->has_menus(False);
-            $this->content_function = 'report_content';
+    protected $required_fields = array('date1', 'date2');
 
-            if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-                $this->report_format = 'xls';
-            } elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-                $this->report_format = 'csv';
-            }
-        }
-
-        return true;
-    }
+    public $description = '[Trends] shows daily sales totals for items over a given date range. Items can be included by UPC, department, or manufacturer.';
+    public $report_set = 'Movement Reports';
 
     public function report_description_content()
     {
@@ -227,7 +218,7 @@ function doShow(){
 
 <form method=get action=TrendsReport.php>
 <b>Type</b>: <input type=radio name=type id=rt1 checked value=dept onchange="doShow();" /><label for="rt1">Department</label>
-<input type=radio name=type id=rt2 value=manu onchange="doShow();" /><label for="rt2">Manufacturer</label>
+<input type=radio name=type id=rt2 value=manu onchange="doShow();" /><label for="rt2"><?php echo _('Manufacturer'); ?></label>
 <input type=radio name=type id=rt3 value=upc onchange="doShow();" /><label for="rt3">Single item </label>
 <input type=radio name=type id=rt4 value=likecode onchange="doShow();" /><label for="rt4">Like code</label><br />
 
@@ -240,7 +231,7 @@ function doShow(){
     <input type=text name=dept1 id=dept1 size=5 value=1 />
     </td>
 
-    <td class="manuField">Manufacturer:</td><td class="manuField">
+    <td class="manuField"><?php echo _('Manufacturer'); ?>:</td><td class="manuField">
     <input type=text name=manufacturer />
     </td>
 
@@ -293,6 +284,6 @@ function doShow(){
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

@@ -27,7 +27,6 @@
 include('../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-$country = (isset($FANNIE_COUNTRY)&&!empty($FANNIE_COUNTRY))?$FANNIE_COUNTRY:"US";
 
 class MemContactImportPage extends FannieUploadPage {
 	protected $title = "Fannie :: Member Tools";
@@ -92,9 +91,11 @@ class MemContactImportPage extends FannieUploadPage {
 
 	private $details = '';
 
-	function MemContactImportPage(){
-		global $country;
-		if ($country == 'CA'){
+	function MemContactImportPage()
+    {
+		global $FANNIE_COUNTRY;
+        $country = (isset($FANNIE_COUNTRY)&&!empty($FANNIE_COUNTRY))?$FANNIE_COUNTRY:"US";
+		if ($country == 'CA') {
 			$this->preview_opts['state']['display_name'] = 'Province';
 			$this->preview_opts['zip']['display_name'] = 'Postal Code';
 		}
@@ -165,8 +166,5 @@ class MemContactImportPage extends FannieUploadPage {
 		return $this->details .= 'Import completed successfully';
 	}
 }
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new MemContactImportPage();
-	$obj->draw_page();
-}
-?>
+
+FannieDispatch::conditionalExec(false);

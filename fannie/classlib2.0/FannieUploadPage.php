@@ -44,7 +44,7 @@ if (!class_exists('PHPExcel_IOFactory')) {
 class FannieUploadPage extends FanniePage 
 {
 
-    public $required = True;
+    public $required = true;
 
     public $description = "
     Base class for handling file uploads
@@ -61,7 +61,7 @@ class FannieUploadPage extends FanniePage
       Show a preview where the user can choose
       columns that contain data
     */
-    protected $preview = True;
+    protected $preview = true;
     /**
       Define user-selectable options
     */
@@ -70,8 +70,8 @@ class FannieUploadPage extends FanniePage
             'name' => 'upc',
             'display_name' => 'UPC',
             'default' => 7,
-            'required' => True
-        )
+            'required' => true,
+        ),
     );
 
     protected $preview_selections = array();
@@ -82,7 +82,7 @@ class FannieUploadPage extends FanniePage
 
     protected $error_details = 'n/a';
 
-    protected $use_splits = False;
+    protected $use_splits = false;
 
     /**
       Handle pre-display tasks such as input processing
@@ -115,7 +115,7 @@ class FannieUploadPage extends FanniePage
                     $this->preview_selections[$col_select[$i]] = $i;
                 }
             }
-            $chk_required = True;
+            $chk_required = true;
             $this->error_details = '';
             foreach($this->preview_opts as $opt) {
                 if ($opt['required'] == true && !isset($this->preview_selections[$opt['name']])) {
@@ -169,14 +169,14 @@ class FannieUploadPage extends FanniePage
                             }
                             $url = rtrim($url,'&');
                             header('Location: '.$url);
+
                             return false;
-                        }
-                        else if ($try && count($files) == 0) {
+                        } else if ($try && count($files) == 0) {
                             /* finished; call cleanup function */
                             $this->split_end();
                         }
                     }
-                } else {
+                } else { // not using splits
                     $try = $this->process_file($this->fileToArray());
                 }
 
@@ -189,7 +189,7 @@ class FannieUploadPage extends FanniePage
                 if (file_exists($this->upload_file_name)) {
                     unlink($this->upload_file_name);
                 }
-            } else {
+            } else { // selected columns were invalid; redisplay preview screen
                 $this->content_function = 'basicPreview';
                 $this->window_dressing = False;
                 $this->add_script($FANNIE_URL.'src/jquery/jquery.js');
@@ -289,11 +289,13 @@ class FannieUploadPage extends FanniePage
                 $za->close();
                 unlink($tmpfile);
                 $this->error_details = 'Bad ZIP contents';
+
                 return false;
             }
         } else if (!in_array($extension,$this->allowed_extensions)) {
             $this->error_details = 'Bad file';
             unlink($tmpfile);
+
             return false;
         }
 
@@ -303,6 +305,7 @@ class FannieUploadPage extends FanniePage
             $this->upload_file_name = '';
             unlink($tmpfile);
             $this->error_details = 'No name found';
+
             return false;
         }
 
@@ -318,6 +321,7 @@ class FannieUploadPage extends FanniePage
             unlink($tmpfile);
             unlink($this->upload_file_name);
             $this->error_details = 'Could not rename';
+
             return false;
         }
 
@@ -539,7 +543,7 @@ class FannieUploadPage extends FanniePage
         if (isset($this->preview_selections[$name])) {
             return $this->preview_selections[$name];
         } else {
-            return False;
+            return false;
         }
     }
 

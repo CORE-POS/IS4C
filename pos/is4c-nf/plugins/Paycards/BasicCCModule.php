@@ -50,6 +50,10 @@ define("LOCAL_CERT_PATH",realpath(dirname(__FILE__)).'/cacert.pem');
 
 class BasicCCModule {
 
+    public $last_ref_num = '';
+    public $last_req_id = 0;
+    public $last_paycard_transaction_id = 0;
+
 	/** 
 	  Constructor
 	  takes no arguments
@@ -149,6 +153,40 @@ class BasicCCModule {
 		return $json;
 	}
 
+    /**
+      The given efsnetRequest.refNum value corresponds to the
+      format used by this class
+      @param $ref [string] efsnetRequest.refNum
+      @return [boolean]
+    */
+    function myRefNum($ref)
+    {
+        return false;
+    }
+
+    /**
+      Lookup transaction status
+      @param $ref [string] efsnetRequest.refNum
+      @param $local [int]
+        1 => transaction is in local efsnetRequest table
+        0 => transaction is in server's efsnetRequest table
+      @param $mode [string]
+        lookup => just fetch information from the processor
+        verify => update efsnetResponse with retreived information
+      @return [keyed array]
+        output => HTML msg to display for the user
+        confirm_dest => URL destination if the user presses enter
+        cancel_dest => URL destination if the user presses clear
+    */
+    function lookupTransaction($ref, $local, $mode)
+    {
+        return array(
+            'output' => DisplayLib::boxMsg('Lookup not available for<br />this processor', '', true),
+            'confirm_dest' => MiscLib::base_url() . 'gui-modules/pos2.php',
+            'cancel_dest' => MiscLib::base_url() . 'gui-modules/pos2.php',
+        );
+    }
+
 	// END INTERFACE METHODS
 	
 	// These are utility methods I found useful
@@ -166,6 +204,9 @@ class BasicCCModule {
 	 @param $type 'GET', 'POST', or 'SOAP'
 	 @param $xml True or False
 	 @param $extraOpts array of curl options and values
+     @param $auto_handle [boolean]
+        true => call handleResponse method automatically
+        false => just return curl result
 	 @return integer error code
 	 
 	 The url should be specified in $this->GATEWAY.
@@ -178,7 +219,7 @@ class BasicCCModule {
 	 This function calls the handleResponse method
 	 and returns the result of that call.
 	 */
-	function curlSend($data=False,$type='POST',$xml=False, $extraOpts=array()){
+	function curlSend($data=False,$type='POST',$xml=False, $extraOpts=array(), $auto_handle=true){
 		global $CORE_LOCAL;
 		if($data && $type == 'GET')
 			$this->GATEWAY .= $data;
@@ -237,7 +278,11 @@ class BasicCCModule {
 
 		curl_close($curl_handle);
 
-		return $this->handleResponse($funcReturn);
+        if ($auto_handle) {
+            return $this->handleResponse($funcReturn);
+        } else {
+            return $funcReturn;
+        }
 	}
 
 	/** 

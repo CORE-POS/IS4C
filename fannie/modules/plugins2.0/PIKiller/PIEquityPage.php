@@ -64,6 +64,6 @@ class PIEquityPage extends PIKillerPage {
 	}
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

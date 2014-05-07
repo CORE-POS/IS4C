@@ -52,6 +52,8 @@ class FanniePage
     protected $scripts = array();
     protected $css_files = array();
 
+    protected $error_text;
+
     public function __construct()
     {
         global $FANNIE_AUTH_DEFAULT, $FANNIE_COOP_ID;
@@ -61,6 +63,8 @@ class FanniePage
         if (isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto') {
             $this->auth_classes[] = 'admin';
         }
+        /*
+        */
     }
 
     /**
@@ -91,6 +95,10 @@ class FanniePage
 
         return ob_get_clean();
     }
+    public function get_header()
+    {
+        return $this->getHeader();
+    }
 
     /**
       Get the standard footer
@@ -103,6 +111,10 @@ class FanniePage
         include($FANNIE_ROOT.'src/footer.html');
 
         return ob_get_clean();
+    }
+    public function get_footer()
+    {
+        return $this->getFooter();
     }
 
     /**
@@ -131,6 +143,11 @@ class FanniePage
     public function bodyContent()
     {
         return $this->body_content();
+    }
+
+    public function errorContent()
+    {
+        return $this->error_text;
     }
 
     /**
@@ -209,6 +226,11 @@ class FanniePage
         header('Location: '.$url.'?redirect='.$redirect);
     }
 
+    public function login_redirect()
+    {
+        $this->loginRedirect();
+    }
+
     /**
       Check if the user is logged in
     */
@@ -235,9 +257,75 @@ class FanniePage
         return False;
     }
 
+    public function check_auth()
+    {
+        return $this->checkAuth();
+    }
+
     public function draw_page()
     {
         $this->drawPage();
+    }
+
+    /**
+      Check if there are any problems
+      that might prevent the page from working
+      properly.
+    */
+    public function readinessCheck()
+    {
+        return true;
+    }
+
+    /**
+      Helper method
+      Check if a given table exists. Sets an appropriate message
+      in $error_text if the table is not present.
+      @param $database [string] database name
+      @param $table [string] table name
+      @return [boolean]
+    */
+    public function tableExistsReadinessCheck($database, $table)
+    {
+        global $FANNIE_URL;
+        $dbc = FannieDB::get($database);
+        if (!$dbc->tableExists($table)) {
+            $this->error_text = "<p>Missing table {$database}.{$table}
+                            <br /><a href=\"{$FANNIE_URL}install/\">Click Here</a> to
+                            create necessary tables.</p>";
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+      Helper method
+      Check if a given table has a specific column. 
+      Sets an appropriate message
+      in $error_text if the column (or table) is not present.
+      @param $database [string] database name
+      @param $table [string] table name
+      @param $column [string] column name
+      @return [boolean]
+    */
+    public function tableHasColumnReadinessCheck($database, $table, $column)
+    {
+        global $FANNIE_URL;
+        if ($this->tableExistsReadinessCheck($database, $table) === false) {
+            return false;
+        }
+
+        $dbc = FannieDB::get($database);
+        $definition = $dbc->tableDefinition($table);
+        if (!isset($definition[$column])) {
+            $this->error_text = "<p>Table {$database}.{$table} needs to be updated.
+                            <br /><a href=\"{$FANNIE_URL}install/InstallUpdatesPage.php\">Click Here</a> to
+                            run updates.</p>";
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -245,17 +333,30 @@ class FanniePage
     */
     public function drawPage()
     {
+        global $FANNIE_WINDOW_DRESSING;
 
         if (!$this->checkAuth() && $this->must_authenticate) {
             $this->loginRedirect();
             exit;
         } elseif ($this->preprocess()) {
+
+            /**
+              Global setting overrides default behavior
+              to force the menu to appear.
+            */
+            if (isset($FANNIE_WINDOW_DRESSING) && $FANNIE_WINDOW_DRESSING) {
+                $this->window_dressing = true;
+            }
             
             if ($this->window_dressing) {
                 echo $this->getHeader();
             }
-
-            echo $this->bodyContent();
+            
+            if ($this->readinessCheck() !== false) {
+                echo $this->bodyContent();
+            } else {
+                echo $this->errorContent();
+            }
 
             if ($this->window_dressing) {
                 $footer = $this->getFooter();
@@ -287,7 +388,6 @@ class FanniePage
                 echo "\n";
             }
             
-            // 22May13 Eric Lee  Moved after css_files so these take precedence.
             $page_css = $this->css_content();
             if (!empty($page_css)) {
                 echo '<style type="text/css">';

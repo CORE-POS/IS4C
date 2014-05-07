@@ -46,6 +46,7 @@ class paycardboxMsgAuth extends PaycardProcessPage {
 				$CORE_LOCAL->set("CachePinEncBlock","");
 				$CORE_LOCAL->set("CacheCardType","");
 				$CORE_LOCAL->set("CacheCardCashBack",0);
+                $CORE_LOCAL->set('ccTermState','swipe');
 				UdpComm::udpSend("termReset");
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
@@ -98,6 +99,7 @@ class paycardboxMsgAuth extends PaycardProcessPage {
 		$amt = $CORE_LOCAL->get("paycard_amount");
 		$due = $CORE_LOCAL->get("amtdue");
 		$cb = $CORE_LOCAL->get('CacheCardCashBack');
+        $balance_limit = $CORE_LOCAL->get('PaycardRetryBalanceLimit');
 		if ($cb > 0) $amt -= $cb;
 		if( !is_numeric($amt) || abs($amt) < 0.005) {
 			echo PaycardLib::paycard_msgBox($type,"Invalid Amount: $amt $due",
@@ -114,6 +116,17 @@ class paycardboxMsgAuth extends PaycardProcessPage {
 		} else if ( ($amt-$due-0.005)>$cb && ($type == 'DEBIT' || $type == 'EBTCASH')){
 			echo PaycardLib::paycard_msgBox($type,"Invalid Amount",
 				"Cannot exceed amount due plus cashback","[clear] to cancel");
+        } else if ($balance_limit > 0 && ($amt-$balance_limit) > 0.005) {
+			echo PaycardLib::paycard_msgBox($type,"Exceeds Balance",
+				"Cannot exceed card balance","[clear] to cancel");
+        } else if ($balance_limit > 0) {
+			$msg = "Tender ".PaycardLib::paycard_moneyFormat($amt);
+			if ($CORE_LOCAL->get("CacheCardType") != "")
+				$msg .= " as ".$CORE_LOCAL->get("CacheCardType");
+			echo PaycardLib::paycard_msgBox($type,$msg."?","",
+                    "Card balance is {$balance_limit}<br>
+                    [enter] to continue if correct<br>Enter a different amount if incorrect<br>
+                    [clear] to cancel");
 		} else if( $amt > 0) {
 			$msg = "Tender ".PaycardLib::paycard_moneyFormat($amt);
 			if ($CORE_LOCAL->get("CacheCardType") != "")

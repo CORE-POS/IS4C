@@ -21,34 +21,27 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class SuspensionHistoryReport extends FannieReportPage 
 {
+    public $description = '[Suspension History] lists when a membership was deactivated &amp; reactivated.';
+    public $report_set = 'Membership';
+
+    protected $title = "Fannie : Suspension History";
+    protected $header = "Suspension History";
     protected $sort_direction = 1;
     protected $report_headers = array('Date', 'Reason', 'User');
+    protected $required_fields = array('memNum');
 
 	public function preprocess()
     {
-		$this->report_cache = 'none';
-		$this->title = "Fannie : Suspension History";
-		$this->header = "Suspension History";
-
         $this->card_no = FormLib::get('memNum','');
-        if ($this->card_no !== '') {
-			$this->content_function = "report_content";
 
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-				$this->report_format = 'xls';
-                $this->has_menus(false);
-			} elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-				$this->report_format = 'csv';
-                $this->has_menus(false);
-            }
-        }
-
-        return true;
+        return parent::preprocess();
     }
 
     public function report_description_content()
@@ -91,6 +84,6 @@ class SuspensionHistoryReport extends FannieReportPage
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

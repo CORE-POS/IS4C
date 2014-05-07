@@ -70,9 +70,9 @@ class WfcAbandonEquityImport extends FannieUploadPage
                 continue;
             }
 
-            $cn = $data[$card_no];
-            $a_amt = $data[$classA];
-            $b_amt = $data[$classB];
+            $cn = trim($data[$card_no]);
+            $a_amt = trim($data[$classA], '$ ');
+            $b_amt = trim($data[$classB], '$ ');
             $offset_amt = $a_amt + $b_amt;
             if ($offset_amt == 0) {
                 continue;
@@ -187,6 +187,22 @@ class WfcAbandonEquityImport extends FannieUploadPage
             $record['regPrice'] = $offset_amt;
             $record['card_no'] = $cn;
             $record['trans_id'] = $trans_id;
+            $trans_id++;
+
+            $info = DTrans::parameterize($record, 'datetime', $dbc->now());
+            $prep = $dbc->prepare("INSERT INTO $dtrans_table ({$info['columnString']}) VALUES ({$info['valueString']})");
+            $dbc->execute($prep, $info['arguments']);
+
+            $record = DTrans::$DEFAULTS;
+            $record['register_no'] = $LANE_NO;
+            $record['emp_no'] = $EMP_NO;
+            $record['trans_no'] = $trans;
+            $record['upc'] = '0';
+            $record['description'] = '63350';
+            $record['trans_type'] = 'C';
+            $record['trans_subtype'] = 'CM';
+            $record['card_no'] = $cn;
+            $record['trans_id'] = $trans_id;
 
             $info = DTrans::parameterize($record, 'datetime', $dbc->now());
             $prep = $dbc->prepare("INSERT INTO $dtrans_table ({$info['columnString']}) VALUES ({$info['valueString']})");
@@ -209,5 +225,5 @@ class WfcAbandonEquityImport extends FannieUploadPage
 	}
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 

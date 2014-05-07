@@ -24,7 +24,7 @@
 /* If no argument display a list of links */
 if (!isset($_REQUEST['fn'])){
 
-	echo "<h3>Links to per-table Help</H3>
+	echo "<h3>Links to Fannie per-table Help</H3>
 <p>Each link displays the current contents of the comment block
 <br>in the PHP script at <i>docroot</i>/IS4C/fannie/install/sql/op|trans/<i>tablename</i>.php
 <br>that creates the table.

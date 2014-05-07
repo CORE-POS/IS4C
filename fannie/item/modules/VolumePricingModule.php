@@ -23,9 +23,11 @@
 
 include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
 
-class VolumePricingModule extends ItemModule {
+class VolumePricingModule extends ItemModule 
+{
 
-	function ShowEditForm($upc){
+	function ShowEditForm($upc)
+    {
 		$upc = BarcodeLib::padUPC($upc);
 
 		$ret = '<fieldset id="3for1FieldSet">';
@@ -45,33 +47,42 @@ class VolumePricingModule extends ItemModule {
 			<th>Mix/Match'.FannieHelp::ToolTip('Items with the same Mix/Match all count').'</th></tr>';
 		$ret .= '<tr><td><select name="vp_method">';
 		foreach($methods as $value => $label){
-			$ret .= sprintf('<option value="%d" %s</option>%s</option>',
-					$value, ($value==$model->pricemethod()?'selected':''), $label);
+			$ret .= sprintf('<option value="%d"%s>%s</option>',
+					$value, ($value==$model->pricemethod()?' selected':''), $label);
 		}
 		$ret .= '</select></td>';
 		$ret .= '<td><input type="text" name="vp_qty" size="4" value="'.$model->quantity().'" /></td>';
 		$ret .= '<td>$<input type="text" name="vp_price" size="4" value="'.sprintf('%.2f',$model->groupprice()).'" /></td>';
 		$ret .= '<td><input type="text" name="vp_mm" size="4" value="'.$model->mixmatchcode().'" /></td>';
 		$ret .= '</table></fieldset>';
+
 		return $ret;
 	}
 
-	function SaveFormData($upc){
+	public function SaveFormData($upc)
+    {
 		$upc = BarcodeLib::padUPC($upc);
+		$dbc = $this->db();
+
+        $model = new ProductsModel($dbc);
+        $model->upc($upc);
 
 		$method = FormLib::get_form_value('vp_method',0);
 		$qty = FormLib::get_form_value('vp_qty',0);
 		$price = FormLib::get_form_value('vp_price',0);
 		$mixmatch = FormLib::get_form_value('vp_mm',0);
 
-		$r1 = ProductsModel::update($upc,array('pricemethod'=>$method,
-				'quantity'=>$qty,'groupprice'=>$price,
-				'mixmatchcode'=>$mixmatch));
+        $model->pricemethod($method);
+        $model->quantity($qty);
+        $model->groupprice($price);
+        $model->mixmatchcode($mixmatch);
+        $r1 = $model->save();
 
-		if ($r1 === False)
-			return False;
-		else
-			return True;	
+		if ($r1 === false) {
+			return false;
+		} else {
+			return true;	
+        }
 	}
 }
 

@@ -45,7 +45,6 @@ class RRR extends Parser {
 
 		Database::getsubtotals();
 		if ($CORE_LOCAL->get("runningTotal") == 0){
-			$CORE_LOCAL->set("End",2);
 			$ret['receipt'] = 'none';
 		}
 		return $ret;

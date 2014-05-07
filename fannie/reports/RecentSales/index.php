@@ -118,4 +118,8 @@ echo "</td><tr><td><font color=blue>Last Month</font></td>";
 printf("<td align=right>%.2f</td><td align=right>$%.2f",$w['qtym1'],$w['totalm1']);
 
 echo "</tr></table>";
+if (isset($_REQUEST['upc'])) {
+    printf('<br /><a href="../ItemLastQuarter/ItemLastQuarterReport.php?upc=%s">Weekly Sales Details</a>', $_REQUEST['upc']);
+    printf('<br /><a href="../ItemOrderHistory/ItemOrderHistoryReport.php?upc=%s">Recent Order History</a>', $_REQUEST['upc']);
+}
 ?>

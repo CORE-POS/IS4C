@@ -579,7 +579,22 @@ class BasicModel
                     if (isset($this->columns[$our_columns[$i]]['default'])) {
                         $sql .= ' DEFAULT '.$this->columns[$our_columns[$i]]['default'];
                     }
+                    if (isset($this->columns[$our_columns[$i]]['increment']) && $this->columns[$our_columns[$i]]['increment']) {
+                        if ($this->connection->dbms_name() == 'mssql') {
+                            $sql .= ' IDENTITY (1, 1) NOT NULL';
+                        } else {
+                            $sql .= ' NOT NULL AUTO_INCREMENT';
+                        }
+                    }
                     $sql .= ' AFTER '.$this->connection->identifier_escape($their_col);
+                    if (isset($this->columns[$our_columns[$i]]['increment']) && $this->columns[$our_columns[$i]]['increment']) {
+                        // increment must be indexed
+                        $index = 'INDEX';
+                        if (isset($this->columns[$our_columns[$i]]['primary_key']) && $this->columns[$our_columns[$i]]['primary_key']) {
+                            $index = 'PRIMARY KEY ';
+                        }
+                        $sql .= ', ADD ' . $index . ' (' . $this->connection->identifier_escape($our_columns[$i]) . ')'; 
+                    }
                     break;
                 } elseif (isset($our_columns[$i+1]) && $our_columns[$i+1] == $their_col) {
                     $sql = 'ALTER TABLE '.$this->name.' ADD COLUMN '
@@ -589,7 +604,22 @@ class BasicModel
                     if (isset($this->columns[$our_columns[$i]]['default'])) {
                         $sql .= ' DEFAULT '.$this->columns[$our_columns[$i]]['default'];
                     }
+                    if (isset($this->columns[$our_columns[$i]]['increment']) && $this->columns[$our_columns[$i]]['increment']) {
+                        if ($this->connection->dbms_name() == 'mssql') {
+                            $sql .= ' IDENTITY (1, 1) NOT NULL';
+                        } else {
+                            $sql .= ' NOT NULL AUTO_INCREMENT';
+                        }
+                    }
                     $sql .= ' BEFORE '.$this->connection->identifier_escape($their_col);
+                    if (isset($this->columns[$our_columns[$i]]['increment']) && $this->columns[$our_columns[$i]]['increment']) {
+                        // increment must be indexed
+                        $index = 'INDEX';
+                        if (isset($this->columns[$our_columns[$i]]['primary_key']) && $this->columns[$our_columns[$i]]['primary_key']) {
+                            $index = 'PRIMARY KEY ';
+                        }
+                        $sql .= ', ADD ' . $index . ' (' . $this->connection->identifier_escape($our_columns[$i]) . ')'; 
+                    }
                     break;
                 }
                 if (isset($our_columns[$i-1]) && in_array($our_columns[$i-1],$new_columns)) {
@@ -600,7 +630,22 @@ class BasicModel
                     if (isset($this->columns[$our_columns[$i]]['default'])) {
                         $sql .= ' DEFAULT '.$this->columns[$our_columns[$i]]['default'];
                     }
+                    if (isset($this->columns[$our_columns[$i]]['increment']) && $this->columns[$our_columns[$i]]['increment']) {
+                        if ($this->connection->dbms_name() == 'mssql') {
+                            $sql .= ' IDENTITY (1, 1) NOT NULL';
+                        } else {
+                            $sql .= ' NOT NULL AUTO_INCREMENT';
+                        }
+                    }
                     $sql .= ' AFTER '.$this->connection->identifier_escape($our_columns[$i-1]);
+                    if (isset($this->columns[$our_columns[$i]]['increment']) && $this->columns[$our_columns[$i]]['increment']) {
+                        // increment must be indexed
+                        $index = 'INDEX';
+                        if (isset($this->columns[$our_columns[$i]]['primary_key']) && $this->columns[$our_columns[$i]]['primary_key']) {
+                            $index = 'PRIMARY KEY ';
+                        }
+                        $sql .= ', ADD ' . $index . ' (' . $this->connection->identifier_escape($our_columns[$i]) . ')'; 
+                    }
                     break;
                 }
             }
@@ -800,6 +845,8 @@ class $name extends BasicModel\n");
 
 if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
 
+    include_once(dirname(__FILE__).'/../AutoLoader.php');
+    AutoLoader::loadMap();
     $obj = new BasicModel(null);
 
     /* Argument signatures, to php, where BasicModel.php is the first:
@@ -813,8 +860,6 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
         echo "Update Table Structure: php BasicModel.php --update <Database name> <Subclass Filename>\n";
         exit;
     }
-
-    include_once(dirname(__FILE__).'/../AutoLoader.php');
 
     // Create new Model
     if ($argc == 3) {

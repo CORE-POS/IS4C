@@ -310,8 +310,6 @@ class InstallMenuPage extends InstallPage {
 // InstallMenuPage
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
-	$obj = new InstallMenuPage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+
 ?>

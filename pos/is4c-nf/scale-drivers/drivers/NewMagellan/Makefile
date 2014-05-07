@@ -2,7 +2,7 @@ CC=gmcs
 RM=rm -f
 BASE_LIBS=
 
-all: DelegateForm.dll USBLayer.dll SPH.dll UDPMsgBox.dll Magellan.cs
+all: DelegateForm.dll USBLayer.dll ParallelLayer.dll SPH.dll UDPMsgBox.dll Magellan.cs
 	$(CC) -target:exe $(BASE_LIBS) -r:SPH.dll -r:DelegateForm.dll -r:UDPMsgBox.dll -out:pos.exe Magellan.cs
 
 UDPMsgBox.dll: DelegateForm.dll UDPMsgBox.cs
@@ -14,8 +14,14 @@ DelegateForm.dll: DelegateForm.cs
 USBLayer.dll: USBLayer.cs USB-Posix.cs
 	$(CC) -target:library $(BASE_LIBS) -r:Mono.Posix.dll -out:USBLayer.dll USBLayer.cs USB-Posix.cs
 
-SPH.dll: DelegateForm.dll USBLayer.dll SerialPortHandler.cs SPH_Magellan_Scale.cs SPH_SignAndPay_USB.cs
-	$(CC) -define:MONO -target:library $(BASE_LIBS) -r:DelegateForm.dll -r:USBLayer.dll -out:SPH.dll SerialPortHandler.cs SPH_Magellan_Scale.cs SPH_SignAndPay_USB.cs
+ParallelLayer.dll: ParallelLayer.cs Parallel-Posix.cs
+	$(CC) -target:library $(BASE_LIBS) -r:Mono.Posix.dll -out:ParallelLayer.dll ParallelLayer.cs Parallel-Posix.cs
+
+SPH.dll: DelegateForm.dll USBLayer.dll ParallelLayer.dll SerialPortHandler.cs SPH_Magellan_Scale.cs SPH_SignAndPay_USB.cs SPH_Parallel_Writer.cs
+	$(CC) -define:MONO -target:library $(BASE_LIBS) \
+        -r:DelegateForm.dll -r:USBLayer.dll -r:ParallelLayer \
+        -out:SPH.dll \
+        SerialPortHandler.cs SPH_Magellan_Scale.cs SPH_SignAndPay_USB.cs SPH_Parallel_Writer.cs
 
 Magellan.dll: DelegateForm.dll SPH.dll UDPMsgBox.dll Magellan.cs
 	$(CC) -target:library $(BASE_LIBS) -r:SPH.dll -r:DelegateForm.dll -r:UDPMsgBox.dll -out:Magellan.dll Magellan.cs

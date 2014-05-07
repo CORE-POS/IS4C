@@ -105,6 +105,7 @@ class MercuryGift extends BasicCCModule {
 		case PaycardLib::PAYCARD_MODE_AUTH:
 			$CORE_LOCAL->set("paycard_amount",$CORE_LOCAL->get("amtdue"));
 			$CORE_LOCAL->set("paycard_id",$CORE_LOCAL->get("LastID")+1); // kind of a hack to anticipate it this way..
+            $CORE_LOCAL->set('CacheCardType', 'GIFT');
 			$plugin_info = new Paycards();
 			$json['main_frame'] = $plugin_info->plugin_url().'/gui/paycardboxMsgAuth.php';
 			return $json;
@@ -113,12 +114,14 @@ class MercuryGift extends BasicCCModule {
 		case PaycardLib::PAYCARD_MODE_ADDVALUE:
 			$CORE_LOCAL->set("paycard_amount",0);
 			$CORE_LOCAL->set("paycard_id",$CORE_LOCAL->get("LastID")+1); // kind of a hack to anticipate it this way..
+            $CORE_LOCAL->set('CacheCardType', 'GIFT');
 			$plugin_info = new Paycards();
 			$json['main_frame'] = $plugin_info->plugin_url().'/gui/paycardboxMsgGift.php';
 			return $json;
 	
 		case PaycardLib::PAYCARD_MODE_BALANCE:
 			$plugin_info = new Paycards();
+            $CORE_LOCAL->set('CacheCardType', 'GIFT');
 			$json['main_frame'] = $plugin_info->plugin_url().'/gui/paycardboxMsgBalance.php';
 			return $json;
 		} // switch mode
@@ -167,6 +170,7 @@ class MercuryGift extends BasicCCModule {
 	 */
 	function cleanup($json){
 		global $CORE_LOCAL;
+        $CORE_LOCAL->set('CacheCardType', 'GIFT');
 		switch($CORE_LOCAL->get("paycard_mode")){
 		case PaycardLib::PAYCARD_MODE_BALANCE:
 			$resp = $CORE_LOCAL->get("paycard_response");
@@ -181,7 +185,6 @@ class MercuryGift extends BasicCCModule {
 			$CORE_LOCAL->set("boxMsg","<b>Success</b><font size=-1><p>New card balance: $".$resp["Balance"]);
 				// reminder to void everything on testgift2, so that it remains inactive to test activations
 			$CORE_LOCAL->set("boxMsg",$CORE_LOCAL->get("boxMsg")."<p>[enter] to continue<br>\"rp\" to reprint slip</font>");
-			$json['receipt'] = 'gcSlip';
 			break;
 		case PaycardLib::PAYCARD_MODE_AUTH:
 			$CORE_LOCAL->set("autoReprint",1);
@@ -193,7 +196,6 @@ class MercuryGift extends BasicCCModule {
 			if( !strcasecmp($CORE_LOCAL->get("paycard_PAN"),"7018525757980004481")) // == doesn't work because the string is numeric and very large, so PHP has trouble turning it into an (int) for comparison
 				$CORE_LOCAL->set("boxMsg",$CORE_LOCAL->get("boxMsg")."<br><b>REMEMBER TO VOID THIS</b><br>(ask IT for details)");
 			$CORE_LOCAL->set("boxMsg",$CORE_LOCAL->get("boxMsg")."<p>[enter] to continue<br>\"rp\" to reprint slip<br>[clear] to cancel and void</font>");
-			$json['receipt'] = 'gcSlip';
 			break;
 		case PaycardLib::PAYCARD_MODE_VOID:
 		case PaycardLib::PAYCARD_MODE_VOIDITEM:
@@ -385,15 +387,52 @@ class MercuryGift extends BasicCCModule {
 		if( !$dbTrans->query($sql)){
 			return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); // internal error, nothing sent (ok to retry)
 		}
-                
+
 		// assemble and send request
 		$authMethod = "";
+        $logged_mode = $mode;
 		switch( $mode) {
-		case 'tender':    $authMethod = 'NoNSFSale';  break;
-		case 'refund':	  $authMethod = 'Return'; break;
-		case 'addvalue':  $authMethod = 'Reload';  break;
-		case 'activate':  $authMethod = 'Issue';  break;
+            case 'tender':
+                $authMethod = 'NoNSFSale';  
+                $logged_mode = 'Sale';
+                break;
+            case 'refund':
+                $authMethod = 'Return';
+                $logged_mode = 'Return';
+                break;
+            case 'addvalue':
+                $authMethod = 'Reload';
+                $logged_mode = 'Reload';
+                break;
+            case 'activate':
+                $authMethod = 'Issue';
+                $logged_mode = 'Issue';
+                break;
 		}
+
+        /**
+          Log transaction in newer table
+        */
+        if ($dbTrans->table_exists('PaycardTransactions')) {
+            $insQ = sprintf("INSERT INTO PaycardTransactions (
+                        dateID, empNo, registerNo, transNo, transID,
+                        processor, refNum, live, cardType, transType,
+                        amount, PAN, issuer, name, manual, requestDateTime)
+                     VALUES (
+                        %d,     %d,    %d,         %d,      %d,
+                        '%s',     '%s',    %d,   '%s',     '%s',
+                        %.2f,  '%s', '%s',  '%s',  %d,     '%s')",
+                        $today, $cashierNo, $laneNo, $transNo, $transID,
+                        'MercuryGift', $identifier, $live, 'Gift', $logged_mode,
+                        $amountText, $cardPAN,
+                        'Mercury', 'Cardholder', $manual, $now);
+            $insR = $dbTrans->query($insQ);
+            if ($insR) {
+                $this->last_paycard_transaction_id = $dbTrans->insert_id();
+            } else {
+                $this->last_paycard_transaction_id = 0;
+            }
+        }
 
 		$msgXml = "<?xml version=\"1.0\"".'?'.">
 			<TStream>
@@ -481,7 +520,34 @@ class MercuryGift extends BasicCCModule {
 		case 'addvalue': $vdMethod='VoidReload'; break;
 		case 'activate': $vdMethod='VoidIssue'; break;
 		}
-		
+
+        /**
+          populate a void record in PaycardTransactions
+        */
+        if ($dbTrans->table_exists('PaycardTransactions')) {
+            $initQ = "INSERT INTO PaycardTransactions (
+                        dateID, empNo, registerNo, transNo, transID,
+                        previousPaycardTransactionID, processor, refNum,
+                        live, cardType, transType, amount, PAN, issuer,
+                        name, manual, requestDateTime)
+                      SELECT dateID, empNo, registerNo, transNo, transID,
+                        paycardTransactionID, processor, refNum,
+                        live, cardType, 'VOID', amount, PAN, issuer,
+                        name, manual, " . $dbTrans->now() . "
+                      FROM PaycardTransactions
+                      WHERE
+                        dateID=" . $today . "
+                        AND empNo=" . $cashierNo . "
+                        AND registerNo=" . $laneNo . "
+                        AND transNo=" . $transNo . "
+                        AND transID=" . $transID;
+            $initR = $dbTrans->query($initQ);
+            if ($initR) {
+                $this->last_paycard_transaction_id = $dbTrans->insert_id();
+            } else {
+                $this->last_paycard_transaction_id = 0;
+            }
+        }
 
 		$msgXml = "<?xml version=\"1.0\"".'?'.">
 			<TStream>
@@ -644,6 +710,52 @@ class MercuryGift extends BasicCCModule {
 		$sql = "INSERT INTO valutecResponse (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
 		$dbTrans->query($sql);
 
+        if ($dbTrans->table_exists('PaycardTransactions')) {
+            $normalized = ($validResponse == 0) ? 4 : 0;
+            $status = $xml->get('CMDSTATUS');
+            if ($status == 'Approved') {
+                $normalized = 1;
+                $resultCode = 1;
+                $rMsg = 'Approved';
+            } else if ($status == 'Declined') {
+                $normalized = 2;
+                $resultCode = 2;
+                $rMsg = 'Declined';
+            } else if ($status == 'Error') {
+                $normalized = 3;
+                $resultCode = 0;
+                $rMsg = substr($errorMsg, 0, 100);
+            }
+            $apprNumber = $xml->get_first('REFNO');
+            $finishQ = sprintf("UPDATE PaycardTransactions SET
+                                    responseDatetime='%s',
+                                    seconds=%f,
+                                    commErr=%d,
+                                    httpCode=%d,
+                                    validResponse=%d,
+                                    xResultCode=%d,
+                                    xApprovalNumber='%s',
+                                    xResponseCode=%d,
+                                    xResultMessage='%s',
+                                    xTransactionID='%s',
+                                    xBalance=%.2f
+                                WHERE paycardTransactionID=%d",
+                                    $now,
+                                    $authResult['curlTime'],
+                                    $authResult['curlErr'],
+                                    $authResult['curlHTTP'],
+                                    $normalized,
+                                    $resultCode,
+                                    $apprNumber,
+                                    $resultCode,
+                                    $rMsg,
+                                    $apprNumber,
+                                    $balance,
+                                    $this->last_paycard_transaction_id
+            );
+            $dbTrans->query($finishQ);
+        }
+
 		// check for communication errors (any cURL error or any HTTP code besides 200)
 		if( $authResult['curlErr'] != CURLE_OK || $authResult['curlHTTP'] != 200){
 			if ($authResult['curlHTTP'] == '0'){
@@ -678,7 +790,7 @@ class MercuryGift extends BasicCCModule {
 		  it correctly.
 		*/
 		if ($xml->get_first("AUTHORIZE")){
-			$CORE_LOCAL->set("paycard_amount",$xml->get_first("AUTHORIZE"));
+            $CORE_LOCAL->set("paycard_amount",$xml->get_first("AUTHORIZE"));
 			if ($xml->get_first('TRANCODE') && $xml->get_first('TRANCODE') == 'Return')
 				$CORE_LOCAL->set("paycard_amount",-1*$xml->get_first("AUTHORIZE"));
 			$correctionQ = sprintf("UPDATE valutecRequest SET amount=%f WHERE
@@ -752,6 +864,52 @@ class MercuryGift extends BasicCCModule {
 		$sqlValues .= ",".$validResponse;
 		$sql = "INSERT INTO valutecRequestMod (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
 		$dbTrans->query($sql);
+
+        if ($dbTrans->table_exists('PaycardTransactions')) {
+            $normalized = ($validResponse == 0) ? 4 : 0;
+            $status = $xml->get('CMDSTATUS');
+            if ($status == 'Approved') {
+                $normalized = 1;
+                $resultCode = 1;
+                $rMsg = 'Approved';
+            } else if ($status == 'Declined') {
+                $normalized = 2;
+                $resultCode = 2;
+                $rMsg = 'Declined';
+            } else if ($status == 'Error') {
+                $normalized = 3;
+                $resultCode = 0;
+                $rMsg = substr($xml->get_first('TEXTRESPONSE'), 0, 100);
+            }
+            $apprNumber = $xml->get_first('REFNO');
+            $finishQ = sprintf("UPDATE PaycardTransactions SET
+                                    responseDatetime='%s',
+                                    seconds=%f,
+                                    curlErr=%d,
+                                    httpCode=%d,
+                                    validResponse=%d,
+                                    xResultCode=%d,
+                                    xApprovalNumber='%s',
+                                    xResponseCode=%d,
+                                    xResultMessage='%s',
+                                    xTransactionID='%s',
+                                    xBalance=%.2f
+                                WHERE paycardTransactionID=%d",
+                                    $now,
+                                    $authResult['curlTime'],
+                                    $authResult['curlErr'],
+                                    $authResult['curlHTTP'],
+                                    $normalized,
+                                    $resultCode,
+                                    $apprNumber,
+                                    $resultCode,
+                                    $rMsg,
+                                    $apprNumber,
+                                    $xml->get('BALANCE'),
+                                    $this->last_paycard_transaction_id
+            );
+            $dbTrans->query($finishQ);
+        }
 
 		if( $vdResult['curlErr'] != CURLE_OK || $vdResult['curlHTTP'] != 200) {
 			if ($authResult['curlHTTP'] == '0'){

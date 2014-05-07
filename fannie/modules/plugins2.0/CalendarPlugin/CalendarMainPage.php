@@ -23,11 +23,9 @@
 
 include_once(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FanniePage'))
-	include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
+	include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 if (!class_exists('CalendarPlugin'))
 	include(dirname(__FILE__).'/CalendarPlugin.php');
-if (!class_exists('FormLib'))
-	include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
 if (!function_exists('getUID'))
 	include($FANNIE_ROOT.'auth/login.php');
 include_once(dirname(__FILE__).'/CalendarPluginDisplayLib.php');
@@ -44,6 +42,7 @@ class CalendarMainPage extends FanniePage {
 		$this->header = "Calendars";
 		
 		$plugin = new CalendarPlugin(); 
+        $this->add_script($FANNIE_URL . 'src/jquery/jquery.js');
 		$this->add_script($plugin->plugin_url().'/javascript/calendar.js');
 		$this->add_script($plugin->plugin_url().'/javascript/ajax.js');
 
@@ -71,6 +70,18 @@ class CalendarMainPage extends FanniePage {
 
 			echo CalendarPluginDisplayLib::monthView($calID,$month,$year,$this->uid);
 			break;
+        case 'week':
+			$year = FormLib::get_form_value('year',date('Y'));
+            $week = FormLib::get_form_value('week', date('W'));
+			$calID = FormLib::get_form_value('calID',0);
+            
+            if ($calID == 0) {
+                echo CalendarPluginDisplayLib::indexView($this->uid);
+            } else {
+                echo CalendarPluginDisplayLib::weekView($calID, $year, $week);
+                $this->add_onload_command('weekBootstrap();');
+            }
+            break;
 		case 'prefs':
 			$calID = FormLib::get_form_value('calID','');
 			echo CalendarPluginDisplayLib::prefsView($calID,$this->uid);
@@ -93,9 +104,6 @@ class CalendarMainPage extends FanniePage {
 
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new CalendarMainPage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
 
 ?>

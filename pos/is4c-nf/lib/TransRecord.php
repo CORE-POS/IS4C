@@ -155,6 +155,10 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 
 	$trans_id = $CORE_LOCAL->get("LastID");
 
+    if (strlen($strdescription) > 30) {
+        $strdescription = substr($strdescription, 0, 30);
+    }
+
 	$values = array(
 		'datetime'	=> $datetimestamp,
 		'register_no'	=> $intregisterno,
@@ -211,6 +215,86 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 	if ($intscale == 1) {
 		$CORE_LOCAL->set("lastWeight",$dblquantity);
     }
+}
+
+/**
+  Wrapper for addItem that accepted a keyed array instead
+  of many, MANY arguments. All keys are optional and will have
+  the default values listed below if ommitted (read the actual method) 
+  @param $named_params [keyed array]
+  @return [none]
+*/
+static public function addRecord($named_params)
+{
+    // start with default values
+    $new_record = array(
+        'upc'           => '',
+        'description'   => '',
+        'trans_type'    => 'I',
+        'trans_subtype' => '',
+        'trans_status'  => '',
+        'department'    => 0,
+        'quantity'      => 0.0,
+        'unitPrice'     => 0.0,
+        'total'         => 0.0,
+        'regPrice'      => 0.0,
+        'scale'         => 0,
+        'tax'           => 0,
+        'foodstamp'     => 0,
+        'discount'      => 0.0,
+        'memDiscount'   => 0.0,
+        'discountable'  => 0,
+        'discounttype'  => 0,
+        'ItemQtty'      => 0.0,
+        'volDiscType'   => 0,
+        'volume'        => 0,
+        'VolSpecial'    => 0,
+        'mixMatch'      => '',
+        'matched'       => 0,
+        'voided'        => 0,
+        'cost'          => 0.0,
+        'numflag'       => 0,
+        'charflag'      => '',
+    );
+
+    // override defaults with any values specified
+    // in $named_params
+    foreach(array_keys($new_record) as $key) {
+        if (isset($named_params[$key])) {
+            $new_record[$key] = $named_params[$key];
+        }
+    }
+
+    // call addItem()
+    self::addItem(
+        $new_record['upc'],
+        $new_record['description'],
+        $new_record['trans_type'],
+        $new_record['trans_subtype'],
+        $new_record['trans_status'],
+        $new_record['department'],
+        $new_record['quantity'],
+        $new_record['unitPrice'],
+        $new_record['total'],
+        $new_record['regPrice'],
+        $new_record['scale'],
+        $new_record['tax'],
+        $new_record['foodstamp'],
+        $new_record['discount'],
+        $new_record['memDiscount'],
+        $new_record['discountable'],
+        $new_record['discounttype'],
+        $new_record['ItemQtty'],
+        $new_record['volDiscType'],
+        $new_record['volume'],
+        $new_record['VolSpecial'],
+        $new_record['mixMatch'],
+        $new_record['matched'],
+        $new_record['voided'],
+        $new_record['cost'],
+        $new_record['numflag'],
+        $new_record['charflag']
+    );
 }
 
 /**
@@ -308,6 +392,31 @@ static public function addtax()
 static public function addtender($strtenderdesc, $strtendercode, $dbltendered) 
 {
 	self::addItem("", $strtenderdesc, "T", $strtendercode, "", 0, 0, 0, $dbltendered, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+}
+
+/**
+  Add a tender record to the transaction with numflag & charflag values
+  @param $strtenderdesc is a description, such as "Credit Card"
+  @param $strtendercode is a 1-2 character code, such as "CC"
+  @param $dbltendered is the amount. Remember that payments are
+      <i>negative</i> amounts. 
+  @param $numflag [int]
+  @param $charflag [1-2 character string]
+
+  Flags are meant to store generic additional data as needed. For example,
+  numflag might contain a record ID corresponding to table(s) of additional
+  processor data on an integrated transaction.
+*/
+static public function addFlaggedTender($strtenderdesc, $strtendercode, $dbltendered, $numflag, $charflag) 
+{
+    self::addRecord(array(
+        'description' => $strtenderdesc,
+        'trans_type' => 'T',
+        'trans_subtype' => $strtendercode,
+        'total' => $dbltendered,
+        'numflag' => $numflag,
+        'charflag' => $charflag,
+    ));
 }
 
 /**
@@ -536,55 +645,8 @@ static public function addCashDrop($amt)
 }
 
 /**
-  Add an activity record to activitytemplog
-  @param $activity identifier
-
-  @deprecated
-  No one really uses activity logging currently.
-  Use TransRecord::addLogRecord instead.
-*/
-static public function addactivity($activity) 
-{
-    /*
-	global $CORE_LOCAL;
-
-	$timeNow = time();
-
-	if ($CORE_LOCAL->get("CashierNo") > 0 && $CORE_LOCAL->get("CashierNo") < 256) {
-		$intcashier = $CORE_LOCAL->get("CashierNo");
-	} else {
-		$intcashier = 0;
-	}
-
-	$db = Database::tDataConnect();
-	$strqtime = "select max(datetime) as maxDateTime, ".$db->now()." as rightNow from activitytemplog";
-	$result = $db->query($strqtime);
-
-	$row = $db->fetch_array($result);
-
-	if (!$row || !$row[0]) {
-		$interval = 0;
-	} else {
-		$interval = strtotime($row["rightNow"]) - strtotime($row["maxDateTime"]);
-	}
-
-	$datetimestamp = strftime("%Y-%m-%d %H:%M:%S", $timeNow);
-
-	$values = array(
-		'datetime'	=> MiscLib::nullwrap($datetimestamp),
-		'LaneNo'	=> MiscLib::nullwrap($CORE_LOCAL->get("laneno")),
-		'CashierNo'	=> MiscLib::nullwrap($intcashier),
-		'TransNo'	=> MiscLib::nullwrap($CORE_LOCAL->get("transno")),
-		'Activity'	=> MiscLib::nullwrap($activity),
-		'Interval'	=> MiscLib::nullwrap($interval)
-		);
-	$result = $db->smart_insert("activitytemplog",$values);
-    */
-}
-
-/**
   Add a log entry to the transaction table.
-  Log records do not appear onscreen on on receipts.
+  Log records do not appear onscreen or on receipts.
 
   @param $opts keyed array. Currently valid keys are:
    - upc
@@ -615,7 +677,7 @@ static public function addLogRecord($opts)
 	$total = isset($opts['amount1']) ? $opts['amount1'] : 0;
 	$regPrice = isset($opts['amount2']) ? $opts['amount2'] : 0;
 	
-	self::addItem($upc, $desc, 'L', 'OG', 'D', $dept, 
+	self::addItem($upc, $desc, 'L', 'OG', 'X', $dept, 
 		0, // quantity
 		0, // unitPrice 
 		$total, 

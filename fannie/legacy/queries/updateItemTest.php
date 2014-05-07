@@ -47,6 +47,9 @@ extract($_POST);
 //echo $today;
 
 $Scale = (isset($_POST["Scale"])) ? 1 : 0;
+if (isset($_POST['s_bycount']) && $_POST['s_bycount'] == 'On' && isset($_POST['s_type']) && $_POST['s_type'] == 'Fixed Weight') {
+    $Scale = 0;
+}
 $FS = (isset($_POST["FS"])) ? 1 : 0;
 $NoDisc = (isset($_POST["NoDisc"])) ? 0 : 1;
 $inUse = (isset($_POST["inUse"])) ? 1 : 0;
@@ -109,11 +112,26 @@ if (empty($vol_qtty) || $vol_qtty == 0){
 $descript = str_replace("'","",$descript);
 $descript = str_replace("\"","",$descript);
 $descript = $sql->escape($descript);
+if (empty($manufacturer))
+	$manufacturer = '';
+if (empty($distributor))
+	$distributor = '';
+$manufacturer = str_replace("'","",$manufacturer);
+$distributor = str_replace("'","",$distributor);
+// lookup vendorID by name
+$vendorID = 0;
+$vendor = new VendorsModel($sql);
+$vendor->vendorName($distributor);
+foreach($vendor->find('vendorID') as $obj) {
+    $vendorID = $obj->vendorID();
+    break;
+}
 
 $stamp = date("Y-m-d H:i:s");
 $model = new ProductsModel($sql);
 $model->upc($upc);
 $model->description($descript);
+$model->brand($manufacturer);
 $model->normal_price($price);
 $model->tax($tax);
 $model->scale($Scale);
@@ -127,30 +145,9 @@ $model->pricemethod($price_method);
 $model->groupprice($vol_price);
 $model->quantity($vol_qtty);
 $model->local($local);
+$model->default_vendor_id($vendorID);
 $model->save();
 
-$nowish = date("Y-m-d h:i:s");
-$query1 = "INSERT INTO prodUpdate 
-        VALUES('$upc','$descript', 
-        $price,$dept,
-        $tax,$FS,
-        $Scale,
-        $likeCode,
-	'$nowish',
-	$uid,
-	$QtyFrc,
-        $NoDisc,
-	$inUse)
-	";
-//////////echo $query1;
-$result1 = $sql->execute($query1, array($upc, $descript, $price, $dept, $tax, $FS, $Scale, $likeCode, $nowish, $uid, $QtyFrc, $NoDisc, $inUse));
-
-if (empty($manufacturer))
-	$manufacturer = '';
-if (empty($distributor))
-	$distributor = '';
-$manufacturer = str_replace("'","",$manufacturer);
-$distributor = str_replace("'","",$distributor);
 $checkP = $sql->prepare("SELECT upc FROM prodExtra WHERE upc=?");
 $checkR = $sql->execute($checkP, array($upc));
 if ($sql->num_rows($checkR) == 0){
@@ -218,6 +215,10 @@ if (!empty($s_plu)){
 	  else
 	    $shelflife = 0;
 	}
+    $netWeight = 0;
+    if (isset($s_netwt)) {
+        $netWeight = (int)$s_netwt;
+    }
 
 	$s_label = 63;
 	if ($s_label == "horizontal" && $s_type == "Random Weight")
@@ -250,32 +251,19 @@ if (!empty($s_plu)){
 	$s_itemdesc = str_replace("\"","",$s_itemdesc);
 	$s_text = str_replace("\"","",$s_text);
 
-	if ($nr == 0){
-	   $scaleQuery = $sql->prepare("insert into scaleItems (plu,price,itemdesc,exceptionprice,
-						 weight,bycount,tare,shelflife,text,label,graphics) 
-						 values
-						 (?, ?, ?,
-						 ?, ?, ?, ?,
-						 ?, ?, ?, ?)");
-	   //echo $scaleQuery;
-	   $scaleRes = $sql->execute($scaleQuery, array($s_plu, $s_price, $s_itemdesc, $s_exception, $wt, $bc, $tare, $shelflife, $s_text, $s_label, $graphics));
-	}
-	else {
-	   $scaleQuery = $sql->prepare("update scaleItems set
-			 price = ?,
-			 itemdesc = ?,
-			 exceptionprice = ?,
-			 weight = ?,
-			 bycount = ?,
-			 tare = ?,
-			 shelflife = ?,
-			 text = ?,
-			 label = ?,
-			 graphics = ?
-			 where plu = ?");
-	  //echo $scaleQuery;
-	  $scareRes = $sql->execute($scaleQuery, array($s_price, $s_itemdesc, $s_exception, $wt, $bc, $tare, $shelflife, $s_text, $s_label, $graphics, $s_plu));
-	}
+    $scaleItem = new ScaleItemsModel($dbc);
+    $scaleItem->plu($s_plu);
+    $scaleItem->price($s_price);
+    $scaleItem->itemdesc($s_itemdesc);
+    $scaleItem->weight($wt);
+    $scaleItem->bycount($bc);
+    $scaleItem->tare($tare);
+    $scaleItem->shelflife($shelflife);
+    $scaleItem->text($s_text);
+    $scaleItem->label($s_label);
+    $scaleItem->graphics($graphics);
+    $scaleItem->netWeight($netWeight);
+    $scaleItem->save();
 
 	$datetime = date("m/d/Y h:i:s a");
 	$fp = fopen('hobartcsv/query.log','a');
@@ -291,12 +279,45 @@ if (!empty($s_plu)){
 	//echo "<br />plu ".$s_plu;
 
 	// hobart csv functionality
+    /*
 	include('hobartcsv/parse.php');
 
 	// generate csv files and place them in the
 	// DGW import directory
+    // @deprecated 29Mar14
 	parseitem('ChangeOneItem',$s_plu,$s_itemdesc,$tare,$shelflife,$s_price,
 		  $s_bycount,$s_type,$s_exception,$s_text,$s_label,$graphics);
+    */
+
+    $item_info = array(
+        'RecordType' => 'ChangeOneItem',
+        'PLU' => $s_plu,
+        'Description' => $s_itemdesc,
+        'Tare' => $tare,
+        'ShelfLife' => $shelflife,
+        'Price' =>$s_price,
+        'Label' => $s_label,
+        'ExpandedText' => $s_text,
+        'ByCount' => ($s_bycount == 'on') ? 1 : 0,
+    );
+    if ($netWeight != 0) {
+        $item_info['NetWeight'] = $netWeight;
+    }
+    if ($graphics) {
+        $item_info['Graphics'] = $graphics;
+    }
+    // normalize type + bycount; they need to match
+    if ($item_info['ByCount'] && $s_type == 'Random Weight') {
+        $item_info['Type'] = 'By Count';
+    } else if ($s_type == 'Fixed Weight') {
+        $item_info['Type'] = 'Fixed Weight';
+        $item_info['ByCount'] = 1;
+    } else {
+        $item_info['Type'] = 'Random Weight';
+        $item_info['ByCount'] = 0;
+    }
+
+    HobartDgwLib::writeItemsToScales($item_info);
 }
 
 $udesc = isset($_REQUEST['u_desc'])?$_REQUEST['u_desc']:'';
@@ -377,16 +398,16 @@ if(!empty($likeCode)){
 	    $selectQ = $sql->prepare("SELECT * FROM upcLike WHERE likecode = ?");
 	    //echo $selectQ;
 	    $selectR = $sql->execute($selectQ, array($likeCode));
+        $prodUpdate = new ProdUpdateModel($sql);
 	    while($selectW = $sql->fetch_array($selectR)){
 	       $upcL = $selectW['upc'];
 	       if($upcL != $upc){
-		  $insQ= $sql->prepare("INSERT INTO prodUpdate SELECT upc, description,normal_price,department,tax,foodstamp,scale,?,?,?,qttyEnforced,discount,1
-			      FROM products where upc = ?");
-		  $insR= $sql->execute($insQ, array($likeCode, date('Y-m-d H:i:s'), $uid, $upcL));
-		  //echo $selectQ . "<br>";
-          $p_model = new ProductsModel($sql);
-          $p_model->upc($upcL);
-          $p_model->pushToLanes();
+                $prodUpdate->reset();
+                $prodUpdate->upc($upcL);
+                $prodUpdate->logUpdate(ProdUpdateModel::UPDATE_EDIT);
+                $p_model = new ProductsModel($sql);
+                $p_model->upc($upcL);
+                $p_model->pushToLanes();
 	      }   
 	    }
     	

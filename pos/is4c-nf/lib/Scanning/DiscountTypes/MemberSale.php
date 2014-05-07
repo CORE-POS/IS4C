@@ -43,7 +43,7 @@ class MemberSale extends DiscountType
             $ret["unitPrice"] = $row['special_price'];
         }
 
-        if ($CORE_LOCAL->get("itemPD") > 0) {
+        if ($row['line_item_discountable'] == 1 && $CORE_LOCAL->get("itemPD") > 0) {
             $discount = $ret['unitPrice'] * (($CORE_LOCAL->get("itemPD")/100));
             $ret["unitPrice"] -= $discount;
             $ret["discount"] += ($discount * $quantity);

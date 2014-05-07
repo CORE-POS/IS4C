@@ -8,5 +8,8 @@ foreach($tokens as $t){
 	global $$name;
 }
 include($config);
+if (!class_exists('FannieAPI')) {
+    include(dirname(__FILE__) . '/../classlib2.0/FannieAPI.php');
+}
 
 ?>

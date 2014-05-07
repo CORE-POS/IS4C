@@ -90,13 +90,16 @@ class FannieAPI
     */
     static private function findClass($name, $path)
     {
-        if (!is_dir($path)){
+        if (!is_dir($path)) {
+            return false;
+        } else if ($name == 'index') {
             return false;
         }
 
         $dh = opendir($path);
         while($dh && ($file=readdir($dh)) !== false) {
             if ($file[0] == ".") continue;
+            if ($file == 'noauto') continue;
             $fullname = realpath($path.'/'.$file);
             if (is_dir($fullname)) {
                 // recurse looking for file
@@ -118,11 +121,18 @@ class FannieAPI
         return false;
     }
 
+    /**
+      Get a list of all available classes implementing a given
+      base class
+      @param $base_class [string] name of base class
+      @param $include_base [boolean] include base class name in the result set
+        [optional, default false]
+      @return [array] of [string] class names
+    */
     static public function listModules($base_class, $include_base=false)
     {
-        $directiories = array();
+        $directories = array();
         $directories[] = dirname(__FILE__).'/../modules/plugins2.0/';
-        $directories[] = dirname(__FILE__);
 
         switch($base_class) {
             case 'ItemModule':
@@ -133,6 +143,15 @@ class FannieAPI
                 break;
             case 'FannieTask':
                 $directories[] = dirname(__FILE__).'/../cron/tasks/';
+                break;
+            case 'BasicModelHook':
+                $directories[] = dirname(__FILE__).'/data/hooks/';
+                break;
+            case 'FannieReportPage':
+                $directories[] = dirname(__FILE__).'/../reports/';
+                break;
+            case 'FannieReportTool':
+                $directories[] = dirname(__FILE__).'/../reports/';
                 break;
         }
 
@@ -145,6 +164,8 @@ class FannieAPI
                 $ret = array();
                 while( ($file=readdir($dh)) !== false) {
                     if ($file == '.' || $file == '..') continue;
+                    if ($file == 'noauto') continue;
+                    if ($file == 'Store-Specific') continue;
                     $ret = array_merge($ret, $search($path.'/'.$file));
                 }
                 return $ret;
@@ -173,15 +194,6 @@ class FannieAPI
                 continue;
             }
 
-            // verify class exists
-            ob_start();
-            include_once($file);
-            ob_end_clean();
-
-            if (!class_exists($class)) {
-                continue;
-            }
-
             // if the file is part of a plugin, make sure
             // the plugin is enabled. The exception is when requesting
             // a list of plugin classes
@@ -190,6 +202,15 @@ class FannieAPI
                 if ($parent === false || !FanniePlugin::isEnabled($parent)) {
                     continue;
                 }
+            }
+
+            // verify class exists
+            ob_start();
+            include_once($file);
+            ob_end_clean();
+
+            if (!class_exists($class)) {
+                continue;
             }
 
             if (is_subclass_of($class, $base_class)) {

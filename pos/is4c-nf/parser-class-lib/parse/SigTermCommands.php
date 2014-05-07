@@ -21,111 +21,181 @@
 
 *********************************************************************************/
 
-class SigTermCommands extends Parser {
+class SigTermCommands extends Parser 
+{
+	private $cb_error;
 
-	var $cb_error;
-
-	function check($str){
+	function check($str)
+    {
 		global $CORE_LOCAL;
-		if ($str == "TERMMANUAL"){
+		if ($str == "TERMMANUAL") {
 			UdpComm::udpSend("termManual");
-			$CORE_LOCAL->set("paycard_keyed",True);
-			return True;
-		}
-		elseif ($str == "TERMRESET" || $str == "TERMREBOOT"){
-			if ($str == "TERMRESET")
+			$CORE_LOCAL->set("paycard_keyed", true);
+
+			return true;
+
+		} else if ($str == "TERMRESET" || $str == "TERMREBOOT") {
+			if ($str == "TERMRESET") {
 				UdpComm::udpSend("termReset");
-			else
+			} else {
 				UdpComm::udpSend("termReboot");
-			$CORE_LOCAL->set("paycard_keyed",False);
+            }
+			$CORE_LOCAL->set("paycard_keyed", false);
 			$CORE_LOCAL->set("CachePanEncBlock","");
 			$CORE_LOCAL->set("CachePinEncBlock","");
 			$CORE_LOCAL->set("CacheCardType","");
 			$CORE_LOCAL->set("CacheCardCashBack",0);
 			$CORE_LOCAL->set('ccTermState','swipe');
-			return True;
-		}
-		elseif ($str == "CCFROMCACHE"){
-			return True;
-		}
-		else if (substr($str,0,9) == "PANCACHE:"){
+
+			return true;
+
+		} else if ($str == "CCFROMCACHE") {
+
+			return true;
+
+		} else if (substr($str,0,9) == "PANCACHE:") {
 			$CORE_LOCAL->set("CachePanEncBlock",substr($str,9));
 			$CORE_LOCAL->set('ccTermState','type');
-			return True;
-		}
-		else if (substr($str,0,9) == "PINCACHE:"){
+            if ($CORE_LOCAL->get('PaycardsStateChange') == 'coordinated') {
+                if ($CORE_LOCAL->get('PaycardsAllowEBT') == 1) {
+                    UdpComm::udpSend('termGetTypeWithFS');
+                } else {
+                    UdpComm::udpSend('termGetType');
+                }
+            } else {
+                // check for out of order messages from terminal
+                if ($CORE_LOCAL->get('CacheCardType') != '' && $CORE_LOCAL->get('CacheCardType') == 'CREDIT') {
+                    $CORE_LOCAL->set('ccTermState', 'ready');
+                } else if ($CORE_LOCAL->get('CacheCardType') != '' && $CORE_LOCAL->get('CachePinEncBlock') != '') {
+                    $CORE_LOCAL->set('ccTermState', 'ready');
+                }
+            }
+
+			return true;
+
+		} else if (substr($str,0,9) == "PINCACHE:") {
 			$CORE_LOCAL->set("CachePinEncBlock",substr($str,9));
 			$CORE_LOCAL->set('ccTermState','ready');
-			return True;
-		}
-		else if (substr($str,0,6) == "VAUTH:"){
+            if ($CORE_LOCAL->get('PaycardsStateChange') == 'coordinated') {
+                UdpComm::udpSend('termWait');
+            }
+
+			return true;
+
+		} else if (substr($str,0,6) == "VAUTH:") {
 			$CORE_LOCAL->set("paycard_voiceauthcode",substr($str,6));
-			return True;
-		}
-		else if (substr($str,0,8) == "EBTAUTH:"){
+
+			return true;
+
+		} else if (substr($str,0,8) == "EBTAUTH:") {
 			$CORE_LOCAL->set("ebt_authcode",substr($str,8));
-			return True;
-		}
-		else if (substr($str,0,5) == "EBTV:"){
+
+			return true;
+
+		} else if (substr($str,0,5) == "EBTV:"){
 			$CORE_LOCAL->set("ebt_vnum",substr($str,5));
-			return True;
-		}
-		else if ($str == "TERMCLEARALL"){
+
+			return true;
+
+		} else if ($str == "TERMCLEARALL") {
 			$CORE_LOCAL->set("CachePanEncBlock","");
 			$CORE_LOCAL->set("CachePinEncBlock","");
 			$CORE_LOCAL->set("CacheCardType","");
 			$CORE_LOCAL->set("CacheCardCashBack",0);
-			return True;
-		}
-		else if (substr($str,0,5) == "TERM:"){
+            $CORE_LOCAL->set('ccTermState', 'swipe');
+
+			return true;
+
+		} else if (substr($str,0,5) == "TERM:") {
 			$CORE_LOCAL->set("CacheCardType",substr($str,5));
-			switch($CORE_LOCAL->get('CacheCardType')){
-			case 'CREDIT':
-				$CORE_LOCAL->set('ccTermState','ready');
-				break;
-			case 'DEBIT':
-				$CORE_LOCAL->set('ccTermState','cashback');
-				break;
-			case 'EBTFOOD':
-				$CORE_LOCAL->set('ccTermState','pin');
-				break;
-			case 'EBTCASH':
-				$CORE_LOCAL->set('ccTermState','cashback');
-				break;
+			switch($CORE_LOCAL->get('CacheCardType')) {
+                case 'CREDIT':
+                    $CORE_LOCAL->set('ccTermState','ready');
+                    if ($CORE_LOCAL->get('PaycardsStateChange') == 'coordinated') {
+                        UdpComm::udpSend('termWait');
+                    }
+                    break;
+                case 'DEBIT':
+                    if ($CORE_LOCAL->get('PaycardsOfferCashBack') == 1) {
+                        $CORE_LOCAL->set('ccTermState','cashback');
+                        if ($CORE_LOCAL->get('PaycardsStateChange') == 'coordinated') {
+                            UdpComm::udpSend('termCashBack');
+                        }
+                    } else {
+                        $CORE_LOCAL->set('ccTermState','pin');
+                        if ($CORE_LOCAL->get('PaycardsStateChange') == 'coordinated') {
+                            UdpComm::udpSend('termGetPin');
+                        }
+                    }
+                    break;
+                case 'EBTFOOD':
+                    $CORE_LOCAL->set('ccTermState','pin');
+                    if ($CORE_LOCAL->get('PaycardsStateChange') == 'coordinated') {
+                        UdpComm::udpSend('termGetPin');
+                    }
+                    break;
+                case 'EBTCASH':
+                    if ($CORE_LOCAL->get('PaycardsOfferCashBack') == 1) {
+                        $CORE_LOCAL->set('ccTermState','cashback');
+                        if ($CORE_LOCAL->get('PaycardsStateChange') == 'coordinated') {
+                            UdpComm::udpSend('termCashBack');
+                        }
+                    } else {
+                        $CORE_LOCAL->set('ccTermState','pin');
+                        if ($CORE_LOCAL->get('PaycardsStateChange') == 'coordinated') {
+                            UdpComm::udpSend('termGetPin');
+                        }
+                    }
+                    break;
 			}
-			return True;
-		}
-		else if (substr($str,0,7) == "TERMCB:"){
+
+            if ($CORE_LOCAL->get('PaycardsStateChange') == 'direct') {
+                // check for out of order messages from terminal
+                if ($CORE_LOCAL->get('CacheCardType') != '' && $CORE_LOCAL->get('CachePanEncBlock') != '' && $CORE_LOCAL->get('CachePinEncBlock') != '') {
+                    $CORE_LOCAL->set('ccTermState', 'ready');
+                }
+            }
+
+			return true;
+
+		} else if (substr($str,0,7) == "TERMCB:") {
 			$cashback = substr($str,7);
-			if ($cashback <= 40){
-				$this->cb_error = False;
+			if ($cashback <= 40) {
+				$this->cb_error = false;
 				$CORE_LOCAL->set("CacheCardCashBack",$cashback);
-			}
-			else {
-				$this->cb_error = True;
+			} else {
+				$this->cb_error = true;
 			}
 			$CORE_LOCAL->set('ccTermState','pin');
-			return True;
+            if ($CORE_LOCAL->get('PaycardsStateChange') == 'coordinated') {
+                UdpComm::udpSend('termGetPin');
+            }
+
+			return true;
 		}
-		return False;
+
+		return false;
 	}
 
-	function parse($str){
+	function parse($str)
+    {
 		global $CORE_LOCAL;
 		$ret = $this->default_json();
 		$ret['scale'] = ''; // redraw righthand column
-		if ($str == "CCFROMCACHE"){
+		if ($str == "CCFROMCACHE") {
 			$ret['retry'] = $CORE_LOCAL->get("CachePanEncBlock");
 		}
-		if ($this->cb_error){
+		if ($this->cb_error) {
 			$CORE_LOCAL->set('boxMsg','Warning: Invalid cash back<br />
 					selection ignored');
 			$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';	
 		}
+
 		return $ret;
 	}
 
-	function doc(){
+	function doc()
+    {
 		return "<table cellspacing=0 cellpadding=3 border=1>
 			<tr>
 				<th>Input</th><th>Result</th>
@@ -156,4 +226,3 @@ class SigTermCommands extends Parser {
 	}
 }
 
-?>

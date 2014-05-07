@@ -34,8 +34,11 @@ mkdir -p /var/run/posdriver-sph
 start(){
 	echo "Starting $NAME"
 	if [ ! -f /var/run/posdriver-sph/pos.pid ]; then
-		cd /var/www/html/git/IS4C/pos/is4c-nf/scale-drivers/drivers/NewMagellan
-		#cd /usr/share/it-core/is4c-nf/scale-drivers/drivers/NewMagellan
+		echo "here"
+		cd /var/www/IS4C/pos/is4c-nf/scale-drivers/drivers/NewMagellan
+		# 18Oct13 EL This cd looks fishy to me. /var/www/html doesn't exist.
+		#cd /var/www/html/git/IS4C/pos/is4c-nf/scale-drivers/drivers/NewMagellan
+		#old?cd /usr/share/it-core/is4c-nf/scale-drivers/drivers/NewMagellan
 		mono pos.exe &> /var/run/posdriver-sph/pos.log &
 		echo $! > /var/run/posdriver-sph/pos.pid
 		RETVAL=$?

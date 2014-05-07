@@ -21,6 +21,7 @@ Columns:
 	sentExp tinyint
 	sentTr1 tinyint
 	sentTr2 tinyint	
+    efsnetRequestID int
 
 Depends on:
 	none
@@ -54,6 +55,12 @@ sent. Most gateways will accept PAN + expiration
 date, or either track. Sending both tracks is
 usually fine; I've never seen a system where
 you send all 4 pieces of card info.
+
+efsnetRequestID is an incrementing ID columns. This
+is unique at a lane level but not an overall system
+level since different lanes will increment through
+the same ID values. The combination of laneNo and
+efsnetRequestID should be unique though.
 */
 $CREATE['trans.efsnetRequest'] = "
 	CREATE TABLE efsnetRequest (
@@ -74,7 +81,8 @@ $CREATE['trans.efsnetRequest'] = "
 		sentPAN tinyint ,
 		sentExp tinyint ,
 		sentTr1 tinyint ,
-		sentTr2 tinyint 
+		sentTr2 tinyint ,
+        efsnetRequestID INT
 	)
 ";
 ?>

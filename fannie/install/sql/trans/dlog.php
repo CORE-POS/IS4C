@@ -24,6 +24,9 @@ Columns:
 	charflag int
 	card_no int
 	trans_id int
+    pos_row_id int
+    store_row_id int
+    trans_num varchar
 
 Depends on:
 	dtransactions (table)
@@ -61,7 +64,7 @@ $CREATE['trans.dlog'] = "
 		discounttype,
 		voided,
 		percentDiscount,
-		ItemQtty,
+	ItemQtty,
 		volDiscType,
 		volume,
 		VolSpecial,
@@ -73,6 +76,8 @@ $CREATE['trans.dlog'] = "
 		charflag,
 		card_no,
 		trans_id,
+        pos_row_id,
+        store_row_id,
 		".$con->concat(
 			$con->convert('emp_no','char'),"'-'",
 			$con->convert('register_no','char'),"'-'",

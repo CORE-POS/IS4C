@@ -4,8 +4,8 @@ Table: ar_history
 
 Columns:
 	card_no int
-	Charges dbms currency
-	Payments dbms currency
+	charges dbms currency
+	payments dbms currency
 	tdate datetime
 	trans_num varchar
 
@@ -41,8 +41,8 @@ cron/nightly.ar.php appends selected columns from
 $CREATE['trans.ar_history'] = "
 	CREATE TABLE ar_history (
 		card_no int,
-		Charges decimal(10,2),
-		Payments decimal(10,2),
+		charges decimal(10,2),
+		payments decimal(10,2),
 		tdate datetime,
 		trans_num varchar(90),
 		INDEX (card_no)

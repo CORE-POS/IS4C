@@ -332,6 +332,12 @@ class AuthorizeDotNet extends BasicCCModule {
 		$sqlColumns .= ",validResponse";
 		$sqlValues .= sprintf(",%d",$validResponse);
 
+        $table_def = $dbTrans->table_definition('efsnetResponse');
+        if (isset($table_def['efsnetRequestID'])) {
+            $sqlColumns .= ', efsnetRequestID';
+            $sqlValues .= sprintf(', %d', $this->last_req_id);
+        }
+
 		$sql = "INSERT INTO efsnetResponse (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
 		PaycardLib::paycard_db_query($sql, $dbTrans);
 
@@ -473,8 +479,20 @@ class AuthorizeDotNet extends BasicCCModule {
 			// cast to string. tender function expects string input
 			// numeric input screws up parsing on negative values > $0.99
 			$amt = "".($CORE_LOCAL->get("paycard_amount")*100);
-			PrehLib::tender("CC", $amt);
+			$t_type = 'CC';
+			if ($CORE_LOCAL->get('paycard_issuer') == 'American Express')
+				$t_type = 'AX';
+            // if the transaction has a non-zero efsnetRequestID,
+            // include it in the tender line
+            $record_id = $this->last_req_id;
+            $charflag = ($record_id != 0) ? 'RQ' : '';
+			TransRecord::addFlaggedTender("Credit Card", $t_type, $amt, $record_id, $charflag);
 			$CORE_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>Please verify cardholder signature<p>[enter] to continue<br>\"rp\" to reprint slip<br>[clear] to cancel and void</font>");
+            if ($CORE_LOCAL->get("paycard_amount") <= $CORE_LOCAL->get("CCSigLimit") && $CORE_LOCAL->get("paycard_amount") >= 0) {
+                $CORE_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>No signature required<p>[enter] to continue<br>[void] to cancel and void</font>");
+            } else if ($CORE_LOCAL->get('PaycardsSigCapture') != 1) {
+                $json['receipt'] = 'ccSlip';
+            }
 			break;
 		case PaycardLib::PAYCARD_MODE_VOID:
 			$v = new Void();
@@ -483,8 +501,7 @@ class AuthorizeDotNet extends BasicCCModule {
 			break;	
 		}
 		$CORE_LOCAL->set("ccCustCopy",0);
-		if ($CORE_LOCAL->get("SigCapture") == "" && $CORE_LOCAL->get("paycard_amount") > $CORE_LOCAL->get("CCSigLimit"))
-			$json['receipt'] = "ccSlip";
+
 		return $json;
 	}
 
@@ -574,9 +591,14 @@ class AuthorizeDotNet extends BasicCCModule {
 			sprintf("'%s','%s',%d,'%s',%s,",  $now, $refNum, $live, $mode, $amountText) .
 			sprintf("'%s','%s',%d,'%s'",           $cardPANmasked, $cardIssuer, $manual, $name);
 		$sql = "INSERT INTO efsnetRequest (" . $sqlCols . ") VALUES (" . $sqlVals . ")";
+        $table_def = $dbTrans->table_definition('efsnetRequest');
 
 		if( !PaycardLib::paycard_db_query($sql, $dbTrans) ) 
 			return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); // internal error, nothing sent (ok to retry)
+
+        if (isset($table_def['efsnetRequestID'])) {
+            $this->last_req_id = $dbTrans->insert_id();
+        }
 
 		$postData = $this->array2post($postValues);
 		$this->GATEWAY = "https://test.authorize.net/gateway/transact.dll";

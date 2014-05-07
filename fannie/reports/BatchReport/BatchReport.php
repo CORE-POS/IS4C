@@ -21,47 +21,41 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class BatchReport extends FannieReportPage 
 {
+    protected $header = "Select batch(es)";
+    protected $title = "Fannie :: Batch Report";
+    protected $report_cache = 'day';
+    protected $report_headers = array('UPC','Description','$','Qty');
+    protected $required_fields = array('batchID');
 
-	function preprocess()
+    public $description = '[Batch Report] lists sales for items in a sales batch (or group of sales batches).';
+
+    public function readinessCheck()
     {
-		/**
-		  Set the page header and title, enable caching
-		*/
-		$this->header = "Select batch(es)";
-		$this->title = "Fannie :: Batch Report";
-		$this->report_cache = 'day';
+        global $FANNIE_OP_DB, $FANNIE_URL;
+        
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $query = 'SELECT upc FROM batchMergeTable';
+        $query = $dbc->add_select_limit($query, 1);
+        $result = $dbc->query($query);
+        if ($result == false || $dbc->num_rows($result) == 0) {
+            $this->error_text = "<p>There is nothing in {$FANNIE_OP_DB}.batchMergeTable.
+                            <br />Therefore this report will be empty.
+                            <br />Run the Scheduled Task 'Cache Report Data' to populate it.
+                            and then set the task to run nightly to keep the table up to date.
+                            <br /><a href=\"{$FANNIE_URL}cron/management/\">View Scheduled Tasks</a>
+                            </p>";
+            return false;
+        }
 
-		if (isset($_REQUEST['batchID'])){
-			/**
-			  Form submission occurred
-
-			  Change content function, turn off the menus,
-			  set up headers
-			*/
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-			$this->report_headers = array('UPC','Description','$','Qty');
-
-			$this->header = "Batch Report"; // gets used as filename on xls/csv
-		
-			/**
-			  Check if a non-html format has been requested
-			*/
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls')
-				$this->report_format = 'xls';
-			elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv')
-				$this->report_format = 'csv';
-		}
-		else 
-			$this->add_script("../../src/CalendarControl.js");
-
-		return True;
-	}
+        return true;
+    }
 
 	function fetch_report_data(){
 		global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
@@ -151,6 +145,12 @@ class BatchReport extends FannieReportPage
 		return array('Total',null,$sumSales,$sumQty);
 	}
 
+	function error_content()
+	{
+		echo "<H2>Problem</H2>";
+		echo "<p>" . $this->error_text . "</p>";
+	}
+
 	function form_content()
     {
 		global $FANNIE_OP_DB;
@@ -193,7 +193,6 @@ class BatchReport extends FannieReportPage
 		echo '<hr />';
 
 		$batchQ = "SELECT b.batchID,batchName FROM batches as b
-			LEFT JOIN batchowner as o ON b.batchID=o.batchID
 			WHERE 1=1 ";
 		$args = array();
 		if ($filter1 !== ""){
@@ -231,7 +230,7 @@ class BatchReport extends FannieReportPage
 
 	function report_description_content()
     {
-		global $FANNIE_OP_DB;
+		global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 		$ret = array();
 		$bStart = FormLib::get_form_value('start','');
@@ -256,11 +255,26 @@ class BatchReport extends FannieReportPage
 				$bEnd = $batchInfoW['endDate'];
 		}
 		$ret[] = '<span style="font-size:150%;">'.$bName.'</span>';
-		$ret[] = "<span style=\"color:black\">From: $bStart to: $bEnd</span>";
+        if ($this->report_format == 'html') {
+            $this->add_script($FANNIE_URL.'src/CalendarControl.js');
+            $this->add_css_file($FANNIE_URL.'src/style.css');
+            $ret[] = '<form action="BatchReport.php" method="get">';
+            $ret[] = "<span style=\"color:black; display:inline;\">From: 
+                    <input type=\"text\" name=\"start\" size=\"10\" value=\"$bStart\" onfocus=\"showCalendarControl(this);\" /> 
+                    to: 
+                    <input type=\"text\" name=\"end\" size=\"10\" value=\"$bEnd\" onfocus=\"showCalendarControl(this);\" />
+                    </span><input type=\"submit\" value=\"Change Dates\" />";
+            foreach($batchID as $bID) {
+                $ret[] = sprintf('<input type="hidden" name="batchID[]" value="%d" />', $bID);
+            }
+            $ret[] = '</form>';
+        } else {
+            $ret[] = "<span style=\"color:black\">From: $bStart to: $bEnd</span>";
+        }
 		return $ret;
 	}
 }
 
-$obj = new BatchReport();
-$obj->draw_page();
+FannieDispatch::conditionalExec(false);
+
 ?>

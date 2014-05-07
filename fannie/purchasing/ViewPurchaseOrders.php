@@ -85,19 +85,27 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 		global $FANNIE_OP_DB;	
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 
+        $month = FormLib::get('month');
+        $year = FormLib::get('year');
+        $start = date('Y-m-01 00:00:00', mktime(0, 0, 0, $month, 1, $year));
+        $end = date('Y-m-t 23:59:59', mktime(0, 0, 0, $month, 1, $year));
+        
 		$query = 'SELECT p.orderID, p.vendorID, MIN(creationDate) as creationDate,
-			MIN(placedDate) as placedDate, COUNT(i.orderID) as records,
-			SUM(i.unitCost*i.caseSize*i.quantity) as estimatedCost,
-			SUM(i.receivedTotalCost) as receivedCost, v.vendorName,
-			MAX(i.receivedDate) as receivedDate
+                MIN(placedDate) as placedDate, COUNT(i.orderID) as records,
+                SUM(i.unitCost*i.caseSize*i.quantity) as estimatedCost,
+                SUM(i.receivedTotalCost) as receivedCost, v.vendorName,
+                MAX(i.receivedDate) as receivedDate
 			FROM PurchaseOrder as p
-			LEFT JOIN PurchaseOrderItems AS i ON p.orderID = i.orderID
-			LEFT JOIN vendors AS v ON p.vendorID=v.vendorID
-			WHERE placed=? ';
-		if (!$this->show_all) $query .= 'AND userID=? ';
-		$query .= 'GROUP BY p.orderID, p.vendorID, v.vendorName
-			ORDER BY MIN(creationDate) DESC';
-		$args = array($placed);
+                LEFT JOIN PurchaseOrderItems AS i ON p.orderID = i.orderID
+                LEFT JOIN vendors AS v ON p.vendorID=v.vendorID
+			WHERE placed=? 
+                AND creationDate BETWEEN ? AND ? ';
+		if (!$this->show_all) {
+            $query .= 'AND userID=? ';
+        }
+		$query .= 'GROUP BY p.orderID, p.vendorID, v.vendorName 
+	               ORDER BY MIN(creationDate) DESC';
+		$args = array($placed, $start, $end);
 		if (!$this->show_all) $args[] = FannieAuth::getUID($this->current_user);
 
 		$prep = $dbc->prepare_statement($query);
@@ -106,6 +114,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 		$ret = '<table cellspacing="0" cellpadding="4" border="1">';
 		$ret .= '<tr><th>Created</th><th>Vendor</th><th># Items</th><th>Est. Cost</th>
 			<th>Placed</th><th>Received</th><th>Rec. Cost</th></tr>';
+        $count = 1;
 		while($w = $dbc->fetch_row($result)){
 			$ret .= sprintf('<tr><td><a href="ViewPurchaseOrders.php?id=%d">%s</a></td>
 					<td>%s</td><td>%d</td><td>%.2f</td>
@@ -119,7 +128,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 			);
 		}
 		$ret .= '</table>';
-	
+
 		return $ret;
 	}
 
@@ -160,11 +169,16 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 		$ret .= '</select>';
 		$ret .= '<input type="submit" value="Export" onclick="doExport('.$this->id.');return false;" />';
 
+        $departments = $dbc->tableDefinition('departments');
         $codingQ = 'SELECT d.salesCode, SUM(o.receivedTotalCost) as rtc
                     FROM PurchaseOrderItems AS o
-                    LEFT JOIN products AS p ON o.internalUPC=p.upc
-                    LEFT JOIN deptSalesCodes AS d ON p.department=d.dept_ID
-                    WHERE o.orderID=?
+                    LEFT JOIN products AS p ON o.internalUPC=p.upc ';
+        if (isset($departments['salesCode'])) {
+            $codingQ .= ' LEFT JOIN departments AS d ON p.department=d.dept_no ';
+        } else if ($dbc->tableExists('deptSalesCodes')) {
+            $codingQ .= ' LEFT JOIN deptSalesCodes AS d ON p.department=d.dept_ID ';
+        }
+        $codingQ .= 'WHERE o.orderID=?
                     GROUP BY d.salesCode';
         $codingP = $dbc->prepare($codingQ);
         $codingR = $dbc->execute($codingP, array($this->id));
@@ -229,6 +243,26 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 			$ret .= '<option selected value="0">My Orders</option><option value="1">All Orders</option>';
 		$ret .= '</select>';
 
+		$ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+        
+        $ret .= '<select id="viewMonth" onchange="fetchOrders();">';
+        $month = date('n');
+        for($i=1; $i<= 12; $i++) {
+            $label = date('F', mktime(0, 0, 0, $i)); 
+            $ret .= sprintf('<option %s value="%d">%s</option>',
+                        ($i == $month ? 'selected' : ''),
+                        $i, $label);
+        }
+        $ret .= '</select>';
+
+        $ret .= '&nbsp;';
+        $ret .= '<select id="viewYear" onchange="fetchOrders();">';
+        $year = date('Y');
+        for($i = $year; $i >= 2013; $i--) {
+            $ret .= '<option>' . $i . '</option>';
+        }
+        $ret .= '</select>';
+
 		$ret .= '<hr />';
 		
 		$ret .= '<div id="ordersDiv"></div>';	
@@ -240,6 +274,6 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 	}
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

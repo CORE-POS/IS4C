@@ -23,6 +23,8 @@
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+	* 24Oct2013 Eric Lee Defeated:
+	*                    + A WEFC_Toronto-only textbox for collecting Member Card#
 	*  5Oct2012 Eric Lee Added:
 	*                    + A WEFC_Toronto-only chunk for collecting Member Card#
 	*                    + A general facility for displaying an error encountered in preprocess()
@@ -189,35 +191,14 @@ class memlist extends NoInputPage {
 	function head_content(){
 		global $CORE_LOCAL;
 		if (count($this->results) > 0){
-			$this->add_onload_command("\$('#search').keypress(processkeypress);\n");
+			$this->add_onload_command("selectSubmit('#search', '#selectform')\n");
 			$this->add_onload_command("\$('#search').focus();\n");
 		} else {
 			$this->default_parsewrapper_js('reginput','selectform');
 			$this->add_onload_command("\$('#reginput').focus();\n");
 		}
 		?>
-		<script type="text/javascript">
-		var prevKey = -1;
-		var prevPrevKey = -1;
-		function processkeypress(e) {
-			var jsKey;
-			if (e.keyCode) // IE
-				jsKey = e.keyCode;
-			else if(e.which) // Netscape/Firefox/Opera
-				jsKey = e.which;
-			if (jsKey==13) {
-				if ( (prevPrevKey == 99 || prevPrevKey == 67) &&
-				(prevKey == 108 || prevKey == 76) ){ //CL<enter>
-					$('#search option:selected').each(function(){
-						$(this).val('');
-					});
-				}
-				$('#selectform').submit();
-			}
-			prevPrevKey = prevKey;
-			prevKey = jsKey;
-		}
-		</script> 
+        <script type="text/javascript" src="../js/selectSubmit.js"></script>
 		<?php
 	} // END head() FUNCTION
 
@@ -287,7 +268,7 @@ class memlist extends NoInputPage {
 				."<div class=\"clear\"></div>";
 
 			// A textbox for the Member Card number, to be added to the db for the selected member.
-			if ( $CORE_LOCAL->get('store') == "WEFC_Toronto" ) {
+			if ( False && $CORE_LOCAL->get('store') == "WEFC_Toronto" ) {
 				echo "<div style='text-align:left; margin-top: 0.5em;'>
 				<p style='margin: 0.2em 0em 0.2em 0em; font-size:0.8em;'>To link the member chosen above to a Member Card:</p>";
 				echo "<span style='font-weight:bold;'>Member Card#:</span> <input name='memberCard' id='memberCard' width='20' title='The digits after 01229, no leading zeroes, not the final, small check-digit' />";

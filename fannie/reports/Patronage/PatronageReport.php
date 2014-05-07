@@ -21,11 +21,17 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class PatronageReport extends FannieReportPage 
 {
+    public $description = '[Patronage] show per-member patronage information by fiscal year. Note this is
+    calculated and entered annually, not assembled on the fly from transaction information.';
+    public $report_set = 'Membership';
+
     protected $header = "Patronage Report";
     protected $title = "Fannie : Patronage Report";
 
@@ -35,13 +41,7 @@ class PatronageReport extends FannieReportPage
 
 	public function preprocess()
     {
-        if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-            $this->report_format = 'xls';
-            $this->has_menus(False);
-        } elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-            $this->report_format = 'csv';
-            $this->has_menus(False);
-		}
+        $this->formatCheck();
 
 		return true;
 	}
@@ -115,6 +115,6 @@ class PatronageReport extends FannieReportPage
 
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

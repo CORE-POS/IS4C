@@ -72,7 +72,6 @@ class OverShortDepositSlips extends FanniePage {
 		$counts = array();
 		$ckSum = 0;
 		$width = 30;
-		$i = 0;
 		$num = 1;
 		$breakon = 1;
 		while($row = $dbc->fetch_row($result)){
@@ -94,19 +93,23 @@ class OverShortDepositSlips extends FanniePage {
 				if (is_numeric($v)) $vcount++;
 			}
 
+            // accumulate up to 57 checks
+            // that's max column size
+            // put any leftovers in $extra
 			if ($vcount + count($acc) <= 57){
 				foreach($vals as $v){
 					if (is_numeric($v)) array_push($acc,$v);
 				}
-				$i = $i+1;
-			}
-			else {
+			} else {
 				foreach($vals as $v){
 					if (is_numeric($v)) array_push($extra,$v);
 				}
-				while ($i % 4 != 0) $i++;
 			}
-			if ($i % 4 == 0){
+
+            // if there are $extra values, then
+            // accumulator $acc is full so print
+            // a column
+			if (count($extra) > 0) {
 				$str1 = "WFC #$num\n";
 				$sum = 0;
 				$str = "";
@@ -140,12 +143,12 @@ class OverShortDepositSlips extends FanniePage {
 				
 				$acc = array();
 				$num++;
-			}
-			if (count($extra) > 0){
+
+                // put $extra values into the accumulator
 				foreach($extra as $e) array_push($acc,$e);
-				$i = $i+1;
 			}
 		}
+
 		$str1 = "WFC #$num\n";
 		$real = $num;
 		if ($num % 7 == 0 && $num > 0) $pdf->AddPage();
@@ -186,7 +189,12 @@ class OverShortDepositSlips extends FanniePage {
 			$pdf->MultiCell($width+($j==0?-1:$k),5,$str3,'R','L');
 		}
 
-		if ($num <= 6 || $num > 10) $pdf->AddPage();
+        // seven columns can fit on a full page
+        // four columns fit on the page containing the
+        // deposit summary
+		if ($num % 7 > 4) {
+            $pdf->AddPage();
+        }
 
 		/* shift last box over a bit */
 		$width += 3;
@@ -314,9 +322,6 @@ class OverShortDepositSlips extends FanniePage {
 	}
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
-	$obj = new OverShortDepositSlips();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
 
 ?>

@@ -21,14 +21,14 @@
 
 *********************************************************************************/
 
-if (!class_exists('DTransactionsModel')) {
-    include_once(dirname(__FILE__).'/DTransactionsModel.php');
+if (!class_exists('LocalTransModel')) {
+    include_once(dirname(__FILE__).'/LocalTransModel.php');
 }
 
 /**
   @class StaffDiscountAddModel
 */
-class StaffDiscountAddModel extends DTransactionsModel
+class StaffDiscountAddModel extends LocalTransModel
 {
 
     protected $name = "staffdiscountadd";

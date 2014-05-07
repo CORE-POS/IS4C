@@ -342,8 +342,6 @@ echo "<input type=text name=FANNIE_LDAP_RN_FIELD value=\"$FANNIE_LDAP_RN_FIELD\"
 // InstallAuthenticationPage
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
-	$obj = new InstallAuthenticationPage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+
 ?>

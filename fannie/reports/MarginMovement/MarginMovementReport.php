@@ -21,11 +21,15 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class MarginMovementReport extends FannieReportPage 
 {
+    public $description = '[Margin Movement] lists item movement with margin information.';
+    public $report_set = 'Movement Reports';
 
     protected $title = "Fannie : Margin Movement Report";
     protected $header = "Margin Movement Report";
@@ -34,26 +38,7 @@ class MarginMovementReport extends FannieReportPage
     protected $sort_direction = 1;
 
     protected $report_headers = array('UPC', 'Desc', 'Dept#', 'Dept', 'Cost', 'Sales', 'Margin', 'Markup', 'Contrib');
-
-	public function preprocess()
-    {
-		$this->report_cache = 'none';
-
-		if (isset($_REQUEST['date1'])){
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-		
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-				$this->report_format = 'xls';
-			} elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-				$this->report_format = 'csv';
-            }
-		}
-		else 
-			$this->add_script("../../src/CalendarControl.js");
-
-		return true;
-	}
+    protected $required_fields = array('date1', 'date2');
 
     public function report_description_content()
     {
@@ -281,6 +266,6 @@ function swap(src,dst){
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

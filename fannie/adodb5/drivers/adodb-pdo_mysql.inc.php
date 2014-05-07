@@ -14,7 +14,7 @@ if (!class_exists('ADODB_pdo'))
 	include(dirname(__FILE__).'/adodb-pdo.inc.php');
 
 class ADODB_pdo_mysql extends ADODB_pdo {
-	var $metaTablesSQL = "SHOW TABLES";	
+	var $metaTablesSQL = "SHOW FULL TABLES";	
 	var $metaColumnsSQL = "SHOW COLUMNS FROM `%s`";
 	var $sysDate = 'CURDATE()';
 	var $sysTimeStamp = 'NOW()';

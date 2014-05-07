@@ -270,6 +270,6 @@ ul#vendorList {
 	}
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

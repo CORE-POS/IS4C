@@ -30,7 +30,9 @@ if (!function_exists('login'))
 include_once($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
 include_once($FANNIE_ROOT.'src/ReportConvert/ArrayToCsv.php');
 
-class ProductListPage extends FanniePage {
+class ProductListPage extends FannieReportTool 
+{
+    public $description = '[Product List] is a cross between a report and a tool. It lists current item prices and status flags for a department or set of departments but also allows editing.';
 
 	protected $title = 'Fannie - Product List';
 	protected $header = 'Product List';
@@ -43,7 +45,7 @@ class ProductListPage extends FanniePage {
 	private $excel = False;
 
 	function preprocess(){
-		global $FANNIE_URL;
+		global $FANNIE_URL, $FANNIE_WINDOW_DRESSING;
 
 		$this->canDeleteItems = validateUserQuiet('delete_items');
 		$this->canEditItems = validateUserQuiet('pricechange');
@@ -57,7 +59,10 @@ class ProductListPage extends FanniePage {
 
 		if (FormLib::get_form_value('supertype') !== ''){
 			$this->mode = 'list';
-			$this->window_dressing = False;
+			if ( isset($FANNIE_WINDOW_DRESSING) && $FANNIE_WINDOW_DRESSING == True )
+				$this->has_menus(True);
+			else
+				$this->window_dressing = False;
 			if (!$this->excel)
 				$this->add_script($FANNIE_URL.'src/jquery/jquery.js');	
 		}
@@ -115,6 +120,10 @@ class ProductListPage extends FanniePage {
 			var content = "<input type=text class=in_supplier value=\""+supplier+"\" />";	
 			$('tr#'+upc+' .td_supplier').html(content);
 
+            var cost = $('tr#'+upc+' .td_cost').html();
+			var content = "<input type=text class=in_cost size=4 value=\""+cost+"\" />";	
+			$('tr#'+upc+' .td_cost').html(content);
+
 			var price = $('tr#'+upc+' .td_price').html();
 			var content = "<input type=text class=in_price size=4 value=\""+price+"\" />";	
 			$('tr#'+upc+' .td_price').html(content);
@@ -152,6 +161,16 @@ class ProductListPage extends FanniePage {
 
 			var lnk = "<img src=\"<?php echo $FANNIE_URL;?>src/img/buttons/b_save.png\" alt=\"Save\" border=0 />";
 			$('tr#'+upc+' .td_cmd').html("<a href=\"\" onclick=\"save('"+upc+"');return false;\">"+lnk+"</a>");
+
+            $('tr#'+upc+' input:text').keydown(function(event) {
+                if (event.which == 13) {
+                    save(upc);
+                }
+            });
+            $('tr#'+upc+' .clickable input:text').click(function(event){
+                // do nothing
+                event.stopPropagation();
+            });
 		}
 		function save(upc){
 			var desc = $('tr#'+upc+' .in_desc').val();
@@ -162,6 +181,9 @@ class ProductListPage extends FanniePage {
 
 			var supplier = $('tr#'+upc+' .in_supplier').val();
 			$('tr#'+upc+' .td_supplier').html(supplier);
+
+			var cost = $('tr#'+upc+' .in_cost').val();
+			$('tr#'+upc+' .td_cost').html(cost);
 
 			var price = $('tr#'+upc+' .in_price').val();
 			$('tr#'+upc+' .td_price').html(price);
@@ -187,7 +209,7 @@ class ProductListPage extends FanniePage {
 			var cmd = "<a href=\"\" onclick=\"edit('"+upc+"'); return false;\">"+lnk+"</a>";
 			$('tr#'+upc+' .td_cmd').html(cmd);
 
-			var dstr = 'ajax=save&upc='+upc+'&desc='+desc+'&dept='+dept+'&price='+price;
+			var dstr = 'ajax=save&upc='+upc+'&desc='+desc+'&dept='+dept+'&price='+price+'&cost='+cost;
 			dstr += '&tax='+tax[1]+'&fs='+fs+'&disc='+disc+'&wgt='+wgt+'&supplier='+supplier+'&local='+local[1];
 			$.ajax({
 			url: 'ProductListPage.php',
@@ -222,7 +244,20 @@ class ProductListPage extends FanniePage {
 			}
 			});
 		}
+        <?php if ($this->canEditItems) { ?>
+        $(document).ready(function(){
+            $('tr').each(function(){
+                if ($(this).find('.hidden_upc').length != 0) {
+                    var upc = $(this).find('.hidden_upc').val();
+                    $(this).find('.clickable').click(function() {
+                        edit(upc);
+                        $(this).find('input:text').select();
+                    });
+                }
+            });
+        });
 		<?php
+        }
 		return ob_get_clean();
 	}
 
@@ -234,24 +269,46 @@ class ProductListPage extends FanniePage {
 			$upc = FormLib::get_form_value('upc');
             $upc = BarcodeLib::padUPC($upc);
 			$values = array();
+            $model = new ProductsModel($dbc);
+            $model->upc($upc);
 			$desc = FormLib::get_form_value('desc');
-			if ($desc !== '') $values['description'] = $desc;
+			if ($desc !== '') {
+                $model->description($desc);
+            }
 			$dept = FormLib::get_form_value('dept');
-			if ($dept !== '') $values['department'] = $dept;
+			if ($dept !== '') {
+                $model->department($dept);
+            }
 			$price = rtrim(FormLib::get_form_value('price'),' ');
-			if ($price !== '') $values['normal_price'] = $price;
+			if ($price !== '') {
+                $model->normal_price($price);
+            }
+            $cost = rtrim(FormLib::get_form_value('cost'), ' ');
+            if ($cost !== '') {
+                $model->cost($cost);
+            }
 			$tax = FormLib::get_form_value('tax');
-			if ($tax !== '') $values['tax'] = $tax;
+			if ($tax !== '') {
+                $model->tax($tax);
+            }
 			$fs = FormLib::get_form_value('fs');
-			if ($fs !== '') $values['foodstamp'] = ($fs==1) ? 1 : 0;
+			if ($fs !== '') {
+                $model->foodstamp($fs);
+            }
 			$disc = FormLib::get_form_value('disc');
-			if ($disc !== '') $values['discount'] = ($disc==1) ? 1 : 0;
+			if ($disc !== '') {
+                $model->discount($disc);
+            }
 			$wgt = FormLib::get_form_value('wgt');
-			if ($wgt !== '') $values['scale'] = ($wgt==1) ? 1 : 0;
+			if ($wgt !== '') {
+                $model->scale($wgt);
+            }
 			$loc = FormLib::get_form_value('local');
-			if ($loc !== '') $values['local'] = $loc;
+			if ($loc !== '') {
+                $model->local($loc);
+            }
 
-			ProductsModel::update($upc, $values);
+            $model->save();
 
 			$supplier = FormLib::get_form_value('supplier');
 			$extraP = $dbc->prepare_statement('UPDATE prodExtra SET distributor=? WHERE upc=?');
@@ -293,6 +350,10 @@ class ProductListPage extends FanniePage {
             $upc = BarcodeLib::padUPC($upc);
 			$desc = base64_decode(FormLib::get_form_value('desc'));
 
+            $update = new ProdUpdateModel($dbc);
+            $update->upc($upc);
+            $update->logUpdate(ProdUpdateModel::UPDATE_DELETE);
+
 			ProductsModel::staticDelete($upc);
 
 			$delP = $dbc->prepare_statement("delete from prodExtra where upc=?");
@@ -321,8 +382,9 @@ class ProductListPage extends FanniePage {
 		$order = 'dept_name';
 		if ($sort === 'UPC') $order = 'i.upc';	
 		elseif ($sort === 'Description') $order = 'i.description';
-		elseif ($sort === 'Supplier') $order = 'x.distributor';
+		elseif ($sort === 'Vendor') $order = 'x.distributor';
 		elseif ($sort === 'Price') $order = 'i.normal_price';
+		elseif ($sort === 'Cost') $order = 'i.cost';
 
 		$ret = 'Report sorted by '.$sort.'<br />';
 		if ($supertype == 'dept' && $super == 0){
@@ -332,14 +394,14 @@ class ProductListPage extends FanniePage {
 			$ret .= 'Sub department '.$super.'<br />';
 		}
 		else {
-			$ret .= 'Manufacturer '.$manufacturer.'<br />';
+			$ret .= _('Manufacturer') . ' ' . $manufacturer . '<br />';
 		}
 		$ret .= date("F j, Y, g:i a").'<br />'; 
 		
 		$page_url = sprintf('ProductListPage.php?supertype=%s&deptStart=%s&deptEnd=%s&deptSub=%s&manufacturer=%s&mtype=%s',
 				$supertype, $deptStart, $deptEnd, $super, $manufacturer, $mtype);
 		if (!$this->excel){
-			$ret .= sprintf('<a href="%s&sort=%s&excel=yes">Save to Excel</a><br />',
+			$ret .= sprintf('<a href="%s&sort=%s&excel=yes">Save to Excel</a> &nbsp; &nbsp; <a href="javascript:history:back();">Back</a><br />',
 				$page_url, $sort);
 		}
 
@@ -351,7 +413,7 @@ class ProductListPage extends FanniePage {
                         (CASE WHEN i.scale = 1 THEN 'X' ELSE '-' END) as WGHd,
 			(CASE WHEN i.local > 0 AND o.originID IS NULL THEN 'X' 
 			      WHEN i.local > 0 AND o.originID IS NOT NULL THEN LEFT(o.shortName,1) ELSE '-' END) as local,
-			x.distributor
+			x.distributor, i.cost
                         FROM products as i LEFT JOIN departments as d ON i.department = d.dept_no
 			LEFT JOIN taxrates AS t ON t.id = i.tax
 			LEFT JOIN prodExtra as x on i.upc = x.upc
@@ -368,7 +430,7 @@ class ProductListPage extends FanniePage {
 				(CASE WHEN i.scale = 1 THEN 'X' ELSE '-' END) as WGHd,
 				(CASE WHEN i.local > 0 AND o.originID IS NULL THEN 'X' 
 				      WHEN i.local > 0 AND o.originID IS NOT NULL THEN LEFT(o.shortName,1) ELSE '-' END) as local,
-				x.distributor
+				x.distributor, i.cost
 				FROM products as i LEFT JOIN superdepts as s ON i.department = s.dept_ID
 				LEFT JOIN taxrates AS t ON t.id = i.tax
 				LEFT JOIN departments as d on i.department = d.dept_no
@@ -387,7 +449,7 @@ class ProductListPage extends FanniePage {
 				(CASE WHEN i.scale = 1 THEN 'X' ELSE '-' END) as WGHd,
 				(CASE WHEN i.local > 0 AND o.originID IS NULL THEN 'X' 
 				      WHEN i.local > 0 AND o.originID IS NOT NULL THEN LEFT(o.shortName,1) ELSE '-' END) as local,
-				x.distributor
+				x.distributor, i.cost
 				FROM products as i LEFT JOIN departments as d ON i.department = d.dept_no
 				LEFT JOIN prodExtra as x on i.upc = x.upc
 				LEFT JOIN originName AS o ON i.local=o.originID
@@ -416,12 +478,13 @@ class ProductListPage extends FanniePage {
 			$ret .= sprintf('<tr><th><a href="%s&sort=UPC">UPC</a></th>
 					<th><a href="%s&sort=Description">Description</a></th>
 					<th><a href="%s&sort=Department">Department</a></th>
-					<th><a href="%s&sort=Supplier">Supplier</a></th>
+					<th><a href="%s&sort=Supplier">' . _('Supplier') . '</a></th>
+					<th><a href="%s&sort=Cost">Cost</a></th>
 					<th><a href="%s&sort=Price">Price</a></th>',
-					$page_url,$page_url,$page_url,$page_url,$page_url);
+					$page_url,$page_url,$page_url,$page_url,$page_url,$page_url);
 		}
 		else
-			$ret .= "<th>UPC</th><th>Description</th><th>Dept</th><th>Supplier</th><th>Price</th>";
+			$ret .= "<th>UPC</th><th>Description</th><th>Dept</th><th>" . _('Supplier') . "</th><th>Cost</th><th>Price</th>";
 		$ret .= "<th>Tax</th><th>FS</th><th>Disc</th><th>Wg'd</th><th>Local</th>";
 		if (!$this->excel && $this->canEditItems !== False)
 			$ret .= '<th>&nbsp;</th>';
@@ -437,13 +500,15 @@ class ProductListPage extends FanniePage {
 					$ret .= "<img src=\"{$FANNIE_URL}src/img/buttons/trash.png\" border=0 /></a>";
 				}
 				$ret .= '</td>';
+                $ret .= '<input type="hidden" class="hidden_upc" value="'.$row[0].'" />';
 			}
 			else
 				$ret .= "<td align=center>$row[0]</td>";
-			$ret .= "<td align=center class=td_desc>$row[1]</td>";
-			$ret .= "<td align=center class=td_dept>$row[2]</td>";
-			$ret .= "<td align=center class=td_supplier>$row[9]</td>";
-			$ret .= "<td align=center class=td_price>$row[3]</td>";
+			$ret .= "<td align=center class=\"td_desc clickable\">{$row['description']}</td>";
+			$ret .= "<td align=center class=\"td_dept clickable\">{$row['department']}</td>";
+			$ret .= "<td align=center class=\"td_supplier clickable\">{$row['distributor']}</td>";
+			$ret .= "<td align=center class=\"td_cost clickable\">".sprintf('%.2f',$row['cost'])."</td>";
+			$ret .= "<td align=center class=\"td_price clickable\">{$row['normal_price']}</td>";
 			$ret .= "<td align=center class=td_tax>$row[4]</td>";
 			$ret .= "<td align=center class=td_fs>$row[5]</td>";
 			$ret .= "<td align=center class=td_disc>$row[6]</td>";
@@ -495,10 +560,10 @@ class ProductListPage extends FanniePage {
 			<label for="supertypeD">Department</label>
 		<input type=radio name=supertype value=manu id="supertypeM"
 			onclick="$('#dept1').hide();$('#dept2').hide();$('#manu').show();" /> 
-			<label for="supertypeM">Manufacturer</label>
+			<label for="supertypeM"><?php echo _('Manufacturer'); ?></label>
 		<table border="0" cellspacing="0" cellpadding="5">
 		<tr class=dept id=dept1>
-			<td valign=top><p><b>Buyer</b></p></td>
+			<td valign=top><p><b>Buyer<br />(SuperDept)</b></p></td>
 			<td><p><select name=deptSub>
 			<option value=0></option>
 			<?php
@@ -506,13 +571,14 @@ class ProductListPage extends FanniePage {
 				printf('<option value="%d">%s</option>',$id,$name);	
 			?>
 			</select></p>
-			<i>Selecting a Buyer/Dept overrides Department Start/Department End.
-			To run reports for a specific department(s) leave Buyer/Dept or set it to 'blank'</i></td>
+			<i>Selecting a Buyer/SuperDept overrides Department Start/Department End.
+			<br />To run reports for a specific department(s) leave Buyer/SuperDept empty or set it to 'blank'</i></td>
 
 		</tr>
-		<tr class=dept id=dept2> 
-			<td> <p><b>Department Start</b></p>
-			<p><b>End</b></p></td>
+		<tr class=dept id=dept2 valign=top> 
+			<td > <p><b>Department Start</b></p>
+			<p style='margin-top:1.5em;'>
+			<b>Department End</b></p></td>
 			<td> <p>
 			<select id=deptStartSelect onchange="$('#deptStart').val(this.value);">
 			<?php
@@ -532,15 +598,14 @@ class ProductListPage extends FanniePage {
 			<input type=text size= 5 id=deptEnd name=deptEnd value=1>
 			</p></td>
 		</tr>
-		<tr class=manu id=manu style="display:none;">
-			<td><p><b>Manufacturer</b></p>
-			<p></p></td>
+		<tr class=manu id=manu style="display:none;" valign="top">
+			<td><p><b><?php echo _('Manufacturer'); ?></b></p>
 			<td><p>
 			<input type=text name=manufacturer />
 			</p>
 			<p>
 			<input type=radio name=mtype value=prefix checked />UPC prefix
-			<input type=radio name=mtype value=name />Manufacturer name
+			<input type=radio name=mtype value=name /><?php echo _('Manufacturer name'); ?>
 			</p></td>
 		</tr>
 		<tr> 
@@ -580,8 +645,5 @@ class ProductListPage extends FanniePage {
 	}
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new ProductListPage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
 

@@ -203,7 +203,7 @@ class WfcGazetteBillingPage extends FannieUploadPage {
 			$cn = $data[$CONTACT];
 			$sz = trim(strtoupper($data[$SIZE]));
 			$clr = trim(strtoupper($data[$COLOR]));
-			if ($clr[0] == "B") $clr = "B/W";
+			if (isset($clr[0]) && $clr[0] == "B") $clr = "B/W";
 			elseif($clr == "COLOR") $clr = "FULL";
 			if (!strstr($sz, '/')) 
 				$sz = $this->decimal_to_fraction($sz);
@@ -296,5 +296,5 @@ class WfcGazetteBillingPage extends FannieUploadPage {
 	}
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 ?>

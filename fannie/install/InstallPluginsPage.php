@@ -156,27 +156,36 @@ foreach($mods as $m){
 		<td style="width:25em;">'."\n";
 	echo '<fieldset class="toggle">'."\n";
 	printf('<input name="PLUGINLIST[]" id="plugin_%s" type="checkbox" %s
-		value="%s" /><label onclick="" for="plugin_%s">%s</label>',
-		$m, ($enabled?'checked':''),$m, $m, $m);
+		value="%s" onchange="$(\'#settings_%s\').toggle();" />
+        <label onclick="" for="plugin_%s">%s</label>',
+		$m, ($enabled?'checked':''), $m, $m, $m, $m);
 	echo "\n".'<span class="toggle-button"></span></fieldset>'."\n";
 	// 17Jun13 EL Added <br /> for overlap problem.
 	printf('<br /><span class="noteTxt">%s</span>',$instance->plugin_description);
 	echo '</td></tr>'."\n";
 
-	if ($enabled && empty($instance->plugin_settings)){
+	if (empty($instance->plugin_settings)){
 		echo '<tr><td colspan="2"><i>No settings required</i></td></tr>';	
-	}
-	else if ($enabled){
+	} else {
 		echo '<tr><td colspan="2" style="margin-bottom: 0px; height:auto;">';
+        printf('<div id="settings_%s" %s>',
+            $m, (!$enabled ? 'style="display:none;"' : '')
+        );
 		foreach($instance->plugin_settings as $field => $info){
 			$form_id = $m.'_'.$field;
-			if (isset($_REQUEST[$form_id])) 
+            // ignore submitted values if plugin was not enabled
+			if ($enabled && isset($_REQUEST[$form_id])) 
 				$FANNIE_PLUGIN_SETTINGS[$field] = $_REQUEST[$form_id];
 			if (!isset($FANNIE_PLUGIN_SETTINGS[$field]))
 				$FANNIE_PLUGIN_SETTINGS[$field] = isset($info['default'])?$info['default']:'';
 			echo '<b>'.(isset($info['label'])?$info['label']:$field).'</b>: ';
 			printf('<input type="text" name="%s" value="%s" />',
 				$form_id,$FANNIE_PLUGIN_SETTINGS[$field]);
+            // show the default if plugin isn't enabled, but
+            // unset so that it isn't saved in the configuration
+            if (!$enabled) {
+                unset($FANNIE_PLUGIN_SETTINGS[$field]);
+            }
 			// 17Jun13 EL Added <br /> for crampedness problem.
 			if (isset($info['description'])) 
 				echo '<br /><span class="noteTxt">'.$info['description'].'</span>';
@@ -186,6 +195,7 @@ foreach($mods as $m){
 		if (isset($_REQUEST['psubmit'])) {
 			$instance->setting_change();
         }
+        echo '</div>';
 		echo '</td></tr>';
 	}
 
@@ -221,8 +231,6 @@ confset('FANNIE_PLUGIN_SETTINGS',$saveStr);
 // InstallPluginsPage
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
-	$obj = new InstallPluginsPage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+
 ?>

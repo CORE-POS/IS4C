@@ -140,12 +140,14 @@ class PISuspensionPage extends PIKillerPage {
 		}
 		echo "</select>";
 		echo '<table>';
+        $i = 0;
 		foreach($this->__models['codes'] as $reason){
 			echo '<tr><td>';
-			echo '<input type="checkbox" name="reasoncodes[]" value="'.$reason->mask().'"';
+			echo '<input type="checkbox" id="pi_rc_'.$i.'" name="reasoncodes[]" value="'.$reason->mask().'"';
 			if (isset($this->__models['suspended']) && $this->__models['suspended']->reasoncode() & $reason->mask())
 				echo ' checked';
-			echo ' /></td><td>'.$reason->textStr().'</td></tr>';
+			echo ' /></td><td><label for="pi_rc_'.$i.'">'.$reason->textStr().'</label></td></tr>';
+            $i++;
 		}
 		echo "</table>";
 		echo "<input type=submit name=submit value=Update />";
@@ -168,7 +170,11 @@ class PISuspensionPage extends PIKillerPage {
 			$code = $code | ((int)$selected_code);
 		}
 
-		if ($code == 0){
+        $cas_model = new CustomerAccountSuspensionsModel($dbc);
+        $cas_model->card_no($this->id);
+        $current_id = 0;
+
+		if ($code == 0) {
 			// reactivate account
 			// add history/log record, restore settings, delete suspensions record
 			$history = new SuspensionHistoryModel($dbc);
@@ -178,6 +184,13 @@ class PISuspensionPage extends PIKillerPage {
 			$history->post('Account reactivated');
 			$history->postdate(date('Y-m-d H:i:s'));
 			$history->save();
+
+            $cas_model->reasonCode(0);
+            $cas_model->suspensionTypeID(0);
+            $cas_model->active(0);
+            $cas_model->username($this->current_user);
+            $cas_model->tdate(date('Y-m-d H:i:s'));
+            $cas_model->save();
 
 			if (isset($this->__models['suspended'])){
 				$cdP = $dbc->prepare_statement('UPDATE custdata SET
@@ -211,10 +224,14 @@ class PISuspensionPage extends PIKillerPage {
 		else if (isset($this->__models['suspended'])){
 			// account already suspended
 			// add history/log record, update suspended record
-			if ($status == 'TERM')
+            $m_status = 0;
+			if ($status == 'TERM') {
 				$this->__models['suspended']->type('T');
-			else
+                $m_status = 2;
+			} else {
 				$this->__models['suspended']->type('I');
+                $m_status = 1;
+            }
 			$this->__models['suspended']->reasoncode($code);
 
 			$history = new SuspensionHistoryModel($dbc);
@@ -224,11 +241,42 @@ class PISuspensionPage extends PIKillerPage {
 			$history->postdate(date('Y-m-d H:i:s'));
 			$history->save();
 
+            $changed = false;
+            $cas_model->active(1);
+            // find most recent active record
+            $current = $cas_model->find('tdate', true);
+            foreach($current as $obj) {
+                if ($obj->reasonCode() != $code || $obj->suspensionTypeID() != $m_status) {
+                    $changed = true;
+                }
+                $cas_model->savedType($obj->savedType());
+                $cas_model->savedMemType($obj->savedMemType());
+                $cas_model->savedDiscount($obj->savedDiscount());
+                $cas_model->savedChargeLimit($obj->savedChargeLimit());
+                $cas_model->savedMailFlag($obj->savedMailFlag());
+                // copy "saved" values from current active
+                // suspension record. should only be one
+                break;
+            }
+
+            // only add a record if something changed.
+            // count($current) of zero means there is no
+            // record. once the migration to the new data
+            // structure is complete, that check won't
+            // be necessary
+            if ($changed || count($current) == 0) {
+                $cas_model->reasonCode($code);
+                $cas_model->username($this->current_user);
+                $cas_model->tdate(date('Y-m-d H:i:s'));
+                $cas_model->suspensionTypeID($m_status);
+
+                $current_id = $cas_model->save();
+            }
+
 			$cdP = $dbc->prepare_statement('UPDATE custdata SET Type=?
 					WHERE CardNo=?');
 			$cdR = $dbc->exec_statement($cdP, array($status, $this->id));
-		}
-		else {
+		} else {
 			// suspend active account
 			// create suspensions and log/history records
 			// set custdata & meminfo to inactive
@@ -248,6 +296,18 @@ class PISuspensionPage extends PIKillerPage {
 			$susp->reasoncode($code);
 			$susp->save();
 
+            $cas_model->savedType($cd->Type());
+            $cas_model->savedMemType($cd->memType());
+            $cas_model->savedDiscount($cd->Discount());
+            $cas_model->savedChargeLimit($cd->ChargeLimit());
+            $cas_model->savedMailFlag($mi->ads_OK());
+            $cas_model->suspensionTypeID( $status == 'TERM' ? 2 : 1 );
+            $cas_model->tdate(date('Y-m-d H:i:s'));
+            $cas_model->username($this->current_user);
+            $cas_model->reasonCode($code);
+            $cas_model->active(1);
+            $current_id = $cas_model->save();
+
 			$history = new SuspensionHistoryModel($dbc);
 			$history->username($this->current_user);
 			$history->cardno($this->id);
@@ -263,11 +323,24 @@ class PISuspensionPage extends PIKillerPage {
 			$cdR = $dbc->exec_statement($cdP, array($status, $this->id));
 		}
 
+        // only one CustomerAccountSuspensions record should be active
+        if ($current_id != 0) {
+            $cas_model->reset();
+            $cas_model->card_no($this->id);
+            $cas_model->active(1);
+            foreach($cas_model->find() as $obj) {
+                if ($obj->customerAccountSuspensionID() != $current_id) {
+                    $obj->active(0);
+                    $obj->save();
+                }
+            }
+        }
+
 		header('Location: PIMemberPage.php?id='.$this->id);
 		return False;
 	}
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

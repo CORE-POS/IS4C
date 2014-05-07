@@ -1,6 +1,6 @@
 <?php
 /*
-View: suspendedtoday
+View: screendisplay
 
 Columns:
 	description varchar
