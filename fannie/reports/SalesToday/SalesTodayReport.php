@@ -29,11 +29,13 @@
  *  and would be encumbered by the FannieReportPage structure.
 */
 
-include('../../config.php');
+include(dirname(__FILE__) . '/../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-class SalesTodayReport extends FanniePage 
+class SalesTodayReport extends FannieReportTool 
 {
+    public $description = '[Today\'s Sales] shows current day totals by hour.';
+    public $report_set = 'Sales Reports';
 
 	protected $selected;
 	protected $name = "";
@@ -281,10 +283,6 @@ function drawLineGraph(data, xrange, yrange)
 // SalesTodayReport
 }
 
-// This construct lets the rest of the file be included for extension.
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
-	$obj = new SalesTodayReport();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
 
 ?>

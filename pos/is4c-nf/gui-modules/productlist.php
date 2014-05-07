@@ -118,32 +118,13 @@ class productlist extends NoInputPage {
 		return True;
 	} // END preprocess() FUNCTION
 
-	function head_content(){
-		global $CORE_LOCAL;
+	function head_content()
+    {
 		// Javascript is only really needed if there are results
-		if ($this->temp_num_rows != 0){
-		?>
-		<script type="text/javascript" >
-		var prevKey = -1;
-		var prevPrevKey = -1;
-		function processkeypress(e) {
-			var jsKey;
-			if (e.keyCode) // IE
-				jsKey = e.keyCode;
-			else if(e.which) // Netscape/Firefox/Opera
-				jsKey = e.which;
-			if (jsKey==13) {
-				if ( (prevPrevKey == 99 || prevPrevKey == 67) &&
-				(prevKey == 108 || prevKey == 76) ){ //CL<enter>
-					$('#search option:selected').val('');
-				}
-				$('#selectform').submit();
-			}
-			prevPrevKey = prevKey;
-			prevKey = jsKey;
-		}
-		</script> 
-		<?php
+		if ($this->temp_num_rows != 0) {
+            ?>
+            <script type="text/javascript" src="../js/selectSubmit.js"></script>
+            <?php
 		}
 	} // END head() FUNCTION
 
@@ -156,7 +137,7 @@ class productlist extends NoInputPage {
 			$this->productsearchbox(_("no match found")."<br />"._("next search or enter upc"));
 		}
 		else {
-			$this->add_onload_command("\$('#search').keypress(processkeypress);\n");
+			$this->add_onload_command("selectSubmit('#search', '#selectform')\n");
 
 			echo "<div class=\"baseHeight\">"
 				."<div class=\"listbox\">"

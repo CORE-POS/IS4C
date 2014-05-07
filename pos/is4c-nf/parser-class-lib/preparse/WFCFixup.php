@@ -26,14 +26,25 @@ class WFCFixup extends PreParser {
 	
 	function check($str){
 		global $CORE_LOCAL;
+        $as_upc = str_pad($str, 13, '0', STR_PAD_LEFT);
 		if (substr($str,-3) == "QK9"){
 			$this->remainder = str_replace("QK9","QM9",$str);
 			return True;
-		}
-		elseif (substr($str,-4) == "QK10"){
+		} else if (substr($str,-4) == "QK10"){
 			$this->remainder = str_replace("QK10","QM10",$str);
 			return True;
-		}
+		} else if (strstr($str, '59070000087') || strstr($str, '59070000087') || strstr($str, '59070000087')) {
+            // stupid Herb Pharm coupon. Expires 30Apr14
+            $this->remainder = '59070099287';
+            return true;
+        } else if ($str == 'MA' || $str == 'OB') {
+            // re-write old WFC quarterly coupon as houseCoupon UPC
+            $this->remainder = '0049999900001';
+            return true;
+        } else if (($as_upc == '0000000001112' || $as_upc == '0000000001113') && $CORE_LOCAL->get('msgrepeat') == 0) {
+            $this->remainder = 'QM708';
+            return true;
+        }
 		return False;
 	}
 

@@ -50,6 +50,7 @@ class EfsnetRequestModel extends BasicModel
     'sentExp' => array('type'=>'TINYINT'),
     'sentTr1' => array('type'=>'TINYINT'),
     'sentTr2' => array('type'=>'TINYINT'),
+    'efsnetRequestID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),
 	);
 
     /* START ACCESSOR FUNCTIONS */
@@ -321,6 +322,21 @@ class EfsnetRequestModel extends BasicModel
             }
         } else {
             $this->instance["sentTr2"] = func_get_arg(0);
+        }
+    }
+
+    public function pairID()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["pairID"])) {
+                return $this->instance["pairID"];
+            } elseif(isset($this->columns["pairID"]["default"])) {
+                return $this->columns["pairID"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["pairID"] = func_get_arg(0);
         }
     }
     /* END ACCESSOR FUNCTIONS */

@@ -23,10 +23,69 @@ body {
 
 <form action=scanning.php method=post>
 <table id="install" border=0 cellspacing=0 cellpadding=4>
-<tr><td style="width:30%;">
+<tr>
+<td colspan="2">
+    <hr />
+    <b>Check Digits</b>
+    <p>
+    Most users omit check digits. If you have no particular preference, this
+    option is more thoroughly tested. Mixing and matching is not recommended.
+    It should work but uniformly omitting or including check digits for
+    all barcodes will make some back end tasks easier.
+    </p>
+</td>
+</tr>
+<tr>
+    <td style="width: 30%;">
+        <b>UPCs</b>
+    </td>
+    <td>
+    <select name="UPC_CHECK_DIGITS">
+    <?php
+    if (isset($_REQUEST['UPC_CHECK_DIGITS'])) $CORE_LOCAL->set('UpcIncludeCheckDigits', $_REQUEST['UPC_CHECK_DIGITS']);
+    if ($CORE_LOCAL->get('UpcIncludeCheckDigits') === '') $CORE_LOCAL->set('UpcIncludeCheckDigits', 0);
+    if ($CORE_LOCAL->get('UpcIncludeCheckDigits') == 0) {
+        echo '<option value="0" selected>Omit Check Digits</option>';
+        echo '<option value="1">Include Check Digits</option>';
+    } else {
+        echo '<option value="0">Omit Check Digits</option>';
+        echo '<option value="1" selected>Include Check Digits</option>';
+    }
+    InstallUtilities::paramSave('UpcIncludeCheckDigits',$CORE_LOCAL->get('UpcIncludeCheckDigits'));
+    ?>
+    </select>
+    </td>
+</tr>
+<tr>
+    <td style="width: 30%;">
+        <b>EANs</b>
+    </td>
+    <td>
+    <select name="EAN_CHECK_DIGITS">
+    <?php
+    if (isset($_REQUEST['EAN_CHECK_DIGITS'])) $CORE_LOCAL->set('EanIncludeCheckDigits', $_REQUEST['EAN_CHECK_DIGITS']);
+    if ($CORE_LOCAL->get('EanIncludeCheckDigits') === '') $CORE_LOCAL->set('EanIncludeCheckDigits', 0);
+    if ($CORE_LOCAL->get('EanIncludeCheckDigits') == 0) {
+        echo '<option value="0" selected>Omit Check Digits</option>';
+        echo '<option value="1">Include Check Digits</option>';
+    } else {
+        echo '<option value="0">Omit Check Digits</option>';
+        echo '<option value="1" selected>Include Check Digits</option>';
+    }
+    InstallUtilities::paramSave('EanIncludeCheckDigits',$CORE_LOCAL->get('EanIncludeCheckDigits'));
+    ?>
+    </select>
+    </td>
+</tr>
+<tr>
+    <td colspan="2"><hr /></td>
+</tr>
+<tr>
+<td style="width:30%;">
 <b>Special UPCs</b>:<br />
 <p>Special handling modules for UPCs that aren't products (e.g., coupons)</p>
-</td><td>
+</td>
+<td>
 <select multiple size=10 name=SPECIAL_UPC_MODS[]>
 <?php
 if (isset($_REQUEST['SPECIAL_UPC_MODS'])) $CORE_LOCAL->set('SpecialUpcClasses',$_REQUEST['SPECIAL_UPC_MODS']);
@@ -58,7 +117,7 @@ InstallUtilities::paramSave('SpecialUpcClasses', $CORE_LOCAL->get('SpecialUpcCla
 if(isset($_REQUEST['HCPREFIX'])) $CORE_LOCAL->set('houseCouponPrefix',$_REQUEST['HCPREFIX'],True);
 else if ($CORE_LOCAL->get('houseCouponPrefix') === '') $CORE_LOCAL->set('houseCouponPrefix', '00499999', true);
 printf("<input type=text name=HCPREFIX value=\"%s\" />",$CORE_LOCAL->get('houseCouponPrefix'));
-InstallUtilities::paramSave('houseCouponPrefix',"'".$CORE_LOCAL->get('houseCouponPrefix')."'");
+InstallUtilities::paramSave('houseCouponPrefix',$CORE_LOCAL->get('houseCouponPrefix'));
 ?>
 <span class='noteTxt'>Set the barcode prefix for houseCoupons.  Should be 8 digits starting with 004. Default is 00499999.</span>
 </td></tr>
@@ -99,10 +158,11 @@ else if ($CORE_LOCAL->get('roundUpDept') === '') {
     }
 }
 printf("<input type=text name=DONATIONDEPT value=\"%s\" />",$CORE_LOCAL->get('roundUpDept'));
-InstallUtilities::paramSave('roundUpDept',"'".$CORE_LOCAL->get('roundUpDept')."'");
+InstallUtilities::paramSave('roundUpDept',$CORE_LOCAL->get('roundUpDept'));
 ?>
 <span class='noteTxt'>Set the department number for lines entered via the "round up" donation function.</span>
-</td></tr>
+</td></tr><tr>
+<td colspan="2">
 <hr />
 <p>Discount type modules control how sale prices are calculated.</p></td></tr>
 <tr><td>
@@ -150,7 +210,9 @@ foreach($CORE_LOCAL->get("DiscountTypeClasses") as $r){
 	$tmp_count++;
 }
 InstallUtilities::paramSave('DiscountTypeClasses',$save);
-?></td></tr><tr><td colspan=2>
+?></td></tr>
+
+<tr><td colspan=2>
 <hr />	<p>Price Methods dictate how item prices are calculated.
 	There's some overlap with Discount Types, but <i>generally</i>
 	price methods deal with grouped items.</p></td></tr>
@@ -248,6 +310,41 @@ InstallUtilities::confsave('SpecialDeptMap',$saveStr);
 </td></tr>
 <tr><td colspan=2>
 <hr />
+</td></tr>
+<tr>
+    <td colspan=2>
+    <b>Variable Weight Item Mapping</b> (UPC Prefix "2"):<br />
+    Variable-weight items do not have identical barcodes because the
+    price is encoded in the barcode. A translator is required to map
+    these different barcodes back to one logical product.
+    </td>
+</tr>
+<tr>
+    <td>
+    <b>Translator</b>:
+    </td>
+    <td>
+    <select name="VW_MOD">
+    <?php
+    $mods = AutoLoader::listModules('VariableWeightReWrite');
+    if (isset($_REQUEST['VW_MOD'])) 
+        $CORE_LOCAL->set('VariableWeightReWriter', $_REQUEST['VW_MOD']);
+    else if ($CORE_LOCAL->get('VariableWeightReWriter') === '') 
+        $CORE_LOCAL->set('VariableWeightReWriter', 'ZeroedPriceReWrite');
+    foreach($mods as $m) {
+        printf('<option %s>%s</option>',
+            $CORE_LOCAL->get('VariableWeightReWriter') == $m ? 'selected' : '',
+            $m);
+    }
+    InstallUtilities::paramSave('VariableWeightReWriter',$CORE_LOCAL->get('VariableWeightReWriter'));
+    ?>
+    </select>
+    </td>
+</tr>
+<tr><td colspan=2>
+<hr />
+</td></tr>
+<tr><td>
 <input type=submit name=scansubmit value="Save Changes" />
 </td></tr></table>
 </form>

@@ -21,38 +21,33 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class HourlySalesReport extends FannieReportPage 
 {
+    public $description = '[Hourly Sales] lists sales per hour over a given date range.';
+    public $report_set = 'Sales Reports';
 
     protected $title = "Fannie : Hourly Sales Report";
     protected $header = "Hourly Sales";
+
+    protected $required_fields = array('date1', 'date2');
 
     protected $sortable = false;
     protected $no_sort_but_style = true;
 
 	public function preprocess()
     {
-		$this->report_cache = 'none';
-
-		if (isset($_REQUEST['date1'])){
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-		
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-				$this->report_format = 'xls';
-			} elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-				$this->report_format = 'csv';
-            } else {
-                $this->add_script('../../src/d3.js/d3.v3.min.js');
-                $this->add_script('../../src/d3.js/charts/singleline/singleline.js');
-                $this->add_css_file('../../src/d3.js/charts/singleline/singleline.css');
-            }
+        parent::preprocess();
+        // custom: needs graphing JS/CSS
+        if ($this->content_function == 'report_content' && $this->report_format == 'html') {
+            $this->add_script('../../src/d3.js/d3.v3.min.js');
+            $this->add_script('../../src/d3.js/charts/singleline/singleline.js');
+            $this->add_css_file('../../src/d3.js/charts/singleline/singleline.css');
 		}
-		else 
-			$this->add_script("../../src/CalendarControl.js");
 
 		return true;
 	}
@@ -111,7 +106,7 @@ class HourlySalesReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB;
+        global $FANNIE_OP_DB, $FANNIE_COOP_ID;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $date1 = FormLib::get('date1', date('Y-m-d'));
@@ -161,8 +156,11 @@ class HourlySalesReport extends FannieReportPage
         }
         $query .= "WHERE d.trans_type IN ('I','D')
                     AND d.tdate BETWEEN ? AND ?
-                    AND $where
-                   GROUP BY $date_selector, $hour
+                    AND $where ";
+        if ($FANNIE_COOP_ID == 'WFC_Duluth') {
+            $query .= ' AND d.department NOT IN (993, 998, 703) ';
+        }
+        $query .= " GROUP BY $date_selector, $hour
                    ORDER BY $date_selector, $hour";
 
         $prep = $dbc->prepare_statement($query);
@@ -229,7 +227,7 @@ class HourlySalesReport extends FannieReportPage
                 $sum += $sales;
             }
 
-            $record[] = $sum;
+            $record[] = sprintf('%.2f', $sum);
             $data[] = $record;
         }
         
@@ -414,6 +412,6 @@ function swap(src,dst){
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

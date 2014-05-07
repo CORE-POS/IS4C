@@ -1,0 +1,1189 @@
+%!FontType1-1.1: GnuMICR 000.300
+%%CreationDate: Wed Aug 02 19:41:00 2000
+%%VMusage: 120000 150000
+%(The above line is most likely not correct)
+%
+%---------------
+%
+%    GnuMICR - a free implementation of the MICR font
+%
+%    Copyright (C) 2000-2003 Eric Sandeen (sandeen-gnumicr@sandeen.net)
+%
+%    This program is free software; you can redistribute it and/or modify
+%    it under the terms of the GNU General Public License as published by
+%    the Free Software Foundation; either version 2 of the License, or
+%    (at your option) any later version.
+%
+%    This program is distributed in the hope that it will be useful,
+%    but WITHOUT ANY WARRANTY; without even the implied warranty of
+%    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+%    GNU General Public License for more details.
+%
+%    You should have received a copy of the GNU General Public License
+%    along with this program; if not, write to the Free Software
+%    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+%
+%---------------
+%
+%    This font contains only the digits 0-9, and 4 symbols
+%    To get the symbols, use the characters A B C D
+% 
+%    To convert back and forth between an editable raw font file
+%    and an encoded, encrypted, useable Type 1 font file, you will need
+%    the t1utils package from http://www.lcdf.org/~eddietwo/type/
+%
+%---------------
+%
+%    TODO:
+%      Get this thing inspected by a bank...!
+%      Implement stem hint replacement ("3", "8", Symbols)
+%      Angles/arcs on "7" may not be quite right
+%
+%---------------
+%
+11 dict begin
+/FontInfo 14 dict dup begin
+/version (000.300) readonly def
+/Copyright (Copyright 2000-2003, Eric Sandeen) readonly def
+/Notice (Copyright (c) 2000-2003, Eric Sandeen <sandeen-gnumicr@sandeen.net>.  Released under the terms of the Gnu Public License, www.gnu.org) readonly def
+/FullName (GnuMICR) readonly def
+/FamilyName (GnuMICR) readonly def
+/Weight (Normal) readonly def
+/ItalicAngle 0 def
+/isFixedPitch false def
+/UnderlinePosition -100 def
+/UnderlineThickness 50 def
+end readonly def
+
+/FontName /GnuMICR def
+/PaintType 0 def
+/FontType 1 def
+/FontMatrix [ 0.00100 0 0 0.00100 0 0 ] readonly def
+/Encoding 256 array
+0 1 255 {1 index exch /.notdef put } for
+dup 32 /space put
+dup 48 /zero put
+dup 49 /one put
+dup 50 /two put
+dup 51 /three put
+dup 52 /four put
+dup 53 /five put
+dup 54 /six put
+dup 55 /seven put
+dup 56 /eight put
+dup 57 /nine put
+dup 65 /A put
+dup 66 /B put
+dup 67 /C put
+dup 68 /D put
+dup 169 /copyright put
+readonly def
+
+/FontBBox { 103 0 649 702 } readonly def
+currentdict end
+currentfile eexec
+dup /Private 18 dict dup begin
+/RD { string currentfile exch readstring pop } executeonly def
+/ND { noaccess def } executeonly def
+/NP { noaccess put } executeonly def
+/BlueValues [ 0 0 ] ND
+/BlueScale 0.03963 def		% default
+/BlueShift 7 def		% default
+/BlueFuzz 1 def			% default
+/MinFeature { 16 16 } ND	% req'd, default
+/StdHW [ 78 ] ND		% std horiz stem width
+/StdVW [ 78 ] ND		% std vert stem width
+/ForceBold false def
+/password 5839 def		% req'd, default
+/UniqueID 5116639 def		% ID assigned by Adobe
+/StemSnapH [ 78 156 234 ] ND	% Common horiz stem widths
+/StemSnapV [ 78 85 151 ] ND	% Common vert stem widths
+%
+% The following is not used, but if we do stem hint replacement
+% in the future, we'll need it.
+%
+/Subrs 4 array
+dup 0 {
+	3 0 callothersubr
+	pop
+	pop
+	setcurrentpoint
+	return
+	} NP
+dup 1 {
+	0 1 callothersubr
+	return
+	} NP
+dup 2 {
+	0 2 callothersubr
+	return
+	} NP
+dup 3 {
+	return
+	} NP
+
+ND
+
+% Actual character definitions start here:
+
+2 index /CharStrings 26 dict dup begin
+/.notdef {
+	0 500 hsbw
+	endchar
+	} ND
+/.null {
+	0 0 hsbw
+	endchar
+	} ND
+/CR {
+	0 500 hsbw
+	endchar
+	} ND
+/space {
+	0 751 hsbw
+	endchar
+	} ND
+/zero {
+	103 751 hsbw
+
+	0 78 hstem
+	624 78 hstem
+	0 78 vstem
+	468 78 vstem
+	
+	% Outline
+	156 0 rmoveto
+	234 hlineto
+	86 70 70 86 hvcurveto
+	390 vlineto
+	86 -70 70 -86 vhcurveto
+	-234 hlineto
+	-86 -70 -70 -86 hvcurveto
+	-390 vlineto
+	-86 70 -70 86 vhcurveto
+	closepath
+
+	% Inside path
+	0 78 rmoveto
+	-43 -35 35 43 hvcurveto
+	390 vlineto
+	43 35 35 43 vhcurveto
+	234 hlineto
+	43 35 -35 -43 hvcurveto
+	-390 vlineto
+	-43 -35 -35 -43 vhcurveto
+	-234 hlineto
+	closepath
+	
+	endchar
+	} ND
+/one {
+	337 751 hsbw
+
+	0 20 hstem %ghost stem
+	585 117 hstem
+	78 78 vstem
+	
+	39 0 rmoveto
+	234 hlineto
+	22 17 17 22 hvcurveto 
+	234 vlineto
+	22 -17 17 -22 vhcurveto 
+	-78 hlineto
+	-22 -17 17 22 hvcurveto
+	312 vlineto
+	22 -17 17 -22 vhcurveto 
+	-78 hlineto
+	-22 -17 -17 -22 hvcurveto 
+	-39 vlineto
+	-22 17 -17 22 vhcurveto 
+	22 17 -17 -22 hvcurveto
+	-195 vlineto
+	-22 -17 -17 -22 vhcurveto
+	-22 -17 -17 -22 hvcurveto 
+	-234 vlineto
+	-22 17 -17 22 vhcurveto 
+	closepath
+
+	endchar
+	} ND
+/two {
+	337 751 hsbw
+
+	0 78 hstem
+	312 78 hstem
+	624 78 hstem
+	0 78 vstem
+	234 78 vstem
+	
+	39 0 rmoveto
+	234 hlineto
+	22 17 17 22 hvcurveto
+	22 -17 17 -22 vhcurveto
+	-156 hlineto
+	-22 -17 17 22 hvcurveto
+	156 vlineto
+	22 17 17 22 vhcurveto
+	156 hlineto
+	22 17 17 22 hvcurveto
+	312 vlineto
+	22 -17 17 -22 vhcurveto
+	-234 hlineto
+	-22 -17 -17 -22 hvcurveto
+	-22 17 -17 22 vhcurveto
+	156 hlineto
+	22 17 -17 -22 hvcurveto
+	-156 vlineto
+	-22 -17 -17 -22 vhcurveto
+	-156 hlineto
+	-22 -17 -17 -22 hvcurveto
+	-312 vlineto
+	-21 17 -17 21 vhcurveto
+	closepath
+
+	endchar
+	} ND
+/three {
+	259 751 hsbw
+
+	0 78 hstem
+	312 78 hstem
+	624 78 hstem
+	234 156 vstem
+	%What about skinny vstem?
+
+	39 0 rmoveto
+	312 hlineto
+	22 17 17 22 hvcurveto 
+	273 vlineto
+	22 -17 17 -22 vhcurveto 
+	-22 -17 17 22 hvcurveto
+	273 vlineto
+	22 -17 17 -22 vhcurveto 
+	-234 hlineto
+	-22 -17 -17 -22 hvcurveto 
+	-22 17 -17 22 vhcurveto 
+	156 hlineto
+	22 17 -17 -22 hvcurveto
+	-156 vlineto
+	-22 -17 -17 -22 vhcurveto
+	-156 hlineto
+	-22 -17 -17 -22 hvcurveto 
+        -22 17 -17 22 vhcurveto 
+	156 hlineto
+	22 17 -17 -22 hvcurveto
+	-156 vlineto
+	-22 -17 -17 -22 vhcurveto
+	-156 hlineto
+	-22 -17 -17 -22 hvcurveto 
+        -22 17 -17 22 vhcurveto 
+	closepath
+
+	endchar
+	} ND
+/four {
+	181 751 hsbw
+
+	0 156 vstem
+	312 156 vstem
+	156 78 hstem
+	
+	351 0 rmoveto
+	78 hlineto
+	22 17 17 22 hvcurveto 
+	234 vlineto
+	22 -17 17 -22 vhcurveto 
+	-78 hlineto
+	-22 -17 -17 -22 hvcurveto 
+        -22 -17 -17 -22 vhcurveto
+	-78 hlineto
+	-22 -17 17 22 hvcurveto
+	390 vlineto
+	22 -17 17 -22 vhcurveto 
+	-78 hlineto
+	-22 -17 -17 -22 hvcurveto 
+	-468 vlineto
+	-22 17 -17 22 vhcurveto 
+	234 hlineto
+	22 17 -17 -22 hvcurveto
+	-78 vlineto
+	-22 17 -17 22 vhcurveto 
+	closepath
+
+	endchar
+	} ND
+/five {
+	259 751 hsbw
+	
+	0 78 hstem
+	312 78 hstem
+	624 78 hstem
+	0 78 vstem
+	312 78 vstem
+
+	39 0 rmoveto
+	312 hlineto
+	22 17 17 22 hvcurveto 
+	312 vlineto
+	22 -17 17 -22 vhcurveto 
+	-234 hlineto
+	-22 -17 17 22 hvcurveto
+	156 vlineto
+	22 17 17 22 vhcurveto
+	234 hlineto
+	22 17 17 22 hvcurveto 
+	22 -17 17 -22 vhcurveto 
+	-312 hlineto
+	-22 -17 -17 -22 hvcurveto 
+        -312 vlineto
+	-22 17 -17 22 vhcurveto 
+	234 hlineto
+	22 17 -17 -22 hvcurveto
+	-156 vlineto
+	-22 -17 -17 -22 vhcurveto
+	-234 hlineto
+	-22 -17 -17 -22 hvcurveto 
+	-22 17 -17 22 vhcurveto 
+	closepath
+
+	endchar
+	} ND
+/six {
+	181 751 hsbw
+
+	0 78 hstem
+	234 78 hstem
+	624 78 hstem
+	0 78 vstem
+	234 78 vstem
+	390 78 vstem
+	
+	% Outline
+	39 0 rmoveto
+	390 hlineto
+	22 17 17 22 hvcurveto 
+	234 vlineto
+	22 -17 17 -22 vhcurveto 
+	-312 hlineto
+	-22 -17 17 22 hvcurveto
+	234 vlineto
+	22 17 17 22 vhcurveto
+	78 hlineto
+	22 17 -17 -22 hvcurveto
+	-39 vlineto
+	-22 17 -17 22 vhcurveto 
+	22 17 17 22 hvcurveto 
+	117 vlineto
+	22 -17 17 -22 vhcurveto 
+	-234 hlineto
+	-22 -17 -17 -22 hvcurveto 
+	-624 vlineto
+	-22 17 -17 22 vhcurveto 
+	closepath
+
+	% Inside path
+	78 78 rmoveto
+	-22 -17 17 22 hvcurveto
+	78 vlineto
+	22 17 17 22 vhcurveto
+	234 hlineto
+	22 17 -17 -22 hvcurveto
+	-78 vlineto
+	-22 -17 -17 -22 vhcurveto
+	-234 hlineto
+	closepath
+
+	endchar
+	} ND
+/seven {
+	259 751 hsbw
+
+	624 78 hstem
+	0 78 vstem
+	156 78 vstem
+	312 78 vstem
+	
+	195 0 rmoveto
+	22 17 17 22 hvcurveto 
+	261 vlineto
+	0 16 9 14 15 6 rrcurveto
+	108 43 rlineto
+	15 6 9 14 0 16 rrcurveto
+	248 vlineto
+	22 -17 17 -22 vhcurveto 
+	-312 hlineto
+	-22 -17 -17 -22 hvcurveto 
+	-156 vlineto
+	-22 17 -17 22 vhcurveto 
+	22 17 17 22 hvcurveto 
+	78 vlineto
+	22 17 17 22 vhcurveto
+	156 hlineto
+	22 17 -17 -22 hvcurveto
+	-117 vlineto
+	0 -16 -9 -14 -15 -6 rrcurveto %arc
+	-108 -45 rlineto
+	-15 -6 -9 -14 0 -16 rrcurveto 
+	-312 vlineto
+	-22 17 -17 22 vhcurveto 
+ 	closepath
+
+	endchar
+	} ND
+/eight {
+	103 751 hsbw
+
+	0 78 hstem
+	312 78 hstem
+	624 78 hstem
+	0 156 vstem
+	390 156 vstem
+	%vstem hints only for "fat" vstems...
+	
+	% Outline
+	39 0 rmoveto
+	468 hlineto
+	22 17 17 22 hvcurveto 
+	273 vlineto
+	22 -17 17 -22 vhcurveto 
+	-22 -17 17 22 hvcurveto
+	273 vlineto
+	22 -17 17 -22 vhcurveto 
+	-312 hlineto
+	-22 -17 -17 -22 hvcurveto 
+	-273 vlineto
+	-22 -17 -17 -22 vhcurveto
+	-22 -17 -17 -22 hvcurveto 
+	-273 vlineto
+	-22 17 -17 22 vhcurveto 
+	closepath
+
+	% Inside bottom path
+	156 78 rmoveto
+	-22 -17 17 22 hvcurveto
+	156 vlineto
+	22 17 17 22 vhcurveto
+	156 hlineto
+	22 17 -17 -22 hvcurveto
+	-156 vlineto
+	-22 -17 -17 -22 vhcurveto
+	-156 hlineto
+	closepath
+
+	% Inside top path
+	0 312 rmoveto
+	-22 -17 17 22 hvcurveto
+	156 vlineto
+	22 17 17 22 vhcurveto
+	156 hlineto
+	22 17 -17 -22 hvcurveto
+	-156 vlineto
+	-22 -17 -17 -22 vhcurveto
+	-156 hlineto
+	closepath
+
+	endchar
+	} ND
+/nine {
+	181 751 hsbw
+
+	0 20 hstem %ghost stem...?
+	312 78 hstem
+	624 78 hstem
+	0 78 vstem
+	312 156 vstem
+
+	% Outline
+	351 0 rmoveto
+	78 hlineto
+	22 17 17 22 hvcurveto 
+	624 vlineto
+	22 -17 17 -22 vhcurveto 
+	-390 hlineto
+	-22 -17 -17 -22 hvcurveto 
+	-312 vlineto
+	-22 17 -17 22 vhcurveto 
+	234 hlineto
+	22 17 -17 -22 hvcurveto
+	-234 vlineto
+	-22 17 -17 22 vhcurveto 
+	closepath
+
+	% Inside path
+	0 390 rmoveto
+	-234 hlineto
+	-22 -17 17 22 hvcurveto
+	156 vlineto
+	22 17 17 22 vhcurveto
+	234 hlineto
+	22 17 -17 -22 hvcurveto
+	-156 vlineto
+	-22 -17 -17 -22 vhcurveto
+	closepath
+	
+	endchar
+	} ND
+/A {
+	103 751 hsbw
+
+	0 234 hstem
+	468 234 hstem
+	% Stem replacement for left bar?
+	0 156 vstem
+	312 234 vstem
+	
+	% Left bar
+	39 117 rmoveto
+	78 hlineto
+	22 17 17 22 hvcurveto 
+	390 vlineto
+	22 -17 17 -22 vhcurveto 
+	-78 hlineto
+	-22 -17 -17 -22 hvcurveto 
+	-390 vlineto
+	-22 17 -17 22 vhcurveto 
+	closepath
+
+	% Bottom square
+	312 -117 rmoveto
+	156 hlineto
+	22 17 17 22 hvcurveto 
+	156 vlineto
+	22 -17 17 -22 vhcurveto 
+	-156 hlineto
+	-22 -17 -17 -22 hvcurveto 
+	-156 vlineto
+	-22 17 -17 22 vhcurveto 
+	closepath
+
+	% Top square
+	0 468 rmoveto
+	156 hlineto
+	22 17 17 22 hvcurveto 
+	156 vlineto
+	22 -17 17 -22 vhcurveto 
+	-156 hlineto
+	-22 -17 -17 -22 hvcurveto 
+	-156 vlineto
+	-22 17 -17 22 vhcurveto 
+	closepath
+
+	endchar
+	} ND
+/B {
+	103 751 hsbw
+
+	0 312 hstem
+	390 312 hstem
+	% Use stem replacement for inner bar htstem?
+	0 156 vstem
+	234 78 vstem
+	390 156 vstem
+
+	% lower bar
+	39 0 rmoveto
+	78 hlineto
+	22 17 17 22 hvcurveto 
+	234 vlineto
+	22 -17 17 -22 vhcurveto 
+	-78 hlineto
+	-22 -17 -17 -22 hvcurveto 
+	-234 vlineto
+	-22 17 -17 22 vhcurveto 
+	closepath
+
+	% middle bar
+	234 176 rmoveto
+	22 17 17 22 hvcurveto 
+	273 vlineto
+	22 -17 17 -22 vhcurveto 
+	-22 -17 -17 -22 hvcurveto 
+	-273 vlineto
+	-22 17 -17 22 vhcurveto 
+	closepath
+
+	% top bar
+	156 214 rmoveto
+	78 hlineto
+	22 17 17 22 hvcurveto 
+	234 vlineto
+	22 -17 17 -22 vhcurveto 
+	-78 hlineto
+	-22 -17 -17 -22 hvcurveto 
+	-234 vlineto
+	-22 17 -17 22 vhcurveto 
+	closepath
+
+	endchar
+	} ND
+/C {
+	103 751 hsbw
+
+	351 312 hstem
+	% Stem replacement for left bars?
+	0 78 vstem
+	156 78 vstem
+	312 234 vstem
+	
+	% Left bar
+	39 117 rmoveto
+	22 17 17 22 hvcurveto 
+	390 vlineto
+	22 -17 17 -22 vhcurveto 
+	-22 -17 -17 -22 hvcurveto 
+	-390 vlineto
+	-22 17 -17 22 vhcurveto 
+	closepath
+	
+	% Middle bar
+	156 0 rmoveto
+	22 17 17 22 hvcurveto 
+	390 vlineto
+	22 -17 17 -22 vhcurveto 
+	-22 -17 -17 -22 hvcurveto 
+	-390 vlineto
+	-22 17 -17 22 vhcurveto 
+	closepath
+
+	% Right rectangle
+	156 234 rmoveto
+	156 hlineto
+	22 17 17 22 hvcurveto 
+	234 vlineto
+	22 -17 17 -22 vhcurveto 
+	-156 hlineto
+	-22 -17 -17 -22 hvcurveto 
+        -234 vlineto
+	-22 17 -17 22 vhcurveto 
+	closepath
+
+	endchar
+	} ND
+/D {
+	103 751 hsbw
+
+	195 312 hstem
+	0 156 vstem
+	234 156 vstem
+	468 78 vstem
+	
+	% Left bar
+	39 195  rmoveto
+	78 hlineto
+	22 17 17 22 hvcurveto 
+	234 vlineto
+	22 -17 17 -22 vhcurveto 
+	-78 hlineto
+	-22 -17 -17 -22 hvcurveto 
+	-234 vlineto
+	-22 17 -17 22 vhcurveto 
+	closepath
+
+	% Middle bar
+	234 0 rmoveto
+	78 hlineto
+	22 17 17 22 hvcurveto 
+	234 vlineto
+	22 -17 17 -22 vhcurveto 
+	-78 hlineto
+	-22 -17 -17 -22 hvcurveto 
+	-234 vlineto
+	-22 17 -17 22 vhcurveto 
+	closepath
+
+	% Right bar
+	234 0 rmoveto
+	22 17 17 22 hvcurveto
+	234 vlineto
+	22 -17 17 -22 vhcurveto 
+	-22 -17 -17 -22 hvcurveto 
+	-234 vlineto
+	-22 17 -17 22 vhcurveto 
+	closepath
+
+	endchar
+	} ND
+
+%% Super secret copyright notice!
+
+/copyright {
+	0 751 hsbw
+
+	% E
+	50 10 rmoveto
+	30 hlineto
+	10 vlineto
+	-20 hlineto
+	10 vlineto
+	10 hlineto
+	10 vlineto
+	-10 hlineto
+	10 vlineto
+	20 hlineto
+	10 vlineto
+	-30 hlineto
+	-50 vlineto
+	closepath
+
+	40 0 rmoveto
+
+	% R
+	10 hlineto
+	10 vlineto
+	10 -10 rlineto
+	10 hlineto
+	10 vlineto
+	-10 10 rlineto
+	10 hlineto
+	30 vlineto
+	-30 hlineto
+	-50 vlineto
+	closepath
+
+	10 30 rmoveto
+	10 vlineto
+	10 hlineto
+	-10 vlineto
+	-10 hlineto
+	closepath	
+
+	-10 -30 rmoveto
+	
+	% I
+	40 0 rmoveto
+	10 hlineto
+	50 vlineto
+	-10 hlineto
+	-50 vlineto
+	closepath
+	
+	% C
+	20 0 rmoveto
+	30 hlineto
+	10 vlineto
+	-20 hlineto
+	30 vlineto
+	20 hlineto
+	10 vlineto
+	-30 hlineto
+	-50 vlineto
+	closepath
+	
+	70 0 rmoveto
+
+	% S
+	30 hlineto
+	30 vlineto
+	-20 hlineto
+	10 vlineto
+	20 hlineto
+	10 vlineto
+	-30 hlineto
+	-30 vlineto
+	20 hlineto
+	-10 vlineto
+	-20 hlineto
+	-10 vlineto
+	closepath
+	
+	% A
+	40 0 rmoveto
+	10 hlineto
+	20 vlineto
+	10 hlineto
+	-20 vlineto
+	10 hlineto
+	50 vlineto
+	-30 hlineto
+	-50 vlineto
+	closepath
+	
+	10 30 rmoveto
+	10 vlineto
+	10 hlineto
+	-10 vlineto
+	-10 hlineto
+	closepath	
+
+	-10 -30 rmoveto
+
+	% N
+	40 0 rmoveto
+	10 hlineto
+	30 vlineto
+	10 -30 rlineto
+	10 hlineto
+	50 vlineto
+	-10 hlineto
+	-20 vlineto
+	-10 20 rlineto
+	-10 hlineto
+	-50 vlineto
+	closepath
+	
+	% D
+	40 0 rmoveto
+	20 hlineto
+	10 10 rlineto
+	30 vlineto
+	-10 10 rlineto
+	-20 hlineto
+	-50 vlineto
+	closepath
+	
+	10 10 rmoveto
+	30 vlineto
+	10 hlineto
+	-30 vlineto
+	-10 hlineto
+	closepath	
+	
+	-10 -10 rmoveto
+	
+	% E
+	40 0 rmoveto
+	30 hlineto
+	10 vlineto
+	-20 hlineto
+	10 vlineto
+	10 hlineto
+	10 vlineto
+	-10 hlineto
+	10 vlineto
+	20 hlineto
+	10 vlineto
+	-30 hlineto
+	-50 vlineto
+	closepath
+
+	40 0 rmoveto
+
+	% E
+	30 hlineto
+	10 vlineto
+	-20 hlineto
+	10 vlineto
+	10 hlineto
+	10 vlineto
+	-10 hlineto
+	10 vlineto
+	20 hlineto
+	10 vlineto
+	-30 hlineto
+	-50 vlineto
+	closepath
+
+	40 0 rmoveto
+	
+	% N
+	10 hlineto
+	30 vlineto
+	10 -30 rlineto
+	10 hlineto
+	50 vlineto
+	-10 hlineto
+	-20 vlineto
+	-10 20 rlineto
+	-10 hlineto
+	-50 vlineto
+	closepath
+	
+	-470 60 rmoveto
+	
+	% C	
+	20 0 rmoveto
+	30 hlineto
+	10 vlineto
+	-20 hlineto
+	30 vlineto
+	20 hlineto
+	10 vlineto
+	-30 hlineto
+	-50 vlineto
+	closepath
+	
+	40 0 rmoveto
+	
+	% O
+	30 hlineto
+	50 vlineto
+	-30 hlineto
+	-50 vlineto
+	closepath
+	
+	10 10 rmoveto
+	10 hlineto
+	30 vlineto
+	-10 hlineto
+	-30 vlineto
+	closepath
+	-10 -10 rmoveto
+	
+	40 0 rmoveto
+	
+	% P
+	10 hlineto
+	20 vlineto
+	20 hlineto
+	30 vlineto
+	-30 hlineto
+	-50 vlineto
+	closepath
+	
+	10 30 rmoveto
+	10 hlineto
+	10 vlineto
+	-10 hlineto
+	-10 vlineto
+	closepath
+	-10 -30 rmoveto
+	
+	50 0 rmoveto
+	
+	% Y
+	10 hlineto
+	20 vlineto
+	10 hlineto
+	30 vlineto
+	-10 hlineto
+	-20 vlineto
+	-10 hlineto
+	20 vlineto
+	-10 hlineto
+	-30 vlineto
+	10 hlineto
+	-20 vlineto
+	closepath
+	
+	30 0 rmoveto
+
+	% R
+	10 hlineto
+	10 vlineto
+	10 -10 rlineto
+	10 hlineto
+	10 vlineto
+	-10 10 rlineto
+	10 hlineto
+	30 vlineto
+	-30 hlineto
+	-50 vlineto
+	closepath
+
+	10 30 rmoveto
+	10 vlineto
+	10 hlineto
+	-10 vlineto
+	-10 hlineto
+	closepath	
+
+	-10 -30 rmoveto
+	
+	% I
+	40 0 rmoveto
+	10 hlineto
+	50 vlineto
+	-10 hlineto
+	-50 vlineto
+	closepath
+	
+	20 0 rmoveto
+	
+	% G
+	30 hlineto
+	20 vlineto
+	-10 hlineto
+	-10 vlineto
+	-10 hlineto
+	30 vlineto
+	20 hlineto
+	10 vlineto
+	-30 hlineto
+	-50 vlineto
+	closepath
+	
+	40 0 rmoveto
+	
+	% H
+	10 hlineto
+	20 vlineto
+	10 hlineto
+	-20 vlineto
+	10 hlineto
+	50 vlineto
+	-10 hlineto
+	-20 vlineto
+	-10 hlineto
+	20 vlineto
+	-10 hlineto
+	-50 vlineto
+	closepath
+	
+	50 0 rmoveto
+	
+	% T
+	10 hlineto
+	40 vlineto
+	10 hlineto
+	10 vlineto
+	-30 hlineto
+	-10 vlineto
+	10 hlineto
+	-40 vlineto
+	closepath
+	
+	60 0 rmoveto
+	
+	% 2
+	30 hlineto
+	10 vlineto
+	-20 hlineto
+	10 vlineto
+	20 hlineto
+	30 vlineto
+	-30 hlineto
+	-10 vlineto
+	20 hlineto
+	-10 vlineto
+	-20 hlineto
+	-30 vlineto
+	closepath
+	
+	40 0 rmoveto
+	
+	% 0
+	30 hlineto
+	50 vlineto
+	-30 hlineto
+	-50 vlineto
+	closepath
+	
+	10 10 rmoveto
+	10 hlineto
+	30 vlineto
+	-10 hlineto
+	-30 vlineto
+	closepath
+	-10 -10 rmoveto
+
+	40 0 rmoveto
+	
+	% 0
+	30 hlineto
+	50 vlineto
+	-30 hlineto
+	-50 vlineto
+	closepath
+	
+	10 10 rmoveto
+	10 hlineto
+	30 vlineto
+	-10 hlineto
+	-30 vlineto
+	closepath
+	-10 -10 rmoveto
+	
+	
+	40 0 rmoveto
+	
+	% 0
+	30 hlineto
+	50 vlineto
+	-30 hlineto
+	-50 vlineto
+	closepath
+	
+	10 10 rmoveto
+	10 hlineto
+	30 vlineto
+	-10 hlineto
+	-30 vlineto
+	closepath
+	-10 -10 rmoveto
+		
+	40 20 rmoveto
+	
+	% -
+	20 hlineto
+	10 vlineto
+	-20 hlineto
+	-10 vlineto
+	closepath
+	
+	30 -20 rmoveto
+
+	% 2
+	30 hlineto
+	10 vlineto
+	-20 hlineto
+	10 vlineto
+	20 hlineto
+	30 vlineto
+	-30 hlineto
+	-10 vlineto
+	20 hlineto
+	-10 vlineto
+	-20 hlineto
+	-30 vlineto
+	closepath
+	
+	40 0 rmoveto
+	
+	% 0
+	30 hlineto
+	50 vlineto
+	-30 hlineto
+	-50 vlineto
+	closepath
+	
+	10 10 rmoveto
+	10 hlineto
+	30 vlineto
+	-10 hlineto
+	-30 vlineto
+	closepath
+	-10 -10 rmoveto
+
+	40 0 rmoveto
+	
+	% 0
+	30 hlineto
+	50 vlineto
+	-30 hlineto
+	-50 vlineto
+	closepath
+	
+	10 10 rmoveto
+	10 hlineto
+	30 vlineto
+	-10 hlineto
+	-30 vlineto
+	closepath
+	-10 -10 rmoveto
+
+	40 0 rmoveto
+
+	% 3
+	30 hlineto
+	50 vlineto
+	-30 hlineto
+	-10 vlineto
+	20 hlineto
+	-10 vlineto
+	-20 hlineto
+	-10 vlineto
+	20 hlineto
+	-10 vlineto
+	-20 hlineto
+	-10 vlineto
+	closepath
+	
+	endchar
+	} ND
+
+end
+end
+readonly put
+put
+dup /FontName get exch definefont pop
+mark currentfile closefile

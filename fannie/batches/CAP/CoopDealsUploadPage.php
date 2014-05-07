@@ -139,5 +139,5 @@ class CoopDealsUploadPage extends FannieUploadPage {
 	}
 }
 
-$obj = new CoopDealsUploadPage();
-$obj->draw_page();
+FannieDispatch::conditionalExec(false);
+

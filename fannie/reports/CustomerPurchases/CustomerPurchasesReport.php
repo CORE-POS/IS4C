@@ -21,45 +21,20 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class CustomerPurchasesReport extends FannieReportPage 
 {
+    public $description = '[Member Purchases] lists items purchased by a given member in a given date range.';
+    public $report_set = 'Membership';
 
-	function preprocess()
-    {
-		/**
-		  Set the page header and title, enable caching
-		*/
-		$this->title = "Fannie : What Did I Buy?";
-		$this->header = "What Did I Buy? Report";
-		$this->report_cache = 'none';
-
-		if (isset($_REQUEST['date1'])){
-			/**
-			  Form submission occurred
-
-			  Change content function, turn off the menus,
-			  set up headers
-			*/
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-			$this->report_headers = array('Date','UPC','Description','Dept','Cat','Qty','$');
-		
-			/**
-			  Check if a non-html format has been requested
-			*/
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls')
-				$this->report_format = 'xls';
-			elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv')
-				$this->report_format = 'csv';
-		}
-		else 
-			$this->add_script("../../src/CalendarControl.js");
-
-		return True;
-	}
+    protected $title = "Fannie : What Did I Buy?";
+    protected $header = "What Did I Buy? Report";
+    protected $report_headers = array('Date','UPC','Description','Dept','Cat','Qty','$');
+    protected $required_fields = array('date1', 'date2');
 
 	function fetch_report_data()
     {
@@ -75,9 +50,9 @@ class CustomerPurchasesReport extends FannieReportPage
 			  t.department,d.dept_name,m.super_name,
 			  sum(t.quantity) as qty,
 			  sum(t.total) as ttl from
-			  $dlog as t left join products as p on t.upc = p.upc 
-			  left join departments AS d ON t.department=d.dept_no
-			  left join MasterSuperDepts AS m ON t.department=m.dept_ID
+			  $dlog as t left join {$FANNIE_OP_DB}.products as p on t.upc = p.upc 
+			  left join {$FANNIE_OP_DB}.departments AS d ON t.department=d.dept_no
+			  left join {$FANNIE_OP_DB}.MasterSuperDepts AS m ON t.department=m.dept_ID
 			  where t.card_no = ? AND
 			  trans_type IN ('I','D') AND
 			  tdate BETWEEN ? AND ?
@@ -136,7 +111,7 @@ class CustomerPurchasesReport extends FannieReportPage
 <form method = "get" action="CustomerPurchasesReport.php">
 	<table border="0" cellspacing="0" cellpadding="5">
 		<tr> 
-			<th>Owner#</th>
+			<th><?php echo _('Owner#'); ?></th>
 			<td>
 			<input type=text name=card_no size=14 id=card_no  />
 			</td>
@@ -172,6 +147,6 @@ class CustomerPurchasesReport extends FannieReportPage
 	}
 }
 
-$obj = new CustomerPurchasesReport();
-$obj->draw_page();
+FannieDispatch::conditionalExec(false);
+
 ?>

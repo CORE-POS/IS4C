@@ -31,6 +31,8 @@ if (!class_exists('WfcHtLib')) {
 
 class WfcHtReport extends FannieReportPage
 {
+    public $discoverable = false; // access is very restricted; no need to list
+                                  // as an available report
     protected $must_authenticate = true;
     protected $auth_classes = array('view_all_hours');
     protected $header = 'Hours Report';
@@ -118,5 +120,5 @@ class WfcHtReport extends FannieReportPage
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 

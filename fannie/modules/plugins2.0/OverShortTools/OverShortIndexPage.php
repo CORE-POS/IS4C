@@ -34,50 +34,69 @@ class OverShortIndexPage extends FanniePage {
 		ob_start();
 		?>
 		<ul>
-		<li><a href="OverShortDayPage.php">Whole Day O/S</a>
+		<li><a href="OverShortDayPage.php" target="_WholeByCashier">Whole Day O/S</a>
 			<?php
-			echo FannieHelp::ToolTip('View POS tender totals for all cashiers
+			echo FannieHelp::ToolTip('<ul><li>View POS tender totals for all cashiers
 						on a given day and enter actual counted totals.
-						The tool will calculate how much an individual
+						<li>The tool will calculate how much an individual
 						cashier is over or short for each tender
-						as well as how much the overall store is over
-						or short.');
+						<br />as well as how much the overall store is over
+						or short.
+						<li>Work can be saved and resumed later.
+						<li>The day can be marked "resolved".</ul>');
 			?>
 		</li> 
-		<li><a href="OverShortCashierPage.php">Single Cashier O/S</a>
+		<li><a href="OverShortCashierPage.php" target="_SingleCashier">Single Cashier O/S</a>
 			<?php
-			echo FannieHelp::ToolTip('View POS tender totals for cashiers
-						and enter actual counted totals. The difference
+			echo FannieHelp::ToolTip('<ul><li>View POS tender totals for cashiers
+						and enter actual counted totals.
+						<li>The difference
 						between this and the "Whole Day O/S" tool is this
 						accepts individual check amounts. If you do not need
 						all the individual checks (typically used for generating
 						bank deposit paperwork) then the "Whole Day O/S" tool
 						is likely more effective. The two tools work with the
-						same data so you can mix and match if needed.');
+						same data so you can mix and match if needed.</ul>');
 			?>
 		</li>
-		<li><a href="OverShortSafecountPage.php">Safe Count</a>
+		<li><a href="OverShortSafecountPage.php" target="_SafeCount">Safe Count</a>
 			<?php
-			echo FannieHelp::ToolTip('Enter information about cash on hand to calculate
-						what should be sent to the bank, how much change to order
-						in various denominations, and what should remain afterwards.
+			echo FannieHelp::ToolTip('<br />Enter information about cash on hand to calculate
+						<ul><li>what should be sent to the bank,
+						<li>how much change to order
+						in various denominations, and
+						<li>what should remain afterwards.
+						</ul>
 						<b>Very WFC specific</b>');
 			?>
 		</li> 
-		<li><a href="OverShortDepositSlips.php">Deposit Slips</a>
+		<li><a href="OverShortDepositSlips.php" target="_DepositSlips">Deposit Slips</a>
 			<?php
-			echo FannieHelp::ToolTip('Uses information from the Safe Count tool to generate
-						paperwork that goes with the bank deposit. <b>Very WFC
-						specific</b>');
+			echo FannieHelp::ToolTip('<br />Uses information from the Safe Count tool to generate
+						paperwork that goes with the bank deposit.
+						<br /><b>Very WFC specific</b>');
 			?>
 		</li> 
+		<!--
+		<li><a href="OverShortDayTillPage.php" target="_WholeByTill">Whole Day O/S by Till</a>
+			<?php
+			echo FannieHelp::ToolTip('<ul><li>View POS tender totals for all tills
+						on a given day and enter actual counted totals.
+						<li>The tool will calculate how much an individual
+						tills is over or short for each tender
+						<br />as well as how much the overall store is over
+						or short.
+						<li>Work can be saved and resumed later.
+						<li>The day can be marked "resolved".</ul>');
+			?>
+		</li> 
+		-->
 		</ul>
+
 		<?php
 		return ob_get_clean();
 	}
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
-	$obj = new OverShortIndexPage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+

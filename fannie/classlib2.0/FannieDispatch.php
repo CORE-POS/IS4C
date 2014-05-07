@@ -24,6 +24,9 @@
 class FannieDispatch 
 {
 
+    /**
+      Helper: get output-appropriate newline
+    */
     static private function nl()
     {
         if (php_sapi_name() == 'cli') { 
@@ -33,6 +36,9 @@ class FannieDispatch
         }
     }
     
+    /**
+      Helper: get output-appropriate tab
+    */
     static private function tab()
     {
         if (php_sapi_name() == 'cli') {
@@ -42,19 +48,59 @@ class FannieDispatch
         }
     }
 
+    /**
+      Helper: tabs in html are implemented with <li> tags
+      but the first block of a given indentation level
+      needs a <ul> tag
+    */
+    static private function indent()
+    {
+        if (php_sapi_name() == 'cli') {
+            return "";
+        } else {
+            return "<ul>";
+        }
+    }
+
+    /**
+      Helper: reverse of indent()
+    */
+    static private function outdent()
+    {
+        if (php_sapi_name() == 'cli') {
+            return "";
+        } else {
+            return "</ul>";
+        }
+    }
+
+
+    /**
+      Error handler function. Can register as PHP's error
+      handling function and use Fannie's output format
+    */
     static public function errorHandler($errno, $errstr, $errfile='', $errline=0, $errcontext=array())
     {
         echo $errstr.' Line '.$errline.', '.$errfile.self::nl();
         self::printStack(debug_backtrace());
+
         return true;
     }
 
+    /**
+      Exception handler function. Can register as PHP's exception
+      handling function and use Fannie's output format
+    */
     static public function exceptionHandler($exception)
     {
         echo $exception->getMessage()." Line ".$exception->getLine().", ".$exception->getFile().self::nl();
         self::printStack($exception->getTrace());
     }
     
+    /**
+      Print entire call stack
+      @param $stack [array] current call stack
+    */
     static public function printStack($stack)
     {
         echo "STACK:".self::nl();
@@ -64,6 +110,7 @@ class FannieDispatch
             if (!isset($frame['file'])) $frame['file']='File not given';
             if (!isset($frame['args'])) $frame['args'] =array();
             if (isset($frame['class'])) $frame['function'] = $frame['class'].'::'.$frame['function'];
+            echo self::indent();
             echo "Frame $i".self::nl();
             echo self::tab().$frame['function'].'(';
             $args = '';
@@ -76,9 +123,15 @@ class FannieDispatch
             echo self::tab().'Line '.$frame['line'].', '.$frame['file'].self::nl();
             $i++;
         }
-
+        for ($j=0; $j < ($i-1); $j++) {
+            echo self::outdent();
+        }
     }
 
+    /**
+      Try to print a call stack on fatal errors
+      if the environment / configuration permits
+    */
     static public function catchFatal()
     {
         $error = error_get_last();
@@ -87,14 +140,79 @@ class FannieDispatch
         }
     }
 
+    /**
+      Log page load in usageStats table
+      @return [boolean] success / fail
+    */
+    static public function logUsage()
+    {
+        global $FANNIE_OP_DB;
+
+        if (php_sapi_name() === 'cli') {
+            // don't log cli usage
+            return false;
+        }
+
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        if (!$dbc || !isset($dbc->connections[$FANNIE_OP_DB]) || $dbc->connections[$FANNIE_OP_DB] == false) {
+            // database unavailable
+            return false;
+        }
+
+        $user = FannieAuth::checkLogin();
+        if ($user === false) {
+            $user = 'n/a';
+        }
+
+        $model = new UsageStatsModel($dbc);
+        $model->tdate(date('Y-m-d H:i:s'));
+        $model->pageName(basename($_SERVER['PHP_SELF']));
+        $referrer = isset($_SERVER['HTTP_REFERER']) ? basename($_SERVER['HTTP_REFERER']) : 'n/a';
+        $model->referrer($referrer);
+        $model->userHash(sha1($user));
+        $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'n/a';
+        $model->ipHash(sha1($ip));
+        
+        return $model->save();
+    }
+
+    static public function i18n()
+    {
+        if (function_exists('bindtextdomain')) {
+            setlocale(LC_MESSAGES, "en_US");
+            bindtextdomain('messages', realpath(dirname(__FILE__).'/../locale'));
+            bind_textdomain_codeset('messages', 'UTF-8');
+            textdomain('messages');
+        }
+    }
+
+    /**
+      Render the current page if appropriate
+      The page is only shown if it's accessed
+      directly rather than through an include().
+    */
     static public function go()
     {
         $bt = debug_backtrace();
+        // go() is the only function on the stack
         if (count($bt) == 1) {
+
+            // log PHP errors local to Fannie
+            $elog = realpath(dirname(__FILE__).'/../logs/').'/php-errors.log';
+            ini_set('error_log', $elog);
     
-            set_error_handler(array('FannieDispatch','errorHandler'));
-            set_exception_handler(array('FannieDispatch','exceptionHandler'));
-            register_shutdown_function(array('FannieDispatch','catchFatal'));
+            // use stack traces if desired
+            include(dirname(__FILE__).'/../config.php');
+            if (isset($FANNIE_CUSTOM_ERRORS) && $FANNIE_CUSTOM_ERRORS) {
+                set_error_handler(array('FannieDispatch','errorHandler'));
+                set_exception_handler(array('FannieDispatch','exceptionHandler'));
+                register_shutdown_function(array('FannieDispatch','catchFatal'));
+            }
+
+            // initialize locale & gettext
+            self::i18n();
+            // write URL log
+            self::logUsage();
 
             $page = basename($_SERVER['PHP_SELF']);
             $class = substr($page,0,strlen($page)-4);
@@ -104,7 +222,53 @@ class FannieDispatch
             } else {
                 trigger_error('Missing class '.$class, E_USER_NOTICE);
             }
+        }
+    }
 
+    /**
+      Render the current page if appropriate
+      The page is only shown if it's accessed
+      directly rather than through an include().
+
+      @param $custom_errors @deprecated
+        This behavior is controlled by config variable
+        FANNIE_CUSTOM_ERRORS. The optional parameter
+        remains for th sake of compatibility but does
+        not do anything. It will go away when all calls
+        to this method have been cleaned up.
+    */
+    static public function conditionalExec($custom_errors=true)
+    {
+        $bt = debug_backtrace();
+        // conditionalExec() is the only function on the stack
+        if (count($bt) == 1) {
+
+            // log PHP errors local to Fannie
+            $elog = realpath(dirname(__FILE__).'/../logs/').'/php-errors.log';
+            ini_set('error_log', $elog);
+    
+            // use stack traces if desired
+            include(dirname(__FILE__).'/../config.php');
+            if (isset($FANNIE_CUSTOM_ERRORS) && $FANNIE_CUSTOM_ERRORS) {
+                set_error_handler(array('FannieDispatch','errorHandler'));
+                set_exception_handler(array('FannieDispatch','exceptionHandler'));
+                register_shutdown_function(array('FannieDispatch','catchFatal'));
+            }
+
+            // initialize locale & gettext
+            self::i18n();
+            // write URL log
+            self::logUsage();
+
+            // draw current page
+            $page = basename($_SERVER['PHP_SELF']);
+            $class = substr($page,0,strlen($page)-4);
+            if ($class != 'index' && class_exists($class)) {
+                $obj = new $class();
+                $obj->draw_page();
+            } else {
+                trigger_error('Missing class '.$class, E_USER_NOTICE);
+            }
         }
     }
 }

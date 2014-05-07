@@ -75,12 +75,14 @@ class DefaultReceiptFilter
                 }
 				$returnset[] = $row;
 				$count++;	
-			} else if ($row['trans_status'] == '0' && substr($row['description'],0,7)=="** Tare"){
+			} else if ($row['trans_type'] == '0' && substr($row['description'],0,7)=="** Tare"){
 				// only deal with tare lines
 				$prev = $count-1;
-				if (isset($returnset[$prev]) && strlen($returnset[$prev]['description'])>7
-				   && substr($returnset[$prev],0,7)=="** Tare") {
-					continue; // ignore repeat tares
+				if (isset($returnset[$prev]) && 
+                    strlen($returnset[$prev]['description']) > 7 &&
+				    substr($returnset[$prev]['description'], 0, 7) == '** Tare'
+                   ) { 
+					continue; // ignore repeated tares
 				}
 				$tare = $row;
 				if (isset($returnset[$prev])) {
@@ -88,7 +90,7 @@ class DefaultReceiptFilter
                 }
 				$returnset[] = $tare;
 				$count++;
-			}
+            }
 		}
 
 		$returnset = array_reverse($returnset);

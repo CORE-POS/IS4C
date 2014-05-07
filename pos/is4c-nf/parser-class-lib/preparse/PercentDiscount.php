@@ -21,50 +21,55 @@
 
 *********************************************************************************/
 
-class PercentDiscount extends PreParser {
-	var $remainder;
-	
-	function check($str){
-		global $CORE_LOCAL;
-		if (strstr($str,"DI")){
-			$split = explode("DI",$str);
-			if (is_numeric($split[0])){
-				$this->remainder = $split[1];
-				$CORE_LOCAL->set("itemPD",(int)$split[0]);
-				return True;
-			}
-		}
-		else if (strpos($str,"PD") > 0){
-			$split = explode("PD",$str);	
-			if (is_numeric($split[0]) && strlen($split[1]) > 0){
-				$this->remainder = $split[1];
-				$CORE_LOCAL->set("itemPD",(int)$split[0]);
-				return True;
-			}
-		}
-		return False;
-	}
+class PercentDiscount extends PreParser 
+{
+    private $remainder;
+   
+    function check($str)
+    {
+      global $CORE_LOCAL;
+      if (strstr($str,"DI")) {
+         $split = explode("DI",$str);
+         if (is_numeric($split[0])){
+            $this->remainder = $split[1];
+            $CORE_LOCAL->set("itemPD",(int)$split[0]);
 
-	function parse($str){
-		return $this->remainder;
-	}
+            return true;
+         }
+      } else if (strpos($str,"PD") > 0) {
+         $split = explode("PD",$str);   
+         if (is_numeric($split[0]) && strlen($split[1]) > 0){
+            $this->remainder = $split[1];
+            $CORE_LOCAL->set("itemPD",(int)$split[0]);
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td><i>discount</i>DI<i>item</i></td>
-				<td>Set a percent discount <i>discount</i>
-				for just one item <i>item</i></td>
-			</tr>
-			<tr>
-				<td><i>discount</i>PD<i>item</i></td>
-				<td>Same as DI above</td>
-			</tr>
-			</table>";
-	}
+            return true;
+         }
+      }
+
+      return false;
+   }
+
+   function parse($str)
+   {
+      return $this->remainder;
+   }
+
+   function doc()
+   {
+      return "<table cellspacing=0 cellpadding=3 border=1>
+         <tr>
+            <th>Input</th><th>Result</th>
+         </tr>
+         <tr>
+            <td><i>discount</i>DI<i>item</i></td>
+            <td>Set a percent discount <i>discount</i>
+            for just one item <i>item</i></td>
+         </tr>
+         <tr>
+            <td><i>discount</i>PD<i>item</i></td>
+            <td>Same as DI above</td>
+         </tr>
+         </table>";
+   }
 }
 
-?>

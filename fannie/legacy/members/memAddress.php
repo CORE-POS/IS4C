@@ -44,7 +44,7 @@ function addressList($memNum)
 	$dateW = $sql->fetch_row($dateR);
 
 	//updated to new stock view based on stockpurchases table....CvR 02/27/06
-	$query2 = $sql->prepare("SELECT payments FROM is4c_trans.newBalanceStockToday_test WHERE memnum = ?");
+	$query2 = $sql->prepare("SELECT payments FROM is4c_trans.equity_live_balance WHERE memnum = ?");
 	$stockResult = $sql->execute($query2, array($memNum));
 	$row2 = $sql->fetch_row($stockResult);
 		
@@ -97,6 +97,9 @@ function addressList($memNum)
 				echo "</td>";
                         }
 			echo "<td><a href=\"{$FANNIE_URL}ordering/clearinghouse.php?card_no=$memNum\">Special Orders</a></td>";
+            if (validateUserQuiet('GiveUsMoney')) {
+                echo "<td><a href=\"{$FANNIE_URL}modules/plugins2.0/GiveUsMoneyPlugin/GumMainPage.php?id=".$memNum."\">Owner Loans</a></td>";
+            }
 		echo "</tr>";
 		echo "<tr>";
 			echo "<td bgcolor='FFFF33'>First Name: </td>";
@@ -230,7 +233,7 @@ function addressForm($memNum)
     $row1 = $sql->fetch_row($result1);
 	$memIDQ = "SELECT * FROM memTypeID";
 
-	$query2 = $sql->prepare("SELECT payments FROM is4c_trans.newBalanceStockToday_test WHERE memnum = ?");
+	$query2 = $sql->prepare("SELECT payments FROM is4c_trans.equity_live_balance WHERE memnum = ?");
 	$stockResult = $sql->execute($query2, array($memNum));
     $row2 = $sql->fetch_row($stockResult);
 
@@ -434,6 +437,9 @@ function alterReason($memNum,$reasonCode,$status=False){
 	$username = checkLogin();
 	$uid = getUID($username);
 
+    $model = new CustomerAccountSuspensionsModel($sql);
+    $model->card_no($memNum);
+
 	$upQ = $sql->prepare("UPDATE suspensions SET reasoncode=? WHERE cardno=?");
 	$upR = $sql->execute($upQ, array($reasonCode, $memNum));
 	if ($reasonCode == 0){
@@ -441,7 +447,9 @@ function alterReason($memNum,$reasonCode,$status=False){
 	}
 	else {
 		$now = date("Y-m-d h:i:s");
-		$insQ = $sql->prepare("INSERT INTO suspension_history VALUES (?,?,'',?,?)");
+        $m_status = 0;
+		$insQ = $sql->prepare("INSERT INTO suspension_history (username, postdate, post, cardno, reasoncode) 
+                                VALUES (?,?,'',?,?)");
 		$insR = $sql->execute($insQ, array($username, $now, $memNum, $reasonCode));
 		if ($status){
 			$prep = $sql->prepare("UPDATE custdata SET type=? WHERE cardno=?");
@@ -449,11 +457,56 @@ function alterReason($memNum,$reasonCode,$status=False){
 			if ($status == "TERM") {
                 $custP = $sql->prepare("UPDATE suspensions SET type='T' WHERE cardno=?");
 				$sql->execute($custP, array($memNum));
+                $m_status = 2;
 			} else {
                 $custP = $sql->prepare("UPDATE suspensions SET type='I' WHERE cardno=?");
 				$sql->execute($custP, array($memNum));
+                $m_status = 1;
             }
 		}
+
+        $changed = false;
+        $model->active(1);
+        // find most recent active record
+        $current = $model->find('tdate', true);
+        foreach($current as $obj) {
+            if ($obj->reasonCode() != $reasonCode || $obj->suspensionTypeID() != $m_status) {
+                $changed = true;
+            }
+            $model->savedType($obj->savedType());
+            $model->savedMemType($obj->savedMemType());
+            $model->savedDiscount($obj->savedDiscount());
+            $model->savedChargeLimit($obj->savedChargeLimit());
+            $model->savedMailFlag($obj->savedMailFlag());
+            // copy "saved" values from current active
+            // suspension record. should only be one
+            break;
+        }
+        
+        // only add a record if something changed.
+        // count($current) of zero means there is no
+        // record. once the migration to the new data
+        // structure is complete, that check won't
+        // be necessary
+        if ($changed || count($current) == 0) {
+            $model->reasonCode($reasonCode);
+            $model->tdate($now);
+            $model->username($username);
+            $model->suspensionTypeID($m_status);
+
+            $new_id = $model->save();
+
+            // only most recent should be active
+            $model->reset();
+            $model->card_no($memNum);
+            $model->active(1);
+            foreach($model->find() as $obj) {
+                if ($obj->customerAccountSuspensionID() != $new_id) {
+                    $obj->active(0);
+                    $obj->save();
+                }
+            }
+        }
 	}
 }
 
@@ -464,6 +517,8 @@ function deactivate($memNum,$type,$reason,$reasonCode){
   $uid = getUID($username);
   $auditQ = "insert custUpdate select now(),$uid,1,* from custdata where cardno=$memNum";
   //$auditR = $sql->query($auditQ);
+  $model = new CustomerAccountSuspensionsModel($sql);
+  $model->card_no($memNum);
 	
   if ($type == 'TERM'){
     $query = $sql->prepare("select memType,Type,ChargeLimit,Discount from custdata where CardNo=?");
@@ -479,8 +534,19 @@ function deactivate($memNum,$type,$reason,$reasonCode){
                 discount, chargelimit, reasoncode) values (?,'T',?,?,?,?,?,?,?,?)");
     //echo $query."<br />";
     $result = $sql->execute($query, array($memNum, $row['memType'], $row['Type'], $reason, $now, $mailflag, $row['Discount'], $row['ChargeLimit'], $reasonCode));
+
+    $model->savedType($row['Type']);
+    $model->savedMemType($row['memType']);
+    $model->savedDiscount($row['Discount']);
+    $model->savedChargeLimit($row['ChargeLimit']);
+    $model->savedMailFlag($mailflag);
+
+    $model->reasonCode($reason);
+    $model->tdate($now);
+    $model->suspensionTypeID(2);
     
     $username = validateUserQuiet('editmembers');
+    $model->username($username);
     
     $query = $sql->prepare("insert into suspension_history (username, postdate, post, cardno, reasoncode) 
                 values (?, ?, ?, ?, ?)");
@@ -506,22 +572,50 @@ function deactivate($memNum,$type,$reason,$reasonCode){
     //echo $query."<br />";
     $result = $sql->execute($query, array($memNum, $row['memType'], $row['Type'], $reason, $now, $mailflag, $row['Discount'], $row['ChargeLimit'], $reasonCode));
 
+    $model->savedType($row['Type']);
+    $model->savedMemType($row['memType']);
+    $model->savedDiscount($row['Discount']);
+    $model->savedChargeLimit($row['ChargeLimit']);
+    $model->savedMailFlag($mailflag);
+
+    $model->reasonCode($reason);
+    $model->tdate($now);
+    $model->suspensionTypeID(1);
+
     $username = validateUserQuiet('editmembers');
+    $model->username($username);
 
     $query = $sql->prepare("insert into suspension_history (username, postdate, post, cardno, reasoncode) 
                 values (?, ?, ?, ?, ?)");
     $result = $sql->execute($query, array($username, $now, $reason, $memNum, $reasonCode));
 
     $mQ = $sql->prepare("update meminfo set ads_OK=0 where card_no = ?");
-    $cQ = $sql->prepare("update custdata set memType=0, Type='TERM',ChargeOk=0,Discount=0,MemDiscountLimit=0,ChargeLimit=0 
+    $cQ = $sql->prepare("update custdata set memType=0, Type=?,ChargeOk=0,Discount=0,MemDiscountLimit=0,ChargeLimit=0 
             where CardNo=?");
     $mR = $sql->execute($mQ, array($memNum));
-    $cR = $sql->execute($cQ, array($memNum));
+    $cR = $sql->execute($cQ, array($type, $memNum));
+  }
+
+  $model->active(1);
+  $new_id = $model->save();
+
+  // only most recent should be active
+  $model->reset();
+  $model->card_no($memNum);
+  $model->active(1);
+  foreach($model->find() as $obj) {
+    if ($obj->customerAccountSuspensionID() != $new_id) {
+        $obj->active(0);
+        $obj->save();
+    }
   }
 }
 
 function activate($memNum){
 	global $sql;
+
+  $model = new CustomerAccountSuspensionsModel($sql);
+  $model->card_no($memNum);
 
   $username = checkLogin();
   $uid = getUID($username);
@@ -552,6 +646,24 @@ function activate($memNum){
   $query = $sql->prepare("insert into suspension_history (username, postdate, post, cardno, reasoncode)
             values (?,?,'Account reactivated',?,-1)");
   $result = $sql->execute($query, array($username, $now, $memNum));
+
+  // add record to denote account was activated
+  // this record is not considered "active" because
+  // the account is not suspended
+  $model->reasonCode(0);
+  $model->suspensionTypeID(0);
+  $model->username($username);
+  $model->tdate($now);
+  $model->active(0);
+  $model->save();
+
+  $model->reset();
+  $model->card_no($memNum);
+  $model->active(1);
+  foreach($model->find() as $obj) {
+    $obj->active(0);
+    $obj->save();
+  }
 }
 
 function addressFormLimited($memNum)

@@ -48,7 +48,7 @@ if (!isset($_GET['excel']))
 $balanceQ = "SELECT s.memnum,s.payments,s.enddate,b.balance,
 		c.lastname,c.firstname,m.street,
 		m.city,m.state,m.zip
-		FROM newBalanceStockToday_test as s left join
+		FROM equity_live_balance as s left join
 		custdata as c on s.memnum=c.cardno left join
 		ar_live_balance as b on s.memnum=b.card_no
 		left join meminfo as m on s.memnum=m.card_no

@@ -39,6 +39,7 @@ class SuperDeptEditor extends FanniePage {
 	}
 
 	function ajax_response($action){
+        global $FANNIE_OP_DB;
 		switch($action){
 		case 'deptsInSuper':
 			$depts = $this->depts_in_super(FormLib::get_form_value('sid',0));
@@ -50,11 +51,27 @@ class SuperDeptEditor extends FanniePage {
 			foreach($depts as $id=>$v)
 				printf('<option value="%d">%d %s</option>',$id,$id,$v);
 			break;
+        case 'superDeptEmail':
+            $id = FormLib::get_form_value('sid', 0);
+            if ($id == -1) {
+                echo '';
+            } else {
+                $model = new SuperDeptEmailsModel(FannieDB::get($FANNIE_OP_DB));
+                $model->superID($id);
+                $model->load();
+                echo $model->email_address();
+            }
+            break;
 		case 'save':
 			$id = FormLib::get_form_value('sid',0);	
 			$name = FormLib::get_form_value('name','');
+			$email = FormLib::get_form_value('email','');
 			$depts = FormLib::get_form_value('depts',array());
 			$this->save_super_dept($id,$name,$depts);
+            $model = new SuperDeptEmailsModel(FannieDB::get($FANNIE_OP_DB));
+            $model->superID($id);
+            $model->email_address($email);
+            $model->save();
 			break;
 		default:
 			echo 'Bad request';
@@ -147,6 +164,14 @@ class SuperDeptEditor extends FanniePage {
 		}
 		if (empty($opts)) $opts .= "<option></option>";
 
+        $firstEmail = '';
+        if ($firstID !== false) {
+            $model = new SuperDeptEmailsModel($dbc);
+            $model->superID($firstID);
+            $model->load();
+            $firstEmail = $model->email_address();
+        }
+
 		ob_start();
 		?>
 		<div id="superdeptdiv">
@@ -156,6 +181,8 @@ class SuperDeptEditor extends FanniePage {
 		</select><p />
 		<span id="namespan" style="display:none;">Name: 
 		<input type="text" id="newname" value="<?php echo $firstName; ?>" /></span>
+		<span id="emailspan" style="display:<?php echo ($firstEmail === '') ? 'none' : 'block' ?>;">Email address(es): 
+		<input type="text" id="sd_email" value="<?php echo $firstEmail; ?>" /></span>
 		</div>
 		<hr />
 		<div id="#deptdiv" style="display:block;">
@@ -193,8 +220,6 @@ class SuperDeptEditor extends FanniePage {
 	}
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new SuperDeptEditor();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+
 ?>

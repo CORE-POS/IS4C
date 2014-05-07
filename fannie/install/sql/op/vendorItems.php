@@ -10,6 +10,7 @@ Columns:
 	size varchar
 	units int
 	cost dbms currency
+	saleCost dbms currency
 	vendorDept int
 	vendorID int
 
@@ -28,7 +29,8 @@ Units relates to a case. So a case of beer has 24
 units, each with a size of 12 oz.
 
 Cost represents the unit cost. Cost times units 
-should then equal the case cost.
+should then equal the case cost. Sale Cost is
+for storing temporary special prices.
 
 upc corresponds to products.upc. Multiple vendorItems
 records may map to one products record if an item
@@ -50,6 +52,7 @@ $CREATE['op.vendorItems'] = "
 		size varchar(25),
 		units int,
 		cost decimal(10,2),
+		saleCost decimal(10,2),
 		vendorDept int,
 		vendorID int,
 		PRIMARY KEY (vendorID,sku),
@@ -69,6 +72,7 @@ if ($dbms == 'mssql'){
 			size varchar(25),
 			units int,
 			cost money,
+			saleCost money,
 			vendorDept int,
 			vendorID int
 		)

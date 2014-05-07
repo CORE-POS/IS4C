@@ -42,10 +42,13 @@ class CashDropParser extends Parser {
 		global $CORE_LOCAL;
 		$ret = $this->default_json();
 		if (substr($str,0,8) == 'DROPDROP'){
-			// go to warning page. save input.
-			$CORE_LOCAL->set('cashDropSaveInput',substr($str,8));
-			$plugin_info = new CashDrop();
-			$ret['main_frame'] = $plugin_info->plugin_url().'/CashDropWarningPage.php';
+            // repeat cashier's input, if any
+            if (strlen($str) > 8) {
+                $json['retry'] = substr($str, 8);
+            }
+            // redraw right side of the screen
+            $json['scale'] = true; 
+
 			return $ret;
 		}
 		else {

@@ -54,6 +54,7 @@
  --functionality } - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
  #'Z --COMMENTZ { - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ * 28Oct13 EL Change $is4cMax from 99989 to 99900 to allow more special cases.
  * 20Jun13 EL Finish report the new member number obtained from CiviCRM.
  *            +>2add +>1add, +>3add
  * 23May13 EL Include table memberNotes in adjustIS4C().
@@ -91,8 +92,7 @@ function selectIS4C ($member_id) {
 		 Re the join:
 			There must be: custdata
 			There will always be: meminfo (unless no email), memDates, memContact
-			There might be one or more: _address and/or _phone and/or _contribution
-			There will always be: _log
+			There might be one or more: memberCards
 	*/
 
 	$selectMember = "SELECT $distinct
@@ -2193,6 +2193,8 @@ function fixCity($str = "") {
   + Double apostrophes
 */
 function fixName($str = "") {
+	if ( $str == 'NULL' )
+		$str = '';
 	if ( preg_match("/[A-Z]{3}/", $str) ) {
 		$str = strtolower($str);
 		// First letter after hyphen
@@ -2872,7 +2874,11 @@ fwrite($reporter, "STARTED: $dbNow\n");
 //     False in development, False to disable getting actual data and use local source instead.
 if ( TRUE ) {
 
-// CiviCRM members with date modified.
+/* CiviCRM members with date modified.
+ * There is a record for each modified_date; 2nd+ are ignored in the loop.
+ * Need to expand mofified date to also check _membership_log
+ *  and use the most recent for the test.
+*/
 $c_selectMembers = "SELECT DISTINCT
 c.id as contact_id
 ,c.first_name
@@ -2939,10 +2945,11 @@ while ( $c_row = $dbConn->fetch_row($c_members) ) {
 // Get all the the members from IS4C, except placeholder "NEW MEMBER"s
 //  and the Dummy 99990-99998 and Non-Member 99999.
 $is4cMin = 470;
-$is4cMax = 99989; // 99989
+$is4cMax = 99900; // 99989
 $i_selectMembers ="SELECT CardNo, LastChange
 FROM custdata
-WHERE CardNo between $is4cMin AND $is4cMax AND LastName != 'NEW MEMBER'
+WHERE CardNo between $is4cMin AND $is4cMax
+ AND (LastName IS NULL OR LastName != 'NEW MEMBER')
  AND NumberOfChecks != 9";
 $i_members = $dbConn2->query("$i_selectMembers");
 if ( $dbConn2->errno ) {

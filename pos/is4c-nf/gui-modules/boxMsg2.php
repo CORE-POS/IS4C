@@ -59,6 +59,7 @@ class boxMsg2 extends BasicPage {
 		}
 		</script>
 		<?php
+        $this->noscan_parsewrapper_js();
 	}
 
 	function preprocess(){
@@ -75,7 +76,7 @@ class boxMsg2 extends BasicPage {
 		}
 		return True;
 	}
-	
+
 	function body_content(){
 		global $CORE_LOCAL;
 		$this->input_header("onsubmit=\"return submitWrapper();\"");

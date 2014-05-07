@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 include('../config.php');
-include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class BatchIndexPage extends FanniePage {
 	protected $title = 'Fannie - Batch Module';
@@ -50,8 +50,6 @@ class BatchIndexPage extends FanniePage {
 	}
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new BatchIndexPage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+
 ?>

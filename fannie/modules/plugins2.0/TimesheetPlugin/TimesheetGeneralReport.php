@@ -2,12 +2,12 @@
 require_once(dirname(__FILE__).'/../../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-$ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
-
 class TimesheetGeneralReport extends FannieReportPage {
 
 	function body_content(){
-		global $ts_db, $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
+		global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
+        $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
+
 		ob_start();
 
 		echo "<form action='report.php' method=GET>";
@@ -80,9 +80,6 @@ class TimesheetGeneralReport extends FannieReportPage {
 	}
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new TimesheetGeneralReport();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
 
 ?>

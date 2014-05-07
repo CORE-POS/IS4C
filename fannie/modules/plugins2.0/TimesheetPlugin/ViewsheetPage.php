@@ -2,8 +2,6 @@
 require_once(dirname(__FILE__).'/../../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-$ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
-
 class ViewsheetPage extends FanniePage {
 
 	protected $auth_classes = array('timesheet_access');
@@ -12,7 +10,8 @@ class ViewsheetPage extends FanniePage {
 	private $display_func;
 
 	function preprocess(){
-		global $ts_db, $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
+		global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
+        $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
 
 		if (!$this->current_user && $_GET['login'] == 1 ){
 			$this->loginRedirect();
@@ -112,7 +111,8 @@ class ViewsheetPage extends FanniePage {
 	}
 
 	function show_sheet($emp_no, $periodID){
-		global $ts_db, $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
+		global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
+        $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
 		include ('./includes/header.html');
 
 		$ft = 40;
@@ -263,7 +263,8 @@ class ViewsheetPage extends FanniePage {
 	}
 
 	function body_content(){
-		global $ts_db, $FANNIE_OP_DB, $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
+		global $FANNIE_OP_DB, $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
+        $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
 		include ('./includes/header.html');
 
 		if ($this->display_func == 'ts_error')
@@ -322,9 +323,6 @@ class ViewsheetPage extends FanniePage {
 	}
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new ViewsheetPage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
 
 ?>

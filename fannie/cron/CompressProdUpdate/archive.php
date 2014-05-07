@@ -46,7 +46,17 @@ ini_set('memory_limit','256M');
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
-$worked = $sql->query("INSERT INTO prodUpdateArchive SELECT * FROM prodUpdate");
+$matching = $sql->matchingColumns('prodUpdate', 'prodUpdateArchive');
+$col_list = '';
+foreach($matching as $column) {
+    if ($column == 'prodUpdateID') {
+        continue;
+    }
+    $col_list .= $column . ',';
+}
+$col_list = substr($col_list, 0, strlen($col_list)-1);
+
+$worked = $sql->query("INSERT INTO prodUpdateArchive ($col_list) SELECT $col_list FROM prodUpdate");
 if ($worked){
 	$sql->query("TRUNCATE TABLE prodUpdate");
 }

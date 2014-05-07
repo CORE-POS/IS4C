@@ -12,7 +12,7 @@ Columns:
 	tare float
 	shelflife int
 	text text
-	class varchar
+	reportingClass varchar
 	label int
 	graphics int
 
@@ -35,7 +35,7 @@ $CREATE['op.scaleItems'] = "
 		tare float,
 		shelflife int,
 		text text,
-		class varchar(6),
+		reportingClass varchar(6),
 		label int,
 		graphics int,
 		PRIMARY KEY (plu)

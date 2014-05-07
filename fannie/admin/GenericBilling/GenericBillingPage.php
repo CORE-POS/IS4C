@@ -204,6 +204,6 @@ function postBilling(){
 	}
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

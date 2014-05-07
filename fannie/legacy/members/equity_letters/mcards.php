@@ -23,7 +23,7 @@ $selAddQ = $sql->prepare("SELECT m.card_no,c.firstname,c.lastname,
 		convert(varchar,d.end_date,101),n.payments
 		FROM meminfo AS m LEFT JOIN
 		custdata AS c ON m.card_no=c.cardno
-		LEFT JOIN newBalanceStockToday_test as n
+		LEFT JOIN equity_live_balance as n
 		on m.card_no=n.memnum LEFT JOIN
 		memDates AS d ON m.card_no=d.card_no
 		WHERE cardno IN $cards

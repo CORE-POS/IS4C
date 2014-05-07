@@ -21,32 +21,21 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class HourlyCustomersReport extends FannieReportPage 
 {
+    public $description = '[Hourly Customers] lists number of customers per hour for a given day.';
 
     protected $header = "Customers per Hour";
     protected $title = "Fannie : Customers per Hour";
 
     protected $content_function = 'both_content';
     protected $report_headers = array('Hour', 'Transactions');
-
-	public function preprocess()
-    {
-        if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-            $this->report_format = 'xls';
-            $this->has_menus(False);
-        } elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-            $this->report_format = 'csv';
-            $this->has_menus(False);
-		} else  {
-			$this->add_script("../../src/CalendarControl.js");
-        }
-
-		return true;
-	}
+    protected $required_fields = array('date');
 
     public function form_content()
     {
@@ -101,6 +90,6 @@ Get transactions per hour for what date (YYYY-MM-DD)?<br />
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

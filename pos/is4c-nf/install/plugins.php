@@ -69,7 +69,7 @@ foreach($mods as $m){
 		value="%s" /><label onclick="" for="plugin_%s">%s</label>',
 		$m, ($enabled?'checked':''),$m, $m, $m);
 	echo "\n".'<span class="toggle-button"></span></fieldset>'."\n";
-	printf('<span class="noteTxt">%s</span>',$instance->plugin_description);
+	printf('<span class="noteTxt" style="width:200px;">%s</span>',$instance->plugin_description);
 	echo '</td></tr>'."\n";
 
 	if ($enabled && empty($instance->plugin_settings)){
@@ -98,7 +98,7 @@ foreach($mods as $m){
 					$form_id,$CORE_LOCAL->get($field));
 			}
 			if (isset($info['description'])) 
-				echo '<span class="noteTxt">'.$info['description'].'</span>';
+				echo '<span class="noteTxt" style="width:200px;">'.$info['description'].'</span>';
 			InstallUtilities::paramSave($field,$CORE_LOCAL->get($field));
 		echo '</td></tr>';
 		}

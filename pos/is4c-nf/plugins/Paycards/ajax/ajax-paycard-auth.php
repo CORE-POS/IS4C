@@ -52,8 +52,15 @@ if ($result === PaycardLib::PAYCARD_ERR_OK){
 	$CORE_LOCAL->set("msgrepeat",0);
 	if (is_object($st))
 		$st->WriteToScale($CORE_LOCAL->get("ccTermOut"));
-}
-else {
+} else if ($result === PaycardLib::PAYCARD_ERR_NSF_RETRY) {
+    // card shows balance < requested amount
+    // try again with lesser amount
+    $json['main_frame'] = $plugin_info->plugin_url().'/gui/paycardboxMsgAuth.php';
+} else if ($result === PaycardLib::PAYCARD_ERR_TRY_VERIFY) {
+    // communication error. query processor about
+    // transaction status.
+    $json['main_frame'] = $plugin_info->plugin_url().'/gui/PaycardTransLookupPage.php?mode=verify&id=_l'.$myObj->last_ref_num;
+} else {
 	PaycardLib::paycard_reset();
 	$CORE_LOCAL->set("msgrepeat",0);
 	$json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';

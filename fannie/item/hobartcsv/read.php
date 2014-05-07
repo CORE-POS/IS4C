@@ -56,7 +56,7 @@ while($line = fgets($fp)){
 	$checkQ = $sql->prepare_statement("select plu from scaleItems where plu=?");
 	$checkR = $sql->exec_statement($checkQ,array($temp));
 	if ($sql->num_rows($checkR) == 0){
-	  $addQ = $sql->prepare_statement("insert into scaleItems (plu,exceptionprice,class) values (?,0,NULL)");
+	  $addQ = $sql->prepare_statement("insert into scaleItems (plu,exceptionprice,reportingClass) values (?,0,NULL)");
 	  $addR = $sql->exec_statement($addQ,array($temp));
 	}
     }

@@ -21,34 +21,26 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class EquityAllReport extends FannieReportPage 
 {
+    public $description = '[Equity Balances] lists current or near-current equity totals for all members';
+    public $report_set = 'Membership';
 
     protected $report_headers = array('Mem #', 'Last Name', 'First Name', 'Equity', 'Due Date');
+    protected $title = "Fannie : All Equity Report";
+    protected $header = "All Equity Report";
+    protected $required_fields = array('submit');
 
-	public function preprocess()
+    public function readinessCheck()
     {
-		$this->report_cache = 'none';
-		$this->title = "Fannie : All Equity Report";
-		$this->header = "All Equity Report";
-
-		if (isset($_REQUEST['submit'])){
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-		
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-				$this->report_format = 'xls';
-			} elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-				$this->report_format = 'csv';
-            }
-		}
-
-		return true;
-	}
-
+        global $FANNIE_TRANS_DB;
+        return $this->tableExistsReadinessCheck($FANNIE_TRANS_DB, 'equity_live_balance');
+    }
 
     public function fetch_report_data()
     {
@@ -66,18 +58,21 @@ class EquityAllReport extends FannieReportPage
         if (FormLib::get('owed',1) == 2) {
             $equity_restrict = "(n.payments > 0 AND n.payments < 100)";
         }
-
-        $q = "SELECT n.memnum,c.LastName,c.FirstName,n.payments,m.end_date
-            FROM custdata AS c LEFT JOIN "
-            .$FANNIE_TRANS_DB.$dbc->sep()."equity_live_balance as n ON
-            n.memnum=c.CardNo AND c.personNum=1
-            LEFT JOIN memDates as m ON n.memnum=m.card_no
-            WHERE $type_restrict AND $equity_restrict
-            ORDER BY n.memnum";
-
-        if (!$dbc->table_exists($FANNIE_TRANS_DB.$dbc->sep().'equity_live_balance')) {
-            $q = str_replace('equity_live_balance', 'newBalanceStockToday_test', $q);
+        $table = 'equity_history_sum';
+        $num = 'n.card_no';
+        if (FormLib::get('grain', 1) == 2) {
+            $table = 'equity_live_balance';
+            $num = 'n.memnum';
         }
+
+        $q = "SELECT $num as memnum,c.LastName,c.FirstName,n.payments,m.end_date
+            FROM custdata AS c LEFT JOIN "
+            . $FANNIE_TRANS_DB . $dbc->sep() . $table . " as n ON
+            $num=c.CardNo AND c.personNum=1
+            LEFT JOIN memDates as m ON $num=m.card_no
+            WHERE $type_restrict AND $equity_restrict
+            ORDER BY $num";
+
         $p = $dbc->prepare_statement($q);
 
         $r = $dbc->exec_statement($p);
@@ -106,15 +101,21 @@ class EquityAllReport extends FannieReportPage
 <form action="EquityAllReport.php" method="get">
 <b>Active status</b>:
 <select name="memtypes">
-	<option value=1>Active Owners</option>
-	<option value=2>Non-termed Owners</option>
-	<option value=3>All Owners</option>
+	<option value=1><?php echo _('Active Owners'); ?></option>
+	<option value=2><?php echo _('Non-termed Owners'); ?></option>
+	<option value=3><?php echo _('All Owners'); ?></option>
 </select>
 <br /><br />
 <b>Equity balance</b>:
 <select name="owed">
 	<option value=1>Any balance</option>
 	<option value=2>less than $100</option>
+</select>
+<br /><br />
+<b>As of</b>:
+<select name="grain">
+    <option value=1>Yesterday</option>
+    <option value=2>Right this Second (slower)</option>
 </select>
 <br /><br />
 <input type="submit" name="submit" value="Get Report" />
@@ -126,6 +127,6 @@ class EquityAllReport extends FannieReportPage
 
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

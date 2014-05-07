@@ -28,11 +28,14 @@
 
 */
 
-require('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class RecentSalesReport extends FannieReportPage
 {
+    public $description = '[Recent Sales] lists sales for an item in recent days/weeks/months.';
 
     protected $header = 'Recent Sales';
     protected $title = 'Fannie : Recent Sales';
@@ -46,26 +49,38 @@ class RecentSalesReport extends FannieReportPage
     private $lc;
 
     public function preprocess() {
+        // custom: one of the fields is required but not both
         $this->upc = BarcodeLib::padUPC(FormLib::get('upc'));
         $this->lc = FormLib::get('likecode');
         if ($this->upc != '0000000000000' || $this->lc !== '') {
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-
             if ($this->lc !== '') {
                 $this->report_headers[0] = 'Like Code #'.$this->lc;
+                $this->required_fields = array('likecode');
             } else {
                 $this->report_headers[0] = $this->upc;
+                $this->required_fields = array('upc');
             }
-		
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-				$this->report_format = 'xls';
-			} elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-				$this->report_format = 'csv';
-            }
+
+            parent::preprocess();
         }
 
         return true;
+    }
+
+    public function report_description_content()
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $prod = new ProductsModel($dbc);
+        $prod->upc(BarcodeLib::padUPC(FormLib::get('upc')));
+        $prod->load();
+        $ret = array('Recent Sales For ' . $prod->upc() . ' ' . $prod->description());
+        if ($this->report_format == 'html') {
+            $ret[] = sprintf('<a href="../ItemLastQuarter/ItemLastQuarterReport.php?upc=%s">Weekly Sales Details</a>', $prod->upc());
+            $ret[] = sprintf('<a href="../ItemOrderHistory/ItemOrderHistoryReport.php?upc=%s">Recent Order History</a>', $prod->upc());
+        }
+
+        return $ret;
     }
 
     public function fetch_report_data()
@@ -135,6 +150,6 @@ class RecentSalesReport extends FannieReportPage
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

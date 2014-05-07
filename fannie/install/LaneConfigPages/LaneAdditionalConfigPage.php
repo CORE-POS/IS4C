@@ -579,8 +579,6 @@ confsave('SigCapture',"'".$CORE_LOCAL->get('SigCapture')."'");
 // LaneAdditionalConfigurationPage  
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
-	$obj = new LaneAdditionalConfigPage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+
 ?>

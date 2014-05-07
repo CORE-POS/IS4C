@@ -156,6 +156,6 @@ function deletecoupon(upc){
 	}
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

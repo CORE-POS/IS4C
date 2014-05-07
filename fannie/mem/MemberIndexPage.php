@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 include('../config.php');
-include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class MemberIndexPage extends FanniePage {
 
@@ -36,14 +36,14 @@ class MemberIndexPage extends FanniePage {
 		<li><a href="MemberTypeEditor.php">Manage Member Types</a></li>
 		<li><a href="NewMemberTool.php">Create New Members</a></li>
 		<li><a href="numbers/index.php">Print Member Stickers</a></li>
+		<li><a href="MemCorrectionIndex.php ">Equity, AR, &amp; Patronage Corrections</a></li>
 		<li><a href="import/">Import Data</a></li>
 		</ul>
 		<?php
 		return ob_get_clean();
 	}
 }
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new MemberIndexPage();
-	$obj->draw_page();
-}
+
+FannieDispatch::conditionalExec(false);
+
 ?>

@@ -21,31 +21,21 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class TenderInOutReport extends FannieReportPage
 {
+    public $description = '[Tender Usages] lists each transaction for a given tender in a given date range.';
+    public $report_set = 'Tenders';
+
     protected $title = "Fannie : Tender Usage";
     protected $header = "Tender Usage Report";
 
     protected $report_headers = array('Date', 'Receipt#', 'Employee', 'Register', 'Amount');
-
-	public function preprocess()
-    {
-        if (FormLib::get('date1') !== '') {
-            $this->has_menus(False);
-            $this->content_function = 'report_content';
-
-            if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-                $this->report_format = 'xls';
-            } elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-                $this->report_format = 'csv';
-            }
-        }
-
-        return true;
-    }
+    protected $required_fields = array('date1', 'date2');
 
     public function report_description_content()
     {
@@ -165,6 +155,6 @@ class TenderInOutReport extends FannieReportPage
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

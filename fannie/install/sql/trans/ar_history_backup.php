@@ -4,8 +4,8 @@ Table: ar_history_backup
 
 Columns:
 	card_no int
-	Charges dbms currency
-	Payments dbms currency
+	charges dbms currency
+	payments dbms currency
 	tdate datetime
 	trans_num varchar
 
@@ -34,8 +34,8 @@ cron/nightly.ar.php, after updating ar_history,
 $CREATE['trans.ar_history_backup'] = "
 	CREATE TABLE ar_history_backup (
 		card_no int,
-		Charges decimal(10,2),
-		Payments decimal(10,2),
+		charges decimal(10,2),
+		payments decimal(10,2),
 		tdate datetime,
 		trans_num varchar(90)
 	)

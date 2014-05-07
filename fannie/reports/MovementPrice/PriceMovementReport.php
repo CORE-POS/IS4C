@@ -21,8 +21,10 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class PriceMovementReport extends FannieReportPage 
 {
@@ -31,26 +33,10 @@ class PriceMovementReport extends FannieReportPage
     protected $header = "Price Movement Report";
 
     protected $report_headers = array('UPC', 'Desc', 'Dept#', 'Dept', 'Price', 'Qty', 'Sales');
+    protected $required_fields = array('date1', 'date2');
 
-	public function preprocess()
-    {
-		$this->report_cache = 'none';
-
-		if (isset($_REQUEST['date1'])){
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-		
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-				$this->report_format = 'xls';
-			} elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-				$this->report_format = 'csv';
-            }
-		}
-		else 
-			$this->add_script("../../src/CalendarControl.js");
-
-		return true;
-	}
+    public $description = '[Movement by Price] lists item sales with a separate line for each price point. If an item was sold at more than one price in the given date range, sales from each price are listed separately.';
+    public $report_set = 'Movement Reports';
 
     public function report_description_content()
     {
@@ -262,6 +248,6 @@ function swap(src,dst){
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

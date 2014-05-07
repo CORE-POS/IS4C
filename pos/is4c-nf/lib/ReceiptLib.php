@@ -44,15 +44,83 @@ static public function writeLine($text) {
 	global $CORE_LOCAL;
 
 	if ($CORE_LOCAL->get("print") != 0) {
-		/* check fails on LTP1: in PHP4
-		   suppress open errors and check result
-		   instead 
-		*/
-		//if (is_writable($CORE_LOCAL->get("printerPort"))){
-		$fp = fopen($CORE_LOCAL->get("printerPort"), "w");
-		fwrite($fp, $text);
-		fclose($fp);
+
+        $printer_port = $CORE_LOCAL->get('printerPort');
+        if (substr($printer_port, 0, 6) == "tcp://") {
+            self::printToServer(substr($printer_port, 6), $text);
+        } else {
+            /* check fails on LTP1: in PHP4
+               suppress open errors and check result
+               instead 
+            */
+            //if (is_writable($CORE_LOCAL->get("printerPort"))){
+            $fp = fopen($CORE_LOCAL->get("printerPort"), "w");
+            fwrite($fp, $text);
+            fclose($fp);
+        }
 	}
+}
+
+/**
+  Write text to server via TCP socket
+  @param $print_server [string] host or host:port
+  @param $text [string] text to print
+  @return
+   - [int]  1 => success
+   - [int]  0 => problem sending text
+   - [int] -1 => sent but no response. printer might be stuck/blocked
+*/
+static public function printToServer($printer_server, $text)
+{
+    $port = 9450;
+    if (strstr($printer_server, ':')) {
+        list($printer_server, $port) = explode(':', $printer_server, 2);
+    }
+    if (!function_exists('socket_create')) {
+        return 0;
+    }
+
+    $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+    if ($socket === false) {
+        return 0;
+    }
+
+    socket_set_block($socket);
+    socket_set_option($socket, SOL_SOCKET, SO_SNDTIMEO, array('sec' => 1, 'usec' => 0)); 
+    socket_set_option($socket, SOL_SOCKET, SO_RCVTIMEO, array('sec' => 2, 'usec' => 0)); 
+    if (!socket_connect($socket, $printer_server, $port)) {
+        return false;
+    }
+
+    $send_failed = false;
+    while(true) {
+        $num_written = socket_write($socket, $text);
+        if ($num_written === false) {
+            // error occurred
+            $send_failed = true;
+            break; 
+        }
+
+        if ($num_written >= strlen($text)) {
+            // whole message has been sent
+            // send ETX to signal message complete
+            socket_write($socket, chr(0x3));
+            break;
+        } else {
+            $text = substr($text, $num_written);
+        }
+    }
+
+    $ack = socket_read($socket, 3);
+    socket_close($socket);
+
+    if ($send_failed) {
+        return 0;
+    } else if ($ack === false) {
+        return -1;
+    } else {
+        return 1;
+    }
 }
 // --------------------------------------------------------------
 static public function center_check($text) {
@@ -85,6 +153,16 @@ static public function center($text, $linewidth) {
 
 // -------------------------------------------------------------
 static public function drawerKick() {
+    // do not open drawer on non-local requests
+    // this may not work on all web servers or 
+    // network configurations
+    /**
+      30Apr14 - Does not work correctly
+      Needs more investigation. IPv6 maybe?
+    if (isset($_SERVER) && isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] != '127.0.0.1') {
+        return;
+    }
+    */
 	$pin = self::currentDrawer();
 	if ($pin == 1)
 		self::writeLine(chr(27).chr(112).chr(0).chr(48)."0");
@@ -209,23 +287,41 @@ static public function promoMsg() {
 }
 
 // Charge Footer split into two functions by apbw 2/1/05
-
-static public function printChargeFooterCust($dateTimeStamp, $ref) {	// apbw 2/14/05 SCR
+//#'C - is this never called?
+static public function printChargeFooterCust($dateTimeStamp, $ref, $program="charge") {	// apbw 2/14/05 SCR
 	global $CORE_LOCAL;
 
 	$chgName = self::getChgName();			// added by apbw 2/14/05 SCR
 
 	$date = self::build_time($dateTimeStamp);
 
+	/* Where should the label values come from, be entered?
+
+       24Apr14 Andy
+       Implementing these as ReceiptMessage subclasses might work
+       better. Plugins could provide their own ReceiptMessage subclass
+       with the proper labels (or config settings for the labels)
+	*/
+	$labels = array();
+	$labels['charge'] = array("CUSTOMER CHARGE ACCOUNT\n", "Charge Amount:");
+	$labels['coopcred'] = array("COOP CRED ACCOUNT\n", "Credit Amount:");
+	$labels['debit'] = array("CUSTOMER DEBIT ACCOUNT\n", "Debit Amount:");
+	/* Could append labels from other modules
+	foreach (plugin as $CORE_LOCAL->get('plugins'))
+		if isset($CORE_LOCAL Plugins[$plugin]['printChargeFooterCustLabels']
+		if isset($plugin['printChargeFooterCustLabels']
+			$labels[]=$plugin['printChargeFooterCustLabels']
+	*/
+
 	$receipt = chr(27).chr(33).chr(5)."\n\n\n".self::centerString("C U S T O M E R   C O P Y")."\n"
 		   .self::centerString("................................................")."\n"
 		   .self::centerString($CORE_LOCAL->get("chargeSlip1"))."\n\n"
-		   ."CUSTOMER CHARGE ACCOUNT\n"
+		   . $labels["$program"][0]
 		   ."Name: ".trim($chgName)."\n"		// changed by apbw 2/14/05 SCR
 		   ."Member Number: ".trim($CORE_LOCAL->get("memberID"))."\n"
 		   ."Date: ".$date."\n"
 		   ."REFERENCE #: ".$ref."\n"
-		   ."Charge Amount: $".number_format(-1 * $CORE_LOCAL->get("chargeTotal"), 2)."\n"
+		   . $labels["$program"][1] . " $".number_format(-1 * $CORE_LOCAL->get("chargeTotal"), 2)."\n"
 		   .self::centerString("................................................")."\n"
 		   ."\n\n\n\n\n\n\n"
 		   .chr(27).chr(105);
@@ -235,8 +331,8 @@ static public function printChargeFooterCust($dateTimeStamp, $ref) {	// apbw 2/1
 }
 
 // Charge Footer split into two functions by apbw 2/1/05
-
-static public function printChargeFooterStore($dateTimeStamp, $ref) {	// apbw 2/14/05 SCR
+//#'S
+static public function printChargeFooterStore($dateTimeStamp, $ref, $program="charge") {	// apbw 2/14/05 SCR
 	global $CORE_LOCAL;
 
 	
@@ -244,26 +340,57 @@ static public function printChargeFooterStore($dateTimeStamp, $ref) {	// apbw 2/
 	
 	$date = self::build_time($dateTimeStamp);
 
+	/* Where should the label values come from, be entered?
+
+       24Apr14 Andy
+       Implementing these as ReceiptMessage subclasses might work
+       better. Plugins could provide their own ReceiptMessage subclass
+       with the proper labels (or config settings for the labels)
+	*/
+	$labels = array();
+	$labels['charge'] = array("CUSTOMER CHARGE ACCOUNT\n"
+			, "Charge Amount:"
+			, "I AGREE TO PAY THE ABOVE AMOUNT\n"
+			, "TO MY CHARGE ACCOUNT\n"
+	);
+	$labels['coopcred'] = array("COOP CRED ACCOUNT\n"
+			, "Debit Amount:"
+			, "I ACKNOWLEDGE THE ABOVE DEBIT\n"
+			, "TO MY COOP CRED ACCOUNT\n"
+	);
+	$labels['debit'] = array("CUSTOMER DEBIT ACCOUNT\n"
+			, "Debit Amount:"
+			, "I ACKNOWLEDGE THE ABOVE DEBIT\n"
+			, "TO MY DEBIT ACCOUNT\n"
+	);
+
+	/* Could append labels from other modules
+	foreach (plugin as $CORE_LOCAL->get('plugins'))
+		if isset($CORE_LOCAL Plugins[$plugin]['printChargeFooterCustLabels']
+		if isset($plugin['printChargeFooterCustLabels']
+			$labels[]=$plugin['printChargeFooterCustLabels']
+	*/
+
 	$receipt = "\n\n\n\n\n\n\n"
 		   .chr(27).chr(105)
 		   .chr(27).chr(33).chr(5)		// apbw 3/18/05 
 		   ."\n".self::centerString($CORE_LOCAL->get("chargeSlip2"))."\n"
 		   .self::centerString("................................................")."\n"
 		   .self::centerString($CORE_LOCAL->get("chargeSlip1"))."\n\n"
-		   ."CUSTOMER CHARGE ACCOUNT\n"
+		   . $labels["$program"][0]
 		   ."Name: ".trim($chgName)."\n"		// changed by apbw 2/14/05 SCR
 		   ."Member Number: ".trim($CORE_LOCAL->get("memberID"))."\n"
 		   ."Date: ".$date."\n"
 		   ."REFERENCE #: ".$ref."\n"
-		   ."Charge Amount: $".number_format(-1 * $CORE_LOCAL->get("chargeTotal"), 2)."\n"
-		   ."I AGREE TO PAY THE ABOVE AMOUNT\n"
-		   ."TO MY CHARGE ACCOUNT\n"
+		   .$labels["$program"][1] . " $".number_format(-1 * $CORE_LOCAL->get("chargeTotal"), 2)."\n"
+		   . $labels["$program"][2]
+		   . $labels["$program"][3]
 		   ."Purchaser Sign Below\n\n\n"
 		   ."X____________________________________________\n"
 		   .$CORE_LOCAL->get("fname")." ".$CORE_LOCAL->get("lname")."\n\n"
 		   .self::centerString(".................................................")."\n\n";
 
-	return self::chargeBalance($receipt);
+	return self::chargeBalance($receipt, $program);
 
 }
 
@@ -414,12 +541,26 @@ static public function centerBig($text) {
 /***** jqh end change *****/
 
 /***** CvR 06/28/06 calculate current balance for receipt ****/
-static public function chargeBalance($receipt){
+static public function chargeBalance($receipt, $program="charge"){
 	global $CORE_LOCAL;
 	PrehLib::chargeOK();
+	/*
+	Should be checking a lane version of: $FANNIE_AR_DEPARTMENTS = '1005 1010'
+	Should be checking: $CORE_LOCAL->get('defaultNonMem'), not 11
+	*/
+	$labels = array();
+	$labels['charge'] = array("Current IOU Balance:"
+			, 1
+	);
+	$labels['coopcred'] = array("Coop Cred Available:"
+			, -1
+	);
+	$labels['debit'] = array("Debit available:"
+			, -1
+	);
 
 	$db = Database::tDataConnect();
-	$checkQ = "select trans_id from localtemptrans where department IN(51,52) or trans_subtype='MI'";
+	$checkQ = "select trans_id from localtemptrans where department=990 or trans_subtype='MI'";
 	$checkR = $db->query($checkQ);
 	$num_rows = $db->num_rows($checkR);
 
@@ -427,7 +568,7 @@ static public function chargeBalance($receipt){
 	$currBalance = $CORE_LOCAL->get("balance") - $currActivity;
 	
 	if(($num_rows > 0 || $currBalance != 0) && $CORE_LOCAL->get("memberID") != 11){
- 		$chargeString = "Current Balance: $".sprintf("%.2f",$currBalance);
+ 		$chargeString = $labels["$program"][0] ." $".sprintf("%.2f",($labels["$program"][1] * $currBalance));
 		$receipt = $receipt."\n\n".self::biggerFont(self::centerBig($chargeString));
 	}
 	
@@ -1042,6 +1183,7 @@ static public function twoColumns($col1, $col2) {
   @param $email generate email-style receipt
   @return string receipt content
 */
+//#'P
 static public function printReceipt($arg1,$second=False,$email=False) {
 	global $CORE_LOCAL;
 
@@ -1115,6 +1257,19 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 			$CORE_LOCAL->set("couldhavesaved",number_format($CORE_LOCAL->get("memSpecial"), 2));
 			$CORE_LOCAL->set("specials",$CORE_LOCAL->get("discounttotal"));
 		}
+	}
+
+	/*#'Q chargeProgram - where to get it or how to decide
+		Since a member can only be in one program this could work
+		  if made part of the session setup, when ID established.
+		   base on shrinkRange (99900-99998, which is also a plugin var
+		$chargeProgram = $CORE_LOCAL->get('chargeProgram');
+		if (!isset($chargeProgram) $chargeProgram = 'charge';
+	*/
+	if ($CORE_LOCAL->get("store") == 'WEFC_Toronto' && $CORE_LOCAL->get("memberID") < 99900) {
+		$chargeProgram = 'coopcred';
+	} else {
+		$chargeProgram = 'charge';
 	}
 
 	$print_class = $CORE_LOCAL->get('ReceiptDriver');
@@ -1208,7 +1363,7 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 			}
 
 			/***** CvR add charge total to receipt bottom ****/
-			$receipt['any'] = self::chargeBalance($receipt['any']);
+			$receipt['any'] = self::chargeBalance($receipt['any'], $chargeProgram);
 			/**** CvR end ****/
 
 			// check if message mods have data
@@ -1298,12 +1453,17 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 	/* --------------------------------------------------------------
 	  print store copy of charge slip regardless of receipt print setting - apbw 2/14/05 
 	  ---------------------------------------------------------------- */
-	if ($CORE_LOCAL->get("chargeTotal") != 0 && (($CORE_LOCAL->get("End") == 1 && !$second) || $reprint)) {
-		if (is_array($receipt))
-			$receipt['print'] .= self::printChargeFooterStore($dateTimeStamp, $ref);
-		else
-			$receipt .= self::printChargeFooterStore($dateTimeStamp, $ref);
-	}		
+    $tmap = $CORE_LOCAL->get('TenderMap');
+    // skip signature slips if using electronic signature capture (unless it's a reprint)
+    if ((is_array($tmap) && isset($tmap['MI']) && $tmap['MI'] != 'SignedStoreChargeTender') || $reprint) {
+        if ($CORE_LOCAL->get("chargeTotal") != 0 && (($CORE_LOCAL->get("End") == 1 && !$second) || $reprint)) {
+            if (is_array($receipt)) {
+                $receipt['print'] .= self::printChargeFooterStore($dateTimeStamp, $ref);
+            } else {
+                $receipt .= self::printChargeFooterStore($dateTimeStamp, $ref);
+            }
+        }
+    }
 			
 	if (is_array($receipt)){
 		if ($second){
@@ -1516,6 +1676,17 @@ static public function equityNotification($trans_num=''){
 	$CORE_LOCAL->set("equityNoticeAmt",$row[0]);
 
 	return $slip;
+}
+
+static public function shutdownFunction()
+{
+    $error = error_get_last(); 
+    if ($error !== null && $error['type'] == 1) {
+        // fatal error occurred
+        ob_end_clean();
+
+        echo '{ "error" : "Printer is not responding" }';
+    }
 }
 
 }

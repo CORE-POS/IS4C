@@ -30,7 +30,7 @@ if (!$current_user){
   header("Location: loginform.php");
 }
 else {
-  header("Location: menu.php");
+  header("Location: AuthIndexPage.php");
 }
 
 ?>

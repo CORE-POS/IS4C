@@ -9,7 +9,79 @@ function try_edit_monthview(idstr,uid){
 		edit_monthview(idstr,uid);
 }
 
-function edit_monthview(idstr,uid){
+function save_open_event() {
+    $('textarea.openevent').each(function(){
+        var elemID = $(this).attr('id');
+        var textstr = $(this).val();
+        textstr = textstr.replace(/\r/g,"");
+        textstr = textstr.replace(/\n/g,"<br>");
+        var calID = $('#calendarID').val();
+
+        var temp = elemID.split('_');
+        var getArgs = 'action=save_or_add_event&id='+calID;
+        if (temp.length == 2) { // existing event
+            var eventID = temp[1];
+            $('#event_'+eventID).html(textstr);
+            getArgs += '&eventID='+eventID;
+        } else if (temp.length == 3) { // new event
+            var datestr = temp[1];
+            var uid = temp[2];
+            $('#event_'+datestr+"_"+uid).html(textstr);
+            getArgs += '&datestr='+datestr+'&uid='+uid;
+        }
+        textstr = textstr.replace(/&/g,"%26");
+        getArgs += '&text='+textstr;
+
+        $.ajax({
+            url: 'CalendarAjax.php',
+            type: 'get',
+            data: getArgs,
+            success: function(){
+            }
+        });
+    });
+}
+
+function edit_event(event_id) {
+    // this event is already being edited
+    if ($('#openevent_'+event_id).length > 0) {
+        return;
+    }
+    
+    save_open_event();
+
+	var content = $('#event_'+event_id).html();
+	content = content.replace(/<br>/g,"\n");
+
+	var area = "<textarea class=\"openevent\" rows=\"2\" cols=\"17\" ";
+	area += "id=\"openevent_"+event_id+"\">";
+	area += content;
+	area += "</textarea>";
+    
+    $('#event_'+event_id).html(area);
+}
+
+function add_event(datestr, uid) {
+    // this event is already being edited
+    if ($('#openevent_'+datestr+'_'+uid).length > 0) {
+        return;
+    }
+    
+    save_open_event();
+
+	var area = "<textarea class=\"openevent\" rows=\"2\" cols=\"17\" ";
+	area += "id=\"openevent_"+datestr+"_"+uid+"\">";
+	area += "</textarea>";
+
+    $('#event_'+datestr+'_'+uid).html(area);
+}
+
+/**
+  @deprecated
+  edit_event() and add_event() functions
+  added to support proper event IDs
+*/
+function edit_monthview(idstr,uid) {
 	if (idstr+":"+uid == placeHolder) return;
 
 	if (placeHolder != null){
@@ -33,6 +105,10 @@ function edit_monthview(idstr,uid){
 	document.getElementById("TA_"+idstr+uid).focus();
 }
 
+/**
+  @deprecated
+  replaced by save_open_event
+*/
 function save_monthview(){
 	var temp = placeHolder.split(":");
 	var datestr = temp[0];
@@ -128,4 +204,80 @@ function savePrefs(calID){
 	}
 
 	phpSend('savePrefs&calID='+calID+'&name='+name+'&viewers='+viewers+'&writers='+writers);
+}
+
+// ************************************************************************
+// Display: weekview functions
+// ************************************************************************
+var openWeek = -1;
+function weekBootstrap()
+{
+    //$('td.weekEntry').click(weekClickCallback);
+}
+
+function weekClickCallback(ts)
+{
+    var me = '#weekEntry'+ts;
+    if ($(me).find('textarea').length != 0) {
+        return;
+    } 
+
+    if ($('#weekEntry'+openWeek).find('textarea').length != 0) {
+        saveCallback(openWeek);
+    }
+    openWeek = ts;
+
+    var content = $(me).find('span.weekEntryContent').html();
+    content = content.replace(/<br>/g, "\n");
+    content = content.replace(/<a.*>(.+)<\/a>/, "$1");
+    var textarea = '<textarea>' + content + '</textarea>';
+    $(me).find('span.weekEntryContent').html(textarea);
+    $(me).find('textarea').focus();
+}
+
+function saveCallback(ts)
+{
+    var textstr = $('#weekEntry'+ts).find('textarea').val();
+    textstr = textstr.replace(/\r/g,"");
+    textstr = textstr.replace(/\n/g,"<br>");
+    var pat = /#(\d+)/;
+    var rep = '<a href="../PIKiller/PIMemberPage.php?id=$1" onclick="noBubble(event);">#$1</a>';
+    var markup = textstr.replace(pat, rep);
+    $('#weekEntry'+ts).find('span.weekEntryContent').html(markup);
+    openWeek = -1;
+    var dstr = 'action=weekview_save';
+    dstr += '&id='+$('#calendarID').val();
+    dstr += '&ts='+ts;
+    textstr = textstr.replace(/&/g,"%26");
+    dstr += '&text='+textstr;
+    if ($('#weekEntry'+ts).find('.weekEntryEventID').length != 0) {
+        dstr += '&eventID='+$('#weekEntry'+ts).find('.weekEntryEventID').val();
+    }
+    $.ajax({
+        url: 'CalendarAjax.php',
+        data: dstr,
+        type: 'post',
+        success: function(resp){
+            var parts = resp.split('`');
+            // response on new entry contains sql eventID
+            if (parts.length > 1 && parseInt(parts[1])) {
+                if ($('#weekEntry'+ts).find('.weekEntryEventID').length != 0) {
+                    // this shouldn't happen and probably means an event date/time
+                    // got duplicated, but try to prevent further damage by updating
+                    // the ID
+                    $('#weekEntry'+ts).find('.weekEntryEventID').val(parts[1]);
+                } else {
+                    $('<input/>').attr({
+                        "class": 'weekEntryEventID',
+                        type: 'hidden',
+                        value: parts[1]
+                    }).appendTo('#weekEntry'+ts);
+                }
+            }
+        }
+    });
+}
+
+function noBubble(e) {
+    e.stopPropagation();
 }

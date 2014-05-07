@@ -375,6 +375,12 @@ class FirstData extends BasicCCModule {
 		$sqlColumns .= ",validResponse";
 		$sqlValues .= sprintf(",%d",0);
 
+        $table_def = $dbTrans->table_definition('efsnetResponse');
+        if (isset($table_def['efsnetRequestID'])) {
+            $sqlColumns .= ', efsnetRequestID';
+            $sqlValues .= sprintf(', %d', $this->last_req_id);
+        }
+
 		$sql = "INSERT INTO efsnetResponse (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
 		PaycardLib::paycard_db_query($sql, $dbTrans);
 
@@ -495,7 +501,14 @@ class FirstData extends BasicCCModule {
 			// cast to string. tender function expects string input
 			// numeric input screws up parsing on negative values > $0.99
 			$amt = "".(-1*($CORE_LOCAL->get("paycard_amount")));
-			TransRecord::addtender("Credit Card", "CC", $amt);
+			$t_type = 'CC';
+			if ($CORE_LOCAL->get('paycard_issuer') == 'American Express')
+				$t_type = 'AX';
+            // if the transaction has a non-zero efsnetRequestID,
+            // include it in the tender line
+            $record_id = $this->last_req_id;
+            $charflag = ($record_id != 0) ? 'RQ' : '';
+			TransRecord::addFlaggedTender("Credit Card", $t_type, $amt, $record_id, $charflag);
 			$CORE_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>Please verify cardholder signature<p>[enter] to continue<br>\"rp\" to reprint slip<br>[void] to cancel and void</font>");
 			if ($CORE_LOCAL->get("paycard_amount") <= $CORE_LOCAL->get("CCSigLimit") && $CORE_LOCAL->get("paycard_amount") >= 0){
 				$CORE_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>No signature required<p>[enter] to continue<br>[void] to cancel and void</font>");
@@ -607,10 +620,15 @@ class FirstData extends BasicCCModule {
 			sprintf("'%s','%s',%d,'%s',%s,",  $now, $refNum, $live, $mode, $amountText) .
 			sprintf("'%s','%s',%d,'%s'",           $cardPANmasked, $cardIssuer, $manual,$fixedName);
 		$sql = "INSERT INTO efsnetRequest (" . $sqlCols . ") VALUES (" . $sqlVals . ")";
+        $table_def = $dbTrans->table_definition('efsnetRequest');
 		if( !PaycardLib::paycard_db_query($sql, $dbTrans) ) {
 			PaycardLib::paycard_reset();
 			return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); // internal error, nothing sent (ok to retry)
 		}
+
+        if (isset($table_def['efsnetRequestID'])) {
+            $this->last_req_id = $dbTrans->insert_id();
+        }
 
 		$xml = '<fdggwsapi:FDGGWSApiOrderRequest  
 			 xmlns:v1="http://secure.linkpt.net/fdggwsapi/schemas_us/v1" 

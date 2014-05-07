@@ -61,7 +61,7 @@ class SaReportPage extends FanniePage {
 			} else {
 				$this->sql_actions='Unable to clear old scans, try again. <!-- '.$query.' -->';
 			}
-		} else if ($_GET['change']=='yes') {
+		} else if (FormLib::get('change')=='yes') {
 		}
 
 		if (FormLib::get_form_value('view') == 'dept'){
@@ -112,10 +112,13 @@ class SaReportPage extends FanniePage {
 			s.upc,
 			s.quantity,
 			s.section,
-			CASE WHEN p.description IS NULL THEN \'Not in POS\' ELSE p.description END as description,
+			CASE 
+                WHEN p.description IS NULL AND v.description IS NULL THEN \'Not in POS\' 
+                WHEN p.description IS NULL AND v.description IS NOT NULL THEN v.description
+                ELSE p.description END as description,
 			CASE WHEN d.dept_name IS NULL THEN \'Unknown\' ELSE d.dept_name END as dept_name,
 			CASE WHEN d.dept_no IS NULL THEN \'n/a\' ELSE d.dept_no END as dept_no,
-			CASE WHEN c.salesCode IS NULL THEN \'n/a\' ELSE c.salesCode END as salesCode,
+			CASE WHEN d.salesCode IS NULL THEN \'n/a\' ELSE d.salesCode END as salesCode,
 
 			CASE WHEN p.discounttype > 0 THEN p.special_price
 			ELSE p.normal_price END AS retail,
@@ -128,8 +131,8 @@ class SaReportPage extends FanniePage {
 			ON s.upc=p.upc LEFT JOIN '.
 			$FANNIE_OP_DB.$dbc->sep().'departments AS d
 			ON p.department=d.dept_no LEFT JOIN '.
-			$FANNIE_OP_DB.$dbc->sep().'deptSalesCodes AS c
-			ON p.department=c.dept_ID
+			$FANNIE_OP_DB.$dbc->sep().'vendorItems AS v
+            ON s.upc=v.upc AND v.vendorID=1
 			WHERE clear!=1
 			ORDER BY '.$order);
 		$r=$dbc->exec_statement($q);
@@ -403,7 +406,5 @@ table tr:hover {
 	}
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new SaReportPage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+

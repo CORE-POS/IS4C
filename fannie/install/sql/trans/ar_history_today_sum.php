@@ -27,7 +27,7 @@ $CREATE['trans.ar_history_today_sum'] = "
 	SUM(CASE WHEN trans_subtype='MI' THEN -total ELSE 0 END) 
 	- SUM(CASE WHEN department IN $dlist THEN total ELSE 0 END) AS balance
 	FROM dlog
-	WHERE trans_subtype='MI' OR department IN $dlist
+	WHERE (trans_subtype='MI' OR department IN {$dlist})
 	AND ".$con->datediff($con->now(),'tdate')."=0
 	GROUP BY card_no
 ";

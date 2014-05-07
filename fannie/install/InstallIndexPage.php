@@ -28,7 +28,6 @@ if (!file_exists(dirname(__FILE__).'/../config.php')){
 	echo "and put this in it:<br />";
 	echo "<div style=\"border: 1px solid black;padding: 5em;\">";
 	echo '&lt;?php<br />';
-	echo '?&gt;';
 	echo '</div>';	
 	exit;	
 }
@@ -168,7 +167,8 @@ class InstallIndexPage extends InstallPage {
 			echo "</blockquote>";
 			exit;
 		}
-		$defaultDbType = array_shift(array_keys($supportedTypes));
+        $db_keys = array_keys($supportedTypes);
+		$defaultDbType = $db_keys[0];
 
 		?>
 		<h4 class="install">Main Server</h4>
@@ -533,11 +533,13 @@ class InstallIndexPage extends InstallPage {
 		?>
 		<a href="LaneConfigPages/LaneNecessitiesPage.php">Edit Global Lane Configuration Page</a>
 		<hr />
-		<h4 class="install">Logs</h4>
+		<h4 class="install">Logs &amp; Debugging</h4>
 		Fannie writes to the following log files:
 		<ul>
 		<li><?php check_writeable('../logs/queries.log'); ?>
 		<ul><li>Contains failed database queries</li></ul>	
+		<li><?php check_writeable('../logs/php-errors.log'); ?>
+		<ul><li>Contains PHP notices, warnings, and errors</li></ul>
 		<li><?php check_writeable('../logs/dayend.log'); ?>
 		<ul><li>Contains output from scheduled tasks</li></ul>	
 		</ul>
@@ -565,7 +567,22 @@ class InstallIndexPage extends InstallPage {
 		confset('FANNIE_LOG_COUNT',"$FANNIE_LOG_COUNT");
 		echo "<input type=text name=FANNIE_LOG_COUNT value=\"$FANNIE_LOG_COUNT\" size=3 />";
 		echo "<br />";
+
+		echo _('Verbose error messages');
+		if (!isset($FANNIE_CUSTOM_ERRORS)) $FANNIE_CUSTOM_ERRORS = 0;
+		if (isset($_REQUEST['FANNIE_CUSTOM_ERRORS'])) $FANNIE_CUSTOM_ERRORS = $_REQUEST['FANNIE_CUSTOM_ERRORS'];
+		confset('FANNIE_CUSTOM_ERRORS',"$FANNIE_CUSTOM_ERRORS");
+		echo '<select name="FANNIE_CUSTOM_ERRORS">';
+		if ($FANNIE_CUSTOM_ERRORS == 0) {
+			echo '<option value="1">' . _('Yes') . '</option>';
+			echo '<option value="0" selected>' . _('No') . '</option>';
+		} else {
+			echo '<option value="1" selected>' . _('Yes') . '</option>';
+			echo '<option value="0">' . _('No') . '</option>';
+		}
+		echo '</select>';
 		?>
+		<br />
 		<hr />
 		<h4 class="install">Scales</h4>
 		Number of scales
@@ -717,7 +734,7 @@ class InstallIndexPage extends InstallPage {
 
 
 	function create_op_dbs($con){
-		global $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
+        require(dirname(__FILE__).'/../config.php'); 
 
 		$ret = array();
 
@@ -727,11 +744,19 @@ class InstallIndexPage extends InstallPage {
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'departments','op');
 
+        /**
+          @deprecated 22Jan14
+          Somewhat deprecated. Others' code may rely on this
+          so it's still created
+        */
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'deptMargin','op');
 
+        /**
+          @deprecated 22Jan14
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'deptSalesCodes','op');
+        */
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'dateRestrict','op');
@@ -744,6 +769,9 @@ class InstallIndexPage extends InstallPage {
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'superDeptNames','op');
+
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+				'superDeptEmails','op');
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'superMinIdView','op');
@@ -781,8 +809,11 @@ class InstallIndexPage extends InstallPage {
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'prodUpdate','op');
 
+        /**
+          @deprecated 21Jan14
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'prodUpdateArchive','op');
+        */
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'prodPriceHistory','op');
@@ -799,8 +830,11 @@ class InstallIndexPage extends InstallPage {
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'batchType','op');
 
+        /**
+          @deprecated 21Jan14
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'batchowner','op');
+        */
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'batchCutPaste','op');
@@ -811,44 +845,80 @@ class InstallIndexPage extends InstallPage {
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'batchMergeTable','op');
 
+        /**
+          @deprecated 21Jan14
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'batchMergeProd','op');
+        */
 
+        /**
+          @deprecated 22Jan14
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'likeCodeView','op');
+        */
 
+        /**
+          @deprecated 21Jan14
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'batchMergeLC','op');
+        */
 
+        /**
+          @deprecated 21Jan14
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'batchPriority30','op');
+        */
 
+        /**
+          @deprecated 21Jan14
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'batchPriority20','op');
+        */
 
+        /**
+          @deprecated 21Jan14
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'batchPriority10','op');
+        */
 
+        /**
+          @deprecated 21Jan14
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'batchPriority0','op');
+        */
 
+        /**
+          @deprecated 21Jan14
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'batchPriority','op');
+        */
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'unfi','op');
 
+        /**
+          @deprecated 22Jan14
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'unfi_order','op');
+        */
 
+        /**
+          @deprecated 22Jan14
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'unfi_diff','op');
+        */
 
+        /**
+          @deprecated 22Jan14
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'unfi_all','op');
+        */
 
+        /**
+          @deprecated 22Jan14
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'unfiCategories','op');
+        */
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'shelftags','op');
@@ -871,6 +941,11 @@ class InstallIndexPage extends InstallPage {
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'memtype','op');
 
+        /**
+          @deprecated 22Jan14
+          memtype has sufficient columns now
+          table kept around until confirming it can be deleted
+        */
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'memdefaults','op');
 
@@ -907,8 +982,11 @@ class InstallIndexPage extends InstallPage {
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'disableCoupon','op');
 		
+        /**
+          @deprecated 21Jan14
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'productMargin','op');
+        */
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'origins','op');
@@ -943,8 +1021,11 @@ class InstallIndexPage extends InstallPage {
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'vendorDepartments','op');
 
+        /**
+         @deprecated 21Jan14
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'vendorLoadScripts','op');
+        */
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'scaleItems','op');
@@ -977,29 +1058,48 @@ class InstallIndexPage extends InstallPage {
 				'suspension_history','op');
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+				'CustomerAccountSuspensions','op');
+
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'cronBackup','op');
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'customReports','op');
 
+        /**
+          @deprecated 21Jan14
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'AdSaleDates','op');
+        */
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'custReceiptMessage','op');
+
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+				'usageStats','op');
+
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+				'ShrinkReasons','op');
+
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+				'Stores','op');
 
 		return $ret;
 
 	// create_op_dbs()
 	}
 
-	function create_trans_dbs($con){
-		global $FANNIE_TRANS_DB, $FANNIE_SERVER_DBMS, $FANNIE_OP_DB;
+	function create_trans_dbs($con)
+    {
+        require(dirname(__FILE__).'/../config.php'); 
 
 		$ret = array();
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 				'alog','trans');
+
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+				'PaycardTransactions','trans');
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 				'efsnetRequest','trans');
@@ -1118,13 +1218,16 @@ class InstallIndexPage extends InstallPage {
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 				'lane_config','trans');
 
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+				'CapturedSignature','trans');
+
 		return $ret;
 
 	// create_trans_dbs()
 	}
 
 	function create_dlogs($con){
-		global $FANNIE_TRANS_DB, $FANNIE_SERVER_DBMS, $FANNIE_AR_DEPARTMENTS, $FANNIE_EQUITY_DEPARTMENTS, $FANNIE_OP_DB;
+        require(dirname(__FILE__).'/../config.php'); 
 
 		$ret = array();
 
@@ -1138,22 +1241,13 @@ class InstallIndexPage extends InstallPage {
 				'suspended','trans');
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-				'SpecialOrderID','trans');
+				'SpecialOrders','trans');
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 				'SpecialOrderDeptMap','trans');
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-				'SpecialOrderContact','trans');
-
-		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-				'SpecialOrderNotes','trans');
-
-		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 				'SpecialOrderHistory','trans');
-
-		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-				'SpecialOrderStatus','trans');
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 				'PendingSpecialOrder','trans');
@@ -1194,14 +1288,20 @@ class InstallIndexPage extends InstallPage {
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 				'stockpurchases','trans');
 
+        /**
+          @deprecated 22Jan14
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 				'stockSum_purch','trans');
+        */
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 				'stockSumToday','trans');
 
+        /**
+          @deprecated 22Jan14
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 				'newBalanceStockToday_test','trans');
+        */
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 				'equity_history_sum','trans');
@@ -1226,9 +1326,11 @@ class InstallIndexPage extends InstallPage {
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 				'CashPerformDay','trans');
-
+        /**
+          @deprecated 21Jan14
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 				'CashPerformDay_cache','trans');
+        */
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 				'houseCouponThisMonth','trans');
@@ -1242,7 +1344,7 @@ class InstallIndexPage extends InstallPage {
 	}
 
 	function create_delayed_dbs(){
-		global $FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_SERVER_USER,$FANNIE_SERVER_PW,$FANNIE_OP_DB,$FANNIE_TRANS_DB;
+        require(dirname(__FILE__).'/../config.php'); 
 
 		$ret = array();
 
@@ -1393,7 +1495,7 @@ class InstallIndexPage extends InstallPage {
 	}
 
 	function create_archive_dbs($con) {
-		global $FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,$FANNIE_ARCHIVE_DB,$FANNIE_ARCHIVE_METHOD;
+        require(dirname(__FILE__).'/../config.php'); 
 
 		$ret = array();
 
@@ -1417,6 +1519,7 @@ class InstallIndexPage extends InstallPage {
 			$con->exec_statement($create,array(),$FANNIE_ARCHIVE_DB);
 			// create the first partition if needed
 			if ($FANNIE_ARCHIVE_METHOD == "partitions"){
+                $con->query('ALTER TABLE bigArchive CHANGE COLUMN store_row_id store_row_id BIGINT UNSIGNED');
 				$p = "p".date("Ym");
 				$limit = date("Y-m-d",mktime(0,0,0,date("n")+1,1,date("Y")));
 				$partQ = sprintf("ALTER TABLE `bigArchive` 
@@ -1424,7 +1527,7 @@ class InstallIndexPage extends InstallPage {
 					(PARTITION %s 
 						VALUES LESS THAN (TO_DAYS('%s'))
 					)",$p,$limit);
-				$prep = $dbc->prepare_statement($partQ);
+				$prep = $con->prepare_statement($partQ);
 				$con->exec_statement($prep);
 			}
 		}
@@ -1467,6 +1570,8 @@ class InstallIndexPage extends InstallPage {
 			charflag,
 			card_no,
 			trans_id,
+            pos_row_id,
+            store_row_id,
 			".$con->concat(
 				$con->convert('emp_no','char'),"'-'",
 				$con->convert('register_no','char'),"'-'",
@@ -1665,6 +1770,14 @@ class InstallIndexPage extends InstallPage {
 				'sumDiscountsByDay','arch');
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
 				'reportDataCache','arch');
+
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+				'weeksLastQuarter','arch');
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+				'productWeeklyLastQuarter','arch');
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+				'productSummaryLastQuarter','arch');
+
 		return $ret;
 
 	// create_archive_dbs()
@@ -1673,8 +1786,6 @@ class InstallIndexPage extends InstallPage {
 // InstallIndexPage
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
-	$obj = new InstallIndexPage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec();
+
 ?>

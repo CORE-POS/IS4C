@@ -39,6 +39,30 @@ class DefaultTender extends Parser {
 
 	function parse($str){
 		global $CORE_LOCAL;
+
+        /**
+          If customer card is available, prevent other tenders
+          unless specficially allowed (e.g., coupons).
+        */
+        if ($CORE_LOCAL->get('PaycardsBlockTenders') == 1) {
+            $tender_code = strtoupper(substr($str, -2));
+            $exceptions = strtoupper($CORE_LOCAL->get('PaycardsBlockExceptions'));
+            $except_array = preg_split('/[^A-Z]+/', $exceptions, 0, PREG_SPLIT_NO_EMPTY);
+            if ($CORE_LOCAL->get('ccTermState') == 'ready' && !in_array($tender_code, $except_array)) {
+                $CORE_LOCAL->set('boxMsg', _('Tender Customer Card First') 
+                                        . '<br />'
+                                        . _('[enter] to charge card')
+                                        . '<br />'
+                                        . _('[clear] to go back')
+                );
+                $CORE_LOCAL->set('strEntered', 'CCFROMCACHE');
+                $ret = $this->default_json();
+                $ret['main_frame'] = MiscLib::baseURL() . 'gui-modules/boxMsg2.php';
+
+                return $ret;
+            }
+        }
+
 		if (strlen($str) > 2){
 			$left = substr($str,0,strlen($str)-2);
 			$right = substr($str,-2);
@@ -75,10 +99,12 @@ class DefaultTender extends Parser {
 				return $ret;
 			}
 			elseif(is_object($tender_object) && $tender_object->AllowDefault()){
+                $CORE_LOCAL->set('RepeatAgain', true);
 				$ret['main_frame'] = $tender_object->DefaultPrompt();
 				return $ret;
 			}
 			else if ($base_object->AllowDefault()){
+                $CORE_LOCAL->set('RepeatAgain', true);
 				$ret['main_frame'] = $base_object->DefaultPrompt();
 				return $ret;
 			}

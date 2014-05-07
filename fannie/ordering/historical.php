@@ -96,7 +96,7 @@ $f3 = (isset($_REQUEST['f3']) && $_REQUEST['f3'] !== '')?$_REQUEST['f3']:'';
 $filterstring = "";
 $filterargs = array();
 if ($f1 !== ''){
-	$filterstring = 'WHERE status_flag=?';
+	$filterstring = 'WHERE statusFlag=?';
 	$filterargs[] = $f1;
 }
 
@@ -153,28 +153,28 @@ $orderby = 'min(datetime) desc';
 if ($order === 'date')
 	$orderby = "min(datetime)";
 elseif($order === 'name')
-	$orderby = "CASE WHEN MAX(p.card_no)=0 THEN MAX(t.last_name) ELSE MAX(c.LastName) END";
+	$orderby = "CASE WHEN MAX(p.card_no)=0 THEN MAX(o.lastName) ELSE MAX(c.LastName) END";
 elseif($order === 'ttl')
 	$orderby = "sum(total)";
 elseif($order === 'qty')
 	$orderby = "count(*)-1";
 elseif($order === 'status')
-	$orderby = "status_flag";
+	$orderby = "statusFlag";
 
 $p = $dbc->prepare_statement("SELECT min(datetime) as orderDate,p.order_id,sum(total) as value,
-	count(*)-1 as items,status_flag,sub_status,
-	CASE WHEN MAX(p.card_no)=0 THEN MAX(t.last_name) ELSE MAX(c.LastName) END as name,
+	count(*)-1 as items,
+    statusFlag AS status_flag,
+    subStatus AS sub_status,
+	CASE WHEN MAX(p.card_no)=0 THEN MAX(o.lastName) ELSE MAX(c.LastName) END as name,
 	MIN(CASE WHEN trans_type='I' THEN charflag ELSE 'ZZZZ' END) as charflag,
 	MAX(p.card_no) AS card_no
 	FROM {$TRANS}CompleteSpecialOrder as p
-	LEFT JOIN {$TRANS}SpecialOrderStatus as s ON p.order_id=s.order_id
-	LEFT JOIN {$TRANS}SpecialOrderNotes as n ON n.order_id=p.order_id
 	LEFT JOIN custdata AS c ON c.CardNo=p.card_no AND personNum=p.voided
-	LEFT JOIN {$TRANS}SpecialOrderContact as t on t.card_no=p.order_id
+    LEFT JOIN {$TRANS}SpecialOrders AS o ON p.order_id=o.specialOrderID
 	$filterstring
-	GROUP BY p.order_id,status_flag,sub_status
+	GROUP BY p.order_id,statusFlag,subStatus
 	HAVING (count(*) > 1 OR
-		SUM(CASE WHEN notes LIKE '' THEN 0 ELSE 1 END) > 0
+		SUM(CASE WHEN o.notes LIKE '' THEN 0 ELSE 1 END) > 0
 		)
 	AND ".$dbc->monthdiff($dbc->now(),'min(datetime)')." >= ((?-1)*3)
 	AND ".$dbc->monthdiff($dbc->now(),'min(datetime)')." < (?*3)
@@ -194,7 +194,7 @@ if ($f2 !== '' || $f3 !== ''){
 	$filter = "";
 	$args = array();
 	if ($f2 !== ''){
-		$filter .= "AND (m.superID IN (?) OR n.superID IN (?))";
+		$filter .= "AND (m.superID IN (?) OR o.noteSuperID IN (?))";
 		$args = array($f2,$f2);
 	}
 	if ($f3 !== ''){
@@ -203,7 +203,7 @@ if ($f2 !== '' || $f3 !== ''){
 	}
 	$p = $dbc->prepare_statement("SELECT p.order_id FROM {$TRANS}CompleteSpecialOrder AS p
 		LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
-		LEFT JOIN {$TRANS}SpecialOrderNotes AS n ON p.order_id=n.order_id
+		LEFT JOIN {$TRANS}SpecialOrders AS o ON p.order_id=o.specialOrderID
 		WHERE 1=1 $filter
 		GROUP BY p.order_id");
 	$r = $dbc->exec_statement($p,$args);
@@ -212,15 +212,15 @@ if ($f2 !== '' || $f3 !== ''){
 		$valid_ids[$w['order_id']] = True;
 
 	if ($f2 !== '' && $f3 === ''){
-		$q2 = $dbc->prepare_statement("SELECT s.order_id FROM 
-				{$TRANS}SpecialOrderNotes AS s
+		$q2 = $dbc->prepare_statement("SELECT o.specialOrderID FROM 
+				{$TRANS}SpecialOrders AS o
 				INNER JOIN {$TRANS}CompleteSpecialOrder AS p
-				ON p.order_id=s.order_id
-				WHERE s.superID IN (?)
-				GROUP BY s.order_id");
+				ON p.order_id=o.specialOrderID
+				WHERE o.noteSuperID IN (?)
+				GROUP BY o.specialOrderID");
 		$r2 = $dbc->exec_statement($q2, array($f2));
 		while($w2 = $dbc->fetch_row($r2))
-			$valid_ids[$w2['order_id']] = True;
+			$valid_ids[$w2['specialOrderID']] = True;
 	}
 }
 

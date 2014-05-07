@@ -35,8 +35,29 @@ class BaseItemModule extends ItemModule {
 		$ret .=  "<legend>Item</legend>";
 
 		$dbc = $this->db();
-		$p = $dbc->prepare_statement('SELECT p.*,x.*,u.description as ldesc FROM products AS p LEFT JOIN prodExtra
-				AS x ON p.upc=x.upc LEFT JOIN productUser AS u ON p.upc=u.upc WHERE p.upc=?');
+		$p = $dbc->prepare_statement('SELECT
+                                        p.description,
+                                        p.pricemethod,
+                                        p.normal_price,
+                                        p.size,
+                                        p.unitofmeasure,
+                                        p.modified,
+                                        p.special_price,
+                                        p.end_date,
+                                        p.subdept,
+                                        p.department,
+                                        p.tax,
+                                        p.foodstamp,
+                                        p.scale,
+                                        p.qttyEnforced,
+                                        p.discount,
+                                        x.manufacturer,
+                                        x.distributor,
+                                        u.description as ldesc 
+                                      FROM products AS p 
+                                        LEFT JOIN prodExtra AS x ON p.upc=x.upc 
+                                        LEFT JOIN productUser AS u ON p.upc=u.upc 
+                                      WHERE p.upc=?');
 		$r = $dbc->exec_statement($p,array($upc));
 		$rowItem = array();
 		$prevUPC = False;
@@ -75,10 +96,11 @@ class BaseItemModule extends ItemModule {
 			  fields for the new item
 			*/
 			$vendorP = "SELECT description,brand as manufacturer,cost,
-				vendorName as distributor,margin,i.vendorID
+				vendorName as distributor,margin,i.vendorID,srp
 				FROM vendorItems AS i LEFT JOIN vendors AS v ON i.vendorID=v.vendorID
 				LEFT JOIN vendorDepartments AS d ON i.vendorDept=d.deptID
-				WHERE upc=?";
+                LEFT JOIN vendorSRPs AS s ON s.upc=i.upc AND s.vendorID=i.vendorID
+				WHERE i.upc=?";
 			$args = array($upc);
 			$vID = FormLib::get_form_value('vid','');
 			if ($vID !== ''){
@@ -96,6 +118,7 @@ class BaseItemModule extends ItemModule {
 				$rowItem['manufacturer'] = $v['manufacturer'];
 				$rowItem['cost'] = $v['cost'];
 				$rowItem['distributor'] = $v['distributor'];
+                $rowItem['normal_price'] = $v['srp'];
 
 				while($v = $dbc->fetch_row($vendorR)){
 					printf('This product is also in <a href="?searchupc=%s&vid=%d">%s</a><br />',
@@ -169,11 +192,11 @@ class BaseItemModule extends ItemModule {
 		$ret .= '<b>Unit of measure</b> <input type="text" name="unitm" size="4"
 				value="'.(isset($rowItem['unitofmeasure'])?$rowItem['unitofmeasure']:'').'" /></td>';
 		$ret .= '<td style="color:darkmagenta;">Last modified</td>
-			<td style="color:darkmagenta;">' . (isset($rowItem['modified']) ? $rowItem['modified'] : 'n/a') .'</td>';
+			<td style="color:darkmagenta;">'. (isset($rowItem['modified']) ? $rowItem['modified'] : '') . '</td>';
 		$ret .= '</tr>';
 
 		$ret .= '<tr><td><b>Long Desc.</b><td colspan="2"><input type="text" size="60" name="puser_description"
-				value="' . (isset($rowItem['ldesc']) ? $rowItem['ldesc'] : '') . '" /></td><td>&nbsp;</td></tr>';
+				value="'. (isset($rowItem['ldesc']) ? $rowItem['ldesc'] : '') . '" /></td><td>&nbsp;</td></tr>';
 
 		$ret .="<td align=right><b>Brand</b></td><td><input type=text name=manufacturer size=30 value=\""
 			.(isset($rowItem['manufacturer'])?$rowItem['manufacturer']:"")
@@ -195,9 +218,9 @@ class BaseItemModule extends ItemModule {
 				$batch = array_pop($dbc->fetch_row($batchR));
 
 			$ret .= '<tr>';
-			$ret .= "<td style=\"color:green;\"><b>Sale Price:</b></td><td style=\"color:green;\">$rowItem[6] (<em>Batch: $batch</em>)</td>";
-			list($date,$time) = explode(' ',$rowItem[11]);
-           		$ret .= "<td style=\"color:green;\">End Date:</td>
+			$ret .= "<td style=\"color:green;\"><b>Sale Price:</b></td><td style=\"color:green;\">{$rowItem['special_price']} (<em>Batch: $batch</em>)</td>";
+			list($date,$time) = explode(' ',$rowItem['end_date']);
+            $ret .= "<td style=\"color:green;\">End Date:</td>
 				<td style=\"color:green;\">$date 
 				(<a href=\"EndItemSale.php?id=$upc\">Unsale Now</a>)</td>";
 			$ret .= '</tr>';
@@ -223,9 +246,9 @@ class BaseItemModule extends ItemModule {
 			if ($w['subdept_no'] == '') continue;
 			if (!isset($subs[$w['dept_ID']]))
 				$subs[$w['dept_ID']] = '';
-			$subs[$w['dept_ID']] .= sprintf('<option %s value="%d">%s</option>',
+			$subs[$w['dept_ID']] .= sprintf('<option %s value="%d">%d %s</option>',
 					($w['subdept_no'] == $rowItem['subdept'] ? 'selected':''),
-					$w['subdept_no'],$w['subdept_name']);
+					$w['subdept_no'],$w['subdept_no'],$w['subdept_name']);
 		}
 
 		$json = count($subs) == 0 ? '{}' : JsonLib::array_to_json($subs);
@@ -312,47 +335,68 @@ class BaseItemModule extends ItemModule {
 		$upc = BarcodeLib::padUPC($upc);
 		$dbc = $this->db();
 
-		$up_array = array();
-		$up_array['tax'] = FormLib::get_form_value('tax',0);
-		$up_array['foodstamp'] = FormLib::get_form_value('FS',0);
-		$up_array['scale'] = FormLib::get_form_value('Scale',0);
-		$up_array['qttyEnforced'] = FormLib::get_form_value('QtyFrc',0);
-		$up_array['discount'] = FormLib::get_form_value('NoDisc',1);
-		$up_array['normal_price'] = FormLib::get_form_value('price',0.00);
-		$up_array['description'] = FormLib::get_form_value('descript','');
-		$up_array['pricemethod'] = 0;
-		$up_array['groupprice'] = 0.00;
-		$up_array['quantity'] = 0;
-		$up_array['department'] = FormLib::get_form_value('department',0);
-		$up_array['size'] = FormLib::get_form_value('size','');
-		$up_array['scaleprice'] = 0.00;
-		$up_array['modified'] = $dbc->now();
-		$up_array['advertised'] = 1;
-		$up_array['tareweight'] = 0;
-		$up_array['unitofmeasure'] = FormLib::get_form_value('unitm','');
-		$up_array['wicable'] = 0;
-		$up_array['idEnforced'] = 0;
-		$up_array['subdept'] = FormLib::get_form_value('subdepartment',0);
-		$up_array['store_id'] = 0;
+        $model = new ProductsModel($dbc);
+        $model->upc($upc);
+        if (!$model->load()) {
+            // fully init new record
+            $model->special_price(0);
+            $model->specialpricemethod(0);
+            $model->specialquantity(0);
+            $model->specialgroupprice(0);
+            $model->advertised(0);
+            $model->tareweight(0);
+            $model->start_date('');
+            $model->end_date('');
+            $model->discounttype(0);
+            $model->wicable(0);
+        }
+		$model->tax(FormLib::get_form_value('tax',0));
+		$model->foodstamp(FormLib::get_form_value('FS',0));
+		$model->scale(FormLib::get_form_value('Scale',0));
+		$model->qttyEnforced(FormLib::get_form_value('QtyFrc',0));
+		$model->discount(FormLib::get_form_value('NoDisc',1));
+		$model->normal_price(FormLib::get_form_value('price',0.00));
+		$model->description(str_replace("'", '', FormLib::get_form_value('descript','')));
+        $model->brand(str_replace("'", '', FormLib::get('manufacturer', '')));
+		$model->pricemethod(0);
+		$model->groupprice(0.00);
+		$model->quantity(0);
+		$model->department(FormLib::get_form_value('department',0));
+		$model->size(FormLib::get_form_value('size',''));
+		$model->modified(date('Y-m-d H:i:s'));
+		$model->unitofmeasure(FormLib::get_form_value('unitm',''));
+		$model->subdept(FormLib::get_form_value('subdepartment',0));
 
 		/* turn on volume pricing if specified, but don't
 		   alter pricemethod if it's already non-zero */
 		$doVol = FormLib::get_form_value('doVolume',False);
 		$vprice = FormLib::get_form_value('vol_price','');
 		$vqty = FormLib::get_form_value('vol_qtty','');
-		if ($doVol !== False && is_numeric($vprice) && is_numeric($vqty)){
-			$up_array['pricemethod'] = FormLib::get_form_value('pricemethod',0);
-			if ($up_array['pricemethod']==0) $up_array['pricemethod']=2;
-			$up_array['groupprice'] = $vprice;
-			$up_array['quantity'] = $vqty;
+		if ($doVol !== false && is_numeric($vprice) && is_numeric($vqty)) {
+			$model->pricemethod(FormLib::get_form_value('pricemethod',0));
+			if ($model->pricemethod() == 0) {
+                $model->pricemethod(2);
+            }
+			$model->groupprice($vprice);
+			$model->quantity($vqty);
 		}
 
-		ProductsModel::update($upc, $up_array);
+        // lookup vendorID by name
+        $vendorID = 0;
+        $vendor = new VendorsModel($dbc);
+        $vendor->vendorName(FormLib::get('distributor'));
+        foreach($vendor->find('vendorID') as $obj) {
+            $vendorID = $obj->vendorID();
+            break;
+        }
+        $model->default_vendor_id($vendorID);
+
+        $model->save();
 
 		if ($dbc->table_exists('prodExtra')){
 			$arr = array();
-			$arr['manufacturer'] = $dbc->escape(FormLib::get_form_value('manufacturer'));
-			$arr['distributor'] = $dbc->escape(FormLib::get_form_value('distributor'));
+			$arr['manufacturer'] = $dbc->escape(str_replace("'",'',FormLib::get_form_value('manufacturer')));
+			$arr['distributor'] = $dbc->escape(str_replace("'",'',FormLib::get_form_value('distributor')));
 			$arr['location'] = 0;
 
 			$checkP = $dbc->prepare_statement('SELECT upc FROM prodExtra WHERE upc=?');

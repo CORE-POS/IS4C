@@ -23,26 +23,28 @@
 
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
-class PriceCheckPage extends NoInputPage {
+class PriceCheckPage extends NoInputPage 
+{
 
-	var $upc;
-	var $found;
-	var $pricing;
+	private $upc;
+	private $found;
+	private $pricing;
 
-	function preprocess(){
+	function preprocess()
+    {
 		global $CORE_LOCAL;
 
 		$this->upc = "";
-		$this->found = False;
-		$this->pricing = array('sale'=>False,'price'=>'','memPrice'=>'',
-			'description','department');
+		$this->found = false;
+		$this->pricing = array('sale'=>false,'actual_price'=>'','memPrice'=>'',
+			'description','department','regular_price');
 
-		if (isset($_REQUEST['reginput']) && strtoupper($_REQUEST['reginput'])=="CL"){
+		if (isset($_REQUEST['reginput']) && strtoupper($_REQUEST['reginput'])=="CL") {
 			// cancel
 			$this->change_page($this->page_url."gui-modules/pos2.php");
-			return False;
-		}
-		else if (isset($_REQUEST['reginput']) || isset($_REQUEST['upc'])){
+
+			return false;
+		} else if (isset($_REQUEST['reginput']) || isset($_REQUEST['upc'])) {
 			// use reginput as UPC unless it's empty
 			$this->upc = isset($_REQUEST['reginput']) ? $_REQUEST['reginput'] : '';
 			if ($this->upc == '' && isset($_REQUEST['upc']))
@@ -54,32 +56,36 @@ class PriceCheckPage extends NoInputPage {
 				qttyEnforced,department,local,cost,tax,foodstamp,discount,
 				discounttype,specialpricemethod,special_price,groupprice,
 				pricemethod,quantity,specialgroupprice,specialquantity,
-				mixmatchcode,idEnforced,tareweight
-				from products where upc = '".$db->escape($this->upc)."'";
+				mixmatchcode,idEnforced,tareweight,d.dept_name
+				from products, departments d where department = d.dept_no
+				AND upc = '" . $db->escape($this->upc) . "'";
 			$result = $db->query($query);
 			$num_rows = $db->num_rows($result);
 
 			// lookup item info
-			if ($num_rows > 0){
-				$this->found = True;
+			if ($num_rows > 0) {
+				$this->found = true;
 				$row = $db->fetch_row($result);
 
 				$discounttype = MiscLib::nullwrap($row["discounttype"]);
 				$DTClasses = $CORE_LOCAL->get("DiscountTypeClasses");
 				$DiscountObject = new $DTClasses[$discounttype];
 
-				if ($DiscountObject->isSale())
-					$this->pricing['sale'] = True;
+				if ($DiscountObject->isSale()) {
+					$this->pricing['sale'] = true;
+                }
 				$info = $DiscountObject->priceInfo($row,1);
-				$this->pricing['price'] = sprintf('$%.2f%s',
+				$this->pricing['actual_price'] = sprintf('$%.2f%s',
 					$info['unitPrice'],($row['scale']>0?' /lb':''));
-				if ($info['memDiscount'] > 0){
+				$this->pricing['regular_price'] = sprintf('$%.2f%s',
+					$info['regPrice'],($row['scale']>0?' /lb':''));
+				if ($info['memDiscount'] > 0) {
 					$this->pricing['memPrice'] = sprintf('$%.2f%s',
 						($info['unitPrice']-$info['memDiscount']),
 						($row['scale']>0?' /lb':''));
 				}
 				$this->pricing['description'] = $row['description'];
-				$this->pricing['department'] = $row['department'];
+				$this->pricing['department'] = $row['dept_name'];
 
 				MiscLib::goodBeep();
 			}
@@ -89,19 +95,22 @@ class PriceCheckPage extends NoInputPage {
 				$CORE_LOCAL->set("msgrepeat",1);
 				$CORE_LOCAL->set("strRemembered",$this->upc);
 				$this->change_page($this->page_url."gui-modules/pos2.php");
-				return False;
+
+				return false;
 			}
 		}
 
-		return True;
+		return true;
 	}
 
-	function head_content(){
+	function head_content()
+    {
 		$this->default_parsewrapper_js();
-		$this->scanner_scale_polling(True);
+		$this->scanner_scale_polling(true);
 	}
 
-	function body_content(){
+	function body_content()
+    {
 		global $CORE_LOCAL;
 		$this->add_onload_command("\$('#reginput').focus();\n");
 		$info = _("price check");
@@ -109,20 +118,22 @@ class PriceCheckPage extends NoInputPage {
 			_("[scan] item"),
 			_("[clear] to cancel"),
 		);
-		if (!empty($this->upc)){
-			if (!$this->found){
+		if (!empty($this->upc)) {
+			if (!$this->found) {
 				$info = _("not a valid item");
 				$inst = array(
 					_("[scan] another item"),
 					_("[clear] to cancel"),
 				);
 				$this->upc = "";
-			}
-			else {
-				$info = $this->pricing['description'].' :: '.$this->pricing['department'].'<br />';
-				$info .= _("Price").": ".$this->pricing['price'];
-				if (!empty($this->pricing['memPrice'])){
-					$info .= "<br />("._("Member Price").": ".$this->pricing['memPrice'].")";
+				MiscLib::errorBeep();				
+			} else {
+				$info = $this->pricing['description'] . '<br />'
+                        . $this->pricing['department'] . '<br />'
+                        . _("Current Price") . ": " . $this->pricing['actual_price'] . '<br />'
+                        . _("Regular Price") . ": " . $this->pricing['regular_price'];
+				if (!empty($this->pricing['memPrice'])) {
+					$info .= "<br />(" . _("Member Price") . ": " . $this->pricing['memPrice'] . ")";
 				}
 				
 				$inst = array(
@@ -152,43 +163,10 @@ class PriceCheckPage extends NoInputPage {
 		<?php
 	} // END true_body() FUNCTION
 
-	function mgrauthenticate($password){
-		global $CORE_LOCAL;
-
-		$ret = array(
-			'cancelOrder'=>false,
-			'color'=>'#800000',
-			'msg'=>_('password invalid'),
-			'heading'=>_('re-enter manager password'),
-			'giveUp'=>false
-		);
-
-		$password = strtoupper($password);
-		$password = str_replace("'","",$password);
-
-		if (!isset($password) || strlen($password) < 1 || $password == "CL") {
-			$ret['giveUp'] = true;
-			return $ret;
-		}
-
-		$db = Database::pDataConnect();
-		$priv = sprintf("%d",$CORE_LOCAL->get("SecurityCancel"));
-		$password = $db->escape($password);
-		$query = "select emp_no, FirstName, LastName from employees where EmpActive = 1 and frontendsecurity >= $priv "
-		."and (CashierPassword = '".$password."' or AdminPassword = '".$password."')";
-		$result = $db->query($query);
-		$num_rows = $db->num_rows($result);
-
-		if ($num_rows != 0) {
-			$this->cancelorder();
-			$ret['cancelOrder'] = true;
-		}
-
-		return $ret;
-	}
-
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__))
+if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
 	new PriceCheckPage();
+}
+
 ?>

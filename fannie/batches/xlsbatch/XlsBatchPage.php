@@ -197,8 +197,7 @@ class XlsBatchPage extends FannieUploadPage {
 		return ob_get_clean();
 	}
 }
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new XlsBatchPage();
-	$obj->draw_page();
-}
+
+FannieDispatch::conditionalExec(false);
+
 ?>

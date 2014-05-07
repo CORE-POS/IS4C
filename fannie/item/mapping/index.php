@@ -97,6 +97,7 @@ function saveItem($store,$sec,$subsec,$sh_set,$shelf,$loc,$upc){
 }
 
 
+$dbc = FannieDB::get($FANNIE_OP_DB);
 $sectionsQ = $dbc->prepare_statement("SELECT superID,super_name FROM MasterSuperDepts
 	WHERE superID > 0 ORDER BY superID");
 $sectionsR = $dbc->exec_statement($sectionsQ);

@@ -42,7 +42,9 @@ class SaScanningPage extends FanniePage {
 		/**
 		  Store session in browser section.
 		*/
-		@session_start();
+        if (ini_get('session.auto_start')==0 && !headers_sent() && php_sapi_name() != 'cli') {
+            @session_start();
+        }
 		if (!isset($_SESSION['SaPluginSection']))
 			$_SESSION['SaPluginSection'] = 0;
 		$this->section = $_SESSION['SaPluginSection'];
@@ -199,7 +201,5 @@ function readinput() {
 	}
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new SaScanningPage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+

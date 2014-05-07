@@ -232,6 +232,6 @@ function do_pricechange(upc, newprice){
 	}
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

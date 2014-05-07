@@ -61,7 +61,7 @@ function audit($dept_sub,$uid,$upc,$desc,$price,$tax,$fs,$scale,$discount,$likec
 	}
 	$message .= "\n";
 	$message .= "Adjust this item?\n";
-	$message .= "http://{$hostname}/{$FANNIE_URL}item/itemMaint.php?upc=$upc\n";
+	$message .= "http://{$hostname}/{$FANNIE_URL}item/itemMaint.php?searchupc=$upc\n";
 	$message .= "\n";
 	$message .= "This change was made by user $uid\n";
 

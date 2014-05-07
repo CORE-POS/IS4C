@@ -23,6 +23,9 @@
 
 include('../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('JsonLib')) {
+    include($FANNIE_ROOT.'src/JsonLib.php');
+}
 
 class BrowseVendorItems extends FanniePage {
 	protected $title = "Fannie : Browse Vendor Catalog";
@@ -47,18 +50,27 @@ class BrowseVendorItems extends FanniePage {
 			$this->getCategoryBrands(FormLib::get_form_Value('vid'),FormLib::get_form_value('deptID'));
 			break;
 		case 'showCategoryItems':
-			$this->showCategoryItems(
+            $ret = array();
+            $ret['tags'] = $this->guessSuper(
+                FormLib::get('vid'),
+                FormLib::get('deptID'),
+                FormLib::get('brand')
+            );
+			$ret['items'] = $this->showCategoryItems(
 				FormLib::get_form_value('vid'),
 				FormLib::get_form_value('deptID'),
-				FormLib::get_form_value('brand')
+				FormLib::get_form_value('brand'),
+                $ret['tags']
 			);
+            echo JsonLib::array_to_json($ret);
 			break;
 		case 'addPosItem':
-			$this->add_to_pos(
+			$this->addToPos(
 				FormLib::get_form_value('upc'),
 				FormLib::get_form_value('vid'),
 				FormLib::get_form_value('price'),
-				FormLib::get_form_value('dept')
+				FormLib::get_form_value('dept'),
+                FormLib::get('tags', -1)
 			);
 			break;
 		default:
@@ -89,18 +101,73 @@ class BrowseVendorItems extends FanniePage {
 		echo $ret;
 	}
 
-	private function showCategoryItems($vid,$did,$brand){
+    private function guessSuper($vid, $did, $brand)
+    {
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 
+        $args = array($vid, $brand);
+        $guess = 'SELECT s.superID
+                  FROM products AS p
+                    LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID
+                    INNER JOIN vendorItems AS v ON p.upc=v.upc
+                  WHERE v.vendorID=?
+                    AND s.superID IS NOT NULL
+                    AND v.brand=? ';
+        if ($did != 'All') {
+            $guess .= ' AND v.vendorDept=? ';
+            $args[] = $did;
+        }
+        $guess .= ' ORDER BY count(*) DESC';
+
+        $prep = $dbc->prepare($guess);
+        $result = $dbc->execute($prep, $args);
+        $defaultSuper = -999;
+        if ($dbc->num_rows($result) > 0) {
+            $row = $dbc->fetch_row($result);
+            if ($row['superID'] != '') {
+                $defaultSuper = $row['superID'];
+            }
+        } 
+        
+        if ($defaultSuper == -999 && $did != 'All') {
+            $guess = 'SELECT s.superID
+                      FROM products AS p
+                        LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID
+                        INNER JOIN vendorItems AS v ON p.upc=v.upc
+                      WHERE v.vendorID=?
+                        AND v.vendorDept=?
+                      ORDER BY count(*) DESC';
+            $prep = $dbc->prepare($guess);
+            $result = $dbc->execute($prep, array($vid, $did));
+            if ($dbc->num_rows($result) > 0) {
+                $row = $dbc->fetch_row($result);
+                $defaultSuper = $row['superID'];
+            }
+        }
+
+        return $defaultSuper;
+    }
+
+	private function showCategoryItems($vid,$did,$brand,$ds=-999){
+		global $FANNIE_OP_DB;
+		$dbc = FannieDB::get($FANNIE_OP_DB);
+
+        $defaultSuper = $ds;
+
 		$depts = "";
-		$p = $dbc->prepare_statement("SELECT dept_no,dept_name FROM departments ORDER BY dept_no");
-		$rp = $dbc->exec_statement($p);
+		$p = $dbc->prepare_statement("SELECT dept_no,dept_name 
+                                      FROM departments AS d
+                                        LEFT JOIN MasterSuperDepts AS s ON d.dept_no=s.dept_ID
+                                      ORDER BY 
+                                          CASE WHEN s.superID=? THEN 0 ELSE 1 END,
+                                          dept_no");
+		$rp = $dbc->exec_statement($p, array($defaultSuper));
 		while($rw = $dbc->fetch_row($rp))
 			$depts .= "<option value=$rw[0]>$rw[0] $rw[1]</option>";
 
 		$query = "SELECT v.upc,v.brand,v.description,v.size,
-			v.cost/v.units as cost,
+			v.cost as cost,
 			CASE WHEN d.margin IS NULL THEN 0 ELSE d.margin END as margin,
 			CASE WHEN p.upc IS NULL THEN 0 ELSE 1 END as inPOS,
 			s.srp
@@ -113,7 +180,7 @@ class BrowseVendorItems extends FanniePage {
 		$args = array($vid,$brand);
 		if ($did != 'All'){
 			$query .= ' AND vendorDept=? ';
-			$args[] = $dept;
+			$args[] = $did;
 		}
 		$query .= "ORDER BY v.upc";
 		
@@ -146,10 +213,11 @@ class BrowseVendorItems extends FanniePage {
 		}
 		$ret .= "</table>";
 
-		echo $ret;
+		return $ret;
 	}
 
-	private function add_to_pos($upc,$vid,$price,$dept){
+	private function addToPos($upc,$vid,$price,$dept,$tags=-1)
+    {
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 
@@ -162,21 +230,37 @@ class BrowseVendorItems extends FanniePage {
 		$dinfo = $dbc->exec_statement($p,array($dept));
 		$dinfo = $dbc->fetch_row($dinfo);
 		
-		ProductsModel::update($upc,array(
-			'description' => $vinfo['description'],
-			'normal_price' => $price,
-			'department' => $dept,
-			'tax' => $dinfo['dept_tax'],
-			'foodstamp' => $dinfo['dept_fs'],
-			'cost' => ($vinfo['cost']/$vinfo['units'])
-		));
+        $model = new ProductsModel($dbc);
+        $model->upc(BarcodeLib::padUPC($upc));
+        $model->description($vinfo['description']);
+        $model->normal_price($price);
+        $model->department($dept);
+        $model->tax($dinfo['dept_tax']);
+        $model->foodstamp($dinfo['dept_fs']);
+        $model->cost($vinfo['cost']);
+        $model->save();
 
 		$xInsQ = $dbc->prepare_statement("INSERT INTO prodExtra (upc,distributor,manufacturer,cost,margin,variable_pricing,location,
 				case_quantity,case_cost,case_info) VALUES
 				(?,?,?,?,0.00,0,'','',0.00,'')");
 		$args = array($upc,$vinfo['brand'],
-				$vinfo['vendorName'],($vinfo['cost']/$vinfo['units']));
+				$vinfo['vendorName'],$vinfo['cost']);
 		$dbc->exec_statement($xInsQ,$args);
+
+        if ($tags !== -1) {
+            $model = new ShelftagsModel($dbc);
+            $model->id($tags);
+            $model->upc($upc);
+            $model->normal_price($price);
+            $model->description($vinfo['description']);
+            $model->brand($vinfo['brand']);
+            $model->vendor($vinfo['vendorName']);
+            $model->sku($vinfo['sku']);
+            $model->size($vinfo['size']);
+            $model->units($vinfo['units']);
+            $model->pricePerUnit(PriceLib::pricePerUnit($price, $vinfo['size']));
+            $model->save();
+        }
 
 		echo "Item added";
 	}
@@ -198,8 +282,13 @@ class BrowseVendorItems extends FanniePage {
 
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 		$cats = "";
-		$p = $dbc->prepare_statement("SELECT deptID,name FROM vendorDepartments
-				WHERE vendorID=?");
+		$p = $dbc->prepare_statement("SELECT i.vendorDept, d.name 
+                                      FROM vendorItems AS i
+                                        LEFT JOIN vendorDepartments AS d
+                                        ON i.vendorID=d.vendorID AND i.vendorDept=d.deptID
+				                      WHERE i.vendorID=?
+                                      GROUP BY i.vendorDept, d.name
+                                      ORDER BY i.vendorDept");
 		$rp = $dbc->exec_statement($p,array($vid));
 		while($rw = $dbc->fetch_row($rp))
 			$cats .= "<option value=$rw[0]>$rw[0] $rw[1]</option>";
@@ -217,11 +306,21 @@ class BrowseVendorItems extends FanniePage {
 		<select id=brandselect onchange="brandchange();">
 		<option>Select a department first...</option>
 		</select>
+		&nbsp;&nbsp;&nbsp;
+        <select id="shelftags">
+        <option value="-1">Shelf Tag Page</option>
+        <?php
+        $pages = $dbc->query('SELECT superID, super_name FROM MasterSuperDepts GROUP BY superID, super_name ORDER BY superID');
+        while($row = $dbc->fetch_row($pages)) {
+            printf('<option value="%d">%s</option>', $row['superID'], $row['super_name']);
+        }
+        ?>
+        </select>
 		</div>
 		<hr />
 		<div id="contentarea">
 		<?php if (isset($_REQUEST['did'])){
-			showCategoryItems($vid,$_REQUEST['did']);
+			echo showCategoryItems($vid,$_REQUEST['did']);
 		}
 		?>
 		</div>
@@ -236,8 +335,6 @@ class BrowseVendorItems extends FanniePage {
 	}
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new BrowseVendorItems();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+
 ?>

@@ -27,7 +27,7 @@
 
    Copies AR transaction information:
    - trans_subtype='MI'
-   - department = 990
+   - department in $FANNIE_AR_DEPARTMENTS
    for the previous day from dlog_15 into ar_history.
 
    turnover view/cache base tables for WFC end-of-month reports
@@ -36,13 +36,11 @@
 
    Should be run after dtransaction rotation (nightly.dtrans.php)
    and after midnight.
-*/
 
-/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-	 14Jun12 EL Comments partly updated from original comments which were just a
-	             copy of the ones in nightly.equity.php
-
+   See also: arbalance.sanitycheck
+   
+   Deprecated in favour of cron/tasks/ArHistoryTask.php
+   
 */
 
 include('../config.php');
@@ -71,18 +69,32 @@ $query = "INSERT INTO ar_history
 	WHERE "
 	.$sql->datediff($sql->now(),'tdate')." = 1
 	AND (department IN $dlist OR trans_subtype='MI')";	
-$sql->query($query);
+$rslt = $sql->query($query);
+if ($rslt === False) {
+	echo cron_msg("Failed: $query");
+}
 
 $sql->query("TRUNCATE TABLE ar_history_sum");
 $query = "INSERT INTO ar_history_sum
 	SELECT card_no,SUM(charges),SUM(payments),SUM(charges)-SUM(payments)
 	FROM ar_history GROUP BY card_no";
-$sql->query($query);
+$rslt = $sql->query($query);
+if ($rslt === False) {
+	echo cron_msg("Failed: $query");
+}
 
 /* turnover view/cache base tables for WFC end-of-month reports */
 if (date("j")==1 && $sql->table_exists("ar_history_backup")){
-	$sql->query("TRUNCATE TABLE ar_history_backup");
-	$sql->query("INSERT INTO ar_history_backup SELECT * FROM ar_history");
+	$query="TRUNCATE TABLE ar_history_backup";
+	$rslt = $sql->query($query);
+	if ($rslt === False) {
+		echo cron_msg("Failed: $query");
+	}
+	$query="INSERT INTO ar_history_backup SELECT * FROM ar_history";
+	$rslt = $sql->query($query);
+	if ($rslt === False) {
+		echo cron_msg("Failed: $query");
+	}
 
 	$AR_EOM_Summary_Q = "
 	INSERT INTO AR_EOM_Summary
@@ -130,9 +142,18 @@ if (date("j")==1 && $sql->table_exists("ar_history_backup")){
 	GROUP BY c.CardNo,c.LastName,c.FirstName";
 
 	if ($sql->table_exists("AR_EOM_Summary")){
-		$sql->query("TRUNCATE TABLE AR_EOM_Summary");
-		$sql->query($AR_EOM_Summary_Q);
+		$query="TRUNCATE TABLE AR_EOM_Summary";
+		$rslt = $sql->query($query);
+		if ($rslt === False) {
+			echo cron_msg("Failed: $query");
+		}
+		$rslt = $sql->query($AR_EOM_Summary_Q);
+		if ($rslt === False) {
+			echo cron_msg("Failed: $AR_EOM_Summary_Q");
+		}
 	}
 }
+
+echo cron_msg("Done.");
 
 ?>

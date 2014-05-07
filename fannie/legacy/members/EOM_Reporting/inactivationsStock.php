@@ -39,7 +39,7 @@ $query = "select m.card_no,CONCAT(c.FirstName,' ',c.LastName),m.start_date,
 	from memDates as m left join
 	custdata as c on c.CardNo=m.card_no and c.personNum=1
 	left join is4c_trans.stockpurchases as s on m.card_no=s.card_no
-	left join is4c_trans.newBalanceStockToday_test as n on m.card_no=n.memnum
+	left join is4c_trans.equity_live_balance as n on m.card_no=n.memnum
 	where ".$sql->monthdiff($sql->now(),'DATE_ADD(m.start_date,INTERVAL 2 YEAR)')." = -1
 	and c.Type='PC' and n.payments < 100
 	order by m.card_no,s.tdate";

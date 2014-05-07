@@ -46,7 +46,10 @@ input[type="submit"] {
 		?>
 <!doctype html>
 <html>
-<head><title>Handheld Menu</title></head>
+<head>
+    <title>Handheld Menu</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
 <body>
 <input type="submit" value="Inventory"
 	onclick="location='SaHandheldPage.php';return false;" />
@@ -63,6 +66,6 @@ input[type="submit"] {
 	}
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

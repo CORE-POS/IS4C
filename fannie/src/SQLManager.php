@@ -79,6 +79,10 @@ class SQLManager
 	*/
 	public function addConnection($server,$type,$database,$username,$password='',$persistent=false,$new=false)
     {
+        if (empty($type)) {
+            return false;
+        }
+
 		$conn = ADONewConnection($type);
 		$conn->SetFetchMode(ADODB_FETCH_BOTH);
 		$ok = false;
@@ -117,6 +121,24 @@ class SQLManager
 	public function add_connection($server,$type,$database,$username,$password='',$persistent=false)
     {
         return $this->addConnection($server, $type, $database, $username, $password, $persistent);
+    }
+
+    /**
+      Verify object is connected to the database
+      @param $which_connection [string] database name (optional)
+      @return [boolean] 
+    */
+    public function isConnected($which_connection='')
+    {
+		if ($which_connection == '') {
+			$which_connection=$this->default_db;
+        }
+        if (isset($this->connections[$which_connection]) && 
+            is_object($this->connections[$which_connection])) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
 	/**
@@ -628,6 +650,45 @@ class SQLManager
         return $this->fetchField($result_object, $index, $which_connection);
     }
 
+	/**
+	  Start a transaction
+	  @param $which_connection see method close()
+	*/
+	public function startTransaction($which_connection='')
+    {
+		if ($which_connection == '') {
+			$which_connection = $this->default_db;
+        }
+
+		return $this->connections[$which_connection]->BeginTrans();
+	}
+
+	/**
+	  Finish a transaction
+	  @param $which_connection see method close()
+	*/
+	public function commitTransaction($which_connection='')
+    {
+		if ($which_connection == '') {
+			$which_connection = $this->default_db;
+        }
+
+		return $this->connections[$which_connection]->CommitTrans();
+	}
+
+	/**
+	  Abort a transaction
+	  @param $which_connection see method close()
+	*/
+	public function rollbackTransaction($which_connection='')
+    {
+		if ($which_connection == '') {
+			$which_connection = $this->default_db;
+        }
+
+		return $this->connections[$which_connection]->RollbackTrans();
+	}
+
 	/** 
 	   Copy a table from one database to another, not necessarily on
 	   the same server or format.
@@ -680,11 +741,17 @@ class SQLManager
 		}
 
 		$ret = true;
+        $this->startTransaction($dest_db);
 		foreach ($queries as $q) {
 			if(!$this->query($q,$dest_db)) {
                 $ret = false;
             }
 		}
+        if ($ret === true) {
+            $this->commitTransaction($dest_db);
+        } else {
+            $this->rollbackTransaction($dest_db);
+        }
 
 		return $ret;
 	}
@@ -870,6 +937,26 @@ class SQLManager
         return $this->tableExists($table_name, $which_connection);
     }
 
+    public function isView($table_name, $which_connection='')
+    {
+        if ($which_connection == '') {
+            $which_connection=$this->default_db;
+        }
+
+        if (!$this->tableExists($table_name, $which_connection)) {
+            return false;
+        }
+
+		$conn = $this->connections[$which_connection];
+        $views = $conn->MetaTables('VIEW');
+        if (in_array($table_name, $views)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
 	/**
 	   Get the table's definition
 	   @param $table_name The table's name
@@ -921,6 +1008,42 @@ class SQLManager
     {
         return $this->getTables($which_connection);
     }
+
+	/**
+	  Get current default database
+      for a given connection
+	  @param which_connection see method close
+	  @return [string] database name
+        or [boolean] false on failure
+	*/
+	public function defaultDatabase($which_connection='')
+    {
+		if ($which_connection == '') {
+			$which_connection=$this->default_db;
+        }
+        $query ='';
+		switch($this->connections[$which_connection]->databaseType) {
+            case 'mysql':
+            case 'mysqli':
+            case 'pdo':
+                $query = 'SELECT DATABASE() as dbname';
+                break;
+            case 'mssql':
+                $query = 'SELECT DB_NAME() as dbname';
+                break;
+            // postgres is SELECT CURRENT_DATABASE()
+            // should it ever come up
+		}
+
+        $ret = false;
+        $try = $this->query($query, $which_connection);
+        if ($try && $this->num_rows($try) > 0) {
+            $row = $this->fetch_row($try);
+            $ret = $row['dbname'];
+        }
+
+        return $ret;
+	}
 
 	/**
 	  Get database's currency type
@@ -1025,6 +1148,10 @@ class SQLManager
 			$which_connection=$this->default_db;
         }
 		$con = $this->connections[$which_connection];
+
+        if (!is_object($con)) {
+            return 'No database connection';
+        }
 
 		return $con->ErrorMsg();
 	}
@@ -1300,6 +1427,48 @@ class SQLManager
 			return false;
 		}
 	}
+
+    /**
+      Get column names common to both tables
+      @param $table1 [string] table name
+      @param $table2 [string] table name
+      $which_connection [optiona] see close()
+      @return [array] of [string] column names
+    */
+    public function matchingColumns($table1, $table2, $which_connection='')
+    {
+		if ($which_connection == '') {
+			$which_connection=$this->default_db;
+        }
+        
+        $definition1 = $this->table_definition($table1, $which_connection);
+        $definition2 = $this->table_definition($table2, $which_connection);
+        $matches = array();
+        foreach($definition1 as $col_name => $info) {
+            if (isset($definition2[$col_name])) {
+                $matches[] = $col_name;
+            }
+        }
+
+        return $matches;
+    }
+
+    public function getMatchingColumns($table1, $which_connection1, $table2, $which_connection2)
+    {
+        $ret = '';
+        $def1 = $this->tableDefinition($table1, $which_connection1);
+        $def2 = $this->tableDefinition($table2, $which_connection2);
+        foreach($def1 as $column_name => $info) {
+            if (isset($def2[$column_name])) {
+                $ret .= $column_name . ',';
+            }
+        }
+        if ($ret === '') {
+            return false;
+        } else {
+            return substr($ret, 0, strlen($ret)-1);
+        }
+    }
 
 	// skipping fetch_cell on purpose; generic-db way would be slow as heck
 

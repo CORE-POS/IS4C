@@ -21,36 +21,23 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class CorrelatedMovementReport extends FannieReportPage 
 {
+    protected $report_cache = 'day';
+    protected $title = "Fannie : Correlated Movement Report";
+    protected $header = "Correlated Movement Report";
     protected $report_headers = array('UPC', 'Desc', 'Dept', 'Qty');
     protected $sort_column = 3;
     protected $sort_direction = 1;
+    protected $required_fields = array('date1', 'date2');
 
-    public function preprocess()
-    {
-		$this->report_cache = 'day';
-		$this->title = "Fannie : Correlated Movement Report";
-		$this->header = "Correlated Movement Report";
-
-		if (isset($_REQUEST['date1'])){
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-		
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-				$this->report_format = 'xls';
-			} elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-				$this->report_format = 'csv';
-            }
-		}
-		else 
-			$this->add_script("../../src/CalendarControl.js");
-
-        return true;
-    }
+    public $description = '[Correlated Movement] shows what items purchasers from a certain department or group of departments also buy. Optionally, results can be filtered by department too. This may be clearer with an example: among transactions that include a sandwich, what do sales from the beverages department look like?';
+    public $report_set = 'Movement Reports';
 
     public function fetch_report_data()
     {
@@ -288,6 +275,6 @@ function flipover(opt){
 
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

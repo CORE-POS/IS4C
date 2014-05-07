@@ -196,5 +196,5 @@ a {
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 

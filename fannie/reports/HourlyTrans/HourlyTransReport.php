@@ -21,38 +21,33 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class HourlyTransReport extends FannieReportPage 
 {
+    public $description = '[Hourly Transactions] lists transactions per hour over a given date range.';
+    public $report_set = 'Sales Reports';
 
     protected $title = "Fannie : Hourly Transactions Report";
     protected $header = "Hourly Transactions";
+
+    protected $required_fields = array('date1', 'date2');
 
     protected $sortable = false;
     protected $no_sort_but_style = true;
 
 	public function preprocess()
     {
-		$this->report_cache = 'none';
-
-		if (isset($_REQUEST['date1'])){
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-		
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-				$this->report_format = 'xls';
-			} elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-				$this->report_format = 'csv';
-            } else {
-                $this->add_script('../../src/d3.js/d3.v3.min.js');
-                $this->add_script('../../src/d3.js/charts/singleline/singleline.js');
-                $this->add_css_file('../../src/d3.js/charts/singleline/singleline.css');
-            }
+        parent::preprocess();
+        // custom: needs graphing JS/CSS
+        if ($this->content_function == 'report_content' && $this->report_format == 'html') {
+            $this->add_script('../../src/d3.js/d3.v3.min.js');
+            $this->add_script('../../src/d3.js/charts/singleline/singleline.js');
+            $this->add_css_file('../../src/d3.js/charts/singleline/singleline.css');
 		}
-		else 
-			$this->add_script("../../src/CalendarControl.js");
 
 		return true;
 	}
@@ -415,6 +410,6 @@ function swap(src,dst){
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

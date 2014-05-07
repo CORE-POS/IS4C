@@ -34,14 +34,19 @@ class OverShortTools extends FanniePlugin {
 	  on the 'Plugins' area of the install page and
 	  written to ini.php
 	*/
+	// 17Dec13 EL Change code style and sequence of elements, putting 'label' first.
 	public $plugin_settings = array(
-	'OverShortDatabase' => array('default'=>'core_overshort','label'=>'Database',
-			'description'=>'Database to store tender counts and related info')
+		'OverShortDatabase' => array(
+			'label'=>'Database',
+			'default'=>'core_overshort',
+			'description'=>'Database to store tables of plugin-specific
+					tender counts and related info.
+					Can be one of the default CORE databases or a separate one.'
+		)
 	);
 
-	public $plugin_description = 'Plugin for comparing counted cashier tender totals
-			to POS totals';
-
+	public $plugin_description = 'Plugin for comparing tender totals counted by cashiers 
+			to totals from the POS transactions database.';
 
 	public function setting_change(){
 		global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
@@ -49,6 +54,7 @@ class OverShortTools extends FanniePlugin {
 		$db_name = $FANNIE_PLUGIN_SETTINGS['OverShortDatabase'];
 		if (empty($db_name)) return;
 
+		// Creates the database if it doesn't already exist.
 		$dbc = FannieDB::get($db_name);
 		
 		$tables = array(

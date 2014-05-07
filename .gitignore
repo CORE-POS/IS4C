@@ -3,6 +3,8 @@ pos/is4c/ini/ini.php
 *~
 pos/is4c-nf/log/*.log
 pos/is4c-nf/ini.php
+pos/is4c-nf/locale/*.po
+pos/is4c-nf/locale/*.pot
 fannie/reports/cash_report/image_area/*
 fannie/config.php
 fannie/logs/*.log
@@ -24,6 +26,9 @@ scripts/dist/rpm/SOURCES/*
 scripts/dist/rpm/SRPMS/*
 fannie/pi_food_net
 fannie/pi_food_net/scalesDistro
+fannie/logs/*
+fannie/locale/*.po
+fannie/locale/*.pot
 *.dll
 *.exe
 fannie/INSTALL

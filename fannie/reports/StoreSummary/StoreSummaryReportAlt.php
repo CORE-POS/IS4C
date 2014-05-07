@@ -35,38 +35,34 @@
 
  * 22Jul13 EL Attempt to use dlog views must wait until they include cost.
 */
-include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class StoreSummaryReportAlt extends FannieReportPage {
 
-	function preprocess(){
-		$this->title = "Fannie : Store Summary Report";
-		$this->header = "Store Summary Report";
-		$this->report_cache = 'none';
-		if (FormLib::get_form_value('sortable') !== '')
-			$this->sortable = True;
-		else
-			$this->sortable = False;
+    protected $title = "Fannie : Store Summary Report";
+    protected $header = "Store Summary Report";
+
+    protected $report_headers = array('','Qty','Costs','% Costs','DeptC%','Sales','% Sales','DeptS %',
+				'Margin %','GST','HST');
+    protected $required_fields = array('date1', 'date2');
+
+    public $description = '[Store Summary Report] shows total sales, costs and taxes per department for a given date range in dollars as well as a percentage of store-wide sales and costs. It uses actual item cost if known and estimates cost from price and department margin if not; relies on department margins being accurate.';
+    public $report_set = 'Sales Reports';
+
+	function preprocess()
+    {
+        // custom: optional sorting
+		if (FormLib::get_form_value('sortable') !== '') {
+			$this->sortable = true;
+		} else {
+			$this->sortable = false;
+        }
 		$this->cellTextAlign = 'right';
 
-		if (FormLib::get_form_value('date1') !== ''){
-			$this->content_function = "report_content";
-			$this->has_menus(True); // 1Jul13 was False, normal for reports of this kind.
-			$this->report_headers = array('','Qty','Costs','% Costs','DeptC%','Sales','% Sales','DeptS %',
-				'Margin %','GST','HST');
-
-			/**
-			  Check if a non-html format has been requested
-			   from the links in the initial display, not the form.
-			*/
-			if (FormLib::get_form_value('excel') !== '')
-				$this->report_format = FormLib::get_form_value('excel');
-		}
-		else 
-			$this->add_script("../../src/CalendarControl.js");
-
-		return True;
+        return parent::preprocess();
 	}
 
 	function report_description_content(){
@@ -120,13 +116,14 @@ class StoreSummaryReportAlt extends FannieReportPage {
 		 *  This does not use a departments table contemporary with the transactions.
 		 * [0]Dept_name [1]Cost, [2]HST, [3]GST, [4]Sales, [x]Qty, [x]superID, [x]super_name
 		*/
+        $departments = $dbc->tableDefinition('departments');
 		if ($dept == 0){
 			// Change varname to sales or totals
 			$costs = "SELECT
 					d.dept_name dname,
 					sum(CASE WHEN t.trans_type = 'I' THEN t.cost 
-						 WHEN t.trans_type = 'D' AND m.margin > 0.00 
-						 THEN t.total - (t.total * m.margin) END) AS costs,
+						 WHEN t.trans_type = 'D' AND d.margin > 0.00 
+						 THEN t.total - (t.total * d.margin) END) AS costs,
 					sum(CASE WHEN t.tax = 1 THEN t.total * x.rate ELSE 0 END) AS taxes1,
 					sum(CASE WHEN t.tax = 2 THEN t.total * x.rate ELSE 0 END) AS taxes2,
 					sum(t.total) AS sales,
@@ -136,9 +133,13 @@ class StoreSummaryReportAlt extends FannieReportPage {
 				FROM
 					$dtrans AS t LEFT JOIN
 					departments AS d ON d.dept_no=t.department LEFT JOIN
-					MasterSuperDepts AS s ON t.department=s.dept_ID LEFT JOIN
-					deptMargin AS m ON t.department=m.dept_id LEFT JOIN
-					taxrates AS x ON t.tax=x.id
+					MasterSuperDepts AS s ON t.department=s.dept_ID LEFT JOIN ";
+                // use margin column from departments if present
+                if (!isset($departments['margin']) && $dbc->tableExists('deptMargin')) {
+					$costs .= ' deptMargin AS m ON t.department=m.dept_id LEFT JOIN ';
+                    $costs = str_replace('d.margin', 'm.margin', $costs);
+                }
+                $costs .= " taxrates AS x ON t.tax=x.id
 				WHERE 
 					($datestamp BETWEEN ? AND ?)
 					AND (s.superID > 0 OR s.superID IS NULL) 
@@ -162,8 +163,8 @@ class StoreSummaryReportAlt extends FannieReportPage {
 			$costs = "SELECT
 				CASE WHEN e.dept_name IS NULL THEN d.dept_name ELSE e.dept_name END AS dname,
 				sum(CASE WHEN t.trans_type = 'I' THEN t.cost 
-					 WHEN t.trans_type = 'D' AND m.margin > 0.00 
-					 THEN t.total - (t.total * m.margin) END) AS costs,
+					 WHEN t.trans_type = 'D' AND d.margin > 0.00 
+					 THEN t.total - (t.total * d.margin) END) AS costs,
 				sum(CASE WHEN t.tax = 1 THEN t.total * x.rate ELSE 0 END) AS taxes1,
 				sum(CASE WHEN t.tax = 2 THEN t.total * x.rate ELSE 0 END) AS taxes2,
 				sum(t.total) AS sales,
@@ -176,9 +177,13 @@ class StoreSummaryReportAlt extends FannieReportPage {
 				departments AS d ON d.dept_no=t.department LEFT JOIN
 				departments AS e ON p.department=e.dept_no LEFT JOIN
 				MasterSuperDepts AS s ON s.dept_ID=p.department LEFT JOIN
-				MasterSuperDepts AS r ON r.dept_ID=t.department LEFT JOIN
-				deptMargin AS m ON p.department=m.dept_id LEFT JOIN
-				taxrates AS x ON t.tax=x.id
+				MasterSuperDepts AS r ON r.dept_ID=t.department LEFT JOIN ";
+            // use margin column from departments if present
+            if (!isset($departments['margin']) && $dbc->tableExists('deptMargin')) {
+                $costs .= ' deptMargin AS m ON p.department=m.dept_id LEFT JOIN ';
+                $costs = str_replace('d.margin', 'm.margin', $costs);
+            }
+            $costs .= "taxrates AS x ON t.tax=x.id
 			WHERE
 				($datestamp BETWEEN ? AND ?)
 				AND (s.superID > 0 OR (s.superID IS NULL AND r.superID > 0)
@@ -416,6 +421,6 @@ class StoreSummaryReportAlt extends FannieReportPage {
 // StoreSummaryReport
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

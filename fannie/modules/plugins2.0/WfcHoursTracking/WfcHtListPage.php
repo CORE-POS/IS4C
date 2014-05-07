@@ -310,5 +310,5 @@ class WfcHtListPage extends FanniePage
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 

@@ -35,16 +35,20 @@
 */
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ * 28Nov13 EL card_no=0 are apparently all members, so OK as is.
  * 23Jul13 EL Commented code for lane2 times-in-future problem.
  *  2Jul13 EL Contains some development comments and apparatus.
 */
 
-include('../../config.php');
+include(dirname(__FILE__) . '/../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-class SalesAndTaxTodayReport extends FanniePage {
+class SalesAndTaxTodayReport extends FannieReportTool 
+{
 
 	//protected $auth_classes = array('salesbyhour');
+    public $description = '[Today\'s Sales and Tax] shows current day totals by hour and tax totals for the day.';
+    public $report_set = 'Sales Reports';
 
 	protected $selected;
 	protected $name = "";
@@ -62,7 +66,7 @@ class SalesAndTaxTodayReport extends FanniePage {
 
 	function preprocess()
     {
-		global $FANNIE_OP_DB;
+		global $FANNIE_OP_DB, $FANNIE_WINDOW_DRESSING;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 		// Should let fanadmin, cashier in but keep lydia out.
 		// But it doesn't.
@@ -87,7 +91,10 @@ class SalesAndTaxTodayReport extends FanniePage {
 		$this->title = "Fannie : Today's $this->name Sales and Taxes";
 		$this->header = "Today's $this->name Sales and Taxes";
 
-		$this->has_menus(True);
+		if ( isset($FANNIE_WINDOW_DRESSING) )
+			$this->has_menus($FANNIE_WINDOW_DRESSING);
+		else
+			$this->has_menus(True);
 
 		return True;
 
@@ -102,8 +109,8 @@ class SalesAndTaxTodayReport extends FanniePage {
 		$table = 'dlog';	// i.e. dlog. dlog_15 if $today is before today.
 		$ddiff = 0;	// i.e. 0. -n if $today is before today.
 /*
-$today = "2013-08-19";
 $table = 'dlog_15';	// i.e. dlog. dlog_15 if $today is before today.
+$today = "2013-11-27";
 $ddiff = -1;	// i.e. 0. -n if $today is before today.
 echo "<br />Jiggered date, table= $table, datediff= $ddiff for $today";
 //
@@ -123,8 +130,10 @@ echo "<br />id $id";
 		for ($n=0;$n<24;++$n) {
 			if ($n==0)
 				$hourNames["$n"] = "Midnight";
-			elseif ($n<12)
-				$hourNames["$n"] = "{$n}am";
+			elseif ($n<12) {
+				$hIndex = sprintf("%02d",$n);
+				$hourNames["$hIndex"] = "{$n}am";
+			}
 			elseif ($n==12)
 				$hourNames["$n"] = "Noon";
 			else {
@@ -134,8 +143,10 @@ echo "<br />id $id";
 		}
 
 		$queryArgs = array();
-		if ( $this->selected != -1 )
-					$queryArgs[]=$this->selected;
+		if ( $this->selected != -1 ) {
+			$queryArgs[]=$this->selected;
+			$queryArgs[]=$this->selected;
+		}
 		// Array pointer to the last column before taxes. Not used.
 		//$colIndex = ($this->selected == -1)?1:2;
 		// taxNames1 is all the taxes, with key/index agreeing with taxrates.id
@@ -171,12 +182,10 @@ echo "<br />id $id";
 					$taxColNameSuper = 'taxes'.$taxId.'s';
 					$taxNames[$taxId]['colNameSuper'] = $taxColNameSuper;
 					// [querySuper] is not used outside this loop.  Needed?
-					/* For security, the argument to superID s/b ? and the value pushed to $queryArgs[],
-					 *  but $queryArgs doesn't exist yet.
-					*/
 					$taxNames[$taxId]['querySuper'] = 
-						", sum(CASE WHEN d.tax = $taxId AND t.superID=$this->selected THEN d.total * x.rate ELSE 0 END) $taxColNameSuper";
+						", sum(CASE WHEN d.tax = $taxId AND t.superID=? THEN d.total * x.rate ELSE 0 END) $taxColNameSuper";
 					$taxQuery .= $taxNames[$taxId]['querySuper'];
+					// For the tax query, which isn't using subs.
 					$queryArgs[] = $this->selected;
 				}
 			}
@@ -184,7 +193,7 @@ echo "<br />id $id";
 //xecho "<br />"; print_r($taxNames);
 
 		if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' )
-			$shrinkageUsers = " AND d.card_no not between 99990 and 99998";
+			$shrinkageUsers = " AND d.card_no not between 99900 and 99998";
 		else
 			$shrinkageUsers = "";
 
@@ -197,58 +206,74 @@ echo "<br />id $id";
 		*/
 		if ($this->selected == -1){
 			$query1="SELECT ".$dbc->hour('tdate')." as Hour, 
-					sum(total)as Sales
+					sum(total)as Sales,
+					sum(case when d.card_no = 99999 then total else 0 end) as nms
 					$taxQuery
-				FROM ".$FANNIE_TRANS_DB.$dbc->sep()."$table AS d LEFT JOIN
-					MasterSuperDepts AS t ON d.department = t.dept_ID
+				FROM ".$FANNIE_TRANS_DB.$dbc->sep()."$table AS d
+					LEFT JOIN MasterSuperDepts AS t ON d.department = t.dept_ID
 					LEFT JOIN taxrates AS x ON d.tax=x.id
 				WHERE ".$dbc->datediff('tdate',$dbc->now())."=$ddiff
 					AND (trans_type ='I' OR trans_type = 'D' or trans_type='M')
 					AND (t.superID > 0 or t.superID IS NULL){$shrinkageUsers}
 				GROUP BY ".$dbc->hour('tdate')."
 				ORDER BY ".$dbc->hour('tdate');
-			// Moved earlier
-			//$queryArgs = array();
 		}
 		// For a superdepartment.
 		else {
 			$query1="SELECT ".$dbc->hour('tdate')." as Hour, 
 					sum(total)as Sales,
-					sum(case when t.superID=? then total else 0 end) as superdeptSales
+					sum(case when t.superID=? then total else 0 end) as superdeptSales,
+					sum(case when t.superID=? AND card_no = 99999 then total else 0 end) as nms
 					$taxQuery
-				FROM ".$FANNIE_TRANS_DB.$dbc->sep()."$table AS d LEFT JOIN
-					MasterSuperDepts AS t ON d.department = t.dept_ID LEFT JOIN
-					taxrates AS x ON d.tax=x.id
+				FROM ".$FANNIE_TRANS_DB.$dbc->sep()."$table AS d
+					LEFT JOIN MasterSuperDepts AS t ON d.department = t.dept_ID
+					LEFT JOIN taxrates AS x ON d.tax=x.id
 				WHERE ".$dbc->datediff('tdate',$dbc->now())."=$ddiff
 					AND (trans_type ='I' OR trans_type = 'D' or trans_type='M')
 					AND t.superID > 0{$shrinkageUsers}
 				GROUP BY ".$dbc->hour('tdate')."
 				ORDER BY ".$dbc->hour('tdate');
-			// Moved earlier
-			//$queryArgs = array($this->selected);
 		}
-//xecho "<br />$query1";
+//echo "<br /> $query1 <br />"; print_r($queryArgs);
 
 		$prep = $dbc->prepare_statement($query1);
 		$result = $dbc->exec_statement($query1,$queryArgs);
 
 		echo "<div align=\"center\"><h1>Today's <span style=\"color:green;\">$this->name</span> Sales and Taxes!</h1>";
+		$today_time = date("l F j, Y g:i A");
+		echo "<h3 style='font-family:arial; color:#444444;'>$today_time</h3>";
 		echo "<table cellpadding=4 cellspacing=2 border=0>";
 		printf("<tr><td style='font-size:1.3em;'><b>Hour</b></td>
 		<td style='text-align:right;font-size:1.3em;'><b>Sales</b></td>
+		<td style='text-align:right;font-size:1.3em;' title='%% of Sales to Members'><b>Member%%</b></td>
+		<td style='text-align:right;font-size:1.3em;' title='%% of Sales to Non-Members'><b>Non-Member%%</b></td>
 		<td style='font-size:1.3em;'>%s</td></tr>",
 			($this->selected==-1)?"":"<b>Proportion</b>");
 		$sum = 0;
-		$sum2 = 0;
+		$sum2 = 0;	// If report by SuperDept.
+		$member_sum = 0;
+		$member_sum2 = 0;
+		$non_member_sum = 0;
+		$non_member_sum2 = 0;
+		$pcell="<td style='text-align:right;'>%.2f%%</td>";
+		$dcell = "<td style='text-align:right;'>\$ %s</td>";
 		while($row=$dbc->fetch_row($result)){
-			printf("<tr><td>%s</td><td style='text-align:right;'>\$ %s</td><td style='%s'>%.2f%%</td></tr>",
+			printf("<tr><td>%s</td>{$dcell}{$pcell}{$pcell}<td style='%s'>%.2f%%</td></tr>",
 				$hourNames["{$row['Hour']}"],
 				($this->selected==-1)?number_format($row['Sales'],2):number_format($row['superdeptSales'],2),
+				(($row['Sales']-$row['nms'])==0)?0.00:($row['Sales']-$row['nms'])/$row['Sales']*100,
+				($row['nms']==0)?0.00:$row['nms']/$row['Sales']*100,
 				($this->selected==-1)?'display:none;':'text-align:right;',	
-				($this->selected==-1)?0.00:$row['superdeptSales']/$row['Sales']*100);
-			$sum += $row[1];
-			if($this->selected != -1)
+				($this->selected==-1)?0.00:$row['superdeptSales']/$row['Sales']*100
+				);
+			$sum += $row['Sales'];
+			$non_member_sum += $row['nms'];
+			$member_sum += ($row['Sales']-$row['nms']);
+			if($this->selected != -1) {
 				$sum2 += $row['superdeptSales'];
+				$non_member_sum2 += $row['nms'];
+				$member_sum2 += ($row['superdeptSales']-$row['nms']);
+			}
 			foreach($taxNames as $k=>$tx) {
 				$taxNames[$k]['sum'] += $row[$tx['colName']];
 				if($this->selected != -1)
@@ -257,11 +282,21 @@ echo "<br />id $id";
 		}
 
 		// Total Sales
-		printf("<tr><td width=60px style='text-align:left; font-size:1.5em;font-weight:700;'>Total</td>
-		<td style='text-align:right;'>\$ %s</td><td style='%s'>%.2f%%</td></tr>",
+		$grandMemberSalesProp = ($this->selected==-1)?
+			(($sum==0)?0.00:($member_sum/$sum)):
+			(($sum2==0)?0.00:($member_sum2/$sum2));
+		$grandNonMemberSalesProp = ($this->selected==-1)?
+			(($sum==0)?0.00:($non_member_sum/$sum)):
+			(($sum2==0)?0.00:($non_member_sum2/$sum2));
+		printf("<tr><td width=60px style='text-align:left; font-size:1.5em;font-weight:700;'>%s</td>
+		{$dcell}{$pcell}{$pcell}<td style='%s'>%.2f%%</td></tr>",
+				'Total',
 				($this->selected==-1)?number_format($sum,2):number_format($sum2,2),
+				number_format(($grandMemberSalesProp*100),2),
+				number_format(($grandNonMemberSalesProp*100),2),
 				($this->selected==-1)?'display:none;':'text-align:right;',	
-				($this->selected==-1)?0.00:($sum==0)?0.00:round($sum2/$sum*100,2));
+				($this->selected==-1)?0.00:($sum==0)?0.00:round($sum2/$sum*100,2)
+				);
 
 		// Total of each Tax
 		foreach($taxNames as $k=>$tx) {
@@ -308,9 +343,6 @@ echo "<br />id $id";
 // SalesAndTaxTodayReport
 }
 
-// This construct lets the rest of the file be included for extension.
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
-	$obj = new SalesAndTaxTodayReport();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+
 ?>

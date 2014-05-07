@@ -21,36 +21,21 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class NewItemsReport extends FannieReportPage 
 {
+    public $description = '[New Items] shows products recently added to POS. This is more
+        approximate than definitive.';
 
     protected $title = "Fannie : New Items Report";
     protected $header = "New Items Report";
 
     protected $report_headers = array('Added', 'UPC', 'Desc', 'Dept#', 'Dept');
-
-	public function preprocess()
-    {
-		$this->report_cache = 'none';
-
-		if (isset($_REQUEST['date1'])){
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-		
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-				$this->report_format = 'xls';
-			} elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-				$this->report_format = 'csv';
-            }
-		}
-		else 
-			$this->add_script("../../src/CalendarControl.js");
-
-		return true;
-	}
+    protected $required_fields = array('date1', 'date2');
 
     public function report_description_content()
     {
@@ -105,7 +90,7 @@ class NewItemsReport extends FannieReportPage
 
         $query = "SELECT MIN(CASE WHEN a.modified IS NULL THEN p.modified ELSE a.modified END) AS entryDate, 
             a.upc, p.description, p.department, d.dept_name
-            FROM products AS p INNER JOIN prodUpdateArchive AS a ON a.upc=p.upc
+            FROM products AS p INNER JOIN prodUpdate AS a ON a.upc=p.upc
             LEFT JOIN departments AS d ON d.dept_no=p.department ";
         // join only needed with specific buyer
         if ($buyer !== '' && $buyer > -1) {
@@ -230,6 +215,6 @@ function swap(src,dst){
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

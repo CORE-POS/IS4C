@@ -53,6 +53,10 @@ if ($orderID === ''){
 <legend>Order Items</legend>
 <div id="itemDiv"></div>
 </fieldset>
+<fieldset>
+<legend>Order History</legend>
+<div id="historyDiv"></div>
+</fieldset>
 <script type="text/javascript">
 function copyOrder(oid){
 	if (confirm("Copy this order?")){
@@ -91,6 +95,15 @@ $(document).ready(function(){
 			$('#itemDiv').html(resp);
 		}
 		});
+        $.ajax({
+            url: 'ajax-calls.php',
+            type: 'post',
+            data: 'action=loadHistory&orderID='+oid,
+            cache: false,
+            success: function(resp){
+                $('#historyDiv').html(resp);
+            }
+        });
 	}
 	});
 

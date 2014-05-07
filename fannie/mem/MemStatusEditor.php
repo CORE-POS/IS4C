@@ -121,8 +121,8 @@ class MemStatusEditor extends FanniePage {
             $obj->Type($valW['memtype2']);
             $obj->memType($valW['memtype1']);
             $obj->Discount($valW['discount']);
-            $obj->MemDiscountLimit($valW['chargelimit');
-            $obj->ChargeLimit($valW['chargelimit');
+            $obj->MemDiscountLimit($valW['chargelimit']);
+            $obj->ChargeLimit($valW['chargelimit']);
             $obj->save();
         }
 
@@ -145,6 +145,10 @@ class MemStatusEditor extends FanniePage {
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 
+        $cas_model = new CustomerAccountSuspensionsModel($dbc);
+        $cas_model->card_no($cardno);
+        $current_id = 0;
+
 		$chkQ = $dbc->prepare_statement("SELECT cardno FROM suspensions WHERE cardno=?");
 		$chkR = $dbc->exec_statement($chkQ,array($cardno));
 		if ($dbc->num_rows($chkR)>0) {
@@ -152,6 +156,45 @@ class MemStatusEditor extends FanniePage {
 			$upQ = $dbc->prepare_statement("UPDATE suspensions SET reasoncode=?, type=?
 				WHERE cardno=?");
 			$upR = $dbc->exec_statement($upQ,array($reason,substr($type,0,1),$cardno));
+
+            $m_status = 0;
+            if (substr($type, 0, 1) == 'T') {
+                $m_status = 2;
+            } else {
+                $m_status = 1;
+            }
+            $cas_model->active(1);
+            $changed = false;
+            // find most recent active record
+            $current = $cas_model->find('tdate', true);
+            foreach($current as $obj) {
+                if ($obj->reasonCode() != $reason || $obj->suspensionTypeID() != $m_status) {
+                    $changed = true;
+                }
+                $cas_model->savedType($obj->savedType());
+                $cas_model->savedMemType($obj->savedMemType());
+                $cas_model->savedDiscount($obj->savedDiscount());
+                $cas_model->savedChargeLimit($obj->savedChargeLimit());
+                $cas_model->savedMailFlag($obj->savedMailFlag());
+                // copy "saved" values from current active
+                // suspension record. should only be one
+                break;
+            }
+
+            // only add a record if something changed.
+            // count($current) of zero means there is no
+            // record. once the migration to the new data
+            // structure is complete, that check won't
+            // be necessary
+            if ($changed || count($current) == 0) {
+                $cas_model->reasonCode($reason);
+                $cas_model->username($this->current_user);
+                $cas_model->tdate(date('Y-m-d H:i:s'));
+                $model->suspensionTypeID($m_status);
+
+                $current_id = $model->save();
+            }
+
 		} else {
 			// new suspension
 			// get current values and save them in suspensions table
@@ -182,6 +225,18 @@ class MemStatusEditor extends FanniePage {
 			$histQ = $dbc->prepare_statement("INSERT INTO suspension_history (username, postdate,
 				post, cardno, reasoncode) VALUES (?,".$dbc->now().",'',?,?)");
 			$histR = $dbc->exec_statement($histQ,array($username,$cardno,$reason));
+
+            $cas_model->savedType($model->Type());
+            $cas_model->savedMemType($model->memType());
+            $cas_model->savedDiscount($model->Discount());
+            $cas_model->savedChargeLimit($model->ChargeLimit());
+            $cas_model->savedMailFlag($meminfo->ads_OK());
+            $cas_model->suspensionTypeID( substr($type, 0, 1) == 'T' ? 2 : 1 );
+            $cas_model->tdate(date('Y-m-d H:i:s'));
+            $cas_model->username($this->current_user);
+            $cas_mode->reasonCode($reason);
+            $cas_model->active(1);
+            $current_id = $cas_model->save();
 		}
 
 		// remove account privileges in custdata
@@ -200,12 +255,22 @@ class MemStatusEditor extends FanniePage {
         $model->card_no($cardno);
         $model->ads_OK(0);
         $model->save();
+
+        // only one CustomerAccountSuspensions record should be active
+        if ($current_id != 0) {
+            $cas_model->reset();
+            $cas_model->card_no($cardno);
+            $cas_model->active(1);
+            foreach($cas_model->find() as $obj) {
+                if ($obj->customerAccountSuspensionID() != $current_id) {
+                    $obj->active(0);
+                    $obj->save();
+                }
+            }
+        }
 	}
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new MemStatusEditor();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
 
 ?>

@@ -1,4 +1,6 @@
 <?php 
+header('Location: ../../modules/plugins2.0/PIKiller/PISearchPage.php');
+exit;
 include('../../config.php');
 
 include($FANNIE_ROOT.'src/SQLManager.php');
@@ -48,7 +50,7 @@ include 'header.html';
     <td colspan="2" align="center" valign="top" bgcolor="#66CC99">&nbsp;</td>
   </tr>
   <tr>
-<form name="memNum" id="memNum" method="post" action="memGen.php">
+<form name="memNum" id="memNum" method="get" action="memGen.php">
     <td width="1" align="right">&nbsp;</td>
     <td width="47" align="right" valign="middle"><font size="2" face="Papyrus, Verdana, Arial, Helvetica, sans-serif">Owner
     # or UPC:</font></td>

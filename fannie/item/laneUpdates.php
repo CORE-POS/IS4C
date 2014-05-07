@@ -41,6 +41,11 @@ function addProductAllLanes($upc){
 		$laneupdate_sql->add_connection($FANNIE_LANES[$i]['host'],$FANNIE_LANES[$i]['type'],
 			$FANNIE_LANES[$i]['op'],$FANNIE_LANES[$i]['user'],
 			$FANNIE_LANES[$i]['pw']);
+        
+        if (!isset($laneupdate_sql->connections[$FANNIE_LANES[$i]['op']]) || $laneupdate_sql->connections[$FANNIE_LANES[$i]['op']] === false) {
+            // connect failed
+            continue;
+        }
 
 		// generate list of columns that exist on both
 		// the server and the lane
@@ -72,12 +77,12 @@ function deleteProductAllLanes($upc){
 		$tmp = new SQLManager($FANNIE_LANES[$i]['host'],$FANNIE_LANES[$i]['type'],
 			$FANNIE_LANES[$i]['op'],$FANNIE_LANES[$i]['user'],
 			$FANNIE_LANES[$i]['pw']);
-		if(!$tmp) {
-			//TODO: log or warn about connection error?
-		} else {
-			$delQ = $tmp->prepare_statement("DELETE FROM products WHERE upc=?");
-			$delR = $tmp->exec_statement($delQ,array($upc),$FANNIE_LANES[$i]['op']);
-		}
+        if (!isset($tmp->connections[$FANNIE_LANES[$i]['op']]) || $tmp->connections[$FANNIE_LANES[$i]['op']] === false) {
+            // connect failed
+            continue;
+        }
+		$delQ = $tmp->prepare_statement("DELETE FROM products WHERE upc=?");
+		$delR = $tmp->exec_statement($delQ,array($upc),$FANNIE_LANES[$i]['op']);
 	}
 }
 

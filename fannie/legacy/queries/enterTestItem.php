@@ -43,6 +43,8 @@ include('../db.php');
 
 extract($_POST);
 
+$upc = str_pad($upc, 13, '0', STR_PAD_LEFT);
+
 $price = trim($price);
 if (!is_numeric($price))
 	$price = 0;
@@ -127,44 +129,66 @@ if (!$validatedUser && !$auditedUser && substr($upc,0,3) != "002"){
 $descript = str_replace("'","",$descript);
 $descript = str_replace("\"","",$descript);
 $descript = $sql->escape($descript);
-
-$stamp = date("Y-m-d H:i:s");
-
-$query1 = "INSERT INTO prodUpdate 
-        VALUES(?, ?,
-        ?, ?,
-        ?, ?, ?,
-        ?,
-        ?,
-        ?,
-        ?,
-        ?,
-        ?)
-        ";
-//echo $query1;
-$result1 = $sql->execute($query1, array($upc, $descript, $price, $dept, $tax, $FS, $Scale, $likeCode, $stamp, $uid, $QtyFrc, $NoDesc, $inUse));
-
-
-$query99 = $sql->prepare("INSERT INTO products (upc,description,normal_price,pricemethod,groupprice,quantity,
-	special_price,specialpricemethod,specialgroupprice,specialquantity,start_date,end_date,
-	department,size,tax,foodstamp,scale,scaleprice,mixmatchcode,modified,advertised,tareweight,discount,
-	discounttype,unitofmeasure,wicable,qttyEnforced,idEnforced,cost,inUse,numflag,subdept,
-	deposit,local)
-	VALUES(?,?,?,0,0.00,0,0.00,0,0.00,0,'','',?,0,?,?,?,0,0,?,0,0,?,0,0,0,0,0,0.00,1,
-	0,0,0.00,?)");
-//echo $query99;
-$resultI = $sql->execute($query99, array($upc, $descript, $price, $dept, $tax, $FS, $Scale, $stamp, $NoDisc, $local));
-
-$model = new ProductsModel($sql);
-$model->upc($upc);
-$model->pushToLanes();
-
 if (empty($manufacturer))
 	$manufacturer = '';
 if (empty($distributor))
 	$distributor = '';
 $manufacturer = preg_replace("/\\\'/","",$manufacturer);
 $distributor = preg_replace("/\\\'/","",$distributor);
+// lookup vendorID by name
+$vendorID = 0;
+$vendor = new VendorsModel($sql);
+$vendor->vendorName($distributor);
+foreach($vendor->find('vendorID') as $obj) {
+    $vendorID = $obj->vendorID();
+    break;
+}
+
+$stamp = date("Y-m-d H:i:s");
+
+// use model instead of raw INSERT query
+$model = new ProductsModel($sql);
+$model->upc($upc);
+$model->description($descript);
+$model->brand($manufacturer);
+$model->normal_price($price);
+$model->pricemethod(0);
+$model->groupprice(0.00);
+$model->quantity(0);
+$model->special_price(0.00);
+$model->specialpricemethod(0);
+$model->specialgroupprice(0.00);
+$model->specialquantity(0);
+$model->start_date('');
+$model->end_date('');
+$model->department($dept);
+$model->size(0);
+$model->tax($tax);
+$model->foodstamp($FS);
+$model->scale($Scale);
+$model->scaleprice(0);
+$model->mixmatchcode(0);
+$model->modified($stamp);
+$model->advertised(0);
+$model->tareweight(0);
+$model->discount($NoDisc);
+$model->discounttype(0);
+$model->unitofmeasure(0);
+$model->wicable(0);
+$model->qttyEnforced(0);
+$model->idEnforced(0);
+$model->cost(0.00);
+$model->inUse(1);
+$model->numflag(0);
+$model->subdept(0);
+$model->deposit(0.00);
+$model->local($local);
+$model->default_vendor_id($vendorID);
+$model->save();
+
+$model->upc($upc);
+$model->pushToLanes();
+
 $checkQ = $sql->prepare("select * from prodExtra where upc=?");
 $checkR = $sql->execute($checkQ, array($upc));
 if ($sql->num_rows($checkR) == 0){

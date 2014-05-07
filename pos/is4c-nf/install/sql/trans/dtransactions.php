@@ -39,6 +39,7 @@ Columns:
 	charflag varchar
 	card_no int
 	trans_id int
+    pos_row_id int
 
 Depends on:
 	none
@@ -191,6 +192,9 @@ purchase as opposed to current status.
 
 numflag and charflag are generic status indicators. As far
 as I know, there's no uniform usage across implementations.
+Also used by the shrink/DDD module to indicate the reason 
+the product has been marked as unsellable, for which 
+trans_status = 'Z'.
 
 card_no is the customer number from core_op.custdata.
 */
@@ -231,7 +235,9 @@ $CREATE['trans.dtransactions'] = "
 	  `numflag` int(11) default 0 NULL,
 	  `charflag` varchar(2) default '' NULL,
 	  `card_no` int(11) default NULL,
-	  `trans_id` int(11) default NULL
+	  `trans_id` int(11) default NULL,
+      `pos_row_id` bigint unsigned not null auto_increment,
+      primary key (`pos_row_id`)
 	)
 ";
 
@@ -272,7 +278,8 @@ if ($dbms == "MSSQL"){
 			[numflag] [smallint] NULL ,
 			[charflag] [nvarchar] (2) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
 			[card_no] [nvarchar] (6) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-			[trans_id] [int] NOT NULL 
+			[trans_id] [int] NOT NULL ,
+            [pos_row_id] [bigint] IDENTITY(1, 1) NOT NULL
 		)
 	";
 }

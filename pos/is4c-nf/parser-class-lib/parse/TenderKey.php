@@ -21,24 +21,29 @@
 
 *********************************************************************************/
 
-class TenderKey extends Parser {
+class TenderKey extends Parser 
+{
 
-	function check($str){
-		if (strstr($str,"TT") && strlen($str) >= 3 &&
-		    substr($str,0,2) != "VD")
-			return True;
-		else if ($str == "TT")
-			return True;
-		return False;
+	function check($str)
+    {
+        if (substr($str, -2) == "TT" && strlen($str) >=3 && is_numeric(substr($str, 0, strlen($str)-2))) {
+			return true;
+		} else if ($str == "TT") {
+			return true;
+        }
+
+		return false;
 	}
 
-	function parse($str){
+	function parse($str)
+    {
 		global $CORE_LOCAL;
 		$my_url = MiscLib::base_url();
 
 		$amt = substr($str,0,strlen($str)-2);
-		if ($amt === "")
+		if ($amt === "") {
 			$amt = 100*$CORE_LOCAL->get("amtdue");
+        }
 		$ret = $this->default_json();
 
 		$CORE_LOCAL->set("tenderTotal",$amt);
@@ -47,7 +52,8 @@ class TenderKey extends Parser {
 		return $ret;
 	}
 
-	function doc(){
+	function doc()
+    {
 		return "<table cellspacing=0 cellpadding=3 border=1>
 			<tr>
 				<th>Input</th><th>Result</th>

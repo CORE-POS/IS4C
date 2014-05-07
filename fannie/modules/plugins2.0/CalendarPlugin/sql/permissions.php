@@ -23,9 +23,11 @@
 
 $PLUGIN_CREATE['permissions'] = "
 	CREATE TABLE permissions (
+    permissionID INT NOT NULL AUTO_INCREMENT,
 	calendarID INT,
 	uid INT,
-	classID INT
+	classID INT,
+    PRIMARY KEY (permissionID)
 	)
 ";
 

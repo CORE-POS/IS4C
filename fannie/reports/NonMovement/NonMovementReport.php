@@ -21,72 +21,48 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class NonMovementReport extends FannieReportPage {
+
+    protected $title = "Fannie: Non-Movement";
+    protected $header = "Non-Movement Report";
+
+    protected $required_fields = array('date1', 'date2');
+
+    public $description = '[Non-Movement] shows items in a department or group of departments that have no sales over a given date range. This is mostly for finding discontinued or mis-entered products.';
+    public $report_set = 'Movement Reports';
 
 	function preprocess()
     {
 		global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-		/**
-		  Set the page header and title, enable caching
-		*/
-		$this->title = "Fannie: Non-Movement";
-		$this->header = "Non-Movement Report";
-		$this->report_cache = 'none';
 
-		if (isset($_REQUEST['deleteItem'])){
+        // custom: can delete items from report results
+		if (isset($_REQUEST['deleteItem'])) {
 			$upc = FormLib::get_form_value('deleteItem','');
-			if (is_numeric($upc))
+			if (is_numeric($upc)) {
 				$upc = BarcodeLib::padUPC($upc);
-
-			$query = "DELETE FROM products WHERE upc=?";
-			$queryP = $dbc->prepare_statement($query);
-			$dbc->exec_statement($queryP, array($upc));
-
-			$query = "DELETE FROM productUser WHERE upc=?";
-			$queryP = $dbc->prepare_statement($query);
-			$dbc->exec_statement($queryP, array($upc));
-
-			$query = "DELETE FROM prodExtra WHERE upc=?";
-			$queryP = $dbc->prepare_statement($query);
-			$dbc->exec_statement($queryP, array($upc));
+            }
+            $dbc = FannieDB::get($FANNIE_OP_DB);
+            $model = new ProductsModel($dbc);
+            $model->upc($upc);
+            $model->delete();
 
 			echo 'Deleted';
 			exit;
 		}
 
-		if (isset($_REQUEST['date1'])){
-			/**
-			  Form submission occurred
+        $ret = parent::preprocess();
+        // custom: needs extra JS for delete option
+        if ($this->content_function == 'report_content' && $this->report_format == 'html') {
+            $this->add_script("../../src/jquery/jquery.js");
+            $this->add_script('delete.js');
+        }
 
-			  Change content function, turn off the menus,
-			  set up headers
-			*/
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-			$this->report_headers = array('UPC','Description','Dept#','Dept','');
-		
-			/**
-			  Check if a non-html format has been requested
-			*/
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls')
-				$this->report_format = 'xls';
-			elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv')
-				$this->report_format = 'csv';
-			else {
-				$this->add_script("../../src/jquery/jquery.js");
-				$this->add_script('delete.js');
-			}
-		}
-		else {
-			$this->add_script("../../src/CalendarControl.js");
-			$this->add_script("../../src/jquery/jquery.js");
-		}
-
-		return True;
+		return $ret;
 	}
 
 	function fetch_report_data()
@@ -225,6 +201,6 @@ class NonMovementReport extends FannieReportPage {
 	}
 }
 
-$obj = new NonMovementReport();
-$obj->draw_page();
+FannieDispatch::conditionalExec(false);
+
 ?>

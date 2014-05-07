@@ -31,6 +31,9 @@ if (!class_exists('WfcHtLib')) {
 
 class WfcHtCsvDump extends FannieReportPage
 {
+    public $discoverable = false; // access is very restricted; no need to list
+                                  // as an available report
+
     protected $must_authenticate = true;
     protected $auth_classes = array('view_all_hours');
     protected $header = 'PTO/UTO Report';
@@ -81,5 +84,5 @@ class WfcHtCsvDump extends FannieReportPage
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 

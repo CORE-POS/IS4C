@@ -184,16 +184,8 @@ class paycardEntered extends Parser {
 			return $ret;
 		}
 
-		/*
-		if ($CORE_LOCAL->get("paycard_type") == PaycardLib::PAYCARD_TYPE_CREDIT){
-			PaycardLib::paycard_reset();
-			$ret['main_frame'] = MiscLib::base_url().'cc-modules/gui/ProcessPage.php';
-			return $ret;
-		}
-		*/
-
 		foreach($CORE_LOCAL->get("RegisteredPaycardClasses") as $rpc){
-			if (!class_exists($rpc)) include_once(MiscLib::base_url()."cc-modules/$rpc.php");
+			if (!class_exists($rpc)) continue;
 			$myObj = new $rpc();
 			if ($myObj->handlesType($CORE_LOCAL->get("paycard_type")))
 				return $myObj->entered($validate,$ret);

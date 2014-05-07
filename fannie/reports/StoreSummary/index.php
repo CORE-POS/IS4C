@@ -50,9 +50,9 @@
 
 */
 header("Location: StoreSummaryReport.php");
-exit;
+return;
 
-include('../../config.php');
+include(dirname(__FILE__) . '/../../config.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
 

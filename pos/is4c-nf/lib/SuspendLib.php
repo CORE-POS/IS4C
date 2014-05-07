@@ -62,6 +62,12 @@ static public function suspendorder()
 
 	$CORE_LOCAL->set("plainmsg",_("transaction suspended"));
 	$recall_line = $CORE_LOCAL->get("standalone")." ".$CORE_LOCAL->get("laneno")." ".$cashier_no." ".$trans_no;
+    /**
+      If the transaction is marked as complete but somehow did not
+      actually finish, this will prevent the suspended receipt from
+      adding tax/discount lines to the transaction
+    */
+    $CORE_LOCAL->set('End', 0);
 }
 
 /**
@@ -77,10 +83,10 @@ static public function checksuspended()
 {
 	global $CORE_LOCAL;
 
-	//Database::testremote();
-
 	$db_a = Database::tDataConnect();
-	$query_local = "select * from suspendedtoday";
+	$query_local = "SELECT upc 
+                    FROM suspended
+                    WHERE datetime >= " . date("'Y-m-d 00:00:00'");
 		
 	$result = "";
 	if ($CORE_LOCAL->get("standalone") == 1) {

@@ -47,16 +47,13 @@ class login3 extends BasicPage {
 			}
 
 			if (Authenticate::checkPassword($passwd,4)){
-				$sd = MiscLib::scaleObject();
-				if (is_object($sd))
-					$sd->ReadReset();
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 			else {
 				$this->color = "errorColoredArea";
 				$this->img = $this->page_url."graphics/redkey4.gif";
-				$this->msg = _("password invalid, please re-enter");
+				$this->msg = _("Password Invalid, Please Re-Enter");
 			}
 		}
 		return True;
@@ -64,7 +61,6 @@ class login3 extends BasicPage {
 
 	function head_content(){
 		$this->default_parsewrapper_js('scannerInput');
-		$this->scanner_scale_polling(True);
 	}
 
 	function body_content(){
@@ -82,11 +78,6 @@ class login3 extends BasicPage {
 			</div>
 		</div>
 		<?php
-        /**
-        alog and its variants are never used.
-        @deprecated
-		TransRecord::addactivity(3);
-        */
 		Database::getsubtotals();
 		echo "<div id=\"footer\">";
 		echo DisplayLib::printfooter();
