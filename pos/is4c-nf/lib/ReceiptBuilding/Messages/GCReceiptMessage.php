@@ -115,7 +115,7 @@ class GCReceiptMessage extends ReceiptMessage
             $slip .= ReceiptLib::twoColumns($col1, $col2);
 
             // name/phone on activation only
-            if (($row['tranType'] == 'Gift Card Activation' || $row['transType'] == 'Gift Card Issue') && $sigSlip) {
+            if (($row['tranType'] == 'Gift Card Activation' || $row['tranType'] == 'Gift Card Issue') && $sigSlip) {
                 $slip .= "\n".ReceiptLib::centerString("Name:  ___________________________________")."\n"
                         ."\n".ReceiptLib::centerString("Phone: ___________________________________")."\n";
             }
