@@ -207,9 +207,9 @@ foreach($data as $row){
    $vendor = substr($row['vendor'],0,7);
    
    //Start laying out a label 
-   $pdf->SetFont('Arial','B',12);  //Set the font 
+   $pdf->SetFont('Arial','B',10);  //Set the font 
    $pdf->SetXY($p,$n);
-   $pdf->MultiCell(41,5,$desc,0,'C');
+   $pdf->MultiCell(41,5,$desc,0,'L');
    // $pdf->SetFont('Arial','',8);  //Set the font 
    //$pdf->TEXT($p,$n,$desc);   //Add description to label
    // $pdf->TEXT($p,$r,$brand);  //Add brand name to label
