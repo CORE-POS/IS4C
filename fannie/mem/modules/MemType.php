@@ -57,11 +57,11 @@ class MemType extends MemberModule {
 		$ret .= "</select></td>";
 		
 		$ret .= "<th>Discount</th>";
-		/*
+		
 		$ret .= sprintf('<td><input name="MemType_discount" value="%d"
 				size="4" /></td></tr>',$disc);	
-		*/
-		$ret .= sprintf('<td>%d%%</td></tr>',$disc);
+		
+//		$ret .= sprintf('<td>%d%%</td></tr>',$disc);
 
         $ret .= sprintf('<tr><td><input type="checkbox" name="MemType_staff" id="MemType_staff"
                         %s /><label for="MemType_staff">Staff</label></td>
