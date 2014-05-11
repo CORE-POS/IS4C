@@ -537,7 +537,7 @@ function goToReport() {
 
         $ret .= '</tr><tr>';
 
-        $ret .= '<td><label for="in_use">InUse</label></td>
+        $ret .= '<th><label for="in_use">InUse</label></th>
 				<td><input type="checkbox" disabled class="saleField" name="in_use" id="in_use" value="1" /></td>'; 
     
         $ret .= '<th>Likecode</th>';
