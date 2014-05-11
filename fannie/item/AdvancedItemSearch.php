@@ -189,6 +189,12 @@ class AdvancedItemSearch extends FannieRESTfulPage
             $args[] = $fs;
         }
 
+		$inUse = FormLib::get('in_use');
+		if ($inUse !== '') {
+			$where .= ' AND p.inUse=? ';
+			$args[] = $inUse;
+		}
+
         $discount = FormLib::get('discountable');
         if ($discount !== '') {
             $where .= ' AND p.discount=? ';
@@ -531,7 +537,8 @@ function goToReport() {
 
         $ret .= '</tr><tr>';
 
-        $ret .= '<td colspan=2">&nbsp;</td>'; // placeholder; can add here
+        $ret .= '<td><label for="in_use">InUse</label></td>
+				<td><input type="checkbox" disabled class="saleField" name="in_use" id="in_use" value="1" /></td>'; 
     
         $ret .= '<th>Likecode</th>';
         $ret .= '<td colspan="3"><select name="likeCode"><option value="">n/a</option>
