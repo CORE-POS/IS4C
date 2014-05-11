@@ -22,20 +22,12 @@
 *********************************************************************************/
 
 /**
-  @class DefaultTenderReport
-  Generate a tender report
+  @class YPSITenderReport
+  Ypsilanti Food Co-op custom tender report format
 */
-class DefaultTenderReport extends TenderReport {
 
-/** 
- Print a tender report
-
- This tender report is based on a single tender tape view
- rather than multiple views (e.g. ckTenders, ckTenderTotal, etc).
- Which tenders to include is defined via checkboxes by the
- tenders on the install page's "extras" tab.
- */
-static public function get(){
+class YPSITenderReport extends TenderReport {
+	static public function get(){
 	global $CORE_LOCAL;
 
 	$DESIRED_TENDERS = $CORE_LOCAL->get("TRDesiredTenders");
