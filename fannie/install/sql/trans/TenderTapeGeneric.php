@@ -38,7 +38,7 @@ $CREATE['trans.TenderTapeGeneric'] = "
 		     WHEN trans_subtype IN ('EF','EC','TA') THEN 'EF'
 		     ELSE trans_subtype
 		END AS tender_code,
-		-1 * sum(total)
+		-1 * sum(total) as tender
 		from dlog
 		where ".$con->datediff($con->now(),'tdate')."= 0
 		and trans_subtype not in ('0','')
