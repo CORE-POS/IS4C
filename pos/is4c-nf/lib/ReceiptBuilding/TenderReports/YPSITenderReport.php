@@ -94,6 +94,7 @@ class YPSITenderReport extends TenderReport {
     $receipt .=	trTotal(array('CP','MC'),'VENDOR COUPON');
     $receipt .=	trTotal('MI','STORE CHARGE');
     $receipt .=	trTotal('IC','INSTORE COUPON');
+	$receipt .= "\n\n";
 
 	foreach(array_keys($DESIRED_TENDERS) as $tender_code){ 
 		$query = "select tdate from TenderTapeGeneric where emp_no=".$CORE_LOCAL->get("CashierNo").
@@ -114,7 +115,7 @@ class YPSITenderReport extends TenderReport {
 		$receipt .= $ref;
 		if ($itemize == 1) $receipt .=	ReceiptLib::centerString("------------------------------------------------------");
 
-		$query = "select tdate,register_no,trans_no,tender_code
+		$query = "select tdate,register_no,trans_no,tender_code,tender
 		       	from TenderTapeGeneric where emp_no=".$CORE_LOCAL->get("CashierNo").
 			" and tender_code = '".$tender_code."' order by tdate";
 		$result = $db_a->query($query);
