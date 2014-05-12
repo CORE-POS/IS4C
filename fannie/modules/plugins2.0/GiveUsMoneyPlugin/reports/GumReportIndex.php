@@ -47,6 +47,7 @@ class GumReportIndex extends FannieRESTfulPage
             <ul>
             <li><a href="GumLoanReport.php">Active Loans</a></li>
             <li><a href="GumEquityReport.php">Active Equity</a></li>
+            <li><a href="GumBothReport.php">Combined Report</a></li>
             </ul>
         ';
     }

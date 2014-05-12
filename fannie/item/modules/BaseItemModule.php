@@ -192,11 +192,11 @@ class BaseItemModule extends ItemModule {
 		$ret .= '<b>Unit of measure</b> <input type="text" name="unitm" size="4"
 				value="'.(isset($rowItem['unitofmeasure'])?$rowItem['unitofmeasure']:'').'" /></td>';
 		$ret .= '<td style="color:darkmagenta;">Last modified</td>
-			<td style="color:darkmagenta;">'.$rowItem['modified'].'</td>';
+			<td style="color:darkmagenta;">'. (isset($rowItem['modified']) ? $rowItem['modified'] : '') . '</td>';
 		$ret .= '</tr>';
 
 		$ret .= '<tr><td><b>Long Desc.</b><td colspan="2"><input type="text" size="60" name="puser_description"
-				value="'.$rowItem['ldesc'].'" /></td><td>&nbsp;</td></tr>';
+				value="'. (isset($rowItem['ldesc']) ? $rowItem['ldesc'] : '') . '" /></td><td>&nbsp;</td></tr>';
 
 		$ret .="<td align=right><b>Brand</b></td><td><input type=text name=manufacturer size=30 value=\""
 			.(isset($rowItem['manufacturer'])?$rowItem['manufacturer']:"")
@@ -356,7 +356,8 @@ class BaseItemModule extends ItemModule {
 		$model->qttyEnforced(FormLib::get_form_value('QtyFrc',0));
 		$model->discount(FormLib::get_form_value('NoDisc',1));
 		$model->normal_price(FormLib::get_form_value('price',0.00));
-		$model->description(FormLib::get_form_value('descript',''));
+		$model->description(str_replace("'", '', FormLib::get_form_value('descript','')));
+        $model->brand(str_replace("'", '', FormLib::get('manufacturer', '')));
 		$model->pricemethod(0);
 		$model->groupprice(0.00);
 		$model->quantity(0);
@@ -380,12 +381,22 @@ class BaseItemModule extends ItemModule {
 			$model->quantity($vqty);
 		}
 
+        // lookup vendorID by name
+        $vendorID = 0;
+        $vendor = new VendorsModel($dbc);
+        $vendor->vendorName(FormLib::get('distributor'));
+        foreach($vendor->find('vendorID') as $obj) {
+            $vendorID = $obj->vendorID();
+            break;
+        }
+        $model->default_vendor_id($vendorID);
+
         $model->save();
 
 		if ($dbc->table_exists('prodExtra')){
 			$arr = array();
-			$arr['manufacturer'] = $dbc->escape(FormLib::get_form_value('manufacturer'));
-			$arr['distributor'] = $dbc->escape(FormLib::get_form_value('distributor'));
+			$arr['manufacturer'] = $dbc->escape(str_replace("'",'',FormLib::get_form_value('manufacturer')));
+			$arr['distributor'] = $dbc->escape(str_replace("'",'',FormLib::get_form_value('distributor')));
 			$arr['location'] = 0;
 
 			$checkP = $dbc->prepare_statement('SELECT upc FROM prodExtra WHERE upc=?');

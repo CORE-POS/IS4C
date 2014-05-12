@@ -538,6 +538,8 @@ class InstallIndexPage extends InstallPage {
 		<ul>
 		<li><?php check_writeable('../logs/queries.log'); ?>
 		<ul><li>Contains failed database queries</li></ul>	
+		<li><?php check_writeable('../logs/php-errors.log'); ?>
+		<ul><li>Contains PHP notices, warnings, and errors</li></ul>
 		<li><?php check_writeable('../logs/dayend.log'); ?>
 		<ul><li>Contains output from scheduled tasks</li></ul>	
 		</ul>
@@ -975,6 +977,9 @@ class InstallIndexPage extends InstallPage {
 				'houseCouponItems','op');
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+				'autoCoupons','op');
+
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'disableCoupon','op');
 		
         /**
@@ -1076,6 +1081,9 @@ class InstallIndexPage extends InstallPage {
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'ShrinkReasons','op');
 
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+				'Stores','op');
+
 		return $ret;
 
 	// create_op_dbs()
@@ -1089,6 +1097,9 @@ class InstallIndexPage extends InstallPage {
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 				'alog','trans');
+
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+				'PaycardTransactions','trans');
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 				'efsnetRequest','trans');
@@ -1233,22 +1244,10 @@ class InstallIndexPage extends InstallPage {
 				'SpecialOrders','trans');
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-				'SpecialOrderID','trans');
-
-		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 				'SpecialOrderDeptMap','trans');
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-				'SpecialOrderContact','trans');
-
-		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-				'SpecialOrderNotes','trans');
-
-		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 				'SpecialOrderHistory','trans');
-
-		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-				'SpecialOrderStatus','trans');
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 				'PendingSpecialOrder','trans');
@@ -1521,8 +1520,6 @@ class InstallIndexPage extends InstallPage {
 			// create the first partition if needed
 			if ($FANNIE_ARCHIVE_METHOD == "partitions"){
                 $con->query('ALTER TABLE bigArchive CHANGE COLUMN store_row_id store_row_id BIGINT UNSIGNED');
-                $noPkQ = 'ALTER TABLE bigArchive DROP PRIMARY KEY';
-                $con->query($noPkQ, $FANNIE_ARCHIVE_DB);
 				$p = "p".date("Ym");
 				$limit = date("Y-m-d",mktime(0,0,0,date("n")+1,1,date("Y")));
 				$partQ = sprintf("ALTER TABLE `bigArchive` 

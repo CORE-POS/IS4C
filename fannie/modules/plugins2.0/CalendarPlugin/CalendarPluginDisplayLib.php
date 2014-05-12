@@ -267,7 +267,7 @@ class CalendarPluginDisplayLib {
         $prevWeek = mktime(0, 0, 0, date('n', $startTS), date('j', $startTS)-7, date('Y', $startTS));
         $nextWeek = mktime(0, 0, 0, date('n', $startTS), date('j', $startTS)+7, date('Y', $startTS));
 
-        $ret .= '<table cellpadding="4" cellspacing="0" border="1">';
+        $ret = '<table cellpadding="4" cellspacing="0" border="1">';
 
         // paging
         $ret .= '<tr>';

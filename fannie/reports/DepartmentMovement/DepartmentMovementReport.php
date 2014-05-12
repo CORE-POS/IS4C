@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-include('../../config.php');
+include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
@@ -72,6 +72,7 @@ class DepartmentMovementReport extends FannieReportPage
         $deptEnd = FormLib::get_form_value('deptEnd','');
         $buyer = FormLib::get_form_value('buyer','');
         $groupby = FormLib::get_form_value('sort','PLU');
+        $store = FormLib::get('store', 0);
 
         /**
           Build a WHERE condition for later.
@@ -116,6 +117,7 @@ class DepartmentMovementReport extends FannieReportPage
         $superTable = ($buyer !== "" && $buyer > 0) ? 'superdepts' : 'MasterSuperDepts';
         $args[] = $date1.' 00:00:00';
         $args[] = $date2.' 23:59:59';
+        $args[] = $store;
         switch($groupby) {
             case 'PLU':
                 $query = "SELECT t.upc,p.description, 
@@ -131,6 +133,7 @@ class DepartmentMovementReport extends FannieReportPage
                       WHERE $filter_condition
                       AND tdate BETWEEN ? AND ?
                       AND $filter_transactions
+                      AND " . DTrans::isStoreID($store, 't') . "
                       GROUP BY t.upc,p.description,
                       d.dept_no,d.dept_name,s.superID,x.distributor ORDER BY SUM(t.total) DESC";
                 break;
@@ -144,18 +147,21 @@ class DepartmentMovementReport extends FannieReportPage
                     WHERE $filter_condition
                     AND tdate BETWEEN ? AND ?
                     AND $filter_transactions
+                    AND " . DTrans::isStoreID($store, 't') . "
                     GROUP BY t.department,d.dept_name ORDER BY SUM(total) DESC";
                 break;
             case 'Date':
                 $query =  "SELECT year(tdate),month(tdate),day(tdate),"
                     . DTrans::sumQuantity('t')." as qty,
-                    SUM(total) as Sales 
+                    SUM(total) as Sales ,
+                    MAX(" . $dbc->dayofweek('tdate') . ") AS dow
                     FROM $dlog as t "
                     . DTrans::joinDepartments()
                     . "LEFT JOIN $superTable AS s ON s.dept_ID = t.department
                     WHERE $filter_condition
                     AND tdate BETWEEN ? AND ?
                     AND $filter_transactions
+                    AND " . DTrans::isStoreID($store, 't') . "
                     GROUP BY year(tdate),month(tdate),day(tdate) 
                     ORDER BY year(tdate),month(tdate),day(tdate)";
                 break;
@@ -178,6 +184,7 @@ class DepartmentMovementReport extends FannieReportPage
                     WHERE $filter_condition
                     AND tdate BETWEEN ? AND ?
                     AND $filter_transactions
+                    AND " . DTrans::isStoreID($store, 't') . "
                     GROUP BY $cols
                     ORDER BY ".$dbc->dayofweek('tdate');
                 break;
@@ -195,6 +202,7 @@ class DepartmentMovementReport extends FannieReportPage
             $record = array();
             if ($groupby == "Date") {
                 $record[] = $row[1]."/".$row[2]."/".$row[0];
+                $record[] = date('l', strtotime($record[0]));
                 $record[] = $row[3];
                 $record[] = $row[4];
             } else {
@@ -252,6 +260,10 @@ class DepartmentMovementReport extends FannieReportPage
                     $this->report_headers = array('Day','Day','Qty','$');
                     $this->sort_column = 0;
                     $this->sort_direction = 0;
+                } elseif (FormLib::get_form_value('sort')=='Date') {
+                    $this->report_headers = array('Date','Day','Qty','$');
+                    $this->sort_column = 0;
+                    $this->sort_direction = 0;
                 } else {
                     $this->report_headers = array('Dept#','Department','Qty','$');
                     $this->sort_column = 3;
@@ -265,17 +277,6 @@ class DepartmentMovementReport extends FannieReportPage
                 }
 
                 return array('Total',null,$sumQty,$sumSales);
-                break;
-            case 3:
-                $this->report_headers = array('Date','Qty','$');
-                $sumQty = 0.0;
-                $sumSales = 0.0;
-                foreach($data as $row) {
-                    $sumQty += $row[1];
-                    $sumSales += $row[2];
-                }
-                
-                return array('Total',$sumQty,$sumSales);
                 break;
         }
     }
@@ -327,7 +328,10 @@ class DepartmentMovementReport extends FannieReportPage
                </select>
              </td>
             <td><b>Send to Excel</b></td>
-            <td><input type=checkbox name=excel id=excel value=1></td>
+            <td><input type=checkbox name=excel id=excel value=1>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <?php $ret=FormLib::storePicker();echo $ret['html']; ?>
+            </td>
         </tr>
         <tr>
             <td colspan=5><i>Selecting a Buyer/Dept overrides Department Start/Department End, but not Date Start/End.
@@ -370,7 +374,8 @@ class DepartmentMovementReport extends FannieReportPage
             <option>Date</option>
             <option>Department</option>
             <option>Weekday</option>
-            </select> </td>
+            </select> 
+            </td>
             <td colspan=2 rowspan=2>
             <?php echo FormLib::date_range_picker(); ?>                            
             </td>

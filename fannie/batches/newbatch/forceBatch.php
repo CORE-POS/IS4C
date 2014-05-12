@@ -36,7 +36,7 @@ if (!function_exists('updateProductAllLanes'))
 	include($FANNIE_ROOT.'item/laneUpdates.php');
 
 function forceBatch($batchID){
-	global $FANNIE_OP_DB,$FANNIE_SERVER_DBMS,$FANNIE_STORE_ID;
+	global $FANNIE_OP_DB,$FANNIE_SERVER_DBMS;
 	$dbc = FannieDB::get($FANNIE_OP_DB);
 
 	$batchInfoQ = $dbc->prepare_statement("SELECT batchType,discountType FROM batches WHERE batchID = ?");

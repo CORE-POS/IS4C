@@ -89,6 +89,7 @@ class OverShortDayPage extends FanniePage {
 				/* determine who worked that day (and their first names) */
 				$empsQ = "select e.firstname,d.emp_no from $dlog as d,$FANNIE_OP_DB".$dbc->sep()."employees as e where
 				      d.tdate BETWEEN ? AND ? and trans_type='T' and d.emp_no = e.emp_no
+                      AND d.upc <> '0049999900001'
 				      group by d.emp_no,e.firstname order by e.firstname";
 				$empsP = $dbc->prepare_statement($empsQ);
 				$empsR=$dbc->exec_statement($empsP,array($date.' 00:00:00',$date.' 23:59:59'));

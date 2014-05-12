@@ -79,6 +79,20 @@ class GumLoanReport extends FannieReportPage
 
         return $data;
     }
+
+    public function calculate_footers($data)
+    {
+        $sum = 0.0;
+        $due = 0.0;
+        foreach($data as $row) {
+            $sum += $row[1];
+            $due += $row[3];
+        }
+
+        return array('Total', sprintf('%.2f', $sum), '', sprintf('%.2f', $due), '', '');
+    }
+
+
 }
 
 FannieDispatch::conditionalExec();

@@ -85,10 +85,17 @@ class MemCard extends MemberModule {
 			$form_upc = sprintf("{$prefix}%0{$clen}d", $form_upc);
 		}
 
-		if (!MemberCardsModel::update($memNum, $form_upc))	
+        $model = new MemberCardsModel($dbc);
+        $model->card_no($memNum);
+        $model->upc($form_upc);
+        $saved = $model->save();
+        $model->pushToLanes();
+
+		if ($saved) {
 			return 'Error: problem saving Member Card<br />';
-		else
+		} else {
 			return '';
+        }
 
 	// saveFormData
 	}

@@ -129,6 +129,20 @@ if (!$validatedUser && !$auditedUser && substr($upc,0,3) != "002"){
 $descript = str_replace("'","",$descript);
 $descript = str_replace("\"","",$descript);
 $descript = $sql->escape($descript);
+if (empty($manufacturer))
+	$manufacturer = '';
+if (empty($distributor))
+	$distributor = '';
+$manufacturer = preg_replace("/\\\'/","",$manufacturer);
+$distributor = preg_replace("/\\\'/","",$distributor);
+// lookup vendorID by name
+$vendorID = 0;
+$vendor = new VendorsModel($sql);
+$vendor->vendorName($distributor);
+foreach($vendor->find('vendorID') as $obj) {
+    $vendorID = $obj->vendorID();
+    break;
+}
 
 $stamp = date("Y-m-d H:i:s");
 
@@ -136,6 +150,7 @@ $stamp = date("Y-m-d H:i:s");
 $model = new ProductsModel($sql);
 $model->upc($upc);
 $model->description($descript);
+$model->brand($manufacturer);
 $model->normal_price($price);
 $model->pricemethod(0);
 $model->groupprice(0.00);
@@ -143,7 +158,7 @@ $model->quantity(0);
 $model->special_price(0.00);
 $model->specialpricemethod(0);
 $model->specialgroupprice(0.00);
-$model->special_quantity(0);
+$model->specialquantity(0);
 $model->start_date('');
 $model->end_date('');
 $model->department($dept);
@@ -168,17 +183,12 @@ $model->numflag(0);
 $model->subdept(0);
 $model->deposit(0.00);
 $model->local($local);
+$model->default_vendor_id($vendorID);
 $model->save();
 
 $model->upc($upc);
 $model->pushToLanes();
 
-if (empty($manufacturer))
-	$manufacturer = '';
-if (empty($distributor))
-	$distributor = '';
-$manufacturer = preg_replace("/\\\'/","",$manufacturer);
-$distributor = preg_replace("/\\\'/","",$distributor);
 $checkQ = $sql->prepare("select * from prodExtra where upc=?");
 $checkR = $sql->execute($checkQ, array($upc));
 if ($sql->num_rows($checkR) == 0){

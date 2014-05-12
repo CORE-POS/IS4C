@@ -8,6 +8,8 @@ Columns:
     subStatus int
     notes text
     noteSuperID int
+    firstName varchar
+    lastName varchar
     street varchar
     city varchar
     state varchar

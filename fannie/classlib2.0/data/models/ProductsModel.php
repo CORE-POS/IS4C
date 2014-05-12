@@ -41,6 +41,8 @@ class ProductsModel extends BasicModel
     protected $columns = array(
     'upc' => array('type'=>'VARCHAR(13)','index'=>true),
     'description'=>array('type'=>'VARCHAR(30)','index'=>true),
+    'brand'=>array('type'=>'VARCHAR(30)'),
+    'formatted_name'=>array('type'=>'VARCHAR(30)'),
     'normal_price'=>array('type'=>'MONEY'),
     'pricemethod'=>array('type'=>'SMALLINT'),
     'groupprice'=>array('type'=>'MONEY'),
@@ -63,6 +65,7 @@ class ProductsModel extends BasicModel
     'tareweight'=>array('type'=>'DOUBLE'),
     'discount'=>array('type'=>'SMALLINT'),
     'discounttype'=>array('type'=>'TINYINT'),
+    'line_item_discountable'=>array('type'=>'TINYINT', 'default'=>0),
     'unitofmeasure'=>array('type'=>'VARCHAR(15)'),
     'wicable'=>array('type'=>'SMALLINT'),
     'qttyEnforced'=>array('type'=>'TINYINT'),
@@ -74,10 +77,13 @@ class ProductsModel extends BasicModel
     'deposit'=>array('type'=>'DOUBLE'),
     'local'=>array('type'=>'INT','default'=>0),
     'store_id'=>array('type'=>'SMALLINT','default'=>0),
+    'default_vendor_id'=>array('type'=>'INT','default'=>0),
     'id'=>array('type'=>'INT','default'=>0,'primary_key'=>true,'increment'=>true)
     );
 
     protected $unique = array('upc');
+
+    protected $normalize_lanes = true;
 
     /**
       Update product record for a upc
@@ -353,7 +359,7 @@ class ProductsModel extends BasicModel
         // call parent method to save the product record,
         // then add a corresponding prodUpdate record
         $try = parent::save();
-        if ($try && !$lane_push) {
+        if ($try && !$lane_push && $this->connection->tableExists('prodUpdate')) {
             $update = new ProdUpdateModel($this->connection);
             $update->upc($this->upc());
             $update->logUpdate(ProdUpdateModel::UPDATE_EDIT);
@@ -425,6 +431,46 @@ class ProductsModel extends BasicModel
                 }
             }
             $this->instance["description"] = func_get_arg(0);
+        }
+    }
+
+    public function brand()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["brand"])) {
+                return $this->instance["brand"];
+            } else if (isset($this->columns["brand"]["default"])) {
+                return $this->columns["brand"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["brand"]) || $this->instance["brand"] != func_get_args(0)) {
+                if (!isset($this->columns["brand"]["ignore_updates"]) || $this->columns["brand"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["brand"] = func_get_arg(0);
+        }
+    }
+
+    public function formatted_name()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["formatted_name"])) {
+                return $this->instance["formatted_name"];
+            } else if (isset($this->columns["formatted_name"]["default"])) {
+                return $this->columns["formatted_name"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["formatted_name"]) || $this->instance["formatted_name"] != func_get_args(0)) {
+                if (!isset($this->columns["formatted_name"]["ignore_updates"]) || $this->columns["formatted_name"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["formatted_name"] = func_get_arg(0);
         }
     }
 
@@ -868,6 +914,26 @@ class ProductsModel extends BasicModel
         }
     }
 
+    public function line_item_discountable()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["line_item_discountable"])) {
+                return $this->instance["line_item_discountable"];
+            } else if (isset($this->columns["line_item_discountable"]["default"])) {
+                return $this->columns["line_item_discountable"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["line_item_discountable"]) || $this->instance["line_item_discountable"] != func_get_args(0)) {
+                if (!isset($this->columns["line_item_discountable"]["ignore_updates"]) || $this->columns["line_item_discountable"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["line_item_discountable"] = func_get_arg(0);
+        }
+    }
+
     public function unitofmeasure()
     {
         if(func_num_args() == 0) {
@@ -1085,6 +1151,26 @@ class ProductsModel extends BasicModel
                 }
             }
             $this->instance["store_id"] = func_get_arg(0);
+        }
+    }
+
+    public function default_vendor_id()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["default_vendor_id"])) {
+                return $this->instance["default_vendor_id"];
+            } else if (isset($this->columns["default_vendor_id"]["default"])) {
+                return $this->columns["default_vendor_id"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["default_vendor_id"]) || $this->instance["default_vendor_id"] != func_get_args(0)) {
+                if (!isset($this->columns["default_vendor_id"]["ignore_updates"]) || $this->columns["default_vendor_id"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["default_vendor_id"] = func_get_arg(0);
         }
     }
 

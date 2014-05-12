@@ -650,6 +650,45 @@ class SQLManager
         return $this->fetchField($result_object, $index, $which_connection);
     }
 
+	/**
+	  Start a transaction
+	  @param $which_connection see method close()
+	*/
+	public function startTransaction($which_connection='')
+    {
+		if ($which_connection == '') {
+			$which_connection = $this->default_db;
+        }
+
+		return $this->connections[$which_connection]->BeginTrans();
+	}
+
+	/**
+	  Finish a transaction
+	  @param $which_connection see method close()
+	*/
+	public function commitTransaction($which_connection='')
+    {
+		if ($which_connection == '') {
+			$which_connection = $this->default_db;
+        }
+
+		return $this->connections[$which_connection]->CommitTrans();
+	}
+
+	/**
+	  Abort a transaction
+	  @param $which_connection see method close()
+	*/
+	public function rollbackTransaction($which_connection='')
+    {
+		if ($which_connection == '') {
+			$which_connection = $this->default_db;
+        }
+
+		return $this->connections[$which_connection]->RollbackTrans();
+	}
+
 	/** 
 	   Copy a table from one database to another, not necessarily on
 	   the same server or format.
@@ -702,11 +741,17 @@ class SQLManager
 		}
 
 		$ret = true;
+        $this->startTransaction($dest_db);
 		foreach ($queries as $q) {
 			if(!$this->query($q,$dest_db)) {
                 $ret = false;
             }
 		}
+        if ($ret === true) {
+            $this->commitTransaction($dest_db);
+        } else {
+            $this->rollbackTransaction($dest_db);
+        }
 
 		return $ret;
 	}
@@ -1406,6 +1451,23 @@ class SQLManager
         }
 
         return $matches;
+    }
+
+    public function getMatchingColumns($table1, $which_connection1, $table2, $which_connection2)
+    {
+        $ret = '';
+        $def1 = $this->tableDefinition($table1, $which_connection1);
+        $def2 = $this->tableDefinition($table2, $which_connection2);
+        foreach($def1 as $column_name => $info) {
+            if (isset($def2[$column_name])) {
+                $ret .= $column_name . ',';
+            }
+        }
+        if ($ret === '') {
+            return false;
+        } else {
+            return substr($ret, 0, strlen($ret)-1);
+        }
     }
 
 	// skipping fetch_cell on purpose; generic-db way would be slow as heck

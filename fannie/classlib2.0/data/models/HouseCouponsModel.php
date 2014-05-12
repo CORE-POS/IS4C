@@ -29,10 +29,12 @@ class HouseCouponsModel extends BasicModel
 
     protected $name = "houseCoupons";
     protected $preferred_db = 'op';
+    protected $normalize_lanes = true;
 
     protected $columns = array(
     'coupID' => array('type'=>'INT', 'primary_key'=>true),
     'description' => array('type'=>'VARCHAR(30)'),
+    'startDate' => array('type'=>'DATETIME'),
     'endDate' => array('type'=>'DATETIME'),
     'limit' => array('type'=>'SMALLINT'),
     'memberOnly' => array('type'=>'SMALLINT'),
@@ -41,6 +43,7 @@ class HouseCouponsModel extends BasicModel
     'minType' => array('type'=>'VARCHAR(2)'),
     'minValue' => array('type'=>'MONEY'),
     'department' => array('type'=>'INT'),
+    'auto' => array('type'=>'TINYINT', 'default'=>0),
 	);
 
     /* START ACCESSOR FUNCTIONS */
@@ -82,6 +85,26 @@ class HouseCouponsModel extends BasicModel
                 }
             }
             $this->instance["description"] = func_get_arg(0);
+        }
+    }
+
+    public function startDate()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["startDate"])) {
+                return $this->instance["startDate"];
+            } else if (isset($this->columns["startDate"]["default"])) {
+                return $this->columns["startDate"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["startDate"]) || $this->instance["startDate"] != func_get_args(0)) {
+                if (!isset($this->columns["startDate"]["ignore_updates"]) || $this->columns["startDate"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["startDate"] = func_get_arg(0);
         }
     }
 
@@ -242,6 +265,26 @@ class HouseCouponsModel extends BasicModel
                 }
             }
             $this->instance["department"] = func_get_arg(0);
+        }
+    }
+
+    public function auto()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["auto"])) {
+                return $this->instance["auto"];
+            } else if (isset($this->columns["auto"]["default"])) {
+                return $this->columns["auto"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["auto"]) || $this->instance["auto"] != func_get_args(0)) {
+                if (!isset($this->columns["auto"]["ignore_updates"]) || $this->columns["auto"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["auto"] = func_get_arg(0);
         }
     }
     /* END ACCESSOR FUNCTIONS */

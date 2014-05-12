@@ -39,14 +39,14 @@ if (isset($_REQUEST['toids'])){
 	$y = 0;
 	$date = date("m/d/Y");
 	$infoP = $dbc->prepare_statement("SELECT ItemQtty,total,regPrice,p.card_no,description,department,
-		CASE WHEN p.card_no=0 THEN t.last_name ELSE c.LastName END as name,
-		CASE WHEN p.card_no=0 THEN t.first_name ELSE c.FirstName END as fname,
-		CASE WHEN t.phone is NULL THEN m.phone ELSE t.phone END as phone,
+		CASE WHEN p.card_no=0 THEN o.lastName ELSE c.LastName END as name,
+		CASE WHEN p.card_no=0 THEN o.firstName ELSE c.FirstName END as fname,
+		CASE WHEN o.phone is NULL THEN m.phone ELSE o.phone END as phone,
 		discounttype,quantity
 		FROM {$TRANS}PendingSpecialOrder AS p
 		LEFT JOIN custdata AS c ON p.card_no=c.CardNo AND personNum=p.voided
 		LEFT JOIN meminfo AS m ON c.CardNo=m.card_no
-		LEFT JOIN {$TRANS}SpecialOrderContact AS t ON t.card_no=p.order_id
+		LEFT JOIN {$TRANS}SpecialOrders AS o ON o.specialOrderID=p.order_id
 		WHERE trans_id=? AND p.order_id=?");
 	$flagP = $dbc->prepare_statement("UPDATE {$TRANS}PendingSpecialOrder SET charflag='P'
 		WHERE trans_id=? AND order_id=?");
@@ -171,10 +171,10 @@ else {
 	}
 	$infoP = $dbc->prepare_statement("SELECT min(datetime) as orderDate,sum(total) as value,
 		count(*)-1 as items,
-		CASE WHEN MAX(p.card_no)=0 THEN MAX(t.last_name) ELSE MAX(c.LastName) END as name
+		CASE WHEN MAX(p.card_no)=0 THEN MAX(o.lastName) ELSE MAX(c.LastName) END as name
 		FROM {$TRANS}PendingSpecialOrder AS p
 		LEFT JOIN custdata AS c ON c.CardNo=p.card_no AND personNum=p.voided
-		LEFT JOIN {$TRANS}SpecialOrderContact AS t ON t.card_no=p.order_id	
+		LEFT JOIN {$TRANS}SpecialOrders AS o ON o.specialOrderID=p.order_id	
 		WHERE p.order_id=?");
 	$itemP = $dbc->prepare_statement("SELECT description,department,quantity,ItemQtty,total,trans_id
 		FROM {$TRANS}PendingSpecialOrder WHERE order_id=? AND trans_id > 0");
