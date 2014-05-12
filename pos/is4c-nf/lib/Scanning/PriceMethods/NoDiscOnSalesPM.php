@@ -30,7 +30,7 @@
    
 */
 
-class NoDiscOnSalePM extends PriceMethod {
+class NoDiscOnSalesPM extends PriceMethod {
 
     function addItem($row,$quantity,$priceObj){
         if ($quantity == 0) return false;
