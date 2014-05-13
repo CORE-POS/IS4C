@@ -224,7 +224,7 @@ class DTransactionsModel extends BasicModel
       and "trans_subtype" still have translations to fix
       older records but everyting else passes through as-is.
     */
-    private function normalizeLog($view_name, $table_name, $mode=BasicModel::NORMALIZE_MODE_CHECK)
+    public function normalizeLog($view_name, $table_name, $mode=BasicModel::NORMALIZE_MODE_CHECK)
     {
         printf("%s view: %s",
             ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Would recreate":"Recreating", 
