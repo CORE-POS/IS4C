@@ -88,6 +88,8 @@ class ProductImportPage extends FannieUploadPage
 			$upc = $line[$upc_index];
 			$desc = $line[$desc_index];
 			$price =  $line[$price_index];	
+            $price = str_replace('$', '', $price);
+            $price = trim($price);
 			$dept = ($dept_index !== false) ? $line[$dept_index] : 0;
 			$tax = 0;
 			$fs = 0;
@@ -114,6 +116,7 @@ class ProductImportPage extends FannieUploadPage
 			if (strlen($desc) > 35) $desc = substr($desc,0,35);		
 
             $model->reset();
+            $model->upc($upc);
             $model->description($desc);
             $model->normal_price($price);
             $model->department($dept);
@@ -132,6 +135,7 @@ class ProductImportPage extends FannieUploadPage
             $model->end_date('');
             $model->discounttype(0);
             $model->wicable(0);
+            $model->inUse(1);
             $try = $model->save();
 
 			if ($try === false) {
