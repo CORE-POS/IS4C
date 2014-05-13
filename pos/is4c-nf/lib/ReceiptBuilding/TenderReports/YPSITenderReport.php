@@ -56,7 +56,7 @@ class YPSITenderReport extends TenderReport {
 	$receipt = "";
 
 	$cashier_names = "";
-    $cashierQ = "SELECT CONCAT(SUBSTR(e.FirstName,1,1),e.Lastname as cashier
+    $cashierQ = "SELECT CONCAT(SUBSTR(e.FirstName,1,1),e.Lastname) as cashier
 		FROM dlog d, is4c_op.employees e
         WHERE d.emp_no = e.emp_no AND d.register_no = ". $CORE_LOCAL->get('laneno')." AND d.emp_no <> 9999 AND d.trans_type <> 'L' 
 		AND d.tdate >= '".$shiftCutoff."'
@@ -75,7 +75,7 @@ class YPSITenderReport extends TenderReport {
 	// NET TOTAL
 	$netQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
 		WHERE register_no=".$CORE_LOCAL->get('laneno').
-		" AND (trans_subtype IN('CA','CK','DC','CC','FS','EC','GD') OR (trans_subtype = 'MI' AND staff <> 1))
+		" AND (trans_subtype IN('CA','CK','DC','CC','EF','FS','EC','GD','TC','WT') OR (trans_subtype = 'MI' AND staff <> 1))
 		AND tdate >= '$shiftCutoff'$excl";
 	$netR = $db_a->query($netQ);
 	$net = $db_a->fetch_row($netR);
@@ -89,7 +89,8 @@ class YPSITenderReport extends TenderReport {
     $receipt .=	trTotal('DC','DEBIT CARD');
     $receipt .=	trTotal('FS','SNAP - FOOD');
     $receipt .=	trTotal('EC','SNAP - CASH');
-    $receipt .=	trTotal('GD','GIFT CERT.');
+    $receipt .=	trTotal('GD','GIFT CARD');
+    $receipt .=	trTotal('TC','GIFT CERT.');	
 	$receipt .=	trTotal('WT','WIC');
 	$receipt .= "\n";
     $receipt .=	trTotal(array('CP','MC'),'VENDOR COUPON');
