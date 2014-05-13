@@ -43,21 +43,28 @@ if ($id !== False){
 		p.department,s.upc");
 	$result = $dbc->exec_statement($query,array($id));
 
-	while($row = $dbc->fetch_row($result)){
-		$myrow = array(
-		'normal_price' => $row['normal_price'],
-		'description' => $row['description'],
-		'brand' => $row['brand'],
-		'units' => $row['units'],
-		'size' => $row['size'],
-		'sku' => $row['sku'],
-		'pricePerUnit' => $row['pricePerUnit'],
-		'upc' => $row['upc'],
-		'vendor' => $row['vendor'],
-		'scale' => $row['scale'],
-		'numflag' => $row['numflag']
-		);			
-		$data[] = $myrow;
+	while ($row = $dbc->fetch_row($result)) {
+        $count = 1;
+        // add multiples of the give tag if requested
+        if (isset($row['count']) && $row['count'] > 0) {
+            $count = $row['count'];
+        }
+        for ($i=0; $i<$count; $i++) {
+            $myrow = array(
+                'normal_price' => $row['normal_price'],
+                'description' => $row['description'],
+                'brand' => $row['brand'],
+                'units' => $row['units'],
+                'size' => $row['size'],
+                'sku' => $row['sku'],
+                'pricePerUnit' => $row['pricePerUnit'],
+                'upc' => $row['upc'],
+                'vendor' => $row['vendor'],
+                'scale' => $row['scale'],
+                'numflag' => $row['numflag']
+            );			
+            $data[] = $myrow;
+        }
 	}
 }
 elseif ($batchID !== False){

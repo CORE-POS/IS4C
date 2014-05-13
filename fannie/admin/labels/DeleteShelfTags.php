@@ -40,26 +40,25 @@ class DeleteShelfTags extends FanniePage
 		$id = FormLib::get_form_value('id',0);
 
 		$dbc = FannieDB::get($FANNIE_OP_DB);
-		$checkNoQ = $dbc->prepare_statement("SELECT * FROM shelftags where id=?");
-		$checkNoR = $dbc->exec_statement($checkNoQ,array($id));
-
-		$checkNoN = $dbc->num_rows($checkNoR);
-		if($checkNoN == 0) {
+        $tags = new ShelftagsModel($dbc);
+        $tags->id($id);
+        $current_set = $tags->find();
+		if (count($current_set) == 0) {
 			$this->messages = "Barcode table is already empty. <a href='ShelfTagIndex.php'>Click here to continue</a>";
 			return true;
 		}
 
-		if(FormLib::get_form_value('submit', false) === '1') {
+		if (FormLib::get('submit', false) === '1') {
             /**
               Shelftags are not actually delete immediately
               Instead, the id field is negated so they disappear
               from view but can be manually retreived by IT if 
               someone comes complaining that they accidentally
-              delete their shelftags (not that such a thing would
+              delete their tags (not that such a thing would
               ever occur). They're properly deleted by the 
               nightly.clipboard cron job.
 
-              If the same user deletes the same UPC from shelftags
+              If the same user deletes the same UPC from tags
               multiple times in a day, the above procedure creates
               a primary key conflict. So any negative-id records
               that will create conflicts must be removed first.
@@ -68,16 +67,16 @@ class DeleteShelfTags extends FanniePage
             if ($id == 0) {
                 $new_id = -999;
             }
-            $problemQ = 'SELECT upc FROM shelftags WHERE id=? AND upc IN (SELECT upc FROM shelftags WHERE id=?)';
-            $problemP = $dbc->prepare($problemQ);
-            $problemR = $dbc->execute($problemP, array($new_id, $id));
-            $clearP = $dbc->prepare('DELETE FROM shelftags WHERE id=? AND upc=?');
-            while($problemW = $dbc->fetch_row($problemR)) {
-               $dbc->execute($clearP, array($new_id, $problemW['upc'])); 
+            $clear = new ShelftagsModel($dbc);
+            $clear->id($new_id);
+            foreach ($current_set as $tag) {
+                // delete existing negative id tag for upc
+                $clear->upc($tag->upc());
+                $clear->delete();
+                // save tag as negative id
+                $tag->id($new_id);
+                $tag->save();
             }
-			$deleteQ = "UPDATE shelftags SET id=? WHERE id=?";
-			$prep = $dbc->prepare_statement($deleteQ);
-			$deleteR = $dbc->exec_statement($prep, array($new_id, $id));
 			$this->messages = "Barcode table cleared <a href='ShelfTagIndex.php'>Click here to continue</a>";
 
 			return true;

@@ -13,6 +13,7 @@ Columns:
 	units int
 	vendor varchar
 	pricePerUnit varchar
+    count int 
 
 Depends on:
 	none
@@ -25,6 +26,8 @@ An id maps to a buyer at WFC, but doesn't have to.
 Size relates to an indivdual product.
 Units relates to a case. So a case of beer has 24
 units, each with a size of 12 oz.
+
+Count is used to print multiples of the same tag
 */
 $CREATE['op.shelftags'] = "
 	CREATE TABLE `shelftags` (
@@ -38,6 +41,7 @@ $CREATE['op.shelftags'] = "
 		`units` int(4) default NULL ,
 		`vendor` varchar(50) default NULL,
 		`pricePerUnit` varchar(50) default NULL,
+        `count` TINYINT DEFAULT 1,
 		PRIMARY KEY (`id`,`upc`),
 		INDEX (`id`)
 	)
@@ -55,7 +59,8 @@ if ($dbms == "MSSQL"){
 			[size] [varchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
 			[units] [int] NULL ,
 			[vendor] [varchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-			[pricePerUnit] [varchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL 
+			[pricePerUnit] [varchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+            [count] [TINYINT]
 		)
 	";
 }

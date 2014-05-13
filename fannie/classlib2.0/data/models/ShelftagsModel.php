@@ -27,7 +27,7 @@
 class ShelftagsModel extends BasicModel
 {
 
-    protected $name = "Shelftags";
+    protected $name = "shelftags";
 
     protected $columns = array(
     'id' => array('type'=>'INT', 'primary_key'=>true),
@@ -40,6 +40,7 @@ class ShelftagsModel extends BasicModel
     'units' => array('type'=>'INT'),
     'vendor' => array('type'=>'VARCHAR(50)'),
     'pricePerUnit' => array('type'=>'VARCHAR(50)'),
+    'count' => array('type'=>'TINYINT', 'default'=>1),
 	);
 
     /* START ACCESSOR FUNCTIONS */
@@ -241,6 +242,26 @@ class ShelftagsModel extends BasicModel
                 }
             }
             $this->instance["pricePerUnit"] = func_get_arg(0);
+        }
+    }
+
+    public function count()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["count"])) {
+                return $this->instance["count"];
+            } else if (isset($this->columns["count"]["default"])) {
+                return $this->columns["count"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["count"]) || $this->instance["count"] != func_get_args(0)) {
+                if (!isset($this->columns["count"]["ignore_updates"]) || $this->columns["count"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["count"] = func_get_arg(0);
         }
     }
     /* END ACCESSOR FUNCTIONS */

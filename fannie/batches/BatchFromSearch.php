@@ -99,18 +99,15 @@ class BatchFromSearch extends FannieRESTfulPage
 
         /**
           If tags were requested and it's price change batch, make them
-          Lookup vendor info for each item then add a shelftags record
+          Lookup vendor info for each item then add a shelftag record
         */
         $tagset = FormLib::get('tagset');
         if ($discounttype == 0 && $tagset !== '') {
-            $ins = $dbc->prepare('INSERT INTO shelftags (id, upc, description, normal_price, 
-                            brand, sku, size, units, vendor, pricePerUnit) VALUES (?, ?, ?, ?,
-                            ?, ?, ?, ?, ?, ?)');
             $lookup = $dbc->prepare('SELECT p.description, v.brand, v.sku, v.size, v.units, n.vendorName
                                 FROM products AS p LEFT JOIN vendorItems AS v ON p.upc=v.upc
                                 LEFT JOIN vendors AS n ON v.vendorID=n.vendorID
                                 WHERE p.upc=? ORDER BY v.vendorID');
-            $clear = $dbc->prepare('DELETE FROM shelftags WHERE id=? AND upc=?');
+            $tag = new ShelftagsModel($dbc);
             for($i=0; $i<count($upcs);$i++) {
                 $upc = $upcs[$i];
                 $price = isset($prices[$i]) ? $prices[$i] : 0.00;
@@ -122,10 +119,17 @@ class BatchFromSearch extends FannieRESTfulPage
                 }
                 $ppo = ($info['size'] !== '') ? PriceLib::pricePerUnit($price, $info['size']) : '';
 
-                $dbc->execute($clear, array($tagset, $upc));
-                $dbc->execute($ins, array($tagset, $upc, $info['description'], $price,
-                                        $info['brand'], $info['sku'], $info['size'],
-                                        $info['units'], $info['vendorName'], $ppo));
+                $tag->id($tagset);
+                $tag->upc($upc);
+                $tag->description($info['description']);
+                $tag->normal_price($price);
+                $tag->brand($info['brand']);
+                $tag->sku($info['sku']);
+                $tag->size($info['size']);
+                $tag->units($info['units']);
+                $tag->vendor($info['vendorName']);
+                $tag->pricePerUnit($ppo);
+                $tag->save();
             }
         }
 

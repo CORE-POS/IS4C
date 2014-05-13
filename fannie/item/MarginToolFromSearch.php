@@ -310,14 +310,11 @@ class MarginToolFromSearch extends FannieRESTfulPage
         // did not select "none" for tags
         // so create some shelftags
         if ($this->tags != -1) {
-            $ins = $dbc->prepare('INSERT INTO shelftags (id, upc, description, normal_price, 
-                            brand, sku, size, units, vendor, pricePerUnit) VALUES (?, ?, ?, ?,
-                            ?, ?, ?, ?, ?, ?)');
             $lookup = $dbc->prepare('SELECT p.description, v.brand, v.sku, v.size, v.units, n.vendorName
                                 FROM products AS p LEFT JOIN vendorItems AS v ON p.upc=v.upc
                                 LEFT JOIN vendors AS n ON v.vendorID=n.vendorID
                                 WHERE p.upc=? ORDER BY v.vendorID');
-            $clear = $dbc->prepare('DELETE FROM shelftags WHERE id=? AND upc=?');
+            $tag = new ShelfTagModel($dbc);
             for($i=0; $i<count($this->upcs);$i++) {
                 $upc = $this->upcs[$i];
                 if (!isset($this->newprices[$i])) {
@@ -332,10 +329,17 @@ class MarginToolFromSearch extends FannieRESTfulPage
                 }
                 $ppo = ($info['size'] !== '') ? PriceLib::pricePerUnit($price, $info['size']) : '';
 
-                $dbc->execute($clear, array($this->tags, $upc));
-                $dbc->execute($ins, array($this->tags, $upc, $info['description'], $price,
-                                        $info['brand'], $info['sku'], $info['size'],
-                                        $info['units'], $info['vendorName'], $ppo));
+                $tag->id($this->tags);
+                $tag->upc($upc);
+                $tag->description($info['description']);
+                $tag->normal_price($price);
+                $tag->brand($info['brand']);
+                $tag->sku($info['sku']);
+                $tag->size($info['size']);
+                $tag->units($info['units']);
+                $tag->vendor($info['vendorName']);
+                $tag->pricePerUnit($ppo);
+                $tag->save();
             }
         }
 

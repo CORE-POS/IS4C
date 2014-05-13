@@ -57,18 +57,19 @@ class CreateTagsByManu extends FanniePage {
 					or (n.vendorName is NULL)
 				)");
 			$r = $dbc->exec_statement($q,array('%'.$manu.'%'));
-			$ins = $dbc->prepare_statement("INSERT INTO shelftags (id,upc,description,normal_price,
-				brand,sku,size,units,vendor,pricePerUnit) VALUES (?,?,?,?,
-				?,?,?,?,?,?)");
+            $tag = new ShelfTagModel($dbc);
 			while($w = $dbc->fetch_row($r)){
-				$args = array($pageID,$w['upc'],
-					$w['description'],$w['normal_price'],
-					$w['manufacturer'],
-					$w['sku'],$w['units'],$w['size'],
-                    $w['distributor'],
-					PriceLib::pricePerUnit($w['normal_price'],$w['size'])
-				);
-				$dbc->exec_statement($ins,$args);
+                $tag->id($pageID);
+                $tag->upc($w['upc']);
+                $tag->description($w['description']);
+                $tag->normal_price($w['normal_price']);
+                $tag->brand($w['manufacturer']);
+                $tag->sku($w['sku']);
+                $tag->size($w['units']);
+                $tag->units($w['size']);
+                $tag->vendor($w['distributor']);
+                $tag->pricePerUnit(PriceLib::pricePerUnit($w['normal_price'], $w['size']));
+                $tag->save();
 			}
 			$this->msgs = '<em>Created tags for manufacturer</em>
 					<br /><a href="ShelfTagIndex.php">Home</a>';
