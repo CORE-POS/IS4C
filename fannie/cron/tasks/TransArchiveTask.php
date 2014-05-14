@@ -38,7 +38,7 @@ class TransArchiveTask extends FannieTask
 
     public function run()
     {
-        global $FANNIE_TRANS_DB, $FANNIE_ARCHIVE_DB, $FANNIE_ARCHIVE_METHOD;
+        global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_ARCHIVE_DB, $FANNIE_ARCHIVE_METHOD;
         $sql = FannieDB::get($FANNIE_TRANS_DB);
         $today = date('Y-m-d 00:00:00');
 
