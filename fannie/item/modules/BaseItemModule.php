@@ -51,7 +51,7 @@ class BaseItemModule extends ItemModule {
                                         p.scale,
                                         p.qttyEnforced,
                                         p.discount,
-                                        x.manufacturer,
+                                        p.brand AS manufacturer,
                                         x.distributor,
                                         u.description as ldesc 
                                       FROM products AS p 

@@ -114,7 +114,7 @@ class ItemEditorPage extends FanniePage {
         if (is_numeric($upc)) {
             switch($numType) {
                 case 'SKU':
-                    $query = "SELECT p.*,x.distributor,x.manufacturer 
+                    $query = "SELECT p.*,x.distributor,p.brand AS manufacturer 
                         FROM products as p inner join 
                         vendorItems as v ON p.upc=v.upc 
                         left join prodExtra as x on p.upc=x.upc 
@@ -122,7 +122,7 @@ class ItemEditorPage extends FanniePage {
                     $args[] = '%'.$upc;
                     break;
                 case 'Brand Prefix':
-                    $query = "SELECT p.*,x.distributor,x.manufacturer 
+                    $query = "SELECT p.*,x.distributor,p.brand AS manufacturer 
                         FROM products as p left join 
                         prodExtra as x on p.upc=x.upc 
                         WHERE p.upc like ?
@@ -132,7 +132,7 @@ class ItemEditorPage extends FanniePage {
                 case 'UPC':
                 default:
                     $upc = BarcodeLib::padUPC($upc);
-                    $query = "SELECT p.*,x.distributor,x.manufacturer 
+                    $query = "SELECT p.*,x.distributor,p.brand AS manufacturer 
                         FROM products as p left join 
                         prodExtra as x on p.upc=x.upc 
                         WHERE p.upc = ?
@@ -141,7 +141,7 @@ class ItemEditorPage extends FanniePage {
                     break;
             }
         } else {
-            $query = "SELECT p.*,x.distributor,x.manufacturer 
+            $query = "SELECT p.*,x.distributor,p.brand AS manufacturer 
                 FROM products AS p LEFT JOIN 
                 prodExtra AS x ON p.upc=x.upc
                 WHERE description LIKE ?

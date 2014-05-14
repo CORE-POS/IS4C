@@ -107,8 +107,10 @@ class ExtraInfoModule extends ItemModule
         $pm->idEnforced($idReq);
         $r1 = $pm->save();
 
-		$p = $dbc->prepare_statement('UPDATE prodExtra SET cost=? WHERE upc=?');
-		$r2 = $dbc->exec_statement($p,array($cost,$upc));
+        if ($dbc->tableExists('prodExtra')) {
+            $p = $dbc->prepare_statement('UPDATE prodExtra SET cost=? WHERE upc=?');
+            $r2 = $dbc->exec_statement($p,array($cost,$upc));
+        }
 	
 		if ($r1 === false || $r2 === false) {
 			return false;

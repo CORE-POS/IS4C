@@ -94,8 +94,7 @@ if (isset($_GET['type'])){
 				d.upc, p.description, 
 				sum(d.quantity) as total 
 				from $dlog as d left join products as p on d.upc = p.upc
-				left join prodExtra as x on p.upc = x.upc
-				where x.manufacturer = ?
+				where p.brand = ?
 				AND d.tdate BETWEEN ? AND ?
 				and trans_status <> 'M'
 				group by year(d.tdate),month(d.tdate),day(d.tdate),

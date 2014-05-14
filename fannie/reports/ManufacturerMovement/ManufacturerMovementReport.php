@@ -46,7 +46,7 @@ class ManufacturerMovementReport extends FannieReportPage
 		$dlog = DTransactionsModel::selectDlog($date1,$date2);
 		$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumUpcSalesByDay";
 
-		$type_condition = "e.manufacturer like ?";
+		$type_condition = "p.brand like ?";
 		$args = array('%'.$manu.'%');
 		if ($type == 'prefix')
 			$type_condition = 't.upc LIKE ?';
@@ -59,10 +59,10 @@ class ManufacturerMovementReport extends FannieReportPage
 			$query = "select t.upc,p.description,
 				  sum(t.quantity) as qty,
 				  sum(t.total),d.dept_no,d.dept_name,s.superID
-				  from $dlog as t left join products as p
-				  on t.upc=p.upc left join prodExtra as e on p.upc = e.upc
-				  left join departments as d on p.department = d.dept_no
-				  left join MasterSuperDepts as s on d.dept_no = s.dept_ID
+				  from $dlog as t 
+                      left join products as p on t.upc=p.upc
+                      left join departments as d on p.department = d.dept_no
+                      left join MasterSuperDepts as s on d.dept_no = s.dept_ID
 				  where $type_condition
 				  and t.tdate between ? AND ?
 				  group by t.upc,p.description,d.dept_no,d.dept_name,s.superID
@@ -71,8 +71,8 @@ class ManufacturerMovementReport extends FannieReportPage
 		case 'date':
 			$query = "select year(t.tdate),month(t.tdate),day(t.tdate),
 				sum(t.quantity),sum(t.total)
-				  from products as p left join prodExtra as e on p.upc = e.upc
-				  left join $dlog as t on p.upc = t.upc
+				  from products as p 
+                      left join $dlog as t on p.upc = t.upc
 				  where $type_condition
 				  and t.tdate between ? AND ?
 				  group by year(t.tdate),month(t.tdate),day(t.tdate)
@@ -80,8 +80,8 @@ class ManufacturerMovementReport extends FannieReportPage
 			break;
 		case 'dept':
 			$query = "select d.dept_no,d.dept_name,sum(t.quantity),sum(t.total),s.superID
-				  from products as p left join prodExtra as e on p.upc = e.upc
-				  left join $dlog as t on p.upc = t.upc
+				  from products as p
+                      left join $dlog as t on p.upc = t.upc
 				  left join departments as d on p.department = d.dept_no
 				  left join MasterSuperDepts as s on d.dept_no=s.dept_ID
 				  where $type_condition

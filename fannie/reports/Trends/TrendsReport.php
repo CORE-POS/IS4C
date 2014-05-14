@@ -65,8 +65,7 @@ class TrendsReport extends FannieReportPage
             case 'manu':
                 if (FormLib::get('mtype', 'name') == "name") {
                     $args = array($manufacturer);
-                    $joins = 'LEFT JOIN prodExtra AS x ON d.upc=x.upc';
-                    $where = 'x.manufacturer = ?';
+                    $where = 'p.brand = ?';
                     $args[] = FormLib::get('manufacturer');
                 } else {
                     $where = 'd.upc LIKE ?';
