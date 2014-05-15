@@ -373,7 +373,8 @@ class MercuryE2E extends BasicCCModule {
 		$xTransID = $xml->get("REFNO");
 		if ($xTransID){
 			$sqlColumns .= ",xTransactionID";
-			$sqlValues .= sprintf(",'%s'",substr($xTransID,0,12));
+            $xTransID = substr($xTransID, 0, 12);
+			$sqlValues .= sprintf(",'%s'", $xTransID);
 		}
 		else $validResponse = -3;
 		$apprNumber = $xml->get("AUTHCODE");
@@ -408,6 +409,54 @@ class MercuryE2E extends BasicCCModule {
 		$sql = "INSERT INTO efsnetResponse (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
 		PaycardLib::paycard_db_query($sql, $dbTrans);
 
+        /**
+          Log transaction in newer table
+        */
+        if ($dbTrans->table_exists('PaycardTransactions')) {
+            // put normalized value in validResponse column
+            $normalized = ($validResponse == 0) ? 4 : 0;
+            if ($responseCode == 1) {
+                $normalized = 1;
+            } else if ($responseCode == 2) {
+                $normalized = 2;
+            } else if ($responseCode == 0) {
+                $normalized = 3;
+            }
+            $finishQ = sprintf("UPDATE PaycardTransactions
+                                SET responseDatetime='%s',
+                                    seconds=%f,
+                                    commErr=%d,
+                                    httpCode=%d,
+                                    validResponse=%d,
+                                    xResultCode=%d,
+                                    xApprovalNumber='%s',
+                                    xResponseCode=%d,
+                                    xResultMessage='%s',
+                                    xTransactionID='%s',
+                                    xBalance='%s',
+                                    xToken='%s',
+                                    xProcessorRef='%s',
+                                    xAcquirerRef='%s'
+                                WHERE paycardTransactionID=%d",
+                                $now,
+                                $authResult['curlTime'],
+                                $authResult['curlErr'],
+                                $authResult['curlHTTP'],
+                                $normalized,
+                                $responseCode,
+                                $apprNumber,
+                                $resultCode,
+                                $rMsg,
+                                $xTransID,
+                                $ebtbalance,
+                                $xml->get_first('RECORDNO'),
+                                $xml->get_first('PROCESSDATA'),
+                                $xml->get_first('ACQREFDATA'),
+                                $this->last_paycard_transaction_id
+            );
+            $dbTrans->query($finishQ);
+        }
+
 		if ($responseCode == 1){
 			$amt = $xml->get_first("AUTHORIZE");
 			if ($amt != abs($CORE_LOCAL->get("paycard_amount"))){
@@ -420,6 +469,13 @@ class MercuryE2E extends BasicCCModule {
 				$CORE_LOCAL->set("paycard_amount",$amt);
 				$CORE_LOCAL->set("paycard_partial",True);
 				UdpComm::udpSend('goodBeep');
+                if ($dbTrans->table_exists('PaycardTransactions')) {
+                    $upQ = sprintf('UPDATE PaycardTransactions
+                                    SET amount=%.2f
+                                    WHERE paycardTransactionID=%d',
+                                    $amt, $this->last_paycard_transaction_id);
+                    $dbTrans->query($upQ);
+                }
 			}
 		}
 
@@ -553,6 +609,44 @@ class MercuryE2E extends BasicCCModule {
 		$sql = "INSERT INTO efsnetRequestMod (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
 		PaycardLib::paycard_db_query($sql, $dbTrans);
 
+        if ($dbTrans->table_exists('PaycardTransactions')) {
+            $normalized = ($validResponse == 0) ? 4 : 0;
+            if ($responseCode == 1) {
+                $normalized = 1;
+            } else if ($responseCode == 2) {
+                $normalized = 2;
+            } else if ($responseCode == 0) {
+                $normalized = 3;
+            }
+            $finishQ = sprintf("UPDATE PaycardTransactions
+                                SET responseDatetime='%s',
+                                    seconds=%f,
+                                    commErr=%d,
+                                    httpCode=%d,
+                                    validResponse=%d,
+                                    xResultCode=%d,
+                                    xResponseCode=%d,
+                                    xResultMessage='%s',
+                                    xToken='%s',
+                                    xProcessorRef='%s',
+                                    xAcquirerRef='%s'
+                                WHERE paycardTransactionID=%d",
+                                $now,
+                                $authResult['curlTime'],
+                                $authResult['curlErr'],
+                                $authResult['curlHTTP'],
+                                $normalized,
+                                $responseCode,
+                                $resultCode,
+                                $rMsg,
+                                $xml->get_first('RECORDNO'),
+                                $xml->get_first('PROCESSDATA'),
+                                $xml->get_first('ACQREFDATA'),
+                                $this->last_paycard_transaction_id
+            );
+            $dbTrans->query($finishQ);
+        }
+
 		$tokenRef = $xml->get_first("INVOICENO");
 		$sql = sprintF("DELETE FROM efsnetTokens WHERE refNum='%s'",$tokenRef);
 		PaycardLib::paycard_db_query($sql, $dbTrans);
@@ -623,12 +717,25 @@ class MercuryE2E extends BasicCCModule {
             $isCredit = ($CORE_LOCAL->get('CacheCardType') == 'CREDIT' || $CORE_LOCAL->get('CacheCardType') == '') ? true : false;
             $needSig = ($CORE_LOCAL->get('paycard_amount') > $CORE_LOCAL->get('CCSigLimit') || $CORE_LOCAL->get('paycard_amount') < 0) ? true : false;
             if ($isCredit && $needSig) {
-                $CORE_LOCAL->set("boxMsg","<b>$appr_type</b><font size=-1><p>Please verify cardholder signature<p>[enter] to continue<br>\"rp\" to reprint slip<br>[void] to cancel and void</font>");
+                $CORE_LOCAL->set("boxMsg",
+                        "<b>$appr_type</b>
+                        <font size=-1>
+                        <p>Please verify cardholder signature
+                        <p>[enter] to continue
+                        <br>\"rp\" to reprint slip
+                        <br>[void] " . _('to reverse the charge') . "
+                        </font>");
                 if ($CORE_LOCAL->get('PaycardsSigCapture') != 1) {
                     $json['receipt'] = 'ccSlip';
                 }
             } else {
-				$CORE_LOCAL->set("boxMsg","<b>$appr_type</b><font size=-1><p>No signature required<p>[enter] to continue<br>[void] to cancel and void</font>");
+				$CORE_LOCAL->set("boxMsg",
+                        "<b>$appr_type</b>
+                        <font size=-1>
+                        <p>No signature required
+                        <p>[enter] to continue
+                        <br>[void] " . _('to reverse the charge') . "
+                        </font>");
 			} 
 			break;
 		case PaycardLib::PAYCARD_MODE_VOID:
@@ -660,7 +767,8 @@ class MercuryE2E extends BasicCCModule {
 	  Updated for E2E
 	  Status: Should be functional once device is available
 	*/
-	function send_auth($domain="w1.mercurypay.com"){
+	function send_auth($domain="w1.mercurypay.com")
+    {
 		global $CORE_LOCAL;
 		// initialize
 		$dbTrans = PaycardLib::paycard_db();
@@ -744,6 +852,30 @@ class MercuryE2E extends BasicCCModule {
 
         if (isset($table_def['efsnetRequestID'])) {
             $this->last_req_id = $dbTrans->insert_id();
+        }
+
+        /**
+          Log transaction in newer table
+        */
+        if ($dbTrans->table_exists('PaycardTransactions')) {
+            $insQ = sprintf("INSERT INTO PaycardTransactions (
+                        dateID, empNo, registerNo, transNo, transID,
+                        processor, refNum, live, cardType, transType,
+                        amount, PAN, issuer, name, manual, requestDateTime)
+                     VALUES (
+                        %d,     %d,    %d,         %d,      %d,
+                        '%s',     '%s',    %d,   '%s',     '%s',
+                        %.2f,  '%s', '%s',  '%s',  %d,     '%s')",
+                        $today, $cashierNo, $laneNo, $transNo, $transID,
+                        'MercuryE2E', $refNum, $live, $type, $mode,
+                        ($amountText+$cashbackText), $cardPANmasked,
+                        $cardIssuer, $fixedName, $manual, $now);
+            $insR = $dbTrans->query($insQ);
+            if ($insR) {
+                $this->last_paycard_transaction_id = $dbTrans->insert_id();
+            } else {
+                $this->last_paycard_transaction_id = 0;
+            }
         }
 
 		// weird string concat here so vim's color highlighting
@@ -925,6 +1057,34 @@ class MercuryE2E extends BasicCCModule {
 			return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); 
 		}
 		$res = PaycardLib::paycard_db_fetch_row($result);
+
+        /**
+          populate a void record in PaycardTransactions
+        */
+        if ($dbTrans->table_exists('PaycardTransactions')) {
+            $initQ = "INSERT INTO PaycardTransactions (
+                        dateID, empNo, registerNo, transNo, transID,
+                        previousPaycardTransactionID, processor, refNum,
+                        live, cardType, transType, amount, PAN, issuer,
+                        name, manual, requestDateTime)
+                      SELECT dateID, empNo, registerNo, transNo, transID,
+                        paycardTransactionID, processor, refNum,
+                        live, cardType, 'VOID', amount, PAN, issuer,
+                        name, manual, " . $dbTrans->now() . "
+                      FROM PaycardTransactions
+                      WHERE
+                        dateID=" . $today . "
+                        AND empNo=" . $cashierNo . "
+                        AND registerNo=" . $laneNo . "
+                        AND transNo=" . $transNo . "
+                        AND transID=" . $transID;
+            $initR = $dbTrans->query($initQ);
+            if ($initR) {
+                $this->last_paycard_transaction_id = $dbTrans->insert_id();
+            } else {
+                $this->last_paycard_transaction_id = 0;
+            }
+        }
 
 		$type = 'Credit';
 		if (substr($res['mode'],0,6)=='Debit_'){

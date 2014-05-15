@@ -39,7 +39,7 @@ class WfcMadCouponParser extends Parser {
 			-1*$madCoup, -1*$madCoup, -1*$madCoup, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 17);
 		$ret = $this->default_json();
 		$ret['output'] = DisplayLib::lastpage();
-		$ret['redraw_footer'] = True;
+		$ret['redraw_footer'] = true;
 		return $ret;
 	}
 

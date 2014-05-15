@@ -24,7 +24,29 @@
 ini_set('display_errors','Off');
 include_once(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 
-if ($CORE_LOCAL->get("End") == 1) {
+$receiptType = isset($_REQUEST['receiptType'])?$_REQUEST['receiptType']:'';
+
+/**
+  Use requested receipt type to determine whether transaction
+  should be completed and flushed from localtemptrans rather
+  than relying on session variables.
+  - full => normal transaction receipt
+  - cancelled => transaction cancelled
+  - suspended => transaction suspended
+  - none => don't print a receipt, just flush localtemptrans
+
+  Note: none is currently only used by the RRR parser which
+  could probably be refactored into a plugin providing its
+  own receipt type implementation via a ReceiptMessage
+*/
+$transFinished = false;
+if ($receiptType == 'full' || $receiptType == 'cancelled' ||
+    $receiptType == 'suspended' || $receiptType == 'none') {
+    
+    $transFinished = true;
+}
+
+if ($receiptType == 'full') {
     TransRecord::addtransDiscount();
     TransRecord::addTax();
     $taxes = Database::LineItemTaxes();
@@ -32,8 +54,6 @@ if ($CORE_LOCAL->get("End") == 1) {
         TransRecord::addQueued('TAXLINEITEM',$tax['description'],$tax['rate_id'],'',$tax['amount']);
     }
 }
-
-$receiptType = isset($_REQUEST['receiptType'])?$_REQUEST['receiptType']:'';
 
 $yesSync = JsonLib::array_to_json(array('sync'=>true));
 $noSync = JsonLib::array_to_json(array('sync'=>false));
@@ -78,8 +98,7 @@ if (strlen($receiptType) > 0) {
         $receiptContent[] = ReceiptLib::printReceipt($receiptType, true);
     }
 
-    if ($CORE_LOCAL->get("End") >= 1 || $receiptType == "cancelled"
-        || $receiptType == "suspended"){
+    if ($transFinished) {
         $CORE_LOCAL->set("End",0);
         $output = $yesSync;
         UdpComm::udpSend("termReset");
@@ -186,13 +205,9 @@ function truncateTempTables()
 {
     $connection = Database::tDataConnect();
     $query1 = "truncate table localtemptrans";
-    // @deprecated
-    //$query2 = "truncate table activitytemplog";
     $query3 = "truncate table couponApplied";
 
     $connection->query($query1);
-    // @deprecated
-    //$connection->query($query2);
     $connection->query($query3);
 }
 
@@ -222,12 +237,5 @@ function moveTempData()
     }
     $cols = Database::localMatchingColumns($connection, 'dtransactions', 'localtemptrans');
     $connection->query("insert into dtransactions ($cols) select $cols from localtemptrans");
-
-    /** 
-    alog and its variants are never used.
-    @deprecated
-    $connection->query("insert into activitylog select * from activitytemplog");
-    $connection->query("insert into alog select * from activitytemplog");
-    */
 }
 

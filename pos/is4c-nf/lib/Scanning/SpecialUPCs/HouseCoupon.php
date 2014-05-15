@@ -87,16 +87,34 @@ class HouseCoupon extends SpecialUPC
     {
         $db = Database::pDataConnect();
         $hctable = $db->table_definition('houseCoupons');
-        $infoQ = "select endDate," . $db->identifier_escape('limit') .
-            ",discountType, department,
-            discountValue, minType, minValue, memberOnly, 
-            case when endDate is NULL then 0 else 
-            ". $db->datediff('endDate', $db->now()) . " end as expired
-            from
-            houseCoupons WHERE coupID=" . ((int)$id);
+        $infoQ = "SELECT endDate," 
+                    . $db->identifier_escape('limit') . ",
+                    discountType, 
+                    department,
+                    discountValue, 
+                    minType, 
+                    minValue, 
+                    memberOnly, 
+                    CASE 
+                        WHEN endDate IS NULL THEN 0 
+                        ELSE ". $db->datediff('endDate', $db->now()) . " 
+                    END AS expired";
+        // new(ish) columns 16apr14
         if (isset($hctable['description'])) {
-            $infoQ = str_replace('as expired', 'as expired, description', $infoQ);
+            $infoQ .= ', description';
+        } else {
+            $infoQ .= ', \'\' AS description';
         }
+        if (isset($hctable['startDate'])) {
+            $infoQ .= ", CASE 
+                          WHEN startDate IS NULL THEN 0 
+                          ELSE ". $db->datediff('startDate', $db->now()) . " 
+                        END as preStart";
+        } else {
+            $infoQ .= ', 0 AS preStart';
+        }
+        $infoQ .= " FROM  houseCoupons 
+                    WHERE coupID=" . ((int)$id);
         $infoR = $db->query($infoQ);
         if ($db->num_rows($infoR) == 0) {
             return false;
@@ -122,6 +140,8 @@ class HouseCoupon extends SpecialUPC
         if ($infoW["expired"] < 0) {
             $expired = substr($infoW["endDate"], 0, strrpos($infoW["endDate"], " "));
             return DisplayLib::boxMsg(_("coupon expired") . " " . $expired);
+        } else if ($infoW['preStart'] > 0) {
+            return DisplayLib::boxMsg(_("coupon not available yet"));
         }
 
         /* check for member-only, longer use tracking
@@ -298,13 +318,45 @@ class HouseCoupon extends SpecialUPC
           For members, enforce limits against longer
           transaction history
         */
-        if ($infoW["memberOnly"] == 1 && $CORE_LOCAL->get("standalone")==0 && $CORE_LOCAL->get('memberID') != $CORE_LOCAL->get('visitingMem')) {
+        if ($infoW["memberOnly"] == 1 && $CORE_LOCAL->get("standalone")==0 
+            && $CORE_LOCAL->get('memberID') != $CORE_LOCAL->get('visitingMem')) {
             $mDB = Database::mDataConnect();
-            $mR = $mDB->query("SELECT quantity FROM houseCouponThisMonth
-                WHERE card_no=" . $CORE_LOCAL->get("memberID") . " and
-                upc='$upc'");
+
+            // Lookup usage of this coupon by this member
+            // Subquery is to combine today (dlog)
+            // with previous days (dlog_90_view)
+            // Potential replacement for houseCouponThisMonth
+            $monthStart = date('Y-m-01 00:00:00');
+            $altQ = "SELECT SUM(s.quantity AS quantity)
+                     FROM (
+                        SELECT upc, card_no, quantity
+                        FROM dlog
+                        WHERE
+                            trans_type='T'
+                            AND trans_subtype='IC'
+                            AND upc='$upc'
+                            AND card_no=" . ((int)$CORE_LOCAL->get('memberID')) . "
+    
+                        UNION ALL
+
+                        SELECT upc, card_no, quantity
+                        FROM dlog_90_view
+                        WHERE
+                            trans_type='T'
+                            AND trans_subtype='IC'
+                            AND upc='$upc'
+                            AND card_no=" . ((int)$CORE_LOCAL->get('memberID')) . "
+                            AND tdate >= '$monthStart'
+                     ) AS s
+                     GROUP BY s.upc, s.card_no";
+
+            $mR = $mDB->query("SELECT quantity 
+                               FROM houseCouponThisMonth
+                               WHERE card_no=" . $CORE_LOCAL->get("memberID") . " and
+                               upc='$upc'");
             if ($mDB->num_rows($mR) > 0) {
-                $uses = array_pop($mDB->fetch_row($mR));
+                $mW = $mDB->fetch_row($mR);
+                $uses = $mW['quantity'];
                 if ($uses >= $infoW["limit"]) {
                     return DisplayLib::boxMsg(_("Coupon already used")
                                 ."<br />"
@@ -448,7 +500,10 @@ class HouseCoupon extends SpecialUPC
                 Database::getsubtotals();
                 $max = floor($infoW['discountValue']);
                 $percentage = $infoW['discountValue'] - $max;
-                $amount = $CORE_LOCAL->get('discountableTotal') > $max ? $max : $CORE_LOCAL->get('discountableTotal');
+                // because the overall value is capped, I'm using
+                // the actual transaction total rather than discountableTotal
+                $total = $CORE_LOCAL->get('runningTotal') - $CORE_LOCAL->get('transDiscount');
+                $amount = $total > $max ? $max : $total;
                 $value = $percentage * $amount;
                 break;
             case "%": // percent discount on all items

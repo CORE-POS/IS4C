@@ -500,18 +500,6 @@ function create_trans_dbs($db,$type){
     $name = $CORE_LOCAL->get('tDatabase');
     $errors = array();
 
-    /**
-    alog and its variants are never used.
-    @deprecated
-    InstallUtilities::createIfNeeded($db, $type, $name, 'activities', 'trans', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'alog', 'trans', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'activitylog', 'trans', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'activitytemplog', 'trans', $errors);
-    */
-
     InstallUtilities::createIfNeeded($db, $type, $name, 'dtransactions', 'trans', $errors);
 
     InstallUtilities::createIfNeeded($db, $type, $name, 'localtrans', 'trans', $errors);
@@ -1028,6 +1016,8 @@ function create_trans_dbs($db,$type){
     if(!$db->table_exists('rp_receipt',$name)){
         InstallUtilities::dbStructureModify($db,'rp_receipt',$rprV,$errors);
     }
+
+    InstallUtilities::createIfNeeded($db, $type, $name, 'PaycardTransactions', 'trans', $errors);
 
     InstallUtilities::createIfNeeded($db, $type, $name, 'efsnetRequest', 'trans', $errors);
 
@@ -2533,21 +2523,6 @@ function create_min_server($db,$type){
         AND emp_no <> 9999 and register_no <> 99";
     if(!$db->table_exists("dlog",$name)){
         $errors = InstallUtilities::dbStructureModify($db,'dlog',$dlogQ,$errors);
-    }
-
-    $alogQ = "CREATE TABLE alog (
-        `datetime` datetime,
-        LaneNo smallint,
-        CashierNo smallint,
-        TransNo int,
-        Activity tinyint,
-        `Interval` real)";
-    if ($type == 'mssql'){
-        $alogQ = str_replace("`datetime`","[datetime]",$alogQ);
-        $alogQ = str_replace("`","",$alogQ);
-    }
-    if(!$db->table_exists("alog",$name)){
-        InstallUtilities::dbStructureModify($db,'alog',$alogQ,$errors);
     }
 
     $efsrq = "CREATE TABLE efsnetRequest (

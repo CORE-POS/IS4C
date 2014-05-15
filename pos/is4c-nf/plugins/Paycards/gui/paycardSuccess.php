@@ -38,7 +38,7 @@ class paycardSuccess extends BasicPage {
 
             // capture file if present; otherwise re-request 
             // signature via terminal
-            if (isset($_REQUEST['doCapture']) && $_REQUEST['doCapture'] == 1 && ($input == '' || $input == 'CL')) {
+            if (isset($_REQUEST['doCapture']) && $_REQUEST['doCapture'] == 1 && $input == '') {
                 if (isset($_REQUEST['bmpfile']) && !empty($_REQUEST['bmpfile']) && file_exists($_REQUEST['bmpfile'])) {
                     $bmp = file_get_contents($_REQUEST['bmpfile']);
                     $format = 'BMP';
@@ -77,14 +77,18 @@ class paycardSuccess extends BasicPage {
 			$mode = $CORE_LOCAL->get("paycard_mode");
 			$type = $CORE_LOCAL->get("paycard_type");
 			$tender_id = $CORE_LOCAL->get("paycard_id");
-			if( $input == "" || $input == "CL") { // [enter] or [clear] exits this screen
+			if( $input == "") { // [enter] exits this screen
 				// remember the mode, type and transid before we reset them
 				$CORE_LOCAL->set("boxMsg","");
 
+                // only reset terminal if the terminal was used for the transaction
+                // activating a gift card should not reset terminal
+                if ($CORE_LOCAL->get("paycard_type") == PaycardLib::PAYCARD_TYPE_ENCRYPTED) {
+                    UdpComm::udpSend('termReset');
+                    $CORE_LOCAL->set('ccTermState','swipe');
+                    $CORE_LOCAL->set("CacheCardType","");
+                }
 				PaycardLib::paycard_reset();
-				UdpComm::udpSend('termReset');
-                $CORE_LOCAL->set('ccTermState','swipe');
-				$CORE_LOCAL->set("CacheCardType","");
 				$CORE_LOCAL->set("strRemembered","TO");
 				$CORE_LOCAL->set("msgrepeat",1);
 
@@ -106,7 +110,7 @@ class paycardSuccess extends BasicPage {
 				"<b>Approved</b><font size=-1>
 				<p>&nbsp;
 				<p>[enter] to continue
-				<br>[void] to cancel and void
+				<br>[void] " . _('to reverse the charge') . "
 				</font>");
 		}
 		return True;
@@ -129,7 +133,7 @@ class paycardSuccess extends BasicPage {
                         if ($('input[name=doCapture]').length != 0) {
                             $('input[name=doCapture]').val(0);    
                             $('div.boxMsgAlert').html('Verify Signature');
-                            $('#sigInstructions').html('[enter] to approve, [void] to cancel and void<br />[reprint] to print slip');
+                            $('#sigInstructions').html('[enter] to approve, [void] to reverse the charge<br />[reprint] to print slip');
                         }
                     }
 				});
@@ -153,7 +157,7 @@ class paycardSuccess extends BasicPage {
                 });
                 $('#imgArea').append(img);
                 $('.boxMsgAlert').html('Approve Signature');
-                $('#sigInstructions').html('[enter] to approve, [void] to cancel and void');
+                $('#sigInstructions').html('[enter] to approve, [void] to reverse the charge');
             } 
         }
         function addToForm(n, v) {
@@ -183,7 +187,8 @@ class paycardSuccess extends BasicPage {
         //   c) Over limit threshold OR a return
         $isCredit = ($CORE_LOCAL->get('CacheCardType') == 'CREDIT' || $CORE_LOCAL->get('CacheCardType') == '') ? true : false;
         $needSig = ($CORE_LOCAL->get('paycard_amount') > $CORE_LOCAL->get('CCSigLimit') || $CORE_LOCAL->get('paycard_amount') < 0) ? true : false;
-		if ($CORE_LOCAL->get("PaycardsSigCapture") == 1 && $isCredit && $needSig) {
+        $isVoid = ($CORE_LOCAL->get('paycard_mode') == PaycardLib::PAYCARD_MODE_VOID) ? true : false;
+		if ($CORE_LOCAL->get("PaycardsSigCapture") == 1 && $isCredit && $needSig && !$isVoid) {
             echo "<div id=\"boxMsg\" class=\"centeredDisplay\">";
 
             echo "<div class=\"boxMsgAlert coloredArea\">";
@@ -197,7 +202,7 @@ class paycardSuccess extends BasicPage {
             echo '$' . sprintf('%.2f', $CORE_LOCAL->get('paycard_amount')) . ' as CREDIT';
             echo '<br />';
             echo '<span id="sigInstructions" style="font-size:90%;">';
-            echo '[enter] to get re-request signature, [void] to cancel and void';
+            echo '[enter] to get re-request signature, [void] ' . _('to reverse the charge');
             echo '<br />';
             echo '[reprint] to print paper slip';
             echo '</span>';

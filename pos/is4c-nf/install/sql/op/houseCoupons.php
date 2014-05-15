@@ -4,6 +4,8 @@ Table: houseCoupons
 
 Columns:
 	coupID int
+    description varchar
+    startDate datetime
 	endDate datetime
 	limit smallint
 	memberOnly smallint
@@ -22,6 +24,8 @@ upc prefix 499999, then the coupon ID
 (zero padded to 5 digits). There's a
 tool in legacy for putting these together
 that may eventually make it into fannie.
+
+startDate is the first day the coupon is valid
 
 endDate is the last day the coupon is valid
 
@@ -102,6 +106,8 @@ the UPC.php parser module (IT CORE).
 $CREATE['op.houseCoupons'] = "
 	CREATE TABLE houseCoupons (
 		coupID int,
+        description VARCHAR(30),
+        startDate DATETIME,
 		endDate datetime,
 		`limit` smallint,
 		memberOnly smallint,
