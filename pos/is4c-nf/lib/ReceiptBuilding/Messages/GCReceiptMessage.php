@@ -75,14 +75,6 @@ class GCReceiptMessage extends ReceiptMessage
                     AND p.xResultMessage LIKE '%Appro%'
                     AND p.cardType = 'Gift'
                 ORDER BY p.requestDatetime " . $order;
-        if (!$db->table_exists('PaycardTransactions')) {
-            // gcReceiptView is lane-local only, if still present
-            $db = Database::tDataConnect();
-            $where = $db->identifier_escape('date')."=".date('Ymd')
-                ." AND cashierNo=".$emp." AND laneNo=".$reg." AND transNo=".$trans;
-            $sql = "SELECT * FROM gcReceiptView WHERE ".$where." ORDER BY "
-                .$db->identifier_escape('datetime')." $order, sortorder $order";
-        }
 
         $result = $db->query($sql);
         $num = $db->num_rows($result);

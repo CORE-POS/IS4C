@@ -566,7 +566,7 @@ class MercuryGift extends BasicCCModule
             sprintf("'%s',%s,'%s',%d",    $mode, $amountText, $cardPAN, $manual);
         $sql = "INSERT INTO valutecRequest (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
         // @deprecated table 5May15
-        if ($dbTrans->table_exists('valutecRequest')) {
+        if ($dbTrans->table_exists('valutecRequest') && !$dbTrans->query($sql)){
             if (!$dbTrans->query($sql)) {
                 return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); // internal error, nothing sent (ok to retry)
             }
