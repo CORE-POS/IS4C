@@ -189,7 +189,7 @@ class InstallUpdatesPage extends InstallPage {
             echo $giterate_info;
             if (strstr($giterate_info, 'New version ')) {
                 echo '<br />To apply update, run: ';
-                echo '<pre>' . GiterateTask::genCommand() . '</pre>';
+                echo '<pre>' . GiterateTask::genCommand() . ' --update</pre>';
             }
         }
 		return ob_get_clean();
