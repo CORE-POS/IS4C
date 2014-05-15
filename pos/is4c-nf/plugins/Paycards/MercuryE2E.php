@@ -488,6 +488,7 @@ class MercuryE2E extends BasicCCModule
             $sqlValues .= sprintf(",%d",$resultCode);
         }
         $resultMsg = $xml->get_first("CMDSTATUS");
+        $rMsg = $resultMsg;
         if ($resultMsg) {
             $sqlColumns .= ",xResultMessage";
             $rMsg = $resultMsg;
