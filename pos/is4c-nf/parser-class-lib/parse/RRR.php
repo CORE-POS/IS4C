@@ -54,7 +54,12 @@ class RRR extends Parser {
 	// quantity is getting shoved into the volume special
 	// column so that basket-size stats aren't skewed
 	function add($qty) {
-		TransRecord::addItem("RRR", "$qty RRR DONATED", "I", "", "", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, $qty, 0, 0, 0);
+        TransRecord::addRecord(array(
+            'upc' => 'RRR',
+            'description' => $qty . ' RRR DONATED',
+            'trans_type' => 'I',
+            'VolSpecial' => $qty,
+        ));
 	}
 
 	function doc(){
