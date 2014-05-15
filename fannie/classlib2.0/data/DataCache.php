@@ -37,18 +37,19 @@ class DataCache
     
       Data is stored in the archive database, reportDataCache table.
 
-      The key column is an MD5 hash of the current URL (minus the excel
+      The default key column is an MD5 hash of the current URL (minus the excel
       parameter, if present). This means your forms should use type GET
-      if caching is enabled.
+      if caching is enabled. If a key argument is provided, that key
+      is hashed instead.
 
       The data is stored as a serialized, gzcompressed string.
     */
-    static public function check()
+    static public function check($key=false)
     {
         global $FANNIE_ARCHIVE_DB;
         $dbc = FannieDB::get($FANNIE_ARCHIVE_DB);
         $table = $FANNIE_ARCHIVE_DB.$dbc->sep()."reportDataCache";
-        $hash = $_SERVER['REQUEST_URI'];
+        $hash = $key ? $key : $_SERVER['REQUEST_URI'];
         $hash = str_replace("&excel=xls","",$hash);
         $hash = str_replace("&excel=csv","",$hash);
         $hash = md5($hash);
@@ -72,11 +73,12 @@ class DataCache
       Store data in the cache
       @param $data the data
       @param $ttl how long data is valid. Options are 'day' and 'month'
+      @param $key [optional] custom lookup key
       @return True or False based on success
 
       See check() for details
     */
-    static public function freshen($data, $ttl='day')
+    static public function freshen($data, $ttl='day', $key)
     {
         global $FANNIE_ARCHIVE_DB;
         $dbc = FannieDB::get($FANNIE_ARCHIVE_DB);
@@ -84,14 +86,14 @@ class DataCache
             return false;
         }
         $table = $FANNIE_ARCHIVE_DB.$dbc->sep()."reportDataCache";
-        $hash = $_SERVER['REQUEST_URI'];
+        $hash = $key ? $key : $_SERVER['REQUEST_URI'];
         $hash = str_replace("&excel=xls","",$hash);
         $hash = str_replace("&excel=csv","",$hash);
         $hash = md5($hash);
         $expires = '';
         if ($ttl == 'day') {
             $expires = date('Y-m-d',mktime(0,0,0,date('n'),date('j')+1,date('Y')));
-        } elseif ($this->report_cache == 'month') {
+        } elseif ($ttl == 'month') {
             $expires = date('Y-m-d',mktime(0,0,0,date('n')+1,date('j'),date('Y')));
         }
 
