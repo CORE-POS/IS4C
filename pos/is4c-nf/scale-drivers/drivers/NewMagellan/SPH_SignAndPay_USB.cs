@@ -99,6 +99,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 
     private int current_state;
     private int ack_counter;
+    private Thread MonoReadThread;
 
     /**
       Does card type screen include foodstamp option
@@ -112,6 +113,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 
     private string usb_devicefile;
     private System.Object usb_lock;
+    private AutoResetEvent ack_event;
 
     public SPH_SignAndPay_USB(string p) : base(p){ 
         read_continues = false;
@@ -120,6 +122,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         ack_counter = 0;
         usb_fs = null;
         usb_lock = new System.Object();
+        ack_event = new AutoResetEvent(false);
         
         #if MONO
         usb_devicefile = p;
@@ -407,7 +410,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         }
 
         byte[] data = null;
-        if (report_length > 3 && (long_pos > 0 || input[2] == 0x02)){ // protcol messages
+        if (report_length > 3 && (long_pos > 0 || input[2] == 0x02)) { // protcol messages
             int data_length = input[3] + (input[4] << 8);
 
             int d_start = 5;
@@ -445,7 +448,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
              * Append data from multi-report messages to the
              * class member byte buffer
              */
-            if (read_continues){
+            if (read_continues) {
                 // last message will contain checksum bytes and
                 // End Tx byte, so don't copy entire data array
                 int d_len = ((input[1]&0x80)!=0) ? data.Length : data.Length-3;
@@ -466,6 +469,10 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
             for(int i=0; i<report_length && i+2<input.Length; i++){
                 data[i] = input[i+2];
             }
+        }
+
+        if (data != null && data.Length == 1 && data[0] == 0x6) {
+            ack_event.Set();
         }
 
         if ( (input[1] & 0x80) == 0){
@@ -537,7 +544,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         if (this.verbose_mode > 0)
             System.Console.Write("DMSG: {0}: ",current_state);
 
-        //if (msg == null) return;
+        if (msg == null) msg = new byte[0];
 
         if (this.verbose_mode > 0){
             foreach(byte b in msg)
@@ -918,13 +925,15 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
             System.Console.WriteLine("");
         }
 
+        ack_event.Reset();
+
         byte[] report = new byte[usb_report_size];
         int size_field = (usb_report_size == 65) ? 1 : 0;
 
         for(int j=0;j<usb_report_size;j++) report[j] = 0;
         int size=0;
 
-        for (int i=0;i<data.Length;i++){
+        for (int i=0;i<data.Length;i++) {
             if (i > 0 && i % 63 == 0){
                 report[size_field] = 63 | 0x80;
 
@@ -961,8 +970,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         }
 
         usb_fs.Write(report,0,usb_report_size);
-        
-        System.Threading.Thread.Sleep(100);
+        ack_event.WaitOne(100, false);
     }
 
     private void BitmapOutput(byte[] file){
