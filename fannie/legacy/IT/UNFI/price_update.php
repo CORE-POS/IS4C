@@ -66,7 +66,7 @@ foreach ($_POST["pricechange"] as $value) {
       $shelftag->id($buyID);
       $shelftag->upc($upc);
       $shelftag->description($desc);
-      $shelftag->normal_price($unitPrice);
+      $shelftag->normal_price($unfiPrice);
       $shelftag->brand($brand);
       $shelftag->sku($sku);
       $shelftag->units($size);
