@@ -33,10 +33,10 @@ class StockpurchasesModel extends BasicModel
 
     protected $columns = array(
     'card_no' => array('type'=>'INT','index'=>True),
-    'stockPurchase' => array('type','MONEY'),
-    'tdate' => array('type','DATETIME'),
-    'trans_num' => array('type','VARCHAR(50)'),
-    'dept' => array('type','INT')
+    'stockPurchase' => array('type'=>'MONEY'),
+    'tdate' => array('type'=>'DATETIME'),
+    'trans_num' => array('type'=>'VARCHAR(50)'),
+    'dept' => array('type'=>'INT')
     );
 
     /* START ACCESSOR FUNCTIONS */

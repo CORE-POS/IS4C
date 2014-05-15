@@ -990,6 +990,72 @@ class SQLManager
         return $this->tableDefinition($table_name, $which_connection);
     }
 
+    /**
+      More detailed table definition
+	   @param $table_name The table's name
+	   @param which_connection see method close
+	   @return
+        - array of column name => info array
+        - the info array has keys: 
+            * type (string)
+            * increment (boolean OR null if unknown)
+            * primary_key (boolean OR null if unknown)
+            * default (value OR null)
+    */
+	public function detailedDefinition($table_name,$which_connection='')
+    {
+		if ($which_connection == '') {
+			$which_connection=$this->default_db;
+        }
+		$conn = $this->connections[$which_connection];
+		$cols = $conn->MetaColumns($table_name);
+
+		$return = array();
+		if (is_array($cols)) {
+			foreach($cols as $c) {
+				$info = array();
+                $type = strtoupper($c->type);
+                if (property_exists($c, 'max_length') && $c->max_length != -1 && substr($type, -3) != 'INT') {
+                    if (property_exists($c, 'scale') && $c->scale) {
+                        $type .= '(' . $c->max_length . ',' . $c->scale . ')';
+                    } else {
+                        $type .= '(' . $c->max_length . ')';
+                    }
+                }
+                if (property_exists($c, 'unsigned') && $c->unsigned) {
+                    $type .= ' UNSIGNED';
+                }
+                $info['type'] = $type;
+                if (property_exists($c, 'auto_increment') && $c->auto_increment) {
+                    $info['increment'] = true;
+                } else if (property_exists($c, 'auto_increment') && !$c->auto_increment) {
+                    $info['increment'] = false;
+                } else {
+                    $info['increment'] = null;
+                }
+                if (property_exists($c, 'primary_key') && $c->primary_key) {
+                    $info['primary_key'] = true;
+                } else if (property_exists($c, 'primary_key') && !$c->primary_key) {
+                    $info['primary_key'] = false;
+                } else {
+                    $info['primary_key'] = null;
+                }
+
+                if (property_exists($c, 'default_value') && $c->default_value !== 'NULL' && $c->default_value !== null) {
+                    $info['default'] = $c->default_value;
+                } else {
+                    $info['default'] = null;
+                }
+
+                $return[$c->name] = $info;
+            }
+
+			return $return;
+		}
+
+		return false;
+	}
+
 	/**
 	   Get list of tables/views
 	   @param which_connection see method close

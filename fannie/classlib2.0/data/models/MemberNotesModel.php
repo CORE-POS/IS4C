@@ -34,9 +34,9 @@ class MemberNotesModel extends BasicModel
     protected $columns = array(
     'memberNoteID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),
     'cardno' => array('type'=>'INT', 'index'=>true),
-    'note' => array('type','TEXT'),
-    'stamp' => array('type','DATETIME'),
-    'username' => array('type','VARCHAR(50)')
+    'note' => array('type'=>'TEXT'),
+    'stamp' => array('type'=>'DATETIME'),
+    'username' => array('type'=>'VARCHAR(50)')
     );
 
     /* START ACCESSOR FUNCTIONS */

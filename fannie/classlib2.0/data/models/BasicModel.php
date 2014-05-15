@@ -753,7 +753,7 @@ class BasicModel
         // get lowercased versions of the class' column names
         // and the current table's column names to check for
         // case mismatches
-        $current = $this->connection->table_definition($this->name);
+        $current = $this->connection->detailedDefinition($this->name);
         $lowercase_current = array();
         $casemap = array();
         foreach($current as $col_name => $definition) {
@@ -769,6 +769,7 @@ class BasicModel
         $new_indexes = array();
         $unknown = array();
         $recase_columns = array();
+        $redo_pk = false;
         foreach ($this->columns as $col_name => $defintion) {
             if (in_array(strtolower($col_name), $lowercase_current) && !in_array($col_name, array_keys($current))) {
                 printf("%s column %s as %s\n", 
@@ -804,6 +805,66 @@ class BasicModel
                     if ($renamed && method_exists($this, 'hookAddColumn'.$col_name)) {
                         $func = 'hookAddColumn'.$col_name;
                         $this->$func();
+                    }
+                }
+            } else if (in_array($col_name, array_keys($current))) {
+                $type = $this->getMeta($this->columns[$col_name]['type'], $this->connection->dbms_name());
+                $rebuild = false;
+                if (strtoupper($type) != $current[$col_name]['type']) {
+                    printf("%s column %s from %s to %s\n", 
+                            ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Need to change":"Changing", 
+                            $col_name, $current[$col_name]['type'], $type);
+                    $rebuild = true;
+                } else if (isset($our_columns[$col_name]['default']) && $our_columns[$col_name]['default'] != $current[$col_name]['default']) {
+                    printf("%s column %s default value from %s to %s\n", 
+                            ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Need to change":"Changing", 
+                            $col_name, $current[$col_name]['default'], $our_columns[$col_name]['default']);
+                    $rebuild = true;
+                } else if (isset($our_columns[$col_name]['increment']) && $our_columns[$col_name]['increment'] && $current[$col_name]['increment'] === false) {
+                    printf("%s for column %s\n", 
+                            ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Need to set increment":"Setting increment", 
+                            $col_name);
+                    $rebuild = true;
+                } else if (isset($our_columns[$col_name]['primary_key']) && $our_columns[$col_name]['primary_key'] && $current[$col_name]['primary_key'] === false) {
+                    $redo_pk = true;
+                }
+                if ($rebuild) {
+                    $sql = 'ALTER TABLE ' . $this->connection->identifier_escape($this->name) . ' CHANGE COLUMN '
+                            . $this->connection->identifier_escape($col_name) . ' '
+                            . $this->connection->identifier_escape($col_name) . ' '
+                            . $this->getMeta($this->columns[$col_name]['type'], $this->connection->dbms_name());
+                    if (isset($this->columns[$col_name]['default'])) {
+                        $sql .= ' DEFAULT '.$this->columns[$col_name]['default'];
+                    }
+                    if (isset($this->columns[$col_name]['increment']) && $this->columns[$col_name]['increment']) {
+                        if ($this->connection->dbms_name() == 'mssql') {
+                            $sql .= ' IDENTITY (1, 1) NOT NULL';
+                        } else {
+                            $sql .= ' NOT NULL AUTO_INCREMENT';
+                        }
+                        if ($current[$col_name]['primary_key'] !== true) {
+                            // increment must be indexed or PK
+                            // only use PK on single-column PK
+                            $index = 'INDEX';
+                            if (isset($this->columns[$col_name]['primary_key']) && $this->columns[$col_name]['primary_key']) {
+                                $count_pk = 0;
+                                foreach ($this->columns as $col) {
+                                    if (isset($col['primary_key']) && $col['primary_key']) {
+                                        $pk_count++;
+                                    }
+                                }
+                                if ($pk_count == 1) {
+                                    $index = 'PRIMARY KEY ';
+                                    $redo_pk = false;
+                                }
+                            }
+                            $sql .= ', ADD ' . $index . ' (' . $this->connection->identifier_escape($this->columns[$col_name]) . ')'; 
+                        }
+                    }
+                    printf("\tSQL Details: %s\n", $sql);
+                    $recase_columns[] = $col_name;
+                    if ($mode == BasicModel::NORMALIZE_MODE_APPLY) {
+                        $modified = $this->connection->query($sql);
                     }
                 }
             } else if (!in_array($col_name,array_keys($current))) {
@@ -939,10 +1000,30 @@ class BasicModel
                 }
             }
         }
+        if ($redo_pk) {
+            echo ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Need to set primary key":"Setting primary key";
+            $sql = 'ALTER TABLE ' . $this->connection->identifier_escape($this->name);
+            foreach ($current as $col_name=>$info) {
+                if ($info['primary_key'] === true) {
+                    $sql .= ' DROP PRIMARY KEY,';
+                    break;
+                }
+            }
+            $sql .= ' ADD PRIMARY KEY(';
+            foreach ($this->columns as $col_name => $info) {
+                if (isset($info['primary_key']) && $info['primary_key']) {
+                    $sql .= $this->connection->identifier_escape($col_name) . ',';
+                }
+            }
+            $sql = substr($sql, 0, strlen($sql)-1);
+            $sql .= ')';
+            echo "\tSQL Details: $sql\n";
+            $new_indexes[] = 'PRIMARY KEY';
+        }
         $alters = count($new_columns) + count($recase_columns);
         echo "==========================================\n";
         printf("%s %d column%s  %d index%s.\n",
-            ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Check complete. Need to add":"Update complete. Added",
+            ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Check complete. Need to adjust":"Update complete. Added",
             $alters, ($alters!=1)?"s":"",
             count($new_indexes), (count($new_indexes)!=1)?"es":""
             );
