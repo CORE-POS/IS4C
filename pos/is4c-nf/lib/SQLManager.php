@@ -1572,5 +1572,24 @@ class SQLManager
             return false;
         }
     }
+
+	/**
+	   Log a string to the query log.
+	   @param $str The string
+	   @return A True on success, False on failure 
+	*/  
+	public function logger($str)
+    {
+		$ql = DEBUG_MYSQL_QUERIES;
+		if (is_writable($ql)) {
+			$fp = fopen($ql,'a');
+			fputs($fp,$_SERVER['PHP_SELF'].": ".date('r').': '.$str."\n");
+			fclose($fp);
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 }
 
