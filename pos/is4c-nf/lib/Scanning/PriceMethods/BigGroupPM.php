@@ -37,9 +37,11 @@
   the discount group. 
 */
 
-class BigGroupPM extends PriceMethod {
+class BigGroupPM extends PriceMethod 
+{
 
-    function addItem($row,$quantity,$priceObj){
+    function addItem($row,$quantity,$priceObj)
+    {
         if ($quantity == 0) return false;
 
         $pricing = $priceObj->priceInfo($row,$quantity);

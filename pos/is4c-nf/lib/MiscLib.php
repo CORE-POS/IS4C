@@ -82,6 +82,10 @@ static public function nullwrap($num)
 */
 static public function truncate2($num) 
 {
+    if ($num === '') {
+        $num = 0;
+    }
+
 	return number_format($num, 2);
 }
 

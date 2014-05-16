@@ -554,6 +554,19 @@ class HouseCoupon extends SpecialUPC
                 $value = 0;
                 $description = $ttlPD . ' % Discount Coupon';
                 break;
+            case 'OD': // override customer percent discount
+                   // rather than add line-item
+                $couponPD = $infoW['discountValue'] * 100;
+                // apply new discount to session & transaction
+                $CORE_LOCAL->set('percentDiscount', $couponPD);
+                $transDB = Database::tDataConnect();
+                $transDB->query(sprintf('UPDATE localtemptrans SET percentDiscount=%f', $couponPD));
+
+                // still need to add a line-item with the coupon UPC to the
+                // transaction to track usage
+                $value = 0;
+                $description = $couponPD . ' % Discount Coupon';
+                break;
         }
 
         return array('value' => $value, 'department' => $infoW['department'], 'description' => $description);

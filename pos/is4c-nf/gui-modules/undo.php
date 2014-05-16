@@ -113,7 +113,7 @@ class undo extends NoInputPage {
 				// look up transaction remotely
 				$db = Database::mDataConnect();
 				$query = "select upc, description, trans_type, trans_subtype,
-					trans_status, department, quantity, Scale, unitPrice,
+					trans_status, department, quantity, scale, unitPrice,
 					total, regPrice, tax, foodstamp, discount, memDiscount,
 					discountable, discounttype, voided, PercentDiscount,
 					ItemQtty, volDiscType, volume, VolSpecial, mixMatch,
@@ -193,7 +193,7 @@ class undo extends NoInputPage {
 					TransRecord::addItem($row["upc"],$row["description"],$row["trans_type"],$row["trans_subtype"],
 						$row["trans_status"],$row["department"],$row["quantity"],
 						$row["unitPrice"],$row["total"],$row["regPrice"],
-						$row["Scale"],$row["tax"],$row["foodstamp"],$row["discount"],
+						$row["scale"],$row["tax"],$row["foodstamp"],$row["discount"],
 						$row["memDiscount"],$row["discountable"],$row["discounttype"],
 						$row["ItemQtty"],$row["volDiscType"],$row["volume"],$row["VolSpecial"],
 						$row["mixMatch"],$row["matched"],$row["voided"]);

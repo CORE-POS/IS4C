@@ -104,7 +104,7 @@ class cablist extends NoInputPage
 
         <div class="baseHeight">
         <div class="listbox">
-        <form name="selectform" onsubmit="return submitWrapper();">
+        <form id="selectform" name="selectform" onsubmit="return submitWrapper();">
         <select name="selectlist" size="10" onblur="$('#selectlist').focus()"
             id="selectlist">
 

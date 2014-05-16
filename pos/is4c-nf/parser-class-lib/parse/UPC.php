@@ -386,7 +386,7 @@ class UPC extends Parser {
 		// wfc uses deposit field to link another upc
 		if (isset($row["deposit"]) && $row["deposit"] > 0){
 			$dupc = (int)$row["deposit"];
-			$this->add_deposit($dupc);
+			$this->addDeposit($dupc);
 		}
 
 		$upc = $row["upc"];
@@ -516,7 +516,8 @@ class UPC extends Parser {
 		return $ret;
 	}
 
-	function add_deposit($upc){
+	private function addDeposit($upc)
+    {
 		global $CORE_LOCAL;
 
 		$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
@@ -539,23 +540,23 @@ class UPC extends Parser {
 		if ($row["scale"] != 0) $scale = 1;
 
 		$tax = 0;
-		if ($row["tax"] > 0 && $CORE_LOCAL->get("toggletax") == 0) $tax = $row["tax"];
-		elseif ($row["tax"] > 0 && $CORE_LOCAL->get("toggletax") == 1) {
+		if ($row["tax"] > 0 && $CORE_LOCAL->get("toggletax") == 0) {
+            $tax = $row["tax"];
+		} else if ($row["tax"] > 0 && $CORE_LOCAL->get("toggletax") == 1) {
 			$tax = 0;
 			$CORE_LOCAL->set("toggletax",0);
-		}
-		elseif ($row["tax"] == 0 && $CORE_LOCAL->get("toggletax") == 1) {
+		} else if ($row["tax"] == 0 && $CORE_LOCAL->get("toggletax") == 1) {
 			$tax = 1;
 			$CORE_LOCAL->set("toggletax",0);
 		}
 						
 		$foodstamp = 0;
-		if ($row["foodstamp"] != 0 && $CORE_LOCAL->get("togglefoodstamp") == 0) $foodstamp = 1;
-		elseif ($row["foodstamp"] != 0 && $CORE_LOCAL->get("togglefoodstamp") == 1) {
+		if ($row["foodstamp"] != 0 && $CORE_LOCAL->get("togglefoodstamp") == 0) {
+            $foodstamp = 1;
+		} else if ($row["foodstamp"] != 0 && $CORE_LOCAL->get("togglefoodstamp") == 1) {
 			$foodstamp = 0;
 			$CORE_LOCAL->set("togglefoodstamp",0);
-		}
-		elseif ($row["foodstamp"] == 0 && $CORE_LOCAL->get("togglefoodstamp") == 1) {
+		} else if ($row["foodstamp"] == 0 && $CORE_LOCAL->get("togglefoodstamp") == 1) {
 			$foodstamp = 1;
 			$CORE_LOCAL->set("togglefoodstamp",0);
 		}
@@ -564,15 +565,28 @@ class UPC extends Parser {
 		$discountable = $row["discount"];
 
 		$quantity = 1;
-		if ($CORE_LOCAL->get("quantity") != 0) $quantity = $CORE_LOCAL->get("quantity");
+		if ($CORE_LOCAL->get("quantity") != 0) {
+            $quantity = $CORE_LOCAL->get("quantity");
+        }
 
 		$save_refund = $CORE_LOCAL->get("refund");
 
-		TransRecord::addItem($upc,$description,"I"," "," ",$row["department"],
-			$quantity,$row["normal_price"],
-			$quantity*$row["normal_price"],$row["normal_price"],
-			$scale,$tax,$foodstamp,0,0,$discountable,$discounttype,
-			$quantity,0,0,0,0,0,0);
+        TransRecord::addRecord(array(
+            'upc' => $upc,
+            'description' => $description,
+            'trans_type' => 'I',
+            'department' => $row['department'],
+            'quantity' => $quantity,
+            'ItemQtty' => $quantity,
+            'unitPrice' => $row['normal_price'],
+            'total' => $quantity * $row['normal_price'],
+            'regPrice' => $row['normal_price'],
+            'scale' => $scale,
+            'tax' => $tax,
+            'foodstamp' => $foodstamp,
+            'discountable' => $discountable,
+            'discounttype' => $discounttype,
+        ));
 
 		$CORE_LOCAL->set("refund",$save_refund);
 	}

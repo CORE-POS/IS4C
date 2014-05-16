@@ -204,7 +204,13 @@ class paycardSuccess extends BasicPage {
             echo '<span id="sigInstructions" style="font-size:90%;">';
             echo '[enter] to get re-request signature, [void] ' . _('to reverse the charge');
             echo '<br />';
-            echo '[reprint] to print paper slip';
+            if (isset($_REQUEST['reginput']) && ($_REQUEST['reginput'] == '' || $_REQUEST['reginput'] == 'CL')) {
+                echo '<b>';
+            }
+            echo '[reprint] to quit &amp; use paper slip';
+            if (isset($_REQUEST['reginput']) && ($_REQUEST['reginput'] == '' || $_REQUEST['reginput'] == 'CL')) {
+                echo '</b>';
+            }
             echo '</span>';
             echo "</div>";
 
