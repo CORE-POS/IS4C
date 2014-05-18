@@ -113,7 +113,7 @@ class adminlist extends NoInputPage {
 	function head_content(){
 		?>
 		<script type="text/javascript" src="<?php echo $this->page_url; ?>js/ajax-parser.js"></script>
-        <script type="text/javascript" src="../js/selectSubmit.js"></script>
+	        <script type="text/javascript" src="../js/selectSubmit.js"></script>
 		<?php
 	} // END head() FUNCTION
 
@@ -126,7 +126,7 @@ class adminlist extends NoInputPage {
 			<br />
 		<form id="selectform" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 		<select name="selectlist" id="selectlist" onblur="$('#selectlist').focus();">
-		<option value=''>
+		<option value=''><?php echo _("Select a Task"); ?>
 		<option value='SUSPEND'>1. <?php echo _("Suspend Transaction"); ?>
 		<option value='RESUME'>2. <?php echo _("Resume Transaction"); ?>
         <?php if ($CORE_LOCAL->get('SecurityTR') != 30 || $this->security >= 30) { ?>
@@ -138,13 +138,19 @@ class adminlist extends NoInputPage {
 		</select>
 		</form>
 		<p>
-		<span class="smaller"><?php echo _("clear to cancel"); ?></span>
+		<span class="smaller"><?php
+		echo _("use arrow keys to navigate");
+		echo "<br />";
+		echo _("enter to select");
+		echo "<br />";
+		echo _("clear to cancel");
+		?></span>
 		</p>
 		</div>
 		</div>
 		<?php
 		$this->add_onload_command("\$('#selectlist').focus();");
-        $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
+	        $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
 	} // END body_content() FUNCTION
 
 }
