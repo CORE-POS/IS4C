@@ -21,13 +21,6 @@
 
 *********************************************************************************/
 
-/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-	* 11Feb2013 EL Support argument from initial PV command: PVAPPLES.
-	* 18Jan2013 Eric Lee Extended lookup to productUser.description, with Andy's help.
-	*                    Very slow unless products.upc has been changed to VARCHAR(13).
-
-*/
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
@@ -95,12 +88,15 @@ class productlist extends NoInputPage {
 				$entered = substr($entered, 0, 8)."00000";
 		}
 
-		/* get all available modules */
+		/* Get all enabled plugins and standard modules of the base. */
 		$modules = AutoLoader::ListModules('ProductSearch');
 		$results = array();
 		$this->boxSize = 1;
-		/* search with each available module. Use UPC
-		   to filter out any duplicate results */
+		/* Search first with the plugins
+         	 *  and then with standard modules.
+        	 * Keep only the first instance of each upc.
+        	 * Increase the depth of the list from module parameters.
+         	*/
 		foreach($modules as $mod_name){
 			$mod = new $mod_name();
 			$mod_results = $mod->search($entered);
