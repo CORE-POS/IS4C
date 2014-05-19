@@ -95,7 +95,10 @@ class ItemEditorPage extends FanniePage {
 
         $ret .= '<input name=searchBtn type=submit value=Go> ';
         $ret .= '</form>';
-        $ret .= '<p><a href="AdvancedItemSearch.php">' . _('Advanced Search') . '</a></p>';
+        $ret .= '<p><a href="AdvancedItemSearch.php">' . _('Advanced Search') . '</a>';
+        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+        $ret .= '<a href="PluRangePage.php">' . _('Find Open PLU Range') . '</a>';
+        $ret .= '</p>';
         
         $this->add_onload_command('$(\'#upc\').focus();');
 
