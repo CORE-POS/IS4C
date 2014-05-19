@@ -77,7 +77,7 @@ class CCReceiptMessage extends ReceiptMessage {
         if (false && $db->table_exists('PaycardTransactions')) {
             $trans_type = $db->concat('p.cardType', "' '", 'p.transType', '');
 
-            $query = "SELECT $trans_type AS transType,
+            $query = "SELECT $trans_type AS tranType,
                         CASE WHEN p.transType = 'Return' THEN -1*p.amount ELSE p.amount END as amount,
                         p.PAN,
                         CASE WHEN p.manual=1 THEN 'Manual' ELSE 'Swiped' END as entryMethod,
