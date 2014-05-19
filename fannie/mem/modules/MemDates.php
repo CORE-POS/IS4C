@@ -37,7 +37,7 @@ class MemDates extends MemberModule {
 		$ret = "<script type=\"text/javascript\"
 			src=\"{$FANNIE_URL}src/CalendarControl.js\">
 			</script>";
-		$ret .= "<fieldset><legend>Membership Dates</legend>";
+		$ret .= "<fieldset class='memOneRow'><legend>Membership Dates</legend>";
 		$ret .= "<table class=\"MemFormTable\" 
 			border=\"0\">";
 

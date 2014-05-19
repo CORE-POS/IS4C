@@ -48,13 +48,13 @@ class MemArTransferTool extends FanniePage {
 		global $FANNIE_AR_DEPARTMENTS, $FANNIE_OP_DB;
 		global $FANNIE_CORRECTION_CASHIER, $FANNIE_CORRECTION_LANE, $FANNIE_CORRECTION_DEPT;
 
-		if (is_set($FANNIE_CORRECTION_CASHIER)) {
+		if (isset($FANNIE_CORRECTION_CASHIER)) {
 			$this->CORRECTION_CASHIER = $FANNIE_CORRECTION_CASHIER;
 		}
-		if (is_set($FANNIE_CORRECTION_LANE)) {
+		if (isset($FANNIE_CORRECTION_LANE)) {
 			$this->CORRECTION_LANE = $FANNIE_CORRECTION_LANE;
 		}
-		if (is_set($FANNIE_CORRECTION_DEPT)) {
+		if (isset($FANNIE_CORRECTION_DEPT)) {
 			$this->CORRECTION_DEPT = $FANNIE_CORRECTION_DEPT;
 		}
 
@@ -128,6 +128,8 @@ class MemArTransferTool extends FanniePage {
 				return True;
 			}
 
+            //EL From# as dummy for fix.
+            if ($this->cn1 > 0) {
 			$q = $dbc->prepare_statement("SELECT FirstName,LastName FROM custdata WHERE CardNo=? AND personNum=1");
 			$r = $dbc->exec_statement($q,array($this->cn1));
 			if ($dbc->num_rows($r) == 0){
@@ -138,6 +140,9 @@ class MemArTransferTool extends FanniePage {
 			}
 			$row = $dbc->fetch_row($r);
 			$this->name1 = $row[0].' '.$row[1];
+            } else {
+                $this->name1 = "Account Adjustment";
+            }
 
 			$q = $dbc->prepare_statement("SELECT FirstName,LastName FROM custdata WHERE CardNo=? AND personNum=1");
 			$r = $dbc->exec_statement($q,array($this->cn2));
@@ -192,6 +197,8 @@ class MemArTransferTool extends FanniePage {
 
 		$ret = '';
 		
+        // Only do the From for a real customer.
+        if ($this->cn1 > 0) {
 		$dtrans = array();
 		$dtrans['trans_no'] = $this->getTransNo($this->CORRECTION_CASHIER,$this->CORRECTION_LANE);
 		$dtrans['trans_id'] = 1;
@@ -201,6 +208,7 @@ class MemArTransferTool extends FanniePage {
 		$this->doInsert($dtrans,-1*$this->amount,$this->dept,$this->cn1);
 
 		$ret .= sprintf("Receipt #1: %s",$this->CORRECTION_CASHIER.'-'.$this->CORRECTION_LANE.'-'.$dtrans['trans_no']);
+        }
 
 		$dtrans['trans_no'] = $this->getTransNo($this->CORRECTION_CASHIER,$this->CORRECTION_LANE);
 		$dtrans['trans_id'] = 1;
@@ -226,10 +234,12 @@ class MemArTransferTool extends FanniePage {
 		foreach($this->depts as $k=>$v)
 			$ret .= "<option value=\"$k\">$v</option>";
 		$ret .= "</select>";
+$ret .= "<br />If adjusting to remove an amount from the account, prefix it with '-'";
 		$ret .= "</p><p style=\"font-size:120%;\">";
 		$memNum = FormLib::get_form_value('memIN');
 		$ret .= "From member #<input type=\"text\" name=\"memFrom\" size=\"5\" value=\"$memNum\" /> ";
 		$ret .= "to member #<input type=\"text\" name=\"memTo\" size=\"5\" />";
+$ret .= "<br />If adjusting, use 'From member' 0";
 		$ret .= "</p><p>";
 		$ret .= "<input type=\"hidden\" name=\"type\" value=\"equity_transfer\" />";
 		$ret .= "<input type=\"submit\" name=\"submit1\" value=\"Submit\" />";
