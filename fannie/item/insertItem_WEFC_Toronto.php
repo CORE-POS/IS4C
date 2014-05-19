@@ -39,13 +39,12 @@
 */
 
 include('../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-$dbc = FannieDB::get($FANNIE_OP_DB);
 $Fannie_Item_Modules = array("Operations","ExtraInfo",
 "ThreeForDollar",
 "Cost","Sale","Margin", "LikeCode", "LaneStatus");
 include('prodFunction_WEFC_Toronto.php');
 // include's SQLManager.php which contains smart_*()
+include_once('../src/mysql_connect.php');
 
 include_once('../auth/login.php');
 $validatedUser = validateUserQuiet('pricechange');
@@ -394,8 +393,6 @@ if (isset($_REQUEST['s_plu'])){
 /* 8. Delete and re-add to product-related tables on the lanes.  */
 /* push updates to the lanes */
 include('laneUpdates_WEFC_Toronto.php');
-// change products only
-//updateProductAllLanes($upc);
 updateAllLanes($upc, array("products", "productUser"));
 
 /* 9. Display the post-update values and an input for the next edit.  */
@@ -403,6 +400,9 @@ updateAllLanes($upc, array("products", "productUser"));
  * The page contains form elements but there is no submit for the them.
  * The record-select input is also displayed in a proper form with a submit.
 */
+// $dbc may be looking at lane db now, so be sure it is looking at Fannie.
+$dbc = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 $prodQ = "SELECT * FROM products WHERE upc = ".$upc;
 $prodR = $dbc->query($prodQ);
 $row = $dbc->fetch_array($prodR);
@@ -417,21 +417,29 @@ $row = $dbc->fetch_array($prodR);
         echo "<tr>";
  
 		$dept = $row["department"];
-        $query2 = "SELECT * FROM departments where dept_no = ".$row["department"];
-        $result2 = $dbc->query($query2);
-		$row2 = $dbc->fetch_array($result2);
+        if (is_numeric($dept)) {
+            $query2 = "SELECT * FROM departments where dept_no = ".$row["department"];
+            $result2 = $dbc->query($query2);
+            $row2 = $dbc->fetch_array($result2);
+        } else {
+            $row2 = array('dept_name' => "");
+        }
 
 		$subdept = $row["subdept"];
-		$query2a = "SELECT * FROM subdepts WHERE subdept_no = ".$row["subdept"];
-		$result2a = $dbc->query($query2a);
-		$row2a = $dbc->fetch_array($result2a);
+        if (is_numeric($subdept)) {
+            $query2a = "SELECT * FROM subdepts WHERE subdept_no = ".$subdept;
+            $result2a = $dbc->query($query2a);
+            $row2a = $dbc->fetch_array($result2a);
+        } else {
+            $row2a = array('subdept_name' => "");
+        }
 
 		echo "<td>";
-        echo $dept . ' ' . $row2[1];
+        echo $dept . ' ' .  $row2['dept_name'];
         echo " </td>"; 
 
 		echo "<td>";
-		echo $subdept . ' ' . $row2a[1];
+		echo $subdept . ' ' .  $row2a['subdept_name'];
 		echo " </td>";
 
         echo "<td align=center><input type=checkbox value=1 name=FS";

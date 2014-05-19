@@ -131,6 +131,74 @@ static public function requestInfoCallback($info)
 }
 
 /**
+  Assign store-specific alternate member message line
+  @param $store code for the coop
+  @param $member CardNo from custdata
+  @param $personNumber personNum from custdata
+  @param $row a record from custdata
+  @param $chargeOk whether member can store-charge purchases
+*/
+static public function setAltMemMsg($store, $member, $personNumber, $row, $chargeOk) 
+{
+	global $CORE_LOCAL;
+
+    if ($store == 'WEFC_Toronto') {
+        if ($chargeOk == 1) {
+            if (isset($row['blueLine'])) {
+                $memMsg = $row['blueLine'];
+            } else {
+                $memMsg = '#'.$member;
+            }
+            if ($member < 99000) {
+
+                $conn = Database::pDataConnect();
+                $query = "SELECT ChargeLimit AS CLimit
+                    FROM custdata
+                    WHERE personNum=1 AND CardNo = $member";
+                $table_def = $conn->table_definition('custdata');
+                // 3Jan14 schema may not have been updated
+                if (!isset($table_def['ChargeLimit'])) {
+                    $query = str_replace('ChargeLimit', 'MemDiscountLimit', $query);
+                }
+                $result = $conn->query($query);
+                $num_rows = $conn->num_rows($result);
+                if ($num_rows > 0) {
+                    $row2 = $conn->fetch_array($result);
+                } else {
+                    $row2 = array();
+                }
+
+                if (isset($row2['CLimit'])) {
+                    $limit = 1.00 * $row2['CLimit'];
+                } else {
+                    $limit = 0.00;
+                }
+
+                // Prepay
+                if ($limit == 0.00) {
+                    $CORE_LOCAL->set("memMsg", $memMsg . _(' : Coop Cred: $') .
+                        number_format(((float)$CORE_LOCAL->get("availBal") * 1),2)
+                    );
+                // Store Charge
+                } else {
+                    $CORE_LOCAL->set("memMsg", $memMsg . _(' : Store Charge: $') .
+                        number_format(((float)$CORE_LOCAL->get("availBal") * 1),2)
+                    );
+                }
+            // Intra-coop transfer
+            } else {
+                $CORE_LOCAL->set("memMsg", $memMsg);
+                $CORE_LOCAL->set("memMsg", $memMsg . _(' : Intra Coop spent: $') .
+                   number_format(((float)$CORE_LOCAL->get("balance") * 1),2)
+                );
+            }
+        }
+    }
+
+	//return $ret;
+}
+
+/**
   Assign a member number to a transaction
   @param $member CardNo from custdata
   @param $personNumber personNum from custdata
@@ -150,12 +218,14 @@ static public function setMember($member, $personNumber, $row)
     }
 	$CORE_LOCAL->set("memMsg",$memMsg);
 
-	$CORE_LOCAL->set("memberID",$member);
+    $CORE_LOCAL->set("memberID",$member);
 	$chargeOk = self::chargeOk();
 	if ($CORE_LOCAL->get("balance") != 0 && $member != $CORE_LOCAL->get("defaultNonMem")) {
-	      $CORE_LOCAL->set("memMsg",$CORE_LOCAL->get("memMsg") . _(" AR"));
+	      $CORE_LOCAL->set("memMsg",$CORE_LOCAL->get("memMsg")._(" AR"));
     }
-      
+
+    self::setAltMemMsg($CORE_LOCAL->get("store"), $member, $personNumber, $row, $chargeOk);
+
 	$CORE_LOCAL->set("memType",$row["memType"]);
 	$CORE_LOCAL->set("lname",$row["LastName"]);
 	$CORE_LOCAL->set("fname",$row["FirstName"]);
@@ -756,7 +826,13 @@ static public function ttl()
         $ttlHooks = $CORE_LOCAL->get('TotalActions');
         if (is_array($ttlHooks)) {
             foreach($ttlHooks as $ttl_class) {
-                if (!class_exists($ttl_class)) continue;
+                if ("$ttl_class" == "") {
+                    continue;
+                }
+                if (!class_exists($ttl_class)) {
+                    $CORE_LOCAL->set("boxMsg",sprintf("TotalActions class %s doesn't exist.", $ttl_class));
+                    return MiscLib::baseURL()."gui-modules/boxMsg2.php?quiet=1";
+                }
                 $mod = new $ttl_class();
                 $result = $mod->apply();
                 if ($result !== true && is_string($result)) {
@@ -1168,6 +1244,7 @@ static public function chargeOk()
 	$availBal = $row["availBal"] + $CORE_LOCAL->get("memChargeTotal");
 	
 	$CORE_LOCAL->set("balance",$row["Balance"]);
+
 	$CORE_LOCAL->set("availBal",number_format($availBal,2,'.',''));	
 	
 	$chargeOk = 1;
