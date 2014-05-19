@@ -37,7 +37,8 @@ class GumPeopleReport extends FannieReportPage
     protected $auth_classes = array('GiveUsMoney');
 
     protected $required_fields = array();
-    protected $report_headers = array('Mem#', 'First Name', 'Last Name', 'Loan Date', 'Principal', 'Interest Rate', 'Term (Months)', 'C Shares'); 
+    protected $report_headers = array('Mem#', 'First Name', 'Last Name', 'Loan Date', 'Principal', 'Interest Rate', 'Term (Months)', 
+                                    'Maturity Date', 'MaturityAmount', 'C Shares'); 
 
     public function preprocess()
     {
@@ -59,8 +60,12 @@ class GumPeopleReport extends FannieReportPage
                     l.loanDate,
                     CASE WHEN l.principal IS NULL THEN 0 ELSE l.principal END as principal,
                     CASE WHEN l.termInMonths IS NULL THEN 0 ELSE l.termInMonths END as termInMonths,
+                    CASE WHEN l.termInMonths IS NULL THEN \'\' ELSE DATE_ADD(loanDate, INTERVAL termInMonths MONTH) END as maturityDate,
                     CASE WHEN l.interestRate IS NULL THEN 0 ELSE l.interestRate END as interestRate,
-                    CASE WHEN e.shares IS NULL THEN 0 ELSE e.shares END as shares
+                    CASE WHEN e.shares IS NULL THEN 0 ELSE e.shares END as shares,
+                    CASE WHEN l.principal IS NULL THEN 0
+                        ELSE principal * POW(1+interestRate, DATEDIFF(DATE_ADD(loanDate, INTERVAL termInMonths MONTH), loanDate)/365.25)
+                    END as maturityAmount
                   FROM ' . $FANNIE_OP_DB . $dbc->sep() . 'custdata AS c
                         LEFT JOIN GumLoanAccounts AS l 
                             ON l.card_no=c.CardNo AND c.personNum=1
@@ -83,6 +88,8 @@ class GumPeopleReport extends FannieReportPage
                sprintf('%.2f', $row['principal']), 
                sprintf('%.2f', $row['interestRate'] * 100), 
                $row['termInMonths'],
+               ($row['maturityDate'] == '' ? 'n/a' : date('Y-m-d', strtotime($row['maturityDate']))),
+               sprintf('%.2f', $row['maturityAmount']),
                $row['shares'],
             );
             $data[] = $record;
@@ -95,12 +102,14 @@ class GumPeopleReport extends FannieReportPage
     {
         $sum = 0.0;
         $c = 0.0;
+        $mat = 0.0;
         foreach($data as $row) {
             $sum += $row[4];
-            $c += $row[7];
+            $mat += $row[8];
+            $c += $row[9];
         }
 
-        return array('Total', '', '', '', sprintf('%.2f', $sum), '', '', sprintf('%.2f', $c));
+        return array('Total', '', '', '', sprintf('%.2f', $sum), '', '', '', sprintf('%.2f', $mat), sprintf('%.2f', $c));
     }
 
 
