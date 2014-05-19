@@ -38,6 +38,10 @@ set_time_limit(0);
 
 $path = 'cache/cachefiles/daily/';
 $dh = opendir($FANNIE_ROOT.$path);
+if (!$dh) {
+    echo cron_msg("$FANNIE_ROOT.$path does not exist.");
+    exit;
+}
 while ( ($file = readdir($dh)) !== False){
 	if (is_file($FANNIE_ROOT.$path.$file))
 		unlink($FANNIE_ROOT.$path.$file);
@@ -48,6 +52,10 @@ echo cron_msg("Cleared daily cache");
 if (date('j') == 1){
 	$path = 'cache/cachefiles/monthly/';
 	$dh = opendir($FANNIE_ROOT.$path);
+    if (!$dh) {
+        echo cron_msg("$FANNIE_ROOT.$path does not exist.");
+        exit;
+    }
 	while ( ($file = readdir($dh)) !== False){
 		if (is_file($FANNIE_ROOT.$path.$file))
 			unlink($FANNIE_ROOT.$path.$file);
