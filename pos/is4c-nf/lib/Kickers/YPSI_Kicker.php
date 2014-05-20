@@ -35,7 +35,7 @@ class YPSI_Kicker extends Kicker
 
         $query = "select trans_id from localtemptrans where 
             (trans_subtype = 'CA' and total <> 0)
-			OR (trans_subtype IN('DC','CC','EF')";
+			OR (trans_subtype IN('DC','CC','EF'))";
 
         $result = $db->query($query);
         $num_rows = $db->num_rows($result);
