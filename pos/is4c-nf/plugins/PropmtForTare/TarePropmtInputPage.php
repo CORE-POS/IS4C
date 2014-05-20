@@ -144,12 +144,3 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
 	new TarePropmtInputPage();
 
 ?>
-this->add_onload_command("\$('#reginput').focus();");
-	} // END true_body() FUNCTION
-
-}
-
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-	new TarePropmtInputPage();
-
-?>
