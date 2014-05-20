@@ -81,7 +81,7 @@ class TarePropmtInputPage extends NoInputPage {
 				$this->change_page($pos_home);
 				return False;
 			} else {
-				if ($reginput === ''){
+				if ($reginput === '' || $reginput === '0'){
 				    // blank. enter default tare.
 				    global $CORE_LOCAL;
 				    if ($CORE_LOCAL->get('DefaultTare') > 0) {
