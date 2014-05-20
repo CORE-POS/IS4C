@@ -84,8 +84,14 @@ class TarePropmtInputPage extends NoInputPage {
 				if ($reginput === ''){
 				    // blank. enter default tare.
 				    global $CORE_LOCAL;
-				    $reginput = $CORE_LOCAL->get('DefaultTare')*100;
-			    }
+				    if ($CORE_LOCAL->get('DefaultTare') > 0) {
+				    	$reginput = $CORE_LOCAL->get('DefaultTare')*100;
+				    } else {
+				    	$CORE_LOCAL->set('tarezero', Ture);
+				    	$this->change_page($pos_home.'?reginput='.$item);
+				    	return False;
+				    }
+				}
 				// give info to callback function
 				$result = $class::requestTareCallback($reginput, $item);
 				if ($result === True){
@@ -130,6 +136,15 @@ class TarePropmtInputPage extends NoInputPage {
 
 		<?php
 		$this->add_onload_command("\$('#reginput').focus();");
+	} // END true_body() FUNCTION
+
+}
+
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new TarePropmtInputPage();
+
+?>
+this->add_onload_command("\$('#reginput').focus();");
 	} // END true_body() FUNCTION
 
 }
