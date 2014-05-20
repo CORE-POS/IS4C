@@ -34,12 +34,13 @@ class PriceOverride extends NoInputPage {
 		$db = Database::tDataConnect();
 		
 		$q = "SELECT description,total,department FROM localtemptrans
-			WHERE trans_type IN ('I','D') AND trans_status = ''
+			WHERE trans_type IN ('I','D') AND trans_status IN ('',' ')
 			AND trans_id=".((int)$line_id);
 		$r = $db->query($q);
 		if ($db->num_rows($r)==0){
 			// current record cannot be repriced
-			$this->change_page($this->page_url."gui-modules/pos2.php");
+			//$this->change_page($this->page_url."gui-modules/pos2.php");
+            var_dump($line_id);
 			return False;
 		}
 		$w = $db->fetch_row($r);

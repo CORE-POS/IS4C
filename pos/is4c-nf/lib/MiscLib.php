@@ -66,7 +66,7 @@ static public function base_url($check_file="css/pos.css")
 static public function nullwrap($num) 
 {
 
-	if ( !$num ) {
+	if ( !$num && $num !== '') {
 		 return 0;
 	} elseif (!is_numeric($num) && strlen($num) < 1) {
 		return " ";
