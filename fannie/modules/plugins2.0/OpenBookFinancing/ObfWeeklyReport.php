@@ -187,7 +187,9 @@ class ObfWeeklyReport extends FannieReportPage
         $qtd_plan = 0;
         $qtd_sales = 0;
         $qtd_hours = 0;
+        $qtd_wages = 0;
         $qtd_proj_hours = 0;
+        $qtd_proj_wages = 0;
         $qtd_sales_ou = 0;
         $qtd_hours_ou = 0;
         $qtd_wages_ou = 0;
@@ -300,6 +302,7 @@ class ObfWeeklyReport extends FannieReportPage
             $qt_proj_hours = $qt_proj_labor / $quarter['averageWage'];
             $qtd_hours += $quarter['hours'];
             $qtd_proj_hours += $qt_proj_hours;
+            $qtd_proj_wages += $qt_proj_labor;
 
             $data[] = array(
                 'Hours',
@@ -329,6 +332,7 @@ class ObfWeeklyReport extends FannieReportPage
                 number_format(($labor->wages() - $proj_wages) + ($quarter['wages'] - $qt_proj_labor), 0),
             );
             $total_wages += $labor->wages();
+            $qtd_wages += $quarter['wages'];
             $qtd_wages_ou += ($quarter['wages'] - $qt_proj_labor);
             $total_proj_wages += $proj_wages;
             $total_proj_hours += $proj_hours;
@@ -381,6 +385,7 @@ class ObfWeeklyReport extends FannieReportPage
             $qt_proj_hours = $qt_proj_labor / $quarter['averageWage'];
             $qtd_hours += $quarter['hours'];
             $qtd_proj_hours += $qt_proj_hours;
+            $qtd_proj_wages += $qt_proj_labor;
 
             $proj_wages = $proj_total * $labor->laborTarget();
             $proj_hours = $proj_wages / $labor->averageWage();
@@ -410,6 +415,7 @@ class ObfWeeklyReport extends FannieReportPage
                 number_format($labor->wages() - $proj_wages, 0),
                 number_format(($labor->wages() - $proj_wages) + ($quarter['wages'] - $qt_proj_labor), 0),
             );
+            $qtd_wages += $quarter['wages'];
             $qtd_wages_ou += ($quarter['wages'] - $qt_proj_labor);
 
             $data[] = array(
@@ -536,6 +542,33 @@ class ObfWeeklyReport extends FannieReportPage
             '',
             '',
             '',
+            '',
+            '',
+            '',
+            '',
+        );
+
+        $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS);
+        $data[] = array('Quarter to Date', '', '', '', '', '', '', '', '', '', 'meta' => FannieReportPage::META_BOLD);
+        $data[] = array(
+            'Sales',
+            number_format($qtd_sales+$total_sales[0], 0),
+            '',
+            '',
+            number_format($qtd_plan+$proj_total, 0),
+            '',
+            '',
+            '',
+            '',
+            '',
+        );
+        $data[] = array(
+            'Personnel',
+            number_format($qtd_wages+$total_wages, 0),
+            '',
+            number_format(($qtd_wages+$total_wages) / ($qtd_sales+$total_sales[0]) * 100, 2) . '%',
+            number_format($qtd_proj_wages+$total_proj_wages, 0),
+            number_format(($qtd_proj_wages+$total_proj_wages) / ($qtd_plan+$proj_total) * 100, 2) . '%',
             '',
             '',
             '',
