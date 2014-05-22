@@ -167,8 +167,8 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 		'upc'		=> MiscLib::nullwrap($strupc),
 		'description'	=> $db->escape($strdescription),
 		'trans_type'	=> MiscLib::nullwrap($strtransType),
-		'trans_subtype'	=> MiscLib::nullwrap($strtranssubType),
-		'trans_status'	=> MiscLib::nullwrap($strtransstatus),
+		'trans_subtype'	=> MiscLib::nullwrap($strtranssubType, true),
+		'trans_status'	=> MiscLib::nullwrap($strtransstatus, true),
 		'department'	=> MiscLib::nullwrap($intdepartment),
 		'quantity'	=> MiscLib::nullwrap($dblquantity),
 		'cost'		=> MiscLib::nullwrap($cost),
@@ -548,7 +548,7 @@ static public function discountnotify($strl)
 	}
     self::addRecord(array(
         'description' => '** ' . $strl . '% Discount Applied **',
-        'trans_type' => '',
+        'trans_type' => '0',
         'trans_status' => 'D',
         'voided' => 4,
     ));
@@ -563,7 +563,7 @@ static public function addTaxExempt()
 
     self::addRecord(array(
         'description' => '** Order is Tax Exempt **',
-        'trans_type' => '',
+        'trans_type' => '0',
         'trans_status' => 'D',
         'voided' => 10,
         'tax' => 9,
@@ -580,7 +580,7 @@ static public function reverseTaxExempt()
 	global $CORE_LOCAL;
     self::addRecord(array(
         'description' => '** Tax Exemption Reversed **',
-        'trans_type' => '',
+        'trans_type' => '0',
         'trans_status' => 'D',
         'voided' => 10,
         'tax' => 9,
@@ -600,7 +600,7 @@ static public function addcdnotify()
 
     self::addRecord(array(
         'description' => '** ' . $CORE_LOCAL->get('casediscount') . '% Case Discount Applied',
-        'trans_type' => '',
+        'trans_type' => '0',
         'trans_status' => 'D',
         'voided' => 6,
     ));
@@ -709,7 +709,7 @@ static public function addTare($dbltare)
 	$rc = $CORE_LOCAL->get("refundComment");
     self::addRecord(array(
         'description' => '** Tare Weight ' . $CORE_LOCAL->get('tare') . ' **',
-        'trans_type' => '',
+        'trans_type' => '0',
         'trans_status' => 'D',
         'voided' => 6,
     ));

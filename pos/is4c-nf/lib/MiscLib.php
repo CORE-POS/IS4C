@@ -57,19 +57,22 @@ static public function base_url($check_file="css/pos.css")
 /**
   Sanitizes values
   @param $num a value
+  @param $char [optional] boolean is character
   @return a sanitized value
 
   Probably an artifact of ASP implementation.
   In practice any argument that evaluates to False
   get translated to integer zero.
 */
-static public function nullwrap($num) 
+static public function nullwrap($num, $char=false) 
 {
 
-	if ( !$num && $num !== '') {
+    if ($char && ($num === '' || $num === null)) {
+        return '';
+	} else if (!$num) {
 		 return 0;
-	} elseif (!is_numeric($num) && strlen($num) < 1) {
-		return " ";
+	} else if (!is_numeric($num) && strlen($num) < 1) {
+		return ' ';
 	} else {
 		return $num;
 	}
