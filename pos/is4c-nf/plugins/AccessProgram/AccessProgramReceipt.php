@@ -49,19 +49,20 @@ class AccessProgramReceipt extends ReceiptMessage
 
         list($emp, $reg, $trans) = explode('-', $ref, 3);
 
-        $ret = 'Date of Application:' . date('M d, Y') . "\n";
+        $ret = 'Date of Application: ' . date('M d, Y') . "\n";
         $ret .= 'Owner Name: ' . $CORE_LOCAL->get('fname')
                 . ' ' . $CORE_LOCAL->get('lname')
-                . ' Owner No.: ' . $CORE_LOCAL->get('memberID') . "\n";
+                . ', Owner No.: ' . $CORE_LOCAL->get('memberID') . "\n";
 
         $ret .= "\n";
         $ret .= ReceiptLib::centerString(str_repeat('_', 30)) . "\n";
         $ret .= ReceiptLib::centerString('Owner Signature') . "\n";
 
         if ($CORE_LOCAL->get('standalone') == 0) {
+            $db_name = $CORE_LOCAL->get('ServerOpDB');
             $db = Database::mDataConnect();
             $query = 'SELECT street, zip, phone, email_1, email_2
-                      FROM is4c_op.meminfo
+                      FROM ' . $db_name . $db->sep() . 'meminfo
                       WHERE card_no = ' . ((int)$CORE_LOCAL->get('memberID'));
             $result = $db->query($query);
             if ($db->num_rows($result) > 0) {
@@ -102,3 +103,4 @@ class AccessProgramReceipt extends ReceiptMessage
         return $ret;
     }
 }
+

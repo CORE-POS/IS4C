@@ -46,7 +46,7 @@ class AccessProgramParser extends Parser {
 
             return $ret;
         } else if ($str == 'ACCESS') {
-            if ($CORE_LOCAL->get('AccessQuickMenu') != '' && class_exists('QuickMenuLanuncher')) {
+            if ($CORE_LOCAL->get('AccessQuickMenu') != '' && class_exists('QuickMenuLauncher')) {
                 $qm = new QuickMenuLauncher();
 
                 return $qm->parse('QM' . $CORE_LOCAL->get('AccessQuickMenu'));
