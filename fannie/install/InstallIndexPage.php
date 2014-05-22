@@ -574,12 +574,18 @@ class InstallIndexPage extends InstallPage {
 		confset('FANNIE_CUSTOM_ERRORS',"$FANNIE_CUSTOM_ERRORS");
 		echo '<select name="FANNIE_CUSTOM_ERRORS">';
 		if ($FANNIE_CUSTOM_ERRORS == 0) {
-			echo '<option value="1">' . _('Yes') . '</option>';
+			echo '<option value="1">' . _('Yes (displayed)') . '</option>';
+			echo '<option value="2">' . _('Yes (logged)') . '</option>';
 			echo '<option value="0" selected>' . _('No') . '</option>';
-		} else {
-			echo '<option value="1" selected>' . _('Yes') . '</option>';
+		} else if ($FANNIE_CUSTOM_ERRORS == 1) {
+			echo '<option value="1" selected>' . _('Yes (displayed)') . '</option>';
+			echo '<option value="2">' . _('Yes (logged)') . '</option>';
 			echo '<option value="0">' . _('No') . '</option>';
-		}
+		} else {
+			echo '<option value="1">' . _('Yes (displayed)') . '</option>';
+			echo '<option value="2" selected>' . _('Yes (logged)') . '</option>';
+			echo '<option value="0">' . _('No') . '</option>';
+        }
 		echo '</select>';
 		?>
 		<br />
