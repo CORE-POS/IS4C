@@ -440,65 +440,6 @@ class InstallIndexPage extends InstallPage {
 		echo "<input type=text name=FANNIE_MISC_DEPT value=\"$FANNIE_MISC_DEPT\" /><br />";
         ?>
         <hr />
-		<h4 class="install">Database Backups</h4>
-		Backup Directory
-		<?php
-		if(!isset($FANNIE_BACKUP_PATH)) $FANNIE_BACKUP_PATH = '/tmp/';
-		if (isset($_REQUEST['FANNIE_BACKUP_PATH'])){
-			$FANNIE_BACKUP_PATH = $_REQUEST['FANNIE_BACKUP_PATH'];
-		}
-		confset('FANNIE_BACKUP_PATH',"'$FANNIE_BACKUP_PATH'");
-		echo "<input type=text name=FANNIE_BACKUP_PATH value=\"$FANNIE_BACKUP_PATH\" /><br />";
-		if (is_writable($FANNIE_BACKUP_PATH)){
-			echo "<span style=\"color:green;\">Backup directory is writeable</span>";
-		}
-		else {
-			echo "<span style=\"color:red;\"><b>Error</b>: backup directory is not writeable</span>";
-		}
-		?>
-		<br />
-		Path to mysqldump
-		<?php
-		if(!isset($FANNIE_BACKUP_BIN)) $FANNIE_BACKUP_BIN = '/usr/bin/';
-		if (isset($_REQUEST['FANNIE_BACKUP_BIN'])){
-			$FANNIE_BACKUP_BIN = $_REQUEST['FANNIE_BACKUP_BIN'];
-		}
-		confset('FANNIE_BACKUP_BIN',"'$FANNIE_BACKUP_BIN'");
-		echo "<input type=text name=FANNIE_BACKUP_BIN value=\"$FANNIE_BACKUP_BIN\" /><br />";
-		if (is_executable(realpath($FANNIE_BACKUP_BIN."/mysqldump"))){
-			echo "<span style=\"color:green;\">Found mysqldump program</span>";
-		}
-		else {
-			echo "<span style=\"color:red;\"><b>Error</b>: mysqldump not found</span>";
-		}
-		?>
-		<br />
-		Number of backups
-		<?php
-		if(!isset($FANNIE_BACKUP_NUM)) $FANNIE_BACKUP_NUM = 1;
-		if (isset($_REQUEST['FANNIE_BACKUP_NUM'])){
-			$FANNIE_BACKUP_NUM = $_REQUEST['FANNIE_BACKUP_NUM'];
-		}
-		confset('FANNIE_BACKUP_NUM',"'$FANNIE_BACKUP_NUM'");
-		echo "<input type=text name=FANNIE_BACKUP_NUM value=\"$FANNIE_BACKUP_NUM\" /><br />";
-		?>
-		<br />
-		Compress backups
-		<select name=FANNIE_BACKUP_GZIP>
-		<?php
-		if (!isset($FANNIE_BACKUP_GZIP)) $FANNIE_BACKUP_GZIP = False;
-		if (isset($_REQUEST['FANNIE_BACKUP_GZIP'])) $FANNIE_BACKUP_GZIP = $_REQUEST['FANNIE_BACKUP_GZIP'];
-		if ($FANNIE_BACKUP_GZIP === True || $FANNIE_BACKUP_GZIP == 'Yes'){
-			confset('FANNIE_BACKUP_GZIP','True');
-			echo "<option selected>Yes</option><option>No</option>";
-		}
-		else{
-			confset('FANNIE_BACKUP_GZIP','False');
-			echo "<option>Yes</option><option selected>No</option>";
-		}
-		?>
-		</select>
-		<hr />
 		<h4 class="install">Lanes</h4>
 		Number of lanes
 		<?php
