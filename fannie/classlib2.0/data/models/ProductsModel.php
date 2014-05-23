@@ -380,9 +380,11 @@ class ProductsModel extends BasicModel
 
         $try = parent::delete();
         if ($try) {
-            $extra = new ProdExtraModel($this->connection);
-            $extra->upc($this->upc());
-            $extra->delete();
+            if ($this->connection->tableExists('prodExtra')) {
+                $extra = new ProdExtraModel($this->connection);
+                $extra->upc($this->upc());
+                $extra->delete();
+            }
 
             $user = new ProductUserModel($this->connection);
             $user->upc($this->upc());
