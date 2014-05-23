@@ -1074,7 +1074,8 @@ class BatchManagementTool extends FanniePage
 
         $cpCount = $dbc->prepare_statement("SELECT count(*) FROM batchCutPaste WHERE uid=?");
         $res = $dbc->exec_statement($cpCount,array($uid));
-        $cp = array_pop($dbc->fetch_row($res));
+        $row = $dbc->fetch_row($res);
+        $cp = $row[0];
         
         $ret = "<span class=\"newBatchBlack\"><b>Batch name</b>: $name</span><br />";
         $ret .= "<a href=\"\" onclick=\"backToList(); return false;\">Back to batch list</a> | ";
