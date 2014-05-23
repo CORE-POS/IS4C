@@ -66,5 +66,15 @@ class BarcodeLib
         }
     }
 
+    static public function verifyCheckDigit($upc)
+    {
+        $current_check = substr($upc, -1);
+        $without_check = substr($upc, 0, strlen($upc)-1);
+        if ($current_check == self::getCheckDigit($without_check)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
 
