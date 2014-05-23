@@ -386,6 +386,60 @@ class InstallIndexPage extends InstallPage {
 		}
 		?>
 		<hr />
+		<h4 class="install">Back Office Transactions</h4>
+        <i>Values used when generating transaction data via Fannie
+        instead of through an actual POS terminal. The corrections department
+        is only used for balancing individual transactions. Total sales
+        to that department via generated transactions should always be
+        zero. The catch-all department is used when generated transactions
+        will generate a sale (or refund) but it is not known where the 
+        amount belongs for accounting purposes.
+        </i><br />
+        Employee# 
+		<?php
+		if (!isset($FANNIE_EMP_NO)) {
+            $FANNIE_EMP_NO = 1001;
+        }
+		if (isset($_REQUEST['FANNIE_EMP_NO'])){
+			$FANNIE_EMP_NO = (int)$_REQUEST['FANNIE_EMP_NO'];
+		}
+		confset('FANNIE_EMP_NO',"$FANNIE_EMP_NO");
+		echo "<input type=text name=FANNIE_EMP_NO value=\"$FANNIE_EMP_NO\" /><br />";
+        ?>
+        Register# 
+		<?php
+		if (!isset($FANNIE_REGISTER_NO)) {
+            $FANNIE_REGISTER_NO = 30;
+        }
+		if (isset($_REQUEST['FANNIE_REGISTER_NO'])){
+			$FANNIE_REGISTER_NO = (int)$_REQUEST['FANNIE_REGISTER_NO'];
+		}
+		confset('FANNIE_REGISTER_NO',"$FANNIE_REGISTER_NO");
+		echo "<input type=text name=FANNIE_REGISTER_NO value=\"$FANNIE_REGISTER_NO\" /><br />";
+        ?>
+        Corrections Dept# 
+		<?php
+		if (!isset($FANNIE_CORRECTION_DEPT)) {
+            $FANNIE_CORRECTION_DEPT = 800;
+        }
+		if (isset($_REQUEST['FANNIE_CORRECTION_DEPT'])){
+			$FANNIE_CORRECTION_DEPT = (int)$_REQUEST['FANNIE_CORRECTION_DEPT'];
+		}
+		confset('FANNIE_CORRECTION_DEPT',"$FANNIE_CORRECTION_DEPT");
+		echo "<input type=text name=FANNIE_CORRECTION_DEPT value=\"$FANNIE_CORRECTION_DEPT\" /><br />";
+        ?>
+        Catch-all Dept# 
+		<?php
+		if (!isset($FANNIE_MISC_DEPT)) {
+            $FANNIE_MISC_DEPT = 703;
+        }
+		if (isset($_REQUEST['FANNIE_MISC_DEPT'])){
+			$FANNIE_MISC_DEPT = (int)$_REQUEST['FANNIE_MISC_DEPT'];
+		}
+		confset('FANNIE_MISC_DEPT',"$FANNIE_MISC_DEPT");
+		echo "<input type=text name=FANNIE_MISC_DEPT value=\"$FANNIE_MISC_DEPT\" /><br />";
+        ?>
+        <hr />
 		<h4 class="install">Database Backups</h4>
 		Backup Directory
 		<?php
