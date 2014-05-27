@@ -87,8 +87,8 @@ class YPSITenderReport extends TenderReport {
     $receipt .=	trTotal('CK','CHECK');
     $receipt .=	trTotal('CC','CREDIT CARD');
     $receipt .=	trTotal('DC','DEBIT CARD');
-    $receipt .=	trTotal('FS','SNAP - FOOD');
-    $receipt .=	trTotal('EC','SNAP - CASH');
+    $receipt .=	trTotal('EF','EBT - FOOD');
+    $receipt .=	trTotal('EC','EBT - CASH');
     $receipt .=	trTotal('GD','GIFT CARD');
     $receipt .=	trTotal('TC','GIFT CERT.');	
 	$receipt .=	trTotal('WT','WIC');
