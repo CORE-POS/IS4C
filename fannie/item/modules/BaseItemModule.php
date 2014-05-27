@@ -28,7 +28,7 @@ include_once(dirname(__FILE__).'/../../src/JsonLib.php');
 class BaseItemModule extends ItemModule {
 
 	function ShowEditForm($upc){
-		global $FANNIE_URL;
+		global $FANNIE_URL, $FANNIE_PRODUCT_MODULES;
 		$upc = BarcodeLib::padUPC($upc);
 
 		$ret = '<fieldset id="BaseItemFieldset">';
@@ -195,8 +195,11 @@ class BaseItemModule extends ItemModule {
 			<td style="color:darkmagenta;">'. (isset($rowItem['modified']) ? $rowItem['modified'] : '') . '</td>';
 		$ret .= '</tr>';
 
-		$ret .= '<tr><td><b>Long Desc.</b><td colspan="2"><input type="text" size="60" name="puser_description"
-				value="'. (isset($rowItem['ldesc']) ? $rowItem['ldesc'] : '') . '" /></td><td>&nbsp;</td></tr>';
+        // no need to display this field twice
+        if (!in_array('ProdUserModule', $FANNIE_PRODUCT_MODULES)) {
+            $ret .= '<tr><td><b>Long Desc.</b><td colspan="2"><input type="text" size="60" name="puser_description"
+                    value="'. (isset($rowItem['ldesc']) ? $rowItem['ldesc'] : '') . '" /></td><td>&nbsp;</td></tr>';
+        }
 
 		$ret .="<td align=right><b>Brand</b></td><td><input type=text name=manufacturer size=30 value=\""
 			.(isset($rowItem['manufacturer'])?$rowItem['manufacturer']:"")
@@ -332,6 +335,7 @@ class BaseItemModule extends ItemModule {
 	}
 
 	function SaveFormData($upc){
+        global $FANNIE_PRODUCT_MODULES;
 		$upc = BarcodeLib::padUPC($upc);
 		$dbc = $this->db();
 
@@ -417,13 +421,15 @@ class BaseItemModule extends ItemModule {
 			}
 		}
 
-		if ($dbc->table_exists('productUser')){
-			$ldesc = FormLib::get_form_value('puser_description');
-			$model = new ProductUserModel($dbc);
-			$model->upc($upc);
-			$model->description($ldesc);
-			$model->save();
-		}
+        if (!in_array('ProdUserModule', $FANNIE_PRODUCT_MODULES)) {
+            if ($dbc->table_exists('productUser')){
+                $ldesc = FormLib::get_form_value('puser_description');
+                $model = new ProductUserModel($dbc);
+                $model->upc($upc);
+                $model->description($ldesc);
+                $model->save();
+            }
+        }
 	}
 
 	function AjaxCallback(){
