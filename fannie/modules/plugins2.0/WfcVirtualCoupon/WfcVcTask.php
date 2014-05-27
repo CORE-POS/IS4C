@@ -95,14 +95,19 @@ class WfcVcTask extends FannieTask
                         $dbc->convert('c.CardNo', 'CHAR'),
                         "' '",
                         'LastName',
-                        "' Coup('",
-                        $dbc->convert('c.memCoupons', 'CHAR'),
-                        "')'",
+                        "' Coup(OB)'",
                         ''
         );
+        $dbc->query("UPDATE custdata AS c SET blueLine=$coupon_blueline WHERE Type='PC' AND memCoupons > 0");
 
-        // set member blueLine based on number of coupons
-        $dbc->query("UPDATE custdata AS c SET blueLine=$coupon_blueline WHERE Type='PC'");
+        $coupon_blueline = $dbc->concat(
+                        $dbc->convert('c.CardNo', 'CHAR'),
+                        "' '",
+                        'LastName',
+                        "' Coup(0)'",
+                        ''
+        );
+        $dbc->query("UPDATE custdata AS c SET blueLine=$coupon_blueline WHERE Type='PC' AND memCoupons > 0");
 
         // more detail needed for access members
         $both_blueline = $dbc->concat(
