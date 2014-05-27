@@ -91,7 +91,7 @@ class MemCard extends MemberModule {
         $saved = $model->save();
         $model->pushToLanes();
 
-		if ($saved) {
+		if (!$saved) {
 			return 'Error: problem saving Member Card<br />';
 		} else {
 			return '';
