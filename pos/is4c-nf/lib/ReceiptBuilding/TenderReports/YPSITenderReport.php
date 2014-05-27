@@ -118,7 +118,7 @@ class YPSITenderReport extends TenderReport {
 		if ($itemize == 1) $receipt .=	ReceiptLib::centerString("------------------------------------------------------");
 
 		$query = "select tdate,register_no,trans_no,tender_code,tender
-		       	from TenderTapeGeneric where emp_no=".$CORE_LOCAL->get("CashierNo").
+		       	from TenderTapeGeneric where register_no=".$CORE_LOCAL->get("laneno").
 			" and tender_code = '".$tender_code."' order by tdate";
 		$result = $db_a->query($query);
 		$num_rows = $db_a->num_rows($result);
