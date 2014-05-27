@@ -153,6 +153,9 @@ class FannieAPI
             case 'FannieReportTool':
                 $directories[] = dirname(__FILE__).'/../reports/';
                 break;
+            case 'FannieSignage':
+                $directories[] = dirname(__FILE__) . '/item/signage/';
+                break;
         }
 
         // recursive search
