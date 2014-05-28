@@ -31,7 +31,10 @@ class AllLanesItemModule extends ItemModule {
 		$queryItem = "SELECT * FROM products WHERE upc = ?";
 
 		$ret = '<fieldset id="AllLanesFieldset">';
-		$ret .= '<legend>Lane Status</legend>';
+		$ret .=  "<legend onclick=\"\$('#AllLanesFieldsetContent').toggle();\">
+                <a href=\"\" onclick=\"return false;\">Lane Status</a>
+                </legend>";
+        $ret .= '<div id="AllLanesFieldsetContent" style="display:none;">';
 		
 		for($i=0;$i<count($FANNIE_LANES);$i++){
 			$f = $FANNIE_LANES[$i];
@@ -66,6 +69,7 @@ class AllLanesItemModule extends ItemModule {
 				$ret .= "<hr />";
 			}
 		}
+        $ret .= '</div>';
 		$ret .= '</fieldset>';
 		return $ret;
 	}

@@ -30,7 +30,10 @@ class VendorItemModule extends ItemModule {
 		$upc = BarcodeLib::padUPC($upc);
 
 		$ret = '<fieldset id="VendorItemsFieldset">';
-		$ret .=  "<legend>Vendor Items</legend>";
+		$ret .=  "<legend onclick=\"\$('#VendorItemsFieldsetContent').toggle();\">
+                <a href=\"\" onclick=\"return false;\">Vendor Items</a>
+                </legend>";
+        $ret .= '<div id="VendorItemsFieldsetContent" style="display:none;">';
 
 		$dbc = $this->db();
 		$p = $dbc->prepare_statement('SELECT vendorID,vendorName FROM vendors ORDER BY vendorID');
@@ -80,6 +83,7 @@ class VendorItemModule extends ItemModule {
 			$style = 'display:none;';
 		}
 		
+        $ret .= '</div>';
 		$ret .= '</fieldset>';
 		return $ret;
 	}

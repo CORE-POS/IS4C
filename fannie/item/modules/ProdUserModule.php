@@ -33,7 +33,10 @@ class ProdUserModule extends ItemModule
 		$upc = BarcodeLib::padUPC($upc);
 
 		$ret = '<fieldset id="ProdUserFieldset">';
-		$ret .=  "<legend>Longform Info</legend>";
+		$ret .=  "<legend onclick=\"\$('#ProdUserFieldsetContent').toggle();\">
+                <a href=\"\" onclick=\"return false;\">Longform Info</a>
+                </legend>";
+        $ret .= '<div id="ProdUserFieldsetContent" style="display:none;">';
 
 		$dbc = $this->db();
         $model = new ProductUserModel($dbc);
@@ -44,11 +47,11 @@ class ProdUserModule extends ItemModule
         $ret .= '<table>';
         $ret .= '<tr>';
         $ret .= '<th>Brand</th>';
-        $ret .= '<td><input type="text" id="lf_brand" name="lf_brand" value="' . $model->brand() . '" /></td>';
+        $ret .= '<td><input type="text" size="45" id="lf_brand" name="lf_brand" value="' . $model->brand() . '" /></td>';
         $ret .= '</tr>';
         $ret .= '<tr>';
         $ret .= '<th>Desc.</th>';
-        $ret .= '<td><input type="text" name="lf_desc" value="' . $model->description() . '" /></td>';
+        $ret .= '<td><input type="text" size="45" name="lf_desc" value="' . $model->description() . '" /></td>';
         $ret .= '</tr>';
         $ret .= '<tr><th colspan="2">Ad Text</th></tr>';
         $ret .= '<tr><td colspan="3"><textarea name="lf_text"
@@ -63,6 +66,8 @@ class ProdUserModule extends ItemModule
             $ret .= '<img width="150px" src="' . $FANNIE_URL . 'item/images/done/' . $model->photo() . '" />';
             $ret .= '</div>';
         }
+
+        $ret .= '</div>';
         $ret .= '</fieldset>';
 
         return $ret;

@@ -31,14 +31,21 @@ class LikeCodeModule extends ItemModule {
 
 	function ShowEditForm($upc){
 		global $FANNIE_URL;
-		$ret = '<fieldset id="LikeCodeFieldSet"><legend>Likecode</legend>';
-
 		$dbc = $this->db();
 		$p = $dbc->prepare_statement('SELECT likeCode FROM upcLike WHERE upc=?');
 		$r = $dbc->exec_statement($p,array($upc));
 		$myLC = -1;		
-		if ($dbc->num_rows($r) > 0)
-			$myLC = array_pop($dbc->fetch_row($r));
+		if ($dbc->num_rows($r) > 0) {
+            $w = $dbc->fetch_row($r);
+            $myLC = $w['likeCode'];
+        }
+		$ret = '<fieldset id="LikeCodeFieldSet">';
+		$ret .=  "<legend onclick=\"\$('#LikeCodeFieldsetContent').toggle();\">
+                <a href=\"\" onclick=\"return false;\">Likecode</a>
+                </legend>";
+        $style = $myLC == -1 ? 'display:none;' : '';
+        $ret .= '<div id="LikeCodeFieldsetContent" style="' . $style . '">';
+
 
 		$ret .= "<table border=0><tr><td><b>Like code</b> ";
 		$ret .= "<select name=likeCode style=\"{width: 175px;}\"

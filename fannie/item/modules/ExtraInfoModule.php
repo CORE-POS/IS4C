@@ -31,7 +31,10 @@ class ExtraInfoModule extends ItemModule
 		$upc = BarcodeLib::padUPC($upc);
 
 		$ret = '<fieldset id="ExtraInfoFieldset">';
-		$ret .=  "<legend>Extra Info</legend>";
+		$ret .=  "<legend onclick=\"\$('#ExtraInfoFieldsetContent').toggle();\">
+                <a href=\"\" onclick=\"return false;\">Extra Info</a>
+                </legend>";
+        $ret .= '<div id="ExtraInfoFieldsetContent" style="display:none;">';
 
 		$info = array('cost'=>0.00,'deposit'=>0,'local'=>0,'inUse'=>1,'modified'=>'Unknown','idEnforced'=>0);
 		$dbc = $this->db();
@@ -82,7 +85,9 @@ class ExtraInfoModule extends ItemModule
 				$info['deposit'],$info['cost'],$ageSelect,$localSelect,
 				($info['inUse']==1 ? 'checked': '')
 		);
-		$ret .= '</table></fieldset>';
+		$ret .= '</table>
+                </div>
+                </fieldset>';
 
 		return $ret;
 	}
