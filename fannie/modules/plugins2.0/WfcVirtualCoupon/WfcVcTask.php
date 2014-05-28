@@ -40,6 +40,35 @@ class WfcVcTask extends FannieTask
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
+        $last_year = date('Y-m-d', mktime(0, 0, 0, date('n'), date('j'), date('Y')-1));
+        $dlog_ly = DTransactionsModel::selectDlog($last_year, date('Y-m-d'));
+        $accessQ = 'SELECT card_no
+                    FROM ' . $dlog_ly . '
+                    WHERE trans_type=\'I\'
+                        AND upc=\'ACCESS\'
+                        AND tdate >= ?
+                    GROUP BY card_no
+                    HAVING SUM(quantity) > 0';
+        $accessP = $dbc->prepare($accessQ);
+        $accessR = $dbc->execute($accessP, array($dlog_ly));
+        $mems = array();
+        $in = '';
+        while($accessW = $dbc->fetch_row($accessR)) {
+            $mems[] = $accessW['card_no'];
+            $in .= '?,';
+        }
+        $in = substr($in, 0, strlen($in)-1);
+
+        if (count($mems) == 0) {
+            $mems = array(-1);
+            $in = '?';
+        }
+
+        $redo = $dbc->prepare('UPDATE custdata SET memType=5 WHERE Type=\'PC\' AND CardNo IN (' . $in . ')');
+        $dbc->execute($redo, $mems);
+        $undo = $dbc->prepare('UPDATE custdata SET memType=1 WHERE memType=5 AND CardNo NOT IN (' . $in . ')');
+        $dbc->execute($undo, $mems);
+
         $start = date('Y-m-01');
         $end = date('Y-m-t');
         $dlog = DTransactionsModel::selectDlog($start, $end);
@@ -107,7 +136,7 @@ class WfcVcTask extends FannieTask
                         "' Coup(0)'",
                         ''
         );
-        $dbc->query("UPDATE custdata AS c SET blueLine=$coupon_blueline WHERE Type='PC' AND memCoupons > 0");
+        $dbc->query("UPDATE custdata AS c SET blueLine=$coupon_blueline WHERE Type='PC' AND memCoupons = 0");
 
         // more detail needed for access members
         $both_blueline = $dbc->concat(
