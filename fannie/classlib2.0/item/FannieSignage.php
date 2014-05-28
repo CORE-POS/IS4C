@@ -43,7 +43,7 @@ class FannieSignage
     {
         $this->items = $items;
         $this->source = strtolower($source);
-        $this->source_id = 0;
+        $this->source_id = $source_id;
     }
 
     public function loadItems()
@@ -100,6 +100,7 @@ class FannieSignage
                 $args[] = $id;
                 $ids .= '?,';
             }
+            $ids = substr($ids, 0, strlen($ids)-1);
             $query = 'SELECT l.upc,
                         l.salePrice AS normal_price,
                         CASE WHEN u.description IS NULL OR u.description=\'\' THEN p.description ELSE u.description END as description,

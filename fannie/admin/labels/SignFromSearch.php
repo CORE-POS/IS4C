@@ -30,9 +30,13 @@ class SignFromSearch extends FannieRESTfulPage
 	protected $title = 'Fannie - Signage';
 	protected $header = 'Signage';
 
+    protected $signage_mod;
+    protected $signage_obj;
+
     public function preprocess()
     {
        $this->__routes[] = 'post<u>'; 
+       $this->__routes[] = 'post<batch>'; 
        return parent::preprocess();
     }
 
@@ -47,46 +51,142 @@ class SignFromSearch extends FannieRESTfulPage
             }
         }
 
+        if (!$this->initModule()) {
+            echo 'Error: no layouts available';
+            return false;
+        }
+
+        $class_name = $this->signage_mod;
+
         if (empty($this->upcs)) {
             echo 'Error: no valid data';
             return false;
         } else if (FormLib::get('pdf') == 'Print') {
-            $mod = FormLib::get('signmod');
-            $obj = new $mod($this->upcs);
-            $obj->drawPDF();
+            $this->signage_obj = new $class_name($this->upcs);
+            $this->signage_obj->drawPDF();
             return false;
         } else {
+            $this->signage_obj = new $class_name($this->upcs);
             return true;
         }
     }
 
-    function post_u_view()
+    function post_batch_handler()
+    {
+        if (!is_array($this->batch)) {
+            $this->batch = array($this->batch);
+        }
+
+        if (!$this->initModule()) {
+            echo 'Error: no layouts available';
+            return false;
+        }
+
+        $class_name = $this->signage_mod;
+
+        if (empty($this->batch)) {
+            echo 'Error: no valid data';
+            return false;
+        } else if (FormLib::get('pdf') == 'Print') {
+            $this->signage_obj = new $class_name(array(), 'batch', $this->batch);
+            $this->signage_obj->drawPDF();
+            return false;
+        } else {
+            $this->signage_obj = new $class_name(array(), 'batch', $this->batch);
+            return true;
+        }
+    }
+
+    /**
+      Detect selected or default layout module
+      @return [boolean] success/failure
+    */
+    protected function initModule()
     {
         $mod = FormLib::get('signmod', false);
+        if ($mod !== false) {
+            $this->signage_mod = $mod;
+            return true;
+        } else {
+            $mods = FannieAPI::listModules('FannieSignage');
+            if (isset($mods[0])) {
+                $this->signage_mod = $mods[0];
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    function post_batch_view()
+    {
+        return $this->post_u_view();
+    }
+
+    function post_u_view()
+    {
         $ret = '';
         $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post" id="signform">';
         $mods = FannieAPI::listModules('FannieSignage');
         $ret .= '<b>Layout</b>: <select name="signmod" onchange="$(\'#signform\').submit())">';
         foreach ($mods as $m) {
             $ret .= sprintf('<option %s>%s</option>',
-                    ($m == $mod ? 'selected' : ''), $m);
+                    ($m == $this->signage_mod ? 'selected' : ''), $m);
         }
         $ret .= '</select>';
-
-        if ($mod === false && isset($mods[0])) {
-            $mod = $mods[0];
-        }
-        $signage = new $mod($this->upcs);
-
-        foreach ($this->upcs as $u) {
-            $ret .= sprintf('<input type="hidden" name="u[]" value="%s" />', $u);
+        
+        if (isset($this->upcs)) {
+            foreach ($this->upcs as $u) {
+                $ret .= sprintf('<input type="hidden" name="u[]" value="%s" />', $u);
+            }
+        } else if (isset($this->batch)) {
+            foreach ($this->batch as $b) {
+                $ret .= sprintf('<input type="hidden" name="batch[]" value="%d" />', $b);
+            }
         }
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
         $ret .= '<input type="submit" name="pdf" value="Print" />';
         $ret .= '</form>';
         $ret .= '<hr />';
 
-        $ret .= $signage->listItems();
+        $ret .= $this->signage_obj->listItems();
+
+        return $ret;
+    }
+
+    public function get_view()
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+
+        $batchQ = 'SELECT batchID, 
+                    batchName,
+                    startDate,
+                    endDate
+                   FROM batches AS b
+                   WHERE
+                    (b.startDate <= ? AND b.endDate >= ?)
+                    OR b.startDate >=?
+                   ORDER BY b.startDate DESC';
+        $batchP = $dbc->prepare($batchQ);
+        $today = date('Y-m-d');
+        $batchR = $dbc->execute($batchP, array($today, $today, $today));
+
+        $ret = '<b>Select batch(es)</b>:'; 
+        $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
+        $ret .= '<select name="batch[]" multiple size="15">';
+        while ($batchW = $dbc->fetch_row($batchR)) {
+            $ret .= sprintf('<option value="%d">%s (%s - %s)</option>',
+                        $batchW['batchID'],
+                        $batchW['batchName'],
+                        date('Y-m-d', strtotime($batchW['startDate'])),
+                        date('Y-m-d', strtotime($batchW['endDate']))
+            );
+        }
+        $ret .= '</select>';
+        $ret .= '<br /><br />';
+        $ret .= '<input type="submit" value="Make Signs" />';
+        $ret .= '</form>';
 
         return $ret;
     }
