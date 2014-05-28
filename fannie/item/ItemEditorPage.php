@@ -41,7 +41,8 @@ for($i=0;$i<count($FANNIE_PRODUCT_MODULES);$i++) {
     }
 }
 
-class ItemEditorPage extends FanniePage {
+class ItemEditorPage extends FanniePage 
+{
 
     private $mode = 'search';
     private $msgs = '';
@@ -77,6 +78,7 @@ class ItemEditorPage extends FanniePage {
 
     function search_form()
     {
+        global $FANNIE_URL;
         $ret = '';
         if (!empty($this->msgs)) {
             $ret .= '<blockquote style="border:solid 1px black;">';
@@ -100,6 +102,9 @@ class ItemEditorPage extends FanniePage {
         $ret .= '<a href="PluRangePage.php">' . _('Find Open PLU Range') . '</a>';
         $ret .= '</p>';
         
+        $this->add_script('autocomplete.js');
+        $ws = $FANNIE_URL . 'ws/';
+        $this->add_onload_command("bindAutoComplete('#upc', '$ws', 'item');\n");
         $this->add_onload_command('$(\'#upc\').focus();');
 
         return $ret;
@@ -218,6 +223,9 @@ class ItemEditorPage extends FanniePage {
         global $FANNIE_PRODUCT_MODULES, $FANNIE_URL;
         $shown = array();
 
+        $this->add_script('autocomplete.js');
+        $ws = $FANNIE_URL . 'ws/';
+
         $authorized = false;
         if (FannieAuth::validateUserQuiet('pricechange') || FannieAuth::validateUserQuiet('audited_pricechange')) {
             $authorized = true;
@@ -230,6 +238,8 @@ class ItemEditorPage extends FanniePage {
             $mod = new BaseItemModule();
             $ret .= $mod->ShowEditForm($upc);
             $shown['BaseItemModule'] = true;
+            $this->add_onload_command("bindAutoComplete('#brand_field', '$ws', 'brand');\n");
+            $this->add_onload_command("bindAutoComplete('#vendor_field', '$ws', 'vendor');\n");
         }
 
         if (!$authorized) {
@@ -313,6 +323,10 @@ class ItemEditorPage extends FanniePage {
             if (!class_exists($mod)) continue;
             $obj = new $mod();
             $ret .= $obj->ShowEditForm($upc);
+        }
+
+        if (in_array('ProdUserModule',$FANNIE_PRODUCT_MODULES)) {
+            $this->add_onload_command("bindAutoComplete('#lf_brand', '$ws', 'long_brand');\n");
         }
 
         $ret .= '</form>';

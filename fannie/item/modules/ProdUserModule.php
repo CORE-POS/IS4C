@@ -44,7 +44,7 @@ class ProdUserModule extends ItemModule
         $ret .= '<table>';
         $ret .= '<tr>';
         $ret .= '<th>Brand</th>';
-        $ret .= '<td><input type="text" name="lf_brand" value="' . $model->brand() . '" /></td>';
+        $ret .= '<td><input type="text" id="lf_brand" name="lf_brand" value="' . $model->brand() . '" /></td>';
         $ret .= '</tr>';
         $ret .= '<tr>';
         $ret .= '<th>Desc.</th>';
