@@ -43,7 +43,8 @@ class CalendarPlugin extends FanniePlugin {
 	public $plugin_description = 'Plugin for calendars';
 
 
-	public function setting_change(){
+	public function setting_change()
+    {
 		global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
 
 		$db_name = $FANNIE_PLUGIN_SETTINGS['CalendarDatabase'];
@@ -51,14 +52,23 @@ class CalendarPlugin extends FanniePlugin {
 
 		$dbc = FannieDB::get($db_name);
 
-		$errors = array();
-		$errors[] = $this->plugin_db_struct($dbc, 'account_classes', $db_name);
-		$errors[] = $this->plugin_db_struct($dbc, 'calendars', $db_name);
-		$errors[] = $this->plugin_db_struct($dbc, 'monthview_events', $db_name);
-		$errors[] = $this->plugin_db_struct($dbc, 'permissions', $db_name);
-		$errors[] = $this->plugin_db_struct($dbc, 'attendees', $db_name);
+		$tables = array(
+			'AccountClasses',
+            'Attendees',
+			'Calendars',
+			'MonthviewEvents',
+			'Permissions',
+		);
+		foreach($tables as $t){
+			$model_class = $t.'Model';
+			if (!class_exists($model_class))
+				include_once(dirname(__FILE__).'/models/'.$model_class.'.php');
+			$instance = new $model_class($dbc);
+			$instance->create();		
+		}
 
-		if ($dbc->table_exists('account_classes')){
+		if ($dbc->table_exists('account_classes')) {
+            $model = new AccountClassesModel($dbc);
 			/* populate account classes */
 			$classes = array(
 				1 => 'VIEWER',
@@ -66,23 +76,11 @@ class CalendarPlugin extends FanniePlugin {
 				3 => 'ADMIN',
 				4 => 'OWNER'
 			);
-			$chkP = $dbc->prepare_statement("SELECT classID FROM account_classes WHERE classID=?");
-			$insP = $dbc->prepare_statement("INSERT INTO account_classes (classID, classDesc) VALUES (?, ?)");
-			$upP = $dbc->prepare_statement("UPDATE account_classes SET classDesc=? WHERE classID=?");
-			foreach($classes as $id => $name){
-				$chkR = $dbc->exec_statement($chkP,array($id));
-				if ($dbc->num_rows($chkR) == 0){
-					$dbc->exec_statement($insP,array($id,$name));
-				}
-				else {
-					$dbc->exec_statement($upP,array($name,$id));
-				}
-			}
-		}
-
-		foreach($errors as $e){
-			if ($e === True) continue;
-			echo 'CalendarPlugin error: '.$e.'<br />';
+            foreach ($classes as $id => $desc) {
+                $model->classID($id);
+                $model->classDesc($desc);
+                $model->save();
+            }
 		}
 	}
 
