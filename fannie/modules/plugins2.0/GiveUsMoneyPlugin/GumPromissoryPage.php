@@ -155,8 +155,12 @@ class GumPromissoryPage extends FannieRESTfulPage
             $y += $line_height;
             $pdf->SetFont('Arial', '', 10);
 
+            if (strlen($this->custdata->FirstName()) + strlen($this->custdata->LastName()) > 50) {
+                $pdf->SetFont('Arial', '', 8);
+            }
             $pdf->SetXY($col1, $y);
             $pdf->Cell($col_width, $line_height, $this->custdata->FirstName() . ' ' . $this->custdata->LastName(), 0, 0, 'C');
+            $pdf->SetFont('Arial', '', 10);
             $pdf->SetXY($col2, $y);
             $pdf->Cell($col_width, $line_height, $this->my_address[0], 0, 0, 'C');
             $y += $line_height;
