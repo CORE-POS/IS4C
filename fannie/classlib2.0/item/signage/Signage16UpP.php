@@ -23,10 +23,14 @@
 
 class Signage16UpP extends FannieSignage 
 {
+    protected $BIG_FONT = 18;
+    protected $MED_FONT = 14;
+    protected $SMALL_FONT = 10;
+
     public function drawPDF()
     {
         $pdf = new FPDF('P', 'mm', 'Letter');
-        $pdf->SetMargins(3.175, 3.175, 3.175);
+        $pdf->SetMargins(0, 3.175, 0);
         $pdf->SetAutoPageBreak(false);
         $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
         $pdf->SetFont('Gill', '', 16);
@@ -34,10 +38,11 @@ class Signage16UpP extends FannieSignage
         $data = $this->loadItems();
         $count = 0;
         $sign = 0;
-        $width = 50.8;
+        $width = 53.975;
         $height = 66.68;
         $top = 15;
-        $left = 10;
+        $left = 5.175;
+        $effective_width = $width - (2*$left);
         foreach ($data as $item) {
             if ($count % 16 == 0) {
                 $pdf->AddPage();
@@ -47,12 +52,28 @@ class Signage16UpP extends FannieSignage
             $row = floor($sign / 4);
             $column = $sign % 4;
 
+            $price = sprintf('$%.2f', $item['normal_price']);
+            if ($item['scale']) {
+                $price .= ' / lb';
+            }
+
             $pdf->SetXY($left + ($width*$column), $top + ($row*$height));
-            $pdf->MultiCell($width, 10, $item['brand'], 0, 'C');
+            $pdf->SetFontSize($this->SMALL_FONT);
+            $pdf->MultiCell($effective_width, 6, $item['brand'], 0, 'C');
             $pdf->SetX($left + ($width*$column));
-            $pdf->MultiCell($width, 10, $item['description'], 0, 'C');
+            $pdf->SetFontSize($this->MED_FONT);
+            $pdf->MultiCell($effective_width, 6, $item['description'], 0, 'C');
             $pdf->SetX($left + ($width*$column));
-            $pdf->MultiCell($width, 10, $item['normal_price'], 0, 'C');
+            $pdf->SetFontSize($this->BIG_FONT);
+            $pdf->MultiCell($effective_width, 8, $price, 0, 'C');
+
+            if ($item['startDate'] != '' && $item['endDate'] != '') {
+                // intl would be nice
+                $datestr = _('Thru') . ' ' . date('n/j/y', strtotime($item['endDate'])) . '  '; // margin padding
+                $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - $top - 10));
+                $pdf->SetFontSize($this->SMALL_FONT);
+                $pdf->Cell($effective_width, 6, $datestr, 0, 1, 'R');
+            }
 
             $count++;
             $sign++;

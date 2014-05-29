@@ -23,6 +23,11 @@
 
 class Signage4UpL extends FannieSignage 
 {
+
+    protected $BIG_FONT = 48;
+    protected $MED_FONT = 24;
+    protected $SMALL_FONT = 14;
+
     public function drawPDF()
     {
         $pdf = new FPDF('L', 'mm', 'Letter');
@@ -34,10 +39,11 @@ class Signage4UpL extends FannieSignage
         $data = $this->loadItems();
         $count = 0;
         $sign = 0;
-        $width = 130;
+        $width = 136.52;
         $height = 105;
         $top = 35;
         $left = 15;
+        $effective_width = $width - (2*$left);
         foreach ($data as $item) {
             if ($count % 4 == 0) {
                 $pdf->AddPage();
@@ -47,12 +53,30 @@ class Signage4UpL extends FannieSignage
             $row = floor($sign / 2);
             $column = $sign % 2;
 
+            $price = sprintf('$%.2f', $item['normal_price']);
+            if ($item['scale']) {
+                $price .= ' / lb';
+            }
+
             $pdf->SetXY($left + ($width*$column), $top + ($row*$height));
-            $pdf->Cell($width, 10, $item['brand'], 0, 1, 'C');
+            $pdf->SetFontSize($this->SMALL_FONT);
+            $pdf->Cell($effective_width, 10, $item['brand'], 0, 1, 'C');
             $pdf->SetX($left + ($width*$column));
-            $pdf->Cell($width, 10, $item['description'], 0, 1, 'C');
+            $pdf->SetFontSize($this->MED_FONT);
+            $pdf->MultiCell($effective_width, 10, $item['description'], 0, 'C');
             $pdf->SetX($left + ($width*$column));
-            $pdf->Cell($width, 10, $item['normal_price'], 0, 1, 'C');
+            $pdf->SetFontSize($this->BIG_FONT);
+            $pdf->Cell($effective_width, 20, $price, 0, 1, 'C');
+
+            if ($item['startDate'] != '' && $item['endDate'] != '') {
+                // intl would be nice
+                $datestr = date('m/d/Y', strtotime($item['startDate']))
+                        . ' - ' 
+                        . date('m/d/Y', strtotime($item['endDate']));
+                $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - $top - 20));
+                $pdf->SetFontSize($this->SMALL_FONT);
+                $pdf->Cell($effective_width, 20, $datestr, 0, 1, 'R');
+            }
 
             $count++;
             $sign++;
