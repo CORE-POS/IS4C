@@ -156,7 +156,6 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
                 if (this.verbose_mode > 0)
                     System.Console.WriteLine("USB device found");
             }
-            
         }
 
     }
@@ -252,12 +251,10 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         SendReport(BuildCommand(LcdStopCapture()));
         SendReport(BuildCommand(LcdClearSignature()));
         SendReport(BuildCommand(LcdSetClipArea(0,0,1,1)));
-        SendReport(BuildCommand(LcdTextFont(FONT_SET, FONT_WIDTH, FONT_HEIGHT)));
-        SendReport(BuildCommand(LcdTextColor(0,0,0)));
         //SendReport(BuildCommand(LcdCreateButton(BUTTON_CREDIT,"Credit",5,5,145,95)));
-        SendReport(BuildCommand(LcdCreateColoredButton(BUTTON_CREDIT,"Credit",5,5,145,95, new byte[]{0x0,0x0,0x0}, new byte[]{0xee,0x0,0x0})));
+        SendReport(BuildCommand(LcdCreateColoredButton(BUTTON_CREDIT,"Credit",5,5,145,95, new byte[]{0x0,0x0,0x0}, new byte[]{0x0,0xbb,0x0})));
         //SendReport(BuildCommand(LcdCreateButton(BUTTON_DEBIT,"Debit",224,5,314,95)));
-        SendReport(BuildCommand(LcdCreateColoredButton(BUTTON_DEBIT,"Debit",174,5,314,95, new byte[]{0x0,0x0,0x0}, new byte[]{0x0,0xbb,0x0})));
+        SendReport(BuildCommand(LcdCreateColoredButton(BUTTON_DEBIT,"Debit",174,5,314,95, new byte[]{0x0,0x0,0x0}, new byte[]{0xee,0x0,0x0})));
         if (this.type_include_fs) {
             //SendReport(BuildCommand(LcdCreateButton(BUTTON_EBT,"EBT",5,144,95,234)));
             SendReport(BuildCommand(LcdCreateColoredButton(BUTTON_EBT,"EBT",5,144,145,234, new byte[]{0x0,0x0,0x0}, new byte[]{0xbb,0xbb,0x0})));
