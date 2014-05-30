@@ -75,6 +75,12 @@ class Signage12UpL extends FannieSignage
                 $pdf->Cell($effective_width, 20, $datestr, 0, 1, 'R');
             }
 
+            if ($item['originShortName'] != '') {
+                $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - $top - 15));
+                $pdf->SetFontSize($this->SMALL_FONT);
+                $pdf->Cell($effective_width, 20, $item['originShortName'], 0, 1, 'L');
+            }
+
             $count++;
             $sign++;
         }
