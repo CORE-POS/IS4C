@@ -74,8 +74,11 @@ class DeleteShelfTags extends FanniePage
                 $clear->upc($tag->upc());
                 $clear->delete();
                 // save tag as negative id
+                $old_id = $tag->id();
                 $tag->id($new_id);
                 $tag->save();
+                $tag->id($old_id);
+                $tag->delete();
             }
 			$this->messages = "Barcode table cleared <a href='ShelfTagIndex.php'>Click here to continue</a>";
 
