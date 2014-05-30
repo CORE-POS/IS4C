@@ -63,9 +63,12 @@ class FannieSignage
                         p.scale,
                         p.numflag,
                         \'\' AS startDate,
-                        \'\' AS endDate
+                        \'\' AS endDate,
+                        o.name AS originName,
+                        o.shortName AS originShortName
                       FROM shelftags AS s
                         INNER JOIN products AS p ON s.upc=p.upc
+                        LEFT JOIN origins AS o ON p.current_origin_id=o.originID
                       WHERE s.id=?
                       ORDER BY p.department, s.upc';
             $args[] = $this->source_id;
@@ -90,10 +93,13 @@ class FannieSignage
                         p.scale,
                         p.numflag,
                         b.startDate,
-                        b.endDate
+                        b.endDate,
+                        o.name AS originName,
+                        o.shortName AS originShortName
                       FROM batchBarcodes AS s
                         INNER JOIN products AS p ON s.upc=p.upc
                         INNER JOIN batches AS b ON s.batchID=b.batchID
+                        LEFT JOIN origins AS o ON p.current_origin_id=o.originID
                       WHERE s.batchID IN (' . $ids . ')
                       ORDER BY p.department, s.upc';
         } else if ($this->source == 'batch') {
@@ -118,13 +124,16 @@ class FannieSignage
                         p.scale,
                         p.numflag,
                         b.startDate,
-                        b.endDate
+                        b.endDate,
+                        o.name AS originName,
+                        o.shortName AS originShortName
                      FROM batchList AS l
                         INNER JOIN products AS p ON l.upc=p.upc
                         INNER JOIN batches AS b ON b.batchID=l.batchID
                         LEFT JOIN productUser AS u ON p.upc=u.upc
                         LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
                         LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
+                        LEFT JOIN origins AS o ON p.current_origin_id=o.originID
                      WHERE l.batchID IN (' . $ids . ')
                      ORDER BY p.department, p.upc';
         } else {
@@ -146,11 +155,14 @@ class FannieSignage
                         p.scale,
                         p.numflag,
                         \'\' AS startDate,
-                        \'\' AS endDate
+                        \'\' AS endDate,
+                        o.name AS originName,
+                        o.shortName AS originShortName
                      FROM products AS p
                         LEFT JOIN productUser AS u ON p.upc=u.upc
                         LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
                         LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
+                        LEFT JOIN origins AS o ON p.current_origin_id=o.originID
                      WHERE p.upc IN (' . $ids . ')
                      ORDER BY p.department, p.upc';
         }
