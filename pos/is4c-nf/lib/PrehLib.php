@@ -234,11 +234,11 @@ static public function setMember($member, $personNumber, $row)
 	$CORE_LOCAL->set("isStaff",$row["staff"]);
 	$CORE_LOCAL->set("SSI",$row["SSI"]);
 
-    if ($CORE_LOCAL->get('useMemtypeTable') == 1 && $conn->table_exists('memtype')) {
-        $prep = $conn->prepare('SELECT discount, staff, ssi 
+    if ($CORE_LOCAL->get('useMemTypeTable') == 1 && $conn->table_exists('memtype')) {
+        $prep = $conn->prepare_statement('SELECT discount, staff, ssi 
                                  FROM memtype
                                  WHERE memtype=?');
-        $res = $conn->execute($prep, array((int)$CORE_LOCAL->get('memType')));
+        $res = $conn->exec_statement($prep, array((int)$CORE_LOCAL->get('memType')));
         if ($conn->num_rows($res) > 0) {
             $mt_row = $conn->fetch_row($res);
             $CORE_LOCAL->set('percentDiscount', $mt_row['discount']);
