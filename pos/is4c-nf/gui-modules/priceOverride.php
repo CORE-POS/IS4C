@@ -39,8 +39,7 @@ class PriceOverride extends NoInputPage {
 		$r = $db->query($q);
 		if ($db->num_rows($r)==0){
 			// current record cannot be repriced
-			//$this->change_page($this->page_url."gui-modules/pos2.php");
-            var_dump($line_id);
+			$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;
 		}
 		$w = $db->fetch_row($r);
