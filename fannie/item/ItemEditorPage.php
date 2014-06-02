@@ -274,7 +274,7 @@ class ItemEditorPage extends FanniePage
         foreach ($FANNIE_PRODUCT_MODULES as $class => $params) {
             $mod = new $class();
             $ret .= $mod->ShowEditForm($upc, $params['show'], $params['expand']);
-            $show[$class] = true;
+            $shown[$class] = true;
 
             if ($count == 0) { // show links after first mod
 
