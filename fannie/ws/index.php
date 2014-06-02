@@ -31,12 +31,19 @@ if (!class_exists('FannieAPI')) {
   Input data can be passed in a GET or POST parameter
   named "json" or POSTed directly to this URL.
 
-  Input data should be a JSON object.
-  The object must have a property named "service"
-  specifying which webservice is being called.
-  Other input data will be passed to the underlying
-  service.
+  Request and response format follows JSON-RPC 2.0.
+  Request objects MUST contain a "method" field and
+  MAY contain "id" and "params" fields.
+
+  The response object WILL contain fields "jsonrpc"
+  and "id". The response WILL also contain EITHER
+  a "result" field or an "error" field.
 */
+
+$response = array(
+    'jsonrpc' => '2.0',
+    'id' => null,
+);
 
 $input = false;
 if (FormLib::get('json', '') !== '') {
@@ -47,38 +54,82 @@ if (FormLib::get('json', '') !== '') {
 
 header('Content-type: application/json');
 if ($input === false) {
-    echo json_encode(array('error' => 'No input'));
+    $response['error'] = array(
+        'code' => -32600,
+        'message' => 'Invalid Request',
+    );
+    echo json_encode($response);
 
     return false;
 }
 
 $input = json_decode($input);
 if ($input === null) {
-    echo json_encode(array('error' => 'Malformed input'));
+    $response['error'] = array(
+        'code' => -32700,
+        'message' => 'JSON Parse Error',
+    );
+    echo json_encode($response);
 
     return false;
 }
 
-if (!property_exists($input, 'service')) {
-    echo json_encode(array('error' => 'No service specified'));
+$send_reply = false;
+if (property_exists($input, 'id') && $input->id != null) {
+    $response['id'] = $input->id;
+    $send_reply = true;
+}
+
+if (!property_exists($input, 'method')) {
+    $response['error'] = array(
+        'code' => -32600,
+        'message' => 'Invalid request: method not specified',
+    );
+    if ($send_reply) {
+        echo json_encode($response);
+    }
 
     return false;
 }
 
-if (!class_exists($input->service)) {
-    echo json_encode(array('error' => 'Invalid service: ' . $input->service));
+if (!class_exists($input->method)) {
+    $response['error'] = array(
+        'code' => -32601,
+        'message' => 'Method not found',
+    );
+    if ($send_reply) {
+        echo json_encode($response);
+    }
 
     return false;
 }
 
-$service_class = $input->service;
+$service_class = $input->method;
 $service_obj = new $service_class();
 if (!$service_obj instanceof FannieWebService) {
-    echo json_encode(array('error' => 'Invalid service: ' . $input->service));
+    $response['error'] = array(
+        'code' => -32601,
+        'message' => 'Method not found',
+    );
+    if ($send_reply) {
+        echo json_encode($response);
+    }
 
     return false;
 }
 
-$output = $service_obj->run($input);
-echo json_encode($output);
+$params = array();
+if (property_exists($input, 'params')) {
+    $params = $input->params;
+}
+
+$output = $service_obj->run($params);
+if (is_array($output) && isset($output['error'])) {
+    $response['error'] = $output['error'];
+} else {
+    $response['result'] = $output;
+}
+if ($send_reply) {
+    echo json_encode($response);
+}
 

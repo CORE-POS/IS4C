@@ -38,11 +38,17 @@ class FannieAutoComplete extends FannieWebService
         $ret = array();
         if (!property_exists($args, 'field') || !property_exists($args, 'search')) {
             // missing required arguments
-            return array('Bad args');
+            $ret['error'] = array(
+                'code' => -32602,
+                'message' => 'Invalid parameters',
+            );
             return $ret;
         } else if (strlen($args->search) < 2) {
             // search term is too short
-            return array('Short', $args->search);
+            $ret['error'] = array(
+                'code' => -32602,
+                'message' => 'Invalid parameters',
+            );
             return $ret;
         }
 
