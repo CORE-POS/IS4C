@@ -285,7 +285,7 @@ class MercuryE2E extends BasicCCModule
                 FROM PaycardTransactions 
                 WHERE dateID=" . $today . "
                     AND empNo=" . $cashier . "
-                    AND cashierNo=" . $lane . "
+                    AND registerNo=" . $lane . "
                     AND transNo=" . $trans . "
                     AND transID=" . $transID . "
                     AND transType='VOID'
