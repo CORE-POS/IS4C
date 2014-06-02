@@ -57,16 +57,17 @@ class SignFromSearch extends FannieRESTfulPage
         }
 
         $class_name = $this->signage_mod;
+        $item_mode = FormLib::get('item_mode', 0);
 
         if (empty($this->upcs)) {
             echo 'Error: no valid data';
             return false;
         } else if (FormLib::get('pdf') == 'Print') {
-            $this->signage_obj = new $class_name($this->upcs);
+            $this->signage_obj = new $class_name($this->upcs, '', $item_mode);
             $this->signage_obj->drawPDF();
             return false;
         } else {
-            $this->signage_obj = new $class_name($this->upcs);
+            $this->signage_obj = new $class_name($this->upcs, '', $item_mode);
             return true;
         }
     }
@@ -128,7 +129,7 @@ class SignFromSearch extends FannieRESTfulPage
         $ret = '';
         $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post" id="signform">';
         $mods = FannieAPI::listModules('FannieSignage');
-        $ret .= '<b>Layout</b>: <select name="signmod" onchange="$(\'#signform\').submit())">';
+        $ret .= '<b>Layout</b>: <select name="signmod" onchange="$(\'#signform\').submit()">';
         foreach ($mods as $m) {
             $ret .= sprintf('<option %s>%s</option>',
                     ($m == $this->signage_mod ? 'selected' : ''), $m);
@@ -139,6 +140,16 @@ class SignFromSearch extends FannieRESTfulPage
             foreach ($this->upcs as $u) {
                 $ret .= sprintf('<input type="hidden" name="u[]" value="%s" />', $u);
             }
+            $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
+            $item_mode = FormLib::get('item_mode', 0);
+            $modes = array('Current Retail', 'Upcoming Retail', 'Current Sale', 'Upcoming Sale');
+            $ret .= '<select name="item_mode" onchange="$(\'#signform\').submit()">';
+            foreach ($modes as $id => $label) {
+                $ret .= sprintf('<option %s value="%d">%s</option>',
+                            ($id == $item_mode ? 'selected' : ''),
+                            $id, $label);
+            }
+            $ret .= '</select>';
         } else if (isset($this->batch)) {
             foreach ($this->batch as $b) {
                 $ret .= sprintf('<input type="hidden" name="batch[]" value="%d" />', $b);

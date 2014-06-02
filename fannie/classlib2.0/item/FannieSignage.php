@@ -38,6 +38,14 @@ class FannieSignage
             use batch(es) for price
         - empty => get data from normal product and vendor tables
       @param $source_id [optional]
+        - for shelftags, shelftags.id
+        - for batchbarcodes, array of batchIDs
+        - for batch, array of batchIDs
+        - for empty:
+            0 => use current price
+            1 => use upcoming retail from price change batch
+            2 => use current sale price
+            3 => use upcoming sale price from sale batch
     */
     public function __construct($items, $source='', $source_id=0)
     {
@@ -165,6 +173,84 @@ class FannieSignage
                         LEFT JOIN origins AS o ON p.current_origin_id=o.originID
                      WHERE p.upc IN (' . $ids . ')
                      ORDER BY p.department, p.upc';
+            if ($this->source_id == 1) { // upcoming retail
+                $query = 'SELECT p.upc,
+                            l.salePrice AS normal_price,
+                            CASE WHEN u.description IS NULL OR u.description=\'\' THEN p.description ELSE u.description END as description,
+                            CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
+                            v.units,
+                            v.size,
+                            v.sku,
+                            \'\' AS pricePerUnit,
+                            n.vendorName,
+                            p.scale,
+                            p.numflag,
+                            \'\' AS startDate,
+                            \'\' AS endDate,
+                            o.name AS originName,
+                            o.shortName AS originShortName
+                         FROM products AS p
+                            LEFT JOIN productUser AS u ON p.upc=u.upc
+                            LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
+                            LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
+                            LEFT JOIN origins AS o ON p.current_origin_id=o.originID
+                            LEFT JOIN batches AS b ON l.batchID=b.batchID
+                         WHERE p.upc IN (' . $ids . ')
+                            AND b.discounttype = 0
+                            AND b.startDate > ' . $dbc->now() . '
+                         ORDER BY p.department, p.upc';
+            } else if ($this->source_id == 2) { // current sale
+                $query = 'SELECT p.upc,
+                            CASE WHEN p.discounttype <> 0 THEN p.special_price ELSE p.normal_price END AS normal_price,
+                            CASE WHEN u.description IS NULL OR u.description=\'\' THEN p.description ELSE u.description END as description,
+                            CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
+                            v.units,
+                            v.size,
+                            v.sku,
+                            \'\' AS pricePerUnit,
+                            n.vendorName,
+                            p.scale,
+                            p.numflag,
+                            p.start_date AS startDate,
+                            p.end_date AS endDate,
+                            o.name AS originName,
+                            o.shortName AS originShortName
+                         FROM products AS p
+                            LEFT JOIN productUser AS u ON p.upc=u.upc
+                            LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
+                            LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
+                            LEFT JOIN origins AS o ON p.current_origin_id=o.originID
+                         WHERE p.upc IN (' . $ids . ')
+                         ORDER BY p.department, p.upc';
+            } else if ($this->source_id == 3) { // current sale
+                $query = 'SELECT p.upc,
+                            l.salePrice AS normal_price,
+                            CASE WHEN u.description IS NULL OR u.description=\'\' THEN p.description ELSE u.description END as description,
+                            CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
+                            v.units,
+                            v.size,
+                            v.sku,
+                            \'\' AS pricePerUnit,
+                            n.vendorName,
+                            p.scale,
+                            p.numflag,
+                            b.startDate,
+                            b.endDate,
+                            o.name AS originName,
+                            o.shortName AS originShortName
+                         FROM products AS p
+                            LEFT JOIN productUser AS u ON p.upc=u.upc
+                            LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
+                            LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
+                            LEFT JOIN origins AS o ON p.current_origin_id=o.originID
+                            LEFT JOIN batchList AS l ON p.upc=l.upc
+                            LEFT JOIN batches AS b ON l.batchID=b.batchID
+                         WHERE p.upc IN (' . $ids . ')
+                            AND b.discounttype <> 0
+                            AND b.startDate > ' . $dbc->now() . '
+                         ORDER BY p.department, p.upc';
+            }
+
         }
 
         $data = array();
