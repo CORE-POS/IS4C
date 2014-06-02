@@ -25,7 +25,8 @@ include_once(dirname(__FILE__).'/../../classlib2.0/item/ItemModule.php');
 
 class AllLanesItemModule extends ItemModule {
 
-	function ShowEditForm($upc){
+    public function showEditForm($upc, $display_mode=1, $expand_mode=1)
+    {
 		global $FANNIE_LANES;
 		$upc = BarcodeLib::padUPC($upc);
 		$queryItem = "SELECT * FROM products WHERE upc = ?";
@@ -34,7 +35,8 @@ class AllLanesItemModule extends ItemModule {
 		$ret .=  "<legend onclick=\"\$('#AllLanesFieldsetContent').toggle();\">
                 <a href=\"\" onclick=\"return false;\">Lane Status</a>
                 </legend>";
-        $ret .= '<div id="AllLanesFieldsetContent" style="display:none;">';
+        $css = ($expand_mode == 1) ? '' : 'display:none;';
+        $ret .= '<div id="AllLanesFieldsetContent" style="' . $css . '">';
 		
 		for($i=0;$i<count($FANNIE_LANES);$i++){
 			$f = $FANNIE_LANES[$i];

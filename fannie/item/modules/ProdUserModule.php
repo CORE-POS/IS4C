@@ -27,7 +27,7 @@ if (!class_exists('FannieAPI'))
 class ProdUserModule extends ItemModule 
 {
 
-	function ShowEditForm($upc)
+    public function showEditForm($upc, $display_mode=1, $expand_mode=1)
     {
         global $FANNIE_URL;
 		$upc = BarcodeLib::padUPC($upc);
@@ -36,7 +36,8 @@ class ProdUserModule extends ItemModule
 		$ret .=  "<legend onclick=\"\$('#ProdUserFieldsetContent').toggle();\">
                 <a href=\"\" onclick=\"return false;\">Longform Info</a>
                 </legend>";
-        $ret .= '<div id="ProdUserFieldsetContent" style="display:none;">';
+        $css = ($expand_mode == 1) ? '' : 'display:none;';
+        $ret .= '<div id="ProdUserFieldsetContent" style="' . $css . '">';
 
 		$dbc = $this->db();
         $model = new ProductUserModel($dbc);

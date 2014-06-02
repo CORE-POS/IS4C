@@ -27,7 +27,8 @@ include_once(dirname(__FILE__).'/../../src/JsonLib.php');
 
 class BaseItemModule extends ItemModule {
 
-	function ShowEditForm($upc){
+    public function showEditForm($upc, $display_mode=1, $expand_mode=1)
+    {
 		global $FANNIE_URL, $FANNIE_PRODUCT_MODULES;
 		$upc = BarcodeLib::padUPC($upc);
 
@@ -84,8 +85,10 @@ class BaseItemModule extends ItemModule {
 
 			$lcP = $dbc->prepare_statement('SELECT likeCode FROM upcLike WHERE upc=?');
 			$lcR = $dbc->exec_statement($lcP,array($upc));
-			if ($dbc->num_rows($lcR) > 0)
-				$likeCode = array_pop($dbc->fetch_row($lcR));
+			if ($dbc->num_rows($lcR) > 0) {
+                $lcW = $dbc->fetch_row($lcR);
+                $likeCode = $lcW['likeCode'];
+            }
 		}
 		else {
 			// new item
@@ -196,7 +199,7 @@ class BaseItemModule extends ItemModule {
 		$ret .= '</tr>';
 
         // no need to display this field twice
-        if (!in_array('ProdUserModule', $FANNIE_PRODUCT_MODULES)) {
+        if (!isset($FANNIE_PRODUCT_MODULES['ProdUserModule'])) {
             $ret .= '<tr><td><b>Long Desc.</b><td colspan="2"><input type="text" size="60" name="puser_description"
                     value="'. (isset($rowItem['ldesc']) ? $rowItem['ldesc'] : '') . '" /></td><td>&nbsp;</td></tr>';
         }
@@ -421,7 +424,7 @@ class BaseItemModule extends ItemModule {
 			}
 		}
 
-        if (!in_array('ProdUserModule', $FANNIE_PRODUCT_MODULES)) {
+        if (!isset($FANNIE_PRODUCT_MODULES['ProdUserModule'])) {
             if ($dbc->table_exists('productUser')){
                 $ldesc = FormLib::get_form_value('puser_description');
                 $model = new ProductUserModel($dbc);

@@ -29,7 +29,8 @@ include_once(dirname(__FILE__).'/../../src/JsonLib.php');
 
 class LikeCodeModule extends ItemModule {
 
-	function ShowEditForm($upc){
+    public function showEditForm($upc, $display_mode=1, $expand_mode=1)
+    {
 		global $FANNIE_URL;
 		$dbc = $this->db();
 		$p = $dbc->prepare_statement('SELECT likeCode FROM upcLike WHERE upc=?');
@@ -43,7 +44,14 @@ class LikeCodeModule extends ItemModule {
 		$ret .=  "<legend onclick=\"\$('#LikeCodeFieldsetContent').toggle();\">
                 <a href=\"\" onclick=\"return false;\">Likecode</a>
                 </legend>";
-        $style = $myLC == -1 ? 'display:none;' : '';
+        $style = '';
+        if ($expand_mode == 1) {
+            $style = '';
+        } else if ($expand_mode == 2 && $myLC != -1) {
+            $style = '';
+        } else {
+            $style = 'display:none;';
+        }
         $ret .= '<div id="LikeCodeFieldsetContent" style="' . $style . '">';
 
 
