@@ -68,8 +68,21 @@ class PriceCheckPage extends NoInputPage
 				$row = $db->fetch_row($result);
 
 				$discounttype = MiscLib::nullwrap($row["discounttype"]);
-				$DTClasses = $CORE_LOCAL->get("DiscountTypeClasses");
-				$DiscountObject = new $DTClasses[$discounttype];
+                $DiscountObject = null;
+                // see UPC parser for explanation
+                $DTClasses = $CORE_LOCAL->get("DiscountTypeClasses");
+                if ($row['discounttype'] < 64 && isset(DiscountType::$MAP[$row['discounttype']])) {
+                    $class = DiscountType::$MAP[$row['discounttype']];
+                    $DiscountObject = new $class();
+                } else if ($row['discounttype'] > 64 && isset($DTClasses[($row['discounttype']-64)])) {
+                    $class = $DTClasses[($row['discounttype'])-64];
+                    $DiscountObject = new $class();
+                } else {
+                    // If the requested discounttype isn't available,
+                    // fallback to normal pricing. Debatable whether
+                    // this should be a hard error.
+                    $DiscountObject = new NormalPricing();
+                }
 
 				if ($DiscountObject->isSale()) {
 					$this->pricing['sale'] = true;

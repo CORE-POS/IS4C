@@ -251,7 +251,7 @@ class InstallUtilities extends LibraryClass
         // maintain ini.php value too
         if (self::confExists($key)) {
             // tweak value for safe output to ini.php
-            if ($save_as_array == 1) {
+            if ($save_as_array == 1 && $value !== '') {
                 $saveStr = 'array(';
                 foreach(explode(',', $value) as $entry) {
                     if (strstr($entry, '=>')) {
@@ -262,6 +262,8 @@ class InstallUtilities extends LibraryClass
                     }
                 }
                 $value = substr($saveStr, 0, strlen($saveStr)-1).')';
+            } else if ($save_as_array == 1 && $value === '') {
+                $value = 'array()';
             } else if (strtoupper($value) === 'TRUE'){
                 $value = 'True';
             } else if (strtoupper($value) === 'FALSE'){

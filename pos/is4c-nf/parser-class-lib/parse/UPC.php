@@ -423,10 +423,31 @@ class UPC extends Parser {
 			BEGIN: figure out discounts by type
 		*/
 
-		/* get discount object */
+		/* get discount object 
+
+           CORE reserves values 0 through 63 in 
+           DiscountType::$MAP for default options.
+
+           Additional discounts provided by plugins
+           can use values 64 through 127. Because
+           the DiscountTypeClasses array is zero-indexed,
+           subtract 64 as an offset  
+        */
 		$discounttype = MiscLib::nullwrap($row["discounttype"]);
+        $DiscountObject = null;
 		$DTClasses = $CORE_LOCAL->get("DiscountTypeClasses");
-		$DiscountObject = new $DTClasses[$discounttype];
+        if ($row['discounttype'] < 64 && isset(DiscountType::$MAP[$row['discounttype']])) {
+            $class = DiscountType::$MAP[$row['discounttype']];
+            $DiscountObject = new $class();
+        } else if ($row['discounttype'] > 64 && isset($DTClasses[($row['discounttype']-64)])) {
+            $class = $DTClasses[($row['discounttype'])-64];
+            $DiscountObject = new $class();
+        } else {
+            // If the requested discounttype isn't available,
+            // fallback to normal pricing. Debatable whether
+            // this should be a hard error.
+            $DiscountObject = new NormalPricing();
+        }
 
 		/* add in sticker price and calculate a quantity
 		   if the item is stickered, scaled, and on sale. 

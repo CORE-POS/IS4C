@@ -166,48 +166,53 @@ InstallUtilities::paramSave('roundUpDept',$CORE_LOCAL->get('roundUpDept'));
 <hr />
 <p>Discount type modules control how sale prices are calculated.</p></td></tr>
 <tr><td>
-<b>Number of Discounts</b>:</td><td>
+<b>Default Discounts</b>:</td><td>
 <?php
-if (isset($_REQUEST['DT_COUNT']) && is_numeric($_REQUEST['DT_COUNT'])) $CORE_LOCAL->set('DiscountTypeCount',$_REQUEST['DT_COUNT']);
-if ($CORE_LOCAL->get("DiscountTypeCount") == "") $CORE_LOCAL->set("DiscountTypeCount",5);
-if ($CORE_LOCAL->get("DiscountTypeCount") <= 0) $CORE_LOCAL->set("DiscountTypeCount",1);
-printf("<input type=text size=4 name=DT_COUNT value=\"%d\" />",
-	$CORE_LOCAL->get('DiscountTypeCount'));
-InstallUtilities::paramSave('DiscountTypeCount',$CORE_LOCAL->get('DiscountTypeCount'));
-?></td></tr><tr><td>
-<b>Discount Module Mapping</b>:</td><td>
+foreach (DiscountType::$MAP as $id => $name) {
+    echo '[' . $id . '] => ' . $name . '<br />';
+}
+?>
+</td></tr>
+<tr><td>
+<b>Custom Discount Mapping</b>:</td><td>
 <?php
-if (isset($_REQUEST['DT_MODS'])) $CORE_LOCAL->set('DiscountTypeClasses',$_REQUEST['DT_MODS']);
-if (!is_array($CORE_LOCAL->get('DiscountTypeClasses'))){
-	$CORE_LOCAL->set('DiscountTypeClasses',
-		array(
-			'NormalPricing',
-			'EveryoneSale',
-			'MemberSale',
-			'CaseDiscount',
-			'StaffSale'			
-		),True);
+if (isset($_REQUEST['DT_MODS'])) {
+    $new_val = array();
+    foreach ($_REQUEST['DT_MODS'] as $r) {
+        if ($r !== '' && !in_array($r, DiscountType::$MAP)) {
+            $new_val[] = $r;
+        }
+    }
+    $CORE_LOCAL->set('DiscountTypeClasses', $r);
+}
+if (!is_array($CORE_LOCAL->get('DiscountTypeClasses'))) {
+	$CORE_LOCAL->set('DiscountTypeClasses', array(), true);
 }
 $discounts = AutoLoader::listModules('DiscountType');
 $dt_conf = $CORE_LOCAL->get("DiscountTypeClasses");
-for($i=0;$i<$CORE_LOCAL->get('DiscountTypeCount');$i++){
-	echo "[$i] => ";
+$dt_conf[] = ''; // add blank slot for adding another discounttype
+$i = 64;
+foreach ($dt_conf as $entry) {
+	echo '[' . $i . '] => ';
 	echo "<select name=DT_MODS[]>";
+    echo '<option value="">[None]</option>';
 	foreach($discounts as $d) {
+        if (in_array($d, DiscountType::$MAP)) {
+            continue;
+        }
 		echo "<option";
-		if (isset($dt_conf[$i]) && $dt_conf[$i] == $d)
+		if ($entry == $d)
 			echo " selected";
 		echo ">$d</option>";
 	}
 	echo "</select><br />";
+    $i++;
 }
-$tmp_count = 0;
 $save = array();
 foreach($CORE_LOCAL->get("DiscountTypeClasses") as $r){
-	$save[] = $r;
-	if ($tmp_count == $CORE_LOCAL->get("DiscountTypeCount")-1)
-		break;
-	$tmp_count++;
+    if ($r !== '' && !in_array($r, DiscountType::$MAP)) {
+        $save[] = $r;
+    }
 }
 InstallUtilities::paramSave('DiscountTypeClasses',$save);
 ?></td></tr>
