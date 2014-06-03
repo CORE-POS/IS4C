@@ -212,14 +212,6 @@ class Steering extends Parser {
             */
             $this->ret['main_frame'] = $my_url."gui-modules/mgrlogin.php";
             return True;
-        case "CC":
-            if ($CORE_LOCAL->get("ttlflag") != 1){
-                $this->ret['output'] = DisplayLib::boxMsg(_("transaction must be totaled")."<br />".
-                    _("before tender can be accepted"));
-            }
-            else
-                $this->ret['main_frame'] = $my_url."cc-modules/gui/ProcessPage.php";
-            return True;
         case "PO":
             $this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=PriceOverrideAdminLogin";
             return True;
