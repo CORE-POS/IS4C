@@ -26,12 +26,16 @@ include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
 class VolumePricingModule extends ItemModule 
 {
 
-	function ShowEditForm($upc)
+    public function showEditForm($upc, $display_mode=1, $expand_mode=1)
     {
 		$upc = BarcodeLib::padUPC($upc);
 
 		$ret = '<fieldset id="3for1FieldSet">';
-		$ret .=  "<legend>\"Three for a dollar\"</legend>";
+		$ret .=  "<legend onclick=\"\$('#VolumeFieldsetContent').toggle();\">
+                <a href=\"\" onclick=\"return false;\">\"Three for a dollar\"</a>
+                </legend>";
+        $css = ($expand_mode == 1) ? '' : 'display:none;';
+        $ret .= '<div id="VolumeFieldsetContent" style="' . $css . '">';
 
 		$dbc = $this->db();
 		$model = new ProductsModel($dbc);
@@ -54,7 +58,7 @@ class VolumePricingModule extends ItemModule
 		$ret .= '<td><input type="text" name="vp_qty" size="4" value="'.$model->quantity().'" /></td>';
 		$ret .= '<td>$<input type="text" name="vp_price" size="4" value="'.sprintf('%.2f',$model->groupprice()).'" /></td>';
 		$ret .= '<td><input type="text" name="vp_mm" size="4" value="'.$model->mixmatchcode().'" /></td>';
-		$ret .= '</table></fieldset>';
+		$ret .= '</table></div></fieldset>';
 
 		return $ret;
 	}

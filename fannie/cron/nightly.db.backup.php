@@ -25,6 +25,9 @@
 
    nightly.db.backup.php
 
+   DEPRECATED: Use SimpleBackup plugin for
+   similar functionality if needed
+
    Backup MySQL database based
    on configuration settings
 */

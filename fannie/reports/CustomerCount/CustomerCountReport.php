@@ -117,10 +117,17 @@ class CustomerCountReport extends FannieReportPage {
 	*/
 	function calculate_footers($data){
 		$sum = 0;
+        $num_columns = isset($data[0]) ? count($data[0]) : 0;
 		foreach($data as $row){
-			$sum += $row[7];
+			$sum += $row[$num_columns-1];
 		}
-		return array('Grand Total',null,null,null,null,null,null,$sum);
+        $ret = array('Grand Total');
+        for ($i=0; $i<$num_columns-2; $i++) {
+            $ret[] = null;
+        }
+        $ret[] = $sum;
+
+        return $ret;
 	}
 
 	function form_content(){

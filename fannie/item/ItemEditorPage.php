@@ -25,29 +25,54 @@ include('../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 include('laneUpdates.php');
 
-// validate modules & include class definitions
-if (!is_array($FANNIE_PRODUCT_MODULES)) $FANNIE_PRODUCT_MODULES = 'BaseItemModule';
-for($i=0;$i<count($FANNIE_PRODUCT_MODULES);$i++) {
-    $mod = $FANNIE_PRODUCT_MODULES[$i];
-    if (class_exists($mod)) continue;
-    $file = dirname(__FILE__).'/modules/'.$mod.'.php';
-    if (!file_exists($file)) {
-        $FANNIE_PRODUCT_MODULES[$i] = ''; // not found
-    } else {
-        include_once($file);
-        if (!class_exists($mod)) {
-            $FANNIE_PRODUCT_MODULES[$i] = ''; // still not found
-        }
-    }
-}
-
-class ItemEditorPage extends FanniePage {
+class ItemEditorPage extends FanniePage 
+{
 
     private $mode = 'search';
     private $msgs = '';
 
     function preprocess()
     {
+        global $FANNIE_PRODUCT_MODULES;
+        /*
+          Convert old settings to new format.
+        */
+        $legacy_indexes = array();
+        $replacement_values = array();
+        foreach ($FANNIE_PRODUCT_MODULES as $id => $m) {
+            if (preg_match('/^\d+$/', $id)) {
+                // old setting. convert to new.
+                $legacy_indexes[] = $id;
+                $replacement_values[$m] = array(
+                    'seq' => $id,
+                    'show' => 1,
+                    'expand' => 1,
+                );
+            }
+        }
+        foreach ($legacy_indexes as $index) {
+            unset($FANNIE_PRODUCT_MODULES[$index]);
+        }
+        foreach ($replacement_values as $name => $params) {
+            $FANNIE_PRODUCT_MODULES[$name] = $params;
+        }
+
+        // verify modules exist
+        foreach (array_keys($FANNIE_PRODUCT_MODULES) as $name) {
+            if (class_exists($name)) {
+                continue;
+            }
+            $file = dirname(__FILE__) . '/modules/' . $name . '.php';
+            if (!file_exists($file)) {
+                unset($FANNIE_PRODUCT_MODULES[$name]);
+            } else {
+                include_once($file);
+                if (!class_exists($name)) {
+                    unset($FANNIE_PRODUCT_MODULES[$name]);
+                }
+            }
+        }
+
         $this->title = _('Fannie') . ' - ' . _('Item Maintenance');
         $this->header = _('Item Maintenance');
 
@@ -77,6 +102,7 @@ class ItemEditorPage extends FanniePage {
 
     function search_form()
     {
+        global $FANNIE_URL;
         $ret = '';
         if (!empty($this->msgs)) {
             $ret .= '<blockquote style="border:solid 1px black;">';
@@ -95,8 +121,14 @@ class ItemEditorPage extends FanniePage {
 
         $ret .= '<input name=searchBtn type=submit value=Go> ';
         $ret .= '</form>';
-        $ret .= '<p><a href="AdvancedItemSearch.php">' . _('Advanced Search') . '</a></p>';
+        $ret .= '<p><a href="AdvancedItemSearch.php">' . _('Advanced Search') . '</a>';
+        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+        $ret .= '<a href="PluRangePage.php">' . _('Find Open PLU Range') . '</a>';
+        $ret .= '</p>';
         
+        $this->add_script('autocomplete.js');
+        $ws = $FANNIE_URL . 'ws/';
+        $this->add_onload_command("bindAutoComplete('#upc', '$ws', 'item');\n");
         $this->add_onload_command('$(\'#upc\').focus();');
 
         return $ret;
@@ -210,10 +242,24 @@ class ItemEditorPage extends FanniePage {
         return $ret;
     }
 
+    public static function sortModules($a, $b)
+    {
+        if ($a['seq'] < $b['seq']) {
+            return -1;
+        } else if ($a['seq'] > $b['seq']) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
     function edit_form($upc,$isNew)
     {
         global $FANNIE_PRODUCT_MODULES, $FANNIE_URL;
         $shown = array();
+
+        $this->add_script('autocomplete.js');
+        $ws = $FANNIE_URL . 'ws/';
 
         $authorized = false;
         if (FannieAuth::validateUserQuiet('pricechange') || FannieAuth::validateUserQuiet('audited_pricechange')) {
@@ -223,93 +269,52 @@ class ItemEditorPage extends FanniePage {
         // remove action so form cannot be submitted by pressing enter
         $ret = '<form action="' . ($authorized ? 'ItemEditorPage.php' : '') . '" method="post">';
 
-        if (in_array('BaseItemModule',$FANNIE_PRODUCT_MODULES)) {
-            $mod = new BaseItemModule();
-            $ret .= $mod->ShowEditForm($upc);
-            $shown['BaseItemModule'] = true;
-        }
+        uasort($FANNIE_PRODUCT_MODULES, array('ItemEditorPage', 'sortModules'));
+        $count = 0;
+        foreach ($FANNIE_PRODUCT_MODULES as $class => $params) {
+            $mod = new $class();
+            $ret .= $mod->ShowEditForm($upc, $params['show'], $params['expand']);
+            $shown[$class] = true;
 
-        if (!$authorized) {
-            $ret .= sprintf('<a href="%sauth/ui/loginform.php?redirect=%sitem/ItemEditorPage.php?searchupc=%s">Login
-                        to edit</a>', $FANNIE_URL, $FANNIE_URL, $upc);
-        } else if ($isNew) {
-            $ret .= '<input type="submit" name="createBtn" value="Create Item" />';
-        } else {
-            $ret .= '<input type="submit" name="updateBtn" value="Update Item" />';
-        }
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <a href="ItemEditorPage.php">Back</a>';
-        if (!$isNew) {
-            $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-            $ret .= '<a href="deleteItem.php?submit=submit&upc='.$upc.'">Delete this item</a>';
+            if ($count == 0) { // show links after first mod
 
-            $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-            $ret .= '<a href="'.$FANNIE_URL.'reports/PriceHistory/?upc='.$upc.'" target="_price_history">Price History</a>';
+                if (!$authorized) {
+                    $ret .= sprintf('<a href="%sauth/ui/loginform.php?redirect=%sitem/ItemEditorPage.php?searchupc=%s">Login
+                                to edit</a>', $FANNIE_URL, $FANNIE_URL, $upc);
+                } else if ($isNew) {
+                    $ret .= '<input type="submit" name="createBtn" value="Create Item" />';
+                } else {
+                    $ret .= '<input type="submit" name="updateBtn" value="Update Item" />';
+                }
+                $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <a href="ItemEditorPage.php">Back</a>';
+                if (!$isNew) {
+                    $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+                    $ret .= '<a href="deleteItem.php?submit=submit&upc='.$upc.'">Delete this item</a>';
 
-            $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-            $ret .= '<a href="'.$FANNIE_URL.'reports/RecentSales/?upc='.$upc.'" target="_recentsales">Sales History</a>';
+                    $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+                    $ret .= '<a href="'.$FANNIE_URL.'reports/PriceHistory/?upc='.$upc.'" target="_price_history">Price History</a>';
 
-            $js = "window.open('addShelfTag.php?upc=$upc', 'New Shelftag','location=0,status=1,scrollbars=1,width=300,height=220');";
-            $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-            $ret .= '<a href="" onclick="'.$js.'return false;">Shelf Tag</a>';
-        }
+                    $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+                    $ret .= '<a href="'.$FANNIE_URL.'reports/RecentSales/?upc='.$upc.'" target="_recentsales">Sales History</a>';
 
-        if (in_array('ScaleItemModule',$FANNIE_PRODUCT_MODULES)) {
-            if (substr($upc,0,3) == "002") {
-                $mod = new ScaleItemModule();
-                $ret .= $mod->ShowEditForm($upc);
-            }
-            $shown['ScaleItemModule'] = true;
-        }
-
-        if (in_array('ExtraInfoModule',$FANNIE_PRODUCT_MODULES)) {
-            $mod = new ExtraInfoModule();
-            $ret .= $mod->ShowEditForm($upc);
-            $shown['ExtraInfoModule'] = true;
-        }
-
-        if (in_array('LikeCodeModule',$FANNIE_PRODUCT_MODULES)) {
-            $mod = new LikeCodeModule();
-            $ret .= $mod->ShowEditForm($upc);
-            $shown['LikeCodeModule'] = true;
-        }
-
-        if (in_array('ItemMarginModule',$FANNIE_PRODUCT_MODULES)) {
-            $mod = new ItemMarginModule();
-            $ret .= $mod->ShowEditForm($upc);
-            $shown['ItemMarginModule'] = true;
-        }
-
-        if (in_array('ItemFlagsModule',$FANNIE_PRODUCT_MODULES)) {
-            $mod = new ItemFlagsModule();
-            $ret .= $mod->ShowEditForm($upc);
-            $shown['ItemFlagsModule'] = true;
-        }
-
-        if (!$isNew) {
-            if (in_array('VendorItemModule',$FANNIE_PRODUCT_MODULES)) {
-                $mod = new VendorItemModule();
-                $ret .= $mod->ShowEditForm($upc);
-                $shown['VendorItemModule'] = true;
+                    $js = "window.open('addShelfTag.php?upc=$upc', 'New Shelftag','location=0,status=1,scrollbars=1,width=300,height=220');";
+                    $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+                    $ret .= '<a href="" onclick="'.$js.'return false;">Shelf Tag</a>';
+                }
             }
 
-            if (in_array('AllLanesItemModule',$FANNIE_PRODUCT_MODULES)) {
-                $mod = new AllLanesItemModule();
-                $ret .= $mod->ShowEditForm($upc);
-                $shown['AllLanesItemModule'] = true;
-            }
+            $count++;
         }
 
-        // show any remaining, valid modules
-        foreach($FANNIE_PRODUCT_MODULES as $mod) {
-            if ($mod == '') continue;
-            if (isset($shown[$mod])) continue;
-            if (!class_exists($mod)) {
-                include_once(dirname(__FILE__).'/modules/'.$mod.'.php');
-            }
-            if (!class_exists($mod)) continue;
-            $obj = new $mod();
-            $ret .= $obj->ShowEditForm($upc);
+        if (isset($shown['BaseItemModule'])) {
+            $this->add_onload_command("bindAutoComplete('#brand_field', '$ws', 'brand');\n");
+            $this->add_onload_command("bindAutoComplete('#vendor_field', '$ws', 'vendor');\n");
+        }
+
+
+        if (isset($shown['ProdUserModule'])) {
+            $this->add_onload_command("bindAutoComplete('#lf_brand', '$ws', 'long_brand');\n");
         }
 
         $ret .= '</form>';
@@ -339,18 +344,10 @@ class ItemEditorPage extends FanniePage {
             return '<span style="color:red;">Error: Log in to edit</span>';
         }
 
-        // save base module data first
-        if (in_array('BaseItemModule',$FANNIE_PRODUCT_MODULES)) {
-            $mod = new BaseItemModule();
+        uasort($FANNIE_PRODUCT_MODULES, array('ItemEditorPage', 'sortModules'));
+        foreach ($FANNIE_PRODUCT_MODULES as $class => $params) {
+            $mod = new $class();
             $mod->SaveFormData($upc);
-        }
-
-        // save everything else
-        foreach($FANNIE_PRODUCT_MODULES as $mod) {
-            if ($mod == '') continue;
-            if ($mod == 'BaseItemModule') continue;
-            $obj = new $mod();
-            $sfd = $obj->SaveFormData($upc);
         }
 
         /* push updates to the lanes */

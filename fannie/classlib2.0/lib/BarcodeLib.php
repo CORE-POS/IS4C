@@ -38,6 +38,46 @@ class BarcodeLib
         return str_pad(trim($upc), 13, '0', STR_PAD_LEFT);
     }
 
+    static public function trimCheckDigit($upc)
+    {
+        if (strlen($upc) < 13) {
+            $upc = self::padUPC($upc);
+        }
+
+        if (strlen(ltrim($upc, '0')) == 13 && self::getCheckDigit(substr($upc,0,12)) == $upc[12]) {
+            // 13 digit value without leading zeroes
+            // Could be EAN-13 w/ check or GTIN-14 w/o check
+            // last digit is check digit
+            // EAN-13 is far more common so trim
+            return '0' . substr($upc, 0, 12);
+        } else if (strlen(ltrim($upc, '0')) == 12) {
+            // 12 digit value without leading zeroes
+            // Could be UPC-A w/ check, EAN-13 w/ or w/o check
+            $upc_check = self::getCheckDigit(substr($upc, 1, 11));
+            $ean_check = self::getCheckDigit(substr($upc, 0, 12));
+            if ($upc_check == $upc[12] && $ean_check == $upc[12]) {
+                // almost definitely UPC-A w/ check
+                // EAN-13 is a superset so its check should match
+                return '0' . substr($upc, 0, 12);
+            } else if ($ean_check == $upc[12] && $upc_check != $upc[12]) {
+                // not sure what this means
+                // EAN-13 with two-digit numbering code
+                // between 01 and 09 & has check?
+                // or should code 01 to 09 correspond to
+                // UPC-A codes 1 to 9
+                return $upc;
+            } else if ($ean_check != $upc[12] && $upc_check == $upc[12]) {
+                // I think this shouldn't happen
+                // since EAN-13 is a superset
+                return $upc;
+            } else {
+                return $upc;
+            }
+        }
+
+        return $upc;
+    }
+
     /**
       Calculate standard check digit for UPCs, EANs, etc
       @param $upc string upc
@@ -66,5 +106,15 @@ class BarcodeLib
         }
     }
 
+    static public function verifyCheckDigit($upc)
+    {
+        $current_check = substr($upc, -1);
+        $without_check = substr($upc, 0, strlen($upc)-1);
+        if ($current_check == self::getCheckDigit($without_check)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
 

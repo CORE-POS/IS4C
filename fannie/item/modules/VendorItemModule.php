@@ -26,11 +26,16 @@ if (!class_exists('FannieAPI'))
 
 class VendorItemModule extends ItemModule {
 
-	function ShowEditForm($upc){
+    public function showEditForm($upc, $display_mode=1, $expand_mode=1)
+    {
 		$upc = BarcodeLib::padUPC($upc);
 
 		$ret = '<fieldset id="VendorItemsFieldset">';
-		$ret .=  "<legend>Vendor Items</legend>";
+		$ret .=  "<legend onclick=\"\$('#VendorItemsFieldsetContent').toggle();\">
+                <a href=\"\" onclick=\"return false;\">Vendor Items</a>
+                </legend>";
+        $css = ($expand_mode == 1) ? '' : 'display:none;';
+        $ret .= '<div id="VendorItemsFieldsetContent" style="' . $css . '">';
 
 		$dbc = $this->db();
 		$p = $dbc->prepare_statement('SELECT vendorID,vendorName FROM vendors ORDER BY vendorID');
@@ -80,6 +85,7 @@ class VendorItemModule extends ItemModule {
 			$style = 'display:none;';
 		}
 		
+        $ret .= '</div>';
 		$ret .= '</fieldset>';
 		return $ret;
 	}

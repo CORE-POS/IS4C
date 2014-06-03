@@ -48,6 +48,20 @@ class PatronageTransferTool extends FanniePage {
 	function preprocess(){
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
+        global $FANNIE_EMP_NO, $FANNIE_REGISTER_NO;
+        global $FANNIE_CORRECTION_DEPT;
+        /**
+          Use fannie settings if properly configured
+        */
+        if (is_numeric($FANNIE_EMP_NO)) {
+            $this->CORRECTION_CASHIER = $FANNIE_EMP_NO;
+        }
+        if (is_numeric($FANNIE_REGISTER_NO)) {
+            $this->CORRECTION_LANE = $FANNIE_REGISTER_NO;
+        }
+        if (is_numeric($FANNIE_MISC_DEPT)) {
+            $this->CORRECTION_DEPT = $FANNIE_CORRECTION_DEPT;
+        }
 
 		if (FormLib::get_form_value('submit1',False) !== False)
 			$this->mode = 'confirm';

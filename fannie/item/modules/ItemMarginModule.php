@@ -27,7 +27,8 @@ include_once(dirname(__FILE__).'/../../src/JsonLib.php');
 
 class ItemMarginModule extends ItemModule {
 	
-	function ShowEditForm($upc){
+    public function showEditForm($upc, $display_mode=1, $expand_mode=1)
+    {
 		$db = $this->db();
 		$p = $db->prepare_statement('SELECT normal_price,cost,department FROM products WHERE upc=?');
 		$r = $db->exec_statement($p,array($upc));
@@ -35,8 +36,11 @@ class ItemMarginModule extends ItemModule {
 		if ($db->num_rows($r) > 0)
 			$vals = $db->fetch_row($r);
 		$ret = '<fieldset id="ItemMarginFieldset">';
-		$ret .= '<legend>Margin</legend>';
-		$ret .= '<div id="ItemMarginContents">';
+		$ret .=  "<legend onclick=\"\$('#ItemMarginContents').toggle();\">
+                <a href=\"\" onclick=\"return false;\">Margin</a>
+                </legend>";
+        $css = ($expand_mode == 1) ? '' : 'display:none;';
+		$ret .= '<div id="ItemMarginContents" style="' . $css . '">';
 		$ret .= $this->calculateMargin($vals[0],$vals[1],$vals[2]);
 		$ret .= '</div>';
 		$ret .= '</fieldset>';

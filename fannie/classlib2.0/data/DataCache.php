@@ -32,6 +32,23 @@
 */
 class DataCache
 {
+
+    /**
+      Generate default hash value for caching.
+      Uses request URI excluding output formatting options
+
+      @return md5 string
+    */
+    static public function genKey()
+    {
+        $hash = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : $_SERVER['PHP_SELF'];
+        $hash = str_replace("&excel=xls", "", $hash);
+        $hash = str_replace("&excel=csv", "", $hash);
+        $hash = md5($hash);
+
+        return $hash;
+    }
+
     /**
       Look for cached data
     
@@ -47,15 +64,16 @@ class DataCache
     static public function check($key=false)
     {
         global $FANNIE_ARCHIVE_DB;
-        $dbc = FannieDB::get($FANNIE_ARCHIVE_DB);
+        $dbc = FannieDB::get($FANNIE_ARCHIVE_DB, $current_db);
         $table = $FANNIE_ARCHIVE_DB.$dbc->sep()."reportDataCache";
-        $hash = $key ? $key : $_SERVER['REQUEST_URI'];
-        $hash = str_replace("&excel=xls","",$hash);
-        $hash = str_replace("&excel=csv","",$hash);
-        $hash = md5($hash);
+        $hash = $key ? $key : self::genKey();
         $query = $dbc->prepare_statement("SELECT report_data FROM $table WHERE
             hash_key=? AND expires >= ".$dbc->now());
         $result = $dbc->exec_statement($query,array($hash));
+        if (!empty($current_db)) {
+            // restore selected database
+            $dbc = FannieDB::get($current_db);
+        }
         if ($dbc->num_rows($result) > 0) {
             $ret = $dbc->fetch_row($result);
             $serial = gzuncompress($ret[0]);
@@ -81,15 +99,12 @@ class DataCache
     static public function freshen($data, $ttl='day', $key)
     {
         global $FANNIE_ARCHIVE_DB;
-        $dbc = FannieDB::get($FANNIE_ARCHIVE_DB);
+        $dbc = FannieDB::get($FANNIE_ARCHIVE_DB, $current_db);
         if ($ttl != 'day' && $ttl != 'month') {
             return false;
         }
         $table = $FANNIE_ARCHIVE_DB.$dbc->sep()."reportDataCache";
-        $hash = $key ? $key : $_SERVER['REQUEST_URI'];
-        $hash = str_replace("&excel=xls","",$hash);
-        $hash = str_replace("&excel=csv","",$hash);
-        $hash = md5($hash);
+        $hash = $key ? $key : self::genKey();
         $expires = '';
         if ($ttl == 'day') {
             $expires = date('Y-m-d',mktime(0,0,0,date('n'),date('j')+1,date('Y')));
@@ -100,17 +115,108 @@ class DataCache
         $delQ = $dbc->prepare_statement("DELETE FROM $table WHERE hash_key=?");
         $dbc->exec_statement($delQ,array($hash));
         $saveStr = gzcompress(serialize($data));
+        $ret = true;
         if (strlen($saveStr) > 65535) {
             // too big to store, probably
-            echo "error ".strlen($saveStr);
-            return false;
+            $ret = false;
+        } else {
+            $upQ = $dbc->prepare_statement("INSERT INTO $table (hash_key, report_data, expires)
+                VALUES (?,?,?)");
+            $dbc->exec_statement($upQ, array($hash, $saveStr, $expires));
         }
-        $upQ = $dbc->prepare_statement("INSERT INTO $table (hash_key, report_data, expires)
-            VALUES (?,?,?)");
-        $dbc->exec_statement($upQ, array($hash, $saveStr, $expires));
 
-        return true;
+        if (!empty($current_db)) {
+            // restore selected database
+            $dbc = FannieDB::get($current_db);
+        }
+
+        return $ret;
     }
 
+    /**
+      Get info from filesystem cache
+      @param $ttl [string] daily or monthly
+      @param $key [optional] use custom key
+      @return cached content or false
+    */
+    static public function getFile($ttl, $key=false)
+    {
+        $type = strtolower($ttl);
+        if ($type[0] == 'm') {
+            $type = 'monthly';
+        } else if ($type[0] == 'd') {
+            $type = 'daily';
+        } else {
+            return false;
+        }
+
+        $key = ($key !== false) ? md5($key) : self::getKey();
+
+        $cache_dir = self::fileCacheDir($type);
+        if ($cache_dir && file_exists($cache_dir . '/' . $key)) {
+            return file_get_contents($cache_dir . '/' . $key);
+        } else {
+            return false;
+        }
+    }
+
+    /**
+      Store info to filesystem cache
+      @param $ttl [string] monthly or daily
+      @param $content [string] content to cache
+      @param $key [optional] custom key
+      @return [boolean] true or false
+    */
+    static public function putFile($ttl, $content, $key=false)
+    {
+        $type = strtolower($ttl);
+        if ($type[0] == 'm') {
+            $type = 'monthly';
+        } else if ($type[0] == 'd') {
+            $type = 'daily';
+        } else {
+            return false;
+        }
+
+        $key = ($key !== false) ? md5($key) : self::getKey();
+
+        $cache_dir = self::fileCacheDir($type);
+        if ($cache_dir) {
+            $fp = fopen($cache_dir . '/' . $key, 'w');
+            fwrite($fp, $content);
+            fclose($fp);
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+      Get filesystem path for storing cache data
+      Auto-creates directories as needed
+      @param $type [string] monthly or daily
+      @return [string] path or false
+    */
+    static public function fileCacheDir($type)
+    {
+        if ($type !== 'monthy' && $type !== 'daily') {
+            return false;
+        }
+
+        $tmp = sys_get_temp_dir();
+        if (!is_dir($tmp . '/fannie_cache/')) {
+            if (!mkdir($tmp . '/fannie_cache')) {
+                return false;
+            }
+        }
+        if (!is_dir($tmp . '/fannie_cache/' . $type)) {
+            if (!mkdir($tmp . '/fannie_cache/' . $type)) {
+                return false;
+            }
+        }
+
+        return realpath($tmp . '/fannie_cache/' . $type);
+    }
 }
 

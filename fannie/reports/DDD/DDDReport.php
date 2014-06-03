@@ -75,9 +75,10 @@ class DDDReport extends FannieReportPage
                     LEFT JOIN ShrinkReasons AS s ON d.numflag=s.shrinkReasonID
                   WHERE trans_status = 'Z'
                     AND trans_type IN ('D', 'I')
-                    AND trans_subtype = ''
+                    AND trans_subtype IN ('','0')
                     AND emp_no <> 9999
                     AND register_no <> 99
+                    AND upc <> '0'
                     {{date_clause}}
                   GROUP BY
                     YEAR(datetime),

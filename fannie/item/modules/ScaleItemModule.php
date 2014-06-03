@@ -26,25 +26,47 @@ include_once(dirname(__FILE__).'/../../classlib2.0/lib/FormLib.php');
 
 class ScaleItemModule extends ItemModule {
 
-	function ShowEditForm($upc){
+    public function showEditForm($upc, $display_mode=1, $expand_mode=1)
+    {
 		$upc = BarcodeLib::padUPC($upc);
 
-		$ret = '<fieldset id="ScaleItemFieldset">';
-		$ret .=  "<legend>Scale</legend>";
-		
 		$dbc = $this->db();
 		$p = $dbc->prepare_statement('SELECT * FROM scaleItems WHERE plu=?');
 		$r = $dbc->exec_statement($p,array($upc));
 		$scale = array('itemdesc'=>'','weight'=>0,'bycount'=>0,'tare'=>0,
 			'shelflife'=>0,'label'=>133,'graphics'=>0,'text'=>'', 'netWeight'=>0);
-		if ($dbc->num_rows($r) > 0)
+        $found = false;
+		if ($dbc->num_rows($r) > 0) {
 			$scale = $dbc->fetch_row($r);
+            $found = true;
+        }
 
+        if (!$found && $display_mode == 2) {
+            return '';
+        }
+        $css = '';
+        if ($expand_mode == 1) {
+            $css = '';
+        } else if ($found && $expand_mode == 2) {
+            $css = '';
+        } else {
+            $css = 'display:none;';
+        }
+
+		$ret = '<fieldset id="ScaleItemFieldset">';
+		$ret .=  "<legend onclick=\"\$('#ScaleFieldsetContent').toggle();\">
+                <a href=\"\" onclick=\"return false;\">Scale</a>
+                </legend>";
+        $css = ($expand_mode == 1) ? '' : 'display:none;';
+        $ret .= '<div id="ScaleFieldsetContent" style="' . $css . '">';
+		
 		$p = $dbc->prepare_statement('SELECT description FROM products WHERE upc=?');
 		$r = $dbc->exec_statement($p,array($upc));
 		$reg_description = '';
-		if ($dbc->num_rows($r) > 0)
-			$reg_description = array_pop($dbc->fetch_row($r));
+		if ($dbc->num_rows($r) > 0) {
+            $w = $dbc->fetch_row($r);
+			$reg_description = $w['description'];
+        }
 
 		$ret .= sprintf('<input type="hidden" name="s_plu" value="%s" />',$upc);
 		$ret .= "<table style=\"background:#ffffcc;\" cellpadding=5 cellspacing=0 border=1>";
@@ -101,7 +123,7 @@ class ScaleItemModule extends ItemModule {
 		$ret .= $scale['text'];
 		$ret .= "</textarea></td></tr>";
 
-		$ret .= '</table></fieldset>';
+		$ret .= '</table></div></fieldset>';
 		return $ret;
 	}
 

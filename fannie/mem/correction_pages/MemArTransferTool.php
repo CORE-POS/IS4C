@@ -46,17 +46,20 @@ class MemArTransferTool extends FanniePage {
 
 	function preprocess(){
 		global $FANNIE_AR_DEPARTMENTS, $FANNIE_OP_DB;
-		global $FANNIE_CORRECTION_CASHIER, $FANNIE_CORRECTION_LANE, $FANNIE_CORRECTION_DEPT;
-
-		if (isset($FANNIE_CORRECTION_CASHIER)) {
-			$this->CORRECTION_CASHIER = $FANNIE_CORRECTION_CASHIER;
-		}
-		if (isset($FANNIE_CORRECTION_LANE)) {
-			$this->CORRECTION_LANE = $FANNIE_CORRECTION_LANE;
-		}
-		if (isset($FANNIE_CORRECTION_DEPT)) {
-			$this->CORRECTION_DEPT = $FANNIE_CORRECTION_DEPT;
-		}
+        global $FANNIE_EMP_NO, $FANNIE_REGISTER_NO;
+        global $FANNIE_CORRECTION_DEPT;
+        /**
+          Use fannie settings if properly configured
+        */
+        if (is_numeric($FANNIE_EMP_NO)) {
+            $this->CORRECTION_CASHIER = $FANNIE_EMP_NO;
+        }
+        if (is_numeric($FANNIE_REGISTER_NO)) {
+            $this->CORRECTION_LANE = $FANNIE_REGISTER_NO;
+        }
+        if (is_numeric($FANNIE_MISC_DEPT)) {
+            $this->CORRECTION_DEPT = $FANNIE_CORRECTION_DEPT;
+        }
 
 		if (empty($FANNIE_AR_DEPARTMENTS)){
 			$this->errors .= "<em>Error: no AR departments found</em>";
