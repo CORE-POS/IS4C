@@ -853,7 +853,7 @@ static public function ttl()
                 // the other Subtotal record generated farther down?
                 TransRecord::addRecord(array(
                     'description' => 'Subtotal',
-                    'trans_type' => '',
+                    'trans_type' => '0',
                     'trans_status' => 'D',
                     'unitPrice' => MiscLib::truncate2($CORE_LOCAL->get('transDiscount') + $CORE_LOCAL->get('subtotal')),
                     'voided' => 7,
@@ -911,7 +911,7 @@ static public function ttl()
 		if ($CORE_LOCAL->get("fntlflag") == 1) {
             TransRecord::addRecord(array(
                 'description' => 'Foodstamps Eligible',
-                'trans_type' => '',
+                'trans_type' => '0',
                 'trans_status' => 'D',
                 'unitPrice' => MiscLib::truncate2($CORE_LOCAL->get('fsEligible')),
                 'voided' => 7,
@@ -1064,7 +1064,7 @@ static public function omtr_ttl()
 		if ($CORE_LOCAL->get("fntlflag") == 1) {
             TransRecord::addRecord(array(
                 'description' => 'Foodstamps Eligible',
-                'trans_type' => '',
+                'trans_type' => '0',
                 'trans_status' => 'D',
                 'unitPrice' => MiscLib::truncate2($CORE_LOCAL->get('fsEligible')),
                 'voided' => 7,
@@ -1160,7 +1160,7 @@ static public function fsEligible()
 		} else {
             TransRecord::addRecord(array(
                 'description' => 'Foodstamps Eligible',
-                'trans_type' => '',
+                'trans_type' => '0',
                 'trans_status' => 'D',
                 'unitPrice' => MiscLib::truncate2($CORE_LOCAL->get('fsEligible')),
                 'voided' => 7,

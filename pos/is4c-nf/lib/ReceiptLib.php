@@ -792,6 +792,30 @@ static public function normalFont() {
 static public function boldFont() {
 	return chr(27).chr(33).chr(9);
 }
+static public function bold()
+{
+    global $CORE_LOCAL;
+    if (!is_object(self::$PRINT_OBJ)) {
+        $print_class = $CORE_LOCAL->get('ReceiptDriver');
+        if ($print_class === '' || !class_exists($print_class))
+            $print_class = 'ESCPOSPrintHandler';
+        self::$PRINT_OBJ = new $print_class();
+    }
+    
+    return self::$PRINT_OBJ->TextStyle(true, true);
+}
+static public function unbold()
+{
+    global $CORE_LOCAL;
+    if (!is_object(self::$PRINT_OBJ)) {
+        $print_class = $CORE_LOCAL->get('ReceiptDriver');
+        if ($print_class === '' || !class_exists($print_class))
+            $print_class = 'ESCPOSPrintHandler';
+        self::$PRINT_OBJ = new $print_class();
+    }
+    
+    return self::$PRINT_OBJ->TextStyle(true, false);
+}
 
 static public function localTTL(){
 	global $CORE_LOCAL;

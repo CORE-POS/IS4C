@@ -34,7 +34,7 @@ class PriceOverride extends NoInputPage {
 		$db = Database::tDataConnect();
 		
 		$q = "SELECT description,total,department FROM localtemptrans
-			WHERE trans_type IN ('I','D') AND trans_status = ''
+			WHERE trans_type IN ('I','D') AND trans_status IN ('', ' ', '0')
 			AND trans_id=".((int)$line_id);
 		$r = $db->query($q);
 		if ($db->num_rows($r)==0){

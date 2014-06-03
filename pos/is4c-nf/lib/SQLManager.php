@@ -346,6 +346,11 @@ class SQLManager
         return 0;
     }
 
+    public function prepare($query_text, $which_connection='')
+    {
+        return $this->prepare_statement($query_text, $which_connection);
+    }
+
     /**
       Prepared statement: non-PDO types just return the query_text
       without modification
@@ -368,6 +373,11 @@ class SQLManager
         }
 
         return false;
+    }
+
+    public function execute($stmt, $args=array(), $which_connection='')
+    {
+        return $this->exec_statement($stmt, $args, $which_connection);
     }
 
     /**

@@ -93,6 +93,9 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
     private const int BUTTON_HARDWARE_BUTTON = 0xff;
 
     private const int DEFAULT_WAIT_TIMEOUT = 1000;
+    private const int FONT_SET = 4;
+    private const int FONT_WIDTH = 16;
+    private const int FONT_HEIGHT = 18;
     private string last_message = "";
 
     private string sig_message = "";
@@ -153,7 +156,6 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
                 if (this.verbose_mode > 0)
                     System.Console.WriteLine("USB device found");
             }
-            
         }
 
     }
@@ -218,7 +220,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         SendReport(BuildCommand(LcdFillColor(0xff,0xff,0xff)));
         SendReport(BuildCommand(LcdFillRectangle(0,0,LCD_X_RES-1,LCD_Y_RES-1)));
 
-        SendReport(BuildCommand(LcdTextFont(3,12,14)));
+        SendReport(BuildCommand(LcdTextFont(FONT_SET, FONT_WIDTH, FONT_HEIGHT)));
         SendReport(BuildCommand(LcdTextColor(0,0,0)));
         SendReport(BuildCommand(LcdTextBackgroundColor(0xff,0xff,0xff)));
         SendReport(BuildCommand(LcdTextBackgroundMode(false)));
@@ -233,11 +235,11 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         SendReport(BuildCommand(LcdFillColor(0xff,0xff,0xff)));
         SendReport(BuildCommand(LcdFillRectangle(0,0,LCD_X_RES-1,LCD_Y_RES-1)));
 
-        SendReport(BuildCommand(LcdTextFont(3,12,14)));
+        SendReport(BuildCommand(LcdTextFont(FONT_SET, FONT_WIDTH, FONT_HEIGHT)));
         SendReport(BuildCommand(LcdTextColor(0,0,0)));
         SendReport(BuildCommand(LcdTextBackgroundColor(0xff,0xff,0xff)));
         SendReport(BuildCommand(LcdTextBackgroundMode(false)));
-        SendReport(BuildCommand(LcdDrawText("Swipe Card Again",55,100)));
+        SendReport(BuildCommand(LcdDrawText("Swipe Card Again",35,100)));
 
         current_state = STATE_START_TRANSACTION;
     }
@@ -249,10 +251,13 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         SendReport(BuildCommand(LcdStopCapture()));
         SendReport(BuildCommand(LcdClearSignature()));
         SendReport(BuildCommand(LcdSetClipArea(0,0,1,1)));
-        SendReport(BuildCommand(LcdCreateButton(BUTTON_CREDIT,"Credit",5,5,95,95)));
-        SendReport(BuildCommand(LcdCreateButton(BUTTON_DEBIT,"Debit",224,5,314,95)));
+        //SendReport(BuildCommand(LcdCreateButton(BUTTON_CREDIT,"Credit",5,5,145,95)));
+        SendReport(BuildCommand(LcdCreateColoredButton(BUTTON_CREDIT,"Credit",5,5,145,95, new byte[]{0x0,0x0,0x0}, new byte[]{0x0,0xbb,0x0})));
+        //SendReport(BuildCommand(LcdCreateButton(BUTTON_DEBIT,"Debit",224,5,314,95)));
+        SendReport(BuildCommand(LcdCreateColoredButton(BUTTON_DEBIT,"Debit",174,5,314,95, new byte[]{0x0,0x0,0x0}, new byte[]{0xee,0x0,0x0})));
         if (this.type_include_fs) {
-            SendReport(BuildCommand(LcdCreateButton(BUTTON_EBT,"EBT",5,144,95,234)));
+            //SendReport(BuildCommand(LcdCreateButton(BUTTON_EBT,"EBT",5,144,95,234)));
+            SendReport(BuildCommand(LcdCreateColoredButton(BUTTON_EBT,"EBT",5,144,145,234, new byte[]{0x0,0x0,0x0}, new byte[]{0xbb,0xbb,0x0})));
         }
         //SendReport(BuildCommand(LcdCreateButton(BUTTON_GIFT,"Gift",224,144,314,234)));
         SendReport(BuildCommand(LcdStartCapture(4)));
@@ -307,11 +312,11 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         SendReport(BuildCommand(LcdFillColor(0xff,0xff,0xff)));
         SendReport(BuildCommand(LcdFillRectangle(0,0,LCD_X_RES-1,LCD_Y_RES-1)));
 
-        SendReport(BuildCommand(LcdTextFont(3,12,14)));
+        SendReport(BuildCommand(LcdTextFont(FONT_SET, FONT_WIDTH, FONT_HEIGHT)));
         SendReport(BuildCommand(LcdTextColor(0,0,0)));
         SendReport(BuildCommand(LcdTextBackgroundColor(0xff,0xff,0xff)));
         SendReport(BuildCommand(LcdTextBackgroundMode(false)));
-        SendReport(BuildCommand(LcdDrawText("wait for cashier",75,100)));
+        SendReport(BuildCommand(LcdDrawText("wait for cashier",35,100)));
 
         current_state = STATE_WAIT_FOR_CASHIER;
     }
@@ -321,12 +326,12 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         SendReport(BuildCommand(LcdFillColor(0xff,0xff,0xff)));
         SendReport(BuildCommand(LcdFillRectangle(0,0,LCD_X_RES-1,LCD_Y_RES-1)));
 
-        SendReport(BuildCommand(LcdTextFont(3,12,14)));
+        SendReport(BuildCommand(LcdTextFont(FONT_SET, FONT_WIDTH, FONT_HEIGHT)));
         SendReport(BuildCommand(LcdTextColor(0,0,0)));
         SendReport(BuildCommand(LcdTextBackgroundColor(0xff,0xff,0xff)));
         SendReport(BuildCommand(LcdTextBackgroundMode(false)));
-        SendReport(BuildCommand(LcdDrawText("approved",95,80)));
-        SendReport(BuildCommand(LcdDrawText("thank you",90,120)));
+        SendReport(BuildCommand(LcdDrawText("approved",90,80)));
+        SendReport(BuildCommand(LcdDrawText("thank you",85,120)));
     }
 
     private void SetStateGetSignature(){
@@ -341,8 +346,8 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         SendReport(BuildCommand(LcdDrawText(sig_message, 1, 1)));
         SendReport(BuildCommand(LcdSetClipArea(5,28,310,140,true,new byte[]{0,0,0})));
         SendReport(BuildCommand(LcdDrawText("please sign",100,146)));
-        SendReport(BuildCommand(LcdCreateButton(BUTTON_SIG_RESET,"Clear",5,180,115,225)));
-        SendReport(BuildCommand(LcdCreateButton(BUTTON_SIG_ACCEPT,"Done",204,180,314,225)));
+        SendReport(BuildCommand(LcdCreateColoredButton(BUTTON_SIG_RESET,"Clear",5,180,115,225, new byte[]{0x0,0x0,0x0}, new byte[]{0xee,0x0,0x0})));
+        SendReport(BuildCommand(LcdCreateColoredButton(BUTTON_SIG_ACCEPT,"Done",204,180,314,225, new byte[]{0x0,0x0,0x0}, new byte[]{0x0,0xbb,0x0})));
 
         SendReport(BuildCommand(LcdStartCapture(5)));
 
@@ -1270,6 +1275,68 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         ret[15] = (byte)( (label.Length >> 8) & 0xff);
 
         int pos = 16;
+        foreach(byte b in System.Text.Encoding.ASCII.GetBytes(label)){
+            ret[pos] = b;
+            pos++;
+        }
+
+        return ret;
+    }
+
+    private byte[] LcdCreateColoredButton(int id, string label, int x_top_left, int y_top_left,
+            int x_bottom_right, int y_bottom_right, byte[] foreground, byte[] background){
+
+        byte[] ret = new byte[33 + label.Length];
+
+        // Command head
+        ret[0] = 0x7a;
+        ret[1] = 0x46;
+        ret[2] = 0x04;
+
+        ret[3] = (byte)(id & 0xff);
+        ret[4] = 0x11; // text is type 3
+        ret[5] = 0xf;
+
+        ret[6] = (byte)(x_top_left & 0xff);
+        ret[7] = (byte)( (x_top_left >> 8) & 0xff);
+
+        ret[8] = (byte)(y_top_left & 0xff);
+        ret[9] = (byte)( (y_top_left >> 8) & 0xff);
+
+        ret[10] = (byte)(x_bottom_right & 0xff);
+        ret[11] = (byte)( (x_bottom_right >> 8) & 0xff);
+
+        ret[12] = (byte)(y_bottom_right & 0xff);
+        ret[13] = (byte)( (y_bottom_right >> 8) & 0xff);
+
+        ret[14] = (byte)((17+label.Length) & 0xff);
+        ret[15] = (byte)( ((17+label.Length) >> 8) & 0xff);
+
+        ret[16] = FONT_WIDTH; // font width
+        ret[17] = FONT_HEIGHT; // font height
+        ret[18] = 1; // weight
+        ret[19] = 0; // italic
+        ret[20] = 0; // underline
+        ret[21] = FONT_SET; // charset
+
+        ret[22] = foreground[0];
+        ret[23] = foreground[1];
+        ret[24] = foreground[2];
+
+        ret[25] = 1; // bg mode
+
+        ret[26] = background[0];
+        ret[27] = background[1];
+        ret[28] = background[2];
+
+        int y_offset = ((y_bottom_right - y_top_left) / 2) - 15;
+        int x_offset = ((x_bottom_right - x_top_left) - (16*label.Length)) / 2;
+        ret[29] = (byte)(x_offset & 0xff);
+        ret[30] = (byte)( (x_offset >> 8) & 0xff);
+        ret[31] = (byte)(y_offset & 0xff);
+        ret[32] = (byte)( (y_offset >> 8) & 0xff);
+
+        int pos = 33;
         foreach(byte b in System.Text.Encoding.ASCII.GetBytes(label)){
             ret[pos] = b;
             pos++;

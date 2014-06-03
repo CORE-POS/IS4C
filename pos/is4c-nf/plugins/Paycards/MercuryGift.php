@@ -90,11 +90,6 @@ class MercuryGift extends BasicCCModule
                         AND empNo=" . $cashier . "
                         AND registerNo=" . $lane . "
                         AND transNo=" . $trans;
-            // @deprecated table 5May14
-            if (!$dbTrans->table_exists('PaycardTransactions')) {
-                $sql = "SELECT transID FROM valutecRequest WHERE ".$dbTrans->identifier_escape('date')."=".$today." AND PAN='".$pan."' " .
-                    "AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans;
-            }
             $search = $dbTrans->query($sql);
             $num = $dbTrans->num_rows($search);
             if ($num < 1) {
@@ -307,11 +302,6 @@ class MercuryGift extends BasicCCModule
                     AND registerNo=" . $lane . "
                     AND transNo=" . $trans . " 
                     AND transID=" . $transID;
-        // @deprecated table 5May14
-        if (!$dbTrans->table_exists('PaycardTransactions')) {
-            $sql = "SELECT live,PAN,mode,amount FROM valutecRequest WHERE ".$dbTrans->identifier_escape('date')."=".$today
-                ." AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
-        }
         $search = $dbTrans->query($sql);
         $num = $dbTrans->num_rows($search);
         if ($num < 1) {
@@ -345,12 +335,6 @@ class MercuryGift extends BasicCCModule
                     AND registerNo=" . $lane ."
                     AND transNo=" . $trans . "
                     AND transID=" . $transID;
-        // @deprecated table 5May14
-        if (!$dbTrans->table_exists('PaycardTransactions')) {
-            $sql = "SELECT commErr,httpCode,validResponse,xAuthorized,
-                xAuthorizationCode FROM valutecResponse WHERE ".$dbTrans->identifier_escape('date')."=".$today." 
-                AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
-        }
         $search = $dbTrans->query($sql);
         $num = $dbTrans->num_rows($search);
         if ($num < 1) {
@@ -382,13 +366,6 @@ class MercuryGift extends BasicCCModule
                     AND transID=" . $transID . "
                     AND transType='VOID'
                     AND xResultCode=1";
-        // @deprecated table 5May14
-        if (!$dbTrans->table_exists('PaycardTransactions')) {
-            $sql = "SELECT transID FROM valutecRequestMod WHERE ".$dbTrans->identifier_escape('date')."=".$today
-                ." AND cashierNo=".$cashier." AND laneNo=".$lane
-                ." AND transNo=".$trans." AND transID=".$transID
-                ." AND mode='void' AND (xAuthorized='true' or xAuthorized='Appro')";
-        }
         $search = $dbTrans->query($sql);
         $voided = $dbTrans->num_rows($search);
         // look up the transaction tender line-item
@@ -555,23 +532,6 @@ class MercuryGift extends BasicCCModule
         $cardTr2 = $this->getTrack2();
         $identifier = $this->valutecIdentifier($transID); // valutec allows 10 digits; this uses lanenum-transnum-transid since we send cashiernum in another field
         
-        // store request in the database before sending it
-        $sqlColumns =
-            $dbTrans->identifier_escape('date').",cashierNo,laneNo,transNo,transID," .
-            $dbTrans->identifier_escape('datetime').",identifier,terminalID,live," . 
-            "mode,amount,PAN,manual";
-        $sqlValues =
-            sprintf("%d,%d,%d,%d,%d,",    $today, $cashierNo, $laneNo, $transNo, $transID) .
-            sprintf("'%s','%s','%s',%d,", $now, $identifier, $termID, $live) .
-            sprintf("'%s',%s,'%s',%d",    $mode, $amountText, $cardPAN, $manual);
-        $sql = "INSERT INTO valutecRequest (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
-        // @deprecated table 5May15
-        if ($dbTrans->table_exists('valutecRequest') && !$dbTrans->query($sql)){
-            if (!$dbTrans->query($sql)) {
-                return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); // internal error, nothing sent (ok to retry)
-            }
-        }
-
         /**
           Log transaction in newer table
         */
@@ -665,13 +625,6 @@ class MercuryGift extends BasicCCModule
                     AND registerNo=" . $laneNo . "
                     AND transNo=" . $transNo . "
                     AND transID=" . $transID;
-        // @deprecated table 5May14
-        if (!$dbTrans->table_exists('PaycardTransactions')) {
-            $sql = "SELECT xAuthorizationCode FROM valutecResponse WHERE "
-                .$dbTrans->identifier_escape('date')."='".$today."'" .
-                " AND cashierNo=".$cashierNo." AND laneNo=".$laneNo." AND 
-                transNo=".$transNo." AND transID=".$transID;
-        }
         $search = $dbTrans->query($sql);
         if (!$search || $dbTrans->num_rows($search) != 1) {
             return PaycardLib::PAYCARD_ERR_NOSEND; // database error, nothing sent (ok to retry)
@@ -688,13 +641,6 @@ class MercuryGift extends BasicCCModule
                     AND registerNo=" . $laneNo . "
                     AND transNo=" . $transNo . "
                     AND transID=" . $transID;
-        // @deprecated table 5May14
-        if (!$dbTrans->table_exists('PaycardTransactions')) {
-            $sql = "SELECT mode FROM valutecRequest WHERE "
-                .$dbTrans->identifier_escape('date')."='".$today."'" .
-                " AND cashierNo=".$cashierNo." AND laneNo=".$laneNo." AND 
-                transNo=".$transNo." AND transID=".$transID;
-        }
         $search = $dbTrans->query($sql);
         if (!$search || $dbTrans->num_rows($search) != 1) {
             return PaycardLib::PAYCARD_ERR_NOSEND; // database error, nothing sent (ok to retry)
@@ -863,16 +809,6 @@ class MercuryGift extends BasicCCModule
         $program = 'Gift';
         $identifier = $this->valutecIdentifier($transID); // valutec allows 10 digits; this uses lanenum-transnum-transid since we send cashiernum in another field
 
-        // prepare some fields to store the parsed response; we'll add more as we verify it
-        $sqlColumns =
-            $dbTrans->identifier_escape('date').",cashierNo,laneNo,transNo,transID," .
-            $dbTrans->identifier_escape('datetime').",identifier," .
-            "seconds,commErr,httpCode";
-        $sqlValues =
-            sprintf("%d,%d,%d,%d,%d,",  $today, $cashierNo, $laneNo, $transNo, $transID) .
-            sprintf("'%s','%s',",       $now, $identifier) .
-            sprintf("%f,%d,%d",         $authResult['curlTime'], $authResult['curlErr'], $authResult['curlHTTP']);
-
         $validResponse = ($xml->isValid()) ? 1 : 0;
         $errorMsg = $xml->get_first("TEXTRESPONSE");
         $balance = $xml->get_first("BALANCE");
@@ -893,21 +829,6 @@ class MercuryGift extends BasicCCModule
                     $validResponse = -4; // response was parsed as XML but fields didn't match
                 }
             }
-
-            $sqlColumns .= ",xAuthorized,xAuthorizationCode,xBalance,xErrorMsg";
-            $sqlValues .= ",'".substr($xml->get("CMDSTATUS"),0,5)."'";
-            $sqlValues .= ",'".$xml->get("REFNO")."'";
-            $sqlValues .= ",'".$balance."'";
-            $sqlValues .= ",'".str_replace("'","",$errorMsg)."'";
-        }
-
-         // finish storing the response in the database before reacting to it
-        $sqlColumns .= ",validResponse";
-        $sqlValues .= ",".$validResponse;
-        // @deprecated table 5May15
-        if ($dbTrans->table_exists('valutecResponse')) {
-            $sql = "INSERT INTO valutecResponse (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
-            $dbTrans->query($sql);
         }
 
         $normalized = ($validResponse == 0) ? 4 : 0;
@@ -1001,12 +922,6 @@ class MercuryGift extends BasicCCModule
                 dateID=%s AND refNum='%s'",
                 $xml->get_first("AUTHORIZE"),date("Ymd"),$identifier);
             $dbTrans->query($correctionQ);
-            if ($dbTrans->table_exists('valutecRequest')) {
-                $correctionQ = sprintf("UPDATE valutecRequest SET amount=%f WHERE
-                    date=%s AND identifier='%s'",
-                    $xml->get_first("AUTHORIZE"),date("Ymd"),$identifier);
-                $dbTrans->query($correctionQ);
-            }
         }
 
         // comm successful, check the Authorized, AuthorizationCode and ErrorMsg fields
@@ -1044,16 +959,6 @@ class MercuryGift extends BasicCCModule
         $authcode = $this->temp;
         $program = "Gift";
 
-        $sqlColumns =
-            $dbTrans->identifier_escape('date').",cashierNo,laneNo,transNo,transID,".
-            $dbTrans->identifier_escape('datetime').
-            ",mode,origAuthCode," .
-            "seconds,commErr,httpCode";
-        $sqlValues =
-            sprintf("%d,%d,%d,%d,%d,'%s',", $today, $cashierNo, $laneNo, $transNo, $transID, $now) .
-            sprintf("'%s','%s',",           $mode, $authcode) .
-            sprintf("%f,%d,%d",             $vdResult['curlTime'], $vdResult['curlErr'], $vdResult['curlHTTP']);
-
         $validResponse = 0;
         // verify that echo'd fields match our request
         if ($xml->get('TRANTYPE') 
@@ -1065,21 +970,6 @@ class MercuryGift extends BasicCCModule
         } else {
             // response was parsed as XML but fields didn't match
             $validResponse = -2; 
-        }
-
-        $sqlColumns .= ",xAuthorized,xAuthorizationCode,xBalance,xErrorMsg";
-        $sqlValues .= ",'".substr($xml->get("CMDSTATUS"),0,5)."'";
-        $sqlValues .= ",'".$xml->get("REFNO")."'";
-        $sqlValues .= ",'".$xml->get("BALANCE")."'";
-        $sqlValues .= ",'".$xml->get_first("TEXTRESPONSE")."'";
-        
-        // finish storing the request and response in the database before reacting to it
-        $sqlColumns .= ",validResponse";
-        $sqlValues .= ",".$validResponse;
-        // @deprecated table 5May15
-        if ($dbTrans->table_exists('valutecRequestMod')) {
-            $sql = "INSERT INTO valutecRequestMod (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
-            $dbTrans->query($sql);
         }
 
         $normalized = ($validResponse == 0) ? 4 : 0;

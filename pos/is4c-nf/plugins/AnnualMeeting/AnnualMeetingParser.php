@@ -70,19 +70,18 @@ class AnnualMeetingParser extends Parser {
 			$flag = strtoupper($str[4]);
 			$plu = substr($str,0,4);
 			$price = ($flag == 'K') ? 5.00 : 20.00;
-			TransRecord::addItem(
-				str_pad($plu,13,'0',STR_PAD_LEFT),
-				$this->descriptions[$plu].' ('.$flag.')',
-				'I','','',
-				235, 1.0, 
-				$price, $price, $price,
-				0, 0, 0,
-				0.00, 0.00,
-				0, 0,
-				1.0, 0, 0, 0.00,
-				0, 0, 0,
-				0.00, 0, $flag
-			);
+			TransRecord::addRecord(array(
+				'upc' => str_pad($plu,13,'0',STR_PAD_LEFT),
+				'description' => $this->descriptions[$plu].' ('.$flag.')',
+				'trans_type' => 'I',
+				'department' => 235, 
+                'quantity' => 1.0, 
+                'ItemQtty' => 1.0, 
+                'unitPrice' => $price,
+                'total' => $price,
+                'regPrice' => $price,
+				'charflag' => $flag
+			));
 			$ret['output'] = DisplayLib::lastpage();
 			$ret['redraw_footer'] = True;
 			return $ret;
