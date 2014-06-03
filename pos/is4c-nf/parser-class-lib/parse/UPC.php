@@ -439,7 +439,7 @@ class UPC extends Parser {
         if ($row['discounttype'] < 64 && isset(DiscountType::$MAP[$row['discounttype']])) {
             $class = DiscountType::$MAP[$row['discounttype']];
             $DiscountObject = new $class();
-        } else if ($row['discounttype'] > 64 && isset($DTClasses[($row['discounttype']-64)])) {
+        } else if ($row['discounttype'] >= 64 && isset($DTClasses[($row['discounttype']-64)])) {
             $class = $DTClasses[($row['discounttype'])-64];
             $DiscountObject = new $class();
         } else {
@@ -484,12 +484,30 @@ class UPC extends Parser {
 			END: figure out discounts by type
 		*/
 
-		/* get price method object  & add item*/
+		/* get price method object  & add item
+        
+           CORE reserves values 0 through 99 in 
+           PriceMethod::$MAP for default methods.
+
+           Additional methods provided by plugins
+           can use values 100 and up. Because
+           the PriceMethodClasses array is zero-indexed,
+           subtract 100 as an offset  
+        */
 		$pricemethod = MiscLib::nullwrap($row["pricemethod"]);
 		if ($DiscountObject->isSale())
 			$pricemethod = MiscLib::nullwrap($row["specialpricemethod"]);
 		$PMClasses = $CORE_LOCAL->get("PriceMethodClasses");
-		$PriceMethodObject = new $PMClasses[$pricemethod];
+        $PriceMethodObject = null;
+        if ($pricemethod < 100 && isset(PriceMethod::$MAP[$pricemethod])) {
+            $class = PriceMethod::$MAP[$pricemethod];
+            $PriceMethodObject = new $class();
+        } else if ($pricemethod >= 100 && isset($PMClasses[($pricemethod-100)])) {
+            $class = $PMClasses[($pricemethod-100)];
+            $PriceMethodObject = new $class();
+        } else {
+            $PriceMethodObject = new BasicPM();
+        }
 		// prefetch: otherwise object members 
 		// pass out of scope in addItem()
 		$prefetch = $DiscountObject->priceInfo($row,$quantity);

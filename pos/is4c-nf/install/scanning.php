@@ -123,7 +123,8 @@ InstallUtilities::paramSave('houseCouponPrefix',$CORE_LOCAL->get('houseCouponPre
 </td></tr>
 <tr><td style="width: 30%;">
 </td><td>
-</td></tr><tr><td>
+</td></tr>
+<tr><td>
 <b>Coupons &amp; Sales Tax</b>:</td><td>
 <?php
 if (isset($_REQUEST['COUPONTAX'])) $CORE_LOCAL->set('CouponsAreTaxable',$_REQUEST['COUPONTAX']);
@@ -164,7 +165,7 @@ InstallUtilities::paramSave('roundUpDept',$CORE_LOCAL->get('roundUpDept'));
 </td></tr><tr>
 <td colspan="2">
 <hr />
-<p>Discount type modules control how sale prices are calculated.</p></td></tr>
+<p>Discount type modules control how sale discounts are calculated.</p></td></tr>
 <tr><td>
 <b>Default Discounts</b>:</td><td>
 <?php
@@ -183,7 +184,7 @@ if (isset($_REQUEST['DT_MODS'])) {
             $new_val[] = $r;
         }
     }
-    $CORE_LOCAL->set('DiscountTypeClasses', $r);
+    $CORE_LOCAL->set('DiscountTypeClasses', $new_val);
 }
 if (!is_array($CORE_LOCAL->get('DiscountTypeClasses'))) {
 	$CORE_LOCAL->set('DiscountTypeClasses', array(), true);
@@ -219,53 +220,82 @@ InstallUtilities::paramSave('DiscountTypeClasses',$save);
 
 <tr><td colspan=2>
 <hr />	<p>Price Methods dictate how item prices are calculated.
-	There's some overlap with Discount Types, but <i>generally</i>
+	There's some overlap with Discount Types, but <i>often</i>
 	price methods deal with grouped items.</p></td></tr>
+</td></tr>
 <tr><td>
-<b>Number of Price Methods</b>:</td><td>
+<b>Default Methods</b>:</td><td>
 <?php
-if (isset($_REQUEST['PM_COUNT']) && is_numeric($_REQUEST['PM_COUNT'])) $CORE_LOCAL->set('PriceMethodCount',$_REQUEST['PM_COUNT']);
-if ($CORE_LOCAL->get("PriceMethodCount") == "") $CORE_LOCAL->set("PriceMethodCount",3);
-if ($CORE_LOCAL->get("PriceMethodCount") <= 0) $CORE_LOCAL->set("PriceMethodCount",1);
-printf("<input type=text size=4 name=PM_COUNT value=\"%d\" />",
-	$CORE_LOCAL->get('PriceMethodCount'));
-InstallUtilities::paramSave('PriceMethodCount',$CORE_LOCAL->get('PriceMethodCount'));
+foreach (PriceMethod::$MAP as $id => $name) {
+    echo '[' . $id . '] => ' . $name . '<br />';
+}
 ?>
-</td></tr><tr><td>
-<b>Price Method Mapping</b>:</td><td>
+</td></tr>
+<tr><td>
+<b>Custom Method Mapping</b>:</td><td>
 <?php
-if (isset($_REQUEST['PM_MODS'])) $CORE_LOCAL->set('PriceMethodClasses',$_REQUEST['PM_MODS']);
+if (isset($_REQUEST['PM_MODS'])) {
+    $new_val = array();
+    foreach ($_REQUEST['PM_MODS'] as $r) {
+        if ($r !== '' && !in_array($r, PriceMethod::$MAP)) {
+            $new_val[] = $r;
+        }
+    }
+    $CORE_LOCAL->set('PriceMethodClasses', $new_val);
+}
 if (!is_array($CORE_LOCAL->get('PriceMethodClasses'))){
-	$CORE_LOCAL->set('PriceMethodClasses',
-		array(
-			'BasicPM',
-			'GroupPM',
-			'QttyEnforcedGroupPM'
-		),True);
+	$CORE_LOCAL->set('PriceMethodClasses', array(), true);
 }
 $pms = AutoLoader::listModules('PriceMethod');
 $pm_conf = $CORE_LOCAL->get("PriceMethodClasses");
-for($i=0;$i<$CORE_LOCAL->get('PriceMethodCount');$i++){
+$pm_conf[] = ''; // add blank slot for adding another method
+$i = 100;
+foreach ($pm_conf as $entry) {
 	echo "[$i] => ";
 	echo "<select name=PM_MODS[]>";
+    echo '<option value="">[None]</option>';
 	foreach($pms as $p) {
+        if (in_array($p, PRiceMethod::$MAP)) {
+            continue;
+        }
 		echo "<option";
-		if (isset($pm_conf[$i]) && $pm_conf[$i] == $p)
+		if ($entry == $p)
 			echo " selected";
 		echo ">$p</option>";
 	}
 	echo "</select><br />";
+    $i++;
 }
 $save = array();
-$tmp_count = 0;
 foreach($CORE_LOCAL->get("PriceMethodClasses") as $r){
-	$save[] = $r;
-	if ($tmp_count == $CORE_LOCAL->get("PriceMethodCount")-1)
-		break;
-	$tmp_count++;
+    if ($r !== '' && !in_array($r, PriceMethod::$MAP)) {
+        $save[] = $r;
+    }
 }
 InstallUtilities::paramSave('PriceMethodClasses',$save);
-?></td></tr><tr><td colspan=2>
+?></td></tr>
+<tr><td>
+<b>Sale Items Are Discountable</b>:</td><td>
+<?php
+if (isset($_REQUEST['SALEDISC'])) $CORE_LOCAL->set('DiscountableSaleItems',$_REQUEST['SALEDISC']);
+if ($CORE_LOCAL->get('DiscountableSaleItems') === '') $CORE_LOCAL->set('DiscountableSaleItems', 1);
+echo '<select name="SALEDISC">';
+if ($CORE_LOCAL->get('DiscountableSaleItems') == 0) {
+	echo '<option value="1">Yes</option>';
+	echo '<option value="0" selected>No</option>';
+} else {
+	echo '<option value="1" selected>Yes</option>';
+	echo '<option value="0">No</option>';
+}
+echo '</select>';
+InstallUtilities::paramSave('DiscountableSaleItems', $CORE_LOCAL->get('DiscountableSaleItems'));
+?>
+<span class='noteTxt'>
+Items that are on sale are eligible for transaction-level discounts - e.g., members
+save 5%.
+</span>
+</td></tr>
+<tr><td colspan=2>
 <hr />	<p>Special Department modules add extra steps to open rings in specific departments.
 	Enter department number(s) that each module should apply to.</p>
 </td></tr>
