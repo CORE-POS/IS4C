@@ -845,5 +845,32 @@ static public function add_log_record($opts)
     self::addLogRecord($opts);
 }
 
+static public function finalizeTransaction($incomplete=false)
+{
+    global $CORE_LOCAL;
+    if (!$incomplete) {
+        self::addtransDiscount();
+        self::addTax();
+        $taxes = Database::LineItemTaxes();
+        foreach($taxes as $tax) {
+            self::addLogRecord(array(
+                'upc' => 'TAXLINEITEM',
+                'description' => $tax['description'],
+                'numflag' => $tax['rate_id'],
+                'amount2' => $tax['amount'],
+            ));
+        }
+    }
+
+    if (Database::rotateTempData()) { // rotate data
+        Database::clearTempTables();
+    }
+
+    // advance trans_no value
+    $nextTransNo = Database::gettransno($CORE_LOCAL->get('CashierNo'));
+    $CORE_LOCAL->set('transno', $nextTransNo);
+    Database::setglobalvalue('TransNo', $nextTransNo);
+}
+
 }
 

@@ -150,7 +150,8 @@ class pos2 extends BasicPage {
 		}
 
 		if (isset($json['receipt']) && $json['receipt'] != False){
-			$this->add_onload_command("receiptFetch('".$json['receipt']."');\n");
+            $ref = isset($json['trans_num']) ? $json['trans_num'] : ReceiptLib::mostRecentReceipt();
+			$this->add_onload_command("receiptFetch('" . $json['receipt'] . "', '" . $ref . "');\n");
 		}
 
 		return True;
@@ -180,11 +181,11 @@ class pos2 extends BasicPage {
 		function lockScreen(){
 			location = '<?php echo $this->page_url; ?>gui-modules/login3.php';
 		}
-		function receiptFetch(r_type){
+		function receiptFetch(r_type, ref){
 			$.ajax({
 				url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-end.php',
 				type: 'get',
-				data: 'receiptType='+r_type,
+				data: 'receiptType='+r_type+'&ref='+ref,
 				dataType: 'json',
 				cache: false,
                 error: function() {

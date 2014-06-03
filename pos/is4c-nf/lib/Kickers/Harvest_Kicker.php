@@ -23,16 +23,20 @@
 
 class Harvest_Kicker extends Kicker {
 
-	function doKick(){
+    public function doKick($trans_num)
+    {
 		global $CORE_LOCAL;
 		if($CORE_LOCAL->get('training') == 1) return False;
 
 		$db = Database::tDataConnect();
 
-		$query = "select trans_id from localtemptrans where 
-			(trans_subtype = 'CA' and total <> 0) 
-			OR (trans_subtype = 'XB' and total <> 0)
-			OR (trans_subtype = 'PE' and total <> 0)";
+		$query = "SELECT trans_id 
+                  FROM localtranstoday 
+                  WHERE (
+                    (trans_subtype = 'CA' and total <> 0) 
+                    OR (trans_subtype = 'XB' and total <> 0)
+                    OR (trans_subtype = 'PE' and total <> 0)
+                  ) AND " . $this->refToWhere($trans_num);
 
 		$result = $db->query($query);
 		$num_rows = $db->num_rows($result);

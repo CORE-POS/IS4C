@@ -63,7 +63,7 @@ function parserHandler(data,status_str,xml_ro){
 		$.ajax({
 			url: CORE_JS_PREFIX+'ajax-callbacks/ajax-end.php',
 			type: 'GET',
-			data: 'receiptType='+data.receipt,
+			data: 'receiptType='+data.receipt+'&ref='+data.trans_num,
 			dataType: 'json',
 			cache: false,
             error: function() {

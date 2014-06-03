@@ -44,9 +44,10 @@ class RRR extends Parser {
 		$ret['udpmsg'] = 'goodBeep';
 
 		Database::getsubtotals();
-		if ($CORE_LOCAL->get("runningTotal") == 0){
-			$ret['receipt'] = 'none';
+		if ($CORE_LOCAL->get("runningTotal") == 0) {
+            TransRecord::finalizeTransaction(true);
 		}
+
 		return $ret;
 	}
 

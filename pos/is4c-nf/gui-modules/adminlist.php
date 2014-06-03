@@ -54,12 +54,12 @@ class adminlist extends NoInputPage {
 				else {
 					// ajax call to end transaction
 					// and print receipt
-					SuspendLib::suspendorder();
+					$ref = SuspendLib::suspendorder();
 					$this->add_onload_command("\$.ajax({
 						type:'post',
 						url:'{$this->page_url}ajax-callbacks/ajax-end.php',
 						cache: false,
-						data: 'receiptType=suspended',
+						data: 'receiptType=suspended&ref={$ref}',
 						dataType: 'json',
 						success: function(data){
 							\$.ajax({

@@ -37,7 +37,7 @@ class ReceiptMessage
 	  <ReceiptMessage1->select_condition()> as ReceiptMessage1,
 	  <ReceiptMessage2->select_condition()> as ReceiptMessage2,
 	  <ReceiptMessage3->select_condition()> as ReceiptMessage3
-	  FROM localtemptrans 
+	  FROM localtranstoday 
 
 	  This query should return one row, so your select statement
 	  should use an aggregate (SUM, MAX, MIN, etc). If the message

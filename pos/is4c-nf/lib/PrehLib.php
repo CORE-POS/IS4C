@@ -531,6 +531,7 @@ static public function tender($right, $strl)
 		$CORE_LOCAL->set("End",1);
 		$ret['receipt'] = 'full';
 		$ret['output'] = DisplayLib::printReceiptFooter();
+        TransRecord::finalizeTransaction();
 	} else {
 		$CORE_LOCAL->set("change",0);
 		$CORE_LOCAL->set("fntlflag",0);

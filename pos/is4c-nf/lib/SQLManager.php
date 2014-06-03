@@ -1599,6 +1599,31 @@ class SQLManager
         return '0';
     }
 
+	/**
+	  Add row limit to a select query
+	  @param $query The select query
+	  @param $int_limit Max rows
+	  @param which_connection see method close
+
+	  This method currently only suport MySQL and MSSQL
+	*/
+	public function addSelectLimit($query,$int_limit,$which_connection='')
+    {
+        if ($which_connection == '') {
+            $which_connection = $this->default_db;
+        }
+        switch($this->db_types[$which_connection]) {
+            case $this->TYPE_PDOMY:
+            case $this->TYPE_MYSQL:
+                return sprintf("%s LIMIT %d",$query,$int_limit);
+            case $this->TYPE_MSSQL:
+            case $this->TYPE_PDOMS:
+                return str_ireplace("SELECT ","SELECT TOP $int_limit ",$query);
+		}
+
+        return $query;
+    }
+
     /**
       Test data is for faking queries.
       Setting the test data then running

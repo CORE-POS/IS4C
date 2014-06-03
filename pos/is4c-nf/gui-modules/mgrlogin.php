@@ -55,7 +55,7 @@ class mgrlogin extends NoInputPage {
 						$.ajax({
 							url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-end.php',
 							type: 'get',
-							data: 'receiptType=cancelled',
+							data: 'receiptType=cancelled&ref='+data.trans_num,
 							cache: false,
 							success: function(data2){
 								location = '<?php echo $this->page_url; ?>gui-modules/pos2.php';
@@ -135,6 +135,12 @@ class mgrlogin extends NoInputPage {
 		if ($num_rows != 0) {
 			$this->cancelorder();
 			$ret['cancelOrder'] = true;
+            $ret['trans_num'] = ReceiptLib::receiptNumber();
+
+            $db = Database::tDataConnect();
+            $db->query("update localtemptrans set trans_status = 'X'");
+            TransRecord::finalizeTransaction(true);
+
             if ($CORE_LOCAL->get('LoudLogins') == 1) {
                 UdpComm::udpSend('goodBeep');
             }
