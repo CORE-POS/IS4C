@@ -58,7 +58,8 @@ class CreditCardTender extends TenderModule
 
     public function allowDefault()
     {
-        if ($this->tender_code == 'CC' && $CORE_LOCAL->get('store') == 'wfc') {
+        global $CORE_LOCAL;
+	    if ($this->tender_code == 'CC' && $CORE_LOCAL->get('store') == 'wfc') {
             return True;
         } else {
             return False;
