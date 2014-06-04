@@ -34,6 +34,7 @@ $receiptNum = isset($_REQUEST['ref']) ? $_REQUEST['ref'] : '';
   - full => normal transaction receipt
   - cancelled => transaction cancelled
   - suspended => transaction suspended
+  - ddd  => shrink items
   - none => don't print a receipt, just flush localtemptrans
 
   Note: none is currently only used by the RRR parser which
@@ -42,7 +43,8 @@ $receiptNum = isset($_REQUEST['ref']) ? $_REQUEST['ref'] : '';
 */
 $transFinished = false;
 if ($receiptType == 'full' || $receiptType == 'cancelled' ||
-    $receiptType == 'suspended' || $receiptType == 'none') {
+    $receiptType == 'suspended' || $receiptType == 'none' ||
+    $receiptType == 'ddd') {
     
     $transFinished = true;
     if (!preg_match('/^\d+-\d+-\d+$/', $receiptNum)) {
