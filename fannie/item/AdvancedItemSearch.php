@@ -195,6 +195,12 @@ class AdvancedItemSearch extends FannieRESTfulPage
             $args[] = $discount;
         }
 
+        $origin = FormLib::get('originID', 0);
+        if ($origin != 0) {
+            $where .= ' AND p.current_origin_id=? ';
+            $args[] = $origin;
+        }
+
         $lc = FormLib::get('likeCode');
         if ($lc !== '') {
             if (!strstr($from, 'upcLike')) {
@@ -531,7 +537,14 @@ function goToReport() {
 
         $ret .= '</tr><tr>';
 
-        $ret .= '<td colspan=2">&nbsp;</td>'; // placeholder; can add here
+        $ret .= '<th>Origin</th>';
+        $ret .= '<td><select name="originID"><option value="0">n/a</option>';
+        $origins = $dbc->query('SELECT originID, shortName FROM origins WHERE local=0 ORDER BY shortName');
+        while($row = $dbc->fetch_row($origins)) {
+            $ret .= sprintf('<option value="%d">%s</option>', $row['originID'], $row['shortName']);
+        }
+        $ret .= '</select>';
+        $ret .= '</td>';
     
         $ret .= '<th>Likecode</th>';
         $ret .= '<td colspan="3"><select name="likeCode"><option value="">n/a</option>

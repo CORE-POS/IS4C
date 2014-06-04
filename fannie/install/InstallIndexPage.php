@@ -1005,6 +1005,9 @@ class InstallIndexPage extends InstallPage {
 				'originName','op');
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+				'ProductOriginsMap','op');
+
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'vendors','op');
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,

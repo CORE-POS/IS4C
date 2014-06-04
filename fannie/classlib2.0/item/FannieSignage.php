@@ -256,10 +256,30 @@ class FannieSignage
         $data = array();
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $args);
+
+        $mapP = $dbc->prepare('SELECT o.name, o.shortName
+                               FROM ProductOriginsMap AS m
+                                INNER JOIN origins AS o ON m.originID=o.originID
+                               WHERE
+                                m.upc = ?
+                                AND o.name <> ?
+                                AND o.shortName <> ?');
+
         while($row = $dbc->fetch_row($result)) {
+
             if ($row['pricePerUnit'] == '') {
                 $row['pricePerUnit'] = PriceLib::pricePerUnit($row['normal_price'], $row['size']);
             }
+
+            if ($row['originName'] != '') {
+                // check for additional origins
+                $mapR = $dbc->execute($mapP, array($row['upc'], $row['originName'], $row['originShortName']));
+                while ($mapW = $dbc->fetch_row($mapR)) {
+                    $row['originName'] .= _(' or ') . $mapW['name'];
+                    $row['originShortName'] .= _(' or ') . $mapW['shortName'];
+                }
+            }
+
             $data[] = $row;
         }
 

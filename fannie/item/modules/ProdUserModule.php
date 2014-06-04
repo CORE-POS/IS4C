@@ -58,6 +58,9 @@ class ProdUserModule extends ItemModule
         $ret .= '<th>Desc.</th>';
         $ret .= '<td><input type="text" size="45" name="lf_desc" value="' . $model->description() . '" /></td>';
         $ret .= '</tr>';
+
+        $otherOriginBlock = '<tr><td>&nbsp;</td><td><select name=otherOrigin[]><option value=0>n/a</option>';
+
         $ret .= '<tr>';
         $ret .= '<th><a href="' . $FANNIE_URL . 'item/origins/OriginEditor.php">Origin</a></th>';
         $ret .= '<td><select name="origin">';
@@ -68,14 +71,31 @@ class ProdUserModule extends ItemModule
             $ret .= sprintf('<option %s value="%d">%s</option>',
                         $prod->current_origin_id() == $o->originID() ? 'selected' : '',
                         $o->originID(), $o->name());
+            $otherOriginBlock .= sprintf('<option value=%d>%s</option>',
+                                            $o->originID(), $o->name());
         }
-        $ret .= '</select></td></tr>';
-        $ret .= '<tr><th colspan="2">Ad Text</th></tr>';
+        $ret .= '</select>';
+        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;<a href="" 
+                onclick="$(\'#originsBeforeMe\').before(\'' . $otherOriginBlock . '\'); return false;">Add more</a>';
+        $ret .= '</td></tr>';
+
+        $mapP = 'SELECT originID FROM ProductOriginsMap WHERE upc=? AND originID <> ?';
+        $mapR = $dbc->execute($mapP, array($upc, $prod->current_origin_id()));
+        while ($mapW = $dbc->fetch_row($mapR)) {
+            $ret .= '<tr><td>&nbsp;</td><td><select name="otherOrigin[]"><option value="0">n/a</option>';
+            foreach ($origins->find('name') as $o) {
+                $ret .= sprintf('<option %s value="%d">%s</option>',
+                            $mapW['originID'] == $o->originID() ? 'selected' : '',
+                            $o->originID(), $o->name());
+            }
+            $ret .= '</select></td></tr>';
+        }
+
+        $ret .= '<tr id="originsBeforeMe"><th colspan="2">Ad Text</th></tr>';
         $ret .= '<tr><td colspan="3"><textarea name="lf_text"
                     rows="8" cols="45">' 
                     . str_replace('<br />', "\n", $model->long_text()) 
                     . '</textarea></td></tr>';
-
         $ret .= '</table>';
         $ret .= '</div>';
         if (is_file(dirname(__FILE__) . '/../images/done/' . $model->photo())) {
@@ -101,14 +121,30 @@ class ProdUserModule extends ItemModule
         $text = str_replace("\n", '<br />', $text);
         // strip non-ASCII (word copy/paste artifacts)
         $text = preg_replace("/[^\x01-\x7F]/","", $text); 
-        
+
         $dbc = $this->db();
-        
+
         $model = new ProductUserModel($dbc);
         $model->upc($upc);
         $model->brand($brand);
         $model->description($desc);
         $model->long_text($text);
+
+        $multiOrigin = FormLib::get('otherOrigin', array());
+        $originMap = array();
+        if ($origin != 0) {
+            $originMap[] = $origin;
+        }
+        foreach ($multiOrigin as $originID) {
+            if ($originID != 0) {
+                $originMap[] = $originID;
+            }
+        }
+        
+        $mapP = $dbc->prepare('DELETE FROM ProductOriginsMap WHERE upc=?');
+        $addP = $dbc->prepare('INSERT INTO ProductOriginsMap
+                                (originID, upc, active)
+                                VALUES (?, ?, 1)');
 
         $lcP = $dbc->prepare('SELECT u.upc
                             FROM upcLike AS u
@@ -132,6 +168,11 @@ class ProdUserModule extends ItemModule
             $prod->upc($item);
             $prod->current_origin_id($origin);
             $prod->save();
+
+            $dbc->execute($mapP, array($item));
+            foreach ($originMap as $originID) {
+                $dbc->execute($addP, array($originID, $item));
+            }
         }
         
         return $model->save();
