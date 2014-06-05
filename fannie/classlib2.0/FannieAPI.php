@@ -121,6 +121,25 @@ class FannieAPI
         return false;
     }
 
+    static public function listFiles($path)
+    {
+        if (is_file($path) && substr($path,-4)=='.php') {
+            return array($path);
+        } elseif (is_dir($path)) {
+            $dh = opendir($path);
+            $ret = array();
+            while( ($file=readdir($dh)) !== false) {
+                if ($file == '.' || $file == '..') continue;
+                if ($file == 'noauto') continue;
+                if ($file == 'index.php') continue;
+                if ($file == 'Store-Specific') continue;
+                $ret = array_merge($ret, self::listFiles($path.'/'.$file));
+            }
+            return $ret;
+        }
+        return array();
+    }
+
     /**
       Get a list of all available classes implementing a given
       base class
@@ -168,6 +187,7 @@ class FannieAPI
                 while( ($file=readdir($dh)) !== false) {
                     if ($file == '.' || $file == '..') continue;
                     if ($file == 'noauto') continue;
+                    if ($file == 'index.php') continue;
                     if ($file == 'Store-Specific') continue;
                     $ret = array_merge($ret, $search($path.'/'.$file));
                 }

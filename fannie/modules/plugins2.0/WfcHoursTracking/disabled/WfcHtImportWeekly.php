@@ -1,8 +1,8 @@
 <?php
+class WfcHtImportWeekly {}
 /**
   No longer in use; not cleaned up to be plugin-safe.
   Kept for reference.
-*/
 return;
 
 include(dirname(__FILE__).'/../../../config.php');
@@ -178,3 +178,4 @@ Filename: <input type="file" id="file" name="upload" />
 
 </body>
 </html>
+*/

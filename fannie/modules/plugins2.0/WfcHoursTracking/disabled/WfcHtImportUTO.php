@@ -1,9 +1,8 @@
 <?php
+class WfcHtImportUTO {}
 /**
   No longer in use; not cleaned up to be plugin-safe.
   Kept for reference.
-*/
-return;
 include(dirname(__FILE__).'/../../../config.php');
 
 require($FANNIE_ROOT.'auth/login.php');
@@ -128,3 +127,5 @@ Filename: <input type="file" id="file" name="upload" />
 
 </body>
 </html>
+<?php
+*/

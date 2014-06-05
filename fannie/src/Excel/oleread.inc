@@ -23,16 +23,6 @@ define('IDENTIFIER_OLE', pack("CCCCCCCC",0xd0,0xcf,0x11,0xe0,0xa1,0xb1,0x1a,0xe1
 //echo $data[ROOT_START_BLOCK_POS];
 //function log
 
-function GetInt4d($data, $pos)
-{
-	$value = ord($data[$pos]) | (ord($data[$pos+1])	<< 8) | (ord($data[$pos+2]) << 16) | (ord($data[$pos+3]) << 24);
-	if ($value>=4294967294)
-	{
-		$value=-2;
-	}
-	return $value;
-}
-
 
 class OLERead {
     var $data = '';
@@ -42,6 +32,17 @@ class OLERead {
         
         
     }
+
+    function GetInt4d($data, $pos)
+    {
+        $value = ord($data[$pos]) | (ord($data[$pos+1])	<< 8) | (ord($data[$pos+2]) << 16) | (ord($data[$pos+3]) << 24);
+        if ($value>=4294967294)
+        {
+            $value=-2;
+        }
+        return $value;
+    }
+
     
     function read($sFileName){
         
@@ -62,11 +63,11 @@ class OLERead {
     		$this->error = 1; 
     		return false; 
    		}
-        $this->numBigBlockDepotBlocks = GetInt4d($this->data, NUM_BIG_BLOCK_DEPOT_BLOCKS_POS);
-        $this->sbdStartBlock = GetInt4d($this->data, SMALL_BLOCK_DEPOT_BLOCK_POS);
-        $this->rootStartBlock = GetInt4d($this->data, ROOT_START_BLOCK_POS);
-        $this->extensionBlock = GetInt4d($this->data, EXTENSION_BLOCK_POS);
-        $this->numExtensionBlocks = GetInt4d($this->data, NUM_EXTENSION_BLOCK_POS);
+        $this->numBigBlockDepotBlocks = $this->GetInt4d($this->data, NUM_BIG_BLOCK_DEPOT_BLOCKS_POS);
+        $this->sbdStartBlock = $this->GetInt4d($this->data, SMALL_BLOCK_DEPOT_BLOCK_POS);
+        $this->rootStartBlock = $this->GetInt4d($this->data, ROOT_START_BLOCK_POS);
+        $this->extensionBlock = $this->GetInt4d($this->data, EXTENSION_BLOCK_POS);
+        $this->numExtensionBlocks = $this->GetInt4d($this->data, NUM_EXTENSION_BLOCK_POS);
         
 	/*
         echo $this->numBigBlockDepotBlocks." ";
@@ -86,7 +87,7 @@ class OLERead {
             }
         
         for ($i = 0; $i < $bbdBlocks; $i++) {
-              $bigBlockDepotBlocks[$i] = GetInt4d($this->data, $pos);
+              $bigBlockDepotBlocks[$i] = $this->GetInt4d($this->data, $pos);
               $pos += 4;
         }
         
@@ -96,13 +97,13 @@ class OLERead {
             $blocksToRead = min($this->numBigBlockDepotBlocks - $bbdBlocks, BIG_BLOCK_SIZE / 4 - 1);
 
             for ($i = $bbdBlocks; $i < $bbdBlocks + $blocksToRead; $i++) {
-                $bigBlockDepotBlocks[$i] = GetInt4d($this->data, $pos);
+                $bigBlockDepotBlocks[$i] = $this->GetInt4d($this->data, $pos);
                 $pos += 4;
             }   
 
             $bbdBlocks += $blocksToRead;
             if ($bbdBlocks < $this->numBigBlockDepotBlocks) {
-                $this->extensionBlock = GetInt4d($this->data, $pos);
+                $this->extensionBlock = $this->GetInt4d($this->data, $pos);
             }
         }
 
@@ -117,7 +118,7 @@ class OLERead {
             $pos = ($bigBlockDepotBlocks[$i] + 1) * BIG_BLOCK_SIZE;
             //echo "pos = $pos";	
             for ($j = 0 ; $j < BIG_BLOCK_SIZE / 4; $j++) {
-                $this->bigBlockChain[$index] = GetInt4d($this->data, $pos);
+                $this->bigBlockChain[$index] = $this->GetInt4d($this->data, $pos);
                 $pos += 4 ;
                 $index++;
             }
@@ -136,7 +137,7 @@ class OLERead {
 	      $pos = ($sbdBlock + 1) * BIG_BLOCK_SIZE;
 	
 	      for ($j = 0; $j < BIG_BLOCK_SIZE / 4; $j++) {
-	        $this->smallBlockChain[$index] = GetInt4d($this->data, $pos);
+	        $this->smallBlockChain[$index] = $this->GetInt4d($this->data, $pos);
 	        $pos += 4;
 	        $index++;
 	      }
@@ -187,8 +188,8 @@ class OLERead {
               $type = ord($d[TYPE_POS]);
               //$maxBlock = strlen($d) / BIG_BLOCK_SIZE - 1;
         
-              $startBlock = GetInt4d($d, START_BLOCK_POS);
-              $size = GetInt4d($d, SIZE_POS);
+              $startBlock = $this->GetInt4d($d, START_BLOCK_POS);
+              $size = $this->GetInt4d($d, SIZE_POS);
         
             $name = '';
             for ($i = 0; $i < $nameSize ; $i++) {

@@ -1,9 +1,8 @@
 <?php
+class WfcHtEmpWeekly {}
 /**
   No longer in use; not cleaned up to be plugin-safe.
   Kept for reference.
-*/
-return;
 
 include(dirname(__FILE__).'/../../../config.php');
 require($FANNIE_ROOT.'auth/login.php');
@@ -199,3 +198,5 @@ echo "<a href=weeklyReport.php>Back to Full Listing</a>";
 </form>
 </body>
 </html>
+<?php
+*/

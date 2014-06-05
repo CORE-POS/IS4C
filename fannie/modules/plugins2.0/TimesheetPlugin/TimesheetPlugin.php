@@ -24,8 +24,8 @@
 global $FANNIE_ROOT;
 if (!class_exists('FannieAPI'))
 	include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-if (!function_exists('createClass'))
-	include($FANNIE_ROOT.'auth/login.php');
+if (!class_exists('FannieAuth'))
+	include($FANNIE_ROOT.'classlib2.0/auth/FannieAuth.php');
 
 /**
 */
@@ -46,7 +46,8 @@ class TimesheetPlugin extends FanniePlugin {
 	public $plugin_description = 'Plugin for timeclock operations';
 
 
-	public function setting_change(){
+	public function setting_change()
+    {
 		global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
 
 		$db_name = $FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'];
@@ -55,19 +56,22 @@ class TimesheetPlugin extends FanniePlugin {
 		$dbc = FannieDB::get($db_name);
 
 		$errors = array();
-		$errors[] = $this->plugin_db_struct($dbc, 'payperiods', $db_name);
-		$errors[] = $this->plugin_db_struct($dbc, 'shifts', $db_name);
-		$errors[] = $this->plugin_db_struct($dbc, 'timesheet', $db_name);
 
-		foreach($errors as $e){
-			if ($e === True) continue;
-			echo 'TimesheetPlugin error: '.$e.'<br />';
+        $models = array(
+            'PayPeriodsModel',
+            'ShiftsModel',
+            'TimesheetModel',
+        );
+
+		foreach ($models as $model) {
+            $obj = new $model($dbc);
+            $obj->create();
 		}
 	}
 
 	public function plugin_enable(){
 		ob_start();
-		$try = createClass('timesheet_access',
+		$try = FannieAuth::createClass('timesheet_access',
 			'Grants user permission to use the
 			 Timesheet plugin');
 		ob_end_clean();

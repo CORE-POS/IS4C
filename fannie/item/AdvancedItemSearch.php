@@ -197,7 +197,9 @@ class AdvancedItemSearch extends FannieRESTfulPage
 
         $origin = FormLib::get('originID', 0);
         if ($origin != 0) {
-            $where .= ' AND p.current_origin_id=? ';
+            $from .= ' INNER JOIN ProductOriginsMap AS g ON p.upc=g.upc ';
+            $where .= ' AND (p.current_origin_id=? OR g.originID=?) ';
+            $args[] = $origin;
             $args[] = $origin;
         }
 

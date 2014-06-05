@@ -22,8 +22,9 @@
 *********************************************************************************/
 
 include(dirname(__FILE__).'/../../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include_once($FANNIE_ROOT.'cache/cache.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class OverShortMAS extends FannieRESTfulPage {
 	protected $header = 'MAS Export';
@@ -263,6 +264,9 @@ class OverShortMAS extends FannieRESTfulPage {
 
 	function get_startDate_endDate_view(){
 		global $FANNIE_URL;
+        if (!function_exists('get_cache')) {
+            include_once($FANNIE_ROOT.'cache/cache.php');
+        }
 		$records = get_cache('daily');
 		if ($records !== False)
 			$records = unserialize($records);

@@ -1,9 +1,8 @@
 <?php
+class WfcHtWeeklyReport {}
 /**
   No longer in use; not cleaned up to be plugin-safe.
   Kept for reference.
-*/
-return;
 
 include(dirname(__FILE__).'/../../../config.php');
 require($FANNIE_ROOT.'auth/login.php');
@@ -112,5 +111,5 @@ foreach($empData as $k=>$v){
 }
 echo "</table>";
 
-
+*/
 ?>

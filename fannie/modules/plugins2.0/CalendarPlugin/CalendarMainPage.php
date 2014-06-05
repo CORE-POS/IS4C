@@ -26,8 +26,8 @@ if (!class_exists('FanniePage'))
 	include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 if (!class_exists('CalendarPlugin'))
 	include(dirname(__FILE__).'/CalendarPlugin.php');
-if (!function_exists('getUID'))
-	include($FANNIE_ROOT.'auth/login.php');
+if (!class_exists('FannieAuth'))
+	include($FANNIE_ROOT.'classlib2.0/auth/FannieAuth.php');
 include_once(dirname(__FILE__).'/CalendarPluginDisplayLib.php');
 
 class CalendarMainPage extends FanniePage {
@@ -37,7 +37,7 @@ class CalendarMainPage extends FanniePage {
 
 	function preprocess(){
 		global $FANNIE_URL;
-		$this->uid = ltrim(getUID($this->current_user),"0");
+		$this->uid = ltrim(FannieAuth::getUID($this->current_user),"0");
 		$this->title = "Cal";
 		$this->header = "Calendars";
 		
