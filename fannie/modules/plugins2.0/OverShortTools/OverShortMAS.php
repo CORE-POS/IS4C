@@ -263,7 +263,7 @@ class OverShortMAS extends FannieRESTfulPage {
 	}
 
 	function get_startDate_endDate_view(){
-		global $FANNIE_URL;
+		global $FANNIE_URL, $FANNIE_ROOT;
         if (!function_exists('get_cache')) {
             include_once($FANNIE_ROOT.'cache/cache.php');
         }
