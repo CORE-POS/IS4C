@@ -271,10 +271,12 @@ class ItemEditorPage extends FanniePage
 
         uasort($FANNIE_PRODUCT_MODULES, array('ItemEditorPage', 'sortModules'));
         $count = 0;
+        $mod_js = '';
         foreach ($FANNIE_PRODUCT_MODULES as $class => $params) {
             $mod = new $class();
             $ret .= $mod->ShowEditForm($upc, $params['show'], $params['expand']);
             $shown[$class] = true;
+            $mod_js .= $mod->getFormJavascript($upc);
 
             if ($count == 0) { // show links after first mod
 
@@ -318,6 +320,12 @@ class ItemEditorPage extends FanniePage
         }
 
         $ret .= '</form>';
+
+        if ($mod_js != '') {
+            $ret .= '<script type="text/javascript">' . "\n";
+            $ret .= $mod_js;
+            $ret .= "\n</script>\n";
+        }
 
         $this->add_onload_command('$(\'#price\').focus();');
         

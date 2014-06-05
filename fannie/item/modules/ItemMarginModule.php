@@ -44,7 +44,7 @@ class ItemMarginModule extends ItemModule {
 		$ret .= $this->calculateMargin($vals[0],$vals[1],$vals[2]);
 		$ret .= '</div>';
 		$ret .= '</fieldset>';
-		$ret .= $this->js();
+
 		return $ret;
 	}
 
@@ -83,11 +83,11 @@ class ItemMarginModule extends ItemModule {
 		if ($price != 0)
 			$actual = (($price-$cost)/$price)*100;
 		if ($actual > $dm && is_numeric($dm)){
-			$ret .= sprintf("<span style=\"color:green;\">Current margin on this item is %.2f%%<br />",
+			$ret .= sprintf("<span style=\"color:green;\">Current margin on this item is %.2f%%</span><br />",
 				$actual);
 		}
 		elseif (!is_numeric($price)){
-			$ret .= "<span style=\"color:green;\">No price has been saved for this item<br />";
+			$ret .= "<span style=\"color:green;\">No price has been saved for this item</span><br />";
 		}
 		else {
 			$ret .= sprintf("<span style=\"color:red;\">Current margin on this item is %.2f%%</span><br />",
@@ -100,11 +100,11 @@ class ItemMarginModule extends ItemModule {
 		return $ret;
 	}
 
-	private function js(){
+	public function getFormJavascript($upc)
+    {
 		global $FANNIE_URL;
 		ob_start();
 		?>
-		<script type="text/javascript">
 		function updateMarginMod(){
 			$.ajax({
 				url: '<?php echo $FANNIE_URL; ?>item/modules/ItemMarginModule.php',
@@ -117,7 +117,6 @@ class ItemMarginModule extends ItemModule {
 		}
 		$('#price').change(updateMarginMod);
 		$('#cost').change(updateMarginMod);
-		</script>
 		<?php
 		return ob_get_clean();
 	}

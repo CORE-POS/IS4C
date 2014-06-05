@@ -74,13 +74,6 @@ class VendorItemModule extends ItemModule {
 			$ret .= '<input type="hidden" name="v_id[]" value="'.$id.'" />';
 			
 			$ret .= '</table>';
-			$ret .= "<script type=\"text/javascript\">
-				function vprice(id){
-					var cost = \$('#vcost'+id).val();
-					var units = \$('#vunits'+id).val();
-					\$('#vcc'+id).html('\$'+(cost*units));
-				}
-				</script>";
 
 			$style = 'display:none;';
 		}
@@ -89,6 +82,17 @@ class VendorItemModule extends ItemModule {
 		$ret .= '</fieldset>';
 		return $ret;
 	}
+
+    public function getFormJavascript($upc)
+    {
+        return "
+            function vprice(id){
+                var cost = \$('#vcost'+id).val();
+                var units = \$('#vunits'+id).val();
+                \$('#vcc'+id).html('\$'+(cost*units));
+            }
+            ";
+    }
 
 	function SaveFormData($upc){
 		$upc = BarcodeLib::padUPC($upc);

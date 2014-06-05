@@ -78,7 +78,6 @@ class LikeCodeModule extends ItemModule {
 		$ret .= $this->HistoryLink($myLC);	
 		$ret .= '</td>';
 		$ret .= '</tr></table></fieldset>';
-		$ret .= $this->js();
 
 		return $ret;
 	}
@@ -119,11 +118,11 @@ class LikeCodeModule extends ItemModule {
 		return True;
 	}
 
-	private function js(){
+	public function getFormJavascript($upc)
+    {
 		global $FANNIE_URL;
 		ob_start();
 		?>
-		<script type="text/javascript">
 		function updateLcModList(val){
 			$.ajax({
 				url: '<?php echo $FANNIE_URL; ?>item/modules/LikeCodeModule.php',
@@ -140,8 +139,8 @@ class LikeCodeModule extends ItemModule {
 				}
 			});
 		}
-		</script>
 		<?php
+
 		return ob_get_clean();
 	}
 

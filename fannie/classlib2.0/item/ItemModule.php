@@ -39,6 +39,11 @@ class ItemModule
 
     }
 
+    public function getFormJavascript($upc)
+    {
+        return '';
+    }
+
     public function saveFormData($upc)
     {
 

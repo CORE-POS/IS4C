@@ -257,41 +257,6 @@ class BaseItemModule extends ItemModule {
 					$w['subdept_no'],$w['subdept_no'],$w['subdept_name']);
 		}
 
-		$json = count($subs) == 0 ? '{}' : JsonLib::array_to_json($subs);
-		ob_start();
-		?>
-		<script type="text/javascript">;
-		function chainSelects(val){
-			var lookupTable = <?php echo $json; ?>;
-			if (val in lookupTable)
-				$('#subdept').html(lookupTable[val]);
-			else
-				$('#subdept').html('<option value=0>None</option>');
-			$.ajax({
-				url: '<?php echo $FANNIE_URL; ?>item/modules/BaseItemModule.php',
-				data: 'dept_defaults='+val,
-				dataType: 'json',
-				cache: false,
-				success: function(data){
-					if (data.tax)
-						$('#tax').val(data.tax);
-					if (data.fs)
-						$('#FS').attr('checked','checked');
-					else{
-						$('#FS').removeAttr('checked');
-					}
-					if (data.nodisc)
-						$('#NoDisc').attr('checked','checked');
-					else
-						$('#NoDisc').removeAttr('checked');
-				}
-
-			});
-		}
-		</script>
-		<?php
-		$ret .= ob_get_clean();
-
 		$ret .= "<tr align=top>";
 		$ret .= "<td align=left>";	
 		$ret .= '<select name="department" id="department" onchange="chainSelects(this.value);">';
@@ -336,6 +301,61 @@ class BaseItemModule extends ItemModule {
 		$ret .= '</table></fieldset>';
 		return $ret;
 	}
+
+    public function getFormJavascript($upc)
+    {
+        global $FANNIE_URL;
+        $dbc = $this->db();
+
+		$p = $dbc->prepare_statement('SELECT dept_no,dept_name,subdept_no,subdept_name,dept_ID 
+				FROM departments AS d
+				LEFT JOIN subdepts AS s ON d.dept_no=s.dept_ID
+				ORDER BY d.dept_no, s.subdept_name');
+		$r = $dbc->exec_statement($p);
+        $subs = array();
+		while($w = $dbc->fetch_row($r)){
+			if ($w['subdept_no'] == '') continue;
+			if (!isset($subs[$w['dept_ID']]))
+				$subs[$w['dept_ID']] = '';
+			$subs[$w['dept_ID']] .= sprintf('<option %s value="%d">%d %s</option>',
+					($w['subdept_no'] == $rowItem['subdept'] ? 'selected':''),
+					$w['subdept_no'],$w['subdept_no'],$w['subdept_name']);
+		}
+
+		$json = count($subs) == 0 ? '{}' : JsonLib::array_to_json($subs);
+		ob_start();
+		?>
+		function chainSelects(val){
+			var lookupTable = <?php echo $json; ?>;
+			if (val in lookupTable)
+				$('#subdept').html(lookupTable[val]);
+			else
+				$('#subdept').html('<option value=0>None</option>');
+			$.ajax({
+				url: '<?php echo $FANNIE_URL; ?>item/modules/BaseItemModule.php',
+				data: 'dept_defaults='+val,
+				dataType: 'json',
+				cache: false,
+				success: function(data){
+					if (data.tax)
+						$('#tax').val(data.tax);
+					if (data.fs)
+						$('#FS').attr('checked','checked');
+					else{
+						$('#FS').removeAttr('checked');
+					}
+					if (data.nodisc)
+						$('#NoDisc').attr('checked','checked');
+					else
+						$('#NoDisc').removeAttr('checked');
+				}
+
+			});
+		}
+		<?php
+
+        return ob_get_clean();
+    }
 
 	function SaveFormData($upc){
         global $FANNIE_PRODUCT_MODULES;
