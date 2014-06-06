@@ -24,7 +24,7 @@
 class ContactPref extends MemberModule {
 
 	// Return a form segment to display or edit the Contact Preference.
-	function ShowEditForm($memNum, $country="US"){
+	function showEditForm($memNum, $country="US"){
 
 		global $FANNIE_URL;
 
@@ -71,7 +71,7 @@ class ContactPref extends MemberModule {
 
 	// Update or insert the Contact Preference.
 	// Return "" on success or an error message.
-	function SaveFormData($memNum){
+	function saveFormData($memNum){
 		$dbc = $this->db();
 
 		$formPref = FormLib::get_form_value('MemContactPref',-1);
@@ -111,7 +111,7 @@ class ContactPref extends MemberModule {
 
 		return "";
 
-	// SaveFormData
+	// saveFormData
 	}
 
 // ContactPref

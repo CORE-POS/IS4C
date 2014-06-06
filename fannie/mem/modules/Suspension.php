@@ -26,7 +26,7 @@
 
 class Suspension extends MemberModule {
 
-	function ShowEditForm($memNum,$country="US"){
+	function showEditForm($memNum,$country="US"){
 		global $FANNIE_URL;
 
 		$dbc = $this->db();

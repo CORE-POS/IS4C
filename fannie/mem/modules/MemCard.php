@@ -24,7 +24,7 @@
 class MemCard extends MemberModule {
 
 	// Return a form segment for display or edit the Member Card#
-	function ShowEditForm($memNum, $country="US"){
+	function showEditForm($memNum, $country="US"){
 		global $FANNIE_URL;
 		global $FANNIE_MEMBER_UPC_PREFIX;
 
@@ -68,7 +68,7 @@ class MemCard extends MemberModule {
 
 	// Update, insert or delete the Member Card#.
 	// Return "" on success or an error message.
-	function SaveFormData($memNum){
+	function saveFormData($memNum){
 
 		global $FANNIE_MEMBER_UPC_PREFIX, $FANNIE_ROOT;
 		$dbc = $this->db();

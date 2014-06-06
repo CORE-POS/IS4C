@@ -23,7 +23,7 @@
 
 class Notes extends MemberModule {
 
-	function ShowEditForm($memNum, $country="US"){
+	function showEditForm($memNum, $country="US"){
 		global $FANNIE_URL;
 
 		$dbc = $this->db();
@@ -88,7 +88,7 @@ class Notes extends MemberModule {
 		return $ret;
 	}
 
-	function SaveFormData($memNum){
+	function saveFormData($memNum){
 
 		/* entry blank. do not save */
 		$note = FormLib::get_form_value('Notes_text');

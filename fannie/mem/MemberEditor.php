@@ -22,7 +22,6 @@
 *********************************************************************************/
 include('../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include('MemberModule.php');
 
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
@@ -121,7 +120,7 @@ class MemberEditor extends FanniePage {
 					if (!class_exists($mm))
 						include('modules/'.$mm.'.php');
 					$instance = new $mm();
-					$this->msgs .= $instance->SaveFormData($this->memNum);
+					$this->msgs .= $instance->saveFormData($this->memNum);
 				}
 
                 $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -184,7 +183,7 @@ class MemberEditor extends FanniePage {
 				include('modules/'.$mm.'.php');
 			$instance = new $mm();
 			$ret .= '<div style="float:left;">';
-			$ret .= $instance->ShowEditForm($this->memNum, $this->country);
+			$ret .= $instance->showEditForm($this->memNum, $this->country);
 			$ret .= '</div>';
 		}
 		$ret .= '<div style="clear:left;"></div>';

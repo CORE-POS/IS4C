@@ -24,7 +24,7 @@
 class AR extends MemberModule 
 {
 
-	function ShowEditForm($memNum,$country="US")
+	function showEditForm($memNum,$country="US")
     {
 		global $FANNIE_URL,$FANNIE_TRANS_DB, $FANNIE_ROOT;
 
@@ -68,7 +68,7 @@ class AR extends MemberModule
 		return $ret;
 	}
 
-	function SaveFormData($memNum)
+	function saveFormData($memNum)
     {
 		global $FANNIE_ROOT;
 		$dbc = $this->db();

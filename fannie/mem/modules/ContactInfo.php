@@ -23,7 +23,7 @@
 
 class ContactInfo extends MemberModule {
 
-	function ShowEditForm($memNum, $country="US"){
+	function showEditForm($memNum, $country="US"){
 		$dbc = $this->db();
 		
 		$infoQ = $dbc->prepare_statement("SELECT CardNo,FirstName,LastName,
@@ -95,7 +95,7 @@ class ContactInfo extends MemberModule {
 		return $ret;
 	}
 
-	function SaveFormData($memNum){
+	function saveFormData($memNum){
 		global $FANNIE_ROOT;
 		$dbc = $this->db();
 		if (!class_exists("MeminfoModel"))
@@ -158,9 +158,9 @@ class ContactInfo extends MemberModule {
 			return "";
 	}
 
-	function HasSearch(){ return True; }
+	function hasSearch(){ return True; }
 
-	function ShowSearchForm($country="US"){
+	function showSearchForm($country="US"){
 		$labels = array();
 		switch ($country) {
 			case "US":
@@ -173,25 +173,37 @@ class ContactInfo extends MemberModule {
 				break;
 		}
 		return "<p><b>First Name</b>: <input type='text' name='ContactInfo_fn'
-				size='10' /> &nbsp;&nbsp;&nbsp; <b>Last Name</b>: 
-				<input type='text' name='ContactInfo_ln' size='10' />
+				size='10' id='s_fn' /> &nbsp;&nbsp;&nbsp; <b>Last Name</b>: 
+				<input type='text' name='ContactInfo_ln' size='10' id='s_ln' />
 				<br /><br />
 				<b>Address</b>: 
-				<input type='text' name='ContactInfo_addr' size='15' />
+				<input type='text' name='ContactInfo_addr' id='s_addr' size='15' />
 				<br /><br />
 				<b>City</b>: 
-				<input type='text' name='ContactInfo_city' size='8' />
+				<input type='text' name='ContactInfo_city' id='s_city' size='8' />
 				<b>{$labels['state']}</b>:
 				<input type='text' name='ContactInfo_state' size='2' />
 				<b>{$labels['zip']}</b>:
 				<input type='text' name='ContactInfo_zip' size='5' />
 				<br /><br />
 				<b>Email</b>: 
-				<input type='text' name='ContactInfo_email' size='15' />
+				<input type='text' name='ContactInfo_email' id='s_email' size='15' />
 				</p>";
 	}
 
-	function GetSearchResults(){
+    public function getSearchLoadCommands()
+    {
+        global $FANNIE_URL;
+        return array(
+            "bindAutoComplete('#s_fn', '" . $FANNIE_URL . "ws/', 'mFirstName');\n",
+            "bindAutoComplete('#s_ln', '" . $FANNIE_URL . "ws/', 'mLastName');\n",
+            "bindAutoComplete('#s_addr', '" . $FANNIE_URL . "ws/', 'mAddress');\n",
+            "bindAutoComplete('#s_city', '" . $FANNIE_URL . "ws/', 'mCity');\n",
+            "bindAutoComplete('#s_email', '" . $FANNIE_URL . "ws/', 'mEmail');\n",
+        );
+    }
+
+	function getSearchResults(){
 		$dbc = $this->db();
 
 		$fn = FormLib::get_form_value('ContactInfo_fn');

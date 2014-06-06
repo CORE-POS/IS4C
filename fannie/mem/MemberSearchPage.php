@@ -22,7 +22,6 @@
 *********************************************************************************/
 include('../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include('MemberModule.php');
 
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
@@ -68,8 +67,8 @@ class MemberSearchPage extends FanniePage {
 			foreach($FANNIE_MEMBER_MODULES as $mm){
 				include('modules/'.$mm.'.php');
 				$instance = new $mm();
-				if ($instance->HasSearch()){
-					$tmp = $instance->GetSearchResults();
+				if ($instance->hasSearch()){
+					$tmp = $instance->getSearchResults();
 					foreach($tmp as $id => $label){
 						if (!isset($this->results[$id]))
 							$this->results[$id] = $label;
@@ -121,16 +120,31 @@ class MemberSearchPage extends FanniePage {
 
 		$ret .= '<form action="MemberSearchPage.php" method="post">';
 		$ret .= '<p><b>Member Number</>: <input type="text" name="memNum" id="mn" size="5" /></p>';
-		foreach($FANNIE_MEMBER_MODULES as $mm){
+        $searchJS = '';
+        $load = array();
+		foreach ($FANNIE_MEMBER_MODULES as $mm) {
 			include('modules/'.$mm.'.php');
 			$instance = new $mm();
-			if ($instance->HasSearch()){
-				$ret .= $instance->ShowSearchForm($this->country);
+			if ($instance->hasSearch()) {
+				$ret .= $instance->showSearchForm($this->country);
+                $searchJS .= $instance->getSearchJavascript();
+                foreach ($instance->getSearchLoadCommands() as $cmd) {
+                    $load[] = $cmd;
+                }
 			}
 		}
 		$ret .= '<hr />';
 		$ret .= '<input type="submit" value="Search" name="doSearch" />';
 		$ret .= '</form>';
+
+        $ret .= '<script type="text/javascript" src="../item/autocomplete.js"></script>';
+        if ($searchJS != '') {
+            $ret .= '<script type="text/javascript">' . $searchJS . '</script>';
+        }
+
+        foreach ($load as $cmd) {
+            $this->add_onload_command($cmd);
+        }
 		$this->add_onload_command("\$('input#mn').focus();");
 
 		return $ret;

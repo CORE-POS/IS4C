@@ -23,7 +23,7 @@
 
 class HouseholdMembers extends MemberModule {
 
-	function ShowEditForm($memNum, $country="US"){
+	function showEditForm($memNum, $country="US"){
 		global $FANNIE_URL;
 
 		$dbc = $this->db();
@@ -64,7 +64,7 @@ class HouseholdMembers extends MemberModule {
 		return $ret;
 	}
 
-	function SaveFormData($memNum){
+	function saveFormData($memNum){
 		global $FANNIE_ROOT;
 		$dbc = $this->db();
 		if (!class_exists("CustdataModel"))
