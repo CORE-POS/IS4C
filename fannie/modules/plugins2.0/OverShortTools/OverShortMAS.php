@@ -82,6 +82,9 @@ class OverShortMAS extends FannieRESTfulPage {
 		'IC' => 67710,
 		'MA' => 66600,
 		'RR' => 63380,	
+        'OB' => 66600,
+        'AD' => 66600,
+        'NCGA' => 66600,
 		'Member Discounts' => 66600,
 		'Staff Discounts' => 61170,
 		);
@@ -93,8 +96,10 @@ class OverShortMAS extends FannieRESTfulPage {
 				CASE WHEN trans_subtype IN ('CA','CK') THEN 'CA'
 				WHEN trans_subtype IN ('CC','AX') THEN 'CC'
 				WHEN trans_subtype IN ('EF','EC') THEN 'EF'
+                WHEN trans_subtype = 'IC' AND upc='0049999900001' THEN 'OB'
+                WHEN trans_subtype = 'IC' AND upc='0049999900002' THEN 'AD'
 				ELSE trans_subtype END as type,
-				MAX(TenderName) as name
+				MAX(CASE WHEN d.upc IN ('0049999900001','0049999900002') THEN d.description ELSE TenderName END) as name
 				FROM $dlog AS d LEFT JOIN
 				tenders AS t ON d.trans_subtype=t.TenderCode
 				WHERE trans_type='T'
