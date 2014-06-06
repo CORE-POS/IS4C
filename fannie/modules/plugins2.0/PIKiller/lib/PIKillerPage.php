@@ -35,7 +35,9 @@ class PIKillerPage extends FannieRESTfulPage {
     {
 		global $FANNIE_URL;
 		$this->add_css_file('css/styles.css');
+		$this->add_css_file($FANNIE_URL . 'src/jquery/css/smoothness/jquery-ui-1.8.1.custom.css');
 		$this->add_script($FANNIE_URL.'src/jquery/jquery.js');
+		$this->add_script($FANNIE_URL.'src/jquery/js/jquery-ui-1.8.1.custom.min.js');
 		return '<!DOCTYPE html>
 			<html lang="en">
 			<head>

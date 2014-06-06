@@ -81,7 +81,9 @@ class PISearchPage extends PIKillerPage {
 		return True;
 	}
 
-	function get_view(){
+	public function get_view()
+    {
+        global $FANNIE_URL;
 		ob_start();
 		?>
 		<tr>
@@ -107,6 +109,9 @@ class PISearchPage extends PIKillerPage {
 		</form></td>
 		</tr>
 		<?php
+        $this->add_script($FANNIE_URL . 'item/autocomplete.js');
+        $this->add_onload_command("bindAutoComplete('#last', '" . $FANNIE_URL . "ws/', 'mLastName');\n");
+        $this->add_onload_command("bindAutoComplete('#first', '" . $FANNIE_URL . "ws/', 'mFirstName');\n");
 		$this->add_onload_command('$(\'#memNum_t\').focus();');
 		return ob_get_clean();
 	}
