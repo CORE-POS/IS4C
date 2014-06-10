@@ -355,17 +355,18 @@ class FannieSignage
     {
         global $FANNIE_URL;
         $ret = '<table>';
+        $ret .= '<tr><th>UPC</th><th>Brand</th><th>Description</th><th>Price</th></tr>';
         $data = $this->loadItems();
         foreach ($data as $item) {
             $ret .= sprintf('<tr>
                             <td><a href="%sitem/ItemEditorPage.php?searchupc=%s" target="_edit%s">%s</a></td>
-                            <td>%s</td>
-                            <td>%s</td>
+                            <input type="hidden" name="update_upc[]" value="%d" />
+                            <td><input class="FannieSignageField" type="text" name="update_brand[]" value="%s" /></td>
+                            <td><input class="FannieSignageField" type="text" name="update_desc[]" value="%s" /></td>
                             <td>%.2f</td>
                             </tr>',
                             $FANNIE_URL,
-                            $item['upc'],
-                            $item['upc'],
+                            $item['upc'], $item['upc'], $item['upc'],
                             $item['upc'],
                             $item['brand'],
                             $item['description'],
@@ -375,6 +376,61 @@ class FannieSignage
         $ret .= '</table>';
 
         return $ret;
+    }
+
+    public function updateItem($upc, $brand, $description)
+    {
+        global $FANNIE_OP_DB;
+        switch (strtolower($this->source)) {
+            case 'shelftags':
+                $model = new ShelftagsModel(FannieDB::get($FANNIE_OP_DB));
+                $model->id($this->source_id);
+                $model->upc(BarcodeLib::padUPC($upc));
+                $model->brand($brand);
+                $model->description($description);
+                $model->save();
+                break;
+            case 'batchbarcodes':
+                $dbc = FannieDB::get($FANNIE_OP_DB);
+                $args = array($brand, $description, BarcodeLib::padUPC($upc));
+                if (!is_array($this->source_id)) {
+                    $this->source_id = array($this->source_id);
+                }
+                $ids = '';
+                foreach ($this->source_id as $id) {
+                    $args[] = $id;
+                    $ids .= '?,';
+                }
+                $ids = substr($ids, 0, strlen($ids)-1);
+                $prep = $dbc->prepare('UPDATE batchBarcodes
+                                       SET brand=?,
+                                        description=?
+                                       WHERE upc=?
+                                        AND batchID IN (' . $ids . ')');
+                $dbc->execute($prep, $args);
+                break;
+            case 'batch':
+            case '':
+                $model = new ProductUserModel(FannieDB::get($FANNIE_OP_DB));
+                $model->upc(BarcodeLib::padUPC($upc));
+                $model->brand($brand);
+                $model->description($description);
+                $model->save();
+                break;
+        }
+    }
+
+    public function saveItems()
+    {
+        $upcs = FormLib::get('update_upc', array());
+        $brands = FormLib::get('update_brand', array());
+        $descs = FormLib::get('update_desc', array());
+        for ($i=0; $i<count($upcs); $i++) {
+            if (!isset($brands[$i]) || !isset($descs[$i])) {
+                continue;
+            }
+            $this->updateItem($upcs[$i], $brands[$i], $descs[$i]);
+        }
     }
 
     public function drawPDF()
