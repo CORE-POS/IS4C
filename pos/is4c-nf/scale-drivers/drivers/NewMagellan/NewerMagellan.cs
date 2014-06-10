@@ -32,18 +32,22 @@ using System;
 using System.Threading;
 using System.IO;
 using System.Collections;
+using System.Net;
 
 using CustomForms;
 using CustomUDP;
+using WebSockets;
 using SPH;
 
-public class Magellan : DelegateForm {
+public class NewerMagellan : DelegateForm {
 
 	private SerialPortHandler[] sph;
 	private UDPMsgBox u;
+    private WebSocketServer w;
+    private Thread WsThread;
 
 	// read deisred modules from config file
-	public Magellan(int verbosity){
+	public NewerMagellan(int verbosity){
 		ArrayList conf = ReadConfig();
 		sph = new SerialPortHandler[conf.Count];
 		for(int i = 0; i < conf.Count; i++){
@@ -67,7 +71,7 @@ public class Magellan : DelegateForm {
 
 	// alternate constructor for specifying
 	// desired modules at compile-time
-	public Magellan(SerialPortHandler[] args){
+	public NewerMagellan(SerialPortHandler[] args){
 		this.sph = args;
 		FinishInit();
 	}
@@ -78,6 +82,10 @@ public class Magellan : DelegateForm {
 		u = new UDPMsgBox(9450);
 		u.SetParent(this);
 		u.My_Thread.Start();
+
+        w = new WebSocketServer(new IPEndPoint(IPAddress.Any, 8888));
+        WsThread = new Thread(new ThreadStart(w.Run));
+        WsThread.Start();
 	}
 
 	private void MonitorSerialPorts(){
@@ -100,18 +108,13 @@ public class Magellan : DelegateForm {
 
     public override void MsgSend(string msg)
     {
-        int ticks = Environment.TickCount;
-        char sep = System.IO.Path.DirectorySeparatorChar;
-        while (File.Exists("ss-output/"  + sep + ticks)) {
-            ticks++;
+        string output;
+        if (msg.Substring(0, 1) == "S") {
+            output = "{\"scale\":\"" + msg + "\"}";
+        } else {
+            output = "{\"scans\":\"" + msg + "\"}";
         }
-
-        TextWriter sw = new StreamWriter("ss-output/" +sep+"tmp"+sep+ticks);
-        sw = TextWriter.Synchronized(sw);
-        sw.WriteLine(msg);
-        sw.Close();
-        File.Move("ss-output/" +sep+"tmp"+sep+ticks,
-              "ss-output/" +sep+ticks);
+        w.Push(output);
     }
 
 	public void ShutDown(){
@@ -181,7 +184,7 @@ public class Magellan : DelegateForm {
 				}
 			}
 		}
-		Magellan m = new Magellan(verbosity);
+		NewerMagellan m = new NewerMagellan(verbosity);
 		bool exiting = false;
 		while(!exiting){
 			string user_in = System.Console.ReadLine();

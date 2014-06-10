@@ -988,6 +988,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
     }
 
     private void PushOutput(string s){
+        /*
         int ticks = Environment.TickCount;
         char sep = System.IO.Path.DirectorySeparatorChar;
         while(File.Exists(MAGELLAN_OUTPUT_DIR+sep+ticks))
@@ -999,6 +1000,8 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         sw.Close();
         File.Move(MAGELLAN_OUTPUT_DIR+sep+"tmp"+sep+ticks,
               MAGELLAN_OUTPUT_DIR+sep+ticks);
+        */
+        parent.MsgSend(s);
     }
 
     /**

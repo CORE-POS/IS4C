@@ -383,11 +383,20 @@ class BasicPage {
 	  Outputs the javascript used to poll for scale
 	  input and activates it on page load.
 	*/
-	function scanner_scale_polling($include_scans=True){
-		if (!$include_scans) return '';
+	function scanner_scale_polling($include_scans=true)
+    {
+        global $CORE_LOCAL;
+		if (!$include_scans) {
+            return '';
+        }
+        $scaleDriver = $CORE_LOCAL->get("scaleDriver");
+        if ($scaleDriver == '' || !class_exists($scaleDriver)) {
+            return '';
+        }
+        $scaleObj = new $scaleDriver();
 		?>
 		<script type="text/javascript"
-			src="<?php echo $this->page_url; ?>js/poll-scale.js">
+			src="<?php echo $this->page_url; ?>js/<?php echo $scaleObj->javascriptFile(); ?>">
 		</script>
 		<?php
 		$this->add_onload_command("pollScale('".$this->page_url."');\n");
