@@ -152,7 +152,7 @@ class DefaultReceiptSort
 	  @return $cur with the new record added
 	*/
 	protected function upc_merge($cur, $new) {
-		if ($new['trans_status'] != '' || $new['trans_type'] != ''
+		if ($new['trans_status'] != '' || $new['trans_type'] != 'I'
 		   || $new['scale'] != 0 || $new['matched'] != 0) {
 			/**
 			  By-weight, refund, void, or group discount
