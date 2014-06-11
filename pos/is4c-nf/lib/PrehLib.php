@@ -703,12 +703,6 @@ static public function deptkey($price, $dept,$ret=array())
 			$CORE_LOCAL->set("togglefoodstamp",0);
 		}
 
-		if ($CORE_LOCAL->get("ddNotify") != 0 &&  $CORE_LOCAL->get("itemPD") == 10) {  
-			$CORE_LOCAL->set("itemPD",0);
-			$deptDiscount = 7;
-			$intvoided = 22;
-		}
-
 		if ($price > $deptmax && $CORE_LOCAL->get("msgrepeat") == 0) {
 
 			$CORE_LOCAL->set("boxMsg","$".$price." "._("is greater than department limit")."<p>"

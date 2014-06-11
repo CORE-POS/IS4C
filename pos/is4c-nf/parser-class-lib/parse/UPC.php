@@ -523,14 +523,6 @@ class UPC extends Parser {
 
 		// cleanup, reset flags and beep
 		if ($quantity != 0) {
-			// ddNotify is legacy/unknown. likely doesn't work
-			if ($CORE_LOCAL->get("ddNotify") == 1 && $CORE_LOCAL->get("itemPD") == 10) {
-				$CORE_LOCAL->set("itemPD",0);
-				$discountable = 7;
-			}
-			$intvoided = 0;
-			if ($CORE_LOCAL->get("ddNotify") == 1 && $discountable == 7) 
-				$intvoided = 22;
 
 			$CORE_LOCAL->set("msgrepeat",0);
 			$CORE_LOCAL->set("qttyvalid",0);
