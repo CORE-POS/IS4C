@@ -243,7 +243,7 @@ class MercuryE2E extends BasicCCModule
         $sql = "SELECT commErr,
                     httpCode,
                     validResponse,
-                    xResponseCode,
+                    xResultCode AS xResponseCode,
                     xTransactionID
                 FROM PaycardTransactions 
                 WHERE dateID=" . $today . " 
@@ -412,7 +412,7 @@ class MercuryE2E extends BasicCCModule
         }
     
         // save the details
-        $CORE_LOCAL->set("paycard_amount",(($request['mode']=='retail_alone_credit') ? -1 : 1) * $request['amount']);
+        $CORE_LOCAL->set("paycard_amount",(($request['mode']=='Return') ? -1 : 1) * $request['amount']);
         $CORE_LOCAL->set("paycard_id",$transID);
         $CORE_LOCAL->set("paycard_trans",$cashier."-".$lane."-".$trans);
         $CORE_LOCAL->set("paycard_type",PaycardLib::PAYCARD_TYPE_ENCRYPTED);

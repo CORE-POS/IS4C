@@ -194,6 +194,12 @@ static public function msgbox($strmsg, $icon,$noBeep=False)
 	$ret .= "</div><div class=\"clear\"></div></div>";
 	$ret .= "</div>";
 
+    // input has probably already been marked up for display. 
+    // no need to re-wrap in various <div>s
+    if (strstr($strmsg, 'id="boxMsg"') && strstr($strmsg, 'class="boxMsgBody"')) {
+        $ret = $strmsg;
+    }
+
 	if (!$noBeep) {
 		MiscLib::errorBeep();
     }
