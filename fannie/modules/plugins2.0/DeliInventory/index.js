@@ -99,7 +99,7 @@ function edititem(id){
 	var fraction = document.getElementById('item'+id+'col5').innerHTML;
 	var price = document.getElementById('item'+id+'col7').innerHTML;
 	
-	document.getElementById('item'+id+'col0').innerHTML = "<input type=text onkeyup=\"key_callback(event);\" id=itemname"+id+" value=\""+item+"\" maxlength=50 />";
+	document.getElementById('item'+id+'col0').innerHTML = "<input type=text id=itemname"+id+" value=\""+item+"\" maxlength=50 />";
 	document.getElementById('item'+id+'col1').innerHTML = "<input type=text id=size"+id+" value=\""+size+"\" size=8 maxlength=20 />";
 	document.getElementById('item'+id+'col2').innerHTML = "<input type=text id=orderno"+id+" value=\""+orderno+"\" size=6 maxlength=15 />";
 	document.getElementById('item'+id+'col3').innerHTML = "<input type=text id=units"+id+" value=\""+units+"\" size=7 maxlength=10 />";
@@ -108,6 +108,8 @@ function edititem(id){
 	document.getElementById('item'+id+'col7').innerHTML = "<input type=text id=price"+id+" value=\""+price+"\" size=7 />";
 	
 	document.getElementById('edit'+id).innerHTML = "<a href=\"\" onclick=\"saveAll(); return false;\">Save</a>";
+
+    $('#itemRow'+id+' input:text').keyup(key_callback);
 }
 
 function key_callback(e){

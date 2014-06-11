@@ -390,6 +390,7 @@ if (isset($_GET['action'])){
 
     public function body_content()
     {
+        global $FANNIE_URL;
         ob_start();
 ?>
 
