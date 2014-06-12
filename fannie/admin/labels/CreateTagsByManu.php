@@ -57,7 +57,7 @@ class CreateTagsByManu extends FanniePage {
 					or (n.vendorName is NULL)
 				)");
 			$r = $dbc->exec_statement($q,array('%'.$manu.'%'));
-            $tag = new ShelfTagModel($dbc);
+            $tag = new ShelftagsModel($dbc);
 			while($w = $dbc->fetch_row($r)){
                 $tag->id($pageID);
                 $tag->upc($w['upc']);

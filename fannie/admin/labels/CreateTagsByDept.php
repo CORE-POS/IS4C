@@ -52,7 +52,7 @@ class CreateTagsByDept extends FanniePage {
 					or (n.vendorName is NULL)
 				)");
 			$r = $dbc->exec_statement($q,array($start,$end));
-            $tag = new ShelfTagModel($dbc);
+            $tag = new ShelftagModel($dbc);
 			while($w = $dbc->fetch_row($r)){
                 $tag->id($pageID);
                 $tag->upc($w['upc']);
