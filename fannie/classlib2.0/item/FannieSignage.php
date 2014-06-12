@@ -27,6 +27,7 @@ class FannieSignage
     protected $source = '';
     protected $source_id = 0;
     protected $data = array();
+    protected $overrides = array();
 
     /**
       constructor
@@ -280,6 +281,15 @@ class FannieSignage
                 }
             }
 
+            if (isset($this->overrides[$row['upc']])) {
+                foreach ($this->overrides[$row['upc']] as $key => $val) {
+                    if ($key == 'originName' && $val != $row['originName']) {
+                        $row['originShortName'] = $val;
+                    }
+                    $row[$key] = $val;
+                }
+            }
+
             $data[] = $row;
         }
 
@@ -355,7 +365,7 @@ class FannieSignage
     {
         global $FANNIE_URL;
         $ret = '<table>';
-        $ret .= '<tr><th>UPC</th><th>Brand</th><th>Description</th><th>Price</th></tr>';
+        $ret .= '<tr><th>UPC</th><th>Brand</th><th>Description</th><th>Price</th><th>Origin</th></tr>';
         $data = $this->loadItems();
         foreach ($data as $item) {
             $ret .= sprintf('<tr>
@@ -364,13 +374,15 @@ class FannieSignage
                             <td><input class="FannieSignageField" type="text" name="update_brand[]" value="%s" /></td>
                             <td><input class="FannieSignageField" type="text" name="update_desc[]" value="%s" /></td>
                             <td>%.2f</td>
+                            <td><input class="FannieSignageField" type="text" name="update_origin[]" value="%s" /></td>
                             </tr>',
                             $FANNIE_URL,
                             $item['upc'], $item['upc'], $item['upc'],
                             $item['upc'],
                             $item['brand'],
                             $item['description'],
-                            $item['normal_price']
+                            $item['normal_price'],
+                            $item['originName']
             );
         }
         $ret .= '</table>';
@@ -416,6 +428,10 @@ class FannieSignage
                 $model->brand($brand);
                 $model->description($description);
                 $model->save();
+                $model = new ProductsModel(FannieDB::get($FANNIE_OP_DB));
+                $model->upc(BarcodeLib::padUPC($upc));
+                $model->brand($brand);
+                $model->save();
                 break;
         }
     }
@@ -431,6 +447,15 @@ class FannieSignage
             }
             $this->updateItem($upcs[$i], $brands[$i], $descs[$i]);
         }
+    }
+
+    public function addOverride($upc, $field_name, $value)
+    {
+        $upc = BarcodeLib::padUPC($upc);
+        if (!isset($this->overrides[$upc])) {
+            $this->overrides[$upc] = array();
+        }
+        $this->overrides[$upc][$field_name] = $value;
     }
 
     public function drawPDF()

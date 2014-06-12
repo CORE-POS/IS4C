@@ -470,6 +470,28 @@ class BaseItemModule extends ItemModule {
 		}
 		echo JsonLib::array_to_json($json);
 	}
+
+    function summaryRows($upc)
+    {
+        global $FANNIE_OP_DB;
+		$dbc = $this->db();
+
+        $model = new ProductsModel($dbc);
+        $model->upc($upc);
+        if ($model->load()) {
+            $row1 = '<th align="right">UPC</th>
+                <td><a href="ItemEditorPage.php?searchupc=' . $upc . '">' . $upc . '</td>
+                <td colspan="2" align="right"><a href="" onclick="window.open(\'addShelfTag.php?upc=' . $upc . '\',
+                    \'New Shelftag\', \'location=0,status=1,scrollbars=1,width=300,height=200\'); return false;"
+                    >Shelf Tag</a></td>';
+            $row2 = '<th>Description</th><td>' . $model->description() . '</td>
+                     <th>Price</th><td>$' . $model->normal_price() . '</td>';
+
+            return array($row1, $row2);
+        } else {
+            return array('<td colspan="4">Error saving. <a href="ItemEditorPage.php?searchupc=' . $upc . '">Try Again</a>?</td>');
+        }
+    }
 }
 
 /**

@@ -49,6 +49,11 @@ class ItemModule
 
     }
 
+    public function summaryRows($upc)
+    {
+        return array();
+    }
+
     public function hasSearch()
     {
         return false;

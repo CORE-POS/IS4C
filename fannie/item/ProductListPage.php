@@ -232,10 +232,12 @@ class ProductListPage extends FannieReportTool
 					if (confirm(data.alertBox)){
 						$.ajax({
 						url: 'ProductListPage.php',
-						data: 'ajax=doDelete&upc='+upc+'&desc='+enc_desc,
+						data: 'ajax=doDelete&upc='+upc+'&desc='+data.enc_desc,
 						cache: false,
 						type: 'post',
-						success: function(data){}
+						success: function(data){
+                            $('#' + upc).remove();
+                        }
 						});
 					}
 				}
@@ -340,7 +342,7 @@ class ProductListPage extends FannieReportTool
 
 			$json = array(
 				'alertBox'=>$ret,
-				'upc'=>ltrim('0',$upc),
+				'upc'=>ltrim($upc, '0'),
 				'enc_desc'=>$encoded_desc
 			);
 			echo JsonLib::array_to_json($json);
@@ -353,11 +355,24 @@ class ProductListPage extends FannieReportTool
             $update = new ProdUpdateModel($dbc);
             $update->upc($upc);
             $update->logUpdate(ProdUpdateModel::UPDATE_DELETE);
+            
+            $model = new ProductsModel($dbc);
+            $model->upc($upc);
+            $model->delete();
 
-			ProductsModel::staticDelete($upc);
+            $model = new ProductUserModel($dbc);
+            $model->upc($upc);
+            $model->delete();
+
+            $model = new ScaleItemsModel($dbc);
+            $model->plu($upc);
+            $model->delete();
 
 			$delP = $dbc->prepare_statement("delete from prodExtra where upc=?");
 			$delXR = $dbc->exec_statement($delP,array($upc));
+
+			$delP = $dbc->prepare_statement("DELETE FROM upcLike WHERE upc=?");
+			$delR = $dbc->exec_statement($delP,array($upc));
 
 			deleteProductAllLanes($upc);
 			break;

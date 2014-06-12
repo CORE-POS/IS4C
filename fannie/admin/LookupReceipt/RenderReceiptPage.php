@@ -188,7 +188,7 @@ class RenderReceiptPage extends FanniePage {
 		$ret .= "<tr><td colspan=4 align=center>--------------------------------------------------------</td></tr>";
 		$ret .= "<tr><td colspan=4 align=center>Reprinted Transaction</td></tr>";
 		$ret .= "<tr><td colspan=4 align=center>--------------------------------------------------------</td></tr>";
-		$ret .= "<tr><td colspan=4 align=center>Member #: {$row2['memberID']}</td</tr>";
+		$ret .= "<tr><td colspan=4 align=center>" . _('Owner') . "#: {$row2['memberID']}</td</tr>";
 		$ret .= "</table>\n";
 
 		return $ret;

@@ -53,6 +53,7 @@ class ProdUserModule extends ItemModule
         $ret .= '<tr>';
         $ret .= '<th>Brand</th>';
         $ret .= '<td><input type="text" size="45" id="lf_brand" name="lf_brand" value="' . $model->brand() . '" /></td>';
+        $ret .= '<td><a href="" onclick="createSign(); return false;">Make Sign</a></td>';
         $ret .= '</tr>';
         $ret .= '<tr>';
         $ret .= '<th>Desc.</th>';
@@ -177,5 +178,39 @@ class ProdUserModule extends ItemModule
         
         return $model->save();
 	}
+
+    public function getFormJavascript($upc)
+    {
+        global $FANNIE_URL;
+        ob_start();
+        ?>
+        function createSign()
+        {
+           var form = $('<form />',
+                            { action: '<?php echo $FANNIE_URL; ?>admin/labels/SignFromSearch.php',
+                              method: 'post',
+                              id: 'newSignForm' }
+            );
+           form.append($('<input />',
+                        { type: 'hidden', name: 'u[]', value: '<?php echo $upc; ?>' }));
+
+           $('body').append(form);
+           $('#newSignForm').submit();
+        }
+        <?php
+        return ob_get_clean();
+
+    }
+
+    public function summaryRows($upc)
+    {
+        global $FANNIE_URL;
+        $form = sprintf('<form id="newSignForm" method="post" action="%sadmin/labels/SignFromSearch.php">
+                        <input type="hidden" name="u[]" value="%s" />
+                        </form>', $FANNIE_URL, $upc);
+        $ret = '<td>' . $form . '<a href="" onclick="$(\'#newSignForm\').submit();return false;">Create Sign</a></td>';
+
+        return array($ret);
+    }
 }
 

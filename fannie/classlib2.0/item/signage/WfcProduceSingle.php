@@ -21,71 +21,72 @@
 
 *********************************************************************************/
 
-class Signage16UpP extends FannieSignage 
+class WfcProduceSingle extends FannieSignage 
 {
-    protected $BIG_FONT = 18;
-    protected $MED_FONT = 14;
-    protected $SMALL_FONT = 10;
+
+    protected $BIG_FONT = 64;
+    protected $MED_FONT = 24;
+    protected $SMALL_FONT = 14;
 
     public function drawPDF()
     {
-        $pdf = new FPDF('P', 'mm', 'Letter');
-        $pdf->SetMargins(0, 3.175, 0);
+        $pdf = new FPDF('L', 'mm', 'Letter');
+        $pdf->SetMargins(3.175, 3.175, 3.175);
         $pdf->SetAutoPageBreak(false);
         $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
         $pdf->SetFont('Gill', '', 16);
 
         $data = $this->loadItems();
-        $count = 0;
-        $sign = 0;
-        $width = 53.975;
-        $height = 66.68;
-        $top = 15;
-        $left = 5.175;
+        $width = 136.52;
+        $height = 105;
+        $top = 90;
+        $left = 15;
         $effective_width = $width - (2*$left);
         foreach ($data as $item) {
-            if ($count % 16 == 0) {
-                $pdf->AddPage();
-                $sign = 0;
-            }
+            $pdf->AddPage();
 
-            $row = floor($sign / 4);
-            $column = $sign % 4;
+            $column = 1; // right aligned
 
             $price = sprintf('$%.2f', $item['normal_price']);
             if ($item['scale']) {
                 $price .= ' / lb';
+            } else {
+                $price .= ' / ea';
             }
 
-            $pdf->SetXY($left + ($width*$column), $top + ($row*$height));
+            $pdf->SetXY($left + ($width*$column), $top);
             $pdf->SetFontSize($this->SMALL_FONT);
-            $pdf->MultiCell($effective_width, 6, $item['brand'], 0, 'C');
+            $pdf->Cell($effective_width, 10, $item['brand'], 0, 1, 'C');
             $pdf->SetX($left + ($width*$column));
             $pdf->SetFontSize($this->MED_FONT);
-            $pdf->MultiCell($effective_width, 6, $item['description'], 0, 'C');
+            $pdf->MultiCell($effective_width, 12, $item['description'], 0, 'C');
             $pdf->SetX($left + ($width*$column));
             $pdf->SetFontSize($this->BIG_FONT);
-            $pdf->MultiCell($effective_width, 8, $price, 0, 'C');
+            $pdf->Cell($effective_width, 25, $price, 0, 1, 'C');
+            $y = $pdf->GetY();
 
             if ($item['startDate'] != '' && $item['endDate'] != '') {
                 // intl would be nice
-                $datestr = _('Thru') . ' ' . date('n/j/y', strtotime($item['endDate'])) . '  '; // margin padding
-                $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - $top - 10));
+                $datestr = date('m/d/Y', strtotime($item['startDate']))
+                        . ' - ' 
+                        . date('m/d/Y', strtotime($item['endDate']));
+                $pdf->SetXY($left + ($width*$column), $top + ($height - 40));
                 $pdf->SetFontSize($this->SMALL_FONT);
-                $pdf->Cell($effective_width, 6, $datestr, 0, 1, 'R');
+                $pdf->Cell($effective_width, 20, $datestr, 0, 1, 'R');
             }
 
-            if ($item['originShortName'] != '') {
-                $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - $top - 10));
+            if ($item['originName'] != '') {
+                $pdf->SetXY($left + ($width*$column), $y);
                 $pdf->SetFontSize($this->SMALL_FONT);
-                $pdf->Cell($effective_width, 6, $item['originShortName'], 0, 1, 'L');
+                if (strlen($item['originName']) < 50) {
+                    $pdf->Cell($effective_width, 20, $item['originName'], 0, 1, 'L');
+                } else {
+                    $pdf->Cell($effective_width, 20, $item['originShortName'], 0, 1, 'L');
+                }
             }
-
-            $count++;
-            $sign++;
         }
 
-        $pdf->Output('Signage16UpP.pdf', 'I');
+        $pdf->Output('WfcProdSingle.pdf', 'I');
     }
 }
 

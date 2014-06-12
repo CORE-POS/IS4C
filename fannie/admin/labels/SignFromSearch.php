@@ -75,7 +75,7 @@ class SignFromSearch extends FannieRESTfulPage
           and forth between this editor and the 
           normal item editor.
         */
-        if (FormLib::get('update') == 'Update Text') {
+        if (FormLib::get('update') == 'Save Text') {
             $this->signage_obj->saveItems();
             echo '<html><head></head>
                   <body onload="document.forms[0].submit();">
@@ -85,6 +85,22 @@ class SignFromSearch extends FannieRESTfulPage
             }
             echo '</form></body></html>';
             return false;
+        } else if (is_array(FormLib::get('update_upc'))) {
+            $upc = FormLib::get('update_upc');
+            $brand = FormLib::get('update_brand', array());
+            $desc = FormLib::get('update_desc', array());
+            $origin = FormLib::get('update_origin', array());
+            for ($i=0; $i<count($upc); $i++) {
+                if (isset($brand[$i])) {
+                    $this->signage_obj->addOverride($upc[$i], 'brand', $brand[$i]);
+                }
+                if (isset($desc[$i])) {
+                    $this->signage_obj->addOverride($upc[$i], 'description', $desc[$i]);
+                }
+                if (isset($origin[$i])) {
+                    $this->signage_obj->addOverride($upc[$i], 'originName', $origin[$i]);
+                }
+            }
         }
 
         if (FormLib::get('pdf') == 'Print') {
@@ -114,7 +130,7 @@ class SignFromSearch extends FannieRESTfulPage
         }
 
         $this->signage_obj = new $class_name(array(), 'batch', $this->batch);
-        if (FormLib::get('update') == 'Update Text') {
+        if (FormLib::get('update') == 'Save Text') {
             $this->signage_obj->saveItems();
             echo '<html><head></head>
                   <body onload="document.forms[0].submit();">
@@ -197,7 +213,7 @@ class SignFromSearch extends FannieRESTfulPage
 
         $ret .= $this->signage_obj->listItems();
 
-        $ret .= '<input type="submit" name="update" id="updateBtn" value="Update Text" />';
+        $ret .= '<input type="submit" name="update" id="updateBtn" value="Save Text" />';
 
         $this->add_onload_command('$(".FannieSignageField").keydown(function(event) {
             if (event.which == 13) {
