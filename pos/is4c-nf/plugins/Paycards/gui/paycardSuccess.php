@@ -89,8 +89,10 @@ class paycardSuccess extends BasicPage {
                     $CORE_LOCAL->set("CacheCardType","");
                 }
 				PaycardLib::paycard_reset();
-				$CORE_LOCAL->set("strRemembered","TO");
-				$CORE_LOCAL->set("msgrepeat",1);
+                if ($mode == PaycardLib::PAYCARD_MODE_AUTH) {
+                    $CORE_LOCAL->set("strRemembered","TO");
+                    $CORE_LOCAL->set("msgrepeat",1);
+                }
 
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
