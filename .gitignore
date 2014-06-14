@@ -5,6 +5,7 @@ pos/is4c-nf/log/*.log
 pos/is4c-nf/ini.php
 pos/is4c-nf/locale/*.po
 pos/is4c-nf/locale/*.pot
+pos/is4c-nf/graphics/is4c.gif
 fannie/reports/cash_report/image_area/*
 fannie/config.php
 fannie/logs/*.log
