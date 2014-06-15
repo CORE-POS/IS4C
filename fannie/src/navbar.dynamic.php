@@ -21,6 +21,7 @@ else {
 
 <?php
 
+if (!function_exists("render_menu")) {
 function render_menu($arr,$depth=0){
 	global $FANNIE_URL, $FANNIE_NAV_POSITION;
 //	$FANNIE_NAV_POSITION = "top";
@@ -69,6 +70,7 @@ else {
 		}
 }
 	}
+}
 }
 
 if (!isset($FANNIE_MENU) || !is_array($FANNIE_MENU))
