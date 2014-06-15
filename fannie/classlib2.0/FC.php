@@ -59,6 +59,16 @@ function fc_init()
             }
 
             $symbol = substr($token[1],1);
+            /* 12Feb2014 EL Made change adding this isset condition.
+             * 19May2014 EL I've forgotten the context of needing this.
+             * Resolve conflict by keeping it until there is time to explore it again.
+             * Re: $$symbol
+             * PHP Manual: http://www.php.net/manual/en/language.variables.variable.php
+             * "A variable variable takes the value of a variable and treats that as the name of a variable."
+             */
+            if (isset($symbols[$symbol])) {
+                continue;
+            }
             $symbols[$symbol] = $$symbol;
             fwrite($fp, 'static public $'.$symbol.';');
             /**

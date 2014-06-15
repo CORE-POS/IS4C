@@ -122,8 +122,14 @@
             foreach($this->uniqueChoices as $sourceValue=>$sourceLabel)
             {
 				if($sourceValue == $selected_item[12]) {		// [12] = Department number
-					$selected_index = $selected_item[28];		// [28] = subdept. #
-					$selected_index = $selected_index - ($sourceValue * 100);	// the index of the subdept just happens to be preceded by the dept_no
+                    // 13May14 EL Adjusted offset.
+					$selected_index = $selected_item[31];		// [28] = subdept. #
+					//$selected_index = $selected_item[28];		// [28] = subdept. #
+                    /* the index of the subdept just happens to be preceded by the dept_no
+                     * 13May14 EL I don't understand the comment above.
+                     *            With this adjustment the function doesn't work; without it it does.
+                     */
+                    //$selected_index = $selected_index - ($sourceValue * 100);
 				} else {
 					$selected_index = 0;
 				}
