@@ -49,6 +49,10 @@ class SyncIndexPage extends FanniePage {
 		<option value="employees">Cashiers</option>
 		<option value="departments">Departments</option>
 		<option value="tenders">Tenders</option>
+		<option value="houseCoupons">House Coupons</option>
+		<option value="houseVirtualCoupons">House Virtual Coupons</option>
+		<option value="houseCouponItems">House Coupon Items</option>
+		<option value="memtype">Member Types</option>
 		</select><br /><br />
 
 		<b>Other table</b>: <input type="text" name="othertable" /><br /><br />

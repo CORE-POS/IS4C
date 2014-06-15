@@ -162,22 +162,58 @@ class HouseCouponEditor extends FanniePage
 	}
 
 	function list_house_coupons(){
-		global $FANNIE_OP_DB;
+		global $FANNIE_OP_DB, $FANNIE_URL;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 		
-		$ret = '<form action="HouseCouponEditor.php" method="get">';
+		$ret = '<form action="HouseCouponEditor.php" method="get" style="margin-top:0.5em;">';
 		$ret .= '<input type="submit" name="new_coupon_submit" value="New Coupon" />';
 		$ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-		$ret .= '<input type="submit" name="explain_submit" value="Explanation of Settings" />';
+        $ret .= ('<span style="font-weight:bold;"><a href="'.
+                "javascript:openHelpWindow('explainify.html');" .
+                    '" title="Help in a popup window">Help: Explanation of Settings and Options</a></span>');
 		$ret .= '</form>';
-		$ret .= '<table cellpadding="4" cellspacing="0" border="1" />';
-		$ret .= '<tr><th>ID</th><th>Value</th><th>Expires</th></tr>';
+
+		$ret .= '<table cellpadding="4" cellspacing="0" border="1" style="margin-top:0.5em;"/>';
+        $ret .= '<tr style="vertical-align:bottom;">' .
+                    '<th>ID</th>' .
+                    '<th>Description</th>' .
+                    '<th>Value</th>' .
+                    '<th title="See the Help link above">Discount<br />Type</th>' .
+                    '<th>Auto</th>' .
+                    '<th title="First day, will not be accepted or applied before">Begins</th>' .
+                    '<th title="Last day, expires at the end of">Expires</th>' .
+                    '<th title="">Department</th>' .
+                    //'<th title="Discount Amount credited to this Department">Discount<br />Department</th>' .
+                    '<th> &nbsp;</th>' .
+                '</tr>';
+        $c = 0;
+        $rc = array("reven","rodd");
         $model = new HouseCouponsModel($dbc);
         foreach($model->find('coupID') as $obj) {
-			$ret .= sprintf('<tr><td>#%d <a href="HouseCouponEditor.php?edit_id=%d">Edit</a></td>
-					<td>%s</td><td>%.2f%s</td><td>%s</td></tr>',
-					$obj->coupID(),$obj->coupID(),$obj->description(),
-                    $obj->discountValue(), $obj->discountType(), $obj->endDate());
+            $c = ($c + 1) % 2;
+            $ret .= ($c == 1 ? '<tr style="background-color:#ffffcc;">' : '<tr style="bgcolor:#ffff11;">');
+            $ret .= sprintf('<td><a href="HouseCouponEditor.php?edit_id=%d">%d</a></td>',
+                    $obj->coupID(),
+                    $obj->coupID());
+            $ret .= sprintf('<td><a href="HouseCouponEditor.php?edit_id=%d">%s</a></td>',
+                    $obj->coupID(),
+                    $obj->description());
+            $ret .= sprintf('<td>%.2f</td>',
+                    $obj->discountValue());
+            $ret .= sprintf('<td>%s</td>',
+                    $obj->discountType());
+            $ret .= sprintf('<td>%s</td>',
+                    ($obj->auto() == 1 ? 'Yes' : 'No'));
+            $ret .= sprintf('<td>%s</td>',
+                    $obj->startDate());
+            $ret .= sprintf('<td>%s</td>',
+                    str_replace('00:00:00','23:59:59',$obj->endDate()));
+            $ret .= sprintf('<td>%d</td>',
+                    $obj->department());
+            $ret .= sprintf('<td><a href="HouseCouponEditor.php?edit_id=%d">'.
+                        "<img src='{$FANNIE_URL}src/img/buttons/b_edit.png' alt='Edit' /></a></td>",
+                    $obj->coupID());
+            $ret .= '</tr>';
 		}
 		$ret .= '</table>';
 		
@@ -312,8 +348,16 @@ class HouseCouponEditor extends FanniePage
 			size=5 /></td></tr>";
 
 		$ret .= "</table>";
+        $ret .= "<br />Click <span class='b'>Save</span> to expose additional form elements to support
+            your Discount Type and Minimum.";
 		$ret .= "<br /><input type=submit name=submit_save value=Save />";
-		$ret .= ' | <input type="submit" value="Back" onclick="location=\'HouseCouponEditor.php\';return false;" />';
+
+        $ret .= ' <input type="submit" value="Back to Coupon List"
+            title="Be sure to Save your changes first."
+            onclick="location=\'HouseCouponEditor.php\';return false;" />';
+        $ret .= (' <span style="font-weight:bold;"><a href="'.
+                "javascript:openHelpWindow('explainify.html');" .
+                    '" title="Help in a popup window">Help: Explanation of Settings and Options</a></span>');
 
 		if ($mType == "Q" || $mType == "Q+" || $mType == "M"){
 			$ret .= "<hr />";
@@ -370,6 +414,40 @@ class HouseCouponEditor extends FanniePage
 		$this->add_script($FANNIE_URL.'src/CalendarControl.js');
 		return $ret;
 	}
+
+    /**
+      Define any javascript needed
+      @return A javascript string
+    */
+    public function javascript_content(){
+
+        $ret = "function openHelpWindow(url) {
+            window.open (url, 'outside','scrollbars,width=600,height=400,left=10,top=10,toolbar,menubar,status,location,resizable')
+    } ";
+        return $ret;
+
+    }
+
+    /**
+      Define any CSS needed
+      @return A CSS string
+    */
+    public function css_content()
+    {
+        $ret = "span.b {
+            font-weight:bold;
+    }
+    span.i {
+        font-style:italic;
+    }
+    span.u {
+        text-decoration:underscore;
+    }
+    ";
+
+    return $ret;
+
+    }
 }
 
 FannieDispatch::conditionalExec(false);
