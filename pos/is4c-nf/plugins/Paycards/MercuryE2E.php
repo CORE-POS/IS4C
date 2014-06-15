@@ -285,7 +285,7 @@ class MercuryE2E extends BasicCCModule
                 FROM PaycardTransactions 
                 WHERE dateID=" . $today . "
                     AND empNo=" . $cashier . "
-                    AND cashierNo=" . $lane . "
+                    AND registerNo=" . $lane . "
                     AND transNo=" . $trans . "
                     AND transID=" . $transID . "
                     AND transType='VOID'
@@ -539,7 +539,9 @@ class MercuryE2E extends BasicCCModule
         }
 
         $sql = "INSERT INTO efsnetResponse (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
-        PaycardLib::paycard_db_query($sql, $dbTrans);
+        if ($dbTrans->table_exists('efsnetResponse')) {
+            PaycardLib::paycard_db_query($sql, $dbTrans);
+        }
 
         /**
           Log transaction in newer table
@@ -595,7 +597,9 @@ class MercuryE2E extends BasicCCModule
                     AND cashierNo=%d AND laneNo=%d AND transNo=%d
                     AND transID=%d",
                     $amt,$today, $cashierNo, $laneNo, $transNo, $transID);
-                PaycardLib::paycard_db_query($sql, $dbTrans);
+                if ($dbTrans->table_exists('efsnetRequest')) {
+                    PaycardLib::paycard_db_query($sql, $dbTrans);
+                }
 
                 $upQ = sprintf('UPDATE PaycardTransactions
                                 SET amount=%.2f
@@ -742,7 +746,9 @@ class MercuryE2E extends BasicCCModule
         $sqlValues .= sprintf(",%d",$validResponse);
 
         $sql = "INSERT INTO efsnetRequestMod (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
-        PaycardLib::paycard_db_query($sql, $dbTrans);
+        if ($dbTrans->table_exists('efsnetRequestMod')) {
+            PaycardLib::paycard_db_query($sql, $dbTrans);
+        }
 
         $normalized = ($validResponse == 0) ? 4 : 0;
         if ($responseCode == 1) {
@@ -782,7 +788,9 @@ class MercuryE2E extends BasicCCModule
 
         $tokenRef = $xml->get_first("INVOICENO");
         $sql = sprintF("DELETE FROM efsnetTokens WHERE refNum='%s'",$tokenRef);
-        PaycardLib::paycard_db_query($sql, $dbTrans);
+        if ($dbTrans->table_exists('efsnetTokens')) {
+            PaycardLib::paycard_db_query($sql, $dbTrans);
+        }
 
         if ($authResult['curlErr'] != CURLE_OK || $authResult['curlHTTP'] != 200) {
             if ($authResult['curlHTTP'] == '0') {
@@ -832,10 +840,10 @@ class MercuryE2E extends BasicCCModule
                 if ($CORE_LOCAL->get('paycard_issuer') == 'American Express') {
                     $t_type = 'AX';
                 }
-                // if the transaction has a non-zero efsnetRequestID,
+                // if the transaction has a non-zero paycardTransactionID,
                 // include it in the tender line
-                $record_id = $this->last_req_id;
-                $charflag = ($record_id != 0) ? 'RQ' : '';
+                $record_id = $this->last_paycard_transaction_id;
+                $charflag = ($record_id != 0) ? 'PT' : '';
                 if (substr($type,0,3) == 'EBT' && $type=="EBTCASH") {
                     TransRecord::addFlaggedTender("EBT Cash", "EC", $amt, $record_id, $charflag);
                 } else if (substr($type,0,3) == 'EBT') {
@@ -992,7 +1000,7 @@ class MercuryE2E extends BasicCCModule
         $sql = "INSERT INTO efsnetRequest (" . $sqlCols . ") VALUES (" . $sqlVals . ")";
         $table_def = $dbTrans->table_definition('efsnetRequest');
 
-        if (!PaycardLib::paycard_db_query($sql, $dbTrans)) {
+        if ($dbTrans->table_exists('efsnetRequest') && !PaycardLib::paycard_db_query($sql, $dbTrans)) {
             PaycardLib::paycard_reset();
             // internal error, nothing sent (ok to retry)
             return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND);
@@ -1644,7 +1652,9 @@ class MercuryE2E extends BasicCCModule
                             $db->escape($apprNumber),
                             $db->escape($ref),
                             $CORE_LOCAL->get('paycard_id'));
-            $upR = $db->query($upQ);
+            if ($db->table_exists('efsnetResponse')) {
+                $upR = $db->query($upQ);
+            }
         }
 
         switch(strtoupper($status)) {

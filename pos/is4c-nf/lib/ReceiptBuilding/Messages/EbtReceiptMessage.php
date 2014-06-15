@@ -119,11 +119,12 @@ class EbtReceiptMessage extends ReceiptMessage
             $col1[] = "Authorization: " . $row['xResultMessage'];
             $col2[] = ReceiptLib::boldFont() . "Amount: " . $row['amount'] . ReceiptLib::normalFont();
             $balance = 'unknown';
-            if (substr($row['ebtMode'], 0, 5) == 'Ebt F') {
+            $ebt_type = substr(strtoupper($row['ebtMode']), 0, 5);
+            if ($ebt_type == 'EBT F' || $ebt_type == 'EBTFO') {
                 if (is_numeric($CORE_LOCAL->get('EbtFsBalance'))) {
                     $balance = sprintf('%.2f', $CORE_LOCAL->get('EbtFsBalance'));
                 }
-            } else if (substr($row['ebtMode'], 0, 5) == 'Ebt C') {
+            } else if ($ebt_type == 'EBT C' || $ebt_type == 'EBTCA') {
                 if (is_numeric($CORE_LOCAL->get('EbtCaBalance'))) {
                     $balance = sprintf('%.2f', $CORE_LOCAL->get('EbtCaBalance'));
                 }

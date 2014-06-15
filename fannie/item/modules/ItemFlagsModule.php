@@ -27,11 +27,16 @@ include_once(dirname(__FILE__).'/../../classlib2.0/data/models/ProductsModel.php
 
 class ItemFlagsModule extends ItemModule {
 
-	function ShowEditForm($upc){
+    public function showEditForm($upc, $display_mode=1, $expand_mode=1)
+    {
 		$upc = BarcodeLib::padUPC($upc);
 
 		$ret = '<fieldset id="ItemFlagsFieldset">';
-		$ret .=  "<legend>Flags</legend>";
+		$ret .=  "<legend onclick=\"\$('#ItemFlagsFieldsetContent').toggle();\">
+                <a href=\"\" onclick=\"return false;\">Flags</a>
+                </legend>";
+        $css = ($expand_mode == 1) ? '' : 'display:none;';
+        $ret .= '<div id="ItemFlagsFieldsetContent" style="' . $css . '">';
 		
 		$dbc = $this->db();
 		$q = "SELECT f.description,
@@ -64,6 +69,7 @@ class ItemFlagsModule extends ItemModule {
 		}
 		$ret .= '</tr></table>';
 
+        $ret .= '</div>';
 		$ret .= '</fieldset>';
 		return $ret;
 	}

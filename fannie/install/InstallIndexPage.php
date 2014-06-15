@@ -386,65 +386,60 @@ class InstallIndexPage extends InstallPage {
 		}
 		?>
 		<hr />
-		<h4 class="install">Database Backups</h4>
-		Backup Directory
+		<h4 class="install">Back Office Transactions</h4>
+        <i>Values used when generating transaction data via Fannie
+        instead of through an actual POS terminal. The corrections department
+        is only used for balancing individual transactions. Total sales
+        to that department via generated transactions should always be
+        zero. The catch-all department is used when generated transactions
+        will generate a sale (or refund) but it is not known where the 
+        amount belongs for accounting purposes.
+        </i><br />
+        Employee# 
 		<?php
-		if(!isset($FANNIE_BACKUP_PATH)) $FANNIE_BACKUP_PATH = '/tmp/';
-		if (isset($_REQUEST['FANNIE_BACKUP_PATH'])){
-			$FANNIE_BACKUP_PATH = $_REQUEST['FANNIE_BACKUP_PATH'];
+		if (!isset($FANNIE_EMP_NO)) {
+            $FANNIE_EMP_NO = 1001;
+        }
+		if (isset($_REQUEST['FANNIE_EMP_NO'])){
+			$FANNIE_EMP_NO = (int)$_REQUEST['FANNIE_EMP_NO'];
 		}
-		confset('FANNIE_BACKUP_PATH',"'$FANNIE_BACKUP_PATH'");
-		echo "<input type=text name=FANNIE_BACKUP_PATH value=\"$FANNIE_BACKUP_PATH\" /><br />";
-		if (is_writable($FANNIE_BACKUP_PATH)){
-			echo "<span style=\"color:green;\">Backup directory is writeable</span>";
-		}
-		else {
-			echo "<span style=\"color:red;\"><b>Error</b>: backup directory is not writeable</span>";
-		}
-		?>
-		<br />
-		Path to mysqldump
+		confset('FANNIE_EMP_NO',"$FANNIE_EMP_NO");
+		echo "<input type=text name=FANNIE_EMP_NO value=\"$FANNIE_EMP_NO\" /><br />";
+        ?>
+        Register# 
 		<?php
-		if(!isset($FANNIE_BACKUP_BIN)) $FANNIE_BACKUP_BIN = '/usr/bin/';
-		if (isset($_REQUEST['FANNIE_BACKUP_BIN'])){
-			$FANNIE_BACKUP_BIN = $_REQUEST['FANNIE_BACKUP_BIN'];
+		if (!isset($FANNIE_REGISTER_NO)) {
+            $FANNIE_REGISTER_NO = 30;
+        }
+		if (isset($_REQUEST['FANNIE_REGISTER_NO'])){
+			$FANNIE_REGISTER_NO = (int)$_REQUEST['FANNIE_REGISTER_NO'];
 		}
-		confset('FANNIE_BACKUP_BIN',"'$FANNIE_BACKUP_BIN'");
-		echo "<input type=text name=FANNIE_BACKUP_BIN value=\"$FANNIE_BACKUP_BIN\" /><br />";
-		if (is_executable(realpath($FANNIE_BACKUP_BIN."/mysqldump"))){
-			echo "<span style=\"color:green;\">Found mysqldump program</span>";
-		}
-		else {
-			echo "<span style=\"color:red;\"><b>Error</b>: mysqldump not found</span>";
-		}
-		?>
-		<br />
-		Number of backups
+		confset('FANNIE_REGISTER_NO',"$FANNIE_REGISTER_NO");
+		echo "<input type=text name=FANNIE_REGISTER_NO value=\"$FANNIE_REGISTER_NO\" /><br />";
+        ?>
+        Corrections Dept# 
 		<?php
-		if(!isset($FANNIE_BACKUP_NUM)) $FANNIE_BACKUP_NUM = 1;
-		if (isset($_REQUEST['FANNIE_BACKUP_NUM'])){
-			$FANNIE_BACKUP_NUM = $_REQUEST['FANNIE_BACKUP_NUM'];
+		if (!isset($FANNIE_CORRECTION_DEPT)) {
+            $FANNIE_CORRECTION_DEPT = 800;
+        }
+		if (isset($_REQUEST['FANNIE_CORRECTION_DEPT'])){
+			$FANNIE_CORRECTION_DEPT = (int)$_REQUEST['FANNIE_CORRECTION_DEPT'];
 		}
-		confset('FANNIE_BACKUP_NUM',"'$FANNIE_BACKUP_NUM'");
-		echo "<input type=text name=FANNIE_BACKUP_NUM value=\"$FANNIE_BACKUP_NUM\" /><br />";
-		?>
-		<br />
-		Compress backups
-		<select name=FANNIE_BACKUP_GZIP>
+		confset('FANNIE_CORRECTION_DEPT',"$FANNIE_CORRECTION_DEPT");
+		echo "<input type=text name=FANNIE_CORRECTION_DEPT value=\"$FANNIE_CORRECTION_DEPT\" /><br />";
+        ?>
+        Catch-all Dept# 
 		<?php
-		if (!isset($FANNIE_BACKUP_GZIP)) $FANNIE_BACKUP_GZIP = False;
-		if (isset($_REQUEST['FANNIE_BACKUP_GZIP'])) $FANNIE_BACKUP_GZIP = $_REQUEST['FANNIE_BACKUP_GZIP'];
-		if ($FANNIE_BACKUP_GZIP === True || $FANNIE_BACKUP_GZIP == 'Yes'){
-			confset('FANNIE_BACKUP_GZIP','True');
-			echo "<option selected>Yes</option><option>No</option>";
+		if (!isset($FANNIE_MISC_DEPT)) {
+            $FANNIE_MISC_DEPT = 703;
+        }
+		if (isset($_REQUEST['FANNIE_MISC_DEPT'])){
+			$FANNIE_MISC_DEPT = (int)$_REQUEST['FANNIE_MISC_DEPT'];
 		}
-		else{
-			confset('FANNIE_BACKUP_GZIP','False');
-			echo "<option>Yes</option><option selected>No</option>";
-		}
-		?>
-		</select>
-		<hr />
+		confset('FANNIE_MISC_DEPT',"$FANNIE_MISC_DEPT");
+		echo "<input type=text name=FANNIE_MISC_DEPT value=\"$FANNIE_MISC_DEPT\" /><br />";
+        ?>
+        <hr />
 		<h4 class="install">Lanes</h4>
 		Number of lanes
 		<?php
@@ -574,12 +569,18 @@ class InstallIndexPage extends InstallPage {
 		confset('FANNIE_CUSTOM_ERRORS',"$FANNIE_CUSTOM_ERRORS");
 		echo '<select name="FANNIE_CUSTOM_ERRORS">';
 		if ($FANNIE_CUSTOM_ERRORS == 0) {
-			echo '<option value="1">' . _('Yes') . '</option>';
+			echo '<option value="1">' . _('Yes (displayed)') . '</option>';
+			echo '<option value="2">' . _('Yes (logged)') . '</option>';
 			echo '<option value="0" selected>' . _('No') . '</option>';
-		} else {
-			echo '<option value="1" selected>' . _('Yes') . '</option>';
+		} else if ($FANNIE_CUSTOM_ERRORS == 1) {
+			echo '<option value="1" selected>' . _('Yes (displayed)') . '</option>';
+			echo '<option value="2">' . _('Yes (logged)') . '</option>';
 			echo '<option value="0">' . _('No') . '</option>';
-		}
+		} else {
+			echo '<option value="1">' . _('Yes (displayed)') . '</option>';
+			echo '<option value="2" selected>' . _('Yes (logged)') . '</option>';
+			echo '<option value="0">' . _('No') . '</option>';
+        }
 		echo '</select>';
 		?>
 		<br />

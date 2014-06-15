@@ -26,12 +26,16 @@ include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
 class ExtraInfoModule extends ItemModule 
 {
 
-	function ShowEditForm($upc)
+    public function showEditForm($upc, $display_mode=1, $expand_mode=1)
     {
 		$upc = BarcodeLib::padUPC($upc);
 
 		$ret = '<fieldset id="ExtraInfoFieldset">';
-		$ret .=  "<legend>Extra Info</legend>";
+		$ret .=  "<legend onclick=\"\$('#ExtraInfoFieldsetContent').toggle();\">
+                <a href=\"\" onclick=\"return false;\">Extra Info</a>
+                </legend>";
+        $css = ($expand_mode == 1) ? '' : 'display:none;';
+        $ret .= '<div id="ExtraInfoFieldsetContent" style="' . $css . '">';
 
 		$info = array('cost'=>0.00,'deposit'=>0,'local'=>0,'inUse'=>1,'modified'=>'Unknown','idEnforced'=>0);
 		$dbc = $this->db();
@@ -82,7 +86,9 @@ class ExtraInfoModule extends ItemModule
 				$info['deposit'],$info['cost'],$ageSelect,$localSelect,
 				($info['inUse']==1 ? 'checked': '')
 		);
-		$ret .= '</table></fieldset>';
+		$ret .= '</table>
+                </div>
+                </fieldset>';
 
 		return $ret;
 	}

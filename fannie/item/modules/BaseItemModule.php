@@ -27,8 +27,9 @@ include_once(dirname(__FILE__).'/../../src/JsonLib.php');
 
 class BaseItemModule extends ItemModule {
 
-	function ShowEditForm($upc){
-		global $FANNIE_URL;
+    public function showEditForm($upc, $display_mode=1, $expand_mode=1)
+    {
+		global $FANNIE_URL, $FANNIE_PRODUCT_MODULES;
 		$upc = BarcodeLib::padUPC($upc);
 
 		$ret = '<fieldset id="BaseItemFieldset">';
@@ -84,8 +85,10 @@ class BaseItemModule extends ItemModule {
 
 			$lcP = $dbc->prepare_statement('SELECT likeCode FROM upcLike WHERE upc=?');
 			$lcR = $dbc->exec_statement($lcP,array($upc));
-			if ($dbc->num_rows($lcR) > 0)
-				$likeCode = array_pop($dbc->fetch_row($lcR));
+			if ($dbc->num_rows($lcR) > 0) {
+                $lcW = $dbc->fetch_row($lcR);
+                $likeCode = $lcW['likeCode'];
+            }
 		}
 		else {
 			// new item
@@ -195,15 +198,18 @@ class BaseItemModule extends ItemModule {
 			<td style="color:darkmagenta;">'. (isset($rowItem['modified']) ? $rowItem['modified'] : '') . '</td>';
 		$ret .= '</tr>';
 
-		$ret .= '<tr><td><b>Long Desc.</b><td colspan="2"><input type="text" size="60" name="puser_description"
-				value="'. (isset($rowItem['ldesc']) ? $rowItem['ldesc'] : '') . '" /></td><td>&nbsp;</td></tr>';
+        // no need to display this field twice
+        if (!isset($FANNIE_PRODUCT_MODULES['ProdUserModule'])) {
+            $ret .= '<tr><td><b>Long Desc.</b><td colspan="2"><input type="text" size="60" name="puser_description"
+                    value="'. (isset($rowItem['ldesc']) ? $rowItem['ldesc'] : '') . '" /></td><td>&nbsp;</td></tr>';
+        }
 
 		$ret .="<td align=right><b>Brand</b></td><td><input type=text name=manufacturer size=30 value=\""
 			.(isset($rowItem['manufacturer'])?$rowItem['manufacturer']:"")
-			."\" /></td>";
+			."\" id=\"brand_field\" /></td>";
 		$ret .= "<td align=right><b>Vendor</b></td><td><input type=text name=distributor size=8 value=\""
 			.(isset($rowItem['distributor'])?$rowItem['distributor']:"")
-			."\" /></td>";
+			."\" id=\"vendor_field\" /></td>";
 		$ret .= '</tr>';
 
 		if (isset($rowItem['special_price']) && $rowItem['special_price'] <> 0){
@@ -332,6 +338,7 @@ class BaseItemModule extends ItemModule {
 	}
 
 	function SaveFormData($upc){
+        global $FANNIE_PRODUCT_MODULES;
 		$upc = BarcodeLib::padUPC($upc);
 		$dbc = $this->db();
 
@@ -349,6 +356,7 @@ class BaseItemModule extends ItemModule {
             $model->end_date('');
             $model->discounttype(0);
             $model->wicable(0);
+            $model->inUse(1);
         }
 		$model->tax(FormLib::get_form_value('tax',0));
 		$model->foodstamp(FormLib::get_form_value('FS',0));
@@ -416,13 +424,15 @@ class BaseItemModule extends ItemModule {
 			}
 		}
 
-		if ($dbc->table_exists('productUser')){
-			$ldesc = FormLib::get_form_value('puser_description');
-			$model = new ProductUserModel($dbc);
-			$model->upc($upc);
-			$model->description($ldesc);
-			$model->save();
-		}
+        if (!isset($FANNIE_PRODUCT_MODULES['ProdUserModule'])) {
+            if ($dbc->table_exists('productUser')){
+                $ldesc = FormLib::get_form_value('puser_description');
+                $model = new ProductUserModel($dbc);
+                $model->upc($upc);
+                $model->description($ldesc);
+                $model->save();
+            }
+        }
 	}
 
 	function AjaxCallback(){

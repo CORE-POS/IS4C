@@ -26,7 +26,8 @@ include_once(dirname(__FILE__).'/../../classlib2.0/lib/FormLib.php');
 
 class ItemLinksModule extends ItemModule {
 
-	function ShowEditForm($upc){
+    public function showEditForm($upc, $display_mode=1, $expand_mode=1)
+    {
 		global $FANNIE_URL;
 		$upc = BarcodeLib::padUPC($upc);
 
@@ -35,7 +36,12 @@ class ItemLinksModule extends ItemModule {
 		$r = $dbc->exec_statement($p,array($upc));
 
 		$ret = '<fieldset id="LinksFieldset">';
-		$ret .=  "<legend>Links</legend>";
+		$ret = '<fieldset id="LinksFieldset">';
+		$ret .=  "<legend onclick=\"\$('#LinksFieldsetContent').toggle();\">
+                <a href=\"\" onclick=\"return false;\">Links</a>
+                </legend>";
+        $css = ($expand_mode == 1) ? '' : 'display:none;';
+        $ret .= '<div id="LinksFieldsetContent" style="' . $css . '">';
 
 		if ($dbc->num_rows($r) > 0){
 			$ret .= '<div style="width:40%; float:left;">';
@@ -61,8 +67,8 @@ class ItemLinksModule extends ItemModule {
 			$ret .= sprintf('<input type="checkbox" name="newshelftag" value="%s" />
 					Create Shelf Tag</li>',$upc);
 		}
+        $ret .= '</div>';
 		$ret .= '</fieldset>';
-
 
 		return $ret;
 	}

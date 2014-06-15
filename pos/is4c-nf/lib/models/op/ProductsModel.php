@@ -68,6 +68,7 @@ class ProductsModel extends BasicModel
     'local'=>array('type'=>'INT','default'=>0),
     'store_id'=>array('type'=>'SMALLINT','default'=>0),
     'default_vendor_id'=>array('type'=>'INT','default'=>0),
+    'current_origin_id'=>array('type'=>'INT','default'=>0),
     'id'=>array('type'=>'INT','default'=>0,'primary_key'=>True,'increment'=>True)
     );
 
@@ -105,21 +106,6 @@ class ProductsModel extends BasicModel
         }
     }
 
-    public function normal_price()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["normal_price"])) {
-                return $this->instance["normal_price"];
-            } elseif(isset($this->columns["normal_price"]["default"])) {
-                return $this->columns["normal_price"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["normal_price"] = func_get_arg(0);
-        }
-    }
-
     public function brand()
     {
         if(func_num_args() == 0) {
@@ -147,6 +133,21 @@ class ProductsModel extends BasicModel
             }
         } else {
             $this->instance["formatted_name"] = func_get_arg(0);
+        }
+    }
+
+    public function normal_price()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["normal_price"])) {
+                return $this->instance["normal_price"];
+            } elseif(isset($this->columns["normal_price"]["default"])) {
+                return $this->columns["normal_price"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["normal_price"] = func_get_arg(0);
         }
     }
 
@@ -657,6 +658,21 @@ class ProductsModel extends BasicModel
             }
         } else {
             $this->instance["default_vendor_id"] = func_get_arg(0);
+        }
+    }
+
+    public function current_origin_id()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["current_origin_id"])) {
+                return $this->instance["current_origin_id"];
+            } elseif(isset($this->columns["current_origin_id"]["default"])) {
+                return $this->columns["current_origin_id"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["current_origin_id"] = func_get_arg(0);
         }
     }
 

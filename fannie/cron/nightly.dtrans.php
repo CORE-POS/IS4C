@@ -102,7 +102,8 @@ $added_partition = false;
 foreach($dates as $date) {
     /* figure out which monthly archive dtransactions data belongs in */
     list($year, $month, $day) = explode('-', $date);
-    $table = 'transArchive'.$year.$month;
+    $dstr = $year.$month;
+    $table = 'transArchive'.$dstr;
 
     /* store monthly archive locally or remotely as needed 
        remote archiving is very beta

@@ -618,7 +618,7 @@ static public function uploadCCdata()
             $ret = false;
         }
 
-    } else if ($sql->table_exists('efsnetRequest')) {
+    } else if (!$sql->table_exists('efsnetRequest')) {
         // if for whatever reason the table does not exist,
         // it's not necessary to treat this as a failure.
         // if integrated card processing is not in use,

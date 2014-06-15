@@ -47,6 +47,20 @@ class MemArEquityDumpTool extends FanniePage {
 		global $FANNIE_AR_DEPARTMENTS;
 		global $FANNIE_EQUITY_DEPARTMENTS;
 		global $FANNIE_OP_DB;
+        global $FANNIE_EMP_NO, $FANNIE_REGISTER_NO;
+        global $FANNIE_MISC_DEPT;
+        /**
+          Use fannie settings if properly configured
+        */
+        if (is_numeric($FANNIE_EMP_NO)) {
+            $this->CORRECTION_CASHIER = $FANNIE_EMP_NO;
+        }
+        if (is_numeric($FANNIE_REGISTER_NO)) {
+            $this->CORRECTION_LANE = $FANNIE_REGISTER_NO;
+        }
+        if (is_numeric($FANNIE_MISC_DEPT)) {
+            $this->DEFAULT_DEPT = $FANNIE_MISC_DEPT;
+        }
 
 		if (empty($FANNIE_AR_DEPARTMENTS)){
 			$this->errors .= "<em>Error: no AR departments found</em>";

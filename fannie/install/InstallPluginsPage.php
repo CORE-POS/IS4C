@@ -179,8 +179,18 @@ foreach($mods as $m){
 			if (!isset($FANNIE_PLUGIN_SETTINGS[$field]))
 				$FANNIE_PLUGIN_SETTINGS[$field] = isset($info['default'])?$info['default']:'';
 			echo '<b>'.(isset($info['label'])?$info['label']:$field).'</b>: ';
-			printf('<input type="text" name="%s" value="%s" />',
-				$form_id,$FANNIE_PLUGIN_SETTINGS[$field]);
+            if (isset($info['options'])) {
+                echo '<select name="' . $form_id . '">';
+                foreach ($info['options'] as $key => $val) {
+                    printf('<option %s value="%s">%s</option>',
+                        ($FANNIE_PLUGIN_SETTINGS[$field] == $val) ? 'selected' : '',
+                        $val, $key);
+                }
+                echo '</select>';
+            } else {
+                printf('<input type="text" name="%s" value="%s" />',
+                    $form_id,$FANNIE_PLUGIN_SETTINGS[$field]);
+            }
             // show the default if plugin isn't enabled, but
             // unset so that it isn't saved in the configuration
             if (!$enabled) {

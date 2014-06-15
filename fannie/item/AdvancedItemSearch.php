@@ -421,7 +421,7 @@ function goToEdit() {
 }
 function goToSigns() {
     if (getItems()) {
-        $('#actionForm').attr('action', '../admin/signs/BuildSigns.php');
+        $('#actionForm').attr('action', '../admin/labels/SignFromSearch.php');
         $('#actionForm').submit();
     }
 }
@@ -583,7 +583,8 @@ function goToReport() {
         $ret .= '<br />';
         $ret .= '<input style="margin-top:10px;" type="submit" value="Edit Items" onclick="goToEdit();" />';
         $ret .= '<br />';
-        //$ret .= '<input style="margin-top:10px;" type="submit" value="Tags/Signs" onclick="goToSigns();" />';
+        $ret .= '<input style="margin-top:10px;" type="submit" value="Tags/Signs" onclick="goToSigns();" />';
+        $ret .= '<br />';
         $ret .= '<input style="margin-top:10px;" type="submit" value="Margins" onclick="goToMargins();" />';
         $ret .= '</fieldset>';
         $ret .= '<fieldset><legend>Report on Items</legend>';

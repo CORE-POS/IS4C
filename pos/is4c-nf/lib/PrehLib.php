@@ -234,11 +234,11 @@ static public function setMember($member, $personNumber, $row)
 	$CORE_LOCAL->set("isStaff",$row["staff"]);
 	$CORE_LOCAL->set("SSI",$row["SSI"]);
 
-    if ($CORE_LOCAL->get('useMemtypeTable') == 1 && $conn->table_exists('memtype')) {
-        $prep = $conn->prepare('SELECT discount, staff, ssi 
+    if ($CORE_LOCAL->get('useMemTypeTable') == 1 && $conn->table_exists('memtype')) {
+        $prep = $conn->prepare_statement('SELECT discount, staff, ssi 
                                  FROM memtype
                                  WHERE memtype=?');
-        $res = $conn->execute($prep, array((int)$CORE_LOCAL->get('memType')));
+        $res = $conn->exec_statement($prep, array((int)$CORE_LOCAL->get('memType')));
         if ($conn->num_rows($res) > 0) {
             $mt_row = $conn->fetch_row($res);
             $CORE_LOCAL->set('percentDiscount', $mt_row['discount']);
@@ -748,7 +748,7 @@ static public function deptkey($price, $dept,$ret=array())
                 'quantity' => $CORE_LOCAL->get('quantity'),
                 'ItemQtty' => $CORE_LOCAL->get('quantity'),
                 'unitPrice' => $price,
-                'total' => $price,
+                'total' => $total,
                 'regPrice' => $price,
                 'tax' => $tax,
                 'foodstamp' => $foodstamp,
@@ -853,7 +853,7 @@ static public function ttl()
                 // the other Subtotal record generated farther down?
                 TransRecord::addRecord(array(
                     'description' => 'Subtotal',
-                    'trans_type' => '',
+                    'trans_type' => '0',
                     'trans_status' => 'D',
                     'unitPrice' => MiscLib::truncate2($CORE_LOCAL->get('transDiscount') + $CORE_LOCAL->get('subtotal')),
                     'voided' => 7,
@@ -911,7 +911,7 @@ static public function ttl()
 		if ($CORE_LOCAL->get("fntlflag") == 1) {
             TransRecord::addRecord(array(
                 'description' => 'Foodstamps Eligible',
-                'trans_type' => '',
+                'trans_type' => '0',
                 'trans_status' => 'D',
                 'unitPrice' => MiscLib::truncate2($CORE_LOCAL->get('fsEligible')),
                 'voided' => 7,
@@ -1064,7 +1064,7 @@ static public function omtr_ttl()
 		if ($CORE_LOCAL->get("fntlflag") == 1) {
             TransRecord::addRecord(array(
                 'description' => 'Foodstamps Eligible',
-                'trans_type' => '',
+                'trans_type' => '0',
                 'trans_status' => 'D',
                 'unitPrice' => MiscLib::truncate2($CORE_LOCAL->get('fsEligible')),
                 'voided' => 7,
@@ -1160,7 +1160,7 @@ static public function fsEligible()
 		} else {
             TransRecord::addRecord(array(
                 'description' => 'Foodstamps Eligible',
-                'trans_type' => '',
+                'trans_type' => '0',
                 'trans_status' => 'D',
                 'unitPrice' => MiscLib::truncate2($CORE_LOCAL->get('fsEligible')),
                 'voided' => 7,

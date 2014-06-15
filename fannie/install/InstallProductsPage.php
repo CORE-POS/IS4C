@@ -61,12 +61,16 @@ class InstallProductsPage extends InstallPage {
 	/**
 	  Define any CSS needed
 	  @return A CSS string
+	*/
 	function css_content(){
-		$css ="";
+		$css = '
+            tr.hilite {
+                background-color: #5CAD5C;
+            }
+        ';
 		return $css;
 	//css_content()
 	}
-	*/
 
 	/**
 	  Define any javascript needed
@@ -105,34 +109,125 @@ class InstallProductsPage extends InstallPage {
 		The product editing interface displayed after you select a product at:
 		<br /><a href="<?php echo $FANNIE_URL; ?>item/" target="_item"><?php echo $FANNIE_URL; ?>item/</a>
 		<br />consists of fields grouped in several sections, called modules, listed below.
-		<br />The enabled (active) ones are selected/highlighted.
+		<br />The enabled (active) ones are highlighted.
+        <br />The <i>Show</i> setting controls whether or not the module is displayed. The <i>Auto</i>
+              means only display the module if it is relevant to the current item.
+        <br />The <i>Expand</i> setting controls whether the module is intially expanded or collapsed.
+             The <i>Auto</i> option means display expanded if relevant to the current item.
 		<br />
 		<br /><b>Available Modules</b> <br />
 		<?php
-		if (!isset($FANNIE_PRODUCT_MODULES)) $FANNIE_PRODUCT_MODULES = array('BaseItemModule');
-		if (isset($_REQUEST['FANNIE_PRODUCT_MODULES'])){
-			$FANNIE_PRODUCT_MODULES = array();
-			foreach($_REQUEST['FANNIE_PRODUCT_MODULES'] as $m)
-				$FANNIE_PRODUCT_MODULES[] = $m;
-		}
-		$saveStr = 'array(';
-		foreach($FANNIE_PRODUCT_MODULES as $m)
-			$saveStr .= '"'.$m.'",';
-		$saveStr = rtrim($saveStr,",").")";
-		confset('FANNIE_PRODUCT_MODULES',$saveStr);
-		?>
-		<select multiple name="FANNIE_PRODUCT_MODULES[]" size="10">
-		<?php
 		$mods = FannieAPI::ListModules('ItemModule',True);
 		sort($mods);
-		foreach($mods as $module){
-			printf("<option %s>%s</option>",(in_array($module,$FANNIE_PRODUCT_MODULES)?'selected':''),$module);
-		}
 		?>
-		</select><br />
-		Click or ctrl-Click or shift-Click to select/deselect modules for enablement.
-		<hr />
+        <table cellspacing="0" cellpadding="4" border="1">
+        <tr>
+            <th>Name</th>
+            <th>Position</th>
+            <th>Show</th>
+            <th>Expand</th>
+        </tr>
+        <?php
+        /**
+          Change by Andy 2Jun14
+          Store modules in a keyed array.
+          Format:
+           - module_name => settings array
+             + seq [int] display order
+             + show [int] yes/no/auto
+             + expand [int] yes/no/auto
+
+          The settings for each module control
+          how it is displayed. The "auto" option
+          will only print or expand a module if
+          it is relevant for that particular item.
+        */
+        $in_mods = FormLib::get('_pm', array());
+        $in_seq = FormLib::get('_pmSeq', array());
+        $in_show = FormLib::get('_pmShow', array());
+        $in_exp = FormLib::get('_pmExpand', array());
+        for ($i=0; $i<count($in_mods); $i++) {
+            if (!isset($in_show[$i]) || $in_show[$i] == 0) {
+                if (isset($FANNIE_PRODUCT_MODULES[$in_mods[$i]])) {
+                    unset($FANNIE_PRODUCT_MODULES[$in_mods[$i]]);
+                }
+                continue;
+            }
+            $FANNIE_PRODUCT_MODULES[$in_mods[$i]] = array(
+                'seq' => isset($in_seq[$i]) ? $in_seq[$i] : 0,
+                'show' => isset($in_show[$i]) ? $in_show[$i] : 0,
+                'expand' => isset($in_exp[$i]) ? $in_exp[$i] : 0,
+            );
+        }
+
+        /*
+          Convert old settings to new format.
+        */
+        $legacy_indexes = array();
+        $replacement_values = array();
+        foreach ($FANNIE_PRODUCT_MODULES as $id => $m) {
+            if (preg_match('/^\d+$/', $id)) {
+                // old setting. convert to new.
+                $legacy_indexes[] = $id;
+                $replacement_values[$m] = array(
+                    'seq' => $id,
+                    'show' => 1,
+                    'expand' => 1,
+                );
+            }
+        }
+        foreach ($legacy_indexes as $index) {
+            unset($FANNIE_PRODUCT_MODULES[$index]);
+        }
+        foreach ($replacement_values as $name => $params) {
+            $FANNIE_PRODUCT_MODULES[$name] = $params;
+        }
+
+        // set a default if needed
+        if (count($FANNIE_PRODUCT_MODULES) == 0) {
+            $FANNIE_PRODUCT_MODULES['BaseItemModule'] = array(
+                'seq' => 0,
+                'show' => 1,
+                'expand' => 1,
+            );
+        }
+
+        $default = array('seq' => 0, 'show' => 0, 'expand' => 0);
+        $opts = array('No', 'Yes', 'Auto');
+        foreach ($mods as $module) {
+            $css = isset($FANNIE_PRODUCT_MODULES[$module]) ? 'class="hilite"' : '';
+            printf('<tr %s><td>%s<input type="hidden" name="_pm[]" value="%s" /></td>', $css, $module, $module);
+            $params = isset($FANNIE_PRODUCT_MODULES[$module]) ? $FANNIE_PRODUCT_MODULES[$module] : $default;
+            printf('<td><input type="text" size="3" name="_pmSeq[]" value="%d" /></td>', $params['seq']);
+            echo '<td><select name="_pmShow[]">';
+            foreach ($opts as $id => $label) {
+                printf('<option %s value="%d">%s</option>',
+                    $id == $params['show'] ? 'selected' : '',
+                    $id, $label);
+            }
+            echo '</select></td>';
+            echo '<td><select name="_pmExpand[]">';
+            foreach ($opts as $id => $label) {
+                printf('<option %s value="%d">%s</option>',
+                    $id == $params['expand'] ? 'selected' : '',
+                    $id, $label);
+            }
+            echo '</select></td>';
+            echo '</tr>';
+        }
+        $saveStr = 'array(';
+        foreach ($FANNIE_PRODUCT_MODULES as $name => $info) {
+            $saveStr .= sprintf("'%s'=>array('seq'=>%d,'show'=>%d,'expand'=>%d),",
+                                $name, $info['seq'],
+                                $info['show'], $info['expand']
+            );
+        }
+        $saveStr = substr($saveStr, 0, strlen($saveStr)-1) . ')';
+        confset('FANNIE_PRODUCT_MODULES', $saveStr);
+        ?>
+        </table>
 		<br />
+		<hr />
 		Default Shelf Tag Layout
 		<select name=FANNIE_DEFAULT_PDF>
 		<?php

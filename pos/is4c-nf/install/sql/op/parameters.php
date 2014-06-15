@@ -4,10 +4,10 @@ Table: parameters
 
 Columns:
 	store_id int
-    lane_id int
+	lane_id int
 	param_key varchar
-	param_value smallint
-    is_array int
+	param_value varchar
+	is_array int
 
 Depends on:
     none
