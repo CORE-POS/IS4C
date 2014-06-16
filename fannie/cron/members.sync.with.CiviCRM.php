@@ -54,6 +54,10 @@
  --functionality } - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
  #'Z --COMMENTZ { - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ * 16Jan14 EL Assign civicrm_membership.status_id = 1 at insert.
+ *             It has no default in Civi, was defaulting to 0 which
+ *              prevented it from being found
+ *              and caused label "Pending and Inactive"
  * 28Oct13 EL Change $is4cMax from 99989 to 99900 to allow more special cases.
  * 20Jun13 EL Finish report the new member number obtained from CiviCRM.
  *            +>2add +>1add, +>3add
@@ -744,12 +748,14 @@ function assignLocalC ($row, $civiOps, $updated, $civiContactId) {
 		, membership_type_id
 		, join_date
 		, start_date
+		, status_id
 		)
 		VALUES
 		('', $civiContactId
 		, $civicrm_membership[membership_type_id])
 		, '$civicrm_membership[join_date]'
 		, '$civicrm_membership[start_date]'
+		, 1
 		)";
 	}
 	else {
@@ -1234,7 +1240,7 @@ function getNewMemberId($contactId) {
 
 	$retVal = 0;
 
-	$sql = "INSERT INTO civicrm_membership (contact_id) VALUES ($contactId)";
+	$sql = "INSERT INTO civicrm_membership (contact_id, status_id) VALUES ($contactId, 1)";
 	$rslt = $dbConn->query("$sql");
 	if ( $dbConn->errno ) {
 		$msg = sprintf("Failed: %s", $dbConn->error);
