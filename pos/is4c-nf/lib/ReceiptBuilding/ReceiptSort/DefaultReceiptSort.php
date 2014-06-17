@@ -139,8 +139,10 @@ class DefaultReceiptSort
 	static public function record_compare($r1,$r2){
 		if (!isset($r1['trans_id']) || !isset($r2['trans_id'])) {
 			return 0;
-		} else {
-			return $r1['trans_id'] - $r2['trans_id'];
+        } else if ($r1['trans_id'] == $r2['trans_id']) {
+            return 0;
+        } else {
+            return $r1['trans_id'] < $r2['trans_id'] ? -1 : 1;
         }
 	}
 

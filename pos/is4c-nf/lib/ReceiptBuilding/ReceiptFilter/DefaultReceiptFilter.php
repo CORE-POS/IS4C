@@ -75,6 +75,12 @@ class DefaultReceiptFilter
                 }
 				$returnset[] = $row;
 				$count++;	
+            } else if ($row['trans_type'] == 'C' && $row['trans_subtype'] == 'CM') {
+                // print comment rows as if they were items
+                $row['trans_type'] = 'I';
+                $row['upc'] = 'COMMENT';
+				$returnset[] = $row;
+				$count++;	
 			} else if ($row['trans_type'] == '0' && substr($row['description'],0,7)=="** Tare"){
 				// only deal with tare lines
 				$prev = $count-1;
@@ -94,6 +100,29 @@ class DefaultReceiptFilter
 		}
 
 		$returnset = array_reverse($returnset);
+
+        /**
+          Re-write trans_id on member special lines to
+        */
+        for ($i=0; $i<count($returnset); $i++) {
+            if (!isset($returnset[$i]['trans_type']) || !isset($returnset[$i]['trans_status'])) {
+                continue;
+            }
+            if ($returnset[$i]['trans_type'] == 'I' && $returnset[$i]['trans_status'] == 'M') {
+                for ($j=0; $j<count($returnset); $j++) {
+                    if (!isset($returnset[$j]['trans_type']) || !isset($returnset[$j]['trans_status'])) {
+                        continue;
+                    }
+                    if ($returnset[$j]['trans_status'] == 'M') {
+                        continue;
+                    }
+                    if ($returnset[$j]['upc'] == $returnset[$i]['upc']) {
+                        $returnset[$i]['trans_id'] = $returnset[$j]['trans_id'] + 0.25;
+                        break;
+                    }
+                }
+            }
+        }
 
 		// add discount, subtotal, tax, and total records to the end
 		if ($discount) {
