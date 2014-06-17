@@ -845,6 +845,21 @@ static public function add_log_record($opts)
     self::addLogRecord($opts);
 }
 
+/**
+  Finish the current transaction
+  @param $incomplete [boolean] optional, default false
+
+  This method:
+  1) Adds tax and discount lines if transaction is complete
+     (i.e., $incomplete == false)
+  2) Rotates data out of localtemptrans
+  3) Advances trans_no variable to next available value
+
+  This method replaces older ajax-end.php / end.php operations
+  where the receipt was printed first and then steps 1-3
+  above happened. This method should be called BEFORE printing
+  a receipt. Receipts are now always printed via localtranstoday.
+*/
 static public function finalizeTransaction($incomplete=false)
 {
     global $CORE_LOCAL;
