@@ -296,8 +296,34 @@ class FannieSignage
         return $data;
     }
 
-    public function drawBarcode($upc, $pdf, $x, $y, $h=16, $w=0.35)
+    /**
+      Draw barcode on given PDF
+      @param $upc [string] barcode value (UPC or EAN)
+      @param $pdf [object] FPDF instance
+      @param $x [numeric] x-coordinate of barcode
+      @param $y [numeric] y-coordinate of barcode
+      @param $args [keyed array] of extra options
+        - height [default 16] height of the barcode
+        - width [default 0.35] width of *each* bar
+        - align [default C] horizontal alignment of barcode number (L/C/R)
+        - valign [default B] vertical alignment of barcode number
+            (T, "top", above barcode) or (B, "botton", below barcode)
+        - prefix [default empty] prepend value to barcode number
+        - suffix [default empty] append value to barcode number
+        - font [default Arial] name of font for barcode number
+        - fontsize [default 9] size of font for barcode number
+    */
+    public function drawBarcode($upc, $pdf, $x, $y, $args=array())
     {
+        $h = isset($args['height']) ? $args['height'] : 16;
+        $w = isset($args['width']) ? $args['width'] : 0.35;
+        $align = isset($args['align']) ? $args['align'] : 'C';
+        $valign = isset($args['valign']) ? $args['valign'] : 'B';
+        $prefix = isset($args['prefix']) ? $args['prefix'] : '';
+        $suffix = isset($args['suffix']) ? $args['suffix'] : '';
+        $font = isset($args['font']) ? $args['font'] : 'Arial';
+        $fontsize = isset($args['fontsize']) ? $args['fontsize'] : 9;
+
         $upc = str_pad($upc, 12, '0', STR_PAD_LEFT);
         if (BarcodeLib::verifyCheckDigit($upc)) {
             // if an EAN13 with valid check digit is passed
@@ -347,18 +373,25 @@ class FannieSignage
         $code.='101'; // end bar
 
         //Draw bars
+        $width = 0;
         for ($i=0;$i<strlen($code);$i++) {
             if ($code{$i}=='1') {
                 $pdf->Rect($x+($i*$w), $y, $w, $h, 'F');
             }
+            $width += $w;
         }
 
         // Print text uder barcode
         // omits first digit; should always be zero
-        $this->SetFont('Arial','',9);
-        $pdf->Text($x+6, $y+$h+11/$pdf->k, substr($upc, -12));
+        $pdf->SetFont($font, '', $fontsize);
+        if ($valign == 'T') {
+            $pdf->SetXY($x, $y - 5);
+        } else {
+            $pdf->SetXY($x, $y + $h);
+        }
+        $pdf->Cell($width, 5, $prefix . substr($upc, -12) . $suffix, 0, 0, $align);
 
-        return true;
+        return $pdf;
     }
 
     public function listItems()
