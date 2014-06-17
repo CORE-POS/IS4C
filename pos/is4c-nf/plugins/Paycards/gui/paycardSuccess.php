@@ -81,14 +81,11 @@ class paycardSuccess extends BasicPage {
 				// remember the mode, type and transid before we reset them
 				$CORE_LOCAL->set("boxMsg","");
 
-                // only reset terminal if the terminal was used for the transaction
-                // activating a gift card should not reset terminal
-                if ($CORE_LOCAL->get("paycard_type") == PaycardLib::PAYCARD_TYPE_ENCRYPTED) {
-                    UdpComm::udpSend('termReset');
-                    $CORE_LOCAL->set('ccTermState','swipe');
-                    $CORE_LOCAL->set("CacheCardType","");
-                }
+                UdpComm::udpSend('termReset');
+                $CORE_LOCAL->set('ccTermState','swipe');
+                $CORE_LOCAL->set("CacheCardType","");
 				PaycardLib::paycard_reset();
+
                 if ($mode == PaycardLib::PAYCARD_MODE_AUTH) {
                     $CORE_LOCAL->set("strRemembered","TO");
                     $CORE_LOCAL->set("msgrepeat",1);
