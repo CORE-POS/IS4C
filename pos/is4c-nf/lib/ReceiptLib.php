@@ -1259,7 +1259,7 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False) {
 		if ($second) {
 			$ins = self::$PRINT_OBJ->centerString("( S T O R E   C O P Y )")."\n";
 			$receipt = substr($receipt,0,3).$ins.substr($receipt,3);
-		} else if ($reprint !== false){
+		} else if ($reprint !== false) {
 			$ins = self::$PRINT_OBJ->centerString("***   R E P R I N T   ***")."\n";
 			$receipt = substr($receipt,0,3).$ins.substr($receipt,3);
 		}
@@ -1289,7 +1289,7 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False) {
 					$receipt['any'] .= self::$PRINT_OBJ->centerString("thank you - owner ".$member,True);
 					$receipt['any'] .= self::$PRINT_OBJ->TextStyle(True);
 					$receipt['any'] .= "\n\n";
-				} else{
+				} else {
 					$receipt['any'] .= self::$PRINT_OBJ->centerString("Thank You - member ".$member);
 					$receipt['any'] .= "\n";
 				}
