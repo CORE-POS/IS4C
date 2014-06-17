@@ -119,7 +119,7 @@ class cablist extends NoInputPage
             $selected = "";
         }
         if ($num_rows == 0) {
-            echo "<option value=\"\">None found</option>";
+            echo "<option selected value=\"\">None found</option>";
         }
         ?>
 

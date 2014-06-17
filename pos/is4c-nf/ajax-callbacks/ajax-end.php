@@ -47,9 +47,10 @@ if ($receiptType == 'full' || $receiptType == 'cancelled' ||
     $receiptType == 'ddd') {
     
     $transFinished = true;
-    if (!preg_match('/^\d+-\d+-\d+$/', $receiptNum)) {
-        $receiptNum = ReceiptLib::mostRecentReceipt();
-    }
+}
+
+if (!preg_match('/^\d+-\d+-\d+$/', $receiptNum)) {
+    $receiptNum = ReceiptLib::mostRecentReceipt();
 }
 
 /**
@@ -75,12 +76,14 @@ if (strlen($receiptType) > 0) {
 
     $receiptContent = array();
 
-    $kicker_class = ($CORE_LOCAL->get("kickerModule")=="") ? 'Kicker' : $CORE_LOCAL->get('kickerModule');
-    $kicker_object = new $kicker_class();
-    if (!is_object($kicker_object)) {
-        $kicker_object = new Kicker();
+    if ($transFinished) {
+        $kicker_class = ($CORE_LOCAL->get("kickerModule")=="") ? 'Kicker' : $CORE_LOCAL->get('kickerModule');
+        $kicker_object = new $kicker_class();
+        if (!is_object($kicker_object)) {
+            $kicker_object = new Kicker();
+        }
+        $dokick = $kicker_object->doKick($receiptNum);
     }
-    $dokick = $kicker_object->doKick($receiptNum);
 
     $print_class = $CORE_LOCAL->get('ReceiptDriver');
     if ($print_class === '' || !class_exists($print_class)) {

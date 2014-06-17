@@ -35,7 +35,7 @@ class WFC_Kicker extends Kicker
         $db = Database::tDataConnect();
 
         $query = "SELECT trans_id 
-                  FROM localtemptrans 
+                  FROM localtranstoday 
                   WHERE ( 
                     (trans_subtype = 'CA' and total <> 0) 
                     OR upc='0000000001065'

@@ -1617,7 +1617,7 @@ static public function receiptNumber()
     return $CORE_LOCAL->get('CashierNo')
            . '-'
            . $CORE_LOCAL->get('laneno')
-           . ' '
+           . '-'
            . $CORE_LOCAL->get('transno');
 }
 
