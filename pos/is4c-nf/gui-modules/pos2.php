@@ -168,7 +168,7 @@ class pos2 extends BasicPage {
 		global $CORE_LOCAL;
 		?>
 		<script type="text/javascript" src="<?php echo $this->page_url; ?>js/ajax-parser.js"></script>
-		<script type="text/javascript" src="<?php echo $this->page_url; ?>js/CustomerDisplay.js"></script>
+        <script type="text/javascript" src="<?php echo $this->page_url; ?>js/CustomerDisplay.js"></script>
 		<script type="text/javascript">
 		function submitWrapper(){
 			var str = $('#reginput').val();
