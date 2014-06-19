@@ -112,7 +112,7 @@ function getTenderTable(){
 	$model = new TendersModel($dbc);
 	
 	$ret = '<table cellpadding="4" cellspacing="0" border="1">
-		<tr><th>Code</th><th>Name</th><th>Type</th>
+		<tr><th>Code</th><th>Name</th><th>Change Type</th>
 		<th>Change Msg</th><th>Min</th><th>Max</th>
 		<th>Refund Limit</th></tr>';
 
