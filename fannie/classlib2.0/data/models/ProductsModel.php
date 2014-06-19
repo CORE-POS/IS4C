@@ -356,7 +356,10 @@ class ProductsModel extends BasicModel
         // writing DB is not necessary
         if (!$this->record_changed && !$lane_push) {
             return true;
+        } else if ($this->record_changed) {
+            $this->modified(date('Y-m-d H:i:s'));
         }
+
         // call parent method to save the product record,
         // then add a corresponding prodUpdate record
         $try = parent::save();
