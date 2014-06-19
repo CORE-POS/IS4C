@@ -132,6 +132,26 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 		return $ret;
 	}
 
+    function delete_id_handler()
+    {
+		global $FANNIE_OP_DB;
+		$dbc = FannieDB::get($FANNIE_OP_DB);
+
+		$order = new PurchaseOrderModel($dbc);
+		$order->orderID($this->id);
+        $order->delete();
+
+        $items = new PurchaseOrderItemsModel($dbc);
+        $items->orderID($this->id);
+        foreach ($items->find() as $item) {
+            $item->delete();
+        }
+
+        echo 'deleted';
+
+        return false;
+    }
+
 	function get_id_view(){
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
@@ -168,6 +188,9 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 		}
 		$ret .= '</select>';
 		$ret .= '<input type="submit" value="Export" onclick="doExport('.$this->id.');return false;" />';
+        $ret .= '&nbsp;&nbsp;&nbsp;';
+        $init = ($order->placed() ? 'init=placed' : 'init=pending');
+        $ret .= '<button onclick="location=\'ViewPurchaseOrders.php?' . $init . '\'; return false;">All Orders</button>';
 
         $departments = $dbc->tableDefinition('departments');
         $codingQ = 'SELECT d.salesCode, SUM(o.receivedTotalCost) as rtc
@@ -183,6 +206,8 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         $codingP = $dbc->prepare($codingQ);
         $codingR = $dbc->execute($codingP, array($this->id));
         $ret .= '<br />';
+
+        $ret .= '<div><div style="float:left;">';
         $ret .= '<table cellspacing="0" cellpadding="4" border="1"><tr><th colspan="2">Coding(s)</th>';
         $ret .= '<td><b>PO#</b>: '.$order->vendorOrderID().'</td>';
         $ret .= '<td><b>Invoice#</b>: '.$order->vendorInvoiceID().'</td>';
@@ -196,7 +221,15 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
             $ret .= sprintf('<tr><td>%s</td><td>%.2f</td><td colspan="2"></td></tr>',
                         $codingW['salesCode'], $codingW['rtc']); 
         }
-        $ret .= '</table><br />';
+        $ret .= '</table>';
+        $ret .= '</div><div style="float:left;">';
+        if (!$order->placed()) {
+            $ret .= '<button onclick="location=\'EditOnePurchaseOrder.php?id=' . $order->vendorID() . '\'; return false;">Add Items</button>';
+            $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
+            $ret .= '<button onclick="deleteOrder(' . $this->id . '); return false;">Delete Order</button>';
+        }
+        $ret .= '</div></div>';
+        $ret .= '<div style="clear:left;"></div>';
 
 		$model = new PurchaseOrderItemsModel($dbc);
 		$model->orderID($this->id);
@@ -230,8 +263,15 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 	}
 
 	function get_view(){
+        $init = FormLib::get('init', 'placed');
+
 		$ret = '<b>Status</b><select id="orderStatus" onchange="fetchOrders();">';
-        $ret .= '<option value="pending">Pending</option><option selected value="placed">Placed</option>';
+        $status = array('pending', 'placed');
+        foreach ($status as $s) {
+            $ret .= sprintf('<option %s value="%s">%s</option>',
+                        ($init == $s ? 'selected' : ''),
+                        $s, ucwords($s));
+        }
 		$ret .= '</select>';
 
 		$ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
@@ -262,6 +302,10 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
             $ret .= '<option>' . $i . '</option>';
         }
         $ret .= '</select>';
+
+        $ret .= '&nbsp;';
+
+        $ret .= '<button onclick="location=\'PurchasingIndexPage.php\'; return false;">Home</button>';
 
 		$ret .= '<hr />';
 		

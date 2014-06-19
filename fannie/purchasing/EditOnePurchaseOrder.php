@@ -35,6 +35,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
 	function preprocess(){
 		$this->__routes[] = 'get<id><search>';
 		$this->__routes[] = 'get<id><sku><qty>';
+		$this->__routes[] = 'get<id><sku><index>';
 		return parent::preprocess();
 	}
 
@@ -48,8 +49,9 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
 		$ret = array();	
 
 		// search by vendor SKU
-		$skuQ = 'SELECT brand, description, size, units, cost, sku
-			FROM vendorItems WHERE sku LIKE ? AND vendorID=?';
+		$skuQ = 'SELECT v.brand, v.description, v.size, v.units, v.cost, v.sku
+			     FROM vendorItems AS v
+                 WHERE v.sku LIKE ? AND v.vendorID=?';
 		$skuP = $dbc->prepare_statement($skuQ);
 		$skuR = $dbc->exec_statement($skuP, array('%'.$this->search.'%', $this->id));	
 		while($w = $dbc->fetch_row($skuR)){
@@ -134,24 +136,27 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
 		$pitem = new PurchaseOrderItemsModel($dbc);
 		$pitem->orderID($orderID);
 		$pitem->sku($this->sku);
-		$pitem->quantity($this->qty);
-		$pitem->unitCost($vitem->cost());
-		$pitem->caseSize($vitem->units());
-		$pitem->unitSize($vitem->size());
-		$pitem->brand($vitem->brand());
-		$pitem->description($vitem->description());
-		$pitem->internalUPC($vitem->upc());
+        if ($this->qty == 0) {
+            $pitem->delete();
+        } else {
+            $pitem->quantity($this->qty);
+            $pitem->unitCost($vitem->cost());
+            $pitem->caseSize($vitem->units());
+            $pitem->unitSize($vitem->size());
+            $pitem->brand($vitem->brand());
+            $pitem->description($vitem->description());
+            $pitem->internalUPC($vitem->upc());
 	
-		$pitem->save();
+            $pitem->save();
+        }
 
 		$ret = array();
 		$pitem->reset();
 		$pitem->orderID($orderID);
 		$pitem->sku($this->sku);
-		if (count($pitem->find()) == 0){
+		if (count($pitem->find()) == 0 && $this->qty != 0) {
 			$ret['error'] = 'Error saving entry';
-		}
-		else {
+		} else {
 			$q = 'SELECT count(*) as rows,
 				SUM(unitCost*caseSize*quantity) as estimatedCost
 				FROM PurchaseOrderItems WHERE orderID=?';
@@ -164,6 +169,28 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
 		echo JsonLib::array_to_json($ret);
 		return False;
 	}
+
+	function get_id_sku_index_handler()
+    {
+		global $FANNIE_OP_DB;
+		$dbc = FannieDB::get($FANNIE_OP_DB);
+		$orderID = $this->getOrderID($this->id, FannieAuth::getUID($this->current_user));
+
+        $ret = array(
+            'qty' => 0,
+            'index' => $this->index,
+        );
+        $item = new PurchaseOrderItemsModel($dbc);
+        $item->orderID($orderID);
+        $item->sku($this->sku);
+        if ($item->load()) {
+            $ret['qty'] = $item->quantity();
+        }
+
+        echo JsonLib::array_to_json($ret);
+
+        return false;
+    }
 
 	/**
 	  Main page. Vendor is selected. Find/create order
@@ -202,6 +229,10 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
 		$ret .= '<form action="" onsubmit="itemSearch();return false;">';
 		$ret .= '<b>UPC/SKU</b>: <input type="text" id="searchField" />';
 		$ret .= '<input type="submit" value="Search" />';
+        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
+        $ret .= '<button onclick="location=\'PurchasingIndexPage.php\'; return false;">Home</button>';
+        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
+        $ret .= '<button onclick="location=\'ViewPurchaseOrders.php?id=' . $orderID . '\'; return false;">View Order</button>';
 		$ret .= '</form>';
 		$ret .= '</div>';
 		$ret .= '<div id="SearchResults"></div>';
@@ -253,6 +284,8 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
 		}
 		$ret .= '</select>';
 		$ret .= ' <input type="submit" value="Go" />';
+        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
+		$ret .= ' <button onclick="location=\'PurchasingIndexPage.php\'; return false;">Home</button>';
 		$ret .= '</form>';
 		return $ret;
 	}
