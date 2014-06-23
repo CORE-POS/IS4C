@@ -27,7 +27,7 @@ $dbc = FannieDB::get($FANNIE_OP_DB);
 <style type="text/css">
 a { color:blue; }
 </style>
-<script type="text/javascript" src="<?php echo $FANNIE_URL; ?>src/jquery/js/jquery-1.4.2.min.js">
+<script type="text/javascript" src="<?php echo $FANNIE_URL; ?>src/javascript/jquery.js">
 </script>
 <script type="text/javascript">
 function setItem(upc){

@@ -109,7 +109,7 @@ if (isset($_REQUEST['upc'])){
 	if (isset($_REQUEST['trim']))
 		echo "<input type=hidden name=trim value=yes />";
 	echo "</form>";
-	echo "<script type=\"text/javscript\">";
+	echo "<script type=\"text/javascript\">";
 	echo "document.getElementById('fcme').focus();";
 	echo "</script>";
 	if (!empty($photo)){
@@ -129,7 +129,7 @@ if (isset($_REQUEST['upc'])){
 else {
 
 ?>
-<script src="<?php echo $FANNIE_URL; ?>src/jquery/jquery.js">
+<script src="<?php echo $FANNIE_URL; ?>src/javascript/jquery.js">
 </script>
 <script type="text/javascript">
 function edit(upc){

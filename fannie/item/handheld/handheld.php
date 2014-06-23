@@ -28,14 +28,14 @@ $dbc = FannieDB::get($FANNIE_OP_DB);
 ?>
 <html><head><title>Item Maintenance</title>
 <script type="text/javascript" 
-	src="<?php echo $FANNIE_URL; ?>src/jquery-1.2.6.min.js">
+	src="<?php echo $FANNIE_URL; ?>src/javascript/jquery.js">
 </script>
 <?php if ($FANNIE_HANDHELD == 'Linea'){ ?>
 <script type="text/javascript" 
-	src="<?php echo $FANNIE_URL; ?>src/linea/cordova-2.2.0.js">
+	src="<?php echo $FANNIE_URL; ?>src/javascript/linea/cordova-2.2.0.js">
 </script>
 <script type="text/javascript" 
-	src="<?php echo $FANNIE_URL; ?>src/linea/ScannerLib-Linea-2.0.0.js">
+	src="<?php echo $FANNIE_URL; ?>src/javascript/linea/ScannerLib-Linea-2.0.0.js">
 </script>
 <script type="text/javascript" >
 Device = new ScannerDevice({

@@ -35,8 +35,8 @@ class SaHandheldPage extends FanniePage {
 
 	private function linea_support_available(){
 		global $FANNIE_ROOT;
-		if (file_exists($FANNIE_ROOT.'src/linea/cordova-2.2.0.js')
-		&& file_exists($FANNIE_ROOT.'src/linea/ScannerLib-Linea-2.0.0.js'))
+		if (file_exists($FANNIE_ROOT.'src/javascript/linea/cordova-2.2.0.js')
+		&& file_exists($FANNIE_ROOT.'src/javascript/linea/ScannerLib-Linea-2.0.0.js'))
 			return True;
 		else
 			return False;
@@ -115,12 +115,12 @@ class SaHandheldPage extends FanniePage {
 			}
 		}
 
-		$this->add_script($FANNIE_URL.'src/jquery/jquery.js');
+		$this->add_script($FANNIE_URL.'src/javascript/jquery.js');
 
 		$this->linea_ios_mode = $this->linea_support_available();
 		if ($this->linea_ios_mode){
-			$this->add_script($FANNIE_URL.'src/linea/cordova-2.2.0.js');
-			$this->add_script($FANNIE_URL.'src/linea/ScannerLib-Linea-2.0.0.js');
+			$this->add_script($FANNIE_URL.'src/javascript/linea/cordova-2.2.0.js');
+			$this->add_script($FANNIE_URL.'src/javascript/linea/ScannerLib-Linea-2.0.0.js');
 		}
 		
 		return True;

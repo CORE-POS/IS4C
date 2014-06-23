@@ -44,9 +44,9 @@ class HourlySalesReport extends FannieReportPage
         parent::preprocess();
         // custom: needs graphing JS/CSS
         if ($this->content_function == 'report_content' && $this->report_format == 'html') {
-            $this->add_script('../../src/d3.js/d3.v3.min.js');
-            $this->add_script('../../src/d3.js/charts/singleline/singleline.js');
-            $this->add_css_file('../../src/d3.js/charts/singleline/singleline.css');
+            $this->add_script('../../src/javascript/d3.js/d3.v3.min.js');
+            $this->add_script('../../src/javascript/d3.js/charts/singleline/singleline.js');
+            $this->add_css_file('../../src/javascript/d3.js/charts/singleline/singleline.css');
 		}
 
 		return true;

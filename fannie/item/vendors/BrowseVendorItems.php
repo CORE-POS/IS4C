@@ -328,7 +328,7 @@ class BrowseVendorItems extends FanniePage {
 		<input type="hidden" id="urlpath" value="<?php echo $FANNIE_URL; ?>" />
 		<?php
 		
-		$this->add_script($FANNIE_URL.'src/jquery/jquery.js');
+		$this->add_script($FANNIE_URL.'src/javascript/jquery.js');
 		$this->add_script('browse.js');
 
 		return ob_get_clean();

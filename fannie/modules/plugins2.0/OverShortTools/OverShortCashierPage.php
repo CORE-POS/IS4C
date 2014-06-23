@@ -305,7 +305,7 @@ class OverShortCashierPage extends FanniePage {
 		ob_start();
 		$this->add_script('js/cashier.js');	
 		$this->add_script($FANNIE_URL.'src/CalendarControl.js');
-		$this->add_script($FANNIE_URL.'src/jquery/jquery.js');
+		$this->add_script($FANNIE_URL.'src/javascript/jquery.js');
 		$this->add_css_file($FANNIE_URL.'src/style.css');
 		if (!$this->window_dressing) {
 			echo "<html>";

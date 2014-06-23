@@ -41,8 +41,8 @@ class MemberStickerPage extends FanniePage {
 			$start = FormLib::get_form_value('start');
 			$x = 0.5;
 			$y = 0.5;
-			$pdf->AddFont('Scala-Bold','B','Scala-Bold.php');
-			$pdf->SetFont('Scala-Bold','B',16);
+            $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
+			$pdf->SetFont('Gill','',16);
 			for($i=0;$i<40;$i++){
 				$current = $start+$i;	
 				$pdf->SetXY($x,$y);

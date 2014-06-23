@@ -1319,7 +1319,7 @@ class BatchManagementTool extends FanniePage
         global $FANNIE_URL;
         $this->add_script('index.js');
         $this->add_script($FANNIE_URL.'src/CalendarControl.js');
-        $this->add_script($FANNIE_URL.'src/jquery/jquery.js');
+        $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
         $this->add_css_file('index.css');
         $this->add_css_file($FANNIE_URL.'src/style.css');
         ob_start();

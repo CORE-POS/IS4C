@@ -97,7 +97,7 @@ include('../src/header.html');
 
 ?>
 <script type="text/javascript" 
-	src="<?php echo $FANNIE_URL; ?>src/jquery-1.2.6.min.js">
+	src="<?php echo $FANNIE_URL; ?>src/javascript/jquery.js">
 </script>
 <script type"text/javascript" src=ajax.js></script>
 <script type="text/javascript">

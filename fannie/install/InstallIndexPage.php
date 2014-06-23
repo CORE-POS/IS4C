@@ -61,12 +61,12 @@ class InstallIndexPage extends InstallPage {
 
 		// Link to a file of CSS by using a function.
 		$this->add_css_file("../src/style.css");
-		$this->add_css_file("../src/jquery/css/smoothness/jquery-ui-1.8.1.custom.css");
+		$this->add_css_file("../src/javascript/jquery-ui.css");
 		$this->add_css_file("../src/css/install.css");
 
 		// Link to a file of JS by using a function.
-		$this->add_script("../src/jquery/js/jquery.js");
-		$this->add_script("../src/jquery/js/jquery-ui-1.8.1.custom.min.js");
+		$this->add_script("../src/javascript/jquery.js");
+		$this->add_script("../src/javascript/jquery-ui.js");
 
 	// __construct()
 	}
@@ -1015,6 +1015,9 @@ class InstallIndexPage extends InstallPage {
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'vendorContact','op');
+
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+				'vendorDeliveries','op');
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'vendorSKUtoPLU','op');

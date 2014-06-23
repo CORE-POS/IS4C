@@ -273,7 +273,7 @@ function saveNotes($date,$notes){
 ?>
 <html>
 <head><title>Overshorts</title>
-<script type="text/javascript" src="<?php echo $FANNIE_URL; ?>src/jquery/js/jquery.js">
+<script type="text/javascript" src="<?php echo $FANNIE_URL; ?>src/javascript/jquery.js">
 </script>
 <script>
 

@@ -509,7 +509,7 @@ function formReset()
         global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $this->add_script($FANNIE_URL.'src/CalendarControl.js');
-        $this->add_script($FANNIE_URL.'src/jquery/jquery.js');
+        $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
         $this->add_css_file($FANNIE_URL.'src/style.css');
 
         $ret = '<div style="float:left;">';

@@ -46,9 +46,9 @@ class Brewventory extends FannieInventory {
 
 	function init(){
 		global $FANNIE_URL;
-		$this->add_script($FANNIE_URL.'src/jquery/js/jquery.js');
-		$this->add_script($FANNIE_URL.'src/jquery/js/jquery-ui-1.8.1.custom.min.js');
-		$this->add_css_file($FANNIE_URL."src/jquery/css/smoothness/jquery-ui-1.8.1.custom.css");
+		$this->add_script($FANNIE_URL.'src/javascript/jquery.js');
+		$this->add_script($FANNIE_URL.'src/javascript/jquery-ui.js');
+		$this->add_css_file($FANNIE_URL."src/javascript/jquery-ui.css");
 
 		ob_start();
 		vprintf('

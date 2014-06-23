@@ -104,14 +104,14 @@ class LogViewer extends FanniePage {
 		else {
 
 			if ($FANNIE_PRETTY_LOGS != 0){
-				$this->add_script($FANNIE_URL.'src/jquery/jQuery-SyntaxHighlighter/scripts/jquery.syntaxhighlighter.min.js');
+				$this->add_script($FANNIE_URL.'src/javascript/syntax-highlighter/scripts/jquery.syntaxhighlighter.min.js');
 				$highlite_cmd = sprintf('
 						$.SyntaxHighlighter.init({
 						\'baseUrl\' : \'%s\',
 						\'prettifyBaseUrl\': \'%s\'		
 						});',
-					$FANNIE_URL.'src/jquery/jQuery-SyntaxHighlighter',
-					$FANNIE_URL.'src/jquery/jQuery-SyntaxHighlighter/prettify');
+					$FANNIE_URL.'src/javascript/syntax-highlighter',
+					$FANNIE_URL.'src/javascript/syntax-highlighter/prettify');
 				$this->add_onload_command($highlite_cmd);
 			}
 		

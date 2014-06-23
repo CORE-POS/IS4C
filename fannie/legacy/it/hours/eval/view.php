@@ -237,7 +237,7 @@ function commentForm(){
 <head>
 <link href="<?php echo $FANNIE_URL; ?>src/style.css" rel="stylesheet" type="text/css">
 <script type="text/javascript" src="<?php echo $FANNIE_URL; ?>src/CalendarControl.js"></script>
-<script type="text/javascript" src="<?php echo $FANNIE_URL; ?>src/jquery-1.2.6.min.js"></script>
+<script type="text/javascript" src="<?php echo $FANNIE_URL; ?>src/javascript/jquery.js"></script>
 <script type="text/javascript">
 $(document).ready(function(){
 	$('#addbutton').click(showAddForm);

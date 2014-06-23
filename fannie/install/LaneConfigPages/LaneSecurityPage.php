@@ -47,12 +47,12 @@ class LaneSecurityPage extends InstallPage {
 		$SRC = '../../src';
 		// Link to a file of CSS by using a function.
 		$this->add_css_file("$SRC/style.css");
-		$this->add_css_file("$SRC/jquery/css/smoothness/jquery-ui-1.8.1.custom.css");
+		$this->add_css_file("$SRC/javascript/jquery-ui.css");
 		$this->add_css_file("$SRC/css/install.css");
 
 		// Link to a file of JS by using a function.
-		$this->add_script("$SRC/jquery/js/jquery.js");
-		$this->add_script("$SRC/jquery/js/jquery-ui-1.8.1.custom.min.js");
+		$this->add_script("$SRC/javascript/jquery.js");
+		$this->add_script("$SRC/javascript/jquery-ui.js");
 
 	// __construct()
 	}

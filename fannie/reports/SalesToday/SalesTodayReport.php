@@ -67,7 +67,7 @@ class SalesTodayReport extends FannieReportTool
 		$this->header = "Today's $this->name Sales";
 
 		$this->has_menus(True);
-        $this->add_script($FANNIE_URL.'src/d3.js/d3.v3.min.js');
+        $this->add_script($FANNIE_URL.'src/javascript/d3.js/d3.v3.min.js');
 
 		return True;
 

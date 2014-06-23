@@ -71,6 +71,7 @@ array('label'=>'Item Maintenance','url'=>'item/ItemEditorPage.php','subheading'=
 	),
 	array('label'=>'Manage Likcodes','url'=>'item/likecodes/'),
 	array('label'=>'Manage Vendors','url'=>'item/vendors/'),
+	array('label'=>'Purchase Orders','url'=>'purchasing/'),
 	array('label'=>'Store Coupons','url'=>'modules/plugins2.0/HouseCoupon/')
 	)
 ),

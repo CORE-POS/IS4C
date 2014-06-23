@@ -512,7 +512,7 @@ class FannieReportPage extends FanniePage
         switch(strtolower($format)) {
             case 'html':
                 if ($this->multi_counter == 1) {
-                    $this->add_css_file($FANNIE_URL.'src/jquery/themes/blue/style.css');
+                    $this->add_css_file($FANNIE_URL.'src/javascript/tablesorter/themes/blue/style.css');
                     if (!$this->window_dressing) {
                         $ret .= '<!DOCTYPE html><html><head>' .
                         '<meta http-equiv="Content-Type" ' .
@@ -621,8 +621,8 @@ class FannieReportPage extends FanniePage
                 foreach($this->report_end_content() as $line) {
                     $ret .= (substr($line,0,1)=='<'?'':'<br />').$line;
                 }
-                $this->add_script($FANNIE_URL.'src/jquery/js/jquery.js');
-                $this->add_script($FANNIE_URL.'src/jquery/jquery.tablesorter.js');
+                $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
+                $this->add_script($FANNIE_URL.'src/javascript/tablesorter/jquery.tablesorter.js');
                 $sort = sprintf('[[%d,%d]]',$this->sort_column,$this->sort_direction);
                 if ($this->sortable) {
                     $this->add_onload_command("\$('.mySortableTable').tablesorter({sortList: $sort, widgets: ['zebra']});");

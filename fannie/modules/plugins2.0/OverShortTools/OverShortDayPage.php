@@ -566,7 +566,7 @@ body, table, td, th {
 		global $FANNIE_URL;
 		$this->add_css_file($FANNIE_URL.'src/style.css');
 		$this->add_script($FANNIE_URL.'src/CalendarControl.js');
-		$this->add_script($FANNIE_URL.'src/jquery/jquery.js');
+		$this->add_script($FANNIE_URL.'src/javascript/jquery.js');
         $user = FannieAuth::checkLogin();
 		ob_start();
 		if (!$this->window_dressing) {

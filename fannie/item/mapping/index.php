@@ -107,7 +107,7 @@ while($sectionsW = $dbc->fetch_row($sectionsR))
 ?>
 <html><head><title>Shelf Mapping</title>
 <script type="text/javascript" 
-	src="<?php echo $FANNIE_URL; ?>src/jquery/jquery.js">
+	src="<?php echo $FANNIE_URL; ?>src/javascript/jquery.js">
 </script>
 <script type="text/javascript">
 function doLookup(){

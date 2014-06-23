@@ -64,7 +64,7 @@ class ProductListPage extends FannieReportTool
 			else
 				$this->window_dressing = False;
 			if (!$this->excel)
-				$this->add_script($FANNIE_URL.'src/jquery/jquery.js');	
+				$this->add_script($FANNIE_URL.'src/javascript/jquery.js');	
 		}
 
 		return True;

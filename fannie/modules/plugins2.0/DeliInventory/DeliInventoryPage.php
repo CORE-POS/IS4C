@@ -396,7 +396,7 @@ if (isset($_GET['action'])){
 
 <html>
 <head><title>Inventory</title>
-<script type="text/javascript" src="<?php echo $FANNIE_URL; ?>src/jquery/jquery.js"></script>
+<script type="text/javascript" src="<?php echo $FANNIE_URL; ?>src/javascript/jquery.js"></script>
 <script type="text/javascript" src="index.js"></script>
 <link rel="stylesheet" type="text/css" href="index.css">
 </head>

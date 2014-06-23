@@ -36,7 +36,7 @@ class VendorPricingBatchPage extends FanniePage {
 		if (FormLib::get_form_value('vid') !== ''){
 			$this->mode = 'edit';
 			$this->window_dressing = False;
-			$this->add_script($FANNIE_URL.'src/jquery/jquery.js');
+			$this->add_script($FANNIE_URL.'src/javascript/jquery.js');
 		}
 
 		return True;

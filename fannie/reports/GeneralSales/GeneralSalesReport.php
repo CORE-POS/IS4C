@@ -47,7 +47,7 @@ class GeneralSalesReport extends FannieReportPage
     {
         parent::preprocess();
         if ($this->content_function == 'report_content' && $this->report_format == 'html') {
-            $this->add_script('../../src/d3.js/d3.v3.min.js');
+            $this->add_script('../../src/javascript/d3.js/d3.v3.min.js');
 		}
 
 		return true;

@@ -79,6 +79,7 @@ class ProductsModel extends BasicModel
     'store_id'=>array('type'=>'SMALLINT','default'=>0),
     'default_vendor_id'=>array('type'=>'INT','default'=>0),
     'current_origin_id'=>array('type'=>'INT','default'=>0),
+    'auto_par'=>array('type'=>'DOUBLE','default'=>0),
     'id'=>array('type'=>'INT','default'=>0,'primary_key'=>true,'increment'=>true)
     );
 
@@ -1197,6 +1198,26 @@ class ProductsModel extends BasicModel
                 }
             }
             $this->instance["current_origin_id"] = func_get_arg(0);
+        }
+    }
+
+    public function auto_par()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["auto_par"])) {
+                return $this->instance["auto_par"];
+            } else if (isset($this->columns["auto_par"]["default"])) {
+                return $this->columns["auto_par"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["auto_par"]) || $this->instance["auto_par"] != func_get_args(0)) {
+                if (!isset($this->columns["auto_par"]["ignore_updates"]) || $this->columns["auto_par"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["auto_par"] = func_get_arg(0);
         }
     }
 
