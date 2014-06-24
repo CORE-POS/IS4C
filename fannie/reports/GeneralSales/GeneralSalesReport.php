@@ -35,7 +35,7 @@ class GeneralSalesReport extends FannieReportPage
 	private $grandTTL = 1;
     protected $title = "Fannie : General Sales Report";
     protected $header = "General Sales Report";
-    protected $report_cache = 'day';
+    protected $report_cache = 'none';
     protected $multi_report_mode = false;
     protected $sortable = false;
     protected $no_sort_but_style = true;
@@ -63,16 +63,25 @@ class GeneralSalesReport extends FannieReportPage
 
 		$dlog = DTransactionsModel::selectDlog($d1,$d2);
 
+        $superR = $dbc->query('SELECT dept_ID FROM MasterSuperDepts WHERE superID=0');
+        $omitDepts = array();
+        $omitVals = '';
+        while ($superW = $dbc->fetch_row($superR)) {
+            $omitDepts[] = $superW['dept_ID'];
+            $omitVals .= '?,';
+        }
+        $omitVals = substr($omitVals, 0, strlen($omitVals)-1);
+
 		$sales = "SELECT d.Dept_name,sum(t.total),
 				sum(case when unitPrice=0.01 THEN 1 else t.quantity END),
 				s.superID,s.super_name
-				FROM $dlog AS t LEFT JOIN departments AS d
-				ON d.dept_no=t.department LEFT JOIN
-				MasterSuperDepts AS s ON t.department=s.dept_ID
+				FROM $dlog AS t 
+                    LEFT JOIN departments AS d ON d.dept_no=t.department 
+                    LEFT JOIN MasterSuperDepts AS s ON t.department=s.dept_ID
 				WHERE 
-				(tDate BETWEEN ? AND ?)
-				AND (s.superID > 0 OR s.superID IS NULL) 
-				AND (t.trans_type = 'I' or t.trans_type = 'D')
+                    t.department NOT IN ($omitVals)
+                    AND t.trans_type IN ('I', 'D')
+                    AND (tdate BETWEEN ? AND ?)
 				GROUP BY s.superID,s.super_name,d.dept_name,t.department
 				ORDER BY s.superID,t.department";
 		if ($dept == 1){
@@ -87,10 +96,9 @@ class GeneralSalesReport extends FannieReportPage
 				MasterSuperDepts AS s ON s.dept_ID=p.department LEFT JOIN
 				MasterSuperDepts AS r ON r.dept_ID=t.department
 				WHERE
-				(tDate BETWEEN ? AND ?)
-				AND (t.trans_type = 'I' or t.trans_type = 'D')
-				AND (s.superID > 0 OR (s.superID IS NULL AND r.superID > 0)
-				OR (s.superID IS NULL AND r.superID IS NULL))
+                    t.trans_type IN ('I', 'D')
+                    AND e.dept_no NOT IN ($omitVals)
+				    AND (tdate BETWEEN ? AND ?)
 				GROUP BY
 				CASE WHEN s.superID IS NULL THEN r.superID ELSE s.superID end,
 				CASE WHEN s.super_name IS NULL THEN r.super_name ELSE s.super_name END,
@@ -102,7 +110,10 @@ class GeneralSalesReport extends FannieReportPage
 		}
 		$supers = array();
 		$prep = $dbc->prepare_statement($sales);
-		$salesR = $dbc->exec_statement($prep,array($d1.' 00:00:00',$d2.' 23:59:59'));
+        $args = $omitDepts;
+        $args[] = $d1 . ' 00:00:00';
+        $args[] = $d2 . ' 23:59:59';
+		$salesR = $dbc->exec_statement($prep, $args);
 	
 		$curSuper = 0;
 		$grandTotal = 0;
@@ -173,7 +184,7 @@ class GeneralSalesReport extends FannieReportPage
 			$sumQty += $row[2];
 			$sumSales += $row[1];
 		}
-		return array('Total',$sumSales,$sumQty, '', );
+		return array('Total',$sumSales,$sumQty, '', null);
 	}
 
     public function javascriptContent()

@@ -141,7 +141,7 @@ class FannieReportPage extends FanniePage
     const META_BLANK        = 2;
     const META_REPEAT_HEADERS    = 4;
     const META_CHART_DATA    = 8;
-    const META_COLOR    = 8;
+    const META_COLOR    = 16;
 
     /**
       Handle pre-display tasks such as input processing
@@ -719,7 +719,7 @@ class FannieReportPage extends FanniePage
         $tag = $header ? 'th' : 'td';
 
         if (($meta & self::META_BOLD) != 0) {
-            $ret = '</tbody><tbody><tr>';
+            $ret = '</tbody><tbody>' . $ret;
             $tag = 'th';
         }
         if (($meta & self::META_BLANK) != 0) {
