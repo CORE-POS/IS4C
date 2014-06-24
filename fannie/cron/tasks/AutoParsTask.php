@@ -72,21 +72,32 @@ class AutoParsTask extends FannieTask
         $minDay = $daysW['minDay'];
         
         $model = new VendorDeliveriesModel($dbc);
-        $model->regular(1);
-        foreach ($model->find() as $schedule) {
-            $schedule->autoNext();
-            $schedule->save();
+        $vendors = new VendorsModel($dbc);
+        // Examine all stocked items from all vendors
+        foreach ($vendors->find() as $vendor) {
+            $model->reset();
+            $model->vendorID($vendor->vendorID());
+            echo $this->cronMsg('Processing ' . $vendor->vendorName());
 
-            $ts1 = strtotime($schedule->nextDelivery());
-            $ts2 = strtotime($schedule->nextNextDelivery());
+            $days = array(date('w'));
+            // if vendor has a regular delivery schedule,
+            // calculate next deliveries and track 
+            // which days fall between them
+            if ($model->load() && $model->regular() == 1) {
+                $model->autoNext();
+                $model->save();
 
-            $days = array();
-            while ($ts1 < $ts2) {
-                $days[] = date('w', $ts1);
-                $ts1 = mktime(0, 0, 0, date('n',$ts1), date('j',$ts1)+1, date('Y',$ts1));
+                $ts1 = strtotime($model->nextDelivery());
+                $ts2 = strtotime($model->nextNextDelivery());
+
+                $days = array();
+                while ($ts1 < $ts2) {
+                    $days[] = date('w', $ts1);
+                    $ts1 = mktime(0, 0, 0, date('n',$ts1), date('j',$ts1)+1, date('Y',$ts1));
+                }
             }
 
-            $itemR = $dbc->execute($itemP, array($schedule->vendorID()));
+            $itemR = $dbc->execute($itemP, array($vendor->vendorID()));
             while ($itemW = $dbc->fetch_row($itemR)) {
                 $total_sales = 0.0;
                 $sameday_sales = array();
@@ -119,8 +130,6 @@ class AutoParsTask extends FannieTask
                 } else {
                     $dbc->execute($saveP, array($special_avg, $itemW['upc']));
                 }
-
-                printf("Item %s\tAvg: %.2f\tSpec: %.2f\n", $itemW['upc'], $period_avg, $special_avg);
             }
         }
     }
