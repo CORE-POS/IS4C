@@ -266,6 +266,9 @@ class InstallUtilities extends LibraryClass
                 $value = 'True';
             } else if (strtoupper($value) === 'FALSE'){
                 $value = 'False';
+            // E.g. numeric barcode prefixes that are strings.
+            } else if (preg_match("/^0\d+$/", $value)) {
+                $value = "'".$value."'";
             } else if (!is_numeric($value)) {
                 $value = "'".$value."'";
             }
