@@ -151,8 +151,12 @@ else {
 	</script>
 	<?php
 
-	echo ' <script src="../../src/CalendarControl.js"
-		type="text/javascript"></script>
+	echo ' <script type="text/javascript">
+            $(document).ready(function() {
+                $(\'#date1\').datepicker();
+                $(\'#date2\').datepicker();
+            });
+            </script>
 		<form action="index.php" method="post">
 		Saved reports: <select onchange="loadSaved(this.value);">
 		<option value="-1">Choose...</option>'.$opts.'</select>
@@ -161,8 +165,8 @@ else {
 		<textarea name="query" id="query" rows="10" cols="40"></textarea>
 		<p />
 		Date range
-		<input type="text" name="date1" size="10" onfocus="showCalendarControl(this);" />
-		<input type="text" name="date2" size="10" onfocus="showCalendarControl(this);" />
+		<input type="text" name="date1" size="10" id="date1" />
+		<input type="text" name="date2" size="10" id="date2" />
 		<br /><input type="checkbox" name="excel" id="excel" />
 		<label for="excel">Download results</label>
 		<p />

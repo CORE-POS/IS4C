@@ -100,7 +100,6 @@ class TenderInOutReport extends FannieReportPage
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $this->add_script('../../src/CalendarControl.js');
         $tenders = array();
         $p = $dbc->prepare_statement("SELECT TenderCode,TenderName FROM tenders ORDER BY TenderName");
         $r = $dbc->exec_statement($p);
@@ -135,10 +134,10 @@ class TenderInOutReport extends FannieReportPage
 		       </td>
 		            <td>
 		             <p>
-		               <input type=text size=25 name=date1 id="date1" onfocus="this.value='';showCalendarControl(this);">
+		               <input type=text size=25 name=date1 id="date1" />
 		               </p>
 		               <p>
-		                <input type=text size=25 name=date2 id="date2" onfocus="this.value='';showCalendarControl(this);">
+		                <input type=text size=25 name=date2 id="date2" />
 		         </p>
 		       </td>
 
@@ -151,6 +150,9 @@ class TenderInOutReport extends FannieReportPage
 </form>
 </div>
         <?php
+        $this->add_onload_command('$(\'#date1\').datepicker();');
+        $this->add_onload_command('$(\'#date2\').datepicker();');
+
         return ob_get_clean();
     }
 }

@@ -239,11 +239,11 @@ function flipover(opt){
 	</div>
 	</td>
 	<th>Start date</th>
-	<td><input type="text" id="date1" name="date1" onclick="showCalendarControl(this);"/></td>
+	<td><input type="text" id="date1" name="date1" /></td>
 </tr>
 <tr>
 	<th>End date</th>
-	<td><input type="text" id="date2" name="date2" onclick="showCalendarControl(this);"/></td>
+	<td><input type="text" id="date2" name="date2" /></td>
 </tr>
 </table>
 <hr />
@@ -270,6 +270,9 @@ function flipover(opt){
 <input type=checkbox name=excel value="xls" /> Excel
 </form>
         <?php
+        $this->add_onload_command('$(\'#date1\').datepicker();');
+        $this->add_onload_command('$(\'#date2\').datepicker();');
+
         return ob_get_clean(); 
     }
 

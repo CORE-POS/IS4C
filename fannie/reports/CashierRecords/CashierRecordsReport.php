@@ -81,10 +81,10 @@ class CashierRecordsReport extends FannieReportPage
             </td>
             <td>
                 <p>
-                <input type=text id=date1 name=date1 onfocus="this.value='';showCalendarControl(this);">
+                <input type=text id=date1 name=date1 />
                 </p>
                 <p>
-                <input type=text id=date2 name=date2 onfocus="this.value='';showCalendarControl(this);">
+                <input type=text id=date2 name=date2 />
                 </p>
             </td>
             <td colspan="2" rowspan="2">
@@ -99,6 +99,9 @@ class CashierRecordsReport extends FannieReportPage
 </form>
 </div>
 <?php
+        $this->add_onload_command('$(\'#date1\').datepicker();');
+        $this->add_onload_command('$(\'#date2\').datepicker();');
+
         return ob_get_clean();
 	}
 }

@@ -628,8 +628,8 @@ class BatchManagementTool extends FanniePage
         }
         $ret .= "</select></td>";
         $ret .= "<td><input type=text id=newBatchName /></td>";
-        $ret .= "<td><input type=text size=10 id=newBatchStartDate onfocus=\"showCalendarControl(this);\" /></td>";
-        $ret .= "<td><input type=text size=10 id=newBatchEndDate onfocus=\"showCalendarControl(this);\" /></td>";
+        $ret .= "<td><input type=text size=10 id=newBatchStartDate /></td>";
+        $ret .= "<td><input type=text size=10 id=newBatchEndDate /></td>";
         $ret .= "<td><select id=newBatchOwner />";
         foreach ($this->owners as $o) {
             $ret .= "<option>$o</option>";
@@ -1318,10 +1318,11 @@ class BatchManagementTool extends FanniePage
     {
         global $FANNIE_URL;
         $this->add_script('index.js');
-        $this->add_script($FANNIE_URL.'src/CalendarControl.js');
         $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
+        $this->add_script($FANNIE_URL.'src/javascript/jquery-ui.js');
         $this->add_css_file('index.css');
         $this->add_css_file($FANNIE_URL.'src/style.css');
+        $this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
         ob_start();
         ?>
         <html>
@@ -1367,6 +1368,9 @@ class BatchManagementTool extends FanniePage
         if (FormLib::get('startAt', 0 ) != 0) {
             $showID = FormLib::get('startAt');
             $this->add_onload_command("showBatch($showID, false);\n");
+        } else {
+            $this->add_onload_command("\$('#newBatchStartDate').datepicker();\n");
+            $this->add_onload_command("\$('#newBatchEndDate').datepicker();\n");
         }
 
         return $ret;

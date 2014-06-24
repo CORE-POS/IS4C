@@ -97,15 +97,18 @@ class PurchasingSearchPage extends FannieRESTfulPage {
         $ret .= '<tr><th>UPC or SKU</th><td><input type="text" name="id" /></td>';
         $ret .= '<td rowspan="3">' . FormLib::dateRangePicker() . '</td></tr>';
         $ret .= '<tr><th>Start Date</th><td><input type="text" size="10" 
-            id="date1" name="date1" onfocus="showCalendarControl(this);" /></td></tr>';
+            id="date1" name="date1" /></td></tr>';
         $ret .= '<tr><th>End Date</th><td><input type="text" size="10" 
-            id="date2" name="date2" onfocus="showCalendarControl(this);" /></td></tr>';
+            id="date2" name="date2" /></td></tr>';
         $ret .= '<tr><td><input type="submit" value="Search" /></td>';
         $ret .= '<td colspan="2">Omit dates to search all orders
                 (<a href="" onclick="$(\'#date1\').val(\'\');$(\'#date2\').val(\'\');return false;">Clear
                 Dates</a>)</td></tr>';
         $ret .= '</table>';
         $ret .= '</form>';
+
+        $this->add_onload_command('$(\'#date1\').datepicker();');
+        $this->add_onload_command('$(\'#date2\').datepicker();');
 
         return $ret;
 	}

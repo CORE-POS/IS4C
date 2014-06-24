@@ -170,7 +170,6 @@ class ObfWeekEntryPage extends FannieRESTfulPage
     public function get_view()
     {
 		global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
-        $this->add_script($FANNIE_URL . 'src/CalendarControl.js');
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
 
         $model = new ObfWeeksModel($dbc);
@@ -212,11 +211,12 @@ class ObfWeekEntryPage extends FannieRESTfulPage
         }
         $ret .= '<tr>';
         $ret .= '<td><input type="text" size="12" name="date1" id="date1"
-                        onfocus="showCalendarControl(this);" value="' . $end1 . '"
+                        value="' . $end1 . '"
                         onchange="getPrevYear(this.value);" /></td>';
+        $this->add_onload_command("\$('#date1').datepicker();\n");
         $ret .= '<td><input type="text" size="12" name="date2" id="date2"
-                        value="' . $end2 . '"
-                        onfocus="showCalendarControl(this);" /></td>';
+                        value="' . $end2 . '" /></td>';
+        $this->add_onload_command("\$('#date2').datepicker();\n");
         $ret .= sprintf('<td><input type="text" size="5" name="growth"
                             value="%.3f" />%%</td>', $this->weekModel->growthTarget()*100);
         $ret .= '</tr>';

@@ -249,18 +249,19 @@ class WfcHtUploadPage extends FanniePage
     private function form_content()
     {
         global $FANNIE_URL;
-        $this->add_script($FANNIE_URL.'src/CalendarControl.js');
         echo '
 <form enctype="multipart/form-data" action="'.$_SERVER['PHP_SELF'].'" method="post">
 <input type="hidden" name="MAX_FILE_SIZE" value="2097152" />
-Pay Period: <input type=text name=start onfocus="showCalendarControl(this);" /> 
-<input type=text name=end onfocus="showCalendarControl(this);" /><p />
+Pay Period: <input type=text name=start id="start" />
+<input type=text name=end id="end" /><p />
 Holiday Hours: <select name=asHoliday><option value=1>As Holiday</option><option value=0>As Hours Worked</option>
 </select><p />
 Filename: <input type="file" id="file" name="upload" />
 <input type="submit" value="Upload File" />
 </form>
         ';
+        $this->add_onload_command("\$('#start').datepicker();\n");
+        $this->add_onload_command("\$('#end').datepicker();\n");
     }
 
     public function body_content()

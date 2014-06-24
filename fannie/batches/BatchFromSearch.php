@@ -160,7 +160,6 @@ class BatchFromSearch extends FannieRESTfulPage
     {
         global $FANNIE_OP_DB, $FANNIE_URL;
         $ret = '<form action="BatchFromSearch.php" method="post">';
-        $this->add_script($FANNIE_URL.'src/CalendarControl.js');
 
         $ret .= '<div style="line-height:2.3em;">';
 
@@ -190,12 +189,14 @@ class BatchFromSearch extends FannieRESTfulPage
                 . '" />';
 
         $ret .= '&nbsp;&nbsp;&nbsp;';
-        $ret .= '<b>Start</b>: <input type="text" size="12" onfocus="showCalendarControl(this);" value="'
+        $ret .= '<b>Start</b>: <input type="text" size="12" id="startDate" value="'
                 . date('Y-m-d') . '" name="startDate" />';
+        $this->add_onload_command("\$('#startDate').datepicker();\n");
 
         $ret .= '&nbsp;&nbsp;&nbsp;';
-        $ret .= '<b>End</b>: <input type="text" size="12" onfocus="showCalendarControl(this);" value="'
+        $ret .= '<b>End</b>: <input type="text" size="12" id="endDate" value="'
                 . date('Y-m-d') . '" name="endDate" />';
+        $this->add_onload_command("\$('#endDate').datepicker();\n");
 
         $ret .= '<br />';
         $owners = $dbc->query('SELECT super_name FROM MasterSuperDepts GROUP BY super_name ORDER BY super_name');

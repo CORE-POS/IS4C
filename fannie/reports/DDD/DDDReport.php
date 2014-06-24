@@ -129,6 +129,8 @@ class DDDReport extends FannieReportPage
 	
 	public function form_content()
     {
+        $this->add_onload_command('$(\'#date1\').datepicker();');
+        $this->add_onload_command('$(\'#date2\').datepicker();');
         return '
             <form method="get" action="DDDReport.php">
             <table>
@@ -137,12 +139,12 @@ class DDDReport extends FannieReportPage
             </tr>
             <tr>
                 <th>Start Date</th>
-                <td><input type="text" id="date1" name="date1" onfocus="showCalendarControl(this);" /></td>
+                <td><input type="text" id="date1" name="date1" /></td>
                 <td rowspan="2">' . FormLib::dateRangePicker() . '</td>
             </tr>
             <tr>
                 <th>End Date</th>
-                <td><input type="text" id="date2" name="date2" onfocus="showCalendarControl(this);" /></td>
+                <td><input type="text" id="date2" name="date2" /></td>
             </tr>
             <tr>
                 <td><input type="submit" name="submitted" value="Get Report" /></td>

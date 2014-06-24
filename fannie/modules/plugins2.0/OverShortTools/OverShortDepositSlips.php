@@ -289,14 +289,13 @@ class OverShortDepositSlips extends FanniePage {
 	function body_content(){
 		global $FANNIE_URL, $FANNIE_PLUGIN_SETTINGS;
 		$dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
-		$this->add_script($FANNIE_URL.'src/CalendarControl.js');
         $this->add_script('js/count.js');
 		ob_start();
 		?>
 		<form action=OverShortDepositSlips.php method=get>
 		<table>
 		<tr>
-            <th>Start</th><td><input type=text id=startDate name=startDate onfocus="this.value='';showCalendarControl(this);" /></td>
+            <th>Start</th><td><input type=text id=startDate name=startDate />
             <td >
             Recent Counts: <select onchange="existingDates(this.value);">
             <option value=''>Select one...</option>
@@ -313,11 +312,14 @@ class OverShortDepositSlips extends FanniePage {
             </select>
             </td>
         </tr>
-		<tr><th>End</th><td><input type=text id=endDate name=endDate onfocus="this.value='';showCalendarControl(this);" /></td></tr>
+		<tr><th>End</th><td><input type=text id=endDate name=endDate />
 		</table>
 		<input type=submit value="Generate slips" />
 		</form>
 		<?php
+        $this->add_onload_command("\$('#startDate').datepicker();\n");
+        $this->add_onload_command("\$('#endDate').datepicker();\n");
+
 		return ob_get_clean();
 	}
 }

@@ -53,7 +53,6 @@ class CalendarAttendedEventPage extends FannieRESTfulPage
         global $FANNIE_URL;
         $this->header = 'Create Attended Event';
         $this->title = 'Create Attended Event';
-        $this->add_script($FANNIE_URL.'src/CalendarControl.js');
 
         return true;
     }
@@ -83,7 +82,8 @@ class CalendarAttendedEventPage extends FannieRESTfulPage
         $ret .= '</select></div>';
 
         $ret .= '<div style="margin:5px;"><b>Date</b>: 
-            <input type="text" size="10" onfocus="showCalendarControl(this);" name="datestr" /></div>';
+            <input type="text" size="10" id="datestr" name="datestr" /></div>';
+        $this->add_onload_command("\$('#datestr').datepicker();\n");
 
         $ret .= '<div style="margin:5px;"><b>Max Attendees</b>: 
             <input type="text" size="4" name="limit" /></div>';

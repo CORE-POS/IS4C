@@ -128,17 +128,18 @@ class ZipCodeReport extends FannieReportPage {
 
 	function form_content(){
 		global $FANNIE_URL;
-		$this->add_script($FANNIE_URL.'src/CalendarControl.js');
+        $this->add_onload_command('$(\'#date1\').datepicker();');
+        $this->add_onload_command('$(\'#date2\').datepicker();');
 		return '<form action="ZipCodeReport.php" method="get">
 			<table>
 			<tr>
 				<th>Start Date</th>
-				<td><input type="text" name="date1" id="date1" onclick="showCalendarControl(this);" /></td>	
+				<td><input type="text" name="date1" id="date1" /></td>	
                 <td rowspan="4">' . FormLib::dateRangePicker() . '</td>
 			</tr>
 			<tr>
 				<th>End Date</th>
-				<td><input type="text" name="date2" id="date2" onclick="showCalendarControl(this);" /></td>	
+				<td><input type="text" name="date2" id="date2" /></td>	
 			</tr>
 			<tr>
 				<th>Based on</th>

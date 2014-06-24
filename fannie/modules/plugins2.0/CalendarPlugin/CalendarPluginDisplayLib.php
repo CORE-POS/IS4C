@@ -461,9 +461,9 @@ class CalendarPluginDisplayLib {
 		$ret .= "</select>";
 		$ret .= "</div>";
 		$ret .= "<div id=overlayinput>";
-		$ret .= "<b>Start Date</b>: <input type=text name=startdate onclick=\"showCalendarControl(this);\"/>";
+		$ret .= "<b>Start Date</b>: <input type=text name=startdate id=\"startdate\" />";
 		$ret .= "<p />";
-		$ret .= "<b>End Date</b>: <input type=text name=enddate onclick=\"showCalendarControl(this);\"/>";
+		$ret .= "<b>End Date</b>: <input type=text name=enddate id=\"enddate\" />";
 		$ret .= "<p />";
 		$ret .= "<input type=submit value=Submit />";
 		$ret .= "<input type=hidden name=view value=showoverlay />";

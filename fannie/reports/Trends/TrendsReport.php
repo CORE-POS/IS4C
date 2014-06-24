@@ -182,7 +182,6 @@ class TrendsReport extends FannieReportPage
         while ($deptsW = $dbc->fetch_array($deptsR)) {
           $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";	
         }
-        $this->add_script('../../src/CalendarControl.js');
         $this->add_onload_command('doShow();');
 
         ob_start();
@@ -242,7 +241,7 @@ function doShow(){
     <input type=text name=likeCode />
     </td>
 
-    <td>Start date:</td><td><input type=text id=date1 name=date1 onfocus="showCalendarControl(this);"/></td></tr>
+    <td>Start date:</td><td><input type=text id=date1 name=date1 /></td></tr>
 
     <tr>
     <td class="deptField">End department:</td><td class="deptField">
@@ -263,7 +262,7 @@ function doShow(){
     <input type=text name=likeCode2 />
     </td>
 
-    <td>End date:</td><td><input type=text id=date2 name=date2 onfocus="showCalendarControl(this);"/></td></tr>
+    <td>End date:</td><td><input type=text id=date2 name=date2 /></td></tr>
 
 </tr></table>
 <br />
@@ -279,6 +278,9 @@ function doShow(){
 </table>
 </form>
         <?php
+        $this->add_onload_command('$(\'#date1\').datepicker();');
+        $this->add_onload_command('$(\'#date2\').datepicker();');
+
         return ob_get_clean();
     }
 }

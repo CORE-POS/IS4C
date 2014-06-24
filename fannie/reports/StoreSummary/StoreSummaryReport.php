@@ -67,8 +67,6 @@ class StoreSummaryReport extends FannieReportPage {
                 $this->has_menus(False);
             }
 		}
-		else 
-			$this->add_script("../../src/CalendarControl.js");
 
 		return True;
 
@@ -505,13 +503,13 @@ class StoreSummaryReport extends FannieReportPage {
 		<table cellspacing=4 cellpadding=4 border=0>
 		<tr>
 		<th>Start Date</th>
-		<td><input type=text id=date1 name=date1 onclick="showCalendarControl(this);" value="<?php echo $lastMonday; ?>" /></td>
+		<td><input type=text id=date1 name=date1 value="<?php echo $lastMonday; ?>" /></td>
 		<td rowspan="2">
 		<?php echo FormLib::date_range_picker(); ?>
 		</td>
 		</tr><tr>
 		<th>End Date</th>
-		<td><input type=text id=date2 name=date2 onclick="showCalendarControl(this);" value="<?php echo $lastSunday; ?>" /></td>
+		<td><input type=text id=date2 name=date2 value="<?php echo $lastSunday; ?>" /></td>
         </tr>
         <tr style='vertical-align:top;'>
         <td colspan=2>
@@ -541,6 +539,8 @@ class StoreSummaryReport extends FannieReportPage {
 		</table>
 		</form>
 		<?php
+        $this->add_onload_command('$(\'#date1\').datepicker();');
+        $this->add_onload_command('$(\'#date2\').datepicker();');
 
 	// form_content()
 	}

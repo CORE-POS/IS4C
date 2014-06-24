@@ -240,12 +240,12 @@ class HouseCouponEditor extends FanniePage
     			<th>Begins</th>
                 <td colspan="3">
                     <input type=text name=starts value="%s" size=12 
-                        onclick="showCalendarControl(this);" />
+                        id="starts"
                 </td>
 			    <th>Expires</th>
                 <td>
                     <input type=text name=expires value="%s" size=12 
-        			    onclick="showCalendarControl(this);" />
+        			    id="expires"
 			    </td>
             </tr>
             <tr>
@@ -366,8 +366,9 @@ class HouseCouponEditor extends FanniePage
 			$ret .= "<input type=submit name=submit_delete_dept value=\"Delete Selected Delete\" />";
 		}
 
-		$dbc->close();
-		$this->add_script($FANNIE_URL.'src/CalendarControl.js');
+        $this->add_onload_command("\$('#starts').datepicker();\n");
+        $this->add_onload_command("\$('#expires').datepicker();\n");
+
 		return $ret;
 	}
 }

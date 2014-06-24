@@ -304,9 +304,11 @@ class OverShortCashierPage extends FanniePage {
 		global $FANNIE_URL;
 		ob_start();
 		$this->add_script('js/cashier.js');	
-		$this->add_script($FANNIE_URL.'src/CalendarControl.js');
 		$this->add_script($FANNIE_URL.'src/javascript/jquery.js');
+		$this->add_script($FANNIE_URL.'src/javascript/jquery-ui.js');
 		$this->add_css_file($FANNIE_URL.'src/style.css');
+		$this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
+        $this->add_onload_command("\$('#date').datepicker();");
 		if (!$this->window_dressing) {
 			echo "<html>";
 			echo "<head><title>{$this->title}</title>";
@@ -316,7 +318,7 @@ class OverShortCashierPage extends FanniePage {
 		?>
 		<div id=input>
 		<form style='margin-top:1.0em;' onsubmit="loadCashier(); return false;">
-		<b>Date</b>:<input type=text  id=date size=10 onfocus="this.value='';showCalendarControl(this);" /> 
+		<b>Date</b>:<input type=text  id=date size=10 />
 		<b>Cashier</b>:<input type=text  id=empno size=5 /> 
 		<input type=submit value="Load Cashier" />
 		</form>

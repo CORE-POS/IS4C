@@ -489,9 +489,12 @@ class OverShortSafecountPage extends FanniePage {
 		global $FANNIE_URL, $FANNIE_PLUGIN_SETTINGS;
 		$dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
 		$this->add_script('js/count.js');
-		$this->add_script($FANNIE_URL.'src/CalendarControl.js');
 		$this->add_script($FANNIE_URL.'src/javascript/jquery.js');
+		$this->add_script($FANNIE_URL.'src/javascript/jquery-ui.js');
 		$this->add_css_file($FANNIE_URL.'src/style.css');
+		$this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
+        $this->add_onload_command("\$('#startDate').datepicker();");
+        $this->add_onload_command("\$('#endDate').datepicker();");
 		ob_start();
 		?>
 		<html>
@@ -503,7 +506,7 @@ class OverShortSafecountPage extends FanniePage {
 		<div id=input>
 		<table>
 		<tr>
-			<th>Start Date</th><td><input type=text id=startDate onfocus="this.value='';showCalendarControl(this);" /></td>
+			<th>Start Date</th><td><input type=text id=startDate /></td>
 			<td>
 			<input type=submit Value=Load onclick="loader();" />
 			</td>
@@ -524,7 +527,7 @@ class OverShortSafecountPage extends FanniePage {
             </td>
 		</tr>
 		<tr>
-			<th>End Date</th><td><input type=text id=endDate onfocus="this.value='';showCalendarControl(this);" /></td>
+			<th>End Date</th><td><input type=text id=endDate /></td>
 		</tr>
 		</table>
 		</div>

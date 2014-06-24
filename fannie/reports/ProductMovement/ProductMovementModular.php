@@ -221,7 +221,7 @@ function showGraph() {
 		<tr>
 			<th>Date Start</th>
 			<td>	
-		               <input type=text size=14 id=date1 name=date1 onfocus="this.value='';showCalendarControl(this);">
+		               <input type=text size=14 id=date1 name=date1 />
 			</td>
 			<td rowspan="3">
 			<?php echo FormLib::date_range_picker(); ?>
@@ -230,7 +230,7 @@ function showGraph() {
 		<tr>
 			<th>Date End</th>
 			<td>
-		                <input type=text size=14 id=date2 name=date2 onfocus="this.value='';showCalendarControl(this);">
+		                <input type=text size=14 id=date2 name=date2 />
 		       </td>
 
 		</tr>
@@ -242,6 +242,8 @@ function showGraph() {
 </form>
 </div>
 <?php
+        $this->add_onload_command('$(\'#date1\').datepicker();');
+        $this->add_onload_command('$(\'#date2\').datepicker();');
 	}
 }
 

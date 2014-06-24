@@ -223,8 +223,8 @@ function showManu(){
 }
 $(document).ready(function(){
 	showUPC();
-	$('#date1').click(function(){showCalendarControl(this);});
-	$('#date2').click(function(){showCalendarControl(this);});
+	$('#date1').datepicker();
+	$('#date2').datepicker();
 	$('#d1s').change(function(){
 		$('#dept1').val($('#d1s').val());
 	});

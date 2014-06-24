@@ -216,12 +216,11 @@ class ReverseTransPage extends FannieRESTfulPage {
 	function get_view(){
 		global $FANNIE_URL;
 		$this->add_script('js/reverse.js');
-		$this->add_script($FANNIE_URL.'src/CalendarControl.js');
 		ob_start();
 		?>
 		<form onsubmit="loadReceipt(); return false;">
 		<table>
-		<tr><td>Date</td><td> <input type=text id=rdate onclick="showCalendarControl(this);" /></td></tr>
+		<tr><td>Date</td><td> <input type=text id=rdate /></td></tr>
 		<tr><td>Trans #</td><td> <input type=text id=rtrans_num /></td></tr>
 		<tr><td colspan="2"><input type=submit value=Submit /></td></tr>
 		</table>
@@ -229,6 +228,8 @@ class ReverseTransPage extends FannieRESTfulPage {
 		<div id=contentarea>
 		</div>
 		<?php
+        $this->add_onload_command("\$('#rdate').datepicker();\n");
+
 		return ob_get_clean();
 	}
 

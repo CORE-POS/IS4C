@@ -93,6 +93,8 @@ function handleResponse() {
         		document.getElementById('inputarea').innerHTML = array[1];
         		document.getElementById('displayarea').innerHTML = array[2];
         		document.getElementById('newBatchName').focus();	
+                $('#newBatchStartDate').datepicker();
+                $('#newBatchEndDate').datepicker();
         		break;
         case 'addItemUPC':
         case 'addItemLC':

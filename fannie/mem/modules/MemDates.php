@@ -34,26 +34,31 @@ class MemDates extends MemberModule {
 		$infoR = $dbc->exec_statement($infoQ,array($memNum));
 		$infoW = $dbc->fetch_row($infoR);
 
-		$ret = "<script type=\"text/javascript\"
-			src=\"{$FANNIE_URL}src/CalendarControl.js\">
-			</script>";
 		$ret .= "<fieldset class='memOneRow'><legend>Membership Dates</legend>";
 		$ret .= "<table class=\"MemFormTable\" 
 			border=\"0\">";
 
 		$ret .= "<tr><th>Start Date</th>";
 		$ret .= sprintf('<td><input name="MemDates_start" size="10"
-				maxlength="10" value="%s" onclick="showCalendarControl(this);"
+				maxlength="10" value="%s" id="MemDates_start"
 				/></td>',$infoW['start_date']);	
 		$ret .= "<th>End Date</th>";
 		$ret .= sprintf('<td><input name="MemDates_end" size="10"
-				maxlength="10" value="%s" onclick="showCalendarControl(this);"
+				maxlength="10" value="%s" id="MemDates_end"
 				/></td></tr>',$infoW['end_date']);	
 
 		$ret .= "</table></fieldset>";
 
 		return $ret;
 	}
+
+    public function getEditLoadCommands()
+    {
+        return array(
+            "\$('#MemDates_start').datepicker();\n",
+            "\$('#MemDates_end').datepicker();\n",
+        );
+    }
 
 	function saveFormData($memNum){
 		global $FANNIE_ROOT;

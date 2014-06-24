@@ -236,7 +236,7 @@ class GeneralDayReport extends FannieReportPage
 		<table cellspacing=4 cellpadding=4>
 		<tr>
 		<th>Date</th>
-		<td><input type=text id=date1 name=date1 onclick="showCalendarControl(this);" value="<?php echo $start; ?>" /></td>
+		<td><input type=text id=date1 name=date1 /></td>
 		</tr><tr>
 		<td>Excel <input type=checkbox name=excel /></td>
 		<td><input type=submit name=submit value="Submit" /></td>
@@ -244,6 +244,7 @@ class GeneralDayReport extends FannieReportPage
 		</table>
 		</form>
 		<?php
+        $this->add_onload_command("\$('#date1').datepicker();\n");
 	}
 
 }

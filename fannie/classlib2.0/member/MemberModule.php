@@ -107,5 +107,25 @@ class MemberModule
     {
         return array();
     }
+
+    /**
+      Get any javascript that goes with
+      the editing form
+      @return [string] javascript
+    */
+    public function getEditJavascript()
+    {
+        return '';
+    }
+
+    /**
+      Get list of commands to run when
+      the edit page is loaded
+      @return [array] of javascript commands
+    */
+    public function getEditLoadCommands()
+    {
+        return array();
+    }
 }
 

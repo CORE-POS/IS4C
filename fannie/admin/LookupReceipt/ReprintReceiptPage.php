@@ -182,15 +182,14 @@ class ReprintReceiptPage extends FanniePage
 		while($w = $dbc->fetch_row($r)) {
 			$depts .= sprintf("<option value=%d>%s</option>",$w[0],$w[1]);
 		}
-		$this->add_script($FANNIE_URL.'src/CalendarControl.js');
 		ob_start();
 		?>
 <form action=ReprintReceiptPage.php method=get>
 Receipt Search - Fill in any information available
 <table id=mytable cellspacing=4 cellpadding=0>
 <tr>
-	<th>Date*</th><td colspan=2><input type=text name=date size=10 onfocus="showCalendarControl(this);" />
-		<input type=text name=date2 size=10 onfocus="showCalendarControl(this);" /></td>
+	<th>Date*</th><td colspan=2><input type=text name=date size=10 id="date" />
+		<input type=text name=date2 size=10 id="date2" /></td>
 	<th>Receipt #</th><td><input type=text name=trans_num size=6 /></td>
 </tr>
 <tr>
@@ -231,6 +230,9 @@ Receipt Search - Fill in any information available
 </ul>
 </form>
 		<?php
+        $this->add_onload_command("\$('#date').datepicker();\n");
+        $this->add_onload_command("\$('#date2').datepicker();\n");
+
 		return ob_get_clean();
 	}
 }

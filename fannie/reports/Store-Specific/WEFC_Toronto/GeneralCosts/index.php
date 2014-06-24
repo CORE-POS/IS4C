@@ -39,7 +39,7 @@
 	*  since the transaction.
 */
 
-include(dirname(__FILE__) . '/../../config.php');
+include(dirname(__FILE__) . '/../../../../config.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
@@ -236,8 +236,11 @@ while($lastMonday == "" || $lastSunday == ""){
 	$ts = mktime(0,0,0,date("n",$ts),date("j",$ts)-1,date("Y",$ts));	
 }
 ?>
-<script type="text/javascript"
-	src="<?php echo $FANNIE_URL; ?>src/CalendarControl.js">
+<script type="text/javascript">
+$(document).ready(function(){
+    $('#date1').datepicker({dateFormat:'yy-mm-dd'});
+    $('#date2').datepicker({dateFormat:'yy-mm-dd'});
+});
 </script>
 <form action=index.php method=get>
 <style type="text/css">
@@ -253,11 +256,11 @@ input[type="checkbox"] {
 <table cellspacing='4' cellpadding='4' border='0'>
 <tr>
 <th>Start Date</th>
-<td><input type=text name='date1' onclick="showCalendarControl(this);" value="<?php echo $lastMonday; ?>" />
+<td><input type=text name='date1' id="date1" /></td>
 <tr>
 <th>End Date</th>
 <td>
-<input type=text name='date2' onclick="showCalendarControl(this);" value="<?php echo $lastSunday; ?>" />
+<input type=text name='date2' id="date2" /></td>
 </td>
 <tr>
 <th></th>

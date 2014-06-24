@@ -223,10 +223,10 @@ function swap(src,dst){
 		       </td>
 		            <td>
 		             <p>
-		               <input type=text id=date1 name=date1 onfocus="this.value='';showCalendarControl(this);">
+		               <input type=text id=date1 name=date1 />
 		               </p>
 		               <p>
-		                <input type=text id=date2 name=date2 onfocus="this.value='';showCalendarControl(this);">
+		                <input type=text id=date2 name=date2 />
 		         </p>
 		       </td>
 
@@ -244,6 +244,9 @@ function swap(src,dst){
 	</table>
 </form>
         <?php
+        $this->add_onload_command('$(\'#date1\').datepicker();');
+        $this->add_onload_command('$(\'#date2\').datepicker();');
+
         return ob_get_clean();
     }
 }

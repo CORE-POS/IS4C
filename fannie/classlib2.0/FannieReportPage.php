@@ -154,13 +154,6 @@ class FannieReportPage extends FanniePage
       report_content method should be called. It
       also the value of "excel" for the request and
       sets necessary output options.
-
-      The CalendarControl javascript is automatically
-      included if the form_content method is selected.
-      This isn't strictly necessary if the form has
-      no date fields, but it will likely be useful
-      more often than not and cause no harm in other
-      cases.
     */
     public function preprocess()
     {
@@ -184,7 +177,6 @@ class FannieReportPage extends FanniePage
             $this->formatCheck();
         } else {
             $this->content_function = 'form_content'; 
-            $this->add_script($FANNIE_URL . 'src/CalendarControl.js');
         }
 
         return true;

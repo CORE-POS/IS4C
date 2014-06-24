@@ -287,9 +287,9 @@ class ImportPurchaseOrder extends FannieUploadPage
 		<td><select name=vendorID>
 		<?php foreach($vendors->find('vendorName') as $v) printf("<option value=%d>%s</option>",$v->vendorID(), $v->vendorName()); ?>
 		</select></td>
-		<th>Order Date</th><td><input type=text size=10 name=orderDate onclick="showCalendarControl(this);" /></td></tr>
+		<th>Order Date</th><td><input type=text size=10 name=orderDate id="orderDate" /></td></tr>
 		<tr><th>PO#/Invoice#</th><td><input type=text size=15 name=identifier /></td>
-		<th>Recv'd Date</th><td><input type=text size=10 name=recvDate onclick="showCalendarControl(this);" /></td></tr>
+		<th>Recv'd Date</th><td><input type=text size=10 name=recvDate id="recvDate" /></td></tr>
 		<tr><td colspan=4>
 		<input type="hidden" name="MAX_FILE_SIZE" value="2097152" />
 		Filename: <input type="file" id="FannieUploadFile" name="FannieUploadFile" />
@@ -305,7 +305,9 @@ class ImportPurchaseOrder extends FannieUploadPage
 		</table>
 		</form>
 		<?php
-		$this->add_script($FANNIE_URL.'src/CalendarControl.js');
+        $this->add_onload_command("\$('#orderDate').datepicker();");
+        $this->add_onload_command("\$('#recvDate').datepicker();");
+
 		return ob_get_clean();
 	}
 }

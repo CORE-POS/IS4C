@@ -106,9 +106,19 @@ else
 <title>Query</title>
 <link href="<?php echo $FANNIE_URL; ?>src/style.css"
       rel="stylesheet" type="text/css">
-<script src="<?php echo $FANNIE_URL; ?>src/CalendarControl.js"
+<script src="<?php echo $FANNIE_URL; ?>src/javascript/jquery.js"
         language="javascript"></script>
+<script src="<?php echo $FANNIE_URL; ?>src/javascript/jquery-ui.js"
+        language="javascript"></script>
+<link href="<?php echo $FANNIE_URL; ?>src/javascript/jquery-ui.css"
+      rel="stylesheet" type="text/css">
 </head>
+<script type="text/javascript">
+$(document).ready(function(){
+    $('#date1').datepicker();
+    $('#date2').datepicker();
+});
+</script>
 <body>
 	<form method = "get" action="movement.php">
 	<table border="0" cellspacing="0" cellpadding="5">
@@ -128,10 +138,10 @@ else
 		       </td>
 		            <td>
 		             <p>
-		               <input type=text size=25 name=date1 onfocus="this.value='';showCalendarControl(this);">
+		               <input type=text size=25 name=date1 id="date1" />
 		               </p>
 		               <p>
-		                <input type=text size=25 name=date2 onfocus="this.value='';showCalendarControl(this);">
+		                <input type=text size=25 name=date2 id="date2" />
 		         </p>
 		       </td>
 

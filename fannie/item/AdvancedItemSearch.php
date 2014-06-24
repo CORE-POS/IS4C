@@ -508,9 +508,10 @@ function formReset()
     {
         global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $this->add_script($FANNIE_URL.'src/CalendarControl.js');
         $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
+        $this->add_script($FANNIE_URL.'src/javascript/jquery-ui.js');
         $this->add_css_file($FANNIE_URL.'src/style.css');
+        $this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
 
         $ret = '<div style="float:left;">';
 
@@ -530,7 +531,8 @@ function formReset()
 
         $ret .= '<th>Modified</th>';
         $ret .= '<td><select name="modOp"><option>On</option><option>Before</option><option>After</option></select>';
-        $ret .= '<td><input type="text" name="modDate" onfocus="showCalendarControl(this);" size="10" /></td>';
+        $ret .= '<td><input type="text" name="modDate" id="modDate" size="10" /></td>';
+        $this->add_onload_command("\$('#modDate').datepicker();\n");
 
         $ret .= '</tr><tr>';
 

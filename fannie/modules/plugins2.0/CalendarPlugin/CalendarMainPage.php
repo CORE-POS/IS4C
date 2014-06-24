@@ -43,6 +43,7 @@ class CalendarMainPage extends FanniePage {
 		
 		$plugin = new CalendarPlugin(); 
         $this->add_script($FANNIE_URL . 'src/javascript/jquery.js');
+        $this->add_script($FANNIE_URL . 'src/javascript/jquery-ui.js');
 		$this->add_script($plugin->plugin_url().'/javascript/calendar.js');
 		$this->add_script($plugin->plugin_url().'/javascript/ajax.js');
 
@@ -50,7 +51,7 @@ class CalendarMainPage extends FanniePage {
 		if ($view == 'month') 
 			$this->window_dressing = False;
 		else
-			$this->add_script($FANNIE_URL.'src/CalendarControl.js');
+			$this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
 
 		if (file_exists(dirname(__FILE__).'/css/'.$view.'.css'))
 			$this->add_css_file($plugin->plugin_url().'/css/'.$view.'.css');
@@ -88,6 +89,8 @@ class CalendarMainPage extends FanniePage {
 			break;
 		case 'overlays':
 			echo CalendarPluginDisplayLib::overlaysView($this->uid);
+            $this->add_onload_command("\$('#startdate').datepicker();\n");
+            $this->add_onload_command("\$('#enddate').datepicker();\n");
 			break;
 		case 'showoverlay':
 			$cals = FormLib::get_form_value('cals');

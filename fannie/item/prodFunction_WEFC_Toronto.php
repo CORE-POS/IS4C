@@ -154,7 +154,12 @@ function itemParse($upc){
 	echo "testwindow.moveTo(50,50);";
 	echo "}";
 	echo "</script>";
-	echo "<script type='text/javascript' src='${FANNIE_URL}src/CalendarControl.js'></script>";
+	echo "<script type='text/javascript'>
+        \$(document).ready(function(){
+            \$('#start_date').datepicker(); 
+            \$('#end_date').datepicker(); 
+        });
+        </script>";
 
 		// 3. No match. Compose form for creation of a new item.
 	if($num == 0 || !$num){
@@ -509,10 +514,10 @@ function itemParse($upc){
 	echo "<table style='margin:0.0em 0.0em 0.0em 0.0em;'>";
 
 	echo "<tr><th align-right>Start Date</th>";
-	echo "<td><input type=text size=6 value='" . date('Y-m-d') . "' name=start_date onclick='showCalendarControl(this);' /></td>";
+	echo "<td><input type=text size=6 value='" . date('Y-m-d') . "' name=start_date id=start_date /></td>";
 
 	echo "</tr><tr><th align-right>End Date</th>";
-	echo "<td><input type=text size=6 value='" . date('Y-m-d') . "' name=end_date onclick='showCalendarControl(this);' /></td>";
+	echo "<td><input type=text size=6 value='" . date('Y-m-d') . "' name=end_date id=end_date /></td>";
 
 	echo "</tr><tr><th align-right>Sale for</th>";
 	// This should really be in the db and be per-coop-configurable.
@@ -1071,10 +1076,10 @@ function itemParse($upc){
 		echo "<table style='margin:0.0em 0.0em 0.0em 0.0em;'>";
 
 		echo "<tr><th align-right>Start Date</th>";
-		echo "<td><input type=text name=start_date size=6 value=\"{$rowItem['start_date']}\" onclick='showCalendarControl(this);' /></td>";
+		echo "<td><input type=text name=start_date size=6 value=\"{$rowItem['start_date']}\" id=start_date /></td>";
 
 		echo "</tr><tr><th align-right>End Date</th>";
-		echo "<td><input type=text name=end_date size=6 value=\"{$rowItem['end_date']}\" onclick='showCalendarControl(this);' /></td>";
+		echo "<td><input type=text name=end_date size=6 value=\"{$rowItem['end_date']}\" id=end_date /></td>";
 
 		echo "</tr><tr><th align-right>Sale for</th>";
 		// This should really be in the db and be per-coop-configurable.

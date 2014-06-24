@@ -123,7 +123,7 @@ class CustomerPurchasesReport extends FannieReportPage
 		<tr>
 			<th>Date Start</th>
 			<td>	
-		               <input type=text size=14 id=date1 name=date1 onfocus="this.value='';showCalendarControl(this);">
+		               <input type=text size=14 id=date1 name=date1 />
 			</td>
 			<td rowspan="3">
 			<?php echo FormLib::date_range_picker(); ?>
@@ -132,7 +132,7 @@ class CustomerPurchasesReport extends FannieReportPage
 		<tr>
 			<th>End</th>
 			<td>
-		                <input type=text size=14 id=date2 name=date2 onfocus="this.value='';showCalendarControl(this);">
+		                <input type=text size=14 id=date2 name=date2 />
 		       </td>
 
 		</tr>
@@ -144,6 +144,8 @@ class CustomerPurchasesReport extends FannieReportPage
 </form>
 </div>
 <?php
+        $this->add_onload_command('$(\'#date1\').datepicker();');
+        $this->add_onload_command('$(\'#date2\').datepicker();');
 	}
 }
 

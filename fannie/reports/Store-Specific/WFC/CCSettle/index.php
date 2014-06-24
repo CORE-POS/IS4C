@@ -28,14 +28,19 @@ if (!isset($_REQUEST['excel'])){
 		tr.two td { background-color: #ffffcc; }
 	</style>';
 	echo '<link rel="STYLESHEET" href="../../../../src/style.css" type="text/css">';
-	echo '<script src="../../../../src/CalendarControl.js"
-		language="javascript"></script>';
+	echo '<link rel="STYLESHEET" href="../../../../src/javascript/jquery-ui.css" type="text/css">';
+	echo '<script src="../../../../src/javascript/jquery.js"
+		type="text/javascript"></script>';
+	echo '<script src="../../../../src/javascript/jquery-ui.js"
+		type="text/javascript"></script>';
 	echo '<form action="index.php" method="get">';
-	echo '<b>Date</b>: <input type="text" name="date"
-		onclick="showCalendarControl(this);" />';
+	echo '<b>Date</b>: <input type="text" name="date" id="date" />';
 	echo ' <input type="submit" value="Get Report" />';
 	echo '</form><hr />';
 	echo '<a href="index.php?date='.$date.'&excel=yes">Download Report</a>';
+    echo '<script type="text/javascript">
+        $(document).ready(function(){ $(\'#date\').datepicker({dateFormat:\'yy-mm-dd\'}); });
+        </script>';
 }
 else {
 	header('Content-Type: application/ms-excel');

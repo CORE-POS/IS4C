@@ -565,8 +565,10 @@ body, table, td, th {
 	function body_content(){
 		global $FANNIE_URL;
 		$this->add_css_file($FANNIE_URL.'src/style.css');
-		$this->add_script($FANNIE_URL.'src/CalendarControl.js');
+		$this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
 		$this->add_script($FANNIE_URL.'src/javascript/jquery.js');
+		$this->add_script($FANNIE_URL.'src/javascript/jquery-ui.js');
+        $this->add_onload_command("\$('#date').datepicker();");
         $user = FannieAuth::checkLogin();
 		ob_start();
 		if (!$this->window_dressing) {
@@ -577,7 +579,7 @@ body, table, td, th {
 		}
 		?>
 		<form style='margin-top:1.0em;' onsubmit="setdate(); return false;" >
-		<b>Date</b>:<input type=text id=date onfocus="showCalendarControl(this);" />
+		<b>Date</b>:<input type=text id=date />
 		<input type=submit value="Set" />
 		<input type=hidden id=user value="<?php if(isset($user)) echo $user ?>" />
 		</form>

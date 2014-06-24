@@ -178,6 +178,8 @@ class MemberEditor extends FanniePage {
 			foreach($list as $l)
 				$ret .= sprintf('<input type="hidden" name="l[]" value="%d" />',$l);
 		}
+        $load = array();
+        $editJS = '';
 		foreach($FANNIE_MEMBER_MODULES as $mm){
 			if (!class_exists($mm))
 				include('modules/'.$mm.'.php');
@@ -185,6 +187,10 @@ class MemberEditor extends FanniePage {
 			$ret .= '<div style="float:left;">';
 			$ret .= $instance->showEditForm($this->memNum, $this->country);
 			$ret .= '</div>';
+            $editJS .= $instance->getEditJavascript();
+            foreach ($instance->getEditLoadCommands() as $cmd) {
+                $load[] = $cmd;
+            }
 		}
 		$ret .= '<div style="clear:left;"></div>';
 		$ret .= '<hr />';
@@ -198,6 +204,14 @@ class MemberEditor extends FanniePage {
 		$ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 		$ret .= '<input type="reset" value="Reset Form" />';
 		$ret .= '</form>';
+
+        if ($editJS != '') {
+            $ret .= '<script type="text/javascript">' . $editJS . '</script>';
+        }
+        foreach ($load as $cmd) {
+            $this->add_onload_command($cmd);
+        }
+
 		return $ret;
 	}
 }

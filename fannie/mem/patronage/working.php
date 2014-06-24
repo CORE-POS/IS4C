@@ -79,7 +79,6 @@ if (isset($_REQUEST['date1'])){
 	echo '<i>Patronage working table created</i>';
 }
 else {
-	echo '<script type="text/javascript" src="'.$FANNIE_URL.'src/CalendarControl.js"></script>';
 	echo '<blockquote><i>';
 	echo 'Step one: gather member transactions for the year. Dates specify the start and
 	end of the year. Inactive and terminated memberships will be included if their type,
@@ -88,9 +87,9 @@ else {
 	echo '<form action="working.php" method="get">';
 	echo '<table>';
 	echo '<tr><th>Start Date</th>';
-	echo '<td><input type="text" name="date1" onfocus="showCalendarControl(this);" />';
+	echo '<td><input type="text" name="date1" id="date1" />';
 	echo '</tr><tr><th>End Date</th>';
-	echo '<td><input type="text" name="date2" onfocus="showCalendarControl(this);" />';
+	echo '<td><input type="text" name="date2" id="date2" />';
 	echo '</tr><tr><td colspan="2"><b>Member Type</b>:<br />';
 	$typeQ = $dbc->prepare_statement("SELECT memtype,memDesc FROM ".$FANNIE_OP_DB.$dbc->sep()."memtype ORDER BY memtype");
 	$typeR = $dbc->exec_statement($typeQ);
@@ -105,6 +104,13 @@ else {
 	echo '</table><br />';
 	echo '<input type="submit" value="Create Table" />';
 	echo '</form>';
+
+    echo '<script type="text/javascript">
+        $(document).ready(function(){
+            $(\'#date1\').datepicker();
+            $(\'#date2\').datepicker();
+        });
+        </script>';
 }
 
 echo '<br /><br />';

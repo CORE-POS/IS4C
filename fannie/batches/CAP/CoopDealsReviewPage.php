@@ -127,20 +127,23 @@ class CoopDealsReviewPage extends FanniePage {
 		}
 		$ret .= "</table><p />
 		<table cellpadding=4 cellspacing=0><tr>
-		<td><b>A Start</b></td><td><input type=text name=start onclick=\"showCalendarControl(this);\" /></td>
+		<td><b>A Start</b></td><td><input type=text name=start id=start /></td>
 		</tr><tr>
-		<td><b>A End</b></td><td><input type=text name=end onclick=\"showCalendarControl(this);\" /></td>
+		<td><b>A End</b></td><td><input type=text name=end id=end /></td>
 		</tr><tr>
-		<td><b>B Start</b></td><td><input type=text name=bstart onclick=\"showCalendarControl(this);\" /></td>
+		<td><b>B Start</b></td><td><input type=text name=bstart id=bstart /></td>
 		</tr><tr>
-		<td><b>B End</b></td><td><input type=text name=bend onclick=\"showCalendarControl(this);\" /></td>
+		<td><b>B End</b></td><td><input type=text name=bend id=bend /></td>
 		</tr><tr>
 		<td><b>Month</b></td><td><input type=text name=naming /></td>
 		</tr></table>
 		<input type=submit value=\"Create Batch(es)\" />
 		</form>";
 
-		$this->add_script($FANNIE_URL.'src/CalendarControl.js');
+        $this->add_onload_command("\$('#start').datepicker();\n");
+        $this->add_onload_command("\$('#end').datepicker();\n");
+        $this->add_onload_command("\$('#bstart').datepicker();\n");
+        $this->add_onload_command("\$('#bend').datepicker();\n");
 
 		return $ret;
 	}

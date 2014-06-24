@@ -174,9 +174,9 @@ class XlsBatchPage extends FannieUploadPage {
 		<td><select name=btype>
 		<?php foreach($batchtypes as $k=>$v) printf("<option value=%d>%s</option>",$k,$v); ?>
 		</select></td>
-		<th>Start</th><td><input type=text size=10 name=date1 onclick="showCalendarControl(this);" /></td></tr>
+		<th>Start</th><td><input type=text size=10 name=date1 id="date1" /></td></tr>
 		<tr><th>Name</th><td><input type=text size=15 name=bname /></td>
-		<th>End</th><td><input type=text size=10 name=date2 onclick="showCalendarControl(this);" /></td></tr>
+		<th>End</th><td><input type=text size=10 name=date2 id="date2" /></td></tr>
 		<tr><td colspan=4>
 		<input type="hidden" name="MAX_FILE_SIZE" value="2097152" />
 		Filename: <input type="file" id="FannieUploadFile" name="FannieUploadFile" />
@@ -190,7 +190,9 @@ class XlsBatchPage extends FannieUploadPage {
 		</table>
 		</form>
 		<?php
-		$this->add_script($FANNIE_URL.'src/CalendarControl.js');
+        $this->add_onload_command("\$('#date1').datepicker();\n");
+        $this->add_onload_command("\$('#date2').datepicker();\n");
+
 		return ob_get_clean();
 	}
 }

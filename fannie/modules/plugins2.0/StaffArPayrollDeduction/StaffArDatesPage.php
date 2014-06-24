@@ -77,15 +77,15 @@ class StaffArDatesPage extends FannieRESTfulPage
     public function get_view()
     {
         global $FANNIE_URL;
-        $this->add_script($FANNIE_URL.'src/CalendarControl.js');
         $this->add_script('js/dates.js');
 
         $ret = '<div id="mainDisplayDiv">';
         $ret .= $this->dateTable();
         $ret .= '</div>';
         $ret .= '<hr />';
-        $ret .= '<b>Add Date</b>: <input type="text" id="newDate" onclick="showCalendarControl(this);" />
+        $ret .= '<b>Add Date</b>: <input type="text" id="newDate" />
                 <input type="submit" onclick="addDate(); return false;" value="Add" />';
+        $this->add_onload_command("\$('#newDate').datepicker();");
 
         return $ret;
     }

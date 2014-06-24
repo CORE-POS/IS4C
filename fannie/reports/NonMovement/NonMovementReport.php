@@ -159,10 +159,10 @@ class NonMovementReport extends FannieReportPage {
 		       </td>
 		            <td>
 		             <p>
-		               <input type=text size=25 id=date1 name=date1 onfocus="this.value='';showCalendarControl(this);">
+		               <input type=text size=25 id=date1 name=date1 />
 		               </p>
 		               <p>
-		                <input type=text size=25 id=date2 name=date2 onfocus="this.value='';showCalendarControl(this);">
+		                <input type=text size=25 id=date2 name=date2 />
 		         </p>
 		       </td>
 
@@ -198,6 +198,8 @@ class NonMovementReport extends FannieReportPage {
 </form>
 </div>
 <?php
+        $this->add_onload_command('$(\'#date1\').datepicker();');
+        $this->add_onload_command('$(\'#date2\').datepicker();');
 	}
 }
 
