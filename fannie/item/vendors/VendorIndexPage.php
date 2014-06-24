@@ -216,9 +216,9 @@ class VendorIndexPage extends FanniePage {
 		$vid = FormLib::get_form_value('vid');
 		while($rw = $dbc->fetch_row($rp)){
 			if ($vid !== '' && $vid == $rw[0])
-				$vendors .= "<option selected value=$rw[0]>$rw[0] $rw[1]</option>";
+				$vendors .= "<option selected value=$rw[0]>$rw[1]</option>";
 			else
-				$vendors .= "<option value=$rw[0]>$rw[0] $rw[1]</option>";
+				$vendors .= "<option value=$rw[0]>$rw[1]</option>";
 		}
 		ob_start();
 		?>
