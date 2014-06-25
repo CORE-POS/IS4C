@@ -268,7 +268,7 @@ class InstallUtilities extends LibraryClass
                 $value = 'True';
             } else if (strtoupper($value) === 'FALSE'){
                 $value = 'False';
-            } else if (!is_numeric($value)) {
+            } else if (!is_numeric($value) || (strlen($value)>1 && substr($value,0,1) == '0')) {
                 $value = "'".$value."'";
             }
 
