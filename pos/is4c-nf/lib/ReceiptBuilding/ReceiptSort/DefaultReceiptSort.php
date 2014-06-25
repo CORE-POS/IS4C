@@ -71,9 +71,11 @@ class DefaultReceiptSort
 					if (!isset($items[$row['category']])) {
 						$items[$row['category']] = array();
                     }
-					$items[$row['category']] = $this->upc_merge($items[$row['category']],$row);
+					//$items[$row['category']] = $this->upc_merge($items[$row['category']],$row);
+					$items[$row['category']][] = $row;
 				} else {
-					$items['_uncategorized'] = $this->upc_merge($items['_uncategorized'],$row);
+					//$items['_uncategorized'] = $this->upc_merge($items['_uncategorized'],$row);
+					$items['_uncategorized'][] = $row;
 				}
 			}
 		}
