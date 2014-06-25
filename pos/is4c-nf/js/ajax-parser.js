@@ -23,7 +23,7 @@ function parserHandler(data,status_str,xml_ro){
 	} else {
 		if (data.output) {
 			$(data.target).html(data.output);
-            if ($.isWindow(customerWindow)) {
+            if (typeof customerWindow != 'undefined' && $.isWindow(customerWindow)) {
                 customerWindow.$(data.target).html(data.output);
             }
         }
@@ -31,21 +31,21 @@ function parserHandler(data,status_str,xml_ro){
 
 	if (data.redraw_footer){
 		$('#footer').html(data.redraw_footer);
-        if ($.isWindow(customerWindow)) {
+        if (typeof customerWindow != 'undefined' && $.isWindow(customerWindow)) {
             customerWindow.$('#footer').html(data.footer);
         }
 	}
 
 	if (data.scale){
 		$('#scaleBottom').html(data.scale);
-        if ($.isWindow(customerWindow)) {
+        if (typeof customerWindow != 'undefined' && $.isWindow(customerWindow)) {
             customerWindow.$('#scaleBottom').html(data.scale);
         }
 	}
 
 	if (data.term){
 		$('#scaleIconBox').html(data.term);
-        if ($.isWindow(customerWindow)) {
+        if (typeof customerWindow != 'undefined' && $.isWindow(customerWindow)) {
             customerWindow.$('#scaleIconBox').html(data.term);
         }
 	}
