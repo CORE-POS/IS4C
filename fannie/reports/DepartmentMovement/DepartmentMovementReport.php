@@ -96,6 +96,8 @@ class DepartmentMovementReport extends FannieReportPage
                 $args[] = $superW['dept_ID'];
             }
             $filter_condition = substr($filter_condition, 0, strlen($filter_condition)-1) . ')';
+            $filter_condition .= ' AND s.superID=?';
+            $args[] = $buyer;
         } else if ($buyer !== "" && $buyer == -1) {
             $filter_condition = "1=1";
             $args = array();
@@ -108,6 +110,7 @@ class DepartmentMovementReport extends FannieReportPage
                 $args[] = $superW['dept_ID'];
             }
             $filter_condition = substr($filter_condition, 0, strlen($filter_condition)-1) . ')';
+            $filter_condition .= ' AND s.superID <> 0';
         }
 
         /**
