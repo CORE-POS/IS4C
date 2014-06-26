@@ -79,7 +79,28 @@ class ClubCard extends Parser {
 			} 
 			else {
 				// --- added partial item desc to club card description - apbw 2/15/05 --- 
-				TransRecord::addItem($strUPC, "Club Card: " . substr($strDescription, 0, 19), "I", "", "J", $row["department"], $dblquantity, $dblUnitPrice, $dblTotal, 0.5 * $row["regPrice"], $intScale, $row["tax"], $intFoodStamp, $dblDiscount, $dblmemDiscount, $intDiscountable, $intdiscounttype, $dblquantity, $row["volDiscType"], $row["volume"], $dblVolSpecial, 0, 0, 0);
+				TransRecord::addRecord(array(
+                    'upc' => $strUPC, 
+                    'description' => "Club Card: " . substr($strDescription, 0, 19), 
+                    'trans_type' => "I", 
+                    'trans_status' => "J", 
+                    'department' => $row["department"], 
+                    'quantity' => $dblquantity, 
+                    'unitPrice' => $dblUnitPrice, 
+                    'total' => $dblTotal, 
+                    'regPrice' => 0.5 * $row["regPrice"], 
+                    'scale' => $intScale, 
+                    'tax' => $row["tax"], 
+                    'foodstamp' => $intFoodStamp, 
+                    'discount' => $dblDiscount, 
+                    'memDiscount' => $dblmemDiscount, 
+                    'discountable' => $intDiscountable, 
+                    'discounttype' => $intdiscounttype, 
+                    'ItemQtty' => $dblquantity, 
+                    'volDiscType' => $row["volDiscType"], 
+                    'volume' => $row["volume"], 
+                    'VolSpecial' => $dblVolSpecial,
+                ));
 
 				$update = "update localtemptrans set voided = 20 where trans_id = " . $CORE_LOCAL->get("currentid");
 				$connection = Database::tDataConnect();

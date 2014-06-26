@@ -34,7 +34,7 @@ class ItemModule
         return FannieDB::get($FANNIE_OP_DB);
     }
 
-    public function showEditForm($upc)
+    public function showEditForm($upc, $display_mode=1, $expand_mode=1)
     {
 
     }

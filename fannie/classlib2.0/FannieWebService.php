@@ -50,9 +50,10 @@ class FannieWebService
     /**
       Do whatever the service is supposed to do.
       Should override this.
+      @param $args array of data
       @return an array of data
     */
-    protected function run()
+    public function run($args=array())
     {
         return array();
     }

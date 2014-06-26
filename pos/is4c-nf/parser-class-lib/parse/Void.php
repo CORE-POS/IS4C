@@ -168,7 +168,35 @@ class Void extends Parser {
 
 		$update = "update localtemptrans set voided = 1 where trans_id = ".$item_num;
 		$db->query($update);
-		TransRecord::addItem($upc, $row["description"], $row["trans_type"], $row["trans_subtype"], "V", $row["department"], $quantity, $unitPrice, $total, $row["regPrice"], $scale, $row["tax"], $foodstamp, $discount, $memDiscount, $discountable, $discounttype, $quantity, $row["volDiscType"], $row["volume"], $VolSpecial, $mm, $matched, 1, $cost, $numflag, $charflag);
+		TransRecord::addRecord(array(
+            'upc' => $upc, 
+            'description' => $row["description"], 
+            'trans_type' => $row["trans_type"], 
+            'trans_subtype' => $row["trans_subtype"], 
+            'trans_status' => "V", 
+            'department' => $row["department"], 
+            'quantity' => $quantity, 
+            'unitPrice' => $unitPrice, 
+            'total' => $total, 
+            'regPrice' => $row["regPrice"], 
+            'scale' => $scale, 
+            'tax' => $row["tax"], 
+            'foodstamp' => $foodstamp, 
+            'discount' => $discount, 
+            'memDiscount' => $memDiscount, 
+            'discountable' => $discountable, 
+            'discounttype' => $discounttype, 
+            'quantity' => $quantity, 
+            'volDiscType' => $row["volDiscType"], 
+            'volume' => $row["volume"], 
+            'VolSpecial' => $VolSpecial, 
+            'mixMatch' => $mm, 
+            'matched' => $matched, 
+            'voided' => 1, 
+            'cost' => $cost, 
+            'numflag' => $numflag, 
+            'charflag' => $charflag
+        ));
 		if ($row["trans_type"] != "T") {
 			$CORE_LOCAL->set("ttlflag",0);
 		}
@@ -377,12 +405,66 @@ class Void extends Parser {
 			}
 
 			if ($volmulti > 0) {
-				TransRecord::addItem($upc, $row["description"], $row["trans_type"], $row["trans_subtype"], "V", $row["department"], -1* $volmulti, $VolSpecial, -1 * $volmulti * $VolSpecial, $VolSpecial, 0, $row["tax"], $foodstamp, $discount, $memDiscount, $discountable, $discounttype, -1 * $volmulti * $volume, $volDiscType, $volume, $VolSpecial, $mixMatch, -1 * $volume * $volmulti, 1, $cost, $numflag, $charflag);
+				TransRecord::addRecord(array(
+                    'upc' => $upc, 
+                    'description' => $row["description"], 
+                    'trans_type' => $row["trans_type"], 
+                    'trans_subtype' => $row["trans_subtype"], 
+                    'trans_status' => "V", 
+                    'department' => $row["department"], 
+                    'quantity' => -1* $volmulti, 
+                    'unitPrice' => $VolSpecial, 
+                    'total' => -1 * $volmulti * $VolSpecial, 
+                    'regPrice' => $VolSpecial, 
+                    'tax' => $row["tax"], 
+                    'foodstamp' => $foodstamp, 
+                    'discount' => $discount, 
+                    'memDiscount' => $memDiscount,
+                    'discountable' => $discountable, 
+                    'discounttype' => $discounttype, 
+                    'ItemQtty' => -1 * $volmulti * $volume, 
+                    'volDiscType' => $volDiscType, 
+                    'volume' => $volume, 
+                    'VolSpecial' => $VolSpecial, 
+                    'mixMatch' => $mixMatch, 
+                    'matched' => -1 * $volume * $volmulti, 
+                    'voided' => 1, 
+                    'cost' => $cost, 
+                    'numflag' => $numflag, 
+                    'charflag' => $charflag
+                ));
 				$quantity = $vmremainder;
 			}
 			if ($vmremainder > $mmremainder) {
 				$voladj = $row["VolSpecial"] - ($unitPrice * ($volume - 1));
-				TransRecord::addItem($upc, $row["description"], $row["trans_type"], $row["trans_subtype"], "V", $row["department"], -1, $voladj, -1 * $voladj, $voladj, 0, $row["tax"], $foodstamp, $discount, $memDiscount, $discountable, $discounttype, -1, $volDiscType, $volume, $VolSpecial, $mixMatch, -1 * $volume, 1, $cost, $numflag, $charflag);
+				TransRecord::addRecord(array(
+                    'upc' => $upc, 
+                    'description' => $row["description"], 
+                    'trans_type' => $row["trans_type"], 
+                    'trans_subtype' => $row["trans_subtype"], 
+                    'trans_status' => "V", 
+                    'department' => $row["department"], 
+                    'quantity' => -1,
+                    'unitPrice' => $voladj,
+                    'total' => -1 * $voladj,
+                    'regPrice' => $voladj, 
+                    'tax' => $row["tax"], 
+                    'foodstamp' => $foodstamp, 
+                    'discount' => $discount, 
+                    'memDiscount' => $memDiscount,
+                    'discountable' => $discountable, 
+                    'discounttype' => $discounttype, 
+                    'ItemQtty' => -1,
+                    'volDiscType' => $volDiscType, 
+                    'volume' => $volume, 
+                    'VolSpecial' => $VolSpecial, 
+                    'mixMatch' => $mixMatch, 
+                    'matched' => -1 * $volume,
+                    'voided' => 1, 
+                    'cost' => $cost, 
+                    'numflag' => $numflag, 
+                    'charflag' => $charflag
+                ));
 				$quantity = $quantity - 1;
 			}
 		}
@@ -407,7 +489,34 @@ class Void extends Parser {
 		elseif ($quantity != 0) {
 			$update = "update localtemptrans set voided = 1 where trans_id = ".$item_num;
 			$db->query($update);
-			TransRecord::addItem($upc, $row["description"], $row["trans_type"], $row["trans_subtype"], "V", $row["department"], $quantity, $unitPrice, $total, $row["regPrice"], $scale, $row["tax"], $foodstamp, $discount, $memDiscount, $discountable, $discounttype, $quantity, $volDiscType, $volume, $VolSpecial, $mixMatch, 0, 1, $cost, $numflag, $charflag);
+            TransRecord::addRecord(array(
+                'upc' => $upc, 
+                'description' => $row["description"], 
+                'trans_type' => $row["trans_type"], 
+                'trans_subtype' => $row["trans_subtype"], 
+                'trans_status' => "V", 
+                'department' => $row["department"], 
+                'quantity' => $quantity, 
+                'unitPrice' => $unitPrice, 
+                'total' => $total, 
+                'regPrice' => $row["regPrice"], 
+                'scale' => $scale, 
+                'tax' => $row["tax"], 
+                'foodstamp' => $foodstamp, 
+                'discount' => $discount, 
+                'memDiscount' => $memDiscount, 
+                'discountable' => $discountable, 
+                'discounttype' => $discounttype, 
+                'quantity' => $quantity, 
+                'volDiscType' => $volDiscType,
+                'volume' => $volume,
+                'VolSpecial' => $VolSpecial, 
+                'mixMatch' => $mixMatch, 
+                'voided' => 1, 
+                'cost' => $cost, 
+                'numflag' => $numflag, 
+                'charflag' => $charflag
+            ));
 
 			if ($row["trans_type"] != "T") {
 				$CORE_LOCAL->set("ttlflag",0);

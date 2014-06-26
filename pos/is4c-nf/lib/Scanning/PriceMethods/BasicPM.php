@@ -30,11 +30,13 @@
    Classically, this is pricemethod=0
 */
 
-class BasicPM extends PriceMethod {
+class BasicPM extends PriceMethod 
+{
 
     private $error_msg = '';
 
-    function addItem($row,$quantity,$priceObj){
+    function addItem($row,$quantity,$priceObj)
+    {
         if ($quantity == 0) return False;
 
         /*
@@ -59,41 +61,38 @@ class BasicPM extends PriceMethod {
 
         $pricing = $priceObj->priceInfo($row,$quantity);
 
-        TransRecord::addItem($row['upc'],
-            $row['description'],
-            'I',
-            ' ',
-            ' ',
-            $row['department'],
-            $quantity,
-            $pricing['unitPrice'],
-            MiscLib::truncate2($pricing['unitPrice'] * $quantity),
-            $pricing['regPrice'],
-            $row['scale'],
-            $row['tax'],
-            $row['foodstamp'],
-            $pricing['discount'],
-            $pricing['memDiscount'],
-            $row['discount'],
-            $row['discounttype'],
-            $quantity,
-            $row['pricemethod'],
-            $row['quantity'],
-            $row['groupprice'],
-            $row['mixmatchcode'],
-            0,
-            0,
-            (isset($row['cost'])?$row['cost']*$quantity:0.00),
-            (isset($row['numflag'])?$row['numflag']:0),
-            (isset($row['charflag'])?$row['charflag']:'')
-        );
+        TransRecord::addRecord(array(
+            'upc' => $row['upc'],
+            'description' => $row['description'],
+            'trans_type' => 'I',
+            'department' => $row['department'],
+            'quantity' => $quantity,
+            'unitPrice' => $pricing['unitPrice'],
+            'total' => MiscLib::truncate2($pricing['unitPrice'] * $quantity),
+            'regPrice' => $pricing['regPrice'],
+            'scale' => $row['scale'],
+            'tax' => $row['tax'],
+            'foodstamp' => $row['foodstamp'],
+            'discount' => $pricing['discount'],
+            'memDiscount' => $pricing['memDiscount'],
+            'discountable' => $row['discount'],
+            'discounttype' => $row['discounttype'],
+            'ItemQtty' => $quantity,
+            'volDiscType' => $row['pricemethod'],
+            'volume' => $row['quantity'],
+            'VolSpecial' => $row['groupprice'],
+            'mixMatch' => $row['mixmatchcode'],
+            'cost' => (isset($row['cost'])?$row['cost']*$quantity:0.00),
+            'numflag' => (isset($row['numflag'])?$row['numflag']:0),
+            'charflag' => (isset($row['charflag'])?$row['charflag']:'')
+        ));
 
-        return True;
+        return true;
     }
 
-    function errorInfo(){
+    function errorInfo()
+    {
         return $this->error_msg;
     }
 }
 
-?>

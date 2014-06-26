@@ -24,14 +24,14 @@ h2 {
 }
 
 h3 {
-	font-family: "Arial,Lucia";
+	font-family: "Arial,Lucida";
 	font-size: 1.2em;
 	font-weight: bolder;
 	line-height: 0.8em;
 	color: #330066;
 }
 h4 {
-	font-family: "Arial,Lucia";
+	font-family: "Arial,Lucida";
 	font-size: 1.4em;
 	line-height: 1.4em;
 	letter-spacing: 0.2em;
@@ -326,9 +326,30 @@ div.level1 li:hover div.level2 {
 	display: block;
 }
 
+/* Member Editor */
 .MemFormTable th {
 	text-align: right;
 	background: #330066;
 	color: #fff;
 	padding: 0 5px 0 2px;
 }
+
+/* To make all the modules with a single, or single-and-a-bit,
+ *  row of inputs the same height so they float more interchangably.
+*/
+fieldset.memOneRow {
+  height: 6.0em;
+}
+fieldset.memTwoRow {
+  height: 7.6em;
+}
+/* Returns from Member modules that prevent leaving the editing form.
+ */
+p.memMessage {
+  font-family: Arial;
+  color: red;
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+

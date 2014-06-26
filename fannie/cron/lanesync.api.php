@@ -75,6 +75,12 @@ if ( isset($FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION) && $FANNIE_COMPOSE_LONG_PRO
 	echo cron_msg($result['messages']);
 }
 
+if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' ) {
+    $result = SyncLanes::push_table('tenders', 'op', SyncLanes::TRUNCATE_DESTINATION);
+    echo cron_msg($result['messages']);
+}
+
+
 echo cron_msg(basename(__FILE__) ." done.");
 
 ?>

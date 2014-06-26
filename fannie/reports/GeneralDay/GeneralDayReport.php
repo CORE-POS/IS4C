@@ -44,7 +44,7 @@ class GeneralDayReport extends FannieReportPage
     protected $required_fields = array('date1');
 
 	function report_description_content() {
-		return(array('&nbsp;'));
+		return(array('<p></p>'));
 	}
 
 	function fetch_report_data()

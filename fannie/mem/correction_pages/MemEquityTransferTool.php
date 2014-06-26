@@ -47,6 +47,20 @@ class MemEquityTransferTool extends FanniePage {
 	function preprocess(){
 		global $FANNIE_EQUITY_DEPARTMENTS;
 		global $FANNIE_OP_DB;
+        global $FANNIE_EMP_NO, $FANNIE_REGISTER_NO;
+        global $FANNIE_CORRECTION_DEPT;
+        /**
+          Use fannie settings if properly configured
+        */
+        if (is_numeric($FANNIE_EMP_NO)) {
+            $this->CORRECTION_CASHIER = $FANNIE_EMP_NO;
+        }
+        if (is_numeric($FANNIE_REGISTER_NO)) {
+            $this->CORRECTION_LANE = $FANNIE_REGISTER_NO;
+        }
+        if (is_numeric($FANNIE_MISC_DEPT)) {
+            $this->CORRECTION_DEPT = $FANNIE_CORRECTION_DEPT;
+        }
 
 		if (empty($FANNIE_EQUITY_DEPARTMENTS)){
 			$this->errors .= "<em>Error: no equity departments found</em>";

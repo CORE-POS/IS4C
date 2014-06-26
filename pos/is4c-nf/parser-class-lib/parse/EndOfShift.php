@@ -39,7 +39,11 @@ class EndOfShift extends Parser
 
         $CORE_LOCAL->set("memberID", $CORE_LOCAL->get('defaultNonMem'));
         $CORE_LOCAL->set("memMsg","End of Shift");
-        TransRecord::addItem("ENDOFSHIFT", "End of Shift", "S", "", "", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        TransRecord::addRecord(array(
+            'upc' => 'ENDOFSHIFT',
+            'description' => 'End of Shift',
+            'trans_type' => 'S',
+        ));
         Database::getsubtotals();
         $chk = self::ttl();
         if ($chk !== true) {

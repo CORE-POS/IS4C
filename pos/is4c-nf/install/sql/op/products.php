@@ -42,6 +42,7 @@ Columns:
 	local              tinyint
 	store_id           smallint
     default_vendor_id  int
+    current_origin_id  int
 	id                 int auto_increment
 
 Depends on:
@@ -158,6 +159,10 @@ is rung.
 default_vendor_id is the identifier (vendors.vendorID)
 for the vendor who typically supplies the product.
 
+current_origin_id is the identifier (origins.originID)
+for the geographical location where the product is
+currently sourced from.
+
 Other columns:
 size, advertised, wicable, and numflag
 have no current meaning on the
@@ -207,6 +212,7 @@ $CREATE['op.products'] = "
 		  local              int(11)     default '0',
 		  store_id           smallint    default '0',
 		  default_vendor_id  int(11)     default '0',
+		  current_origin_id  int(11)     default '0',
 		  id                 integer     NOT NULL auto_increment,
 		  PRIMARY KEY (id),
 		  INDEX (upc),
@@ -261,6 +267,7 @@ if ($dbms == "MSSQL"){
 			[local]              [int]          NULL ,
 			[store_id]           [smallint]     0,
 			[default_vendor_id]  [int]          NULL ,
+			[current_origin_id]  [int]          NULL ,
 			[id]                 [int] IDENTITY (1, 1) NOT NULL ,
 			PRIMARY KEY ([id]) )
 	";

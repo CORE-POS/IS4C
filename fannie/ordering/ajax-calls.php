@@ -193,7 +193,7 @@ switch ($_REQUEST['action']) {
     case 'saveVendor':
         $upP = $dbc->prepare_statement("UPDATE {$TRANS}PendingSpecialOrder SET
             mixMatch=? WHERE order_id=? AND trans_id=?");
-        $dbc->exec_statement($upP, array($_REQUEST['vendor'],$_REQUEST['orderID'],$_REQUEST['transID']));
+        $dbc->exec_statement($upP, array(trim($_REQUEST['vendor']),$_REQUEST['orderID'],$_REQUEST['transID']));
         break;
     case 'saveAddr':
         $addr = $_REQUEST['addr1'];

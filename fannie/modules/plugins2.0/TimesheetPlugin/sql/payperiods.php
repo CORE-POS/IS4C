@@ -30,7 +30,7 @@ $PLUGIN_CREATE['payperiods'] = "
 	)
 ";
 
-if ($FANNIE_SERVER_DBMS == "MSSQL"){
+if (isset($FANNIE_SERVER_DBMS) && $FANNIE_SERVER_DBMS == "MSSQL"){
 	$PLUGIN_CREATE['payperiods'] = str_replace('NOT NULL AUTO_INCREMENT',
 		'IDENTITY (1, 1) NOT NULL',
 		$PLUGIN_CREATE['payperiods']);

@@ -45,22 +45,19 @@ class ShelfAudit extends FanniePlugin {
 
 	public $plugin_description = 'Plugin for scanning items on hand';
 
-	public function setting_change(){
+	public function setting_change()
+    {
 		global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
 
 		$db_name = $FANNIE_PLUGIN_SETTINGS['ShelfAuditDB'];
 		if (empty($db_name)) return;
 
 		$dbc = FannieDB::get($db_name);
-
-		$errors = array();
-		$errors[] = $this->plugin_db_struct($dbc, 'sa_inventory', $db_name);
-
-		foreach($errors as $e){
-			if ($e === True) continue;
-			echo 'ShelfAuditPlugin error: '.$e.'<br />';
-		}
+        if (!class_exists('SaInventoryModel')) {
+            include(dirname(__FILE__) . '/models/SaInventoryModel.php');
+        }
+        $obj = new SaInventoryModel($dbc);
+        $obj->create();
 	}
 }
 
-?>

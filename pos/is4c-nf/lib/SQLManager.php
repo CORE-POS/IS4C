@@ -346,6 +346,11 @@ class SQLManager
         return 0;
     }
 
+    public function prepare($query_text, $which_connection='')
+    {
+        return $this->prepare_statement($query_text, $which_connection);
+    }
+
     /**
       Prepared statement: non-PDO types just return the query_text
       without modification
@@ -368,6 +373,11 @@ class SQLManager
         }
 
         return false;
+    }
+
+    public function execute($stmt, $args=array(), $which_connection='')
+    {
+        return $this->exec_statement($stmt, $args, $which_connection);
     }
 
     /**
@@ -1617,5 +1627,24 @@ class SQLManager
             return false;
         }
     }
+
+	/**
+	   Log a string to the query log.
+	   @param $str The string
+	   @return A True on success, False on failure 
+	*/  
+	public function logger($str)
+    {
+		$ql = DEBUG_MYSQL_QUERIES;
+		if (is_writable($ql)) {
+			$fp = fopen($ql,'a');
+			fputs($fp,$_SERVER['PHP_SELF'].": ".date('r').': '.$str."\n");
+			fclose($fp);
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 }
 

@@ -63,9 +63,9 @@ class DTransactionsModel extends BasicModel
     'memType'    => array('type'=>'TINYINT'),
     'staff'        => array('type'=>'TINYINT'),
     'numflag'    => array('type'=>'INT','default'=>0),
-    'charflag'    => array('type'=>'INT','default'=>''),
+    'charflag'    => array('type'=>'VARCHAR(2)','default'=>''),
     'card_no'    => array('type'=>'INT','index'=>True),
-    'trans_id'    => array('type'=>'TINYINT'),
+    'trans_id'    => array('type'=>'INT'),
     'pos_row_id' => array('type'=>'BIGINT UNSIGNED', 'index'=>true),
     'store_row_id' => array('type'=>'BIGINT UNSIGNED', 'increment'=>true, 'index'=>true),
     );
@@ -224,7 +224,7 @@ class DTransactionsModel extends BasicModel
       and "trans_subtype" still have translations to fix
       older records but everyting else passes through as-is.
     */
-    private function normalizeLog($view_name, $table_name, $mode=BasicModel::NORMALIZE_MODE_CHECK)
+    public function normalizeLog($view_name, $table_name, $mode=BasicModel::NORMALIZE_MODE_CHECK)
     {
         printf("%s view: %s",
             ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Would recreate":"Recreating", 

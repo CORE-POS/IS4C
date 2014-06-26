@@ -53,8 +53,7 @@ include('../config.php');
 $Fannie_Item_Modules = array("Operations","ExtraInfo",
 		"ThreeForDollar",
 	"Cost","Sale","Margin", "LikeCode", "LaneStatus");
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-$dbc = FannieDB::get($FANNIE_OP_DB);
+require_once('../src/mysql_connect.php');
 
 require_once('../auth/login.php');
 $validatedUser = validateUserQuiet('pricechange');
@@ -450,10 +449,13 @@ if(isset($_REQUEST['s_plu'])){
 /* 10. Delete and re-add to product-related tables on the lanes.  */
 /* push updates to the lanes */
 include('laneUpdates_WEFC_Toronto.php');
-//update only table products
-//updateProductAllLanes($upc);
 updateAllLanes($upc, array("products", "productUser"));
 
+// $dbc is looking at lane db now, so change it back.
+// What is the DB function to do this? FannieDB::get()?
+//   We're not in the right environment for that.
+$dbc = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 /* 'i9el. Update likecodes */
 /* update the item's likecode if specified
    also update other items in the likecode
@@ -499,23 +501,29 @@ echo "<table border=0>";
         echo "</tr>";
         echo "<tr>";
         $dept=$row['department'];
-        $query2 = "SELECT dept_name FROM departments where dept_no = " .$dept;
-        $result2 = $dbc->query($query2);
-		$row2 = $dbc->fetch_array($result2);
+        if (is_numeric($dept)) {
+            $query2 = "SELECT dept_name FROM departments where dept_no = " .$dept;
+            $result2 = $dbc->query($query2);
+            $row2 = $dbc->fetch_array($result2);
+        } else {
+            $row2 = array('dept_name' => "");
+        }
 
 		$subdept=$row["subdept"];
-		$query2a = "SELECT subdept_name FROM subdepts WHERE subdept_no = " .$subdept;
-		$result2a = $dbc->query($query2a);
-		$row2a = $dbc->fetch_array($result2a);
+        if (is_numeric($subdept)) {
+            $query2a = "SELECT subdept_name FROM subdepts WHERE subdept_no = " .$subdept;
+            $result2a = $dbc->query($query2a);
+            $row2a = $dbc->fetch_array($result2a);
+        } else {
+            $row2a = array('subdept_name' => "");
+        }
 
 		echo "<td>";
-        echo $dept . ' ' . 
-		$row2['dept_name'];
+        echo $dept . ' ' .  $row2['dept_name'];
         echo " </td>";
 
 		echo "<td>";
-		echo $subdept . ' ' .
-		$row2a['subdept_name'];
+		echo $subdept . ' ' .  $row2a['subdept_name'];
 		echo " </td>";
 
 		echo "<td align=center><input type=checkbox value=1 name=FS";

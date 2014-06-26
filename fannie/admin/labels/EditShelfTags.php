@@ -47,26 +47,34 @@ class EditShelfTags extends FanniePage {
 			$units = FormLib::get_form_value('units',array());
 			$vendors = FormLib::get_form_value('vendors',array());
 			$ppos = FormLib::get_form_value('ppo',array());
+			$counts = FormLib::get_form_value('counts',array());
 
 			$dbc = FannieDB::get($FANNIE_OP_DB);
-			$prep = $dbc->prepare_statement("UPDATE shelftags SET 
-					description=?, normal_price=?,
-					brand=?, sku=?, size=?,
-					units=?, vendor=?,
-					pricePerUnit=?
-					WHERE upc=? and id=?");
+            $tag = new ShelftagsModel($dbc);
 			for ($i = 0; $i < count($upcs); $i++){
 				$upc = $upcs[$i];
 				$desc = isset($descs[$i]) ? $descs[$i] : '';
 				$price = isset($prices[$i]) ? $prices[$i] : 0;
 				$brand = isset($brands[$i]) ? $brands[$i] : '';
 				$size = isset($sizes[$i]) ? $sizes[$i] : '';
+				$sku = isset($sku[$i]) ? $sku[$i] : '';
 				$unit = isset($units[$i]) ? $units[$i] : 1;
 				$vendor = isset($vendors[$i]) ? $vendors[$i] : '';
 				$ppo = isset($ppos[$i]) ? $ppos[$i] : '';
+				$count = isset($counts[$i]) ? $counts[$i] : 1;
 			
-				$dbc->exec_statement($prep, array($desc, $price, $brand,
-					$sku, $size, $unit, $vendor, $ppo, $upc, $this->id));
+                $tag->id($this->id);
+                $tag->upc($upc);
+                $tag->description($desc);
+                $tag->normal_price($price);
+                $tag->brand($brand);
+                $tag->sku($sku);
+                $tag->size($size);
+                $tag->units($unit);
+                $tag->vendor($vendor);
+                $tag->pricePerUnit($ppo);
+                $tag->count($count);
+                $tag->save();
 			}
 			header("Location: ShelfTagIndex.php");
 			return False;
@@ -92,25 +100,24 @@ class EditShelfTags extends FanniePage {
 		$ret = "<form action=EditShelfTags.php method=post>";
 		$ret .= "<table cellspacing=0 cellpadding=4 border=1>";
 		$ret .= "<tr><th>UPC</th><th>Desc</th><th>Price</th><th>Brand</th><th>SKU</th>";
-		$ret .= "<th>Size</th><th>Units</th><th>Vendor</th><th>PricePer</th></tr>";
+		$ret .= "<th>Size</th><th>Units</th><th>Vendor</th><th>PricePer</th><th># Tags</th></tr>";
 
 		$class = array("one","two");
 		$c = 1;
-		$query = $dbc->prepare_statement("select upc,description,normal_price,
-			brand,sku,size,units,vendor,pricePerUnit from shelftags
-			where id=? order by upc");
-		$result = $dbc->exec_statement($query,array($this->id));
-		while ($row = $dbc->fetch_row($result)){
+        $tags = new ShelftagsModel($dbc);
+        $tags->id($this->id);
+		foreach($tags->find() as $tag) {
 			$ret .= "<tr class=$class[$c]>";
-			$ret .= "<td>$row[0]</td><input type=hidden name=upc[] value=\"$row[0]\" />";
-			$ret .= "<td><input type=text name=desc[] value=\"$row[1]\" size=25 /></td>";
-			$ret .= "<td><input type=text name=price[] value=\"$row[2]\" size=5 /></td>";
-			$ret .= "<td><input type=text name=brand[] value=\"$row[3]\" size=13 /></td>";
-			$ret .= "<td><input type=text name=sku[] value=\"$row[4]\" size=6 /></td>";
-			$ret .= "<td><input type=text name=size[] value=\"$row[5]\" size=6 /></td>";
-			$ret .= "<td><input type=text name=units[] value=\"$row[6]\" size=4 /></td>";
-			$ret .= "<td><input type=text name=vendor[] value=\"$row[7]\" size=7 /></td>";
-			$ret .= "<td><input type=text name=ppo[] value=\"$row[8]\" size=10 /></td>";
+			$ret .= "<td>" . $tag->upc() . "</td><input type=hidden name=upc[] value=\"" . $tag->upc() . "\" />";
+			$ret .= "<td><input type=text name=desc[] value=\"" . $tag->description() . "\" size=25 /></td>";
+			$ret .= "<td><input type=text name=price[] value=\"" . $tag->normal_price() . "\" size=5 /></td>";
+			$ret .= "<td><input type=text name=brand[] value=\"" . $tag->brand() . "\" size=13 /></td>";
+			$ret .= "<td><input type=text name=sku[] value=\"" . $tag->sku() . "\" size=6 /></td>";
+			$ret .= "<td><input type=text name=size[] value=\"" . $tag->size() . "\" size=6 /></td>";
+			$ret .= "<td><input type=text name=units[] value=\"" . $tag->units() . "\" size=4 /></td>";
+			$ret .= "<td><input type=text name=vendor[] value=\"" . $tag->vendor() . "\" size=7 /></td>";
+			$ret .= "<td><input type=text name=ppo[] value=\"" . $tag->pricePerUnit() . "\" size=10 /></td>";
+			$ret .= "<td><input type=text name=counts[] value=\"" . $tag->count() . "\" size=4 /></td>";
 			$ret .= "</tr>";
 			$c = ($c+1)%2;
 		}

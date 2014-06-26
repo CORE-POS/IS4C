@@ -128,7 +128,7 @@ InstallUtilities::paramSave('houseCouponPrefix',$CORE_LOCAL->get('houseCouponPre
 <?php
 if (isset($_REQUEST['COUPONTAX'])) $CORE_LOCAL->set('CouponsAreTaxable',$_REQUEST['COUPONTAX']);
 echo '<select name="COUPONTAX">';
-if ($CORE_LOCAL->get('CouponsAreTaxable') === 0){
+if ($CORE_LOCAL->get('CouponsAreTaxable') === '0'){
 	echo '<option value="1">Tax pre-coupon total</option>';
 	echo '<option value="0" selected>Tax post-coupon total</option>';
 }

@@ -29,16 +29,31 @@ include_once(dirname(__FILE__).'/../../src/JsonLib.php');
 
 class LikeCodeModule extends ItemModule {
 
-	function ShowEditForm($upc){
+    public function showEditForm($upc, $display_mode=1, $expand_mode=1)
+    {
 		global $FANNIE_URL;
-		$ret = '<fieldset id="LikeCodeFieldSet"><legend>Likecode</legend>';
-
 		$dbc = $this->db();
 		$p = $dbc->prepare_statement('SELECT likeCode FROM upcLike WHERE upc=?');
 		$r = $dbc->exec_statement($p,array($upc));
 		$myLC = -1;		
-		if ($dbc->num_rows($r) > 0)
-			$myLC = array_pop($dbc->fetch_row($r));
+		if ($dbc->num_rows($r) > 0) {
+            $w = $dbc->fetch_row($r);
+            $myLC = $w['likeCode'];
+        }
+		$ret = '<fieldset id="LikeCodeFieldSet">';
+		$ret .=  "<legend onclick=\"\$('#LikeCodeFieldsetContent').toggle();\">
+                <a href=\"\" onclick=\"return false;\">Likecode</a>
+                </legend>";
+        $style = '';
+        if ($expand_mode == 1) {
+            $style = '';
+        } else if ($expand_mode == 2 && $myLC != -1) {
+            $style = '';
+        } else {
+            $style = 'display:none;';
+        }
+        $ret .= '<div id="LikeCodeFieldsetContent" style="' . $style . '">';
+
 
 		$ret .= "<table border=0><tr><td><b>Like code</b> ";
 		$ret .= "<select name=likeCode style=\"{width: 175px;}\"
@@ -57,7 +72,7 @@ class LikeCodeModule extends ItemModule {
 		$ret .= "<td><input type=checkbox name=LikeCodeNoUpdate value='noupdate'>Check to not update like code items</td>
 			</tr><tr>";
 		$ret .= '<td id="LikeCodeItemList">';
-		$ret .= $this->LikeCodeItems($myLC);	
+		$ret .= $this->LikeCodeItems($myLC, $upc);
 		$ret .= '</td>';
 		$ret .= '<td id="LikeCodeHistoryLink" valign="top">';
 		$ret .= $this->HistoryLink($myLC);	
@@ -98,7 +113,7 @@ class LikeCodeModule extends ItemModule {
 		$upcP = $dbc->prepare_statement('SELECT upc FROM upcLike WHERE likeCode=? AND upc<>?');
 		$upcR = $dbc->exec_statement($upcP,array($lc,$upc));
 		while($upcW = $dbc->fetch_row($upcR)){
-			ProductsModel::update($upcW['upc'],$values);
+			ProductsModel::update($upcW['upc'],$values, true);
 			updateProductAllLanes($upcW['upc']);
 		}
 		return True;
@@ -138,7 +153,7 @@ class LikeCodeModule extends ItemModule {
 		return $ret;
 	}
 
-	private function LikeCodeItems($lc){
+	private function LikeCodeItems($lc, $upc='nomatch'){
 		if ($lc == -1) return '';
 		$ret = "<b>Like Code Linked Items</b><div id=lctable>";
 		$ret .= "<table border=0 bgcolor=\"#FFFFCC\">";
@@ -149,8 +164,11 @@ class LikeCodeModule extends ItemModule {
 			ORDER BY p.upc");
 		$res = $dbc->exec_statement($p,array($lc));
 		while($row = $dbc->fetch_row($res)){
-			$ret .= sprintf("<tr><td><a href=itemMaint.php?upc=%s>%s</a></td>
-					<td>%s</td></tr>",$row[0],$row[0],$row[1]);
+            $tag = ($upc == $row['upc']) ? 'th' : 'td';
+			$ret .= sprintf("<tr><%s><a href=itemMaint.php?upc=%s>%s</a></%s>
+					<%s>%s</%s></tr>",
+                    $tag, $row['upc'],$row['upc'], $tag,
+                    $tag, $row[1], $tag);
 		}
 		$ret .= "</table>";
 		$ret .= '</div>';

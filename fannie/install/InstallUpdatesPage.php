@@ -27,6 +27,7 @@ include('updates/Update.php');
 include('util.php');
 include('db.php');
 include_once('../classlib2.0/FannieAPI.php');
+include_once('../cron/tasks/GiterateTask.php');
 
 /**
 	@class InstallUpdatesPage
@@ -34,11 +35,11 @@ include_once('../classlib2.0/FannieAPI.php');
 */
 class InstallUpdatesPage extends InstallPage {
 
-	protected $title = 'Fannie: Database Updates';
-	protected $header = 'Fannie: Database Updates';
+	protected $title = 'Fannie: Updates';
+	protected $header = 'Fannie: Updates';
 
 	public $description = "
-	Class for the Database Updates install and config options page.
+	Class for the Updates install and config options page.
 	";
 
 	// This replaces the __construct() in the parent.
@@ -98,7 +99,7 @@ class InstallUpdatesPage extends InstallPage {
 ?>
 
 <h1 class="install"><?php echo $this->header; ?></h1>
-<p class="ichunk">Model-based Updates.</p>
+<p class="ichunk">Database Updates.</p>
 <?php
 		if (FormLib::get_form_value('mupdate') !== ''){
 			$updateClass = FormLib::get_form_value('mupdate');
@@ -176,146 +177,21 @@ class InstallUpdatesPage extends InstallPage {
 		echo '</ul>';
 ?>
 <hr />
-<p class="ichunk">Click a link for details on the simple Update.</p>
+<p class="ichunk">CORE Updates.</p>
+<em>This is new; consider it alpha-y. Commit any changes before running an update.</em><br />
 <?php
-		if (is_writable('../config.php')){
-			echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
-		}
-		else {
-			echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
-		}
-
-		echo "<hr />";
-
-		$action = isset($_REQUEST['action']) ? $_REQUEST['action']: 'list';
-		$updateID = isset($_REQUEST['u']) ? $_REQUEST['u'] : '';
-		switch($action){
-			case 'view':
-			case 'mark':
-			case 'unmark':
-				if (empty($updateID)){
-					echo 'No update specified!';
-					echo '<a href="InstallUpdatesPage.php">Back</a>';
-					exit;
-				}
-				$file_name = "updates/$updateID.php";
-				$class_name = "update_$updateID";
-				if (!file_exists($file_name)){
-					echo 'Update not found!';
-					echo '<a href="InstallUpdatesPage.php">Back</a>';
-					exit;
-				}
-				include($file_name);
-				if (!class_exists($class_name)){
-					echo 'Update is malformed!';
-					echo '<a href="InstallUpdatesPage.php">Back</a>';
-					exit;
-				}
-				$obj = new $class_name();
-				echo $obj->HtmlInfo();
-				if ($action=='mark')
-					$obj->SetStatus(True);
-				if ($action=='unmark')
-					$obj->SetStatus(False);
-				if (!$obj->CheckStatus()){
-					printf('<a href="InstallUpdatesPage.php?action=apply&u=%s">Apply Update</a><br />',$updateID);
-					printf('<a href="InstallUpdatesPage.php?action=mark&u=%s">Mark Update Complete</a><br />',$updateID);
-				} else {
-					printf('<a href="InstallUpdatesPage.php?action=unmark&u=%s" title="This does not un-do the Update. Not all Updates can be re-run.">Un-mark Update (so it can be run again)</a><br />',$updateID);
-				}
-				echo '<a href="InstallUpdatesPage.php">Back to List of Updates</a>';
-				echo "<hr />";
-				echo "<b>Query details</b>:<br />";
-				echo $obj->HtmlQueries();
-					
-				break;
-			case 'apply':
-				if (empty($updateID)){
-					echo 'No update specified!';
-					echo '<a href="InstallUpdatesPage.php">Back</a>';
-					exit;
-				}
-				$file_name = "updates/$updateID.php";
-				$class_name = "update_$updateID";
-				if (!file_exists($file_name)){
-					echo 'Update not found!';
-					echo '<a href="InstallUpdatesPage.php">Back</a>';
-					exit;
-				}
-				include($file_name);
-				if (!class_exists($class_name)){
-					echo 'Update is malformed!';
-					echo '<a href="InstallUpdatesPage.php">Back</a>';
-					exit;
-				}
-				$obj = new $class_name();
-				echo $obj->ApplyUpdates();
-				echo '<hr />';
-				echo "If the queries all succeeded, this update is automatically marked complete.
-		If not, you can make corrections in your database and refresh this page to try again or just make
-		alterations directly";
-				echo '<br /><br />';	
-				if ( !$obj->CheckStatus() ) {
-					printf('<a href="InstallUpdatesPage.php?action=mark&u=%s">Manually Mark Update $updateID Complete</a><br />',$updateID);
-				} else {
-					echo "Update $updateID has been Marked Complete.<br />";
-					printf('<a href="InstallUpdatesPage.php?action=unmark&u=%s" title="This does not un-do the Update. Not all Updates can be re-run.">Un-mark Update (so it can be run again)</a><br />',$updateID);
-				}
-				echo '<a href="InstallUpdatesPage.php">Back to List of Updates</a>';
-				break;
-			case 'list':
-				// find update files
-				$dh = opendir('updates');
-				$updates = array();
-				while ( ($file=readdir($dh)) !== False ){
-					if ($file[0] == ".") continue;
-					if ($file == "Update.php") continue;
-					if (!is_file('updates/'.$file)) continue;
-					if (substr($file,-4) != ".php") continue;
-					$updates[] = $file;
-				}
-				sort($updates);
-
-				// check for new vs. finished and put in separate arrays.
-				$new = array();
-				$done = array();
-				foreach($updates as $u){
-					$key = substr($u,0,strlen($u)-4);
-					include('updates/'.$u);
-					if (!class_exists('update_'.$key)) continue;
-					$class = "update_$key";
-					$obj = new $class();
-					if ($obj->CheckStatus())
-						$done[] = $key;
-					else
-						$new[] = $key;
-				}
-
-				// display
-				echo '<h4 class="install">Available Updates</h4>';
-				echo '<ul>';
-				foreach($new as $key){
-					printf('<li><a href="InstallUpdatesPage.php?action=view&u=%s">%s</a></li>',
-						$key,$key);
-				}
-				echo '</ul>';
-				echo '<h4 class="install">Applied Updates</h4>';
-				echo '<ul>';
-				foreach($done as $key){
-					printf('<li><a href="InstallUpdatesPage.php?action=view&u=%s">%s</a></li>',
-						$key,$key);
-				}
-				echo '</ul>';
-				break;
-			default:
-				echo 'Action unknown!';
-				echo '<a href="InstallUpdatesPage.php">Back</a>';
-				break;
-		}
-
-
-		echo "<hr />";
-
+        $giterate_info = DataCache::check('GiterateTask');
+        if ($giterate_info == false) {
+            echo 'Updater has not been run recently. See <b>Check for Updates</b> task';
+            echo '<br />';
+            echo '<a href="../cron/management/CronManagementPage.php">Manage Scheduled Tasks</a>';
+        } else {
+            echo $giterate_info;
+            if (strstr($giterate_info, 'New version ')) {
+                echo '<br />To apply update, run: ';
+                echo '<pre>' . GiterateTask::genCommand() . ' --update</pre>';
+            }
+        }
 		return ob_get_clean();
 
 	// body_content

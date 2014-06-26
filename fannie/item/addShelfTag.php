@@ -127,11 +127,13 @@ echo "value='".$size."'";
 ><br>
 PricePer: <input type=text name=ppo size=15
 <?php echo "value=\"$ppo\"" ?> /><br />
-Vendor: <input type='text' name='vendor' size=15
+Vendor: <input type='text' name='vendor' size=12
 <?php
 echo "value='$vendor'";
 ?>
-><br>
+>
+# Tags: <input type="text" name="count" size="3" value="1" />
+<br>
 SKU: <input type='text' name='sku' size=8
 <?php
 echo "value='".$sku."'";

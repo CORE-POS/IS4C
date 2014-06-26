@@ -112,9 +112,9 @@ class PriceHistoryReport extends FannieReportPage
                 $args = array('%'.$manu.'%',$start_date.' 00:00:00',$end_date.' 23:59:59');
             } else {
                 $q = "select p.upc,b.description,p.price,p.modified,b.normal_price
-                    from prodPriceHistory as p left join prodExtra as x
+                    from prodPriceHistory as p left join products as x
                     on p.upc = x.upc left join products as b on
-                    p.upc=b.upc where x.manufacturer ? and
+                    p.upc=b.upc where x.brand ? and
                     p.modified between ? AND ?
                     order by p.upc,p.modified";
                     $args = array($manu,$start_date.' 00:00:00',$end_date.' 23:59:59');

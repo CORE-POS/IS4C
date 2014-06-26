@@ -36,7 +36,7 @@ class MemType extends MemberModule {
 				ORDER BY n.memType");
 		$infoR = $dbc->exec_statement($infoQ,array($memNum));
 
-		$ret = "<fieldset><legend>Membership Type</legend>";
+		$ret = "<fieldset class='memOneRow'><legend>Membership Type</legend>";
 		$ret .= "<table class=\"MemFormTable\" 
 			border=\"0\">";
 

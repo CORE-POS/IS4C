@@ -141,6 +141,7 @@ class FannieReportPage extends FanniePage
     const META_BLANK        = 2;
     const META_REPEAT_HEADERS    = 4;
     const META_CHART_DATA    = 8;
+    const META_COLOR    = 8;
 
     /**
       Handle pre-display tasks such as input processing
@@ -747,6 +748,17 @@ class FannieReportPage extends FanniePage
                 $row[] = $h;
             }
         }
+        $color_styles = '';
+        if (($meta & self::META_COLOR) != 0) {
+            if (isset($row['meta_background'])) {
+                $color_styles .= 'background-color:' . $row['meta_background'] . ';';
+                unset($row['meta_background']);
+            }
+            if (isset($row['meta_foreground'])) {
+                $color_styles .= 'color:' . $row['meta_foreground'] . ';';
+                unset($row['meta_foreground']);
+            }
+        }
 
         $date = false;
         /* After removing HTML, the cell will be seen as a number
@@ -763,8 +775,8 @@ class FannieReportPage extends FanniePage
             while(array_key_exists($i+$span,$row) && $row[$i+$span] === null && ($i+$span)<count($row)) {
                 $span++;
             }
-            $align = '';
             $date = '';
+            $styles = $color_styles;
             if ($row[$i] === "" || $row[$i] === null) {
                 $row[$i] = '&nbsp;';
             } elseif (is_numeric($row[$i]) && strlen($row[$i]) == 13) {
@@ -783,7 +795,7 @@ class FannieReportPage extends FanniePage
                                     $date, $row[$i], $row[$i]);
             } else {
                 if (preg_match($numberPattern, strip_tags($row[$i]))) {
-                    $align = ' style="text-align:right;" ';
+                    $styles .= 'text-align:right;';
                 }
             }
 
@@ -800,7 +812,7 @@ class FannieReportPage extends FanniePage
             }
             $class .= '"';
 
-            $ret .= '<'.$tag.' '.$class.' '.$align.' colspan="'.$span.'">'.$row[$i].'</'.$tag.'>';
+            $ret .= '<'.$tag.' '.$class.' style="'.$styles.'" colspan="'.$span.'">'.$row[$i].'</'.$tag.'>';
             $i += $span;
         }
         $ret .= '</tr>';

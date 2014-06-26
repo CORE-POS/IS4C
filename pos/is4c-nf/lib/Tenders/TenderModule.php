@@ -144,8 +144,12 @@ class TenderModule
     */
     public function add()
     {
-        TransRecord::addItem('', $this->name_string, "T", $this->tender_code, 
-            "", 0, 0, 0, -1*$this->amount, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        TransRecord::addRecord(array(
+            'description' => $this->name_string,
+            'trans_type' => 'T',
+            'trans_subtype' => $this->tender_code,
+            'total' => -1 * $this->amount,
+        ));
     }
 
     /**

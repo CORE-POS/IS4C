@@ -76,14 +76,13 @@ function confset($key, $value)
 }
 
 function db_test_connect($host,$type,$db,$user,$pw){
-	global $FANNIE_ROOT;
 	if (!function_exists("check_db_host"))
-		include($FANNIE_ROOT.'src/host_up.php');
+		include(dirname(__FILE__) . '/../src/host_up.php');
 	if (!check_db_host($host,$type))
 		return False;
 
 	if (!class_exists('SQLManager'))
-		include($FANNIE_ROOT.'src/SQLManager.php');
+		include(dirname(__FILE__) . '/../src/SQLManager.php');
 	$sql = False;
 	try {
 		$sql = new SQLManager($host,$type,$db,$user,$pw);

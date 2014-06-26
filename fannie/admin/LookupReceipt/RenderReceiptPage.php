@@ -65,14 +65,7 @@ class RenderReceiptPage extends FanniePage {
 		$emp_no = $transact[0];
 		$trans_no = $transact[2];
 		$reg_no = $transact[1];
-		$head = $FANNIE_ARCHIVE_DB.$dbconn.'rp_receipt_header_'.$year.$month;
-		$rp= $FANNIE_ARCHIVE_DB.$dbconn.'rp_dt_receipt_'.$year.$month;
-		if ($FANNIE_ARCHIVE_METHOD == 'partitions'){
-			$head = $FANNIE_ARCHIVE_DB.$dbconn.'rp_receipt_header_big';
-			$rp = $FANNIE_ARCHIVE_DB.$dbconn.'rp_dt_receipt_big';
-		}
 
-		// equivalent to rp_dt_receipt_* view
 		$table = DTransactionsModel::selectDtrans(date('Y-m-d',$totime));
 		$query1 = "SELECT 
 			description,

@@ -95,7 +95,7 @@ class SpinsSubmitTask extends FannieTask
         // Odd "CASE" statement is to deal with special order
         // line items the have case size & number of cases
         $dataQ = "SELECT d.upc, p.description,
-                    CASE WHEN d.quantity <> d.ItemQtty AND d.ItemQtty <> 0 THEN d.quantity*d.ItemQtty ELSE d.quantity END as quantity,
+                    SUM(CASE WHEN d.quantity <> d.ItemQtty AND d.ItemQtty <> 0 THEN d.quantity*d.ItemQtty ELSE d.quantity END) as quantity,
                     SUM(d.total) AS dollars,
                     '$lastDay' AS lastDay
                   FROM $dlog AS d
@@ -114,6 +114,9 @@ class SpinsSubmitTask extends FannieTask
         $dataR = $dbc->execute($dataP, $args);
         while($row = $dbc->fetch_row($dataR)){
             for($i=0;$i<4; $i++){
+                if ($i==2 || $i==3) {
+                    $row[$i] = sprintf('%.2f', $row[$i]);
+                }
                 fwrite($fp,"\"".$row[$i]."\",");
             }
             fwrite($fp,"\"".$row[4]."\"\n");

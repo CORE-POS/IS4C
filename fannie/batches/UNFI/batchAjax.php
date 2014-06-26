@@ -50,8 +50,11 @@ case 'newPrice':
 	$model->upc($upc);
 	$model->salePrice($price);
 	$model->save();
-	$bP = $dbc->prepare_statement("UPDATE shelftags SET normal_price=? WHERE upc=? AND id=?");
-	$dbc->exec_statement($bP,array($price,$upc,$sid));
+    $tag = new ShelftagsModel($tag);
+    $tag->id($sid);
+    $tag->upc($upc);
+    $tag->normal_price($price);
+    $tag->save();
 	echo "New Price Applied";
 	break;
 case 'batchAdd':
@@ -78,14 +81,18 @@ case 'batchAdd':
 	$ppo = PriceLib::pricePerUnit($price,$info['size']);
 	
 	/* create a shelftag */
-	$stQ = $dbc->prepare_statement("DELETE FROM shelftags WHERE upc=? AND id=?");
-	$stR = $dbc->exec_statement($stQ,array($upc,$sid));
-	$addQ = $dbc->prepare_statement("INSERT INTO shelftags VALUES (?,?,?,?,?,?,?,?,?,?)");
-	$args = array($sid,$upc,$info['description'],$price,
-			$info['brand'],$info['sku'],
-			$info['size'],$info['units'],$info['vendorName'],
-			$ppo);
-	$addR = $dbc->exec_statement($addQ,$args);
+    $tag = new ShelftagsModel($tag);
+    $tag->id($sid);
+    $tag->upc($upc);
+    $tag->description($info['description']);
+    $tag->normal_price($price);
+    $tag->brand($info['brand']);
+    $tag->sku($info['sku']);
+    $tag->size($info['size']);
+    $tag->units($info['units']);
+    $tag->vendor($info['vendorName']);
+    $tag->pricePerUnit($ppo);
+    $tag->save();
 
 	break;
 case 'batchDel':
@@ -99,8 +106,10 @@ case 'batchDel':
 	$model->upc($upc);
 	$model->delete();
 
-	$stQ = $dbc->prepare_statement("DELETE FROM shelftags WHERE upc=? AND id=?");
-	$stR = $dbc->exec_statement($stQ,array($upc,$sid));
+    $tag = new ShelftagsModel($tag);
+    $tag->id($sid);
+    $tag->upc($upc);
+    $tag->delete();
 
 	break;
 }

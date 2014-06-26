@@ -36,29 +36,33 @@ echo " />\n<label for='printing' onclick=''>Enable receipts: </label>\n
 InstallUtilities::paramSave('print',$CORE_LOCAL->get("print"));
 ?>
 </td></tr><tr><td>
-<b>Use new receipt</b>: </td><td><select name=NEWRECEIPT>
+<b>Receipt Type</b>: </td><td><select name=NEWRECEIPT>
 <?php
 if (isset($_REQUEST['NEWRECEIPT'])) $CORE_LOCAL->set('newReceipt',$_REQUEST['NEWRECEIPT']);
-if ($CORE_LOCAL->get("newReceipt") == 2){
-	echo "<option value=2 selected>PHP (even newer)</option>";
-	echo "<option value=1>Yes</option>";
-	echo "<option value=0>No</option>";
-}
-elseif ($CORE_LOCAL->get("newReceipt") == 1){
-	echo "<option value=2>PHP (even newer)</option>";
-	echo "<option value=1 selected>Yes</option>";
-	echo "<option value=0>No</option>";
-}
-else {
-	echo "<option value=2>PHP (even newer)</option>";
-	echo "<option value=1 >Yes</option>";
-	echo "<option value=0 selected>No</option>";
+if ($CORE_LOCAL->get('newReceipt') === '') $CORE_LOCAL->set('newReceipt', 2);
+if ($CORE_LOCAL->get("newReceipt") == 2) {
+	echo "<option value=2 selected>Modular</option>";
+	echo "<option value=1>Grouped (static, legacy)</option>";
+	echo "<option value=0>In Order (static, legacy)</option>";
+} else if ($CORE_LOCAL->get("newReceipt") == 1){
+	echo "<option value=2>Modular</option>";
+	echo "<option value=1 selected>Grouped (static, legacy)</option>";
+	echo "<option value=0>In Order (static, legacy)</option>";
+} else {
+	echo "<option value=2>Modular</option>";
+	echo "<option value=1>Grouped (static, legacy)</option>";
+	echo "<option value=0 selected>In Order (static, legacy)</option>";
 }
 InstallUtilities::paramSave('newReceipt',$CORE_LOCAL->get("newReceipt"));
 ?>
 </select>
-<span class='noteTxt'>The new receipt groups items by category; the old one just lists
-them in order.</span></td></tr>
+<span class='noteTxt'>
+The Modular receipt uses the modules below to assemble the receipt's contents.
+The Grouped option groups items together in categories. The In Order option
+simply prints items in the order they were entered. The default set of modulars
+will group items in categories. The InOrder modules will print items in order.
+Legacy options may not be supported in the future.
+</span></td></tr>
 <tr>
 	<td><b>Receipt Driver</b>:</td>
 	<td>

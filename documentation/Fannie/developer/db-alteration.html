@@ -4,7 +4,7 @@
 </head>
 <body>
 	<div style="text-align:center;margin-bottom:10px;font-size:80%;">
-	updated as of: August 20, 2012<br />
+	updated as of: May 15, 2014<br />
 	last author: Andy Theuninck
 	</div>
 Occasionally a developer may wish to change an existing table
@@ -12,25 +12,30 @@ or view. This has the potential to be more disruptive to other
 users, so the process is a bit different and requires confirmation
 rather than being automated.
 <p />
-Updates must be placed in the install/updates directory.
-Update files should be named with a date and time stamp -
-i.e., YYYYMMDDHHMMSS.php. This means they sort sensibly into
-chronological order.
+Updates are made using BasicModels. The BasicModel.php file can be used
+as a command line script. To generate a skeleton model for a table, run
+<pre>
+php BasicModel.php --name TableName
+</pre>
+To generate the getter / setter functions, run
+<pre>
+php BasicModel.php TableNameModel.php
+</pre>
 <p />
-The update file should contain a class named
-<b>update_YYYYMMDDHHMMSS</b> the extends the provided base
-class <b>UpdateObj</b> (class names can't start with a number).
-In most cases an update class will just define a few properties:
-<ul>
-<li> <i>$timestamp</i> should be the same YYYYMMDDHHMMSS date and time.
-<li> <i>$author</i> should say who you are
-<li> <i>$description</i> should explain what the update does.
-<li> <i>$queries</i> is the the actual update. It should contain 
-three entries with keys: <i>op</i>, <i>trans</i>, and <i>archive</i>.
-Each entry is an array of queries to perform on the respective
-databases.
-</ul>
-Look at existing updates for examples. It's very light coding; you're 
-really just defining variables.
+To add a new column, simply define it in the array of columns then re-run
+the command to generate getters and setters. To rename a column, specify
+the name of the column it replaces in the definition. No other alterations
+are support by the base class but you can define your own normalize() 
+method for other changes.
+<p />
+If a method exists named 'hookAddColumnNAME' (where NAME is the name of the
+new column), that method will be called after creating the column. This can
+be used to populate data into that column.
+<p />
+Every effort should be made to avoid creating SQL errors in code by
+changing the database. INSERTs are the most common problem. Using model classes
+to write records can simplify this otherwise manually checking whether a 
+column exists can work too. Put a <b>dated</b> comment near this kind of code
+to give an indication when the schema changed.
 </body>
 </html>

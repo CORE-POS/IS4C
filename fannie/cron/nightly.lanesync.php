@@ -60,6 +60,12 @@ foreach($FANNIE_LANES as $f){
 		continue;
 	}
 
+    // valutec tables are deprecated and may no longer
+    // exist on the lane
+    if (!$dbc->table_exists('valutecRequest', $f['trans'])) {
+        continue;
+    }
+
 	$try = $dbc->transfer($f['trans'],'SELECT * FROM valutecRequest',
 			$FANNIE_TRANS_DB,'INSERT INTO valutecRequest');
 	if ($try !== False){

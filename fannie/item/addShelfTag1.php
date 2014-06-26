@@ -45,30 +45,28 @@ $vendor = $_REQUEST['vendor'];
 $sku = $_REQUEST['sku'];
 $price = $_REQUEST['price'];
 $id = $_REQUEST['subID'];
+$count = FormLib::get('count', 1);
 
-$checkUPCQ = $dbc->prepare_statement("SELECT * FROM shelftags where upc = ? and id=?");
-$checkUPCR = $dbc->exec_statement($checkUPCQ,array($upc,$id));
-$checkUPCN = $dbc->num_rows($checkUPCR);
+$shelftag = new ShelftagsModel($dbc);
+$shelftag->id($id);
+$shelftag->upc($upc);
+$shelftag->normal_price($price);
+$shelftag->pricePerUnit($ppo);
+$shelftag->description($description);
+$shelftag->brand($brand);
+$shelftag->sku($sku);
+$shelftag->size($size);
+$shelftag->units($units);
+$shelftag->vendor($vendor);
+$shelftag->count($count);
+$insR = $shelftag->save();
 
-$insQ = "";
-$args = array();
-if($checkUPCN == 0){
-   $insQ = $dbc->prepare_statement("INSERT INTO shelftags VALUES(?,?,?,?,?,?,?,?,?,?)");
-   $args = array($id,$upc,$description,$price,$brand,$sku,$size,$units,$vendor,$ppo);
-}else{
-   $insQ = $dbc->prepare_statement("UPDATE shelftags SET normal_price=?, pricePerUnit=?,
-			description=?,brand=?,sku=?,size=?,units=?,vendor=? WHERE upc = ? and id=?");
-   $args = array($price,$ppo,$description,$brand,$sku,$size,$units,$vendor,$upc,$id);
-}
-
-$insR = $dbc->exec_statement($insQ,$args);
 if ( $insR == False ) {
 echo "<html>
 <head>
 </head>
 <body>
-<p>Failed:<br />
-$insQ
+<p>Failed to create tag
 </p>
 </body>
 </html>";
