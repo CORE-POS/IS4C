@@ -50,7 +50,7 @@ class DefaultReceiptDataFetch
             l.charflag,l.scale,l.quantity,l.unitPrice,
             l.ItemQtty,l.matched,l.numflag,l.tax,
             l.foodstamp,l.trans_id,l.department,
-            l.trans_subtype,
+            l.trans_subtype,l.regPrice,
             ' . $column . ' AS category 
             FROM localtemptrans AS l 
                 LEFT JOIN ' . $join_table . ' AS s ON l.department=s.dept_ID
@@ -62,7 +62,7 @@ class DefaultReceiptDataFetch
                 l.charflag,l.scale,l.quantity,l.unitPrice,
                 l.ItemQtty,l.matched,l.numflag,l.tax,
                 l.foodstamp,l.trans_id,l.department,
-                l.trans_subtype,
+                l.trans_subtype,l.regPrice,
                 " . $column . " AS category 
                 FROM localtranstoday as l 
                     LEFT JOIN " . $join_table . " AS s ON l.department=s.dept_ID
