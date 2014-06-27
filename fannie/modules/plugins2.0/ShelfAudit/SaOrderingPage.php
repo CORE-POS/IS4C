@@ -304,7 +304,7 @@ onfocus="paint_focus('upc_in');"
                 echo '<table class="tablesorter">
                     <thead>
                     <tr>
-                        <th>Date</th><th>Vendor</th><th>Cases</th><th>Units</th>
+                        <th>Date Ordered</th><th>Vendor</th><th>Cases</th><th>Units</th>
                     </tr>
                     </thead>
                     <tbody>';
@@ -326,7 +326,7 @@ onfocus="paint_focus('upc_in');"
                 echo '<table class="tablesorter">
                     <thead>
                     <tr>
-                        <th>Date</th><th>Qty Sold</th>
+                        <th>Date Sold</th><th>Qty Sold</th>
                     </tr>
                     </thead>
                     <tbody>';
