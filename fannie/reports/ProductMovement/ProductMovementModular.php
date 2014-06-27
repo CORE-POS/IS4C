@@ -75,16 +75,25 @@ class ProductMovementModular extends FannieReportPage
 		$dlog = DTransactionsModel::selectDlog($date1,$date2);
 		$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumUpcSalesByDay";
 
-		$query = "select month(t.tdate),day(t.tdate),year(t.tdate),
-			  t.upc,p.description,
-			  sum(t.quantity) as qty,
-			  sum(t.total) from
-			  $dlog as t left join products as p on t.upc = p.upc 
-			  where t.upc = ? AND
-			  tdate BETWEEN ? AND ?
-			  group by year(t.tdate),month(t.tdate),day(t.tdate),
-			  t.upc,p.description
-			  order by year(t.tdate),month(t.tdate),day(t.tdate)";
+		$query = "SELECT 
+                    MONTH(t.tdate),
+                    DAY(t.tdate),
+                    YEAR(t.tdate),
+			        t.upc,
+                    p.description,
+                    " . DTrans::sumQuantity('t') . " AS qty,
+                    SUM(t.total) AS total
+                  FROM $dlog AS t 
+                    " . DTrans::joinProducts('t', 'p') . "
+    			  WHERE t.upc = ? AND
+			        t.tdate BETWEEN ? AND ?
+                  GROUP BY 
+                    YEAR(t.tdate),
+                    MONTH(t.tdate),
+                    DAY(t.tdate),
+                    t.upc,
+                    p.description
+			      ORDER BY year(t.tdate),month(t.tdate),day(t.tdate)";
 		$args = array($upc,$date1.' 00:00:00',$date2.' 23:59:59');
 	
 		if (strtolower($upc) == "rrr" || $upc == "0000000000052"){
@@ -97,7 +106,7 @@ class ProductMovementModular extends FannieReportPage
 			$query = "select MONTH(datetime),DAY(datetime),YEAR(datetime),
 				upc,'RRR',
 				sum(case when upc <> 'rrr' then quantity when volSpecial is null or volSpecial > 9999 then 0 else volSpecial end) as qty,
-				sum(t.total) from
+				sum(t.total) AS total from
 				$dlog as t
 				where upc = ?
 				AND datetime BETWEEN ? AND ?
@@ -112,7 +121,7 @@ class ProductMovementModular extends FannieReportPage
 			$query = "select MONTH(datetime),DAY(datetime),YEAR(datetime),
 				upc,description,
 				sum(CASE WHEN quantity=0 THEN 1 ELSE quantity END) as qty,
-				sum(t.total) from
+				sum(t.total) AS total from
 				$dlog as t
 				where upc = ?
 				AND datetime BETWEEN ? AND ?
@@ -132,10 +141,10 @@ class ProductMovementModular extends FannieReportPage
 		while ($row = $dbc->fetch_array($result)){
 			$record = array();
 			$record[] = $row[0]."/".$row[1]."/".$row[2];
-			$record[] = $row[3];
-			$record[] = $row[4];
-			$record[] = $row[5];
-			$record[] = $row[6];
+			$record[] = $row['upc'];
+			$record[] = $row['description'];
+			$record[] = sprintf('%.2f', $row['qty']);
+			$record[] = sprintf('%.2f', $row['total']);
 			$ret[] = $record;
 		}
 		return $ret;
