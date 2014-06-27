@@ -114,9 +114,12 @@ class PISuspensionPage extends PIKillerPage {
 			if ($obj->reasoncode() == -1)
 				echo $obj->post().'<br /><hr />';
 			else {
+                $code = (int)$obj->reasoncode();
 				foreach($this->__models['codes'] as $reason){
-					if (($reason->mask() & $obj->reasoncode()) != 0)
+                    $mask = (int)$reason->mask();
+					if (($code & $mask) != 0) {
 						echo $reason->textStr().'<br />';
+                    }
 				}
 				echo '<hr />';
 			}
@@ -141,11 +144,14 @@ class PISuspensionPage extends PIKillerPage {
 		echo "</select>";
 		echo '<table>';
         $i = 0;
+        $code = isset($this->__models['suspended']) ? (int)$this->__models['suspended']->reasoncode() : 0;
 		foreach($this->__models['codes'] as $reason){
 			echo '<tr><td>';
 			echo '<input type="checkbox" id="pi_rc_'.$i.'" name="reasoncodes[]" value="'.$reason->mask().'"';
-			if (isset($this->__models['suspended']) && $this->__models['suspended']->reasoncode() & $reason->mask())
+            $mask = (int)$reason->mask();
+			if (($code & $mask) != 0) {
 				echo ' checked';
+            }
 			echo ' /></td><td><label for="pi_rc_'.$i.'">'.$reason->textStr().'</label></td></tr>';
             $i++;
 		}
