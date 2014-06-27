@@ -48,7 +48,7 @@ class SaPriceChangePage extends FannieRESTfulPage {
 	function preprocess(){
 		global $FANNIE_URL;
 
-		$this->add_script($FANNIE_URL.'src/jquery/jquery.js');
+		$this->add_script($FANNIE_URL.'src/javascript/jquery.js');
 
 		$this->linea_ios_mode = $this->linea_support_available();
 		if ($this->linea_ios_mode){
