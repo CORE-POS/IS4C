@@ -39,7 +39,7 @@ class MonthOverMonthReport extends FannieReportPage {
 	function preprocess()
     {
         parent::preprocess();
-        if ($this->content_function = 'report_content') {
+        if ($this->content_function == 'report_content') {
 			$this->report_headers = array('#','Description');
 			// build headers and keys off span of months
 			$this->months = array();
