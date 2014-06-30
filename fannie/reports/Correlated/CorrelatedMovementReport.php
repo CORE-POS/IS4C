@@ -95,23 +95,30 @@ class CorrelatedMovementReport extends FannieReportPage
         $dArgs[] = $date2.' 23:59:59';
         $dbc->exec_statement($loadQ,$dArgs);
 
-        $dataQ = $dbc->prepare_statement("SELECT d.upc,p.description,t.dept_no,t.dept_name,
-            SUM(d.quantity) AS quantity FROM
-            $dlog AS d INNER JOIN groupingTemp AS g
-            ON $dateConvertStr = g.tdate
-            AND g.emp_no = d.emp_no
-            AND g.register_no = d.register_no
-            AND g.trans_no = d.trans_no
-            LEFT JOIN products AS p on d.upc=p.upc
-            LEFT JOIN departments AS t
-            ON d.department=t.dept_no
+        $dataQ = $dbc->prepare_statement("
+            SELECT d.upc,
+                p.description,
+                t.dept_no,
+                t.dept_name,
+                SUM(d.quantity) AS quantity
+            FROM $dlog AS d 
+                INNER JOIN groupingTemp AS g ON 
+                    $dateConvertStr = g.tdate
+                    AND g.emp_no = d.emp_no
+                    AND g.register_no = d.register_no
+                    AND g.trans_no = d.trans_no "
+                . DTrans::joinProducts('d', 'p')
+                . DTrans::joinDepartments('d', 't') . "
             WHERE $inv 
-            AND trans_type IN ('I','D')
-            AND d.tdate BETWEEN ? AND ?
-            AND d.trans_status=''
-            $filter
-            GROUP BY d.upc,p.description,t.dept_no,t.dept_name
-            ORDER BY SUM(d.quantity) DESC");	
+                AND trans_type IN ('I','D')
+                AND d.tdate BETWEEN ? AND ?
+                AND d.trans_status=''
+                $filter
+            GROUP BY d.upc,
+                p.description,
+                t.dept_no,
+                t.dept_name
+            ORDER BY SUM(d.quantity) DESC");
         foreach($fArgs as $f) $dArgs[] = $f;
         $dataR = $dbc->exec_statement($dataQ,$dArgs);
 

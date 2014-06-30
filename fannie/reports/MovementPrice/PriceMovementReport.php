@@ -89,18 +89,24 @@ class PriceMovementReport extends FannieReportPage
 
         $dlog = DTransactionsModel::selectDlog($date1, $date2);
 
-        $query = "SELECT d.upc,p.description,sum(d.quantity) as qty,
-            CASE WHEN memDiscount <> 0 AND memType <> 0 THEN unitPrice - memDiscount ELSE unitPrice END as price,
-            d.department, t.dept_name, sum(total) as total
-            FROM $dlog AS d INNER JOIN products AS p
-            ON d.upc=p.upc LEFT JOIN departments AS t 
-            ON d.department=t.dept_no ";
+        $query = "
+            SELECT d.upc,
+                p.description,"
+                . DTrans::sumQuantity('d') . " AS qty,
+                CASE WHEN memDiscount <> 0 AND memType <> 0 THEN unitPrice - memDiscount ELSE unitPrice END as price,
+                d.department, 
+                t.dept_name, 
+                SUM(total) AS total
+            FROM $dlog AS d "
+                . DTrans::joinProducts('d', 'p', 'inner')
+                . DTrans::joinDepartments('d', 't');
         // join only needed with specific buyer
         if ($buyer !== '' && $buyer > -1) {
             $query .= 'LEFT JOIN superdepts AS s ON d.department=s.dept_ID ';
         }
-        $query .= "WHERE tdate BETWEEN ? AND ?
-            AND $where
+        $query .= "
+            WHERE tdate BETWEEN ? AND ?
+                AND $where
             GROUP BY d.upc,p.description,price,d.department,t.dept_name
             ORDER BY d.upc";
 

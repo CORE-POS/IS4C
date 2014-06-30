@@ -176,7 +176,7 @@ class BrowseVendorItems extends FanniePage {
 			ON d.deptID=v.vendorDept
 			LEFT JOIN vendorSRPs AS s 
 			ON v.upc=s.upc AND v.vendorID=s.vendorID
-			WHERE v.vendorID=? AND brand=?";
+			WHERE v.vendorID=? AND v.brand=?";
 		$args = array($vid,$brand);
 		if ($did != 'All'){
 			$query .= ' AND vendorDept=? ';

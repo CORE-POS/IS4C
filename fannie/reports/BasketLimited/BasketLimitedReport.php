@@ -59,12 +59,19 @@ class BasketLimitedReport extends FannieReportPage {
             HAVING COUNT(*) <= ?");
         $dbc->exec_statement($setupQ,array($date1.' 00:00:00',$date2.' 23:59:59',$qty));
 
-        $reportQ = $dbc->prepare_statement("SELECT g.upc,description,sum(g.quantity),count(DISTINCT trans_num),sum(total) FROM
-            groupingTempBS as g 
-            LEFT JOIN products AS p ON g.upc=p.upc
-            GROUP BY 
-            g.upc,p.description HAVING sum(total) <> 0
-            ORDER BY count(*) DESC");
+        $reportQ = $dbc->prepare_statement('
+            SELECT g.upc,
+                p.description,
+                SUM(g.quantity) AS qty,
+                COUNT(DISTINCT trans_num) AS num,
+                SUM(total) AS ttl
+            FROM groupingTempBS as g '
+                . DTrans::joinProducts('g', 'p') . '
+            GROUP BY g.upc,
+                p.description
+            HAVING sum(total) <> 0
+            ORDER BY count(*) DESC
+        ');
         $reportR = $dbc->exec_statement($reportQ);
 
         $data = array();

@@ -64,11 +64,6 @@ class MarginMovementReport extends FannieReportPage
             $ret[] = 'Includes sale items';
         }
 
-        if ($this->report_format == 'html') {
-            $ret[] = sprintf('<a href="../HourlySales/HourlySalesReport.php?%s">Sales for Same Period</a>', 
-                            $_SERVER['QUERY_STRING']);
-        }
-
         return $ret;
     }
 
@@ -95,18 +90,23 @@ class MarginMovementReport extends FannieReportPage
                 $args[] = $buyer;
             }
         } else {
-            $where = ' t.department BETWEEN ? AND ? ';
+            $where = ' d.department BETWEEN ? AND ? ';
             $args[] = $deptStart;
             $args[] = $deptEnd;
         }
 
         $dlog = DTransactionsModel::selectDlog($date1, $date2);
 
-        $query = "SELECT d.upc,p.description,d.department,t.dept_name,
-            sum(total) as total,sum(d.cost) as cost, sum(d.quantity) as qty
-            FROM $dlog AS d INNER JOIN products AS p
-            ON d.upc=p.upc LEFT JOIN departments AS t 
-            ON d.department=t.dept_no ";
+        $query = "SELECT d.upc,
+                    p.description,
+                    d.department,
+                    t.dept_name,
+                    SUM(total) AS total,
+                    SUM(d.cost) AS cost,"
+                    . DTrans::sumQuantity('d') . " AS qty
+                  FROM $dlog AS d "
+                    . DTrans::joinProducts('d', 'p', 'inner')
+                    . DTrans::joinDepartments('d', 't');
         // join only needed with specific buyer
         if ($buyer !== '' && $buyer > -1) {
             $query .= 'LEFT JOIN superdepts AS s ON d.department=s.dept_ID ';

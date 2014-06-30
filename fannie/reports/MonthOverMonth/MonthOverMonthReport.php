@@ -81,17 +81,26 @@ class MonthOverMonthReport extends FannieReportPage {
 			}
 			$inClause = rtrim($inClause,",").")";
 
-			$query = "SELECT t.upc,p.description, SUM(t.quantity) as qty,
-				SUM(total) as sales, MONTH(tdate) as month, YEAR(tdate) as year
-				FROM $dlog AS t
-				LEFT JOIN products AS p ON p.upc=t.upc
-				WHERE t.trans_status <> 'M'
-				AND tdate BETWEEN ? AND ?
-				AND t.upc IN $inClause
-				GROUP BY YEAR(tdate),MONTH(tdate),t.upc,p.description
-				ORDER BY YEAR(tdate),MONTH(tdate),t.upc,p.description";
-		}
-		else {
+			$query = "SELECT t.upc,
+                        p.description, "
+                        . DTrans::sumQuantity('t') . " AS qty,
+                        SUM(total) AS sales, 
+                        MONTH(tdate) AS month, 
+                        YEAR(tdate) AS year
+				      FROM $dlog AS t "
+                        . DTrans::joinProducts('t', 'p') . " 
+                      WHERE t.trans_status <> 'M'
+                        AND tdate BETWEEN ? AND ?
+                        AND t.upc IN $inClause
+                      GROUP BY YEAR(tdate),
+                        MONTH(tdate),
+                        t.upc,
+                        p.description
+                      ORDER BY YEAR(tdate),
+                        MONTH(tdate),
+                        t.upc,
+                        p.description";
+		} else {
 			$dept1 = FormLib::get_form_value('dept1',1);
 			$dept2 = FormLib::get_form_value('dept2',1);
 			$qArgs[] = $dept1;

@@ -86,20 +86,27 @@ class TrendsReport extends FannieReportPage
                 break;
         }
 
-        $query = "select 
-            year(d.tdate) as year,
-            month(d.tdate) as month,
-            day(d.tdate) as day,
-            $groupby,
-            sum(d.quantity) as total 
-            from $dlog as d left join products as p on d.upc = p.upc
-            $joins
-            where d.tdate BETWEEN ? AND ?
-            and trans_status <> 'M'
-            and $where
-            group by year(d.tdate),month(d.tdate),day(d.tdate),
-            $groupby
-            order by d.upc,year(d.tdate),month(d.tdate),day(d.tdate)";
+        $query = "
+            SELECT 
+                YEAR(d.tdate) AS year,
+                MONTH(d.tdate) AS month,
+                DAY(d.tdate) AS day,
+                $groupby, "
+                . DTrans::sumQuantity('d') . " AS total
+            FROM $dlog as d "
+                . DTrans::joinProducts('d', 'p')
+                . $joins . "
+            WHERE d.tdate BETWEEN ? AND ?
+                AND trans_status <> 'M'
+                AND $where
+            GROUP BY YEAR(d.tdate),
+                MONTH(d.tdate),
+                DAY(d.tdate),
+                $groupby
+            ORDER BY d.upc,
+                YEAR(d.tdate),
+                MONTH(d.tdate),
+                DAY(d.tdate)";
         $prep = $dbc->prepare_statement($query);
         $result = $dbc->exec_statement($prep,$args);
 	
