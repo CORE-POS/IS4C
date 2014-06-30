@@ -55,8 +55,8 @@ class SyncFromSearch extends FannieRESTfulPage
             if ($model->load()) {
                 $all_items[] = $this->getItemInfo($model);
                 echo '<li style="color:green;">Sending <b>' . $model->plu() . '</b></li>';
-                // batch out changes @ 50 items / file
-                if (count($all_items) > 50) {
+                // batch out changes @ 10 items / file
+                if (count($all_items) >= 10) {
                     HobartDgwLib::writeItemsToScales($all_items);
                     $all_items = array();
                 }
