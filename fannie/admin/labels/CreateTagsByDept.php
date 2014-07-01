@@ -46,8 +46,8 @@ class CreateTagsByDept extends FanniePage {
 				    x.manufacturer,
 				    x.distributor,
 				    v.sku,
-				    v.size,
-    				CASE WHEN v.units IS NULL THEN 1 ELSE v.units END AS units
+				    v.size as pack_size_and_units,
+    				CASE WHEN v.units IS NULL THEN 1 ELSE v.units END AS units_per_case
 				FROM
 				    products AS p
 				    left join prodExtra AS x ON p.upc=x.upc
@@ -83,10 +83,10 @@ class CreateTagsByDept extends FanniePage {
 				                $w['normal_price'],
                                 $w['manufacturer'],
             					$w['sku'],
-            					$w['units'],
-            					$w['size'],
+            					$w['units_per_case'],
+            					$w['pack_size_and_units'],
                                 $w['distributor'],
-            					PriceLib::pricePerUnit($w['normal_price'],$w['size'])
+            					PriceLib::pricePerUnit($w['normal_price'],$w['pack_size_and_units'])
 				);
 				$dbc->exec_statement($ins,$args);
 			}
