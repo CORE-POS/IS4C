@@ -28,9 +28,8 @@ include($FANNIE_ROOT.'src/tmp_dir.php');
 if (isset($_REQUEST['upc'])){
     define('FPDF_FONTPATH','font/');
     include($FANNIE_ROOT.'src/fpdf/fpdf.php');
-    include($FANNIE_ROOT.'src/barcodepdf.php');
 
-    $pdf=new WFC_Standard_PDF('P','mm','Letter'); //start new instance of PDF
+    $pdf=new FPDF('P','mm','Letter'); //start new instance of PDF
     $pdf->Open(); //open new PDF Document
 
     $count = 0;
@@ -90,9 +89,8 @@ if (isset($_REQUEST['upc'])){
         
         $upc = str_pad($_REQUEST['upc'],11,'0',STR_PAD_LEFT);
         $upc = $_REQUEST['upc'];
-        //$chk = $pdf->GetCheckDigit($upc);
 
-        $pdf->UPC_A($x+30,$y+95,$upc);
+        $pdf = FannieSignage::drawBarcode($upc, $pdf, $x+30, $y+95, array('height'=>14,'fontsize'=>8));
         
         $count++;
     }

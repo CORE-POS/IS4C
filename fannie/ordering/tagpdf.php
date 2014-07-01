@@ -29,9 +29,8 @@ $TRANS = $FANNIE_TRANS_DB.$dbc->sep();
 if (isset($_REQUEST['toids'])){
     define('FPDF_FONTPATH','font/');
     include($FANNIE_ROOT.'src/fpdf/fpdf.php');
-    include($FANNIE_ROOT.'src/barcodepdf.php');
 
-    $pdf=new WFC_Standard_PDF('P','mm','Letter'); //start new instance of PDF
+    $pdf=new FPDF('P','mm','Letter'); //start new instance of PDF
     $pdf->Open(); //open new PDF Document
 
     $count = 0;
@@ -127,9 +126,8 @@ if (isset($_REQUEST['toids'])){
         $pdf->SetX($x);
         
         $upc = "454".str_pad($oid,6,'0',STR_PAD_LEFT).str_pad($tid,2,'0',STR_PAD_LEFT);
-        //$chk = $pdf->GetCheckDigit($upc);
 
-        $pdf->UPC_A($x+30,$y+95,$upc);
+        $pdf = FannieSignage::drawBarcode($upc, $pdf, $x+30, $y+95, array('height'=>14,'fontsize'=>8));
         
         $count++;
     }
