@@ -90,8 +90,10 @@ class Tags4x8P extends FannieSignage
             $pdf->SetX($x);
             $pdf->Cell($width,4,$sku.' '.$vendor,0,0,'L');
 
-            $pdf->SetX($x);
-            $pdf->Cell($width-5,4,$ppu,0,0,'R');
+            if (strstr($ppu, '/') && $ppu[strlen($ppu)-1] != '/') {
+                $pdf->SetX($x);
+                $pdf->Cell($width-5,4,$ppu,0,0,'R');
+            }
 
             $pdf->SetXY($x, $y+16);
             $pdf->SetFont('Arial','B',24);  //change font size
