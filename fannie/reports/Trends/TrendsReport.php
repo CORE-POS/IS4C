@@ -54,7 +54,7 @@ class TrendsReport extends FannieReportPage
         
         $joins = '';
         $where = '1=1';
-        $groupby = 'd.upc, p.description';
+        $groupby = 'd.upc, CASE WHEN p.description IS NULL THEN d.description ELSE p.description END';
         $args = array($date1.' 00:00:00', $date2.' 23:59:59');
         switch (FormLib::get('type', 'dept')) {
             case 'dept':
@@ -98,6 +98,7 @@ class TrendsReport extends FannieReportPage
                 . $joins . "
             WHERE d.tdate BETWEEN ? AND ?
                 AND trans_status <> 'M'
+                AND trans_type = 'I'
                 AND $where
             GROUP BY YEAR(d.tdate),
                 MONTH(d.tdate),
