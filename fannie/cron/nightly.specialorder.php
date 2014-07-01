@@ -126,8 +126,8 @@ if (strlen($allIDs) > 2){
 }
 // end auto-close
 
-$query = "SELECT mixMatch,
-            matched,
+$query = "SELECT CASE WHEN matched > 10 THEN matched ELSE mixMatch END as mixMatch,
+            CASE WHEN matched > 10 THEN mixMatch ELSE matched END AS matched,
             MAX(datetime) as tdate,
             MAX(emp_no) as emp,
             MAX(register_no) AS reg,
