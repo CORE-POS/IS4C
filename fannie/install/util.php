@@ -75,9 +75,44 @@ function confset($key, $value)
     fclose($fp);
 }
 
+function check_db_host($host,$dbms)
+{
+	if (!function_exists("socket_create")) {
+		return true; // test not possible
+    }
+
+	$port = 0;
+	switch (strtoupper($dbms)) {
+        case 'MYSQL':
+        case 'MYSQLI':
+        case 'PDO_MYSQL':
+            $port = 3306;
+            break;
+        case 'MSSQL':
+            $port = 1433;
+            break;	
+        case 'PGSQL':
+            $port = 5432;
+            break;
+	}
+
+	if (strstr($host,":")) {
+		list($host,$port) = explode(":",$host,2);
+    }
+
+	$test = false;
+	$sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+	socket_set_option($sock, SOL_SOCKET, SO_SNDTIMEO, array('sec' => 1, 'usec' => 0)); 
+	socket_set_block($sock);
+	try {
+		$test = @socket_connect($sock,$host,$port);
+	} catch(Exception $ex) {}
+	socket_close($sock);
+
+	return ($test ? true : false);	
+}
+
 function db_test_connect($host,$type,$db,$user,$pw){
-    if (!function_exists("check_db_host"))
-        include(dirname(__FILE__) . '/../src/host_up.php');
     if (!check_db_host($host,$type))
         return False;
 
