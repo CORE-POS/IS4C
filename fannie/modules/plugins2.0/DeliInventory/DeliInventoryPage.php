@@ -309,11 +309,17 @@ if (isset($_GET['action'])){
             $ret .= "<td onclick=\"edititem(".$fetchW['id'].",'$catfixed');\" id=item".$fetchW['id']."col2 bgcolor=$colors[$c]>".$fetchW['orderno']."&nbsp;</td>";
             $ret .= "<td onclick=\"edititem(".$fetchW['id'].",'$catfixed');\" id=item".$fetchW['id']."col3 bgcolor=$colors[$c]>".$fetchW['units']."&nbsp;</td>";
             $ret .= "<td onclick=\"edititem(".$fetchW['id'].",'$catfixed');\" 
-                    id=item".$fetchW['id']."col4 bgcolor=$colors[$c]>".sprintf('%.2f',$fetchW['cases'])."&nbsp;</td>";
+                    id=item".$fetchW['id']."col4 bgcolor=$colors[$c]>"
+                    . ($fetchW['cases'] == 0 ? '&nbsp;' : sprintf('%.2f',$fetchW['cases']))
+                    . "&nbsp;</td>";
             $ret .= "<td onclick=\"edititem(".$fetchW['id'].",'$catfixed');\" 
-                    id=item".$fetchW['id']."col5 bgcolor=$colors[$c]>".sprintf('%.2f',$fetchW['fraction'])."&nbsp;</td>";
+                    id=item".$fetchW['id']."col5 bgcolor=$colors[$c]>"
+                    . ($fetchW['fraction'] == 0 ? '&nbsp;' : sprintf('%.2f',$fetchW['fraction']))
+                    . "&nbsp;</td>";
             $ret .= "<td onclick=\"edititem(".$fetchW['id'].",'$catfixed');\" 
-                    id=item".$fetchW['id']."col6 bgcolor=$colors[$c]>".sprintf('%.2f',$fetchW['totalstock'])."&nbsp;</td>";
+                    id=item".$fetchW['id']."col6 bgcolor=$colors[$c]>"
+                    . ($fetchW['totalstock'] == 0 ? '&nbsp;' : sprintf('%.2f',$fetchW['totalstock']))
+                    . "&nbsp;</td>";
             $ret .= "<td onclick=\"edititem(".$fetchW['id'].",'$catfixed');\" 
                     id=item".$fetchW['id']."col7 bgcolor=$colors[$c]>".sprintf('%.2f',$fetchW['price'])."&nbsp;</td>";
             $ret .= "<td onclick=\"edititem(".$fetchW['id'].",'$catfixed');\" 
