@@ -53,7 +53,6 @@ include('../../../../config.php');
 //include($FANNIE_ROOT.'config.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
-//obs. include($FANNIE_ROOT.'src/select_dlog.php');
 include($FANNIE_ROOT.'src/functions.php');
 
 /* from EOMreport
