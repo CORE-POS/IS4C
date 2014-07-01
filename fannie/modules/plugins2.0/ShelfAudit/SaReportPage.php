@@ -120,8 +120,10 @@ class SaReportPage extends FanniePage {
 			CASE WHEN d.dept_no IS NULL THEN \'n/a\' ELSE d.dept_no END as dept_no,
 			CASE WHEN d.salesCode IS NULL THEN \'n/a\' ELSE d.salesCode END as salesCode,
 
+            p.normal_price as normal_retail,
+
 			CASE WHEN p.discounttype > 0 THEN p.special_price
-			ELSE p.normal_price END AS retail,
+			ELSE p.normal_price END AS actual_retail,
 
 			CASE WHEN p.discounttype = 2 THEN \'M\'
 			ELSE \'\' END AS retailstatus
@@ -242,18 +244,19 @@ table tr:hover {
 	}
 
 	function csv_content(){
-		$ret = "UPC,Description,Account#,Dept#,\"Dept Name\",Qty,Retail,Status,Total\r\n";
+		$ret = "UPC,Description,Account#,Dept#,\"Dept Name\",Qty,Normal Retail,Current Retail,Status,Total\r\n";
 		$totals = array();
 		foreach($this->scans as $row){
-			$ret .= sprintf("%s,\"%s\",%s,%s,%s,%.2f,%.2f,%s,%.2f\r\n",
+			$ret .= sprintf("%s,\"%s\",%s,%s,%s,%.2f,%.2f,%.2f,%s,%.2f\r\n",
 				$row['upc'],$row['description'],$row['salesCode'],$row['dept_no'],
-				$row['dept_name'],$row['quantity'],$row['retail'],
-				$row['retailstatus'],($row['quantity']*$row['retail'])
+				$row['dept_name'],$row['quantity'],$row['normal_retail'],
+                $row['actual_retail'],
+				$row['retailstatus'],($row['quantity']*$row['normal_retail'])
 			);
 			if (!isset($totals[$row['salesCode']]))
 				$totals[$row['salesCode']] = array('qty'=>0.0,'ttl'=>0.0);
 			$totals[$row['salesCode']]['qty'] += $row['quantity'];
-			$totals[$row['salesCode']]['ttl'] += ($row['quantity']*$row['retail']);
+			$totals[$row['salesCode']]['ttl'] += ($row['quantity']*$row['normal_retail']);
 		}
 		$ret .= ",,,,,,,,\r\n";
 		foreach($totals as $code => $info){
@@ -292,7 +295,7 @@ table tr:hover {
 				if ($counter=='d') { $counter_number=$row['dept_no']; }
 				else { $counter_number=$row['section']; }
 				
-				$counter_total=$row['quantity']*$row['retail'];
+				$counter_total=$row['quantity']*$row['normal_retail'];
 				
 				if ($counter=='d') { $caption=$row['dept_name'].' Department'; }
 				else { $caption='Section #'.$row['section']; }
@@ -306,7 +309,8 @@ table tr:hover {
 					<th>UPC</th>
 					<th>Description</th>
 					<th>Qty</th>
-					<th>Each</th>
+					<th>Each (Normal)</th>
+					<th>Each (Current)</th>
 					<th>Sale</th>
 					<th>Total</th>
 					<th>Delete</th>
@@ -318,10 +322,11 @@ table tr:hover {
 					<td id="col_b">'.$row['upc'].'</td>
 					<td id="col_c">'.$row['description'].'</td>
 					<td id="col_d" class="right">'.$row['quantity'].'</td>
-					<td id="col_e" class="right">'.money_format('%.2n', $row['retail']).'</td>
-					<td id="col_f">'.(($row['retailstatus'])?$row['retailstatus']:'&nbsp;').'</td>
-					<td id="col_g" class="right">'.money_format('%!.2n', ($row['quantity']*$row['retail'])).'</td>
-					<td id="col_h"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'"><img src="../../../src/img/buttons/trash.png" border="0"/></a></td>
+					<td id="col_e" class="right">'.money_format('%.2n', $row['normal_retail']).'</td>
+					<td id="col_f" class="right">'.money_format('%.2n', $row['atual_retail']).'</td>
+					<td id="col_g">'.(($row['retailstatus'])?$row['retailstatus']:'&nbsp;').'</td>
+					<td id="col_h" class="right">'.money_format('%!.2n', ($row['quantity']*$row['normal_retail'])).'</td>
+					<td id="col_i"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'"><img src="../../../src/img/buttons/trash.png" border="0"/></a></td>
 				</tr>';
 			} else if ($counter_number!=$row['section'] && $counter_number!=$row['dept_no']) {
 				if ($counter=='d') { $counter_number=$row['dept_no']; }
@@ -348,7 +353,8 @@ table tr:hover {
 					<th>UPC</th>
 					<th>Description</th>
 					<th>Qty</th>
-					<th>Each</th>
+					<th>Each (Normal)</th>
+					<th>Each (Current)</th>
 					<th>Sale</th>
 					<th>Total</th>
 					<th>Delete</th>
@@ -360,15 +366,16 @@ table tr:hover {
 					<td id="col_b">'.$row['upc'].'</td>
 					<td id="col_c">'.$row['description'].'</td>
 					<td id="col_d" class="right">'.$row['quantity'].'</td>
-					<td id="col_e" class="right">'.money_format('%.2n', $row['retail']).'</td>
-					<td id="col_f">'.(($row['retailstatus'])?$row['retailstatus']:'&nbsp;').'</td>
-					<td id="col_g" class="right">'.money_format('%!.2n', ($row['quantity']*$row['retail'])).'</td>
-					<td id="col_h"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'"><img src="../../../src/img/buttons/trash.png" border="0"/></a></td>
+					<td id="col_e" class="right">'.money_format('%.2n', $row['normal_retail']).'</td>
+					<td id="col_f" class="right">'.money_format('%.2n', $row['actual_retail']).'</td>
+					<td id="col_g">'.(($row['retailstatus'])?$row['retailstatus']:'&nbsp;').'</td>
+					<td id="col_h" class="right">'.money_format('%!.2n', ($row['quantity']*$row['normal_retail'])).'</td>
+					<td id="col_i"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'"><img src="../../../src/img/buttons/trash.png" border="0"/></a></td>
 				</tr>';
 				
-				$counter_total=$row['quantity']*$row['retail'];
+				$counter_total=$row['quantity']*$row['normal_retail'];
 			} else {
-				$counter_total+=$row['quantity']*$row['retail'];
+				$counter_total+=$row['quantity']*$row['normal_retail'];
 				
 				$table .= '
 				<tr>
@@ -376,10 +383,11 @@ table tr:hover {
 					<td id="col_b">'.$row['upc'].'</td>
 					<td id="col_c">'.$row['description'].'</td>
 					<td id="col_d" class="right">'.$row['quantity'].'</td>
-					<td id="col_e" class="right">'.money_format('%.2n', $row['retail']).'</td>
-					<td id="col_f">'.(($row['retailstatus'])?$row['retailstatus']:'&nbsp;').'</td>
-					<td id="col_g" class="right">'.money_format('%!.2n', ($row['quantity']*$row['retail'])).'</td>
-					<td id="col_h"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'"><img src="../../../src/img/buttons/trash.png" border="0"/></a></td>
+					<td id="col_e" class="right">'.money_format('%.2n', $row['normal_retail']).'</td>
+					<td id="col_f" class="right">'.money_format('%.2n', $row['actual_retail']).'</td>
+					<td id="col_g">'.(($row['retailstatus'])?$row['retailstatus']:'&nbsp;').'</td>
+					<td id="col_h" class="right">'.money_format('%!.2n', ($row['quantity']*$row['normal_retail'])).'</td>
+					<td id="col_i"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'"><img src="../../../src/img/buttons/trash.png" border="0"/></a></td>
 				</tr>';
 			}
 		}
