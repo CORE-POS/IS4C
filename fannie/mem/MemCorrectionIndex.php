@@ -26,24 +26,24 @@ include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class MemCorrectionIndex extends FanniePage {
 
-	protected $title='Fannie - Member Management Module';
-	protected $header='Make Member Corrections';
+    protected $title='Fannie - Member Management Module';
+    protected $header='Make Member Corrections';
 
-	private $msgs = '';
+    private $msgs = '';
 
-	function body_content(){
-		ob_start();
-		?>
-		<ul>
-		<li><a href="correction_pages/MemEquityTransferTool.php">Equity Transfer</a></li>
-		<li><a href="correction_pages/MemArTransferTool.php">AR Transfer</a></li>
-		<li><a href="correction_pages/MemArEquitySwapTool.php">AR/Equity Swap</a></li>
-		<li><a href="correction_pages/MemArEquityDumpTool.php">Remove AR/Equity</a></li>
-		<li><a href="correction_pages/PatronageTransferTool.php">Transfer Patronage</a></li>
-		</ul>
-		<?php
-		return $this->msgs.ob_get_clean();
-	}
+    function body_content(){
+        ob_start();
+        ?>
+        <ul>
+        <li><a href="correction_pages/MemEquityTransferTool.php">Equity Transfer</a></li>
+        <li><a href="correction_pages/MemArTransferTool.php">AR Transfer</a></li>
+        <li><a href="correction_pages/MemArEquitySwapTool.php">AR/Equity Swap</a></li>
+        <li><a href="correction_pages/MemArEquityDumpTool.php">Remove AR/Equity</a></li>
+        <li><a href="correction_pages/PatronageTransferTool.php">Transfer Patronage</a></li>
+        </ul>
+        <?php
+        return $this->msgs.ob_get_clean();
+    }
 }
 
 FannieDispatch::conditionalExec(false);

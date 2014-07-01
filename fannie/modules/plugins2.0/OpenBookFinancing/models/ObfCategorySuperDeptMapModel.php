@@ -33,7 +33,7 @@ class ObfCategorySuperDeptMapModel extends BasicModel
     'obfCategoryID' => array('type'=>'INT', 'primary_key'=>true),
     'superID' => array('type'=>'INT', 'primary_key'=>true),
     'growthTarget' => array('type'=>'DOUBLE'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

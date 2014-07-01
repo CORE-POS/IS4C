@@ -3,29 +3,29 @@
 Table: dlog_15
 
 Columns:
-	tdate datetime
-	register_no int
-	emp_no int
-	trans_no int
-	upc varchar
-	trans_type varchar
-	trans_subtype varchar
-	trans_status varchar
-	department int
-	quantity double
-	unitPrice dbms currency
-	total dbms currency
-	tax int
-	foodstamp int
-	ItemQtty double
-	card_no int
-	trans_id int
+    tdate datetime
+    register_no int
+    emp_no int
+    trans_no int
+    upc varchar
+    trans_type varchar
+    trans_subtype varchar
+    trans_status varchar
+    department int
+    quantity double
+    unitPrice dbms currency
+    total dbms currency
+    tax int
+    foodstamp int
+    ItemQtty double
+    card_no int
+    trans_id int
     pos_row_id int
     store_row_id int
     trans_num
 
 Depends on:
-	dlog_90_view (view)
+    dlog_90_view (view)
 
 Use:
 This is just a look-up table. It contains the
@@ -40,12 +40,12 @@ Truncated and populated by cron/nightly.dtrans.php
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-	* 23Oct2012 Eric Lee Added Maintenance section to comments.
+    * 23Oct2012 Eric Lee Added Maintenance section to comments.
 
 */
 
 $CREATE['trans.dlog_15'] = "
-	CREATE TABLE dlog_15 (`tdate` datetime default NULL,
+    CREATE TABLE dlog_15 (`tdate` datetime default NULL,
           `register_no` smallint(6) default NULL,
           `emp_no` smallint(6) default NULL,
           `trans_no` int(11) default NULL,
@@ -84,11 +84,11 @@ $CREATE['trans.dlog_15'] = "
           `pos_row_id` bigint unsigned,
           `store_row_id` bigint unsigned,
           `trans_num` varchar(25) default NULL
-	 )";
+     )";
 
 if ($dbms == "MSSQL"){
-	$CREATE['trans.dlog_15'] = "
-		CREATE TABLE dlog_15 ([tdate] [datetime] NOT NULL ,
+    $CREATE['trans.dlog_15'] = "
+        CREATE TABLE dlog_15 ([tdate] [datetime] NOT NULL ,
                         [register_no] [smallint] NOT NULL ,
                         [emp_no] [smallint] NOT NULL ,
                         [trans_no] [int] NOT NULL ,
@@ -116,18 +116,18 @@ if ($dbms == "MSSQL"){
                         [volDiscType] [tinyint] NULL ,
                         [volume] [tinyint] NULL ,
                         [VolSpecial] [money] NULL ,
-			[mixMatch] [nvarchar] (13) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+            [mixMatch] [nvarchar] (13) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
                         [matched] [tinyint] NULL ,
-			[memType] [smallint] NULL ,
-			[isStaff] [tinyint] NULL ,
-			[numflag] [smallint] NULL ,
-			[charflag] [nvarchar] (2) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+            [memType] [smallint] NULL ,
+            [isStaff] [tinyint] NULL ,
+            [numflag] [smallint] NULL ,
+            [charflag] [nvarchar] (2) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
                         [card_no] [nvarchar] (6) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
                         [trans_id] [int] NOT NULL ,
                         [pos_row_id [bigint] ,
                         [store_row_id] [bigint] ,
                         [trans_num] [nvarchar] (25) COLLATE SQL_Latin1_General_CP1_CI_AS NULL 
-		)
-	";
+        )
+    ";
 }
 ?>

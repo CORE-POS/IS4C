@@ -26,81 +26,81 @@ include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class ImportPurchaseOrder extends FannieUploadPage 
 {
-	protected $title = "Fannie - Purchase Order";
-	protected $header = "Upload Purchase Order / Invoice";
+    protected $title = "Fannie - Purchase Order";
+    protected $header = "Upload Purchase Order / Invoice";
 
-	protected $preview_opts = array(
-		'sku' => array(
-			'name' => 'sku',
-			'display_name' => 'SKU*',
-			'default' => 0,
-			'required' => true
-		),
-		'cost' => array(
-			'name' => 'cost',
-			'display_name' => 'Cost (Total)*',
-			'default' => 1,
-			'required' => false
-		),
-		'unitQty' => array(
-			'name' => 'unitQty',
-			'display_name' => 'Qty (Units)+',
-			'default' => 2,
-			'required' => false
-		),
-		'caseQty' => array(
-			'name' => 'caseQty',
-			'display_name' => 'Qty (Cases)+',
-			'default' => 3,
-			'required' => false
-		),
-		'caseSize' => array(
-			'name' => 'caseSize',
-			'display_name' => 'Units / Case',
-			'default' => 4,
-			'required' => false
-		),
-		'unitSize' => array(
-			'name' => 'unitSize',
-			'display_name' => 'Unit Size',
-			'default' => 5,
-			'required' => false
-		),
-		'brand' => array(
-			'name' => 'brand',
-			'display_name' => 'Brand',
-			'default' => 6,
-			'required' => false
-		),
-		'desc' => array(
-			'name' => 'desc',
-			'display_name' => 'Description',
-			'default' => 7,
-			'required' => false
-		),
-		'upc' => array(
-			'name' => 'upc',
-			'display_name' => 'UPC (w/o check)',
-			'default' => 8,
-			'required' => false
-		),
-		'upcc' => array(
-			'name' => 'upcc',
-			'display_name' => 'UPC (w/ check)',
-			'default' => 9,
-			'required' => false
-		),
-	);
+    protected $preview_opts = array(
+        'sku' => array(
+            'name' => 'sku',
+            'display_name' => 'SKU*',
+            'default' => 0,
+            'required' => true
+        ),
+        'cost' => array(
+            'name' => 'cost',
+            'display_name' => 'Cost (Total)*',
+            'default' => 1,
+            'required' => false
+        ),
+        'unitQty' => array(
+            'name' => 'unitQty',
+            'display_name' => 'Qty (Units)+',
+            'default' => 2,
+            'required' => false
+        ),
+        'caseQty' => array(
+            'name' => 'caseQty',
+            'display_name' => 'Qty (Cases)+',
+            'default' => 3,
+            'required' => false
+        ),
+        'caseSize' => array(
+            'name' => 'caseSize',
+            'display_name' => 'Units / Case',
+            'default' => 4,
+            'required' => false
+        ),
+        'unitSize' => array(
+            'name' => 'unitSize',
+            'display_name' => 'Unit Size',
+            'default' => 5,
+            'required' => false
+        ),
+        'brand' => array(
+            'name' => 'brand',
+            'display_name' => 'Brand',
+            'default' => 6,
+            'required' => false
+        ),
+        'desc' => array(
+            'name' => 'desc',
+            'display_name' => 'Description',
+            'default' => 7,
+            'required' => false
+        ),
+        'upc' => array(
+            'name' => 'upc',
+            'display_name' => 'UPC (w/o check)',
+            'default' => 8,
+            'required' => false
+        ),
+        'upcc' => array(
+            'name' => 'upcc',
+            'display_name' => 'UPC (w/ check)',
+            'default' => 9,
+            'required' => false
+        ),
+    );
 
-	private $results = '';
+    private $results = '';
 
-	function process_file($linedata)
+    function process_file($linedata)
     {
-		global $FANNIE_OP_DB;
-		$dbc = FannieDB::get($FANNIE_OP_DB);
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 
-		$skuCol = $this->get_column_index('sku');
-		$costCol = $this->get_column_index('cost');
+        $skuCol = $this->get_column_index('sku');
+        $costCol = $this->get_column_index('cost');
         $uQtyCol = $this->get_column_index('unitQty');
         $cQtyCol = $this->get_column_index('caseQty');
         $uSizeCol = $this->get_column_index('unitSize');
@@ -128,19 +128,19 @@ class ImportPurchaseOrder extends FannieUploadPage
         $item = new PurchaseOrderItemsModel($dbc);
         $info = new VendorItems($dbc);
 
-		$ret = '';
-		foreach ($linedata as $line) {
-			if (!isset($line[$skuCol])) continue;
-			if (!isset($line[$costCol])) continue;
+        $ret = '';
+        foreach ($linedata as $line) {
+            if (!isset($line[$skuCol])) continue;
+            if (!isset($line[$costCol])) continue;
 
-			$sku = $line[$skuCol];
-			$cost = $line[$costCol];
-			$cost = trim($cost,' ');
-			$cost = trim($cost,'$');
-			if (!is_numeric($cost)) {
-				$ret .= "<i>Omitting item {$sku}. Cost {$cost} isn't a number</i><br />";
-				continue;
-			}
+            $sku = $line[$skuCol];
+            $cost = $line[$costCol];
+            $cost = trim($cost,' ');
+            $cost = trim($cost,'$');
+            if (!is_numeric($cost)) {
+                $ret .= "<i>Omitting item {$sku}. Cost {$cost} isn't a number</i><br />";
+                continue;
+            }
 
             $unitQty = isset($line[$uQtyCol]) ? $line[$uQtyCol] : 0;
             $caseQty = isset($line[$cQtyCol]) ? $line[$cQtyCol] : 0;
@@ -227,89 +227,89 @@ class ImportPurchaseOrder extends FannieUploadPage
             $item->internalUPC($upc);
 
             $item->save();
-		}
+        }
 
-		$ret .= "Import Complete";
+        $ret .= "Import Complete";
         $ret .= '<br />';
         $ret .= '<a href="ViewPurchaseOrders.php?id=' . $orderID . '">View Order</a>';
-		$this->results = $ret;
+        $this->results = $ret;
 
-		return true;
-	}
+        return true;
+    }
 
-	function results_content(){
-		return $this->results;
-	}
+    function results_content(){
+        return $this->results;
+    }
 
-	function preview_content()
+    function preview_content()
     {
-		global $FANNIE_OP_DB, $FANNIE_URL;
-		$dbc = FannieDB::get($FANNIE_OP_DB);
+        global $FANNIE_OP_DB, $FANNIE_URL;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
         $vendor = new VendorsModel($dbc);
         $vendor->vendorID(FormLib::get('vendorID'));
         $vendor->load();
-		$ret = sprintf("<b>Batch Type: %s <input type=hidden value=%d name=vendorID /><br />",
-			$vendor->vendorName(),FormLib::get_form_value('vendorID'));
-		$ret .= sprintf("<b>PO/Inv#: %s <input type=hidden value=\"%s\" name=identifier /><br />",
-			FormLib::get_form_value('identifier'),FormLib::get_form_value('identifier'));
-		$ret .= sprintf("<b>Order Date: %s <input type=hidden value=\"%s\" name=orderDate /><br />",
-			FormLib::get_form_value('orderDate'),FormLib::get_form_value('orderDate'));
-		$ret .= sprintf("<b>Recv'd Date: %s <input type=hidden value=\"%s\" name=recvDate /><br />",
-			FormLib::get_form_value('recvDate'),FormLib::get_form_value('recvDate'));
+        $ret = sprintf("<b>Batch Type: %s <input type=hidden value=%d name=vendorID /><br />",
+            $vendor->vendorName(),FormLib::get_form_value('vendorID'));
+        $ret .= sprintf("<b>PO/Inv#: %s <input type=hidden value=\"%s\" name=identifier /><br />",
+            FormLib::get_form_value('identifier'),FormLib::get_form_value('identifier'));
+        $ret .= sprintf("<b>Order Date: %s <input type=hidden value=\"%s\" name=orderDate /><br />",
+            FormLib::get_form_value('orderDate'),FormLib::get_form_value('orderDate'));
+        $ret .= sprintf("<b>Recv'd Date: %s <input type=hidden value=\"%s\" name=recvDate /><br />",
+            FormLib::get_form_value('recvDate'),FormLib::get_form_value('recvDate'));
 
-		return $ret;
-	}
+        return $ret;
+    }
 
-	function form_content(){
-		ob_start();
-		?>
-		<blockquote style="border:solid 1px black;background:#ddd;padding:4px;">
-		Use this tool to import a purchase order or vendor invoice.
+    function form_content(){
+        ob_start();
+        ?>
+        <blockquote style="border:solid 1px black;background:#ddd;padding:4px;">
+        Use this tool to import a purchase order or vendor invoice.
         Files should have vendor SKUs, costs, and quantity (in units, cases, or both).
-		</blockquote>
-		<?php
-		return ob_get_clean();
-	}
+        </blockquote>
+        <?php
+        return ob_get_clean();
+    }
 
-	/**
-	  overriding the basic form since I need several extra fields	
-	*/
-	protected function basicForm()
+    /**
+      overriding the basic form since I need several extra fields   
+    */
+    protected function basicForm()
     {
-		global $FANNIE_OP_DB, $FANNIE_URL;
-		$dbc = FannieDB::get($FANNIE_OP_DB);
+        global $FANNIE_OP_DB, $FANNIE_URL;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
         $vendors = new VendorsModel($dbc);
-		ob_start();
-		?>
-		<form enctype="multipart/form-data" action="ImportPurchaseOrder.php" id="FannieUploadForm" method="post">
-		<table cellspacing=4 cellpadding=4>
-		<tr><th>Vendor</th>
-		<td><select name=vendorID>
-		<?php foreach($vendors->find('vendorName') as $v) printf("<option value=%d>%s</option>",$v->vendorID(), $v->vendorName()); ?>
-		</select></td>
-		<th>Order Date</th><td><input type=text size=10 name=orderDate id="orderDate" /></td></tr>
-		<tr><th>PO#/Invoice#</th><td><input type=text size=15 name=identifier /></td>
-		<th>Recv'd Date</th><td><input type=text size=10 name=recvDate id="recvDate" /></td></tr>
-		<tr><td colspan=4>
-		<input type="hidden" name="MAX_FILE_SIZE" value="2097152" />
-		Filename: <input type="file" id="FannieUploadFile" name="FannieUploadFile" />
-		</td></tr>
-		<tr>
-		<td colspan=2>
-		<input type="submit" value="Upload File" />
-		</td>
-		<td colspan=2>
-		<input type="submit" onclick="location='PurchasingIndexPage.php'; return false;" value="Home" />
-		</td>
+        ob_start();
+        ?>
+        <form enctype="multipart/form-data" action="ImportPurchaseOrder.php" id="FannieUploadForm" method="post">
+        <table cellspacing=4 cellpadding=4>
+        <tr><th>Vendor</th>
+        <td><select name=vendorID>
+        <?php foreach($vendors->find('vendorName') as $v) printf("<option value=%d>%s</option>",$v->vendorID(), $v->vendorName()); ?>
+        </select></td>
+        <th>Order Date</th><td><input type=text size=10 name=orderDate id="orderDate" /></td></tr>
+        <tr><th>PO#/Invoice#</th><td><input type=text size=15 name=identifier /></td>
+        <th>Recv'd Date</th><td><input type=text size=10 name=recvDate id="recvDate" /></td></tr>
+        <tr><td colspan=4>
+        <input type="hidden" name="MAX_FILE_SIZE" value="2097152" />
+        Filename: <input type="file" id="FannieUploadFile" name="FannieUploadFile" />
+        </td></tr>
+        <tr>
+        <td colspan=2>
+        <input type="submit" value="Upload File" />
+        </td>
+        <td colspan=2>
+        <input type="submit" onclick="location='PurchasingIndexPage.php'; return false;" value="Home" />
+        </td>
         </tr>
-		</table>
-		</form>
-		<?php
+        </table>
+        </form>
+        <?php
         $this->add_onload_command("\$('#orderDate').datepicker();");
         $this->add_onload_command("\$('#recvDate').datepicker();");
 
-		return ob_get_clean();
-	}
+        return ob_get_clean();
+    }
 }
 
 FannieDispatch::conditionalExec(false);

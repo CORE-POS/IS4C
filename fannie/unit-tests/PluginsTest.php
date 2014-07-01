@@ -5,7 +5,7 @@
  */
 class PluginsTest extends PHPUnit_Framework_TestCase
 {
-	public function testPlugins()
+    public function testPlugins()
     {
         $plugin_path = dirname(__FILE__) . '/../modules/plugins2.0/';
         $files = FannieAPI::listFiles($plugin_path);

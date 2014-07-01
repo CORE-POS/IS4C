@@ -4,7 +4,7 @@ Table: productWeeklyLastQuarter
 
 Columns:
     productWeeklyLastQuarterID int
-	upc varchar
+    upc varchar
     quantity double
     total double
     percentageStoreSales
@@ -12,7 +12,7 @@ Columns:
     percentageDeptSales
 
 Depends on:
-	none
+    none
 
 Use:
 Per-item sales numbers for a given week. As always,
@@ -26,17 +26,17 @@ are saved here on the off-chance they prove useful
 for something else.
 */
 $CREATE['arch.productWeeklyLastQuarter'] = "
-	CREATE TABLE productWeeklyLastQuarter (
-	productWeeklyLastQuarterID INT NOT NULL AUTO_INCREMENT,
-	upc VARCHAR(13),
+    CREATE TABLE productWeeklyLastQuarter (
+    productWeeklyLastQuarterID INT NOT NULL AUTO_INCREMENT,
+    upc VARCHAR(13),
     weekLastQuarterID INT,
-	quantity DECIMAL(10,2),
-	total DECIMAL(10,2),
+    quantity DECIMAL(10,2),
+    total DECIMAL(10,2),
     percentageStoreSales DECIMAL(10,5),
     percentageSuperDeptSales DECIMAL(10,5),
     percentageDeptSales DECIMAL(10,5),
-	PRIMARY KEY (upc, weekLastQuarterID),
+    PRIMARY KEY (upc, weekLastQuarterID),
     INDEX(productWeeklyLastQuarterID)
-	)
+    )
 ";
 

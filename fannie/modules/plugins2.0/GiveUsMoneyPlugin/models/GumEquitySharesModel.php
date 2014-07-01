@@ -47,7 +47,7 @@ class GumEquitySharesModel extends BasicModel
     'value' => array('type'=>'MONEY', 'default'=>0),
     'tdate' => array('type'=>'DATETIME'),
     'trans_num' => array('type'=>'VARCHAR(50)'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

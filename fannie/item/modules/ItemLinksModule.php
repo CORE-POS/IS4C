@@ -28,63 +28,63 @@ class ItemLinksModule extends ItemModule {
 
     public function showEditForm($upc, $display_mode=1, $expand_mode=1)
     {
-		global $FANNIE_URL;
-		$upc = BarcodeLib::padUPC($upc);
+        global $FANNIE_URL;
+        $upc = BarcodeLib::padUPC($upc);
 
-		$dbc = $this->db();
-		$p = $dbc->prepare_statement('SELECT upc FROM products WHERE upc=?');
-		$r = $dbc->exec_statement($p,array($upc));
+        $dbc = $this->db();
+        $p = $dbc->prepare_statement('SELECT upc FROM products WHERE upc=?');
+        $r = $dbc->exec_statement($p,array($upc));
 
-		$ret = '<fieldset id="LinksFieldset">';
-		$ret = '<fieldset id="LinksFieldset">';
-		$ret .=  "<legend onclick=\"\$('#LinksFieldsetContent').toggle();\">
+        $ret = '<fieldset id="LinksFieldset">';
+        $ret = '<fieldset id="LinksFieldset">';
+        $ret .=  "<legend onclick=\"\$('#LinksFieldsetContent').toggle();\">
                 <a href=\"\" onclick=\"return false;\">Links</a>
                 </legend>";
         $css = ($expand_mode == 1) ? '' : 'display:none;';
         $ret .= '<div id="LinksFieldsetContent" style="' . $css . '">';
 
-		if ($dbc->num_rows($r) > 0){
-			$ret .= '<div style="width:40%; float:left;">';
-			$ret .= "<li><a href=\"javascript:shelftag('$upc');\">New Shelf Tag</a></li>";
-			$ret .= "<li><a href=\"{$FANNIE_URL}item/deleteItem.php?upc=$upc&submit=submit\">Delete this item</a></li>";
-			$ret .= '</div>';
+        if ($dbc->num_rows($r) > 0){
+            $ret .= '<div style="width:40%; float:left;">';
+            $ret .= "<li><a href=\"javascript:shelftag('$upc');\">New Shelf Tag</a></li>";
+            $ret .= "<li><a href=\"{$FANNIE_URL}item/deleteItem.php?upc=$upc&submit=submit\">Delete this item</a></li>";
+            $ret .= '</div>';
 
-			$ret .= '<div style="width:40%; float:left;">';
-			$ret .= "<li><a href=\"{$FANNIE_URL}reports/PriceHistory/?upc=$upc\" target=\"_price_history\">Price History</a></li>";
-			$ret .= "<li><a href=\"{$FANNIE_URL}reports/RecentSales/?upc=$upc\" target=\"_recentsales\">Recent Sales History</a></li>";
-			$ret .= '</div>';
+            $ret .= '<div style="width:40%; float:left;">';
+            $ret .= "<li><a href=\"{$FANNIE_URL}reports/PriceHistory/?upc=$upc\" target=\"_price_history\">Price History</a></li>";
+            $ret .= "<li><a href=\"{$FANNIE_URL}reports/RecentSales/?upc=$upc\" target=\"_recentsales\">Recent Sales History</a></li>";
+            $ret .= '</div>';
 
-			$ret .= '<div style="clear:left;"></div>';
+            $ret .= '<div style="clear:left;"></div>';
 
-			$ret .= "<script type=\"text/javascript\">";
-			$ret .= "function shelftag(u){";
-			$ret .= "testwindow= window.open (\"addShelfTag.php?upc=\"+u, \"New Shelftag\",\"location=0,status=1,scrollbars=1,width=300,height=220\");";
-			$ret .= "testwindow.moveTo(50,50);";
-			$ret .= "}";
-			$ret .= "</script>";
-		}
-		else {
-			$ret .= sprintf('<input type="checkbox" name="newshelftag" value="%s" />
-					Create Shelf Tag</li>',$upc);
-		}
+            $ret .= "<script type=\"text/javascript\">";
+            $ret .= "function shelftag(u){";
+            $ret .= "testwindow= window.open (\"addShelfTag.php?upc=\"+u, \"New Shelftag\",\"location=0,status=1,scrollbars=1,width=300,height=220\");";
+            $ret .= "testwindow.moveTo(50,50);";
+            $ret .= "}";
+            $ret .= "</script>";
+        }
+        else {
+            $ret .= sprintf('<input type="checkbox" name="newshelftag" value="%s" />
+                    Create Shelf Tag</li>',$upc);
+        }
         $ret .= '</div>';
-		$ret .= '</fieldset>';
+        $ret .= '</fieldset>';
 
-		return $ret;
-	}
+        return $ret;
+    }
 
-	function SaveFormData($upc){
-		$upc = BarcodeLib::padUPC($upc);
-		$ret = '';
-		if (FormLib::get_form_value('newshelftag','') != ''){
-			$ret .= "<script type=\"text/javascript\">";
-			$ret .= "testwindow= window.open (\"addShelfTag.php?upc=$upc\", \"New Shelftag\",\"location=0,status=1,scrollbars=1,width=300,height=220\");";
-			$ret .= "testwindow.moveTo(50,50);";
-			$ret .= "</script>";
-		}
-		echo $ret; // output javascript to result page
-		return True;
-	}
+    function SaveFormData($upc){
+        $upc = BarcodeLib::padUPC($upc);
+        $ret = '';
+        if (FormLib::get_form_value('newshelftag','') != ''){
+            $ret .= "<script type=\"text/javascript\">";
+            $ret .= "testwindow= window.open (\"addShelfTag.php?upc=$upc\", \"New Shelftag\",\"location=0,status=1,scrollbars=1,width=300,height=220\");";
+            $ret .= "testwindow.moveTo(50,50);";
+            $ret .= "</script>";
+        }
+        echo $ret; // output javascript to result page
+        return True;
+    }
 
 }
 

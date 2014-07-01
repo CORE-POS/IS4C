@@ -54,7 +54,7 @@ else {
   echo "<form action=deleteClass.php method=post>";
 echo "Class:<select name=name>";
 foreach(getAuthList() as $uid => $name)
-	echo "<option>".$name."</option>";
+    echo "<option>".$name."</option>";
 echo "</select>";
 echo '&nbsp;&nbsp;&nbsp;<input type="submit" value="Delete" />';
   echo "<input type=hidden name=warn value=warn>";

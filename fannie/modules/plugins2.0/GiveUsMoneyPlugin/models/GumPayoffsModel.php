@@ -40,7 +40,7 @@ class GumPayoffsModel extends BasicModel
     'issueDate' => array('type'=>'DATETIME'),
     'checkNumber' => array('type'=>'INT', 'index'=>true),
     'checkIssued' => array('type'=>'TINYINT', 'default'=>0),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

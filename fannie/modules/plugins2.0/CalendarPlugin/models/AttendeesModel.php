@@ -33,7 +33,7 @@ class AttendeesModel extends BasicModel
     'attendeeID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),
     'uid' => array('type'=>'INT'),
     'eventID' => array('type'=>'INT'),
-	);
+    );
 
     protected $unique = array('uid', 'eventID');
 

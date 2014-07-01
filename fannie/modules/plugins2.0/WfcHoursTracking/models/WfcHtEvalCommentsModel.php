@@ -36,7 +36,7 @@ class WfcHtEvalCommentsModel extends BasicModel
     'stamp' => array('type'=>'DATETIME'),
     'user' => array('type'=>'VARCHAR(50)'),
     'deleted' => array('type'=>'TINYINT'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

@@ -35,7 +35,7 @@ class GumLoanPayoffMapModel extends BasicModel
     protected $columns = array(
     'gumLoanAccountID' => array('type'=>'INT', 'primary_key'=>true),
     'gumPayoffID' => array('type'=>'INT', 'primary_key'=>true),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

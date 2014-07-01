@@ -36,7 +36,7 @@ class MonthviewEventsModel extends BasicModel
     'eventText' => array('type'=>'TEXT'),
     'uid' => array('type'=>'INT'),
     'attendeeLimit' => array('type'=>'SMALLINT', 'default'=>0),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

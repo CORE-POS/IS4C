@@ -49,10 +49,10 @@ Modules
 <h1>Fannie Module System</h1>
 <?php
 if (is_writable('../../config.php')){
-	echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
+    echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
 }
 else {
-	echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
+    echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
 }
 echo '<hr />';
 
@@ -60,20 +60,20 @@ if (!isset($FANNIE_SYMBOLS)) $FANNIE_SYMBOLS = array();
 unpack_symbols();
 
 function __autoload($class_name){
-	global $FANNIE_ROOT;
-	bootstrap_load($FANNIE_ROOT.'class-lib',$class_name);
+    global $FANNIE_ROOT;
+    bootstrap_load($FANNIE_ROOT.'class-lib',$class_name);
 }
 
 // sanity checks
 if (!isset($FANNIE_SYMBOLS['functions']))
-	$FANNIE_SYMBOLS['functions'] = array();
+    $FANNIE_SYMBOLS['functions'] = array();
 elseif (!is_array($FANNIE_SYMBOLS['functions']))
-	$FANNIE_SYMBOLS['functions'] = array();
+    $FANNIE_SYMBOLS['functions'] = array();
 
 if (!isset($FANNIE_SYMBOLS['classes']))
-	$FANNIE_SYMBOLS['classes'] = array();
+    $FANNIE_SYMBOLS['classes'] = array();
 elseif (!is_array($FANNIE_SYMBOLS['classes']))
-	$FANNIE_SYMBOLS['classes'] = array();
+    $FANNIE_SYMBOLS['classes'] = array();
 
 get_available_modules($FANNIE_ROOT.'class-lib',$sysmods);
 ksort($sysmods);
@@ -82,34 +82,34 @@ echo '<h3>System modules</h3>';
 echo '<table cellspacing="0" cellpadding="4" border="1">';
 echo '<tr><th>Module</th><th>Description</th><th>Enabled</th></tr>';
 foreach($sysmods as $class=>$file){
-	include_once($file);
-	$obj = new $class();
-	if (!is_object($obj)){
-		printf('<tr><td colspan="3">Something is wrong with the %s module</td></tr>',
-			$class);
-	}
-	else {
-		if ($obj->required && !isset($FANNIE_SYMBOLS['classes'][$class])){
-			$obj->enable();
-		}
-		else if (!$obj->required && isset($_REQUEST['submitted'])){
-			if (isset($_REQUEST['SYS_MODS_'.$class]) && !isset($FANNIE_SYMBOLS['classes'][$class])){
-				// box is checked, object not yet enabled
-				$obj->enable();
-			}
-			elseif (!isset($_REQUEST['SYS_MODS_'.$class]) && isset($FANNIE_SYMBOLS['classes'][$class])){
-				// box is not checked, object is currently enabled
-				$obj->disable();
-			}
-		}
+    include_once($file);
+    $obj = new $class();
+    if (!is_object($obj)){
+        printf('<tr><td colspan="3">Something is wrong with the %s module</td></tr>',
+            $class);
+    }
+    else {
+        if ($obj->required && !isset($FANNIE_SYMBOLS['classes'][$class])){
+            $obj->enable();
+        }
+        else if (!$obj->required && isset($_REQUEST['submitted'])){
+            if (isset($_REQUEST['SYS_MODS_'.$class]) && !isset($FANNIE_SYMBOLS['classes'][$class])){
+                // box is checked, object not yet enabled
+                $obj->enable();
+            }
+            elseif (!isset($_REQUEST['SYS_MODS_'.$class]) && isset($FANNIE_SYMBOLS['classes'][$class])){
+                // box is not checked, object is currently enabled
+                $obj->disable();
+            }
+        }
 
-		printf('<tr><td>%s</td><td>%s</td><td><input type="checkbox"
-			name="SYS_MODS_%s" value="1" %s %s /></td></tr>',
-			$class,$obj->description,$class,
-			(isset($FANNIE_SYMBOLS['classes'][$class]) ? 'checked' : ''),
-			($obj->required ? 'disabled="disabled"' : '')
-		);
-	}
+        printf('<tr><td>%s</td><td>%s</td><td><input type="checkbox"
+            name="SYS_MODS_%s" value="1" %s %s /></td></tr>',
+            $class,$obj->description,$class,
+            (isset($FANNIE_SYMBOLS['classes'][$class]) ? 'checked' : ''),
+            ($obj->required ? 'disabled="disabled"' : '')
+        );
+    }
 }
 echo '</table>';
 
@@ -124,30 +124,30 @@ echo '<h3>User modules</h3>';
 echo '<table cellspacing="0" cellpadding="4" border="1">';
 echo '<tr><th>Module</th><th>Description</th><th>Enabled</th></tr>';
 foreach($usermods as $class=>$file){
-	include_once($file);
-	$obj = new $class();
-	if (!is_object($obj)){
-		printf('<tr><td colspan="3">Something is wrong with the %s module</td></tr>',
-			$class);
-	}
-	else {
-		if (isset($_REQUEST['submitted'])){
-			if (isset($_REQUEST['USER_MODS_'.$class]) && !isset($FANNIE_SYMBOLS['classes'][$class])){
-				// box is checked, object not yet enabled
-				$obj->enable();
-			}
-			elseif (!isset($_REQUEST['USER_MODS_'.$class]) && isset($FANNIE_SYMBOLS['classes'][$class])){
-				// box is not checked, object is currently enabled
-				$obj->disable();
-			}
-		}
+    include_once($file);
+    $obj = new $class();
+    if (!is_object($obj)){
+        printf('<tr><td colspan="3">Something is wrong with the %s module</td></tr>',
+            $class);
+    }
+    else {
+        if (isset($_REQUEST['submitted'])){
+            if (isset($_REQUEST['USER_MODS_'.$class]) && !isset($FANNIE_SYMBOLS['classes'][$class])){
+                // box is checked, object not yet enabled
+                $obj->enable();
+            }
+            elseif (!isset($_REQUEST['USER_MODS_'.$class]) && isset($FANNIE_SYMBOLS['classes'][$class])){
+                // box is not checked, object is currently enabled
+                $obj->disable();
+            }
+        }
 
-		printf('<tr><td>%s</td><td>%s</td><td><input type="checkbox"
-			name="USER_MODS_%s" value="1" %s /></td></tr>',
-			$class,$obj->description,$class,
-			(isset($FANNIE_SYMBOLS['classes'][$class]) ? 'checked' : '')
-		);
-	}
+        printf('<tr><td>%s</td><td>%s</td><td><input type="checkbox"
+            name="USER_MODS_%s" value="1" %s /></td></tr>',
+            $class,$obj->description,$class,
+            (isset($FANNIE_SYMBOLS['classes'][$class]) ? 'checked' : '')
+        );
+    }
 }
 echo '</table>';
 

@@ -11,7 +11,7 @@ Columns:
     newest DATETIME
 
 Depends on:
-	PurchaseOrder, PurchaseOrderItems
+    PurchaseOrder, PurchaseOrderItems
 
 Use:
 Stores total quantities ordered for recent
@@ -28,16 +28,16 @@ numCredits. oldest and newest are bounds on when
 the item has been ordered.
 */
 $CREATE['op.PurchaseOrderSummary'] = "
-	create table PurchaseOrderSummary (
-		vendorID INT,
-		sku VARCHAR(13),
+    create table PurchaseOrderSummary (
+        vendorID INT,
+        sku VARCHAR(13),
         totalReceived INT,
         casesReceived INT,
         numOrders INT,
         numCredits INT,
         oldest DATETIME,
         newest DATETIME,
-		primary key (vendorID, sku)
-	)
+        primary key (vendorID, sku)
+    )
 ";
 ?>

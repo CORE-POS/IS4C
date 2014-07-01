@@ -32,7 +32,7 @@ class WfcHtFirstPayPeriodModel extends BasicModel
     protected $columns = array(
     'empID' => array('type'=>'INT'),
     'periodID' => array('type'=>'INT'),
-	);
+    );
 
     public function create()
     {

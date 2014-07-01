@@ -35,7 +35,7 @@ class ObfWeeksModel extends BasicModel
     'endDate' => array('type'=>'DATETIME'),
     'previousYear' => array('type'=>'DATETIME'),
     'growthTarget' => array('type'=>'DOUBLE'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

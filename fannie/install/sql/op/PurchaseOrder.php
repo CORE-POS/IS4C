@@ -3,17 +3,17 @@
 Table: PurchaseOrder
 
 Columns:
-	orderID int
-	vendorID int
-	creationDate datetime
-	placed tinyint
-	placedDate datetime
-	userID int
+    orderID int
+    vendorID int
+    creationDate datetime
+    placed tinyint
+    placedDate datetime
+    userID int
     vendorOrderID varchar
     vendorInvoiceID varchar
 
 Depends on:
-	none
+    none
 
 Use:
 Stores general an order from a vendor.
@@ -27,17 +27,17 @@ identifiers on orders and/or invoices those
 values can be saved here for reference.
 */
 $CREATE['op.PurchaseOrder'] = "
-	create table PurchaseOrder (
-		orderID INT NOT NULL AUTO_INCREMENT,
-		vendorID INT,
-		creationDate DATETIME,
-		placed TINYINT DEFAULT 0,
-		placedDate DATETIME,
-		userID INT,
+    create table PurchaseOrder (
+        orderID INT NOT NULL AUTO_INCREMENT,
+        vendorID INT,
+        creationDate DATETIME,
+        placed TINYINT DEFAULT 0,
+        placedDate DATETIME,
+        userID INT,
         vendorOrderID VARCHAR(25),
         vendorInvoiceID VARCHAR(25),
-		primary key (orderID),
-		INDEX(placed)
-	)
+        primary key (orderID),
+        INDEX(placed)
+    )
 ";
 ?>

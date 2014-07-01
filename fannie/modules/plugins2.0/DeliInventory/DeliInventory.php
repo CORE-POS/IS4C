@@ -23,41 +23,41 @@
 
 global $FANNIE_ROOT;
 if (!class_exists('FannieAPI'))
-	include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 /**
 */
 class DeliInventory extends FanniePlugin {
 
-	/**
-	  Desired settings. These are automatically exposed
-	  on the 'Plugins' area of the install page and
-	  written to ini.php
-	*/
-	public $plugin_settings = array(
-	);
+    /**
+      Desired settings. These are automatically exposed
+      on the 'Plugins' area of the install page and
+      written to ini.php
+    */
+    public $plugin_settings = array(
+    );
 
-	public $plugin_description = 'Plugin for tracking deli kitchen inventory. Essentially
-			a so-so web implemntation of a spreadsheet.';
+    public $plugin_description = 'Plugin for tracking deli kitchen inventory. Essentially
+            a so-so web implemntation of a spreadsheet.';
 
 
-	public function setting_change(){
-		global $FANNIE_OP_DB;
+    public function setting_change(){
+        global $FANNIE_OP_DB;
 
-		$dbc = FannieDB::get($FANNIE_OP_DB);
-		
-		$tables = array(
-			'DeliInventoryCat'
-		);
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        
+        $tables = array(
+            'DeliInventoryCat'
+        );
 
-		foreach($tables as $t){
-			$model_class = $t.'Model';
-			if (!class_exists($model_class))
-				include_once(dirname(__FILE__).'/models/'.$model_class.'.php');
-			$instance = new $model_class($dbc);
-			$instance->create();		
-		}
-	}
+        foreach($tables as $t){
+            $model_class = $t.'Model';
+            if (!class_exists($model_class))
+                include_once(dirname(__FILE__).'/models/'.$model_class.'.php');
+            $instance = new $model_class($dbc);
+            $instance->create();        
+        }
+    }
 }
 
 ?>

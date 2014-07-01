@@ -56,7 +56,7 @@ class PcDailyReport extends FannieReportPage
         return $ret;
     }
 
-	public function fetch_report_data()
+    public function fetch_report_data()
     {
         global $FANNIE_TRANS_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_TRANS_DB);

@@ -20,4 +20,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-header('Location: HourlySalesReport.php');
+if (dirname(__FILE__) == dirname($_SERVER['PHP_SELF'])) {
+    header('Location: HourlySalesReport.php');
+}
+

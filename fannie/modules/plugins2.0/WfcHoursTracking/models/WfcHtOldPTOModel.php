@@ -32,7 +32,7 @@ class WfcHtOldPTOModel extends BasicModel
     protected $columns = array(
     'empID' => array('type'=>'INT', 'primary_key'=>true),
     'hours' => array('type'=>'DOUBLE'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

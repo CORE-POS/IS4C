@@ -23,9 +23,9 @@
 
 class update_20130118214805 extends UpdateObj {
 
-	protected $timestamp = '20130118214805';
+    protected $timestamp = '20130118214805';
 
-	protected $description = 'Create and populate special backups of tables
+    protected $description = 'Create and populate special backups of tables
 <br />products, productBackup and prodExtra
 <br />prior to changing the data type of upc in each.
 <br />If this succeeds run update 20130118214806 to make the data type changes.
@@ -33,20 +33,20 @@ class update_20130118214805 extends UpdateObj {
 <br />When all is well run update 20130118214808 to drop these special backups.
 <br />These changes were tested under MySQL 5.1';
 
-	protected $author = 'Eric Lee (WEFC_Toronto)';
+    protected $author = 'Eric Lee (WEFC_Toronto)';
 
-	protected $queries = array(
-		'op' => array(
-			'CREATE TABLE productBackup_upc LIKE productBackup',
-			'INSERT INTO productBackup_upc (SELECT * from productBackup)',
-			'CREATE TABLE prodExtra_upc LIKE prodExtra',
-			'INSERT INTO prodExtra_upc (SELECT * from prodExtra)',
-			'CREATE TABLE products_upc LIKE products',
-			'INSERT INTO products_upc (SELECT * from products)'
-		),
-		'trans' => array(),
-		'archive' => array()
-	);
+    protected $queries = array(
+        'op' => array(
+            'CREATE TABLE productBackup_upc LIKE productBackup',
+            'INSERT INTO productBackup_upc (SELECT * from productBackup)',
+            'CREATE TABLE prodExtra_upc LIKE prodExtra',
+            'INSERT INTO prodExtra_upc (SELECT * from prodExtra)',
+            'CREATE TABLE products_upc LIKE products',
+            'INSERT INTO products_upc (SELECT * from products)'
+        ),
+        'trans' => array(),
+        'archive' => array()
+    );
 }
 
 ?>

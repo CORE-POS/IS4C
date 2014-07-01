@@ -3,15 +3,15 @@
 Table: ar_history
 
 Columns:
-	card_no int
-	charges dbms currency
-	payments dbms currency
-	tdate datetime
-	trans_num varchar
+    card_no int
+    charges dbms currency
+    payments dbms currency
+    tdate datetime
+    trans_num varchar
 
 Depends on:
-	transarchive (table), i.e. dlog_15 (table)
-	was: dlog (view)
+    transarchive (table), i.e. dlog_15 (table)
+    was: dlog (view)
 
 Depended on by:
   table ar_history_backup and its descendents
@@ -32,23 +32,23 @@ cron/nightly.ar.php appends selected columns from
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-	* 22Oct2012 Eric Lee Change Depends on:
-	*                    Break Maintenance section of comments from Use:
-	*                     add note about cronjob
+    * 22Oct2012 Eric Lee Change Depends on:
+    *                    Break Maintenance section of comments from Use:
+    *                     add note about cronjob
 
 */
 
 $CREATE['trans.ar_history'] = "
-	CREATE TABLE ar_history (
-		card_no int,
-		charges decimal(10,2),
-		payments decimal(10,2),
-		tdate datetime,
-		trans_num varchar(90),
-		INDEX (card_no)
-	)
+    CREATE TABLE ar_history (
+        card_no int,
+        charges decimal(10,2),
+        payments decimal(10,2),
+        tdate datetime,
+        trans_num varchar(90),
+        INDEX (card_no)
+    )
 ";
 if ($dbms == "MSSQL"){
-	$CREATE['trans.ar_history'] = str_replace("decimal(10,2)","money",$CREATE['trans.ar_history']);
+    $CREATE['trans.ar_history'] = str_replace("decimal(10,2)","money",$CREATE['trans.ar_history']);
 }
 ?>

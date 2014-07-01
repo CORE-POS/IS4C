@@ -3,11 +3,11 @@
 Table: disableCoupon
 
 Columns:
-	upc varchar
-	reason text
+    upc varchar
+    reason text
 
 Depends on:
-	none
+    none
 
 Use:
 Maintain a list of manufacturer coupons
@@ -21,11 +21,11 @@ obtaining and maintaing those codes isn't
 feasible.
 */
 $CREATE['op.disableCoupon'] = "
-	CREATE TABLE disableCoupon (
-		upc varchar(13),
-		threshold smallint default 0,
-		reason text,
-		PRIMARY KEY (upc)
-	)
+    CREATE TABLE disableCoupon (
+        upc varchar(13),
+        threshold smallint default 0,
+        reason text,
+        PRIMARY KEY (upc)
+    )
 ";
 ?>

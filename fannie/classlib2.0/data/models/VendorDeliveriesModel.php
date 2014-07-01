@@ -42,7 +42,7 @@ class VendorDeliveriesModel extends BasicModel
     'thursday' => array('type'=>'TINYINT', 'default'=>0),
     'friday' => array('type'=>'TINYINT', 'default'=>0),
     'saturday' => array('type'=>'TINYINT', 'default'=>0),
-	);
+    );
 
     /**
       Calculate next delivery dates

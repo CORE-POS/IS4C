@@ -35,7 +35,7 @@ class ObfCategoriesPage extends FannieRESTfulPage
 
     public function post_id_handler()
     {
-		global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
+        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
         $model = new ObfCategoriesModel($dbc);
 
@@ -59,7 +59,7 @@ class ObfCategoriesPage extends FannieRESTfulPage
 
     public function get_view()
     {
-		global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
+        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
 
         $model = new ObfCategoriesModel($dbc);

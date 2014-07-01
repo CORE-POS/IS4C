@@ -3,11 +3,11 @@
 Table: likeCodes
 
 Columns:
-	likeCode int
-	likeCodeDesc varchar
+    likeCode int
+    likeCodeDesc varchar
 
 Depends on:
-	upcLike (table)
+    upcLike (table)
 
 Use:
 Like Codes group sets of items that will always
@@ -18,10 +18,10 @@ but could be applied to product lines, too
 The actual likeCode => upc mapping is in upcLike
 */
 $CREATE['op.likeCodes'] = "
-	CREATE TABLE likeCodes (
-		likeCode int,
-		likeCodeDesc varchar(50),
-		PRIMARY KEY(likeCode)
-	)
+    CREATE TABLE likeCodes (
+        likeCode int,
+        likeCodeDesc varchar(50),
+        PRIMARY KEY(likeCode)
+    )
 ";
 ?>

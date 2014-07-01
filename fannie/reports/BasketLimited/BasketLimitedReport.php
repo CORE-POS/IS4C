@@ -39,7 +39,7 @@ class BasketLimitedReport extends FannieReportPage {
     protected $header = "Basket Limited Report Report";
     protected $required_fields = array('date1', 'date2');
 
-	public function fetch_report_data()
+    public function fetch_report_data()
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -88,7 +88,7 @@ class BasketLimitedReport extends FannieReportPage {
         $dbc->exec_statement($drop);
 
         return $data;
-	}
+    }
 
     public function report_description_content()
     {
@@ -96,27 +96,27 @@ class BasketLimitedReport extends FannieReportPage {
             'Basket Size '.FormLib::get('qty', 1).' or less'
         );
     }
-	
-	public function form_content()
+    
+    public function form_content()
     {
         ob_start();
 ?>
 <div id=main>
 <form method ="get" action="BasketLimitedReport.php">
-	<table border="0" cellspacing="0" cellpadding="5">
-		<tr> 
-			<td> 
+    <table border="0" cellspacing="0" cellpadding="5">
+        <tr> 
+            <td> 
                 <p><b>Size Limit (Qty)</b></p>
                 <p><b>Excel</b></p>
-			</td>
-			<td>
+            </td>
+            <td>
                 <p>
                 <input type=text name=qty id=qty value="1"  />
                 </p>
                 <p>
                 <input type=checkbox name=excel id=excel /> 
                 </p>
-			</td>
+            </td>
             <td>
                 <p><b>Date Start</b> </p>
                 <p><b>End</b></p>
@@ -131,13 +131,13 @@ class BasketLimitedReport extends FannieReportPage {
             </td>
         </tr>
         <tr>
-			<td> <input type=submit name=submit value="Submit"> </td>
-			<td> <input type=reset name=reset value="Start Over"> </td>
+            <td> <input type=submit name=submit value="Submit"> </td>
+            <td> <input type=reset name=reset value="Start Over"> </td>
             <td colspan="2" rowspan="2">
                 <?php echo FormLib::date_range_picker(); ?>
             </td>
-		</tr>
-	</table>
+        </tr>
+    </table>
 </form>
 </div>
 <?php
@@ -145,7 +145,7 @@ class BasketLimitedReport extends FannieReportPage {
         $this->add_onload_command('$(\'#date2\').datepicker();');
 
         return ob_get_clean();
-	}
+    }
 }
 
 FannieDispatch::conditionalExec();

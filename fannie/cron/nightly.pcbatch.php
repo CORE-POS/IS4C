@@ -52,7 +52,7 @@ if (!class_exists('FannieAPI')) {
 set_time_limit(0);
 
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
+        $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
 $chk_vital = array();
 $chk_opt = array();
@@ -60,57 +60,57 @@ $chk_opt = array();
 /* change prices
 */
 if (strstr($FANNIE_SERVER_DBMS, "MYSQL")){
-	$chk_vital[] = $sql->query("UPDATE products AS p LEFT JOIN
-		batchList AS l ON l.upc=p.upc LEFT JOIN
-		batches AS b ON b.batchID=l.batchID
-		SET p.normal_price = l.salePrice
-		WHERE l.batchID=b.batchID AND l.upc=p.upc
-		AND l.upc NOT LIKE 'LC%'
-		AND b.discounttype = 0
-		AND ".$sql->datediff($sql->now(),'b.startDate')." = 0");
+    $chk_vital[] = $sql->query("UPDATE products AS p LEFT JOIN
+        batchList AS l ON l.upc=p.upc LEFT JOIN
+        batches AS b ON b.batchID=l.batchID
+        SET p.normal_price = l.salePrice
+        WHERE l.batchID=b.batchID AND l.upc=p.upc
+        AND l.upc NOT LIKE 'LC%'
+        AND b.discounttype = 0
+        AND ".$sql->datediff($sql->now(),'b.startDate')." = 0");
 }
 else {
-	$chk_vital[] = $sql->query("UPDATE products SET
-		normal_price = l.salePrice
-		FROM products AS p, batches AS b, batchList AS l
-		WHERE l.batchID=b.batchID AND l.upc=p.upc
-		AND l.upc NOT LIKE 'LC%'
-		AND b.discounttype = 0
-		AND ".$sql->datediff($sql->now(),'b.startDate')." = 0");
+    $chk_vital[] = $sql->query("UPDATE products SET
+        normal_price = l.salePrice
+        FROM products AS p, batches AS b, batchList AS l
+        WHERE l.batchID=b.batchID AND l.upc=p.upc
+        AND l.upc NOT LIKE 'LC%'
+        AND b.discounttype = 0
+        AND ".$sql->datediff($sql->now(),'b.startDate')." = 0");
 }
 
 /* likecoded items differentiated
    for char concatenation
 */
 if (strstr($FANNIE_SERVER_DBMS,"MYSQL")){
-	$chk_vital[] = $sql->query("UPDATE products AS p LEFT JOIN
-		upcLike AS v ON v.upc=p.upc LEFT JOIN
-		batchList AS l ON l.upc=concat('LC',convert(v.likeCode,char))
-		LEFT JOIN batches AS b ON b.batchID = l.batchID
-		SET p.normal_price = l.salePrice
-		WHERE l.upc LIKE 'LC%'
-		AND b.discounttype = 0
-		AND ".$sql->datediff($sql->now(),'b.startDate')." = 0");
+    $chk_vital[] = $sql->query("UPDATE products AS p LEFT JOIN
+        upcLike AS v ON v.upc=p.upc LEFT JOIN
+        batchList AS l ON l.upc=concat('LC',convert(v.likeCode,char))
+        LEFT JOIN batches AS b ON b.batchID = l.batchID
+        SET p.normal_price = l.salePrice
+        WHERE l.upc LIKE 'LC%'
+        AND b.discounttype = 0
+        AND ".$sql->datediff($sql->now(),'b.startDate')." = 0");
 } else {
-	$chk_vital[] = $sql->query("UPDATE products SET normal_price = l.salePrice
-		FROM products AS p LEFT JOIN
-		upcLike AS v ON v.upc=p.upc LEFT JOIN
-		batchList AS l ON l.upc='LC'+convert(varchar,v.likecode)
-		LEFT JOIN batches AS b ON b.batchID = l.batchID
-		WHERE l.upc LIKE 'LC%'
-		AND b.discounttype = 0
-		AND ".$sql->datediff($sql->now(),'b.startDate')." = 0");
+    $chk_vital[] = $sql->query("UPDATE products SET normal_price = l.salePrice
+        FROM products AS p LEFT JOIN
+        upcLike AS v ON v.upc=p.upc LEFT JOIN
+        batchList AS l ON l.upc='LC'+convert(varchar,v.likecode)
+        LEFT JOIN batches AS b ON b.batchID = l.batchID
+        WHERE l.upc LIKE 'LC%'
+        AND b.discounttype = 0
+        AND ".$sql->datediff($sql->now(),'b.startDate')." = 0");
 }
 
 $success = true;
 foreach($chk_vital as $chk){
-	if ($chk === false)
-		$success = false;
+    if ($chk === false)
+        $success = false;
 }
 if ($success)
-	echo cron_msg("Price change batches run successfully");
+    echo cron_msg("Price change batches run successfully");
 else
-	echo cron_msg("Error running price change batches");
+    echo cron_msg("Error running price change batches");
 
 // log updates to prodUpdate table
 $success = true;
@@ -144,7 +144,7 @@ while($batchW = $sql->fetch_row($batchR)) {
 }
 
 if ($success)
-	echo cron_msg("Changes logged in prodUpdate");
+    echo cron_msg("Changes logged in prodUpdate");
 else
-	echo cron_msg("Error logging changes");
+    echo cron_msg("Error logging changes");
 ?>

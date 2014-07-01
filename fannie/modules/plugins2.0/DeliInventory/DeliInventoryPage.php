@@ -1,7 +1,7 @@
 <?php
 
 if (basename($_SERVER['PHP_SELF']) != basename(__FILE__)) {
-	return;
+    return;
 }
 
 include(dirname(__FILE__).'/../../../config.php');
@@ -27,207 +27,207 @@ class DeliInventoryPage extends FanniePage
  */
 $out = '';
 if (isset($_GET['action'])){
-	// prepend request name & backtick
-	$out = $_GET['action']."`";
-	// switch on request name
-	switch ($_GET['action']){
-	case 'additem':
-		$item = $_GET['item'];
-		$orderno = $_GET['orderno'];
-		$units = $this->strim($_GET['units']);
-		$price = $_GET['price'];
-		$price = preg_replace("/,/",".",$price);
-		$size = $_GET['size'];
-		$cases = $this->strim($_GET['cases']);
-		$fraction = $this->strim($_GET['fraction']);
-		$category = $this->strim($_GET['category']);
-		$category = preg_replace("/_/"," ",$category);
+    // prepend request name & backtick
+    $out = $_GET['action']."`";
+    // switch on request name
+    switch ($_GET['action']){
+    case 'additem':
+        $item = $_GET['item'];
+        $orderno = $_GET['orderno'];
+        $units = $this->strim($_GET['units']);
+        $price = $_GET['price'];
+        $price = preg_replace("/,/",".",$price);
+        $size = $_GET['size'];
+        $cases = $this->strim($_GET['cases']);
+        $fraction = $this->strim($_GET['fraction']);
+        $category = $this->strim($_GET['category']);
+        $category = preg_replace("/_/"," ",$category);
 
-		if (empty($price))
-			$price = 0;
-		if (empty($cases))
-			$cases = 0;
-		if (empty($fraction))
-			$fraction = 0;
-		
-		$stocktotal = 0;
-		if (!empty($units)){
-			if ($units[strlen($units)-1] == '#' && 
-				$fraction[strlen($fraction)-1] == '#' && $units != 0){
-				$partial = substr($fraction,0,strlen($fraction)-1) / substr($units,0,strlen($units)-1);
-				$stocktotal = $cases + $partial;		
-			}
-			else if ($units != 0){
-				$partial = $fraction / $units;
-				$stocktotal = $cases + $partial;
-			}
-		}
-		$total = $stocktotal * $price;
-			
-		$model = new DeliInventoryCatModel($sql);
-		$model->item($item);
-		$model->orderno($orderno);
-		$model->units($units);
-		$model->cases($cases);
-		$model->fraction($fraction);
-		$model->totalstock($stocktotal);
-		$model->price($price);
-		$model->total($total);
-		$model->size($size);
-		$model->category($category);
-		$model->save();
-		
-		$out .= $this->gettable();
-		break;
-	case 'saveitem':
-		$id = $_GET["id"];
-		$item = $this->strim($_GET['item']);
-		$orderno = $this->strim($_GET['orderno']);
-		$units = $this->strim($_GET['units']);
-		$cases = $this->strim($_GET['cases']);
-		$fraction = $this->strim($_GET['fraction']);
-		$price = $this->strim($_GET['price']);
-		$size = $this->strim($_GET['size']);
+        if (empty($price))
+            $price = 0;
+        if (empty($cases))
+            $cases = 0;
+        if (empty($fraction))
+            $fraction = 0;
+        
+        $stocktotal = 0;
+        if (!empty($units)){
+            if ($units[strlen($units)-1] == '#' && 
+                $fraction[strlen($fraction)-1] == '#' && $units != 0){
+                $partial = substr($fraction,0,strlen($fraction)-1) / substr($units,0,strlen($units)-1);
+                $stocktotal = $cases + $partial;        
+            }
+            else if ($units != 0){
+                $partial = $fraction / $units;
+                $stocktotal = $cases + $partial;
+            }
+        }
+        $total = $stocktotal * $price;
+            
+        $model = new DeliInventoryCatModel($sql);
+        $model->item($item);
+        $model->orderno($orderno);
+        $model->units($units);
+        $model->cases($cases);
+        $model->fraction($fraction);
+        $model->totalstock($stocktotal);
+        $model->price($price);
+        $model->total($total);
+        $model->size($size);
+        $model->category($category);
+        $model->save();
+        
+        $out .= $this->gettable();
+        break;
+    case 'saveitem':
+        $id = $_GET["id"];
+        $item = $this->strim($_GET['item']);
+        $orderno = $this->strim($_GET['orderno']);
+        $units = $this->strim($_GET['units']);
+        $cases = $this->strim($_GET['cases']);
+        $fraction = $this->strim($_GET['fraction']);
+        $price = $this->strim($_GET['price']);
+        $size = $this->strim($_GET['size']);
 
-		if (empty($cases) || !is_numeric($cases))
-			$cases = 0;
-		if (empty($fraction))
-			$fraction = 0;
-		
-		$stocktotal = 0;
-		if (!empty($units)){
-			if ($units[strlen($units)-1] == '#' && 
-				$fraction[strlen($fraction)-1] == '#' && $units != 0){
-				$partial = substr($fraction,0,strlen($fraction)-1) / substr($units,0,strlen($units)-1);
-				$stocktotal = $cases + $partial;		
-			}
-			else if ($units != 0){
-				$partial = $fraction / $units;
-				$stocktotal = $cases + $partial;
-			}
-		}
-		$total = $stocktotal * $price;
-		
-		$model = new DeliInventoryCatModel($sql);
-		$model->id($id);
-		$model->item($item);
-		$model->orderno($orderno);
-		$model->units($units);
-		$model->cases($cases);
-		$model->fraction($fraction);
-		$model->totalstock($stocktotal);
-		$model->price($price);
-		$model->total($total);
-		$model->size($size);
-		$model->save();
+        if (empty($cases) || !is_numeric($cases))
+            $cases = 0;
+        if (empty($fraction))
+            $fraction = 0;
+        
+        $stocktotal = 0;
+        if (!empty($units)){
+            if ($units[strlen($units)-1] == '#' && 
+                $fraction[strlen($fraction)-1] == '#' && $units != 0){
+                $partial = substr($fraction,0,strlen($fraction)-1) / substr($units,0,strlen($units)-1);
+                $stocktotal = $cases + $partial;        
+            }
+            else if ($units != 0){
+                $partial = $fraction / $units;
+                $stocktotal = $cases + $partial;
+            }
+        }
+        $total = $stocktotal * $price;
+        
+        $model = new DeliInventoryCatModel($sql);
+        $model->id($id);
+        $model->item($item);
+        $model->orderno($orderno);
+        $model->units($units);
+        $model->cases($cases);
+        $model->fraction($fraction);
+        $model->totalstock($stocktotal);
+        $model->price($price);
+        $model->total($total);
+        $model->size($size);
+        $model->save();
 
-		$ret = array(
-			'stock'=>$stocktotal,
-			'total'=>$total,
-			'cat'=>str_replace(' ','_',$model->category())
-		);
+        $ret = array(
+            'stock'=>$stocktotal,
+            'total'=>$total,
+            'cat'=>str_replace(' ','_',$model->category())
+        );
 
-		// recalculate category total
-		$cat = $model->category();
-		$model->reset();
-		$model->category($cat);
-		$ret['grandTotal'] = 0.0;
-		foreach($model->find() as $obj)
-			$ret['grandTotal'] += $obj->total();
-		
-		echo JsonLib::array_to_json($ret);
-		$out = '';
-		break;
-	case 'refresh':
-		$out .= $this->gettable();
-		break;
-	case 'deleteitem':
-		$id = $_GET['id'];
-		
-		$model = new DeliInventoryCatModel($sql);
-		$model->id($id);
-		$cat = $model->category();
-		$model->delete();
-		$ret = array('delete_row'=>True);
+        // recalculate category total
+        $cat = $model->category();
+        $model->reset();
+        $model->category($cat);
+        $ret['grandTotal'] = 0.0;
+        foreach($model->find() as $obj)
+            $ret['grandTotal'] += $obj->total();
+        
+        echo JsonLib::array_to_json($ret);
+        $out = '';
+        break;
+    case 'refresh':
+        $out .= $this->gettable();
+        break;
+    case 'deleteitem':
+        $id = $_GET['id'];
+        
+        $model = new DeliInventoryCatModel($sql);
+        $model->id($id);
+        $cat = $model->category();
+        $model->delete();
+        $ret = array('delete_row'=>True);
 
-		$model->reset();
-		$model->category($cat);
-		$remaining = $model->find();
-		if (count($remaining) == 0)
-			$ret['delete_category'] = str_replace(' ','_',$cat);
-		
-		echo JsonLib::array_to_json($ret);
-		$out = '';
-		break;
-	case 'printview':
-		$category = $_GET['category'];
-			
-		$out = "";
+        $model->reset();
+        $model->category($cat);
+        $remaining = $model->find();
+        if (count($remaining) == 0)
+            $ret['delete_category'] = str_replace(' ','_',$cat);
+        
+        echo JsonLib::array_to_json($ret);
+        $out = '';
+        break;
+    case 'printview':
+        $category = $_GET['category'];
+            
+        $out = "";
 
-		if (isset($_GET["excel"])){
-			header("Content-Disposition: inline; filename=deliInventoryCat.xls");
-			header("Content-Description: PHP3 Generated Data");
-			header("Content-type: application/vnd.ms-excel; name='excel'");
-		}
-		else {
-			$out .= "<a href={$_SERVER['PHP_SELF']}?action=printview&category=$category&excel=yes>Save to Excel</a><br />";	
-		}
-		$out .= $this->gettable(true,$category);
-		break;
-	case 'saveCategory':
-		$oldcat = preg_replace("/_/"," ",$_GET['oldcat']);
-		$newcat = preg_replacE("/_/"," ",$_GET['newcat']);
+        if (isset($_GET["excel"])){
+            header("Content-Disposition: inline; filename=deliInventoryCat.xls");
+            header("Content-Description: PHP3 Generated Data");
+            header("Content-type: application/vnd.ms-excel; name='excel'");
+        }
+        else {
+            $out .= "<a href={$_SERVER['PHP_SELF']}?action=printview&category=$category&excel=yes>Save to Excel</a><br />"; 
+        }
+        $out .= $this->gettable(true,$category);
+        break;
+    case 'saveCategory':
+        $oldcat = preg_replace("/_/"," ",$_GET['oldcat']);
+        $newcat = preg_replacE("/_/"," ",$_GET['newcat']);
 
-		$update = $sql->prepare_statement('UPDATE deliInventoryCat SET category=? WHERE category=?');
-		$sql->exec_statement($update, array($newcat, $oldcat));
+        $update = $sql->prepare_statement('UPDATE deliInventoryCat SET category=? WHERE category=?');
+        $sql->exec_statement($update, array($newcat, $oldcat));
 
-		$out .= $this->gettable();
-		break;
-	case 'catList':
-		$id = $_GET['id'];
-		$cat = preg_replace("/_/"," ",$_GET['category']);
-		
-		$fetchQ = "select category from deliInventoryCat
-			   group by category order by category";
-		$fetchR = $sql->query($fetchQ);
-		
-		$out .= "$id"."`";
-		$out .= "<select onchange=\"saveCat($id);\" id=catSelect$id>";
-		while ($fetchW = $sql->fetch_array($fetchR)){
-			if ($fetchW[0] == $cat)
-				$out .= "<option selected>$fetchW[0]</option>";
-			else
-				$out .= "<option>$fetchW[0]</option>";
-		}
-		$out .= "</select>";
-		break;
-	case 'changeCat':
-		$id = $_GET['id'];
-		$newcat = $_GET['newcat'];
+        $out .= $this->gettable();
+        break;
+    case 'catList':
+        $id = $_GET['id'];
+        $cat = preg_replace("/_/"," ",$_GET['category']);
+        
+        $fetchQ = "select category from deliInventoryCat
+               group by category order by category";
+        $fetchR = $sql->query($fetchQ);
+        
+        $out .= "$id"."`";
+        $out .= "<select onchange=\"saveCat($id);\" id=catSelect$id>";
+        while ($fetchW = $sql->fetch_array($fetchR)){
+            if ($fetchW[0] == $cat)
+                $out .= "<option selected>$fetchW[0]</option>";
+            else
+                $out .= "<option>$fetchW[0]</option>";
+        }
+        $out .= "</select>";
+        break;
+    case 'changeCat':
+        $id = $_GET['id'];
+        $newcat = $_GET['newcat'];
 
-		$model = new DeliInventoryCatModel($sql);
-		$model->id($id);
-		$model->category($newcat);
-		$model->save();
+        $model = new DeliInventoryCatModel($sql);
+        $model->id($id);
+        $model->category($newcat);
+        $model->save();
 
-		$model->reset();
-		$model->category($newcat);
-		$ret['grandTotal'] = 0.0;
-		foreach($model->find() as $obj)
-			$ret['grandTotal'] += $obj->total();
-		
-		echo JsonLib::array_to_json($ret);
-		break;
-	case 'clearAll':
-		$clearQ = "update deliInventoryCat set cases=0, fraction=0,
-			totalstock=0, total=0";
-		$clearR = $sql->query($clearQ);
-		$out .= $this->gettable();
-		break;
-	}
-	
-	echo $out;
-	return false;
+        $model->reset();
+        $model->category($newcat);
+        $ret['grandTotal'] = 0.0;
+        foreach($model->find() as $obj)
+            $ret['grandTotal'] += $obj->total();
+        
+        echo JsonLib::array_to_json($ret);
+        break;
+    case 'clearAll':
+        $clearQ = "update deliInventoryCat set cases=0, fraction=0,
+            totalstock=0, total=0";
+        $clearR = $sql->query($clearQ);
+        $out .= $this->gettable();
+        break;
+    }
+    
+    echo $out;
+    return false;
 } else {
     return true;
 }
@@ -259,7 +259,7 @@ if (isset($_GET['action'])){
             $args[] = $limitCat;
         }
         $fetchQ .= "order by category, item";
-        $fetchP = $sql->prepare_statement($fetchQ);	
+        $fetchP = $sql->prepare_statement($fetchQ); 
         $fetchR = $sql->exec_statement($fetchP, $args);
 
         $ret .= "<a href=\"\" onclick=\"saveAll();return false;\">Save all changes</a> | <a href=\"\" onclick=\"clearAll();return false;\">Clear all totals</a><br /><br />";
@@ -274,7 +274,7 @@ if (isset($_GET['action'])){
                     $ret .= '<tfoot>';
                     $ret .= "<tr><th bgcolor=$colors[$c]>Grand Total</th>";
                     for ($i = 0; $i < 7; $i++)
-                        $ret .= "<td bgcolor=$colors[$c]>&nbsp;</td>";	
+                        $ret .= "<td bgcolor=$colors[$c]>&nbsp;</td>";  
                     $ret .= "<td id=\"ttl$catfixed\">$sum</td></tr>";
                     $ret .= '</tfoot>';
                     $ret .= "</table>";
@@ -286,7 +286,7 @@ if (isset($_GET['action'])){
                 $currentCat = $fetchW['category'];
                 $catfixed = preg_replace("/ /","_",$currentCat);
                 $ret .= '<div id="wholeCategory'.$catfixed.'">';
-                $ret .= "<b><span id=category$catfixed>$currentCat</span></b>";	
+                $ret .= "<b><span id=category$catfixed>$currentCat</span></b>"; 
                 $ret .= "<span id=renameTrigger$catfixed>";
                 if (!$limit){
                     $ret .= " [<a href=\"\" onclick=\"renameCategory('$catfixed'); return false;\">Rename This Category</a>]";
@@ -325,7 +325,7 @@ if (isset($_GET['action'])){
             $ret .= "<td onclick=\"edititem(".$fetchW['id'].",'$catfixed');\" 
                     id=item".$fetchW['id']."col8 bgcolor=$colors[$c]>".sprintf('%.2f',$fetchW['total'])."&nbsp;</td>";
 
-            $sum += $fetchW['total'];		
+            $sum += $fetchW['total'];       
 
             if (!$limit){
                 $ret .= "<td id=edit".$fetchW['id']." bgcolor=$colors[$c]><a href=\"\" onclick=\"edititem(".$fetchW['id']."); return false;\" title=Edit><img src=\"$b_edit\" border=0 /></a></td>";
@@ -335,16 +335,16 @@ if (isset($_GET['action'])){
 
             $ret .= "</tr>";
             $c = ($c+1)%2;
-		
+        
         }
         $ret .= "<tr><th bgcolor=$colors[$c]>Grand Total</th>";
         for ($i = 0; $i < 7; $i++)
-            $ret .= "<td bgcolor=$colors[$c]>&nbsp;</td>";	
+            $ret .= "<td bgcolor=$colors[$c]>&nbsp;</td>";  
         $ret .= "<td>$sum</td></tr>";
         $ret .= "</table>";
         if (!$limit)
             $ret .= $this->inputBox($currentCat);
-	
+    
         return $ret;
     }
 
@@ -412,23 +412,23 @@ if (isset($_GET['action'])){
 <hr />
 <b>Add an item to a new category</b><br />
 <form onsubmit="additem('__new__'); return false;" id=newform__new__>
-	<table cellspacing=0 cellpadding=3 border=1>
-	<tr>
-	<th>Item</th><th>Size</th><th>Order #</th><th>Units/Case</th>
-	<th>Cases</t><th>#/Each</th><th>Price/case</th><th>Category Name</th>
-	</tr>
-	<tr>
-	<td bgcolor=#cccccc><input type=text id=newitem__new__ maxlength=50 /></td>
-	<td bgcolor=#cccccc><input type=text id=newsize__new__ size=8 maxlength=20 /></td>
-	<td bgcolor=#cccccc><input type=text id=neworderno__new__ size=6 maxlength=15 /></td>
-	<td bgcolor=#cccccc><input type=text id=newunits__new__ size=7 maxlength=10 /></td>
-	<td bgcolor=#cccccc><input type=text id=newcases__new__ size=7 maxlength=10 /></td>
-	<td bgcolor=#cccccc><input type=text id=newfraction__new__ size=7 maxlength=10 /></td>
-	<td bgcolor=#cccccc><input type=text id=newprice__new__ size=7 /></td>
-	<td bgcolor=#cccccc><input type=text id=category__new__ maxlength=50 /></td>
-	<td><input type=submit value=Add /></td>
-	</tr>
-	</table>
+    <table cellspacing=0 cellpadding=3 border=1>
+    <tr>
+    <th>Item</th><th>Size</th><th>Order #</th><th>Units/Case</th>
+    <th>Cases</t><th>#/Each</th><th>Price/case</th><th>Category Name</th>
+    </tr>
+    <tr>
+    <td bgcolor=#cccccc><input type=text id=newitem__new__ maxlength=50 /></td>
+    <td bgcolor=#cccccc><input type=text id=newsize__new__ size=8 maxlength=20 /></td>
+    <td bgcolor=#cccccc><input type=text id=neworderno__new__ size=6 maxlength=15 /></td>
+    <td bgcolor=#cccccc><input type=text id=newunits__new__ size=7 maxlength=10 /></td>
+    <td bgcolor=#cccccc><input type=text id=newcases__new__ size=7 maxlength=10 /></td>
+    <td bgcolor=#cccccc><input type=text id=newfraction__new__ size=7 maxlength=10 /></td>
+    <td bgcolor=#cccccc><input type=text id=newprice__new__ size=7 /></td>
+    <td bgcolor=#cccccc><input type=text id=category__new__ maxlength=50 /></td>
+    <td><input type=submit value=Add /></td>
+    </tr>
+    </table>
 </form>
 <br />
 </div>

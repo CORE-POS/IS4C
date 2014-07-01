@@ -33,7 +33,7 @@ class PayPeriodsModel extends BasicModel
     'periodID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),
     'periodStart' => array('type'=>'DATETIME'),
     'periodEnd' => array('type'=>'DATETIME'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

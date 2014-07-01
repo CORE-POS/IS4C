@@ -39,12 +39,12 @@ class PatronageReport extends FannieReportPage
 
     protected $report_headers = array('#', 'Gross Purchases', 'Discounts', 'Rewards', 'Net Purchases', 'Cash Portion', 'Equity Portion', 'Total Rebate');
 
-	public function preprocess()
+    public function preprocess()
     {
         $this->formatCheck();
 
-		return true;
-	}
+        return true;
+    }
 
     public function form_content()
     {

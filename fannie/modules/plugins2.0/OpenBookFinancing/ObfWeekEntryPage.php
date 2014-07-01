@@ -83,7 +83,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
 
     public function post_handler()
     {
-		global $FANNIE_PLUGIN_SETTINGS;
+        global $FANNIE_PLUGIN_SETTINGS;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
 
         $date1 = FormLib::get('date1');
@@ -107,7 +107,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
 
     public function post_id_handler()
     {
-		global $FANNIE_PLUGIN_SETTINGS;
+        global $FANNIE_PLUGIN_SETTINGS;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
 
         $date1 = FormLib::get('date1');
@@ -156,7 +156,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
 
     public function get_id_view()
     {
-		global $FANNIE_PLUGIN_SETTINGS;
+        global $FANNIE_PLUGIN_SETTINGS;
         if ($this->id != 0) {
             $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
             $this->weekModel = new ObfWeeksModel($dbc);
@@ -169,7 +169,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
     
     public function get_view()
     {
-		global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
+        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
 
         $model = new ObfWeeksModel($dbc);

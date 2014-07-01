@@ -23,37 +23,37 @@
 
 class update_20120706115700 extends UpdateObj {
 
-	protected $timestamp = '20120706115700';
+    protected $timestamp = '20120706115700';
 
-	protected $description = 'This update revises
+    protected $description = 'This update revises
 TenderTapeGeneric using grouping. This makes cash total
 correct.'; 
 
 
-	protected $author = 'Andy Theuninck (WFC)';
+    protected $author = 'Andy Theuninck (WFC)';
 
-	protected $queries = array(
-		'op' => array(),
-		'trans' => array(
-		"ALTER VIEW TenderTapeGeneric AS
-		select
-		max(tdate) as tdate,
-		emp_no,
-		register_no,
-		trans_no,
-		CASE WHEN trans_subtype = 'CP' AND upc LIKE '%MAD%' THEN ''
-		WHEN trans_subtype IN ('EF','EC','TA') THEN 'EF'
-		ELSE trans_subtype
-		END AS tender_code,
-		-1 * sum(total) as tender
-		from dlog
-		WHERE datediff(curdate(),tdate)=0
-		and trans_subtype not in ('0','')
-		GROUP BY emp_no, register_no, trans_no,
-		tender_code",
-		),
-		'archive' => array()
-	);
+    protected $queries = array(
+        'op' => array(),
+        'trans' => array(
+        "ALTER VIEW TenderTapeGeneric AS
+        select
+        max(tdate) as tdate,
+        emp_no,
+        register_no,
+        trans_no,
+        CASE WHEN trans_subtype = 'CP' AND upc LIKE '%MAD%' THEN ''
+        WHEN trans_subtype IN ('EF','EC','TA') THEN 'EF'
+        ELSE trans_subtype
+        END AS tender_code,
+        -1 * sum(total) as tender
+        from dlog
+        WHERE datediff(curdate(),tdate)=0
+        and trans_subtype not in ('0','')
+        GROUP BY emp_no, register_no, trans_no,
+        tender_code",
+        ),
+        'archive' => array()
+    );
 }
 
 ?>

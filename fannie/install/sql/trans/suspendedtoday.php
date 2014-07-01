@@ -3,10 +3,10 @@
 View: suspendedtoday
 
 Columns:
-	identical to dtransactions
+    identical to dtransactions
 
 Depends on:
-	suspended (table)
+    suspended (table)
 
 Use:
 This view omits all entries in suspended
@@ -18,8 +18,8 @@ could eventually make the list of available
 transactions unwieldy.
 */
 $CREATE['trans.suspendedtoday'] = "
-	CREATE VIEW suspendedtoday AS
-	SELECT * FROM suspended WHERE "
-	.$con->datediff($con->now(),'datetime')." = 0
+    CREATE VIEW suspendedtoday AS
+    SELECT * FROM suspended WHERE "
+    .$con->datediff($con->now(),'datetime')." = 0
 ";
 ?>

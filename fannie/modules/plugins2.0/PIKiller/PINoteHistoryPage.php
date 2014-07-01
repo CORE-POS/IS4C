@@ -23,38 +23,38 @@
 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI'))
-	include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 if (!class_exists('PIKillerPage')) {
     include('lib/PIKillerPage.php');
 }
 
 class PINoteHistoryPage extends PIKillerPage {
 
-	protected function get_id_handler(){
-		global $FANNIE_OP_DB;
-		$this->card_no = $this->id;
+    protected function get_id_handler(){
+        global $FANNIE_OP_DB;
+        $this->card_no = $this->id;
 
-		$this->title = 'Notes History : Member '.$this->card_no;
+        $this->title = 'Notes History : Member '.$this->card_no;
 
-		$this->__models['notes'] = $this->get_model(FannieDB::get($FANNIE_OP_DB), 'MemberNotesModel',
-						array('cardno'=>$this->id),'stamp');
-		$this->__models['notes'] = array_reverse($this->__models['notes']);
-	
-		return True;
-	}
+        $this->__models['notes'] = $this->get_model(FannieDB::get($FANNIE_OP_DB), 'MemberNotesModel',
+                        array('cardno'=>$this->id),'stamp');
+        $this->__models['notes'] = array_reverse($this->__models['notes']);
+    
+        return True;
+    }
 
-	protected function get_id_view(){
-		global $FANNIE_URL;
-		ob_start();
-		echo '<tr><td>';
-		foreach($this->__models['notes'] as $note){
-			if(trim($note->note()) == '') continue;
-			echo '<b>'.$note->stamp().' - note added by '.$note->username().'</b><br />';
-			echo $note->note().'<br /><hr />';
-		}
-		echo '</td></tr>';
-		return ob_get_clean();
-	}
+    protected function get_id_view(){
+        global $FANNIE_URL;
+        ob_start();
+        echo '<tr><td>';
+        foreach($this->__models['notes'] as $note){
+            if(trim($note->note()) == '') continue;
+            echo '<b>'.$note->stamp().' - note added by '.$note->username().'</b><br />';
+            echo $note->note().'<br /><hr />';
+        }
+        echo '</td></tr>';
+        return ob_get_clean();
+    }
 }
 
 FannieDispatch::conditionalExec();

@@ -27,103 +27,103 @@ include('ajax.php');
 
 class TenderEditor extends FanniePage {
 
-	protected $title = "Fannie : Tenders";
-	protected $header = "Tenders";
-	protected $must_authenticate = True;
-	protected $auth_classes = array('tenders');
+    protected $title = "Fannie : Tenders";
+    protected $header = "Tenders";
+    protected $must_authenticate = True;
+    protected $auth_classes = array('tenders');
 
-	function javascript_content(){
-		ob_start();
-		?>
+    function javascript_content(){
+        ob_start();
+        ?>
 function saveCode(val,t_id){
-	$.ajax({url:'ajax.php',
-		cache:false,
-		data: 'saveCode='+val+'&id='+t_id,
-		success: function(data){
-			if (data != "")
-				alert(data);
-		}	
-	});
+    $.ajax({url:'ajax.php',
+        cache:false,
+        data: 'saveCode='+val+'&id='+t_id,
+        success: function(data){
+            if (data != "")
+                alert(data);
+        }   
+    });
 }
 function saveName(val,t_id){
-	$.ajax({url:'ajax.php',
-		cache:false,
-		data: 'saveName='+val+'&id='+t_id,
-		success: function(data){
-			if (data != "")
-				alert(data);
-		}	
-	});
+    $.ajax({url:'ajax.php',
+        cache:false,
+        data: 'saveName='+val+'&id='+t_id,
+        success: function(data){
+            if (data != "")
+                alert(data);
+        }   
+    });
 }
 function saveType(val,t_id){
-	$.ajax({url:'ajax.php',
-		cache:false,
-		data: 'saveType='+val+'&id='+t_id,
-		success: function(data){
-			if (data != "")
-				alert(data);
-		}	
-	});
+    $.ajax({url:'ajax.php',
+        cache:false,
+        data: 'saveType='+val+'&id='+t_id,
+        success: function(data){
+            if (data != "")
+                alert(data);
+        }   
+    });
 }
 function saveCMsg(val,t_id){
-	$.ajax({url:'ajax.php',
-		cache:false,
-		data: 'saveCMsg='+val+'&id='+t_id,
-		success: function(data){
-			if (data != "")
-				alert(data);
-		}	
-	});
+    $.ajax({url:'ajax.php',
+        cache:false,
+        data: 'saveCMsg='+val+'&id='+t_id,
+        success: function(data){
+            if (data != "")
+                alert(data);
+        }   
+    });
 }
 function saveMin(val,t_id){
-	$.ajax({url:'ajax.php',
-		cache:false,
-		data: 'saveMin='+val+'&id='+t_id,
-		success: function(data){
-			if (data != "")
-				alert(data);
-		}	
-	});
+    $.ajax({url:'ajax.php',
+        cache:false,
+        data: 'saveMin='+val+'&id='+t_id,
+        success: function(data){
+            if (data != "")
+                alert(data);
+        }   
+    });
 }
 function saveMax(val,t_id){
-	$.ajax({url:'ajax.php',
-		cache:false,
-		data: 'saveMax='+val+'&id='+t_id,
-		success: function(data){
-			if (data != "")
-				alert(data);
-		}	
-	});
+    $.ajax({url:'ajax.php',
+        cache:false,
+        data: 'saveMax='+val+'&id='+t_id,
+        success: function(data){
+            if (data != "")
+                alert(data);
+        }   
+    });
 }
 function saveRLimit(val,t_id){
-	$.ajax({url:'ajax.php',
-		cache:false,
-		data: 'saveRLimit='+val+'&id='+t_id,
-		success: function(data){
-			if (data != "")
-				alert(data);
-		}	
-	});
+    $.ajax({url:'ajax.php',
+        cache:false,
+        data: 'saveRLimit='+val+'&id='+t_id,
+        success: function(data){
+            if (data != "")
+                alert(data);
+        }   
+    });
 }
 function addTender(){
-	$.ajax({url:'ajax.php',
-		cache: false,
-		data:'newTender=yes',
-		success: function(data){
-			$('#mainDisplay').html(data);
-		}
-	});
+    $.ajax({url:'ajax.php',
+        cache: false,
+        data:'newTender=yes',
+        success: function(data){
+            $('#mainDisplay').html(data);
+        }
+    });
 }
-		<?php
-		return ob_get_clean();
-	}
+        <?php
+        return ob_get_clean();
+    }
 
-	function body_content(){
-		$ret = '<div id="mainDisplay">';
-		$ret .= getTenderTable();
-		$ret .= '</div>';
-		return $ret;
-	}
+    function body_content(){
+        $ret = '<div id="mainDisplay">';
+        $ret .= getTenderTable();
+        $ret .= '</div>';
+        return $ret;
+    }
 }
 
 FannieDispatch::conditionalExec(false);

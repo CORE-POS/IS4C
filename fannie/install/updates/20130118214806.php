@@ -23,26 +23,26 @@
 
 class update_20130118214806 extends UpdateObj {
 
-	protected $timestamp = '20130118214806';
+    protected $timestamp = '20130118214806';
 
-	protected $description = 'Change the data type of upc in tables
+    protected $description = 'Change the data type of upc in tables
 <br />products, productBackup and prodExtra
 <br />Before you do this back up these tables using update 20130118214805.
 <br />If the data type change succeeds but you need to restore the leading zeros on upc, run update 20130118214807.
 <br />When all is well run update 20130118214808 to drop these special backups.
 <br />These changes were tested under MySQL 5.1';
 
-	protected $author = 'Eric Lee (WEFC_Toronto)';
+    protected $author = 'Eric Lee (WEFC_Toronto)';
 
-	protected $queries = array(
-		'op' => array(
-			'ALTER TABLE productBackup CHANGE COLUMN  upc upc VARCHAR(13)',
-			'ALTER TABLE prodExtra CHANGE COLUMN  upc upc VARCHAR(13)',
-			'ALTER TABLE products CHANGE COLUMN  upc upc VARCHAR(13)'
-		),
-		'trans' => array(),
-		'archive' => array()
-	);
+    protected $queries = array(
+        'op' => array(
+            'ALTER TABLE productBackup CHANGE COLUMN  upc upc VARCHAR(13)',
+            'ALTER TABLE prodExtra CHANGE COLUMN  upc upc VARCHAR(13)',
+            'ALTER TABLE products CHANGE COLUMN  upc upc VARCHAR(13)'
+        ),
+        'trans' => array(),
+        'archive' => array()
+    );
 }
 
 ?>

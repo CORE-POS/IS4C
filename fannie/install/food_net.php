@@ -50,19 +50,19 @@ $FANNIE_ROOT = $FILEPATH;
 $FANNIE_URL = $URL;
 
 if (function_exists('posix_getpwuid')){
-	$chk = posix_getpwuid(posix_getuid());
-	echo "PHP is running as: ".$chk['name']."<br />";
+    $chk = posix_getpwuid(posix_getuid());
+    echo "PHP is running as: ".$chk['name']."<br />";
 }
 else
-	echo "PHP is (probably) running as: ".get_current_user()."<br />";
+    echo "PHP is (probably) running as: ".get_current_user()."<br />";
 
 if (is_writable($FILEPATH.'config.php')){
-	confset('FANNIE_ROOT',"'$FILEPATH'");
-	confset('FANNIE_URL',"'$URL'");
-	echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
+    confset('FANNIE_ROOT',"'$FILEPATH'");
+    confset('FANNIE_URL',"'$URL'");
+    echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
 }
 else {
-	echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
+    echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
 }
 ?>
 <hr />
@@ -71,7 +71,7 @@ Server Database Host
 <?php
 if(!isset($FANNIE_FN_SERVER)) $FANNIE_FN_SERVER = '127.0.0.1';
 if (isset($_REQUEST['FANNIE_FN_SERVER'])){
-	$FANNIE_FN_SERVER = $_REQUEST['FANNIE_FN_SERVER'];
+    $FANNIE_FN_SERVER = $_REQUEST['FANNIE_FN_SERVER'];
 }
 confset('FANNIE_FN_SERVER',"'$FANNIE_FN_SERVER'");
 echo "<input type=text name=FANNIE_FN_SERVER value=\"$FANNIE_FN_SERVER\" />";
@@ -81,23 +81,23 @@ echo "<input type=text name=FANNIE_FN_SERVER value=\"$FANNIE_FN_SERVER\" />";
 <?php
 if(!isset($FANNIE_FN_DBMS)) $FANNIE_FN_DBMS = 'MYSQL';
 if (isset($_REQUEST['FANNIE_FN_DBMS'])){
-	$FANNIE_FN_DBMS = $_REQUEST['FANNIE_FN_DBMS'];
+    $FANNIE_FN_DBMS = $_REQUEST['FANNIE_FN_DBMS'];
 }
 confset('FANNIE_FN_DBMS',"'$FANNIE_FN_DBMS'");
 if ($FANNIE_FN_DBMS == 'MYSQL'){
-	echo "<option value=MYSQL selected>MySQL</option>";
-	echo "<option value=MSSQL>SQL Server</option>";
-	echo "<option value=MYSQLI>MySQLi</option>";
+    echo "<option value=MYSQL selected>MySQL</option>";
+    echo "<option value=MSSQL>SQL Server</option>";
+    echo "<option value=MYSQLI>MySQLi</option>";
 }
 else if ($FANNIE_FN_DBMS == 'MSSQL'){
-	echo "<option value=MYSQL>MySQL</option>";
-	echo "<option value=MSSQL selected>SQL Server</option>";
-	echo "<option value=MYSQLI>MySQLi</option>";
+    echo "<option value=MYSQL>MySQL</option>";
+    echo "<option value=MSSQL selected>SQL Server</option>";
+    echo "<option value=MYSQLI>MySQLi</option>";
 }
 else {
-	echo "<option value=MYSQL>MySQL</option>";
-	echo "<option value=MSSQL>SQL Server</option>";
-	echo "<option value=MYSQLI selected>MySQLi</option>";
+    echo "<option value=MYSQL>MySQL</option>";
+    echo "<option value=MSSQL>SQL Server</option>";
+    echo "<option value=MYSQLI selected>MySQLi</option>";
 }
 ?>
 </select>
@@ -105,7 +105,7 @@ else {
 <?php
 if (!isset($FANNIE_FN_USER)) $FANNIE_FN_USER = 'root';
 if (isset($_REQUEST['FANNIE_FN_USER']))
-	$FANNIE_FN_USER = $_REQUEST['FANNIE_FN_USER'];
+    $FANNIE_FN_USER = $_REQUEST['FANNIE_FN_USER'];
 confset('FANNIE_FN_USER',"'$FANNIE_FN_USER'");
 echo "<input type=text name=FANNIE_FN_USER value=\"$FANNIE_FN_USER\" />";
 ?>
@@ -113,7 +113,7 @@ echo "<input type=text name=FANNIE_FN_USER value=\"$FANNIE_FN_USER\" />";
 <?php
 if (!isset($FANNIE_FN_PW)) $FANNIE_FN_PW = '';
 if (isset($_REQUEST['FANNIE_FN_PW']))
-	$FANNIE_FN_PW = $_REQUEST['FANNIE_FN_PW'];
+    $FANNIE_FN_PW = $_REQUEST['FANNIE_FN_PW'];
 confset('FANNIE_FN_PW',"'$FANNIE_FN_PW'");
 echo "<input type=password name=FANNIE_FN_PW value=\"$FANNIE_FN_PW\" />";
 ?>
@@ -121,19 +121,19 @@ echo "<input type=password name=FANNIE_FN_PW value=\"$FANNIE_FN_PW\" />";
 <?php
 if (!isset($FANNIE_FN_DB)) $FANNIE_FN_DB = 'pi_food_net';
 if (isset($_REQUEST['FANNIE_FN_DB']))
-	$FANNIE_FN_DB = $_REQUEST['FANNIE_FN_DB'];
+    $FANNIE_FN_DB = $_REQUEST['FANNIE_FN_DB'];
 confset('FANNIE_FN_DB',"'$FANNIE_FN_DB'");
 echo "<input type=text name=FANNIE_FN_DB value=\"$FANNIE_FN_DB\" />";
 ?>
 <br />Testing DB connection:
 <?php
 $sql = db_test_connect($FANNIE_FN_SERVER,$FANNIE_FN_DBMS,
-		$FANNIE_FN_DB,$FANNIE_FN_USER,
-		$FANNIE_FN_PW);
+        $FANNIE_FN_DB,$FANNIE_FN_USER,
+        $FANNIE_FN_PW);
 if ($sql === False)
-	echo "<span style=\"color:red;\">Failed</span>";
+    echo "<span style=\"color:red;\">Failed</span>";
 else {
-	echo "<span style=\"color:green;\">Succeeded</span>";
+    echo "<span style=\"color:green;\">Succeeded</span>";
 }
 ?>
 <hr />

@@ -3,7 +3,7 @@
 Table: vendorDeliveries
 
 Columns:
-	vendorID int
+    vendorID int
     frequency varchar
     regular int
     nextDelivery datetime
@@ -15,18 +15,18 @@ Columns:
     thursday int
     friday int
     saturday int
-	
+    
 
 Depends on:
-	none
+    none
 
 Use:
 Schedule of vendor deliveries
 */
 $CREATE['op.vendorDeliveries'] = "
-	create table vendorDeliveries (
+    create table vendorDeliveries (
         vendorID int,
-		frequency VARCHAR(10),
+        frequency VARCHAR(10),
         regular TINYINT DEFAULT 1,
         nextDelivery DATETIME,
         nextNextDelivery DATETIME,
@@ -37,7 +37,7 @@ $CREATE['op.vendorDeliveries'] = "
         thursday TINYINT DEFAULT 0,
         friday TINYINT DEFAULT 0,
         saturday TINYINT DEFAULT 0,
-		PRIMARY KEY (vendorID)
-	)
+        PRIMARY KEY (vendorID)
+    )
 ";
 

@@ -30,7 +30,7 @@ if (!class_exists('FannieAPI')) {
 */
 class SPINS extends FanniePlugin 
 {
-	public $plugin_settings = array(
+    public $plugin_settings = array(
     'SpinsFtpUser' => array('default'=>'', 'label'=>'FTP Username',
             'description'=>'ftp.spins.com credentials'), 
     'SpinsFtpPw' => array('default'=>'', 'label'=>'FTP Password',
@@ -41,6 +41,6 @@ class SPINS extends FanniePlugin
             number for a given date.'),
     );
 
-	public $plugin_description = 'Plugin for submitting SPINS data';
+    public $plugin_description = 'Plugin for submitting SPINS data';
 }
 

@@ -29,8 +29,8 @@ if (!class_exists('FannieAPI')) {
 class PluRangePage extends FannieRESTfulPage 
 {
 
-	protected $header = 'PLU Range';
-	protected $title = 'PLU Range';
+    protected $header = 'PLU Range';
+    protected $title = 'PLU Range';
     private $start_plu = '';
 
     public function preprocess()
@@ -196,7 +196,7 @@ class PluRangePage extends FannieRESTfulPage
         $ret .= '</tr></table></form>';
 
         return $ret;
-	}
+    }
 
 }
 

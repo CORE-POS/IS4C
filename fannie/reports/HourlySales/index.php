@@ -34,16 +34,16 @@ $page_title = "Fannie : Hourly Sales";
 include($FANNIE_ROOT.'src/header.html');
 $options = "<option value=-1 selected>All</option>";
 $prep = $dbc->prepare_statement("SELECT superID,super_name FROM superDeptNames 
-		WHERE superID > 0");
+        WHERE superID > 0");
 $res = $dbc->exec_statement($prep);
 while($row = $dbc->fetch_row($res))
-	$options .= sprintf("<option value=%d>%s</option>",$row[0],$row[1]);
+    $options .= sprintf("<option value=%d>%s</option>",$row[0],$row[1]);
 ?>
 
 <form name='addBatch' action = 'HourlySalesReport.php' method='get'>
 <table><tr><td>Super Department</td><td>Start Date</td><td>End Date</td></tr>
 <tr><td><select name=buyer>
-	<?php echo $options; ?>
+    <?php echo $options; ?>
       </select></td>
      <td><input name="date1" type="text"></td>
      <td><input name="date2" type="text"></td>

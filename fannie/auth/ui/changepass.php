@@ -45,12 +45,12 @@ else {
     else {
       $success = changePassword($name,$oldpass,$newpass1);
       if (!$success){
-	echo "Password change failed.  Ensure the old password is correct and that the new password is alphanumeric<p />";
-	echo "<a href=changepass.php>Try again</a> | <a href=menu.php>Main menu</a>";
+    echo "Password change failed.  Ensure the old password is correct and that the new password is alphanumeric<p />";
+    echo "<a href=changepass.php>Try again</a> | <a href=menu.php>Main menu</a>";
       }
       else {
-	echo "Password changed successfully<p />";
-	echo "<a href=menu.php>Continue</a>";
+    echo "Password changed successfully<p />";
+    echo "<a href=menu.php>Continue</a>";
       }
     }
   }

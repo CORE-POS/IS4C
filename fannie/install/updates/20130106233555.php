@@ -23,24 +23,24 @@
 
 class update_20130106233555 extends UpdateObj {
 
-	protected $timestamp = '20130106233555';
+    protected $timestamp = '20130106233555';
 
-	protected $description = 'Populate the table memContactPrefs, a list of available member contact preferences.
+    protected $description = 'Populate the table memContactPrefs, a list of available member contact preferences.
 Also see 20130106233554 to create the table.';
 
-	protected $author = 'Eric Lee (WEFC_Toronto)';
+    protected $author = 'Eric Lee (WEFC_Toronto)';
 
-	protected $queries = array(
-		'op' => array(
-			'TRUNCATE TABLE memContactPrefs',
-			"INSERT INTO memContactPrefs (pref_id, pref_description) VALUES (0, 'No contact of any kind')",
-			"INSERT INTO memContactPrefs (pref_id, pref_description) VALUES (1, 'Postal mail only')",
-			"INSERT INTO memContactPrefs (pref_id, pref_description) VALUES (2, 'Email only')",
-			"INSERT INTO memContactPrefs (pref_id, pref_description) VALUES (3, 'Either postal mail or email')"
-		),
-		'trans' => array(),
-		'archive' => array()
-	);
+    protected $queries = array(
+        'op' => array(
+            'TRUNCATE TABLE memContactPrefs',
+            "INSERT INTO memContactPrefs (pref_id, pref_description) VALUES (0, 'No contact of any kind')",
+            "INSERT INTO memContactPrefs (pref_id, pref_description) VALUES (1, 'Postal mail only')",
+            "INSERT INTO memContactPrefs (pref_id, pref_description) VALUES (2, 'Email only')",
+            "INSERT INTO memContactPrefs (pref_id, pref_description) VALUES (3, 'Either postal mail or email')"
+        ),
+        'trans' => array(),
+        'archive' => array()
+    );
 }
 
 ?>

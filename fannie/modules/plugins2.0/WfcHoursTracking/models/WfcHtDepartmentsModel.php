@@ -32,7 +32,7 @@ class WfcHtDepartmentsModel extends BasicModel
     protected $columns = array(
     'deptID' => array('type'=>'INT', 'primary_key'=>true),
     'name' => array('type'=>'VARCHAR(255)'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

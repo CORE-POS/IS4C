@@ -35,20 +35,20 @@ class VendorMovementReport extends FannieReportPage
     protected $header = "Vendor Movement Report";
     protected $required_fields = array('date1', 'date2');
 
-	public function fetch_report_data()
+    public function fetch_report_data()
     {
-		global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
+        global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-		$date1 = FormLib::get_form_value('date1',date('Y-m-d'));
-		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
-		$vendor = FormLib::get_form_value('vendor','');
-		$groupby = FormLib::get_form_value('groupby','upc');
+        $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
+        $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
+        $vendor = FormLib::get_form_value('vendor','');
+        $groupby = FormLib::get_form_value('groupby','upc');
 
-		$dlog = DTransactionsModel::selectDlog($date1,$date2);
-		$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumUpcSalesByDay";
+        $dlog = DTransactionsModel::selectDlog($date1,$date2);
+        $sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumUpcSalesByDay";
 
-		$query = "";
-		switch ($groupby) {
+        $query = "";
+        switch ($groupby) {
             case 'upc':
                 $query = "
                     SELECT t.upc,
@@ -110,39 +110,39 @@ class VendorMovementReport extends FannieReportPage
                         s.superID
                     ORDER BY SUM(t.total) DESC";
                 break;
-		}
-		$args = array('%'.$vendor.'%',$date1.' 00:00:00',$date2.' 23:59:59');
-		$prep = $dbc->prepare_statement($query);
+        }
+        $args = array('%'.$vendor.'%',$date1.' 00:00:00',$date2.' 23:59:59');
+        $prep = $dbc->prepare_statement($query);
 
-		$result = $dbc->exec_statement($prep,$args);
-		$ret = array();
-		while ($row = $dbc->fetch_array($result)) {
-			$record = array();
-			if ($groupby == "date") {
-				$record[] = $row['month'] . '/' . $row['day'] . '/' . $row['year'];
-				$record[] = number_format($row['qty'], 2);
-				$record[] = number_format($row['ttl'], 2);
-			} else {
-				for ($i=0;$i<$dbc->num_fields($result);$i++) {
+        $result = $dbc->exec_statement($prep,$args);
+        $ret = array();
+        while ($row = $dbc->fetch_array($result)) {
+            $record = array();
+            if ($groupby == "date") {
+                $record[] = $row['month'] . '/' . $row['day'] . '/' . $row['year'];
+                $record[] = number_format($row['qty'], 2);
+                $record[] = number_format($row['ttl'], 2);
+            } else {
+                for ($i=0;$i<$dbc->num_fields($result);$i++) {
                     if ($dbc->field_name($result, $i) == 'qty' || $dbc->field_name($result, $i) == 'ttl') {
                         $row[$i] = number_format($row[$i], 2);
                     }
-					$record[] .= $row[$i];
+                    $record[] .= $row[$i];
                 }
-			}
-			$ret[] = $record;
-		}
-
-		return $ret;
-	}
-	
-	public function calculate_footers($data)
-    {
-		if (empty($data)) {
-			return array();
+            }
+            $ret[] = $record;
         }
 
-		switch (count($data[0])) {
+        return $ret;
+    }
+    
+    public function calculate_footers($data)
+    {
+        if (empty($data)) {
+            return array();
+        }
+
+        switch (count($data[0])) {
             case 7:
                 $this->report_headers = array('UPC','Description','Qty','$',
                     'Dept#','Department','Subdept');
@@ -176,56 +176,56 @@ class VendorMovementReport extends FannieReportPage
                 }
 
                 return array('Total',$sumQty,$sumSales);
-		}
-	}
+        }
+    }
 
-	public function form_content()
+    public function form_content()
     {
 ?>
-<div id=main>	
+<div id=main>   
 <form method = "get" action="<?php echo $_SERVER['PHP_SELF']; ?>">
-	<table border="0" cellspacing="0" cellpadding="5">
-		<tr> 
-			<th>Vendor</th>
-			<td>
-			<input type=text name=vendor id=vendor  />
-			</td>
-			<th>Date Start</th>
-			<td>
-		        <input type=text size=14 id=date1 name=date1 />
-			</td>
-		</tr>
-		<tr>
-			<th>Sum report by</th>
-			<td><select name=groupby>
-			<option value="upc">UPC</option>
-			<option value="date">Date</option>
-			<option value="dept">Department</option>
-			</select></td>
-			<th>Date End</th>	
-			<td>
-			<input type=text size=14 id=date2 name=date2 />
-			</td>
-		</tr>
-		<tr>
-			<td colspan="2">
-			<input type=checkbox name=excel value=xls /> Excel 
-			</td>
-			<td colspan="2" rowspan="2">
-			<?php echo FormLib::date_range_picker(); ?>
-			</td>
-		</tr>
-		<tr>
-			<td> <input type=submit name=submit value="Submit"> </td>
-			<td> <input type=reset name=reset value="Start Over"> </td>
-		</tr>
-	</table>
+    <table border="0" cellspacing="0" cellpadding="5">
+        <tr> 
+            <th>Vendor</th>
+            <td>
+            <input type=text name=vendor id=vendor  />
+            </td>
+            <th>Date Start</th>
+            <td>
+                <input type=text size=14 id=date1 name=date1 />
+            </td>
+        </tr>
+        <tr>
+            <th>Sum report by</th>
+            <td><select name=groupby>
+            <option value="upc">UPC</option>
+            <option value="date">Date</option>
+            <option value="dept">Department</option>
+            </select></td>
+            <th>Date End</th>   
+            <td>
+            <input type=text size=14 id=date2 name=date2 />
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+            <input type=checkbox name=excel value=xls /> Excel 
+            </td>
+            <td colspan="2" rowspan="2">
+            <?php echo FormLib::date_range_picker(); ?>
+            </td>
+        </tr>
+        <tr>
+            <td> <input type=submit name=submit value="Submit"> </td>
+            <td> <input type=reset name=reset value="Start Over"> </td>
+        </tr>
+    </table>
 </form>
 </div>
 <?php
         $this->add_onload_command('$(\'#date1\').datepicker();');
         $this->add_onload_command('$(\'#date2\').datepicker();');
-	}
+    }
 }
 
 FannieDispatch::conditionalExec(false);

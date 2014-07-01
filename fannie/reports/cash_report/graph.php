@@ -91,10 +91,10 @@ function linegraph($data, $labels, $filename, $scale=-1,$thickness=1){
   $max = 0;
   $min = 999999;
   foreach($data as $d){
-	if (max($d) > $max)
-	  $max = max($d);
-	if (abs_min($d) < $min)
-	  $min = abs_min($d);
+    if (max($d) > $max)
+      $max = max($d);
+    if (abs_min($d) < $min)
+      $min = abs_min($d);
   }
   $range = $max - $min;
   /* auto scaling, seems to work for now */
@@ -141,32 +141,32 @@ function linegraph($data, $labels, $filename, $scale=-1,$thickness=1){
   }
 
   $colors = array(
-				array(255,0,0),
-				array(0,0,255),
-				array(0,255,0)
-	   		     );
+                array(255,0,0),
+                array(0,0,255),
+                array(0,255,0)
+                 );
   /* map the data */
   imagesetthickness($im,$thickness);
   $prevs = array_fill(0,count($data[0]),-1);
   $backtrack = array_fill(0,count($data[0]),-1);
   for ($i = 0; $i < count($data); $i++){
-	for($j = 0; $j < count($data[$i]); $j++){
-	  if ($data[$i][$j] != -1){
-		$fill = imagecolorallocate($im,$colors[$j][0],$colors[$j][1],$colors[$j][2]);
-		imagefilledellipse($im,$i*$col_width+$left,$height-($data[$i][$j]*$scale*$row_height)+$top,4*sqrt($thickness),4*sqrt($thickness),$fill);
-		if ($prevs[$j] != -1){
-		  imageline($im,$i*$col_width+$left,$height-($data[$i][$j]*$scale*$row_height)+$top,
-				    ($i-$backtrack[$j])*$col_width+$left,$height-($prevs[$j]*$scale*$row_height)+$top,$fill);
-		}
-	  }
-	  if ($data[$i][$j] != -1){
-	 	$prevs[$j] = $data[$i][$j];
-		$backtrack[$j] = 1;
-	  }
-	  else{ 
-	  	$backtrack[$j]++;
-	  }
-	}
+    for($j = 0; $j < count($data[$i]); $j++){
+      if ($data[$i][$j] != -1){
+        $fill = imagecolorallocate($im,$colors[$j][0],$colors[$j][1],$colors[$j][2]);
+        imagefilledellipse($im,$i*$col_width+$left,$height-($data[$i][$j]*$scale*$row_height)+$top,4*sqrt($thickness),4*sqrt($thickness),$fill);
+        if ($prevs[$j] != -1){
+          imageline($im,$i*$col_width+$left,$height-($data[$i][$j]*$scale*$row_height)+$top,
+                    ($i-$backtrack[$j])*$col_width+$left,$height-($prevs[$j]*$scale*$row_height)+$top,$fill);
+        }
+      }
+      if ($data[$i][$j] != -1){
+        $prevs[$j] = $data[$i][$j];
+        $backtrack[$j] = 1;
+      }
+      else{ 
+        $backtrack[$j]++;
+      }
+    }
   }
 
   /* save the image */
@@ -181,8 +181,8 @@ function linegraph($data, $labels, $filename, $scale=-1,$thickness=1){
 function abs_min($a){
   $min = 999999;
   foreach($a as $i){
-	if ($i < $min && $i >= 0)
-	  $min = $i;
+    if ($i < $min && $i >= 0)
+      $min = $i;
   }
   return $min;
 }

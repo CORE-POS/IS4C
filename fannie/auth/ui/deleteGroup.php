@@ -58,7 +58,7 @@ else {
   echo "<form action=deleteGroup.php method=post>";
 echo "Group name:<select name=name>";
 foreach(getGroupList() as $uid => $name)
-	echo "<option>".$name."</option>";
+    echo "<option>".$name."</option>";
 echo "</select>";
   echo "<input type=hidden name=warn value=warn>";
 echo '&nbsp;&nbsp;&nbsp;<input type="submit" value="Delete" />';

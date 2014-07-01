@@ -24,10 +24,10 @@ include('../config.php');
 
 include($FANNIE_ROOT.'auth/login.php');
 if (!checkLogin()){
-	$url = $FANNIE_URL."auth/ui/loginform.php";
-	$rd = $FANNIE_URL."ordering/";
-	header("Location: $url?redirect=$rd");
-	exit;
+    $url = $FANNIE_URL."auth/ui/loginform.php";
+    $rd = $FANNIE_URL."ordering/";
+    header("Location: $url?redirect=$rd");
+    exit;
 }
 
 $page_title = "Fannie :: Special Orders";
@@ -37,10 +37,10 @@ include($FANNIE_ROOT.'src/header.html');
 <ul>
 <li><a href="view.php">Create Order</a></li>
 <li>Review Orders
-	<ul>
-	<li><a href="clearinghouse.php">Active Orders</a></li>
-	<li><a href="historical.php">Old Orders</a></li>
-	</ul>
+    <ul>
+    <li><a href="clearinghouse.php">Active Orders</a></li>
+    <li><a href="historical.php">Old Orders</a></li>
+    </ul>
 </li>
 <li><a href="receivingReport.php">Receiving Report</a></li>
 <li><a href="muzak.php">Muzak</a></li>

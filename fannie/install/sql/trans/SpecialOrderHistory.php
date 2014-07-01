@@ -4,13 +4,13 @@ Table: SpecialOrderHistory
 
 Columns:
     specialOrderHistoryID int
-	order_id int
-	entry_type varchar
-	entry_date datetime
-	entry_value text
+    order_id int
+    entry_type varchar
+    entry_date datetime
+    entry_value text
 
 Depends on:
-	PendingSpecialOrder
+    PendingSpecialOrder
 
 Use:
 This table is for a work-in-progress special
@@ -23,15 +23,15 @@ their special order.
 This table stores a dated history for the order
 */
 $CREATE['trans.SpecialOrderHistory'] = "
-	CREATE TABLE SpecialOrderHistory (
+    CREATE TABLE SpecialOrderHistory (
         specialOrderHistoryID INT NOT NULL AUTO_INCREMENT,
-		order_id int,
-		entry_type varchar(20),
-		entry_date datetime,
-		entry_value text,
+        order_id int,
+        entry_type varchar(20),
+        entry_date datetime,
+        entry_value text,
         PRIMARY KEY (specialOrderHistoryID),
         INDEX (order_id)
-	)
+    )
 ";
 
 if ($dbms == "MSSQL") {

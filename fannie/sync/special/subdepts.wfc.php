@@ -24,15 +24,15 @@
 // map server super depts to lane subdepts
 foreach($FANNIE_LANES as $lane){
 
-	$dbc->add_connection($lane['host'],$lane['type'],$lane['op'],
-			$lane['user'],$lane['pw']);
-	if ($dbc->connections[$lane['op']] !== False){
-		$selectQ = "SELECT superID,super_name,dept_ID FROM MasterSuperDepts";
-		$insQ = "INSERT INTO subdepts (subdept_no,subdept_name,dept_ID)";
+    $dbc->add_connection($lane['host'],$lane['type'],$lane['op'],
+            $lane['user'],$lane['pw']);
+    if ($dbc->connections[$lane['op']] !== False){
+        $selectQ = "SELECT superID,super_name,dept_ID FROM MasterSuperDepts";
+        $insQ = "INSERT INTO subdepts (subdept_no,subdept_name,dept_ID)";
 
-		$dbc->query("TRUNCATE TABLE subdepts",$lane['op']);
-		$dbc->transfer($FANNIE_OP_DB,$selectQ,$lane['op'],$insQ);
-	}
+        $dbc->query("TRUNCATE TABLE subdepts",$lane['op']);
+        $dbc->transfer($FANNIE_OP_DB,$selectQ,$lane['op'],$insQ);
+    }
 }
 
 echo "<li>Subdepts table synched</li>";

@@ -32,7 +32,7 @@ class WfcHtSalaryPTOYTDModel extends BasicModel
     protected $columns = array(
     'empID' => array('type'=>'INT'),
     'totalTaken' => array('type'=>'INT'),
-	);
+    );
 
     public function create()
     {

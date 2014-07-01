@@ -25,11 +25,11 @@ include('../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class PurchasingSearchPage extends FannieRESTfulPage {
-	
-	protected $header = 'Purchase Orders';
-	protected $title = 'Purchase Orders';
+    
+    protected $header = 'Purchase Orders';
+    protected $title = 'Purchase Orders';
 
-	protected $must_authenticate = true;
+    protected $must_authenticate = true;
 
     public function get_id_view()
     {
@@ -90,7 +90,7 @@ class PurchasingSearchPage extends FannieRESTfulPage {
         return $ret;
     }
 
-	public function get_view()
+    public function get_view()
     {
         $ret = '<form action="PurchasingSearchPage.php" method="get">';
         $ret .= '<table>';
@@ -111,7 +111,7 @@ class PurchasingSearchPage extends FannieRESTfulPage {
         $this->add_onload_command('$(\'#date2\').datepicker();');
 
         return $ret;
-	}
+    }
 }
 
 FannieDispatch::conditionalExec();

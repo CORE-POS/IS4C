@@ -3,13 +3,13 @@
 Table: voidTransHistory
 
 Columns:
-	tdate datetime
-	description varchar
-	trans_num varchar
-	total money
+    tdate datetime
+    description varchar
+    trans_num varchar
+    total money
 
 Depends on:
-	none
+    none
 
 Use:
 Store transaction numbers for voided transactions
@@ -17,12 +17,12 @@ Store transaction numbers for voided transactions
 excluded from dlog views)
 */
 $CREATE['trans.voidTransHistory'] = "
-	CREATE TABLE voidTransHistory (
-		tdate datetime,
-		description varchar(40),
-		trans_num varchar(20),
-		total decimal(10,2),
-		INDEX(tdate)
-	)
+    CREATE TABLE voidTransHistory (
+        tdate datetime,
+        description varchar(40),
+        trans_num varchar(20),
+        total decimal(10,2),
+        INDEX(tdate)
+    )
 ";
 ?>

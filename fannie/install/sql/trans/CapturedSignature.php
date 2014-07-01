@@ -3,7 +3,7 @@
 Table: CapturedSignature
 
 Columns:
-	capturedSignatureID int
+    capturedSignatureID int
     tdate datetime
     emp_no int
     register_no int
@@ -13,7 +13,7 @@ Columns:
     filecontents binary data
 
 Depends on:
-	none
+    none
 
 Use:
 This table contains digital images of customer signatures.
@@ -40,7 +40,7 @@ $CREATE['trans.CapturedSignature'] = "
     )
 ";
 if ($dbms == 'MSSQL'){
-	$CREATE['trans.CapturedSignature'] = str_replace("blob","image",$CREATE['trans.CapturedSignature']);
-	$CREATE['trans.CapturedSignature'] = str_replace("AUTO_INCREMENT","IDENTITY(1, 1)",$CREATE['trans.CapturedSignature']);
+    $CREATE['trans.CapturedSignature'] = str_replace("blob","image",$CREATE['trans.CapturedSignature']);
+    $CREATE['trans.CapturedSignature'] = str_replace("AUTO_INCREMENT","IDENTITY(1, 1)",$CREATE['trans.CapturedSignature']);
 }
 

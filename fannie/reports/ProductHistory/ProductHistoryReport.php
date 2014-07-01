@@ -35,15 +35,15 @@ class ProductHistoryReport extends FannieReportPage
     protected $report_headers = array('Date','Description', 'Price', 'Dept#', 'Tax', 'FS', 'Scale', 'Qty Rq\'d', 'NoDisc', 'UserID');
     protected $required_fields = array('upc');
 
-	public function fetch_report_data()
+    public function fetch_report_data()
     {
-		global $FANNIE_OP_DB;
+        global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-		$date1 = FormLib::get_form_value('date1');
-		$date2 = FormLib::get_form_value('date2');
-		$upc = FormLib::get_form_value('upc');
-		if (is_numeric($upc)) {
-			$upc = BarcodeLib::padUPC($upc);
+        $date1 = FormLib::get_form_value('date1');
+        $date2 = FormLib::get_form_value('date2');
+        $upc = FormLib::get_form_value('upc');
+        if (is_numeric($upc)) {
+            $upc = BarcodeLib::padUPC($upc);
         }
 
         $table = 'prodUpdate';
@@ -78,8 +78,8 @@ class ProductHistoryReport extends FannieReportPage
         }
         $query .= ' ORDER BY modified DESC';
 
-		$prep = $dbc->prepare_statement($query);
-		$result = $dbc->exec_statement($prep,$args);
+        $prep = $dbc->prepare_statement($query);
+        $result = $dbc->exec_statement($prep,$args);
 
         $data = array();
         while($row = $dbc->fetch_row($result)) {
@@ -99,9 +99,9 @@ class ProductHistoryReport extends FannieReportPage
         }
 
         return $data;
-	}
-	
-	public function form_content()
+    }
+    
+    public function form_content()
     {
         $this->add_onload_command('$(\'#date1\').datepicker();');
         $this->add_onload_command('$(\'#date2\').datepicker();');
@@ -127,7 +127,7 @@ class ProductHistoryReport extends FannieReportPage
             </tr>
             </table>
             </form>';
-	}
+    }
 }
 
 FannieDispatch::conditionalExec();

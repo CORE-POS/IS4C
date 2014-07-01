@@ -22,8 +22,8 @@
 *********************************************************************************/
 
 if (!chdir("CC")){
-	echo "Error: Can't find directory (CC)";
-	exit;
+    echo "Error: Can't find directory (CC)";
+    exit;
 }
 
 include('../../config.php');
@@ -33,27 +33,27 @@ include($FANNIE_ROOT.'src/fetchLib.php');
 
 /* HELP
 
-	Void GoE transactions from the previous
-	hour that had communication errors
+    Void GoE transactions from the previous
+    hour that had communication errors
 
 */
 
 set_time_limit(0);
 
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
+        $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
 $stack = getFailedTrans(date("Y-m-d"),date("G")-1);
 
 $void_ids = array();
 foreach($stack as $refNum){
-	$vref = doquery(date("mdy"),$refNum);
-	if ($vref != False)
-		$void_ids[] = $vref;
+    $vref = doquery(date("mdy"),$refNum);
+    if ($vref != False)
+        $void_ids[] = $vref;
 }
 
 if (count($void_ids) > 0){
-	dovoid($void_ids);
+    dovoid($void_ids);
 }
 
 

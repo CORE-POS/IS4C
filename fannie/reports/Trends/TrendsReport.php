@@ -28,8 +28,8 @@ if (!class_exists('FannieAPI')) {
 
 class TrendsReport extends FannieReportPage
 {
-	protected $title = "Fannie : Trends";
-	protected $header = "Trend Report";
+    protected $title = "Fannie : Trends";
+    protected $header = "Trend Report";
 
     protected $required_fields = array('date1', 'date2');
 
@@ -110,7 +110,7 @@ class TrendsReport extends FannieReportPage
                 DAY(d.tdate)";
         $prep = $dbc->prepare_statement($query);
         $result = $dbc->exec_statement($prep,$args);
-	
+    
         // variable columns. one per dates
         $dates = array();
         while($date1 != $date2) {
@@ -126,12 +126,12 @@ class TrendsReport extends FannieReportPage
             $this->report_headers[] = $i;
         }
         $this->report_headers[] = 'Total';
-	
+    
         $current = array('upc'=>'', 'description'=>'');
         $data = array();
         // track upc while going through the rows, storing 
         // all data about a given upc before printing
-        while ($row = $dbc->fetch_array($result)){	
+        while ($row = $dbc->fetch_array($result)){  
             if ($current['upc'] != $row[3]){
                 if ($current['upc'] != ""){
                     $record = array($current['upc'], $current['description']);
@@ -188,7 +188,7 @@ class TrendsReport extends FannieReportPage
         $deptsR = $dbc->exec_statement($deptsQ);
         $deptsList = "";
         while ($deptsW = $dbc->fetch_array($deptsR)) {
-          $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";	
+          $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";  
         }
         $this->add_onload_command('doShow();');
 
@@ -196,8 +196,8 @@ class TrendsReport extends FannieReportPage
         ?>
 <script type="text/javascript">
 function swap(src,dst){
-	var val = document.getElementById(src).value;
-	document.getElementById(dst).value = val;
+    var val = document.getElementById(src).value;
+    document.getElementById(dst).value = val;
 }
 
 function doShow(){
@@ -210,15 +210,15 @@ function doShow(){
     $('.upcField').hide();
     $('.lcField').hide();
     $('.manuField').hide();
-	if (which == "manu") {
+    if (which == "manu") {
         $('.manuField').show();
-	} else if (which == "dept") {
+    } else if (which == "dept") {
         $('.deptField').show();
-	} else if (which == "upc") {
+    } else if (which == "upc") {
         $('.upcField').show();
-	} else if (which == "likecode") {
+    } else if (which == "likecode") {
         $('.lcField').show();
-	}
+    }
 }
 </script>
 

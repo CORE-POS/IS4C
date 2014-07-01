@@ -192,17 +192,17 @@ class CorrelatedMovementReport extends FannieReportPage
         ob_start();
         ?>
 function flipover(opt){
-	if (opt == 'UPC'){
-		document.getElementById('inputset1').style.display='none';
-		document.getElementById('inputset2').style.display='block';
-		document.forms[0].dept1.value='';
-		document.forms[0].dept2.value='';
-	}
-	else {
-		document.getElementById('inputset2').style.display='none';
-		document.getElementById('inputset1').style.display='block';
-		document.forms[0].upc.value='';
-	}
+    if (opt == 'UPC'){
+        document.getElementById('inputset1').style.display='none';
+        document.getElementById('inputset2').style.display='block';
+        document.forms[0].dept1.value='';
+        document.forms[0].dept2.value='';
+    }
+    else {
+        document.getElementById('inputset2').style.display='none';
+        document.getElementById('inputset1').style.display='block';
+        document.forms[0].upc.value='';
+    }
 }
         <?php
         return ob_get_clean();
@@ -231,42 +231,42 @@ function flipover(opt){
 
 <table border=0 cellspacing=5 cellpadding=3>
 <tr>
-	<td rowspan="2" valign=middle>
-	<div id="inputset1">
-	<b>Department(s)</b><br />
-	<select size=7 multiple name=depts[]>
-	<?php 
-	foreach($depts as $no=>$name)
-		echo "<option value=$no>$no $name</option>";	
-	?>
-	</select>
-	</div>
-	<div id="inputset2">
-	<b>UPC</b>: <input type=text size=13 name=upc />
-	</div>
-	</td>
-	<th>Start date</th>
-	<td><input type="text" id="date1" name="date1" /></td>
+    <td rowspan="2" valign=middle>
+    <div id="inputset1">
+    <b>Department(s)</b><br />
+    <select size=7 multiple name=depts[]>
+    <?php 
+    foreach($depts as $no=>$name)
+        echo "<option value=$no>$no $name</option>";    
+    ?>
+    </select>
+    </div>
+    <div id="inputset2">
+    <b>UPC</b>: <input type=text size=13 name=upc />
+    </div>
+    </td>
+    <th>Start date</th>
+    <td><input type="text" id="date1" name="date1" /></td>
 </tr>
 <tr>
-	<th>End date</th>
-	<td><input type="text" id="date2" name="date2" /></td>
+    <th>End date</th>
+    <td><input type="text" id="date2" name="date2" /></td>
 </tr>
 </table>
 <hr />
 <table border=0 cellspacing=5 cellpadding=3>
 <tr>
-	<td colspan="2"><b>Result Filter</b> (optional)</td>
+    <td colspan="2"><b>Result Filter</b> (optional)</td>
 </tr>
 <tr>
-	<td rowspan="2" valign=middle>
-	<select size=7 multiple name=filters[]>
-	<?php 
-	foreach($depts as $no=>$name)
-		echo "<option value=$no>$no $name</option>";	
-	?>
-	</select>
-	</td>
+    <td rowspan="2" valign=middle>
+    <select size=7 multiple name=filters[]>
+    <?php 
+    foreach($depts as $no=>$name)
+        echo "<option value=$no>$no $name</option>";    
+    ?>
+    </select>
+    </td>
     <td colspan="2">
         <?php echo FormLib::date_range_picker(); ?>
     </td>

@@ -30,12 +30,12 @@ if (!class_exists('FannieAPI')) {
 */
 class WfcHoursTracking extends FanniePlugin 
 {
-	public $plugin_settings = array(
-	'WfcHtDatabase' => array('default'=>'HoursTracking','label'=>'Database',
-			'description'=>'Database for logging hours. Cannot be the same
+    public $plugin_settings = array(
+    'WfcHtDatabase' => array('default'=>'HoursTracking','label'=>'Database',
+            'description'=>'Database for logging hours. Cannot be the same
             as CORE as "employees" table has a different format"'),
-	);
+    );
 
-	public $plugin_description = 'WFC Plugin for tracking hours worked';
+    public $plugin_description = 'WFC Plugin for tracking hours worked';
 }
 

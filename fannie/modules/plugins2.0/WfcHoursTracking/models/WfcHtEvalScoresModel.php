@@ -38,7 +38,7 @@ class WfcHtEvalScoresModel extends BasicModel
     'year' => array('type'=>'SMALLINT'),
     'pos' => array('type'=>'VARCHAR(50)'),
     'score2' => array('type'=>'INT'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

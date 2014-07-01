@@ -48,65 +48,65 @@ $FILEPATH = rtrim($FILEPATH,'install');
 $FANNIE_ROOT = $FILEPATH;
 
 if (is_writable($FILEPATH.'config.php')){
-	echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
+    echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
 }
 else {
-	echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
-	echo "<br />Full path is: ".$FILEPATH.'config.php'."<br />";
-	if (function_exists('posix_getpwuid')){
-		$chk = posix_getpwuid(posix_getuid());
-		echo "PHP is running as: ".$chk['name']."<br />";
-	}
-	else
-		echo "PHP is (probably) running as: ".get_current_user()."<br />";
+    echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
+    echo "<br />Full path is: ".$FILEPATH.'config.php'."<br />";
+    if (function_exists('posix_getpwuid')){
+        $chk = posix_getpwuid(posix_getuid());
+        echo "PHP is running as: ".$chk['name']."<br />";
+    }
+    else
+        echo "PHP is (probably) running as: ".get_current_user()."<br />";
 }
 ?>
 <hr  />
 <b>PHP Modules Checks</b><br />
 <?php
 if (function_exists("mysql_connect"))
-	echo "<span style=\"color:green;\">MySQL support enabled</span>";
+    echo "<span style=\"color:green;\">MySQL support enabled</span>";
 else
-	echo "<span style=\"color:red;\">MySQL support missing</span>";
+    echo "<span style=\"color:red;\">MySQL support missing</span>";
 echo "<br />";
 echo '<blockquote>MySQL support is only necessary is you have MySQL
-	servers or lanes</blockquote>';
+    servers or lanes</blockquote>';
 echo "<br />";
 if (function_exists("mssql_connect"))
-	echo "<span style=\"color:green;\">MSSQL support enabled</span>";
+    echo "<span style=\"color:green;\">MSSQL support enabled</span>";
 else
-	echo "<span style=\"color:red;\">MSSQL support missing</span>";
+    echo "<span style=\"color:red;\">MSSQL support missing</span>";
 echo "<br />";
 echo '<blockquote>MSSQL support is only necessary is you have MSSQL
-	servers or lanes</blockquote>';
+    servers or lanes</blockquote>';
 echo "<br />";
 if (function_exists("curl_init"))
-	echo "<span style=\"color:green;\">cURL support enabled</span>";
+    echo "<span style=\"color:green;\">cURL support enabled</span>";
 else
-	echo "<span style=\"color:red;\">cURL support missing</span>";
+    echo "<span style=\"color:red;\">cURL support missing</span>";
 echo "<br />";
 echo '<blockquote>cURL support is used for scheduled, custom lane-server
-	database syncs. 
-	</blockquote>';
+    database syncs. 
+    </blockquote>';
 echo "<br />";
 if (class_exists("DOMDocument"))
-	echo "<span style=\"color:green;\">DOM/XML Classes enabled</span>";
+    echo "<span style=\"color:green;\">DOM/XML Classes enabled</span>";
 else
-	echo "<span style=\"color:red;\">DOM/XML Classes missing</span>";
+    echo "<span style=\"color:red;\">DOM/XML Classes missing</span>";
 echo "<br />";
 echo '<blockquote>DOM Objects are used in some reports to transform output
-	to proper .xls documents. The Excel option for these reports will not
-	work without it.
-	</blockquote>';
+    to proper .xls documents. The Excel option for these reports will not
+    work without it.
+    </blockquote>';
 echo "<br />";
 if (function_exists("ldap_connect"))
-	echo "<span style=\"color:green;\">LDAP support enabled</span>";
+    echo "<span style=\"color:green;\">LDAP support enabled</span>";
 else
-	echo "<span style=\"color:red;\">LDAP support missing</span>";
+    echo "<span style=\"color:red;\">LDAP support missing</span>";
 echo "<br />";
 echo '<blockquote>Only necessary is authentication is enabled with the
-	LDAP option.
-	</blockquote>';
+    LDAP option.
+    </blockquote>';
 ?>
 <br />
 <i>Resolving PHP problems: normally your package manager will install what
@@ -124,10 +124,10 @@ and restart Apache again.</i><br />
 rather new PHP versions). Errors here are only relevant if you use a given feature</i><br />
 <?php
 if (is_writable($FILEPATH.'logs/'))
-	echo "<span style=\"color:green;\">Logging directory is writable</span>";
+    echo "<span style=\"color:green;\">Logging directory is writable</span>";
 else {
-	echo "<span style=\"color:red;\">Logging directory is not writeable</span>";
-	echo "<br />Full path is ".$FILEPATH.'logs/';
+    echo "<span style=\"color:red;\">Logging directory is not writeable</span>";
+    echo "<br />Full path is ".$FILEPATH.'logs/';
 }
 echo "<br />";
 ?>

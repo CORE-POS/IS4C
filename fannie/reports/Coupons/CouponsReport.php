@@ -91,7 +91,7 @@ class CouponsReport extends FannieReportPage {
             } elseif(date("w",$ts) == 0) {
                 $lastSunday = date("Y-m-d",$ts);
             }
-            $ts = mktime(0,0,0,date("n",$ts),date("j",$ts)-1,date("Y",$ts));	
+            $ts = mktime(0,0,0,date("n",$ts),date("j",$ts)-1,date("Y",$ts));    
         }
 
         ob_start();

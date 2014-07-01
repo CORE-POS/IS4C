@@ -30,13 +30,13 @@ if (!class_exists('FannieAPI')) {
 */
 class UnfiInvoiceGrabber extends FanniePlugin 
 {
-	public $plugin_settings = array(
+    public $plugin_settings = array(
     'UnfiInvoiceUser' => array('default'=>'','label'=>'Username',
                     'description'=>'Username to log into UNFI website'), 
     'UnfiInvoicePass' => array('default'=>'','label'=>'Password',
                     'description'=>'Password to log into UNFI website'), 
     );
 
-	public $plugin_description = 'Plugin for downloading UNFI invoices and importing them as purchase orders';
+    public $plugin_description = 'Plugin for downloading UNFI invoices and importing them as purchase orders';
 }
 

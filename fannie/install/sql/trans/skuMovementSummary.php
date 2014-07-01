@@ -5,7 +5,7 @@ Table: skuMovementSummary
 Columns:
 
 Depends on:
-	transarchive (table)
+    transarchive (table)
 
 Use:
 Summary of item movement by vendorID and SKU

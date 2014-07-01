@@ -45,23 +45,23 @@ if ($_POST['button2']){
   echo "<a href=menu.php>Main menu</a>";
 }
 else if (isset($_POST['button1'])){
-	$name = $_POST['name'];
-	echo "<form action=editClassNotes.php method=post>";
-	echo "<table cellspacing=4 cellpadding=4>";
-	echo "<tr><td>Authorization class:</td><td><select name=name>";
-	echo "<option>".$name."</option></select></td></tr>";
-	echo "<tr><td>Notes</td><td><textarea name=notes rows=10 cols=40>";
-	echo getAuthNotes($name);
-	echo "</textarea></td></tr>";
-	echo "<tr><td><input type=submit name=button2 value=Save></td><td><input type=reset value=Reset></td></tr>";
-	echo "</table</form>";
+    $name = $_POST['name'];
+    echo "<form action=editClassNotes.php method=post>";
+    echo "<table cellspacing=4 cellpadding=4>";
+    echo "<tr><td>Authorization class:</td><td><select name=name>";
+    echo "<option>".$name."</option></select></td></tr>";
+    echo "<tr><td>Notes</td><td><textarea name=notes rows=10 cols=40>";
+    echo getAuthNotes($name);
+    echo "</textarea></td></tr>";
+    echo "<tr><td><input type=submit name=button2 value=Save></td><td><input type=reset value=Reset></td></tr>";
+    echo "</table</form>";
 }
 else {
   echo "<form action=editClassNotes.php method=post>";
   echo "<table cellspacing=4 cellpadding=4>";
   echo "<tr><td>Authorization class:</td><td><select name=name>";
   foreach(getAuthList() as $name)
-	echo "<option>".$name."</option>";
+    echo "<option>".$name."</option>";
   echo "</select></td></tr>";
   echo "<tr><td><input type=submit name=button1 value=Edit></td><td><input type=reset value=Reset></td></tr>";
   echo "</table</form>";

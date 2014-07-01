@@ -3,15 +3,15 @@
 Table: batchMergeTable
 
 Columns:
-	startDate datetime
-	endDate datetime
-	upc varchar or int, dbms dependent
-	description varchar
-	batchID int
+    startDate datetime
+    endDate datetime
+    upc varchar or int, dbms dependent
+    description varchar
+    batchID int
 
 Depends on:
-	batchMergeProd
-	batchMergeLC
+    batchMergeProd
+    batchMergeLC
 
 Use:
 This is a speedup table for reports. It's
@@ -23,16 +23,16 @@ and slow to join against directly.
 */
 
 $CREATE['op.batchMergeTable'] = "
-	CREATE TABLE batchMergeTable (
-		startDate datetime,
-		endDate datetime,
-		upc varchar(13),
-		description varchar(30),
-		batchID int,
-		PRIMARY KEY (batchID,upc),
-		INDEX (upc),
-		INDEX (batchID)
-	)
+    CREATE TABLE batchMergeTable (
+        startDate datetime,
+        endDate datetime,
+        upc varchar(13),
+        description varchar(30),
+        batchID int,
+        PRIMARY KEY (batchID,upc),
+        INDEX (upc),
+        INDEX (batchID)
+    )
 ";
 
 ?>

@@ -3,20 +3,20 @@
 Table: houseCoupons
 
 Columns:
-	coupID int
+    coupID int
     description varchar
     startDate datetime
-	endDate datetime
-	limit smallint
-	memberOnly smallint
-	discountType varchar
-	discountValue double
-	minType varchar
-	minValue double
-	department int
+    endDate datetime
+    limit smallint
+    memberOnly smallint
+    discountType varchar
+    discountValue double
+    minType varchar
+    minValue double
+    department int
 
 Depends on:
-	houseCouponItems
+    houseCouponItems
 
 Use:
 WFC runs custom barcoded coupons with
@@ -104,21 +104,21 @@ The nuts and bolts of this are in
 the UPC.php parser module (IT CORE).
 */
 $CREATE['op.houseCoupons'] = "
-	CREATE TABLE houseCoupons (
-		coupID int,
+    CREATE TABLE houseCoupons (
+        coupID int,
         description VARCHAR(30),
         startDate DATETIME,
-		endDate datetime,
-		`limit` smallint,
-		memberOnly smallint,
-		discountType varchar(2),
-		discountValue double,
-		minType varchar(2),
-		minValue double,
-		department int,
-		PRIMARY KEY (coupID)
-	)
+        endDate datetime,
+        `limit` smallint,
+        memberOnly smallint,
+        discountType varchar(2),
+        discountValue double,
+        minType varchar(2),
+        minValue double,
+        department int,
+        PRIMARY KEY (coupID)
+    )
 ";
 if ($dbms == "MSSQL")
-	$CREATE['op.houseCoupons'] = str_replace("`","",$CREATE['op.houseCoupons']);
+    $CREATE['op.houseCoupons'] = str_replace("`","",$CREATE['op.houseCoupons']);
 ?>

@@ -35,7 +35,7 @@ class ShiftsModel extends BasicModel
     'ShiftID' => array('type'=>'INT', 'primary_key'=>true),
     'visible' => array('type'=>'TINYINT'),
     'ShiftOrder' => array('type'=>'INT'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

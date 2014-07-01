@@ -38,7 +38,7 @@ class GumLoanDefaultInterestRatesModel extends BasicModel
     'lowerBound' => array('type'=>'MONEY', 'default'=>0),
     'upperBound' => array('type'=>'MONEY', 'default'=>99999999.99),
     'interestRate' => array('type'=>'DOUBLE'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

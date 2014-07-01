@@ -52,44 +52,44 @@ include($FANNIE_ROOT.'src/SQLManager.php');
 include($FANNIE_ROOT.'src/cron_msg.php');
 
 /* PURPOSE:
-	Crunch the previous month's total sales &
-	deliveries into a single archive record
+    Crunch the previous month's total sales &
+    deliveries into a single archive record
 */
 
 set_time_limit(0);
 
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
+        $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
 $deliveryQ = "INSERT INTO InvDeliveryArchive
-	SELECT max(inv_date),upc,vendor_id,sum(quantity),sum(price)
-	FROM InvDeliveryLM 
-	GROUP BY upc,vendor_id";
+    SELECT max(inv_date),upc,vendor_id,sum(quantity),sum(price)
+    FROM InvDeliveryLM 
+    GROUP BY upc,vendor_id";
 $chk = $sql->query($deliveryQ);
 if ($chk === false)
-	echo cron_msg("Error archiving last month's inventory data");
+    echo cron_msg("Error archiving last month's inventory data");
 
 $chk1 = $sql->query("TRUNCATE TABLE InvDeliveryLM");
 $lmQ = "INSERT INTO InvDeliveryLM SELECT * FROM InvDelivery WHERE "
-	.$sql->monthdiff($sql->now(),'inv_date')." = 1";
+    .$sql->monthdiff($sql->now(),'inv_date')." = 1";
 $chk2 = $sql->query($lmQ);
 if ($chk1 === false || $chk2 === false)
-	echo cron_msg("Error setting up last month's inventory data");
+    echo cron_msg("Error setting up last month's inventory data");
 
 $clearQ = "DELETE FROM InvDelivery WHERE ".$sql->monthdiff($sql->now(),'inv_date')." = 1";
 $chk = $sql->query($clearQ);
 if ($chk === false)
-	echo cron_msg("Error clearing inventory data");
+    echo cron_msg("Error clearing inventory data");
 
 $salesQ = "INSERT INTO InvSalesArchive
-		select max(datetime),upc,sum(quantity),sum(total)
-		FROM transarchive WHERE ".$sql->monthdiff($sql->now(),'datetime')." = 1
-		AND scale=0 AND trans_status NOT IN ('X','R') 
-		AND trans_type = 'I' AND trans_subtype <> '0'
-		AND register_no <> 99 AND emp_no <> 9999
-		GROUP BY upc";
+        select max(datetime),upc,sum(quantity),sum(total)
+        FROM transarchive WHERE ".$sql->monthdiff($sql->now(),'datetime')." = 1
+        AND scale=0 AND trans_status NOT IN ('X','R') 
+        AND trans_type = 'I' AND trans_subtype <> '0'
+        AND register_no <> 99 AND emp_no <> 9999
+        GROUP BY upc";
 $chk = $sql->query($salesQ);
 if ($chk === false)
-	echo cron_msg("Error archiving sales data for inventory");
+    echo cron_msg("Error archiving sales data for inventory");
 
 ?>

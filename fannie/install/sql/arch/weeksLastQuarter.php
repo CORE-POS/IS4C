@@ -8,7 +8,7 @@ Columns:
     weekEnd datetime
 
 Depends on:
-	none
+    none
 
 Use:
 Keep track of weeks in the last quarter.
@@ -23,11 +23,11 @@ The other thirteen weeks are used for the last quarter
 so any comparisions are between full, 7-day weeks.
 */
 $CREATE['arch.weeksLastQuarter'] = "
-	CREATE TABLE weeksLastQuarter (
-	weekLastQuarterID INT NOT NULL AUTO_INCREMENT,
+    CREATE TABLE weeksLastQuarter (
+    weekLastQuarterID INT NOT NULL AUTO_INCREMENT,
     weekStart DATETIME,
     weekEnd DATETIME,
-	PRIMARY KEY (weekLastQuarterID)
-	)
+    PRIMARY KEY (weekLastQuarterID)
+    )
 ";
 

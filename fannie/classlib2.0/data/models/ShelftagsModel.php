@@ -41,7 +41,7 @@ class ShelftagsModel extends BasicModel
     'vendor' => array('type'=>'VARCHAR(50)'),
     'pricePerUnit' => array('type'=>'VARCHAR(50)'),
     'count' => array('type'=>'TINYINT', 'default'=>1),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

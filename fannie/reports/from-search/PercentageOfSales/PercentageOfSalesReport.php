@@ -133,7 +133,7 @@ class PercentageOfSalesReport extends FannieReportPage
         }
 
         return $data;
-	}
+    }
 
     public function calculate_footers($data)
     {

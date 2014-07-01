@@ -5,7 +5,7 @@
  */
 class ItemsTest extends PHPUnit_Framework_TestCase
 {
-	public function testItems()
+    public function testItems()
     {
         $items = FannieAPI::listModules('ItemModule', true);
 

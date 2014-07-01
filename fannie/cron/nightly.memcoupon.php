@@ -37,20 +37,20 @@ include($FANNIE_ROOT.'src/cron_msg.php');
 set_time_limit(0);
 
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
+        $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
 $TRANS = ($FANNIE_SERVER_DBMS == "MSSQL") ? $FANNIE_TRANS_DB.".dbo." : $FANNIE_TRANS_DB.".";
 
 $sql->query("TRUNCATE TABLE memcoupon");
 
 $insQ = "INSERT INTO memcoupon
-	select card_no, tdate, total,trans_num 
-	from {$TRANS}dlog_90_view
-	where (trans_subtype = 'MA'  or upc like '%MAD Coupon%') 
-	and ceiling(month(tdate)/3.0) = ceiling(month(".$sql->now().")/3.0)
-	and year(tdate) = year(".$sql->now().")
-	and total > -2.52 and total < 2.52
-	order by card_no";
+    select card_no, tdate, total,trans_num 
+    from {$TRANS}dlog_90_view
+    where (trans_subtype = 'MA'  or upc like '%MAD Coupon%') 
+    and ceiling(month(tdate)/3.0) = ceiling(month(".$sql->now().")/3.0)
+    and year(tdate) = year(".$sql->now().")
+    and total > -2.52 and total < 2.52
+    order by card_no";
 $insR = $sql->query($insQ);
 
 $resetQ = "update custdata set memCoupons=1 where Type='PC'";
@@ -58,22 +58,22 @@ $resetR = $sql->query($resetQ);
 
 $bl = "CONCAT( CONVERT(CardNo,char), ' ', LastName )";
 if ($FANNIE_SERVER_DBMS == "MSSQL")
-	$bl = "RTRIM(CardNo) + ' ' + RTRIM(LastName)";
+    $bl = "RTRIM(CardNo) + ' ' + RTRIM(LastName)";
 $resetQ = "update custdata set memCoupons=0,blueLine=$bl where Type<>'PC'";
 $resetR = $sql->query($resetQ);
 
 $usedQ = "SELECT cardno FROM memcoupon GROUP BY cardno HAVING SUM(total) <> 0";
 $usedR = $sql->query($usedQ);
 while($usedW = $sql->fetch_row($usedR)){
-	$upR = $sql->query("UPDATE custdata SET memCoupons=0 WHERE CardNo=".$usedW['cardno']);
+    $upR = $sql->query("UPDATE custdata SET memCoupons=0 WHERE CardNo=".$usedW['cardno']);
 }
 
 $bl = "CONCAT( CONVERT(CardNo,char), ' ', LastName, ' Coup(', CONVERT(memCoupons,char), ')' )";
 if ($FANNIE_SERVER_DBMS == "MSSQL")
-	$bl = "RTRIM(CardNo) + ' ' + RTRIM(LastName) + ' Coup(' + CONVERT(varchar,memCoupons) + ')'";
+    $bl = "RTRIM(CardNo) + ' ' + RTRIM(LastName) + ' Coup(' + CONVERT(varchar,memCoupons) + ')'";
 $blQ = "update custdata
-	SET blueLine = $bl
-	WHERE Type = 'PC'";
+    SET blueLine = $bl
+    WHERE Type = 'PC'";
 $blR = $sql->query($blQ);
 
 ?>

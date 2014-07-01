@@ -36,7 +36,7 @@ class UsageStatsModel extends BasicModel
     'referrer' => array('type'=>'VARCHAR(100)'),
     'userHash' => array('type'=>'VARCHAR(40)'),
     'ipHash' => array('type'=>'VARCHAR(40)'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

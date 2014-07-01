@@ -72,18 +72,18 @@ The Membership Card number, the barcode on the card is different; it is used to 
 All member-related things in IS4C are on the member number.
 </li>
 <li><span style="font-weight:bold;">Download</span>
-	<ul>
-	<li>"Excel", in newer reports, where "CSV" is also an option, refers to a file
-	with formatting similar to that on the page.
-	It is for further use in Excel or another similar spreadsheet program.
-	In older reports, where there is no "CSV" option, it is more like CSV (raw data).
-	</li>
-	<li>"CSV" refers to a file of raw data, without formatting.
-	Literally, "Comma-Separated Values".  Many applications, including Excel, can import this format.
-	</li>
-	</ul>
-	</li>
-	</ul>
+    <ul>
+    <li>"Excel", in newer reports, where "CSV" is also an option, refers to a file
+    with formatting similar to that on the page.
+    It is for further use in Excel or another similar spreadsheet program.
+    In older reports, where there is no "CSV" option, it is more like CSV (raw data).
+    </li>
+    <li>"CSV" refers to a file of raw data, without formatting.
+    Literally, "Comma-Separated Values".  Many applications, including Excel, can import this format.
+    </li>
+    </ul>
+    </li>
+    </ul>
 </li>
 <li><span style="font-weight:bold;">Note</span>
 <br />While making these reports it can be useful to have the 

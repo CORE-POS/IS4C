@@ -26,87 +26,87 @@ include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class ScaleItemUploadPage extends FannieUploadPage 
 {
-	protected $title = "Fannie :: Product Tools";
-	protected $header = "Import Scale Items";
+    protected $title = "Fannie :: Product Tools";
+    protected $header = "Import Scale Items";
 
-	protected $preview_opts = array(
-		'upc' => array(
-			'name' => 'upc',
-			'display_name' => 'UPC*',
-			'default' => 0,
-			'required' => true
-		),
-		'desc' => array(
-			'name' => 'desc',
-			'display_name' => 'Description',
-			'default' => 1,
-			'required' => false
-		),
-		'price' => array(
-			'name' => 'price',
-			'display_name' => 'Price',
-			'default' => 2,
-			'required' => false
-		),
-		'type' => array(
-			'name' => 'type',
-			'display_name' => 'Random/Fixed',
-			'default' => 3,
-			'required' => false
-		),
-		'tare' => array(
-			'name' => 'tare',
-			'display_name' => 'Tare',
-			'default' => 3,
-			'required' => false
-		),
-		'shelf' => array(
-			'name' => 'shelf',
-			'display_name' => 'Shelf Life',
-			'default' => 3,
-			'required' => false
-		),
-		'net' => array(
-			'name' => 'net',
-			'display_name' => 'NetWt',
-			'default' => 3,
-			'required' => false
-		),
-		'text' => array(
-			'name' => 'text',
-			'display_name' => 'Text',
-			'default' => 3,
-			'required' => false
-		),
-	);
+    protected $preview_opts = array(
+        'upc' => array(
+            'name' => 'upc',
+            'display_name' => 'UPC*',
+            'default' => 0,
+            'required' => true
+        ),
+        'desc' => array(
+            'name' => 'desc',
+            'display_name' => 'Description',
+            'default' => 1,
+            'required' => false
+        ),
+        'price' => array(
+            'name' => 'price',
+            'display_name' => 'Price',
+            'default' => 2,
+            'required' => false
+        ),
+        'type' => array(
+            'name' => 'type',
+            'display_name' => 'Random/Fixed',
+            'default' => 3,
+            'required' => false
+        ),
+        'tare' => array(
+            'name' => 'tare',
+            'display_name' => 'Tare',
+            'default' => 3,
+            'required' => false
+        ),
+        'shelf' => array(
+            'name' => 'shelf',
+            'display_name' => 'Shelf Life',
+            'default' => 3,
+            'required' => false
+        ),
+        'net' => array(
+            'name' => 'net',
+            'display_name' => 'NetWt',
+            'default' => 3,
+            'required' => false
+        ),
+        'text' => array(
+            'name' => 'text',
+            'display_name' => 'Text',
+            'default' => 3,
+            'required' => false
+        ),
+    );
 
-	protected $use_splits = true;
+    protected $use_splits = true;
 
-	function process_file($linedata)
+    function process_file($linedata)
     {
-		global $FANNIE_OP_DB;
-		$dbc = FannieDB::get($FANNIE_OP_DB);
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 
-		$upc_index = $this->get_column_index('upc');
-		$desc_index = $this->get_column_index('desc');
-		$price_index = $this->get_column_index('price');
-		$type_index = $this->get_column_index('type');
-		$tare_index = $this->get_column_index('tare');
-		$shelf_index = $this->get_column_index('shelf');
-		$net_index = $this->get_column_index('net');
-		$text_index = $this->get_column_index('text');
+        $upc_index = $this->get_column_index('upc');
+        $desc_index = $this->get_column_index('desc');
+        $price_index = $this->get_column_index('price');
+        $type_index = $this->get_column_index('type');
+        $tare_index = $this->get_column_index('tare');
+        $shelf_index = $this->get_column_index('shelf');
+        $net_index = $this->get_column_index('net');
+        $text_index = $this->get_column_index('text');
 
         $model = new ScaleItemsModel($dbc);
         $ret = true;
-		foreach($linedata as $line) {
-			// get info from file and member-type default settings
-			// if applicable
-			$upc = $line[$upc_index];
+        foreach($linedata as $line) {
+            // get info from file and member-type default settings
+            // if applicable
+            $upc = $line[$upc_index];
 
-			// upc cleanup
-			$upc = str_replace(" ","",$upc);
-			$upc = str_replace("-","",$upc);
-			if (!is_numeric($upc)) continue; // skip header(s) or blank rows
+            // upc cleanup
+            $upc = str_replace(" ","",$upc);
+            $upc = str_replace("-","",$upc);
+            if (!is_numeric($upc)) continue; // skip header(s) or blank rows
 
             $upc = BarcodeLib::padUPC($upc);
 
@@ -150,29 +150,29 @@ class ScaleItemUploadPage extends FannieUploadPage
 
             $try = $model->save();
 
-			if ($try === false) {
-				$ret = false;
-				$this->error_details = 'There was an error importing UPC ' . $upc;
-			}
-		}
+            if ($try === false) {
+                $ret = false;
+                $this->error_details = 'There was an error importing UPC ' . $upc;
+            }
+        }
 
-		return $ret;
-	}
+        return $ret;
+    }
 
-	function form_content()
+    function form_content()
     {
-		return '<fieldset><legend>Instructions</legend>
-		Upload a CSV or XLS file containing product UPCs plus descriptions, prices,
-		tare weights, net weights, shelf lives, and/or ingredients/text.
-		<br />A preview helps you to choose and map columns to the database.
-		<br />The uploaded file will be deleted after the load.
-		</fieldset><br />';
-	}
+        return '<fieldset><legend>Instructions</legend>
+        Upload a CSV or XLS file containing product UPCs plus descriptions, prices,
+        tare weights, net weights, shelf lives, and/or ingredients/text.
+        <br />A preview helps you to choose and map columns to the database.
+        <br />The uploaded file will be deleted after the load.
+        </fieldset><br />';
+    }
 
-	function results_content()
+    function results_content()
     {
-		return 'Import completed successfully';
-	}
+        return 'Import completed successfully';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

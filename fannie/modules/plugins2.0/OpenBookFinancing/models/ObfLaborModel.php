@@ -38,7 +38,7 @@ class ObfLaborModel extends BasicModel
     'laborTarget' => array('type'=>'DOUBLE'),
     'averageWage' => array('type'=>'MONEY'),
     'forecastSales' => array('type'=>'MONEY'),
-	);
+    );
 
     protected $unique = array('obfWeekID', 'obfCategoryID');
 

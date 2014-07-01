@@ -23,39 +23,39 @@
 
 global $FANNIE_ROOT;
 if (!class_exists('FannieAPI'))
-	include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 if (!class_exists('FannieAuth'))
-	include($FANNIE_ROOT.'classlib2.0/auth/FannieAuth.php');
+    include($FANNIE_ROOT.'classlib2.0/auth/FannieAuth.php');
 
 /**
 */
 class TimesheetPlugin extends FanniePlugin {
 
-	/**
-	  Desired settings. These are automatically exposed
-	  on the 'Plugins' area of the install page and
-	  written to ini.php
-	*/
-	public $plugin_settings = array(
-	'TimesheetDatabase' => array('default'=>'core_timesheet','label'=>'Database',
-			'description'=>'Database to store timesheet information. Can
-					be one of the default CORE databases or a 
-					separate one.')
-	);
+    /**
+      Desired settings. These are automatically exposed
+      on the 'Plugins' area of the install page and
+      written to ini.php
+    */
+    public $plugin_settings = array(
+    'TimesheetDatabase' => array('default'=>'core_timesheet','label'=>'Database',
+            'description'=>'Database to store timesheet information. Can
+                    be one of the default CORE databases or a 
+                    separate one.')
+    );
 
-	public $plugin_description = 'Plugin for timeclock operations';
+    public $plugin_description = 'Plugin for timeclock operations';
 
 
-	public function setting_change()
+    public function setting_change()
     {
-		global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
+        global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
 
-		$db_name = $FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'];
-		if (empty($db_name)) return;
+        $db_name = $FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'];
+        if (empty($db_name)) return;
 
-		$dbc = FannieDB::get($db_name);
+        $dbc = FannieDB::get($db_name);
 
-		$errors = array();
+        $errors = array();
 
         $models = array(
             'PayPeriodsModel',
@@ -63,26 +63,26 @@ class TimesheetPlugin extends FanniePlugin {
             'TimesheetModel',
         );
 
-		foreach ($models as $model) {
+        foreach ($models as $model) {
             $obj = new $model($dbc);
             $obj->create();
-		}
-	}
+        }
+    }
 
-	public function plugin_enable(){
-		ob_start();
-		$try = FannieAuth::createClass('timesheet_access',
-			'Grants user permission to use the
-			 Timesheet plugin');
-		ob_end_clean();
-		if ($try === False){
-			echo 'Failed to create authentication class.
-				Make sure authentication is enabled in
-				Fannie and you\'re logged in as an admin
-				then try turning Timesheet on and off
-				again';
-		}
-	}
+    public function plugin_enable(){
+        ob_start();
+        $try = FannieAuth::createClass('timesheet_access',
+            'Grants user permission to use the
+             Timesheet plugin');
+        ob_end_clean();
+        if ($try === False){
+            echo 'Failed to create authentication class.
+                Make sure authentication is enabled in
+                Fannie and you\'re logged in as an admin
+                then try turning Timesheet on and off
+                again';
+        }
+    }
 }
 
 ?>

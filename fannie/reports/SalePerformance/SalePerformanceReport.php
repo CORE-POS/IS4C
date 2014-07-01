@@ -142,17 +142,17 @@ class SalePerformanceReport extends FannieReportPage
         ob_start();
         ?>
 function lookupSales(){
-	var dstr = "lookup=yes&year=";
-	dstr += $('#syear').val();
-	dstr += "&month="+$('#smonth :selected').val();
-	$.ajax({url: 'SalePerformanceReport.php',
-		method: 'get',
-		cache: false,
-		data: dstr,
-		success: function(data){
-			$('#result').html(data);
-		}
-	});
+    var dstr = "lookup=yes&year=";
+    dstr += $('#syear').val();
+    dstr += "&month="+$('#smonth :selected').val();
+    $.ajax({url: 'SalePerformanceReport.php',
+        method: 'get',
+        cache: false,
+        data: dstr,
+        success: function(data){
+            $('#result').html(data);
+        }
+    });
 }
         <?php
         return ob_get_clean();

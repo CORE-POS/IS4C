@@ -39,26 +39,26 @@ include($FANNIE_ROOT.'src/cron_msg.php');
 set_time_limit(0);
 
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
+        $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
 // drop and recreate because SQL Server
 // really hates identity inserts
 $sql->query("DROP TABLE productBackup");
 if ($FANNIE_SERVER_DBMS == "MSSQL"){
-	$sql->query("SELECT * INTO productBackup FROM products");
+    $sql->query("SELECT * INTO productBackup FROM products");
 }
 else {
-	$sql->query("CREATE TABLE productBackup LIKE products");
-	$sql->query("INSERT INTO productBackup SELECT * FROM products");
+    $sql->query("CREATE TABLE productBackup LIKE products");
+    $sql->query("INSERT INTO productBackup SELECT * FROM products");
 }
 
 $sql->query("DROP TABLE custdataBackup");
 if ($FANNIE_SERVER_DBMS == "MSSQL"){
-	$sql->query("SELECT * INTO custdataBackup FROM custdata");
+    $sql->query("SELECT * INTO custdataBackup FROM custdata");
 }
 else {
-	$sql->query("CREATE TABLE custdataBackup LIKE custdata");
-	$sql->query("INSERT INTO custdataBackup SELECT * FROM custdata");
+    $sql->query("CREATE TABLE custdataBackup LIKE custdata");
+    $sql->query("INSERT INTO custdataBackup SELECT * FROM custdata");
 }
 
 ?>

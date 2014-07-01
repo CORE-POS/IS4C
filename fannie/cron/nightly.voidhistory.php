@@ -40,23 +40,23 @@ include($FANNIE_ROOT.'src/cron_msg.php');
 set_time_limit(0);
 
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
+        $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
 $query = "INSERT INTO voidTransHistory
-	SELECT datetime,description,
-	".$sql->concat(
-		$sql->convert('emp_no','char'),"'-'",
-		$sql->convert('register_no','char'),"'-'",
-		$sql->convert('trans_no','char'),'')
-	.",
-	0
-	FROM transarchive WHERE trans_subtype='CM'
-	AND ".$sql->datediff('datetime',$sql->now())." = -1
-	AND description LIKE 'VOIDING TRANSACTION %-%-%'
-	AND register_no <> 99 AND emp_no <> 9999 AND trans_status <> 'X'";
+    SELECT datetime,description,
+    ".$sql->concat(
+        $sql->convert('emp_no','char'),"'-'",
+        $sql->convert('register_no','char'),"'-'",
+        $sql->convert('trans_no','char'),'')
+    .",
+    0
+    FROM transarchive WHERE trans_subtype='CM'
+    AND ".$sql->datediff('datetime',$sql->now())." = -1
+    AND description LIKE 'VOIDING TRANSACTION %-%-%'
+    AND register_no <> 99 AND emp_no <> 9999 AND trans_status <> 'X'";
 $success = $sql->query($query);
 
 if ($success)
-	echo cron_msg("Voids logged");
+    echo cron_msg("Voids logged");
 else
-	echo cron_msg("Error logging voids");
+    echo cron_msg("Error logging voids");

@@ -51,7 +51,7 @@ class EfsnetRequestModel extends BasicModel
     'sentTr1' => array('type'=>'TINYINT'),
     'sentTr2' => array('type'=>'TINYINT'),
     'efsnetRequestID' => array('type'=>'INT', 'index'=>true),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

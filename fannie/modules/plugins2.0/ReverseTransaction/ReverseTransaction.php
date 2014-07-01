@@ -23,29 +23,29 @@
 
 global $FANNIE_ROOT;
 if (!class_exists('FannieAPI'))
-	include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 /**
 */
 class ReverseTransaction extends FanniePlugin {
 
-	/**
-	  Desired settings. These are automatically exposed
-	  on the 'Plugins' area of the install page and
-	  written to ini.php
-	*/
-	public $plugin_settings = array(
-	'ReversalEmployee' => array('default'=>'1001','label'=>'Employee #',
-			'description'=>'Employee number to use when posting
-			reversal transactions'),
-	'ReversalLane' => array('default'=>'30','label'=>'Register #',
-			'description'=>'Register number to use when posting
-			reversal transactions')
-	);
+    /**
+      Desired settings. These are automatically exposed
+      on the 'Plugins' area of the install page and
+      written to ini.php
+    */
+    public $plugin_settings = array(
+    'ReversalEmployee' => array('default'=>'1001','label'=>'Employee #',
+            'description'=>'Employee number to use when posting
+            reversal transactions'),
+    'ReversalLane' => array('default'=>'30','label'=>'Register #',
+            'description'=>'Register number to use when posting
+            reversal transactions')
+    );
 
-	public $plugin_description = 'Plugin for posting reversal transaction. A reversal is
-			essentially the original transaction times minus one. Used in correcting
-			and cleaning up after mistakes.';
+    public $plugin_description = 'Plugin for posting reversal transaction. A reversal is
+            essentially the original transaction times minus one. Used in correcting
+            and cleaning up after mistakes.';
 }
 
 ?>

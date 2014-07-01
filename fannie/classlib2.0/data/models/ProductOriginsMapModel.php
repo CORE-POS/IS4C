@@ -31,7 +31,7 @@ class ProductOriginsMapModel extends BasicModel
 
     protected $columns = array(
     'originID' => array('type'=>'INT', 'primary_key'=>true),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
     /* END ACCESSOR FUNCTIONS */

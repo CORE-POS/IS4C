@@ -3,11 +3,11 @@
 Table: batchowner
 
 Columns:
-	batchID int
-	owner varchar
+    batchID int
+    owner varchar
 
 Depends on:
-	batches
+    batches
 
 Use:
 Pure housekeeping. A batch does not have to
@@ -16,10 +16,10 @@ the list of batches, since $deity forbid anyone
 ever delete one when they're done with it...
 */
 $CREATE['op.batchowner'] = "
-	CREATE TABLE batchowner (
-		batchID int,
-		owner varchar(50),
-		PRIMARY KEY (batchID)
-	)
+    CREATE TABLE batchowner (
+        batchID int,
+        owner varchar(50),
+        PRIMARY KEY (batchID)
+    )
 ";
 ?>

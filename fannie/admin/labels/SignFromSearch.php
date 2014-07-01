@@ -27,8 +27,8 @@ include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 class SignFromSearch extends FannieRESTfulPage 
 {
 
-	protected $title = 'Fannie - Signage';
-	protected $header = 'Signage';
+    protected $title = 'Fannie - Signage';
+    protected $header = 'Signage';
 
     protected $signage_mod;
     protected $signage_obj;

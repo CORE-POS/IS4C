@@ -32,7 +32,7 @@ class CalendarsModel extends BasicModel
     protected $columns = array(
     'calendarID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),
     'name' => array('type'=>'VARCHAR(50)'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

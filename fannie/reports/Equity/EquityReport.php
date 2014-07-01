@@ -37,7 +37,7 @@ class EquityReport extends FannieReportPage
     protected $header = "Equity Activity Report";
     protected $required_fields = array('memNum');
 
-	public function preprocess()
+    public function preprocess()
     {
         $this->card_no = FormLib::get('memNum','');
 
@@ -49,7 +49,7 @@ class EquityReport extends FannieReportPage
         return array('Activity for account #'.$this->card_no);
     }
 
-	public function fetch_report_data()
+    public function fetch_report_data()
     {
         global $FANNIE_OP_DB,$FANNIE_TRANS_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);

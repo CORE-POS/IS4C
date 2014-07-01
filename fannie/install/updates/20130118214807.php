@@ -23,26 +23,26 @@
 
 class update_20130118214807 extends UpdateObj {
 
-	protected $timestamp = '20130118214807';
+    protected $timestamp = '20130118214807';
 
-	protected $description = 'If you have run update 20130118214806 to change the data type of upc in
+    protected $description = 'If you have run update 20130118214806 to change the data type of upc in
 <br />products, productBackup and prodExtra
 <br />and it succeeded but removed the leading zeroes from upc run this update to restore them.
 <br />When all is well run update 20130118214808 to drop the special backups of
 <br />products, productBackup and prodExtra that were made by update 20130118214805.
 <br />These changes were tested under MySQL 5.1';
 
-	protected $author = 'Eric Lee (WEFC_Toronto)';
+    protected $author = 'Eric Lee (WEFC_Toronto)';
 
-	protected $queries = array(
-		'op' => array(
-			"UPDATE productBackup SET upc = LPAD(upc,13,'0') WHERE CHAR_LENGTH(upc) <> 13",
-			"UPDATE prodExtra SET upc = LPAD(upc,13,'0') WHERE CHAR_LENGTH(upc) < 13",
-			"UPDATE products SET upc = LPAD(upc,13,'0') WHERE CHAR_LENGTH(upc) < 13"
-		),
-		'trans' => array(),
-		'archive' => array()
-	);
+    protected $queries = array(
+        'op' => array(
+            "UPDATE productBackup SET upc = LPAD(upc,13,'0') WHERE CHAR_LENGTH(upc) <> 13",
+            "UPDATE prodExtra SET upc = LPAD(upc,13,'0') WHERE CHAR_LENGTH(upc) < 13",
+            "UPDATE products SET upc = LPAD(upc,13,'0') WHERE CHAR_LENGTH(upc) < 13"
+        ),
+        'trans' => array(),
+        'archive' => array()
+    );
 }
 
 ?>

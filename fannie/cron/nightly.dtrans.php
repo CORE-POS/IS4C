@@ -58,11 +58,11 @@ include($FANNIE_ROOT.'src/cron_msg.php');
 set_time_limit(0);
 
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
+        $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
 $cols = $sql->table_definition('dtransactions');
 if (isset($cols['date_id'])){
-	$sql->query("UPDATE dtransactions SET date_id=DATE_FORMAT(datetime,'%Y%m%d')");
+    $sql->query("UPDATE dtransactions SET date_id=DATE_FORMAT(datetime,'%Y%m%d')");
 }
 
 /* Find date(s) in dtransactions */
@@ -83,20 +83,20 @@ foreach($dates as $date) {
 }
 $chk2 = $sql->query("DELETE FROM transarchive WHERE ".$sql->datediff($sql->now(),'datetime')." > 92");
 if ($chk1 === false) {
-	echo cron_msg("Error loading data into transarchive");
+    echo cron_msg("Error loading data into transarchive");
 } elseif ($chk2 === false) {
-	echo cron_msg("Error trimming transarchive");
+    echo cron_msg("Error trimming transarchive");
 } else {
-	echo cron_msg("Data rotated into transarchive");
+    echo cron_msg("Data rotated into transarchive");
 }
 
 /* reload all the small snapshot */
 $chk1 = $sql->query("TRUNCATE TABLE dlog_15");
 $chk2 = $sql->query("INSERT INTO dlog_15 SELECT * FROM dlog_90_view WHERE ".$sql->datediff($sql->now(),'tdate')." <= 15");
 if ($chk1 === false || $chk2 === false)
-	echo cron_msg("Error reloading dlog_15");
+    echo cron_msg("Error reloading dlog_15");
 else
-	echo cron_msg("Success reloading dlog_15");
+    echo cron_msg("Success reloading dlog_15");
 
 $added_partition = false;
 foreach($dates as $date) {
@@ -142,7 +142,7 @@ foreach($dates as $date) {
                     $added_partition = true;
                 }
             }
-		
+        
             // now just copy rows into the partitioned table
             $loadQ = "INSERT INTO bigArchive SELECT * FROM {$FANNIE_TRANS_DB}.dtransactions
                         WHERE ".$sql->datediff('datetime', "'$date'")."= 0";
@@ -189,13 +189,13 @@ foreach($dates as $date) {
                 SELECT DATE(MAX(tdate)) AS tdate, upc,
                 CONVERT(SUM(total),DECIMAL(10,2)) as total,
                 CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
-				WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty
+                WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty
                 FROM $FANNIE_TRANS_DB.dlog WHERE
                 trans_type IN ('I') AND upc <> '0'
                 AND ".$sql->datediff('tdate',"'$date'")."= 0
                 GROUP BY upc");
         }
-        if ($sql->table_exists("sumRingSalesByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){	
+        if ($sql->table_exists("sumRingSalesByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){    
             $sql->query("INSERT INTO sumRingSalesByDay
                 SELECT DATE(MAX(tdate)) AS tdate, upc, department,
                 CONVERT(SUM(total),DECIMAL(10,2)) as total,
@@ -217,7 +217,7 @@ foreach($dates as $date) {
                 AND ".$sql->datediff('tdate',"'$date'")."= 0
                 GROUP BY department");
         }
-        if ($sql->table_exists("sumMemSalesByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){	
+        if ($sql->table_exists("sumMemSalesByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){ 
             $sql->query("INSERT INTO sumMemSalesByDay
                 SELECT DATE(MAX(tdate)) AS tdate, card_no,
                 CONVERT(SUM(total),DECIMAL(10,2)) as total,
@@ -229,7 +229,7 @@ foreach($dates as $date) {
                 AND ".$sql->datediff('tdate',"'$date'")."= 0
                 GROUP BY card_no");
         }
-        if ($sql->table_exists("sumMemTypeSalesByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){	
+        if ($sql->table_exists("sumMemTypeSalesByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){ 
             $sql->query("INSERT INTO sumMemTypeSalesByDay
                 SELECT DATE(MAX(tdate)) AS tdate, c.memType,
                 CONVERT(SUM(total),DECIMAL(10,2)) as total,
@@ -244,7 +244,7 @@ foreach($dates as $date) {
                 AND ".$sql->datediff('tdate',"'$date'")."= 0
                 GROUP BY c.memType");
         }
-        if ($sql->table_exists("sumTendersByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){	
+        if ($sql->table_exists("sumTendersByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){  
             $sql->query("INSERT INTO sumTendersByDay
                 SELECT DATE(MAX(tdate)) AS tdate, trans_subtype,
                 CONVERT(SUM(total),DECIMAL(10,2)) as total,
@@ -255,7 +255,7 @@ foreach($dates as $date) {
                 AND ".$sql->datediff('tdate',"'$date'")."= 0
                 GROUP BY trans_subtype");
         }
-        if ($sql->table_exists("sumDiscountsByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){	
+        if ($sql->table_exists("sumDiscountsByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){    
             $sql->query("INSERT INTO sumDiscountsByDay
                 SELECT DATE(MAX(tdate)) AS tdate, c.memType,
                 CONVERT(SUM(total),DECIMAL(10,2)) as total,
@@ -275,161 +275,161 @@ foreach($dates as $date) {
    DO NOT TRUNCATE; that resets AUTO_INCREMENT column
 */
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
+        $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 $chk = $sql->query("DELETE FROM dtransactions");
 if ($chk === false)
-	echo cron_msg("Error truncating dtransactions");
+    echo cron_msg("Error truncating dtransactions");
 else
-	echo cron_msg("Success truncating dtransactions");
+    echo cron_msg("Success truncating dtransactions");
 
 function createArchive($name,$db){
-	global $FANNIE_SERVER_DBMS, $FANNIE_ARCHIVE_REMOTE,
-		$FANNIE_ARCHIVE_DBMS, $FANNIE_ARCHIVE_DB;;
+    global $FANNIE_SERVER_DBMS, $FANNIE_ARCHIVE_REMOTE,
+        $FANNIE_ARCHIVE_DBMS, $FANNIE_ARCHIVE_DB;;
 
-	$dbms = $FANNIE_ARCHIVE_REMOTE?$FANNIE_ARCHIVE_DBMS:$FANNIE_SERVER_DBMS;
-	
-	$trans_columns = "(
-	  `datetime` datetime default NULL,
-	  `register_no` smallint(6) default NULL,
-	  `emp_no` smallint(6) default NULL,
-	  `trans_no` int(11) default NULL,
-	  `upc` varchar(255) default NULL,
-	  `description` varchar(255) default NULL,
-	  `trans_type` varchar(255) default NULL,
-	  `trans_subtype` varchar(255) default NULL,
-	  `trans_status` varchar(255) default NULL,
-	  `department` smallint(6) default NULL,
-	  `quantity` double default NULL,
-	  `scale` tinyint(4) default NULL,
-	  `cost` double default 0.00 NULL,
-	  `unitPrice` double default NULL,
-	  `total` double default NULL,
-	  `regPrice` double default NULL,
-	  `tax` smallint(6) default NULL,
-	  `foodstamp` tinyint(4) default NULL,
-	  `discount` double default NULL,
-	  `memDiscount` double default NULL,
-	  `discountable` tinyint(4) default NULL,
-	  `discounttype` tinyint(4) default NULL,
-	  `voided` tinyint(4) default NULL,
-	  `percentDiscount` tinyint(4) default NULL,
-	  `ItemQtty` double default NULL,
-	  `volDiscType` tinyint(4) default NULL,
-	  `volume` tinyint(4) default NULL,
-	  `VolSpecial` double default NULL,
-	  `mixMatch` smallint(6) default NULL,
-	  `matched` smallint(6) default NULL,
-	  `memType` tinyint(2) default NULL,
-	  `staff` tinyint(4) default NULL,
-	  `numflag` smallint(6) default 0 NULL,
-	  `charflag` varchar(2) default '' NULL,
-	  `card_no` varchar(255) default NULL,
-	  `trans_id` int(11) default NULL
-	)";
+    $dbms = $FANNIE_ARCHIVE_REMOTE?$FANNIE_ARCHIVE_DBMS:$FANNIE_SERVER_DBMS;
+    
+    $trans_columns = "(
+      `datetime` datetime default NULL,
+      `register_no` smallint(6) default NULL,
+      `emp_no` smallint(6) default NULL,
+      `trans_no` int(11) default NULL,
+      `upc` varchar(255) default NULL,
+      `description` varchar(255) default NULL,
+      `trans_type` varchar(255) default NULL,
+      `trans_subtype` varchar(255) default NULL,
+      `trans_status` varchar(255) default NULL,
+      `department` smallint(6) default NULL,
+      `quantity` double default NULL,
+      `scale` tinyint(4) default NULL,
+      `cost` double default 0.00 NULL,
+      `unitPrice` double default NULL,
+      `total` double default NULL,
+      `regPrice` double default NULL,
+      `tax` smallint(6) default NULL,
+      `foodstamp` tinyint(4) default NULL,
+      `discount` double default NULL,
+      `memDiscount` double default NULL,
+      `discountable` tinyint(4) default NULL,
+      `discounttype` tinyint(4) default NULL,
+      `voided` tinyint(4) default NULL,
+      `percentDiscount` tinyint(4) default NULL,
+      `ItemQtty` double default NULL,
+      `volDiscType` tinyint(4) default NULL,
+      `volume` tinyint(4) default NULL,
+      `VolSpecial` double default NULL,
+      `mixMatch` smallint(6) default NULL,
+      `matched` smallint(6) default NULL,
+      `memType` tinyint(2) default NULL,
+      `staff` tinyint(4) default NULL,
+      `numflag` smallint(6) default 0 NULL,
+      `charflag` varchar(2) default '' NULL,
+      `card_no` varchar(255) default NULL,
+      `trans_id` int(11) default NULL
+    )";
 
-	if ($dbms == 'MSSQL'){
-		$trans_columns = "([datetime] [datetime] NOT NULL ,
-			[register_no] [smallint] NOT NULL ,
-			[emp_no] [smallint] NOT NULL ,
-			[trans_no] [int] NOT NULL ,
-			[upc] [nvarchar] (13) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-			[description] [nvarchar] (30) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-			[trans_type] [nvarchar] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-			[trans_subtype] [nvarchar] (2) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-			[trans_status] [nvarchar] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-			[department] [smallint] NULL ,
-			[quantity] [float] NULL ,
-			[scale] [tinyint] NULL ,
-			[cost] [money] NULL ,
-			[unitPrice] [money] NULL ,
-			[total] [money] NOT NULL ,
-			[regPrice] [money] NULL ,
-			[tax] [smallint] NULL ,
-			[foodstamp] [tinyint] NOT NULL ,
-			[discount] [money] NOT NULL ,
-			[memDiscount] [money] NULL ,
-			[discountable] [tinyint] NULL ,
-			[discounttype] [tinyint] NULL ,
-			[voided] [tinyint] NULL ,
-			[percentDiscount] [tinyint] NULL ,
-			[ItemQtty] [float] NULL ,
-			[volDiscType] [tinyint] NOT NULL ,
-			[volume] [tinyint] NOT NULL ,
-			[VolSpecial] [money] NOT NULL ,
-			[mixMatch] [smallint] NULL ,
-			[matched] [smallint] NOT NULL ,
-			[memType] [smallint] NULL ,
-			[isStaff] [tinyint] NULL ,
-			[numflag] [smallint] NULL ,
-			[charflag] [nvarchar] (2) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-			[card_no] [nvarchar] (6) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-			[trans_id] [int] NOT NULL )";
-	}
+    if ($dbms == 'MSSQL'){
+        $trans_columns = "([datetime] [datetime] NOT NULL ,
+            [register_no] [smallint] NOT NULL ,
+            [emp_no] [smallint] NOT NULL ,
+            [trans_no] [int] NOT NULL ,
+            [upc] [nvarchar] (13) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+            [description] [nvarchar] (30) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+            [trans_type] [nvarchar] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+            [trans_subtype] [nvarchar] (2) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+            [trans_status] [nvarchar] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+            [department] [smallint] NULL ,
+            [quantity] [float] NULL ,
+            [scale] [tinyint] NULL ,
+            [cost] [money] NULL ,
+            [unitPrice] [money] NULL ,
+            [total] [money] NOT NULL ,
+            [regPrice] [money] NULL ,
+            [tax] [smallint] NULL ,
+            [foodstamp] [tinyint] NOT NULL ,
+            [discount] [money] NOT NULL ,
+            [memDiscount] [money] NULL ,
+            [discountable] [tinyint] NULL ,
+            [discounttype] [tinyint] NULL ,
+            [voided] [tinyint] NULL ,
+            [percentDiscount] [tinyint] NULL ,
+            [ItemQtty] [float] NULL ,
+            [volDiscType] [tinyint] NOT NULL ,
+            [volume] [tinyint] NOT NULL ,
+            [VolSpecial] [money] NOT NULL ,
+            [mixMatch] [smallint] NULL ,
+            [matched] [smallint] NOT NULL ,
+            [memType] [smallint] NULL ,
+            [isStaff] [tinyint] NULL ,
+            [numflag] [smallint] NULL ,
+            [charflag] [nvarchar] (2) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+            [card_no] [nvarchar] (6) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+            [trans_id] [int] NOT NULL )";
+    }
 
-	$db->query("CREATE TABLE $table $trans_columns",$FANNIE_ARCHIVE_DB);
+    $db->query("CREATE TABLE $table $trans_columns",$FANNIE_ARCHIVE_DB);
 }
 
 function createViews($dstr,$db){
-	global $FANNIE_SERVER_DBMS, $FANNIE_ARCHIVE_REMOTE,
-		$FANNIE_ARCHIVE_DBMS, $FANNIE_ARCHIVE_DB,
-		$FANNIE_SERVER,$FANNIE_SERVER_PW,$FANNIE_SERVER_USER,
-		$FANNIE_ARCHIVE_SERVER,$FANNIE_ARCHIVE_USER,
-		$FANNIE_ARCHIVE_PW;	
+    global $FANNIE_SERVER_DBMS, $FANNIE_ARCHIVE_REMOTE,
+        $FANNIE_ARCHIVE_DBMS, $FANNIE_ARCHIVE_DB,
+        $FANNIE_SERVER,$FANNIE_SERVER_PW,$FANNIE_SERVER_USER,
+        $FANNIE_ARCHIVE_SERVER,$FANNIE_ARCHIVE_USER,
+        $FANNIE_ARCHIVE_PW; 
 
-	if ($FANNIE_ARCHIVE_REMOTE){
-		$db->add_connection($FANNIE_ARCHIVE_SERVER,$FANNIE_ARCHIVE_DBMS,
-			$FANNIE_ARCHIVE_DB,$FANNIE_ARCHIVE_USER,
-			$FANNIE_ARCHIVE_PW);
-	}
-	else {
-		$db->add_connection($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
-			$FANNIE_ARCHIVE_DB,$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
-	}
+    if ($FANNIE_ARCHIVE_REMOTE){
+        $db->add_connection($FANNIE_ARCHIVE_SERVER,$FANNIE_ARCHIVE_DBMS,
+            $FANNIE_ARCHIVE_DB,$FANNIE_ARCHIVE_USER,
+            $FANNIE_ARCHIVE_PW);
+    }
+    else {
+        $db->add_connection($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
+            $FANNIE_ARCHIVE_DB,$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
+    }
 
-	$dbms = $FANNIE_ARCHIVE_REMOTE?$FANNIE_ARCHIVE_DBMS:$FANNIE_SERVER_DBMS;
+    $dbms = $FANNIE_ARCHIVE_REMOTE?$FANNIE_ARCHIVE_DBMS:$FANNIE_SERVER_DBMS;
 
     $table_def = $db->table_definition('transArchive' . $str);
 
-	$dlogQ = "CREATE  view dlog$dstr as
-		select 
-		d.datetime as tdate, 
-		d.register_no, 
-		d.emp_no, 
-		d.trans_no, 
-		d.upc, 
+    $dlogQ = "CREATE  view dlog$dstr as
+        select 
+        d.datetime as tdate, 
+        d.register_no, 
+        d.emp_no, 
+        d.trans_no, 
+        d.upc, 
         d.description,
-		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
-			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
-		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
-		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
-		d.trans_status, 
-		d.department, 
-		d.quantity, 
+        CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+            WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+        CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+           case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+        d.trans_status, 
+        d.department, 
+        d.quantity, 
         d.scale,
         d.cost,
-		d.unitPrice, 
-		d.total, 
+        d.unitPrice, 
+        d.total, 
         d.regPrice,
-		d.tax, 
-		d.foodstamp, 
+        d.tax, 
+        d.foodstamp, 
         d.discount,
         d.memDiscount,
         d.discountable,
         d.discounttype,
         d.voided,
         d.percentDiscount,
-		d.itemQtty, 
-		d.memType,
+        d.itemQtty, 
+        d.memType,
         d.volDiscType,
         d.volume,
         d.VolSpecial,
         d.mixMatch,
         d.matched,
-		d.staff,
-		d.numflag,
-		d.charflag,
-		d.card_no, 
-		d.trans_id, ";
+        d.staff,
+        d.numflag,
+        d.charflag,
+        d.card_no, 
+        d.trans_id, ";
     if (isset($table_def['pos_row_id'])) {
         $dlogQ .= "d.pos_row_id,";
     }
@@ -437,67 +437,67 @@ function createViews($dstr,$db){
         $dlogQ .= "d.store_row_id,";
     }
     $dlogQ .= "concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
-		convert(d.trans_no,char)) as trans_num
+        convert(d.trans_no,char)) as trans_num
 
-		from transArchive$dstr as d
-		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99";
+        from transArchive$dstr as d
+        where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99";
 
-	if ($dbms == "MSSQL"){
-		$dlogQ = "CREATE  view dlog$dstr as
-			select 
-			d.datetime as tdate, 
-			d.register_no, 
-			d.emp_no, 
-			d.trans_no, 
-			d.upc, 
+    if ($dbms == "MSSQL"){
+        $dlogQ = "CREATE  view dlog$dstr as
+            select 
+            d.datetime as tdate, 
+            d.register_no, 
+            d.emp_no, 
+            d.trans_no, 
+            d.upc, 
             d.description,
-			CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
-				WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
-			CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
-			   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
-			d.trans_status, 
-			d.department, 
-			d.quantity, 
+            CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+                WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+            CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+               case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+            d.trans_status, 
+            d.department, 
+            d.quantity, 
             c.scale,
             d.cost,
-			d.unitPrice, 
-			d.total, 
+            d.unitPrice, 
+            d.total, 
             d.regPrice,
-			d.tax, 
-			d.foodstamp, 
+            d.tax, 
+            d.foodstamp, 
             d.discount,
             d.memDiscount,
             d.discountable,
             d.discounttype,
             d.voided,
             d.percentDiscount,
-			d.itemQtty, 
+            d.itemQtty, 
             d.volDiscType,
             d.volume,
             d.VolSpecial,
             d.mixMatch,
             d.matched,
-			d.memType,
-			d.isStaff,
-			d.numflag,
-			d.charflag,
-			d.card_no, 
-			d.trans_id,";
+            d.memType,
+            d.isStaff,
+            d.numflag,
+            d.charflag,
+            d.card_no, 
+            d.trans_id,";
             if (isset($table_def['pos_row_id'])) {
                 $dlogQ .= "d.pos_row_id,";
             }
             if (isset($table_def['store_row_id'])) {
                 $dlogQ .= "d.store_row_id,";
             }
-			$dlogQ .= "(convert(varchar,d.emp_no) +  '-' + convert(varchar,d.register_no) + '-' + 
-			convert(varchar,d.trans_no)) as trans_num
+            $dlogQ .= "(convert(varchar,d.emp_no) +  '-' + convert(varchar,d.register_no) + '-' + 
+            convert(varchar,d.trans_no)) as trans_num
 
-			from transArchive$dstr as d
-			where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99";
-	}
-	$chk = $db->query($dlogQ,$FANNIE_ARCHIVE_DB);
-	if ($chk === false)
-		echo cron_msg("Error creating dlog view for new archive table");
+            from transArchive$dstr as d
+            where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99";
+    }
+    $chk = $db->query($dlogQ,$FANNIE_ARCHIVE_DB);
+    if ($chk === false)
+        echo cron_msg("Error creating dlog view for new archive table");
 }
 
 ?>

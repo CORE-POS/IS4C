@@ -5,7 +5,7 @@
  */
 class TasksTest extends PHPUnit_Framework_TestCase
 {
-	public function testTasks()
+    public function testTasks()
     {
         $tasks = FannieAPI::listModules('FannieTask', true);
 

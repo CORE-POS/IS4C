@@ -44,15 +44,15 @@ class RecallReport extends FannieReportPage
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $upc = BarcodeLib::padUPC(FormLib::get('upc'));
-		$date1 = FormLib::get_form_value('date1',date('Y-m-d'));
-		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
+        $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
+        $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
 
         $q = $dbc->prepare_statement("SELECT description FROM products WHERE upc=?");
         $r = $dbc->exec_statement($q,array($upc));
         $w = $dbc->fetch_row($r);
         $description = $w[0];
 
-	    return array("Purchases for $upc ($description)",
+        return array("Purchases for $upc ($description)",
                     "between $date1 and $date2");
     }
 
@@ -62,8 +62,8 @@ class RecallReport extends FannieReportPage
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $upc = BarcodeLib::padUPC(FormLib::get('upc'));
-		$date1 = FormLib::get_form_value('date1',date('Y-m-d'));
-		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
+        $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
+        $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
 
         $dlog = DTransactionsModel::selectDlog($date1,$date2);
 
@@ -99,8 +99,8 @@ class RecallReport extends FannieReportPage
         }
 
         return $data;
-	}
-		
+    }
+        
     public function form_content()
     {
         $this->add_onload_command("\$('#date1').datepicker({dateFormat:'yy-mm-dd'});\n");

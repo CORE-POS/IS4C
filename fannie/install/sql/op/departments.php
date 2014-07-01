@@ -3,21 +3,21 @@
 Table: departments
 
 Columns:
-	dept_no smallint
-	dept_name varchar
-	dept_tax tinyint
-	dept_fs tinyint
-	dept_limit dbms currency
-	dept_minimum dbms currency
-	dept_discount tinyint
-	dept_see_id tinyint
-	modified datetime
-	modifiedby int
+    dept_no smallint
+    dept_name varchar
+    dept_tax tinyint
+    dept_fs tinyint
+    dept_limit dbms currency
+    dept_minimum dbms currency
+    dept_discount tinyint
+    dept_see_id tinyint
+    modified datetime
+    modifiedby int
     margin double
     salesCode int
 
 Depends on:
-	none
+    none
 
 Use:
 Departments are the primary level of granularity
@@ -55,39 +55,39 @@ and reporting field with no meaning on the lane.
 */
 
 $CREATE['op.departments'] = "
-	CREATE TABLE `departments` (
-	  `dept_no` smallint(6) default NULL,
-	  `dept_name` varchar(30) default NULL,
-	  `dept_tax` tinyint(4) default NULL,
-	  `dept_fs` tinyint(4) default NULL,  
-	  `dept_limit` double default NULL,
-	  `dept_minimum` double default NULL,
-	  `dept_discount` tinyint(4) default NULL,
-	  `dept_see_id` tinyint(4) default NULL,
-	  `modified` datetime default NULL,
-	  `modifiedby` int(11) default NULL,
+    CREATE TABLE `departments` (
+      `dept_no` smallint(6) default NULL,
+      `dept_name` varchar(30) default NULL,
+      `dept_tax` tinyint(4) default NULL,
+      `dept_fs` tinyint(4) default NULL,  
+      `dept_limit` double default NULL,
+      `dept_minimum` double default NULL,
+      `dept_discount` tinyint(4) default NULL,
+      `dept_see_id` tinyint(4) default NULL,
+      `modified` datetime default NULL,
+      `modifiedby` int(11) default NULL,
       `margin` double default 0,
       `salesCode` int default 0,
-	  PRIMARY KEY (`dept_no`),
-	  KEY `dept_name` (`dept_name`)
-	);
+      PRIMARY KEY (`dept_no`),
+      KEY `dept_name` (`dept_name`)
+    );
 ";
 if ($dbms == "MSSQL"){
-	$CREATE['op.departments'] = "
-		CREATE TABLE [departments] (
-			[dept_no] [smallint] NULL ,
-			[dept_name] [nvarchar] (30) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-			[dept_tax] [tinyint] NULL ,
-			[dept_fs] [bit] NOT NULL ,
-			[dept_limit] [money] NULL ,
-			[dept_minimum] [money] NULL ,
-			[dept_discount] [smallint] NULL ,
-			[dept_see_id] [tinyint] NULL ,
-			[modified] [smalldatetime] NULL ,
-			[modifiedby] [int] NULL ,
+    $CREATE['op.departments'] = "
+        CREATE TABLE [departments] (
+            [dept_no] [smallint] NULL ,
+            [dept_name] [nvarchar] (30) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+            [dept_tax] [tinyint] NULL ,
+            [dept_fs] [bit] NOT NULL ,
+            [dept_limit] [money] NULL ,
+            [dept_minimum] [money] NULL ,
+            [dept_discount] [smallint] NULL ,
+            [dept_see_id] [tinyint] NULL ,
+            [modified] [smalldatetime] NULL ,
+            [modifiedby] [int] NULL ,
             [margin] [double] NULL,
             [salesCode] [int] NULL
-		)";
+        )";
 }
 
 ?>

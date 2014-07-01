@@ -37,12 +37,12 @@ class DDDReport extends FannieReportPage
 
     protected $sort_direction = 1;
 
-	public function fetch_report_data()
+    public function fetch_report_data()
     {
-		global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
+        global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-		$date1 = FormLib::get_form_value('date1');
-		$date2 = FormLib::get_form_value('date2');
+        $date1 = FormLib::get_form_value('date1');
+        $date2 = FormLib::get_form_value('date2');
 
         $dtrans = $FANNIE_TRANS_DB . $dbc->sep() . 'transarchive';
         $union = true;
@@ -125,9 +125,9 @@ class DDDReport extends FannieReportPage
         }
 
         return $data;
-	}
-	
-	public function form_content()
+    }
+    
+    public function form_content()
     {
         $this->add_onload_command('$(\'#date1\').datepicker();');
         $this->add_onload_command('$(\'#date2\').datepicker();');
@@ -151,7 +151,7 @@ class DDDReport extends FannieReportPage
             </tr>
             </table>
             </form>';
-	}
+    }
 }
 
 FannieDispatch::conditionalExec();

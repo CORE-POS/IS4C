@@ -23,29 +23,29 @@
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-	* 03Apr13 AT Added prepared statements. Used SQLManger::identifer_escape
-		     rather than direct backticks for datestamp field variable
-	* 15Feb13 EL + For trans_type D approximate cost as (total - (total*dept_margin)).
-	* 27Jan13 Eric Lee Based on GeneralCosts.
-	*         N.B. For trans_type D approximate cost as (total / dept markup).
-	*         To exclude Cancelled transactions (X). What are D and Z?
-  *						AND t.trans_status not in ('D','X','Z')
-	*         To exclude Dummy/Training transactions
-	*						AND t.emp_no not in (7000, 9999)
-	*         Display: Costs, Sales, Tax1 (HST), Tax2 (GST) in same table.
-	*         Might want to try to generate tax-related code from taxNames[]
-	*          so the program could be more portable.
+    * 03Apr13 AT Added prepared statements. Used SQLManger::identifer_escape
+             rather than direct backticks for datestamp field variable
+    * 15Feb13 EL + For trans_type D approximate cost as (total - (total*dept_margin)).
+    * 27Jan13 Eric Lee Based on GeneralCosts.
+    *         N.B. For trans_type D approximate cost as (total / dept markup).
+    *         To exclude Cancelled transactions (X). What are D and Z?
+  *                     AND t.trans_status not in ('D','X','Z')
+    *         To exclude Dummy/Training transactions
+    *                       AND t.emp_no not in (7000, 9999)
+    *         Display: Costs, Sales, Tax1 (HST), Tax2 (GST) in same table.
+    *         Might want to try to generate tax-related code from taxNames[]
+    *          so the program could be more portable.
 
-	* 25Jan13 EL Add today, yesterday, this week, last week, this month, last month options.
-	*  2Jan13 Eric Lee Report of Costs, based on GeneralSales/index.php
-	* + Base on a dtrans table
-	* + Use variable for name of datestamp field.
-	* + Exclude what the dlog view excludes
-	* + For trans_type D approximate cost as (total / dept markup).
-	* + Page heading.
-	* + Format report as a single table. Other HTML adjustments.
-	* I'm not sure the dept==1 flavour gets markup right when department has changed
-	*  since the transaction.
+    * 25Jan13 EL Add today, yesterday, this week, last week, this month, last month options.
+    *  2Jan13 Eric Lee Report of Costs, based on GeneralSales/index.php
+    * + Base on a dtrans table
+    * + Use variable for name of datestamp field.
+    * + Exclude what the dlog view excludes
+    * + For trans_type D approximate cost as (total / dept markup).
+    * + Page heading.
+    * + Format report as a single table. Other HTML adjustments.
+    * I'm not sure the dept==1 flavour gets markup right when department has changed
+    *  since the transaction.
 
 */
 header("Location: StoreSummaryReport.php");

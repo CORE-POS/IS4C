@@ -23,27 +23,27 @@
 
 class update_20130502000001 extends UpdateObj {
 
-	protected $timestamp = '20130502000001';
+    protected $timestamp = '20130502000001';
 
-	protected $description = 'Add the following columns to
-		dlog_15: memType, staff, numflag, charflag. This will
-		also drop the view dlog_90_view so it can be recreated
-		with the same columns included. Click the necessities tab
-		after this update to recreate the view.';
+    protected $description = 'Add the following columns to
+        dlog_15: memType, staff, numflag, charflag. This will
+        also drop the view dlog_90_view so it can be recreated
+        with the same columns included. Click the necessities tab
+        after this update to recreate the view.';
 
-	protected $author = 'Andy Theuninck (WFC)';
+    protected $author = 'Andy Theuninck (WFC)';
 
-	protected $queries = array(
-		'op' => array(),
-		'trans' => array(
-			'ALTER TABLE dlog_15 ADD COLUMN memType TINYINT AFTER ItemQtty',
-			'ALTER TABLE dlog_15 ADD COLUMN staff TINYINT AFTER memType',
-			'ALTER TABLE dlog_15 ADD COLUMN numflag INT AFTER staff',
-			'ALTER TABLE dlog_15 ADD COLUMN charflag VARCHAR(2) AFTER numflag',
-			'DROP VIEW dlog_90_view'
-		),
-		'archive' => array()
-	);
+    protected $queries = array(
+        'op' => array(),
+        'trans' => array(
+            'ALTER TABLE dlog_15 ADD COLUMN memType TINYINT AFTER ItemQtty',
+            'ALTER TABLE dlog_15 ADD COLUMN staff TINYINT AFTER memType',
+            'ALTER TABLE dlog_15 ADD COLUMN numflag INT AFTER staff',
+            'ALTER TABLE dlog_15 ADD COLUMN charflag VARCHAR(2) AFTER numflag',
+            'DROP VIEW dlog_90_view'
+        ),
+        'archive' => array()
+    );
 }
 
 ?>

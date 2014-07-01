@@ -37,16 +37,16 @@ and false on failure
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-	* 10Nov12 Eric Lee Add FANNIE_AUTH_ENABLED test in addAuth per intent(?)
-	*                   of create-first-user call from install/auth.php.
+    * 10Nov12 Eric Lee Add FANNIE_AUTH_ENABLED test in addAuth per intent(?)
+    *                   of create-first-user call from install/auth.php.
 
 */
 
 require_once('utilities.php');
 
 function addAuth($name,$auth_class,$sub_start='all',$sub_end='all'){
-	// 10Nov12 EL Add FANNIE_AUTH_ENABLED
-	global $FANNIE_AUTH_ENABLED;
+    // 10Nov12 EL Add FANNIE_AUTH_ENABLED
+    global $FANNIE_AUTH_ENABLED;
   $sql = dbconnect();
   if (!isAlphanumeric($name) or !isAlphanumeric($auth_class) or
       !isAlphanumeric($sub_start) or !isAlphanumeric($sub_end)){
@@ -62,13 +62,13 @@ function addAuth($name,$auth_class,$sub_start='all',$sub_end='all'){
    *             auth_enabled() does not return the correct value.
   */
   if ( $FANNIE_AUTH_ENABLED ) {
-	if (($auth_class == 'admin' || $auth_class=='sysadmin') && getNumUsers() == 1){
-		// skip validation check in
-		// this instance
-	}
-	elseif (!validateUser('admin')){
-		return false;
-	}
+    if (($auth_class == 'admin' || $auth_class=='sysadmin') && getNumUsers() == 1){
+        // skip validation check in
+        // this instance
+    }
+    elseif (!validateUser('admin')){
+        return false;
+    }
   }
 
   $addQ = $sql->prepare_statement("insert into userPrivs values (?,?,?,?)");
@@ -77,48 +77,48 @@ function addAuth($name,$auth_class,$sub_start='all',$sub_end='all'){
 }
 
 function createClass($name, $notes){
-	if (!isAlphanumeric($name) ){
-		return false;
-	}
+    if (!isAlphanumeric($name) ){
+        return false;
+    }
 
-	$sql = dbconnect();
-	$checkQ = $sql->prepare_statement("select * from userKnownPrivs where auth_class='$name'");
-	$checkR = $sql->exec_statement($checkQ);
-	if ($sql->num_rows($checkR) != 0){
-		return true;
-	}
+    $sql = dbconnect();
+    $checkQ = $sql->prepare_statement("select * from userKnownPrivs where auth_class='$name'");
+    $checkR = $sql->exec_statement($checkQ);
+    if ($sql->num_rows($checkR) != 0){
+        return true;
+    }
 
-	if (!validateUser('admin')){
-		return false;
-	}
+    if (!validateUser('admin')){
+        return false;
+    }
 
-	$notes = str_replace("\n","<br />",$notes);
-	$insQ = $sql->prepare_statement("INSERT INTO userKnownPrivs (auth_class, notes)
-			VALUES (?, ?)");
-	$insR = $sql->exec_statement($insQ,array($name,$notes));
-	return ($insR) ? true : false;
+    $notes = str_replace("\n","<br />",$notes);
+    $insQ = $sql->prepare_statement("INSERT INTO userKnownPrivs (auth_class, notes)
+            VALUES (?, ?)");
+    $insR = $sql->exec_statement($insQ,array($name,$notes));
+    return ($insR) ? true : false;
 }
 
 function deleteClass($name){
-	if (!isAlphanumeric($name) ){
-		return false;
-	}
+    if (!isAlphanumeric($name) ){
+        return false;
+    }
 
-	if (!validateUser('admin')){
-		return false;
-	}
+    if (!validateUser('admin')){
+        return false;
+    }
 
-	$sql = dbconnect();
+    $sql = dbconnect();
 
-	$q1 = $sql->prepare_statement("DELETE FROM userKnownPrivs WHERE auth_class=?");
-	$r1 = $sql->exec_statement($q1,array($name));
+    $q1 = $sql->prepare_statement("DELETE FROM userKnownPrivs WHERE auth_class=?");
+    $r1 = $sql->exec_statement($q1,array($name));
 
-	$q2 = $sql->prepare_statement("DELETE FROM userPrivs WHERE auth_class=?");
-	$r2 = $sql->exec_statement($q2,array($name));
+    $q2 = $sql->prepare_statement("DELETE FROM userPrivs WHERE auth_class=?");
+    $r2 = $sql->exec_statement($q2,array($name));
 
-	$q3 = $sql->prepare_statement("DELETE FROM userGroupPrivs WHERE auth=?");
-	$r3 = $sql->exec_statement($q3,array($name));
-	return true;
+    $q3 = $sql->prepare_statement("DELETE FROM userGroupPrivs WHERE auth=?");
+    $r3 = $sql->exec_statement($q3,array($name));
+    return true;
 }
 
 function deleteAuth($name,$auth_class){
@@ -193,38 +193,38 @@ function showClasses(){
 }
 
 function getAuthNotes($name){
-	$sql = dbconnect();
-	$q = $sql->prepare_statement("SELECT notes FROM userKnownPrivs WHERE auth_class=?");
-	$r = $sql->exec_statement($q,array($name));
-	if ($sql->num_rows($r) == 0) return "";
-	$w = $sql->fetch_row($r);
-	return str_replace("<br />","\n",$w['notes']);
+    $sql = dbconnect();
+    $q = $sql->prepare_statement("SELECT notes FROM userKnownPrivs WHERE auth_class=?");
+    $r = $sql->exec_statement($q,array($name));
+    if ($sql->num_rows($r) == 0) return "";
+    $w = $sql->fetch_row($r);
+    return str_replace("<br />","\n",$w['notes']);
 }
 
 function updateAuthNotes($name,$notes){
-	if (!validateUser('admin')){
-		return false;
-	}
-	$sql = dbconnect();
-	$notes = str_replace("\n","<br />",$notes);
-	$q = $sql->prepare_statement("UPDATE userKnownPrivs SET notes=? WHERE auth_class=?");
-	$r = $sql->exec_statement($q,array($notes,$name));
-	return true;
+    if (!validateUser('admin')){
+        return false;
+    }
+    $sql = dbconnect();
+    $notes = str_replace("\n","<br />",$notes);
+    $q = $sql->prepare_statement("UPDATE userKnownPrivs SET notes=? WHERE auth_class=?");
+    $r = $sql->exec_statement($q,array($notes,$name));
+    return true;
 }
 
 function getAuthList(){
-	$sql = dbconnect();
-	$ret = array();
-	$prep = $sql->prepare_statement("SELECT auth_class FROM userKnownPrivs ORDER BY auth_class");
-	$result = $sql->exec_statement($prep);
-	while($row = $sql->fetch_Row($result))
-		$ret[] = $row['auth_class'];
+    $sql = dbconnect();
+    $ret = array();
+    $prep = $sql->prepare_statement("SELECT auth_class FROM userKnownPrivs ORDER BY auth_class");
+    $result = $sql->exec_statement($prep);
+    while($row = $sql->fetch_Row($result))
+        $ret[] = $row['auth_class'];
 
-	if (!in_array('admin',$ret)){
-		$ret[] = 'admin';
-		sort($ret);
-	}
-	return $ret;
+    if (!in_array('admin',$ret)){
+        $ret[] = 'admin';
+        sort($ret);
+    }
+    return $ret;
 }
 
 /*

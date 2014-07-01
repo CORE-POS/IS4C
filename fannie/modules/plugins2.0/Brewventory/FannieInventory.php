@@ -27,75 +27,75 @@
 */
 class FannieInventory extends FanniePage {
 
-	public $required = True;
+    public $required = True;
 
-	public $description = "
-	Class for managing inventory
-	";
+    public $description = "
+    Class for managing inventory
+    ";
 
-	protected $mode = 'view';
+    protected $mode = 'view';
 
-	/**
-	  Display screen content
-	  Default modes are
-	  - view
-	  - receive
-	  - sale
-	  - adjust
+    /**
+      Display screen content
+      Default modes are
+      - view
+      - receive
+      - sale
+      - adjust
 
-	  You can define your own. Just make
-	  a method with the same name.
-	*/
-	function body_content(){
-		switch ($this->mode){
-		case 'view':
-			return $this->view();
-		case 'receive':
-			return $this->receive();
-		case 'sale':
-			return $this->sale();
-		case 'adjust':
-			return $this->adjust();
-		default:
-			$func = $this->mode;
-			if (method_exists($this, $func))
-				return $this->$func();
-			else
-				return "";
-		}
-	}
+      You can define your own. Just make
+      a method with the same name.
+    */
+    function body_content(){
+        switch ($this->mode){
+        case 'view':
+            return $this->view();
+        case 'receive':
+            return $this->receive();
+        case 'sale':
+            return $this->sale();
+        case 'adjust':
+            return $this->adjust();
+        default:
+            $func = $this->mode;
+            if (method_exists($this, $func))
+                return $this->$func();
+            else
+                return "";
+        }
+    }
 
-	/**
-	  Display receiving entry form
-	  @return HTML string
-	*/
-	function receive(){
-		return "";
-	}
+    /**
+      Display receiving entry form
+      @return HTML string
+    */
+    function receive(){
+        return "";
+    }
 
-	/**
-	  Display sales entry form
-	  @return HTML string
-	*/
-	function sale(){
-		return "";
-	}
+    /**
+      Display sales entry form
+      @return HTML string
+    */
+    function sale(){
+        return "";
+    }
 
-	/**
-	  Display adjustment entry form
-	  @return HTML string
-	*/
-	function adjustt(){
-		return "";
-	}
+    /**
+      Display adjustment entry form
+      @return HTML string
+    */
+    function adjustt(){
+        return "";
+    }
 
-	/**
-	  Display current inventory
-	  @return HTML string
-	*/
-	function view(){
-		return "";
-	}
+    /**
+      Display current inventory
+      @return HTML string
+    */
+    function view(){
+        return "";
+    }
 }
 
 ?>

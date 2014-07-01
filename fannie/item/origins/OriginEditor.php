@@ -29,8 +29,8 @@ if (!class_exists('FannieAPI')) {
 class OriginEditor extends FannieRESTfulPage 
 {
 
-	protected $header = 'Product Origins';
-	protected $title = 'Product Origins';
+    protected $header = 'Product Origins';
+    protected $title = 'Product Origins';
 
     public function preprocess()
     {

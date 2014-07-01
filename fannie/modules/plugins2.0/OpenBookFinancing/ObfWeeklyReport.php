@@ -45,7 +45,7 @@ class ObfWeeklyReport extends FannieReportPage
 
     public function report_description_content()
     {
-		global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
+        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
         
         $week = new ObfWeeksModel($dbc);
@@ -59,7 +59,7 @@ class ObfWeeklyReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-		global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
+        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
         
         $week = new ObfWeeksModel($dbc);
@@ -683,7 +683,7 @@ class ObfWeeklyReport extends FannieReportPage
 
     public function form_content()
     {
-		global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
+        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
 
         $ret = '<form action="' . $_SERVER['PHP_SELF'] . '" method="get">';

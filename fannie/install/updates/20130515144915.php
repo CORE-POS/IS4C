@@ -23,21 +23,21 @@
 
 class update_20130515144915 extends UpdateObj {
 
-	protected $timestamp = '20130515144915';
+    protected $timestamp = '20130515144915';
 
-	protected $description = 'This update:
+    protected $description = 'This update:
 changes the PRIMARY KEY of userSessions to (uid, session_id)
 ';
 
-	protected $author = 'Eric Lee (WEFC_Toronto)';
+    protected $author = 'Eric Lee (WEFC_Toronto)';
 
-	protected $queries = array(
-		'op' => array(
-			'ALTER TABLE userSessions DROP PRIMARY KEY',
-			'ALTER TABLE userSessions ADD PRIMARY KEY (uid, session_id) USING BTREE'),
-		'trans' => array(),
-		'archive' => array()
-	);
+    protected $queries = array(
+        'op' => array(
+            'ALTER TABLE userSessions DROP PRIMARY KEY',
+            'ALTER TABLE userSessions ADD PRIMARY KEY (uid, session_id) USING BTREE'),
+        'trans' => array(),
+        'archive' => array()
+    );
 }
 
 ?>

@@ -28,15 +28,15 @@ class MemberModule
       Get connection to member database
       @return [SQLManager object]
     */
-	public function db()
+    public function db()
     {
-		global $FANNIE_OP_DB;
-		if (!class_exists('FannieDB')) {
+        global $FANNIE_OP_DB;
+        if (!class_exists('FannieDB')) {
             include_once(dirname(__FILE__) . '/../data/FannieDB.php');
         }
 
-		return FannieDB::get($FANNIE_OP_DB);
-	}
+        return FannieDB::get($FANNIE_OP_DB);
+    }
 
     /**
       Get form for editing member information
@@ -44,10 +44,10 @@ class MemberModule
       @param $country [string] locale code. Default "US"
       @return [string] HTML form fields
     */
-	public function showEditForm($memNum,$country="US")
+    public function showEditForm($memNum,$country="US")
     {
         return '';
-	}
+    }
 
     /**
       Extract data from GET/POST and save
@@ -55,38 +55,38 @@ class MemberModule
       @param $memNum [int] member number
       @return [boolean] success/failure
     */
-	public function saveFormData($memNum)
+    public function saveFormData($memNum)
     {
         return true;
-	}
+    }
 
     /**
       Module's information is searchable
       @return [boolean]
     */
-	public function hasSearch()
+    public function hasSearch()
     {
-		return false;
-	}
+        return false;
+    }
 
     /**
       Get form for searching member information
       @param $country [string] locale code. Default "US"
       @return [string] HTML form fields
     */
-	public function showSearchForm($country="US")
+    public function showSearchForm($country="US")
     {
         return '';
-	}
+    }
 
     /**
       Perform search based on GET/POST data
       @return [keyed array] member number => description
     */
-	public function getSearchResults()
+    public function getSearchResults()
     {
         return array();
-	}
+    }
 
     /**
       Get any javascript that goes with

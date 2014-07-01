@@ -23,37 +23,37 @@
 
 class update_20121116094200 extends UpdateObj {
 
-	protected $timestamp = '20121116094200';
+    protected $timestamp = '20121116094200';
 
-	protected $description = 'Replace AR_EOM_Summary with a table rather
-		than caching the view all the time';
+    protected $description = 'Replace AR_EOM_Summary with a table rather
+        than caching the view all the time';
 
-	protected $author = 'Andy Theuninck (WFC)';
+    protected $author = 'Andy Theuninck (WFC)';
 
-	protected $queries = array(
-		'op' => array(),
-		'trans' => array(
-		'DROP VIEW AR_EOM_Summary',
-		'CREATE TABLE AR_EOM_Summary (
-		cardno int,
-		memName varchar(100),
-		priorBalance decimal(10,2),
-		threeMonthCharges decimal(10,2),
-		threeMonthPayments decimal(10,2),
-		threeMonthBalance decimal(10,2),	
-		twoMonthCharges decimal(10,2),
-		twoMonthPayments decimal(10,2),
-		twoMonthBalance decimal(10,2),	
-		lastMonthCharges decimal(10,2),
-		lastMonthPayments decimal(10,2),
-		lastMonthBalance decimal(10,2),	
-		PRIMARY KEY (cardno)
-		)',
-		'INSERT INTO AR_EOM_Summary SELECT * FROM AR_EOM_Summary_cache',
-		'DROP TABLE AR_EOM_Summary_cache',
-		),
-		'archive' => array()
-	);
+    protected $queries = array(
+        'op' => array(),
+        'trans' => array(
+        'DROP VIEW AR_EOM_Summary',
+        'CREATE TABLE AR_EOM_Summary (
+        cardno int,
+        memName varchar(100),
+        priorBalance decimal(10,2),
+        threeMonthCharges decimal(10,2),
+        threeMonthPayments decimal(10,2),
+        threeMonthBalance decimal(10,2),    
+        twoMonthCharges decimal(10,2),
+        twoMonthPayments decimal(10,2),
+        twoMonthBalance decimal(10,2),  
+        lastMonthCharges decimal(10,2),
+        lastMonthPayments decimal(10,2),
+        lastMonthBalance decimal(10,2), 
+        PRIMARY KEY (cardno)
+        )',
+        'INSERT INTO AR_EOM_Summary SELECT * FROM AR_EOM_Summary_cache',
+        'DROP TABLE AR_EOM_Summary_cache',
+        ),
+        'archive' => array()
+    );
 }
 
 ?>

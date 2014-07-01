@@ -3,20 +3,20 @@
 Table: employees
 
 Columns:
-	emp_no int	
-	CashierPassword varchar
-	AdminPassword varchar
-	FirstName varchar
-	LastName varchar
-	JobTitle varchar
-	EmpActive int
-	frontendsecurity int
-	backendsecurity int
-	birthdate datetime
-	
+    emp_no int  
+    CashierPassword varchar
+    AdminPassword varchar
+    FirstName varchar
+    LastName varchar
+    JobTitle varchar
+    EmpActive int
+    frontendsecurity int
+    backendsecurity int
+    birthdate datetime
+    
 
 Depends on:
-	none
+    none
 
 Use:
 Table of cashiers. emp_no identifies
@@ -29,17 +29,17 @@ to restrict certain actions at the register
 based on security level.
 */
 $CREATE['op.employees'] = "
-	CREATE TABLE employees (
-		emp_no smallint,
-		CashierPassword VARCHAR(50),
-		AdminPassword VARCHAR(50),
-		FirstName varchar(255),
-		LastName varchar(255),
-		JobTitle varchar(255),
-		EmpActive tinyint,
-		frontendsecurity smallint,
-		backendsecurity smallint,
-		birthdate datetime,
-		PRIMARY KEY (emp_no))
+    CREATE TABLE employees (
+        emp_no smallint,
+        CashierPassword VARCHAR(50),
+        AdminPassword VARCHAR(50),
+        FirstName varchar(255),
+        LastName varchar(255),
+        JobTitle varchar(255),
+        EmpActive tinyint,
+        frontendsecurity smallint,
+        backendsecurity smallint,
+        birthdate datetime,
+        PRIMARY KEY (emp_no))
 ";
 ?>

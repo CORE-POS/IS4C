@@ -3,13 +3,13 @@
 Table: vendorSRPs
 
 Columns:
-	vendorID int
-	upc varchar
-	srp decimal(10,2)
+    vendorID int
+    upc varchar
+    srp decimal(10,2)
 
 Depends on:
-	vendorItems (table)
-	vendorDepartments (table)
+    vendorItems (table)
+    vendorDepartments (table)
 
 Use:
 This table contains SRPs for items
@@ -22,13 +22,13 @@ afterwards in a separate step reduces the chances
 of hitting a PHP time or memory limit.
 */
 $CREATE['op.vendorSRPs'] = "
-	create table vendorSRPs (
-		vendorID int,
-		upc varchar(13),
-		srp decimal(10,2),
-		PRIMARY KEY (vendorID,upc),
-		INDEX(vendorID),
-		INDEX(upc)
-	)
+    create table vendorSRPs (
+        vendorID int,
+        upc varchar(13),
+        srp decimal(10,2),
+        PRIMARY KEY (vendorID,upc),
+        INDEX(vendorID),
+        INDEX(upc)
+    )
 ";
 ?>

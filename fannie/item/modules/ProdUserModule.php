@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 if (!class_exists('FannieAPI'))
-	include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
+    include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
 
 class ProdUserModule extends ItemModule 
 {
@@ -30,16 +30,16 @@ class ProdUserModule extends ItemModule
     public function showEditForm($upc, $display_mode=1, $expand_mode=1)
     {
         global $FANNIE_URL;
-		$upc = BarcodeLib::padUPC($upc);
+        $upc = BarcodeLib::padUPC($upc);
 
-		$ret = '<fieldset id="ProdUserFieldset">';
-		$ret .=  "<legend onclick=\"\$('#ProdUserFieldsetContent').toggle();\">
+        $ret = '<fieldset id="ProdUserFieldset">';
+        $ret .=  "<legend onclick=\"\$('#ProdUserFieldsetContent').toggle();\">
                 <a href=\"\" onclick=\"return false;\">Longform Info</a>
                 </legend>";
         $css = ($expand_mode == 1) ? '' : 'display:none;';
         $ret .= '<div id="ProdUserFieldsetContent" style="' . $css . '">';
 
-		$dbc = $this->db();
+        $dbc = $this->db();
         $model = new ProductUserModel($dbc);
         $model->upc($upc);
         $model->load();
@@ -109,11 +109,11 @@ class ProdUserModule extends ItemModule
         $ret .= '</fieldset>';
 
         return $ret;
-	}
+    }
 
-	function SaveFormData($upc)
+    function SaveFormData($upc)
     {
-		$upc = BarcodeLib::padUPC($upc);
+        $upc = BarcodeLib::padUPC($upc);
         $brand = FormLib::get('lf_brand');
         $desc = FormLib::get('lf_desc');
         $origin = FormLib::get('origin', 0);
@@ -177,7 +177,7 @@ class ProdUserModule extends ItemModule
         }
         
         return $model->save();
-	}
+    }
 
     public function getFormJavascript($upc)
     {

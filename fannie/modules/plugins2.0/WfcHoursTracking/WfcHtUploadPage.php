@@ -56,16 +56,16 @@ class WfcHtUploadPage extends FanniePage
     {
         return '
 .one {
-	background: #ffffff;
+    background: #ffffff;
 }
 .one td {
-	text-align: right;
+    text-align: right;
 }
 .two {
-	background: #ffffcc;
+    background: #ffffcc;
 }
 .two td {
-	text-align: right;
+    text-align: right;
 }
         ';
     }
@@ -84,7 +84,7 @@ class WfcHtUploadPage extends FanniePage
         $filename = md5(time());
         $tmp = sys_get_temp_dir();
         move_uploaded_file($_FILES['upload']['tmp_name'],"$tmp/$filename");
-	
+    
         $start = FormLib::get('start');
         $end = FormLib::get('end');
 
@@ -144,7 +144,7 @@ class WfcHtUploadPage extends FanniePage
             switch(strtoupper($fields[$TYPE_COL])){
                 case 'REGLAR':
                     if (substr($fields[$ALT_COL],-1)=="0")
-                        $rows[$adpID]['regular'] += $hours;	
+                        $rows[$adpID]['regular'] += $hours; 
                     else
                         $rows[$adpID]['alt'] += $hours;
                     break;
@@ -168,7 +168,7 @@ class WfcHtUploadPage extends FanniePage
                     break;
                 default:
                     $ret .= "Unknown type: ".$fields[$TYPE_COL]."<br />";
-            }	
+            }   
         }
 
         foreach($rows as $adpID => $row){
@@ -182,16 +182,16 @@ class WfcHtUploadPage extends FanniePage
                 $adpID,$row['regular'],$row['overtime'],$row['pto'],
                 $row['uto'],$row['alt'],$row['holiday']
             );
-		
+        
             $c = ($c+1)%2;
         }
         $ret .= "</table>";
         $ret .= "<input type=submit value=\"Import Data\">";
-	
+    
         fclose($fp);
         unlink("$tmp/$filename");
 
-        return $ret;	
+        return $ret;    
     }
 
     private function import_content()
@@ -204,7 +204,7 @@ class WfcHtUploadPage extends FanniePage
 
         $dateStr = date('n/j/Y', strtotime($start)).' - '.date('n/j/Y', strtotime($end));
         $year = date('Y', strtotime($start));
-	
+    
         $ppIDQ = "select max(periodID)+1 from PayPeriods";
         $ppIDR = $db->query($ppIDQ);
         $ppIDW = $db->fetch_row($ppIDR);
@@ -242,7 +242,7 @@ class WfcHtUploadPage extends FanniePage
         $ret = "ADP data import complete!<br />";
         $ret .= "<a href=WfcHtListPage.php>View Employees</a><br />";
         $ret .= "<a href=WfcHtPayPeriodsPage.php>View Pay Periods</a>";
-	
+    
         return $ret;
     }
 

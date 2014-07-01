@@ -33,7 +33,7 @@ class SuperDeptEmailsModel extends BasicModel
     protected $columns = array(
     'superID' => array('type'=>'INT', 'primary_key'=>true),
     'emailAddress' => array('type'=>'VARCHAR(255)', 'replaces'=>'email_address'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

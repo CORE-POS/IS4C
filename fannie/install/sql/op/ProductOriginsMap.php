@@ -4,7 +4,7 @@ Table: ProductOriginsMap
 
 Columns:
     upc int
-	originID int
+    originID int
     active tinyint
 
 Depends on:
@@ -20,11 +20,11 @@ could also occur. Produce is the most
 common use case.
 */
 $CREATE['op.ProductOriginsMap'] = "
-	CREATE TABLE ProductOriginsMap (
-	  originID INT,
+    CREATE TABLE ProductOriginsMap (
+      originID INT,
       upc VARCHAR(13),
-	  active TINYINT DEFAULT 1,
-	  PRIMARY KEY  (originID, upc)
-	)
+      active TINYINT DEFAULT 1,
+      PRIMARY KEY  (originID, upc)
+    )
 ";
 

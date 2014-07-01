@@ -59,7 +59,7 @@ else {
   echo "<form action=deleteUser.php method=post>";
 echo "Username:<select name=name>";
 foreach(getUserList() as $uid => $name)
-	echo "<option>".$name."</option>";
+    echo "<option>".$name."</option>";
 echo "</select>";
 echo '&nbsp;&nbsp;&nbsp;<input type="submit" value="Delete" />';
   echo "<input type=hidden name=warn value=warn>";

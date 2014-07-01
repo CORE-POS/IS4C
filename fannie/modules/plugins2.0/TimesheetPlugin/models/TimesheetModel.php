@@ -38,7 +38,7 @@ class TimesheetModel extends BasicModel
     'ID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),
     'VACATION' => array('type'=>'DOUBLE'),
     'tstamp' => array('type'=>'TIMESTAMP'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

@@ -44,23 +44,23 @@ include($FANNIE_ROOT.'src/cron_msg.php');
 set_time_limit(0);
 
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
+        $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
 $query = "UPDATE {$FANNIE_OP_DB}.custdata AS c
-	LEFT JOIN ar_live_balance AS n ON c.CardNo=n.card_no
-	SET c.Balance = n.balance";
+    LEFT JOIN ar_live_balance AS n ON c.CardNo=n.card_no
+    SET c.Balance = n.balance";
 
 if ($FANNIE_SERVER_DBMS == "MSSQL"){
-	$query = "UPDATE {$FANNIE_OP_DB}.dbo.custdata SET Balance = n.balance
-		FROM {$FANNIE_OP_DB}.dbo.custdata AS c LEFT JOIN
-		ar_live_balance AS n ON c.CardNo=n.card_no";
+    $query = "UPDATE {$FANNIE_OP_DB}.dbo.custdata SET Balance = n.balance
+        FROM {$FANNIE_OP_DB}.dbo.custdata AS c LEFT JOIN
+        ar_live_balance AS n ON c.CardNo=n.card_no";
 }
 
 $rslt = $sql->query($query);
 
 if ($rslt === False)
-	echo cron_msg("Failed.");
+    echo cron_msg("Failed.");
 else
-	echo cron_msg("OK.");
+    echo cron_msg("OK.");
 
 ?>

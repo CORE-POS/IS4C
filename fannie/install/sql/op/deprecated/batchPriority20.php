@@ -3,19 +3,19 @@
 Table: batchPriority20
 
 Columns:
-	upc varchar(13)
-	batchID int
-	startDate datetime
-	endDate datetime
-	discountType int
-	salePrice dbms currency
-	pricemethod int
-	quantity int
+    upc varchar(13)
+    batchID int
+    startDate datetime
+    endDate datetime
+    discountType int
+    salePrice dbms currency
+    pricemethod int
+    quantity int
 
 Depends on:
-	batches (table)
-	batchList (table)
-	batchPriority30 (view)
+    batches (table)
+    batchList (table)
+    batchPriority30 (view)
 
 Use:
 This view lists sale batch info for

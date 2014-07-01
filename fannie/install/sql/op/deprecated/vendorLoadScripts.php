@@ -3,11 +3,11 @@
 Table: vendorLoadScripts
 
 Columns:
-	vendorID int
-	loadScript varchar
+    vendorID int
+    loadScript varchar
 
 Depends on:
-	vendors (table)
+    vendors (table)
 
 Use:
 Mapping of scripts for loading vendor items
@@ -16,10 +16,10 @@ don't have to match across stores
 
 */
 $CREATE['op.vendorLoadScripts'] = "
-	create table vendorLoadScripts (
-		vendorID int,
-		loadScript varchar(125),
-		primary key (vendorID)
-	)
+    create table vendorLoadScripts (
+        vendorID int,
+        loadScript varchar(125),
+        primary key (vendorID)
+    )
 ";
 ?>

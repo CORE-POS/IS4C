@@ -24,7 +24,7 @@
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-	* 21Jan2013 Eric Lee table upcLike need database specified: core_op.upcLike
+    * 21Jan2013 Eric Lee table upcLike need database specified: core_op.upcLike
 
 */
 

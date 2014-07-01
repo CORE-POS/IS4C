@@ -37,7 +37,7 @@ else {
   $priv = validateUserQuiet('admin');
   $options = 'all';
   if (!$priv){
-		$options = 'limited';
+        $options = 'limited';
   }
 
   /* password change only allowed if not using
@@ -57,7 +57,7 @@ else {
     echo "<li><a href=deleteUser.php>Delete User</a></li>";
     echo "<li><a href=deleteAuth.php>Delete a User's authorizations</a></li>";
     if (!$FANNIE_AUTH_SHADOW && !$FANNIE_AUTH_LDAP)
-			echo "<li><a href=resetUserPassword.php>Reset a User's password</a></li>";
+            echo "<li><a href=resetUserPassword.php>Reset a User's password</a></li>";
     echo "<br />";
     echo "<li><a href=viewGroups.php>View Groups</a></li>";
     echo "<li><a href=groupDetail.php>View Details of a Group</a></li>";
@@ -71,7 +71,7 @@ else {
     echo "<li><a href=pose.php>Switch User</a></li>";
   }
   if (!$FANNIE_AUTH_SHADOW && !$FANNIE_AUTH_LDAP)
-	  echo "<li><a href=changepass.php>Change password</a></li>";
+      echo "<li><a href=changepass.php>Change password</a></li>";
   echo "<li><a href=loginform.php?logout=yes>Logout</a></li>";
   echo "</ul>";
 }  

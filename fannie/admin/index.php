@@ -31,7 +31,7 @@ include('../src/header.html');
 Utilities for managing membership database
 </br></br>
 
-			<a href="Cashiers/"><font size=4>Cashier Management</font></a></br>
+            <a href="Cashiers/"><font size=4>Cashier Management</font></a></br>
 Utilities for managing cashier database and cashier reports
 </br></br>
 
@@ -48,23 +48,23 @@ Manage specail orders
 </br></br>
 
 <a href="labels"><font size=4>Generate Shelftags</font></a><br>
-	Create and print shelftag batches
+    Create and print shelftag batches
 </br></br>
 
 <a href="LookupReceipt"><font size=4>Transaction Look-up</font></a></br>
-	Search transaction history and reprint receipts
+    Search transaction history and reprint receipts
 
 <!--<a href="/admin/volunteers.php"><font size=4>Volunteer Hours</font></a></br>
-	Enter volunteer hours worked
+    Enter volunteer hours worked
 </br></br>
 <a href="/admin/charges.php"><font size=4>Staff Charges</font></a><br>
-	View staff charge totals
+    View staff charge totals
 </br></br>
 <a href="/admin/patronage.php"><font size=4>Patronage Pts. Calculator</font></a></br>
-	View patronage point totals and calculate refunds
+    View patronage point totals and calculate refunds
 </br></br>
 <a href="shelftags.php"><font size=4>Generate Shelftags</font></a><br>
-	Create and print shelftag batches
+    Create and print shelftag batches
 </br>-->
 </body>
 <?

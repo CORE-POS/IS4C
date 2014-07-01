@@ -44,11 +44,11 @@ else {
   echo '<table>';
 echo "<tr><th>Group name</th><td><select name=group>";
 foreach(getGroupList() as $uid => $name)
-	echo "<option>".$name."</option>";
+    echo "<option>".$name."</option>";
 echo "</select></td></tr>";
 echo "<tr><th>Username</th><td><select name=user>";
 foreach(getUserList() as $uid => $name)
-	echo "<option>".$name."</option>";
+    echo "<option>".$name."</option>";
 echo "</select></td></tr>";
   echo '</table>';
   echo "<input type=submit value=Submit /></form>";  

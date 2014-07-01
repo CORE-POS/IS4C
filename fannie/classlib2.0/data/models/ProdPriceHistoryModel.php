@@ -36,7 +36,7 @@ class ProdPriceHistoryModel extends BasicModel
     'price' => array('type'=>'MONEY'),
     'uid' => array('type'=>'INT'),
     'prodUpdateID' => array('type'=>'BIGINT UNSIGNED','index'=>true),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

@@ -29,26 +29,26 @@ include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 */
 class SaOrderingPage extends FanniePage 
 {
-	protected $window_dressing = False;
-	private $section=0;
-	private $current_item_data=array();
-	private $linea_ios_mode = False;
+    protected $window_dressing = False;
+    private $section=0;
+    private $current_item_data=array();
+    private $linea_ios_mode = False;
 
-	private function linea_support_available(){
-		global $FANNIE_ROOT;
-		if (file_exists($FANNIE_ROOT.'src/javascript/linea/cordova-2.2.0.js')
-		&& file_exists($FANNIE_ROOT.'src/javascript/linea/ScannerLib-Linea-2.0.0.js'))
-			return True;
-		else
-			return False;
-	}
+    private function linea_support_available(){
+        global $FANNIE_ROOT;
+        if (file_exists($FANNIE_ROOT.'src/javascript/linea/cordova-2.2.0.js')
+        && file_exists($FANNIE_ROOT.'src/javascript/linea/ScannerLib-Linea-2.0.0.js'))
+            return True;
+        else
+            return False;
+    }
 
-	public function preprocess()
+    public function preprocess()
     {
-		global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB, $FANNIE_URL, $FANNIE_TRANS_DB;
+        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB, $FANNIE_URL, $FANNIE_TRANS_DB;
 
-		$this->add_script($FANNIE_URL.'src/javascript/jquery.js');
-		$this->add_script($FANNIE_URL.'src/javascript/jquery-ui.js');
+        $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
+        $this->add_script($FANNIE_URL.'src/javascript/jquery-ui.js');
 
         if (FormLib::get('upc_in') !== '') {
             $upc = BarcodeLib::padUPC(FormLib::get('upc_in'));
@@ -147,95 +147,95 @@ class SaOrderingPage extends FanniePage
             $this->current_item_data['sales'] = $sales;
         }
 
-		$this->linea_ios_mode = $this->linea_support_available();
-		if ($this->linea_ios_mode) {
-			$this->add_script($FANNIE_URL.'src/javascript/linea/cordova-2.2.0.js');
-			$this->add_script($FANNIE_URL.'src/javascript/linea/ScannerLib-Linea-2.0.0.js');
-		}
+        $this->linea_ios_mode = $this->linea_support_available();
+        if ($this->linea_ios_mode) {
+            $this->add_script($FANNIE_URL.'src/javascript/linea/cordova-2.2.0.js');
+            $this->add_script($FANNIE_URL.'src/javascript/linea/ScannerLib-Linea-2.0.0.js');
+        }
         $this->add_script($FANNIE_URL.'src/javascript/tablesorter/jquery.tablesorter.js');
         $this->add_css_file($FANNIE_URL.'src/javascript/tablesorter/themes/blue/style.css');
         $this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
-		
-		return true;
-	}
+        
+        return true;
+    }
 
-	function css_content(){
-		ob_start();
-		?>
+    function css_content(){
+        ob_start();
+        ?>
 .saleInfo {
     color: green;
 }
 input.addButton {
-	width: 60px;
-	height: 50px;
-	background-color: #090;
-	color: #fff;
-	font-weight: bold;
-	font-size: 135%;
+    width: 60px;
+    height: 50px;
+    background-color: #090;
+    color: #fff;
+    font-weight: bold;
+    font-size: 135%;
 }
 input.subButton {
-	width: 60px;
-	height: 50px;
-	background-color: #900;
-	color: #fff;
-	font-weight: bold;
-	font-size: 135%;
+    width: 60px;
+    height: 50px;
+    background-color: #900;
+    color: #fff;
+    font-weight: bold;
+    font-size: 135%;
 }
 input#cur_qty {
-	width: 60px;
-	height: 50px;
-	font-size: 135%;
-	font-weight: bold;
+    width: 60px;
+    height: 50px;
+    font-size: 135%;
+    font-weight: bold;
 }
 input.focused {
-	background: #ffeebb;
+    background: #ffeebb;
 }
-		<?php
-		return ob_get_clean();
-	}
+        <?php
+        return ob_get_clean();
+    }
 
-	function javascript_content(){
-		ob_start();
-		?>
+    function javascript_content(){
+        ob_start();
+        ?>
 function paint_focus(elem){
-	if (elem == 'upc_in'){
-		$('#upc_in').addClass('focused');
-	}
-	else {
-		$('#upc_in').removeClass('focused');
-	}
+    if (elem == 'upc_in'){
+        $('#upc_in').addClass('focused');
+    }
+    else {
+        $('#upc_in').removeClass('focused');
+    }
 }
-		<?php if ($this->linea_ios_mode){ ?>
+        <?php if ($this->linea_ios_mode){ ?>
 Device = new ScannerDevice({
-	barcodeData: function (data, type){
-		var upc = data.substring(0,data.length-1);
-		if ($('#upc_in').length > 0){
-			$('#upc_in').val(upc);
-			$('#goBtn').click();
-		}
-	},
-	magneticCardData: function (track1, track2, track3){
-	},
-	magneticCardRawData: function (data){
-	},
-	buttonPressed: function (){
-	},
-	buttonReleased: function (){
-	},
-	connectionState: function (state){
-	}
+    barcodeData: function (data, type){
+        var upc = data.substring(0,data.length-1);
+        if ($('#upc_in').length > 0){
+            $('#upc_in').val(upc);
+            $('#goBtn').click();
+        }
+    },
+    magneticCardData: function (track1, track2, track3){
+    },
+    magneticCardRawData: function (data){
+    },
+    buttonPressed: function (){
+    },
+    buttonReleased: function (){
+    },
+    connectionState: function (state){
+    }
 });
 ScannerDevice.registerListener(Device);
-		<?php } ?>
+        <?php } ?>
 
-		<?php
-		return ob_get_clean();
-	}
+        <?php
+        return ob_get_clean();
+    }
 
-	function body_content(){
-		ob_start();
-		$elem = '#upc_in';
-		?>
+    function body_content(){
+        ob_start();
+        $elem = '#upc_in';
+        ?>
 <html>
 <head>
     <title>Order Info</title>
@@ -256,19 +256,19 @@ onfocus="paint_focus('upc_in');"
 <div style="clear:left;"></div>
 </form>
 <hr />
-		<?php
-		if (isset($this->current_item_data['upc'])){
-			if (!isset($this->current_item_data['desc'])){
-				echo '<span class="error">Item not found (';
-				echo $this->current_item_data['desc'];
-				echo ')</span>';
-			} else {
-				echo '<span class="itemInfo">';
-				echo $this->current_item_data['upc'];
-				echo ' ';
-				echo $this->current_item_data['desc'];
-				echo '</span>';
-				echo '<br />';
+        <?php
+        if (isset($this->current_item_data['upc'])){
+            if (!isset($this->current_item_data['desc'])){
+                echo '<span class="error">Item not found (';
+                echo $this->current_item_data['desc'];
+                echo ')</span>';
+            } else {
+                echo '<span class="itemInfo">';
+                echo $this->current_item_data['upc'];
+                echo ' ';
+                echo $this->current_item_data['desc'];
+                echo '</span>';
+                echo '<br />';
                 if (isset($this->current_item_data['vendor'])) {
                     echo '<span class="itemInfo">Vendor: ' . $this->current_item_data['vendor'] . '</span><br />';
                     echo '<span class="itemInfo">Next Deliveries: ' . (isset($this->current_item_data['nextDelivery'])
@@ -345,10 +345,10 @@ onfocus="paint_focus('upc_in');"
 
                 $this->add_onload_command("\$('.tablesorter').tablesorter({sortList: [[0, 1]], widgets: ['zebra']});");
                 $this->add_onload_command('$(\'#tabs\').tabs();');
-			}
-		}
-		return ob_get_clean();
-	}
+            }
+        }
+        return ob_get_clean();
+    }
 }
 
 FannieDispatch::conditionalExec(false);

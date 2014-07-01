@@ -44,7 +44,7 @@ class ScaleItemsModel extends BasicModel
     'label' => array('type'=>'INT'),
     'graphics' => array('type'=>'INT'),
     'modified' => array('type'=>'DATETIME', 'ignore_updates'=>true),
-	);
+    );
 
     protected $preferred_db = 'op';
 

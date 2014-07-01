@@ -30,20 +30,20 @@
 // on each MySQL lane, load the CSV file
 foreach($FANNIE_LANES as $lane){
 
-	if ($lane['type'] != 'MYSQL') continue;
+    if ($lane['type'] != 'MYSQL') continue;
 
-	$dbc->add_connection($lane['host'],$lane['type'],$lane['op'],
-			$lane['user'],$lane['pw']);
-	if ($dbc->connections[$lane['op']] !== False){
+    $dbc->add_connection($lane['host'],$lane['type'],$lane['op'],
+            $lane['user'],$lane['pw']);
+    if ($dbc->connections[$lane['op']] !== False){
 
-		if (!is_readable('/pos/csvs/products.csv')) break;
-		
-		$dbc->query("TRUNCATE TABLE products",$lane['op']);
+        if (!is_readable('/pos/csvs/products.csv')) break;
+        
+        $dbc->query("TRUNCATE TABLE products",$lane['op']);
 
-		$dbc->query("LOAD DATA LOCAL INFILE '/pos/csvs/products.csv' INTO TABLE
-			products FIELDS TERMINATED BY ',' OPTIONALLY
-			ENCLOSED BY '\"' LINES TERMINATED BY '\\r\\n'",$lane['op']);
-	}
+        $dbc->query("LOAD DATA LOCAL INFILE '/pos/csvs/products.csv' INTO TABLE
+            products FIELDS TERMINATED BY ',' OPTIONALLY
+            ENCLOSED BY '\"' LINES TERMINATED BY '\\r\\n'",$lane['op']);
+    }
 }
 
 echo "<li>Product table synched</li>";

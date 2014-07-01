@@ -23,67 +23,67 @@
 
 class DailyDepositModel extends BasicModel {
 
-	protected $name = 'dailyDeposit';
+    protected $name = 'dailyDeposit';
 
-	protected $columns = array(
-	'dateStr' => array('type'=>'VARCHAR(21)','primary_key'=>True),
-	'rowName' => array('type'=>'VARCHAR(15)','primary_key'=>True),
-	'denomination' => array('type'=>'VARCHAR(6)','primary_key'=>True),
-	'amt' => array('type'=>'MONEY','default'=>0)
-	);
+    protected $columns = array(
+    'dateStr' => array('type'=>'VARCHAR(21)','primary_key'=>True),
+    'rowName' => array('type'=>'VARCHAR(15)','primary_key'=>True),
+    'denomination' => array('type'=>'VARCHAR(6)','primary_key'=>True),
+    'amt' => array('type'=>'MONEY','default'=>0)
+    );
 
-	/* START ACCESSOR FUNCTIONS */
+    /* START ACCESSOR FUNCTIONS */
 
-	public function dateStr(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["dateStr"]))
-				return $this->instance["dateStr"];
-			elseif(isset($this->columns["dateStr"]["default"]))
-				return $this->columns["dateStr"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["dateStr"] = func_get_arg(0);
-		}
-	}
+    public function dateStr(){
+        if(func_num_args() == 0){
+            if(isset($this->instance["dateStr"]))
+                return $this->instance["dateStr"];
+            elseif(isset($this->columns["dateStr"]["default"]))
+                return $this->columns["dateStr"]["default"];
+            else return null;
+        }
+        else{
+            $this->instance["dateStr"] = func_get_arg(0);
+        }
+    }
 
-	public function rowName(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["rowName"]))
-				return $this->instance["rowName"];
-			elseif(isset($this->columns["rowName"]["default"]))
-				return $this->columns["rowName"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["rowName"] = func_get_arg(0);
-		}
-	}
+    public function rowName(){
+        if(func_num_args() == 0){
+            if(isset($this->instance["rowName"]))
+                return $this->instance["rowName"];
+            elseif(isset($this->columns["rowName"]["default"]))
+                return $this->columns["rowName"]["default"];
+            else return null;
+        }
+        else{
+            $this->instance["rowName"] = func_get_arg(0);
+        }
+    }
 
-	public function denomination(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["denomination"]))
-				return $this->instance["denomination"];
-			elseif(isset($this->columns["denomination"]["default"]))
-				return $this->columns["denomination"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["denomination"] = func_get_arg(0);
-		}
-	}
+    public function denomination(){
+        if(func_num_args() == 0){
+            if(isset($this->instance["denomination"]))
+                return $this->instance["denomination"];
+            elseif(isset($this->columns["denomination"]["default"]))
+                return $this->columns["denomination"]["default"];
+            else return null;
+        }
+        else{
+            $this->instance["denomination"] = func_get_arg(0);
+        }
+    }
 
-	public function amt(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["amt"]))
-				return $this->instance["amt"];
-			elseif(isset($this->columns["amt"]["default"]))
-				return $this->columns["amt"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["amt"] = func_get_arg(0);
-		}
-	}
-	/* END ACCESSOR FUNCTIONS */
+    public function amt(){
+        if(func_num_args() == 0){
+            if(isset($this->instance["amt"]))
+                return $this->instance["amt"];
+            elseif(isset($this->columns["amt"]["default"]))
+                return $this->columns["amt"]["default"];
+            else return null;
+        }
+        else{
+            $this->instance["amt"] = func_get_arg(0);
+        }
+    }
+    /* END ACCESSOR FUNCTIONS */
 }

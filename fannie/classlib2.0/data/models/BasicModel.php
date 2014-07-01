@@ -1180,7 +1180,7 @@ class $name extends BasicModel\n");
         fwrite($fp,"\n");
         fwrite($fp,"    protected \$name = \"".substr($name,0,strlen($name)-5)."\";\n");
         fwrite($fp,"\n");
-        fwrite($fp,"    protected \$columns = array(\n\t);\n");
+        fwrite($fp,"    protected \$columns = array(\n    );\n");
         fwrite($fp,"\n");
         fwrite($fp,"    /* START ACCESSOR FUNCTIONS */\n");
         fwrite($fp,"    /* END ACCESSOR FUNCTIONS */\n");

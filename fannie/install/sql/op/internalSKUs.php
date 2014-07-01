@@ -3,14 +3,14 @@
 Table: internalSKUs
 
 Columns:
-	our_sku int
-	vendor_sku varchar
-	vendorID int
-	upc varchar
+    our_sku int
+    vendor_sku varchar
+    vendorID int
+    upc varchar
 
 Depends on:
-	vendorItems (table)
-	products (table)
+    vendorItems (table)
+    products (table)
 
 Use:
 Internal SKUs, sometimes also called "order codes",
@@ -22,12 +22,12 @@ are an optional feature and simply another means of
 searching for & identifying items.
 */
 $CREATE['op.internalSKUs'] = "
-	create table internalSKUs (
-		our_sku int,
-		vendor_sku varchar(13),
-		vendorID int,
-		upc varchar(13),
-		primary key (our_sku)
-	)
+    create table internalSKUs (
+        our_sku int,
+        vendor_sku varchar(13),
+        vendorID int,
+        upc varchar(13),
+        primary key (our_sku)
+    )
 ";
 ?>

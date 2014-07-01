@@ -23,40 +23,40 @@
 
 class SignClass {
 
-	function SignClass(){
-		switch($_REQUEST['action']){
-		case 'start':
-			echo $this->start_form();
-			break;
-		case 'edit':
-			echo $this->edit_form();
-			break;
-		case 'preview':
-			echo $this->preview();
-			break;
-		case 'pdf':
-			$this->sign_pdf();
-			break;
-		default:
-			echo 'Unknown action error!';
-			break;
-		}
-	}
+    function SignClass(){
+        switch($_REQUEST['action']){
+        case 'start':
+            echo $this->start_form();
+            break;
+        case 'edit':
+            echo $this->edit_form();
+            break;
+        case 'preview':
+            echo $this->preview();
+            break;
+        case 'pdf':
+            $this->sign_pdf();
+            break;
+        default:
+            echo 'Unknown action error!';
+            break;
+        }
+    }
 
-	function start_form(){
+    function start_form(){
 
-	}
+    }
 
-	function edit_form(){
+    function edit_form(){
 
-	}
+    }
 
-	function preview(){
+    function preview(){
 
-	}
+    }
 
-	function sign_pdf(){
+    function sign_pdf(){
 
-	}
+    }
 
 }

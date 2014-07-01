@@ -24,10 +24,10 @@ include('../config.php');
 
 include($FANNIE_ROOT.'auth/login.php');
 if (!checkLogin()){
-	$url = $FANNIE_URL."auth/ui/loginform.php";
-	$rd = $FANNIE_URL."ordering/";
-	header("Location: $url?redirect=$rd");
-	exit;
+    $url = $FANNIE_URL."auth/ui/loginform.php";
+    $rd = $FANNIE_URL."ordering/";
+    header("Location: $url?redirect=$rd");
+    exit;
 }
 
 $page_title = "Fannie :: Special Orders";
@@ -36,24 +36,24 @@ include($FANNIE_ROOT.'src/header.html');
 ?>
 <script type="text/javascript">
 function mplay(){
-	var tag = document.getElementById('muzak');
-	tag.currentTime=0;
-	tag.play();
+    var tag = document.getElementById('muzak');
+    tag.currentTime=0;
+    tag.play();
 }
 function mstop(){
-	var tag = document.getElementById('muzak');
-	tag.pause();
+    var tag = document.getElementById('muzak');
+    tag.pause();
 }
 </script>
 <audio id="muzak" loop src="frog.wav">
 No audio support
 </audio>
 <input type="submit" value="Muzak ON" 
-	onclick="mplay(); return false;" />
+    onclick="mplay(); return false;" />
 <p />
 <p />
 <input type="submit" value="Muzak OFF" 
-	onclick="mstop(); return false;" />
+    onclick="mstop(); return false;" />
 <?php
 include($FANNIE_ROOT.'src/footer.html');
 ?>

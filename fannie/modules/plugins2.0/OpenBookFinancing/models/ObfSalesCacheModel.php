@@ -38,7 +38,7 @@ class ObfSalesCacheModel extends BasicModel
     'lastYearSales' => array('type'=>'MONEY'),
     'transactions' => array('type'=>'INT'),
     'growthTarget' => array('type'=>'DOUBLE'),
-	);
+    );
 
     protected $unique = array('obfWeekID', 'obfCategoryID', 'superID');
 

@@ -37,7 +37,7 @@ class WfcHtEmployeesModel extends BasicModel
     'PTOCutoff' => array('type'=>'INT'),
     'department' => array('type'=>'INT'),
     'deleted' => array('type'=>'TINYINT'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

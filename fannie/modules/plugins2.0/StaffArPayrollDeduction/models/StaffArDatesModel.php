@@ -32,7 +32,7 @@ class StaffArDatesModel extends BasicModel
     protected $columns = array(
     'staffArDateID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),
     'tdate' => array('type'=>'DATETIME'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

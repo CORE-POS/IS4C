@@ -32,7 +32,7 @@ class WfcHtUTOModel extends BasicModel
     protected $columns = array(
     'empID' => array('type'=>'INT'),
     'hours' => array('type'=>'DOUBLE'),
-	);
+    );
 
     public function create()
     {

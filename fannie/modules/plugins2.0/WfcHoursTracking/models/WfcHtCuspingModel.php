@@ -32,7 +32,7 @@ class WfcHtCuspingModel extends BasicModel
     protected $columns = array(
     'empID' => array('type'=>'INT'),
     'cusp' => array('type'=>'VARCHAR(4)'),
-	);
+    );
 
     public function create()
     {

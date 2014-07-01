@@ -25,37 +25,37 @@
 
    members.update.from.CiviCRM.php
 
-	 Updates Fannie membership data from CiviCRM 3.4.4.
-	 Matches records on custdata.CardNo = civicrm_membership.id
-	 Add CiviCRM records that don't exist in Fannie.
+     Updates Fannie membership data from CiviCRM 3.4.4.
+     Matches records on custdata.CardNo = civicrm_membership.id
+     Add CiviCRM records that don't exist in Fannie.
 
 */
 
 /* members.update.from.CiviCRM.php
    update IS4C members tables from CiviCRM membership tables
-	 
+     
  --FUNCTIONALITY { - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
  -=proposed o=in-progress +=working  x=removed/disabled
 
  + SELECT all of the currently valid members from CiviCRM
    - that were created or changed since a certain date.
-	   There is not a straightforward way to find this in Civi.
+       There is not a straightforward way to find this in Civi.
  + v.1
-	 + Write to a tab-delimited file for export to IS4C.
-	 x In a separate script, on pos[dev], read this file and populate IS4C tables.
-	   Probably won't do this if direct access from IS4C-side is possible.
+     + Write to a tab-delimited file for export to IS4C.
+     x In a separate script, on pos[dev], read this file and populate IS4C tables.
+       Probably won't do this if direct access from IS4C-side is possible.
 
  + v.2
  + Populate the IS4C custdata and other tables:
-	 - update the name and contact-point data
-	  	but not re-initialize IS4C fields that are populated for new records.
-	 - create new records as in getMembers.php
+     - update the name and contact-point data
+        but not re-initialize IS4C fields that are populated for new records.
+     - create new records as in getMembers.php
    + Make 2 or more custdata records for Civi Household records.
 
  - Outstanding
    - putting membership fees in IS4C
-	 - different contact-points in some records, for some people
-	 - sort out households and organizations at Civi end.
+     - different contact-points in some records, for some people
+     - sort out households and organizations at Civi end.
 
  --functionality } - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -66,14 +66,14 @@
   3Oct12 EL Get member card number from civicrm_value_identification_and_cred_5.member_card_number2_21
 .            and populate memberCard.
  29Aug12 EL Set memberIdOffset to 0 from 4000. Note that clearIS4C() will need different params now
- 							or maybe need to work differently.
+                            or maybe need to work differently.
   7Aug12 EL Enable email, to me at gmail.
  13Jul12 EL -> Try doing dbConn2 as add_connection. It may be necessary.
                It is important that the databases for each conn have different names.
                See nightly.dtrans.php for example, but it isn't clear how you distinguish the two.
-							   See the (foo,$database) arg, which defaults to the first one.
-							 There they are both on the same server.
-							 Perhaps the usage is limited to transfers.
+                               See the (foo,$database) arg, which defaults to the first one.
+                             There they are both on the same server.
+                             Perhaps the usage is limited to transfers.
             -> Try SetFetchMode
  12Jul12 EL For IS4C environment.
 
@@ -83,7 +83,7 @@ Both work here.
 // Connect:
 $dbConn = @new mysqli("$CIVICRM_SERVER", "$CIVICRM_SERVER_USER", "$CIVICRM_SERVER_PW", "$CIVICRM_DB");
 $dbConn = new SQLManager($CIVICRM_SERVER,$CIVICRM_SERVER_DBMS,$CIVICRM_DB,
-		$CIVICRM_SERVER_USER,$CIVICRM_SERVER_PW);
+        $CIVICRM_SERVER_USER,$CIVICRM_SERVER_PW);
 
 // Same:
 $selectCivi = "SELECT id, contact_id from civicrm_membership LIMIT 10;";
@@ -97,67 +97,67 @@ $dbConn->connect_errno and $dbConn->connect_error don't exist in SQLManager, use
 
  --upadateMembers at point of port from webfaction:- - - - - - - - - - - - - - - - - -
  11Jul EL + log final email message
- 					o Better to log results to file
-					  - and email that?
-					+ Run this on the whole set.
-					- Clear and then run with real member id#s.  Maybe not for a while yet.
-					-> Handle multiple first name.  Should this be a Household?
+                    o Better to log results to file
+                      - and email that?
+                    + Run this on the whole set.
+                    - Clear and then run with real member id#s.  Maybe not for a while yet.
+                    -> Handle multiple first name.  Should this be a Household?
 There is also a Household for them, #2115, linking to #823 and #824.  Is #1187 obsolete?
-1187	Individual	0		Peter/Debbie		Fleming/Adams					80 Ritchie Ave.			Toronto	M6R 2J9	1108	1039					661	4	0	2010-07-06	2010-07-06							
-823	Individual	0		Peter		Fleming					80 Ritchie Ave.			Toronto	M6R 2J9	1108	1039	416 537 6576	peterfleming@sympatico.ca	0	0	565	4	0	2010-01-02	2010-01-02		100.00	7	1	2010-03-12 00:00:00		1
-824	Individual	0		Debbie		Adams					80 Ritchie Ave.			Toronto	M6R 2J9	1108	1039		debbieadams@sympatico.ca	0	0	835	4	0	2010-03-12	2010-03-12		100.00	7	1	2010-03-12 00:00:00		0
-824	Individual	0		Debbie		Adams					80 Ritchie Ave.			Toronto	M6R 2J9	1108	1039		debbieadams@sympatico.ca	0	0	835	4	0	2010-03-12	2010-03-12		100.00	7	1	2010-03-12 00:00:00		0
-					-> Re multiple records for a person:
-						- Add is_primary to address, phone and email field sets
-						- Capture 2nd phone for meminfo.email_2
-						  There's no current place in IS4C for other 2nd+ contact points.
-						+ LEFT JOIN on email.  Doesn't help dups but gets 18 records w/o email.
-						+ Try DISTINCT. Gets rid of dups.
+1187    Individual  0       Peter/Debbie        Fleming/Adams                   80 Ritchie Ave.         Toronto M6R 2J9 1108    1039                    661 4   0   2010-07-06  2010-07-06                          
+823 Individual  0       Peter       Fleming                 80 Ritchie Ave.         Toronto M6R 2J9 1108    1039    416 537 6576    peterfleming@sympatico.ca   0   0   565 4   0   2010-01-02  2010-01-02      100.00  7   1   2010-03-12 00:00:00     1
+824 Individual  0       Debbie      Adams                   80 Ritchie Ave.         Toronto M6R 2J9 1108    1039        debbieadams@sympatico.ca    0   0   835 4   0   2010-03-12  2010-03-12      100.00  7   1   2010-03-12 00:00:00     0
+824 Individual  0       Debbie      Adams                   80 Ritchie Ave.         Toronto M6R 2J9 1108    1039        debbieadams@sympatico.ca    0   0   835 4   0   2010-03-12  2010-03-12      100.00  7   1   2010-03-12 00:00:00     0
+                    -> Re multiple records for a person:
+                        - Add is_primary to address, phone and email field sets
+                        - Capture 2nd phone for meminfo.email_2
+                          There's no current place in IS4C for other 2nd+ contact points.
+                        + LEFT JOIN on email.  Doesn't help dups but gets 18 records w/o email.
+                        + Try DISTINCT. Gets rid of dups.
  10Jul EL + To run by cron:
- 						+ email results to admin(s).
- 						+ func to handle, email errors instead of die.
-						+ .sh to run this. Mainly to cd to ~/is4c.  Can PHP do that?
-						+ cronjob to run the .sh or this.
-						+ Defeat clearing IS4C tables: clearIS4C
-						  - Undo Janna jigger in clearIS4C.
+                        + email results to admin(s).
+                        + func to handle, email errors instead of die.
+                        + .sh to run this. Mainly to cd to ~/is4c.  Can PHP do that?
+                        + cronjob to run the .sh or this.
+                        + Defeat clearing IS4C tables: clearIS4C
+                          - Undo Janna jigger in clearIS4C.
   9Jul EL Branch from getMembers.php to:
-	        + update the name and contact-point data
-					  but not re-initialize IS4C fields that are populated for new records.
-	        + create new records as in getMembers.php (as in getMembers.php)
+            + update the name and contact-point data
+                      but not re-initialize IS4C fields that are populated for new records.
+            + create new records as in getMembers.php (as in getMembers.php)
 
  --getMembers at point of branch:- - - - - - - - - - - - - - - - - - - - - - - - -
   7Jul EL + Do complete run.  Doesn't crash, not perfect.
-	        o Fixing funcs.
-	        o Household, other multiples working. Data style not settled.
-	        + Handle Organization Name as last name
-	        -> Is there a cashier-side lookup?
-	        -> Code this to lookup-and-update for existing members.
+            o Fixing funcs.
+            o Household, other multiples working. Data style not settled.
+            + Handle Organization Name as last name
+            -> Is there a cashier-side lookup?
+            -> Code this to lookup-and-update for existing members.
   5Jul EL + memDates and memContact done.
-	        -> How to identify new records for a later run?
-					    xDatestamp? None exists.
-						  -Last member#
-	        -> Code stockpurchases. Worth the trouble?
-					   - Is there a change-db method in the conn?
-					   - How to identify the membership purchase:
-						   - Explicit
-							 - Bond + $5
-							 - Any cannery, if not one of the others.
+            -> How to identify new records for a later run?
+                        xDatestamp? None exists.
+                          -Last member#
+            -> Code stockpurchases. Worth the trouble?
+                       - Is there a change-db method in the conn?
+                       - How to identify the membership purchase:
+                           - Explicit
+                             - Bond + $5
+                             - Any cannery, if not one of the others.
   4Jul EL + Test after at least part of meminfo assignment is coded. OK!
   2Jul EL + Code part of each of
-	          + custdata and (lint ok, not tested) Values complete?  Check is4c table.
-						+ meminfo
+              + custdata and (lint ok, not tested) Values complete?  Check is4c table.
+                        + meminfo
   1Jul EL With better join: 1584 items.
-	         With distinct c.id: 1170.  Why 695 in Civi members list?  Still many c.id dups
-					  Distinct means the whole row is unique.
-					  With manual c.id de-dup then 700, so I will assume that's same as the Civi list.
+             With distinct c.id: 1170.  Why 695 in Civi members list?  Still many c.id dups
+                      Distinct means the whole row is unique.
+                      With manual c.id de-dup then 700, so I will assume that's same as the Civi list.
  30Jun EL Start to build select from Civi.  1164 rows to handle.  449 if 1/contact.id
-					Re: Version 1, why cannot use "select into outfile":
-					INTO OUTFILE '${outFile}' FIELDS TERMINATED BY '\t' LINES TERMINATED BY '\n'
-					Access error ...
-					See:
-					 http://community.webfaction.com/questions/7465/export-database-to-csv
-					  Says to use phpMyAdmin export.
-					Can connect to posdev!
+                    Re: Version 1, why cannot use "select into outfile":
+                    INTO OUTFILE '${outFile}' FIELDS TERMINATED BY '\t' LINES TERMINATED BY '\n'
+                    Access error ...
+                    See:
+                     http://community.webfaction.com/questions/7465/export-database-to-csv
+                      Says to use phpMyAdmin export.
+                    Can connect to posdev!
 
  --'p PHP study
 . {} needed around multi-dimension array references in quoted strings.
@@ -194,71 +194,71 @@ Is this, directly from ADODB, available here?  What does the include in SQLManag
 // CardNo or card_no range between 4000 and 6000
 function clearIS4C($low = 417, $high = 1500) {
 
-	global $dbConn2;
-	global $is4cTables;
+    global $dbConn2;
+    global $is4cTables;
 
-	// Argument to where.
-	$clearWhere = "";
+    // Argument to where.
+    $clearWhere = "";
 
-	foreach ($is4cTables as $table_desc) {
-		list($db, $table, $cn) = explode("|", $table_desc);
-		//$clearWhere = "$cn = 4471";
-		$clearWhere = "$cn BETWEEN $low AND $high;";
-		$query = "DELETE FROM $table WHERE ${clearWhere};";
+    foreach ($is4cTables as $table_desc) {
+        list($db, $table, $cn) = explode("|", $table_desc);
+        //$clearWhere = "$cn = 4471";
+        $clearWhere = "$cn BETWEEN $low AND $high;";
+        $query = "DELETE FROM $table WHERE ${clearWhere};";
 //echo "$query\n";
-		if ( TRUE && $db == "core_op" ) {
-			$rslt = $dbConn2->query("$query");
-			if ( $dbConn2->errno ) {
-				return(sprintf("DML failed: %s\n", $dbConn2->error));
-				//$dbConn2->close();
-				//die("dying ...");
-				//exit();
-			}
-		} elseif ( $db == "core_trans" ) {
-			// Need another connection for this db.
-			1;
-		} else {
-			// In fact a problem, but not likely.
-			1;
-		}
-	}
+        if ( TRUE && $db == "core_op" ) {
+            $rslt = $dbConn2->query("$query");
+            if ( $dbConn2->errno ) {
+                return(sprintf("DML failed: %s\n", $dbConn2->error));
+                //$dbConn2->close();
+                //die("dying ...");
+                //exit();
+            }
+        } elseif ( $db == "core_trans" ) {
+            // Need another connection for this db.
+            1;
+        } else {
+            // In fact a problem, but not likely.
+            1;
+        }
+    }
 
-	return("OK");
+    return("OK");
 
 // clearIS4C
 }
 
 
 /* v2: Return an array of custdata for the memberId.
-		Calling script to test for #-of-items in array: 0=none, >=1 if some.
-		Return error-string if the lookup failed.
+        Calling script to test for #-of-items in array: 0=none, >=1 if some.
+        Return error-string if the lookup failed.
 */
 /* v1: Return TRUE if the Civi membership number is known in ISC4C custdata.
-		Return FALSE if not.
-		Return error-string if the lookup failed.
-		Is there something to gain by getting some data, such a number-of persons
-		 from custdata at this point?
-		 Names for household members?
+        Return FALSE if not.
+        Return error-string if the lookup failed.
+        Is there something to gain by getting some data, such a number-of persons
+         from custdata at this point?
+         Names for household members?
 */
 function searchIS4C($member) {
 
-	global $dbConn2;
+    global $dbConn2;
 
-	$is4cMembers = array();
-	$sel = "SELECT CardNo, personNum, FirstName, LastName FROM custdata where CardNo = ${member};";
-	$rslt = $dbConn2->query("$sel");
-	if ( $dbConn2->errno ) {
-		$msg = sprintf("Error: DQL failed: %s\n", $dbConn2->error);
-		$is4cMembers[] = array($msg);
-		return($is4cMembers);
-	}
-	// What is $rslt if 0 rows?  Does it exist?
-	//$n = 0;
-	while ( $row = $dbConn2->fetch_row($rslt) ) {
-		//$n++;
-		$is4cMembers[] = array($row[CardNo], $row[personNum], $row[FirstName], $row[LastName]);
-	}
-	return($is4cMembers);
+    $is4cMembers = array();
+    $sel = "SELECT CardNo, personNum, FirstName, LastName FROM custdata where CardNo = ${member};";
+    $rslt = $dbConn2->query("$sel");
+    if ( $dbConn2->errno ) {
+        $msg = sprintf("Error: DQL failed: %s\n", $dbConn2->error);
+        $is4cMembers[] = array($msg);
+        return($is4cMembers);
+    }
+    // What is $rslt if 0 rows?  Does it exist?
+    //$n = 0;
+    while ( $row = $dbConn2->fetch_row($rslt) ) {
+        //$n++;
+        $is4cMembers[] = array($row[CardNo], $row[personNum], $row[FirstName], $row[LastName]);
+    }
+    return($is4cMembers);
 
 // searchIS4C
 }
@@ -266,37 +266,37 @@ function searchIS4C($member) {
 // #'t
 function searchIS4C2($member) {
 
-	global $dbConn2;
+    global $dbConn2;
 
-	$is4cOp = array();
-	$sel = "SELECT c.CardNo as cCard,
-	i.card_no as iCard,
-	t.card_no as tCard,
-	d.card_no as dCard,
-	r.card_no as rCard
-	FROM custdata c
+    $is4cOp = array();
+    $sel = "SELECT c.CardNo as cCard,
+    i.card_no as iCard,
+    t.card_no as tCard,
+    d.card_no as dCard,
+    r.card_no as rCard
+    FROM custdata c
 LEFT JOIN meminfo i ON c.CardNo = i.card_no
 LEFT JOIN memContact t ON c.CardNo = t.card_no
 LEFT JOIN memDates d ON c.CardNo = d.card_no
 LEFT JOIN memberCards r ON c.CardNo = r.card_no
-	WHERE c.CardNo = ${member};";
-	$rslt = $dbConn2->query("$sel");
-	if ( $dbConn2->errno ) {
-		$msg = sprintf("Error: DQL failed: %s\n", $dbConn2->error);
-		$is4cOp[] = array($msg);
-		return($is4cOp);
-	}
+    WHERE c.CardNo = ${member};";
+    $rslt = $dbConn2->query("$sel");
+    if ( $dbConn2->errno ) {
+        $msg = sprintf("Error: DQL failed: %s\n", $dbConn2->error);
+        $is4cOp[] = array($msg);
+        return($is4cOp);
+    }
 
-	while ( $row = $dbConn2->fetch_row($rslt) ) {
-		$is4cOp['custdata'] = "update";
-		$is4cOp['meminfo'] = ( $row[iCard] != "" ) ? "update" : "insert";
-		$is4cOp['memContact'] = ( $row[tCard] != "" ) ? "update" : "insert";
-		$is4cOp['memDates'] = ( $row[dCard] != "" ) ? "update" : "insert";
-		$is4cOp['memberCards'] = ( $row[rCard] != "" ) ? "update" : "insert";
-		break;
-	}
+    while ( $row = $dbConn2->fetch_row($rslt) ) {
+        $is4cOp['custdata'] = "update";
+        $is4cOp['meminfo'] = ( $row[iCard] != "" ) ? "update" : "insert";
+        $is4cOp['memContact'] = ( $row[tCard] != "" ) ? "update" : "insert";
+        $is4cOp['memDates'] = ( $row[dCard] != "" ) ? "update" : "insert";
+        $is4cOp['memberCards'] = ( $row[rCard] != "" ) ? "update" : "insert";
+        break;
+    }
 
-	return($is4cOp);
+    return($is4cOp);
 
 // searchIS4C2
 }
@@ -305,56 +305,56 @@ LEFT JOIN memberCards r ON c.CardNo = r.card_no
 // Return "OK" if all OK or abort returning message on any error.
 function insertToIS4C() {
 
-	global $dbConn2;
+    global $dbConn2;
 
-	global $insertCustdata;
-	global $insertMeminfo;
-	global $insertMemContact;
-	global $insertMemDates;
-	global $insertMemberCards;
-	global $insertStockpurchases;
+    global $insertCustdata;
+    global $insertMeminfo;
+    global $insertMemContact;
+    global $insertMemDates;
+    global $insertMemberCards;
+    global $insertStockpurchases;
 
-	global $debug;
+    global $debug;
 
 //echo "In insertToIS4C\n";
 
-	$statements = array($insertMeminfo,
-		$insertMemContact,
-		$insertMemDates,
-		$insertMemberCards);
-	$statement = "";
+    $statements = array($insertMeminfo,
+        $insertMemContact,
+        $insertMemDates,
+        $insertMemberCards);
+    $statement = "";
 
-	if ( count($insertCustdata) > 0 ) {
-		foreach ($insertCustdata as $statement) {
-			if ( $debug == 1) 
-				echo $statement, "\n";
+    if ( count($insertCustdata) > 0 ) {
+        foreach ($insertCustdata as $statement) {
+            if ( $debug == 1) 
+                echo $statement, "\n";
 //continue;
-			$rslt = $dbConn2->query("$statement");
-			if ( 1 && $dbConn2->errno ) {
-				return(sprintf("Error: Insert failed: %s\n", $dbConn2->error));
-			}
-		}
-	}
-	else {
-		//echo "No custdata to insert.\n";
-		1;
-	}
+            $rslt = $dbConn2->query("$statement");
+            if ( 1 && $dbConn2->errno ) {
+                return(sprintf("Error: Insert failed: %s\n", $dbConn2->error));
+            }
+        }
+    }
+    else {
+        //echo "No custdata to insert.\n";
+        1;
+    }
 
-	foreach ($statements as $statement) {
-		if ( $statement != "" ) {
-			if ( $debug == 1) 
-				echo $statement, "\n";
+    foreach ($statements as $statement) {
+        if ( $statement != "" ) {
+            if ( $debug == 1) 
+                echo $statement, "\n";
 //continue;
-			$rslt = $dbConn2->query("$statement");
-			if ( 1 && $dbConn2->errno ) {
-				return(sprintf("Error: Insert failed: %s\n", $dbConn2->error));
-			}
-		}
-	}
+            $rslt = $dbConn2->query("$statement");
+            if ( 1 && $dbConn2->errno ) {
+                return(sprintf("Error: Insert failed: %s\n", $dbConn2->error));
+            }
+        }
+    }
 
-	// stockpurchases is in a different db.
+    // stockpurchases is in a different db.
 
-	return("OK");
+    return("OK");
 
 // insertToIS4C
 }
@@ -363,56 +363,56 @@ function insertToIS4C() {
 // Return "OK" if all OK or abort returning message on any error.
 function updateIS4C() {
 
-	global $dbConn2;
+    global $dbConn2;
 
 //echo "In updateIS4C\n";
 
-	global $updateCustdata;
-	global $updateMeminfo;
-	global $updateMemContact;
-	global $updateMemDates;
-	global $updateMemberCards;
-	global $updateStockpurchases;
+    global $updateCustdata;
+    global $updateMeminfo;
+    global $updateMemContact;
+    global $updateMemDates;
+    global $updateMemberCards;
+    global $updateStockpurchases;
 
-	global $debug;
+    global $debug;
 
-	$statements = array($updateMeminfo,
-		$updateMemContact,
-		$updateMemDates,
-		$updateMemberCards);
-	$statement = "";
+    $statements = array($updateMeminfo,
+        $updateMemContact,
+        $updateMemDates,
+        $updateMemberCards);
+    $statement = "";
 
-	if ( count($updateCustdata) > 0 ) {
-		foreach ($updateCustdata as $statement) {
-			if ( $debug == 1) 
-				echo $statement, "\n";
+    if ( count($updateCustdata) > 0 ) {
+        foreach ($updateCustdata as $statement) {
+            if ( $debug == 1) 
+                echo $statement, "\n";
 //continue;
-			$rslt = $dbConn2->query("$statement");
-			if ( 1 && $dbConn2->errno ) {
-				return(sprintf("Error: Update failed: %s\n", $dbConn2->error));
-			}
-		}
-	}
-	else {
-		//echo "No custdata to update.\n";
-		1;
-	}
+            $rslt = $dbConn2->query("$statement");
+            if ( 1 && $dbConn2->errno ) {
+                return(sprintf("Error: Update failed: %s\n", $dbConn2->error));
+            }
+        }
+    }
+    else {
+        //echo "No custdata to update.\n";
+        1;
+    }
 
-	foreach ($statements as $statement) {
-		if ( $statement != "" ) {
-			if ( $debug == 1) 
-				echo $statement, "\n";
+    foreach ($statements as $statement) {
+        if ( $statement != "" ) {
+            if ( $debug == 1) 
+                echo $statement, "\n";
 //continue;
-			$rslt = $dbConn2->query("$statement");
-			if ( 1 && $dbConn2->errno ) {
-				return(sprintf("Error: Update failed: %s\n", $dbConn2->error));
-			}
-		}
-	}
+            $rslt = $dbConn2->query("$statement");
+            if ( 1 && $dbConn2->errno ) {
+                return(sprintf("Error: Update failed: %s\n", $dbConn2->error));
+            }
+        }
+    }
 
-	// stockpurchases is in a different db.
+    // stockpurchases is in a different db.
 
-	return("OK");
+    return("OK");
 
 // updateIS4C
 }
@@ -421,81 +421,81 @@ function updateIS4C() {
 // Each IS4C table is represented by an assoc array.
 function clearWorkVars() {
 
-	// in core_op
-	// Card#, Person#, Name
-	global $custdata;
-	// Contact points for Card#
-	global $meminfo;
-	// Whether/how to contact.
-	global $memContact;
-	// Membership start, i.e. join date
-	global $memDates;
-	// Member Card barcode lookup.
-	global $memberCards;
-	// in core_trans
-	global $stockpurchases;
+    // in core_op
+    // Card#, Person#, Name
+    global $custdata;
+    // Contact points for Card#
+    global $meminfo;
+    // Whether/how to contact.
+    global $memContact;
+    // Membership start, i.e. join date
+    global $memDates;
+    // Member Card barcode lookup.
+    global $memberCards;
+    // in core_trans
+    global $stockpurchases;
 
-	// in core_op
-	// Card#, Person#, Name
-//	$custdata[CardNo] = 0;
-//	$custdata[personNum] = 0;
-	$flds = array_keys($custdata);
-	foreach ($flds as $field) {
-		$custdata[$field] = "";
-	}
+    // in core_op
+    // Card#, Person#, Name
+//  $custdata[CardNo] = 0;
+//  $custdata[personNum] = 0;
+    $flds = array_keys($custdata);
+    foreach ($flds as $field) {
+        $custdata[$field] = "";
+    }
 
-	$flds = array_keys($meminfo);
-	foreach ($flds as $field) {
-		$meminfo[$field] = "";
-	}
+    $flds = array_keys($meminfo);
+    foreach ($flds as $field) {
+        $meminfo[$field] = "";
+    }
 
-	$flds = array_keys($memDates);
-	foreach ($flds as $field) {
-		$memDates[$field] = "";
-	}
+    $flds = array_keys($memDates);
+    foreach ($flds as $field) {
+        $memDates[$field] = "";
+    }
 
-	$flds = array_keys($memContact);
-	foreach ($flds as $field) {
-		$memContact[$field] = "";
-	}
+    $flds = array_keys($memContact);
+    foreach ($flds as $field) {
+        $memContact[$field] = "";
+    }
 
-	$flds = array_keys($memberCards);
-	foreach ($flds as $field) {
-		$memberCards[$field] = "";
-	}
+    $flds = array_keys($memberCards);
+    foreach ($flds as $field) {
+        $memberCards[$field] = "";
+    }
 
-	$flds = array_keys($stockpurchases);
-	foreach ($flds as $field) {
-		$stockpurchases[$field] = "";
-	}
+    $flds = array_keys($stockpurchases);
+    foreach ($flds as $field) {
+        $stockpurchases[$field] = "";
+    }
 
-	global $insertCustdata;
-	global $insertMeminfo;
-	global $insertMemContact;
-	global $insertMemDates;
-	global $insertMemberCards;
-	global $insertStockpurchases;
+    global $insertCustdata;
+    global $insertMeminfo;
+    global $insertMemContact;
+    global $insertMemDates;
+    global $insertMemberCards;
+    global $insertStockpurchases;
 
-	global $updateCustdata;
-	global $updateMeminfo;
-	global $updateMemContact;
-	global $updateMemDates;
-	global $updateMemberCards;
-	global $updateStockpurchases;
+    global $updateCustdata;
+    global $updateMeminfo;
+    global $updateMemContact;
+    global $updateMemDates;
+    global $updateMemberCards;
+    global $updateStockpurchases;
 
-	$insertCustdata = array();
-	$insertMeminfo = "";
-	$insertMemContact = "";
-	$insertMemDates = "";
-	$insertMemberCards = "";
-	$insertStockpurchases = "";
+    $insertCustdata = array();
+    $insertMeminfo = "";
+    $insertMemContact = "";
+    $insertMemDates = "";
+    $insertMemberCards = "";
+    $insertStockpurchases = "";
 
-	$updateCustdata = array();
-	$updateMeminfo = "";
-	$updateMemContact = "";
-	$updateMemDates = "";
-	$updateMemberCards = "";
-	$updateStockpurchases = "";
+    $updateCustdata = array();
+    $updateMeminfo = "";
+    $updateMemContact = "";
+    $updateMemDates = "";
+    $updateMemberCards = "";
+    $updateStockpurchases = "";
 
 // clearWorkVars
 }
@@ -503,33 +503,33 @@ function clearWorkVars() {
 // Return province or state name from code format 1=abbreviation or 2=full-name
 function getProvince($num = 0, $format = 1) {
 
-	$province = "";
+    $province = "";
 
-	if ( $format == 1 ) {
-		switch ($num) {
-			case 1108:
-				$province = "ON";
-				break;
-			default:
-				$province = "XX";
-				break;
-		}
-	}
+    if ( $format == 1 ) {
+        switch ($num) {
+            case 1108:
+                $province = "ON";
+                break;
+            default:
+                $province = "XX";
+                break;
+        }
+    }
 
-	return($province);
+    return($province);
 
 //getProvince
 }
 
 // o Return in format "A9A 9A9"
 function fixPostalCode($str = "") {
-	$str = strtoupper($str);
-	// Remove anything but uppercase letters and numbers.
-	$str = preg_replace("/[^A-Z\d]/", "", $str);
-	// Format: A9A 9A9
-	//  Leaves non-postal-code content alone.
-	$str = preg_replace("/([A-Z]\d[A-Z])(\d[A-Z]\d)/", "$1 $2", $str);
-	return($str);
+    $str = strtoupper($str);
+    // Remove anything but uppercase letters and numbers.
+    $str = preg_replace("/[^A-Z\d]/", "", $str);
+    // Format: A9A 9A9
+    //  Leaves non-postal-code content alone.
+    $str = preg_replace("/([A-Z]\d[A-Z])(\d[A-Z]\d)/", "$1 $2", $str);
+    return($str);
 //fixPostalCode
 }
 
@@ -537,76 +537,76 @@ function fixPostalCode($str = "") {
     unless the original wasn't even close.
 */
 function fixPhone($str = "") {
-	$str_orig = $str;
-	$str = preg_replace("/[^\d]/", "", $str);
-	$str = preg_replace("/^(\d{3})(\d{3})(\d{4})$/", "$1-$2-$3", $str);
-	if ( preg_match("/^(\d{3})-(\d{3})-(\d{4})$/", $str) ) {
-		return($str);
-	} else {
-		$str_orig = str_replace("'", "''", $str_orig);
-		return($str_orig);
-	}
+    $str_orig = $str;
+    $str = preg_replace("/[^\d]/", "", $str);
+    $str = preg_replace("/^(\d{3})(\d{3})(\d{4})$/", "$1-$2-$3", $str);
+    if ( preg_match("/^(\d{3})-(\d{3})-(\d{4})$/", $str) ) {
+        return($str);
+    } else {
+        $str_orig = str_replace("'", "''", $str_orig);
+        return($str_orig);
+    }
 //fixPhone
 }
 
 /* City:
-	+ tolower if ALL CAPS
+    + tolower if ALL CAPS
   + Capitalize first letter of each word
   + Double apostrophes
 */
 function fixCity($str = "") {
-	if ( preg_match("/[A-Z]{3}/", $str) ) {
-		$str = strtolower($str);
-	}
-	$str = ucwords($str);
-	$str = str_replace("'", "''", $str);
-	return($str);
+    if ( preg_match("/[A-Z]{3}/", $str) ) {
+        $str = strtolower($str);
+    }
+    $str = ucwords($str);
+    $str = str_replace("'", "''", $str);
+    return($str);
 //fixCity
 }
 
 /* Name:
-	+ tolower if ALL CAPS
+    + tolower if ALL CAPS
   + Capitalize first letter of each word
   + Double apostrophes
 */
 function fixName($str = "") {
-	if ( preg_match("/[A-Z]{3}/", $str) ) {
-		$str = strtolower($str);
-		// First letter after hyphen
-		$str = preg_replace("/(-[A-Z])/", "$1", $str);
-		if ( "$1" != "" ) {
-			$upper1 = strtoupper("$1");
-			$str = str_replace("$1", "$upper1", $str);
-		}
-		//$str = preg_replace("/(-[A-Z])/", strtoupper($1), $str); // T_LNUMBER error
-		$str = ucwords($str);
-	}
-	// Is all-lowercase + hyphen space apostrophe
-	elseif ( preg_match("/^[- 'a-z]+$/", $str) ) {
-		// Need exceptions: "di", "de la", ... ?
-		$str = ucwords($str);
-	}
-	// Already mixed-case
-	else {
-		1;
-	}
-	$str = str_replace("'", "''", $str);
-	return($str);
+    if ( preg_match("/[A-Z]{3}/", $str) ) {
+        $str = strtolower($str);
+        // First letter after hyphen
+        $str = preg_replace("/(-[A-Z])/", "$1", $str);
+        if ( "$1" != "" ) {
+            $upper1 = strtoupper("$1");
+            $str = str_replace("$1", "$upper1", $str);
+        }
+        //$str = preg_replace("/(-[A-Z])/", strtoupper($1), $str); // T_LNUMBER error
+        $str = ucwords($str);
+    }
+    // Is all-lowercase + hyphen space apostrophe
+    elseif ( preg_match("/^[- 'a-z]+$/", $str) ) {
+        // Need exceptions: "di", "de la", ... ?
+        $str = ucwords($str);
+    }
+    // Already mixed-case
+    else {
+        1;
+    }
+    $str = str_replace("'", "''", $str);
+    return($str);
 //fixName
 }
 
 /* Address:
-	+ tolower if ALL CAPS
+    + tolower if ALL CAPS
   + Capitalize first letter of each word
   + Double apostrophes
 */
 function fixAddress($str = "") {
-	if ( preg_match("/[A-Z]{3}/", $str) ) {
-		$str = strtolower($str);
-	}
-	$str = ucwords($str);
-	$str = str_replace("'", "''", $str);
-	return($str);
+    if ( preg_match("/[A-Z]{3}/", $str) ) {
+        $str = strtolower($str);
+    }
+    $str = ucwords($str);
+    $str = str_replace("'", "''", $str);
+    return($str);
 //fixAddress
 }
 
@@ -614,39 +614,39 @@ function fixAddress($str = "") {
 */
 function dieHere($msg="") {
 
-	global $dbConn;
-	global $dbConn2;
-	global $insertCount;
-	global $updateCount;
-	global $admins;
+    global $dbConn;
+    global $dbConn2;
+    global $insertCount;
+    global $updateCount;
+    global $admins;
 
-	$subject = "PoS: Error: Update IS4C members";
-	$message = "$msg";
-	//$message = "Added: $insertCount  Updated: $updateCount\n";
-	$adminString = implode(" ", $admins);
+    $subject = "PoS: Error: Update IS4C members";
+    $message = "$msg";
+    //$message = "Added: $insertCount  Updated: $updateCount\n";
+    $adminString = implode(" ", $admins);
 
-	$lastLine = exec("echo \"$message\" | mail -s \"$subject\" $adminString");
-	// echo "Not ready to email: $msg\n";
-	// Ordinary success returns nothing, or "".
-	echo "from mailing: {$lastLine}\n";
+    $lastLine = exec("echo \"$message\" | mail -s \"$subject\" $adminString");
+    // echo "Not ready to email: $msg\n";
+    // Ordinary success returns nothing, or "".
+    echo "from mailing: {$lastLine}\n";
 
-	if ( $dbConn ) {
-		// Warning: mysqli::close(): Couldn't fetch mysqli in /home/parkdale/is4c/updateMembers.php on line next
-		@$dbConn->close();
-	} else {
-		//echo "No dbConn to close.\n";
-		1;
-	}
+    if ( $dbConn ) {
+        // Warning: mysqli::close(): Couldn't fetch mysqli in /home/parkdale/is4c/updateMembers.php on line next
+        @$dbConn->close();
+    } else {
+        //echo "No dbConn to close.\n";
+        1;
+    }
 
-	if ( $dbConn2 ) {
-		@$dbConn2->close();
-	} else {
-		//echo "No dbConn2 to close.\n";
-		1;
-	}
+    if ( $dbConn2 ) {
+        @$dbConn2->close();
+    } else {
+        //echo "No dbConn2 to close.\n";
+        1;
+    }
 
-	//echo "End of dieHere\n";
-	exit();
+    //echo "End of dieHere\n";
+    exit();
 
 //dieHere
 }
@@ -654,25 +654,25 @@ function dieHere($msg="") {
 // Return an array of the name keys: 1, 3, etc.
 function getNameKeys($row) {
 
-	$names = array();
-	$key = "";
-	$n = 0;
-	foreach (array_keys($row) as $key) {
-		// Test for odd number.
-		// http://ca.php.net/manual/en/function.array-filter.php
-		// Also works:
-		//if ( ($n % 2) != 0 ) {}
-		if ($n & 1) {
-			$names[] = $key;
-			//echo "$n odd: $key\n";
-		} else {
-			1;
-			//echo "$n not-odd: $key\n";
-		}
-		$n++;
-	}
+    $names = array();
+    $key = "";
+    $n = 0;
+    foreach (array_keys($row) as $key) {
+        // Test for odd number.
+        // http://ca.php.net/manual/en/function.array-filter.php
+        // Also works:
+        //if ( ($n % 2) != 0 ) {}
+        if ($n & 1) {
+            $names[] = $key;
+            //echo "$n odd: $key\n";
+        } else {
+            1;
+            //echo "$n not-odd: $key\n";
+        }
+        $n++;
+    }
 
-	return($names);
+    return($names);
 
 //getNameKeys
 }
@@ -682,25 +682,25 @@ function getNameKeys($row) {
 // Getting the evens would have the same result.
 function getNameValues($row) {
 
-	$values = array();
-	$val = "";
-	$n = 0;
-	foreach ($row as $val) {
-		// Test for odd number.
-		// http://ca.php.net/manual/en/function.array-filter.php
-		// Also works:
-		//if ( ($n % 2) != 0 ) {}
-		if ($n & 1) {
-			$values[] = $val;
-			//echo "$n odd: $key\n";
-		} else {
-			1;
-			//echo "$n not-odd: $key\n";
-		}
-		$n++;
-	}
+    $values = array();
+    $val = "";
+    $n = 0;
+    foreach ($row as $val) {
+        // Test for odd number.
+        // http://ca.php.net/manual/en/function.array-filter.php
+        // Also works:
+        //if ( ($n % 2) != 0 ) {}
+        if ($n & 1) {
+            $values[] = $val;
+            //echo "$n odd: $key\n";
+        } else {
+            1;
+            //echo "$n not-odd: $key\n";
+        }
+        $n++;
+    }
 
-	return($values);
+    return($values);
 
 //getNameValues
 }
@@ -782,56 +782,56 @@ $updateCount = 0;
 // in core_op
 // Card#, Person#, Name
 $custdata = array(
-	"CardNo" => "",
-	"personNum" => "",
-	"LastName" => "",
-	"FirstName" => "",
-	"Type" => "",
-	"memType" => "",
-	"blueLine" => "",
-	"id" => ""
+    "CardNo" => "",
+    "personNum" => "",
+    "LastName" => "",
+    "FirstName" => "",
+    "Type" => "",
+    "memType" => "",
+    "blueLine" => "",
+    "id" => ""
 );
 // Contact points for Card#
 $meminfo = array(
-	"card_no" => "",
-	"last_name" => "",
-	"first_name" => "",
-	"street" => "",
-	"city" => "",
-	"state" => "",
-	"zip" => "",
-	"phone" => "",
-	"email_1" => "",
-	"email_2" => "",
-	"ads_OK" => ""
+    "card_no" => "",
+    "last_name" => "",
+    "first_name" => "",
+    "street" => "",
+    "city" => "",
+    "state" => "",
+    "zip" => "",
+    "phone" => "",
+    "email_1" => "",
+    "email_2" => "",
+    "ads_OK" => ""
 );
 // Whether/how to contact.
 $memContact = array(
-	"card_no" => "",
-	"x" => ""
+    "card_no" => "",
+    "x" => ""
 );
 // Membership start, i.e. join date
 $memDates = array(
-	"card_no" => "",
-	"x" => ""
+    "card_no" => "",
+    "x" => ""
 );
 // Member Card barcode lookup.
 $memberCards = array(
-	"card_no" => "",
-	"upc" => ""
-	);
+    "card_no" => "",
+    "upc" => ""
+    );
 // in core_trans
 $stockpurchases = array(
-	"card_no" => "",
-	"x" => ""
+    "card_no" => "",
+    "x" => ""
 );
 
 $is4cTables = array("core_op|custdata|CardNo",
-	"core_op|meminfo|card_no",
-	"core_op|memContact|card_no",
-	"core_op|memDates|card_no",
-	"core_op|memberCards|card_no",
-	"core_trans|stockpurchases|card_no");
+    "core_op|meminfo|card_no",
+    "core_op|memContact|card_no",
+    "core_op|memDates|card_no",
+    "core_op|memberCards|card_no",
+    "core_trans|stockpurchases|card_no");
 
 $insertCustdata = array();
 $insertMeminfo = "";
@@ -865,8 +865,8 @@ exit();
 //  but the test further on will still see it.
 //$dbConn = @new mysqli("$CIVICRM_SERVER", "$CIVICRM_SERVER_USER", "$CIVICRM_SERVER_PW", "$CIVICRM_DB");
 $dbConn = new SQLManager($CIVICRM_SERVER,$CIVICRM_SERVER_DBMS,$CIVICRM_DB,
-		$CIVICRM_SERVER_USER,$CIVICRM_SERVER_PW);
-//		$CIVICRM_SERVER_USER,"xx");
+        $CIVICRM_SERVER_USER,$CIVICRM_SERVER_PW);
+//      $CIVICRM_SERVER_USER,"xx");
 //Orig:
 //$dbConn = @new mysqli("$CIVI_IP", "$CIVI_USER", "$CIVI_PASSWORD", "$CIVI_DB");
 // Cannot do this - func doesn't exist, or object doesn't.
@@ -886,57 +886,57 @@ $dbConn = new SQLManager($CIVICRM_SERVER,$CIVICRM_SERVER_DBMS,$CIVICRM_DB,
 */
 $message = $dbConn->error();
 if ( $message != "" ) {
-	dieHere("$message");
+    dieHere("$message");
 }
 else {
-	$message = "1CiviCRM connection did not fail";
-	if ( $debug == 1) 
-		echo "$message\n";
+    $message = "1CiviCRM connection did not fail";
+    if ( $debug == 1) 
+        echo "$message\n";
 }
 if ( FALSE && $dbConn->error() ) {
-	$message = sprintf("Connect1 failed: %s\n", $dbConn->error());
-	dieHere("$message");
-	//die("dying ...");
-	//exit();
+    $message = sprintf("Connect1 failed: %s\n", $dbConn->error());
+    dieHere("$message");
+    //die("dying ...");
+    //exit();
 }
 //echo "Hello?\n";
 $message = "2CiviCRM connection did not fail";
 //dieHere("$message");
 if ( $debug == 1) 
-	echo "$message\n";
+    echo "$message\n";
 
 /* Assignment doesn't fail.
    But it doesn't affect the behaviour of fetch_array
-	 If not assigned, is DEFAULT
+     If not assigned, is DEFAULT
 //$dbConn->fetchMode = ADODB_FETCH_NUM;
 $fm = $dbConn->fetchMode;
 // If no assignment this shows "" but matches FETCH_DEFAULT.
 echo "fm: >{$fm}<\n";
 switch ($fm) {
-	// 3
-	case ADODB_FETCH_BOTH:
-		echo "Is both\n";
-		break;
-	// 2
-	case ADODB_FETCH_ASSOC:
-		echo "Is assoc\n";
-		break;
-	// 1
-	case ADODB_FETCH_NUM:
-		echo "Is num\n";
-		break;
-	// 0
-	case ADODB_FETCH_DEFAULT:
-		echo "Is default\n";
-		break;
-	case "":
-		echo "Is ''\n";
-		break;
-	case FALSE:
-		echo "Is FALSE\n";
-		break;
-	default:
-	echo "Ain't nothin\n";
+    // 3
+    case ADODB_FETCH_BOTH:
+        echo "Is both\n";
+        break;
+    // 2
+    case ADODB_FETCH_ASSOC:
+        echo "Is assoc\n";
+        break;
+    // 1
+    case ADODB_FETCH_NUM:
+        echo "Is num\n";
+        break;
+    // 0
+    case ADODB_FETCH_DEFAULT:
+        echo "Is default\n";
+        break;
+    case "":
+        echo "Is ''\n";
+        break;
+    case FALSE:
+        echo "Is FALSE\n";
+        break;
+    default:
+    echo "Ain't nothin\n";
 }
 dieHere("After fm");
 */
@@ -944,41 +944,41 @@ dieHere("After fm");
 // Little tests of civicrm connection.
 if (0) {
 
-	$selectCivi = "SELECT id, contact_id from civicrm_membership LIMIT 5;";
-	$civim = $dbConn->query("$selectCivi");
-	// Does not complain about error in MySQL statement.
-	// See $LOGS/queries.log for them.
-	if ( $dbConn->errno ) {
-		$message = printf("Select failed: %s\n", $dbConn->error);
-		dieHere("$message");
-	}
+    $selectCivi = "SELECT id, contact_id from civicrm_membership LIMIT 5;";
+    $civim = $dbConn->query("$selectCivi");
+    // Does not complain about error in MySQL statement.
+    // See $LOGS/queries.log for them.
+    if ( $dbConn->errno ) {
+        $message = printf("Select failed: %s\n", $dbConn->error);
+        dieHere("$message");
+    }
 
-	// Quick test.
-	echo "Civi Members Numbered\n";
-	// PHP Fatal error:  Call to undefined method ADORecordSet_mysql::fetch_row() in /var/www/IS4C/fannie/cron/nightly.update.members.php on line 694
-	// PHP Fatal error:  Call to undefined method ADORecordSet_mysql::fetch_array() in /var/www/IS4C/fannie/cron/nightly.update.members.php on line 694
+    // Quick test.
+    echo "Civi Members Numbered\n";
+    // PHP Fatal error:  Call to undefined method ADORecordSet_mysql::fetch_row() in /var/www/IS4C/fannie/cron/nightly.update.members.php on line 694
+    // PHP Fatal error:  Call to undefined method ADORecordSet_mysql::fetch_array() in /var/www/IS4C/fannie/cron/nightly.update.members.php on line 694
 //$res = $sql->query("SELECT month(datetime),year(datetime) FROM dtransactions");
 //$row = $sql->fetch_row($res);
-	//mysqli: while ( $row = $civim->fetch_row() ) {}
-	while ( $row = $dbConn->fetch_array($civim) ) {
-		// The numeric keys come first. 0,2,4. Name keys 1, 3, 5.
-		$flds = getNameKeys($row);
-		//$flds = array_keys($row);
-		$lineOut = implode("\t", $flds) . "\n";
-		echo $lineOut;
-		$lineOut = implode("\t", array($row[id], $row[contact_id])) . "\n";
-		echo $lineOut;
-		// This gives duplicate values, for each of: first number, then name reference.
-		//$lineOut = implode("\t", $row) . "\n";
-		// Reduce to one set.
-		/*
-		$vals = getNameValues($row);
-		$lineOut = implode("\t", $vals) . "\n";
-		echo $lineOut;
-		*/
-	}
-	
-	dieHere("Little test c OK, bailing ...");
+    //mysqli: while ( $row = $civim->fetch_row() ) {}
+    while ( $row = $dbConn->fetch_array($civim) ) {
+        // The numeric keys come first. 0,2,4. Name keys 1, 3, 5.
+        $flds = getNameKeys($row);
+        //$flds = array_keys($row);
+        $lineOut = implode("\t", $flds) . "\n";
+        echo $lineOut;
+        $lineOut = implode("\t", array($row[id], $row[contact_id])) . "\n";
+        echo $lineOut;
+        // This gives duplicate values, for each of: first number, then name reference.
+        //$lineOut = implode("\t", $row) . "\n";
+        // Reduce to one set.
+        /*
+        $vals = getNameValues($row);
+        $lineOut = implode("\t", $vals) . "\n";
+        echo $lineOut;
+        */
+    }
+    
+    dieHere("Little test c OK, bailing ...");
 
 // Enable/defeat little tests of civicrm connection
 }
@@ -990,15 +990,15 @@ if ( 1 ) {
 //$dbConn2 = @new mysqli("$IS4C_IP", "$IS4C_USER", "$IS4C_PASSWORD", "$IS4C_DB");
 
 $dbConn2 = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
+        $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 if ( $dbConn2->connect_errno ) {
-	$message = sprintf("Connect2 failed: %s\n", $dbConn2->connect_error);
-	dieHere("$message");
-	// if ( $dbConn ) {
-	// 	$dbConn->close();
-	// }
-	// die("dying ...");
-	//exit();
+    $message = sprintf("Connect2 failed: %s\n", $dbConn2->connect_error);
+    dieHere("$message");
+    // if ( $dbConn ) {
+    //  $dbConn->close();
+    // }
+    // die("dying ...");
+    //exit();
 }
 
 
@@ -1042,32 +1042,32 @@ $dbConn2->SetFetchMode(ADODB_FETCH_ASSOC);
 // Little tests of is4c connection.
 if (0) {
 
-	$selectIs4c = "SELECT CardNo, LastName from custdata LIMIT 5;";
-	$customers = $dbConn2->query("$selectIs4c");
-	// ->errno probably doesn't exist in SQLManager
-	if ( $dbConn2->errno ) {
-		$message = sprintf("Select failed: %s\n", $dbConn->error);
-		dieHere($message);
-	}
+    $selectIs4c = "SELECT CardNo, LastName from custdata LIMIT 5;";
+    $customers = $dbConn2->query("$selectIs4c");
+    // ->errno probably doesn't exist in SQLManager
+    if ( $dbConn2->errno ) {
+        $message = sprintf("Select failed: %s\n", $dbConn->error);
+        dieHere($message);
+    }
 
-	// Quick test.
-	echo "IS4C Numbered\n";
-	while ( $row = $dbConn2->fetch_row($customers) ) {
-		// Why does $row contain each field twice?
-		//  Because $row is a BOTH list and hash; use hash syntax.
-		// array_keys gets both names and numbers.
-		//$flds = array_keys($row);
-		$flds = getNameKeys($row);
-		$lineOut = implode("\t", $flds) . "\n";
-		echo $lineOut;
-//		echo "count:", count($row), "\n";
-		$vals = getNameValues($row);
-		$lineOut = implode("\t", $vals) . "\n";
-		echo $lineOut;
-		$lineOut = implode("\t", array($row[CardNo], $row[LastName])) . "\n";
-		echo $lineOut;
-	}
-	die("IS4C OK, bailing ...");
+    // Quick test.
+    echo "IS4C Numbered\n";
+    while ( $row = $dbConn2->fetch_row($customers) ) {
+        // Why does $row contain each field twice?
+        //  Because $row is a BOTH list and hash; use hash syntax.
+        // array_keys gets both names and numbers.
+        //$flds = array_keys($row);
+        $flds = getNameKeys($row);
+        $lineOut = implode("\t", $flds) . "\n";
+        echo $lineOut;
+//      echo "count:", count($row), "\n";
+        $vals = getNameValues($row);
+        $lineOut = implode("\t", $vals) . "\n";
+        echo $lineOut;
+        $lineOut = implode("\t", array($row[CardNo], $row[LastName])) . "\n";
+        echo $lineOut;
+    }
+    die("IS4C OK, bailing ...");
 
 // Enable/defeat little tests of is4c connection
 }
@@ -1075,11 +1075,11 @@ if (0) {
 // Enable/defeat clearing testrecords
 // For update generally don't want to do this.
 if (FALSE) {
-	$resultString = clearIS4C();
-	if ( $resultString != "OK" ) {
-		dieHere("$resultString");
-	}
-	//dieHere("Done clearing");
+    $resultString = clearIS4C();
+    if ( $resultString != "OK" ) {
+        dieHere("$resultString");
+    }
+    //dieHere("Done clearing");
 // Enable/defeat clearing testrecords
 }
 
@@ -1103,15 +1103,15 @@ $selLimit = "";
     There must be: _membership, _contact
     There will always be: _email
     There might be one or more: _address and/or _phone and/or _contribution
-	 The field sequence is similar to the Civi export.
+     The field sequence is similar to the Civi export.
 
 There seem to be two or more records for almost all people.
 Happens if there are two+ phones or emails.
 But why are there two of. What is the difference:
-61	Individual	0		Bina		Mittal					288 Indian Road			Toronto		1108	1039	416 766 7800	bina.mittal@mitcer.com	0	0	478	4	0	2010-08-11	2010-08-11		5.00	2	1	2010-04-17 00:00:00	3	0
-61	Individual	0		Bina		Mittal					288 Indian Road			Toronto		1108	1039	416 766 7800	bina.mittal@mitcer.com	0	0	478	4	0	2010-08-11	2010-08-11		5.00	2	1	2010-04-17 00:00:00	3	0
+61  Individual  0       Bina        Mittal                  288 Indian Road         Toronto     1108    1039    416 766 7800    bina.mittal@mitcer.com  0   0   478 4   0   2010-08-11  2010-08-11      5.00    2   1   2010-04-17 00:00:00 3   0
+61  Individual  0       Bina        Mittal                  288 Indian Road         Toronto     1108    1039    416 766 7800    bina.mittal@mitcer.com  0   0   478 4   0   2010-08-11  2010-08-11      5.00    2   1   2010-04-17 00:00:00 3   0
 There is only one:
-42	Individual	0		Graeme		Hussey													graemehussey@yahoo.com	0	0	850	4	0	2009-11-02	2009-11-02		1200.00	7	1	2009-11-02 14:04:00		0
+42  Individual  0       Graeme      Hussey                                                  graemehussey@yahoo.com  0   0   850 4   0   2009-11-02  2009-11-02      1200.00 7   1   2009-11-02 14:04:00     0
 */
 // 'S
 $selectMembers = "SELECT DISTINCT
@@ -1147,24 +1147,24 @@ $members = $dbConn->query("$selectMembers");
 //$members = $dbConn->query("$selectMembers", MYSQLI_STORE_RESULT);
 // How to trap error?
 if ( $dbConn->errno ) {
-	$message = sprintf("Select failed: %s\n", $dbConn->error);
-	dieHere("$message");
-	//$dbConn->close();
-	//die("dying ...");
-	//exit();
+    $message = sprintf("Select failed: %s\n", $dbConn->error);
+    dieHere("$message");
+    //$dbConn->close();
+    //die("dying ...");
+    //exit();
 }
 
 if ( $version = 1 ) {
-	$outer = fopen("$outFile", "w");
-	if ( ! $outer ) {
-		//$dbConn->close();
-		dieHere("Could not open $outFile\n");
-	}
+    $outer = fopen("$outFile", "w");
+    if ( ! $outer ) {
+        //$dbConn->close();
+        dieHere("Could not open $outFile\n");
+    }
 }
 
 $logger = fopen("$logFile", "a");
 if ( ! $logger ) {
-	dieHere("Could not open $logFile\n");
+    dieHere("Could not open $logFile\n");
 }
 
 //echo "After ->query \n";
@@ -1172,180 +1172,180 @@ if ( ! $logger ) {
 // was fetch_assoc
 while ( $row = $dbConn->fetch_row($members) ) {
 
-	$inCount++;
-	if ( $inCount == 1 ) {
-		// Write the names of the fields as column heads to the export file.
-		//$flds = array_keys($row);
-		$flds = getNameKeys($row);
-		//echo "Fields: ", implode(" ", $flds), "\n";
-		$lineOut = implode("\t", $flds) . "\n";
-		$writeOK = fwrite($outer, $lineOut);
-		//if ( $inCount > 0 ) { break; }
-	}
+    $inCount++;
+    if ( $inCount == 1 ) {
+        // Write the names of the fields as column heads to the export file.
+        //$flds = array_keys($row);
+        $flds = getNameKeys($row);
+        //echo "Fields: ", implode(" ", $flds), "\n";
+        $lineOut = implode("\t", $flds) . "\n";
+        $writeOK = fwrite($outer, $lineOut);
+        //if ( $inCount > 0 ) { break; }
+    }
 
-	if ( TRUE && $row['contact_id'] == $lastCid ) {
-		$dupCid++;
-		$isDupCid = 1;
-		// continue;
-	} else {
-		$uniqueCid++;
-		$isDupCid = 0;
-		$lastCid = "$row[contact_id]";
-	}
+    if ( TRUE && $row['contact_id'] == $lastCid ) {
+        $dupCid++;
+        $isDupCid = 1;
+        // continue;
+    } else {
+        $uniqueCid++;
+        $isDupCid = 0;
+        $lastCid = "$row[contact_id]";
+    }
 
-	/* For the first record for each member (same contact_id):
-		 o If there is data for the previous member, update or insert it and clear the working vars.
-		 Assume that the name and contact-point data is equally good in all rows.
-		 + Compose the member-number for custdata.CardNo from m.id = member_id + memberIdOffset
-		 + For Household or if first_name contains " and "
-			 o Try to parse/compose separate first and last names
-	*/
-	if ( $isDupCid == 0 ) {
-		// If this isn't the first pass.
-		if ( $writeIS4C && $custdata[CardNo] != "" ) {
+    /* For the first record for each member (same contact_id):
+         o If there is data for the previous member, update or insert it and clear the working vars.
+         Assume that the name and contact-point data is equally good in all rows.
+         + Compose the member-number for custdata.CardNo from m.id = member_id + memberIdOffset
+         + For Household or if first_name contains " and "
+             o Try to parse/compose separate first and last names
+    */
+    if ( $isDupCid == 0 ) {
+        // If this isn't the first pass.
+        if ( $writeIS4C && $custdata[CardNo] != "" ) {
 
 //echo "To DML is4cOp >${is4cOp}< CardNo >$custdata[CardNo]<\n";
-			// Is the op for the just-finished member to be insert or update?
-			if ( True || $is4cOp1 == "insert" ) {
-				// Insert the records for this Individual, Household or Organization.
-				$resultString = insertToIS4C();
-				if ( $resultString != "OK" ) {
-					//$dbConn->close();
-					//$dbConn2->close();
-					dieHere("$resultString");
-				}
-				//$insertCount++;
-			}
-			// update existing members.
-			if ( True || $is4cOp1 == "update" ) {
-				$resultString = updateIS4C();
-				if ( $resultString != "OK" ) {
-					//$dbConn->close();
-					//$dbConn2->close();
-					dieHere("$resultString");
-				}
-				//$updateCount++;
-			}
-			/*
-			else {
-				//$dbConn->close();
-				//$dbConn2->close();
-				dieHere("Unknown is4cOp >${is4cOp}< CardNo >$custdata[CardNo]<\n");
-			}
-			*/
+            // Is the op for the just-finished member to be insert or update?
+            if ( True || $is4cOp1 == "insert" ) {
+                // Insert the records for this Individual, Household or Organization.
+                $resultString = insertToIS4C();
+                if ( $resultString != "OK" ) {
+                    //$dbConn->close();
+                    //$dbConn2->close();
+                    dieHere("$resultString");
+                }
+                //$insertCount++;
+            }
+            // update existing members.
+            if ( True || $is4cOp1 == "update" ) {
+                $resultString = updateIS4C();
+                if ( $resultString != "OK" ) {
+                    //$dbConn->close();
+                    //$dbConn2->close();
+                    dieHere("$resultString");
+                }
+                //$updateCount++;
+            }
+            /*
+            else {
+                //$dbConn->close();
+                //$dbConn2->close();
+                dieHere("Unknown is4cOp >${is4cOp}< CardNo >$custdata[CardNo]<\n");
+            }
+            */
 
-			// Each IS4C table is represented by an assoc array.
-			clearWorkVars();
-			$is4cOp = array();
-			$is4cOp1 = "";
-			$customers = array();
+            // Each IS4C table is represented by an assoc array.
+            clearWorkVars();
+            $is4cOp = array();
+            $is4cOp1 = "";
+            $customers = array();
 
-		}
+        }
 
-		/* Populate the IS4C-data arrays.
-			 $row element names do not include the table prefix "c." etc.
-		*/
-		/* custdata
-		*/
-		$custdata[CardNo] = $row[member_id] + $memberIdOffset;
+        /* Populate the IS4C-data arrays.
+             $row element names do not include the table prefix "c." etc.
+        */
+        /* custdata
+        */
+        $custdata[CardNo] = $row[member_id] + $memberIdOffset;
 
-		// #'sIs this member already in IS4C?
-		$customers = searchIS4C($custdata[CardNo]);
-		// Error is in [0][0]
-		// Is waiting to process the error here worth it?
-		if ( preg_match("/^Error/", $customers[0][0]) ) {
-			//$dbConn->close();
-			//$dbConn2->close();
-			// Q: Why do these print "Array[0]"? The test of $customers[0][0] works.
-			// A: braces are needed.
-			dieHere("{$customers[0][0]}");
-		}
-		// Decide where the operation to each IS4C table will be update or insert.
-		//  There is another test of whether there is anything to add/change.
-		$is4cOp = array();
-		if ( count($customers) == 0 ) {
-			$is4cOp1 = "insert";
-			foreach ($is4cTableNames as $table) {
-				$is4cOp["$table"] = "insert";
-			}
-			$insertCount++;
-		} else {
-			$is4cOp1 = "update";
-			// Find out wether the operation to each table will be insert or update.
-			$is4cOp = searchIS4C2($custdata[CardNo]);
-			if ( preg_match("/^Error/", $is4cOp[0][0]) ) {
-				dieHere("{$is4cOp[0][0]}");
-			}
-			$updateCount++;
-		}
+        // #'sIs this member already in IS4C?
+        $customers = searchIS4C($custdata[CardNo]);
+        // Error is in [0][0]
+        // Is waiting to process the error here worth it?
+        if ( preg_match("/^Error/", $customers[0][0]) ) {
+            //$dbConn->close();
+            //$dbConn2->close();
+            // Q: Why do these print "Array[0]"? The test of $customers[0][0] works.
+            // A: braces are needed.
+            dieHere("{$customers[0][0]}");
+        }
+        // Decide where the operation to each IS4C table will be update or insert.
+        //  There is another test of whether there is anything to add/change.
+        $is4cOp = array();
+        if ( count($customers) == 0 ) {
+            $is4cOp1 = "insert";
+            foreach ($is4cTableNames as $table) {
+                $is4cOp["$table"] = "insert";
+            }
+            $insertCount++;
+        } else {
+            $is4cOp1 = "update";
+            // Find out wether the operation to each table will be insert or update.
+            $is4cOp = searchIS4C2($custdata[CardNo]);
+            if ( preg_match("/^Error/", $is4cOp[0][0]) ) {
+                dieHere("{$is4cOp[0][0]}");
+            }
+            $updateCount++;
+        }
 
-		// This lets autoincrement do its thing.
-		$custdata[id] = "";
-		// Fields that are the same for all.
-		$custdata[CashBack] = 999.99;	// double
-		$custdata[Type] = "PC";
-		$custdata[memType] = $row[mti]; // int
+        // This lets autoincrement do its thing.
+        $custdata[id] = "";
+        // Fields that are the same for all.
+        $custdata[CashBack] = 999.99;   // double
+        $custdata[Type] = "PC";
+        $custdata[memType] = $row[mti]; // int
 
-		// See if the record is for more than one person.
-		$isMultiple = 0; $isMultipleFirst = 0; $isMultipleLast = 0;
-		$firstNames = array();
-		$lastNames = array();
-		$insertCustdata = array();
-		// If so, flag and prepare the first person data.
-		// Organization
-		if ( $row[household_name] != "" ) {
-			// E.g. "Inge and John Crowther", "Klucha / Northrup", "Annandale/Stevenson"
-			// The "Crowther" example probably shouldn't be done that way.  They are also Org, Clover Roads.
-			$lastNames = preg_split("/ ?\/ ?/", $row[household_name]);
-			if ( count($lastNames) > 1 ) {
-				$isMultipleLast = 1;
-			}
-			$i = -1;
-			foreach ($lastNames as $lastName) {
-				$i++;
-				// Why does assignment to fN[] not work here? I think it does.  Some other problem.
-				$firstNames[$i] = $row[$first_name];
-				//echo "lastNames $i >",$lastNames[$i],"< $row[last_name]\n";
-				//echo "Names $i >",$lastNames[$i],"<  >$row[first_name]<\n";
-			}
-		}
-		// Organization
-		elseif ( $row[organization_name] != "" ) {
-			$lastNames[] = $row[organization_name];
-			$firstNames[] = $row[first_name];
-			//echo "Names 0 >",$lastNames[0],"<  >$row[first_name]<\n";
-		}
-		// Individual coded for multiple
-		elseif ( preg_match("/ and /", $row[first_name]) ) {
-			// E.g. Irina and Ionel
-			$firstNames = explode(" and ", $row[first_name]);
-			// $isMultipleFirst = 1; // not used
-			foreach ($firstNames as $firstName) {
-				$lastNames[] = $row[last_name];
-			}
-		}
-		// Regular, i.e. single-name, Individual
-		else {
-			$firstNames[] = $row[first_name];
-			$lastNames[] = $row[last_name];
-			1;
-		}
+        // See if the record is for more than one person.
+        $isMultiple = 0; $isMultipleFirst = 0; $isMultipleLast = 0;
+        $firstNames = array();
+        $lastNames = array();
+        $insertCustdata = array();
+        // If so, flag and prepare the first person data.
+        // Organization
+        if ( $row[household_name] != "" ) {
+            // E.g. "Inge and John Crowther", "Klucha / Northrup", "Annandale/Stevenson"
+            // The "Crowther" example probably shouldn't be done that way.  They are also Org, Clover Roads.
+            $lastNames = preg_split("/ ?\/ ?/", $row[household_name]);
+            if ( count($lastNames) > 1 ) {
+                $isMultipleLast = 1;
+            }
+            $i = -1;
+            foreach ($lastNames as $lastName) {
+                $i++;
+                // Why does assignment to fN[] not work here? I think it does.  Some other problem.
+                $firstNames[$i] = $row[$first_name];
+                //echo "lastNames $i >",$lastNames[$i],"< $row[last_name]\n";
+                //echo "Names $i >",$lastNames[$i],"<  >$row[first_name]<\n";
+            }
+        }
+        // Organization
+        elseif ( $row[organization_name] != "" ) {
+            $lastNames[] = $row[organization_name];
+            $firstNames[] = $row[first_name];
+            //echo "Names 0 >",$lastNames[0],"<  >$row[first_name]<\n";
+        }
+        // Individual coded for multiple
+        elseif ( preg_match("/ and /", $row[first_name]) ) {
+            // E.g. Irina and Ionel
+            $firstNames = explode(" and ", $row[first_name]);
+            // $isMultipleFirst = 1; // not used
+            foreach ($firstNames as $firstName) {
+                $lastNames[] = $row[last_name];
+            }
+        }
+        // Regular, i.e. single-name, Individual
+        else {
+            $firstNames[] = $row[first_name];
+            $lastNames[] = $row[last_name];
+            1;
+        }
 
-		// Make a custdata record for each person.
-		for ($personNum = 1 ; $personNum <= count($firstNames); $personNum++ ) {
-			$custdata[personNum] = $personNum;
-			// Index to names arrays.
-			$i = $personNum - 1;
-			$custdata[FirstName] = fixName($firstNames[$i]);
-			$custdata[LastName] = fixName($lastNames[$i]);
-			// blueLine should start with a '"', but in case of quoting chaos,
-			//  wait until otherwise working.
-			$custdata[blueLine] = "\"$custdata[CardNo] $custdata[LastName]";
+        // Make a custdata record for each person.
+        for ($personNum = 1 ; $personNum <= count($firstNames); $personNum++ ) {
+            $custdata[personNum] = $personNum;
+            // Index to names arrays.
+            $i = $personNum - 1;
+            $custdata[FirstName] = fixName($firstNames[$i]);
+            $custdata[LastName] = fixName($lastNames[$i]);
+            // blueLine should start with a '"', but in case of quoting chaos,
+            //  wait until otherwise working.
+            $custdata[blueLine] = "\"$custdata[CardNo] $custdata[LastName]";
 
-			// Is this premature?  Contribution recordds not examined.
-			if ( $is4cOp[custdata] == "insert" ) {
-				// $insertCustdata is an array of statements to execute later.
-				$insertCustdata[$i] = "INSERT INTO custdata (
+            // Is this premature?  Contribution recordds not examined.
+            if ( $is4cOp[custdata] == "insert" ) {
+                // $insertCustdata is an array of statements to execute later.
+                $insertCustdata[$i] = "INSERT INTO custdata (
 CardNo,
 personNum,
 LastName,
@@ -1366,10 +1366,10 @@ $custdata[memType],
 '$custdata[blueLine]',
 '$custdata[id]'
 );";
-			}
-			elseif ( $is4cOp[custdata] == "update" ) {
-				// $updateCustdata is an array of statements to execute later.
-				$updateCustdata[$i] = "UPDATE custdata SET 
+            }
+            elseif ( $is4cOp[custdata] == "update" ) {
+                // $updateCustdata is an array of statements to execute later.
+                $updateCustdata[$i] = "UPDATE custdata SET 
 LastName = '$custdata[LastName]'
 , FirstName = '$custdata[FirstName]'
 , blueLine = '$custdata[blueLine]'
@@ -1377,40 +1377,40 @@ WHERE CardNo = $custdata[CardNo]
 AND
 personNum = $custdata[personNum]
 ;";
-			}
-			else {
-				echo "Bad is4cOp >{$is4cOp[custdata]}<\n";
-				1;
-			}
+            }
+            else {
+                echo "Bad is4cOp >{$is4cOp[custdata]}<\n";
+                1;
+            }
 
-		// each person on the card
-		}
+        // each person on the card
+        }
 
-		/* meminfo
-		*/
-		$meminfo[card_no] = $custdata[CardNo];
-		// Need fixAddress to capitalize first letter of each word.
-		$meminfo[street] = fixAddress($row[street_address]);
-			if ( $row[supplemental_address_1] != "" ) {
-				$meminfo[street] .= ", $row[supplemental_address_1]";
-			}
-			if ( $row[supplemental_address_2] != "" ) {
-				$meminfo[street] .= ", $row[supplemental_address_2]";
-			}
-		// Need fixCity to capitalize first letter.
-		$meminfo[city] = fixCity($row[city]);
-		$meminfo[state] = getProvince($row[state_province_id], 1);
-		$meminfo[zip] =  fixPostalCode($row[postal_code]);
-		$meminfo[phone] = fixPhone($row[phone]);
-		$meminfo[email_1] = $row[email];
-		// Use for 2nd phone is there is one. None I know of.
-		$meminfo[email_2] = "";
-		// What should the source for this be?
-		$meminfo[ads_OK] = "1";
+        /* meminfo
+        */
+        $meminfo[card_no] = $custdata[CardNo];
+        // Need fixAddress to capitalize first letter of each word.
+        $meminfo[street] = fixAddress($row[street_address]);
+            if ( $row[supplemental_address_1] != "" ) {
+                $meminfo[street] .= ", $row[supplemental_address_1]";
+            }
+            if ( $row[supplemental_address_2] != "" ) {
+                $meminfo[street] .= ", $row[supplemental_address_2]";
+            }
+        // Need fixCity to capitalize first letter.
+        $meminfo[city] = fixCity($row[city]);
+        $meminfo[state] = getProvince($row[state_province_id], 1);
+        $meminfo[zip] =  fixPostalCode($row[postal_code]);
+        $meminfo[phone] = fixPhone($row[phone]);
+        $meminfo[email_1] = $row[email];
+        // Use for 2nd phone is there is one. None I know of.
+        $meminfo[email_2] = "";
+        // What should the source for this be?
+        $meminfo[ads_OK] = "1";
 
-		if ( $is4cOp[meminfo] == "insert" ) {
-			// Compose the insert statement.
-			$insertMeminfo = "INSERT INTO meminfo (
+        if ( $is4cOp[meminfo] == "insert" ) {
+            // Compose the insert statement.
+            $insertMeminfo = "INSERT INTO meminfo (
 card_no
 ,street
 ,city
@@ -1433,9 +1433,9 @@ $meminfo[card_no]
 , $meminfo[ads_OK]
 );";
 
-		// update
-		} else {
-			$updateMeminfo = "UPDATE meminfo SET
+        // update
+        } else {
+            $updateMeminfo = "UPDATE meminfo SET
 street =  '$meminfo[street]'
 ,city = '$meminfo[city]'
 ,state = '$meminfo[state]'
@@ -1446,26 +1446,26 @@ street =  '$meminfo[street]'
 ,ads_OK = $meminfo[ads_OK]
 WHERE card_no = $meminfo[card_no]
 ;";
-		}
+        }
 
-		/* memDates
-			 Date the person became a member.
-			 May change if expiry implemented, so code.
-		*/
-		if ( $row[start_date] != "" ) {
+        /* memDates
+             Date the person became a member.
+             May change if expiry implemented, so code.
+        */
+        if ( $row[start_date] != "" ) {
 
-			$memDates[card_no] = $custdata[CardNo];
-			// Civi is date, IS4C is datetime
-			//   The time part is set to 00:00:00
-			// Is conversion needed? Seems OK without.
-			$memDates[start_date] = $row[start_date];
-			if ( $row[end_date] != "" ) {
-				$memDates[end_date] = $row[end_date];
-			}
+            $memDates[card_no] = $custdata[CardNo];
+            // Civi is date, IS4C is datetime
+            //   The time part is set to 00:00:00
+            // Is conversion needed? Seems OK without.
+            $memDates[start_date] = $row[start_date];
+            if ( $row[end_date] != "" ) {
+                $memDates[end_date] = $row[end_date];
+            }
 
-			if ( $is4cOp[memDates] == "insert" ) {
-				// Compose the insert statement.
-				$insertMemDates = "INSERT INTO memDates (
+            if ( $is4cOp[memDates] == "insert" ) {
+                // Compose the insert statement.
+                $insertMemDates = "INSERT INTO memDates (
 card_no
 ,start_date
 ,end_date
@@ -1475,41 +1475,41 @@ $memDates[card_no]
 , '$memDates[start_date]'
 , '$memDates[end_date]'
 );";
-			} else {
-				// Compose the update statement.
-				$updateMemDates = "UPDATE memDates SET
+            } else {
+                // Compose the update statement.
+                $updateMemDates = "UPDATE memDates SET
 start_date = '$memDates[start_date]'
 , end_date = '$memDates[end_date]'
 WHERE card_no = $memDates[card_no]
 ;";
-			}
+            }
 
-		// memDates, if anything to record.
-		}
+        // memDates, if anything to record.
+        }
 
-		/* memContact
-			 Preference about being contacted.
-				0 => no contact
-				1 => snail mail  # WEFC doesn't do, so not used.
-				2 => email	# Default.
-				3 => both	# Not used.
-			 May want to do only if "no".
-		*/
-		// Assign, regardless of value.
-		if ( TRUE || $row[is_opt_out] = 1 ) {
-			$memContact[card_no] = $custdata[CardNo];
-			// Civi is date, IS4C is datetime
-			if ( $row[is_opt_out] == 1 ) {
-				// no contact
-				$memContact[pref] = 0;
-			} else {
-				// email
-				$memContact[pref] = 2;
-			}
+        /* memContact
+             Preference about being contacted.
+                0 => no contact
+                1 => snail mail  # WEFC doesn't do, so not used.
+                2 => email  # Default.
+                3 => both   # Not used.
+             May want to do only if "no".
+        */
+        // Assign, regardless of value.
+        if ( TRUE || $row[is_opt_out] = 1 ) {
+            $memContact[card_no] = $custdata[CardNo];
+            // Civi is date, IS4C is datetime
+            if ( $row[is_opt_out] == 1 ) {
+                // no contact
+                $memContact[pref] = 0;
+            } else {
+                // email
+                $memContact[pref] = 2;
+            }
 
-			if ( $is4cOp[memContact] == "insert" ) {
-				// Compose the insert statement.
-				$insertMemContact = "INSERT INTO memContact (
+            if ( $is4cOp[memContact] == "insert" ) {
+                // Compose the insert statement.
+                $insertMemContact = "INSERT INTO memContact (
 card_no
 ,pref
 )
@@ -1518,27 +1518,27 @@ $memContact[card_no]
 , '$memContact[pref]'
 );";
 
-			} else {
-				// Compose the update statement.
-				$updateMemContact = "UPDATE memContact SET
+            } else {
+                // Compose the update statement.
+                $updateMemContact = "UPDATE memContact SET
 pref = '$memContact[pref]'
 WHERE card_no = $memContact[card_no]
 ;";
-			}
+            }
 
-		// memContact, do or not.
-		}
+        // memContact, do or not.
+        }
 
-		/* #'m memberCards
-		*/
-		if ( $row[mcard] != "" && $row[mcard] != "0" ) {
+        /* #'m memberCards
+        */
+        if ( $row[mcard] != "" && $row[mcard] != "0" ) {
 
-			$memberCards[card_no] = $custdata[CardNo];
-			$memberCards[upc] = sprintf("00401229%05d", $row[mcard]);
+            $memberCards[card_no] = $custdata[CardNo];
+            $memberCards[upc] = sprintf("00401229%05d", $row[mcard]);
 
-			if ( $is4cOp[memberCards] == "insert" ) {
-				// Compose the insert statement.
-				$insertMemberCards = "INSERT INTO memberCards (
+            if ( $is4cOp[memberCards] == "insert" ) {
+                // Compose the insert statement.
+                $insertMemberCards = "INSERT INTO memberCards (
 card_no
 ,upc
 )
@@ -1546,37 +1546,37 @@ VALUES (
 $memberCards[card_no]
 , '$memberCards[upc]'
 );";
-			} else {
-				// Compose the update statement.
-				$updateMemberCards = "UPDATE memberCards SET
+            } else {
+                // Compose the update statement.
+                $updateMemberCards = "UPDATE memberCards SET
 upc = '$memberCards[upc]'
 WHERE card_no = $memberCards[card_no]
 ;";
-			}
+            }
 
-		// memberCards, if anything to record.
-		}
+        // memberCards, if anything to record.
+        }
 
-		/* stockpurchases
-		*/
+        /* stockpurchases
+        */
 
-		// Local monitor
-		if ( ($uniqueCid % 10) == 0 ) {
-			//echo "Done: $uniqueCid members.\n";
-			1;
-		}
+        // Local monitor
+        if ( ($uniqueCid % 10) == 0 ) {
+            //echo "Done: $uniqueCid members.\n";
+            1;
+        }
 
-	// Each unique Cid (member)
-	}
+    // Each unique Cid (member)
+    }
 
-	$vals = getNameValues($row);
-	$lineOut = implode("\t", $vals) . "\n";
-	$writeOK = fwrite($outer, $lineOut);
-	if ( ! $writeOK ) {
-		//$dbConn->close();
-		dieHere("Could not write to $outFile\n");
-	}
-	$outCount++;
+    $vals = getNameValues($row);
+    $lineOut = implode("\t", $vals) . "\n";
+    $writeOK = fwrite($outer, $lineOut);
+    if ( ! $writeOK ) {
+        //$dbConn->close();
+        dieHere("Could not write to $outFile\n");
+    }
+    $outCount++;
 
 // each Civi $row
 }
@@ -1585,51 +1585,51 @@ WHERE card_no = $memberCards[card_no]
 if ( $writeIS4C ) {
 
 //echo "To DML is4cOp >${is4cOp}< CardNo >$custdata[CardNo]<\n";
-	// Is the op for the just-finished member to be insert or update?
-	if ( True || $is4cOp1 == "insert" ) {
-		// Insert the records for this Individual, Household or Organization.
-		$resultString = insertToIS4C();
-		if ( $resultString != "OK" ) {
-			//$dbConn->close();
-			//$dbConn2->close();
-			dieHere("$resultString");
-		}
-		//$insertCount++;
-	}
-	// update existing members.
-	if ( True || $is4cOp1 == "update" ) {
-		$resultString = updateIS4C();
-		if ( $resultString != "OK" ) {
-			//$dbConn->close();
-			//$dbConn2->close();
-			dieHere("$resultString");
-		}
-		//$updateCount++;
-	}
+    // Is the op for the just-finished member to be insert or update?
+    if ( True || $is4cOp1 == "insert" ) {
+        // Insert the records for this Individual, Household or Organization.
+        $resultString = insertToIS4C();
+        if ( $resultString != "OK" ) {
+            //$dbConn->close();
+            //$dbConn2->close();
+            dieHere("$resultString");
+        }
+        //$insertCount++;
+    }
+    // update existing members.
+    if ( True || $is4cOp1 == "update" ) {
+        $resultString = updateIS4C();
+        if ( $resultString != "OK" ) {
+            //$dbConn->close();
+            //$dbConn2->close();
+            dieHere("$resultString");
+        }
+        //$updateCount++;
+    }
 
-	/*
-	else {
-		//$dbConn->close();
-		//$dbConn2->close();
-		dieHere("Unknown is4cOp1 >${is4cOp1}< CardNo >$custdata[CardNo]<\n");
-	}
-	*/
+    /*
+    else {
+        //$dbConn->close();
+        //$dbConn2->close();
+        dieHere("Unknown is4cOp1 >${is4cOp1}< CardNo >$custdata[CardNo]<\n");
+    }
+    */
 
 // The last Civi row.
 }
 
 if ( $debug == 1) 
-	echo "Reported on $inCount rows.\n";
+    echo "Reported on $inCount rows.\n";
 
 if ( $debug == 1) 
-	echo "Bye.\n";
+    echo "Bye.\n";
 
 /* Logging and reporting
 */
 if ( $version = 1 ) {
-	if ( $debug == 1) 
-		echo "Wrote $outCount lines to ${outFile} dupCid: $dupCid\n";
-	1;
+    if ( $debug == 1) 
+        echo "Wrote $outCount lines to ${outFile} dupCid: $dupCid\n";
+    1;
 }
 
 $subject = "PoS: Update IS4C members: added $insertCount";
@@ -1637,11 +1637,11 @@ $message = "Added: $insertCount  Updated: $updateCount\n";
 $adminString = implode(" ", $admins);
 
 if ( $debug == 1) {
-	echo "Not ready to email. subject: $subject  message: $message\n";
+    echo "Not ready to email. subject: $subject  message: $message\n";
 } else {
-	$lastLine = exec("echo \"$message\" | mail -s \"$subject\" $adminString");
-	// Ordinary success returns nothing, or "".
-	echo "from mailing: {$lastLine}\n";
+    $lastLine = exec("echo \"$message\" | mail -s \"$subject\" $adminString");
+    // Ordinary success returns nothing, or "".
+    echo "from mailing: {$lastLine}\n";
 }
 
 $now = date("Ymd_M H:i:s e");
@@ -1661,21 +1661,21 @@ $members->close();
 // But maybe $members->close() does the same thing.
 
 if ( $dbConn ) {
-	$dbConn->close();
+    $dbConn->close();
 } else {
-	//echo "No dbConn to close.\n";
-	1;
+    //echo "No dbConn to close.\n";
+    1;
 }
 //echo "After ->close \n";
 if ( $dbConn2 ) {
-	$dbConn2->close();
+    $dbConn2->close();
 } else {
-	//echo "No dbConn2 to close.\n";
-	1;
+    //echo "No dbConn2 to close.\n";
+    1;
 }
 
 if ( $version = 1 ) {
-	fclose($outer);
+    fclose($outer);
 }
 
 // Close logfile
@@ -1685,8 +1685,8 @@ exit();
 
 /*'W --WOODSHED { - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-		//$a = count($row); echo "row has $a elements.\n";
-		//echo implode("\t", $row), "\n";
+        //$a = count($row); echo "row has $a elements.\n";
+        //echo implode("\t", $row), "\n";
 
 FROM civicrm_contact c
 INNER JOIN civicrm_membership m ON c.id = m.contact_id
@@ -1700,25 +1700,25 @@ INNER JOIN civicrm_contribution r on c.id = r.contact_id
 // Little tests of posdev connection.
 if (0) {
 
-	$selectIs4c = "SELECT CardNo, LastName from custdata;";
-	$customers = $dbConn2->query("$selectIs4c");
-	if ( $dbConn2->errno ) {
-		printf("Select failed: %s\n", $dbConn->error);
-		$dbConn2->close();
-		$dbConn->close();
-		die("dying ...");
-		//exit();
-	}
+    $selectIs4c = "SELECT CardNo, LastName from custdata;";
+    $customers = $dbConn2->query("$selectIs4c");
+    if ( $dbConn2->errno ) {
+        printf("Select failed: %s\n", $dbConn->error);
+        $dbConn2->close();
+        $dbConn->close();
+        die("dying ...");
+        //exit();
+    }
 
-	// Quick test.
-	echo "IS4C Numbered\n";
-	while ( $row = $customers->fetch_row() ) {
-		$lineOut = implode("\t", $row) . "\n";
-		echo $lineOut;
-	}
-	$dbConn2->close();
-	$dbConn->close();
-	die("bailing ...");
+    // Quick test.
+    echo "IS4C Numbered\n";
+    while ( $row = $customers->fetch_row() ) {
+        $lineOut = implode("\t", $row) . "\n";
+        echo $lineOut;
+    }
+    $dbConn2->close();
+    $dbConn->close();
+    die("bailing ...");
 
 // Enable/defeat little tests of posdev connection
 }

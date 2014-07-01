@@ -40,10 +40,10 @@ class WfcHtPayPeriodsPage extends FanniePage
     {
         return '
 .one {
-	background: #ffffff;
+    background: #ffffff;
 }
 .two {
-	background: #ffffcc;
+    background: #ffffcc;
 }
         ';
     }

@@ -33,7 +33,7 @@ class WfcHtPTOModel extends BasicModel
     'empID' => array('type'=>'INT'),
     'PTORemaining' => array('type'=>'DOUBLE'),
     'totalPTO' => array('type'=>'DOUBLE'),
-	);
+    );
 
     public function create()
     {
