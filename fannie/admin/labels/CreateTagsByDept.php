@@ -55,6 +55,8 @@ class CreateTagsByDept extends FanniePage {
 				    left join vendors AS n ON v.vendorID=n.vendorID
 				WHERE
 				    p.department BETWEEN ? AND ?
+			");
+/*
 				    AND (
 					    x.distributor = n.vendorName
 					    OR (x.distributor='' AND n.vendorName='UNFI')
@@ -62,6 +64,7 @@ class CreateTagsByDept extends FanniePage {
 					    OR (n.vendorName IS NULL)
 				    )
 			");
+*/
 			$r = $dbc->exec_statement($q,array($start,$end));
 			$ins = $dbc->prepare_statement("
 			    INSERT INTO shelftags (
@@ -83,8 +86,8 @@ class CreateTagsByDept extends FanniePage {
 				                $w['normal_price'],
                                 $w['manufacturer'],
             					$w['sku'],
-            					$w['units_per_case'],
             					$w['pack_size_and_units'],
+            					$w['units_per_case'],
                                 $w['distributor'],
             					PriceLib::pricePerUnit($w['normal_price'],$w['pack_size_and_units'])
 				);
