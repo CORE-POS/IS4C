@@ -55,8 +55,6 @@ class CreateTagsByDept extends FanniePage {
 				    left join vendors AS n ON v.vendorID=n.vendorID
 				WHERE
 				    p.department BETWEEN ? AND ?
-			");
-/*
 				    AND (
 					    x.distributor = n.vendorName
 					    OR (x.distributor='' AND n.vendorName='UNFI')
@@ -64,7 +62,6 @@ class CreateTagsByDept extends FanniePage {
 					    OR (n.vendorName IS NULL)
 				    )
 			");
-*/
 			$r = $dbc->exec_statement($q,array($start,$end));
 			$ins = $dbc->prepare_statement("
 			    INSERT INTO shelftags (
@@ -91,13 +88,6 @@ class CreateTagsByDept extends FanniePage {
                                 $w['distributor'],
             					PriceLib::pricePerUnit($w['normal_price'],$w['pack_size_and_units'])
 				);
-/*
-TODO: compare definition of size and units fields in products/prodExtra vs vendorItems vs shelftags
-"select as" aliases are accurate to data in initial query
-ambiguity of field definitions in shelftags, and in mapping initial query to insert statement
-review shelftags table-creation script for notes?
-find an item that definitely has a correct entry in vendorItems and products, and pull up an individual shelf tag?
-*/
 				$dbc->exec_statement($ins,$args);
 			}
 			$this->msgs = sprintf('<em>Created tags for departments #%d through #%d</em>
