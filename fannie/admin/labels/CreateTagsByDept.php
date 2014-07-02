@@ -48,13 +48,13 @@ class CreateTagsByDept extends FanniePage {
 				    x.manufacturer,
 				    x.distributor,
 				    v.sku,
-				    v.size as pack_size_and_units,
+				    v.size AS pack_size_and_units,
     				CASE WHEN v.units IS NULL THEN 1 ELSE v.units END AS units_per_case
 				FROM
-				    ((products AS p
-				    left join prodExtra AS x ON p.upc=x.upc)
-				    left join vendorItems AS v ON p.upc=v.upc)
-				    left join vendors AS n ON v.vendorID=n.vendorID
+				    products AS p
+				    LEFT JOIN prodExtra AS x ON p.upc=x.upc
+				    LEFT JOIN vendorItems AS v ON p.upc=v.upc
+				    LEFT JOIN vendors AS n ON v.vendorID=n.vendorID
 				WHERE
 				    p.department BETWEEN ? AND ?
 				    " . ($FANNIE_COOP_ID == 'ypsi' ? "" : "
@@ -77,7 +77,8 @@ class CreateTagsByDept extends FanniePage {
 			        size,
 			        units,
 			        vendor,
-			        pricePerUnit)
+			        pricePerUnit
+		        )
 		        VALUES (?,?,?,?,?,?,?,?,?,?)");
 			while($w = $dbc->fetch_row($r)){
 				$args = array(  $pageID,
@@ -89,7 +90,7 @@ class CreateTagsByDept extends FanniePage {
             					$w['pack_size_and_units'],
             					$w['units_per_case'],
                                 $w['distributor'],
-            					PriceLib::pricePerUnit($w['normal_price'],$w['pack_size_and_units'])
+            					PriceLib::pricePerUnit( $w['normal_price'], $w['pack_size_and_units'] )
 				);
 				$dbc->exec_statement($ins,$args);
 			}

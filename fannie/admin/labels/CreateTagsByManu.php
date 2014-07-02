@@ -43,30 +43,57 @@ class CreateTagsByManu extends FanniePage {
 			else
 				$cond = " x.manufacturer LIKE ? ";
 			$dbc = FannieDB::get($FANNIE_OP_DB);
-			$q = $dbc->prepare_statement("select p.upc,p.description,p.normal_price,
-				x.manufacturer,x.distributor,v.sku,v.size,
-				CASE WHEN v.units IS NULL THEN 1 ELSE v.units END as units
-				FROM products as p
-				left join prodExtra as x on p.upc=x.upc
-				left join vendorItems as v ON p.upc=v.upc
-				left join vendors as n on v.vendorID=n.vendorID
-				where $cond AND (
-					x.distributor=n.vendorName
-					or (x.distributor='' and n.vendorName='UNFI')
-					or (x.distributor is null and n.vendorName='UNFI')
-					or (n.vendorName is NULL)
-				)");
+			$q = $dbc->prepare_statement("
+			    SELECT
+			        p.upc,
+			        p.description,
+			        p.normal_price,
+				    x.manufacturer,
+				    x.distributor,
+				    v.sku,
+				    v.size AS pack_size_and_units,
+				    CASE WHEN v.units IS NULL THEN 1 ELSE v.units END AS units_per_case
+				FROM
+				    products AS p
+				    LEFT JOIN prodExtra AS x ON p.upc=x.upc
+				    LEFT JOIN vendorItems AS v ON p.upc=v.upc
+				    LEFT JOIN vendors AS n ON v.vendorID=n.vendorID
+				WHERE
+				    $cond
+				    AND (
+					    x.distributor = n.vendorName
+					    OR (x.distributor='' AND n.vendorName='UNFI')
+					    OR (x.distributor IS NULL AND n.vendorName='UNFI')
+					    OR (n.vendorName IS NULL)
+    				)
+			");
 			$r = $dbc->exec_statement($q,array('%'.$manu.'%'));
-			$ins = $dbc->prepare_statement("INSERT INTO shelftags (id,upc,description,normal_price,
-				brand,sku,size,units,vendor,pricePerUnit) VALUES (?,?,?,?,
-				?,?,?,?,?,?)");
+
+			$ins = $dbc->prepare_statement("
+			    INSERT INTO shelftags (
+			        id,
+			        upc,
+			        description,
+			        normal_price,
+    				brand,
+    				sku,
+    				size,
+    				units,
+    				vendor,
+    				pricePerUnit
+				)
+				VALUES (?,?,?,?,?,?,?,?,?,?)");
 			while($w = $dbc->fetch_row($r)){
-				$args = array($pageID,$w['upc'],
-					$w['description'],$w['normal_price'],
-					$w['manufacturer'],
-					$w['sku'],$w['units'],$w['size'],
-                    $w['distributor'],
-					PriceLib::pricePerUnit($w['normal_price'],$w['size'])
+				$args = array(  $pageID,
+				                $w['upc'],
+            					$w['description'],
+            					$w['normal_price'],
+            					$w['manufacturer'],
+			            		$w['sku'],
+			            		$w['pack_size_and_units'],
+			            		$w['units_per_case'],
+                                $w['distributor'],
+            					PriceLib::pricePerUnit( $w['normal_price'], $w['pack_size_and_units'] )
 				);
 				$dbc->exec_statement($ins,$args);
 			}
