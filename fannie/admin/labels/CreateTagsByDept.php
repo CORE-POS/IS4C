@@ -33,6 +33,8 @@ class CreateTagsByDept extends FanniePage {
 
 	function preprocess(){
 		global $FANNIE_OP_DB;
+		global $FANNIE_COOP_ID;
+		
 		if (FormLib::get_form_value('deptStart',False) !== False){
 			$start = FormLib::get_form_value('deptStart');
 			$end = FormLib::get_form_value('deptEnd');
@@ -49,19 +51,20 @@ class CreateTagsByDept extends FanniePage {
 				    v.size as pack_size_and_units,
     				CASE WHEN v.units IS NULL THEN 1 ELSE v.units END AS units_per_case
 				FROM
-				    products AS p
-				    left join prodExtra AS x ON p.upc=x.upc
-				    left join vendorItems AS v ON p.upc=v.upc
+				    ((products AS p
+				    left join prodExtra AS x ON p.upc=x.upc)
+				    left join vendorItems AS v ON p.upc=v.upc)
 				    left join vendors AS n ON v.vendorID=n.vendorID
 				WHERE
 				    p.department BETWEEN ? AND ?
-				    AND (
-					    x.distributor = n.vendorName
-					    OR (x.distributor='' AND n.vendorName='UNFI')
-					    OR (x.distributor IS NULL AND n.vendorName='UNFI')
-					    OR (n.vendorName IS NULL)
-				    )
-			");
+				    " . ($FANNIE_COOP_ID == 'ypsi' ? "" : "
+				        AND (
+					        x.distributor = n.vendorName
+					        OR (x.distributor='' AND n.vendorName='UNFI')
+					        OR (x.distributor IS NULL AND n.vendorName='UNFI')
+					        OR (n.vendorName IS NULL)
+				        )
+			"));
 			$r = $dbc->exec_statement($q,array($start,$end));
 			$ins = $dbc->prepare_statement("
 			    INSERT INTO shelftags (
