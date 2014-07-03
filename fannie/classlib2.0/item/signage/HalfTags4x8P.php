@@ -35,7 +35,7 @@ class HalfTags4x8P extends FannieSignage
         $width = 52; // tag width in mm
         $height = 31; // tag height in mm
         $left = 6; // left margin
-        $top = 18; // top margin
+        $top = 16; // top margin
         $pdf->SetTopMargin($top);  //Set top margin of the page
         $pdf->SetLeftMargin($left);  //Set left margin of the page
         $pdf->SetRightMargin($left);  //Set the right margin of the page
@@ -49,7 +49,7 @@ class HalfTags4x8P extends FannieSignage
 
             // extract & format data
             $price = $item['normal_price'];
-            $desc = strtoupper(substr($item['description'],0,27));
+            $desc = strtoupper(substr($item['posDescription'],0,25));
             $brand = ucwords(strtolower(substr($item['brand'],0,13)));
             $pak = $item['units'];
             $size = $item['units'] . "-" . $item['size'];
@@ -73,14 +73,14 @@ class HalfTags4x8P extends FannieSignage
             $pdf->SetXY($x,$y);
             // try normal wordwrap
             // but squeeze into two lines if needed
-            $wrapped = wordwrap($desc, 13);
+            $wrapped = wordwrap($desc, 12, "\n", true);
             if (count(explode("\n", $wrapped)) > 2) {
-                $wrapped = substr($desc, 0, 13);
-                if ($wrapped[12] != ' ') {
+                $wrapped = substr($desc, 0, 12);
+                if ($wrapped[11] != ' ') {
                     $wrapped .= '-';
                 }
                 $wrapped .= "\n";
-                $wrapped .= substr($desc, 13);
+                $wrapped .= trim(substr($desc, 12));
             }
             $pdf->MultiCell($width/2, 3, $wrapped, 0, 'L');
 

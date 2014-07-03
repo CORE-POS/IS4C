@@ -93,6 +93,7 @@ class FannieSignage
             $ids = substr($ids, 0, strlen($ids)-1);
             $query = 'SELECT s.upc,
                         s.description,
+                        s.description AS posDescription,
                         s.brand,
                         s.units,
                         s.size,
@@ -124,6 +125,7 @@ class FannieSignage
             $query = 'SELECT l.upc,
                         l.salePrice AS normal_price,
                         CASE WHEN u.description IS NULL OR u.description=\'\' THEN p.description ELSE u.description END as description,
+                        p.description AS posDescription,
                         CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
                         v.units,
                         v.size,
@@ -155,6 +157,7 @@ class FannieSignage
             $query = 'SELECT p.upc,
                         p.normal_price,
                         CASE WHEN u.description IS NULL OR u.description=\'\' THEN p.description ELSE u.description END as description,
+                        p.description AS posDescription,
                         CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
                         v.units,
                         v.size,
@@ -178,6 +181,7 @@ class FannieSignage
                 $query = 'SELECT p.upc,
                             l.salePrice AS normal_price,
                             CASE WHEN u.description IS NULL OR u.description=\'\' THEN p.description ELSE u.description END as description,
+                            p.description AS posDescription,
                             CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
                             v.units,
                             v.size,
@@ -195,15 +199,17 @@ class FannieSignage
                             LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
                             LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                             LEFT JOIN origins AS o ON p.current_origin_id=o.originID
+                            LEFT JOIN batchList AS l ON p.upc=l.upc
                             LEFT JOIN batches AS b ON l.batchID=b.batchID
                          WHERE p.upc IN (' . $ids . ')
                             AND b.discounttype = 0
-                            AND b.startDate > ' . $dbc->now() . '
+                            AND b.startDate >= ' . $dbc->curdate() . '
                          ORDER BY p.department, p.upc';
             } else if ($this->source_id == 2) { // current sale
                 $query = 'SELECT p.upc,
                             CASE WHEN p.discounttype <> 0 THEN p.special_price ELSE p.normal_price END AS normal_price,
                             CASE WHEN u.description IS NULL OR u.description=\'\' THEN p.description ELSE u.description END as description,
+                            p.description AS posDescription,
                             CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
                             v.units,
                             v.size,
@@ -227,6 +233,7 @@ class FannieSignage
                 $query = 'SELECT p.upc,
                             l.salePrice AS normal_price,
                             CASE WHEN u.description IS NULL OR u.description=\'\' THEN p.description ELSE u.description END as description,
+                            p.description AS posDescription,
                             CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
                             v.units,
                             v.size,

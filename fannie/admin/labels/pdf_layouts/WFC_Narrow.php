@@ -191,16 +191,23 @@ foreach($data as $row){
    $limit = 13;
    $lineheight = 0;
    $curStr = "";
-   foreach($words as $w){
-    if (strlen($curStr." ".$w) <= $limit)
-        $curStr .= " ".$w;
-    else {
-        $pdf->TEXT($p,$n+$lineheight,$curStr);
-        $curStr = "";
-        $lineheight += 3;
+   $length = 0;
+   $lines = 0;
+   foreach ($words as $w) {
+    if ($length + strlen($w) <= $limit) {
+        $curStr .= $w . ' ';
+        $length += strlen($w) + 1;
+    } else {
+        $lines++;
+        if ($lines >= 2) {
+            break;
+        }
+        $curStr = trim($curStr) . "\n" . $w . ' ';
+        $length = strlen($w)+1;
     }
    }
-   $pdf->TEXT($p,$n+$lineheight,$curStr);
+   $pdf->SetXY($p, $n-3);
+   $pdf->MultiCell(100, 3, $curStr);
    
    //$pdf->TEXT($p,$n,$desc);   //Add description to label
 
