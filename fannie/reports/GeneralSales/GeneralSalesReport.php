@@ -97,7 +97,8 @@ class GeneralSalesReport extends FannieReportPage
                 MasterSuperDepts AS r ON r.dept_ID=t.department
                 WHERE
                     t.trans_type IN ('I', 'D')
-                    AND e.dept_no NOT IN ($omitVals)
+                    AND (s.superID > 0 OR (s.superID IS NULL AND r.superID > 0)
+                    OR (s.superID IS NULL AND r.superID IS NULL))
                     AND (tdate BETWEEN ? AND ?)
                 GROUP BY
                 CASE WHEN s.superID IS NULL THEN r.superID ELSE s.superID end,
@@ -107,6 +108,7 @@ class GeneralSalesReport extends FannieReportPage
                 ORDER BY
                 CASE WHEN s.superID IS NULL THEN r.superID ELSE s.superID end,
                 CASE WHEN e.dept_no IS NULL THEN d.dept_no ELSE e.dept_no end";
+                $omitDepts = array();
         }
         $supers = array();
         $prep = $dbc->prepare_statement($sales);
