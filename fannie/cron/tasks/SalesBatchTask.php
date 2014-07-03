@@ -183,6 +183,12 @@ class SalesBatchTask extends FannieTask
             } // end loop on batchList record items
         } // end loop on batchList records
 
+        // No sale items; need a filler value for
+        // the query below
+        if (count($sale_upcs) == 0) {
+            echo $this->cronMsg('Notice: nothing is currently on sale');
+            $sale_upcs[] = 'notValidUPC';
+        }
         // now look for anything on sale that should not be
         // and take those items off sale
         $upc_in = '';
