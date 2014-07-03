@@ -164,7 +164,13 @@ class HobartDgwLib
                     $has_et = true;
                     $mode = $new_item ? 'WriteOneExpandedText' : 'ChangeOneExpandedText';
                     fwrite($fp,"Record Type,Expanded Text Number,Expanded Text\r\n");
-                    fwrite($fp, $mode . ',' . $item['PLU'] . ',"' . $item['ExpandedText'] . "\"\r\n");
+                    $text = '';
+                    foreach (explode("\n", $item['ExpandedText']) as $line) {
+                        $text .= wordwrap($line, 50, "\n") . "\n";
+                    }
+                    $text = preg_replace("/\\r/", '', $text);
+                    $text = preg_replace("/\\n/", '<br />', $text);
+                    fwrite($fp, $mode . ',' . $item['PLU'] . ',"' . $text . "\"\r\n");
                 }
             }
             fclose($fp);
