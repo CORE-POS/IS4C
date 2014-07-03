@@ -52,6 +52,7 @@
 */
 
 include('../config.php');
+include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
 include('../src/SQLManager.php');
 include($FANNIE_ROOT.'src/cron_msg.php');
 
@@ -73,6 +74,13 @@ $datesR = $sql->query('SELECT YEAR(datetime) AS year, MONTH(datetime) as month, 
 $dates = array();
 while($datesW = $sql->fetch_row($datesR)) {
     $dates[] = sprintf('%d-%02d-%02d', $datesW['year'], $datesW['month'], $datesW['day']);
+}
+
+$UPDATED_DLOG_SCHEMA = false;
+$table_def = $sql->table_definition('dlog');
+if (isset($table_def['description'])) {
+    // most likely
+    $UPDATED_DLOG_SCHEMA = true;
 }
 
 /* Load dtransactions into the archive, trim to 90 days */
@@ -113,7 +121,12 @@ foreach($dates as $date) {
             $FANNIE_ARCHIVE_DB,$FANNIE_ARCHIVE_USER,$FANNIE_ARCHIVE_PW);
         if (!$sql->table_exists($table)){
             createArchive($table,$sql);
-            createViews($dstr,$sql);
+            if ($UPDATED_DLOG_SCHEMA) {
+                $model = new DTransactionsModel($sql);
+                $model->normalizeLog('dlog' . $str, $table, BasicModel::NORMALIZE_MODE_APPLY);
+            } else {
+                createViews($dstr,$sql);
+            }
         }
         $sql->add_connection($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
             $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
@@ -166,7 +179,12 @@ foreach($dates as $date) {
             } else {
                 echo cron_msg("Created new table $table and archived dtransactions");
             }
-            createViews($dstr,$sql);
+            if ($UPDATED_DLOG_SCHEMA) {
+                $model = new DTransactionsModel($sql);
+                $model->normalizeLog('dlog' . $str, $table, BasicModel::NORMALIZE_MODE_APPLY);
+            } else {
+                createViews($dstr,$sql);
+            }
         } else {
             $query = "INSERT INTO $table SELECT * FROM $FANNIE_TRANS_DB.dtransactions
                         WHERE ".$sql->datediff('datetime', "'$date'")."= 0";
