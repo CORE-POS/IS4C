@@ -71,6 +71,26 @@ class CoopDealsReviewPage extends FanniePage {
 		$names = FormLib::get_form_value('batch',array());
 		$batchIDs = array();
 
+		$saleItemsP = $dbc->prepare_statement("
+		    SELECT
+		        t.upc,
+		        t.price,
+		        CONCAT(
+		            CASE WHEN s.super_name IS NULL THEN 'sale' ELSE s.super_name END,
+		            ' Co-op Deals ',
+		            t.abtpr
+	            ) as batch
+			FROM
+			    tempCapPrices as t
+    			INNER JOIN products AS p on t.upc = p.upc
+    			LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID
+			ORDER BY s.super_name, t.upc
+		");
+		$saleItemsR = $dbc->exec_statement($saleItemsP);
+		define("UPC_COL",0);
+		define("PRICE_COL",1);
+		define("BATCHNAME_COL",2);
+
 		$batchP = $dbc->prepare_statement('
 		    INSERT INTO batches (
 		        batchName,
@@ -96,14 +116,14 @@ class CoopDealsReviewPage extends FanniePage {
 		$list->pricemethod(0);
 		$list->quantity(0);
 
-		for($i=0;$i<count($upcs);$i++){
-			if(!isset($batchIDs[$names[$i]])){
-				$args = array($names[$i].' '.$naming,1,1);
-				if (substr($names[$i],-2) == " A"){
+		while($row = $dbc->fetch_row($saleItemsR)){
+			if(!isset($batchIDs[$row[BATCHNAME_COL]])){
+				$args = array($row[BATCHNAME_COL] . ' ' . $naming, 1, 1);
+				if (substr($row[BATCHNAME_COL],-2) == " A"){
 					$args[] = $start;
 					$args[] = $end;
 				}
-				elseif (substr($names[$i],-2) == " B"){
+				elseif (substr($row[BATCHNAME_COL],-2) == " B"){
 					$args[] = $b_start;
 					$args[] = $b_end;
 				}
@@ -114,13 +134,13 @@ class CoopDealsReviewPage extends FanniePage {
 	
 				$dbc->exec_statement($batchP,$args);
 				$bID = $dbc->insert_id();
-				$batchIDs[$names[$i]] = $bID;
+				$batchIDs[$row[BATCHNAME_COL]] = $bID;
 			}
-			$id = $batchIDs[$names[$i]];
+			$id = $batchIDs[$row[BATCHNAME_COL]];
 
-			$list->upc($upcs[$i]);
+			$list->upc($row[UPC_COL]);
 			$list->batchID($id);
-			$list->salePrice(sprintf("%.2f",$prices[$i]));
+			$list->salePrice(sprintf("%.2f",$row[PRICE_COL]));
 			$list->save();
 		}
 
@@ -154,10 +174,14 @@ class CoopDealsReviewPage extends FanniePage {
 		while($row = $dbc->fetch_row($result)){
 			$ret .= sprintf("<tr><td>%s</td><td>%s</td><td>%.2f</td><td>%s Co-op Deals %s</tr>",
 				$row[0],$row[1],$row[2],$row[3],$row[4]);
-			$ret .= sprintf("<input type=hidden name=upc[] value=\"%s\" />
+/*
+			$ret .= sprintf("
+			    <input type=hidden name=upc[] value=\"%s\" />
 				<input type=hidden name=price[] value=\"%s\" />
 				<input type=hidden name=batch[] value=\"%s Co-op Deals %s\" />",
-				$row[0],$row[2],$row[3],$row[4]);
+				$row[0],$row[2],$row[3],$row[4]
+			);
+*/
 		}
 		$ret .= "</table><p />
 		<table cellpadding=4 cellspacing=0><tr>
