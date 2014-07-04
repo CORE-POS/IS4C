@@ -32,20 +32,6 @@ class CoopDealsReviewPage extends FanniePage {
 	private $mode = 'form';
 
 	function preprocess(){
-		echo "formlib: [" . FormLib::get_form_value('start') . "]";
-		echo "<br />\n";
-		echo "formlib: [" . FormLib::getFormValue('start') . "]";
-		echo "<br />\n";
-		echo 'isset($_REQUEST["start"]): [' . (isset($_REQUEST["start"]) ? "true" : "false") . ']';
-		echo "<br />\n";
-		echo '$_REQUEST["start"]: [' . $_REQUEST["start"] ."]";
-		echo "<br />\n";
-		echo 'count( $_REQUEST ) [' . count( $_REQUEST ) . ']';
-		echo "<br />\n";
-		echo 'begin print_r:';
-		echo "<br />\n";
-        echo print_r($_REQUEST);
-		echo "<br />\n";
 		if (FormLib::get_form_value('start') !== '')
 			$this->mode = 'results';
 		return True;
@@ -170,18 +156,10 @@ class CoopDealsReviewPage extends FanniePage {
 
 		$ret = "<form action=CoopDealsReviewPage.php method=post>
 		<table cellpadding=4 cellspacing=0 border=1>
-		<tr><th>UPC</th><th>Desc</th><th>Sale Price</th><th>Batch</th></tr>";
+		<tr><th>UPC</th><th>Desc</th><th>Sale Price</th><th>Batch</th></tr>\n";
 		while($row = $dbc->fetch_row($result)){
-			$ret .= sprintf("<tr><td>%s</td><td>%s</td><td>%.2f</td><td>%s Co-op Deals %s</tr>",
+			$ret .= sprintf("<tr><td>%s</td><td>%s</td><td>%.2f</td><td>%s Co-op Deals %s</tr>\n",
 				$row[0],$row[1],$row[2],$row[3],$row[4]);
-/*
-			$ret .= sprintf("
-			    <input type=hidden name=upc[] value=\"%s\" />
-				<input type=hidden name=price[] value=\"%s\" />
-				<input type=hidden name=batch[] value=\"%s Co-op Deals %s\" />",
-				$row[0],$row[2],$row[3],$row[4]
-			);
-*/
 		}
 		$ret .= "</table><p />
 		<table cellpadding=4 cellspacing=0><tr>
