@@ -169,7 +169,7 @@ class TransArchiveTask extends FannieTask
                     CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
                     WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty
                     FROM $summary_source AS t
-                    trans_type IN ('I') AND upc <> '0'
+                    WHERE trans_type IN ('I') AND upc <> '0'
                     AND tdate BETWEEN '$date 00:00:00' AND '$date 23:59:59'
                     GROUP BY upc");
             }
@@ -181,7 +181,7 @@ class TransArchiveTask extends FannieTask
                     CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
                         WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty
                     FROM $summary_source AS t
-                    trans_type IN ('I','D') AND upc <> '0'
+                    WHERE trans_type IN ('I','D') AND upc <> '0'
                     AND tdate BETWEEN '$date 00:00:00' AND '$date 23:59:59'
                     GROUP BY upc, department");
             }
@@ -193,7 +193,7 @@ class TransArchiveTask extends FannieTask
                     CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
                         WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty
                     FROM $summary_source AS t
-                    trans_type IN ('I','D') 
+                    WHERE trans_type IN ('I','D') 
                     AND tdate BETWEEN '$date 00:00:00' AND '$date 23:59:59'
                     GROUP BY department");
             }
@@ -206,7 +206,7 @@ class TransArchiveTask extends FannieTask
                         WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty,
                     COUNT(DISTINCT trans_num) AS transCount
                     FROM $summary_source AS t
-                    trans_type IN ('I','D')
+                    WHERE trans_type IN ('I','D')
                     AND tdate BETWEEN '$date 00:00:00' AND '$date 23:59:59'
                     GROUP BY card_no");
             }
@@ -219,9 +219,9 @@ class TransArchiveTask extends FannieTask
                         WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty,
                     COUNT(DISTINCT trans_num) AS transCount
                     FROM $summary_source AS t
-                    $FANNIE_OP_DB.custdata AS c ON d.card_no=c.CardNo
-                    AND c.personNum=1 WHERE
-                    trans_type IN ('I','D')
+                    LEFT JOIN $FANNIE_OP_DB.custdata AS c ON t.card_no=c.CardNo
+                    AND c.personNum=1
+                    WHERE trans_type IN ('I','D')
                     AND upc <> 'RRR' AND card_no <> 0
                     AND tdate BETWEEN '$date 00:00:00' AND '$date 23:59:59'
                     GROUP BY c.memType");
@@ -233,7 +233,7 @@ class TransArchiveTask extends FannieTask
                     CONVERT(SUM(total),DECIMAL(10,2)) as total,
                     COUNT(*) AS quantity
                     FROM $summary_source AS t
-                    trans_type IN ('T')
+                    WHERE trans_type IN ('T')
                     AND total <> 0
                     AND tdate BETWEEN '$date 00:00:00' AND '$date 23:59:59'
                     GROUP BY trans_subtype");
@@ -245,9 +245,9 @@ class TransArchiveTask extends FannieTask
                     CONVERT(SUM(total),DECIMAL(10,2)) as total,
                     COUNT(DISTINCT trans_num) AS transCount
                     FROM $summary_source AS t
-                    $FANNIE_OP_DB.custdata AS c ON d.card_no=c.CardNo
-                    AND c.personNum=1 WHERE
-                    trans_type IN ('S') AND total <> 0
+                    LEFT JOIN $FANNIE_OP_DB.custdata AS c ON t.card_no=c.CardNo
+                    AND c.personNum=1
+                    WHERE trans_type IN ('S') AND total <> 0
                     AND upc = 'DISCOUNT' AND card_no <> 0
                     AND tdate BETWEEN '$date 00:00:00' AND '$date 23:59:59'
                     GROUP BY c.memType");
