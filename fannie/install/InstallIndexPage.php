@@ -584,6 +584,27 @@ class InstallIndexPage extends InstallPage {
         echo '</select>';
         ?>
         <br />
+        Task Error Severity resulting in emails: 
+        <select name="TASK_THRESHOLD">
+        <?php
+        if (!isset($FANNIE_TASK_THRESHOLD)) $FANNIE_TASK_THRESHOLD = 4;
+        if (isset($_REQUEST['TASK_THRESHOLD'])) $FANNIE_TASK_THRESHOLD = $_REQUEST['FANNIE_TASK_THRESHOLD'];
+        confset('FANNIE_TASK_THRESHOLD',"$FANNIE_TASK_THRESHOLD");
+        $opts = array(
+            99 => 'Never email on error',
+            1  => 'All Errors',
+            2  => 'Small Errors and bigger',
+            3  => 'Medium Errors and bigger',
+            4  => 'Large Errors and bigger',
+            5  => 'Only the Worst Errors',
+        );
+        foreach ($opts as $k => $v) {
+            printf('<option %s value="%d">%s</option>',
+                $FANNIE_TASK_THRESHOLD == $k ? 'selected' : '',
+                $k, $v);
+        }
+        ?>
+        </select>
         <hr />
         <h4 class="install">Scales</h4>
         Number of scales

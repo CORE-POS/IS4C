@@ -40,6 +40,20 @@ class FannieTask
         'weekday' => '*',
     );
 
+    protected $error_threshold  = 99;
+
+    const TASK_NO_ERROR         = 0;
+    const TASK_TRIVIAL_ERROR    = 1;
+    const TASK_SMALL_ERROR      = 2;
+    const TASK_MEDIUM_ERROR     = 3;
+    const TASK_LARGE_ERROR      = 4;
+    const TASK_WORST_ERROR      = 5;
+
+    public function setThreshold($t)
+    {
+        $this->error_threshold = $t;
+    }
+
     /**
       Implement task functionality here
     */
@@ -52,12 +66,20 @@ class FannieTask
       Format message with date information
       and task's class name
       @param $str message string
+      @param $severity [optional, default zero] message importance
       @return formatted string
     */
-    public function cronMsg($str)
+    public function cronMsg($str, $severity=0)
     {
         $info = new ReflectionClass($this);
-        return date('r').': '.$info->getName().': '.$str."\n";
+        $msg = date('r').': '.$info->getName().': '.$str."\n";
+
+        // raise message into stderr
+        if ($severity >= $this->error_threshold) {
+            file_put_contents('php://stderr', $msg, FILE_APPEND);
+        }
+
+        return $msg;
     }
 }
 
@@ -84,6 +106,10 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
     if (!is_a($obj, 'FannieTask')) {
         echo "Error: invalid class. Must be subclass of FannieTask\n";
         exit;
+    }
+
+    if (isset($FANNIE_TASK_THRESHOLD) && is_numeric($FANNIE_TASK_THRESHOLD)) {
+        $obj->setThreshold($FANNIE_TASK_THRESHOLD);
     }
 
     $obj->run();
