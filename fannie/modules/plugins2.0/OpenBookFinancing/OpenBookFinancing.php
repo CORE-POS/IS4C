@@ -53,6 +53,7 @@ class OpenBookFinancing extends FanniePlugin
             'ObfCategorySuperDeptMap',
             'ObfLabor',
             'ObfSalesCache',
+            'ObfQuarters',
         );
 
         foreach($tables as $t){

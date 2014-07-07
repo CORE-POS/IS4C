@@ -64,7 +64,10 @@ class ObfCategoriesPage extends FannieRESTfulPage
 
         $model = new ObfCategoriesModel($dbc);
 
-        $ret = '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
+        $ret = '<button onclick="location=\'ObfIndexPage.php\';return false;">Home</button>
+                <br /><br />';
+
+        $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
         $ret .= '<table cellspacing="0" cellpadding="4" border="1">';
         $ret .= '<tr>
                     <th>Name</th>

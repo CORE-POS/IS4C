@@ -154,8 +154,11 @@ class ObfMappingPage extends FannieRESTfulPage
         $ret .= '</select>';
         $ret .= '<br /><br />';
         $ret .= '<input type="submit" value="Add New Mapping" />';
+        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+        $ret .= '<button onclick="location=\'ObfIndexPage.php\';return false;">Home</button>';
         $ret .= '</form>';
         $ret .= '</fieldset>';
+        $ret .= '<i>Note: percentages are sales growth targets for categories</i>';
         $ret .= '</div>';
         $ret .= '</div>';
 
