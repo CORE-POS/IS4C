@@ -48,23 +48,30 @@ class CreateTagsByDept extends FanniePage {
 				    x.manufacturer,
 				    x.distributor,
 				    v.sku,
-				    v.size AS pack_size_and_units,
-    				CASE WHEN v.units IS NULL THEN 1 ELSE v.units END AS units_per_case
+				    CASE WHEN v.size IS NOT NULL THEN v.size ELSE "
+				        . $dbc->concat(
+				            "p.size",
+				            "' '",
+				            "p.unitofmeasure",
+				            ''
+				        ) ." END AS pack_size_and_units,
+    				CASE WHEN v.units IS NOT NULL THEN v.units ELSE 1 END AS units_per_case
 				FROM
 				    products AS p
 				    LEFT JOIN prodExtra AS x ON p.upc=x.upc
 				    LEFT JOIN vendorItems AS v ON p.upc=v.upc
 				    LEFT JOIN vendors AS n ON v.vendorID=n.vendorID
 				WHERE
-				    p.department BETWEEN ? AND ?
-				    " . ($FANNIE_COOP_ID == 'ypsi' ? "" : "
+				    p.department BETWEEN ? AND ?"
+    			    . ($FANNIE_COOP_ID == 'ypsi' ? "" : "
 				        AND (
 					        x.distributor = n.vendorName
 					        OR (x.distributor='' AND n.vendorName='UNFI')
 					        OR (x.distributor IS NULL AND n.vendorName='UNFI')
 					        OR (n.vendorName IS NULL)
-				        )
-			"));
+				        )"
+			        )
+	        );
 			$r = $dbc->exec_statement($q,array($start,$end));
 			$ins = $dbc->prepare_statement("
 			    INSERT INTO shelftags (
