@@ -101,15 +101,18 @@ class BatchReport extends FannieReportPage
         $bStart .= ' 00:00:00';
         $bEnd .= ' 23:59:59';
 
-        $salesBatchQ ="select d.upc, b.description, sum(d.total) as sales, 
-             sum(d.quantity) as quantity
-             FROM $dlog as d left join batchMergeTable as b
-             ON d.upc = b.upc
-             WHERE 
-             b.batchID IN $inClause 
-             AND d.tdate BETWEEN ? AND ?
-             GROUP BY d.upc, b.description
-             ORDER BY d.upc";
+        $salesBatchQ ="
+            SELECT d.upc, 
+                b.description, 
+                SUM(d.total) AS sales, "
+                . DTrans::sumQuantity('d') . " AS quantity 
+            FROM $dlog AS d 
+                INNER JOIN batchMergeTable AS b ON d.upc = b.upc
+            WHERE b.batchID IN $inClause 
+                AND d.tdate BETWEEN ? AND ?
+            GROUP BY d.upc, 
+                b.description
+            ORDER BY d.upc";
         $salesBatchP = $dbc->prepare_statement($salesBatchQ);
         $inArgs[] = $bStart;
         $inArgs[] = $bEnd;
