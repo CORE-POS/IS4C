@@ -2,9 +2,10 @@
 //header('Content-Type: application/ms-excel');
 //header('Content-Disposition: attachment; filename="EOMreport.xls"');
 include('../../../../config.php');
-
+if (!class_exists('FannieAPI')) {
+    include(dirname(__FILE__).'/../classlib2.0/FannieAPI.php');
+}
 include($FANNIE_ROOT.'src/functions.php');
-include($FANNIE_ROOT.'cache/cache.php');
 
 if (isset($_GET["excel"])){
 header('Content-Type: application/ms-excel');
@@ -28,7 +29,7 @@ $end = date("Y-m-t",$stamp);
 $span = "'$start 00:00:00' AND '$end 23:59:59'";
 $args = array($start.' 00:00:00',$end.' 23:59:59');
 
-$output = get_cache("monthly");
+$output = DataCache::getFile("monthly");
 if (!$output || isset($_REQUEST['recache'])){
     if (isset($_REQUEST['recache'])) {
         $_SERVER['REQUEST_URI'] = $_SERVER['PHP_SELF']; // remove recache from URI
@@ -314,7 +315,7 @@ if (!$output || isset($_REQUEST['recache'])){
         </html>";
 
     $output = ob_get_contents();
-    put_cache("monthly",$output);
+    DataCache::putFile("monthly",$output);
     ob_end_clean();
 }
 

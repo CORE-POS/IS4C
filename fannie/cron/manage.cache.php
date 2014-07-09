@@ -23,6 +23,9 @@
 
 /* HELP
 
+   @deprecated. ReportDataCache task handles
+   all cached data.
+
    manage.cache.php
 
    Delete daily & monthly cache files as needed

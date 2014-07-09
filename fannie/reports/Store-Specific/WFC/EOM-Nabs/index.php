@@ -1,6 +1,5 @@
 <?php
 include('../../../../config.php');
-include($FANNIE_ROOT.'cache/cache.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
@@ -49,10 +48,10 @@ $dlog = "is4c_trans.dlog_90_view";
 $dlog = "trans_archive.dlogBig";
 echo " NABS</b><br />";
 if (!isset($_GET["excel"]))
-    echo "<a href=index.php?excel=yes&monthMinus=$monthMinus>Save to Excel</a>";
+    echo "<a href=index.php?excel=xls&monthMinus=$monthMinus>Save to Excel</a>";
 echo "<p />";
 
-$output = get_cache("monthly");
+$output = DataCache::getFile('monthly');
 if (!$output){
     ob_start();
 
@@ -154,7 +153,7 @@ if (!$output){
     }
 
     $output = ob_get_contents();
-    put_cache("monthly",$output);
+    DataCache::putFile('monthly', $output);
     ob_end_clean();
 }
 
