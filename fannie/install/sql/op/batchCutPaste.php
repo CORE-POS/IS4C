@@ -22,6 +22,7 @@ $CREATE['op.batchCutPaste'] = "
         batchID int,
         upc varchar(13),
         uid int,
+        tdate DATETIME,
         PRIMARY KEY (batchID,upc,uid)
     )
 ";

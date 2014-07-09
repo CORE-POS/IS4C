@@ -70,6 +70,12 @@ class BatchManagementTool extends FanniePage
             return false;
         }
 
+        // autoclear old data from clipboard table on intial page load
+        $clipboard = $this->con->tableDefinition('batchCutPaste');
+        if (isset($clipboard['tdate'])) {
+            $this->con->query('DELETE FROM batchCutPaste WHERE tdate < ' . $this->con->curdate());
+        }
+
         return true;
     }
 
@@ -463,7 +469,8 @@ class BatchManagementTool extends FanniePage
             $upc = FormLib::get_form_value('upc','');
             $bid = FormLib::get_form_value('batchID','');
             $uid = FormLib::get_form_value('uid','');
-            $q = $dbc->prepare_statement("INSERT INTO batchCutPaste VALUES (?,?,?)");
+            $q = $dbc->prepare_statement("INSERT INTO batchCutPaste (batchID, upc, uid, tdate)
+                                          VALUES (?,?,?," . $dbc->now() . ")");
             $dbc->exec_statement($q,array($bid,$upc,$uid));
             break;
 

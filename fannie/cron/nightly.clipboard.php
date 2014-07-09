@@ -25,6 +25,12 @@
 
    nightly.clipboard.php
 
+   @deprecated
+   Not replaced. Updated batchCutPaste schema includes
+   a timestamp so old entries can be removed as needed 
+   without a scheduled task. Clearing the deleted
+   entries from the shelftags table really isn't necessary.
+
    This script truncates the table batchCutPaste. This table
    acts as a clipboard so users can cut/paste items from
    on sales batch to another. The table must be truncated
