@@ -126,7 +126,7 @@ class ProductMovementModular extends FannieReportPage
                 where upc = ?
                 AND datetime BETWEEN ? AND ?
                 and emp_no <> 9999 and register_no <> 99
-                and trans_status <> 'X'
+                and (trans_status <> 'X' || trans_type='L')
                 GROUP BY YEAR(datetime),MONTH(datetime),DAY(datetime)";
         }
         $prep = $dbc->prepare_statement($query);
