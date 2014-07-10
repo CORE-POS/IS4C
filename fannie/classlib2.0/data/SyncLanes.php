@@ -64,15 +64,15 @@ class SyncLanes
         $db = strtolower($db);
         if ($db != 'op' && $db != 'trans') {
             $ret['sending'] = False;
-            $ret['messages'] = 'Invalid database: '.$db;
+            $ret['messages'] = 'Error: Invalid database: '.$db;
             return $ret;
         } elseif(empty($table)) {
             $ret['sending'] = False;
-            $ret['messages'] = 'No table given';
+            $ret['messages'] = 'Error: No table given';
             return $ret;
         } elseif (ereg("[^A-Za-z0-9_]",$table)) {
             $ret['sending'] = False;
-            $ret['messages'] = 'Illegal table name: '.$table;
+            $ret['messages'] = 'Error: Illegal table name: '.$table;
             return $ret;
         }
 
@@ -111,10 +111,10 @@ class SyncLanes
                     if ($success) {
                         $ret['messages'] .= "Lane $laneNumber ({$lane['host']}) $table completed successfully";
                     } else {
-                        $ret['messages'] .= "Lane $laneNumber ({$lane['host']}) $table completed but with some errors";
+                        $ret['messages'] .= "Error: Lane $laneNumber ({$lane['host']}) $table completed but with some errors";
                     }
                 } else {
-                    $ret['messages'] .= "Couldn't connect to lane $laneNumber ({$lane['host']})";
+                    $ret['messages'] .= "Error: Couldn't connect to lane $laneNumber ({$lane['host']})";
                 }
                 $laneNumber++;
             }
@@ -151,15 +151,15 @@ class SyncLanes
         $db = strtolower($db);
         if ($db != 'op' && $db != 'trans') {
             $ret['sending'] = False;
-            $ret['messages'] = 'Invalid database: '.$db;
+            $ret['messages'] = 'Error: Invalid database: '.$db;
             return $ret;
         } elseif(empty($table)) {
             $ret['sending'] = False;
-            $ret['messages'] = 'No table given';
+            $ret['messages'] = 'Error: No table given';
             return $ret;
         } elseif (ereg("[^A-Za-z0-9_]",$table)) {
             $ret['sending'] = False;
-            $ret['messages'] = 'Illegal table name: '.$table;
+            $ret['messages'] = 'Error: Illegal table name: '.$table;
             return $ret;
         }
 
@@ -186,10 +186,10 @@ class SyncLanes
                 if ($success) {
                     $ret['messages'] .= "Lane $laneNumber ({$lane['host']}) $table completed successfully";
                 } else {
-                    $ret['messages'] .= "Lane $laneNumber ({$lane['host']}) $table completed but with some errors";
+                    $ret['messages'] .= "Error: Lane $laneNumber ({$lane['host']}) $table completed but with some errors";
                 }
             } else {
-                $ret['messages'] .= "Couldn't connect to lane $laneNumber ({$lane['host']})";
+                $ret['messages'] .= "Error: Couldn't connect to lane $laneNumber ({$lane['host']})";
             }
             $laneNumber++;
         }
