@@ -214,17 +214,24 @@ class BaseItemModule extends ItemModule {
 
         if (isset($rowItem['special_price']) && $rowItem['special_price'] <> 0){
             /* show sale info */
-            $batchP = $dbc->prepare_statement("SELECT b.batchName FROM batches AS b 
-                LEFT JOIN batchList as l
-                on b.batchID=l.batchID WHERE '".date('Y-m-d')."' BETWEEN b.startDate
-                AND b.endDate AND (l.upc=? OR l.upc=?)");
+            $batchP = $dbc->prepare_statement("
+                SELECT b.batchName, 
+                    b.batchID 
+                FROM batches AS b 
+                    LEFT JOIN batchList as l on b.batchID=l.batchID 
+                WHERE '" . date('Y-m-d') . "' BETWEEN b.startDate AND b.endDate 
+                    AND (l.upc=? OR l.upc=?)"
+            );
             $batchR = $dbc->exec_statement($batchP,array($upc,'LC'.$likeCode));
-            $batch = "Unknown";
-            if ($dbc->num_rows($batchR) > 0)
-                $batch = array_pop($dbc->fetch_row($batchR));
+            $batch = array('batchID'=>0, 'batchName'=>"Unknown");
+            if ($dbc->num_rows($batchR) > 0) {
+                $batch = $dbc->fetch_row($batchR);
+            }
 
             $ret .= '<tr>';
-            $ret .= "<td style=\"color:green;\"><b>Sale Price:</b></td><td style=\"color:green;\">{$rowItem['special_price']} (<em>Batch: $batch</em>)</td>";
+            $ret .= sprintf("<td style=\"color:green;\"><b>Sale Price:</b></td>
+                <td style=\"color:green;\">%.2f (<em>Batch: <a href=\"%sbatches/newbatch/BatchManagementTool.php?startAt=%d\">%s</a></em>)</td>",
+                $rowItem['special_price'], $FANNIE_URL, $batch['batchID'], $batch['batchName']);
             list($date,$time) = explode(' ',$rowItem['end_date']);
             $ret .= "<td style=\"color:green;\">End Date:</td>
                 <td style=\"color:green;\">$date 
