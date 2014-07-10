@@ -341,7 +341,7 @@ class TransArchiveTask extends FannieTask
                                 WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty,
                             COUNT(DISTINCT trans_num) AS transCount
                         FROM $summary_source AS t
-                            LEFT JOIN $FANNIE_OP_DB.custdata AS c ON d.card_no=c.CardNo AND c.personNum=1 
+                            LEFT JOIN $FANNIE_OP_DB.custdata AS c ON t.card_no=c.CardNo AND c.personNum=1 
                         WHERE trans_type IN ('I','D')
                             AND upc <> 'RRR' 
                             AND card_no <> 0
@@ -389,7 +389,7 @@ class TransArchiveTask extends FannieTask
                             CONVERT(SUM(total),DECIMAL(10,2)) as total,
                             COUNT(DISTINCT trans_num) AS transCount
                         FROM $summary_source AS t
-                            LEFT JOIN $FANNIE_OP_DB.custdata AS c ON d.card_no=c.CardNo AND c.personNum=1
+                            LEFT JOIN $FANNIE_OP_DB.custdata AS c ON t.card_no=c.CardNo AND c.personNum=1
                         WHERE trans_type IN ('S') 
                             AND total <> 0
                             AND upc = 'DISCOUNT' 
