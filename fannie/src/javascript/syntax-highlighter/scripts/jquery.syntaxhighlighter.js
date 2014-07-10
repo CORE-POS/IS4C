@@ -165,7 +165,7 @@ if ( typeof window.console.emulated === 'undefined' ) {
 		}
 		
 		// Create
-		var bodyEl = document.getElementsByTagName($.browser.safari ? 'head' : 'body')[0];
+		var bodyEl = document.getElementsByTagName('body')[0];
 		var linkEl = document.createElement('link');
 		linkEl.type = 'text/css';
 		linkEl.rel = 'stylesheet';
@@ -217,7 +217,7 @@ if ( typeof window.console.emulated === 'undefined' ) {
 		}
 		
 		// Create
-		var bodyEl = document.getElementsByTagName($.browser.safari ? 'head' : 'body')[0];
+		var bodyEl = document.getElementsByTagName('body')[0];
 		var scriptEl = document.createElement('script');
 		scriptEl.type = 'text/javascript';
 		scriptEl.src = url;
@@ -412,9 +412,6 @@ if ( typeof window.console.emulated === 'undefined' ) {
 					$.each(themes,function(i,theme){
 						$.appendStylesheet(baseUrl+'/styles/theme-'+theme+'.min.css');
 					});
-					if ( $.browser.msie ) {
-						$.appendStylesheet(baseUrl+'/styles/ie.min.css');
-					}
 					SyntaxHighlighter.loadedExtras = true;
 				}
 				

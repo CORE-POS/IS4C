@@ -68,18 +68,35 @@ class InstallIndexPage extends InstallPage {
         $this->add_script("../src/javascript/jquery.js");
         $this->add_script("../src/javascript/jquery-ui.js");
 
+        $this->add_script('../src/javascript/syntax-highlighter/scripts/jquery.syntaxhighlighter.min.js');
+        $this->add_onload_command('
+            $.SyntaxHighlighter.init({
+                baseUrl: \'../src/javascript/syntax-highlighter\',
+                prettifyBaseUrl: \'../src/javascript/syntax-highlighter/prettify\',
+                wrapLines: false
+            });');
+
     // __construct()
     }
 
     /**
       Define any CSS needed
       @return A CSS string
-    function css_content(){
-        $css ="";
-        return $css;
+    */
+    function css_content()
+    {
+        return '
+        pre.tailedLog {
+            display: none;
+            border: solid 1px black;
+            background: #eee;
+            padding: 1em;
+            height: 200px;
+            overflow: scroll;
+        }
+        ';
     //css_content()
     }
-    */
 
     //  redefined to return them.
     /**
@@ -530,13 +547,40 @@ class InstallIndexPage extends InstallPage {
         <hr />
         <h4 class="install">Logs &amp; Debugging</h4>
         Fannie writes to the following log files:
+        <?php
+        if (!class_exists('LogViewer')) {
+            include(dirname(__FILE__) . '/../logs/LogViewer.php');
+        }
+        $log = new LogViewer();
+        ?>
         <ul>
         <li><?php check_writeable('../logs/queries.log'); ?>
-        <ul><li>Contains failed database queries</li></ul>  
+            <ul>
+            <li>Contains failed database queries</li>
+            <li>
+            <a href="" onclick="$('#queryLogView').toggle(); return false;">See Recent Entries</a>
+            <?php $queries = $log->getLogFile('../logs/queries.log', 100); ?>
+            <pre id="queryLogView" class="tailedLog highlight"><?php echo $queries; ?></pre>
+            </li>
+            </ul>  
         <li><?php check_writeable('../logs/php-errors.log'); ?>
-        <ul><li>Contains PHP notices, warnings, and errors</li></ul>
+            <ul>
+            <li>Contains PHP notices, warnings, and errors</li>
+            <li>
+            <a href="" onclick="$('#phpLogView').toggle(); return false;">See Recent Entries</a>
+            <?php $phplog = $log->getLogFile('../logs/php-errors.log', 100); ?>
+            <pre id="phpLogView" class="tailedLog highlight"><?php echo $phplog; ?></pre>
+            </li>
+            </ul>
         <li><?php check_writeable('../logs/dayend.log'); ?>
-        <ul><li>Contains output from scheduled tasks</li></ul>  
+            <ul>
+            <li>Contains output from scheduled tasks</li>
+            <li>
+            <a href="" onclick="$('#dayendLogView').toggle(); return false;">See Recent Entries</a>
+            <?php $dayend = $log->getLogFile('../logs/dayend.log', 100); ?>
+            <pre id="dayendLogView" class="tailedLog highlight"><?php echo $dayend; ?></pre>
+            </li>
+            </ul>  
         </ul>
         Color-Highlighted Logs
         <?php
