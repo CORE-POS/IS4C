@@ -3,16 +3,17 @@ global $FANNIE_DYNAMIC_MENU, $FANNIE_NAV_POSITION;
 /* try to deal with relative paths for includes */
 $path = "";
 $found = False;
-$uri = $_SERVER['REQUEST_URI'];
+$uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
 $tmp = explode("?",$uri);
-if (count($tmp) > 1) $uri = $tmp[0];
-foreach(explode("/",$uri) as $x){
-	if (strpos($x,".php") === False
-		&& strlen($x) != 0){
+if (count($tmp) > 1) {
+    $uri = $tmp[0];
+}
+foreach (explode("/",$uri) as $x) {
+	if (strpos($x,".php") === false && strlen($x) != 0) {
 		$path .= "../";
 	}
-	if (!$found && stripos($x,"fannie") !== False){
-		$found = True;
+	if (!$found && stripos($x,"fannie") !== false) {
+		$found = true;
 		$path = "";
 	}
 }
