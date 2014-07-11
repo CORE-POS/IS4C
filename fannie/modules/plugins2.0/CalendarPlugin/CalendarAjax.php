@@ -35,7 +35,8 @@ class CalendarAjax extends FannieWebService {
         return $ret;
     }   
 
-    function run(){
+    public function run($args=array())
+    {
         global $FANNIE_URL;
         $data = array();
         $action = FormLib::get_form_value('action');
