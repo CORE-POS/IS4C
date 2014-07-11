@@ -108,16 +108,16 @@ class ProductListPage extends FannieReportTool
             $('tr#'+upc+' .td_desc').html(content);
 
             var dept = $('tr#'+upc+' .td_dept').html();
-            var content = '<select class=in_dept>';
+            var content = '<select class=in_dept style="width:8em;"><optgroup style="font-size: 90%;">';
             for(dept_no in deptObj){
                 content += "<option value=\""+dept_no+"\" "+((dept==deptObj[dept_no])?'selected':'')+">";
                 content += deptObj[dept_no]+"</option>";
             }
-            content += '</select>';
+            content += '</optgroup></select>';
             $('tr#'+upc+' .td_dept').html(content);
 
             var supplier = $('tr#'+upc+' .td_supplier').html();
-            var content = "<input type=text class=in_supplier value=\""+supplier+"\" />";   
+            var content = "<input type=text class=in_supplier size=10 value=\""+supplier+"\" />";   
             $('tr#'+upc+' .td_supplier').html(content);
 
             var cost = $('tr#'+upc+' .td_cost').html();
@@ -168,6 +168,10 @@ class ProductListPage extends FannieReportTool
                 }
             });
             $('tr#'+upc+' .clickable input:text').click(function(event){
+                // do nothing
+                event.stopPropagation();
+            });
+            $('tr#'+upc+' .clickable select').click(function(event){
                 // do nothing
                 event.stopPropagation();
             });
@@ -252,8 +256,10 @@ class ProductListPage extends FannieReportTool
                 if ($(this).find('.hidden_upc').length != 0) {
                     var upc = $(this).find('.hidden_upc').val();
                     $(this).find('.clickable').click(function() {
-                        edit(upc);
-                        $(this).find('input:text').select();
+                        if ($(this).find('input:text').length == 0) {
+                            edit(upc);
+                            $(this).find('input:text').select();
+                        }
                     });
                 }
             });
@@ -494,13 +500,13 @@ class ProductListPage extends FannieReportTool
                     <th><a href="%s&sort=Description">Description</a></th>
                     <th><a href="%s&sort=Department">Department</a></th>
                     <th><a href="%s&sort=Supplier">' . _('Supplier') . '</a></th>
-                    <th><a href="%s&sort=Cost">Cost</a></th>
-                    <th><a href="%s&sort=Price">Price</a></th>',
+                    <th style="width:4em;"><a href="%s&sort=Cost">Cost</a></th>
+                    <th style="width:4em;"><a href="%s&sort=Price">Price</a></th>',
                     $page_url,$page_url,$page_url,$page_url,$page_url,$page_url);
         }
         else
             $ret .= "<th>UPC</th><th>Description</th><th>Dept</th><th>" . _('Supplier') . "</th><th>Cost</th><th>Price</th>";
-        $ret .= "<th>Tax</th><th>FS</th><th>Disc</th><th>Wg'd</th><th>Local</th>";
+        $ret .= "<th style=\"width:5em;\">Tax</th><th>FS</th><th>Disc</th><th>Wg'd</th><th style=\"width:5em;\">Local</th>";
         if (!$this->excel && $this->canEditItems !== False)
             $ret .= '<th>&nbsp;</th>';
         $ret .= "</tr>";
