@@ -290,4 +290,97 @@ function check_writeable($filename, $optional=False, $template=False){
     }
 }
 
+function installTextField($name, &$current_value, $default_value='', $quoted=true, $attributes=array())
+{
+    if (FormLib::get($name, false) !== false) {
+        $current_value = FormLib::get($name);
+    }
+
+    // sanitize values:
+    if (!$quoted) {
+        // unquoted must be a number or boolean
+        if (!is_numeric($current_value) && strtolower($current_value) !== 'true' && strtolower($current_value) !== false) {
+            $current_value = (int)$current_value;
+        }
+    } else if ($quoted) {
+        // quoted must not contain single quotes
+        $current_value = str_replace("'", '', $current_value);
+        // must not start with backslash
+        while (strlen($current_value) > 0 && substr($current_value, 0, 1) == "\\") {
+            $current_value = substr($current_value, 1);
+        }
+        // must not end with backslash
+        while (strlen($current_value) > 0 && substr($current_value, -1) == "\\") {
+            $current_value = substr($current_value, 0, strlen($current_value)-1);
+        }
+    }
+
+    confset($name, ($quoted ? "'" . $current_value . "'" : $current_value));
+
+    $ret = sprintf('<input name="%s" value="%s"',
+        $name, $current_value);
+    if (!isset($attributes['type'])) {
+        $attributes['type'] = 'text';
+    }
+    foreach ($attributes as $name => $value) {
+        if ($name == 'name' || $name == 'value') {
+            continue;
+        }
+        $ret .= ' ' . $name . '="' . $value . '"';
+    }
+    $ret .= " />\n";
+
+    return $ret;
+}
+
+function installSelectField($name, &$current_value, $options, $default_value='', $quoted=true)
+{
+    if (FormLib::get($name, false) !== false) {
+        $current_value = FormLib::get($name);
+    }
+
+    // sanitize values:
+    if (!$quoted) {
+        // unquoted must be a number or boolean
+        if (!is_numeric($current_value) && strtolower($current_value) !== 'true' && strtolower($current_value) !== 'false') {
+            $current_value = (int)$current_value;
+        }
+    } else if ($quoted) {
+        // quoted must not contain single quotes
+        $current_value = str_replace("'", '', $current_value);
+        // must not start with backslash
+        while (strlen($current_value) > 0 && substr($current_value, 0, 1) == "\\") {
+            $current_value = substr($current_value, 1);
+        }
+        // must not end with backslash
+        while (strlen($current_value) > 0 && substr($current_value, -1) == "\\") {
+            $current_value = substr($current_value, 0, strlen($current_value)-1);
+        }
+    }
+
+    confset($name, ($quoted ? "'" . $current_value . "'" : $current_value));
+
+    $ret = '<select name="' . $name . '">' . "\n";
+    // array has non-numeric keys
+    // if the array has meaningful keys, use the key value
+    // combination to build <option>s with labels
+    $has_keys = ($options === array_values($options)) ? false : true;
+    foreach ($options as $key => $value) {
+        $selected = '';
+        if ($has_keys && $current_value == $key) {
+            $selected = 'selected';
+        } elseif (!$has_keys && $current_value == $value) {
+            $selected = 'selected';
+        }
+        $optval = $has_keys ? $key : $value;
+
+        $ret .= sprintf('<option value="%s" %s>%s</option>',
+            $optval, $selected, $value);
+        $ret .= "\n";
+    }
+    $ret .= '</select>' . "\n";
+
+    return $ret;
+}
+
 ?>

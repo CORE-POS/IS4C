@@ -108,8 +108,8 @@ class InstallIndexPage extends InstallPage {
     }
     */
 
-    function body_content(){
-
+    function body_content()
+    {
         include('../config.php'); 
         ob_start();
 
@@ -129,20 +129,19 @@ class InstallIndexPage extends InstallPage {
         $FANNIE_ROOT = $FILEPATH;
         $FANNIE_URL = $URL;
 
-        if (function_exists('posix_getpwuid')){
+        if (function_exists('posix_getpwuid')) {
             $chk = posix_getpwuid(posix_getuid());
             echo "PHP is running as: ".$chk['name']."<br />";
-        }
-        else
+        } else {
             echo "PHP is (probably) running as: ".get_current_user()."<br />";
+        }
 
-        if (is_writable($FILEPATH.'config.php')){
+        if (is_writable($FILEPATH.'config.php')) {
             confset('FANNIE_ROOT',"'$FILEPATH'");
             confset('FANNIE_URL',"'$URL'");
             echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
             echo "<hr />";
-        }
-        else {
+        } else {
             echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
             echo "<blockquote>";
             echo "config.php ({$FILEPATH}config.php) is Fannie's main configuration file.";
@@ -174,7 +173,7 @@ class InstallIndexPage extends InstallPage {
         if (extension_loaded('mssql'))
             $supportedTypes['MSSQL'] = 'MSSQL';
 
-        if (count($supportedTypes) == 0){
+        if (count($supportedTypes) == 0) {
             echo "<span style=\"color:red;\"><b>Error</b>: no database driver available</span>";
             echo "<blockquote>";
             echo 'Install at least one of the following PHP extensions: pdo_mysql, mysqli, mysql,
@@ -187,274 +186,124 @@ class InstallIndexPage extends InstallPage {
         $db_keys = array_keys($supportedTypes);
         $defaultDbType = $db_keys[0];
 
-        ?>
-        <h4 class="install">Main Server</h4>
-        Server Database Host
-        <?php
-        if(!isset($FANNIE_SERVER)) $FANNIE_SERVER = '127.0.0.1';
-        if (isset($_REQUEST['FANNIE_SERVER'])){
-            $FANNIE_SERVER = $_REQUEST['FANNIE_SERVER'];
-        }
-        confset('FANNIE_SERVER',"'$FANNIE_SERVER'");
-        echo "<input type=text name=FANNIE_SERVER value=\"$FANNIE_SERVER\" />";
-        ?>
-        <br />Server Database Type
-        <select name=FANNIE_SERVER_DBMS>
-        <?php
-        if(!isset($FANNIE_SERVER_DBMS)) $FANNIE_SERVER_DBMS = $defaultDbType;
-        if (isset($_REQUEST['FANNIE_SERVER_DBMS'])){
-            $FANNIE_SERVER_DBMS = $_REQUEST['FANNIE_SERVER_DBMS'];
-        }
-        confset('FANNIE_SERVER_DBMS',"'$FANNIE_SERVER_DBMS'");
-        foreach ($supportedTypes as $val=>$label){
-            printf('<option value="%s" %s>%s</option>',
-                $val,
-                ($FANNIE_SERVER_DBMS == $val)?'selected':'',
-                $label);
-        }
-        ?>
-        </select>
-        <br />Server Database Username
-        <?php
-        if (!isset($FANNIE_SERVER_USER)) $FANNIE_SERVER_USER = 'root';
-        if (isset($_REQUEST['FANNIE_SERVER_USER']))
-            $FANNIE_SERVER_USER = $_REQUEST['FANNIE_SERVER_USER'];
-        confset('FANNIE_SERVER_USER',"'$FANNIE_SERVER_USER'");
-        echo "<input type=text name=FANNIE_SERVER_USER value=\"$FANNIE_SERVER_USER\" />";
-        ?>
-        <br />Server Database Password
-        <?php
-        if (!isset($FANNIE_SERVER_PW)) $FANNIE_SERVER_PW = '';
-        if (isset($_REQUEST['FANNIE_SERVER_PW']))
-            $FANNIE_SERVER_PW = $_REQUEST['FANNIE_SERVER_PW'];
-        confset('FANNIE_SERVER_PW',"'$FANNIE_SERVER_PW'");
-        echo "<input type=password name=FANNIE_SERVER_PW value=\"$FANNIE_SERVER_PW\" />";
-        ?>
-        <br />Server Operational DB name
-        <?php
-        if (!isset($FANNIE_OP_DB)) $FANNIE_OP_DB = 'core_op';
-        if (isset($_REQUEST['FANNIE_OP_DB']))
-            $FANNIE_OP_DB = $_REQUEST['FANNIE_OP_DB'];
-        confset('FANNIE_OP_DB',"'$FANNIE_OP_DB'");
-        echo "<input type=text name=FANNIE_OP_DB value=\"$FANNIE_OP_DB\" />";
-        ?>
-        <br />Server Transaction DB name
-        <?php
-        if (!isset($FANNIE_TRANS_DB)) $FANNIE_TRANS_DB = 'core_trans';
-        if (isset($_REQUEST['FANNIE_TRANS_DB']))
-            $FANNIE_TRANS_DB = $_REQUEST['FANNIE_TRANS_DB'];
-        confset('FANNIE_TRANS_DB',"'$FANNIE_TRANS_DB'");
-        echo "<input type=text name=FANNIE_TRANS_DB value=\"$FANNIE_TRANS_DB\" />";
-        ?>
-        <br />Testing Operational DB connection:
-        <?php
+        echo '<h4 class="install"><a href="" onclick="$(\'#serverConfTable\').toggle(); return false;">Main Server</a> +</h4>';
+        echo '<table id="serverConfTable">'; 
+    
+        echo '<tr><td>Server Database Host</td>'
+            . '<td>' . installTextField('FANNIE_SERVER', $FANNIE_SERVER, '127.0.0.1')
+            . '</td></tr>';
+
+        echo '<tr><td>Server Database Type</td>'
+            . '<td>' . installSelectField('FANNIE_SERVER_DBMS', $FANNIE_SERVER_DBMS, $supportedTypes, $defaultDbType)
+            . '</td></tr>';
+
+        echo '<tr><td>Server Database Username</td>'
+            . '<td>' . installTextField('FANNIE_SERVER_USER', $FANNIE_SERVER_USER, 'root')
+            . '</td></tr>';
+
+        echo '<tr><td>Server Database Password</td>'
+            . '<td> ' . installTextField('FANNIE_SERVER_PW', $FANNIE_SERVER_PW, '', true, array('type'=>'password'))
+            . '</td></tr>';
+
+        echo '<tr><td>Server Operational DB name</td>'
+            . '<td>' . installTextField('FANNIE_OP_DB', $FANNIE_OP_DB, 'core_op')
+            . '</td></tr>';
+
+        echo '<tr><td>Server Transaction DB name</td>'
+            . '<td>' . installTextField('FANNIE_TRANS_DB', $FANNIE_TRANS_DB, 'core_trans')
+            . '</td></tr>';;
+        echo '</table>';
+
+        echo '<br />Testing Operational DB connection:';
         $sql = db_test_connect($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
                 $FANNIE_OP_DB,$FANNIE_SERVER_USER,
                 $FANNIE_SERVER_PW);
-        $createdOps = False;
-        if ($sql === False)
+        $createdOps = false;
+        if ($sql === false) {
             echo "<span style=\"color:red;\">Failed</span>";
-        else {
+        } else {
             echo "<span style=\"color:green;\">Succeeded</span>";
             $msgs = $this->create_op_dbs($sql);
-            $createdOps = True;
-            foreach($msgs as $msg){
+            $createdOps = true;
+            foreach ($msgs as $msg) {
                 if ($msg['error'] == 0) continue;
-                echo $msg['error_msg'].'<br />';
+                echo $msg['error_msg'] . '<br />';
             }
 
             // create auth tables later than the original
             // setting in case db settings were wrong
-            if (isset($FANNIE_AUTH_ENABLED) && $FANNIE_AUTH_ENABLED === True){ 
-                if (!function_exists('table_check'))
+            if (isset($FANNIE_AUTH_ENABLED) && $FANNIE_AUTH_ENABLED === true) {
+                if (!function_exists('table_check')) {
                     include($FILEPATH.'auth/utilities.php');
+                }
                 table_check();
             }
         }
-        ?>
-        <br />Testing Transaction DB connection:
-        <?php
+
+        echo '<br />Testing Transaction DB connection:';
         $sql = db_test_connect($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
                 $FANNIE_TRANS_DB,$FANNIE_SERVER_USER,
                 $FANNIE_SERVER_PW);
-        $createdTrans = False;
-        if ($sql === False)
+        $createdTrans = false;
+        if ($sql === false) {
             echo "<span style=\"color:red;\">Failed</span>";
-        else {
+        } else {
             echo "<span style=\"color:green;\">Succeeded</span>";
             $msgs = $this->create_trans_dbs($sql);
-            foreach($msgs as $msg){
+            foreach ($msgs as $msg) {
                 if ($msg['error'] == 0) continue;
-                echo $msg['error_msg'].'<br />';
+                echo $msg['error_msg'] . '<br />';
             }
             $msgs = $this->create_dlogs($sql);
-            foreach($msgs as $msg){
+            foreach ($msgs as $msg) {
                 if ($msg['error'] == 0) continue;
-                echo $msg['error_msg'].'<br />';
+                echo $msg['error_msg'] . '<br />';
             }
-            $createdTrans = True;
+            $createdTrans = true;
         }
-        if ($createdOps && $createdTrans){
+        if ($createdOps && $createdTrans) {
             $msgs = $this->create_delayed_dbs();
-            foreach($msgs as $msg){
+            foreach ($msgs as $msg) {
                 if ($msg['error'] == 0) continue;
-                echo $msg['error_msg'].'<br />';
+                echo $msg['error_msg'] . '<br />';
             }
+
+            // connected to both databases
+            // collapse config fields
+            $this->add_onload_command('$(\'#serverConfTable\').hide();');
         }
         ?>
         <hr />
-        <h4 class="install">Transaction archiving</h4>
-        Archive DB name:
         <?php
-        if (!isset($FANNIE_ARCHIVE_DB)) $FANNIE_ARCHIVE_DB = 'trans_archive';
-        if (isset($_REQUEST['FANNIE_ARCHIVE_DB'])) $FANNIE_ARCHIVE_DB = $_REQUEST['FANNIE_ARCHIVE_DB'];
-        confset('FANNIE_ARCHIVE_DB',"'$FANNIE_ARCHIVE_DB'");
-        echo "<input type=text name=FANNIE_ARCHIVE_DB value=\"$FANNIE_ARCHIVE_DB\" />";
-        ?>
-        <br />Archive Method:
-        <select name=FANNIE_ARCHIVE_METHOD>
-        <?php
-        if (!isset($FANNIE_ARCHIVE_METHOD)) $FANNIE_ARCHIVE_METHOD = 'partitions';
-        if (isset($_REQUEST['FANNIE_ARCHIVE_METHOD'])) $FANNIE_ARCHIVE_METHOD = $_REQUEST['FANNIE_ARCHIVE_METHOD'];
-        if ($FANNIE_ARCHIVE_METHOD == 'tables'){
-            confset('FANNIE_ARCHIVE_METHOD',"'tables'");
-            echo "<option selected>tables</option><option>partitions</option>";
-        }
-        else{
-            confset('FANNIE_ARCHIVE_METHOD',"'partitions'");
-            echo "<option>tables</option><option selected>partitions</option>";
-        }
-        echo "</select><br />";
-        ?>
-        <br />Use a different DB server for archives
-        <select name=FANNIE_ARCHIVE_REMOTE>
-        <?php
-        if (!isset($FANNIE_ARCHIVE_REMOTE)) $FANNIE_ARCHIVE_REMOTE = 'No';
-        if (isset($_REQUEST['FANNIE_ARCHIVE_REMOTE'])) $FANNIE_ARCHIVE_REMOTE = $_REQUEST['FANNIE_ARCHIVE_REMOTE'];
-        if ($FANNIE_ARCHIVE_REMOTE == 'Yes' || $FANNIE_ARCHIVE_REMOTE === True){
-            confset('FANNIE_ARCHIVE_REMOTE','True');
-            echo "<option selected>Yes</option><option>No</option>";
-        }
-        else{
-            confset('FANNIE_ARCHIVE_REMOTE','False');
-            echo "<option>Yes</option><option selected>No</option>";
-        }
-        echo "</select><br />";
-        if ($FANNIE_ARCHIVE_REMOTE === True || $FANNIE_ARCHIVE_REMOTE == 'Yes'){
-        if ($FANNIE_ARCHIVE_DB == $FANNIE_TRANS_DB){
-            echo "<blockquote><i>Warning: using the same name for the archive database
-            and the main transaction database will probably cause problems</blockquote>";
-        }
-        ?>
-        <br />Archive DB Server
-        <?php
-        if (!isset($FANNIE_ARCHIVE_SERVER)) $FANNIE_ARCHIVE_SERVER = '127.0.0.1';
-        if (isset($_REQUEST['FANNIE_ARCHIVE_SERVER'])) $FANNIE_ARCHIVE_SERVER = $_REQUEST['FANNIE_ARCHIVE_SERVER'];
-        confset('FANNIE_ARCHIVE_SERVER',"'$FANNIE_ARCHIVE_SERVER'");
-        echo "<input type=text name=FANNIE_ARCHIVE_SERVER value=\"$FANNIE_ARCHIVE_SERVER\" />";
-        ?>
-        <br />Archive DB type
-        <select name=FANNIE_ARCHIVE_DBMS>
-        <?php
-        if (!isset($FANNIE_ARCHIVE_DBMS)) $FANNIE_ARCHIVE_DBMS = 'MYSQL';
-        if (isset($_REQUEST['FANNIE_ARCHIVE_DBMS'])) $FANNIE_ARCHIVE_DBMS = $_REQUEST['FANNIE_ARCHIVE_DBMS'];
-        confset('FANNIE_ARCHIVE_DBMS',"'$FANNIE_ARCHIVE_DBMS'");
-        if ($FANNIE_ARCHIVE_DBMS == 'MYSQL'){
-            echo "<option value=MYSQL selected>MySQL</option><option value=MSSQL>SQL Server</option><option value=MYSQLI>MySQLi</option>";
-        }
-        else if ($FANNIE_ARCHIVE_DBMS == 'MSSQL'){
-            echo "<option value=MYSQL>MySQL</option><option selected value=MSSQL>SQL Server</option><option value=MYSQLI>MySQLi</option>";
-        }
-        else {
-            echo "<option value=MYSQL>MySQL</option><option value=MSSQL>SQL Server</option><option selected value=MYSQLI>MySQLi</option>";
-        }
-        ?>
-        </select>
-        <br />Archive DB username
-        <?php
-        if (!isset($FANNIE_ARCHIVE_USER)) $FANNIE_ARCHIVE_USER = 'root';
-        if (isset($_REQUEST['FANNIE_ARCHIVE_USER'])) $FANNIE_ARCHIVE_USER = $_REQUEST['FANNIE_ARCHIVE_USER'];
-        confset('FANNIE_ARCHIVE_USER',"'$FANNIE_ARCHIVE_USER'");
-        echo "<input type=text name=FANNIE_ARCHIVE_USER value=\"$FANNIE_ARCHIVE_USER\" />";
-        ?>
-        <br />Archive DB password
-        <?php
-        if (!isset($FANNIE_ARCHIVE_PW)) $FANNIE_ARCHIVE_PW = '';
-        if (isset($_REQUEST['FANNIE_ARCHIVE_PW'])) $FANNIE_ARCHIVE_PW = $_REQUEST['FANNIE_ARCHIVE_PW'];
-        confset('FANNIE_ARCHIVE_PW',"'$FANNIE_ARCHIVE_PW'");
-        echo "<input type=password name=FANNIE_ARCHIVE_PW value=\"$FANNIE_ARCHIVE_PW\" />";
-        }
-        else {
-            //local archiving - set up now
-            echo "<br />Testing Transaction DB connection:";
-            $sql = db_test_connect($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
-                    $FANNIE_ARCHIVE_DB,$FANNIE_SERVER_USER,
-                    $FANNIE_SERVER_PW);
-            if ($sql === False)
-                echo "<span style=\"color:red;\">Failed</span>";
-            else {
-                echo "<span style=\"color:green;\">Succeeded</span>";
-                $msgs = $this->create_archive_dbs($sql);
-                foreach($msgs as $msg){
-                    if ($msg['error'] == 0) continue;
-                    echo $msg['error_msg'].'<br />';
-                }
+        echo '<h4 class="install"><a href="" onclick="$(\'#archiveConfTable\').toggle(); return false;">Transaction Archiving</a> +</h4>';
+        echo '<table id="archiveConfTable">'; 
+
+        echo '<tr><td>Archive DB name</td>'
+            . '<td>' . installTextField('FANNIE_ARCHIVE_DB', $FANNIE_ARCHIVE_DB, 'trans_archive')
+            . '</td></tr>';
+
+        echo '<tr><td>Archive Method</td>'
+            . '<td>' . installSelectField('FANNIE_ARCHIVE_METHOD', $FANNIE_ARCHIVE_METHOD, array('partitions', 'tables'), 'partitions')
+            . '</td></tr>';
+
+        echo '</table>';
+
+        //local archiving - set up now
+        echo "<br />Testing Transaction DB connection:";
+        $sql = db_test_connect($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
+                $FANNIE_ARCHIVE_DB,$FANNIE_SERVER_USER,
+                $FANNIE_SERVER_PW);
+        if ($sql === false) {
+            echo "<span style=\"color:red;\">Failed</span>";
+        } else {
+            echo "<span style=\"color:green;\">Succeeded</span>";
+            $msgs = $this->create_archive_dbs($sql);
+            foreach ($msgs as $msg) {
+                if ($msg['error'] == 0) continue;
+                echo $msg['error_msg'] . '<br />';
             }
+            $this->add_onload_command('$(\'#archiveConfTable\').hide();');
         }
-        ?>
-        <hr />
-        <h4 class="install">Back Office Transactions</h4>
-        <i>Values used when generating transaction data via Fannie
-        instead of through an actual POS terminal. The corrections department
-        is only used for balancing individual transactions. Total sales
-        to that department via generated transactions should always be
-        zero. The catch-all department is used when generated transactions
-        will generate a sale (or refund) but it is not known where the 
-        amount belongs for accounting purposes.
-        </i><br />
-        Employee# 
-        <?php
-        if (!isset($FANNIE_EMP_NO)) {
-            $FANNIE_EMP_NO = 1001;
-        }
-        if (isset($_REQUEST['FANNIE_EMP_NO'])){
-            $FANNIE_EMP_NO = (int)$_REQUEST['FANNIE_EMP_NO'];
-        }
-        confset('FANNIE_EMP_NO',"$FANNIE_EMP_NO");
-        echo "<input type=text name=FANNIE_EMP_NO value=\"$FANNIE_EMP_NO\" /><br />";
-        ?>
-        Register# 
-        <?php
-        if (!isset($FANNIE_REGISTER_NO)) {
-            $FANNIE_REGISTER_NO = 30;
-        }
-        if (isset($_REQUEST['FANNIE_REGISTER_NO'])){
-            $FANNIE_REGISTER_NO = (int)$_REQUEST['FANNIE_REGISTER_NO'];
-        }
-        confset('FANNIE_REGISTER_NO',"$FANNIE_REGISTER_NO");
-        echo "<input type=text name=FANNIE_REGISTER_NO value=\"$FANNIE_REGISTER_NO\" /><br />";
-        ?>
-        Corrections Dept# 
-        <?php
-        if (!isset($FANNIE_CORRECTION_DEPT)) {
-            $FANNIE_CORRECTION_DEPT = 800;
-        }
-        if (isset($_REQUEST['FANNIE_CORRECTION_DEPT'])){
-            $FANNIE_CORRECTION_DEPT = (int)$_REQUEST['FANNIE_CORRECTION_DEPT'];
-        }
-        confset('FANNIE_CORRECTION_DEPT',"$FANNIE_CORRECTION_DEPT");
-        echo "<input type=text name=FANNIE_CORRECTION_DEPT value=\"$FANNIE_CORRECTION_DEPT\" /><br />";
-        ?>
-        Catch-all Dept# 
-        <?php
-        if (!isset($FANNIE_MISC_DEPT)) {
-            $FANNIE_MISC_DEPT = 703;
-        }
-        if (isset($_REQUEST['FANNIE_MISC_DEPT'])){
-            $FANNIE_MISC_DEPT = (int)$_REQUEST['FANNIE_MISC_DEPT'];
-        }
-        confset('FANNIE_MISC_DEPT',"$FANNIE_MISC_DEPT");
-        echo "<input type=text name=FANNIE_MISC_DEPT value=\"$FANNIE_MISC_DEPT\" /><br />";
         ?>
         <hr />
         <h4 class="install">Lanes</h4>
@@ -559,6 +408,8 @@ class InstallIndexPage extends InstallPage {
             <li>Contains failed database queries</li>
             <li>
             <a href="" onclick="$('#queryLogView').toggle(); return false;">See Recent Entries</a>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="../logs/LogViewer.php?logfile=<?php echo base64_encode('queries.log'); ?>">View Entire Log</a>
             <?php $queries = $log->getLogFile('../logs/queries.log', 100); ?>
             <pre id="queryLogView" class="tailedLog highlight"><?php echo $queries; ?></pre>
             </li>
@@ -568,6 +419,8 @@ class InstallIndexPage extends InstallPage {
             <li>Contains PHP notices, warnings, and errors</li>
             <li>
             <a href="" onclick="$('#phpLogView').toggle(); return false;">See Recent Entries</a>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="../logs/LogViewer.php?logfile=<?php echo base64_encode('php-errors.log'); ?>">View Entire Log</a>
             <?php $phplog = $log->getLogFile('../logs/php-errors.log', 100); ?>
             <pre id="phpLogView" class="tailedLog highlight"><?php echo $phplog; ?></pre>
             </li>
@@ -577,64 +430,34 @@ class InstallIndexPage extends InstallPage {
             <li>Contains output from scheduled tasks</li>
             <li>
             <a href="" onclick="$('#dayendLogView').toggle(); return false;">See Recent Entries</a>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="../logs/LogViewer.php?logfile=<?php echo base64_encode('dayend.log'); ?>">View Entire Log</a>
             <?php $dayend = $log->getLogFile('../logs/dayend.log', 100); ?>
             <pre id="dayendLogView" class="tailedLog highlight"><?php echo $dayend; ?></pre>
             </li>
             </ul>  
         </ul>
-        Color-Highlighted Logs
         <?php
-        if (!isset($FANNIE_PRETTY_LOGS)) $FANNIE_PRETTY_LOGS = 0;
-        if (isset($_REQUEST['FANNIE_PRETTY_LOGS'])) $FANNIE_PRETTY_LOGS = $_REQUEST['FANNIE_PRETTY_LOGS'];
-        confset('FANNIE_PRETTY_LOGS',"$FANNIE_PRETTY_LOGS");
-        echo '<select name="FANNIE_PRETTY_LOGS">';
-        if ($FANNIE_PRETTY_LOGS == 0){
-            echo '<option value="1">Yes</option>';
-            echo '<option value="0" selected>No</option>';
-        }
-        else {
-            echo '<option value="1" selected>Yes</option>';
-            echo '<option value="0">No</option>';
-        }
-        echo '</select>';
-        ?>
-        <br />
-        Log Rotation Count
-        <?php
-        if (!isset($FANNIE_LOG_COUNT)) $FANNIE_LOG_COUNT = 5;
-        if (isset($_REQUEST['FANNIE_LOG_COUNT'])) $FANNIE_LOG_COUNT = $_REQUEST['FANNIE_LOG_COUNT'];
-        confset('FANNIE_LOG_COUNT',"$FANNIE_LOG_COUNT");
-        echo "<input type=text name=FANNIE_LOG_COUNT value=\"$FANNIE_LOG_COUNT\" size=3 />";
-        echo "<br />";
+        echo '<table>';
 
-        echo _('Verbose error messages');
-        if (!isset($FANNIE_CUSTOM_ERRORS)) $FANNIE_CUSTOM_ERRORS = 0;
-        if (isset($_REQUEST['FANNIE_CUSTOM_ERRORS'])) $FANNIE_CUSTOM_ERRORS = $_REQUEST['FANNIE_CUSTOM_ERRORS'];
-        confset('FANNIE_CUSTOM_ERRORS',"$FANNIE_CUSTOM_ERRORS");
-        echo '<select name="FANNIE_CUSTOM_ERRORS">';
-        if ($FANNIE_CUSTOM_ERRORS == 0) {
-            echo '<option value="1">' . _('Yes (displayed)') . '</option>';
-            echo '<option value="2">' . _('Yes (logged)') . '</option>';
-            echo '<option value="0" selected>' . _('No') . '</option>';
-        } else if ($FANNIE_CUSTOM_ERRORS == 1) {
-            echo '<option value="1" selected>' . _('Yes (displayed)') . '</option>';
-            echo '<option value="2">' . _('Yes (logged)') . '</option>';
-            echo '<option value="0">' . _('No') . '</option>';
-        } else {
-            echo '<option value="1">' . _('Yes (displayed)') . '</option>';
-            echo '<option value="2" selected>' . _('Yes (logged)') . '</option>';
-            echo '<option value="0">' . _('No') . '</option>';
-        }
-        echo '</select>';
-        ?>
-        <br />
-        Task Error Severity resulting in emails: 
-        <select name="TASK_THRESHOLD">
-        <?php
-        if (!isset($FANNIE_TASK_THRESHOLD)) $FANNIE_TASK_THRESHOLD = 4;
-        if (isset($_REQUEST['TASK_THRESHOLD'])) $FANNIE_TASK_THRESHOLD = $_REQUEST['FANNIE_TASK_THRESHOLD'];
-        confset('FANNIE_TASK_THRESHOLD',"$FANNIE_TASK_THRESHOLD");
-        $opts = array(
+        echo '<tr><td align="right">Color-Highlighted Logs</td>'
+            . '<td>' . installSelectField('FANNIE_PRETTY_LOGS', $FANNIE_PRETTY_LOGS, array('true'=>'Yes', 'false'=>'No'), false, false)
+            . '</td></tr>';
+
+        echo '<tr><td align="right">Log Rotation Count</td>'
+            . '<td>' . installTextField('FANNIE_LOG_COUNT', $FANNIE_LOG_COUNT, 5, false)
+            . '</td></tr>';
+
+        $errorOpts = array(
+            1 => 'Yes (displayed)',
+            2 => 'Yes (logged)',
+            0 => 'No',
+        );
+        echo '<tr><td align="right">Verbose Error Messages</td>'
+            . '<td>' . installSelectField('FANNIE_CUSTOM_ERRORS', $FANNIE_CUSTOM_ERRORS, $errorOpts, false, false)
+            . '</td></tr>';
+
+        $taskOpts = array(
             99 => 'Never email on error',
             1  => 'All Errors',
             2  => 'Small Errors and bigger',
@@ -642,13 +465,14 @@ class InstallIndexPage extends InstallPage {
             4  => 'Large Errors and bigger',
             5  => 'Only the Worst Errors',
         );
-        foreach ($opts as $k => $v) {
-            printf('<option %s value="%d">%s</option>',
-                $FANNIE_TASK_THRESHOLD == $k ? 'selected' : '',
-                $k, $v);
-        }
+
+        echo '<tr><td>Task Error Severity resulting in emails</td>'
+            . '<td>' . installSelectField('FANNIE_TASK_THRESHOLD', $FANNIE_TASK_THRESHOLD, $taskOpts, 4, false)
+            . '</td></tr>';
+
+        echo '</table>';
+
         ?>
-        </select>
         <hr />
         <h4 class="install">Scales</h4>
         Number of scales
@@ -730,10 +554,7 @@ class InstallIndexPage extends InstallPage {
         <br />Try to use a code that will not be confused with any other, e.g. "WEFC_Toronto" instead of "WEFC".
         <br />Co-op ID: 
         <?php
-        if (!isset($FANNIE_COOP_ID)) $FANNIE_COOP_ID = '';
-        if (isset($_REQUEST['FANNIE_COOP_ID'])) $FANNIE_COOP_ID=$_REQUEST['FANNIE_COOP_ID'];
-        confset('FANNIE_COOP_ID',"'$FANNIE_COOP_ID'");
-        printf("<input type=\"text\" name=\"FANNIE_COOP_ID\" value=\"%s\" />",$FANNIE_COOP_ID);
+        echo installTextField('FANNIE_COOP_ID', $FANNIE_COOP_ID);
         ?>
 
         <hr />
@@ -742,50 +563,48 @@ class InstallIndexPage extends InstallPage {
         <br />If these are not set in Fannie configuration but are set in the Linux environment the environment values will be used as
         defaults that can be overridden by settings here.
 
-        <br />Country
         <?php
-        // If the var doesn't exist in config.php assign a default value.
-        if (!isset($FANNIE_COUNTRY)) $FANNIE_COUNTRY = "";
-        // If the form var is set assign it to the local copy of the config var.
-        if (isset($_REQUEST['FANNIE_COUNTRY'])) $FANNIE_COUNTRY = $_REQUEST['FANNIE_COUNTRY'];
-        // Change or add the local copy to the config file.
-        confset('FANNIE_COUNTRY',"'$FANNIE_COUNTRY'");
-        if ( !isset($FANNIE_COUNTRY) && isset($_ENV['LANG']) ) {
-            $FANNIE_COUNTRY = substr($_ENV['LANG'],3,2);
-        }
-        ?>
-        <select name="FANNIE_COUNTRY" size='1'>
-        <?php
+        echo '<br />Country: ';
         //Use I18N country codes.
         $countries = array("US"=>"USA", "CA"=>"Canada");
-        foreach (array_keys($countries) as $key) {
-            printf("<option value='%s' %s>%s</option>", $key, (($FANNIE_COUNTRY == $key)?'selected':''), $countries["$key"]);
-        }
-        ?>
-        </select>
+        echo installSelectField('FANNIE_COUNTRY', $FANNIE_COUNTRY, $countries, '');
 
-        <br />Language
-        <?php
-        // If the var doesn't exist in config.php assign a default value.
-        if (!isset($FANNIE_LANGUAGE)) $FANNIE_LANGUAGE = "";
-        // If the form var is set assign it to the local copy of the config var.
-        if (isset($_REQUEST['FANNIE_LANGUAGE'])) $FANNIE_LANGUAGE = $_REQUEST['FANNIE_LANGUAGE'];
-        // Change or add the local copy to the config file.
-        confset('FANNIE_LANGUAGE',"'$FANNIE_LANGUAGE'");
-        if ( !isset($FANNIE_LANGUAGE) && isset($_ENV['LANG']) ) {
-            $FANNIE_LANGUAGE = substr($_ENV['LANG'],0,2);
-        }
-        ?>
-        <select name="FANNIE_LANGUAGE" size='1'>
-        <?php
+        echo '<br />Language: ';
         //Use I18N language codes.
         $langs = array("en"=>"English", "fr"=>"French", "sp"=>"Spanish");
-        foreach (array_keys($langs) as $key) {
-            printf("<option value='%s' %s>%s</option>", $key, (($FANNIE_LANGUAGE == $key)?'selected':''), $langs["$key"]);
-        }
+        echo installSelectField('FANNIE_LANGUAGE', $FANNIE_LANGUAGE, $langs, '');
         ?>
-        </select><br />
+        <hr />
+        <h4 class="install">Back Office Transactions</h4>
+        <i>Values used when generating transaction data via Fannie
+        instead of through an actual POS terminal. The corrections department
+        is only used for balancing individual transactions. Total sales
+        to that department via generated transactions should always be
+        zero. The catch-all department is used when generated transactions
+        will generate a sale (or refund) but it is not known where the 
+        amount belongs for accounting purposes.
+        </i><br />
+        <?php
+        echo '<table>';
+        
+        echo '<tr><td>Employee#</td>'
+            . '<td>' . installTextField('FANNIE_EMP_NO', $FANNIE_EMP_NO, 1001, false)
+            . '</td></tr>';
 
+        echo '<tr><td>Register#</td>'
+            . '<td>' . installTextField('FANNIE_REGISTER_NO', $FANNIE_REGISTER_NO, 30, false)
+            . '</td></tr>';
+
+        echo '<tr><td>Corrections Dept#</td>'
+            . '<td>' . installTextField('FANNIE_CORRECTION_DEPT', $FANNIE_CORRECTION_DEPT, 800, false)
+            . '</td></tr>';
+
+        echo '<tr><td>Catch-all Dept#</td>'
+            . '<td>' . installTextField('FANNIE_MISC_DEPT', $FANNIE_MISC_DEPT, 800, false)
+            . '</td></tr>';
+
+        echo '</table>';
+        ?>
         <hr />
         <input type=submit value="Re-run" />
         </form>
