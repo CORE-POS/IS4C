@@ -290,6 +290,19 @@ function check_writeable($filename, $optional=False, $template=False){
     }
 }
 
+/**
+  Render configuration variable as an <input> tag
+  Process any form submissions
+  Write configuration variable to config.php
+
+  @param $name [string] name of the variable
+  @param $current_value [mixed] the actual config variable
+  @param $default_value [mixed, default empty string] default value for the setting
+  @param $quoted [boolean, default true] write value to config.php with single quotes
+  @param $attributes [array, default empty] array of <input> tag attribute names and values
+
+  @return [string] html input field
+*/
 function installTextField($name, &$current_value, $default_value='', $quoted=true, $attributes=array())
 {
     if (FormLib::get($name, false) !== false) {
@@ -333,6 +346,23 @@ function installTextField($name, &$current_value, $default_value='', $quoted=tru
     return $ret;
 }
 
+/**
+  Render configuration variable as an <select> tag
+  Process any form submissions
+  Write configuration variable to config.php
+  
+  @param $name [string] name of the variable
+  @param $current_value [mixed] the actual config variable
+  @param $options [array] list of options
+    This can be a keyed array in which case the keys
+    are what is written to config.php and the values
+    are what is shown in the user interface, or it
+    can simply be an array of valid values.
+  @param $default_value [mixed, default empty string] default value for the setting
+  @param $quoted [boolean, default true] write value to config.php with single quotes
+
+  @return [string] html select field
+*/
 function installSelectField($name, &$current_value, $options, $default_value='', $quoted=true)
 {
     if (FormLib::get($name, false) !== false) {
