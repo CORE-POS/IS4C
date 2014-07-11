@@ -1096,6 +1096,11 @@ class SQLManager
 		if ($which_connection == '') {
 			$which_connection=$this->default_db;
         }
+
+        if (count($this->connections) == 0) {
+            return false;
+        }
+
         $query ='';
 		switch($this->connections[$which_connection]->databaseType) {
             case 'mysql':
