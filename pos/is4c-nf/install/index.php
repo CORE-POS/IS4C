@@ -59,77 +59,56 @@ if (!function_exists("socket_create")){
 <br />
 <table id="install" border=0 cellspacing=0 cellpadding=4>
 <tr>
-<td style="width: 30%;">OS: </td><td><select name=OS>
-<?php
-if (isset($_REQUEST['OS'])) $CORE_LOCAL->set('OS',$_REQUEST['OS'],True);
-if ($CORE_LOCAL->get('OS') == 'win32'){
-    echo "<option value=win32 selected>Windows</option>";
-    echo "<option value=other>*nix</option>";
-}
-else {
-    echo "<option value=win32>Windows</option>";
-    echo "<option value=other selected>*nix</option>";
-}
-InstallUtilities::paramSave('OS',$CORE_LOCAL->get('OS'));
-?>
-</select></td></tr>
-<tr><td>Lane number:</td><td>
-<?php
-if (isset($_REQUEST['LANE_NO']) && is_numeric($_REQUEST['LANE_NO'])) $CORE_LOCAL->set('laneno',$_REQUEST['LANE_NO'],True);
-printf("<input type=text name=LANE_NO value=\"%d\" />",
-    $CORE_LOCAL->get('laneno'));
-InstallUtilities::confsave('laneno',$CORE_LOCAL->get('laneno'));
-?>
-</td></tr><tr><td colspan=2 class="tblheader">
-<h3>Database set up</h3></td></tr>
-<tr><td>
-Lane database host: </td><td>
-<?php
-if (isset($_REQUEST['LANE_HOST'])) $CORE_LOCAL->set('localhost',$_REQUEST['LANE_HOST'],True);
-printf("<input type=text name=LANE_HOST value=\"%s\" />",
-    $CORE_LOCAL->get('localhost'));
-InstallUtilities::confsave('localhost',"'".$CORE_LOCAL->get('localhost')."'");
-?>
-</td></tr><tr><td>
-Lane database type:</td>
-<td><select name=LANE_DBMS>
-<?php
-$db_opts = array('mysql'=>'MySQL','mssql'=>'SQL Server',
-    'pdomysql'=>'MySQL (PDO)','pdomssql'=>'SQL Server (PDO)',
-    'pdolite' => 'SQLite (PDO)');
-if(isset($_REQUEST['LANE_DBMS'])) $CORE_LOCAL->set('DBMS',$_REQUEST['LANE_DBMS'],True);
-foreach($db_opts as $name=>$label){
-    printf('<option %s value="%s">%s</option>',
-        ($CORE_LOCAL->get('DBMS')==$name?'selected':''),
-        $name,$label);
-}
-InstallUtilities::confsave('DBMS',"'".$CORE_LOCAL->get('DBMS')."'");
-?>
-</select></td></tr>
-<tr><td>Lane user name:</td><td>
-<?php
-if (isset($_REQUEST['LANE_USER'])) $CORE_LOCAL->set('localUser',$_REQUEST['LANE_USER'],True);
-printf("<input type=text name=LANE_USER value=\"%s\" />",
-    $CORE_LOCAL->get('localUser'));
-InstallUtilities::confsave('localUser',"'".$CORE_LOCAL->get('localUser')."'");
-?>
-</td></tr><tr><td>
-Lane password:</td><td>
-<?php
-if (isset($_REQUEST['LANE_PASS'])) $CORE_LOCAL->set('localPass',$_REQUEST['LANE_PASS'],True);
-printf("<input type=password name=LANE_PASS value=\"%s\" />",
-    $CORE_LOCAL->get('localPass'));
-InstallUtilities::confsave('localPass',"'".$CORE_LOCAL->get('localPass')."'");
-?>
-</td></tr><tr><td>
-Lane operational DB:</td><td>
-<?php
-if (isset($_REQUEST['LANE_OP_DB'])) $CORE_LOCAL->set('pDatabase',$_REQUEST['LANE_OP_DB'],True);
-printf("<input type=text name=LANE_OP_DB value=\"%s\" />",
-    $CORE_LOCAL->get('pDatabase'));
-InstallUtilities::confsave('pDatabase',"'".$CORE_LOCAL->get('pDatabase')."'");
-?>
-</td></tr><tr><td colspan=2>
+    <td style="width: 30%;">OS: </td>
+    <td>
+    <?php
+    $osOpts = array('win32' => 'Windows', 'other' => '*nix');
+    echo InstallUtilities::installSelectField('OS', $osOpts, 'other');
+    ?>
+    </td>
+</tr>
+<tr>
+    <td>Lane number:</td>
+    <td><?php echo InstallUtilities::installTextField('laneno', 99, InstallUtilities::INI_SETTING, false); ?></td>
+</tr>
+<tr>
+    <td colspan=2 class="tblheader">
+    <h3>Database set up</h3>
+    </td>
+</tr>
+<tr>
+    <td>Lane database host: </td>
+    <td><?php echo InstallUtilities::installTextField('localhost', '127.0.0.1', InstallUtilities::INI_SETTING); ?></td>
+</tr>
+<tr>
+    <td>Lane database type:</td>
+    <td>
+    <?php
+    $db_opts = array('mysql'=>'MySQL','mssql'=>'SQL Server',
+        'pdomysql'=>'MySQL (PDO)','pdomssql'=>'SQL Server (PDO)',
+        'pdolite' => 'SQLite (PDO)');
+    echo InstallUtilities::installSelectField('DBMS', $db_opts, 'mysql', InstallUtilities::INI_SETTING);
+    ?>
+    </td>
+</tr>
+<tr>
+    <td>Lane user name:</td>
+    <td><?php echo InstallUtilities::installTextField('localUser', 'root', InstallUtilities::INI_SETTING); ?></td>
+</tr>
+<tr>
+    <td>Lane password:</td>
+    <td>
+    <?php
+    echo InstallUtilities::installTextField('localPass', '', InstallUtilities::INI_SETTING, true, array('type'=>'password'));
+    ?>
+    </td>
+</tr>
+<tr>
+    <td>Lane operational DB:</td>
+    <td><?php echo InstallUtilities::installTextField('pDatabase', 'opdata', InstallUtilities::INI_SETTING); ?></td>
+</tr>
+<tr>
+    <td colspan=2>
 <div class="noteTxt">
 Testing operational DB Connection:
 <?php
@@ -142,7 +121,7 @@ $sql = InstallUtilities::dbTestConnect($CORE_LOCAL->get('localhost'),
         $CORE_LOCAL->get('pDatabase'),
         $CORE_LOCAL->get('localUser'),
         $CORE_LOCAL->get('localPass'));
-if ($sql === False){
+if ($sql === False) {
     echo "<span class='fail'>Failed</span>";
     echo '<div class="db_hints" style="margin-left:25px;">';
     if (!function_exists('socket_create')){
@@ -158,8 +137,7 @@ if ($sql === False){
             firewall is allowing connections.</i>';
     }
     echo '</div>';
-}
-else {
+} else {
     echo "<span class='success'>Succeeded</span><br />";
     //echo "<textarea rows=3 cols=80>";
     $opErrors = create_op_dbs($sql,$CORE_LOCAL->get('DBMS'));
@@ -185,15 +163,13 @@ else {
 }
 ?>
 </div> <!-- noteTxt -->
-</td></tr><tr><td>
-Lane transaction DB:</td><td>
-<?php
-if (isset($_REQUEST['LANE_TRANS_DB'])) $CORE_LOCAL->set('tDatabase',$_REQUEST['LANE_TRANS_DB'],True);
-printf("<input type=text name=LANE_TRANS_DB value=\"%s\" />",
-    $CORE_LOCAL->get('tDatabase'));
-InstallUtilities::confsave('tDatabase',"'".$CORE_LOCAL->get('tDatabase')."'");
-?>
-</td></tr><tr><td colspan=2>
+</td></tr>
+<tr>
+    <td>Lane transaction DB:</td>
+    <td><?php echo InstallUtilities::installTextField('tDatabase', 'translog', InstallUtilities::INI_SETTING); ?></td>
+</tr>
+<tr>
+    <td colspan=2>
 <div class="noteTxt">
 Testing transactional DB connection:
 <?php
@@ -202,15 +178,14 @@ $sql = InstallUtilities::dbTestConnect($CORE_LOCAL->get('localhost'),
         $CORE_LOCAL->get('tDatabase'),
         $CORE_LOCAL->get('localUser'),
         $CORE_LOCAL->get('localPass'));
-if ($sql === False ){
+if ($sql === False ) {
     echo "<span class='fail'>Failed</span>";
     echo '<div class="db_hints" style="margin-left:25px;">';
     echo '<i>If both connections failed, see above. If just this one
         is failing, it\'s probably an issue of database user 
         permissions.</i>';
     echo '</div>';
-}
-else {
+} else {
     echo "<span class='success'>Succeeded</span><br />";
     //echo "<textarea rows=3 cols=80>";
     
@@ -262,53 +237,40 @@ else {
 }
 ?>
 </div> <!-- noteTxt -->
-</td></tr><tr><td>
-Server database host: </td><td>
-<?php
-if (isset($_REQUEST['SERVER_HOST'])) $CORE_LOCAL->set('mServer',$_REQUEST['SERVER_HOST']);
-printf("<input type=text name=SERVER_HOST value=\"%s\" />",
-    $CORE_LOCAL->get('mServer'));
-InstallUtilities::paramSave('mServer',$CORE_LOCAL->get('mServer'));
-?>
-</td></tr><tr><td>
-Server database type:</td><td>
-<select name=SERVER_TYPE>
-<?php
-$db_opts = array('mysql'=>'MySQL','mssql'=>'SQL Server',
-    'pdomysql'=>'MySQL (PDO)','pdomssql'=>'SQL Server (PDO)');
-if (isset($_REQUEST['SERVER_TYPE'])) $CORE_LOCAL->set('mDBMS',$_REQUEST['SERVER_TYPE']);
-foreach($db_opts as $name=>$label){
-    printf('<option %s value="%s">%s</option>',
-        ($CORE_LOCAL->get('mDBMS')==$name?'selected':''),
-        $name,$label);
-}
-InstallUtilities::paramSave('mDBMS',$CORE_LOCAL->get('mDBMS'));
-?>
-</select></td></tr><tr><td>
-Server user name:</td><td>
-<?php
-if (isset($_REQUEST['SERVER_USER'])) $CORE_LOCAL->set('mUser',$_REQUEST['SERVER_USER']);
-printf("<input type=text name=SERVER_USER value=\"%s\" />",
-    $CORE_LOCAL->get('mUser'));
-InstallUtilities::paramSave('mUser',$CORE_LOCAL->get('mUser'));
-?>
-</td></tr><tr><td>
-Server password:</td><td>
-<?php
-if (isset($_REQUEST['SERVER_PASS'])) $CORE_LOCAL->set('mPass',$_REQUEST['SERVER_PASS']);
-printf("<input type=password name=SERVER_PASS value=\"%s\" />",
-    $CORE_LOCAL->get('mPass'));
-InstallUtilities::paramSave('mPass',$CORE_LOCAL->get('mPass'));
-?>
-</td></tr><tr><td>
-Server database name:</td><td>
-<?php
-if (isset($_REQUEST['SERVER_DB'])) $CORE_LOCAL->set('mDatabase',$_REQUEST['SERVER_DB']);
-printf("<input type=text name=SERVER_DB value=\"%s\" />",
-    $CORE_LOCAL->get('mDatabase'));
-InstallUtilities::paramSave('mDatabase',$CORE_LOCAL->get('mDatabase'));
-?>
-</td></tr><tr><td colspan=2>
+</td>
+</tr>
+<tr>
+    <td>Server database host: </td>
+    <td><?php echo InstallUtilities::installTextField('mServer', '127.0.0.1'); ?></td>
+</tr>
+<tr>
+    <td>Server database type:</td>
+    <td>
+    <?php
+    $db_opts = array('mysql'=>'MySQL','mssql'=>'SQL Server',
+        'pdomysql'=>'MySQL (PDO)','pdomssql'=>'SQL Server (PDO)');
+    echo InstallUtilities::installSelectField('mDBMS', $db_opts, 'mysql');
+    ?>
+    </td>
+</tr>
+<tr>
+    <td>Server user name:</td>
+    <td><?php echo InstallUtilities::installTextField('mUser', 'root'); ?></td>
+</tr>
+<tr>
+    <td>Server password:</td>
+    <td>
+    <?php
+    echo InstallUtilities::installTextField('mPass', '', InstallUtilities::EITHER_SETTING, true, array('type'=>'password'));
+    ?>
+    </td>
+</tr>
+<tr>
+    <td>Server database name:</td>
+    <td><?php echo InstallUtilities::installTextField('mDatabase', 'core_trans'); ?></td>
+</tr>
+<tr>
+    <td colspan=2>
 <div class="noteTxt">
 Testing server connection:
 <?php
