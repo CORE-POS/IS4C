@@ -267,6 +267,27 @@ class HouseCouponEditor extends FanniePage
         }
         $ret .= "</select></td></tr>";
 
+        $mts = array(
+            'Q'=>'Quantity (at least)',
+            'Q+'=>'Quantity (more than)',
+            'D'=>'Department (at least $)',
+            'D+'=>'Department (more than $)',
+            'M'=>'Mixed',
+            '$'=>'Total (at least $)',
+            '$+'=>'Total (more than $)',
+            ''=>'No minimum'
+        );
+        $ret .= "<tr><th>Minimum Type</th><td colspan=3>
+            <select name=mtype>";
+        foreach($mts as $k=>$v){
+            $ret .= "<option value=\"$k\"";
+            if ($k == $mType) $ret .= " selected";
+            $ret .= ">$v</option>";
+        }
+        $ret .= "</select></td><th>Minimum value</th>
+            <td><input type=text name=mval value=\"$mVal\"
+            size=5 /></td></tr>";
+
         $dts = array('Q'=>'Quantity Discount',
             'P'=>'Set Price Discount',
             'FI'=>'Scaling Discount (Item)',
@@ -288,27 +309,6 @@ class HouseCouponEditor extends FanniePage
         }
         $ret .= "</select></td><th>Discount value</th>
             <td><input type=text name=dval value=\"$dVal\"
-            size=5 /></td></tr>";
-
-        $mts = array(
-            'Q'=>'Quantity (at least)',
-            'Q+'=>'Quantity (more than)',
-            'D'=>'Department (at least $)',
-            'D+'=>'Department (more than $)',
-            'M'=>'Mixed',
-            '$'=>'Total (at least $)',
-            '$+'=>'Total (more than $)',
-            ''=>'No minimum'
-        );
-        $ret .= "<tr><th>Minimum Type</th><td colspan=3>
-            <select name=mtype>";
-        foreach($mts as $k=>$v){
-            $ret .= "<option value=\"$k\"";
-            if ($k == $mType) $ret .= " selected";
-            $ret .= ">$v</option>";
-        }
-        $ret .= "</select></td><th>Minimum value</th>
-            <td><input type=text name=mval value=\"$mVal\"
             size=5 /></td></tr>";
 
         $ret .= "</table>";
