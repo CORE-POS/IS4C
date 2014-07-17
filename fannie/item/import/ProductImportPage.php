@@ -81,6 +81,7 @@ class ProductImportPage extends FannieUploadPage
 
         $ret = true;
         $checks = (FormLib::get_form_value('checks')=='yes') ? true : false;
+        $skipExisting = FormLib::get('skipExisting', 1);
         $model = new ProductsModel($dbc);
         foreach($linedata as $line) {
             // get info from file and member-type default settings
@@ -117,6 +118,9 @@ class ProductImportPage extends FannieUploadPage
 
             $model->reset();
             $model->upc($upc);
+            if ($model->load() && $skipExisting) {
+                continue;
+            }
             $model->description($desc);
             $model->normal_price($price);
             $model->department($dept);
@@ -160,7 +164,11 @@ class ProductImportPage extends FannieUploadPage
     function preview_content()
     {
         return '<input type="checkbox" name="checks" value="yes" />
-            Remove check digits from UPCs';
+            Remove check digits from UPCs
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="checkbox" name="skipExisting" value="1" checked />
+            Skip Existing Items
+            ';
     }
 
     function results_content()
