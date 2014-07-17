@@ -161,10 +161,19 @@ class CoopDealsReviewPage extends FanniePage
         <table cellpadding=4 cellspacing=0 border=1>
         <tr><th>UPC</th><th>Desc</th><th>Sale Price</th><th>Batch</th></tr>\n";
         while ($row = $dbc->fetch_row($result)) {
-            $ret .= sprintf("<tr><td>%s</td><td>%s</td><td>%.2f</td><td>%s Co-op Deals %s</tr>\n",
-                $row[0],$row[1],$row[2],$row[3],$row[4]);
+            $ret .= sprintf('<tr>
+                        <td>%s</td>
+                        <td>%s</td>
+                        <td>%.2f</td>
+                        <td><span class="superNameSpan">%s </span>Co-op Deals %s</td>
+                        </tr>' . "\n",
+                        $row['upc'],
+                        $row['description'],
+                        $row['price'],
+                        $row['batch'],
+                        $row['subbatch']);
         }
-        $ret .= <<< end_heredoc
+        $ret .= <<<html
         </table><p />
         <table cellpadding=4 cellspacing=0><tr>
         <td><b>A Start</b></td><td><input type=text name=start id=start /></td>
@@ -178,12 +187,13 @@ class CoopDealsReviewPage extends FanniePage
         <td><b>Month</b></td><td><input type=text name=naming /></td>
         </tr></table>
         <label>
-            <input type="checkbox" name="group_by_superdepts" checked="true" />
+            <input type="checkbox" name="group_by_superdepts" checked="true" 
+                onchange="$('.superNameSpan').toggle(); " />
             Group sale batches by Superdepartment
          </label><br />
         <input type=submit value="Create Batch(es)" />
         </form>
-end_heredoc;
+html;
 
         $this->add_onload_command("\$('#start').datepicker();\n");
         $this->add_onload_command("\$('#end').datepicker();\n");
