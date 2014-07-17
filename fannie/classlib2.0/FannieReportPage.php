@@ -918,6 +918,17 @@ class FannieReportPage extends FanniePage
         if (FormLib::get('excel') === 'xls') {
             $this->report_format = 'xls';
             $this->window_dressing = false;
+            /**
+              Verify whether PEAR is available. If it is not,
+              fall back to CSV output. Should probably
+              generate some kind of log message or notification.
+            */
+            if (!class_exists('PEAR')) {
+                $pear = @include_once('PEAR.php');
+                if (!$pear) {
+                    $this->report_format = 'csv';
+                }
+            }
         } elseif (FormLib::get('excel') === 'csv') {
             $this->report_format = 'csv';
             $this->window_dressing = false;
