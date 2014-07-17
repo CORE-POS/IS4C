@@ -59,7 +59,7 @@ class PatronageTransferTool extends FanniePage {
         if (is_numeric($FANNIE_REGISTER_NO)) {
             $this->CORRECTION_LANE = $FANNIE_REGISTER_NO;
         }
-        if (is_numeric($FANNIE_MISC_DEPT)) {
+        if (is_numeric($FANNIE_CORRECTION_DEPT)) {
             $this->CORRECTION_DEPT = $FANNIE_CORRECTION_DEPT;
         }
 
@@ -165,6 +165,10 @@ class PatronageTransferTool extends FanniePage {
         $ret .= "<br /><br />";
         $ret .= sprintf("Receipt #2: %s",$this->CORRECTION_CASHIER.'-'.$this->CORRECTION_LANE.'-'.$dtrans['trans_no']);
 
+        $ret .= '<hr />';
+
+        $ret .= '<a href="../MemCorrectionIndex.php">Home</a>';
+
         return $ret;
     }
 
@@ -174,7 +178,7 @@ class PatronageTransferTool extends FanniePage {
 
         $ret = "<form action=\"PatronageTransferTool.php\" method=\"post\">";
         $ret .= "<p style=\"font-size:120%\">";
-        $ret .= "Date <input type=\"text\" name=\"date\" size=\"10\" /> ";
+        $ret .= "Date <input type=\"text\" id=\"date\" name=\"date\" size=\"10\" /> ";
         $ret .= '<br />';
         $ret .= "Receipt <input type=\"text\" name=\"trans_num\" size=\"10\" /> ";
         $ret .= "</p><p style=\"font-size:120%;\">";
@@ -185,6 +189,8 @@ class PatronageTransferTool extends FanniePage {
         $ret .= "<input type=\"submit\" name=\"submit1\" value=\"Submit\" />";
         $ret .= "</p>";
         $ret .= "</form>";
+
+        $this->add_onload_command('$(\'#date\').datepicker();');
 
         return $ret;
     }
