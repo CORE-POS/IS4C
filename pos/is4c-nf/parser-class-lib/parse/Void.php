@@ -21,26 +21,30 @@
 
 *********************************************************************************/
 
-class Void extends Parser {
-
-	function check($str){
-		if (substr($str,0,2) == "VD" && strlen($str) <= 15)
-			return True;
-		return False;
-	}
-
+class Void extends Parser 
+{
 	private $discounttype = 0;
 	private $discountable = 0;
 	private $caseprice = 0;
 	private $scaleprice = 0;
 
-	function parse($str){
+	public function check($str)
+    {
+		if (substr($str,0,2) == "VD" && strlen($str) <= 15) {
+			return true;
+        } else {
+            return false;
+        }
+	}
+
+	public function parse($str)
+    {
 		global $CORE_LOCAL;
 		$ret = $this->default_json();
 	
 		if (is_numeric($CORE_LOCAL->get('VoidLimit')) && $CORE_LOCAL->get('VoidLimit') > 0){
 			Database::getsubtotals();
-			if ($CORE_LOCAL->get('voidTotal') > $CORE_LOCAL->get('VoidLimit') && $CORE_LOCAL->get('voidOverride') != 1){
+			if ($CORE_LOCAL->get('voidTotal') > $CORE_LOCAL->get('VoidLimit') && $CORE_LOCAL->get('voidOverride') != 1) {
 				$CORE_LOCAL->set('strRemembered', $CORE_LOCAL->get('strEntered'));
 				$CORE_LOCAL->set('voidOverride', 0);
 				$ret['main_frame'] = MiscLib::base_url().'gui-modules/adminlogin.php?class=Void';
@@ -54,9 +58,9 @@ class Void extends Parser {
 		} else if ($CORE_LOCAL->get("currentid") == 0) {
 			$ret['output'] = DisplayLib::boxMsg(_("No Item on Order"));
 		} else {
-			$str = $CORE_LOCAL->get("currentid");
+			$id = $CORE_LOCAL->get("currentid");
 
-			$status = PrehLib::checkstatus($str);
+			$status = PrehLib::checkstatus($id);
 			$this->discounttype = $status['discounttype'];
 			$this->discountable = $status['discountable'];
 			$this->caseprice = $status['caseprice'];
@@ -74,7 +78,7 @@ class Void extends Parser {
             */
             if ($status['voided'] == 2) {
                 // void preceeding item
-                $ret['output'] = $this->voiditem($str - 1);
+                $ret['output'] = $this->voiditem($id - 1);
 			} else if ($status['voided'] == 3 || $status['voided'] == 6 || $status['voided'] == 8) {
 				$ret['output'] = DisplayLib::boxMsg(_("Cannot void this entry"));
 			} else if ($status['voided'] == 4 || $status['voided'] == 5) {
@@ -84,7 +88,7 @@ class Void extends Parser {
 			} else if ($status['status'] == "V") {
 				$ret['output'] = DisplayLib::boxMsg(_("Item already voided"));
 			} else {
-				$ret['output'] = $this->voiditem($str);
+				$ret['output'] = $this->voiditem($id);
             }
 		}
 
@@ -148,7 +152,7 @@ class Void extends Parser {
 		} else {
             return DisplayLib::boxMsg(_("Item not found"));
         }
-	}	
+	}
 
     /**
       Void record by trans_id
@@ -253,7 +257,10 @@ class Void extends Parser {
 	}
 
     /**
-
+      Void the given UPC
+      @param $upc [string] upc to void. Optionally including quantity and asterisk
+      @param $item_num [int] trans_id of record to void. Optional.
+      @param $silent [boolean] Optional. Legacy. Currently does nothing.
     */
 	public function voidupc($upc, $item_num=-1, $silent=false) 
     {
@@ -263,6 +270,10 @@ class Void extends Parser {
 		$deliflag = false;
 		$quantity = 0;
 
+        /**
+          If UPC contains an asterisk, extract quantity
+          and validate input. Otherwise use quantity 1.
+        */
         if (strstr($upc, '*')) {
             list($quantity, $upc) = explode('*', $upc, 2);
             if ($quantity === '' || $upc === '' || !is_numeric($quantity) || !is_numeric($upc)) {
