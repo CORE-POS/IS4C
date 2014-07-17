@@ -55,7 +55,7 @@ function confsave($k,$v){
     $r = $dbc->exec_statement($p,array($k));
     if ($dbc->num_rows($r)==0){
         $insP = $dbc->prepare_statement("INSERT INTO $FANNIE_TRANS_DB.lane_config (keycode, value,
-                modified) VALUES (?, ?, '.$dbc->now().')");
+                modified) VALUES (?, ?, ".$dbc->now().")");
         $dbc->exec_statement($insP,array($k,serialize($v)));
     }
     else {
