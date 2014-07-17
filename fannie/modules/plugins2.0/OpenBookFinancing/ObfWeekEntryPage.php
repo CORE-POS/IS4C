@@ -143,7 +143,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
             $model->wages( isset($wages[$i]) ? $wages[$i] : 0 );
             $model->laborTarget( isset($goals[$i]) ? $goals[$i] / 100.00 : 0 );
             $model->averageWage( isset($avg[$i]) ? $avg[$i] : 0 );
-            $model->forecastSales(sprintf('%d', $sales[$i]));
+            $model->forecastSales(sprintf('%d', isset($sales[$i]) ? $sales[$i] : 0));
             $model->save();
         }
 

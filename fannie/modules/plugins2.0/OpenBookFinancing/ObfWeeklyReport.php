@@ -129,8 +129,8 @@ class ObfWeeklyReport extends FannieReportPage
             $dlog2 = DTransactionsModel::selectDlog(date('Y-m-d', $start_ly), date('Y-m-d', $end_ly));
             $args = array(date('Y-m-d 00:00:00', $start_ts), date('Y-m-d 23:59:59', $end_ts));
 
-            $transQ = str_replace('__table__', $dlog1, $transQ);
-            $transP = $dbc->prepare($transQ);
+            $trans1Q = str_replace('__table__', $dlog1, $transQ);
+            $transP = $dbc->prepare($trans1Q);
             $transR = $dbc->execute($transP, array($args));
             if ($transR) {
                 $sales->transactions($dbc->num_rows($transR));
@@ -151,12 +151,21 @@ class ObfWeeklyReport extends FannieReportPage
             
             $sales->reset();
             $sales->obfWeekID($week->obfWeekID());
+            $args = array(date('Y-m-d 00:00:00', $start_ly), date('Y-m-d 23:59:59', $end_ly));
+
+            $trans2Q = str_replace('__table__', $dlog2, $transQ);
+            $transP = $dbc->prepare($trans2Q);
+            $transR = $dbc->execute($transP, array($args));
+            if ($transR) {
+                $sales->lastYearTransactions($dbc->num_rows($transR));
+            } else {
+                $sales->lastYearTransactions(0);
+            }
 
             $twoQ = str_replace('__table__', $dlog2, $salesQ);
             $twoP = $dbc->prepare($twoQ);
-            $args = array(date('Y-m-d 00:00:00', $start_ly), date('Y-m-d 23:59:59', $end_ly));
             $twoR = $dbc->execute($twoP, $args);
-            while($w = $dbc->fetch_row($twoR)) {
+            while ($w = $dbc->fetch_row($twoR)) {
                 $sales->obfCategoryID($w['id']);
                 $sales->superID($w['superID']);
                 $sales->lastYearSales($w['sales']);
@@ -167,6 +176,7 @@ class ObfWeeklyReport extends FannieReportPage
         $data = array();
         $total_sales = array(0, 0);
         $total_trans = 0;
+        $ly_total_trans = 0;
         $total_hours = 0;
         $total_wages = 0;
         $proj_total = 0;
@@ -190,7 +200,8 @@ class ObfWeeklyReport extends FannieReportPage
                                     s.growthTarget,
                                     n.super_name,
                                     s.superID,
-                                    s.transactions
+                                    s.transactions,
+                                    s.lastYearTransactions
                                  FROM ObfSalesCache AS s
                                     LEFT JOIN ' . $FANNIE_OP_DB . $dbc->sep() . 'superDeptNames
                                         AS n ON s.superID=n.superID
@@ -243,9 +254,9 @@ class ObfWeeklyReport extends FannieReportPage
                     $w['super_name'],
                     number_format($w['actualSales'], 0),
                     number_format($w['lastYearSales'], 0),
-                    sprintf('%.2f%%', 100 * ($w['actualSales']-$w['lastYearSales'])/$w['lastYearSales']),
+                    sprintf('%.2f%%', $this->percentGrowth($w['actualSales'], $w['lastYearSales'])),
                     number_format($proj, 0),
-                    sprintf('%.2f%%', 100 * ($w['actualSales']-$proj)/$proj),
+                    sprintf('%.2f%%', $this->percentGrowth($w['actualSales'], $proj)),
                     '',
                     '',
                     number_format($w['actualSales'] - $proj, 0),
@@ -260,6 +271,9 @@ class ObfWeeklyReport extends FannieReportPage
                 $total_sales[1] += $w['lastYearSales'];
                 if ($total_trans == 0) {
                     $total_trans = $w['transactions'];
+                }
+                if ($ly_total_trans == 0) {
+                    $ly_total_trans = $w['lastYearTransactions'];
                 }
                 $proj_total += $proj;
                 $dept_proj += $proj;
@@ -276,14 +290,11 @@ class ObfWeeklyReport extends FannieReportPage
                 'Total',
                 number_format($sum[0], 0),
                 number_format($sum[1], 0),
-                sprintf('%.2f%%', 100 * ($sum[0]-$sum[1])/$sum[1]),
+                sprintf('%.2f%%', $this->percentGrowth($sum[0], $sum[1])),
                 number_format($dept_proj, 0),
-                sprintf('%.2f%%', 100 * ($sum[0]-$dept_proj)/$dept_proj),
+                sprintf('%.2f%%', $this->percentGrowth($sum[0], $dept_proj)),
                 number_format($labor->forecastSales(), 0),
-                sprintf('%.2f%%', 
-                    $labor->forecastSales() == 0 ? 0 :
-                    100 * ($sum[0]-$labor->forecastSales())/$labor->forecastSales()
-                ),
+                sprintf('%.2f%%', $this->percentGrowth($sum[0], $labor->forecastSales())),
                 number_format($sum[0] - $dept_proj, 0),
                 number_format($qtd_dept_ou, 0),
                 'meta' => FannieReportPage::META_COLOR | FannieReportPage::META_BOLD,
@@ -294,7 +305,8 @@ class ObfWeeklyReport extends FannieReportPage
             $forecast_total += $labor->forecastSales();
 
             $proj_wages = $dept_proj * $labor->laborTarget();
-            $proj_hours = $proj_wages / $labor->averageWage();
+            $average_wage = $labor->wages() / ((float)$labor->hours());
+            $proj_hours = $proj_wages / $average_wage;
 
             $quarter = $dbc->execute($quarterLaborP, array($week->obfQuarterID(), $labor->obfCategoryID()));
             if ($dbc->num_rows($quarter) == 0) {
@@ -303,7 +315,8 @@ class ObfWeeklyReport extends FannieReportPage
                 $quarter = $dbc->fetch_row($quarter);
             }
             $qt_proj_labor = $qtd_dept_plan * $quarter['laborTarget'];
-            $qt_proj_hours = $qt_proj_labor / $quarter['averageWage'];
+            $qt_average_wage = $quarter['wages'] / ((float)$quarter['hours']);
+            $qt_proj_hours = $qt_proj_labor / $qt_average_wage;
             $qtd_hours += $quarter['hours'];
             $qtd_proj_hours += $qt_proj_hours;
 
@@ -313,7 +326,7 @@ class ObfWeeklyReport extends FannieReportPage
                 '',
                 '',
                 number_format($proj_hours, 0),
-                '',
+                sprintf('%.2f%%', $this->percentGrowth($labor->hours(), $proj_hours)),
                 number_format($proj_hours, 0),
                 '',
                 number_format($labor->hours() - $proj_hours, 0),
@@ -331,7 +344,7 @@ class ObfWeeklyReport extends FannieReportPage
                 '',
                 '',
                 number_format($proj_wages, 0),
-                '',
+                sprintf('%.2f%%', $this->percentGrowth($labor->wages(), $proj_wages)),
                 number_format($proj_wages, 0),
                 '',
                 number_format($labor->wages() - $proj_wages, 0),
@@ -351,8 +364,8 @@ class ObfWeeklyReport extends FannieReportPage
                 sprintf('%.2f%%', $labor->wages() / $sum[0] * 100),
                 '',
                 '',
-                sprintf('%.2f%%', $proj_wages / $proj * 100),
-                '',
+                sprintf('%.2f%%', $proj_wages / $dept_proj * 100),
+                sprintf('%.2f%%', $this->percentGrowth(($labor->wages()/$sum[0]*100), ($proj_wages/$dept_proj*100))),
                 sprintf('%.2f%%', 
                     $labor->forecastSales() == 0 ? 0 :
                     $proj_wages / $labor->forecastSales() * 100
@@ -372,11 +385,11 @@ class ObfWeeklyReport extends FannieReportPage
                 number_format($sum[0] / $labor->hours(), 2),
                 '',
                 '',
-                number_format($proj / $proj_hours, 2),
-                '',
+                number_format($dept_proj / $proj_hours, 2),
+                sprintf('%.2f%%', $this->percentGrowth(($sum[0]/$labor->hours()), $dept_proj/$proj_hours)),
                 number_format($labor->forecastSales() / $proj_hours, 2),
                 '',
-                number_format(($sum[0]/$labor->hours()) - ($proj / $proj_hours), 2),
+                number_format(($sum[0]/$labor->hours()) - ($dept_proj / $proj_hours), 2),
                 number_format($quarter_actual_sph - $quarter_proj_sph, 2),
                 'meta' => FannieReportPage::META_COLOR,
                 'meta_background' => $colors[0],
@@ -408,12 +421,14 @@ class ObfWeeklyReport extends FannieReportPage
                 $quarter = $dbc->fetch_row($quarter);
             }
             $qt_proj_labor = $qtd_plan * $quarter['laborTarget'];
-            $qt_proj_hours = $qt_proj_labor / $quarter['averageWage'];
+            $qt_average_wage = $quarter['wages'] / ((float)$quarter['hours']);
+            $qt_proj_hours = $qt_proj_labor / $qt_average_wage;
             $qtd_hours += $quarter['hours'];
             $qtd_proj_hours += $qt_proj_hours;
 
             $proj_wages = $proj_total * $labor->laborTarget();
-            $proj_hours = $proj_wages / $labor->averageWage();
+            $average_wage = $labor->wages() / ((float)$labor->hours());
+            $proj_hours = $proj_wages / $average_wage;
             $data[] = array(
                 'Hours',
                 number_format($labor->hours(), 0),
@@ -504,14 +519,11 @@ class ObfWeeklyReport extends FannieReportPage
             'Sales',
             number_format($total_sales[0], 0),
             number_format($total_sales[1], 0),
-            sprintf('%.2f%%', 100 * ($total_sales[0]-$total_sales[1])/$total_sales[1]),
+            sprintf('%.2f%%', $this->percentGrowth($total_sales[0], $total_sales[1])),
             number_format($proj_total, 0),
-            sprintf('%.2f%%', 100 * ($total_sales[0]-$proj_total)/$proj_total),
+            sprintf('%.2f%%', $this->percentGrowth($total_sales[0], $proj_total)),
             number_format($forecast_total, 0),
-            sprintf('%.2f%%', 
-                $forecast_total == 0 ? 0 :
-                100 * ($total_sales[0]-$forecast_total)/$forecast_total
-            ),
+            sprintf('%.2f%%', $this->percentGrowth($total_sales[0], $forecast_total)),
             number_format($total_sales[0] - $proj_total, 0),
             number_format($qtd_sales_ou, 0),
             'meta' => FannieReportPage::META_COLOR,
@@ -588,13 +600,14 @@ class ObfWeeklyReport extends FannieReportPage
             'meta_foreground' => 'black',
         );
 
+        $proj_trans = $ly_total_trans * 1.05;
         $data[] = array(
             'Transactions',
             number_format($total_trans),
-            '',
-            '',
-            '',
-            '',
+            number_format($ly_total_trans),
+            sprintf('%.2f%%', $this->percentGrowth($total_trans, $ly_total_trans)),
+            number_format($proj_trans),
+            sprintf('%.2f%%', $this->percentGrowth($total_trans, $proj_trans)),
             '',
             '',
             '',
@@ -607,10 +620,10 @@ class ObfWeeklyReport extends FannieReportPage
         $data[] = array(
             'Average Basket',
             number_format($total_sales[0] / $total_trans, 2),
-            '',
-            '',
-            '',
-            '',
+            number_format($total_sales[1] / $ly_total_trans, 2),
+            sprintf('%.2f%%', $this->percentGrowth($total_sales[0]/$total_trans, $total_sales[1]/$ly_total_trans)),
+            number_format($proj_total / $proj_trans, 2),
+            sprintf('%.2f%%', $this->percentGrowth($total_sales[0]/$total_trans, $proj_total/$proj_trans)),
             '',
             '',
             '',
@@ -742,7 +755,8 @@ class ObfWeeklyReport extends FannieReportPage
         foreach ($model->find('startDate', true) as $week) {
             $ret .= sprintf('<option value="%d">%s</option>',
                             $week->obfWeekID(),
-                            $week->startDate()
+                            date('M, d Y', strtotime($week->startDate()))
+                            . ' - ' . date('M, d Y', strtotime($week->endDate()))
             );
         }
         $ret .= '</select>';
@@ -753,6 +767,15 @@ class ObfWeeklyReport extends FannieReportPage
                 <button onclick="location=\'ObfIndexPage.php\';return false;">Home</button>';
 
         return $ret;
+    }
+
+    private function percentGrowth($a, $b)
+    {
+        if ($b == 0) {
+            return 0.0;
+        } else {
+            return 100 * ($a - $b) / ((float)$b);
+        }
     }
 }
 
