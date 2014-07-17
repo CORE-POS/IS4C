@@ -139,11 +139,15 @@ class Void extends Parser
 				$this->discounttype = $row['discounttype'];
 				$this->discountable = $row['discountable'];
 
-				if ((!$row["upc"] || strlen($row["upc"]) < 1) && $row["voided"] == 1) {
+				if ($row['voided'] == 1 &&
+                     (!$row["upc"] || strlen($row["upc"]) < 1 
+                     || $row['trans_type'] == 'D' 
+                     || $row['charflag'] == 'SO')
+                    ) {
 					return DisplayLib::boxMsg(_("Item already voided"));
-				} else if (!$row["upc"] || strlen($row["upc"]) < 1 || $row['charflag'] == 'SO') {
-					return $this->voidid($item_num);
-                } else if ($row['trans_type'] == 'D') {
+				} else if (!$row["upc"] || strlen($row["upc"]) < 1 
+                           || $row['trans_type'] == 'D'
+                           || $row['charflag'] == 'SO') {
 					return $this->voidid($item_num);
 				} else {
 					return $this->voidupc($row["ItemQtty"] . "*" . $row["upc"], $item_num);
