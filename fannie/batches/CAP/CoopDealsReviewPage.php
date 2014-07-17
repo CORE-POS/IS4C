@@ -64,12 +64,18 @@ class CoopDealsReviewPage extends FanniePage
         $names = FormLib::get_form_value('batch',array());
         $batchIDs = array();
 
+        if( FormLib::get_form_value('group_by_superdepts','') == 'on' ){
+            $superdept_grouping = "CASE WHEN s.super_name IS NULL THEN 'sale' ELSE s.super_name END";
+        } else {
+            $superdept_grouping = "";
+        }
         $saleItemsP = $dbc->prepare_statement("
             SELECT t.upc,
                 t.price,"
                 . $dbc->concat(
-                    "CASE WHEN s.super_name IS NULL THEN 'sale' ELSE s.super_name END",
-                    "' Co-op Deals '",
+                    ($superdept_grouping ? $superdept_grouping : "''"),
+                    ($superdept_grouping ? "' '" : "''"),
+                    "'Co-op Deals '",
                     "t.abtpr",
                     ''
                 ) . " AS batch
@@ -158,7 +164,8 @@ class CoopDealsReviewPage extends FanniePage
             $ret .= sprintf("<tr><td>%s</td><td>%s</td><td>%.2f</td><td>%s Co-op Deals %s</tr>\n",
                 $row[0],$row[1],$row[2],$row[3],$row[4]);
         }
-        $ret .= "</table><p />
+        $ret .= <<< end_heredoc
+        </table><p />
         <table cellpadding=4 cellspacing=0><tr>
         <td><b>A Start</b></td><td><input type=text name=start id=start /></td>
         </tr><tr>
@@ -170,8 +177,13 @@ class CoopDealsReviewPage extends FanniePage
         </tr><tr>
         <td><b>Month</b></td><td><input type=text name=naming /></td>
         </tr></table>
-        <input type=submit value=\"Create Batch(es)\" />
-        </form>";
+        <label>
+            <input type="checkbox" name="group_by_superdepts" checked="true" />
+            Group sale batches by Superdepartment
+         </label><br />
+        <input type=submit value="Create Batch(es)" />
+        </form>
+end_heredoc;
 
         $this->add_onload_command("\$('#start').datepicker();\n");
         $this->add_onload_command("\$('#end').datepicker();\n");
