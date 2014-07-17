@@ -141,7 +141,7 @@ class FannieReportPage extends FanniePage
     const META_BLANK        = 2;
     const META_REPEAT_HEADERS    = 4;
     const META_CHART_DATA    = 8;
-    const META_COLOR    = 8;
+    const META_COLOR    = 16;
 
     /**
       Handle pre-display tasks such as input processing
@@ -154,13 +154,6 @@ class FannieReportPage extends FanniePage
       report_content method should be called. It
       also the value of "excel" for the request and
       sets necessary output options.
-
-      The CalendarControl javascript is automatically
-      included if the form_content method is selected.
-      This isn't strictly necessary if the form has
-      no date fields, but it will likely be useful
-      more often than not and cause no harm in other
-      cases.
     */
     public function preprocess()
     {
@@ -184,7 +177,6 @@ class FannieReportPage extends FanniePage
             $this->formatCheck();
         } else {
             $this->content_function = 'form_content'; 
-            $this->add_script($FANNIE_URL . 'src/CalendarControl.js');
         }
 
         return true;
@@ -512,7 +504,7 @@ class FannieReportPage extends FanniePage
         switch(strtolower($format)) {
             case 'html':
                 if ($this->multi_counter == 1) {
-                    $this->add_css_file($FANNIE_URL.'src/jquery/themes/blue/style.css');
+                    $this->add_css_file($FANNIE_URL.'src/javascript/tablesorter/themes/blue/style.css');
                     if (!$this->window_dressing) {
                         $ret .= '<!DOCTYPE html><html><head>' .
                         '<meta http-equiv="Content-Type" ' .
@@ -621,8 +613,8 @@ class FannieReportPage extends FanniePage
                 foreach($this->report_end_content() as $line) {
                     $ret .= (substr($line,0,1)=='<'?'':'<br />').$line;
                 }
-                $this->add_script($FANNIE_URL.'src/jquery/js/jquery.js');
-                $this->add_script($FANNIE_URL.'src/jquery/jquery.tablesorter.js');
+                $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
+                $this->add_script($FANNIE_URL.'src/javascript/tablesorter/jquery.tablesorter.js');
                 $sort = sprintf('[[%d,%d]]',$this->sort_column,$this->sort_direction);
                 if ($this->sortable) {
                     $this->add_onload_command("\$('.mySortableTable').tablesorter({sortList: $sort, widgets: ['zebra']});");
@@ -727,7 +719,7 @@ class FannieReportPage extends FanniePage
         $tag = $header ? 'th' : 'td';
 
         if (($meta & self::META_BOLD) != 0) {
-            $ret = '</tbody><tbody><tr>';
+            $ret = '</tbody><tbody>' . $ret;
             $tag = 'th';
         }
         if (($meta & self::META_BLANK) != 0) {

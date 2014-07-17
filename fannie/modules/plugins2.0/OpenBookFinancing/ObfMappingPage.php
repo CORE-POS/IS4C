@@ -43,7 +43,7 @@ class ObfMappingPage extends FannieRESTfulPage
 
     public function post_add_cat_handler()
     {
-		global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
+        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
 
         $map = new ObfCategorySuperDeptMapModel($dbc);
@@ -59,7 +59,7 @@ class ObfMappingPage extends FannieRESTfulPage
 
     public function post_id_superID_growth_handler()
     {
-		global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
+        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
 
         $map = new ObfCategorySuperDeptMapModel($dbc);
@@ -90,7 +90,7 @@ class ObfMappingPage extends FannieRESTfulPage
 
     public function get_view()
     {
-		global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL, $FANNIE_OP_DB;
+        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL, $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
 
         $model = new ObfCategoriesModel($dbc);
@@ -154,8 +154,11 @@ class ObfMappingPage extends FannieRESTfulPage
         $ret .= '</select>';
         $ret .= '<br /><br />';
         $ret .= '<input type="submit" value="Add New Mapping" />';
+        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+        $ret .= '<button onclick="location=\'ObfIndexPage.php\';return false;">Home</button>';
         $ret .= '</form>';
         $ret .= '</fieldset>';
+        $ret .= '<i>Note: percentages are sales growth targets for categories</i>';
         $ret .= '</div>';
         $ret .= '</div>';
 

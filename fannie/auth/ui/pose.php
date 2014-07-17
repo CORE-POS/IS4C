@@ -28,30 +28,30 @@ $header = 'Fannie : Auth : Pose';
 
 $name = checkLogin();
 if (validateUserQuiet('admin')){
-	if (isset($_POST["newname"])){
-		pose($_POST["newname"]);
-		header("Location: menu.php");
-		return;
-	}
-	else {
-		include($FANNIE_ROOT."src/header.html");
+    if (isset($_POST["newname"])){
+        pose($_POST["newname"]);
+        header("Location: menu.php");
+        return;
+    }
+    else {
+        include($FANNIE_ROOT."src/header.html");
 ?>
 <form method=post action=pose.php>
 <?php
 echo "Username:<select name=newname>";
 foreach(getUserList() as $uid => $name)
-	echo "<option>".$name."</option>";
+    echo "<option>".$name."</option>";
 echo "</select>";
 echo '&nbsp;&nbsp;&nbsp;<input type="submit" value="Pose" />';
 ?>
 </form>
 <?php
-		include($FANNIE_ROOT."src/footer.html");
-	}
+        include($FANNIE_ROOT."src/footer.html");
+    }
 }
 else {
-	include($FANNIE_ROOT."src/header.html");
-	echo "You aren't authorized to use this feature";
-	include($FANNIE_ROOT."src/footer.html");
+    include($FANNIE_ROOT."src/header.html");
+    echo "You aren't authorized to use this feature";
+    include($FANNIE_ROOT."src/footer.html");
 }
 ?>

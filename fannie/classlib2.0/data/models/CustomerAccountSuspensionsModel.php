@@ -43,7 +43,7 @@ class CustomerAccountSuspensionsModel extends BasicModel
     'savedDiscount' => array('type'=>'SMALLINT'),
     'savedChargeLimit' => array('type'=>'MONEY'),
     'savedMailFlag' => array('type'=>'TINYINT'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

@@ -33,7 +33,7 @@ class WfcHtStartYearMonthModel extends BasicModel
     'empID' => array('type'=>'INT'),
     'year' => array('type'=>'INT'),
     'month' => array('type'=>'INT'),
-	);
+    );
 
     public function create()
     {

@@ -38,7 +38,7 @@ class GumSettingsModel extends BasicModel
     'gumSettingID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),
     'key' => array('type'=>'VARCHAR(50)', 'index'=>true),
     'value' => array('type'=>'VARCHAR(50)'),
-	);
+    );
 
     protected $unique = array('key');
 

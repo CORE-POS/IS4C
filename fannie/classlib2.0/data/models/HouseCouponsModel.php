@@ -44,7 +44,7 @@ class HouseCouponsModel extends BasicModel
     'minValue' => array('type'=>'MONEY'),
     'department' => array('type'=>'INT'),
     'auto' => array('type'=>'TINYINT', 'default'=>0),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

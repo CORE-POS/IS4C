@@ -34,7 +34,7 @@ class CustAvailablePrefsModel extends BasicModel
     'pref_key' => array('type'=>'VARCHAR(50)', 'primary_key'=>true),
     'pref_default_value' => array('type'=>'VARCHAR(100)'),
     'pref_description' => array('type'=>'TEXT'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

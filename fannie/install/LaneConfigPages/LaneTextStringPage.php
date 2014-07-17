@@ -26,114 +26,114 @@ include_once('../../classlib2.0/InstallPage.php');
 include('../util.php');
 
 /**
-	@class LaneTextStringPage
-	Class for the Global Lane define Text Strings page.
-	Strings that appear in receipt headers and footers and in the PoS interface.
+    @class LaneTextStringPage
+    Class for the Global Lane define Text Strings page.
+    Strings that appear in receipt headers and footers and in the PoS interface.
 */
 class LaneTextStringPage extends InstallPage {
 
-	protected $title = 'CORE:PoS Global Lane Configuration: Text Strings';
-	protected $header = 'CORE:PoS Global Lane Configuration: Text Strings';
+    protected $title = 'CORE:PoS Global Lane Configuration: Text Strings';
+    protected $header = 'CORE:PoS Global Lane Configuration: Text Strings';
 
-	public $description = "
-	Class for the Global Lane define Text Strings page.
-	Strings that appear in receipt headers and footers and in the PoS interface.
-	";
+    public $description = "
+    Class for the Global Lane define Text Strings page.
+    Strings that appear in receipt headers and footers and in the PoS interface.
+    ";
 
-	// This replaces the __construct() in the parent.
-	public function __construct() {
+    // This replaces the __construct() in the parent.
+    public function __construct() {
 
-		// To set authentication.
-		FanniePage::__construct();
+        // To set authentication.
+        FanniePage::__construct();
 
-		$SRC = '../../src';
-		// Link to a file of CSS by using a function.
-		$this->add_css_file("$SRC/style.css");
-		$this->add_css_file("$SRC/jquery/css/smoothness/jquery-ui-1.8.1.custom.css");
-		$this->add_css_file("$SRC/css/install.css");
+        $SRC = '../../src';
+        // Link to a file of CSS by using a function.
+        $this->add_css_file("$SRC/style.css");
+        $this->add_css_file("$SRC/javascript/jquery-ui.css");
+        $this->add_css_file("$SRC/css/install.css");
 
-		// Link to a file of JS by using a function.
-		$this->add_script("$SRC/jquery/js/jquery.js");
-		$this->add_script("$SRC/jquery/js/jquery-ui-1.8.1.custom.min.js");
+        // Link to a file of JS by using a function.
+        $this->add_script("$SRC/javascript/jquery.js");
+        $this->add_script("$SRC/javascript/jquery-ui.js");
 
-	// __construct()
-	}
+    // __construct()
+    }
 
-	// If chunks of CSS are going to be added the function has to be
-	//  redefined to return them.
-	// If this is to override x.css draw_page() needs to load it after the add_css_file
-	/**
-	  Define any CSS needed
-	  @return A CSS string
-	function css_content(){
-		$css ="";
-		return $css;
-	//css_content()
-	}
-	*/
+    // If chunks of CSS are going to be added the function has to be
+    //  redefined to return them.
+    // If this is to override x.css draw_page() needs to load it after the add_css_file
+    /**
+      Define any CSS needed
+      @return A CSS string
+    function css_content(){
+        $css ="";
+        return $css;
+    //css_content()
+    }
+    */
 
-	// If chunks of JS are going to be added the function has to be
-	//  redefined to return them.
-	/**
-	  Define any javascript needed
-	  @return A javascript string
-	function javascript_content(){
-		$js ="";
-		return $js;
-	}
-	*/
+    // If chunks of JS are going to be added the function has to be
+    //  redefined to return them.
+    /**
+      Define any javascript needed
+      @return A javascript string
+    function javascript_content(){
+        $js ="";
+        return $js;
+    }
+    */
 
-	function body_content(){
-		global $FANNIE_OP_DB; //, $TRANSLATE;
+    function body_content(){
+        global $FANNIE_OP_DB; //, $TRANSLATE;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-		// keys are customReceipt.type values.
-		$TRANSLATE = array(
-			'receiptHeader'=>'Receipt Header',
-			'receiptFooter'=>'Receipt Footer',
-			'ckEndorse'=>'Check Endorsement',
-			'welcomeMsg'=>'Welcome On-screen Message',
-			'farewellMsg'=>'Goodbye On-screen Message',
-			'trainingMsg'=>'Training On-screen Message',
-			'chargeSlip'=>'Store Charge Slip'
-		);
+        // keys are customReceipt.type values.
+        $TRANSLATE = array(
+            'receiptHeader'=>'Receipt Header',
+            'receiptFooter'=>'Receipt Footer',
+            'ckEndorse'=>'Check Endorsement',
+            'welcomeMsg'=>'Welcome On-screen Message',
+            'farewellMsg'=>'Goodbye On-screen Message',
+            'trainingMsg'=>'Training On-screen Message',
+            'chargeSlip'=>'Store Charge Slip'
+        );
 
-		if (isset($_REQUEST['new_submit'])){
-			$chkQ = $dbc->prepare_statement("SELECT MAX(seq) FROM customReceipt WHERE type=?");
-			$chkR = $dbc->exec_statement($chkQ, array($_REQUEST['new_type']));
-			$seq = 0;
-			if ($dbc->num_rows($chkR) > 0){
-				$max = array_pop($dbc->fetch_row($chkR));
-				if ($max != null) $seq=$max+1;
-			}
-			if (!empty($_REQUEST['new_content'])){
-				$insQ = $dbc->prepare_statement("INSERT INTO customReceipt (type,text,seq) VALUES (?,?,?)");
-				$dbc->exec_statement($insQ,array($_REQUEST['new_type'],$_REQUEST['new_content'],$seq));
-			}
-		}
-		else if (isset($_REQUEST['old_submit'])){
-			$cont = $_REQUEST['old_content'];
-			$type = $_REQUEST['old_type'];
-			$seq=0;
-			$prev_type='';
-			$trun = $dbc->prepare_statement("TRUNCATE TABLE customReceipt");
-			$dbc->exec_statement($trun);
-			$insP = $dbc->prepare_statement("INSERT INTO customReceipt (type,text,seq) VALUES (?,?,?)");
-			for($i=0;$i<count($cont);$i++){
-				if ($prev_type != $type[$i])
-					$seq = 0; // new type, reset sequence
-				if (empty($cont[$i])) 
-					continue; // empty means delete that line
-				$dbc->exec_statement($insP, array($type[$i],$cont[$i],$seq));
-				$prev_type=$type[$i];
-				$seq++;
-			}
-		}
+        if (isset($_REQUEST['new_submit'])){
+            $chkQ = $dbc->prepare_statement("SELECT MAX(seq) FROM customReceipt WHERE type=?");
+            $chkR = $dbc->exec_statement($chkQ, array($_REQUEST['new_type']));
+            $seq = 0;
+            if ($dbc->num_rows($chkR) > 0){
+                $max = array_pop($dbc->fetch_row($chkR));
+                if ($max != null) $seq=$max+1;
+            }
+            if (!empty($_REQUEST['new_content'])){
+                $insQ = $dbc->prepare_statement("INSERT INTO customReceipt (type,text,seq) VALUES (?,?,?)");
+                $dbc->exec_statement($insQ,array($_REQUEST['new_type'],$_REQUEST['new_content'],$seq));
+            }
+        }
+        else if (isset($_REQUEST['old_submit'])){
+            $cont = $_REQUEST['old_content'];
+            $type = $_REQUEST['old_type'];
+            $seq=0;
+            $prev_type='';
+            $trun = $dbc->prepare_statement("TRUNCATE TABLE customReceipt");
+            $dbc->exec_statement($trun);
+            $insP = $dbc->prepare_statement("INSERT INTO customReceipt (type,text,seq) VALUES (?,?,?)");
+            for($i=0;$i<count($cont);$i++){
+                if ($prev_type != $type[$i])
+                    $seq = 0; // new type, reset sequence
+                if (empty($cont[$i])) 
+                    continue; // empty means delete that line
+                $dbc->exec_statement($insP, array($type[$i],$cont[$i],$seq));
+                $prev_type=$type[$i];
+                $seq++;
+            }
+        }
 
-		ob_start();
+        ob_start();
 
-		echo showLinkToFannie();
-		echo showInstallTabsLane("Text Strings", '');
+        echo showLinkToFannie();
+        echo showInstallTabsLane("Text Strings", '');
 
 ?>
 
@@ -142,10 +142,10 @@ class LaneTextStringPage extends InstallPage {
 
 <?php
 if (is_writable('../../config.php')){
-	echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
+    echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
 }
 else {
-	echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
+    echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
 }
 ?>
 <p class="ichunk">Use this utility to enter and edit the lines of text that appear on
@@ -167,14 +167,14 @@ receipts, the lane Welcome screen, and elsewhere.
 <?php
 $tcount = 0;
 foreach($TRANSLATE as $short=>$long){
-	$tcount++;
-	if (isset($_REQUEST['new_type'])) {
-		$selected=($_REQUEST['new_type']==$short)?'selected':'';
-	} else {
-		$selected = ($tcount==1)?'selected':'';
-	}
-	printf('<option value="%s" %s>%s</option>',
-		$short, $selected, $long);
+    $tcount++;
+    if (isset($_REQUEST['new_type'])) {
+        $selected=($_REQUEST['new_type']==$short)?'selected':'';
+    } else {
+        $selected = ($tcount==1)?'selected':'';
+    }
+    printf('<option value="%s" %s>%s</option>',
+        $short, $selected, $long);
 }
 ?>
 </select>
@@ -196,14 +196,14 @@ $r = $dbc->exec_statement($q);
 $header="";
 $i=1;
 while($w = $dbc->fetch_row($r)){
-	if ($header != $w['type']){
-		echo '<h3>'.$TRANSLATE[$w['type']].'</h3>';
-		$header = $w['type'];	
-		$i=1;
-	}
-	printf('<p>%d:<input type="text" maxlength="20" name="old_content[]" value="%s" />
-		<input type="hidden" name="old_type[]" value="%s" /></p>',
-		$i++,$w['text'],$w['type']);
+    if ($header != $w['type']){
+        echo '<h3>'.$TRANSLATE[$w['type']].'</h3>';
+        $header = $w['type'];   
+        $i=1;
+    }
+    printf('<p>%d:<input type="text" maxlength="20" name="old_content[]" value="%s" />
+        <input type="hidden" name="old_type[]" value="%s" /></p>',
+        $i++,$w['text'],$w['type']);
 }
 ?>
 <input type="submit" name="old_submit" value="Save Changes" />
@@ -211,10 +211,10 @@ while($w = $dbc->fetch_row($r)){
 
 <?php
 
-		return ob_get_clean();
+        return ob_get_clean();
 
-	// body_content
-	}
+    // body_content
+    }
 
 // LaneTextStringPage  
 }

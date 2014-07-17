@@ -30,38 +30,39 @@ if (!class_exists('FannieAPI')) {
 */
 class OpenBookFinancing extends FanniePlugin 
 {
-	public $plugin_settings = array(
-	'ObfDatabase' => array('default'=>'OpenBookFinancing','label'=>'Database',
-			'description'=>'Database for storing OBF info'),
-	);
+    public $plugin_settings = array(
+    'ObfDatabase' => array('default'=>'OpenBookFinancing','label'=>'Database',
+            'description'=>'Database for storing OBF info'),
+    );
 
-	public $plugin_description = 'WFC Plugin for weekly Open Book Financing';
+    public $plugin_description = 'WFC Plugin for weekly Open Book Financing';
 
-	public function setting_change()
+    public function setting_change()
     {
-		global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
+        global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
 
-		$db_name = $FANNIE_PLUGIN_SETTINGS['ObfDatabase'];
-		if (empty($db_name)) return;
+        $db_name = $FANNIE_PLUGIN_SETTINGS['ObfDatabase'];
+        if (empty($db_name)) return;
 
-		// Creates the database if it doesn't already exist.
-		$dbc = FannieDB::get($db_name);
-		
-		$tables = array(
-			'ObfWeeks',
-			'ObfCategories',
-			'ObfCategorySuperDeptMap',
-			'ObfLabor',
+        // Creates the database if it doesn't already exist.
+        $dbc = FannieDB::get($db_name);
+        
+        $tables = array(
+            'ObfWeeks',
+            'ObfCategories',
+            'ObfCategorySuperDeptMap',
+            'ObfLabor',
             'ObfSalesCache',
-		);
+            'ObfQuarters',
+        );
 
-		foreach($tables as $t){
-			$model_class = $t.'Model';
-			if (!class_exists($model_class))
-				include_once(dirname(__FILE__).'/models/'.$model_class.'.php');
-			$instance = new $model_class($dbc);
-			$instance->create();		
-		}
-	}
+        foreach($tables as $t){
+            $model_class = $t.'Model';
+            if (!class_exists($model_class))
+                include_once(dirname(__FILE__).'/models/'.$model_class.'.php');
+            $instance = new $model_class($dbc);
+            $instance->create();        
+        }
+    }
 }
 

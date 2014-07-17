@@ -43,9 +43,19 @@ class ScaleItemsModel extends BasicModel
     'reportingClass' => array('type'=>'VARCHAR(6)'),
     'label' => array('type'=>'INT'),
     'graphics' => array('type'=>'INT'),
-	);
+    'modified' => array('type'=>'DATETIME', 'ignore_updates'=>true),
+    );
 
     protected $preferred_db = 'op';
+
+    public function save()
+    {
+        if ($this->record_changed) {
+            $this->modified(date('Y-m-d H:i:s'));
+        }
+
+        return parent::save();
+    }
 
     /**
       Custom normalization:
@@ -344,6 +354,26 @@ class ScaleItemsModel extends BasicModel
                 }
             }
             $this->instance["graphics"] = func_get_arg(0);
+        }
+    }
+
+    public function modified()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["modified"])) {
+                return $this->instance["modified"];
+            } else if (isset($this->columns["modified"]["default"])) {
+                return $this->columns["modified"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["modified"]) || $this->instance["modified"] != func_get_args(0)) {
+                if (!isset($this->columns["modified"]["ignore_updates"]) || $this->columns["modified"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["modified"] = func_get_arg(0);
         }
     }
     /* END ACCESSOR FUNCTIONS */

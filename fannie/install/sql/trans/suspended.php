@@ -3,10 +3,10 @@
 Table: suspended
 
 Columns:
-	identical to dtransactions
+    identical to dtransactions
 
 Depends on:
-	dtransactions (table)
+    dtransactions (table)
 
 Use:
 This table exists so that transactions that
@@ -19,5 +19,5 @@ is resumed, appropriate rows are sent from here
 to that register's localtemptrans table.
 */
 $CREATE['trans.suspended'] = duplicate_structure($dbms,
-					'dtransactions','suspended');
+                    'dtransactions','suspended');
 ?>

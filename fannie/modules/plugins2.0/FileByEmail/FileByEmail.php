@@ -30,7 +30,7 @@ if (!class_exists('FannieAPI')) {
 */
 class FileByEmail extends FanniePlugin 
 {
-	public $plugin_settings = array(
+    public $plugin_settings = array(
     'FbeMimeTypes' => array('default'=>'application/pdf', 'label'=>'Mime Types',
                         'description'=>'Accept these types of files'), 
     'FbeBurst' => array('default'=>'', 'label'=>'Burst PDFs',
@@ -38,6 +38,6 @@ class FileByEmail extends FanniePlugin
                          enter full path to pdftk or convert (ImageMagick)'),
     );
 
-	public $plugin_description = 'Receive Documents by email, queue them, file them.';
+    public $plugin_description = 'Receive Documents by email, queue them, file them.';
 }
 

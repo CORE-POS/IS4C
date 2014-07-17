@@ -204,33 +204,33 @@ Department End: <input type=text id=dept2 size=4 name=dept2 />
         ob_start();
         ?>
 function showUPC(){
-	$('#radioU').attr('checked',true);
-	document.getElementById('upcfields').style.display='block';
-	document.getElementById('departmentfields').style.display='none';
-	document.getElementById('manufacturerfields').style.display='none';
+    $('#radioU').attr('checked',true);
+    document.getElementById('upcfields').style.display='block';
+    document.getElementById('departmentfields').style.display='none';
+    document.getElementById('manufacturerfields').style.display='none';
 }
 function showDept(){
-	$('#radioD').attr('checked',true);
-	document.getElementById('upcfields').style.display='none';
-	document.getElementById('departmentfields').style.display='block';
-	document.getElementById('manufacturerfields').style.display='none';
+    $('#radioD').attr('checked',true);
+    document.getElementById('upcfields').style.display='none';
+    document.getElementById('departmentfields').style.display='block';
+    document.getElementById('manufacturerfields').style.display='none';
 }
 function showManu(){
-	$('#radioM').attr('checked',true);
-	document.getElementById('upcfields').style.display='none';
-	document.getElementById('departmentfields').style.display='none';
-	document.getElementById('manufacturerfields').style.display='block';
+    $('#radioM').attr('checked',true);
+    document.getElementById('upcfields').style.display='none';
+    document.getElementById('departmentfields').style.display='none';
+    document.getElementById('manufacturerfields').style.display='block';
 }
 $(document).ready(function(){
-	showUPC();
-	$('#date1').click(function(){showCalendarControl(this);});
-	$('#date2').click(function(){showCalendarControl(this);});
-	$('#d1s').change(function(){
-		$('#dept1').val($('#d1s').val());
-	});
-	$('#d2s').change(function(){
-		$('#dept2').val($('#d2s').val());
-	});
+    showUPC();
+    $('#date1').datepicker();
+    $('#date2').datepicker();
+    $('#d1s').change(function(){
+        $('#dept1').val($('#d1s').val());
+    });
+    $('#d2s').change(function(){
+        $('#dept2').val($('#d2s').val());
+    });
 });
         <?php
         return ob_get_clean();
@@ -242,10 +242,10 @@ $(document).ready(function(){
         ?>
 <style type=text/css>
 #departmentfields{
-	display:none;
+    display:none;
 }
 #manufacturerfields{
-	display:none;
+    display:none;
 }
         <?php
         return ob_get_clean();

@@ -30,8 +30,8 @@ if (!class_exists('FannieAPI')) {
 */
 class WfcAbandonEquity extends FanniePlugin 
 {
-	public $plugin_settings = array();
+    public $plugin_settings = array();
 
-	public $plugin_description = 'WFC Plugin for clearing equity and disabling ancient accounts';
+    public $plugin_description = 'WFC Plugin for clearing equity and disabling ancient accounts';
 }
 

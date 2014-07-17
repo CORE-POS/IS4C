@@ -3,11 +3,11 @@
 Table: superDeptEmails
 
 Columns:
-	superID int
-	email_address varchar
+    superID int
+    email_address varchar
 
 Depends on:
-	superdepts (table)
+    superdepts (table)
 
 Use:
 Associating a person or people with
@@ -21,10 +21,10 @@ list or whatever your mail server
 understands.
 */
 $CREATE['op.superDeptEmails'] = "
-	CREATE TABLE superDeptEmails (
-		superID INT,
-		email_address VARCHAR(255),
-		PRIMARY KEY (superID)
-	)
+    CREATE TABLE superDeptEmails (
+        superID INT,
+        email_address VARCHAR(255),
+        PRIMARY KEY (superID)
+    )
 ";
 

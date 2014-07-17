@@ -40,7 +40,7 @@ class WfcHtImportedHoursDataModel extends BasicModel
     'SecondRateHours' => array('type'=>'DOUBLE'),
     'HolidayHours' => array('type'=>'DOUBLE'),
     'UTOHours' => array('type'=>'DOUBLE'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

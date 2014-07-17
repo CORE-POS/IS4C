@@ -40,6 +40,7 @@ class TransArchiveTask extends FannieTask
     {
         global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_ARCHIVE_DB, $FANNIE_ARCHIVE_METHOD;
         $sql = FannieDB::get($FANNIE_TRANS_DB);
+        $sql->throwOnFailure(true);
         $today = date('Y-m-d 00:00:00');
 
         set_time_limit(0);
@@ -50,49 +51,89 @@ class TransArchiveTask extends FannieTask
         }
 
         /* Find date(s) in dtransactions */
-        $datesP = $sql->prepare('SELECT YEAR(datetime) AS year, MONTH(datetime) as month, DAY(datetime) as day
-                            FROM dtransactions
-                            WHERE datetime < ?
-                            GROUP BY YEAR(datetime), MONTH(datetime), DAY(datetime)
-                            ORDER BY YEAR(datetime), MONTH(datetime), DAY(datetime)');
-        $datesR = $sql->execute($datesP, array($today));
         $dates = array();
-        while($datesW = $sql->fetch_row($datesR)) {
-            $dates[] = sprintf('%d-%02d-%02d', $datesW['year'], $datesW['month'], $datesW['day']);
+        try {
+            $datesP = $sql->prepare('
+                SELECT YEAR(datetime) AS year, 
+                    MONTH(datetime) as month, 
+                    DAY(datetime) as day
+                FROM dtransactions
+                WHERE datetime < ?
+                GROUP BY YEAR(datetime), 
+                    MONTH(datetime), 
+                    DAY(datetime)
+                ORDER BY YEAR(datetime), 
+                    MONTH(datetime), 
+                    DAY(datetime)
+            ');
+            $datesR = $sql->execute($datesP, array($today));
+            while ($datesW = $sql->fetch_row($datesR)) {
+                $dates[] = sprintf('%d-%02d-%02d', $datesW['year'], $datesW['month'], $datesW['day']);
+            }
+        } catch (Exception $ex) {
+            /**
+            @severity: this query should not fail unless
+            the database server is down or inaccessible
+            */
+            echo $this->cronMsg('Failed to find dates in dtransactions. Details: '
+                . $ex->getMessage(), FannieTask::TASK_WORST_ERROR);
         }
 
         if (count($dates) == 0) {
             echo $this->cronMsg('No data to rotate');
+
             return true;
         }
 
         /* Load dtransactions into the archive, trim to 90 days */
-        $chkP = $sql->prepare("INSERT INTO transarchive SELECT * FROM dtransactions WHERE ".$sql->datediff('datetime','?').'= 0');
-        $chk1 = false;
-        foreach($dates as $date) {
-            $chk1 = $sql->execute($chkP, array($date));
+        $chkP = $sql->prepare("INSERT INTO transarchive 
+                               SELECT * 
+                               FROM dtransactions 
+                               WHERE " . $sql->datediff('datetime','?').'= 0');
+        foreach ($dates as $date) {
+            try {
+                $chk1 = $sql->execute($chkP, array($date));
+            } catch (Exception $ex) {
+                /**
+                @severity: generally should not fail, but this isn't
+                as important as the long-term archive table(s)
+                */
+                echo $this->cronMsg('Failed to archive ' . $date . ' in transarchive (last quarter table)
+                    Details: ' . $ex->getMessage(), FannieTask::TASK_MEDIUM_ERROR);
+            }
         }
-        $chk2 = $sql->query("DELETE FROM transarchive WHERE ".$sql->datediff($sql->now(),'datetime')." > 92");
-        if ($chk1 === false) {
-            echo $this->cronMsg("Error loading data into transarchive");
-        } else if ($chk2 === false) {
-            echo $this->cronMsg("Error trimming transarchive");
-        } else {
-            echo $this->cronMsg("Data rotated into transarchive");
+        try {
+            $chk2 = $sql->query("DELETE FROM transarchive WHERE ".$sql->datediff($sql->now(),'datetime')." > 92");
+        } catch (Exception $ex) {
+            /**
+            @severity: should not happen, but impact is limited.
+            performance issues may eventually crop up if the table
+            gets very large.
+            */
+            echo $this->cronMsg('Failed to trim transarchive (last quarter table)
+                Details: ' . $ex->getMessage(), FannieTask::TASK_MEDIUM_ERROR);
         }
 
         /* reload all the small snapshot */
-        $chk1 = $sql->query("TRUNCATE TABLE dlog_15");
-        $chk2 = $sql->query("INSERT INTO dlog_15 SELECT * FROM dlog_90_view WHERE ".$sql->datediff($sql->now(),'tdate')." <= 15");
-        if ($chk1 === false || $chk2 === false) {
-            echo $this->cronMsg("Error reloading dlog_15");
-        } else {
-            echo $this->cronMsg("Success reloading dlog_15");
+        try {
+            $chk1 = $sql->query("TRUNCATE TABLE dlog_15");
+            $chk2 = $sql->query("INSERT INTO dlog_15 
+                                 SELECT * 
+                                 FROM dlog_90_view 
+                                 WHERE " . $sql->datediff($sql->now(),'tdate') . " <= 15");
+        } catch (Exception $ex) {
+            /**
+            @severity: no long term impact but may lead
+            to reporting oddities
+            */
+            echo $this->cronMsg('Failed to reload dlog_15. Details: '
+                . $ex->getMessage(), FannieTask::TASK_MEDIUM_ERROR);
         }
 
         $added_partition = false;
         $created_view = false;
         $sql = FannieDB::get($FANNIE_ARCHIVE_DB);
+        $sql->throwOnFailure(true);
         foreach ($dates as $date) {
             /* figure out which monthly archive dtransactions data belongs in */
             list($year, $month, $day) = explode('-', $date);
@@ -110,18 +151,34 @@ class TransArchiveTask extends FannieTask
                         (PARTITION %s 
                         VALUES LESS THAN (TO_DAYS('%s'))
                         )",$partition_name,$boundary);
-                    $newR = $sql->query($newQ);
-                    if ($newR === false) {
-                        echo $this->cronMsg("Error creating new partition $partition_name");
-                    } else {
+                    try {
+                        $newR = $sql->query($newQ);
                         $added_partition = true;
+                    } catch (Exception $ex) {
+                        /**
+                        @severity lack of partitions will eventually
+                        cause performance problems in large data sets
+                        */
+                        echo $this->cronMsg("Error creating new partition $partition_name. Details: "
+                            . $ex->getMessage(), FannieTask::TASK_MEDIUM_ERROR);
                     }
                 }
         
                 // now just copy rows into the partitioned table
-                $loadQ = "INSERT INTO bigArchive SELECT * FROM {$FANNIE_TRANS_DB}.dtransactions
-                            WHERE ".$sql->datediff('datetime', "'$date'")."= 0";
-                $loadR = $sql->query($loadQ);
+                $loadQ = "INSERT INTO bigArchive 
+                          SELECT * 
+                          FROM {$FANNIE_TRANS_DB}.dtransactions
+                          WHERE " . $sql->datediff('datetime', "'$date'") . "= 0";
+                try {
+                    $loadR = $sql->query($loadQ);
+                } catch (Exception $ex) {
+                    /**
+                    @severity: transaction data was not archived.
+                    absolutely needs to be addressed.
+                    */
+                    echo $this->cronMsg('Failed to properly archive transaction data for ' . $date
+                        . ' Details: ' . $ex->getMessage(), FannieTask::TASK_WORST_ERROR);
+                }
             } else if (!$sql->table_exists($table)) {
                 // 20Nov12 EL Add "TABLE".
                 $query = "CREATE TABLE $table LIKE $FANNIE_TRANS_DB.dtransactions";
@@ -129,141 +186,242 @@ class TransArchiveTask extends FannieTask
                     $query = "SELECT * INTO $table FROM $FANNIE_TRANS_DB.dbo.dtransactions
                                 WHERE ".$sql->datediff('datetime', "'$date'")."= 0";
                 }
-                $chk1 = $sql->query($query, $FANNIE_ARCHIVE_DB);
-                $chk2 = true;
-                if ($sql->dbms_name() != 'mssql') {
-                    // mysql doesn't create & populate in one step
-                    $chk2 = $sql->query("INSERT INTO $table SELECT * FROM $FANNIE_TRANS_DB.dtransactions
-                                        WHERE ".$sql->datediff('datetime', "'$date'")."= 0");
-                }
-                if ($chk1 === false || $chk2 === false) {
-                    echo $this->cronMsg("Error creating new archive $table");
-                } else {
-                    echo $this->cronMsg("Created new table $table and archived dtransactions");
+                try {
+                    $chk1 = $sql->query($query, $FANNIE_ARCHIVE_DB);
+                    if ($sql->dbms_name() != 'mssql') {
+                        // mysql doesn't create & populate in one step
+                        $chk2 = $sql->query("INSERT INTO $table 
+                                             SELECT * 
+                                             FROM $FANNIE_TRANS_DB.dtransactions
+                                             WHERE ".$sql->datediff('datetime', "'$date'")."= 0");
+                    }
                     if (!$created_view) {
                         $model = new DTransactionsModel($sql);
                         $model->normalizeLog('dlog' . $str, $table, BasicModel::NORMALIZE_MODE_APPLY);
                         $created_view = true;
                     }
+                } catch (Exception $ex) {
+                    /**
+                    @severity: missing monthly table will prevent
+                    proper transaction archiving. absolutely needs
+                    to be addressed.
+                    */
+                    echo $this->cronMsg("Error creating new archive structure $table Details: "
+                        . $ex->getMessage(), FannieTask::TASK_WORST_ERROR);
                 }
             } else {
                 $query = "INSERT INTO " . $table . "
                           SELECT * FROM " . $FANNIE_TRANS_DB . $sql->sep() . "dtransactions
                           WHERE ".$sql->datediff('datetime', "'$date'")."= 0";
-                $chk = $sql->query($query, $FANNIE_ARCHIVE_DB);
-                if ($chk === false) {
-                    echo $this->cronMsg("Error archiving dtransactions");
-                } else {
-                    echo $this->cronMsg("Success archiving dtransactions");
+                try {
+                    $chk = $sql->query($query, $FANNIE_ARCHIVE_DB);
+                } catch (Exception $ex) {
+                    /**
+                    @severity: transaction data was not archived.
+                    absolutely needs to be addressed.
+                    */
+                    echo $this->cronMsg('Failed to properly archive transaction data for ' . $date
+                        . ' Details: ' . $ex->getMessage(), FannieTask::TASK_WORST_ERROR);
                 }
             }
 
             /* summary table stuff */
+            if ($sql->dbms_name() == 'mssql') {
+                // summaries are mysql only
+                continue;
+            }
 
             $summary_source = DTransactionsModel::selectDlog($date);
-            if ($sql->table_exists("sumUpcSalesByDay") && $sql->dbms_name() != 'mssql') {
-                $sql->query("DELETE FROM sumUpcSalesByDay WHERE tdate='$date'");
-                $sql->query("INSERT INTO sumUpcSalesByDay
-                    SELECT DATE(MAX(tdate)) AS tdate, upc,
-                    CONVERT(SUM(total),DECIMAL(10,2)) as total,
-                    CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
-                    WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty
-                    FROM $summary_source AS t
-                    trans_type IN ('I') AND upc <> '0'
-                    AND tdate BETWEEN '$date 00:00:00' AND '$date 23:59:59'
-                    GROUP BY upc");
+            if ($sql->table_exists("sumUpcSalesByDay")) { 
+                try {
+                    $sql->query("DELETE FROM sumUpcSalesByDay WHERE tdate='$date'");
+                    $sql->query("
+                        INSERT INTO sumUpcSalesByDay
+                        SELECT DATE(MAX(tdate)) AS tdate, 
+                            upc,
+                            CONVERT(SUM(total),DECIMAL(10,2)) as total,
+                            CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
+                            WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty
+                        FROM $summary_source AS t
+                        WHERE trans_type IN ('I') 
+                            AND upc <> '0'
+                            AND tdate BETWEEN '$date 00:00:00' AND '$date 23:59:59'
+                        GROUP BY upc
+                    ");
+                } catch (Exception $ex) {
+                    /**
+                    @severity: tables aren't used for antying
+                    */
+                    echo $this->cronMsg('Summary error with sumUpcSalesByDay. Details: '
+                        . $ex->getMessage(), FannieTask::TASK_TRIVIAL_ERROR);
+                }
             }
-            if ($sql->table_exists("sumRingSalesByDay") && $sql->dbms_name() != 'mssql') {
-                $sql->query("DELETE FROM sumRingSalesByDay WHERE tdate='$date'");
-                $sql->query("INSERT INTO sumRingSalesByDay
-                    SELECT DATE(MAX(tdate)) AS tdate, upc, department,
-                    CONVERT(SUM(total),DECIMAL(10,2)) as total,
-                    CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
-                        WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty
-                    FROM $summary_source AS t
-                    trans_type IN ('I','D') AND upc <> '0'
-                    AND tdate BETWEEN '$date 00:00:00' AND '$date 23:59:59'
-                    GROUP BY upc, department");
+            if ($sql->table_exists("sumRingSalesByDay")) {
+                try {
+                    $sql->query("DELETE FROM sumRingSalesByDay WHERE tdate='$date'");
+                    $sql->query("
+                        INSERT INTO sumRingSalesByDay
+                        SELECT DATE(MAX(tdate)) AS tdate, 
+                            upc, 
+                            department,
+                            CONVERT(SUM(total),DECIMAL(10,2)) as total,
+                            CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
+                                WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty
+                        FROM $summary_source AS t
+                        WHERE trans_type IN ('I','D') 
+                            AND upc <> '0'
+                            AND tdate BETWEEN '$date 00:00:00' AND '$date 23:59:59'
+                        GROUP BY upc, 
+                            department
+                    ");
+                } catch (Exception $ex) {
+                    /**
+                    @severity: tables aren't used for antying
+                    */
+                    echo $this->cronMsg('Summary error with sumRingSalesByDay. Details: '
+                        . $ex->getMessage(), FannieTask::TASK_TRIVIAL_ERROR);
+                }
             }
-            if ($sql->table_exists("sumDeptSalesByDay") && $sql->dbms_name() != 'mssql') {
-                $sql->query("DELETE FROM sumDeptSalesByDay WHERE tdate='$date'");
-                $sql->query("INSERT INTO sumDeptSalesByDay
-                    SELECT DATE(MAX(tdate)) AS tdate, department,
-                    CONVERT(SUM(total),DECIMAL(10,2)) as total,
-                    CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
-                        WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty
-                    FROM $summary_source AS t
-                    trans_type IN ('I','D') 
-                    AND tdate BETWEEN '$date 00:00:00' AND '$date 23:59:59'
-                    GROUP BY department");
+            if ($sql->table_exists("sumDeptSalesByDay")) {
+                try {
+                    $sql->query("DELETE FROM sumDeptSalesByDay WHERE tdate='$date'");
+                    $sql->query("
+                        INSERT INTO sumDeptSalesByDay
+                        SELECT DATE(MAX(tdate)) AS tdate, 
+                            department,
+                            CONVERT(SUM(total),DECIMAL(10,2)) as total,
+                            CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
+                                WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty
+                        FROM $summary_source AS t
+                        WHERE trans_type IN ('I','D') 
+                            AND tdate BETWEEN '$date 00:00:00' AND '$date 23:59:59'
+                        GROUP BY department
+                    ");
+                } catch (Exception $ex) {
+                    /**
+                    @severity: tables aren't used for antying
+                    */
+                    echo $this->cronMsg('Summary error with sumDeptSalesByDay. Details: '
+                        . $ex->getMessage(), FannieTask::TASK_TRIVIAL_ERROR);
+                }
             }
-            if ($sql->table_exists("sumMemSalesByDay") && $sql->dbms_name() != 'mssql') {
-                $sql->query("DELETE FROM sumMemSalesByDay WHERE tdate='$date'");
-                $sql->query("INSERT INTO sumMemSalesByDay
-                    SELECT DATE(MAX(tdate)) AS tdate, card_no,
-                    CONVERT(SUM(total),DECIMAL(10,2)) as total,
-                    CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
-                        WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty,
-                    COUNT(DISTINCT trans_num) AS transCount
-                    FROM $summary_source AS t
-                    trans_type IN ('I','D')
-                    AND tdate BETWEEN '$date 00:00:00' AND '$date 23:59:59'
-                    GROUP BY card_no");
+            if ($sql->table_exists("sumMemSalesByDay")) {
+                try {
+                    $sql->query("DELETE FROM sumMemSalesByDay WHERE tdate='$date'");
+                    $sql->query("
+                        INSERT INTO sumMemSalesByDay
+                        SELECT DATE(MAX(tdate)) AS tdate, 
+                            card_no,
+                            CONVERT(SUM(total),DECIMAL(10,2)) as total,
+                            CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
+                                WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty,
+                            COUNT(DISTINCT trans_num) AS transCount
+                        FROM $summary_source AS t
+                        WHERE trans_type IN ('I','D')
+                            AND tdate BETWEEN '$date 00:00:00' AND '$date 23:59:59'
+                        GROUP BY card_no
+                    ");
+                } catch (Exception $ex) {
+                    /**
+                    @severity: tables aren't used for antying
+                    */
+                    echo $this->cronMsg('Summary error with sumMemSalesByDay. Details: '
+                        . $ex->getMessage(), FannieTask::TASK_TRIVIAL_ERROR);
+                }
             }
-            if ($sql->table_exists("sumMemTypeSalesByDay") && $sql->dbms_name() != 'mssql') {
-                $sql->query("DELETE FROM sumMemTypeSalesByDay WHERE tdate='$date'");
-                $sql->query("INSERT INTO sumMemTypeSalesByDay
-                    SELECT DATE(MAX(tdate)) AS tdate, c.memType,
-                    CONVERT(SUM(total),DECIMAL(10,2)) as total,
-                    CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
-                        WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty,
-                    COUNT(DISTINCT trans_num) AS transCount
-                    FROM $summary_source AS t
-                    $FANNIE_OP_DB.custdata AS c ON d.card_no=c.CardNo
-                    AND c.personNum=1 WHERE
-                    trans_type IN ('I','D')
-                    AND upc <> 'RRR' AND card_no <> 0
-                    AND tdate BETWEEN '$date 00:00:00' AND '$date 23:59:59'
-                    GROUP BY c.memType");
+            if ($sql->table_exists("sumMemTypeSalesByDay")) {
+                try {
+                    $sql->query("DELETE FROM sumMemTypeSalesByDay WHERE tdate='$date'");
+                    $sql->query("
+                        INSERT INTO sumMemTypeSalesByDay
+                        SELECT DATE(MAX(tdate)) AS tdate, 
+                            c.memType,
+                            CONVERT(SUM(total),DECIMAL(10,2)) as total,
+                            CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
+                                WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty,
+                            COUNT(DISTINCT trans_num) AS transCount
+                        FROM $summary_source AS t
+                            LEFT JOIN $FANNIE_OP_DB.custdata AS c ON t.card_no=c.CardNo AND c.personNum=1 
+                        WHERE trans_type IN ('I','D')
+                            AND upc <> 'RRR' 
+                            AND card_no <> 0
+                            AND tdate BETWEEN '$date 00:00:00' AND '$date 23:59:59'
+                        GROUP BY c.memType
+                    ");
+                } catch (Exception $ex) {
+                    /**
+                    @severity: tables aren't used for antying
+                    */
+                    echo $this->cronMsg('Summary error with sumMemTypeSalesByDay. Details: '
+                        . $ex->getMessage(), FannieTask::TASK_TRIVIAL_ERROR);
+                }
             }
-            if ($sql->table_exists("sumTendersByDay") && $sql->dbms_name() != 'mssql') {
-                $sql->query("DELETE FROM sumTendersByDay WHERE tdate='$date'");
-                $sql->query("INSERT INTO sumTendersByDay
-                    SELECT DATE(MAX(tdate)) AS tdate, trans_subtype,
-                    CONVERT(SUM(total),DECIMAL(10,2)) as total,
-                    COUNT(*) AS quantity
-                    FROM $summary_source AS t
-                    trans_type IN ('T')
-                    AND total <> 0
-                    AND tdate BETWEEN '$date 00:00:00' AND '$date 23:59:59'
-                    GROUP BY trans_subtype");
+            if ($sql->table_exists("sumTendersByDay")) {
+                try {
+                    $sql->query("DELETE FROM sumTendersByDay WHERE tdate='$date'");
+                    $sql->query("
+                        INSERT INTO sumTendersByDay
+                        SELECT DATE(MAX(tdate)) AS tdate, 
+                            trans_subtype,
+                            CONVERT(SUM(total),DECIMAL(10,2)) as total,
+                            COUNT(*) AS quantity
+                        FROM $summary_source AS t
+                        WHERE trans_type IN ('T')
+                            AND total <> 0
+                            AND tdate BETWEEN '$date 00:00:00' AND '$date 23:59:59'
+                        GROUP BY trans_subtype
+                    ");
+                } catch (Exception $ex) {
+                    /**
+                    @severity: tables aren't used for antying
+                    */
+                    echo $this->cronMsg('Summary error with sumTendersSalesByDay. Details: '
+                        . $ex->getMessage(), FannieTask::TASK_TRIVIAL_ERROR);
+                }
             }
-            if ($sql->table_exists("sumDiscountsByDay") && $sql->dbms_name() != 'mssql') {
-                $sql->query("DELETE FROM sumDiscountsByDay WHERE tdate='$date'");
-                $sql->query("INSERT INTO sumDiscountsByDay
-                    SELECT DATE(MAX(tdate)) AS tdate, c.memType,
-                    CONVERT(SUM(total),DECIMAL(10,2)) as total,
-                    COUNT(DISTINCT trans_num) AS transCount
-                    FROM $summary_source AS t
-                    $FANNIE_OP_DB.custdata AS c ON d.card_no=c.CardNo
-                    AND c.personNum=1 WHERE
-                    trans_type IN ('S') AND total <> 0
-                    AND upc = 'DISCOUNT' AND card_no <> 0
-                    AND tdate BETWEEN '$date 00:00:00' AND '$date 23:59:59'
-                    GROUP BY c.memType");
+            if ($sql->table_exists("sumDiscountsByDay")) {
+                try {
+                    $sql->query("DELETE FROM sumDiscountsByDay WHERE tdate='$date'");
+                    $sql->query("
+                        INSERT INTO sumDiscountsByDay
+                        SELECT DATE(MAX(tdate)) AS tdate, 
+                            c.memType,
+                            CONVERT(SUM(total),DECIMAL(10,2)) as total,
+                            COUNT(DISTINCT trans_num) AS transCount
+                        FROM $summary_source AS t
+                            LEFT JOIN $FANNIE_OP_DB.custdata AS c ON t.card_no=c.CardNo AND c.personNum=1
+                        WHERE trans_type IN ('S') 
+                            AND total <> 0
+                            AND upc = 'DISCOUNT' 
+                            AND card_no <> 0
+                            AND tdate BETWEEN '$date 00:00:00' AND '$date 23:59:59'
+                        GROUP BY c.memType
+                    ");
+                } catch (Exception $ex) {
+                    /**
+                    @severity: tables aren't used for antying
+                    */
+                    echo $this->cronMsg('Summary error with sumDiscountSalesByDay. Details: '
+                        . $ex->getMessage(), FannieTask::TASK_TRIVIAL_ERROR);
+                }
             }
-
         } // for loop on dates in dtransactions
 
         /* drop dtransactions data 
            DO NOT TRUNCATE; that resets AUTO_INCREMENT column
         */
         $sql =  FannieDB::get($FANNIE_TRANS_DB);
-        $chk = $sql->query("DELETE FROM dtransactions WHERE datetime < '$today'");
-        if ($chk === false) {
-            echo $this->cronMsg("Error truncating dtransactions");
-        } else {
-            echo $this->cronMsg("Success truncating dtransactions");
+        $sql->throwOnFailure(true);
+        try {
+            $chk = $sql->query("DELETE FROM dtransactions WHERE datetime < '$today'");
+        } catch (Exception $ex) {
+            /**
+            @severity: should not fail. could eventually
+            create duplicate archive records if this is
+            failing and queries above are not
+            */
+            echo $this->cronMsg("Error clearing dtransactions. Details: "
+                . $ex->getMessage(), FannieTask::TASK_LARGE_ERROR);
         }
     }
 }

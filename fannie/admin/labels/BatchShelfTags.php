@@ -27,64 +27,64 @@ include('scan_layouts.php');
 
 class BatchShelfTags extends FanniePage {
 
-	protected $title = "Fannie : Batch Barcodes";
-	protected $header = "Batch Barcodes";
+    protected $title = "Fannie : Batch Barcodes";
+    protected $header = "Batch Barcodes";
 
-	private $layouts = array();
+    private $layouts = array();
 
-	function preprocess(){
-		$this->layouts = scan_layouts();
-		return True;
-	}
+    function preprocess(){
+        $this->layouts = scan_layouts();
+        return True;
+    }
 
-	function body_content(){
-		global $FANNIE_OP_DB, $FANNIE_URL, $FANNIE_DEFAULT_PDF;
-		ob_start();
-		?>
-		<a href="ShelfTagIndex.php">Regular shelf tags</a>
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-		Batch shelf tags
-		<p />
-		<?php
-		$ret = ob_get_clean();
+    function body_content(){
+        global $FANNIE_OP_DB, $FANNIE_URL, $FANNIE_DEFAULT_PDF;
+        ob_start();
+        ?>
+        <a href="ShelfTagIndex.php">Regular shelf tags</a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        Batch shelf tags
+        <p />
+        <?php
+        $ret = ob_get_clean();
 
-		$ret .= "<form action=genLabels.php method=get>";
-		//echo "<form action=barcodenew.php method=get>";
-		$ret .= "<b>Select batch(es*) to be printed</b>:<br />";
-		
-		$dbc = FannieDB::get($FANNIE_OP_DB);
-		$fetchQ = $dbc->prepare_statement("select b.batchID,b.batchName
-			  from batches as b left join
-			  batchBarcodes as c on b.batchID = c.batchID
-			  where c.upc is not null
-				  group by b.batchID,b.batchName
-				  order by b.batchID desc");
-		$fetchR = $dbc->exec_statement($fetchQ);
-		$ret .= "<select name=batchID[] multiple style=\"{width:300px;}\" size=15>";
-		while($fetchW = $dbc->fetch_array($fetchR))
-			$ret .= "<option value=$fetchW[0]>$fetchW[1]</option>";
-		$ret .= "</select><p />";
-		$ret .= "<fieldset>";
-		$ret .= "Offset: <input size=3 type=text name=offset value=0 />";
-		$ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-		$ret .= "<select name=layout>";
-		foreach($this->layouts as $l){
-			if ($l == $FANNIE_DEFAULT_PDF)
-				$ret .= "<option selected>".$l."</option>";
-			else
-				$ret .= "<option>".$l."</option>";
-		}	
-		$ret .= "</select>";
-		$ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-		$ret .= "<input type=submit value=Print />";
-		$ret .= "</fieldset>";
-		$ret .= "</form>";
-		$ret .= "<a href={$FANNIE_URL}batches/newbatch/index.php>Back to batch list</a><p />";
-		$ret .= "* Hold the apple key while clicking to select multiple batches ";
-		$ret .= "(or the control key if you're not on a Mac)";
+        $ret .= "<form action=genLabels.php method=get>";
+        //echo "<form action=barcodenew.php method=get>";
+        $ret .= "<b>Select batch(es*) to be printed</b>:<br />";
+        
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $fetchQ = $dbc->prepare_statement("select b.batchID,b.batchName
+              from batches as b left join
+              batchBarcodes as c on b.batchID = c.batchID
+              where c.upc is not null
+                  group by b.batchID,b.batchName
+                  order by b.batchID desc");
+        $fetchR = $dbc->exec_statement($fetchQ);
+        $ret .= "<select name=batchID[] multiple style=\"{width:300px;}\" size=15>";
+        while($fetchW = $dbc->fetch_array($fetchR))
+            $ret .= "<option value=$fetchW[0]>$fetchW[1]</option>";
+        $ret .= "</select><p />";
+        $ret .= "<fieldset>";
+        $ret .= "Offset: <input size=3 type=text name=offset value=0 />";
+        $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+        $ret .= "<select name=layout>";
+        foreach($this->layouts as $l){
+            if ($l == $FANNIE_DEFAULT_PDF)
+                $ret .= "<option selected>".$l."</option>";
+            else
+                $ret .= "<option>".$l."</option>";
+        }   
+        $ret .= "</select>";
+        $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+        $ret .= "<input type=submit value=Print />";
+        $ret .= "</fieldset>";
+        $ret .= "</form>";
+        $ret .= "<a href={$FANNIE_URL}batches/newbatch/index.php>Back to batch list</a><p />";
+        $ret .= "* Hold the apple key while clicking to select multiple batches ";
+        $ret .= "(or the control key if you're not on a Mac)";
 
-		return $ret;
-	}
+        return $ret;
+    }
 }
 
 FannieDispatch::conditionalExec(false);

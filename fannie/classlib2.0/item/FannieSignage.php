@@ -27,6 +27,7 @@ class FannieSignage
     protected $source = '';
     protected $source_id = 0;
     protected $data = array();
+    protected $overrides = array();
 
     /**
       constructor
@@ -92,6 +93,7 @@ class FannieSignage
             $ids = substr($ids, 0, strlen($ids)-1);
             $query = 'SELECT s.upc,
                         s.description,
+                        s.description AS posDescription,
                         s.brand,
                         s.units,
                         s.size,
@@ -123,6 +125,7 @@ class FannieSignage
             $query = 'SELECT l.upc,
                         l.salePrice AS normal_price,
                         CASE WHEN u.description IS NULL OR u.description=\'\' THEN p.description ELSE u.description END as description,
+                        p.description AS posDescription,
                         CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
                         v.units,
                         v.size,
@@ -154,6 +157,7 @@ class FannieSignage
             $query = 'SELECT p.upc,
                         p.normal_price,
                         CASE WHEN u.description IS NULL OR u.description=\'\' THEN p.description ELSE u.description END as description,
+                        p.description AS posDescription,
                         CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
                         v.units,
                         v.size,
@@ -177,6 +181,7 @@ class FannieSignage
                 $query = 'SELECT p.upc,
                             l.salePrice AS normal_price,
                             CASE WHEN u.description IS NULL OR u.description=\'\' THEN p.description ELSE u.description END as description,
+                            p.description AS posDescription,
                             CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
                             v.units,
                             v.size,
@@ -194,15 +199,17 @@ class FannieSignage
                             LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
                             LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                             LEFT JOIN origins AS o ON p.current_origin_id=o.originID
+                            LEFT JOIN batchList AS l ON p.upc=l.upc
                             LEFT JOIN batches AS b ON l.batchID=b.batchID
                          WHERE p.upc IN (' . $ids . ')
                             AND b.discounttype = 0
-                            AND b.startDate > ' . $dbc->now() . '
+                            AND b.startDate >= ' . $dbc->curdate() . '
                          ORDER BY p.department, p.upc';
             } else if ($this->source_id == 2) { // current sale
                 $query = 'SELECT p.upc,
                             CASE WHEN p.discounttype <> 0 THEN p.special_price ELSE p.normal_price END AS normal_price,
                             CASE WHEN u.description IS NULL OR u.description=\'\' THEN p.description ELSE u.description END as description,
+                            p.description AS posDescription,
                             CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
                             v.units,
                             v.size,
@@ -226,6 +233,7 @@ class FannieSignage
                 $query = 'SELECT p.upc,
                             l.salePrice AS normal_price,
                             CASE WHEN u.description IS NULL OR u.description=\'\' THEN p.description ELSE u.description END as description,
+                            p.description AS posDescription,
                             CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
                             v.units,
                             v.size,
@@ -256,18 +264,73 @@ class FannieSignage
         $data = array();
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $args);
+
+        $mapP = $dbc->prepare('SELECT o.name, o.shortName
+                               FROM ProductOriginsMap AS m
+                                INNER JOIN origins AS o ON m.originID=o.originID
+                               WHERE
+                                m.upc = ?
+                                AND o.name <> ?
+                                AND o.shortName <> ?');
+
         while($row = $dbc->fetch_row($result)) {
+
             if ($row['pricePerUnit'] == '') {
                 $row['pricePerUnit'] = PriceLib::pricePerUnit($row['normal_price'], $row['size']);
             }
+
+            if ($row['originName'] != '') {
+                // check for additional origins
+                $mapR = $dbc->execute($mapP, array($row['upc'], $row['originName'], $row['originShortName']));
+                while ($mapW = $dbc->fetch_row($mapR)) {
+                    $row['originName'] .= _(' or ') . $mapW['name'];
+                    $row['originShortName'] .= _(' or ') . $mapW['shortName'];
+                }
+            }
+
+            if (isset($this->overrides[$row['upc']])) {
+                foreach ($this->overrides[$row['upc']] as $key => $val) {
+                    if ($key == 'originName' && $val != $row['originName']) {
+                        $row['originShortName'] = $val;
+                    }
+                    $row[$key] = $val;
+                }
+            }
+
             $data[] = $row;
         }
 
         return $data;
     }
 
-    public function drawBarcode($upc, $pdf, $x, $y, $h=16, $w=0.35)
+    /**
+      Draw barcode on given PDF
+      @param $upc [string] barcode value (UPC or EAN)
+      @param $pdf [object] FPDF instance
+      @param $x [numeric] x-coordinate of barcode
+      @param $y [numeric] y-coordinate of barcode
+      @param $args [keyed array] of extra options
+        - height [default 16] height of the barcode
+        - width [default 0.35] width of *each* bar
+        - align [default C] horizontal alignment of barcode number (L/C/R)
+        - valign [default B] vertical alignment of barcode number
+            (T, "top", above barcode) or (B, "botton", below barcode)
+        - prefix [default empty] prepend value to barcode number
+        - suffix [default empty] append value to barcode number
+        - font [default Arial] name of font for barcode number
+        - fontsize [default 9] size of font for barcode number
+    */
+    public function drawBarcode($upc, $pdf, $x, $y, $args=array())
     {
+        $h = isset($args['height']) ? $args['height'] : 16;
+        $w = isset($args['width']) ? $args['width'] : 0.35;
+        $align = isset($args['align']) ? $args['align'] : 'C';
+        $valign = isset($args['valign']) ? $args['valign'] : 'B';
+        $prefix = isset($args['prefix']) ? $args['prefix'] : '';
+        $suffix = isset($args['suffix']) ? $args['suffix'] : '';
+        $font = isset($args['font']) ? $args['font'] : 'Arial';
+        $fontsize = isset($args['fontsize']) ? $args['fontsize'] : 9;
+
         $upc = str_pad($upc, 12, '0', STR_PAD_LEFT);
         if (BarcodeLib::verifyCheckDigit($upc)) {
             // if an EAN13 with valid check digit is passed
@@ -317,44 +380,122 @@ class FannieSignage
         $code.='101'; // end bar
 
         //Draw bars
+        $width = 0;
         for ($i=0;$i<strlen($code);$i++) {
             if ($code{$i}=='1') {
                 $pdf->Rect($x+($i*$w), $y, $w, $h, 'F');
             }
+            $width += $w;
         }
 
         // Print text uder barcode
         // omits first digit; should always be zero
-        $this->SetFont('Arial','',9);
-        $pdf->Text($x+6, $y+$h+11/$pdf->k, substr($upc, -12));
+        $pdf->SetFont($font, '', $fontsize);
+        if ($valign == 'T') {
+            $pdf->SetXY($x, $y - 5);
+        } else {
+            $pdf->SetXY($x, $y + $h);
+        }
+        $pdf->Cell($width, 5, $prefix . substr($upc, -12) . $suffix, 0, 0, $align);
 
-        return true;
+        return $pdf;
     }
 
     public function listItems()
     {
         global $FANNIE_URL;
         $ret = '<table>';
+        $ret .= '<tr><th>UPC</th><th>Brand</th><th>Description</th><th>Price</th><th>Origin</th></tr>';
         $data = $this->loadItems();
         foreach ($data as $item) {
             $ret .= sprintf('<tr>
                             <td><a href="%sitem/ItemEditorPage.php?searchupc=%s" target="_edit%s">%s</a></td>
-                            <td>%s</td>
-                            <td>%s</td>
+                            <input type="hidden" name="update_upc[]" value="%d" />
+                            <td><input class="FannieSignageField" type="text" name="update_brand[]" value="%s" /></td>
+                            <td><input class="FannieSignageField" type="text" name="update_desc[]" value="%s" /></td>
                             <td>%.2f</td>
+                            <td><input class="FannieSignageField" type="text" name="update_origin[]" value="%s" /></td>
                             </tr>',
                             $FANNIE_URL,
-                            $item['upc'],
-                            $item['upc'],
+                            $item['upc'], $item['upc'], $item['upc'],
                             $item['upc'],
                             $item['brand'],
                             $item['description'],
-                            $item['normal_price']
+                            $item['normal_price'],
+                            $item['originName']
             );
         }
         $ret .= '</table>';
 
         return $ret;
+    }
+
+    public function updateItem($upc, $brand, $description)
+    {
+        global $FANNIE_OP_DB;
+        switch (strtolower($this->source)) {
+            case 'shelftags':
+                $model = new ShelftagsModel(FannieDB::get($FANNIE_OP_DB));
+                $model->id($this->source_id);
+                $model->upc(BarcodeLib::padUPC($upc));
+                $model->brand($brand);
+                $model->description($description);
+                $model->save();
+                break;
+            case 'batchbarcodes':
+                $dbc = FannieDB::get($FANNIE_OP_DB);
+                $args = array($brand, $description, BarcodeLib::padUPC($upc));
+                if (!is_array($this->source_id)) {
+                    $this->source_id = array($this->source_id);
+                }
+                $ids = '';
+                foreach ($this->source_id as $id) {
+                    $args[] = $id;
+                    $ids .= '?,';
+                }
+                $ids = substr($ids, 0, strlen($ids)-1);
+                $prep = $dbc->prepare('UPDATE batchBarcodes
+                                       SET brand=?,
+                                        description=?
+                                       WHERE upc=?
+                                        AND batchID IN (' . $ids . ')');
+                $dbc->execute($prep, $args);
+                break;
+            case 'batch':
+            case '':
+                $model = new ProductUserModel(FannieDB::get($FANNIE_OP_DB));
+                $model->upc(BarcodeLib::padUPC($upc));
+                $model->brand($brand);
+                $model->description($description);
+                $model->save();
+                $model = new ProductsModel(FannieDB::get($FANNIE_OP_DB));
+                $model->upc(BarcodeLib::padUPC($upc));
+                $model->brand($brand);
+                $model->save();
+                break;
+        }
+    }
+
+    public function saveItems()
+    {
+        $upcs = FormLib::get('update_upc', array());
+        $brands = FormLib::get('update_brand', array());
+        $descs = FormLib::get('update_desc', array());
+        for ($i=0; $i<count($upcs); $i++) {
+            if (!isset($brands[$i]) || !isset($descs[$i])) {
+                continue;
+            }
+            $this->updateItem($upcs[$i], $brands[$i], $descs[$i]);
+        }
+    }
+
+    public function addOverride($upc, $field_name, $value)
+    {
+        $upc = BarcodeLib::padUPC($upc);
+        if (!isset($this->overrides[$upc])) {
+            $this->overrides[$upc] = array();
+        }
+        $this->overrides[$upc][$field_name] = $value;
     }
 
     public function drawPDF()

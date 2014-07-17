@@ -3,15 +3,15 @@
 Table: memtype
 
 Columns:
-	memtype tinyint
-	memDesc varchar
+    memtype tinyint
+    memDesc varchar
     custdataType varchar
     discount int
     staff int
     ssi int
 
 Depends on:
-	none
+    none
 
 Use:
 Housekeeping. If you want to sort people in
@@ -25,14 +25,14 @@ when creating a new record of a given
 memtype.
 */
 $CREATE['op.memtype'] = "
-	CREATE TABLE memtype (
-		memtype tinyint,
-		memDesc varchar(20),
+    CREATE TABLE memtype (
+        memtype tinyint,
+        memDesc varchar(20),
         custdataType varchar(10),
         discount smallint,
         staff tinyint,
         ssi tinyint,
-		primary key (memtype)
-	)
+        primary key (memtype)
+    )
 ";
 

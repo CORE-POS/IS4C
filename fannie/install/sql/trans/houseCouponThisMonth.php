@@ -3,19 +3,19 @@
 View: houseCouponThisMonth
 
 Columns:
-	card_no  int
-	upc	 varchar
-	quantity float
+    card_no  int
+    upc  varchar
+    quantity float
 
 Depends on:
     dlog (view)
-	dlog_90_view (view)
+    dlog_90_view (view)
 
 Use:
 List of custom coupons redeemed, per member
 */
 $CREATE['trans.houseCouponThisMonth'] = "
-	CREATE VIEW houseCouponThisMonth AS
+    CREATE VIEW houseCouponThisMonth AS
     SELECT
         s.card_no,
         s.upc,

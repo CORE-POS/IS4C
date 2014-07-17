@@ -40,7 +40,7 @@ class ProdExtraModel extends BasicModel
     'case_quantity' => array('type'=>'VARCHAR(15)'),
     'case_cost' => array('type'=>'MONEY'),
     'case_info' => array('type'=>'VARCHAR(100)'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

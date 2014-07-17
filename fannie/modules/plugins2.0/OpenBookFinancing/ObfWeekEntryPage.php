@@ -83,7 +83,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
 
     public function post_handler()
     {
-		global $FANNIE_PLUGIN_SETTINGS;
+        global $FANNIE_PLUGIN_SETTINGS;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
 
         $date1 = FormLib::get('date1');
@@ -96,7 +96,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
         $model->startDate(date('Y-m-d', mktime(0, 0, 0, date('n', $end_ts), date('j', $end_ts)-6, date('Y', $end_ts))));
         $model->endDate(date('Y-m-d', $end_ts));
         $model->previousYear(date('Y-m-d', mktime(0, 0, 0, date('n', $prev_ts), date('j', $prev_ts)-6, date('Y', $prev_ts))));
-        $model->growthTarget(FormLib::get('growth') / 100);
+        $model->obfQuarterID(FormLib::get('quarter'));
 
         $new_id = $model->save();
 
@@ -107,7 +107,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
 
     public function post_id_handler()
     {
-		global $FANNIE_PLUGIN_SETTINGS;
+        global $FANNIE_PLUGIN_SETTINGS;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
 
         $date1 = FormLib::get('date1');
@@ -120,7 +120,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
         $model->obfWeekID($this->id);
         $model->startDate(date('Y-m-d', mktime(0, 0, 0, date('n', $end_ts), date('j', $end_ts)-6, date('Y', $end_ts))));
         $model->previousYear(date('Y-m-d', mktime(0, 0, 0, date('n', $prev_ts), date('j', $prev_ts)-6, date('Y', $prev_ts))));
-        $model->growthTarget(FormLib::get('growth') / 100);
+        $model->obfQuarterID(FormLib::get('quarter'));
 
         $model->save();
 
@@ -143,7 +143,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
             $model->wages( isset($wages[$i]) ? $wages[$i] : 0 );
             $model->laborTarget( isset($goals[$i]) ? $goals[$i] / 100.00 : 0 );
             $model->averageWage( isset($avg[$i]) ? $avg[$i] : 0 );
-            $model->forecastSales(sprintf('%d', $sales[$i]));
+            $model->forecastSales(sprintf('%d', isset($sales[$i]) ? $sales[$i] : 0));
             $model->save();
         }
 
@@ -156,7 +156,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
 
     public function get_id_view()
     {
-		global $FANNIE_PLUGIN_SETTINGS;
+        global $FANNIE_PLUGIN_SETTINGS;
         if ($this->id != 0) {
             $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
             $this->weekModel = new ObfWeeksModel($dbc);
@@ -169,8 +169,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
     
     public function get_view()
     {
-		global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
-        $this->add_script($FANNIE_URL . 'src/CalendarControl.js');
+        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
 
         $model = new ObfWeeksModel($dbc);
@@ -179,12 +178,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
         }
         $select = '<select onchange="location=\'' . $_SERVER['PHP_SELF'] . '?id=\' + this.value;">';
         $select .= '<option value="">New Entry</option>';
-        $first = true;
         foreach($model->find('obfWeekID', true) as $week) {
-            if ($first) {
-                $this->weekModel->growthTarget($week->growthTarget());
-                $first = false;
-            }
             $ts = strtotime($week->startDate());
             $end = date('Y-m-d', mktime(0, 0, 0, date('n', $ts), date('j', $ts)+6, date('Y', $ts)));
             $select .= sprintf('<option %s value="%d">%s</option>',
@@ -193,7 +187,10 @@ class ObfWeekEntryPage extends FannieRESTfulPage
         }
         $select .= '</select>';
 
-        $ret = '<b>Week Ending</b>: ' . $select . '<br /><br />';
+        $ret = '<b>Week Ending</b>: ' . $select
+                . '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+                . '<button onclick="location=\'ObfIndexPage.php\';return false;">Home</button>'
+                . '<br /><br />';
 
         $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
         $ret .= '<table cellpadding="4" cellspacing="0" border="1">';
@@ -212,13 +209,20 @@ class ObfWeekEntryPage extends FannieRESTfulPage
         }
         $ret .= '<tr>';
         $ret .= '<td><input type="text" size="12" name="date1" id="date1"
-                        onfocus="showCalendarControl(this);" value="' . $end1 . '"
+                        value="' . $end1 . '"
                         onchange="getPrevYear(this.value);" /></td>';
+        $this->add_onload_command("\$('#date1').datepicker();\n");
         $ret .= '<td><input type="text" size="12" name="date2" id="date2"
-                        value="' . $end2 . '"
-                        onfocus="showCalendarControl(this);" /></td>';
-        $ret .= sprintf('<td><input type="text" size="5" name="growth"
-                            value="%.3f" />%%</td>', $this->weekModel->growthTarget()*100);
+                        value="' . $end2 . '" /></td>';
+        $this->add_onload_command("\$('#date2').datepicker();\n");
+        $ret .= '<td><select name="quarter">';
+        $quarters = new ObfQuartersModel($dbc);
+        foreach ($quarters->find('obfQuarterID', true) as $q) {
+            $ret .= sprintf('<option %s value="%d">%s %s</option>',
+                        ($q->obfQuarterID() == $this->weekModel->obfQuarterID() ? 'selected' : ''),
+                        $q->obfQuarterID(), $q->name(), $q->year());
+        }
+        $ret .= '</select></td>';
         $ret .= '</tr>';
         
         $ret .= '</table>';

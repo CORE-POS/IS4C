@@ -26,39 +26,39 @@ include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class CreateTagsByManu extends FanniePage {
 
-	private $msgs = '';
+    private $msgs = '';
 
-	function preprocess(){
-		global $FANNIE_OP_DB;
+    function preprocess(){
+        global $FANNIE_OP_DB;
 
         $this->title = _("Fannie") . ' : ' . _("Manufacturer Shelf Tags");
         $this->header = _("Manufacturer Shelf Tags");
 
-		if (FormLib::get_form_value('manufacturer',False) !== False){
-			$manu = FormLib::get_form_value('manufacturer');
-			$pageID = FormLib::get_form_value('sID',0);
-			$cond = "";
-			if (is_numeric($_REQUEST['manufacturer']))
-				$cond = " p.upc LIKE ? ";
-			else
-				$cond = " x.manufacturer LIKE ? ";
-			$dbc = FannieDB::get($FANNIE_OP_DB);
-			$q = $dbc->prepare_statement("select p.upc,p.description,p.normal_price,
-				x.manufacturer,x.distributor,v.sku,v.size,
-				CASE WHEN v.units IS NULL THEN 1 ELSE v.units END as units
-				FROM products as p
-				left join prodExtra as x on p.upc=x.upc
-				left join vendorItems as v ON p.upc=v.upc
-				left join vendors as n on v.vendorID=n.vendorID
-				where $cond AND (
-					x.distributor=n.vendorName
-					or (x.distributor='' and n.vendorName='UNFI')
-					or (x.distributor is null and n.vendorName='UNFI')
-					or (n.vendorName is NULL)
-				)");
-			$r = $dbc->exec_statement($q,array('%'.$manu.'%'));
-            $tag = new ShelfTagModel($dbc);
-			while($w = $dbc->fetch_row($r)){
+        if (FormLib::get_form_value('manufacturer',False) !== False){
+            $manu = FormLib::get_form_value('manufacturer');
+            $pageID = FormLib::get_form_value('sID',0);
+            $cond = "";
+            if (is_numeric($_REQUEST['manufacturer']))
+                $cond = " p.upc LIKE ? ";
+            else
+                $cond = " x.manufacturer LIKE ? ";
+            $dbc = FannieDB::get($FANNIE_OP_DB);
+            $q = $dbc->prepare_statement("select p.upc,p.description,p.normal_price,
+                x.manufacturer,x.distributor,v.sku,v.size,
+                CASE WHEN v.units IS NULL THEN 1 ELSE v.units END as units
+                FROM products as p
+                left join prodExtra as x on p.upc=x.upc
+                left join vendorItems as v ON p.upc=v.upc
+                left join vendors as n on v.vendorID=n.vendorID
+                where $cond AND (
+                    x.distributor=n.vendorName
+                    or (x.distributor='' and n.vendorName='UNFI')
+                    or (x.distributor is null and n.vendorName='UNFI')
+                    or (n.vendorName is NULL)
+                )");
+            $r = $dbc->exec_statement($q,array('%'.$manu.'%'));
+            $tag = new ShelftagsModel($dbc);
+            while($w = $dbc->fetch_row($r)){
                 $tag->id($pageID);
                 $tag->upc($w['upc']);
                 $tag->description($w['description']);
@@ -70,54 +70,54 @@ class CreateTagsByManu extends FanniePage {
                 $tag->vendor($w['distributor']);
                 $tag->pricePerUnit(PriceLib::pricePerUnit($w['normal_price'], $w['size']));
                 $tag->save();
-			}
-			$this->msgs = '<em>Created tags for manufacturer</em>
-					<br /><a href="ShelfTagIndex.php">Home</a>';
-		}
-		return True;
-	}
+            }
+            $this->msgs = '<em>Created tags for manufacturer</em>
+                    <br /><a href="ShelfTagIndex.php">Home</a>';
+        }
+        return True;
+    }
 
-	function body_content(){
-		global $FANNIE_OP_DB;
-		$dbc = FannieDB::get($FANNIE_OP_DB);
-		$deptSubQ = $dbc->prepare_statement("SELECT superID,super_name FROM MasterSuperDepts
-				GROUP BY superID,super_name
-				ORDER BY superID");
-		$deptSubR = $dbc->exec_statement($deptSubQ);
+    function body_content(){
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $deptSubQ = $dbc->prepare_statement("SELECT superID,super_name FROM MasterSuperDepts
+                GROUP BY superID,super_name
+                ORDER BY superID");
+        $deptSubR = $dbc->exec_statement($deptSubQ);
 
-		$deptSubList = "";
-		while($deptSubW = $dbc->fetch_array($deptSubR)){
-			$deptSubList .=" <option value=$deptSubW[0]>$deptSubW[1]</option>";
-		}
+        $deptSubList = "";
+        while($deptSubW = $dbc->fetch_array($deptSubR)){
+            $deptSubList .=" <option value=$deptSubW[0]>$deptSubW[1]</option>";
+        }
 
-		$ret = '';
-		if (!empty($this->msgs)){
-			$ret .= '<blockquote style="border:solid 1px black; padding:5px;
-					margin:5px;">';
-			$ret .= $this->msgs;
-			$ret .= '</blockquote>';
-		}
+        $ret = '';
+        if (!empty($this->msgs)){
+            $ret .= '<blockquote style="border:solid 1px black; padding:5px;
+                    margin:5px;">';
+            $ret .= $this->msgs;
+            $ret .= '</blockquote>';
+        }
 
-		ob_start();
-		?>
-		<form action="CreateTagsByManu.php" method="get">
-		<table>
-		<tr> 
-			<td align="right"> <p><b>Name or UPC prefix</b></p></td>
-			<td> 
-			</p>
-			<input type=text name=manufacturer />
-			</p></td>
-		</tr>
-		<tr>
-			<td><p><b>Page:</b> <select name="sID"><?php echo $deptSubList; ?></select></p></td>
-			<td align="right"><input type="submit" value="Create Shelftags" />
-		</tr>
-		</table>
-		</form>
-		<?php
-		return $ret.ob_get_clean();
-	}
+        ob_start();
+        ?>
+        <form action="CreateTagsByManu.php" method="get">
+        <table>
+        <tr> 
+            <td align="right"> <p><b>Name or UPC prefix</b></p></td>
+            <td> 
+            </p>
+            <input type=text name=manufacturer />
+            </p></td>
+        </tr>
+        <tr>
+            <td><p><b>Page:</b> <select name="sID"><?php echo $deptSubList; ?></select></p></td>
+            <td align="right"><input type="submit" value="Create Shelftags" />
+        </tr>
+        </table>
+        </form>
+        <?php
+        return $ret.ob_get_clean();
+    }
 }
 
 FannieDispatch::conditionalExec(false);

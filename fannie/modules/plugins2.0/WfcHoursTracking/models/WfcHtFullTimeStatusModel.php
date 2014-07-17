@@ -32,7 +32,7 @@ class WfcHtFullTimeStatusModel extends BasicModel
     protected $columns = array(
     'empID' => array('type'=>'INT', 'primary_key'=>true),
     'status' => array('type'=>'VARCHAR(20)'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

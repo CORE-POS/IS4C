@@ -30,7 +30,7 @@ if (!class_exists('FannieAPI')) {
 */
 class SimpleBackup extends FanniePlugin 
 {
-	public $plugin_settings = array(
+    public $plugin_settings = array(
     'SimpleBackupDir' => array('default'=>'/tmp/', 'label'=>'Backup Save Directory',
             'description'=>'Backups are stored here'), 
     'SimpleBackupBinPath' => array('default'=>'/usr/bin/', 'label'=>'BIN Path',
@@ -42,6 +42,6 @@ class SimpleBackup extends FanniePlugin
             'description' => 'Shrink backups with gzip'),
     );
 
-	public $plugin_description = 'Plugin automating mysqldump backups';
+    public $plugin_description = 'Plugin automating mysqldump backups';
 }
 

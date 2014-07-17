@@ -35,7 +35,8 @@ class ObfWeeksModel extends BasicModel
     'endDate' => array('type'=>'DATETIME'),
     'previousYear' => array('type'=>'DATETIME'),
     'growthTarget' => array('type'=>'DOUBLE'),
-	);
+    'obfQuarterID' => array('type'=>'INT', 'index'=>true),
+    );
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -136,6 +137,26 @@ class ObfWeeksModel extends BasicModel
                 }
             }
             $this->instance["growthTarget"] = func_get_arg(0);
+        }
+    }
+
+    public function obfQuarterID()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["obfQuarterID"])) {
+                return $this->instance["obfQuarterID"];
+            } else if (isset($this->columns["obfQuarterID"]["default"])) {
+                return $this->columns["obfQuarterID"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["obfQuarterID"]) || $this->instance["obfQuarterID"] != func_get_args(0)) {
+                if (!isset($this->columns["obfQuarterID"]["ignore_updates"]) || $this->columns["obfQuarterID"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["obfQuarterID"] = func_get_arg(0);
         }
     }
     /* END ACCESSOR FUNCTIONS */

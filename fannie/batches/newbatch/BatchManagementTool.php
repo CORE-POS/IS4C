@@ -70,6 +70,12 @@ class BatchManagementTool extends FanniePage
             return false;
         }
 
+        // autoclear old data from clipboard table on intial page load
+        $clipboard = $this->con->tableDefinition('batchCutPaste');
+        if (isset($clipboard['tdate'])) {
+            $this->con->query('DELETE FROM batchCutPaste WHERE tdate < ' . $this->con->curdate());
+        }
+
         return true;
     }
 
@@ -463,7 +469,8 @@ class BatchManagementTool extends FanniePage
             $upc = FormLib::get_form_value('upc','');
             $bid = FormLib::get_form_value('batchID','');
             $uid = FormLib::get_form_value('uid','');
-            $q = $dbc->prepare_statement("INSERT INTO batchCutPaste VALUES (?,?,?)");
+            $q = $dbc->prepare_statement("INSERT INTO batchCutPaste (batchID, upc, uid, tdate)
+                                          VALUES (?,?,?," . $dbc->now() . ")");
             $dbc->exec_statement($q,array($bid,$upc,$uid));
             break;
 
@@ -600,6 +607,84 @@ class BatchManagementTool extends FanniePage
                 $upc = $selW['upc'];
             }
             break;
+        case 'UnsaleBatch':
+            $id = FormLib::get_form_value('batchID',0);
+
+            // unsale regular items
+            $unsaleQ = "UPDATE products AS p LEFT JOIN batchList as b
+                ON p.upc=b.upc
+                SET special_price=0,
+                specialpricemethod=0,specialquantity=0,
+                specialgroupprice=0,discounttype=0,
+                start_date='1900-01-01',end_date='1900-01-01'
+                WHERE b.upc NOT LIKE '%LC%'
+                AND b.batchID=?";
+            if ($FANNIE_SERVER_DBMS=="MSSQL") {
+                $unsaleQ = "UPDATE products SET special_price=0,
+                    specialpricemethod=0,specialquantity=0,
+                    specialgroupprice=0,discounttype=0,
+                    start_date='1900-01-01',end_date='1900-01-01'
+                    FROM products AS p, batchList as b
+                    WHERE p.upc=b.upc AND b.upc NOT LIKE '%LC%'
+                    AND b.batchID=?";
+            }
+            $prep = $dbc->prepare_statement($unsaleQ);
+            $unsaleR = $dbc->exec_statement($prep,array($id));
+
+            // unsale likecode items items
+            $unsaleLCQ = "UPDATE products AS p LEFT JOIN
+                upcLike AS v ON v.upc=p.upc LEFT JOIN
+                batchList AS l ON l.upc=concat('LC',convert(v.likeCode,char))
+                SET special_price=0,
+                specialpricemethod=0,specialquantity=0,
+                specialgroupprice=0,p.discounttype=0,
+                start_date='1900-01-01',end_date='1900-01-01'
+                WHERE l.upc LIKE '%LC%'
+                AND l.batchID=?";
+            if ($FANNIE_SERVER_DBMS=="MSSQL") {
+                $unsaleLCQ = "UPDATE products
+                    SET special_price=0,
+                    specialpricemethod=0,specialquantity=0,
+                    specialgroupprice=0,discounttype=0,
+                    start_date='1900-01-01',end_date='1900-01-01'
+                    FROM products AS p LEFT JOIN
+                    upcLike AS v ON v.upc=p.upc LEFT JOIN
+                    batchList AS l ON l.upc=concat('LC',convert(v.likeCode,char))
+                    WHERE l.upc LIKE '%LC%'
+                    AND l.batchID=?";
+            }
+            $prep = $dbc->prepare_statement($unsaleLCQ);
+            $unsaleLCR = $dbc->exec_statement($prep,array($id));
+
+            // find all affected UPCs
+            $itemQ = 'SELECT l.upc
+                      FROM batchList AS l 
+                      WHERE l.batchID=?';
+            $itemP = $dbc->prepare($itemQ);
+            $likeQ = 'SELECT u.upc
+                      FROM upcLike AS u
+                        INNER JOIN products AS p ON u.upc=p.upc
+                      WHERE u.likeCode=?';
+            $likeP = $dbc->prepare($likeQ);
+            $items = array();
+            $itemR = $dbc->execute($itemP, array($id));
+            while ($itemW = $dbc->fetch_row($itemR)) {
+                if (substr($itemW['upc'], 0, 2) == 'LC') {
+                    $likeCode = substr($itemW['upc'], 2);
+                    $likeR = $dbc->execute($likeP, array($likeCode));
+                    while ($likeW = $dbc->fetch_row($likeR)) {
+                        $items[] = $likeW['upc'];
+                    }
+                } else {
+                    $items[] = $itemW['upc'];
+                }
+            }
+
+            // push changed items to lanes
+            foreach ($items as $item) {
+                updateProductAllLanes($item);
+            }
+            break;
         default:
             $out .= 'bad request';
             break;
@@ -628,8 +713,8 @@ class BatchManagementTool extends FanniePage
         }
         $ret .= "</select></td>";
         $ret .= "<td><input type=text id=newBatchName /></td>";
-        $ret .= "<td><input type=text size=10 id=newBatchStartDate onfocus=\"showCalendarControl(this);\" /></td>";
-        $ret .= "<td><input type=text size=10 id=newBatchEndDate onfocus=\"showCalendarControl(this);\" /></td>";
+        $ret .= "<td><input type=text size=10 id=newBatchStartDate /></td>";
+        $ret .= "<td><input type=text size=10 id=newBatchEndDate /></td>";
         $ret .= "<td><select id=newBatchOwner />";
         foreach ($this->owners as $o) {
             $ret .= "<option>$o</option>";
@@ -1084,6 +1169,9 @@ class BatchManagementTool extends FanniePage
         if ($cp > 0)
             $ret .= "<a href=\"\" onclick=\"doPaste($uid,$id); return false;\">Paste Items ($cp)</a> | ";
         $ret .= "<a href=\"\" onclick=\"forceBatch($id); return false;\">Force batch</a> | ";
+        if ($dtype != 0) {
+            $ret .= "<a href=\"\" onclick=\"unsaleBatch($id); return false;\">Stop Sale</a> | ";
+        }
         if (!$canHaveLimit){
             $ret .= "No limit";
             $ret .= " <span id=\"currentLimit\" style=\"color:#000;\"></span>";
@@ -1318,10 +1406,11 @@ class BatchManagementTool extends FanniePage
     {
         global $FANNIE_URL;
         $this->add_script('index.js');
-        $this->add_script($FANNIE_URL.'src/CalendarControl.js');
-        $this->add_script($FANNIE_URL.'src/jquery/jquery.js');
+        $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
+        $this->add_script($FANNIE_URL.'src/javascript/jquery-ui.js');
         $this->add_css_file('index.css');
         $this->add_css_file($FANNIE_URL.'src/style.css');
+        $this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
         ob_start();
         ?>
         <html>
@@ -1367,6 +1456,9 @@ class BatchManagementTool extends FanniePage
         if (FormLib::get('startAt', 0 ) != 0) {
             $showID = FormLib::get('startAt');
             $this->add_onload_command("showBatch($showID, false);\n");
+        } else {
+            $this->add_onload_command("\$('#newBatchStartDate').datepicker();\n");
+            $this->add_onload_command("\$('#newBatchEndDate').datepicker();\n");
         }
 
         return $ret;

@@ -3,12 +3,12 @@
 Table: batchType
 
 Columns:
-	batchTypeID int
-	typeDesc varchar
-	discType int
+    batchTypeID int
+    typeDesc varchar
+    discType int
 
 Depends on:
-	none
+    none
 
 Use:
 This table contains types of batches that
@@ -17,11 +17,11 @@ for each discount type, but you can have
 more for organizational purposes
 */
 $CREATE['op.batchType'] = "
-	CREATE TABLE batchType (
-		batchTypeID int,
-		typeDesc varchar(50),
-		discType int,
-		PRIMARY KEY (batchTypeID)
-	)
+    CREATE TABLE batchType (
+        batchTypeID int,
+        typeDesc varchar(50),
+        discType int,
+        PRIMARY KEY (batchTypeID)
+    )
 ";
 ?>

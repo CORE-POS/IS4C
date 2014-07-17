@@ -47,7 +47,7 @@ class GumLoanAccountsModel extends BasicModel
     'principal' => array('type'=>'MONEY'),
     'termInMonths' => array('type'=>'INT'),
     'interestRate' => array('type'=>'DOUBLE'),
-	);
+    );
 
     protected $unique = array('accountNumber');
 

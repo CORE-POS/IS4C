@@ -102,7 +102,7 @@ class FannieUploadPage extends FanniePage
             if ($try) {
                 $this->content_function = 'basicPreview';
                 $this->window_dressing = False;
-                $this->add_script($FANNIE_URL.'src/jquery/jquery.js');
+                $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
             } else {
                 $this->content_function = 'uploadError';
             }
@@ -192,7 +192,7 @@ class FannieUploadPage extends FanniePage
             } else { // selected columns were invalid; redisplay preview screen
                 $this->content_function = 'basicPreview';
                 $this->window_dressing = False;
-                $this->add_script($FANNIE_URL.'src/jquery/jquery.js');
+                $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
             }
         }
 

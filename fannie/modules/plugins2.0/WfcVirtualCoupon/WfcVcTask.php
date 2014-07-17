@@ -50,10 +50,10 @@ class WfcVcTask extends FannieTask
                     GROUP BY card_no
                     HAVING SUM(quantity) > 0';
         $accessP = $dbc->prepare($accessQ);
-        $accessR = $dbc->execute($accessP, array($dlog_ly));
+        $accessR = $dbc->execute($accessP, array($last_year));
         $mems = array();
         $in = '';
-        while($accessW = $dbc->fetch_row($accessR)) {
+        while ($accessW = $dbc->fetch_row($accessR)) {
             $mems[] = $accessW['card_no'];
             $in .= '?,';
         }
@@ -162,12 +162,12 @@ class WfcVcTask extends FannieTask
         );
         $accessR = $dbc->query("SELECT CardNo FROM custdata WHERE memType=5 AND personNum=1 AND memCoupons > 0");
         while($accessW = $dbc->fetch_row($accessR)) {
-            if (isset($no_ob[$accessR['CardNo']]) && !isset($no_ac[$accessR['CardNo']])) {
-                $dbc->query("UPDATE custdata SET blueLine=$ac_blueline WHERE CardNo=" . $accessR['CardNo']);
-            } else if (!isset($no_ob[$accessR['CardNo']]) && isset($no_ac[$accessR['CardNo']])) {
-                $dbc->query("UPDATE custdata SET blueLine=$ob_blueline WHERE CardNo=" . $accessR['CardNo']);
+            if (isset($no_ob[$accessW['CardNo']]) && !isset($no_ac[$accessW['CardNo']])) {
+                $dbc->query("UPDATE custdata SET blueLine=$ac_blueline WHERE CardNo=" . $accessW['CardNo']);
+            } else if (!isset($no_ob[$accessW['CardNo']]) && isset($no_ac[$accessW['CardNo']])) {
+                $dbc->query("UPDATE custdata SET blueLine=$ob_blueline WHERE CardNo=" . $accessW['CardNo']);
             } else {
-                $dbc->query("UPDATE custdata SET blueLine=$both_blueline WHERE CardNo=" . $accessR['CardNo']);
+                $dbc->query("UPDATE custdata SET blueLine=$both_blueline WHERE CardNo=" . $accessW['CardNo']);
             }
         }
     }

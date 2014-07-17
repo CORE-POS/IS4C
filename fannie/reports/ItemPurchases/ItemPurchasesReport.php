@@ -37,17 +37,17 @@ class ItemPurchasesReport extends FannieReportPage
 
     public $description = '[Item Purchases] lists each transaction containing a particular item';
 
-	function fetch_report_data()
+    function fetch_report_data()
     {
-		global $FANNIE_OP_DB, $FANNIE_URL;
+        global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-		$date1 = FormLib::get_form_value('date1',date('Y-m-d'));
-		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
-		$upc = FormLib::get_form_value('upc','0');
-		if (is_numeric($upc))
-			$upc = BarcodeLib::padUPC($upc);
+        $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
+        $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
+        $upc = FormLib::get_form_value('upc','0');
+        if (is_numeric($upc))
+            $upc = BarcodeLib::padUPC($upc);
 
-		$dlog = DTransactionsModel::selectDlog($date1,$date2);
+        $dlog = DTransactionsModel::selectDlog($date1,$date2);
         $lookupTrans = 'SELECT register_no, emp_no, trans_no,
                             YEAR(tdate) AS year,
                             MONTH(tdate) AS month,
@@ -109,7 +109,7 @@ class ItemPurchasesReport extends FannieReportPage
         }
 
         return $data;
-	}
+    }
     
     function report_description_content()
     {
@@ -118,47 +118,49 @@ class ItemPurchasesReport extends FannieReportPage
             'From ' . FormLib::get('date1') . ' to ' . FormLib::get('date2'),
         );
     }
-	
-	function form_content(){
+    
+    function form_content(){
 ?>
-<div id=main>	
+<div id=main>   
 <form method = "get" action="<?php echo $_SERVER['PHP_SELF']; ?>">
-	<table border="0" cellspacing="0" cellpadding="5">
-		<tr> 
-			<th>UPC</th>
-			<td>
-			<input type=text name=upc size=14 id=upc  />
-			</td>
-			<td>
-			<input type="checkbox" name="excel" id="excel" value="xls" />
-			<label for="excel">Excel</label>
-			</td>	
-		</tr>
-		<tr>
-			<th>Date Start</th>
-			<td>	
-		               <input type=text size=14 id=date1 name=date1 onfocus="this.value='';showCalendarControl(this);">
-			</td>
-			<td rowspan="3">
-			<?php echo FormLib::date_range_picker(); ?>
-			</td>
-		</tr>
-		<tr>
-			<th>End</th>
-			<td>
-		                <input type=text size=14 id=date2 name=date2 onfocus="this.value='';showCalendarControl(this);">
-		       </td>
+    <table border="0" cellspacing="0" cellpadding="5">
+        <tr> 
+            <th>UPC</th>
+            <td>
+            <input type=text name=upc size=14 id=upc  />
+            </td>
+            <td>
+            <input type="checkbox" name="excel" id="excel" value="xls" />
+            <label for="excel">Excel</label>
+            </td>   
+        </tr>
+        <tr>
+            <th>Date Start</th>
+            <td>    
+                       <input type=text size=14 id=date1 name=date1 />
+            </td>
+            <td rowspan="3">
+            <?php echo FormLib::date_range_picker(); ?>
+            </td>
+        </tr>
+        <tr>
+            <th>End</th>
+            <td>
+                        <input type=text size=14 id=date2 name=date2 />
+               </td>
 
-		</tr>
-		<tr>
-			<td> <input type=submit name=submit value="Submit"> </td>
-			<td> <input type=reset name=reset value="Start Over"> </td>
-		</tr>
-	</table>
+        </tr>
+        <tr>
+            <td> <input type=submit name=submit value="Submit"> </td>
+            <td> <input type=reset name=reset value="Start Over"> </td>
+        </tr>
+    </table>
 </form>
 </div>
 <?php
-	}
+        $this->add_onload_command("\$('#date1').datepicker({dateFormat:'yy-mm-dd'});\n");
+        $this->add_onload_command("\$('#date2').datepicker({dateFormat:'yy-mm-dd'});\n");
+    }
 }
 
 FannieDispatch::conditionalExec(false);

@@ -22,8 +22,8 @@
 *********************************************************************************/
 
 if (!chdir("CompressProdUpdate")){
-	echo "Error: Can't find directory (archive prod update)";
-	exit;
+    echo "Error: Can't find directory (archive prod update)";
+    exit;
 }
 
 include('../../config.php');
@@ -44,7 +44,7 @@ set_time_limit(0);
 ini_set('memory_limit','256M');
 
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
+        $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
 $matching = $sql->matchingColumns('prodUpdate', 'prodUpdateArchive');
 $col_list = '';
@@ -58,11 +58,11 @@ $col_list = substr($col_list, 0, strlen($col_list)-1);
 
 $worked = $sql->query("INSERT INTO prodUpdateArchive ($col_list) SELECT $col_list FROM prodUpdate");
 if ($worked){
-	$sql->query("TRUNCATE TABLE prodUpdate");
+    $sql->query("TRUNCATE TABLE prodUpdate");
 }
 else {
-	echo "There was an archiving error on prodUpdate\n";
-	flush();
+    echo "There was an archiving error on prodUpdate\n";
+    flush();
 }
 
 ?>

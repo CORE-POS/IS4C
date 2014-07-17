@@ -3,22 +3,22 @@
 View: batchPriority
 
 Columns:
-	upc varchar(13)
-	batchID int
-	startDate datetime
-	endDate datetime
-	discountType int
-	salePrice dbms currency
-	pricemethod int
-	quantity int
+    upc varchar(13)
+    batchID int
+    startDate datetime
+    endDate datetime
+    discountType int
+    salePrice dbms currency
+    pricemethod int
+    quantity int
 
 Depends on:
-	batches (table)
-	batchList (table)
-	batchPriority30 (view)
-	batchPriority20 (view)
-	batchPriority10 (view)
-	batchPriority0 (view)
+    batches (table)
+    batchList (table)
+    batchPriority30 (view)
+    batchPriority20 (view)
+    batchPriority10 (view)
+    batchPriority0 (view)
 
 Use:
 This view combines the other

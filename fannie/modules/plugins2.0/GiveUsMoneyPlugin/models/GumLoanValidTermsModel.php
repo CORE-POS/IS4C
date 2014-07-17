@@ -40,7 +40,7 @@ class GumLoanValidTermsModel extends BasicModel
     'gumLoanValidTermID' => array('type'=>'INT', 'increment'=>true, 'index'=>true),
     'termInMonths' => array('type'=>'INT', 'primary_key'=>true),
     'totalPrincipalLimit' => array('type'=>'MONEY', 'default'=>0),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

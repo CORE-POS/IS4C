@@ -28,16 +28,16 @@ $dbc = FannieDB::get($FANNIE_TRANS_DB);
 */
 
 class cl_wrapper {
-	var $CL;
-	function cl_wrapper(){
-		$this->CL = array();
-	}
-	function get($k){
-		return (isset($this->CL["$k"])) ? $this->CL["$k"] : "";
-	}
-	function set($k,$v){
-		$this->CL["$k"] = $v;
-	}
+    var $CL;
+    function cl_wrapper(){
+        $this->CL = array();
+    }
+    function get($k){
+        return (isset($this->CL["$k"])) ? $this->CL["$k"] : "";
+    }
+    function set($k,$v){
+        $this->CL["$k"] = $v;
+    }
 }
 
 /* Save new key+value pairs and changed values to the database.
@@ -47,25 +47,25 @@ class cl_wrapper {
  *   change the value in the database.
 */
 function confsave($k,$v){
-	global $FANNIE_TRANS_DB;
+    global $FANNIE_TRANS_DB;
     $dbc = FannieDB::get($FANNIE_TRANS_DB);
-	if (is_string($v))
-		$v = trim($v,"'");
-	$p = $dbc->prepare_statement("SELECT value FROM $FANNIE_TRANS_DB.lane_config WHERE keycode=?");
-	$r = $dbc->exec_statement($p,array($k));
-	if ($dbc->num_rows($r)==0){
-		$insP = $dbc->prepare_statement("INSERT INTO $FANNIE_TRANS_DB.lane_config (keycode, value,
-				modified) VALUES (?, ?, '.$dbc->now().')");
-		$dbc->exec_statement($insP,array($k,serialize($v)));
-	}
-	else {
-		$current = array_pop($dbc->fetch_row($r));
-		if ($v !== unserialize($current)){
-			$upP = $dbc->prepare_statement('UPDATE '.$FANNIE_TRANS_DB.'.lane_config SET value=?,
-				modified='.$dbc->now().' WHERE keycode=?');
-			$dbc->exec_statement($upP, array(serialize($v),$k));
-		}	
-	}
+    if (is_string($v))
+        $v = trim($v,"'");
+    $p = $dbc->prepare_statement("SELECT value FROM $FANNIE_TRANS_DB.lane_config WHERE keycode=?");
+    $r = $dbc->exec_statement($p,array($k));
+    if ($dbc->num_rows($r)==0){
+        $insP = $dbc->prepare_statement("INSERT INTO $FANNIE_TRANS_DB.lane_config (keycode, value,
+                modified) VALUES (?, ?, ".$dbc->now().")");
+        $dbc->exec_statement($insP,array($k,serialize($v)));
+    }
+    else {
+        $current = array_pop($dbc->fetch_row($r));
+        if ($v !== unserialize($current)){
+            $upP = $dbc->prepare_statement('UPDATE '.$FANNIE_TRANS_DB.'.lane_config SET value=?,
+                modified='.$dbc->now().' WHERE keycode=?');
+            $dbc->exec_statement($upP, array(serialize($v),$k));
+        }   
+    }
 }
 
 $CORE_LOCAL = new cl_wrapper();
@@ -73,9 +73,9 @@ $CORE_LOCAL = new cl_wrapper();
 $q = $dbc->prepare_statement("SELECT keycode,value FROM lane_config");
 $r = $dbc->exec_statement($q);
 while($w = $dbc->fetch_row($r)){
-	$k = $w['keycode'];
-	$v = unserialize($w['value']);
-	$CORE_LOCAL->set($k,$v);
+    $k = $w['keycode'];
+    $v = unserialize($w['value']);
+    $CORE_LOCAL->set($k,$v);
 }
 
 ?>

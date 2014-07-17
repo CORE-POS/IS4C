@@ -35,7 +35,7 @@ class WfcHtEvalInfoModel extends BasicModel
     'nextEval' => array('type'=>'DATETIME'),
     'hireDate' => array('type'=>'DATETIME'),
     'nextTypeID' => array('type'=>'INT'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

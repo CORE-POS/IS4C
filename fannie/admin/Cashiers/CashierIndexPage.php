@@ -26,22 +26,22 @@ include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class CashierIndexPage extends FanniePage {
 
-	protected $title = "Fannie : Cashier Management";
-	protected $header = "Cashier Management";
-	protected $must_authenticate = True;
-	protected $auth_classes = array('editcashiers');
+    protected $title = "Fannie : Cashier Management";
+    protected $header = "Cashier Management";
+    protected $must_authenticate = True;
+    protected $auth_classes = array('editcashiers');
 
-	function body_content(){
-		ob_start();
-		?>
-		<ul>
-		<li> <a href=AddCashierPage.php>Add a new cashier</a></li>
-		<li> <a href=ViewCashiersPage.php>View/edit cashiers</a></li>
-		<li> <a href="../../reports/cash_report/">Cashier performance report</a></li>
-		</ul>
-		<?php
-		return ob_get_clean();
-	}
+    function body_content(){
+        ob_start();
+        ?>
+        <ul>
+        <li> <a href=AddCashierPage.php>Add a new cashier</a></li>
+        <li> <a href=ViewCashiersPage.php>View/edit cashiers</a></li>
+        <li> <a href="../../reports/cash_report/">Cashier performance report</a></li>
+        </ul>
+        <?php
+        return ob_get_clean();
+    }
 }
 
 FannieDispatch::conditionalExec(false);

@@ -35,7 +35,7 @@ class ObfCategoriesPage extends FannieRESTfulPage
 
     public function post_id_handler()
     {
-		global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
+        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
         $model = new ObfCategoriesModel($dbc);
 
@@ -59,12 +59,15 @@ class ObfCategoriesPage extends FannieRESTfulPage
 
     public function get_view()
     {
-		global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
+        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
 
         $model = new ObfCategoriesModel($dbc);
 
-        $ret = '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
+        $ret = '<button onclick="location=\'ObfIndexPage.php\';return false;">Home</button>
+                <br /><br />';
+
+        $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
         $ret .= '<table cellspacing="0" cellpadding="4" border="1">';
         $ret .= '<tr>
                     <th>Name</th>

@@ -27,7 +27,6 @@
 */
 class BarcodeLib
 {
-
     /**
       Zero-padd a UPC to standard length
       @param $upc string upc
@@ -114,6 +113,52 @@ class BarcodeLib
             return true;
         } else {
             return false;
+        }
+    }
+
+    static public function EAN13CheckDigit($str)
+    {
+        $ean = str_pad($str,12,'0',STR_PAD_LEFT);
+
+        $evens = 0;
+        $odds = 0;
+        for ($i=0;$i<12;$i++) {
+            if ($i%2 == 0) $evens += (int)$ean[$i];
+            else $odds += (int)$ean[$i];
+        }
+        $odds *= 3;
+        
+        $total = $evens + $odds;
+        $chk = (10 - ($total%10)) % 10;
+
+        return $ean.$chk;
+    }
+
+    public static function UPCACheckDigit($str)
+    {
+        $upc = str_pad($str,11,'0',STR_PAD_LEFT);
+
+        $evens = 0;
+        $odds = 0;
+        for ($i=0;$i<11;$i++) {
+            if($i%2==0) $odds += (int)$upc[$i];
+            else $evens += (int)$upc[$i];
+        }
+        $odds *= 3;
+
+        $total = $evens+$odds;
+        $chk = (10 - ($total%10)) % 10;
+
+        return $upc.$chk;
+    }
+
+    public static function normalize13($str)
+    {
+        $str = ltrim($str,'0');
+        if (strlen($str) <= 11) {
+            return '0' . self::UPCACheckDigit($str);
+        } else {
+            return self::EAN13CheckDigit($str);
         }
     }
 }

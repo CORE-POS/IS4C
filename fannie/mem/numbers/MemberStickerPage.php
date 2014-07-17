@@ -28,52 +28,52 @@ define('FPDF_FONTPATH',$FANNIE_ROOT.'src/fpdf/font/');
 
 class MemberStickerPage extends FanniePage {
 
-	protected $title='Fannie - Print Member Stickers';
-	protected $header='Print Member Stickers';
+    protected $title='Fannie - Print Member Stickers';
+    protected $header='Print Member Stickers';
 
-	function preprocess(){
-		if (FormLib::get_form_value('start',False) !== False){
-			$pdf = new FPDF('P','in','Letter');
-			$pdf->SetMargins(0.5,0.5,0.5);
-			$pdf->SetAutoPageBreak(False,0.5);
-			$pdf->AddPage();
+    function preprocess(){
+        if (FormLib::get_form_value('start',False) !== False){
+            $pdf = new FPDF('P','in','Letter');
+            $pdf->SetMargins(0.5,0.5,0.5);
+            $pdf->SetAutoPageBreak(False,0.5);
+            $pdf->AddPage();
 
-			$start = FormLib::get_form_value('start');
-			$x = 0.5;
-			$y = 0.5;
-			$pdf->AddFont('Scala-Bold','B','Scala-Bold.php');
-			$pdf->SetFont('Scala-Bold','B',16);
-			for($i=0;$i<40;$i++){
-				$current = $start+$i;	
-				$pdf->SetXY($x,$y);
-				$pdf->Cell(1.75,0.5,$current,0,0,'C');
-				$pdf->Cell(1.75,0.5,$current,0,0,'C');
-				if ($i % 2 == 0) $x += (1.75*2)+0.5;
-				else {
-					$x = 0.5;
-					$y += 0.5;
-				}
-			}
-			$pdf->Close();
-			$pdf->Output("mem stickers $start.pdf","I");
+            $start = FormLib::get_form_value('start');
+            $x = 0.5;
+            $y = 0.5;
+            $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
+            $pdf->SetFont('Gill','',16);
+            for($i=0;$i<40;$i++){
+                $current = $start+$i;   
+                $pdf->SetXY($x,$y);
+                $pdf->Cell(1.75,0.5,$current,0,0,'C');
+                $pdf->Cell(1.75,0.5,$current,0,0,'C');
+                if ($i % 2 == 0) $x += (1.75*2)+0.5;
+                else {
+                    $x = 0.5;
+                    $y += 0.5;
+                }
+            }
+            $pdf->Close();
+            $pdf->Output("mem stickers $start.pdf","I");
 
-			return False;
-		}
-		return True;
-	}
+            return False;
+        }
+        return True;
+    }
 
-	function body_content(){
-		return '<form action="MemberStickerPage.php" method="get">
-		<p>
-		Generate a sheet of member stickers<br />
-		Format: Avery 5267<br />
-		Starting member number:
-		<input type="text" name="start" size="6" /><br />
-		<br />
-		<input type="submit" value="Get PDF" />
-		</p>
-		</form>';
-	}
+    function body_content(){
+        return '<form action="MemberStickerPage.php" method="get">
+        <p>
+        Generate a sheet of member stickers<br />
+        Format: Avery 5267<br />
+        Starting member number:
+        <input type="text" name="start" size="6" /><br />
+        <br />
+        <input type="submit" value="Get PDF" />
+        </p>
+        </form>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

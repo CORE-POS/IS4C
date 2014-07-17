@@ -3,11 +3,11 @@
 Table: deptSalesCode
 
 Columns:
-	dept_ID int
-	salesCode int
+    dept_ID int
+    salesCode int
 
 Depends on:
-	departments (table)
+    departments (table)
 
 Use:
 Probably WFC specific. This is yet
@@ -17,10 +17,10 @@ department field you can use for whatever
 you want.
 */
 $CREATE['op.deptSalesCodes'] = "
-	CREATE TABLE deptSalesCodes (
-		dept_ID int,
-		salesCode int,
-		PRIMARY KEY (dept_ID)
-	)
+    CREATE TABLE deptSalesCodes (
+        dept_ID int,
+        salesCode int,
+        PRIMARY KEY (dept_ID)
+    )
 ";
 ?>

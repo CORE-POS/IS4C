@@ -54,6 +54,7 @@ class BasicModel
       - default (null if omitted)
       - primary_key (optional, boolean)
       - index (optional, boolean)
+      - not_null (optional, boolean)
       - increment (optional, boolean)
       - ignore_updates (optional, boolean)
       - replaces (optional, string previous column name)
@@ -210,6 +211,10 @@ class BasicModel
             }
             $sql .= $type;
 
+            if (isset($definition['not_null']) && $definition['not_null']) {
+                $sql .= ' NOT NULL';
+            }
+
             if (isset($definition['increment']) && $definition['increment']) {
                 if ($dbms == 'mssql') {
                     $sql .= ' IDENTITY (1, 1) NOT NULL';
@@ -217,7 +222,9 @@ class BasicModel
                     $sql .= ' NOT NULL AUTO_INCREMENT';
                 }
                 $inc = true;
-            } elseif (isset($definition['default']) && $definition['default']) {
+            } elseif (isset($definition['default']) && (
+                is_string($definition['default']) || is_numeric($definition['default'])
+            )) {
                 if ($dbms == 'mssql') {
                     $sql .= ' '.$definition['default'];
                 } else {
@@ -1180,7 +1187,7 @@ class $name extends BasicModel\n");
         fwrite($fp,"\n");
         fwrite($fp,"    protected \$name = \"".substr($name,0,strlen($name)-5)."\";\n");
         fwrite($fp,"\n");
-        fwrite($fp,"    protected \$columns = array(\n\t);\n");
+        fwrite($fp,"    protected \$columns = array(\n    );\n");
         fwrite($fp,"\n");
         fwrite($fp,"    /* START ACCESSOR FUNCTIONS */\n");
         fwrite($fp,"    /* END ACCESSOR FUNCTIONS */\n");

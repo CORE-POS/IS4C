@@ -34,7 +34,7 @@ class PermissionsModel extends BasicModel
     'calendarID' => array('type'=>'INT'),
     'uid' => array('type'=>'INT'),
     'classID' => array('type'=>'INT'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 
