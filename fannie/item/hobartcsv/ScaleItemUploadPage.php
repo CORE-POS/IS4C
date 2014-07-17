@@ -115,10 +115,10 @@ class ScaleItemUploadPage extends FannieUploadPage
             $model->load();
 
             if ($type_index !== false && isset($line[$type_index])) {
-                if (strtoupper($line[$type_index]) == 'FIXED') {
+                if (strtoupper($line[$type_index]) == 'FIXED' || strtoupper($line[$type_index]) == 'EA') {
                     $model->weight(1);
                     $model->bycount(1);
-                } else if (strtoupper($line[$type_index]) == 'RANDOM') {
+                } else if (strtoupper($line[$type_index]) == 'RANDOM' || strtoupper($line[$type_index]) == 'RAND') {
                     $model->weight(0);
                     $model->bycount(0);
                 }

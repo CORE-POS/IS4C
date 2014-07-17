@@ -73,7 +73,6 @@ class ScaleItemModule extends ItemModule {
         $ret .= sprintf("<tr><th colspan=2>Longer description</th><td colspan=5><input size=35 
                 type=text name=s_longdesc maxlength=100 value=\"%s\" /></td></tr>",
                 ($reg_description == $scale['itemdesc'] ? '': $scale['itemdesc']));
-        $ret .= "<tr><td colspan=7 style=\"font-size:1px;\">&nbsp;</td></tr>";
 
         $ret .= "<tr><th>Weight</th><th>By Count</th><th>Tare</th><th>Shelf Life</th>";
         $ret .= "<th>Net Wt (oz)</th><th>Label</th><th>Safehandling</th></tr>";         
@@ -116,12 +115,46 @@ class ScaleItemModule extends ItemModule {
                 ($scale['graphics']==1?'checked':''));
         $ret .= '</tr>';    
 
-        $ret .= "<tr><td colspan=7 style=\"font-size:1px;\">&nbsp;</td></tr>";
-
         $ret .= "<tr><td colspan=7>";
-        $ret .= "<b>Expanded text:<br /><textarea name=s_text rows=4 cols=50>";
+        $ret .= '<div style="float: left;">';
+        $ret .= "<b>Expanded text:<br /><textarea name=s_text rows=4 cols=45>";
         $ret .= $scale['text'];
-        $ret .= "</textarea></td></tr>";
+        $ret .= "</textarea>";
+        $ret .= '</div>';
+        $scales = new ServiceScalesModel($dbc);
+        $mapP = $dbc->prepare('SELECT upc
+                               FROM ServiceScaleItemMap
+                               WHERE serviceScaleID=?
+                                AND upc=?');
+        $deptP = $dbc->prepare('SELECT p.upc
+                                FROM products AS p
+                                    INNER JOIN superdepts AS s ON p.department=s.dept_ID
+                                WHERE p.upc=?
+                                    AND s.superID=?');
+        $ret .= '<div style="float: left;">';
+        foreach ($scales->find('description') as $scale) {
+            $checked = false;
+            $mapR = $dbc->execute($mapP, array($scale->serviceScaleID(), $upc));
+            if ($dbc->num_rows($mapR) > 0) {
+                // marked in map table
+                $checked = true;
+            } else {
+                $deptR = $dbc->execute($deptP, array($upc, $scale->superID()));
+                if ($dbc->num_rows($deptR) > 0) {
+                    // in a POS department corresponding 
+                    // to this scale
+                    $checked = true;
+                }
+            }
+
+            $ret .= sprintf('<input type="checkbox" name="scaleID[]" id="scaleID%d" value=%d %s />
+                            <label for="scaleID%d">%s</label><br />',
+                            $scale->serviceScaleID(), $scale->serviceScaleID(), ($checked ? 'checked' : ''),
+                            $scale->serviceScaleID(), $scale->description());
+        }
+        $ret .= '</div>';
+        $ret .= '<div style="clear:left;"></div>';
+        $ret .= "</td></tr>";
 
         $ret .= '</table></div></fieldset>';
         return $ret;
@@ -199,14 +232,6 @@ class ScaleItemModule extends ItemModule {
         $scaleItem->netWeight($netWeight);
         $scaleItem->save();
 
-        /**
-          Legacy way of sending scale info
-          @deprecated 28Mar14
-        include(dirname(__FILE__).'/../hobartcsv/parse.php');
-        parseitem($action,$upc,$desc,$tare,$shelf,$price,$bycount,$type,
-            0.00,$text,$label,($graphics==1?121:0));
-        */
-
         // extract scale PLU
         preg_match("/002(\d\d\d\d)0/",$upc,$matches);
         $s_plu = $matches[1];
@@ -239,7 +264,40 @@ class ScaleItemModule extends ItemModule {
             $item_info['ByCount'] = 0;
         }
 
-        HobartDgwLib::writeItemsToScales($item_info);
+        $scales = array();
+        $scaleIDs = FormLib::get('scaleID', array());
+        $model = new ServiceScalesModel($dbc);
+        $chkMap = $dbc->prepare('SELECT upc
+                                 FROM ServiceScaleItemMap
+                                 WHERE serviceScaleID=?
+                                    AND upc=?');
+        $addMap = $dbc->prepare('INSERT INTO ServiceScaleItemMap
+                                    (serviceScaleID, upc)
+                                 VALUES
+                                    (?, ?)');
+        foreach ($scaleIDs as $scaleID) {
+            $model->reset();
+            $model->serviceScaleID($scaleID);
+            if (!$model->load()) {
+                // scale doesn't exist
+                continue;
+            }
+            $repr = array(
+                'host' => $model->host(),
+                'dept' => $model->scaleDeptName(),
+                'type' => $model->scaleType(),  
+                'new' => false,
+            );
+            $exists = $dbc->execute($chkMap, array($scaleID, $upc));
+            if ($dbc->num_rows($exists) == 0) {
+                $repr['new'] = true;
+                $dbc->execute($addMap, array($scaleID, $upc));
+            }
+
+            $scales[] = $repr;
+        }
+
+        HobartDgwLib::writeItemsToScales($item_info, $scales);
     }
 }
 

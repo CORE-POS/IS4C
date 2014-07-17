@@ -48,27 +48,56 @@ class SyncFromSearch extends FannieRESTfulPage
         $model = new ScaleItemsModel(FannieDB::get($FANNIE_OP_DB));
         $upcs = FormLib::get('upcs', array());
         $all_items = array();
-        echo '<ul>';
-        foreach ($upcs as $upc) {
-            $model->reset();
-            $model->plu(BarcodeLib::padUPC($upc));
-            if ($model->load()) {
-                $all_items[] = $this->getItemInfo($model);
-                echo '<li style="color:green;">Sending <b>' . $model->plu() . '</b></li>';
-                // batch out changes @ 10 items / file
-                if (count($all_items) >= 10) {
-                    HobartDgwLib::writeItemsToScales($all_items);
-                    $all_items = array();
-                }
-            } else {
-                echo '<li style="color:red;">Error on <b>' . $model->plu() . '</b></li>';
-            }
-        }
-        echo '</ul>';
+        $scales = $this->scalesFromIDs(FormLib::get('scaleID', array()));
 
-        if (count($all_items) > 0) {
-            HobartDgwLib::writeItemsToScales($all_items);
-        }
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $chkMap = $dbc->prepare('
+            SELECT upc
+            FROM ServiceScaleItemMap
+            WHERE serviceScaleID=?
+                AND upc=?
+        ');
+        $addMap = $dbc->prepare('
+            INSERT INTO ServiceScaleItemMap
+                (serviceScaleID, upc)
+            VALUES
+                (?, ?)
+        ');
+
+        echo '<ul>';
+        // go through scales one at a time
+        // check whether item is present on that
+        // scale and do write or change as appropriate
+        foreach ($scales as $scale) {
+
+            foreach ($upcs as $upc) {
+                $model->reset();
+                $model->plu(BarcodeLib::padUPC($upc));
+
+                if ($model->load()) {
+                    $item_info = $this->getItemInfo($model);
+                    $chk = $dbc->execute($chkMap, array($scale['id'], $upc));
+                    if ($dbc->num_rows($chk) == 0) {
+                        $dbc->execute($addMap, array($scale['id'], $upc));
+                        $item_info['RecordType'] = 'WriteOneItem';
+                    }
+                    $all_items[] = $item_info;
+                    echo '<li style="color:green;">Sending <b>' . $model->plu() . '</b></li>';
+                    // batch out changes @ 10 items / file
+                    if (count($all_items) >= 10) {
+                        HobartDgwLib::writeItemsToScales($all_items, array($scale));
+                        $all_items = array();
+                    }
+                } else {
+                    echo '<li style="color:red;">Error on <b>' . $model->plu() . '</b></li>';
+                }
+            } // end loop on items
+            echo '</ul>';
+
+            if (count($all_items) > 0) {
+                HobartDgwLib::writeItemsToScales($all_items, array($scale));
+            }
+        } // end loop on scales
 
         return false;
     }
@@ -79,10 +108,40 @@ class SyncFromSearch extends FannieRESTfulPage
         $model = new ScaleItemsModel(FannieDB::get($FANNIE_OP_DB));
         $model->plu(BarcodeLib::padUPC($this->sendupc));
 
-        if ($model->load()) {
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $chkMap = $dbc->prepare('
+            SELECT upc
+            FROM ServiceScaleItemMap
+            WHERE serviceScaleID=?
+                AND upc=?
+        ');
+        $addMap = $dbc->prepare('
+            INSERT INTO ServiceScaleItemMap
+                (serviceScaleID, upc)
+            VALUES
+                (?, ?)
+        ');
+
+        $scales = $this->scalesFromIDs(FormLib::get('scaleID', array()));
+
+        if ($model->load() && is_array($scales)) {
             $item_info = $this->getItemInfo($model);
 
-            HobartDgwLib::writeItemsToScales($item_info);
+            // go through scales one at a time
+            // check whether item is present on that
+            // scale and do write or change as appropriate
+            foreach ($scales as $scale) {
+
+                $chk = $dbc->execute($chkMap, array($scale['id'], $this->sendupc));
+                if ($dbc->num_rows($chk) == 0) {
+                    $dbc->execute($addMap, array($scale['id'], $this->sendupc));
+                    $item_info['RecordType'] = 'WriteOneItem';
+                } else {
+                    $item_info['RecordType'] = 'ChangeOneItem';
+                }
+
+                HobartDgwLib::writeItemsToScales($item_info, array($scale));
+            }
 
             echo '{error:0}';
         } else {
@@ -90,6 +149,29 @@ class SyncFromSearch extends FannieRESTfulPage
         }
 
         return false;
+    }
+
+    private function scalesFromIDs($ids)
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $model = new ServiceScalesModel($dbc);
+        $scales = array();
+        foreach ($ids as $id) {
+            $model->reset();
+            $model->serviceScaleID($id);
+            if (!$model->load()) {
+                continue;
+            }
+            $scales[] = array(
+                'host' => $model->host(),
+                'type' => $model->scaleType(),
+                'dept' => $model->scaleDeptName(),
+                'id' => $model->serviceScaleID(),
+            );
+        }
+
+        return $scales;
     }
 
     private function getItemInfo($model)
@@ -151,6 +233,16 @@ class SyncFromSearch extends FannieRESTfulPage
         $ret = '';
 
         $ret .= '<form action="SyncFromSearch.php" method="post">';
+        $scales = new ServiceScalesModel(FannieDB::get($FANNIE_OP_DB));
+        $ret .= '<fieldset><legend>Scales</legend>';
+        foreach ($scales->find('description') as $scale) {
+            $ret .= sprintf('<input type="checkbox" class="scaleID" name="scaleID[]" 
+                                id="scaleID%d" value="%d" />
+                             <label for="scaleID%d">%s</label><br />',
+                             $scale->serviceScaleID(), $scale->serviceScaleID(),
+                             $scale->serviceScaleID(), $scale->description());
+        }
+        $ret .= '</fieldset>';
         $ret .= '<input type="submit" name="sendall" value="Sync All Items" />';
         $ret .= '<table cellpadding="4" cellspacing="0" border="1">';
         $ret .= '<tr>
@@ -195,9 +287,15 @@ class SyncFromSearch extends FannieRESTfulPage
         ?>
         function sendOne(upc)
         {
+            var scaleStr = $('.scaleID').serialize();
+            if (scaleStr == '') {
+                alert('Must select a scale');
+
+                return false;
+            }
             $.ajax({
                 type: 'post',
-                data: 'sendupc='+upc,
+                data: 'sendupc='+upc+'&'+scaleStr,
                 success: function(result) {
                     $('#row'+upc).remove();
                 }

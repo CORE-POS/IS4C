@@ -919,7 +919,13 @@ class InstallIndexPage extends InstallPage {
         */
 
         $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+                'ServiceScales','op');
+
+        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
                 'scaleItems','op');
+
+        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+                'ServiceScaleItemMap','op');
 
         $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
                 'PurchaseOrder','op');
