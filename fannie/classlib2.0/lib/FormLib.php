@@ -47,6 +47,28 @@ class FormLib
     {
         return self::getFormValue($name, $default);
     }
+
+    /**
+      Get form input as a formatted date
+      @param $name [string] form field
+      @param $default [mixed, optional] default value if
+        form input is omitted or invalid
+      @param $format [string, optional] date format string.
+        Default is Y-m-d.
+    */
+    public static function getDate($name, $default='', $format='Y-m-d')
+    {
+        $input_value = self::getFormValue($name, $default);
+        $timestamp = strtotime($input_value);
+        if ($timestamp === false || $timestamp === -1) {
+            // input is invalid
+            // if default is invalid that's the caller's problem
+            return $default;
+        } else {
+            return date($format, $timestamp);
+        }
+    }
+
     /**
       Get a fieldset to select certain date ranges
       Requires JQquery

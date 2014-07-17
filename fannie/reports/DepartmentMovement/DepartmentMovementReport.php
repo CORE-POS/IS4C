@@ -66,8 +66,8 @@ class DepartmentMovementReport extends FannieReportPage
     {
         global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
-        $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
+        $date1 = FormLib::getDate('date1',date('Y-m-d'));
+        $date2 = FormLib::getDate('date2',date('Y-m-d'));
         $deptStart = FormLib::get_form_value('deptStart','');
         $deptEnd = FormLib::get_form_value('deptEnd','');
         $buyer = FormLib::get_form_value('buyer','');
@@ -307,7 +307,7 @@ class DepartmentMovementReport extends FannieReportPage
     function report_description_content()
     {
         $ret = array();
-        $ret[] = "Movement from ".FormLib::get_form_value('date1','')." to ".FormLib::get_form_value('date2','');
+        $ret[] = "Movement from ".FormLib::getDate('date1','')." to ".FormLib::getDate('date2','');
         $ret[] = "Summed by ".FormLib::get_form_value('sort','');
         $buyer = FormLib::get_form_value('buyer','');
         if ($buyer === '0') {
