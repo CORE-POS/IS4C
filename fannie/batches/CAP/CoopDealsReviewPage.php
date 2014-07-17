@@ -54,10 +54,10 @@ class CoopDealsReviewPage extends FanniePage
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $start = FormLib::get_form_value('start',date('Y-m-d'));
-        $end = FormLib::get_form_value('end',date('Y-m-d'));
-        $b_start = FormLib::get_form_value('bstart',date('Y-m-d'));
-        $b_end = FormLib::get_form_value('bend',date('Y-m-d'));
+        $start = date('Y-m-d', strtotime(FormLib::get_form_value('start',date('Y-m-d'))));
+        $end = date('Y-m-d', strtotime(FormLib::get_form_value('end',date('Y-m-d'))));
+        $b_start = date('Y-m-d', strtotime(FormLib::get_form_value('bstart',date('Y-m-d'))));
+        $b_end = date('Y-m-d', strtotime(FormLib::get_form_value('bend',date('Y-m-d'))));
         $naming = FormLib::get_form_value('naming','');
         $upcs = FormLib::get_form_value('upc',array());
         $prices = FormLib::get_form_value('price',array());
