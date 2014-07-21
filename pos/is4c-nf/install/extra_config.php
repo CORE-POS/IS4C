@@ -25,14 +25,7 @@ include('InstallUtilities.php');
     <td colspan=2 class="tblHeader"><h3>General Settings</h3></td>
 </tr>
 <tr>
-    <td style="width: 30%;"></td>
-    <td>
-    <?php echo InstallUtilities::installCheckboxField('browserOnly', 'Browser only', 0); ?>
-    <span class='noteTxt'>If Yes, the "exit" button on the login screen attempts to close the window.</span>
-    </td>
-</tr>
-<tr>
-    <td><b>Organization</b>:</td>
+    <td style="width: 30%;"><b>Organization</b>:</td>
     <td>
     <?php echo InstallUtilities::installTextField('store', ''); ?>
     <span class='noteTxt'>In theory, any hard-coded, organization specific sequences should be blocked
@@ -67,14 +60,14 @@ include('InstallUtilities.php');
     <td><b>Line Item Discount (member)</b>: </td>
     <td>
     <?php echo InstallUtilities::installTextField('LineItemDiscountMem', 0); ?>
-    (percentage; 0.05 =&gt; 5%)
+    <span class='noteTxt'>(percentage; 0.05 =&gt; 5%)</span>
     </td>
 </tr>
 <tr>
     <td><b>Line Item Discount (non-member)</b>: </td>
     <td>
     <?php echo InstallUtilities::installTextField('LineItemDiscountNonMem', 0); ?>
-    (percentage; 0.05 =&gt; 5%)
+    <span class='noteTxt'>(percentage; 0.05 =&gt; 5%)</span>
     </td>
 </tr>
 <tr>
@@ -91,8 +84,6 @@ include('InstallUtilities.php');
     $behavior = array('1' => 'Cannot override other accounts', '0' => 'No different than other accounts');
     echo InstallUtilities::installSelectField('RestrictDefaultNonMem', $behavior, 0);
     ?>
-    <span class='noteTxt'>Normally a single account number is used for most if not all non-member
-    transactions. Specify that account number here.</span>
     </td>
 </tr>
 <tr>
@@ -226,7 +217,7 @@ InstallUtilities::paramSave('printerPort',$CORE_LOCAL->get('printerPort'));
 </tr>
 <tr>
     <td><b>Scanner/scale driver</b>:</td>
-    <td><?php echo InstallUtilities::installTextField('scaleDriver', 'NewMagellan'); ?></td>
+    <td><?php echo InstallUtilities::installSelectField('scaleDriver', array('NewMagellan', 'ssd'), 'NewMagellan'); ?></td>
 </tr>
 <tr>
     <td colspan=2>

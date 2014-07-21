@@ -135,15 +135,9 @@ class login2 extends BasicPage
 			</div>	
 		</div>
 		<div id="loginExit">
-			<?php echo _("EXIT"); ?>
-			<?php
-			if ($CORE_LOCAL->get("browserOnly") == 1) {
-				echo "<a href=\"\" onclick=\"window.top.close();\" ";
-			}
-			else {
-				//echo "<a href='/bye.html' onclick=\"var cw=window.open('','Customer_Display'); cw.close()\" ";
-				echo "<a href=\"\" ";
-			}
+			<?php 
+            echo _("EXIT");
+            echo "<a href=\"\" ";
 			echo "onmouseover=\"document.exit.src='{$this->page_url}graphics/switchred2.gif';\" ";
 			echo "onmouseout=\"document.exit.src='{$this->page_url}graphics/switchblue2.gif';\">";
 			?>
