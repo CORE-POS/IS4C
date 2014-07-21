@@ -450,49 +450,6 @@ while($row = $db->fetch_row($res)){
 </table>
 
 </td></tr>
-<tr>
-    <td colspan=2 class="tblHeader">
-    <h3>Integrated Card Processing</h3>
-    <p><i>Integrated card processing configuration is included for the sake
-    of completeness. The modules themselves require individual configuration,
-    too</i></p>
-    </td>
-</tr>
-<tr>
-    <td><b>Integrated Credit Cards</b>: </td>
-    <td><?php echo InstallUtilities::installSelectField('CCintegrate', array(1=>'Yes',0=>'No'), 0); ?></td>
-</tr>
-<tr>
-    <td><b>Integrated Gift Cards</b>: </td>
-    <td><?php echo InstallUtilities::installSelectField('gcIntegrate', array(1=>'Yes',0=>'No'), 0); ?></td>
-</tr>
-<tr>
-    <td><b>Enabled paycard modules</b>:</td>
-    <td>
-    <?php
-    $mods = array();
-    $dh = opendir('../plugins/Paycards/');
-    while (false !== ($f = readdir($dh))) {
-        if ($f == "." || $f == ".." || $f == "BasicCCModule.php")
-            continue;
-        if (substr($f,-4) == ".php") {
-            $mods[] = rtrim($f,".php");
-        }
-    }
-    echo InstallUtilities::installSelectField('RegisteredPaycardClasses',
-        $mods,
-        array(),
-        InstallUtilities::EITHER_SETTING,
-        true,
-        array('multiple'=>'multiple', 'size'=>10)
-    );
-    ?>
-    </td>
-</tr>
-<tr>
-    <td><b>Signature Required Limit</b>:</td>
-    <td>$<?php echo InstallUtilities::installTextField('CCSigLimit', 0.00); ?></td>
-</tr>
 <!--
 <tr><td colspan=2 class="tblHeader">
 <h3>Various</h3>

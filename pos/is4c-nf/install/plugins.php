@@ -77,13 +77,6 @@ foreach($mods as $m){
 	} else if ($enabled){
 		foreach ($instance->plugin_settings as $field => $info) {
 			echo '<tr><td colspan="2" style="margin-bottom: 0px; height:auto;">';
-            /*
-			$form_id = $m.'_'.$field;
-			if (isset($_REQUEST[$form_id])) 
-				$CORE_LOCAL->set($field,$_REQUEST[$form_id]);
-			if ($CORE_LOCAL->get($field) === "") 
-				$CORE_LOCAL->set($field,isset($info['default'])?$info['default']:'');
-            */
             $default = isset($info['default']) ? $info['default'] : '';
 			echo '<b>'.(isset($info['label'])?$info['label']:$field).'</b>: ';
 			if (isset($info['options']) && is_array($info['options'])) {
@@ -92,22 +85,14 @@ foreach($mods as $m){
                 foreach ($info['options'] as $label => $value) {
                     $invert[$value] = $label;
                 }
-                echo InstallUtilities::installSelectField($field, $invert, $default); 
-                /*
-				printf('<select name="%s">',$form_id);
-				foreach($info['options'] as $label => $value){
-					printf('<option %s value="%s">%s</option>',
-						($CORE_LOCAL->get($field)==$value?'selected':''),
-						$value, $label);
-				}
-				echo '</select>';
-                */
+                $attributes = array();
+                if (is_array($default)) {
+                    $attributes['multiple'] = 'multiple';
+                    $attributes['size'] = 5;
+                }
+                echo InstallUtilities::installSelectField($field, $invert, $default, InstallUtilities::EITHER_SETTING, true, $attributes); 
 			} else {
                 echo InstallUtilities::installTextField($field, $default);
-                /*
-				printf('<input type="text" name="%s" value="%s" />',
-					$form_id,$CORE_LOCAL->get($field));
-                */
 			}
 			if (isset($info['description'])) 
 				echo '<span class="noteTxt" style="width:200px;">'.$info['description'].'</span>';

@@ -801,7 +801,9 @@ class InstallUtilities extends LibraryClass
         $has_keys = ($options === array_values($options)) ? false : true;
         foreach ($options as $key => $value) {
             $selected = '';
-            if ($is_array && in_array($value, $current_value)) {
+            if ($is_array && $has_keys && in_array($key, $current_value)) {
+                $selected = 'selected';
+            } elseif ($is_array && !$has_keys && in_array($value, $current_value)) {
                 $selected = 'selected';
             } elseif ($has_keys && $current_value == $key) {
                 $selected = 'selected';
