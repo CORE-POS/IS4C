@@ -970,8 +970,18 @@ function fetch_data($date1,$date2){
 <script type=text/javascript src=journal.js></script>
 <link href="<?php echo $FANNIE_URL; ?>src/style.css"
       rel="stylesheet" type="text/css">
-<script src="<?php echo $FANNIE_URL; ?>src/CalendarControl.js"
+<link href="<?php echo $FANNIE_URL; ?>src/javascript/jquery-ui.css"
+      rel="stylesheet" type="text/css">
+<script src="<?php echo $FANNIE_URL; ?>src/javascript/jquery.js"
         language="javascript"></script>
+<script src="<?php echo $FANNIE_URL; ?>src/javascript/jquery-ui.js"
+        language="javascript"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+    $('#startDate').datepicker();
+    $('#endDate').datepicker();
+});
+</script>
 </head>
 <style type=text/css>
 td.money {
@@ -1007,10 +1017,10 @@ a {
 <div id=input>
 <table>
 <tr>
-	<th>Start Date</th><td><input type=text id=startDate onfocus="this.value='';showCalendarControl(this);" /></td>
+	<th>Start Date</th><td><input type=text id=startDate /></td>
 </tr>
 <tr>
-	<th>End Date</th><td><input type=text id=endDate onfocus="this.value='';showCalendarControl(this);" /></td>
+	<th>End Date</th><td><input type=text id=endDate /></td>
 </tr>
 </tr>
 </table>

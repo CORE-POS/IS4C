@@ -3,16 +3,17 @@ global $FANNIE_DYNAMIC_MENU, $FANNIE_NAV_POSITION;
 /* try to deal with relative paths for includes */
 $path = "";
 $found = False;
-$uri = $_SERVER['REQUEST_URI'];
+$uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
 $tmp = explode("?",$uri);
-if (count($tmp) > 1) $uri = $tmp[0];
-foreach(explode("/",$uri) as $x){
-	if (strpos($x,".php") === False
-		&& strlen($x) != 0){
+if (count($tmp) > 1) {
+    $uri = $tmp[0];
+}
+foreach (explode("/",$uri) as $x) {
+	if (strpos($x,".php") === false && strlen($x) != 0) {
 		$path .= "../";
 	}
-	if (!$found && stripos($x,"fannie") !== False){
-		$found = True;
+	if (!$found && stripos($x,"fannie") !== false) {
+		$found = true;
 		$path = "";
 	}
 }
@@ -23,10 +24,10 @@ foreach(explode("/",$uri) as $x){
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 <title><?php echo $page_title; ?></title>
 <link rel="STYLESHEET" href="<?php echo $path; ?>src/style.css" type="text/css">
-<link rel="STYLESHEET" href="<?php echo $path; ?>src/jquery/css/smoothness/jquery-ui-1.8.1.custom.css" type="text/css">
-<script type="text/javascript" src="<?php echo $path; ?>src/jquery/js/jquery.js">
+<link rel="STYLESHEET" href="<?php echo $path; ?>src/javascript/jquery-ui.css?id=20140625" type="text/css">
+<script type="text/javascript" src="<?php echo $path; ?>src/javascript/jquery.js?id=20140625">
 </script>
-<script type="text/javascript" src="<?php echo $path; ?>src/jquery/js/jquery-ui-1.8.1.custom.min.js">
+<script type="text/javascript" src="<?php echo $path; ?>src/javascript/jquery-ui.js?id=20140625.1">
 </script>
 </head>
 <body>

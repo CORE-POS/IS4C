@@ -33,7 +33,7 @@ class OriginStateProvModel extends BasicModel
     'stateProvID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),
     'name' => array('type'=>'VARCHAR(50)'),
     'abbr' => array('type'=>'VARCHAR(5)'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

@@ -34,6 +34,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
     function preprocess()
     {
         $this->__routes[] = 'get<search>';
+        $this->__routes[] = 'post<search>';
         $this->__routes[] = 'post<upc>';
         return parent::preprocess();
     }
@@ -55,6 +56,11 @@ class AdvancedItemSearch extends FannieRESTfulPage
     function post_upc_view()
     {
         return $this->get_view() . $this->post_results;
+    }
+
+    function post_search_handler()
+    {
+        return $this->get_search_handler();
     }
 
     function get_search_handler()
@@ -195,6 +201,14 @@ class AdvancedItemSearch extends FannieRESTfulPage
             $args[] = $discount;
         }
 
+        $origin = FormLib::get('originID', 0);
+        if ($origin != 0) {
+            $from .= ' INNER JOIN ProductOriginsMap AS g ON p.upc=g.upc ';
+            $where .= ' AND (p.current_origin_id=? OR g.originID=?) ';
+            $args[] = $origin;
+            $args[] = $origin;
+        }
+
         $lc = FormLib::get('likeCode');
         if ($lc !== '') {
             if (!strstr($from, 'upcLike')) {
@@ -210,6 +224,12 @@ class AdvancedItemSearch extends FannieRESTfulPage
             }
         }
 
+        $hobart = FormLib::get('serviceScale');
+        if ($hobart !== '') {
+            $from .= ' INNER JOIN scaleItems AS h ON h.plu=p.upc ';
+            $where = str_replace('p.modified', 'h.modified', $where);
+        }
+
         if ($where == '1=1') {
             echo 'Too many results';
             return false;
@@ -218,7 +238,8 @@ class AdvancedItemSearch extends FannieRESTfulPage
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $query = 'SELECT p.upc, p.description, m.super_name, p.department, d.dept_name,
                  p.normal_price, p.special_price,
-                 CASE WHEN p.discounttype > 0 THEN \'X\' ELSE \'-\' END as onSale
+                 CASE WHEN p.discounttype > 0 THEN \'X\' ELSE \'-\' END as onSale,
+                 0 as selected
                  FROM ' . $from . ' WHERE ' . $where;
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $args);
@@ -330,6 +351,33 @@ class AdvancedItemSearch extends FannieRESTfulPage
             $items = $valid;
         }
 
+        $savedItems = FormLib::get('u', array());
+        if (is_array($savedItems) && count($savedItems) > 0) {
+            $savedQ = 'SELECT p.upc, p.description, m.super_name, p.department, d.dept_name,
+                        p.normal_price, p.special_price,
+                        CASE WHEN p.discounttype > 0 THEN \'X\' ELSE \'-\' END as onSale,
+                        1 as selected
+                       FROM products AS p 
+                        LEFT JOIN departments AS d ON p.department=d.dept_no
+                        LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
+                       WHERE p.upc IN (';
+            foreach ($savedItems as $item) {
+                $savedQ .= '?,';
+            }
+            $savedQ = substr($savedQ, 0, strlen($savedQ)-1);
+            $savedQ .= ')';
+
+            $savedP = $dbc->prepare($savedQ);
+            $savedR = $dbc->execute($savedP, $savedItems);
+            while ($savedW = $dbc->fetch_row($savedR)) {
+                if (isset($items[$savedW['upc']])) {
+                    $items[$savedW['upc']]['selected'] = 1;
+                } else {
+                    $items[$savedW['upc']] = $savedW;
+                }
+            }
+        }
+
         echo $this->streamOutput($items);
 
         return false;
@@ -344,7 +392,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 </tr>';
         foreach($data as $upc => $record) {
             $ret .= sprintf('<tr>
-                            <td><input type="checkbox" name="u[]" class="upcCheckBox" value="%s" /></td>
+                            <td><input type="checkbox" name="u[]" class="upcCheckBox" value="%s" %s /></td>
                             <td><a href="ItemEditorPage.php?searchupc=%s" target="_advs%s">%s</a></td>
                             <td>%s</td>
                             <td>%s</td>
@@ -353,7 +401,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
                             <td>%s</td>
                             <td>$%.2f</td>
                             </tr>', 
-                            $upc,
+                            $upc, ($record['selected'] == 1 ? 'checked' : ''),
                             $upc, $upc, $upc,
                             $record['description'],
                             $record['super_name'],
@@ -374,6 +422,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
         ?>
 function getResults() {
     var dstr = $('#searchform').serialize();
+    $('.upcCheckBox:checked').each(function(){
+        dstr += '&u[]='+$(this).val();
+    });
+
     console.log(dstr);
     $('#resultArea').html('Searching');
     $.ajax({
@@ -431,11 +483,22 @@ function goToMargins() {
         $('#actionForm').submit();
     }
 }
+function goToSync() {
+    if (getItems()) {
+        $('#actionForm').attr('action', 'hobartcsv/SyncFromSearch.php');
+        $('#actionForm').submit();
+    }
+}
 function goToReport() {
     if (getItems()) {
         $('#actionForm').attr('action', $('#reportURL').val());
         $('#actionForm').submit();
     }
+}
+function formReset()
+{
+    $('#vendorSale').attr('disabled', 'disabled');
+    $('.saleField').attr('disabled', 'disabled');
 }
         <?php
         return ob_get_clean();
@@ -445,13 +508,14 @@ function goToReport() {
     {
         global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $this->add_script($FANNIE_URL.'src/CalendarControl.js');
-        $this->add_script($FANNIE_URL.'src/jquery/jquery.js');
+        $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
+        $this->add_script($FANNIE_URL.'src/javascript/jquery-ui.js');
         $this->add_css_file($FANNIE_URL.'src/style.css');
+        $this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
 
         $ret = '<div style="float:left;">';
 
-        $ret .= '<form method="post" id="searchform" onsubmit="getResults(); return false;">';
+        $ret .= '<form method="post" id="searchform" onsubmit="getResults(); return false;" onreset="formReset();">';
         $ret .= '<table>';    
 
         $ret .= '<tr>';
@@ -467,7 +531,8 @@ function goToReport() {
 
         $ret .= '<th>Modified</th>';
         $ret .= '<td><select name="modOp"><option>On</option><option>Before</option><option>After</option></select>';
-        $ret .= '<td><input type="text" name="modDate" onfocus="showCalendarControl(this);" size="10" /></td>';
+        $ret .= '<td><input type="text" name="modDate" id="modDate" size="10" /></td>';
+        $this->add_onload_command("\$('#modDate').datepicker();\n");
 
         $ret .= '</tr><tr>';
 
@@ -531,7 +596,14 @@ function goToReport() {
 
         $ret .= '</tr><tr>';
 
-        $ret .= '<td colspan=2">&nbsp;</td>'; // placeholder; can add here
+        $ret .= '<th>Origin</th>';
+        $ret .= '<td><select name="originID"><option value="0">n/a</option>';
+        $origins = $dbc->query('SELECT originID, shortName FROM origins WHERE local=0 ORDER BY shortName');
+        while($row = $dbc->fetch_row($origins)) {
+            $ret .= sprintf('<option value="%d">%s</option>', $row['originID'], $row['shortName']);
+        }
+        $ret .= '</select>';
+        $ret .= '</td>';
     
         $ret .= '<th>Likecode</th>';
         $ret .= '<td colspan="3"><select name="likeCode"><option value="">n/a</option>
@@ -543,7 +615,7 @@ function goToReport() {
         }
         $ret .= '</select></td>';
 
-        // more empty space available here
+        $ret .= '<td><label for="serviceScale">Service Scale</label> <input type="checkbox" id="serviceScale" name="serviceScale" /></td>';
 
         $ret .= '</tr><tr>';
 
@@ -574,6 +646,8 @@ function goToReport() {
 
         $ret .= '</table>';
         $ret .= '<input type="submit" value="Find Items" />';
+        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
+        $ret .= '<input type="reset" value="Clear Settings" />';
         $ret .= '</form>';
 
         $ret .= '</div>';
@@ -582,10 +656,12 @@ function goToReport() {
         $ret .= '<input type="submit" value="Create Price or Sale Batch" onclick="goToBatch();" />';
         $ret .= '<br />';
         $ret .= '<input style="margin-top:10px;" type="submit" value="Edit Items" onclick="goToEdit();" />';
-        $ret .= '<br />';
+        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
         $ret .= '<input style="margin-top:10px;" type="submit" value="Tags/Signs" onclick="goToSigns();" />';
         $ret .= '<br />';
         $ret .= '<input style="margin-top:10px;" type="submit" value="Margins" onclick="goToMargins();" />';
+        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+        $ret .= '<input style="margin-top:10px;" type="submit" value="Scale Sync" onclick="goToSync();" />';
         $ret .= '</fieldset>';
         $ret .= '<fieldset><legend>Report on Items</legend>';
         $ret .= '<select id="reportURL">';

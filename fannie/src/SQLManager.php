@@ -44,6 +44,9 @@ class SQLManager
 	/** Default database connection */
 	public $default_db;
 
+    /** throw exception on failed query **/
+    private $throw_on_fail = false;
+
 	/** Constructor
 	    @param $server Database server host
 	    @param $type Database type. Most supported are
@@ -173,20 +176,26 @@ class SQLManager
 		$con = $this->connections[$which_connection];
 
 		$ok = (!is_object($con)) ? false : $con->Execute($query_text,$params);
-		if (!$ok && is_writable($ql)) {
-			$fp = fopen($ql,'a');
+		if (!$ok) {
+
 			if (is_array($query_text)) {
 				$query_text = $query_text[0];
             }
-			fputs($fp,$_SERVER['PHP_SELF'].": ".date('r').': '.$query_text."\n");
-			fputs($fp,$this->error()."\n\n");
-			fclose($fp);
-		} else if (!$ok) {
-			if (is_array($query_text)) {
-				$query_text = $query_text[0];
+
+			$errorMsg = $_SERVER['PHP_SELF'] . ': ' . date('r') . ': ' . $query_text . "\n";
+			$errorMsg .= $this->error($which_connection) . "\n\n";
+
+            if (is_writable($ql)) {
+                $fp = fopen($ql,'a');
+                fwrite($fp, $errorMsg);
+                fclose($fp);
+            } else {
+                echo str_replace("\n", '<br />', $errorMsg);
             }
-			echo "Bad query: {$_SERVER['PHP_SELF']}: $query_text<br />";
-			echo $this->error($which_connection)."<br />";
+
+            if ($this->throw_on_fail) {
+                throw new Exception($errorMsg);
+            }
 		}
 
 		return $ok;
@@ -1087,6 +1096,11 @@ class SQLManager
 		if ($which_connection == '') {
 			$which_connection=$this->default_db;
         }
+
+        if (count($this->connections) == 0) {
+            return false;
+        }
+
         $query ='';
 		switch($this->connections[$which_connection]->databaseType) {
             case 'mysql':
@@ -1534,6 +1548,15 @@ class SQLManager
         } else {
             return substr($ret, 0, strlen($ret)-1);
         }
+    }
+
+    /**
+      Enable or disable exceptions on failed queries
+      @param $mode boolean
+    */
+    public function throwOnFailure($mode)
+    {
+        $this->throw_on_fail = $mode;
     }
 
 	// skipping fetch_cell on purpose; generic-db way would be slow as heck

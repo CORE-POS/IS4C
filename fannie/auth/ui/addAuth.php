@@ -52,11 +52,11 @@ else {
   echo "<table cellspacing=3 cellpadding=3>";
   echo "<tr><td>Username:</td><td><select name=name>";
   foreach(getUserList() as $uid => $name)
-	echo "<option>".$name."</option>";
+    echo "<option>".$name."</option>";
   echo "</select></td></tr>";
   echo "<tr><td>Authorization class:</td><td><select name=class>";
   foreach(getAuthList() as $name)
-	echo "<option>".$name."</option>";
+    echo "<option>".$name."</option>";
   echo "</select></td></tr>";
   echo "<tr><td>Subclass start:</td><td><input type=text name=start value=all></td></tr>";
   echo "<tr><td>Subclass end:</td><td><input type=text name=end value=all></td></tr>";

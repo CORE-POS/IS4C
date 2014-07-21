@@ -102,8 +102,18 @@ else{
 <title>Upload Price Sheet</title>
 <link href="<?php echo $FANNIE_URL; ?>src/style.css"
       rel="stylesheet" type="text/css">
-<script src="<?php echo $FANNIE_URL; ?>src/CalendarControl.js"
+<script src="<?php echo $FANNIE_URL; ?>src/javascript/jquery.js"
         language="javascript"></script>
+<script src="<?php echo $FANNIE_URL; ?>src/javascript/jquery-ui.js"
+        language="javascript"></script>
+<link href="<?php echo $FANNIE_URL; ?>src/javascript/jquery-ui.css"
+      rel="stylesheet" type="text/css">
+<script type="text/javascript">
+$(document).ready(function(){
+    $('#startDate').datepicker();
+    $('#endDate').datepicker();
+});
+</script>
 </head>
 <body>
 <form enctype="multipart/form-data" action="salesBatchLC.php" method="post">
@@ -124,9 +134,9 @@ else{
 </tr>
 <tr>
 	<td>Start Date</td>
-	<td><input type=text name=startDate onfocus="showCalendarControl(this);" /></td>
+	<td><input type=text name=startDate id="startDate" /></td>
 	<td>End Date</td>
-	<td><input type=text name=endDate onfocus="showCalendarControl(this);" /></td>
+	<td><input type=text name=endDate id="endDate" /></td>
 </tr>
 <tr>
 <input type="hidden" name="MAX_FILE_SIZE" value="2097152" />

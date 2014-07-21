@@ -47,14 +47,16 @@ class PcDailyReport extends FannieReportPage
         $ret = array();
         if ($this->report_format == 'html') {
             $ret[] = $this->form_content();
-            $this->add_css_file($FANNIE_URL.'src/CalendarControl.css');
+            $this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
+            $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
+            $this->add_script($FANNIE_URL.'src/javascript/jquery-ui.js');
         }
         $ret[] = 'Activity for ' . FormLib::get('date', date('Y-m-d'));
 
         return $ret;
     }
 
-	public function fetch_report_data()
+    public function fetch_report_data()
     {
         global $FANNIE_TRANS_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_TRANS_DB);
@@ -382,10 +384,9 @@ class PcDailyReport extends FannieReportPage
     public function form_content()
     {
         global $FANNIE_URL;
-        $this->add_script($FANNIE_URL.'src/CalendarControl.js');
+        $this->add_onload_command('$(\'#date\').datepicker();');
         return '<form style="display:inline;" method="get" action="PcDailyReport.php">
-            <b>Change Date</b> <input type="text" name="date" value="" size="10" 
-                        onfocus="showCalendarControl(this);" />
+            <b>Change Date</b> <input type="text" name="date" value="" size="10" id="date" />
             <input type="submit" value="Get Report" />
             </form>';
     }

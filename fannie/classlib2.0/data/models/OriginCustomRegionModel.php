@@ -32,7 +32,7 @@ class OriginCustomRegionModel extends BasicModel
     protected $columns = array(
     'customID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),
     'name' => array('type'=>'VARCHAR(50)'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

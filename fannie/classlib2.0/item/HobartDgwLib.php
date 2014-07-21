@@ -103,8 +103,11 @@ class HobartDgwLib
         One additional key, ExpandedText, is used to write Expanded Text. This
         is separate from the Write Item operation so it's excluded from that
         set of fields.
+      @param $scales [keyed array, optional] List of scales items will be written to
+        Must have keys "host", "type", and "dept". 
+        May have boolean value with key "new".
     */
-    static public function writeItemsToScales($items)
+    static public function writeItemsToScales($items, $scales=array())
     {
         include(dirname(__FILE__).'/../../config.php');
         if (!isset($items[0])) {
@@ -112,7 +115,7 @@ class HobartDgwLib
         }
         $new_item = false;
         $header_line = '';
-        foreach(self::$WRITE_ITEM_FIELDS as $key => $field_info) {
+        foreach (self::$WRITE_ITEM_FIELDS as $key => $field_info) {
             if (isset($items[0][$key])) {
                 $header_line .= $field_info['name'] . ',';
                 if ($key == 'PLU') {
@@ -136,8 +139,12 @@ class HobartDgwLib
 
         $file_prefix = self::sessionKey();
         $output_dir = realpath(dirname(__FILE__) . '/../../item/hobartcsv/csv_output');
+        $selected_scales = $scales;
+        if (!is_array($scales) || count($selected_scales) == 0) {
+            $selected_scales = $FANNIE_SCALES;
+        }
         $i = 0;
-        foreach($FANNIE_SCALES as $scale) {
+        foreach ($selected_scales as $scale) {
             $file_name = sys_get_temp_dir() . '/' . $file_prefix . '_writeItem_' . $i . '.csv';
             $fp = fopen($file_name, 'w');
             fwrite($fp,"Record Type,Task Department,Task Destination,Task Destination Device,Task Destination Type\r\n");
@@ -164,7 +171,13 @@ class HobartDgwLib
                     $has_et = true;
                     $mode = $new_item ? 'WriteOneExpandedText' : 'ChangeOneExpandedText';
                     fwrite($fp,"Record Type,Expanded Text Number,Expanded Text\r\n");
-                    fwrite($fp, $mode . ',' . $item['PLU'] . ',"' . $item['ExpandedText'] . "\"\r\n");
+                    $text = '';
+                    foreach (explode("\n", $item['ExpandedText']) as $line) {
+                        $text .= wordwrap($line, 50, "\n") . "\n";
+                    }
+                    $text = preg_replace("/\\r/", '', $text);
+                    $text = preg_replace("/\\n/", '<br />', $text);
+                    fwrite($fp, $mode . ',' . $item['PLU'] . ',"' . $text . "\"\r\n");
                 }
             }
             fclose($fp);

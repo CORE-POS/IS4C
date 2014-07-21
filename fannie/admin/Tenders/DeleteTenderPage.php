@@ -26,66 +26,66 @@ include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class DeleteTenderPage extends FanniePage {
 
-	protected $title = "Fannie : Tenders";
-	protected $header = "Tenders";
-	protected $must_authenticate = True;
-	protected $auth_classes = array('tenders');
+    protected $title = "Fannie : Tenders";
+    protected $header = "Tenders";
+    protected $must_authenticate = True;
+    protected $auth_classes = array('tenders');
 
-	private $mode = 'form';
+    private $mode = 'form';
 
-	function preprocess(){
-		$id = FormLib::get_form_value('TenderID',False);
-		if (is_numeric($id))
-			$this->mode = 'results';
-		return True;
-	}
+    function preprocess(){
+        $id = FormLib::get_form_value('TenderID',False);
+        if (is_numeric($id))
+            $this->mode = 'results';
+        return True;
+    }
 
-	function body_content(){
-		if ($this->mode == 'form')
-			return $this->form_content();
-		elseif ($this->mode == 'results')
-			return $this->results_content();
-	}
+    function body_content(){
+        if ($this->mode == 'form')
+            return $this->form_content();
+        elseif ($this->mode == 'results')
+            return $this->results_content();
+    }
 
-	function results_content(){
-		global $FANNIE_OP_DB;
-		$dbc = FannieDB::get($FANNIE_OP_DB);
+    function results_content(){
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 
-		$id = FormLib::get_form_value('TenderID');
-		$tender = new TendersModel($dbc);
-		$tender->TenderID($id);
-		$tender->delete();
+        $id = FormLib::get_form_value('TenderID');
+        $tender = new TendersModel($dbc);
+        $tender->TenderID($id);
+        $tender->delete();
 
-		$ret = "<i>Tender deleted</i>";
-		$ret .= "<br /><br />";
-		$ret .= '<a href="DeleteTenderPage.php">Delete another</a>';
-		$ret .= "&nbsp;&nbsp;&nbsp;&nbsp;";
-		$ret .= '<a href="index.php">Back to edit tenders</a>';
-		return $ret;
-	}
-	
-	function form_content(){
-		global $FANNIE_OP_DB;
-		$dbc = FannieDB::get($FANNIE_OP_DB);
-		$ret = "<b>Be careful. Deleting a tender could make a mess.
-			If you run into problems, re-add the tender using
-			the same two-character code.</b>";
-		$ret .= "<br /><br />";
-		$ret .= '<form action="DeleteTenderPage.php" method="post">';
-		$ret .= '<select name="TenderID">';
-		$ret .= '<option>Select a tender...</option>';
-		$tender = new TendersModel($dbc);
-		foreach($tender->find('TenderID') as $obj){
-			$ret .= sprintf('<option value="%d">%s - %s</option>',
-				$obj->TenderID(),$obj->TenderCode(),
-				$obj->TenderName());
-		}
-		$ret .= "</select>";
-		$ret .= "&nbsp;&nbsp;&nbsp;&nbsp;";
-		$ret .= '<input type="submit" value="Delete Selected Tender" />';
-		$ret .= "</form>";
-		return $ret;
-	}
+        $ret = "<i>Tender deleted</i>";
+        $ret .= "<br /><br />";
+        $ret .= '<a href="DeleteTenderPage.php">Delete another</a>';
+        $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;";
+        $ret .= '<a href="index.php">Back to edit tenders</a>';
+        return $ret;
+    }
+    
+    function form_content(){
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $ret = "<b>Be careful. Deleting a tender could make a mess.
+            If you run into problems, re-add the tender using
+            the same two-character code.</b>";
+        $ret .= "<br /><br />";
+        $ret .= '<form action="DeleteTenderPage.php" method="post">';
+        $ret .= '<select name="TenderID">';
+        $ret .= '<option>Select a tender...</option>';
+        $tender = new TendersModel($dbc);
+        foreach($tender->find('TenderID') as $obj){
+            $ret .= sprintf('<option value="%d">%s - %s</option>',
+                $obj->TenderID(),$obj->TenderCode(),
+                $obj->TenderName());
+        }
+        $ret .= "</select>";
+        $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;";
+        $ret .= '<input type="submit" value="Delete Selected Tender" />';
+        $ret .= "</form>";
+        return $ret;
+    }
 }
 
 FannieDispatch::conditionalExec(false);

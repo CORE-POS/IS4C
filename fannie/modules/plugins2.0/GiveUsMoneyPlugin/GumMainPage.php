@@ -339,7 +339,6 @@ class GumMainPage extends FannieRESTfulPage
     public function get_id_view()
     {
         global $FANNIE_URL;
-        $this->add_script($FANNIE_URL.'src/CalendarControl.js');
         $this->add_script('js/main.js');
         $ret = '';
 
@@ -434,7 +433,8 @@ class GumMainPage extends FannieRESTfulPage
         $ret .= '</select></td>';
         $ldate = date('Y-m-d');
         $ret .= '<td><input type="text" size="10" id="loandate" name="loandate" 
-                        onfocus="showCalendarControl(this);" onchange="getEndDate();" value="'.$ldate.'" /></td>';
+                        onchange="getEndDate();" value="'.$ldate.'" /></td>';
+        $this->add_onload_command("\$('#loandate').datepicker();\n");
         $ret .= '<td><input type="text" size="4" id="rate" name="rate" onchange="validateRate();" />%
                 <input type="hidden" id="maxrate" value="0" />
                 </td>';

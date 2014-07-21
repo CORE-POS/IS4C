@@ -3,20 +3,20 @@
 Table: vendorItems
 
 Columns:
-	upc varchar
-	sku varchar
-	brand varchar
-	description varchar
-	size varchar
-	units int
-	cost dbms currency
-	saleCost dbms currency
-	vendorDept int
-	vendorID int
+    upc varchar
+    sku varchar
+    brand varchar
+    description varchar
+    size varchar
+    units int
+    cost dbms currency
+    saleCost dbms currency
+    vendorDept int
+    vendorID int
 
 Depends on:
-	vendors (table)
-	vendorDepartments (table)
+    vendors (table)
+    vendorDepartments (table)
 
 Use:
 This table has items from vendors. Cost
@@ -44,39 +44,39 @@ in the SKU field may be a simple solution to assigning
 SKUs.
 */
 $CREATE['op.vendorItems'] = "
-	CREATE TABLE vendorItems (
-		upc varchar(13),
-		sku varchar(13),
-		brand varchar(50),
-		description varchar(50),
-		size varchar(25),
-		units int,
-		cost decimal(10,2),
-		saleCost decimal(10,2),
-		vendorDept int,
-		vendorID int,
-		PRIMARY KEY (vendorID,sku),
-		INDEX(vendorID),
-		INDEX(upc),
-		INDEX(sku)
-	)
+    CREATE TABLE vendorItems (
+        upc varchar(13),
+        sku varchar(13),
+        brand varchar(50),
+        description varchar(50),
+        size varchar(25),
+        units int,
+        cost decimal(10,2),
+        saleCost decimal(10,2),
+        vendorDept int,
+        vendorID int,
+        PRIMARY KEY (vendorID,sku),
+        INDEX(vendorID),
+        INDEX(upc),
+        INDEX(sku)
+    )
 ";
 
 if ($dbms == 'mssql'){
-	$CREATE['op.vendorItems'] = "
-		CREATE TABLE vendorItems (
-			upc varchar(13),
-			sku varchar(10),
-			brand varchar(50),
-			description varchar(50),
-			size varchar(25),
-			units int,
-			cost money,
-			saleCost money,
-			vendorDept int,
-			vendorID int
-		)
-	";
+    $CREATE['op.vendorItems'] = "
+        CREATE TABLE vendorItems (
+            upc varchar(13),
+            sku varchar(10),
+            brand varchar(50),
+            description varchar(50),
+            size varchar(25),
+            units int,
+            cost money,
+            saleCost money,
+            vendorDept int,
+            vendorID int
+        )
+    ";
 }
 
 ?>

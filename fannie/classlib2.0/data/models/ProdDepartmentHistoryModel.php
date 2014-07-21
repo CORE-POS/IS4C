@@ -36,7 +36,7 @@ class ProdDepartmentHistoryModel extends BasicModel
     'dept_ID' => array('type'=>'INT'),
     'uid' => array('type'=>'INT'),
     'prodUpdateID' => array('type'=>'BIGINT UNSIGNED','index'=>true),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

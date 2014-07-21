@@ -57,7 +57,7 @@ class Signage2UpP extends FannieSignage
             $sign++;
         }
 
-        $pdf->Output('Sigange4UpL.pdf', 'I');
+        $pdf->Output('Signage4UpL.pdf', 'I');
     }
 }
 

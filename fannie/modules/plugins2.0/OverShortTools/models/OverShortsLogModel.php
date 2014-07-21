@@ -23,53 +23,53 @@
 
 class OverShortsLogModel extends BasicModel {
 
-	protected $name = 'overshortsLog';
+    protected $name = 'overshortsLog';
 
-	protected $columns = array(
-	'date' => array('type'=>'VARCHAR(10)','primary_key'=>True),
-	'username' => array('type'=>'VARCHAR(25)'),
-	'resolved' => array('type'=>'TINYINT','default'=>0)
-	);
+    protected $columns = array(
+    'date' => array('type'=>'VARCHAR(10)','primary_key'=>True),
+    'username' => array('type'=>'VARCHAR(25)'),
+    'resolved' => array('type'=>'TINYINT','default'=>0)
+    );
 
-	/* START ACCESSOR FUNCTIONS */
+    /* START ACCESSOR FUNCTIONS */
 
-	public function date(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["date"]))
-				return $this->instance["date"];
-			elseif(isset($this->columns["date"]["default"]))
-				return $this->columns["date"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["date"] = func_get_arg(0);
-		}
-	}
+    public function date(){
+        if(func_num_args() == 0){
+            if(isset($this->instance["date"]))
+                return $this->instance["date"];
+            elseif(isset($this->columns["date"]["default"]))
+                return $this->columns["date"]["default"];
+            else return null;
+        }
+        else{
+            $this->instance["date"] = func_get_arg(0);
+        }
+    }
 
-	public function username(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["username"]))
-				return $this->instance["username"];
-			elseif(isset($this->columns["username"]["default"]))
-				return $this->columns["username"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["username"] = func_get_arg(0);
-		}
-	}
+    public function username(){
+        if(func_num_args() == 0){
+            if(isset($this->instance["username"]))
+                return $this->instance["username"];
+            elseif(isset($this->columns["username"]["default"]))
+                return $this->columns["username"]["default"];
+            else return null;
+        }
+        else{
+            $this->instance["username"] = func_get_arg(0);
+        }
+    }
 
-	public function resolved(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["resolved"]))
-				return $this->instance["resolved"];
-			elseif(isset($this->columns["resolved"]["default"]))
-				return $this->columns["resolved"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["resolved"] = func_get_arg(0);
-		}
-	}
-	/* END ACCESSOR FUNCTIONS */
+    public function resolved(){
+        if(func_num_args() == 0){
+            if(isset($this->instance["resolved"]))
+                return $this->instance["resolved"];
+            elseif(isset($this->columns["resolved"]["default"]))
+                return $this->columns["resolved"]["default"];
+            else return null;
+        }
+        else{
+            $this->instance["resolved"] = func_get_arg(0);
+        }
+    }
+    /* END ACCESSOR FUNCTIONS */
 }

@@ -31,7 +31,7 @@ class WfcHtZipCodesModel extends BasicModel
 
     protected $columns = array(
     'zip' => array('type'=>'VARCHAR(50)', 'primary_key'=>true),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

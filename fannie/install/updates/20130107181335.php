@@ -23,21 +23,21 @@
 
 class update_20130107181335 extends UpdateObj {
 
-	protected $timestamp = '20130107181335';
+    protected $timestamp = '20130107181335';
 
-	protected $description = 'Change the data type of custdata.CardNo to int(11)
-	to agree with the format of the value in other tables
-	and to NOT NULL.';
+    protected $description = 'Change the data type of custdata.CardNo to int(11)
+    to agree with the format of the value in other tables
+    and to NOT NULL.';
 
-	protected $author = 'Eric Lee (WEFC_Toronto)';
+    protected $author = 'Eric Lee (WEFC_Toronto)';
 
-	protected $queries = array(
-		'op' => array(
-			'ALTER TABLE custdata CHANGE COLUMN CardNo CardNo INT(11) NOT NULL'
-		),
-		'trans' => array(),
-		'archive' => array()
-	);
+    protected $queries = array(
+        'op' => array(
+            'ALTER TABLE custdata CHANGE COLUMN CardNo CardNo INT(11) NOT NULL'
+        ),
+        'trans' => array(),
+        'archive' => array()
+    );
 }
 
 ?>

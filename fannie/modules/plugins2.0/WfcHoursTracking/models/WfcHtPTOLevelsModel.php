@@ -33,7 +33,7 @@ class WfcHtPTOLevelsModel extends BasicModel
     'LevelID' => array('type'=>'SMALLINT', 'primary_key'=>true),
     'HoursWorked' => array('type'=>'DOUBLE'),
     'PTOHours' => array('type'=>'DOUBLE'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

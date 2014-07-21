@@ -29,8 +29,8 @@ if (!class_exists('FannieAPI')) {
 class OriginEditor extends FannieRESTfulPage 
 {
 
-	protected $header = 'Product Origins';
-	protected $title = 'Product Origins';
+    protected $header = 'Product Origins';
+    protected $title = 'Product Origins';
 
     public function preprocess()
     {
@@ -384,7 +384,7 @@ class OriginEditor extends FannieRESTfulPage
                 <th><a href="' . $_SERVER['PHP_SELF'] . '?country=1">Country</a></th>
                 <th>Local</th>
                 </tr>';
-        foreach ($origins->find() as $o) {
+        foreach ($origins->find('name') as $o) {
             $ret .= sprintf('<tr>
                             <input type="hidden" name="originID[]" value="%d" />
                             <td>%s</td>

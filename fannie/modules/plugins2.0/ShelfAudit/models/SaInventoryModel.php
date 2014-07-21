@@ -36,7 +36,7 @@ class SaInventoryModel extends BasicModel
     'clear' => array('type'=>'TINYINT'),
     'quantity' => array('type'=>'DOUBLE'),
     'section' => array('type'=>'INT'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

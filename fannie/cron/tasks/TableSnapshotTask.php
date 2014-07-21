@@ -41,23 +41,62 @@ class TableSnapshotTask extends FannieTask
     {
         global $FANNIE_OP_DB;
         $sql = FannieDB::get($FANNIE_OP_DB);
+        $sql->throwOnFailure(true);
 
         // drop and recreate because SQL Server
         // really hates identity inserts
-        $sql->query("DROP TABLE productBackup");
-        if ($sql->dbms_name() == "mssql") {
-            $sql->query("SELECT * INTO productBackup FROM products");
-        } else {
-            $sql->query("CREATE TABLE productBackup LIKE products");
-            $sql->query("INSERT INTO productBackup SELECT * FROM products");
+        try {
+            $sql->query("DROP TABLE productBackup");
+        } catch (Exception $ex) {
+            /**
+            @severity: most likely just means first ever run
+            and the backup table does not exist yet
+            */
+            echo $this->cronMsg("Could not drop productBackup. Details: " . $ex->getMessage(),
+                    FannieTask::TASK_TRIVIAL_ERROR);
         }
 
-        $sql->query("DROP TABLE custdataBackup");
-        if ($sql->dbms_name() == "mssql") {
-            $sql->query("SELECT * INTO custdataBackup FROM custdata");
-        } else {
-            $sql->query("CREATE TABLE custdataBackup LIKE custdata");
-            $sql->query("INSERT INTO custdataBackup SELECT * FROM custdata");
+        try {
+            if ($sql->dbms_name() == "mssql") {
+                $sql->query("SELECT * INTO productBackup FROM products");
+            } else {
+                $sql->query("CREATE TABLE productBackup LIKE products");
+                $sql->query("INSERT INTO productBackup SELECT * FROM products");
+            }
+        } catch (Exception $ex) {
+            /**
+            @severity: backup did not happen. that's the primary
+            purpose of this task.
+            */
+            echo $this->cronMsg("Failed to back up products. Details: " . $ex->getMessage(),
+                    FannieTask::TASK_LARGE_ERROR);
+        }
+
+        try {
+            $sql->query("DROP TABLE custdataBackup");
+        } catch (Exception $ex) {
+            /**
+            @severity: most likely just means first ever run
+            and the backup table does not exist yet
+            */
+            echo $this->cronMsg("Could not drop custdataBackup. Details: " . $ex->getMessage(),
+                    FannieTask::TASK_TRIVIAL_ERROR);
+        }
+
+        try {
+            if ($sql->dbms_name() == "mssql") {
+                $sql->query("SELECT * INTO custdataBackup FROM custdata");
+            } else {
+                $sql->query("CREATE TABLE custdataBackup LIKE custdata");
+                $sql->query("INSERT INTO custdataBackup SELECT * FROM custdata");
+            }
+        } catch (Exception $ex) {
+            /**
+            @severity: backup did not happen. that's the primary
+            purpose of this task.
+            */
+            echo $this->cronMsg("Failed to back up custdata. Details: " . $ex->getMessage(),
+                    FannieTask::TASK_LARGE_ERROR);
         }
     }
 }

@@ -36,6 +36,7 @@ class BatchFromSearch extends FannieRESTfulPage
     {
        $this->__routes[] = 'post<u>'; 
        $this->__routes[] = 'post<createBatch>';
+       $this->__routes[] = 'post<redoSRPs>';
        return parent::preprocess();
     }
 
@@ -103,17 +104,27 @@ class BatchFromSearch extends FannieRESTfulPage
         */
         $tagset = FormLib::get('tagset');
         if ($discounttype == 0 && $tagset !== '') {
-            $lookup = $dbc->prepare('SELECT p.description, v.brand, v.sku, v.size, v.units, n.vendorName
-                                FROM products AS p LEFT JOIN vendorItems AS v ON p.upc=v.upc
-                                LEFT JOIN vendors AS n ON v.vendorID=n.vendorID
-                                WHERE p.upc=? ORDER BY v.vendorID');
+            $vendorID = FormLib::get('preferredVendor', 0);
+            $lookup = $dbc->prepare('
+                SELECT p.description, 
+                    v.brand, 
+                    v.sku, 
+                    v.size, 
+                    v.units, 
+                    n.vendorName
+                FROM products AS p 
+                    LEFT JOIN vendorItems AS v ON p.upc=v.upc
+                    LEFT JOIN vendors AS n ON v.vendorID=n.vendorID
+                WHERE p.upc=? 
+                ORDER BY CASE WHEN v.vendorID=? THEN -999 ELSE v.vendorID END'
+            );
             $tag = new ShelftagsModel($dbc);
             for($i=0; $i<count($upcs);$i++) {
                 $upc = $upcs[$i];
                 $price = isset($prices[$i]) ? $prices[$i] : 0.00;
                 $info = array('description'=>'', 'brand'=>'', 'sku'=>'', 'size'=>'', 'units'=>1,
                             'vendorName'=>'');
-                $lookupR = $dbc->execute($lookup, array($upc));
+                $lookupR = $dbc->execute($lookup, array($upc, $vendorID));
                 if ($dbc->num_rows($lookupR) > 0) {
                     $info = $dbc->fetch_row($lookupR);
                 }
@@ -134,6 +145,48 @@ class BatchFromSearch extends FannieRESTfulPage
         }
 
         header('Location: newbatch/BatchManagementTool.php?startAt=' . $id);
+        return false;
+    }
+
+    function post_redoSRPs_handler()
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $upcs = FormLib::get('upc', array());
+        $vendorID = FormLib::get('preferredVendor', 0);
+
+        for ($i=0; $i<count($upcs); $i++) {
+            $upcs[$i] = BarcodeLib::padUPC($upcs[$i]);
+        }
+        $params = $this->arrayToParams($upcs);
+
+        $query = '
+            SELECT p.upc,
+                CASE WHEN v.srp IS NULL THEN 0 ELSE v.srp END as newSRP
+            FROM products AS p
+                LEFT JOIN vendorSRPs AS v ON p.upc=v.upc
+            WHERE p.upc IN (' . $params['in'] . ')
+            ORDER BY p.upc,
+                CASE WHEN v.vendorID=? THEN -999 ELSE v.vendorID END';
+        $prep = $dbc->prepare($query);
+        $params['args'][] = $vendorID;
+        $result = $dbc->execute($prep, $params['args']);
+
+        $prevUPC = 'notUPC';
+        $results = array();
+        while ($row = $dbc->fetch_row($result)) {
+            if ($row['upc'] == $prevUPC) {
+                continue;
+            }
+            $results[] = array(
+                'upc' => $row['upc'],
+                'srp' => $row['newSRP'],
+            );
+            $prevUPC = $row['upc'];
+        }
+
+        echo json_encode($results);
+
         return false;
     }
 
@@ -160,7 +213,6 @@ class BatchFromSearch extends FannieRESTfulPage
     {
         global $FANNIE_OP_DB, $FANNIE_URL;
         $ret = '<form action="BatchFromSearch.php" method="post">';
-        $this->add_script($FANNIE_URL.'src/CalendarControl.js');
 
         $ret .= '<div style="line-height:2.3em;">';
 
@@ -190,12 +242,14 @@ class BatchFromSearch extends FannieRESTfulPage
                 . '" />';
 
         $ret .= '&nbsp;&nbsp;&nbsp;';
-        $ret .= '<b>Start</b>: <input type="text" size="12" onfocus="showCalendarControl(this);" value="'
+        $ret .= '<b>Start</b>: <input type="text" size="12" id="startDate" value="'
                 . date('Y-m-d') . '" name="startDate" />';
+        $this->add_onload_command("\$('#startDate').datepicker();\n");
 
         $ret .= '&nbsp;&nbsp;&nbsp;';
-        $ret .= '<b>End</b>: <input type="text" size="12" onfocus="showCalendarControl(this);" value="'
+        $ret .= '<b>End</b>: <input type="text" size="12" id="endDate" value="'
                 . date('Y-m-d') . '" name="endDate" />';
+        $this->add_onload_command("\$('#endDate').datepicker();\n");
 
         $ret .= '<br />';
         $owners = $dbc->query('SELECT super_name FROM MasterSuperDepts GROUP BY super_name ORDER BY super_name');
@@ -235,6 +289,14 @@ class BatchFromSearch extends FannieRESTfulPage
         $ret .= '<div id="priceChangeTools">';
         $ret .= '<input type="submit" value="Use Vendor SRPs" onclick="useSRPs(); return false;" />';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+        $ret .= '<select name="preferredVendor" onchange="reCalcSRPs();"><option value="0">Auto Choose Vendor</option>';
+        $vendors = new VendorsModel($dbc);
+        foreach ($vendors->find('vendorName') as $vendor) {
+            $ret .= sprintf('<option value="%d">%s</option>',
+                        $vendor->vendorID(), $vendor->vendorName());
+        }
+        $ret .= '</select>';
+        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
         $ret .= '<b>Markup</b>: <input type="text" id="muPercent" size="4" value="10" onchange="markUp(this.value);" />%
                 <input type="submit" value="Go" onclick="markUp($(\'#muPercent\').val()); return false" />';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
@@ -252,7 +314,7 @@ class BatchFromSearch extends FannieRESTfulPage
         $superDetect = array();
         while($row = $dbc->fetch_row($result)) {
             $ret .= sprintf('<tr class="batchItem">
-                            <td><input type="hidden" name="upc[]" value="%s" />%s</td>
+                            <td><input type="hidden" name="upc[]" class="itemUPC" value="%s" />%s</td>
                             <td>%s</td>
                             <td>$%.2f<input type="hidden" class="currentPrice" value="%.2f" /></td>
                             <td>
@@ -312,6 +374,28 @@ function useSRPs() {
     $('tr.batchItem').each(function(){
         var srp = $(this).find('.itemSRP').val();
         $(this).find('.itemPrice').val(fixupPrice(srp));
+    });
+}
+function reCalcSRPs() {
+    var info = $('form').serialize(); 
+    info += '&redoSRPs=1';
+    $.ajax({
+        type: 'post',
+        dataType: 'json',
+        data: info,
+        success: function(resp) {
+            for (var i=0; i<resp.length; i++) {
+                var item = resp[i];
+                $('tr.batchItem').each(function(){
+                    var upc = $(this).find('.itemUPC').val(); 
+                    if (upc == item.upc) {
+                        $(this).find('.itemSRP').val(item.srp);
+
+                        return false;
+                    }
+                });
+            }
+        }
     });
 }
 function discount(amt) {

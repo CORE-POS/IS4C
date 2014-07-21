@@ -3,15 +3,15 @@
 Table: vendorDepartments
 
 Columns:
-	vendorID int
-	deptID int
-	name varchar
-	margin float
-	testing float
-	posDeptID int
+    vendorID int
+    deptID int
+    name varchar
+    margin float
+    testing float
+    posDeptID int
 
 Depends on:
-	vendors (table)
+    vendors (table)
 
 Use:
 This table contains a vendors product categorization.
@@ -24,16 +24,16 @@ Traditional deptID corresponds to a UNFI's category
 number. This may differ for other vendors.
 */
 $CREATE['op.vendorDepartments'] = "
-	create table vendorDepartments (
-		vendorID int,
-		deptID int,
-		name varchar(125),
-		margin float,
-		testing float,
-		posDeptID int,
-		PRIMARY KEY (vendorID, deptID),
-		INDEX(deptID),
-		INDEX(vendorID)
-	)
+    create table vendorDepartments (
+        vendorID int,
+        deptID int,
+        name varchar(125),
+        margin float,
+        testing float,
+        posDeptID int,
+        PRIMARY KEY (vendorID, deptID),
+        INDEX(deptID),
+        INDEX(vendorID)
+    )
 ";
 ?>

@@ -24,20 +24,20 @@ include('../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class MemImportIndex extends FanniePage {
-	protected $title = "Fannie :: Member Tools";
-	protected $header = "Import Member Information";
-	
-	function body_content(){
-		ob_start();
-		?>
-		<ul>
-		<li><a href="MemNameNumImportPage.php">Names &amp; Numbers</a></li>
-		<li><a href="MemContactImportPage.php">Contact Information</a></li>
-		<li><a href="EquityHistoryImportPage.php">Existing Equity</a></li>
-		</ul>
-		<?php
-		return ob_get_clean();
-	}
+    protected $title = "Fannie :: Member Tools";
+    protected $header = "Import Member Information";
+    
+    function body_content(){
+        ob_start();
+        ?>
+        <ul>
+        <li><a href="MemNameNumImportPage.php">Names &amp; Numbers</a></li>
+        <li><a href="MemContactImportPage.php">Contact Information</a></li>
+        <li><a href="EquityHistoryImportPage.php">Existing Equity</a></li>
+        </ul>
+        <?php
+        return ob_get_clean();
+    }
 }
 
 FannieDispatch::conditionalExec(false);

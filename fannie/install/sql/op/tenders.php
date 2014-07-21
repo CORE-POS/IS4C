@@ -3,17 +3,17 @@
 Table: tenders
 
 Columns:
-	TenderID smallint
-	TenderCode varchar
-	TenderName varchar
-	TenderType varchar
-	ChangeMessage varchar
-	MinAmount double
-	MaxAmount double
-	MaxRefund double
+    TenderID smallint
+    TenderCode varchar
+    TenderName varchar
+    TenderType varchar
+    ChangeMessage varchar
+    MinAmount double
+    MaxAmount double
+    MaxRefund double
 
 Depends on:
-	none
+    none
 
 Use:
 List of tenders IT CORE accepts. TenderCode
@@ -30,17 +30,17 @@ and on various reports.
 TenderType and TenderID are mostly ignored.
 */
 $CREATE['op.tenders'] = "
-	CREATE TABLE tenders (
-		TenderID smallint,
-		TenderCode varchar(255),
-		TenderName varchar(255),
-		TenderType varchar(255),
-		ChangeMessage varchar(255),
-		MinAmount double,
-		MaxAmount double,
-		MaxRefund double,
-		PRIMARY KEY (TenderID),
-		INDEX (TenderCode)
-	)
+    CREATE TABLE tenders (
+        TenderID smallint,
+        TenderCode varchar(255),
+        TenderName varchar(255),
+        TenderType varchar(255),
+        ChangeMessage varchar(255),
+        MinAmount double,
+        MaxAmount double,
+        MaxRefund double,
+        PRIMARY KEY (TenderID),
+        INDEX (TenderCode)
+    )
 ";
 ?>

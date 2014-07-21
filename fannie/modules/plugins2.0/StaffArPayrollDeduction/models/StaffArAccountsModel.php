@@ -34,7 +34,7 @@ class StaffArAccountsModel extends BasicModel
     'card_no' => array('type'=>'INT', 'primary_key'=>true),
     'payrollIdentifier' => array('type'=>'VARCHAR(30)'),
     'nextPayment' => array('type'=>'MONEY', 'default'=>0),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

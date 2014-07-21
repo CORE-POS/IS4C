@@ -412,8 +412,8 @@ function newBatchInput(){
 	}
 	$ret .= "</select></td>";
 	$ret .= "<td><input type=text id=newBatchName /></td>";
-	$ret .= "<td><input type=text id=newBatchStartDate onfocus=\"showCalendarControl(this);\" /></td>";
-	$ret .= "<td><input type=text id=newBatchEndDate onfocus=\"showCalendarControl(this);\" /></td>";
+	$ret .= "<td><input type=text id=newBatchStartDate /></td>";
+	$ret .= "<td><input type=text id=newBatchEndDate /></td>";
 	$ret .= "<td><select id=newBatchOwner />";
 	global $owners;
 	foreach ($owners as $o)
@@ -813,11 +813,18 @@ if (!$user){
 <html>
 <head><title>Batch controller</title>
 <script type="text/javascript" src="index.js"></script>
-<script src="<?php echo $FANNIE_URL; ?>src/CalendarControl.js"
+<script src="<?php echo $FANNIE_URL; ?>src/javascript/jquery.js"
+        language="javascript"></script>
+<script src="<?php echo $FANNIE_URL; ?>src/javascript/jquery-ui.js"
         language="javascript"></script>
 <link href="<?php echo $FANNIE_URL; ?>src/style.css"
       rel="stylesheet" type="text/css">
+<link href="<?php echo $FANNIE_URL; ?>src/javascript/jquery-ui.css"
+      rel="stylesheet" type="text/css">
 <link rel="stylesheet" type="text/css" href="index.css">
+<script type="text/javascript">
+$(document).ready(function(){ setupDatePickers(); });
+</script>
 </head>
 <body onload="document.getElementById('newBatchName').focus();">
 <div style="text-align:center;" id="batchmobile">

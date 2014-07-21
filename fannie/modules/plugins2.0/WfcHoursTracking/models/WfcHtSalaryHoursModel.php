@@ -33,7 +33,7 @@ class WfcHtSalaryHoursModel extends BasicModel
     'empID' => array('type'=>'INT', 'index'=>true),
     'dstamp' => array('type'=>'DATETIME'),
     'daysUsed' => array('type'=>'INT'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

@@ -74,11 +74,11 @@ else {
   echo "<table cellspacing=3 cellpadding=3>";
   echo "<tr><td>Username:</td><td><select name=name>";
   foreach(getUserList() as $uid => $name)
-	echo "<option>".$name."</option>";
+    echo "<option>".$name."</option>";
   echo "</select></td></tr>";
   echo "<tr><td>Authorization class:</td><td><select name=class>";
   foreach(getAuthList() as $name)
-	echo "<option>".$name."</option>";
+    echo "<option>".$name."</option>";
   echo "</select></td></tr>";
   echo "<tr><td><input type=submit value=Delete></td><td><input type=reset value=Reset></td></tr>";
   echo "<input type=hidden value=warn name=warn>";

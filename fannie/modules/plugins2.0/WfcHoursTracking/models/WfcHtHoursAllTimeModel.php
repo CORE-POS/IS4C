@@ -36,7 +36,7 @@ class WfcHtHoursAllTimeModel extends BasicModel
     'emergencyHours' => array('type'=>'DOUBLE'),
     'rateHours' => array('type'=>'DOUBLE'),
     'totalHours' => array('type'=>'DOUBLE'),
-	);
+    );
 
     public function create()
     {

@@ -39,7 +39,7 @@ class CashierRecordsReport extends FannieReportPage
     protected $header = "Cashier Shift Records Report";
     protected $required_fields = array('date1', 'date2');
 
-	public function fetch_report_data()
+    public function fetch_report_data()
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -65,26 +65,26 @@ class CashierRecordsReport extends FannieReportPage
             $data[] = $record;
         }
         return $data;
-	}
+    }
 
-	public function form_content()
+    public function form_content()
     {
         ob_start();
 ?>
 <div id=main>
 <form method ="get" action="CashierRecordsReport.php">
-	<table border="0" cellspacing="0" cellpadding="5">
-		<tr> 
+    <table border="0" cellspacing="0" cellpadding="5">
+        <tr> 
             <td>
                 <p><b>Date Start</b> </p>
                 <p><b>End</b></p>
             </td>
             <td>
                 <p>
-                <input type=text id=date1 name=date1 onfocus="this.value='';showCalendarControl(this);">
+                <input type=text id=date1 name=date1 />
                 </p>
                 <p>
-                <input type=text id=date2 name=date2 onfocus="this.value='';showCalendarControl(this);">
+                <input type=text id=date2 name=date2 />
                 </p>
             </td>
             <td colspan="2" rowspan="2">
@@ -92,15 +92,18 @@ class CashierRecordsReport extends FannieReportPage
             </td>
         </tr>
         <tr>
-			<td> <input type=submit name=submit value="Submit"> </td>
-			<td> <input type=reset name=reset value="Start Over"> </td>
-		</tr>
-	</table>
+            <td> <input type=submit name=submit value="Submit"> </td>
+            <td> <input type=reset name=reset value="Start Over"> </td>
+        </tr>
+    </table>
 </form>
 </div>
 <?php
+        $this->add_onload_command('$(\'#date1\').datepicker();');
+        $this->add_onload_command('$(\'#date2\').datepicker();');
+
         return ob_get_clean();
-	}
+    }
 }
 
 FannieDispatch::conditionalExec();

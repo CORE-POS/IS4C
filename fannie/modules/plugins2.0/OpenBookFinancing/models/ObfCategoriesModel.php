@@ -36,7 +36,7 @@ class ObfCategoriesModel extends BasicModel
     'growthTarget' => array('type'=>'DOUBLE'),
     'laborTarget' => array('type'=>'DOUBLE'),
     'averageWage' => array('type'=>'MONEY'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

@@ -35,7 +35,7 @@ class ShrinkReasonsModel extends BasicModel
     protected $columns = array(
     'shrinkReasonID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),
     'description' => array('type'=>'VARCHAR(30)'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

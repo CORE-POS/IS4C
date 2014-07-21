@@ -25,20 +25,20 @@ include('../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class DepartmentIndexPage extends FanniePage {
-	protected $title = "Fannie : Manage Departments";
-	protected $header = "Manage Departments";
-	
-	function body_content(){
-		ob_start();
-		?>
-		<ul>
-		<li> <a href="SuperDeptEditor.php">Super Departments</a></li>
-		<li> <a href="DepartmentEditor.php">Departments</a></li>
-		<li> <a href="SubDeptEditor.php">Sub Departments</a></li>
-		</ul>
-		<?php
-		return ob_get_clean();
-	}
+    protected $title = "Fannie : Manage Departments";
+    protected $header = "Manage Departments";
+    
+    function body_content(){
+        ob_start();
+        ?>
+        <ul>
+        <li> <a href="SuperDeptEditor.php">Super Departments</a></li>
+        <li> <a href="DepartmentEditor.php">Departments</a></li>
+        <li> <a href="SubDeptEditor.php">Sub Departments</a></li>
+        </ul>
+        <?php
+        return ob_get_clean();
+    }
 }
 
 FannieDispatch::conditionalExec(false);

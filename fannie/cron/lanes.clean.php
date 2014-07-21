@@ -45,32 +45,32 @@ set_time_limit(0);
 
 foreach($FANNIE_LANES as $ln){
 
-	$sql = new SQLManager($ln['host'],$ln['type'],$ln['trans'],$ln['user'],$ln['pw']);
-	if ($sql === False){
-		echo cron_msg("Could not connect to lane: ".$ln['host']);
-		continue;
-	}
+    $sql = new SQLManager($ln['host'],$ln['type'],$ln['trans'],$ln['user'],$ln['pw']);
+    if ($sql === False){
+        echo cron_msg("Could not connect to lane: ".$ln['host']);
+        continue;
+    }
 
-	$table = 'localtrans_today';
-	$cleanQ = "DELETE FROM $table WHERE ".$sql->datediff($sql->now(),'datetime')." <> 0";
-	$cleanR = $sql->query($cleanQ,$ln['trans']);
-	if ($cleanR === False){
-		echo cron_msg("Could not clean $table on lane: ".$ln['host']);
-	}
+    $table = 'localtrans_today';
+    $cleanQ = "DELETE FROM $table WHERE ".$sql->datediff($sql->now(),'datetime')." <> 0";
+    $cleanR = $sql->query($cleanQ,$ln['trans']);
+    if ($cleanR === False){
+        echo cron_msg("Could not clean $table on lane: ".$ln['host']);
+    }
 
-	$table = 'localtrans';
-	$cleanQ = "DELETE FROM $table WHERE ".$sql->datediff($sql->now(),'datetime')." > 30";
-	$cleanR = $sql->query($cleanQ,$ln['trans']);
-	if ($cleanR === False){
-		echo cron_msg("Could not clean $table on lane: ".$ln['host']);
-	}
+    $table = 'localtrans';
+    $cleanQ = "DELETE FROM $table WHERE ".$sql->datediff($sql->now(),'datetime')." > 30";
+    $cleanR = $sql->query($cleanQ,$ln['trans']);
+    if ($cleanR === False){
+        echo cron_msg("Could not clean $table on lane: ".$ln['host']);
+    }
 
-	$table = 'efsnetTokens';
-	$cleanQ = "DELETE FROM $table WHERE ".$sql->datediff($sql->now(),'expireDay')." <> 0 ";
-	$cleanR = $sql->query($cleanQ,$ln['trans']);
-	if ($cleanR === False){
-		echo cron_msg("Could not clean $table on lane: ".$ln['host']);
-	}
+    $table = 'efsnetTokens';
+    $cleanQ = "DELETE FROM $table WHERE ".$sql->datediff($sql->now(),'expireDay')." <> 0 ";
+    $cleanR = $sql->query($cleanQ,$ln['trans']);
+    if ($cleanR === False){
+        echo cron_msg("Could not clean $table on lane: ".$ln['host']);
+    }
 
 }
 

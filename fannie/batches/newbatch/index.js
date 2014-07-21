@@ -84,6 +84,9 @@ function handleResponse() {
 	case 'autoTag':
 			alert('New tags generated');
 			break;
+	case 'UnsaleBatch':
+			alert('Sale stopped');
+			break;
         case 'showBatch':
         		document.getElementById('inputarea').innerHTML = array[1];
         		document.getElementById('displayarea').innerHTML = array[2];
@@ -93,6 +96,8 @@ function handleResponse() {
         		document.getElementById('inputarea').innerHTML = array[1];
         		document.getElementById('displayarea').innerHTML = array[2];
         		document.getElementById('newBatchName').focus();	
+                $('#newBatchStartDate').datepicker();
+                $('#newBatchEndDate').datepicker();
         		break;
         case 'addItemUPC':
         case 'addItemLC':
@@ -518,3 +523,9 @@ function saveLimit(batchID){
 function autoTag(bID){
 	phpSend('autoTag&batchID='+bID);
 }
+
+function unsaleBatch(bID)
+{
+    phpSend('UnsaleBatch&batchID='+bID);
+}
+

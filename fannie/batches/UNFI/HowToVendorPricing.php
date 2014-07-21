@@ -3,17 +3,17 @@ include('../../config.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class HowToVendorPricing extends FanniePage {
-	protected $window_dressing = False;
+    protected $window_dressing = False;
 
-	function css_content(){
-		return 'img {
-			border: solid 1px black;
-		}';
-	}
+    function css_content(){
+        return 'img {
+            border: solid 1px black;
+        }';
+    }
 
-	function body_content(){
-		ob_start();
-		?>
+    function body_content(){
+        ob_start();
+        ?>
 Step 1: Obtain a UNFI price file. The zip file I got had three files in it, only
 one has pricing info and that's the one we need. Open it up in Excel
 and save it as filename <i>unfi.csv</i>, format <i>CSV (Windows)</i>.<br />
@@ -43,9 +43,9 @@ anything drastically different, tell Andy.<br />
 <br />
 Step 5 (optional): track down a dedicated professional to help<br />
 <img src=images/techsupport.jpg />
-		<?php
-		return ob_get_clean();
-	}
+        <?php
+        return ob_get_clean();
+    }
 }
 
 FannieDispatch::conditionalExec(false);

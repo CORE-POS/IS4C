@@ -3,20 +3,20 @@
 Table: UpdateLog
 
 Columns:
-	id varchar
-	status tinyint
-	tdate datetime
+    id varchar
+    status tinyint
+    tdate datetime
 
 Depends on:
-	none
+    none
 
 Use:
 */
 $CREATE['op.UpdateLog'] = "
-	create table UpdateLog (id varchar(14),
-		status tinyint,
-		tdate datetime,
-		PRIMARY KEY (id)
-	)
+    create table UpdateLog (id varchar(14),
+        status tinyint,
+        tdate datetime,
+        PRIMARY KEY (id)
+    )
 ";
 ?>

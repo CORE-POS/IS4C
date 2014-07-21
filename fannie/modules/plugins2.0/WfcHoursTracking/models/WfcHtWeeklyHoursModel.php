@@ -34,7 +34,7 @@ class WfcHtWeeklyHoursModel extends BasicModel
     'weekEnd' => array('type'=>'DATETIME'),
     'empID' => array('type'=>'INT', 'index'=>true),
     'hours' => array('type'=>'DOUBLE'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 
