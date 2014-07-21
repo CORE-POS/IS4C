@@ -453,6 +453,12 @@ function create_op_dbs($db,$type){
     InstallUtilities::createIfNeeded($db, $type, $name, 'lane_config', 'op', $errors);
 
     InstallUtilities::createIfNeeded($db, $type, $name, 'parameters', 'op', $errors);
+    $chk = $db->query('SELECT param_key FROM parameters', $name);
+    if (!$db->fetch_row($chk)) {
+        InstallUtilities::loadSampleData($db, 'parameters');
+    } else {
+        $db->end_query($chk);
+    }
     
     return $errors;
 }
