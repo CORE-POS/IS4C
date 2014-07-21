@@ -65,7 +65,7 @@ $CREATE['op.departments'] = "
 	  `modified` datetime default NULL,
 	  `modifiedby` int(11) default NULL,
       `margin` double default 0,
-      `salesCodes` int default 0,
+      `salesCode` int default 0,
 	  PRIMARY KEY (`dept_no`),
 	  KEY `dept_name` (`dept_name`)
 	);
@@ -101,7 +101,7 @@ elseif ($dbms == 'PDOLITE'){
 		  `modified` datetime default NULL,
 		  `modifiedby` int(11) default NULL,
           `margin` double default 0,
-          `salesCodes` int default 0,
+          `salesCode` int default 0,
 		  PRIMARY KEY (`dept_no`)
 		)";
 }
