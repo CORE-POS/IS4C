@@ -671,7 +671,11 @@ class InstallUtilities extends LibraryClass
 
         $CORE_LOCAL->set($name, $current_value);
         if ($storage == self::INI_SETTING) {
-            self::confsave($name, $current_value);
+            if (!is_numeric($current_value) && strtolower($current_value) !== 'true' && strtolower($current_value !== 'false')) {
+                self::confsave($name, "'" . $current_value . "'");
+            } else {
+                self::confsave($name, $current_value);
+            }
         } else {
             self::paramSave($name, $current_value);
         }
@@ -764,7 +768,11 @@ class InstallUtilities extends LibraryClass
         
         $CORE_LOCAL->set($name, $current_value);
         if ($storage == self::INI_SETTING) {
-            self::confsave($name, $current_value);
+            if (!is_numeric($current_value) && strtolower($current_value) !== 'true' && strtolower($current_value !== 'false')) {
+                self::confsave($name, "'" . $current_value . "'");
+            } else {
+                self::confsave($name, $current_value);
+            }
         } else {
             self::paramSave($name, $current_value);
         }
@@ -836,7 +844,11 @@ class InstallUtilities extends LibraryClass
 
         $CORE_LOCAL->set($name, $current_value);
         if ($storage == self::INI_SETTING) {
-            self::confsave($name, $current_value);
+            if (!is_numeric($current_value) && strtolower($current_value) !== 'true' && strtolower($current_value !== 'false')) {
+                self::confsave($name, "'" . $current_value . "'");
+            } else {
+                self::confsave($name, $current_value);
+            }
         } else {
             self::paramSave($name, $current_value);
         }
