@@ -24,7 +24,7 @@
 /**
   @class ArLiveBalanceModel
 */
-class ArLiveBalanceModel extends BasicModel 
+class ArLiveBalanceModel extends ViewModel 
 {
 
     protected $name = "ar_live_balance";
@@ -37,10 +37,29 @@ class ArLiveBalanceModel extends BasicModel
     'mark' => array('type'=>'TINYINT')
     );
 
-    public function create(){ return false; }
-    public function delete(){ return false; }
-    public function save(){ return false; }
-    public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=false){ return 0; }
+    public function definition()
+    {
+        global $FANNIE_OP_DB;
+
+        return '
+            SELECT   
+                c.CardNo AS card_no,
+                (CASE WHEN a.charges IS NULL THEN 0 ELSE a.charges END)
+                    + (CASE WHEN t.charges IS NULL THEN 0 ELSE t.charges END)
+                    AS totcharges,
+                (CASE WHEN a.payments IS NULL THEN 0 ELSE a.payments END)
+                    + (CASE WHEN t.payments IS NULL THEN 0 ELSE t.payments END)
+                    AS totpayments,
+                (CASE WHEN a.balance IS NULL THEN 0 ELSE a.balance END)
+                    + (CASE WHEN t.balance IS NULL THEN 0 ELSE t.balance END)
+                    AS balance,
+                (CASE WHEN t.card_no IS NULL THEN 0 ELSE 1 END) AS mark
+            FROM ' . $FANNIE_OP_DB . $this->connection->sep() . 'custdata as c 
+                LEFT JOIN ar_history_sum AS a ON c.CardNo=a.card_no AND c.personNum=1
+                LEFT JOIN ar_history_today_sum AS t ON c.CardNo = t.card_no AND c.personNum=1
+            WHERE c.personNum=1
+        ';
+    }
 
     /* START ACCESSOR FUNCTIONS */
 
