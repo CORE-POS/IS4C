@@ -319,8 +319,19 @@ class ProductListPage extends FannieReportTool
             $model->save();
 
             $supplier = FormLib::get_form_value('supplier');
-            $extraP = $dbc->prepare_statement('UPDATE prodExtra SET distributor=? WHERE upc=?');
-            $dbc->exec_statement($extraP, array($supplier,$upc));
+            $chkP = $dbc->prepare('SELECT upc FROM prodExtra WHERE upc=?');
+            $chkR = $dbc->execute($chkP, array($upc));
+            if ($dbc->num_rows($chkR) > 0) {
+                $extraP = $dbc->prepare_statement('UPDATE prodExtra SET distributor=? WHERE upc=?');
+                $dbc->exec_statement($extraP, array($supplier,$upc));
+            } else {
+                $extraP = $dbc->prepare('INSERT INTO prodExtra
+                                (upc, variable_pricing, margin, distributor)
+                                VALUES
+                                (?, 0, 0, ?)');
+
+                $dbc->execute($extraP, array($upc, $supplier));
+            }
             
             updateProductAllLanes($upc);
             break;  
@@ -402,10 +413,10 @@ class ProductListPage extends FannieReportTool
         $sort = FormLib::get_form_value('sort','Department');   
         $order = 'dept_name';
         if ($sort === 'UPC') $order = 'i.upc';  
-        elseif ($sort === 'Description') $order = 'i.description';
-        elseif ($sort === 'Vendor') $order = 'x.distributor';
-        elseif ($sort === 'Price') $order = 'i.normal_price';
-        elseif ($sort === 'Cost') $order = 'i.cost';
+        elseif ($sort === 'Description') $order = 'i.description, i.upc';
+        elseif ($sort === 'Vendor') $order = 'x.distributor, i.upc';
+        elseif ($sort === 'Price') $order = 'i.normal_price, i.upc';
+        elseif ($sort === 'Cost') $order = 'i.cost, i.upc';
 
         $ret = 'Report sorted by '.$sort.'<br />';
         if ($supertype == 'dept' && $super == 0){
@@ -499,7 +510,7 @@ class ProductListPage extends FannieReportTool
             $ret .= sprintf('<tr><th><a href="%s&sort=UPC">UPC</a></th>
                     <th><a href="%s&sort=Description">Description</a></th>
                     <th><a href="%s&sort=Department">Department</a></th>
-                    <th><a href="%s&sort=Supplier">' . _('Supplier') . '</a></th>
+                    <th><a href="%s&sort=Vendor">' . _('Supplier') . '</a></th>
                     <th style="width:4em;"><a href="%s&sort=Cost">Cost</a></th>
                     <th style="width:4em;"><a href="%s&sort=Price">Price</a></th>',
                     $page_url,$page_url,$page_url,$page_url,$page_url,$page_url);

@@ -220,7 +220,8 @@ class ObfWeeklyReport extends FannieReportPage
         $quarterLaborP = $dbc->prepare('SELECT SUM(l.hours) AS hours,
                                             SUM(l.wages) AS wages,
                                             AVG(l.laborTarget) as laborTarget,
-                                            AVG(l.averageWage) as averageWage
+                                            AVG(l.averageWage) as averageWage,
+                                            SUM(l.hoursTarget) as hoursTarget
                                         FROM ObfLabor AS l
                                             INNER JOIN ObfWeeks AS w ON l.obfWeekID=w.obfWeekID
                                         WHERE w.obfQuarterID=?
@@ -304,19 +305,19 @@ class ObfWeeklyReport extends FannieReportPage
             $data[] = $record;
             $forecast_total += $labor->forecastSales();
 
-            $proj_wages = $dept_proj * $labor->laborTarget();
             $average_wage = $labor->wages() / ((float)$labor->hours());
-            $proj_hours = $proj_wages / $average_wage;
+            $proj_hours = $labor->hoursTarget();
+            $proj_wages = $proj_hours * $average_wage;
 
             $quarter = $dbc->execute($quarterLaborP, array($week->obfQuarterID(), $labor->obfCategoryID()));
             if ($dbc->num_rows($quarter) == 0) {
-                $quarter = array('hours'=>0, 'wages'=>0, 'laborTarget'=>0, 'averageWage'=>0);
+                $quarter = array('hours'=>0, 'wages'=>0, 'laborTarget'=>0, 'hoursTarget'=>0);
             } else {
                 $quarter = $dbc->fetch_row($quarter);
             }
-            $qt_proj_labor = $qtd_dept_plan * $quarter['laborTarget'];
             $qt_average_wage = $quarter['wages'] / ((float)$quarter['hours']);
-            $qt_proj_hours = $qt_proj_labor / $qt_average_wage;
+            $qt_proj_hours = $quarter['hoursTarget'];
+            $qt_proj_labor = $qt_proj_hours * $qt_average_wage;
             $qtd_hours += $quarter['hours'];
             $qtd_proj_hours += $qt_proj_hours;
 
@@ -416,19 +417,20 @@ class ObfWeeklyReport extends FannieReportPage
 
             $quarter = $dbc->execute($quarterLaborP, array($week->obfQuarterID(), $labor->obfCategoryID()));
             if ($dbc->num_rows($quarter) == 0) {
-                $quarter = array('hours'=>0, 'wages'=>0, 'laborTarget'=>0, 'averageWage'=>0);
+                $quarter = array('hours'=>0, 'wages'=>0, 'laborTarget'=>0, 'hoursTarget'=>0);
             } else {
                 $quarter = $dbc->fetch_row($quarter);
             }
-            $qt_proj_labor = $qtd_plan * $quarter['laborTarget'];
             $qt_average_wage = $quarter['wages'] / ((float)$quarter['hours']);
-            $qt_proj_hours = $qt_proj_labor / $qt_average_wage;
+            $qt_proj_hours = $quarter['hoursTarget'];
+            $qt_proj_labor = $qt_proj_hours * $qt_average_wage;
             $qtd_hours += $quarter['hours'];
             $qtd_proj_hours += $qt_proj_hours;
 
-            $proj_wages = $proj_total * $labor->laborTarget();
             $average_wage = $labor->wages() / ((float)$labor->hours());
-            $proj_hours = $proj_wages / $average_wage;
+            $proj_hours = $labor->hoursTarget();
+            $proj_wages = $proj_hours * $average_wage;
+
             $data[] = array(
                 'Hours',
                 number_format($labor->hours(), 0),

@@ -129,7 +129,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
         $weeks = FormLib::get('weekID', array());
         $cats = FormLib::get('catID', array());
         $goals = FormLib::get('labor', array());
-        $avg = FormLib::get('avgwage', array());
+        $alloc = FormLib::get('alloc', array());
         $sales = FormLib::get('sales', array());
         $model = new ObfLaborModel($dbc);
         for($i=0;$i<count($cats);$i++) {
@@ -142,7 +142,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
             $model->hours( isset($hours[$i]) ? $hours[$i] : 0 );
             $model->wages( isset($wages[$i]) ? $wages[$i] : 0 );
             $model->laborTarget( isset($goals[$i]) ? $goals[$i] / 100.00 : 0 );
-            $model->averageWage( isset($avg[$i]) ? $avg[$i] : 0 );
+            $model->hoursTarget( isset($alloc[$i]) ? $alloc[$i] : 0 );
             $model->forecastSales(sprintf('%d', isset($sales[$i]) ? $sales[$i] : 0));
             $model->save();
         }
@@ -234,7 +234,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
             $ret .= '<hr />';
             $ret .= '<table cellpadding="4" cellspacing="0" border="1">';
             $ret .= '<tr><th>Group</th><th>Hours</th><th>Wages</th>
-                    <th>Labor Goal</th><th>Avg Wage</th><th>Sales Forecast</th></tr>';
+                    <th>Labor Goal</th><th>Allocated Hours</th><th>Sales Forecast</th></tr>';
             $categories = new ObfCategoriesModel($dbc);
             $labor = new ObfLaborModel($dbc);
             foreach($categories->find() as $obj) {
@@ -248,12 +248,15 @@ class ObfWeekEntryPage extends FannieRESTfulPage
                 if ($labor->averageWage() == 0) {
                     $labor->averageWage($obj->averageWage());
                 }
+                if ($labor->hoursTarget() == 0) {
+                    $labor->hoursTarget($obj->hoursTarget());
+                }
                 $ret .= sprintf('<tr>
                             <td>%s</td>
                             <td><input type="text" size="8" name="hours[]" value="%.2f" /></td>
                             <td><input type="text" size="8" name="wages[]" value="%.2f" /></td>
                             <td><input type="text" size="8" name="labor[]" value="%.2f" />%%</td>
-                            <td>$<input type="text" size="8" name="avgwage[]" value="%.2f" /></td>
+                            <td><input type="text" size="8" name="alloc[]" value="%d" /></td>
                             <td>$<input type="text" size="8" name="sales[]" %s value="%s" /></td>
                             <input type="hidden" name="weekID[]" value="%d" />
                             <input type="hidden" name="catID[]" value="%d" />
@@ -262,7 +265,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
                             $labor->hours(),
                             $labor->wages(),
                             $labor->laborTarget() * 100,
-                            $labor->averageWage(),
+                            $labor->hoursTarget(),
                             ($obj->hasSales() ? '' : 'disabled'),
                             ($obj->hasSales() ? round($labor->forecastSales()) : 'n/a'),
                             $labor->obfWeekID(),

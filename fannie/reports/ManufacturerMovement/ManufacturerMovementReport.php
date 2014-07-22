@@ -33,6 +33,14 @@ class ManufacturerMovementReport extends FannieReportPage
     public $description = '[Brand Movement] lists sales for products from a specific brand over a given date range. Brand is given either by name or as a UPC prefix.';
     public $report_set = 'Movement Reports';
 
+    public function preprocess()
+    {
+        $this->title = _("Fannie") . " : " . _("Manufacturer Movement Report");
+        $this->header = _("Manufacturer Movement Report");
+
+        return parent::preprocess();
+    }
+
     public function fetch_report_data()
     {
         global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
@@ -183,8 +191,6 @@ class ManufacturerMovementReport extends FannieReportPage
 
     public function form_content()
     {
-        $this->title = _("Fannie") . " : " . _("Manufacturer Movement Report");
-        $this->header = _("Manufacturer Movement Report");
 ?>
 <div id=main>   
 <form method = "get" action="ManufacturerMovementReport.php">

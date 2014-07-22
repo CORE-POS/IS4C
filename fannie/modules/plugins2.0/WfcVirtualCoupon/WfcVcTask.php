@@ -140,21 +140,21 @@ class WfcVcTask extends FannieTask
 
         // more detail needed for access members
         $both_blueline = $dbc->concat(
-                        $dbc->convert('c.CardNo', 'CHAR'),
+                        $dbc->convert('CardNo', 'CHAR'),
                         "' '",
                         'LastName',
                         "' Coup(OB AC)'",
                         ''
         );
         $ob_blueline = $dbc->concat(
-                        $dbc->convert('c.CardNo', 'CHAR'),
+                        $dbc->convert('CardNo', 'CHAR'),
                         "' '",
                         'LastName',
                         "' Coup(OB)'",
                         ''
         );
         $ac_blueline = $dbc->concat(
-                        $dbc->convert('c.CardNo', 'CHAR'),
+                        $dbc->convert('CardNo', 'CHAR'),
                         "' '",
                         'LastName',
                         "' Coup(AC)'",

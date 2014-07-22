@@ -42,13 +42,13 @@ class ObfCategoriesPage extends FannieRESTfulPage
         $ids = FormLib::get('id', array());
         $sales = FormLib::get('hasSales', array());
         $labor = FormLib::get('labor', array());
-        $wage = FormLib::get('wage', array());
+        $hours = FormLib::get('hours', array());
         for ($i=0; $i<count($ids); $i++) {
             $model->reset();
             $model->obfCategoryID($ids[$i]);
             $model->hasSales( in_array($ids[$i], $sales) ? 1 : 0 );
             $model->laborTarget($labor[$i] / 100.00);
-            $model->averageWage($wage[$i]);
+            $model->hoursTarget($hours[$i]);
             $model->save();
         }
         
@@ -73,7 +73,7 @@ class ObfCategoriesPage extends FannieRESTfulPage
                     <th>Name</th>
                     <th>Has Sales</th>
                     <th>Labor Goal</th>
-                    <th>Avg Wage</th>
+                    <th>Allocated Hours</th>
                  </tr>';
         foreach($model->find() as $cat) {
             $ret .= sprintf('<tr>
@@ -81,13 +81,13 @@ class ObfCategoriesPage extends FannieRESTfulPage
                             <td>%s</td>
                             <td><input type="checkbox" name="hasSales[]" value="%d" %s /></td>
                             <td><input type="text" size="5" name="labor[]" value="%.2f" />%%</td>
-                            <td>$<input type="text" size="5" name="wage[]" value="%.2f" /></td>
+                            <td><input type="text" size="5" name="hours[]" value="%d" /></td>
                             </tr>',
                             $cat->obfCategoryID(),
                             $cat->name(),
                             $cat->obfCategoryID(), ($cat->hasSales() == 1 ? 'checked' : ''),
                             $cat->laborTarget()*100,
-                            $cat->averageWage()
+                            $cat->hoursTarget()
             );
         }
         $ret .= '</table>';
