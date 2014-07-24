@@ -648,15 +648,34 @@ class InstallUtilities extends LibraryClass
         }
         if (isset($_REQUEST[$name])) {
             $current_value = $_REQUEST[$name];
+            /**
+              If default is array, value is probably supposed to be an array
+              Split quoted values on whitespace, commas, and semicolons
+              Split non-quoted values on non-numeric characters
+            */
+            if (is_array($default_value)) {
+                if ($quoted) {
+                    $current_value = preg_split('/[\s,;]+/', $current_value); 
+                } else {
+                    $current_value = preg_split('/\D+/', $current_value); 
+                }
+            }
         }
 
         // sanitize values:
         if (!$quoted) {
             // unquoted must be a number or boolean
-            if (!is_numeric($current_value) && strtolower($current_value) !== 'true' && strtolower($current_value) !== false) {
+            // arrays of unquoted values only allow numbers
+            if (is_array($current_value)) {
+                for ($i=0; $i<count($current_value); $i++) {
+                    if (!is_numeric($current_value[$i])) {
+                        $current_value[$i] = (int)$current_value[$i];
+                    }
+                }
+            } elseif (!is_numeric($current_value) && strtolower($current_value) !== 'true' && strtolower($current_value) !== false) {
                 $current_value = (int)$current_value;
             }
-        } else if ($quoted) {
+        } else if ($quoted && !is_array($current_value)) {
             // quoted must not contain single quotes
             $current_value = str_replace("'", '', $current_value);
             // must not start with backslash
@@ -671,13 +690,20 @@ class InstallUtilities extends LibraryClass
 
         $CORE_LOCAL->set($name, $current_value);
         if ($storage == self::INI_SETTING) {
-            if (!is_numeric($current_value) && strtolower($current_value) !== 'true' && strtolower($current_value !== 'false')) {
+            if (is_array($current_value)) {
+                $out_value = 'array(' . implode(',', $current_value) . ')';
+                self::confsave($name, $out_value);
+            } elseif (!is_numeric($current_value) && strtolower($current_value) !== 'true' && strtolower($current_value !== 'false')) {
                 self::confsave($name, "'" . $current_value . "'");
             } else {
                 self::confsave($name, $current_value);
             }
         } else {
             self::paramSave($name, $current_value);
+        }
+
+        if (is_array($current_value)) {
+            $current_value = implode(', ', $current_value);
         }
         
         $style = isset($attributes['style']) ? $attributes['style'] : '';

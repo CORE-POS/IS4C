@@ -23,6 +23,7 @@
 
 class EquityEndorseDept extends SpecialDept 
 {
+    public $help_summary = 'Prompt to print receipt number on equity paperwork via endorser';
 
     public function handle($deptID,$amount,$json)
     {

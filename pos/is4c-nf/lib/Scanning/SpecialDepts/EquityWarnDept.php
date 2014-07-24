@@ -23,6 +23,7 @@
 
 class EquityWarnDept extends SpecialDept 
 {
+    public $help_summary = 'Require cashier confirmation on equity sale';
 
     public function handle($deptID,$amount,$json)
     {

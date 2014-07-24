@@ -95,6 +95,43 @@ body {
     </td>
 </tr>
 <tr>
+    <td><b>Equity Department(s)</b></td>
+    <td>
+    <?php
+    // try to find a sane default automatically
+    $default = array();
+    $db = Database::pDataConnect();
+    $lookup = $db->query("SELECT dept_no FROM departments WHERE dept_name LIKE '%EQUIT%'");
+    if ($lookup && $db->num_rows($lookup) > 0) {
+        while ($row = $db->fetch_row($lookup)) {
+            $default[] = $row['dept_no'];
+        }
+    }
+    echo InstallUtilities::installTextField('EquityDepartments', $default, InstallUtilities::EITHER_SETTING, false);
+    ?>
+    <span class='noteTxt'>Set the department number(s) that are considered member equity</span>
+    </td>
+</tr>
+<tr>
+    <td><b>AR Department(s)</b></td>
+    <td>
+    <?php
+    // try to find a sane default automatically
+    $default = array();
+    $db = Database::pDataConnect();
+    $lookup = $db->query("SELECT dept_no FROM departments WHERE dept_name LIKE '%PAYMENT%'");
+    if ($lookup && $db->num_rows($lookup) > 0) {
+        while ($row = $db->fetch_row($lookup)) {
+            $default[] = $row['dept_no'];
+        }
+    }
+    echo InstallUtilities::installTextField('ArDepartments', $default, InstallUtilities::EITHER_SETTING, false);
+    ?>
+    <span class='noteTxt'>Set the department number(s) that are store charge balance payments. 
+        Also known as AR or accounts receivable.</span>
+    </td>
+</tr>
+<tr>
     <td><b>Donation Department</b></td>
     <td>
     <?php
@@ -276,11 +313,12 @@ foreach($sdepts as $sd){
 			$list .= $id.', ';
 	}
 	$list = rtrim($list,', ');
-	printf('<tr><td>%s</td><td>
+    $obj = new $sd();
+	printf('<tr><td title="%s">%s</td><td>
 		<input type="text" name="SDEPT_MAP_LIST[]" value="%s" />
 		<input type="hidden" name="SDEPT_MAP_NAME[]" value="%s" />
 		</td></tr>',
-		$sd,$list,$sd);
+		$obj->help_summary,$sd,$list,$sd);
 }
 $saveStr = 'array(';
 foreach($sconf as $id => $mods){
