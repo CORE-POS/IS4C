@@ -97,7 +97,7 @@ if ($dbms == "MSSQL"){
             [modifiedby] [int] NULL ,
             [margin] [double] NULL,
             [salesCode] [int] NULL,
-            [memberOnly] [smallint] NULL,
+            [memberOnly] [smallint] NULL
         )";
 }
 
