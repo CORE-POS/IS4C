@@ -273,11 +273,14 @@ class UPC extends Parser {
 				return $ret;
 			}
 
-			if ($CORE_LOCAL->get("memAge")=="")
+			if ($CORE_LOCAL->get("memAge")=="") {
 				$CORE_LOCAL->set("memAge",date('Ymd'));
-			$diff = time() - ((int)strtotime($CORE_LOCAL->get("memAge")));
-			$age = floor($diff / (365*60*60*24));
-			if ($age < $row['idEnforced']){
+			}
+			$ts = strtotime($CORE_LOCAL->get("memAge"));
+			$required_age = $row['idEnforced'];
+			$of_age_on_day = mktime(0, 0, 0, date('n', $ts), date('j', $ts), date('Y', $ts) + $required_age);
+			$today = strtotime( date('Y-m-d') );
+			if ($of_age_on_day > $today) {
 				$ret['udpmsg'] = 'twoPairs';
 				$ret['main_frame'] = $my_url.'gui-modules/requestInfo.php?class=UPC';
 				return $ret;
