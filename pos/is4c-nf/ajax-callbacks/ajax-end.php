@@ -25,6 +25,7 @@ ini_set('display_errors','Off');
 include_once(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 
 $receiptType = isset($_REQUEST['receiptType'])?$_REQUEST['receiptType']:'';
+$receiptNum = isset($_REQUEST['ref']) ? $_REQUEST['ref'] : '';
 
 /**
   Use requested receipt type to determine whether transaction
@@ -33,6 +34,7 @@ $receiptType = isset($_REQUEST['receiptType'])?$_REQUEST['receiptType']:'';
   - full => normal transaction receipt
   - cancelled => transaction cancelled
   - suspended => transaction suspended
+  - ddd  => shrink items
   - none => don't print a receipt, just flush localtemptrans
 
   Note: none is currently only used by the RRR parser which
@@ -41,11 +43,17 @@ $receiptType = isset($_REQUEST['receiptType'])?$_REQUEST['receiptType']:'';
 */
 $transFinished = false;
 if ($receiptType == 'full' || $receiptType == 'cancelled' ||
-    $receiptType == 'suspended' || $receiptType == 'none') {
+    $receiptType == 'suspended' || $receiptType == 'none' ||
+    $receiptType == 'ddd') {
     
     $transFinished = true;
 }
 
+if (!preg_match('/^\d+-\d+-\d+$/', $receiptNum)) {
+    $receiptNum = ReceiptLib::mostRecentReceipt();
+}
+
+/**
 if ($receiptType == 'full') {
     TransRecord::addtransDiscount();
     TransRecord::addTax();
@@ -54,6 +62,7 @@ if ($receiptType == 'full') {
         TransRecord::addQueued('TAXLINEITEM',$tax['description'],$tax['rate_id'],'',$tax['amount']);
     }
 }
+*/
 
 $yesSync = JsonLib::array_to_json(array('sync'=>true));
 $noSync = JsonLib::array_to_json(array('sync'=>false));
@@ -67,12 +76,14 @@ if (strlen($receiptType) > 0) {
 
     $receiptContent = array();
 
-    $kicker_class = ($CORE_LOCAL->get("kickerModule")=="") ? 'Kicker' : $CORE_LOCAL->get('kickerModule');
-    $kicker_object = new $kicker_class();
-    if (!is_object($kicker_object)) {
-        $kicker_object = new Kicker();
+    if ($transFinished) {
+        $kicker_class = ($CORE_LOCAL->get("kickerModule")=="") ? 'Kicker' : $CORE_LOCAL->get('kickerModule');
+        $kicker_object = new $kicker_class();
+        if (!is_object($kicker_object)) {
+            $kicker_object = new Kicker();
+        }
+        $dokick = $kicker_object->doKick($receiptNum);
     }
-    $dokick = $kicker_object->doKick();
 
     $print_class = $CORE_LOCAL->get('ReceiptDriver');
     if ($print_class === '' || !class_exists($print_class)) {
@@ -85,17 +96,17 @@ if (strlen($receiptType) > 0) {
     $doEmail = ($customerEmail !== false) ? true : false;
     
     if ($receiptType != "none") {
-        $receiptContent[] = ReceiptLib::printReceipt($receiptType, false, $doEmail);
+        $receiptContent[] = ReceiptLib::printReceipt($receiptType, $receiptNum, false, $doEmail);
     }
 
     if ($CORE_LOCAL->get("ccCustCopy") == 1) {
         $CORE_LOCAL->set("ccCustCopy",0);
-        $receiptContent[] = ReceiptLib::printReceipt($receiptType);
+        $receiptContent[] = ReceiptLib::printReceipt($receiptType, $receiptNum);
     } elseif ($receiptType == "ccSlip" || $receiptType == 'gcSlip') {
         // don't mess with reprints
     } elseif ($CORE_LOCAL->get("autoReprint") == 1) {
         $CORE_LOCAL->set("autoReprint",0);
-        $receiptContent[] = ReceiptLib::printReceipt($receiptType, true);
+        $receiptContent[] = ReceiptLib::printReceipt($receiptType, $receiptNum, true);
     }
 
     if ($transFinished) {
@@ -107,7 +118,7 @@ if (strlen($receiptType) > 0) {
             $sd->ReadReset();
         }
         $CORE_LOCAL->set('ccTermState','swipe');
-        cleartemptrans($receiptType);
+        uploadAndReset($receiptType);
     }
 
     // close session so if printer hangs
@@ -143,37 +154,31 @@ if (is_object($td)) {
 echo $output;
 ob_end_flush();
 
-function cleartemptrans($type) 
+function uploadAndReset($type) 
 {
     global $CORE_LOCAL;
 
-    TransRecord::emptyQueue();
-
-    // make sure transno advances even if something
-    // wacky happens with the db shuffling
+    /** @deprecated 3Jun14
+      Handled by TransRecord::finalizeTransaction()
     Database::loadglobalvalues();    
     $CORE_LOCAL->set("transno",$CORE_LOCAL->get("transno") + 1);
     Database::setglobalvalue("TransNo", $CORE_LOCAL->get("transno"));
+    */
 
-    $db = Database::tDataConnect();
-
+    /** @deprecated 3Jun14
+      Handled by mgrlogin.php
     if($type == "cancelled") {
         $db->query("update localtemptrans set trans_status = 'X'");
     }
-
-    /**
-     @deprecated 25Feb14 for Database class methods
-    moveTempData();
-    truncateTempTables();
     */
 
+    /** @deprecated 3Jun14
+      Handled by TransRecord::finalizeTransaction()
     if (Database::rotateTempData()) {
         Database::clearTempTables();
     }
-
-    /**
-      Moved to separate ajax call (ajax-transaction-sync.php)
     */
+
     if ($CORE_LOCAL->get("testremote")==0) {
         Database::testremote(); 
     }

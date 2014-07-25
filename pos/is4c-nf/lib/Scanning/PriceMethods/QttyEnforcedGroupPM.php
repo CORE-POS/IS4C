@@ -33,9 +33,16 @@
 class QttyEnforcedGroupPM extends PriceMethod {
 
     function addItem($row,$quantity,$priceObj){
+        global $CORE_LOCAL;
         if ($quantity == 0) return false;
 
         $pricing = $priceObj->priceInfo($row,$quantity);
+
+        // enforce limit on discounting sale items
+        $dsi = $CORE_LOCAL->get('DiscountableSaleItems');
+        if ($dsi == 0 && $dsi !== '' && $priceObj->isSale()) {
+            $row['discount'] = 0;
+        }
 
         /* group definition: number of items
            that make up a group, price for a

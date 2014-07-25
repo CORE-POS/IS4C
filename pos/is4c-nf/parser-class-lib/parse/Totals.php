@@ -50,6 +50,7 @@ class Totals extends Parser {
 		elseif ($str == "FTTL")
 			PrehLib::finalttl();
 		elseif ($str == "TL"){
+            $CORE_LOCAL->set('End', 0);
 			$chk = PrehLib::ttl();
 			if ($chk !== True)
 				$ret['main_frame'] = $chk;

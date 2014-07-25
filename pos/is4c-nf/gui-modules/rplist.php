@@ -36,7 +36,7 @@ class rplist extends NoInputPage
                     $print_class = 'ESCPOSPrintHandler';
                 }
                 $PRINT_OBJ = new $print_class();
-                $receipt = ReceiptLib::printReceipt($_REQUEST['selectlist']);
+                $receipt = ReceiptLib::printReceipt('reprint', $_REQUEST['selectlist']);
                 if (session_id() != '') {
                     session_write_close();
                 }

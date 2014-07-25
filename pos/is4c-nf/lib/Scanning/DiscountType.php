@@ -28,6 +28,16 @@
 class DiscountType 
 {
 
+    static public $MAP = array(
+        0   => 'NormalPricing',
+        1   => 'EveryoneSale',
+        2   => 'MemberSale',
+        3   => 'PercentMemSale',
+        4   => 'StaffSale',
+        5   => 'SlidingMemSale',
+        6   => 'CasePriceDiscount',
+    );
+
     /**
       Convenience variable to save prieInfo() argument
       for later if needed

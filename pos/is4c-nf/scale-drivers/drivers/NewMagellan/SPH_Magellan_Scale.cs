@@ -137,6 +137,7 @@ private static String MAGELLAN_OUTPUT_DIR = "ss-output/";
 		 *    move the finished files to the output directory
 		 *    (i.e., so they aren't read too early)
 		 */
+         /*
 		int ticks = Environment.TickCount;
 		char sep = System.IO.Path.DirectorySeparatorChar;
 		while(File.Exists(MAGELLAN_OUTPUT_DIR+sep+ticks))
@@ -148,6 +149,8 @@ private static String MAGELLAN_OUTPUT_DIR = "ss-output/";
 		sw.Close();
 		File.Move(MAGELLAN_OUTPUT_DIR+sep+"tmp"+sep+ticks,
 			  MAGELLAN_OUTPUT_DIR+sep+ticks);
+              */
+        parent.MsgSend(s);
 	}
 
 	private string ParseData(string s){

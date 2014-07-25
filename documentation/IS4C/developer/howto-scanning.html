@@ -3,7 +3,7 @@
 </head>
 <body>
 	<div style="text-align:center;margin-bottom:10px;font-size:80%;">
-	updated as of: August 20, 2012<br />
+	updated as of: June 3, 2014<br />
 	last author: Andy Theuninck
 	</div>
 The UPC <a href="howto-parse.html">parser module</a> is currently
@@ -55,11 +55,10 @@ class WackyPLU extends SpecialUPC {
 <h3>Discount Types</h3>
 Calculating discounts and pricing is done based on opdata.products.discounttype.
 This column is an integer, and simply hard-coding checks for a specific value is
-bound to eventually conflict with another location's usage. Discount Type modules
-are are a simple solution. Each store can specify an array of modules in their
-configuration and opdata.products.discounttype maps into that array. Then it
-doesn't matter if discounttype==4 means something different at WFC than it does
-at the Wedge.
+bound to eventually conflict with another location's usage. Values zero through
+63 are reserved for use with DiscountType modules provided in the default
+install. Values 64 through 127 may be customized on a per-coop basis to correspond
+to any available DiscountType.
 <p />
 All Discount Type objects should subclass DiscountType (lib/Scanning/DiscountType.php)
 and implement the following method:

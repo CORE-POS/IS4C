@@ -28,6 +28,10 @@ if (!class_exists('AutoLoader')) {
 class InstallUtilities extends LibraryClass 
 {
 
+    const INI_SETTING   = 1;
+    const PARAM_SETTING  = 2;
+    const EITHER_SETTING = 3;
+
     static public function whoami()
     {
         if (function_exists('posix_getpwuid')){
@@ -251,7 +255,7 @@ class InstallUtilities extends LibraryClass
         // maintain ini.php value too
         if (self::confExists($key)) {
             // tweak value for safe output to ini.php
-            if ($save_as_array == 1) {
+            if ($save_as_array == 1 && $value !== '') {
                 $saveStr = 'array(';
                 foreach(explode(',', $value) as $entry) {
                     if (strstr($entry, '=>')) {
@@ -262,11 +266,13 @@ class InstallUtilities extends LibraryClass
                     }
                 }
                 $value = substr($saveStr, 0, strlen($saveStr)-1).')';
+            } else if ($save_as_array == 1 && $value === '') {
+                $value = 'array()';
             } else if (strtoupper($value) === 'TRUE'){
                 $value = 'True';
             } else if (strtoupper($value) === 'FALSE'){
                 $value = 'False';
-            } else if (!is_numeric($value)) {
+            } else if (!is_numeric($value) || (strlen($value)>1 && substr($value,0,1) == '0')) {
                 $value = "'".$value."'";
             }
 
@@ -398,7 +404,7 @@ class InstallUtilities extends LibraryClass
         }
     }
 
-static public function loadSampleData($sql, $table)
+    static public function loadSampleData($sql, $table)
     {
         $success = true; 
         $loaded = 0;
@@ -619,6 +625,242 @@ static public function loadSampleData($sql, $table)
         } else {
             return false;
         }
+    }
+
+    /**
+      Render configuration variable as an <input> tag
+      Process any form submissions
+      Write configuration variable to config.php
+
+      @param $name [string] name of the variable
+      @param $default_value [mixed, default empty string] default value for the setting
+      @param $quoted [boolean, default true] write value to config.php with single quotes
+      @param $attributes [array, default empty] array of <input> tag attribute names and values
+
+      @return [string] html input field
+    */
+    static public function installTextField($name, $default_value='', $storage=self::EITHER_SETTING, $quoted=true, $attributes=array())
+    {
+        global $CORE_LOCAL;
+        $current_value = $CORE_LOCAL->get($name);
+        if ($current_value === '') {
+            $current_value = $default_value;
+        }
+        if (isset($_REQUEST[$name])) {
+            $current_value = $_REQUEST[$name];
+        }
+
+        // sanitize values:
+        if (!$quoted) {
+            // unquoted must be a number or boolean
+            if (!is_numeric($current_value) && strtolower($current_value) !== 'true' && strtolower($current_value) !== false) {
+                $current_value = (int)$current_value;
+            }
+        } else if ($quoted) {
+            // quoted must not contain single quotes
+            $current_value = str_replace("'", '', $current_value);
+            // must not start with backslash
+            while (strlen($current_value) > 0 && substr($current_value, 0, 1) == "\\") {
+                $current_value = substr($current_value, 1);
+            }
+            // must not end with backslash
+            while (strlen($current_value) > 0 && substr($current_value, -1) == "\\") {
+                $current_value = substr($current_value, 0, strlen($current_value)-1);
+            }
+        }
+
+        $CORE_LOCAL->set($name, $current_value);
+        if ($storage == self::INI_SETTING) {
+            self::confsave($name, $current_value);
+        } else {
+            self::paramSave($name, $current_value);
+        }
+        
+        $style = isset($attributes['style']) ? $attributes['style'] : '';
+        if ($storage == self::INI_SETTING) {
+            $style .= 'background-color: #ffff66';
+        } elseif (self::confExists($name)) {
+            $style .= 'background-color: #66ff33';
+        } else {
+            $style .= 'background-color: #3399ff';
+        }
+        $attributes['style'] = $style;
+
+        $ret = sprintf('<input name="%s" value="%s"',
+            $name, $current_value);
+        if (!isset($attributes['type'])) {
+            $attributes['type'] = 'text';
+        }
+        foreach ($attributes as $name => $value) {
+            if ($name == 'name' || $name == 'value') {
+                continue;
+            }
+            $ret .= ' ' . $name . '="' . $value . '"';
+        }
+        $ret .= " />\n";
+
+        return $ret;
+    }
+
+    /**
+      Render configuration variable as an <select> tag
+      Process any form submissions
+      Write configuration variable to config.php
+      
+      @param $name [string] name of the variable
+      @param $options [array] list of options
+        This can be a keyed array in which case the keys
+        are what is written to config.php and the values
+        are what is shown in the user interface, or it
+        can simply be an array of valid values.
+      @param $default_value [mixed, default empty string] default value for the setting
+      @param $quoted [boolean, default true] write value to config.php with single quotes
+
+      @return [string] html select field
+    */
+    static public function installSelectField($name, $options, $default_value='', $storage=self::EITHER_SETTING, $quoted=true, $attributes=array())
+    {
+        global $CORE_LOCAL;
+        $current_value = $CORE_LOCAL->get($name);
+        if ($current_value === '') {
+            $current_value = $default_value;
+        }
+        if (isset($_REQUEST[$name])) {
+            $current_value = $_REQUEST[$name];
+        }
+
+        $is_array = false;
+        if (isset($attributes['multiple'])) {
+            $is_array = true;
+            if (!isset($attributes['size'])) {
+                $attributes['size'] = 5;
+            }
+            // with multi select, no value means no POST
+            if (count($_POST) > 0 && !isset($_REQUEST[$name])) {
+                $current_value = array();
+            }
+        }
+
+        // sanitize values:
+        if (!$is_array && !$quoted) {
+            // unquoted must be a number or boolean
+            if (!is_numeric($current_value) && strtolower($current_value) !== 'true' && strtolower($current_value) !== 'false') {
+                $current_value = (int)$current_value;
+            }
+        } else if (!$is_array && $quoted) {
+            // quoted must not contain single quotes
+            $current_value = str_replace("'", '', $current_value);
+            // must not start with backslash
+            while (strlen($current_value) > 0 && substr($current_value, 0, 1) == "\\") {
+                $current_value = substr($current_value, 1);
+            }
+            // must not end with backslash
+            while (strlen($current_value) > 0 && substr($current_value, -1) == "\\") {
+                $current_value = substr($current_value, 0, strlen($current_value)-1);
+            }
+        } else if ($is_array && !is_array($current_value)) {
+            $current_value = $default_value;
+        }
+        
+        $CORE_LOCAL->set($name, $current_value);
+        if ($storage == self::INI_SETTING) {
+            self::confsave($name, $current_value);
+        } else {
+            self::paramSave($name, $current_value);
+        }
+
+        $style = isset($attributes['style']) ? $attributes['style'] : '';
+        if ($storage == self::INI_SETTING) {
+            $style .= 'background-color: #ffff66;';
+        } elseif (self::confExists($name)) {
+            $style .= 'background-color: #66ff33;';
+        } else {
+            $style .= 'background-color: #3399ff;';
+        }
+        $attributes['style'] = $style;
+
+        $ret = '<select name="' . $name . ($is_array ? '[]' : '') . '" ';
+        foreach ($attributes as $name => $value) {
+            if ($name == 'name' || $name == 'value') {
+                continue;
+            }
+            $ret .= ' ' . $name . '="' . $value . '"';
+        }
+        $ret .= ">\n";
+        // array has non-numeric keys
+        // if the array has meaningful keys, use the key value
+        // combination to build <option>s with labels
+        $has_keys = ($options === array_values($options)) ? false : true;
+        foreach ($options as $key => $value) {
+            $selected = '';
+            if ($is_array && in_array($value, $current_value)) {
+                $selected = 'selected';
+            } elseif ($has_keys && $current_value == $key) {
+                $selected = 'selected';
+            } elseif (!$has_keys && $current_value == $value) {
+                $selected = 'selected';
+            }
+            $optval = $has_keys ? $key : $value;
+
+            $ret .= sprintf('<option value="%s" %s>%s</option>',
+                $optval, $selected, $value);
+            $ret .= "\n";
+        }
+        $ret .= '</select>' . "\n";
+
+        return $ret;
+    }
+
+    static public function installCheckboxField($name, $label, $default_value=0, $storage=self::EITHER_SETTING, $choices=array(0, 1))
+    {
+        global $CORE_LOCAL;
+        $current_value = $CORE_LOCAL->get($name);
+        if ($current_value === '') {
+            $current_value = $default_value;
+        }
+        if (isset($_REQUEST[$name])) {
+            $current_value = $_REQUEST[$name];
+        }
+
+        // sanitize
+        if (!is_array($choices) || count($choices) != 2) {
+            $choices = array(0, 1);
+        }
+        if (!in_array($current_value, $choices)) {
+            $current_value = $default_value;
+        }
+
+        if (count($_POST) > 0 && !isset($_REQUEST[$name])) {
+            $current_value = $choices[0];
+        }
+
+        $CORE_LOCAL->set($name, $current_value);
+        if ($storage == self::INI_SETTING) {
+            self::confsave($name, $current_value);
+        } else {
+            self::paramSave($name, $current_value);
+        }
+
+        $color = '';
+        if ($storage == self::INI_SETTING) {
+            $color .= '#ffff66';
+        } elseif (self::confExists($name)) {
+            $color .= '#66ff33';
+        } else {
+            $color .= '#3399ff';
+        }
+
+        $ret = '<fieldset class="toggle">' . "\n";
+        $ret .= sprintf('<input type="checkbox" name="%s" id="%s" value="%s" %s />',
+                    $name, $name, $choices[1],
+                    ($current_value == $choices[1] ? 'checked' : '')
+        );
+        $ret .= "\n";
+        $ret .= sprintf('<label for="%s" onclick="">%s: </label>', $name, $label);
+        $ret .= "\n";
+        $ret .= '<span class="toggle-button" style="border: solid 3px black; background:' . $color . ';"></span></fieldset>' . "\n";
+
+        return $ret;
     }
 
 }

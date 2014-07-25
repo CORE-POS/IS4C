@@ -4,19 +4,38 @@
 </head>
 <body>
 	<div style="text-align:center;margin-bottom:10px;font-size:80%;">
-	updated as of: August 20, 2012<br />
+	updated as of: June 3, 2014<br />
 	last author: Andy Theuninck
 	</div>
 Sale pricing is managed through <i>batches</i>. A batch is a
 group of items and sale prices that will have sale pricing
 for a pre-defined time period and conditions.
 <p />
+<h2>Sale Pricing</h2>
 What sort of conditions? Out of the box, IS4C supports
-two types of sale price: sale prices that are applicable
-to all customers and sale prices that apply only to
-members. The third type of batch, Price Change, isn't
-really a sale but sort of fits the batch model. It will
-be discussed later.
+a few kinds of sale pricing:
+<ul>
+<li><b>Everyone Sale</b> - the item will ring up at the specified
+sale price for all customers.</li>
+<li><b>Member Sale</b> - the item will ring up at the specified
+sale price for members and at regular retail price for other
+customers.</li>
+<li><b>Percent Member Sale</b> - the item will be discounted by
+the specified percentage for members. For example, entering a
+sale "price" of 0.10 will make the item 10% for members. This
+can be useful for longer term sales on items whose retail price
+fluctuates often.</li>
+<li><b>Staff Sale</b> - the item will ring up at the specified
+sale price for staff and at regular retail price for other
+customers. <i>This is reserved for future implementation and
+may not work correctly. Test before using.</i>.
+<li><b>Sliding Member Sale</b> - the item will be discounted
+by the specified amount for members. A sale price of 0.10 will
+reduce the price by 10 cents for members. The use case is similar
+to <i>Percent Member Sale</i>.
+<li><b>Case Discount Sale</b> - reserved for future implementation. 
+Don't use yet.
+</ul>
 <p />
 <h2>Batch Types</h2>
 Before you can make sales batches, you need to define
