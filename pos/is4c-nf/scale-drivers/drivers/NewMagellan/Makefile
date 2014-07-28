@@ -23,11 +23,11 @@ ParallelLayer.dll: ParallelLayer.cs Parallel-Posix.cs
 WebSockets.dll: WebSocketServer.cs
 	$(CC) -target:library $(BASE_LIBS) -out:WebSockets.dll WebSocketServer.cs
 
-SPH.dll: DelegateForm.dll USBLayer.dll ParallelLayer.dll SerialPortHandler.cs SPH_Magellan_Scale.cs SPH_SignAndPay_USB.cs SPH_Parallel_Writer.cs
+SPH.dll: DelegateForm.dll USBLayer.dll ParallelLayer.dll SerialPortHandler.cs SPH_Magellan_Scale.cs SPH_SignAndPay_USB.cs SPH_Parallel_Writer.cs SPH_iSC250_IP.cs
 	$(CC) -define:MONO -target:library $(BASE_LIBS) \
         -r:DelegateForm.dll -r:USBLayer.dll -r:ParallelLayer \
         -out:SPH.dll \
-        SerialPortHandler.cs SPH_Magellan_Scale.cs SPH_SignAndPay_USB.cs SPH_Parallel_Writer.cs
+        SerialPortHandler.cs SPH_Magellan_Scale.cs SPH_SignAndPay_USB.cs SPH_Parallel_Writer.cs SPH_iSC250_IP.cs
 
 Magellan.dll: DelegateForm.dll SPH.dll UDPMsgBox.dll Magellan.cs
 	$(CC) -target:library $(BASE_LIBS) -r:SPH.dll -r:DelegateForm.dll -r:UDPMsgBox.dll -out:Magellan.dll Magellan.cs
