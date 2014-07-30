@@ -81,8 +81,8 @@ class CWDemographicsReport extends FannieReportPage {
         
             if ($report1[$totalW['yearBucket']][1] != 0){
                 $report1[$totalW['yearBucket']][3] = sprintf('%.2f%%',
-                    100 * $report1[$totalW['yearBucket']][1] /
-                    ($report1[$totalW['yearBucket']][1] + $report1[$totalW['yearBucket']][2])
+                    100 * $report1[$totalW['yearBucket']][2] /
+                    ($report1[$totalW['yearBucket']][1])
                 );
             }
         }
