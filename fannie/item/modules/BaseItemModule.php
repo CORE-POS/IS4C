@@ -383,6 +383,7 @@ class BaseItemModule extends ItemModule {
             $model->end_date('');
             $model->discounttype(0);
             $model->wicable(0);
+            $model->scaleprice(0);
             $model->inUse(1);
         }
         $model->tax(FormLib::get_form_value('tax',0));
