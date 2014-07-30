@@ -41,7 +41,8 @@ if (isset($_REQUEST['toids'])){
         CASE WHEN p.card_no=0 THEN o.lastName ELSE c.LastName END as name,
         CASE WHEN p.card_no=0 THEN o.firstName ELSE c.FirstName END as fname,
         CASE WHEN o.phone is NULL THEN m.phone ELSE o.phone END as phone,
-        discounttype,quantity
+        discounttype,quantity,
+        p.mixMatch AS vendorName
         FROM {$TRANS}PendingSpecialOrder AS p
         LEFT JOIN custdata AS c ON p.card_no=c.CardNo AND personNum=p.voided
         LEFT JOIN meminfo AS m ON c.CardNo=m.card_no
@@ -118,7 +119,11 @@ if (isset($_REQUEST['toids'])){
         }
         $pdf->Cell(100,6,"Tag Date: ".$date,0,1,'C');
         $pdf->SetX($x);
-        $pdf->Cell(100,6,"Dept #".$w['department'],0,1,'C');
+        $pdf->Cell(50,6,"Dept #".$w['department'],0,0,'R');
+        $pdf->SetFont('Arial','B','12');
+        $pdf->SetX($x+50);
+        $pdf->Cell(50,6,$w['vendorName'],0,1,'L');
+        $pdf->SetFont('Arial','','12');
         $pdf->SetX($x);
         $pdf->Cell(100,6,"Ph: ".$w['phone'],0,1,'C');
         $pdf->SetXY($x,$y+85);
@@ -128,7 +133,7 @@ if (isset($_REQUEST['toids'])){
         $upc = "454".str_pad($oid,6,'0',STR_PAD_LEFT).str_pad($tid,2,'0',STR_PAD_LEFT);
 
         $pdf = FannieSignage::drawBarcode($upc, $pdf, $x+30, $y+95, array('height'=>14,'fontsize'=>8));
-        
+
         $count++;
     }
 

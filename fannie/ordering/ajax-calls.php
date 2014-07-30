@@ -521,12 +521,19 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1)
     $srp = 0.00;
     $vendor_upc = (!is_numeric($upc)?'0000000000000':"");
     $skuMatch=0;
-    $caseP = $dbc->prepare_statement("SELECT units,vendorName,description,srp,i.upc,
-            CASE WHEN i.upc=? THEN 0 ELSE 1 END as skuMatch FROM vendorItems as i
-            LEFT JOIN vendors AS v ON
-            i.vendorID=v.vendorID LEFT JOIN
-            vendorSRPs AS s ON i.upc=s.upc AND i.vendorID=s.vendorID
-        WHERE i.upc=? OR i.sku=? OR i.sku=?
+    $caseP = $dbc->prepare_statement("
+        SELECT units,
+            vendorName,
+            description,
+            srp,
+            i.upc,
+            CASE WHEN i.upc=? THEN 0 ELSE 1 END as skuMatch 
+        FROM vendorItems as i
+            LEFT JOIN vendors AS v ON i.vendorID=v.vendorID 
+            LEFT JOIN vendorSRPs AS s ON i.upc=s.upc AND i.vendorID=s.vendorID
+        WHERE i.upc=? 
+            OR i.sku=? 
+            OR i.sku=?
         ORDER BY i.vendorID");
     $caseR = $dbc->exec_statement($caseP, array($upc,$upc,$sku,'0'.$sku));
     if ($dbc->num_rows($caseR) > 0) {
@@ -560,8 +567,15 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1)
         }
     }
 
-    $pdP = $dbc->prepare_statement("SELECT normal_price,special_price,department,discounttype,
-        description,discount FROM products WHERE upc=?");
+    $pdP = $dbc->prepare_statement("
+        SELECT normal_price,
+            special_price,
+            department,
+            discounttype,
+            description,
+            discount,
+            default_vendor_id
+        FROM products WHERE upc=?");
     $pdR = $dbc->exec_statement($pdP, array($upc));
     $qtyReq = False;
     if ($dbc->num_rows($pdR) > 0) {
@@ -618,6 +632,32 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1)
             }
         }
         $ins_array['description'] = "'".substr($pdW['description'],0,32)." SO'";
+        /**
+          If product has a default vendor, lookup
+          vendor name and add it
+        */
+        if ($pdW['default_vendor_id'] != 0) {
+            $v = new VendorsModel($dbc);
+            $v->vendorID($pdW['default_vendor_id']);
+            if ($v->load()) {
+                $ins_array['mixMatch'] = $dbc->escape(substr($v->vendorName(),0,26));
+            }
+        }
+        /**
+          If no vendor name was found, try looking in prodExtra
+        */
+        if (empty($ins_array['mixMatch']) && $dbc->tableExists('prodExtra')) {
+            $distP = $dbc->prepare('
+                SELECT x.distributor
+                FROM prodExtra AS x
+                WHERE x.upc=?
+            ');
+            $distR = $dbc->execute($distP, array($upc));
+            if ($distR && $dbc->num_rows($distR) > 0) {
+                $distW = $dbc->fetch_row($distR);
+                $ins_array['mixMatch'] = $dbc->escape(substr($w['distributor'],0,26));
+            }
+        }
     } elseif ($srp != 0) {
         // use vendor SRP if applicable
         $ins_array['regPrice'] = $srp*$caseSize*$num_cases;
