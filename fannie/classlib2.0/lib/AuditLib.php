@@ -102,10 +102,12 @@ class AuditLib
             }
             // upc is a like code. find the description
             // and a valid upc (hence inner join)
-            $infoQ = 'SELECT department, likeCodeDesc FROM upcLike AS u
-                    INNER JOIN products AS p ON u.upc=l.upc
-                    LEFT JOIN likeCodes AS l ON u.likeCode=l.likeCode
-                    WHERE u.likeCode=?';
+            $infoQ = 'SELECT p.department,
+                        l.likeCodeDesc 
+                      FROM upcLike AS u
+                        INNER JOIN products AS p ON u.upc=p.upc
+                        LEFT JOIN likeCodes AS l ON u.likeCode=l.likeCode
+                      WHERE u.likeCode=?';
             $infoP = $dbc->prepare($infoQ);
             $infoR = $dbc->execute($infoP, array($lc));
             if ($dbc->num_rows($infoR) == 0) {
