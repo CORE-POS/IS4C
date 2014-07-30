@@ -42,8 +42,8 @@ class GumDividendReport extends FannieReportPage
 
     public function preprocess()
     {
-        $this->header = 'Dividend Report';
-        $this->title = 'Dividend Report';
+        $this->header = 'Projected Dividend Report';
+        $this->title = 'Projected Dividend Report';
 
         return parent::preprocess();
     }

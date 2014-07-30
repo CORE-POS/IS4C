@@ -228,7 +228,9 @@ class GumCheckTemplate
         $pdf->Cell(63.5, $line_height, 'Authorized By Signature', 'T');
 
         $pdf->SetXY($check_left_x + 36, $check_bottom_y + $line_height - 1);
-        $pdf->AddFont('GnuMICR', '', 'GnuMICR.php');
+        if (!isset($pdf->fonts['gnumicr'])) {
+            $pdf->AddFont('GnuMICR', '', 'GnuMICR.php');
+        }
         $pdf->SetFont('GnuMICR', '', 12);
         // In the MICR font:
         // A is the symbol for routing/transit
