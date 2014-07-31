@@ -389,8 +389,6 @@ function create_op_dbs($db,$type){
         return $errors;
     }
     
-    return 'wtfm8';
-    
     InstallUtilities::createIfNeeded($db, $type, $name, 'couponcodes', 'op', $errors);
     $chk = $db->query('SELECT Code FROM couponcodes', $name);
     if (!$db->fetch_row($chk)){
@@ -500,8 +498,6 @@ function create_trans_dbs($db,$type){
         return $errors;
     }
     
-    return 'wtfm8';
-
     InstallUtilities::createIfNeeded($db, $type, $name, 'dtransactions', 'trans', $errors);
 
     InstallUtilities::createIfNeeded($db, $type, $name, 'localtrans', 'trans', $errors);
@@ -2348,8 +2344,6 @@ function create_min_server($db,$type){
         return $errors;
     }
     
-    return 'wtfm8';
-
     $dtransQ = "CREATE TABLE `dtransactions` (
       `datetime` datetime default NULL,
       `register_no` smallint(6) default NULL,
