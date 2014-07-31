@@ -38,7 +38,7 @@ class DefaultReceiptFilter
 	*/
 	public function filter($data)
     {
-		$deptsUsed = array();
+		$reverseMap = array();
 		$tenderTTL = 0.00;
 		$tax = False;
 		$discount = False;
