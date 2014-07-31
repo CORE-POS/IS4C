@@ -392,7 +392,7 @@ class InstallIndexPage extends InstallPage {
 
         }
         ?>
-        <a href="LaneConfigPages/LaneNecessitiesPage.php">Edit Global Lane Configuration Page</a>
+        <a href="LaneConfigPages/index.php">Edit Global Lane Configuration Page</a>
         <hr />
         <h4 class="install">Logs &amp; Debugging</h4>
         Fannie writes to the following log files:
@@ -906,6 +906,9 @@ class InstallIndexPage extends InstallPage {
 
         $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
                 'Stores','op');
+
+        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+                'parameters','op');
 
         return $ret;
 

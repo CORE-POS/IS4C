@@ -91,10 +91,17 @@ class InstallUtilities extends LibraryClass
     */
     static public function confsave($key,$value,$prefer_local=False)
     {
+        global $CORE_LOCAL;
         // do nothing if page isn't a form submit (i.e. user didn't press save)
         if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] !== 'POST') {
             return null;
         }
+        // lane #0 is the server config editor
+        // no ini.php file to write values to
+        if ($CORE_LOCAL->get('laneno') == 0) {
+            return null;
+        }
+
 
         /*
         Attempt to update settings in both ini.php and ini-local.php.
