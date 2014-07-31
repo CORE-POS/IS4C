@@ -26,8 +26,8 @@ ini_set('display_errors','1');
 
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
-if(file_exists((dirname(__FILE__).'/../ini.php')))
-    include(realpath(dirname(__FILE__).'/../ini.php'));
+if (file_exists('../ini.php'))
+    include('../ini.php');
 include('InstallUtilities.php');
 ?>
 <html>
@@ -69,8 +69,13 @@ if (!function_exists("socket_create")){
 </tr>
 <tr>
     <td>Lane number:</td>
+    <?php if ($CORE_LOCAL->get('laneno') !== '' && $CORE_LOCAL->get('laneno') == 0) { ?>
+    <td>0 (Zero)</td>
+    <?php } else { ?>
     <td><?php echo InstallUtilities::installTextField('laneno', 99, InstallUtilities::INI_SETTING, false); ?></td>
+    <?php } ?>
 </tr>
+<?php if ($CORE_LOCAL->get('laneno') === '' || $CORE_LOCAL->get('laneno') != 0) { ?>
 <tr>
     <td colspan=2 class="tblheader">
     <h3>Database set up</h3>
@@ -239,6 +244,7 @@ if ($sql === False ) {
 </div> <!-- noteTxt -->
 </td>
 </tr>
+<?php } else { $gotDBs=2; } // end local lane db config that does not apply on lane#0 / server ?> 
 <tr>
     <td>Server database host: </td>
     <td><?php echo InstallUtilities::installTextField('mServer', '127.0.0.1'); ?></td>
@@ -331,15 +337,25 @@ descriptions should be DB-legal syntax (e.g., no spaces). A rate of
 <tr><td colspan=2>
 <?php
 $rates = array();
-if($gotDBs == 2){
+if ($gotDBs == 2) {
     $sql = new SQLManager($CORE_LOCAL->get('localhost'),
             $CORE_LOCAL->get('DBMS'),
             $CORE_LOCAL->get('tDatabase'),
             $CORE_LOCAL->get('localUser'),
             $CORE_LOCAL->get('localPass'));
-    $ratesR = $sql->query("SELECT id,rate,description FROM taxrates ORDER BY id");
-    while($row=$sql->fetch_row($ratesR))
-        $rates[] = array($row[0],$row[1],$row[2]);
+    if ($CORE_LOCAL->get('laneno') == 0 && $CORE_LOCAL->get('laneno') !== '') {
+        // server-side rate table is in op database
+        $sql = new SQLManager($CORE_LOCAL->get('localhost'),
+                $CORE_LOCAL->get('DBMS'),
+                $CORE_LOCAL->get('pDatabase'),
+                $CORE_LOCAL->get('localUser'),
+                $CORE_LOCAL->get('localPass'));
+    }
+    if ($sql->table_exists('taxrates')) {
+        $ratesR = $sql->query("SELECT id,rate,description FROM taxrates ORDER BY id");
+        while($row=$sql->fetch_row($ratesR))
+            $rates[] = array($row[0],$row[1],$row[2]);
+    }
 }
 echo "<table><tr><th>ID</th><th>Rate</th><th>Description</th></tr>";
 foreach($rates as $rate){
@@ -362,6 +378,18 @@ function create_op_dbs($db,$type){
     global $CORE_LOCAL;
     $name = $CORE_LOCAL->get('pDatabase');
     $errors = array();
+
+    if ($CORE_LOCAL->get('laneno') == 0) {
+        $errors[] = array(
+            'struct' => 'No structures created for lane #0',
+            'query' => 'None',
+            'details' => 'Zero is reserved for server',
+        );
+
+        return $errors;
+    }
+    
+    return 'wtfm8';
     
     InstallUtilities::createIfNeeded($db, $type, $name, 'couponcodes', 'op', $errors);
     $chk = $db->query('SELECT Code FROM couponcodes', $name);
@@ -461,6 +489,18 @@ function create_trans_dbs($db,$type){
     global $CORE_LOCAL;
     $name = $CORE_LOCAL->get('tDatabase');
     $errors = array();
+
+    if ($CORE_LOCAL->get('laneno') == 0) {
+        $errors[] = array(
+            'struct' => 'No structures created for lane #0',
+            'query' => 'None',
+            'details' => 'Zero is reserved for server',
+        );
+
+        return $errors;
+    }
+    
+    return 'wtfm8';
 
     InstallUtilities::createIfNeeded($db, $type, $name, 'dtransactions', 'trans', $errors);
 
@@ -2297,6 +2337,18 @@ function create_min_server($db,$type){
     global $CORE_LOCAL;
     $name = $CORE_LOCAL->get('mDatabase');
     $errors = array();
+
+    if ($CORE_LOCAL->get('laneno') == 0) {
+        $errors[] = array(
+            'struct' => 'No structures created for lane #0',
+            'query' => 'None',
+            'details' => 'Zero is reserved for server',
+        );
+
+        return $errors;
+    }
+    
+    return 'wtfm8';
 
     $dtransQ = "CREATE TABLE `dtransactions` (
       `datetime` datetime default NULL,

@@ -3,7 +3,7 @@
 <?php
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
-include(realpath(dirname(__FILE__).'/../ini.php'));
+include('../ini.php');
 include('InstallUtilities.php');
 ?>
 <head>
@@ -481,7 +481,7 @@ while($row = $db->fetch_row($res)){
     <?php
     $mods = array();
     $dh = opendir('../plugins/Paycards/');
-    while (false !== ($f = readdir($dh))) {
+    while ($dh && false !== ($f = readdir($dh))) {
         if ($f == "." || $f == ".." || $f == "BasicCCModule.php")
             continue;
         if (substr($f,-4) == ".php") {

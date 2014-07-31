@@ -144,7 +144,7 @@ function showInstallTabs($current,$path='') {
         'Updates' => 'InstallUpdatesPage.php',
         'Plugins' => 'InstallPluginsPage.php',
         'Menu' => 'InstallMenuPage.php',
-        'Lane Config' => 'LaneConfigPages/LaneNecessitiesPage.php',
+        'Lane Config' => 'LaneConfigPages/index.php',
         'Sample Data' => 'sample_data/InstallSampleDataPage.php'
         );
 
