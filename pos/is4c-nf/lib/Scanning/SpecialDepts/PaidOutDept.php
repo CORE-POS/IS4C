@@ -23,6 +23,8 @@
 
 class PaidOutDept extends SpecialDept
 {
+    public $help_summary = 'Negate entered amount and also prompt for comment';
+
     public function handle($deptID,$amount,$json)
     {
         global $CORE_LOCAL;

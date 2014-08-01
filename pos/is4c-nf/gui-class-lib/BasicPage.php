@@ -249,14 +249,12 @@ class BasicPage {
 			else {
 				echo "<img id=\"receipticon\" alt=\"no receipt\" src='{$my_url}graphics/noreceipt.gif'>&nbsp;&nbsp;&nbsp;";
 			}
-			if($CORE_LOCAL->get("CCintegrate") == 1 && 
-				$CORE_LOCAL->get("ccLive") == 1 && $CORE_LOCAL->get("training") == 0){
+			if ($CORE_LOCAL->get("CCintegrate") == 1 && $CORE_LOCAL->get("training") == 0) {
 			   if ($CORE_LOCAL->get("CachePanEncBlock")=="")
 				   echo "<img alt=\"cc mode\" src='{$my_url}graphics/ccIn.gif'>&nbsp;";
 			   else
 				   echo "<img alt=\"cc available\" src='{$my_url}graphics/ccInLit.gif'>&nbsp;";
-			}elseif($CORE_LOCAL->get("CCintegrate") == 1 && 
-				($CORE_LOCAL->get("training") == 1 || $CORE_LOCAL->get("ccLive") == 0)){
+			} elseif ($CORE_LOCAL->get("CCintegrate") == 1 && $CORE_LOCAL->get("training") == 1) {
 			   if ($CORE_LOCAL->get("CachePanEncBlock")=="")
 				   echo "<img alt=\"cc test mode\" src='{$my_url}graphics/ccTest.gif'>&nbsp;";
 			   else
@@ -333,14 +331,12 @@ class BasicPage {
 				echo "<span class=\"text\">stand alone</span>"
 				     ."<img alt=\"standalone\" src='{$my_url}graphics/REDDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
-			if($CORE_LOCAL->get("CCintegrate") == 1 && 
-				$CORE_LOCAL->get("ccLive") == 1 && $CORE_LOCAL->get("training") == 0){
+			if ($CORE_LOCAL->get("CCintegrate") == 1 && $CORE_LOCAL->get("training") == 0) {
 			   if ($CORE_LOCAL->get("CachePanEncBlock")=="")
 				   echo "<img alt=\"cc mode\" src='{$my_url}graphics/ccIn.gif'>&nbsp;";
 			   else
 				   echo "<img alt=\"cc available\" src='{$my_url}graphics/ccInLit.gif'>&nbsp;";
-			}elseif($CORE_LOCAL->get("CCintegrate") == 1 && 
-				($CORE_LOCAL->get("training") == 1 || $CORE_LOCAL->get("ccLive") == 0)){
+			} elseif ($CORE_LOCAL->get("CCintegrate") == 1 && $CORE_LOCAL->get("training") == 1) {
 			   if ($CORE_LOCAL->get("CachePanEncBlock")=="")
 				   echo "<img alt=\"cc test mode\" src='{$my_url}graphics/ccTest.gif'>&nbsp;";
 			   else

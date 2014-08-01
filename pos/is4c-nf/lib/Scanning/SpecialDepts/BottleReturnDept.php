@@ -23,6 +23,9 @@
 
 class BottleReturnDept extends SpecialDept
 {
+
+    public $help_summary = 'Negate entered amount e.g. 100 means $1 refund not $1 sale';
+
     public function handle($deptID,$amount,$json)
     {
         global $CORE_LOCAL;

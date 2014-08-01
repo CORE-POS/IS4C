@@ -116,6 +116,7 @@ $CREATE['op.houseCoupons'] = "
 		minType varchar(2),
 		minValue double,
 		department int,
+        auto TINYINT DEFAULT 0,
 		PRIMARY KEY (coupID)
 	)
 ";

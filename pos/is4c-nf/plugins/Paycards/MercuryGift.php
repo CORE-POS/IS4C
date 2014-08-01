@@ -64,7 +64,7 @@ class MercuryGift extends BasicCCModule
     {
         global $CORE_LOCAL;
         // error checks based on card type
-        if($CORE_LOCAL->get("gcIntegrate") != 1) { // credit card integration must be enabled
+        if($CORE_LOCAL->get("CCintegrate") != 1) { // credit card integration must be enabled
             $json['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_GIFT,
                                                         "Card Integration Disabled",
                                                         "Please process gift cards in standalone",
@@ -274,7 +274,7 @@ class MercuryGift extends BasicCCModule
     {
         global $CORE_LOCAL;
         // situation checking
-        if ($CORE_LOCAL->get("gcIntegrate") != 1) { // gift card integration must be enabled
+        if ($CORE_LOCAL->get("CCintegrate") != 1) { // gift card integration must be enabled
             $json['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_GIFT,
                                                          "Card Integration Disabled",
                                                          "Please process gift cards in standalone",
