@@ -36,7 +36,7 @@ function audit($dept_sub,$uid,$upc,$desc,$price,$tax,$fs,$scale,$discount,$likec
     $tos = array(   0=>"andy",
             1=>"jim, lisa, meales",
             2=>"jesse, lisa, meales",
-            3=>"debbie, aelliott, justin",
+            3=>"fkoenig, aelliott, justin",
             4=>"joeu, lisa, meales",
             5=>"jillhall, lisa, meales",
             6=>"michael",
