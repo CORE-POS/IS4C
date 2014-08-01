@@ -144,6 +144,7 @@ function showInstallTabs($current,$path='') {
         'Updates' => 'InstallUpdatesPage.php',
         'Plugins' => 'InstallPluginsPage.php',
         'Menu' => 'InstallMenuPage.php',
+        'Theming' => 'InstallThemePage.php',
         'Lane Config' => 'LaneConfigPages/index.php',
         'Sample Data' => 'sample_data/InstallSampleDataPage.php'
         );
@@ -307,6 +308,8 @@ function installTextField($name, &$current_value, $default_value='', $quoted=tru
 {
     if (FormLib::get($name, false) !== false) {
         $current_value = FormLib::get($name);
+    } else if ($current_value === null) {
+        $current_value = $default_value;
     }
 
     // sanitize values:
@@ -330,8 +333,9 @@ function installTextField($name, &$current_value, $default_value='', $quoted=tru
 
     confset($name, ($quoted ? "'" . $current_value . "'" : $current_value));
 
-    $ret = sprintf('<input name="%s" value="%s"',
-        $name, $current_value);
+    $quote_char = strstr($current_value, '"') ? '\'' : '"';
+    $ret = sprintf('<input name="%s" value=%s%s%s',
+        $name, $quote_char, $current_value, $quote_char);
     if (!isset($attributes['type'])) {
         $attributes['type'] = 'text';
     }
