@@ -89,21 +89,18 @@ class PISearchPage extends PIKillerPage {
         <tr>
         <form name="memNum" id="memNum" method="get" action="PISearchPage.php">
         <td width="1" align="right">&nbsp;</td>
-        <td width="47" align="right" valign="middle"><font size="2" face="Papyrus, Verdana, Arial, Helvetica, sans-serif">Owner
-        # or UPC:</font></td>
+        <td width="47" align="right" valign="middle" style="padding: 3px;">
+        Owner # or UPC:
+        </td>
         <td>
-            <font size="2" face="Papyrus, Verdana, Arial, Helvetica, sans-serif">
             <input name="id" type="text" id="memNum_t" size="5" maxlength="12" />
-            </font>
         </td>
-        <td width="82" valign="middle"><font size="2" face="Papyrus, Verdana, Arial, Helvetica, sans-serif">Last Name</font></td>
+        <td width="82" valign="middle" align="right">Last Name: </td>
         <td colspan="5">
-        <font size="2" face="Papyrus, Verdana, Arial, Helvetica, sans-serif">
-        <input name="last" type="text" id="last" size="25" maxlength="50" />
-        </font>
+            <input name="last" type="text" id="last" size="25" maxlength="50" />
         </td>
-        <td width="75" valign="middle"><font size="2" face="Papyrus, Verdana, Arial, Helvetica, sans-serif">First
-        Name:</font></td><td>
+        <td width="75" valign="middle" align="right">First Name: </td>
+        <td>
         <input name="first" type="text" id="first" size="20" maxlength="50" /></td>
         <td><input type="submit" name="submit" value="submit">
         </form></td>

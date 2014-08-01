@@ -51,18 +51,22 @@ class PIKillerPage extends FannieRESTfulPage {
             </tr>
             <tr>
             <td colspan="11" bgcolor="#006633">
-            <a href="'.($this->card_no?'PIMemberPage.php?id='.$this->card_no:'').'"><img src="images/general.gif" 
-                width="72" height="16" border="0" /></a>
-            <a href="'.($this->card_no?'PIEquityPage.php?id='.$this->card_no:'').'"><img src="images/equity.gif" 
-                width="72" height="16" border="0" /></a>
-            <a href="'.($this->card_no?'PIArPage.php?id='.$this->card_no:'').'"><img src="images/AR.gif" 
-                width="72" height="16" border="0" /></a>
-            <a href="'.($this->card_no?$FANNIE_URL.'mem/prefs.php?memID='.$this->card_no:'').'"><img src="images/control.gif" 
-                width="72" height="16" border="0" /></a>
-            <a href="'.($this->card_no?'PIPurchasesPage.php?id='.$this->card_no:'').'"><img src="images/detail.gif" 
-                width="72" height="16" border="0" /></a>
-            <a href="'.($this->card_no?'PIPatronagePage.php?id='.$this->card_no:'').'"><img src="images/patronage.gif" 
-                width="72" height="16" border="1" /></a>
+            <div style="width:100%;height:4px;"></div><!-- spacer for vertical-align -->
+            <div style="width:100%;height:1.8em;font-size:115%;">
+            <a style="margin-left:15px;margin-right:15px;vertical-align: top; color:#6c9;" 
+                href="'.($this->card_no?'PIMemberPage.php?id='.$this->card_no:'').'">General</a>
+            <a style="margin-left:15px;margin-right:15px;vertical-align: top; color:#6c9;" 
+                href="'.($this->card_no?'PIEquityPage.php?id='.$this->card_no:'').'">Equity</a>
+            <a style="margin-left:15px;margin-right:15px;vertical-align: top; color:#6c9;" 
+                href="'.($this->card_no?'PIArPage.php?id='.$this->card_no:'').'">AR</a>
+            <a style="margin-left:15px;margin-right:15px;vertical-align: top; color:#6c9;" 
+                href="'.($this->card_no?$FANNIE_URL.'mem/prefs.php?memID='.$this->card_no:'').'">Control</a>
+            <a style="margin-left:15px;margin-right:15px;vertical-align: top; color:#6c9;" 
+                href="'.($this->card_no?'PIPurchasesPage.php?id='.$this->card_no:'').'">Detail</a>
+            <a style="margin-left:15px;margin-right:15px;vertical-align: top; color:#6c9;" 
+                href="'.($this->card_no?'PIPatronagePage.php?id='.$this->card_no:'').'">Patronage</a>
+            </div>
+            </td>
             </tr>
             <tr>
             <td colspan="9">
