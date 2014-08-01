@@ -439,9 +439,9 @@ function getResults() {
 }
 function toggleAll(elem, selector) {
     if (elem.checked) {
-        $(selector).attr('checked', 'checked');
+        $(selector).prop('checked', true);
     } else {
-        $(selector).removeAttr('checked');
+        $(selector).prop('checked', false);
     }
 }
 // helper: add all selected upc values to hidden form
@@ -513,7 +513,8 @@ function formReset()
         $this->add_css_file($FANNIE_URL.'src/style.css');
         $this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
 
-        $ret = '<div style="float:left;">';
+        $ret .= '<!doctype html><html><head><title>Advanced Search</title></head><body>';
+        $ret .= '<div style="float:left;">';
 
         $ret .= '<form method="post" id="searchform" onsubmit="getResults(); return false;" onreset="formReset();">';
         $ret .= '<table>';    
@@ -678,6 +679,7 @@ function formReset()
         $ret .= '<hr />';
 
         $ret .= '<div id="resultArea"></div>';
+        $ret .= '</body></html>';
 
         return $ret;
     }
