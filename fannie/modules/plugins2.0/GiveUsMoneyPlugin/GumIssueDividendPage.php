@@ -119,6 +119,37 @@ class GumIssueDividendPage extends FannieRESTfulPage
                 $check->checkIssued(1);
                 $check->issueDate(date('Y-m-d H:i:s'));
                 $check->save();
+
+                $pdf->Image('img/new_letterhead.png', 10, 10, 50);
+
+                if (!isset($pdf->fonts['gillsansmtpro-book'])) {
+                    $pdf->AddFont('GillSansMTPro-Book', '', 'GillSansMTPro-Book.php');
+                }
+                $pdf->SetFont('GillSansMTPro-Book', '', 11);
+
+                $l = 65;
+                $pdf->SetXY($l, 20);
+                $pdf->Cell(0, 5, date('j F Y'), 0, 1);
+                $pdf->Ln(15);
+                $pdf->SetX($l);
+                $pdf->Cell(0, 5, 'Dear Owner:', 0, 1);
+                $pdf->Ln(5);
+                $pdf->SetX($l);
+                $pdf->MultiCell(135, 5, 'Based on the Co-op\'s profitability in Fiscal Year 2014 (July 1, 2013-June 30, 2014), the Board of Directors approved a four percent (4%) dividend on your Class C equity investment. Your dividend is pro-rated based on when you made your investment during that fiscal year. As this check represents an annual return on your investment, the amount cannot be compounded.');
+                $pdf->Ln(5);
+                $pdf->SetX($l);
+                $pdf->MultiCell(135, 5, 'You are welcome to cash your check toward a purchase at the Co-op. Thank you for investing in Whole Foods Co-op');
+                $pdf->Ln(10);
+                $pdf->SetX($l);
+                $pdf->Cell(0, 5, 'Thank you,', 0, 1);
+                $pdf->Ln(20);
+                $pdf->SetX($l);
+                $pdf->Cell(0, 5, 'Sharon Murphy', 0, 1);
+                $pdf->Ln(5);
+                $pdf->SetX($l);
+                $pdf->Cell(0, 5, 'General Manager', 0, 1);
+
+                $pdf->Image('img/sig.png', $l, 100, 63.5);
             }
         }
 

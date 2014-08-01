@@ -170,6 +170,10 @@ class GumCheckTemplate
     public function renderAsPDF($pdf)
     {
         $margins = $pdf->GetMargins();
+        // this was written BEFORE patching
+        // fpdf to correctly return the top margin
+        // set to zero to mimic old, broken fpdf
+        $margins['top'] = 0.0; 
         $check_left_x = ($margins['left'] > 3.175) ? $margins['right'] : 3.175 - $margins['left'];
         $check_top_y = 193.675 - $margins['top'];
         $check_right_x = 203.2 - $margins['left'];
