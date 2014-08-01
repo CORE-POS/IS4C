@@ -62,8 +62,9 @@ class VendorMovementReport extends FannieReportPage
                         . DTrans::joinProducts('t', 'p')
                         . DTrans::joinDepartments('t', 'd') . "
                         LEFT JOIN vendors AS v ON p.default_vendor_id = v.vendorID
+                        LEFT JOIN prodExtra AS x ON p.upc=x.upc
                         LEFT JOIN MasterSuperDepts AS s ON d.dept_no = s.dept_ID
-                    WHERE v.vendorName LIKE ?
+                    WHERE (v.vendorName LIKE ? OR x.distributor LIKE ?)
                         AND t.tdate BETWEEN ? AND ?
                     GROUP BY t.upc,
                         p.description,
@@ -82,7 +83,8 @@ class VendorMovementReport extends FannieReportPage
                     FROM $dlog AS t "
                         . DTrans::joinProducts('t', 'p') . "
                         LEFT JOIN vendors AS v ON p.default_vendor_id = v.vendorID
-                    WHERE v.vendorName LIKE ?
+                        LEFT JOIN prodExtra AS x ON p.upc=x.upc
+                    WHERE (v.vendorName LIKE ? OR x.distributor LIKE ?)
                         AND t.tdate BETWEEN ? AND ?
                     GROUP BY YEAR(t.tdate),
                         MONTH(t.tdate),
@@ -103,7 +105,8 @@ class VendorMovementReport extends FannieReportPage
                         . DTrans::joinDepartments('t', 'd') . "
                         LEFT JOIN vendors AS v ON p.default_vendor_id = v.vendorID
                         LEFT JOIN MasterSuperDepts AS s ON d.dept_no=s.dept_ID
-                    WHERE v.vendorName LIKE ?
+                        LEFT JOIN prodExtra AS x ON p.upc=x.upc
+                    WHERE (v.vendorName LIKE ? OR x.distributor LIKE ?)
                         AND t.tdate BETWEEN ? AND ?
                     GROUP BY d.dept_no,
                         d.dept_name,
@@ -111,7 +114,7 @@ class VendorMovementReport extends FannieReportPage
                     ORDER BY SUM(t.total) DESC";
                 break;
         }
-        $args = array('%'.$vendor.'%',$date1.' 00:00:00',$date2.' 23:59:59');
+        $args = array('%'.$vendor.'%','%'.$vendor.'%',$date1.' 00:00:00',$date2.' 23:59:59');
         $prep = $dbc->prepare_statement($query);
 
         $result = $dbc->exec_statement($prep,$args);
