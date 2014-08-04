@@ -59,16 +59,7 @@ if (!function_exists("socket_create")){
 <br />
 <table id="install" border=0 cellspacing=0 cellpadding=4>
 <tr>
-    <td style="width: 30%;">OS: </td>
-    <td>
-    <?php
-    $osOpts = array('win32' => 'Windows', 'other' => '*nix');
-    echo InstallUtilities::installSelectField('OS', $osOpts, 'other');
-    ?>
-    </td>
-</tr>
-<tr>
-    <td>Lane number:</td>
+    <td style="width:30%;">Lane number:</td>
     <?php if ($CORE_LOCAL->get('laneno') !== '' && $CORE_LOCAL->get('laneno') == 0) { ?>
     <td>0 (Zero)</td>
     <?php } else { ?>

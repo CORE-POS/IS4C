@@ -128,7 +128,7 @@ static public function pingport($host, $dbms)
 static public function win32() 
 {
 	$winos = 0;
-	if (substr(PHP_OS, 0, 3) == "WIN") {
+	if (strtoupper(substr(PHP_OS, 0, 3)) == "WIN") {
         $winos = 1;
     }
 
