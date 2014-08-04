@@ -225,5 +225,101 @@ static public function twoPairs()
     }
 }
 
+/**
+  Use ipconfig.exe or ifconfig, depending on OS,
+  to determine all available IP addresses
+  @return [array] of [string] IP addresses
+*/
+function getAllIPs()
+{
+    /**
+      First: use OS utilities to check IP(s)
+      This should be most complete but also
+      may be blocked by permission settings
+    */
+    $ret = array();
+    if (strstr(strtoupper(PHP_OS), 'WIN')) {
+        // windows
+        $cmd = "ipconfig.exe";
+        exec($cmd, $output_lines, $retval);
+        foreach ($output_lines as $line) {
+            if (preg_match('/IP Address[\. ]+?: ([\d\.]+)/', $line, $matches)) {
+                $ret[] = $matches[1];
+            } elseif (preg_match('/IPv4 Address[\. ]+?: ([\d\.]+)/', $line, $matches)) {
+                $ret[] = $matches[1];
+            }
+        }
+    } else {
+        // unix-y system
+        $cmd = '/sbin/ifconfig';
+        $count = 0;
+        // try to locate ifconfig
+        while (!file_exists($cmd)) {
+            switch ($count) {
+                case 0:
+                    $cmd = '/usr/sbin/ifconfig';
+                    break;
+                case 1:
+                    $cmd = '/usr/bin/ifconfig';
+                    break;
+                case 2:
+                    $cmd = '/bin/ifconfig';
+                    break;
+                case 3:
+                    $cmd = '/usr/local/sbin/ifconfig';
+                    break;
+                case 4:
+                    $cmd = '/usr/local/bin/ifconfig';
+                    break;
+            }
+            $count++;
+            // give up; hope $PATH is correct
+            if ($count <= 5) {
+                $cmd = 'ifconfig';
+                break;
+            }
+        }
+
+        exec($cmd, $output_lines, $retval);
+        foreach ($output_lines as $line) {
+            if (preg_match('/inet addr:([\d\.]+?) /', $line, $matches)) {
+                $ret[] = $matches[1];
+            }
+        }
+    }
+
+    /**
+      PHP 5.3 adds gethostname() function
+      Try getting host name and resolving to an IP
+    */
+    if (function_exists('gethostname')) {
+        $name = gethostname();
+        $resolved = gethostbyname($name);
+        if (preg_match('/^[\d\.+]$/', $resolved) && !in_array($resolved, $ret)) {
+            $ret[] = $resolved;
+        }
+    }
+    
+    /**
+      $_SERVER may simply contain an IP address
+    */
+    if (isset($_SERVER['SERVER_ADDR']) && !in_array($_SERVER['SERVER_ADDR'], $ret)) {
+        $ret[] = $_SERVER['SERVER_ADDR'];
+    }
+
+    /**
+      $_SERVER may contain a host name that can
+      be resolved to an IP address
+    */
+    if (isset($_SERVER['SERVER_NAME'])) {
+        $resolved = gethostbyname($_SERVER['SERVER_NAME']);
+        if (preg_match('/^[\d\.+]$/', $resolved) && !in_array($resolved, $ret)) {
+            $ret[] = $resolved;
+        }
+    }
+
+    return $ret;
+}
+
 } // end class MiscLib
 
