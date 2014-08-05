@@ -58,12 +58,72 @@ if (!function_exists("socket_create")){
 ?>
 <br />
 <table id="install" border=0 cellspacing=0 cellpadding=4>
+<?php 
+if (is_array($CORE_LOCAL->get('LaneMap'))) {
+    $my_ips = MiscLib::getAllIPs();
+    $map = $CORE_LOCAL->get('LaneMap');
+    $register_id_is_mapped = false;
+    $store_id_is_mapped = false;
+    foreach ($my_ips as $ip) {
+        if (!isset($map[$ip])) {
+            continue;
+        }
+        if (!is_array($map[$ip])) {
+            echo '<tr><td colspan="3">Error: invalid entry for ' . $ip . '</td></tr>';
+        } elseif (!isset($map[$ip]['register_id'])) {
+            echo '<tr><td colspan="3">Error: missing register_id for ' . $ip . '</td></tr>';
+        } elseif (!isset($map[$ip]['store_id'])) {
+            echo '<tr><td colspan="3">Error: missing store_id for ' . $ip . '</td></tr>';
+        } else {
+            if ($CORE_LOCAL->get('store_id') === '') {
+                // no store_id set. assign based on IP
+                $CORE_LOCAL->set('store_id', $map[$ip]['store_id']);
+                $store_id_is_mapped = true;
+            } else if ($CORE_LOCAL->get('store_id') != $map[$ip]['store_id']) {
+                echo '<tr><td colspan="3">Warning: store_id is set to ' 
+                    . $CORE_LOCAL->get('store_id') . '. Based on IP ' . $ip
+                    . ' it should be set to ' . $map[$ip]['store_id'] . '</td></tr>';
+            } else {
+                $store_id_is_mapped = true;
+            }
+            if ($CORE_LOCAL->get('laneno') === '') {
+                // no store_id set. assign based on IP
+                $CORE_LOCAL->set('laneno', $map[$ip]['register_id']);
+                $register_id_is_mapped = true;
+            } else if ($CORE_LOCAL->get('laneno') != $map[$ip]['register_id']) {
+                echo '<tr><td colspan="3">Warning: register_id is set to ' 
+                    . $CORE_LOCAL->get('laneno') . '. Based on IP ' . $ip
+                    . ' it should be set to ' . $map[$ip]['register_id'] . '</td></tr>';
+            } else {
+                // map entry matches
+                // should maybe delete ini.php entry if it exists?
+                $register_id_is_mapped = true;
+            }
+
+            // use first matching IP
+            break;
+        }
+    }
+}
+?>
 <tr>
     <td style="width:30%;">Lane number:</td>
     <?php if ($CORE_LOCAL->get('laneno') !== '' && $CORE_LOCAL->get('laneno') == 0) { ?>
     <td>0 (Zero)</td>
+    <?php } elseif ($register_id_is_mapped) { ?>
+    <td><?php echo $CORE_LOCAL->get('laneno'); ?> (assigned by IP; cannot be edited)</td>
     <?php } else { ?>
     <td><?php echo InstallUtilities::installTextField('laneno', 99, InstallUtilities::INI_SETTING, false); ?></td>
+    <?php } ?>
+</tr>
+<tr>
+    <td>Store number:</td>
+    <?php if ($CORE_LOCAL->get('store_id') !== '' && $CORE_LOCAL->get('store_id') == 0) { ?>
+    <td>0 (Zero)</td>
+    <?php } elseif ($store_id_is_mapped) { ?>
+    <td><?php echo $CORE_LOCAL->get('store_id'); ?> (assigned by IP; cannot be edited)</td>
+    <?php } else { ?>
+    <td><?php echo InstallUtilities::installTextField('store_id', 1, InstallUtilities::INI_SETTING, false); ?></td>
     <?php } ?>
 </tr>
 <?php if ($CORE_LOCAL->get('laneno') === '' || $CORE_LOCAL->get('laneno') != 0) { ?>
