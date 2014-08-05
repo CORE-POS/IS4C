@@ -590,16 +590,27 @@ static public function deptkey($price, $dept,$ret=array())
 	$total = $price * $CORE_LOCAL->get("quantity");
 	$intdept = $dept;
 
-	$query = "select dept_no,dept_name,dept_tax,dept_fs,dept_limit,
-		dept_minimum,dept_discount,";
+	$query = "SELECT dept_no,
+        dept_name,
+        dept_tax,
+        dept_fs,
+        dept_limit,
+		dept_minimum,
+        dept_discount,";
 	$db = Database::pDataConnect();
 	$table = $db->table_definition('departments');
 	if (isset($table['dept_see_id'])) {
-		$query .= 'dept_see_id';
+		$query .= 'dept_see_id,';
 	} else {
-		$query .= '0 as dept_see_id';
+		$query .= '0 as dept_see_id,';
     }
-	$query .= " from departments where dept_no = ".$intdept;
+    if (isset($table['memberOnly'])) {
+        $query .= 'memberOnly';
+    } else {
+        $query .= '0 AS memberOnly';
+    }
+	$query .= " FROM departments 
+                WHERE dept_no = " . $intdept;
 	$result = $db->query($query);
 
 	$num_rows = $db->num_rows($result);
@@ -647,9 +658,10 @@ static public function deptkey($price, $dept,$ret=array())
 	} else {
 		$row = $db->fetch_array($result);
 
+        $my_url = MiscLib::baseURL();
+
 		if ($row['dept_see_id'] > 0) {
 
-			$my_url = MiscLib::baseURL();
 
 			if ($CORE_LOCAL->get("cashierAge") < 18 && $CORE_LOCAL->get("cashierAgeOverride") != 1) {
 				$ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=AgeApproveAdminLogin";
@@ -669,6 +681,52 @@ static public function deptkey($price, $dept,$ret=array())
 				return $ret;
 			}
 		}
+
+        /**
+          Enforce memberOnly flag
+        */
+        if ($row['memberOnly'] > 0) {
+            switch ($row['memberOnly']) {
+                case 1: // member only, no override
+                    if ($CORE_LOCAL->get('isMember') == 0) {
+                        $ret['output'] = DisplayLib::boxMsg(_(
+                                            'Department is member-only<br />' .
+                                            'Enter member number first'
+                                        ));
+                        return $ret;
+                    }
+                    break; 
+                case 2: // member only, can override
+                    if ($CORE_LOCAL->get('isMember') == 0) {
+                        if ($CORE_LOCAL->get('msgrepeat') == 0 || $CORE_LOCAL->get('lastRepeat') != 'memberOnlyDept') {
+                            $CORE_LOCAL->set('boxMsg', _(
+                                'Department is member-only<br />' .
+                                '[enter] to continue, [clear] to cancel'
+                            ));
+                            $CORE_LOCAL->set('lastRepeat', 'memberOnlyDept');
+                            $ret['main_frame'] = $my_url . 'gui-modules/boxMsg2.php';
+                            return $ret;
+                        } else if ($CORE_LOCAL->get('lastRepeat') == 'memberOnlyDept') {
+                            $CORE_LOCAL->set('lastRepeat', '');
+                        }
+                    }
+                    break;
+                case 3: // anyone but default non-member
+                    if ($CORE_LOCAL->get('memberID') == '0') {
+                        $ret['output'] = DisplayLib::boxMsg(_(
+                                            'Department is member-only<br />' .
+                                            'Enter member number first'
+                                        ));
+                        return $ret;
+                    } else if ($CORE_LOCAL->get('memberID') == $CORE_LOCAL->get('defaultNonMem')) {
+                        $ret['output'] = DisplayLib::boxMsg(_(
+                                            'Department not allowed with this member'
+                                        ));
+                        return $ret;
+                    }
+                    break;
+            }
+        }
 
 		if (!$row["dept_limit"]) {
             $deptmax = 0;
@@ -693,7 +751,7 @@ static public function deptkey($price, $dept,$ret=array())
 
 		if ($CORE_LOCAL->get("toggleDiscountable") == 1) {
 			$CORE_LOCAL->set("toggleDiscountable",0);
-			if  ($deptDiscount == 0) {
+			if ($deptDiscount == 0) {
 				$deptDiscount = 1;
 			} else {
 				$deptDiscount = 0;
