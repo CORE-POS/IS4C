@@ -50,7 +50,8 @@ class ProductMovementModular extends FannieReportPage
         return $ret;
     }
 
-    public function report_content() {
+    public function report_content() 
+    {
         $default = parent::report_content();
 
         if ($this->report_format == 'html') {
@@ -212,7 +213,9 @@ function showGraph() {
         return ob_get_clean();
     }
 
-    function form_content(){
+    function form_content()
+    {
+        global $FANNIE_URL;
 ?>
 <div id=main>   
 <form method = "get" action="ProductMovementModular.php">
@@ -253,6 +256,10 @@ function showGraph() {
 <?php
         $this->add_onload_command('$(\'#date1\').datepicker();');
         $this->add_onload_command('$(\'#date2\').datepicker();');
+        $this->add_script($FANNIE_URL . 'item/autocomplete.js');
+        $ws = $FANNIE_URL . 'ws/';
+        $this->add_onload_command("bindAutoComplete('#upc', '$ws', 'item');\n");
+        $this->add_onload_command('$(\'#upc\').focus();');
     }
 }
 
