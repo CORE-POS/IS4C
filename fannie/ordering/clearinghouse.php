@@ -60,6 +60,7 @@ if (isset($_REQUEST['card_no']) && is_numeric($_REQUEST['card_no'])){
 echo '<html>
     <head><title>'.$page_title.'</title>
     <link rel="STYLESHEET" href="'.$FANNIE_URL.'src/style.css" type="text/css">
+    <link rel="STYLESHEET" href="'.$FANNIE_URL.'src/css/configurable.php" type="text/css">
     <link rel="STYLESHEET" href="'.$FANNIE_URL.'src/javascript/jquery-ui.css" type="text/css">
     <script type="text/javascript" src="'.$FANNIE_URL.'src/javascript/jquery.js">
     </script>
