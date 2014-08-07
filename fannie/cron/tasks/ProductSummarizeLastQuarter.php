@@ -139,9 +139,9 @@ last thirteen weeks';
                     $weekID,
                     $info['qty'],
                     $info['ttl'],
-                    $info['ttl'] / $store_sales,
-                    $info['ttl'] / $s_ttl,
-                    $info['ttl'] / $d_ttl,
+                    $store_sales == 0 ? 0.0 : $info['ttl'] / $store_sales,
+                    $s_ttl == 0 ? 0.0 : $info['ttl'] / $s_ttl,
+                    $d_ttl == 0 ? 0.0 : $info['ttl'] / $d_ttl,
                 );
                 $dbc->execute($addP, $args);
             }
