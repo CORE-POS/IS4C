@@ -203,7 +203,7 @@ function loaddata($sql, $table)
                     $query = substr($query,0,strlen($query)-1).')';
                     $stmt = $sql->prepare_statement($query);
                 }
-                $sql->exec_statement($stmt, $line);
+                $try = $sql->exec_statement($stmt, $line);
                 if ($try === false) {
                     $error = $sql->error();
                     $success = false;

@@ -461,6 +461,10 @@ static public function transReset()
 	  is only capable of producing swipe-style data.
 	*/
 	$CORE_LOCAL->set("paycard_keyed",False);
+    
+    if (!is_array($CORE_LOCAL->get('PluginList'))) {
+        $CORE_LOCAL->set('PluginList', array());
+    }
 
     if (is_array($CORE_LOCAL->get('PluginList'))) {
         foreach($CORE_LOCAL->get('PluginList') as $p) {

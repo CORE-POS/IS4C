@@ -113,15 +113,31 @@ class GeneralDayReport extends FannieReportPage
         }
         $data[] = $report;
 
+        $report = array();
+        $trans = DTransactionsModel::selectDTrans($d1);
+        $lineItemQ = $dbc->prepare("
+            SELECT description,
+                SUM(regPrice) AS ttl
+            FROM $trans AS d
+            WHERE datetime BETWEEN ? AND ?
+                AND d.upc='TAXLINEITEM'
+                AND " . DTrans::isNotTesting('d') . "
+            GROUP BY d.description
+        ");
+        $lineItemR = $dbc->execute($lineItemQ, $dates);
+        while ($lineItemW = $dbc->fetch_row($lineItemR)) {
+            $record = array($lineItemW['description'], sprintf('%.2f', $lineItemW['ttl']));
+            $report[] = $record;
+        }
+
         $taxSumQ = $dbc->prepare_statement("SELECT  sum(total) as tax_collected
             FROM $dlog as d 
             WHERE d.tdate BETWEEN ? AND ?
                 AND (d.upc = 'tax'){$shrinkageUsers}
             GROUP BY d.upc");
         $taxR = $dbc->exec_statement($taxSumQ,$dates);
-        $report = array();
         while($taxW = $dbc->fetch_row($taxR)){
-            $record = array('Sales Tax',null,round($taxW['tax_collected'],2));
+            $record = array('Total Sales Tax',round($taxW['tax_collected'],2), 'meta'=>FannieReportPage::META_BOLD);
             $report[] = $record;
         }
         $data[] = $report;
@@ -209,7 +225,8 @@ class GeneralDayReport extends FannieReportPage
             $this->report_headers[0] = 'Discounts';
             break;
         case 4:
-            $this->report_headers[0] = 'Tax';
+            $this->report_headers = array('Tax', 'Amount');
+            return array();
             break;
         case 5:
             $this->report_headers = array('Type','Trans','Items','Avg. Items','Amount','Avg. Amount');

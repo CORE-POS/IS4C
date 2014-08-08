@@ -1,0 +1,2 @@
+#!/bin/bash
+mysql -uroot ypsi_opdata < /Users/joel/Sites/YPSI_CORE/data/opdata.sql

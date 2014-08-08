@@ -195,6 +195,12 @@ class AdvancedItemSearch extends FannieRESTfulPage
             $args[] = $fs;
         }
 
+		$inUse = FormLib::get('in_use');
+		if ($inUse !== '') {
+			$where .= ' AND p.inUse=? ';
+			$args[] = $inUse;
+		}
+
         $discount = FormLib::get('discountable');
         if ($discount !== '') {
             $where .= ' AND p.discount=? ';
@@ -548,7 +554,10 @@ function formReset()
 
         $ret .= '<th>Movement</th>';
         $ret .= '<td colspan="2"><select name="soldOp"><option value="">n/a</option><option value="7">Last 7 days</option>
-                    <option value="30">Last 30 days</option><option value="90">Last 90 days</option></select></td>';
+                    <option value="30">Last 30 days</option><option value="90">Last 90 days</option></select>';
+
+        $ret .= '&nbsp;&nbsp;&nbsp;<label for="in_use">InUse</label>
+				<input type="checkbox" class="saleField" name="in_use" id="in_use" value="1" /></td>'; 
 
         $ret .= '</tr><tr>';
 
@@ -605,7 +614,7 @@ function formReset()
         }
         $ret .= '</select>';
         $ret .= '</td>';
-    
+
         $ret .= '<th>Likecode</th>';
         $ret .= '<td colspan="3"><select name="likeCode"><option value="">n/a</option>
                 <option value="ANY">In Any Likecode</option>
