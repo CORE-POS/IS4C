@@ -1,5 +1,5 @@
 <?php
-global $FANNIE_DYNAMIC_MENU, $FANNIE_NAV_POSITION, $FANNIE_CSS_LOGO;
+global $FANNIE_DYNAMIC_MENU, $FANNIE_NAV_POSITION, $FANNIE_CSS_LOGO, $FANNIE_CHARSET;
 /* try to deal with relative paths for includes */
 $path = "";
 $found = False;
@@ -17,11 +17,14 @@ foreach (explode("/",$uri) as $x) {
 		$path = "";
 	}
 }
+if (!isset($FANNIE_CHARSET) || empty($FANNIE_CHARSET)) {
+    $FANNIE_CHARSET = 'ISO-8859-1';
+}
 ?>
 <!DOCTYPE html> 
 <html lang="en">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<meta http-equiv="Content-Type" content="text/html; charset=<?php echo $FANNIE_CHARSET; ?>">
 <title><?php echo $page_title; ?></title>
 <link rel="STYLESHEET" href="<?php echo $path; ?>src/style.css" type="text/css">
 <link rel="STYLESHEET" href="<?php echo $path; ?>src/css/configurable.php" type="text/css">
@@ -42,7 +45,7 @@ foreach (explode("/",$uri) as $x) {
         <tr><td>
             <?php if (isset($FANNIE_CSS_LOGO) && !empty($FANNIE_CSS_LOGO)) { ?>
             <img src="<?php echo $FANNIE_CSS_LOGO; ?>" alt="logo" />
-            <?php }  else var_dump($FANNIE_CSS_LOGO); ?>
+            <?php } ?>
         </td>
         <td>
         <div style="font-size:28px;" class="primaryColor">

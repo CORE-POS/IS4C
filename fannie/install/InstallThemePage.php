@@ -108,6 +108,10 @@ class InstallThemePage extends InstallPage
             . ' border:solid 1px black; \'>Lorem Ipsum</div></td>'
             . '</tr>';
 
+        echo '<tr><td>Character Set</td>'
+            . '<td>' . installTextField('FANNIE_CHARSET', $FANNIE_CHARSET, 'ISO-8859-1') . '</td>'
+            . '</tr>';
+
         echo '<tr><td>Logo</td>'
             . '<td>' . installTextField('FANNIE_CSS_LOGO', $FANNIE_CSS_LOGO, '') . '</td>'
             . '<td><img src="' . $FANNIE_CSS_LOGO . '" alt="logo preview" /></td>'
