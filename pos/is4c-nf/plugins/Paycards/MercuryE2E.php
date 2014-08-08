@@ -912,7 +912,7 @@ class MercuryE2E extends BasicCCModule
                 /**
                   Now look up card-issuer specific overrides, if any
                 */
-                if (!empty($CORE_LOCAL->get('PaycardsTenderCodeVisa')) && $CORE_LOCAL->get('paycard_issuer') == 'Visa') {
+                if ($CORE_LOCAL->get('PaycardsTenderCodeVisa') && $CORE_LOCAL->get('paycard_issuer') == 'Visa') {
                         $args = array($CORE_LOCAL->get('PaycardsTenderCodeVisa'));
                         $found = $db->execute($lookup, $args);
                         if ($found && $db->num_rows($found) > 0) {
@@ -920,7 +920,7 @@ class MercuryE2E extends BasicCCModule
                             $row = $db->fetch_row($found);
                             $tender_description = $row['TenderName'];
                         }
-                } elseif (!empty($CORE_LOCAL->get('PaycardsTenderCodeMC')) && $CORE_LOCAL->get('paycard_issuer') == 'MasterCard') {
+                } elseif ($CORE_LOCAL->get('PaycardsTenderCodeMC') && $CORE_LOCAL->get('paycard_issuer') == 'MasterCard') {
                         $args = array($CORE_LOCAL->get('PaycardsTenderCodeMC'));
                         $found = $db->execute($lookup, $args);
                         if ($found && $db->num_rows($found) > 0) {
@@ -928,7 +928,7 @@ class MercuryE2E extends BasicCCModule
                             $row = $db->fetch_row($found);
                             $tender_description = $row['TenderName'];
                         }
-                } elseif (!empty($CORE_LOCAL->get('PaycardsTenderCodeDiscover')) && $CORE_LOCAL->get('paycard_issuer') == 'Discover') {
+                } elseif ($CORE_LOCAL->get('PaycardsTenderCodeDiscover') && $CORE_LOCAL->get('paycard_issuer') == 'Discover') {
                         $args = array($CORE_LOCAL->get('PaycardsTenderCodeDiscover'));
                         $found = $db->execute($lookup, $args);
                         if ($found && $db->num_rows($found) > 0) {
@@ -936,7 +936,7 @@ class MercuryE2E extends BasicCCModule
                             $row = $db->fetch_row($found);
                             $tender_description = $row['TenderName'];
                         }
-                } elseif (!empty($CORE_LOCAL->get('PaycardsTenderCodeAmex')) && $CORE_LOCAL->get('paycard_issuer') == 'American Express') {
+                } elseif ($CORE_LOCAL->get('PaycardsTenderCodeAmex') && $CORE_LOCAL->get('paycard_issuer') == 'American Express') {
                         $args = array($CORE_LOCAL->get('PaycardsTenderCodeAmex'));
                         $found = $db->execute($lookup, $args);
                         if ($found && $db->num_rows($found) > 0) {
