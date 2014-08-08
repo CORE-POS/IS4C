@@ -106,18 +106,18 @@ class DepartmentEditor extends FanniePage {
             $taxes[$row[0]] = $row[1];
         }
 
-        $ret = "<table cellspacing=0 cellpadding=4 border=1><tr>";
+        $ret = "<table class=\"deptFields\" cellspacing=0 cellpadding=4 border=1><tr>";
         $ret .= "<th>Dept #</th><th colspan=2>Name</th><th>Tax</th><th>FS</th></tr>";
         $ret .= "<tr><td>";
         if ($id == -1){
-            $ret .= "<input type=text size=4 id=deptno />";
+            $ret .= "<input type=text size=4 name=did id=deptno />";
         }
         else {
             $ret .= $id;
         }
         $ret .= "</td>";
-        $ret .= "<td colspan=2><input type=text maxlength=30 id=deptname value=\"$name\" /></td>";
-        $ret .= "<td><select id=depttax>";
+        $ret .= "<td colspan=2><input type=text maxlength=30 name=name id=deptname value=\"$name\" /></td>";
+        $ret .= "<td><select id=depttax name=tax>";
         foreach($taxes as $k=>$v){
             if ($k == $tax)
                 $ret .= "<option value=$k selected>$v</option>";
@@ -125,21 +125,21 @@ class DepartmentEditor extends FanniePage {
                 $ret .= "<option value=$k>$v</option>";
         }
         $ret .= "</select></td>";
-        $ret .= "<td><input type=checkbox id=deptfs ".($fs==1?'checked':'')." /></td>";
+        $ret .= "<td><input type=checkbox value=1 name=fs id=deptfs ".($fs==1?'checked':'')." /></td>";
         $ret .= "</tr><tr>";
         $ret .= "<th>Discount</th><th>Min</th><th>Max</th><th>Margin</th><th>Sales Code</th></tr>";
-        $ret .= "<td><input type=checkbox id=deptdisc ".($disc>0?'checked':'')." /></td>";
-        $ret .= sprintf("<td>\$<input type=text size=5 id=deptmin value=\"%.2f\" /></td>",$min,0);  
-        $ret .= sprintf("<td>\$<input type=text size=5 id=deptmax value=\"%.2f\" /></td>",$max,0);  
-        $ret .= sprintf("<td><input type=text size=5 id=deptmargin value=\"%.2f\" />%%</td>",$margin*100);
-        $ret .= "<td><input type=text size=5 id=deptsalescode value=\"$pcode\" /></td>";
-        $ret .= "</tr></table>";
+        $ret .= "<td><input type=checkbox value=1 name=disc id=deptdisc ".($disc>0?'checked':'')." /></td>";
+        $ret .= sprintf("<td>\$<input type=text size=5 name=min id=deptmin value=\"%.2f\" /></td>",$min,0);  
+        $ret .= sprintf("<td>\$<input type=text size=5 name=max id=deptmax value=\"%.2f\" /></td>",$max,0);  
+        $ret .= sprintf("<td><input type=text size=5 name=margin id=deptmargin value=\"%.2f\" />%%</td>",$margin*100);
+        $ret .= "<td><input type=text size=5 id=deptsalescode name=pcode value=\"$pcode\" /></td>";
         if ($id != -1){
-            $ret .= "<input type=hidden id=deptno value=\"$id\" />";
-            $ret .= "<input type=hidden id=isNew value=0 />";
+            $ret .= "<input type=hidden name=did id=deptno value=\"$id\" />";
+            $ret .= "<input type=hidden name=new id=isNew value=0 />";
         }
         else
-            $ret .= "<input type=hidden id=isNew value=1 />";
+            $ret .= "<input type=hidden id=isNew name=new value=1 />";
+        $ret .= "</tr></table>";
         $ret .= "<p /><input type=submit value=Save onclick=\"deptSave(); return false;\" />";
 
         echo $ret;

@@ -43,22 +43,11 @@ function deptchange(){
 
 function deptSave(){
 	var qs = "action=deptSave";
-	qs += "&new="+$('#isNew').val();
-	qs += "&did="+$('#deptno').val();
-	qs += "&name="+$('#deptname').val();
-	qs += "&tax="+$('#depttax').val();
-	if ($('#deptfs').is(':checked'))
-		qs += "&fs=1";
-	else
-		qs += "&fs=0";
-	if ($('#deptdisc').is(':checked'))
-		qs += "&disc=1";
-	else
-		qs += "&disc=0";
-	qs += "&min="+$('#deptmin').val();
-	qs += "&max="+$('#deptmax').val();
-	qs += "&margin="+$('#deptmargin').val();
-	qs += "&pcode="+$('#deptsalescode').val();
+	var fields = $('.deptFields :input').serialize();
+	if (!$('#deptdisc').is(':checked')) {
+		fields += '&disc=0';
+	}
+	qs += '&'+fields;
 
 	$.ajax({
 		url: 'DepartmentEditor.php',
