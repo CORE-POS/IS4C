@@ -519,7 +519,7 @@ function formReset()
         $this->add_css_file($FANNIE_URL.'src/style.css');
         $this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
 
-        $ret .= '<!doctype html><html><head><title>Advanced Search</title></head><body>';
+        $ret = '<!doctype html><html><head><title>Advanced Search</title></head><body>';
         $ret .= '<div style="float:left;">';
 
         $ret .= '<form method="post" id="searchform" onsubmit="getResults(); return false;" onreset="formReset();">';
