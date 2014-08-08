@@ -121,6 +121,46 @@ messages from POS?',
             'description' => 'Still allow these tenders with Block Other Tenders enabled',
             'default' => 'CP IC',
         ),
+        'PaycardsTenderCodeCredit' => array(
+            'label' => 'Credit Tender Code',
+            'description' => 'Two-letter tender code for credit transactions',
+            'default' => 'CC',
+        ),
+        'PaycardsTenderCodeDebit' => array(
+            'label' => 'Debit Tender Code',
+            'description' => 'Two-letter tender code for debit transactions',
+            'default' => 'DB',
+        ),
+        'PaycardsTenderCodeEbtFood' => array(
+            'label' => 'EBT Food Tender Code',
+            'description' => 'Two-letter tender code for EBT Food transactions',
+            'default' => 'EF',
+        ),
+        'PaycardsTenderCodeEbtCash' => array(
+            'label' => 'EBT Cash Tender Code',
+            'description' => 'Two-letter tender code for EBT Cash transactions',
+            'default' => 'EC',
+        ),
+        'PaycardsTenderCodeVisa' => array(
+            'label' => 'Visa-Specific Tender Code',
+            'description' => 'Two-letter tender code for Visa transactions. If blank, uses credit or debit code.',
+            'default' => '',
+        ),
+        'PaycardsTenderCodeMC' => array(
+            'label' => 'MasterCard-Specific Tender Code',
+            'description' => 'Two-letter tender code for MasterCard transactions. If blank, uses credit or debit code.',
+            'default' => '',
+        ),
+        'PaycardsTenderCodeDiscover' => array(
+            'label' => 'Discover-Specific Tender Code',
+            'description' => 'Two-letter tender code for Discover transactions. If blank, uses credit or debit code.',
+            'default' => '',
+        ),
+        'PaycardsTenderCodeAmex' => array(
+            'label' => 'American Express-Specific Tender Code',
+            'description' => 'Two-letter tender code for American Express transactions. If blank, uses credit or debit code.',
+            'default' => '',
+        ),
 	);
 
 	public function plugin_enable(){
@@ -130,5 +170,11 @@ messages from POS?',
 	public function plugin_disable(){
 
 	}
+
+    public function plugin_transaction_reset()
+    {
+        global $CORE_LOCAL;
+        $CORE_LOCAL->set('paycardTendered', false);
+    }
 
 }
