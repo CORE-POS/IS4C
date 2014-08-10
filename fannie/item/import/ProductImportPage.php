@@ -80,6 +80,7 @@ class ProductImportPage extends FannieUploadPage
         $dept_index = $this->get_column_index('dept');
 
         $ret = true;
+        $linecount = 0;
         $checks = (FormLib::get_form_value('checks')=='yes') ? true : false;
         $skipExisting = FormLib::get('skipExisting', 1);
         $model = new ProductsModel($dbc);
@@ -145,6 +146,10 @@ class ProductImportPage extends FannieUploadPage
             if ($try === false) {
                 $ret = false;
                 $this->error_details = 'There was an error importing UPC '.$upc;
+            }
+
+            if ($linecount++ % 100 == 0) {
+                set_time_limit(30);
             }
         }
 
