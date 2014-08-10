@@ -221,7 +221,11 @@ class DepartmentEditor extends FanniePage {
             }
         }
 
-        echo 'Department '.$id.' - '.$name.' Saved';
+        $json = array();
+        $json['did'] = $id;
+        $json['msg'] = 'Department '.$id.' - '.$name.' Saved';
+
+        echo json_encode($json);
     }
 
 

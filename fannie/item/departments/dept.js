@@ -54,11 +54,18 @@ function deptSave(){
 		type: 'POST',
 		timeout: 5000,
 		data: qs,
+        dataType: 'json',
 		error: function(){
 		alert('Error loading XML document');
 		},
 		success: function(resp){
-			alert(resp);
+            if (resp.did && resp.msg) {
+                alert(resp.msg);
+                location = 'DepartmentEditor.php?did='+resp.did;
+            } else {
+                alert('Error saving department');
+                console.log(resp);
+            }
 		}
 	});
 }
