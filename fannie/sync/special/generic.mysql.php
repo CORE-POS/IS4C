@@ -90,7 +90,7 @@ if ($ret > 0) {
             . ' -P ' . escapeshellarg($lane_port)
             . ' ' . escapeshellarg($lane['op'])
             . ' < ' . escapeshellarg($tempfile);
-        exec($cmd, $output, $ret);
+        exec($lane_cmd, $output, $ret);
         if ( $ret == 0 ) {
             echo "{$itemStart}Lane $laneNumber ({$lane['host']}) $table completed successfully{$itemEnd}";
         } else {
