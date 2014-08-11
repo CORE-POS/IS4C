@@ -92,7 +92,8 @@ class UnfiUploadPage extends FannieUploadPage {
         )
     );
 
-    protected $use_splits = True;
+    protected $use_splits = false;
+    protected $use_js = true;
 
     function process_file($linedata){
         global $FANNIE_OP_DB;

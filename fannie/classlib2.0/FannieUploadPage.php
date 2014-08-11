@@ -83,6 +83,7 @@ class FannieUploadPage extends FanniePage
     protected $error_details = 'n/a';
 
     protected $use_splits = false;
+    protected $user_js = false;
 
     /**
       Handle pre-display tasks such as input processing
@@ -92,7 +93,7 @@ class FannieUploadPage extends FanniePage
     */
     public function preprocess()
     {
-        global $FANNIE_URL;
+        global $FANNIE_URL, $FANNIE_OP_DB;
 
         $col_select = FormLib::get_form_value('cs','');
 
@@ -127,7 +128,154 @@ class FannieUploadPage extends FanniePage
             if ($chk_required == true) {
 
                 $try = false;
-                if ($this->use_splits) {
+                if ($this->use_js) {
+                    /**
+                      Create temporary database table
+                      and load all records into the table
+                    */
+                    if (FormLib::get('ajaxOp', '') == 'upload') {
+                        $ret = array('error'=>0);
+                        $fileData = $this->fileToArray();
+                        $offset = FormLib::get('offset', 0);
+                        $chunk_size = 500;
+
+                        if (count($fileData) == 0) {
+                            $ret['error'] = 'File is empty';
+                            unlink($this->upload_file_name);
+                            echo json_encode($ret);
+                            return false;
+                        }
+
+                        $dbc = FannieDB::get($FANNIE_OP_DB);
+
+                        $num_columns = count($fileData[0]);
+                        $table_def = '';
+                        $insert_columns = '';
+                        $insert_vals = '';
+                        for ($i=0; $i<$num_columns; $i++) {
+                            $table_def .= 'col' . $i . ' VARCHAR(255),';
+                            $insert_columns .= 'col' . $i . ',';
+                            $insert_vals .= '?,';
+                        }
+                        $insert_columns = substr($insert_columns, 0, strlen($insert_columns)-1);
+                        $insert_vals = substr($insert_vals, 0, strlen($insert_vals)-1);
+
+                        /** first pass; create table **/
+                        if ($offset == 0) {
+                            $table_def .= 'recordID INT';
+                            if ($dbc->dbmsName() == 'mssql') {
+                                $table_def .= ' IDENTITY(1, 1) NOT NULL,';
+                            } else {
+                                $table_def .= ' NOT NULL AUTO_INCREMENT,';
+                            }
+                            $table_def .= 'PRIMARY KEY(recordID)';
+
+                            if ($dbc->tableExists('fannieUploadData')) {
+                                $dbc->query('DROP TABLE fannieUploadData');
+                            }
+                            $table = $dbc->query('CREATE TABLE fannieUploadData (' . $table_def . ')');
+                            if (!$table) {
+                                $ret['error'] = 'Error creating temporary table';
+                                unlink($this->upload_file_name);
+                                echo json_encode($ret);
+                                return false;
+                            }
+                        }
+
+                        $insP = $dbc->prepare('
+                            INSERT INTO fannieUploadData (' . $insert_columns . ')
+                            VALUES (' . $insert_vals . ')'
+                        );
+                        $loaded = 0;
+                        for ($i=$offset; $i<count($fileData); $i++) {
+                            if (count($fileData[$i]) != $num_columns) {
+                                continue;
+                            }
+                            if ($dbc->execute($insP, $fileData[$i])) {
+                                $loaded++;
+                            }
+                            if ($loaded > $chunk_size) {
+                                break;
+                            }
+                        }
+
+                        $done = ($offset + $chunk_size) > count($fileData) ? true : false;
+
+                        if ($loaded == 0 && !$done) {
+                            $ret['error'] = 'Upload into database failed';
+                            unlink($this->upload_file_name);
+                            echo json_encode($ret);
+                            return false;
+                        } elseif (!$done) {
+                            $ret['num_lines'] = count($fileData);
+                            $ret['cur_record'] = $offset + $chunk_size;
+                            $ret['done'] = $done;
+                            echo json_encode($ret);
+                            return false;
+                        } else {
+                            $numR = $dbc->query('SELECT MAX(recordID) as num_records FROM fannieUploadData');
+                            if ($numR && $row = $dbc->fetch_row($numR)) {
+                                $ret['num_records'] = $row['num_records']+1;
+                            } else {
+                                $ret['num_records'] = '???';
+                            }
+                            $ret['cur_record'] = 0;
+                            $ret['done'] = $done;
+                            unlink($this->upload_file_name);
+                            echo json_encode($ret);
+                            return false;
+                        }
+
+                    /**
+                      Now process records from the table
+                    */
+                    } elseif (FormLib::get('ajaxOp', '') == 'process') {
+                        $current_id = FormLib::get('cur_record', 0);
+                        // first set of records
+                        if ($current_id == 0) {
+                            $this->split_start();
+                        }
+                        $ret = array('error'=>0);
+                        $chunk_size = 200;
+                        $dbc = FannieDB::get($FANNIE_OP_DB);
+                        $query = 'SELECT *
+                                  FROM fannieUploadData
+                                  WHERE recordID >= ?
+                                  ORDER BY recordID';
+                        $query = $dbc->add_select_limit($query, $chunk_size);
+                        $prep = $dbc->prepare($query);
+                        $res = $dbc->execute($prep, array($current_id));
+                        $lines = array();
+                        while ($row = $dbc->fetch_row($res)) { 
+                            $line = array();
+                            for ($i=0; $i<$dbc->num_fields($res)-1; $i++) {
+                                $line[] = $row[$i];
+                            }
+                            $lines[] = $line;
+                            $ret['cur_record'] = $row['recordID'];
+                        }
+                        $try = $this->process_file($lines);
+                        // last set of records
+                        if (count($lines) < $chunk_size) {
+                            $this->split_end();
+                            $ret['done'] = true;
+                            $dbc->query('DROP TABLE fannieUploadData');
+                        }
+
+                        $ret['cur_record']++;
+                        echo json_encode($ret);
+
+                        return false;
+
+                    /**
+                      Render page that includes ajax javascript
+                    */
+                    } else {
+                        $this->content_function = 'ajaxContent';
+
+                        return true;
+                    }
+                } elseif ($this->use_splits) {
                     /* break file into pieces */
                     $files = FormLib::get_form_value('f');
                     if ($files === '') {
@@ -519,6 +667,53 @@ class FannieUploadPage extends FanniePage
                 });
             });
         });
+        function doUpload(file_name, offset)
+        {
+            var data = 'ajaxOp=upload&upload_file_name=' + encodeURIComponent(file_name);
+            data += '&' + $('#fieldInfo :input').serialize() + '&offset=' + offset;
+            if (offset == 0) {
+                $('#uploadingSpan').html('Uploading data');
+            }
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                data: data,
+                success: function(resp) {
+                    if (resp.error == 0) {
+                        if (!resp.done) {
+                            $('#numLines').html('/'+resp.num_lines+' lines');
+                            $('#uploadingSpan').html('Uploading '+resp.cur_record);
+                            doUpload(file_name, resp.cur_record);
+                        } else {
+                            $('#progressSpan').html('Processing 0');
+                            $('#numRecords').html('/'+resp.num_records+' records');
+                            doProcessing(resp.cur_record);
+                        }
+                    } else {
+                        $('#uploadingSpan').html('Upload error: ' + resp.error);
+                    }
+                }
+            });
+        }
+        function doProcessing(record_id)
+        {
+            var data = 'ajaxOp=process&cur_record=' + record_id;
+            data += '&' + $('#fieldInfo :input').serialize();
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                data: data,
+                success: function(resp) {
+                    if (resp.done) {
+                        $('#progressSpan').html('Processing ' + resp.cur_record);
+                        $('#resultsSpan').html('Upload complete');
+                    } else {
+                        $('#progressSpan').html('Processing ' + resp.cur_record);
+                        doProcessing(resp.cur_record);
+                    }
+                }
+            });
+        }
         <?php
         return ob_get_clean();
     }
@@ -530,6 +725,24 @@ class FannieUploadPage extends FanniePage
     public function results_content()
     {
         return "";
+    }
+
+    public function ajaxContent()
+    {
+        $ret = '<div id="progressDiv">
+            <span id="uploadingSpan"></span><span id="numLines"></span><br />
+            <span id="progressSpan"></span><span id="numRecords"></span><br />
+            <span id="resultsSpan"></span>
+            </div>';
+        $ret .= '<div id="fieldInfo" style="display:none;">';
+        foreach (FormLib::get('cs', array()) as $column) {
+            $ret .= sprintf('<input type="hidden" name="cs[]" value="%s" />', $column);
+        }
+        $ret .= '</div>';
+
+        $this->add_onload_command("doUpload('" . $this->upload_file_name . "', 0);");
+
+        return $ret;
     }
 
     /**
