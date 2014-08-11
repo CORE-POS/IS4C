@@ -64,6 +64,15 @@ $cmd = 'mysqldump'
     . ' -P ' . escapeshellarg($port)
     . ' ' . escapeshellarg($FANNIE_OP_DB)
     . ' ' . escapeshellarg($table)
+    . ' > ' . escapeshellarg($tempfile)
+    . ' 2>&1';
+$cmd_obfusc = 'mysqldump'
+    . ' -u ' . escapeshellarg($FANNIE_SERVER_USER)
+    . ' -p' . str_repeat('*', strlen($FANNIE_SERVER_PW))
+    . ' -h ' . escapeshellarg($host)
+    . ' -P ' . escapeshellarg($port)
+    . ' ' . escapeshellarg($FANNIE_OP_DB)
+    . ' ' . escapeshellarg($table)
     . ' > ' . escapeshellarg($tempfile);
 exec($cmd, $output, $ret);
 if ($ret > 0) {
@@ -71,7 +80,7 @@ if ($ret > 0) {
     if (strlen($report) > 0) {
         $report = "{$lineBreak}$report";
     }
-    echo "{$itemStart}mysqldump failed, returned: $ret {$report}{$itemEnd}";
+    echo "{$itemStart}<code style='font-weight:bold'>{$cmd_obfusc}</code> failed, returned: $ret {$report}{$itemEnd}";
 } else {
     // Load the mysqldump from Fannie to each lane.
     $laneNumber=1;
@@ -89,6 +98,14 @@ if ($ret > 0) {
             . ' -h ' . escapeshellarg($lane_host)
             . ' -P ' . escapeshellarg($lane_port)
             . ' ' . escapeshellarg($lane['op'])
+            . ' < ' . escapeshellarg($tempfile)
+            . ' 2>&1';
+        $lane_cmd_obfusc = 'mysql'
+            . ' -u ' . escapeshellarg($lane['user'])
+            . ' -p' . str_repeat('*', strlen($lane['pw']))
+            . ' -h ' . escapeshellarg($lane_host)
+            . ' -P ' . escapeshellarg($lane_port)
+            . ' ' . escapeshellarg($lane['op'])
             . ' < ' . escapeshellarg($tempfile);
         exec($lane_cmd, $output, $ret);
         if ( $ret == 0 ) {
@@ -98,7 +115,7 @@ if ($ret > 0) {
             if (strlen($report) > 0) {
                 $report = "{$lineBreak}$report";
             }
-            echo "{$itemStart}Lane $laneNumber ({$lane['host']}) $table failed, returned: $ret {$report}{$itemEnd}";
+            echo "{$itemStart}<code style='font-weight:bold'>{$lane_cmd_obfusc}</code>{$lineBreak}Lane $laneNumber ({$lane['host']}) $table failed, returned: $ret {$report}{$itemEnd}";
         }
         unset($output);
         $laneNumber++;
