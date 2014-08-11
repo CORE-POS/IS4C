@@ -790,6 +790,9 @@ class BasicModel
                 if (isset($this->columns[$col_name]['default'])) {
                     $sql .= ' DEFAULT '.$this->columns[$col_name]['default'];
                 }
+                if (isset($this->columns[$col_name]['not_null'])) {
+                    $sql .= ' NOT NULL';
+                }
                 printf("\tSQL Details: %s\n", $sql);
                 if ($mode == BasicModel::NORMALIZE_MODE_APPLY) {
                     $renamed = $this->connection->query($sql);
@@ -805,6 +808,9 @@ class BasicModel
                         . $this->getMeta($this->columns[$col_name]['type'], $this->connection->dbms_name());
                 if (isset($this->columns[$col_name]['default'])) {
                     $sql .= ' DEFAULT '.$this->columns[$col_name]['default'];
+                }
+                if (isset($this->columns[$col_name]['not_null'])) {
+                    $sql .= ' NOT NULL';
                 }
                 printf("\tSQL Details: %s\n", $sql);
                 if ($mode == BasicModel::NORMALIZE_MODE_APPLY) {
@@ -842,6 +848,9 @@ class BasicModel
                             . $this->getMeta($this->columns[$col_name]['type'], $this->connection->dbms_name());
                     if (isset($this->columns[$col_name]['default'])) {
                         $sql .= ' DEFAULT '.$this->columns[$col_name]['default'];
+                    }
+                    if (isset($this->columns[$col_name]['not_null'])) {
+                        $sql .= ' NOT NULL';
                     }
                     if (isset($this->columns[$col_name]['increment']) && $this->columns[$col_name]['increment']) {
                         if ($this->connection->dbms_name() == 'mssql') {
@@ -904,6 +913,9 @@ class BasicModel
                     if (isset($this->columns[$our_columns[$i]]['default'])) {
                         $sql .= ' DEFAULT '.$this->columns[$our_columns[$i]]['default'];
                     }
+                    if (isset($this->columns[$our_columns[$i]]['not_null'])) {
+                        $sql .= ' NOT NULL';
+                    }
                     if (isset($this->columns[$our_columns[$i]]['increment']) && $this->columns[$our_columns[$i]]['increment']) {
                         if ($this->connection->dbms_name() == 'mssql') {
                             $sql .= ' IDENTITY (1, 1) NOT NULL';
@@ -928,6 +940,9 @@ class BasicModel
                             $this->connection->dbms_name());
                     if (isset($this->columns[$our_columns[$i]]['default'])) {
                         $sql .= ' DEFAULT '.$this->columns[$our_columns[$i]]['default'];
+                    }
+                    if (isset($this->columns[$our_columns[$i]]['not_null'])) {
+                        $sql .= ' NOT NULL';
                     }
                     if (isset($this->columns[$our_columns[$i]]['increment']) && $this->columns[$our_columns[$i]]['increment']) {
                         if ($this->connection->dbms_name() == 'mssql') {
@@ -954,6 +969,9 @@ class BasicModel
                             $this->connection->dbms_name());
                     if (isset($this->columns[$our_columns[$i]]['default'])) {
                         $sql .= ' DEFAULT '.$this->columns[$our_columns[$i]]['default'];
+                    }
+                    if (isset($this->columns[$our_columns[$i]]['not_null'])) {
+                        $sql .= ' NOT NULL';
                     }
                     if (isset($this->columns[$our_columns[$i]]['increment']) && $this->columns[$our_columns[$i]]['increment']) {
                         if ($this->connection->dbms_name() == 'mssql') {
