@@ -68,7 +68,7 @@ $cmd = 'mysqldump'
     . ' 2>&1';
 $cmd_obfusc = 'mysqldump'
     . ' -u ' . escapeshellarg($FANNIE_SERVER_USER)
-    . ' -p' . str_repeat('*', 8);
+    . ' -p' . str_repeat('*', 8)
     . ' -h ' . escapeshellarg($host)
     . ' -P ' . escapeshellarg($port)
     . ' ' . escapeshellarg($FANNIE_OP_DB)
@@ -102,7 +102,7 @@ if ($ret > 0) {
             . ' 2>&1';
         $lane_cmd_obfusc = 'mysql'
             . ' -u ' . escapeshellarg($lane['user'])
-            . ' -p' . str_repeat('*', 8);
+            . ' -p' . str_repeat('*', 8)
             . ' -h ' . escapeshellarg($lane_host)
             . ' -P ' . escapeshellarg($lane_port)
             . ' ' . escapeshellarg($lane['op'])
