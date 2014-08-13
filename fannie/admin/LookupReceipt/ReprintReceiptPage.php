@@ -102,6 +102,15 @@ class ReprintReceiptPage extends FanniePage
             }
             $tender_clause .= ")";
 
+            /**
+              There is no tender restriction
+              replace with a not-true statements
+              otherwise the OR will match everything
+            */
+            if ($tender_clause == '( 1=1)') {
+                $tender_clause = '1=0';
+            }
+
             $or_clause = '(' . $tender_clause;
             if ($department != "") {
                 $or_clause .= " OR department=? ";
