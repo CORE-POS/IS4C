@@ -58,7 +58,7 @@ class MemEquityTransferTool extends FanniePage {
         if (is_numeric($FANNIE_REGISTER_NO)) {
             $this->CORRECTION_LANE = $FANNIE_REGISTER_NO;
         }
-        if (is_numeric($FANNIE_MISC_DEPT)) {
+        if (is_numeric($FANNIE_CORRECTION_DEPT)) {
             $this->CORRECTION_DEPT = $FANNIE_CORRECTION_DEPT;
         }
 
