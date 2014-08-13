@@ -119,6 +119,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
         $model = new ObfWeeksModel($dbc);
         $model->obfWeekID($this->id);
         $model->startDate(date('Y-m-d', mktime(0, 0, 0, date('n', $end_ts), date('j', $end_ts)-6, date('Y', $end_ts))));
+        $model->endDate(date('Y-m-d', $end_ts));
         $model->previousYear(date('Y-m-d', mktime(0, 0, 0, date('n', $prev_ts), date('j', $prev_ts)-6, date('Y', $prev_ts))));
         $model->obfQuarterID(FormLib::get('quarter'));
         $model->growthTarget(FormLib::get('growthTarget', 0.00) / 100.00);
