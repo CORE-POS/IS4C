@@ -89,7 +89,7 @@ class OverShortDayPage extends FanniePage {
                 /* determine who worked that day (and their first names) */
                 $empsQ = "select e.firstname,d.emp_no from $dlog as d,$FANNIE_OP_DB".$dbc->sep()."employees as e where
                       d.tdate BETWEEN ? AND ? and trans_type='T' and d.emp_no = e.emp_no
-                      AND d.upc <> '0049999900001'
+                      AND d.upc NOT IN ('0049999900001', '0049999900002')
                       group by d.emp_no,e.firstname order by e.firstname";
                 $empsP = $dbc->prepare_statement($empsQ);
                 $empsR=$dbc->exec_statement($empsP,array($date.' 00:00:00',$date.' 23:59:59'));
@@ -104,6 +104,7 @@ class OverShortDayPage extends FanniePage {
                 .$FANNIE_OP_DB.$dbc->sep()."tenders AS t WHERE
                 d.tdate BETWEEN ? AND ? AND trans_type='T'
                 AND d.trans_subtype = t.TenderCode
+                AND d.upc NOT IN ('0049999900001', '0049999900002')
                 GROUP BY d.trans_subtype, t.TenderName, t.tenderID
                 ORDER BY t.TenderID";
             $tP = $dbc->prepare_statement($tQ);
@@ -136,8 +137,10 @@ class OverShortDayPage extends FanniePage {
             $q = "SELECT -1*sum(total) AS total,emp_no,
                 CASE WHEN trans_subtype IN ('CC','AX') THEN 'CC' ELSE trans_subtype END
                 AS trans_subtype
-                FROM $dlog
-                WHERE tdate BETWEEN ? AND ? AND trans_type='T' ";
+                FROM $dlog AS d
+                WHERE tdate BETWEEN ? AND ? 
+                AND d.upc NOT IN ('0049999900001', '0049999900002')
+                AND trans_type='T' ";
             if (FormLib::get_form_value('emp_no') !== ''){
                 $q .= ' AND emp_no=? ';
                 $args[] = FormLib::get_form_value('emp_no');

@@ -88,7 +88,7 @@ class OverShortCashierPage extends FanniePage {
             WHERE emp_no = ?
             AND tdate BETWEEN ? AND ?
             AND trans_type='T'
-            AND d.upc <> '0049999900001'
+            AND d.upc NOT IN ('0049999900001', '0049999900002')
             GROUP BY 
             CASE WHEN trans_subtype IN ('CC','AX') THEN 'CC' ELSE trans_subtype END
             ORDER BY TenderID";
