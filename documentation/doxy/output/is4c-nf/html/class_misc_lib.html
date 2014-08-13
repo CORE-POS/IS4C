@@ -43,7 +43,7 @@
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="bc03bea489277bf351a638286cbd0a37"></a><!-- doxytag: member="MiscLib::base_url" ref="bc03bea489277bf351a638286cbd0a37" args="($check_file=&quot;css/pos.css&quot;)" -->
 static&nbsp;</td><td class="memItemRight" valign="bottom"><b>base_url</b> ($check_file=&quot;css/pos.css&quot;)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_misc_lib.html#1ce0d60a2b198ec1a6bf9d2e6fc6e0cb">nullwrap</a> ($num)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_misc_lib.html#e6dd394f82751761f5a497bbdc32daf4">nullwrap</a> ($num, $char=false)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_misc_lib.html#4ab7c9b563b0b6092dc87ccd86cc7cc6">truncate2</a> ($num)</td></tr>
 
@@ -132,7 +132,7 @@ Send error beep message to the scale
 Send good beep message to the scale 
 </div>
 </div><p>
-<a class="anchor" name="1ce0d60a2b198ec1a6bf9d2e6fc6e0cb"></a><!-- doxytag: member="MiscLib::nullwrap" ref="1ce0d60a2b198ec1a6bf9d2e6fc6e0cb" args="($num)" -->
+<a class="anchor" name="e6dd394f82751761f5a497bbdc32daf4"></a><!-- doxytag: member="MiscLib::nullwrap" ref="e6dd394f82751761f5a497bbdc32daf4" args="($num, $char=false)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -140,9 +140,18 @@ Send good beep message to the scale
           <td class="memname">static MiscLib::nullwrap           </td>
           <td>(</td>
           <td class="paramtype">$&nbsp;</td>
-          <td class="paramname"> <em>num</em>          </td>
-          <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [static]</code></td>
+          <td class="paramname"> <em>num</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>char</em> = <code>false</code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"><code> [static]</code></td>
         </tr>
       </table>
 </div>
@@ -152,6 +161,7 @@ Send good beep message to the scale
 Sanitizes values <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>$num</em>&nbsp;</td><td>a value </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$char</em>&nbsp;</td><td>[optional] boolean is character </td></tr>
   </table>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>a sanitized value</dd></dl>
@@ -323,7 +333,7 @@ Guess whether PHP is running on windows <dl compact><dt><b>Returns:</b></dt><dd>
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/MiscLib.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 13 Aug 2014 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>
