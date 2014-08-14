@@ -122,7 +122,7 @@ class BatchManagementTool extends FanniePage
                 $insR = $dbc->exec_statement($insQ,array($id,$owner));
             }
             
-            $out .= $this->batchListDisplay();
+            $out = $this->batchListDisplay();
             break;
         case 'deleteBatch':
             $id = FormLib::get_form_value('id',0);
@@ -177,7 +177,7 @@ class BatchManagementTool extends FanniePage
             $delQ = $dbc->prepare_statement("delete from batchList where batchID=?");
             $delR = $dbc->exec_statement($delQ,array($id));
 
-            $out .= $this->batchListDisplay();
+            $out = $this->batchListDisplay();
             break;
         case 'saveBatch':
             $id = FormLib::get_form_value('id',0);
@@ -218,15 +218,17 @@ class BatchManagementTool extends FanniePage
             $id = FormLib::get_form_value('id',0);
             $tag = FormLib::get_form_value('tag')=='true' ? True : False;
             
-            $out .= $this->addItemUPCInput($tag);
-            $out .= "`";
-            $out .= $this->showBatchDisplay($id);
+            $json = array();
+            $json['input'] = $this->addItemUPCInput($tag);
+            $json['display'] = $this->showBatchDisplay($id);
+            $out = json_encode($json);
             
             break;
         case 'backToList':
-            $out .= $this->newBatchInput();
-            $out .= "`";
-            $out .= $this->batchListDisplay();
+            $json = array();
+            $json['input'] = $this->newBatchInput();
+            $json['display'] = $this->batchListDisplay();
+            $out = json_encode($json);
             
             break;
         case 'addItemUPC':
@@ -235,12 +237,12 @@ class BatchManagementTool extends FanniePage
             $upc = BarcodeLib::padUPC($upc);
             $tag = FormLib::get_form_value('tag')=='true' ? True : False;
             
-            $out .= $this->addItemPriceInput($upc,$tag);
+            $out = $this->addItemPriceInput($upc,$tag);
             break;
         case 'addItemLC':
             $id = FormLib::get_form_value('id',0);
             $lc = FormLib::get_form_value('lc',0);
-            $out .= $this->addItemPriceLCInput($lc);
+            $out = $this->addItemPriceLCInput($lc);
             break;
         case 'addItemPrice':
             $id = FormLib::get_form_value('id',0);
@@ -264,9 +266,10 @@ class BatchManagementTool extends FanniePage
                 }
             }
             
-            $out .= $this->addItemUPCInput();
-            $out .= '`';
-            $out .= $this->showBatchDisplay($id);
+            $json = array();
+            $json['input'] = $this->addItemUPCInput();
+            $json['display'] = $this->showBatchDisplay($id);
+            $out = json_encode($json);
             break;
         case 'addItemLCPrice':
             $id = FormLib::get_form_value('id',0);
@@ -289,9 +292,9 @@ class BatchManagementTool extends FanniePage
                 }
             }
             
-            $out .= $this->addItemLCInput();
-            $out .= '`';
-            $out .= $this->showBatchDisplay($id);
+            $json['input'] = $this->addItemLCInput();
+            $json['display'] = $this->showBatchDisplay($id);
+            $out = json_encode($json);
             break;
         case 'deleteItem':
             $id = FormLib::get_form_value('id',0);
@@ -340,12 +343,12 @@ class BatchManagementTool extends FanniePage
                 AuditLib::batchNotification($id, $upc, AuditLib::BATCH_DELETE, (substr($upc,0,2)=='LC' ? true : false));
             }
             
-            $out .= $this->showBatchDisplay($id);
+            $out = $this->showBatchDisplay($id);
             break;
         case 'refilter':
             $owner = FormLib::get_form_value('owner','');
             
-            $out .= $this->batchListDisplay($owner);
+            $out = $this->batchListDisplay($owner);
             break;
         case 'savePrice':
             $id = FormLib::get_form_value('id',0);
@@ -375,7 +378,9 @@ class BatchManagementTool extends FanniePage
             $upc = FormLib::get_form_value('upc','');
             $price = FormLib::get_form_value('price',0);
             
-            $out .= $this->newTagInput($upc,$price,$id);
+            $json = array();
+            $json['input'] = $this->newTagInput($upc,$price,$id);
+            $out = json_encode($json);
             
             break;
         case 'addTag':
@@ -417,13 +422,14 @@ class BatchManagementTool extends FanniePage
             break;
         case 'redisplay':
             $mode = FormLib::get_form_value('mode');
-            $out .= $this->batchListDisplay('',$mode);
+            $owner = FormLib::get('owner', '');
+            $out = $this->batchListDisplay($owner, $mode);
             break;
         case 'batchListPage':
             $filter = FormLib::get_form_value('filter');
             $mode = FormLib::get_form_value('mode');
             $max = FormLib::get_form_value('maxBatchID');
-            $out .= $this->batchListDisplay($filter,$mode,$max);
+            $out = $this->batchListDisplay($filter,$mode,$max);
             break;
         case 'forceBatch':
             $id = FormLib::get_form_value('id',0);
@@ -702,25 +708,25 @@ class BatchManagementTool extends FanniePage
     {
         global $FANNIE_URL;
 
-        $ret = "<form onsubmit=\"newBatch(); return false;\">";
+        $ret = "<form id=\"newBatchForm\" onsubmit=\"newBatch(); return false;\">";
         $ret .= "<table>";
         $ret .= "<tr><th colspan=99 style='line-height:1.0em;'>Create a Batch:</th></tr>";
         $ret .= "<tr><th>Batch/Sale Type</th><th>Name</th><th>Start date</th><th>End date</th><th>Owner/Super Dept.</th><th>Priority</tr>";
         $ret .= "<tr>";
-        $ret .= "<td><select id=newBatchType>";
+        $ret .= '<td><select id=newBatchType name="type">';
         foreach ($this->batchtypes as $id=>$desc) {
             $ret .= "<option value=$id>$desc</option>";
         }
         $ret .= "</select></td>";
-        $ret .= "<td><input type=text id=newBatchName /></td>";
-        $ret .= "<td><input type=text size=10 id=newBatchStartDate /></td>";
-        $ret .= "<td><input type=text size=10 id=newBatchEndDate /></td>";
-        $ret .= "<td><select id=newBatchOwner />";
+        $ret .= '<td><input type=text id=newBatchName name="name" /></td>';
+        $ret .= '<td><input type=text size=10 id=newBatchStartDate name="startdate" /></td>';
+        $ret .= '<td><input type=text size=10 id=newBatchEndDate name="enddate" /></td>';
+        $ret .= '<td><select id=newBatchOwner name="owner">';
         foreach ($this->owners as $o) {
             $ret .= "<option>$o</option>";
         }
         $ret .= "</select></td>";
-        $ret .= "<td><select id=\"newBatchPriority\">";
+        $ret .= '<td><select id="newBatchPriority" name="priority">';
         $ret .= sprintf('<option value="%d">Default</option>', 0);
         $ret .= sprintf('<option value="%d">Override</option>', 5);
         $ret .= "</select></td>";
@@ -730,7 +736,7 @@ class BatchManagementTool extends FanniePage
         $ret .= "<span class=\"newBatchBlack\">";
         $ret .= "<b>Filter</b>: show batches owned by (of Super Dept.): ";
         $ret .= "</span>";
-        $ret .= "<select id=filterOwner onchange=\"refilter();\">";
+        $ret .= "<select id=filterOwner onchange=\"refilter(this.value);\">";
         foreach ($this->owners as $o) {
             $ret .= "<option>$o</option>";
         }
@@ -743,16 +749,16 @@ class BatchManagementTool extends FanniePage
 
     function addItemUPCInput($newtags=false)
     {
-        $ret = "<form onsubmit=\"addItem(); return false;\">";
-        $ret .= "<b style=\"color:#000;\">UPC</b>: <input type=text maxlength=13 id=addItemUPC /> ";
+        $ret = "<form class=\"addItemForm\" onsubmit=\"addItem(); return false;\">";
+        $ret .= "<b style=\"color:#000;\">UPC</b>: <input type=text maxlength=13 name=\"upc\" id=addItemUPC /> ";
         $ret .= "<input type=submit value=Add />";
-        $ret .= "<input type=checkbox id=addItemTag";
-        if ($newtags) {
+        $ret .= "<input type=checkbox id=addItemTag name=\"tag\" ";
+         if ($newtags) {
             $ret .= " checked";
         }
-        $ret .= " /> <span class=\"newBatchBlack\">New shelf tag</span>";
+        $ret .= " /> <label for=\"addItemTag\" class=\"newBatchBlack\">New shelf tag</label>";
         $ret .= " <input type=checkbox id=addItemLikeCode onclick=\"switchToLC();\" /> 
-            <span class=\"newBatchBlack\">Likecode</span>";
+            <label for=\"addItemLikeCode\" class=\"newBatchBlack\">Likecode</label>";
         $ret .= "</form>";
         
         return $ret;
@@ -761,9 +767,9 @@ class BatchManagementTool extends FanniePage
     function addItemLCInput($newtags=false)
     {
         $dbc = $this->con;
-        $ret = "<form onsubmit=\"addItem(); return false;\">";
+        $ret = "<form class=\"addItemForm\" onsubmit=\"addItem(); return false;\">";
         $ret .= "<span class=\"newBatchBlack\">";
-        $ret .= "<b>Like code</b>: <input type=text id=addItemUPC size=4 value=1 /> ";
+        $ret .= "<b>Like code</b>: <input type=text id=addItemUPC name=\"lc\" size=4 value=1 /> ";
         $ret .= "<select id=lcselect onchange=lcselect_util();>";
         $lcQ = $dbc->prepare_statement("select likecode,likecodeDesc from likeCodes order by likecode");
         $lcR = $dbc->exec_statement($lcQ);
@@ -772,12 +778,13 @@ class BatchManagementTool extends FanniePage
         }
         $ret .= "</select>";
         $ret .= "<input type=submit value=Add />";
-        $ret .= "<input type=checkbox id=addItemTag";
+        $ret .= "<input type=checkbox id=addItemTag name=\"tag\" ";
         if ($newtags) {
             $ret .= " checked";
         }
-        $ret .= " /> New shelf tag";
-        $ret .= " <input type=checkbox id=addItemLikeCode checked onclick=\"switchFromLC();\" /> Likecode";
+        $ret .= " /> <label for=\"addItemTag\">New shelf tag</label>";
+        $ret .= " <input type=checkbox id=addItemLikeCode checked onclick=\"switchFromLC();\" /> 
+                  <label for=\"addItemLikeCode\">Likecode</label>";
         $ret .= "</span>";
         $ret .= "</form>";
         
@@ -951,37 +958,27 @@ class BatchManagementTool extends FanniePage
         // where clause is for str_ireplace below
         $fetchQ = "select b.batchName,b.batchType,b.startDate,b.endDate,b.batchID,
                    $ownerclause
-                   WHERE 1=1
-                   order by b.batchID desc";
+                   WHERE 1=1 ";
         $args = array();
         switch($mode) {
             case 'pending':
-                $fetchQ = "select b.batchName,b.batchType,b.startDate,b.endDate,b.batchID,
-                       $ownerclause
-                       WHERE ".$dbc->datediff("b.startDate",$dbc->now())." > 0
-                       order by b.batchID desc";
+                $fetchQ .= ' AND '. $dbc->datediff("b.startDate",$dbc->now()) . ' > 0 ';
                 break;
             case 'current':
-                $fetchQ = "select b.batchName,b.batchType,b.startDate,b.endDate,b.batchID,
-                       $ownerclause
-                       WHERE ".$dbc->datediff("b.startDate",$dbc->now())." <= 0
-                       and ".$dbc->datediff("b.endDate",$dbc->now())." >= 0
-                       order by b.batchID desc";
+                $fetchQ .= '
+                    AND ' . $dbc->datediff("b.startDate",$dbc->now()) . ' <= 0
+                    AND ' . $dbc->datediff("b.endDate",$dbc->now()) . ' >= 0 ';
                 break;
             case 'historical':
-                $fetchQ = "select b.batchName,b.batchType,b.startDate,b.endDate,b.batchID,
-                       $ownerclause
-                       WHERE ".$dbc->datediff("b.endDate",$dbc->now())." <= 0
-                       order by b.batchID desc";
+                $fetchQ .= ' AND '. $dbc->datediff("b.startDate",$dbc->now()) . ' <= 0 ';
                 break;    
         }
         // use a filter - only works in 'all' mode
         if ($filter != '') {
-            $fetchQ = "select b.batchName,b.batchType,b.startDate,b.endDate,b.batchID,
-                   $ownerclause
-                   WHERE $owneralias.owner=? order by b.batchID desc";
+            $fetchQ .= ' AND ' . $owneralias . '.owner = ? ';
             $args[] = $filter;
         }
+        $fetchQ .= ' ORDER BY b.batchID DESC';
         $fetchQ = $dbc->add_select_limit($fetchQ,50);
         if (is_numeric($maxBatchID)) {
             $fetchQ = str_replace("WHERE ","WHERE b.batchID < ? AND ",$fetchQ);
@@ -993,7 +990,7 @@ class BatchManagementTool extends FanniePage
         $lastBatchID = 0;
         while($fetchW = $dbc->fetch_array($fetchR)) {
             $c = ($c + 1) % 2;
-            $ret .= "<tr>";
+            $ret .= '<tr id="batchRow' . $fetchW['batchID'] . '">';
             $ret .= "<td bgcolor=$colors[$c] id=name$fetchW[4]><a id=namelink$fetchW[4] href=\"\" onclick=\"showBatch($fetchW[4]";
             if ($fetchW[1] == 4) {// batchtype 4
                 $ret .= ",'true'";
@@ -1007,7 +1004,14 @@ class BatchManagementTool extends FanniePage
             $fetchW[3] = array_shift(explode(" ",$fetchW[3]));
             $ret .= "<td bgcolor=$colors[$c] id=enddate$fetchW[4]>$fetchW[3]</td>";
             $ret .= "<td bgcolor=$colors[$c] id=owner$fetchW[4]>$fetchW[5]</td>";
-            $ret .= "<td bgcolor=$colors[$c] id=edit$fetchW[4]><a href=\"\" onclick=\"editBatch($fetchW[4]); return false;\"><img src=\"{$FANNIE_URL}src/img/buttons/b_edit.png\" alt=\"Edit\" /></a></td>";
+            $ret .= "<td bgcolor=$colors[$c] id=edit$fetchW[4]>
+                <a href=\"\" onclick=\"editBatch($fetchW[4]); return false;\" class=\"batchEditLink\">
+                    <img src=\"{$FANNIE_URL}src/img/buttons/b_edit.png\" alt=\"Edit\" />
+                </a>
+                <a href=\"\" onclick=\"saveBatch($fetchW[4]); return false;\" class=\"batchSaveLink\" style=\"display:none;\">
+                    <img src=\"{$FANNIE_URL}src/img/buttons/b_save.png\" alt=\"Save\" />
+                </a>
+                </td>";
             $ret .= "<td bgcolor=$colors[$c]><a href=\"\" onclick=\"deleteBatch($fetchW[4],'$fetchW[0]'); return false;\"><img src=\"{$FANNIE_URL}src/img/buttons/b_drop.png\" alt=\"Delete\" /></a></td>";
             $ret .= "<td bgcolor=$colors[$c]><a href=\"batchReport.php?batchID=$fetchW[4]\">Report</a></td>";
             $ret .= "</tr>";
