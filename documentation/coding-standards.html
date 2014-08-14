@@ -1,0 +1,136 @@
+<!doctype html>
+<html>
+<head>
+    <title>Coding Standards</title>
+</head>
+<body>
+<div style="text-align:center;">
+<h2>CORE-POS Coding Standards</h2>
+<br />as of: June 26, 2014
+<!--
+26Jun14 AT Added document
+-->
+</div>
+<h1>PHP Standards</h1>
+CORE generally follows the style guidelines for the
+<a href="http://www.php-fig.org/">PHP Framework Interop Group</a>.
+New code should follow the <a href="http://www.php-fig.org/psr/psr-1/">PSR-1</a>
+coding standard and the <a href="http://www.php-fig.org/psr/psr-2/">PSR-2</a>
+style guide. There are two exceptions of note:
+<ol>
+    <li>CORE <b>does</b> use class autoloading, but <b>does not</b> currently
+    use namespaces or underscores to define directory paths. File names should
+    still match class names and be case-sensitive - e.g., class <i>Foo</i> should
+    be defined in a file named <i>Foo.php</i>.</li>
+    <li>PSR-1 says <i>Files SHOULD either declare symbols (classes, functions, constants, etc.) 
+    or cause side-effects (e.g. generate output, change .ini settings, etc.) but SHOULD NOT do both</i>.
+    CORE files <b>should not</b> cause side effects at all when include()ed; side effects
+    should only occur when files are directly executed. This aids in class autodiscovery.
+    Typically one of these constructs used:
+    <pre style="border: solid 1px black; background: #ccc; padding: 1em;">
+if (dirname(__FILE__) == dirname($_SERVER['PHP_SELF'])) {
+    // means file is being executed
+    // side effects code goes here
+}
+
+// OR EQUIVALENTLY
+
+FannieDispatch::conditionalExec();
+    </pre>
+</ol>
+<h1>SQL Standards</h1>
+<ol><li><b>Naming Things</b>:
+<ul>
+    <li>New tables and views should be named in StudlyCaps. Names should be plural
+    unless there is a specific logical reason for a singular name.</li>
+    <li>Column names should be in camelCase.</li>
+    <li>All tables should contain an incrementing integer column named tableNameID.
+    The camelCase rule applies and these columns should be singular unless, again,
+    there is a specific logical reason for using plural. For example, a table named
+    <i>Members</i> would have increment column <i>memberID</i>.</li>
+    <li>All tables should contain a primary key. The primary key may be the incrementing
+    integer column but does not have to be if another column has a more important
+    uniqueness contraint. Single column primary keys are preferred</li>
+    <li>Foreign key columns should exactly match the column name in the relevant table.</li>
+    <li>Exceptions:<ul>
+        <li>New columns added to an existing table should follow the naming style
+        present in that table. If existing columns are lowercase_underscore, new
+        columns should be the same. If there is no rhyme or reason to the existing
+        column names, use camelCase.</li>
+        <li>Abbreviations and acronyms are generally capitalized - e.g., memberID
+        instead of memberId - but if they occur in the middle of a name
+        use whatever capitalization pattern is most readable.</li>
+        <li>Multiple foreign keys to the same column can be named in any reasonably
+        logical manner.</li>
+        <li>If a new table has a foreign key to an older table where the older
+        table <b>does not</b> have proper camelCase column names, the new table
+        should use a camelCase name rather than an exactly matching name. For example,
+        NewTable.departmentID corresponds to departments.dept_no rather than
+        continuing to spread misformatted names through the schema.
+    </ul>
+    </li>
+</ul>
+</li>
+<li><b>Writing Queries</b>:
+<ul>
+    <li>SQL reserved words and function names should be CAPITALIZED.</li>
+    <li>SELECT, FROM, WHERE, GROUP BY, HAVING, and ORDER BY lines should all be
+    on new lines at the same indent level.</li>
+    <li>At most one column or conditional may be included on the same line
+    as SELECT, FROM, WHERE, GROUP BY, HAVING, and ORDER BY.</li>
+    <li>Additional columns, conditionals, and joins should be indented
+    on further level with one column, conditional, or join per line.
+    <li>JOIN and ON should go on the same line.</li>
+    <li>Very long column, conditional, or join lines should be split
+    and indented so as to be readable.
+    <li>Commas go on the end of lines</li>
+    <li>ANDs and ORs go at the beginning of lines</li>
+    <li>Example queries:
+    <pre style="border: solid 1px black; background: #ccc; padding: 1em;">
+SELECT d.dept_no,
+    d.dept_name,
+    COUNT(p.upc) AS numProducts
+FROM products AS p
+    LEFT JOIN departments AS d ON p.department=d.dept_name
+WHERE p.upc LIKE '0000000%'
+    AND d.department < 500
+GROUP BY d.dept_no,
+    d.dept_name
+HAVING COUNT(p.upc) <> 0
+ORDER BY d.dept_no,
+    d.dept_name
+
+SELECT
+    d.dept_no,
+    d.dept_name,
+    COUNT(p.upc) AS numProducts
+FROM 
+    products AS p
+    LEFT JOIN departments AS d ON p.department=d.dept_name
+WHERE 
+    p.upc LIKE '0000000%'
+    AND d.department < 500
+GROUP BY 
+    d.dept_no,
+    d.dept_name
+HAVING 
+    COUNT(p.upc) <> 0
+ORDER BY 
+    d.dept_no,
+    d.dept_name
+    </pre>
+    <li>User input <b>should</b> be handled via prepared statements in lane code.
+    User input <b>must</b> be handled via prepared statements in Fannie code.
+    Typically question marks are used instead of named placeholders.</li>
+    <li>Queries should specify column names on SELECT and INSERT queries
+    rather than assuming a particular column count and order.</li>
+    <li>Results should be accessed by column name rather than numeric index</li>
+    <li>Reasonable effort should be made to avoid using syntax only supported
+    by one particular dialect of SQL. The SQLManager class provides helper
+    methods for generating appropriate per-dialect syntax for many common
+    situations.</li>
+</ul>
+</li>
+</ol>
+</body>
+</html>

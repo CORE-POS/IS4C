@@ -23,20 +23,20 @@
 
 class update_20130107181336 extends UpdateObj {
 
-	protected $timestamp = '20130107181336';
+    protected $timestamp = '20130107181336';
 
-	protected $description = 'Change the data type of meminfo.card_no to int(11)
-	to agree with the format of the value in other tables.';
+    protected $description = 'Change the data type of meminfo.card_no to int(11)
+    to agree with the format of the value in other tables.';
 
-	protected $author = 'Eric Lee (WEFC_Toronto)';
+    protected $author = 'Eric Lee (WEFC_Toronto)';
 
-	protected $queries = array(
-		'op' => array(
-			'ALTER TABLE meminfo CHANGE COLUMN card_no card_no INT(11)'
-		),
-		'trans' => array(),
-		'archive' => array()
-	);
+    protected $queries = array(
+        'op' => array(
+            'ALTER TABLE meminfo CHANGE COLUMN card_no card_no INT(11)'
+        ),
+        'trans' => array(),
+        'archive' => array()
+    );
 }
 
 ?>

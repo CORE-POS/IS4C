@@ -3,22 +3,22 @@
 Table: usageStats
 
 Columns:
-	usageID int
-	tdate datetime
+    usageID int
+    tdate datetime
     pageName varchar
     referrer varchar
     userHash varchar
     ipHash varchar
 
 Depends on:
-	none
+    none
 
 Use:
 Internal usage metrics. Tracks visits
 to different Fannie pages.
 */
 $CREATE['op.usageStats'] = "
-	create table usageStats (
+    create table usageStats (
         usageID INT NOT NULL AUTO_INCREMENT,
         tdate DATETIME,
         pageName VARCHAR(100),
@@ -28,6 +28,6 @@ $CREATE['op.usageStats'] = "
         PRIMARY KEY (usageID),
         INDEX(tdate),
         INDEX(pageName)
-	)
+    )
 ";
 

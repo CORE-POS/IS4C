@@ -35,7 +35,7 @@ class GumEmailLogModel extends BasicModel
     'tdate' => array('type'=>'DATETIME'),
     'uid' => array('type'=>'INT'),
     'messageType' => array('type'=>'VARCHAR(50)'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

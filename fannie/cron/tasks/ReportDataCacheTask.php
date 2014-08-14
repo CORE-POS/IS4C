@@ -114,6 +114,28 @@ Replaces nightly.tablecache.php';
         if ($sql->table_exists("reportDataCache")){
             $sql->query("DELETE FROM reportDataCache WHERE expires < ".$sql->now());
         }
+
+        $daily = DataCache::fileCacheDir('daily');
+        if ($daily) {
+            $dh = opendir($daily);
+            while ( ($file = readdir($dh)) !== false) {
+                if (is_file($daily . '/' . $file)) {
+                    unlink($daily . '/' . $file);
+                }
+            }
+            closedir($dh);
+        }
+
+        $monthly = DataCache::fileCacheDir('monthly');
+        if ($monthly && date('j') == 1) {
+            $dh = opendir($monthly);
+            while ( ($file = readdir($dh)) !== false) {
+                if (is_file($monthly . '/' . $file)) {
+                    unlink($monthly . '/' . $file);
+                }
+            }
+            closedir($dh);
+        }
     }
 }
 

@@ -1,5 +1,6 @@
 <?php
 include('../../../config.php');
+include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include($FANNIE_ROOT.'src/functions.php');
 
@@ -9,8 +10,7 @@ if (isset($_GET['excel'])){
 	$_SERVER['REQUEST_URI'] = $_SERVER['PHP_SELF'];
 }
 
-include($FANNIE_ROOT.'cache/cache.php');
-$cached_output = get_cache("monthly");
+$cached_output = DataCache::getFile("monthly");
 if ($cached_output){
 	echo $cached_output;
 	exit;
@@ -49,7 +49,7 @@ select_to_table2($query,array(),0,'#ffffcc',120,0,0,$headers,True);
 
 $output = ob_get_contents();
 ob_end_clean();
-put_cache('monthly',$output);
+DataCache::putFile('monthly',$output);
 echo $output;
 
 ?>

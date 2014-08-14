@@ -24,7 +24,7 @@
 /**
   @class EquityLiveBalanceModel
 */
-class EquityLiveBalanceModel extends BasicModel 
+class EquityLiveBalanceModel extends ViewModel 
 {
 
     protected $name = "equity_live_balance";
@@ -35,10 +35,29 @@ class EquityLiveBalanceModel extends BasicModel
     'startdate' => array('type','DATETIME')
     );
 
-    public function create(){ return false; }
-    public function delete(){ return false; }
-    public function save(){ return false; }
-    public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=false){ return 0; }
+    public function definition()
+    {
+        global $FANNIE_OP_DB;
+        return '
+            SELECT
+                m.card_no AS memnum,
+                CASE
+                    WHEN a.card_no IS NOT NULL AND b.card_no IS NOT NULL
+                    THEN a.payments + b.totPayments
+                    WHEN a.card_no IS NOT NULL
+                    THEN a.payments
+                    WHEN b.card_no IS NOT NULL
+                    THEN b.totPayments
+                    END AS payments,
+                CASE WHEN a.startdate IS NULL THEN b.startdate
+                    ELSE a.startdate END AS startdate
+            FROM ' . $FANNIE_OP_DB . $this->connection->sep() . 'meminfo AS m 
+                LEFT JOIN equity_history_sum AS a ON a.card_no=m.card_no
+                LEFT JOIN stockSumToday AS b ON m.card_no=b.card_no
+            WHERE a.card_no IS NOT NULL 
+                OR b.card_no IS NOT NULL
+        ';
+    }
 
     /* START ACCESSOR FUNCTIONS */
 

@@ -4,40 +4,40 @@ Table: PaycardTransaction
 
 Columns:
     paycardTransactionID int
-	dateID int
-	empNo int
-	registerNo int
-	transNo int
-	transID int
+    dateID int
+    empNo int
+    registerNo int
+    transNo int
+    transID int
     previousPaycardTransactionID int
     processor varchar
-	refNum varchar
-	live tinyint
+    refNum varchar
+    live tinyint
     cardType varchar
     transType varchar
-	amount double
-	PAN varchar
-	issuer varchar
-	name varchar
-	manual tinyint
-	requestDatetime datetime
-	responseDatetime datetime
-	seconds float
-	commErr int
-	httpCode int
+    amount double
+    PAN varchar
+    issuer varchar
+    name varchar
+    manual tinyint
+    requestDatetime datetime
+    responseDatetime datetime
+    seconds float
+    commErr int
+    httpCode int
     validResponse tinyint
-	xResultCode varchar
-	xApprovalNumber varchar
-	xResponseCode varchar
-	xResultMessage varchar
-	xTransactionID varchar
-	xBalance varchar
+    xResultCode varchar
+    xApprovalNumber varchar
+    xResponseCode varchar
+    xResultMessage varchar
+    xTransactionID varchar
+    xBalance varchar
     xToken varchar
     xProcessorRef varchar
     xAcquirerRef varchar
 
 Depends on:
-	none
+    none
 
 Use:
 This table records information about integrated
@@ -119,44 +119,44 @@ approval in xResultMessage. All the other response fields
 are optional.
 */
 $CREATE['trans.PaycardTransactions'] = "
-	CREATE TABLE PaycardTransactions (
+    CREATE TABLE PaycardTransactions (
         paycardTransactionID INT, 
-		dateID INT ,
-		empNo INT ,
-		registerNo INT ,
-		transNo INT ,
-		transID INT ,
+        dateID INT ,
+        empNo INT ,
+        registerNo INT ,
+        transNo INT ,
+        transID INT ,
         previousPaycardTransactionID INT,
         processor VARCHAR(25),
-		refNum VARCHAR(50) ,
-		live tinyint ,
-		cardType VARCHAR(15) ,
-		transType VARCHAR(15) ,
-		amount DOUBLE ,
-		PAN VARCHAR (19) ,
-		issuer VARCHAR (20) ,
-		name VARCHAR (50) ,
-		manual TINYINT ,
+        refNum VARCHAR(50) ,
+        live tinyint ,
+        cardType VARCHAR(15) ,
+        transType VARCHAR(15) ,
+        amount DOUBLE ,
+        PAN VARCHAR (19) ,
+        issuer VARCHAR (20) ,
+        name VARCHAR (50) ,
+        manual TINYINT ,
         requestDatetime DATETIME,
         responseDatetime DATETIME,
-		seconds FLOAT ,
-		commErr SMALLINT ,
-		httpCode SMALLINT ,
-		validResponse SMALLINT ,
-		xResultCode VARCHAR (8), 
-		xApprovalNumber VARCHAR (20),
-		xResponseCode VARCHAR (8),
-		xResultMessage VARCHAR (100),
-		xTransactionID VARCHAR (12),
-		xBalance VARCHAR(8),
-		xToken VARCHAR(64),
-		xProcessorRef VARCHAR(24),
-		xAcquirerRef VARCHAR(100),
+        seconds FLOAT ,
+        commErr SMALLINT ,
+        httpCode SMALLINT ,
+        validResponse SMALLINT ,
+        xResultCode VARCHAR (8), 
+        xApprovalNumber VARCHAR (20),
+        xResponseCode VARCHAR (8),
+        xResultMessage VARCHAR (100),
+        xTransactionID VARCHAR (12),
+        xBalance VARCHAR(8),
+        xToken VARCHAR(64),
+        xProcessorRef VARCHAR(24),
+        xAcquirerRef VARCHAR(100),
         INDEX(paycardTransactionID),
         INDEX(dateID),
         INDEX(registerNo),
         INDEX(transNo)
-	)
+    )
 ";
 
 if ($dbms == "MSSQL") {

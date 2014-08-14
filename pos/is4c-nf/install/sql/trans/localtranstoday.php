@@ -17,6 +17,7 @@ $CREATE['trans.localtranstoday'] = InstallUtilities::duplicateStructure($dbms,'d
 if ($CREATE['trans.localtranstoday'] !== false) {
     $CREATE['trans.localtranstoday'] = array(
                                             $CREATE['trans.localtranstoday'],
+                                            'ALTER TABLE localtranstoday DROP COLUMN pos_row_id',
                                             'ALTER TABLE localtranstoday ADD INDEX (trans_no)',
                                             'ALTER TABLE localtranstoday ADD INDEX (emp_no)',
                                             'ALTER TABLE localtranstoday ADD INDEX (register_no)',

@@ -37,7 +37,7 @@ class OriginsModel extends BasicModel
     'local' => array('type'=>'TINYINT', 'default'=>0),
     'name' => array('type'=>'VARCHAR(100)'),
     'shortName' => array('type'=>'VARCHAR(50)'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

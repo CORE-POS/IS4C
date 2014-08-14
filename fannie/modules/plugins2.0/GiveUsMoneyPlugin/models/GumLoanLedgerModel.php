@@ -40,7 +40,7 @@ class GumLoanLedgerModel extends BasicModel
     'amount' => array('type'=>'MONEY'),
     'tdate' => array('type'=>'DATETIME'),
     'trans_num' => array('type'=>'VARCHAR(50)'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

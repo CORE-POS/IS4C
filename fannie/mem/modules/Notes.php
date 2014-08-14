@@ -23,103 +23,103 @@
 
 class Notes extends MemberModule {
 
-	function ShowEditForm($memNum, $country="US"){
-		global $FANNIE_URL;
+    function showEditForm($memNum, $country="US"){
+        global $FANNIE_URL;
 
-		$dbc = $this->db();
-		
-		$infoQ = $dbc->prepare_statement("SELECT note,stamp FROM memberNotes
-				WHERE cardno=? ORDER BY stamp DESC");
-		$infoR = $dbc->exec_statement($infoQ,array($memNum));
+        $dbc = $this->db();
+        
+        $infoQ = $dbc->prepare_statement("SELECT note,stamp FROM memberNotes
+                WHERE cardno=? ORDER BY stamp DESC");
+        $infoR = $dbc->exec_statement($infoQ,array($memNum));
 
-		$recentNote = "";
-		$recentDate = "";
-		/*
-		  Always show the most recent note
-		*/
-		if ($dbc->num_rows($infoR) > 0){
-			$temp = $dbc->fetch_row($infoR);	
-			$recentNote = str_replace("<br />","\n",$temp['note']);
-			$recentDate = $temp['stamp'];
-		}
+        $recentNote = "";
+        $recentDate = "";
+        /*
+          Always show the most recent note
+        */
+        if ($dbc->num_rows($infoR) > 0){
+            $temp = $dbc->fetch_row($infoR);    
+            $recentNote = str_replace("<br />","\n",$temp['note']);
+            $recentDate = $temp['stamp'];
+        }
 
-		$ret = "<fieldset><legend>Notes</legend>";
+        $ret = "<fieldset><legend>Notes</legend>";
 
-		$ret .= "<table class=\"MemFormTable\" border=\"0\">";
-		$ret .= "<tr><th>Additional Notes</th>";
-//		$ret .= "<td><a href=\"\">History</a></td></tr>";
-		$ret .= "<td> ";
-		if ($dbc->num_rows($infoR) > 1){
-			$ret .= "<input type=\"button\" value=\"History\" id=\"historyButton\"
-				style=\"display:block;\"
-				onclick=\"
-					tb = document.getElementById('noteHistory'); tb.style.display='block';
-					nhb = document.getElementById('noHistoryButton'); nhb.style.display='block';
-					hb = document.getElementById('historyButton'); hb.style.display='none';
-					\"
-				/>";
-			$ret .= "<input type=\"button\" value=\"NoHistory\" id=\"noHistoryButton\"
-				style=\"display:none;\"
-				onclick=\"
-					tb = document.getElementById('noteHistory'); tb.style.display='none';
-					hb = document.getElementById('historyButton'); hb.style.display='block';
-					nhb = document.getElementById('noHistoryButton'); nhb.style.display='none';
-					\"
-				/>";
-		}
-		$ret .= "</td></tr>\n";
-		$ret .= "<tr><td colspan=\"2\"><textarea name=\"Notes_text\" rows=\"4\" cols=\"25\">";
-		$ret .= $recentNote;
-		$ret .= "</textarea></td></tr>";
-		$ret .= '<input type="hidden" name="Notes_current" value="'.base64_encode($recentNote).'" />';
-		$ret .= "</table>\n";
+        $ret .= "<table class=\"MemFormTable\" border=\"0\">";
+        $ret .= "<tr><th>Additional Notes</th>";
+//      $ret .= "<td><a href=\"\">History</a></td></tr>";
+        $ret .= "<td> ";
+        if ($dbc->num_rows($infoR) > 1){
+            $ret .= "<input type=\"button\" value=\"History\" id=\"historyButton\"
+                style=\"display:block;\"
+                onclick=\"
+                    tb = document.getElementById('noteHistory'); tb.style.display='block';
+                    nhb = document.getElementById('noHistoryButton'); nhb.style.display='block';
+                    hb = document.getElementById('historyButton'); hb.style.display='none';
+                    \"
+                />";
+            $ret .= "<input type=\"button\" value=\"NoHistory\" id=\"noHistoryButton\"
+                style=\"display:none;\"
+                onclick=\"
+                    tb = document.getElementById('noteHistory'); tb.style.display='none';
+                    hb = document.getElementById('historyButton'); hb.style.display='block';
+                    nhb = document.getElementById('noHistoryButton'); nhb.style.display='none';
+                    \"
+                />";
+        }
+        $ret .= "</td></tr>\n";
+        $ret .= "<tr><td colspan=\"2\"><textarea name=\"Notes_text\" rows=\"4\" cols=\"25\">";
+        $ret .= $recentNote;
+        $ret .= "</textarea></td></tr>";
+        $ret .= '<input type="hidden" name="Notes_current" value="'.base64_encode($recentNote).'" />';
+        $ret .= "</table>\n";
 
-		$ret .= "<table id=\"noteHistory\" class=\"MemFormTable\" border=\"0\" style=\"display:none;\">";
-		while (	$infoW = $dbc->fetch_row($infoR) ) {
-			// converting br tags to newlines is only necessary
-			// when displaying in a textarea
-			$note = $infoW['note'];
-			$date = $infoW['stamp'];
-			$ret .= "<tr><td>$date</td><td>$note</td></tr>\n";
-		}
-		$ret .= "</table>\n";
+        $ret .= "<table id=\"noteHistory\" class=\"MemFormTable\" border=\"0\" style=\"display:none;\">";
+        while ( $infoW = $dbc->fetch_row($infoR) ) {
+            // converting br tags to newlines is only necessary
+            // when displaying in a textarea
+            $note = $infoW['note'];
+            $date = $infoW['stamp'];
+            $ret .= "<tr><td>$date</td><td>$note</td></tr>\n";
+        }
+        $ret .= "</table>\n";
 
-		$ret .= "</fieldset>\n";
-		return $ret;
-	}
+        $ret .= "</fieldset>\n";
+        return $ret;
+    }
 
-	function SaveFormData($memNum){
+    function saveFormData($memNum){
 
-		/* entry blank. do not save */
-		$note = FormLib::get_form_value('Notes_text');
-		if ( $note == "" ) {
-			return "";
-		}
-		
-		/* entry has note changed. this means it's already
-		   in memberNotes as the most recent entry */
-		$current = FormLib::get_form_value('Notes_current');
-		if ($note == base64_decode($current)){
-			return "";
-		}
+        /* entry blank. do not save */
+        $note = FormLib::get_form_value('Notes_text');
+        if ( $note == "" ) {
+            return "";
+        }
+        
+        /* entry has note changed. this means it's already
+           in memberNotes as the most recent entry */
+        $current = FormLib::get_form_value('Notes_current');
+        if ($note == base64_decode($current)){
+            return "";
+        }
 
-		$dbc = $this->db();
+        $dbc = $this->db();
 
-		$insertNote = $dbc->prepare_statement("INSERT into memberNotes
-				(cardno, note, stamp, username)
-				VALUES (?, ?, ".$dbc->now().", 'Admin')");
+        $insertNote = $dbc->prepare_statement("INSERT into memberNotes
+                (cardno, note, stamp, username)
+                VALUES (?, ?, ".$dbc->now().", 'Admin')");
 
-		// convert newlines back to br tags
-		// so displayed notes have user's
-		// paragraph formatting
-		$note = str_replace("\n",'<br />',$note);
-		$test1 = $dbc->exec_statement($insertNote,array($memNum,$note));
+        // convert newlines back to br tags
+        // so displayed notes have user's
+        // paragraph formatting
+        $note = str_replace("\n",'<br />',$note);
+        $test1 = $dbc->exec_statement($insertNote,array($memNum,$note));
 
-		if ($test1 === False )
-			return "Error: problem saving Notes<br />";
-		else
-			return "";
-	}
+        if ($test1 === False )
+            return "Error: problem saving Notes<br />";
+        else
+            return "";
+    }
 
 // Notes
 }

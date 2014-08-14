@@ -26,7 +26,7 @@ class Paycards extends Plugin {
 	public $description = 'Plugin for integrated payment cards';
 
 	public $plugin_settings = array(
-		'ccLive' => array(
+		'CCintegrate' => array(
 		'label' => 'Live',
 		'description' => 'Enable live integrated transactions',
 		'default' => 1,
@@ -35,6 +35,19 @@ class Paycards extends Plugin {
 			'No' => 0
 			)
 		),
+        'RegisteredPaycardClasses' => array(
+        'label' => 'Processor(s)',
+        'description' => 'Which processors to use',
+        'default' => array(),
+        'options' => array(
+            'Mercury E2E' => 'MercuryE2E',
+            'Mercury Gift Only' => 'MercuryGift',
+            'Go E Merchant' => 'GoEMerchant',
+            'First Data' => 'FirstData',
+            'Authorize.net' => 'AuthorizeDotNet',
+            'Valutec' => 'Valutec',
+            ),
+        ),
         'PaycardsTerminalID' => array(
         'label' => 'Terminal ID',
         'description' => 'Unique ID for MC regs (1-3 characters, alphanumeric)',
@@ -69,6 +82,11 @@ messages from POS?',
 			'Sign paper slip' => 0
 			)
 		),
+        'CCSigLimit' => array(
+        'label' => 'Signature Required Threshold',
+        'description' => 'Require signatures on credit purchases above this amount',
+        'default' => 0.00,
+        ),
 		'PaycardsOfferCashBack' => array(
 		'label' => 'Offer Cashback',
 		'description' => 'Show cashback screen on terminal',

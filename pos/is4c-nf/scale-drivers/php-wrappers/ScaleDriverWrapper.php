@@ -33,7 +33,20 @@
     ReadFromScale and WriteToScale.
 */
 
-class ScaleDriverWrapper {
+class ScaleDriverWrapper 
+{
+
+    /**
+      Javascript used to interact with
+      scale driver. Default is poll-scale.js.
+
+      Javascript file must provide a function
+      named pollScale.
+    */
+    public function javascriptFile()
+    {
+        return 'poll-scale.js';
+    }
 
 	/**
 	  This method updates the driver code
@@ -49,7 +62,7 @@ class ScaleDriverWrapper {
 	  implementation skips this method that's probably
 	  fine.
 	*/
-	function SavePortConfiguration($portName){}
+	public function SavePortConfiguration($portName){}
 	
 	/** 
 	   This method updates the driver code or configuration
@@ -59,7 +72,7 @@ class ScaleDriverWrapper {
 	   <b>not used much</b>
 	   See the SavePortConfiguration() method for details.
 	*/
-	function SaveDirectoryConfiguration($absPath){}
+	public function SaveDirectoryConfiguration($absPath){}
 
 	/** 
 	   Reads available scale and scanner input
@@ -70,7 +83,7 @@ class ScaleDriverWrapper {
 	   appropriate weight-related session variables are
 	   updated.
 	*/
-	function ReadFromScale(){}
+	public function ReadFromScale(){}
 
 	/** 
 	   Sends output to the scale. 
@@ -82,7 +95,7 @@ class ScaleDriverWrapper {
 		4. rePoll
 		5. wakeup
 	*/
-	function WriteToScale($str){}
+	public function WriteToScale($str){}
 
 	/** Clear all pending input 
 	    
@@ -91,8 +104,7 @@ class ScaleDriverWrapper {
 	    accumulated weight data. POS uses this method
 	    to discard everything on startup. 
 	 */
-	function ReadReset(){}
+	public function ReadReset(){}
 
 }
 
-?>

@@ -35,8 +35,9 @@ class ObfCategoriesModel extends BasicModel
     'hasSales' => array('type'=>'TINYINT', 'default'=>1),
     'growthTarget' => array('type'=>'DOUBLE'),
     'laborTarget' => array('type'=>'DOUBLE'),
+    'hoursTarget' => array('type'=>'DOUBLE'),
     'averageWage' => array('type'=>'MONEY'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -137,6 +138,26 @@ class ObfCategoriesModel extends BasicModel
                 }
             }
             $this->instance["laborTarget"] = func_get_arg(0);
+        }
+    }
+
+    public function hoursTarget()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["hoursTarget"])) {
+                return $this->instance["hoursTarget"];
+            } else if (isset($this->columns["hoursTarget"]["default"])) {
+                return $this->columns["hoursTarget"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["hoursTarget"]) || $this->instance["hoursTarget"] != func_get_args(0)) {
+                if (!isset($this->columns["hoursTarget"]["ignore_updates"]) || $this->columns["hoursTarget"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["hoursTarget"] = func_get_arg(0);
         }
     }
 

@@ -150,7 +150,7 @@ class DataCache
             return false;
         }
 
-        $key = ($key !== false) ? md5($key) : self::getKey();
+        $key = ($key !== false) ? md5($key) : self::genKey();
 
         $cache_dir = self::fileCacheDir($type);
         if ($cache_dir && file_exists($cache_dir . '/' . $key)) {
@@ -178,7 +178,7 @@ class DataCache
             return false;
         }
 
-        $key = ($key !== false) ? md5($key) : self::getKey();
+        $key = ($key !== false) ? md5($key) : self::genKey();
 
         $cache_dir = self::fileCacheDir($type);
         if ($cache_dir) {
@@ -200,7 +200,7 @@ class DataCache
     */
     static public function fileCacheDir($type)
     {
-        if ($type !== 'monthy' && $type !== 'daily') {
+        if ($type !== 'monthly' && $type !== 'daily') {
             return false;
         }
 

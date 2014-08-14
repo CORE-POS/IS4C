@@ -62,14 +62,23 @@ refreshSession();
 	<title>Schedule an interview</title>
 <link href="<?php echo $FANNIE_URL; ?>src/style.css"
       rel="stylesheet" type="text/css">
-<script src="<?php echo $FANNIE_URL; ?>src/CalendarControl.js"
+<script src="<?php echo $FANNIE_URL; ?>src/javascript/jquery.js"
         language="javascript"></script>
+<script src="<?php echo $FANNIE_URL; ?>src/javascript/jquery-ui.js"
+        language="javascript"></script>
+<link href="<?php echo $FANNIE_URL; ?>src/javascript/jquery-ui.css"
+      rel="stylesheet" type="text/css">
+<script type="text/javascript">
+$(document).ready(function(){
+    $('#date').datepicker();
+});
+</script>
 </head>
 <body>
 <form action=set_interview.php method=post>
 <span style="font-size: 125%;">
 <?php echo $username ?> will interview <?php echo $name ?> on 
-<input type=text name=date onfocus="this.value=''; showCalendarControl(this);" /><br />
+<input type=text name=date id="date" /><br />
 <input type=hidden name=appID value="<?php echo $appID ?>" />
 <input type=hidden name=username value="<?php echo $username ?>" />
 <input type=submit name='submit' value="Schedule Interview" /> 

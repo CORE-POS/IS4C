@@ -241,7 +241,7 @@ class GoEMerchant extends BasicCCModule
         $sql = "SELECT commErr,
                     httpCode,
                     validResponse,
-                    xResponseCode,
+                    xResultCode AS xResponseCode,
                     xTransactionID
                 FROM PaycardTransactions 
                 WHERE dateID=" . $today . " 

@@ -20,10 +20,28 @@ function itemSearch(){
 			}
 			else {
 				$('#SearchResults').html(manyResultForm(data));
-				$('#srQty0').focus();	
+				$('#srQty0').focus();
 			}
+            markInCurrentOrder(data);
 		}
 	});
+}
+
+function markInCurrentOrder(data)
+{
+	for(var i=0; i<data.length;i++){
+        $.ajax({
+            url: 'EditOnePurchaseOrder.php',
+            data: 'id='+$('#id').val()+'&sku='+data[i].sku+'&index='+i,
+            dataType: 'json',
+            success: function(result) {
+                if (result.qty != 0) {
+                    $('#qtyRow'+result.index).append(' <span style="color:green;">IN CURRENT ORDER</span>');
+                    $('#srQty'+result.index).val(result.qty);
+                }
+            }
+        });
+    }
 }
 
 function manyResultForm(data){
@@ -49,6 +67,7 @@ function oneResultForm(obj, resultNum){
 	if (resultNum > 0)
 		output += ' style="display:none;"';
 	output += '>';
+    output += '<form onsubmit="saveItem('+resultNum+');return false;">';
 	output += '<table>';
 	output += '<tr><td align="right">SKU</td>';
 	output += '<td id="srSKU'+resultNum+'">'+obj.sku+'</td></tr>';
@@ -59,10 +78,11 @@ function oneResultForm(obj, resultNum){
 	output += '<tr><td>Unit Cost: '+obj.unitCost+'</td>';
 	output += '<td>Case Cost: '+obj.caseCost+'</td></tr>';
 	output += '<tr>';
-	output += '<td colspan="2">Order <input type="number" size="3" value="1" onfocus="this.select();" id="srQty'+resultNum+'" />';
+	output += '<td id="qtyRow'+resultNum+'" colspan="2">Order <input type="number" size="3" value="1" onfocus="this.select();" id="srQty'+resultNum+'" />';
 	output += ' Cases</td></tr>';	
 	output += '</table>';
 	output += '<input type="submit" value="Confirm" onclick="saveItem('+resultNum+');return false;" />';
+	output += '</form>';
 
 	output += '</div>';
 	return output;
@@ -72,6 +92,7 @@ function saveItem(resultNum){
 	var dstr = 'id='+$('#id').val();
 	dstr += '&sku='+$('#srSKU'+resultNum).html();
 	dstr += '&qty='+$('#srQty'+resultNum).val();
+    saveQty = $('#srQty'+resultNum).val();
 	$.ajax({
 		url: 'EditOnePurchaseOrder.php?'+dstr,
 		method: 'get',
@@ -83,7 +104,11 @@ function saveItem(resultNum){
 			else if (data.cost && data.count){
 				$('#orderInfoCount').html(data.count);
 				$('#orderInfoCost').html(data.cost);
-				$('#SearchResults').html('Item added to order');
+                if (saveQty != 0) {
+                    $('#SearchResults').html('Item added to order');
+                } else {
+                    $('#SearchResults').html('Item removed from order');
+                }
 			}
 			$('#searchField').focus();
 		}

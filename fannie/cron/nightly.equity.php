@@ -44,20 +44,20 @@ $ret = preg_match_all("/[0-9]+/",$FANNIE_EQUITY_DEPARTMENTS,$depts);
 $depts = array_pop($depts);
 $dlist = "(";
 foreach ($depts as $d){
-	$dlist .= $d.",";	
+    $dlist .= $d.",";   
 }
 $dlist = substr($dlist,0,strlen($dlist)-1).")";
 
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
+        $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
 $query = "INSERT INTO stockpurchases
-	SELECT card_no,
-	CASE WHEN department IN $dlist THEN total ELSE 0 END as stockPayments,
-	tdate,trans_num,department
-	FROM dlog_15 WHERE "
-	.$sql->datediff($sql->now(),'tdate')." = 1
-	AND department IN $dlist";	
+    SELECT card_no,
+    CASE WHEN department IN $dlist THEN total ELSE 0 END as stockPayments,
+    tdate,trans_num,department
+    FROM dlog_15 WHERE "
+    .$sql->datediff($sql->now(),'tdate')." = 1
+    AND department IN $dlist";  
 $sql->query($query);
 
 // rebuild summary table

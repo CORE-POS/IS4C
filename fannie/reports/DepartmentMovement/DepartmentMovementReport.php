@@ -66,31 +66,51 @@ class DepartmentMovementReport extends FannieReportPage
     {
         global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
-        $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
+        $date1 = FormLib::getDate('date1',date('Y-m-d'));
+        $date2 = FormLib::getDate('date2',date('Y-m-d'));
         $deptStart = FormLib::get_form_value('deptStart','');
         $deptEnd = FormLib::get_form_value('deptEnd','');
         $buyer = FormLib::get_form_value('buyer','');
         $groupby = FormLib::get_form_value('sort','PLU');
         $store = FormLib::get('store', 0);
+        $superP = $dbc->prepare('SELECT dept_ID FROM superdepts WHERE superID=?');
 
         /**
           Build a WHERE condition for later.
           Superdepartment (buyer) takes precedence over
           department and negative values have special
           meaning
+
+          Extra lookup to write condition in terms of
+          transaction.department seems to result in
+          better index utilization and faster queries
         */
-        $filter_condition = 'd.dept_no BETWEEN ? AND ?';
+        $filter_condition = 't.department BETWEEN ? AND ?';
         $args = array($deptStart,$deptEnd);
         if ($buyer !== "" && $buyer > 0) {
-            $filter_condition = 's.superID=?';
-            $args = array($buyer);
+            $superR = $dbc->execute($superP, array($buyer));
+            $filter_condition = 't.department IN (';
+            $args = array();
+            while ($superW = $dbc->fetch_row($superR)) {
+                $filter_condition .= '?,';
+                $args[] = $superW['dept_ID'];
+            }
+            $filter_condition = substr($filter_condition, 0, strlen($filter_condition)-1) . ')';
+            $filter_condition .= ' AND s.superID=?';
+            $args[] = $buyer;
         } else if ($buyer !== "" && $buyer == -1) {
             $filter_condition = "1=1";
             $args = array();
         } else if ($buyer !== "" && $buyer == -2){
-            $filter_condition = "s.superID<>0";
+            $superR = $dbc->execute($superP, array(0));
+            $filter_condition = 't.department NOT IN (0,';
             $args = array();
+            while ($superW = $dbc->fetch_row($superR)) {
+                $filter_condition .= '?,';
+                $args[] = $superW['dept_ID'];
+            }
+            $filter_condition = substr($filter_condition, 0, strlen($filter_condition)-1) . ')';
+            $filter_condition .= ' AND s.superID <> 0';
         }
 
         /**
@@ -132,6 +152,7 @@ class DepartmentMovementReport extends FannieReportPage
                       . "LEFT JOIN $superTable AS s ON t.department = s.dept_ID
                       LEFT JOIN prodExtra as x on t.upc = x.upc
                       WHERE $filter_condition
+                      AND t.trans_type IN ('I', 'D')
                       AND tdate BETWEEN ? AND ?
                       AND $filter_transactions
                       AND " . DTrans::isStoreID($store, 't') . "
@@ -286,7 +307,7 @@ class DepartmentMovementReport extends FannieReportPage
     function report_description_content()
     {
         $ret = array();
-        $ret[] = "Movement from ".FormLib::get_form_value('date1','')." to ".FormLib::get_form_value('date2','');
+        $ret[] = "Movement from ".FormLib::getDate('date1','')." to ".FormLib::getDate('date2','');
         $ret[] = "Summed by ".FormLib::get_form_value('sort','');
         $buyer = FormLib::get_form_value('buyer','');
         if ($buyer === '0') {
@@ -361,10 +382,10 @@ class DepartmentMovementReport extends FannieReportPage
                </td>
                     <td>
                      <p>
-                       <input type=text id=date1 name=date1 onfocus="this.value='';showCalendarControl(this);">
+                       <input type=text id=date1 name=date1 />
                        </p>
                        <p>
-                        <input type=text id=date2 name=date2 onfocus="this.value='';showCalendarControl(this);">
+                        <input type=text id=date2 name=date2 />
                  </p>
                </td>
 
@@ -391,6 +412,8 @@ class DepartmentMovementReport extends FannieReportPage
     </table>
 </form>
 <?php
+        $this->add_onload_command('$(\'#date1\').datepicker();');
+        $this->add_onload_command('$(\'#date2\').datepicker();');
     }
 }
 

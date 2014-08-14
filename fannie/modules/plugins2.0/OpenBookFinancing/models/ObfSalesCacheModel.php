@@ -37,8 +37,9 @@ class ObfSalesCacheModel extends BasicModel
     'actualSales' => array('type'=>'MONEY'),
     'lastYearSales' => array('type'=>'MONEY'),
     'transactions' => array('type'=>'INT'),
+    'lastYearTransactions' => array('type'=>'INT'),
     'growthTarget' => array('type'=>'DOUBLE'),
-	);
+    );
 
     protected $unique = array('obfWeekID', 'obfCategoryID', 'superID');
 
@@ -181,6 +182,26 @@ class ObfSalesCacheModel extends BasicModel
                 }
             }
             $this->instance["transactions"] = func_get_arg(0);
+        }
+    }
+
+    public function lastYearTransactions()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["lastYearTransactions"])) {
+                return $this->instance["lastYearTransactions"];
+            } else if (isset($this->columns["lastYearTransactions"]["default"])) {
+                return $this->columns["lastYearTransactions"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["lastYearTransactions"]) || $this->instance["lastYearTransactions"] != func_get_args(0)) {
+                if (!isset($this->columns["lastYearTransactions"]["ignore_updates"]) || $this->columns["lastYearTransactions"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["lastYearTransactions"] = func_get_arg(0);
         }
     }
 

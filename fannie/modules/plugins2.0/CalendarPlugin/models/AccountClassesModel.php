@@ -32,7 +32,7 @@ class AccountClassesModel extends BasicModel
     protected $columns = array(
     'classID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),
     'classDesc' => array('type'=>'VARCHAR(50)'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

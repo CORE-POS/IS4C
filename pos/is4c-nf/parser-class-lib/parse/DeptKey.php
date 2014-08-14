@@ -21,65 +21,76 @@
 
 *********************************************************************************/
 
-class DeptKey extends Parser {
-	function check($str){
+class DeptKey extends Parser 
+{
+	public function check($str)
+    {
 		if (strstr($str,"DP") && strlen($str) > 3 &&
-		    substr($str,0,2) != "VD")
-			return True;
-		return False;
+		    substr($str,0,2) != "VD") {
+			return true;
+        }
+
+		return false;
 	}
 
-	function parse($str){
+	public function parse($str)
+    {
 		global $CORE_LOCAL;
 		$my_url = MiscLib::base_url();
 
 		$split = explode("DP",$str);
 		$dept = $split[1];
 		$amt = $split[0];
+        if (strstr($amt, '.')) {
+            $amt = round($amt * 100);
+        }
 		$ret = $this->default_json();
 
 		/**
 		  This "if" is the new addition to trigger the
 		  department select screen
 		*/
-		if (empty($split[1])){
+		if (empty($split[1])) {
 			// no department specified, just amount followed by DP
 			
 			// maintain refund if needed
-			if ($CORE_LOCAL->get("refund"))
-				$amt = "RF".$amt;
+			if ($CORE_LOCAL->get("refund")) {
+				$amt = "RF" . $amt;
+            }
 
 			// save entered amount
 			$CORE_LOCAL->set("departmentAmount",$amt);
 
 			// go to the department select screen
 			$ret['main_frame'] = $my_url.'gui-modules/deptlist.php';
-		}
-		elseif ($CORE_LOCAL->get("refund")==1 && $CORE_LOCAL->get("refundComment") == ""){
-			if ($CORE_LOCAL->get("SecurityRefund") > 20){
+		} else if ($CORE_LOCAL->get("refund")==1 && $CORE_LOCAL->get("refundComment") == "") {
+			if ($CORE_LOCAL->get("SecurityRefund") > 20) {
 				$ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=RefundAdminLogin";
-			}
-			else
+			} else {
 				$ret['main_frame'] = $my_url.'gui-modules/refundComment.php';
+            }
 			$CORE_LOCAL->set("refundComment",$CORE_LOCAL->get("strEntered"));
 		}
 
 		/* apply any appropriate special dept modules */
 		$deptmods = $CORE_LOCAL->get('SpecialDeptMap');
 		$index = (int)($dept/10);
-		if (is_array($deptmods) && isset($deptmods[$index])){
-			foreach($deptmods[$index] as $mod){
+		if (is_array($deptmods) && isset($deptmods[$index])) {
+			foreach($deptmods[$index] as $mod) {
 				$obj = new $mod();
 				$ret = $obj->handle($dept,$amt/100,$ret);
 			}
 		}
 		
-		if (!$ret['main_frame'])
-			$ret = PrehLib::deptkey($split[0],$split[1],$ret);
+		if (!$ret['main_frame']) {
+			$ret = PrehLib::deptkey($amt, $dept, $ret);
+        }
+
 		return $ret;
 	}
 
-	function doc(){
+	public function doc()
+    {
 		return "<table cellspacing=0 cellpadding=3 border=1>
 			<tr>
 				<th>Input</th><th>Result</th>
@@ -94,4 +105,3 @@ class DeptKey extends Parser {
 	}
 }
 
-?>

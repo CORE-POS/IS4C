@@ -25,82 +25,82 @@ if(!class_exists("CalendarPluginDB")) include(dirname(__FILE__).'/CalendarPlugin
 
 class CalendarPluginPermissions {
 
-	public static function get_own_calendars($uid){
-		$db = CalendarPluginDB::get();
+    public static function get_own_calendars($uid){
+        $db = CalendarPluginDB::get();
 
-		$p =  $db->prepare_statement("SELECT c.calendarID,c.name FROM
-			    calendars AS c LEFT JOIN permissions AS p
-			    ON c.calendarID=p.calendarID WHERE
-			    p.uid=? AND p.classID=4 order by c.name");
-		$results = $db->exec_statement($p,array($uid));
-		$ret = array();
-		while($row = $db->fetch_row($results))
-			$ret[$row[0]] = $row[1];	
+        $p =  $db->prepare_statement("SELECT c.calendarID,c.name FROM
+                calendars AS c LEFT JOIN permissions AS p
+                ON c.calendarID=p.calendarID WHERE
+                p.uid=? AND p.classID=4 order by c.name");
+        $results = $db->exec_statement($p,array($uid));
+        $ret = array();
+        while($row = $db->fetch_row($results))
+            $ret[$row[0]] = $row[1];    
 
-		return $ret;
-	}
+        return $ret;
+    }
 
-	public static function get_other_calendars($uid){
-		$db = CalendarPluginDB::get();
+    public static function get_other_calendars($uid){
+        $db = CalendarPluginDB::get();
 
-		$p =  $db->prepare_statement("SELECT c.calendarID,c.name,p.classID FROM
-			    calendars AS c LEFT JOIN permissions AS p
-			    ON c.calendarID=p.calendarID WHERE
-			    p.uid=? or p.uid=-1 order by c.name");
-		$results = $db->exec_statement($p,array($uid));
-		$ret = array();
-		while($row = $db->fetch_row($results)){
-			$ret[$row[0]] = $row[1];
-			if ($row[2] == 4)
-				unset($ret[$row[0]]);
-		}
+        $p =  $db->prepare_statement("SELECT c.calendarID,c.name,p.classID FROM
+                calendars AS c LEFT JOIN permissions AS p
+                ON c.calendarID=p.calendarID WHERE
+                p.uid=? or p.uid=-1 order by c.name");
+        $results = $db->exec_statement($p,array($uid));
+        $ret = array();
+        while($row = $db->fetch_row($results)){
+            $ret[$row[0]] = $row[1];
+            if ($row[2] == 4)
+                unset($ret[$row[0]]);
+        }
 
-		return $ret;
-	}
+        return $ret;
+    }
 
-	public static function can_read($uid,$calID){
-		$db = CalendarPluginDB::get();
-		$p =  $db->prepare_statement("SELECT c.calendarID,c.name FROM
-			    calendars AS c LEFT JOIN permissions AS p
-			    ON c.calendarID=p.calendarID WHERE
-			    p.uid=? OR p.uid=-1 AND c.calendarID=?");
-		$results = $db->exec_statement($p,array($uid,$calID));
-		if ($db->num_rows($results) > 0) return True;
-		return False;
-	}
+    public static function can_read($uid,$calID){
+        $db = CalendarPluginDB::get();
+        $p =  $db->prepare_statement("SELECT c.calendarID,c.name FROM
+                calendars AS c LEFT JOIN permissions AS p
+                ON c.calendarID=p.calendarID WHERE
+                p.uid=? OR p.uid=-1 AND c.calendarID=?");
+        $results = $db->exec_statement($p,array($uid,$calID));
+        if ($db->num_rows($results) > 0) return True;
+        return False;
+    }
 
-	public static function can_write($uid,$calID){
-		$db = CalendarPluginDB::get();
-		$p =  $db->prepare_statement("SELECT c.calendarID,c.name FROM
-			    calendars AS c LEFT JOIN permissions AS p
-			    ON c.calendarID=p.calendarID WHERE
-			    (p.uid=? OR p.uid=-1) AND p.classID > 1 and c.calendarID=?");
-		$results = $db->exec_statement($p,array($uid,$calID));
-		if ($db->num_rows($results) > 0) return True;
-		return False;
-	}
+    public static function can_write($uid,$calID){
+        $db = CalendarPluginDB::get();
+        $p =  $db->prepare_statement("SELECT c.calendarID,c.name FROM
+                calendars AS c LEFT JOIN permissions AS p
+                ON c.calendarID=p.calendarID WHERE
+                (p.uid=? OR p.uid=-1) AND p.classID > 1 and c.calendarID=?");
+        $results = $db->exec_statement($p,array($uid,$calID));
+        if ($db->num_rows($results) > 0) return True;
+        return False;
+    }
 
-	public static function can_admin($uid,$calID){
-		$db = CalendarPluginDB::get();
-		$p =  $db->prepare_statement("SELECT c.calendarID,c.name FROM
-			    calendars AS c LEFT JOIN permissions AS p
-			    ON c.calendarID=p.calendarID WHERE
-			    p.uid=? AND p.classID > 2 and c.calendarID=?");
-		$results = $db->exec_statement($p,array($uid,$calID));
-		if ($db->num_rows($results) > 0) return True;
-		return False;
-	}
+    public static function can_admin($uid,$calID){
+        $db = CalendarPluginDB::get();
+        $p =  $db->prepare_statement("SELECT c.calendarID,c.name FROM
+                calendars AS c LEFT JOIN permissions AS p
+                ON c.calendarID=p.calendarID WHERE
+                p.uid=? AND p.classID > 2 and c.calendarID=?");
+        $results = $db->exec_statement($p,array($uid,$calID));
+        if ($db->num_rows($results) > 0) return True;
+        return False;
+    }
 
-	public static function is_owner($uid,$calID){
-		$db = CalendarPluginDB::get();
-		$p =  $db->prepare_statement("SELECT c.calendarID,c.name FROM
-			    calendars AS c LEFT JOIN permissions AS p
-			    ON c.calendarID=p.calendarID WHERE
-			    p.uid=? AND p.classID = 4 and c.calendarID=?");
-		$results = $db->exec_statement($p,array($uid,$calID));
-		if ($db->num_rows($results) > 0) return True;
-		return False;
-	}
+    public static function is_owner($uid,$calID){
+        $db = CalendarPluginDB::get();
+        $p =  $db->prepare_statement("SELECT c.calendarID,c.name FROM
+                calendars AS c LEFT JOIN permissions AS p
+                ON c.calendarID=p.calendarID WHERE
+                p.uid=? AND p.classID = 4 and c.calendarID=?");
+        $results = $db->exec_statement($p,array($uid,$calID));
+        if ($db->num_rows($results) > 0) return True;
+        return False;
+    }
 
 }
 

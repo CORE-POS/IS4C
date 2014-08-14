@@ -35,7 +35,7 @@ class WfcHtPayPeriodsModel extends BasicModel
     'year' => array('type'=>'SMALLINT', 'index'=>true),
     'startDate' => array('type'=>'DATETIME'),
     'endDate' => array('type'=>'DATETIME'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

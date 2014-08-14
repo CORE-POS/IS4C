@@ -30,9 +30,9 @@ if (!class_exists('FannieAPI')) {
 */
 class WfcVirtualCoupon extends FanniePlugin 
 {
-	public $plugin_settings = array();
+    public $plugin_settings = array();
 
-	public $plugin_description = 'WFC Plugin for maintaing custdata.memCoupons field with number
+    public $plugin_description = 'WFC Plugin for maintaing custdata.memCoupons field with number
                                 of coupons available to members';
 }
 

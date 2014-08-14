@@ -46,6 +46,7 @@ class DepartmentsModel extends BasicModel
     'modifiedby' => array('type'=>'INT'),
     'margin' => array('type'=>'DOUBLE'),
     'salesCode' => array('type'=>'INT'),
+    'memberOnly' => array('type'=>'SMALLINT', 'default'=>0),
     );
 
     protected function hookAddColumnmargin()
@@ -319,6 +320,26 @@ class DepartmentsModel extends BasicModel
                 }
             }
             $this->instance["salesCode"] = func_get_arg(0);
+        }
+    }
+
+    public function memberOnly()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["memberOnly"])) {
+                return $this->instance["memberOnly"];
+            } else if (isset($this->columns["memberOnly"]["default"])) {
+                return $this->columns["memberOnly"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["memberOnly"]) || $this->instance["memberOnly"] != func_get_args(0)) {
+                if (!isset($this->columns["memberOnly"]["ignore_updates"]) || $this->columns["memberOnly"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["memberOnly"] = func_get_arg(0);
         }
     }
     /* END ACCESSOR FUNCTIONS */

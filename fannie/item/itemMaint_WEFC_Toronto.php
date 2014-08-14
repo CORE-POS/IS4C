@@ -31,7 +31,7 @@
 */
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
- * 4Jul13	Require admin priv.
+ * 4Jul13   Require admin priv.
  * Changes to the item edit suite:
  * + The changes were initially to support part of our ordering apparatus which
  *    involves:
@@ -84,12 +84,12 @@ if (!class_exists('FannieAPI')) {
 $dbc = FannieDB::get($FANNIE_OP_DB);
 include('prodFunction_WEFC_Toronto.php');
 if ( !function_exists('validateUserQuiet') )
-	require($FANNIE_ROOT.'auth/login.php');
+    require($FANNIE_ROOT.'auth/login.php');
 
 if ( !validateUserQuiet('admin') ) {
-	$redirect = $_SERVER['REQUEST_URI'];
-	$url = $FANNIE_URL.'auth/ui/loginform.php';
-	header('Location: '.$url.'?redirect='.$redirect);
+    $redirect = $_SERVER['REQUEST_URI'];
+    $url = $FANNIE_URL.'auth/ui/loginform.php';
+    header('Location: '.$url.'?redirect='.$redirect);
 }
 $page_title = 'Fannie - Item Maintanence WEFC_Toronto';
 $header = 'Item Maintanence WEFC_Toronto';
@@ -97,7 +97,7 @@ include('../src/header.html');
 
 ?>
 <script type="text/javascript" 
-	src="<?php echo $FANNIE_URL; ?>src/jquery-1.2.6.min.js">
+    src="<?php echo $FANNIE_URL; ?>src/javascript/jquery.js">
 </script>
 <script type"text/javascript" src=ajax.js></script>
 <script type="text/javascript">
@@ -113,8 +113,8 @@ include('../src/header.html');
  }
 
  function setPrice(p){
-	document.getElementById('price').value = p;
-	scroll(0,0);
+    document.getElementById('price').value = p;
+    scroll(0,0);
  }
 
 <!-- The second number in the "onLoad" command in the body
@@ -161,15 +161,15 @@ echo "<input name=upc type=text id=upc>";
 echo " <input name=submit type=submit value=Go> ";
 echo " is a ";
 echo "<select name=\"ntype\">
-	<option value='UPC'>UPC or PLU</option>
-	<option>SKU</option>
-	<option>Brand Prefix</option>
+    <option value='UPC'>UPC or PLU</option>
+    <option>SKU</option>
+    <option>Brand Prefix</option>
 </select>";
 //echo " or product name here: ";
 echo "<br />";
 echo "To add a product enter its UPC or PLU or Vendor SKU.";
 if ( !empty($upc) )
-	echo "<br /> &nbsp; <a href='itemMaint.php?upc=$upc'>Edit $upc again</a>";
+    echo "<br /> &nbsp; <a href='itemMaint.php?upc=$upc'>Edit $upc again</a>";
 echo "<br />";
 */
 

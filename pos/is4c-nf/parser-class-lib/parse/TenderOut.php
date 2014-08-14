@@ -54,6 +54,7 @@ class TenderOut extends Parser {
 			$ret['output'] = DisplayLib::printReceiptFooter();
 			$ret['redraw_footer'] = true;
 			$ret['receipt'] = 'full';
+            TransRecord::finalizeTransaction();
 		} else {
 			$CORE_LOCAL->set("change",0);
 			$CORE_LOCAL->set("fntlflag",0);

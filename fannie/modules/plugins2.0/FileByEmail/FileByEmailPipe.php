@@ -53,8 +53,13 @@ class FileByEmailPipe extends AttachmentEmailPipe
                     continue;
                 }
                 $fp = fopen(dirname(__FILE__) . '/noauto/queue/' . $a['name'], 'w');
+                if ($fp === false) {
+                    echo 'File open failed' . "\n";
+                    continue;
+                }
                 fwrite($fp, $a['content']);
                 fclose($fp);
+                echo 'Wrote file ' . dirname(__FILE__) . '/noauto/queue/' . $a['name'] . "\n";
                 chmod(dirname(__FILE__) . '/noauto/queue/' . $a['name'], 0666);
                 if (!empty($burst)) {
                     $this->burstPDF($a['name'], $burst);

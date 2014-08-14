@@ -39,6 +39,16 @@
 */
 class PriceMethod {
 
+    public static $MAP = array(
+        0   => 'BasicPM',
+        1   => 'GroupPM',
+        2   => 'QttyEnforcedGroupPM',
+        3   => 'SplitABGroupPM',
+        4   => 'ABGroupPM',
+        5   => 'BigGroupPM',
+        6   => 'MoreThanQttyPM',
+    );
+
     var $savedRow;
     var $savedInfo;
 

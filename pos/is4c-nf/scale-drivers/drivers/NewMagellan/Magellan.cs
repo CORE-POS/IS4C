@@ -85,7 +85,7 @@ public class Magellan : DelegateForm {
 			if (s == null) continue;
 			s.SPH_Thread.Start();
 		}
-	}	
+	}
 
 	public override void MsgRecv(string msg){
 		if (msg == "exit"){
@@ -97,6 +97,22 @@ public class Magellan : DelegateForm {
 			}
 		}
 	}
+
+    public override void MsgSend(string msg)
+    {
+        int ticks = Environment.TickCount;
+        char sep = System.IO.Path.DirectorySeparatorChar;
+        while (File.Exists("ss-output/"  + sep + ticks)) {
+            ticks++;
+        }
+
+        TextWriter sw = new StreamWriter("ss-output/" +sep+"tmp"+sep+ticks);
+        sw = TextWriter.Synchronized(sw);
+        sw.WriteLine(msg);
+        sw.Close();
+        File.Move("ss-output/" +sep+"tmp"+sep+ticks,
+              "ss-output/" +sep+ticks);
+    }
 
 	public void ShutDown(){
 		try {

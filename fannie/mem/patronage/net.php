@@ -30,7 +30,7 @@ $header = "Update Net Purchases";
 include($FANNIE_ROOT.'src/header.html');
 
 $q = $dbc->prepare_statement("UPDATE patronage_workingcopy SET
-	net_purch = purchase + discounts + rewards");
+    net_purch = purchase + discounts + rewards");
 $r = $dbc->exec_statement($q);
 echo '<i>Net purchases updated</i>';
 

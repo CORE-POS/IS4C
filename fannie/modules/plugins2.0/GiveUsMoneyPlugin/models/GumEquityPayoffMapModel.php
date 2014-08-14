@@ -35,7 +35,7 @@ class GumEquityPayoffMapModel extends BasicModel
     protected $columns = array(
     'gumEquityShareID' => array('type'=>'INT', 'primary_key'=>true),
     'gumPayoffID' => array('type'=>'INT', 'primary_key'=>true),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

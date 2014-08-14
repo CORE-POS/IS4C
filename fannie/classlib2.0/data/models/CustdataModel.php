@@ -541,7 +541,7 @@ class CustdataModel extends BasicModel
             $viewSQL = 'CREATE VIEW memchargebalance AS
                 SELECT 
                 c.CardNo AS CardNo,
-                c.ChargeLimit - c.Balance AS availBal,	
+                c.ChargeLimit - c.Balance AS availBal,  
                 c.Balance AS balance
                 FROM custdata AS c WHERE personNum = 1';
 

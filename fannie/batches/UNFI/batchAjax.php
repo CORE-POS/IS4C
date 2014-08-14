@@ -30,57 +30,57 @@ $upc = FormLib::get_form_value('upc');
 $action = FormLib::get_form_value('action','unknown');
 switch($action){
 case 'addVarPricing':
-	$prep = $dbc->prepare_statement("UPDATE prodExtra SET variable_pricing=1 WHERE upc=?");
-	$dbc->exec_statement($prep,array($upc));
-	break;
+    $prep = $dbc->prepare_statement("UPDATE prodExtra SET variable_pricing=1 WHERE upc=?");
+    $dbc->exec_statement($prep,array($upc));
+    break;
 case 'delVarPricing':
-	$prep = $dbc->prepare_statement("UPDATE prodExtra SET variable_pricing=0 WHERE upc=?");
-	$dbc->exec_statement($prep,array($upc));
-	break;
+    $prep = $dbc->prepare_statement("UPDATE prodExtra SET variable_pricing=0 WHERE upc=?");
+    $dbc->exec_statement($prep,array($upc));
+    break;
 case 'newPrice':
-	$vid = FormLib::get_form_value('vendorID');
-	$bid = FormLib::get_form_value('batchID');
-	$sid = FormLib::get_form_value('superID',0);
-	if ($sid == 99) $sid = 0;
-	$price = FormLib::get_form_value('price',0);
-	$sP = $dbc->prepare_statement("UPDATE vendorSRPs SET srp=? WHERE upc=? AND vendorID=?");
-	$dbc->exec_statement($sP,array($price,$upc,$vid));
-	$model = new BatchListModel($dbc);
-	$model->batchID($bid);
-	$model->upc($upc);
-	$model->salePrice($price);
-	$model->save();
+    $vid = FormLib::get_form_value('vendorID');
+    $bid = FormLib::get_form_value('batchID');
+    $sid = FormLib::get_form_value('superID',0);
+    if ($sid == 99) $sid = 0;
+    $price = FormLib::get_form_value('price',0);
+    $sP = $dbc->prepare_statement("UPDATE vendorSRPs SET srp=? WHERE upc=? AND vendorID=?");
+    $dbc->exec_statement($sP,array($price,$upc,$vid));
+    $model = new BatchListModel($dbc);
+    $model->batchID($bid);
+    $model->upc($upc);
+    $model->salePrice($price);
+    $model->save();
     $tag = new ShelftagsModel($tag);
     $tag->id($sid);
     $tag->upc($upc);
     $tag->normal_price($price);
     $tag->save();
-	echo "New Price Applied";
-	break;
+    echo "New Price Applied";
+    break;
 case 'batchAdd':
-	$vid = FormLib::get_form_value('vendorID');
-	$bid = FormLib::get_form_value('batchID');
-	$sid = FormLib::get_form_value('superID',0);
-	if ($sid == 99) $sid = 0;
-	$price = FormLib::get_form_value('price',0);
+    $vid = FormLib::get_form_value('vendorID');
+    $bid = FormLib::get_form_value('batchID');
+    $sid = FormLib::get_form_value('superID',0);
+    if ($sid == 99) $sid = 0;
+    $price = FormLib::get_form_value('price',0);
 
-	$model = new BatchListModel($dbc);
-	$model->batchID($bid);
-	$model->upc($upc);
-	$model->salePrice($price);
-	$model->pricemethod(0);
-	$model->quantity(0);
-	$model->save();
+    $model = new BatchListModel($dbc);
+    $model->batchID($bid);
+    $model->upc($upc);
+    $model->salePrice($price);
+    $model->pricemethod(0);
+    $model->quantity(0);
+    $model->save();
 
-	/* get shelftag info */
-	$infoQ = $dbc->prepare_statement("SELECT p.description,v.brand,v.sku,v.size,v.units,b.vendorName
-		FROM products AS p LEFT JOIN vendorItems AS v ON p.upc=v.upc AND
-		v.vendorID=? LEFT JOIN vendors AS b ON v.vendorID=b.vendorID
-		WHERE p.upc=?");
-	$info = $dbc->fetch_row($dbc->exec_statement($infoQ,array($vid,$upc)));
-	$ppo = PriceLib::pricePerUnit($price,$info['size']);
-	
-	/* create a shelftag */
+    /* get shelftag info */
+    $infoQ = $dbc->prepare_statement("SELECT p.description,v.brand,v.sku,v.size,v.units,b.vendorName
+        FROM products AS p LEFT JOIN vendorItems AS v ON p.upc=v.upc AND
+        v.vendorID=? LEFT JOIN vendors AS b ON v.vendorID=b.vendorID
+        WHERE p.upc=?");
+    $info = $dbc->fetch_row($dbc->exec_statement($infoQ,array($vid,$upc)));
+    $ppo = PriceLib::pricePerUnit($price,$info['size']);
+    
+    /* create a shelftag */
     $tag = new ShelftagsModel($tag);
     $tag->id($sid);
     $tag->upc($upc);
@@ -94,24 +94,24 @@ case 'batchAdd':
     $tag->pricePerUnit($ppo);
     $tag->save();
 
-	break;
+    break;
 case 'batchDel':
-	$vid = FormLib::get_form_value('vendorID');
-	$bid = FormLib::get_form_value('batchID');
-	$sid = FormLib::get_form_value('superID',0);
-	if ($sid == 99) $sid = 0;
+    $vid = FormLib::get_form_value('vendorID');
+    $bid = FormLib::get_form_value('batchID');
+    $sid = FormLib::get_form_value('superID',0);
+    if ($sid == 99) $sid = 0;
 
-	$model = new BatchListModel($dbc);
-	$model->batchID($bid);
-	$model->upc($upc);
-	$model->delete();
+    $model = new BatchListModel($dbc);
+    $model->batchID($bid);
+    $model->upc($upc);
+    $model->delete();
 
     $tag = new ShelftagsModel($tag);
     $tag->id($sid);
     $tag->upc($upc);
     $tag->delete();
 
-	break;
+    break;
 }
 
 ?>

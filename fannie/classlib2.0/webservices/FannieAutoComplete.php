@@ -110,6 +110,99 @@ class FannieAutoComplete extends FannieWebService
                 while ($row = $dbc->fetch_row($res)) {
                     $ret[] = $row['vendorName'];
                 }
+                if ($dbc->tableExists('prodExtra')) {
+                    $prep = $dbc->prepare('SELECT distributor
+                                           FROM prodExtra
+                                           WHERE distributor LIKE ?
+                                           GROUP BY distributor
+                                           ORDER BY distributor');
+                    $res = $dbc->execute($prep, array($args->search . '%'));
+                    while ($row = $dbc->fetch_row($res)) {
+                        if (!in_array($row['distributor'], $ret)) {
+                            $ret[] = $row['distributor'];
+                        }
+                    }
+                }
+
+                return $ret;
+
+            case 'mfirstname':
+                $prep = $dbc->prepare('SELECT FirstName
+                                       FROM custdata
+                                       WHERE FirstName LIKE ?
+                                       GROUP BY FirstName
+                                       ORDER BY FirstName');
+                $res = $dbc->execute($prep, array('%' . $args->search . '%'));
+                while ($row = $dbc->fetch_row($res)) {
+                    $ret[] = $row['FirstName'];
+                    if (count($ret) > 50) {
+                        break;
+                    }
+                }
+                
+                return $ret;
+
+            case 'mlastname':
+                $prep = $dbc->prepare('SELECT LastName
+                                       FROM custdata
+                                       WHERE LastName LIKE ?
+                                       GROUP BY LastName
+                                       ORDER BY LastName');
+                $res = $dbc->execute($prep, array('%' . $args->search . '%'));
+                while ($row = $dbc->fetch_row($res)) {
+                    $ret[] = $row['LastName'];
+                    if (count($ret) > 50) {
+                        break;
+                    }
+                }
+
+                return $ret;
+
+            case 'maddress':
+                $prep = $dbc->prepare('SELECT street
+                                       FROM meminfo
+                                       WHERE street LIKE ?
+                                       GROUP BY street
+                                       ORDER BY street');
+                $res = $dbc->execute($prep, array('%' . $args->search . '%'));
+                while ($row = $dbc->fetch_row($res)) {
+                    $ret[] = $row['street'];
+                    if (count($ret) > 50) {
+                        break;
+                    }
+                }
+
+                return $ret;
+
+            case 'mcity':
+                $prep = $dbc->prepare('SELECT city
+                                       FROM meminfo
+                                       WHERE city LIKE ?
+                                       GROUP BY city
+                                       ORDER BY city');
+                $res = $dbc->execute($prep, array('%' . $args->search . '%'));
+                while ($row = $dbc->fetch_row($res)) {
+                    $ret[] = $row['city'];
+                    if (count($ret) > 50) {
+                        break;
+                    }
+                }
+
+                return $ret;
+
+            case 'memail':
+                $prep = $dbc->prepare('SELECT email_1
+                                       FROM meminfo
+                                       WHERE email_1 LIKE ?
+                                       GROUP BY email_1
+                                       ORDER BY email_1');
+                $res = $dbc->execute($prep, array('%' . $args->search . '%'));
+                while ($row = $dbc->fetch_row($res)) {
+                    $ret[] = $row['email_1'];
+                    if (count($ret) > 50) {
+                        break;
+                    }
+                }
 
                 return $ret;
 

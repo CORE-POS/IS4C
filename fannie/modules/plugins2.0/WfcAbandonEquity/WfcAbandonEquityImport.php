@@ -11,42 +11,42 @@ $OFFSET_DEPT = 703;
 class WfcAbandonEquityImport extends FannieUploadPage 
 {
 
-	protected $preview_opts = array(
-		'card_no' => array(
-			'name' => 'card_no',
-			'display_name' => 'Mem#',
-			'default' => 0,
-			'required' => true
-		),
-		'classA' => array(
-			'name' => 'classA',
-			'display_name' => 'Class A',
-			'default' => 1,
-			'required' => true
-		),
-		'classB' => array(
-			'name' => 'classB',
-			'display_name' => 'Class B',
-			'default' => 2,
-			'required' => true
-		),
-		'note' => array(
-			'name' => 'note',
-			'display_name' => 'Note',
-			'default' => 4,
-			'required' => false
-		)
-	);
+    protected $preview_opts = array(
+        'card_no' => array(
+            'name' => 'card_no',
+            'display_name' => 'Mem#',
+            'default' => 0,
+            'required' => true
+        ),
+        'classA' => array(
+            'name' => 'classA',
+            'display_name' => 'Class A',
+            'default' => 1,
+            'required' => true
+        ),
+        'classB' => array(
+            'name' => 'classB',
+            'display_name' => 'Class B',
+            'default' => 2,
+            'required' => true
+        ),
+        'note' => array(
+            'name' => 'note',
+            'display_name' => 'Note',
+            'default' => 4,
+            'required' => false
+        )
+    );
 
-	protected $header = 'Abandoned Equity';
-	protected $title = 'Abandoned Equity';
+    protected $header = 'Abandoned Equity';
+    protected $title = 'Abandoned Equity';
 
-	function process_file($linedata)
+    function process_file($linedata)
     {
-		global $OFFSET_DEPT, $FANNIE_OP_DB, $FANNIE_TRANS_DB, $EMP_NO, $LANE_NO;
-		$card_no = $this->get_column_index('card_no');
-		$classA = $this->get_column_index('classA');
-		$classB = $this->get_column_index('classB');
+        global $OFFSET_DEPT, $FANNIE_OP_DB, $FANNIE_TRANS_DB, $EMP_NO, $LANE_NO;
+        $card_no = $this->get_column_index('card_no');
+        $classA = $this->get_column_index('classA');
+        $classB = $this->get_column_index('classB');
         $note = $this->get_column_index('note');
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -62,9 +62,9 @@ class WfcAbandonEquityImport extends FannieUploadPage
             }
         }
 
-		foreach($linedata as $data) {
+        foreach($linedata as $data) {
 
-	        if (!isset($data[$card_no])) {
+            if (!isset($data[$card_no])) {
                 continue;
             } elseif (!is_numeric($data[$card_no])) {
                 continue;
@@ -209,20 +209,20 @@ class WfcAbandonEquityImport extends FannieUploadPage
             $dbc->execute($prep, $info['arguments']);
 
             $trans++;
-		}
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-	function results_content()
+    function results_content()
     {
-		return 'Import complete';
-	}
+        return 'Import complete';
+    }
 
-	function form_content()
+    function form_content()
     {
-		return 'Upload abandoned equity spreadsheet';
-	}
+        return 'Upload abandoned equity spreadsheet';
+    }
 }
 
 FannieDispatch::conditionalExec();

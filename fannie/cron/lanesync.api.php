@@ -51,28 +51,28 @@ include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 set_time_limit(0);
 
 foreach (array('valutecRequest', 'valutecRequestMod', 'valutecResponse') as $table) {
-	$result = SyncLanes::pull_table("$table", 'trans', SyncLanes::TRUNCATE_SOURCE);
-	echo cron_msg($result['messages']);
+    $result = SyncLanes::pull_table("$table", 'trans', SyncLanes::TRUNCATE_SOURCE);
+    echo cron_msg($result['messages']);
 }
 
 $regularPushTables = array(
-	'products',
-	'custdata',
-	'memberCards',
-	'custReceiptMessage',
-	'employees',
-	'departments',
-	'houseCoupons',
-	'houseVirtualCoupons'
+    'products',
+    'custdata',
+    'memberCards',
+    'custReceiptMessage',
+    'employees',
+    'departments',
+    'houseCoupons',
+    'houseVirtualCoupons'
 );
 foreach ($regularPushTables as $table) {
-	$result = SyncLanes::push_table("$table", 'op', SyncLanes::TRUNCATE_DESTINATION);
-	echo cron_msg($result['messages']);
+    $result = SyncLanes::push_table("$table", 'op', SyncLanes::TRUNCATE_DESTINATION);
+    echo cron_msg($result['messages']);
 }
 
 if ( isset($FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION) && $FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION == True ) {
-	$result = SyncLanes::push_table('productUser', 'op', SyncLanes::TRUNCATE_DESTINATION);
-	echo cron_msg($result['messages']);
+    $result = SyncLanes::push_table('productUser', 'op', SyncLanes::TRUNCATE_DESTINATION);
+    echo cron_msg($result['messages']);
 }
 
 if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' ) {

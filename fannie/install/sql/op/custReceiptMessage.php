@@ -3,12 +3,12 @@
 Table: custReceiptMessage
 
 Columns:
-	card_no int
-	msg_text varchar	
-	modifier_module varchar
+    card_no int
+    msg_text varchar    
+    modifier_module varchar
 
 Depends on:
-	custdata (table)
+    custdata (table)
 
 Use:
 Create member-specific messages for
@@ -25,10 +25,10 @@ receipts.
   transaction
 */
 $CREATE['op.custReceiptMessage'] = "
-	CREATE TABLE custReceiptMessage (
-		card_no int,
-		msg_text varchar(255),
-		modifier_module varchar(50)
-	)
+    CREATE TABLE custReceiptMessage (
+        card_no int,
+        msg_text varchar(255),
+        modifier_module varchar(50)
+    )
 ";
 ?>

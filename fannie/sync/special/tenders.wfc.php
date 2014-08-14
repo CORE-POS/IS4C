@@ -25,17 +25,17 @@
 // map my big tender table down
 foreach($FANNIE_LANES as $lane){
 
-	$dbc->add_connection($lane['host'],$lane['type'],$lane['op'],
-			$lane['user'],$lane['pw']);
-	if ($dbc->connections[$lane['op']] !== False){
-		$selectQ = "SELECT TenderID,TenderCode,TenderName,TenderType,ChangeMessage,
-			MinAmount,MaxAmount,MaxRefund FROM tenders";
-		$insQ = "INSERT INTO tenders (TenderID,TenderCode,TenderName,TenderType,
-			ChangeMessage,MinAmount,MaxAmount,MaxRefund)";
+    $dbc->add_connection($lane['host'],$lane['type'],$lane['op'],
+            $lane['user'],$lane['pw']);
+    if ($dbc->connections[$lane['op']] !== False){
+        $selectQ = "SELECT TenderID,TenderCode,TenderName,TenderType,ChangeMessage,
+            MinAmount,MaxAmount,MaxRefund FROM tenders";
+        $insQ = "INSERT INTO tenders (TenderID,TenderCode,TenderName,TenderType,
+            ChangeMessage,MinAmount,MaxAmount,MaxRefund)";
 
-		$dbc->query("TRUNCATE TABLE tenders",$lane['op']);
-		$dbc->transfer($FANNIE_OP_DB,$selectQ,$lane['op'],$insQ);
-	}
+        $dbc->query("TRUNCATE TABLE tenders",$lane['op']);
+        $dbc->transfer($FANNIE_OP_DB,$selectQ,$lane['op'],$insQ);
+    }
 }
 
 echo "<li>Tenders table synched</li>";

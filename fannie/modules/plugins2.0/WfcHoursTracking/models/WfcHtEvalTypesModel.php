@@ -32,7 +32,7 @@ class WfcHtEvalTypesModel extends BasicModel
     protected $columns = array(
     'id' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),
     'title' => array('type'=>'VARCHAR(50)'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

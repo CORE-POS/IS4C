@@ -21,102 +21,106 @@
 
 *********************************************************************************/
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	 6Mar2013 Andy Theuninck re-do as class
-	 4Sep2012 Eric Lee Add some notes to the initial page.
+     6Mar2013 Andy Theuninck re-do as class
+     4Sep2012 Eric Lee Add some notes to the initial page.
 */
 include('../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class ProductImportPage extends FannieUploadPage 
 {
-	protected $title = "Fannie :: Product Tools";
-	protected $header = "Import Products";
+    protected $title = "Fannie :: Product Tools";
+    protected $header = "Import Products";
 
-	protected $preview_opts = array(
-		'upc' => array(
-			'name' => 'upc',
-			'display_name' => 'UPC',
-			'default' => 0,
-			'required' => true
-		),
-		'desc' => array(
-			'name' => 'desc',
-			'display_name' => 'Description',
-			'default' => 1,
-			'required' => true
-		),
-		'price' => array(
-			'name' => 'price',
-			'display_name' => 'Price',
-			'default' => 2,
-			'required' => true
-		),
-		'dept' => array(
-			'name' => 'dept',
-			'display_name' => 'Department #',
-			'default' => 3,
-			'required' => false
-		)
-	);
+    protected $preview_opts = array(
+        'upc' => array(
+            'name' => 'upc',
+            'display_name' => 'UPC',
+            'default' => 0,
+            'required' => true
+        ),
+        'desc' => array(
+            'name' => 'desc',
+            'display_name' => 'Description',
+            'default' => 1,
+            'required' => true
+        ),
+        'price' => array(
+            'name' => 'price',
+            'display_name' => 'Price',
+            'default' => 2,
+            'required' => true
+        ),
+        'dept' => array(
+            'name' => 'dept',
+            'display_name' => 'Department #',
+            'default' => 3,
+            'required' => false
+        )
+    );
 
-	function process_file($linedata)
+    function process_file($linedata)
     {
-		global $FANNIE_OP_DB;
-		$dbc = FannieDB::get($FANNIE_OP_DB);
-		$defaults_table = array();
-		$defQ = $dbc->prepare_statement("SELECT dept_no,dept_tax,dept_fs,dept_discount FROM departments");
-		$defR = $dbc->exec_statement($defQ);
-		while($defW = $dbc->fetch_row($defR)){
-			$defaults_table[$defW['dept_no']] = array(
-				'tax' => $defW['dept_tax'],
-				'fs' => $defW['dept_fs'],
-				'discount' => $defW['dept_discount']
-			);
-		}
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $defaults_table = array();
+        $defQ = $dbc->prepare_statement("SELECT dept_no,dept_tax,dept_fs,dept_discount FROM departments");
+        $defR = $dbc->exec_statement($defQ);
+        while($defW = $dbc->fetch_row($defR)){
+            $defaults_table[$defW['dept_no']] = array(
+                'tax' => $defW['dept_tax'],
+                'fs' => $defW['dept_fs'],
+                'discount' => $defW['dept_discount']
+            );
+        }
 
-		$upc_index = $this->get_column_index('upc');
-		$desc_index = $this->get_column_index('desc');
-		$price_index = $this->get_column_index('price');
-		$dept_index = $this->get_column_index('dept');
+        $upc_index = $this->get_column_index('upc');
+        $desc_index = $this->get_column_index('desc');
+        $price_index = $this->get_column_index('price');
+        $dept_index = $this->get_column_index('dept');
 
-		$ret = true;
-		$checks = (FormLib::get_form_value('checks')=='yes') ? true : false;
+        $ret = true;
+        $checks = (FormLib::get_form_value('checks')=='yes') ? true : false;
+        $skipExisting = FormLib::get('skipExisting', 1);
         $model = new ProductsModel($dbc);
-		foreach($linedata as $line) {
-			// get info from file and member-type default settings
-			// if applicable
-			$upc = $line[$upc_index];
-			$desc = $line[$desc_index];
-			$price =  $line[$price_index];	
+        foreach($linedata as $line) {
+            // get info from file and member-type default settings
+            // if applicable
+            $upc = $line[$upc_index];
+            $desc = $line[$desc_index];
+            $price =  $line[$price_index];  
             $price = str_replace('$', '', $price);
             $price = trim($price);
-			$dept = ($dept_index !== false) ? $line[$dept_index] : 0;
-			$tax = 0;
-			$fs = 0;
-			$discount = 1;
-			if ($dept_index !== false){
-				if (isset($defaults_table[$dept]['tax']))
-					$tax = $defaults_table[$dept]['tax'];
-				if (isset($defaults_table[$dept]['discount']))
-					$discount = $defaults_table[$dept]['discount'];
-				if (isset($defaults_table[$dept]['fs']))
-					$fs = $defaults_table[$dept]['fs'];
-			}
+            $dept = ($dept_index !== false) ? $line[$dept_index] : 0;
+            $tax = 0;
+            $fs = 0;
+            $discount = 1;
+            if ($dept_index !== false){
+                if (isset($defaults_table[$dept]['tax']))
+                    $tax = $defaults_table[$dept]['tax'];
+                if (isset($defaults_table[$dept]['discount']))
+                    $discount = $defaults_table[$dept]['discount'];
+                if (isset($defaults_table[$dept]['fs']))
+                    $fs = $defaults_table[$dept]['fs'];
+            }
 
-			// upc cleanup
-			$upc = str_replace(" ","",$upc);
-			$upc = str_replace("-","",$upc);
-			if (!is_numeric($upc)) continue; // skip header(s) or blank rows
+            // upc cleanup
+            $upc = str_replace(" ","",$upc);
+            $upc = str_replace("-","",$upc);
+            if (!is_numeric($upc)) continue; // skip header(s) or blank rows
 
-			if ($checks) {
-				$upc = substr($upc,0,strlen($upc)-1);
+            if ($checks) {
+                $upc = substr($upc,0,strlen($upc)-1);
             }
             $upc = BarcodeLib::padUPC($upc);
 
-			if (strlen($desc) > 35) $desc = substr($desc,0,35);		
+            if (strlen($desc) > 35) $desc = substr($desc,0,35);     
 
             $model->reset();
             $model->upc($upc);
+            if ($model->load() && $skipExisting) {
+                continue;
+            }
             $model->description($desc);
             $model->normal_price($price);
             $model->department($dept);
@@ -138,35 +142,39 @@ class ProductImportPage extends FannieUploadPage
             $model->inUse(1);
             $try = $model->save();
 
-			if ($try === false) {
-				$ret = false;
-				$this->error_details = 'There was an error importing UPC '.$upc;
-			}
-		}
+            if ($try === false) {
+                $ret = false;
+                $this->error_details = 'There was an error importing UPC '.$upc;
+            }
+        }
 
-		return $ret;
-	}
+        return $ret;
+    }
 
-	function form_content()
+    function form_content()
     {
-		return '<fieldset><legend>Instructions</legend>
-		Upload a CSV or XLS file containing product UPCs, descriptions, prices,
-		and optional department numbers
-		<br />A preview helps you to choose and map columns to the database.
-		<br />The uploaded file will be deleted after the load.
-		</fieldset><br />';
-	}
+        return '<fieldset><legend>Instructions</legend>
+        Upload a CSV or XLS file containing product UPCs, descriptions, prices,
+        and optional department numbers
+        <br />A preview helps you to choose and map columns to the database.
+        <br />The uploaded file will be deleted after the load.
+        </fieldset><br />';
+    }
 
-	function preview_content()
+    function preview_content()
     {
-		return '<input type="checkbox" name="checks" value="yes" />
-			Remove check digits from UPCs';
-	}
+        return '<input type="checkbox" name="checks" value="yes" />
+            Remove check digits from UPCs
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="checkbox" name="skipExisting" value="1" checked />
+            Skip Existing Items
+            ';
+    }
 
-	function results_content()
+    function results_content()
     {
-		return 'Import completed successfully';
-	}
+        return 'Import completed successfully';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

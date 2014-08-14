@@ -37,12 +37,12 @@ class DDDReport extends FannieReportPage
 
     protected $sort_direction = 1;
 
-	public function fetch_report_data()
+    public function fetch_report_data()
     {
-		global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
+        global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-		$date1 = FormLib::get_form_value('date1');
-		$date2 = FormLib::get_form_value('date2');
+        $date1 = FormLib::get_form_value('date1');
+        $date2 = FormLib::get_form_value('date2');
 
         $dtrans = $FANNIE_TRANS_DB . $dbc->sep() . 'transarchive';
         $union = true;
@@ -125,10 +125,12 @@ class DDDReport extends FannieReportPage
         }
 
         return $data;
-	}
-	
-	public function form_content()
+    }
+    
+    public function form_content()
     {
+        $this->add_onload_command('$(\'#date1\').datepicker();');
+        $this->add_onload_command('$(\'#date2\').datepicker();');
         return '
             <form method="get" action="DDDReport.php">
             <table>
@@ -137,19 +139,19 @@ class DDDReport extends FannieReportPage
             </tr>
             <tr>
                 <th>Start Date</th>
-                <td><input type="text" id="date1" name="date1" onfocus="showCalendarControl(this);" /></td>
+                <td><input type="text" id="date1" name="date1" /></td>
                 <td rowspan="2">' . FormLib::dateRangePicker() . '</td>
             </tr>
             <tr>
                 <th>End Date</th>
-                <td><input type="text" id="date2" name="date2" onfocus="showCalendarControl(this);" /></td>
+                <td><input type="text" id="date2" name="date2" /></td>
             </tr>
             <tr>
                 <td><input type="submit" name="submitted" value="Get Report" /></td>
             </tr>
             </table>
             </form>';
-	}
+    }
 }
 
 FannieDispatch::conditionalExec();

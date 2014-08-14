@@ -54,6 +54,7 @@ class BasicModel
       - default (null if omitted)
       - primary_key (optional, boolean)
       - index (optional, boolean)
+      - not_null (optional, boolean)
       - increment (optional, boolean)
       - ignore_updates (optional, boolean)
       - replaces (optional, string previous column name)
@@ -210,6 +211,10 @@ class BasicModel
             }
             $sql .= $type;
 
+            if (isset($definition['not_null']) && $definition['not_null']) {
+                $sql .= ' NOT NULL';
+            }
+
             if (isset($definition['increment']) && $definition['increment']) {
                 if ($dbms == 'mssql') {
                     $sql .= ' IDENTITY (1, 1) NOT NULL';
@@ -217,7 +222,9 @@ class BasicModel
                     $sql .= ' NOT NULL AUTO_INCREMENT';
                 }
                 $inc = true;
-            } elseif (isset($definition['default']) && $definition['default']) {
+            } elseif (isset($definition['default']) && (
+                is_string($definition['default']) || is_numeric($definition['default'])
+            )) {
                 if ($dbms == 'mssql') {
                     $sql .= ' '.$definition['default'];
                 } else {
@@ -1146,7 +1153,7 @@ class BasicModel
     // generate()
     }
 
-    public function newModel($name)
+    public function newModel($name, $as_view=false)
     {
         $fp = fopen($name.'.php','w');
         fwrite($fp, chr(60)."?php
@@ -1175,12 +1182,18 @@ class BasicModel
 /**
   @class $name
 */
-class $name extends BasicModel\n");
+class $name extends " . ($as_view ? 'ViewModel' : 'BasicModel') . "\n");
         fwrite($fp,"{\n");
         fwrite($fp,"\n");
         fwrite($fp,"    protected \$name = \"".substr($name,0,strlen($name)-5)."\";\n");
         fwrite($fp,"\n");
-        fwrite($fp,"    protected \$columns = array(\n\t);\n");
+        fwrite($fp,"    protected \$columns = array(\n    );\n");
+        fwrite($fp,"\n");
+        if ($as_view) {
+            fwrite($fp,"    public function definition()\n");
+            fwrite($fp,"    {\n");
+            fwrite($fp,"    }\n");
+        }
         fwrite($fp,"\n");
         fwrite($fp,"    /* START ACCESSOR FUNCTIONS */\n");
         fwrite($fp,"    /* END ACCESSOR FUNCTIONS */\n");
@@ -1233,9 +1246,10 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
    * 3 args: Create new Model: php BasicModel.php --new <Model Name>\n";
    * 4 args: Update Table Structure: php BasicModel.php --update <Database name> <Subclass Filename[[Model].php]>\n";
     */
-    if (($argc < 2 || $argc > 4) || ($argc == 3 && $argv[1] != "--new") || ($argc == 4 && $argv[1] != '--update')) {
+    if (($argc < 2 || $argc > 4) || ($argc == 3 && $argv[1] != "--new" && $argv[1] != '--new-view') || ($argc == 4 && $argv[1] != '--update')) {
         echo "Generate Accessor Functions: php BasicModel.php <Subclass Filename>\n";
         echo "Create new Model: php BasicModel.php --new <Model Name>\n";
+        echo "Create new Model: php BasicModel.php --new-view <Model Name>\n";
         echo "Update Table Structure: php BasicModel.php --update <Database name> <Subclass Filename>\n";
         exit;
     }
@@ -1254,7 +1268,8 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
         }
         echo "Generating Model '$modelname'\n";
         $obj = new BasicModel(null);
-        $obj->newModel($modelname);
+        $as_view = $argv[1] == '--new-view' ? true : false;
+        $obj->newModel($modelname, $as_view);
         exit;
     }
 

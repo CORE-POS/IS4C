@@ -39,9 +39,19 @@ class ItemModule
 
     }
 
+    public function getFormJavascript($upc)
+    {
+        return '';
+    }
+
     public function saveFormData($upc)
     {
 
+    }
+
+    public function summaryRows($upc)
+    {
+        return array();
     }
 
     public function hasSearch()

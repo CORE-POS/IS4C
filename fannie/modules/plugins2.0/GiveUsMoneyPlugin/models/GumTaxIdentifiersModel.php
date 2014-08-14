@@ -46,7 +46,7 @@ class GumTaxIdentifiersModel extends BasicModel
     'card_no' => array('type'=>'INT', 'primary_key'=>true),
     'encryptedTaxIdentifier' => array('type'=>'BLOB'),
     'maskedTaxIdentifier' => array('type'=>'CHAR(4)'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

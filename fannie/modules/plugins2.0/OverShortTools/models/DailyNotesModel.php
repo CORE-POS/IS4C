@@ -23,53 +23,53 @@
 
 class DailyNotesModel extends BasicModel {
 
-	protected $name = 'dailyNotes';
+    protected $name = 'dailyNotes';
 
-	protected $columns = array(
-	'date' => array('type'=>'VARCHAR(10)','primary_key'=>True),
-	'emp_no' => array('type'=>'SMALLINT','primary_key'=>True),
-	'note' => array('type'=>'TEXT')
-	);
+    protected $columns = array(
+    'date' => array('type'=>'VARCHAR(10)','primary_key'=>True),
+    'emp_no' => array('type'=>'SMALLINT','primary_key'=>True),
+    'note' => array('type'=>'TEXT')
+    );
 
-	/* START ACCESSOR FUNCTIONS */
+    /* START ACCESSOR FUNCTIONS */
 
-	public function date(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["date"]))
-				return $this->instance["date"];
-			elseif(isset($this->columns["date"]["default"]))
-				return $this->columns["date"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["date"] = func_get_arg(0);
-		}
-	}
+    public function date(){
+        if(func_num_args() == 0){
+            if(isset($this->instance["date"]))
+                return $this->instance["date"];
+            elseif(isset($this->columns["date"]["default"]))
+                return $this->columns["date"]["default"];
+            else return null;
+        }
+        else{
+            $this->instance["date"] = func_get_arg(0);
+        }
+    }
 
-	public function emp_no(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["emp_no"]))
-				return $this->instance["emp_no"];
-			elseif(isset($this->columns["emp_no"]["default"]))
-				return $this->columns["emp_no"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["emp_no"] = func_get_arg(0);
-		}
-	}
+    public function emp_no(){
+        if(func_num_args() == 0){
+            if(isset($this->instance["emp_no"]))
+                return $this->instance["emp_no"];
+            elseif(isset($this->columns["emp_no"]["default"]))
+                return $this->columns["emp_no"]["default"];
+            else return null;
+        }
+        else{
+            $this->instance["emp_no"] = func_get_arg(0);
+        }
+    }
 
-	public function note(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["note"]))
-				return $this->instance["note"];
-			elseif(isset($this->columns["note"]["default"]))
-				return $this->columns["note"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["note"] = func_get_arg(0);
-		}
-	}
-	/* END ACCESSOR FUNCTIONS */
+    public function note(){
+        if(func_num_args() == 0){
+            if(isset($this->instance["note"]))
+                return $this->instance["note"];
+            elseif(isset($this->columns["note"]["default"]))
+                return $this->columns["note"]["default"];
+            else return null;
+        }
+        else{
+            $this->instance["note"] = func_get_arg(0);
+        }
+    }
+    /* END ACCESSOR FUNCTIONS */
 }

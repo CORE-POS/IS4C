@@ -32,7 +32,7 @@ class WfcHtEmpWeeklyNotesModel extends BasicModel
     protected $columns = array(
     'empID' => array('type'=>'INT'),
     'notes' => array('type'=>'TEXT'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

@@ -91,8 +91,8 @@ class SpecialOrder extends SpecialUPC
             'foodstamp' => $row['dept_fs'],
             'discountable' => $row['discountable'],
             'ItemQtty' => $row['ItemQtty'],
-            'matched' => $orderID,
-            'mixMatch' => $transID,
+            'mixMatch' => $orderID,
+            'matched' => $transID,
             'charflag' => 'SO',
         ));
         $json['output'] = DisplayLib::lastpage();

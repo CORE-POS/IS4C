@@ -209,7 +209,7 @@ class WfcHtViewEmpPage extends FanniePage
                 $sums[5] += $row[1];
                 continue;
             }
-	
+    
             echo "<tr class=$class[$c]>";
             $total = $row[1]+$row[2]+$row[5];
             echo "<td class=left>$row[0]</td>";

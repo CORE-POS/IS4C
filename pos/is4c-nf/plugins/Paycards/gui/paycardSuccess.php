@@ -89,8 +89,10 @@ class paycardSuccess extends BasicPage {
                     $CORE_LOCAL->set("CacheCardType","");
                 }
 				PaycardLib::paycard_reset();
-				$CORE_LOCAL->set("strRemembered","TO");
-				$CORE_LOCAL->set("msgrepeat",1);
+                if ($mode == PaycardLib::PAYCARD_MODE_AUTH) {
+                    $CORE_LOCAL->set("strRemembered","TO");
+                    $CORE_LOCAL->set("msgrepeat",1);
+                }
 
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
@@ -125,7 +127,7 @@ class paycardSuccess extends BasicPage {
 				$.ajax({url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-end.php',
 					cache: false,
 					type: 'post',
-					data: 'receiptType='+$('#rp_type').val(),
+					data: 'receiptType='+$('#rp_type').val()+'&ref=<?php echo ReceiptLib::receiptNumber(); ?>',
 					success: function(data) {
                         // If a paper signature slip is requested during
                         // electronic signature capture, abort capture

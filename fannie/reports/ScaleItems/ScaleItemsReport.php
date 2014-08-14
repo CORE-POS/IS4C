@@ -38,7 +38,7 @@ class ScaleItemsReport extends FannieReportPage
 
     protected $required_fields = array('submit');
 
-	public function fetch_report_data()
+    public function fetch_report_data()
     {
         global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);

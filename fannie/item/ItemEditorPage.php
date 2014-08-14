@@ -271,10 +271,12 @@ class ItemEditorPage extends FanniePage
 
         uasort($FANNIE_PRODUCT_MODULES, array('ItemEditorPage', 'sortModules'));
         $count = 0;
+        $mod_js = '';
         foreach ($FANNIE_PRODUCT_MODULES as $class => $params) {
             $mod = new $class();
             $ret .= $mod->ShowEditForm($upc, $params['show'], $params['expand']);
             $shown[$class] = true;
+            $mod_js .= $mod->getFormJavascript($upc);
 
             if ($count == 0) { // show links after first mod
 
@@ -318,6 +320,12 @@ class ItemEditorPage extends FanniePage
         }
 
         $ret .= '</form>';
+
+        if ($mod_js != '') {
+            $ret .= '<script type="text/javascript">' . "\n";
+            $ret .= $mod_js;
+            $ret .= "\n</script>\n";
+        }
 
         $this->add_onload_command('$(\'#price\').focus();');
         
@@ -364,19 +372,15 @@ class ItemEditorPage extends FanniePage
             }
         }
 
-        $verify = $dbc->prepare_statement('SELECT upc,description,normal_price,department,subdept,
-                foodstamp,scale,qttyEnforced,discount,inUse,deposit
-                 FROM products WHERE upc = ?');
-        $result = $dbc->exec_statement($verify,array($upc));
-        $row = $dbc->fetch_array($result);
         $ret = "<table border=0>";
-        $ret .= "<tr><td align=right><b>UPC</b></td><td><font color='red'>
-                    <a href=\"ItemEditorPage.php?searchupc=".$row['upc']."\">".$row['upc']."</a>
-                    </font><input type=hidden value='{$row['upc']}' name=upc></td>";
-        $js = "window.open('addShelfTag.php?upc=$upc', 'New Shelftag','location=0,status=1,scrollbars=1,width=300,height=220');";
-        $ret .= "<td colspan=2 align=right><a href=\"\" onclick=\"{$js}return false;\">Shelf Tag</a></td>";
-        $ret .= "</tr><tr><td><b>Description</b></td><td>{$row['description']}</td>";
-        $ret .= "<td><b>Price</b></td><td>\${$row['normal_price']}</td></tr></table>";
+        foreach ($FANNIE_PRODUCT_MODULES as $class => $params) {
+            $mod = new $class();
+            $rows = $mod->summaryRows($upc);
+            foreach ($rows as $row) {
+                $ret .= '<tr>' . $row . '</tr>';
+            }
+        }
+        $ret .= '</table>';
 
         return $ret;
     }

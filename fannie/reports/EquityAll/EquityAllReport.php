@@ -101,15 +101,15 @@ class EquityAllReport extends FannieReportPage
 <form action="EquityAllReport.php" method="get">
 <b>Active status</b>:
 <select name="memtypes">
-	<option value=1><?php echo _('Active Owners'); ?></option>
-	<option value=2><?php echo _('Non-termed Owners'); ?></option>
-	<option value=3><?php echo _('All Owners'); ?></option>
+    <option value=1><?php echo _('Active Owners'); ?></option>
+    <option value=2><?php echo _('Non-termed Owners'); ?></option>
+    <option value=3><?php echo _('All Owners'); ?></option>
 </select>
 <br /><br />
 <b>Equity balance</b>:
 <select name="owed">
-	<option value=1>Any balance</option>
-	<option value=2>less than $100</option>
+    <option value=1>Any balance</option>
+    <option value=2>less than $100</option>
 </select>
 <br /><br />
 <b>As of</b>:

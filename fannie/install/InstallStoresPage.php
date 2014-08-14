@@ -28,35 +28,35 @@ include('db.php');
 include_once('../classlib2.0/FannieAPI.php');
 
 /**
-	@class InstallStoresPage
-	Class for the Stores install and config options
+    @class InstallStoresPage
+    Class for the Stores install and config options
 */
 class InstallStoresPage extends InstallPage {
 
-	protected $title = 'Fannie: Store Settings';
-	protected $header = 'Fannie: Store Settings';
+    protected $title = 'Fannie: Store Settings';
+    protected $header = 'Fannie: Store Settings';
 
-	public $description = "
-	Class for the Stores install and config options page.
-	";
+    public $description = "
+    Class for the Stores install and config options page.
+    ";
 
-	// This replaces the __construct() in the parent.
-	public function __construct() {
+    // This replaces the __construct() in the parent.
+    public function __construct() {
 
-		// To set authentication.
-		FanniePage::__construct();
+        // To set authentication.
+        FanniePage::__construct();
 
-		// Link to a file of CSS by using a function.
-		$this->add_css_file("../src/style.css");
-		$this->add_css_file("../src/jquery/css/smoothness/jquery-ui-1.8.1.custom.css");
-		$this->add_css_file("../src/css/install.css");
+        // Link to a file of CSS by using a function.
+        $this->add_css_file("../src/style.css");
+        $this->add_css_file("../src/javascript/jquery-ui.css");
+        $this->add_css_file("../src/css/install.css");
 
-		// Link to a file of JS by using a function.
-		$this->add_script("../src/jquery/js/jquery.js");
-		$this->add_script("../src/jquery/js/jquery-ui-1.8.1.custom.min.js");
+        // Link to a file of JS by using a function.
+        $this->add_script("../src/javascript/jquery.js");
+        $this->add_script("../src/javascript/jquery-ui.js");
 
-	// __construct()
-	}
+    // __construct()
+    }
 
     public function preprocess()
     {
@@ -124,36 +124,36 @@ class InstallStoresPage extends InstallPage {
         return true;
     }
 
-	/**
-	  Define any CSS needed
-	  @return a CSS string
-	*/
-	function css_content(){
+    /**
+      Define any CSS needed
+      @return a CSS string
+    */
+    function css_content(){
         return '
             tr.highlight td {
                 background-color: #ffffcc;
             }
         ';
-	//css_content()
-	}
+    //css_content()
+    }
 
-	public function body_content()
+    public function body_content()
     {
-		global $FANNIE_OP_DB, $FANNIE_SERVER;
-		ob_start();
+        global $FANNIE_OP_DB, $FANNIE_SERVER;
+        ob_start();
 
-		echo showInstallTabs('Stores');
-		?>
+        echo showInstallTabs('Stores');
+        ?>
 
 <form action=InstallStoresPage.php method=post>
 <h1 class="install"><?php echo $this->header; ?></h1>
 <p class="ichunk">Revised 23Apr2014</p>
 <?php
 if (is_writable('../config.php')){
-	echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
+    echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
 }
 else {
-	echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
+    echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
 }
 ?>
 <hr />
@@ -256,10 +256,10 @@ if (extension_loaded('mssql'))
 
 <?php
 
-		return ob_get_clean();
+        return ob_get_clean();
 
-	// body_content
-	}
+    // body_content
+    }
 
 // InstallStoresPage
 }

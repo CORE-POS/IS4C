@@ -48,6 +48,8 @@ $CORE_LOCAL->set("End",2);
 $CORE_LOCAL->set('shrinkReason', 0);
 
 $_REQUEST['receiptType'] = 'ddd';
+$_REQUEST['ref'] = ReceiptLib::receiptNumber();
+TransRecord::finalizeTransaction(true);
 ob_start();
 include(realpath(dirname(__FILE__).'/ajax-end.php'));
 header("Location: ".MiscLib::base_url()."gui-modules/pos2.php");

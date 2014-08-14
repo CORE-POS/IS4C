@@ -50,6 +50,8 @@ class GumReportIndex extends FannieRESTfulPage
             <li><a href="GumEquityReport.php">Active Equity</a></li>
             <li><a href="GumBothReport.php">Combined Report</a></li>
             <li><a href="GumPeopleReport.php">Owner Report</a></li>
+            <li><a href="GumDividendReport.php">Projected Dividends</a></li>
+            <li><a href="GumIssuedDividendReport.php">Issued Dividends</a></li>
             </ul>
         ';
     }

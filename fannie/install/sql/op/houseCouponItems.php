@@ -3,12 +3,12 @@
 Table: houseCouponItems
 
 Columns:
-	coupID int
-	upc varchar
-	type varchar
+    coupID int
+    upc varchar
+    type varchar
 
 Depends on:
-	houseCoupons
+    houseCoupons
 
 Use:
 WFC runs custom barcoded coupons with
@@ -17,13 +17,13 @@ more detail. Type here should be 'QUALIFIER',
 'DISCOUNT', or 'BOTH'.
 */
 $CREATE['op.houseCouponItems'] = "
-	CREATE TABLE houseCouponItems (
-		coupID int,
-		upc varchar(13),
-		type varchar(15),
-		PRIMARY KEY (coupID,upc),
-		INDEX (coupID),
-		INDEX (upc)
-	)
+    CREATE TABLE houseCouponItems (
+        coupID int,
+        upc varchar(13),
+        type varchar(15),
+        PRIMARY KEY (coupID,upc),
+        INDEX (coupID),
+        INDEX (upc)
+    )
 ";
 ?>

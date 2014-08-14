@@ -28,64 +28,64 @@ if (!class_exists('FannieAPI')) include($FANNIE_ROOT.'classlib2.0/FannieAPI.php'
 */
 class CalendarPlugin extends FanniePlugin {
 
-	/**
-	  Desired settings. These are automatically exposed
-	  on the 'Plugins' area of the install page and
-	  written to ini.php
-	*/
-	public $plugin_settings = array(
-	'CalendarDatabase' => array('default'=>'core_calendar','label'=>'Database',
-			'description'=>'Database to calendars. Can
-					be one of the default CORE databases or a 
-					separate one.')
-	);
+    /**
+      Desired settings. These are automatically exposed
+      on the 'Plugins' area of the install page and
+      written to ini.php
+    */
+    public $plugin_settings = array(
+    'CalendarDatabase' => array('default'=>'core_calendar','label'=>'Database',
+            'description'=>'Database to calendars. Can
+                    be one of the default CORE databases or a 
+                    separate one.')
+    );
 
-	public $plugin_description = 'Plugin for calendars';
+    public $plugin_description = 'Plugin for calendars';
 
 
-	public function setting_change()
+    public function setting_change()
     {
-		global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
+        global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
 
-		$db_name = $FANNIE_PLUGIN_SETTINGS['CalendarDatabase'];
-		if (empty($db_name)) return;
+        $db_name = $FANNIE_PLUGIN_SETTINGS['CalendarDatabase'];
+        if (empty($db_name)) return;
 
-		$dbc = FannieDB::get($db_name);
+        $dbc = FannieDB::get($db_name);
 
-		$tables = array(
-			'AccountClasses',
+        $tables = array(
+            'AccountClasses',
             'Attendees',
-			'Calendars',
-			'MonthviewEvents',
-			'Permissions',
-		);
-		foreach($tables as $t){
-			$model_class = $t.'Model';
-			if (!class_exists($model_class))
-				include_once(dirname(__FILE__).'/models/'.$model_class.'.php');
-			$instance = new $model_class($dbc);
-			$instance->create();		
-		}
+            'Calendars',
+            'MonthviewEvents',
+            'Permissions',
+        );
+        foreach($tables as $t){
+            $model_class = $t.'Model';
+            if (!class_exists($model_class))
+                include_once(dirname(__FILE__).'/models/'.$model_class.'.php');
+            $instance = new $model_class($dbc);
+            $instance->create();        
+        }
 
-		if ($dbc->table_exists('account_classes')) {
+        if ($dbc->table_exists('account_classes')) {
             $model = new AccountClassesModel($dbc);
-			/* populate account classes */
-			$classes = array(
-				1 => 'VIEWER',
-				2 => 'CONTRIBUTOR',
-				3 => 'ADMIN',
-				4 => 'OWNER'
-			);
+            /* populate account classes */
+            $classes = array(
+                1 => 'VIEWER',
+                2 => 'CONTRIBUTOR',
+                3 => 'ADMIN',
+                4 => 'OWNER'
+            );
             foreach ($classes as $id => $desc) {
                 $model->classID($id);
                 $model->classDesc($desc);
                 $model->save();
             }
-		}
-	}
+        }
+    }
 
-	public function plugin_enable(){
-	}
+    public function plugin_enable(){
+    }
 }
 
 ?>
