@@ -76,7 +76,7 @@ $cmd_obfusc = 'mysqldump'
     . ' > ' . escapeshellarg($tempfile);
 exec($cmd, $output, $ret);
 if ($ret > 0) {
-    $report = implode("$lineBreak", $output);
+    $report = implode($lineBreak, $output);
     if (strlen($report) > 0) {
         $report = "{$lineBreak}$report";
     }
@@ -111,7 +111,7 @@ if ($ret > 0) {
         if ( $ret == 0 ) {
             echo "{$itemStart}Lane $laneNumber ({$lane['host']}) $table completed successfully{$itemEnd}";
         } else {
-            $report = implode("$lineBreak", $output);
+            $report = implode($lineBreak, $output);
             if (strlen($report) > 0) {
                 $report = "{$lineBreak}$report";
             }
