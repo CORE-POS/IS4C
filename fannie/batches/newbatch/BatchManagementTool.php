@@ -1002,9 +1002,9 @@ class BatchManagementTool extends FanniePage
             }
             $ret .= "); return false;\">$fetchW[0]</a></td>";
             $ret .= "<td bgcolor=$colors[$c] id=type$fetchW[4]>".$this->batchtypes[$fetchW[1]]."</td>";
-            $fetchW[2] = array_shift(explode(" ",$fetchW[2]));
+            $fetchW[2] = @array_shift(explode(" ",$fetchW[2]));
             $ret .= "<td bgcolor=$colors[$c] id=startdate$fetchW[4]>$fetchW[2]</td>";
-            $fetchW[3] = array_shift(explode(" ",$fetchW[3]));
+            $fetchW[3] = @array_shift(explode(" ",$fetchW[3]));
             $ret .= "<td bgcolor=$colors[$c] id=enddate$fetchW[4]>$fetchW[3]</td>";
             $ret .= "<td bgcolor=$colors[$c] id=owner$fetchW[4]>$fetchW[5]</td>";
             $ret .= "<td bgcolor=$colors[$c] id=edit$fetchW[4]><a href=\"\" onclick=\"editBatch($fetchW[4]); return false;\"><img src=\"{$FANNIE_URL}src/img/buttons/b_edit.png\" alt=\"Edit\" /></a></td>";
