@@ -32,7 +32,7 @@ class Totals extends Parser {
 	function check($str){
 		if ($str == "FNTL" || $str == "TETL" ||
 		    $str == "FTTL" || $str == "TL" ||
-				$str == "MTL" ||
+			$str == "MTL" || $str == "WICTL" ||
 		    substr($str,0,2) == "FN")
 			return True;
 		return False;
@@ -59,7 +59,17 @@ class Totals extends Parser {
 			$chk = PrehLib::omtr_ttl();
 			if ($chk !== True)
 				$ret['main_frame'] = $chk;
-		}
+		} elseif ($str == "WICTL") {
+            $ttl = PrehLib::wicableTotal();
+            $ret['output'] = DisplayLib::boxMsg(
+                _('WIC Total') . sprintf(': $%.2f', $ttl), 
+                '', 
+                true
+            );
+
+            // return early since output has been set
+            return $ret;
+        }
 
 		if (!$ret['main_frame']){
 			$ret['output'] = DisplayLib::lastpage();

@@ -1134,6 +1134,34 @@ static public function omtr_ttl()
 }
 
 /**
+  Calculate WIC eligible total
+  @return [number] WIC eligible items total
+*/
+static public function wicableTotal()
+{
+    global $CORE_LOCAL;
+    $db = Database::tDataConnect();
+    $products = $CORE_LOCAL->get('pDatabase') . $db->sep() . 'products';
+
+    $query = '
+        SELECT SUM(total) AS wicableTotal
+        FROM localtemptrans AS t
+            INNER JOIN ' . $products . ' AS p ON t.upc=p.upc
+        WHERE t.trans_type = \'I\'
+            AND p.wicable = 1
+    ';
+
+    $result = $db->query($query);
+    if (!$result || $db->num_rows($result) == 0) {
+        return 0.00;
+    } else {
+        $row = $db->fetch_row($result);
+        
+        return $row['wicableTotal'];
+    }
+}
+
+/**
   See what the last item in the transaction is currently
   @return localtemptrans.description for the last item
 */
