@@ -60,6 +60,12 @@ body {
     <td colspan="2"><hr /></td>
 </tr>
 <tr>
+<tr>
+    <td><b>Unknown Item Handler</b></td>
+    <td><?php echo InstallUtilities::installSelectField('ItemNotFound', AutoLoader::listModules('ItemNotFound', true), 'ItemNotFound'); ?>
+    <span class='noteTxt'>Module called when a UPC does not match any item or Special UPC handler</span>
+    </td>
+</tr>
     <td style="width:30%;">
     <b>Special UPCs</b>:<br />
     <p>Special handling modules for UPCs that aren't products (e.g., coupons)</p>

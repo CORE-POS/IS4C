@@ -58,6 +58,27 @@ class UPC extends Parser {
 			return $ret;
 		}
 
+        /**
+          15Aug14 Andy
+          Idea not implemented yet
+          Adding items after charging a card may indicate
+          some kind of problem where the transaction
+          didn't complete correctly
+        */
+        if ($CORE_LOCAL->get('paycardTendered')) {
+            if ($CORE_LOCAL->get('msgrepeat') == 0 || $CORE_LOCAL->get('lastRepeat') != 'paycardAlreadyApplied') {
+                $CORE_LOCAL->set('boxMsg', 'Card already tendered<br />
+                                            Confirm adding more items');
+                $CORE_LOCAL->set('lastRepeat', 'paycardAlreadyApplied');
+                $ret['main_frame'] = $my_url . 'gui-modules/boxMsg2.php';
+
+                return $ret;
+            } else if ($CORE_LOCAL->get('lastRepeat') == 'paycardAlreadyApplied') {
+                $CORE_LOCAL->set('lastRepeat', '');
+                $CORE_LOCAL->set('paycardTendered', false);
+            }
+        }
+
         // leading/trailing whitespace creates issues
         $entered = trim($entered);
 
@@ -167,11 +188,13 @@ class UPC extends Parser {
 			}
 			// no match; not a product, not special
 			
-			$opts = array('upc'=>$upc,'description'=>'BADSCAN');
-			TransRecord::add_log_record($opts);
-			$CORE_LOCAL->set("boxMsg",$upc." "._("not a valid item"));
-			//$ret['udpmsg'] = 'errorBeep'; // 12/12/12 this seems to stack with DisplayLib::msgbox
-			$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php";
+            $handler = $CORE_LOCAL->get('ItemNotFound');
+            if ($handler === '' || !class_exists($handler)) {
+                $handler = 'ItemNotFound';
+            }
+            $obj = new $handler();
+            $ret = $obj->handle($upc, $ret);
+
 			return $ret;
 		}
 
