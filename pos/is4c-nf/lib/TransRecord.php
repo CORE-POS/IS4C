@@ -207,7 +207,6 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 		$CORE_LOCAL->set("repeatable",1);
 	}
 
-	$CORE_LOCAL->set("msgrepeat",0);
 	$CORE_LOCAL->set("toggletax",0);
 	$CORE_LOCAL->set("togglefoodstamp",0);
 	$CORE_LOCAL->set("SNR",0);
@@ -868,6 +867,9 @@ static public function finalizeTransaction($incomplete=false)
         self::addTax();
         $taxes = Database::LineItemTaxes();
         foreach($taxes as $tax) {
+            if ($CORE_LOCAL->get('TaxExempt') == 1) {
+                $tax['amount'] = 0.00;
+            }
             self::addLogRecord(array(
                 'upc' => 'TAXLINEITEM',
                 'description' => $tax['description'],
@@ -885,6 +887,33 @@ static public function finalizeTransaction($incomplete=false)
     $nextTransNo = Database::gettransno($CORE_LOCAL->get('CashierNo'));
     $CORE_LOCAL->set('transno', $nextTransNo);
     Database::setglobalvalue('TransNo', $nextTransNo);
+}
+
+static public function debugLog($val)
+{
+    global $CORE_LOCAL;
+
+	$tdate = "";
+	if ($CORE_LOCAL->get("DBMS") == "mssql") {
+		$tdate = strftime("%m/%d/%y %H:%M:%S %p", time());
+	} else {
+		$tdate = strftime("%Y-%m-%d %H:%M:%S", time());
+	}
+    $trans_num = ReceiptLib::receiptNumber();
+    $lastID = $CORE_LOCAL->get('LastID');
+
+    $db = Database::tDataConnect();
+    if ($db->table_exists('DebugLog')) {
+        $prep = $db->prepare('INSERT INTO DebugLog 
+                              (tdate, transNum, transID, entry)
+                              VALUES
+                              (?, ?, ?, ?)');
+        $res = $db->execute($prep, array($tdate, $trans_num, $lastID, $val));
+
+        return $res ? true : false;
+    } else {
+        return false;
+    }
 }
 
 }
