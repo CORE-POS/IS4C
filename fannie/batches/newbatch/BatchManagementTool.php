@@ -105,7 +105,11 @@ class BatchManagementTool extends FanniePage
             
             $infoQ = $dbc->prepare_statement("select discType from batchType where batchTypeID=?");
             $infoR = $dbc->exec_statement($infoQ,array($type));
-            $discounttype = array_pop($dbc->fetch_array($infoR));
+            $discounttype = 1; // if no match, assuming sale is probably safer
+                               // than assuming price change
+            if ($infoR && ($infoW = $dbc->fetch_row($infoR))) {
+                $discounttype = $infoW['discType'];
+            }
             
             $b = new BatchesModel($dbc);
             $b->startDate($startdate);
@@ -999,9 +1003,13 @@ class BatchManagementTool extends FanniePage
             }
             $ret .= "); return false;\">$fetchW[0]</a></td>";
             $ret .= "<td bgcolor=$colors[$c] id=type$fetchW[4]>".$this->batchtypes[$fetchW[1]]."</td>";
-            $fetchW[2] = @array_shift(explode(" ",$fetchW[2]));
+            if (strpos($fetchW[2], ' ') > 0) {
+                list($fetchW[2], $time) = explode(' ', $fetchW[2], 2);
+            }
             $ret .= "<td bgcolor=$colors[$c] id=startdate$fetchW[4]>$fetchW[2]</td>";
-            $fetchW[3] = @array_shift(explode(" ",$fetchW[3]));
+            if (strpos($fetchW[3], ' ') > 0) {
+                list($fetchW[3], $time) = explode(' ', $fetchW[3], 2);
+            }
             $ret .= "<td bgcolor=$colors[$c] id=enddate$fetchW[4]>$fetchW[3]</td>";
             $ret .= "<td bgcolor=$colors[$c] id=owner$fetchW[4]>$fetchW[5]</td>";
             $ret .= "<td bgcolor=$colors[$c] id=edit$fetchW[4]>
