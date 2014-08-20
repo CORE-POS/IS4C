@@ -51,6 +51,7 @@ class VendorItemModule extends ItemModule {
         $product->upc($upc);
         $product->load();
         $my_vendor = $product->default_vendor_id();
+        $matched = false;
         $hilite = 'style="color:' . $FANNIE_CSS_PRIMARY_COLOR . ';"';
 
         $ret .= '<select onchange="$(\'.vtable\').hide();$(\'#vtable\'+this.value).show();">';
@@ -61,12 +62,20 @@ class VendorItemModule extends ItemModule {
                         $name,
                         ($my_vendor == $id ? ' [current]': '')
             );
+            if ($my_vendor == $id) {
+                $matched = true;
+            }
         }
         $ret .= '</select>';
 
         $prep = $dbc->prepare_statement('SELECT * FROM vendorItems WHERE vendorID=? AND upc=?');
-        $style = 'display:table;';
-        foreach($vendors as $id => $name){
+        $style = ($matched) ? 'display:none;' : 'display:table;';
+        $cost_class = '';
+        foreach ($vendors as $id => $name) {
+            if ($matched && $id == $my_vendor) {
+                $style = 'display:table;';
+                $cost_class = 'class="default_vendor_cost"';
+            }
             $ret .= "<table style=\"margin-top:5px;margin-bottom:5px;$style\" 
                     border=1 id=\"vtable$id\"
                     cellpadding=5 cellspacing=0 class=\"vtable\">";
@@ -77,8 +86,8 @@ class VendorItemModule extends ItemModule {
             $ret .= '<tr><th>SKU</th><td><input type="text" size="8" name="v_sku[]"
                     value="'.$row['sku'].'" /></td>';
             $ret .= sprintf('<th>Unit Cost</th><td>$<input type="text" size="6"
-                    name="v_cost[]" id="vcost%d" value="%.2f" onchange="vprice(%d);" /></td></tr>',
-                    $id, $row['cost'], $id);
+                    name="v_cost[]" id="vcost%d" %s value="%.2f" onchange="vprice(%d);" /></td></tr>',
+                    $id, $cost_class, $row['cost'], $id);
             $ret .= '<tr><th>Units/Case</th><td><input type="text" size="4" name="v_units[]"
                     id="vunits'.$id.'" value="'.$row['units'].'" 
                     onchange="vprice('.$id.');" /></td>';
@@ -103,6 +112,10 @@ class VendorItemModule extends ItemModule {
                 var cost = \$('#vcost'+id).val();
                 var units = \$('#vunits'+id).val();
                 \$('#vcc'+id).html('\$'+(cost*units));
+                if (\$('#vcost'+id).hasClass('default_vendor_cost')) {
+                    \$('#cost').val(\$('#vcost'+id).val());
+                    \$('#cost').trigger('change');
+                }
             }
             ";
     }
