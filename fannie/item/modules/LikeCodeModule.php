@@ -22,10 +22,7 @@
 *********************************************************************************/
 
 include_once(dirname(__FILE__).'/../../config.php');
-include_once(dirname(__FILE__).'/../../classlib2.0/item/ItemModule.php');
-include_once(dirname(__FILE__).'/../../classlib2.0/lib/FormLib.php');
-include_once(dirname(__FILE__).'/../../classlib2.0/data/models/ProductsModel.php');
-include_once(dirname(__FILE__).'/../../src/JsonLib.php');
+include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
 
 class LikeCodeModule extends ItemModule {
 
@@ -55,7 +52,7 @@ class LikeCodeModule extends ItemModule {
         $ret .= '<div id="LikeCodeFieldsetContent" style="' . $style . '">';
 
 
-        $ret .= "<table border=0><tr><td><b>Like code</b> ";
+        $ret .= "<table border=0><tr><td><b>Like code</b> <button id=\"lcAddButton\">+</button> ";
         $ret .= "<select name=likeCode style=\"{width: 175px;}\"
                 onchange=\"updateLcModList(this.value);\">";
         $ret .= "<option value=-1>(none)</option>";
@@ -78,6 +75,16 @@ class LikeCodeModule extends ItemModule {
         $ret .= $this->HistoryLink($myLC);  
         $ret .= '</td>';
         $ret .= '</tr></table></fieldset>';
+
+        $ret .= '<div id="addLikeCodeDialog" title="Add Like Code">';
+        $ret .= '<span id="addLikeAreaAlert" style="color:red;"></span>';
+        $ret .= '<fieldset>';
+        $ret .= '<label for="newLikeID">LC #</label>';
+        $ret .= '<input type="text" name="newLC" id="newLikeID" style="display:block;" />';
+        $ret .= '<label for="newLikeName">LC Name</label>';
+        $ret .= '<input type="text" name="lcName" id="newLikeName" style="display:block;" />';
+        $ret .= '</fieldset>';
+        $ret .= '</div>';
 
         return $ret;
     }
@@ -139,6 +146,63 @@ class LikeCodeModule extends ItemModule {
                 }
             });
         }
+        function addLcDialog()
+        {
+            var lc_dialog = $('#addLikeCodeDialog').dialog({
+                autoOpen: false,
+                height: 300,
+                width: 300,
+                modal: true,
+                buttons: {
+                    "Create Like Code" : addLcCallback,
+                    "Cancel" : function() {
+                        lc_dialog.dialog("close");
+                    }
+                },
+                close: function() {
+                    $('#addLikeCodeDialog :input').each(function(){
+                        $(this).val('');
+                    });
+                    $('#addLikeAreaAlert').html('');
+                }
+            });
+
+            $('#addLikeCodeDialog :input').keyup(function (e) {
+                if (e.which == 13) {
+                    addLcCallback();
+                }
+            });
+
+            $('#lcAddButton').click(function(e){
+                e.preventDefault();
+                lc_dialog.dialog("open"); 
+            });
+
+            function addLcCallback()
+            {
+                var data = $('#addLikeCodeDialog :input').serialize();
+                $.ajax({
+                    url: '<?php echo $FANNIE_URL; ?>item/modules/LikeCodeModule.php',
+                    data: data,
+                    dataType: 'json',
+                    error: function() {
+                        $('#addLikeAreaAlert').html('Communication error');
+                    },
+                    success: function(resp) {
+                        if (resp.error) {
+                            $('#addLikeAreaAlert').html(resp.error);
+                        } else {
+                            var newOpt = $('<option></option>');
+                            newOpt.val(resp.likeCode);
+                            newOpt.html(resp.likeCode + ' ' + resp.likeCodeDesc);
+                            $('#LikeCodeFieldSet select').append(newOpt);
+                            $('#LikeCodeFieldSet select').val(resp.likeCode);
+                            lc_dialog.dialog("close");
+                        }
+                    }
+                });
+            }
+        }
         <?php
 
         return ob_get_clean();
@@ -174,13 +238,55 @@ class LikeCodeModule extends ItemModule {
         return $ret;
     }
 
-    function AjaxCallback(){
+    function AjaxCallback()
+    {
+        global $FANNIE_OP_DB;
         $lc = FormLib::get_form_value('lc',-1);
-        $json = array(
-        'items' => $this->LikeCodeItems($lc),
-        'link' => $this->HistoryLink($lc)
-        );
-        echo JsonLib::array_to_json($json);
+        $newLC = FormLib::get('newLC', false);
+        $json = array();
+
+        /** create new like code **/
+        if ($newLC !== false) {
+            $newName = FormLib::get('lcName');
+            $json['error'] = '';
+            if ($newName == '') {
+                $json['error'] .= '<li>Name is required</li>';
+            }
+            if ($newLC == '') {
+                $json['error'] .= '<li>Number is required</li>';
+            } elseif (!is_numeric($newLC)) {
+                $json['error'] .= '<li>' . $newLC . ' is not a number</li>';
+            }
+            if (empty($json['error'])) {
+                $dbc = FannieDB::get($FANNIE_OP_DB);
+                $chkP = $dbc->prepare('
+                    SELECT likeCode
+                    FROM likeCodes
+                    WHERE likeCode = ?
+                ');
+                $chkR = $dbc->execute($chkP, array($newLC));
+                if ($dbc->num_rows($chkR) > 0) {
+                    $json['error'] .= '<li>' . $newLC . ' is already a like code</li>';
+                } else {
+                    unset($json['error']);
+                    $insP = $dbc->prepare('
+                        INSERT INTO likeCodes (likeCode, likeCodeDesc)
+                        VALUES (?, ?)
+                    ');
+                    $insR = $dbc->execute($insP, array($newLC, $newName));
+                    $json['likeCode'] = $newLC;
+                    $json['likeCodeDesc'] = $newName;
+                }
+            }
+        /** lookup items associated w/ like code **/
+        } else {
+            $json = array(
+            'items' => $this->LikeCodeItems($lc),
+            'link' => $this->HistoryLink($lc)
+            );
+        }
+
+        echo json_encode($json);
     }
 }
 

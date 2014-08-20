@@ -335,11 +335,15 @@ class ItemEditorPage extends FanniePage
         if (isset($shown['BaseItemModule'])) {
             $this->add_onload_command("bindAutoComplete('#brand_field', '$ws', 'brand');\n");
             $this->add_onload_command("bindAutoComplete('#vendor_field', '$ws', 'vendor');\n");
+            $this->add_onload_command("addVendorDialog();\n");
         }
-
 
         if (isset($shown['ProdUserModule'])) {
             $this->add_onload_command("bindAutoComplete('#lf_brand', '$ws', 'long_brand');\n");
+        }
+
+        if (isset($shown['LikeCodeModule'])) {
+            $this->add_onload_command("addLcDialog();\n");
         }
 
         $ret .= '</form>';

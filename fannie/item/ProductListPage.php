@@ -315,10 +315,24 @@ class ProductListPage extends FannieReportTool
             if ($loc !== '') {
                 $model->local($loc);
             }
+            $supplier = FormLib::get_form_value('supplier');
+            /**
+              Normalize free-form supplier text
+              Look up corresponding vendor ID
+            */
+            $vendorID = '';
+            $vendors = new VendorsModel($dbc);
+            $vendors->vendorName($supplier);
+            foreach ($vendors->find() as $obj) {
+                $vendorID = $obj->vendorID();
+                break;
+            }
+            if ($vendorID !== '') {
+                $model->default_vendor_id($vendorID);
+            }
 
             $model->save();
 
-            $supplier = FormLib::get_form_value('supplier');
             $chkP = $dbc->prepare('SELECT upc FROM prodExtra WHERE upc=?');
             $chkR = $dbc->execute($chkP, array($upc));
             if ($dbc->num_rows($chkR) > 0) {

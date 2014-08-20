@@ -28,6 +28,7 @@ class VendorItemModule extends ItemModule {
 
     public function showEditForm($upc, $display_mode=1, $expand_mode=1)
     {
+        global $FANNIE_CSS_PRIMARY_COLOR;
         $upc = BarcodeLib::padUPC($upc);
 
         $ret = '<fieldset id="VendorItemsFieldset">';
@@ -38,16 +39,28 @@ class VendorItemModule extends ItemModule {
         $ret .= '<div id="VendorItemsFieldsetContent" style="' . $css . '">';
 
         $dbc = $this->db();
-        $p = $dbc->prepare_statement('SELECT vendorID,vendorName FROM vendors ORDER BY vendorID');
+        $p = $dbc->prepare_statement('SELECT vendorID,vendorName FROM vendors ORDER BY vendorName');
         $r = $dbc->exec_statement($p);
         if ($dbc->num_rows($r) == 0) return ''; // no vendors available
         $vendors = array();
-        while($w = $dbc->fetch_row($r))
+        while ($w = $dbc->fetch_row($r)) {
             $vendors[$w['vendorID']] = $w['vendorName'];
+        }
+
+        $product = new ProductsModel($dbc);
+        $product->upc($upc);
+        $product->load();
+        $my_vendor = $product->default_vendor_id();
+        $hilite = 'style="color:' . $FANNIE_CSS_PRIMARY_COLOR . ';"';
 
         $ret .= '<select onchange="$(\'.vtable\').hide();$(\'#vtable\'+this.value).show();">';
-        foreach($vendors as $id => $name){
-            $ret .= sprintf('<option value="%d">%s</option>',$id,$name);
+        foreach ($vendors as $id => $name) {
+            $ret .= sprintf('<option %s value="%d">%s%s</option>',
+                        ($my_vendor == $id ? 'selected ' . $hilite : ''),
+                        $id,
+                        $name,
+                        ($my_vendor == $id ? ' [current]': '')
+            );
         }
         $ret .= '</select>';
 
