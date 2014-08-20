@@ -142,6 +142,7 @@ class LikeCodeModule extends ItemModule {
                     }
                     if (data.link){
                         $('#LikeCodeHistoryLink').html(data.link);
+                        $('#LikeCodeHistoryLink a.fancyboxLink').fancybox();
                     }
                 }
             });
@@ -211,7 +212,8 @@ class LikeCodeModule extends ItemModule {
     private function HistoryLink($lc){
         global $FANNIE_URL;
         if ($lc == -1) return '';
-        $ret = '<a href="'.$FANNIE_URL.'reports/RecentSales/?likecode='.$lc.'" target="_recentlike">';
+        $ret = '<a href="'.$FANNIE_URL.'reports/RecentSales/?likecode='.$lc.'" 
+                title="Likecode Sales History" class="iframe fancyboxLink">';
         $ret .= 'Likecode Sales History</a>';
         return $ret;
     }
