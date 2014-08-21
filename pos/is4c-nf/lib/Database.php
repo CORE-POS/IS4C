@@ -497,12 +497,18 @@ static public function getMatchingColumns($connection,$table_name,$table2="")
     global $CORE_LOCAL;
 
     $local_poll = $connection->table_definition($table_name,$CORE_LOCAL->get("tDatabase"));
+    if ($local_poll === false) {
+        return '';
+    }
     $local_cols = array();
     foreach($local_poll as $name=>$v) {
         $local_cols[$name] = true;
     }
     $remote_poll = $connection->table_definition((!empty($table2)?$table2:$table_name),
                 $CORE_LOCAL->get("mDatabase"));
+    if ($remote_poll === false) {
+        return '';
+    }
     $matching_cols = array();
     foreach($remote_poll as $name=>$v) {
         if (isset($local_cols[$name])) {
