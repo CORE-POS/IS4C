@@ -107,6 +107,22 @@ class ScaleItemsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'plu',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["plu"]) || $this->instance["plu"] != func_get_args(0)) {
                 if (!isset($this->columns["plu"]["ignore_updates"]) || $this->columns["plu"]["ignore_updates"] == false) {
@@ -115,6 +131,7 @@ class ScaleItemsModel extends BasicModel
             }
             $this->instance["plu"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function price()
@@ -127,6 +144,22 @@ class ScaleItemsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'price',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["price"]) || $this->instance["price"] != func_get_args(0)) {
                 if (!isset($this->columns["price"]["ignore_updates"]) || $this->columns["price"]["ignore_updates"] == false) {
@@ -135,6 +168,7 @@ class ScaleItemsModel extends BasicModel
             }
             $this->instance["price"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function itemdesc()
@@ -147,6 +181,22 @@ class ScaleItemsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'itemdesc',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["itemdesc"]) || $this->instance["itemdesc"] != func_get_args(0)) {
                 if (!isset($this->columns["itemdesc"]["ignore_updates"]) || $this->columns["itemdesc"]["ignore_updates"] == false) {
@@ -155,6 +205,7 @@ class ScaleItemsModel extends BasicModel
             }
             $this->instance["itemdesc"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function exceptionprice()
@@ -167,6 +218,22 @@ class ScaleItemsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'exceptionprice',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["exceptionprice"]) || $this->instance["exceptionprice"] != func_get_args(0)) {
                 if (!isset($this->columns["exceptionprice"]["ignore_updates"]) || $this->columns["exceptionprice"]["ignore_updates"] == false) {
@@ -175,6 +242,7 @@ class ScaleItemsModel extends BasicModel
             }
             $this->instance["exceptionprice"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function weight()
@@ -187,6 +255,22 @@ class ScaleItemsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'weight',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["weight"]) || $this->instance["weight"] != func_get_args(0)) {
                 if (!isset($this->columns["weight"]["ignore_updates"]) || $this->columns["weight"]["ignore_updates"] == false) {
@@ -195,6 +279,7 @@ class ScaleItemsModel extends BasicModel
             }
             $this->instance["weight"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function bycount()
@@ -207,6 +292,22 @@ class ScaleItemsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'bycount',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["bycount"]) || $this->instance["bycount"] != func_get_args(0)) {
                 if (!isset($this->columns["bycount"]["ignore_updates"]) || $this->columns["bycount"]["ignore_updates"] == false) {
@@ -215,6 +316,7 @@ class ScaleItemsModel extends BasicModel
             }
             $this->instance["bycount"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function tare()
@@ -227,6 +329,22 @@ class ScaleItemsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'tare',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["tare"]) || $this->instance["tare"] != func_get_args(0)) {
                 if (!isset($this->columns["tare"]["ignore_updates"]) || $this->columns["tare"]["ignore_updates"] == false) {
@@ -235,6 +353,7 @@ class ScaleItemsModel extends BasicModel
             }
             $this->instance["tare"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function shelflife()
@@ -247,6 +366,22 @@ class ScaleItemsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'shelflife',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["shelflife"]) || $this->instance["shelflife"] != func_get_args(0)) {
                 if (!isset($this->columns["shelflife"]["ignore_updates"]) || $this->columns["shelflife"]["ignore_updates"] == false) {
@@ -255,6 +390,7 @@ class ScaleItemsModel extends BasicModel
             }
             $this->instance["shelflife"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function netWeight()
@@ -267,6 +403,22 @@ class ScaleItemsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'netWeight',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["netWeight"]) || $this->instance["netWeight"] != func_get_args(0)) {
                 if (!isset($this->columns["netWeight"]["ignore_updates"]) || $this->columns["netWeight"]["ignore_updates"] == false) {
@@ -275,6 +427,7 @@ class ScaleItemsModel extends BasicModel
             }
             $this->instance["netWeight"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function text()
@@ -287,6 +440,22 @@ class ScaleItemsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'text',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["text"]) || $this->instance["text"] != func_get_args(0)) {
                 if (!isset($this->columns["text"]["ignore_updates"]) || $this->columns["text"]["ignore_updates"] == false) {
@@ -295,6 +464,7 @@ class ScaleItemsModel extends BasicModel
             }
             $this->instance["text"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function reportingClass()
@@ -307,6 +477,22 @@ class ScaleItemsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'reportingClass',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["reportingClass"]) || $this->instance["reportingClass"] != func_get_args(0)) {
                 if (!isset($this->columns["reportingClass"]["ignore_updates"]) || $this->columns["reportingClass"]["ignore_updates"] == false) {
@@ -315,6 +501,7 @@ class ScaleItemsModel extends BasicModel
             }
             $this->instance["reportingClass"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function label()
@@ -327,6 +514,22 @@ class ScaleItemsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'label',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["label"]) || $this->instance["label"] != func_get_args(0)) {
                 if (!isset($this->columns["label"]["ignore_updates"]) || $this->columns["label"]["ignore_updates"] == false) {
@@ -335,6 +538,7 @@ class ScaleItemsModel extends BasicModel
             }
             $this->instance["label"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function graphics()
@@ -347,6 +551,22 @@ class ScaleItemsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'graphics',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["graphics"]) || $this->instance["graphics"] != func_get_args(0)) {
                 if (!isset($this->columns["graphics"]["ignore_updates"]) || $this->columns["graphics"]["ignore_updates"] == false) {
@@ -355,6 +575,7 @@ class ScaleItemsModel extends BasicModel
             }
             $this->instance["graphics"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function modified()
@@ -367,6 +588,22 @@ class ScaleItemsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'modified',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["modified"]) || $this->instance["modified"] != func_get_args(0)) {
                 if (!isset($this->columns["modified"]["ignore_updates"]) || $this->columns["modified"]["ignore_updates"] == false) {
@@ -375,6 +612,7 @@ class ScaleItemsModel extends BasicModel
             }
             $this->instance["modified"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

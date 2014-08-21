@@ -102,6 +102,11 @@ class BasicModel
     protected $instance = array();
 
     /**
+      List of WHERE clauses
+    */
+    protected $filters = array();
+
+    /**
       When updating server-side tables, apply
       the same updates to lane-side tables.
       Default is false.
@@ -330,6 +335,7 @@ class BasicModel
     public function reset()
     {
         $this->instance = array();
+        $this->filters = array();
     }
 
     public function getColumns()
@@ -375,6 +381,17 @@ class BasicModel
         foreach($this->instance as $name => $value) {
             $sql .= ' AND '.$this->connection->identifier_escape($name).' = ?';
             $args[] = $value;
+        }
+
+        foreach ($this->filters as $filter) {
+            $sql .= ' AND ' . $this->connection->identifier_escape($filter['left'])
+                . ' ' . $filter['op'];
+            if (!$filter['rightIsLiteral'] && isset($this->columns[$filter['right']])) {
+                $sql .= ' ' . $this->connection->identifier_escape($filter['right']);
+            } else {
+                $sql .= ' ?';
+                $args[] = $filter['right'];
+            }
         }
 
         $order_by = '';
@@ -455,6 +472,32 @@ class BasicModel
         $meta = $this->meta_types[strtoupper($type)];
 
         return isset($meta[$dbms]) ? $meta[$dbms] : $meta['default'];
+    }
+
+    /**
+      Validate SQL binary operator
+      @param $operator [string] operator
+      @return [string] valid operator or [boolean] false
+    */
+    protected function validateOp($operator)
+    {
+        if (strlen($operator) == 0) {
+            return false;
+        }
+
+        switch ($operator) {
+            case '<':
+            case '>':
+            case '=':
+            case '<>':
+            case '>=':
+            case '<=':
+                return $operator;
+            case '!=':
+                return '<>';
+            default:
+                return false;
+        }
     }
 
     /**
@@ -1154,6 +1197,22 @@ class BasicModel
             fwrite($fp,"            } else {\n");
             fwrite($fp,"                return null;\n");
             fwrite($fp,"            }\n");
+            fwrite($fp,"        } else if (func_num_args() > 1) {\n");
+            fwrite($fp,'            $value = func_get_arg(0);'."\n");
+            fwrite($fp,'            $op = $this->validateOp(func_get_arg(1));'."\n");
+            fwrite($fp,'            if ($op === false) {'."\n");
+            fwrite($fp,'                throw new Exception(\'Invalid operator: \' . func_get_arg(1));'."\n");
+            fwrite($fp,"            }\n");
+            fwrite($fp,'            $filter = array('."\n");
+            fwrite($fp,'                \'left\' => \''.$name.'\','."\n");
+            fwrite($fp,'                \'right\' => $value,'."\n");
+            fwrite($fp,'                \'op\' => $op,'."\n");
+            fwrite($fp,'                \'rightIsLiteral\' => false,'."\n");
+            fwrite($fp,"            );\n");
+            fwrite($fp,'            if (func_num_args() > 2 && func_get_arg(2) === true) {'."\n");
+            fwrite($fp,'                $filter[\'rightIsLiteral\'] = true;'."\n");
+            fwrite($fp,"            }\n");
+            fwrite($fp,'            $this->filters[] = $filter;'."\n");
             fwrite($fp,"        } else {\n");
             fwrite($fp,'            if (!isset($this->instance["'.$name.'"]) || $this->instance["'.$name.'"] != func_get_args(0)) {'."\n");
             fwrite($fp,'                if (!isset($this->columns["'.$name.'"]["ignore_updates"]) || $this->columns["'.$name.'"]["ignore_updates"] == false) {'."\n");
@@ -1162,6 +1221,7 @@ class BasicModel
             fwrite($fp,"            }\n");
             fwrite($fp,'            $this->instance["'.$name.'"] = func_get_arg(0);'."\n");
             fwrite($fp,"        }\n");
+            fwrite($fp,'        return $this;'."\n");
             fwrite($fp,"    }\n");
         }
         fwrite($fp,$after);
@@ -1267,7 +1327,7 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
     if (($argc < 2 || $argc > 4) || ($argc == 3 && $argv[1] != "--new" && $argv[1] != '--new-view') || ($argc == 4 && $argv[1] != '--update')) {
         echo "Generate Accessor Functions: php BasicModel.php <Subclass Filename>\n";
         echo "Create new Model: php BasicModel.php --new <Model Name>\n";
-        echo "Create new Model: php BasicModel.php --new-view <Model Name>\n";
+        echo "Create new View Model: php BasicModel.php --new-view <Model Name>\n";
         echo "Update Table Structure: php BasicModel.php --update <Database name> <Subclass Filename>\n";
         exit;
     }
@@ -1288,6 +1348,29 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
         $obj = new BasicModel(null);
         $as_view = $argv[1] == '--new-view' ? true : false;
         $obj->newModel($modelname, $as_view);
+        exit;
+    }
+
+    /**
+      Generate all is purposely undocumented write now. It's useful
+      if updating the acutal column methods since they need to then
+      be rebuilt for every file, but it also has the potential to 
+      make a giant mess.
+    */
+    if ($argc == 2 && $argv[1] == '--generate-all') {
+        $all = FannieAPI::listModules('BasicModel');
+        foreach ($all as $model_class) {
+            echo 'Class ' . $model_class . "\n";
+            $reflector = new ReflectionClass($model_class);
+            $filename = $reflector->getFileName();
+            if (!is_writable($filename)) {
+                echo 'ERROR: cannot rewrite file: ' . $filename . "\n";
+                continue;
+            } else {
+                $writer = new $model_class(null);
+                $writer->generate($filename);
+            }
+        }
         exit;
     }
 

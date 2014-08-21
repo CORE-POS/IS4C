@@ -163,6 +163,9 @@ class FannieAPI
             case 'FannieTask':
                 $directories[] = dirname(__FILE__).'/../cron/tasks/';
                 break;
+            case 'BasicModel':
+                $directories[] = dirname(__FILE__).'/data/models/';
+                break;
             case 'BasicModelHook':
                 $directories[] = dirname(__FILE__).'/data/hooks/';
                 break;

@@ -60,14 +60,36 @@ class MeminfoModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["card_no"])) {
                 return $this->instance["card_no"];
-            } elseif(isset($this->columns["card_no"]["default"])) {
+            } else if (isset($this->columns["card_no"]["default"])) {
                 return $this->columns["card_no"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'card_no',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["card_no"]) || $this->instance["card_no"] != func_get_args(0)) {
+                if (!isset($this->columns["card_no"]["ignore_updates"]) || $this->columns["card_no"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["card_no"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function last_name()
@@ -75,14 +97,36 @@ class MeminfoModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["last_name"])) {
                 return $this->instance["last_name"];
-            } elseif(isset($this->columns["last_name"]["default"])) {
+            } else if (isset($this->columns["last_name"]["default"])) {
                 return $this->columns["last_name"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'last_name',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["last_name"]) || $this->instance["last_name"] != func_get_args(0)) {
+                if (!isset($this->columns["last_name"]["ignore_updates"]) || $this->columns["last_name"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["last_name"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function first_name()
@@ -90,14 +134,36 @@ class MeminfoModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["first_name"])) {
                 return $this->instance["first_name"];
-            } elseif(isset($this->columns["first_name"]["default"])) {
+            } else if (isset($this->columns["first_name"]["default"])) {
                 return $this->columns["first_name"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'first_name',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["first_name"]) || $this->instance["first_name"] != func_get_args(0)) {
+                if (!isset($this->columns["first_name"]["ignore_updates"]) || $this->columns["first_name"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["first_name"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function othlast_name()
@@ -105,14 +171,36 @@ class MeminfoModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["othlast_name"])) {
                 return $this->instance["othlast_name"];
-            } elseif(isset($this->columns["othlast_name"]["default"])) {
+            } else if (isset($this->columns["othlast_name"]["default"])) {
                 return $this->columns["othlast_name"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'othlast_name',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["othlast_name"]) || $this->instance["othlast_name"] != func_get_args(0)) {
+                if (!isset($this->columns["othlast_name"]["ignore_updates"]) || $this->columns["othlast_name"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["othlast_name"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function othfirst_name()
@@ -120,14 +208,36 @@ class MeminfoModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["othfirst_name"])) {
                 return $this->instance["othfirst_name"];
-            } elseif(isset($this->columns["othfirst_name"]["default"])) {
+            } else if (isset($this->columns["othfirst_name"]["default"])) {
                 return $this->columns["othfirst_name"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'othfirst_name',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["othfirst_name"]) || $this->instance["othfirst_name"] != func_get_args(0)) {
+                if (!isset($this->columns["othfirst_name"]["ignore_updates"]) || $this->columns["othfirst_name"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["othfirst_name"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function street()
@@ -135,14 +245,36 @@ class MeminfoModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["street"])) {
                 return $this->instance["street"];
-            } elseif(isset($this->columns["street"]["default"])) {
+            } else if (isset($this->columns["street"]["default"])) {
                 return $this->columns["street"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'street',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["street"]) || $this->instance["street"] != func_get_args(0)) {
+                if (!isset($this->columns["street"]["ignore_updates"]) || $this->columns["street"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["street"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function city()
@@ -150,14 +282,36 @@ class MeminfoModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["city"])) {
                 return $this->instance["city"];
-            } elseif(isset($this->columns["city"]["default"])) {
+            } else if (isset($this->columns["city"]["default"])) {
                 return $this->columns["city"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'city',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["city"]) || $this->instance["city"] != func_get_args(0)) {
+                if (!isset($this->columns["city"]["ignore_updates"]) || $this->columns["city"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["city"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function state()
@@ -165,14 +319,36 @@ class MeminfoModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["state"])) {
                 return $this->instance["state"];
-            } elseif(isset($this->columns["state"]["default"])) {
+            } else if (isset($this->columns["state"]["default"])) {
                 return $this->columns["state"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'state',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["state"]) || $this->instance["state"] != func_get_args(0)) {
+                if (!isset($this->columns["state"]["ignore_updates"]) || $this->columns["state"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["state"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function zip()
@@ -180,14 +356,36 @@ class MeminfoModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["zip"])) {
                 return $this->instance["zip"];
-            } elseif(isset($this->columns["zip"]["default"])) {
+            } else if (isset($this->columns["zip"]["default"])) {
                 return $this->columns["zip"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'zip',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["zip"]) || $this->instance["zip"] != func_get_args(0)) {
+                if (!isset($this->columns["zip"]["ignore_updates"]) || $this->columns["zip"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["zip"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function phone()
@@ -195,14 +393,36 @@ class MeminfoModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["phone"])) {
                 return $this->instance["phone"];
-            } elseif(isset($this->columns["phone"]["default"])) {
+            } else if (isset($this->columns["phone"]["default"])) {
                 return $this->columns["phone"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'phone',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["phone"]) || $this->instance["phone"] != func_get_args(0)) {
+                if (!isset($this->columns["phone"]["ignore_updates"]) || $this->columns["phone"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["phone"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function email_1()
@@ -210,14 +430,36 @@ class MeminfoModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["email_1"])) {
                 return $this->instance["email_1"];
-            } elseif(isset($this->columns["email_1"]["default"])) {
+            } else if (isset($this->columns["email_1"]["default"])) {
                 return $this->columns["email_1"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'email_1',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["email_1"]) || $this->instance["email_1"] != func_get_args(0)) {
+                if (!isset($this->columns["email_1"]["ignore_updates"]) || $this->columns["email_1"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["email_1"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function email_2()
@@ -225,14 +467,36 @@ class MeminfoModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["email_2"])) {
                 return $this->instance["email_2"];
-            } elseif(isset($this->columns["email_2"]["default"])) {
+            } else if (isset($this->columns["email_2"]["default"])) {
                 return $this->columns["email_2"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'email_2',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["email_2"]) || $this->instance["email_2"] != func_get_args(0)) {
+                if (!isset($this->columns["email_2"]["ignore_updates"]) || $this->columns["email_2"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["email_2"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function ads_OK()
@@ -240,14 +504,36 @@ class MeminfoModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["ads_OK"])) {
                 return $this->instance["ads_OK"];
-            } elseif(isset($this->columns["ads_OK"]["default"])) {
+            } else if (isset($this->columns["ads_OK"]["default"])) {
                 return $this->columns["ads_OK"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'ads_OK',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["ads_OK"]) || $this->instance["ads_OK"] != func_get_args(0)) {
+                if (!isset($this->columns["ads_OK"]["ignore_updates"]) || $this->columns["ads_OK"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["ads_OK"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 

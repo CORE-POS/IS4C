@@ -49,6 +49,22 @@ class ShrinkReasonsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'shrinkReasonID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["shrinkReasonID"]) || $this->instance["shrinkReasonID"] != func_get_args(0)) {
                 if (!isset($this->columns["shrinkReasonID"]["ignore_updates"]) || $this->columns["shrinkReasonID"]["ignore_updates"] == false) {
@@ -57,6 +73,7 @@ class ShrinkReasonsModel extends BasicModel
             }
             $this->instance["shrinkReasonID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function description()
@@ -69,6 +86,22 @@ class ShrinkReasonsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'description',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["description"]) || $this->instance["description"] != func_get_args(0)) {
                 if (!isset($this->columns["description"]["ignore_updates"]) || $this->columns["description"]["ignore_updates"] == false) {
@@ -77,6 +110,7 @@ class ShrinkReasonsModel extends BasicModel
             }
             $this->instance["description"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

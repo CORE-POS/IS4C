@@ -52,6 +52,22 @@ class ProductUserModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'upc',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["upc"]) || $this->instance["upc"] != func_get_args(0)) {
                 if (!isset($this->columns["upc"]["ignore_updates"]) || $this->columns["upc"]["ignore_updates"] == false) {
@@ -60,6 +76,7 @@ class ProductUserModel extends BasicModel
             }
             $this->instance["upc"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function description()
@@ -72,6 +89,22 @@ class ProductUserModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'description',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["description"]) || $this->instance["description"] != func_get_args(0)) {
                 if (!isset($this->columns["description"]["ignore_updates"]) || $this->columns["description"]["ignore_updates"] == false) {
@@ -80,6 +113,7 @@ class ProductUserModel extends BasicModel
             }
             $this->instance["description"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function brand()
@@ -92,6 +126,22 @@ class ProductUserModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'brand',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["brand"]) || $this->instance["brand"] != func_get_args(0)) {
                 if (!isset($this->columns["brand"]["ignore_updates"]) || $this->columns["brand"]["ignore_updates"] == false) {
@@ -100,6 +150,7 @@ class ProductUserModel extends BasicModel
             }
             $this->instance["brand"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function sizing()
@@ -112,6 +163,22 @@ class ProductUserModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'sizing',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["sizing"]) || $this->instance["sizing"] != func_get_args(0)) {
                 if (!isset($this->columns["sizing"]["ignore_updates"]) || $this->columns["sizing"]["ignore_updates"] == false) {
@@ -120,6 +187,7 @@ class ProductUserModel extends BasicModel
             }
             $this->instance["sizing"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function photo()
@@ -132,6 +200,22 @@ class ProductUserModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'photo',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["photo"]) || $this->instance["photo"] != func_get_args(0)) {
                 if (!isset($this->columns["photo"]["ignore_updates"]) || $this->columns["photo"]["ignore_updates"] == false) {
@@ -140,6 +224,7 @@ class ProductUserModel extends BasicModel
             }
             $this->instance["photo"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function long_text()
@@ -152,6 +237,22 @@ class ProductUserModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'long_text',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["long_text"]) || $this->instance["long_text"] != func_get_args(0)) {
                 if (!isset($this->columns["long_text"]["ignore_updates"]) || $this->columns["long_text"]["ignore_updates"] == false) {
@@ -160,6 +261,7 @@ class ProductUserModel extends BasicModel
             }
             $this->instance["long_text"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function enableOnline()
@@ -172,6 +274,22 @@ class ProductUserModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'enableOnline',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["enableOnline"]) || $this->instance["enableOnline"] != func_get_args(0)) {
                 if (!isset($this->columns["enableOnline"]["ignore_updates"]) || $this->columns["enableOnline"]["ignore_updates"] == false) {
@@ -180,6 +298,7 @@ class ProductUserModel extends BasicModel
             }
             $this->instance["enableOnline"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function soldOut()
@@ -192,6 +311,22 @@ class ProductUserModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'soldOut',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["soldOut"]) || $this->instance["soldOut"] != func_get_args(0)) {
                 if (!isset($this->columns["soldOut"]["ignore_updates"]) || $this->columns["soldOut"]["ignore_updates"] == false) {
@@ -200,6 +335,7 @@ class ProductUserModel extends BasicModel
             }
             $this->instance["soldOut"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

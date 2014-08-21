@@ -48,14 +48,36 @@ class BatchListModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["listID"])) {
                 return $this->instance["listID"];
-            } elseif(isset($this->columns["listID"]["default"])) {
+            } else if (isset($this->columns["listID"]["default"])) {
                 return $this->columns["listID"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'listID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["listID"]) || $this->instance["listID"] != func_get_args(0)) {
+                if (!isset($this->columns["listID"]["ignore_updates"]) || $this->columns["listID"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["listID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function upc()
@@ -63,14 +85,36 @@ class BatchListModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["upc"])) {
                 return $this->instance["upc"];
-            } elseif(isset($this->columns["upc"]["default"])) {
+            } else if (isset($this->columns["upc"]["default"])) {
                 return $this->columns["upc"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'upc',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["upc"]) || $this->instance["upc"] != func_get_args(0)) {
+                if (!isset($this->columns["upc"]["ignore_updates"]) || $this->columns["upc"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["upc"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function batchID()
@@ -78,14 +122,36 @@ class BatchListModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["batchID"])) {
                 return $this->instance["batchID"];
-            } elseif(isset($this->columns["batchID"]["default"])) {
+            } else if (isset($this->columns["batchID"]["default"])) {
                 return $this->columns["batchID"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'batchID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["batchID"]) || $this->instance["batchID"] != func_get_args(0)) {
+                if (!isset($this->columns["batchID"]["ignore_updates"]) || $this->columns["batchID"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["batchID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function salePrice()
@@ -93,14 +159,36 @@ class BatchListModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["salePrice"])) {
                 return $this->instance["salePrice"];
-            } elseif(isset($this->columns["salePrice"]["default"])) {
+            } else if (isset($this->columns["salePrice"]["default"])) {
                 return $this->columns["salePrice"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'salePrice',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["salePrice"]) || $this->instance["salePrice"] != func_get_args(0)) {
+                if (!isset($this->columns["salePrice"]["ignore_updates"]) || $this->columns["salePrice"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["salePrice"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function active()
@@ -108,14 +196,36 @@ class BatchListModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["active"])) {
                 return $this->instance["active"];
-            } elseif(isset($this->columns["active"]["default"])) {
+            } else if (isset($this->columns["active"]["default"])) {
                 return $this->columns["active"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'active',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["active"]) || $this->instance["active"] != func_get_args(0)) {
+                if (!isset($this->columns["active"]["ignore_updates"]) || $this->columns["active"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["active"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function pricemethod()
@@ -123,14 +233,36 @@ class BatchListModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["pricemethod"])) {
                 return $this->instance["pricemethod"];
-            } elseif(isset($this->columns["pricemethod"]["default"])) {
+            } else if (isset($this->columns["pricemethod"]["default"])) {
                 return $this->columns["pricemethod"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'pricemethod',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["pricemethod"]) || $this->instance["pricemethod"] != func_get_args(0)) {
+                if (!isset($this->columns["pricemethod"]["ignore_updates"]) || $this->columns["pricemethod"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["pricemethod"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function quantity()
@@ -138,14 +270,36 @@ class BatchListModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["quantity"])) {
                 return $this->instance["quantity"];
-            } elseif(isset($this->columns["quantity"]["default"])) {
+            } else if (isset($this->columns["quantity"]["default"])) {
                 return $this->columns["quantity"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'quantity',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["quantity"]) || $this->instance["quantity"] != func_get_args(0)) {
+                if (!isset($this->columns["quantity"]["ignore_updates"]) || $this->columns["quantity"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["quantity"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

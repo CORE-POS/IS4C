@@ -93,6 +93,22 @@ class DepartmentsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'dept_no',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["dept_no"]) || $this->instance["dept_no"] != func_get_args(0)) {
                 if (!isset($this->columns["dept_no"]["ignore_updates"]) || $this->columns["dept_no"]["ignore_updates"] == false) {
@@ -101,6 +117,7 @@ class DepartmentsModel extends BasicModel
             }
             $this->instance["dept_no"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function dept_name()
@@ -113,6 +130,22 @@ class DepartmentsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'dept_name',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["dept_name"]) || $this->instance["dept_name"] != func_get_args(0)) {
                 if (!isset($this->columns["dept_name"]["ignore_updates"]) || $this->columns["dept_name"]["ignore_updates"] == false) {
@@ -121,6 +154,7 @@ class DepartmentsModel extends BasicModel
             }
             $this->instance["dept_name"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function dept_tax()
@@ -133,6 +167,22 @@ class DepartmentsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'dept_tax',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["dept_tax"]) || $this->instance["dept_tax"] != func_get_args(0)) {
                 if (!isset($this->columns["dept_tax"]["ignore_updates"]) || $this->columns["dept_tax"]["ignore_updates"] == false) {
@@ -141,6 +191,7 @@ class DepartmentsModel extends BasicModel
             }
             $this->instance["dept_tax"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function dept_fs()
@@ -153,6 +204,22 @@ class DepartmentsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'dept_fs',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["dept_fs"]) || $this->instance["dept_fs"] != func_get_args(0)) {
                 if (!isset($this->columns["dept_fs"]["ignore_updates"]) || $this->columns["dept_fs"]["ignore_updates"] == false) {
@@ -161,6 +228,7 @@ class DepartmentsModel extends BasicModel
             }
             $this->instance["dept_fs"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function dept_limit()
@@ -173,6 +241,22 @@ class DepartmentsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'dept_limit',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["dept_limit"]) || $this->instance["dept_limit"] != func_get_args(0)) {
                 if (!isset($this->columns["dept_limit"]["ignore_updates"]) || $this->columns["dept_limit"]["ignore_updates"] == false) {
@@ -181,6 +265,7 @@ class DepartmentsModel extends BasicModel
             }
             $this->instance["dept_limit"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function dept_minimum()
@@ -193,6 +278,22 @@ class DepartmentsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'dept_minimum',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["dept_minimum"]) || $this->instance["dept_minimum"] != func_get_args(0)) {
                 if (!isset($this->columns["dept_minimum"]["ignore_updates"]) || $this->columns["dept_minimum"]["ignore_updates"] == false) {
@@ -201,6 +302,7 @@ class DepartmentsModel extends BasicModel
             }
             $this->instance["dept_minimum"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function dept_discount()
@@ -213,6 +315,22 @@ class DepartmentsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'dept_discount',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["dept_discount"]) || $this->instance["dept_discount"] != func_get_args(0)) {
                 if (!isset($this->columns["dept_discount"]["ignore_updates"]) || $this->columns["dept_discount"]["ignore_updates"] == false) {
@@ -221,6 +339,7 @@ class DepartmentsModel extends BasicModel
             }
             $this->instance["dept_discount"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function dept_see_id()
@@ -233,6 +352,22 @@ class DepartmentsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'dept_see_id',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["dept_see_id"]) || $this->instance["dept_see_id"] != func_get_args(0)) {
                 if (!isset($this->columns["dept_see_id"]["ignore_updates"]) || $this->columns["dept_see_id"]["ignore_updates"] == false) {
@@ -241,6 +376,7 @@ class DepartmentsModel extends BasicModel
             }
             $this->instance["dept_see_id"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function modified()
@@ -253,6 +389,22 @@ class DepartmentsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'modified',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["modified"]) || $this->instance["modified"] != func_get_args(0)) {
                 if (!isset($this->columns["modified"]["ignore_updates"]) || $this->columns["modified"]["ignore_updates"] == false) {
@@ -261,6 +413,7 @@ class DepartmentsModel extends BasicModel
             }
             $this->instance["modified"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function modifiedby()
@@ -273,6 +426,22 @@ class DepartmentsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'modifiedby',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["modifiedby"]) || $this->instance["modifiedby"] != func_get_args(0)) {
                 if (!isset($this->columns["modifiedby"]["ignore_updates"]) || $this->columns["modifiedby"]["ignore_updates"] == false) {
@@ -281,6 +450,7 @@ class DepartmentsModel extends BasicModel
             }
             $this->instance["modifiedby"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function margin()
@@ -293,6 +463,22 @@ class DepartmentsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'margin',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["margin"]) || $this->instance["margin"] != func_get_args(0)) {
                 if (!isset($this->columns["margin"]["ignore_updates"]) || $this->columns["margin"]["ignore_updates"] == false) {
@@ -301,6 +487,7 @@ class DepartmentsModel extends BasicModel
             }
             $this->instance["margin"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function salesCode()
@@ -313,6 +500,22 @@ class DepartmentsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'salesCode',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["salesCode"]) || $this->instance["salesCode"] != func_get_args(0)) {
                 if (!isset($this->columns["salesCode"]["ignore_updates"]) || $this->columns["salesCode"]["ignore_updates"] == false) {
@@ -321,6 +524,7 @@ class DepartmentsModel extends BasicModel
             }
             $this->instance["salesCode"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function memberOnly()
@@ -333,6 +537,22 @@ class DepartmentsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'memberOnly',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["memberOnly"]) || $this->instance["memberOnly"] != func_get_args(0)) {
                 if (!isset($this->columns["memberOnly"]["ignore_updates"]) || $this->columns["memberOnly"]["ignore_updates"] == false) {
@@ -341,6 +561,7 @@ class DepartmentsModel extends BasicModel
             }
             $this->instance["memberOnly"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

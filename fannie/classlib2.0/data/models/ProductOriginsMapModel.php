@@ -34,6 +34,43 @@ class ProductOriginsMapModel extends BasicModel
     );
 
     /* START ACCESSOR FUNCTIONS */
+
+    public function originID()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["originID"])) {
+                return $this->instance["originID"];
+            } else if (isset($this->columns["originID"]["default"])) {
+                return $this->columns["originID"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'originID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["originID"]) || $this->instance["originID"] != func_get_args(0)) {
+                if (!isset($this->columns["originID"]["ignore_updates"]) || $this->columns["originID"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["originID"] = func_get_arg(0);
+        }
+        return $this;
+    }
     /* END ACCESSOR FUNCTIONS */
 }
 

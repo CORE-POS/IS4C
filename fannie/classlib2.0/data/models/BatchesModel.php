@@ -70,6 +70,22 @@ class BatchesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'batchID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["batchID"]) || $this->instance["batchID"] != func_get_args(0)) {
                 if (!isset($this->columns["batchID"]["ignore_updates"]) || $this->columns["batchID"]["ignore_updates"] == false) {
@@ -78,6 +94,7 @@ class BatchesModel extends BasicModel
             }
             $this->instance["batchID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function startDate()
@@ -90,6 +107,22 @@ class BatchesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'startDate',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["startDate"]) || $this->instance["startDate"] != func_get_args(0)) {
                 if (!isset($this->columns["startDate"]["ignore_updates"]) || $this->columns["startDate"]["ignore_updates"] == false) {
@@ -98,6 +131,7 @@ class BatchesModel extends BasicModel
             }
             $this->instance["startDate"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function endDate()
@@ -110,6 +144,22 @@ class BatchesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'endDate',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["endDate"]) || $this->instance["endDate"] != func_get_args(0)) {
                 if (!isset($this->columns["endDate"]["ignore_updates"]) || $this->columns["endDate"]["ignore_updates"] == false) {
@@ -118,6 +168,7 @@ class BatchesModel extends BasicModel
             }
             $this->instance["endDate"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function batchName()
@@ -130,6 +181,22 @@ class BatchesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'batchName',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["batchName"]) || $this->instance["batchName"] != func_get_args(0)) {
                 if (!isset($this->columns["batchName"]["ignore_updates"]) || $this->columns["batchName"]["ignore_updates"] == false) {
@@ -138,6 +205,7 @@ class BatchesModel extends BasicModel
             }
             $this->instance["batchName"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function batchType()
@@ -150,6 +218,22 @@ class BatchesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'batchType',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["batchType"]) || $this->instance["batchType"] != func_get_args(0)) {
                 if (!isset($this->columns["batchType"]["ignore_updates"]) || $this->columns["batchType"]["ignore_updates"] == false) {
@@ -158,6 +242,7 @@ class BatchesModel extends BasicModel
             }
             $this->instance["batchType"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function discountType()
@@ -170,6 +255,22 @@ class BatchesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'discountType',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["discountType"]) || $this->instance["discountType"] != func_get_args(0)) {
                 if (!isset($this->columns["discountType"]["ignore_updates"]) || $this->columns["discountType"]["ignore_updates"] == false) {
@@ -178,6 +279,7 @@ class BatchesModel extends BasicModel
             }
             $this->instance["discountType"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function priority()
@@ -190,6 +292,22 @@ class BatchesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'priority',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["priority"]) || $this->instance["priority"] != func_get_args(0)) {
                 if (!isset($this->columns["priority"]["ignore_updates"]) || $this->columns["priority"]["ignore_updates"] == false) {
@@ -198,6 +316,7 @@ class BatchesModel extends BasicModel
             }
             $this->instance["priority"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function owner()
@@ -210,6 +329,22 @@ class BatchesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'owner',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["owner"]) || $this->instance["owner"] != func_get_args(0)) {
                 if (!isset($this->columns["owner"]["ignore_updates"]) || $this->columns["owner"]["ignore_updates"] == false) {
@@ -218,6 +353,7 @@ class BatchesModel extends BasicModel
             }
             $this->instance["owner"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

@@ -50,14 +50,36 @@ class PatronageModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["cardno"])) {
                 return $this->instance["cardno"];
-            } elseif(isset($this->columns["cardno"]["default"])) {
+            } else if (isset($this->columns["cardno"]["default"])) {
                 return $this->columns["cardno"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'cardno',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["cardno"]) || $this->instance["cardno"] != func_get_args(0)) {
+                if (!isset($this->columns["cardno"]["ignore_updates"]) || $this->columns["cardno"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["cardno"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function purchase()
@@ -65,14 +87,36 @@ class PatronageModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["purchase"])) {
                 return $this->instance["purchase"];
-            } elseif(isset($this->columns["purchase"]["default"])) {
+            } else if (isset($this->columns["purchase"]["default"])) {
                 return $this->columns["purchase"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'purchase',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["purchase"]) || $this->instance["purchase"] != func_get_args(0)) {
+                if (!isset($this->columns["purchase"]["ignore_updates"]) || $this->columns["purchase"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["purchase"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function discounts()
@@ -80,14 +124,36 @@ class PatronageModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["discounts"])) {
                 return $this->instance["discounts"];
-            } elseif(isset($this->columns["discounts"]["default"])) {
+            } else if (isset($this->columns["discounts"]["default"])) {
                 return $this->columns["discounts"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'discounts',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["discounts"]) || $this->instance["discounts"] != func_get_args(0)) {
+                if (!isset($this->columns["discounts"]["ignore_updates"]) || $this->columns["discounts"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["discounts"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function rewards()
@@ -95,14 +161,36 @@ class PatronageModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["rewards"])) {
                 return $this->instance["rewards"];
-            } elseif(isset($this->columns["rewards"]["default"])) {
+            } else if (isset($this->columns["rewards"]["default"])) {
                 return $this->columns["rewards"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'rewards',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["rewards"]) || $this->instance["rewards"] != func_get_args(0)) {
+                if (!isset($this->columns["rewards"]["ignore_updates"]) || $this->columns["rewards"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["rewards"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function net_purch()
@@ -110,14 +198,36 @@ class PatronageModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["net_purch"])) {
                 return $this->instance["net_purch"];
-            } elseif(isset($this->columns["net_purch"]["default"])) {
+            } else if (isset($this->columns["net_purch"]["default"])) {
                 return $this->columns["net_purch"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'net_purch',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["net_purch"]) || $this->instance["net_purch"] != func_get_args(0)) {
+                if (!isset($this->columns["net_purch"]["ignore_updates"]) || $this->columns["net_purch"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["net_purch"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function tot_pat()
@@ -125,14 +235,36 @@ class PatronageModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["tot_pat"])) {
                 return $this->instance["tot_pat"];
-            } elseif(isset($this->columns["tot_pat"]["default"])) {
+            } else if (isset($this->columns["tot_pat"]["default"])) {
                 return $this->columns["tot_pat"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'tot_pat',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["tot_pat"]) || $this->instance["tot_pat"] != func_get_args(0)) {
+                if (!isset($this->columns["tot_pat"]["ignore_updates"]) || $this->columns["tot_pat"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["tot_pat"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function cash_pat()
@@ -140,14 +272,36 @@ class PatronageModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["cash_pat"])) {
                 return $this->instance["cash_pat"];
-            } elseif(isset($this->columns["cash_pat"]["default"])) {
+            } else if (isset($this->columns["cash_pat"]["default"])) {
                 return $this->columns["cash_pat"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'cash_pat',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["cash_pat"]) || $this->instance["cash_pat"] != func_get_args(0)) {
+                if (!isset($this->columns["cash_pat"]["ignore_updates"]) || $this->columns["cash_pat"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["cash_pat"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function equit_pat()
@@ -155,14 +309,36 @@ class PatronageModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["equit_pat"])) {
                 return $this->instance["equit_pat"];
-            } elseif(isset($this->columns["equit_pat"]["default"])) {
+            } else if (isset($this->columns["equit_pat"]["default"])) {
                 return $this->columns["equit_pat"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'equit_pat',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["equit_pat"]) || $this->instance["equit_pat"] != func_get_args(0)) {
+                if (!isset($this->columns["equit_pat"]["ignore_updates"]) || $this->columns["equit_pat"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["equit_pat"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function FY()
@@ -170,14 +346,36 @@ class PatronageModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["FY"])) {
                 return $this->instance["FY"];
-            } elseif(isset($this->columns["FY"]["default"])) {
+            } else if (isset($this->columns["FY"]["default"])) {
                 return $this->columns["FY"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'FY',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["FY"]) || $this->instance["FY"] != func_get_args(0)) {
+                if (!isset($this->columns["FY"]["ignore_updates"]) || $this->columns["FY"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["FY"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

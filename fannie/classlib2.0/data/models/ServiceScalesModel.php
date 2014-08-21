@@ -50,6 +50,22 @@ class ServiceScalesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'serviceScaleID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["serviceScaleID"]) || $this->instance["serviceScaleID"] != func_get_args(0)) {
                 if (!isset($this->columns["serviceScaleID"]["ignore_updates"]) || $this->columns["serviceScaleID"]["ignore_updates"] == false) {
@@ -58,6 +74,7 @@ class ServiceScalesModel extends BasicModel
             }
             $this->instance["serviceScaleID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function description()
@@ -70,6 +87,22 @@ class ServiceScalesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'description',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["description"]) || $this->instance["description"] != func_get_args(0)) {
                 if (!isset($this->columns["description"]["ignore_updates"]) || $this->columns["description"]["ignore_updates"] == false) {
@@ -78,6 +111,7 @@ class ServiceScalesModel extends BasicModel
             }
             $this->instance["description"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function host()
@@ -90,6 +124,22 @@ class ServiceScalesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'host',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["host"]) || $this->instance["host"] != func_get_args(0)) {
                 if (!isset($this->columns["host"]["ignore_updates"]) || $this->columns["host"]["ignore_updates"] == false) {
@@ -98,6 +148,7 @@ class ServiceScalesModel extends BasicModel
             }
             $this->instance["host"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function scaleType()
@@ -110,6 +161,22 @@ class ServiceScalesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'scaleType',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["scaleType"]) || $this->instance["scaleType"] != func_get_args(0)) {
                 if (!isset($this->columns["scaleType"]["ignore_updates"]) || $this->columns["scaleType"]["ignore_updates"] == false) {
@@ -118,6 +185,7 @@ class ServiceScalesModel extends BasicModel
             }
             $this->instance["scaleType"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function scaleDeptName()
@@ -130,6 +198,22 @@ class ServiceScalesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'scaleDeptName',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["scaleDeptName"]) || $this->instance["scaleDeptName"] != func_get_args(0)) {
                 if (!isset($this->columns["scaleDeptName"]["ignore_updates"]) || $this->columns["scaleDeptName"]["ignore_updates"] == false) {
@@ -138,6 +222,7 @@ class ServiceScalesModel extends BasicModel
             }
             $this->instance["scaleDeptName"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function superID()
@@ -150,6 +235,22 @@ class ServiceScalesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'superID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["superID"]) || $this->instance["superID"] != func_get_args(0)) {
                 if (!isset($this->columns["superID"]["ignore_updates"]) || $this->columns["superID"]["ignore_updates"] == false) {
@@ -158,6 +259,7 @@ class ServiceScalesModel extends BasicModel
             }
             $this->instance["superID"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }
