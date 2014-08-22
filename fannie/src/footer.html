@@ -26,6 +26,11 @@ if($FANNIE_AUTH_ENABLED){
 		echo "[<a href=\"{$FANNIE_URL}auth/ui/loginform.php?logout=yes\">Logout</a>]";
 	}
 }
+$version_file = dirname(__FILE__) . '/../../VERSION';
+if (file_exists($version_file) && is_readable($version_file)) {
+    $version = file_get_contents($version_file);
+    echo '<div id="fannieVersion">Current version: ' . $version . '</div>';
+}
 ?>
 		</div>
 	</td>
