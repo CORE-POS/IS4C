@@ -201,6 +201,11 @@ class paycardSuccess extends BasicPage {
         //   b) a Credit transaction
         //   c) Over limit threshold OR a return
         $isCredit = ($CORE_LOCAL->get('CacheCardType') == 'CREDIT' || $CORE_LOCAL->get('CacheCardType') == '') ? true : false;
+        // gift doesn't set CacheCardType so customer swipes and
+        // cashier types don't overwrite each other's type
+        if ($CORE_LOCAL->get('paycard_type') == PaycardLib::PAYCARD_TYPE_GIFT) {
+            $isCredit = false;
+        }
         $needSig = ($CORE_LOCAL->get('paycard_amount') > $CORE_LOCAL->get('CCSigLimit') || $CORE_LOCAL->get('paycard_amount') < 0) ? true : false;
         $isVoid = ($CORE_LOCAL->get('paycard_mode') == PaycardLib::PAYCARD_MODE_VOID) ? true : false;
 		if ($CORE_LOCAL->get("PaycardsSigCapture") == 1 && $isCredit && $needSig && !$isVoid) {
