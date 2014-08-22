@@ -1163,16 +1163,25 @@ static public function wicableTotal()
 
 /**
   See what the last item in the transaction is currently
+  @param $full_record [boolean] return full database record.
+    Default is false. Just returns description.
   @return localtemptrans.description for the last item
+    or localtemptrans record for the last item
+
+    If no record exists, returns false
 */
-static public function peekItem()
+static public function peekItem($full_record=false)
 {
 	$db = Database::tDataConnect();
 	$q = "SELECT description FROM localtemptrans ORDER BY trans_id DESC";
 	$r = $db->query($q);
 	$w = $db->fetch_row($r);
 
-	return (isset($w['description'])?$w['description']:'');
+    if ($full_record) {
+        return is_array($w) ? $w : false;
+    } else {
+        return isset($w['description']) ? $w['description'] : false;
+    }
 }
 
 /**
