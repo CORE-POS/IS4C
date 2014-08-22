@@ -89,7 +89,7 @@ function deleteEmp(emp_no,filter){
         $ret .= "</select><hr />";
 
         $ret .= "<table cellpadding=4 cellspacing=0 border=1><tr>";
-        $ret .= "<th><a href=ViewCashiersPage.php?filter=$filter&order=num>Emp#</th>";
+        $ret .= "<th><a href=ViewCashiersPage.php?filter=$filter&order=num>#</th>";
         $ret .= "<th><a href=ViewCashiersPage.php?filter=$filter&order=name>Name</th>";
         $ret .= "<th><a href=ViewCashiersPage.php?filter=$filter&order=pass>Password</th>";
         $ret .= "<th><a href=ViewCashiersPage.php?filter=$filter&order=fes>Privileges</th>";
