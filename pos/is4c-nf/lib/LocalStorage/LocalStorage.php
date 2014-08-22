@@ -99,6 +99,7 @@ class LocalStorage
                         echo 'New value: ';
                         print_r($s['args'][1]);
                         echo "\n"; 
+                        echo 'URL ' . $_SERVER['PHP_SELF'] . "\n";
                         echo 'Line '.$s['line'].', '.$s['file']."\n\n";
                         $out = ob_get_clean();
                         fwrite($fp,$out);
