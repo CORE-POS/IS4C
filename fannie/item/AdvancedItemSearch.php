@@ -36,6 +36,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
         $this->__routes[] = 'get<search>';
         $this->__routes[] = 'post<search>';
         $this->__routes[] = 'post<upc>';
+        $this->__routes[] = 'get<init>';
         return parent::preprocess();
     }
 
@@ -384,13 +385,28 @@ class AdvancedItemSearch extends FannieRESTfulPage
             }
         }
 
+        $dataStr = http_build_query($_GET);
+        echo '<a href="AdvancedItemSearch.php?init=' . base64_encode($dataStr) . '">Permalink for this Search</a>';
         echo $this->streamOutput($items);
 
         return false;
     }
 
+    public function get_init_handler()
+    {
+        $vars = base64_decode($this->init);
+        parse_str($vars, $data);
+        foreach ($data as $field_name => $field_val) {
+            $this->add_onload_command('$(\'#searchform :input[name="' . $field_name . '"]\').val(\'' . $field_val . '\');' . "\n");
+        }
+        $this->add_onload_command('getResults();' . "\n");
+
+        return true;
+    }
+
     private function streamOutput($data) {
-        $ret = '<table cellspacing="0" cellpadding="4" border="1">';
+        $ret = $dataStr;
+        $ret .= '<table cellspacing="0" cellpadding="4" border="1">';
         $ret .= '<tr>
                 <th><input type="checkbox" onchange="toggleAll(this, \'.upcCheckBox\');" /></th>
                 <th>UPC</th><th>Desc</th><th>Super</th><th>Dept</th>
@@ -432,7 +448,6 @@ function getResults() {
         dstr += '&u[]='+$(this).val();
     });
 
-    console.log(dstr);
     $('#resultArea').html('Searching');
     $.ajax({
         url: 'AdvancedItemSearch.php',
@@ -508,6 +523,11 @@ function formReset()
 }
         <?php
         return ob_get_clean();
+    }
+
+    public function get_init_view()
+    {
+        return $this->get_view();
     }
 
     function get_view()
