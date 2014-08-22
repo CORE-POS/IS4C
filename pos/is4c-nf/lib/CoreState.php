@@ -138,16 +138,18 @@ static public function systemInit()
     */
     if (is_array($CORE_LOCAL->get('LaneMap'))) {
         $my_ips = MiscLib::getAllIPs();
-        if (!isset($map[$ip])) {
-            continue;
-        }
-        if (isset($map[$ip]['register_id']) && isset($map[$ip]['store_id'])) {
-            $CORE_LOCAL->set('laneno', $map[$ip]['register_id']);
-            $CORE_LOCAL->set('store_id', $map[$ip]['store_id']);
+        foreach ($my_ips as $ip) {
+            if (!isset($map[$ip])) {
+                continue;
+            }
+            if (isset($map[$ip]['register_id']) && isset($map[$ip]['store_id'])) {
+                $CORE_LOCAL->set('laneno', $map[$ip]['register_id']);
+                $CORE_LOCAL->set('store_id', $map[$ip]['store_id']);
+            }
+            // use first matching IP
+            break;
         }
 
-        // use first matching IP
-        break;
     }
 }
 
