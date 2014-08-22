@@ -81,6 +81,22 @@ class paycardSuccess extends BasicPage {
 				// remember the mode, type and transid before we reset them
 				$CORE_LOCAL->set("boxMsg","");
 
+                /**
+                  paycard_mode is sometimes cleared pre-emptively
+                  perhaps by a double keypress on enter so tender out
+                  if the last record in the transaction is a tender
+                  record 
+                */
+                $peek = PrehLib::peekItem(true);
+                if ($mode == PaycardLib::PAYCARD_MODE_AUTH || 
+                    ($peek !== false && isset($peek['trans_type']) && $peek['trans_type'] == 'T')) {
+                    $CORE_LOCAL->set("strRemembered","TO");
+                    $CORE_LOCAL->set("msgrepeat",1);
+                    $CORE_LOCAL->set('paycardTendered', true);
+                } else {
+                    TransRecord::debugLog('Not Tendering Out (mode): ' . print_r($mode, true));
+                }
+
                 // only reset terminal if the terminal was used for the transaction
                 // activating a gift card should not reset terminal
                 if ($CORE_LOCAL->get("paycard_type") == PaycardLib::PAYCARD_TYPE_ENCRYPTED) {
@@ -89,12 +105,9 @@ class paycardSuccess extends BasicPage {
                     $CORE_LOCAL->set("CacheCardType","");
                 }
 				PaycardLib::paycard_reset();
-                if ($mode == PaycardLib::PAYCARD_MODE_AUTH) {
-                    $CORE_LOCAL->set("strRemembered","TO");
-                    $CORE_LOCAL->set("msgrepeat",1);
-                }
 
 				$this->change_page($this->page_url."gui-modules/pos2.php");
+
 				return False;
 			} else if ($mode == PaycardLib::PAYCARD_MODE_AUTH && $input == "VD" 
 				&& ($CORE_LOCAL->get('CacheCardType') == 'CREDIT' || $CORE_LOCAL->get('CacheCardType') == '')){
