@@ -180,9 +180,8 @@ class FannieAPI
                 break;
             case 'FanniePage':
                 $directories[] = dirname(__FILE__).'/../admin/';
-                /*
-                $directories[] = dirname(__FILE__).'/../auth/';
                 $directories[] = dirname(__FILE__).'/../batches/';
+                /*
                 $directories[] = dirname(__FILE__).'/../cron/';
                 $directories[] = dirname(__FILE__).'/../install/';
                 $directories[] = dirname(__FILE__).'/../item/';

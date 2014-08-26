@@ -21,11 +21,17 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include_once('../../auth/login.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+if (!function_exists('checkLogin')) {
+    include_once($FANNIE_ROOT . 'auth/login.php');
+}
 if (!function_exists("updateProductAllLanes")) include($FANNIE_ROOT.'item/laneUpdates.php');
-include('forceBatch.php');
+if (!function_exists('forceBatch')) {
+    include('forceBatch.php');
+}
 
 class BatchManagementTool extends FanniePage 
 {
