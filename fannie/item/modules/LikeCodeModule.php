@@ -52,7 +52,7 @@ class LikeCodeModule extends ItemModule {
         $ret .= '<div id="LikeCodeFieldsetContent" style="' . $style . '">';
 
 
-        $ret .= "<table border=0><tr><td><b>Like code</b> <button id=\"lcAddButton\">+</button> ";
+        $ret .= "<table border=0><tr><td><b>Like code</b> <button type=\"button\" id=\"lcAddButton\">+</button> ";
         $ret .= "<select name=likeCode style=\"{width: 175px;}\"
                 onchange=\"updateLcModList(this.value);\">";
         $ret .= "<option value=-1>(none)</option>";

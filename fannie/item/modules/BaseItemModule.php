@@ -219,7 +219,7 @@ class BaseItemModule extends ItemModule {
         $ret .="<td align=right><b>Brand</b></td><td><input type=text name=manufacturer size=30 value=\""
             .(isset($rowItem['manufacturer'])?$rowItem['manufacturer']:"")
             ."\" id=\"brand_field\" /></td>";
-        $ret .= "<td align=right><button id=\"newVendorButton\">+</button> <b>Vendor</b></td>
+        $ret .= "<td align=right><button type=\"button\" id=\"newVendorButton\">+</button> <b>Vendor</b></td>
                 <td><input type=text name=distributor size=8 value=\""
             .(isset($rowItem['distributor'])?$rowItem['distributor']:"")
             ."\" id=\"vendor_field\" /></td>";
