@@ -94,12 +94,7 @@ class StoreSummaryReport extends FannieReportPage {
     }
 
     function report_description_content(){
-        $d1 = FormLib::get_form_value('date1');
-        $d2 = FormLib::get_form_value('date2');
-        
         $ret = array();
-        $ret[] = sprintf("<h3 class='explain'>Store Summary: %s </h3>",
-            ($d1 == $d2) ? "For $d1" : "From $d1 to $d2");
         if (FormLib::get_form_value('dept',0) == 0){
             $ret[] = "<p class='explain'>Using the department# the upc was assigned to at time of sale</p>";
         }

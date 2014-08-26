@@ -44,10 +44,6 @@ class GeneralDayReport extends FannieReportPage
     protected $report_headers = array('Desc','Qty','Amount');
     protected $required_fields = array('date1');
 
-    function report_description_content() {
-        return(array('<p></p>'));
-    }
-
     function fetch_report_data()
     {
         global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB, $FANNIE_EQUITY_DEPARTMENTS,

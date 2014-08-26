@@ -54,16 +54,12 @@ class HourlySalesReport extends FannieReportPage
 
     public function report_description_content()
     {
-        $date1 = FormLib::get('date1', date('Y-m-d'));
-        $date2 = FormLib::get('date2', date('Y-m-d'));
         $deptStart = FormLib::get('deptStart');
         $deptEnd = FormLib::get('deptEnd');
         $weekday = FormLib::get('weekday', 0);
         $buyer = FormLib::get('buyer', '');
     
         $ret = array();
-        $ret[] = 'Hourly Sales Report';
-        $ret[] = 'From '.$date1.' to '.$date2;
         if ($buyer === '') {
             $ret[] = 'Department '.$deptStart.' to '.$deptEnd;
         } else if ($buyer == -1) {
@@ -77,7 +73,7 @@ class HourlySalesReport extends FannieReportPage
         }
 
         if ($this->report_format == 'html') {
-            $ret[] = sprintf('<a href="../HourlyTrans/HourlyTransReport.php?%s">Transaction Counts for Same Period</a>', 
+            $ret[] = sprintf(' <a href="../HourlyTrans/HourlyTransReport.php?%s">Transaction Counts for Same Period</a>', 
                             $_SERVER['QUERY_STRING']);
         }
 

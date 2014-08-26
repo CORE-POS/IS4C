@@ -34,13 +34,13 @@ class ObfWeeklyReport extends FannieReportPage
     protected $required_fields = array('weekID');
 
     protected $report_headers = array(
-        array('', 'Actual', '% Store', 'Last Year', '% Growth', 'Plan Goal', '% Store', '% Growth O/U', 'Current O/U', 'QTD O/U'),
-        array('', 'Actual', '% Store', 'Last Year', '% Growth', 'Plan Goal', '% Store', '% Growth O/U', 'Current O/U', 'QTD O/U'),
-        array('', 'Actual', '% Store', 'Last Year', '% Growth', 'Plan Goal', '% Store', '% Growth O/U', 'Current O/U', 'QTD O/U'),
-        array('', 'Actual', '% Store', 'Last Year', '% Growth', 'Plan Goal', '% Store', '% Growth O/U', 'Current O/U', 'QTD O/U'),
-        array('', 'Actual', '% Store', 'Last Year', '% Growth', 'Plan Goal', '% Store', '% Growth O/U', 'Current O/U', 'QTD O/U'),
-        array('', 'Actual', '% Store', 'Last Year', '% Growth', 'Plan Goal', '% Store', '% Growth O/U', 'Current O/U', 'QTD O/U'),
-        array('', 'Actual', '%', '', 'Plan', '%', '', 'Est. Bonus', 'Current', 'Prior'),
+        array('', 'Last Year', 'Plan Goal', '% Store', 'Actual', '% Growth', '% Store', 'Current O/U', 'QTD O/U'),
+        array('', 'Last Year', 'Plan Goal', '% Store', 'Actual', '% Growth', '% Store', 'Current O/U', 'QTD O/U'),
+        array('', 'Last Year', 'Plan Goal', '% Store', 'Actual', '% Growth', '% Store', 'Current O/U', 'QTD O/U'),
+        array('', 'Last Year', 'Plan Goal', '% Store', 'Actual', '% Growth', '% Store', 'Current O/U', 'QTD O/U'),
+        array('', 'Last Year', 'Plan Goal', '% Store', 'Actual', '% Growth', '% Store', 'Current O/U', 'QTD O/U'),
+        array('', 'Last Year', 'Plan Goal', '% Store', 'Actual', '% Growth', '% Store', 'Current O/U', 'QTD O/U'),
+        array('', 'Actual', '%', '', 'Plan', '%', 'Est. Bonus', 'Current', 'Prior'),
     );
 
     public function report_description_content()
@@ -229,7 +229,7 @@ class ObfWeeklyReport extends FannieReportPage
                                             AND l.obfCategoryID=?');
 
         foreach ($categories->find('name') as $category) {
-            $data[] = array($category->name(), '', '', '', '', '', '', '', '', '',
+            $data[] = array($category->name(), '', '', '', '', '', '', '', '',
                         'meta' => FannieReportPage::META_BOLD | FannieReportPage::META_COLOR,
                         'meta_background' => $colors[0],
                         'meta_foreground' => 'black',
@@ -255,13 +255,12 @@ class ObfWeeklyReport extends FannieReportPage
 
                 $record = array(
                     $w['super_name'],
-                    number_format($w['actualSales'], 0),
-                    number_format($w['actualSales'], 0),
                     number_format($w['lastYearSales'], 0),
+                    number_format($proj, 0),
+                    number_format($proj, 0),
+                    number_format($w['actualSales'], 0),
                     sprintf('%.2f%%', $this->percentGrowth($w['actualSales'], $w['lastYearSales'])),
-                    number_format($proj, 0),
-                    number_format($proj, 0),
-                    sprintf('%.2f%%', $this->percentGrowth($w['actualSales'], $proj)),
+                    number_format($w['actualSales'], 0),
                     number_format($w['actualSales'] - $proj, 0),
                     number_format($quarter['actual'] - $quarter['plan'], 0),
                     'meta' => FannieReportPage::META_COLOR,
@@ -291,13 +290,12 @@ class ObfWeeklyReport extends FannieReportPage
             $labor->load();
             $record = array(
                 'Total',
-                number_format($sum[0], 0),
-                number_format($sum[0], 0),
                 number_format($sum[1], 0),
+                number_format($dept_proj, 0),
+                number_format($dept_proj, 0),
+                number_format($sum[0], 0),
                 sprintf('%.2f%%', $this->percentGrowth($sum[0], $sum[1])),
-                number_format($dept_proj, 0),
-                number_format($dept_proj, 0),
-                sprintf('%.2f%%', $this->percentGrowth($sum[0], $dept_proj)),
+                number_format($sum[0], 0),
                 number_format($sum[0] - $dept_proj, 0),
                 number_format($qtd_dept_ou, 0),
                 'meta' => FannieReportPage::META_COLOR | FannieReportPage::META_BOLD,
@@ -324,13 +322,12 @@ class ObfWeeklyReport extends FannieReportPage
 
             $data[] = array(
                 'Hours',
-                number_format($labor->hours(), 0),
-                '',
-                '',
                 '',
                 number_format($proj_hours, 0),
                 '',
+                number_format($labor->hours(), 0),
                 sprintf('%.2f%%', $this->percentGrowth($labor->hours(), $proj_hours)),
+                '',
                 number_format($labor->hours() - $proj_hours, 0),
                 number_format($quarter['hours'] - $qt_proj_hours, 0),
                 'meta' => FannieReportPage::META_COLOR,
@@ -342,13 +339,12 @@ class ObfWeeklyReport extends FannieReportPage
 
             $data[] = array(
                 'Wages',
-                number_format($labor->wages(), 0),
-                '',
-                '',
                 '',
                 number_format($proj_wages, 0),
                 '',
+                number_format($labor->wages(), 0),
                 sprintf('%.2f%%', $this->percentGrowth($labor->wages(), $proj_wages)),
+                '',
                 number_format($labor->wages() - $proj_wages, 0),
                 number_format($quarter['wages'] - $qt_proj_labor, 0),
                 'meta' => FannieReportPage::META_COLOR,
@@ -363,13 +359,12 @@ class ObfWeeklyReport extends FannieReportPage
 
             $data[] = array(
                 '% of Sales',
-                sprintf('%.2f%%', $labor->wages() / $sum[0] * 100),
-                '',
-                '',
                 '',
                 sprintf('%.2f%%', $proj_wages / $dept_proj * 100),
                 '',
+                sprintf('%.2f%%', $labor->wages() / $sum[0] * 100),
                 sprintf('%.2f%%', $this->percentGrowth(($labor->wages()/$sum[0]*100), ($proj_wages/$dept_proj*100))),
+                '',
                 '',
                 '',
                 'meta' => FannieReportPage::META_COLOR,
@@ -381,13 +376,12 @@ class ObfWeeklyReport extends FannieReportPage
             $quarter_proj_sph = ($qtd_dept_plan)/($qt_proj_hours);
             $data[] = array(
                 'Sales per Hour',
-                number_format($sum[0] / $labor->hours(), 2),
-                '',
-                '',
                 '',
                 number_format($dept_proj / $proj_hours, 2),
                 '',
+                number_format($sum[0] / $labor->hours(), 2),
                 sprintf('%.2f%%', $this->percentGrowth(($sum[0]/$labor->hours()), $dept_proj/$proj_hours)),
+                '',
                 number_format(($sum[0]/$labor->hours()) - ($dept_proj / $proj_hours), 2),
                 number_format($quarter_actual_sph - $quarter_proj_sph, 2),
                 'meta' => FannieReportPage::META_COLOR,
@@ -403,10 +397,10 @@ class ObfWeeklyReport extends FannieReportPage
         }
 
         for ($i=0; $i<count($data); $i++) {
-            if (isset($data[$i][2]) && preg_match('/^[\d,]+$/', $data[$i][2])) {
-                $amt = str_replace(',', '', $data[$i][2]);
+            if (isset($data[$i][3]) && preg_match('/^[\d,]+$/', $data[$i][3])) {
+                $amt = str_replace(',', '', $data[$i][3]);
                 $percentage = ((float)$amt) / ((float)$total_sales[0]);
-                $data[$i][2] = number_format($percentage*100, 2) . '%';
+                $data[$i][3] = number_format($percentage*100, 2) . '%';
             }
             if (isset($data[$i][6]) && preg_match('/^[\d,]+$/', $data[$i][6])) {
                 $amt = str_replace(',', '', $data[$i][6]);
@@ -418,7 +412,7 @@ class ObfWeeklyReport extends FannieReportPage
         $cat = new ObfCategoriesModel($dbc);
         $cat->hasSales(0);
         foreach ($cat->find('name') as $c) {
-            $data[] = array($c->name(), '', '', '', '', '', '', '', '', '',
+            $data[] = array($c->name(), '', '', '', '', '', '', '', '',
                         'meta' => FannieReportPage::META_BOLD | FannieReportPage::META_COLOR,
                         'meta_background' => $colors[0],
                         'meta_foreground' => 'black',
@@ -438,17 +432,19 @@ class ObfWeeklyReport extends FannieReportPage
             $qtd_hours += $quarter['hours'];
             $qtd_proj_hours += $qt_proj_hours;
 
-            $average_wage = $labor->wages() / ((float)$labor->hours());
+            $average_wage = 0;
+            if ($labor->hours() != 0) {
+                $average_wage = $labor->wages() / ((float)$labor->hours());
+            }
             $proj_hours = $labor->hoursTarget();
             $proj_wages = $proj_hours * $average_wage;
 
             $data[] = array(
                 'Hours',
-                number_format($labor->hours(), 0),
-                '',
-                '',
                 '',
                 number_format($proj_hours, 0),
+                '',
+                number_format($labor->hours(), 0),
                 '',
                 '',
                 number_format($labor->hours() - $proj_hours, 0),
@@ -461,11 +457,10 @@ class ObfWeeklyReport extends FannieReportPage
 
             $data[] = array(
                 'Wages',
-                number_format($labor->wages(), 0),
-                '',
-                '',
                 '',
                 number_format($proj_wages, 0),
+                '',
+                number_format($labor->wages(), 0),
                 '',
                 '',
                 number_format($labor->wages() - $proj_wages, 0),
@@ -479,11 +474,10 @@ class ObfWeeklyReport extends FannieReportPage
 
             $data[] = array(
                 '% of Sales',
-                sprintf('%.2f%%', $labor->wages() / $total_sales[0] * 100),
-                '',
-                '',
                 '',
                 sprintf('%.2f%%', $proj_wages / $proj_total * 100),
+                '',
+                sprintf('%.2f%%', $labor->wages() / $total_sales[0] * 100),
                 '',
                 '',
                 '',
@@ -497,11 +491,10 @@ class ObfWeeklyReport extends FannieReportPage
             $quarter_proj_sph = ($qtd_plan)/($qt_proj_hours);
             $data[] = array(
                 'Sales per Hour',
-                number_format($total_sales[0] / $labor->hours(), 2),
-                '',
-                '',
                 '',
                 sprintf('%.2f', $proj_total / $proj_hours),
+                '',
+                number_format($total_sales[0] / $labor->hours(), 2),
                 '',
                 '',
                 number_format(($total_sales[0]/$labor->hours()) - ($proj_total / $proj_hours), 2),
@@ -523,20 +516,19 @@ class ObfWeeklyReport extends FannieReportPage
             }
         }
 
-        $data[] = array('Total Store', '', '', '', '', '', '', '', '', '',
+        $data[] = array('Total Store', '', '', '', '', '', '', '', '',
                         'meta' => FannieReportPage::META_BOLD | FannieReportPage::META_COLOR,
                         'meta_background' => $colors[0],
                         'meta_foreground' => 'black',
         );
         $data[] = array(
             'Sales',
-            number_format($total_sales[0], 0),
-            '',
             number_format($total_sales[1], 0),
-            sprintf('%.2f%%', $this->percentGrowth($total_sales[0], $total_sales[1])),
             number_format($proj_total, 0),
             '',
-            sprintf('%.2f%%', $this->percentGrowth($total_sales[0], $proj_total)),
+            number_format($total_sales[0], 0),
+            sprintf('%.2f%%', $this->percentGrowth($total_sales[0], $total_sales[1])),
+            '',
             number_format($total_sales[0] - $proj_total, 0),
             number_format($qtd_sales_ou, 0),
             'meta' => FannieReportPage::META_COLOR,
@@ -546,11 +538,10 @@ class ObfWeeklyReport extends FannieReportPage
 
         $data[] = array(
             'Hours',
-            number_format($total_hours, 0),
-            '',
-            '',
             '',
             number_format($total_proj_hours, 0),
+            '',
+            number_format($total_hours, 0),
             '',
             '',
             number_format($total_hours - $total_proj_hours, 0),
@@ -562,11 +553,10 @@ class ObfWeeklyReport extends FannieReportPage
 
         $data[] = array(
             'Wages',
-            number_format($total_wages, 0),
-            '',
-            '',
             '',
             number_format($total_proj_wages, 0),
+            '',
+            number_format($total_wages, 0),
             '',
             '',
             number_format($total_wages - $total_proj_wages, 0),
@@ -578,11 +568,10 @@ class ObfWeeklyReport extends FannieReportPage
 
         $data[] = array(
             'Wages as % of Sales',
-            sprintf('%.2f%%', $total_wages / $total_sales[0] * 100),
-            '',
-            '',
             '',
             sprintf('%.2f%%', $total_proj_wages / $proj_total * 100),
+            '',
+            sprintf('%.2f%%', $total_wages / $total_sales[0] * 100),
             '',
             '',
             '',
@@ -595,11 +584,10 @@ class ObfWeeklyReport extends FannieReportPage
         $p_est = 0.32;
         $data[] = array(
             'Other Personnel Cost (est)',
-            number_format($total_wages * $p_est, 0),
-            '',
-            '',
             '',
             number_format($total_proj_wages * $p_est, 0),
+            '',
+            number_format($total_wages * $p_est, 0),
             '',
             '',
             number_format(($total_wages - $total_proj_wages) * $p_est, 0),
@@ -612,11 +600,10 @@ class ObfWeeklyReport extends FannieReportPage
         $p_est += 1.0;
         $data[] = array(
             'Total Personnel Cost (est)',
-            number_format($total_wages * $p_est, 0),
-            '',
-            '',
             '',
             number_format($total_proj_wages * $p_est, 0),
+            '',
+            number_format($total_wages * $p_est, 0),
             '',
             '',
             number_format(($total_wages - $total_proj_wages) * $p_est, 0),
@@ -630,11 +617,10 @@ class ObfWeeklyReport extends FannieReportPage
         $quarter_proj_sph = ($qtd_plan)/($qtd_proj_hours);
         $data[] = array(
             'Sales per Hour',
-            number_format($total_sales[0] / $total_hours, 2),
-            '',
-            '',
             '',
             sprintf('%.2f', $proj_total / $total_proj_hours),
+            '',
+            number_format($total_sales[0] / $total_hours, 2),
             '',
             '',
             number_format(($total_sales[0]/$total_hours) - ($proj_total/$total_proj_hours), 2),
@@ -648,13 +634,12 @@ class ObfWeeklyReport extends FannieReportPage
         $qtd_proj_trans = $qtd_trans[1] * 1.05;
         $data[] = array(
             'Transactions',
-            number_format($total_trans),
-            '',
             number_format($ly_total_trans),
-            sprintf('%.2f%%', $this->percentGrowth($total_trans, $ly_total_trans)),
             number_format($proj_trans),
             '',
-            sprintf('%.2f%%', $this->percentGrowth($total_trans, $proj_trans)),
+            number_format($total_trans),
+            sprintf('%.2f%%', $this->percentGrowth($total_trans, $ly_total_trans)),
+            '',
             number_format($total_trans - $proj_trans),
             number_format($qtd_trans[0] - $qtd_proj_trans),
             'meta' => FannieReportPage::META_COLOR,
@@ -664,13 +649,12 @@ class ObfWeeklyReport extends FannieReportPage
 
         $data[] = array(
             'Average Basket',
-            number_format($total_sales[0] / $total_trans, 2),
-            '',
             number_format($total_sales[1] / $ly_total_trans, 2),
-            sprintf('%.2f%%', $this->percentGrowth($total_sales[0]/$total_trans, $total_sales[1]/$ly_total_trans)),
             number_format($proj_total / $proj_trans, 2),
             '',
-            sprintf('%.2f%%', $this->percentGrowth($total_sales[0]/$total_trans, $proj_total/$proj_trans)),
+            number_format($total_sales[0] / $total_trans, 2),
+            sprintf('%.2f%%', $this->percentGrowth($total_sales[0]/$total_trans, $total_sales[1]/$ly_total_trans)),
+            '',
             number_format(($total_sales[0]/$total_trans) - ($proj_total/$proj_trans), 2),
             number_format(($qtd_sales/$qtd_trans[0]) - ($qtd_plan/$qtd_proj_trans), 2),
             'meta' => FannieReportPage::META_COLOR,
@@ -694,7 +678,7 @@ class ObfWeeklyReport extends FannieReportPage
         $quarterW = $dbc->fetch_row($quarterR);
 
         $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS);
-        $data[] = array('Quarter to Date', '', '', '', '', '', '', '', '', '',
+        $data[] = array('Quarter to Date', '', '', '', '', '', '', '', '',
                         'meta' => FannieReportPage::META_BOLD | FannieReportPage::META_COLOR,
                         'meta_background' => $colors[0],
                         'meta_foreground' => 'black',
@@ -709,7 +693,6 @@ class ObfWeeklyReport extends FannieReportPage
             '',
             '',
             '',
-            '',
             'meta' => FannieReportPage::META_COLOR,
             'meta_background' => $colors[0],
             'meta_foreground' => 'black',
@@ -719,7 +702,6 @@ class ObfWeeklyReport extends FannieReportPage
             'Total Wages',
             number_format($qtd_wages, 0),
             number_format(($qtd_wages) / ($qtd_sales) * 100, 2) . '%',
-            '',
             '',
             '',
             '',
@@ -746,7 +728,6 @@ class ObfWeeklyReport extends FannieReportPage
             '',
             number_format($plan_personnel, 0),
             number_format(($plan_personnel) / ($quarterW['plan']) * 100, 2) . '%',
-            '',
             number_format($bonus, 0),
             '',
             '',
@@ -789,7 +770,6 @@ class ObfWeeklyReport extends FannieReportPage
         }
         $data[] = array(
             'YTD Ownership',
-            '',
             '',
             '',
             '',

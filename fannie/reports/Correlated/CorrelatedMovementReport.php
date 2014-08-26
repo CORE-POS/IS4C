@@ -161,12 +161,6 @@ class CorrelatedMovementReport extends FannieReportPage
             $ret[] = $line;
         }
 
-        $line = 'Period: ';
-        $line .= FormLib::get('date1', date('Y-m-d'));
-        $line .= ' to ';
-        $line .= FormLib::get('date2', date('Y-m-d'));
-        $ret[] = $line;
-
         return $ret;
     }
 

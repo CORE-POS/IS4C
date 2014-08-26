@@ -115,7 +115,6 @@ class ItemPurchasesReport extends FannieReportPage
     {
         return array(
             'Transactions containing UPC ' . FormLib::get('upc'),
-            'From ' . FormLib::get('date1') . ' to ' . FormLib::get('date2'),
         );
     }
     
