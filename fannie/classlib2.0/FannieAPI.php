@@ -181,14 +181,15 @@ class FannieAPI
             case 'FanniePage':
                 $directories[] = dirname(__FILE__).'/../admin/';
                 $directories[] = dirname(__FILE__).'/../batches/';
+                $directories[] = dirname(__FILE__).'/../cron/management/';
                 $directories[] = dirname(__FILE__).'/../item/';
                 $directories[] = dirname(__FILE__).'/../logs/';
                 $directories[] = dirname(__FILE__).'/../reports/';
                 $directories[] = dirname(__FILE__).'/../mem/';
+                $directories[] = dirname(__FILE__).'/../purchasing/';
                 /*
                 $directories[] = dirname(__FILE__).'/../install/';
                 $directories[] = dirname(__FILE__).'/../ordering/';
-                $directories[] = dirname(__FILE__).'/../purchasing/';
                 */
                 break;
         }
