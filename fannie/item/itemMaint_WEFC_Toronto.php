@@ -76,11 +76,13 @@
  * + Extend lane updates to multiple lane-side tables.
 */
 
-include('../config.php');
+require(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
-//include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
+    return;
+}
 $dbc = FannieDB::get($FANNIE_OP_DB);
 include('prodFunction_WEFC_Toronto.php');
 if ( !function_exists('validateUserQuiet') )

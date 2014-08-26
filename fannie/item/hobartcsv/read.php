@@ -1,4 +1,7 @@
 <?php
+if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
+    return;
+}
 
 /*
 this script reads a csv file from the scale (items.csv)

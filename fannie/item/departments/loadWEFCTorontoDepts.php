@@ -81,9 +81,14 @@ COOPKITCHEN 2005    0                               COOPKITCHEN 2005 - COOPKITCH
 */
 
 /* configuration for your module - Important */
-include("../../config.php");
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
+    return;
+}
 require($FANNIE_ROOT.'src/csv_parser.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
 require($FANNIE_ROOT.'src/tmp_dir.php');
 

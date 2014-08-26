@@ -67,13 +67,16 @@
     *
 */
 
-include('../config.php');
+require(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
-include_once('../auth/login.php');
-include_once('ajax.php');
-//include_once(dirname(__FILE__).'/../classlib2.0/lib/FormLib.php');
+if (!function_exists('checkLogin')) {
+    include_once('../auth/login.php');
+}
+if (!function_exists('GetLikecodeItems')) {
+    include_once('ajax.php');
+}
 
 function itemParse($upc){
     global $FANNIE_OP_DB,$FANNIE_URL;

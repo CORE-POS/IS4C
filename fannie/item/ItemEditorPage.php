@@ -21,9 +21,13 @@
 
 *********************************************************************************/
 
-include('../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include('laneUpdates.php');
+require(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+if (!function_exists('addProductAllLanes')) {
+    include('laneUpdates.php');
+}
 
 class ItemEditorPage extends FanniePage 
 {

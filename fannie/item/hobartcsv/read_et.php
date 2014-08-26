@@ -1,4 +1,7 @@
 <?php
+if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
+    return;
+}
 
 /* like read, but for expanded text */
 

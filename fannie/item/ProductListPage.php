@@ -21,14 +21,24 @@
 
 *********************************************************************************/
 
-include('../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include_once($FANNIE_ROOT.'src/JsonLib.php');
-require('laneUpdates.php');
+require(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+if (!class_exists('JsonLib')) {
+    include_once($FANNIE_ROOT.'src/JsonLib.php');
+}
+if (!function_exists('addProductAllLanes')) {
+    require('laneUpdates.php');
+}
 if (!function_exists('login'))
     include($FANNIE_ROOT.'auth/login.php');
-include_once($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
-include_once($FANNIE_ROOT.'src/ReportConvert/ArrayToCsv.php');
+if (!function_exists('HtmlToArray')) {
+    include_once($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
+}
+if (!function_exists('ArrayToCsv')) {
+    include_once($FANNIE_ROOT.'src/ReportConvert/ArrayToCsv.php');
+}
 
 class ProductListPage extends FannieReportTool 
 {

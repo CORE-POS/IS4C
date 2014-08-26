@@ -47,7 +47,13 @@
  *  + is for HQ and there are non-HQ store records for the item
 */
 
-include('../config.php');
+require(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
+    return;
+}
 //$FANNIE_ITEM_MODULES;
 // This would be both whether-or-not and sequence-on-page
 $Fannie_Item_Modules = array("Operations","ExtraInfo",

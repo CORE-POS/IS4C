@@ -142,8 +142,13 @@
 */
 
 /* configuration for your module - Important */
-include("../../config.php");
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
+    return;
+}
 $dbc = FannieDB::get($FANNIE_OP_DB);
 require($FANNIE_ROOT.'src/csv_parser.php');
 require($FANNIE_ROOT.'src/tmp_dir.php');
@@ -163,8 +168,12 @@ $isposdev = preg_match("/0A-38/", php_uname('n'))?True:False;
 /* Return the number of decimal places to use in a price format spec: %.#f .
  * Minimum is 2.
  * > 2 only if the price is in a quantity-enforced situation.
+ * 
+ * I renamed this sigdecimals2 to prevent a name conflict with another
+ * sigdecimals function in prodFunction_WEFC_Toronto
+ * Andy - 26Aug14
 */
-function sig_decimals ($num, $qtty_enforced=0) {
+function sig_decimals2 ($num, $qtty_enforced=0) {
     $dec = 2;
     if ( $qtty_enforced ) {
         if ( preg_match('/\.\d{3}/',$num) )
@@ -709,7 +718,7 @@ vary based on whose code you're running
             }
             $set_price_pattern = '/^\d+\.\d{2}$/';
             if ( $data[$SET_PRICE] != "" ) {
-                $dec = ($data[$QTYFRC])?sig_decimals($data[$SET_PRICE],1):2;
+                $dec = ($data[$QTYFRC])?sig_decimals2($data[$SET_PRICE],1):2;
                 $set_price_pattern = '/^\d+\.\d{'.$dec.'}$/';
 //$messages[++$mct] = "UPC: {$data[$UPC]} set_price : {$data[$SET_PRICE]} qttyF: {$data[$QTYFRC]}";
                 $data[$SET_PRICE] = sprintf("%.{$dec}f", $data[$SET_PRICE]);
