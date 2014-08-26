@@ -178,6 +178,22 @@ class FannieAPI
             case 'FannieSignage':
                 $directories[] = dirname(__FILE__) . '/item/signage/';
                 break;
+            case 'FanniePage':
+                $directories[] = dirname(__FILE__).'/../admin/';
+                /*
+                $directories[] = dirname(__FILE__).'/../auth/';
+                $directories[] = dirname(__FILE__).'/../batches/';
+                $directories[] = dirname(__FILE__).'/../cron/';
+                $directories[] = dirname(__FILE__).'/../install/';
+                $directories[] = dirname(__FILE__).'/../item/';
+                $directories[] = dirname(__FILE__).'/../logs/';
+                $directories[] = dirname(__FILE__).'/../mem/';
+                $directories[] = dirname(__FILE__).'/../ordering/';
+                $directories[] = dirname(__FILE__).'/../purchasing/';
+                $directories[] = dirname(__FILE__).'/../reports/';
+                $directories[] = dirname(__FILE__).'/../sync/';
+                */
+                break;
         }
 
         // recursive search

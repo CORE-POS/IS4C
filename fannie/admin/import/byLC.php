@@ -21,8 +21,13 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include($FANNIE_ROOT.'src/tmp_dir.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!function_exists('sys_get_temp_dir')) {
+    include($FANNIE_ROOT.'src/tmp_dir.php');
+}
+if (basename($_SERVER['PHP_SELF']) != basename(__FILE__)) {
+    return;
+}
 
 if (isset($_POST['MAX_FILE_SIZE'])){
     $tpath = sys_get_temp_dir()."/vendorupload/";

@@ -21,9 +21,10 @@
 
 *********************************************************************************/
 
-require('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-require('scan_layouts.php');
+require(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class ShelfTagIndex extends FanniePage {
 
@@ -35,6 +36,9 @@ class ShelfTagIndex extends FanniePage {
     private $layouts = array();
 
     function preprocess(){
+        if (!function_exists('scan_layouts')) {
+            require('scan_layouts.php');
+        }
         $this->layouts = scan_layouts();
         return True;
     }

@@ -21,8 +21,13 @@
 
 *********************************************************************************/
 
-include("../../config.php");
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+if (basename($_SERVER['PHP_SELF']) != basename(__FILE__)) {
+    return;
+}
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 require($FANNIE_ROOT.'src/csv_parser.php');

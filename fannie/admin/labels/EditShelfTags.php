@@ -21,8 +21,10 @@
 
 *********************************************************************************/
 
-require('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+require(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class EditShelfTags extends FanniePage {
 

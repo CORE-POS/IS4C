@@ -21,8 +21,13 @@
 
 *********************************************************************************/
 
-require('../../config.php');
-require_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+require(dirname(__FILE__) . '/../../config.php');
+if (class_exists('FannieAPI')) {
+    require_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
+    return;
+}
 
 $layout = FormLib::get_form_value('layout',$FANNIE_DEFAULT_PDF);
 $layout = str_replace(" ","_",$layout);

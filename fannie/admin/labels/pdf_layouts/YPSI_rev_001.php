@@ -38,7 +38,9 @@ require($FANNIE_ROOT.'src/fpdf/fpdf.php');
   * URL: www.fpdf.org                                                            *
   * You may use, modify and redistribute this software as you wish.              *
   *******************************************************************************/
+if (!defined('FPDF_FONTPATH')) {
   define('FPDF_FONTPATH','font/');
+}
   
   class YPSI_rev_001_PDF extends FPDF
   {

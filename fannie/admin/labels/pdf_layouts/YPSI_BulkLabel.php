@@ -21,14 +21,16 @@
 
 *********************************************************************************/
 
-define('FPDF_FONTPATH','font/');
+if (!defined('FPDF_FONTPATH')) {
+  define('FPDF_FONTPATH','font/');
+}
 require($FANNIE_ROOT.'src/fpdf/fpdf.php');
 
 /****Credit for the majority of what is below for barcode generation
  has to go to Olivier for posting the script on the FPDF.org scripts
  webpage.****/
 
-class No_Barcode_PDF extends FPDF
+class YPSI_BulkLabel extends FPDF
 {
    function EAN13($x,$y,$barcode,$h=16,$w=.35)
    {
@@ -124,7 +126,7 @@ class No_Barcode_PDF extends FPDF
 
 function YPSI_BulkLabel($data,$offset=0){
 
-$pdf=new No_Barcode_PDF('P','mm','Letter'); //start new instance of PDF
+$pdf=new YPSI_BulkLabel('P','mm','Letter'); //start new instance of PDF
 $pdf->Open(); //open new PDF Document
 $pdf->SetTopMargin(40);  //Set top margin of the page
 $pdf->SetLeftMargin(5);  //Set left margin of the page
