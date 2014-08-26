@@ -184,9 +184,9 @@ class FannieAPI
                 $directories[] = dirname(__FILE__).'/../item/';
                 $directories[] = dirname(__FILE__).'/../logs/';
                 $directories[] = dirname(__FILE__).'/../reports/';
+                $directories[] = dirname(__FILE__).'/../mem/';
                 /*
                 $directories[] = dirname(__FILE__).'/../install/';
-                $directories[] = dirname(__FILE__).'/../mem/';
                 $directories[] = dirname(__FILE__).'/../ordering/';
                 $directories[] = dirname(__FILE__).'/../purchasing/';
                 */

@@ -24,8 +24,10 @@
      6Mar2013 Andy Theuninck re-do as class
      4Sep2012 Eric Lee Add some notes to the initial page.
 */
-include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class MemNameNumImportPage extends FannieUploadPage 
 {
