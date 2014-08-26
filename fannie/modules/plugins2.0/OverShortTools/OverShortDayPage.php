@@ -31,6 +31,9 @@ class OverShortDayPage extends FanniePage {
     protected $header = 'Over/Short Whole Day';
     protected $window_dressing = False;
     protected $auth_classes = array('overshorts');
+    public $page_set = 'Plugin :: Over/Shorts';
+    public $description = '[Single Day] allows viewing and entering tender amounts for all
+    cashiers on a given day.';
 
     // 10Nov13 EL Added constructor
     public function __construct() {

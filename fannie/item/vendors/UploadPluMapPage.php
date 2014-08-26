@@ -31,6 +31,10 @@ class UploadPluMapPage extends FannieUploadPage {
     public $title = "Fannie - Load Vendor SKU/PLU mapping";
     public $header = "Upload Vendor SKU/PLU file";
 
+    public $description = '[Vendor PLU Map] loads a list of vendor SKUs and the corresponding
+    POS UPC used to sell the item. Typically these are things like bulk PLUs but any UPC is
+    permitted.';
+
     protected $preview_opts = array(
         'sku' => array(
             'name' => 'sku',

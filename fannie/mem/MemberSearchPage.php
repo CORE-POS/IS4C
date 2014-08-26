@@ -31,6 +31,8 @@ class MemberSearchPage extends FanniePage {
         <p style='font-family:arial; font-size:0.7em; margin:0.0em 0em 0em 1.5em;'>
         Enter criteria to find one member or a list members from which to choose.</p>";
 
+    public $description = '[Member Search] finds a member account by name, number, or contact info.';
+
     private $mode = 'search';
     private $country;
     private $results = array();

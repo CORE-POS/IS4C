@@ -31,6 +31,8 @@ class MemArEquityDumpTool extends FanniePage {
     protected $title='Fannie - Member Management Module';
     protected $header='Dump Member Equity/AR';
 
+    public $description = '[Remove Equity/AR] simply removes amounts from a member\'s account.';
+
     private $errors = '';
     private $mode = 'init';
     private $depts = array();

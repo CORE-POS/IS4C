@@ -30,6 +30,8 @@ class XlsBatchPage extends FannieUploadPage {
     protected $title = "Fannie -  Sales Batch";
     protected $header = "Upload Batch file";
 
+    public $description = '[Excel Batch] creates a sale or price change batch from a spreadsheet.';
+
     protected $preview_opts = array(
         'upc_lc' => array(
             'name' => 'upc_lc',

@@ -34,6 +34,9 @@ class ProductImportPage extends FannieUploadPage
     protected $title = "Fannie :: Product Tools";
     protected $header = "Import Products";
 
+    public $description = '[Product Import] loads or updates product data via spreadsheet. Used
+    primarily for intial database population.';
+
     protected $preview_opts = array(
         'upc' => array(
             'name' => 'upc',

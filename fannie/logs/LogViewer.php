@@ -33,6 +33,8 @@ class LogViewer extends FanniePage
 	protected $must_authenticate = true;
 	protected $auth_classes = array('admin');
 
+    public $description = '[Log Viewer] shows Fannie\'s log files through the web.';
+
 	private $mode = 'list';
 
 	public function preprocess()

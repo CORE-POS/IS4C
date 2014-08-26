@@ -31,6 +31,9 @@ class CreateTagsByDept extends FanniePage {
     protected $title = "Fannie : Department Shelf Tags";
     protected $header = "Department Shelf Tags";
 
+    public $description = '[Department Shelf Tags] generates a set of shelf tags for given POS
+    department(s).';
+
     private $msgs = '';
 
     function preprocess(){

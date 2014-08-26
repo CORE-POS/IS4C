@@ -37,6 +37,9 @@ class MemberStickerPage extends FanniePage {
     protected $title='Fannie - Print Member Stickers';
     protected $header='Print Member Stickers';
 
+    public $description = '[Member Stickers] generates a PDF of member number stickers
+    for use with membership paperwork.';
+
     function preprocess(){
         if (FormLib::get_form_value('start',False) !== False){
             $pdf = new FPDF('P','in','Letter');

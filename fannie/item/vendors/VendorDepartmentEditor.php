@@ -30,6 +30,9 @@ class VendorDepartmentEditor extends FanniePage {
     protected $title = "Fannie : Manage Vendors";
     protected $header = "Manage Vendors";
 
+    public $description = '[Vendor Departments] manages vendor-specific departments or categories.
+    These are distinct from POS departments.';
+
     function preprocess(){
 
         $ajax = FormLib::get_form_value('action');

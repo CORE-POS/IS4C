@@ -30,6 +30,9 @@ class OverShortMAS extends FannieRESTfulPage {
     protected $header = 'MAS Export';
     protected $title = 'MAS Export';
 
+    public $page_set = 'Plugin :: Over/Shorts';
+    public $description = '[MAS Export] formats over/short info for MAS90 journal entry.';
+
     function preprocess(){
         $this->__routes[] = 'get<startDate><endDate>';
         return parent::preprocess();

@@ -44,6 +44,9 @@ class UploadAnyFile extends FanniePage {
     protected $title = "Fannie - Upload Any File";
     protected $header = "Upload Any File";
 
+    public $description = '[Generic Upload] simply uploads a file to temporary storage
+    on the server.';
+
     private $tpath;
     
     function preprocess(){

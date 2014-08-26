@@ -31,6 +31,8 @@ class EndItemSale extends FannieRESTfulPage {
     protected $header = 'Take item off sale';
     protected $title = 'Take item off sale';
 
+    public $description = '[Take Item Off Sale] immediately stops sale pricing an item.';
+
     function post_id_handler(){
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);

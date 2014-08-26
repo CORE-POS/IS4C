@@ -33,6 +33,8 @@ class DeleteTenderPage extends FanniePage {
     protected $must_authenticate = True;
     protected $auth_classes = array('tenders');
 
+    public $description = '[Delete Tender] gets rid of a tender type.';
+
     private $mode = 'form';
 
     function preprocess(){

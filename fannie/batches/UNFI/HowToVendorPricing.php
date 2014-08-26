@@ -7,6 +7,8 @@ if (!class_exists('FannieAPI')) {
 class HowToVendorPricing extends FanniePage {
     protected $window_dressing = False;
 
+    public $description = '[Vendor Pricing Documentation] describes uploading vendor catalog price files.';
+
     function css_content(){
         return 'img {
             border: solid 1px black;

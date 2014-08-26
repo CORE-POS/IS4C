@@ -31,6 +31,9 @@ class VendorPricingIndex extends FanniePage {
     protected $title = "Fannie - Vendor Price File";
     protected $header = "Vendor Price File";
 
+    public $description = '[Vendor Pricing Menu] lists tools for managing vendor
+    cost information and making price changes when costs change.';
+
     function body_content(){
         ob_start();
         ?>

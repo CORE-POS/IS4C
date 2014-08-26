@@ -34,6 +34,10 @@ class MemNameNumImportPage extends FannieUploadPage
     protected $title = "Fannie :: Member Tools";
     protected $header = "Import Member Names &amp; Numbers";
 
+    public $description = '[Member Names and Numbers] loads member names and numbers. This is the
+    starting point for importing existing member information. Member numbers need to be established
+    first so other information can be associated by number.';
+
     protected $preview_opts = array(
         'memnum' => array(
             'name' => 'memnum',

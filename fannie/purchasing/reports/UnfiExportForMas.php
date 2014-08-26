@@ -33,6 +33,9 @@ class UnfiExportForMas extends FannieReportPage
     protected $sortable = false;
     protected $no_sort_but_style = true;
 
+    public $page_set = 'Reports';
+    public $description = '[MAS Invoice Export] exports vendor invoices for MAS90.';
+
     function preprocess(){
         /**
           Set the page header and title, enable caching

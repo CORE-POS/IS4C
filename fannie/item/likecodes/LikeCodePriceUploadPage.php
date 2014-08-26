@@ -31,6 +31,9 @@ class LikeCodePriceUploadPage extends FannieUploadPage
     protected $title = "Fannie :: Upload Likecode Prices";
     protected $header = "Upload Likecode Prices";
 
+    public $description = '[Like Code Prices] uploads a spreadsheet of like codes and prices
+    and immediately updates the prices for those like coded items.';
+
     protected $preview_opts = array(
         'likecode' => array(
             'name' => 'likecode',

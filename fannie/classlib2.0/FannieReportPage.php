@@ -41,6 +41,8 @@ class FannieReportPage extends FanniePage
     Base class for creating reports.
     ";
 
+    public $page_set = 'Reports';
+
     /**
       Assign report to a "set" of reports
     */

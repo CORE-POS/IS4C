@@ -65,6 +65,8 @@ class CronManagementPage extends FanniePage
     protected $must_authenticate = True;
     protected $auth_classes = array('admin');
 
+    public $description = '[Scheduled Tasks] manages periodic background tasks.';
+
     function preprocess()
     {
         global $FANNIE_OP_DB;

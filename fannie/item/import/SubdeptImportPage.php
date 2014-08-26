@@ -35,6 +35,8 @@ class SubdeptImportPage extends FannieUploadPage {
     protected $title = "Fannie :: Product Tools";
     protected $header = "Import Sub-Departments";
 
+    public $description = '[Subdepartment Import] loads subdept data from a spreadsheet.';
+
     protected $preview_opts = array(
         'sn' => array(
             'name' => 'sn',

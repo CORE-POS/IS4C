@@ -29,6 +29,9 @@ class OverShortSafecountPage extends FanniePage {
     protected $window_dressing = False;
     protected $auth_classes = array('overshorts');
 
+    public $page_set = 'Plugin :: Over/Shorts';
+    public $description = '[Safe Count] stores information about cash on hand and change buys.';
+
     function preprocess(){
         $action = FormLib::get_form_value('action',False);
         if ($action !== False){

@@ -31,6 +31,9 @@ class SyncFromSearch extends FannieRESTfulPage
     protected $header = 'Send Items to Scales';
     protected $title = 'Send Items to Scales';
 
+    public $description = '[Scale Sync] sends a set of advanced search items to
+    specified scales (Hobart). Must be accessed via Advanced Search.';
+
     protected $window_dressing = false;
 
     private $upcs = array();

@@ -33,6 +33,9 @@ class ObfWeekEntryPage extends FannieRESTfulPage
     protected $title = 'OBF: Weeks';
     protected $header = 'OBF: Weeks';
 
+    public $page_set = 'Plugin :: Open Book Financing';
+    public $description = '[Week Entry] sets labor amounts and sales goals by week.';
+
     public function javascript_content()
     {
         ob_start();

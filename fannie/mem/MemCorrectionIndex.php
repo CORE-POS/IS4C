@@ -31,6 +31,8 @@ class MemCorrectionIndex extends FanniePage {
     protected $title='Fannie - Member Management Module';
     protected $header='Make Member Corrections';
 
+    public $description = '[Member Correction Menu] lists tools for correcting account imbalances.';
+
     private $msgs = '';
 
     function body_content(){

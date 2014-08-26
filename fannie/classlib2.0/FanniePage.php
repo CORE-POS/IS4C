@@ -38,6 +38,10 @@ class FanniePage
     Base class for creating HTML pages.
     ";
 
+    public $discoverable = true;
+
+    public $page_set = 'Misc';
+
     /** force users to login immediately */
     protected $must_authenticate = False;
     /** name of the logged in user (or False is no one is logged in) */

@@ -35,6 +35,10 @@ class FbeProcessQueuePage extends FannieRESTfulPage
     protected $title = 'File Queued Documents';
     protected $header = 'File Queued Documents';
 
+    public $page_set = 'Plugin: File By Email';
+    public $description = '[File By Email] shows pending documents so the user can rename them and
+    file them in an appropriate directory.';
+
     protected $window_dressing = false;
 
     public function preprocess()

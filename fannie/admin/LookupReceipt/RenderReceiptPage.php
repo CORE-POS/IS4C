@@ -8,6 +8,8 @@ class RenderReceiptPage extends FanniePage {
 
     protected $window_dressing = False;
 
+    public $description = '[Reprint Receipt] show a POS transaction receipt.';
+
     function body_content(){
         ob_start();
         ?>

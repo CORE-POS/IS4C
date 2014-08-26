@@ -34,6 +34,9 @@ class EditManyPurchaseOrders extends FannieRESTfulPage {
     protected $header = 'Purchase Orders';
     protected $title = 'Purchase Orders';
 
+    public $description = '[Multi-Vendor Purchase Order] creates and edits multiple purchase orders
+    as items from different vendors are scanned.';
+
     protected $must_authenticate = True;
 
     function preprocess(){

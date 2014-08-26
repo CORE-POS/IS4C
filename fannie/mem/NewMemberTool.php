@@ -27,7 +27,7 @@ if (!class_exists('FannieAPI')) {
 
 class NewMemberTool extends FanniePage 
 {
-
+    public $description = '[New Members] creates a block of new member accounts.';
     protected $title = "Fannie :: Create Members";
     protected $header = "Create Members";
     protected $must_authenticate = True;

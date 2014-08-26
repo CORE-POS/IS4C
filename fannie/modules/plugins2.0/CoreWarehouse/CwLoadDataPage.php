@@ -30,6 +30,10 @@ class CwLoadDataPage extends FanniePage {
     protected $title = 'Core Warehouse : Load Data';
     protected $header = 'Core Warehouse : Load Data';
 
+    public $page_set = 'Plugin :: Core Warehouse';
+    public $description = '[Core Warehouse Load Data] pull historical transaction data into
+    the warehouse storage tables.';
+
     function preprocess(){
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_ARCHIVE_DB;
         $month = FormLib::get_form_value('month', False);

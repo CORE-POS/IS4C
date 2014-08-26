@@ -33,6 +33,9 @@ class MemContactImportPage extends FannieUploadPage {
     protected $title = "Fannie :: Member Tools";
     protected $header = "Import Member Contact Info";
 
+    public $description = '[Member Contact Info] uploads members\' address, phone number, and
+    email. Member numbers must already exist.';
+
     protected $preview_opts = array(
         'memnum' => array(
             'name' => 'memnum',

@@ -31,6 +31,8 @@ class MemArEquitySwapTool extends FanniePage {
     protected $title='Fannie - Member Management Module';
     protected $header='Swap Member Equity/AR';
 
+    public $description = '[Swap Equity/AR] turns an Equity payment into an AR payment or vice versa.';
+
     private $errors = '';
     private $mode = 'init';
     private $depts = array();

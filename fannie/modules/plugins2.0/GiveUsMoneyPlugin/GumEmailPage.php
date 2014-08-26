@@ -34,6 +34,9 @@ class GumEmailPage extends FannieRESTfulPage
     protected $must_authenticate = false;
     //protected $auth_classes = array('GiveUsMoney');
 
+    public $page_set = 'Plugin :: Give Us Money';
+    public $description = '[Emails] can send different notifications to account holders.';
+
     public function preprocess()
     {
         $acct = FormLib::get('id');

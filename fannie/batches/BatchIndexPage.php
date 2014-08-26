@@ -29,6 +29,8 @@ class BatchIndexPage extends FanniePage {
     protected $title = 'Fannie - Batch Module';
     protected $header = 'Sales Batches';
 
+    public $description = '[Batch Menu] lists various batch related pages.';
+
     function body_content(){
         ob_start();
         ?>

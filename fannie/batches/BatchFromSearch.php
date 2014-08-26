@@ -32,6 +32,9 @@ class BatchFromSearch extends FannieRESTfulPage
     protected $header = 'Create Batch From Search Results';
     protected $title = 'Create Batch From Search Results';
 
+    public $description = '[Batch From Search] takes a set of advanced search results and
+    creates a sale or price change batch. Must be accessed via Advanced Search.';
+
     private $upcs = array();
 
     function preprocess()

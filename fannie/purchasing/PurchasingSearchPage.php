@@ -31,6 +31,8 @@ class PurchasingSearchPage extends FannieRESTfulPage {
     protected $header = 'Purchase Orders';
     protected $title = 'Purchase Orders';
 
+    public $description = '[Search Purchase Orders] finds orders/invoices containing a given item.';
+
     protected $must_authenticate = true;
 
     public function get_id_view()

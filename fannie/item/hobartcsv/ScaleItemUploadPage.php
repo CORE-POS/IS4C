@@ -31,6 +31,8 @@ class ScaleItemUploadPage extends FannieUploadPage
     protected $title = "Fannie :: Product Tools";
     protected $header = "Import Scale Items";
 
+    public $description = '[Scale Item Import] load information about service-scale (Hobart) items.';
+
     protected $preview_opts = array(
         'upc' => array(
             'name' => 'upc',

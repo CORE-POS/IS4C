@@ -30,6 +30,9 @@ include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 class SaMenuPage extends FannieRESTfulPage {
     protected $window_dressing = False;
 
+    public $page_set = 'Plugin :: Shelf Audit';
+    public $description = '[Menu] lists handheld-friendly pages for navigation.';
+
     function css_content(){
         ob_start();
         ?>

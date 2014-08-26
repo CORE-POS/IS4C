@@ -33,6 +33,8 @@ class EditShelfTags extends FanniePage {
     protected $must_authenticate = True;
     protected $auth_classes = array('barcodes');
 
+    public $description = '[Edit Shelf Tags] updates the text information for a set of tags.';
+
     private $id;
 
     function preprocess(){

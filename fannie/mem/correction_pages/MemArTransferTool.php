@@ -31,6 +31,8 @@ class MemArTransferTool extends FanniePage {
     protected $title='Fannie - Member Management Module';
     protected $header='Transfer A/R';
 
+    public $description = '[Transfer AR] moves an AR payment from one member to another.';
+
     private $errors = '';
     private $mode = 'init';
     private $depts = array();

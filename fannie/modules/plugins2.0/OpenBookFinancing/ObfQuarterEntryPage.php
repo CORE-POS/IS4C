@@ -33,6 +33,9 @@ class ObfQuarterEntryPage extends FannieRESTfulPage
     protected $title = 'OBF: Quarters';
     protected $header = 'OBF: Quarters';
 
+    public $page_set = 'Plugin :: Open Book Financing';
+    public $description = '[Quarter Entry] sets sales and labor goals by quarter.';
+
     public function javascript_content()
     {
         ob_start();

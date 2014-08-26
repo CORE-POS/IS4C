@@ -31,6 +31,8 @@ class BatchShelfTags extends FanniePage {
     protected $title = "Fannie : Batch Barcodes";
     protected $header = "Batch Barcodes";
 
+    public $description = '[Batch Shelf Tags] generates PDF shelftags for items in a batch.';
+
     private $layouts = array();
 
     function preprocess(){

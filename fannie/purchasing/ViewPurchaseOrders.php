@@ -34,6 +34,8 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
     protected $header = 'Purchase Orders';
     protected $title = 'Purchase Orders';
 
+    public $description = '[View Purchase Orders] lists pending orders and completed invoices.';
+
     protected $must_authenticate = false;
 
     private $show_all = true;

@@ -35,6 +35,8 @@ class MemEquityTransferTool extends FanniePage {
     private $mode = 'init';
     private $depts = array();
 
+    public $description = '[Transfer Equity] moves an Equity payment from one member to another.';
+
     private $CORRECTION_CASHIER = 1001;
     private $CORRECTION_LANE = 30;
     private $CORRECTION_DEPT = 800;

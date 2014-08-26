@@ -28,6 +28,8 @@ if (!class_exists('FannieAPI')) {
 class MemImportIndex extends FanniePage {
     protected $title = "Fannie :: Member Tools";
     protected $header = "Import Member Information";
+
+    public $description = '[Member Import Menu] lists tools for importing member information.';
     
     function body_content(){
         ob_start();

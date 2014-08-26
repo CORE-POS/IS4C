@@ -31,6 +31,8 @@ class OverShortCashierPage extends FanniePage {
     protected $header = 'Over/Short Single Cashier';
     protected $window_dressing = False;
     protected $auth_classes = array('overshorts');
+    public $page_set = 'Plugin :: Over/Shorts';
+    public $description = '[Single Cashier] allows viewing and entering tender amounts by cashier.';
 
     // 10Nov13 EL Added constructor
     public function __construct() {

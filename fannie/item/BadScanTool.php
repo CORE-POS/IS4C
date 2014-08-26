@@ -31,6 +31,9 @@ class BadScanTool extends FannieRESTfulPage
     protected $header = 'Bad Scans';
     protected $title = 'Bad Scans';
 
+    public $description = '[Bad Scan Tool] shows information about UPCs that were scanned
+    at the lanes but not found in POS.';
+
     private $date_restrict = false;
 
     function preprocess()

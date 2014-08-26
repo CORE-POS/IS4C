@@ -31,6 +31,9 @@ class MarginToolFromSearch extends FannieRESTfulPage
     protected $header = 'Margin Search Results';
     protected $title = 'Margin Search Results';
 
+    public $description = '[Margin Preview] takes a set of advanced search results and shows the effect on
+    margin of various price changes. Must be accessed via Advanced Search.';
+
     protected $window_dressing = false;
 
     protected $upcs = array();

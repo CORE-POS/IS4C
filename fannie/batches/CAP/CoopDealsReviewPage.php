@@ -31,6 +31,9 @@ class CoopDealsReviewPage extends FanniePage
 
     protected $title = "Fannie - CAP sales";
     protected $header = "Review Data";
+
+    public $description = '[Co+op Deals Review] lists the currently load Co+op Deals data
+    and can create sales batches from that data.';
     
     private $mode = 'form';
 

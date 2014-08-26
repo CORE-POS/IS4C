@@ -34,6 +34,9 @@ class RestrictCouponPage extends FannieRESTfulPage {
     protected $header = 'Coupon Restrictions';
     protected $title = 'Coupon Restrictions';
 
+    public $description = '[Coupon Restrictions] bans or limits use of broken manufacturer coupons.
+    Typically this means the manufacturer put the wrong UPC code on the coupon.';
+
     function get_view(){
         global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);

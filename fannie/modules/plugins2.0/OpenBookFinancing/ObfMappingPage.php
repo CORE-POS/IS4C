@@ -33,6 +33,10 @@ class ObfMappingPage extends FannieRESTfulPage
     protected $title = 'OBF: Department Mapping';
     protected $header = 'OBF: Department Mapping';
 
+    public $page_set = 'Plugin :: Open Book Financing';
+    public $description = '[Department Mapping] associates POS sales departments with
+    OBF labor categories.';
+
     public function preprocess()
     {
         $this->__routes[] = 'post<id><superID><growth>';

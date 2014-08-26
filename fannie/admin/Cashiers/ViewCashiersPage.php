@@ -33,6 +33,8 @@ class ViewCashiersPage extends FanniePage {
     protected $must_authenticate = True;
     protected $auth_classes = array('editcashiers');
 
+    public $description = '[View Cashiers] shows information about cashiers.';
+
 
     function javascript_content(){
         ob_start();

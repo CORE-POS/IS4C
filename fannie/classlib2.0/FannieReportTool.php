@@ -42,6 +42,8 @@ class FannieReportTool extends FanniePage
     Base class for hybrid report/tool pages
     ";
 
+    public $page_set = 'Reports';
+
     /**
       Assign report to a "set" of reports
     */

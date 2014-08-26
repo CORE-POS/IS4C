@@ -30,6 +30,8 @@ class MemberIndexPage extends FanniePage {
     protected $title = "Fannie :: Member Tools";
     protected $header = "Member Tools";
 
+    public $description = '[Member Menu] lists member related pages.';
+
     function body_content(){
         ob_start();
         ?>

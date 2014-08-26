@@ -31,6 +31,8 @@ class ScaleEditor extends FannieRESTfulPage
     protected $header = 'Manage Service Scales';
     protected $title = 'Manage Service Scales';
 
+    public $description = '[Scale Editor] defines available service scales (Hobart).';
+
     public function preprocess()
     {
         $this->__routes[] = 'get<new>'; 

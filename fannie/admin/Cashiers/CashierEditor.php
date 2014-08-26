@@ -33,6 +33,8 @@ class CashierEditor extends FanniePage {
     protected $must_authenticate = True;
     protected $auth_classes = array('editcashiers');
 
+    public $description = '[Edit Cashier] is for managing existing cashiers.';
+
     private $messages = '';
 
     function preprocess(){

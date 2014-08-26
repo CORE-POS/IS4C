@@ -31,6 +31,9 @@ class DefaultUploadPage extends FannieUploadPage {
     public $title = "Fannie - Load Vendor Prices";
     public $header = "Upload Vendor price file";
 
+    public $description = '[Vendor Catalog Import] is the default tool for loading or updating vendor item data
+    via spreadsheet.';
+
     protected $preview_opts = array(
         'upc' => array(
             'name' => 'upc',

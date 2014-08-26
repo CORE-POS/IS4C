@@ -29,6 +29,8 @@ class OverShortIndexPage extends FanniePage {
     protected $header = 'Over Short Tools';
     protected $title = 'Over Short Tools';
     protected $auth_classes = array('overshorts');
+    public $page_set = 'Plugin :: Over/Shorts';
+    public $description = '[Menu] lists over/short pages.';
 
     function body_content(){
         ob_start();

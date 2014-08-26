@@ -33,6 +33,8 @@ class DepartmentImportPage extends FannieUploadPage {
     protected $title = "Fannie :: Product Tools";
     protected $header = "Import Departments";
 
+    public $description = '[Department Import] load POS departments from a spreadsheet.';
+
     protected $preview_opts = array(
         'dept_no' => array(
             'name' => 'dept_no',

@@ -31,6 +31,9 @@ class UnfiUploadPage extends FannieUploadPage {
     public $title = "Fannie - UNFI Prices";
     public $header = "Upload UNFI price file";
 
+    public $description = '[UNFI Catalog Import] specialized vendor import tool. Column choices
+    default to UNFI price file layout.';
+
     protected $preview_opts = array(
         'upc' => array(
             'name' => 'upc',

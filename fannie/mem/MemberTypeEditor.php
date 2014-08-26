@@ -29,6 +29,7 @@ class MemberTypeEditor extends FanniePage {
 
     protected $title = "Fannie :: Member Types";
     protected $header = "Member Types";
+    public $description = '[Member Types] creates, updates, and deletes account types.';
     protected $must_authenticate = True;
     protected $auth_classes = array('editmembers');
 

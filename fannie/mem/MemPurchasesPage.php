@@ -32,6 +32,8 @@ class MemPurchasesPage extends FannieRESTfulPage
     protected $title = 'Member Purchase History';
     protected $header = 'Member Purchase History';
 
+    public $description = '[Member Purchases] lists all of a given member\'s transactions.';
+
     protected function get_id_handler()
     {
         $this->card_no = $this->id;

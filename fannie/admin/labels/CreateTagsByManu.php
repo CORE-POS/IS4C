@@ -30,6 +30,8 @@ class CreateTagsByManu extends FanniePage {
 
     private $msgs = '';
 
+    public $description = '[Brand Shelf Tags] generates a set of shelf tags for brand or UPC prefix.';
+
     function preprocess(){
         global $FANNIE_OP_DB;
 

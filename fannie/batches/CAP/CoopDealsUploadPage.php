@@ -30,6 +30,9 @@ class CoopDealsUploadPage extends FannieUploadPage {
     public $title = "Fannie - Co+op Deals sales";
     public $header = "Upload Co+op Deals file";
 
+    public $description = '[Co+op Deals Import] loads sales information from Co+op Deals pricing spreadsheets.
+    This data can be used to create sales batches.';
+
     protected $preview_opts = array(
         'upc' => array(
             'name' => 'upc',

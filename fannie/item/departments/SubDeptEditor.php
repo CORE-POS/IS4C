@@ -30,6 +30,8 @@ class SubDeptEditor extends FanniePage {
     protected $title = "Fannie : Manage Subdepartments";
     protected $header = "Manage Subdepartments";
 
+    public $description = '[Subdepartment Editor] manges POS sub departments.';
+
     function preprocess(){
         /* allow ajax calls */
         if(FormLib::get_form_value('action') !== ''){

@@ -29,6 +29,8 @@ if (!class_exists('FannieAPI')) {
 class DepartmentIndexPage extends FanniePage {
     protected $title = "Fannie : Manage Departments";
     protected $header = "Manage Departments";
+
+    public $description = '[Department Menu] lists pages related to departments.';
     
     function body_content(){
         ob_start();

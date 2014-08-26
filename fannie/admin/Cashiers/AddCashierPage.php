@@ -33,6 +33,8 @@ class AddCashierPage extends FanniePage {
     protected $must_authenticate = True;
     protected $auth_classes = array('editcashiers');
 
+    public $description = '[Add Cashier] is the tool to create new cashiers.';
+
     private $messages = '';
 
     function preprocess(){

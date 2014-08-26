@@ -29,6 +29,8 @@ class ItemImportIndex extends FanniePage {
     protected $title = "Fannie :: Product Tools";
     protected $header = "Import Product Information";
 
+    public $description = '[Item Import Menu] lists options for importing item related data.';
+
     function body_content(){
         ob_start();
         ?>

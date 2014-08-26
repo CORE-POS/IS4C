@@ -32,6 +32,9 @@ class OriginEditor extends FannieRESTfulPage
     protected $header = 'Product Origins';
     protected $title = 'Product Origins';
 
+    public $description = '[Origins Editor] manages complex data about where items come from
+    geographically.';
+
     public function preprocess()
     {
         $this->__routes[] = 'get<country>';

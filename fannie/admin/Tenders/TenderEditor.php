@@ -33,6 +33,7 @@ class TenderEditor extends FanniePage {
     protected $header = "Tenders";
     protected $must_authenticate = True;
     protected $auth_classes = array('tenders');
+    public $description = '[Tenders] creates and updates tender types.';
 
     function javascript_content(){
         ob_start();

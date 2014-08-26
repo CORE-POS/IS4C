@@ -31,6 +31,9 @@ class ObfWeeklyReport extends FannieReportPage
     protected $header = 'OBF: Weekly Report';
     protected $title = 'OBF: Weekly Report';
 
+    public $page_set = 'Plugin :: Open Book Financing';
+    public $description = '[Weekly Report] shows sales and labor data for a given week.';
+
     protected $required_fields = array('weekID');
 
     protected $report_headers = array(

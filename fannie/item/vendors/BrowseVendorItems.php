@@ -34,6 +34,9 @@ class BrowseVendorItems extends FanniePage {
     protected $header = "Browse Vendor Catalog";
     protected $window_dressing = False;
 
+    public $description = '[Vendor Items] lists items in the vendor\'s catalog. Must be
+    accessed via the Vendor Editor.';
+
     function preprocess(){
 
         $ajax = FormLib::get_form_value('action');

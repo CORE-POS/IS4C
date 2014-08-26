@@ -35,6 +35,9 @@ class GenericBillingPage extends FannieRESTfulPage {
     protected $title = "Fannie : Generic Biling";
     protected $header = "Generic Billing";
 
+    public $description = '[Generic Billing] adds a specified amount and memo to a member\'s
+    accounts receivable (AR) balance.';
+
     function javascript_content(){
         ob_start();
         ?>

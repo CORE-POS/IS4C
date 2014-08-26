@@ -34,6 +34,9 @@ class RecalculateVendorSRPs extends FanniePage {
     protected $title = "Fannie - Vendor SRPs";
     protected $header = "Recalculate SRPs from Margins";
 
+    public $description = '[Calculate Vendor SRPs] recalculates item SRPs based on vendor
+    specific margin goals.';
+
     private $mode = 'form';
 
     function preprocess(){

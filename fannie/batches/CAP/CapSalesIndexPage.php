@@ -30,6 +30,9 @@ class CapSalesIndexPage extends FanniePage {
     protected $title = "Fannie - CAP sales";
     protected $header = "CAP Sales";
 
+    public $description = '[Co+op Deals Menu] lists options for importing and creating
+    Co+op Deals batches.';
+
     function body_content(){
         ob_start();
         ?>

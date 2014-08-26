@@ -36,6 +36,8 @@ class BatchTypeEditor extends FanniePage {
     protected $title = 'Fannie - Batch Module';
     protected $header = 'Sales Batches';
 
+    public $description = '[Batch Type Editor] manages different kinds of batches.';
+
     function preprocess(){
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);

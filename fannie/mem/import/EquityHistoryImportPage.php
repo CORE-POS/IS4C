@@ -33,6 +33,9 @@ class EquityHistoryImportPage extends FannieUploadPage {
     protected $title = "Fannie :: Member Tools";
     protected $header = "Import Existing Member Equity";
 
+    public $description = '[Equity History Import] loads information about members\' pre-existing
+    equity balance. Pre-existing means equity was not purchased using this POS.';
+
     protected $preview_opts = array(
         'memnum' => array(
             'name' => 'memnum',

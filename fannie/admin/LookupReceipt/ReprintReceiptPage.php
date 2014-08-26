@@ -32,6 +32,8 @@ class ReprintReceiptPage extends FanniePage
     protected $title = 'Fannie :: Lookup Receipt';
     protected $header = 'Lookup Receipt';
 
+    public $description  = '[Lookup Receipt] finds a POS transaction.';
+
     private $results = '';
 
     function preprocess()

@@ -30,6 +30,8 @@ class DepartmentEditor extends FanniePage {
     protected $title = "Fannie : Manage Departments";
     protected $header = "Manage Departments";
 
+    public $description = '[Department Editor] creates, updates, and deletes POS departments.';
+
     function preprocess(){
         /* allow ajax calls */
         if(FormLib::get_form_value('action') !== ''){

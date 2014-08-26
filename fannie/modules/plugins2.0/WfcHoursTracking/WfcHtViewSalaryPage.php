@@ -33,6 +33,8 @@ class WfcHtViewSalaryPage extends FanniePage
 {
     protected $must_authenticate = true;
     protected $window_dressing = false;
+    public $page_set = 'Plugin :: WFC Hours Tracking';
+    public $description = '[View Salary] shows information for a single salaried employee.';
 
     private $empID = 0;
     public function preprocess()

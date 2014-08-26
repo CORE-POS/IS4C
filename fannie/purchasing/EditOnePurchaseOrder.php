@@ -34,6 +34,9 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
     protected $header = 'Purchase Orders';
     protected $title = 'Purchase Orders';
 
+    public $description = '[Single-Vendor Purchase Order] creates and edits a purchase order
+    for a specific vendor. When scanning, only items available from that vendor are shown.';
+
     protected $must_authenticate = True;
     
     function preprocess(){

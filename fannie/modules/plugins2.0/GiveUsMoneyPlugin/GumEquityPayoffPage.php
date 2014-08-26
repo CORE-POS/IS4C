@@ -33,6 +33,9 @@ class GumEquityPayoffPage extends FannieRESTfulPage
     protected $must_authenticate = true;
     protected $auth_classes = array('GiveUsMoney');
 
+    public $page_set = 'Plugin :: Give Us Money';
+    public $description = '[Equity Payoff] generates a check and statement for buying back equity shares.';
+
     public function preprocess()
     {
         $this->header = 'Class C Payoff';

@@ -32,6 +32,9 @@ class SignFromSearch extends FannieRESTfulPage
     protected $title = 'Fannie - Signage';
     protected $header = 'Signage';
 
+    public $description = '[Signage] is a tool to create sale signs or shelf tags
+    for a set of advanced search items. Must be accessed via Advanced Search.';
+
     protected $signage_mod;
     protected $signage_obj;
 

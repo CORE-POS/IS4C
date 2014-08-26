@@ -31,6 +31,9 @@ class ImportPurchaseOrder extends FannieUploadPage
     protected $title = "Fannie - Purchase Order";
     protected $header = "Upload Purchase Order / Invoice";
 
+    public $description = '[Purchase Order Import] loads a vendor purchase order / invoice 
+    from a spreadsheet.';
+
     protected $preview_opts = array(
         'sku' => array(
             'name' => 'sku',

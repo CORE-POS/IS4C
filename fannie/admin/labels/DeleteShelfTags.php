@@ -36,6 +36,8 @@ class DeleteShelfTags extends FanniePage
 
     private $messages = '';
 
+    public $description = '[Delete Shelf Tags] gets rid of a set of shelf tags.';
+
     function preprocess()
     {
         global $FANNIE_OP_DB;

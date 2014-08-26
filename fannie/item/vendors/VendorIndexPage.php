@@ -40,6 +40,8 @@ class VendorIndexPage extends FanniePage {
     protected $title = "Fannie : Manage Vendors";
     protected $header = "Manage Vendors";
 
+    public $description = '[Vendor Editor] creates or update information about vendors.';
+
     function preprocess(){
 
         $ajax = FormLib::get_form_value('action');

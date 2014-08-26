@@ -31,6 +31,8 @@ class PurchasingIndexPage extends FannieRESTfulPage {
     protected $header = 'Purchase Orders';
     protected $title = 'Purchase Orders';
 
+    public $description = '[Purchase Order Menu] lists purchase order related pages.';
+
     protected $must_authenticate = True;
 
     function get_view(){

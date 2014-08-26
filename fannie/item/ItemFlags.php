@@ -30,6 +30,8 @@ class ItemFlags extends FanniePage {
     
     private $msgs;
 
+    public $description = '[Item Flags] are extra fields that can be associated with an item.';
+
     function preprocess(){
         global $FANNIE_OP_DB;
         $this->title = 'Fannie - Product Flag Maintenance';

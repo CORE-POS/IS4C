@@ -40,6 +40,9 @@ class CalendarAttendedEventPage extends FannieRESTfulPage
 
     protected $must_authenticate = true;
 
+    public $page_set = 'Plugin :: Calendar';
+    public $description = '[Attended Event] is a calendar entry with an attendee list attached.';
+
     public function preprocess()
     {
         $this->__routes[] = 'get<id><join_id>';

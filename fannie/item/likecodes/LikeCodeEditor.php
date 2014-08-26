@@ -36,6 +36,8 @@ class LikeCodeEditor extends FanniePage {
     protected $auth_classes = array('manage_likecodes');
     private $msgs = "";
 
+    public $description = '[Like Code Editor] creates and deletes like codes.';
+
     function preprocess(){
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);

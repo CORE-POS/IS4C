@@ -35,6 +35,8 @@ class ItemEditorPage extends FanniePage
     private $mode = 'search';
     private $msgs = '';
 
+    public $description = '[Item Editor] is the primary item editing tool.';
+
     function preprocess()
     {
         global $FANNIE_PRODUCT_MODULES;

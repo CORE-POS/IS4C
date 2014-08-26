@@ -30,6 +30,8 @@ class TaxRateEditor extends FanniePage {
     protected $title = "Fannie : Tax Rates";
     protected $header = "Tax Rates";
 
+    public $description = '[Tax Rates] defines applicable sales tax rates.';
+
     function preprocess(){
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);

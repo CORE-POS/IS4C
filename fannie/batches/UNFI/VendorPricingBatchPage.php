@@ -30,6 +30,9 @@ class VendorPricingBatchPage extends FanniePage {
     protected $title = "Fannie - Create Price Change Batch";
     protected $header = "Create Price Change Batch";
 
+    public $description = '[Vendor Price Change] creates a price change batch for a given
+    vendor and edits it based on catalog cost information.';
+
     private $mode = 'start';
 
     function preprocess(){

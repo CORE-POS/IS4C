@@ -31,6 +31,8 @@ class UploadVendorPriceFile extends FanniePage {
     protected $title = "Fannie - Upload Price File";
     protected $header = "Upload Price File";
 
+    public $description = '[Vendor Price File] loads or reloads catalog information from a spreadsheet.';
+
     function body_content(){
         global $FANNIE_URL, $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
