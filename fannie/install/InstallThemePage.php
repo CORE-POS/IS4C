@@ -98,6 +98,9 @@ class InstallThemePage extends InstallPage
 
         echo '<table id="otherConfTable">'; 
 
+        echo '<tr><td>Custom Title</td>'
+            . '<td>' . installTextField('FANNIE_CUSTOM_TITLE', $FANNIE_CUSTOM_TITLE, '') . '</td>';
+
         echo '<tr><td>Font</td>'
             . '<td>' . installTextField('FANNIE_CSS_FONT', $FANNIE_CSS_FONT, '') . '</td>';
         $family = str_replace(';', '', $FANNIE_CSS_FONT);
