@@ -1,5 +1,5 @@
 <?php
-global $FANNIE_DYNAMIC_MENU, $FANNIE_NAV_POSITION, $FANNIE_CSS_LOGO, $FANNIE_CHARSET;
+global $FANNIE_DYNAMIC_MENU, $FANNIE_NAV_POSITION, $FANNIE_CSS_LOGO, $FANNIE_CHARSET, $FANNIE_CUSTOM_TITLE;
 /* try to deal with relative paths for includes */
 $path = "";
 $found = False;
@@ -50,6 +50,9 @@ if (!isset($FANNIE_CHARSET) || empty($FANNIE_CHARSET)) {
         <td>
         <div style="font-size:28px;" class="primaryColor">
         Fannie
+        <?php if (isset($FANNIE_CUSTOM_TITLE) && !empty($FANNIE_CUSTOM_TITLE)) {
+            echo ' - ' . $FANNIE_CUSTOM_TITLE;
+        } ?>
         </div>
         <div style="font-size:20px;" class="secondaryColor">
         IT CORE maintenance & reporting
