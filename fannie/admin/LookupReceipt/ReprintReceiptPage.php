@@ -127,6 +127,9 @@ class ReprintReceiptPage extends FanniePage
             }
 
             $or_clause .= ")";
+            if ($or_clause == "(1=0)") {
+                $or_clause = "1=1";
+            }
             $query .= ' AND '.$or_clause;
 
             $query .= " GROUP BY year(tdate),month(tdate),day(tdate),emp_no,register_no,trans_no ";
