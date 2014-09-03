@@ -248,14 +248,65 @@ class BatchManagementTool extends FanniePage
             $id = FormLib::get_form_value('id',0);
             $upc = FormLib::get_form_value('upc','');
             $upc = BarcodeLib::padUPC($upc);
-            $tag = FormLib::get_form_value('tag')=='true' ? True : False;
-            
-            $out = $this->addItemPriceInput($upc,$tag);
+
+            $json = array(
+                'error' => 0,
+                'field' => '#addItemPrice',
+            );
+
+            $batch = new BatchesModel($dbc);
+            $batch->batchID($id);
+            $batch->load();
+            $overlapP = $dbc->prepare('
+                SELECT b.batchName,
+                    b.startDate,
+                    b.endDate
+                FROM batchList AS l
+                    INNER JOIN batches AS b ON l.batchID=b.batchID
+                WHERE l.batchID <> ?
+                    AND l.upc = ?
+                    AND ? <= b.endDate
+                    AND ? >= b.startDate
+                    AND b.discounttype <> 0
+            ');
+            $args = array(
+                $id,
+                $upc,
+                date('Y-m-d', strtotime($batch->startDate())),
+                date('Y-m-d', strtotime($batch->endDate())),
+            );
+            $overlapR = $dbc->execute($overlapP, $args);
+            if ($batch->discounttype() > 0 && $dbc->num_rows($overlapR) > 0) {
+                $row = $dbc->fetch_row($overlapR);
+                $error = 'Item already in concurrent batch: '
+                    . $row['batchName'] . ' ('
+                    . date('Y-m-d', strtotime($row['startDate'])) . ' - '
+                    . date('Y-m-d', strtotime($row['endDate'])) . ')'
+                    . '<br />'
+                    . 'Either remove item from conflicting batch or change
+                       dates so the batches do not overlap.';
+                $json['error'] = $error;
+                $json['content'] = $this->addItemUPCInput();
+                $json['field'] = '#addItemUPC';
+            } else {
+
+                $tag = FormLib::get_form_value('tag')=='true' ? True : False;
+                
+                $json['content'] = $this->addItemPriceInput($upc,$tag);
+            }
+            echo json_encode($json);
+            $out = '';
             break;
         case 'addItemLC':
             $id = FormLib::get_form_value('id',0);
             $lc = FormLib::get_form_value('lc',0);
-            $out = $this->addItemPriceLCInput($lc);
+            $json = array(
+                'error' => 0,
+                'content' => $this->addItemPriceLCInput($lc),
+                'field' => '#addItemPrice',
+            );
+            echo json_encode($json);
+            $out = '';
             break;
         case 'addItemPrice':
             $id = FormLib::get_form_value('id',0);

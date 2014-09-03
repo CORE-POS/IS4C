@@ -290,9 +290,18 @@ function addItem()
     $.ajax({
         url: 'BatchManagementTool.php',
         data: data,
+        dataType: 'json',
         success: function(resp) {
-            $('#inputarea').html(resp);
-            $('#addItemPrice').focus();
+            if (resp.error) {
+                $('<div>'+resp.error+'</div>').dialog({
+                    close: function() {
+                        $(resp.field).focus();
+                    },
+                    modal: true
+                });
+            }
+            $('#inputarea').html(resp.content);
+            $(resp.field).focus();
         }
     });
 }
