@@ -3,7 +3,7 @@
 //header('Content-Disposition: attachment; filename="EOMreport.xls"');
 include('../../../../config.php');
 if (!class_exists('FannieAPI')) {
-    include(dirname(__FILE__).'/../classlib2.0/FannieAPI.php');
+    include(dirname(__FILE__).'/../../../../classlib2.0/FannieAPI.php');
 }
 include($FANNIE_ROOT.'src/functions.php');
 
@@ -46,13 +46,14 @@ if (!$output || isset($_REQUEST['recache'])){
     d.salesCode,d.dept_name,
     SUM(t.total)
     FROM $dlog as t LEFT JOIN
-    departments as d ON t.department = d.dept_no
-    LEFT JOIN MasterSuperDepts AS s
-    ON s.dept_ID = d.dept_no    
+        departments as d ON t.department = d.dept_no
+        LEFT JOIN MasterSuperDepts AS s
+        ON s.dept_ID = d.dept_no    
     WHERE tdate BETWEEN ? AND ?
-    AND t.Department < 600
-    AND t.department <> 0
-    AND t.trans_type <> 'T'
+        AND t.department < 600
+        AND t.department <> 0
+        AND t.trans_type <> 'T'
+        AND t.trans_type IN ('I', 'D')
     GROUP BY
     s.superID,t.department,d.dept_name,d.salesCode
     order by s.superID,t.department";
@@ -63,6 +64,7 @@ if (!$output || isset($_REQUEST['recache'])){
     WHERE l.tdate BETWEEN ? AND ?
     AND l.department < 600 AND l.department <> 0
     AND l.trans_type <> 'T'
+    AND l.trans_type IN ('I','D')
     GROUP BY s.superID
     order by s.superID";
 
@@ -73,10 +75,12 @@ if (!$output || isset($_REQUEST['recache'])){
     AND l.trans_type <> 'T'";
 
     $query2 = "SELECT t.TenderName,-sum(d.total) as total, COUNT(d.total)
-    FROM $dlog d ,tenders as t 
+    FROM $dlog AS d
+        left join tenders as t ON d.trans_subtype=t.TenderCode
     WHERE d.tdate BETWEEN ? AND ?
     AND d.trans_status <>'X'  
-    AND d.Trans_Subtype = t.TenderCode
+    AND d.trans_type='T'
+    AND d.trans_subtype <> 'MA'
     and t.TenderName <> 'MAD Coupon'
     and d.total <> 0
     GROUP BY t.TenderName";
@@ -282,7 +286,7 @@ if (!$output || isset($_REQUEST['recache'])){
     echo '<table><td width=120><u><font size=2><b>pCode</b></u></font></td>
           <td width=120><u><font size=2><b>Retail</b></u></font></td>
           <td>Dept Number</td><td>WholeSale</td></table>';
-    select_to_table($query2y,$args,0,'ffffff');
+    select_to_table($query2,$args,0,'ffffff');
     select_to_table($query22,$args,0,'ffffff');
     echo '<br>';
     echo 'Transactions';
@@ -292,6 +296,7 @@ if (!$output || isset($_REQUEST['recache'])){
     select_to_table($query21,$args,0,'ffffff');
     echo '<br>';
     echo '<br>';
+    /**
     echo 'Sales Tax';
     echo '<br>------------------------------';
     echo '<table><td width=120><u><font size=2><b>Taxable Sales</b></u></font></td>
@@ -305,6 +310,7 @@ if (!$output || isset($_REQUEST['recache'])){
     $queryCorrect = "select TaxableSales,TotalTax,StateTaxable,StateTax,CityTaxable,CityTax,DeliTaxable,DeliTax
             from is4c_trans.taxReport_corrected";
     select_to_table($queryCorrect,array(),0,'ffffff');
+    */
     echo '<br>';
     echo '<b>Actual Tax Collected</b>';
     select_to_table($query11,$args,0,'ffffff');
