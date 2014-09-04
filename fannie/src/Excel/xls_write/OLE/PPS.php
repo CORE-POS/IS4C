@@ -21,7 +21,7 @@
 
 
 require_once 'PEAR.php';
-require_once $FANNIE_ROOT.'src/pear-stuff/OLE/OLE.php';
+require_once dirname(__FILE__) . '/OLE.php';
 
 /**
 * Class for creating PPS's for OLE containers

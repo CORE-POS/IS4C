@@ -550,13 +550,27 @@ class FannieReportPage extends FanniePage
                             'content="text/html; charset=iso-8859-1">' .
                         '</head><body>';
                     }
-                    $ret .= sprintf('<a href="%s%sexcel=xls">Download Excel</a>
-                        &nbsp;&nbsp;&nbsp;&nbsp;
-                        <a href="%s%sexcel=csv">Download CSV</a>
+                    /**
+                      Detect PEAR and only offer XLS if
+                      the system is capable.
+                    */
+                    $pear = true;
+                    if (!class_exists('PEAR')) {
+                        $pear = @include_once('PEAR.php');
+                        if (!$pear) {
+                            $pear = false;
+                        }
+                    }
+                    if ($pear) {
+                        $ret .= sprintf('<a href="%s%sexcel=xls">Download Excel</a>
+                            &nbsp;&nbsp;&nbsp;&nbsp;',
+                            $_SERVER['REQUEST_URI'],
+                            (strstr($_SERVER['REQUEST_URI'],'?') ===False ? '?' : '&')
+                        );
+                    }
+                    $ret .= sprintf('<a href="%s%sexcel=csv">Download CSV</a>
                         &nbsp;&nbsp;&nbsp;&nbsp;
                         <a href="javascript:history:back();">Back</a>',
-                        $_SERVER['REQUEST_URI'],
-                        (strstr($_SERVER['REQUEST_URI'],'?') ===False ? '?' : '&'),
                         $_SERVER['REQUEST_URI'],
                         (strstr($_SERVER['REQUEST_URI'],'?') ===False ? '?' : '&')
                     );

@@ -28,10 +28,10 @@ if (!class_exists('FormLib')) {
     include_once(dirname(__FILE__).'/lib/FormLib.php');
 }
 if (!class_exists('Spreadsheet_Excel_Reader')) {
-    include_once(dirname(__FILE__).'/../src/Excel/reader.php');
+    include_once(dirname(__FILE__).'/../src/Excel/xls_read/reader.php');
 }
 if (!class_exists('PHPExcel_IOFactory')) {
-    include_once(dirname(__FILE__).'/../src/PHPExcel/Classes/PHPExcel.php');
+    include_once(dirname(__FILE__).'/../src/Excel/xlsx_read/Classes/PHPExcel.php');
 }
 
 /**

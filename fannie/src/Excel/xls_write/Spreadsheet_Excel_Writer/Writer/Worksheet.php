@@ -32,8 +32,8 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-require_once $FANNIE_ROOT.'src/pear-stuff/Spreadsheet_Excel_Writer/Writer/Parser.php';
-require_once $FANNIE_ROOT.'src/pear-stuff/Spreadsheet_Excel_Writer/Writer/BIFFwriter.php';
+require_once dirname(__FILE__) . '/BIFFwriter.php';
+require_once dirname(__FILE__) . '/Parser.php';
 
 /**
 * Class for generating Excel Spreadsheets

@@ -32,7 +32,7 @@
 */
 
 require_once 'PEAR.php';
-require_once $FANNIE_ROOT.'src/pear-stuff/Spreadsheet_Excel_Writer/Writer/Workbook.php';
+require_once dirname(__FILE__) . '/Writer/Workbook.php';
 
 /**
 * Class for writing Excel Spreadsheets. This class should change COMPLETELY.

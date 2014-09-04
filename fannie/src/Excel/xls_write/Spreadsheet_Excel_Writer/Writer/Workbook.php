@@ -32,12 +32,12 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-require_once $FANNIE_ROOT.'src/pear-stuff/Spreadsheet_Excel_Writer/Writer/Format.php';
-require_once $FANNIE_ROOT.'src/pear-stuff/Spreadsheet_Excel_Writer/Writer/BIFFwriter.php';
-require_once $FANNIE_ROOT.'src/pear-stuff/Spreadsheet_Excel_Writer/Writer/Worksheet.php';
-require_once $FANNIE_ROOT.'src/pear-stuff/Spreadsheet_Excel_Writer/Writer/Parser.php';
-require_once $FANNIE_ROOT.'src/pear-stuff/OLE/PPS/Root.php';
-require_once $FANNIE_ROOT.'src/pear-stuff/OLE/PPS/File.php';
+require_once dirname(__FILE__) . '/Format.php';
+require_once dirname(__FILE__) . '/BIFFwriter.php';
+require_once dirname(__FILE__) . '/Worksheet.php';
+require_once dirname(__FILE__) . '/Parser.php';
+require_once dirname(__FILE__) . '/../../OLE/PPS/Root.php';
+require_once dirname(__FILE__) . '/../../OLE/PPS/File.php';
 
 /**
 * Class for generating Excel Spreadsheets
@@ -369,8 +369,7 @@ class Spreadsheet_Excel_Writer_Workbook extends Spreadsheet_Excel_Writer_BIFFwri
      */
     function &addValidator()
     {
-	global $FANNIE_ROOT;
-        include_once $FANNIE_ROOT.'src/pear-stuff/Spreadsheet_Excel_Writer/Writer/Validator.php';
+        require_once dirname(__FILE__) . '/Validator.php';
         /* FIXME: check for successful inclusion*/
         $valid = new Spreadsheet_Excel_Writer_Validator($this->_parser);
         return $valid;
