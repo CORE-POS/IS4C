@@ -50,7 +50,7 @@ $Fannie_Item_Modules = array("Operations","ExtraInfo",
 "Cost","Sale","Margin", "LikeCode", "LaneStatus");
 include('prodFunction_WEFC_Toronto.php');
 // include's SQLManager.php which contains smart_*()
-include_once('../src/mysql_connect.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 include_once('../auth/login.php');
 $validatedUser = validateUserQuiet('pricechange');

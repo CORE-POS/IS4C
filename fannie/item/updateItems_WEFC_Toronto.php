@@ -59,7 +59,7 @@ if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
 $Fannie_Item_Modules = array("Operations","ExtraInfo",
         "ThreeForDollar",
     "Cost","Sale","Margin", "LikeCode", "LaneStatus");
-require_once('../src/mysql_connect.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 require_once('../auth/login.php');
 $validatedUser = validateUserQuiet('pricechange');
