@@ -168,8 +168,17 @@ class paycardEntered extends Parser {
 					$ret['output'] = PaycardLib::paycard_msgBox($type,"Type Mismatch",
 						"Foodstamp eligible amount inapplicable","[clear] to cancel");
 					return $ret;
-				}
+				} 
 			}
+            /**
+              Always validate amount as non-zero
+            */
+            if ($CORE_LOCAL->get('fsEligible') <= 0.005 && $CORE_LOCAL->get('fsEligible') >= -0.005) {
+                $ret['output'] = PaycardLib::paycard_msgBox($type,_('Zero Total'),
+                    "Foodstamp eligible amount is zero","[clear] to cancel");
+                UdpComm::udpSend('termReset');
+                return $ret;
+            } 
 			$CORE_LOCAL->set("paycard_amount",$CORE_LOCAL->get("fsEligible"));
 		}
 		if (($type == 'EBTCASH' || $type == 'DEBIT') && $CORE_LOCAL->get('CacheCardCashBack') > 0){
