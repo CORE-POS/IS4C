@@ -150,7 +150,6 @@ if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
     return;
 }
 $dbc = FannieDB::get($FANNIE_OP_DB);
-require($FANNIE_ROOT.'src/csv_parser.php');
 require($FANNIE_ROOT.'auth/login.php');
 
 if ( !validateUserQuiet('admin') ) {
@@ -291,7 +290,7 @@ if ( isset($_REQUEST['product_csv']) && $_REQUEST['product_csv'] != "" ) {
 
         // #'C --CONSTANTS- - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-        /* Indexes to the array returned by csv_parser, the column number in the .csv file.
+        /* Indexes to the array returned by fgetcsv, the column number in the .csv file.
             "first" = 0.
         {
         */
@@ -449,9 +448,8 @@ vary based on whose code you're running
         $fp = fopen($tpath.$current,'r');
         while( !feof($fp) ) {
 
-            $line = fgets($fp);
-            $line = preg_replace("/[\r\n|\n]$/", "", $line);
-            if ( preg_match("/^\t*$/", $line) ) {
+            $data = fgetcsv($fp, 0, "\t", '"');
+            if (count($data) == 0) {
                 continue;
             }
             $lineCount++;
@@ -466,9 +464,6 @@ vary based on whose code you're running
             //EL The data is tab-delimited, but no embedded commas.
             //      But fields with embedded commas are quoted.
             //      Why not just use explode()?
-            /* csv parser takes a comma-, or other-, separated line and returns its elements
-                 as an array */
-            $data = csv_parser($line, '"', "\t");
             if ( !is_array($data) ) {
                 echo "Line $lineCount is not a valid CSV line.";
                 $messages[++$mct] = "Line $lineCount is not a valid CSV line.";

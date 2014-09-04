@@ -88,7 +88,6 @@ if (!class_exists('FannieAPI')) {
 if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
     return;
 }
-require($FANNIE_ROOT.'src/csv_parser.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 $tpath = sys_get_temp_dir()."/misc/";
@@ -105,7 +104,7 @@ if ( isset($_REQUEST['dept_csv']) && $_REQUEST['dept_csv'] != "" ) {
 //MEMBERSHIPS|1000|0  |     |        |      |      |        |           |       |MEMBERSHIPS     |1000 - MEMBERSHIPS (MEMBERSHIPS)
 //PRODUCE    |3000|0  |     |        |      |      |        |           |       |RETAIL          |3000 - PRODUCE (RETAIL)
 //WPRODUCE   |3100|0  |     |        |      |      |        |           |       |RETAIL          |3100 - WPRODUCE (RETAIL)
-    /* the column number in the array returned by csv_parser where various information is stored
+    /* the column number in the array returned by fgetcsv where various information is stored
         "first" = 0.
     */
     $DEPT_NAME = 0;             // A 
@@ -224,14 +223,13 @@ if ( isset($_REQUEST['dept_csv']) && $_REQUEST['dept_csv'] != "" ) {
     $fp = fopen($tpath.$current,'r');
     while( !feof($fp) ) {
 
-        $line = fgets($fp);
+        $data = fgetcsv($fp, 0, "\t", '"');
         $lineCount++;
         //EL The data is tab-delimited, but no embedded commas.
         //      Why not just use explode()?
         // $line = preg_replace("\t",",",$line);
         /* csv parser takes a comma-, or other-, separated line and returns its elements
              as an array */
-        $data = csv_parser($line, "", "\t");
         if (!is_array($data)) continue;
 
         // Row cannot be valid without this.

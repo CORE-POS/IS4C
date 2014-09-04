@@ -4,8 +4,6 @@ include('../../../config.php');
 require($FANNIE_ROOT.'src/SQLManager.php');
 include('../../db.php');
 
-require($FANNIE_ROOT.'src/csv_parser.php');
-
 $LC_COL=0;
 $PRICE_COL=1;
 
@@ -31,8 +29,7 @@ if (isset($_POST["MAX_FILE_SIZE"])){
         u.likeCode, l.likeCodeDesc
         order by count(*) desc");
 	while (!feof($fp)){
-		$line = fgets($fp);
-		$data = csv_parser($line);
+		$data = fgetcsv($fp);
 
 		if (!is_numeric($data[$LC_COL])) continue;
 

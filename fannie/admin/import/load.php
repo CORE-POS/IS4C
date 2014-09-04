@@ -30,8 +30,6 @@ if (basename($_SERVER['PHP_SELF']) != basename(__FILE__)) {
 }
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
-require($FANNIE_ROOT.'src/csv_parser.php');
-
 if (!isset($_REQUEST['lc_col'])){
     $tpath = sys_get_temp_dir()."/vendorupload/";
     $fp = fopen($tpath."lcimp.csv","r");
@@ -41,8 +39,7 @@ if (!isset($_REQUEST['lc_col'])){
     $width = 0;
     $table = "";
     for($i=0;$i<5;$i++){
-        $line = fgets($fp);
-        $data = csv_parser($line);
+        $data = fgetcsv($fp);
         $table .= '<tr><td>&nbsp;</td>';
         $j=0;
         foreach($data as $d){
@@ -90,8 +87,7 @@ $up = $dbc->prepare_statement("UPDATE productUser AS p INNER JOIN
     SET p.description=?,
     p.brand=? WHERE u.likeCode=?");
 while(!feof($fp)){
-    $line = fgets($fp);
-    $data = csv_parser($line);
+    $data = fgetcsv($fp);
     if (!is_array($data)) continue;
     if (count($data) < 3) continue;
 
