@@ -497,6 +497,8 @@ static public function transReset()
             $obj->transactionReset();
         }
     }
+
+    FormLib::clearTokens();
 }
 
 /**
