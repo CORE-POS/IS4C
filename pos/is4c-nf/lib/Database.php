@@ -855,6 +855,7 @@ static public function changeLttTaxCode($fromName, $toName)
 */
 static public function rotateTempData()
 {
+    global $CORE_LOCAL;
     $connection = Database::tDataConnect();
 
     // LEGACY.
@@ -875,6 +876,22 @@ static public function rotateTempData()
 
     $cols = Database::localMatchingColumns($connection, 'dtransactions', 'localtemptrans');
     $ret = $connection->query("insert into dtransactions ($cols) select $cols from localtemptrans");
+
+    /**
+      If store_id column is present in lane dtransactions table
+      and the lane's store_id has been configured, assign that
+      value to the column. Otherwise it may be handled but some
+      other mechanism such as triggers or column default values.
+    */
+    $table_def = $connection->table_definition('dtransactions');
+    if (isset($table_def['store_id']) && $CORE_LOCAL->get('store_id') !== '') {
+        $assignQ = sprintf('
+            UPDATE dtransactions
+            SET store_id = %d',
+            $CORE_LOCAL->get('store_id')
+        );
+        $connection->query($assignQ);
+    }
 
     return ($ret) ? true : false;
 }
