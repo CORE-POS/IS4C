@@ -25,9 +25,6 @@ include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
-if (!class_exists('JsonLib')) {
-    include_once($FANNIE_ROOT.'src/JsonLib.php');
-}
 
 class RestrictCouponPage extends FannieRESTfulPage {
 
@@ -82,7 +79,7 @@ class RestrictCouponPage extends FannieRESTfulPage {
         'limit' => $model->threshold(),
         'reason' => $model->reason()
         );
-        echo JsonLib::array_to_json($ret);
+        echo json_encode($ret);
         return False;
     }
 

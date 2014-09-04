@@ -25,9 +25,6 @@ include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
-if (!class_exists('JsonLib')) {
-    include($FANNIE_ROOT.'src/JsonLib.php');
-}
 
 class BrowseVendorItems extends FanniePage {
     protected $title = "Fannie : Browse Vendor Catalog";
@@ -67,7 +64,7 @@ class BrowseVendorItems extends FanniePage {
                 FormLib::get_form_value('brand'),
                 $ret['tags']
             );
-            echo JsonLib::array_to_json($ret);
+            echo json_encode($ret);
             break;
         case 'addPosItem':
             $this->addToPos(

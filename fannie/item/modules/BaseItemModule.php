@@ -23,7 +23,6 @@
 
 include_once(dirname(__FILE__).'/../../config.php');
 include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
-include_once(dirname(__FILE__).'/../../src/JsonLib.php');
 
 class BaseItemModule extends ItemModule {
 
@@ -350,7 +349,7 @@ class BaseItemModule extends ItemModule {
                     $w['subdept_no'],$w['subdept_no'],$w['subdept_name']);
         }
 
-        $json = count($subs) == 0 ? '{}' : JsonLib::array_to_json($subs);
+        $json = count($subs) == 0 ? '{}' : json_encode($subs);
         ob_start();
         ?>
         function chainSelects(val){

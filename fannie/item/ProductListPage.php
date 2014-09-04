@@ -25,9 +25,6 @@ require(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
-if (!class_exists('JsonLib')) {
-    include_once($FANNIE_ROOT.'src/JsonLib.php');
-}
 if (!function_exists('addProductAllLanes')) {
     require('laneUpdates.php');
 }
@@ -109,9 +106,9 @@ class ProductListPage extends FannieReportTool
         if (count($local_opts) == 1) $local_opts['X'] = array(1,'Yes'); // generic local if no origins defined
         ob_start();
         ?>
-        var deptObj = <?php echo JsonLib::array_to_json($depts); ?>;
-        var taxObj = <?php echo JsonLib::array_to_json($taxes); ?>;
-        var localObj = <?php echo JsonLib::array_to_json($local_opts); ?>;
+        var deptObj = <?php echo json_encode($depts); ?>;
+        var taxObj = <?php echo json_encode($taxes); ?>;
+        var localObj = <?php echo json_encode($local_opts); ?>;
         function edit(upc){
             var desc = $('tr#'+upc+' .td_desc').html();
             var content = "<input type=text class=in_desc value=\""+desc+"\" />";   
@@ -386,7 +383,7 @@ class ProductListPage extends FannieReportTool
                 'upc'=>ltrim($upc, '0'),
                 'enc_desc'=>$encoded_desc
             );
-            echo JsonLib::array_to_json($json);
+            echo json_encode($json);
             break;
         case 'doDelete':
             $upc = FormLib::get_form_value('upc');

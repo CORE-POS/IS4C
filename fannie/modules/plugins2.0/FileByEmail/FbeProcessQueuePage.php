@@ -25,9 +25,6 @@ include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
-if (!class_exists('JsonLib')) {
-    include($FANNIE_ROOT.'src/JsonLib.php');
-}
 
 class FbeProcessQueuePage extends FannieRESTfulPage
 {
@@ -84,7 +81,7 @@ class FbeProcessQueuePage extends FannieRESTfulPage
             }
         }
 
-        echo JsonLib::array_to_json($ret);
+        echo json_encode($ret);
 
         return false;
     }

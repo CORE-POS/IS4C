@@ -78,11 +78,7 @@ class StaffArAccountsPage extends FannieRESTfulPage
             $model->save();
         }
 
-        if (!class_exists('JsonLib')) {
-            include($FANNIE_ROOT.'src/JsonLib.php');
-        }
-
-        echo JsonLib::array_to_json($ret);
+        echo json_encode($ret);
 
         return false;
     }

@@ -23,14 +23,13 @@
 
 include('../../config.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include($FANNIE_ROOT.'src/JsonLib.php');
 
 if (isset($_REQUEST['ajax'])){
     // required fields
     $req = array('store_id','section','subsection','shelfset','shelf','location');
     foreach($req as $key){
         if (!isset($_REQUEST[$key]) || !is_numeric($_REQUEST[$key])){
-            echo JsonLib::array_to_json(array('errors'=>'invalid request '));
+            echo json_encode(array('errors'=>'invalid request '));
             exit;
         }
     }
@@ -43,19 +42,19 @@ if (isset($_REQUEST['ajax'])){
     switch($_REQUEST['ajax']){
     case 'get':
         $output = lookupItem($store,$section,$subsection,$shelfset,$shelf,$location);
-        echo JsonLib::array_to_json($output);
+        echo json_encode($output);
         break;
     case 'set':
         if (!isset($_REQUEST['upc']) || !is_numeric($_REQUEST['upc'])){
-            echo JsonLib::array_to_json(array('errors'=>'invalid request'));
+            echo json_encode(array('errors'=>'invalid request'));
             exit;
         }
         saveItem($store,$section,$subsection,$shelfset,$shelf,$location,$_REQUEST['upc']);
         $output = lookupItem($store,$section,$subsection,$shelfset,$shelf,$location+1);
-        echo JsonLib::array_to_json($output);
+        echo json_encode($output);
         break;
     case 'default':
-        echo JsonLib::array_to_json(array('errors'=>'invalid request'));
+        echo json_encode(array('errors'=>'invalid request'));
         break;
     }
     exit;
