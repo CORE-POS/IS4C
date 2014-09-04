@@ -78,14 +78,22 @@ class MemberEditor extends FanniePage {
             }
             else {
                 $dbc = FannieDB::get($FANNIE_OP_DB);
-                $prevP = $dbc->prepare_statement('SELECT MAX(CardNo) FROM custdata WHERE CardNo < ?');
+                $prevP = $dbc->prepare_statement('SELECT MAX(CardNo) AS prev
+                                                  FROM custdata 
+                                                  WHERE CardNo < ?');
                 $prevR = $dbc->exec_statement($prevP,array($this->memNum));
-                if ($dbc->num_rows($prevR) > 0)
-                    $prev = array_pop($dbc->fetch_row($prevR));
-                $nextP = $dbc->prepare_statement('SELECT MIN(CardNo) FROM custdata WHERE CardNo > ?');
+                if ($dbc->num_rows($prevR) > 0) {
+                    $prevW = $dbc->fetch_row($prevR);
+                    $prev = $prevW['prev'];
+                }
+                $nextP = $dbc->prepare_statement('SELECT MIN(CardNo) AS next 
+                                                  FROM custdata 
+                                                  WHERE CardNo > ?');
                 $nextR = $dbc->exec_statement($nextP,array($this->memNum));
-                if ($dbc->num_rows($nextR) > 0)
-                    $next = array_pop($dbc->fetch_row($nextR));
+                if ($dbc->num_rows($nextR) > 0) {
+                    $nextW = $dbc->fetch_row($nextR);
+                    $next = $nextW['next'];
+                }
             }
 
             if ($prev != ''){

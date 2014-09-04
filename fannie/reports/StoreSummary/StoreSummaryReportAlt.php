@@ -367,7 +367,8 @@ class StoreSummaryReportAlt extends FannieReportPage {
     // fetch_report_data()
     }
 
-    function calculate_footers(){
+    public function calculate_footers($data)
+    {
         return array();
     // calculate_footers()
     }

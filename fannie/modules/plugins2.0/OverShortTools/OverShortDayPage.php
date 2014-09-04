@@ -184,7 +184,8 @@ class OverShortDayPage extends FanniePage {
                 if ($dbc->num_rows($fetchR) == 0)
                     $output .= "<td><input type=text id=startingCash$row[1] class=startingCash onchange=\"calcOS('Cash',$row[1]);\" /></td><td>n/a</td></tr>";
                 else {
-                    $startcash = array_pop($dbc->fetch_array($fetchR));
+                    $fetchW = $dbc->fetch_row($fetchR);
+                    $startcash = $fetchW[0];
                     $output .= "<td><input type=text id=startingCash$row[1] class=startingCash value=\"";
                     $output .= $startcash;
                     $output .= "\" onchange=\"calcOS('Cash',$row[1]);\" /></td><td>n/a</td></tr>";
@@ -210,7 +211,8 @@ class OverShortDayPage extends FanniePage {
                             id=os$code$row[1]Hidden />";
                     }
                     else {
-                        $cash = array_pop($dbc->fetch_array($fetchR));
+                        $fetchW = $dbc->fetch_row($fetchR);
+                        $cash = $fetchW[0];
                         $output .= "<td><input type=text id=count$code$row[1] 
                             class=\"countT$code countEmp$emp_no\"
                             onchange=\"calcOS('$code',$row[1]);\" value=\"$cash\"/></td>";
