@@ -34,7 +34,6 @@
 include('../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
 include($FANNIE_ROOT.'src/cron_msg.php');
-include($FANNIE_ROOT.'src/tmp_dir.php');
 
 set_time_limit(0);
 

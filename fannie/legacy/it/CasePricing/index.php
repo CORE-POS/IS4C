@@ -2,7 +2,6 @@
 include('../../../config.php');
 require($FANNIE_ROOT.'auth/login.php');
 require($FANNIE_ROOT.'src/csv_parser.php');
-require($FANNIE_ROOT.'src/tmp_dir.php');
 
 // 04Oct13 - no longer in use?
 return;

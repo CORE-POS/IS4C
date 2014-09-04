@@ -90,7 +90,6 @@ if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
 }
 require($FANNIE_ROOT.'src/csv_parser.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
-require($FANNIE_ROOT.'src/tmp_dir.php');
 
 $tpath = sys_get_temp_dir()."/misc/";
 

@@ -31,7 +31,6 @@ if (basename($_SERVER['PHP_SELF']) != basename(__FILE__)) {
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 require($FANNIE_ROOT.'src/csv_parser.php');
-require($FANNIE_ROOT.'src/tmp_dir.php');
 
 if (!isset($_REQUEST['lc_col'])){
     $tpath = sys_get_temp_dir()."/vendorupload/";

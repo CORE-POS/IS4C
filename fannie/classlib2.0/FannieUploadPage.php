@@ -27,9 +27,6 @@ if (!class_exists('FanniePage')) {
 if (!class_exists('FormLib')) {
     include_once(dirname(__FILE__).'/lib/FormLib.php');
 }
-if (!function_exists('sys_get_temp_dir')) {
-    include_once(dirname(__FILE__).'/../src/tmp_dir.php');
-}
 if (!class_exists('Spreadsheet_Excel_Reader')) {
     include_once(dirname(__FILE__).'/../src/Excel/reader.php');
 }

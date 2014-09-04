@@ -151,7 +151,6 @@ if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
 }
 $dbc = FannieDB::get($FANNIE_OP_DB);
 require($FANNIE_ROOT.'src/csv_parser.php');
-require($FANNIE_ROOT.'src/tmp_dir.php');
 require($FANNIE_ROOT.'auth/login.php');
 
 if ( !validateUserQuiet('admin') ) {

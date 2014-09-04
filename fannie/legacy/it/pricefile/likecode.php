@@ -9,7 +9,6 @@ require($FANNIE_ROOT.'src/SQLManager.php');
 include('../../db.php');
 
 require($FANNIE_ROOT.'src/csv_parser.php');
-require($FANNIE_ROOT.'src/tmp_dir.php');
 
 $LC_COL=0;
 $PRICE_COL=1;

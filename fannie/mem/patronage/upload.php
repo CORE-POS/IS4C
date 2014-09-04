@@ -8,8 +8,6 @@ if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
 }
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
-require($FANNIE_ROOT.'src/tmp_dir.php');
-
 include($FANNIE_ROOT.'src/header.html');
 
 if (isset($_POST["MAX_FILE_SIZE"])){
