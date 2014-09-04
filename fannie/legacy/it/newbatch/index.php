@@ -178,7 +178,8 @@ if (isset($_GET['action'])){
                 AND ? <= b.endDate
                 AND ? >= b.startDate
                 AND b.discounttype <> 0
-        ');
+                AND b.endDate >= ' . $sql->curdate()
+        );
         $args = array(
             $id,
             $upc,

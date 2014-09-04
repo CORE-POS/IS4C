@@ -268,7 +268,8 @@ class BatchManagementTool extends FanniePage
                     AND ? <= b.endDate
                     AND ? >= b.startDate
                     AND b.discounttype <> 0
-            ');
+                    AND b.endDate >= ' . $dbc->curdate()
+            );
             $args = array(
                 $id,
                 $upc,
