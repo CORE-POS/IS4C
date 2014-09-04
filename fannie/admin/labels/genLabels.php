@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 require(dirname(__FILE__) . '/../../config.php');
-if (class_exists('FannieAPI')) {
+if (!class_exists('FannieAPI')) {
     require_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
