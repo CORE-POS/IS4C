@@ -41,10 +41,6 @@ if (!isset($CORE_LOCAL)){
 
 if (!class_exists("AutoLoader")) include_once(realpath(dirname(__FILE__).'/../../lib/AutoLoader.php'));
 
-define('MERCURY_TERMINAL_ID',"");
-define('MERCURY_PASSWORD',"");
-define('MERCURY_USE_TOKENS',True);
-
 class MercuryE2E extends BasicCCModule 
 {
 
@@ -613,18 +609,16 @@ class MercuryE2E extends BasicCCModule
             }
         }
 
-        if (MERCURY_USE_TOKENS) {
-            $tokenSql = sprintf("INSERT INTO efsnetTokens (expireDay, refNum, token, processData, acqRefData) 
-                    VALUES (%s,'%s','%s','%s','%s')",
-                $dbTrans->now(),
-                $refNum, $xml->get_first("RECORDNO"),
-                $xml->get_first("PROCESSDATA"),
-                $xml->get_first("ACQREFDATA")
-            );
-            $token = $xml->get_first('RECORDNO');
-            if (!empty($token)) {
-                PaycardLib::paycard_db_query($tokenSql, $dbTrans);
-            }
+        $tokenSql = sprintf("INSERT INTO efsnetTokens (expireDay, refNum, token, processData, acqRefData) 
+                VALUES (%s,'%s','%s','%s','%s')",
+            $dbTrans->now(),
+            $refNum, $xml->get_first("RECORDNO"),
+            $xml->get_first("PROCESSDATA"),
+            $xml->get_first("ACQREFDATA")
+        );
+        $token = $xml->get_first('RECORDNO');
+        if (!empty($token)) {
+            PaycardLib::paycard_db_query($tokenSql, $dbTrans);
         }
 
         if ($authResult['curlErr'] != CURLE_OK || $authResult['curlHTTP'] != 200) {
@@ -1157,10 +1151,8 @@ class MercuryE2E extends BasicCCModule
         if ($logged_mode == "Credit_Sale") {
             $msgXml .= "<PartialAuth>Allow</PartialAuth>";
         }
-        if (MERCURY_USE_TOKENS) {
-            $msgXml .= '<RecordNo>RecordNumberRequested</RecordNo>';
-            $msgXml .= '<Frequency>OneTime</Frequency>';    
-        }
+        $msgXml .= '<RecordNo>RecordNumberRequested</RecordNo>';
+        $msgXml .= '<Frequency>OneTime</Frequency>';    
         $msgXml .= '<Account>
                 <EncryptedFormat>'.$e2e['Format'].'</EncryptedFormat>
                 <AccountSource>'.($manual ? 'Keyed' : 'Swiped').'</AccountSource>
@@ -1437,7 +1429,7 @@ class MercuryE2E extends BasicCCModule
         if ($CORE_LOCAL->get("training") == 1) {
             return "395347308=E2ETKN";
         } else {
-            return MERCURY_TERMINAL_ID;
+            return $CORE_LOCAL->get('MercuryE2ETerminalID');
         }
     }
 
@@ -1451,7 +1443,7 @@ class MercuryE2E extends BasicCCModule
         if ($CORE_LOCAL->get("training") == 1) {
             return "123E2ETKN";
         } else {
-            return MERCURY_PASSWORD;
+            return $CORE_LOCAL->get('MercuryE2EPassword');
         }
     }
 
@@ -1626,8 +1618,8 @@ class MercuryE2E extends BasicCCModule
         global $CORE_LOCAL;
 
         $ws_params = array(
-            'merchant' => MERCURY_TERMINAL_ID,
-            'pw' => MERCURY_PASSWORD,
+            'merchant' => $CORE_LOCAL->get('MercuryE2ETerminalID'),
+            'pw' => $CORE_LOCAL->get('MercuryE2EPassword'),
             'invoice' => $ref,
         );
 

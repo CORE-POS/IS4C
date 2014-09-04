@@ -161,6 +161,16 @@ messages from POS?',
             'description' => 'Two-letter tender code for American Express transactions. If blank, uses credit or debit code.',
             'default' => '',
         ),
+        'MercuryE2ETerminalID' => array(
+            'label' => 'Mercury E2E Terminal ID',
+            'description' => 'Terminal ID number for use with encrypted Mercury processing',
+            'default' => '',
+        ),
+        'MercuryE2EPassword' => array(
+            'label' => 'Mercury E2E Password',
+            'description' => 'Password for use with encrypted Mercury processing',
+            'default' => '',
+        ),
 	);
 
 	public function plugin_enable(){
