@@ -43,7 +43,7 @@ class ObfWeeklyReport extends FannieReportPage
         array('', 'Last Year', 'Plan Goal', '% Store', 'Actual', '% Growth', '% Store', 'Current O/U', 'QTD O/U'),
         array('', 'Last Year', 'Plan Goal', '% Store', 'Actual', '% Growth', '% Store', 'Current O/U', 'QTD O/U'),
         array('', 'Last Year', 'Plan Goal', '% Store', 'Actual', '% Growth', '% Store', 'Current O/U', 'QTD O/U'),
-        array('', 'Actual', '%', '', 'Plan', '%', 'Est. Bonus', 'Current', 'Prior'),
+        array('', 'Actual', '%', '', 'Plan', '%', 'Est. Bonus', 'Current Year', 'Last Year'),
     );
 
     public function report_description_content()
@@ -400,15 +400,15 @@ class ObfWeeklyReport extends FannieReportPage
         }
 
         for ($i=0; $i<count($data); $i++) {
-            if (isset($data[$i][3]) && preg_match('/^[\d,]+$/', $data[$i][3])) {
-                $amt = str_replace(',', '', $data[$i][3]);
-                $percentage = ((float)$amt) / ((float)$total_sales[0]);
-                $data[$i][3] = number_format($percentage*100, 2) . '%';
-            }
             if (isset($data[$i][6]) && preg_match('/^[\d,]+$/', $data[$i][6])) {
                 $amt = str_replace(',', '', $data[$i][6]);
-                $percentage = ((float)$amt) / ((float)$proj_total);
+                $percentage = ((float)$amt) / ((float)$total_sales[0]);
                 $data[$i][6] = number_format($percentage*100, 2) . '%';
+            }
+            if (isset($data[$i][3]) && preg_match('/^[\d,]+$/', $data[$i][3])) {
+                $amt = str_replace(',', '', $data[$i][3]);
+                $percentage = ((float)$amt) / ((float)$proj_total);
+                $data[$i][3] = number_format($percentage*100, 2) . '%';
             }
         }
 
@@ -757,8 +757,19 @@ class ObfWeeklyReport extends FannieReportPage
             date('Y-m-d 23:59:59', $last_year),
         );
 
+        $args3 = array(
+            date('Y-m-d 00:00:00', $start_ts),
+            date('Y-m-d 23:59:59', $end_ts),
+        );
+        $args4 = array(
+            date('Y-m-d 00:00:00', $start_ly),
+            date('Y-m-d 23:59:59', $end_ly),
+        );
+
         $current = $dbc->execute($stockP, $args1);
         $prior = $dbc->execute($stockP, $args2);
+        $this_week = $dbc->execute($stockP, $args3);
+        $last_week = $dbc->execute($stockP, $args4);
         if ($dbc->num_rows($current) > 0) {
             $current = $dbc->fetch_row($current);
             $current = $current['ttl'] / 20;
@@ -771,8 +782,35 @@ class ObfWeeklyReport extends FannieReportPage
         } else {
             $prior = 0;
         }
+        if ($dbc->num_rows($this_week) > 0) {
+            $this_week = $dbc->fetch_row($this_week);
+            $this_week = $this_week['ttl'] / 20;
+        } else {
+            $this_week = 0;
+        }
+        if ($dbc->num_rows($last_week) > 0) {
+            $last_week = $dbc->fetch_row($last_week);
+            $last_week = $last_week['ttl'] / 20;
+        } else {
+            $last_week = 0;
+        }
+
         $data[] = array(
-            'YTD Ownership',
+            'Ownership This Week',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            number_format($this_week, 0),
+            number_format($last_week, 0),
+            'meta' => FannieReportPage::META_COLOR,
+            'meta_background' => $colors[0],
+            'meta_foreground' => 'black',
+        );
+        $data[] = array(
+            'Ownership This Year',
             '',
             '',
             '',
