@@ -552,7 +552,8 @@ function addItemPriceLCInput($lc){
 
 function newTagInput($upc,$price,$id){
 	global $sql;
-	$unfiQ = $sql->prepare("select distinct * from UNFI where upc = ?");
+	$unfiQ = $sql->prepare("select size, units, brand, description, sku
+                            from vendorItems where upc=? and vendorID=1");
 	$unfiR = $sql->execute($unfiQ, array($upc));
 	$unfiN = $sql->num_rows($unfiR);
 	
