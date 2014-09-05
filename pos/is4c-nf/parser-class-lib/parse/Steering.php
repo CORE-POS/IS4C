@@ -150,6 +150,10 @@ class Steering extends Parser {
             if ($CORE_LOCAL->get("LastID") != 0) {
                 $this->ret['output'] = DisplayLib::boxMsg(_("Transaction in Progress"));
             } else {
+                TransRecord::addLogRecord(array(
+                    'upc' => 'SIGNOUT',
+                    'description' => 'Sign Out Emp#' . $CORE_LOCAL->get('CashierNo'),
+                ));
                 Database::setglobalvalue("LoggedIn", 0);
                 $CORE_LOCAL->set("LoggedIn",0);
                 $CORE_LOCAL->set("training",0);

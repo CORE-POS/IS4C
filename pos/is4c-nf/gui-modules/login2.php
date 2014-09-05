@@ -68,6 +68,11 @@ class login2 extends BasicPage
 				else
 					ReceiptLib::assignDrawer($CORE_LOCAL->get('CashierNo'),$my_drawer);
 
+                TransRecord::addLogRecord(array(
+                    'upc' => 'SIGNIN',
+                    'description' => 'Sign In Emp#' . $CORE_LOCAL->get('CashierNo'),
+                ));
+
 				/**
 				  Use Kicker object to determine whether the drawer should open
 				  The first line is just a failsafe in case the setting has not
