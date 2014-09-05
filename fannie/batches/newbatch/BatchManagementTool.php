@@ -260,7 +260,8 @@ class BatchManagementTool extends FanniePage
             $overlapP = $dbc->prepare('
                 SELECT b.batchName,
                     b.startDate,
-                    b.endDate
+                    b.endDate,
+                    b.batchID
                 FROM batchList AS l
                     INNER JOIN batches AS b ON l.batchID=b.batchID
                 WHERE l.batchID <> ?
@@ -280,7 +281,8 @@ class BatchManagementTool extends FanniePage
             if ($batch->discounttype() > 0 && $dbc->num_rows($overlapR) > 0) {
                 $row = $dbc->fetch_row($overlapR);
                 $error = 'Item already in concurrent batch: '
-                    . $row['batchName'] . ' ('
+                    . '<a style="color:blue;" href="BatchManagementTool.php?startAt=' . $row['batchID'] . '">'
+                    . $row['batchName'] . '</a> ('
                     . date('Y-m-d', strtotime($row['startDate'])) . ' - '
                     . date('Y-m-d', strtotime($row['endDate'])) . ')'
                     . '<br />'
