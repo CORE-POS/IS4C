@@ -896,7 +896,7 @@ class MercuryE2E extends BasicCCModule
                             $tender_code = 'CC';
                             $tender_description = 'Credit Card';
                         } else {
-                            $tender_code = $CORE_LOCAL->get('PaycardsTenderCodeEbtFood');
+                            $tender_code = $CORE_LOCAL->get('PaycardsTenderCodeCredit');
                             $row = $db->fetch_row($found);
                             $tender_description = $row['TenderName'];
                         }
@@ -934,7 +934,7 @@ class MercuryE2E extends BasicCCModule
                         $args = array($CORE_LOCAL->get('PaycardsTenderCodeAmex'));
                         $found = $db->execute($lookup, $args);
                         if ($found && $db->num_rows($found) > 0) {
-                            $tender_code = $CORE_LOCAL->get('PaycardsTenderCodeDiscover');
+                            $tender_code = $CORE_LOCAL->get('PaycardsTenderCodeAmex');
                             $row = $db->fetch_row($found);
                             $tender_description = $row['TenderName'];
                         }
