@@ -887,6 +887,7 @@ class MercuryE2E extends BasicCCModule
                         // extra tax exemption steps
                         TransRecord::addfsTaxExempt();
                         $CORE_LOCAL->set("fntlflag",0);
+                        Database::setglobalvalue("FntlFlag", 0);
                         break;
                     case 'CREDIT':
                     default:

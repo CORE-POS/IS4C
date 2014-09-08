@@ -535,6 +535,7 @@ static public function tender($right, $strl)
 	} else {
 		$CORE_LOCAL->set("change",0);
 		$CORE_LOCAL->set("fntlflag",0);
+		Database::setglobalvalue("FntlFlag", 0);
 		$chk = self::ttl();
 		if ($chk === true) {
 			$ret['output'] = DisplayLib::lastpage();
