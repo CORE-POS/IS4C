@@ -177,7 +177,7 @@ class FannieUploadPage extends FanniePage
                                 continue;
                             }
                             $lines[] = $fileData[$i];
-                            if ($loaded > $chunk_size) {
+                            if (count($lines) > $chunk_size) {
                                 break;
                             }
                         }
