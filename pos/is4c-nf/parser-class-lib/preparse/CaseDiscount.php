@@ -25,9 +25,14 @@ class CaseDiscount extends PreParser {
 	
 	function check($str){
 		// force quantity == 1
-		if (strstr($str,"CT") && !strstr($str,"*"))
-			return True;
-		return False;
+		if (strstr($str,"CT") && !strstr($str,"*")) {
+            $split = explode('CT', $str);
+            if (is_numeric($split[0]) && strlen($split[0] > 1) && strlen($split[1] > 1)) {
+                return true;
+            }
+        }
+
+		return false;
 	}
 
 	function parse($str){

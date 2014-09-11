@@ -497,12 +497,18 @@ static public function getMatchingColumns($connection,$table_name,$table2="")
     global $CORE_LOCAL;
 
     $local_poll = $connection->table_definition($table_name,$CORE_LOCAL->get("tDatabase"));
+    if ($local_poll === false) {
+        return '';
+    }
     $local_cols = array();
     foreach($local_poll as $name=>$v) {
         $local_cols[$name] = true;
     }
     $remote_poll = $connection->table_definition((!empty($table2)?$table2:$table_name),
                 $CORE_LOCAL->get("mDatabase"));
+    if ($remote_poll === false) {
+        return '';
+    }
     $matching_cols = array();
     foreach($remote_poll as $name=>$v) {
         if (isset($local_cols[$name])) {
@@ -849,6 +855,7 @@ static public function changeLttTaxCode($fromName, $toName)
 */
 static public function rotateTempData()
 {
+    global $CORE_LOCAL;
     $connection = Database::tDataConnect();
 
     // LEGACY.
@@ -869,6 +876,22 @@ static public function rotateTempData()
 
     $cols = Database::localMatchingColumns($connection, 'dtransactions', 'localtemptrans');
     $ret = $connection->query("insert into dtransactions ($cols) select $cols from localtemptrans");
+
+    /**
+      If store_id column is present in lane dtransactions table
+      and the lane's store_id has been configured, assign that
+      value to the column. Otherwise it may be handled but some
+      other mechanism such as triggers or column default values.
+    */
+    $table_def = $connection->table_definition('dtransactions');
+    if (isset($table_def['store_id']) && $CORE_LOCAL->get('store_id') !== '') {
+        $assignQ = sprintf('
+            UPDATE dtransactions
+            SET store_id = %d',
+            $CORE_LOCAL->get('store_id')
+        );
+        $connection->query($assignQ);
+    }
 
     return ($ret) ? true : false;
 }

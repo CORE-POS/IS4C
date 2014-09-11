@@ -31,10 +31,19 @@ AutoLoader::loadMap();
 
 CoreState::initiate_session();
 
-if ($CORE_LOCAL->get("SessionFirstRun") == "")
+if ($CORE_LOCAL->get("SessionFirstRun") == "") {
 	$CORE_LOCAL->set("SessionFirstRun",1);
+}
 
+
+/**
+  Go to login screen if no one is signed in
+  Go to lock screen if someone is signed in
+*/
 $my_url = MiscLib::base_url();
-header("Location: {$my_url}gui-modules/login2.php");
-?>
+if ($CORE_LOCAL->get('LoggedIn') == 0) {
+    header("Location: {$my_url}gui-modules/login2.php");
+} else {
+    header("Location: {$my_url}gui-modules/login3.php");
+}
 

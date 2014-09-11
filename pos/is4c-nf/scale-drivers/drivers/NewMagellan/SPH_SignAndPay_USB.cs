@@ -781,6 +781,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
                 HandleMsg(last_message);
                 last_message = "";
             }
+            lock(usb_lock){}
         }
     }
 

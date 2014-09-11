@@ -477,6 +477,7 @@ class GoEMerchant extends BasicCCModule
             $sqlValues .= sprintf(",%d",$resultCode);
         }
         $resultMsg = $xml->get_first("AUTH_RESPONSE");
+        $rMsg = $resultMsg;
         if ($resultMsg) {
             $sqlColumns .= ",xResultMessage";
             $rMsg = $resultMsg;

@@ -40,6 +40,9 @@ class adminlist extends NoInputPage {
 		}
 
 		if (isset($_REQUEST['selectlist'])){
+            if (!FormLib::validateToken()) {
+                return false;
+            }
 			if (empty($_REQUEST['selectlist'])){
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
@@ -136,6 +139,7 @@ class adminlist extends NoInputPage {
 			<option value='OTR'>4. <?php echo _("Any Tender Report"); ?>
 		<?php } ?>
 		</select>
+        <?php echo FormLib::tokenField(); ?>
 		</form>
 		<p>
 		<span class="smaller"><?php
