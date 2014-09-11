@@ -110,7 +110,7 @@ class ExtraInfoModule extends ItemModule
         $pm->idEnforced($idReq);
         $r1 = $pm->save();
 
-        if ($r1 === false || $r2 === false) {
+        if ($r1 === false) {
             return false;
         } else {
             return true;    
