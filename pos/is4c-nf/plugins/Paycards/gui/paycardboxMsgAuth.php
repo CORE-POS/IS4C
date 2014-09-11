@@ -121,19 +121,31 @@ class paycardboxMsgAuth extends PaycardProcessPage {
 				"Cannot exceed card balance","[clear] to cancel");
         } else if ($balance_limit > 0) {
 			$msg = "Tender ".PaycardLib::paycard_moneyFormat($amt);
-			if ($CORE_LOCAL->get("CacheCardType") != "")
+			if ($CORE_LOCAL->get("CacheCardType") != "") {
 				$msg .= " as ".$CORE_LOCAL->get("CacheCardType");
+            } elseif ($CORE_LOCAL->get('paycard_type') == PaycardLib::PAYCARD_TYPE_GIFT) {
+                $msg .= ' as GIFT';
+            }
 			echo PaycardLib::paycard_msgBox($type,$msg."?","",
                     "Card balance is {$balance_limit}<br>
                     [enter] to continue if correct<br>Enter a different amount if incorrect<br>
                     [clear] to cancel");
 		} else if( $amt > 0) {
 			$msg = "Tender ".PaycardLib::paycard_moneyFormat($amt);
-			if ($CORE_LOCAL->get("CacheCardType") != "")
+			if ($CORE_LOCAL->get("CacheCardType") != "") {
 				$msg .= " as ".$CORE_LOCAL->get("CacheCardType");
-			if ($cb > 0)
+            } elseif ($CORE_LOCAL->get('paycard_type') == PaycardLib::PAYCARD_TYPE_GIFT) {
+                $msg .= ' as GIFT';
+            }
+			if ($cb > 0) {
 				$msg .= ' (CB:'.PaycardLib::paycard_moneyFormat($cb).')';
-			echo PaycardLib::paycard_msgBox($type,$msg."?","","[enter] to continue if correct<br>Enter a different amount if incorrect<br>[clear] to cancel");
+            }
+            $msg .= '?';
+            if ($CORE_LOCAL->get('CacheCardType') == 'EBTFOOD' && abs($CORE_LOCAL->get('subtotal') - $CORE_LOCAL->get('fsEligible')) > 0.005) {
+                $msg .= '<br />'
+                    . _('Not all items eligible');
+            }
+			echo PaycardLib::paycard_msgBox($type,$msg,"","[enter] to continue if correct<br>Enter a different amount if incorrect<br>[clear] to cancel");
 		} else if( $amt < 0) {
 			echo PaycardLib::paycard_msgBox($type,"Refund ".PaycardLib::paycard_moneyFormat($amt)."?","","[enter] to continue if correct<br>Enter a different amount if incorrect<br>[clear] to cancel");
 		} else {

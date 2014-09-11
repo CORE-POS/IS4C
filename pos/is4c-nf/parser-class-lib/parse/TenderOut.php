@@ -58,7 +58,9 @@ class TenderOut extends Parser {
 		} else {
 			$CORE_LOCAL->set("change",0);
 			$CORE_LOCAL->set("fntlflag",0);
-			PrehLib::ttl();
+			$ttl_result = PrehLib::ttl();
+            TransRecord::debugLog('Tender Out (PrehLib): ' . print_r($ttl_result, true));
+            TransRecord::debugLog('Tender Out (amtdue): ' . print_r($CORE_LOCAL->get('amtdue'), true));
 			$ret['output'] = DisplayLib::lastpage();
 		}
 		return $ret;

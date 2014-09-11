@@ -1146,6 +1146,9 @@ class SQLManager
             case $this->TYPE_MYSQL:
                 $return = array();
                 $result = $this->query("SHOW COLUMNS FROM $table_name", $which_connection);
+                if ($result === false) {
+                    return false; 
+                }
                 while($row = $this->fetch_row($result, $which_connection)) {
                     $auto = false;
                     if (strstr($row[5],"auto_increment")) {
