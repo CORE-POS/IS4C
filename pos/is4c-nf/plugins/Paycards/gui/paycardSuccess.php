@@ -134,6 +134,7 @@ class paycardSuccess extends BasicPage {
 	function head_content(){
 		?>
 		<script type="text/javascript">
+        var formSubmitted = false;
 		function submitWrapper(){
 			var str = $('#reginput').val();
 			if (str.toUpperCase() == 'RP'){
@@ -155,7 +156,13 @@ class paycardSuccess extends BasicPage {
 				$('#reginput').val('');
 				return false;
 			}
-			return true;
+            // avoid double submit
+            if (!formSubmitted) {
+                formSubmitted = true;
+                return true;
+            } else {
+                return false;
+            }
 		}
         function parseWrapper(str) {
             if (str.substring(0, 7) == 'TERMBMP') {
@@ -243,7 +250,6 @@ class paycardSuccess extends BasicPage {
             echo DisplayLib::boxMsg($CORE_LOCAL->get("boxMsg"), "", true);
             UdpComm::udpSend('termApproved');
         }
-		$CORE_LOCAL->set("msgrepeat",2);
 		$CORE_LOCAL->set("CachePanEncBlock","");
 		$CORE_LOCAL->set("CachePinEncBlock","");
 		?>
