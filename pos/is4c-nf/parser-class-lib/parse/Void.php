@@ -441,7 +441,8 @@ class Void extends Parser
             if ($db->num_rows($cash) > 0) {
                 return DisplayLib::boxMsg(_("Item already paid for"));
             }
-        } else if ($quantity != 0) {
+        }
+        if ($quantity != 0) {
 
             $update = "update localtemptrans set voided = 1 where trans_id = ".$item_num;
             $db->query($update);
@@ -498,7 +499,7 @@ class Void extends Parser
                 }
             }
         }
-        return "";
+        return '';
     }
 
     public static $adminLoginMsg = 'Void Limit Exceeded. Login to continue.';
