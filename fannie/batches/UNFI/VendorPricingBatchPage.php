@@ -180,7 +180,7 @@ function saveprice(upc){
     }
 
     function edit_content(){
-        global $FANNIE_OP_DB;
+        global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $vendorID = FormLib::get_form_value('vid',0);
         $superID = FormLib::get_form_value('super',99);
@@ -198,29 +198,35 @@ function saveprice(upc){
         $vn = array_pop($dbc->fetch_row($r));
 
         $batchName = $sn." ".$vn." PC ".date('m/d/y');
-        $ret = "<b>Batch</b>: ".$batchName;
 
         /* find a price change batch type */
         $typeP = $dbc->prepare_statement('SELECT MIN(batchTypeID) FROM batchType WHERE discType=0');
         $typeR = $dbc->exec_statement($typeP);
         $bType = 0;
-        if ($dbc->num_rows($typeR) > 0)
-            $bType = array_pop($dbc->fetch_row($typeR));
+        if ($dbc->num_rows($typeR) > 0) {
+            $typeW = $dbc->fetch_row($typeR);
+            $bType = $typeW[0];
+        }
 
         /* get the ID of the current batch. Create it if needed. */
         $bidQ = $dbc->prepare_statement("SELECT batchID FROM batches WHERE batchName=? AND batchType=? AND discounttype=0
             ORDER BY batchID DESC");
         $bidR = $dbc->exec_statement($bidQ,array($batchName,$bType));
         $batchID = 0;
-        if ($dbc->num_rows($bidR) == 0){
+        if ($dbc->num_rows($bidR) == 0) {
             $insQ = $dbc->prepare_statement("INSERT INTO batches (batchName,startDate,endDate,batchType,discounttype,priority) VALUES
                 (?,'1900-01-01','1900-01-01',?,0,0)");
             $insR = $dbc->exec_statement($insQ,array($batchName,$bType));
             $batchID = $dbc->insert_id();
-        }
-        else 
+        } else  {
             $batchID = array_pop($dbc->fetch_row($bidR));
+        }
 
+        $ret = sprintf('<b>Batch</b>: 
+                    <a href="%sbatches/newbatch/BatchManagementTool.php?startAt=%d">%s</a>',
+                    $FANNIE_URL,
+                    $batchID,
+                    $batchName);
         $ret .= sprintf("<input type=hidden id=vendorID value=%d />
             <input type=hidden id=batchID value=%d />
             <input type=hidden id=superID value=%d />",

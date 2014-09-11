@@ -86,7 +86,7 @@ case 'batchAdd':
     $ppo = PriceLib::pricePerUnit($price,$info['size']);
     
     /* create a shelftag */
-    $tag = new ShelftagsModel($tag);
+    $tag = new ShelftagsModel($dbc);
     $tag->id($sid);
     $tag->upc($upc);
     $tag->description($info['description']);
@@ -111,7 +111,7 @@ case 'batchDel':
     $model->upc($upc);
     $model->delete();
 
-    $tag = new ShelftagsModel($tag);
+    $tag = new ShelftagsModel($dbc);
     $tag->id($sid);
     $tag->upc($upc);
     $tag->delete();
