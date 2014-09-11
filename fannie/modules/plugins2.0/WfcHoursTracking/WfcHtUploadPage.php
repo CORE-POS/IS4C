@@ -38,6 +38,9 @@ class WfcHtUploadPage extends FanniePage
     protected $auth_classes = array('upload_hours_data');
     protected $header = 'Upload';
     protected $title = 'Upload';
+    
+    public $page_set = 'Plugin :: WFC Hours Tracking';
+    public $description = '[Hours Upload] imports data for hourly employees.';
 
     private $mode = 'form';
 

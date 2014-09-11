@@ -20,12 +20,14 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-include('../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class NewMemberTool extends FanniePage 
 {
-
+    public $description = '[New Members] creates a block of new member accounts.';
     protected $title = "Fannie :: Create Members";
     protected $header = "Create Members";
     protected $must_authenticate = True;

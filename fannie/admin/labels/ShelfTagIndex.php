@@ -21,9 +21,10 @@
 
 *********************************************************************************/
 
-require('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-require('scan_layouts.php');
+require(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class ShelfTagIndex extends FanniePage {
 
@@ -31,10 +32,14 @@ class ShelfTagIndex extends FanniePage {
     protected $header = 'Shelf Tags';
     protected $must_authenticate = True;
     protected $auth_classes = array('barcodes');
+    public $description = '[Shelf Tag Menu] lists shelf tag related pages.';
 
     private $layouts = array();
 
     function preprocess(){
+        if (!function_exists('scan_layouts')) {
+            require('scan_layouts.php');
+        }
         $this->layouts = scan_layouts();
         return True;
     }

@@ -34,7 +34,6 @@
 
 include('../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
-include($FANNIE_ROOT.'src/tmp_dir.php');
 
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
     $FANNIE_TRANS_DB,$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);

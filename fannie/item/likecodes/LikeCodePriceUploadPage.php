@@ -21,13 +21,18 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class LikeCodePriceUploadPage extends FannieUploadPage 
 {
     protected $title = "Fannie :: Upload Likecode Prices";
     protected $header = "Upload Likecode Prices";
+
+    public $description = '[Like Code Prices] uploads a spreadsheet of like codes and prices
+    and immediately updates the prices for those like coded items.';
 
     protected $preview_opts = array(
         'likecode' => array(

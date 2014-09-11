@@ -33,6 +33,10 @@ class SaHandheldPage extends FanniePage {
     private $current_item_data=array();
     private $linea_ios_mode = False;
 
+    public $page_set = 'Plugin :: Shelf Audit';
+    public $description = '[Handheld] is an interface for scanning and entering quantities on
+    hand using a handheld device.';
+
     private function linea_support_available(){
         global $FANNIE_ROOT;
         if (file_exists($FANNIE_ROOT.'src/javascript/linea/cordova-2.2.0.js')

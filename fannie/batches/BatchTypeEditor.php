@@ -20,8 +20,10 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-include('../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__). '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class BatchTypeEditor extends FanniePage {
 
@@ -33,6 +35,8 @@ class BatchTypeEditor extends FanniePage {
 
     protected $title = 'Fannie - Batch Module';
     protected $header = 'Sales Batches';
+
+    public $description = '[Batch Type Editor] manages different kinds of batches.';
 
     function preprocess(){
         global $FANNIE_OP_DB;

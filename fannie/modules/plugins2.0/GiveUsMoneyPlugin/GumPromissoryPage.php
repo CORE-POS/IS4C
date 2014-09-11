@@ -33,6 +33,9 @@ class GumPromissoryPage extends FannieRESTfulPage
     protected $must_authenticate = true;
     protected $auth_classes = array('GiveUsMoney');
 
+    public $page_set = 'Plugin :: Give Us Money';
+    public $description = '[Promissory Note] creates document to accompany loan paperwork.';
+
     private $paragraphs = array(
 
 'For value received, the Borrower, a Minnesota cooperative corporation, hereby promises to pay the Lender, a current Owner of the Borrower, whose address is indicated above, or his or her successors, the principal sum indicated above together with interest thereon at the interest rate indicated above .  Interest shall be calculated and compounded annually.   Upon maturity of this Note on the date set forth above, interest and principal shall be paid in full.',

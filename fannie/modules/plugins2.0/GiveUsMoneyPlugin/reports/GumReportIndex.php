@@ -33,6 +33,8 @@ class GumReportIndex extends FannieRESTfulPage
     protected $must_authenticate = true;
     protected $auth_classes = array('GiveUsMoney');
 
+    public $discoverable = false;
+
     public function preprocess()
     {
         $this->header = 'Available Reporting';

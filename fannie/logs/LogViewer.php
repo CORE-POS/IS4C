@@ -20,7 +20,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-include('../config.php');
+include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
@@ -32,6 +32,8 @@ class LogViewer extends FanniePage
 	protected $header = 'View Logs';
 	protected $must_authenticate = true;
 	protected $auth_classes = array('admin');
+
+    public $description = '[Log Viewer] shows Fannie\'s log files through the web.';
 
 	private $mode = 'list';
 

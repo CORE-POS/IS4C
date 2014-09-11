@@ -21,12 +21,16 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class DepartmentIndexPage extends FanniePage {
     protected $title = "Fannie : Manage Departments";
     protected $header = "Manage Departments";
+
+    public $description = '[Department Menu] lists pages related to departments.';
     
     function body_content(){
         ob_start();

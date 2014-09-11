@@ -25,13 +25,17 @@
      4Sep2012 Eric Lee Change $header to Sub-Departments.
               Add some notes to the initial page.
 */
-include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class SubdeptImportPage extends FannieUploadPage {
 
     protected $title = "Fannie :: Product Tools";
     protected $header = "Import Sub-Departments";
+
+    public $description = '[Subdepartment Import] loads subdept data from a spreadsheet.';
 
     protected $preview_opts = array(
         'sn' => array(

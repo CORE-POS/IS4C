@@ -46,14 +46,36 @@ class TendersModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["TenderID"])) {
                 return $this->instance["TenderID"];
-            } elseif(isset($this->columns["TenderID"]["default"])) {
+            } else if (isset($this->columns["TenderID"]["default"])) {
                 return $this->columns["TenderID"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'TenderID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["TenderID"]) || $this->instance["TenderID"] != func_get_args(0)) {
+                if (!isset($this->columns["TenderID"]["ignore_updates"]) || $this->columns["TenderID"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["TenderID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function TenderCode()
@@ -61,14 +83,36 @@ class TendersModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["TenderCode"])) {
                 return $this->instance["TenderCode"];
-            } elseif(isset($this->columns["TenderCode"]["default"])) {
+            } else if (isset($this->columns["TenderCode"]["default"])) {
                 return $this->columns["TenderCode"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'TenderCode',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["TenderCode"]) || $this->instance["TenderCode"] != func_get_args(0)) {
+                if (!isset($this->columns["TenderCode"]["ignore_updates"]) || $this->columns["TenderCode"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["TenderCode"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function TenderName()
@@ -76,14 +120,36 @@ class TendersModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["TenderName"])) {
                 return $this->instance["TenderName"];
-            } elseif(isset($this->columns["TenderName"]["default"])) {
+            } else if (isset($this->columns["TenderName"]["default"])) {
                 return $this->columns["TenderName"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'TenderName',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["TenderName"]) || $this->instance["TenderName"] != func_get_args(0)) {
+                if (!isset($this->columns["TenderName"]["ignore_updates"]) || $this->columns["TenderName"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["TenderName"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function TenderType()
@@ -91,14 +157,36 @@ class TendersModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["TenderType"])) {
                 return $this->instance["TenderType"];
-            } elseif(isset($this->columns["TenderType"]["default"])) {
+            } else if (isset($this->columns["TenderType"]["default"])) {
                 return $this->columns["TenderType"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'TenderType',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["TenderType"]) || $this->instance["TenderType"] != func_get_args(0)) {
+                if (!isset($this->columns["TenderType"]["ignore_updates"]) || $this->columns["TenderType"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["TenderType"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function ChangeMessage()
@@ -106,14 +194,36 @@ class TendersModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["ChangeMessage"])) {
                 return $this->instance["ChangeMessage"];
-            } elseif(isset($this->columns["ChangeMessage"]["default"])) {
+            } else if (isset($this->columns["ChangeMessage"]["default"])) {
                 return $this->columns["ChangeMessage"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'ChangeMessage',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["ChangeMessage"]) || $this->instance["ChangeMessage"] != func_get_args(0)) {
+                if (!isset($this->columns["ChangeMessage"]["ignore_updates"]) || $this->columns["ChangeMessage"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["ChangeMessage"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function MinAmount()
@@ -121,14 +231,36 @@ class TendersModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["MinAmount"])) {
                 return $this->instance["MinAmount"];
-            } elseif(isset($this->columns["MinAmount"]["default"])) {
+            } else if (isset($this->columns["MinAmount"]["default"])) {
                 return $this->columns["MinAmount"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'MinAmount',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["MinAmount"]) || $this->instance["MinAmount"] != func_get_args(0)) {
+                if (!isset($this->columns["MinAmount"]["ignore_updates"]) || $this->columns["MinAmount"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["MinAmount"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function MaxAmount()
@@ -136,14 +268,36 @@ class TendersModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["MaxAmount"])) {
                 return $this->instance["MaxAmount"];
-            } elseif(isset($this->columns["MaxAmount"]["default"])) {
+            } else if (isset($this->columns["MaxAmount"]["default"])) {
                 return $this->columns["MaxAmount"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'MaxAmount',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["MaxAmount"]) || $this->instance["MaxAmount"] != func_get_args(0)) {
+                if (!isset($this->columns["MaxAmount"]["ignore_updates"]) || $this->columns["MaxAmount"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["MaxAmount"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function MaxRefund()
@@ -151,14 +305,36 @@ class TendersModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["MaxRefund"])) {
                 return $this->instance["MaxRefund"];
-            } elseif(isset($this->columns["MaxRefund"]["default"])) {
+            } else if (isset($this->columns["MaxRefund"]["default"])) {
                 return $this->columns["MaxRefund"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'MaxRefund',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["MaxRefund"]) || $this->instance["MaxRefund"] != func_get_args(0)) {
+                if (!isset($this->columns["MaxRefund"]["ignore_updates"]) || $this->columns["MaxRefund"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["MaxRefund"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

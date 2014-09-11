@@ -21,13 +21,17 @@
 
 *********************************************************************************/
 
-include('../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class PurchasingIndexPage extends FannieRESTfulPage {
     
     protected $header = 'Purchase Orders';
     protected $title = 'Purchase Orders';
+
+    public $description = '[Purchase Order Menu] lists purchase order related pages.';
 
     protected $must_authenticate = True;
 

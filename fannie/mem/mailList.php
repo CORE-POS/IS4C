@@ -20,6 +20,9 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
+    return;
+}
    header("Content-Disposition: inline; filename=mailingList.csv");
    header("Content-Description: PHP3 Generated Data");
    header("Content-type: application/vnd.ms-excel; name='excel'");

@@ -31,6 +31,8 @@ class ReportsIndexPage extends FanniePage {
     protected $title = "Fannie : Reports";
     protected $header = "Reports";
 
+    public $description = '[Reports Menu] lists all known reports.';
+
     public function body_content()
     {
         global $FANNIE_ROOT, $FANNIE_URL;

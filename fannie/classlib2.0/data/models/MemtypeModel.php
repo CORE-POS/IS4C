@@ -116,6 +116,22 @@ class MemtypeModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'memtype',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["memtype"]) || $this->instance["memtype"] != func_get_args(0)) {
                 if (!isset($this->columns["memtype"]["ignore_updates"]) || $this->columns["memtype"]["ignore_updates"] == false) {
@@ -124,6 +140,7 @@ class MemtypeModel extends BasicModel
             }
             $this->instance["memtype"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function memDesc()
@@ -136,6 +153,22 @@ class MemtypeModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'memDesc',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["memDesc"]) || $this->instance["memDesc"] != func_get_args(0)) {
                 if (!isset($this->columns["memDesc"]["ignore_updates"]) || $this->columns["memDesc"]["ignore_updates"] == false) {
@@ -144,6 +177,7 @@ class MemtypeModel extends BasicModel
             }
             $this->instance["memDesc"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function custdataType()
@@ -156,6 +190,22 @@ class MemtypeModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'custdataType',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["custdataType"]) || $this->instance["custdataType"] != func_get_args(0)) {
                 if (!isset($this->columns["custdataType"]["ignore_updates"]) || $this->columns["custdataType"]["ignore_updates"] == false) {
@@ -164,6 +214,7 @@ class MemtypeModel extends BasicModel
             }
             $this->instance["custdataType"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function discount()
@@ -176,6 +227,22 @@ class MemtypeModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'discount',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["discount"]) || $this->instance["discount"] != func_get_args(0)) {
                 if (!isset($this->columns["discount"]["ignore_updates"]) || $this->columns["discount"]["ignore_updates"] == false) {
@@ -184,6 +251,7 @@ class MemtypeModel extends BasicModel
             }
             $this->instance["discount"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function staff()
@@ -196,6 +264,22 @@ class MemtypeModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'staff',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["staff"]) || $this->instance["staff"] != func_get_args(0)) {
                 if (!isset($this->columns["staff"]["ignore_updates"]) || $this->columns["staff"]["ignore_updates"] == false) {
@@ -204,6 +288,7 @@ class MemtypeModel extends BasicModel
             }
             $this->instance["staff"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function ssi()
@@ -216,6 +301,22 @@ class MemtypeModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'ssi',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["ssi"]) || $this->instance["ssi"] != func_get_args(0)) {
                 if (!isset($this->columns["ssi"]["ignore_updates"]) || $this->columns["ssi"]["ignore_updates"] == false) {
@@ -224,6 +325,7 @@ class MemtypeModel extends BasicModel
             }
             $this->instance["ssi"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

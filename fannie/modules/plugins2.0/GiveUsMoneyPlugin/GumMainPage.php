@@ -33,6 +33,9 @@ class GumMainPage extends FannieRESTfulPage
     protected $must_authenticate = true;
     protected $auth_classes = array('GiveUsMoney');
 
+    public $page_set = 'Plugin :: Give Us Money';
+    public $description = '[Account Editor] creates loan and equity accounts for a given member.';
+
     public function preprocess()
     {
         $this->header = 'Loans & Equity';

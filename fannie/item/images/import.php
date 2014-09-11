@@ -1,6 +1,11 @@
 <?php
-include('../../config.php');
-include('../../src/SQLManager.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('SQLManager')) {
+    include($FANNIE_ROOT . 'src/SQLManager.php');
+}
+if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
+    return;
+}
 
 $dbc = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
         $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);

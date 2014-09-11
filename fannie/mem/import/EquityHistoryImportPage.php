@@ -24,12 +24,17 @@
      6Mar2013 Andy Theuninck re-do as class
      4Sep2012 Eric Lee Add some notes to the initial page.
 */
-include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class EquityHistoryImportPage extends FannieUploadPage {
     protected $title = "Fannie :: Member Tools";
     protected $header = "Import Existing Member Equity";
+
+    public $description = '[Equity History Import] loads information about members\' pre-existing
+    equity balance. Pre-existing means equity was not purchased using this POS.';
 
     protected $preview_opts = array(
         'memnum' => array(

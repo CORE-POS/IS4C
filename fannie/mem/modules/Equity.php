@@ -34,8 +34,10 @@ class Equity extends MemberModule {
                 WHERE memnum=?");
         $infoR = $dbc->exec_statement($infoQ,array($memNum));
         $equity = 0;
-        if ($dbc->num_rows($infoR) > 0)
-            $equity = array_pop($dbc->fetch_row($infoR));
+        if ($dbc->num_rows($infoR) > 0) {
+            $w = $dbc->fetch_row($infoR);
+            $equity = $w['payments'];
+        }
 
         $ret = "<fieldset><legend>Equity</legend>";
         $ret .= "<table class=\"MemFormTable\" 

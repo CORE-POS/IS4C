@@ -51,6 +51,22 @@ class OriginsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'originID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["originID"]) || $this->instance["originID"] != func_get_args(0)) {
                 if (!isset($this->columns["originID"]["ignore_updates"]) || $this->columns["originID"]["ignore_updates"] == false) {
@@ -59,6 +75,7 @@ class OriginsModel extends BasicModel
             }
             $this->instance["originID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function countryID()
@@ -71,6 +88,22 @@ class OriginsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'countryID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["countryID"]) || $this->instance["countryID"] != func_get_args(0)) {
                 if (!isset($this->columns["countryID"]["ignore_updates"]) || $this->columns["countryID"]["ignore_updates"] == false) {
@@ -79,6 +112,7 @@ class OriginsModel extends BasicModel
             }
             $this->instance["countryID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function stateProvID()
@@ -91,6 +125,22 @@ class OriginsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'stateProvID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["stateProvID"]) || $this->instance["stateProvID"] != func_get_args(0)) {
                 if (!isset($this->columns["stateProvID"]["ignore_updates"]) || $this->columns["stateProvID"]["ignore_updates"] == false) {
@@ -99,6 +149,7 @@ class OriginsModel extends BasicModel
             }
             $this->instance["stateProvID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function customID()
@@ -111,6 +162,22 @@ class OriginsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'customID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["customID"]) || $this->instance["customID"] != func_get_args(0)) {
                 if (!isset($this->columns["customID"]["ignore_updates"]) || $this->columns["customID"]["ignore_updates"] == false) {
@@ -119,6 +186,7 @@ class OriginsModel extends BasicModel
             }
             $this->instance["customID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function local()
@@ -131,6 +199,22 @@ class OriginsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'local',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["local"]) || $this->instance["local"] != func_get_args(0)) {
                 if (!isset($this->columns["local"]["ignore_updates"]) || $this->columns["local"]["ignore_updates"] == false) {
@@ -139,6 +223,7 @@ class OriginsModel extends BasicModel
             }
             $this->instance["local"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function name()
@@ -151,6 +236,22 @@ class OriginsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'name',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["name"]) || $this->instance["name"] != func_get_args(0)) {
                 if (!isset($this->columns["name"]["ignore_updates"]) || $this->columns["name"]["ignore_updates"] == false) {
@@ -159,6 +260,7 @@ class OriginsModel extends BasicModel
             }
             $this->instance["name"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function shortName()
@@ -171,6 +273,22 @@ class OriginsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'shortName',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["shortName"]) || $this->instance["shortName"] != func_get_args(0)) {
                 if (!isset($this->columns["shortName"]["ignore_updates"]) || $this->columns["shortName"]["ignore_updates"] == false) {
@@ -179,6 +297,7 @@ class OriginsModel extends BasicModel
             }
             $this->instance["shortName"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

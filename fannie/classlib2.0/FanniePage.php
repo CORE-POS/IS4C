@@ -38,6 +38,12 @@ class FanniePage
     Base class for creating HTML pages.
     ";
 
+    public $discoverable = true;
+
+    public $page_set = 'Misc';
+
+    public $doc_link = '';
+
     /** force users to login immediately */
     protected $must_authenticate = False;
     /** name of the logged in user (or False is no one is logged in) */
@@ -353,16 +359,21 @@ class FanniePage
             }
             
             if ($this->readinessCheck() !== false) {
-                echo $this->bodyContent();
+                $body = $this->bodyContent();
             } else {
-                echo $this->errorContent();
+                $body = $this->errorContent();
             }
 
             if ($this->window_dressing) {
+                echo $body;
                 $footer = $this->getFooter();
                 $footer = str_ireplace('</html>','',$footer);
                 $footer = str_ireplace('</body>','',$footer);
                 echo $footer;
+            } else {
+                $body = str_ireplace('</html>','',$body);
+                $body = str_ireplace('</body>','',$body);
+                echo $body;
             }
 
             foreach($this->scripts as $s_url => $s_type) {
@@ -395,9 +406,7 @@ class FanniePage
                 echo '</style>';
             }
 
-            if ($this->window_dressing) {
-                echo '</body></html>';
-            }
+            echo '</body></html>';
         }
     }
 }

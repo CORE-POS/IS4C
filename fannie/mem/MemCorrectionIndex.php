@@ -21,13 +21,17 @@
 
 *********************************************************************************/
 // A page to search the member base.
-include('../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class MemCorrectionIndex extends FanniePage {
 
     protected $title='Fannie - Member Management Module';
     protected $header='Make Member Corrections';
+
+    public $description = '[Member Correction Menu] lists tools for correcting account imbalances.';
 
     private $msgs = '';
 

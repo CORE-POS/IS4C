@@ -36,6 +36,9 @@ class WfcHtSalaryUploadPage extends FanniePage
     protected $header = 'Import Salary PTO';
     protected $title = 'Import Salary PTO';
 
+    public $page_set = 'Plugin :: WFC Hours Tracking';
+    public $description = '[Salary Upload] import PTO usage for salaried employees.';
+
     public function body_content()
     {
         $sql = WfcHtLib::hours_dbconnect();

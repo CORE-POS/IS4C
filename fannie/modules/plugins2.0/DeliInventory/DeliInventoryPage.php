@@ -6,7 +6,6 @@ if (basename($_SERVER['PHP_SELF']) != basename(__FILE__)) {
 
 include(dirname(__FILE__).'/../../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include_once($FANNIE_ROOT.'src/JsonLib.php');
 
 class DeliInventoryPage extends FanniePage
 {
@@ -135,7 +134,7 @@ if (isset($_GET['action'])){
         foreach($model->find() as $obj)
             $ret['grandTotal'] += $obj->total();
         
-        echo JsonLib::array_to_json($ret);
+        echo json_encode($ret);
         $out = '';
         break;
     case 'refresh':
@@ -156,7 +155,7 @@ if (isset($_GET['action'])){
         if (count($remaining) == 0)
             $ret['delete_category'] = str_replace(' ','_',$cat);
         
-        echo JsonLib::array_to_json($ret);
+        echo json_encode($ret);
         $out = '';
         break;
     case 'printview':
@@ -216,7 +215,7 @@ if (isset($_GET['action'])){
         foreach($model->find() as $obj)
             $ret['grandTotal'] += $obj->total();
         
-        echo JsonLib::array_to_json($ret);
+        echo json_encode($ret);
         break;
     case 'clearAll':
         $clearQ = "update deliInventoryCat set cases=0, fraction=0,

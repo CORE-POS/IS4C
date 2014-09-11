@@ -22,10 +22,12 @@
 *********************************************************************************/
 
 //ini_set('display_errors','1');
-include('../config.php'); 
+include('../config.php');
+if (!class_exists('FannieAPI')) {
+         include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 include('util.php');
 include('db.php');
-include_once('../classlib2.0/InstallPage.php');
 
 /**
     @class InstallMemModDisplayPage
@@ -56,25 +58,6 @@ class InstallMemModDisplayPage extends InstallPage {
 
     // __construct()
     }
-
-    /**
-      Define any CSS needed
-      @return A CSS string
-    function css_content(){
-        $css ="";
-        return $css;
-    //css_content()
-    }
-    */
-
-    /**
-      Define any javascript needed
-      @return A javascript string
-    function javascript_content(){
-        $js ="";
-        return $js;
-    }
-    */
 
     function body_content(){
         global $FANNIE_MEMBER_MODULES;

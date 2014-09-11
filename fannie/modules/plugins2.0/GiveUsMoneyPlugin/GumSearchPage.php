@@ -31,6 +31,9 @@ class GumSearchPage extends FannieRESTfulPage
     protected $must_authenticate = true;
     protected $auth_classes = array('GiveUsMoney');
 
+    public $page_set = 'Plugin :: Give Us Money';
+    public $description = '[Search Page] looks up member accounts.';
+
     function preprocess(){
         $this->__routes[] = 'get<id><first><last>';
         $this->header = 'Loans & Equity Search';

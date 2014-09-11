@@ -39,7 +39,6 @@ $SPINS_SERVER = "ftp.spins.com";
 
 include('../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
-include($FANNIE_ROOT.'src/tmp_dir.php');
 
 /**
   CONFIGURATION:

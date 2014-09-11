@@ -25,12 +25,17 @@
    settings, which may have changed since the order was imported */
 
 /* configuration for your module - Important */
-include("../../config.php");
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class RecalculateVendorSRPs extends FanniePage {
     protected $title = "Fannie - Vendor SRPs";
     protected $header = "Recalculate SRPs from Margins";
+
+    public $description = '[Calculate Vendor SRPs] recalculates item SRPs based on vendor
+    specific margin goals.';
 
     private $mode = 'form';
 

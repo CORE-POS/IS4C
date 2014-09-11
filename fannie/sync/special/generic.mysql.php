@@ -27,9 +27,9 @@
    is much faster than SQLManager transfer
 */
 
-if (!isset($FANNIE_ROOT))
+if (!isset($FANNIE_ROOT)) {
     include(dirname(__FILE__).'/../../config.php');
-include_once($FANNIE_ROOT.'src/tmp_dir.php');
+}
 
 $ret = 0;
 $output = array();
@@ -37,8 +37,7 @@ if (isset($outputFormat) && $outputFormat == 'plain') {
     $itemStart = '';
     $itemEnd = '';
     $lineBreak = "\n";
-}
-else {
+} else {
     $outputFormat = 'html';
     $itemStart = '<li>';
     $itemEnd = '</li>';
@@ -52,33 +51,70 @@ if (empty($table)) {
 $tempfile = tempnam(sys_get_temp_dir(),$table.".sql");
 
 // Make a mysqldump of the table.
-exec("mysqldump -u $FANNIE_SERVER_USER -p$FANNIE_SERVER_PW -h $FANNIE_SERVER $FANNIE_OP_DB $table > $tempfile", $output, $ret);
-if ( $ret > 0 ) {
-    $report = implode("$lineBreak", $output);
-    if ( strlen($report) > 0 )
-        $report = "{$lineBreak}$report";
-    echo "{$itemStart}mysqldump failed, returned: $ret {$report}{$itemEnd}";
+$port = 3306;
+$host = $FANNIE_SERVER;
+if (strpos($FANNIE_SERVER, ':') > 0) {
+    list($host, $port) = explode(':', $FANNIE_SERVER, 2);
 }
-else {
+$cmd = 'mysqldump'
+    . ' -u ' . escapeshellarg($FANNIE_SERVER_USER)
+    . ' -p' . escapeshellarg($FANNIE_SERVER_PW)
+    . ' -h ' . escapeshellarg($host)
+    . ' -P ' . escapeshellarg($port)
+    . ' ' . escapeshellarg($FANNIE_OP_DB)
+    . ' ' . escapeshellarg($table)
+    . ' > ' . escapeshellarg($tempfile)
+    . ' 2>&1';
+$cmd_obfusc = 'mysqldump'
+    . ' -u ' . escapeshellarg($FANNIE_SERVER_USER)
+    . ' -p' . str_repeat('*', 8)
+    . ' -h ' . escapeshellarg($host)
+    . ' -P ' . escapeshellarg($port)
+    . ' ' . escapeshellarg($FANNIE_OP_DB)
+    . ' ' . escapeshellarg($table)
+    . ' > ' . escapeshellarg($tempfile);
+exec($cmd, $output, $ret);
+if ($ret > 0) {
+    $report = implode($lineBreak, $output);
+    if (strlen($report) > 0) {
+        $report = "{$lineBreak}$report";
+    }
+    echo "{$itemStart}<code style='font-weight:bold'>{$cmd_obfusc}</code> failed, returned: $ret {$report}{$itemEnd}";
+} else {
     // Load the mysqldump from Fannie to each lane.
     $laneNumber=1;
-    foreach($FANNIE_LANES as $lane){
+    foreach ($FANNIE_LANES as $lane) {
         $ret = 0;
         $output = array();
-        if ( strpos($lane['host'], ':') > 0 ) {
-            list($host, $port) = explode(":", $lane['host']);
-            exec("mysql -u {$lane['user']} -p{$lane['pw']} -h {$host} -P {$port} {$lane['op']} < $tempfile", $output, $ret);
+        $lane_host = $lane['host'];
+        $lane_port = 3306;
+        if (strpos($lane['host'], ':') > 0) {
+            list($lane_host, $lane_port) = explode(':', $lane['host'], 2);
         }
-        else {
-            exec("mysql -u {$lane['user']} -p{$lane['pw']} -h {$lane['host']} {$lane['op']} < $tempfile", $output, $ret);
-        }
+        $lane_cmd = 'mysql'
+            . ' -u ' . escapeshellarg($lane['user'])
+            . ' -p' . escapeshellarg($lane['pw'])
+            . ' -h ' . escapeshellarg($lane_host)
+            . ' -P ' . escapeshellarg($lane_port)
+            . ' ' . escapeshellarg($lane['op'])
+            . ' < ' . escapeshellarg($tempfile)
+            . ' 2>&1';
+        $lane_cmd_obfusc = 'mysql'
+            . ' -u ' . escapeshellarg($lane['user'])
+            . ' -p' . str_repeat('*', 8)
+            . ' -h ' . escapeshellarg($lane_host)
+            . ' -P ' . escapeshellarg($lane_port)
+            . ' ' . escapeshellarg($lane['op'])
+            . ' < ' . escapeshellarg($tempfile);
+        exec($lane_cmd, $output, $ret);
         if ( $ret == 0 ) {
             echo "{$itemStart}Lane $laneNumber ({$lane['host']}) $table completed successfully{$itemEnd}";
         } else {
-            $report = implode("$lineBreak", $output);
-            if ( strlen($report) > 0 )
+            $report = implode($lineBreak, $output);
+            if (strlen($report) > 0) {
                 $report = "{$lineBreak}$report";
-            echo "{$itemStart}Lane $laneNumber ({$lane['host']}) $table failed, returned: $ret {$report}{$itemEnd}";
+            }
+            echo "{$itemStart}<code style='font-weight:bold'>{$lane_cmd_obfusc}</code>{$lineBreak}Lane $laneNumber ({$lane['host']}) $table failed, returned: $ret {$report}{$itemEnd}";
         }
         unset($output);
         $laneNumber++;
@@ -89,4 +125,3 @@ else {
 
 unlink($tempfile);
 
-?>

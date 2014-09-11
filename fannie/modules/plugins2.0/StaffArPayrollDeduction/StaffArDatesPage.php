@@ -30,6 +30,8 @@ if (!class_exists('FannieAPI')) {
 */
 class StaffArDatesPage extends FannieRESTfulPage 
 {
+    public $page_set = 'Plugin :: Payroll Deductions';
+    public $description = '[Schedule] sets dates when payments will be applied.';
 
     public function preprocess()
     {

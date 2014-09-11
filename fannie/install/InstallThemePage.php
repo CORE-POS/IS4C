@@ -98,6 +98,9 @@ class InstallThemePage extends InstallPage
 
         echo '<table id="otherConfTable">'; 
 
+        echo '<tr><td>Custom Title</td>'
+            . '<td>' . installTextField('FANNIE_CUSTOM_TITLE', $FANNIE_CUSTOM_TITLE, '') . '</td>';
+
         echo '<tr><td>Font</td>'
             . '<td>' . installTextField('FANNIE_CSS_FONT', $FANNIE_CSS_FONT, '') . '</td>';
         $family = str_replace(';', '', $FANNIE_CSS_FONT);
@@ -106,6 +109,10 @@ class InstallThemePage extends InstallPage
         $family .= ', arial, sans-serif';
         echo '<td><div style=\'font-family: ' . $family . '; margin:3px; padding:5px;'
             . ' border:solid 1px black; \'>Lorem Ipsum</div></td>'
+            . '</tr>';
+
+        echo '<tr><td>Character Set</td>'
+            . '<td>' . installTextField('FANNIE_CHARSET', $FANNIE_CHARSET, 'ISO-8859-1') . '</td>'
             . '</tr>';
 
         echo '<tr><td>Logo</td>'

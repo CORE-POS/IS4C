@@ -33,43 +33,115 @@ class OverShortsLogModel extends BasicModel {
 
     /* START ACCESSOR FUNCTIONS */
 
-    public function date(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["date"]))
+    public function date()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["date"])) {
                 return $this->instance["date"];
-            elseif(isset($this->columns["date"]["default"]))
+            } else if (isset($this->columns["date"]["default"])) {
                 return $this->columns["date"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'date',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["date"]) || $this->instance["date"] != func_get_args(0)) {
+                if (!isset($this->columns["date"]["ignore_updates"]) || $this->columns["date"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["date"] = func_get_arg(0);
         }
+        return $this;
     }
 
-    public function username(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["username"]))
+    public function username()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["username"])) {
                 return $this->instance["username"];
-            elseif(isset($this->columns["username"]["default"]))
+            } else if (isset($this->columns["username"]["default"])) {
                 return $this->columns["username"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'username',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["username"]) || $this->instance["username"] != func_get_args(0)) {
+                if (!isset($this->columns["username"]["ignore_updates"]) || $this->columns["username"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["username"] = func_get_arg(0);
         }
+        return $this;
     }
 
-    public function resolved(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["resolved"]))
+    public function resolved()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["resolved"])) {
                 return $this->instance["resolved"];
-            elseif(isset($this->columns["resolved"]["default"]))
+            } else if (isset($this->columns["resolved"]["default"])) {
                 return $this->columns["resolved"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'resolved',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["resolved"]) || $this->instance["resolved"] != func_get_args(0)) {
+                if (!isset($this->columns["resolved"]["ignore_updates"]) || $this->columns["resolved"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["resolved"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

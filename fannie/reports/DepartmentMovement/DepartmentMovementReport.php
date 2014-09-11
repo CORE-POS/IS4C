@@ -307,7 +307,6 @@ class DepartmentMovementReport extends FannieReportPage
     function report_description_content()
     {
         $ret = array();
-        $ret[] = "Movement from ".FormLib::getDate('date1','')." to ".FormLib::getDate('date2','');
         $ret[] = "Summed by ".FormLib::get_form_value('sort','');
         $buyer = FormLib::get_form_value('buyer','');
         if ($buyer === '0') {

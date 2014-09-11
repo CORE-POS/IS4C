@@ -22,7 +22,9 @@
 
 *********************************************************************************/
 
-define('FPDF_FONTPATH',$FANNIE_ROOT.'src/fpdf/font/');
+if (!defined('FPDF_FONTPATH')) {
+  define('FPDF_FONTPATH','font/');
+}
 require($FANNIE_ROOT.'src/fpdf/fpdf.php');
 
 /****Credit for the majority of what is below for barcode generation

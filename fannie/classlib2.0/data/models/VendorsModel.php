@@ -41,14 +41,36 @@ class VendorsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["vendorID"])) {
                 return $this->instance["vendorID"];
-            } elseif(isset($this->columns["vendorID"]["default"])) {
+            } else if (isset($this->columns["vendorID"]["default"])) {
                 return $this->columns["vendorID"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'vendorID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["vendorID"]) || $this->instance["vendorID"] != func_get_args(0)) {
+                if (!isset($this->columns["vendorID"]["ignore_updates"]) || $this->columns["vendorID"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["vendorID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function vendorName()
@@ -56,14 +78,36 @@ class VendorsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["vendorName"])) {
                 return $this->instance["vendorName"];
-            } elseif(isset($this->columns["vendorName"]["default"])) {
+            } else if (isset($this->columns["vendorName"]["default"])) {
                 return $this->columns["vendorName"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'vendorName',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["vendorName"]) || $this->instance["vendorName"] != func_get_args(0)) {
+                if (!isset($this->columns["vendorName"]["ignore_updates"]) || $this->columns["vendorName"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["vendorName"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

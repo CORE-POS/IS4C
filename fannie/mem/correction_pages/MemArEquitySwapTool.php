@@ -21,13 +21,17 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class MemArEquitySwapTool extends FanniePage {
 
     protected $title='Fannie - Member Management Module';
     protected $header='Swap Member Equity/AR';
+
+    public $description = '[Swap Equity/AR] turns an Equity payment into an AR payment or vice versa.';
 
     private $errors = '';
     private $mode = 'init';
@@ -58,7 +62,7 @@ class MemArEquitySwapTool extends FanniePage {
         if (is_numeric($FANNIE_REGISTER_NO)) {
             $this->CORRECTION_LANE = $FANNIE_REGISTER_NO;
         }
-        if (is_numeric($FANNIE_MISC_DEPT)) {
+        if (is_numeric($FANNIE_CORRECTION_DEPT)) {
             $this->CORRECTION_DEPT = $FANNIE_CORRECTION_DEPT;
         }
 

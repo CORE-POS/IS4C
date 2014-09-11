@@ -23,7 +23,6 @@
 include('../config.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
-include($FANNIE_ROOT.'src/tmp_dir.php');
 
 include($FANNIE_ROOT.'auth/login.php');
 if (!checkLogin()){

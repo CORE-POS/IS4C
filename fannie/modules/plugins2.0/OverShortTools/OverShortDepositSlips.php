@@ -30,6 +30,9 @@ class OverShortDepositSlips extends FanniePage {
     protected $header = 'Print Deposit Slips';
     protected $title = 'Print Deposit Slips';
 
+    public $page_set = 'Plugin :: Over/Shorts';
+    public $description = '[Deposit Slips] generates PDF of bank-required deposit info.';
+
     function preprocess(){
         if (FormLib::get_form_value('startDate') !== ''){
             $this->outputPDF();

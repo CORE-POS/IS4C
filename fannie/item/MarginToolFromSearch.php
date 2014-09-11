@@ -21,13 +21,18 @@
 
 *********************************************************************************/
 
-include('../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+require(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class MarginToolFromSearch extends FannieRESTfulPage
 {
     protected $header = 'Margin Search Results';
     protected $title = 'Margin Search Results';
+
+    public $description = '[Margin Preview] takes a set of advanced search results and shows the effect on
+    margin of various price changes. Must be accessed via Advanced Search.';
 
     protected $window_dressing = false;
 

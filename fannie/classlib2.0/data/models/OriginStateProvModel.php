@@ -47,6 +47,22 @@ class OriginStateProvModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'stateProvID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["stateProvID"]) || $this->instance["stateProvID"] != func_get_args(0)) {
                 if (!isset($this->columns["stateProvID"]["ignore_updates"]) || $this->columns["stateProvID"]["ignore_updates"] == false) {
@@ -55,6 +71,7 @@ class OriginStateProvModel extends BasicModel
             }
             $this->instance["stateProvID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function name()
@@ -67,6 +84,22 @@ class OriginStateProvModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'name',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["name"]) || $this->instance["name"] != func_get_args(0)) {
                 if (!isset($this->columns["name"]["ignore_updates"]) || $this->columns["name"]["ignore_updates"] == false) {
@@ -75,6 +108,7 @@ class OriginStateProvModel extends BasicModel
             }
             $this->instance["name"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function abbr()
@@ -87,6 +121,22 @@ class OriginStateProvModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'abbr',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["abbr"]) || $this->instance["abbr"] != func_get_args(0)) {
                 if (!isset($this->columns["abbr"]["ignore_updates"]) || $this->columns["abbr"]["ignore_updates"] == false) {
@@ -95,6 +145,7 @@ class OriginStateProvModel extends BasicModel
             }
             $this->instance["abbr"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

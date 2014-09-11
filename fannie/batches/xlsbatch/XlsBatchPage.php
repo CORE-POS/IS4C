@@ -21,12 +21,16 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class XlsBatchPage extends FannieUploadPage {
     protected $title = "Fannie -  Sales Batch";
     protected $header = "Upload Batch file";
+
+    public $description = '[Excel Batch] creates a sale or price change batch from a spreadsheet.';
 
     protected $preview_opts = array(
         'upc_lc' => array(

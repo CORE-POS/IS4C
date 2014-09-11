@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-include('../config.php');
+include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
@@ -31,6 +31,8 @@ class MemPurchasesPage extends FannieRESTfulPage
 
     protected $title = 'Member Purchase History';
     protected $header = 'Member Purchase History';
+
+    public $description = '[Member Purchases] lists all of a given member\'s transactions.';
 
     protected function get_id_handler()
     {

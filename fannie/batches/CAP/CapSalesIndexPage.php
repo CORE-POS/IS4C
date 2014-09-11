@@ -21,12 +21,17 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class CapSalesIndexPage extends FanniePage {
     protected $title = "Fannie - CAP sales";
     protected $header = "CAP Sales";
+
+    public $description = '[Co+op Deals Menu] lists options for importing and creating
+    Co+op Deals batches.';
 
     function body_content(){
         ob_start();

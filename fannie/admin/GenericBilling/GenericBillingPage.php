@@ -21,8 +21,10 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 $LANE_NO=30;
 $EMP_NO=1001;
@@ -32,6 +34,9 @@ class GenericBillingPage extends FannieRESTfulPage {
 
     protected $title = "Fannie : Generic Biling";
     protected $header = "Generic Billing";
+
+    public $description = '[Generic Billing] adds a specified amount and memo to a member\'s
+    accounts receivable (AR) balance.';
 
     function javascript_content(){
         ob_start();

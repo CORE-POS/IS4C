@@ -44,14 +44,13 @@ class PcDailyReport extends FannieReportPage
     public function report_description_content()
     {
         global $FANNIE_URL;
-        $ret = array();
+        $ret = array(''); // spacer line
         if ($this->report_format == 'html') {
             $ret[] = $this->form_content();
             $this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
             $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
             $this->add_script($FANNIE_URL.'src/javascript/jquery-ui.js');
         }
-        $ret[] = 'Activity for ' . FormLib::get('date', date('Y-m-d'));
 
         return $ret;
     }

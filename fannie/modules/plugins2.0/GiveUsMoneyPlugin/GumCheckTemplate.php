@@ -82,7 +82,7 @@ class GumCheckTemplate
         $this->my_address[1] = 'Street Address';
         $settings->key('storeAddress');
         if ($settings->load()) {
-            //$this->my_address[1] = $settings->value();
+            $this->my_address[1] = $settings->value();
         }
         $this->my_address[2] = '';
         $settings->key('storeCity');

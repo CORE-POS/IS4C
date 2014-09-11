@@ -21,14 +21,18 @@
 
 *********************************************************************************/
 
-/* configuration for your module - Important */
-include("../../config.php");
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class VendorPricingIndex extends FanniePage {
     /* html header, including navbar */
     protected $title = "Fannie - Vendor Price File";
     protected $header = "Vendor Price File";
+
+    public $description = '[Vendor Pricing Menu] lists tools for managing vendor
+    cost information and making price changes when costs change.';
 
     function body_content(){
         ob_start();

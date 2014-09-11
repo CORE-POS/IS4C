@@ -36,13 +36,6 @@ class TrendsReport extends FannieReportPage
     public $description = '[Trends] shows daily sales totals for items over a given date range. Items can be included by UPC, department, or manufacturer.';
     public $report_set = 'Movement Reports';
 
-    public function report_description_content()
-    {
-        $date1 = FormLib::get('date1', date('Y-m-d'));
-        $date2 = FormLib::get('date2', date('Y-m-d'));
-        return array();
-    }
-
     public function fetch_report_data()
     {
         global $FANNIE_OP_DB;

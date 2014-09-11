@@ -54,14 +54,36 @@ class MemberCardsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["card_no"])) {
                 return $this->instance["card_no"];
-            } elseif(isset($this->columns["card_no"]["default"])) {
+            } else if (isset($this->columns["card_no"]["default"])) {
                 return $this->columns["card_no"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'card_no',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["card_no"]) || $this->instance["card_no"] != func_get_args(0)) {
+                if (!isset($this->columns["card_no"]["ignore_updates"]) || $this->columns["card_no"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["card_no"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function upc()
@@ -69,14 +91,36 @@ class MemberCardsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["upc"])) {
                 return $this->instance["upc"];
-            } elseif(isset($this->columns["upc"]["default"])) {
+            } else if (isset($this->columns["upc"]["default"])) {
                 return $this->columns["upc"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'upc',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["upc"]) || $this->instance["upc"] != func_get_args(0)) {
+                if (!isset($this->columns["upc"]["ignore_updates"]) || $this->columns["upc"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["upc"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 
