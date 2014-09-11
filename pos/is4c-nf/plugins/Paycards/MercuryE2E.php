@@ -838,7 +838,8 @@ class MercuryE2E extends BasicCCModule
                 $tender_code = 'CC';
                 $tender_description = 'Credit Card';
                 $db = Database::pDataConnect();
-                $lookup = $db->prepare('SELECT TenderName
+                $lookup = $db->prepare('SELECT TenderName,
+                                            TenderCode
                                         FROM tenders
                                         WHERE TenderCode = ?');
                 /**
@@ -856,8 +857,8 @@ class MercuryE2E extends BasicCCModule
                             $tender_code = 'DC';
                             $tender_description = 'Debit Card';
                         } else {
-                            $tender_code = $CORE_LOCAL->get('PaycardsTenderCodeDebit');
                             $row = $db->fetch_row($found);
+                            $tender_code = $row['TenderCode'];
                             $tender_description = $row['TenderName'];
                         }
                         break;
@@ -868,8 +869,8 @@ class MercuryE2E extends BasicCCModule
                             $tender_code = 'EC';
                             $tender_description = 'EBT Cash';
                         } else {
-                            $tender_code = $CORE_LOCAL->get('PaycardsTenderCodeEbtCash');
                             $row = $db->fetch_row($found);
+                            $tender_code = $row['TenderCode'];
                             $tender_description = $row['TenderName'];
                         }
                         break;
@@ -880,8 +881,8 @@ class MercuryE2E extends BasicCCModule
                             $tender_code = 'EF';
                             $tender_description = 'EBT Food';
                         } else {
-                            $tender_code = $CORE_LOCAL->get('PaycardsTenderCodeEbtFood');
                             $row = $db->fetch_row($found);
+                            $tender_code = $row['TenderCode'];
                             $tender_description = $row['TenderName'];
                         }
                         // extra tax exemption steps
@@ -897,8 +898,8 @@ class MercuryE2E extends BasicCCModule
                             $tender_code = 'CC';
                             $tender_description = 'Credit Card';
                         } else {
-                            $tender_code = $CORE_LOCAL->get('PaycardsTenderCodeCredit');
                             $row = $db->fetch_row($found);
+                            $tender_code = $row['TenderCode'];
                             $tender_description = $row['TenderName'];
                         }
                         break;
@@ -911,32 +912,32 @@ class MercuryE2E extends BasicCCModule
                         $args = array($CORE_LOCAL->get('PaycardsTenderCodeVisa'));
                         $found = $db->execute($lookup, $args);
                         if ($found && $db->num_rows($found) > 0) {
-                            $tender_code = $CORE_LOCAL->get('PaycardsTenderCodeVisa');
                             $row = $db->fetch_row($found);
+                            $tender_code = $row['TenderCode'];
                             $tender_description = $row['TenderName'];
                         }
                 } elseif ($CORE_LOCAL->get('PaycardsTenderCodeMC') && $CORE_LOCAL->get('paycard_issuer') == 'MasterCard') {
                         $args = array($CORE_LOCAL->get('PaycardsTenderCodeMC'));
                         $found = $db->execute($lookup, $args);
                         if ($found && $db->num_rows($found) > 0) {
-                            $tender_code = $CORE_LOCAL->get('PaycardsTenderCodeMC');
                             $row = $db->fetch_row($found);
+                            $tender_code = $row['TenderCode'];
                             $tender_description = $row['TenderName'];
                         }
                 } elseif ($CORE_LOCAL->get('PaycardsTenderCodeDiscover') && $CORE_LOCAL->get('paycard_issuer') == 'Discover') {
                         $args = array($CORE_LOCAL->get('PaycardsTenderCodeDiscover'));
                         $found = $db->execute($lookup, $args);
                         if ($found && $db->num_rows($found) > 0) {
-                            $tender_code = $CORE_LOCAL->get('PaycardsTenderCodeDiscover');
                             $row = $db->fetch_row($found);
+                            $tender_code = $row['TenderCode'];
                             $tender_description = $row['TenderName'];
                         }
                 } elseif ($CORE_LOCAL->get('PaycardsTenderCodeAmex') && $CORE_LOCAL->get('paycard_issuer') == 'American Express') {
                         $args = array($CORE_LOCAL->get('PaycardsTenderCodeAmex'));
                         $found = $db->execute($lookup, $args);
                         if ($found && $db->num_rows($found) > 0) {
-                            $tender_code = $CORE_LOCAL->get('PaycardsTenderCodeAmex');
                             $row = $db->fetch_row($found);
+                            $tender_code = $row['TenderCode'];
                             $tender_description = $row['TenderName'];
                         }
                 }
