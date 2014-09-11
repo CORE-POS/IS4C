@@ -412,7 +412,7 @@ class CronManagementPage extends FanniePage
             (isset($tab[$t_index][$shortname])?$tab[$t_index][$shortname]['day']:'1'),
             (isset($tab[$t_index][$shortname])?$tab[$t_index][$shortname]['month']:'1'),
             (isset($tab[$t_index][$shortname])?$tab[$t_index][$shortname]['wkdy']:'*'),
-            (isset($tab[$t_index][$shortname])?$tab[$t_index][$shortname]['cmd']:$cmd),
+            (isset($tab[$t_index][$shortname])&&isset($tab[$t_index][$shortname]['cmd'])?$tab[$t_index][$shortname]['cmd']:$cmd),
             base64_encode($shortname),$nicename
         );
     }
