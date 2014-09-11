@@ -62,6 +62,7 @@ class EditItemsFromSearch extends FannieRESTfulPage
         $vendor = FormLib::get('vendor');
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
+        $vlookup = new VendorsModel($dbc);
         for($i=0; $i<count($upcs); $i++) {
             $model = new ProductsModel($dbc);
             $upc = BarcodeLib::padUPC($upcs[$i]);
@@ -75,6 +76,17 @@ class EditItemsFromSearch extends FannieRESTfulPage
             }
             if (isset($local[$i])) {
                 $model->local($local[$i]);
+            }
+            if (isset($brand[$i])) {
+                $model->brand($brand[$i]);
+            }
+            if (isset($vendor[$i])) {
+                $vlookup->reset();
+                $vlookup->vendorName($vendor[$i]);
+                foreach ($vlookup->find('vendorID') as $obj) {
+                    $model->default_vendor_id($obj->vendorID());
+                    break;
+                }
             }
 
             if (in_array($upc, FormLib::get('fs', array()))) {
