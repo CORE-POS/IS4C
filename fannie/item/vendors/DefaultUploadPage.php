@@ -201,6 +201,9 @@ class DefaultUploadPage extends FannieUploadPage {
             if (!is_numeric($reg))
                 continue;
 
+            if (!is_numeric($qty)) {
+                $qty = 1.0;
+            }
             // need unit cost, not case cost
             $reg_unit = $reg / $qty;
             $net_unit = $net / $qty;
