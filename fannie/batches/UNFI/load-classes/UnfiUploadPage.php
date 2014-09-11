@@ -262,10 +262,10 @@ class UnfiUploadPage extends FannieUploadPage {
         $vsP = $dbc->prepare_statement("DELETE FROM vendorSRPs WHERE vendorID=?");
         /** deprecating unfi_* structures 22Jan14
         $uoP = $dbc->prepare_statement("TRUNCATE TABLE unfi_order");
+        $dbc->exec_statement($uoP);
         */
         $dbc->exec_statement($viP,array($VENDOR_ID));
         $dbc->exec_statement($vsP,array($VENDOR_ID));
-        $dbc->exec_statement($uoP);
     }
 
     function preview_content(){
