@@ -59,13 +59,13 @@ class UPC extends Parser {
 		}
 
         /**
-          15Aug14 Andy
-          Idea not implemented yet
-          Adding items after charging a card may indicate
-          some kind of problem where the transaction
-          didn't complete correctly
+          11Sep14 Andy
+          Disabled until keypress double form submission is
+          fixed on paycard confirmation screen. Depending on
+          sequence can case flag to be raised, cleared, and
+          re-raised leading to spurrious error notifications
         */
-        if ($CORE_LOCAL->get('paycardTendered')) {
+        if (false && $CORE_LOCAL->get('paycardTendered')) {
             if ($CORE_LOCAL->get('msgrepeat') == 0 || $CORE_LOCAL->get('lastRepeat') != 'paycardAlreadyApplied') {
                 $CORE_LOCAL->set('boxMsg', 'Card already tendered<br />
                                             Confirm adding more items');
