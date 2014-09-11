@@ -64,7 +64,9 @@ static&nbsp;</td><td class="memItemRight" valign="bottom"><b>check_unpaid_ar</b>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_preh_lib.html#567cd27adb4979abc8e74f45f9be2f14">omtr_ttl</a> ()</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_preh_lib.html#0587eb26c8b1552de016a86ea350859c">peekItem</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_preh_lib.html#cfedde08ba4427337b5722b5c6fbbc09">wicableTotal</a> ()</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_preh_lib.html#e599664e2b7042bbb108846bac16b2db">peekItem</a> ($full_record=false)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_preh_lib.html#89a499378c8bdb90e8f334424b5ffa74">finalttl</a> ()</td></tr>
 
@@ -219,6 +221,8 @@ Add an open ring to a department <dl compact><dt><b>Parameters:</b></dt><dd>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>An array. See <a class="el" href="class_parser.html#0076d421db25e8eb844d0ecc093688ad">Parser::default_json()</a> for format explanation. </dd></dl>
 
+<p>
+Enforce memberOnly flag 
 </div>
 </div><p>
 <a class="anchor" name="89a499378c8bdb90e8f334424b5ffa74"></a><!-- doxytag: member="PrehLib::finalttl" ref="89a499378c8bdb90e8f334424b5ffa74" args="()" -->
@@ -310,14 +314,15 @@ The Ontario Meal Tax Rebate refunds the provincial part of the Harmonized Sales 
 If the transaction qualifies, change the tax status for each item at the higher rate to the lower rate. Display a message that a change was made. Otherwise display a message about that. Total the transaction as usual. 
 </div>
 </div><p>
-<a class="anchor" name="0587eb26c8b1552de016a86ea350859c"></a><!-- doxytag: member="PrehLib::peekItem" ref="0587eb26c8b1552de016a86ea350859c" args="()" -->
+<a class="anchor" name="e599664e2b7042bbb108846bac16b2db"></a><!-- doxytag: member="PrehLib::peekItem" ref="e599664e2b7042bbb108846bac16b2db" args="($full_record=false)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">static PrehLib::peekItem           </td>
           <td>(</td>
-          <td class="paramname">          </td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>full_record</em> = <code>false</code>          </td>
           <td>&nbsp;)&nbsp;</td>
           <td width="100%"><code> [static]</code></td>
         </tr>
@@ -326,8 +331,13 @@ If the transaction qualifies, change the tax status for each item at the higher 
 <div class="memdoc">
 
 <p>
-See what the last item in the transaction is currently <dl compact><dt><b>Returns:</b></dt><dd>localtemptrans.description for the last item </dd></dl>
-
+See what the last item in the transaction is currently <dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>$full_record</em>&nbsp;</td><td>[boolean] return full database record. Default is false. Just returns description. </td></tr>
+  </table>
+</dl>
+<dl compact><dt><b>Returns:</b></dt><dd>localtemptrans.description for the last item or localtemptrans record for the last item</dd></dl>
+If no record exists, returns false 
 </div>
 </div><p>
 <a class="anchor" name="1e6d503cd0df830c2603f089e06ec3f6"></a><!-- doxytag: member="PrehLib::percentDiscount" ref="1e6d503cd0df830c2603f089e06ec3f6" args="($strl, $json=array())" -->
@@ -363,7 +373,7 @@ Add a percent discount notification <dl compact><dt><b>Parameters:</b></dt><dd>
   </table>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>An array see <a class="el" href="class_parser.html#0076d421db25e8eb844d0ecc093688ad">Parser::default_json()</a> </dd></dl>
-<dl compact><dt><b><a class="el" href="deprecated.html#_deprecated000010">Deprecated:</a></b></dt><dd>Use discountnotify() instead. This just adds hard-coded percentages and PLUs that likely aren't applicable anywhere but the Wedge. </dd></dl>
+<dl compact><dt><b><a class="el" href="deprecated.html#_deprecated000007">Deprecated:</a></b></dt><dd>Use discountnotify() instead. This just adds hard-coded percentages and PLUs that likely aren't applicable anywhere but the Wedge. </dd></dl>
 
 </div>
 </div><p>
@@ -523,9 +533,29 @@ If <a class="el" href="class_preh_lib.html#f9b1934491a95a26dcb42f0a66e4f919">ttl
 The most common error, by far, is no member number in which case the return value is the member-entry page. 
 </div>
 </div><p>
+<a class="anchor" name="cfedde08ba4427337b5722b5c6fbbc09"></a><!-- doxytag: member="PrehLib::wicableTotal" ref="cfedde08ba4427337b5722b5c6fbbc09" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static PrehLib::wicableTotal           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Calculate WIC eligible total <dl compact><dt><b>Returns:</b></dt><dd>[number] WIC eligible items total </dd></dl>
+
+</div>
+</div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/PrehLib.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 13 Aug 2014 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

@@ -413,6 +413,8 @@ Rotate current transaction data Current data in translog.localtemptrans is inser
 <p>
 <dl compact><dt><b>Returns:</b></dt><dd>[boolean] success or failure</dd></dl>
 Success or failure is based on whether or not the insert into translog.dtransactions succeeds. That's the most important query in terms of ensuring data flows properly to the server. 
+<p>
+If store_id column is present in lane dtransactions table and the lane's store_id has been configured, assign that value to the column. Otherwise it may be handled but some other mechanism such as triggers or column default values. 
 </div>
 </div><p>
 <a class="anchor" name="1ae86c9bc705ce1011ca00c85542e418"></a><!-- doxytag: member="Database::setglobalflags" ref="1ae86c9bc705ce1011ca00c85542e418" args="($value)" -->
@@ -594,7 +596,7 @@ On success the local tables are truncated. The efsnet tables are copied in the <
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/Database.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 13 Aug 2014 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>
