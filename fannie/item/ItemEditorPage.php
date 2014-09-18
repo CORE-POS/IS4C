@@ -288,6 +288,8 @@ class ItemEditorPage extends FanniePage
         $shown = array();
 
         $this->add_script('autocomplete.js');
+        $this->add_script($FANNIE_URL . 'src/javascript/chosen/chosen.jquery.min.js');
+        $this->add_css_file($FANNIE_URL . 'src/javascript/chosen/chosen.min.css');
         $ws = $FANNIE_URL . 'ws/';
 
         $authorized = false;
@@ -353,6 +355,7 @@ class ItemEditorPage extends FanniePage
         if (isset($shown['LikeCodeModule'])) {
             $this->add_onload_command("addLcDialog();\n");
         }
+        $this->add_onload_command('$(\'.chosen-select\').chosen();');
 
         $ret .= '</form>';
 

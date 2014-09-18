@@ -6,3 +6,4 @@ Currently installed versions of javascript libraries:
 * linea              2.0.0       23Jun2014
 * d3.js              3.3.9       23Jun2014
 * fancybox           1.3.4       20Aug2014
+* chosen             1.1.0       18Sep2014

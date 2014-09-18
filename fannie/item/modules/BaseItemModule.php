@@ -53,7 +53,8 @@ class BaseItemModule extends ItemModule {
                                         p.discount,
                                         p.brand AS manufacturer,
                                         x.distributor,
-                                        u.description as ldesc 
+                                        u.description as ldesc,
+                                        p.default_vendor_id
                                       FROM products AS p 
                                         LEFT JOIN prodExtra AS x ON p.upc=x.upc 
                                         LEFT JOIN productUser AS u ON p.upc=u.upc 
@@ -110,7 +111,8 @@ class BaseItemModule extends ItemModule {
               fields for the new item
             */
             $vendorP = "SELECT description,brand as manufacturer,cost,
-                vendorName as distributor,margin,i.vendorID,srp
+                vendorName as distributor,margin,i.vendorID,srp,
+                vendorID as default_vendor_id
                 FROM vendorItems AS i LEFT JOIN vendors AS v ON i.vendorID=v.vendorID
                 LEFT JOIN vendorDepartments AS d ON i.vendorDept=d.deptID
                 LEFT JOIN vendorSRPs AS s ON s.upc=i.upc AND s.vendorID=i.vendorID
@@ -218,10 +220,40 @@ class BaseItemModule extends ItemModule {
         $ret .="<td align=right><b>Brand</b></td><td><input type=text name=manufacturer size=30 value=\""
             .(isset($rowItem['manufacturer'])?$rowItem['manufacturer']:"")
             ."\" id=\"brand_field\" /></td>";
-        $ret .= "<td align=right><button type=\"button\" id=\"newVendorButton\">+</button> <b>Vendor</b></td>
-                <td><input type=text name=distributor size=8 value=\""
-            .(isset($rowItem['distributor'])?$rowItem['distributor']:"")
-            ."\" id=\"vendor_field\" /></td>";
+        /**
+          Check products.default_vendor_id to see if it is a 
+          valid reference to the vendors table
+        */
+        $normalizedVendorID = false;
+        if (isset($rowItem['default_vendor_id']) && $rowItem['default_vendor_id'] > 0) {
+            $normalizedVendor = new VendorsModel($dbc);
+            $normalizedVendor->vendorID($rowItem['default_vendor_id']);
+            if ($normalizedVendor->load()) {
+                $normalizedVendorID = $normalizedVendor->vendorID();
+            }
+        }
+        /**
+          Use a <select> box if the current vendor corresponds to a valid
+          entry OR if no vendor entry exists. Only allow free text
+          if it's already in place
+        */
+        $ret .= "<td align=right><button type=\"button\" id=\"newVendorButton\">+</button> <b>Vendor</b></td><td>";
+        if ($normalizedVendorID || empty($rowItem['distributor'])) {
+            $ret .= '<select name="distributor" class="chosen-select">';
+            $ret .= '<option value="0"></option>';
+            $vendors = new VendorsModel($dbc);
+            foreach ($vendors->find('vendorName') as $v) {
+                $ret .= sprintf('<option %s>%s</option>',
+                            ($v->vendorID() == $normalizedVendorID ? 'selected' : ''),
+                            $v->vendorName());
+            }
+            $ret .= '</select>';
+        } else {
+            $ret .= "<input type=text name=distributor size=8 value=\""
+                .(isset($rowItem['distributor'])?$rowItem['distributor']:"")
+                ."\" id=\"vendor_field\" />";
+        }
+        $ret .= '</td>';
         $ret .= '</tr>';
 
         $ret .= '<div id="newVendorDialog" title="Create new Vendor">';

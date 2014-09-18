@@ -53,8 +53,8 @@ class LikeCodeModule extends ItemModule {
 
 
         $ret .= "<table border=0><tr><td><b>Like code</b> <button type=\"button\" id=\"lcAddButton\">+</button> ";
-        $ret .= "<select name=likeCode style=\"{width: 175px;}\"
-                onchange=\"updateLcModList(this.value);\">";
+        $ret .= "<select name=likeCode id=\"likeCodeSelect\" style=\"{width: 175px;}\"
+                onchange=\"updateLcModList(this.value);\" class=\"chosenSelect\">";
         $ret .= "<option value=-1>(none)</option>";
     
         $p = $dbc->prepare_statement('SELECT likeCode, likeCodeDesc FROM likeCodes ORDER BY likeCode');
