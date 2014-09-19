@@ -53,11 +53,11 @@ class MemberModule
       Extract data from GET/POST and save
       member information
       @param $memNum [int] member number
-      @return [boolean] success/failure
+      @return [string] message. empty string indicates success
     */
     public function saveFormData($memNum)
     {
-        return true;
+        return '';
     }
 
     /**
