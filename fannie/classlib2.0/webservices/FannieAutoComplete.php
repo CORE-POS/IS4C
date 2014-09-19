@@ -21,7 +21,10 @@
 
 *********************************************************************************/
 
-class FannieAutoComplete extends FannieWebService 
+namespace COREPOS\Fannie\API\webservices 
+{
+
+class FannieAutoComplete extends \FannieWebService 
 {
     
     public $type = 'json'; // json/plain by default
@@ -52,7 +55,7 @@ class FannieAutoComplete extends FannieWebService
             return $ret;
         }
 
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = \FannieDB::get($FANNIE_OP_DB);
         switch (strtolower($args->field)) {
             case 'item':
                 $prep = $dbc->prepare('SELECT p.upc,
@@ -210,5 +213,13 @@ class FannieAutoComplete extends FannieWebService
                 return $ret;
         }
     }
+}
+
+}
+
+namespace 
+{
+    // global namespace wrapper class
+    class FannieAutoComplete extends \COREPOS\Fannie\API\webservices\FannieAutoComplete {}
 }
 
