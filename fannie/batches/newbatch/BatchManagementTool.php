@@ -754,8 +754,10 @@ class BatchManagementTool extends FanniePage
             }
 
             // push changed items to lanes
+            $model = new ProductsModel($dbc);
             foreach ($items as $item) {
-                updateProductAllLanes($item);
+                $model->upc($item);
+                $model->pushToLanes();
             }
             break;
         default:
