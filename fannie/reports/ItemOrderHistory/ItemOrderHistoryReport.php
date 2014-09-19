@@ -21,11 +21,15 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class ItemOrderHistoryReport extends FannieReportPage 
 {
+    public $description = '[Item Order History] shows purchase orders for a given item. Requires purchase orders or
+    invoice information to be entered into POS.';
 
     protected $title = "Fannie : Item Order History";
     protected $header = "Item Order History";
@@ -98,7 +102,7 @@ class ItemOrderHistoryReport extends FannieReportPage
         }
 
         return $data;
-	}
+    }
 
     public function calculate_footers($data)
     {

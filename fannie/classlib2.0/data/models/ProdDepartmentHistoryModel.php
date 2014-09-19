@@ -36,7 +36,7 @@ class ProdDepartmentHistoryModel extends BasicModel
     'dept_ID' => array('type'=>'INT'),
     'uid' => array('type'=>'INT'),
     'prodUpdateID' => array('type'=>'BIGINT UNSIGNED','index'=>true),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -50,6 +50,22 @@ class ProdDepartmentHistoryModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'prodDepartmentHistoryID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["prodDepartmentHistoryID"]) || $this->instance["prodDepartmentHistoryID"] != func_get_args(0)) {
                 if (!isset($this->columns["prodDepartmentHistoryID"]["ignore_updates"]) || $this->columns["prodDepartmentHistoryID"]["ignore_updates"] == false) {
@@ -58,6 +74,7 @@ class ProdDepartmentHistoryModel extends BasicModel
             }
             $this->instance["prodDepartmentHistoryID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function upc()
@@ -70,6 +87,22 @@ class ProdDepartmentHistoryModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'upc',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["upc"]) || $this->instance["upc"] != func_get_args(0)) {
                 if (!isset($this->columns["upc"]["ignore_updates"]) || $this->columns["upc"]["ignore_updates"] == false) {
@@ -78,6 +111,7 @@ class ProdDepartmentHistoryModel extends BasicModel
             }
             $this->instance["upc"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function modified()
@@ -90,6 +124,22 @@ class ProdDepartmentHistoryModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'modified',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["modified"]) || $this->instance["modified"] != func_get_args(0)) {
                 if (!isset($this->columns["modified"]["ignore_updates"]) || $this->columns["modified"]["ignore_updates"] == false) {
@@ -98,6 +148,7 @@ class ProdDepartmentHistoryModel extends BasicModel
             }
             $this->instance["modified"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function dept_ID()
@@ -110,6 +161,22 @@ class ProdDepartmentHistoryModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'dept_ID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["dept_ID"]) || $this->instance["dept_ID"] != func_get_args(0)) {
                 if (!isset($this->columns["dept_ID"]["ignore_updates"]) || $this->columns["dept_ID"]["ignore_updates"] == false) {
@@ -118,6 +185,7 @@ class ProdDepartmentHistoryModel extends BasicModel
             }
             $this->instance["dept_ID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function uid()
@@ -130,6 +198,22 @@ class ProdDepartmentHistoryModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'uid',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["uid"]) || $this->instance["uid"] != func_get_args(0)) {
                 if (!isset($this->columns["uid"]["ignore_updates"]) || $this->columns["uid"]["ignore_updates"] == false) {
@@ -138,6 +222,7 @@ class ProdDepartmentHistoryModel extends BasicModel
             }
             $this->instance["uid"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function prodUpdateID()
@@ -150,6 +235,22 @@ class ProdDepartmentHistoryModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'prodUpdateID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["prodUpdateID"]) || $this->instance["prodUpdateID"] != func_get_args(0)) {
                 if (!isset($this->columns["prodUpdateID"]["ignore_updates"]) || $this->columns["prodUpdateID"]["ignore_updates"] == false) {
@@ -158,6 +259,7 @@ class ProdDepartmentHistoryModel extends BasicModel
             }
             $this->instance["prodUpdateID"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

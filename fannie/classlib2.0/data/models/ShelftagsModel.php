@@ -27,7 +27,7 @@
 class ShelftagsModel extends BasicModel
 {
 
-    protected $name = "Shelftags";
+    protected $name = "shelftags";
 
     protected $columns = array(
     'id' => array('type'=>'INT', 'primary_key'=>true),
@@ -40,7 +40,8 @@ class ShelftagsModel extends BasicModel
     'units' => array('type'=>'INT'),
     'vendor' => array('type'=>'VARCHAR(50)'),
     'pricePerUnit' => array('type'=>'VARCHAR(50)'),
-	);
+    'count' => array('type'=>'TINYINT', 'default'=>1),
+    );
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -54,6 +55,22 @@ class ShelftagsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'id',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["id"]) || $this->instance["id"] != func_get_args(0)) {
                 if (!isset($this->columns["id"]["ignore_updates"]) || $this->columns["id"]["ignore_updates"] == false) {
@@ -62,6 +79,7 @@ class ShelftagsModel extends BasicModel
             }
             $this->instance["id"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function upc()
@@ -74,6 +92,22 @@ class ShelftagsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'upc',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["upc"]) || $this->instance["upc"] != func_get_args(0)) {
                 if (!isset($this->columns["upc"]["ignore_updates"]) || $this->columns["upc"]["ignore_updates"] == false) {
@@ -82,6 +116,7 @@ class ShelftagsModel extends BasicModel
             }
             $this->instance["upc"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function description()
@@ -94,6 +129,22 @@ class ShelftagsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'description',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["description"]) || $this->instance["description"] != func_get_args(0)) {
                 if (!isset($this->columns["description"]["ignore_updates"]) || $this->columns["description"]["ignore_updates"] == false) {
@@ -102,6 +153,7 @@ class ShelftagsModel extends BasicModel
             }
             $this->instance["description"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function normal_price()
@@ -114,6 +166,22 @@ class ShelftagsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'normal_price',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["normal_price"]) || $this->instance["normal_price"] != func_get_args(0)) {
                 if (!isset($this->columns["normal_price"]["ignore_updates"]) || $this->columns["normal_price"]["ignore_updates"] == false) {
@@ -122,6 +190,7 @@ class ShelftagsModel extends BasicModel
             }
             $this->instance["normal_price"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function brand()
@@ -134,6 +203,22 @@ class ShelftagsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'brand',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["brand"]) || $this->instance["brand"] != func_get_args(0)) {
                 if (!isset($this->columns["brand"]["ignore_updates"]) || $this->columns["brand"]["ignore_updates"] == false) {
@@ -142,6 +227,7 @@ class ShelftagsModel extends BasicModel
             }
             $this->instance["brand"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function sku()
@@ -154,6 +240,22 @@ class ShelftagsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'sku',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["sku"]) || $this->instance["sku"] != func_get_args(0)) {
                 if (!isset($this->columns["sku"]["ignore_updates"]) || $this->columns["sku"]["ignore_updates"] == false) {
@@ -162,6 +264,7 @@ class ShelftagsModel extends BasicModel
             }
             $this->instance["sku"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function size()
@@ -174,6 +277,22 @@ class ShelftagsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'size',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["size"]) || $this->instance["size"] != func_get_args(0)) {
                 if (!isset($this->columns["size"]["ignore_updates"]) || $this->columns["size"]["ignore_updates"] == false) {
@@ -182,6 +301,7 @@ class ShelftagsModel extends BasicModel
             }
             $this->instance["size"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function units()
@@ -194,6 +314,22 @@ class ShelftagsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'units',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["units"]) || $this->instance["units"] != func_get_args(0)) {
                 if (!isset($this->columns["units"]["ignore_updates"]) || $this->columns["units"]["ignore_updates"] == false) {
@@ -202,6 +338,7 @@ class ShelftagsModel extends BasicModel
             }
             $this->instance["units"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function vendor()
@@ -214,6 +351,22 @@ class ShelftagsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'vendor',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["vendor"]) || $this->instance["vendor"] != func_get_args(0)) {
                 if (!isset($this->columns["vendor"]["ignore_updates"]) || $this->columns["vendor"]["ignore_updates"] == false) {
@@ -222,6 +375,7 @@ class ShelftagsModel extends BasicModel
             }
             $this->instance["vendor"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function pricePerUnit()
@@ -234,6 +388,22 @@ class ShelftagsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'pricePerUnit',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["pricePerUnit"]) || $this->instance["pricePerUnit"] != func_get_args(0)) {
                 if (!isset($this->columns["pricePerUnit"]["ignore_updates"]) || $this->columns["pricePerUnit"]["ignore_updates"] == false) {
@@ -242,6 +412,44 @@ class ShelftagsModel extends BasicModel
             }
             $this->instance["pricePerUnit"] = func_get_arg(0);
         }
+        return $this;
+    }
+
+    public function count()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["count"])) {
+                return $this->instance["count"];
+            } else if (isset($this->columns["count"]["default"])) {
+                return $this->columns["count"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'count',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["count"]) || $this->instance["count"] != func_get_args(0)) {
+                if (!isset($this->columns["count"]["ignore_updates"]) || $this->columns["count"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["count"] = func_get_arg(0);
+        }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

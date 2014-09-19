@@ -61,6 +61,7 @@ class Parser {
 	     totals have changed.
 	   - receipt False or string type. Print a receipt with
 	     the given type.
+       - trans_num string current transaction identifier
 	   - scale Update the scale display and session variables
 	   - udpmsg False or string. Send a message to hardware
 	     device(s)
@@ -79,13 +80,15 @@ class Parser {
 	
 	  See parse() method
 	*/
-	function default_json(){
+	function default_json()
+    {
 		return array(
 			'main_frame'=>false,
 			'target'=>'.baseHeight',
 			'output'=>false,
 			'redraw_footer'=>false,
 			'receipt'=>false,
+            'trans_num'=>ReceiptLib::receiptNumber(),
 			'scale'=>false,
 			'udpmsg'=>false,
 			'retry'=>false

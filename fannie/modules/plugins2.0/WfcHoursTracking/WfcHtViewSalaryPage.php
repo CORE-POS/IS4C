@@ -33,6 +33,8 @@ class WfcHtViewSalaryPage extends FanniePage
 {
     protected $must_authenticate = true;
     protected $window_dressing = false;
+    public $page_set = 'Plugin :: WFC Hours Tracking';
+    public $description = '[View Salary] shows information for a single salaried employee.';
 
     private $empID = 0;
     public function preprocess()
@@ -87,65 +89,65 @@ class WfcHtViewSalaryPage extends FanniePage
 echo "<html><head><title>View</title>";
 echo "<style type=text/css>
 #payperiods {
-	margin-top: 50px;
+    margin-top: 50px;
 }
 
 #payperiods td {
-	text-align: right;
+    text-align: right;
 }
 
 #payperiods th {
-	text-align: center;
+    text-align: center;
 }
 
 #payperiods td.left {
-	text-align: left;
+    text-align: left;
 }
 
 #payperiods th.left {
-	text-align: left;
+    text-align: left;
 }
 
 #payperiods th.right {
-	text-align: right;
+    text-align: right;
 }
 
 tr.one td {
-	background: #ffffcc;
+    background: #ffffcc;
 }
 tr.one th {
-	background: #ffffcc;
-	text-align: right;
+    background: #ffffcc;
+    text-align: right;
 }
 
 tr.two td {
-	background: #ffffff;
+    background: #ffffff;
 }
 tr.two th {
-	background: #ffffff;
-	text-align: right;
+    background: #ffffff;
+    text-align: right;
 }
 a {
-	color: blue;
+    color: blue;
 }
 
 #temptable th {
-	text-align: left;
+    text-align: left;
 }
 #temptable td {
-	text-align: right;
-	padding-left: 2em;
+    text-align: right;
+    padding-left: 2em;
 }
 
 #temptable {
-	font-size: 125%;
+    font-size: 125%;
 }
 
 #newtable th{
-	text-align: left;
+    text-align: left;
 }
 #newtable td{
-	text-align: right;
+    text-align: right;
 }
 
 </style>";
@@ -180,7 +182,7 @@ a {
             $dstr = date("F Y",mktime(0,0,0,$row[1],1,$row[2]));
             echo "<td>$dstr</td>";
             echo "<td>$row[0]</td>";
-            echo "</tr>";	
+            echo "</tr>";   
             $c = ($c+1)%2;
         }
 

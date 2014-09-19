@@ -121,6 +121,25 @@ class FannieAPI
         return false;
     }
 
+    static public function listFiles($path)
+    {
+        if (is_file($path) && substr($path,-4)=='.php') {
+            return array($path);
+        } elseif (is_dir($path)) {
+            $dh = opendir($path);
+            $ret = array();
+            while( ($file=readdir($dh)) !== false) {
+                if ($file == '.' || $file == '..') continue;
+                if ($file == 'noauto') continue;
+                if ($file == 'index.php') continue;
+                if ($file == 'Store-Specific') continue;
+                $ret = array_merge($ret, self::listFiles($path.'/'.$file));
+            }
+            return $ret;
+        }
+        return array();
+    }
+
     /**
       Get a list of all available classes implementing a given
       base class
@@ -144,8 +163,34 @@ class FannieAPI
             case 'FannieTask':
                 $directories[] = dirname(__FILE__).'/../cron/tasks/';
                 break;
+            case 'BasicModel':
+                $directories[] = dirname(__FILE__).'/data/models/';
+                break;
             case 'BasicModelHook':
                 $directories[] = dirname(__FILE__).'/data/hooks/';
+                break;
+            case 'FannieReportPage':
+                $directories[] = dirname(__FILE__).'/../reports/';
+                break;
+            case 'FannieReportTool':
+                $directories[] = dirname(__FILE__).'/../reports/';
+                break;
+            case 'FannieSignage':
+                $directories[] = dirname(__FILE__) . '/item/signage/';
+                break;
+            case 'FanniePage':
+                $directories[] = dirname(__FILE__).'/../admin/';
+                $directories[] = dirname(__FILE__).'/../batches/';
+                $directories[] = dirname(__FILE__).'/../cron/management/';
+                $directories[] = dirname(__FILE__).'/../item/';
+                $directories[] = dirname(__FILE__).'/../logs/';
+                $directories[] = dirname(__FILE__).'/../reports/';
+                $directories[] = dirname(__FILE__).'/../mem/';
+                $directories[] = dirname(__FILE__).'/../purchasing/';
+                /*
+                $directories[] = dirname(__FILE__).'/../install/';
+                $directories[] = dirname(__FILE__).'/../ordering/';
+                */
                 break;
         }
 
@@ -159,6 +204,8 @@ class FannieAPI
                 while( ($file=readdir($dh)) !== false) {
                     if ($file == '.' || $file == '..') continue;
                     if ($file == 'noauto') continue;
+                    if ($file == 'index.php') continue;
+                    if ($file == 'Store-Specific') continue;
                     $ret = array_merge($ret, $search($path.'/'.$file));
                 }
                 return $ret;

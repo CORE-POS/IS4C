@@ -33,6 +33,9 @@ class GumValidTermsPage extends FannieRESTfulPage
     protected $must_authenticate = true;
     protected $auth_classes = array('GiveUsMoney');
 
+    public $page_set = 'Plugin :: Give Us Money';
+    public $description = '[Loan Terms] configures what loan lengths are allowed.';
+
     public function preprocess()
     {
         $this->header = 'Available Loan Terms';

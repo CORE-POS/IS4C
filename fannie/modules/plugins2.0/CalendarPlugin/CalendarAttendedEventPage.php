@@ -23,22 +23,25 @@
 
 include_once(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FanniePage'))
-	include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 if (!class_exists('CalendarPlugin'))
-	include(dirname(__FILE__).'/CalendarPlugin.php');
+    include(dirname(__FILE__).'/CalendarPlugin.php');
 if (!class_exists('CalendarPluginDB'))
-	include(dirname(__FILE__).'/CalendarPluginDB.php');
+    include(dirname(__FILE__).'/CalendarPluginDB.php');
 if (!class_exists('PermissionsModel'))
-	include(dirname(__FILE__).'/models/PermissionsModel.php');
+    include(dirname(__FILE__).'/models/PermissionsModel.php');
 if (!class_exists('CalendarsModel'))
-	include(dirname(__FILE__).'/models/CalendarsModel.php');
+    include(dirname(__FILE__).'/models/CalendarsModel.php');
 if (!class_exists('MonthviewEventsModel'))
-	include(dirname(__FILE__).'/models/MonthviewEventsModel.php');
+    include(dirname(__FILE__).'/models/MonthviewEventsModel.php');
 
 class CalendarAttendedEventPage extends FannieRESTfulPage 
 {
 
-	protected $must_authenticate = true;
+    protected $must_authenticate = true;
+
+    public $page_set = 'Plugin :: Calendar';
+    public $description = '[Attended Event] is a calendar entry with an attendee list attached.';
 
     public function preprocess()
     {
@@ -53,7 +56,6 @@ class CalendarAttendedEventPage extends FannieRESTfulPage
         global $FANNIE_URL;
         $this->header = 'Create Attended Event';
         $this->title = 'Create Attended Event';
-        $this->add_script($FANNIE_URL.'src/CalendarControl.js');
 
         return true;
     }
@@ -83,7 +85,8 @@ class CalendarAttendedEventPage extends FannieRESTfulPage
         $ret .= '</select></div>';
 
         $ret .= '<div style="margin:5px;"><b>Date</b>: 
-            <input type="text" size="10" onfocus="showCalendarControl(this);" name="datestr" /></div>';
+            <input type="text" size="10" id="datestr" name="datestr" /></div>';
+        $this->add_onload_command("\$('#datestr').datepicker();\n");
 
         $ret .= '<div style="margin:5px;"><b>Max Attendees</b>: 
             <input type="text" size="4" name="limit" /></div>';

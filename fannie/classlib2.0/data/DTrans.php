@@ -167,6 +167,24 @@ class DTrans
     }
 
     /**
+      Get SQL condition to select transactions with
+      the given store ID. Store ID must be passed to the
+      resulting prepared statement as an argument
+    */
+    public static function isStoreID($store_id, $prefix='')
+    {
+        if (!empty($prefix)) {
+            $prefix = $prefix . '.';
+        }
+        
+        if ($store_id == 0) {
+            return ' (0 = ?) ';    
+        } else {
+            return ' (' . $prefix . 'store_id = ?) ';
+        }
+    }
+
+    /**
       Get standard quantity sum. Member-discount line items
       are excluded and quasi-scalabe items with a unitPrice
       of a penny are counted as one instead of whatever value
@@ -193,7 +211,7 @@ class DTrans
       @param $product_alias [optional] alias for the products table (default 'p')
       @return string SQL snippet
     */
-    public static function joinProducts($dlog_alias='t', $product_alias='p')
+    public static function joinProducts($dlog_alias='t', $product_alias='p', $join_type='left')
     {
         global $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
         $table = 'products';
@@ -203,8 +221,22 @@ class DTrans
             $table .= 'products';
         }
 
-        return ' LEFT JOIN ' . $table . ' AS ' . $product_alias
+        return ' ' . self::normalizeJoin($join_type) . ' JOIN ' . $table 
+                . ' AS ' . $product_alias
                 . ' ON ' . $product_alias . '.upc = ' . $dlog_alias . '.upc ';
+    }
+
+    private static function normalizeJoin($join_type)
+    {
+        switch (strtoupper($join_type)) {
+            case 'RIGHT':
+                return 'RIGHT';
+            case 'INNER':
+                return 'INNER';
+            default:
+            case 'LEFT':
+                return 'LEFT';
+        }
     }
 
     /**

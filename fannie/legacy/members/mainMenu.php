@@ -1,4 +1,6 @@
 <?php 
+header('Location: ../../modules/plugins2.0/PIKiller/PISearchPage.php');
+exit;
 include('../../config.php');
 
 include($FANNIE_ROOT.'src/SQLManager.php');

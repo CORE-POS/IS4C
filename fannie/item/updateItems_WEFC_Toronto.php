@@ -47,13 +47,18 @@
  *  + is for HQ and there are non-HQ store records for the item
 */
 
-include('../config.php');
+require(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
+    return;
+}
 //$FANNIE_ITEM_MODULES;
 // This would be both whether-or-not and sequence-on-page
 $Fannie_Item_Modules = array("Operations","ExtraInfo",
-		"ThreeForDollar",
-	"Cost","Sale","Margin", "LikeCode", "LaneStatus");
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+        "ThreeForDollar",
+    "Cost","Sale","Margin", "LikeCode", "LaneStatus");
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 require_once('../auth/login.php');
@@ -115,10 +120,10 @@ $up_array['numflag'] = (isset($_REQUEST['flags']))?setProductFlags($_REQUEST['fl
 // 3 for $1 from fieldset
 // Only use these if the fieldset they are in is displayed ...
 if ( array_search('ThreeForDollar',$Fannie_Item_Modules) !== False ) {
-	$up_array['pricemethod'] = is_numeric($_REQUEST['pricemethod'])?$_REQUEST['pricemethod']:0;
-	$up_array['groupprice'] = saveAsMoney($_REQUEST,'groupprice');
-	//$up_array['groupprice'] = is_numeric($_REQUEST['groupprice'])?$_REQUEST['groupprice']:0.00;
-	$up_array['quantity'] = is_numeric($_REQUEST['quantity'])?$_REQUEST['quantity']:0;
+    $up_array['pricemethod'] = is_numeric($_REQUEST['pricemethod'])?$_REQUEST['pricemethod']:0;
+    $up_array['groupprice'] = saveAsMoney($_REQUEST,'groupprice');
+    //$up_array['groupprice'] = is_numeric($_REQUEST['groupprice'])?$_REQUEST['groupprice']:0.00;
+    $up_array['quantity'] = is_numeric($_REQUEST['quantity'])?$_REQUEST['quantity']:0;
 }
 // ... but use this regardless since it isn't edited in the "Volume" group.
 //  Is in effect hidden if its block isn't displayed.
@@ -141,11 +146,11 @@ $up_array['specialquantity'] = is_numeric($_REQUEST['specialquantity'])?$_REQUES
     1Mar13 EL The whole Volume option is only available if the ThreeForDollar fieldset is not available.
 */
 if (isset($_REQUEST['doVolume']) && is_numeric($_REQUEST['vol_price']) && is_numeric($_REQUEST['vol_qtty'])){
-	$up_array['pricemethod'] = $_REQUEST['vol_pricemethod'];
-	if ($up_array['pricemethod']==0) $up_array['pricemethod']=2;
-	$up_array['groupprice'] = saveAsMoney($_REQUEST,'vol_price');
-	//$up_array['groupprice'] = $_REQUEST['vol_price'];
-	$up_array['quantity'] = $_REQUEST['vol_qtty'];
+    $up_array['pricemethod'] = $_REQUEST['vol_pricemethod'];
+    if ($up_array['pricemethod']==0) $up_array['pricemethod']=2;
+    $up_array['groupprice'] = saveAsMoney($_REQUEST,'vol_price');
+    //$up_array['groupprice'] = $_REQUEST['vol_price'];
+    $up_array['quantity'] = $_REQUEST['vol_qtty'];
 }
 
 /* pull the current, HQ values for all the editable fields
@@ -153,29 +158,29 @@ if (isset($_REQUEST['doVolume']) && is_numeric($_REQUEST['vol_price']) && is_num
    Store actual changes in the array $CHANGES
 */
 $currentQ = "SELECT tax,foodstamp,scale,deposit,qttyEnforced,discount,normal_price,
-	description,pricemethod,groupprice,quantity,department,cost,subdept,local,
-	mixmatchcode,size,unitofmeasure,
-	special_price,specialpricemethod,specialgroupprice,specialquantity,discounttype,start_date,end_date
-	FROM products WHERE upc='$upc' AND store_id=0";
+    description,pricemethod,groupprice,quantity,department,cost,subdept,local,
+    mixmatchcode,size,unitofmeasure,
+    special_price,specialpricemethod,specialgroupprice,specialquantity,discounttype,start_date,end_date
+    FROM products WHERE upc='$upc' AND store_id=0";
 $currentR = $dbc->query($currentQ);
 $currentW = array();
 if ($dbc->num_rows($currentR) > 0)
-	$currentW = $dbc->fetch_row($currentR);
+    $currentW = $dbc->fetch_row($currentR);
 $CHANGES = array();
 foreach($up_array as $column => $new_value){
-	if (!isset($currentW[$column])) continue;
-	if ($currentW[$column] != trim($new_value,"'")){
-		$CHANGES[$column] = array(
-			'old' => $currentW[$column],
-			'new' => trim($new_value,"'")
-		);
-	}
+    if (!isset($currentW[$column])) continue;
+    if ($currentW[$column] != trim($new_value,"'")){
+        $CHANGES[$column] = array(
+            'old' => $currentW[$column],
+            'new' => trim($new_value,"'")
+        );
+    }
 }
 
 $sR = $dbc->query("SELECT superID FROM MasterSuperDepts WHERE dept_ID=".$up_array['department']);
 $sID = 0;
 if ($dbc->num_rows($sR) > 0)
-	$sID = array_pop($dbc->fetch_row($sR));
+    $sID = array_pop($dbc->fetch_row($sR));
 
 /* 1. Validate credentials of the operator.  */
 $uid = 0;
@@ -202,280 +207,283 @@ elseif ($auditedUser){
  * Store the raw versions of products.description and productUser.description in products_WEFC_Toronto.
 */
 if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == "WEFC_Toronto" ) {
-	$table_name = "products_{$FANNIE_COOP_ID}";
-	if ($dbc->table_exists("$table_name")){
-		$coop_array = array("description" => $dbc->escape(substr($_REQUEST['descript'],0,255)),
-		"search_description" => isset($_REQUEST['puser_description'])?$dbc->escape(substr($_REQUEST['puser_description'],0,255)):'');
-		$checkR = $dbc->query("SELECT upc FROM $table_name WHERE upc='$upc'");
-		if ($dbc->num_rows($checkR) == 0){
-			$coop_array['upc'] = $dbc->escape($upc);
-			$dbc->smart_insert("$table_name",$coop_array);
-		}
-		else {
-			$dbc->smart_update("$table_name",$coop_array,"upc='$upc'");
-		}
-	}
+    $table_name = "products_{$FANNIE_COOP_ID}";
+    if ($dbc->table_exists("$table_name")){
+        $coop_array = array("description" => $dbc->escape(substr($_REQUEST['descript'],0,255)),
+        "search_description" => isset($_REQUEST['puser_description'])?$dbc->escape(substr($_REQUEST['puser_description'],0,255)):'');
+        $checkR = $dbc->query("SELECT upc FROM $table_name WHERE upc='$upc'");
+        if ($dbc->num_rows($checkR) == 0){
+            $coop_array['upc'] = $dbc->escape($upc);
+            $dbc->smart_insert("$table_name",$coop_array);
+        }
+        else {
+            $dbc->smart_update("$table_name",$coop_array,"upc='$upc'");
+        }
+    }
 }
 
 // Compose "package" strings.
 $package = "";
 $sizing = "";
 if ( $string_size != "" && $unitofmeasure != "" ) {
-	$package = " $string_size$unitofmeasure";
-	$sizing = "$string_size $unitofmeasure";
+    $package = " $string_size$unitofmeasure";
+    $sizing = "$string_size $unitofmeasure";
 }
 
 // Compose products.description and productUser.description if wanted.
 if ( isset($FANNIE_COMPOSE_PRODUCT_DESCRIPTION) && $FANNIE_COMPOSE_PRODUCT_DESCRIPTION == "1" ) {
-	$plen = strlen($package);
-	$descp = $_REQUEST['descript'];
-	$dlen = strlen($descp);
-	$maxDescLen = 30;
-	$wlen = ($dlen + $plen);
+    $plen = strlen($package);
+    $descp = $_REQUEST['descript'];
+    $dlen = strlen($descp);
+    $maxDescLen = 30;
+    $wlen = ($dlen + $plen);
 
-	if ( $wlen <= $maxDescLen ) {
-		$up_array['description'] = $dbc->escape($descp . $package);
-	} else {
-		$up_array['description'] = $dbc->escape(substr($descp,0,($dlen - ($wlen - $maxDescLen))) . $package);
-	}
+    if ( $wlen <= $maxDescLen ) {
+        $up_array['description'] = $dbc->escape($descp . $package);
+    } else {
+        $up_array['description'] = $dbc->escape(substr($descp,0,($dlen - ($wlen - $maxDescLen))) . $package);
+    }
 }
 if ( isset($FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION) && $FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION == "1" ) {
-	$plen = strlen($package);
-	$mlen = strlen($_REQUEST['manufacturer']);
-	$descp = $_REQUEST['puser_description'];
-	$dlen = strlen($descp);
-	$maxDescLen = 255;
-	$wlen = ($dlen + 3 + $mlen + 3 + $plen);
-	if ( $wlen <= $maxDescLen ) {
-		$puser_description = strtoupper($_REQUEST['manufacturer']) . ' | ' . $_REQUEST['puser_description'] . ' | ' . $package;
-	} else {
-		$puser_description = strtoupper($_REQUEST['manufacturer']) . ' | ' .
-			substr($descp,0,($dlen - ($wlen - $maxDescLen)) . ' | ' . $package);
-	}
+    $plen = strlen($package);
+    $mlen = strlen($_REQUEST['manufacturer']);
+    $descp = $_REQUEST['puser_description'];
+    $dlen = strlen($descp);
+    $maxDescLen = 255;
+    $wlen = ($dlen + 3 + $mlen + 3 + $plen);
+    if ( $wlen <= $maxDescLen ) {
+        $puser_description = strtoupper($_REQUEST['manufacturer']) . ' | ' . $_REQUEST['puser_description'] . ' | ' . $package;
+    } else {
+        $puser_description = strtoupper($_REQUEST['manufacturer']) . ' | ' .
+            substr($descp,0,($dlen - ($wlen - $maxDescLen)) . ' | ' . $package);
+    }
 } else {
-	$puser_description = substr($_REQUEST['puser_description'],0,255);
+    $puser_description = substr($_REQUEST['puser_description'],0,255);
 }
 
 /* 3. Insert or update products */
 if ($up_array['store_id'] == $FANNIE_STORE_ID){
-	// record exists so update it
-	$dbc->smart_update('products',$up_array,"upc='$upc'");
+    // record exists so update it
+    $dbc->smart_update('products',$up_array,"upc='$upc'");
 }
 else if($up_array['store_id']==0 && count($CHANGES) > 0){
-	// only the HQ record exists and we are not HQ
-	// so it has to be an insert
-	// only create a new record if changes really exist
-	// 22Feb13 EL store_id is set again below.
-	$up_array['store_id'] = $FANNIE_STORE_ID;
-	$up_array['upc'] = $dbc->escape($_REQUEST['upc']);
-	// 22Feb13 EL Not certain about using entered values instead of these defaults
-	//  when inserting to HQ.  Leave as-is for now.
-	$up_array['special_price'] = 0.00;
-	$up_array['specialpricemethod'] = 0;
-	$up_array['specialgroupprice'] = 0.00;
-	$up_array['specialquantity'] = 0;
-	$up_array['start_date'] = "'1900-01-01'";
-	$up_array['end_date'] = "'1900-01-01'";
-	$up_array['mixmatchcode'] = "'0'";
-	$up_array['discounttype'] = 0;
-	$up_array['store_id'] = 0;
-	$dbc->smart_insert('products',$up_array);
+    // only the HQ record exists and we are not HQ
+    // so it has to be an insert
+    // only create a new record if changes really exist
+    // 22Feb13 EL store_id is set again below.
+    $up_array['store_id'] = $FANNIE_STORE_ID;
+    $up_array['upc'] = $dbc->escape($_REQUEST['upc']);
+    // 22Feb13 EL Not certain about using entered values instead of these defaults
+    //  when inserting to HQ.  Leave as-is for now.
+    $up_array['special_price'] = 0.00;
+    $up_array['specialpricemethod'] = 0;
+    $up_array['specialgroupprice'] = 0.00;
+    $up_array['specialquantity'] = 0;
+    $up_array['start_date'] = "'1900-01-01'";
+    $up_array['end_date'] = "'1900-01-01'";
+    $up_array['mixmatchcode'] = "'0'";
+    $up_array['discounttype'] = 0;
+    $up_array['store_id'] = 0;
+    $dbc->smart_insert('products',$up_array);
 }
 
 /* 4. Apply HQ updates to non-HQ records */
 // apply HQ updates to non-HQ records
 //  where the current value matches the old HQ value
 if ($FANNIE_STORE_ID==0 && count($CHANGES) > 0){
-	foreach($CHANGES as $col => $values){
-		$v_old = is_numeric($values['old']) ? $values['old'] : $dbc->escape($values['old']);
-		$v_new = is_numeric($values['new']) ? $values['new'] : $dbc->escape($values['new']);
-		$upQ = sprintf("UPDATE products SET %s=%s,modified=%s
-			WHERE %s=%s AND upc=%s AND store_id > 0",
-			$col,$v_new,
-			$dbc->now(),
-			$col,$v_old,
-			$dbc->escape($upc));
-		$upR = $dbc->query($upQ);
-	}
+    foreach($CHANGES as $col => $values){
+        $v_old = is_numeric($values['old']) ? $values['old'] : $dbc->escape($values['old']);
+        $v_new = is_numeric($values['new']) ? $values['new'] : $dbc->escape($values['new']);
+        $upQ = sprintf("UPDATE products SET %s=%s,modified=%s
+            WHERE %s=%s AND upc=%s AND store_id > 0",
+            $col,$v_new,
+            $dbc->now(),
+            $col,$v_old,
+            $dbc->escape($upc));
+        $upR = $dbc->query($upQ);
+    }
 }
 
 /* 5. Insert or update productUser */
 if ($dbc->table_exists('productUser')){
-	$puser_array = array();
-	$puser_array['brand'] = $dbc->escape($_REQUEST['manufacturer']);
-	$puser_array['description'] = $dbc->escape($puser_description);
-	$puser_array['sizing'] = $dbc->escape($sizing);
-	$checkR = $dbc->query("SELECT upc FROM productUser WHERE upc='$upc'");
-	if ($dbc->num_rows($checkR) == 0){
-		// if productUser record doesn't exist, needs more values
-		$puser_array['upc'] = $dbc->escape($upc);
-		$puser_array['enableOnline'] = 0;
-		$dbc->smart_insert('productUser',$puser_array);
-	}
-	else {
-		$dbc->smart_update('productUser',$puser_array,"upc='$upc'");
-	}
+    $puser_array = array();
+    $puser_array['brand'] = $dbc->escape($_REQUEST['manufacturer']);
+    $puser_array['description'] = $dbc->escape($puser_description);
+    $puser_array['sizing'] = $dbc->escape($sizing);
+    $checkR = $dbc->query("SELECT upc FROM productUser WHERE upc='$upc'");
+    if ($dbc->num_rows($checkR) == 0){
+        // if productUser record doesn't exist, needs more values
+        $puser_array['upc'] = $dbc->escape($upc);
+        $puser_array['enableOnline'] = 0;
+        $dbc->smart_insert('productUser',$puser_array);
+    }
+    else {
+        $dbc->smart_update('productUser',$puser_array,"upc='$upc'");
+    }
 }
 
 /* 6. Insert or update vendorItems */
 /* Changing vendorItems at all should perhaps be an option. */
 if ($dbc->table_exists('vendorItems')){
-	$vi_array = array();
-	$vi_array['sku'] = $dbc->escape(substr($_REQUEST['sku'], 0, 10));
-	$vi_array['brand'] = $dbc->escape(substr($_REQUEST['manufacturer'], 0, 50));
-	$vi_array['description'] = $dbc->escape(substr($_REQUEST['descript'], 0, 50));
-	$vi_array['cost'] = saveAsMoney($_REQUEST,'case_cost');
-	$vi_array['size'] = $dbc->escape("$sizing");
-	if ( is_numeric($_REQUEST['case_quantity']) && $_REQUEST['case_quantity'] > 0 )
-		$vi_array['units'] = $_REQUEST['case_quantity'];
-	else
-		$vi_array['units'] = 'NULL';
-	// Several vendorItems fields are not edited in itemMaint.php
-	$checkR = $dbc->query("SELECT upc FROM vendorItems WHERE upc='$upc'");
-	if ($dbc->num_rows($checkR) == 0){
-		$vi_array['upc'] = $dbc->escape($upc);
-		// vendorID
-		$checkR = $dbc->query("SELECT vendorID FROM vendorItems WHERE brand='{$vi_array['brand']}'");
-		if ( $dbc->num_rows($checkR) > 0 ) {
-			$vi_row = $dbc->fetch_row($checkR);
-			$vi_array['vendorID'] = $vi_row['vendorID'];
-		}
-		else {
-			$vi_array['vendorID'] = 0;
-		}
-		$dbc->smart_insert('vendorItems',$vi_array);
-	}
-	else {
-		$dbc->smart_update('vendorItems',$vi_array,"upc='$upc'");
-	}
+    $vi_array = array();
+    $vi_array['sku'] = $dbc->escape(substr($_REQUEST['sku'], 0, 10));
+    $vi_array['brand'] = $dbc->escape(substr($_REQUEST['manufacturer'], 0, 50));
+    $vi_array['description'] = $dbc->escape(substr($_REQUEST['descript'], 0, 50));
+    $vi_array['cost'] = saveAsMoney($_REQUEST,'case_cost');
+    $vi_array['size'] = $dbc->escape("$sizing");
+    if ( is_numeric($_REQUEST['case_quantity']) && $_REQUEST['case_quantity'] > 0 )
+        $vi_array['units'] = $_REQUEST['case_quantity'];
+    else
+        $vi_array['units'] = 'NULL';
+    // Several vendorItems fields are not edited in itemMaint.php
+    $checkR = $dbc->query("SELECT upc FROM vendorItems WHERE upc='$upc'");
+    if ($dbc->num_rows($checkR) == 0){
+        $vi_array['upc'] = $dbc->escape($upc);
+        // vendorID
+        $checkR = $dbc->query("SELECT vendorID FROM vendorItems WHERE brand='{$vi_array['brand']}'");
+        if ( $dbc->num_rows($checkR) > 0 ) {
+            $vi_row = $dbc->fetch_row($checkR);
+            $vi_array['vendorID'] = $vi_row['vendorID'];
+        }
+        else {
+            $vi_array['vendorID'] = 0;
+        }
+        $dbc->smart_insert('vendorItems',$vi_array);
+    }
+    else {
+        $dbc->smart_update('vendorItems',$vi_array,"upc='$upc'");
+    }
 }
 
 /* 7. Insert or update prodExtra */
 if ($dbc->table_exists('prodExtra')){
-	$px_array = array();
-	$px_array['manufacturer'] = $dbc->escape($_REQUEST['manufacturer']);
-	$px_array['distributor'] = $dbc->escape($_REQUEST['distributor']);
-	$px_array['cost'] = $up_array['cost'];
-	$px_array['location'] = $dbc->escape($_REQUEST['location']);
-	$px_array['case_cost'] = saveAsMoney($_REQUEST,'case_cost');
-	$px_array['case_quantity'] = is_numeric($_REQUEST['case_quantity'])?$dbc->escape($_REQUEST['case_quantity']):"''";
-	if ( $up_array['cost'] != 0 && $up_array['normal_price'] != 0 ) {
-		$px_array['margin'] = sprintf("%.2f", 1 -($up_array['cost'] / $up_array['normal_price']));
-	} else {
-		$px_array['margin'] = 0.00;
-	}
-	$checkR = $dbc->query("SELECT upc FROM prodExtra WHERE upc='$upc'");
-	if ($dbc->num_rows($checkR) == 0){
-		// if prodExtra record doesn't exist, needs more values
-		$px_array['upc'] = $dbc->escape($upc);
-		$px_array['variable_pricing'] = 0;
-		$px_array['case_info'] = "''";
-		$dbc->smart_insert('prodExtra',$px_array);
-	}
-	else {
-		$dbc->smart_update('prodExtra',$px_array,"upc='$upc'");
-	}
+    $px_array = array();
+    $px_array['manufacturer'] = $dbc->escape($_REQUEST['manufacturer']);
+    $px_array['distributor'] = $dbc->escape($_REQUEST['distributor']);
+    $px_array['cost'] = $up_array['cost'];
+    $px_array['location'] = $dbc->escape($_REQUEST['location']);
+    $px_array['case_cost'] = saveAsMoney($_REQUEST,'case_cost');
+    $px_array['case_quantity'] = is_numeric($_REQUEST['case_quantity'])?$dbc->escape($_REQUEST['case_quantity']):"''";
+    if ( $up_array['cost'] != 0 && $up_array['normal_price'] != 0 ) {
+        $px_array['margin'] = sprintf("%.2f", 1 -($up_array['cost'] / $up_array['normal_price']));
+    } else {
+        $px_array['margin'] = 0.00;
+    }
+    $checkR = $dbc->query("SELECT upc FROM prodExtra WHERE upc='$upc'");
+    if ($dbc->num_rows($checkR) == 0){
+        // if prodExtra record doesn't exist, needs more values
+        $px_array['upc'] = $dbc->escape($upc);
+        $px_array['variable_pricing'] = 0;
+        $px_array['case_info'] = "''";
+        $dbc->smart_insert('prodExtra',$px_array);
+    }
+    else {
+        $dbc->smart_update('prodExtra',$px_array,"upc='$upc'");
+    }
 }
 
 /* 8. Insert or update prodUpdate: audit trail */
 if ($dbc->table_exists("prodUpdate")){
-	$pu_array = array(
-	'upc' => $dbc->escape($upc),
-	'description' => $up_array['description'],
-	'price' => $up_array['normal_price'],
-	'dept' => $up_array['department'],
-	'tax' => $up_array['tax'],
-	'fs' => $up_array['foodstamp'],
-	'scale' => $up_array['scale'],
-	'likeCode' => isset($_REQUEST['likeCode'])?$_REQUEST['likeCode']:0,
-	'modified' => $dbc->now(),
-	'user' => $uid,
-	'forceQty' => $up_array['qttyEnforced'],
-	'noDisc' => $up_array['discount'],
-	'inUse' => $up_array['inUse']
-	);
-	$dbc->smart_insert('prodUpdate',$pu_array);
+    $pu_array = array(
+    'upc' => $dbc->escape($upc),
+    'description' => $up_array['description'],
+    'price' => $up_array['normal_price'],
+    'dept' => $up_array['department'],
+    'tax' => $up_array['tax'],
+    'fs' => $up_array['foodstamp'],
+    'scale' => $up_array['scale'],
+    'likeCode' => isset($_REQUEST['likeCode'])?$_REQUEST['likeCode']:0,
+    'modified' => $dbc->now(),
+    'user' => $uid,
+    'forceQty' => $up_array['qttyEnforced'],
+    'noDisc' => $up_array['discount'],
+    'inUse' => $up_array['inUse']
+    );
+    $dbc->smart_insert('prodUpdate',$pu_array);
 }
 
 /* 9. Insert or update scaleItems */
 if(isset($_REQUEST['s_plu'])){
-	$s_plu = substr($_REQUEST['s_plu'],3,4);
-	$scale_array = array();
-	$scale_array['plu'] = $upc;
-	$scale_array['itemdesc'] = $up_array['description'];
-	$scale_array['price'] = $up_array['normal_price'];
-	if (isset($_REQUEST['s_longdesc']) && !empty($_REQUEST['s_longdesc']))
-		$scale_array['itemdesc'] = $dbc->escape($_REQUEST['s_longdesc']);
-	$scale_array['tare'] = isset($_REQUEST['s_tare'])?$_REQUEST['s_tare']:0;
-	$scale_array['shelflife'] = isset($_REQUEST['s_shelflife'])?$_REQUEST['s_shelflife']:0;
-	$scale_array['bycount'] = isset($_REQUEST['s_bycount'])?1:0;
-	$scale_array['graphics'] = isset($_REQUEST['s_graphics'])?1:0;
-	$s_type = isset($_REQUEST['s_type'])?$_REQUEST['s_type']:'Random Weight';
-	$scale_array['weight'] = ($s_type=="Random Weight")?0:1;
-	$scale_array['text'] = isset($_REQUEST['s_text'])?$dbc->escape($_REQUEST['s_text']):"''";
+    $s_plu = substr($_REQUEST['s_plu'],3,4);
+    $scale_array = array();
+    $scale_array['plu'] = $upc;
+    $scale_array['itemdesc'] = $up_array['description'];
+    $scale_array['price'] = $up_array['normal_price'];
+    if (isset($_REQUEST['s_longdesc']) && !empty($_REQUEST['s_longdesc']))
+        $scale_array['itemdesc'] = $dbc->escape($_REQUEST['s_longdesc']);
+    $scale_array['tare'] = isset($_REQUEST['s_tare'])?$_REQUEST['s_tare']:0;
+    $scale_array['shelflife'] = isset($_REQUEST['s_shelflife'])?$_REQUEST['s_shelflife']:0;
+    $scale_array['bycount'] = isset($_REQUEST['s_bycount'])?1:0;
+    $scale_array['graphics'] = isset($_REQUEST['s_graphics'])?1:0;
+    $s_type = isset($_REQUEST['s_type'])?$_REQUEST['s_type']:'Random Weight';
+    $scale_array['weight'] = ($s_type=="Random Weight")?0:1;
+    $scale_array['text'] = isset($_REQUEST['s_text'])?$dbc->escape($_REQUEST['s_text']):"''";
 
-	$s_label = isset($_REQUEST['s_label'])?$_REQUEST['s_label']:'horizontal';
-	if ($s_label == "horizontal" && $s_type == "Random Weight")
-		$s_label = 133;
-	elseif ($s_label == "horizontal" && $s_type == "Fixed Weight")
-		$s_label = 63;
-	elseif ($s_label == "vertical" && $s_type == "Random Weight")
-		$s_label = 103;
-	elseif ($s_label == "vertical" && $s_type == "Fixed Weight")
-		$s_label = 23;
+    $s_label = isset($_REQUEST['s_label'])?$_REQUEST['s_label']:'horizontal';
+    if ($s_label == "horizontal" && $s_type == "Random Weight")
+        $s_label = 133;
+    elseif ($s_label == "horizontal" && $s_type == "Fixed Weight")
+        $s_label = 63;
+    elseif ($s_label == "vertical" && $s_type == "Random Weight")
+        $s_label = 103;
+    elseif ($s_label == "vertical" && $s_type == "Fixed Weight")
+        $s_label = 23;
 
-	$scale_array['label'] = $s_label;
-	$scale_array['excpetionprice'] = 0.00;
-	$scale_array['class'] = "''";
+    $scale_array['label'] = $s_label;
+    $scale_array['excpetionprice'] = 0.00;
+    $scale_array['class'] = "''";
 
-	$chk = $dbc->query("SELECT * FROM scaleItems WHERE plu='$upc'");
-	$action = "ChangeOneItem";
-	if ($dbc->num_rows($chk) == 0){
-		$dbc->smart_insert('scaleItems',$scale_array);
-		$action = "WriteOneItem";
-	}
-	else {
-		unset($scale_array['plu']);
-		$dbc->smart_update('scaleItems',$scale_array,"plu='$upc'");
-		$action = "ChangeOneItem";
-	}
+    $chk = $dbc->query("SELECT * FROM scaleItems WHERE plu='$upc'");
+    $action = "ChangeOneItem";
+    if ($dbc->num_rows($chk) == 0){
+        $dbc->smart_insert('scaleItems',$scale_array);
+        $action = "WriteOneItem";
+    }
+    else {
+        unset($scale_array['plu']);
+        $dbc->smart_update('scaleItems',$scale_array,"plu='$upc'");
+        $action = "ChangeOneItem";
+    }
 
-	include('hobartcsv/parse.php');
-	parseitem($action,$s_plu,trim($scale_array["itemdesc"],"'"),
-		$scale_array['tare'],$scale_array['shelflife'],$scale_array['price'],
-		$scale_array['bycount'],$s_type,0.00,trim($scale_array['text'],"'"),
-		$scale_array['label'],($scale_array['graphics']==1)?121:0);
+    include('hobartcsv/parse.php');
+    parseitem($action,$s_plu,trim($scale_array["itemdesc"],"'"),
+        $scale_array['tare'],$scale_array['shelflife'],$scale_array['price'],
+        $scale_array['bycount'],$s_type,0.00,trim($scale_array['text'],"'"),
+        $scale_array['label'],($scale_array['graphics']==1)?121:0);
 }
 
 /* 10. Delete and re-add to product-related tables on the lanes.  */
 /* push updates to the lanes */
 include('laneUpdates_WEFC_Toronto.php');
-//update only table products
-//updateProductAllLanes($upc);
 updateAllLanes($upc, array("products", "productUser"));
 
+// $dbc is looking at lane db now, so change it back.
+// What is the DB function to do this? FannieDB::get()?
+//   We're not in the right environment for that.
+$dbc = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+        $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 /* 'i9el. Update likecodes */
 /* update the item's likecode if specified
    also update other items in the likecode
    if the appropriate box isn't checked */
 if (isset($_REQUEST['likeCode']) && $_REQUEST['likeCode'] != -1){
-	$dbc->query("DELETE FROM upcLike WHERE upc='$upc'");
-	$lcQ = "INSERT INTO upcLike (upc,likeCode) VALUES ('$upc',{$_REQUEST['likeCode']})";
-	$dbc->query($lcQ);
+    $dbc->query("DELETE FROM upcLike WHERE upc='$upc'");
+    $lcQ = "INSERT INTO upcLike (upc,likeCode) VALUES ('$upc',{$_REQUEST['likeCode']})";
+    $dbc->query($lcQ);
 
-	if (!isset($_REQUEST['update'])){
-		$upcsQ = "SELECT upc FROM upcLike WHERE likeCode={$_REQUEST['likeCode']} AND upc <> '$upc'";
-		$upcsR = $dbc->query($upcsQ);
-		unset($up_array['description']);
-		while($upcsW = $dbc->fetch_row($upcsR)){
-			$dbc->smart_update('products',$up_array,
-				"upc='$upcsW[0]' AND store_id=$FANNIE_STORE_ID");
-			updateProductAllLanes($upcsW[0]);
-		}
-	}
+    if (!isset($_REQUEST['update'])){
+        $upcsQ = "SELECT upc FROM upcLike WHERE likeCode={$_REQUEST['likeCode']} AND upc <> '$upc'";
+        $upcsR = $dbc->query($upcsQ);
+        unset($up_array['description']);
+        while($upcsW = $dbc->fetch_row($upcsR)){
+            $dbc->smart_update('products',$up_array,
+                "upc='$upcsW[0]' AND store_id=$FANNIE_STORE_ID");
+            updateProductAllLanes($upcsW[0]);
+        }
+    }
 }
 elseif (isset($_REQUEST['likeCode']) && $_REQUEST['likeCode'] == -1){
-	$dbc->query("DELETE FROM upcLike WHERE upc='$upc'");
+    $dbc->query("DELETE FROM upcLike WHERE upc='$upc'");
 }
 
 
@@ -485,8 +493,8 @@ elseif (isset($_REQUEST['likeCode']) && $_REQUEST['likeCode'] == -1){
  * The record-select input is also displayed in a proper form with a submit.
 */
 $query1 = "SELECT upc,description,normal_price,department,subdept,
-		foodstamp,scale,qttyEnforced,discount,inUse,deposit
-		 FROM products WHERE upc = '$upc'";
+        foodstamp,scale,qttyEnforced,discount,inUse,deposit
+         FROM products WHERE upc = '$upc'";
 $result1 = $dbc->query($query1);
 $row = $dbc->fetch_array($result1);
 
@@ -499,26 +507,32 @@ echo "<table border=0>";
         echo "</tr>";
         echo "<tr>";
         $dept=$row['department'];
-        $query2 = "SELECT dept_name FROM departments where dept_no = " .$dept;
-        $result2 = $dbc->query($query2);
-		$row2 = $dbc->fetch_array($result2);
+        if (is_numeric($dept)) {
+            $query2 = "SELECT dept_name FROM departments where dept_no = " .$dept;
+            $result2 = $dbc->query($query2);
+            $row2 = $dbc->fetch_array($result2);
+        } else {
+            $row2 = array('dept_name' => "");
+        }
 
-		$subdept=$row["subdept"];
-		$query2a = "SELECT subdept_name FROM subdepts WHERE subdept_no = " .$subdept;
-		$result2a = $dbc->query($query2a);
-		$row2a = $dbc->fetch_array($result2a);
+        $subdept=$row["subdept"];
+        if (is_numeric($subdept)) {
+            $query2a = "SELECT subdept_name FROM subdepts WHERE subdept_no = " .$subdept;
+            $result2a = $dbc->query($query2a);
+            $row2a = $dbc->fetch_array($result2a);
+        } else {
+            $row2a = array('subdept_name' => "");
+        }
 
-		echo "<td>";
-        echo $dept . ' ' . 
-		$row2['dept_name'];
+        echo "<td>";
+        echo $dept . ' ' .  $row2['dept_name'];
         echo " </td>";
 
-		echo "<td>";
-		echo $subdept . ' ' .
-		$row2a['subdept_name'];
-		echo " </td>";
+        echo "<td>";
+        echo $subdept . ' ' .  $row2a['subdept_name'];
+        echo " </td>";
 
-		echo "<td align=center><input type=checkbox value=1 name=FS";
+        echo "<td align=center><input type=checkbox value=1 name=FS";
                 if($row["foodstamp"]==1){
                         echo " checked";
                 }
@@ -539,27 +553,27 @@ echo "<table border=0>";
                         echo " checked";
                 }
         echo "></td><td align=center><input type=text value=\"".$row["deposit"]."\" name=deposit size='5'";
-		echo "></td></tr>";
+        echo "></td></tr>";
 
     echo "</table>";
-		echo "<hr>";
-		echo "<form action='itemMaint_WEFC_Toronto.php' method=post>";
+        echo "<hr>";
+        echo "<form action='itemMaint_WEFC_Toronto.php' method=post>";
 
-				echo promptForUPC($upc);
+                echo promptForUPC($upc);
 
         echo "</form>";
 
-		/* 12. If requested on the capture form, pop a window for making a shelf tag. */
+        /* 12. If requested on the capture form, pop a window for making a shelf tag. */
     if (isset($_REQUEST['newshelftag'])){
-	    echo "<script type=\"text/javascript\">";
-	    echo "testwindow= window.open (\"addShelfTag.php?upc=$upc\", \"New Shelftag\",\"location=0,status=1,scrollbars=1,width=300,height=220\");";
-	    echo "testwindow.moveTo(50,50);";
-	    echo "</script>";
+        echo "<script type=\"text/javascript\">";
+        echo "testwindow= window.open (\"addShelfTag.php?upc=$upc\", \"New Shelftag\",\"location=0,status=1,scrollbars=1,width=300,height=220\");";
+        echo "testwindow.moveTo(50,50);";
+        echo "</script>";
     }
 ?>
 <script type="text/javascript">
 $(document).ready(function(){
-	$('#upc').focus();
+    $('#upc').focus();
 });
 </script>
 <?php

@@ -47,6 +47,28 @@ class FormLib
     {
         return self::getFormValue($name, $default);
     }
+
+    /**
+      Get form input as a formatted date
+      @param $name [string] form field
+      @param $default [mixed, optional] default value if
+        form input is omitted or invalid
+      @param $format [string, optional] date format string.
+        Default is Y-m-d.
+    */
+    public static function getDate($name, $default='', $format='Y-m-d')
+    {
+        $input_value = self::getFormValue($name, $default);
+        $timestamp = strtotime($input_value);
+        if ($timestamp === false || $timestamp === -1) {
+            // input is invalid
+            // if default is invalid that's the caller's problem
+            return $default;
+        } else {
+            return date($format, $timestamp);
+        }
+    }
+
     /**
       Get a fieldset to select certain date ranges
       Requires JQquery
@@ -134,6 +156,44 @@ class FormLib
     public static function date_range_picker($one='date1',$two='date2',$week_start=1)
     {
         return self::dateRangePicker($one, $two, $week_start);
+    }
+
+    /**
+      Get <select> box for the store ID
+      @param $field_name [string] select.name (default 'store')
+      @return keyed [array]
+        - html => [string] select box
+        - names => [array] store names
+    */
+    public static function storePicker($field_name='store')
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB, $previous);
+
+        $stores = new StoresModel($dbc);
+        $current = FormLib::get($field_name, 0);
+        $labels = array(0 => _('All Stores'));
+        $ret = '<select name="' . $field_name . '">';
+        $ret .= '<option value="0">' . $labels[0] . '</option>';
+        foreach($stores->find('storeID') as $store) {
+            $ret .= sprintf('<option %s value="%d">%s</option>',
+                    ($store->storeID() == $current ? 'selected' : ''),
+                    $store->storeID(),
+                    $store->description()
+            );
+            $labels[$store->storeID()] = $store->description();
+        }
+        $ret .= '</select>';
+
+        // restore previous selected database
+        if ($previous != $FANNIE_OP_DB) {
+            FannieDB::get($previous);
+        }
+
+        return array(
+            'html' => $ret,
+            'names' => $labels, 
+        );
     }
 
 }

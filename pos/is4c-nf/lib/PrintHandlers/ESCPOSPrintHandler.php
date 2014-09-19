@@ -705,20 +705,7 @@ class ESCPOSPrintHandler extends PrintHandler {
 	}
 
 	function writeLine($text){
-		global $CORE_LOCAL;
-		if ($CORE_LOCAL->get("print") != 0) {
-
-			/* check fails on LTP1: in PHP4
-			   suppress open errors and check result
-			   instead 
-			*/
-			//if (is_writable($CORE_LOCAL->get("printerPort"))){}
-			$fp = fopen($CORE_LOCAL->get("printerPort"), "w");
-			if ($fp){
-				fwrite($fp, $text);
-				fclose($fp);
-			}
-		}
+        ReceiptLib::writeLine($text);
 	}
 
 	function RenderBitmapFromFile($fn, $align='C'){

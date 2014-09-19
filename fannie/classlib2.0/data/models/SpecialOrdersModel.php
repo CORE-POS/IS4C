@@ -46,7 +46,7 @@ class SpecialOrdersModel extends BasicModel
     'phone' => array('type'=>'VARCHAR(30)'),
     'altPhone' => array('type'=>'VARCHAR(30)'),
     'email' => array('type'=>'VARCHAR(50)'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -60,6 +60,22 @@ class SpecialOrdersModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'specialOrderID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["specialOrderID"]) || $this->instance["specialOrderID"] != func_get_args(0)) {
                 if (!isset($this->columns["specialOrderID"]["ignore_updates"]) || $this->columns["specialOrderID"]["ignore_updates"] == false) {
@@ -68,6 +84,7 @@ class SpecialOrdersModel extends BasicModel
             }
             $this->instance["specialOrderID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function statusFlag()
@@ -80,6 +97,22 @@ class SpecialOrdersModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'statusFlag',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["statusFlag"]) || $this->instance["statusFlag"] != func_get_args(0)) {
                 if (!isset($this->columns["statusFlag"]["ignore_updates"]) || $this->columns["statusFlag"]["ignore_updates"] == false) {
@@ -88,6 +121,7 @@ class SpecialOrdersModel extends BasicModel
             }
             $this->instance["statusFlag"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function subStatus()
@@ -100,6 +134,22 @@ class SpecialOrdersModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'subStatus',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["subStatus"]) || $this->instance["subStatus"] != func_get_args(0)) {
                 if (!isset($this->columns["subStatus"]["ignore_updates"]) || $this->columns["subStatus"]["ignore_updates"] == false) {
@@ -108,6 +158,7 @@ class SpecialOrdersModel extends BasicModel
             }
             $this->instance["subStatus"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function notes()
@@ -120,6 +171,22 @@ class SpecialOrdersModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'notes',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["notes"]) || $this->instance["notes"] != func_get_args(0)) {
                 if (!isset($this->columns["notes"]["ignore_updates"]) || $this->columns["notes"]["ignore_updates"] == false) {
@@ -128,6 +195,7 @@ class SpecialOrdersModel extends BasicModel
             }
             $this->instance["notes"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function noteSuperID()
@@ -140,6 +208,22 @@ class SpecialOrdersModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'noteSuperID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["noteSuperID"]) || $this->instance["noteSuperID"] != func_get_args(0)) {
                 if (!isset($this->columns["noteSuperID"]["ignore_updates"]) || $this->columns["noteSuperID"]["ignore_updates"] == false) {
@@ -148,6 +232,7 @@ class SpecialOrdersModel extends BasicModel
             }
             $this->instance["noteSuperID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function firstName()
@@ -160,6 +245,22 @@ class SpecialOrdersModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'firstName',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["firstName"]) || $this->instance["firstName"] != func_get_args(0)) {
                 if (!isset($this->columns["firstName"]["ignore_updates"]) || $this->columns["firstName"]["ignore_updates"] == false) {
@@ -168,6 +269,7 @@ class SpecialOrdersModel extends BasicModel
             }
             $this->instance["firstName"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function lastName()
@@ -180,6 +282,22 @@ class SpecialOrdersModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'lastName',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["lastName"]) || $this->instance["lastName"] != func_get_args(0)) {
                 if (!isset($this->columns["lastName"]["ignore_updates"]) || $this->columns["lastName"]["ignore_updates"] == false) {
@@ -188,6 +306,7 @@ class SpecialOrdersModel extends BasicModel
             }
             $this->instance["lastName"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function street()
@@ -200,6 +319,22 @@ class SpecialOrdersModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'street',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["street"]) || $this->instance["street"] != func_get_args(0)) {
                 if (!isset($this->columns["street"]["ignore_updates"]) || $this->columns["street"]["ignore_updates"] == false) {
@@ -208,6 +343,7 @@ class SpecialOrdersModel extends BasicModel
             }
             $this->instance["street"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function city()
@@ -220,6 +356,22 @@ class SpecialOrdersModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'city',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["city"]) || $this->instance["city"] != func_get_args(0)) {
                 if (!isset($this->columns["city"]["ignore_updates"]) || $this->columns["city"]["ignore_updates"] == false) {
@@ -228,6 +380,7 @@ class SpecialOrdersModel extends BasicModel
             }
             $this->instance["city"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function state()
@@ -240,6 +393,22 @@ class SpecialOrdersModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'state',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["state"]) || $this->instance["state"] != func_get_args(0)) {
                 if (!isset($this->columns["state"]["ignore_updates"]) || $this->columns["state"]["ignore_updates"] == false) {
@@ -248,6 +417,7 @@ class SpecialOrdersModel extends BasicModel
             }
             $this->instance["state"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function zip()
@@ -260,6 +430,22 @@ class SpecialOrdersModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'zip',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["zip"]) || $this->instance["zip"] != func_get_args(0)) {
                 if (!isset($this->columns["zip"]["ignore_updates"]) || $this->columns["zip"]["ignore_updates"] == false) {
@@ -268,6 +454,7 @@ class SpecialOrdersModel extends BasicModel
             }
             $this->instance["zip"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function phone()
@@ -280,6 +467,22 @@ class SpecialOrdersModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'phone',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["phone"]) || $this->instance["phone"] != func_get_args(0)) {
                 if (!isset($this->columns["phone"]["ignore_updates"]) || $this->columns["phone"]["ignore_updates"] == false) {
@@ -288,6 +491,7 @@ class SpecialOrdersModel extends BasicModel
             }
             $this->instance["phone"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function altPhone()
@@ -300,6 +504,22 @@ class SpecialOrdersModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'altPhone',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["altPhone"]) || $this->instance["altPhone"] != func_get_args(0)) {
                 if (!isset($this->columns["altPhone"]["ignore_updates"]) || $this->columns["altPhone"]["ignore_updates"] == false) {
@@ -308,6 +528,7 @@ class SpecialOrdersModel extends BasicModel
             }
             $this->instance["altPhone"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function email()
@@ -320,6 +541,22 @@ class SpecialOrdersModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'email',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["email"]) || $this->instance["email"] != func_get_args(0)) {
                 if (!isset($this->columns["email"]["ignore_updates"]) || $this->columns["email"]["ignore_updates"] == false) {
@@ -328,6 +565,7 @@ class SpecialOrdersModel extends BasicModel
             }
             $this->instance["email"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

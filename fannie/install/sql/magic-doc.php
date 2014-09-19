@@ -24,101 +24,101 @@
 /* If no argument display a list of links */
 if (!isset($_REQUEST['fn'])){
 
-	echo "<h3>Links to per-table Help</H3>
+    echo "<h3>Links to Fannie per-table Help</H3>
 <p>Each link displays the current contents of the comment block
 <br>in the PHP script at <i>docroot</i>/IS4C/fannie/install/sql/op|trans/<i>tablename</i>.php
 <br>that creates the table.
 </p>
 ";
 
-	 /* Option to display each page in a new tab (target=). 1=do, 0=don't */
-	$new_tab = 1;
+     /* Option to display each page in a new tab (target=). 1=do, 0=don't */
+    $new_tab = 1;
 
-	echo "<h3>core_op</h3>";
-	echo "This database contains relatively static information
-		related to operations, such as products and employees";
-	echo "<ul>";
-	$dh = opendir("op");
-	$op_files = array();
-	while (($file = readdir($dh)) !== false) {
-		if (is_file("op/".$file))
-			$op_files[] = $file;
-	}
-	sort($op_files);
-	foreach($op_files as $f){
-		if ( $new_tab == 1 ) {
-			printf('<li><a href="magic-doc.php?fn=%s" target="_%s">%s</a></li>',
-				urlencode("op/".$f),
-				$f,
-				substr($f,0,-4)
-			);
-		}
-		else {
-			printf('<li><a href="magic-doc.php?fn=%s">%s</a></li>',
-				urlencode("op/".$f),
-				substr($f,0,-4)
-			);
-		}
-	}
-	echo "</ul>";
+    echo "<h3>core_op</h3>";
+    echo "This database contains relatively static information
+        related to operations, such as products and employees";
+    echo "<ul>";
+    $dh = opendir("op");
+    $op_files = array();
+    while (($file = readdir($dh)) !== false) {
+        if (is_file("op/".$file))
+            $op_files[] = $file;
+    }
+    sort($op_files);
+    foreach($op_files as $f){
+        if ( $new_tab == 1 ) {
+            printf('<li><a href="magic-doc.php?fn=%s" target="_%s">%s</a></li>',
+                urlencode("op/".$f),
+                $f,
+                substr($f,0,-4)
+            );
+        }
+        else {
+            printf('<li><a href="magic-doc.php?fn=%s">%s</a></li>',
+                urlencode("op/".$f),
+                substr($f,0,-4)
+            );
+        }
+    }
+    echo "</ul>";
 
-	echo "<h3>core_trans</h3>";
-	echo "This database contains changing information,
-		primarily transaction related";
-	echo "<ul>";
-	$dh = opendir("trans");
-	$trans_files = array();
-	while (($file = readdir($dh)) !== false) {
-		if (is_file("trans/".$file))
-			$trans_files[] = $file;
-	}
-	sort($trans_files);
-	foreach($trans_files as $f){
-/*		printf('<li><a href="magic-doc.php?fn=%s" target="_%s">%s</a></li>',
-			urlencode("trans/".$f),
-			$f,
-			substr($f,0,-4)
-		);
-		*/
-		if ( $new_tab == 1 ) {
-			printf('<li><a href="magic-doc.php?fn=%s" target="_%s">%s</a></li>',
-				urlencode("trans/".$f),
-				$f,
-				substr($f,0,-4)
-			);
-		}
-		else {
-			printf('<li><a href="magic-doc.php?fn=%s">%s</a></li>',
-				urlencode("trans/".$f),
-				substr($f,0,-4)
-			);
-		}
-	}
-	echo "</ul>";
+    echo "<h3>core_trans</h3>";
+    echo "This database contains changing information,
+        primarily transaction related";
+    echo "<ul>";
+    $dh = opendir("trans");
+    $trans_files = array();
+    while (($file = readdir($dh)) !== false) {
+        if (is_file("trans/".$file))
+            $trans_files[] = $file;
+    }
+    sort($trans_files);
+    foreach($trans_files as $f){
+/*      printf('<li><a href="magic-doc.php?fn=%s" target="_%s">%s</a></li>',
+            urlencode("trans/".$f),
+            $f,
+            substr($f,0,-4)
+        );
+        */
+        if ( $new_tab == 1 ) {
+            printf('<li><a href="magic-doc.php?fn=%s" target="_%s">%s</a></li>',
+                urlencode("trans/".$f),
+                $f,
+                substr($f,0,-4)
+            );
+        }
+        else {
+            printf('<li><a href="magic-doc.php?fn=%s">%s</a></li>',
+                urlencode("trans/".$f),
+                substr($f,0,-4)
+            );
+        }
+    }
+    echo "</ul>";
 }
 /* Display the help for the named table-creation-script. */
 else {
-	$fn = urldecode($_REQUEST['fn']);
-	if (!file_exists($fn)){
-		echo "Error: bad file name: $fn";
-		echo "<br />";
-		echo "<a href=\"magic-doc.php\">Back</a>";
-		exit;
-	}
+    $fn = urldecode($_REQUEST['fn']);
+    if (!file_exists($fn)){
+        echo "Error: bad file name: $fn";
+        echo "<br />";
+        echo "<a href=\"magic-doc.php\">Back</a>";
+        exit;
+    }
 
-	$data = file_get_contents($fn);
-	$tokens = token_get_all($data);
-	$documentation = "";
-	foreach($tokens as $t){
-		if ($t[0] == T_COMMENT)
-			$documentation .= (empty($documentation)?"\n":"").$t[1];
-	}
+    $data = file_get_contents($fn);
+    $tokens = token_get_all($data);
+    $documentation = "";
+    foreach($tokens as $t){
+        if ($t[0] == T_COMMENT)
+            $documentation .= (empty($documentation)?"\n":"").$t[1];
+    }
 
-	echo '<a href="magic-doc.php">Back</a><br />';
-	if (empty($documentation))
-		echo "<i>Someone forgot to comment their table...</i><br />";
-	else
-		printf("<pre>%s</pre>",$documentation);
-	echo '<a href="magic-doc.php">Back</a><br />';
+    echo '<a href="magic-doc.php">Back</a><br />';
+    if (empty($documentation))
+        echo "<i>Someone forgot to comment their table...</i><br />";
+    else
+        printf("<pre>%s</pre>",$documentation);
+    echo '<a href="magic-doc.php">Back</a><br />';
 }
 ?>

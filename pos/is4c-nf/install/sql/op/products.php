@@ -5,6 +5,8 @@ Table: products
 Columns:
 	upc                int or varchar, dbms dependent  ## DH 28oct13: is this still true?
 	description        varchar
+    brand              varchar
+    formatted_name     varchar
 	normal_price       double
 	pricemethod        smallint
 	groupprice         double
@@ -27,6 +29,7 @@ Columns:
 	tareweight         double
 	discount           smallint
 	discounttype       tinyint
+    line_item_discountable tinyint
 	unitofmeasure      varchar
 	wicable            tinyint
 	qttyEnforced       tinyint
@@ -38,6 +41,8 @@ Columns:
 	deposit            double
 	local              tinyint
 	store_id           smallint
+    default_vendor_id  int
+    current_origin_id  int
 	id                 int auto_increment
 
 Depends on:
@@ -58,7 +63,14 @@ matching record or to limit which records are
 pushed to the registers.
 
 description is used for screen display, reporting,
-and receipts.
+and receipts. formatted_name is an alternative that
+will be used instead of description if it has a
+non-NULL, non-empty value. brand and description are
+intended to be distinct fields for use in things
+like shelf tags and signage. formatted_name can
+be used to combine these two fields or otherwise
+create a standardized screen/receipt description
+containing extra information. 
 
 Pricing:
 When an item has pricemethod 0, the price is
@@ -118,6 +130,9 @@ discounttype indicates if an item is on sale
 Values greater than 2 may be used, but results will
 vary based on whose code you're running
 
+line_item_discount indicates whether an item is eligible
+for line item discounts. Value 0 means not eligible.
+
 unitofmeasure might be used for screen display and
 receipt listings of quantity. 
 
@@ -141,6 +156,13 @@ deposit is a PLU. The product record with this UPC will
 be added to the transaction automatically when the item
 is rung.
 
+default_vendor_id is the identifier (vendors.vendorID)
+for the vendor who typically supplies the product.
+
+current_origin_id is the identifier (origins.originID)
+for the geographical location where the product is
+currently sourced from.
+
 Other columns:
 size, advertised, wicable, and numflag
 have no current meaning on the
@@ -153,6 +175,8 @@ $CREATE['op.products'] = "
 	CREATE TABLE products (
 		  upc                varchar(13) default NULL,
 		  description        varchar(30) default NULL,
+		  brand              varchar(30) default NULL,
+		  formatted_name     varchar(30) default NULL,
 		  normal_price       double      default NULL,
 		  pricemethod        smallint(6) default NULL,
 		  groupprice         double      default NULL,
@@ -175,6 +199,7 @@ $CREATE['op.products'] = "
 		  tareweight         double      default NULL,
 		  discount           smallint(6) default NULL,
 		  discounttype       tinyint(4)  default NULL,
+		  line_item_discountable tinyint(4)  default NULL,
 		  unitofmeasure      varchar(15) default NULL,
 		  wicable            smallint(6) default NULL,
 		  qttyEnforced       tinyint(4)  default NULL,
@@ -186,6 +211,8 @@ $CREATE['op.products'] = "
 		  deposit            double      default NULL,
 		  local              int(11)     default '0',
 		  store_id           smallint    default '0',
+		  default_vendor_id  int(11)     default '0',
+		  current_origin_id  int(11)     default '0',
 		  id                 integer     NOT NULL auto_increment,
 		  PRIMARY KEY (id),
 		  INDEX (upc),
@@ -203,6 +230,8 @@ if ($dbms == "MSSQL"){
 		CREATE TABLE [products] (
 			[upc]                [varchar] (13) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
 			[description]        [varchar] (30) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+			[brand]              [varchar] (30) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+			[formatted_name]     [varchar] (30) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
 			[normal_price]       [money]        NULL ,
 			[pricemethod]        [smallint]     NULL ,
 			[groupprice]         [money]        NULL ,
@@ -225,6 +254,7 @@ if ($dbms == "MSSQL"){
 			[tareweight]         [float]        NULL ,
 			[discount]           [smallint]     NULL ,
 			[discounttype]       [tinyint]      NULL ,
+			[line_item_discountable]       [tinyint]      NULL ,
 			[unitofmeasure]      [varchar] (15) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
 			[wicable]            [smallint]     NULL ,
 			[qttyEnforced]       [tinyint]      NULL ,
@@ -236,6 +266,8 @@ if ($dbms == "MSSQL"){
 			[deposit]            [money]        NULL ,
 			[local]              [int]          NULL ,
 			[store_id]           [smallint]     0,
+			[default_vendor_id]  [int]          NULL ,
+			[current_origin_id]  [int]          NULL ,
 			[id]                 [int] IDENTITY (1, 1) NOT NULL ,
 			PRIMARY KEY ([id]) )
 	";

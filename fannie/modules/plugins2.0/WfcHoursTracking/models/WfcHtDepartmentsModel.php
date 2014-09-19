@@ -32,7 +32,7 @@ class WfcHtDepartmentsModel extends BasicModel
     protected $columns = array(
     'deptID' => array('type'=>'INT', 'primary_key'=>true),
     'name' => array('type'=>'VARCHAR(255)'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -41,14 +41,36 @@ class WfcHtDepartmentsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["deptID"])) {
                 return $this->instance["deptID"];
-            } elseif(isset($this->columns["deptID"]["default"])) {
+            } else if (isset($this->columns["deptID"]["default"])) {
                 return $this->columns["deptID"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'deptID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["deptID"]) || $this->instance["deptID"] != func_get_args(0)) {
+                if (!isset($this->columns["deptID"]["ignore_updates"]) || $this->columns["deptID"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["deptID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function name()
@@ -56,14 +78,36 @@ class WfcHtDepartmentsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["name"])) {
                 return $this->instance["name"];
-            } elseif(isset($this->columns["name"]["default"])) {
+            } else if (isset($this->columns["name"]["default"])) {
                 return $this->columns["name"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'name',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["name"]) || $this->instance["name"] != func_get_args(0)) {
+                if (!isset($this->columns["name"]["ignore_updates"]) || $this->columns["name"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["name"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

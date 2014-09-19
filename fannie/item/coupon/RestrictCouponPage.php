@@ -21,139 +21,143 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include_once($FANNIE_ROOT.'src/JsonLib.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class RestrictCouponPage extends FannieRESTfulPage {
 
-	protected $header = 'Coupon Restrictions';
-	protected $title = 'Coupon Restrictions';
+    protected $header = 'Coupon Restrictions';
+    protected $title = 'Coupon Restrictions';
 
-	function get_view(){
-		global $FANNIE_OP_DB, $FANNIE_URL;
-		$dbc = FannieDB::get($FANNIE_OP_DB);
+    public $description = '[Coupon Restrictions] bans or limits use of broken manufacturer coupons.
+    Typically this means the manufacturer put the wrong UPC code on the coupon.';
 
-		$ret = '<form onsubmit="save();return false;">
-			<table><tr><td>
-			<b>UPC</b></td><td><input type="text" id="upc" />
-			</td></tr><tr><td>
-			<b>Limit</b></td><td><input type="text" size="3" value="0" id="limit" />
-			(max uses per transaction)
-			</td></tr><tr><td>
-			Reason</td><td><input type="text" id="reason" />
-			</td></tr></table>
-			<input type="submit" value="Save" />
-			</form>
-			<hr/>';
+    function get_view(){
+        global $FANNIE_OP_DB, $FANNIE_URL;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 
-		$model = new DisableCouponModel($dbc);
-		$ret .= '<table cellpadding="4" cellspacing="0" border="1">';
-		foreach($model->find('upc') as $obj){
-			$ret .= sprintf('<tr><td><a href="" onclick="loadcoupon(\'%s\');return false;">%s</a></td>
-					<td>%d</td><td>%s</td>
-					<td><a href="" onclick="deletecoupon(\'%s\');return false;"><img 
-					src="%ssrc/img/buttons/trash.png" /></a></td></tr>',
-					$obj->upc(), $obj->upc(), $obj->threshold(),
-					$obj->reason(), $obj->upc(), $FANNIE_URL
-			);
-		}
-		$ret .= '</table>';
-		return $ret;
-	}
+        $ret = '<form onsubmit="save();return false;">
+            <table><tr><td>
+            <b>UPC</b></td><td><input type="text" id="upc" />
+            </td></tr><tr><td>
+            <b>Limit</b></td><td><input type="text" size="3" value="0" id="limit" />
+            (max uses per transaction)
+            </td></tr><tr><td>
+            Reason</td><td><input type="text" id="reason" />
+            </td></tr></table>
+            <input type="submit" value="Save" />
+            </form>
+            <hr/>';
 
-	function get_id_handler(){
-		global $FANNIE_OP_DB;
-		$dbc = FannieDB::get($FANNIE_OP_DB);
+        $model = new DisableCouponModel($dbc);
+        $ret .= '<table cellpadding="4" cellspacing="0" border="1">';
+        foreach($model->find('upc') as $obj){
+            $ret .= sprintf('<tr><td><a href="" onclick="loadcoupon(\'%s\');return false;">%s</a></td>
+                    <td>%d</td><td>%s</td>
+                    <td><a href="" onclick="deletecoupon(\'%s\');return false;"><img 
+                    src="%ssrc/img/buttons/trash.png" /></a></td></tr>',
+                    $obj->upc(), $obj->upc(), $obj->threshold(),
+                    $obj->reason(), $obj->upc(), $FANNIE_URL
+            );
+        }
+        $ret .= '</table>';
+        return $ret;
+    }
 
-		$upc = BarcodeLib::padUPC($this->id);
-		$model = new DisableCouponModel($dbc);
-		$model->upc($upc);
-		$model->load();
+    function get_id_handler(){
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 
-		$ret = array(
-		'limit' => $model->threshold(),
-		'reason' => $model->reason()
-		);
-		echo JsonLib::array_to_json($ret);
-		return False;
-	}
+        $upc = BarcodeLib::padUPC($this->id);
+        $model = new DisableCouponModel($dbc);
+        $model->upc($upc);
+        $model->load();
 
-	function post_id_handler(){
-		global $FANNIE_OP_DB;
-		$dbc = FannieDB::get($FANNIE_OP_DB);
+        $ret = array(
+        'limit' => $model->threshold(),
+        'reason' => $model->reason()
+        );
+        echo json_encode($ret);
+        return False;
+    }
 
-		$upc = BarcodeLib::padUPC($this->id);
-		$limit = FormLib::get_form_value('limit',0);
-		$reason = FormLib::get_form_value('reason','');
+    function post_id_handler(){
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 
-		$model = new DisableCouponModel($dbc);
-		$model->upc($upc);
-		$model->threshold($limit);
-		$model->reason($reason);
-		$model->save();
+        $upc = BarcodeLib::padUPC($this->id);
+        $limit = FormLib::get_form_value('limit',0);
+        $reason = FormLib::get_form_value('reason','');
 
-		echo 'Done';
-		return False;
-	}
+        $model = new DisableCouponModel($dbc);
+        $model->upc($upc);
+        $model->threshold($limit);
+        $model->reason($reason);
+        $model->save();
 
-	function delete_id_handler(){
-		global $FANNIE_OP_DB;
-		$dbc = FannieDB::get($FANNIE_OP_DB);
+        echo 'Done';
+        return False;
+    }
 
-		$upc = BarcodeLib::padUPC($this->id);
-		$model = new DisableCouponModel($dbc);
-		$model->upc($upc);
-		$model->delete();
+    function delete_id_handler(){
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 
-		echo 'Done';
-		return False;
-	}
+        $upc = BarcodeLib::padUPC($this->id);
+        $model = new DisableCouponModel($dbc);
+        $model->upc($upc);
+        $model->delete();
 
-	function javascript_content(){
-		ob_start();
-		?>
+        echo 'Done';
+        return False;
+    }
+
+    function javascript_content(){
+        ob_start();
+        ?>
 function loadcoupon(upc){
-	$.ajax({
-	url: 'RestrictCouponPage.php?id='+upc,
-	type: 'get',
-	dataType: 'json',
-	success: function(data){
-		$('#upc').val(upc);
-		if (data.limit)
-			$('#limit').val(data.limit);
-		if (data.reason)
-			$('#reason').val(data.reason);
-	}
-	});
+    $.ajax({
+    url: 'RestrictCouponPage.php?id='+upc,
+    type: 'get',
+    dataType: 'json',
+    success: function(data){
+        $('#upc').val(upc);
+        if (data.limit)
+            $('#limit').val(data.limit);
+        if (data.reason)
+            $('#reason').val(data.reason);
+    }
+    });
 }
 function save(){
-	var dstr = 'id='+$('#upc').val();
-	dstr += '&limit='+$('#limit').val();
-	dstr += '&reason='+$('#reason').val();
-	$.ajax({
-	url: 'RestrictCouponPage.php',
-	type: 'post',
-	data: dstr,
-	success: function(){
-		location='RestrictCouponPage.php';
-	}
-	});
+    var dstr = 'id='+$('#upc').val();
+    dstr += '&limit='+$('#limit').val();
+    dstr += '&reason='+$('#reason').val();
+    $.ajax({
+    url: 'RestrictCouponPage.php',
+    type: 'post',
+    data: dstr,
+    success: function(){
+        location='RestrictCouponPage.php';
+    }
+    });
 }
 function deletecoupon(upc){
-	if (confirm('Remove restrictions for '+upc+'?')){
-		$.ajax({
-		url: 'RestrictCouponPage.php?id='+upc,
-		type: 'delete',
-		success: function(){
-			location='RestrictCouponPage.php';
-		}
-		});
-	}
+    if (confirm('Remove restrictions for '+upc+'?')){
+        $.ajax({
+        url: 'RestrictCouponPage.php?id='+upc,
+        type: 'delete',
+        success: function(){
+            location='RestrictCouponPage.php';
+        }
+        });
+    }
 }
-		<?php
-		return ob_get_clean();
-	}
+        <?php
+        return ob_get_clean();
+    }
 }
 
 FannieDispatch::conditionalExec();

@@ -1,5 +1,6 @@
 <?php
 include('../../../config.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 require($FANNIE_ROOT.'item/pricePerOunce.php');
 
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
@@ -35,8 +36,7 @@ $insBItemQ = $sql->prepare("INSERT INTO batchListTest(upc,batchID,salePrice)
             VALUES(?,?,?)");
 $getTagInfoQ = $sql->prepare('SELECT description as item_desc, sku as unfi_sku, brand, units as pack, size as pack_size
                             FROM vendorItems WHERE vendorID=1 AND upc LIKE ?');
-$barP = $sql->prepare("INSERT INTO shelftags (id,upc,description,normal_price,brand,sku,units,size,vendor,
-    pricePerUnit) VALUES (?,?,?,?,?,?,?,?,'UNFI',?)");
+$shelftag = new ShelftagsModel($sql);
 foreach ($_POST["pricechange"] as $value) {
       //echo $getUNFIPriceQ . "<br>";
       $getUNFIPriceR = $sql->execute($getUNFIPriceQ, array($value));
@@ -63,8 +63,17 @@ foreach ($_POST["pricechange"] as $value) {
       if(empty($pak)){
          $pak = 0;
       }
-      //echo $insQ . "<br>";
-      $insR = $sql->execute($barP, array($buyID, $upc, $desc, $unfiPrice, $brand, $sku, $size, $pak, $ppo));
+      $shelftag->id($buyID);
+      $shelftag->upc($upc);
+      $shelftag->description($desc);
+      $shelftag->normal_price($unfiPrice);
+      $shelftag->brand($brand);
+      $shelftag->sku($sku);
+      $shelftag->units($size);
+      $shelftag->size($pak);
+      $shelftag->pricePerUnit($ppo);
+      $shelftag->vendor('UNFI');
+      $shelftag->save();
       
       echo "<tr><td>$upc</td><td><font color=blue><b>$desc</b></font></td><td>$sku</td>";
       echo "<td>$brand</td><td>$pak</td><td>$size</td>";

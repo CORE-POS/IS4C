@@ -21,38 +21,41 @@
 
 *********************************************************************************/
 
-/* configuration for your module - Important */
-include("../../config.php");
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class UploadVendorPriceFile extends FanniePage {
-	/* html header, including navbar */
-	protected $title = "Fannie - Upload Price File";
-	protected $header = "Upload Price File";
+    /* html header, including navbar */
+    protected $title = "Fannie - Upload Price File";
+    protected $header = "Upload Price File";
 
-	function body_content(){
-		global $FANNIE_URL, $FANNIE_OP_DB;
-		$dbc = FannieDB::get($FANNIE_OP_DB);
-		$p = $dbc->prepare_statement('SELECT vendorID,vendorName FROM vendors ORDER BY vendorName');
-		$r = $dbc->exec_statement($p);
-		$ret = '<b>Use the Default import tool</b>:<br /><ul>';
-		while($w = $dbc->fetch_row($r)){
-			$ret .= sprintf('<li><a href="%sitem/vendors/DefaultUploadPage.php?vid=%d">Upload %s Price File</a>',
-				$FANNIE_URL,$w['vendorID'],$w['vendorName']);
-		}
-		$ret .= '</ul>';
-		$ret .= '<hr />';
-		$ret .= '<b>Use a Custom import tool</b>:<br /><ul>';
-		$files = scandir('load-classes');
-		foreach($files as $f){
-			if($f[0] == '.') continue;
-			if (substr($f,-4) != '.php') continue;
-			$ret .= sprintf('<li><a href="load-classes/%s">%s</a></li>',
-					$f,substr($f,0,strlen($f)-4));
-		}
-		$ret .= '</ul>';
-		return $ret;
-	}
+    public $description = '[Vendor Price File] loads or reloads catalog information from a spreadsheet.';
+
+    function body_content(){
+        global $FANNIE_URL, $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $p = $dbc->prepare_statement('SELECT vendorID,vendorName FROM vendors ORDER BY vendorName');
+        $r = $dbc->exec_statement($p);
+        $ret = '<b>Use the Default import tool</b>:<br /><ul>';
+        while($w = $dbc->fetch_row($r)){
+            $ret .= sprintf('<li><a href="%sitem/vendors/DefaultUploadPage.php?vid=%d">Upload %s Price File</a>',
+                $FANNIE_URL,$w['vendorID'],$w['vendorName']);
+        }
+        $ret .= '</ul>';
+        $ret .= '<hr />';
+        $ret .= '<b>Use a Custom import tool</b>:<br /><ul>';
+        $files = scandir('load-classes');
+        foreach($files as $f){
+            if($f[0] == '.') continue;
+            if (substr($f,-4) != '.php') continue;
+            $ret .= sprintf('<li><a href="load-classes/%s">%s</a></li>',
+                    $f,substr($f,0,strlen($f)-4));
+        }
+        $ret .= '</ul>';
+        return $ret;
+    }
 
 }
 

@@ -35,7 +35,7 @@ class CustPreferencesModel extends BasicModel
     'custAvailablePrefID' => array('type'=>'INT'),
     'pref_key' => array('type'=>'VARCHAR(50)', 'primary_key'=>true),
     'pref_value' => array('type'=>'VARCHAR(100'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -49,6 +49,22 @@ class CustPreferencesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'custPrefenceID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["custPrefenceID"]) || $this->instance["custPrefenceID"] != func_get_args(0)) {
                 if (!isset($this->columns["custPrefenceID"]["ignore_updates"]) || $this->columns["custPrefenceID"]["ignore_updates"] == false) {
@@ -57,6 +73,7 @@ class CustPreferencesModel extends BasicModel
             }
             $this->instance["custPrefenceID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function card_no()
@@ -69,6 +86,22 @@ class CustPreferencesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'card_no',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["card_no"]) || $this->instance["card_no"] != func_get_args(0)) {
                 if (!isset($this->columns["card_no"]["ignore_updates"]) || $this->columns["card_no"]["ignore_updates"] == false) {
@@ -77,6 +110,7 @@ class CustPreferencesModel extends BasicModel
             }
             $this->instance["card_no"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function custAvailablePrefID()
@@ -89,6 +123,22 @@ class CustPreferencesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'custAvailablePrefID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["custAvailablePrefID"]) || $this->instance["custAvailablePrefID"] != func_get_args(0)) {
                 if (!isset($this->columns["custAvailablePrefID"]["ignore_updates"]) || $this->columns["custAvailablePrefID"]["ignore_updates"] == false) {
@@ -97,6 +147,7 @@ class CustPreferencesModel extends BasicModel
             }
             $this->instance["custAvailablePrefID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function pref_key()
@@ -109,6 +160,22 @@ class CustPreferencesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'pref_key',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["pref_key"]) || $this->instance["pref_key"] != func_get_args(0)) {
                 if (!isset($this->columns["pref_key"]["ignore_updates"]) || $this->columns["pref_key"]["ignore_updates"] == false) {
@@ -117,6 +184,7 @@ class CustPreferencesModel extends BasicModel
             }
             $this->instance["pref_key"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function pref_value()
@@ -129,6 +197,22 @@ class CustPreferencesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'pref_value',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["pref_value"]) || $this->instance["pref_value"] != func_get_args(0)) {
                 if (!isset($this->columns["pref_value"]["ignore_updates"]) || $this->columns["pref_value"]["ignore_updates"] == false) {
@@ -137,6 +221,7 @@ class CustPreferencesModel extends BasicModel
             }
             $this->instance["pref_value"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

@@ -84,6 +84,9 @@ function handleResponse() {
 	case 'autoTag':
 			alert('New tags generated');
 			break;
+	case 'UnsaleBatch':
+			alert('Sale stopped');
+			break;
         case 'showBatch':
         		document.getElementById('inputarea').innerHTML = array[1];
         		document.getElementById('displayarea').innerHTML = array[2];
@@ -93,6 +96,8 @@ function handleResponse() {
         		document.getElementById('inputarea').innerHTML = array[1];
         		document.getElementById('displayarea').innerHTML = array[2];
         		document.getElementById('newBatchName').focus();	
+                $('#newBatchStartDate').datepicker();
+                $('#newBatchEndDate').datepicker();
         		break;
         case 'addItemUPC':
         case 'addItemLC':
@@ -134,37 +139,43 @@ function getOwners(){
 	return document.getElementById('passtojsowners').value.split("`");
 }
 
-function newBatch(){
-	var type = document.getElementById('newBatchType').value;
-	var name = document.getElementById('newBatchName').value;
-	var startdate = document.getElementById('newBatchStartDate').value;
-	var enddate = document.getElementById('newBatchEndDate').value;
-	var owner = document.getElementById('newBatchOwner').value;
-	var priority = document.getElementById('newBatchPriority').value;
+function newBatch()
+{
+    var data = 'action=newBatch&' + $('#newBatchForm :input').serialize();
+    $.ajax({
+        url: 'BatchManagementTool.php',
+        method: 'get',
+        data: data,
+        success: function(resp) {
+            $('#displayarea').html(resp);
+        }
+    });
+    $('#newBatchForm').get(0).reset();
 	
-	phpSend('newBatch&type='+type+'&name='+name+'&startdate='+startdate+'&enddate='+enddate+'&owner='+owner+'&priority='+priority);
-	
-	document.getElementById('newBatchType').value = 0;
-	document.getElementById('newBatchName').value = '';
-	document.getElementById('newBatchStartDate').value = '';
-	document.getElementById('newBatchEndDate').value = '';
-	
-	document.getElementById('newBatchName').focus();
+    $('#newBatchName').focus();
 }
 
-function deleteBatch(id,name){
-	var audited = document.getElementById('isAudited').value;
-	if (audited == "1"){
+function deleteBatch(id, name)
+{
+	var audited = $('#isAudited').val();
+	if (audited == "1") {
 		alert("You're not allowed to delete batches");
 		return;
 	}
 
-	if (confirm('Delete this batch ('+name+')?'))
-		phpSend('deleteBatch&id='+id);
+	if (confirm('Delete this batch ('+name+')?')) {
+        $.ajax({
+            url: 'BatchManagementTool.php',
+            data: 'action=deleteBatch&id='+id,
+            success: function(resp) {
+                $('#displayarea').html(resp);
+            }
+        });
+    }
 }
 
 function editBatch(id){
-	var name = document.getElementById('namelink'+id).innerHTML;
+    var name = $('tr#batchRow' + id + ' a:first').html();
 	var type = document.getElementById('type'+id).innerHTML;
 	var startdate = document.getElementById('startdate'+id).innerHTML;
 	var enddate = document.getElementById('enddate'+id).innerHTML;
@@ -174,7 +185,7 @@ function editBatch(id){
 	var batchtypeids = getTypeIDs();
 	var owners = getOwners();
 	
-	var typeselect = "<select id=type"+id+"i>";
+	var typeselect = "<select id=type"+id+"i name=type>";
 	for (var i = 0; i < batchtypes.length; i++){
 		typeselect += "<option value="+batchtypeids[i];
 		if (batchtypes[i] == type)
@@ -183,7 +194,7 @@ function editBatch(id){
 	}
 	typeselect += "</select>";
 	
-	var ownerselect = "<select id=owner"+id+"i>";
+	var ownerselect = "<select id=owner"+id+"i name=owner>";
 	for (var i = 0; i < owners.length; i++){
 		ownerselect += "<option";
 		if (owners[i] == owner)
@@ -192,124 +203,224 @@ function editBatch(id){
 	}
 	ownerselect += "</select>";
 	
-	document.getElementById('name'+id).innerHTML = "<input type=text id=name"+id+"i value=\""+name+"\" />";
+	document.getElementById('name'+id).innerHTML = "<input type=text name=name id=name"+id+"i value=\""+name+"\" />";
 	document.getElementById('type'+id).innerHTML = typeselect;
-	document.getElementById('startdate'+id).innerHTML = "<input type=text id=startdate"+id+"i value=\""+startdate+"\" onclick=\"showCalendarControl(this);\" />";
-	document.getElementById('enddate'+id).innerHTML = "<input type=text id=enddate"+id+"i value=\""+enddate+"\" onclick=\"showCalendarControl(this);\" />";
+	document.getElementById('startdate'+id).innerHTML = "<input type=text name=startdate class=dateinput id=startdate"+id+"i value=\""+startdate+"\" />";
+	document.getElementById('enddate'+id).innerHTML = "<input type=text name=enddate class=dateinput id=enddate"+id+"i value=\""+enddate+"\" />";
 	document.getElementById('owner'+id).innerHTML = ownerselect;
 
-	var path = document.getElementById('buttonimgpath').value;
-	var svb = "<a href=\"\" onclick=\"saveBatch("+id+"); return false;\"><img src=\""+path+"b_save.png\" alt=\"Save\" /></a>";
-	document.getElementById('edit'+id).innerHTML = svb;
+    $('tr#batchRow' + id).find('a.batchEditLink').hide();
+    $('tr#batchRow' + id).find('a.batchSaveLink').show();
 	
+    $('input.dateinput').datepicker();
 	document.getElementById('name'+id+'i').focus();
 }
 
-function saveBatch(id){
-	var name = document.getElementById('name'+id+'i').value;
-	var type = document.getElementById('type'+id+'i').value;
-	var startdate = document.getElementById('startdate'+id+'i').value;
-	var enddate = document.getElementById('enddate'+id+'i').value;
-	var owner = document.getElementById('owner'+id+'i').value;
+function saveBatch(id)
+{
+    var data = $('tr#batchRow' + id + ' :input').serialize();
+    $.ajax({
+        url: 'BatchManagementTool.php',
+        data: 'action=saveBatch&id=' + id + '&' + data,
+        success: function(resp) {
+        }
+    });
+    $('tr#batchRow' + id + ' td').each(function() {
+        if ($(this).find('select').length > 0) {
+            var val = $(this).find('option:selected').text();
+            $(this).html(val);
+        } else if ($(this).find('input').length > 0) {
+            var val = $(this).find('input').val();
+            $(this).html(val);
+        }
+    });
 
-	var batchtypes = getTypes();
-	var batchtypeids = getTypeIDs();
-	var found_index = 0;
-	for (var i = 0; i < batchtypeids.length; i++){
-		if (type == batchtypeids[i])
-			found_index = i;
+    var link = $('<a></a>');
+    link.attr('href', '');
+    link.html($('tr#batchRow' + id + ' td:first').html());
+    link.click(function(e){ e.preventDefault(); showBatch(id); });
+    $('tr#batchRow' + id + ' td:first').html('').append(link);
+	
+    $('tr#batchRow' + id).find('a.batchEditLink').show();
+    $('tr#batchRow' + id).find('a.batchSaveLink').hide();
+}
+
+function showBatch(id, tag)
+{
+	if ($('#isAudited').val() == "1" && $('#type'+id).html() == 'Price Change') {
+        alert("You can't edit price change batches");
+        return;
 	}
-	
-	document.getElementById('name'+id).innerHTML = "<a id=namelink"+id+" href=\"\" onclick=\"showBatch("+id+"); return false;\">"+name+"</a>";
-	document.getElementById('type'+id).innerHTML = batchtypes[found_index];
-	document.getElementById('startdate'+id).innerHTML = startdate;
-	document.getElementById('enddate'+id).innerHTML = enddate;
-	document.getElementById('owner'+id).innerHTML = owner;
 
-	var path = document.getElementById('buttonimgpath').value;
-	var eb = "<a href=\"\" onclick=\"editBatch("+id+"); return false;\"><img src=\""+path+"b_edit.png\" alt=\"Edit\" /></a>";
-	document.getElementById('edit'+id).innerHTML = eb;
-	
-	phpSend('saveBatch&id='+id+'&name='+name+'&type='+type+'&startdate='+startdate+'&enddate='+enddate+'&owner='+owner);
+    $.ajax({
+        url: 'BatchManagementTool.php',
+        data: 'action=showBatch&id=' + id + '&tag=' + tag,
+        dataType: 'json',
+        success: function(resp) {
+            $('#inputarea').html(resp.input);
+            $('#displayarea').html(resp.display);
+            $('#addItemUPC').focus();
+        }
+    });
 }
 
-function showBatch(id,tag){
-	if (document.getElementById('isAudited').value == "1"){
-		if (document.getElementById('type'+id).innerHTML == "Price Change"){
-			alert("You can't edit price change batches");
-			return;
-		}
-	}
-	phpSend('showBatch&id='+id+'&tag='+tag);
+function backToList()
+{
+    $.ajax({
+        url: 'BatchManagementTool.php',
+        data: 'action=backToList',
+        dataType: 'json',
+        success: function(resp) {
+            $('#inputarea').html(resp.input);
+            $('#displayarea').html(resp.display);
+            $('#addItemUPC').focus();
+        }
+    });
 }
 
-function backToList(){
-	phpSend('backToList');
+function addItem()
+{
+    var data = 'id=' + $('#currentBatchID').val();
+    data += '&' + $('.addItemForm :input').serialize();
+    if ($('#addItemLikeCode').is(':checked')) {
+        data += '&action=addItemLC';
+    } else {
+        data += '&action=addItemUPC';
+    }
+    $.ajax({
+        url: 'BatchManagementTool.php',
+        data: data,
+        dataType: 'json',
+        success: function(resp) {
+            if (resp.error) {
+                $('<div>'+resp.error+'</div>').dialog({
+                    close: function() {
+                        $(resp.field).focus();
+                    },
+                    modal: true
+                });
+            }
+            $('#inputarea').html(resp.content);
+            $(resp.field).focus();
+        }
+    });
 }
 
-function addItem(){
-	var id = document.getElementById('currentBatchID').value;
-	var upc = document.getElementById('addItemUPC').value;
-	var tag = document.getElementById('addItemTag').checked;
-	var lc = document.getElementById('addItemLikeCode').checked;
+function addItemFinish(upc)
+{
+	var data = 'id=' + $('#currentBatchID').val() + '&upc='+upc;
+	data += '&price=' + $('#addItemPrice').val();
 
-	if (!lc)
-		phpSend('addItemUPC&id='+id+'&upc='+upc+'&tag='+tag);
-	else
-		phpSend('addItemLC&id='+id+'&lc='+upc);
+	data += '&uid=' + $('#uid').val();
+	data += '&audited=' + $('#isAudited').val();
+
+	var limit = $('#currentLimit').html();
+	if (limit == '') {
+        limit = 0;
+    }
+    data += '&limit=' + limit;
+
+    if (!($('#addItemTag').is(':checked')) || $('#isAudited').val() == '1') {
+        data += '&action=addItemPrice';
+    } else {
+        data += '&action=newTag';
+    }
+
+    $.ajax({
+        url: 'BatchManagementTool.php',
+        data: data,
+        dataType: 'json',
+        success: function(resp) {
+            $('#inputarea').html(resp.input);
+            if (resp.display) {
+                $('#displayarea').html(resp.display);
+                $('#addItemUPC').focus();
+            }
+        }
+    });
 }
 
-function addItemFinish(upc){
-	var id = document.getElementById('currentBatchID').value;
-	var price = document.getElementById('addItemPrice').value;
-	var tag = document.getElementById('addItemTag').checked;
+function addItemLCFinish(lc)
+{
+	var data = 'id=' + $('#currentBatchID').val() + '&lc='+lc;
+	data += '&price=' + $('#addItemPrice').val();
 
-	var uid = document.getElementById('uid').value;
-	var audited = document.getElementById('isAudited').value;
+	data += '&uid=' + $('#uid').val();
+	data += '&audited=' + $('#isAudited').val();
 
-	var limit = document.getElementById('currentLimit').innerHTML;
-	if (limit == '') limit = 0;
-	
-	if (!tag || audited=="1")
-		phpSend('addItemPrice&id='+id+'&upc='+upc+'&price='+price+'&uid='+uid+'&audited='+audited+'&limit='+limit);
-	else
-		phpSend('newTag&id='+id+'&upc='+upc+'&price='+price);
+	var limit = $('#currentLimit').html();
+	if (limit == '') {
+        limit = 0;
+    }
+    data += '&limit=' + limit;
+    data += '&action=addItemLCPrice';
+    $.ajax({
+        url: 'BatchManagementTool.php',
+        data: data,
+        dataType: 'json',
+        success: function(resp) {
+            $('#inputarea').html(resp.input);
+            $('#displayarea').html(resp.display);
+            $('#addItemUPC').focus();
+        }
+    });
 }
 
-function addItemLCFinish(lc){
-	var id = document.getElementById('currentBatchID').value;
-	var price = document.getElementById('addItemPrice').value;
-	
-	var uid = document.getElementById('uid').value;
-	var audited = document.getElementById('isAudited').value;
+function deleteItem(upc)
+{
+    var data = 'action=deleteItem';
+    data += '&upc=' + upc;
+    data += '&id=' + $('#currentBatchID').val();
+    data += '&uid=' + $('#uid').val();
+    data += '&audited=' + $('#isAudited').val();
 
-	var limit = document.getElementById('currentLimit').innerHTML;
-	if (limit == '') limit = 0;
-
-	phpSend('addItemLCPrice&id='+id+'&lc='+lc+'&price='+price+'&uid='+uid+'&audited='+audited+'&limit='+limit);
+    $.ajax({
+        url: 'BatchManagementTool.php',
+        data: data,
+        success: function(resp) {
+            $('#displayarea').html(resp);
+        }
+    });
 }
 
-function deleteItem(upc){
-	var id = document.getElementById('currentBatchID').value;
-	var uid = document.getElementById('uid').value;
-	var audited = document.getElementById('isAudited').value;
-	
-	phpSend('deleteItem&id='+id+'&upc='+upc+'&uid='+uid+'&audited='+audited);
+function refilter(owner)
+{
+    $.ajax({
+        url: 'BatchManagementTool.php',
+        data: 'action=refilter&owner=' + encodeURIComponent(owner),
+        success: function(resp) {
+            $('#displayarea').html(resp);
+        }
+    });
 }
 
-function refilter(){
-	var owner = document.getElementById('filterOwner').value;
-	
-	phpSend('refilter&owner='+owner);
+function redisplay(mode)
+{
+    var data = 'action=redisplay';
+    data += '&mode=' + encodeURIComponent(mode);
+    data += '&owner=' + encodeURIComponent($('#filterOwner').val());
+    $.ajax({
+        url: 'BatchManagementTool.php',
+        data: data,
+        success: function(resp) {
+            $('#displayarea').html(resp);
+        }
+    });
 }
 
-function redisplay(mode){
-	document.getElementById('filterOwner').selectedIndex = 0;
-	phpSend('redisplay&mode='+mode);
-}
-
-function batchListPage(filter,mode,batchID){
-	phpSend('batchListPage&filter='+filter+'&mode='+mode+'&maxBatchID='+batchID);
+function batchListPage(filter,mode,batchID)
+{
+    var data = 'action=batchListPage';
+    data += '&mode=' + encodeURIComponent(mode);
+    data += '&filter=' + encodeURIComponent(filter);
+    data += '&maxBatchID=' + encodeURIComponent(batchID);
+    $.ajax({
+        url: 'BatchManagementTool.php',
+        data: data,
+        success: function(resp) {
+            $('#displayarea').html(resp);
+        }
+    });
 }
 
 function editPrice(upc){
@@ -518,3 +629,9 @@ function saveLimit(batchID){
 function autoTag(bID){
 	phpSend('autoTag&batchID='+bID);
 }
+
+function unsaleBatch(bID)
+{
+    phpSend('UnsaleBatch&batchID='+bID);
+}
+

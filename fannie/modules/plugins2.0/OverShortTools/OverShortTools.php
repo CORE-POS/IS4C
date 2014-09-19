@@ -23,50 +23,56 @@
 
 global $FANNIE_ROOT;
 if (!class_exists('FannieAPI'))
-	include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 /**
 */
 class OverShortTools extends FanniePlugin {
 
-	/**
-	  Desired settings. These are automatically exposed
-	  on the 'Plugins' area of the install page and
-	  written to ini.php
-	*/
-	public $plugin_settings = array(
-	'OverShortDatabase' => array('default'=>'core_overshort','label'=>'Database',
-			'description'=>'Database to store tender counts and related info')
-	);
+    /**
+      Desired settings. These are automatically exposed
+      on the 'Plugins' area of the install page and
+      written to ini.php
+    */
+    // 17Dec13 EL Change code style and sequence of elements, putting 'label' first.
+    public $plugin_settings = array(
+        'OverShortDatabase' => array(
+            'label'=>'Database',
+            'default'=>'core_overshort',
+            'description'=>'Database to store tables of plugin-specific
+                    tender counts and related info.
+                    Can be one of the default CORE databases or a separate one.'
+        )
+    );
 
-	public $plugin_description = 'Plugin for comparing counted cashier tender totals
-			to POS totals';
+    public $plugin_description = 'Plugin for comparing tender totals counted by cashiers 
+            to totals from the POS transactions database.';
 
+    public function setting_change(){
+        global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
 
-	public function setting_change(){
-		global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
+        $db_name = $FANNIE_PLUGIN_SETTINGS['OverShortDatabase'];
+        if (empty($db_name)) return;
 
-		$db_name = $FANNIE_PLUGIN_SETTINGS['OverShortDatabase'];
-		if (empty($db_name)) return;
+        // Creates the database if it doesn't already exist.
+        $dbc = FannieDB::get($db_name);
+        
+        $tables = array(
+            'DailyChecks',
+            'DailyCounts',
+            'DailyDeposit',
+            'DailyNotes',
+            'OverShortsLog'
+        );
 
-		$dbc = FannieDB::get($db_name);
-		
-		$tables = array(
-			'DailyChecks',
-			'DailyCounts',
-			'DailyDeposit',
-			'DailyNotes',
-			'OverShortsLog'
-		);
-
-		foreach($tables as $t){
-			$model_class = $t.'Model';
-			if (!class_exists($model_class))
-				include_once(dirname(__FILE__).'/models/'.$model_class.'.php');
-			$instance = new $model_class($dbc);
-			$instance->create();		
-		}
-	}
+        foreach($tables as $t){
+            $model_class = $t.'Model';
+            if (!class_exists($model_class))
+                include_once(dirname(__FILE__).'/models/'.$model_class.'.php');
+            $instance = new $model_class($dbc);
+            $instance->create();        
+        }
+    }
 
     public static $EXCLUDE_TENDERS = array('MA', 'RR');
 }

@@ -71,9 +71,11 @@ class DefaultReceiptSort
 					if (!isset($items[$row['category']])) {
 						$items[$row['category']] = array();
                     }
-					$items[$row['category']] = $this->upc_merge($items[$row['category']],$row);
+					//$items[$row['category']] = $this->upc_merge($items[$row['category']],$row);
+					$items[$row['category']][] = $row;
 				} else {
-					$items['_uncategorized'] = $this->upc_merge($items['_uncategorized'],$row);
+					//$items['_uncategorized'] = $this->upc_merge($items['_uncategorized'],$row);
+					$items['_uncategorized'][] = $row;
 				}
 			}
 		}
@@ -139,8 +141,10 @@ class DefaultReceiptSort
 	static public function record_compare($r1,$r2){
 		if (!isset($r1['trans_id']) || !isset($r2['trans_id'])) {
 			return 0;
-		} else {
-			return $r1['trans_id'] - $r2['trans_id'];
+        } else if ($r1['trans_id'] == $r2['trans_id']) {
+            return 0;
+        } else {
+            return $r1['trans_id'] < $r2['trans_id'] ? -1 : 1;
         }
 	}
 
@@ -152,7 +156,7 @@ class DefaultReceiptSort
 	  @return $cur with the new record added
 	*/
 	protected function upc_merge($cur, $new) {
-		if ($new['trans_status'] != '' || $row['trans_type'] != ''
+		if ($new['trans_status'] != '' || $new['trans_type'] != 'I'
 		   || $new['scale'] != 0 || $new['matched'] != 0) {
 			/**
 			  By-weight, refund, void, or group discount
@@ -164,7 +168,7 @@ class DefaultReceiptSort
 			/**
 			  Valid item to merge; add to the existing record
 			*/
-			$cur[$new['upc']]['ItemQty'] += $new['ItemQty'];
+			$cur[$new['upc']]['ItemQtty'] += $new['ItemQtty'];
 			$cur[$new['upc']]['quantity'] += $new['quantity'];
 			$cur[$new['upc']]['total'] += $new['total'];
 		} else {

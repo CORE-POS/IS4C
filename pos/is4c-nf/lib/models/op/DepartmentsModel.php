@@ -46,6 +46,7 @@ class DepartmentsModel extends BasicModel
     'modifiedby' => array('type'=>'INT'),
     'margin' => array('type'=>'DOUBLE'),
     'salesCode' => array('type'=>'INT'),
+    'memberOnly' => array('type'=>'SMALLINT', 'default'=>0),
     );
 
     protected function hookAddColumnmargin()
@@ -87,17 +88,12 @@ class DepartmentsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["dept_no"])) {
                 return $this->instance["dept_no"];
-            } else if (isset($this->columns["dept_no"]["default"])) {
+            } elseif(isset($this->columns["dept_no"]["default"])) {
                 return $this->columns["dept_no"]["default"];
             } else {
                 return null;
             }
         } else {
-            if (!isset($this->instance["dept_no"]) || $this->instance["dept_no"] != func_get_args(0)) {
-                if (!isset($this->columns["dept_no"]["ignore_updates"]) || $this->columns["dept_no"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
             $this->instance["dept_no"] = func_get_arg(0);
         }
     }
@@ -107,17 +103,12 @@ class DepartmentsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["dept_name"])) {
                 return $this->instance["dept_name"];
-            } else if (isset($this->columns["dept_name"]["default"])) {
+            } elseif(isset($this->columns["dept_name"]["default"])) {
                 return $this->columns["dept_name"]["default"];
             } else {
                 return null;
             }
         } else {
-            if (!isset($this->instance["dept_name"]) || $this->instance["dept_name"] != func_get_args(0)) {
-                if (!isset($this->columns["dept_name"]["ignore_updates"]) || $this->columns["dept_name"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
             $this->instance["dept_name"] = func_get_arg(0);
         }
     }
@@ -127,17 +118,12 @@ class DepartmentsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["dept_tax"])) {
                 return $this->instance["dept_tax"];
-            } else if (isset($this->columns["dept_tax"]["default"])) {
+            } elseif(isset($this->columns["dept_tax"]["default"])) {
                 return $this->columns["dept_tax"]["default"];
             } else {
                 return null;
             }
         } else {
-            if (!isset($this->instance["dept_tax"]) || $this->instance["dept_tax"] != func_get_args(0)) {
-                if (!isset($this->columns["dept_tax"]["ignore_updates"]) || $this->columns["dept_tax"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
             $this->instance["dept_tax"] = func_get_arg(0);
         }
     }
@@ -147,17 +133,12 @@ class DepartmentsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["dept_fs"])) {
                 return $this->instance["dept_fs"];
-            } else if (isset($this->columns["dept_fs"]["default"])) {
+            } elseif(isset($this->columns["dept_fs"]["default"])) {
                 return $this->columns["dept_fs"]["default"];
             } else {
                 return null;
             }
         } else {
-            if (!isset($this->instance["dept_fs"]) || $this->instance["dept_fs"] != func_get_args(0)) {
-                if (!isset($this->columns["dept_fs"]["ignore_updates"]) || $this->columns["dept_fs"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
             $this->instance["dept_fs"] = func_get_arg(0);
         }
     }
@@ -167,17 +148,12 @@ class DepartmentsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["dept_limit"])) {
                 return $this->instance["dept_limit"];
-            } else if (isset($this->columns["dept_limit"]["default"])) {
+            } elseif(isset($this->columns["dept_limit"]["default"])) {
                 return $this->columns["dept_limit"]["default"];
             } else {
                 return null;
             }
         } else {
-            if (!isset($this->instance["dept_limit"]) || $this->instance["dept_limit"] != func_get_args(0)) {
-                if (!isset($this->columns["dept_limit"]["ignore_updates"]) || $this->columns["dept_limit"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
             $this->instance["dept_limit"] = func_get_arg(0);
         }
     }
@@ -187,17 +163,12 @@ class DepartmentsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["dept_minimum"])) {
                 return $this->instance["dept_minimum"];
-            } else if (isset($this->columns["dept_minimum"]["default"])) {
+            } elseif(isset($this->columns["dept_minimum"]["default"])) {
                 return $this->columns["dept_minimum"]["default"];
             } else {
                 return null;
             }
         } else {
-            if (!isset($this->instance["dept_minimum"]) || $this->instance["dept_minimum"] != func_get_args(0)) {
-                if (!isset($this->columns["dept_minimum"]["ignore_updates"]) || $this->columns["dept_minimum"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
             $this->instance["dept_minimum"] = func_get_arg(0);
         }
     }
@@ -207,17 +178,12 @@ class DepartmentsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["dept_discount"])) {
                 return $this->instance["dept_discount"];
-            } else if (isset($this->columns["dept_discount"]["default"])) {
+            } elseif(isset($this->columns["dept_discount"]["default"])) {
                 return $this->columns["dept_discount"]["default"];
             } else {
                 return null;
             }
         } else {
-            if (!isset($this->instance["dept_discount"]) || $this->instance["dept_discount"] != func_get_args(0)) {
-                if (!isset($this->columns["dept_discount"]["ignore_updates"]) || $this->columns["dept_discount"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
             $this->instance["dept_discount"] = func_get_arg(0);
         }
     }
@@ -227,17 +193,12 @@ class DepartmentsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["dept_see_id"])) {
                 return $this->instance["dept_see_id"];
-            } else if (isset($this->columns["dept_see_id"]["default"])) {
+            } elseif(isset($this->columns["dept_see_id"]["default"])) {
                 return $this->columns["dept_see_id"]["default"];
             } else {
                 return null;
             }
         } else {
-            if (!isset($this->instance["dept_see_id"]) || $this->instance["dept_see_id"] != func_get_args(0)) {
-                if (!isset($this->columns["dept_see_id"]["ignore_updates"]) || $this->columns["dept_see_id"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
             $this->instance["dept_see_id"] = func_get_arg(0);
         }
     }
@@ -247,17 +208,12 @@ class DepartmentsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["modified"])) {
                 return $this->instance["modified"];
-            } else if (isset($this->columns["modified"]["default"])) {
+            } elseif(isset($this->columns["modified"]["default"])) {
                 return $this->columns["modified"]["default"];
             } else {
                 return null;
             }
         } else {
-            if (!isset($this->instance["modified"]) || $this->instance["modified"] != func_get_args(0)) {
-                if (!isset($this->columns["modified"]["ignore_updates"]) || $this->columns["modified"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
             $this->instance["modified"] = func_get_arg(0);
         }
     }
@@ -267,17 +223,12 @@ class DepartmentsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["modifiedby"])) {
                 return $this->instance["modifiedby"];
-            } else if (isset($this->columns["modifiedby"]["default"])) {
+            } elseif(isset($this->columns["modifiedby"]["default"])) {
                 return $this->columns["modifiedby"]["default"];
             } else {
                 return null;
             }
         } else {
-            if (!isset($this->instance["modifiedby"]) || $this->instance["modifiedby"] != func_get_args(0)) {
-                if (!isset($this->columns["modifiedby"]["ignore_updates"]) || $this->columns["modifiedby"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
             $this->instance["modifiedby"] = func_get_arg(0);
         }
     }
@@ -287,17 +238,12 @@ class DepartmentsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["margin"])) {
                 return $this->instance["margin"];
-            } else if (isset($this->columns["margin"]["default"])) {
+            } elseif(isset($this->columns["margin"]["default"])) {
                 return $this->columns["margin"]["default"];
             } else {
                 return null;
             }
         } else {
-            if (!isset($this->instance["margin"]) || $this->instance["margin"] != func_get_args(0)) {
-                if (!isset($this->columns["margin"]["ignore_updates"]) || $this->columns["margin"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
             $this->instance["margin"] = func_get_arg(0);
         }
     }
@@ -307,18 +253,28 @@ class DepartmentsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["salesCode"])) {
                 return $this->instance["salesCode"];
-            } else if (isset($this->columns["salesCode"]["default"])) {
+            } elseif(isset($this->columns["salesCode"]["default"])) {
                 return $this->columns["salesCode"]["default"];
             } else {
                 return null;
             }
         } else {
-            if (!isset($this->instance["salesCode"]) || $this->instance["salesCode"] != func_get_args(0)) {
-                if (!isset($this->columns["salesCode"]["ignore_updates"]) || $this->columns["salesCode"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
             $this->instance["salesCode"] = func_get_arg(0);
+        }
+    }
+
+    public function memberOnly()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["memberOnly"])) {
+                return $this->instance["memberOnly"];
+            } elseif(isset($this->columns["memberOnly"]["default"])) {
+                return $this->columns["memberOnly"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["memberOnly"] = func_get_arg(0);
         }
     }
     /* END ACCESSOR FUNCTIONS */

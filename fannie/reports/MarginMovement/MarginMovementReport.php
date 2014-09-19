@@ -21,11 +21,15 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class MarginMovementReport extends FannieReportPage 
 {
+    public $description = '[Margin Movement] lists item movement with margin information.';
+    public $report_set = 'Movement Reports';
 
     protected $title = "Fannie : Margin Movement Report";
     protected $header = "Margin Movement Report";
@@ -38,16 +42,12 @@ class MarginMovementReport extends FannieReportPage
 
     public function report_description_content()
     {
-        $date1 = FormLib::get('date1', date('Y-m-d'));
-        $date2 = FormLib::get('date2', date('Y-m-d'));
         $deptStart = FormLib::get('deptStart');
         $deptEnd = FormLib::get('deptEnd');
         $include_sales = FormLib::get('includeSales', 0);
         $buyer = FormLib::get('buyer', '');
-	
+    
         $ret = array();
-        $ret[] = 'Margin Movement Report';
-        $ret[] = 'From '.$date1.' to '.$date2;
         if ($buyer === '') {
             $ret[] = 'Department '.$deptStart.' to '.$deptEnd;
         } else if ($buyer == -1) {
@@ -58,11 +58,6 @@ class MarginMovementReport extends FannieReportPage
 
         if ($include_sales == 1) {
             $ret[] = 'Includes sale items';
-        }
-
-        if ($this->report_format == 'html') {
-            $ret[] = sprintf('<a href="../HourlySales/HourlySalesReport.php?%s">Sales for Same Period</a>', 
-                            $_SERVER['QUERY_STRING']);
         }
 
         return $ret;
@@ -78,7 +73,7 @@ class MarginMovementReport extends FannieReportPage
         $deptStart = FormLib::get('deptStart');
         $deptEnd = FormLib::get('deptEnd');
         $include_sales = FormLib::get('includeSales', 0);
-	
+    
         $buyer = FormLib::get('buyer', '');
 
         // args/parameters differ with super
@@ -91,18 +86,23 @@ class MarginMovementReport extends FannieReportPage
                 $args[] = $buyer;
             }
         } else {
-            $where = ' t.department BETWEEN ? AND ? ';
+            $where = ' d.department BETWEEN ? AND ? ';
             $args[] = $deptStart;
             $args[] = $deptEnd;
         }
 
         $dlog = DTransactionsModel::selectDlog($date1, $date2);
 
-        $query = "SELECT d.upc,p.description,d.department,t.dept_name,
-            sum(total) as total,sum(d.cost) as cost, sum(d.quantity) as qty
-            FROM $dlog AS d INNER JOIN products AS p
-            ON d.upc=p.upc LEFT JOIN departments AS t 
-            ON d.department=t.dept_no ";
+        $query = "SELECT d.upc,
+                    p.description,
+                    d.department,
+                    t.dept_name,
+                    SUM(total) AS total,
+                    SUM(d.cost) AS cost,"
+                    . DTrans::sumQuantity('d') . " AS qty
+                  FROM $dlog AS d "
+                    . DTrans::joinProducts('d', 'p', 'inner')
+                    . DTrans::joinDepartments('d', 't');
         // join only needed with specific buyer
         if ($buyer !== '' && $buyer > -1) {
             $query .= 'LEFT JOIN superdepts AS s ON d.department=s.dept_ID ';
@@ -149,7 +149,7 @@ class MarginMovementReport extends FannieReportPage
         }
 
         return $data;
-	}
+    }
 
     public function calculate_footers($data)
     {
@@ -197,67 +197,70 @@ function swap(src,dst){
     document.getElementById(dst).value = val;
 }
 </script>
-<div id=main>	
+<div id=main>   
 <form method = "get" action="MarginMovementReport.php">
-	<table border="0" cellspacing="0" cellpadding="5">
-		<tr>
-			<td><b>Select Buyer/Dept</b></td>
-			<td><select id=buyer name=buyer>
-			   <option value=""></option>
-			   <?php echo $deptSubList; ?>
-			   <option value=-1 >All</option>
-			   </select>
- 			</td>
-			<td><b>Send to Excel</b></td>
-			<td><input type=checkbox name=excel id=excel value=1></td>
-		</tr>
-		<tr>
-			<td colspan=5><i>Selecting a Buyer/Dept overrides Department Start/Department End, but not Date Start/End.
-			To run reports for a specific department(s) leave Buyer/Dept or set it to 'blank'</i></td>
-		</tr>
-		<tr> 
-			<td> <p><b>Department Start</b></p>
-			<p><b>End</b></p></td>
-			<td> <p>
- 			<select id=deptStartSel onchange="swap('deptStartSel','deptStart');">
-			<?php echo $deptsList ?>
-			</select>
-			<input type=text name=deptStart id=deptStart size=5 value=1 />
-			</p>
-			<p>
-			<select id=deptEndSel onchange="swap('deptEndSel','deptEnd');">
-			<?php echo $deptsList ?>
-			</select>
-			<input type=text name=deptEnd id=deptEnd size=5 value=1 />
-			</p></td>
+    <table border="0" cellspacing="0" cellpadding="5">
+        <tr>
+            <td><b>Select Buyer/Dept</b></td>
+            <td><select id=buyer name=buyer>
+               <option value=""></option>
+               <?php echo $deptSubList; ?>
+               <option value=-1 >All</option>
+               </select>
+            </td>
+            <td><b>Send to Excel</b></td>
+            <td><input type=checkbox name=excel id=excel value=1></td>
+        </tr>
+        <tr>
+            <td colspan=5><i>Selecting a Buyer/Dept overrides Department Start/Department End, but not Date Start/End.
+            To run reports for a specific department(s) leave Buyer/Dept or set it to 'blank'</i></td>
+        </tr>
+        <tr> 
+            <td> <p><b>Department Start</b></p>
+            <p><b>End</b></p></td>
+            <td> <p>
+            <select id=deptStartSel onchange="swap('deptStartSel','deptStart');">
+            <?php echo $deptsList ?>
+            </select>
+            <input type=text name=deptStart id=deptStart size=5 value=1 />
+            </p>
+            <p>
+            <select id=deptEndSel onchange="swap('deptEndSel','deptEnd');">
+            <?php echo $deptsList ?>
+            </select>
+            <input type=text name=deptEnd id=deptEnd size=5 value=1 />
+            </p></td>
 
-			 <td>
-			<p><b>Date Start</b> </p>
-		         <p><b>End</b></p>
-		       </td>
-		            <td>
-		             <p>
-		               <input type=text id=date1 name=date1 onfocus="this.value='';showCalendarControl(this);">
-		               </p>
-		               <p>
-		                <input type=text id=date2 name=date2 onfocus="this.value='';showCalendarControl(this);">
-		         </p>
-		       </td>
+             <td>
+            <p><b>Date Start</b> </p>
+                 <p><b>End</b></p>
+               </td>
+                    <td>
+                     <p>
+                       <input type=text id=date1 name=date1 />
+                       </p>
+                       <p>
+                        <input type=text id=date2 name=date2 />
+                 </p>
+               </td>
 
-		</tr>
-		<tr> 
+        </tr>
+        <tr> 
              <td colspan="2"><input type=checkbox name=includeSales value=1>Include Sale Items</td>
-			<td colspan="2" rowspan="2">
+            <td colspan="2" rowspan="2">
                 <?php echo FormLib::date_range_picker(); ?>
             </td>
-		</tr>
+        </tr>
         <tr>
-			<td> <input type=submit name=submit value="Submit"> </td>
-			<td> <input type=reset name=reset value="Start Over"> </td>
-		</tr>
-	</table>
+            <td> <input type=submit name=submit value="Submit"> </td>
+            <td> <input type=reset name=reset value="Start Over"> </td>
+        </tr>
+    </table>
 </form>
         <?php
+        $this->add_onload_command('$(\'#date1\').datepicker();');
+        $this->add_onload_command('$(\'#date2\').datepicker();');
+
         return ob_get_clean();
     }
 }

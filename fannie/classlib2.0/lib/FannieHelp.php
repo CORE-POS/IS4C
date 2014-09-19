@@ -38,7 +38,7 @@ class FannieHelp {
 
         $text = preg_replace('/\s\s+/',' ',$text);
 
-        $snippet = strlen($text) > 100 ? substr($text,0,100) : False;
+        $snippet = strlen($text) > 100 ? strip_tags(substr($text,0,100)).' ...' : False;
         if ($snippet || $doc_link) {
             $snippet .= ' (Click for more)';
         }

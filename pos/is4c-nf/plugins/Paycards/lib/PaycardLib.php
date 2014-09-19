@@ -247,7 +247,7 @@ static public function paycard_live($type = self::PAYCARD_TYPE_UNKNOWN) {
 		return 0;
 	// special session vars for each card type
 	if( $type === self::PAYCARD_TYPE_CREDIT) {
-		if( $CORE_LOCAL->get("ccLive") != 1)
+		if( $CORE_LOCAL->get("CCintegrate") != 1)
 			return 0;
 	} else if( $type === self::PAYCARD_TYPE_GIFT) {
 		if( $CORE_LOCAL->get("training") == 1)

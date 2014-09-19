@@ -3,12 +3,12 @@
 Table: customReceipt
 
 Columns:
-	text varchar
-	seq int
-	type varchar
+    text varchar
+    seq int
+    type varchar
 
 Depends on:
-	none
+    none
 
 Use:
 This table contains strings of text
@@ -29,11 +29,11 @@ chargeSlip
 
 */
 $CREATE['op.customReceipt'] = "
-	CREATE TABLE customReceipt (
-		text varchar(80),
-		seq int,
-		type varchar(20),
-		PRIMARY KEY (seq, type)
-	)
+    CREATE TABLE customReceipt (
+        text varchar(80),
+        seq int,
+        type varchar(20),
+        PRIMARY KEY (seq, type)
+    )
 ";
 ?>

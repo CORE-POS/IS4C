@@ -33,9 +33,11 @@
 <h1>TenderReport Class Reference</h1><!-- doxytag: class="TenderReport" --><!-- doxytag: inherits="LibraryClass" --><p>Inheritance diagram for TenderReport:
 <p><center><img src="class_tender_report.png" usemap="#TenderReport_map" border="0" alt=""></center>
 <map name="TenderReport_map">
-<area href="class_library_class.html" alt="LibraryClass" shape="rect" coords="69,0,198,24">
-<area href="class_default_tender_report.html" alt="DefaultTenderReport" shape="rect" coords="0,112,129,136">
-<area href="class_wfc_tender_report.html" alt="WfcTenderReport" shape="rect" coords="139,112,268,136">
+<area href="class_library_class.html" alt="LibraryClass" shape="rect" coords="252,0,410,24">
+<area href="class_default_tender_report.html" alt="DefaultTenderReport" shape="rect" coords="0,112,158,136">
+<area href="class_harvest_new_tender_report.html" alt="HarvestNewTenderReport" shape="rect" coords="168,112,326,136">
+<area href="class_wfc_tender_report.html" alt="WfcTenderReport" shape="rect" coords="336,112,494,136">
+<area href="class_y_p_s_i_tender_report.html" alt="YPSITenderReport" shape="rect" coords="504,112,662,136">
 </map>
 <a href="class_tender_report-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
 <tr><td></td></tr>
@@ -71,7 +73,7 @@ Generate a tender report
 Generate a tender report <dl compact><dt><b>Returns:</b></dt><dd>[string] receipt contents</dd></dl>
 This method can be overriden by subclasses to create alternate tender reports. When called, this function will use whichever module is listed in the configuration setting "TenderReportMod". If nothing has been selected, the "DefaultTenderReport" module is used. 
 <p>
-Reimplemented in <a class="el" href="class_default_tender_report.html#1e478ba7419e83479c659fe62f3dd82b">DefaultTenderReport</a>, and <a class="el" href="class_wfc_tender_report.html#a10db16c7df64b941367b751ed8e53ce">WfcTenderReport</a>.
+Reimplemented in <a class="el" href="class_default_tender_report.html#1e478ba7419e83479c659fe62f3dd82b">DefaultTenderReport</a>, <a class="el" href="class_harvest_new_tender_report.html#9ca7af041e4d4b4b036652d8afedd4de">HarvestNewTenderReport</a>, <a class="el" href="class_wfc_tender_report.html#a10db16c7df64b941367b751ed8e53ce">WfcTenderReport</a>, and <a class="el" href="class_y_p_s_i_tender_report.html#54a349fcb90aed6c072c5b45590d5470">YPSITenderReport</a>.
 </div>
 </div><p>
 <a class="anchor" name="b6882d92a94a281cdce629d61d555af5"></a><!-- doxytag: member="TenderReport::printReport" ref="b6882d92a94a281cdce629d61d555af5" args="()" -->
@@ -95,7 +97,7 @@ Write tender report to the printer
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/ReceiptBuilding/TenderReports/TenderReport.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

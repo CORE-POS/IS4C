@@ -25,7 +25,15 @@
 
    lanes.clean.php
 
-   Empty out old entries in localtrans_today
+   Housekeeping on lanes.
+
+   Delete all entries from localtrans_today except today's.
+    Not pruning localtrans_today will eventually slow logins.
+   Delete entries from localtransover 30 days old.
+   Delete entries from efsnetTokens that do not expire today.
+
+   Can run either before or after midnight with somewhat different results.
+   After midnight probably better.
 
 */
 
@@ -36,19 +44,34 @@ include($FANNIE_ROOT.'src/SQLManager.php');
 set_time_limit(0);
 
 foreach($FANNIE_LANES as $ln){
-	$sql = new SQLManager($ln['host'],$ln['type'],$ln['trans'],$ln['user'],$ln['pw']);
-	if ($sql === False){
-		cron_msg("Could not clear lane: ".$ln['host']);
-		continue;
-	}
 
-	$cleanQ = "DELETE FROM localtrans_today WHERE ".$sql->datediff($sql->now(),'datetime')." <> 0";
-	$cleanR = $sql->query($cleanQ,$ln['trans']);
-	$cleanQ = "DELETE FROM localtrans WHERE ".$sql->datediff($sql->now(),'datetime')." > 30";
-	$cleanR = $sql->query($cleanQ,$ln['trans']);
+    $sql = new SQLManager($ln['host'],$ln['type'],$ln['trans'],$ln['user'],$ln['pw']);
+    if ($sql === False){
+        echo cron_msg("Could not connect to lane: ".$ln['host']);
+        continue;
+    }
 
-	$cleanQ = 'DELETE FROM efsnetTokens WHERE '.$sql->datediff($sql->now(),'expireDay').' <> 0 ';
-	$cleanR = $sql->query($cleanQ,$ln['trans']);
+    $table = 'localtrans_today';
+    $cleanQ = "DELETE FROM $table WHERE ".$sql->datediff($sql->now(),'datetime')." <> 0";
+    $cleanR = $sql->query($cleanQ,$ln['trans']);
+    if ($cleanR === False){
+        echo cron_msg("Could not clean $table on lane: ".$ln['host']);
+    }
+
+    $table = 'localtrans';
+    $cleanQ = "DELETE FROM $table WHERE ".$sql->datediff($sql->now(),'datetime')." > 30";
+    $cleanR = $sql->query($cleanQ,$ln['trans']);
+    if ($cleanR === False){
+        echo cron_msg("Could not clean $table on lane: ".$ln['host']);
+    }
+
+    $table = 'efsnetTokens';
+    $cleanQ = "DELETE FROM $table WHERE ".$sql->datediff($sql->now(),'expireDay')." <> 0 ";
+    $cleanR = $sql->query($cleanQ,$ln['trans']);
+    if ($cleanR === False){
+        echo cron_msg("Could not clean $table on lane: ".$ln['host']);
+    }
+
 }
 
 

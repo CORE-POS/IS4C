@@ -51,7 +51,7 @@ class EfsnetRequestModel extends BasicModel
     'sentTr1' => array('type'=>'TINYINT'),
     'sentTr2' => array('type'=>'TINYINT'),
     'efsnetRequestID' => array('type'=>'INT', 'index'=>true),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -65,6 +65,22 @@ class EfsnetRequestModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'date',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["date"]) || $this->instance["date"] != func_get_args(0)) {
                 if (!isset($this->columns["date"]["ignore_updates"]) || $this->columns["date"]["ignore_updates"] == false) {
@@ -73,6 +89,7 @@ class EfsnetRequestModel extends BasicModel
             }
             $this->instance["date"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function cashierNo()
@@ -85,6 +102,22 @@ class EfsnetRequestModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'cashierNo',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["cashierNo"]) || $this->instance["cashierNo"] != func_get_args(0)) {
                 if (!isset($this->columns["cashierNo"]["ignore_updates"]) || $this->columns["cashierNo"]["ignore_updates"] == false) {
@@ -93,6 +126,7 @@ class EfsnetRequestModel extends BasicModel
             }
             $this->instance["cashierNo"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function laneNo()
@@ -105,6 +139,22 @@ class EfsnetRequestModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'laneNo',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["laneNo"]) || $this->instance["laneNo"] != func_get_args(0)) {
                 if (!isset($this->columns["laneNo"]["ignore_updates"]) || $this->columns["laneNo"]["ignore_updates"] == false) {
@@ -113,6 +163,7 @@ class EfsnetRequestModel extends BasicModel
             }
             $this->instance["laneNo"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function transNo()
@@ -125,6 +176,22 @@ class EfsnetRequestModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'transNo',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["transNo"]) || $this->instance["transNo"] != func_get_args(0)) {
                 if (!isset($this->columns["transNo"]["ignore_updates"]) || $this->columns["transNo"]["ignore_updates"] == false) {
@@ -133,6 +200,7 @@ class EfsnetRequestModel extends BasicModel
             }
             $this->instance["transNo"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function transID()
@@ -145,6 +213,22 @@ class EfsnetRequestModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'transID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["transID"]) || $this->instance["transID"] != func_get_args(0)) {
                 if (!isset($this->columns["transID"]["ignore_updates"]) || $this->columns["transID"]["ignore_updates"] == false) {
@@ -153,6 +237,7 @@ class EfsnetRequestModel extends BasicModel
             }
             $this->instance["transID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function datetime()
@@ -165,6 +250,22 @@ class EfsnetRequestModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'datetime',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["datetime"]) || $this->instance["datetime"] != func_get_args(0)) {
                 if (!isset($this->columns["datetime"]["ignore_updates"]) || $this->columns["datetime"]["ignore_updates"] == false) {
@@ -173,6 +274,7 @@ class EfsnetRequestModel extends BasicModel
             }
             $this->instance["datetime"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function refNum()
@@ -185,6 +287,22 @@ class EfsnetRequestModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'refNum',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["refNum"]) || $this->instance["refNum"] != func_get_args(0)) {
                 if (!isset($this->columns["refNum"]["ignore_updates"]) || $this->columns["refNum"]["ignore_updates"] == false) {
@@ -193,6 +311,7 @@ class EfsnetRequestModel extends BasicModel
             }
             $this->instance["refNum"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function live()
@@ -205,6 +324,22 @@ class EfsnetRequestModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'live',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["live"]) || $this->instance["live"] != func_get_args(0)) {
                 if (!isset($this->columns["live"]["ignore_updates"]) || $this->columns["live"]["ignore_updates"] == false) {
@@ -213,6 +348,7 @@ class EfsnetRequestModel extends BasicModel
             }
             $this->instance["live"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function mode()
@@ -225,6 +361,22 @@ class EfsnetRequestModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'mode',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["mode"]) || $this->instance["mode"] != func_get_args(0)) {
                 if (!isset($this->columns["mode"]["ignore_updates"]) || $this->columns["mode"]["ignore_updates"] == false) {
@@ -233,6 +385,7 @@ class EfsnetRequestModel extends BasicModel
             }
             $this->instance["mode"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function amount()
@@ -245,6 +398,22 @@ class EfsnetRequestModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'amount',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["amount"]) || $this->instance["amount"] != func_get_args(0)) {
                 if (!isset($this->columns["amount"]["ignore_updates"]) || $this->columns["amount"]["ignore_updates"] == false) {
@@ -253,6 +422,7 @@ class EfsnetRequestModel extends BasicModel
             }
             $this->instance["amount"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function PAN()
@@ -265,6 +435,22 @@ class EfsnetRequestModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'PAN',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["PAN"]) || $this->instance["PAN"] != func_get_args(0)) {
                 if (!isset($this->columns["PAN"]["ignore_updates"]) || $this->columns["PAN"]["ignore_updates"] == false) {
@@ -273,6 +459,7 @@ class EfsnetRequestModel extends BasicModel
             }
             $this->instance["PAN"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function issuer()
@@ -285,6 +472,22 @@ class EfsnetRequestModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'issuer',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["issuer"]) || $this->instance["issuer"] != func_get_args(0)) {
                 if (!isset($this->columns["issuer"]["ignore_updates"]) || $this->columns["issuer"]["ignore_updates"] == false) {
@@ -293,6 +496,7 @@ class EfsnetRequestModel extends BasicModel
             }
             $this->instance["issuer"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function name()
@@ -305,6 +509,22 @@ class EfsnetRequestModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'name',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["name"]) || $this->instance["name"] != func_get_args(0)) {
                 if (!isset($this->columns["name"]["ignore_updates"]) || $this->columns["name"]["ignore_updates"] == false) {
@@ -313,6 +533,7 @@ class EfsnetRequestModel extends BasicModel
             }
             $this->instance["name"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function manual()
@@ -325,6 +546,22 @@ class EfsnetRequestModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'manual',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["manual"]) || $this->instance["manual"] != func_get_args(0)) {
                 if (!isset($this->columns["manual"]["ignore_updates"]) || $this->columns["manual"]["ignore_updates"] == false) {
@@ -333,6 +570,7 @@ class EfsnetRequestModel extends BasicModel
             }
             $this->instance["manual"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function sentPAN()
@@ -345,6 +583,22 @@ class EfsnetRequestModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'sentPAN',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["sentPAN"]) || $this->instance["sentPAN"] != func_get_args(0)) {
                 if (!isset($this->columns["sentPAN"]["ignore_updates"]) || $this->columns["sentPAN"]["ignore_updates"] == false) {
@@ -353,6 +607,7 @@ class EfsnetRequestModel extends BasicModel
             }
             $this->instance["sentPAN"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function sentExp()
@@ -365,6 +620,22 @@ class EfsnetRequestModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'sentExp',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["sentExp"]) || $this->instance["sentExp"] != func_get_args(0)) {
                 if (!isset($this->columns["sentExp"]["ignore_updates"]) || $this->columns["sentExp"]["ignore_updates"] == false) {
@@ -373,6 +644,7 @@ class EfsnetRequestModel extends BasicModel
             }
             $this->instance["sentExp"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function sentTr1()
@@ -385,6 +657,22 @@ class EfsnetRequestModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'sentTr1',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["sentTr1"]) || $this->instance["sentTr1"] != func_get_args(0)) {
                 if (!isset($this->columns["sentTr1"]["ignore_updates"]) || $this->columns["sentTr1"]["ignore_updates"] == false) {
@@ -393,6 +681,7 @@ class EfsnetRequestModel extends BasicModel
             }
             $this->instance["sentTr1"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function sentTr2()
@@ -405,6 +694,22 @@ class EfsnetRequestModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'sentTr2',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["sentTr2"]) || $this->instance["sentTr2"] != func_get_args(0)) {
                 if (!isset($this->columns["sentTr2"]["ignore_updates"]) || $this->columns["sentTr2"]["ignore_updates"] == false) {
@@ -413,6 +718,7 @@ class EfsnetRequestModel extends BasicModel
             }
             $this->instance["sentTr2"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function efsnetRequestID()
@@ -425,6 +731,22 @@ class EfsnetRequestModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'efsnetRequestID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["efsnetRequestID"]) || $this->instance["efsnetRequestID"] != func_get_args(0)) {
                 if (!isset($this->columns["efsnetRequestID"]["ignore_updates"]) || $this->columns["efsnetRequestID"]["ignore_updates"] == false) {
@@ -433,6 +755,7 @@ class EfsnetRequestModel extends BasicModel
             }
             $this->instance["efsnetRequestID"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

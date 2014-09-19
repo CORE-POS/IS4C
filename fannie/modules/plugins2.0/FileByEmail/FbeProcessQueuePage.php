@@ -25,15 +25,16 @@ include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
-if (!class_exists('JsonLib')) {
-    include($FANNIE_ROOT.'src/JsonLib.php');
-}
 
 class FbeProcessQueuePage extends FannieRESTfulPage
 {
 
     protected $title = 'File Queued Documents';
     protected $header = 'File Queued Documents';
+
+    public $page_set = 'Plugin: File By Email';
+    public $description = '[File By Email] shows pending documents so the user can rename them and
+    file them in an appropriate directory.';
 
     protected $window_dressing = false;
 
@@ -80,7 +81,7 @@ class FbeProcessQueuePage extends FannieRESTfulPage
             }
         }
 
-        echo JsonLib::array_to_json($ret);
+        echo json_encode($ret);
 
         return false;
     }
@@ -121,7 +122,7 @@ class FbeProcessQueuePage extends FannieRESTfulPage
             $ret .= '<input type="hidden" id="curName" value="' . base64_encode($next) . '" />';
         }
 
-        $this->add_script($FANNIE_URL.'src/jquery/jquery.js');
+        $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
         $this->add_script('js/process.js');
 
         return $ret;

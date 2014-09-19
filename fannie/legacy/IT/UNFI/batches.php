@@ -3,6 +3,8 @@ include('../../../config.php');
 
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include('../../db.php');
+if (!class_exists('FannieAPI'))
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 $batchID = $_REQUEST['batchID'];
 //echo $batchID;
@@ -42,10 +44,14 @@ else if(isset($_REQUEST['submit']) && $_REQUEST['submit']=="submit"){
        $name = $matches[1];
        $price = $infoW[1];
        $delItmQ = $sql->prepare("DELETE FROM batchListTest WHERE upc = ? and batchID = ?");
-       $delBarQ = $sql->prepare("DELETE FROM shelftags WHERE upc=? and normal_price=?");
-       //echo $delBarQ."<br />";
        $delItmR = $sql->execute($delItmQ, array($upc1, $batchID));
        $delBarR = $sql->execute($delBarQ, array($upc1, $price));
+       $tags = new ShelftagsModel($sql);
+       $tags->upc($upc1);
+       $tags->normal_price($price);
+       foreach ($tags->find as $tag) {
+           $tag->delete();
+       }
      }
    }   
 }

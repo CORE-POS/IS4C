@@ -33,7 +33,7 @@ class SuperDeptEmailsModel extends BasicModel
     protected $columns = array(
     'superID' => array('type'=>'INT', 'primary_key'=>true),
     'emailAddress' => array('type'=>'VARCHAR(255)', 'replaces'=>'email_address'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -47,6 +47,22 @@ class SuperDeptEmailsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'superID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["superID"]) || $this->instance["superID"] != func_get_args(0)) {
                 if (!isset($this->columns["superID"]["ignore_updates"]) || $this->columns["superID"]["ignore_updates"] == false) {
@@ -55,6 +71,7 @@ class SuperDeptEmailsModel extends BasicModel
             }
             $this->instance["superID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function emailAddress()
@@ -67,6 +84,22 @@ class SuperDeptEmailsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'emailAddress',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["emailAddress"]) || $this->instance["emailAddress"] != func_get_args(0)) {
                 if (!isset($this->columns["emailAddress"]["ignore_updates"]) || $this->columns["emailAddress"]["ignore_updates"] == false) {
@@ -75,6 +108,7 @@ class SuperDeptEmailsModel extends BasicModel
             }
             $this->instance["emailAddress"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function email_address()
@@ -87,6 +121,22 @@ class SuperDeptEmailsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'emailAddress',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["emailAddress"]) || $this->instance["emailAddress"] != func_get_args(0)) {
                 if (!isset($this->columns["emailAddress"]["ignore_updates"]) || $this->columns["emailAddress"]["ignore_updates"] == false) {
@@ -95,6 +145,7 @@ class SuperDeptEmailsModel extends BasicModel
             }
             $this->instance["emailAddress"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

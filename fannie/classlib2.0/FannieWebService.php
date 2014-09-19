@@ -21,10 +21,6 @@
 
 *********************************************************************************/
 
-if (!class_exists('JsonLib')) {
-    include(dirname(__FILE__).'/../src/JsonLib.php');
-}
-
 class FannieWebService 
 {
     
@@ -50,9 +46,10 @@ class FannieWebService
     /**
       Do whatever the service is supposed to do.
       Should override this.
+      @param $args array of data
       @return an array of data
     */
-    protected function run()
+    public function run($args=array())
     {
         return array();
     }
@@ -64,7 +61,7 @@ class FannieWebService
     */
     protected function renderJson($arr)
     {
-        return JsonLib::array_to_json($arr);
+        return json_encode($arr);
     }
     
     /**

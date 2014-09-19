@@ -14,6 +14,9 @@
 	<li><a href="phpinfo.php">PHP Environment</a><br />
 		(Displays phpinfo() output)
 	</li>
+	<li><a href="isc250.php">Test iSC250 Communication</a><br />
+		Send test messages to a connected iSC250 terminal
+	</li>
 </ul>
 </body>
 </html>

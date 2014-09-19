@@ -45,7 +45,11 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_basic_c_c_module.html#a4835167fcf53d410cfbf07a28374d6f">paycard_void</a> ($transID, $laneNo=-1, $transNo=-1, $json=array())</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_basic_c_c_module.html#01e3df81b2d5251f6df521a85880b598">curlSend</a> ($data=False, $type='POST', $xml=False, $extraOpts=array())</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_basic_c_c_module.html#3d7f56d871cc8141f6440c93d956121c">myRefNum</a> ($ref)</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_basic_c_c_module.html#f45bd5e2c8f1b297505e3d09086d160f">lookupTransaction</a> ($ref, $local, $mode)</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_basic_c_c_module.html#8b11af0822156cda641650d47b7766cb">curlSend</a> ($data=False, $type='POST', $xml=False, $extraOpts=array(), $auto_handle=true)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_basic_c_c_module.html#ea8c69e2e0435a7235546f4ee83dd769">handleResponse</a> ($response)</td></tr>
 
@@ -53,13 +57,23 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_basic_c_c_module.html#aecdc3fde76694a3edbf6d65b2b9a42b">array2post</a> ($parray)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_basic_c_c_module.html#c60b2002a84333a0f8447f8ea951c721">soapify</a> ($action, $objs, $namespace=&quot;&quot;, $encode_tags=True)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_basic_c_c_module.html#3b3c106bc71bdfec300acdc8f2f130ee">soapify</a> ($action, $objs, $namespace=&quot;&quot;, $encode_tags=true)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_basic_c_c_module.html#126aa231b51bc3dbeede335825a3cb5f">desoapify</a> ($action, $soaptext)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_basic_c_c_module.html#0db0bdf595bb6b05e61e4a2c1100414f">setErrorMsg</a> ($errorCode)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_basic_c_c_module.html#6f7b2ad9c70f2eb17d1eca04c20c797f">setPAN</a> ($in)</td></tr>
+
+<tr><td colspan="2"><br><h2>Public Attributes</h2></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="6a6b14db152f8fac27a6f557dd926fd1"></a><!-- doxytag: member="BasicCCModule::$last_ref_num" ref="6a6b14db152f8fac27a6f557dd926fd1" args="" -->
+&nbsp;</td><td class="memItemRight" valign="bottom"><b>$last_ref_num</b> = ''</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="55a001ca0a5006098bde71ed9d6152d6"></a><!-- doxytag: member="BasicCCModule::$last_req_id" ref="55a001ca0a5006098bde71ed9d6152d6" args="" -->
+&nbsp;</td><td class="memItemRight" valign="bottom"><b>$last_req_id</b> = 0</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="7b73b8e036aa8906366130825c472131"></a><!-- doxytag: member="BasicCCModule::$last_paycard_transaction_id" ref="7b73b8e036aa8906366130825c472131" args="" -->
+&nbsp;</td><td class="memItemRight" valign="bottom"><b>$last_paycard_transaction_id</b> = 0</td></tr>
 
 <tr><td colspan="2"><br><h2>Protected Attributes</h2></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="dcb34e4d9624222f0e287ed1607798eb"></a><!-- doxytag: member="BasicCCModule::$GATEWAY" ref="dcb34e4d9624222f0e287ed1607798eb" args="" -->
@@ -151,7 +165,7 @@ This function is called when <a class="el" href="class_basic_c_c_module.html#55a
 I use it for tendering, printing receipts, etc, but it's really only for code cleanliness. You could leave this as is and do all the everything inside <a class="el" href="class_basic_c_c_module.html#55a1b019cfc7a5990ee96d19b58bc8eb">doSend()</a> 
 </div>
 </div><p>
-<a class="anchor" name="01e3df81b2d5251f6df521a85880b598"></a><!-- doxytag: member="BasicCCModule::curlSend" ref="01e3df81b2d5251f6df521a85880b598" args="($data=False, $type='POST', $xml=False, $extraOpts=array())" -->
+<a class="anchor" name="8b11af0822156cda641650d47b7766cb"></a><!-- doxytag: member="BasicCCModule::curlSend" ref="8b11af0822156cda641650d47b7766cb" args="($data=False, $type='POST', $xml=False, $extraOpts=array(), $auto_handle=true)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -177,7 +191,13 @@ I use it for tendering, printing receipts, etc, but it's really only for code cl
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">$&nbsp;</td>
-          <td class="paramname"> <em>extraOpts</em> = <code>array()</code></td><td>&nbsp;</td>
+          <td class="paramname"> <em>extraOpts</em> = <code>array()</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>auto_handle</em> = <code>true</code></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -195,6 +215,7 @@ Send a curl request with the specified data. <dl compact><dt><b>Parameters:</b><
     <tr><td valign="top"></td><td valign="top"><em>$type</em>&nbsp;</td><td>'GET', 'POST', or 'SOAP' </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>$xml</em>&nbsp;</td><td>True or False </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>$extraOpts</em>&nbsp;</td><td>array of curl options and values </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$auto_handle</em>&nbsp;</td><td>[boolean] true =&gt; call handleResponse method automatically false =&gt; just return curl result </td></tr>
   </table>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>integer error code</dd></dl>
@@ -321,7 +342,7 @@ If you have 'output' defined in the return array, that gets shown as an error me
 <div class="memdoc">
 
 <p>
-Processes data fetched by $this-&gt;<a class="el" href="class_basic_c_c_module.html#01e3df81b2d5251f6df521a85880b598">curlSend()</a> <dl compact><dt><b>Parameters:</b></dt><dd>
+Processes data fetched by $this-&gt;<a class="el" href="class_basic_c_c_module.html#8b11af0822156cda641650d47b7766cb">curlSend()</a> <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>$response</em>&nbsp;</td><td>is a keyed array with:<ul>
 <li>curlErr cURL error code</li><li>curlErrText cURL error message</li><li>curlTime time spent fetching response</li><li>curlHTTP response HTTP code</li><li>response is the actual text result </li></ul>
@@ -356,6 +377,75 @@ Check whether module handles this paycard type <dl compact><dt><b>Parameters:</b
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>True or False</dd></dl>
 Type constants are defined in paycardLib.php. 
+</div>
+</div><p>
+<a class="anchor" name="f45bd5e2c8f1b297505e3d09086d160f"></a><!-- doxytag: member="BasicCCModule::lookupTransaction" ref="f45bd5e2c8f1b297505e3d09086d160f" args="($ref, $local, $mode)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">BasicCCModule::lookupTransaction           </td>
+          <td>(</td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>ref</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>local</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>mode</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Lookup transaction status <dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>$ref</em>&nbsp;</td><td>[string] efsnetRequest.refNum </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$local</em>&nbsp;</td><td>[int] 1 =&gt; transaction is in local efsnetRequest table 0 =&gt; transaction is in server's efsnetRequest table </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$mode</em>&nbsp;</td><td>[string] lookup =&gt; just fetch information from the processor verify =&gt; update efsnetResponse with retreived information </td></tr>
+  </table>
+</dl>
+<dl compact><dt><b>Returns:</b></dt><dd>[keyed array] output =&gt; HTML msg to display for the user confirm_dest =&gt; URL destination if the user presses enter cancel_dest =&gt; URL destination if the user presses clear </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="3d7f56d871cc8141f6440c93d956121c"></a><!-- doxytag: member="BasicCCModule::myRefNum" ref="3d7f56d871cc8141f6440c93d956121c" args="($ref)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">BasicCCModule::myRefNum           </td>
+          <td>(</td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>ref</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+The given efsnetRequest.refNum value corresponds to the format used by this class <dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>$ref</em>&nbsp;</td><td>[string] efsnetRequest.refNum </td></tr>
+  </table>
+</dl>
+<dl compact><dt><b>Returns:</b></dt><dd>[boolean] </dd></dl>
+
 </div>
 </div><p>
 <a class="anchor" name="a4835167fcf53d410cfbf07a28374d6f"></a><!-- doxytag: member="BasicCCModule::paycard_void" ref="a4835167fcf53d410cfbf07a28374d6f" args="($transID, $laneNo=-1, $transNo=-1, $json=array())" -->
@@ -488,7 +578,7 @@ Store card data in class member $trans_pan. <dl compact><dt><b>Parameters:</b></
 Recommended for credit card modules. Card data can be populated at the last possible moment before calling doSend and expunged again once the request has been submitted to the gateway. 
 </div>
 </div><p>
-<a class="anchor" name="c60b2002a84333a0f8447f8ea951c721"></a><!-- doxytag: member="BasicCCModule::soapify" ref="c60b2002a84333a0f8447f8ea951c721" args="($action, $objs, $namespace=&quot;&quot;, $encode_tags=True)" -->
+<a class="anchor" name="3b3c106bc71bdfec300acdc8f2f130ee"></a><!-- doxytag: member="BasicCCModule::soapify" ref="3b3c106bc71bdfec300acdc8f2f130ee" args="($action, $objs, $namespace=&quot;&quot;, $encode_tags=true)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -514,7 +604,7 @@ Recommended for credit card modules. Card data can be populated at the last poss
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">$&nbsp;</td>
-          <td class="paramname"> <em>encode_tags</em> = <code>True</code></td><td>&nbsp;</td>
+          <td class="paramname"> <em>encode_tags</em> = <code>true</code></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -554,13 +644,13 @@ Put objects into a soap envelope <dl compact><dt><b>Parameters:</b></dt><dd>
                 <span class="stringliteral">"xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\""</span>,
                 <span class="stringliteral">"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\""</span>,
                 <span class="stringliteral">"xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\""</span>
-                )
+    )
 </pre></div>Envelope attributes for SOAP. 
 </div>
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/plugins/Paycards/BasicCCModule.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

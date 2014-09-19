@@ -28,66 +28,64 @@ if (!class_exists('FannieAPI')) include($FANNIE_ROOT.'classlib2.0/FannieAPI.php'
 */
 class CalendarPlugin extends FanniePlugin {
 
-	/**
-	  Desired settings. These are automatically exposed
-	  on the 'Plugins' area of the install page and
-	  written to ini.php
-	*/
-	public $plugin_settings = array(
-	'CalendarDatabase' => array('default'=>'core_calendar','label'=>'Database',
-			'description'=>'Database to calendars. Can
-					be one of the default CORE databases or a 
-					separate one.')
-	);
+    /**
+      Desired settings. These are automatically exposed
+      on the 'Plugins' area of the install page and
+      written to ini.php
+    */
+    public $plugin_settings = array(
+    'CalendarDatabase' => array('default'=>'core_calendar','label'=>'Database',
+            'description'=>'Database to calendars. Can
+                    be one of the default CORE databases or a 
+                    separate one.')
+    );
 
-	public $plugin_description = 'Plugin for calendars';
+    public $plugin_description = 'Plugin for calendars';
 
 
-	public function setting_change(){
-		global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
+    public function setting_change()
+    {
+        global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
 
-		$db_name = $FANNIE_PLUGIN_SETTINGS['CalendarDatabase'];
-		if (empty($db_name)) return;
+        $db_name = $FANNIE_PLUGIN_SETTINGS['CalendarDatabase'];
+        if (empty($db_name)) return;
 
-		$dbc = FannieDB::get($db_name);
+        $dbc = FannieDB::get($db_name);
 
-		$errors = array();
-		$errors[] = $this->plugin_db_struct($dbc, 'account_classes', $db_name);
-		$errors[] = $this->plugin_db_struct($dbc, 'calendars', $db_name);
-		$errors[] = $this->plugin_db_struct($dbc, 'monthview_events', $db_name);
-		$errors[] = $this->plugin_db_struct($dbc, 'permissions', $db_name);
-		$errors[] = $this->plugin_db_struct($dbc, 'attendees', $db_name);
+        $tables = array(
+            'AccountClasses',
+            'Attendees',
+            'Calendars',
+            'MonthviewEvents',
+            'Permissions',
+        );
+        foreach($tables as $t){
+            $model_class = $t.'Model';
+            if (!class_exists($model_class))
+                include_once(dirname(__FILE__).'/models/'.$model_class.'.php');
+            $instance = new $model_class($dbc);
+            $instance->create();        
+        }
 
-		if ($dbc->table_exists('account_classes')){
-			/* populate account classes */
-			$classes = array(
-				1 => 'VIEWER',
-				2 => 'CONTRIBUTOR',
-				3 => 'ADMIN',
-				4 => 'OWNER'
-			);
-			$chkP = $dbc->prepare_statement("SELECT classID FROM account_classes WHERE classID=?");
-			$insP = $dbc->prepare_statement("INSERT INTO account_classes (classID, classDesc) VALUES (?, ?)");
-			$upP = $dbc->prepare_statement("UPDATE account_classes SET classDesc=? WHERE classID=?");
-			foreach($classes as $id => $name){
-				$chkR = $dbc->exec_statement($chkP,array($id));
-				if ($dbc->num_rows($chkR) == 0){
-					$dbc->exec_statement($insP,array($id,$name));
-				}
-				else {
-					$dbc->exec_statement($upP,array($name,$id));
-				}
-			}
-		}
+        if ($dbc->table_exists('account_classes')) {
+            $model = new AccountClassesModel($dbc);
+            /* populate account classes */
+            $classes = array(
+                1 => 'VIEWER',
+                2 => 'CONTRIBUTOR',
+                3 => 'ADMIN',
+                4 => 'OWNER'
+            );
+            foreach ($classes as $id => $desc) {
+                $model->classID($id);
+                $model->classDesc($desc);
+                $model->save();
+            }
+        }
+    }
 
-		foreach($errors as $e){
-			if ($e === True) continue;
-			echo 'CalendarPlugin error: '.$e.'<br />';
-		}
-	}
-
-	public function plugin_enable(){
-	}
+    public function plugin_enable(){
+    }
 }
 
 ?>

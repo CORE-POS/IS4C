@@ -47,6 +47,8 @@ Use:
 Local table for suspending transactions if
 server connection is temporarily unavailable
 */
-$CREATE['trans.suspended'] = InstallUtilities::duplicateStructure($dbms,'dtransactions','suspended');
+$CREATE['trans.suspended'] = array(
+    InstallUtilities::duplicateStructure($dbms,'dtransactions','suspended'),
+    'ALTER TABLE suspended DROP COLUMN pos_row_id',
+);
 
-?>

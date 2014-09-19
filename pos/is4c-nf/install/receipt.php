@@ -3,7 +3,7 @@
 <?php
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
-include(realpath(dirname(__FILE__).'/../ini.php'));
+include('../ini.php');
 include('InstallUtilities.php');
 ?>
 <head>
@@ -21,136 +21,92 @@ include('InstallUtilities.php');
 
 <form action=receipt.php method=post>
 <table id="install" border=0 cellspacing=0 cellpadding=4>
-<tr><td colspan=2 class="tblHeader">
-<h3>Receipt Settings</h3></td></tr>
-<tr><td style="width: 30%;">
-</td><td>
-<?php
-if (isset($_REQUEST['PRINT'])) $CORE_LOCAL->set('print',1,True);
-elseif (isset($_REQUEST['esubmit'])) $CORE_LOCAL->set('print',0,True);
-elseif ($CORE_LOCAL->get('print')==='') $CORE_LOCAL->set('print',0,True);
-echo "<fieldset class='toggle'>\n<input type='checkbox' name='PRINT' id='printing'";
-if ($CORE_LOCAL->get("print") == 1) echo " checked";
-echo " />\n<label for='printing' onclick=''>Enable receipts: </label>\n
-	<span class='toggle-button'></span></fieldset>";
-InstallUtilities::paramSave('print',$CORE_LOCAL->get("print"));
-?>
-</td></tr><tr><td>
-<b>Use new receipt</b>: </td><td><select name=NEWRECEIPT>
-<?php
-if (isset($_REQUEST['NEWRECEIPT'])) $CORE_LOCAL->set('newReceipt',$_REQUEST['NEWRECEIPT']);
-if ($CORE_LOCAL->get("newReceipt") == 2){
-	echo "<option value=2 selected>PHP (even newer)</option>";
-	echo "<option value=1>Yes</option>";
-	echo "<option value=0>No</option>";
-}
-elseif ($CORE_LOCAL->get("newReceipt") == 1){
-	echo "<option value=2>PHP (even newer)</option>";
-	echo "<option value=1 selected>Yes</option>";
-	echo "<option value=0>No</option>";
-}
-else {
-	echo "<option value=2>PHP (even newer)</option>";
-	echo "<option value=1 >Yes</option>";
-	echo "<option value=0 selected>No</option>";
-}
-InstallUtilities::paramSave('newReceipt',$CORE_LOCAL->get("newReceipt"));
-?>
-</select>
-<span class='noteTxt'>The new receipt groups items by category; the old one just lists
-them in order.</span></td></tr>
+<tr>
+    <td colspan=2 class="tblHeader">
+    <h3>Receipt Settings</h3>
+    </td>
+</tr>
+<tr>
+    <td style="width: 30%;"></td>
+    <td><?php echo InstallUtilities::installCheckBoxField('print', 'Enable receipts', 0); ?></td>
+</tr>
+<tr>
+    <td><b>Receipt Type</b>: </td>
+    <td>
+    <?php
+    $receipts = array(
+        2 => 'Modular',
+        1 => 'Grouped (static, legacy)',
+        0 => 'In Order (static, legacy)',
+    );
+    echo InstallUtilities::installSelectField('newReceipt', $receipts, 2);
+    ?>
+    <span class='noteTxt'>
+    The Modular receipt uses the modules below to assemble the receipt's contents.
+    The Grouped option groups items together in categories. The In Order option
+    simply prints items in the order they were entered. The default set of modulars
+    will group items in categories. The InOrder modules will print items in order.
+    Legacy options may not be supported in the future.
+    </span>
+    </td>
+</tr>
 <tr>
 	<td><b>Receipt Driver</b>:</td>
 	<td>
-	<select name="ReceiptDriver">
-<?php
-if (isset($_REQUEST['ReceiptDriver'])) $CORE_LOCAL->set('ReceiptDriver',$_REQUEST['ReceiptDriver']);
-elseif($CORE_LOCAL->get('ReceiptDriver') === '') $CORE_LOCAL->set('ReceiptDriver','ESCPOSPrintHandler');
-$mods = AutoLoader::listModules('PrintHandler',True);
-foreach($mods as $m){
-	printf('<option %s>%s</option>',
-		($m==$CORE_LOCAL->get('ReceiptDriver')?'selected':''),
-		$m);
-}
-InstallUtilities::paramSave('ReceiptDriver',$CORE_LOCAL->get("ReceiptDriver"));
-?>
-	</select>
+    <?php
+    $mods = AutoLoader::listModules('PrintHandler',True);
+    echo InstallUtilities::installSelectField('ReceiptDriver', $mods, 'ESCPOSPrintHandler');
+    ?>
 	<span class="noteTxt"></span>
 	</td>
 </tr>
-<tr><td>
-<b>Email Receipt Sender</b>:</td><td>
-<?php
-if(isset($_REQUEST['emailReceiptFrom'])) $CORE_LOCAL->set('emailReceiptFrom',$_REQUEST['emailReceiptFrom']);
-printf("<input type=text name=emailReceiptFrom value=\"%s\" />",$CORE_LOCAL->get('emailReceiptFrom'));
-InstallUtilities::paramSave('emailReceiptFrom',$CORE_LOCAL->get('emailReceiptFrom'));
-?>
-</td></tr>
-<tr><td colspan="2"><h3>PHP Receipt Modules</h3></td></tr>
-<tr><td><b>Data Fetch Mod</b>:</td>
-<td><select name="RBFETCHDATA">
-<?php
-if(isset($_REQUEST['RBFETCHDATA'])) $CORE_LOCAL->set('RBFetchData',$_REQUEST['RBFETCHDATA']);
-if($CORE_LOCAL->get('RBFetchData')=='') $CORE_LOCAL->set('RBFetchData','DefaultReceiptDataFetch');
-$mods = AutoLoader::listModules('DefaultReceiptDataFetch',True);
-sort($mods);
-foreach($mods as $mod){
-	printf('<option %s>%s</option>',
-		($CORE_LOCAL->get('RBFetchData') == $mod ? 'selected' : ''),
-		$mod
-	);
-}
-InstallUtilities::paramSave('RBFetchData',$CORE_LOCAL->get('RBFetchData'));
-?>
-</select></td></tr>
-<tr><td><b>Filtering Mod</b>:</td>
-<td><select name="RBFILTER">
-<?php
-if(isset($_REQUEST['RBFILTER'])) $CORE_LOCAL->set('RBFilter',$_REQUEST['RBFILTER']);
-if($CORE_LOCAL->get('RBFilter')=='') $CORE_LOCAL->set('RBFilter','DefaultReceiptFilter');
-$mods = AutoLoader::listModules('DefaultReceiptFilter',True);
-sort($mods);
-foreach($mods as $mod){
-	printf('<option %s>%s</option>',
-		($CORE_LOCAL->get('RBFilter') == $mod ? 'selected' : ''),
-		$mod
-	);
-}
-InstallUtilities::paramSave('RBFilter',$CORE_LOCAL->get('RBFilter'));
-?>
-</select></td></tr>
-<tr><td><b>Sorting Mod</b>:</td>
-<td><select name="RBSORT">
-<?php
-if(isset($_REQUEST['RBSORT'])) $CORE_LOCAL->set('RBSort',$_REQUEST['RBSORT']);
-if($CORE_LOCAL->get('RBSort')=='') $CORE_LOCAL->set('RBSort','DefaultReceiptSort');
-$mods = AutoLoader::listModules('DefaultReceiptSort',True);
-sort($mods);
-foreach($mods as $mod){
-	printf('<option %s>%s</option>',
-		($CORE_LOCAL->get('RBSort') == $mod ? 'selected' : ''),
-		$mod
-	);
-}
-InstallUtilities::paramSave('RBSort',$CORE_LOCAL->get('RBSort'));
-?>
-</select></td></tr>
-<tr><td><b>Tagging Mod</b>:</td>
-<td><select name="RBTAG">
-<?php
-if(isset($_REQUEST['RBTAG'])) $CORE_LOCAL->set('RBTag',$_REQUEST['RBTAG']);
-if($CORE_LOCAL->get('RBTag')=='') $CORE_LOCAL->set('RBTag','DefaultReceiptTag');
-$mods = AutoLoader::listModules('DefaultReceiptTag',True);
-sort($mods);
-foreach($mods as $mod){
-	printf('<option %s>%s</option>',
-		($CORE_LOCAL->get('RBTag') == $mod ? 'selected' : ''),
-		$mod
-	);
-}
-InstallUtilities::paramSave('RBTag',$CORE_LOCAL->get('RBTag'));
-?>
-</select></td></tr>
+<tr>
+    <td><b>Email Receipt Sender</b>:</td>
+    <td><?php echo InstallUtilities::installTextField('emailReceiptFrom', ''); ?></td>
+</tr>
+<tr>
+    <td colspan="2"><h3>PHP Receipt Modules</h3></td>
+</tr>
+<tr>
+    <td><b>Data Fetch Mod</b>:</td>
+    <td>
+    <?php
+    $mods = AutoLoader::listModules('DefaultReceiptDataFetch', true);
+    sort($mods);
+    echo InstallUtilities::installSelectField('RBFetchData', $mods, 'DefaultReceiptDataFetch');
+    ?>
+    </td>
+</tr>
+<tr>
+    <td><b>Filtering Mod</b>:</td>
+    <td>
+    <?php
+    $mods = AutoLoader::listModules('DefaultReceiptFilter',True);
+    sort($mods);
+    echo InstallUtilities::installSelectField('RBFilter', $mods, 'DefaultReceiptFilter');
+    ?>
+    </td>
+</tr>
+<tr>
+    <td><b>Sorting Mod</b>:</td>
+    <td>
+    <?php
+    $mods = AutoLoader::listModules('DefaultReceiptSort',True);
+    sort($mods);
+    echo InstallUtilities::installSelectField('RBSort', $mods, 'DefaultReceiptSort');
+    ?>
+    </td>
+</tr>
+<tr>
+    <td><b>Tagging Mod</b>:</td>
+    <td>
+    <?php
+    $mods = AutoLoader::listModules('DefaultReceiptTag',True);
+    sort($mods);
+    echo InstallUtilities::installSelectField('RBTag', $mods, 'DefaultReceiptTag');
+    ?>
+    </td>
+</tr>
 <tr><td colspan="2"><h3>Message Modules</h3></td></tr>
 <tr><td colspan="3">
 <p>Message Modules provide special blocks of text on the end

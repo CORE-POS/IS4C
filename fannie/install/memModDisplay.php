@@ -26,17 +26,17 @@ include('util.php');
 include('db.php');
 $FILEPATH = $FANNIE_ROOT;
 if (isset($_REQUEST['ordering'])){
-	$FANNIE_MEMBER_MODULES = array();
-	foreach($_REQUEST['ordering'] as $o){
-		if (!in_array($o,$FANNIE_MEMBER_MODULES)) 
-			$FANNIE_MEMBER_MODULES[] = $o;
-	}
-	$saveStr = 'array(';
-	foreach($FANNIE_MEMBER_MODULES as $t)
-		$saveStr .= '"'.$t.'",';
-	$saveStr = rtrim($saveStr,',').")";
-	echo "<blockquote><i>Order Updated</i></blockquote>";
-	confset('FANNIE_MEMBER_MODULES',$saveStr);
+    $FANNIE_MEMBER_MODULES = array();
+    foreach($_REQUEST['ordering'] as $o){
+        if (!in_array($o,$FANNIE_MEMBER_MODULES)) 
+            $FANNIE_MEMBER_MODULES[] = $o;
+    }
+    $saveStr = 'array(';
+    foreach($FANNIE_MEMBER_MODULES as $t)
+        $saveStr .= '"'.$t.'",';
+    $saveStr = rtrim($saveStr,',').")";
+    echo "<blockquote><i>Order Updated</i></blockquote>";
+    confset('FANNIE_MEMBER_MODULES',$saveStr);
 }
 ?>
 <form action=memModDisplay.php method=post>
@@ -44,22 +44,22 @@ if (isset($_REQUEST['ordering'])){
 <?php
 $num = count($FANNIE_MEMBER_MODULES);
 if ($num == 0){
-	echo "<i>Error: no modules enabled</i><br />";
-	echo '<a href="mem.php">Back to Member Settings</a>';
-	exit;
+    echo "<i>Error: no modules enabled</i><br />";
+    echo '<a href="mem.php">Back to Member Settings</a>';
+    exit;
 }
 for ($i=1;$i<=$num;$i++){
-	echo "#$i: <select name=\"ordering[]\">";
-	for($j=1;$j<=$num;$j++){
-		printf("<option %s>%s</option>",
-			($i==$j?'selected':''),
-			$FANNIE_MEMBER_MODULES[$j-1]);
-	}
-	echo "</select><p />";
+    echo "#$i: <select name=\"ordering[]\">";
+    for($j=1;$j<=$num;$j++){
+        printf("<option %s>%s</option>",
+            ($i==$j?'selected':''),
+            $FANNIE_MEMBER_MODULES[$j-1]);
+    }
+    echo "</select><p />";
 }
 ?>
 <input type="submit" value="Save Order" />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <input type="submit" value="Back to Member Settings" 
-	onclick="location='mem.php';return false;" />
+    onclick="location='mem.php';return false;" />
 </form>

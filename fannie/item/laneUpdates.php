@@ -22,73 +22,73 @@
 *********************************************************************************/
 
 if (!isset($FANNIE_ROOT))
-	require('../config.php');
+    require(dirname(__FILE__) . '/../config.php');
 if (!class_exists('SQLManager'))
-	require($FANNIE_ROOT.'src/SQLManager.php');
+    require($FANNIE_ROOT.'src/SQLManager.php');
 
 function addProductAllLanes($upc){
-	global $FANNIE_LANES, $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
+    global $FANNIE_LANES, $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
     $laneupdate_sql = FannieDB::get($FANNIE_OP_DB);
 
-	$server_table_def = $laneupdate_sql->table_definition('products',$FANNIE_OP_DB);
+    $server_table_def = $laneupdate_sql->table_definition('products',$FANNIE_OP_DB);
 
-	// generate list of server columns
-	$server_cols = array();
-	foreach($server_table_def as $k=>$v)
-		$server_cols[$k] = True;
+    // generate list of server columns
+    $server_cols = array();
+    foreach($server_table_def as $k=>$v)
+        $server_cols[$k] = True;
 
-	for ($i = 0; $i < count($FANNIE_LANES); $i++){
-		$laneupdate_sql->add_connection($FANNIE_LANES[$i]['host'],$FANNIE_LANES[$i]['type'],
-			$FANNIE_LANES[$i]['op'],$FANNIE_LANES[$i]['user'],
-			$FANNIE_LANES[$i]['pw']);
+    for ($i = 0; $i < count($FANNIE_LANES); $i++){
+        $laneupdate_sql->add_connection($FANNIE_LANES[$i]['host'],$FANNIE_LANES[$i]['type'],
+            $FANNIE_LANES[$i]['op'],$FANNIE_LANES[$i]['user'],
+            $FANNIE_LANES[$i]['pw']);
         
         if (!isset($laneupdate_sql->connections[$FANNIE_LANES[$i]['op']]) || $laneupdate_sql->connections[$FANNIE_LANES[$i]['op']] === false) {
             // connect failed
             continue;
         }
 
-		// generate list of columns that exist on both
-		// the server and the lane
-		$lane_table_def = $laneupdate_sql->table_definition('products',$FANNIE_LANES[$i]['op']);
-		$matching_columns = array();
-		foreach($lane_table_def as $k=>$v){
-			if (isset($server_cols[$k])) $matching_columns[] = $k;
-		}
+        // generate list of columns that exist on both
+        // the server and the lane
+        $lane_table_def = $laneupdate_sql->table_definition('products',$FANNIE_LANES[$i]['op']);
+        $matching_columns = array();
+        foreach($lane_table_def as $k=>$v){
+            if (isset($server_cols[$k])) $matching_columns[] = $k;
+        }
 
-		$selQ = "SELECT ";
-		$ins = "INSERT INTO products (";
-		foreach($matching_columns as $col){
-			$selQ .= $col.",";
-			$ins .= $col.",";
-		}
-		$selQ = rtrim($selQ,",")." FROM products WHERE upc='$upc' ORDER BY store_id DESC";
-		$selQ = $laneupdate_sql->add_select_limit($selQ, 1, $FANNIE_OP_DB);
-		$ins = rtrim($ins,",").")";
+        $selQ = "SELECT ";
+        $ins = "INSERT INTO products (";
+        foreach($matching_columns as $col){
+            $selQ .= $col.",";
+            $ins .= $col.",";
+        }
+        $selQ = rtrim($selQ,",")." FROM products WHERE upc='$upc' ORDER BY store_id DESC";
+        $selQ = $laneupdate_sql->add_select_limit($selQ, 1, $FANNIE_OP_DB);
+        $ins = rtrim($ins,",").")";
 
-		$laneupdate_sql->transfer($FANNIE_OP_DB,$selQ,$FANNIE_LANES[$i]['op'],$ins);
-	}
+        $laneupdate_sql->transfer($FANNIE_OP_DB,$selQ,$FANNIE_LANES[$i]['op'],$ins);
+    }
 }
 
 function deleteProductAllLanes($upc){
-	global $FANNIE_OP_DB, $FANNIE_LANES;
+    global $FANNIE_OP_DB, $FANNIE_LANES;
     $laneupdate_sql = FannieDB::get($FANNIE_OP_DB);
 
-	for ($i = 0; $i < count($FANNIE_LANES); $i++){
-		$tmp = new SQLManager($FANNIE_LANES[$i]['host'],$FANNIE_LANES[$i]['type'],
-			$FANNIE_LANES[$i]['op'],$FANNIE_LANES[$i]['user'],
-			$FANNIE_LANES[$i]['pw']);
+    for ($i = 0; $i < count($FANNIE_LANES); $i++){
+        $tmp = new SQLManager($FANNIE_LANES[$i]['host'],$FANNIE_LANES[$i]['type'],
+            $FANNIE_LANES[$i]['op'],$FANNIE_LANES[$i]['user'],
+            $FANNIE_LANES[$i]['pw']);
         if (!isset($tmp->connections[$FANNIE_LANES[$i]['op']]) || $tmp->connections[$FANNIE_LANES[$i]['op']] === false) {
             // connect failed
             continue;
         }
-		$delQ = $tmp->prepare_statement("DELETE FROM products WHERE upc=?");
-		$delR = $tmp->exec_statement($delQ,array($upc),$FANNIE_LANES[$i]['op']);
-	}
+        $delQ = $tmp->prepare_statement("DELETE FROM products WHERE upc=?");
+        $delR = $tmp->exec_statement($delQ,array($upc),$FANNIE_LANES[$i]['op']);
+    }
 }
 
 function updateProductAllLanes($upc){
-	deleteProductAllLanes($upc);
-	addProductAllLanes($upc);
+    deleteProductAllLanes($upc);
+    addProductAllLanes($upc);
 }
 
 ?>

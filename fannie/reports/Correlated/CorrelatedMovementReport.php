@@ -21,8 +21,10 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class CorrelatedMovementReport extends FannieReportPage 
 {
@@ -33,6 +35,9 @@ class CorrelatedMovementReport extends FannieReportPage
     protected $sort_column = 3;
     protected $sort_direction = 1;
     protected $required_fields = array('date1', 'date2');
+
+    public $description = '[Correlated Movement] shows what items purchasers from a certain department or group of departments also buy. Optionally, results can be filtered by department too. This may be clearer with an example: among transactions that include a sandwich, what do sales from the beverages department look like?';
+    public $report_set = 'Movement Reports';
 
     public function fetch_report_data()
     {
@@ -90,23 +95,30 @@ class CorrelatedMovementReport extends FannieReportPage
         $dArgs[] = $date2.' 23:59:59';
         $dbc->exec_statement($loadQ,$dArgs);
 
-        $dataQ = $dbc->prepare_statement("SELECT d.upc,p.description,t.dept_no,t.dept_name,
-            SUM(d.quantity) AS quantity FROM
-            $dlog AS d INNER JOIN groupingTemp AS g
-            ON $dateConvertStr = g.tdate
-            AND g.emp_no = d.emp_no
-            AND g.register_no = d.register_no
-            AND g.trans_no = d.trans_no
-            LEFT JOIN products AS p on d.upc=p.upc
-            LEFT JOIN departments AS t
-            ON d.department=t.dept_no
+        $dataQ = $dbc->prepare_statement("
+            SELECT d.upc,
+                p.description,
+                t.dept_no,
+                t.dept_name,
+                SUM(d.quantity) AS quantity
+            FROM $dlog AS d 
+                INNER JOIN groupingTemp AS g ON 
+                    $dateConvertStr = g.tdate
+                    AND g.emp_no = d.emp_no
+                    AND g.register_no = d.register_no
+                    AND g.trans_no = d.trans_no "
+                . DTrans::joinProducts('d', 'p')
+                . DTrans::joinDepartments('d', 't') . "
             WHERE $inv 
-            AND trans_type IN ('I','D')
-            AND d.tdate BETWEEN ? AND ?
-            AND d.trans_status=''
-            $filter
-            GROUP BY d.upc,p.description,t.dept_no,t.dept_name
-            ORDER BY SUM(d.quantity) DESC");	
+                AND trans_type IN ('I','D')
+                AND d.tdate BETWEEN ? AND ?
+                AND d.trans_status=''
+                $filter
+            GROUP BY d.upc,
+                p.description,
+                t.dept_no,
+                t.dept_name
+            ORDER BY SUM(d.quantity) DESC");
         foreach($fArgs as $f) $dArgs[] = $f;
         $dataR = $dbc->exec_statement($dataQ,$dArgs);
 
@@ -149,12 +161,6 @@ class CorrelatedMovementReport extends FannieReportPage
             $ret[] = $line;
         }
 
-        $line = 'Period: ';
-        $line .= FormLib::get('date1', date('Y-m-d'));
-        $line .= ' to ';
-        $line .= FormLib::get('date2', date('Y-m-d'));
-        $ret[] = $line;
-
         return $ret;
     }
 
@@ -180,17 +186,17 @@ class CorrelatedMovementReport extends FannieReportPage
         ob_start();
         ?>
 function flipover(opt){
-	if (opt == 'UPC'){
-		document.getElementById('inputset1').style.display='none';
-		document.getElementById('inputset2').style.display='block';
-		document.forms[0].dept1.value='';
-		document.forms[0].dept2.value='';
-	}
-	else {
-		document.getElementById('inputset2').style.display='none';
-		document.getElementById('inputset1').style.display='block';
-		document.forms[0].upc.value='';
-	}
+    if (opt == 'UPC'){
+        document.getElementById('inputset1').style.display='none';
+        document.getElementById('inputset2').style.display='block';
+        document.forms[0].dept1.value='';
+        document.forms[0].dept2.value='';
+    }
+    else {
+        document.getElementById('inputset2').style.display='none';
+        document.getElementById('inputset1').style.display='block';
+        document.forms[0].upc.value='';
+    }
 }
         <?php
         return ob_get_clean();
@@ -219,42 +225,42 @@ function flipover(opt){
 
 <table border=0 cellspacing=5 cellpadding=3>
 <tr>
-	<td rowspan="2" valign=middle>
-	<div id="inputset1">
-	<b>Department(s)</b><br />
-	<select size=7 multiple name=depts[]>
-	<?php 
-	foreach($depts as $no=>$name)
-		echo "<option value=$no>$no $name</option>";	
-	?>
-	</select>
-	</div>
-	<div id="inputset2">
-	<b>UPC</b>: <input type=text size=13 name=upc />
-	</div>
-	</td>
-	<th>Start date</th>
-	<td><input type="text" id="date1" name="date1" onclick="showCalendarControl(this);"/></td>
+    <td rowspan="2" valign=middle>
+    <div id="inputset1">
+    <b>Department(s)</b><br />
+    <select size=7 multiple name=depts[]>
+    <?php 
+    foreach($depts as $no=>$name)
+        echo "<option value=$no>$no $name</option>";    
+    ?>
+    </select>
+    </div>
+    <div id="inputset2">
+    <b>UPC</b>: <input type=text size=13 name=upc />
+    </div>
+    </td>
+    <th>Start date</th>
+    <td><input type="text" id="date1" name="date1" /></td>
 </tr>
 <tr>
-	<th>End date</th>
-	<td><input type="text" id="date2" name="date2" onclick="showCalendarControl(this);"/></td>
+    <th>End date</th>
+    <td><input type="text" id="date2" name="date2" /></td>
 </tr>
 </table>
 <hr />
 <table border=0 cellspacing=5 cellpadding=3>
 <tr>
-	<td colspan="2"><b>Result Filter</b> (optional)</td>
+    <td colspan="2"><b>Result Filter</b> (optional)</td>
 </tr>
 <tr>
-	<td rowspan="2" valign=middle>
-	<select size=7 multiple name=filters[]>
-	<?php 
-	foreach($depts as $no=>$name)
-		echo "<option value=$no>$no $name</option>";	
-	?>
-	</select>
-	</td>
+    <td rowspan="2" valign=middle>
+    <select size=7 multiple name=filters[]>
+    <?php 
+    foreach($depts as $no=>$name)
+        echo "<option value=$no>$no $name</option>";    
+    ?>
+    </select>
+    </td>
     <td colspan="2">
         <?php echo FormLib::date_range_picker(); ?>
     </td>
@@ -265,6 +271,9 @@ function flipover(opt){
 <input type=checkbox name=excel value="xls" /> Excel
 </form>
         <?php
+        $this->add_onload_command('$(\'#date1\').datepicker();');
+        $this->add_onload_command('$(\'#date2\').datepicker();');
+
         return ob_get_clean(); 
     }
 

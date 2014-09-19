@@ -34,9 +34,9 @@ class MemberNotesModel extends BasicModel
     protected $columns = array(
     'memberNoteID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),
     'cardno' => array('type'=>'INT', 'index'=>true),
-    'note' => array('type','TEXT'),
-    'stamp' => array('type','DATETIME'),
-    'username' => array('type','VARCHAR(50)')
+    'note' => array('type'=>'TEXT'),
+    'stamp' => array('type'=>'DATETIME'),
+    'username' => array('type'=>'VARCHAR(50)')
     );
 
     /* START ACCESSOR FUNCTIONS */
@@ -51,6 +51,22 @@ class MemberNotesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'memberNoteID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["memberNoteID"]) || $this->instance["memberNoteID"] != func_get_args(0)) {
                 if (!isset($this->columns["memberNoteID"]["ignore_updates"]) || $this->columns["memberNoteID"]["ignore_updates"] == false) {
@@ -59,6 +75,7 @@ class MemberNotesModel extends BasicModel
             }
             $this->instance["memberNoteID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function cardno()
@@ -71,6 +88,22 @@ class MemberNotesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'cardno',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["cardno"]) || $this->instance["cardno"] != func_get_args(0)) {
                 if (!isset($this->columns["cardno"]["ignore_updates"]) || $this->columns["cardno"]["ignore_updates"] == false) {
@@ -79,6 +112,7 @@ class MemberNotesModel extends BasicModel
             }
             $this->instance["cardno"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function note()
@@ -91,6 +125,22 @@ class MemberNotesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'note',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["note"]) || $this->instance["note"] != func_get_args(0)) {
                 if (!isset($this->columns["note"]["ignore_updates"]) || $this->columns["note"]["ignore_updates"] == false) {
@@ -99,6 +149,7 @@ class MemberNotesModel extends BasicModel
             }
             $this->instance["note"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function stamp()
@@ -111,6 +162,22 @@ class MemberNotesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'stamp',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["stamp"]) || $this->instance["stamp"] != func_get_args(0)) {
                 if (!isset($this->columns["stamp"]["ignore_updates"]) || $this->columns["stamp"]["ignore_updates"] == false) {
@@ -119,6 +186,7 @@ class MemberNotesModel extends BasicModel
             }
             $this->instance["stamp"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function username()
@@ -131,6 +199,22 @@ class MemberNotesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'username',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["username"]) || $this->instance["username"] != func_get_args(0)) {
                 if (!isset($this->columns["username"]["ignore_updates"]) || $this->columns["username"]["ignore_updates"] == false) {
@@ -139,6 +223,7 @@ class MemberNotesModel extends BasicModel
             }
             $this->instance["username"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

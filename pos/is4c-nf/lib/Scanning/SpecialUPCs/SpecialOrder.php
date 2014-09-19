@@ -78,9 +78,23 @@ class SpecialOrder extends SpecialUPC
         }
 
         $row = $db->fetch_array($result);
-        TransRecord::addItem($row['upc'],$row['description'],'I','','',$row['department'],$row['quantity'],
-            $row['unitPrice'],$row['total'],$row['regPrice'],0,$row['dept_tax'],
-            $row['dept_fs'],0.00,0.00,$row['discountable'],0,$row['ItemQtty'],0,0,0,$orderID,$transID,0,0.00,0,'SO');
+        TransRecord::addRecord(array(
+            'upc' => $row['upc'],
+            'description' => $row['description'],
+            'trans_type' => 'I',
+            'department' => $row['department'],
+            'quantity' => $row['quantity'],
+            'unitPrice' => $row['unitPrice'],
+            'total' => $row['total'],
+            'regPrice' => $row['regPrice'],
+            'tax' => $row['dept_tax'],
+            'foodstamp' => $row['dept_fs'],
+            'discountable' => $row['discountable'],
+            'ItemQtty' => $row['ItemQtty'],
+            'mixMatch' => $orderID,
+            'matched' => $transID,
+            'charflag' => 'SO',
+        ));
         $json['output'] = DisplayLib::lastpage();
         $json['udpmsg'] = 'goodBeep';
         $json['redraw_footer'] = True;

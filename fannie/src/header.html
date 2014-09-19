@@ -1,45 +1,64 @@
 <?php
-global $FANNIE_DYNAMIC_MENU, $FANNIE_NAV_POSITION;
+global $FANNIE_DYNAMIC_MENU, $FANNIE_NAV_POSITION, $FANNIE_CSS_LOGO, $FANNIE_CHARSET, $FANNIE_CUSTOM_TITLE;
 /* try to deal with relative paths for includes */
 $path = "";
 $found = False;
-$uri = $_SERVER['REQUEST_URI'];
+$uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
 $tmp = explode("?",$uri);
-if (count($tmp) > 1) $uri = $tmp[0];
-foreach(explode("/",$uri) as $x){
-	if (strpos($x,".php") === False
-		&& strlen($x) != 0){
+if (count($tmp) > 1) {
+    $uri = $tmp[0];
+}
+foreach (explode("/",$uri) as $x) {
+	if (strpos($x,".php") === false && strlen($x) != 0) {
 		$path .= "../";
 	}
-	if (!$found && stripos($x,"fannie") !== False){
-		$found = True;
+	if (!$found && stripos($x,"fannie") !== false) {
+		$found = true;
 		$path = "";
 	}
+}
+if (!isset($FANNIE_CHARSET) || empty($FANNIE_CHARSET)) {
+    $FANNIE_CHARSET = 'ISO-8859-1';
 }
 ?>
 <!DOCTYPE html> 
 <html lang="en">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<meta http-equiv="Content-Type" content="text/html; charset=<?php echo $FANNIE_CHARSET; ?>">
 <title><?php echo $page_title; ?></title>
 <link rel="STYLESHEET" href="<?php echo $path; ?>src/style.css" type="text/css">
-<link rel="STYLESHEET" href="<?php echo $path; ?>src/jquery/css/smoothness/jquery-ui-1.8.1.custom.css" type="text/css">
-<script type="text/javascript" src="<?php echo $path; ?>src/jquery/js/jquery.js">
+<link rel="STYLESHEET" href="<?php echo $path; ?>src/css/configurable.php" type="text/css">
+<link rel="STYLESHEET" href="<?php echo $path; ?>src/javascript/jquery-ui.css?id=20140625" type="text/css">
+<script type="text/javascript" src="<?php echo $path; ?>src/javascript/jquery.js?id=20140625">
 </script>
-<script type="text/javascript" src="<?php echo $path; ?>src/jquery/js/jquery-ui-1.8.1.custom.min.js">
+<script type="text/javascript" src="<?php echo $path; ?>src/javascript/jquery-ui.js?id=20140625.1">
 </script>
 </head>
 <body>
-<div style="width:90%;margin-left:auto;margin-right:auto;">
-<table style="width:90%;">
+<div style="margin-left:3em;margin-right:3em;">
+<table style="width:100%;">
 <tr>
-	<td colspan="2" style="width:100%;border-bottom:solid 1px #ccc;margin-bottom:10px;padding-bottom:15px;">
-		<div style="font-size:28px;color:#330066">
-		Fannie
-		</div>
-		<div style="font-size:20px;color:#666666">
-		IT CORE maintenance & reporting
-		</div>
+	<td colspan="2" class="secondaryBorder" 
+        style="width:100%;border-bottom-style:solid; border-bottom-width: 1px;
+               margin-bottom:10px;padding-bottom:5px;">
+        <table cellspacing="0" cellpadding="0"> <!-- yes. sick of fighting with floating divs... -->
+        <tr><td>
+            <?php if (isset($FANNIE_CSS_LOGO) && !empty($FANNIE_CSS_LOGO)) { ?>
+            <img src="<?php echo $FANNIE_CSS_LOGO; ?>" alt="logo" />
+            <?php } ?>
+        </td>
+        <td>
+        <div style="font-size:28px;" class="primaryColor">
+        Fannie
+        <?php if (isset($FANNIE_CUSTOM_TITLE) && !empty($FANNIE_CUSTOM_TITLE)) {
+            echo ' - ' . $FANNIE_CUSTOM_TITLE;
+        } ?>
+        </div>
+        <div style="font-size:20px;" class="secondaryColor">
+        IT CORE maintenance & reporting
+        </div>
+        </td></tr>
+        </table>
 	</td>
 </tr>
 <?php
@@ -60,16 +79,17 @@ if ( isset($FANNIE_NAV_POSITION) && $FANNIE_NAV_POSITION == "top" ) {
 		</div>
 	</td>
 </tr>
-<!-- Page content -->
+<!-- Page contents -->
 <tr>
 	<td style="width:100%;vertical-align:top;border-right:solid 1px #ccc;">
 		<span style="font-size:6px"><br /></span>
 		<!-- Div for content, why fixed width? -->
 		<div style="width:579;margin-left:auto;margin-right:auto;">
-			<!-- Heading of content, $header from the content script -->
+			<!-- Heading of contents, $header from the content script -->
 			<div style="width:95%;height:27px;background:#f9f9f9;
-				color:#330066;font-size:15px;border-top:1px #ccc solid;
-				border-bottom:1px #ccc solid;padding-top:3px;">
+				font-size:15px;border-top:1px #ccc solid;
+				border-bottom:1px #ccc solid;padding-top:3px;"
+                class="primaryColor">
 				&nbsp;&nbsp;<?php echo $header; ?>
 			</div>
 			<!-- Body of content, STDOUT from the content script -->
@@ -81,7 +101,8 @@ if ( isset($FANNIE_NAV_POSITION) && $FANNIE_NAV_POSITION == "top" ) {
 else {
 ?>
 <tr>
-	<td style="width:170px;background:#fff;vertical-align:top;border-right:solid 1px #ccc;">
+	<td style="width:170px;background:#fff;vertical-align:top;border-right-style:solid;
+        border-right-width: 1px;" class="secondaryBorder">
 		<div style="width:170px;margin-left:auto;margin-right:auto;">
  	<?php
 		if (isset($FANNIE_DYNAMIC_MENU) && $FANNIE_DYNAMIC_MENU===True)
@@ -92,15 +113,18 @@ else {
 		<span style="font-size:6px"><br /></span>
 		</div>
 	</td>
-	<td style="width:100%;vertical-align:top;border-right:solid 1px #ccc;">
+	<td style="width:100%;vertical-align:top;border-right-style:solid;
+        border-right-width: 1px;" class="secondaryBorder">
 		<span style="font-size:6px"><br /></span>
 		<div style="width:579;margin-left:auto;margin-right:auto;">
-			<div style="width:95%;height:27px;background:#f9f9f9;
-				color:#330066;font-size:15px;border-top:1px #ccc solid;
-				border-bottom:1px #ccc solid;padding-top:3px;">
+			<div style="width:95%;height:27px;
+				font-size:15px;border-top-width:1px;border-top-style: solid;
+				border-bottom-width:1px; border-bottom-style: solid;
+                padding-top:3px; margin-bottom: 5px;"
+                class="primaryColor secondaryBorder">
 				&nbsp;&nbsp;<?php echo $header; ?>
 			</div>
-			<div style="width:95%;color:#444;line-height:1.6em;margin-left:7px;">
+			<div style="width:95%;line-height:1.6em;margin-left:7px;">
 
 <?php
 }

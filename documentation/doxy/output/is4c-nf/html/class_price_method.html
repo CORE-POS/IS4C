@@ -33,14 +33,13 @@
 <h1>PriceMethod Class Reference</h1><!-- doxytag: class="PriceMethod" --><p>Inheritance diagram for PriceMethod:
 <p><center><img src="class_price_method.png" usemap="#PriceMethod_map" border="0" alt=""></center>
 <map name="PriceMethod_map">
-<area href="class_a_b_group_p_m.html" alt="ABGroupPM" shape="rect" coords="151,56,292,80">
-<area href="class_basic_p_m.html" alt="BasicPM" shape="rect" coords="151,112,292,136">
-<area href="class_big_group_p_m.html" alt="BigGroupPM" shape="rect" coords="151,168,292,192">
-<area href="class_group_p_m.html" alt="GroupPM" shape="rect" coords="151,224,292,248">
-<area href="class_more_than_qtty_p_m.html" alt="MoreThanQttyPM" shape="rect" coords="151,280,292,304">
-<area href="class_no_disc_on_sale_p_m.html" alt="NoDiscOnSalePM" shape="rect" coords="151,336,292,360">
-<area href="class_qtty_enforced_group_p_m.html" alt="QttyEnforcedGroupPM" shape="rect" coords="151,392,292,416">
-<area href="class_split_a_b_group_p_m.html" alt="SplitABGroupPM" shape="rect" coords="151,448,292,472">
+<area href="class_a_b_group_p_m.html" alt="ABGroupPM" shape="rect" coords="0,56,141,80">
+<area href="class_basic_p_m.html" alt="BasicPM" shape="rect" coords="151,56,292,80">
+<area href="class_big_group_p_m.html" alt="BigGroupPM" shape="rect" coords="302,56,443,80">
+<area href="class_group_p_m.html" alt="GroupPM" shape="rect" coords="453,56,594,80">
+<area href="class_more_than_qtty_p_m.html" alt="MoreThanQttyPM" shape="rect" coords="604,56,745,80">
+<area href="class_qtty_enforced_group_p_m.html" alt="QttyEnforcedGroupPM" shape="rect" coords="755,56,896,80">
+<area href="class_split_a_b_group_p_m.html" alt="SplitABGroupPM" shape="rect" coords="906,56,1047,80">
 </map>
 <a href="class_price_method-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
 <tr><td></td></tr>
@@ -55,6 +54,9 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="50918fb5760837e4f456654791c9aa09"></a><!-- doxytag: member="PriceMethod::$savedInfo" ref="50918fb5760837e4f456654791c9aa09" args="" -->
 &nbsp;</td><td class="memItemRight" valign="bottom"><b>$savedInfo</b></td></tr>
+
+<tr><td colspan="2"><br><h2>Static Public Attributes</h2></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><b>$MAP</b></td></tr>
 
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
@@ -106,7 +108,7 @@ Add the item to the transaction <dl compact><dt><b>Parameters:</b></dt><dd>
 <dl compact><dt><b>Returns:</b></dt><dd>boolean success/failure </dd></dl>
 
 <p>
-Reimplemented in <a class="el" href="class_a_b_group_p_m.html#6a8e78c3388f38f52e26e1c17f337278">ABGroupPM</a>, <a class="el" href="class_basic_p_m.html#2837673886c07d799d551cfc9103c3fa">BasicPM</a>, <a class="el" href="class_big_group_p_m.html#c19d8974b7bd328f7bbfaada76ba3838">BigGroupPM</a>, <a class="el" href="class_group_p_m.html#912215bd966c6989c3abebdb4d51feed">GroupPM</a>, <a class="el" href="class_more_than_qtty_p_m.html#6e45cde266f106160df89568f0fd38ab">MoreThanQttyPM</a>, <a class="el" href="class_no_disc_on_sale_p_m.html#bbc7bf44c3eab2bb3e66177d09b66825">NoDiscOnSalePM</a>, <a class="el" href="class_qtty_enforced_group_p_m.html#88293321b6cdfb4de60b81e306b84b48">QttyEnforcedGroupPM</a>, and <a class="el" href="class_split_a_b_group_p_m.html#24d7cd4f8b8ad76bc2fe3b6a1ee24812">SplitABGroupPM</a>.
+Reimplemented in <a class="el" href="class_a_b_group_p_m.html#6a8e78c3388f38f52e26e1c17f337278">ABGroupPM</a>, <a class="el" href="class_basic_p_m.html#2837673886c07d799d551cfc9103c3fa">BasicPM</a>, <a class="el" href="class_big_group_p_m.html#c19d8974b7bd328f7bbfaada76ba3838">BigGroupPM</a>, <a class="el" href="class_group_p_m.html#912215bd966c6989c3abebdb4d51feed">GroupPM</a>, <a class="el" href="class_more_than_qtty_p_m.html#6e45cde266f106160df89568f0fd38ab">MoreThanQttyPM</a>, <a class="el" href="class_qtty_enforced_group_p_m.html#88293321b6cdfb4de60b81e306b84b48">QttyEnforcedGroupPM</a>, and <a class="el" href="class_split_a_b_group_p_m.html#24d7cd4f8b8ad76bc2fe3b6a1ee24812">SplitABGroupPM</a>.
 </div>
 </div><p>
 <a class="anchor" name="38cc94d744fc9b5ad37fac0404fc93a4"></a><!-- doxytag: member="PriceMethod::errorInfo" ref="38cc94d744fc9b5ad37fac0404fc93a4" args="()" -->
@@ -131,9 +133,34 @@ Information about error(s) adding the item to the transaction <dl compact><dt><b
 Reimplemented in <a class="el" href="class_basic_p_m.html#3e9f7cac56a3b874303e0cb5b31b400a">BasicPM</a>.
 </div>
 </div><p>
+<hr><h2>Member Data Documentation</h2>
+<a class="anchor" name="b76fe1cbe930fa4e99b2ad6020d13021"></a><!-- doxytag: member="PriceMethod::$MAP" ref="b76fe1cbe930fa4e99b2ad6020d13021" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">PriceMethod::$MAP<code> [static]</code>          </td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+<b>Initial value:</b><div class="fragment"><pre class="fragment"> array(
+        0   =&gt; '<a class="code" href="class_basic_p_m.html">BasicPM</a>',
+        1   =&gt; '<a class="code" href="class_group_p_m.html">GroupPM</a>',
+        2   =&gt; '<a class="code" href="class_qtty_enforced_group_p_m.html">QttyEnforcedGroupPM</a>',
+        3   =&gt; '<a class="code" href="class_split_a_b_group_p_m.html">SplitABGroupPM</a>',
+        4   =&gt; '<a class="code" href="class_a_b_group_p_m.html">ABGroupPM</a>',
+        5   =&gt; '<a class="code" href="class_big_group_p_m.html">BigGroupPM</a>',
+        6   =&gt; '<a class="code" href="class_more_than_qtty_p_m.html">MoreThanQttyPM</a>',
+    )
+</pre></div>
+</div>
+</div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/Scanning/PriceMethod.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

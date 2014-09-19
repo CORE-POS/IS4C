@@ -62,6 +62,8 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_display_lib.html#71b7cf3c5c66045df0373644bb616ca0">termdisplaymsg</a> ()</td></tr>
 
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_display_lib.html#5c4c2a1750dc2fc3285a8477e494ec25">drawNotifications</a> ()</td></tr>
+
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_display_lib.html#f605b71bfe219f2a1c7cb439fe010d5e">listItems</a> ($top_item, $highlight)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_display_lib.html#aa60b268c0c69748c2bb1b8abae2ecb4">printReceiptfooter</a> ($readOnly=False)</td></tr>
@@ -160,6 +162,28 @@ Get the currently displayed items <dl compact><dt><b>Parameters:</b></dt><dd>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>An HTML string</dd></dl>
 This function probably shouldn't be used directly. Call listitems() or <a class="el" href="class_display_lib.html#8cee5ed474eec9fad96a3ec0cf9cdf49">lastpage()</a> instead. 
+<p>
+11Mar14 Andy Ancient idea about displaying transaction line-items on credit card terminal screen. Current terminal does not even support this functionality.<p>
+I'm leaving the "get last relevant line" implementation for reference. if (is_object($td) &amp;&amp; !empty($last_item)) { $due = sprintf('%.2f',$CORE_LOCAL-&gt;get("amtdue")); $dueline = 'Subtotal' .str_pad('',22-strlen($due),' ') .$due; $items = ""; $count = 0; for($i=count($last_item)-1;$i&gt;=0;$i--) { $items = ":".$last_item[$i].$items; $count++; if ($count &gt;= 3) break; } for($i=$count;$i&lt;3;$i++) { $items = ": ".$items; } $td-&gt;WriteToScale("display:".$last_item.":".$dueline); } 
+</div>
+</div><p>
+<a class="anchor" name="5c4c2a1750dc2fc3285a8477e494ec25"></a><!-- doxytag: member="DisplayLib::drawNotifications" ref="5c4c2a1750dc2fc3285a8477e494ec25" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static DisplayLib::drawNotifications           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Use the right side of the screen to show various notifications 
 </div>
 </div><p>
 <a class="anchor" name="6f47b5762c2f71fbc2a96d0d6f9f5902"></a><!-- doxytag: member="DisplayLib::inputUnknown" ref="6f47b5762c2f71fbc2a96d0d6f9f5902" args="()" -->
@@ -645,7 +669,7 @@ An alias for <a class="el" href="class_display_lib.html#87bf6dd610589566b597ec69
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/DisplayLib.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

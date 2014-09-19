@@ -13,11 +13,11 @@ $all = validateUserQuiet('view_all_hours');
 $name = checkLogin();
 
 if ($all) {
-	header("Location: WfcHtMenuPage.php");
+    header("Location: WfcHtMenuPage.php");
 } elseif ($name) {
-	header("Location: WfcHtViewEmpPage.php?id=".getUID($name));
+    header("Location: WfcHtViewEmpPage.php?id=".getUID($name));
 } else {
-	header("Location: {$FANNIE_URL}auth/ui/loginform.php?redirect={$_SERVER['PHP_SELF']}");
+    header("Location: {$FANNIE_URL}auth/ui/loginform.php?redirect={$_SERVER['PHP_SELF']}");
 }
 
 ?>

@@ -346,6 +346,11 @@ class SQLManager
         return 0;
     }
 
+    public function prepare($query_text, $which_connection='')
+    {
+        return $this->prepare_statement($query_text, $which_connection);
+    }
+
     /**
       Prepared statement: non-PDO types just return the query_text
       without modification
@@ -368,6 +373,11 @@ class SQLManager
         }
 
         return false;
+    }
+
+    public function execute($stmt, $args=array(), $which_connection='')
+    {
+        return $this->exec_statement($stmt, $args, $which_connection);
     }
 
     /**
@@ -1136,6 +1146,9 @@ class SQLManager
             case $this->TYPE_MYSQL:
                 $return = array();
                 $result = $this->query("SHOW COLUMNS FROM $table_name", $which_connection);
+                if ($result === false) {
+                    return false; 
+                }
                 while($row = $this->fetch_row($result, $which_connection)) {
                     $auto = false;
                     if (strstr($row[5],"auto_increment")) {
@@ -1405,7 +1418,7 @@ class SQLManager
         }
         switch($this->db_types[$which_connection]) {
             case $this->TYPE_MYSQL:
-                return mysql_real_escape_string($str);
+                return mysql_real_escape_string($str,$this->connections[$which_connection]);
             case $this->TYPE_MSSQL:
                 return str_replace("'","''",$str);
             case $this->TYPE_PDOMY:
@@ -1589,6 +1602,31 @@ class SQLManager
         return '0';
     }
 
+	/**
+	  Add row limit to a select query
+	  @param $query The select query
+	  @param $int_limit Max rows
+	  @param which_connection see method close
+
+	  This method currently only suport MySQL and MSSQL
+	*/
+	public function addSelectLimit($query,$int_limit,$which_connection='')
+    {
+        if ($which_connection == '') {
+            $which_connection = $this->default_db;
+        }
+        switch($this->db_types[$which_connection]) {
+            case $this->TYPE_PDOMY:
+            case $this->TYPE_MYSQL:
+                return sprintf("%s LIMIT %d",$query,$int_limit);
+            case $this->TYPE_MSSQL:
+            case $this->TYPE_PDOMS:
+                return str_ireplace("SELECT ","SELECT TOP $int_limit ",$query);
+		}
+
+        return $query;
+    }
+
     /**
       Test data is for faking queries.
       Setting the test data then running
@@ -1617,5 +1655,24 @@ class SQLManager
             return false;
         }
     }
+
+	/**
+	   Log a string to the query log.
+	   @param $str The string
+	   @return A True on success, False on failure 
+	*/  
+	public function logger($str)
+    {
+		$ql = DEBUG_MYSQL_QUERIES;
+		if (is_writable($ql)) {
+			$fp = fopen($ql,'a');
+			fputs($fp,$_SERVER['PHP_SELF'].": ".date('r').': '.$str."\n");
+			fclose($fp);
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 }
 

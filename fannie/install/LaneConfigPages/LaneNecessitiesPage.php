@@ -38,68 +38,68 @@ include('../../config.php');
 include_once('../../classlib2.0/FannieAPI.php');
 
 /**
-	@class LaneNecessitiesPage
-	Class for the Global Lane install and config options Necessities page.
+    @class LaneNecessitiesPage
+    Class for the Global Lane install and config options Necessities page.
 */
 class LaneNecessitiesPage extends InstallPage {
 
-	protected $title = 'CORE:PoS Global Lane Configuration: Necessities';
-	protected $header = 'CORE:PoS Global Lane Configuration: Necessities';
+    protected $title = 'CORE:PoS Global Lane Configuration: Necessities';
+    protected $header = 'CORE:PoS Global Lane Configuration: Necessities';
 
-	public $description = "
-	Class for the Global Lane install and config options Necessities page.
-	";
+    public $description = "
+    Class for the Global Lane install and config options Necessities page.
+    ";
 
-	// This replaces the __construct() in the parent.
-	public function __construct() {
+    // This replaces the __construct() in the parent.
+    public function __construct() {
 
-		// To set authentication.
-		FanniePage::__construct();
+        // To set authentication.
+        FanniePage::__construct();
 
-		$SRC = '../../src';
-		// Link to a file of CSS by using a function.
-		$this->add_css_file("$SRC/style.css");
-		$this->add_css_file("$SRC/jquery/css/smoothness/jquery-ui-1.8.1.custom.css");
-		$this->add_css_file("$SRC/css/install.css");
+        $SRC = '../../src';
+        // Link to a file of CSS by using a function.
+        $this->add_css_file("$SRC/style.css");
+        $this->add_css_file("$SRC/javascript/jquery-ui.css");
+        $this->add_css_file("$SRC/css/install.css");
 
-		// Link to a file of JS by using a function.
-		$this->add_script("$SRC/jquery/js/jquery.js");
-		$this->add_script("$SRC/jquery/js/jquery-ui-1.8.1.custom.min.js");
+        // Link to a file of JS by using a function.
+        $this->add_script("$SRC/javascript/jquery.js");
+        $this->add_script("$SRC/javascript/jquery-ui.js");
 
-	// __construct()
-	}
+    // __construct()
+    }
 
-	// If chunks of CSS are going to be added the function has to be
-	//  redefined to return them.
-	// If this is to override x.css draw_page() needs to load it after the add_css_file
-	/**
-	  Define any CSS needed
-	  @return A CSS string
-	function css_content(){
-		$css ="";
-		return $css;
-	//css_content()
-	}
-	*/
+    // If chunks of CSS are going to be added the function has to be
+    //  redefined to return them.
+    // If this is to override x.css draw_page() needs to load it after the add_css_file
+    /**
+      Define any CSS needed
+      @return A CSS string
+    function css_content(){
+        $css ="";
+        return $css;
+    //css_content()
+    }
+    */
 
-	// If chunks of JS are going to be added the function has to be
-	//  redefined to return them.
-	/**
-	  Define any javascript needed
-	  @return A javascript string
-	function javascript_content(){
-		$js ="";
-		return $js;
-	}
-	*/
+    // If chunks of JS are going to be added the function has to be
+    //  redefined to return them.
+    /**
+      Define any javascript needed
+      @return A javascript string
+    function javascript_content(){
+        $js ="";
+        return $js;
+    }
+    */
 
-	function body_content(){
-		global $CORE_LOCAL;
+    function body_content(){
+        global $CORE_LOCAL;
 
-		ob_start();
+        ob_start();
 
-		echo showLinkToFannie();
-		echo showInstallTabsLane("Lane Necessities", '');
+        echo showLinkToFannie();
+        echo showInstallTabsLane("Lane Necessities", '');
 
 ?>
 
@@ -108,10 +108,10 @@ class LaneNecessitiesPage extends InstallPage {
 
 <?php
 if (is_writable('../../config.php')){
-	echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
+    echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
 }
 else {
-	echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
+    echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
 }
 ?>
 
@@ -133,16 +133,16 @@ Use these forms for values that will be used on all lanes.
 <b>Lane Operating System:</b> <select name=OS>
 <?php
 if (isset($_REQUEST['OS']))
-	$CORE_LOCAL->set('OS',$_REQUEST['OS']);
+    $CORE_LOCAL->set('OS',$_REQUEST['OS']);
 if ($CORE_LOCAL->get('OS')=="")
-	$CORE_LOCAL->set('OS','other');
+    $CORE_LOCAL->set('OS','other');
 if ($CORE_LOCAL->get('OS') == 'win32'){
-	echo "<option value=win32 selected>Windows</option>";
-	echo "<option value=other>*nix</option>";
+    echo "<option value=win32 selected>Windows</option>";
+    echo "<option value=other>*nix</option>";
 }
 else {
-	echo "<option value=win32>Windows</option>";
-	echo "<option value=other selected>*nix</option>";
+    echo "<option value=win32>Windows</option>";
+    echo "<option value=other selected>*nix</option>";
 }
 echo "</select>";
 confsave('OS',"'".$CORE_LOCAL->get('OS')."'");
@@ -160,7 +160,7 @@ confsave('OS',"'".$CORE_LOCAL->get('OS')."'");
 if (isset($_REQUEST['LANE_HOST'])) $CORE_LOCAL->set('localhost',$_REQUEST['LANE_HOST']);
 if ($CORE_LOCAL->get('localhost')=="") $CORE_LOCAL->set('localhost','127.0.0.1');
 printf("<input type=text name=LANE_HOST value=\"%s\" />",
-	$CORE_LOCAL->get('localhost'));
+    $CORE_LOCAL->get('localhost'));
 echo "</p>";
 confsave('localhost',"'".$CORE_LOCAL->get('localhost')."'");
 ?>
@@ -170,12 +170,12 @@ confsave('localhost',"'".$CORE_LOCAL->get('localhost')."'");
 if(isset($_REQUEST['LANE_DBMS'])) $CORE_LOCAL->set('DBMS',$_REQUEST['LANE_DBMS']);
 if ($CORE_LOCAL->get('DBMS')=="") $CORE_LOCAL->set('DBMS','mysql');
 if ($CORE_LOCAL->get('DBMS') == 'mssql'){
-	echo "<option value=mysql>MySQL</option>";
-	echo "<option value=mssql selected>SQL Server</option>";
+    echo "<option value=mysql>MySQL</option>";
+    echo "<option value=mssql selected>SQL Server</option>";
 }
 else {
-	echo "<option value=mysql selected>MySQL</option>";
-	echo "<option value=mssql>SQL Server</option>";
+    echo "<option value=mysql selected>MySQL</option>";
+    echo "<option value=mssql>SQL Server</option>";
 }
 echo "</p>";
 confsave('DBMS',"'".$CORE_LOCAL->get('DBMS')."'");
@@ -186,7 +186,7 @@ confsave('DBMS',"'".$CORE_LOCAL->get('DBMS')."'");
 if (isset($_REQUEST['LANE_USER'])) $CORE_LOCAL->set('localUser',$_REQUEST['LANE_USER']);
 if ($CORE_LOCAL->get('localUser')=="") $CORE_LOCAL->set('localUser','root');
 printf("<input type=text name=LANE_USER value=\"%s\" />",
-	$CORE_LOCAL->get('localUser'));
+    $CORE_LOCAL->get('localUser'));
 echo "</p>";
 confsave('localUser',"'".$CORE_LOCAL->get('localUser')."'");
 ?>
@@ -194,7 +194,7 @@ confsave('localUser',"'".$CORE_LOCAL->get('localUser')."'");
 <?php
 if (isset($_REQUEST['LANE_PASS'])) $CORE_LOCAL->set('localPass',$_REQUEST['LANE_PASS']);
 printf("<input type=password name=LANE_PASS value=\"%s\" />",
-	$CORE_LOCAL->get('localPass'));
+    $CORE_LOCAL->get('localPass'));
 echo "</p>";
 confsave('localPass',"'".$CORE_LOCAL->get('localPass')."'");
 ?>
@@ -203,7 +203,7 @@ confsave('localPass',"'".$CORE_LOCAL->get('localPass')."'");
 if (isset($_REQUEST['LANE_OP_DB'])) $CORE_LOCAL->set('pDatabase',$_REQUEST['LANE_OP_DB']);
 if ($CORE_LOCAL->get('pDatabase')=="") $CORE_LOCAL->set('pDatabase','opdata');
 printf("<input type=text name=LANE_OP_DB value=\"%s\" />",
-	$CORE_LOCAL->get('pDatabase'));
+    $CORE_LOCAL->get('pDatabase'));
 echo "</p>";
 confsave('pDatabase',"'".$CORE_LOCAL->get('pDatabase')."'");
 ?>
@@ -212,7 +212,7 @@ confsave('pDatabase',"'".$CORE_LOCAL->get('pDatabase')."'");
 if (isset($_REQUEST['LANE_TRANS_DB'])) $CORE_LOCAL->set('tDatabase',$_REQUEST['LANE_TRANS_DB']);
 if ($CORE_LOCAL->get('pDatabase')=="") $CORE_LOCAL->set('pDatabase','translog');
 printf("<input type=text name=LANE_TRANS_DB value=\"%s\" />",
-	$CORE_LOCAL->get('tDatabase'));
+    $CORE_LOCAL->get('tDatabase'));
 echo "</p>";
 confsave('tDatabase',"'".$CORE_LOCAL->get('tDatabase')."'");
 ?>
@@ -227,7 +227,7 @@ confsave('tDatabase',"'".$CORE_LOCAL->get('tDatabase')."'");
 if (isset($_REQUEST['SERVER_HOST'])) $CORE_LOCAL->set('mServer',$_REQUEST['SERVER_HOST']);
 if ($CORE_LOCAL->get('mServer')=="") $CORE_LOCAL->set('mServer','127.0.0.1');
 printf("<input type=text name=SERVER_HOST value=\"%s\" />",
-	$CORE_LOCAL->get('mServer'));
+    $CORE_LOCAL->get('mServer'));
 echo "</p>";
 confsave('mServer',"'".$CORE_LOCAL->get('mServer')."'");
 ?>
@@ -237,12 +237,12 @@ confsave('mServer',"'".$CORE_LOCAL->get('mServer')."'");
 if (isset($_REQUEST['SERVER_TYPE'])) $CORE_LOCAL->set('mDBMS',$_REQUEST['SERVER_TYPE']);
 if ($CORE_LOCAL->get('mDBMS')=="") $CORE_LOCAL->set('mDBMS','mysql');
 if ($CORE_LOCAL->get('mDBMS') == 'mssql'){
-	echo "<option value=mysql>MySQL</option>";
-	echo "<option value=mssql selected>SQL Server</option>";
+    echo "<option value=mysql>MySQL</option>";
+    echo "<option value=mssql selected>SQL Server</option>";
 }
 else {
-	echo "<option value=mysql selected>MySQL</option>";
-	echo "<option value=mssql>SQL Server</option>";
+    echo "<option value=mysql selected>MySQL</option>";
+    echo "<option value=mssql>SQL Server</option>";
 }
 echo "</select>";
 echo "</p>";
@@ -253,7 +253,7 @@ confsave('mDBMS',"'".$CORE_LOCAL->get('mDBMS')."'");
 if (isset($_REQUEST['SERVER_USER'])) $CORE_LOCAL->set('mUser',$_REQUEST['SERVER_USER']);
 if ($CORE_LOCAL->get('mUser')=="") $CORE_LOCAL->set('mUser','root');
 printf("<input type=text name=SERVER_USER value=\"%s\" />",
-	$CORE_LOCAL->get('mUser'));
+    $CORE_LOCAL->get('mUser'));
 echo "</p>";
 confsave('mUser',"'".$CORE_LOCAL->get('mUser')."'");
 ?>
@@ -261,7 +261,7 @@ confsave('mUser',"'".$CORE_LOCAL->get('mUser')."'");
 <?php
 if (isset($_REQUEST['SERVER_PASS'])) $CORE_LOCAL->set('mPass',$_REQUEST['SERVER_PASS']);
 printf("<input type=password name=SERVER_PASS value=\"%s\" />",
-	$CORE_LOCAL->get('mPass'));
+    $CORE_LOCAL->get('mPass'));
 echo "</p>";
 confsave('mPass',"'".$CORE_LOCAL->get('mPass')."'");
 ?>
@@ -270,7 +270,7 @@ confsave('mPass',"'".$CORE_LOCAL->get('mPass')."'");
 if (isset($_REQUEST['SERVER_DB'])) $CORE_LOCAL->set('mDatabase',$_REQUEST['SERVER_DB']);
 if ($CORE_LOCAL->get('mDatabase')=="") $CORE_LOCAL->set('mDatabase','core_trans');
 printf("<input type=text name=SERVER_DB value=\"%s\" />",
-	$CORE_LOCAL->get('mDatabase'));
+    $CORE_LOCAL->get('mDatabase'));
 echo "</p>";
 confsave('mDatabase',"'".$CORE_LOCAL->get('mDatabase')."'");
 ?>
@@ -280,10 +280,10 @@ confsave('mDatabase',"'".$CORE_LOCAL->get('mDatabase')."'");
 
 <?php
 
-		return ob_get_clean();
+        return ob_get_clean();
 
-	// body_content
-	}
+    // body_content
+    }
 
 // LaneNecessitiesPage  
 }

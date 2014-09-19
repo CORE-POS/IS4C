@@ -24,6 +24,8 @@
 class ArWarnDept extends SpecialDept 
 {
 
+    public $help_summary = 'Require cashier confirmation on AR sale';
+
     public function handle($deptID,$amount,$json)
     {
         global $CORE_LOCAL;

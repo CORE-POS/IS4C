@@ -4,7 +4,8 @@
 	</td>
 </tr>
 <tr>
-	<td colspan="2" style="border-top:1px #ccc solid;margin-top:10px;padding-top:5px;background:#fff;">
+	<td colspan="2" style="border-top-width:1px;border-top-style: solid;margin-top:10px;
+        padding-top:5px;background:#fff;" class="secondaryBorder">
 		<div style="float:right;"> 
 			<!--Copyleft &#0169; 2009, <a href="http://www.designslife.com" style="font-size:12px;color:AAAAAA">designslife</a>. All Rights Reserved.-->
 		</div>
@@ -25,7 +26,13 @@ if($FANNIE_AUTH_ENABLED){
 		echo "[<a href=\"{$FANNIE_URL}auth/ui/loginform.php?logout=yes\">Logout</a>]";
 	}
 }
+$version_file = dirname(__FILE__) . '/../../VERSION';
+if (file_exists($version_file) && is_readable($version_file)) {
+    $version = file_get_contents($version_file);
+    echo '<div id="fannieVersion">Current version: ' . $version . '</div>';
+}
 ?>
+<a href="<?php echo $FANNIE_URL; ?>admin/SiteMap.php">Site Map</a>
 		</div>
 	</td>
 </tr>

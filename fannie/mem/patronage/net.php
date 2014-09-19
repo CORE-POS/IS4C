@@ -20,8 +20,13 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
+    return;
+}
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 $page_title = "Fannie :: Patronage Tools";
@@ -30,7 +35,7 @@ $header = "Update Net Purchases";
 include($FANNIE_ROOT.'src/header.html');
 
 $q = $dbc->prepare_statement("UPDATE patronage_workingcopy SET
-	net_purch = purchase + discounts + rewards");
+    net_purch = purchase + discounts + rewards");
 $r = $dbc->exec_statement($q);
 echo '<i>Net purchases updated</i>';
 

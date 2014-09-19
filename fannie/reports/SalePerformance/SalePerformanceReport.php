@@ -21,11 +21,14 @@
 
 *********************************************************************************/
 
-require('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class SalePerformanceReport extends FannieReportPage
 {
+    public $description = '[Batch Performance] lists weekly sales totals for a batch.';
 
     protected $title = "Fannie : Sale Performance";
     protected $header = "Sale Performance";
@@ -139,17 +142,17 @@ class SalePerformanceReport extends FannieReportPage
         ob_start();
         ?>
 function lookupSales(){
-	var dstr = "lookup=yes&year=";
-	dstr += $('#syear').val();
-	dstr += "&month="+$('#smonth :selected').val();
-	$.ajax({url: 'SalePerformanceReport.php',
-		method: 'get',
-		cache: false,
-		data: dstr,
-		success: function(data){
-			$('#result').html(data);
-		}
-	});
+    var dstr = "lookup=yes&year=";
+    dstr += $('#syear').val();
+    dstr += "&month="+$('#smonth :selected').val();
+    $.ajax({url: 'SalePerformanceReport.php',
+        method: 'get',
+        cache: false,
+        data: dstr,
+        success: function(data){
+            $('#result').html(data);
+        }
+    });
 }
         <?php
         return ob_get_clean();

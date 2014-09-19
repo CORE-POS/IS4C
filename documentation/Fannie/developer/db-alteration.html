@@ -1,36 +1,174 @@
 <html>
 <head>
-	<title>Database Alteration System</title>
+	<title>Basic Models</title>
 </head>
 <body>
 	<div style="text-align:center;margin-bottom:10px;font-size:80%;">
-	updated as of: August 20, 2012<br />
+	updated as of: August 21, 2014<br />
 	last author: Andy Theuninck
 	</div>
-Occasionally a developer may wish to change an existing table
-or view. This has the potential to be more disruptive to other
-users, so the process is a bit different and requires confirmation
-rather than being automated.
+BasicModel is the base class of a very light weight ORM (object relational mapping). 
+Most subclasses are PHP classes that correspond to tables or views in the database.
+One advantage of having a table definition in code is it's possible to do runtime
+analysis comparing the class definition to the underlying and table and cope with
+differences intelligently. It can also generate SQL for simple queries which
+typically saves on boilerplate code.
+<h2>Creating Models</h2>
+The BasicModel class has some command line functionality assist in writing
+and maintaining other model classes. To generate a new model, run:
+<pre>
+php BasicModel.php --new TableName
+OR
+php BasicModel.php --new-view TableName
+</pre>
+This will create a skeleton class named TableNameModel.php. The chief
+difference with using --new-view is some functionality that doesn't make
+sense in a read-only context is automatically disabled. You can use a regular
+model with a view, but attempting to add/change/delete a record may not
+work depending on the underlying database.
 <p />
-Updates must be placed in the install/updates directory.
-Update files should be named with a date and time stamp -
-i.e., YYYYMMDDHHMMSS.php. This means they sort sensibly into
-chronological order.
+There are two important properties to define in the new skeleton class.
+The first is $name. By default this would be <i>TableName</i> in the
+example. In theory per <a href="../../coding-standards.html">coding standards</a>
+both tables should use StudlyCaps, but there's a long ways to go in
+fully implementing that. When retrofitting new model classes to old tables,
+the new class should use StudlyCaps but the underlying $name does not have
+to match - i.e., <i>ProductsModel</i> corresponds to the table <i>products</i>.
 <p />
-The update file should contain a class named
-<b>update_YYYYMMDDHHMMSS</b> the extends the provided base
-class <b>UpdateObj</b> (class names can't start with a number).
-In most cases an update class will just define a few properties:
+The other property that must be defined is $columns. This is a keyed array where
+the column keys are the column names and the array values are the column definitions.
+A column definition may include the following attributes:
 <ul>
-<li> <i>$timestamp</i> should be the same YYYYMMDDHHMMSS date and time.
-<li> <i>$author</i> should say who you are
-<li> <i>$description</i> should explain what the update does.
-<li> <i>$queries</i> is the the actual update. It should contain 
-three entries with keys: <i>op</i>, <i>trans</i>, and <i>archive</i>.
-Each entry is an array of queries to perform on the respective
-databases.
+    <li><i>type</i> - the SQL datatype of the column. This is the only required attribute.</li>
+    <li><i>default</i> - a default value for the column. Omitting it implies NULL.</li>
+    <li><i>primary_key</i> - boolean. This attribute may be applied to multiple columns for a composite primary key.</li>
+    <li><i>index</i> - boolean. Column should be indexed. Default is false.</li>
+    <li><i>not_null</i> boolean. Column cannot be null. If <i>not_null</i> is used, a <i>default</i> must be provided.</li>
+    <li><i>increment</i> boolean. An identity or auto_increment column. Increment columns are automatically indexed.</li>
+    <li><i>ignore_updates</i> boolean. Changes to this column will not trigger an update on the underlying table.</li>
+    <li><i>replaces</i> previous column name. Helps with schema migrates. Use cautiously - breaking other people's installs is still frowned upon.</li>
 </ul>
-Look at existing updates for examples. It's very light coding; you're 
-really just defining variables.
+Example:
+<pre>
+class TableNameModel extends BasicModel
+{
+    protected $name = 'TableName';
+    
+    protected $columns = array(
+    'tableNameID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),
+    'columnOne' => array('type'=>'VARCHAR(50)', 'index'=>true),
+    'columnTwo' => array('type'=>'TINYINT', 'default'=>0), 
+    );    
+}
+</pre>
+A third property that may be defined for the class is $unique. Some operations
+must be able to isolate a single, unique record in the table. By default, the primary
+key column(s) are used for the uniqueness constraint. You may override this by defining
+$unique with array of column names. This can useful if a table has an integer ID column
+but is most often referenced using another logically unique column.
+<p />
+Lastly, after defining all the $columns, you need to run BasicModel's generator to
+create the methods for each column.
+<pre>
+php BasicModel.php TableNameModel.php
+</pre>
+<h2>Using Models</h2>
+The constructor takes one argument, an SQLManager connection object. An object
+has a method for each column to get or set that column's value. Continuing with
+the example:
+<pre>
+$tableName = new TableNameModel($sqlInstance);
+// get column value
+$value = $tableName->columnOne();
+// set column value
+$tableName->columnOne($newValue);
+</pre>
+When a model object is first instantiated, it does not contain any data. The get
+methods will simply return the default value for the column. Similarly, the set
+methods are just updated the object. Data is loaded from the database and written
+to the database using the <b>load()</b> and <b>save()</b> methods, respectively.
+<p />
+To <b>load()</b> a record from the database, you assign values to the unique column(s) of
+the object. This specifies which record will be loaded from the database. <i>The load method
+requires a primary key or unqiueness constraint</i>. A successful load will set all
+columns in the object to the values in the underlying record. Load fails and returns
+false is the unique column(s) do not have values, if no record in the database matches
+the unique column value(s), or if the table itself does not exist. Example:
+<pre>
+$tableName->tableNameID(1);
+$tableName->load();
+</pre>
+The reverse of load() is <b>save()</b>. The save method writes the object's current column values
+to the database. If the object's unique columns are defined, save() will perform either
+an INSERT or an UPDATE depending on whether the corresponding record exists. If the unique
+columns do not have values (or no uniqueness constraint has been defined), save() will always
+perform an INSERT. Note that save will only write columns that are set in the current instance.
+For instance, this would only update products.cost and leave the remainder of the record unchanged:
+<pre>
+$product = new ProductsModel($sqlInstance);
+$product->upc('0000000004011');
+$product->cost(0.99);
+$product->save();
+</pre>
+Finally, model objects have a <b>find()</b> method for looking up multiple records.
+Simply calling find() on a new object will return all records in the table.
+Specifically, find returns an array of model objects whose columns are fully populated
+with data from the underlying records. These are new objects; find() does not modify
+the object that it is called on.
+Filters can be applied by adding a second argument containing an SQL operator
+such as &lt;, &lt;=, &gt;, &gt;=, =, !=, or &lt;&gt;. Filters are cummulative
+and repeated calls will add more conditions to the query. Some examples:
+<pre>
+// WHERE tableNameID < 5
+$tableName->tableNameID(5, '<');
+
+// For backwards compatibility purposes, these are identical filters
+// The first one does update the object's columns while the
+// second one does not
+$tableName->columnTwo(0);
+$tableName->columnTwo(0, '=');
+
+// There is an optional third argument for rare situations
+// where the value matches one of the column names. 
+// WHERE TableName.columnOne <> TableName.columnTwo
+$tableName->columnOne('columnTwo', '<>');
+// WHERE TableName.columnOne <> 'columnTwo'
+$tableName->columnOne('columnTwo', '<>', true);
+</pre>
+<h2>Updating Schemas</h2>
+Because the model classes contain an extensive table definition, they
+can analyze the actual database table for discrepancies and suggest
+updates. Models can create tables, add columns to tables, and rename
+columns. They will not drop columns from tables although they will notify
+the user of the discrepancy between the definition and the actual table.
+<p />
+Updates from the command line require a database name to open the correct
+connection. There is a confirmation prompt before applying any updates.
+CLI synatx:
+<pre>
+php BasicModel.php --update <database_name> TableNameModel.php
+</pre>
+Two extra class properties are relevant to updates. The $preferred_db
+can be set to "op" or "trans". This is strictly for the web GUI to apply 
+updates correctly. CLI updates will always respect the database value
+provided. The other property is $normalize_lanes. If this property is true,
+updates will be applied to the server's table as well as the corresponding
+table on any configured lanes.
+<p />
+To add a new column, simply define it in the array of columns then re-run
+the command to generate getters and setters. To rename a column, specify
+the name of the column it replaces in the definition. Changing properties
+of a column such as type or increment may work depending on the underlying
+database.
+<p />
+If a method exists named 'hookAddColumnNAME' (where NAME is the name of the
+new column), that method will be called after creating the column. This can
+be used to populate data into that column.
+<p />
+Every effort should be made to avoid creating SQL errors in code by
+changing the database. INSERTs are the most common problem. Using model classes
+to write records can simplify this otherwise manually checking whether a 
+column exists can work too. Put a <b>dated</b> comment near this kind of code
+to give an indication when the schema changed.
 </body>
 </html>

@@ -9,9 +9,11 @@ function getEndDate()
 }
 
 function dateToYMD(dt) {
-    var d = dt.getDate()+1;
-    var m = dt.getMonth() + 1;
-    var y = dt.getFullYear();
+    var addDay = new Date(dt.valueOf());
+    addDay.setDate(dt.getDate()+1);
+    var d = addDay.getDate();
+    var m = addDay.getMonth() + 1;
+    var y = addDay.getFullYear();
     return '' + y + '-' + (m<=9 ? '0' + m : m) + '-' + (d <= 9 ? '0' + d : d);
 }
 

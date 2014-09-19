@@ -41,19 +41,23 @@ class FannieDB
       @param $db_name the database name
       @return A connected SQLManager instance
     */
-    public static function get($db_name)
+    public static function get($db_name, &$previous_db=null)
     {
         if (!self::dbIsConfigured()) {
             return false;
         } else if (self::$db == null) {
+            $previous_db = $db_name;
             self::newDB($db_name);
         } else if (!isset(self::$db->connections[$db_name])) {
+            $previous_db = self::$db->defaultDatabase();
             self::addDB($db_name);
+        } else {
+            $previous_db = self::$db->defaultDatabase();
         }
 
         self::$db->default_db = $db_name;
         self::$db->query('use '.$db_name);
-        $info = debug_backtrace();
+
         return self::$db;
     }
 

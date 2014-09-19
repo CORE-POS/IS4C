@@ -21,106 +21,117 @@
 
 *********************************************************************************/
 
-require('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+require(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class EditShelfTags extends FanniePage {
 
-	protected $title = 'Fannie - Edit Shelf Tags';
-	protected $header = 'Edit Shelf Tags';
-	protected $must_authenticate = True;
-	protected $auth_classes = array('barcodes');
+    protected $title = 'Fannie - Edit Shelf Tags';
+    protected $header = 'Edit Shelf Tags';
+    protected $must_authenticate = True;
+    protected $auth_classes = array('barcodes');
 
-	private $id;
+    public $description = '[Edit Shelf Tags] updates the text information for a set of tags.';
 
-	function preprocess(){
-		global $FANNIE_OP_DB;
-		$this->id = FormLib::get_form_value('id',0);
+    private $id;
 
-		if (FormLib::get_form_value('submit',False) !== False){
-			$upcs = FormLib::get_form_value('upc',array());
-			$descs = FormLib::get_form_value('desc',array());
-			$prices = FormLib::get_form_value('price',array());
-			$brands = FormLib::get_form_value('brand',array());
-			$skus = FormLib::get_form_value('sku',array());
-			$sizes = FormLib::get_form_value('size',array());
-			$units = FormLib::get_form_value('units',array());
-			$vendors = FormLib::get_form_value('vendors',array());
-			$ppos = FormLib::get_form_value('ppo',array());
+    function preprocess(){
+        global $FANNIE_OP_DB;
+        $this->id = FormLib::get_form_value('id',0);
 
-			$dbc = FannieDB::get($FANNIE_OP_DB);
-			$prep = $dbc->prepare_statement("UPDATE shelftags SET 
-					description=?, normal_price=?,
-					brand=?, sku=?, size=?,
-					units=?, vendor=?,
-					pricePerUnit=?
-					WHERE upc=? and id=?");
-			for ($i = 0; $i < count($upcs); $i++){
-				$upc = $upcs[$i];
-				$desc = isset($descs[$i]) ? $descs[$i] : '';
-				$price = isset($prices[$i]) ? $prices[$i] : 0;
-				$brand = isset($brands[$i]) ? $brands[$i] : '';
-				$size = isset($sizes[$i]) ? $sizes[$i] : '';
-				$unit = isset($units[$i]) ? $units[$i] : 1;
-				$vendor = isset($vendors[$i]) ? $vendors[$i] : '';
-				$ppo = isset($ppos[$i]) ? $ppos[$i] : '';
-			
-				$dbc->exec_statement($prep, array($desc, $price, $brand,
-					$sku, $size, $unit, $vendor, $ppo, $upc, $this->id));
-			}
-			header("Location: ShelfTagIndex.php");
-			return False;
-		}
+        if (FormLib::get_form_value('submit',False) !== False){
+            $upcs = FormLib::get_form_value('upc',array());
+            $descs = FormLib::get_form_value('desc',array());
+            $prices = FormLib::get_form_value('price',array());
+            $brands = FormLib::get_form_value('brand',array());
+            $skus = FormLib::get_form_value('sku',array());
+            $sizes = FormLib::get_form_value('size',array());
+            $units = FormLib::get_form_value('units',array());
+            $vendors = FormLib::get_form_value('vendors',array());
+            $ppos = FormLib::get_form_value('ppo',array());
+            $counts = FormLib::get_form_value('counts',array());
 
-		return True;
-	}
+            $dbc = FannieDB::get($FANNIE_OP_DB);
+            $tag = new ShelftagsModel($dbc);
+            for ($i = 0; $i < count($upcs); $i++){
+                $upc = $upcs[$i];
+                $desc = isset($descs[$i]) ? $descs[$i] : '';
+                $price = isset($prices[$i]) ? $prices[$i] : 0;
+                $brand = isset($brands[$i]) ? $brands[$i] : '';
+                $size = isset($sizes[$i]) ? $sizes[$i] : '';
+                $sku = isset($sku[$i]) ? $sku[$i] : '';
+                $unit = isset($units[$i]) ? $units[$i] : 1;
+                $vendor = isset($vendors[$i]) ? $vendors[$i] : '';
+                $ppo = isset($ppos[$i]) ? $ppos[$i] : '';
+                $count = isset($counts[$i]) ? $counts[$i] : 1;
+            
+                $tag->id($this->id);
+                $tag->upc($upc);
+                $tag->description($desc);
+                $tag->normal_price($price);
+                $tag->brand($brand);
+                $tag->sku($sku);
+                $tag->size($size);
+                $tag->units($unit);
+                $tag->vendor($vendor);
+                $tag->pricePerUnit($ppo);
+                $tag->count($count);
+                $tag->save();
+            }
+            header("Location: ShelfTagIndex.php");
+            return False;
+        }
 
-	function css_content(){
-		return "
-		.one {
-			background: #ffffff;
-		}
-		.two {
-			background: #ffffcc;
-		}";
-	}
+        return True;
+    }
 
-	function body_content(){
-		global $FANNIE_OP_DB;
-		$dbc = FannieDB::get($FANNIE_OP_DB);
+    function css_content(){
+        return "
+        .one {
+            background: #ffffff;
+        }
+        .two {
+            background: #ffffcc;
+        }";
+    }
 
-		$ret = "<form action=EditShelfTags.php method=post>";
-		$ret .= "<table cellspacing=0 cellpadding=4 border=1>";
-		$ret .= "<tr><th>UPC</th><th>Desc</th><th>Price</th><th>Brand</th><th>SKU</th>";
-		$ret .= "<th>Size</th><th>Units</th><th>Vendor</th><th>PricePer</th></tr>";
+    function body_content(){
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 
-		$class = array("one","two");
-		$c = 1;
-		$query = $dbc->prepare_statement("select upc,description,normal_price,
-			brand,sku,size,units,vendor,pricePerUnit from shelftags
-			where id=? order by upc");
-		$result = $dbc->exec_statement($query,array($this->id));
-		while ($row = $dbc->fetch_row($result)){
-			$ret .= "<tr class=$class[$c]>";
-			$ret .= "<td>$row[0]</td><input type=hidden name=upc[] value=\"$row[0]\" />";
-			$ret .= "<td><input type=text name=desc[] value=\"$row[1]\" size=25 /></td>";
-			$ret .= "<td><input type=text name=price[] value=\"$row[2]\" size=5 /></td>";
-			$ret .= "<td><input type=text name=brand[] value=\"$row[3]\" size=13 /></td>";
-			$ret .= "<td><input type=text name=sku[] value=\"$row[4]\" size=6 /></td>";
-			$ret .= "<td><input type=text name=size[] value=\"$row[5]\" size=6 /></td>";
-			$ret .= "<td><input type=text name=units[] value=\"$row[6]\" size=4 /></td>";
-			$ret .= "<td><input type=text name=vendor[] value=\"$row[7]\" size=7 /></td>";
-			$ret .= "<td><input type=text name=ppo[] value=\"$row[8]\" size=10 /></td>";
-			$ret .= "</tr>";
-			$c = ($c+1)%2;
-		}
-		$ret .= "</table>";
-		$ret .= "<input type=hidden name=id value=\"".$this->id."\" />";
-		$ret .= "<input type=submit name=submit value=\"Update Shelftags\" />";
-		$ret .= "</form>";
+        $ret = "<form action=EditShelfTags.php method=post>";
+        $ret .= "<table cellspacing=0 cellpadding=4 border=1>";
+        $ret .= "<tr><th>UPC</th><th>Desc</th><th>Price</th><th>Brand</th><th>SKU</th>";
+        $ret .= "<th>Size</th><th>Units</th><th>Vendor</th><th>PricePer</th><th># Tags</th></tr>";
 
-		return $ret;
-	}
+        $class = array("one","two");
+        $c = 1;
+        $tags = new ShelftagsModel($dbc);
+        $tags->id($this->id);
+        foreach($tags->find() as $tag) {
+            $ret .= "<tr class=$class[$c]>";
+            $ret .= "<td>" . $tag->upc() . "</td><input type=hidden name=upc[] value=\"" . $tag->upc() . "\" />";
+            $ret .= "<td><input type=text name=desc[] value=\"" . $tag->description() . "\" size=25 /></td>";
+            $ret .= "<td><input type=text name=price[] value=\"" . $tag->normal_price() . "\" size=5 /></td>";
+            $ret .= "<td><input type=text name=brand[] value=\"" . $tag->brand() . "\" size=13 /></td>";
+            $ret .= "<td><input type=text name=sku[] value=\"" . $tag->sku() . "\" size=6 /></td>";
+            $ret .= "<td><input type=text name=size[] value=\"" . $tag->size() . "\" size=6 /></td>";
+            $ret .= "<td><input type=text name=units[] value=\"" . $tag->units() . "\" size=4 /></td>";
+            $ret .= "<td><input type=text name=vendor[] value=\"" . $tag->vendor() . "\" size=7 /></td>";
+            $ret .= "<td><input type=text name=ppo[] value=\"" . $tag->pricePerUnit() . "\" size=10 /></td>";
+            $ret .= "<td><input type=text name=counts[] value=\"" . $tag->count() . "\" size=4 /></td>";
+            $ret .= "</tr>";
+            $c = ($c+1)%2;
+        }
+        $ret .= "</table>";
+        $ret .= "<input type=hidden name=id value=\"".$this->id."\" />";
+        $ret .= "<input type=submit name=submit value=\"Update Shelftags\" />";
+        $ret .= "</form>";
+
+        return $ret;
+    }
 }
 
 FannieDispatch::conditionalExec(false);

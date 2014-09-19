@@ -22,42 +22,42 @@
 *********************************************************************************/
 
 if (!class_exists('FannieAPI'))
-	include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 /**
 */
 class ShelfAudit extends FanniePlugin {
 
-	/**
-	  Desired settings. These are automatically exposed
-	  on the 'Plugins' area of the install page and
-	  written to ini.php
-	*/
-	public $plugin_settings = array(
-	'ShelfAuditDB' => array('default'=>'core_shelfaudit','label'=>'Database',
-			'description'=>'Database to store inventory information. Can
-					be one of the default CORE databases or a 
-					separate one.')
-	);
+    /**
+      Desired settings. These are automatically exposed
+      on the 'Plugins' area of the install page and
+      written to ini.php
+    */
+    public $plugin_settings = array(
+    'ShelfAuditDB' => array(
+            'label'=>'Database',
+            'default'=>'core_shelfaudit',
+            'description'=>'Database to store plugin-specific inventory tables.
+                Can be one of the default CORE databases or a separate one.'
+        )
+    );
 
-	public $plugin_description = 'Plugin for scanning items on hand';
 
-	public function setting_change(){
-		global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
+    public $plugin_description = 'Plugin for scanning items on hand';
 
-		$db_name = $FANNIE_PLUGIN_SETTINGS['ShelfAuditDB'];
-		if (empty($db_name)) return;
+    public function setting_change()
+    {
+        global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
 
-		$dbc = FannieDB::get($db_name);
+        $db_name = $FANNIE_PLUGIN_SETTINGS['ShelfAuditDB'];
+        if (empty($db_name)) return;
 
-		$errors = array();
-		$errors[] = $this->plugin_db_struct($dbc, 'sa_inventory', $db_name);
-
-		foreach($errors as $e){
-			if ($e === True) continue;
-			echo 'ShelfAuditPlugin error: '.$e.'<br />';
-		}
-	}
+        $dbc = FannieDB::get($db_name);
+        if (!class_exists('SaInventoryModel')) {
+            include(dirname(__FILE__) . '/models/SaInventoryModel.php');
+        }
+        $obj = new SaInventoryModel($dbc);
+        $obj->create();
+    }
 }
 
-?>

@@ -29,25 +29,8 @@ class cablist extends NoInputPage
     function head_content()
     {
         ?>
-        <script type="text/javascript" >
-        var prevKey = -1;
-        var prevPrevKey = -1;
-        function processkeypress(e) {
-            var jsKey;
-            if (e.keyCode) // IE
-                jsKey = e.keyCode;
-            else if(e.which) // Netscape/Firefox/Opera
-                jsKey = e.which;
-            if (jsKey==13) {
-                if ( (prevPrevKey == 99 || prevPrevKey == 67) &&
-                (prevKey == 108 || prevKey == 76) ){ //CL<enter>
-                    $('#selectlist option:selected').val('');    
-                }
-                submitWrapper();
-            }
-            prevPrevKey = prevKey;
-            prevKey = jsKey;
-        }
+        <script type="text/javascript" src="../js/selectSubmit.js"></script>
+        <script type="text/javascript">
         function submitWrapper(){
             var ref = $('#selectlist').val();
             if (ref != ""){
@@ -69,7 +52,7 @@ class cablist extends NoInputPage
         }
         </script> 
         <?php
-        $this->add_onload_command("\$('#selectlist').keypress(processkeypress);\n");
+        $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
         $this->add_onload_command("\$('#selectlist').focus();\n");
     }
     
@@ -121,7 +104,7 @@ class cablist extends NoInputPage
 
         <div class="baseHeight">
         <div class="listbox">
-        <form name="selectform" onsubmit="return submitWrapper();">
+        <form id="selectform" name="selectform" onsubmit="return submitWrapper();">
         <select name="selectlist" size="10" onblur="$('#selectlist').focus()"
             id="selectlist">
 
@@ -136,7 +119,7 @@ class cablist extends NoInputPage
             $selected = "";
         }
         if ($num_rows == 0) {
-            echo "<option value=\"\">None found</option>";
+            echo "<option selected value=\"\">None found</option>";
         }
         ?>
 

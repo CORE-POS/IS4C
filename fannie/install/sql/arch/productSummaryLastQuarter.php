@@ -4,7 +4,7 @@ Table: productSummaryLastQuarter
 
 Columns:
     productSummaryLastQuarterID int
-	upc varchar
+    upc varchar
     qtyThisWeek
     totalThisWeek
     qtyLastQuarter
@@ -36,18 +36,18 @@ over a longer period should capture long-term trends
 while smoothing over random fluctuations.
 */
 $CREATE['arch.productSummaryLastQuarter'] = "
-	CREATE TABLE productSummaryLastQuarter (
-	productSummaryLastQuarterID INT NOT NULL AUTO_INCREMENT,
-	upc VARCHAR(13),
-	qtyThisWeek DECIMAL(10,2),
-	totalThisWeek DECIMAL(10,2),
+    CREATE TABLE productSummaryLastQuarter (
+    productSummaryLastQuarterID INT NOT NULL AUTO_INCREMENT,
+    upc VARCHAR(13),
+    qtyThisWeek DECIMAL(10,2),
+    totalThisWeek DECIMAL(10,2),
     qtyLastQuarter DECIMAL(10,2),
     totalLastQuarter DECIMAL(10,2),
     percentageStoreSales DECIMAL(10,5),
     percentageSuperDeptSales DECIMAL(10,5),
     percentageDeptSales DECIMAL(10,5),
-	PRIMARY KEY (upc),
+    PRIMARY KEY (upc),
     INDEX(productSummaryLastQuarterID)
-	)
+    )
 ";
 

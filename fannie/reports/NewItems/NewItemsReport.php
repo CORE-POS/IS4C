@@ -21,11 +21,15 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class NewItemsReport extends FannieReportPage 
 {
+    public $description = '[New Items] shows products recently added to POS. This is more
+        approximate than definitive.';
 
     protected $title = "Fannie : New Items Report";
     protected $header = "New Items Report";
@@ -35,15 +39,11 @@ class NewItemsReport extends FannieReportPage
 
     public function report_description_content()
     {
-        $date1 = FormLib::get('date1', date('Y-m-d'));
-        $date2 = FormLib::get('date2', date('Y-m-d'));
         $deptStart = FormLib::get('deptStart');
         $deptEnd = FormLib::get('deptEnd');
         $buyer = FormLib::get('buyer', '');
-	
+    
         $ret = array();
-        $ret[] = 'New Items Report';
-        $ret[] = 'From '.$date1.' to '.$date2;
         if ($buyer === '') {
             $ret[] = 'Department '.$deptStart.' to '.$deptEnd;
         } else if ($buyer == -1) {
@@ -64,7 +64,7 @@ class NewItemsReport extends FannieReportPage
         $date2 = FormLib::get('date2', date('Y-m-d'));
         $deptStart = FormLib::get('deptStart');
         $deptEnd = FormLib::get('deptEnd');
-	
+    
         $buyer = FormLib::get('buyer', '');
 
         // args/parameters differ with super
@@ -86,7 +86,7 @@ class NewItemsReport extends FannieReportPage
 
         $query = "SELECT MIN(CASE WHEN a.modified IS NULL THEN p.modified ELSE a.modified END) AS entryDate, 
             a.upc, p.description, p.department, d.dept_name
-            FROM products AS p INNER JOIN prodUpdateArchive AS a ON a.upc=p.upc
+            FROM products AS p INNER JOIN prodUpdate AS a ON a.upc=p.upc
             LEFT JOIN departments AS d ON d.dept_no=p.department ";
         // join only needed with specific buyer
         if ($buyer !== '' && $buyer > -1) {
@@ -114,7 +114,7 @@ class NewItemsReport extends FannieReportPage
         }
 
         return $data;
-	}
+    }
 
     public function form_content()
     {
@@ -146,67 +146,70 @@ function swap(src,dst){
     document.getElementById(dst).value = val;
 }
 </script>
-<div id=main>	
+<div id=main>   
 <form method = "get" action="NewItemsReport.php">
-	<table border="0" cellspacing="0" cellpadding="5">
-		<tr>
-			<td><b>Select Buyer/Dept</b></td>
-			<td><select id=buyer name=buyer>
-			   <option value=""></option>
-			   <?php echo $deptSubList; ?>
-			   <option value=-1 >All</option>
-			   </select>
- 			</td>
-			<td><b>Send to Excel</b></td>
-			<td><input type=checkbox name=excel id=excel value=1></td>
-		</tr>
-		<tr>
-			<td colspan=5><i>Selecting a Buyer/Dept overrides Department Start/Department End, but not Date Start/End.
-			To run reports for a specific department(s) leave Buyer/Dept or set it to 'blank'</i></td>
-		</tr>
-		<tr> 
-			<td> <p><b>Department Start</b></p>
-			<p><b>End</b></p></td>
-			<td> <p>
- 			<select id=deptStartSel onchange="swap('deptStartSel','deptStart');">
-			<?php echo $deptsList ?>
-			</select>
-			<input type=text name=deptStart id=deptStart size=5 value=1 />
-			</p>
-			<p>
-			<select id=deptEndSel onchange="swap('deptEndSel','deptEnd');">
-			<?php echo $deptsList ?>
-			</select>
-			<input type=text name=deptEnd id=deptEnd size=5 value=1 />
-			</p></td>
+    <table border="0" cellspacing="0" cellpadding="5">
+        <tr>
+            <td><b>Select Buyer/Dept</b></td>
+            <td><select id=buyer name=buyer>
+               <option value=""></option>
+               <?php echo $deptSubList; ?>
+               <option value=-1 >All</option>
+               </select>
+            </td>
+            <td><b>Send to Excel</b></td>
+            <td><input type=checkbox name=excel id=excel value=1></td>
+        </tr>
+        <tr>
+            <td colspan=5><i>Selecting a Buyer/Dept overrides Department Start/Department End, but not Date Start/End.
+            To run reports for a specific department(s) leave Buyer/Dept or set it to 'blank'</i></td>
+        </tr>
+        <tr> 
+            <td> <p><b>Department Start</b></p>
+            <p><b>End</b></p></td>
+            <td> <p>
+            <select id=deptStartSel onchange="swap('deptStartSel','deptStart');">
+            <?php echo $deptsList ?>
+            </select>
+            <input type=text name=deptStart id=deptStart size=5 value=1 />
+            </p>
+            <p>
+            <select id=deptEndSel onchange="swap('deptEndSel','deptEnd');">
+            <?php echo $deptsList ?>
+            </select>
+            <input type=text name=deptEnd id=deptEnd size=5 value=1 />
+            </p></td>
 
-			 <td>
-			<p><b>Date Start</b> </p>
-		         <p><b>End</b></p>
-		       </td>
-		            <td>
-		             <p>
-		               <input type=text id=date1 name=date1 onfocus="this.value='';showCalendarControl(this);">
-		               </p>
-		               <p>
-		                <input type=text id=date2 name=date2 onfocus="this.value='';showCalendarControl(this);">
-		         </p>
-		       </td>
+             <td>
+            <p><b>Date Start</b> </p>
+                 <p><b>End</b></p>
+               </td>
+                    <td>
+                     <p>
+                       <input type=text id=date1 name=date1 />
+                       </p>
+                       <p>
+                        <input type=text id=date2 name=date2 />
+                 </p>
+               </td>
 
-		</tr>
-		<tr> 
+        </tr>
+        <tr> 
              <td colspan="2"> </td>
-			<td colspan="2" rowspan="2">
+            <td colspan="2" rowspan="2">
                 <?php echo FormLib::date_range_picker(); ?>
             </td>
-		</tr>
+        </tr>
         <tr>
-			<td> <input type=submit name=submit value="Submit"> </td>
-			<td> <input type=reset name=reset value="Start Over"> </td>
-		</tr>
-	</table>
+            <td> <input type=submit name=submit value="Submit"> </td>
+            <td> <input type=reset name=reset value="Start Over"> </td>
+        </tr>
+    </table>
 </form>
         <?php
+        $this->add_onload_command('$(\'#date1\').datepicker();');
+        $this->add_onload_command('$(\'#date2\').datepicker();');
+
         return ob_get_clean();
     }
 }

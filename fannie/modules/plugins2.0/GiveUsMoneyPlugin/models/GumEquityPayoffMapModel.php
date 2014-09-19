@@ -35,7 +35,7 @@ class GumEquityPayoffMapModel extends BasicModel
     protected $columns = array(
     'gumEquityShareID' => array('type'=>'INT', 'primary_key'=>true),
     'gumPayoffID' => array('type'=>'INT', 'primary_key'=>true),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -49,6 +49,22 @@ class GumEquityPayoffMapModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'gumEquityShareID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["gumEquityShareID"]) || $this->instance["gumEquityShareID"] != func_get_args(0)) {
                 if (!isset($this->columns["gumEquityShareID"]["ignore_updates"]) || $this->columns["gumEquityShareID"]["ignore_updates"] == false) {
@@ -57,6 +73,7 @@ class GumEquityPayoffMapModel extends BasicModel
             }
             $this->instance["gumEquityShareID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function gumPayoffID()
@@ -69,6 +86,22 @@ class GumEquityPayoffMapModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'gumPayoffID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["gumPayoffID"]) || $this->instance["gumPayoffID"] != func_get_args(0)) {
                 if (!isset($this->columns["gumPayoffID"]["ignore_updates"]) || $this->columns["gumPayoffID"]["ignore_updates"] == false) {
@@ -77,6 +110,7 @@ class GumEquityPayoffMapModel extends BasicModel
             }
             $this->instance["gumPayoffID"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

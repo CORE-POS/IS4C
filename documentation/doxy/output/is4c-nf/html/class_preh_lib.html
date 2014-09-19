@@ -45,6 +45,8 @@
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="1b9e7cc22a95e1278a7855af9344595d"></a><!-- doxytag: member="PrehLib::requestInfoCallback" ref="1b9e7cc22a95e1278a7855af9344595d" args="($info)" -->
 static&nbsp;</td><td class="memItemRight" valign="bottom"><b>requestInfoCallback</b> ($info)</td></tr>
 
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_preh_lib.html#2ef4fc77208466cb48558a4d8081eca7">setAltMemMsg</a> ($store, $member, $personNumber, $row, $chargeOk)</td></tr>
+
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_preh_lib.html#8069b3b2ab8043a22c2255db7c3a39c2">setMember</a> ($member, $personNumber, $row)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_preh_lib.html#467f33f366e690132836e19b0e9546fd">checkUnpaidAR</a> ($cardno)</td></tr>
@@ -62,7 +64,9 @@ static&nbsp;</td><td class="memItemRight" valign="bottom"><b>check_unpaid_ar</b>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_preh_lib.html#567cd27adb4979abc8e74f45f9be2f14">omtr_ttl</a> ()</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_preh_lib.html#0587eb26c8b1552de016a86ea350859c">peekItem</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_preh_lib.html#cfedde08ba4427337b5722b5c6fbbc09">wicableTotal</a> ()</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_preh_lib.html#e599664e2b7042bbb108846bac16b2db">peekItem</a> ($full_record=false)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_preh_lib.html#89a499378c8bdb90e8f334424b5ffa74">finalttl</a> ()</td></tr>
 
@@ -217,6 +221,8 @@ Add an open ring to a department <dl compact><dt><b>Parameters:</b></dt><dd>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>An array. See <a class="el" href="class_parser.html#0076d421db25e8eb844d0ecc093688ad">Parser::default_json()</a> for format explanation. </dd></dl>
 
+<p>
+Enforce memberOnly flag 
 </div>
 </div><p>
 <a class="anchor" name="89a499378c8bdb90e8f334424b5ffa74"></a><!-- doxytag: member="PrehLib::finalttl" ref="89a499378c8bdb90e8f334424b5ffa74" args="()" -->
@@ -281,6 +287,8 @@ Set member number for transaction <dl compact><dt><b>Parameters:</b></dt><dd>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>An array. See <a class="el" href="class_parser.html#0076d421db25e8eb844d0ecc093688ad">Parser::default_json()</a> for format.</dd></dl>
 This function will either assign the number to the current transaction or return a redirect request to get more input. If you want the cashier to verify member name from a list, use this function. If you want to force the number to be set immediately, use <a class="el" href="class_preh_lib.html#8069b3b2ab8043a22c2255db7c3a39c2">setMember()</a>. 
+<p>
+This is a bad idea. If the search is cancelled, these fields won't be refreshed with new data $CORE_LOCAL-&gt;set("memberID","0"); $CORE_LOCAL-&gt;set("memType",0); $CORE_LOCAL-&gt;set("percentDiscount",0); $CORE_LOCAL-&gt;set("memMsg",""); 
 </div>
 </div><p>
 <a class="anchor" name="567cd27adb4979abc8e74f45f9be2f14"></a><!-- doxytag: member="PrehLib::omtr_ttl" ref="567cd27adb4979abc8e74f45f9be2f14" args="()" -->
@@ -306,14 +314,15 @@ The Ontario Meal Tax Rebate refunds the provincial part of the Harmonized Sales 
 If the transaction qualifies, change the tax status for each item at the higher rate to the lower rate. Display a message that a change was made. Otherwise display a message about that. Total the transaction as usual. 
 </div>
 </div><p>
-<a class="anchor" name="0587eb26c8b1552de016a86ea350859c"></a><!-- doxytag: member="PrehLib::peekItem" ref="0587eb26c8b1552de016a86ea350859c" args="()" -->
+<a class="anchor" name="e599664e2b7042bbb108846bac16b2db"></a><!-- doxytag: member="PrehLib::peekItem" ref="e599664e2b7042bbb108846bac16b2db" args="($full_record=false)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">static PrehLib::peekItem           </td>
           <td>(</td>
-          <td class="paramname">          </td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>full_record</em> = <code>false</code>          </td>
           <td>&nbsp;)&nbsp;</td>
           <td width="100%"><code> [static]</code></td>
         </tr>
@@ -322,8 +331,13 @@ If the transaction qualifies, change the tax status for each item at the higher 
 <div class="memdoc">
 
 <p>
-See what the last item in the transaction is currently <dl compact><dt><b>Returns:</b></dt><dd>localtemptrans.description for the last item </dd></dl>
-
+See what the last item in the transaction is currently <dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>$full_record</em>&nbsp;</td><td>[boolean] return full database record. Default is false. Just returns description. </td></tr>
+  </table>
+</dl>
+<dl compact><dt><b>Returns:</b></dt><dd>localtemptrans.description for the last item or localtemptrans record for the last item</dd></dl>
+If no record exists, returns false 
 </div>
 </div><p>
 <a class="anchor" name="1e6d503cd0df830c2603f089e06ec3f6"></a><!-- doxytag: member="PrehLib::percentDiscount" ref="1e6d503cd0df830c2603f089e06ec3f6" args="($strl, $json=array())" -->
@@ -359,7 +373,63 @@ Add a percent discount notification <dl compact><dt><b>Parameters:</b></dt><dd>
   </table>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>An array see <a class="el" href="class_parser.html#0076d421db25e8eb844d0ecc093688ad">Parser::default_json()</a> </dd></dl>
-<dl compact><dt><b><a class="el" href="deprecated.html#_deprecated000001">Deprecated:</a></b></dt><dd>Use discountnotify() instead. This just adds hard-coded percentages and PLUs that likely aren't applicable anywhere but the Wedge. </dd></dl>
+<dl compact><dt><b><a class="el" href="deprecated.html#_deprecated000007">Deprecated:</a></b></dt><dd>Use discountnotify() instead. This just adds hard-coded percentages and PLUs that likely aren't applicable anywhere but the Wedge. </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="2ef4fc77208466cb48558a4d8081eca7"></a><!-- doxytag: member="PrehLib::setAltMemMsg" ref="2ef4fc77208466cb48558a4d8081eca7" args="($store, $member, $personNumber, $row, $chargeOk)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static PrehLib::setAltMemMsg           </td>
+          <td>(</td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>store</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>member</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>personNumber</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>row</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>chargeOk</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"><code> [static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Assign store-specific alternate member message line <dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>$store</em>&nbsp;</td><td>code for the coop </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$member</em>&nbsp;</td><td>CardNo from custdata </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$personNumber</em>&nbsp;</td><td>personNum from custdata </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$row</em>&nbsp;</td><td>a record from custdata </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$chargeOk</em>&nbsp;</td><td>whether member can store-charge purchases </td></tr>
+  </table>
+</dl>
 
 </div>
 </div><p>
@@ -433,7 +503,8 @@ Use discount module to calculate modified percentDiscount
 <div class="memdoc">
 
 <p>
-Add a tender to the transaction  tender amount in cents (100 = $1)  tender code from tenders table <dl compact><dt><b>Returns:</b></dt><dd>An array see <a class="el" href="class_parser.html#0076d421db25e8eb844d0ecc093688ad">Parser::default_json()</a> for format explanation.</dd></dl>
+Add a tender to the transaction<p>
+tender amount in cents (100 = $1)  tender code from tenders table <dl compact><dt><b>Returns:</b></dt><dd>An array see <a class="el" href="class_parser.html#0076d421db25e8eb844d0ecc093688ad">Parser::default_json()</a> for format explanation.</dd></dl>
 This function will automatically end a transaction if the amount due becomes &lt;= zero. 
 <p>
 First use base module to check for error conditions common to all tenders<p>
@@ -462,9 +533,29 @@ If <a class="el" href="class_preh_lib.html#f9b1934491a95a26dcb42f0a66e4f919">ttl
 The most common error, by far, is no member number in which case the return value is the member-entry page. 
 </div>
 </div><p>
+<a class="anchor" name="cfedde08ba4427337b5722b5c6fbbc09"></a><!-- doxytag: member="PrehLib::wicableTotal" ref="cfedde08ba4427337b5722b5c6fbbc09" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static PrehLib::wicableTotal           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Calculate WIC eligible total <dl compact><dt><b>Returns:</b></dt><dd>[number] WIC eligible items total </dd></dl>
+
+</div>
+</div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/PrehLib.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

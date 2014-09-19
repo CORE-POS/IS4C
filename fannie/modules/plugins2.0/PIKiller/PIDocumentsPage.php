@@ -23,34 +23,34 @@
 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI'))
-	include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 if (!class_exists('PIKillerPage')) {
     include('lib/PIKillerPage.php');
 }
 
 class PIDocumentsPage extends PIKillerPage {
 
-	protected function get_id_handler(){
-		global $FANNIE_OP_DB;
-		$this->card_no = $this->id;
+    protected function get_id_handler(){
+        global $FANNIE_OP_DB;
+        $this->card_no = $this->id;
 
-		$this->title = 'Documents : Member '.$this->card_no;
+        $this->title = 'Documents : Member '.$this->card_no;
 
-		return True;
-	}
+        return True;
+    }
 
-	protected function get_id_view(){
-		ob_start();
-		echo '<tr><td>';
+    protected function get_id_view(){
+        ob_start();
+        echo '<tr><td>';
 
-		echo '<iframe width="90%" height="300"
-			src="/cgi-bin/docfile/index.cgi?memID='.$this->id.'"
-			style="border: 0px;">
-		</iframe>';
+        echo '<iframe width="90%" height="300"
+            src="/cgi-bin/docfile/index.cgi?memID='.$this->id.'"
+            style="border: 0px;">
+        </iframe>';
 
-		echo '</td></tr>';
-		return ob_get_clean();
-	}
+        echo '</td></tr>';
+        return ob_get_clean();
+    }
 }
 
 FannieDispatch::conditionalExec();

@@ -34,6 +34,9 @@ class WfcHtViewEmpPage extends FanniePage
     protected $must_authenticate = true;
     protected $window_dressing = false;
 
+    public $page_set = 'Plugin :: WFC Hours Tracking';
+    public $description = '[View Hourly] shows information for a single hourly employee.';
+
     private $empID = 0;
 
     public function preprocess()
@@ -209,7 +212,7 @@ class WfcHtViewEmpPage extends FanniePage
                 $sums[5] += $row[1];
                 continue;
             }
-	
+    
             echo "<tr class=$class[$c]>";
             $total = $row[1]+$row[2]+$row[5];
             echo "<td class=left>$row[0]</td>";

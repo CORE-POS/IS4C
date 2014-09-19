@@ -21,15 +21,19 @@
 
 *********************************************************************************/
 
-include('../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class PurchasingSearchPage extends FannieRESTfulPage {
-	
-	protected $header = 'Purchase Orders';
-	protected $title = 'Purchase Orders';
+    
+    protected $header = 'Purchase Orders';
+    protected $title = 'Purchase Orders';
 
-	protected $must_authenticate = true;
+    public $description = '[Search Purchase Orders] finds orders/invoices containing a given item.';
+
+    protected $must_authenticate = true;
 
     public function get_id_view()
     {
@@ -90,16 +94,16 @@ class PurchasingSearchPage extends FannieRESTfulPage {
         return $ret;
     }
 
-	public function get_view()
+    public function get_view()
     {
         $ret = '<form action="PurchasingSearchPage.php" method="get">';
         $ret .= '<table>';
         $ret .= '<tr><th>UPC or SKU</th><td><input type="text" name="id" /></td>';
         $ret .= '<td rowspan="3">' . FormLib::dateRangePicker() . '</td></tr>';
         $ret .= '<tr><th>Start Date</th><td><input type="text" size="10" 
-            id="date1" name="date1" onfocus="showCalendarControl(this);" /></td></tr>';
+            id="date1" name="date1" /></td></tr>';
         $ret .= '<tr><th>End Date</th><td><input type="text" size="10" 
-            id="date2" name="date2" onfocus="showCalendarControl(this);" /></td></tr>';
+            id="date2" name="date2" /></td></tr>';
         $ret .= '<tr><td><input type="submit" value="Search" /></td>';
         $ret .= '<td colspan="2">Omit dates to search all orders
                 (<a href="" onclick="$(\'#date1\').val(\'\');$(\'#date2\').val(\'\');return false;">Clear
@@ -107,8 +111,11 @@ class PurchasingSearchPage extends FannieRESTfulPage {
         $ret .= '</table>';
         $ret .= '</form>';
 
+        $this->add_onload_command('$(\'#date1\').datepicker();');
+        $this->add_onload_command('$(\'#date2\').datepicker();');
+
         return $ret;
-	}
+    }
 }
 
 FannieDispatch::conditionalExec();

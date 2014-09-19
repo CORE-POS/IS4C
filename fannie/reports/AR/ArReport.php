@@ -21,11 +21,15 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class ArReport extends FannieReportPage 
 {
+    public $description = '[AR/Store Charge] lists all AR/Store Charge transactions for a given member';
+    public $report_set = 'Membership';
 
     protected $report_headers = array('Date', 'Receipt', 'Amount', 'Type');
     protected $sort_direction = 1;
@@ -33,7 +37,7 @@ class ArReport extends FannieReportPage
     protected $header = "AR Activity Report";
     protected $required_fields = array('memNum');
 
-	public function preprocess()
+    public function preprocess()
     {
         $this->card_no = FormLib::get('memNum','');
 
@@ -45,7 +49,7 @@ class ArReport extends FannieReportPage
         return array('Activity for account #'.$this->card_no);
     }
 
-	public function fetch_report_data()
+    public function fetch_report_data()
     {
         global $FANNIE_TRANS_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_TRANS_DB);

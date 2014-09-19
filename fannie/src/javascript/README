@@ -1,0 +1,16 @@
+Some organization is required or we wind up with 
+dozens of different version of the same library
+(usually jquery).
+
+Javascript libraries should be placed in
+their own directory. An entry in the CurrentVersions.txt
+file should indicate which version of the library
+is in that directory. CSS files bundled with the
+javascript library belong here even though they
+are not javascript per se.
+
+Optionally, place a symlink without version number
+in the top level pointing at a particular version
+of a library. When these symlinks are provided, pages
+should use the symlink URLs to avoid rewrites if
+the underlying javascript libraries are upgraded.

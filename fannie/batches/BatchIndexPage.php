@@ -20,34 +20,38 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-include('../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__). '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class BatchIndexPage extends FanniePage {
-	protected $title = 'Fannie - Batch Module';
-	protected $header = 'Sales Batches';
+    protected $title = 'Fannie - Batch Module';
+    protected $header = 'Sales Batches';
 
-	function body_content(){
-		ob_start();
-		?>
-		<ul>
-			<li><a href="newbatch/">Sales Batches</a> is a tool to create
-				batches manually one item at a time.</li>
-			<li><a href="xlsbatch/">Upload Batch</a> is a tool to create
-				a batch from a spreadsheet.</li>
-			<li><a href="BatchTypeEditor.php">Manage Batch Types</a> adds, removes, or
-				adjusts batch types</li>
-			<li><a href="CAP/">Co+op Deals</a> imports the Co+op Deals pricing
-				spreadsheet, determines where sale items exist in POS,
-				and creates appropriate sales batches.</li>
-			<li><a href="UNFI/">Vendor Pricing</a> imports cost information
-				from vendor spreadsheets, calculates SRPs based on desired
-				margins, and creates price change batches to apply new
-				SRPs.</li>
-		</ul>
-		<?php
-		return ob_get_clean();
-	}
+    public $description = '[Batch Menu] lists various batch related pages.';
+
+    function body_content(){
+        ob_start();
+        ?>
+        <ul>
+            <li><a href="newbatch/">Sales Batches</a> is a tool to create
+                batches manually one item at a time.</li>
+            <li><a href="xlsbatch/">Upload Batch</a> is a tool to create
+                a batch from a spreadsheet.</li>
+            <li><a href="BatchTypeEditor.php">Manage Batch Types</a> adds, removes, or
+                adjusts batch types</li>
+            <li><a href="CAP/">Co+op Deals</a> imports the Co+op Deals pricing
+                spreadsheet, determines where sale items exist in POS,
+                and creates appropriate sales batches.</li>
+            <li><a href="UNFI/">Vendor Pricing</a> imports cost information
+                from vendor spreadsheets, calculates SRPs based on desired
+                margins, and creates price change batches to apply new
+                SRPs.</li>
+        </ul>
+        <?php
+        return ob_get_clean();
+    }
 }
 
 FannieDispatch::conditionalExec(false);

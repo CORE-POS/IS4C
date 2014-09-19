@@ -24,7 +24,7 @@
 /**
   @class EquityLiveBalanceModel
 */
-class EquityLiveBalanceModel extends BasicModel 
+class EquityLiveBalanceModel extends ViewModel 
 {
 
     protected $name = "equity_live_balance";
@@ -35,10 +35,29 @@ class EquityLiveBalanceModel extends BasicModel
     'startdate' => array('type','DATETIME')
     );
 
-    public function create(){ return false; }
-    public function delete(){ return false; }
-    public function save(){ return false; }
-    public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=false){ return 0; }
+    public function definition()
+    {
+        global $FANNIE_OP_DB;
+        return '
+            SELECT
+                m.card_no AS memnum,
+                CASE
+                    WHEN a.card_no IS NOT NULL AND b.card_no IS NOT NULL
+                    THEN a.payments + b.totPayments
+                    WHEN a.card_no IS NOT NULL
+                    THEN a.payments
+                    WHEN b.card_no IS NOT NULL
+                    THEN b.totPayments
+                    END AS payments,
+                CASE WHEN a.startdate IS NULL THEN b.startdate
+                    ELSE a.startdate END AS startdate
+            FROM ' . $FANNIE_OP_DB . $this->connection->sep() . 'meminfo AS m 
+                LEFT JOIN equity_history_sum AS a ON a.card_no=m.card_no
+                LEFT JOIN stockSumToday AS b ON m.card_no=b.card_no
+            WHERE a.card_no IS NOT NULL 
+                OR b.card_no IS NOT NULL
+        ';
+    }
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -47,14 +66,36 @@ class EquityLiveBalanceModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["memnum"])) {
                 return $this->instance["memnum"];
-            } elseif(isset($this->columns["memnum"]["default"])) {
+            } else if (isset($this->columns["memnum"]["default"])) {
                 return $this->columns["memnum"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'memnum',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["memnum"]) || $this->instance["memnum"] != func_get_args(0)) {
+                if (!isset($this->columns["memnum"]["ignore_updates"]) || $this->columns["memnum"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["memnum"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function payments()
@@ -62,14 +103,36 @@ class EquityLiveBalanceModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["payments"])) {
                 return $this->instance["payments"];
-            } elseif(isset($this->columns["payments"]["default"])) {
+            } else if (isset($this->columns["payments"]["default"])) {
                 return $this->columns["payments"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'payments',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["payments"]) || $this->instance["payments"] != func_get_args(0)) {
+                if (!isset($this->columns["payments"]["ignore_updates"]) || $this->columns["payments"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["payments"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function startdate()
@@ -77,14 +140,36 @@ class EquityLiveBalanceModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["startdate"])) {
                 return $this->instance["startdate"];
-            } elseif(isset($this->columns["startdate"]["default"])) {
+            } else if (isset($this->columns["startdate"]["default"])) {
                 return $this->columns["startdate"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'startdate',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["startdate"]) || $this->instance["startdate"] != func_get_args(0)) {
+                if (!isset($this->columns["startdate"]["ignore_updates"]) || $this->columns["startdate"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["startdate"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

@@ -21,13 +21,18 @@
 
 *********************************************************************************/
 
-include('../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+require(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class EditItemsFromSearch extends FannieRESTfulPage
 {
     protected $header = 'Edit Search Results';
     protected $title = 'Edit Search Results';
+
+    public $description = '[Edit Search Results] takes a set of advanced search items and allows
+    editing some fields on all items simultaneously. Must be accessed via Advanced Search.';
 
     protected $window_dressing = false;
 
@@ -57,6 +62,7 @@ class EditItemsFromSearch extends FannieRESTfulPage
         $vendor = FormLib::get('vendor');
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
+        $vlookup = new VendorsModel($dbc);
         for($i=0; $i<count($upcs); $i++) {
             $model = new ProductsModel($dbc);
             $upc = BarcodeLib::padUPC($upcs[$i]);
@@ -70,6 +76,17 @@ class EditItemsFromSearch extends FannieRESTfulPage
             }
             if (isset($local[$i])) {
                 $model->local($local[$i]);
+            }
+            if (isset($brand[$i])) {
+                $model->brand($brand[$i]);
+            }
+            if (isset($vendor[$i])) {
+                $vlookup->reset();
+                $vlookup->vendorName($vendor[$i]);
+                foreach ($vlookup->find('vendorID') as $obj) {
+                    $model->default_vendor_id($obj->vendorID());
+                    break;
+                }
             }
 
             if (in_array($upc, FormLib::get('fs', array()))) {
@@ -152,7 +169,7 @@ class EditItemsFromSearch extends FannieRESTfulPage
     function post_u_view()
     {
         global $FANNIE_OP_DB, $FANNIE_URL;
-        $this->add_script($FANNIE_URL.'/src/jquery/jquery.js');
+        $this->add_script($FANNIE_URL.'/src/javascript/jquery.js');
         $this->add_css_file($FANNIE_URL.'/src/style.css');
         $ret = '';
 

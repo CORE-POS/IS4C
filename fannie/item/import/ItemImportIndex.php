@@ -20,25 +20,29 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class ItemImportIndex extends FanniePage {
-	protected $title = "Fannie :: Product Tools";
-	protected $header = "Import Product Information";
+    protected $title = "Fannie :: Product Tools";
+    protected $header = "Import Product Information";
 
-	function body_content(){
-		ob_start();
-		?>
-		<ul>
-		<li><a href="DepartmentImportPage.php">Departments</a></li>
-		<li><a href="SubdeptImportPage.php">Subdepartments</a></li>
-		<li><a href="ProductImportPage.php">Products</a></li>
-		<li><a href="UploadAnyFile.php">Upload a file</a></li>
-		</ul>
-		<?php
-		return ob_get_clean();
-	}
+    public $description = '[Item Import Menu] lists options for importing item related data.';
+
+    function body_content(){
+        ob_start();
+        ?>
+        <ul>
+        <li><a href="DepartmentImportPage.php">Departments</a></li>
+        <li><a href="SubdeptImportPage.php">Subdepartments</a></li>
+        <li><a href="ProductImportPage.php">Products</a></li>
+        <li><a href="UploadAnyFile.php">Upload a file</a></li>
+        </ul>
+        <?php
+        return ob_get_clean();
+    }
 }
 
 FannieDispatch::conditionalExec(false);

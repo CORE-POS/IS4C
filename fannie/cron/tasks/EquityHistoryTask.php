@@ -91,7 +91,7 @@ Deprecates nightly.equity.php.';
 
             // add to equity history
             $try = $dbc->execute($addP, array($lookupW['card_no'], $lookupW['total'], $lookupW['tdate'],
-                                                $lookupW['trans_num'], $lookupW['departments']));
+                                                $lookupW['trans_num'], $lookupW['department']));
             if ($try === false) {
                 echo $this->cronMsg('Error adding equity entry '.$lookupW['tdate']. ' '.$lookupW['trans_num']);
             }

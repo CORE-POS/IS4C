@@ -38,6 +38,9 @@ class WfcHtUploadPage extends FanniePage
     protected $auth_classes = array('upload_hours_data');
     protected $header = 'Upload';
     protected $title = 'Upload';
+    
+    public $page_set = 'Plugin :: WFC Hours Tracking';
+    public $description = '[Hours Upload] imports data for hourly employees.';
 
     private $mode = 'form';
 
@@ -56,16 +59,16 @@ class WfcHtUploadPage extends FanniePage
     {
         return '
 .one {
-	background: #ffffff;
+    background: #ffffff;
 }
 .one td {
-	text-align: right;
+    text-align: right;
 }
 .two {
-	background: #ffffcc;
+    background: #ffffcc;
 }
 .two td {
-	text-align: right;
+    text-align: right;
 }
         ';
     }
@@ -84,7 +87,7 @@ class WfcHtUploadPage extends FanniePage
         $filename = md5(time());
         $tmp = sys_get_temp_dir();
         move_uploaded_file($_FILES['upload']['tmp_name'],"$tmp/$filename");
-	
+    
         $start = FormLib::get('start');
         $end = FormLib::get('end');
 
@@ -144,7 +147,7 @@ class WfcHtUploadPage extends FanniePage
             switch(strtoupper($fields[$TYPE_COL])){
                 case 'REGLAR':
                     if (substr($fields[$ALT_COL],-1)=="0")
-                        $rows[$adpID]['regular'] += $hours;	
+                        $rows[$adpID]['regular'] += $hours; 
                     else
                         $rows[$adpID]['alt'] += $hours;
                     break;
@@ -168,7 +171,7 @@ class WfcHtUploadPage extends FanniePage
                     break;
                 default:
                     $ret .= "Unknown type: ".$fields[$TYPE_COL]."<br />";
-            }	
+            }   
         }
 
         foreach($rows as $adpID => $row){
@@ -182,16 +185,16 @@ class WfcHtUploadPage extends FanniePage
                 $adpID,$row['regular'],$row['overtime'],$row['pto'],
                 $row['uto'],$row['alt'],$row['holiday']
             );
-		
+        
             $c = ($c+1)%2;
         }
         $ret .= "</table>";
         $ret .= "<input type=submit value=\"Import Data\">";
-	
+    
         fclose($fp);
         unlink("$tmp/$filename");
 
-        return $ret;	
+        return $ret;    
     }
 
     private function import_content()
@@ -204,7 +207,7 @@ class WfcHtUploadPage extends FanniePage
 
         $dateStr = date('n/j/Y', strtotime($start)).' - '.date('n/j/Y', strtotime($end));
         $year = date('Y', strtotime($start));
-	
+    
         $ppIDQ = "select max(periodID)+1 from PayPeriods";
         $ppIDR = $db->query($ppIDQ);
         $ppIDW = $db->fetch_row($ppIDR);
@@ -242,25 +245,26 @@ class WfcHtUploadPage extends FanniePage
         $ret = "ADP data import complete!<br />";
         $ret .= "<a href=WfcHtListPage.php>View Employees</a><br />";
         $ret .= "<a href=WfcHtPayPeriodsPage.php>View Pay Periods</a>";
-	
+    
         return $ret;
     }
 
     private function form_content()
     {
         global $FANNIE_URL;
-        $this->add_script($FANNIE_URL.'src/CalendarControl.js');
         echo '
 <form enctype="multipart/form-data" action="'.$_SERVER['PHP_SELF'].'" method="post">
 <input type="hidden" name="MAX_FILE_SIZE" value="2097152" />
-Pay Period: <input type=text name=start onfocus="showCalendarControl(this);" /> 
-<input type=text name=end onfocus="showCalendarControl(this);" /><p />
+Pay Period: <input type=text name=start id="start" />
+<input type=text name=end id="end" /><p />
 Holiday Hours: <select name=asHoliday><option value=1>As Holiday</option><option value=0>As Hours Worked</option>
 </select><p />
 Filename: <input type="file" id="file" name="upload" />
 <input type="submit" value="Upload File" />
 </form>
         ';
+        $this->add_onload_command("\$('#start').datepicker();\n");
+        $this->add_onload_command("\$('#end').datepicker();\n");
     }
 
     public function body_content()

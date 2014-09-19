@@ -454,3 +454,14 @@ function validateAndHome(){
 
 	return false;
 }
+function updateStatus(oid,val){
+	$.ajax({
+	url: 'ajax-calls.php',
+	type: 'post',
+	data: 'action=UpdateStatus&orderID='+oid+'&val='+val,
+	cache: false,
+	success: function(resp){
+		$('#statusdate'+oid).html(resp);	
+	}
+	});
+}

@@ -24,15 +24,18 @@
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-	* 21Jan2013 Eric Lee table upcLike need database specified: core_op.upcLike
+    * 21Jan2013 Eric Lee table upcLike need database specified: core_op.upcLike
 
 */
 
-require('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class RecentSalesReport extends FannieReportPage
 {
+    public $description = '[Recent Sales] lists sales for an item in recent days/weeks/months.';
 
     protected $header = 'Recent Sales';
     protected $title = 'Fannie : Recent Sales';

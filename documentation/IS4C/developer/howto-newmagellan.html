@@ -4,11 +4,12 @@
 </head>
 <body>
 <!--
+11Apr14 AT Add current inputs & outputs
 .8Nov12 EL Link to another doc about NewMagellan.
 -->
 	<div style="text-align:center;margin-bottom:10px;font-size:80%;">
-	updated as of: November 8, 2012
-	<br />last author: Eric Lee
+	updated as of: April 11, 2012
+	<br />last author: Andy Theuninck
 	<br />original author: Andy Theuninck
 	</div>
 NewMagellan is one of the scale drivers included in this release.
@@ -22,7 +23,7 @@ Visual Studio on Windows; the .NET 2 SDK includes a command line that's
 sufficient. Both a makefile for linux and a batch file for compiling
 on windows included.
 <p />
-<b>How it works</b>
+<h2>How it works</h2>
 <p />
 Magellan reads ports.conf to see what drivers to use. Entries are just
 a port (COM1, /dev/Stty1, etc) and a driver name (e.g., SPH_Magellan_Scale).
@@ -54,5 +55,55 @@ run installutil.exe posSVC.exe. To remove, run installutil.exe /u posSVC.exe.
 Installation prompts for a username and password. The username has to 
 include the machine name (e.g., POS1\is4c_user) to work. It took me awhile
 to figure that out.
+<p />
+<h2>Currently Supported Input Messages</h2>
+These are messages sent from POS to the driver via UDP.
+<ul>
+    <li><b>errorBeep</b> [scale] issue three beeps</li>
+    <li><b>beepTwice</b> [scale] issue two beeps</li>
+    <li><b>goodBeep</b> [scale] issue one beeps</li>
+    <li><b>twoPairs</b> [scale] issue four beeps with a pause between the second and third</li>
+    <li><b>rePoll</b> [scale] re-request weight</li>
+    <li><b>termReset</b> [cc] reset terminal to its start transaction state</li>
+    <li><b>termReboot</b> [cc] reboot terminal hardware</li>
+    <li><b>termManual</b> [cc] display manual card entry screen</li>
+    <li><b>termApproved</b> [cc] display approval screen</li>
+    <li><b>termGetType</b> [cc] display card type selection screen</li>
+    <li><b>termGetTypeWithFS</b> [cc] display card type selection screen including foodstamp option</li>
+    <li><b>termCashBack</b> [cc] display cash backselection screen</li>
+    <li><b>termGetPin</b> [cc] display PIN entry screen</li>
+    <li><b>termWait</b> [cc] display wait-for-cashier screen</li>
+    <li><b>termSig[suffix]</b> [cc] do signature capture. The suffix is an optional 
+    message to display on the screen (do not include the square brackets)</li>
+</ul>
+<p />
+<h2>Currently Supported Output Messages</h2>
+These are messages sent from the driver to POS by writing a file in
+the ss-output directory.
+<ul>
+    <li><b>[numeric value]</b> [scale] UPC/EAN data</li>
+    <li><b>GS1~[numeric value]</b> [scale] GS1 barcode data</li>
+    <li><b>S11[four digit weight</b> [scale] current weight</li>
+    <li><b>S141</b> [scale] not settled on a weight yet</li>
+    <li><b>S142</b> [scale] error condition</li>
+    <li><b>S143</b> [scale] weight is zero</li>
+    <li><b>S145</b> [scale] weight is below zero (error condition as well)</li>
+    <li><b>TERMCLEARALL</b> [cc] term has reset to start transaction state. Clear
+        any pending POS-side data</li>
+    <li><b>TERM:[type]</b> [cc] card type selection. <b>[type]</b> will be
+        Credit, Debit, EbtFood, EbtCash, or Gift.</li>
+    <li><b>TERMCB:[amount]</b> [cc] cash back amount selection.</li>
+    <li><b>PINCACHE:[entryped data]</b> [cc] entryped PIN block</li>
+    <li><b>PANCACHE:[entryped data]</b> [cc] entryped card data (magstripe) block</li>
+    <li><b>TERMBMP[filename]</b> [cc] signature data available. The file should be located in
+        ss-output/tmp/.</li>
+</ul>
+<b>Output notes / stuff to be aware of</b>:<br />
+Any output that begins with <b>S</b> is assumed to be scale-weight data. Non-scale-weight output 
+containing a colon character is parsed entirely in the background. For example, if the cashier
+has typed "5*" in the input box and scans an item, the driver output will be combined with
+that "5*", where as a card type output would ignore the "5*". The colon is omitted from the
+signature data command intentionally because that command is typically not used in conjunction
+with the "main" pos2.php screen.
 </body>
 </html>

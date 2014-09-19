@@ -1,7 +1,7 @@
 <?php
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
-include(realpath(dirname(__FILE__).'/../ini.php'));
+include('../ini.php');
 include('InstallUtilities.php');
 ?>
 <html>
@@ -40,20 +40,10 @@ body {
         <b>UPCs</b>
     </td>
     <td>
-    <select name="UPC_CHECK_DIGITS">
     <?php
-    if (isset($_REQUEST['UPC_CHECK_DIGITS'])) $CORE_LOCAL->set('UpcIncludeCheckDigits', $_REQUEST['UPC_CHECK_DIGITS']);
-    if ($CORE_LOCAL->get('UpcIncludeCheckDigits') === '') $CORE_LOCAL->set('UpcIncludeCheckDigits', 0);
-    if ($CORE_LOCAL->get('UpcIncludeCheckDigits') == 0) {
-        echo '<option value="0" selected>Omit Check Digits</option>';
-        echo '<option value="1">Include Check Digits</option>';
-    } else {
-        echo '<option value="0">Omit Check Digits</option>';
-        echo '<option value="1" selected>Include Check Digits</option>';
-    }
-    InstallUtilities::paramSave('UpcIncludeCheckDigits',$CORE_LOCAL->get('UpcIncludeCheckDigits'));
+    $checkOpts = array(1=>'Include Check Digits', 0=>'Omit Check Digits');
+    echo InstallUtilities::installSelectField('UpcIncludeCheckDigits', $checkOpts, 0);
     ?>
-    </select>
     </td>
 </tr>
 <tr>
@@ -61,206 +51,245 @@ body {
         <b>EANs</b>
     </td>
     <td>
-    <select name="EAN_CHECK_DIGITS">
     <?php
-    if (isset($_REQUEST['EAN_CHECK_DIGITS'])) $CORE_LOCAL->set('EanIncludeCheckDigits', $_REQUEST['EAN_CHECK_DIGITS']);
-    if ($CORE_LOCAL->get('EanIncludeCheckDigits') === '') $CORE_LOCAL->set('EanIncludeCheckDigits', 0);
-    if ($CORE_LOCAL->get('EanIncludeCheckDigits') == 0) {
-        echo '<option value="0" selected>Omit Check Digits</option>';
-        echo '<option value="1">Include Check Digits</option>';
-    } else {
-        echo '<option value="0">Omit Check Digits</option>';
-        echo '<option value="1" selected>Include Check Digits</option>';
-    }
-    InstallUtilities::paramSave('EanIncludeCheckDigits',$CORE_LOCAL->get('EanIncludeCheckDigits'));
+    echo InstallUtilities::installSelectField('EanIncludeCheckDigits', $checkOpts, 0);
     ?>
-    </select>
     </td>
 </tr>
 <tr>
     <td colspan="2"><hr /></td>
 </tr>
 <tr>
-<td style="width:30%;">
-<b>Special UPCs</b>:<br />
-<p>Special handling modules for UPCs that aren't products (e.g., coupons)</p>
-</td>
-<td>
-<select multiple size=10 name=SPECIAL_UPC_MODS[]>
-<?php
-if (isset($_REQUEST['SPECIAL_UPC_MODS'])) $CORE_LOCAL->set('SpecialUpcClasses',$_REQUEST['SPECIAL_UPC_MODS']);
-
-$mods = AutoLoader::listModules('SpecialUPC');
-
-foreach($mods as $m){
-	$selected = "";
-	foreach($CORE_LOCAL->get("SpecialUpcClasses") as $r){
-		if ($r == $m){
-			$selected = "selected";
-			break;
-		}
-	}
-	echo "<option $selected>$m</option>";
-}
-
-$saveStr = "array(";
-foreach($CORE_LOCAL->get("SpecialUpcClasses") as $r){
-	$saveStr .= "'".$r."',";
-}
-$saveStr = rtrim($saveStr,",").")";
-InstallUtilities::paramSave('SpecialUpcClasses', $CORE_LOCAL->get('SpecialUpcClasses'));
-?>
-</select></td></tr>
-<tr><td>
-<b>House Coupon Prefix</b></td><td>
-<?php
-if(isset($_REQUEST['HCPREFIX'])) $CORE_LOCAL->set('houseCouponPrefix',$_REQUEST['HCPREFIX'],True);
-else if ($CORE_LOCAL->get('houseCouponPrefix') === '') $CORE_LOCAL->set('houseCouponPrefix', '00499999', true);
-printf("<input type=text name=HCPREFIX value=\"%s\" />",$CORE_LOCAL->get('houseCouponPrefix'));
-InstallUtilities::paramSave('houseCouponPrefix',$CORE_LOCAL->get('houseCouponPrefix'));
-?>
-<span class='noteTxt'>Set the barcode prefix for houseCoupons.  Should be 8 digits starting with 004. Default is 00499999.</span>
-</td></tr>
-<tr><td style="width: 30%;">
-</td><td>
-</td></tr><tr><td>
-<b>Coupons &amp; Sales Tax</b>:</td><td>
-<?php
-if (isset($_REQUEST['COUPONTAX'])) $CORE_LOCAL->set('CouponsAreTaxable',$_REQUEST['COUPONTAX']);
-echo '<select name="COUPONTAX">';
-if ($CORE_LOCAL->get('CouponsAreTaxable') === 0){
-	echo '<option value="1">Tax pre-coupon total</option>';
-	echo '<option value="0" selected>Tax post-coupon total</option>';
-}
-else {
-	echo '<option value="1" selected>Tax pre-coupon total</option>';
-	echo '<option value="0">Tax post-coupon total</option>';
-	$CORE_LOCAL->set('CouponsAreTaxable', 1);
-}
-echo '</select>';
-InstallUtilities::paramSave('CouponsAreTaxable',$CORE_LOCAL->get('CouponsAreTaxable'));
-?>
-<span class='noteTxt'>Apply sales tax based on item price before any coupons, or
-apply sales tax to item price inclusive of coupons.</span>
-</td></tr>
-<tr><td>
-<b>Donation Department</b></td><td>
-<?php
-if(isset($_REQUEST['DONATIONDEPT'])) $CORE_LOCAL->set('roundUpDept',$_REQUEST['DONATIONDEPT'], true);
-else if ($CORE_LOCAL->get('roundUpDept') === '') {
+<tr>
+    <td><b>Unknown Item Handler</b></td>
+    <td><?php echo InstallUtilities::installSelectField('ItemNotFound', AutoLoader::listModules('ItemNotFound', true), 'ItemNotFound'); ?>
+    <span class='noteTxt'>Module called when a UPC does not match any item or Special UPC handler</span>
+    </td>
+</tr>
+    <td style="width:30%;">
+    <b>Special UPCs</b>:<br />
+    <p>Special handling modules for UPCs that aren't products (e.g., coupons)</p>
+    </td>
+    <td>
+    <?php
+    $mods = AutoLoader::listModules('SpecialUPC');
+    echo InstallUtilities::installSelectField('SpecialUpcClasses',
+        $mods,
+        array(),
+        InstallUtilities::EITHER_SETTING,
+        true,
+        array('multiple'=>'multiple', 'size'=>10)
+    );
+    ?>
+    </td>
+</tr>
+<tr>
+    <td><b>House Coupon Prefix</b></td>
+    <td><?php echo InstallUtilities::installTextField('houseCouponPrefix', '00499999'); ?>
+    <span class='noteTxt'>Set the barcode prefix for houseCoupons.  Should be 8 digits starting with 004. Default is 00499999.</span>
+    </td>
+</tr>
+<tr>
+    <td><b>Coupons &amp; Sales Tax</b>:</td>
+    <td>
+    <?php
+    $couponTax = array(1=>'Tax pre-coupon total', 0=>'Tax post-coupon total');
+    echo InstallUtilities::installSelectField('CouponsAreTaxable', $couponTax, 1);
+    ?>
+    <span class='noteTxt'>Apply sales tax based on item price before any coupons, or
+    apply sales tax to item price inclusive of coupons.</span>
+    </td>
+</tr>
+<tr>
+    <td><b>Equity Department(s)</b></td>
+    <td>
+    <?php
     // try to find a sane default automatically
-    $CORE_LOCAL->set('roundUpDept', 701);
+    $default = array();
+    $db = Database::pDataConnect();
+    $lookup = $db->query("SELECT dept_no FROM departments WHERE dept_name LIKE '%EQUIT%'");
+    if ($lookup && $db->num_rows($lookup) > 0) {
+        while ($row = $db->fetch_row($lookup)) {
+            $default[] = $row['dept_no'];
+        }
+    }
+    echo InstallUtilities::installTextField('EquityDepartments', $default, InstallUtilities::EITHER_SETTING, false);
+    ?>
+    <span class='noteTxt'>Set the department number(s) that are considered member equity</span>
+    </td>
+</tr>
+<tr>
+    <td><b>AR Department(s)</b></td>
+    <td>
+    <?php
+    // try to find a sane default automatically
+    $default = array();
+    $db = Database::pDataConnect();
+    $lookup = $db->query("SELECT dept_no FROM departments WHERE dept_name LIKE '%PAYMENT%'");
+    if ($lookup && $db->num_rows($lookup) > 0) {
+        while ($row = $db->fetch_row($lookup)) {
+            $default[] = $row['dept_no'];
+        }
+    }
+    echo InstallUtilities::installTextField('ArDepartments', $default, InstallUtilities::EITHER_SETTING, false);
+    ?>
+    <span class='noteTxt'>Set the department number(s) that are store charge balance payments. 
+        Also known as AR or accounts receivable.</span>
+    </td>
+</tr>
+<tr>
+    <td><b>Donation Department</b></td>
+    <td>
+    <?php
+    // try to find a sane default automatically
+    $default = 701;
     $db = Database::pDataConnect();
     $lookup = $db->query("SELECT dept_no FROM departments WHERE dept_name LIKE '%DONAT%'");
     if ($lookup && $db->num_rows($lookup) > 0) {
         $row = $db->fetch_row($lookup);
-        $CORE_LOCAL->set('roundUpDept', $row['dept_no']);
+        $default = $row['dept_no'];
     }
-}
-printf("<input type=text name=DONATIONDEPT value=\"%s\" />",$CORE_LOCAL->get('roundUpDept'));
-InstallUtilities::paramSave('roundUpDept',$CORE_LOCAL->get('roundUpDept'));
-?>
-<span class='noteTxt'>Set the department number for lines entered via the "round up" donation function.</span>
-</td></tr><tr>
-<td colspan="2">
-<hr />
-<p>Discount type modules control how sale prices are calculated.</p></td></tr>
+    echo InstallUtilities::installTextField('roundUpDept', $default);
+    ?>
+    <span class='noteTxt'>Set the department number for lines entered via the "round up" donation function.</span>
+    </td>
+</tr>
+<tr>
+    <td colspan="2">
+    <hr />
+    <p>Discount type modules control how sale discounts are calculated.</p>
+    </td>
+</tr>
 <tr><td>
-<b>Number of Discounts</b>:</td><td>
+<b>Default Discounts</b>:</td><td>
 <?php
-if (isset($_REQUEST['DT_COUNT']) && is_numeric($_REQUEST['DT_COUNT'])) $CORE_LOCAL->set('DiscountTypeCount',$_REQUEST['DT_COUNT']);
-if ($CORE_LOCAL->get("DiscountTypeCount") == "") $CORE_LOCAL->set("DiscountTypeCount",5);
-if ($CORE_LOCAL->get("DiscountTypeCount") <= 0) $CORE_LOCAL->set("DiscountTypeCount",1);
-printf("<input type=text size=4 name=DT_COUNT value=\"%d\" />",
-	$CORE_LOCAL->get('DiscountTypeCount'));
-InstallUtilities::paramSave('DiscountTypeCount',$CORE_LOCAL->get('DiscountTypeCount'));
-?></td></tr><tr><td>
-<b>Discount Module Mapping</b>:</td><td>
+foreach (DiscountType::$MAP as $id => $name) {
+    echo '[' . $id . '] => ' . $name . '<br />';
+}
+?>
+</td></tr>
+<tr><td>
+<b>Custom Discount Mapping</b>:</td><td>
 <?php
-if (isset($_REQUEST['DT_MODS'])) $CORE_LOCAL->set('DiscountTypeClasses',$_REQUEST['DT_MODS']);
-if (!is_array($CORE_LOCAL->get('DiscountTypeClasses'))){
-	$CORE_LOCAL->set('DiscountTypeClasses',
-		array(
-			'NormalPricing',
-			'EveryoneSale',
-			'MemberSale',
-			'CaseDiscount',
-			'StaffSale'			
-		),True);
+if (isset($_REQUEST['DT_MODS'])) {
+    $new_val = array();
+    foreach ($_REQUEST['DT_MODS'] as $r) {
+        if ($r !== '' && !in_array($r, DiscountType::$MAP)) {
+            $new_val[] = $r;
+        }
+    }
+    $CORE_LOCAL->set('DiscountTypeClasses', $new_val);
+}
+if (!is_array($CORE_LOCAL->get('DiscountTypeClasses'))) {
+	$CORE_LOCAL->set('DiscountTypeClasses', array(), true);
 }
 $discounts = AutoLoader::listModules('DiscountType');
 $dt_conf = $CORE_LOCAL->get("DiscountTypeClasses");
-for($i=0;$i<$CORE_LOCAL->get('DiscountTypeCount');$i++){
-	echo "[$i] => ";
+$dt_conf[] = ''; // add blank slot for adding another discounttype
+$i = 64;
+foreach ($dt_conf as $entry) {
+	echo '[' . $i . '] => ';
 	echo "<select name=DT_MODS[]>";
+    echo '<option value="">[None]</option>';
 	foreach($discounts as $d) {
+        if (in_array($d, DiscountType::$MAP)) {
+            continue;
+        }
 		echo "<option";
-		if (isset($dt_conf[$i]) && $dt_conf[$i] == $d)
+		if ($entry == $d)
 			echo " selected";
 		echo ">$d</option>";
 	}
 	echo "</select><br />";
+    $i++;
 }
-$tmp_count = 0;
 $save = array();
 foreach($CORE_LOCAL->get("DiscountTypeClasses") as $r){
-	$save[] = $r;
-	if ($tmp_count == $CORE_LOCAL->get("DiscountTypeCount")-1)
-		break;
-	$tmp_count++;
+    if ($r !== '' && !in_array($r, DiscountType::$MAP)) {
+        $save[] = $r;
+    }
 }
 InstallUtilities::paramSave('DiscountTypeClasses',$save);
 ?></td></tr>
 
 <tr><td colspan=2>
 <hr />	<p>Price Methods dictate how item prices are calculated.
-	There's some overlap with Discount Types, but <i>generally</i>
+	There's some overlap with Discount Types, but <i>often</i>
 	price methods deal with grouped items.</p></td></tr>
+</td></tr>
 <tr><td>
-<b>Number of Price Methods</b>:</td><td>
+<b>Default Methods</b>:</td><td>
 <?php
-if (isset($_REQUEST['PM_COUNT']) && is_numeric($_REQUEST['PM_COUNT'])) $CORE_LOCAL->set('PriceMethodCount',$_REQUEST['PM_COUNT']);
-if ($CORE_LOCAL->get("PriceMethodCount") == "") $CORE_LOCAL->set("PriceMethodCount",3);
-if ($CORE_LOCAL->get("PriceMethodCount") <= 0) $CORE_LOCAL->set("PriceMethodCount",1);
-printf("<input type=text size=4 name=PM_COUNT value=\"%d\" />",
-	$CORE_LOCAL->get('PriceMethodCount'));
-InstallUtilities::paramSave('PriceMethodCount',$CORE_LOCAL->get('PriceMethodCount'));
+foreach (PriceMethod::$MAP as $id => $name) {
+    echo '[' . $id . '] => ' . $name . '<br />';
+}
 ?>
-</td></tr><tr><td>
-<b>Price Method Mapping</b>:</td><td>
+</td></tr>
+<tr><td>
+<b>Custom Method Mapping</b>:</td><td>
 <?php
-if (isset($_REQUEST['PM_MODS'])) $CORE_LOCAL->set('PriceMethodClasses',$_REQUEST['PM_MODS']);
+if (isset($_REQUEST['PM_MODS'])) {
+    $new_val = array();
+    foreach ($_REQUEST['PM_MODS'] as $r) {
+        if ($r !== '' && !in_array($r, PriceMethod::$MAP)) {
+            $new_val[] = $r;
+        }
+    }
+    $CORE_LOCAL->set('PriceMethodClasses', $new_val);
+}
 if (!is_array($CORE_LOCAL->get('PriceMethodClasses'))){
-	$CORE_LOCAL->set('PriceMethodClasses',
-		array(
-			'BasicPM',
-			'GroupPM',
-			'QttyEnforcedGroupPM'
-		),True);
+	$CORE_LOCAL->set('PriceMethodClasses', array(), true);
 }
 $pms = AutoLoader::listModules('PriceMethod');
 $pm_conf = $CORE_LOCAL->get("PriceMethodClasses");
-for($i=0;$i<$CORE_LOCAL->get('PriceMethodCount');$i++){
+$pm_conf[] = ''; // add blank slot for adding another method
+$i = 100;
+foreach ($pm_conf as $entry) {
 	echo "[$i] => ";
 	echo "<select name=PM_MODS[]>";
+    echo '<option value="">[None]</option>';
 	foreach($pms as $p) {
+        if (in_array($p, PRiceMethod::$MAP)) {
+            continue;
+        }
 		echo "<option";
-		if (isset($pm_conf[$i]) && $pm_conf[$i] == $p)
+		if ($entry == $p)
 			echo " selected";
 		echo ">$p</option>";
 	}
 	echo "</select><br />";
+    $i++;
 }
 $save = array();
-$tmp_count = 0;
 foreach($CORE_LOCAL->get("PriceMethodClasses") as $r){
-	$save[] = $r;
-	if ($tmp_count == $CORE_LOCAL->get("PriceMethodCount")-1)
-		break;
-	$tmp_count++;
+    if ($r !== '' && !in_array($r, PriceMethod::$MAP)) {
+        $save[] = $r;
+    }
 }
 InstallUtilities::paramSave('PriceMethodClasses',$save);
-?></td></tr><tr><td colspan=2>
+?></td></tr>
+<tr><td>
+<b>Sale Items Are Discountable</b>:</td><td>
+<?php
+if (isset($_REQUEST['SALEDISC'])) $CORE_LOCAL->set('DiscountableSaleItems',$_REQUEST['SALEDISC']);
+if ($CORE_LOCAL->get('DiscountableSaleItems') === '') $CORE_LOCAL->set('DiscountableSaleItems', 1);
+echo '<select name="SALEDISC">';
+if ($CORE_LOCAL->get('DiscountableSaleItems') == 0) {
+	echo '<option value="1">Yes</option>';
+	echo '<option value="0" selected>No</option>';
+} else {
+	echo '<option value="1" selected>Yes</option>';
+	echo '<option value="0">No</option>';
+}
+echo '</select>';
+InstallUtilities::paramSave('DiscountableSaleItems', $CORE_LOCAL->get('DiscountableSaleItems'));
+?>
+<span class='noteTxt'>
+Items that are on sale are eligible for transaction-level discounts - e.g., members
+save 5%.
+</span>
+</td></tr>
+<tr><td colspan=2>
 <hr />	<p>Special Department modules add extra steps to open rings in specific departments.
 	Enter department number(s) that each module should apply to.</p>
 </td></tr>
@@ -290,11 +319,12 @@ foreach($sdepts as $sd){
 			$list .= $id.', ';
 	}
 	$list = rtrim($list,', ');
-	printf('<tr><td>%s</td><td>
+    $obj = new $sd();
+	printf('<tr><td title="%s">%s</td><td>
 		<input type="text" name="SDEPT_MAP_LIST[]" value="%s" />
 		<input type="hidden" name="SDEPT_MAP_NAME[]" value="%s" />
 		</td></tr>',
-		$sd,$list,$sd);
+		$obj->help_summary,$sd,$list,$sd);
 }
 $saveStr = 'array(';
 foreach($sconf as $id => $mods){
@@ -310,6 +340,30 @@ InstallUtilities::confsave('SpecialDeptMap',$saveStr);
 </td></tr>
 <tr><td colspan=2>
 <hr />
+</td></tr>
+<tr>
+    <td colspan=2>
+    <b>Variable Weight Item Mapping</b> (UPC Prefix "2"):<br />
+    Variable-weight items do not have identical barcodes because the
+    price is encoded in the barcode. A translator is required to map
+    these different barcodes back to one logical product.
+    </td>
+</tr>
+<tr>
+    <td>
+    <b>Translator</b>:
+    </td>
+    <td>
+    <?php
+    $mods = AutoLoader::listModules('VariableWeightReWrite');
+    echo InstallUtilities::installSelectField('VariableWeightReWriter', $mods, 'ZeroedPriceReWrite');
+    ?>
+    </td>
+</tr>
+<tr><td colspan=2>
+<hr />
+</td></tr>
+<tr><td>
 <input type=submit name=scansubmit value="Save Changes" />
 </td></tr></table>
 </form>

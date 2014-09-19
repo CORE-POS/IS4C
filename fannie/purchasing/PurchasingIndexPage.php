@@ -21,31 +21,36 @@
 
 *********************************************************************************/
 
-include('../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class PurchasingIndexPage extends FannieRESTfulPage {
-	
-	protected $header = 'Purchase Orders';
-	protected $title = 'Purchase Orders';
+    
+    protected $header = 'Purchase Orders';
+    protected $title = 'Purchase Orders';
 
-	protected $must_authenticate = True;
+    public $description = '[Purchase Order Menu] lists purchase order related pages.';
 
-	function get_view(){
+    protected $must_authenticate = True;
 
-		return '<ul>
-			<li><a href="ViewPurchaseOrders.php">View Orders</a>
-			<li><a href="PurchasingSearchPage.php">Search Orders</a>
-			</li>
-			<li>Create Order
-				<ul>
-				<li><a href="EditOnePurchaseOrder.php">By Vendor</a></li>
-				<li><a href="EditManyPurchaseOrders.php">By Item</a></li>
-				</ul>
-			</li>
-			</ul>';
-		
-	}
+    function get_view(){
+
+        return '<ul>
+            <li><a href="ViewPurchaseOrders.php">View Orders</a>
+            <li><a href="PurchasingSearchPage.php">Search Orders</a>
+            <li><a href="ImportPurchaseOrder.php">Import Order</a>
+            </li>
+            <li>Create Order
+                <ul>
+                <li><a href="EditOnePurchaseOrder.php">By Vendor</a></li>
+                <li><a href="EditManyPurchaseOrders.php">By Item</a></li>
+                </ul>
+            </li>
+            </ul>';
+        
+    }
 }
 
 FannieDispatch::conditionalExec();

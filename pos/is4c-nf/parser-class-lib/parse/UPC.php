@@ -58,6 +58,27 @@ class UPC extends Parser {
 			return $ret;
 		}
 
+        /**
+          11Sep14 Andy
+          Disabled until keypress double form submission is
+          fixed on paycard confirmation screen. Depending on
+          sequence can case flag to be raised, cleared, and
+          re-raised leading to spurrious error notifications
+        */
+        if (false && $CORE_LOCAL->get('paycardTendered')) {
+            if ($CORE_LOCAL->get('msgrepeat') == 0 || $CORE_LOCAL->get('lastRepeat') != 'paycardAlreadyApplied') {
+                $CORE_LOCAL->set('boxMsg', 'Card already tendered<br />
+                                            Confirm adding more items');
+                $CORE_LOCAL->set('lastRepeat', 'paycardAlreadyApplied');
+                $ret['main_frame'] = $my_url . 'gui-modules/boxMsg2.php';
+
+                return $ret;
+            } else if ($CORE_LOCAL->get('lastRepeat') == 'paycardAlreadyApplied') {
+                $CORE_LOCAL->set('lastRepeat', '');
+                $CORE_LOCAL->set('paycardTendered', false);
+            }
+        }
+
         // leading/trailing whitespace creates issues
         $entered = trim($entered);
 
@@ -102,26 +123,57 @@ class UPC extends Parser {
            002 or 02.
         */
         $scalePrefix = '002';
+        $scaleStickerItem = false;
+        $scaleCheckDigits = false;
         if ($CORE_LOCAL->get('UpcIncludeCheckDigits') == 1) {
             $scalePrefix = '02';
+            $scaleCheckDigits = true;
         }
 		$scalepriceUPC = 0;
 		$scalepriceEAN = 0;
+        // prefix indicates it is a scale-sticker
 		if (substr($upc, 0, strlen($scalePrefix)) == $scalePrefix) {
-			$scalepriceUPC = MiscLib::truncate2(substr($upc, -4)/100);
-			$scalepriceEAN = MiscLib::truncate2(substr($upc, -5)/100);
-			$upc = substr($upc, 0, 8)."00000";
+            $scaleStickerItem = true;
+            // extract price portion of the barcode
+            // position varies depending whether a check
+            // digit is present in the upc
+            if ($scaleCheckDigits) {
+                $scalepriceUPC = MiscLib::truncate2(substr($upc, 8, 4)/100);
+                $scalepriceEAN = MiscLib::truncate2(substr($upc, 7, 5)/100);
+            } else {
+                $scalepriceUPC = MiscLib::truncate2(substr($upc, -4)/100);
+                $scalepriceEAN = MiscLib::truncate2(substr($upc, -5)/100);
+            }
+            $rewrite_class = $CORE_LOCAL->get('VariableWeightReWriter');
+            if ($rewrite_class === '' || !class_exists($rewrite_class)) {
+                $rewrite_class = 'ZeroedPriceReWrite';
+            }
+            $rewriter = new $rewrite_class();
+            $upc = $rewriter->translate($upc, $scaleCheckDigits);
             // I think this is WFC special casing; needs revising.
 			if ($upc == "0020006000000" || $upc == "0020010000000") $scalepriceUPC *= -1;
 		}
 
 		$db = Database::pDataConnect();
-		$query = "select inUse,upc,description,normal_price,scale,deposit,
+        $table = $db->table_definition('products');
+		$query = "SELECT inUse,upc,description,normal_price,scale,deposit,
 			qttyEnforced,department,local,cost,tax,foodstamp,discount,
 			discounttype,specialpricemethod,special_price,groupprice,
 			pricemethod,quantity,specialgroupprice,specialquantity,
-			mixmatchcode,idEnforced,tareweight,scaleprice
-		       	from products where upc = '".$upc."'";
+			mixmatchcode,idEnforced,tareweight,scaleprice";
+        // New column 16Apr14
+        if (isset($table['line_item_discountable'])) {
+            $query .= ', line_item_discountable';
+        } else {
+            $query .= ', 1 AS line_item_discountable';
+        }
+        // New column 16Apr14
+        if (isset($table['formatted_name'])) {
+            $query .= ', formatted_name';
+        } else {
+            $query .= ', \'\' AS formatted_name';
+        }
+		$query .= " FROM products WHERE upc = '".$upc."'";
 		$result = $db->query($query);
 		$num_rows = $db->num_rows($result);
 
@@ -136,11 +188,13 @@ class UPC extends Parser {
 			}
 			// no match; not a product, not special
 			
-			$opts = array('upc'=>$upc,'description'=>'BADSCAN');
-			TransRecord::add_log_record($opts);
-			$CORE_LOCAL->set("boxMsg",$upc." "._("not a valid item"));
-			//$ret['udpmsg'] = 'errorBeep'; // 12/12/12 this seems to stack with DisplayLib::msgbox
-			$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php";
+            $handler = $CORE_LOCAL->get('ItemNotFound');
+            if ($handler === '' || !class_exists($handler)) {
+                $handler = 'ItemNotFound';
+            }
+            $obj = new $handler();
+            $ret = $obj->handle($upc, $ret);
+
 			return $ret;
 		}
 
@@ -148,6 +202,16 @@ class UPC extends Parser {
 		   BEGIN error checking round #1
 		*/
 		$row = $db->fetch_array($result);
+
+        /**
+          If formatted_name is present, copy it directly over
+          products.description. This way nothing further down
+          the process has to worry about the distinction between
+          two potential naming fields.
+        */
+        if ($row['formatted_name'] != '') {
+            $row['description'] = $row['formatted_name'];
+        }
 
 		/* Implementation of inUse flag
 		 *   if the flag is not set, display a warning dialog noting this
@@ -191,7 +255,7 @@ class UPC extends Parser {
 		if ($num_rows > 0 && $row['scale'] == 1 
 			&& $CORE_LOCAL->get("lastWeight") > 0 && $CORE_LOCAL->get("weight") > 0
 			&& abs($CORE_LOCAL->get("weight") - $CORE_LOCAL->get("lastWeight")) < 0.0005
-			&& substr($upc,0,strlen($scalePrefix)) != $scalePrefix && abs($row['normal_price']) > 0.01){
+			&& !$scaleStickerItem && abs($row['normal_price']) > 0.01){
 			if ($CORE_LOCAL->get('msgrepeat') == 0){
 				$CORE_LOCAL->set("strEntered",$row["upc"]);
 				$CORE_LOCAL->set("boxMsg","<b>Same weight as last item</b>
@@ -232,11 +296,14 @@ class UPC extends Parser {
 				return $ret;
 			}
 
-			if ($CORE_LOCAL->get("memAge")=="")
+			if ($CORE_LOCAL->get("memAge")=="") {
 				$CORE_LOCAL->set("memAge",date('Ymd'));
-			$diff = time() - ((int)strtotime($CORE_LOCAL->get("memAge")));
-			$age = floor($diff / (365*60*60*24));
-			if ($age < $row['idEnforced']){
+			}
+			$ts = strtotime($CORE_LOCAL->get("memAge"));
+			$required_age = $row['idEnforced'];
+			$of_age_on_day = mktime(0, 0, 0, date('n', $ts), date('j', $ts), date('Y', $ts) + $required_age);
+			$today = strtotime( date('Y-m-d') );
+			if ($of_age_on_day > $today) {
 				$ret['udpmsg'] = 'twoPairs';
 				$ret['main_frame'] = $my_url.'gui-modules/requestInfo.php?class=UPC';
 				return $ret;
@@ -250,7 +317,12 @@ class UPC extends Parser {
 			$peek = PrehLib::peekItem();
 			if (strstr($peek,"** Tare Weight") === False)
 				TransRecord::addTare($row['tareweight']*100);
-		}
+		} elseif ($row['scale'] != 0 && !$CORE_LOCAL->get("tare") && Plugin::isEnabled('PromptForTare') && !$CORE_LOCAL->get("tarezero")) {
+            $ret['main_frame'] = $my_url.'plugins/PropmtForTare/TarePropmtInputPage.php?class=UPC&item='.$entered;
+			return $ret;
+        } else {
+        	$CORE_LOCAL->set('tarezero', False);
+        }
 
 		/* sanity check - ridiculous price 
 		   (can break db column if it doesn't fit
@@ -261,14 +333,16 @@ class UPC extends Parser {
 		}
 
 		$scale = ($row["scale"] == 0) ? 0 : 1;
-		/* get correct scale price */
+		/* use scaleprice bit column to indicate 
+           whether values should be interpretted as 
+           UPC or EAN */ 
 		$scaleprice = ($row['scaleprice'] == 0) ? $scalepriceUPC : $scalepriceEAN;
 
 		/* need a weight with this item
 		   retry the UPC in a few milliseconds and see
 		*/
 		if ($scale != 0 && $CORE_LOCAL->get("weight") == 0 && 
-			$CORE_LOCAL->get("quantity") == 0 && substr($upc,0,strlen($scalePrefix)) != $scalePrefix) {
+			$CORE_LOCAL->get("quantity") == 0 && !$scaleStickerItem) {
 
 			$CORE_LOCAL->set("SNR",$CORE_LOCAL->get('strEntered'));
 			$ret['output'] = DisplayLib::boxMsg(_("please put item on scale"),'',True);
@@ -279,7 +353,7 @@ class UPC extends Parser {
 
 		/* got a scale weight, make sure the tare
 		   is valid */
-		if ($scale != 0 and substr($upc,0,strlen($scalePrefix)) != $scalePrefix){
+		if ($scale != 0 && !$scaleStickerItem) {
 			$quantity = $CORE_LOCAL->get("weight") - $CORE_LOCAL->get("tare");
 			if ($CORE_LOCAL->get("quantity") != 0) 
 				$quantity = $CORE_LOCAL->get("quantity") - $CORE_LOCAL->get("tare");
@@ -340,7 +414,7 @@ class UPC extends Parser {
 		// wfc uses deposit field to link another upc
 		if (isset($row["deposit"]) && $row["deposit"] > 0){
 			$dupc = (int)$row["deposit"];
-			$this->add_deposit($dupc);
+			$this->addDeposit($dupc);
 		}
 
 		$upc = $row["upc"];
@@ -375,10 +449,31 @@ class UPC extends Parser {
 			BEGIN: figure out discounts by type
 		*/
 
-		/* get discount object */
+		/* get discount object 
+
+           CORE reserves values 0 through 63 in 
+           DiscountType::$MAP for default options.
+
+           Additional discounts provided by plugins
+           can use values 64 through 127. Because
+           the DiscountTypeClasses array is zero-indexed,
+           subtract 64 as an offset  
+        */
 		$discounttype = MiscLib::nullwrap($row["discounttype"]);
+        $DiscountObject = null;
 		$DTClasses = $CORE_LOCAL->get("DiscountTypeClasses");
-		$DiscountObject = new $DTClasses[$discounttype];
+        if ($row['discounttype'] < 64 && isset(DiscountType::$MAP[$row['discounttype']])) {
+            $class = DiscountType::$MAP[$row['discounttype']];
+            $DiscountObject = new $class();
+        } else if ($row['discounttype'] >= 64 && isset($DTClasses[($row['discounttype']-64)])) {
+            $class = $DTClasses[($row['discounttype'])-64];
+            $DiscountObject = new $class();
+        } else {
+            // If the requested discounttype isn't available,
+            // fallback to normal pricing. Debatable whether
+            // this should be a hard error.
+            $DiscountObject = new NormalPricing();
+        }
 
 		/* add in sticker price and calculate a quantity
 		   if the item is stickered, scaled, and on sale. 
@@ -397,7 +492,7 @@ class UPC extends Parser {
            quantity and items that do not have a normal_price
            assigned cannot calculate a proper quantity.
 		*/
-		if (substr($upc,0,strlen($scalePrefix)) == $scalePrefix) {
+		if ($scaleStickerItem) {
 			if ($DiscountObject->isSale() && $scale == 1 && $row['normal_price'] != 0) {
 				$quantity = MiscLib::truncate2($scaleprice / $row["normal_price"]);
             } else if ($scale == 1 && $row['normal_price'] != 0) {
@@ -415,12 +510,30 @@ class UPC extends Parser {
 			END: figure out discounts by type
 		*/
 
-		/* get price method object  & add item*/
+		/* get price method object  & add item
+        
+           CORE reserves values 0 through 99 in 
+           PriceMethod::$MAP for default methods.
+
+           Additional methods provided by plugins
+           can use values 100 and up. Because
+           the PriceMethodClasses array is zero-indexed,
+           subtract 100 as an offset  
+        */
 		$pricemethod = MiscLib::nullwrap($row["pricemethod"]);
 		if ($DiscountObject->isSale())
 			$pricemethod = MiscLib::nullwrap($row["specialpricemethod"]);
 		$PMClasses = $CORE_LOCAL->get("PriceMethodClasses");
-		$PriceMethodObject = new $PMClasses[$pricemethod];
+        $PriceMethodObject = null;
+        if ($pricemethod < 100 && isset(PriceMethod::$MAP[$pricemethod])) {
+            $class = PriceMethod::$MAP[$pricemethod];
+            $PriceMethodObject = new $class();
+        } else if ($pricemethod >= 100 && isset($PMClasses[($pricemethod-100)])) {
+            $class = $PMClasses[($pricemethod-100)];
+            $PriceMethodObject = new $class();
+        } else {
+            $PriceMethodObject = new BasicPM();
+        }
 		// prefetch: otherwise object members 
 		// pass out of scope in addItem()
 		$prefetch = $DiscountObject->priceInfo($row,$quantity);
@@ -436,14 +549,6 @@ class UPC extends Parser {
 
 		// cleanup, reset flags and beep
 		if ($quantity != 0) {
-			// ddNotify is legacy/unknown. likely doesn't work
-			if ($CORE_LOCAL->get("ddNotify") == 1 && $CORE_LOCAL->get("itemPD") == 10) {
-				$CORE_LOCAL->set("itemPD",0);
-				$discountable = 7;
-			}
-			$intvoided = 0;
-			if ($CORE_LOCAL->get("ddNotify") == 1 && $discountable == 7) 
-				$intvoided = 22;
 
 			$CORE_LOCAL->set("msgrepeat",0);
 			$CORE_LOCAL->set("qttyvalid",0);
@@ -470,7 +575,8 @@ class UPC extends Parser {
 		return $ret;
 	}
 
-	function add_deposit($upc){
+	private function addDeposit($upc)
+    {
 		global $CORE_LOCAL;
 
 		$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
@@ -493,23 +599,23 @@ class UPC extends Parser {
 		if ($row["scale"] != 0) $scale = 1;
 
 		$tax = 0;
-		if ($row["tax"] > 0 && $CORE_LOCAL->get("toggletax") == 0) $tax = $row["tax"];
-		elseif ($row["tax"] > 0 && $CORE_LOCAL->get("toggletax") == 1) {
+		if ($row["tax"] > 0 && $CORE_LOCAL->get("toggletax") == 0) {
+            $tax = $row["tax"];
+		} else if ($row["tax"] > 0 && $CORE_LOCAL->get("toggletax") == 1) {
 			$tax = 0;
 			$CORE_LOCAL->set("toggletax",0);
-		}
-		elseif ($row["tax"] == 0 && $CORE_LOCAL->get("toggletax") == 1) {
+		} else if ($row["tax"] == 0 && $CORE_LOCAL->get("toggletax") == 1) {
 			$tax = 1;
 			$CORE_LOCAL->set("toggletax",0);
 		}
 						
 		$foodstamp = 0;
-		if ($row["foodstamp"] != 0 && $CORE_LOCAL->get("togglefoodstamp") == 0) $foodstamp = 1;
-		elseif ($row["foodstamp"] != 0 && $CORE_LOCAL->get("togglefoodstamp") == 1) {
+		if ($row["foodstamp"] != 0 && $CORE_LOCAL->get("togglefoodstamp") == 0) {
+            $foodstamp = 1;
+		} else if ($row["foodstamp"] != 0 && $CORE_LOCAL->get("togglefoodstamp") == 1) {
 			$foodstamp = 0;
 			$CORE_LOCAL->set("togglefoodstamp",0);
-		}
-		elseif ($row["foodstamp"] == 0 && $CORE_LOCAL->get("togglefoodstamp") == 1) {
+		} else if ($row["foodstamp"] == 0 && $CORE_LOCAL->get("togglefoodstamp") == 1) {
 			$foodstamp = 1;
 			$CORE_LOCAL->set("togglefoodstamp",0);
 		}
@@ -518,15 +624,28 @@ class UPC extends Parser {
 		$discountable = $row["discount"];
 
 		$quantity = 1;
-		if ($CORE_LOCAL->get("quantity") != 0) $quantity = $CORE_LOCAL->get("quantity");
+		if ($CORE_LOCAL->get("quantity") != 0) {
+            $quantity = $CORE_LOCAL->get("quantity");
+        }
 
 		$save_refund = $CORE_LOCAL->get("refund");
 
-		TransRecord::addItem($upc,$description,"I"," "," ",$row["department"],
-			$quantity,$row["normal_price"],
-			$quantity*$row["normal_price"],$row["normal_price"],
-			$scale,$tax,$foodstamp,0,0,$discountable,$discounttype,
-			$quantity,0,0,0,0,0,0);
+        TransRecord::addRecord(array(
+            'upc' => $upc,
+            'description' => $description,
+            'trans_type' => 'I',
+            'department' => $row['department'],
+            'quantity' => $quantity,
+            'ItemQtty' => $quantity,
+            'unitPrice' => $row['normal_price'],
+            'total' => $quantity * $row['normal_price'],
+            'regPrice' => $row['normal_price'],
+            'scale' => $scale,
+            'tax' => $tax,
+            'foodstamp' => $foodstamp,
+            'discountable' => $discountable,
+            'discounttype' => $discounttype,
+        ));
 
 		$CORE_LOCAL->set("refund",$save_refund);
 	}
@@ -562,6 +681,17 @@ class UPC extends Parser {
 			return True;
 		}
 		return False;
+	}
+
+	public static $requestTareHeader = 'Enter Tare';
+	public static $requestTareMsg = 'Type tare weight or eneter for default';
+	public static function requestTareCallback($tare, $in_item) {
+        if (is_numeric($tare)) {
+            TransRecord::addTare($tare);
+            $ret_url = '../../gui-modules/pos2.php?reginput='.$in_item;
+            return $ret_url;
+        }
+        return False;
 	}
 
 	function doc(){

@@ -3,11 +3,13 @@
 Table: SpecialOrders
 
 Columns:
-	specialOrderID int (auto increment)
+    specialOrderID int (auto increment)
     statusFlag int
     subStatus int
     notes text
     noteSuperID int
+    firstName varchar
+    lastName varchar
     street varchar
     city varchar
     state varchar
@@ -23,8 +25,8 @@ CompletedSpecialOrder never conflict
 */
 
 $CREATE['trans.SpecialOrders'] = "
-	CREATE TABLE `SpecialOrders` (
-		  `specialOrderID` int(11) NOT NULL auto_increment,
+    CREATE TABLE `SpecialOrders` (
+          `specialOrderID` int(11) NOT NULL auto_increment,
           `statusFlag` int,
           `subStatus` bigint,
           `notes` text,
@@ -38,13 +40,13 @@ $CREATE['trans.SpecialOrders'] = "
           `phone` varchar(30),
           `altPhone` varchar(30),
           `email` varchar(50),
-		  PRIMARY KEY  (`specialOrderID`)
-	)
+          PRIMARY KEY  (`specialOrderID`)
+    )
 ";
 if ($dbms == "MSSQL") {
-	$CREATE['trans.SpecialOrders'] = "
-		CREATE TABLE [SpecialOrders] (
-			[specialOrderID] [int] IDENTITY (1, 1) NOT NULL ,
+    $CREATE['trans.SpecialOrders'] = "
+        CREATE TABLE [SpecialOrders] (
+            [specialOrderID] [int] IDENTITY (1, 1) NOT NULL ,
             [statusFlag] [int] ,
             [subStatus] [bigint] ,
             [notes] [text] ,
@@ -58,7 +60,7 @@ if ($dbms == "MSSQL") {
             [phone] [varchar(30)] ,
             [altPhone] [varchar(30)] ,
             [email] [varchar(50)] ,
-			PRIMARY KEY ([specialOrderID]) )
-	";
+            PRIMARY KEY ([specialOrderID]) )
+    ";
 }
 

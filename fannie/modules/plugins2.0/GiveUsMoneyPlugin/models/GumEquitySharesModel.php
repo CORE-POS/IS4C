@@ -47,7 +47,7 @@ class GumEquitySharesModel extends BasicModel
     'value' => array('type'=>'MONEY', 'default'=>0),
     'tdate' => array('type'=>'DATETIME'),
     'trans_num' => array('type'=>'VARCHAR(50)'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -61,6 +61,22 @@ class GumEquitySharesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'gumEquityShareID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["gumEquityShareID"]) || $this->instance["gumEquityShareID"] != func_get_args(0)) {
                 if (!isset($this->columns["gumEquityShareID"]["ignore_updates"]) || $this->columns["gumEquityShareID"]["ignore_updates"] == false) {
@@ -69,6 +85,7 @@ class GumEquitySharesModel extends BasicModel
             }
             $this->instance["gumEquityShareID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function card_no()
@@ -81,6 +98,22 @@ class GumEquitySharesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'card_no',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["card_no"]) || $this->instance["card_no"] != func_get_args(0)) {
                 if (!isset($this->columns["card_no"]["ignore_updates"]) || $this->columns["card_no"]["ignore_updates"] == false) {
@@ -89,6 +122,7 @@ class GumEquitySharesModel extends BasicModel
             }
             $this->instance["card_no"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function shares()
@@ -101,6 +135,22 @@ class GumEquitySharesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'shares',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["shares"]) || $this->instance["shares"] != func_get_args(0)) {
                 if (!isset($this->columns["shares"]["ignore_updates"]) || $this->columns["shares"]["ignore_updates"] == false) {
@@ -109,6 +159,7 @@ class GumEquitySharesModel extends BasicModel
             }
             $this->instance["shares"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function value()
@@ -121,6 +172,22 @@ class GumEquitySharesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'value',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["value"]) || $this->instance["value"] != func_get_args(0)) {
                 if (!isset($this->columns["value"]["ignore_updates"]) || $this->columns["value"]["ignore_updates"] == false) {
@@ -129,6 +196,7 @@ class GumEquitySharesModel extends BasicModel
             }
             $this->instance["value"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function tdate()
@@ -141,6 +209,22 @@ class GumEquitySharesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'tdate',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["tdate"]) || $this->instance["tdate"] != func_get_args(0)) {
                 if (!isset($this->columns["tdate"]["ignore_updates"]) || $this->columns["tdate"]["ignore_updates"] == false) {
@@ -149,6 +233,7 @@ class GumEquitySharesModel extends BasicModel
             }
             $this->instance["tdate"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function trans_num()
@@ -161,6 +246,22 @@ class GumEquitySharesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'trans_num',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["trans_num"]) || $this->instance["trans_num"] != func_get_args(0)) {
                 if (!isset($this->columns["trans_num"]["ignore_updates"]) || $this->columns["trans_num"]["ignore_updates"] == false) {
@@ -169,6 +270,7 @@ class GumEquitySharesModel extends BasicModel
             }
             $this->instance["trans_num"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

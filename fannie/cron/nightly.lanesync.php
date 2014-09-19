@@ -24,11 +24,11 @@
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-	* 22Sep2012 Eric Lee Annotate, esp re cURL.
-	*           http://curl.haxx.se/
-	*           http://ca.php.net/manual/en/function.curl-setopt.php
-	*           See www-data's crontab for where error reports go, e.g.
-	*            30 1 * * * cd /var/www/IS4C/fannie/cron && php ./nightly.lanesync.php >> /var/www/IS4C/fannie/logs/dayend.log
+    * 22Sep2012 Eric Lee Annotate, esp re cURL.
+    *           http://curl.haxx.se/
+    *           http://ca.php.net/manual/en/function.curl-setopt.php
+    *           See www-data's crontab for where error reports go, e.g.
+    *            30 1 * * * cd /var/www/IS4C/fannie/cron && php ./nightly.lanesync.php >> /var/www/IS4C/fannie/logs/dayend.log
 
 */
 
@@ -54,29 +54,35 @@ set_time_limit(0);
 
 $dbc = FannieDB::get($FANNIE_TRANS_DB);
 foreach($FANNIE_LANES as $f){
-	$dbc->add_connection($f['host'],$f['type'],$f['trans'],$f['user'],$f['pw']);
-	if ($dbc->connections[$f['trans']] === False){
-		echo cron_msg('Cannot connect to '.$f['host']);
-		continue;
-	}
+    $dbc->add_connection($f['host'],$f['type'],$f['trans'],$f['user'],$f['pw']);
+    if ($dbc->connections[$f['trans']] === False){
+        echo cron_msg('Cannot connect to '.$f['host']);
+        continue;
+    }
 
-	$try = $dbc->transfer($f['trans'],'SELECT * FROM valutecRequest',
-			$FANNIE_TRANS_DB,'INSERT INTO valutecRequest');
-	if ($try !== False){
-		$dbc->query('TRUNCATE TABLE valutecRequest',$f['trans']);
-	}
+    // valutec tables are deprecated and may no longer
+    // exist on the lane
+    if (!$dbc->table_exists('valutecRequest', $f['trans'])) {
+        continue;
+    }
 
-	$try = $dbc->transfer($f['trans'],'SELECT * FROM valutecRequestMod',
-			$FANNIE_TRANS_DB,'INSERT INTO valutecRequestMod');
-	if ($try !== False){
-		$dbc->query('TRUNCATE TABLE valutecRequestMod',$f['trans']);
-	}
+    $try = $dbc->transfer($f['trans'],'SELECT * FROM valutecRequest',
+            $FANNIE_TRANS_DB,'INSERT INTO valutecRequest');
+    if ($try !== False){
+        $dbc->query('TRUNCATE TABLE valutecRequest',$f['trans']);
+    }
 
-	$try = $dbc->transfer($f['trans'],'SELECT * FROM valutecResponse',
-			$FANNIE_TRANS_DB,'INSERT INTO valutecResponse');
-	if ($try !== False){
-		$dbc->query('TRUNCATE TABLE valutecResponse',$f['trans']);
-	}
+    $try = $dbc->transfer($f['trans'],'SELECT * FROM valutecRequestMod',
+            $FANNIE_TRANS_DB,'INSERT INTO valutecRequestMod');
+    if ($try !== False){
+        $dbc->query('TRUNCATE TABLE valutecRequestMod',$f['trans']);
+    }
+
+    $try = $dbc->transfer($f['trans'],'SELECT * FROM valutecResponse',
+            $FANNIE_TRANS_DB,'INSERT INTO valutecResponse');
+    if ($try !== False){
+        $dbc->query('TRUNCATE TABLE valutecResponse',$f['trans']);
+    }
 }
 
 $url = "http://".php_uname('n').$FANNIE_URL."sync/TableSyncPage.php";
@@ -127,10 +133,10 @@ $r1 = curl_exec($departments);
 curl_close($departments);
 
 if ( isset($FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION) && $FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION == True ) {
-	$productUser = curl_init($url."?tablename=productUser&othertable=");
-	curl_setopt($productUser, CURLOPT_RETURNTRANSFER, True);
-	$r1 = curl_exec($productUser);
-	curl_close($productUser);
+    $productUser = curl_init($url."?tablename=productUser&othertable=");
+    curl_setopt($productUser, CURLOPT_RETURNTRANSFER, True);
+    $r1 = curl_exec($productUser);
+    curl_close($productUser);
 }
 
 ?>

@@ -106,26 +106,7 @@ class fsTotalConfirm extends NoInputPage
 	function head_content()
     {
 		?>
-		<script type="text/javascript" >
-		var prevKey = -1;
-		var prevPrevKey = -1;
-		function processkeypress(e) {
-			var jsKey;
-			if (e.keyCode) // IE
-				jsKey = e.keyCode;
-			else if(e.which) // Netscape/Firefox/Opera
-				jsKey = e.which;
-			if (jsKey==13) {
-				if ( (prevPrevKey == 99 || prevPrevKey == 67) &&
-				(prevKey == 108 || prevKey == 76) ){ //CL<enter>
-					$('#selectlist :selected').val('');
-				}
-				$('#selectform').submit();
-			}
-			prevPrevKey = prevKey;
-			prevKey = jsKey;
-		}
-		</script> 
+        <script type="text/javascript" src="../js/selectSubmit.js"></script>
 		<?php
 	} // END head() FUNCTION
 
@@ -172,7 +153,7 @@ class fsTotalConfirm extends NoInputPage
 		<?php
 		if (empty($this->tendertype)) {
 			$this->add_onload_command("\$('#selectlist').focus();\n");
-			$this->add_onload_command("\$('#selectlist').keypress(processkeypress);\n");
+            $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
 		} else {
 			$this->add_onload_command("\$('#tenderamt').focus();\n");
         }

@@ -230,14 +230,14 @@ function showGroups(){
 }
 
 function getGroupList(){
-	$sql = dbconnect();
-	$ret = array();
-	$prep = $sql->prepare_statement("SELECT name,gid FROM userGroups 
-			GROUP BY name,gid ORDER BY name");
-	$result = $sql->exec_statement($prep);
-	while($row = $sql->fetch_row($result))
-		$ret[$row['gid']] = $row['name'];
-	return $ret;
+    $sql = dbconnect();
+    $ret = array();
+    $prep = $sql->prepare_statement("SELECT name,gid FROM userGroups 
+            GROUP BY name,gid ORDER BY name");
+    $result = $sql->exec_statement($prep);
+    while($row = $sql->fetch_row($result))
+        $ret[$row['gid']] = $row['name'];
+    return $ret;
 }
 
 /* detailGroup(groupname)

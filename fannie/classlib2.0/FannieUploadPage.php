@@ -27,14 +27,11 @@ if (!class_exists('FanniePage')) {
 if (!class_exists('FormLib')) {
     include_once(dirname(__FILE__).'/lib/FormLib.php');
 }
-if (!function_exists('sys_get_temp_dir')) {
-    include_once(dirname(__FILE__).'/../src/tmp_dir.php');
-}
 if (!class_exists('Spreadsheet_Excel_Reader')) {
-    include_once(dirname(__FILE__).'/../src/Excel/reader.php');
+    include_once(dirname(__FILE__).'/../src/Excel/xls_read/reader.php');
 }
 if (!class_exists('PHPExcel_IOFactory')) {
-    include_once(dirname(__FILE__).'/../src/PHPExcel/Classes/PHPExcel.php');
+    include_once(dirname(__FILE__).'/../src/Excel/xlsx_read/Classes/PHPExcel.php');
 }
 
 /**
@@ -49,6 +46,8 @@ class FannieUploadPage extends FanniePage
     public $description = "
     Base class for handling file uploads
     ";
+
+    public $page_set = 'Import Tools';
 
     /**
       Function for drawing page content.
@@ -82,7 +81,26 @@ class FannieUploadPage extends FanniePage
 
     protected $error_details = 'n/a';
 
+    /**
+      Split uploaded file into multiple smaller files
+      process_file() will be called separately for
+      each smaller file. split_start() and split_end()
+      are called at the beginning and end of the whole
+      process. Only works with CSV files in *nix environments.
+    */
     protected $use_splits = false;
+
+    /**
+      Make repeated AJAX calls to process part of the file
+      and provide progress feedback. Similar to splitting
+      in that process_file is called repeatedly and split_start()
+      and split_end() called once each at the very beginning
+      and end. Works with all supported file types BUT must
+      be able to load the entire file within PHP's memory_limit.
+      Memory allocated to load the file can be substantially
+      higher than the raw file size.
+    */
+    protected $use_js = false;
 
     /**
       Handle pre-display tasks such as input processing
@@ -92,7 +110,7 @@ class FannieUploadPage extends FanniePage
     */
     public function preprocess()
     {
-        global $FANNIE_URL;
+        global $FANNIE_URL, $FANNIE_OP_DB;
 
         $col_select = FormLib::get_form_value('cs','');
 
@@ -102,7 +120,7 @@ class FannieUploadPage extends FanniePage
             if ($try) {
                 $this->content_function = 'basicPreview';
                 $this->window_dressing = False;
-                $this->add_script($FANNIE_URL.'src/jquery/jquery.js');
+                $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
             } else {
                 $this->content_function = 'uploadError';
             }
@@ -127,7 +145,74 @@ class FannieUploadPage extends FanniePage
             if ($chk_required == true) {
 
                 $try = false;
-                if ($this->use_splits) {
+                if ($this->use_js) {
+                    /**
+                      Create temporary database table
+                      and load all records into the table
+                    */
+                    if (FormLib::get('ajaxOp', '') == 'upload') {
+                        $ret = array('error'=>0);
+                        $fileData = $this->fileToArray();
+                        $offset = FormLib::get('offset', 0);
+                        $chunk_size = 200;
+
+                        if (count($fileData) == 0) {
+                            $ret['error'] = 'File is empty';
+                            unlink($this->upload_file_name);
+                            echo json_encode($ret);
+                            return false;
+                        }
+
+                        $num_columns = count($fileData[0]);
+
+                        /** first pass; create table **/
+                        if ($offset == 0) {
+                            $this->split_start();
+                        }
+
+                        // Extract lines & process
+                        $lines = array();
+                        for ($i=$offset; $i<count($fileData); $i++) {
+                            if (count($fileData[$i]) != $num_columns) {
+                                continue;
+                            }
+                            $lines[] = $fileData[$i];
+                            if (count($lines) > $chunk_size) {
+                                break;
+                            }
+                        }
+                        $try = $this->process_file($lines);
+
+                        $done = ($offset + $chunk_size) > count($fileData) ? true : false;
+
+                        if (count($lines) == 0 && !$done) {
+                            $ret['error'] = 'Upload into database failed';
+                            unlink($this->upload_file_name);
+                            echo json_encode($ret);
+                            return false;
+                        } elseif (!$done) {
+                            $ret['num_lines'] = count($fileData);
+                            $ret['cur_record'] = $offset + $chunk_size;
+                            $ret['done'] = $done;
+                            echo json_encode($ret);
+                            return false;
+                        } else {
+                            $ret['cur_record'] = 0;
+                            $ret['done'] = $done;
+                            $this->split_end();
+                            unlink($this->upload_file_name);
+                            echo json_encode($ret);
+                            return false;
+                        }
+                    /**
+                      Render page that includes ajax javascript
+                    */
+                    } else {
+                        $this->content_function = 'ajaxContent';
+
+                        return true;
+                    }
+                } elseif ($this->use_splits) {
                     /* break file into pieces */
                     $files = FormLib::get_form_value('f');
                     if ($files === '') {
@@ -192,7 +277,7 @@ class FannieUploadPage extends FanniePage
             } else { // selected columns were invalid; redisplay preview screen
                 $this->content_function = 'basicPreview';
                 $this->window_dressing = False;
-                $this->add_script($FANNIE_URL.'src/jquery/jquery.js');
+                $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
             }
         }
 
@@ -216,7 +301,7 @@ class FannieUploadPage extends FanniePage
 
         $tmpfile = $_FILES[$this->upload_field_name]['tmp_name'];
         $path_parts = pathinfo($_FILES[$this->upload_field_name]['name']);
-        $extension = strtolower($path_parts['extension']);
+        $extension = isset($path_parts['extension']) ? strtolower($path_parts['extension']) : '';
         $zip = false;
         if ($_FILES[$this->upload_field_name]['error'] != UPLOAD_ERR_OK) {
             $msg = '';
@@ -519,6 +604,34 @@ class FannieUploadPage extends FanniePage
                 });
             });
         });
+        function doUpload(file_name, offset)
+        {
+            var data = 'ajaxOp=upload&upload_file_name=' + encodeURIComponent(file_name);
+            data += '&' + $('#fieldInfo :input').serialize() + '&offset=' + offset;
+            if (offset == 0) {
+                $('#uploadingSpan').html('Uploading data');
+            }
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                data: data,
+                success: function(resp) {
+                    if (resp.error == 0) {
+                        if (!resp.done) {
+                            $('#numLines').html('/'+resp.num_lines+' lines');
+                            $('#uploadingSpan').html('Uploading '+resp.cur_record);
+                            doUpload(file_name, resp.cur_record);
+                        } else {
+                            $('#progressSpan').html('Processing 0');
+                            $('#numRecords').html('/'+resp.num_records+' records');
+                            $('#resultsSpan').html('Upload complete');
+                        }
+                    } else {
+                        $('#uploadingSpan').html('Upload error: ' + resp.error);
+                    }
+                }
+            });
+        }
         <?php
         return ob_get_clean();
     }
@@ -530,6 +643,24 @@ class FannieUploadPage extends FanniePage
     public function results_content()
     {
         return "";
+    }
+
+    public function ajaxContent()
+    {
+        $ret = '<div id="progressDiv">
+            <span id="uploadingSpan"></span><span id="numLines"></span><br />
+            <span id="progressSpan"></span><span id="numRecords"></span><br />
+            <span id="resultsSpan"></span>
+            </div>';
+        $ret .= '<div id="fieldInfo" style="display:none;">';
+        foreach (FormLib::get('cs', array()) as $column) {
+            $ret .= sprintf('<input type="hidden" name="cs[]" value="%s" />', $column);
+        }
+        $ret .= '</div>';
+
+        $this->add_onload_command("doUpload('" . $this->upload_file_name . "', 0);");
+
+        return $ret;
     }
 
     /**

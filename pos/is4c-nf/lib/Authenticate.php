@@ -84,14 +84,6 @@ static public function checkPassword($password,$activity=1)
 
 			CoreState::cashierLogin($transno, $row_q['age']);
 
-            /**
-            alog and its variants are never used.
-            @deprecated
-			if ($transno == 1) {
-                TransRecord::addactivity($activity);
-            }
-            */
-			
 		} elseif ($password == 9999) {
 			Database::loadglobalvalues();
 

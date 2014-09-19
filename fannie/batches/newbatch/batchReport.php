@@ -21,11 +21,14 @@
 
 *********************************************************************************/
 
-include('../../config.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
+    return;
+}
 
 $batchID = 1;
 if (isset($_GET['batchID']))
-	$batchID = $_GET['batchID'];
+    $batchID = $_GET['batchID'];
 
 /* use batch report in reports directory */
 header('Location: '.$FANNIE_URL.'reports/BatchReport/BatchReport.php?batchID[]='.$batchID);

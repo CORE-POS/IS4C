@@ -32,18 +32,19 @@ class SuspendLib extends LibraryClass
   Suspends the current transaction
   If the remote server is available, it will be suspended
   there. Otherwise it is suspended locally.
+  @return [string] transaction identifier
 */
 static public function suspendorder() 
 {
 	global $CORE_LOCAL;
 
-	//testremote();
 	$query_a = "select emp_no, trans_no from localtemptrans";
 	$db_a = Database::tDataConnect();
 	$result_a = $db_a->query($query_a);
 	$row_a = $db_a->fetch_array($result_a);
 	$cashier_no = substr("000".$row_a["emp_no"], -2);
 	$trans_no = substr("0000".$row_a["trans_no"], -4);
+    $trans_num = ReceiptLib::receiptNumber();
 
 	if ($CORE_LOCAL->get("standalone") == 0) {
 		$db_a->add_connection($CORE_LOCAL->get("mServer"),$CORE_LOCAL->get("mDBMS"),
@@ -59,9 +60,18 @@ static public function suspendorder()
 
 	/* ensure the cancel happens */
 	$cancelR = $db_a->query("UPDATE localtemptrans SET trans_status='X',charflag='S'");
+    TransRecord::finalizeTransaction(true);
 
 	$CORE_LOCAL->set("plainmsg",_("transaction suspended"));
 	$recall_line = $CORE_LOCAL->get("standalone")." ".$CORE_LOCAL->get("laneno")." ".$cashier_no." ".$trans_no;
+    /**
+      If the transaction is marked as complete but somehow did not
+      actually finish, this will prevent the suspended receipt from
+      adding tax/discount lines to the transaction
+    */
+    $CORE_LOCAL->set('End', 0);
+
+    return $trans_num;
 }
 
 /**

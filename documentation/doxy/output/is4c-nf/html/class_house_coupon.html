@@ -42,6 +42,12 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_house_coupon.html#a1fdba33e021f11855b27b3747c37026">handle</a> ($upc, $json)</td></tr>
 
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_house_coupon.html#bece82cdeb3d832dc0354d328e363d5d">checkQualifications</a> ($id)</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_house_coupon.html#2731c4561c43d09a5139cedfea948da4">checkLimits</a> ($id)</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_house_coupon.html#5c8728806ef824a3166c94e0ac6e1add">getValue</a> ($id)</td></tr>
+
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
 WFC style custom store coupons<p>
@@ -49,6 +55,89 @@ This class looks for UPC prefix 00499999<p>
 The remainder of the UPC is an ID value to look up requirement(s) and discount via the houseCoupons and houseCouponItems tables 
 <p>
 <hr><h2>Member Function Documentation</h2>
+<a class="anchor" name="2731c4561c43d09a5139cedfea948da4"></a><!-- doxytag: member="HouseCoupon::checkLimits" ref="2731c4561c43d09a5139cedfea948da4" args="($id)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">HouseCoupon::checkLimits           </td>
+          <td>(</td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>id</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Check how many times the coupon has been used and compare against usage limits - e.g., one per transaction, one per member, etc. This is a separate method from <a class="el" href="class_house_coupon.html#bece82cdeb3d832dc0354d328e363d5d">checkQualifications()</a> so that calling code has the option of working around limits via voids or amount adjustments <dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>$id</em>&nbsp;</td><td>[int] coupon ID </td></tr>
+  </table>
+</dl>
+<dl compact><dt><b>Returns:</b></dt><dd>[boolean] true or [string] error message </dd></dl>
+
+<p>
+For members, enforce limits against longer transaction history 
+</div>
+</div><p>
+<a class="anchor" name="bece82cdeb3d832dc0354d328e363d5d"></a><!-- doxytag: member="HouseCoupon::checkQualifications" ref="bece82cdeb3d832dc0354d328e363d5d" args="($id)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">HouseCoupon::checkQualifications           </td>
+          <td>(</td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>id</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Validate coupon exists, is not expired, and transaction meets required qualifications <dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>$id</em>&nbsp;</td><td>[int] coupon ID </td></tr>
+  </table>
+</dl>
+<dl compact><dt><b>Returns:</b></dt><dd>[boolean] true or [string] error message </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="5c8728806ef824a3166c94e0ac6e1add"></a><!-- doxytag: member="HouseCoupon::getValue" ref="5c8728806ef824a3166c94e0ac6e1add" args="($id)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">HouseCoupon::getValue           </td>
+          <td>(</td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>id</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get information about how much the coupon is worth <dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>$id</em>&nbsp;</td><td>[int] coupon ID </td></tr>
+  </table>
+</dl>
+<dl compact><dt><b>Returns:</b></dt><dd>array with keys: value =&gt; [float] coupon value department =&gt; [int] department number for the coupon description =&gt; [string] description for coupon </dd></dl>
+
+<p>
+This is a little messy to cram two different values into one number. The decimal portion is the discount percentage; the integer portion is the maximum discountable total. The latter is the discount cap expressed in a way that will be an integer more often.<p>
+Example: A 5 percent discount capped at $2.50 =&gt; 50.05 
+</div>
+</div><p>
 <a class="anchor" name="a1fdba33e021f11855b27b3747c37026"></a><!-- doxytag: member="HouseCoupon::handle" ref="a1fdba33e021f11855b27b3747c37026" args="($upc, $json)" -->
 <div class="memitem">
 <div class="memproto">
@@ -119,7 +208,7 @@ Reimplemented from <a class="el" href="class_special_u_p_c.html#351152eeb6a93ab2
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/Scanning/SpecialUPCs/HouseCoupon.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

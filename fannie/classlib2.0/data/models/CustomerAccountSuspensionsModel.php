@@ -43,7 +43,7 @@ class CustomerAccountSuspensionsModel extends BasicModel
     'savedDiscount' => array('type'=>'SMALLINT'),
     'savedChargeLimit' => array('type'=>'MONEY'),
     'savedMailFlag' => array('type'=>'TINYINT'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -57,6 +57,22 @@ class CustomerAccountSuspensionsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'customerAccountSuspensionID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["customerAccountSuspensionID"]) || $this->instance["customerAccountSuspensionID"] != func_get_args(0)) {
                 if (!isset($this->columns["customerAccountSuspensionID"]["ignore_updates"]) || $this->columns["customerAccountSuspensionID"]["ignore_updates"] == false) {
@@ -65,6 +81,7 @@ class CustomerAccountSuspensionsModel extends BasicModel
             }
             $this->instance["customerAccountSuspensionID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function card_no()
@@ -77,6 +94,22 @@ class CustomerAccountSuspensionsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'card_no',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["card_no"]) || $this->instance["card_no"] != func_get_args(0)) {
                 if (!isset($this->columns["card_no"]["ignore_updates"]) || $this->columns["card_no"]["ignore_updates"] == false) {
@@ -85,6 +118,7 @@ class CustomerAccountSuspensionsModel extends BasicModel
             }
             $this->instance["card_no"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function active()
@@ -97,6 +131,22 @@ class CustomerAccountSuspensionsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'active',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["active"]) || $this->instance["active"] != func_get_args(0)) {
                 if (!isset($this->columns["active"]["ignore_updates"]) || $this->columns["active"]["ignore_updates"] == false) {
@@ -105,6 +155,7 @@ class CustomerAccountSuspensionsModel extends BasicModel
             }
             $this->instance["active"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function tdate()
@@ -117,6 +168,22 @@ class CustomerAccountSuspensionsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'tdate',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["tdate"]) || $this->instance["tdate"] != func_get_args(0)) {
                 if (!isset($this->columns["tdate"]["ignore_updates"]) || $this->columns["tdate"]["ignore_updates"] == false) {
@@ -125,6 +192,7 @@ class CustomerAccountSuspensionsModel extends BasicModel
             }
             $this->instance["tdate"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function suspensionTypeID()
@@ -137,6 +205,22 @@ class CustomerAccountSuspensionsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'suspensionTypeID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["suspensionTypeID"]) || $this->instance["suspensionTypeID"] != func_get_args(0)) {
                 if (!isset($this->columns["suspensionTypeID"]["ignore_updates"]) || $this->columns["suspensionTypeID"]["ignore_updates"] == false) {
@@ -145,6 +229,7 @@ class CustomerAccountSuspensionsModel extends BasicModel
             }
             $this->instance["suspensionTypeID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function reasonCode()
@@ -157,6 +242,22 @@ class CustomerAccountSuspensionsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'reasonCode',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["reasonCode"]) || $this->instance["reasonCode"] != func_get_args(0)) {
                 if (!isset($this->columns["reasonCode"]["ignore_updates"]) || $this->columns["reasonCode"]["ignore_updates"] == false) {
@@ -165,6 +266,7 @@ class CustomerAccountSuspensionsModel extends BasicModel
             }
             $this->instance["reasonCode"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function legacyReason()
@@ -177,6 +279,22 @@ class CustomerAccountSuspensionsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'legacyReason',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["legacyReason"]) || $this->instance["legacyReason"] != func_get_args(0)) {
                 if (!isset($this->columns["legacyReason"]["ignore_updates"]) || $this->columns["legacyReason"]["ignore_updates"] == false) {
@@ -185,6 +303,7 @@ class CustomerAccountSuspensionsModel extends BasicModel
             }
             $this->instance["legacyReason"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function username()
@@ -197,6 +316,22 @@ class CustomerAccountSuspensionsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'username',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["username"]) || $this->instance["username"] != func_get_args(0)) {
                 if (!isset($this->columns["username"]["ignore_updates"]) || $this->columns["username"]["ignore_updates"] == false) {
@@ -205,6 +340,7 @@ class CustomerAccountSuspensionsModel extends BasicModel
             }
             $this->instance["username"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function savedType()
@@ -217,6 +353,22 @@ class CustomerAccountSuspensionsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'savedType',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["savedType"]) || $this->instance["savedType"] != func_get_args(0)) {
                 if (!isset($this->columns["savedType"]["ignore_updates"]) || $this->columns["savedType"]["ignore_updates"] == false) {
@@ -225,6 +377,7 @@ class CustomerAccountSuspensionsModel extends BasicModel
             }
             $this->instance["savedType"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function savedMemType()
@@ -237,6 +390,22 @@ class CustomerAccountSuspensionsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'savedMemType',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["savedMemType"]) || $this->instance["savedMemType"] != func_get_args(0)) {
                 if (!isset($this->columns["savedMemType"]["ignore_updates"]) || $this->columns["savedMemType"]["ignore_updates"] == false) {
@@ -245,6 +414,7 @@ class CustomerAccountSuspensionsModel extends BasicModel
             }
             $this->instance["savedMemType"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function savedDiscount()
@@ -257,6 +427,22 @@ class CustomerAccountSuspensionsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'savedDiscount',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["savedDiscount"]) || $this->instance["savedDiscount"] != func_get_args(0)) {
                 if (!isset($this->columns["savedDiscount"]["ignore_updates"]) || $this->columns["savedDiscount"]["ignore_updates"] == false) {
@@ -265,6 +451,7 @@ class CustomerAccountSuspensionsModel extends BasicModel
             }
             $this->instance["savedDiscount"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function savedChargeLimit()
@@ -277,6 +464,22 @@ class CustomerAccountSuspensionsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'savedChargeLimit',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["savedChargeLimit"]) || $this->instance["savedChargeLimit"] != func_get_args(0)) {
                 if (!isset($this->columns["savedChargeLimit"]["ignore_updates"]) || $this->columns["savedChargeLimit"]["ignore_updates"] == false) {
@@ -285,6 +488,7 @@ class CustomerAccountSuspensionsModel extends BasicModel
             }
             $this->instance["savedChargeLimit"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function savedMailFlag()
@@ -297,6 +501,22 @@ class CustomerAccountSuspensionsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'savedMailFlag',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["savedMailFlag"]) || $this->instance["savedMailFlag"] != func_get_args(0)) {
                 if (!isset($this->columns["savedMailFlag"]["ignore_updates"]) || $this->columns["savedMailFlag"]["ignore_updates"] == false) {
@@ -305,6 +525,7 @@ class CustomerAccountSuspensionsModel extends BasicModel
             }
             $this->instance["savedMailFlag"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

@@ -30,8 +30,8 @@ unless otherwise noted
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-	* 10Nov12 Eric Lee Add FANNIE_AUTH_ENABLED test in createLogin per intent(?)
-	*                   in first-user call from install/auth.php.
+    * 10Nov12 Eric Lee Add FANNIE_AUTH_ENABLED test in createLogin per intent(?)
+    *                   in first-user call from install/auth.php.
 
 */
 
@@ -75,30 +75,30 @@ function login($name,$password){
 }
 
 /* 
-	Revised login for use with UNIX system
-	
-	shadowread searches the shadow password file
-	and returns the user's password hash
+    Revised login for use with UNIX system
+    
+    shadowread searches the shadow password file
+    and returns the user's password hash
 */
 
 function shadow_login($name,$passwd){
-	if (!isAlphanumeric($name))
-		return false;
-	if ($passwd == "") return false;
+    if (!isAlphanumeric($name))
+        return false;
+    if ($passwd == "") return false;
 
-	$output = array();
-	$return_value = -1;
-	exec("../shadowread/shadowread \"$name\"",$output,$return_value);
-	if ($return_value != 0)
-		return false;
+    $output = array();
+    $return_value = -1;
+    exec("../shadowread/shadowread \"$name\"",$output,$return_value);
+    if ($return_value != 0)
+        return false;
 
-	$pwhash = $output[0];
-	if (crypt($passwd,$pwhash) == $pwhash){
-		syncUserShadow($name);
-		doLogin($name);
-		return true;
-	}	
-	return false;
+    $pwhash = $output[0];
+    if (crypt($passwd,$pwhash) == $pwhash){
+        syncUserShadow($name);
+        doLogin($name);
+        return true;
+    }   
+    return false;
 }
 
 /* login using an ldap server 
@@ -106,64 +106,68 @@ function shadow_login($name,$passwd){
  * Tested against openldap 2.3.27
  */
 function ldap_login($name,$passwd){
-	global $FANNIE_LDAP_SERVER, $FANNIE_LDAP_PORT, $FANNIE_LDAP_DN, $FANNIE_LDAP_SEARCH_FIELD, $FANNIE_LDAP_UID_FIELD, $FANNIE_LDAP_RN_FIELD;
-	if (!isAlphanumeric($name))
-		return false;
-	if ($passwd == "") return false;
+    global $FANNIE_LDAP_SERVER, $FANNIE_LDAP_PORT, $FANNIE_LDAP_DN, $FANNIE_LDAP_SEARCH_FIELD, $FANNIE_LDAP_UID_FIELD, $FANNIE_LDAP_RN_FIELD;
+    if (!isAlphanumeric($name))
+        return false;
+    if ($passwd == "") return false;
 
-	$conn = ldap_connect($FANNIE_LDAP_SERVER,$FANNIE_LDAP_PORT);
-	if (!$conn) return false;
+    $conn = ldap_connect($FANNIE_LDAP_SERVER,$FANNIE_LDAP_PORT);
+    if (!$conn) return false;
 
-	$search_result = ldap_search($conn,$FANNIE_LDAP_DN,
-				     $FANNIE_LDAP_SEARCH_FIELD."=".$name);
-	if (!$search_result) return false;
+    $search_result = ldap_search($conn,$FANNIE_LDAP_DN,
+                     $FANNIE_LDAP_SEARCH_FIELD."=".$name);
+    if (!$search_result) return false;
 
-	$ldap_info = ldap_get_entries($conn,$search_result);
-	if (!$ldap_info) return false;
+    $ldap_info = ldap_get_entries($conn,$search_result);
+    if (!$ldap_info) {
+        return false;
+    } else if ($ldap_info['count'] == 0) {
+        return false;
+    }
 
-	$user_dn = $ldap_info[0]["dn"];
-	$uid = $ldap_info[0][$FANNIE_LDAP_UID_FIELD][0];
-	$fullname = $ldap_info[0][$FANNIE_LDAP_RN_FIELD][0];
+    $user_dn = $ldap_info[0]["dn"];
+    $uid = $ldap_info[0][$FANNIE_LDAP_UID_FIELD][0];
+    $fullname = $ldap_info[0][$FANNIE_LDAP_RN_FIELD][0];
 
-	if (ldap_bind($conn,$user_dn,$passwd)){
-		syncUserLDAP($name,$uid,$fullname);	
-		doLogin($name);
-		return true;
-	}	
-	return false;
+    if (ldap_bind($conn,$user_dn,$passwd)){
+        syncUserLDAP($name,$uid,$fullname); 
+        doLogin($name);
+        return true;
+    }   
+    return false;
 }
 
 /*
 sets a cookie.  nothing before this function call can have output
 */
 function logout(){
-	$name = checkLogin();
-	if (!$name){
-		return true;
-	}
+    $name = checkLogin();
+    if (!$name){
+        return true;
+    }
 
-	/**
-	  Remove session data from the database
-	*/
-	if (isset($_COOKIE['session_data'])){
-		$cookie_data = base64_decode($_COOKIE['session_data']);
-		$session_data = unserialize($cookie_data);
+    /**
+      Remove session data from the database
+    */
+    if (isset($_COOKIE['session_data'])){
+        $cookie_data = base64_decode($_COOKIE['session_data']);
+        $session_data = unserialize($cookie_data);
 
-		$name = $session_data['name'];
-		$session_id = $session_data['session_id'];
-		$uid = getUID($name);
+        $name = $session_data['name'];
+        $session_id = $session_data['session_id'];
+        $uid = getUID($name);
 
-		$sql = dbconnect();
-		$delP = $sql->prepare_statement('DELETE FROM userSessions
-				WHERE uid=? AND session_id=?');
-		$delR = $sql->exec_statement($delP, array($uid,$session_id));
+        $sql = dbconnect();
+        $delP = $sql->prepare_statement('DELETE FROM userSessions
+                WHERE uid=? AND session_id=?');
+        $delR = $sql->exec_statement($delP, array($uid,$session_id));
 
-		$upP = $sql->prepare_statement("UPDATE Users SET session_id='' WHERE name=?");
-		$upR = $sql->exec_statement($upP,array($name));
-	}
+        $upP = $sql->prepare_statement("UPDATE Users SET session_id='' WHERE name=?");
+        $upR = $sql->exec_statement($upP,array($name));
+    }
 
-	setcookie('session_data','',time()+(60*600),'/');
-	return true;
+    setcookie('session_data','',time()+(60*600),'/');
+    return true;
 }
 
 /*
@@ -176,8 +180,8 @@ a session id is also stored in this table, but that is created
 when the user actually logs in
 */
 function createLogin($name,$password){
-	// 10Nov12 EL Add FANNIE_AUTH_ENABLED
-	global $FANNIE_AUTH_ENABLED;
+    // 10Nov12 EL Add FANNIE_AUTH_ENABLED
+    global $FANNIE_AUTH_ENABLED;
   if (!isAlphanumeric($name) ){
     //echo 'failed alphanumeric';
     return false;
@@ -186,11 +190,11 @@ function createLogin($name,$password){
   if (init_check())
     table_check();
 
-	// 10Nov12 EL Add FANNIE_AUTH_ENABLED test per intent in first-user call from auth.php.
-	if ( $FANNIE_AUTH_ENABLED ) {
-		if (!validateUser('admin')){
-			return false;
-		}
+    // 10Nov12 EL Add FANNIE_AUTH_ENABLED test per intent in first-user call from auth.php.
+    if ( $FANNIE_AUTH_ENABLED ) {
+        if (!validateUser('admin')){
+            return false;
+        }
   }
 
   $sql = dbconnect();
@@ -277,8 +281,8 @@ function checkLogin(){
   */
   $sql = dbconnect();
   $checkQ = $sql->prepare_statement("select * from Users AS u LEFT JOIN
-			userSessions AS s ON u.uid=s.uid where u.name=? 
-			and s.session_id=?");
+            userSessions AS s ON u.uid=s.uid where u.name=? 
+            and s.session_id=?");
   $checkR = $sql->exec_statement($checkQ,array($name,$session_id));
 
   if ($sql->num_rows($checkR) == 0){
@@ -308,13 +312,13 @@ function showUsers(){
 }
 
 function getUserList(){
-	$sql = dbconnect();
-	$ret = array();
-	$prep = $sql->prepare_statement("SELECT name,uid FROM Users ORDER BY name");
-	$result = $sql->exec_statement($prep);
-	while($row = $sql->fetch_row($result))
-		$ret[$row['uid']] = $row['name'];
-	return $ret;
+    $sql = dbconnect();
+    $ret = array();
+    $prep = $sql->prepare_statement("SELECT name,uid FROM Users ORDER BY name");
+    $result = $sql->exec_statement($prep);
+    while($row = $sql->fetch_row($result))
+        $ret[$row['uid']] = $row['name'];
+    return $ret;
 }
 
 /* 
@@ -377,7 +381,7 @@ function validateUser($auth,$sub='all'){
      if (!auth_enabled()) return 'null';
 
      if (init_check())
-	return 'init';
+    return 'init';
 
      $current_user = checkLogin();
      if (!$current_user){
@@ -402,7 +406,7 @@ function validateUserQuiet($auth,$sub='all'){
      if (!auth_enabled()) return 'null';
 
      if (init_check())
-	return 'init';
+    return 'init';
 
      $current_user = checkLogin();
      if (!$current_user){
@@ -433,14 +437,14 @@ function refreshSession(){
 }
 
 function pose($username){
-	if (!isset($_COOKIE['session_data']))
-		return false;
-	if (!isAlphanumeric($username))
-		return false;
+    if (!isset($_COOKIE['session_data']))
+        return false;
+    if (!isAlphanumeric($username))
+        return false;
 
-	doLogin($username);
+    doLogin($username);
 
-	return true;
+    return true;
 }
 
 ?>

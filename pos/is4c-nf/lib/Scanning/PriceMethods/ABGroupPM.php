@@ -34,12 +34,23 @@
    and may not exist anywhere else.
 */
 
-class ABGroupPM extends PriceMethod {
+class ABGroupPM extends PriceMethod 
+{
 
-    function addItem($row,$quantity,$priceObj){
-        if ($quantity == 0) return false;
+    function addItem($row,$quantity,$priceObj)
+    {
+        global $CORE_LOCAL;
+        if ($quantity == 0) {
+            return false;
+        }
 
         $pricing = $priceObj->priceInfo($row,$quantity);
+
+        // enforce limit on discounting sale items
+        $dsi = $CORE_LOCAL->get('DiscountableSaleItems');
+        if ($dsi == 0 && $dsi !== '' && $priceObj->isSale()) {
+            $row['discount'] = 0;
+        }
 
         $mixMatch = $row['mixmatchcode'];
         /* group definition: number of items
@@ -48,7 +59,7 @@ class ABGroupPM extends PriceMethod {
            item is on sale */
         $groupQty = $row['quantity'];
         $groupPrice = $row['groupprice'];
-        if ($priceObj->isSale()){
+        if ($priceObj->isSale()) {
             $groupQty = $row['specialquantity'];
             $groupPrice = $row['specialgroupprice'];    
         }
@@ -158,34 +169,32 @@ class ABGroupPM extends PriceMethod {
             if($quantity != (int)$quantity) $sets = $quantity;
             $quantity = $quantity - $sets;
 
-            TransRecord::addItem($row['upc'],
-                $row['description'],
-                'I',
-                '',
-                '',
-                $row['department'],
-                $sets,
-                $pricing['regPrice'],
-                MiscLib::truncate2($sets*$pricing['regPrice']),
-                $pricing['regPrice'],
-                $row['scale'],
-                $row['tax'],
-                $row['foodstamp'],
-                ($priceObj->isMemberSale() || $priceObj->isStaffSale()) ? 0 : MiscLib::truncate2($maxDiscount),
-                ($priceObj->isMemberSale() || $priceObj->isStaffSale()) ? MiscLib::truncate2($maxDiscount) : 0,
-                $row['discount'],
-                $row['discounttype'],
-                $sets,
-                ($priceObj->isSale() ? $row['specialpricemethod'] : $row['pricemethod']),
-                ($priceObj->isSale() ? $row['specialquantity'] : $row['quantity']),
-                ($priceObj->isSale() ? $row['specialgroupprice'] : $row['groupprice']),
-                $row['mixmatchcode'],
-                $ttlMatches * $groupQty,
-                0,
-                (isset($row['cost']) ? $row['cost']*$new_sets*$groupQty : 0.00),
-                (isset($row['numflag']) ? $row['numflag'] : 0),
-                (isset($row['charflag']) ? $row['charflag'] : '')
-            );
+            TransRecord::addRecord(array(
+                'upc' => $row['upc'],
+                'description' => $row['description'],
+                'trans_type' => 'I',
+                'department' => $row['department'],
+                'quantity' => $sets,
+                'unitPrice' => $pricing['regPrice'],
+                'total' => MiscLib::truncate2($sets*$pricing['regPrice']),
+                'regPrice' => $pricing['regPrice'],
+                'scale' => $row['scale'],
+                'tax' => $row['tax'],
+                'foodstamp' => $row['foodstamp'],
+                'discount' => ($priceObj->isMemberSale() || $priceObj->isStaffSale()) ? 0 : MiscLib::truncate2($maxDiscount),
+                'memDiscount' => ($priceObj->isMemberSale() || $priceObj->isStaffSale()) ? MiscLib::truncate2($maxDiscount) : 0,
+                'discountable' => $row['discount'],
+                'discounttype' => $row['discounttype'],
+                'ItemQtty' => $sets,
+                'volDiscType' => ($priceObj->isSale() ? $row['specialpricemethod'] : $row['pricemethod']),
+                'volume' => ($priceObj->isSale() ? $row['specialquantity'] : $row['quantity']),
+                'VolSpecial' => ($priceObj->isSale() ? $row['specialgroupprice'] : $row['groupprice']),
+                'mixMatch' => $row['mixmatchcode'],
+                'matched' => $ttlMatches * $groupQty,
+                'cost' => (isset($row['cost']) ? $row['cost']*$new_sets*$groupQty : 0.00),
+                'numflag' => (isset($row['numflag']) ? $row['numflag'] : 0),
+                'charflag' => (isset($row['charflag']) ? $row['charflag'] : '')
+            ));
 
             if (!$priceObj->isMemberSale() && !$priceObj->isStaffSale()){
                 TransRecord::additemdiscount($dept2,MiscLib::truncate2($maxDiscount));
@@ -195,38 +204,32 @@ class ABGroupPM extends PriceMethod {
         /* any remaining quantity added without
            grouping discount */
         if ($quantity > 0){
-            TransRecord::addItem($row['upc'],
-                $row['description'],
-                'I',
-                ' ',
-                ' ',
-                $row['department'],
-                $quantity,
-                $pricing['regPrice'],
-                MiscLib::truncate2($pricing['regPrice'] * $quantity),
-                $pricing['regPrice'],
-                $row['scale'],
-                $row['tax'],
-                $row['foodstamp'],
-                0,        
-                0,    
-                $row['discount'],
-                $row['discounttype'],
-                $quantity,
-                ($priceObj->isSale() ? $row['specialpricemethod'] : $row['pricemethod']),
-                ($priceObj->isSale() ? $row['specialquantity'] : $row['quantity']),
-                ($priceObj->isSale() ? $row['specialgroupprice'] : $row['groupprice']),
-                $row['mixmatchcode'],
-                0,
-                0,
-                (isset($row['cost'])?$row['cost']*$quantity:0.00),
-                (isset($row['numflag'])?$row['numflag']:0),
-                (isset($row['charflag'])?$row['charflag']:'')
-            );
+            TransRecord::addRecord(array(
+                'upc' => $row['upc'],
+                'description' => $row['description'],
+                'trans_type' => 'I',
+                'department' => $row['department'],
+                'quantity' => $quantity,
+                'unitPrice' => $pricing['regPrice'],
+                'total' => MiscLib::truncate2($pricing['regPrice'] * $quantity),
+                'regPrice' => $pricing['regPrice'],
+                'scale' => $row['scale'],
+                'tax' => $row['tax'],
+                'foodstamp' => $row['foodstamp'],
+                'discountable' => $row['discount'],
+                'discounttype' => $row['discounttype'],
+                'ItemQtty' => $quantity,
+                'volDiscType' => ($priceObj->isSale() ? $row['specialpricemethod'] : $row['pricemethod']),
+                'volume' => ($priceObj->isSale() ? $row['specialquantity'] : $row['quantity']),
+                'VolSpecial' => ($priceObj->isSale() ? $row['specialgroupprice'] : $row['groupprice']),
+                'mixMatch' => $row['mixmatchcode'],
+                'cost' => (isset($row['cost'])?$row['cost']*$quantity:0.00),
+                'numflag' => (isset($row['numflag'])?$row['numflag']:0),
+                'charflag' => (isset($row['charflag'])?$row['charflag']:'')
+            ));
         }
 
-        return True;
+        return true;
     }
 }
 
-?>

@@ -23,26 +23,26 @@
 
 class update_20121213000001 extends UpdateObj {
 
-	protected $timestamp = '20121213000001';
+    protected $timestamp = '20121213000001';
 
-	protected $description = 'This update
+    protected $description = 'This update
 is to support a datestamp for changes to membership-
 related tables.  It adds a self-updating field LastChange
 to custdata. A new installation may already have this field.
 Also see 20121213000002 which creates triggers that assign
 this field.';
 
-	protected $author = 'Eric Lee (WEFC_Toronto)';
+    protected $author = 'Eric Lee (WEFC_Toronto)';
 
-	protected $queries = array(
-		'op' => array(
-			'ALTER TABLE custdata add column
-			LastChange timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP after Shown,
-			add index (LastChange)'
-		),
-		'trans' => array(),
-		'archive' => array()
-	);
+    protected $queries = array(
+        'op' => array(
+            'ALTER TABLE custdata add column
+            LastChange timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP after Shown,
+            add index (LastChange)'
+        ),
+        'trans' => array(),
+        'archive' => array()
+    );
 }
 
 ?>

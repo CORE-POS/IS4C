@@ -21,93 +21,95 @@
 
 *********************************************************************************/
 
-include('../config.php');
+include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
-	include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
 class MemPurchasesPage extends FannieRESTfulPage 
 {
 
-	protected $title = 'Member Purchase History';
-	protected $header = 'Member Purchase History';
+    protected $title = 'Member Purchase History';
+    protected $header = 'Member Purchase History';
 
-	protected function get_id_handler()
+    public $description = '[Member Purchases] lists all of a given member\'s transactions.';
+
+    protected function get_id_handler()
     {
-		$this->card_no = $this->id;
+        $this->card_no = $this->id;
 
-		$my = FormLib::get_form_value('my',date('Ym'));
-		$start = date("Y-m-d",mktime(0,0,0,substr($my,4),1,substr($my,0,4)));
-		$end = date("Y-m-t",mktime(0,0,0,substr($my,4),1,substr($my,0,4)));
+        $my = FormLib::get_form_value('my',date('Ym'));
+        $start = date("Y-m-d",mktime(0,0,0,substr($my,4),1,substr($my,0,4)));
+        $end = date("Y-m-t",mktime(0,0,0,substr($my,4),1,substr($my,0,4)));
 
-		$this->__models['start'] = $start;
-		$this->__models['end'] = $end;
-		
-		return true;
-	}
+        $this->__models['start'] = $start;
+        $this->__models['end'] = $end;
+        
+        return true;
+    }
 
-	protected function get_id_view()
+    protected function get_id_view()
     {
-		global $FANNIE_TRANS_DB,$FANNIE_URL;
-		$table = DTransactionsModel::selectDlog($this->__models['start'],$this->__models['end']);
-		$my = date('Ym',strtotime($this->__models['start']));
+        global $FANNIE_TRANS_DB,$FANNIE_URL;
+        $table = DTransactionsModel::selectDlog($this->__models['start'],$this->__models['end']);
+        $my = date('Ym',strtotime($this->__models['start']));
 
-		$dbc = FannieDB::get($FANNIE_TRANS_DB);
-		$query = "SELECT month(tdate),day(tdate),year(tdate),trans_num,
-			sum(case when trans_type='T' then -total else 0 end) as tenderTotal
-			FROM $table as t
-			WHERE card_no=?
-			AND tdate BETWEEN ? AND ?
-			GROUP BY year(tdate),month(tdate),day(tdate),trans_num
-			ORDER BY year(tdate) DESC, month(tdate) DESC,
-			day(tdate) DESC";
-		$prep = $dbc->prepare_statement($query);
-		$result = $dbc->exec_statement($prep, 
-			array($this->id, $this->__models['start'].' 00:00:00', $this->__models['end'].' 23:59:59'));
+        $dbc = FannieDB::get($FANNIE_TRANS_DB);
+        $query = "SELECT month(tdate),day(tdate),year(tdate),trans_num,
+            sum(case when trans_type='T' then -total else 0 end) as tenderTotal
+            FROM $table as t
+            WHERE card_no=?
+            AND tdate BETWEEN ? AND ?
+            GROUP BY year(tdate),month(tdate),day(tdate),trans_num
+            ORDER BY year(tdate) DESC, month(tdate) DESC,
+            day(tdate) DESC";
+        $prep = $dbc->prepare_statement($query);
+        $result = $dbc->exec_statement($prep, 
+            array($this->id, $this->__models['start'].' 00:00:00', $this->__models['end'].' 23:59:59'));
 
-		ob_start();
+        ob_start();
 
-		echo "<form action=\"MemPurchasesPage.php\" id=myform method=get>";
-		echo "<input type=hidden name=id value=\"".$this->id."\" />";
-		$ts = time();
-		echo "<select name=my onchange=\"\$('#myform').submit();\">";
+        echo "<form action=\"MemPurchasesPage.php\" id=myform method=get>";
+        echo "<input type=hidden name=id value=\"".$this->id."\" />";
+        $ts = time();
+        echo "<select name=my onchange=\"\$('#myform').submit();\">";
         $count = 0;
-		while(true) {
-			$val = date("Ym",$ts);
-			printf("<option value=\"%d\" %s>%s %d</option>",
-				$val,($val==$my?"selected":""),
-				date("F",$ts),date("Y",$ts));
+        while(true) {
+            $val = date("Ym",$ts);
+            printf("<option value=\"%d\" %s>%s %d</option>",
+                $val,($val==$my?"selected":""),
+                date("F",$ts),date("Y",$ts));
 
-			$ts = mktime(0,0,0,date("n",$ts)-1,1,date("Y",$ts));
+            $ts = mktime(0,0,0,date("n",$ts)-1,1,date("Y",$ts));
 
             // cuts off at 5 years
-			if ($count++ > 60) {
-				break;	
+            if ($count++ > 60) {
+                break;  
             }
-		}
-		echo "</select>";
+        }
+        echo "</select>";
 
-		$visits = 0;
-		$spending = 0.0;
-		echo "<table cellspacing=0 cellpadding=4 border=1 style=\"font-weight:bold;\">";
-		while($row = $dbc->fetch_row($result)) {
-			echo "<tr>";
-			printf("<td>%d/%d/%d</td>",$row[0],$row[1],$row[2]);
-			printf("<td><a href=\"{$FANNIE_URL}admin/LookupReceipt/RenderReceiptPage.php?receipt=%s&month=%d&day=%d&year=%d\">%s</a></td>",
-				$row[3],$row[0],$row[1],$row[2],$row[3]);
-			printf("<td>\$%.2f</td>",$row[4]);
-			echo "</tr>";
-			$spending += $row[4];
-			$visits += 1;
-		}
-		echo "</table>";
-		printf("<b>Visits</b>: %d<br /><b>Spending</b>: \$%.2f
-			<br /><b>Avg</b>: \$%.2f",
-			$visits,$spending,
-			($visits > 0 ? $spending/$visits : 0));
+        $visits = 0;
+        $spending = 0.0;
+        echo "<table cellspacing=0 cellpadding=4 border=1 style=\"font-weight:bold;\">";
+        while($row = $dbc->fetch_row($result)) {
+            echo "<tr>";
+            printf("<td>%d/%d/%d</td>",$row[0],$row[1],$row[2]);
+            printf("<td><a href=\"{$FANNIE_URL}admin/LookupReceipt/RenderReceiptPage.php?receipt=%s&month=%d&day=%d&year=%d\">%s</a></td>",
+                $row[3],$row[0],$row[1],$row[2],$row[3]);
+            printf("<td>\$%.2f</td>",$row[4]);
+            echo "</tr>";
+            $spending += $row[4];
+            $visits += 1;
+        }
+        echo "</table>";
+        printf("<b>Visits</b>: %d<br /><b>Spending</b>: \$%.2f
+            <br /><b>Avg</b>: \$%.2f",
+            $visits,$spending,
+            ($visits > 0 ? $spending/$visits : 0));
 
-		return ob_get_clean();
-	}
+        return ob_get_clean();
+    }
 
 }
 

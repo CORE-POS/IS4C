@@ -34,7 +34,7 @@ class CustAvailablePrefsModel extends BasicModel
     'pref_key' => array('type'=>'VARCHAR(50)', 'primary_key'=>true),
     'pref_default_value' => array('type'=>'VARCHAR(100)'),
     'pref_description' => array('type'=>'TEXT'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -48,6 +48,22 @@ class CustAvailablePrefsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'custAvailablePrefID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["custAvailablePrefID"]) || $this->instance["custAvailablePrefID"] != func_get_args(0)) {
                 if (!isset($this->columns["custAvailablePrefID"]["ignore_updates"]) || $this->columns["custAvailablePrefID"]["ignore_updates"] == false) {
@@ -56,6 +72,7 @@ class CustAvailablePrefsModel extends BasicModel
             }
             $this->instance["custAvailablePrefID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function pref_key()
@@ -68,6 +85,22 @@ class CustAvailablePrefsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'pref_key',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["pref_key"]) || $this->instance["pref_key"] != func_get_args(0)) {
                 if (!isset($this->columns["pref_key"]["ignore_updates"]) || $this->columns["pref_key"]["ignore_updates"] == false) {
@@ -76,6 +109,7 @@ class CustAvailablePrefsModel extends BasicModel
             }
             $this->instance["pref_key"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function pref_default_value()
@@ -88,6 +122,22 @@ class CustAvailablePrefsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'pref_default_value',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["pref_default_value"]) || $this->instance["pref_default_value"] != func_get_args(0)) {
                 if (!isset($this->columns["pref_default_value"]["ignore_updates"]) || $this->columns["pref_default_value"]["ignore_updates"] == false) {
@@ -96,6 +146,7 @@ class CustAvailablePrefsModel extends BasicModel
             }
             $this->instance["pref_default_value"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function pref_description()
@@ -108,6 +159,22 @@ class CustAvailablePrefsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'pref_description',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["pref_description"]) || $this->instance["pref_description"] != func_get_args(0)) {
                 if (!isset($this->columns["pref_description"]["ignore_updates"]) || $this->columns["pref_description"]["ignore_updates"] == false) {
@@ -116,6 +183,7 @@ class CustAvailablePrefsModel extends BasicModel
             }
             $this->instance["pref_description"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

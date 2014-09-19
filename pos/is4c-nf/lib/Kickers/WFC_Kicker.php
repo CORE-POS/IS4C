@@ -29,15 +29,17 @@
 class WFC_Kicker extends Kicker 
 {
 
-    public function doKick()
+    public function doKick($trans_num)
     {
         global $CORE_LOCAL;
         $db = Database::tDataConnect();
 
-        $query = "select trans_id from localtemptrans where 
-            (trans_subtype = 'CA' and total <> 0) or 
-            (trans_subtype IN ('CC','AX') AND (total < -25 or total > 0) AND description <> 'Debit Card') or 
-            upc='0000000001065'";
+        $query = "SELECT trans_id 
+                  FROM localtranstoday 
+                  WHERE ( 
+                    (trans_subtype = 'CA' and total <> 0) 
+                    OR upc='0000000001065'
+                  ) AND " . $this->refToWhere($trans_num);
 
         $result = $db->query($query);
         $num_rows = $db->num_rows($result);

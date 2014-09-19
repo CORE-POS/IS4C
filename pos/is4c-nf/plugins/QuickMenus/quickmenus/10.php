@@ -1,13 +1,17 @@
 <?php
 
 $my_menu = array(
-	"Books Assortment" => "10000",
-	"Surya Sampler Darbari" => "10002",
-	"Surya Euphoria" => "10003",
-	"Basket, Barcelona Gathering" => "10004",
-	"Basket, Athenian Market" => "10005",
-	"Basket, Maine Berry" => "10006",
-	"Argentinean Garden Hat" => "10007"
+	"Outside Bakery" => "DP1500",
+	"Ashland Baking" => "*15001",
+	"Great Harvest" => "*15002",
+	"Positively 3rd Street" => "*15003",
+	"Red Mug Bakeshop" => "*150004",
+	"St Paul Bagelry" => "*15005",
+	"Starlite Kitchen" => "*15007",
+	"Turtle Bread" => "*15006",
+	"Biscotti" => "7011",
+	"Single Bagel" => "99DP1500",
+	"Cream Cheese" => "0020104000050"
 );
 
 ?>

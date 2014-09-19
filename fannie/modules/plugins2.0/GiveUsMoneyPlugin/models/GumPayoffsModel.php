@@ -40,7 +40,7 @@ class GumPayoffsModel extends BasicModel
     'issueDate' => array('type'=>'DATETIME'),
     'checkNumber' => array('type'=>'INT', 'index'=>true),
     'checkIssued' => array('type'=>'TINYINT', 'default'=>0),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -54,6 +54,22 @@ class GumPayoffsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'gumPayoffID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["gumPayoffID"]) || $this->instance["gumPayoffID"] != func_get_args(0)) {
                 if (!isset($this->columns["gumPayoffID"]["ignore_updates"]) || $this->columns["gumPayoffID"]["ignore_updates"] == false) {
@@ -62,6 +78,7 @@ class GumPayoffsModel extends BasicModel
             }
             $this->instance["gumPayoffID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function amount()
@@ -74,6 +91,22 @@ class GumPayoffsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'amount',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["amount"]) || $this->instance["amount"] != func_get_args(0)) {
                 if (!isset($this->columns["amount"]["ignore_updates"]) || $this->columns["amount"]["ignore_updates"] == false) {
@@ -82,6 +115,7 @@ class GumPayoffsModel extends BasicModel
             }
             $this->instance["amount"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function issueDate()
@@ -94,6 +128,22 @@ class GumPayoffsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'issueDate',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["issueDate"]) || $this->instance["issueDate"] != func_get_args(0)) {
                 if (!isset($this->columns["issueDate"]["ignore_updates"]) || $this->columns["issueDate"]["ignore_updates"] == false) {
@@ -102,6 +152,7 @@ class GumPayoffsModel extends BasicModel
             }
             $this->instance["issueDate"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function checkNumber()
@@ -114,6 +165,22 @@ class GumPayoffsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'checkNumber',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["checkNumber"]) || $this->instance["checkNumber"] != func_get_args(0)) {
                 if (!isset($this->columns["checkNumber"]["ignore_updates"]) || $this->columns["checkNumber"]["ignore_updates"] == false) {
@@ -122,6 +189,7 @@ class GumPayoffsModel extends BasicModel
             }
             $this->instance["checkNumber"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function checkIssued()
@@ -134,6 +202,22 @@ class GumPayoffsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'checkIssued',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["checkIssued"]) || $this->instance["checkIssued"] != func_get_args(0)) {
                 if (!isset($this->columns["checkIssued"]["ignore_updates"]) || $this->columns["checkIssued"]["ignore_updates"] == false) {
@@ -142,6 +226,7 @@ class GumPayoffsModel extends BasicModel
             }
             $this->instance["checkIssued"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

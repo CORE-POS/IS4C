@@ -23,69 +23,75 @@
 
 global $FANNIE_ROOT;
 if (!class_exists('FannieAPI'))
-	include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class PIKillerPage extends FannieRESTfulPage {
 
-	protected $card_no = False;
+    protected $card_no = False;
 
     protected $must_authenticate = true;
-	
-	function getHeader() 
-    {
-		global $FANNIE_URL;
-		$this->add_css_file('css/styles.css');
-		$this->add_script($FANNIE_URL.'src/jquery/jquery.js');
-		return '<!DOCTYPE html>
-			<html lang="en">
-			<head>
-			<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-			<title>'.$this->title.'</title>
-			</head>
-			<body bgcolor="#66CC99" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
-			<table width="660" height="111" border="0" cellpadding="0" cellspacing="0" bgcolor="#66cc99">
-			<tr>
-			<td colspan="2"><img src="images/newLogo_small1.gif" /></td>
-			</tr>
-			<tr>
-			<td colspan="11" bgcolor="#006633">
-			<a href="'.($this->card_no?'PIMemberPage.php?id='.$this->card_no:'').'"><img src="images/general.gif" 
-				width="72" height="16" border="0" /></a>
-			<a href="'.($this->card_no?'PIEquityPage.php?id='.$this->card_no:'').'"><img src="images/equity.gif" 
-				width="72" height="16" border="0" /></a>
-			<a href="'.($this->card_no?'PIArPage.php?id='.$this->card_no:'').'"><img src="images/AR.gif" 
-				width="72" height="16" border="0" /></a>
-			<a href="'.($this->card_no?$FANNIE_URL.'mem/prefs.php?memID='.$this->card_no:'').'"><img src="images/control.gif" 
-				width="72" height="16" border="0" /></a>
-			<a href="'.($this->card_no?'PIPurchasesPage.php?id='.$this->card_no:'').'"><img src="images/detail.gif" 
-				width="72" height="16" border="0" /></a>
-			<a href="'.($this->card_no?'PIPatronagePage.php?id='.$this->card_no:'').'"><img src="images/patronage.gif" 
-				width="72" height="16" border="1" /></a>
-			</tr>
-			<tr>
-			<td colspan="9">
-			<a href="PISearchPage.php">
-			<img src="images/memDown.gif" alt="" name="Members" border="0" id="Members"  /></a>
-			<a href="">
-			<img src="images/repUp.gif" alt="" name="Reports" width="81" height="62" border="0" id="Reports" /></a>
-			<a href="" target="_top">
-			<img name="Items" src="images/itemsUp.gif" border="0" alt="Items"  /></a>
-			<a href="'.($this->card_no?'PIDocumentsPage.php?id='.$this->card_no:'').'">
-			<img name="Reference" src="images/refUp.gif" border="0" alt="Reference"  /></a></td>
-			<td colspan="2">&nbsp;</td>
-			</tr>
-			<tr>
-			<td colspan="2" align="center" valign="top">&nbsp;</td>
-			<td width="60" align="center" valign="top">&nbsp;</td>
-			<td colspan="6" align="center" valign="top">&nbsp;</td>
-			<td colspan="2" align="center" valign="top" bgcolor="#66CC99">&nbsp;</td>
-			</tr>';
-	}
-
-	function getFooter()
+    
+    function getHeader() 
     {
         global $FANNIE_URL;
-		$ret = '</table>';
+        $this->add_css_file('css/styles.css');
+        $this->add_css_file($FANNIE_URL . 'src/javascript/jquery-ui.css');
+        $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
+        $this->add_script($FANNIE_URL.'src/javascript/jquery-ui.js');
+        return '<!DOCTYPE html>
+            <html lang="en">
+            <head>
+            <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+            <title>'.$this->title.'</title>
+            </head>
+            <body bgcolor="#66CC99" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
+            <table width="660" height="111" border="0" cellpadding="0" cellspacing="0" bgcolor="#66cc99">
+            <tr>
+            <td colspan="2"><img src="images/newLogo_small1.gif" /></td>
+            </tr>
+            <tr>
+            <td colspan="11" bgcolor="#006633">
+            <div style="width:100%;height:4px;"></div><!-- spacer for vertical-align -->
+            <div style="width:100%;height:1.8em;font-size:115%;">
+            <a style="margin-left:15px;margin-right:15px;vertical-align: top; color:#6c9;" 
+                href="'.($this->card_no?'PIMemberPage.php?id='.$this->card_no:'').'">General</a>
+            <a style="margin-left:15px;margin-right:15px;vertical-align: top; color:#6c9;" 
+                href="'.($this->card_no?'PIEquityPage.php?id='.$this->card_no:'').'">Equity</a>
+            <a style="margin-left:15px;margin-right:15px;vertical-align: top; color:#6c9;" 
+                href="'.($this->card_no?'PIArPage.php?id='.$this->card_no:'').'">AR</a>
+            <a style="margin-left:15px;margin-right:15px;vertical-align: top; color:#6c9;" 
+                href="'.($this->card_no?$FANNIE_URL.'mem/prefs.php?memID='.$this->card_no:'').'">Control</a>
+            <a style="margin-left:15px;margin-right:15px;vertical-align: top; color:#6c9;" 
+                href="'.($this->card_no?'PIPurchasesPage.php?id='.$this->card_no:'').'">Detail</a>
+            <a style="margin-left:15px;margin-right:15px;vertical-align: top; color:#6c9;" 
+                href="'.($this->card_no?'PIPatronagePage.php?id='.$this->card_no:'').'">Patronage</a>
+            </div>
+            </td>
+            </tr>
+            <tr>
+            <td colspan="9">
+            <a href="PISearchPage.php">
+            <img src="images/memDown.gif" alt="" name="Members" border="0" id="Members"  /></a>
+            <a href="">
+            <img src="images/repUp.gif" alt="" name="Reports" width="81" height="62" border="0" id="Reports" /></a>
+            <a href="" target="_top">
+            <img name="Items" src="images/itemsUp.gif" border="0" alt="Items"  /></a>
+            <a href="'.($this->card_no?'PIDocumentsPage.php?id='.$this->card_no:'').'">
+            <img name="Reference" src="images/refUp.gif" border="0" alt="Reference"  /></a></td>
+            <td colspan="2">&nbsp;</td>
+            </tr>
+            <tr>
+            <td colspan="2" align="center" valign="top">&nbsp;</td>
+            <td width="60" align="center" valign="top">&nbsp;</td>
+            <td colspan="6" align="center" valign="top">&nbsp;</td>
+            <td colspan="2" align="center" valign="top" bgcolor="#66CC99">&nbsp;</td>
+            </tr>';
+    }
+
+    function getFooter()
+    {
+        global $FANNIE_URL;
+        $ret = '</table>';
         if (FannieAuth::checkLogin() !== false) {
             $ret .= '<p><span id="logininfo" style="top:50px;">';
             $ret .= 'Logged in as: '.FannieAuth::checkLogin();
@@ -98,5 +104,5 @@ class PIKillerPage extends FannieRESTfulPage {
         $ret .= '</body></html>';
 
         return $ret;
-	}
+    }
 }

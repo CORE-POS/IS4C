@@ -29,6 +29,20 @@
 */
 class SpecialDept 
 {
+
+    /**
+      A short summary of what the special dept does
+      Shown on mouse hover
+    */
+    public $help_summary = 'Documentation Needed!';
+
+    /**
+      More extensive help text, if needed
+    */
+    public function help_text()
+    {
+        return $help_summary;
+    }
     
     /**
       Utility function

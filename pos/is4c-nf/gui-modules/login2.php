@@ -33,69 +33,80 @@ class login2 extends BasicPage
 
 	public $body_class = '';
 
-	function preprocess(){
+	public function preprocess()
+    {
 		global $CORE_LOCAL;
 		$this->box_css_class = 'coloredArea';
 		$this->msg = _('please enter your password');
 
-		if (isset($_REQUEST['reginput']) || isset($_REQUEST['userPassword'])){
+		if (isset($_REQUEST['reginput']) || isset($_REQUEST['userPassword'])) {
 
 			$passwd = '';
-			if (isset($_REQUEST['reginput']) && !empty($_REQUEST['reginput'])){
+			if (isset($_REQUEST['reginput']) && !empty($_REQUEST['reginput'])) {
 				$passwd = $_REQUEST['reginput'];
 				UdpComm::udpSend('goodBeep');
-			}
-			elseif (isset($_REQUEST['userPassword']) && !empty($_REQUEST['userPassword']))
+			} elseif (isset($_REQUEST['userPassword']) && !empty($_REQUEST['userPassword'])) {
 				$passwd = $_REQUEST['userPassword'];
+            }
 
-			if (Authenticate::checkPassword($passwd)){
+			if (Authenticate::checkPassword($passwd)) {
 				Database::testremote();
 				$sd = MiscLib::scaleObject();
-				if (is_object($sd))
+				if (is_object($sd)) {
 					$sd->ReadReset();
+                }
 
 				/**
 				  Find a drawer for the cashier
 				*/
 				$my_drawer = ReceiptLib::currentDrawer();
-				if ($my_drawer == 0){
+				if ($my_drawer == 0) {
 					$available = ReceiptLib::availableDrawers();	
-					if (count($available) > 0){ 
+					if (count($available) > 0) { 
 						ReceiptLib::assignDrawer($CORE_LOCAL->get('CashierNo'),$available[0]);
 						$my_drawer = $available[0];
 					}
-				}
-				else
+				} else {
 					ReceiptLib::assignDrawer($CORE_LOCAL->get('CashierNo'),$my_drawer);
+                }
+
+                TransRecord::addLogRecord(array(
+                    'upc' => 'SIGNIN',
+                    'description' => 'Sign In Emp#' . $CORE_LOCAL->get('CashierNo'),
+                ));
 
 				/**
 				  Use Kicker object to determine whether the drawer should open
 				  The first line is just a failsafe in case the setting has not
 				  been configured.
 				*/
-				if (session_id() != '')
+				if (session_id() != '') {
 					session_write_close();
+                }
 				$kicker_class = ($CORE_LOCAL->get("kickerModule")=="") ? 'Kicker' : $CORE_LOCAL->get('kickerModule');
 				$kicker_object = new $kicker_class();
-				if ($kicker_object->kickOnSignIn())
+				if ($kicker_object->kickOnSignIn()) {
 					ReceiptLib::drawerKick();
+                }
 
-				if ($my_drawer == 0)
+				if ($my_drawer == 0) {
 					$this->change_page($this->page_url."gui-modules/drawerPage.php");
-				else
+				} else {
 					$this->change_page($this->page_url."gui-modules/pos2.php");
-				return False;
-			}
-			else {
+                }
+
+				return false;
+			} else {
 				$this->box_css_class = 'errorColoredArea';
 				$this->msg = _('password invalid, please re-enter');
 			}
 		}
 
-		return True;
+		return true;
 	}
 
-	function head_content(){
+	public function head_content()
+    {
 		?>
 		<script type="text/javascript">
 		function closeFrames() {
@@ -107,7 +118,8 @@ class login2 extends BasicPage
 		$this->scanner_scale_polling(True);
 	}
 
-	function body_content(){
+	public function body_content()
+    {
 		global $CORE_LOCAL;
 		// 18Agu12 EL Add separately for readability of source.
 		$this->add_onload_command("\$('#userPassword').focus();");
@@ -135,15 +147,9 @@ class login2 extends BasicPage
 			</div>	
 		</div>
 		<div id="loginExit">
-			<?php echo _("EXIT"); ?>
-			<?php
-			if ($CORE_LOCAL->get("browserOnly") == 1) {
-				echo "<a href=\"\" onclick=\"window.top.close();\" ";
-			}
-			else {
-				//echo "<a href='/bye.html' onclick=\"var cw=window.open('','Customer_Display'); cw.close()\" ";
-				echo "<a href=\"\" ";
-			}
+			<?php 
+            echo _("EXIT");
+            echo "<a href=\"\" ";
 			echo "onmouseover=\"document.exit.src='{$this->page_url}graphics/switchred2.gif';\" ";
 			echo "onmouseout=\"document.exit.src='{$this->page_url}graphics/switchblue2.gif';\">";
 			?>

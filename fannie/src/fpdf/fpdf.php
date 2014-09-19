@@ -192,7 +192,7 @@ function SetMargins($left,$top,$right=-1)
 
 function GetMargins()
 {
-    return array('left'=>$this->lMargin, 'right'=>$this->rMargin, 'top'=>$this->topMargin);
+    return array('left'=>$this->lMargin, 'right'=>$this->rMargin, 'top'=>$this->tMargin);
 }
 
 function SetLeftMargin($margin)
@@ -483,7 +483,7 @@ function AddFont($family,$style='',$file='')
 		$this->Error('Could not include font definition file');
 	$i=count($this->fonts)+1;
 	$this->fonts[$fontkey]=array('i'=>$i,'type'=>$type,'name'=>$name,'desc'=>$desc,'up'=>$up,'ut'=>$ut,'cw'=>$cw,'enc'=>$enc,'file'=>$file);
-	if($diff)
+	if(isset($diff) && $diff)
 	{
 		//Search existing encodings
 		$d=0;
@@ -1016,8 +1016,10 @@ function Output($name='',$dest='')
 	{
 		case 'I':
 			//Send to standard output
-			if(ob_get_contents())
-				$this->Error('Some data has already been output, can\'t send PDF file');
+			if(ob_get_contents()){
+				$j2 = ob_clean();
+				//$this->Error('Some data has already been output, can\'t send PDF file');
+			}
 			if(php_sapi_name()!='cli')
 			{
 				//We send to a browser

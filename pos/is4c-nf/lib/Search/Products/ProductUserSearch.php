@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 /**
-  @class DefaultProductSearch
+  @class ProductUserSearch
   Use the productUser table to
   supplement searches
 */

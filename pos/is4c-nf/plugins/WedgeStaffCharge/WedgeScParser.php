@@ -87,7 +87,17 @@ class WedgeScParser extends Parser
         global $CORE_LOCAL;
 
         if ($CORE_LOCAL->get("scDiscount") != 0) {
-            TransRecord::addItem("DISCOUNT", "** 10% Deli Discount **", "I", "", "", 0, 1, MiscLib::truncate2(-1 * $CORE_LOCAL->get("scDiscount")), MiscLib::truncate2(-1 * $CORE_LOCAL->get("scDiscount")), 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 2);
+            TransRecord::addRecord(array(
+                'upc' => "DISCOUNT", 
+                'description' => "** 10% Deli Discount **", 
+                'trans_type' => "I",
+                'quantity' => 1, 
+                'ItemQtty' => 1, 
+                'unitPrice' => MiscLib::truncate2(-1 * $CORE_LOCAL->get("scDiscount")), 
+                'total' => MiscLib::truncate2(-1 * $CORE_LOCAL->get("scDiscount")), 
+                'discountable' => 1,
+                'voided' => 2,
+            ));
         }
     }
 

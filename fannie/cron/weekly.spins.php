@@ -39,7 +39,6 @@ $SPINS_SERVER = "ftp.spins.com";
 
 include('../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
-include($FANNIE_ROOT.'src/tmp_dir.php');
 
 /**
   CONFIGURATION:
@@ -55,42 +54,42 @@ if ($week == 0) $week = 52;
 
 
 if (isset($argv[1]) && is_numeric($argv[1]))
-	$week = $argv[1];
+    $week = $argv[1];
 
 while(date("W",$tstamp) != $week or date("w",$tstamp) != 6){
-	$tstamp = mktime(0,0,0,date("n",$tstamp),
-		date("j",$tstamp)-1,date("Y",$tstamp));
+    $tstamp = mktime(0,0,0,date("n",$tstamp),
+        date("j",$tstamp)-1,date("Y",$tstamp));
 }
 
 $lastDay = date("M d, Y",$tstamp)." 11:59PM";
 
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
-	$FANNIE_TRANS_DB,$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
+    $FANNIE_TRANS_DB,$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
 $dataQ = "SELECT d.upc as upc, p.description as description,
-	sum(CASE WHEN d.quantity <> d.ItemQtty AND d.ItemQtty <> 0 THEN d.quantity*d.ItemQtty ELSE d.quantity END) as quantity,
-	sum(d.total) as dollars,
-	'$lastDay' as lastDay
-	FROM dlog_90_view as d inner join 
-	{$FANNIE_OP_DB}.dbo.products as p
-	on d.upc=p.upc
-	WHERE p.scale = 0
-	AND d.upc > '0000000999999'
-	AND datepart(ww,tdate) = $week
-	group by d.upc, p.description";
+    sum(CASE WHEN d.quantity <> d.ItemQtty AND d.ItemQtty <> 0 THEN d.quantity*d.ItemQtty ELSE d.quantity END) as quantity,
+    sum(d.total) as dollars,
+    '$lastDay' as lastDay
+    FROM dlog_90_view as d inner join 
+    {$FANNIE_OP_DB}.dbo.products as p
+    on d.upc=p.upc
+    WHERE p.scale = 0
+    AND d.upc > '0000000999999'
+    AND datepart(ww,tdate) = $week
+    group by d.upc, p.description";
 // mysql handles week # differently by default
 if (strstr($FANNIE_SERVER_DBMS,"MYSQL")){
-	$dataQ = "SELECT d.upc as upc, p.description as description,
-		sum(CASE WHEN d.quantity <> d.ItemQtty AND d.ItemQtty <> 0 THEN d.quantity*d.ItemQtty ELSE d.quantity END) as quantity,
-		sum(d.total) as dollars,
-		'$lastDay' as lastDay
-		FROM dlog_90_view as d inner join 
-		{$FANNIE_OP_DB}.products as p
-		on d.upc=p.upc
-		WHERE p.scale = 0
-		AND d.upc > '0000000999999'
-		AND week(tdate) = ".($week-1)."
-		group by d.upc, p.description";
+    $dataQ = "SELECT d.upc as upc, p.description as description,
+        sum(CASE WHEN d.quantity <> d.ItemQtty AND d.ItemQtty <> 0 THEN d.quantity*d.ItemQtty ELSE d.quantity END) as quantity,
+        sum(d.total) as dollars,
+        '$lastDay' as lastDay
+        FROM dlog_90_view as d inner join 
+        {$FANNIE_OP_DB}.products as p
+        on d.upc=p.upc
+        WHERE p.scale = 0
+        AND d.upc > '0000000999999'
+        AND week(tdate) = ".($week-1)."
+        group by d.upc, p.description";
 }
 
 /* SPINS numbering is non-standard in 2012
@@ -103,10 +102,10 @@ $fp = fopen($outfile,"w");
 
 $dataR = $sql->query($dataQ);
 while($row = $sql->fetch_row($dataR)){
-	for($i=0;$i<4; $i++){
-		fwrite($fp,"\"".$row[$i]."\",");
-	}
-	fwrite($fp,"\"".$row[4]."\"\n");
+    for($i=0;$i<4; $i++){
+        fwrite($fp,"\"".$row[$i]."\",");
+    }
+    fwrite($fp,"\"".$row[4]."\"\n");
 }
 fclose($fp);
 
@@ -114,7 +113,7 @@ $conn_id = ftp_connect($SPINS_SERVER);
 $login_id = ftp_login($conn_id, $SPINS_USER, $SPINS_PW);
 
 if (!$conn_id or !$login_id){
-	echo "FTP connect failed!";
+    echo "FTP connect failed!";
 }
 
 ftp_chdir($conn_id,"data");
@@ -123,7 +122,7 @@ ftp_pasv($conn_id,True);
 $upload = ftp_put($conn_id, $filename, $outfile, FTP_ASCII);
 
 if (!$upload){
-	echo "FTP upload failed";
+    echo "FTP upload failed";
 }
 
 echo date('r').': Uploaded file to SPINS';

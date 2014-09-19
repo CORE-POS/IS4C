@@ -189,7 +189,34 @@ class ItemPD extends Parser {
 			$quantity = -1 * $ItemQtty;
 
 		elseif ($quantity != 0) {
-			TransRecord::addItem($upc, $row["description"], $row["trans_type"], $row["trans_subtype"], "V", $row["department"], $quantity, $unitPrice, $total, $row["regPrice"], $scale, $row["tax"], $foodstamp, $discount, $memDiscount, $discountable, $discounttype, $quantity, $volDiscType, $volume, $VolSpecial, $mixMatch, 0, 1, $cost, $numflag, $charflag);
+			TransRecord::addRecord(array(
+                'upc' => $upc, 
+                'description' => $row["description"], 
+                'trans_type' => $row["trans_type"], 
+                'trans_subtype' => $row["trans_subtype"], 
+                'trans_status' => "V", 
+                'department' => $row["department"], 
+                'quantity' => $quantity, 
+                'unitPrice' => $unitPrice, 
+                'total' => $total, 
+                'regPrice' => $row["regPrice"], 
+                'scale' => $scale, 
+                'tax' => $row["tax"], 
+                'foodstamp' => $foodstamp, 
+                'discount' => $discount, 
+                'memDiscount' => $memDiscount, 
+                'discountable' => $discountable, 
+                'discounttype' => $discounttype, 
+                'quantity' => $quantity, 
+                'volDiscType' => $volDiscType, 
+                'volume' => $volume, 
+                'VolSpecial' => $VolSpecial, 
+                'mixMatch' => $mixMatch, 
+                'voided' => 1, 
+                'cost' => $cost, 
+                'numflag' => $numflag, 
+                'charflag' => $charflag
+            ));
 
 			if ($row["trans_type"] != "T") {
 				$CORE_LOCAL->set("ttlflag",0);

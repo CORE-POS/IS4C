@@ -36,14 +36,17 @@ class WfcHtPayPeriodsPage extends FanniePage
     protected $header = 'Pay Periods';
     protected $title = 'Pay Periods';
 
+    public $page_set = 'Plugin :: WFC Hours Tracking';
+    public $description = '[Pay Periods] shows all pay periods.';
+
     public function css_content()
     {
         return '
 .one {
-	background: #ffffff;
+    background: #ffffff;
 }
 .two {
-	background: #ffffcc;
+    background: #ffffcc;
 }
         ';
     }

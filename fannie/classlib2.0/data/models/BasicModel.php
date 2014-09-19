@@ -54,6 +54,7 @@ class BasicModel
       - default (null if omitted)
       - primary_key (optional, boolean)
       - index (optional, boolean)
+      - not_null (optional, boolean)
       - increment (optional, boolean)
       - ignore_updates (optional, boolean)
       - replaces (optional, string previous column name)
@@ -99,6 +100,11 @@ class BasicModel
       List of column names => values
     */
     protected $instance = array();
+
+    /**
+      List of WHERE clauses
+    */
+    protected $filters = array();
 
     /**
       When updating server-side tables, apply
@@ -210,6 +216,10 @@ class BasicModel
             }
             $sql .= $type;
 
+            if (isset($definition['not_null']) && $definition['not_null']) {
+                $sql .= ' NOT NULL';
+            }
+
             if (isset($definition['increment']) && $definition['increment']) {
                 if ($dbms == 'mssql') {
                     $sql .= ' IDENTITY (1, 1) NOT NULL';
@@ -217,7 +227,9 @@ class BasicModel
                     $sql .= ' NOT NULL AUTO_INCREMENT';
                 }
                 $inc = true;
-            } elseif (isset($definition['default']) && $definition['default']) {
+            } elseif (isset($definition['default']) && (
+                is_string($definition['default']) || is_numeric($definition['default'])
+            )) {
                 if ($dbms == 'mssql') {
                     $sql .= ' '.$definition['default'];
                 } else {
@@ -323,6 +335,7 @@ class BasicModel
     public function reset()
     {
         $this->instance = array();
+        $this->filters = array();
     }
 
     public function getColumns()
@@ -368,6 +381,17 @@ class BasicModel
         foreach($this->instance as $name => $value) {
             $sql .= ' AND '.$this->connection->identifier_escape($name).' = ?';
             $args[] = $value;
+        }
+
+        foreach ($this->filters as $filter) {
+            $sql .= ' AND ' . $this->connection->identifier_escape($filter['left'])
+                . ' ' . $filter['op'];
+            if (!$filter['rightIsLiteral'] && isset($this->columns[$filter['right']])) {
+                $sql .= ' ' . $this->connection->identifier_escape($filter['right']);
+            } else {
+                $sql .= ' ?';
+                $args[] = $filter['right'];
+            }
         }
 
         $order_by = '';
@@ -448,6 +472,32 @@ class BasicModel
         $meta = $this->meta_types[strtoupper($type)];
 
         return isset($meta[$dbms]) ? $meta[$dbms] : $meta['default'];
+    }
+
+    /**
+      Validate SQL binary operator
+      @param $operator [string] operator
+      @return [string] valid operator or [boolean] false
+    */
+    protected function validateOp($operator)
+    {
+        if (strlen($operator) == 0) {
+            return false;
+        }
+
+        switch ($operator) {
+            case '<':
+            case '>':
+            case '=':
+            case '<>':
+            case '>=':
+            case '<=':
+                return $operator;
+            case '!=':
+                return '<>';
+            default:
+                return false;
+        }
     }
 
     /**
@@ -753,7 +803,7 @@ class BasicModel
         // get lowercased versions of the class' column names
         // and the current table's column names to check for
         // case mismatches
-        $current = $this->connection->table_definition($this->name);
+        $current = $this->connection->detailedDefinition($this->name);
         $lowercase_current = array();
         $casemap = array();
         foreach($current as $col_name => $definition) {
@@ -769,6 +819,7 @@ class BasicModel
         $new_indexes = array();
         $unknown = array();
         $recase_columns = array();
+        $redo_pk = false;
         foreach ($this->columns as $col_name => $defintion) {
             if (in_array(strtolower($col_name), $lowercase_current) && !in_array($col_name, array_keys($current))) {
                 printf("%s column %s as %s\n", 
@@ -781,6 +832,9 @@ class BasicModel
                         . $this->getMeta($this->columns[$col_name]['type'], $this->connection->dbms_name());
                 if (isset($this->columns[$col_name]['default'])) {
                     $sql .= ' DEFAULT '.$this->columns[$col_name]['default'];
+                }
+                if (isset($this->columns[$col_name]['not_null'])) {
+                    $sql .= ' NOT NULL';
                 }
                 printf("\tSQL Details: %s\n", $sql);
                 if ($mode == BasicModel::NORMALIZE_MODE_APPLY) {
@@ -798,12 +852,78 @@ class BasicModel
                 if (isset($this->columns[$col_name]['default'])) {
                     $sql .= ' DEFAULT '.$this->columns[$col_name]['default'];
                 }
+                if (isset($this->columns[$col_name]['not_null'])) {
+                    $sql .= ' NOT NULL';
+                }
                 printf("\tSQL Details: %s\n", $sql);
                 if ($mode == BasicModel::NORMALIZE_MODE_APPLY) {
                     $renamed = $this->connection->query($sql);
                     if ($renamed && method_exists($this, 'hookAddColumn'.$col_name)) {
                         $func = 'hookAddColumn'.$col_name;
                         $this->$func();
+                    }
+                }
+            } else if (in_array($col_name, array_keys($current))) {
+                $type = $this->getMeta($this->columns[$col_name]['type'], $this->connection->dbms_name());
+                $rebuild = false;
+                if (strtoupper($type) != $current[$col_name]['type']) {
+                    printf("%s column %s from %s to %s\n", 
+                            ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Need to change":"Changing", 
+                            $col_name, $current[$col_name]['type'], $type);
+                    $rebuild = true;
+                } else if (isset($our_columns[$col_name]['default']) && $our_columns[$col_name]['default'] != $current[$col_name]['default']) {
+                    printf("%s column %s default value from %s to %s\n", 
+                            ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Need to change":"Changing", 
+                            $col_name, $current[$col_name]['default'], $our_columns[$col_name]['default']);
+                    $rebuild = true;
+                } else if (isset($our_columns[$col_name]['increment']) && $our_columns[$col_name]['increment'] && $current[$col_name]['increment'] === false) {
+                    printf("%s for column %s\n", 
+                            ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Need to set increment":"Setting increment", 
+                            $col_name);
+                    $rebuild = true;
+                } else if (isset($our_columns[$col_name]['primary_key']) && $our_columns[$col_name]['primary_key'] && $current[$col_name]['primary_key'] === false) {
+                    $redo_pk = true;
+                }
+                if ($rebuild) {
+                    $sql = 'ALTER TABLE ' . $this->connection->identifier_escape($this->name) . ' CHANGE COLUMN '
+                            . $this->connection->identifier_escape($col_name) . ' '
+                            . $this->connection->identifier_escape($col_name) . ' '
+                            . $this->getMeta($this->columns[$col_name]['type'], $this->connection->dbms_name());
+                    if (isset($this->columns[$col_name]['default'])) {
+                        $sql .= ' DEFAULT '.$this->columns[$col_name]['default'];
+                    }
+                    if (isset($this->columns[$col_name]['not_null'])) {
+                        $sql .= ' NOT NULL';
+                    }
+                    if (isset($this->columns[$col_name]['increment']) && $this->columns[$col_name]['increment']) {
+                        if ($this->connection->dbms_name() == 'mssql') {
+                            $sql .= ' IDENTITY (1, 1) NOT NULL';
+                        } else {
+                            $sql .= ' NOT NULL AUTO_INCREMENT';
+                        }
+                        if ($current[$col_name]['primary_key'] !== true) {
+                            // increment must be indexed or PK
+                            // only use PK on single-column PK
+                            $index = 'INDEX';
+                            if (isset($this->columns[$col_name]['primary_key']) && $this->columns[$col_name]['primary_key']) {
+                                $count_pk = 0;
+                                foreach ($this->columns as $col) {
+                                    if (isset($col['primary_key']) && $col['primary_key']) {
+                                        $pk_count++;
+                                    }
+                                }
+                                if ($pk_count == 1) {
+                                    $index = 'PRIMARY KEY ';
+                                    $redo_pk = false;
+                                }
+                            }
+                            $sql .= ', ADD ' . $index . ' (' . $this->connection->identifier_escape($this->columns[$col_name]) . ')'; 
+                        }
+                    }
+                    printf("\tSQL Details: %s\n", $sql);
+                    $recase_columns[] = $col_name;
+                    if ($mode == BasicModel::NORMALIZE_MODE_APPLY) {
+                        $modified = $this->connection->query($sql);
                     }
                 }
             } else if (!in_array($col_name,array_keys($current))) {
@@ -836,6 +956,9 @@ class BasicModel
                     if (isset($this->columns[$our_columns[$i]]['default'])) {
                         $sql .= ' DEFAULT '.$this->columns[$our_columns[$i]]['default'];
                     }
+                    if (isset($this->columns[$our_columns[$i]]['not_null'])) {
+                        $sql .= ' NOT NULL';
+                    }
                     if (isset($this->columns[$our_columns[$i]]['increment']) && $this->columns[$our_columns[$i]]['increment']) {
                         if ($this->connection->dbms_name() == 'mssql') {
                             $sql .= ' IDENTITY (1, 1) NOT NULL';
@@ -860,6 +983,9 @@ class BasicModel
                             $this->connection->dbms_name());
                     if (isset($this->columns[$our_columns[$i]]['default'])) {
                         $sql .= ' DEFAULT '.$this->columns[$our_columns[$i]]['default'];
+                    }
+                    if (isset($this->columns[$our_columns[$i]]['not_null'])) {
+                        $sql .= ' NOT NULL';
                     }
                     if (isset($this->columns[$our_columns[$i]]['increment']) && $this->columns[$our_columns[$i]]['increment']) {
                         if ($this->connection->dbms_name() == 'mssql') {
@@ -886,6 +1012,9 @@ class BasicModel
                             $this->connection->dbms_name());
                     if (isset($this->columns[$our_columns[$i]]['default'])) {
                         $sql .= ' DEFAULT '.$this->columns[$our_columns[$i]]['default'];
+                    }
+                    if (isset($this->columns[$our_columns[$i]]['not_null'])) {
+                        $sql .= ' NOT NULL';
                     }
                     if (isset($this->columns[$our_columns[$i]]['increment']) && $this->columns[$our_columns[$i]]['increment']) {
                         if ($this->connection->dbms_name() == 'mssql') {
@@ -939,10 +1068,30 @@ class BasicModel
                 }
             }
         }
+        if ($redo_pk) {
+            echo ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Need to set primary key":"Setting primary key";
+            $sql = 'ALTER TABLE ' . $this->connection->identifier_escape($this->name);
+            foreach ($current as $col_name=>$info) {
+                if ($info['primary_key'] === true) {
+                    $sql .= ' DROP PRIMARY KEY,';
+                    break;
+                }
+            }
+            $sql .= ' ADD PRIMARY KEY(';
+            foreach ($this->columns as $col_name => $info) {
+                if (isset($info['primary_key']) && $info['primary_key']) {
+                    $sql .= $this->connection->identifier_escape($col_name) . ',';
+                }
+            }
+            $sql = substr($sql, 0, strlen($sql)-1);
+            $sql .= ')';
+            echo "\tSQL Details: $sql\n";
+            $new_indexes[] = 'PRIMARY KEY';
+        }
         $alters = count($new_columns) + count($recase_columns);
         echo "==========================================\n";
         printf("%s %d column%s  %d index%s.\n",
-            ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Check complete. Need to add":"Update complete. Added",
+            ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Check complete. Need to adjust":"Update complete. Added",
             $alters, ($alters!=1)?"s":"",
             count($new_indexes), (count($new_indexes)!=1)?"es":""
             );
@@ -1048,6 +1197,22 @@ class BasicModel
             fwrite($fp,"            } else {\n");
             fwrite($fp,"                return null;\n");
             fwrite($fp,"            }\n");
+            fwrite($fp,"        } else if (func_num_args() > 1) {\n");
+            fwrite($fp,'            $value = func_get_arg(0);'."\n");
+            fwrite($fp,'            $op = $this->validateOp(func_get_arg(1));'."\n");
+            fwrite($fp,'            if ($op === false) {'."\n");
+            fwrite($fp,'                throw new Exception(\'Invalid operator: \' . func_get_arg(1));'."\n");
+            fwrite($fp,"            }\n");
+            fwrite($fp,'            $filter = array('."\n");
+            fwrite($fp,'                \'left\' => \''.$name.'\','."\n");
+            fwrite($fp,'                \'right\' => $value,'."\n");
+            fwrite($fp,'                \'op\' => $op,'."\n");
+            fwrite($fp,'                \'rightIsLiteral\' => false,'."\n");
+            fwrite($fp,"            );\n");
+            fwrite($fp,'            if (func_num_args() > 2 && func_get_arg(2) === true) {'."\n");
+            fwrite($fp,'                $filter[\'rightIsLiteral\'] = true;'."\n");
+            fwrite($fp,"            }\n");
+            fwrite($fp,'            $this->filters[] = $filter;'."\n");
             fwrite($fp,"        } else {\n");
             fwrite($fp,'            if (!isset($this->instance["'.$name.'"]) || $this->instance["'.$name.'"] != func_get_args(0)) {'."\n");
             fwrite($fp,'                if (!isset($this->columns["'.$name.'"]["ignore_updates"]) || $this->columns["'.$name.'"]["ignore_updates"] == false) {'."\n");
@@ -1056,6 +1221,7 @@ class BasicModel
             fwrite($fp,"            }\n");
             fwrite($fp,'            $this->instance["'.$name.'"] = func_get_arg(0);'."\n");
             fwrite($fp,"        }\n");
+            fwrite($fp,'        return $this;'."\n");
             fwrite($fp,"    }\n");
         }
         fwrite($fp,$after);
@@ -1065,7 +1231,7 @@ class BasicModel
     // generate()
     }
 
-    public function newModel($name)
+    public function newModel($name, $as_view=false)
     {
         $fp = fopen($name.'.php','w');
         fwrite($fp, chr(60)."?php
@@ -1094,12 +1260,18 @@ class BasicModel
 /**
   @class $name
 */
-class $name extends BasicModel\n");
+class $name extends " . ($as_view ? 'ViewModel' : 'BasicModel') . "\n");
         fwrite($fp,"{\n");
         fwrite($fp,"\n");
         fwrite($fp,"    protected \$name = \"".substr($name,0,strlen($name)-5)."\";\n");
         fwrite($fp,"\n");
-        fwrite($fp,"    protected \$columns = array(\n\t);\n");
+        fwrite($fp,"    protected \$columns = array(\n    );\n");
+        fwrite($fp,"\n");
+        if ($as_view) {
+            fwrite($fp,"    public function definition()\n");
+            fwrite($fp,"    {\n");
+            fwrite($fp,"    }\n");
+        }
         fwrite($fp,"\n");
         fwrite($fp,"    /* START ACCESSOR FUNCTIONS */\n");
         fwrite($fp,"    /* END ACCESSOR FUNCTIONS */\n");
@@ -1152,9 +1324,10 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
    * 3 args: Create new Model: php BasicModel.php --new <Model Name>\n";
    * 4 args: Update Table Structure: php BasicModel.php --update <Database name> <Subclass Filename[[Model].php]>\n";
     */
-    if (($argc < 2 || $argc > 4) || ($argc == 3 && $argv[1] != "--new") || ($argc == 4 && $argv[1] != '--update')) {
+    if (($argc < 2 || $argc > 4) || ($argc == 3 && $argv[1] != "--new" && $argv[1] != '--new-view') || ($argc == 4 && $argv[1] != '--update')) {
         echo "Generate Accessor Functions: php BasicModel.php <Subclass Filename>\n";
         echo "Create new Model: php BasicModel.php --new <Model Name>\n";
+        echo "Create new View Model: php BasicModel.php --new-view <Model Name>\n";
         echo "Update Table Structure: php BasicModel.php --update <Database name> <Subclass Filename>\n";
         exit;
     }
@@ -1173,7 +1346,31 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
         }
         echo "Generating Model '$modelname'\n";
         $obj = new BasicModel(null);
-        $obj->newModel($modelname);
+        $as_view = $argv[1] == '--new-view' ? true : false;
+        $obj->newModel($modelname, $as_view);
+        exit;
+    }
+
+    /**
+      Generate all is purposely undocumented write now. It's useful
+      if updating the acutal column methods since they need to then
+      be rebuilt for every file, but it also has the potential to 
+      make a giant mess.
+    */
+    if ($argc == 2 && $argv[1] == '--generate-all') {
+        $all = FannieAPI::listModules('BasicModel');
+        foreach ($all as $model_class) {
+            echo 'Class ' . $model_class . "\n";
+            $reflector = new ReflectionClass($model_class);
+            $filename = $reflector->getFileName();
+            if (!is_writable($filename)) {
+                echo 'ERROR: cannot rewrite file: ' . $filename . "\n";
+                continue;
+            } else {
+                $writer = new $model_class(null);
+                $writer->generate($filename);
+            }
+        }
         exit;
     }
 

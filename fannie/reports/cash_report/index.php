@@ -1,5 +1,5 @@
 <?php
-include('../../config.php');
+include(dirname(__FILE__) . '/../../config.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 $dbc = FannieDB::get($FANNIE_TRANS_DB);
 /*
@@ -16,23 +16,23 @@ if (!validateUserQuiet('cashierPerformance')){
 */
 
 function avg($array){
-	$count = 0;
-	$sum = 0;
-	foreach ($array as $a){
-		$sum += $a;
-		$count++;
-	}
-	return (float)$sum / $count;
+    $count = 0;
+    $sum = 0;
+    foreach ($array as $a){
+        $sum += $a;
+        $count++;
+    }
+    return (float)$sum / $count;
 }
 
 if (!isset($_GET['emp_no'])){
-	$page_title = "Fannie :: Cashier Report";
-	$header = "Cashier Report";
-	include($FANNIE_ROOT.'src/header.html');
+    $page_title = "Fannie :: Cashier Report";
+    $header = "Cashier Report";
+    include($FANNIE_ROOT.'src/header.html');
 ?>
 <script type="text/javascript">
 $(document).ready(function(){
-	$('#emp_no').focus();
+    $('#emp_no').focus();
 });
 </script>
 Enter an employee number<br />
@@ -42,8 +42,8 @@ Enter an employee number<br />
 <input type=checkbox name=pdf /> PDF
 </form>
 <?php
-	include($FANNIE_ROOT.'src/footer.html');
-	return;
+    include($FANNIE_ROOT.'src/footer.html');
+    return;
 }
 
 /*
@@ -59,15 +59,15 @@ $query = "select
           emp_no,
           ".$dbc->weekdiff($dbc->now(),'proc_date')." as week,
           year(proc_date) as year,
-	  SUM(Rings) / count(emp_no) as rings,
-	  ".$dbc->convert('SUM(items)','int')." / count(emp_no) as items,
-	  COUNT(Rings) / count(emp_no) as Trans,
-	  SUM(CASE WHEN transinterval = 0 then 1 when transinterval > 600 then 600 else transinterval END) / count(emp_no)  / 60 as minutes,
-	  SUM(Cancels) / count(emp_no) as cancels,
-	  MIN(proc_date)
-	  from CashPerformDay
-	  GROUP BY emp_no,".$dbc->weekdiff($dbc->now(),'proc_date').",year(proc_date)
-	  ORDER BY year(proc_date) desc,".$dbc->weekdiff($dbc->now(),'proc_date')." asc";
+      SUM(Rings) / count(emp_no) as rings,
+      ".$dbc->convert('SUM(items)','int')." / count(emp_no) as items,
+      COUNT(Rings) / count(emp_no) as Trans,
+      SUM(CASE WHEN transinterval = 0 then 1 when transinterval > 600 then 600 else transinterval END) / count(emp_no)  / 60 as minutes,
+      SUM(Cancels) / count(emp_no) as cancels,
+      MIN(proc_date)
+      from CashPerformDay
+      GROUP BY emp_no,".$dbc->weekdiff($dbc->now(),'proc_date').",year(proc_date)
+      ORDER BY year(proc_date) desc,".$dbc->weekdiff($dbc->now(),'proc_date')." asc";
 
 }
 else {
@@ -76,15 +76,15 @@ $query = "select
           ".$dbc->weekdiff($dbc->now(),'proc_date')." as week,
           year(proc_date) as year,
           SUM(Rings) as rings,
-	  ".$dbc->convert('SUM(items)','int')." as items,
+      ".$dbc->convert('SUM(items)','int')." as items,
           COUNT(*) as TRANS,
           SUM(CASE WHEN transInterval = 0 THEN 1 when transInterval > 600 then 600 ELSE transInterval END)/60 as minutes,
           SUM(cancels)as cancels,
           MIN(proc_date)
           FROM CashPerformDay
           WHERE emp_no = ?
-	  GROUP BY emp_no,".$dbc->weekdiff($dbc->now(),'proc_date').",year(proc_date)
-	  ORDER BY year(proc_date) desc,".$dbc->weekdiff($dbc->now(),'proc_date')." asc";
+      GROUP BY emp_no,".$dbc->weekdiff($dbc->now(),'proc_date').",year(proc_date)
+      ORDER BY year(proc_date) desc,".$dbc->weekdiff($dbc->now(),'proc_date')." asc";
 $args = array($emp_no);
 }
 if ($dbc->isView('CashPerformDay') && $dbc->tableExists('CashPerformDay_cache')) {

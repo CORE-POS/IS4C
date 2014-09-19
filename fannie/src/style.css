@@ -1,8 +1,3 @@
-/*#body { 
-	color:#444444;
-
-}*/
-
 #box { border: 2px;
 	border-style: solid;
 	padding: 2em;
@@ -10,32 +5,24 @@
 }
 
 p {
-	font-family: "Arial,Lucida";
-	color:#330066;
 	font-size: 1em;
 	line-height: 1.4em;
 }
 
 h2 {
-	font-family: "Arial,Lucida";
 	font-size: 1.6em;
 	line-height: 1.8em;
-	color:#330066;
 }
 
 h3 {
-	font-family: "Arial,Lucia";
 	font-size: 1.2em;
 	font-weight: bolder;
 	line-height: 0.8em;
-	color: #330066;
 }
 h4 {
-	font-family: "Arial,Lucia";
 	font-size: 1.4em;
 	line-height: 1.4em;
 	letter-spacing: 0.2em;
-	color:#330066;
 }
 
 #alert {
@@ -43,7 +30,6 @@ h4 {
 	background-color: #FFFFCC;
 	padding: 3px;
 	margin: 3px;
-	font-family: "Arial,Lucida";
 	font-size: 1em;
 	font-weight: bolder;
 }
@@ -53,55 +39,36 @@ h4 {
 /*								*/
 
 body {
-	font-family:arial;
+	font-family: arial, sans-serif;
 	font-size:12px;
 	cursor:default;
-	color:#999999;
 }
 
 td {
-	font-family:arial;
 	font-size:12px;
 	cursor:default;
-	color:#444444;
 }
 
 th {
-	font-family:arial;
 	font-size:12px;
 	font-weight:bold;
 	color:#444444;
 }
 
 a {
-	color:#330066;
 	text-decoration:none;
 	font-size:13px
 }
 
 a:hover {
-	color:#330066;
 	text-decoration:underline;
 }
 
 input {
-	font-family:monaco;
 	font-size:12px;
 	padding:0px;
 	height:21px;
-/*	background-color:#F9F9F9; */
 	color:#000000;
-	/* make button more visually obvious...
-	border-color:#CCCCCC;
-	border-style:solid;
-	border-width:1;
-	background-color:#EEEEEE;
-	*/
-}
-
-#loading {
-	font:bold 12px Verdana;
-	color:red;
 }
 
 /*									*/
@@ -242,12 +209,12 @@ ul#css_menu_root {
 ul#css_menu_root div.sub {
 	margin-bottom: 5px;
 	padding-bottom: 5px;
-	border-bottom: solid 1px black;
+	border-bottom-style: solid;
+    border-bottom-width: 1px;
 }
 
 ul#css_menu_root a {
 	font-size: 16px;
-	font-family:Arial;
 	text-decoration: none;
 }
 
@@ -288,16 +255,6 @@ ul#css_menu_root li:hover {
 	background: #bbbbbb;
 }
 
-/* I couldn't figure out how to change
- * the link color without changing ALL
- * the links, so I resorted to light enough
- * highlighting that I could leave the
- * foreground color alone
-ul#css_menu_root li:hover a {
-	color: #ffffff;
-}
-*/
-
 ul#css_menu_root li div.level0 {
 	display: none;
 }
@@ -326,9 +283,28 @@ div.level1 li:hover div.level2 {
 	display: block;
 }
 
+/* Member Editor */
 .MemFormTable th {
 	text-align: right;
-	background: #330066;
 	color: #fff;
 	padding: 0 5px 0 2px;
 }
+
+/* To make all the modules with a single, or single-and-a-bit,
+ *  row of inputs the same height so they float more interchangably.
+*/
+fieldset.memOneRow {
+  height: 6.0em;
+}
+fieldset.memTwoRow {
+  height: 7.6em;
+}
+/* Returns from Member modules that prevent leaving the editing form.
+ */
+p.memMessage {
+  color: red;
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+

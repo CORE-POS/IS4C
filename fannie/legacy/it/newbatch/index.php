@@ -32,8 +32,8 @@ if (isset($_GET['action'])){
 	case 'newBatch':
 		$type = $_GET['type'];
 		$name = str_replace("'","''",$_GET['name']);
-		$startdate = $_GET['startdate']." 00:00:00.00";
-		$enddate = $_GET['enddate']." 00:00:00.00";
+		$startdate = $_GET['startdate']." 00:00:00";
+		$enddate = $_GET['enddate']." 23:59:59";
 		$owner = $_GET['owner'];
 		
 		$infoQ = $sql->prepare("select discType from batchType where batchTypeID=?");
@@ -163,8 +163,43 @@ if (isset($_GET['action'])){
 		$testQ = $sql->prepare("select * from products where upc=?");
 		$testR = $sql->execute($testQ, array($newupc));
 		if ($sql->num_rows($testR) > 0) $upc = $newupc;
-		
-		$out .= addItemPriceInput($upc,$tag);
+
+        $batch = new BatchesModel($dbc);
+        $batch->batchID($id);
+        $batch->load();
+        $overlapP = $sql->prepare('
+            SELECT b.batchName,
+                b.startDate,
+                b.endDate
+            FROM batchList AS l
+                INNER JOIN batches AS b ON l.batchID=b.batchID
+            WHERE l.batchID <> ?
+                AND l.upc = ?
+                AND ? <= b.endDate
+                AND ? >= b.startDate
+                AND b.discounttype <> 0
+                AND b.endDate >= ' . $sql->curdate()
+        );
+        $args = array(
+            $id,
+            $upc,
+            date('Y-m-d', strtotime($batch->startDate())),
+            date('Y-m-d', strtotime($batch->endDate())),
+        );
+        $overlapR = $sql->execute($overlapP, $args);
+        if ($batch->discounttype() > 0 && $sql->num_rows($overlapR) > 0) {
+            $row = $sql->fetch_row($overlapR);
+            $error = 'Item already in concurrent batch: '
+                . $row['batchName'] . ' ('
+                . date('Y-m-d', strtotime($row['startDate'])) . ' - '
+                . date('Y-m-d', strtotime($row['endDate'])) . ')'
+                . '<br />'
+                . 'Either remove item from conflicting batch or change
+                   dates so the batches do not overlap.';
+            $out .= '<p>' . $error . '</p>' . addItemUPCInput();
+        } else {
+            $out .= addItemPriceInput($upc,$tag);
+        }
 		break;
 	case 'addItemLC':
 		$id = $_GET['id'];
@@ -412,8 +447,8 @@ function newBatchInput(){
 	}
 	$ret .= "</select></td>";
 	$ret .= "<td><input type=text id=newBatchName /></td>";
-	$ret .= "<td><input type=text id=newBatchStartDate onfocus=\"showCalendarControl(this);\" /></td>";
-	$ret .= "<td><input type=text id=newBatchEndDate onfocus=\"showCalendarControl(this);\" /></td>";
+	$ret .= "<td><input type=text id=newBatchStartDate /></td>";
+	$ret .= "<td><input type=text id=newBatchEndDate /></td>";
 	$ret .= "<td><select id=newBatchOwner />";
 	global $owners;
 	foreach ($owners as $o)
@@ -517,7 +552,8 @@ function addItemPriceLCInput($lc){
 
 function newTagInput($upc,$price,$id){
 	global $sql;
-	$unfiQ = $sql->prepare("select distinct * from UNFI where upc = ?");
+	$unfiQ = $sql->prepare("select size, units, brand, description, sku
+                            from vendorItems where upc=? and vendorID=1");
 	$unfiR = $sql->execute($unfiQ, array($upc));
 	$unfiN = $sql->num_rows($unfiR);
 	
@@ -813,11 +849,18 @@ if (!$user){
 <html>
 <head><title>Batch controller</title>
 <script type="text/javascript" src="index.js"></script>
-<script src="<?php echo $FANNIE_URL; ?>src/CalendarControl.js"
+<script src="<?php echo $FANNIE_URL; ?>src/javascript/jquery.js"
+        language="javascript"></script>
+<script src="<?php echo $FANNIE_URL; ?>src/javascript/jquery-ui.js"
         language="javascript"></script>
 <link href="<?php echo $FANNIE_URL; ?>src/style.css"
       rel="stylesheet" type="text/css">
+<link href="<?php echo $FANNIE_URL; ?>src/javascript/jquery-ui.css"
+      rel="stylesheet" type="text/css">
 <link rel="stylesheet" type="text/css" href="index.css">
+<script type="text/javascript">
+$(document).ready(function(){ setupDatePickers(); });
+</script>
 </head>
 <body onload="document.getElementById('newBatchName').focus();">
 <div style="text-align:center;" id="batchmobile">

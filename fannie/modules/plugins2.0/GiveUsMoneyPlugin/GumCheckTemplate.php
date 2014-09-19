@@ -82,7 +82,7 @@ class GumCheckTemplate
         $this->my_address[1] = 'Street Address';
         $settings->key('storeAddress');
         if ($settings->load()) {
-            //$this->my_address[1] = $settings->value();
+            $this->my_address[1] = $settings->value();
         }
         $this->my_address[2] = '';
         $settings->key('storeCity');
@@ -170,6 +170,10 @@ class GumCheckTemplate
     public function renderAsPDF($pdf)
     {
         $margins = $pdf->GetMargins();
+        // this was written BEFORE patching
+        // fpdf to correctly return the top margin
+        // set to zero to mimic old, broken fpdf
+        $margins['top'] = 0.0; 
         $check_left_x = ($margins['left'] > 3.175) ? $margins['right'] : 3.175 - $margins['left'];
         $check_top_y = 193.675 - $margins['top'];
         $check_right_x = 203.2 - $margins['left'];
@@ -228,7 +232,9 @@ class GumCheckTemplate
         $pdf->Cell(63.5, $line_height, 'Authorized By Signature', 'T');
 
         $pdf->SetXY($check_left_x + 36, $check_bottom_y + $line_height - 1);
-        $pdf->AddFont('GnuMICR', '', 'GnuMICR.php');
+        if (!isset($pdf->fonts['gnumicr'])) {
+            $pdf->AddFont('GnuMICR', '', 'GnuMICR.php');
+        }
         $pdf->SetFont('GnuMICR', '', 12);
         // In the MICR font:
         // A is the symbol for routing/transit

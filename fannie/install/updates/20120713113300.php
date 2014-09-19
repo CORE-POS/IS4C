@@ -23,40 +23,40 @@
 
 class update_20120713113300 extends UpdateObj {
 
-	protected $timestamp = '20120713113300';
+    protected $timestamp = '20120713113300';
 
-	protected $description = 'Change dtransactions
+    protected $description = 'Change dtransactions
 columns representing currency to a proper type';
 
-	protected $author = 'Andy Theuninck (WFC)';
+    protected $author = 'Andy Theuninck (WFC)';
 
-	protected $queries = array(
-		'op' => array(),
-		'trans' => array(
-		'ALTER TABLE dtransactions CHANGE COLUMN cost cost DECIMAL(10,2)',
-		'ALTER TABLE dtransactions CHANGE COLUMN unitPrice unitPrice DECIMAL(10,2)',
-		'ALTER TABLE dtransactions CHANGE COLUMN total total DECIMAL(10,2)',
-		'ALTER TABLE dtransactions CHANGE COLUMN regPrice regPrice DECIMAL(10,2)',
-		'ALTER TABLE dtransactions CHANGE COLUMN discount discount DECIMAL(10,2)',
-		'ALTER TABLE dtransactions CHANGE COLUMN memDiscount memDiscount DECIMAL(10,2)',
-		'ALTER TABLE dtransactions CHANGE COLUMN VolSpecial VolSpecial DECIMAL(10,2)',
-		'ALTER TABLE transarchive CHANGE COLUMN cost cost DECIMAL(10,2)',
-		'ALTER TABLE transarchive CHANGE COLUMN unitPrice unitPrice DECIMAL(10,2)',
-		'ALTER TABLE transarchive CHANGE COLUMN total total DECIMAL(10,2)',
-		'ALTER TABLE transarchive CHANGE COLUMN regPrice regPrice DECIMAL(10,2)',
-		'ALTER TABLE transarchive CHANGE COLUMN discount discount DECIMAL(10,2)',
-		'ALTER TABLE transarchive CHANGE COLUMN memDiscount memDiscount DECIMAL(10,2)',
-		'ALTER TABLE transarchive CHANGE COLUMN VolSpecial VolSpecial DECIMAL(10,2)',
-		'ALTER TABLE suspended CHANGE COLUMN cost cost DECIMAL(10,2)',
-		'ALTER TABLE suspended CHANGE COLUMN unitPrice unitPrice DECIMAL(10,2)',
-		'ALTER TABLE suspended CHANGE COLUMN total total DECIMAL(10,2)',
-		'ALTER TABLE suspended CHANGE COLUMN regPrice regPrice DECIMAL(10,2)',
-		'ALTER TABLE suspended CHANGE COLUMN discount discount DECIMAL(10,2)',
-		'ALTER TABLE suspended CHANGE COLUMN memDiscount memDiscount DECIMAL(10,2)',
-		'ALTER TABLE suspended CHANGE COLUMN VolSpecial VolSpecial DECIMAL(10,2)'
-		),
-		'archive' => array()
-	);
+    protected $queries = array(
+        'op' => array(),
+        'trans' => array(
+        'ALTER TABLE dtransactions CHANGE COLUMN cost cost DECIMAL(10,2)',
+        'ALTER TABLE dtransactions CHANGE COLUMN unitPrice unitPrice DECIMAL(10,2)',
+        'ALTER TABLE dtransactions CHANGE COLUMN total total DECIMAL(10,2)',
+        'ALTER TABLE dtransactions CHANGE COLUMN regPrice regPrice DECIMAL(10,2)',
+        'ALTER TABLE dtransactions CHANGE COLUMN discount discount DECIMAL(10,2)',
+        'ALTER TABLE dtransactions CHANGE COLUMN memDiscount memDiscount DECIMAL(10,2)',
+        'ALTER TABLE dtransactions CHANGE COLUMN VolSpecial VolSpecial DECIMAL(10,2)',
+        'ALTER TABLE transarchive CHANGE COLUMN cost cost DECIMAL(10,2)',
+        'ALTER TABLE transarchive CHANGE COLUMN unitPrice unitPrice DECIMAL(10,2)',
+        'ALTER TABLE transarchive CHANGE COLUMN total total DECIMAL(10,2)',
+        'ALTER TABLE transarchive CHANGE COLUMN regPrice regPrice DECIMAL(10,2)',
+        'ALTER TABLE transarchive CHANGE COLUMN discount discount DECIMAL(10,2)',
+        'ALTER TABLE transarchive CHANGE COLUMN memDiscount memDiscount DECIMAL(10,2)',
+        'ALTER TABLE transarchive CHANGE COLUMN VolSpecial VolSpecial DECIMAL(10,2)',
+        'ALTER TABLE suspended CHANGE COLUMN cost cost DECIMAL(10,2)',
+        'ALTER TABLE suspended CHANGE COLUMN unitPrice unitPrice DECIMAL(10,2)',
+        'ALTER TABLE suspended CHANGE COLUMN total total DECIMAL(10,2)',
+        'ALTER TABLE suspended CHANGE COLUMN regPrice regPrice DECIMAL(10,2)',
+        'ALTER TABLE suspended CHANGE COLUMN discount discount DECIMAL(10,2)',
+        'ALTER TABLE suspended CHANGE COLUMN memDiscount memDiscount DECIMAL(10,2)',
+        'ALTER TABLE suspended CHANGE COLUMN VolSpecial VolSpecial DECIMAL(10,2)'
+        ),
+        'archive' => array()
+    );
 }
 
 ?>

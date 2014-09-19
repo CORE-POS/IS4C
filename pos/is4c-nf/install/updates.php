@@ -33,7 +33,7 @@ if (isset($_REQUEST['mupdate'])) {
             echo 'Error: requested database unknown';
         } else {
             ob_start();
-            $changes = $updateModel->normalize($db_name, BasicModel::NORMALIZE_MODE_APPLY);
+            $changes = $updateModel->normalize($db_name, BasicModel::NORMALIZE_MODE_APPLY, true);
             $details = ob_get_clean();
             if ($changes === false) {
                 echo 'An error occurred.';

@@ -138,29 +138,92 @@ static public function getsubtotals()
         self::setglobalflags(0);
     }
 
+    // LastID => MAX(localtemptrans.trans_id) or zero table is empty
     $CORE_LOCAL->set("LastID", (!$row || !isset($row['LastID'])) ? 0 : (double)$row["LastID"] );
+    // card_no => MAX(localtemptrans.card_no)
     $cn = (!$row || !isset($row['card_no'])) ? "0" : trim($row["card_no"]);
     if ($cn != "0" || $CORE_LOCAL->get("memberID") == "") {
         $CORE_LOCAL->set("memberID",$cn);
     }
+    // runningTotal => SUM(localtemptrans.total)
     $CORE_LOCAL->set("runningTotal", (!$row || !isset($row['runningTotal'])) ? 0 : (double)$row["runningTotal"] );
+    // complicated, but replaced by taxView & LineItemTaxes() method
     $CORE_LOCAL->set("taxTotal", (!$row || !isset($row['taxTotal'])) ? 0 : (double)$row["taxTotal"] );
+    // discountTTL => SUM(localtemptrans.total) where discounttype=1
+    // probably not necessary
     $CORE_LOCAL->set("discounttotal", (!$row || !isset($row['discountTTL'])) ? 0 : (double)$row["discountTTL"] );
+    // tenderTotal => SUM(localtemptrans.total) where trans_type=T
     $CORE_LOCAL->set("tenderTotal", (!$row || !isset($row['tenderTotal'])) ? 0 : (double)$row["tenderTotal"] );
+    // memSpecial => SUM(localtemptrans.total) where discounttype=2,3
     $CORE_LOCAL->set("memSpecial", (!$row || !isset($row['memSpecial'])) ? 0 : (double)$row["memSpecial"] );
+    // staffSpecial => SUM(localtemptrans.total) where discounttype=4
     $CORE_LOCAL->set("staffSpecial", (!$row || !isset($row['staffSpecial'])) ? 0 : (double)$row["staffSpecial"] );
     if ( $CORE_LOCAL->get("member_subtotal") !== False ) {
+        // percentDiscount => MAX(localtemptrans.percentDiscount)
         $CORE_LOCAL->set("percentDiscount", (!$row || !isset($row['percentDiscount'])) ? 0 : (double)$row["percentDiscount"] );
     }
+    // transDiscount => lttsummary.discountableTTL * lttsummary.percentDiscount
     $CORE_LOCAL->set("transDiscount", (!$row || !isset($row['transDiscount'])) ? 0 : (double)$row["transDiscount"] );
+    // complicated, but replaced by taxView & LineItemTaxes() method
     $CORE_LOCAL->set("fsTaxExempt", (!$row || !isset($row['fsTaxExempt'])) ? 0 : (double)$row["fsTaxExempt"] );
+    // foodstamp total net percentdiscount minus previous foodstamp tenders
     $CORE_LOCAL->set("fsEligible", (!$row || !isset($row['fsEligible'])) ? 0 : (double)$row["fsEligible"] );
+    // chargeTotal => hardcoded to localtemptrans.trans_subtype MI or CX
     $CORE_LOCAL->set("chargeTotal", (!$row || !isset($row['chargeTotal'])) ? 0 : (double)$row["chargeTotal"] );
+    // paymentTotal => hardcoded to localtemptrans.department = 990
     $CORE_LOCAL->set("paymentTotal", (!$row || !isset($row['paymentTotal'])) ? 0 : (double)$row["paymentTotal"] );
     $CORE_LOCAL->set("memChargeTotal", $CORE_LOCAL->get("chargeTotal") + $CORE_LOCAL->get("paymentTotal") );
+    // discountableTotal => SUM(localtemptrans.total) where discountable > 0
     $CORE_LOCAL->set("discountableTotal", (!$row || !isset($row['discountableTotal'])) ? 0 : (double)$row["discountableTotal"] );
+    // localTotal => SUM(localtemptrans.total) where numflag=1
     $CORE_LOCAL->set("localTotal", (!$row || !isset($row['localTotal'])) ? 0 : (double)$row["localTotal"] );
+    // voidTotal => SUM(localtemptrans.total) where trans_status=V
     $CORE_LOCAL->set("voidTotal", (!$row || !isset($row['voidTotal'])) ? 0 : (double)$row["voidTotal"] );
+
+    /**
+      9May14 Andy
+      I belive this query is equivalent to the
+      old subtotals => lttsubtotals => lttsummary
+      I've omitted tax since those are already calculated
+      separately. A few conditions here should obviously
+      be more configurable, but first I want to get
+      rid of or simply the old nested views
+
+      fsEligible is the complicated one. That's:
+      1. Total foodstampable items
+      2. Minus transaction-level discount on those items
+      3. Minus any foodstamp tenders already applied.
+         localtemptrans.total is negative on tenders
+         so the query uses an addition sign but in 
+         effect it's subracting.
+    */
+    $replacementQ = "
+        SELECT
+            CASE WHEN MAX(trans_id) IS NULL THEN 0 ELSE MAX(trans_id) END AS LastID,
+            MAX(card_no) AS card_no,
+            SUM(total) AS runningTotal,
+            SUM(CASE WHEN discounttype=1 THEN total ELSE 0 END) AS discountTTL,
+            SUM(CASE WHEN discounttype IN (2,3) THEN total ELSE 0 END) AS staffSpecial,
+            SUM(CASE WHEN discounttype=4 THEN total ELSE 0 END) AS discountTTL,
+            SUM(CASE WHEN trans_type='T' THEN total ELSE 0 END) AS tenderTotal,
+            MAX(percentDiscount) AS percentDiscount,
+            SUM(CASE WHEN discountable=0 THEN 0 ELSE total END) as discountableTotal,
+            SUM(CASE WHEN discountable=0 THEN 0 ELSE total END) * (MAX(percentDiscount)/100.00) AS transDiscount,
+            SUM(CASE WHEN trans_subtype IN ('MI', 'CX') THEN total ELSE 0 END) AS chargeTotal,
+            SUM(CASE WHEN department=990 THEN total ELSE 0 END) as paymentTotal,
+            SUM(CASE WHEN numflag=1 THEN total ELSE 0 END) as localTotal,
+            SUM(CASE WHEN trans_status='V' THEN total ELSE 0 END) as voidTotal,
+            (
+                SUM(CASE WHEN foodstamp=1 THEN total ELSE 0 END) 
+                -
+                ((MAX(percentDiscount)/100.00)
+                * SUM(CASE WHEN foodstamp=1 AND discountable=1 THEN total ELSE 0 END))
+                +
+                SUM(CASE WHEN trans_subtype IN ('EF','FS') THEN total ELSE 0 END)
+            ) AS fsEligble
+        FROM localtemptrans AS l
+        WHERE trans_type <> 'L'
+    ";
 
     $handler_class = $CORE_LOCAL->get('DiscountModule');
     if ($handler_class === '') $handler_class = 'DiscountModule';
@@ -170,8 +233,7 @@ static public function getsubtotals()
         $CORE_LOCAL->set('transDiscount', $module->calculate() );
     }
 
-    /* BETA 10Jun2013
-       ENABLED LIVE 15Aug2013
+    /* ENABLED LIVE 15Aug2013
        Calculate taxes & exemptions separately from
        the subtotals view.
 
@@ -191,7 +253,7 @@ static public function getsubtotals()
     $CORE_LOCAL->set('taxTotal', number_format($taxTTL,2));
     $CORE_LOCAL->set('fsTaxExempt', number_format(-1*$exemptTTL,2));
 
-    if ( $CORE_LOCAL->get("TaxExempt") == 1 ) {
+    if ($CORE_LOCAL->get("TaxExempt") == 1) {
         $CORE_LOCAL->set("taxable",0);
         $CORE_LOCAL->set("taxTotal",0);
         $CORE_LOCAL->set("fsTaxable",0);
@@ -344,11 +406,12 @@ static public function testremote()
   Copy tables from the lane to the remote server
   The following tables are copied:
    - dtransactions
-   - alog
    - suspended
    - efsnetRequest
    - efsnetResponse
    - efsnetRequestMod
+   - efsnetTokens
+   - CapturedSignature
 
   On success the local tables are truncated. The efsnet tables
   are copied in the uploadCCdata() function but that gets called 
@@ -390,26 +453,6 @@ static public function uploadtoServer()
         $connect->query("DELETE FROM dtransactions",
             $CORE_LOCAL->get("tDatabase"));
 
-        /* alog deprecated
-        $al_matches = self::getMatchingColumns($connect,"alog");
-        // interval is a mysql reserved word
-        // so it needs to be escaped
-        $local_columns = str_replace('Interval',
-                    $connect->identifier_escape('Interval',$CORE_LOCAL->get('tDatabase')),
-                    $al_matches);
-        $server_columns = str_replace('Interval',
-                    $connect->identifier_escape('Interval',$CORE_LOCAL->get('mDatabase')),
-                    $al_matches);
-        $al_success = $connect->transfer($CORE_LOCAL->get("tDatabase"),
-            "select $local_columns FROM alog",
-            $CORE_LOCAL->get("mDatabase"),
-            "insert into alog ($server_columns)");
-        if ($al_success) {
-            $connect->query("truncate table alog",
-                $CORE_LOCAL->get("tDatabase"));
-        }
-        */
-
         $su_matches = self::getMatchingColumns($connect,"suspended");
         $su_success = $connect->transfer($CORE_LOCAL->get("tDatabase"),
             "select {$su_matches} from suspended",
@@ -419,18 +462,22 @@ static public function uploadtoServer()
         if ($su_success) {
             $connect->query("truncate table suspended",
                 $CORE_LOCAL->get("tDatabase"));
+            $uploaded = 1;
+            $CORE_LOCAL->set("standalone",0);
+        } else {
+            $uploaded = 0;
+            $CORE_LOCAL->set("standalone",1);
         }
 
-        $uploaded = 1;
-        $CORE_LOCAL->set("standalone",0);
     } else {
         $uploaded = 0;
         $CORE_LOCAL->set("standalone",1);
     }
 
-    $connect->close($CORE_LOCAL->get("mDatabase"),True);
-
-    self::uploadCCdata();
+    if (!self::uploadCCdata()) {
+        $uploaded = 0;
+        $CORE_LOCAL->set("standalone",1);
+    }
 
     return $uploaded;
 }
@@ -450,12 +497,18 @@ static public function getMatchingColumns($connection,$table_name,$table2="")
     global $CORE_LOCAL;
 
     $local_poll = $connection->table_definition($table_name,$CORE_LOCAL->get("tDatabase"));
+    if ($local_poll === false) {
+        return '';
+    }
     $local_cols = array();
     foreach($local_poll as $name=>$v) {
         $local_cols[$name] = true;
     }
     $remote_poll = $connection->table_definition((!empty($table2)?$table2:$table_name),
                 $CORE_LOCAL->get("mDatabase"));
+    if ($remote_poll === false) {
+        return '';
+    }
     $matching_cols = array();
     foreach($remote_poll as $name=>$v) {
         if (isset($local_cols[$name])) {
@@ -571,13 +624,13 @@ static public function uploadCCdata()
             $ret = false;
         }
 
-    } else if ($sql->table_exists('efsnetRequest')) {
+    } else if (!$sql->table_exists('efsnetRequest')) {
         // if for whatever reason the table does not exist,
         // it's not necessary to treat this as a failure.
         // if integrated card processing is not in use,
         // this is not an important enough error to go
         // to standalone. 
-        $ret = false;
+        $ret = true;
     }
 
     if ($sql->table_exists('CapturedSignature')) {
@@ -589,6 +642,25 @@ static public function uploadCCdata()
         if ($sig_success) {
             $sql->query("truncate table CapturedSignature",
                 $CORE_LOCAL->get("tDatabase"));
+        } else {
+            // transfer failure
+            $ret = false;
+        }
+    }
+
+    // newer paycard transactions table
+    if ($sql->table_exists('PaycardTransactions')) {
+        $ptrans_cols = self::getMatchingColumns($sql, 'PaycardTransactions');
+        $ptrans_success = $sql->transfer($CORE_LOCAL->get('tDatabase'),
+                                         "SELECT {$ptrans_cols} FROM PaycardTransactions",
+                                         $CORE_LOCAL->get('mDatabase'),
+                                         "INSERT INTO PaycardTransactions ($ptrans_cols)"
+        );
+        if ($ptrans_success) {
+            $sql->query('DELETE FROM PaycardTransactions', $CORE_LOCAL->get('tDatabase'));
+        } else {
+            // transfer failure
+            $ret = false;
         }
     }
 
@@ -783,6 +855,7 @@ static public function changeLttTaxCode($fromName, $toName)
 */
 static public function rotateTempData()
 {
+    global $CORE_LOCAL;
     $connection = Database::tDataConnect();
 
     // LEGACY.
@@ -803,6 +876,22 @@ static public function rotateTempData()
 
     $cols = Database::localMatchingColumns($connection, 'dtransactions', 'localtemptrans');
     $ret = $connection->query("insert into dtransactions ($cols) select $cols from localtemptrans");
+
+    /**
+      If store_id column is present in lane dtransactions table
+      and the lane's store_id has been configured, assign that
+      value to the column. Otherwise it may be handled but some
+      other mechanism such as triggers or column default values.
+    */
+    $table_def = $connection->table_definition('dtransactions');
+    if (isset($table_def['store_id']) && $CORE_LOCAL->get('store_id') !== '') {
+        $assignQ = sprintf('
+            UPDATE dtransactions
+            SET store_id = %d',
+            $CORE_LOCAL->get('store_id')
+        );
+        $connection->query($assignQ);
+    }
 
     return ($ret) ? true : false;
 }

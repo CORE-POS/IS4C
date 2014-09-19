@@ -85,12 +85,15 @@ This function ignores any transactions that are not from the current day.
 <div class="memdoc">
 
 <p>
-Suspends the current transaction If the remote server is available, it will be suspended there. Otherwise it is suspended locally. 
+Suspends the current transaction If the remote server is available, it will be suspended there. Otherwise it is suspended locally. <dl compact><dt><b>Returns:</b></dt><dd>[string] transaction identifier </dd></dl>
+
+<p>
+If the transaction is marked as complete but somehow did not actually finish, this will prevent the suspended receipt from adding tax/discount lines to the transaction 
 </div>
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/SuspendLib.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

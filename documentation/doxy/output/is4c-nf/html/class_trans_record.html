@@ -40,6 +40,8 @@
 <tr><td colspan="2"><br><h2>Static Public Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_trans_record.html#63c34a6abb06ad1ce1c961e60ee9eab6">addItem</a> ($strupc, $strdescription, $strtransType, $strtranssubType, $strtransstatus, $intdepartment, $dblquantity, $dblunitPrice, $dbltotal, $dblregPrice, $intscale, $inttax, $intfoodstamp, $dbldiscount, $dblmemDiscount, $intdiscountable, $intdiscounttype, $dblItemQtty, $intvolDiscType, $intvolume, $dblVolSpecial, $intmixMatch, $intmatched, $intvoided, $cost=0, $numflag=0, $charflag='')</td></tr>
 
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_trans_record.html#2634ef142976b2ad06218053a1822a6b">addRecord</a> ($named_params)</td></tr>
+
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_trans_record.html#97deec93808990b89c6cecdc59f9679e">addQueued</a> ($upc, $description, $numflag=0, $charflag='', $regPrice=0)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_trans_record.html#ad11ee7b7004548b06c3e5527d467986">emptyQueue</a> ()</td></tr>
@@ -47,6 +49,8 @@
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_trans_record.html#baf177ed7faaea716cf776e0a3fe7a37">addtax</a> ()</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_trans_record.html#033a179d2a527f2a6a815ab1851eb663">addtender</a> ($strtenderdesc, $strtendercode, $dbltendered)</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_trans_record.html#ffea2f6a9f22391329ab13d7bdc66950">addFlaggedTender</a> ($strtenderdesc, $strtendercode, $dbltendered, $numflag, $charflag)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_trans_record.html#ee7142a1fda7e3b9e81f76a496f11997">addcomment</a> ($comment)</td></tr>
 
@@ -68,7 +72,7 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_trans_record.html#50fbfb508f920eb9056992c96ebfae24">addCoupon</a> ($strupc, $intdepartment, $dbltotal, $foodstamp=0, $tax=0)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_trans_record.html#a34d52a8076a988737a5906b28b76ad5">addhousecoupon</a> ($strupc, $intdepartment, $dbltotal)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_trans_record.html#fe1d4ee041ad8178ba5f330be83c24f8">addhousecoupon</a> ($strupc, $intdepartment, $dbltotal, $description='')</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_trans_record.html#de708b0df8fd849be1c05163133db53b">additemdiscount</a> ($intdepartment, $dbltotal)</td></tr>
 
@@ -80,43 +84,21 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_trans_record.html#06a311892e9d0f7548a10991090583a1">addCashDrop</a> ($amt)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_trans_record.html#64fed62575a2f1d1c8346119b60979a9">addactivity</a> ($activity)</td></tr>
-
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_trans_record.html#759d59ead14f99a3056f05633c30478d">addLogRecord</a> ($opts)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="cac9bdc7da506bae3cfa797a7d6031a5"></a><!-- doxytag: member="TransRecord::add_log_record" ref="cac9bdc7da506bae3cfa797a7d6031a5" args="($opts)" -->
 static&nbsp;</td><td class="memItemRight" valign="bottom"><b>add_log_record</b> ($opts)</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_trans_record.html#5331abddf2f479cdcc7527f877a271d4">finalizeTransaction</a> ($incomplete=false)</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="df6213d85ce02ff5e8176bad66dde9ee"></a><!-- doxytag: member="TransRecord::debugLog" ref="df6213d85ce02ff5e8176bad66dde9ee" args="($val)" -->
+static&nbsp;</td><td class="memItemRight" valign="bottom"><b>debugLog</b> ($val)</td></tr>
 
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
 Defines functions for adding records to the transaction 
 <p>
 <hr><h2>Member Function Documentation</h2>
-<a class="anchor" name="64fed62575a2f1d1c8346119b60979a9"></a><!-- doxytag: member="TransRecord::addactivity" ref="64fed62575a2f1d1c8346119b60979a9" args="($activity)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">static TransRecord::addactivity           </td>
-          <td>(</td>
-          <td class="paramtype">$&nbsp;</td>
-          <td class="paramname"> <em>activity</em>          </td>
-          <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [static]</code></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-<p>
-Add an activity record to activitytemplog <dl compact><dt><b>Parameters:</b></dt><dd>
-  <table border="0" cellspacing="2" cellpadding="0">
-    <tr><td valign="top"></td><td valign="top"><em>$activity</em>&nbsp;</td><td>identifier</td></tr>
-  </table>
-</dl>
-No one really uses activity logging currently. 
-</div>
-</div><p>
 <a class="anchor" name="06a311892e9d0f7548a10991090583a1"></a><!-- doxytag: member="TransRecord::addCashDrop" ref="06a311892e9d0f7548a10991090583a1" args="($amt)" -->
 <div class="memitem">
 <div class="memproto">
@@ -306,6 +288,62 @@ Add a "YOU SAVED" record to the transaction. This is just informational and will
 
 </div>
 </div><p>
+<a class="anchor" name="ffea2f6a9f22391329ab13d7bdc66950"></a><!-- doxytag: member="TransRecord::addFlaggedTender" ref="ffea2f6a9f22391329ab13d7bdc66950" args="($strtenderdesc, $strtendercode, $dbltendered, $numflag, $charflag)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static TransRecord::addFlaggedTender           </td>
+          <td>(</td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>strtenderdesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>strtendercode</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>dbltendered</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>numflag</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>charflag</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"><code> [static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Add a tender record to the transaction with numflag &amp; charflag values <dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>$strtenderdesc</em>&nbsp;</td><td>is a description, such as "Credit Card" </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$strtendercode</em>&nbsp;</td><td>is a 1-2 character code, such as "CC" </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$dbltendered</em>&nbsp;</td><td>is the amount. Remember that payments are <em>negative</em> amounts. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$numflag</em>&nbsp;</td><td>[int] </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$charflag</em>&nbsp;</td><td>[1-2 character string]</td></tr>
+  </table>
+</dl>
+Flags are meant to store generic additional data as needed. For example, numflag might contain a record ID corresponding to table(s) of additional processor data on an integrated transaction. 
+</div>
+</div><p>
 <a class="anchor" name="cf234ef07ffa61b6a11109b58e339082"></a><!-- doxytag: member="TransRecord::addfsones" ref="cf234ef07ffa61b6a11109b58e339082" args="($intfsones)" -->
 <div class="memitem">
 <div class="memproto">
@@ -350,7 +388,7 @@ Please do verify cashback is permitted with EBT transactions in your area before
 Add tax exemption for foodstamps 
 </div>
 </div><p>
-<a class="anchor" name="a34d52a8076a988737a5906b28b76ad5"></a><!-- doxytag: member="TransRecord::addhousecoupon" ref="a34d52a8076a988737a5906b28b76ad5" args="($strupc, $intdepartment, $dbltotal)" -->
+<a class="anchor" name="fe1d4ee041ad8178ba5f330be83c24f8"></a><!-- doxytag: member="TransRecord::addhousecoupon" ref="fe1d4ee041ad8178ba5f330be83c24f8" args="($strupc, $intdepartment, $dbltotal, $description='')" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -370,7 +408,13 @@ Add tax exemption for foodstamps
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">$&nbsp;</td>
-          <td class="paramname"> <em>dbltotal</em></td><td>&nbsp;</td>
+          <td class="paramname"> <em>dbltotal</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>description</em> = <code>''</code></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -653,7 +697,7 @@ Add a line-item discount <dl compact><dt><b>Parameters:</b></dt><dd>
 <div class="memdoc">
 
 <p>
-Add a log entry to the transaction table. Log records do not appear onscreen on on receipts.<p>
+Add a log entry to the transaction table. Log records do not appear onscreen or on receipts.<p>
 <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>$opts</em>&nbsp;</td><td>keyed array. Currently valid keys are:<ul>
@@ -708,7 +752,34 @@ All keys are optional and will be left blank or zero if omitted. Log records hav
 <div class="memdoc">
 
 <p>
-Add a item, but not until the end of the transaction Use this for records that shouldn't be displayed 
+Add a item, but not until the end of the transaction Use this for records that shouldn't be displayed<p>
+Note: <a class="el" href="class_trans_record.html#759d59ead14f99a3056f05633c30478d">TransRecord::addLogRecord()</a> can be used to add non-display records to the transaction instantly 
+</div>
+</div><p>
+<a class="anchor" name="2634ef142976b2ad06218053a1822a6b"></a><!-- doxytag: member="TransRecord::addRecord" ref="2634ef142976b2ad06218053a1822a6b" args="($named_params)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static TransRecord::addRecord           </td>
+          <td>(</td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>named_params</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Wrapper for addItem that accepted a keyed array instead of many, MANY arguments. All keys are optional and will have the default values listed below if ommitted (read the actual method) <dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>$named_params</em>&nbsp;</td><td>[keyed array] </td></tr>
+  </table>
+</dl>
+<dl compact><dt><b>Returns:</b></dt><dd>[none] </dd></dl>
+
 </div>
 </div><p>
 <a class="anchor" name="201d107cf10964397c6f77bf582674bd"></a><!-- doxytag: member="TransRecord::addTare" ref="201d107cf10964397c6f77bf582674bd" args="($dbltare)" -->
@@ -904,6 +975,32 @@ Add a information record showing transaction percent discount <dl compact><dt><b
 Add records queued by <a class="el" href="class_trans_record.html#97deec93808990b89c6cecdc59f9679e">TransRecord::addQueued</a> to the current transaction then clear the queue. Records get trans_type C, trans_status D 
 </div>
 </div><p>
+<a class="anchor" name="5331abddf2f479cdcc7527f877a271d4"></a><!-- doxytag: member="TransRecord::finalizeTransaction" ref="5331abddf2f479cdcc7527f877a271d4" args="($incomplete=false)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static TransRecord::finalizeTransaction           </td>
+          <td>(</td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>incomplete</em> = <code>false</code>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Finish the current transaction <dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>$incomplete</em>&nbsp;</td><td>[boolean] optional, default false</td></tr>
+  </table>
+</dl>
+This method: 1) Adds tax and discount lines if transaction is complete (i.e., $incomplete == false) 2) Rotates data out of localtemptrans 3) Advances trans_no variable to next available value<p>
+This method replaces older ajax-end.php / end.php operations where the receipt was printed first and then steps 1-3 above happened. This method should be called BEFORE printing a receipt. Receipts are now always printed via localtranstoday. 
+</div>
+</div><p>
 <a class="anchor" name="1b2589f7d1e96ee1eefbfefaf24a15f5"></a><!-- doxytag: member="TransRecord::reverseTaxExempt" ref="1b2589f7d1e96ee1eefbfefaf24a15f5" args="()" -->
 <div class="memitem">
 <div class="memproto">
@@ -925,7 +1022,7 @@ Add record to undo tax exemption
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/TransRecord.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

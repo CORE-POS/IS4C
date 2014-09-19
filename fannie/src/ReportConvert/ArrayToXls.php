@@ -3,8 +3,7 @@
 function ArrayToXls($array){
 	global $FANNIE_ROOT;
 
-	include_once($FANNIE_ROOT.'src/pear-stuff/Spreadsheet_Excel_Writer/Writer.php');
-	include_once($FANNIE_ROOT.'src/tmp_dir.php');
+	include_once($FANNIE_ROOT.'src/Excel/xls_write/Spreadsheet_Excel_Writer/Writer.php');
 
 	$fn = tempnam(sys_get_temp_dir(),"xlstemp");
 	$workbook = new Spreadsheet_Excel_Writer($fn);
@@ -15,12 +14,16 @@ function ArrayToXls($array){
 
 	for($i=0;$i<count($array);$i++){
 		for($j=0;$j<count($array[$i]);$j++){
-			if ( ($pos = strpos($array[$i][$j],chr(0))) !== False){
-				$val = substr($array[$i][$j],0,$pos);
-				$worksheet->write($i,$j,$val,$format_bold);
+			// 5Apr14 EL Added the isset test for StoreSummaryReport.php with multiple header sets.
+			//            Why should it be needed?
+			if (isset($array[$i][$j])) {
+				if ( ($pos = strpos($array[$i][$j],chr(0))) !== False){
+					$val = substr($array[$i][$j],0,$pos);
+					$worksheet->write($i,$j,$val,$format_bold);
+				} else  {
+					$worksheet->write($i,$j,$array[$i][$j]);
+				}
 			}
-			else 
-				$worksheet->write($i,$j,$array[$i][$j]);
 		}
 	}
 

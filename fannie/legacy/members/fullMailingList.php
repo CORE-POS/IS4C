@@ -4,8 +4,9 @@ include('../../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
 include('../db.php');
 
-$query = "select c.CardNo, c.LastName, c.FirstName, m.street, m.city, m.state, m.zip
-	  from custdata as c left join meminfo as m on c.cardno=m.card_no
+$query = "select c.CardNo, c.LastName, c.FirstName, m.street, m.city, m.state, m.zip, e.payments
+	  from custdata as c left join meminfo as m on c.CardNo=m.card_no
+      left join is4c_trans.equity_history_sum as e ON c.CardNo=e.card_no
 	  where c.personNum = 1 and c.memType in (1,3)
 	  AND c.Type='PC'
 	  AND LastName <> 'NEW MEMBER'
@@ -19,7 +20,7 @@ else {
 	header("Content-Disposition: inline; filename=FullMailingList.csv");
 	header("Content-type: application/vnd.ms-excel; name='excel'");
 }
-echo "Mem#,Lastname,Firstname,Address1,Address2,City,State,Zip".$NL;
+echo "Mem#,Lastname,Firstname,Address1,Address2,City,State,Zip,Equity Bal.".$NL;
 $result = $sql->query($query);
 while ($row = $sql->fetch_array($result)){
 	echo $row[0].",";
@@ -34,6 +35,7 @@ while ($row = $sql->fetch_array($result)){
 	}
 	echo "\"".$row[4]."\",";
 	echo "\"".$row[5]."\",";
-	echo "\"".$row[6]."\"".$NL;
+	echo "\"".$row[6]."\",";
+	echo "\"".$row[7]."\"".$NL;
 }
 ?>

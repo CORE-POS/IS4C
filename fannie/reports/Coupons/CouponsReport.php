@@ -21,10 +21,14 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class CouponsReport extends FannieReportPage {
+
+    public $description = '[Manufacturer Coupons] lists coupons totals by UPC for a given date range.';
 
     protected $title = "Fannie : Coupons Report";
     protected $header = "Coupons Report";
@@ -87,7 +91,7 @@ class CouponsReport extends FannieReportPage {
             } elseif(date("w",$ts) == 0) {
                 $lastSunday = date("Y-m-d",$ts);
             }
-            $ts = mktime(0,0,0,date("n",$ts),date("j",$ts)-1,date("Y",$ts));	
+            $ts = mktime(0,0,0,date("n",$ts),date("j",$ts)-1,date("Y",$ts));    
         }
 
         ob_start();
@@ -96,13 +100,13 @@ class CouponsReport extends FannieReportPage {
 <table cellspacing=4 cellpadding=4>
 <tr>
 <th>Start Date</th>
-<td><input type=text id="date1" name=date1 onclick="showCalendarControl(this);" value="<?php echo $lastMonday; ?>" /></td>
+<td><input type=text id="date1" name=date1 value="<?php echo $lastMonday; ?>" /></td>
 <td rowspan="3">
 <?php echo FormLib::date_range_picker(); ?>
 </td>
 </tr><tr>
 <th>End Date</th>
-<td><input type=text id="date2" name=date2 onclick="showCalendarControl(this);" value="<?php echo $lastSunday; ?>" /></td>
+<td><input type=text id="date2" name=date2 value="<?php echo $lastSunday; ?>" /></td>
 </tr><tr>
 <td>Excel <input type=checkbox name=excel value="xls" /></td>
 <td><input type=submit name=submit value="Submit" /></td>
@@ -110,6 +114,9 @@ class CouponsReport extends FannieReportPage {
 </table>
 </form>
         <?php
+        $this->add_onload_command('$(\'#date1\').datepicker();');
+        $this->add_onload_command('$(\'#date2\').datepicker();');
+
         return ob_get_clean();
     }
 

@@ -21,22 +21,20 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class TrendsReport extends FannieReportPage
 {
-	protected $title = "Fannie : Trends";
-	protected $header = "Trend Report";
+    protected $title = "Fannie : Trends";
+    protected $header = "Trend Report";
 
     protected $required_fields = array('date1', 'date2');
 
-    public function report_description_content()
-    {
-        $date1 = FormLib::get('date1', date('Y-m-d'));
-        $date2 = FormLib::get('date2', date('Y-m-d'));
-        return array();
-    }
+    public $description = '[Trends] shows daily sales totals for items over a given date range. Items can be included by UPC, department, or manufacturer.';
+    public $report_set = 'Movement Reports';
 
     public function fetch_report_data()
     {
@@ -49,7 +47,7 @@ class TrendsReport extends FannieReportPage
         
         $joins = '';
         $where = '1=1';
-        $groupby = 'd.upc, p.description';
+        $groupby = 'd.upc, CASE WHEN p.description IS NULL THEN d.description ELSE p.description END';
         $args = array($date1.' 00:00:00', $date2.' 23:59:59');
         switch (FormLib::get('type', 'dept')) {
             case 'dept':
@@ -60,8 +58,7 @@ class TrendsReport extends FannieReportPage
             case 'manu':
                 if (FormLib::get('mtype', 'name') == "name") {
                     $args = array($manufacturer);
-                    $joins = 'LEFT JOIN prodExtra AS x ON d.upc=x.upc';
-                    $where = 'x.manufacturer = ?';
+                    $where = 'p.brand = ?';
                     $args[] = FormLib::get('manufacturer');
                 } else {
                     $where = 'd.upc LIKE ?';
@@ -82,23 +79,31 @@ class TrendsReport extends FannieReportPage
                 break;
         }
 
-        $query = "select 
-            year(d.tdate) as year,
-            month(d.tdate) as month,
-            day(d.tdate) as day,
-            $groupby,
-            sum(d.quantity) as total 
-            from $dlog as d left join products as p on d.upc = p.upc
-            $joins
-            where d.tdate BETWEEN ? AND ?
-            and trans_status <> 'M'
-            and $where
-            group by year(d.tdate),month(d.tdate),day(d.tdate),
-            $groupby
-            order by d.upc,year(d.tdate),month(d.tdate),day(d.tdate)";
+        $query = "
+            SELECT 
+                YEAR(d.tdate) AS year,
+                MONTH(d.tdate) AS month,
+                DAY(d.tdate) AS day,
+                $groupby, "
+                . DTrans::sumQuantity('d') . " AS total
+            FROM $dlog as d "
+                . DTrans::joinProducts('d', 'p')
+                . $joins . "
+            WHERE d.tdate BETWEEN ? AND ?
+                AND trans_status <> 'M'
+                AND trans_type = 'I'
+                AND $where
+            GROUP BY YEAR(d.tdate),
+                MONTH(d.tdate),
+                DAY(d.tdate),
+                $groupby
+            ORDER BY d.upc,
+                YEAR(d.tdate),
+                MONTH(d.tdate),
+                DAY(d.tdate)";
         $prep = $dbc->prepare_statement($query);
         $result = $dbc->exec_statement($prep,$args);
-	
+    
         // variable columns. one per dates
         $dates = array();
         while($date1 != $date2) {
@@ -114,12 +119,12 @@ class TrendsReport extends FannieReportPage
             $this->report_headers[] = $i;
         }
         $this->report_headers[] = 'Total';
-	
+    
         $current = array('upc'=>'', 'description'=>'');
         $data = array();
         // track upc while going through the rows, storing 
         // all data about a given upc before printing
-        while ($row = $dbc->fetch_array($result)){	
+        while ($row = $dbc->fetch_array($result)){  
             if ($current['upc'] != $row[3]){
                 if ($current['upc'] != ""){
                     $record = array($current['upc'], $current['description']);
@@ -176,17 +181,16 @@ class TrendsReport extends FannieReportPage
         $deptsR = $dbc->exec_statement($deptsQ);
         $deptsList = "";
         while ($deptsW = $dbc->fetch_array($deptsR)) {
-          $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";	
+          $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";  
         }
-        $this->add_script('../../src/CalendarControl.js');
         $this->add_onload_command('doShow();');
 
         ob_start();
         ?>
 <script type="text/javascript">
 function swap(src,dst){
-	var val = document.getElementById(src).value;
-	document.getElementById(dst).value = val;
+    var val = document.getElementById(src).value;
+    document.getElementById(dst).value = val;
 }
 
 function doShow(){
@@ -199,15 +203,15 @@ function doShow(){
     $('.upcField').hide();
     $('.lcField').hide();
     $('.manuField').hide();
-	if (which == "manu") {
+    if (which == "manu") {
         $('.manuField').show();
-	} else if (which == "dept") {
+    } else if (which == "dept") {
         $('.deptField').show();
-	} else if (which == "upc") {
+    } else if (which == "upc") {
         $('.upcField').show();
-	} else if (which == "likecode") {
+    } else if (which == "likecode") {
         $('.lcField').show();
-	}
+    }
 }
 </script>
 
@@ -238,7 +242,7 @@ function doShow(){
     <input type=text name=likeCode />
     </td>
 
-    <td>Start date:</td><td><input type=text id=date1 name=date1 onfocus="showCalendarControl(this);"/></td></tr>
+    <td>Start date:</td><td><input type=text id=date1 name=date1 /></td></tr>
 
     <tr>
     <td class="deptField">End department:</td><td class="deptField">
@@ -259,7 +263,7 @@ function doShow(){
     <input type=text name=likeCode2 />
     </td>
 
-    <td>End date:</td><td><input type=text id=date2 name=date2 onfocus="showCalendarControl(this);"/></td></tr>
+    <td>End date:</td><td><input type=text id=date2 name=date2 /></td></tr>
 
 </tr></table>
 <br />
@@ -275,6 +279,9 @@ function doShow(){
 </table>
 </form>
         <?php
+        $this->add_onload_command('$(\'#date1\').datepicker();');
+        $this->add_onload_command('$(\'#date2\').datepicker();');
+
         return ob_get_clean();
     }
 }

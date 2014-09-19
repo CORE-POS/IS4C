@@ -35,11 +35,22 @@ class WfcMadCouponParser extends Parser {
 		$amt = $CORE_LOCAL->get('runningTotal') - $CORE_LOCAL->get('transDiscount');
 		$madCoup = number_format($amt * 0.05, 2);
 		if ($madCoup > 2.50) $madCoup = 2.50;
-		TransRecord::addItem("MAD Coupon", "Member Appreciation Coupon", "I", "CP", "C", 0, 1, 
-			-1*$madCoup, -1*$madCoup, -1*$madCoup, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 17);
+		TransRecord::addRecord(array(
+            'upc' => "MAD Coupon", 
+            'description' => "Member Appreciation Coupon", 
+            'trans_type' => "I", 
+            'trans_subtype' => "CP", 
+            'trans_status' => "C", 
+            'quantity' => 1, 
+            'ItemQtty' => 1, 
+			'unitPrice' => -1*$madCoup,
+			'total' => -1*$madCoup,
+			'regPrice' => -1*$madCoup,
+            'voided' => 17,
+        ));
 		$ret = $this->default_json();
 		$ret['output'] = DisplayLib::lastpage();
-		$ret['redraw_footer'] = True;
+		$ret['redraw_footer'] = true;
 		return $ret;
 	}
 

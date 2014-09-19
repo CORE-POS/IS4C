@@ -21,22 +21,20 @@
 
 *********************************************************************************/
 
-include('../../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class PercentageOfSalesReport extends FannieReportPage 
 {
+    public $discoverable = false; // not directly runnable; must start from search
 
     protected $title = "Fannie : Percentage Sales Report";
     protected $header = "Percentages Sales Report";
 
     protected $report_headers = array('UPC', 'Desc', 'Super', 'Dept');
     protected $required_fields = array('u');
-
-    public function report_description_content()
-    {
-        return '';
-    }
 
     public function fetch_report_data()
     {
@@ -130,7 +128,7 @@ class PercentageOfSalesReport extends FannieReportPage
         }
 
         return $data;
-	}
+    }
 
     public function calculate_footers($data)
     {

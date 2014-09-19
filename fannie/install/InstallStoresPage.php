@@ -28,224 +28,238 @@ include('db.php');
 include_once('../classlib2.0/FannieAPI.php');
 
 /**
-	@class InstallStoresPage
-	Class for the Stores install and config options
+    @class InstallStoresPage
+    Class for the Stores install and config options
 */
 class InstallStoresPage extends InstallPage {
 
-	protected $title = 'Fannie: Store Settings';
-	protected $header = 'Fannie: Store Settings';
+    protected $title = 'Fannie: Store Settings';
+    protected $header = 'Fannie: Store Settings';
 
-	public $description = "
-	Class for the Stores install and config options page.
-	";
+    public $description = "
+    Class for the Stores install and config options page.
+    ";
 
-	// This replaces the __construct() in the parent.
-	public function __construct() {
+    // This replaces the __construct() in the parent.
+    public function __construct() {
 
-		// To set authentication.
-		FanniePage::__construct();
+        // To set authentication.
+        FanniePage::__construct();
 
-		// Link to a file of CSS by using a function.
-		$this->add_css_file("../src/style.css");
-		$this->add_css_file("../src/jquery/css/smoothness/jquery-ui-1.8.1.custom.css");
-		$this->add_css_file("../src/css/install.css");
+        // Link to a file of CSS by using a function.
+        $this->add_css_file("../src/style.css");
+        $this->add_css_file("../src/javascript/jquery-ui.css");
+        $this->add_css_file("../src/css/install.css");
 
-		// Link to a file of JS by using a function.
-		$this->add_script("../src/jquery/js/jquery.js");
-		$this->add_script("../src/jquery/js/jquery-ui-1.8.1.custom.min.js");
+        // Link to a file of JS by using a function.
+        $this->add_script("../src/javascript/jquery.js");
+        $this->add_script("../src/javascript/jquery-ui.js");
 
-	// __construct()
-	}
+    // __construct()
+    }
 
-	// If chunks of CSS are going to be added the function has to be
-	//  redefined to return them.
-	// If this is to override x.css draw_page() needs to load it after the add_css_file
-	/**
-	  Define any CSS needed
-	  @return a CSS string
-	function css_content(){
-		$css ="";
+    public function preprocess()
+    {
+        global $FANNIE_OP_DB;
+        $model = new StoresModel(FannieDB::get($FANNIE_OP_DB));
+        $posted = false;
 
-		return $css;
+        // save info
+        if (is_array(FormLib::get('storeID'))) {
+            $ids = FormLib::get('storeID');
+            $names = FormLib::get('storeName', array());
+            $hosts = FormLib::get('storeHost', array());
+            $drivers = FormLib::get('storeDriver', array());
+            $users = FormLib::get('storeUser', array());
+            $passwords = FormLib::get('storePass', array());
+            $op_dbs = FormLib::get('storeOp', array());
+            $trans_dbs = FormLib::get('storeTrans', array());
+            $push = FormLib::get('storePush', array());
+            $pull = FormLib::get('storePull', array());
 
-	//css_content()
-	}
-	*/
+            for($i=0; $i<count($ids); $i++) {
+                $model->reset();
+                $model->storeID($ids[$i]);
+                $model->description( isset($names[$i]) ? $names[$i] : '' );
+                $model->dbHost( isset($hosts[$i]) ? $hosts[$i] : '' );
+                $model->dbDriver( isset($drivers[$i]) ? $drivers[$i] : '' );
+                $model->dbUser( isset($users[$i]) ? $users[$i] : '' );
+                $model->dbPassword( isset($passwords[$i]) ? $passwords[$i] : '' );
+                $model->opDB( isset($op_dbs[$i]) ? $op_dbs[$i] : '' );
+                $model->transDB( isset($trans_dbs[$i]) ? $trans_dbs[$i] : '' );
+                $model->push( in_array($ids[$i], $push) ? 1 : 0 );
+                $model->pull( in_array($ids[$i], $pull) ? 1 : 0 );
+                $model->save();
+            }
 
-	// If chunks of JS are going to be added the function has to be
-	//  redefined to return them.
-	/**
-	  Define any javascript needed
-	  @return a javascript string
-	*/
-	function javascript_content(){
-		$js = "
-		function showhide(i,num){
-			for (var j=0; j<num; j++){
-				if (j == i)
-					document.getElementById('storedef'+j).style.display='block';
-				else
-					document.getElementById('storedef'+j).style.display='none';
-			}
-		}";
+            $posted = true;
+        }
 
-		return $js;
-	}
+        // delete any marked stores
+        if (is_array(FormLib::get('storeDelete'))) {
+            foreach(FormLib::get('storeDelete') as $id) {
+                $model->reset();
+                $model->storeID($id);
+                $model->delete();
+            }
 
-	function body_content(){
-		//Should this really be done with global?
-		global $FANNIE_NUM_STORES, $FANNIE_STORE_ID, $FANNIE_STORES;
-		ob_start();
+            $posted = true;
+        }
 
-		echo showInstallTabs('Stores');
-		?>
+        if (FormLib::get('addButton') == 'Add Another Store') {
+            $model->reset();
+            $model->description('NEW STORE');
+            $model->save();
+
+            $posted = true;
+        }
+
+        // redirect to self so refreshing the page
+        // doesn't repeat HTML POST
+        if ($posted) {
+            header('Location: InstallStoresPage.php');
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+      Define any CSS needed
+      @return a CSS string
+    */
+    function css_content(){
+        return '
+            tr.highlight td {
+                background-color: #ffffcc;
+            }
+        ';
+    //css_content()
+    }
+
+    public function body_content()
+    {
+        global $FANNIE_OP_DB, $FANNIE_SERVER;
+        ob_start();
+
+        echo showInstallTabs('Stores');
+        ?>
 
 <form action=InstallStoresPage.php method=post>
 <h1 class="install"><?php echo $this->header; ?></h1>
-<p class="ichunk">As of 11Apr2013 these settings are not widely or well supported.</p>
+<p class="ichunk">Revised 23Apr2014</p>
 <?php
 if (is_writable('../config.php')){
-	echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
+    echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
 }
 else {
-	echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
+    echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
 }
 ?>
 <hr />
 <h4 class="install">Stores</h4>
-<p class="ichunk" style="margin:0.0em 0em 0.4em 0em;"><b>Store ID</b>: 
+<p class="ichunk" style="margin:0.0em 0em 0.4em 0em;">
 <?php
-if (!isset($FANNIE_STORE_ID))
-	$FANNIE_STORE_ID = 0;
-if (isset($_REQUEST['FANNIE_STORE_ID']))
-	$FANNIE_STORE_ID = $_REQUEST['FANNIE_STORE_ID'];
-confset('FANNIE_STORE_ID',"$FANNIE_STORE_ID");
-echo "<input type=text name=FANNIE_STORE_ID value=\"$FANNIE_STORE_ID\" size=3 />";
-?>
- &nbsp; By convention store id #0 is HQ.
-</p>
-<?php
-/*
-	By convention store id #0 is HQ
-	I don't know if the rest of these settings are really
-	necessary, but I don't want to remove them yet
-	just in case
-*/
-if($FANNIE_STORE_ID == 0){
-?>
-
-<p class="ichunk" style="margin:0.0em 0em 0.4em 0em;"><b>Other Stores</b>: 
-<?php
-if (!isset($FANNIE_NUM_STORES))
-	$FANNIE_NUM_STORES = 0;
-if (isset($_REQUEST['FANNIE_NUM_STORES']))
-	$FANNIE_NUM_STORES = $_REQUEST['FANNIE_NUM_STORES'];
-confset('FANNIE_NUM_STORES',"$FANNIE_NUM_STORES");
-echo "<input type=text name=FANNIE_NUM_STORES value=\"$FANNIE_NUM_STORES\" size=3 />";
-?>
-</p>
-<?php
-if ($FANNIE_NUM_STORES == 0)
-	confset('FANNIE_STORES','array()');
-else {
-	echo "<select onchange=\"showhide(this.value,$FANNIE_NUM_STORES);\">";
-	for($i=0; $i<$FANNIE_NUM_STORES;$i++){
-		echo "<option value=$i>Store ".($i+1)."</option>";
-	}
-	echo "</select><br />";
-
-	$conf = 'array(';
-	for($i=0; $i<$FANNIE_NUM_STORES; $i++){
-		$style = ($i == 0)?'block':'none';
-		echo "<div id=\"storedef{$i}\" style=\"display:$style;\">";
-		if (!isset($FANNIE_STORES[$i])) $FANNIE_STORES[$i] = array();
-		$conf .= 'array(';
-
-		if (!isset($FANNIE_STORES[$i]['host']))
-			$FANNIE_STORES[$i]['host'] = '127.0.0.1';
-		if (isset($_REQUEST["STORE_HOST_$i"])){
-			$FANNIE_STORES[$i]['host'] = $_REQUEST["STORE_HOST_$i"];
-		}
-		$conf .= "'host'=>'{$FANNIE_STORES[$i]['host']}',";
-		echo "<p class='ichunk2'>";
-		echo "Store ".($i+1)." Database Host: <input type=text name=STORE_HOST_$i value=\"{$FANNIE_STORES[$i]['host']}\" /></p>";
-		
-		if (!isset($FANNIE_STORES[$i]['type']))
-			$FANNIE_STORES[$i]['type'] = 'MYSQL';
-		if (isset($_REQUEST["STORE_TYPE_$i"]))
-			$FANNIE_STORES[$i]['type'] = $_REQUEST["STORE_TYPE_$i"];
-		$conf .= "'type'=>'{$FANNIE_STORES[$i]['type']}',";
-		echo "<p class='ichunk2'>";
-		echo "Store ".($i+1)." Database Type: <select name=STORE_TYPE_$i>";
-		if ($FANNIE_STORES[$i]['type'] == 'MYSQL'){
-			echo "<option value=MYSQL selected>MySQL</option><option value=MSSQL>SQL Server</option>";
-		}
-		else {
-			echo "<option value=MYSQL>MySQL</option><option selected value=MSSQL>SQL Server</option>";
-		}
-		echo "</select></p>";
-
-		if (!isset($FANNIE_STORES[$i]['user']))
-			$FANNIE_STORES[$i]['user'] = 'root';
-		if (isset($_REQUEST["STORE_USER_$i"]))
-			$FANNIE_STORES[$i]['user'] = $_REQUEST["STORE_USER_$i"];
-		$conf .= "'user'=>'{$FANNIE_STORES[$i]['user']}',";
-
-		echo "<p class='ichunk2'>";
-		echo "Store ".($i+1)." Database Username: <input type=text name=STORE_USER_$i value=\"{$FANNIE_STORES[$i]['user']}\" /></p>";
-
-		if (!isset($FANNIE_STORES[$i]['pw']))
-			$FANNIE_STORES[$i]['pw'] = '';
-		if (isset($_REQUEST["STORE_PW_$i"]))
-			$FANNIE_STORES[$i]['pw'] = $_REQUEST["STORE_PW_$i"];
-		$conf .= "'pw'=>'{$FANNIE_STORES[$i]['pw']}',";
-		echo "<p class='ichunk2'>";
-		echo "Store ".($i+1)." Database Password: <input type=password name=STORE_PW_$i value=\"{$FANNIE_STORES[$i]['pw']}\" /></p>";
-
-		if (!isset($FANNIE_STORES[$i]['op']))
-			$FANNIE_STORES[$i]['op'] = 'core_op';
-		if (isset($_REQUEST["STORE_OP_$i"]))
-			$FANNIE_STORES[$i]['op'] = $_REQUEST["STORE_OP_$i"];
-		$conf .= "'op'=>'{$FANNIE_STORES[$i]['op']}',";
-		echo "<p class='ichunk2'>";
-		echo "Store ".($i+1)." Operational DB: <input type=text name=STORE_OP_$i value=\"{$FANNIE_STORES[$i]['op']}\" /></p>";
-
-		if (!isset($FANNIE_STORES[$i]['trans']))
-			$FANNIE_STORES[$i]['trans'] = 'core_trans';
-		if (isset($_REQUEST["STORE_TRANS_$i"]))
-			$FANNIE_STORES[$i]['trans'] = $_REQUEST["STORE_TRANS_$i"];
-		$conf .= "'trans'=>'{$FANNIE_STORES[$i]['trans']}'";
-		echo "<p class='ichunk2'>";
-		echo "Store ".($i+1)." Transaction DB: <input type=text name=STORE_TRANS_$i value=\"{$FANNIE_STORES[$i]['trans']}\" /></p>";
-
-		$conf .= ")";
-		echo "</div><!-- /#storedef$i -->";	
-
-		if ($i == $FANNIE_NUM_STORES - 1)
-			$conf .= ")";
-		else
-			$conf .= ",";
-	}
-	confset('FANNIE_STORES',$conf);
+$model = new StoresModel(FannieDB::get($FANNIE_OP_DB));
+$model->dbHost($FANNIE_SERVER);
+$myself = $model->find();
+if (count($myself) == 0) {
+    echo '<i>No entry found for this store. Adding one automatically...</i><br />';
+    $model->description('CURRENT STORE');
+    $model->save();
+} else if (count($myself) > 1) {
+    echo '<i>Warning: more than one entry for store host: ' . $FANNIE_SERVER . '</i><br />';
+} else {
+    echo '<i>This store is #' . $myself[0]->storeID() . '</i><br />';
 }
+$model->reset();
 
+$supportedTypes = array('none'=>'');
+if (extension_loaded('pdo') && extension_loaded('pdo_mysql'))
+    $supportedTypes['PDO_MYSQL'] = 'PDO MySQL';
+if (extension_loaded('mysqli'))
+    $supportedTypes['MYSQLI'] = 'MySQLi';
+if (extension_loaded('mysql'))
+    $supportedTypes['MYSQL'] = 'MySQL';
+if (extension_loaded('mssql'))
+    $supportedTypes['MSSQL'] = 'MSSQL';
 ?>
+<table cellspacing="0" cellpadding="4" border="1">
+<tr>
+    <th>Store #</th><th>Description</th><th>DB Host</th>
+    <th>Driver</th><th>Username</th><th>Password</th>
+    <th>Operational DB</th>
+    <th>Transaction DB</th>
+    <th>Push</th>
+    <th>Pull</th>
+    <th>Delete Entry</th>
+</tr>
+<?php foreach($model->find('storeID') as $store) {
+    printf('<tr %s>
+            <td>%d<input type="hidden" name="storeID[]" value="%d" /></td>
+            <td><input type="text" name="storeName[]" value="%s" /></td>
+            <td><input type="text" name="storeHost[]" value="%s" /></td>',
+            ($store->dbHost() == $FANNIE_SERVER ? 'class="highlight"' : ''),
+            $store->storeID(), $store->storeID(),
+            $store->description(),
+            $store->dbHost()
+    );
+    echo '<td><select name="storeDriver[]">';
+    foreach($supportedTypes as $key => $label) {
+        printf('<option %s value="%s">%s</option>',
+            ($store->dbDriver() == $key ? 'selected' : ''),
+            $key, $label);
+    }
+    echo '</select></td>';
+    printf('<td><input type="text" size="10" name="storeUser[]" value="%s" /></td>
+            <td><input type="password" size="10" name="storePass[]" value="%s" /></td>
+            <td><input type="text" size="10" name="storeOp[]" value="%s" /></td>
+            <td><input type="text" size="10" name="storeTrans[]" value="%s" /></td>
+            <td><input type="checkbox" name="storePush[]" value="%d" %s /></td>
+            <td><input type="checkbox" name="storePull[]" value="%d" %s /></td>
+            <td><input type="checkbox" name="storeDelete[]" value="%d" /></td>
+            </tr>',
+            $store->dbUser(),
+            $store->dbPassword(),
+            $store->opDB(),
+            $store->transDB(),
+            $store->storeID(), ($store->push() ? 'checked' : ''),
+            $store->storeID(), ($store->pull() ? 'checked' : ''),
+            $store->storeID()
+    );
 
-<?php
-} // endif for HQ only settings
-?>
-
+} ?>
+</table>
+</p>
 <hr />
-<input type=submit value="Re-run" />
+<h4 class="install">Testing Connections</h4>
+<p class="ichunk" style="margin:0.0em 0em 0.4em 0em;">
+    <ul>
+<?php foreach($model->find('storeID') as $store) {
+    $test = db_test_connect($store->dbHost(),
+                            $store->dbDriver(),
+                            $store->transDB(),
+                            $store->dbUser(),
+                            $store->dbPassword()
+                           );
+    echo '<li> Store #' . $store->storeID() . ': ' . ($test ? 'Connected' : 'No connection') . '</li>';
+} ?>
+    </ul>
+    <i>Note: it's OK if this store's connection fails as long as it succeeds
+       on the "Necessities" tab.</i>
+</p>
+<hr />
+<input type=submit name="saveButton" value="Save" />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type=submit name="addButton" value="Add Another Store" />
 </form>
 
 <?php
 
-		return ob_get_clean();
+        return ob_get_clean();
 
-	// body_content
-	}
+    // body_content
+    }
 
 // InstallStoresPage
 }

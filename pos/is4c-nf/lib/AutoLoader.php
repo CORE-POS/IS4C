@@ -195,6 +195,13 @@ class AutoLoader extends LibraryClass
                 $path = realpath(dirname(__FILE__).'/TotalActions');
                 $map = Plugin::pluginMap($path,$map);
                 break;
+            case 'VariableWeightReWrite':
+                $path = realpath(dirname(__FILE__).'/Scanning/VariableWeightReWrites');
+                $map = Plugin::pluginMap($path,$map);
+                break;
+            case 'ItemNotFound':
+                $map['ItemNotFound'] = realpath(dirname(__FILE__) . '/ItemNotFound.php');
+                break;
 		}
 
 		foreach($map as $name => $file) {

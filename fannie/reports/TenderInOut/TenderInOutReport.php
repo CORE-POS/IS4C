@@ -21,11 +21,16 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class TenderInOutReport extends FannieReportPage
 {
+    public $description = '[Tender Usages] lists each transaction for a given tender in a given date range.';
+    public $report_set = 'Tenders';
+
     protected $title = "Fannie : Tender Usage";
     protected $header = "Tender Usage Report";
 
@@ -34,13 +39,9 @@ class TenderInOutReport extends FannieReportPage
 
     public function report_description_content()
     {
-        $date1 = FormLib::get('date1', date('Y-m-d'));
-        $date2 = FormLib::get('date2', date('Y-m-d'));
         $code = FormLib::get('tendercode');
 
         return array(
-            'Report run '.date('F d, Y'),
-            'From '.$date1.' to '.$date2,
             'For tender '.$code,
         );
     }
@@ -95,7 +96,6 @@ class TenderInOutReport extends FannieReportPage
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $this->add_script('../../src/CalendarControl.js');
         $tenders = array();
         $p = $dbc->prepare_statement("SELECT TenderCode,TenderName FROM tenders ORDER BY TenderName");
         $r = $dbc->exec_statement($p);
@@ -105,47 +105,50 @@ class TenderInOutReport extends FannieReportPage
 
         ob_start();
         ?>
-<div id=main>	
+<div id=main>   
 <form method = "get" action="TenderInOutReport.php">
     <table border="0" cellspacing="0" cellpadding="5">
-		<tr> 
-			<td> <p><b>Tender</b></p>
-			<p><b>Excel</b></p>
-			</td>
-			<td><p>
-			<select name="tendercode">
-			<?php foreach($tenders as $code=>$name) {
-				printf('<option value="%s">%s</option>',$code,$name);
-			} ?>
-			</select>
-			</p>
-			<p>
-			<input type=checkbox name=excel id=excel value=xls /> 
-			</p>
-			</td>
+        <tr> 
+            <td> <p><b>Tender</b></p>
+            <p><b>Excel</b></p>
+            </td>
+            <td><p>
+            <select name="tendercode">
+            <?php foreach($tenders as $code=>$name) {
+                printf('<option value="%s">%s</option>',$code,$name);
+            } ?>
+            </select>
+            </p>
+            <p>
+            <input type=checkbox name=excel id=excel value=xls /> 
+            </p>
+            </td>
 
-			 <td>
-			<p><b>Date Start</b> </p>
-		         <p><b>End</b></p>
-		       </td>
-		            <td>
-		             <p>
-		               <input type=text size=25 name=date1 id="date1" onfocus="this.value='';showCalendarControl(this);">
-		               </p>
-		               <p>
-		                <input type=text size=25 name=date2 id="date2" onfocus="this.value='';showCalendarControl(this);">
-		         </p>
-		       </td>
+             <td>
+            <p><b>Date Start</b> </p>
+                 <p><b>End</b></p>
+               </td>
+                    <td>
+                     <p>
+                       <input type=text size=25 name=date1 id="date1" />
+                       </p>
+                       <p>
+                        <input type=text size=25 name=date2 id="date2" />
+                 </p>
+               </td>
 
-		</tr>
-			<td> <input type=submit name=submit value="Submit"> </td>
-			<td> <input type=reset name=reset value="Start Over"> </td>
-			<td colspan="2"><?php echo FormLib::date_range_picker(); ?></td>
-		</tr>
-	</table>
+        </tr>
+            <td> <input type=submit name=submit value="Submit"> </td>
+            <td> <input type=reset name=reset value="Start Over"> </td>
+            <td colspan="2"><?php echo FormLib::date_range_picker(); ?></td>
+        </tr>
+    </table>
 </form>
 </div>
         <?php
+        $this->add_onload_command('$(\'#date1\').datepicker();');
+        $this->add_onload_command('$(\'#date2\').datepicker();');
+
         return ob_get_clean();
     }
 }

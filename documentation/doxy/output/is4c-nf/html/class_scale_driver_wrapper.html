@@ -33,6 +33,8 @@
 <h1>ScaleDriverWrapper Class Reference</h1><!-- doxytag: class="ScaleDriverWrapper" --><a href="class_scale_driver_wrapper-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
 <tr><td></td></tr>
 <tr><td colspan="2"><br><h2>Public Member Functions</h2></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_scale_driver_wrapper.html#4727b3b88b0be70051e0f6fbe7a9a7de">javascriptFile</a> ()</td></tr>
+
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_scale_driver_wrapper.html#71971d81e6cc35f29d8cc0c9a8a99df9">SavePortConfiguration</a> ($portName)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_scale_driver_wrapper.html#d29f502f1eb3d4378588c65a4f599980">SaveDirectoryConfiguration</a> ($absPath)</td></tr>
@@ -50,6 +52,26 @@ This class deals with reading and writing to hardware devices that PHP can't tal
 Modules that extend this class must at least define ReadFromScale and WriteToScale. 
 <p>
 <hr><h2>Member Function Documentation</h2>
+<a class="anchor" name="4727b3b88b0be70051e0f6fbe7a9a7de"></a><!-- doxytag: member="ScaleDriverWrapper::javascriptFile" ref="4727b3b88b0be70051e0f6fbe7a9a7de" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">ScaleDriverWrapper::javascriptFile           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Javascript used to interact with scale driver. Default is poll-scale.js.<p>
+Javascript file must provide a function named pollScale. 
+</div>
+</div><p>
 <a class="anchor" name="3860bf310bb8b1779a919e52e3f627e9"></a><!-- doxytag: member="ScaleDriverWrapper::ReadFromScale" ref="3860bf310bb8b1779a919e52e3f627e9" args="()" -->
 <div class="memitem">
 <div class="memproto">
@@ -166,7 +188,7 @@ Sends output to the scale. <dl compact><dt><b>Parameters:</b></dt><dd>
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/scale-drivers/php-wrappers/ScaleDriverWrapper.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

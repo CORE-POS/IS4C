@@ -22,124 +22,107 @@
 *********************************************************************************/
 
 //ini_set('display_errors','1');
-include('../config.php'); 
+include('../config.php');
+if (!class_exists('FannieAPI')) {
+         include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 include('util.php');
 include('db.php');
-include_once('../classlib2.0/InstallPage.php');
 
 /**
-	@class InstallMemModDisplayPage
-	Class for the MemModDisplay install and config options
+    @class InstallMemModDisplayPage
+    Class for the MemModDisplay install and config options
 */
 class InstallMemModDisplayPage extends InstallPage {
 
-	protected $title = 'Fannie: Member Editor Module Display Order';
-	protected $header = 'Fannie: Member Editor Module Display Order';
+    protected $title = 'Fannie: Member Editor Module Display Order';
+    protected $header = 'Fannie: Member Editor Module Display Order';
 
-	public $description = "
-	Class for the Member Editor Module Display Order configuration page.
-	";
+    public $description = "
+    Class for the Member Editor Module Display Order configuration page.
+    ";
 
-	public function __construct() {
+    public function __construct() {
 
-		// To set authentication.
-		FanniePage::__construct();
+        // To set authentication.
+        FanniePage::__construct();
 
-		// Link to a file of CSS by using a function.
-		$this->add_css_file("../src/style.css");
-		$this->add_css_file("../src/jquery/css/smoothness/jquery-ui-1.8.1.custom.css");
-		$this->add_css_file("../src/css/install.css");
+        // Link to a file of CSS by using a function.
+        $this->add_css_file("../src/style.css");
+        $this->add_css_file("../src/javascript/jquery-ui.css");
+        $this->add_css_file("../src/css/install.css");
 
-		// Link to a file of JS by using a function.
-		$this->add_script("../src/jquery/js/jquery.js");
-		$this->add_script("../src/jquery/js/jquery-ui-1.8.1.custom.min.js");
+        // Link to a file of JS by using a function.
+        $this->add_script("../src/javascript/jquery.js");
+        $this->add_script("../src/javascript/jquery-ui.js");
 
-	// __construct()
-	}
+    // __construct()
+    }
 
-	/**
-	  Define any CSS needed
-	  @return A CSS string
-	function css_content(){
-		$css ="";
-		return $css;
-	//css_content()
-	}
-	*/
+    function body_content(){
+        global $FANNIE_MEMBER_MODULES;
+        ob_start();
 
-	/**
-	  Define any javascript needed
-	  @return A javascript string
-	function javascript_content(){
-		$js ="";
-		return $js;
-	}
-	*/
+        $parent = 'InstallMembershipPage.php';
+        echo showLinkUp('Back to Membership',"$parent",'');
 
-	function body_content(){
-		global $FANNIE_MEMBER_MODULES;
-		ob_start();
+        echo "<h1 class='install'>{$this->header}</h1>";
 
-		$parent = 'InstallMembershipPage.php';
-		echo showLinkUp('Back to Membership',"$parent",'');
+        // Re-order the modules and report.
+        if (isset($_REQUEST['ordering'])){
+            $FANNIE_MEMBER_MODULES = array();
+            foreach($_REQUEST['ordering'] as $o){
+                if (!in_array($o,$FANNIE_MEMBER_MODULES)) 
+                    $FANNIE_MEMBER_MODULES[] = $o;
+            }
+            $saveStr = 'array(';
+            foreach($FANNIE_MEMBER_MODULES as $t)
+                $saveStr .= '"'.$t.'",';
+            $saveStr = rtrim($saveStr,',').")";
+            echo "<blockquote><i>Order Updated</i></blockquote>";
+            confset('FANNIE_MEMBER_MODULES',$saveStr);
+        }
 
-		echo "<h1 class='install'>{$this->header}</h1>";
+        $self = basename($_SERVER['PHP_SELF']);
 
-		// Re-order the modules and report.
-		if (isset($_REQUEST['ordering'])){
-			$FANNIE_MEMBER_MODULES = array();
-			foreach($_REQUEST['ordering'] as $o){
-				if (!in_array($o,$FANNIE_MEMBER_MODULES)) 
-					$FANNIE_MEMBER_MODULES[] = $o;
-			}
-			$saveStr = 'array(';
-			foreach($FANNIE_MEMBER_MODULES as $t)
-				$saveStr .= '"'.$t.'",';
-			$saveStr = rtrim($saveStr,',').")";
-			echo "<blockquote><i>Order Updated</i></blockquote>";
-			confset('FANNIE_MEMBER_MODULES',$saveStr);
-		}
+        echo "<form action='$self' method='post'>";
 
-		$self = basename($_SERVER['PHP_SELF']);
+        if (is_writable('../config.php')){
+            echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
+        }
+        else {
+            echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
+        }
+        echo "<hr />";
 
-		echo "<form action='$self' method='post'>";
+        $num = count($FANNIE_MEMBER_MODULES);
+        if ($num == 0){
+            echo "<i>Error: no modules enabled</i><br />";
+            echo '<a href="mem.php">Back to Member Settings</a>';
+            return ob_get_clean();
+        }
+        echo "<p class='ichunk'>The enabled modules are listed below in the order in which they will appear in the editor.
+        <br />In each dropdown, choose the module you would like to appear in that position.
+        </p>";
+        for ($i=1;$i<=$num;$i++){
+            echo "#$i: <select name=\"ordering[]\">";
+            for($j=1;$j<=$num;$j++){
+                printf("<option %s>%s</option>",
+                    ($i==$j?'selected':''),
+                    $FANNIE_MEMBER_MODULES[$j-1]);
+            }
+            echo "</select><p />";
+        }
+        ?>
+        <input type="submit" value="Save Order of Modules" />
+        </form>
 
-		if (is_writable('../config.php')){
-			echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
-		}
-		else {
-			echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
-		}
-		echo "<hr />";
+        <?php
 
-		$num = count($FANNIE_MEMBER_MODULES);
-		if ($num == 0){
-			echo "<i>Error: no modules enabled</i><br />";
-			echo '<a href="mem.php">Back to Member Settings</a>';
-			return ob_get_clean();
-		}
-		echo "<p class='ichunk'>The enabled modules are listed below in the order in which they will appear in the editor.
-		<br />In each dropdown, choose the module you would like to appear in that position.
-		</p>";
-		for ($i=1;$i<=$num;$i++){
-			echo "#$i: <select name=\"ordering[]\">";
-			for($j=1;$j<=$num;$j++){
-				printf("<option %s>%s</option>",
-					($i==$j?'selected':''),
-					$FANNIE_MEMBER_MODULES[$j-1]);
-			}
-			echo "</select><p />";
-		}
-		?>
-		<input type="submit" value="Save Order of Modules" />
-		</form>
+        return ob_get_clean();
 
-		<?php
-
-		return ob_get_clean();
-
-	// body_content
-	}
+    // body_content
+    }
 
 // InstallMemModDisplayPage
 }

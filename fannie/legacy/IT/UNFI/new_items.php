@@ -72,7 +72,7 @@ if (isset($_GET['cat'])){
 	}
 	$depts .= "</select>";
 
-	$dataQ = $sql->prepare("SELECT v.upc,brand,v.description,v.vendorDept,
+	$dataQ = $sql->prepare("SELECT v.upc,v.brand,v.description,v.vendorDept,
 		s.srp,v.cost, 
 		v.size,v.units,v.sku FROM vendorItems AS v 
 		LEFT JOIN products AS p ON v.upc = p.upc 
@@ -155,12 +155,12 @@ else if (isset($_POST["upc"])){
     $product->idEnforced(0);
     $product->scaleprice(0);
     $product->cost(0);
+    
+    $tag = new ShelftagsModel($sql);
 
     $taxfsP = $sql->prepare("SELECT dept_tax,dept_fs FROM departments WHERE dept_no=?");
     $xtraP = $sql->prepare("INSERT INTO prodExtra (upc,distributor,manufacturer,cost,margin,variable_pricing,location)
         VALUES (?,'UNFI',?,?,0,0,'')");
-    $barP = $sql->prepare("INSERT INTO shelftags (id,upc,description,normal_price,brand,sku,units,size,vendor,
-        pricePerUnit) VALUES (?,?,?,?,?,?,?,?,'UNFI',?)");
 for ($i=0; $i<count($depts); $i++){
 		if ($depts[$i] == -1) continue;
 		
@@ -187,7 +187,17 @@ for ($i=0; $i<count($depts); $i++){
 		$sql->execute($xtraP, array($upcs[$i], $brands[$i], $costs[$i]));
 
 		$ppo = pricePerOunce($prices[$i],$sizes[$i]);
-		$sql->execute($barP, array($bID, $upcs[$i], $descs[$i], $prices[$i], $brands[$i], $skus[$i], $sizes[$i], $packs[$i], $ppo));
+        $tag->id($bID);
+        $tag->upc($upcs[$i]);
+        $tag->description($descs[$i]);
+        $tag->normal_price($prices[$i]);
+        $tag->brand($brands[$i]);
+        $tag->sku($skus[$i]);
+        $tag->units($sizes[$i]);
+        $tag->size($packs[$i]);
+        $tag->pricePerUnit($ppo);
+        $tag->vendor('UNFI');
+        $tag->save();
 
         $product->pushToLanes();
 	}

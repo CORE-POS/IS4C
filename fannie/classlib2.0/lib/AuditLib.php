@@ -49,9 +49,9 @@ class AuditLib
 
         $subject = "Item Update notification: ".$upc;
 
-        $message = "Item $upc ($desc) has been changed\n";	
+        $message = "Item $upc ($desc) has been changed\n";  
         $message .= "Price: " . $product->normal_price() . "\n";
-		$taxQ = $dbc->prepare_statement('SELECT description FROM taxrates WHERE id=?');
+        $taxQ = $dbc->prepare_statement('SELECT description FROM taxrates WHERE id=?');
         $taxR = $dbc->execute($taxQ, array($product->tax()));
         $taxname = 'No Tax';
         if ($dbc->num_rows($taxR) > 0) {
@@ -63,7 +63,7 @@ class AuditLib
         $message .= "Scale: " . ($product->scale()==1 ? "Yes" :"No") . "\n";
         $message .= "Discountable: " . ($product->discount()==1 ? "Yes" : "No") . "\n";
         if ($likecode) {
-			$message .= "All items in this likecode ($likecode) were changed\n";
+            $message .= "All items in this likecode ($likecode) were changed\n";
         }
         $message .= "\n";
         $message .= "Adjust this item?\n";
@@ -102,10 +102,12 @@ class AuditLib
             }
             // upc is a like code. find the description
             // and a valid upc (hence inner join)
-            $infoQ = 'SELECT department, likeCodeDesc FROM upcLike AS u
-                    INNER JOIN products AS p ON u.upc=l.upc
-                    LEFT JOIN likeCodes AS l ON u.likeCode=l.likeCode
-                    WHERE u.likeCode=?';
+            $infoQ = 'SELECT p.department,
+                        l.likeCodeDesc 
+                      FROM upcLike AS u
+                        INNER JOIN products AS p ON u.upc=p.upc
+                        LEFT JOIN likeCodes AS l ON u.likeCode=l.likeCode
+                      WHERE u.likeCode=?';
             $infoP = $dbc->prepare($infoQ);
             $infoR = $dbc->execute($infoP, array($lc));
             if ($dbc->num_rows($infoR) == 0) {

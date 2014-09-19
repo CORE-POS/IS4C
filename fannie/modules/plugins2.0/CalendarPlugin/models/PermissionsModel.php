@@ -34,7 +34,7 @@ class PermissionsModel extends BasicModel
     'calendarID' => array('type'=>'INT'),
     'uid' => array('type'=>'INT'),
     'classID' => array('type'=>'INT'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -48,6 +48,22 @@ class PermissionsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'permissionID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["permissionID"]) || $this->instance["permissionID"] != func_get_args(0)) {
                 if (!isset($this->columns["permissionID"]["ignore_updates"]) || $this->columns["permissionID"]["ignore_updates"] == false) {
@@ -56,6 +72,7 @@ class PermissionsModel extends BasicModel
             }
             $this->instance["permissionID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function calendarID()
@@ -68,6 +85,22 @@ class PermissionsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'calendarID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["calendarID"]) || $this->instance["calendarID"] != func_get_args(0)) {
                 if (!isset($this->columns["calendarID"]["ignore_updates"]) || $this->columns["calendarID"]["ignore_updates"] == false) {
@@ -76,6 +109,7 @@ class PermissionsModel extends BasicModel
             }
             $this->instance["calendarID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function uid()
@@ -88,6 +122,22 @@ class PermissionsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'uid',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["uid"]) || $this->instance["uid"] != func_get_args(0)) {
                 if (!isset($this->columns["uid"]["ignore_updates"]) || $this->columns["uid"]["ignore_updates"] == false) {
@@ -96,6 +146,7 @@ class PermissionsModel extends BasicModel
             }
             $this->instance["uid"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function classID()
@@ -108,6 +159,22 @@ class PermissionsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'classID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["classID"]) || $this->instance["classID"] != func_get_args(0)) {
                 if (!isset($this->columns["classID"]["ignore_updates"]) || $this->columns["classID"]["ignore_updates"] == false) {
@@ -116,6 +183,7 @@ class PermissionsModel extends BasicModel
             }
             $this->instance["classID"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

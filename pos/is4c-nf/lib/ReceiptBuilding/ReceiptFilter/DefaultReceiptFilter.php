@@ -38,7 +38,7 @@ class DefaultReceiptFilter
 	*/
 	public function filter($data)
     {
-		$deptsUsed = array();
+		$reverseMap = array();
 		$tenderTTL = 0.00;
 		$tax = False;
 		$discount = False;
@@ -73,6 +73,36 @@ class DefaultReceiptFilter
 				if (!isset($reverseMap[$row['category']])) {
 					$reverseMap[$row['category']] = true;
                 }
+                if ($row['trans_type'] == 'I' && $row['matched'] == 0 && $row['scale'] == 0) {
+                    // merge duplicate items
+                    $merged = false;
+                    for ($i=0; $i<count($returnset); $i++) {
+                        if ($row['upc'] == $returnset[$i]['upc']
+                            && $returnset[$i]['matched'] == 0
+                            && $returnset[$i]['scale'] == 0
+                            && $row['unitPrice'] == $returnset[$i]['unitPrice']
+                            && $row['regPrice'] == $returnset[$i]['regPrice']
+                            && $row['trans_status'] == $returnset[$i]['trans_status']) {
+
+                            $returnset[$i]['ItemQtty'] += $row['ItemQtty'];
+                            $returnset[$i]['quantity'] += $row['quantity'];
+                            $returnset[$i]['total'] += $row['total'];
+                            $merged = true;
+                            break;
+                        }
+                    }
+                    if (!$merged) {
+                        $returnset[] = $row;
+                        $count++;	
+                    }
+                } else {
+                    $returnset[] = $row;
+                    $count++;	
+                }
+            } else if ($row['trans_type'] == 'C' && $row['trans_subtype'] == 'CM') {
+                // print comment rows as if they were items
+                $row['trans_type'] = 'I';
+                $row['upc'] = 'COMMENT';
 				$returnset[] = $row;
 				$count++;	
 			} else if ($row['trans_type'] == '0' && substr($row['description'],0,7)=="** Tare"){
@@ -94,6 +124,38 @@ class DefaultReceiptFilter
 		}
 
 		$returnset = array_reverse($returnset);
+
+        /**
+          Re-write trans_id on member special lines to
+          be adjacent to applicable item
+        */
+        $removes = array();
+        for ($i=0; $i<count($returnset); $i++) {
+            if (!isset($returnset[$i]['trans_type']) || !isset($returnset[$i]['trans_status'])) {
+                continue;
+            }
+            if ($returnset[$i]['trans_type'] == 'I' && $returnset[$i]['trans_status'] == 'M') {
+                if ($returnset[$i]['total'] == 0) {
+                    $removes[] = $i;
+                    continue;
+                }
+                for ($j=0; $j<count($returnset); $j++) {
+                    if (!isset($returnset[$j]['trans_type']) || !isset($returnset[$j]['trans_status'])) {
+                        continue;
+                    }
+                    if ($returnset[$j]['trans_status'] == 'M') {
+                        continue;
+                    }
+                    if ($returnset[$j]['upc'] == $returnset[$i]['upc']) {
+                        $returnset[$i]['trans_id'] = $returnset[$j]['trans_id'] + 0.25;
+                        break;
+                    }
+                }
+            }
+        }
+        foreach ($removes as $index) {
+            array_splice($returnset, $index, 1);
+        }
 
 		// add discount, subtotal, tax, and total records to the end
 		if ($discount) {

@@ -23,19 +23,24 @@
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-	* 25Mar2013 AT Merged changes between CORE and flathat
-	* 21Mar2013 EL Hacked FANNIE_POUNDS_AS_POUNDS until established.
-	*              Use input description width 30, not 27, OK per AT.
-	* 16Mar2013 Eric Lee Need to get the vendor name either from the form
-	*            or from, ideally, vendors, or prodExtra.
-	*            Currently the vendor name input is just text, not controlled.
-	*           It would be better if it used size and unitofmeasure from the form.
-	*            In update, would need a post-update shelftag create as in insertItem.php
+    * 25Mar2013 AT Merged changes between CORE and flathat
+    * 21Mar2013 EL Hacked FANNIE_POUNDS_AS_POUNDS until established.
+    *              Use input description width 30, not 27, OK per AT.
+    * 16Mar2013 Eric Lee Need to get the vendor name either from the form
+    *            or from, ideally, vendors, or prodExtra.
+    *            Currently the vendor name input is just text, not controlled.
+    *           It would be better if it used size and unitofmeasure from the form.
+    *            In update, would need a post-update shelftag create as in insertItem.php
 
 */
 
-require('../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+require(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
+    return;
+}
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 $upc = BarcodeLib::padUPC(FormLib::get('upc'));
@@ -44,15 +49,15 @@ $upc = BarcodeLib::padUPC(FormLib::get('upc'));
 // This favours UNFI which traditionally has vendorID 1.
 //was: $unfiQ = "SELECT DISTINCT * FROM vendorItems WHERE upc = '$upc' ORDER BY vendorID";
 $vendiQ = $dbc->prepare_statement("SELECT DISTINCT i.*,v.vendorName FROM vendorItems AS i
-			LEFT JOIN vendors AS v ON i.vendorID=v.vendorID
-			where upc = ? ORDER BY i.vendorID");
+            LEFT JOIN vendors AS v ON i.vendorID=v.vendorID
+            where upc = ? ORDER BY i.vendorID");
 
 $vendiR = $dbc->exec_statement($vendiQ,array($upc));
 $vendiN = $dbc->num_rows($vendiR);
 
 $prodQ = $dbc->prepare_statement("SELECT p.*,s.superID FROM products AS p
-	LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID
-	where upc=?");
+    LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID
+    where upc=?");
 //echo $prodQ;
 $prodR = $dbc->exec_statement($prodQ,array($upc));
 
@@ -76,15 +81,15 @@ if($vendiN > 0){
  $units = $vendiW['units'];
  $sku = $vendiW['sku'];
  if ( $vendiW['vendorName'] != "" ) {
-	 $vendor = $vendiW['vendorName'];
+     $vendor = $vendiW['vendorName'];
  } else if ($dbc->table_exists('prodExtra')) {
-	$prodExtraQ = $dbc->prepare_statement("select distributor from prodExtra where upc=?");
-	$prodExtraR = $dbc->exec_statement($prodExtraQ, array($upc));
-	$prodExtraN = $dbc->num_rows($prodExtraR);
-	if ($prodExtraN > 0){
-		$prodExtraW = $dbc->fetch_array($prodExtraR);
-		$vendor = $prodExtraW['distributor'];
-	}
+    $prodExtraQ = $dbc->prepare_statement("select distributor from prodExtra where upc=?");
+    $prodExtraR = $dbc->exec_statement($prodExtraQ, array($upc));
+    $prodExtraN = $dbc->num_rows($prodExtraR);
+    if ($prodExtraN > 0){
+        $prodExtraW = $dbc->fetch_array($prodExtraR);
+        $vendor = $prodExtraW['distributor'];
+    }
  }
  $ppo = PriceLib::pricePerUnit($price,$size);
 }
@@ -92,11 +97,11 @@ else if ($dbc->table_exists('prodExtra')) {
 $prodExtraQ = $dbc->prepare_statement("select manufacturer,distributor from prodExtra where upc=?");
 $prodExtraR = $dbc->exec_statement($prodExtraQ,array($upc));
 $prodExtraN = $dbc->num_rows($prodExtraR);
-	if ($prodExtraN == 1){
-		$prodExtraW = $dbc->fetch_array($prodExtraR);
-		$brand = $prodExtraW['manufacturer'];
-		$vendor = $prodExtraW['distributor'];
-	}
+    if ($prodExtraN == 1){
+        $prodExtraW = $dbc->fetch_array($prodExtraR);
+        $brand = $prodExtraW['manufacturer'];
+        $vendor = $prodExtraW['distributor'];
+    }
 }
 
 echo "<body bgcolor='ffffcc'>";
@@ -127,11 +132,13 @@ echo "value='".$size."'";
 ><br>
 PricePer: <input type=text name=ppo size=15
 <?php echo "value=\"$ppo\"" ?> /><br />
-Vendor: <input type='text' name='vendor' size=15
+Vendor: <input type='text' name='vendor' size=12
 <?php
 echo "value='$vendor'";
 ?>
-><br>
+>
+# Tags: <input type="text" name="count" size="3" value="1" />
+<br>
 SKU: <input type='text' name='sku' size=8
 <?php
 echo "value='".$sku."'";
@@ -149,9 +156,9 @@ echo "<input type='submit' value='New' name='submit'>";
 $subsQ = $dbc->prepare_statement("SELECT superID,super_name FROM superDeptNames");
 $subsR = $dbc->exec_statement($subsQ);
 while($subsW = $dbc->fetch_row($subsR)){
-	if ($subsW[0] == 0) $subsW[1] = 'All';
-	$checked = ($subsW[0]==$superID)?'selected':'';
-	echo "<option value=\"$subsW[0]\" $checked>$subsW[1]</option>";
+    if ($subsW[0] == 0) $subsW[1] = 'All';
+    $checked = ($subsW[0]==$superID)?'selected':'';
+    echo "<option value=\"$subsW[0]\" $checked>$subsW[1]</option>";
 }
 ?>
 </select><br />

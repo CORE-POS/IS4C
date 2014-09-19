@@ -23,57 +23,61 @@
 
 include_once(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FanniePage'))
-	include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 if (!class_exists('CalendarPlugin'))
-	include(dirname(__FILE__).'/CalendarPlugin.php');
-if (!function_exists('getUID'))
-	include($FANNIE_ROOT.'auth/login.php');
+    include(dirname(__FILE__).'/CalendarPlugin.php');
+if (!class_exists('FannieAuth'))
+    include($FANNIE_ROOT.'classlib2.0/auth/FannieAuth.php');
 include_once(dirname(__FILE__).'/CalendarPluginDisplayLib.php');
 
 class CalendarMainPage extends FanniePage {
 
-	protected $must_authenticate = True;
-	private $uid;
+    public $page_set = 'Plugin :: Calendar';
+    public $description = '[Calendar Plugin] is a simple click to edit shared calendar.';
 
-	function preprocess(){
-		global $FANNIE_URL;
-		$this->uid = ltrim(getUID($this->current_user),"0");
-		$this->title = "Cal";
-		$this->header = "Calendars";
-		
-		$plugin = new CalendarPlugin(); 
-        $this->add_script($FANNIE_URL . 'src/jquery/jquery.js');
-		$this->add_script($plugin->plugin_url().'/javascript/calendar.js');
-		$this->add_script($plugin->plugin_url().'/javascript/ajax.js');
+    protected $must_authenticate = True;
+    private $uid;
 
-		$view = FormLib::get_form_value('view','index');
-		if ($view == 'month') 
-			$this->window_dressing = False;
-		else
-			$this->add_script($FANNIE_URL.'src/CalendarControl.js');
+    function preprocess(){
+        global $FANNIE_URL;
+        $this->uid = ltrim(FannieAuth::getUID($this->current_user),"0");
+        $this->title = "Cal";
+        $this->header = "Calendars";
+        
+        $plugin = new CalendarPlugin(); 
+        $this->add_script($FANNIE_URL . 'src/javascript/jquery.js');
+        $this->add_script($FANNIE_URL . 'src/javascript/jquery-ui.js');
+        $this->add_script($plugin->plugin_url().'/javascript/calendar.js');
+        $this->add_script($plugin->plugin_url().'/javascript/ajax.js');
 
-		if (file_exists(dirname(__FILE__).'/css/'.$view.'.css'))
-			$this->add_css_file($plugin->plugin_url().'/css/'.$view.'.css');
+        $view = FormLib::get_form_value('view','index');
+        if ($view == 'month') 
+            $this->window_dressing = False;
+        else
+            $this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
 
-		return True;
-	}
-	
-	function body_content(){
-		$view = FormLib::get_form_value('view','index');
-		switch ($view){
-		case 'month':
-			$editable = True;
+        if (file_exists(dirname(__FILE__).'/css/'.$view.'.css'))
+            $this->add_css_file($plugin->plugin_url().'/css/'.$view.'.css');
 
-			$year = FormLib::get_form_value('year',date('Y'));
-			$month = FormLib::get_form_value('month',date('n'));
-			$calID = FormLib::get_form_value('calID',0);
+        return True;
+    }
+    
+    function body_content(){
+        $view = FormLib::get_form_value('view','index');
+        switch ($view){
+        case 'month':
+            $editable = True;
 
-			echo CalendarPluginDisplayLib::monthView($calID,$month,$year,$this->uid);
-			break;
+            $year = FormLib::get_form_value('year',date('Y'));
+            $month = FormLib::get_form_value('month',date('n'));
+            $calID = FormLib::get_form_value('calID',0);
+
+            echo CalendarPluginDisplayLib::monthView($calID,$month,$year,$this->uid);
+            break;
         case 'week':
-			$year = FormLib::get_form_value('year',date('Y'));
+            $year = FormLib::get_form_value('year',date('Y'));
             $week = FormLib::get_form_value('week', date('W'));
-			$calID = FormLib::get_form_value('calID',0);
+            $calID = FormLib::get_form_value('calID',0);
             
             if ($calID == 0) {
                 echo CalendarPluginDisplayLib::indexView($this->uid);
@@ -82,25 +86,27 @@ class CalendarMainPage extends FanniePage {
                 $this->add_onload_command('weekBootstrap();');
             }
             break;
-		case 'prefs':
-			$calID = FormLib::get_form_value('calID','');
-			echo CalendarPluginDisplayLib::prefsView($calID,$this->uid);
-			break;
-		case 'overlays':
-			echo CalendarPluginDisplayLib::overlaysView($this->uid);
-			break;
-		case 'showoverlay':
-			$cals = FormLib::get_form_value('cals');
-			$start = FormLib::get_form_value('startdate');
-			$end = FormLib::get_form_value('enddate');
-			echo CalendarPluginDisplayLib::showoverlayView($cals,$startdate,$enddate);
-			break;
-		case 'index':
-		default:
-			echo CalendarPluginDisplayLib::indexView($this->uid);
-			break;
-		}
-	}
+        case 'prefs':
+            $calID = FormLib::get_form_value('calID','');
+            echo CalendarPluginDisplayLib::prefsView($calID,$this->uid);
+            break;
+        case 'overlays':
+            echo CalendarPluginDisplayLib::overlaysView($this->uid);
+            $this->add_onload_command("\$('#startdate').datepicker();\n");
+            $this->add_onload_command("\$('#enddate').datepicker();\n");
+            break;
+        case 'showoverlay':
+            $cals = FormLib::get_form_value('cals');
+            $start = FormLib::get_form_value('startdate');
+            $end = FormLib::get_form_value('enddate');
+            echo CalendarPluginDisplayLib::showoverlayView($cals,$startdate,$enddate);
+            break;
+        case 'index':
+        default:
+            echo CalendarPluginDisplayLib::indexView($this->uid);
+            break;
+        }
+    }
 
 }
 

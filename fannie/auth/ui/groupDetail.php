@@ -24,11 +24,11 @@
 require('../login.php');
 include("../../config.php");
 if (isset($_GET['group'])){
-	$group=$_GET['group'];
-	$groupHeading=" : $group";
+    $group=$_GET['group'];
+    $groupHeading=" : $group";
 } else {
-	$group="";
-	$groupHeading="";
+    $group="";
+    $groupHeading="";
 }
 $page_title = "Fannie : Auth : Group Details$groupHeading";
 $header = "Fannie : Auth : Group Details$groupHeading";
@@ -45,7 +45,7 @@ if (isset($_GET['group'])){
 echo "<form method=get action=groupDetail.php>";
 echo "Group name to view: <select name=group>";
 foreach(getGroupList() as $uid => $name)
-	echo "<option>".$name."</option>";
+    echo "<option>".$name."</option>";
 echo "</select>";
 echo '&nbsp;&nbsp;&nbsp;<input type="submit" value="View" />';
 echo '</form>';

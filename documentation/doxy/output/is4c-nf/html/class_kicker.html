@@ -33,30 +33,37 @@
 <h1>Kicker Class Reference</h1><!-- doxytag: class="Kicker" --><p>Inheritance diagram for Kicker:
 <p><center><img src="class_kicker.png" usemap="#Kicker_map" border="0" alt=""></center>
 <map name="Kicker_map">
-<area href="class_w_f_c___kicker.html" alt="WFC_Kicker" shape="rect" coords="0,56,83,80">
+<area href="class_r_a_f_c___kicker.html" alt="RAFC_Kicker" shape="rect" coords="0,56,89,80">
+<area href="class_w_f_c___kicker.html" alt="WFC_Kicker" shape="rect" coords="99,56,188,80">
+<area href="class_y_p_s_i___kicker.html" alt="YPSI_Kicker" shape="rect" coords="198,56,287,80">
 </map>
 <a href="class_kicker-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
 <tr><td></td></tr>
 <tr><td colspan="2"><br><h2>Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_kicker.html#4e27acbdc55412cf76d00fe65638925b">doKick</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_kicker.html#29c30411aded20e17b0dff3c9c86984a">doKick</a> ($trans_num)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_kicker.html#10825401b32e080a3534886b42f484ea">kickOnSignIn</a> ()</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_kicker.html#60fb82b43e395765beac99230e5c1526">kickOnSignOut</a> ()</td></tr>
+
+<tr><td colspan="2"><br><h2>Protected Member Functions</h2></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="c77c2665be9f358cbc14359ba57248f2"></a><!-- doxytag: member="Kicker::refToWhere" ref="c77c2665be9f358cbc14359ba57248f2" args="($ref)" -->
+&nbsp;</td><td class="memItemRight" valign="bottom"><b>refToWhere</b> ($ref)</td></tr>
 
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
 Base class for opening cash drawer 
 <p>
 <hr><h2>Member Function Documentation</h2>
-<a class="anchor" name="4e27acbdc55412cf76d00fe65638925b"></a><!-- doxytag: member="Kicker::doKick" ref="4e27acbdc55412cf76d00fe65638925b" args="()" -->
+<a class="anchor" name="29c30411aded20e17b0dff3c9c86984a"></a><!-- doxytag: member="Kicker::doKick" ref="29c30411aded20e17b0dff3c9c86984a" args="($trans_num)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">Kicker::doKick           </td>
           <td>(</td>
-          <td class="paramname">          </td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>trans_num</em>          </td>
           <td>&nbsp;)&nbsp;</td>
           <td width="100%"></td>
         </tr>
@@ -65,10 +72,15 @@ Base class for opening cash drawer
 <div class="memdoc">
 
 <p>
-Determine whether to open the drawer <dl compact><dt><b>Returns:</b></dt><dd>boolean </dd></dl>
+Determine whether to open the drawer <dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>$trans_num</em>&nbsp;</td><td>[string] transaction identifier </td></tr>
+  </table>
+</dl>
+<dl compact><dt><b>Returns:</b></dt><dd>boolean </dd></dl>
 
 <p>
-Reimplemented in <a class="el" href="class_w_f_c___kicker.html#b0aad20739887c828121e91e7f90ab4a">WFC_Kicker</a>.
+Reimplemented in <a class="el" href="class_w_f_c___kicker.html#8717c989f3f7e27d9fefb3f985f07f72">WFC_Kicker</a>.
 </div>
 </div><p>
 <a class="anchor" name="10825401b32e080a3534886b42f484ea"></a><!-- doxytag: member="Kicker::kickOnSignIn" ref="10825401b32e080a3534886b42f484ea" args="()" -->
@@ -90,7 +102,7 @@ Reimplemented in <a class="el" href="class_w_f_c___kicker.html#b0aad20739887c828
 Determine whether to open the drawer when a cashier signs in <dl compact><dt><b>Returns:</b></dt><dd>boolean </dd></dl>
 
 <p>
-Reimplemented in <a class="el" href="class_w_f_c___kicker.html#3630510ff7586479bfa3e53b673c693c">WFC_Kicker</a>.
+Reimplemented in <a class="el" href="class_r_a_f_c___kicker.html#4734ea6308f97f6ca5d348a0aad5c7a9">RAFC_Kicker</a>, <a class="el" href="class_w_f_c___kicker.html#3630510ff7586479bfa3e53b673c693c">WFC_Kicker</a>, and <a class="el" href="class_y_p_s_i___kicker.html#e5642ff211ecd823506f34e4865d6d64">YPSI_Kicker</a>.
 </div>
 </div><p>
 <a class="anchor" name="60fb82b43e395765beac99230e5c1526"></a><!-- doxytag: member="Kicker::kickOnSignOut" ref="60fb82b43e395765beac99230e5c1526" args="()" -->
@@ -111,11 +123,13 @@ Reimplemented in <a class="el" href="class_w_f_c___kicker.html#3630510ff7586479b
 <p>
 Determine whether to open the drawer when a cashier signs out <dl compact><dt><b>Returns:</b></dt><dd>boolean </dd></dl>
 
+<p>
+Reimplemented in <a class="el" href="class_r_a_f_c___kicker.html#a431f1c32756ca7c2244d504062f5694">RAFC_Kicker</a>, and <a class="el" href="class_y_p_s_i___kicker.html#f83bdaccaeb6504806b9e70057d428bd">YPSI_Kicker</a>.
 </div>
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/Kickers/Kicker.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

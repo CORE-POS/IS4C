@@ -33,14 +33,14 @@
 <h1>SQLManager Class Reference</h1><!-- doxytag: class="SQLManager" --><a href="class_s_q_l_manager-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
 <tr><td></td></tr>
 <tr><td colspan="2"><br><h2>Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="1d0c34c18a5ccbcb134f1a8829fc943d"></a><!-- doxytag: member="SQLManager::SQLManager" ref="1d0c34c18a5ccbcb134f1a8829fc943d" args="($server, $type, $database, $username, $password='', $persistent=False)" -->
-&nbsp;</td><td class="memItemRight" valign="bottom"><b>SQLManager</b> ($server, $type, $database, $username, $password='', $persistent=False)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="d755b1ee9df94262f3d8dd92b1031b62"></a><!-- doxytag: member="SQLManager::__construct" ref="d755b1ee9df94262f3d8dd92b1031b62" args="($server, $type, $database, $username, $password='', $persistent=false)" -->
+&nbsp;</td><td class="memItemRight" valign="bottom"><b>__construct</b> ($server, $type, $database, $username, $password='', $persistent=false)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="64a91f55ad0a81cb9f894131a111e6aa"></a><!-- doxytag: member="SQLManager::add_connection" ref="64a91f55ad0a81cb9f894131a111e6aa" args="($server, $type, $database, $username, $password='', $persistent=False)" -->
-&nbsp;</td><td class="memItemRight" valign="bottom"><b>add_connection</b> ($server, $type, $database, $username, $password='', $persistent=False)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="0dfc16dca6ac3eb2406a46587e13cb02"></a><!-- doxytag: member="SQLManager::add_connection" ref="0dfc16dca6ac3eb2406a46587e13cb02" args="($server, $type, $database, $username, $password='', $persistent=false)" -->
+&nbsp;</td><td class="memItemRight" valign="bottom"><b>add_connection</b> ($server, $type, $database, $username, $password='', $persistent=false)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="8e574d1f554383d5e017acf31a69f4ff"></a><!-- doxytag: member="SQLManager::connect" ref="8e574d1f554383d5e017acf31a69f4ff" args="($server, $type, $username, $password, $persistent=False, $newlink=False)" -->
-&nbsp;</td><td class="memItemRight" valign="bottom"><b>connect</b> ($server, $type, $username, $password, $persistent=False, $newlink=False)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="3bfdb67a4b41af1f136f44cc7b1b77ad"></a><!-- doxytag: member="SQLManager::connect" ref="3bfdb67a4b41af1f136f44cc7b1b77ad" args="($server, $type, $username, $password, $persistent=false, $newlink=false)" -->
+&nbsp;</td><td class="memItemRight" valign="bottom"><b>connect</b> ($server, $type, $username, $password, $persistent=false, $newlink=false)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="74fabec65d89c9957d39666fe6101fe8"></a><!-- doxytag: member="SQLManager::select_db" ref="74fabec65d89c9957d39666fe6101fe8" args="($db_name, $which_connection='')" -->
 &nbsp;</td><td class="memItemRight" valign="bottom"><b>select_db</b> ($db_name, $which_connection='')</td></tr>
@@ -51,7 +51,15 @@
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="78a9019b520557f737eba35210f821cd"></a><!-- doxytag: member="SQLManager::end_query" ref="78a9019b520557f737eba35210f821cd" args="($result_object, $which_connection='')" -->
 &nbsp;</td><td class="memItemRight" valign="bottom"><b>end_query</b> ($result_object, $which_connection='')</td></tr>
 
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_s_q_l_manager.html#ae5ec9ac87a854435ccd1e75a19ad049">insert_id</a> ($which_connection='')</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="5abae7f0227c9f5a3f7632cc009c4b73"></a><!-- doxytag: member="SQLManager::prepare" ref="5abae7f0227c9f5a3f7632cc009c4b73" args="($query_text, $which_connection='')" -->
+&nbsp;</td><td class="memItemRight" valign="bottom"><b>prepare</b> ($query_text, $which_connection='')</td></tr>
+
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_s_q_l_manager.html#6cc7a030019fe8a5a2f20f41dac69219">prepare_statement</a> ($query_text, $which_connection='')</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="ca74c4cb57fa5272c5450e092ad260f5"></a><!-- doxytag: member="SQLManager::execute" ref="ca74c4cb57fa5272c5450e092ad260f5" args="($stmt, $args=array(), $which_connection='')" -->
+&nbsp;</td><td class="memItemRight" valign="bottom"><b>execute</b> ($stmt, $args=array(), $which_connection='')</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_s_q_l_manager.html#d56878daa8ae93aae276d60f8e6e0e03">exec_statement</a> ($stmt, $args=array(), $which_connection='')</td></tr>
 
@@ -73,9 +81,9 @@
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="2b9406ef24971920c81997b7bc16b1ed"></a><!-- doxytag: member="SQLManager::field_type" ref="2b9406ef24971920c81997b7bc16b1ed" args="($result_object, $index, $which_connection='')" -->
 &nbsp;</td><td class="memItemRight" valign="bottom"><b>field_type</b> ($result_object, $index, $which_connection='')</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_s_q_l_manager.html#916c6bebfed942cf31942980493c7732">close</a> ($which_connection='', $force=False)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_s_q_l_manager.html#eedd18399c8f68dea01086e7d8894f7e">close</a> ($which_connection='', $force=false)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_s_q_l_manager.html#881a9765bab98d0f512e70d8ca674dd5">db_close</a> ($which_connection='', $force=False)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_s_q_l_manager.html#c963606382c75a4c175904b29d97889c">db_close</a> ($which_connection='', $force=false)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_s_q_l_manager.html#debaeb022bb8ec7a278da9d879fbe7f2">start_transaction</a> ($which_connection='')</td></tr>
 
@@ -86,14 +94,21 @@
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="c0e9971268c2d88ab7068495ac98d03e"></a><!-- doxytag: member="SQLManager::test" ref="c0e9971268c2d88ab7068495ac98d03e" args="($which_connection='')" -->
 &nbsp;</td><td class="memItemRight" valign="bottom"><b>test</b> ($which_connection='')</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="1f37bd896333d0ae5c94153644f6cf9b"></a><!-- doxytag: member="SQLManager::transfer" ref="1f37bd896333d0ae5c94153644f6cf9b" args="($source_db, $select_query, $dest_db, $insert_query)" -->
-&nbsp;</td><td class="memItemRight" valign="bottom"><b>transfer</b> ($source_db, $select_query, $dest_db, $insert_query)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_s_q_l_manager.html#1f37bd896333d0ae5c94153644f6cf9b">transfer</a> ($source_db, $select_query, $dest_db, $insert_query)</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="3ab1e38ef2fe735b8dc1c5e9eb500fa9"></a><!-- doxytag: member="SQLManager::safeTransfer" ref="3ab1e38ef2fe735b8dc1c5e9eb500fa9" args="($source_db, $select_query, $select_args, $dest_db, $insert_query)" -->
+&nbsp;</td><td class="memItemRight" valign="bottom"><b>safeTransfer</b> ($source_db, $select_query, $select_args, $dest_db, $insert_query)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="18de16e041cb55068621f9e421d55910"></a><!-- doxytag: member="SQLManager::cleanDateTime" ref="18de16e041cb55068621f9e421d55910" args="($str)" -->
 &nbsp;</td><td class="memItemRight" valign="bottom"><b>cleanDateTime</b> ($str)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="e4627c6b099816af3190aa0279de55af"></a><!-- doxytag: member="SQLManager::table_exists" ref="e4627c6b099816af3190aa0279de55af" args="($table_name, $which_connection='')" -->
 &nbsp;</td><td class="memItemRight" valign="bottom"><b>table_exists</b> ($table_name, $which_connection='')</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="9cac4925dbe56971308fc33f10399c6b"></a><!-- doxytag: member="SQLManager::isView" ref="9cac4925dbe56971308fc33f10399c6b" args="($table_name, $which_connection='')" -->
+&nbsp;</td><td class="memItemRight" valign="bottom"><b>isView</b> ($table_name, $which_connection='')</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_s_q_l_manager.html#602ee5cf2fb4f5c54aa68df7c25a348f">getViewDefinition</a> ($view_name, $which_connection='')</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="616ae881299f1ffa830cd9953c421027"></a><!-- doxytag: member="SQLManager::table_definition" ref="616ae881299f1ffa830cd9953c421027" args="($table_name, $which_connection='')" -->
 &nbsp;</td><td class="memItemRight" valign="bottom"><b>table_definition</b> ($table_name, $which_connection='')</td></tr>
@@ -110,6 +125,9 @@
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="dc9a01ba24623101120af4ea60b5d4de"></a><!-- doxytag: member="SQLManager::now" ref="dc9a01ba24623101120af4ea60b5d4de" args="($which_connection='')" -->
 &nbsp;</td><td class="memItemRight" valign="bottom"><b>now</b> ($which_connection='')</td></tr>
 
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="d8b3472bfb6b1fabc9c71ab618f90887"></a><!-- doxytag: member="SQLManager::curdate" ref="d8b3472bfb6b1fabc9c71ab618f90887" args="($which_connection='')" -->
+&nbsp;</td><td class="memItemRight" valign="bottom"><b>curdate</b> ($which_connection='')</td></tr>
+
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="b049e9b8c8bbfa934be8b9281986fe3f"></a><!-- doxytag: member="SQLManager::dayofweek" ref="b049e9b8c8bbfa934be8b9281986fe3f" args="($col, $which_connection='')" -->
 &nbsp;</td><td class="memItemRight" valign="bottom"><b>dayofweek</b> ($col, $which_connection='')</td></tr>
 
@@ -125,6 +143,9 @@
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="49398253a5522486910f33edd5da52dd"></a><!-- doxytag: member="SQLManager::sep" ref="49398253a5522486910f33edd5da52dd" args="($which_connection='')" -->
 &nbsp;</td><td class="memItemRight" valign="bottom"><b>sep</b> ($which_connection='')</td></tr>
 
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="c0583e9cef6a241bfc9fa48e3ac7d90c"></a><!-- doxytag: member="SQLManager::dbms_name" ref="c0583e9cef6a241bfc9fa48e3ac7d90c" args="($which_connection='')" -->
+&nbsp;</td><td class="memItemRight" valign="bottom"><b>dbms_name</b> ($which_connection='')</td></tr>
+
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="ed5ecfcaaa433954d095caa67df1147b"></a><!-- doxytag: member="SQLManager::error" ref="ed5ecfcaaa433954d095caa67df1147b" args="($which_connection='')" -->
 &nbsp;</td><td class="memItemRight" valign="bottom"><b>error</b> ($which_connection='')</td></tr>
 
@@ -132,11 +153,15 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_s_q_l_manager.html#85bcd567f6ccb7711baa20d91282caf6">convert</a> ($expr, $type, $which_connection='')</td></tr>
 
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_s_q_l_manager.html#7932a73130512cb02a049ba3f3c89c0c">addSelectLimit</a> ($query, $int_limit, $which_connection='')</td></tr>
+
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="cc0f5bfb33cf2691121846beaee2ca91"></a><!-- doxytag: member="SQLManager::setTestData" ref="cc0f5bfb33cf2691121846beaee2ca91" args="($records)" -->
 &nbsp;</td><td class="memItemRight" valign="bottom"><b>setTestData</b> ($records)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="bc4596c68890fe3c52b0404b7e1a7908"></a><!-- doxytag: member="SQLManager::getTestDataRow" ref="bc4596c68890fe3c52b0404b7e1a7908" args="()" -->
 &nbsp;</td><td class="memItemRight" valign="bottom"><b>getTestDataRow</b> ()</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_s_q_l_manager.html#e88d0539bd2d7d775843f476c300fd13">logger</a> ($str)</td></tr>
 
 <tr><td colspan="2"><br><h2>Static Public Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_s_q_l_manager.html#3b0453df893e8d0764d50e1ae3230e44">sqlite_right</a> ($str, $num)</td></tr>
@@ -157,34 +182,55 @@ static&nbsp;</td><td class="memItemRight" valign="bottom"><b>sqlite_replace</b> 
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="37e44e03db3aae8c67a12768c57bb14f"></a><!-- doxytag: member="SQLManager::$default_db" ref="37e44e03db3aae8c67a12768c57bb14f" args="" -->
 &nbsp;</td><td class="memItemRight" valign="bottom"><b>$default_db</b></td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="953a8506dd2c3c6d473118fefaec142c"></a><!-- doxytag: member="SQLManager::$TYPE_MYSQL" ref="953a8506dd2c3c6d473118fefaec142c" args="" -->
-&nbsp;</td><td class="memItemRight" valign="bottom"><b>$TYPE_MYSQL</b> = 'MYSQL'</td></tr>
-
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="0b2bff2d8e85373c3adb3d7d12783f9b"></a><!-- doxytag: member="SQLManager::$TYPE_MSSQL" ref="0b2bff2d8e85373c3adb3d7d12783f9b" args="" -->
-&nbsp;</td><td class="memItemRight" valign="bottom"><b>$TYPE_MSSQL</b> = 'MSSQL'</td></tr>
-
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="97e25f1da7f4ab03347202b0b1585bcb"></a><!-- doxytag: member="SQLManager::$TYPE_PGSQL" ref="97e25f1da7f4ab03347202b0b1585bcb" args="" -->
-&nbsp;</td><td class="memItemRight" valign="bottom"><b>$TYPE_PGSQL</b> = 'PGSQL'</td></tr>
-
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="f2922bbc6ed525034315f6d466ed9f19"></a><!-- doxytag: member="SQLManager::$TYPE_PDOMY" ref="f2922bbc6ed525034315f6d466ed9f19" args="" -->
-&nbsp;</td><td class="memItemRight" valign="bottom"><b>$TYPE_PDOMY</b> = 'PDOMYSQL'</td></tr>
-
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="f126f9c5263ac42a869b8d9386fc9158"></a><!-- doxytag: member="SQLManager::$TYPE_PDOMS" ref="f126f9c5263ac42a869b8d9386fc9158" args="" -->
-&nbsp;</td><td class="memItemRight" valign="bottom"><b>$TYPE_PDOMS</b> = 'PDOMSSQL'</td></tr>
-
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="3d086612a62f1fe5ec5ad89d0f18911c"></a><!-- doxytag: member="SQLManager::$TYPE_PDOPG" ref="3d086612a62f1fe5ec5ad89d0f18911c" args="" -->
-&nbsp;</td><td class="memItemRight" valign="bottom"><b>$TYPE_PDOPG</b> = 'PDOPGSQL'</td></tr>
-
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="bff73ddc2d5f3cc0a9e99e86d96efedb"></a><!-- doxytag: member="SQLManager::$TYPE_PDOSL" ref="bff73ddc2d5f3cc0a9e99e86d96efedb" args="" -->
-&nbsp;</td><td class="memItemRight" valign="bottom"><b>$TYPE_PDOSL</b> = 'PDOLITE'</td></tr>
-
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
 Custom abstraction layer for SQL<p>
 Please see Fannie. It's the same class and tons of documentation to reproduce here. 
 <p>
 <hr><h2>Member Function Documentation</h2>
-<a class="anchor" name="916c6bebfed942cf31942980493c7732"></a><!-- doxytag: member="SQLManager::close" ref="916c6bebfed942cf31942980493c7732" args="($which_connection='', $force=False)" -->
+<a class="anchor" name="7932a73130512cb02a049ba3f3c89c0c"></a><!-- doxytag: member="SQLManager::addSelectLimit" ref="7932a73130512cb02a049ba3f3c89c0c" args="($query, $int_limit, $which_connection='')" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">SQLManager::addSelectLimit           </td>
+          <td>(</td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>query</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>int_limit</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>which_connection</em> = <code>''</code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Add row limit to a select query <dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>$query</em>&nbsp;</td><td>The select query </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$int_limit</em>&nbsp;</td><td>Max rows </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>which_connection</em>&nbsp;</td><td>see method close</td></tr>
+  </table>
+</dl>
+This method currently only suport MySQL and MSSQL 
+</div>
+</div><p>
+<a class="anchor" name="eedd18399c8f68dea01086e7d8894f7e"></a><!-- doxytag: member="SQLManager::close" ref="eedd18399c8f68dea01086e7d8894f7e" args="($which_connection='', $force=false)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -198,7 +244,7 @@ Please see Fannie. It's the same class and tons of documentation to reproduce he
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">$&nbsp;</td>
-          <td class="paramname"> <em>force</em> = <code>False</code></td><td>&nbsp;</td>
+          <td class="paramname"> <em>force</em> = <code>false</code></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -295,14 +341,14 @@ Get a SQL convert function <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>$expr</em>&nbsp;</td><td>An SQL expression </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>$type</em>&nbsp;</td><td>Convert to this SQL type </td></tr>
-    <tr><td valign="top"></td><td valign="top"><em>$which_connection</em>&nbsp;</td><td>see method <a class="el" href="class_s_q_l_manager.html#916c6bebfed942cf31942980493c7732">close()</a> </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$which_connection</em>&nbsp;</td><td>see method <a class="el" href="class_s_q_l_manager.html#eedd18399c8f68dea01086e7d8894f7e">close()</a> </td></tr>
   </table>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>The SQL expression</dd></dl>
 This method currently only supports MySQL and MSSQL 
 </div>
 </div><p>
-<a class="anchor" name="881a9765bab98d0f512e70d8ca674dd5"></a><!-- doxytag: member="SQLManager::db_close" ref="881a9765bab98d0f512e70d8ca674dd5" args="($which_connection='', $force=False)" -->
+<a class="anchor" name="c963606382c75a4c175904b29d97889c"></a><!-- doxytag: member="SQLManager::db_close" ref="c963606382c75a4c175904b29d97889c" args="($which_connection='', $force=false)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -316,7 +362,7 @@ This method currently only supports MySQL and MSSQL
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">$&nbsp;</td>
-          <td class="paramname"> <em>force</em> = <code>False</code></td><td>&nbsp;</td>
+          <td class="paramname"> <em>force</em> = <code>false</code></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -328,7 +374,7 @@ This method currently only supports MySQL and MSSQL
 <div class="memdoc">
 
 <p>
-Temporary compatibility solution. Will go away once <a class="el" href="class_s_q_l_manager.html#881a9765bab98d0f512e70d8ca674dd5">db_close()</a> calls are gone in all branches 
+Temporary compatibility solution. Will go away once <a class="el" href="class_s_q_l_manager.html#c963606382c75a4c175904b29d97889c">db_close()</a> calls are gone in all branches 
 </div>
 </div><p>
 <a class="anchor" name="d56878daa8ae93aae276d60f8e6e0e03"></a><!-- doxytag: member="SQLManager::exec_statement" ref="d56878daa8ae93aae276d60f8e6e0e03" args="($stmt, $args=array(), $which_connection='')" -->
@@ -364,6 +410,89 @@ Temporary compatibility solution. Will go away once <a class="el" href="class_s_
 
 <p>
 execute statement: exec is emulated for non-PDO types 
+</div>
+</div><p>
+<a class="anchor" name="602ee5cf2fb4f5c54aa68df7c25a348f"></a><!-- doxytag: member="SQLManager::getViewDefinition" ref="602ee5cf2fb4f5c54aa68df7c25a348f" args="($view_name, $which_connection='')" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">SQLManager::getViewDefinition           </td>
+          <td>(</td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>view_name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>which_connection</em> = <code>''</code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get SQL definition of a view <dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>$view_name</em>&nbsp;</td><td>string name </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$which_connection</em>&nbsp;</td><td>[optional] </td></tr>
+  </table>
+</dl>
+<dl compact><dt><b>Returns:</b></dt><dd>[string] SQL statement or [boolean] false </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="ae5ec9ac87a854435ccd1e75a19ad049"></a><!-- doxytag: member="SQLManager::insert_id" ref="ae5ec9ac87a854435ccd1e75a19ad049" args="($which_connection='')" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">SQLManager::insert_id           </td>
+          <td>(</td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>which_connection</em> = <code>''</code>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get last insert ID <dl compact><dt><b>Returns:</b></dt><dd>[integer] last ID </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="e88d0539bd2d7d775843f476c300fd13"></a><!-- doxytag: member="SQLManager::logger" ref="e88d0539bd2d7d775843f476c300fd13" args="($str)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">SQLManager::logger           </td>
+          <td>(</td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>str</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Log a string to the query log. <dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>$str</em>&nbsp;</td><td>The string </td></tr>
+  </table>
+</dl>
+<dl compact><dt><b>Returns:</b></dt><dd>A True on success, False on failure </dd></dl>
+
 </div>
 </div><p>
 <a class="anchor" name="6cc7a030019fe8a5a2f20f41dac69219"></a><!-- doxytag: member="SQLManager::prepare_statement" ref="6cc7a030019fe8a5a2f20f41dac69219" args="($query_text, $which_connection='')" -->
@@ -464,9 +593,50 @@ Supplementary functionality that SQLite doesn't have natively
 Start a SQL transaction Nexted transactions not supported on MSSQL 
 </div>
 </div><p>
+<a class="anchor" name="1f37bd896333d0ae5c94153644f6cf9b"></a><!-- doxytag: member="SQLManager::transfer" ref="1f37bd896333d0ae5c94153644f6cf9b" args="($source_db, $select_query, $dest_db, $insert_query)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">SQLManager::transfer           </td>
+          <td>(</td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>source_db</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>select_query</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>dest_db</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>insert_query</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/SQLManager.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

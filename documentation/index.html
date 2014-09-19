@@ -21,6 +21,10 @@
 Rudimentary ToC to /IS4C/documentation
 </br>and links to some <a href="#other">other</a> resources
 <!--
+.3Jun14 AT Added Advanced Pricing section
+17May14 EL Plugin links up to date.
+12Mar14 EL magic-docs for lane; remove duplicated chunks.
+18Jan14 EL Wedge's keyboard reference, updated.
 .5Dec13 AT End-user Authentication doc
 .3Dec13 AT Revised vendors section
 10Apr13 AT Removed dead Tender Reports link; now in lane API section
@@ -32,7 +36,7 @@ Rudimentary ToC to /IS4C/documentation
 20Oct12 EL Add Fannie > End User > House Coupons section and link to explainify.
 .          In Fannie > Dev add links to Auth API, Auth README
 -->
-<br />as of: Dec 5, 2013
+<br />as of: May 17, 2014
 </div>
 
 <p>You are here: Documentation Top
@@ -61,9 +65,11 @@ Rudimentary ToC to /IS4C/documentation
 	</br>Configuration and Development.  See IT below for installation and maintenance.
 	</br>You should be familiar with the IT materials before developing.
 	<br />Much of the following is also at the Techhub wiki: <a href="http://techhub.coop/media/index.php?title=Fannie_4_Developers" target="_Fannie_th_wiki">Fannie 4 Developers</a>
+		<!-- Fannie developer menu { -->
 		<ul>
 			<li><a href="Fannie/developer/index.html" target="_Fdev">Developer Menu</a>
 				<ul>
+                    <li><a href="coding-standards.html" target="_Fd_coding">Coding Standards &amp; Style Guide</a></li>
 					<li><a href="Fannie/developer/installation.html" target="_Fd_installation">Installation</a>
 						<ul id="" class="detail">
 							<li>Pre-requisites</li>
@@ -85,6 +91,11 @@ Rudimentary ToC to /IS4C/documentation
 						</ul>
 					</li>
 					<li><a href="Fannie/developer/plugins/index.html" target="_Fplugindev">Plugin Developer</a>
+						<ul id="" class="detail">
+							<li>Defining a Plugin</li>
+							<li>Creating a Page</li>
+							<li>Database Best Practices</li>
+						</ul>
 					</li>
 					<li><a href="Fannie/developer/porting.html" target="_Fplugindev">Porting from other versions of Fannie</a>
 					</li>
@@ -106,6 +117,9 @@ Rudimentary ToC to /IS4C/documentation
 								<li>Tying it all together</li>
 								<li>Installation</li>
 								<li>Drawbacks and/or Gotchas</li>
+								<li><a href="Fannie/end-user/auth-classes.html" target="_Fd_authc">auth classes</a>
+								- List of scripts that require specific authorizations if authentication is enabled.
+								<br />Apparently doesn't exist, or if it does, this isn't it.</li>
 							</ul>
 							<ul id="">
 								<li><a href="../fannie/auth/doc/index.html" target="_Fd_auth_api_doc">Auth Module API Documentation</a>
@@ -139,95 +153,20 @@ Rudimentary ToC to /IS4C/documentation
 								<li>[Using the install/updates directory</li>
 							</ul>
 						</li>
-						<li><a href="../fannie/install/sql/magic-doc.php" target="_Fd_agdd">Auto-Generated Database Documentation</a>
+						<li><a href="../fannie/install/sql/magic-doc.php"
+									target="_Fd_agdd">Auto-Generated Fannie Database Documentation</a>
 							<ul id="" class="detail">
 								<li>Links to per-table Help</li>
 								<li>core_op</li>
 								<li>core_trans</li>
 							</ul>
 						</li>
-						</ul>
+					</ul>
 					</li>
 				</li>
-				<li><a href="Fannie/end-user/index.html" target="_Fend-user">end-user</a>
-					<ul>
-
-					<li><a href="Fannie/end-user/data-loading.html" target="_Fe_dl">Data Loading</a>
-						<ul id="" class="detail">
-							<li>Members</li>
-							<li>Employees</li>
-							<li>Tenders</li>
-							<li>Tax Rates</li>
-						</ul>
-					</li>
-					<li><a href="Fannie/end-user/departments.html" target="_Fe_departments">Departments</a>
-						<ul id="" class="detail">
-							<li>Departments</li>
-							<li>Super Departments</li>
-							<li>Sub Departments</li>
-						</ul>
-					</li>
-					<li>House Coupons
-						<ul id="">
-							<li><a href="../fannie/modules/plugins2.0/HouseCoupon/explainify.html" target="_Fe_hc_explain">Explanation of terms and options</a>
-								<ul id="" class="detail">
-									<li>Simple ones</li>
-									<li>Required Purchases</li>
-									<li>Disount Types</li>
-								</ul>
-							</li>
-						</ul>
-					</li>
-
-					<li><a href="Fannie/end-user/members.html" target="_Fe_members">Members</a>
-						<ul id="" class="detail">
-							<li>Membership Types</li>
-							<li>Membership-related Settings</li>
-							<li><a href="Fannie/end-user/auth-classes.html" target="_Fd_authc">auth classes</a>
-									- List of scripts that require specific authorizations if authentication is enabled.</li>
-						</ul>
-					</li>
-					<li><a href="Fannie/developer/cron.html" target="_Fd_cron">Scheduled Tasks (cron jobs)</a></li>
-						<ul id="" class="detail">
-							<li>[Overview]</li>
-							<li>Example</li>
-						</ul>
-					</li>
-					<li><a href="Fannie/end-user/auth-classes.html" target="_Fd_auth">User Authentication</a></li>
-						<ul id="" class="detail">
-							<li>[Overview]</li>
-							<li>Permissions</li>
-							<li>Groups</li>
-							<li>Common Roles</li>
-						</ul>
-					</li>
-					<li><a href="Fannie/developer/db-creation.html" target="_Fd_dbc">Creating Tables and Views</a>
-						<ul id="" class="detail">
-							<li>[It is done in install/index.php]</li>
-						</ul>
-					</li>
-					<li><a href="Fannie/developer/db-alteration.html" target="_Fd_dba">Altering Tables and Views</a>
-						<ul id="" class="detail">
-							<li>[Using the install/updates directory</li>
-						</ul>
-					</li>
-					<li><a href="../fannie/install/sql/magic-doc.php" target="_Fd_agdd">Auto-Generated Database Documentation</a>
-						<ul id="" class="detail">
-							<li>Links to per-table Help</li>
-							<li>core_op</li>
-							<li>core_trans</li>
-						</ul>
-					</li>
-					<li><a href="Fannie/developer/get-going.html" target="_Fd_gg">Dive In</a>
-						<ul id="" class="detail">
-							<li>Grab the config</li>
-							<li>Need a database connection?</li>
-							<li>Want a skin?</li>
-						</ul>
-					</li>
-				</ul>
-			</li>
-			<li><a href="Fannie/end-user/index.html" target="_Fend-user">end-user</a>
+			</ul><!-- /Fannie developer menu } -->
+			<!-- Fannie end-user menu { -->
+			<li><a href="Fannie/end-user/index.html" target="_Fend-user">Fannie End-user (Administrator) Menu</a>
 				<ul>
 
 					<li><a href="Fannie/end-user/data-loading.html" target="_Fe_dl">Data Loading</a>
@@ -247,7 +186,8 @@ Rudimentary ToC to /IS4C/documentation
 					</li>
 					<li>House Coupons
 						<ul id="">
-							<li><a href="../fannie/modules/plugins2.0/HouseCoupon/explainify.html" target="_Fe_hc_explain">Explanation of terms and options</a>
+							<li><a href="../fannie/modules/plugins2.0/HouseCoupon/explainify.html"
+										target="_Fe_hc_explain">Explanation of terms and options</a>
 								<ul id="" class="detail">
 									<li>Simple ones</li>
 									<li>Required Purchases</li>
@@ -288,7 +228,11 @@ Rudimentary ToC to /IS4C/documentation
 							<li>How do I pull price updates from a spreadsheet my vendor sent?</li>
 						</ul>
 					</li>
-
+					<li><a href="Fannie/end-user/advanced-pricing.html" target="_Fe_adv_pricing">Advanced Pricing</a>
+						<ul id="" class="detail">
+                            <li>Complex pricing options not available through the user interface</li>
+                        </ul>
+                    </li>
 					<li><a href="Fannie/end-user/batches.html" target="_Fe_batches">Sale Batches</a>
 						<ul id="" class="detail">
 							<li>Batch Types</li>
@@ -316,15 +260,26 @@ Rudimentary ToC to /IS4C/documentation
 							<li>Mass updating retail prices from vendor info</li>
 						</ul>
 					</li>
+
+					<li><a href="Fannie/end-user/auth-classes.html" target="_Fe_auth">User Authentication</a></li>
+						<ul id="" class="detail">
+							<li>[Overview]</li>
+							<li>Permissions</li>
+							<li>Groups</li>
+							<li>Common Roles</li>
+						</ul>
+					</li>
 				</ul>
 			</li>
-		</ul>
+		</ul><!-- /Fannie end-user } -->
 	</li>
 
-	<li><a name="IS4C" href="IS4C/index.html" target="_IS4C"><span class="major">IS4C</span></a> i.e. the lane or actual Point of Sale
+	<li><a name="IS4C" href="IS4C/index.html" target="_IS4C"><span class="major">IS4C</span></a>
+	i.e. the lane or actual Point of Sale
 		<ul>
-			<li><a href="IS4C/developer/index.html" target="_ISdev">developer</a>
+			<li><a href="IS4C/developer/index.html" target="_ISdev">Developer Menu</a>
 				<ul>
+                    <li><a href="coding-standards.html" target="_IS_coding">Coding Standards &amp; Style Guide</a></li>
 					<li><a href="IS4C/developer/installation.html" target="_ISd_installation">Installation</a></li>
 					<li><a href="IS4C/developer/api/index.html" target="_ISd_api">Module API</a></li>
 					<li><a href="IS4C/developer/framework.html" target="_ISd_framework">Framework</a>
@@ -335,7 +290,6 @@ Rudimentary ToC to /IS4C/documentation
 							<li>Modular Paycards</li>
 							<li>Hardware Flexibility</li>
 							<li>Database Best Practices</li>
-							<li>Plugin System</li>
 						</ul>
 					</li>
 					<li><a href="IS4C/developer/get-going.html" target="_ISd_gg">Dive In - another ToC to this list</a></li>
@@ -403,19 +357,28 @@ Rudimentary ToC to /IS4C/documentation
 							<li>Putting a collection of related POS modules in a self-contained, distributable package</li>
 						</ul>
 					</li>
+					<li><a href="IS4C/keyboard.php" target="_ISd_kbd">PoS keyboard commands</a>
+					</br>Calls the doc() methods of keyboard command handlers.
+					</li>
+					<li><a href="../pos/is4c-nf/install/sql/magic-doc.php"
+								target="_ISd_agdd">Auto-Generated IS4C Database Documentation</a>
+						<ul id="" class="detail">
+							<li>Links to per-table Help</li>
+							<li>opdata</li>
+							<li>translog</li>
+						</ul>
+					</li>
 				</ul>
 			</li>
-			<li><a href="IS4C/end-user/index.html" target="_ISend-user">end-user</a> i.e. Front-end or Cashier
+			<li><a href="IS4C/end-user/index.html" target="_ISend-user">IS4C End-user Menu</a> i.e. Front-end or Cashier
 			<br />Much of the following is also at the Techhub wiki: <a href="http://techhub.coop/media/index.php?title=Point_of_Sale_4_Users" target="_Lane_th_wiki">Point of Sale 4 Users</a>
 				<ul>
 					<li><a href="IS4C/end-user/basics.html" target="_ISe_basics">basics</a></li>
 					<li><a href="IS4C/end-user/commands.html" target="_ISe_commands">commands</a></li>
+					<li><a href="IS4C/end-user/keyboard.html" target="_ISe_keyboard">keyboard commands</a></li>
 					<li><a href="IS4C/end-user/configuration.html" target="_ISe_configuration">configuration</a></li>
 					<li><a href="IS4C/end-user/installation.html" target="_ISe_installation">installation</a></li>
 				</ul>
-			</li>
-			<li><a href="IS4C/keyboard.php" target="_ISkbd">PoS keyboard commands</a>
-			</br>Calls the doc() methods of keyboard command handlers.
 			</li>
 		</ul>
 	</li>

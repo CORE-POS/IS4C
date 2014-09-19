@@ -42,8 +42,19 @@ class NeedDiscountParser extends Parser {
         	// $NBDupc = substr(strtoupper(str_replace(' ','',$CORE_LOCAL->get('needBasedName'))),0,13);
         	$NBDupc = "NEEDBASEDDISC";
         	$NBDname = $CORE_LOCAL->get('needBasedName');
-        	TransRecord::addItem("$NBDupc", "$NBDname", "I", "IC", "C", 0, 1, 
-            		-1*$NBDisc, -1*$NBDisc, -1*$NBDisc, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 29);
+        	TransRecord::addRecord(array(
+                'upc' => $NBDupc, 
+                'description' => $NBDname, 
+                'trans_type' => "I", 
+                'trans_subtype' => "IC", 
+                'trans_status' => "C", 
+                'quantity' => 1, 
+                'ItemQtty' => 1, 
+                'unitPrice' => -1*$NBDisc,
+                'total' => -1*$NBDisc,
+                'regPrice' => -1*$NBDisc,
+                'voided' => 29
+            ));
         	$ret['output'] = DisplayLib::lastpage();
         	$ret['redraw_footer'] = True;
         	return $ret;

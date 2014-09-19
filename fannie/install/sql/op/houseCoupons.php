@@ -3,18 +3,20 @@
 Table: houseCoupons
 
 Columns:
-	coupID int
-	endDate datetime
-	limit smallint
-	memberOnly smallint
-	discountType varchar
-	discountValue double
-	minType varchar
-	minValue double
-	department int
+    coupID int
+    description varchar
+    startDate datetime
+    endDate datetime
+    limit smallint
+    memberOnly smallint
+    discountType varchar
+    discountValue double
+    minType varchar
+    minValue double
+    department int
 
 Depends on:
-	houseCouponItems
+    houseCouponItems
 
 Use:
 WFC runs custom barcoded coupons with
@@ -22,6 +24,8 @@ upc prefix 499999, then the coupon ID
 (zero padded to 5 digits). There's a
 tool in legacy for putting these together
 that may eventually make it into fannie.
+
+startDate is the first day the coupon is valid
 
 endDate is the last day the coupon is valid
 
@@ -100,19 +104,21 @@ The nuts and bolts of this are in
 the UPC.php parser module (IT CORE).
 */
 $CREATE['op.houseCoupons'] = "
-	CREATE TABLE houseCoupons (
-		coupID int,
-		endDate datetime,
-		`limit` smallint,
-		memberOnly smallint,
-		discountType varchar(2),
-		discountValue double,
-		minType varchar(2),
-		minValue double,
-		department int,
-		PRIMARY KEY (coupID)
-	)
+    CREATE TABLE houseCoupons (
+        coupID int,
+        description VARCHAR(30),
+        startDate DATETIME,
+        endDate datetime,
+        `limit` smallint,
+        memberOnly smallint,
+        discountType varchar(2),
+        discountValue double,
+        minType varchar(2),
+        minValue double,
+        department int,
+        PRIMARY KEY (coupID)
+    )
 ";
 if ($dbms == "MSSQL")
-	$CREATE['op.houseCoupons'] = str_replace("`","",$CREATE['op.houseCoupons']);
+    $CREATE['op.houseCoupons'] = str_replace("`","",$CREATE['op.houseCoupons']);
 ?>

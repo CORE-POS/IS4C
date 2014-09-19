@@ -87,7 +87,6 @@ trans_subtype refines the record's type. Values include
 	(tender code) => goes with trans_type 'T',
 			 exact values depends what's
 			 in core_op.tenders
-	0 => no refinement available for this trans_type
 	blank => no refinement available for this trans_type
 
 trans_status is a fairly all-purpose indicator. Values include
@@ -99,7 +98,6 @@ trans_status is a fairly all-purpose indicator. Values include
 	M => this line is a member special discount
 	C => this line is a coupon
 	Z => this item was damaged, not sold (WFC)
-	0 => no particular meaning
 	blank => no particular meaning
 
 department is set for a UPC item, an open-department ring,

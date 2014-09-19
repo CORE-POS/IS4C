@@ -36,7 +36,7 @@ class MonthviewEventsModel extends BasicModel
     'eventText' => array('type'=>'TEXT'),
     'uid' => array('type'=>'INT'),
     'attendeeLimit' => array('type'=>'SMALLINT', 'default'=>0),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -50,6 +50,22 @@ class MonthviewEventsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'eventID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["eventID"]) || $this->instance["eventID"] != func_get_args(0)) {
                 if (!isset($this->columns["eventID"]["ignore_updates"]) || $this->columns["eventID"]["ignore_updates"] == false) {
@@ -58,6 +74,7 @@ class MonthviewEventsModel extends BasicModel
             }
             $this->instance["eventID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function calendarID()
@@ -70,6 +87,22 @@ class MonthviewEventsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'calendarID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["calendarID"]) || $this->instance["calendarID"] != func_get_args(0)) {
                 if (!isset($this->columns["calendarID"]["ignore_updates"]) || $this->columns["calendarID"]["ignore_updates"] == false) {
@@ -78,6 +111,7 @@ class MonthviewEventsModel extends BasicModel
             }
             $this->instance["calendarID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function eventDate()
@@ -90,6 +124,22 @@ class MonthviewEventsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'eventDate',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["eventDate"]) || $this->instance["eventDate"] != func_get_args(0)) {
                 if (!isset($this->columns["eventDate"]["ignore_updates"]) || $this->columns["eventDate"]["ignore_updates"] == false) {
@@ -98,6 +148,7 @@ class MonthviewEventsModel extends BasicModel
             }
             $this->instance["eventDate"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function eventText()
@@ -110,6 +161,22 @@ class MonthviewEventsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'eventText',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["eventText"]) || $this->instance["eventText"] != func_get_args(0)) {
                 if (!isset($this->columns["eventText"]["ignore_updates"]) || $this->columns["eventText"]["ignore_updates"] == false) {
@@ -118,6 +185,7 @@ class MonthviewEventsModel extends BasicModel
             }
             $this->instance["eventText"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function uid()
@@ -130,6 +198,22 @@ class MonthviewEventsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'uid',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["uid"]) || $this->instance["uid"] != func_get_args(0)) {
                 if (!isset($this->columns["uid"]["ignore_updates"]) || $this->columns["uid"]["ignore_updates"] == false) {
@@ -138,6 +222,7 @@ class MonthviewEventsModel extends BasicModel
             }
             $this->instance["uid"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function attendeeLimit()
@@ -150,6 +235,22 @@ class MonthviewEventsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'attendeeLimit',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["attendeeLimit"]) || $this->instance["attendeeLimit"] != func_get_args(0)) {
                 if (!isset($this->columns["attendeeLimit"]["ignore_updates"]) || $this->columns["attendeeLimit"]["ignore_updates"] == false) {
@@ -158,6 +259,7 @@ class MonthviewEventsModel extends BasicModel
             }
             $this->instance["attendeeLimit"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

@@ -145,8 +145,8 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
         $prodUpdateR = $dbc->execute($prodUpdateP, $args);
        
         $chkP = $dbc->prepare("SELECT modified,price FROM
-			prodPriceHistory WHERE upc=?
-			ORDER BY modified DESC");
+            prodPriceHistory WHERE upc=?
+            ORDER BY modified DESC");
         $upc = null;
         $prevPrice = null;
         $update = new ProdUpdateModel($dbc); 
@@ -208,8 +208,8 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
         $prodUpdateR = $dbc->execute($prodUpdateP, $args);
        
         $chkP = $dbc->prepare("SELECT modified,dept_ID FROM
-			prodDepartmentHistory WHERE upc=?
-			ORDER BY modified DESC");
+            prodDepartmentHistory WHERE upc=?
+            ORDER BY modified DESC");
         $upc = null;
         $prevDept = null;
         $update = new ProdUpdateModel($dbc); 

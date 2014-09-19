@@ -27,7 +27,7 @@ class CCMenu extends PreParser {
 	function check($str){
 		global $CORE_LOCAL;
 		if ($str == "CC"){
-			$this->remainder = "QM1";
+//			$this->remainder = "QM1";
 			return True;
 		}
 		elseif ($str == "MANUALCC"){

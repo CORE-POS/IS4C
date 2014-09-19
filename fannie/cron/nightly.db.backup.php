@@ -25,6 +25,9 @@
 
    nightly.db.backup.php
 
+   DEPRECATED: Use SimpleBackup plugin for
+   similar functionality if needed
+
    Backup MySQL database based
    on configuration settings
 */
@@ -37,36 +40,36 @@ set_time_limit(0);
 $dbs = array($FANNIE_OP_DB,$FANNIE_TRANS_DB,$FANNIE_ARCHIVE_DB);
 
 foreach($dbs as $db){
-	$path = realpath($FANNIE_BACKUP_PATH);
-	$dir = $path."/".$db;
-	if (!is_dir($dir)) 
-		mkdir($dir);
+    $path = realpath($FANNIE_BACKUP_PATH);
+    $dir = $path."/".$db;
+    if (!is_dir($dir)) 
+        mkdir($dir);
 
-	/* sort backups in descending order, remove
-	   old ones from the end of the array */
-	$files = scandir($dir,1);
-	array_pop($files); // . directory
-	array_pop($files); // .. directory
-	$num = count($files);
-	while($num >= $FANNIE_BACKUP_NUM){
-		if (is_file(realpath($dir."/".$files[$num-1]))){
-			unlink($dir."/".$files[$num-1]);
-		}
-		$num--;
-	}
+    /* sort backups in descending order, remove
+       old ones from the end of the array */
+    $files = scandir($dir,1);
+    array_pop($files); // . directory
+    array_pop($files); // .. directory
+    $num = count($files);
+    while($num >= $FANNIE_BACKUP_NUM){
+        if (is_file(realpath($dir."/".$files[$num-1]))){
+            unlink($dir."/".$files[$num-1]);
+        }
+        $num--;
+    }
 
-	$cmd = realpath($FANNIE_BACKUP_BIN."/mysqldump");
-	$cmd .= " -q --databases -h \"$FANNIE_SERVER\" -u \"$FANNIE_SERVER_USER\" -p\"$FANNIE_SERVER_PW\" \"$db\"";
-	$cmd = escapeshellcmd($cmd);
-	if ($FANNIE_BACKUP_GZIP)
-		$cmd .= " | ".escapeshellcmd(realpath($FANNIE_BACKUP_BIN."/gzip"));
-	
-	$outfile = $dir."/".$db.date("Ymd").".sql";
-	if ($FANNIE_BACKUP_GZIP) $outfile .= ".gz";
+    $cmd = realpath($FANNIE_BACKUP_BIN."/mysqldump");
+    $cmd .= " -q --databases -h \"$FANNIE_SERVER\" -u \"$FANNIE_SERVER_USER\" -p\"$FANNIE_SERVER_PW\" \"$db\"";
+    $cmd = escapeshellcmd($cmd);
+    if ($FANNIE_BACKUP_GZIP)
+        $cmd .= " | ".escapeshellcmd(realpath($FANNIE_BACKUP_BIN."/gzip"));
+    
+    $outfile = $dir."/".$db.date("Ymd").".sql";
+    if ($FANNIE_BACKUP_GZIP) $outfile .= ".gz";
 
-	$cmd .= " > ".escapeshellcmd("\"$outfile\"");
+    $cmd .= " > ".escapeshellcmd("\"$outfile\"");
 
-	system($cmd);
+    system($cmd);
 }
 
 ?>

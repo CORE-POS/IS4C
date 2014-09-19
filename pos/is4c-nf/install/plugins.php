@@ -1,7 +1,7 @@
 <?php
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
-include(realpath(dirname(__FILE__).'/../ini.php'));
+include('../ini.php');
 include('InstallUtilities.php');
 ?>
 <html>
@@ -72,36 +72,34 @@ foreach($mods as $m){
 	printf('<span class="noteTxt" style="width:200px;">%s</span>',$instance->plugin_description);
 	echo '</td></tr>'."\n";
 
-	if ($enabled && empty($instance->plugin_settings)){
+	if ($enabled && empty($instance->plugin_settings)) {
 		echo '<tr><td colspan="2"><i>No settings required</i></td></tr>';	
-	}
-	else if ($enabled){
-		foreach($instance->plugin_settings as $field => $info){
+	} else if ($enabled){
+		foreach ($instance->plugin_settings as $field => $info) {
 			echo '<tr><td colspan="2" style="margin-bottom: 0px; height:auto;">';
-			$form_id = $m.'_'.$field;
-			if (isset($_REQUEST[$form_id])) 
-				$CORE_LOCAL->set($field,$_REQUEST[$form_id]);
-			if ($CORE_LOCAL->get($field) === "") 
-				$CORE_LOCAL->set($field,isset($info['default'])?$info['default']:'');
+            $default = isset($info['default']) ? $info['default'] : '';
 			echo '<b>'.(isset($info['label'])?$info['label']:$field).'</b>: ';
-			if (isset($info['options']) && is_array($info['options'])){
-				printf('<select name="%s">',$form_id);
-				foreach($info['options'] as $label => $value){
-					printf('<option %s value="%s">%s</option>',
-						($CORE_LOCAL->get($field)==$value?'selected':''),
-						$value, $label);
-				}
-				echo '</select>';
-			}
-			else {
-				printf('<input type="text" name="%s" value="%s" />',
-					$form_id,$CORE_LOCAL->get($field));
+			if (isset($info['options']) && is_array($info['options'])) {
+                // plugin select fields are defined backwards. swap keys for values.
+                $invert = array();
+                foreach ($info['options'] as $label => $value) {
+                    $invert[$value] = $label;
+                }
+                $attributes = array();
+                if (is_array($default)) {
+                    $attributes['multiple'] = 'multiple';
+                    $attributes['size'] = 5;
+                }
+                echo InstallUtilities::installSelectField($field, $invert, $default, InstallUtilities::EITHER_SETTING, true, $attributes); 
+			} else {
+                echo InstallUtilities::installTextField($field, $default);
 			}
 			if (isset($info['description'])) 
 				echo '<span class="noteTxt" style="width:200px;">'.$info['description'].'</span>';
 			InstallUtilities::paramSave($field,$CORE_LOCAL->get($field));
 		echo '</td></tr>';
 		}
+        $instance->settingChange();
 	}
 
 }

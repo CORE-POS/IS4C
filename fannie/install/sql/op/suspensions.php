@@ -3,19 +3,19 @@
 Table: suspensions
 
 Columns:
-	cardno int
-	type char
-	memtype1 int
-	memtype2 varchar
-	reason text
-	suspDate datetime
-	mailflag int
-	discount int
-	chargelimit dbms currency
-	reasoncode int
+    cardno int
+    type char
+    memtype1 int
+    memtype2 varchar
+    reason text
+    suspDate datetime
+    mailflag int
+    discount int
+    chargelimit dbms currency
+    reasoncode int
 
 Depends on:
-	custdata (table)
+    custdata (table)
 
 Use:
 suspensions are a way of putting a membership on
@@ -38,18 +38,18 @@ using masks from the reasoncodes table to determine
 which reason(s) have been given.
 */
 $CREATE['op.suspensions'] = "
-	CREATE TABLE suspensions (
-		cardno int,
-		type char(1),
-		memtype1 int,
-		memtype2 varchar(6),
-		suspDate datetime,
-		reason text,
-		mailflag int,
-		discount int,
-		chargelimit ".$con->currency().",
-		reasoncode int,
-		PRIMARY KEY (cardno)
-	)
+    CREATE TABLE suspensions (
+        cardno int,
+        type char(1),
+        memtype1 int,
+        memtype2 varchar(6),
+        suspDate datetime,
+        reason text,
+        mailflag int,
+        discount int,
+        chargelimit ".$con->currency().",
+        reasoncode int,
+        PRIMARY KEY (cardno)
+    )
 ";
 ?>

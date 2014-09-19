@@ -39,15 +39,21 @@ class DefaultReceiptDataFetch
         global $CORE_LOCAL;
         $op_db = $CORE_LOCAL->get('pDatabase');
         $sql = Database::tDataConnect();
+        $join_table = $op_db . $sql->sep() . 'MasterSuperDepts';
+        $column = 's.super_name';
+        if (!$sql->table_exists($join_table)) {
+            $join_table = $op_db . $sql->sep() . 'subdepts';
+            $column = 's.subdept_name';
+        }
         $query = 'SELECT l.upc,l.trans_type,l.description,
             l.total,l.percentDiscount,l.trans_status,
             l.charflag,l.scale,l.quantity,l.unitPrice,
             l.ItemQtty,l.matched,l.numflag,l.tax,
             l.foodstamp,l.trans_id,l.department,
-            s.subdept_name AS category 
-            FROM localtemptrans AS l LEFT JOIN '
-            .$op_db.$sql->sep().'subdepts AS s 
-            ON l.department=s.dept_ID
+            l.trans_subtype,l.regPrice,
+            ' . $column . ' AS category 
+            FROM localtemptrans AS l 
+                LEFT JOIN ' . $join_table . ' AS s ON l.department=s.dept_ID
             WHERE trans_type <> \'L\'
             ORDER BY trans_id DESC';
         if ($empNo && $laneNo && $transNo) {
@@ -56,10 +62,10 @@ class DefaultReceiptDataFetch
                 l.charflag,l.scale,l.quantity,l.unitPrice,
                 l.ItemQtty,l.matched,l.numflag,l.tax,
                 l.foodstamp,l.trans_id,l.department,
-                s.subdept_name AS category 
-                FROM localtranstoday as l LEFT JOIN "
-                .$op_db.$sql->sep()."subdepts AS s
-                ON l.department=s.dept_ID
+                l.trans_subtype,l.regPrice,
+                " . $column . " AS category 
+                FROM localtranstoday as l 
+                    LEFT JOIN " . $join_table . " AS s ON l.department=s.dept_ID
                 WHERE trans_type <> 'L' AND
                 emp_no=%d AND register_no=%d AND trans_no=%d
                 AND datetime >= " . $sql->curdate() . "

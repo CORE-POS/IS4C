@@ -47,7 +47,7 @@ class GumLoanAccountsModel extends BasicModel
     'principal' => array('type'=>'MONEY'),
     'termInMonths' => array('type'=>'INT'),
     'interestRate' => array('type'=>'DOUBLE'),
-	);
+    );
 
     protected $unique = array('accountNumber');
 
@@ -63,6 +63,22 @@ class GumLoanAccountsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'gumLoanAccountID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["gumLoanAccountID"]) || $this->instance["gumLoanAccountID"] != func_get_args(0)) {
                 if (!isset($this->columns["gumLoanAccountID"]["ignore_updates"]) || $this->columns["gumLoanAccountID"]["ignore_updates"] == false) {
@@ -71,6 +87,7 @@ class GumLoanAccountsModel extends BasicModel
             }
             $this->instance["gumLoanAccountID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function card_no()
@@ -83,6 +100,22 @@ class GumLoanAccountsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'card_no',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["card_no"]) || $this->instance["card_no"] != func_get_args(0)) {
                 if (!isset($this->columns["card_no"]["ignore_updates"]) || $this->columns["card_no"]["ignore_updates"] == false) {
@@ -91,6 +124,7 @@ class GumLoanAccountsModel extends BasicModel
             }
             $this->instance["card_no"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function accountNumber()
@@ -103,6 +137,22 @@ class GumLoanAccountsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'accountNumber',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["accountNumber"]) || $this->instance["accountNumber"] != func_get_args(0)) {
                 if (!isset($this->columns["accountNumber"]["ignore_updates"]) || $this->columns["accountNumber"]["ignore_updates"] == false) {
@@ -111,6 +161,7 @@ class GumLoanAccountsModel extends BasicModel
             }
             $this->instance["accountNumber"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function loanDate()
@@ -123,6 +174,22 @@ class GumLoanAccountsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'loanDate',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["loanDate"]) || $this->instance["loanDate"] != func_get_args(0)) {
                 if (!isset($this->columns["loanDate"]["ignore_updates"]) || $this->columns["loanDate"]["ignore_updates"] == false) {
@@ -131,6 +198,7 @@ class GumLoanAccountsModel extends BasicModel
             }
             $this->instance["loanDate"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function principal()
@@ -143,6 +211,22 @@ class GumLoanAccountsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'principal',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["principal"]) || $this->instance["principal"] != func_get_args(0)) {
                 if (!isset($this->columns["principal"]["ignore_updates"]) || $this->columns["principal"]["ignore_updates"] == false) {
@@ -151,6 +235,7 @@ class GumLoanAccountsModel extends BasicModel
             }
             $this->instance["principal"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function termInMonths()
@@ -163,6 +248,22 @@ class GumLoanAccountsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'termInMonths',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["termInMonths"]) || $this->instance["termInMonths"] != func_get_args(0)) {
                 if (!isset($this->columns["termInMonths"]["ignore_updates"]) || $this->columns["termInMonths"]["ignore_updates"] == false) {
@@ -171,6 +272,7 @@ class GumLoanAccountsModel extends BasicModel
             }
             $this->instance["termInMonths"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function interestRate()
@@ -183,6 +285,22 @@ class GumLoanAccountsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'interestRate',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["interestRate"]) || $this->instance["interestRate"] != func_get_args(0)) {
                 if (!isset($this->columns["interestRate"]["ignore_updates"]) || $this->columns["interestRate"]["ignore_updates"] == false) {
@@ -191,6 +309,7 @@ class GumLoanAccountsModel extends BasicModel
             }
             $this->instance["interestRate"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

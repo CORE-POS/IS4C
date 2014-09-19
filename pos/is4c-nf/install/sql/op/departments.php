@@ -50,6 +50,14 @@ Often the financial accounting side of the business
 wants to look at sales figures differently than
 the operational side of the business. It's an organizational
 and reporting field with no meaning on the lane.
+
+memberOnly restricts sales based on customer membership
+status. Values 0 through 99 are reserved. 100 and above
+may be used for custom settings. Currently defined values:
+    0 => No restrictions
+    1 => Active members only (custdata.Type = 'PC')
+    2 => Active members only but cashier can override
+    3 => Any custdata account *except* the default non-member account
 */
 
 $CREATE['op.departments'] = "
@@ -65,7 +73,8 @@ $CREATE['op.departments'] = "
 	  `modified` datetime default NULL,
 	  `modifiedby` int(11) default NULL,
       `margin` double default 0,
-      `salesCodes` int default 0,
+      `salesCode` int default 0,
+      `memberOnly` smallint default 0,
 	  PRIMARY KEY (`dept_no`),
 	  KEY `dept_name` (`dept_name`)
 	);
@@ -84,7 +93,8 @@ if ($dbms == "MSSQL"){
 			[modified] [smalldatetime] NULL ,
 			[modifiedby] [int] NULL 
             [margin] [double] NULL,
-            [salesCode] [int] NULL
+            [salesCode] [int] NULL,
+            [memberOnly] [smallint] NULL
 		)";
 }
 elseif ($dbms == 'PDOLITE'){
@@ -101,7 +111,8 @@ elseif ($dbms == 'PDOLITE'){
 		  `modified` datetime default NULL,
 		  `modifiedby` int(11) default NULL,
           `margin` double default 0,
-          `salesCodes` int default 0,
+          `salesCode` int default 0,
+          `memberOnly` smallint default 0,
 		  PRIMARY KEY (`dept_no`)
 		)";
 }

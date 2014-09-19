@@ -32,7 +32,7 @@ class WfcHtSalaryPTOYTDModel extends BasicModel
     protected $columns = array(
     'empID' => array('type'=>'INT'),
     'totalTaken' => array('type'=>'INT'),
-	);
+    );
 
     public function create()
     {
@@ -56,14 +56,36 @@ class WfcHtSalaryPTOYTDModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["empID"])) {
                 return $this->instance["empID"];
-            } elseif(isset($this->columns["empID"]["default"])) {
+            } else if (isset($this->columns["empID"]["default"])) {
                 return $this->columns["empID"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'empID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["empID"]) || $this->instance["empID"] != func_get_args(0)) {
+                if (!isset($this->columns["empID"]["ignore_updates"]) || $this->columns["empID"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["empID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function totalTaken()
@@ -71,14 +93,36 @@ class WfcHtSalaryPTOYTDModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["totalTaken"])) {
                 return $this->instance["totalTaken"];
-            } elseif(isset($this->columns["totalTaken"]["default"])) {
+            } else if (isset($this->columns["totalTaken"]["default"])) {
                 return $this->columns["totalTaken"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'totalTaken',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["totalTaken"]) || $this->instance["totalTaken"] != func_get_args(0)) {
+                if (!isset($this->columns["totalTaken"]["ignore_updates"]) || $this->columns["totalTaken"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["totalTaken"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

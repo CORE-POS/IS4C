@@ -181,6 +181,15 @@ class SigCapturePage extends BasicPage
 
         echo "<div id=\"imgArea\"></div>";
         echo '<div class="textArea">';
+        if (!isset($_REQUEST['amt'])) {
+            $_REQUEST['amt'] = 0.00;
+        }
+        if (!isset($_REQUEST['type'])) {
+            $_REQUEST['type'] = 'Unknown';
+        }
+        if (!isset($_REQUEST['code'])) {
+            $_REQUEST['code'] = '??';
+        }
         echo '$' . sprintf('%.2f', $_REQUEST['amt']) . ' as ' . $_REQUEST['type'];
         echo '<br />';
         echo '<span id="sigInstructions" style="font-size:90%;">';

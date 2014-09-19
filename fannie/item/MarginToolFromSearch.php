@@ -21,13 +21,18 @@
 
 *********************************************************************************/
 
-include('../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+require(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class MarginToolFromSearch extends FannieRESTfulPage
 {
     protected $header = 'Margin Search Results';
     protected $title = 'Margin Search Results';
+
+    public $description = '[Margin Preview] takes a set of advanced search results and shows the effect on
+    margin of various price changes. Must be accessed via Advanced Search.';
 
     protected $window_dressing = false;
 
@@ -310,14 +315,11 @@ class MarginToolFromSearch extends FannieRESTfulPage
         // did not select "none" for tags
         // so create some shelftags
         if ($this->tags != -1) {
-            $ins = $dbc->prepare('INSERT INTO shelftags (id, upc, description, normal_price, 
-                            brand, sku, size, units, vendor, pricePerUnit) VALUES (?, ?, ?, ?,
-                            ?, ?, ?, ?, ?, ?)');
             $lookup = $dbc->prepare('SELECT p.description, v.brand, v.sku, v.size, v.units, n.vendorName
                                 FROM products AS p LEFT JOIN vendorItems AS v ON p.upc=v.upc
                                 LEFT JOIN vendors AS n ON v.vendorID=n.vendorID
                                 WHERE p.upc=? ORDER BY v.vendorID');
-            $clear = $dbc->prepare('DELETE FROM shelftags WHERE id=? AND upc=?');
+            $tag = new ShelfTagModel($dbc);
             for($i=0; $i<count($this->upcs);$i++) {
                 $upc = $this->upcs[$i];
                 if (!isset($this->newprices[$i])) {
@@ -332,10 +334,17 @@ class MarginToolFromSearch extends FannieRESTfulPage
                 }
                 $ppo = ($info['size'] !== '') ? PriceLib::pricePerUnit($price, $info['size']) : '';
 
-                $dbc->execute($clear, array($this->tags, $upc));
-                $dbc->execute($ins, array($this->tags, $upc, $info['description'], $price,
-                                        $info['brand'], $info['sku'], $info['size'],
-                                        $info['units'], $info['vendorName'], $ppo));
+                $tag->id($this->tags);
+                $tag->upc($upc);
+                $tag->description($info['description']);
+                $tag->normal_price($price);
+                $tag->brand($info['brand']);
+                $tag->sku($info['sku']);
+                $tag->size($info['size']);
+                $tag->units($info['units']);
+                $tag->vendor($info['vendorName']);
+                $tag->pricePerUnit($ppo);
+                $tag->save();
             }
         }
 
@@ -381,10 +390,10 @@ class MarginToolFromSearch extends FannieRESTfulPage
     {
         global $FANNIE_OP_DB, $FANNIE_URL, $FANNIE_ARCHIVE_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $this->add_script($FANNIE_URL.'/src/jquery/jquery.js');
-        $this->add_script($FANNIE_URL.'src/jquery/jquery.tablesorter.js');
+        $this->add_script($FANNIE_URL.'/src/javascript/jquery.js');
+        $this->add_script($FANNIE_URL.'src/javascript/tablesorter/jquery.tablesorter.js');
         $this->add_css_file($FANNIE_URL.'/src/style.css');
-        $this->add_css_file($FANNIE_URL.'src/jquery/themes/blue/style.css');
+        $this->add_css_file($FANNIE_URL.'src/javascript/tablesorter/themes/blue/style.css');
         $ret = '';
 
         // list super depts & starting margins

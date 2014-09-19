@@ -32,8 +32,8 @@
 */
 
 if (!chdir("CompressProdUpdate")){
-	echo "Error: Can't find directory (prod update compress price)";
-	exit;
+    echo "Error: Can't find directory (prod update compress price)";
+    exit;
 }
 
 include('../../config.php');
@@ -43,7 +43,7 @@ set_time_limit(0);
 ini_set('memory_limit','256M');
 
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
+        $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
 $upc = null;
 $prevPrice = null;
@@ -52,38 +52,38 @@ $q = "select u.upc,u.modified,price,user from prodUpdate
 as u inner join products as p on p.upc=u.upc
 order by u.upc,u.modified";
 if ($FANNIE_SERVER_DBMS == "MSSQL")
-	$q = str_replace("user","[user]",$q);
+    $q = str_replace("user","[user]",$q);
 $r = $sql->query($q);
 while($w = $sql->fetch_row($r)){
-	if ($upc === null || $upc != $w['upc']){
-		// next item, get previous
-		// date and price from compressed
-		// history if available
-		$upc = $w['upc'];
-		$prevPrice = null;
-		$prevDate = null;
-		$chkR = $sql->query("SELECT modified,price FROM
-			prodPriceHistory WHERE upc='$upc'
-			ORDER BY modified DESC");
-		if ($sql->num_rows($chkR) > 0){
-			$chk = $sql->fetch_row($chkR);
-			$prevDate = $chk['modified'];
-			$prevPrice = $chk['price'];
-		}
-	}
-	
-	if ($prevPrice != $w['price']){ // price changed
-		$ins = sprintf("INSERT INTO prodPriceHistory
-			(upc,modified,price,uid)
-			VALUES (%s,%s,%.2f,%d)",
-			$sql->escape($upc),
-			$sql->escape($w['modified']),
-			$w['price'],$w['user']);
-		$sql->query($ins);
-	}
+    if ($upc === null || $upc != $w['upc']){
+        // next item, get previous
+        // date and price from compressed
+        // history if available
+        $upc = $w['upc'];
+        $prevPrice = null;
+        $prevDate = null;
+        $chkR = $sql->query("SELECT modified,price FROM
+            prodPriceHistory WHERE upc='$upc'
+            ORDER BY modified DESC");
+        if ($sql->num_rows($chkR) > 0){
+            $chk = $sql->fetch_row($chkR);
+            $prevDate = $chk['modified'];
+            $prevPrice = $chk['price'];
+        }
+    }
+    
+    if ($prevPrice != $w['price']){ // price changed
+        $ins = sprintf("INSERT INTO prodPriceHistory
+            (upc,modified,price,uid)
+            VALUES (%s,%s,%.2f,%d)",
+            $sql->escape($upc),
+            $sql->escape($w['modified']),
+            $w['price'],$w['user']);
+        $sql->query($ins);
+    }
 
-	$prevPrice = $w['price'];
-	$prevDate = $w['modified'];	
+    $prevPrice = $w['price'];
+    $prevDate = $w['modified']; 
 }
 
 

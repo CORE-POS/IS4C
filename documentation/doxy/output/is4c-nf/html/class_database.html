@@ -72,6 +72,10 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_database.html#4465ce9a9961b580b4487bb91c4dbde1">changeLttTaxCode</a> ($fromName, $toName)</td></tr>
 
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_database.html#fb256dcc8594ca30387505265a206b89">rotateTempData</a> ()</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_database.html#d02b6625f56f2d3e8fe51134cf19327f">clearTempTables</a> ()</td></tr>
+
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
 Functions related to the database 
@@ -110,6 +114,29 @@ Change one tax code in all items of localtemptrans to a different one. Parameter
   </table>
 </dl>
 
+</div>
+</div><p>
+<a class="anchor" name="d02b6625f56f2d3e8fe51134cf19327f"></a><!-- doxytag: member="Database::clearTempTables" ref="d02b6625f56f2d3e8fe51134cf19327f" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static Database::clearTempTables           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Truncate current transaction tables. Clears data from:<ul>
+<li>translog.localtemptrans</li><li>translog.couponApplied</li></ul>
+<p>
+<dl compact><dt><b>Returns:</b></dt><dd>[boolean] success or failure</dd></dl>
+Success or failure is based on whether translog.localtemptrans is cleared correctly. 
 </div>
 </div><p>
 <a class="anchor" name="8635a0e5aeb162a6967cc959f5b60b79"></a><!-- doxytag: member="Database::getMatchingColumns" ref="8635a0e5aeb162a6967cc959f5b60b79" args="($connection, $table_name, $table2=&quot;&quot;)" -->
@@ -151,7 +178,7 @@ Get a list of columns that exist on the local db and the server db for the given
     <tr><td valign="top"></td><td valign="top"><em>$table2</em>&nbsp;</td><td>is provided, it match columns from local.table_name against remote.table2 </td></tr>
   </table>
 </dl>
-<dl compact><dt><b>Returns:</b></dt><dd>an array of column names </dd></dl>
+<dl compact><dt><b>Returns:</b></dt><dd>[string] comma separated list of column names </dd></dl>
 
 </div>
 </div><p>
@@ -172,6 +199,9 @@ Get a list of columns that exist on the local db and the server db for the given
 
 <p>
 Load values from subtotals view into $CORE_LOCAL. Essentially refreshes totals in the session. 
+<p>
+9May14 Andy I belive this query is equivalent to the old subtotals =&gt; lttsubtotals =&gt; lttsummary I've omitted tax since those are already calculated separately. A few conditions here should obviously be more configurable, but first I want to get rid of or simply the old nested views<p>
+fsEligible is the complicated one. That's: 1. Total foodstampable items 2. Minus transaction-level discount on those items 3. Minus any foodstamp tenders already applied. localtemptrans.total is negative on tenders so the query uses an addition sign but in effect it's subracting. 
 </div>
 </div><p>
 <a class="anchor" name="be91493950055ad3433ba15d55cb45c8"></a><!-- doxytag: member="Database::gettransno" ref="be91493950055ad3433ba15d55cb45c8" args="($CashierNo)" -->
@@ -315,7 +345,7 @@ Get a list of columns in both tables. <dl compact><dt><b>Parameters:</b></dt><dd
     <tr><td valign="top"></td><td valign="top"><em>$table2</em>&nbsp;</td><td>a database table </td></tr>
   </table>
 </dl>
-<dl compact><dt><b>Returns:</b></dt><dd>an array of column names common to both tables </dd></dl>
+<dl compact><dt><b>Returns:</b></dt><dd>[string] comma separated list of column names </dd></dl>
 
 </div>
 </div><p>
@@ -360,6 +390,31 @@ Connect to the operational database (local) <dl compact><dt><b>Returns:</b></dt>
 <p>
 Add both local databases to the connection object<p>
 Switch connection object to the requested database 
+</div>
+</div><p>
+<a class="anchor" name="fb256dcc8594ca30387505265a206b89"></a><!-- doxytag: member="Database::rotateTempData" ref="fb256dcc8594ca30387505265a206b89" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static Database::rotateTempData           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Rotate current transaction data Current data in translog.localtemptrans is inserted into:<ul>
+<li>translog.dtransactions</li><li>translog.localtrans</li><li>translog.localtranstoday (if not a view)</li><li>translog.localtrans_today (if present)</li></ul>
+<p>
+<dl compact><dt><b>Returns:</b></dt><dd>[boolean] success or failure</dd></dl>
+Success or failure is based on whether or not the insert into translog.dtransactions succeeds. That's the most important query in terms of ensuring data flows properly to the server. 
+<p>
+If store_id column is present in lane dtransactions table and the lane's store_id has been configured, assign that value to the column. Otherwise it may be handled but some other mechanism such as triggers or column default values. 
 </div>
 </div><p>
 <a class="anchor" name="1ae86c9bc705ce1011ca00c85542e418"></a><!-- doxytag: member="Database::setglobalflags" ref="1ae86c9bc705ce1011ca00c85542e418" args="($value)" -->
@@ -508,7 +563,9 @@ See if the remote database is available This function calls <a class="el" href="
 <div class="memdoc">
 
 <p>
-Transfer credit card tables to the server. See <a class="el" href="class_database.html#638b382fa0bfd2578afe68396a9cef10">uploadtoServer()</a>. 
+Transfer credit card tables to the server. See <a class="el" href="class_database.html#638b382fa0bfd2578afe68396a9cef10">uploadtoServer()</a>.<p>
+<dl compact><dt><b>Returns:</b></dt><dd>boolean success / failure </dd></dl>
+
 </div>
 </div><p>
 <a class="anchor" name="638b382fa0bfd2578afe68396a9cef10"></a><!-- doxytag: member="Database::uploadtoServer" ref="638b382fa0bfd2578afe68396a9cef10" args="()" -->
@@ -528,7 +585,7 @@ Transfer credit card tables to the server. See <a class="el" href="class_databas
 
 <p>
 Copy tables from the lane to the remote server The following tables are copied:<ul>
-<li>dtransactions</li><li>alog</li><li>suspended</li><li>efsnetRequest</li><li>efsnetResponse</li><li>efsnetRequestMod</li></ul>
+<li>dtransactions</li><li>suspended</li><li>efsnetRequest</li><li>efsnetResponse</li><li>efsnetRequestMod</li><li>efsnetTokens</li><li>CapturedSignature</li></ul>
 <p>
 On success the local tables are truncated. The efsnet tables are copied in the <a class="el" href="class_database.html#52794d1a21f1e6519841c0f40be25c95">uploadCCdata()</a> function but that gets called automatically.<p>
 <dl compact><dt><b>Returns:</b></dt><dd><ul>
@@ -539,7 +596,7 @@ On success the local tables are truncated. The efsnet tables are copied in the <
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/Database.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

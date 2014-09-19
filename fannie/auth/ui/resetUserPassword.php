@@ -39,14 +39,14 @@ if (isset($_GET['name'])){
   for($i=0;$i<8;$i++){
     switch(rand(1,3)){
     case 1: // digit
-	$newpass .= chr(48+rand(0,9));
-	break;
+    $newpass .= chr(48+rand(0,9));
+    break;
     case 2: // uppercase
-	$newpass .= chr(65+rand(0,25));
-	break;
+    $newpass .= chr(65+rand(0,25));
+    break;
     case 3:
-	$newpass .= chr(97+rand(0,25));
-	break;
+    $newpass .= chr(97+rand(0,25));
+    break;
     }
   }
   if (changeAnyPassword($name,$newpass)){
@@ -58,7 +58,7 @@ else {
   echo "<form method=get action=resetUserPassword.php>";
   echo "User name: <select name=name>";
   foreach(getUserList() as $uid => $name)
-	echo "<option>".$name."</option>";
+    echo "<option>".$name."</option>";
   echo '</select> ';
   echo "<input type=submit value=Submit /></form>";  
 }

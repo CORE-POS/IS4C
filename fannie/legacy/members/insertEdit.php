@@ -50,6 +50,7 @@ $cust->personNum(1);
 $cust->load(); // get all current values
 $cust->MemDiscountLimit($_POST['chargeLimit']);
 $cust->ChargeLimit($_POST['chargeLimit']);
+$cust->ChargeOk( $_POST['chargeLimit'] == 0 ? 0 : 1 );
 $cust->memType($_POST['discList']);
 $cust->Type('REG');
 $cust->Staff(0);

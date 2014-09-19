@@ -26,109 +26,177 @@ include_once(dirname(__FILE__).'/../../classlib2.0/lib/FormLib.php');
 
 class ScaleItemModule extends ItemModule {
 
-	function ShowEditForm($upc){
-		$upc = BarcodeLib::padUPC($upc);
+    public function showEditForm($upc, $display_mode=1, $expand_mode=1)
+    {
+        $upc = BarcodeLib::padUPC($upc);
 
-		$ret = '<fieldset id="ScaleItemFieldset">';
-		$ret .=  "<legend>Scale</legend>";
-		
-		$dbc = $this->db();
-		$p = $dbc->prepare_statement('SELECT * FROM scaleItems WHERE plu=?');
-		$r = $dbc->exec_statement($p,array($upc));
-		$scale = array('itemdesc'=>'','weight'=>0,'bycount'=>0,'tare'=>0,
-			'shelflife'=>0,'label'=>133,'graphics'=>0,'text'=>'');
-		if ($dbc->num_rows($r) > 0)
-			$scale = $dbc->fetch_row($r);
+        $dbc = $this->db();
+        $p = $dbc->prepare_statement('SELECT * FROM scaleItems WHERE plu=?');
+        $r = $dbc->exec_statement($p,array($upc));
+        $scale = array('itemdesc'=>'','weight'=>0,'bycount'=>0,'tare'=>0,
+            'shelflife'=>0,'label'=>133,'graphics'=>0,'text'=>'', 'netWeight'=>0);
+        $found = false;
+        if ($dbc->num_rows($r) > 0) {
+            $scale = $dbc->fetch_row($r);
+            $found = true;
+        }
 
-		$p = $dbc->prepare_statement('SELECT description FROM products WHERE upc=?');
-		$r = $dbc->exec_statement($p,array($upc));
-		$reg_description = '';
-		if ($dbc->num_rows($r) > 0)
-			$reg_description = array_pop($dbc->fetch_row($r));
+        if (!$found && $display_mode == 2) {
+            return '';
+        }
+        $css = '';
+        if ($expand_mode == 1) {
+            $css = '';
+        } else if ($found && $expand_mode == 2) {
+            $css = '';
+        } else {
+            $css = 'display:none;';
+        }
 
-		$ret .= sprintf('<input type="hidden" name="s_plu" value="%s" />',$upc);
-		$ret .= "<table style=\"background:#ffffcc;\" cellpadding=5 cellspacing=0 border=1>";
-		$ret .= sprintf("<tr><th colspan=2>Longer description</th><td colspan=4><input size=35 
-				type=text name=s_longdesc maxlength=100 value=\"%s\" /></td></tr>",
-				($reg_description == $scale['itemdesc'] ? '': $scale['itemdesc']));
-		$ret .= "<tr><td colspan=6 style=\"font-size:1px;\">&nbsp;</td></tr>";
+        $ret = '<fieldset id="ScaleItemFieldset">';
+        $ret .=  "<legend onclick=\"\$('#ScaleFieldsetContent').toggle();\">
+                <a href=\"\" onclick=\"return false;\">Scale</a>
+                </legend>";
+        $css = ($expand_mode == 1) ? '' : 'display:none;';
+        $ret .= '<div id="ScaleFieldsetContent" style="' . $css . '">';
+        
+        $p = $dbc->prepare_statement('SELECT description FROM products WHERE upc=?');
+        $r = $dbc->exec_statement($p,array($upc));
+        $reg_description = '';
+        if ($dbc->num_rows($r) > 0) {
+            $w = $dbc->fetch_row($r);
+            $reg_description = $w['description'];
+        }
 
-		$ret .= "<tr><th>Weight</th><th>By Count</th><th>Tare</th><th>Shelf Life</th>";
-		$ret .= "<th>Label</th><th>Safehandling</th></tr>";			
+        $ret .= sprintf('<input type="hidden" name="s_plu" value="%s" />',$upc);
+        $ret .= "<table style=\"background:#ffffcc;\" cellpadding=5 cellspacing=0 border=1>";
+        $ret .= sprintf("<tr><th colspan=2>Longer description</th><td colspan=5><input size=35 
+                type=text name=s_longdesc maxlength=100 value=\"%s\" /></td></tr>",
+                ($reg_description == $scale['itemdesc'] ? '': $scale['itemdesc']));
 
-		$ret .= '<tr><td>';
-		if ($scale['weight']==0){
-			$ret .= "<input type=radio name=s_type value=\"Random Weight\" checked /> Random<br />";
-			$ret .= "<input type=radio name=s_type value=\"Fixed Weight\" /> Fixed<br />";
-		}
-		else {
-			$ret .= "<input type=radio name=s_type value=\"Random Weight\" /> Random<br />";
-			$ret .= "<input type=radio name=s_type value=\"Fixed Weight\" checked /> Fixed<br />";
-		}
-		$ret .= '</td>';
+        $ret .= "<tr><th>Weight</th><th>By Count</th><th>Tare</th><th>Shelf Life</th>";
+        $ret .= "<th>Net Wt (oz)</th><th>Label</th><th>Safehandling</th></tr>";         
 
-		$ret .= sprintf("<td align=center><input type=checkbox value=1 name=s_bycount %s /></td>",
-				($scale['bycount']==1?'checked':''));
+        $ret .= '<tr><td>';
+        if ($scale['weight']==0){
+            $ret .= "<input type=radio name=s_type value=\"Random Weight\" checked /> Random<br />";
+            $ret .= "<input type=radio name=s_type value=\"Fixed Weight\" /> Fixed<br />";
+        }
+        else {
+            $ret .= "<input type=radio name=s_type value=\"Random Weight\" /> Random<br />";
+            $ret .= "<input type=radio name=s_type value=\"Fixed Weight\" checked /> Fixed<br />";
+        }
+        $ret .= '</td>';
 
-		$ret .= sprintf("<td align=center><input type=text size=5 name=s_tare value=\"%s\" /></td>",
-				$scale['tare']);
+        $ret .= sprintf("<td align=center><input type=checkbox value=1 name=s_bycount %s /></td>",
+                ($scale['bycount']==1?'checked':''));
 
-		$ret .= sprintf("<td align=center><input type=text size=5 name=s_shelflife value=\"%s\" /></td>",
-				$scale['shelflife']);
+        $ret .= sprintf("<td align=center><input type=text size=5 name=s_tare value=\"%s\" /></td>",
+                $scale['tare']);
 
-		$ret .= "<td><select name=s_label size=2>";
-		if ($scale['label']==133 || $scale['label']==63){
-			$ret .= "<option value=horizontal selected>Horizontal</option>";
-			$ret .= "<option value=vertical>Vertical</option>";
-		}
-		else {
-			$ret .= "<option value=horizontal>Horizontal</option>";
-			$ret .= "<option value=vertical selected>Vertical</option>";
-		}
-		$ret .= '</select></td>';
+        $ret .= sprintf("<td align=center><input type=text size=5 name=s_shelflife value=\"%s\" /></td>",
+                $scale['shelflife']);
 
-		$ret .= sprintf("<td align=center><input type=checkbox value=1 name=s_graphics %s /></td>",
-				($scale['graphics']==1?'checked':''));
-		$ret .= '</tr>';	
+        $ret .= sprintf("<td align=center><input type=text size=5 name=s_netwt value=\"%s\" /></td>",
+                $scale['netWeight']);
 
-		$ret .= "<tr><td colspan=6 style=\"font-size:1px;\">&nbsp;</td></tr>";
+        $ret .= "<td><select name=s_label size=2>";
+        if ($scale['label']==133 || $scale['label']==63){
+            $ret .= "<option value=horizontal selected>Horizontal</option>";
+            $ret .= "<option value=vertical>Vertical</option>";
+        }
+        else {
+            $ret .= "<option value=horizontal>Horizontal</option>";
+            $ret .= "<option value=vertical selected>Vertical</option>";
+        }
+        $ret .= '</select></td>';
 
-		$ret .= "<tr><td colspan=6>";
-		$ret .= "<b>Expanded text:<br /><textarea name=s_text rows=4 cols=50>";
-		$ret .= $scale['text'];
-		$ret .= "</textarea></td></tr>";
+        $ret .= sprintf("<td align=center><input type=checkbox value=1 name=s_graphics %s /></td>",
+                ($scale['graphics']==1?'checked':''));
+        $ret .= '</tr>';    
 
-		$ret .= '</table></fieldset>';
-		return $ret;
-	}
+        $ret .= "<tr><td colspan=7>";
+        $ret .= '<div style="float: left;">';
+        $ret .= "<b>Expanded text:<br /><textarea name=s_text rows=4 cols=45>";
+        $ret .= $scale['text'];
+        $ret .= "</textarea>";
+        $ret .= '</div>';
+        $scales = new ServiceScalesModel($dbc);
+        $mapP = $dbc->prepare('SELECT upc
+                               FROM ServiceScaleItemMap
+                               WHERE serviceScaleID=?
+                                AND upc=?');
+        $deptP = $dbc->prepare('SELECT p.upc
+                                FROM products AS p
+                                    INNER JOIN superdepts AS s ON p.department=s.dept_ID
+                                WHERE p.upc=?
+                                    AND s.superID=?');
+        $ret .= '<div style="float: left;">';
+        foreach ($scales->find('description') as $scale) {
+            $checked = false;
+            $mapR = $dbc->execute($mapP, array($scale->serviceScaleID(), $upc));
+            if ($dbc->num_rows($mapR) > 0) {
+                // marked in map table
+                $checked = true;
+            } else {
+                $deptR = $dbc->execute($deptP, array($upc, $scale->superID()));
+                if ($dbc->num_rows($deptR) > 0) {
+                    // in a POS department corresponding 
+                    // to this scale
+                    $checked = true;
+                }
+            }
 
-	function SaveFormData($upc){
-		/* check if data was submitted */
-		if (FormLib::get_form_value('s_plu') === '') return False;
+            $ret .= sprintf('<input type="checkbox" name="scaleID[]" id="scaleID%d" value=%d %s />
+                            <label for="scaleID%d">%s</label><br />',
+                            $scale->serviceScaleID(), $scale->serviceScaleID(), ($checked ? 'checked' : ''),
+                            $scale->serviceScaleID(), $scale->description());
+        }
+        $ret .= '</div>';
+        $ret .= '<div style="clear:left;"></div>';
+        $ret .= "</td></tr>";
 
-		$desc = FormLib::get_form_value('description','');
-		$longdesc = FormLib::get_form_value('s_longdesc','');
-		if ($longdesc !== '') $desc = $longdesc;
-		$price = FormLib::get_form_value('price',0);
-		$tare = FormLib::get_form_value('s_tare',0);
-		$shelf = FormLib::get_form_value('s_shelflife',0);
-		$bycount = FormLib::get_form_value('s_bycount',0);
-		$graphics = FormLib::get_form_value('s_graphics',0);
-		$type = FormLib::get_form_value('s_type','Random Weight');
-		$weight = ($type == 'Random Weight') ? 0 : 1;
-		$text = FormLib::get_form_value('s_text','');
-		$label = FormLib::get_form_value('s_label','horizontal');
+        $ret .= '</table></div></fieldset>';
+        return $ret;
+    }
 
-		if ($label == "horizontal" && $type == "Random Weight")
-			$label = 133;
-		elseif ($label == "horizontal" && $type == "Fixed Weight")
-			$label = 63;
-		elseif ($label == "vertical" && $type == "Random Weight")
-			$label = 103;
-		elseif ($label == "vertical" && $type == "Fixed Weight")
-			$label = 23;
+    function SaveFormData($upc)
+    {
+        /* check if data was submitted */
+        if (FormLib::get('s_plu') === '') return False;
 
-		$dbc = $this->db();
+        $desc = FormLib::get('description','');
+        $longdesc = FormLib::get('s_longdesc','');
+        if ($longdesc !== '') $desc = $longdesc;
+        $price = FormLib::get('price',0);
+        $tare = FormLib::get('s_tare',0);
+        $shelf = FormLib::get('s_shelflife',0);
+        $bycount = FormLib::get('s_bycount',0);
+        $graphics = FormLib::get('s_graphics',0);
+        $type = FormLib::get('s_type','Random Weight');
+        $weight = ($type == 'Random Weight') ? 0 : 1;
+        $text = FormLib::get('s_text','');
+        $label = FormLib::get('s_label','horizontal');
+        $netWeight = FormLib::get('s_netwt', 0);
+
+        if ($label == "horizontal" && $type == "Random Weight")
+            $label = 133;
+        elseif ($label == "horizontal" && $type == "Fixed Weight")
+            $label = 63;
+        elseif ($label == "vertical" && $type == "Random Weight")
+            $label = 103;
+        elseif ($label == "vertical" && $type == "Fixed Weight")
+            $label = 23;
+
+        $dbc = $this->db();
+
+        // apostrophes might make a mess
+        // double quotes definitely will
+        // DGW quotes text fields w/o any escaping
+        $desc = str_replace("'","",$desc);
+        $text = str_replace("'","",$text);
+        $desc = str_replace("\"","",$desc);
+        $text = str_replace("\"","",$text);
         
         /**
           Safety check:
@@ -145,30 +213,92 @@ class ScaleItemModule extends ItemModule {
             }
         }
 
-		$chkP = $dbc->prepare_statement('SELECT * FROM scaleItems WHERE plu=?');
-		$chkR = $dbc->exec_statement($chkP,array($upc));
-		$action = 'ChangeOneItem';
-		if ($dbc->num_rows($chkR) == 0){
-			$insP = $dbc->prepare_statement("INSERT INTO scaleItems (plu, price, itemdesc,
-					exceptionprice, weight, bycount, tare, shelflife, text, class,
-					label, graphics) VALUES (?, ?, ?, 0.00, ?, ?, ?, ?, '', ?, ?)");
-			$insR = $dbc->exec_statement($insP,array($upc, $price, $desc, $weight, $bycount,
-								$tare, $shelf, $text, $label, $graphics));
-			$action = "WriteOneItem";
-		}
-		else {
-			$upP = $dbc->prepare_statement('UPDATE scaleItems SET price=?, itemdesc=?, weight=?,
-						bycount=?, tare=?, shelflife=?, text=?, label=?, graphics=?
-						WHERE plu=?');
-			$upR = $dbc->exec_statement($upP,array($price, $desc, $weight, $bycount, $tare,
-								$shelf, $text, $label, $graphics, $upc));
-			$action = "ChangeOneItem";
-		}
+        $scaleItem = new ScaleItemsModel($dbc);
+        $scaleItem->plu($upc);
+        $action = 'ChangeOneItem';
+        if (!$scaleItem->load()) {
+            // new record
+            $action = "WriteOneItem";
+        }
+        $scaleItem->price($price);
+        $scaleItem->itemdesc($desc);
+        $scaleItem->weight( ($type == 'Fixed Weight') ? 1 : 0 );
+        $scaleItem->bycount($bycount);
+        $scaleItem->tare($tare);
+        $scaleItem->shelflife($shelf);
+        $scaleItem->text($text);
+        $scaleItem->label($label);
+        $scaleItem->graphics( ($graphics) ? 121 : 0 );
+        $scaleItem->netWeight($netWeight);
+        $scaleItem->save();
 
-		include(dirname(__FILE__).'/../hobartcsv/parse.php');
-		parseitem($action,$upc,$desc,$tare,$shelf,$price,$bycount,$type,
-			0.00,$text,$label,($graphics==1?121:0));
-	}
+        // extract scale PLU
+        preg_match("/002(\d\d\d\d)0/",$upc,$matches);
+        $s_plu = $matches[1];
+
+        $item_info = array(
+            'RecordType' => $action,
+            'PLU' => $s_plu,
+            'Description' => $desc,
+            'Tare' => $tare,
+            'ShelfLife' => $shelf,
+            'Price' => $price,
+            'Label' => $label,
+            'ExpandedText' => $text,
+            'ByCount' => $bycount,
+        );
+        if ($netWeight != 0) {
+            $item_info['NetWeight'] = $netWeight;
+        }
+        if ($graphics) {
+            $item_info['Graphics'] = 121;
+        }
+        // normalize type + bycount; they need to match
+        if ($item_info['ByCount'] && $type == 'Random Weight') {
+            $item_info['Type'] = 'By Count';
+        } else if ($type == 'Fixed Weight') {
+            $item_info['Type'] = 'Fixed Weight';
+            $item_info['ByCount'] = 1;
+        } else {
+            $item_info['Type'] = 'Random Weight';
+            $item_info['ByCount'] = 0;
+        }
+
+        $scales = array();
+        $scaleIDs = FormLib::get('scaleID', array());
+        $model = new ServiceScalesModel($dbc);
+        $chkMap = $dbc->prepare('SELECT upc
+                                 FROM ServiceScaleItemMap
+                                 WHERE serviceScaleID=?
+                                    AND upc=?');
+        $addMap = $dbc->prepare('INSERT INTO ServiceScaleItemMap
+                                    (serviceScaleID, upc)
+                                 VALUES
+                                    (?, ?)');
+        foreach ($scaleIDs as $scaleID) {
+            $model->reset();
+            $model->serviceScaleID($scaleID);
+            if (!$model->load()) {
+                // scale doesn't exist
+                continue;
+            }
+            $repr = array(
+                'host' => $model->host(),
+                'dept' => $model->scaleDeptName(),
+                'type' => $model->scaleType(),  
+                'new' => false,
+            );
+            $exists = $dbc->execute($chkMap, array($scaleID, $upc));
+            if ($dbc->num_rows($exists) == 0) {
+                $repr['new'] = true;
+                $dbc->execute($addMap, array($scaleID, $upc));
+            }
+
+            $scales[] = $repr;
+        }
+
+        HobartDgwLib::writeItemsToScales($item_info, $scales);
+    }
 }
 
 ?>

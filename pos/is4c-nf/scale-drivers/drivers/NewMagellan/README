@@ -1,17 +1,86 @@
-Make sure ss-output is writable by the driver:
+COMPILATION
+
+1. Windows
+	Compilation on Windows requires
+	* .NET 2.0 Runtime
+	* .NET 2.0 SDK
+	The latter provides a special command line
+	with all the appropriate environment variables
+	set. Use that (or set them yourself) then
+	run make.bat
+
+2. Non-windows, e.g. Linux
+	Requires mono. Possibly:
+	 $ sudo apt-get mono-devel or
+	 $ sudo apt-get build-essential
+	Use the makefile:
+	 $ make clean
+	 $ make
+
+DESIGN NOTES
+
+Originally, this was similar to the original, VB magellan
+and used a WebBrowser object embedded in a windows form with
+various page change callbacks registered. Turns out WebBrowser
+objects are flaky at best on the Linux/mono side of things, so
+there's been some significant refactoring to remove the GUI 
+portions. Some naming conventions seem odd now that made sense
+in the original structure (e.g., DelegateForm is no longer a
+System.Windows.Forms.Form, nor does it contain any delegates).
+
+INSTALL NOTES
+
+# Make sure the directory ss-output exists is writable by the driver and PHP:
+$ ls -l ss-output
+# If it doesn't exist:
+$ mkdir ss-output
 $ sudo chmod -R 777 ss-output
 
 Check the assignment of MAGELLAN_OUTPUT_DIR in SPH_Magellan_Scales.cs
-$ grep MAGELLAN_OUTPUT_DIR SPH_Magellan_Scales.cs
-It should be "ss-output/", the same as the directory above.
+and drivers for other devices you plan to use.
+$ grep "MAGELLAN_OUTPUT_DIR =" *.cs
+It should be "ss-output/", the same as the directory above, in all cases.
 
-If it isn't, open SPH_Magellan_Scales.cs in a text editor and change it.
-Then re-compile pos.exe:
+If it isn't, open SPH_Magellan_Scale.cs and the other files in a text
+editor and change it.
+
+Compile the driver;  the executable pos.exe is not part of the distribution:
 $ make clean
 $ make
 
-Run the driver in the forground:
+Indicate which ports, i.e. which peripheral devices are being monitored.
+Edit ports.conf and uncomment (remove the leading "#" from) and change,
+or add, as necessary the lines such as:
+# <name of port> <name of handler class>
+#	
+# typical linux config, scanner/scale
+/dev/ttyS0 SPH_Magellan_Scale
+
+But leave lines for devices you aren't using commented:
+# typical linux config, USB IDtech
+#/dev/hidraw0	SPH_SignAndPay_USB
+
+You can run the driver in the foreground:
 $ sudo mono pos.exe
+If it starts OK it will immediately say:
+Reading serial data
+
+Use a script like posdriver-sph-debian to launch in the background.
+(posdriver-sph is for Redhat)
+posdriver-sph-debian can be configured to run pos.exe in verbose mode.
+Possibly configure (which posdriver script to run) and use posd.sh
+to manage the launcher.
+If you do, begin with:
+$ posd.sh install
+
+If you are running pos.exe in verbose mode you can use:
+$ tail -f /var/run/posdriver-sph-debian/pos.log
+or the utility tail_nmd_log.sh (tnl) to monitor it.
+
+For further help search the techhub forum for "NewMagellan".
+
+Run the driver in the foreground:
+$ sudo mono pos.exe -v
 If it starts OK it will immediately say:
 Reading serial data
 and there may be another line of scale or scanner data such as S110000
@@ -24,15 +93,26 @@ where "23" is the weight, 23/100ths of a pound in this case.
 Remove the thing from the scale and two more lines will probably appear:
 S141
 S1100000
+RECV FROM SCALE: S143
+PASS TO POS: S110000
 the second indicating the scale is back to zero.
-To stop the driver: ^C
+To stop the driver type:
+^C
+or
+exit
 
 You can run the driver in the foreground and use the PoS at the same time.
 The items you scan and weigh (if you also enter product codes) will appear
 in the transaction in the usual way.
 
+The driver launch script posdriver-sph is set to not non-verbose mode for
+production use because the logfile can grow very large.  You can change
+it to verbose for debugging.  Be sure to re-install the version you
+want to run at boot, possibly with:
+$ posd swap
+
 A second attempt to run the driver in the foreground may get a message like:
-$ sudo mono pos.exe
+$ sudo mono pos.exe -v
 
 Unhandled Exception: System.NullReferenceException: Object reference not set to an instance of an object
   at System.TermInfoDriver.CheckWindowDimensions () [0x00000] 
@@ -62,24 +142,27 @@ $ls -l will show something like:
 -rw-r--r-- 1 root     root        8 2012-10-27 17:35 15216206
 -rw-r--r-- 1 root     root        5 2012-10-27 17:35 15217402
 
-Each file contains output like that echoed to the screen.
+Files contain output like that echoed to the screen, without the LABELS:.
+There may be no files if the driver has been doing effective housekeeping,
+but the datestamp on the directory will be recent if the scanner/scale
+is active.
 
 While the driver is running in the background,
-scan and scale events are also logged to
-a file named in the driver start script, posdriver-sph, for example:
-/var/run/posdriver-sph/sph.log
+scan and scale events are, if the -v option was used, also logged to
+a file named in the driver start script, begin with, posdriver-sph, for example:
+/var/run/posdriver-sph/pos.log
 You can watch this as it accumulates with:
-$ tail -f /var/run/posdriver-sph/sph.log
+$ tail -f /var/run/posdriver-sph/pos.log
 Reading serial data
-S110000
 Received: rePoll
-S110000
-03120044618
+RECV FROM SCALE: S143
+PASS TO POS: S110000
 Received: goodBeep
-S110024
+RECV FROM SCALE: S08A88904400002
+PASS TO POS: 88904400002
 Received: goodBeep
-S141
-S110000
-85794100187
-^C to stop the display.
-
+RECV FROM SCALE: S110029
+RECV FROM SCALE: S1440029
+PASS TO POS: S110029
+RECV FROM SCALE: S1440029
+...

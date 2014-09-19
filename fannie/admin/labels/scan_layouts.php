@@ -22,14 +22,14 @@
 *********************************************************************************/
 
 function scan_layouts(){
-	$layouts = array();
-	$dh = opendir(dirname(__FILE__).'/pdf_layouts/');
-	while( ($file=readdir($dh)) !== False){
-		if ($file[0] == ".") continue;
-		if (substr(strtolower($file),-4) == ".php")
-			$layouts[] = str_replace("_"," ",substr($file,0,strlen($file)-4));
-	}
-	sort($layouts);
+    $layouts = array();
+    $dh = opendir(dirname(__FILE__).'/pdf_layouts/');
+    while( ($file=readdir($dh)) !== False){
+        if ($file[0] == ".") continue;
+        if (substr(strtolower($file),-4) == ".php")
+            $layouts[] = str_replace("_"," ",substr($file,0,strlen($file)-4));
+    }
+    sort($layouts);
 
-	return $layouts;
+    return $layouts;
 }

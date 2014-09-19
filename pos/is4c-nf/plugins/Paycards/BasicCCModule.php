@@ -41,17 +41,31 @@
  */
 
 if (!class_exists("PaycardLib")) include_once(realpath(dirname(__FILE__)."/lib/PaycardLib.php"));
-if (!isset($CORE_LOCAL)){
+if (!isset($CORE_LOCAL)) {
 	include_once(realpath(dirname(__FILE__)."/lib/LS_Access.php"));
 	$CORE_LOCAL = new LS_Access();
 }
 
 define("LOCAL_CERT_PATH",realpath(dirname(__FILE__)).'/cacert.pem');
 
-class BasicCCModule {
+class BasicCCModule 
+{
 
     public $last_ref_num = '';
     public $last_req_id = 0;
+    public $last_paycard_transaction_id = 0;
+
+	protected $GATEWAY;
+	protected $SOAPACTION = '';
+
+	/**
+	  Envelope attributes for SOAP.
+	*/
+	protected $SOAP_ENVELOPE_ATTRS = array(
+		"xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"",
+		"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"",
+		"xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\""
+    );
 
 	/** 
 	  Constructor
@@ -71,7 +85,8 @@ class BasicCCModule {
 
 	 Type constants are defined in paycardLib.php.
 	 */
-	function handlesType($type){
+	public function handlesType($type)
+    {
 		return False;
 	}
 
@@ -90,9 +105,15 @@ class BasicCCModule {
 	 If you set a URL in 'main_frame', POS
 	 might go there but it's not guaranteed.
 	 */
-	function entered($validate,$json){
-		if(!isset($json['output'])) $json['output'] = '';
-		if(!isset($json['main_frame'])) $json['main_frame'] = False;
+	public function entered($validate,$json)
+    {
+		if (!isset($json['output'])) {
+            $json['output'] = '';
+        }
+		if (!isset($json['main_frame'])) {
+            $json['main_frame'] = false;
+        }
+
 		return $json;
 	}
 
@@ -115,7 +136,8 @@ class BasicCCModule {
 	 <b>Do not store full card number when logging
 	 request and response info</b>.
 	 */
-	function doSend($type){
+	public function doSend($type)
+    {
 		return $this->setErrorMsg(0);
 	}
 
@@ -128,7 +150,8 @@ class BasicCCModule {
 	  cleanliness. You could leave this as is and
 	  do all the everything inside doSend()
 	 */
-	function cleanup($json){
+	public function cleanup($json)
+    {
 
 	}
 
@@ -146,9 +169,15 @@ class BasicCCModule {
 	 check the status of the original transaction before
 	 proceeding.
 	*/
-	function paycard_void($transID, $laneNo=-1, $transNo=-1, $json=array()){
-		if(!isset($json['output'])) $json['output'] = '';
-		if(!isset($json['main_frame'])) $json['main_frame'] = False;
+	public function paycard_void($transID, $laneNo=-1, $transNo=-1, $json=array())
+    {
+		if (!isset($json['output'])) {
+            $json['output'] = '';
+        }
+		if (!isset($json['main_frame'])) {
+            $json['main_frame'] = false;
+        }
+
 		return $json;
 	}
 
@@ -158,7 +187,7 @@ class BasicCCModule {
       @param $ref [string] efsnetRequest.refNum
       @return [boolean]
     */
-    function myRefNum($ref)
+    public function myRefNum($ref)
     {
         return false;
     }
@@ -177,7 +206,7 @@ class BasicCCModule {
         confirm_dest => URL destination if the user presses enter
         cancel_dest => URL destination if the user presses clear
     */
-    function lookupTransaction($ref, $local, $mode)
+    public function lookupTransaction($ref, $local, $mode)
     {
         return array(
             'output' => DisplayLib::boxMsg('Lookup not available for<br />this processor', '', true),
@@ -193,9 +222,6 @@ class BasicCCModule {
 	// They don't need to be defined or used. Any class
 	// that implements the interface methods above
 	// will work modularly
-
-	protected $GATEWAY;
-	protected $SOAPACTION = '';
 
 	/**
 	 Send a curl request with the specified data.
@@ -218,10 +244,12 @@ class BasicCCModule {
 	 This function calls the handleResponse method
 	 and returns the result of that call.
 	 */
-	function curlSend($data=False,$type='POST',$xml=False, $extraOpts=array(), $auto_handle=true){
+	function curlSend($data=False,$type='POST',$xml=False, $extraOpts=array(), $auto_handle=true)
+    {
 		global $CORE_LOCAL;
-		if($data && $type == 'GET')
+		if($data && $type == 'GET') {
 			$this->GATEWAY .= $data;
+        }
 
 		$curl_handle = curl_init($this->GATEWAY);
 
@@ -233,25 +261,28 @@ class BasicCCModule {
 		curl_setopt($curl_handle, CURLOPT_FRESH_CONNECT,true);
 		curl_setopt($curl_handle, CURLOPT_TIMEOUT,30);
 		curl_setopt($curl_handle, CURLOPT_SSL_VERIFYPEER, 0);
-		if($CORE_LOCAL->get("OS")=="win32")
+        if (MiscLib::win32()) {
 			curl_setopt($curl_handle, CURLOPT_CAINFO, LOCAL_CERT_PATH);
-		if ($type == 'SOAP'){
+        }
+		if ($type == 'SOAP') {
 			$headers = array();
-			if (!empty($this->SOAPACTION))
+			if (!empty($this->SOAPACTION)) {
 				$headers[] = "SOAPAction: ".$this->SOAPACTION;
+            }
 			$headers[] = "Content-type: text/xml";
 			curl_setopt($curl_handle, CURLOPT_HTTPHEADER, $headers);
-		}
-		elseif ($xml){
+		} else if ($xml) {
 			curl_setopt($curl_handle, CURLOPT_HTTPHEADER,
 				array("Content-type: text/xml"));
 		}
 
-		foreach($extraOpts as $opt => $value)
+		foreach ($extraOpts as $opt => $value) {
 			curl_setopt($curl_handle, $opt, $value);
+        }
 
-		if ($data && ($type == 'POST' || $type == 'SOAP'))
+		if ($data && ($type == 'POST' || $type == 'SOAP')) {
 			curl_setopt($curl_handle, CURLOPT_POSTFIELDS, $data);
+        }
 
 		set_time_limit(60);
 
@@ -260,7 +291,7 @@ class BasicCCModule {
 		// request sent; get rid of PAN info
 		$this->setPAN(array());
 
-		if ($type == "SOAP"){
+		if ($type == "SOAP") {
 			$response = str_replace("&lt;","<",$response);
 			$response = str_replace("&gt;",">",$response);
 		}
@@ -296,8 +327,9 @@ class BasicCCModule {
 	  in paycardLib.php. PaycardLib::PAYCARD_ERR_OK should be
 	  return on success.
 	 */
-	function handleResponse($response){
-		return False;
+	public function handleResponse($response)
+    {
+		return false;
 	}
 
 	/**
@@ -310,20 +342,23 @@ class BasicCCModule {
 	  - NNN is transaction number
 	  - III is transaction ID
 	 */
-	function refnum($transID){
+	public function refnum($transID)
+    {
 		global $CORE_LOCAL;
 		$transNo   = (int)$CORE_LOCAL->get("transno");
 		$cashierNo = (int)$CORE_LOCAL->get("CashierNo");
 		$laneNo    = (int)$CORE_LOCAL->get("laneno");
 		// fail if any field is too long (we don't want to truncate, since that might produce a non-unique refnum and cause bigger problems)
-		if( $transID > 999 || $transNo > 999 || $laneNo > 99 || $cashierNo > 9999)
+		if ($transID > 999 || $transNo > 999 || $laneNo > 99 || $cashierNo > 9999) {
 			return "";
+        }
 		// assemble string
 		$ref = "";
 		$ref .= str_pad($cashierNo, 4, "0", STR_PAD_LEFT);
 		$ref .= str_pad($laneNo,    2, "0", STR_PAD_LEFT);
 		$ref .= str_pad($transNo,   3, "0", STR_PAD_LEFT);
 		$ref .= str_pad($transID,   3, "0", STR_PAD_LEFT);
+
 		return $ref;
 	}
 
@@ -332,22 +367,16 @@ class BasicCCModule {
 	  @param $parray keyed array
 	  @return formatted string
 	 */
-	function array2post($parray){
+	public function array2post($parray)
+    {
 		$postData = "";
-		foreach($parray as $k=>$v) 
+		foreach ($parray as $k=>$v) {
 			$postData .= "$k=".urlencode($v)."&";
+        }
 		$postData = rtrim($postData,"&");
+
 		return $postData;
 	}
-
-	/**
-	  Envelope attributes for SOAP.
-	*/
-	protected $SOAP_ENVELOPE_ATTRS = array(
-		"xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"",
-		"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"",
-		"xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\""
-		);
 
 	/** Put objects into a soap envelope
 	  @param $action top level tag in the soap body
@@ -355,21 +384,23 @@ class BasicCCModule {
 	  @param $namespace include an xmlns attribute
 	  @return soap string
 	*/
-	function soapify($action,$objs,$namespace="",$encode_tags=True){
+	public function soapify($action,$objs,$namespace="",$encode_tags=true)
+    {
 		$ret = "<?xml version=\"1.0\"?>
 			<soap:Envelope";
-		foreach ($this->SOAP_ENVELOPE_ATTRS as $attr){
+		foreach ($this->SOAP_ENVELOPE_ATTRS as $attr) {
 			$ret .= " ".$attr;
 		}
 		$ret .= ">
 			<soap:Body>
 			<".$action;
-		if ($namespace != "")
+		if ($namespace != "") {
 			$ret .= " xmlns=\"".$namespace."\"";
+        }
 		$ret .= ">\n";
-		foreach($objs as $key=>$value){
+		foreach ($objs as $key=>$value) {
 			$ret .= "<".$key.">";
-			if ($encode_tags){
+			if ($encode_tags) {
 				$value = str_replace("<","&lt;",$value);
 				$value = str_replace(">","&gt;",$value);
 			}
@@ -388,9 +419,11 @@ class BasicCCModule {
 	  @param $action is the top level tag in the soap body
 	  @param $soaptext is the full soap response
 	*/
-	function desoapify($action,$soaptext){
+	public function desoapify($action,$soaptext)
+    {
 		preg_match("/<$action.*?>(.*?)<\/$action>/s",
 			$soaptext,$groups);
+
 		return isset($groups[1]) ? $groups[1] : "";
 	}
 
@@ -405,26 +438,83 @@ class BasicCCModule {
 	  PaycardLib::PAYCARD_ERR_PROC can have one default message
 	  assigned here
 	 */
-	function setErrorMsg($errorCode){
+	public function setErrorMsg($errorCode)
+    {
 		global $CORE_LOCAL;
-		switch ($errorCode){
-		case PaycardLib::PAYCARD_ERR_NOSEND:
-			$CORE_LOCAL->set("boxMsg",PaycardLib::paycard_errorText("Internal Error",$errorCode,"",1,1,0,0,1,$CORE_LOCAL->get("paycard_type")));
-			break;
-		case PaycardLib::PAYCARD_ERR_COMM:
-			$CORE_LOCAL->set("boxMsg",PaycardLib::paycard_errorText("Communication Error",$errorCode,"",1,1,0,0,0,$CORE_LOCAL->get("paycard_type")));
-			break;
-		case PaycardLib::PAYCARD_ERR_TIMEOUT:
-			$CORE_LOCAL->set("boxMsg",PaycardLib::paycard_errorText("Timeout Error",$errorCode,"",0,0,0,1,0,$CORE_LOCAL->get("paycard_type")));
-			break;
-		case PaycardLib::PAYCARD_ERR_DATA:
-			$CORE_LOCAL->set("boxMsg",PaycardLib::paycard_errorText("System Error",$errorCode,"",0,0,0,1,1,$CORE_LOCAL->get("paycard_type")));
-			break;
-		default:
-			$CORE_LOCAL->set("boxMsg",PaycardLib::paycard_errorText("Internal Error",$errorCode,"",1,1,0,0,1,$CORE_LOCAL->get("paycard_type")));
-			break;
-		return $errorCode;
+		switch ($errorCode) {
+            case PaycardLib::PAYCARD_ERR_NOSEND:
+                $CORE_LOCAL->set("boxMsg",
+                                 PaycardLib::paycard_errorText("Internal Error",
+                                                               $errorCode,
+                                                               "",
+                                                               1,
+                                                               1,
+                                                               0,
+                                                               0,
+                                                               1,
+                                                               $CORE_LOCAL->get("paycard_type")
+                                 )
+                );
+                break;
+            case PaycardLib::PAYCARD_ERR_COMM:
+                $CORE_LOCAL->set("boxMsg",
+                                 PaycardLib::paycard_errorText("Communication Error",
+                                                               $errorCode,
+                                                               "",
+                                                               1,
+                                                               1,
+                                                               0,
+                                                               0,
+                                                               0,
+                                                               $CORE_LOCAL->get("paycard_type")
+                                 )
+                );
+                break;
+            case PaycardLib::PAYCARD_ERR_TIMEOUT:
+                $CORE_LOCAL->set("boxMsg",
+                                 PaycardLib::paycard_errorText("Timeout Error",
+                                                               $errorCode,
+                                                               "",
+                                                               0,
+                                                               0,
+                                                               0,
+                                                               1,
+                                                               0,
+                                                               $CORE_LOCAL->get("paycard_type")
+                                 )
+                );
+                break;
+            case PaycardLib::PAYCARD_ERR_DATA:
+                $CORE_LOCAL->set("boxMsg",
+                                 PaycardLib::paycard_errorText("System Error",
+                                                               $errorCode,
+                                                               "",
+                                                               0,
+                                                               0,
+                                                               0,
+                                                               1,
+                                                               1,
+                                                               $CORE_LOCAL->get("paycard_type")
+                                 )
+                );
+                break;
+            default:
+                $CORE_LOCAL->set("boxMsg",
+                                 PaycardLib::paycard_errorText("Internal Error",
+                                                               $errorCode,
+                                                               "",
+                                                               1,
+                                                               1,
+                                                               0,
+                                                               0,
+                                                               1,
+                                                               $CORE_LOCAL->get("paycard_type")
+                                 )
+                );
+                break;
 		}
+
+        return $errorCode;
 	}
 
 	protected $trans_pan;
@@ -441,9 +531,9 @@ class BasicCCModule {
 	  before calling doSend and expunged again once
 	  the request has been submitted to the gateway.
 	*/
-	function setPAN($in){
+	public function setPAN($in)
+    {
 		$this->trans_pan = $in;
 	}
 }
 
-?>

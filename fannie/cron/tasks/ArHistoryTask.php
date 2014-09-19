@@ -132,6 +132,8 @@ Deprecates nightly.ar.php and arbalance.sanitycheck.php.';
             echo $this->cronMsg('Error reloading custdata balances');
         }
 
+        echo $this->cronMsg('Finished every-day tasks.');
+
         /* turnover view/cache base tables for WFC end-of-month reports */
         if (date('j') == 1) {
 
@@ -189,6 +191,7 @@ Deprecates nightly.ar.php and arbalance.sanitycheck.php.';
                 $dbc->query("TRUNCATE TABLE AR_EOM_Summary");
                 $dbc->query($AR_EOM_Summary_Q);
             }
+            echo $this->cronMsg('Finished first-of-month tasks.');
         }
     }
 }

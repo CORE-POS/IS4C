@@ -114,7 +114,7 @@ class FannieRESTfulPage extends FanniePage {
         // routes begin with method
         $this->__method = FormLib::get_form_value('_method');
         if ($this->__method === '') {
-            $this->__method = $_SERVER['REQUEST_METHOD'];
+            $this->__method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'get';
         }
         $this->__method = strtolower($this->__method);
 
@@ -214,7 +214,7 @@ class FannieRESTfulPage extends FanniePage {
       Draw default page for unknown HTTP method
       @return HTML string
     */
-    protected function unknownRquestView()
+    protected function unknownRequestView()
     {
         return 'HTTP 400 - Bad Request';
     }

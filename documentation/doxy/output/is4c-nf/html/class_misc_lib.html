@@ -37,13 +37,16 @@
 </map>
 <a href="class_misc_lib-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
 <tr><td></td></tr>
+<tr><td colspan="2"><br><h2>Public Member Functions</h2></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_misc_lib.html#52b9ae65d48b7c37c5cef1810072430e">getAllIPs</a> ()</td></tr>
+
 <tr><td colspan="2"><br><h2>Static Public Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_misc_lib.html#1181d41f12095bdaee5be52dcf4f2d0d">baseURL</a> ($check_file=&quot;css/pos.css&quot;)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="bc03bea489277bf351a638286cbd0a37"></a><!-- doxytag: member="MiscLib::base_url" ref="bc03bea489277bf351a638286cbd0a37" args="($check_file=&quot;css/pos.css&quot;)" -->
 static&nbsp;</td><td class="memItemRight" valign="bottom"><b>base_url</b> ($check_file=&quot;css/pos.css&quot;)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_misc_lib.html#1ce0d60a2b198ec1a6bf9d2e6fc6e0cb">nullwrap</a> ($num)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_misc_lib.html#e6dd394f82751761f5a497bbdc32daf4">nullwrap</a> ($num, $char=false)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_misc_lib.html#4ab7c9b563b0b6092dc87ccd86cc7cc6">truncate2</a> ($num)</td></tr>
 
@@ -113,6 +116,31 @@ Path detection. Find the relative URL for POS root. <dl compact><dt><b>Parameter
 Send error beep message to the scale 
 </div>
 </div><p>
+<a class="anchor" name="52b9ae65d48b7c37c5cef1810072430e"></a><!-- doxytag: member="MiscLib::getAllIPs" ref="52b9ae65d48b7c37c5cef1810072430e" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">MiscLib::getAllIPs           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Use ipconfig.exe or ifconfig, depending on OS, to determine all available IP addresses <dl compact><dt><b>Returns:</b></dt><dd>[array] of [string] IP addresses </dd></dl>
+
+<p>
+First: use OS utilities to check IP(s) This should be most complete but also may be blocked by permission settings<p>
+PHP 5.3 adds gethostname() function Try getting host name and resolving to an IP<p>
+$_SERVER may simply contain an IP address<p>
+$_SERVER may contain a host name that can be resolved to an IP address 
+</div>
+</div><p>
 <a class="anchor" name="e6ceb86f005dcc5c1d6908bbd166cb9e"></a><!-- doxytag: member="MiscLib::goodBeep" ref="e6ceb86f005dcc5c1d6908bbd166cb9e" args="()" -->
 <div class="memitem">
 <div class="memproto">
@@ -132,7 +160,7 @@ Send error beep message to the scale
 Send good beep message to the scale 
 </div>
 </div><p>
-<a class="anchor" name="1ce0d60a2b198ec1a6bf9d2e6fc6e0cb"></a><!-- doxytag: member="MiscLib::nullwrap" ref="1ce0d60a2b198ec1a6bf9d2e6fc6e0cb" args="($num)" -->
+<a class="anchor" name="e6dd394f82751761f5a497bbdc32daf4"></a><!-- doxytag: member="MiscLib::nullwrap" ref="e6dd394f82751761f5a497bbdc32daf4" args="($num, $char=false)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -140,9 +168,18 @@ Send good beep message to the scale
           <td class="memname">static MiscLib::nullwrap           </td>
           <td>(</td>
           <td class="paramtype">$&nbsp;</td>
-          <td class="paramname"> <em>num</em>          </td>
-          <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [static]</code></td>
+          <td class="paramname"> <em>num</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>char</em> = <code>false</code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"><code> [static]</code></td>
         </tr>
       </table>
 </div>
@@ -152,6 +189,7 @@ Send good beep message to the scale
 Sanitizes values <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>$num</em>&nbsp;</td><td>a value </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$char</em>&nbsp;</td><td>[optional] boolean is character </td></tr>
   </table>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>a sanitized value</dd></dl>
@@ -323,7 +361,7 @@ Guess whether PHP is running on windows <dl compact><dt><b>Returns:</b></dt><dd>
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/MiscLib.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

@@ -23,35 +23,37 @@
 
 class Equity extends MemberModule {
 
-	function ShowEditForm($memNum, $country="US"){
-		global $FANNIE_URL,$FANNIE_TRANS_DB;
+    function showEditForm($memNum, $country="US"){
+        global $FANNIE_URL,$FANNIE_TRANS_DB;
 
-		$dbc = $this->db();
-		$trans = $FANNIE_TRANS_DB.$dbc->sep();
-		
-		$infoQ = $dbc->prepare_statement("SELECT payments
-				FROM {$trans}equity_live_balance
-				WHERE memnum=?");
-		$infoR = $dbc->exec_statement($infoQ,array($memNum));
-		$equity = 0;
-		if ($dbc->num_rows($infoR) > 0)
-			$equity = array_pop($dbc->fetch_row($infoR));
+        $dbc = $this->db();
+        $trans = $FANNIE_TRANS_DB.$dbc->sep();
+        
+        $infoQ = $dbc->prepare_statement("SELECT payments
+                FROM {$trans}equity_live_balance
+                WHERE memnum=?");
+        $infoR = $dbc->exec_statement($infoQ,array($memNum));
+        $equity = 0;
+        if ($dbc->num_rows($infoR) > 0) {
+            $w = $dbc->fetch_row($infoR);
+            $equity = $w['payments'];
+        }
 
-		$ret = "<fieldset><legend>Equity</legend>";
-		$ret .= "<table class=\"MemFormTable\" 
-			border=\"0\">";
+        $ret = "<fieldset><legend>Equity</legend>";
+        $ret .= "<table class=\"MemFormTable\" 
+            border=\"0\">";
 
-		$ret .= "<tr><th>Stock Purhcased</th>";
-		$ret .= sprintf('<td>%.2f</td>',$equity);
+        $ret .= "<tr><th>Stock Purhcased</th>";
+        $ret .= sprintf('<td>%.2f</td>',$equity);
 
-		$ret .= "<td><a href=\"{$FANNIE_URL}reports/Equity/index.php?memNum=$memNum\">History</a></td></tr>";
-		$ret .= "<tr><td><a href=\"{$FANNIE_URL}mem/correction_pages/MemEquityTransferTool.php?memIN=$memNum\">Transfer Equity</a></td>";
-		$ret .= "<td><a href=\"{$FANNIE_URL}mem/correction_pages/MemArEquitySwapTool.php?memIN=$memNum\">Convert Equity</a></td></tr>";
+        $ret .= "<td><a href=\"{$FANNIE_URL}reports/Equity/index.php?memNum=$memNum\">History</a></td></tr>";
+        $ret .= "<tr><td><a href=\"{$FANNIE_URL}mem/correction_pages/MemEquityTransferTool.php?memIN=$memNum\">Transfer Equity</a></td>";
+        $ret .= "<td><a href=\"{$FANNIE_URL}mem/correction_pages/MemArEquitySwapTool.php?memIN=$memNum\">Convert Equity</a></td></tr>";
 
 
-		$ret .= "</table></fieldset>";
-		return $ret;
-	}
+        $ret .= "</table></fieldset>";
+        return $ret;
+    }
 }
 
 ?>

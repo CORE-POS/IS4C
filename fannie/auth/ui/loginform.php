@@ -24,8 +24,8 @@
 include('../../config.php');
 require('../login.php');
 if (isset($_GET["redirect"]) && init_check()){
-	header("Location:".$_GET['redirect']);
-	return;
+    header("Location:".$_GET['redirect']);
+    return;
 }
 
 $page_title = 'Fannie : Auth';
@@ -45,7 +45,7 @@ if ($current_user){
   include($FANNIE_ROOT."src/header.html");
   echo "You are logged in as $current_user<p />";
   if (isset($_GET['redirect'])){
-	echo "<b style=\"font-size:1.5em;\">It looks like you don't have permission to access this page</b><p />";
+    echo "<b style=\"font-size:1.5em;\">It looks like you don't have permission to access this page</b><p />";
   }
   echo "<a href=menu.php>Main menu</a>  |  <a href=loginform.php?logout=yes>Logout</a>?";
   include($FANNIE_ROOT."src/footer.html");
@@ -58,7 +58,7 @@ else {
     $redirect = $_POST['redirect'];
 
     if (!$login && $FANNIE_AUTH_LDAP)
-	$login = ldap_login($name,$password);
+    $login = ldap_login($name,$password);
 
     if (!$login && $FANNIE_AUTH_SHADOW)
         $login = shadow_login($name,$password);
@@ -80,7 +80,7 @@ else {
     }
     include($FANNIE_ROOT."src/header.html");
     if (isset($_GET['logout']))
-	echo "<blockquote><i>You've logged out</i></blockquote>";
+    echo "<blockquote><i>You've logged out</i></blockquote>";
     echo "<form action=loginform.php method=post>";
     echo "<table cellspacing=2 cellpadding=4><tr>";
     echo "<td>Name:</td><td><input type=text name=name></td>";

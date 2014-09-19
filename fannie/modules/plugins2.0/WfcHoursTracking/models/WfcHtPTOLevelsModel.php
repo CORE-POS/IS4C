@@ -33,7 +33,7 @@ class WfcHtPTOLevelsModel extends BasicModel
     'LevelID' => array('type'=>'SMALLINT', 'primary_key'=>true),
     'HoursWorked' => array('type'=>'DOUBLE'),
     'PTOHours' => array('type'=>'DOUBLE'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -42,14 +42,36 @@ class WfcHtPTOLevelsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["LevelID"])) {
                 return $this->instance["LevelID"];
-            } elseif(isset($this->columns["LevelID"]["default"])) {
+            } else if (isset($this->columns["LevelID"]["default"])) {
                 return $this->columns["LevelID"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'LevelID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["LevelID"]) || $this->instance["LevelID"] != func_get_args(0)) {
+                if (!isset($this->columns["LevelID"]["ignore_updates"]) || $this->columns["LevelID"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["LevelID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function HoursWorked()
@@ -57,14 +79,36 @@ class WfcHtPTOLevelsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["HoursWorked"])) {
                 return $this->instance["HoursWorked"];
-            } elseif(isset($this->columns["HoursWorked"]["default"])) {
+            } else if (isset($this->columns["HoursWorked"]["default"])) {
                 return $this->columns["HoursWorked"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'HoursWorked',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["HoursWorked"]) || $this->instance["HoursWorked"] != func_get_args(0)) {
+                if (!isset($this->columns["HoursWorked"]["ignore_updates"]) || $this->columns["HoursWorked"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["HoursWorked"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function PTOHours()
@@ -72,14 +116,36 @@ class WfcHtPTOLevelsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["PTOHours"])) {
                 return $this->instance["PTOHours"];
-            } elseif(isset($this->columns["PTOHours"]["default"])) {
+            } else if (isset($this->columns["PTOHours"]["default"])) {
                 return $this->columns["PTOHours"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'PTOHours',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["PTOHours"]) || $this->instance["PTOHours"] != func_get_args(0)) {
+                if (!isset($this->columns["PTOHours"]["ignore_updates"]) || $this->columns["PTOHours"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["PTOHours"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

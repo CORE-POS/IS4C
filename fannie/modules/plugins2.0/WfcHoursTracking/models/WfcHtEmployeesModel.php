@@ -37,7 +37,7 @@ class WfcHtEmployeesModel extends BasicModel
     'PTOCutoff' => array('type'=>'INT'),
     'department' => array('type'=>'INT'),
     'deleted' => array('type'=>'TINYINT'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -46,14 +46,36 @@ class WfcHtEmployeesModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["empID"])) {
                 return $this->instance["empID"];
-            } elseif(isset($this->columns["empID"]["default"])) {
+            } else if (isset($this->columns["empID"]["default"])) {
                 return $this->columns["empID"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'empID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["empID"]) || $this->instance["empID"] != func_get_args(0)) {
+                if (!isset($this->columns["empID"]["ignore_updates"]) || $this->columns["empID"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["empID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function name()
@@ -61,14 +83,36 @@ class WfcHtEmployeesModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["name"])) {
                 return $this->instance["name"];
-            } elseif(isset($this->columns["name"]["default"])) {
+            } else if (isset($this->columns["name"]["default"])) {
                 return $this->columns["name"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'name',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["name"]) || $this->instance["name"] != func_get_args(0)) {
+                if (!isset($this->columns["name"]["ignore_updates"]) || $this->columns["name"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["name"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function adpID()
@@ -76,14 +120,36 @@ class WfcHtEmployeesModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["adpID"])) {
                 return $this->instance["adpID"];
-            } elseif(isset($this->columns["adpID"]["default"])) {
+            } else if (isset($this->columns["adpID"]["default"])) {
                 return $this->columns["adpID"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'adpID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["adpID"]) || $this->instance["adpID"] != func_get_args(0)) {
+                if (!isset($this->columns["adpID"]["ignore_updates"]) || $this->columns["adpID"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["adpID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function PTOLevel()
@@ -91,14 +157,36 @@ class WfcHtEmployeesModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["PTOLevel"])) {
                 return $this->instance["PTOLevel"];
-            } elseif(isset($this->columns["PTOLevel"]["default"])) {
+            } else if (isset($this->columns["PTOLevel"]["default"])) {
                 return $this->columns["PTOLevel"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'PTOLevel',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["PTOLevel"]) || $this->instance["PTOLevel"] != func_get_args(0)) {
+                if (!isset($this->columns["PTOLevel"]["ignore_updates"]) || $this->columns["PTOLevel"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["PTOLevel"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function PTOCutoff()
@@ -106,14 +194,36 @@ class WfcHtEmployeesModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["PTOCutoff"])) {
                 return $this->instance["PTOCutoff"];
-            } elseif(isset($this->columns["PTOCutoff"]["default"])) {
+            } else if (isset($this->columns["PTOCutoff"]["default"])) {
                 return $this->columns["PTOCutoff"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'PTOCutoff',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["PTOCutoff"]) || $this->instance["PTOCutoff"] != func_get_args(0)) {
+                if (!isset($this->columns["PTOCutoff"]["ignore_updates"]) || $this->columns["PTOCutoff"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["PTOCutoff"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function department()
@@ -121,14 +231,36 @@ class WfcHtEmployeesModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["department"])) {
                 return $this->instance["department"];
-            } elseif(isset($this->columns["department"]["default"])) {
+            } else if (isset($this->columns["department"]["default"])) {
                 return $this->columns["department"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'department',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["department"]) || $this->instance["department"] != func_get_args(0)) {
+                if (!isset($this->columns["department"]["ignore_updates"]) || $this->columns["department"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["department"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function deleted()
@@ -136,14 +268,36 @@ class WfcHtEmployeesModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["deleted"])) {
                 return $this->instance["deleted"];
-            } elseif(isset($this->columns["deleted"]["default"])) {
+            } else if (isset($this->columns["deleted"]["default"])) {
                 return $this->columns["deleted"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'deleted',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["deleted"]) || $this->instance["deleted"] != func_get_args(0)) {
+                if (!isset($this->columns["deleted"]["ignore_updates"]) || $this->columns["deleted"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["deleted"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

@@ -21,11 +21,15 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class HourlySalesReport extends FannieReportPage 
 {
+    public $description = '[Hourly Sales] lists sales per hour over a given date range.';
+    public $report_set = 'Sales Reports';
 
     protected $title = "Fannie : Hourly Sales Report";
     protected $header = "Hourly Sales";
@@ -35,31 +39,27 @@ class HourlySalesReport extends FannieReportPage
     protected $sortable = false;
     protected $no_sort_but_style = true;
 
-	public function preprocess()
+    public function preprocess()
     {
         parent::preprocess();
         // custom: needs graphing JS/CSS
         if ($this->content_function == 'report_content' && $this->report_format == 'html') {
-            $this->add_script('../../src/d3.js/d3.v3.min.js');
-            $this->add_script('../../src/d3.js/charts/singleline/singleline.js');
-            $this->add_css_file('../../src/d3.js/charts/singleline/singleline.css');
-		}
+            $this->add_script('../../src/javascript/d3.js/d3.v3.min.js');
+            $this->add_script('../../src/javascript/d3.js/charts/singleline/singleline.js');
+            $this->add_css_file('../../src/javascript/d3.js/charts/singleline/singleline.css');
+        }
 
-		return true;
-	}
+        return true;
+    }
 
     public function report_description_content()
     {
-        $date1 = FormLib::get('date1', date('Y-m-d'));
-        $date2 = FormLib::get('date2', date('Y-m-d'));
         $deptStart = FormLib::get('deptStart');
         $deptEnd = FormLib::get('deptEnd');
         $weekday = FormLib::get('weekday', 0);
         $buyer = FormLib::get('buyer', '');
-	
+    
         $ret = array();
-        $ret[] = 'Hourly Sales Report';
-        $ret[] = 'From '.$date1.' to '.$date2;
         if ($buyer === '') {
             $ret[] = 'Department '.$deptStart.' to '.$deptEnd;
         } else if ($buyer == -1) {
@@ -73,7 +73,7 @@ class HourlySalesReport extends FannieReportPage
         }
 
         if ($this->report_format == 'html') {
-            $ret[] = sprintf('<a href="../HourlyTrans/HourlyTransReport.php?%s">Transaction Counts for Same Period</a>', 
+            $ret[] = sprintf(' <a href="../HourlyTrans/HourlyTransReport.php?%s">Transaction Counts for Same Period</a>', 
                             $_SERVER['QUERY_STRING']);
         }
 
@@ -102,7 +102,7 @@ class HourlySalesReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB;
+        global $FANNIE_OP_DB, $FANNIE_COOP_ID;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $date1 = FormLib::get('date1', date('Y-m-d'));
@@ -110,7 +110,7 @@ class HourlySalesReport extends FannieReportPage
         $deptStart = FormLib::get('deptStart');
         $deptEnd = FormLib::get('deptEnd');
         $weekday = FormLib::get('weekday', 0);
-	
+    
         $buyer = FormLib::get('buyer', '');
 
         // args/parameters differ with super
@@ -152,8 +152,11 @@ class HourlySalesReport extends FannieReportPage
         }
         $query .= "WHERE d.trans_type IN ('I','D')
                     AND d.tdate BETWEEN ? AND ?
-                    AND $where
-                   GROUP BY $date_selector, $hour
+                    AND $where ";
+        if ($FANNIE_COOP_ID == 'WFC_Duluth') {
+            $query .= ' AND d.department NOT IN (993, 998, 703) ';
+        }
+        $query .= " GROUP BY $date_selector, $hour
                    ORDER BY $date_selector, $hour";
 
         $prep = $dbc->prepare_statement($query);
@@ -220,12 +223,12 @@ class HourlySalesReport extends FannieReportPage
                 $sum += $sales;
             }
 
-            $record[] = $sum;
+            $record[] = sprintf('%.2f', $sum);
             $data[] = $record;
         }
         
         return $data;
-	}
+    }
 
     public function calculate_footers($data)
     {
@@ -340,67 +343,70 @@ function swap(src,dst){
     document.getElementById(dst).value = val;
 }
 </script>
-<div id=main>	
+<div id=main>   
 <form method = "get" action="HourlySalesReport.php">
-	<table border="0" cellspacing="0" cellpadding="5">
-		<tr>
-			<td><b>Select Buyer/Dept</b></td>
-			<td><select id=buyer name=buyer>
-			   <option value=""></option>
-			   <?php echo $deptSubList; ?>
-			   <option value=-1 selected>All</option>
-			   </select>
- 			</td>
-			<td><b>Send to Excel</b></td>
-			<td><input type=checkbox name=excel id=excel value=1></td>
-		</tr>
-		<tr>
-			<td colspan=5><i>Selecting a Buyer/Dept overrides Department Start/Department End, but not Date Start/End.
-			To run reports for a specific department(s) leave Buyer/Dept or set it to 'blank'</i></td>
-		</tr>
-		<tr> 
-			<td> <p><b>Department Start</b></p>
-			<p><b>End</b></p></td>
-			<td> <p>
- 			<select id=deptStartSel onchange="swap('deptStartSel','deptStart');">
-			<?php echo $deptsList ?>
-			</select>
-			<input type=text name=deptStart id=deptStart size=5 value=1 />
-			</p>
-			<p>
-			<select id=deptEndSel onchange="swap('deptEndSel','deptEnd');">
-			<?php echo $deptsList ?>
-			</select>
-			<input type=text name=deptEnd id=deptEnd size=5 value=1 />
-			</p></td>
+    <table border="0" cellspacing="0" cellpadding="5">
+        <tr>
+            <td><b>Select Buyer/Dept</b></td>
+            <td><select id=buyer name=buyer>
+               <option value=""></option>
+               <?php echo $deptSubList; ?>
+               <option value=-1 selected>All</option>
+               </select>
+            </td>
+            <td><b>Send to Excel</b></td>
+            <td><input type=checkbox name=excel id=excel value=1></td>
+        </tr>
+        <tr>
+            <td colspan=5><i>Selecting a Buyer/Dept overrides Department Start/Department End, but not Date Start/End.
+            To run reports for a specific department(s) leave Buyer/Dept or set it to 'blank'</i></td>
+        </tr>
+        <tr> 
+            <td> <p><b>Department Start</b></p>
+            <p><b>End</b></p></td>
+            <td> <p>
+            <select id=deptStartSel onchange="swap('deptStartSel','deptStart');">
+            <?php echo $deptsList ?>
+            </select>
+            <input type=text name=deptStart id=deptStart size=5 value=1 />
+            </p>
+            <p>
+            <select id=deptEndSel onchange="swap('deptEndSel','deptEnd');">
+            <?php echo $deptsList ?>
+            </select>
+            <input type=text name=deptEnd id=deptEnd size=5 value=1 />
+            </p></td>
 
-			 <td>
-			<p><b>Date Start</b> </p>
-		         <p><b>End</b></p>
-		       </td>
-		            <td>
-		             <p>
-		               <input type=text id=date1 name=date1 onfocus="this.value='';showCalendarControl(this);">
-		               </p>
-		               <p>
-		                <input type=text id=date2 name=date2 onfocus="this.value='';showCalendarControl(this);">
-		         </p>
-		       </td>
+             <td>
+            <p><b>Date Start</b> </p>
+                 <p><b>End</b></p>
+               </td>
+                    <td>
+                     <p>
+                       <input type=text id=date1 name=date1 />
+                       </p>
+                       <p>
+                        <input type=text id=date2 name=date2 />
+                 </p>
+               </td>
 
-		</tr>
-		<tr> 
+        </tr>
+        <tr> 
              <td colspan="2"><input type=checkbox name=weekday value=1>Group by weekday?</td>
-			<td colspan="2" rowspan="2">
+            <td colspan="2" rowspan="2">
                 <?php echo FormLib::date_range_picker(); ?>
             </td>
-		</tr>
+        </tr>
         <tr>
-			<td> <input type=submit name=submit value="Submit"> </td>
-			<td> <input type=reset name=reset value="Start Over"> </td>
-		</tr>
-	</table>
+            <td> <input type=submit name=submit value="Submit"> </td>
+            <td> <input type=reset name=reset value="Start Over"> </td>
+        </tr>
+    </table>
 </form>
         <?php
+        $this->add_onload_command('$(\'#date1\').datepicker();');
+        $this->add_onload_command('$(\'#date2\').datepicker();');
+
         return ob_get_clean();
     }
 }

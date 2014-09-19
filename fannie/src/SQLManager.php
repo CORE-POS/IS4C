@@ -44,6 +44,9 @@ class SQLManager
 	/** Default database connection */
 	public $default_db;
 
+    /** throw exception on failed query **/
+    private $throw_on_fail = false;
+
 	/** Constructor
 	    @param $server Database server host
 	    @param $type Database type. Most supported are
@@ -173,20 +176,26 @@ class SQLManager
 		$con = $this->connections[$which_connection];
 
 		$ok = (!is_object($con)) ? false : $con->Execute($query_text,$params);
-		if (!$ok && is_writable($ql)) {
-			$fp = fopen($ql,'a');
+		if (!$ok) {
+
 			if (is_array($query_text)) {
 				$query_text = $query_text[0];
             }
-			fputs($fp,$_SERVER['PHP_SELF'].": ".date('r').': '.$query_text."\n");
-			fputs($fp,$this->error()."\n\n");
-			fclose($fp);
-		} else if (!$ok) {
-			if (is_array($query_text)) {
-				$query_text = $query_text[0];
+
+			$errorMsg = $_SERVER['PHP_SELF'] . ': ' . date('r') . ': ' . $query_text . "\n";
+			$errorMsg .= $this->error($which_connection) . "\n\n";
+
+            if (is_writable($ql)) {
+                $fp = fopen($ql,'a');
+                fwrite($fp, $errorMsg);
+                fclose($fp);
+            } else {
+                echo str_replace("\n", '<br />', $errorMsg);
             }
-			echo "Bad query: {$_SERVER['PHP_SELF']}: $query_text<br />";
-			echo $this->error($which_connection)."<br />";
+
+            if ($this->throw_on_fail) {
+                throw new Exception($errorMsg);
+            }
 		}
 
 		return $ok;
@@ -650,6 +659,45 @@ class SQLManager
         return $this->fetchField($result_object, $index, $which_connection);
     }
 
+	/**
+	  Start a transaction
+	  @param $which_connection see method close()
+	*/
+	public function startTransaction($which_connection='')
+    {
+		if ($which_connection == '') {
+			$which_connection = $this->default_db;
+        }
+
+		return $this->connections[$which_connection]->BeginTrans();
+	}
+
+	/**
+	  Finish a transaction
+	  @param $which_connection see method close()
+	*/
+	public function commitTransaction($which_connection='')
+    {
+		if ($which_connection == '') {
+			$which_connection = $this->default_db;
+        }
+
+		return $this->connections[$which_connection]->CommitTrans();
+	}
+
+	/**
+	  Abort a transaction
+	  @param $which_connection see method close()
+	*/
+	public function rollbackTransaction($which_connection='')
+    {
+		if ($which_connection == '') {
+			$which_connection = $this->default_db;
+        }
+
+		return $this->connections[$which_connection]->RollbackTrans();
+	}
+
 	/** 
 	   Copy a table from one database to another, not necessarily on
 	   the same server or format.
@@ -702,11 +750,17 @@ class SQLManager
 		}
 
 		$ret = true;
+        $this->startTransaction($dest_db);
 		foreach ($queries as $q) {
 			if(!$this->query($q,$dest_db)) {
                 $ret = false;
             }
 		}
+        if ($ret === true) {
+            $this->commitTransaction($dest_db);
+        } else {
+            $this->rollbackTransaction($dest_db);
+        }
 
 		return $ret;
 	}
@@ -945,6 +999,72 @@ class SQLManager
         return $this->tableDefinition($table_name, $which_connection);
     }
 
+    /**
+      More detailed table definition
+	   @param $table_name The table's name
+	   @param which_connection see method close
+	   @return
+        - array of column name => info array
+        - the info array has keys: 
+            * type (string)
+            * increment (boolean OR null if unknown)
+            * primary_key (boolean OR null if unknown)
+            * default (value OR null)
+    */
+	public function detailedDefinition($table_name,$which_connection='')
+    {
+		if ($which_connection == '') {
+			$which_connection=$this->default_db;
+        }
+		$conn = $this->connections[$which_connection];
+		$cols = $conn->MetaColumns($table_name);
+
+		$return = array();
+		if (is_array($cols)) {
+			foreach($cols as $c) {
+				$info = array();
+                $type = strtoupper($c->type);
+                if (property_exists($c, 'max_length') && $c->max_length != -1 && substr($type, -3) != 'INT') {
+                    if (property_exists($c, 'scale') && $c->scale) {
+                        $type .= '(' . $c->max_length . ',' . $c->scale . ')';
+                    } else {
+                        $type .= '(' . $c->max_length . ')';
+                    }
+                }
+                if (property_exists($c, 'unsigned') && $c->unsigned) {
+                    $type .= ' UNSIGNED';
+                }
+                $info['type'] = $type;
+                if (property_exists($c, 'auto_increment') && $c->auto_increment) {
+                    $info['increment'] = true;
+                } else if (property_exists($c, 'auto_increment') && !$c->auto_increment) {
+                    $info['increment'] = false;
+                } else {
+                    $info['increment'] = null;
+                }
+                if (property_exists($c, 'primary_key') && $c->primary_key) {
+                    $info['primary_key'] = true;
+                } else if (property_exists($c, 'primary_key') && !$c->primary_key) {
+                    $info['primary_key'] = false;
+                } else {
+                    $info['primary_key'] = null;
+                }
+
+                if (property_exists($c, 'default_value') && $c->default_value !== 'NULL' && $c->default_value !== null) {
+                    $info['default'] = $c->default_value;
+                } else {
+                    $info['default'] = null;
+                }
+
+                $return[$c->name] = $info;
+            }
+
+			return $return;
+		}
+
+		return false;
+	}
+
 	/**
 	   Get list of tables/views
 	   @param which_connection see method close
@@ -976,6 +1096,11 @@ class SQLManager
 		if ($which_connection == '') {
 			$which_connection=$this->default_db;
         }
+
+        if (count($this->connections) == 0) {
+            return false;
+        }
+
         $query ='';
 		switch($this->connections[$which_connection]->databaseType) {
             case 'mysql':
@@ -1406,6 +1531,32 @@ class SQLManager
         }
 
         return $matches;
+    }
+
+    public function getMatchingColumns($table1, $which_connection1, $table2, $which_connection2)
+    {
+        $ret = '';
+        $def1 = $this->tableDefinition($table1, $which_connection1);
+        $def2 = $this->tableDefinition($table2, $which_connection2);
+        foreach($def1 as $column_name => $info) {
+            if (isset($def2[$column_name])) {
+                $ret .= $column_name . ',';
+            }
+        }
+        if ($ret === '') {
+            return false;
+        } else {
+            return substr($ret, 0, strlen($ret)-1);
+        }
+    }
+
+    /**
+      Enable or disable exceptions on failed queries
+      @param $mode boolean
+    */
+    public function throwOnFailure($mode)
+    {
+        $this->throw_on_fail = $mode;
     }
 
 	// skipping fetch_cell on purpose; generic-db way would be slow as heck

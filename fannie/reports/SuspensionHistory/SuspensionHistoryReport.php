@@ -21,18 +21,23 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class SuspensionHistoryReport extends FannieReportPage 
 {
+    public $description = '[Suspension History] lists when a membership was deactivated &amp; reactivated.';
+    public $report_set = 'Membership';
+
     protected $title = "Fannie : Suspension History";
     protected $header = "Suspension History";
     protected $sort_direction = 1;
     protected $report_headers = array('Date', 'Reason', 'User');
     protected $required_fields = array('memNum');
 
-	public function preprocess()
+    public function preprocess()
     {
         $this->card_no = FormLib::get('memNum','');
 

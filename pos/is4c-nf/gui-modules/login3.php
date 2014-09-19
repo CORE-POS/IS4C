@@ -78,11 +78,6 @@ class login3 extends BasicPage {
 			</div>
 		</div>
 		<?php
-        /**
-        alog and its variants are never used.
-        @deprecated
-		TransRecord::addactivity(3);
-        */
 		Database::getsubtotals();
 		echo "<div id=\"footer\">";
 		echo DisplayLib::printfooter();

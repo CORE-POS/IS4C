@@ -3,18 +3,18 @@
 Table: cronBackup
 
 Columns:
-	modified datetime
-	file_contents text
+    modified datetime
+    file_contents text
 
 Depends on:
-	none
+    none
 
 Use:
 */
 $CREATE['op.cronBackup'] = "
-	CREATE TABLE cronBackup (
-		modified datetime,
-		file_contents text
-	)
+    CREATE TABLE cronBackup (
+        modified datetime,
+        file_contents text
+    )
 ";
 ?>

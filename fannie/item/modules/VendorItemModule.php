@@ -22,104 +22,140 @@
 *********************************************************************************/
 
 if (!class_exists('FannieAPI'))
-	include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
+    include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
 
 class VendorItemModule extends ItemModule {
 
-	function ShowEditForm($upc){
-		$upc = BarcodeLib::padUPC($upc);
+    public function showEditForm($upc, $display_mode=1, $expand_mode=1)
+    {
+        global $FANNIE_CSS_PRIMARY_COLOR;
+        $upc = BarcodeLib::padUPC($upc);
 
-		$ret = '<fieldset id="VendorItemsFieldset">';
-		$ret .=  "<legend>Vendor Items</legend>";
+        $ret = '<fieldset id="VendorItemsFieldset">';
+        $ret .=  "<legend onclick=\"\$('#VendorItemsFieldsetContent').toggle();\">
+                <a href=\"\" onclick=\"return false;\">Vendor Items</a>
+                </legend>";
+        $css = ($expand_mode == 1) ? '' : 'display:none;';
+        $ret .= '<div id="VendorItemsFieldsetContent" style="' . $css . '">';
 
-		$dbc = $this->db();
-		$p = $dbc->prepare_statement('SELECT vendorID,vendorName FROM vendors ORDER BY vendorID');
-		$r = $dbc->exec_statement($p);
-		if ($dbc->num_rows($r) == 0) return ''; // no vendors available
-		$vendors = array();
-		while($w = $dbc->fetch_row($r))
-			$vendors[$w['vendorID']] = $w['vendorName'];
+        $dbc = $this->db();
+        $p = $dbc->prepare_statement('SELECT vendorID,vendorName FROM vendors ORDER BY vendorName');
+        $r = $dbc->exec_statement($p);
+        if ($dbc->num_rows($r) == 0) return ''; // no vendors available
+        $vendors = array();
+        while ($w = $dbc->fetch_row($r)) {
+            $vendors[$w['vendorID']] = $w['vendorName'];
+        }
 
-		$ret .= '<select onchange="$(\'.vtable\').hide();$(\'#vtable\'+this.value).show();">';
-		foreach($vendors as $id => $name){
-			$ret .= sprintf('<option value="%d">%s</option>',$id,$name);
-		}
-		$ret .= '</select>';
+        $product = new ProductsModel($dbc);
+        $product->upc($upc);
+        $product->load();
+        $my_vendor = $product->default_vendor_id();
+        $matched = false;
+        $hilite = 'style="color:' . $FANNIE_CSS_PRIMARY_COLOR . ';"';
 
-		$prep = $dbc->prepare_statement('SELECT * FROM vendorItems WHERE vendorID=? AND upc=?');
-		$style = 'display:table;';
-		foreach($vendors as $id => $name){
-			$ret .= "<table style=\"margin-top:5px;margin-bottom:5px;$style\" 
-					border=1 id=\"vtable$id\"
-					cellpadding=5 cellspacing=0 class=\"vtable\">";
-			$row = array('cost'=>0,'sku'=>'','units'=>1);
-			$res = $dbc->exec_statement($prep,array($id,$upc));	
-			if ($dbc->num_rows($res) > 0)
-				$row = $dbc->fetch_row($res);
-			$ret .= '<tr><th>SKU</th><td><input type="text" size="8" name="v_sku[]"
-					value="'.$row['sku'].'" /></td>';
-			$ret .= sprintf('<th>Unit Cost</th><td>$<input type="text" size="6"
-					name="v_cost[]" id="vcost%d" value="%.2f" onchange="vprice(%d);" /></td></tr>',
-					$id, $row['cost'], $id);
-			$ret .= '<tr><th>Units/Case</th><td><input type="text" size="4" name="v_units[]"
-					id="vunits'.$id.'" value="'.$row['units'].'" 
-					onchange="vprice('.$id.');" /></td>';
-			$ret .= sprintf('<th>Case Cost</th><td id="vcc%d">$%.2f</td></tr>',
-					$id, ($row['units']*$row['cost']));
-			$ret .= '<input type="hidden" name="v_id[]" value="'.$id.'" />';
-			
-			$ret .= '</table>';
-			$ret .= "<script type=\"text/javascript\">
-				function vprice(id){
-					var cost = \$('#vcost'+id).val();
-					var units = \$('#vunits'+id).val();
-					\$('#vcc'+id).html('\$'+(cost*units));
-				}
-				</script>";
+        $ret .= '<select onchange="$(\'.vtable\').hide();$(\'#vtable\'+this.value).show();">';
+        foreach ($vendors as $id => $name) {
+            $ret .= sprintf('<option %s value="%d">%s%s</option>',
+                        ($my_vendor == $id ? 'selected ' . $hilite : ''),
+                        $id,
+                        $name,
+                        ($my_vendor == $id ? ' [current]': '')
+            );
+            if ($my_vendor == $id) {
+                $matched = true;
+            }
+        }
+        $ret .= '</select>';
 
-			$style = 'display:none;';
-		}
-		
-		$ret .= '</fieldset>';
-		return $ret;
-	}
+        $prep = $dbc->prepare_statement('SELECT * FROM vendorItems WHERE vendorID=? AND upc=?');
+        $style = ($matched) ? 'display:none;' : 'display:table;';
+        $cost_class = '';
+        foreach ($vendors as $id => $name) {
+            if ($matched && $id == $my_vendor) {
+                $style = 'display:table;';
+                $cost_class = 'class="default_vendor_cost"';
+            }
+            $ret .= "<table style=\"margin-top:5px;margin-bottom:5px;$style\" 
+                    border=1 id=\"vtable$id\"
+                    cellpadding=5 cellspacing=0 class=\"vtable\">";
+            $row = array('cost'=>0,'sku'=>'','units'=>1);
+            $res = $dbc->exec_statement($prep,array($id,$upc)); 
+            if ($dbc->num_rows($res) > 0)
+                $row = $dbc->fetch_row($res);
+            $ret .= '<tr><th>SKU</th><td><input type="text" size="8" name="v_sku[]"
+                    value="'.$row['sku'].'" /></td>';
+            $ret .= sprintf('<th>Unit Cost</th><td>$<input type="text" size="6"
+                    name="v_cost[]" id="vcost%d" %s value="%.2f" onchange="vprice(%d);" /></td></tr>',
+                    $id, $cost_class, $row['cost'], $id);
+            $ret .= '<tr><th>Units/Case</th><td><input type="text" size="4" name="v_units[]"
+                    id="vunits'.$id.'" value="'.$row['units'].'" 
+                    onchange="vprice('.$id.');" /></td>';
+            $ret .= sprintf('<th>Case Cost</th><td id="vcc%d">$%.2f</td></tr>',
+                    $id, ($row['units']*$row['cost']));
+            $ret .= '<input type="hidden" name="v_id[]" value="'.$id.'" />';
+            
+            $ret .= '</table>';
 
-	function SaveFormData($upc){
-		$upc = BarcodeLib::padUPC($upc);
-		$ids = FormLib::get_form_value('v_id',array());
-		$skus = FormLib::get_form_value('v_sku',array());
-		$costs = FormLib::get_form_value('v_cost',array());
-		$units = FormLib::get_form_value('v_units',array());
+            $style = 'display:none;';
+        }
+        
+        $ret .= '</div>';
+        $ret .= '</fieldset>';
+        return $ret;
+    }
 
-		$dbc = $this->db();
-		$chkP = $dbc->prepare_statement('SELECT upc FROM vendorItems WHERE vendorID=? AND upc=?');
-		$insP = $dbc->prepare_statement('INSERT INTO vendorItems (upc,vendorID,cost,units,sku)
-					VALUES (?,?,?,?,?)');
-		$upP = $dbc->prepare_statement('UPDATE vendorItems SET cost=?,units=?,sku=? WHERE
-					upc=? AND vendorID=?');
-	
-		$ret = True;
-		for ($i=0;$i<count($ids);$i++){
-			if (!isset($skus[$i]) || !isset($costs[$i]) || !isset($units[$i]))
-				continue; // bad submit
-			if (empty($skus[$i]) || empty($costs[$i]))
-				continue; // no submission. don't create a record
+    public function getFormJavascript($upc)
+    {
+        return "
+            function vprice(id){
+                var cost = \$('#vcost'+id).val();
+                var units = \$('#vunits'+id).val();
+                \$('#vcc'+id).html('\$'+(cost*units));
+                if (\$('#vcost'+id).hasClass('default_vendor_cost')) {
+                    \$('#cost').val(\$('#vcost'+id).val());
+                    \$('#cost').trigger('change');
+                }
+            }
+            ";
+    }
 
-			$chkR = $dbc->exec_statement($chkP,array($ids[$i],$upc));
-			if ($dbc->num_rows($chkR) == 0){
-				$try = $dbc->exec_statement($insP,array($upc,$ids[$i],
-					$costs[$i],$units[$i],$skus[$i]));
-				if ($try === False) $ret = False;
-			}
-			else {
-				$try = $dbc->exec_statement($upP,array($costs[$i],
-					$units[$i],$skus[$i],$upc,$ids[$i]));
-				if ($try === False) $ret = False;
-			}
-		}
+    function SaveFormData($upc){
+        $upc = BarcodeLib::padUPC($upc);
+        $ids = FormLib::get_form_value('v_id',array());
+        $skus = FormLib::get_form_value('v_sku',array());
+        $costs = FormLib::get_form_value('v_cost',array());
+        $units = FormLib::get_form_value('v_units',array());
 
-		return $ret;
-	}
+        $dbc = $this->db();
+        $chkP = $dbc->prepare_statement('SELECT upc FROM vendorItems WHERE vendorID=? AND upc=?');
+        $insP = $dbc->prepare_statement('INSERT INTO vendorItems (upc,vendorID,cost,units,sku)
+                    VALUES (?,?,?,?,?)');
+        $upP = $dbc->prepare_statement('UPDATE vendorItems SET cost=?,units=?,sku=? WHERE
+                    upc=? AND vendorID=?');
+    
+        $ret = True;
+        for ($i=0;$i<count($ids);$i++){
+            if (!isset($skus[$i]) || !isset($costs[$i]) || !isset($units[$i]))
+                continue; // bad submit
+            if (empty($skus[$i]) || empty($costs[$i]))
+                continue; // no submission. don't create a record
+
+            $chkR = $dbc->exec_statement($chkP,array($ids[$i],$upc));
+            if ($dbc->num_rows($chkR) == 0){
+                $try = $dbc->exec_statement($insP,array($upc,$ids[$i],
+                    $costs[$i],$units[$i],$skus[$i]));
+                if ($try === False) $ret = False;
+            }
+            else {
+                $try = $dbc->exec_statement($upP,array($costs[$i],
+                    $units[$i],$skus[$i],$upc,$ids[$i]));
+                if ($try === False) $ret = False;
+            }
+        }
+
+        return $ret;
+    }
 }
 
 ?>

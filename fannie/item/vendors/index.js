@@ -48,8 +48,27 @@ function vendorchange(){
 		},
 		success: function(resp){
 			$('#contentarea').html(resp);
+            $('.delivery').change(saveDelivery);
 		}
 	});
+}
+
+function saveDelivery()
+{
+    var data = $('.delivery').serialize();
+	var vid = $('#vendorselect').val();
+    $.ajax({
+        url: 'VendorIndexPage.php',
+        data: 'action=saveDelivery&vID='+vid+'&'+data,
+        method: 'post',
+        dataType: 'json',
+        success: function(resp){
+            if (resp.next && resp.nextNext) {
+                $('#nextDelivery').html(resp.next);
+                $('#nextNextDelivery').html(resp.nextNext);
+            }
+        }
+    });
 }
 
 function newvendor(){

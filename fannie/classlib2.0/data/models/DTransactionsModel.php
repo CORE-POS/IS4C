@@ -30,6 +30,7 @@ class DTransactionsModel extends BasicModel
 
     protected $columns = array(
     'datetime'    => array('type'=>'DATETIME','index'=>True),
+    'store_id'    => array('type'=>'SMALLINT', 'index'=>true),
     'register_no'    => array('type'=>'SMALLINT'),
     'emp_no'    => array('type'=>'SMALLINT'),
     'trans_no'    => array('type'=>'INT'),
@@ -62,11 +63,11 @@ class DTransactionsModel extends BasicModel
     'memType'    => array('type'=>'TINYINT'),
     'staff'        => array('type'=>'TINYINT'),
     'numflag'    => array('type'=>'INT','default'=>0),
-    'charflag'    => array('type'=>'INT','default'=>''),
+    'charflag'    => array('type'=>'VARCHAR(2)','default'=>''),
     'card_no'    => array('type'=>'INT','index'=>True),
-    'trans_id'    => array('type'=>'TINYINT'),
+    'trans_id'    => array('type'=>'INT'),
     'pos_row_id' => array('type'=>'BIGINT UNSIGNED', 'index'=>true),
-    'store_row_id' => array('type'=>'BIGINT UNSIGNED', 'increment'=>true, 'primary_key'=>true),
+    'store_row_id' => array('type'=>'BIGINT UNSIGNED', 'increment'=>true, 'index'=>true),
     );
 
     /**
@@ -223,7 +224,7 @@ class DTransactionsModel extends BasicModel
       and "trans_subtype" still have translations to fix
       older records but everyting else passes through as-is.
     */
-    private function normalizeLog($view_name, $table_name, $mode=BasicModel::NORMALIZE_MODE_CHECK)
+    public function normalizeLog($view_name, $table_name, $mode=BasicModel::NORMALIZE_MODE_CHECK)
     {
         printf("%s view: %s",
             ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Would recreate":"Recreating", 
@@ -378,14 +379,73 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["datetime"])) {
                 return $this->instance["datetime"];
-            } elseif(isset($this->columns["datetime"]["default"])) {
+            } else if (isset($this->columns["datetime"]["default"])) {
                 return $this->columns["datetime"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'datetime',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["datetime"]) || $this->instance["datetime"] != func_get_args(0)) {
+                if (!isset($this->columns["datetime"]["ignore_updates"]) || $this->columns["datetime"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["datetime"] = func_get_arg(0);
         }
+        return $this;
+    }
+
+    public function store_id()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["store_id"])) {
+                return $this->instance["store_id"];
+            } else if (isset($this->columns["store_id"]["default"])) {
+                return $this->columns["store_id"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'store_id',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["store_id"]) || $this->instance["store_id"] != func_get_args(0)) {
+                if (!isset($this->columns["store_id"]["ignore_updates"]) || $this->columns["store_id"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["store_id"] = func_get_arg(0);
+        }
+        return $this;
     }
 
     public function register_no()
@@ -393,14 +453,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["register_no"])) {
                 return $this->instance["register_no"];
-            } elseif(isset($this->columns["register_no"]["default"])) {
+            } else if (isset($this->columns["register_no"]["default"])) {
                 return $this->columns["register_no"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'register_no',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["register_no"]) || $this->instance["register_no"] != func_get_args(0)) {
+                if (!isset($this->columns["register_no"]["ignore_updates"]) || $this->columns["register_no"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["register_no"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function emp_no()
@@ -408,14 +490,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["emp_no"])) {
                 return $this->instance["emp_no"];
-            } elseif(isset($this->columns["emp_no"]["default"])) {
+            } else if (isset($this->columns["emp_no"]["default"])) {
                 return $this->columns["emp_no"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'emp_no',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["emp_no"]) || $this->instance["emp_no"] != func_get_args(0)) {
+                if (!isset($this->columns["emp_no"]["ignore_updates"]) || $this->columns["emp_no"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["emp_no"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function trans_no()
@@ -423,14 +527,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["trans_no"])) {
                 return $this->instance["trans_no"];
-            } elseif(isset($this->columns["trans_no"]["default"])) {
+            } else if (isset($this->columns["trans_no"]["default"])) {
                 return $this->columns["trans_no"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'trans_no',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["trans_no"]) || $this->instance["trans_no"] != func_get_args(0)) {
+                if (!isset($this->columns["trans_no"]["ignore_updates"]) || $this->columns["trans_no"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["trans_no"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function upc()
@@ -438,14 +564,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["upc"])) {
                 return $this->instance["upc"];
-            } elseif(isset($this->columns["upc"]["default"])) {
+            } else if (isset($this->columns["upc"]["default"])) {
                 return $this->columns["upc"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'upc',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["upc"]) || $this->instance["upc"] != func_get_args(0)) {
+                if (!isset($this->columns["upc"]["ignore_updates"]) || $this->columns["upc"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["upc"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function description()
@@ -453,14 +601,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["description"])) {
                 return $this->instance["description"];
-            } elseif(isset($this->columns["description"]["default"])) {
+            } else if (isset($this->columns["description"]["default"])) {
                 return $this->columns["description"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'description',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["description"]) || $this->instance["description"] != func_get_args(0)) {
+                if (!isset($this->columns["description"]["ignore_updates"]) || $this->columns["description"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["description"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function trans_type()
@@ -468,14 +638,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["trans_type"])) {
                 return $this->instance["trans_type"];
-            } elseif(isset($this->columns["trans_type"]["default"])) {
+            } else if (isset($this->columns["trans_type"]["default"])) {
                 return $this->columns["trans_type"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'trans_type',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["trans_type"]) || $this->instance["trans_type"] != func_get_args(0)) {
+                if (!isset($this->columns["trans_type"]["ignore_updates"]) || $this->columns["trans_type"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["trans_type"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function trans_subtype()
@@ -483,14 +675,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["trans_subtype"])) {
                 return $this->instance["trans_subtype"];
-            } elseif(isset($this->columns["trans_subtype"]["default"])) {
+            } else if (isset($this->columns["trans_subtype"]["default"])) {
                 return $this->columns["trans_subtype"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'trans_subtype',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["trans_subtype"]) || $this->instance["trans_subtype"] != func_get_args(0)) {
+                if (!isset($this->columns["trans_subtype"]["ignore_updates"]) || $this->columns["trans_subtype"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["trans_subtype"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function trans_status()
@@ -498,14 +712,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["trans_status"])) {
                 return $this->instance["trans_status"];
-            } elseif(isset($this->columns["trans_status"]["default"])) {
+            } else if (isset($this->columns["trans_status"]["default"])) {
                 return $this->columns["trans_status"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'trans_status',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["trans_status"]) || $this->instance["trans_status"] != func_get_args(0)) {
+                if (!isset($this->columns["trans_status"]["ignore_updates"]) || $this->columns["trans_status"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["trans_status"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function department()
@@ -513,14 +749,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["department"])) {
                 return $this->instance["department"];
-            } elseif(isset($this->columns["department"]["default"])) {
+            } else if (isset($this->columns["department"]["default"])) {
                 return $this->columns["department"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'department',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["department"]) || $this->instance["department"] != func_get_args(0)) {
+                if (!isset($this->columns["department"]["ignore_updates"]) || $this->columns["department"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["department"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function quantity()
@@ -528,14 +786,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["quantity"])) {
                 return $this->instance["quantity"];
-            } elseif(isset($this->columns["quantity"]["default"])) {
+            } else if (isset($this->columns["quantity"]["default"])) {
                 return $this->columns["quantity"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'quantity',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["quantity"]) || $this->instance["quantity"] != func_get_args(0)) {
+                if (!isset($this->columns["quantity"]["ignore_updates"]) || $this->columns["quantity"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["quantity"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function scale()
@@ -543,14 +823,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["scale"])) {
                 return $this->instance["scale"];
-            } elseif(isset($this->columns["scale"]["default"])) {
+            } else if (isset($this->columns["scale"]["default"])) {
                 return $this->columns["scale"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'scale',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["scale"]) || $this->instance["scale"] != func_get_args(0)) {
+                if (!isset($this->columns["scale"]["ignore_updates"]) || $this->columns["scale"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["scale"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function cost()
@@ -558,14 +860,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["cost"])) {
                 return $this->instance["cost"];
-            } elseif(isset($this->columns["cost"]["default"])) {
+            } else if (isset($this->columns["cost"]["default"])) {
                 return $this->columns["cost"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'cost',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["cost"]) || $this->instance["cost"] != func_get_args(0)) {
+                if (!isset($this->columns["cost"]["ignore_updates"]) || $this->columns["cost"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["cost"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function unitPrice()
@@ -573,14 +897,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["unitPrice"])) {
                 return $this->instance["unitPrice"];
-            } elseif(isset($this->columns["unitPrice"]["default"])) {
+            } else if (isset($this->columns["unitPrice"]["default"])) {
                 return $this->columns["unitPrice"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'unitPrice',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["unitPrice"]) || $this->instance["unitPrice"] != func_get_args(0)) {
+                if (!isset($this->columns["unitPrice"]["ignore_updates"]) || $this->columns["unitPrice"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["unitPrice"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function total()
@@ -588,14 +934,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["total"])) {
                 return $this->instance["total"];
-            } elseif(isset($this->columns["total"]["default"])) {
+            } else if (isset($this->columns["total"]["default"])) {
                 return $this->columns["total"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'total',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["total"]) || $this->instance["total"] != func_get_args(0)) {
+                if (!isset($this->columns["total"]["ignore_updates"]) || $this->columns["total"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["total"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function regPrice()
@@ -603,14 +971,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["regPrice"])) {
                 return $this->instance["regPrice"];
-            } elseif(isset($this->columns["regPrice"]["default"])) {
+            } else if (isset($this->columns["regPrice"]["default"])) {
                 return $this->columns["regPrice"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'regPrice',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["regPrice"]) || $this->instance["regPrice"] != func_get_args(0)) {
+                if (!isset($this->columns["regPrice"]["ignore_updates"]) || $this->columns["regPrice"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["regPrice"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function tax()
@@ -618,14 +1008,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["tax"])) {
                 return $this->instance["tax"];
-            } elseif(isset($this->columns["tax"]["default"])) {
+            } else if (isset($this->columns["tax"]["default"])) {
                 return $this->columns["tax"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'tax',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["tax"]) || $this->instance["tax"] != func_get_args(0)) {
+                if (!isset($this->columns["tax"]["ignore_updates"]) || $this->columns["tax"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["tax"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function foodstamp()
@@ -633,14 +1045,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["foodstamp"])) {
                 return $this->instance["foodstamp"];
-            } elseif(isset($this->columns["foodstamp"]["default"])) {
+            } else if (isset($this->columns["foodstamp"]["default"])) {
                 return $this->columns["foodstamp"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'foodstamp',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["foodstamp"]) || $this->instance["foodstamp"] != func_get_args(0)) {
+                if (!isset($this->columns["foodstamp"]["ignore_updates"]) || $this->columns["foodstamp"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["foodstamp"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function discount()
@@ -648,14 +1082,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["discount"])) {
                 return $this->instance["discount"];
-            } elseif(isset($this->columns["discount"]["default"])) {
+            } else if (isset($this->columns["discount"]["default"])) {
                 return $this->columns["discount"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'discount',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["discount"]) || $this->instance["discount"] != func_get_args(0)) {
+                if (!isset($this->columns["discount"]["ignore_updates"]) || $this->columns["discount"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["discount"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function memDiscount()
@@ -663,14 +1119,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["memDiscount"])) {
                 return $this->instance["memDiscount"];
-            } elseif(isset($this->columns["memDiscount"]["default"])) {
+            } else if (isset($this->columns["memDiscount"]["default"])) {
                 return $this->columns["memDiscount"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'memDiscount',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["memDiscount"]) || $this->instance["memDiscount"] != func_get_args(0)) {
+                if (!isset($this->columns["memDiscount"]["ignore_updates"]) || $this->columns["memDiscount"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["memDiscount"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function discountable()
@@ -678,14 +1156,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["discountable"])) {
                 return $this->instance["discountable"];
-            } elseif(isset($this->columns["discountable"]["default"])) {
+            } else if (isset($this->columns["discountable"]["default"])) {
                 return $this->columns["discountable"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'discountable',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["discountable"]) || $this->instance["discountable"] != func_get_args(0)) {
+                if (!isset($this->columns["discountable"]["ignore_updates"]) || $this->columns["discountable"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["discountable"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function discounttype()
@@ -693,14 +1193,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["discounttype"])) {
                 return $this->instance["discounttype"];
-            } elseif(isset($this->columns["discounttype"]["default"])) {
+            } else if (isset($this->columns["discounttype"]["default"])) {
                 return $this->columns["discounttype"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'discounttype',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["discounttype"]) || $this->instance["discounttype"] != func_get_args(0)) {
+                if (!isset($this->columns["discounttype"]["ignore_updates"]) || $this->columns["discounttype"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["discounttype"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function voided()
@@ -708,14 +1230,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["voided"])) {
                 return $this->instance["voided"];
-            } elseif(isset($this->columns["voided"]["default"])) {
+            } else if (isset($this->columns["voided"]["default"])) {
                 return $this->columns["voided"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'voided',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["voided"]) || $this->instance["voided"] != func_get_args(0)) {
+                if (!isset($this->columns["voided"]["ignore_updates"]) || $this->columns["voided"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["voided"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function percentDiscount()
@@ -723,14 +1267,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["percentDiscount"])) {
                 return $this->instance["percentDiscount"];
-            } elseif(isset($this->columns["percentDiscount"]["default"])) {
+            } else if (isset($this->columns["percentDiscount"]["default"])) {
                 return $this->columns["percentDiscount"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'percentDiscount',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["percentDiscount"]) || $this->instance["percentDiscount"] != func_get_args(0)) {
+                if (!isset($this->columns["percentDiscount"]["ignore_updates"]) || $this->columns["percentDiscount"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["percentDiscount"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function ItemQtty()
@@ -738,14 +1304,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["ItemQtty"])) {
                 return $this->instance["ItemQtty"];
-            } elseif(isset($this->columns["ItemQtty"]["default"])) {
+            } else if (isset($this->columns["ItemQtty"]["default"])) {
                 return $this->columns["ItemQtty"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'ItemQtty',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["ItemQtty"]) || $this->instance["ItemQtty"] != func_get_args(0)) {
+                if (!isset($this->columns["ItemQtty"]["ignore_updates"]) || $this->columns["ItemQtty"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["ItemQtty"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function volDiscType()
@@ -753,14 +1341,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["volDiscType"])) {
                 return $this->instance["volDiscType"];
-            } elseif(isset($this->columns["volDiscType"]["default"])) {
+            } else if (isset($this->columns["volDiscType"]["default"])) {
                 return $this->columns["volDiscType"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'volDiscType',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["volDiscType"]) || $this->instance["volDiscType"] != func_get_args(0)) {
+                if (!isset($this->columns["volDiscType"]["ignore_updates"]) || $this->columns["volDiscType"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["volDiscType"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function volume()
@@ -768,14 +1378,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["volume"])) {
                 return $this->instance["volume"];
-            } elseif(isset($this->columns["volume"]["default"])) {
+            } else if (isset($this->columns["volume"]["default"])) {
                 return $this->columns["volume"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'volume',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["volume"]) || $this->instance["volume"] != func_get_args(0)) {
+                if (!isset($this->columns["volume"]["ignore_updates"]) || $this->columns["volume"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["volume"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function VolSpecial()
@@ -783,14 +1415,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["VolSpecial"])) {
                 return $this->instance["VolSpecial"];
-            } elseif(isset($this->columns["VolSpecial"]["default"])) {
+            } else if (isset($this->columns["VolSpecial"]["default"])) {
                 return $this->columns["VolSpecial"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'VolSpecial',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["VolSpecial"]) || $this->instance["VolSpecial"] != func_get_args(0)) {
+                if (!isset($this->columns["VolSpecial"]["ignore_updates"]) || $this->columns["VolSpecial"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["VolSpecial"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function mixMatch()
@@ -798,14 +1452,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["mixMatch"])) {
                 return $this->instance["mixMatch"];
-            } elseif(isset($this->columns["mixMatch"]["default"])) {
+            } else if (isset($this->columns["mixMatch"]["default"])) {
                 return $this->columns["mixMatch"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'mixMatch',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["mixMatch"]) || $this->instance["mixMatch"] != func_get_args(0)) {
+                if (!isset($this->columns["mixMatch"]["ignore_updates"]) || $this->columns["mixMatch"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["mixMatch"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function matched()
@@ -813,14 +1489,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["matched"])) {
                 return $this->instance["matched"];
-            } elseif(isset($this->columns["matched"]["default"])) {
+            } else if (isset($this->columns["matched"]["default"])) {
                 return $this->columns["matched"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'matched',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["matched"]) || $this->instance["matched"] != func_get_args(0)) {
+                if (!isset($this->columns["matched"]["ignore_updates"]) || $this->columns["matched"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["matched"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function memType()
@@ -828,14 +1526,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["memType"])) {
                 return $this->instance["memType"];
-            } elseif(isset($this->columns["memType"]["default"])) {
+            } else if (isset($this->columns["memType"]["default"])) {
                 return $this->columns["memType"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'memType',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["memType"]) || $this->instance["memType"] != func_get_args(0)) {
+                if (!isset($this->columns["memType"]["ignore_updates"]) || $this->columns["memType"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["memType"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function staff()
@@ -843,14 +1563,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["staff"])) {
                 return $this->instance["staff"];
-            } elseif(isset($this->columns["staff"]["default"])) {
+            } else if (isset($this->columns["staff"]["default"])) {
                 return $this->columns["staff"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'staff',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["staff"]) || $this->instance["staff"] != func_get_args(0)) {
+                if (!isset($this->columns["staff"]["ignore_updates"]) || $this->columns["staff"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["staff"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function numflag()
@@ -858,14 +1600,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["numflag"])) {
                 return $this->instance["numflag"];
-            } elseif(isset($this->columns["numflag"]["default"])) {
+            } else if (isset($this->columns["numflag"]["default"])) {
                 return $this->columns["numflag"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'numflag',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["numflag"]) || $this->instance["numflag"] != func_get_args(0)) {
+                if (!isset($this->columns["numflag"]["ignore_updates"]) || $this->columns["numflag"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["numflag"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function charflag()
@@ -873,14 +1637,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["charflag"])) {
                 return $this->instance["charflag"];
-            } elseif(isset($this->columns["charflag"]["default"])) {
+            } else if (isset($this->columns["charflag"]["default"])) {
                 return $this->columns["charflag"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'charflag',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["charflag"]) || $this->instance["charflag"] != func_get_args(0)) {
+                if (!isset($this->columns["charflag"]["ignore_updates"]) || $this->columns["charflag"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["charflag"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function card_no()
@@ -888,14 +1674,36 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["card_no"])) {
                 return $this->instance["card_no"];
-            } elseif(isset($this->columns["card_no"]["default"])) {
+            } else if (isset($this->columns["card_no"]["default"])) {
                 return $this->columns["card_no"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'card_no',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["card_no"]) || $this->instance["card_no"] != func_get_args(0)) {
+                if (!isset($this->columns["card_no"]["ignore_updates"]) || $this->columns["card_no"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["card_no"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function trans_id()
@@ -903,14 +1711,110 @@ class DTransactionsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["trans_id"])) {
                 return $this->instance["trans_id"];
-            } elseif(isset($this->columns["trans_id"]["default"])) {
+            } else if (isset($this->columns["trans_id"]["default"])) {
                 return $this->columns["trans_id"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'trans_id',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["trans_id"]) || $this->instance["trans_id"] != func_get_args(0)) {
+                if (!isset($this->columns["trans_id"]["ignore_updates"]) || $this->columns["trans_id"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["trans_id"] = func_get_arg(0);
         }
+        return $this;
+    }
+
+    public function pos_row_id()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["pos_row_id"])) {
+                return $this->instance["pos_row_id"];
+            } else if (isset($this->columns["pos_row_id"]["default"])) {
+                return $this->columns["pos_row_id"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'pos_row_id',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["pos_row_id"]) || $this->instance["pos_row_id"] != func_get_args(0)) {
+                if (!isset($this->columns["pos_row_id"]["ignore_updates"]) || $this->columns["pos_row_id"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["pos_row_id"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function store_row_id()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["store_row_id"])) {
+                return $this->instance["store_row_id"];
+            } else if (isset($this->columns["store_row_id"]["default"])) {
+                return $this->columns["store_row_id"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'store_row_id',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["store_row_id"]) || $this->instance["store_row_id"] != func_get_args(0)) {
+                if (!isset($this->columns["store_row_id"]["ignore_updates"]) || $this->columns["store_row_id"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["store_row_id"] = func_get_arg(0);
+        }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

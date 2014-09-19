@@ -33,28 +33,27 @@
 include('../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
 include($FANNIE_ROOT.'src/cron_msg.php');
-include($FANNIE_ROOT.'src/tmp_dir.php');
 
 set_time_limit(0);
 
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
+        $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
 $OP = $FANNIE_OP_DB . ($FANNIE_SERVER_DBMS == "MSSQL" ? 'dbo.' : '.');
 
 $q = "
 select s.order_id,description,datetime,
-case when c.last_name ='' then b.LastName else c.last_name END as name
+case when c.lastName ='' then b.LastName else c.lastName END as name
 from PendingSpecialOrder
-as s left join SpecialOrderContact as c on s.order_id=c.card_no
+as s left join SpecialOrders as c on s.order_id=c.specialOrderID
 left join {$OP}custdata as b on s.card_no=b.CardNo and s.voided=b.personNum
 where s.order_id in (
 select p.order_id from PendingSpecialOrder as p
-left join SpecialOrderNotes as n
-on p.order_id=n.order_id
+left join SpecialOrders as n
+on p.order_id=n.specialOrderID
 where notes LIKE ''
 group by p.order_id
-having max(department)=0 and max(superID)=0
+having max(department)=0 and max(noteSuperID)=0
 and max(trans_id) > 0
 )
 and trans_id > 0
@@ -63,17 +62,17 @@ order by datetime
 
 $r = $sql->query($q);
 if ($sql->num_rows($r) > 0){
-	$msg_body = "Homeless orders detected!\n\n";
-	while($w = $sql->fetch_row($r)){
-		$msg_body .= $w['datetime'].' - '.(empty($w['name'])?'(no name)':$w['name']).' - '.$w['description']."\n";
-		$msg_body .= "http://key".$FANNIE_URL."ordering/view.php?orderID=".$w['order_id']."\n\n";
-	}
-	$msg_body .= "These messages will be sent daily until orders get departments\n";
-	$msg_body .= "or orders are closed\n";
+    $msg_body = "Homeless orders detected!\n\n";
+    while($w = $sql->fetch_row($r)){
+        $msg_body .= $w['datetime'].' - '.(empty($w['name'])?'(no name)':$w['name']).' - '.$w['description']."\n";
+        $msg_body .= "http://key".$FANNIE_URL."ordering/view.php?orderID=".$w['order_id']."\n\n";
+    }
+    $msg_body .= "These messages will be sent daily until orders get departments\n";
+    $msg_body .= "or orders are closed\n";
 
-	$to = "buyers, michael";
-	$subject = "Incomplete SO(s)";
-	mail($to,$subject,$msg_body);
+    $to = "buyers, michael";
+    $subject = "Incomplete SO(s)";
+    mail($to,$subject,$msg_body);
 }
 
 ?>

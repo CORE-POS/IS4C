@@ -26,68 +26,68 @@ include('../util.php');
 include_once('../../classlib2.0/InstallPage.php');
 
 /**
-	@class LaneScanningPage
-	Class for the Global Lane install and config options Scanning page.
+    @class LaneScanningPage
+    Class for the Global Lane install and config options Scanning page.
 */
 class LaneScanningPage extends InstallPage {
 
-	protected $title = 'CORE:PoS Global Lane Configuration: Scanning';
-	protected $header = 'CORE:PoS Global Lane Configuration: Scanning';
+    protected $title = 'CORE:PoS Global Lane Configuration: Scanning';
+    protected $header = 'CORE:PoS Global Lane Configuration: Scanning';
 
-	public $description = "
-	Class for the Global Lane install and config options Scanning page.
-	";
+    public $description = "
+    Class for the Global Lane install and config options Scanning page.
+    ";
 
-	// This replaces the __construct() in the parent.
-	public function __construct() {
+    // This replaces the __construct() in the parent.
+    public function __construct() {
 
-		// To set authentication.
-		FanniePage::__construct();
+        // To set authentication.
+        FanniePage::__construct();
 
-		$SRC = '../../src';
-		// Link to a file of CSS by using a function.
-		$this->add_css_file("$SRC/style.css");
-		$this->add_css_file("$SRC/jquery/css/smoothness/jquery-ui-1.8.1.custom.css");
-		$this->add_css_file("$SRC/css/install.css");
+        $SRC = '../../src';
+        // Link to a file of CSS by using a function.
+        $this->add_css_file("$SRC/style.css");
+        $this->add_css_file("$SRC/javascript/jquery-ui.css");
+        $this->add_css_file("$SRC/css/install.css");
 
-		// Link to a file of JS by using a function.
-		$this->add_script("$SRC/jquery/js/jquery.js");
-		$this->add_script("$SRC/jquery/js/jquery-ui-1.8.1.custom.min.js");
+        // Link to a file of JS by using a function.
+        $this->add_script("$SRC/javascript/jquery.js");
+        $this->add_script("$SRC/javascript/jquery-ui.js");
 
-	// __construct()
-	}
+    // __construct()
+    }
 
-	// If chunks of CSS are going to be added the function has to be
-	//  redefined to return them.
-	// If this is to override x.css draw_page() needs to load it after the add_css_file
-	/**
-	  Define any CSS needed
-	  @return A CSS string
-	function css_content(){
-		$css ="";
-		return $css;
-	//css_content()
-	}
-	*/
+    // If chunks of CSS are going to be added the function has to be
+    //  redefined to return them.
+    // If this is to override x.css draw_page() needs to load it after the add_css_file
+    /**
+      Define any CSS needed
+      @return A CSS string
+    function css_content(){
+        $css ="";
+        return $css;
+    //css_content()
+    }
+    */
 
-	// If chunks of JS are going to be added the function has to be
-	//  redefined to return them.
-	/**
-	  Define any javascript needed
-	  @return A javascript string
-	function javascript_content(){
-		$js ="";
-		return $js;
-	}
-	*/
+    // If chunks of JS are going to be added the function has to be
+    //  redefined to return them.
+    /**
+      Define any javascript needed
+      @return A javascript string
+    function javascript_content(){
+        $js ="";
+        return $js;
+    }
+    */
 
-	function body_content(){
-		global $CORE_LOCAL, $CORE_PATH;
+    function body_content(){
+        global $CORE_LOCAL, $CORE_PATH;
 
-		ob_start();
+        ob_start();
 
-		echo showLinkToFannie();
-		echo showInstallTabsLane("Scanning Options", '');
+        echo showLinkToFannie();
+        echo showInstallTabsLane("Scanning Options", '');
 
 ?>
 
@@ -96,10 +96,10 @@ class LaneScanningPage extends InstallPage {
 
 <?php
 if (is_writable('../../config.php')){
-	echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
+    echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
 }
 else {
-	echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
+    echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
 }
 ?>
 
@@ -122,26 +122,26 @@ if (isset($_REQUEST['SPECIAL_UPC_MODS'])) $CORE_LOCAL->set('SpecialUpcClasses',$
 $mods = array();
 $dh = opendir($CORE_PATH.'lib/Scanning/SpecialUPCs');
 while($dh && False !== ($f = readdir($dh))){
-	if ($f == "." || $f == "..")
-		continue;
-	if (substr($f,-4) == ".php")
-		$mods[] = rtrim($f,".php");
+    if ($f == "." || $f == "..")
+        continue;
+    if (substr($f,-4) == ".php")
+        $mods[] = rtrim($f,".php");
 }
 
 foreach($mods as $m){
-	$selected = "";
-	foreach($CORE_LOCAL->get("SpecialUpcClasses") as $r){
-		if ($r == $m){
-			$selected = "selected";
-			break;
-		}
-	}
-	echo "<option $selected>$m</option>";
+    $selected = "";
+    foreach($CORE_LOCAL->get("SpecialUpcClasses") as $r){
+        if ($r == $m){
+            $selected = "selected";
+            break;
+        }
+    }
+    echo "<option $selected>$m</option>";
 }
 
 $saveStr = "array(";
 foreach($CORE_LOCAL->get("SpecialUpcClasses") as $r){
-	$saveStr .= "'".$r."',";
+    $saveStr .= "'".$r."',";
 }
 $saveStr = rtrim($saveStr,",").")";
 // this is different than lane save; uses array type
@@ -164,50 +164,50 @@ if (isset($_REQUEST['DT_COUNT']) && is_numeric($_REQUEST['DT_COUNT'])) $CORE_LOC
 if ($CORE_LOCAL->get("DiscountTypeCount") == "") $CORE_LOCAL->set("DiscountTypeCount",5);
 if ($CORE_LOCAL->get("DiscountTypeCount") <= 0) $CORE_LOCAL->set("DiscountTypeCount",1);
 printf("<input type=text size=4 name=DT_COUNT value=\"%d\" />",
-	$CORE_LOCAL->get('DiscountTypeCount'));
+    $CORE_LOCAL->get('DiscountTypeCount'));
 confsave('DiscountTypeCount',$CORE_LOCAL->get('DiscountTypeCount'));
 ?>
 <br /><b>Discount Module Mapping</b>:<br />
 <?php
 if (isset($_REQUEST['DT_MODS'])) $CORE_LOCAL->set('DiscountTypeClasses',$_REQUEST['DT_MODS']);
 if (!is_array($CORE_LOCAL->get('DiscountTypeClasses'))){
-	$CORE_LOCAL->set('DiscountTypeClasses',
-		array(
-			'NormalPricing',
-			'EveryoneSale',
-			'MemberSale',
-			'CaseDiscount',
-			'StaffSale'			
-		));
+    $CORE_LOCAL->set('DiscountTypeClasses',
+        array(
+            'NormalPricing',
+            'EveryoneSale',
+            'MemberSale',
+            'CaseDiscount',
+            'StaffSale'         
+        ));
 }
 $discounts = array();
 $dh = opendir($CORE_PATH.'lib/Scanning/DiscountTypes');
 while($dh && False !== ($f = readdir($dh))){
-	if ($f == "." || $f == "..")
-		continue;
-	if (substr($f,-4) == ".php"){
-		$discounts[] = rtrim($f,".php");
-	}
+    if ($f == "." || $f == "..")
+        continue;
+    if (substr($f,-4) == ".php"){
+        $discounts[] = rtrim($f,".php");
+    }
 }
 $dt_conf = $CORE_LOCAL->get("DiscountTypeClasses");
 for($i=0;$i<$CORE_LOCAL->get('DiscountTypeCount');$i++){
-	echo "[$i] => ";
-	echo "<select name=DT_MODS[]>";
-	foreach($discounts as $d) {
-		echo "<option";
-		if (isset($dt_conf[$i]) && $dt_conf[$i] == $d)
-			echo " selected";
-		echo ">$d</option>";
-	}
-	echo "</select><br />";
+    echo "[$i] => ";
+    echo "<select name=DT_MODS[]>";
+    foreach($discounts as $d) {
+        echo "<option";
+        if (isset($dt_conf[$i]) && $dt_conf[$i] == $d)
+            echo " selected";
+        echo ">$d</option>";
+    }
+    echo "</select><br />";
 }
 $saveStr = "array(";
 $tmp_count = 0;
 foreach($CORE_LOCAL->get("DiscountTypeClasses") as $r){
-	$saveStr .= "'".$r."',";
-	if ($tmp_count == $CORE_LOCAL->get("DiscountTypeCount")-1)
-		break;
-	$tmp_count++;
+    $saveStr .= "'".$r."',";
+    if ($tmp_count == $CORE_LOCAL->get("DiscountTypeCount")-1)
+        break;
+    $tmp_count++;
 }
 $saveStr = rtrim($saveStr,",").")";
 // this is different than lane save; uses array type
@@ -231,48 +231,48 @@ if (isset($_REQUEST['PM_COUNT']) && is_numeric($_REQUEST['PM_COUNT'])) $CORE_LOC
 if ($CORE_LOCAL->get("PriceMethodCount") == "") $CORE_LOCAL->set("PriceMethodCount",3);
 if ($CORE_LOCAL->get("PriceMethodCount") <= 0) $CORE_LOCAL->set("PriceMethodCount",1);
 printf("<input type=text size=4 name=PM_COUNT value=\"%d\" />",
-	$CORE_LOCAL->get('PriceMethodCount'));
+    $CORE_LOCAL->get('PriceMethodCount'));
 confsave('PriceMethodCount',$CORE_LOCAL->get('PriceMethodCount'));
 ?>
 <br /><b>Price Method Mapping</b>:<br />
 <?php
 if (isset($_REQUEST['PM_MODS'])) $CORE_LOCAL->set('PriceMethodClasses',$_REQUEST['PM_MODS']);
 if (!is_array($CORE_LOCAL->get('PriceMethodClasses'))){
-	$CORE_LOCAL->set('PriceMethodClasses',
-		array(
-			'BasicPM',
-			'GroupPM',
-			'QttyEnforcedGroupPM'
-		));
+    $CORE_LOCAL->set('PriceMethodClasses',
+        array(
+            'BasicPM',
+            'GroupPM',
+            'QttyEnforcedGroupPM'
+        ));
 }
 $pms = array();
 $dh = opendir($CORE_PATH.'lib/Scanning/PriceMethods');
 while($dh && False !== ($f = readdir($dh))){
-	if ($f == "." || $f == "..")
-		continue;
-	if (substr($f,-4) == ".php"){
-		$pms[] = rtrim($f,".php");
-	}
+    if ($f == "." || $f == "..")
+        continue;
+    if (substr($f,-4) == ".php"){
+        $pms[] = rtrim($f,".php");
+    }
 }
 $pm_conf = $CORE_LOCAL->get("PriceMethodClasses");
 for($i=0;$i<$CORE_LOCAL->get('PriceMethodCount');$i++){
-	echo "[$i] => ";
-	echo "<select name=PM_MODS[]>";
-	foreach($pms as $p) {
-		echo "<option";
-		if (isset($pm_conf[$i]) && $pm_conf[$i] == $p)
-			echo " selected";
-		echo ">$p</option>";
-	}
-	echo "</select><br />";
+    echo "[$i] => ";
+    echo "<select name=PM_MODS[]>";
+    foreach($pms as $p) {
+        echo "<option";
+        if (isset($pm_conf[$i]) && $pm_conf[$i] == $p)
+            echo " selected";
+        echo ">$p</option>";
+    }
+    echo "</select><br />";
 }
 $saveStr = "array(";
 $tmp_count = 0;
 foreach($CORE_LOCAL->get("PriceMethodClasses") as $r){
-	$saveStr .= "'".$r."',";
-	if ($tmp_count == $CORE_LOCAL->get("PriceMethodCount")-1)
-		break;
-	$tmp_count++;
+    $saveStr .= "'".$r."',";
+    if ($tmp_count == $CORE_LOCAL->get("PriceMethodCount")-1)
+        break;
+    $tmp_count++;
 }
 $saveStr = rtrim($saveStr,",").")";
 // this is different than lane save; uses array type
@@ -284,10 +284,10 @@ confsave('PriceMethodClasses',$CORE_LOCAL->get('PriceMethodClasses'));
 
 <?php
 
-		return ob_get_clean();
+        return ob_get_clean();
 
-	// body_content
-	}
+    // body_content
+    }
 
 // LaneScanningPage  
 }

@@ -96,6 +96,8 @@ $CREATE['trans.screendisplay'] = "
 			THEN 'RF'
 		WHEN (trans_status = 'C')
 			THEN 'MC'
+        WHEN trans_type = 'T' AND charflag='PT'
+            THEN 'PC'
 		WHEN (tax = 1 and foodstamp <> 0)
 			THEN 'TF'
 		WHEN (tax = 1 and foodstamp = 0)

@@ -34,7 +34,7 @@ class nslogin extends NoInputPage
     {
         global $CORE_LOCAL;
 		$this->color ="coloredArea";
-		$this->heading = _("enter manager password");
+		$this->heading = _("enter password");
 		$this->msg = _("confirm no sales");
 
 		if (isset($_REQUEST['reginput']) || isset($_REQUEST['userPassword'])) {
@@ -58,7 +58,7 @@ class nslogin extends NoInputPage
 				return false;
 			} else {
 				$this->color ="errorColoredArea";
-				$this->heading = _("re-enter manager password");
+				$this->heading = _("re-enter password");
 				$this->msg = _("invalid password");
 
                 if ($CORE_LOCAL->get('LoudLogins') == 1) {

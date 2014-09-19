@@ -1,0 +1,147 @@
+<html>
+<head>
+	<title>House Coupon Explanations - Another</title>
+</head>
+<body>
+<h1>Explanation of House Coupons - Another</h1>
+<h2>Introduction</h2>
+<p>
+House Coupons exist to define a purchase requirement and a discount.
+They were originally implemented as barcoded coupons. EVERYTHING
+built on top of them is just alternatives to using barcodes.
+The coupon requirements and value are always defined in the
+core_op/opdata.houseCoupons
+and core_op/opdata.houseCouponItems tables.
+The latter is only used when the coupon applies to particular items;
+if it applies to the entire transaction no houseCouponItems need to be
+specified.
+What the coupon <em>does</em> is always defined in houseCoupons;
+the other related tables (?) give the cashier alternate entry methods.
+</p>
+
+<p>
+Virtual coupons, core_op/opdata.houseVirtualCoupons,
+associate a coupon ID (houseCoupons.coupID) with a
+membership.
+They are a good fit for a monthly or quarterly coupon where each individual
+member gets to decide when they're using their coupon.
+This individual decision means it's going to be an extra step for the cashier,
+and the member has to say when they want to use the coupon.
+</p>
+
+<p>
+Auto coupons is a list of coupon IDs that will be applied to every
+applicable transaction. The basic requirements in houseCoupons still
+apply - e.g., member only, expiration date, any minimum purchase, etc
+- but it's automatically added when the cashier subtotals.
+-> The API here is TotalActions and it shows up on the lane's extras tab under "Subtotal Settings".
+</p>
+
+<p>
+In all cases, the actual transaction records are going to be UPC
+prefix 4, manufacturer code 99999, and then coupon ID. So the first
+coupon is 49999900001. The auto and virtual options should be
+functionally identical to scanning or keying that barcode.
+</p>
+
+<h2>Operations</h2>
+<h2>Setup</h2>
+
+<ul>
+	<li>Enable the HouseCoupon plugin in the Fannie &gt; Install &gt; Plugins tab.
+</li>
+<li>Navigate to the <a href="/IS4C/fannie/modules/plugins2.0/HouseCoupon/"
+	target="_hced">House Coupon editor</a>
+and enter the specifics for your coupon.
+<br />Note that unlike for Sale Batches there is no start date for coupons,
+so if they will be published to lanes automatically don't enter them,
+or at least not with real dates, until they should actually be used.
+</li>
+<li>The houseCoupons, houseCouponItems and houseVirtualCoupon tables
+need to be on the lanes.
+If you are going to be using coupons regularly it might be a good idea
+to add them to the automated nightly syncing of data.
+Otherwise, use the Fannie &gt; Synchronize options
+</li>
+<li>Apply Coupons automatically.
+If there are coupons (discounts) that should be applied without the customer
+having to present the physical coupon,
+then on each lane:
+Lane &gt; Install &gt; Extras tab &gt; Subtotal Settings &gt; AutoCoupon
+</li>
+</ul>
+
+<h2>Terms and options</h2>
+
+<h3>The simple ones</h3>
+<ul>
+<li><b>Expires:</b> when the coupon runs through, inclusive. E.g., if the expiration date is
+January 31, 2010, the coupon will ring as "expired" starting February 1, 2010
+<li><b>Limit:</b> is the number of times the coupon can be used <i>per transaction</i>
+<li><b>Member-only:</b> coupons can only be used by members
+<li><b>Department:</b> dictates how the discount gets coded by the POS
+</ul>
+
+<h3>Discount type</h3>
+<ul>
+<li><b>Quantity</b> discount gives a certain number of items free. Fractions are OK, so
+this ends up being like a percent discount. A value of 1.0 gives an item for free, a value of
+0.5 gives an item for 50% off, etc. The discount is always applied to the cheapest valid item.
+<li><b>Set Price</b> discount locks in the coupon price. Regardless of the regular price, the 
+price with coupon will be exactly what's specified here.
+<li><b>Scaling Discount (Item)</b> discounts the chepeast applicable item by the specified amount.
+This scales with quantity to deal with by-weight items.
+<li><b>Scaling Discount (Department)</b> is the same as above except for an item in the specified department(s) instead of a specific UPC
+<li><b>Capped Discount (Department)</b> ??
+<li><b>Flat Discount</b> removes exactly the given amount, once, from the transaction
+<li><b>Percent Discount (End of Transaction)</b> provides a percentage off all discountable items (e.g., member appreciation month)
+<li><b>Percent Discount (Department)</b> provides a percentage off all discountable items (e.g., member appreciation month) ??in the named Department.
+<li><b>Percent Discount (Anytime)</b> provides a percentage off all discountable items (e.g., member appreciation month) ??
+<li><b>All Discount (Department)</b> ??
+</ul>
+
+<h3>Minimum Type</h3>
+The bulk of features are here.
+The settings for minimum purchase dictate which kinds of discounts can be applied.
+Many of these have similar options for <i>at least</i> and <i>more than</i>.
+The usage is the same for all of them and affects how the minimum 
+is applied. E.g., if a soda coupon requires a quantity of at least 2, then purchasing
+2 sodas is enough to use the coupon. On the other hand, if the requirement was a
+quantity of more than 2, then 3 (or more) soda purchases would be needed.
+<ul>
+<li><b>Quantity</b> (Q, Q+) requires a minimum purchase of specific items. Quantity is
+measured by each or by the pound depending on the setting for the item. A quantity
+minimum must have items associated with it.
+This is one of the more flexible minimum types;
+ it works with every discount type except <i>scaling discount (department)</i>
+ </li>
+
+<li><b>Department</b> (D, D+) requires a minimum total purchase across the selected departments.
+Purchase is measured in dollars rather than quantity.
+Applicable discount types are
+<i>scaling discount (department)</i>,
+<i>flat discount</i>,
+and <i>percent discount</i>.
+ </li>
+
+ <li><b>Mixed</b> (M) is the most complicated minimum type (yet).
+ The customer must purchase at least the specified quantity of <i>qualifying</i> items
+ and some quantity of <i>discount</i> items.
+ Mixed discount is the only case where an item's QUALIFIER/DISCOUNT/BOTH setting
+ should be used.
+ Like quantity discount, mixed discount can be used with any discount
+type except <i>scaling discount (department)</i>
+ </li>
+
+<li><b>Total</b> ($, $+) discount simply refers to the total of the entire transaction in
+dollars.
+No specific items or departments are associated with this minimum.
+The only applicable discount types are <i>flat discount</i> and <i>percent discount</i>
+ </li>
+
+<li><b>No minimum</b> (blank) is exactly what it sounds like.
+ </li>
+</ul>
+
+</body>
+</html>

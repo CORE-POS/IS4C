@@ -45,14 +45,36 @@ class VendorContactModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["vendorID"])) {
                 return $this->instance["vendorID"];
-            } elseif(isset($this->columns["vendorID"]["default"])) {
+            } else if (isset($this->columns["vendorID"]["default"])) {
                 return $this->columns["vendorID"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'vendorID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["vendorID"]) || $this->instance["vendorID"] != func_get_args(0)) {
+                if (!isset($this->columns["vendorID"]["ignore_updates"]) || $this->columns["vendorID"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["vendorID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function phone()
@@ -60,14 +82,36 @@ class VendorContactModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["phone"])) {
                 return $this->instance["phone"];
-            } elseif(isset($this->columns["phone"]["default"])) {
+            } else if (isset($this->columns["phone"]["default"])) {
                 return $this->columns["phone"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'phone',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["phone"]) || $this->instance["phone"] != func_get_args(0)) {
+                if (!isset($this->columns["phone"]["ignore_updates"]) || $this->columns["phone"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["phone"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function fax()
@@ -75,14 +119,36 @@ class VendorContactModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["fax"])) {
                 return $this->instance["fax"];
-            } elseif(isset($this->columns["fax"]["default"])) {
+            } else if (isset($this->columns["fax"]["default"])) {
                 return $this->columns["fax"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'fax',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["fax"]) || $this->instance["fax"] != func_get_args(0)) {
+                if (!isset($this->columns["fax"]["ignore_updates"]) || $this->columns["fax"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["fax"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function email()
@@ -90,14 +156,36 @@ class VendorContactModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["email"])) {
                 return $this->instance["email"];
-            } elseif(isset($this->columns["email"]["default"])) {
+            } else if (isset($this->columns["email"]["default"])) {
                 return $this->columns["email"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'email',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["email"]) || $this->instance["email"] != func_get_args(0)) {
+                if (!isset($this->columns["email"]["ignore_updates"]) || $this->columns["email"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["email"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function website()
@@ -105,14 +193,36 @@ class VendorContactModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["website"])) {
                 return $this->instance["website"];
-            } elseif(isset($this->columns["website"]["default"])) {
+            } else if (isset($this->columns["website"]["default"])) {
                 return $this->columns["website"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'website',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["website"]) || $this->instance["website"] != func_get_args(0)) {
+                if (!isset($this->columns["website"]["ignore_updates"]) || $this->columns["website"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["website"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function notes()
@@ -120,14 +230,36 @@ class VendorContactModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["notes"])) {
                 return $this->instance["notes"];
-            } elseif(isset($this->columns["notes"]["default"])) {
+            } else if (isset($this->columns["notes"]["default"])) {
                 return $this->columns["notes"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'notes',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["notes"]) || $this->instance["notes"] != func_get_args(0)) {
+                if (!isset($this->columns["notes"]["ignore_updates"]) || $this->columns["notes"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["notes"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

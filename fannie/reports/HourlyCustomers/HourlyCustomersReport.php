@@ -21,11 +21,14 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class HourlyCustomersReport extends FannieReportPage 
 {
+    public $description = '[Hourly Customers] lists number of customers per hour for a given day.';
 
     protected $header = "Customers per Hour";
     protected $title = "Fannie : Customers per Hour";
@@ -40,18 +43,14 @@ class HourlyCustomersReport extends FannieReportPage
         ?>
 <form method=get action=<?php echo $_SERVER["PHP_SELF"]; ?> >
 Get transactions per hour for what date (YYYY-MM-DD)?<br />
-<input type=text onfocus="showCalendarControl(this);" name=date />&nbsp;
+<input type=text name=date id="date" />&nbsp;
 <input type=submit value=Generate />
 </form>
+<script type="text/javascript">
+$(document).ready(function() { $('#date').datepicker(); });
+</script>
         <?php
         return ob_get_clean();
-    }
-
-    public function report_description_content()
-    {
-        $date = FormLib::get_form_value('date', date('Y-m-d'));
-
-        return array("Report for $date");
     }
 
     public function fetch_report_data()
