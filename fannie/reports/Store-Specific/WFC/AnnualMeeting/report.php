@@ -43,7 +43,7 @@ while($hereW = $fannieDB->fetch_row($hereR)){
     $records[] = $hereW;
 }
 
-include($FANNIE_ROOT.'src/Credentials/OutsideDB.is4c.php');
+include($FANNIE_ROOT.'src/Credentials/OutsideDB.tunneled.php');
 // online registrations
 $q = "SELECT tdate,r.card_no,name,email,
     phone,guest_count,child_count,
@@ -64,7 +64,7 @@ while($w = $dbc->fetch_row($r)){
 echo '<table cellspacing="0" cellpadding="4" border="1">
     <tr>
     <th>Reg. Date</th><th>Owner#</th><th>Last Name</th><th>First Name</th>
-    <th>Email</th><th>Ph.</th><th>Adults</th><th>Steak</th><th>Risotto</th><th>Squash</th>
+    <th>Email</th><th>Ph.</th><th>Adults</th><th>Steak</th><th>Lasagna</th><th>Polenta</th>
     <th>Kids</th><th>Source</th>
     </tr>';
 $sum = 0;
