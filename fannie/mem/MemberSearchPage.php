@@ -20,16 +20,18 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-include('../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-
-$dbc = FannieDB::get($FANNIE_OP_DB);
+include(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class MemberSearchPage extends FanniePage {
     protected $title = "Fannie :: Find Member";
     protected $header = "Find Members
         <p style='font-family:arial; font-size:0.7em; margin:0.0em 0em 0em 1.5em;'>
         Enter criteria to find one member or a list members from which to choose.</p>";
+
+    public $description = '[Member Search] finds a member account by name, number, or contact info.';
 
     private $mode = 'search';
     private $country;

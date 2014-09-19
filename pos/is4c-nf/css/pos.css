@@ -1,7 +1,7 @@
 html { overflow: hidden; }
 body { font-family: arial; margin-top: 20px; }
 .mainBGimage {
-	background-image: url('../graphics/is4c.gif');
+	background-image: url('../graphics/is4c_taller.gif');
 	background-repeat: no-repeat;
 }
 div#boundingBox { width: 675px; }

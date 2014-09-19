@@ -20,10 +20,10 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-include('../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-
-$dbc = FannieDB::get($FANNIE_OP_DB);
+include(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class MemberEditor extends FanniePage {
 
@@ -33,6 +33,8 @@ class MemberEditor extends FanniePage {
     */
     protected $title = "Fannie :: Member "; 
     protected $header = "Member ";
+
+    public $description = '[Member Editor] is the primary tool for viewing and editing member accounts.';
 
     private $country;
     private $memNum;
@@ -76,14 +78,22 @@ class MemberEditor extends FanniePage {
             }
             else {
                 $dbc = FannieDB::get($FANNIE_OP_DB);
-                $prevP = $dbc->prepare_statement('SELECT MAX(CardNo) FROM custdata WHERE CardNo < ?');
+                $prevP = $dbc->prepare_statement('SELECT MAX(CardNo) AS prev
+                                                  FROM custdata 
+                                                  WHERE CardNo < ?');
                 $prevR = $dbc->exec_statement($prevP,array($this->memNum));
-                if ($dbc->num_rows($prevR) > 0)
-                    $prev = array_pop($dbc->fetch_row($prevR));
-                $nextP = $dbc->prepare_statement('SELECT MIN(CardNo) FROM custdata WHERE CardNo > ?');
+                if ($dbc->num_rows($prevR) > 0) {
+                    $prevW = $dbc->fetch_row($prevR);
+                    $prev = $prevW['prev'];
+                }
+                $nextP = $dbc->prepare_statement('SELECT MIN(CardNo) AS next 
+                                                  FROM custdata 
+                                                  WHERE CardNo > ?');
                 $nextR = $dbc->exec_statement($nextP,array($this->memNum));
-                if ($dbc->num_rows($nextR) > 0)
-                    $next = array_pop($dbc->fetch_row($nextR));
+                if ($dbc->num_rows($nextR) > 0) {
+                    $nextW = $dbc->fetch_row($nextR);
+                    $next = $nextW['next'];
+                }
             }
 
             if ($prev != ''){
@@ -155,7 +165,10 @@ class MemberEditor extends FanniePage {
         }
         else {
             // cannot operate without a member number
-            header('Location: MemberSearchPage.php');
+            // php sapi check makes page unit-testable
+            if (php_sapi_name() !== 'cli') {
+                header('Location: MemberSearchPage.php');
+            }
             return False;   
         }
         return True;

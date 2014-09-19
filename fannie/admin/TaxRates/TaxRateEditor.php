@@ -21,12 +21,16 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class TaxRateEditor extends FanniePage {
     protected $title = "Fannie : Tax Rates";
     protected $header = "Tax Rates";
+
+    public $description = '[Tax Rates] defines applicable sales tax rates.';
 
     function preprocess(){
         global $FANNIE_OP_DB;

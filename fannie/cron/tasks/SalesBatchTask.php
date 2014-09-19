@@ -165,12 +165,12 @@ class SalesBatchTask extends FannieTask
                     $changed = true;
                     $product->discounttype($discounttype);
                 }
-                if ($mixmatch === false || $product->mixmatch() == $mixmatch) {
+                if ($mixmatch === false || $product->mixmatchcode() == $mixmatch) {
                     echo $this->cronMsg("\tmixmatch is correct");
                 } else {
                     echo $this->cronMsg("\tmixmatch will be updated");
                     $changed = true;
-                    $product->mixmatch($mixmatch);
+                    $product->mixmatchcode($mixmatch);
                 }
 
                 if ($changed) {

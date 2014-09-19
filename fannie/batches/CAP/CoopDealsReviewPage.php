@@ -21,14 +21,19 @@
 
 *********************************************************************************/
 
-include("../../config.php");
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class CoopDealsReviewPage extends FanniePage 
 {
 
     protected $title = "Fannie - CAP sales";
     protected $header = "Review Data";
+
+    public $description = '[Co+op Deals Review] lists the currently load Co+op Deals data
+    and can create sales batches from that data.';
     
     private $mode = 'form';
 

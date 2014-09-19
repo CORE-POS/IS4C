@@ -31,6 +31,9 @@ class GumIssueDividendPage extends FannieRESTfulPage
     protected $must_authenticate = true;
     protected $auth_classes = array('GiveUsMoney');
 
+    public $page_set = 'Plugin :: Give Us Money';
+    public $description = '[Issue Dividend] creates a dividend entry based on equity held.';
+
     function preprocess()
     {
         $this->header = 'Issue Dividend';

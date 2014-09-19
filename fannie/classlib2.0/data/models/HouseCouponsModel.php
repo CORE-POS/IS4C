@@ -58,6 +58,22 @@ class HouseCouponsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'coupID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["coupID"]) || $this->instance["coupID"] != func_get_args(0)) {
                 if (!isset($this->columns["coupID"]["ignore_updates"]) || $this->columns["coupID"]["ignore_updates"] == false) {
@@ -66,6 +82,7 @@ class HouseCouponsModel extends BasicModel
             }
             $this->instance["coupID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function description()
@@ -78,6 +95,22 @@ class HouseCouponsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'description',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["description"]) || $this->instance["description"] != func_get_args(0)) {
                 if (!isset($this->columns["description"]["ignore_updates"]) || $this->columns["description"]["ignore_updates"] == false) {
@@ -86,6 +119,7 @@ class HouseCouponsModel extends BasicModel
             }
             $this->instance["description"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function startDate()
@@ -98,6 +132,22 @@ class HouseCouponsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'startDate',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["startDate"]) || $this->instance["startDate"] != func_get_args(0)) {
                 if (!isset($this->columns["startDate"]["ignore_updates"]) || $this->columns["startDate"]["ignore_updates"] == false) {
@@ -106,6 +156,7 @@ class HouseCouponsModel extends BasicModel
             }
             $this->instance["startDate"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function endDate()
@@ -118,6 +169,22 @@ class HouseCouponsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'endDate',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["endDate"]) || $this->instance["endDate"] != func_get_args(0)) {
                 if (!isset($this->columns["endDate"]["ignore_updates"]) || $this->columns["endDate"]["ignore_updates"] == false) {
@@ -126,6 +193,7 @@ class HouseCouponsModel extends BasicModel
             }
             $this->instance["endDate"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function limit()
@@ -138,6 +206,22 @@ class HouseCouponsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'limit',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["limit"]) || $this->instance["limit"] != func_get_args(0)) {
                 if (!isset($this->columns["limit"]["ignore_updates"]) || $this->columns["limit"]["ignore_updates"] == false) {
@@ -146,6 +230,7 @@ class HouseCouponsModel extends BasicModel
             }
             $this->instance["limit"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function memberOnly()
@@ -158,6 +243,22 @@ class HouseCouponsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'memberOnly',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["memberOnly"]) || $this->instance["memberOnly"] != func_get_args(0)) {
                 if (!isset($this->columns["memberOnly"]["ignore_updates"]) || $this->columns["memberOnly"]["ignore_updates"] == false) {
@@ -166,6 +267,7 @@ class HouseCouponsModel extends BasicModel
             }
             $this->instance["memberOnly"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function discountType()
@@ -178,6 +280,22 @@ class HouseCouponsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'discountType',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["discountType"]) || $this->instance["discountType"] != func_get_args(0)) {
                 if (!isset($this->columns["discountType"]["ignore_updates"]) || $this->columns["discountType"]["ignore_updates"] == false) {
@@ -186,6 +304,7 @@ class HouseCouponsModel extends BasicModel
             }
             $this->instance["discountType"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function discountValue()
@@ -198,6 +317,22 @@ class HouseCouponsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'discountValue',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["discountValue"]) || $this->instance["discountValue"] != func_get_args(0)) {
                 if (!isset($this->columns["discountValue"]["ignore_updates"]) || $this->columns["discountValue"]["ignore_updates"] == false) {
@@ -206,6 +341,7 @@ class HouseCouponsModel extends BasicModel
             }
             $this->instance["discountValue"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function minType()
@@ -218,6 +354,22 @@ class HouseCouponsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'minType',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["minType"]) || $this->instance["minType"] != func_get_args(0)) {
                 if (!isset($this->columns["minType"]["ignore_updates"]) || $this->columns["minType"]["ignore_updates"] == false) {
@@ -226,6 +378,7 @@ class HouseCouponsModel extends BasicModel
             }
             $this->instance["minType"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function minValue()
@@ -238,6 +391,22 @@ class HouseCouponsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'minValue',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["minValue"]) || $this->instance["minValue"] != func_get_args(0)) {
                 if (!isset($this->columns["minValue"]["ignore_updates"]) || $this->columns["minValue"]["ignore_updates"] == false) {
@@ -246,6 +415,7 @@ class HouseCouponsModel extends BasicModel
             }
             $this->instance["minValue"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function department()
@@ -258,6 +428,22 @@ class HouseCouponsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'department',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["department"]) || $this->instance["department"] != func_get_args(0)) {
                 if (!isset($this->columns["department"]["ignore_updates"]) || $this->columns["department"]["ignore_updates"] == false) {
@@ -266,6 +452,7 @@ class HouseCouponsModel extends BasicModel
             }
             $this->instance["department"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function auto()
@@ -278,6 +465,22 @@ class HouseCouponsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'auto',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["auto"]) || $this->instance["auto"] != func_get_args(0)) {
                 if (!isset($this->columns["auto"]["ignore_updates"]) || $this->columns["auto"]["ignore_updates"] == false) {
@@ -286,6 +489,7 @@ class HouseCouponsModel extends BasicModel
             }
             $this->instance["auto"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

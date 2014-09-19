@@ -32,6 +32,7 @@ class PluRangePage extends FannieRESTfulPage
     protected $header = 'PLU Range';
     protected $title = 'PLU Range';
     private $start_plu = '';
+    public $description = '[PLU Range] finds a range of consecutive unused PLU numbers.';
 
     public function preprocess()
     {

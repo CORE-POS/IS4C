@@ -34,6 +34,9 @@ class WfcHtViewEmpPage extends FanniePage
     protected $must_authenticate = true;
     protected $window_dressing = false;
 
+    public $page_set = 'Plugin :: WFC Hours Tracking';
+    public $description = '[View Hourly] shows information for a single hourly employee.';
+
     private $empID = 0;
 
     public function preprocess()

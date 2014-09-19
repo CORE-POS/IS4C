@@ -24,12 +24,16 @@
      6Mar2013 Andy Theuninck re-do as class
      4Sep2012 Eric Lee Add some notes to the initial page.
 */
-include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class DepartmentImportPage extends FannieUploadPage {
     protected $title = "Fannie :: Product Tools";
     protected $header = "Import Departments";
+
+    public $description = '[Department Import] load POS departments from a spreadsheet.';
 
     protected $preview_opts = array(
         'dept_no' => array(

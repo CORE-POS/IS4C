@@ -30,6 +30,9 @@ class AdTextImportPage extends FannieUploadPage
     protected $title = "Fannie :: Product Ad Text";
     protected $header = "Import Product Ad Text";
 
+    public $description = '[Ad Text Import] uploads long brand names and product descriptions
+    for use in signage. The default format is set for Co+op Deals signage spreadsheets.';
+
     /**
       Default based on Co+op Deals Signage Data spreadsheets
     */

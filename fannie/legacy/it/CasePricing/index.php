@@ -1,8 +1,6 @@
 <?php
 include('../../../config.php');
 require($FANNIE_ROOT.'auth/login.php');
-require($FANNIE_ROOT.'src/csv_parser.php');
-require($FANNIE_ROOT.'src/tmp_dir.php');
 
 // 04Oct13 - no longer in use?
 return;
@@ -25,8 +23,7 @@ if (isset($_POST["MAX_FILE_SIZE"])){
 	echo "<th>Origin</th><th colspan=2>Case Size</th><th>Case Price</th>";
 	echo "<form action=index.php method=post>";
 	while (!feof($fp)){
-		$line = fgets($fp);
-		$data = csv_parser($line);
+		$data = fgetcsv($fp);
 
 		if (!is_numeric($data[0])) continue;
 		

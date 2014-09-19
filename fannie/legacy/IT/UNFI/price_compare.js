@@ -33,8 +33,6 @@ function handleResponse() {
 		var array = response.split('`');
 		switch(array[0]){
 		case 'savePrice':
-			document.getElementById('row'+array[1]).innerHTML = array[2];
-			break;
 		case 'saveUnfiPrice':
 		case 'toggleVariable':
 			break;

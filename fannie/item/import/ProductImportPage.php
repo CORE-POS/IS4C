@@ -24,13 +24,18 @@
      6Mar2013 Andy Theuninck re-do as class
      4Sep2012 Eric Lee Add some notes to the initial page.
 */
-include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class ProductImportPage extends FannieUploadPage 
 {
     protected $title = "Fannie :: Product Tools";
     protected $header = "Import Products";
+
+    public $description = '[Product Import] loads or updates product data via spreadsheet. Used
+    primarily for intial database population.';
 
     protected $preview_opts = array(
         'upc' => array(
@@ -80,6 +85,7 @@ class ProductImportPage extends FannieUploadPage
         $dept_index = $this->get_column_index('dept');
 
         $ret = true;
+        $linecount = 0;
         $checks = (FormLib::get_form_value('checks')=='yes') ? true : false;
         $skipExisting = FormLib::get('skipExisting', 1);
         $model = new ProductsModel($dbc);
@@ -145,6 +151,10 @@ class ProductImportPage extends FannieUploadPage
             if ($try === false) {
                 $ret = false;
                 $this->error_details = 'There was an error importing UPC '.$upc;
+            }
+
+            if ($linecount++ % 100 == 0) {
+                set_time_limit(30);
             }
         }
 

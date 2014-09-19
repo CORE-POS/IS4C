@@ -4,7 +4,7 @@
 	</head>
 	<body>
 	<div style="text-align:center;margin-bottom:10px;font-size:80%;">
-	updated as of: August 20, 2012<br />
+	updated as of: August 21, 2014<br />
 	last author: Andy Theuninck
 	</div>
 		A framework needs some rules. I hate rules, so let's keep this short. I think we can share code if everyone can live with just two requirements.
@@ -14,13 +14,10 @@
 		This is the hard part. Ideally, we'd all keep the same schema. With a little caution, I think we can at least have scripts that degrade gracefully when the underlying structure changes. These are not meant as permanent solutions; there practices should merely streamline schema changes and make them less disruptive. Ideas:
 		<ul>
 		<li>Grab row values by column name instead of numeric index. As long as the column exists, you'll get the right value, regardless of actual layout</li>
-		<li>Use the SQLManager class where you can. I know most people are using MySQL, but I don't see any downside to keeping the system fairly open. If someone wants to run IS4C on top of Postgres, it's a much easier port down the line. There are also a couple bits of handy functionality:
-			<ul>
-			<li>SQLManager::smart_insert(table_name,value_array) - this method takes an array of column names &amp; values, polls the given table to see which of those columns are available, then forms an appropriate INSERT statement. Obviously this doesn't guarantee all your information will be written, but it increases the chances of basic success. If your script is trying to create a products record, it'll probably at least get a row into that table with upc, price, department, etc.</li>
-			<li>SQLManager::smart_update(table_name,value_array,where_clause) - this method takes an array of column names &amp; values, polls the given table to see which columns are available, then forms an appropriate UPDATE statement. Again, not all data is necessarily saved, but if your script is trying to change a price it'll likely manage to do so. This only works for single-table updates, but those are the norm in Fannie anyway.</li>
-			</ul>
-		</li>
+		<li>Use the SQLManager class instead of database-specific functions (e.g., mysqli_connect). I know most people are using MySQL, but I don't see any downside to keeping the system fairly open. If someone wants to run IS4C on top of Postgres, it's a much easier port down the line. There are also a couple bits of handy functionality:
+        <li>Use prepared statements for any query involving a variable. The only exception is with code-generators that create snippets of SQL at runtime such as DTransactionsModel::selectDlog (calculate appropriate archive table name) or SQLManager::now (get database-specific datetime function). Anything the database considers data and can be substituted using placeholders and prepared statements should use placeholders and prepared statements. Question mark placeholders are preferred.</li>
+        <li>Use the <a href="db-alteration.html">BasicModel</a> classes where feasible. In particular in the case of INSERTs and UPDATEs models will cope with missing or extra columns without crashing. For simple queries models may lead to shorter code compared to manual prepared statements.
 		<li>Put CREATE statements in install.php when you need new tables. This makes it easy for other developers (and regular users) to add the tables your script needs. Don't drop and recreate tables that already exist; deleting someone else's data is impolite.</li>
-		<li>Publish schema updates via the <a href="db-alteration.html">provided system</a>.
+		<li>Publish schema updates via the <a href="db-alteration.html">provided system</a>. Before adding a column to a table and committing the change, ensure that queries involving the table will not break if the new column is missing. Again models can help with INSERTs and UPDATEs. If the column has a default value, which is usually a good idea, models can also help smooth over SELECTs with and without the column. If models do not fit the situation, SQLManager::tableDefinition will provide a list of columns that currently exist in a given table.</li>
 	</body>
 </html>

@@ -21,8 +21,10 @@
 
 *********************************************************************************/
 
-require('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+require(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class DeleteShelfTags extends FanniePage 
 {
@@ -33,6 +35,8 @@ class DeleteShelfTags extends FanniePage
     protected $auth_classes = array('barcodes');
 
     private $messages = '';
+
+    public $description = '[Delete Shelf Tags] gets rid of a set of shelf tags.';
 
     function preprocess()
     {

@@ -38,7 +38,9 @@ require($FANNIE_ROOT.'src/fpdf/fpdf.php');
   * URL: www.fpdf.org                                                            *
   * You may use, modify and redistribute this software as you wish.              *
   *******************************************************************************/
-  define('FPDF_FONTPATH','font/');
+  if (!defined('FPDF_FONTPATH')) {
+      define('FPDF_FONTPATH','font/');
+  }
   
   class Fannie_Standard_PDF extends FPDF
   {

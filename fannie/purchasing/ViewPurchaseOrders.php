@@ -21,14 +21,17 @@
 
 *********************************************************************************/
 
-include('../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include_once($FANNIE_ROOT.'src/JsonLib.php');
+include(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class ViewPurchaseOrders extends FannieRESTfulPage {
 
     protected $header = 'Purchase Orders';
     protected $title = 'Purchase Orders';
+
+    public $description = '[View Purchase Orders] lists pending orders and completed invoices.';
 
     protected $must_authenticate = false;
 

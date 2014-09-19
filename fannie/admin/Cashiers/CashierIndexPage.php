@@ -21,8 +21,10 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class CashierIndexPage extends FanniePage {
 
@@ -30,6 +32,8 @@ class CashierIndexPage extends FanniePage {
     protected $header = "Cashier Management";
     protected $must_authenticate = True;
     protected $auth_classes = array('editcashiers');
+
+    public $description = '[Cashier Menu] lists pages related to cashier management.';
 
     function body_content(){
         ob_start();

@@ -21,14 +21,19 @@
 
 *********************************************************************************/
 
-require('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+require(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class SignFromSearch extends FannieRESTfulPage 
 {
 
     protected $title = 'Fannie - Signage';
     protected $header = 'Signage';
+
+    public $description = '[Signage] is a tool to create sale signs or shelf tags
+    for a set of advanced search items. Must be accessed via Advanced Search.';
 
     protected $signage_mod;
     protected $signage_obj;

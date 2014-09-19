@@ -21,15 +21,24 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-require($FANNIE_ROOT.'src/fpdf/fpdf.php');
-define('FPDF_FONTPATH',$FANNIE_ROOT.'src/fpdf/font/');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+if (!class_exists('FPDF')) {
+    require($FANNIE_ROOT.'src/fpdf/fpdf.php');
+}
+if (!defined('FPDF_FONTPATH')) {
+    define('FPDF_FONTPATH',$FANNIE_ROOT.'src/fpdf/font/');
+}
 
 class MemberStickerPage extends FanniePage {
 
     protected $title='Fannie - Print Member Stickers';
     protected $header='Print Member Stickers';
+
+    public $description = '[Member Stickers] generates a PDF of member number stickers
+    for use with membership paperwork.';
 
     function preprocess(){
         if (FormLib::get_form_value('start',False) !== False){

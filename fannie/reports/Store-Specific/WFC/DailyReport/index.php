@@ -347,6 +347,19 @@ $diff = array_pop($dbc->fetch_row($checkR));
 $deliTax = 0.0325;
 $deliTax = 0.02775; 
 
+$stateTax = 0.0685;
+$cityTax = 0.01;
+$deliTax = 0.0225;
+if (strtotime($repDate) >= strtotime('2008-07-01')) {
+    $deliTax = 0.025;
+} elseif (strtotime($repDate) >= strtotime('2012-11-01')) {
+    $deliTax = 0.0325;
+} elseif (strtotime($repDate) >= strtotime('2013-06-01')) {
+    $deliTax = 0.02775; 
+} elseif (strtotime($repDate) >= strtotime('2014-08-01')) {
+    $deliTax = 0.0325;
+}
+
 $taxQ = $dbc->prepare_statement("SELECT (CASE WHEN d.tax = 1 THEN 'Non Deli Sales' ELSE 'Deli Sales' END) as type, sum(total) as taxable_sales,
 .01*(sum(CASE WHEN d.tax = 1 THEN total ELSE 0 END)) as city_tax_nonDeli,
 $deliTax*(sum(CASE WHEN d.tax = 2 THEN total ELSE 0 END)) as city_tax_Del, 

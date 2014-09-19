@@ -1641,6 +1641,19 @@ static public function mostRecentReceipt()
     }
 }
 
+static public function code39($barcode)
+{
+    global $CORE_LOCAL;
+    if (!is_object(self::$PRINT_OBJ)) {
+        $print_class = $CORE_LOCAL->get('ReceiptDriver');
+        if ($print_class === '' || !class_exists($print_class)) {
+            $print_class = 'ESCPOSPrintHandler';
+        }
+        self::$PRINT_OBJ = new $print_class();
+    }
+
+    return self::$PRINT_OBJ->BarcodeCODE39($barcode);
 }
 
-?>
+}
+

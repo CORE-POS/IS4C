@@ -41,10 +41,6 @@ if (!isset($CORE_LOCAL)){
 
 if (!class_exists("AutoLoader")) include_once(realpath(dirname(__FILE__).'/../../lib/AutoLoader.php'));
 
-define('MERCURY_TERMINAL_ID',"");
-define('MERCURY_PASSWORD',"");
-define('MERCURY_USE_TOKENS',True);
-
 class MercuryE2E extends BasicCCModule 
 {
 
@@ -613,18 +609,16 @@ class MercuryE2E extends BasicCCModule
             }
         }
 
-        if (MERCURY_USE_TOKENS) {
-            $tokenSql = sprintf("INSERT INTO efsnetTokens (expireDay, refNum, token, processData, acqRefData) 
-                    VALUES (%s,'%s','%s','%s','%s')",
-                $dbTrans->now(),
-                $refNum, $xml->get_first("RECORDNO"),
-                $xml->get_first("PROCESSDATA"),
-                $xml->get_first("ACQREFDATA")
-            );
-            $token = $xml->get_first('RECORDNO');
-            if (!empty($token)) {
-                PaycardLib::paycard_db_query($tokenSql, $dbTrans);
-            }
+        $tokenSql = sprintf("INSERT INTO efsnetTokens (expireDay, refNum, token, processData, acqRefData) 
+                VALUES (%s,'%s','%s','%s','%s')",
+            $dbTrans->now(),
+            $refNum, $xml->get_first("RECORDNO"),
+            $xml->get_first("PROCESSDATA"),
+            $xml->get_first("ACQREFDATA")
+        );
+        $token = $xml->get_first('RECORDNO');
+        if (!empty($token)) {
+            PaycardLib::paycard_db_query($tokenSql, $dbTrans);
         }
 
         if ($authResult['curlErr'] != CURLE_OK || $authResult['curlHTTP'] != 200) {
@@ -840,21 +834,120 @@ class MercuryE2E extends BasicCCModule
                 if ($CORE_LOCAL->get('paycard_issuer') == 'American Express') {
                     $t_type = 'AX';
                 }
+
+                $tender_code = 'CC';
+                $tender_description = 'Credit Card';
+                $db = Database::pDataConnect();
+                $lookup = $db->prepare('SELECT TenderName,
+                                            TenderCode
+                                        FROM tenders
+                                        WHERE TenderCode = ?');
+                /**
+                  Lookup user-configured tender
+                  Failover to defaults if tender does not exist
+                  Since we already have an authorization at this point,
+                  adding a default tender record to the transaction
+                  is better than issuing an error message
+                */
+                switch ($type) {
+                    case 'DEBIT':
+                        $args = array($CORE_LOCAL->get('PaycardsTenderCodeDebit'));
+                        $found = $db->execute($lookup, $args);
+                        if ($found == false || $db->num_rows($found) == 0) {
+                            $tender_code = 'DC';
+                            $tender_description = 'Debit Card';
+                        } else {
+                            $row = $db->fetch_row($found);
+                            $tender_code = $row['TenderCode'];
+                            $tender_description = $row['TenderName'];
+                        }
+                        break;
+                    case 'EBTCASH':
+                        $args = array($CORE_LOCAL->get('PaycardsTenderCodeEbtCash'));
+                        $found = $db->execute($lookup, $args);
+                        if ($found == false || $db->num_rows($found) == 0) {
+                            $tender_code = 'EC';
+                            $tender_description = 'EBT Cash';
+                        } else {
+                            $row = $db->fetch_row($found);
+                            $tender_code = $row['TenderCode'];
+                            $tender_description = $row['TenderName'];
+                        }
+                        break;
+                    case 'EBTFOOD':
+                        $args = array($CORE_LOCAL->get('PaycardsTenderCodeEbtFood'));
+                        $found = $db->execute($lookup, $args);
+                        if ($found == false || $db->num_rows($found) == 0) {
+                            $tender_code = 'EF';
+                            $tender_description = 'EBT Food';
+                        } else {
+                            $row = $db->fetch_row($found);
+                            $tender_code = $row['TenderCode'];
+                            $tender_description = $row['TenderName'];
+                        }
+                        // extra tax exemption steps
+                        TransRecord::addfsTaxExempt();
+                        $CORE_LOCAL->set("fntlflag",0);
+                        Database::setglobalvalue("FntlFlag", 0);
+                        break;
+                    case 'CREDIT':
+                    default:
+                        $args = array($CORE_LOCAL->get('PaycardsTenderCodeCredit'));
+                        $found = $db->execute($lookup, $args);
+                        if ($found == false || $db->num_rows($found) == 0) {
+                            $tender_code = 'CC';
+                            $tender_description = 'Credit Card';
+                        } else {
+                            $row = $db->fetch_row($found);
+                            $tender_code = $row['TenderCode'];
+                            $tender_description = $row['TenderName'];
+                        }
+                        break;
+                }
+
+                /**
+                  Now look up card-issuer specific overrides, if any
+                */
+                if ($CORE_LOCAL->get('PaycardsTenderCodeVisa') && $CORE_LOCAL->get('paycard_issuer') == 'Visa') {
+                        $args = array($CORE_LOCAL->get('PaycardsTenderCodeVisa'));
+                        $found = $db->execute($lookup, $args);
+                        if ($found && $db->num_rows($found) > 0) {
+                            $row = $db->fetch_row($found);
+                            $tender_code = $row['TenderCode'];
+                            $tender_description = $row['TenderName'];
+                        }
+                } elseif ($CORE_LOCAL->get('PaycardsTenderCodeMC') && $CORE_LOCAL->get('paycard_issuer') == 'MasterCard') {
+                        $args = array($CORE_LOCAL->get('PaycardsTenderCodeMC'));
+                        $found = $db->execute($lookup, $args);
+                        if ($found && $db->num_rows($found) > 0) {
+                            $row = $db->fetch_row($found);
+                            $tender_code = $row['TenderCode'];
+                            $tender_description = $row['TenderName'];
+                        }
+                } elseif ($CORE_LOCAL->get('PaycardsTenderCodeDiscover') && $CORE_LOCAL->get('paycard_issuer') == 'Discover') {
+                        $args = array($CORE_LOCAL->get('PaycardsTenderCodeDiscover'));
+                        $found = $db->execute($lookup, $args);
+                        if ($found && $db->num_rows($found) > 0) {
+                            $row = $db->fetch_row($found);
+                            $tender_code = $row['TenderCode'];
+                            $tender_description = $row['TenderName'];
+                        }
+                } elseif ($CORE_LOCAL->get('PaycardsTenderCodeAmex') && $CORE_LOCAL->get('paycard_issuer') == 'American Express') {
+                        $args = array($CORE_LOCAL->get('PaycardsTenderCodeAmex'));
+                        $found = $db->execute($lookup, $args);
+                        if ($found && $db->num_rows($found) > 0) {
+                            $row = $db->fetch_row($found);
+                            $tender_code = $row['TenderCode'];
+                            $tender_description = $row['TenderName'];
+                        }
+                }
+
                 // if the transaction has a non-zero paycardTransactionID,
                 // include it in the tender line
                 $record_id = $this->last_paycard_transaction_id;
                 $charflag = ($record_id != 0) ? 'PT' : '';
-                if (substr($type,0,3) == 'EBT' && $type=="EBTCASH") {
-                    TransRecord::addFlaggedTender("EBT Cash", "EC", $amt, $record_id, $charflag);
-                } else if (substr($type,0,3) == 'EBT') {
-                    TransRecord::addFlaggedTender("EBT Food", "EF", $amt, $record_id, $charflag);
-                    TransRecord::addfsTaxExempt();
-                    $CORE_LOCAL->set("fntlflag",0);
-                } else if ($type == "DEBIT") {
-                    TransRecord::addFlaggedTender("Debit Card", "DC", $amt, $record_id, $charflag);
-                } else {
-                    TransRecord::addFlaggedTender("Credit Card", $t_type, $amt, $record_id, $charflag);
-                }
+                TransRecord::addFlaggedTender($tender_description, $tender_code, $amt, $record_id, $charflag);
+
                 $appr_type = 'Approved';
                 if ($CORE_LOCAL->get('paycard_partial')){
                     $appr_type = 'Partial Approval';
@@ -1060,10 +1153,8 @@ class MercuryE2E extends BasicCCModule
         if ($logged_mode == "Credit_Sale") {
             $msgXml .= "<PartialAuth>Allow</PartialAuth>";
         }
-        if (MERCURY_USE_TOKENS) {
-            $msgXml .= '<RecordNo>RecordNumberRequested</RecordNo>';
-            $msgXml .= '<Frequency>OneTime</Frequency>';    
-        }
+        $msgXml .= '<RecordNo>RecordNumberRequested</RecordNo>';
+        $msgXml .= '<Frequency>OneTime</Frequency>';    
         $msgXml .= '<Account>
                 <EncryptedFormat>'.$e2e['Format'].'</EncryptedFormat>
                 <AccountSource>'.($manual ? 'Keyed' : 'Swiped').'</AccountSource>
@@ -1340,7 +1431,7 @@ class MercuryE2E extends BasicCCModule
         if ($CORE_LOCAL->get("training") == 1) {
             return "395347308=E2ETKN";
         } else {
-            return MERCURY_TERMINAL_ID;
+            return $CORE_LOCAL->get('MercuryE2ETerminalID');
         }
     }
 
@@ -1354,7 +1445,7 @@ class MercuryE2E extends BasicCCModule
         if ($CORE_LOCAL->get("training") == 1) {
             return "123E2ETKN";
         } else {
-            return MERCURY_PASSWORD;
+            return $CORE_LOCAL->get('MercuryE2EPassword');
         }
     }
 
@@ -1529,8 +1620,8 @@ class MercuryE2E extends BasicCCModule
         global $CORE_LOCAL;
 
         $ws_params = array(
-            'merchant' => MERCURY_TERMINAL_ID,
-            'pw' => MERCURY_PASSWORD,
+            'merchant' => $CORE_LOCAL->get('MercuryE2ETerminalID'),
+            'pw' => $CORE_LOCAL->get('MercuryE2EPassword'),
             'invoice' => $ref,
         );
 

@@ -21,14 +21,17 @@
 
 *********************************************************************************/
 
-/* configuration for your module - Important */
-include("../../config.php");
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class UploadVendorPriceFile extends FanniePage {
     /* html header, including navbar */
     protected $title = "Fannie - Upload Price File";
     protected $header = "Upload Price File";
+
+    public $description = '[Vendor Price File] loads or reloads catalog information from a spreadsheet.';
 
     function body_content(){
         global $FANNIE_URL, $FANNIE_OP_DB;

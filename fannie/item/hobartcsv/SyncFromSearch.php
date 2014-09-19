@@ -21,13 +21,18 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+require(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class SyncFromSearch extends FannieRESTfulPage
 {
     protected $header = 'Send Items to Scales';
     protected $title = 'Send Items to Scales';
+
+    public $description = '[Scale Sync] sends a set of advanced search items to
+    specified scales (Hobart). Must be accessed via Advanced Search.';
 
     protected $window_dressing = false;
 

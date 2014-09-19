@@ -54,6 +54,22 @@ class StoresModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'storeID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["storeID"]) || $this->instance["storeID"] != func_get_args(0)) {
                 if (!isset($this->columns["storeID"]["ignore_updates"]) || $this->columns["storeID"]["ignore_updates"] == false) {
@@ -62,6 +78,7 @@ class StoresModel extends BasicModel
             }
             $this->instance["storeID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function description()
@@ -74,6 +91,22 @@ class StoresModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'description',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["description"]) || $this->instance["description"] != func_get_args(0)) {
                 if (!isset($this->columns["description"]["ignore_updates"]) || $this->columns["description"]["ignore_updates"] == false) {
@@ -82,6 +115,7 @@ class StoresModel extends BasicModel
             }
             $this->instance["description"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function dbHost()
@@ -94,6 +128,22 @@ class StoresModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'dbHost',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["dbHost"]) || $this->instance["dbHost"] != func_get_args(0)) {
                 if (!isset($this->columns["dbHost"]["ignore_updates"]) || $this->columns["dbHost"]["ignore_updates"] == false) {
@@ -102,6 +152,7 @@ class StoresModel extends BasicModel
             }
             $this->instance["dbHost"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function dbDriver()
@@ -114,6 +165,22 @@ class StoresModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'dbDriver',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["dbDriver"]) || $this->instance["dbDriver"] != func_get_args(0)) {
                 if (!isset($this->columns["dbDriver"]["ignore_updates"]) || $this->columns["dbDriver"]["ignore_updates"] == false) {
@@ -122,6 +189,7 @@ class StoresModel extends BasicModel
             }
             $this->instance["dbDriver"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function dbUser()
@@ -134,6 +202,22 @@ class StoresModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'dbUser',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["dbUser"]) || $this->instance["dbUser"] != func_get_args(0)) {
                 if (!isset($this->columns["dbUser"]["ignore_updates"]) || $this->columns["dbUser"]["ignore_updates"] == false) {
@@ -142,6 +226,7 @@ class StoresModel extends BasicModel
             }
             $this->instance["dbUser"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function dbPassword()
@@ -154,6 +239,22 @@ class StoresModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'dbPassword',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["dbPassword"]) || $this->instance["dbPassword"] != func_get_args(0)) {
                 if (!isset($this->columns["dbPassword"]["ignore_updates"]) || $this->columns["dbPassword"]["ignore_updates"] == false) {
@@ -162,6 +263,7 @@ class StoresModel extends BasicModel
             }
             $this->instance["dbPassword"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function transDB()
@@ -174,6 +276,22 @@ class StoresModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'transDB',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["transDB"]) || $this->instance["transDB"] != func_get_args(0)) {
                 if (!isset($this->columns["transDB"]["ignore_updates"]) || $this->columns["transDB"]["ignore_updates"] == false) {
@@ -182,6 +300,7 @@ class StoresModel extends BasicModel
             }
             $this->instance["transDB"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function opDB()
@@ -194,6 +313,22 @@ class StoresModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'opDB',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["opDB"]) || $this->instance["opDB"] != func_get_args(0)) {
                 if (!isset($this->columns["opDB"]["ignore_updates"]) || $this->columns["opDB"]["ignore_updates"] == false) {
@@ -202,6 +337,7 @@ class StoresModel extends BasicModel
             }
             $this->instance["opDB"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function push()
@@ -214,6 +350,22 @@ class StoresModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'push',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["push"]) || $this->instance["push"] != func_get_args(0)) {
                 if (!isset($this->columns["push"]["ignore_updates"]) || $this->columns["push"]["ignore_updates"] == false) {
@@ -222,6 +374,7 @@ class StoresModel extends BasicModel
             }
             $this->instance["push"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function pull()
@@ -234,6 +387,22 @@ class StoresModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'pull',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["pull"]) || $this->instance["pull"] != func_get_args(0)) {
                 if (!isset($this->columns["pull"]["ignore_updates"]) || $this->columns["pull"]["ignore_updates"] == false) {
@@ -242,6 +411,7 @@ class StoresModel extends BasicModel
             }
             $this->instance["pull"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

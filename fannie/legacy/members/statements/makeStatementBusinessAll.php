@@ -43,37 +43,45 @@ $selTransR = $sql->execute($selTransQ, $args);
 $selTransN = $sql->num_rows($selTransR);
 
 $arRows = array();
-$trans_clause = "";
-$t_args = array();
 while($w = $sql->fetch_row($selTransR)){
 	if (!isset($arRows[$w['card_no']]))
 		$arRows[$w['card_no']] = array();
 	$arRows[$w['card_no']][] = $w;
 	$date = explode(' ',$w['tdate']);
     $date_id = date('Ymd', strtotime($date[0]));
-    $t_args[] = $date_id;
-	$t_args[] = $w['register_no'];
-	$t_args[] = $w['emp_no'];
-	$t_args[] = $w['trans_no'];
-	$trans_clause .= " (date_id=? AND register_no=? AND emp_no=? AND trans_no=?) OR ";
 }
-$trans_clause = substr($trans_clause,0,strlen($trans_clause)-3);
-$q = $sql->prepare("SELECT card_no,description,department,emp_no,register_no,trans_no 
-	FROM {$TRANS}transarchive
-	WHERE trans_type IN ('I','D') and emp_no <> 9999
-	AND register_no <> 99 AND trans_status <> 'X'
-	AND upc <> 'DISCOUNT'
-	AND ($trans_clause)");
+$transP = $sql->prepare('
+    SELECT card_no,
+        description,
+        department,
+        emp_no,
+        register_no,
+        trans_no
+    FROM ' . $TRANS . ' dlog_90_view
+    WHERE tdate BETWEEN ? AND ?
+        AND trans_num=?
+        AND card_no=?
+        AND trans_type IN (\'I\', \'D\')
+    ');         
 $details = array();
-if ($trans_clause != '') {
-    $r = $sql->execute($q, $t_args);
-    while($w = $sql->fetch_row($r)){
-        $tn = $w['emp_no']."-".$w['register_no']."-".$w['trans_no'];
-        if (!isset($details[$w['card_no']]))
-            $details[$w['card_no']] = array();
-        if (!isset($details[$w['card_no']][$tn]))
-            $details[$w['card_no']][$tn] = array();
-        $details[$w['card_no']][$tn][] = $w['description'];
+foreach ($arRows as $card_no => $trans) {
+    foreach ($trans as $info) {
+        $dt = strtotime($info['tdate']);
+        $args = array(
+            date('Y-m-d 00:00:00', $dt),
+            date('Y-m-d 23:59:59', $dt),
+            $info['trans_num'],
+            $info['card_no'],
+        );
+        $r = $sql->execute($transP, $args);
+        while($w = $sql->fetch_row($r)){
+            $tn = $w['emp_no']."-".$w['register_no']."-".$w['trans_no'];
+            if (!isset($details[$w['card_no']]))
+                $details[$w['card_no']] = array();
+            if (!isset($details[$w['card_no']][$tn]))
+                $details[$w['card_no']][$tn] = array();
+            $details[$w['card_no']][$tn][] = $w['description'];
+        }
     }
 }
 
@@ -250,6 +258,11 @@ while($selAddW = $sql->fetch_row($selAddR)){
 		$gazette = True;
 	$lineitem = (count($detail)==1) ? $detail[0] : '(multiple items)';
 	if ($lineitem == "ARPAYMEN") $lineitem = "Payment Received - Thank You";
+    foreach ($detail as $line) {
+        if ($line == 'ARPAYMEN') {
+            $lineitem = 'Payment Received - Thank You';
+        }
+    }
 
       
 	$pdf->Cell(20,8,'',0,0,'L');

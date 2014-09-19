@@ -33,6 +33,9 @@ class ObfCategoriesPage extends FannieRESTfulPage
     protected $title = 'OBF: Categories';
     protected $header = 'OBF: Categories';
 
+    public $page_set = 'Plugin :: Open Book Financing';
+    public $description = '[Categories] sets up labor category divisions.';
+
     public function post_id_handler()
     {
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;

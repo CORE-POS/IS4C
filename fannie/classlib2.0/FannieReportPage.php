@@ -41,6 +41,8 @@ class FannieReportPage extends FanniePage
     Base class for creating reports.
     ";
 
+    public $page_set = 'Reports';
+
     /**
       Assign report to a "set" of reports
     */
@@ -465,6 +467,43 @@ class FannieReportPage extends FanniePage
     }
 
     /**
+      Standard lines to include above report data
+      @param $datefields [array] names of one or two date fields
+        in the GET/POST data. The fields "date", "date1", and
+        "date2" are detected automatically.
+      @return array of description lines
+    */
+    protected function defaultDescriptionContent($datefields=array())
+    {
+        $ret = array();
+        $ret[] = $this->header;
+        $ret[] = _('Report generated') . ' ' . date('l, F j, Y g:iA');
+        $dt1 = false;
+        $dt2 = false;
+        if (count($datefields) == 1) {
+            $dt1 = strtotime(FormLib::get($datefields[0])); 
+        } elseif (count($datefields) == 2) {
+            $dt1 = strtotime(FormLib::get($datefields[0])); 
+            $dt2 = strtotime(FormLib::get($datefields[1])); 
+        } elseif (FormLib::get('date') !== '') {
+            $dt1 = strtotime(FormLib::get('date'));
+        } elseif (FormLib::get('date1') !== '' && FormLib::get('date2') !== '') {
+            $dt1 = strtotime(FormLib::get('date1'));
+            $dt2 = strtotime(FormLib::get('date2'));
+        }
+        if ($dt1 && $dt2) {
+            $ret[] = _('From') . ' ' 
+                . date('l, F j, Y', $dt1) 
+                . ' ' . _('to') . ' ' 
+                . date('l, F j, Y', $dt2);
+        } elseif ($dt1 && !$dt2) {
+            $ret[] = _('For') . ' ' . date('l, F j, Y', $dt1);
+        }
+
+        return $ret;
+    }
+
+    /**
       Extra, non-tabular information appended to
       reports
       @return array of strings
@@ -511,17 +550,34 @@ class FannieReportPage extends FanniePage
                             'content="text/html; charset=iso-8859-1">' .
                         '</head><body>';
                     }
-                    $ret .= sprintf('<a href="%s%sexcel=xls">Download Excel</a>
-                        &nbsp;&nbsp;&nbsp;&nbsp;
-                        <a href="%s%sexcel=csv">Download CSV</a>
+                    /**
+                      Detect PEAR and only offer XLS if
+                      the system is capable.
+                    */
+                    $pear = true;
+                    if (!class_exists('PEAR')) {
+                        $pear = @include_once('PEAR.php');
+                        if (!$pear) {
+                            $pear = false;
+                        }
+                    }
+                    if ($pear) {
+                        $ret .= sprintf('<a href="%s%sexcel=xls">Download Excel</a>
+                            &nbsp;&nbsp;&nbsp;&nbsp;',
+                            $_SERVER['REQUEST_URI'],
+                            (strstr($_SERVER['REQUEST_URI'],'?') ===False ? '?' : '&')
+                        );
+                    }
+                    $ret .= sprintf('<a href="%s%sexcel=csv">Download CSV</a>
                         &nbsp;&nbsp;&nbsp;&nbsp;
                         <a href="javascript:history:back();">Back</a>',
                         $_SERVER['REQUEST_URI'],
-                        (strstr($_SERVER['REQUEST_URI'],'?') ===False ? '?' : '&'),
-                        $_SERVER['REQUEST_URI'],
                         (strstr($_SERVER['REQUEST_URI'],'?') ===False ? '?' : '&')
                     );
-                    foreach($this->report_description_content() as $line) {
+                    foreach ($this->defaultDescriptionContent() as $line) {
+                        $ret .= (substr($line,0,1)=='<'?'':'<br />').$line;
+                    }
+                    foreach ($this->report_description_content() as $line) {
                         $ret .= (substr($line,0,1)=='<'?'':'<br />').$line;
                     }
                 }
@@ -535,7 +591,10 @@ class FannieReportPage extends FanniePage
                     cellpadding="4" border="1">';
                 break;
             case 'csv':
-                foreach($this->report_description_content() as $line) {
+                foreach ($this->defaultDescriptionContent() as $line) {
+                    $ret .= $this->csvLine(array(strip_tags($line)));
+                }
+                foreach ($this->report_description_content() as $line) {
                     $ret .= $this->csvLine(array(strip_tags($line)));
                 }
             case 'xls':
@@ -656,10 +715,13 @@ class FannieReportPage extends FanniePage
                         }
                     }
                 }
-                foreach($this->report_end_content() as $line) {
+                foreach ($this->report_end_content() as $line) {
                     array_push($xlsdata, array(strip_tags($line)));
                 }
-                foreach($this->report_description_content() as $line) {
+                foreach ($this->defaultDescriptionContent() as $line) {
+                    array_unshift($xlsdata,array(strip_tags($line)));
+                }
+                foreach ($this->report_description_content() as $line) {
                     array_unshift($xlsdata,array(strip_tags($line)));
                 }
                 if (!function_exists('ArrayToXls')) {

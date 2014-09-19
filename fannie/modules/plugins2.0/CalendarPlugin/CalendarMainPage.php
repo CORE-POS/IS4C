@@ -32,6 +32,9 @@ include_once(dirname(__FILE__).'/CalendarPluginDisplayLib.php');
 
 class CalendarMainPage extends FanniePage {
 
+    public $page_set = 'Plugin :: Calendar';
+    public $description = '[Calendar Plugin] is a simple click to edit shared calendar.';
+
     protected $must_authenticate = True;
     private $uid;
 

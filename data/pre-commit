@@ -1,0 +1,4 @@
+#!/bin/bash
+mysqldump -uroot --skip-extended-insert ypsi_opdata > /Users/joel/Sites/YPSI_CORE/data/opdata.sql
+cd /Users/joel/Sites/YPSI_CORE/data
+git add opdata.sql

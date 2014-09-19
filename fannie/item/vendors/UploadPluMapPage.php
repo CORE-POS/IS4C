@@ -21,17 +21,19 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-
-/* this page requires a session to pass some extra
-   state information through multiple requests */
-@session_start();
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class UploadPluMapPage extends FannieUploadPage {
 
     public $title = "Fannie - Load Vendor SKU/PLU mapping";
     public $header = "Upload Vendor SKU/PLU file";
+
+    public $description = '[Vendor PLU Map] loads a list of vendor SKUs and the corresponding
+    POS UPC used to sell the item. Typically these are things like bulk PLUs but any UPC is
+    permitted.';
 
     protected $preview_opts = array(
         'sku' => array(
@@ -148,6 +150,17 @@ class UploadPluMapPage extends FannieUploadPage {
         return '<fieldset><legend>Instructions</legend>
             Upload a PLU and SKU file for <i>'.$vrow['vendorName'].'</i> ('.$vid.'). File
             can be CSV, XLS, or XLSX.</fieldset><br />';
+    }
+
+    public function preprocess()
+    {
+        if (php_sapi_name() !== 'cli') {
+            /* this page requires a session to pass some extra
+               state information through multiple requests */
+            @session_start();
+        }
+
+        return parent::preprocess();
     }
 }
 

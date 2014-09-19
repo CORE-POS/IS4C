@@ -21,8 +21,13 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
+    return;
+}
 
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
@@ -81,7 +86,7 @@ case 'batchAdd':
     $ppo = PriceLib::pricePerUnit($price,$info['size']);
     
     /* create a shelftag */
-    $tag = new ShelftagsModel($tag);
+    $tag = new ShelftagsModel($dbc);
     $tag->id($sid);
     $tag->upc($upc);
     $tag->description($info['description']);
@@ -106,7 +111,7 @@ case 'batchDel':
     $model->upc($upc);
     $model->delete();
 
-    $tag = new ShelftagsModel($tag);
+    $tag = new ShelftagsModel($dbc);
     $tag->id($sid);
     $tag->upc($upc);
     $tag->delete();

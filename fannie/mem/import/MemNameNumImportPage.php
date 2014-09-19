@@ -24,13 +24,19 @@
      6Mar2013 Andy Theuninck re-do as class
      4Sep2012 Eric Lee Add some notes to the initial page.
 */
-include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class MemNameNumImportPage extends FannieUploadPage 
 {
     protected $title = "Fannie :: Member Tools";
     protected $header = "Import Member Names &amp; Numbers";
+
+    public $description = '[Member Names and Numbers] loads member names and numbers. This is the
+    starting point for importing existing member information. Member numbers need to be established
+    first so other information can be associated by number.';
 
     protected $preview_opts = array(
         'memnum' => array(

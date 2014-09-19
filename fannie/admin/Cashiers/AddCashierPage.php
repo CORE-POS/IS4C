@@ -21,8 +21,10 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class AddCashierPage extends FanniePage {
 
@@ -30,6 +32,8 @@ class AddCashierPage extends FanniePage {
     protected $header = "Add Cashier";
     protected $must_authenticate = True;
     protected $auth_classes = array('editcashiers');
+
+    public $description = '[Add Cashier] is the tool to create new cashiers.';
 
     private $messages = '';
 

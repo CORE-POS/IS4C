@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 if (!isset($FANNIE_ROOT))
-    require('../config.php');
+    require(dirname(__FILE__) . '/../config.php');
 if (!class_exists('SQLManager'))
     require($FANNIE_ROOT.'src/SQLManager.php');
 

@@ -60,8 +60,8 @@ class BatchReport extends FannieReportPage
     function fetch_report_data(){
         global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $bStart = FormLib::get_form_value('start','');
-        $bEnd = FormLib::get_form_value('end','');
+        $bStart = FormLib::get_form_value('date1','');
+        $bEnd = FormLib::get_form_value('date2','');
 
         /**
           Assemble argument array and appropriate string
@@ -221,9 +221,9 @@ class BatchReport extends FannieReportPage
         echo '</select>';
         echo '</td>';
         echo '<th>Start Date</th>';
-        echo '<td><input name="start" id="date1" /></td></tr>';
+        echo '<td><input name="date1" id="date1" /></td></tr>';
         echo '<tr><th>End Date</th>';
-        echo '<td><input name="end" id="date2" /></td></tr>';
+        echo '<td><input name="date2" id="date2" /></td></tr>';
         echo '<tr><th>Excel</th>';
         echo '<td><input type="checkbox" name="excel" value="xls" /></td></tr>';
         echo '<tr><td colspan="2"><input type="submit" value="Run Report" /></td></tr>';
@@ -239,8 +239,8 @@ class BatchReport extends FannieReportPage
         global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $ret = array();
-        $bStart = FormLib::get_form_value('start','');
-        $bEnd = FormLib::get_form_value('end','');
+        $bStart = FormLib::get_form_value('date1','');
+        $bEnd = FormLib::get_form_value('date2','');
         $batchID = FormLib::get_form_value('batchID','0');
         $inArgs = array();
         $inClause = '(';
@@ -260,16 +260,16 @@ class BatchReport extends FannieReportPage
             if (empty($bEnd))
                 $bEnd = $batchInfoW['endDate'];
         }
-        $ret[] = '<span style="font-size:150%;">'.$bName.'</span>';
+        $ret[] = '<br /><span style="font-size:150%;">'.$bName.'</span>';
         if ($this->report_format == 'html') {
             $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
             $this->add_script($FANNIE_URL.'src/javascript/jquery-ui.js');
             $this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
             $ret[] = '<form action="BatchReport.php" method="get">';
             $ret[] = "<span style=\"color:black; display:inline;\">From: 
-                    <input type=\"text\" name=\"start\" size=\"10\" value=\"$bStart\" id=\"date1\" />
+                    <input type=\"text\" name=\"date1\" size=\"10\" value=\"$bStart\" id=\"date1\" />
                     to: 
-                    <input type=\"text\" name=\"end\" size=\"10\" value=\"$bEnd\" id=\"date2\" />
+                    <input type=\"text\" name=\"date2\" size=\"10\" value=\"$bEnd\" id=\"date2\" />
                     </span><input type=\"submit\" value=\"Change Dates\" />";
             $this->add_onload_command("\$('#date1').datepicker();");
             $this->add_onload_command("\$('#date2').datepicker();");

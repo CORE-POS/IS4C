@@ -21,14 +21,18 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include_once($FANNIE_ROOT.'src/JsonLib.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class RestrictCouponPage extends FannieRESTfulPage {
 
     protected $header = 'Coupon Restrictions';
     protected $title = 'Coupon Restrictions';
+
+    public $description = '[Coupon Restrictions] bans or limits use of broken manufacturer coupons.
+    Typically this means the manufacturer put the wrong UPC code on the coupon.';
 
     function get_view(){
         global $FANNIE_OP_DB, $FANNIE_URL;
@@ -75,7 +79,7 @@ class RestrictCouponPage extends FannieRESTfulPage {
         'limit' => $model->threshold(),
         'reason' => $model->reason()
         );
-        echo JsonLib::array_to_json($ret);
+        echo json_encode($ret);
         return False;
     }
 

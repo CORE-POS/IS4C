@@ -34,7 +34,7 @@ class MemDates extends MemberModule {
         $infoR = $dbc->exec_statement($infoQ,array($memNum));
         $infoW = $dbc->fetch_row($infoR);
 
-        $ret .= "<fieldset class='memOneRow'><legend>Membership Dates</legend>";
+        $ret = "<fieldset class='memOneRow'><legend>Membership Dates</legend>";
         $ret .= "<table class=\"MemFormTable\" 
             border=\"0\">";
 

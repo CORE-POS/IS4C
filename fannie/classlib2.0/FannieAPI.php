@@ -163,6 +163,9 @@ class FannieAPI
             case 'FannieTask':
                 $directories[] = dirname(__FILE__).'/../cron/tasks/';
                 break;
+            case 'BasicModel':
+                $directories[] = dirname(__FILE__).'/data/models/';
+                break;
             case 'BasicModelHook':
                 $directories[] = dirname(__FILE__).'/data/hooks/';
                 break;
@@ -174,6 +177,20 @@ class FannieAPI
                 break;
             case 'FannieSignage':
                 $directories[] = dirname(__FILE__) . '/item/signage/';
+                break;
+            case 'FanniePage':
+                $directories[] = dirname(__FILE__).'/../admin/';
+                $directories[] = dirname(__FILE__).'/../batches/';
+                $directories[] = dirname(__FILE__).'/../cron/management/';
+                $directories[] = dirname(__FILE__).'/../item/';
+                $directories[] = dirname(__FILE__).'/../logs/';
+                $directories[] = dirname(__FILE__).'/../reports/';
+                $directories[] = dirname(__FILE__).'/../mem/';
+                $directories[] = dirname(__FILE__).'/../purchasing/';
+                /*
+                $directories[] = dirname(__FILE__).'/../install/';
+                $directories[] = dirname(__FILE__).'/../ordering/';
+                */
                 break;
         }
 

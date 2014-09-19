@@ -53,13 +53,6 @@ $(document).ready(function() { $('#date').datepicker(); });
         return ob_get_clean();
     }
 
-    public function report_description_content()
-    {
-        $date = FormLib::get_form_value('date', date('Y-m-d'));
-
-        return array("Report for $date");
-    }
-
     public function fetch_report_data()
     {
         global $FANNIE_OP_DB;

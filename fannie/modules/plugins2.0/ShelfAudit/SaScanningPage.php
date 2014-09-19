@@ -32,6 +32,10 @@ class SaScanningPage extends FanniePage {
 
     protected $window_dressing = False;
 
+    public $page_set = 'Plugin :: Shelf Audit';
+    public $description = '[Alt. Scanning] is an older interface for entering quantities
+    on hand';
+
     private $status='';
     private $section=0;
 

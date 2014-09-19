@@ -327,9 +327,10 @@ class HouseCoupon extends SpecialUPC
             // with previous days (dlog_90_view)
             // Potential replacement for houseCouponThisMonth
             $monthStart = date('Y-m-01 00:00:00');
-            $altQ = "SELECT SUM(s.quantity AS quantity)
+            $altQ = "SELECT SUM(s.quantity) AS quantity,
+                        MAX(tdate) AS lastUse
                      FROM (
-                        SELECT upc, card_no, quantity
+                        SELECT upc, card_no, quantity, tdate
                         FROM dlog
                         WHERE
                             trans_type='T'
@@ -339,7 +340,7 @@ class HouseCoupon extends SpecialUPC
     
                         UNION ALL
 
-                        SELECT upc, card_no, quantity
+                        SELECT upc, card_no, quantity, tdate
                         FROM dlog_90_view
                         WHERE
                             trans_type='T'

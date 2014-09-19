@@ -107,238 +107,670 @@ class TransactionSummaryModel extends CoreWarehouseModel {
 
     /* START ACCESSOR FUNCTIONS */
 
-    public function date_id(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["date_id"]))
+    public function date_id()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["date_id"])) {
                 return $this->instance["date_id"];
-            elseif(isset($this->columns["date_id"]["default"]))
+            } else if (isset($this->columns["date_id"]["default"])) {
                 return $this->columns["date_id"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'date_id',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["date_id"]) || $this->instance["date_id"] != func_get_args(0)) {
+                if (!isset($this->columns["date_id"]["ignore_updates"]) || $this->columns["date_id"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["date_id"] = func_get_arg(0);
         }
+        return $this;
     }
 
-    public function trans_num(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["trans_num"]))
+    public function trans_num()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["trans_num"])) {
                 return $this->instance["trans_num"];
-            elseif(isset($this->columns["trans_num"]["default"]))
+            } else if (isset($this->columns["trans_num"]["default"])) {
                 return $this->columns["trans_num"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'trans_num',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["trans_num"]) || $this->instance["trans_num"] != func_get_args(0)) {
+                if (!isset($this->columns["trans_num"]["ignore_updates"]) || $this->columns["trans_num"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["trans_num"] = func_get_arg(0);
         }
+        return $this;
     }
 
-    public function register_no(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["register_no"]))
+    public function register_no()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["register_no"])) {
                 return $this->instance["register_no"];
-            elseif(isset($this->columns["register_no"]["default"]))
+            } else if (isset($this->columns["register_no"]["default"])) {
                 return $this->columns["register_no"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'register_no',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["register_no"]) || $this->instance["register_no"] != func_get_args(0)) {
+                if (!isset($this->columns["register_no"]["ignore_updates"]) || $this->columns["register_no"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["register_no"] = func_get_arg(0);
         }
+        return $this;
     }
 
-    public function emp_no(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["emp_no"]))
+    public function emp_no()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["emp_no"])) {
                 return $this->instance["emp_no"];
-            elseif(isset($this->columns["emp_no"]["default"]))
+            } else if (isset($this->columns["emp_no"]["default"])) {
                 return $this->columns["emp_no"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'emp_no',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["emp_no"]) || $this->instance["emp_no"] != func_get_args(0)) {
+                if (!isset($this->columns["emp_no"]["ignore_updates"]) || $this->columns["emp_no"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["emp_no"] = func_get_arg(0);
         }
+        return $this;
     }
 
-    public function tenderTotal(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["tenderTotal"]))
+    public function tenderTotal()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["tenderTotal"])) {
                 return $this->instance["tenderTotal"];
-            elseif(isset($this->columns["tenderTotal"]["default"]))
+            } else if (isset($this->columns["tenderTotal"]["default"])) {
                 return $this->columns["tenderTotal"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'tenderTotal',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["tenderTotal"]) || $this->instance["tenderTotal"] != func_get_args(0)) {
+                if (!isset($this->columns["tenderTotal"]["ignore_updates"]) || $this->columns["tenderTotal"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["tenderTotal"] = func_get_arg(0);
         }
+        return $this;
     }
 
-    public function taxTotal(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["taxTotal"]))
+    public function taxTotal()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["taxTotal"])) {
                 return $this->instance["taxTotal"];
-            elseif(isset($this->columns["taxTotal"]["default"]))
+            } else if (isset($this->columns["taxTotal"]["default"])) {
                 return $this->columns["taxTotal"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'taxTotal',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["taxTotal"]) || $this->instance["taxTotal"] != func_get_args(0)) {
+                if (!isset($this->columns["taxTotal"]["ignore_updates"]) || $this->columns["taxTotal"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["taxTotal"] = func_get_arg(0);
         }
+        return $this;
     }
 
-    public function discountTotal(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["discountTotal"]))
+    public function discountTotal()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["discountTotal"])) {
                 return $this->instance["discountTotal"];
-            elseif(isset($this->columns["discountTotal"]["default"]))
+            } else if (isset($this->columns["discountTotal"]["default"])) {
                 return $this->columns["discountTotal"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'discountTotal',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["discountTotal"]) || $this->instance["discountTotal"] != func_get_args(0)) {
+                if (!isset($this->columns["discountTotal"]["ignore_updates"]) || $this->columns["discountTotal"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["discountTotal"] = func_get_arg(0);
         }
+        return $this;
     }
 
-    public function percentDiscount(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["percentDiscount"]))
+    public function percentDiscount()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["percentDiscount"])) {
                 return $this->instance["percentDiscount"];
-            elseif(isset($this->columns["percentDiscount"]["default"]))
+            } else if (isset($this->columns["percentDiscount"]["default"])) {
                 return $this->columns["percentDiscount"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'percentDiscount',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["percentDiscount"]) || $this->instance["percentDiscount"] != func_get_args(0)) {
+                if (!isset($this->columns["percentDiscount"]["ignore_updates"]) || $this->columns["percentDiscount"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["percentDiscount"] = func_get_arg(0);
         }
+        return $this;
     }
 
-    public function retailTotal(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["retailTotal"]))
+    public function retailTotal()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["retailTotal"])) {
                 return $this->instance["retailTotal"];
-            elseif(isset($this->columns["retailTotal"]["default"]))
+            } else if (isset($this->columns["retailTotal"]["default"])) {
                 return $this->columns["retailTotal"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'retailTotal',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["retailTotal"]) || $this->instance["retailTotal"] != func_get_args(0)) {
+                if (!isset($this->columns["retailTotal"]["ignore_updates"]) || $this->columns["retailTotal"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["retailTotal"] = func_get_arg(0);
         }
+        return $this;
     }
 
-    public function retailQty(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["retailQty"]))
+    public function retailQty()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["retailQty"])) {
                 return $this->instance["retailQty"];
-            elseif(isset($this->columns["retailQty"]["default"]))
+            } else if (isset($this->columns["retailQty"]["default"])) {
                 return $this->columns["retailQty"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'retailQty',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["retailQty"]) || $this->instance["retailQty"] != func_get_args(0)) {
+                if (!isset($this->columns["retailQty"]["ignore_updates"]) || $this->columns["retailQty"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["retailQty"] = func_get_arg(0);
         }
+        return $this;
     }
 
-    public function nonRetailTotal(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["nonRetailTotal"]))
+    public function nonRetailTotal()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["nonRetailTotal"])) {
                 return $this->instance["nonRetailTotal"];
-            elseif(isset($this->columns["nonRetailTotal"]["default"]))
+            } else if (isset($this->columns["nonRetailTotal"]["default"])) {
                 return $this->columns["nonRetailTotal"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'nonRetailTotal',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["nonRetailTotal"]) || $this->instance["nonRetailTotal"] != func_get_args(0)) {
+                if (!isset($this->columns["nonRetailTotal"]["ignore_updates"]) || $this->columns["nonRetailTotal"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["nonRetailTotal"] = func_get_arg(0);
         }
+        return $this;
     }
 
-    public function nonRetailQty(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["nonRetailQty"]))
+    public function nonRetailQty()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["nonRetailQty"])) {
                 return $this->instance["nonRetailQty"];
-            elseif(isset($this->columns["nonRetailQty"]["default"]))
+            } else if (isset($this->columns["nonRetailQty"]["default"])) {
                 return $this->columns["nonRetailQty"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'nonRetailQty',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["nonRetailQty"]) || $this->instance["nonRetailQty"] != func_get_args(0)) {
+                if (!isset($this->columns["nonRetailQty"]["ignore_updates"]) || $this->columns["nonRetailQty"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["nonRetailQty"] = func_get_arg(0);
         }
+        return $this;
     }
 
-    public function ringCount(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["ringCount"]))
+    public function ringCount()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["ringCount"])) {
                 return $this->instance["ringCount"];
-            elseif(isset($this->columns["ringCount"]["default"]))
+            } else if (isset($this->columns["ringCount"]["default"])) {
                 return $this->columns["ringCount"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'ringCount',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["ringCount"]) || $this->instance["ringCount"] != func_get_args(0)) {
+                if (!isset($this->columns["ringCount"]["ignore_updates"]) || $this->columns["ringCount"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["ringCount"] = func_get_arg(0);
         }
+        return $this;
     }
 
-    public function start_time(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["start_time"]))
+    public function start_time()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["start_time"])) {
                 return $this->instance["start_time"];
-            elseif(isset($this->columns["start_time"]["default"]))
+            } else if (isset($this->columns["start_time"]["default"])) {
                 return $this->columns["start_time"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'start_time',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["start_time"]) || $this->instance["start_time"] != func_get_args(0)) {
+                if (!isset($this->columns["start_time"]["ignore_updates"]) || $this->columns["start_time"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["start_time"] = func_get_arg(0);
         }
+        return $this;
     }
 
-    public function end_time(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["end_time"]))
+    public function end_time()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["end_time"])) {
                 return $this->instance["end_time"];
-            elseif(isset($this->columns["end_time"]["default"]))
+            } else if (isset($this->columns["end_time"]["default"])) {
                 return $this->columns["end_time"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'end_time',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["end_time"]) || $this->instance["end_time"] != func_get_args(0)) {
+                if (!isset($this->columns["end_time"]["ignore_updates"]) || $this->columns["end_time"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["end_time"] = func_get_arg(0);
         }
+        return $this;
     }
 
-    public function duration(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["duration"]))
+    public function duration()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["duration"])) {
                 return $this->instance["duration"];
-            elseif(isset($this->columns["duration"]["default"]))
+            } else if (isset($this->columns["duration"]["default"])) {
                 return $this->columns["duration"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'duration',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["duration"]) || $this->instance["duration"] != func_get_args(0)) {
+                if (!isset($this->columns["duration"]["ignore_updates"]) || $this->columns["duration"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["duration"] = func_get_arg(0);
         }
+        return $this;
     }
 
-    public function card_no(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["card_no"]))
+    public function card_no()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["card_no"])) {
                 return $this->instance["card_no"];
-            elseif(isset($this->columns["card_no"]["default"]))
+            } else if (isset($this->columns["card_no"]["default"])) {
                 return $this->columns["card_no"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'card_no',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["card_no"]) || $this->instance["card_no"] != func_get_args(0)) {
+                if (!isset($this->columns["card_no"]["ignore_updates"]) || $this->columns["card_no"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["card_no"] = func_get_arg(0);
         }
+        return $this;
     }
 
-    public function memType(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["memType"]))
+    public function memType()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["memType"])) {
                 return $this->instance["memType"];
-            elseif(isset($this->columns["memType"]["default"]))
+            } else if (isset($this->columns["memType"]["default"])) {
                 return $this->columns["memType"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'memType',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["memType"]) || $this->instance["memType"] != func_get_args(0)) {
+                if (!isset($this->columns["memType"]["ignore_updates"]) || $this->columns["memType"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["memType"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

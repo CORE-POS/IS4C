@@ -135,7 +135,7 @@ class ManufacturerMovementReport extends FannieReportPage
             } else {
                 for ($i=0;$i<$dbc->num_fields($result);$i++) {
                     if ($dbc->field_name($result, $i) == 'qty' || $dbc->field_name($result, $i) == 'ttl') {
-                        $row[$i] = number_format($row[$i], 2);
+                        $row[$i] = sprintf('%.2f', $row[$i]);
                     }
                     $record[] .= $row[$i];
                 }
@@ -163,7 +163,7 @@ class ManufacturerMovementReport extends FannieReportPage
                     $sumSales += $row[3];
                 }
 
-                return array('Total',null,$sumQty,$sumSales,null,null,null);
+                return array('Total',null,$sumQty,$sumSales,'',null,null);
 
             case 5:
                 $this->report_headers = array('Dept#','Department','Qty','$','Subdept');

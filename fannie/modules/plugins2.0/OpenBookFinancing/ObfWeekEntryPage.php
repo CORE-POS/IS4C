@@ -33,6 +33,9 @@ class ObfWeekEntryPage extends FannieRESTfulPage
     protected $title = 'OBF: Weeks';
     protected $header = 'OBF: Weeks';
 
+    public $page_set = 'Plugin :: Open Book Financing';
+    public $description = '[Week Entry] sets labor amounts and sales goals by week.';
+
     public function javascript_content()
     {
         ob_start();
@@ -97,6 +100,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
         $model->endDate(date('Y-m-d', $end_ts));
         $model->previousYear(date('Y-m-d', mktime(0, 0, 0, date('n', $prev_ts), date('j', $prev_ts)-6, date('Y', $prev_ts))));
         $model->obfQuarterID(FormLib::get('quarter'));
+        $model->growthTarget(FormLib::get('growthTarget', 0.00) / 100.00);
 
         $new_id = $model->save();
 
@@ -119,8 +123,10 @@ class ObfWeekEntryPage extends FannieRESTfulPage
         $model = new ObfWeeksModel($dbc);
         $model->obfWeekID($this->id);
         $model->startDate(date('Y-m-d', mktime(0, 0, 0, date('n', $end_ts), date('j', $end_ts)-6, date('Y', $end_ts))));
+        $model->endDate(date('Y-m-d', $end_ts));
         $model->previousYear(date('Y-m-d', mktime(0, 0, 0, date('n', $prev_ts), date('j', $prev_ts)-6, date('Y', $prev_ts))));
         $model->obfQuarterID(FormLib::get('quarter'));
+        $model->growthTarget(FormLib::get('growthTarget', 0.00) / 100.00);
 
         $model->save();
 
@@ -195,7 +201,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
         $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
         $ret .= '<table cellpadding="4" cellspacing="0" border="1">';
         $ret .= '<tr><th>Week End Date</th><th>Previous Year End Date</th>
-                <th>Sales Growth Target</th></tr>';
+                <th>Sales Growth Target</th><th>Quarter</th></tr>';
 
         $end1 = '';
         if ($this->weekModel->startDate() != '') {
@@ -214,6 +220,8 @@ class ObfWeekEntryPage extends FannieRESTfulPage
         $this->add_onload_command("\$('#date1').datepicker();\n");
         $ret .= '<td><input type="text" size="12" name="date2" id="date2"
                         value="' . $end2 . '" /></td>';
+        $ret .= '<td><input type="text" size="6" name="growthTarget" 
+                        value="' . sprintf('%.2f', $this->weekModel->growthTarget() * 100) . '" />%</td>';
         $this->add_onload_command("\$('#date2').datepicker();\n");
         $ret .= '<td><select name="quarter">';
         $quarters = new ObfQuartersModel($dbc);

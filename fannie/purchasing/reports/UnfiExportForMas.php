@@ -21,8 +21,10 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class UnfiExportForMas extends FannieReportPage 
 {
@@ -30,6 +32,9 @@ class UnfiExportForMas extends FannieReportPage
     protected $report_headers = array('Vendor', 'Inv#', 'Date', 'Inv Ttl', 'Code Ttl', 'Code');
     protected $sortable = false;
     protected $no_sort_but_style = true;
+
+    public $page_set = 'Reports';
+    public $description = '[MAS Invoice Export] exports vendor invoices for MAS90.';
 
     function preprocess(){
         /**

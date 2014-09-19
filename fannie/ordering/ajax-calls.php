@@ -37,7 +37,6 @@
 
 include('../config.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include($FANNIE_ROOT.'src/tmp_dir.php');
 include($FANNIE_ROOT.'auth/login.php');
 
 $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -610,8 +609,24 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1)
             $ins_array['regPrice'] = $pdW['normal_price']*$caseSize*$num_cases;
             $ins_array['unitPrice'] = $pdW['normal_price'];
             if ($pdW['discount'] != 0 && $pdW['discounttype'] == 1) {
-                $ins_array['total'] = $pdW['special_price']*$caseSize*$num_cases;
-                $ins_array['unitPrice'] = $pdW['special_price'];
+                /**
+                  Only apply sale pricing from non-closeout batches
+                  At WFC closeout happens to be batch type #11
+                */
+                $closeoutP = $dbc->prepare('
+                    SELECT l.upc
+                    FROM batchList AS l
+                        INNER JOIN batches AS b ON l.batchID=b.batchID
+                    WHERE l.upc=?
+                        AND ' . $dbc->curdate() . ' >= b.startDate
+                        AND ' . $dbc->curdate() . ' <= b.endDate
+                        AND b.batchType=11
+                ');
+                $closeoutR = $dbc->execute($closeoutP, array($upc));
+                if ($closeoutR && $dbc->num_rows($closeoutR) == 0) {
+                    $ins_array['total'] = $pdW['special_price']*$caseSize*$num_cases;
+                    $ins_array['unitPrice'] = $pdW['special_price'];
+                }
             } elseif ($mempricing){
                 if ($pdW['discounttype'] == 2) {
                     $ins_array['total'] = $pdW['special_price']*$caseSize*$num_cases;

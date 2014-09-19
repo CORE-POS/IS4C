@@ -21,16 +21,18 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-if (!class_exists('JsonLib')) {
-    include($FANNIE_ROOT.'src/JsonLib.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
 class BrowseVendorItems extends FanniePage {
     protected $title = "Fannie : Browse Vendor Catalog";
     protected $header = "Browse Vendor Catalog";
     protected $window_dressing = False;
+
+    public $description = '[Vendor Items] lists items in the vendor\'s catalog. Must be
+    accessed via the Vendor Editor.';
 
     function preprocess(){
 
@@ -62,7 +64,7 @@ class BrowseVendorItems extends FanniePage {
                 FormLib::get_form_value('brand'),
                 $ret['tags']
             );
-            echo JsonLib::array_to_json($ret);
+            echo json_encode($ret);
             break;
         case 'addPosItem':
             $this->addToPos(

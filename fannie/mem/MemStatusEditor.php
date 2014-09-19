@@ -20,13 +20,16 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-include('../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class MemStatusEditor extends FanniePage {
     protected $header = "Customer Status";
     protected $title = "Fannie :: Customer Status";
     protected $must_authenticate = True;
+    public $description = '[Member Status] alters an account\'s active status.';
     protected $auth_classes =  array('editmembers');
 
     private $cardno;
