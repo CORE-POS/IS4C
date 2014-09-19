@@ -159,6 +159,9 @@ class WfcGazetteBillingPage extends FannieUploadPage {
             $ret .= sprintf("<tr><td>%d</td><td>$%.2f</td><td>%s</td></tr>",
                 $cardno,$amt,$EMP_NO."-".$LANE_NO."-".$t_no);
         }
+
+        $ret .= '</table>';
+
         return $ret;
     }
 
@@ -215,6 +218,9 @@ class WfcGazetteBillingPage extends FannieUploadPage {
                     $ph = '218-348-4557';
                 elseif(strstr($cn,'BREWHOUSE'))
                     $ph = '218-726-1392';
+                elseif (strstr($cn, 'ENDION')) {
+                    $ph = '218-623-1872';
+                }
             }
 
             $desc = "($sz, ".($clr=="FULL" ? "color" : "b&w");
@@ -227,12 +233,14 @@ class WfcGazetteBillingPage extends FannieUploadPage {
                 $searchR = $sql->exec_statement($altSearchQ, array($tmp[0].'%', $ph, $ph, $ph));
             }
 
-            if (strstr($cn, 'GREY DOFFIN')){
+            if (strstr($cn, 'GREY DOFFIN') && strstr(strtoupper($cn),'FURNITURE')) {
                 $searchP = $sql->prepare_statement('SELECT CardNo as card_no, LastName
                         FROM custdata WHERE CardNo=? AND personNum=1');
-                $args = array( ($greydoffin==0) ? 6880 : 13366 );
-                $searchR = $sql->exec_statement($searchP, $args);
-                $greydoffin++;
+                $searchR = $sql->exec_statement($searchP, array(13366));
+            } else if (strstr($cn, 'GREY DOFFIN')) {
+                $searchP = $sql->prepare_statement('SELECT CardNo as card_no, LastName
+                        FROM custdata WHERE CardNo=? AND personNum=1');
+                $searchR = $sql->exec_statement($searchP, array(6880));
             }
             
             if ($sql->num_rows($searchR) == 0){
