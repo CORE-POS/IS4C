@@ -77,7 +77,6 @@ class MailChimpTask extends FannieTask
         } // end create owner number field if needed
 
         $statuses = array('subscribed', 'unsubscribed', 'cleaned');
-        $statuses = array('subscribed', 'cleaned'); // temp; other segments misbehave with update-member
         $cleans = array();
         $memlist = '';
         /**
@@ -216,10 +215,20 @@ class MailChimpTask extends FannieTask
                             break;
                         /**
                           Unsubscribed are currently ignored. The can't be updated as is.
-                          Resuscribing, updating owner number, and re-unsubscribing is
-                          possible but not currently implemented.
+                          They could be deleted entirely via unsubscribe, resubscribed with
+                          an owner number, and then unsubscribed again. That's not currently
+                          implemented. It does check for the email address on the POS side
+                          to prevent re-adding it.
                         */
                         case 'unsubscribed':
+                            $meminfo->reset();
+                            echo $this->cronMsg('Checking unsubscribed ' . $email);
+                            $meminfo->email_1($email);
+                            $matches = $meminfo->find();
+                            foreach ($matches as $opted_out) {
+                                $memlist .= sprintf('%d,', $opted_out->card_no());
+                                echo $this->cronMsg('Excluding member ' . $opted_out->card_no());
+                            }
                             break;
                         /**
                           Cleaned are bad addresses. Delete them from POS database
@@ -301,6 +310,7 @@ class MailChimpTask extends FannieTask
         if (count($add_batch) > 0) {
             echo $this->cronMsg(sprintf('Adding %d new members', count($add_batch)));
             $added = $mc->lists->batchSubscribe($LISTID, $add_batch, false, true);
+
         }
 
         return true;
