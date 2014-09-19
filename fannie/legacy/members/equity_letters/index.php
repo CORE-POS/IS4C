@@ -1,5 +1,8 @@
 <?php
 include('../../../config.php');
+header('Location: ' . $FANNIE_URL . '/modules/plugins2.0/StatementsPlugin/StatementsPluginIndex.php');
+exit;
+
 include($FANNIE_ROOT.'src/fpdf/fpdf.php');
 
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
@@ -489,3 +492,4 @@ function arDisplays($subtype){
 <input type=submit value="Save as List" onclick="doExcel();" />
 </body>
 </html>
+<?php
