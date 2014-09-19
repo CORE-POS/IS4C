@@ -181,6 +181,7 @@ class ADODB_pdo extends ADOConnection {
 		if(isset($this->_driver) && method_exists($this->_driver, 'Concat')) 
 			return call_user_func_array(array($this->_driver, 'Concat'), $args); 
 		
+		if (PHP_VERSION >= 5.3) return call_user_func_array('parent::Concat', $args);
 		return call_user_func_array(array($this,'parent::Concat'), $args); 
 	}
 	
@@ -241,7 +242,7 @@ class ADODB_pdo extends ADOConnection {
 		
 		if ($arr) {
 		 	if (sizeof($arr)<2) return '';
-			if ((integer)$arr[1]) return $arr[2];
+			if ((integer)$arr[0]) return $arr[2];
 			else return '';
 		} else return '-1';
 	}

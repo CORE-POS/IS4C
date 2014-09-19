@@ -2,7 +2,7 @@
 
 
 /*
-V5.09 25 June 2009   (c) 2000-2009 John Lim (jlim#natsoft.com). All rights reserved.
+V5.20dev  ??-???-2014  (c) 2000-2014 John Lim (jlim#natsoft.com). All rights reserved.
   Released under both BSD license and Lesser GPL library license. 
   Whenever there is any discrepancy between the two licenses, 
   the BSD license will take precedence.
@@ -14,7 +14,11 @@ if (!class_exists('ADODB_pdo'))
 	include(dirname(__FILE__).'/adodb-pdo.inc.php');
 
 class ADODB_pdo_mysql extends ADODB_pdo {
-	var $metaTablesSQL = "SHOW FULL TABLES";	
+	var $metaTablesSQL = "SELECT
+			TABLE_NAME,
+			CASE WHEN TABLE_TYPE = 'VIEW' THEN 'V' ELSE 'T' END
+		FROM INFORMATION_SCHEMA.TABLES
+		WHERE TABLE_SCHEMA=";
 	var $metaColumnsSQL = "SHOW COLUMNS FROM `%s`";
 	var $sysDate = 'CURDATE()';
 	var $sysTimeStamp = 'NOW()';
@@ -78,6 +82,8 @@ class ADODB_pdo_mysql extends ADODB_pdo {
 		$save = $this->metaTablesSQL;
 		if ($showSchema && is_string($showSchema)) {
 			$this->metaTablesSQL .= " from $showSchema";
+		} else {
+			$this->metaTablesSQL .= "schema()";
 		}
 		
 		if ($mask) {
@@ -287,4 +293,3 @@ class ADODB_pdo_mysql extends ADODB_pdo {
 		return $s;
 	}
 }
-?>
