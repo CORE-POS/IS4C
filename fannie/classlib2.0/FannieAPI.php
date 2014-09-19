@@ -49,6 +49,44 @@ class FannieAPI
     */
     static public function loadClass($name)
     {
+        /**
+          There's a namespace involved
+          If the prefix is COREPOS\Fannie\API, look for class
+          in classlib2.0 directory path. 
+          If the prefix is COREPOS\Fannie\Plugin, look for class
+          in modules/plugins2.0 directory path
+          Otherwise, just strip off the namespace and search
+          both plugins and API class library
+        */
+        if (strstr($name, '\\')) {
+            $full_name = explode('\\', $name);
+            if (count($full_name) >= 3 && $full_name[0] == 'COREPOS' && $full_name[1] == 'Fannie' 
+                && ($full_name[2] == 'API' || $full_name[2] == 'Plugin')) {
+                $filename = '';
+                for ($i=3; $i<count($full_name); $i++) {
+                    $filename .= $full_name[$i];
+                    if ($i < count($full_name) - 1) {
+                        $filename .= '/';
+                    } else {
+                        $filename .= '.php';
+                    }
+                }
+                $expected_file = '';
+                if ($full_name[2] == 'API') {
+                    $expected_file = dirname(__FILE__) . '/' . $filename;
+                } else {
+                    $expected_file = dirname(__FILE__) . '/../modules/plugins2.0/' . $filename;
+                }
+                if (file_exists($expected_file)) {
+                    include_once($expected_file);
+                    return;
+                }
+            } else {
+                // remove all namespacing for global search below
+                $name = $full_name[count($full_name) - 1];
+            }
+        }
+
         $map = $_SESSION['FannieClassMap'];
 
         // class map should be array
