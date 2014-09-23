@@ -73,6 +73,7 @@ class OverShortCashierPage extends FanniePage {
     function displayCashier($date,$empno){
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
+        $store = FormLib::get('store', 0);
 
         $dlog = DTransactionsModel::selectDlog($date);
 
@@ -81,6 +82,7 @@ class OverShortCashierPage extends FanniePage {
         $names = array();
         $counts["SCA"] = 0.00;
 
+        $args = array($empno,$date.' 00:00:00',$date.' 23:59:59');
         $totalsQ = "SELECT 
             CASE WHEN trans_subtype IN ('CC','AX') THEN 'CC' ELSE trans_subtype END
             as trans_subtype,MAX(TenderName) as TenderName,
@@ -90,12 +92,16 @@ class OverShortCashierPage extends FanniePage {
             WHERE emp_no = ?
             AND tdate BETWEEN ? AND ?
             AND trans_type='T'
-            AND d.upc NOT IN ('0049999900001', '0049999900002')
-            GROUP BY 
+            AND d.upc NOT IN ('0049999900001', '0049999900002')";
+        if ($store != 0) {
+            $totalsQ .= ' AND d.store_id = ? ';
+            $args[] = $store;
+        }
+        $totalsQ .= " GROUP BY 
             CASE WHEN trans_subtype IN ('CC','AX') THEN 'CC' ELSE trans_subtype END
             ORDER BY TenderID";
         $totalsP = $dbc->prepare_statement($totalsQ);
-        $totalsR = $dbc->exec_statement($totalsP, array($empno,$date.' 00:00:00',$date.' 23:59:59'));
+        $totalsR = $dbc->exec_statement($totalsP, $args);
         while($totalsW = $dbc->fetch_row($totalsR)){
             if (in_array($totalsW['trans_subtype'], OverShortTools::$EXCLUDE_TENDERS)) {
                 continue;
@@ -319,9 +325,14 @@ class OverShortCashierPage extends FanniePage {
         }
         ?>
         <div id=input>
-        <form style='margin-top:1.0em;' onsubmit="loadCashier(); return false;">
-        <b>Date</b>:<input type=text  id=date size=10 />
-        <b>Cashier</b>:<input type=text  id=empno size=5 /> 
+        <form id="osForm" style='margin-top:1.0em;' onsubmit="loadCashier(); return false;">
+        <b>Date</b>:<input type=text  name=date id=date size=10 />
+        <b>Cashier</b>:<input type=text name=empno id=empno size=5 /> 
+        <?php
+        $_REQUEST['store'] = 1;
+        $sp = FormLib::storePicker();
+        echo $sp['html'];
+        ?>
         <input type=submit value="Load Cashier" />
         </form>
         </div>

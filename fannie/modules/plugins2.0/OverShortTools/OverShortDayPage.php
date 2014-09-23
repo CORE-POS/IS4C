@@ -77,7 +77,15 @@ class OverShortDayPage extends FanniePage {
 
         case 'date':
             $date = FormLib::get_form_value('arg');
+            if (empty($date)) {
+                $date = date('Y-m-d');
+            }
+            $store = FormLib::get('store', 0);
             $dlog = DTransactionsModel::selectDlog($date);
+            $args = array($date . ' 00:00:00', $date . ' 23:59:59');
+            if ($store != 0) {
+                $args[] = $store;
+            }
             
             $empsR = null;
             if (FormLib::get_form_value('emp_no') !== ''){
@@ -90,12 +98,17 @@ class OverShortDayPage extends FanniePage {
             }
             else {
                 /* determine who worked that day (and their first names) */
-                $empsQ = "select e.firstname,d.emp_no from $dlog as d,$FANNIE_OP_DB".$dbc->sep()."employees as e where
-                      d.tdate BETWEEN ? AND ? and trans_type='T' and d.emp_no = e.emp_no
-                      AND d.upc NOT IN ('0049999900001', '0049999900002')
-                      group by d.emp_no,e.firstname order by e.firstname";
+                $empsQ = "select e.firstname,d.emp_no from $dlog as d,$FANNIE_OP_DB".$dbc->sep()."employees as e 
+                    WHERE d.tdate BETWEEN ? AND ? 
+                        AND trans_type='T' 
+                        AND d.emp_no = e.emp_no
+                        AND d.upc NOT IN ('0049999900001', '0049999900002')";
+                if ($store != 0) {
+                    $empsQ .= ' AND d.store_id = ? ';
+                }
+                $empsQ .= " GROUP BY d.emp_no,e.firstname order by e.firstname";
                 $empsP = $dbc->prepare_statement($empsQ);
-                $empsR=$dbc->exec_statement($empsP,array($date.' 00:00:00',$date.' 23:59:59'));
+                $empsR=$dbc->exec_statement($empsP,$args);
             }
             $output = "<h3 id=currentdate>$date</h3>";
 
@@ -104,14 +117,17 @@ class OverShortDayPage extends FanniePage {
             $output .= "<th>Name</th><th>&nbsp;</th><th>Total</th><th>Counted Amt</th><th>Over/Short</th></tr>";
 
             $tQ = "SELECT d.trans_subtype,t.TenderName FROM $dlog as d, "
-                .$FANNIE_OP_DB.$dbc->sep()."tenders AS t WHERE
-                d.tdate BETWEEN ? AND ? AND trans_type='T'
-                AND d.trans_subtype = t.TenderCode
-                AND d.upc NOT IN ('0049999900001', '0049999900002')
-                GROUP BY d.trans_subtype, t.TenderName, t.tenderID
+                .$FANNIE_OP_DB.$dbc->sep()."tenders AS t 
+                WHERE d.tdate BETWEEN ? AND ? AND trans_type='T'
+                    AND d.trans_subtype = t.TenderCode
+                    AND d.upc NOT IN ('0049999900001', '0049999900002')";
+            if ($store != 0) {
+                $tQ .= ' AND d.store_id = ? ';
+            }
+            $tQ .= " GROUP BY d.trans_subtype, t.TenderName, t.tenderID
                 ORDER BY t.TenderID";
             $tP = $dbc->prepare_statement($tQ);
-            $tR=$dbc->exec_statement($tP,array($date.' 00:00:00',$date.' 23:59:59'));
+            $tR=$dbc->exec_statement($tP,$args);
 
             $tender_info = array();
             while($tW = $dbc->fetch_row($tR)){
@@ -136,7 +152,6 @@ class OverShortDayPage extends FanniePage {
 
             /* get cash, check, and credit totals for each employee
             print them in a table along with input boxes for over/short */
-            $args = array($date.' 00:00:00',$date.' 23:59:59');
             $q = "SELECT -1*sum(total) AS total,emp_no,
                 CASE WHEN trans_subtype IN ('CC','AX') THEN 'CC' ELSE trans_subtype END
                 AS trans_subtype
@@ -144,6 +159,9 @@ class OverShortDayPage extends FanniePage {
                 WHERE tdate BETWEEN ? AND ? 
                 AND d.upc NOT IN ('0049999900001', '0049999900002')
                 AND trans_type='T' ";
+            if ($store != 0) {
+                $q .= ' AND d.store_id = ? ';
+            }
             if (FormLib::get_form_value('emp_no') !== ''){
                 $q .= ' AND emp_no=? ';
                 $args[] = FormLib::get_form_value('emp_no');
@@ -372,7 +390,8 @@ function setFormsText(){
    both the loading animation and request are started */
 
 function setdate(){
-    var date = $('#date').val();
+    var dataStr = $('#osForm').serialize();
+    dataStr += '&action=date';
     $('#date').val('');
     $('#forms').innerHTML = "<span id=\"loading\">Loading</span>";
     loading=1;
@@ -380,7 +399,7 @@ function setdate(){
     formstext = '';
     $.ajax({
         url: 'OverShortDayPage.php',
-        data: 'action=date&arg='+date,
+        data: dataStr,
         success: function(data){
             formstext = data;
             loading = 0;
@@ -586,8 +605,13 @@ body, table, td, th {
             echo "<body>";
         }
         ?>
-        <form style='margin-top:1.0em;' onsubmit="setdate(); return false;" >
-        <b>Date</b>:<input type=text id=date />
+        <form style='margin-top:1.0em;' id="osForm" onsubmit="setdate(); return false;" >
+        <b>Date</b>:<input type=text id=date name=arg />
+        <?php
+        $_REQUEST['store'] = 1;
+        $sp = FormLib::storePicker();
+        echo $sp['html'];
+        ?>
         <input type=submit value="Set" />
         <input type=hidden id=user value="<?php if(isset($user)) echo $user ?>" />
         </form>
