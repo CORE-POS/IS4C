@@ -112,7 +112,7 @@ class BaseItemModule extends ItemModule {
             */
             $vendorP = "SELECT description,brand as manufacturer,cost,
                 vendorName as distributor,margin,i.vendorID,srp,
-                vendorID as default_vendor_id
+                i.vendorID as default_vendor_id
                 FROM vendorItems AS i LEFT JOIN vendors AS v ON i.vendorID=v.vendorID
                 LEFT JOIN vendorDepartments AS d ON i.vendorDept=d.deptID
                 LEFT JOIN vendorSRPs AS s ON s.upc=i.upc AND s.vendorID=i.vendorID
