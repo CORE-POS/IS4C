@@ -144,7 +144,7 @@ class ObfWeeklyReport extends FannieReportPage
 
             $trans1Q = str_replace('__table__', $dlog1, $transQ);
             $transP = $dbc->prepare($trans1Q);
-            $transR = $dbc->execute($transP, array($args));
+            $transR = $dbc->execute($transP, $args);
             if (!$future && $transR) {
                 $sales->transactions($dbc->num_rows($transR));
             } else {
@@ -171,7 +171,7 @@ class ObfWeeklyReport extends FannieReportPage
 
             $trans2Q = str_replace('__table__', $dlog2, $transQ);
             $transP = $dbc->prepare($trans2Q);
-            $transR = $dbc->execute($transP, array($args));
+            $transR = $dbc->execute($transP, $args);
             if ($transR) {
                 $sales->lastYearTransactions($dbc->num_rows($transR));
             } else {
@@ -185,6 +185,10 @@ class ObfWeeklyReport extends FannieReportPage
                 $sales->obfCategoryID($w['id']);
                 $sales->superID($w['superID']);
                 $sales->lastYearSales($w['sales']);
+                if ($future) {
+                    $sales->actualSales(0);
+                    $sales->growthTarget($week->growthTarget());
+                }
                 $sales->save();
             }
         }
