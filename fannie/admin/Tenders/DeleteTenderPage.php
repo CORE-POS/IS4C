@@ -21,8 +21,10 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class DeleteTenderPage extends FanniePage {
 
@@ -30,6 +32,8 @@ class DeleteTenderPage extends FanniePage {
     protected $header = "Tenders";
     protected $must_authenticate = True;
     protected $auth_classes = array('tenders');
+
+    public $description = '[Delete Tender] gets rid of a tender type.';
 
     private $mode = 'form';
 

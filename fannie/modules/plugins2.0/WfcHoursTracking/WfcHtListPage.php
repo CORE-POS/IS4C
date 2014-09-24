@@ -36,6 +36,9 @@ class WfcHtListPage extends FanniePage
     protected $title = 'List';
     protected $window_dressing = false;
 
+    public $page_set = 'Plugin :: WFC Hours Tracking';
+    public $description = '[List] tracked employees.';
+
     private $dept_restrict = "WHERE deleted=0 ";
     private $dept_args = array();
     private $selected_dept = "";

@@ -23,7 +23,6 @@
 
 include_once(dirname(__FILE__).'/../../config.php');
 include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
-include_once(dirname(__FILE__).'/../../src/JsonLib.php');
 
 class BaseItemModule extends ItemModule {
 
@@ -67,6 +66,18 @@ class BaseItemModule extends ItemModule {
         if($dbc->num_rows($r) > 0){
             //existing item
             $rowItem = $dbc->fetch_row($r);
+
+            /**
+              Lookup default vendor & normalize
+            */
+            $product = new ProductsModel($dbc);
+            $product->upc($upc);
+            $product->load();
+            $vendor = new VendorsModel($dbc);
+            $vendor->vendorID($product->default_vendor_id());
+            if ($vendor->load()) {
+                $rowItem['distributor'] = $vendor->vendorName();
+            }
 
             /* find previous and next items in department */
             $pnP = $dbc->prepare_statement('SELECT upc FROM products WHERE department=? ORDER BY upc');
@@ -207,10 +218,19 @@ class BaseItemModule extends ItemModule {
         $ret .="<td align=right><b>Brand</b></td><td><input type=text name=manufacturer size=30 value=\""
             .(isset($rowItem['manufacturer'])?$rowItem['manufacturer']:"")
             ."\" id=\"brand_field\" /></td>";
-        $ret .= "<td align=right><b>Vendor</b></td><td><input type=text name=distributor size=8 value=\""
+        $ret .= "<td align=right><button type=\"button\" id=\"newVendorButton\">+</button> <b>Vendor</b></td>
+                <td><input type=text name=distributor size=8 value=\""
             .(isset($rowItem['distributor'])?$rowItem['distributor']:"")
             ."\" id=\"vendor_field\" /></td>";
         $ret .= '</tr>';
+
+        $ret .= '<div id="newVendorDialog" title="Create new Vendor">';
+        $ret .= '<span id="newVendorAlert" style="color:red;"></span>';
+        $ret .= '<fieldset>';
+        $ret .= '<label for="newVendorName">Vendor Name</label>';
+        $ret .= '<input type="text" name="newVendorName" id="newVendorName" style="display:block;" />';
+        $ret .= '</fieldset>';
+        $ret .= '</div>';
 
         if (isset($rowItem['special_price']) && $rowItem['special_price'] <> 0){
             /* show sale info */
@@ -329,7 +349,7 @@ class BaseItemModule extends ItemModule {
                     $w['subdept_no'],$w['subdept_no'],$w['subdept_name']);
         }
 
-        $json = count($subs) == 0 ? '{}' : JsonLib::array_to_json($subs);
+        $json = count($subs) == 0 ? '{}' : json_encode($subs);
         ob_start();
         ?>
         function chainSelects(val){
@@ -358,6 +378,63 @@ class BaseItemModule extends ItemModule {
                 }
 
             });
+        }
+        function addVendorDialog()
+        {
+            var v_dialog = $('#newVendorDialog').dialog({
+                autoOpen: false,
+                height: 300,
+                width: 300,
+                modal: true,
+                buttons: {
+                    "Create Vendor" : addVendorCallback,
+                    "Cancel" : function() {
+                        v_dialog.dialog("close");
+                    }
+                },
+                close: function() {
+                    $('#newVendorDialog :input').each(function(){
+                        $(this).val('');
+                    });
+                    $('#newVendorAlert').html('');
+                }
+            });
+
+            $('#newVendorDialog :input').keyup(function(e) {
+                if (e.which == 13) {
+                    addVendorCallback();
+                }
+            });
+
+            $('#newVendorButton').click(function(e){
+                e.preventDefault();
+                v_dialog.dialog("open"); 
+            });
+
+            function addVendorCallback()
+            {
+                var data = 'action=addVendor';
+                data += '&' + $('#newVendorDialog :input').serialize();
+                $.ajax({
+                    url: '<?php echo $FANNIE_URL; ?>item/modules/BaseItemModule.php',
+                    data: data,
+                    dataType: 'json',
+                    error: function() {
+                        $('#newVendorAlert').html('Communication error');
+                    },
+                    success: function(resp){
+                        if (resp.vendorID) {
+                            v_dialog.dialog("close");
+                            $('#vendor_field').val(resp.vendorName);
+                        } else if (resp.error) {
+                            $('#newVendorAlert').html(resp.error);
+                        } else {
+                            $('#newVendorAlert').html('Invalid response');
+                        }
+                    }
+                });
+            }
+
         }
         <?php
 
@@ -463,20 +540,47 @@ class BaseItemModule extends ItemModule {
         }
     }
 
-    function AjaxCallback(){
-        $json = array('tax'=>0,'fs'=>False,'nodisc'=>False);
-        $dept = FormLib::get_form_value('dept_defaults','');
+    function AjaxCallback()
+    {
         $db = $this->db();
-        $p = $db->prepare_statement('SELECT dept_tax,dept_fs,dept_discount
-                FROM departments WHERE dept_no=?');
-        $r = $db->exec_statement($p,array($dept));
-        if ($db->num_rows($r)){
-            $w = $db->fetch_row($r);
-            $json['tax'] = $w['dept_tax'];
-            if ($w['dept_fs'] == 1) $json['fs'] = True;
-            if ($w['dept_discount'] == 0) $json['nodisc'] = True;
+        $json = array();
+        if (FormLib::get('action') == 'addVendor') {
+            $name = FormLib::get('newVendorName');
+            if (empty($name)) {
+                $json['error'] = 'Name is required';
+            } else {
+                $vendor = new VendorsModel($db);
+                $vendor->vendorName($name);
+                if (count($vendor->find()) > 0) {
+                    $json['error'] = 'Vendor "' . $name . '" already exists';
+                } else {
+                    $max = $db->query('SELECT MAX(vendorID) AS max
+                                       FROM vendors');
+                    $newID = 1;
+                    if ($max && $maxW = $db->fetch_row($max)) {
+                        $newID = ((int)$maxW['max']) + 1;
+                    }
+                    $vendor->vendorID($newID);
+                    $vendor->save();
+                    $json['vendorID'] = $newID;
+                    $json['vendorName'] = $name;
+                }
+            }
+        } else {
+            $json = array('tax'=>0,'fs'=>False,'nodisc'=>False);
+            $dept = FormLib::get_form_value('dept_defaults','');
+            $p = $db->prepare_statement('SELECT dept_tax,dept_fs,dept_discount
+                    FROM departments WHERE dept_no=?');
+            $r = $db->exec_statement($p,array($dept));
+            if ($db->num_rows($r)) {
+                $w = $db->fetch_row($r);
+                $json['tax'] = $w['dept_tax'];
+                if ($w['dept_fs'] == 1) $json['fs'] = True;
+                if ($w['dept_discount'] == 0) $json['nodisc'] = True;
+            }
         }
-        echo JsonLib::array_to_json($json);
+
+        echo json_encode($json);
     }
 
     function summaryRows($upc)

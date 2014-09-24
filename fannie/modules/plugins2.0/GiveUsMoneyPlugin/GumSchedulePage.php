@@ -33,6 +33,9 @@ class GumSchedulePage extends FannieRESTfulPage
     protected $must_authenticate = true;
     protected $auth_classes = array('GiveUsMoney');
 
+    public $page_set = 'Plugin :: Give Us Money';
+    public $description = '[Loan Schedule] lists annual interest accrued for a loan account.';
+
     public function preprocess()
     {
         $acct = FormLib::get('id');

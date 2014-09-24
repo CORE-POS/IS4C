@@ -29,6 +29,9 @@ class OverShortSafecountPage extends FanniePage {
     protected $window_dressing = False;
     protected $auth_classes = array('overshorts');
 
+    public $page_set = 'Plugin :: Over/Shorts';
+    public $description = '[Safe Count] stores information about cash on hand and change buys.';
+
     function preprocess(){
         $action = FormLib::get_form_value('action',False);
         if ($action !== False){
@@ -396,7 +399,8 @@ class OverShortSafecountPage extends FanniePage {
         $posTotalQ = "SELECT -1*sum(d.total) FROM $dlog as d WHERE ".str_replace(" date "," d.tdate ",$dateClause)." AND d.trans_subtype IN ('CA','CK')";
         $posTotalP = $dbc->prepare_statement($posTotalQ);   
         $posTotalR = $dbc->exec_statement($posTotalP, $dateArgs);
-        $posTotal = array_pop($dbc->fetch_row($posTotalR));
+        $posTotalW = $dbc->fetch_row($posTotalR);
+        $posTotal = $posTotalW[0];
 
         $ret .= "<tr class=\"color\"><th>Over/Shorts</th>";
         $ret .= "<td><i>Count total</i></td><td>".round(($osCounts['CA']+$osCounts['CK'] - $osCounts['SCA'] ),2)."</td>";

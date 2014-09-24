@@ -36,6 +36,9 @@ class WfcHtEditPage extends FanniePage
     protected $header = 'Edit';
     protected $title = 'Edit';
 
+    public $page_set = 'Plugin :: WFC Hours Tracking';
+    public $description = '[Edit] the settings for an employee.';
+
     public function body_content()
     {
         $db = WfcHtLib::hours_dbconnect();

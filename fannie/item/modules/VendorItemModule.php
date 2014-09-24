@@ -28,6 +28,7 @@ class VendorItemModule extends ItemModule {
 
     public function showEditForm($upc, $display_mode=1, $expand_mode=1)
     {
+        global $FANNIE_CSS_PRIMARY_COLOR;
         $upc = BarcodeLib::padUPC($upc);
 
         $ret = '<fieldset id="VendorItemsFieldset">';
@@ -38,22 +39,43 @@ class VendorItemModule extends ItemModule {
         $ret .= '<div id="VendorItemsFieldsetContent" style="' . $css . '">';
 
         $dbc = $this->db();
-        $p = $dbc->prepare_statement('SELECT vendorID,vendorName FROM vendors ORDER BY vendorID');
+        $p = $dbc->prepare_statement('SELECT vendorID,vendorName FROM vendors ORDER BY vendorName');
         $r = $dbc->exec_statement($p);
         if ($dbc->num_rows($r) == 0) return ''; // no vendors available
         $vendors = array();
-        while($w = $dbc->fetch_row($r))
+        while ($w = $dbc->fetch_row($r)) {
             $vendors[$w['vendorID']] = $w['vendorName'];
+        }
+
+        $product = new ProductsModel($dbc);
+        $product->upc($upc);
+        $product->load();
+        $my_vendor = $product->default_vendor_id();
+        $matched = false;
+        $hilite = 'style="color:' . $FANNIE_CSS_PRIMARY_COLOR . ';"';
 
         $ret .= '<select onchange="$(\'.vtable\').hide();$(\'#vtable\'+this.value).show();">';
-        foreach($vendors as $id => $name){
-            $ret .= sprintf('<option value="%d">%s</option>',$id,$name);
+        foreach ($vendors as $id => $name) {
+            $ret .= sprintf('<option %s value="%d">%s%s</option>',
+                        ($my_vendor == $id ? 'selected ' . $hilite : ''),
+                        $id,
+                        $name,
+                        ($my_vendor == $id ? ' [current]': '')
+            );
+            if ($my_vendor == $id) {
+                $matched = true;
+            }
         }
         $ret .= '</select>';
 
         $prep = $dbc->prepare_statement('SELECT * FROM vendorItems WHERE vendorID=? AND upc=?');
-        $style = 'display:table;';
-        foreach($vendors as $id => $name){
+        $style = ($matched) ? 'display:none;' : 'display:table;';
+        $cost_class = '';
+        foreach ($vendors as $id => $name) {
+            if ($matched && $id == $my_vendor) {
+                $style = 'display:table;';
+                $cost_class = 'class="default_vendor_cost"';
+            }
             $ret .= "<table style=\"margin-top:5px;margin-bottom:5px;$style\" 
                     border=1 id=\"vtable$id\"
                     cellpadding=5 cellspacing=0 class=\"vtable\">";
@@ -64,8 +86,8 @@ class VendorItemModule extends ItemModule {
             $ret .= '<tr><th>SKU</th><td><input type="text" size="8" name="v_sku[]"
                     value="'.$row['sku'].'" /></td>';
             $ret .= sprintf('<th>Unit Cost</th><td>$<input type="text" size="6"
-                    name="v_cost[]" id="vcost%d" value="%.2f" onchange="vprice(%d);" /></td></tr>',
-                    $id, $row['cost'], $id);
+                    name="v_cost[]" id="vcost%d" %s value="%.2f" onchange="vprice(%d);" /></td></tr>',
+                    $id, $cost_class, $row['cost'], $id);
             $ret .= '<tr><th>Units/Case</th><td><input type="text" size="4" name="v_units[]"
                     id="vunits'.$id.'" value="'.$row['units'].'" 
                     onchange="vprice('.$id.');" /></td>';
@@ -90,6 +112,10 @@ class VendorItemModule extends ItemModule {
                 var cost = \$('#vcost'+id).val();
                 var units = \$('#vunits'+id).val();
                 \$('#vcc'+id).html('\$'+(cost*units));
+                if (\$('#vcost'+id).hasClass('default_vendor_cost')) {
+                    \$('#cost').val(\$('#vcost'+id).val());
+                    \$('#cost').trigger('change');
+                }
             }
             ";
     }

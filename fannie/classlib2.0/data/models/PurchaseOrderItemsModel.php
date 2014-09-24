@@ -86,14 +86,36 @@ class PurchaseOrderItemsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["orderID"])) {
                 return $this->instance["orderID"];
-            } elseif(isset($this->columns["orderID"]["default"])) {
+            } else if (isset($this->columns["orderID"]["default"])) {
                 return $this->columns["orderID"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'orderID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["orderID"]) || $this->instance["orderID"] != func_get_args(0)) {
+                if (!isset($this->columns["orderID"]["ignore_updates"]) || $this->columns["orderID"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["orderID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function sku()
@@ -101,14 +123,36 @@ class PurchaseOrderItemsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["sku"])) {
                 return $this->instance["sku"];
-            } elseif(isset($this->columns["sku"]["default"])) {
+            } else if (isset($this->columns["sku"]["default"])) {
                 return $this->columns["sku"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'sku',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["sku"]) || $this->instance["sku"] != func_get_args(0)) {
+                if (!isset($this->columns["sku"]["ignore_updates"]) || $this->columns["sku"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["sku"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function quantity()
@@ -116,14 +160,36 @@ class PurchaseOrderItemsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["quantity"])) {
                 return $this->instance["quantity"];
-            } elseif(isset($this->columns["quantity"]["default"])) {
+            } else if (isset($this->columns["quantity"]["default"])) {
                 return $this->columns["quantity"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'quantity',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["quantity"]) || $this->instance["quantity"] != func_get_args(0)) {
+                if (!isset($this->columns["quantity"]["ignore_updates"]) || $this->columns["quantity"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["quantity"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function unitCost()
@@ -131,14 +197,36 @@ class PurchaseOrderItemsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["unitCost"])) {
                 return $this->instance["unitCost"];
-            } elseif(isset($this->columns["unitCost"]["default"])) {
+            } else if (isset($this->columns["unitCost"]["default"])) {
                 return $this->columns["unitCost"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'unitCost',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["unitCost"]) || $this->instance["unitCost"] != func_get_args(0)) {
+                if (!isset($this->columns["unitCost"]["ignore_updates"]) || $this->columns["unitCost"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["unitCost"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function caseSize()
@@ -146,14 +234,36 @@ class PurchaseOrderItemsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["caseSize"])) {
                 return $this->instance["caseSize"];
-            } elseif(isset($this->columns["caseSize"]["default"])) {
+            } else if (isset($this->columns["caseSize"]["default"])) {
                 return $this->columns["caseSize"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'caseSize',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["caseSize"]) || $this->instance["caseSize"] != func_get_args(0)) {
+                if (!isset($this->columns["caseSize"]["ignore_updates"]) || $this->columns["caseSize"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["caseSize"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function receivedDate()
@@ -161,14 +271,36 @@ class PurchaseOrderItemsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["receivedDate"])) {
                 return $this->instance["receivedDate"];
-            } elseif(isset($this->columns["receivedDate"]["default"])) {
+            } else if (isset($this->columns["receivedDate"]["default"])) {
                 return $this->columns["receivedDate"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'receivedDate',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["receivedDate"]) || $this->instance["receivedDate"] != func_get_args(0)) {
+                if (!isset($this->columns["receivedDate"]["ignore_updates"]) || $this->columns["receivedDate"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["receivedDate"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function receivedQty()
@@ -176,14 +308,36 @@ class PurchaseOrderItemsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["receivedQty"])) {
                 return $this->instance["receivedQty"];
-            } elseif(isset($this->columns["receivedQty"]["default"])) {
+            } else if (isset($this->columns["receivedQty"]["default"])) {
                 return $this->columns["receivedQty"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'receivedQty',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["receivedQty"]) || $this->instance["receivedQty"] != func_get_args(0)) {
+                if (!isset($this->columns["receivedQty"]["ignore_updates"]) || $this->columns["receivedQty"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["receivedQty"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function receivedTotalCost()
@@ -191,14 +345,36 @@ class PurchaseOrderItemsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["receivedTotalCost"])) {
                 return $this->instance["receivedTotalCost"];
-            } elseif(isset($this->columns["receivedTotalCost"]["default"])) {
+            } else if (isset($this->columns["receivedTotalCost"]["default"])) {
                 return $this->columns["receivedTotalCost"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'receivedTotalCost',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["receivedTotalCost"]) || $this->instance["receivedTotalCost"] != func_get_args(0)) {
+                if (!isset($this->columns["receivedTotalCost"]["ignore_updates"]) || $this->columns["receivedTotalCost"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["receivedTotalCost"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function unitSize()
@@ -206,14 +382,36 @@ class PurchaseOrderItemsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["unitSize"])) {
                 return $this->instance["unitSize"];
-            } elseif(isset($this->columns["unitSize"]["default"])) {
+            } else if (isset($this->columns["unitSize"]["default"])) {
                 return $this->columns["unitSize"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'unitSize',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["unitSize"]) || $this->instance["unitSize"] != func_get_args(0)) {
+                if (!isset($this->columns["unitSize"]["ignore_updates"]) || $this->columns["unitSize"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["unitSize"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function brand()
@@ -221,14 +419,36 @@ class PurchaseOrderItemsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["brand"])) {
                 return $this->instance["brand"];
-            } elseif(isset($this->columns["brand"]["default"])) {
+            } else if (isset($this->columns["brand"]["default"])) {
                 return $this->columns["brand"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'brand',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["brand"]) || $this->instance["brand"] != func_get_args(0)) {
+                if (!isset($this->columns["brand"]["ignore_updates"]) || $this->columns["brand"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["brand"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function description()
@@ -236,14 +456,36 @@ class PurchaseOrderItemsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["description"])) {
                 return $this->instance["description"];
-            } elseif(isset($this->columns["description"]["default"])) {
+            } else if (isset($this->columns["description"]["default"])) {
                 return $this->columns["description"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'description',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["description"]) || $this->instance["description"] != func_get_args(0)) {
+                if (!isset($this->columns["description"]["ignore_updates"]) || $this->columns["description"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["description"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function internalUPC()
@@ -251,14 +493,36 @@ class PurchaseOrderItemsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["internalUPC"])) {
                 return $this->instance["internalUPC"];
-            } elseif(isset($this->columns["internalUPC"]["default"])) {
+            } else if (isset($this->columns["internalUPC"]["default"])) {
                 return $this->columns["internalUPC"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'internalUPC',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["internalUPC"]) || $this->instance["internalUPC"] != func_get_args(0)) {
+                if (!isset($this->columns["internalUPC"]["ignore_updates"]) || $this->columns["internalUPC"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["internalUPC"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

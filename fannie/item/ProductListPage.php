@@ -21,14 +21,21 @@
 
 *********************************************************************************/
 
-include('../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include_once($FANNIE_ROOT.'src/JsonLib.php');
-require('laneUpdates.php');
+require(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+if (!function_exists('addProductAllLanes')) {
+    require('laneUpdates.php');
+}
 if (!function_exists('login'))
     include($FANNIE_ROOT.'auth/login.php');
-include_once($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
-include_once($FANNIE_ROOT.'src/ReportConvert/ArrayToCsv.php');
+if (!function_exists('HtmlToArray')) {
+    include_once($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
+}
+if (!function_exists('ArrayToCsv')) {
+    include_once($FANNIE_ROOT.'src/ReportConvert/ArrayToCsv.php');
+}
 
 class ProductListPage extends FannieReportTool 
 {
@@ -99,9 +106,9 @@ class ProductListPage extends FannieReportTool
         if (count($local_opts) == 1) $local_opts['X'] = array(1,'Yes'); // generic local if no origins defined
         ob_start();
         ?>
-        var deptObj = <?php echo JsonLib::array_to_json($depts); ?>;
-        var taxObj = <?php echo JsonLib::array_to_json($taxes); ?>;
-        var localObj = <?php echo JsonLib::array_to_json($local_opts); ?>;
+        var deptObj = <?php echo json_encode($depts); ?>;
+        var taxObj = <?php echo json_encode($taxes); ?>;
+        var localObj = <?php echo json_encode($local_opts); ?>;
         function edit(upc){
             var desc = $('tr#'+upc+' .td_desc').html();
             var content = "<input type=text class=in_desc value=\""+desc+"\" />";   
@@ -315,10 +322,24 @@ class ProductListPage extends FannieReportTool
             if ($loc !== '') {
                 $model->local($loc);
             }
+            $supplier = FormLib::get_form_value('supplier');
+            /**
+              Normalize free-form supplier text
+              Look up corresponding vendor ID
+            */
+            $vendorID = '';
+            $vendors = new VendorsModel($dbc);
+            $vendors->vendorName($supplier);
+            foreach ($vendors->find() as $obj) {
+                $vendorID = $obj->vendorID();
+                break;
+            }
+            if ($vendorID !== '') {
+                $model->default_vendor_id($vendorID);
+            }
 
             $model->save();
 
-            $supplier = FormLib::get_form_value('supplier');
             $chkP = $dbc->prepare('SELECT upc FROM prodExtra WHERE upc=?');
             $chkR = $dbc->execute($chkP, array($upc));
             if ($dbc->num_rows($chkR) > 0) {
@@ -362,7 +383,7 @@ class ProductListPage extends FannieReportTool
                 'upc'=>ltrim($upc, '0'),
                 'enc_desc'=>$encoded_desc
             );
-            echo JsonLib::array_to_json($json);
+            echo json_encode($json);
             break;
         case 'doDelete':
             $upc = FormLib::get_form_value('upc');

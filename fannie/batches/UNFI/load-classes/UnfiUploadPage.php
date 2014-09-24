@@ -21,13 +21,18 @@
 
 *********************************************************************************/
 
-include('../../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class UnfiUploadPage extends FannieUploadPage {
 
     public $title = "Fannie - UNFI Prices";
     public $header = "Upload UNFI price file";
+
+    public $description = '[UNFI Catalog Import] specialized vendor import tool. Column choices
+    default to UNFI price file layout.';
 
     protected $preview_opts = array(
         'upc' => array(
@@ -92,7 +97,8 @@ class UnfiUploadPage extends FannieUploadPage {
         )
     );
 
-    protected $use_splits = True;
+    protected $use_splits = false;
+    protected $use_js = true;
 
     function process_file($linedata){
         global $FANNIE_OP_DB;
@@ -256,10 +262,10 @@ class UnfiUploadPage extends FannieUploadPage {
         $vsP = $dbc->prepare_statement("DELETE FROM vendorSRPs WHERE vendorID=?");
         /** deprecating unfi_* structures 22Jan14
         $uoP = $dbc->prepare_statement("TRUNCATE TABLE unfi_order");
+        $dbc->exec_statement($uoP);
         */
         $dbc->exec_statement($viP,array($VENDOR_ID));
         $dbc->exec_statement($vsP,array($VENDOR_ID));
-        $dbc->exec_statement($uoP);
     }
 
     function preview_content(){

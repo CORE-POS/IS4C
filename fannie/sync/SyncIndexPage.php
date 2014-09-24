@@ -46,7 +46,7 @@ class SyncIndexPage extends FanniePage {
         <option value="productUser">Extra Product Info</option>
         <option value="custdata">Members</option>
         <option value="memberCards">Membership Cards</option>
-        <option value="employees">Cashiers</option>
+        <option value="employees"><?php echo _('Cashiers'); ?></option>
         <option value="departments">Departments</option>
         <option value="tenders">Tenders</option>
         </select><br /><br />

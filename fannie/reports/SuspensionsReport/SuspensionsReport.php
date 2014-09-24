@@ -121,7 +121,6 @@ class SuspensionsReport extends FannieReportPage
         }
         return array(
             'Accounts suspended for: ' . $reason,
-            'From ' . FormLib::get('date1') . ' to ' . FormLib::get('date2'),
         );
     }
     

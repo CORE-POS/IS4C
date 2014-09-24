@@ -214,10 +214,10 @@ style="text-decoration:underline;">Synchronize</a>
 utilities to populate the lane tables.
 </p>
 <hr />
-<h4 class="install">Employees</h4>
+<h4 class="install"><?php echo _('Cashiers'); ?></h4>
 This table contains login information for cashiers. The two
 included logins are '56' and '7000'.<br />
-<input type=submit name=employees value="Load sample employees" />
+<input type=submit name=employees value="<?php echo _('Load sample cashiers'); ?>" />
 <hr />
 <h4 class="install">Custdata</h4>
 Customer data is the membership information. Sample data includes

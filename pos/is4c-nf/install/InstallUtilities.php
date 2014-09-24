@@ -244,6 +244,7 @@ class InstallUtilities extends LibraryClass
             $save_as_array = 1;
         }
 
+        /** temp
         if ($sql !== false) {
             $prep = $sql->prepare_statement('SELECT param_value FROM parameters
                                         WHERE param_key=? AND lane_id=?');
@@ -258,9 +259,10 @@ class InstallUtilities extends LibraryClass
                 $sql->exec_statement($prep, array($CORE_LOCAL->get('laneno'), $key, $value, $save_as_array));
             }
         }
+        */
 
         // maintain ini.php value too
-        if (self::confExists($key)) {
+        if (True || self::confExists($key)) {
             // tweak value for safe output to ini.php
             if ($save_as_array == 1 && $value !== '') {
                 $saveStr = 'array(';

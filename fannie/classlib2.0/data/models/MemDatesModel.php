@@ -50,14 +50,36 @@ class MemDatesModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["card_no"])) {
                 return $this->instance["card_no"];
-            } elseif(isset($this->columns["card_no"]["default"])) {
+            } else if (isset($this->columns["card_no"]["default"])) {
                 return $this->columns["card_no"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'card_no',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["card_no"]) || $this->instance["card_no"] != func_get_args(0)) {
+                if (!isset($this->columns["card_no"]["ignore_updates"]) || $this->columns["card_no"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["card_no"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function start_date()
@@ -65,14 +87,36 @@ class MemDatesModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["start_date"])) {
                 return $this->instance["start_date"];
-            } elseif(isset($this->columns["start_date"]["default"])) {
+            } else if (isset($this->columns["start_date"]["default"])) {
                 return $this->columns["start_date"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'start_date',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["start_date"]) || $this->instance["start_date"] != func_get_args(0)) {
+                if (!isset($this->columns["start_date"]["ignore_updates"]) || $this->columns["start_date"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["start_date"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function end_date()
@@ -80,14 +124,36 @@ class MemDatesModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["end_date"])) {
                 return $this->instance["end_date"];
-            } elseif(isset($this->columns["end_date"]["default"])) {
+            } else if (isset($this->columns["end_date"]["default"])) {
                 return $this->columns["end_date"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'end_date',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["end_date"]) || $this->instance["end_date"] != func_get_args(0)) {
+                if (!isset($this->columns["end_date"]["ignore_updates"]) || $this->columns["end_date"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["end_date"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 

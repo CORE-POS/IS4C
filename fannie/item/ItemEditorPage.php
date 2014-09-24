@@ -21,15 +21,21 @@
 
 *********************************************************************************/
 
-include('../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include('laneUpdates.php');
+require(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+if (!function_exists('addProductAllLanes')) {
+    include('laneUpdates.php');
+}
 
 class ItemEditorPage extends FanniePage 
 {
 
     private $mode = 'search';
     private $msgs = '';
+
+    public $description = '[Item Editor] is the primary item editing tool.';
 
     function preprocess()
     {
@@ -209,7 +215,7 @@ class ItemEditorPage extends FanniePage
         if ($num > 1) {
             $items = array();
             while($row = $dbc->fetch_row($result)) {
-                $items[$row['upc']] = $row['description'];
+                $items[$row['upc']] = $row;
             }
             return $this->multiple_results($items);
         }
@@ -233,11 +239,34 @@ class ItemEditorPage extends FanniePage
 
     function multiple_results($results)
     {
-        $ret = '';
-        foreach($results as $upc => $description) {
-            $ret .= sprintf('<a href="ItemEditorPage.php?searchupc=%s">%s</a> - %s<br />',
-                $upc, $upc, $description);
+        global $FANNIE_URL;
+        $ret = '<table id="itemSearchResults" class="tablesorter">';
+        $ret .= '<thead><tr>
+            <th>UPC</th><th>Description</th><th>Brand</th><th>Reg. Price</th><th>Sale Price</th><th>Modified</th>
+            </tr></thead>';
+        $ret .= '<tbody>';
+        foreach ($results as $upc => $data) {
+            $ret .= sprintf('<tr>
+                            <td><a href="ItemEditorPage.php?searchupc=%s">%s</a></td>
+                            <td>%s</td>
+                            <td>%s</td>
+                            <td>%.2f</td>
+                            <td>%s</td>
+                            <td>%s</td>
+                            </tr>',
+                            $upc, $upc, 
+                            $data['description'],
+                            $data['manufacturer'],
+                            $data['normal_price'],
+                            ($data['discounttype'] > 0 ? $data['special_price'] : 'n/a'),
+                            $data['modified']
+            );
         }
+        $ret .= '</tbody></table>';
+
+        $this->add_css_file($FANNIE_URL . 'src/javascript/tablesorter/themes/blue/style.css');
+        $this->add_script($FANNIE_URL . 'src/javascript/tablesorter/jquery.tablesorter.min.js');
+        $this->add_onload_command('$(\'#itemSearchResults\').tablesorter();');
 
         return $ret;
     }
@@ -291,14 +320,16 @@ class ItemEditorPage extends FanniePage
                 $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     <a href="ItemEditorPage.php">Back</a>';
                 if (!$isNew) {
+                    $this->add_script($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.js?v=1');
+                    $this->add_css_file($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.css');
                     $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
                     $ret .= '<a href="deleteItem.php?submit=submit&upc='.$upc.'">Delete this item</a>';
 
                     $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-                    $ret .= '<a href="'.$FANNIE_URL.'reports/PriceHistory/?upc='.$upc.'" target="_price_history">Price History</a>';
+                    $ret .= '<a class="iframe fancyboxLink" href="'.$FANNIE_URL.'reports/PriceHistory/?upc='.$upc.'" title="Price History">Price History</a>';
 
                     $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-                    $ret .= '<a href="'.$FANNIE_URL.'reports/RecentSales/?upc='.$upc.'" target="_recentsales">Sales History</a>';
+                    $ret .= '<a class="iframe fancyboxLink" href="'.$FANNIE_URL.'reports/RecentSales/?upc='.$upc.'" title="Sales History">Sales History</a>';
 
                     $js = "window.open('addShelfTag.php?upc=$upc', 'New Shelftag','location=0,status=1,scrollbars=1,width=300,height=220');";
                     $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
@@ -312,11 +343,15 @@ class ItemEditorPage extends FanniePage
         if (isset($shown['BaseItemModule'])) {
             $this->add_onload_command("bindAutoComplete('#brand_field', '$ws', 'brand');\n");
             $this->add_onload_command("bindAutoComplete('#vendor_field', '$ws', 'vendor');\n");
+            $this->add_onload_command("addVendorDialog();\n");
         }
-
 
         if (isset($shown['ProdUserModule'])) {
             $this->add_onload_command("bindAutoComplete('#lf_brand', '$ws', 'long_brand');\n");
+        }
+
+        if (isset($shown['LikeCodeModule'])) {
+            $this->add_onload_command("addLcDialog();\n");
         }
 
         $ret .= '</form>';
@@ -327,6 +362,7 @@ class ItemEditorPage extends FanniePage
             $ret .= "\n</script>\n";
         }
 
+        $this->add_onload_command('$(\'.fancyboxLink\').fancybox();');
         $this->add_onload_command('$(\'#price\').focus();');
         
         return $ret;

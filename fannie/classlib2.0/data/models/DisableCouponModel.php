@@ -42,14 +42,36 @@ class DisableCouponModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["upc"])) {
                 return $this->instance["upc"];
-            } elseif(isset($this->columns["upc"]["default"])) {
+            } else if (isset($this->columns["upc"]["default"])) {
                 return $this->columns["upc"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'upc',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["upc"]) || $this->instance["upc"] != func_get_args(0)) {
+                if (!isset($this->columns["upc"]["ignore_updates"]) || $this->columns["upc"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["upc"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function threshold()
@@ -57,14 +79,36 @@ class DisableCouponModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["threshold"])) {
                 return $this->instance["threshold"];
-            } elseif(isset($this->columns["threshold"]["default"])) {
+            } else if (isset($this->columns["threshold"]["default"])) {
                 return $this->columns["threshold"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'threshold',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["threshold"]) || $this->instance["threshold"] != func_get_args(0)) {
+                if (!isset($this->columns["threshold"]["ignore_updates"]) || $this->columns["threshold"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["threshold"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function reason()
@@ -72,14 +116,36 @@ class DisableCouponModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["reason"])) {
                 return $this->instance["reason"];
-            } elseif(isset($this->columns["reason"]["default"])) {
+            } else if (isset($this->columns["reason"]["default"])) {
                 return $this->columns["reason"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'reason',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["reason"]) || $this->instance["reason"] != func_get_args(0)) {
+                if (!isset($this->columns["reason"]["ignore_updates"]) || $this->columns["reason"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["reason"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

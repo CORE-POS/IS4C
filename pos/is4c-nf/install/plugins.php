@@ -99,6 +99,7 @@ foreach($mods as $m){
 			InstallUtilities::paramSave($field,$CORE_LOCAL->get($field));
 		echo '</td></tr>';
 		}
+        $instance->settingChange();
 	}
 
 }

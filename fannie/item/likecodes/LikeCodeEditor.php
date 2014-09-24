@@ -21,9 +21,13 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include_once($FANNIE_ROOT.'auth/login.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+if (!function_exists('checkLogin')) {
+    include_once($FANNIE_ROOT.'auth/login.php');
+}
 
 class LikeCodeEditor extends FanniePage {
     protected $title = "Fannie : Like Codes";
@@ -31,6 +35,8 @@ class LikeCodeEditor extends FanniePage {
     protected $must_authenticate = True;
     protected $auth_classes = array('manage_likecodes');
     private $msgs = "";
+
+    public $description = '[Like Code Editor] creates and deletes like codes.';
 
     function preprocess(){
         global $FANNIE_OP_DB;

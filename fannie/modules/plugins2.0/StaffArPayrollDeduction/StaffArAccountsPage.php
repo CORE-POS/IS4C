@@ -31,6 +31,10 @@ if (!class_exists('FannieAPI')) {
 class StaffArAccountsPage extends FannieRESTfulPage 
 {
 
+    public $page_set = 'Plugin :: Payroll Deductions';
+    public $description = '[Accounts] sets which accounts will have deductions for AR
+    payments as well as the amounts.';
+
     public function preprocess()
     {
         $this->title = _('Payroll Deductions');
@@ -74,11 +78,7 @@ class StaffArAccountsPage extends FannieRESTfulPage
             $model->save();
         }
 
-        if (!class_exists('JsonLib')) {
-            include($FANNIE_ROOT.'src/JsonLib.php');
-        }
-
-        echo JsonLib::array_to_json($ret);
+        echo json_encode($ret);
 
         return false;
     }

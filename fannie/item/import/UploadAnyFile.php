@@ -31,14 +31,18 @@
 */
 
 /* configuration for your module - Important */
-include("../../config.php");
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include_once($FANNIE_ROOT.'src/tmp_dir.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class UploadAnyFile extends FanniePage {
 
     protected $title = "Fannie - Upload Any File";
     protected $header = "Upload Any File";
+
+    public $description = '[Generic Upload] simply uploads a file to temporary storage
+    on the server.';
 
     private $tpath;
     

@@ -21,18 +21,24 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include('scan_layouts.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI.php')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class BatchShelfTags extends FanniePage {
 
     protected $title = "Fannie : Batch Barcodes";
     protected $header = "Batch Barcodes";
 
+    public $description = '[Batch Shelf Tags] generates PDF shelftags for items in a batch.';
+
     private $layouts = array();
 
     function preprocess(){
+        if (!function_exists('scan_layouts')) {
+            require('scan_layouts.php');
+        }
         $this->layouts = scan_layouts();
         return True;
     }

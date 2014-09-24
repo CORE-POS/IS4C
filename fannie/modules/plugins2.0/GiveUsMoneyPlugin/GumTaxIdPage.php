@@ -25,9 +25,6 @@ include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
-if (!class_exists('JsonLib')) {
-    include_once($FANNIE_ROOT.'src/JsonLib.php');
-}
 
 /**
 */
@@ -35,6 +32,9 @@ class GumTaxIdPage extends FannieRESTfulPage
 {
     protected $must_authenticate = true;
     protected $auth_classes = array('GiveUsMoney');
+    
+    public $page_set = 'Plugin :: Give Us Money';
+    public $description = '[Tax Identifier] saves sensitive tax IDs with encryption.';
 
     public function preprocess()
     {
@@ -73,7 +73,7 @@ class GumTaxIdPage extends FannieRESTfulPage
             }
         }
 
-        echo JsonLib::array_to_json($ret);
+        echo json_encode($ret);
 
         return false;
     }

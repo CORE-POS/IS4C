@@ -21,14 +21,18 @@
 
 *********************************************************************************/
 
-include('../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include_once($FANNIE_ROOT.'src/JsonLib.php');
+include(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class EditManyPurchaseOrders extends FannieRESTfulPage {
 
     protected $header = 'Purchase Orders';
     protected $title = 'Purchase Orders';
+
+    public $description = '[Multi-Vendor Purchase Order] creates and edits multiple purchase orders
+    as items from different vendors are scanned.';
 
     protected $must_authenticate = True;
 
@@ -63,7 +67,7 @@ class EditManyPurchaseOrders extends FannieRESTfulPage {
             $ret[] = $result;
         }
         if (count($ret) > 0){
-            echo JsonLib::array_to_json($ret);
+            echo json_encode($ret);
             return False;
         }
 
@@ -87,7 +91,7 @@ class EditManyPurchaseOrders extends FannieRESTfulPage {
             $ret[] = $result;
         }
         if (count($ret) > 0){
-            echo JsonLib::array_to_json($ret);
+            echo json_encode($ret);
             return False;
         }
 
@@ -114,7 +118,7 @@ class EditManyPurchaseOrders extends FannieRESTfulPage {
             $ret[] = $result;
         }
         if (count($ret) > 0){
-            echo JsonLib::array_to_json($ret);
+            echo json_encode($ret);
             return False;
         }
 
@@ -160,7 +164,7 @@ class EditManyPurchaseOrders extends FannieRESTfulPage {
         else {
             $ret['sidebar'] = $this->calculate_sidebar();
         }
-        echo JsonLib::array_to_json($ret);
+        echo json_encode($ret);
         return False;
     }
 

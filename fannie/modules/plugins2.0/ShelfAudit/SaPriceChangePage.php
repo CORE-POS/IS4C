@@ -35,6 +35,9 @@ class SaPriceChangePage extends FannieRESTfulPage {
     private $section=0;
     private $current_item_data=array();
     private $linea_ios_mode = False;
+    public $page_set = 'Plugin :: Shelf Audit';
+    public $description = '[Price Change] checks for available price change batches
+    on a given item and applies them.';
 
     private function linea_support_available(){
         global $FANNIE_ROOT;

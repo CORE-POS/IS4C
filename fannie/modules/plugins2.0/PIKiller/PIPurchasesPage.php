@@ -67,7 +67,7 @@ class PIPurchasesPage extends PIKillerPage {
             ORDER BY yt DESC, mt DESC,
             dt DESC";
         $args = array($this->id, $this->__models['start'].' 00:00:00', $this->__models['end'].' 23:59:59');
-        if ($my == date('Ym')) {
+        if ($my == date('Ym') && substr($table, -5) != '.dlog') {
             // current month. tack on today's transactions
             $today = "SELECT month(tdate) as mt,day(tdate) as dt,year(tdate) as yt,trans_num,
                 sum(case when trans_type='T' then -total else 0 end) as tenderTotal,
@@ -80,7 +80,7 @@ class PIPurchasesPage extends PIKillerPage {
                 FROM dlog as t
                 WHERE card_no=?
                 GROUP BY year(tdate),month(tdate),day(tdate),trans_num ";
-            $query = $today . ' UNION ALL '.$query;
+            $query = $today . ' UNION ALL ' . $query;
             array_unshift($args, $this->id);
         }
         $prep = $dbc->prepare_statement($query);

@@ -21,10 +21,6 @@
 
 *********************************************************************************/
 
-if (!class_exists('JsonLib')) {
-    include(dirname(__FILE__).'/../src/JsonLib.php');
-}
-
 class FannieWebService 
 {
     
@@ -65,7 +61,7 @@ class FannieWebService
     */
     protected function renderJson($arr)
     {
-        return JsonLib::array_to_json($arr);
+        return json_encode($arr);
     }
     
     /**

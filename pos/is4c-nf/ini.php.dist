@@ -28,6 +28,14 @@ if (!isset($CORE_LOCAL)) {
 	require_once(realpath(dirname(__FILE__)."/lib/LocalStorage/conf.php"));
 }
 
+/**
+  Optionally define register number and
+  store number for all lanes by IP address.
+  Add additional lines for other IPs
+*/
+$CORE_LOCAL->set('LaneMap', array(
+    '255.255.255.255' => array('register_id' => 99, 'store_id' => 1),
+));
 
 /************************************************************************************
 General Settings

@@ -46,14 +46,36 @@ class SuspensionHistoryModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["username"])) {
                 return $this->instance["username"];
-            } elseif(isset($this->columns["username"]["default"])) {
+            } else if (isset($this->columns["username"]["default"])) {
                 return $this->columns["username"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'username',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["username"]) || $this->instance["username"] != func_get_args(0)) {
+                if (!isset($this->columns["username"]["ignore_updates"]) || $this->columns["username"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["username"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function postdate()
@@ -61,14 +83,36 @@ class SuspensionHistoryModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["postdate"])) {
                 return $this->instance["postdate"];
-            } elseif(isset($this->columns["postdate"]["default"])) {
+            } else if (isset($this->columns["postdate"]["default"])) {
                 return $this->columns["postdate"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'postdate',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["postdate"]) || $this->instance["postdate"] != func_get_args(0)) {
+                if (!isset($this->columns["postdate"]["ignore_updates"]) || $this->columns["postdate"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["postdate"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function post()
@@ -76,14 +120,36 @@ class SuspensionHistoryModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["post"])) {
                 return $this->instance["post"];
-            } elseif(isset($this->columns["post"]["default"])) {
+            } else if (isset($this->columns["post"]["default"])) {
                 return $this->columns["post"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'post',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["post"]) || $this->instance["post"] != func_get_args(0)) {
+                if (!isset($this->columns["post"]["ignore_updates"]) || $this->columns["post"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["post"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function cardno()
@@ -91,14 +157,36 @@ class SuspensionHistoryModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["cardno"])) {
                 return $this->instance["cardno"];
-            } elseif(isset($this->columns["cardno"]["default"])) {
+            } else if (isset($this->columns["cardno"]["default"])) {
                 return $this->columns["cardno"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'cardno',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["cardno"]) || $this->instance["cardno"] != func_get_args(0)) {
+                if (!isset($this->columns["cardno"]["ignore_updates"]) || $this->columns["cardno"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["cardno"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function reasoncode()
@@ -106,14 +194,36 @@ class SuspensionHistoryModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["reasoncode"])) {
                 return $this->instance["reasoncode"];
-            } elseif(isset($this->columns["reasoncode"]["default"])) {
+            } else if (isset($this->columns["reasoncode"]["default"])) {
                 return $this->columns["reasoncode"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'reasoncode',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["reasoncode"]) || $this->instance["reasoncode"] != func_get_args(0)) {
+                if (!isset($this->columns["reasoncode"]["ignore_updates"]) || $this->columns["reasoncode"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["reasoncode"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

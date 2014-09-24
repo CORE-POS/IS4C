@@ -32,6 +32,10 @@ class ReverseTransPage extends FannieRESTfulPage {
     protected $header = 'Transaction adjustment tool';
     protected $title = 'Transaction adjustment tool';
 
+    public $page_set = 'Plugin :: Reverse Transaction';
+    public $description = '[Reverse Transaction] generates a new transaction that exactly negates
+    a previous transaction. The net effect should be zero but with a clear audit trail.';
+
     function preprocess(){
         $this->__routes[] = 'get<date><trans>';
         $this->__routes[] = 'post<date><trans>';

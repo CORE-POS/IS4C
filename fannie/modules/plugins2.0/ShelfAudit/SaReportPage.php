@@ -32,6 +32,9 @@ class SaReportPage extends FanniePage {
 
     protected $window_dressing = False;
 
+    public $page_set = 'Plugin :: Shelf Audit';
+    public $description = '[Quantity Report] lists the entered quantites on hand.';
+
     private $status = '';
     private $sql_actions = '';
     private $scans = array();

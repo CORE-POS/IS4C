@@ -163,8 +163,43 @@ if (isset($_GET['action'])){
 		$testQ = $sql->prepare("select * from products where upc=?");
 		$testR = $sql->execute($testQ, array($newupc));
 		if ($sql->num_rows($testR) > 0) $upc = $newupc;
-		
-		$out .= addItemPriceInput($upc,$tag);
+
+        $batch = new BatchesModel($dbc);
+        $batch->batchID($id);
+        $batch->load();
+        $overlapP = $sql->prepare('
+            SELECT b.batchName,
+                b.startDate,
+                b.endDate
+            FROM batchList AS l
+                INNER JOIN batches AS b ON l.batchID=b.batchID
+            WHERE l.batchID <> ?
+                AND l.upc = ?
+                AND ? <= b.endDate
+                AND ? >= b.startDate
+                AND b.discounttype <> 0
+                AND b.endDate >= ' . $sql->curdate()
+        );
+        $args = array(
+            $id,
+            $upc,
+            date('Y-m-d', strtotime($batch->startDate())),
+            date('Y-m-d', strtotime($batch->endDate())),
+        );
+        $overlapR = $sql->execute($overlapP, $args);
+        if ($batch->discounttype() > 0 && $sql->num_rows($overlapR) > 0) {
+            $row = $sql->fetch_row($overlapR);
+            $error = 'Item already in concurrent batch: '
+                . $row['batchName'] . ' ('
+                . date('Y-m-d', strtotime($row['startDate'])) . ' - '
+                . date('Y-m-d', strtotime($row['endDate'])) . ')'
+                . '<br />'
+                . 'Either remove item from conflicting batch or change
+                   dates so the batches do not overlap.';
+            $out .= '<p>' . $error . '</p>' . addItemUPCInput();
+        } else {
+            $out .= addItemPriceInput($upc,$tag);
+        }
 		break;
 	case 'addItemLC':
 		$id = $_GET['id'];
@@ -517,7 +552,8 @@ function addItemPriceLCInput($lc){
 
 function newTagInput($upc,$price,$id){
 	global $sql;
-	$unfiQ = $sql->prepare("select distinct * from UNFI where upc = ?");
+	$unfiQ = $sql->prepare("select size, units, brand, description, sku
+                            from vendorItems where upc=? and vendorID=1");
 	$unfiR = $sql->execute($unfiQ, array($upc));
 	$unfiN = $sql->num_rows($unfiR);
 	

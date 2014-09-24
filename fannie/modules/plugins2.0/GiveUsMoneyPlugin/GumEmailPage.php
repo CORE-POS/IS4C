@@ -34,6 +34,9 @@ class GumEmailPage extends FannieRESTfulPage
     protected $must_authenticate = false;
     //protected $auth_classes = array('GiveUsMoney');
 
+    public $page_set = 'Plugin :: Give Us Money';
+    public $description = '[Emails] can send different notifications to account holders.';
+
     public function preprocess()
     {
         $acct = FormLib::get('id');
@@ -41,6 +44,7 @@ class GumEmailPage extends FannieRESTfulPage
         $this->title = 'Email Communications' . ' : ' . $acct;
         $this->__routes[] = 'get<id><welcome>';
         $this->__routes[] = 'get<id><creceipt><cid>';
+        $this->__routes[] = 'get<id><loanstatement>';
 
         return parent::preprocess();
     }
@@ -109,6 +113,118 @@ class GumEmailPage extends FannieRESTfulPage
         } else {
             echo 'Error: unable to send email. Notify IT';
         }
+        return false;
+    }
+
+    public function get_id_loanstatement_handler()
+    {
+        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB, $FANNIE_ROOT;
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB']);
+        $loan = new GumLoanAccountsModel($dbc);
+        $loan->accountNumber($this->id);
+        $loan->load();
+
+        $bridge = GumLib::getSetting('posLayer');
+        $this->custdata = $bridge::getCustdata($loan->card_no());
+        $this->meminfo = $bridge::getMeminfo($loan->card_no());
+
+        // bridge may change selected database
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB']);
+
+        $preamble = 'Hello, Owner ' . "\n";
+        $preamble .= 'Here is a statement on your owner loan to WFC as of '
+            . date('m/d/Y', mktime(0, 0, 0, GumLib::getSetting('FYendMonth'), GumLib::getSetting('FYendDay'), date('Y')))
+            . ', the end of the co-op\'s fiscal year. This is just for your information -'
+            . ' no action is required and you do not have to report interest income until your'
+            . ' loan is reppaid. Thank you for your support';
+
+        $info_section = 'First Name: ' . $this->custdata->FirstName() . "\n"
+            . 'Last Name: ' . $this->custdata->LastName() . "\n"
+            . 'Address: ' . $this->meminfo->street() . "\n"
+            . 'City: ' . $this->meminfo->city() . "\n"
+            . 'State: ' . $this->meminfo->state() . "\n"
+            . 'Zip Code: ' . $this->meminfo->zip() . "\n"
+            . 'Loan Amount: ' . number_format($loan->principal(), 2) . "\n"
+            . 'Loan Date: ' . date('m/d/Y', strtotime($loan->loanDate())) . "\n"
+            . 'Loan Term: ' . ($loan->termInMonths() / 12) . ' years' . "\n"
+            . 'Interest Rate: ' . number_format($loan->interestRate()*100, 2) . "%\n";
+        $ld = strtotime($loan->loanDate());
+        $ed = mktime(0, 0, 0, date('n', $ld)+$loan->termInMonths(), date('j', $ld), date('Y', $ld));
+        $info_section .= 'Maturity Date: ' . date('m/d/Y', $ed) . "\n";
+
+        $schedule = GumLib::loanSchedule($loan);
+        $interest = 0.0;
+        $balance = 0.0;
+        $html = '<table style="border-spacing:1em;">
+                <tr><th colspan="4" style="text-align:center;">Schedule</th></tr>
+                <tr><th>Year Ending</th><th>Days</th><th>Interest</th><th>Balance</th></tr>';
+        $text = 'Annual Schedule:' . "\n";
+        foreach ($schedule['schedule'] as $year) {
+            if (strtotime($year['end_date']) > time()) {
+                break;
+            }
+            $html .= '<tr> <td>' . $year['end_date'] . '</td> <td>'
+                . $year['days'] . '</td> <td>'
+                . number_format($year['interest'], 2) . '</td> <td>'
+                . number_format($year['balance'], 2) . '</td> </tr>';
+            $text .= 'Year Ending: ' . $year['end_date'] . "\n"
+                . 'Days: ' . $year['days'] . "\n"
+                . 'Interest: ' . number_format($year['interest'], 2) . "\n"
+                . 'Balance: ' . number_format($year['balance'], 2) . "\n\n";
+            $interest += $year['interest'];
+            $balance = $year['balance'];
+        }
+        $html .= '<tr><th>Balance</th><th>'
+                . number_format($loan->principal(), 2) . '</th><th>'
+                . number_format($interest, 2) . '</th><th>'
+                . number_format($balance, 2) . '</th></tr>';
+        $html .= '</table>';
+
+        $text = wordwrap($preamble) . "\n" . $info_section . $text;
+        $html = '<p>' . wordwrap(nl2br($preamble)) . '</p>'
+                . '<p>' . nl2br($info_section) . '</p>'
+                . wordwrap($html);
+        $html = '<html><body>' . $html . '</body></html>';
+
+        $uid = FannieAuth::getUID($this->current_user);
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB']);
+        $log = new GumEmailLogModel($dbc);
+        $log->card_no($loan->card_no());
+        $log->tdate(date('Y-m-d H:i:s'));
+        $log->uid($uid);
+        $log->messageType('Statement (' . $this->id . ')');
+
+        if (!class_exists('SMTP')) {
+            include($FANNIE_ROOT . 'src/PHPMailer/class.smtp.php');
+        }
+        if (!class_exists('PHPMailer')) {
+            include($FANNIE_ROOT . 'src/PHPMailer/class.phpmailer.php');
+        }
+        $mail = new PHPMailer();
+        $mail->isSMTP();
+        $mail->Host = '127.0.0.1';
+        $mail->Port = 25;
+        $mail->SMTPAuth = false;
+        $mail->From = 'finance@wholefoods.coop';
+        $mail->FromName = 'Whole Foods Co-op';
+        $mail->addReplyTo('finance@wholefoods.coop');
+        $mail->addAddress($this->meminfo->email_1());
+        $mail->isHTML(true);
+        $mail->Subject = 'Owner Loan Statement';
+        $mail->Body = $html;
+        $mail->AltBody = $text;
+
+        if (FormLib::get('sendAs') == 'print') {
+            echo $html;
+
+            return false;
+        } else if ($mail->send()) {
+            $log->save();
+            header('Location: GumEmailPage.php?id=' . $loan->card_no());
+        } else {
+            echo 'Error: unable to send email. Notify IT';
+        }
+
         return false;
     }
 
@@ -271,11 +387,13 @@ class GumEmailPage extends FannieRESTfulPage
             $ret .= sprintf('<tr>
                             <td>Loan Account %s (%.2f)</td>
                             <td>%s</td>
-                            <td>(No messages available)</td>
+                            <td><input type="button" value="Send Statement"
+                                onclick="location=\'GumEmailPage.php?id=%s&loanstatement=1&sendAs=\'+$(\'#sendType\').val();" />
                             </tr>',
                             $obj->accountNumber(),
                             $obj->principal(),
-                            $obj->loanDate()
+                            $obj->loanDate(),
+                            $obj->accountNumber()
             );
         }
         foreach($this->equity as $obj) {

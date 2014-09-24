@@ -33,6 +33,9 @@ class ObfIndexPage extends FannieRESTfulPage
     protected $title = 'OBF: Menu';
     protected $header = 'OBF: Menu';
 
+    public $page_set = 'Plugin :: Open Book Financing';
+    public $description = '[Menu] lists all the OBF pages.';
+
     public function get_view()
     {
         return '<ul>

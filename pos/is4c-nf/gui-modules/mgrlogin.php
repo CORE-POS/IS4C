@@ -99,7 +99,7 @@ class mgrlogin extends NoInputPage {
 		<input type="hidden" name="reginput" id="reginput" value="" />
 		</form>
 		<p>
-		<span id="localmsg"><?php echo _("please enter manager password"); ?></span>
+		<span id="localmsg"><?php echo _("please enter password"); ?></span>
 		</p>
 		</div>
 		</div>
@@ -112,7 +112,7 @@ class mgrlogin extends NoInputPage {
 		$ret = array(
 			'cancelOrder'=>false,
 			'msg'=>_('password invalid'),
-			'heading'=>_('re-enter manager password'),
+			'heading'=>_('re-enter password'),
 			'giveUp'=>false
 		);
 

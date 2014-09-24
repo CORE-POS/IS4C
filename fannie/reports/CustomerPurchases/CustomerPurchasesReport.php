@@ -87,7 +87,6 @@ class CustomerPurchasesReport extends FannieReportPage
     function report_description_content()
     {
         $ret = array();
-        $ret[] = "Purchases from ".FormLib::get_form_value('date1','')." to ".FormLib::get_form_value('date2','');
         $ret[] = "For owner #".FormLib::get_form_value('card_no');
         return $ret;
     }

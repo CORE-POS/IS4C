@@ -21,13 +21,17 @@
 
 *********************************************************************************/
 
-include('../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+require(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class AdvancedItemSearch extends FannieRESTfulPage
 {
     protected $header = 'Advanced Search';
     protected $title = 'Advanced Search';
+
+    public $description = '[Advanced Search] is a tool to look up items with lots of search options.';
 
     protected $window_dressing = false;
 
@@ -36,6 +40,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
         $this->__routes[] = 'get<search>';
         $this->__routes[] = 'post<search>';
         $this->__routes[] = 'post<upc>';
+        $this->__routes[] = 'get<init>';
         return parent::preprocess();
     }
 
@@ -194,6 +199,12 @@ class AdvancedItemSearch extends FannieRESTfulPage
             $where .= ' AND p.foodstamp=? ';
             $args[] = $fs;
         }
+
+		$inUse = FormLib::get('in_use');
+		if ($inUse !== '') {
+			$where .= ' AND p.inUse=? ';
+			$args[] = $inUse;
+		}
 
         $discount = FormLib::get('discountable');
         if ($discount !== '') {
@@ -378,13 +389,28 @@ class AdvancedItemSearch extends FannieRESTfulPage
             }
         }
 
+        $dataStr = http_build_query($_GET);
+        echo '<a href="AdvancedItemSearch.php?init=' . base64_encode($dataStr) . '">Permalink for this Search</a>';
         echo $this->streamOutput($items);
 
         return false;
     }
 
+    public function get_init_handler()
+    {
+        $vars = base64_decode($this->init);
+        parse_str($vars, $data);
+        foreach ($data as $field_name => $field_val) {
+            $this->add_onload_command('$(\'#searchform :input[name="' . $field_name . '"]\').val(\'' . $field_val . '\');' . "\n");
+        }
+        $this->add_onload_command('getResults();' . "\n");
+
+        return true;
+    }
+
     private function streamOutput($data) {
-        $ret = '<table cellspacing="0" cellpadding="4" border="1">';
+        $ret = $dataStr;
+        $ret .= '<table cellspacing="0" cellpadding="4" border="1">';
         $ret .= '<tr>
                 <th><input type="checkbox" onchange="toggleAll(this, \'.upcCheckBox\');" /></th>
                 <th>UPC</th><th>Desc</th><th>Super</th><th>Dept</th>
@@ -426,7 +452,6 @@ function getResults() {
         dstr += '&u[]='+$(this).val();
     });
 
-    console.log(dstr);
     $('#resultArea').html('Searching');
     $.ajax({
         url: 'AdvancedItemSearch.php',
@@ -504,6 +529,11 @@ function formReset()
         return ob_get_clean();
     }
 
+    public function get_init_view()
+    {
+        return $this->get_view();
+    }
+
     function get_view()
     {
         global $FANNIE_OP_DB, $FANNIE_URL;
@@ -513,7 +543,7 @@ function formReset()
         $this->add_css_file($FANNIE_URL.'src/style.css');
         $this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
 
-        $ret .= '<!doctype html><html><head><title>Advanced Search</title></head><body>';
+        $ret = '<!doctype html><html><head><title>Advanced Search</title></head><body>';
         $ret .= '<div style="float:left;">';
 
         $ret .= '<form method="post" id="searchform" onsubmit="getResults(); return false;" onreset="formReset();">';
@@ -548,7 +578,10 @@ function formReset()
 
         $ret .= '<th>Movement</th>';
         $ret .= '<td colspan="2"><select name="soldOp"><option value="">n/a</option><option value="7">Last 7 days</option>
-                    <option value="30">Last 30 days</option><option value="90">Last 90 days</option></select></td>';
+                    <option value="30">Last 30 days</option><option value="90">Last 90 days</option></select>';
+
+        $ret .= '&nbsp;&nbsp;&nbsp;<label for="in_use">InUse</label>
+				<input type="checkbox" class="saleField" name="in_use" id="in_use" value="1" /></td>'; 
 
         $ret .= '</tr><tr>';
 
@@ -605,7 +638,7 @@ function formReset()
         }
         $ret .= '</select>';
         $ret .= '</td>';
-    
+
         $ret .= '<th>Likecode</th>';
         $ret .= '<td colspan="3"><select name="likeCode"><option value="">n/a</option>
                 <option value="ANY">In Any Likecode</option>

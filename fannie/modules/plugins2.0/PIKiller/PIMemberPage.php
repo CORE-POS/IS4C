@@ -110,7 +110,16 @@ class PIMemberPage extends PIKillerPage {
 
         if ($this->auth_mode == 'Full'){
             $dates = $this->get_model($dbc, 'MemDatesModel', array('card_no'=>$this->card_no));
-            $dates->start_date(FormLib::get_form_value('start_date'));
+            $start = FormLib::get('start_date', '');
+            /**
+              Interface hides 1900-01-01 dates from the end-user
+              but that's not identical to 0000-00-00. A blank submission
+              should preserve that 1900-01-01 date.
+            */
+            if ($start == '' && FormLib::get('nonBlankStart') != '') {
+                $start = FormLib::get('nonBlankStart');
+            }
+            $dates->start_date($start);
             $dates->end_date(FormLib::get_form_value('end_date'));
             $dates->save();
         }
@@ -304,6 +313,9 @@ class PIMemberPage extends PIKillerPage {
         echo "<td class=\"yellowbg\">Start Date: </td>";
         $start = $this->__models['memDates']->start_date();
         if (strstr($start,' ') !== False) list($start,$junk) = explode(' ',$start,2);
+        if ($start == '1900-01-01') {
+            echo '<input type="hidden" name="nonBlankStart" value="' . $start . '" />';
+        }
         if ($start == '1900-01-01' || $start == '0000-00-00') $start = '';
         echo '<td>'.$this->text_or_field('start_date',$start,array(),$limitedEdit).'</td>';
         echo "<td class=\"yellowbg\">End Date: </td>";

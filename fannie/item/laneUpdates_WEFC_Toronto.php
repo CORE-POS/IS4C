@@ -26,18 +26,18 @@
     * 27Feb2013 Eric Lee Add functions like the originals with table_name as a parameter.
     *           Supports more product-related tables on the lane.
 
+    * 26Aug2014 Andy comment out unused functions to avoid name conflict with laneUpdates.php
 */
 
 if (!isset($FANNIE_ROOT))
-    require('../config.php');
+    require(dirname(__FILE__) . '/../config.php');
 if (!class_exists('SQLManager'))
     require($FANNIE_ROOT.'src/SQLManager.php');
 
-$laneupdate_sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                $FANNIE_SERVER_USER, $FANNIE_SERVER_PW);
-
+/*
 function addProductAllLanes($upc){
-    global $laneupdate_sql, $FANNIE_LANES, $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
+    global $FANNIE_LANES, $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
+    $laneupdate_sql = FannieDB::get($FANNIE_OP_DB);
 
     $server_table_def = $laneupdate_sql->table_definition('products',$FANNIE_OP_DB);
 
@@ -74,7 +74,8 @@ function addProductAllLanes($upc){
 }
 
 function deleteProductAllLanes($upc){
-    global $laneupdate_sql, $FANNIE_OP_DB, $FANNIE_LANES;
+    global $FANNIE_OP_DB, $FANNIE_LANES;
+    $laneupdate_sql = FannieDB::get($FANNIE_OP_DB);
 
     for ($i = 0; $i < count($FANNIE_LANES); $i++){
         $tmp = new SQLManager($FANNIE_LANES[$i]['host'],$FANNIE_LANES[$i]['type'],
@@ -89,11 +90,13 @@ function updateProductAllLanes($upc){
     deleteProductAllLanes($upc);
     addProductAllLanes($upc);
 }
+*/
 
 /* Functions like the above with table_name as a parameter. */
 
 function addAllLanes($upc, $table_name){
-    global $laneupdate_sql, $FANNIE_LANES, $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
+    global $FANNIE_LANES, $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
+    $laneupdate_sql = FannieDB::get($FANNIE_OP_DB);
 
     $server_table_def = $laneupdate_sql->table_definition("{$table_name}",$FANNIE_OP_DB);
     if (count($server_table_def) == 0)
@@ -136,7 +139,8 @@ function addAllLanes($upc, $table_name){
 }
 
 function removeAllLanes($upc, $table_name){
-    global $laneupdate_sql, $FANNIE_OP_DB, $FANNIE_LANES;
+    global $FANNIE_OP_DB, $FANNIE_LANES;
+    $laneupdate_sql = FannieDB::get($FANNIE_OP_DB);
 
     for ($i = 0; $i < count($FANNIE_LANES); $i++){
         $tmp = new SQLManager($FANNIE_LANES[$i]['host'],$FANNIE_LANES[$i]['type'],

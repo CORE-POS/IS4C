@@ -21,13 +21,17 @@
 
 *********************************************************************************/
 
-include_once(dirname(__FILE__).'/../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+require(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class EndItemSale extends FannieRESTfulPage {
 
     protected $header = 'Take item off sale';
     protected $title = 'Take item off sale';
+
+    public $description = '[Take Item Off Sale] immediately stops sale pricing an item.';
 
     function post_id_handler(){
         global $FANNIE_OP_DB;

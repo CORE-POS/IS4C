@@ -21,7 +21,10 @@
 
 *********************************************************************************/
 
-include('../../config.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
+    return;
+}
 
 $batchID = 1;
 if (isset($_GET['batchID']))

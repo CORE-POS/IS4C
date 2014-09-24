@@ -21,8 +21,10 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class ViewCashiersPage extends FanniePage {
 
@@ -30,6 +32,8 @@ class ViewCashiersPage extends FanniePage {
     protected $header = "View Cashiers";
     protected $must_authenticate = True;
     protected $auth_classes = array('editcashiers');
+
+    public $description = '[View Cashiers] shows information about cashiers.';
 
 
     function javascript_content(){
@@ -89,7 +93,7 @@ function deleteEmp(emp_no,filter){
         $ret .= "</select><hr />";
 
         $ret .= "<table cellpadding=4 cellspacing=0 border=1><tr>";
-        $ret .= "<th><a href=ViewCashiersPage.php?filter=$filter&order=num>Emp#</th>";
+        $ret .= "<th><a href=ViewCashiersPage.php?filter=$filter&order=num>#</th>";
         $ret .= "<th><a href=ViewCashiersPage.php?filter=$filter&order=name>Name</th>";
         $ret .= "<th><a href=ViewCashiersPage.php?filter=$filter&order=pass>Password</th>";
         $ret .= "<th><a href=ViewCashiersPage.php?filter=$filter&order=fes>Privileges</th>";

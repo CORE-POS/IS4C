@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-include('../../config.php');
+include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
@@ -31,6 +31,8 @@ class ReprintReceiptPage extends FanniePage
 
     protected $title = 'Fannie :: Lookup Receipt';
     protected $header = 'Lookup Receipt';
+
+    public $description  = '[Lookup Receipt] finds a POS transaction.';
 
     private $results = '';
 
@@ -102,6 +104,15 @@ class ReprintReceiptPage extends FanniePage
             }
             $tender_clause .= ")";
 
+            /**
+              There is no tender restriction
+              replace with a not-true statements
+              otherwise the OR will match everything
+            */
+            if ($tender_clause == '( 1=1)') {
+                $tender_clause = '1=0';
+            }
+
             $or_clause = '(' . $tender_clause;
             if ($department != "") {
                 $or_clause .= " OR department=? ";
@@ -116,6 +127,9 @@ class ReprintReceiptPage extends FanniePage
             }
 
             $or_clause .= ")";
+            if ($or_clause == "(1=0)") {
+                $or_clause = "1=1";
+            }
             $query .= ' AND '.$or_clause;
 
             $query .= " GROUP BY year(tdate),month(tdate),day(tdate),emp_no,register_no,trans_no ";

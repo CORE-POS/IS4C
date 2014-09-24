@@ -261,7 +261,7 @@ class BasicCCModule
 		curl_setopt($curl_handle, CURLOPT_FRESH_CONNECT,true);
 		curl_setopt($curl_handle, CURLOPT_TIMEOUT,30);
 		curl_setopt($curl_handle, CURLOPT_SSL_VERIFYPEER, 0);
-		if($CORE_LOCAL->get("OS")=="win32") {
+        if (MiscLib::win32()) {
 			curl_setopt($curl_handle, CURLOPT_CAINFO, LOCAL_CERT_PATH);
         }
 		if ($type == 'SOAP') {

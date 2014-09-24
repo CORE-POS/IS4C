@@ -40,6 +40,7 @@ else {
         $options = 'limited';
   }
 
+
   /* password change only allowed if not using
      UNIX or LDAP passwords */
   echo "Welcome $name<p />";

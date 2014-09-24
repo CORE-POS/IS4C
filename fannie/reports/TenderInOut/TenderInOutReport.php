@@ -39,13 +39,9 @@ class TenderInOutReport extends FannieReportPage
 
     public function report_description_content()
     {
-        $date1 = FormLib::get('date1', date('Y-m-d'));
-        $date2 = FormLib::get('date2', date('Y-m-d'));
         $code = FormLib::get('tendercode');
 
         return array(
-            'Report run '.date('F d, Y'),
-            'From '.$date1.' to '.$date2,
             'For tender '.$code,
         );
     }
