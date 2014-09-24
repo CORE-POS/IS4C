@@ -44,6 +44,11 @@ class FanniePage
 
     public $doc_link = '';
 
+    /**
+      Page has been updated to support themeing
+    */
+    public $themed = false;
+
     /** force users to login immediately */
     protected $must_authenticate = False;
     /** name of the logged in user (or False is no one is logged in) */
@@ -93,11 +98,26 @@ class FanniePage
     */
     public function getHeader()
     {
-        global $FANNIE_ROOT;
+        global $FANNIE_URL;
         ob_start();
         $page_title = $this->title;
         $header = $this->header;
-        include($FANNIE_ROOT.'src/header.html');
+        if ($this->themed) {
+            include(dirname(__FILE__) . '/../src/header.bootstrap.html');
+            $this->addCssFile($FANNIE_URL . 'src/javascript/jquery-ui.css?id=20140625');
+            $this->addCssFile($FANNIE_URL . 'src/javascript/bootstrap/css/bootstrap.min.css?id=20140922');
+            $this->addCssFile($FANNIE_URL . 'src/javascript/bootstrap-default/css/bootstrap.min.css?id=20140922');
+            $this->addCssFile($FANNIE_URL . 'src/javascript/bootstrap-default/css/bootstrap-theme.min.css?id=20140922');
+            //$this->addCssFile($FANNIE_URL . 'src/style.css');
+            $this->addCssFile($FANNIE_URL . 'src/css/configurable.php');
+            $this->addScript($FANNIE_URL . 'src/javascript/jquery/jquery.min.js');
+            $this->addScript($FANNIE_URL . 'src/javascript/bootstrap/js/bootstrap.min.js');
+            if (!file_exists(dirname(__FILE__) . '/../src/javascript/bootstrap/js/bootstrap.min.js')) {
+                echo '<em>Warning: bootstrap does not appear to be installed. Try running composer update</em>';
+            }
+        } else {
+            include(dirname(__FILE__) . '/../src/header.html');
+        }
 
         return ob_get_clean();
     }
@@ -114,7 +134,11 @@ class FanniePage
     {
         global $FANNIE_ROOT, $FANNIE_AUTH_ENABLED, $FANNIE_URL;
         ob_start();
-        include($FANNIE_ROOT.'src/footer.html');
+        if ($this->themed) {
+            include($FANNIE_ROOT.'src/footer.bootstrap.html');
+        } else {
+            include($FANNIE_ROOT.'src/footer.html');
+        }
 
         return ob_get_clean();
     }
