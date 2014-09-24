@@ -37,6 +37,8 @@ class CalendarFeed extends FannieRESTfulPage
         $filename = dirname(__FILE__) . '/ics/' . $this->token . '.ics';
         if (!file_exists($filename) || $cal->modified() == 1) {
             $this->writeIcal($this->id, $filename);
+            $cal->modified(0);
+            $cal->save();
         }
 
         return true;
