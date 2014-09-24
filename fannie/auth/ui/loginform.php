@@ -34,6 +34,8 @@ class FannieAuthLoginPage extends FannieRESTfulPage
     protected $title = 'Fannie : Auth';
     protected $header = 'Fannie : Auth';
 
+    public $themed = false;
+
     public function preprocess()
     {
         if (isset($_GET["redirect"]) && init_check()){
@@ -121,18 +123,35 @@ class FannieAuthLoginPage extends FannieRESTfulPage
         } else {
             $redirect = FormLib::get('redirect', 'menu.php');
             echo "<form action=loginform.php method=post>";
-            echo "<table cellspacing=2 cellpadding=4><tr>";
-            echo "<td>Name:</td><td><input type=text name=name></td>";
-            echo "</tr><tr>";
-            echo "<td>Password:</td><td><input type=password name=password></td>";
-            echo "</tr><tr>";
-            echo "<td><input type=submit value=Login></td><td><input type=reset value=Clear></td>";
-            echo "</tr></table>";
+            if ($this->themed) {
+                echo '<p>';
+                echo '<div class="form-group">';
+                echo '<label for="authUserName">Name</label>';
+                echo '<input class="form-control" id="authUserName" name="name" type="text" />';
+                echo '</div>';
+                echo '<div class="form-group">';
+                echo '<label for="authPassword">Password</label>';
+                echo '<input class="form-control" id="authPassword" name="password" type="password" />';
+                echo '</div>';
+                echo '</p>';
+            } else {
+                echo '<table>';
+                echo '<tr><td>';
+                echo '<label for="authUserName">Name</label>';
+                echo '</td><td>';
+                echo '<input class="form-control" id="authUserName" name="name" type="text" />';
+                echo '</td></tr>';
+                echo '<tr><td>';
+                echo '<label for="authPassword">Password</label>';
+                echo '</td><td>';
+                echo '<input class="form-control" id="authPassword" name="password" type="password" />';
+                echo '</td></tr>';
+                echo '</table>';
+            }
+            echo '<button type="submit" class="btn btn-default">Login</button>';
             echo "<input type=hidden value=$redirect name=redirect />";
             echo "</form>";
-            echo "<script type=text/javascript>";
-            echo "document.forms[0].name.focus();";
-            echo "</script>";
+            $this->add_onload_command('$(\'#authUserName\').focus();');
         }
 
         return ob_get_clean();
