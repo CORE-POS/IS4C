@@ -160,6 +160,33 @@ class InstallIndexPage extends InstallPage {
             return ob_get_clean();
         }
 
+        if (!is_dir(dirname(__FILE__) . '/../vendor')) {
+            echo "<span style=\"color:red;\"><b>Warning</b>: dependencies appear to be missing.</span>";
+            echo '<blockquote>';
+            echo 'Install <a href="https://getcomposer.org/">Composer</a> then run ';
+            echo "<pre style=\"font:fixed;background:#ccc;\">";
+            echo '$ cd "' . $FILEPATH . "\"\n";
+            echo '$ /path/to/composer.phar update';
+            echo '</pre>';
+        } else {
+            $json = file_get_contents(dirname(__FILE__) . '/../composer.json');
+            $obj = json_decode($json);
+            $missing = false;
+            foreach (get_object_vars($obj->require) as $package => $version) {
+                if (!is_dir(dirname(__FILE__) . '/../vendor/' . $package)) {
+                    $missing = true;
+                    echo "<span style=\"color:red;\"><b>Warning</b>: package " . $package . " is not installed.</span><br />";
+                }
+            }
+            if ($missing) {
+                echo 'Install dependencies by running';
+                echo "<pre style=\"font:fixed;background:#ccc;\">";
+                echo '$ cd "' . $FILEPATH . "\"\n";
+                echo '$ /path/to/composer.phar update';
+                echo '</pre>';
+            }
+        }
+
         /**
             Detect databases that are supported
         */
