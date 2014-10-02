@@ -1,5 +1,5 @@
 <?php
-global $FANNIE_DYNAMIC_MENU, $FANNIE_NAV_POSITION, $FANNIE_CSS_LOGO, $FANNIE_CHARSET, $FANNIE_CUSTOM_TITLE;
+global $FANNIE_DYNAMIC_MENU, $FANNIE_NAV_POSITION, $FANNIE_CSS_LOGO, $FANNIE_CHARSET, $FANNIE_CUSTOM_TITLE, $FANNIE_MENU;
 /* try to deal with relative paths for includes */
 $path = "";
 $found = False;
@@ -52,12 +52,47 @@ if (!isset($FANNIE_CHARSET) || empty($FANNIE_CHARSET)) {
         </table>
     </div>
     <div class="secondaryBorder container-fluid" style="border-width: 1px; border-style: solid;">
- 	<?php
-		if (isset($FANNIE_DYNAMIC_MENU) && $FANNIE_DYNAMIC_MENU===True)
-			include(dirname(__FILE__) . '/navbar.dynamic.php');
-		else
-			include(dirname(__FILE__) . '/navbar.bootstrap.html');
-	?>
+
+        <div class="navbar navbar-default">
+            <ul class="nav navbar-nav">
+            <?php
+            if (!is_array($FANNIE_MENU) || count($FANNIE_MENU) == 0) {
+                include(dirname(__FILE__) . '/init_menu.php');
+                $FANNIE_MENU = $INIT_MENU;
+            } elseif (isset($FANNIE_MENU[0]['subheading'])) {
+                // old-style menu configuration
+                include(dirname(__FILE__) . '/init_menu.php');
+                $FANNIE_MENU = $INIT_MENU;
+            }
+            foreach ($FANNIE_MENU as $menu => $contents) {
+                if (count($contents) == 0) {
+                    continue;
+                }
+                if ($menu == '__store__') {
+                    $menu = 'Custom';
+                }
+                printf('<li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" data-target="#" 
+                        href="#">%s<span class="caret"></span></a>' . "\n", $menu);
+                echo '<ul class="dropdown-menu" role="menu">' . "\n";
+                foreach ($contents as $m_title => $m_url) {
+                    if ($m_url == '__header__') {
+                        printf('<li class="dropdown-header">%s</li>' . "\n", $m_title);
+                    } elseif ($m_url == '__divider__') {
+                        echo '<li class="divider"></li>' . "\n";
+                    } else {
+                        $prefix = $path;
+                        if ($m_url[0] == '/' || substr($m_url, 0, 7) == 'http://' || substr($m_url, 0, 8) == 'https://') {
+                            $prefix = '';
+                        }
+                        printf('<li><a href="%s%s">%s</a></li>' . "\n", $prefix, $m_url, $m_title);
+                    }
+                }
+                echo '</ul>' . "\n";
+                echo '</li>' . "\n";
+            }
+            ?>
+            </ul>
+        </div>
         <div class="h3 primaryColor">
             &nbsp;&nbsp;<?php echo $header; ?>
         </div>
