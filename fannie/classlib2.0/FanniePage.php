@@ -111,6 +111,7 @@ class FanniePage
             //$this->addCssFile($FANNIE_URL . 'src/style.css');
             $this->addCssFile($FANNIE_URL . 'src/css/configurable.php');
             $this->addScript($FANNIE_URL . 'src/javascript/jquery/jquery.min.js');
+            $this->addScript($FANNIE_URL . 'src/javascript/jquery-ui.js');
             $this->addScript($FANNIE_URL . 'src/javascript/bootstrap/js/bootstrap.min.js');
             if (!file_exists(dirname(__FILE__) . '/../src/javascript/bootstrap/js/bootstrap.min.js')) {
                 echo '<em>Warning: bootstrap does not appear to be installed. Try running composer update</em>';

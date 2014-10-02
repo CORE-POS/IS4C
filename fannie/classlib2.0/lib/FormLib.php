@@ -109,35 +109,47 @@ class FormLib
         $last_month = array(date('Y-m-01',$lm),date('Y-m-t',$lm));
 
         $extra_opts = sprintf("
-            <fieldset style='border:330066;'>
+            <fieldset>
             <legend>Other dates</legend>
-            <table style='margin: 0em 0em 0em 0em;'>
+            <table class=\"table\">
             <tr style='vertical-align:top;'><td style='margin: 0em 1.0em 0em 0em;'>
-            <input id='od10' type='radio' name='other_dates' 
-                onclick=\"\$('#%s').val('%s');\$('#%s').val('%s')\" > 
-                <label for='od10'>Today</label></br >
+            <label>
+                <input class=\"radio-inline\" id='od10' type='radio' name='other_dates' 
+                    onclick=\"\$('#%s').val('%s');\$('#%s').val('%s')\" > 
+                Today
+            </label>
             </td><td>
-            <input id='od11' type='radio' name='other_dates' 
+            <label>
+                <input class=\"radio-inline\" id='od11' type='radio' name='other_dates' 
                 onclick=\"\$('#%s').val('%s');\$('#%s').val('%s')\" >
-                <label for='od11'>This week</label></br >
+                This week
+            </label>
             </td><td>
-            <input id='od12' type='radio' name='other_dates' 
-                onclick=\"\$('#%s').val('%s');\$('#%s').val('%s')\" >
-                <label for='od12'>This month</label></br >
+            <label>
+                <input class=\"radio-inline\" id='od12' type='radio' name='other_dates' 
+                    onclick=\"\$('#%s').val('%s');\$('#%s').val('%s')\" >
+                This month
+            </label>
             </td>
             </tr><tr>
             <td rowspan='1'>
-            <input id='od20' type='radio' name='other_dates' value='yesterday'
+            <label>
+                <input id='od20' type='radio' name='other_dates' value='yesterday'
                 onclick=\"\$('#%s').val('%s');\$('#%s').val('%s')\" >
-                <label for='od20'>Yesterday</label></br >
+                Yesterday
+            </label>
             </td><td>
-            <input id='od21' type='radio' name='other_dates' value='last_week'
+            <label>
+                <input id='od21' type='radio' name='other_dates' value='last_week'
                 onclick=\"\$('#%s').val('%s');\$('#%s').val('%s')\" >
-                <label for='od21'>Last week</label></br >
+                Last week
+            </label>
             </td><td>
-            <input id='od22' type='radio' name='other_dates' value='last_month'
+            <label>
+                <input id='od22' type='radio' name='other_dates' value='last_month'
                 onclick=\"\$('#%s').val('%s');\$('#%s').val('%s')\" >
-                <label for='od22'>Last month</label></br >
+                Last month
+            </label>
             </td>
             </tr>
             </table>

@@ -63,12 +63,12 @@ function showResultForm(num){
 }
 
 function oneResultForm(obj, resultNum){
-	var output = '<div class="srDiv" id="sr'+resultNum+'" ';
+	var output = '<div class="srDiv col-sm-6" id="sr'+resultNum+'" ';
 	if (resultNum > 0)
 		output += ' style="display:none;"';
 	output += '>';
     output += '<form onsubmit="saveItem('+resultNum+');return false;">';
-	output += '<table>';
+	output += '<table class="table">';
 	output += '<tr><td align="right">SKU</td>';
 	output += '<td id="srSKU'+resultNum+'">'+obj.sku+'</td></tr>';
 	output += '<tr>';
@@ -81,8 +81,8 @@ function oneResultForm(obj, resultNum){
 	output += '<td id="qtyRow'+resultNum+'" colspan="2">Order <input type="number" size="3" value="1" onfocus="this.select();" id="srQty'+resultNum+'" />';
 	output += ' Cases</td></tr>';	
 	output += '</table>';
-	output += '<input type="submit" value="Confirm" onclick="saveItem('+resultNum+');return false;" />';
-	output += '</form>';
+	output += '<button type="submit" class="btn btn-default" onclick="saveItem('+resultNum+');return false;">Confirm</button>';
+	output += '</form><br />';
 
 	output += '</div>';
 	return output;

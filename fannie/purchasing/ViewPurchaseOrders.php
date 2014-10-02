@@ -32,6 +32,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
     protected $title = 'Purchase Orders';
 
     public $description = '[View Purchase Orders] lists pending orders and completed invoices.';
+    public $themed = true;
 
     protected $must_authenticate = false;
 
@@ -114,7 +115,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         $prep = $dbc->prepare_statement($query);
         $result = $dbc->exec_statement($prep, $args);
 
-        $ret = '<table cellspacing="0" cellpadding="4" border="1">';
+        $ret = '<table class="table">';
         $ret .= '<tr><th>Created</th><th>Vendor</th><th># Items</th><th>Est. Cost</th>
             <th>Placed</th><th>Received</th><th>Rec. Cost</th></tr>';
         $count = 1;
@@ -189,11 +190,12 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
             if (!isset($obj->nice_name)) continue;
             $ret .= '<option value="'.$class.'">'.$obj->nice_name.'</option>';
         }
-        $ret .= '</select>';
-        $ret .= '<input type="submit" value="Export" onclick="doExport('.$this->id.');return false;" />';
+        $ret .= '</select> ';
+        $ret .= '<button type="submit" class="btn btn-default" onclick="doExport('.$this->id.');return false;">Export</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;';
         $init = ($order->placed() ? 'init=placed' : 'init=pending');
-        $ret .= '<button onclick="location=\'ViewPurchaseOrders.php?' . $init . '\'; return false;">All Orders</button>';
+        $ret .= '<button type="button" class="btn btn-default" 
+            onclick="location=\'ViewPurchaseOrders.php?' . $init . '\'; return false;">All Orders</button>';
 
         $departments = $dbc->tableDefinition('departments');
         $codingQ = 'SELECT d.salesCode, SUM(o.receivedTotalCost) as rtc
@@ -211,7 +213,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         $ret .= '<br />';
 
         $ret .= '<div><div style="float:left;">';
-        $ret .= '<table cellspacing="0" cellpadding="4" border="1"><tr><th colspan="2">Coding(s)</th>';
+        $ret .= '<table class="table table-bordered"><tr><th colspan="2">Coding(s)</th>';
         $ret .= '<td><b>PO#</b>: '.$order->vendorOrderID().'</td>';
         $ret .= '<td><b>Invoice#</b>: '.$order->vendorInvoiceID().'</td>';
         $ret .= '</tr>';
@@ -237,7 +239,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         $model = new PurchaseOrderItemsModel($dbc);
         $model->orderID($this->id);
 
-        $ret .= '<table cellspacing="0" cellpadding="4" border="1">';
+        $ret .= '<table class="table">';
         $ret .= '<tr><th>SKU</th><th>Brand</th><th>Description</th>
             <th>Unit Size</th><th>Units/Case</th><th>Cases</th>
             <th>Est. Cost</th><th>&nbsp;</th><th>Received</th>
@@ -308,7 +310,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 
         $ret .= '&nbsp;';
 
-        $ret .= '<button onclick="location=\'PurchasingIndexPage.php\'; return false;">Home</button>';
+        $ret .= '<button class="btn btn-default" onclick="location=\'PurchasingIndexPage.php\'; return false;">Home</button>';
 
         $ret .= '<hr />';
         
