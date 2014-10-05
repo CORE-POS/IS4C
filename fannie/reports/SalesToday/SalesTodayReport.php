@@ -32,7 +32,7 @@
 include(dirname(__FILE__) . '/../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-class SalesTodayReport extends FannieReportTool 
+class SalesTodayReport extends \COREPOS\Fannie\API\FannieReportTool 
 {
     public $description = '[Today\'s Sales] shows current day totals by hour.';
     public $report_set = 'Sales Reports';

@@ -37,7 +37,7 @@ if (!function_exists('ArrayToCsv')) {
     include_once($FANNIE_ROOT.'src/ReportConvert/ArrayToCsv.php');
 }
 
-class ProductListPage extends FannieReportTool 
+class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool 
 {
     public $description = '[Product List] is a cross between a report and a tool. It lists current item prices and status flags for a department or set of departments but also allows editing.';
 

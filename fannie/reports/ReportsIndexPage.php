@@ -121,7 +121,7 @@ open in a separate tab or window as a reference for Manufacturers and Vendors (D
                 );
             }
         }
-        $tools = FannieAPI::listModules('FannieReportTool');
+        $tools = FannieAPI::listModules('\COREPOS\Fannie\API\FannieReportTool');
         foreach($tools as $class) {
             $obj = new $class();
             if (!$obj->discoverable) {

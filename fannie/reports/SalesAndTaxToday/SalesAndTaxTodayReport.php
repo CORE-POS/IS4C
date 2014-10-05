@@ -43,7 +43,7 @@
 include(dirname(__FILE__) . '/../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-class SalesAndTaxTodayReport extends FannieReportTool 
+class SalesAndTaxTodayReport extends \COREPOS\Fannie\API\FannieReportTool 
 {
 
     //protected $auth_classes = array('salesbyhour');
