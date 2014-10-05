@@ -25,7 +25,7 @@ include('../config.php');
 include_once('../classlib2.0/FannieAPI.php');
 include('util.php');
 
-class InstallThemePage extends InstallPage
+class InstallThemePage extends \COREPOS\Fannie\API\InstallPage
 {
     protected $title = 'Fannie: Theme Settings';
     protected $header = 'Fannie: Theme Settings';

@@ -31,7 +31,7 @@ include_once('../classlib2.0/FannieAPI.php');
     @class InstallAuthenticationPage
     Class for the Authentication install and config options
 */
-class InstallAuthenticationPage extends InstallPage {
+class InstallAuthenticationPage extends \COREPOS\Fannie\API\InstallPage {
 
     protected $title = 'Fannie: Authentication Settings';
     protected $header = 'Fannie: Authentication Settings';

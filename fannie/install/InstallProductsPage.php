@@ -31,7 +31,7 @@ include_once('../classlib2.0/FannieAPI.php');
     @class InstallProductsPage
     Class for the Products install and config options
 */
-class InstallProductsPage extends InstallPage {
+class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
 
     protected $title = 'Fannie: Products Settings';
     protected $header = 'Fannie: Products Settings';

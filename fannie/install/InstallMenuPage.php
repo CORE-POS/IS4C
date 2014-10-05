@@ -31,7 +31,7 @@ include_once('../classlib2.0/FannieAPI.php');
     @class InstallMenuPage
     Class for the Menu install and config options
 */
-class InstallMenuPage extends InstallPage {
+class InstallMenuPage extends \COREPOS\Fannie\API\InstallPage {
 
     protected $title = 'Fannie: Menu Builder';
     protected $header = 'Fannie: Menu Builder';

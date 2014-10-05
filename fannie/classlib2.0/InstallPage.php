@@ -21,15 +21,14 @@
 
 *********************************************************************************/
 
-if (!class_exists('FanniePage')) {
-    include_once(dirname(__FILE__).'/FanniePage.php');
-}
+namespace COREPOS\Fannie\API
+{
 
 /**
   @class InstallPage
   Class for Fannie Install-and-config pages, not using Fannie Admin menu.
 */
-class InstallPage extends FanniePage 
+class InstallPage extends \FanniePage 
 {
 
     public $required = true;
@@ -82,5 +81,12 @@ class InstallPage extends FanniePage
         return ob_get_clean();
     }
 
+}
+
+}
+
+namespace 
+{
+    class InstallPage extends \COREPOS\Fannie\API\InstallPage {}
 }
 

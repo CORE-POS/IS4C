@@ -31,7 +31,7 @@ $FILEPATH = $FANNIE_ROOT;
     @class InstallPluginsPage
     Class for the Plugins install and config options
 */
-class InstallPluginsPage extends InstallPage {
+class InstallPluginsPage extends \COREPOS\Fannie\API\InstallPage {
 
     protected $title = 'Fannie: Plugin Install';
     protected $header = 'Fannie: Plugin Install Options';

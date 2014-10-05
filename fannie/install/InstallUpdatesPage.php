@@ -33,7 +33,7 @@ include_once('../cron/tasks/GiterateTask.php');
     @class InstallUpdatesPage
     Class for the Updates install and config options
 */
-class InstallUpdatesPage extends InstallPage {
+class InstallUpdatesPage extends \COREPOS\Fannie\API\InstallPage {
 
     protected $title = 'Fannie: Updates';
     protected $header = 'Fannie: Updates';

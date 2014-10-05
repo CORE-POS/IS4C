@@ -31,7 +31,7 @@ include_once('../classlib2.0/FannieAPI.php');
     @class InstallMembershipPage
     Class for the Membership install and config options
 */
-class InstallMembershipPage extends InstallPage {
+class InstallMembershipPage extends \COREPOS\Fannie\API\InstallPage {
 
     protected $title = 'Fannie: Membership Settings';
     protected $header = 'Fannie: Membership Settings';

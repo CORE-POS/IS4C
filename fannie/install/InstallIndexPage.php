@@ -41,7 +41,7 @@ include_once('../classlib2.0/FannieAPI.php');
     @class InstallIndexPage
     Class for the System Necessities (Install Home) install and config options
 */
-class InstallIndexPage extends InstallPage {
+class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
 
     protected $title = 'Fannie install checks: Necessities';
     protected $header = 'Fannie install checks: Necessities';
