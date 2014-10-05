@@ -33,6 +33,7 @@ class HouseCouponEditor extends FanniePage
     public $description = "
     Module for managing in store coupons
     ";
+    public $themed = true;
 
     protected $header = "Fannie :: House Coupons";
     protected $title = "House Coupons";
@@ -44,11 +45,11 @@ class HouseCouponEditor extends FanniePage
         global $FANNIE_OP_DB;
         $this->display_function = 'list_house_coupons';
 
-        if (FormLib::get_form_value('edit_id','') !== ''){
+        $msgs = array();
+        if (FormLib::get_form_value('edit_id','') !== '') {
             $this->coupon_id = (int)FormLib::get_form_value('edit_id',0);
             $this->display_function = 'edit_coupon';
-        }
-        else if (FormLib::get_form_value('new_coupon_submit') !== ''){
+        } elseif (FormLib::get_form_value('new_coupon_submit') !== '') {
             $dbc = FannieDB::get($FANNIE_OP_DB);
 
             $maxQ = $dbc->prepare_statement("SELECT max(coupID) from houseCoupons");
@@ -59,18 +60,15 @@ class HouseCouponEditor extends FanniePage
             $dbc->exec_statement($insQ,array($this->coupon_id));
 
             $this->display_function='edit_coupon';
+
+            $msgs[] = array('type'=>'success', 'text'=>'Created new coupon');
             
             $dbc->close();
-        }
-        else if (FormLib::get_form_value('explain_submit') !== ''){
-            include(dirname(__FILE__).'/explainify.html');
-            return False;
-        }
-        else if (FormLib::get_form_value('submit_save') !== '' 
+        } elseif (FormLib::get_form_value('submit_save') !== '' 
           || FormLib::get_form_value('submit_add_upc') !== ''
           || FormLib::get_form_value('submit_delete_upc') !== '' 
           || FormLib::get_form_value('submit_add_dept') !== ''
-          || FormLib::get_form_value('submit_delete_dept') !== '' ){
+          || FormLib::get_form_value('submit_delete_dept') !== '' ) {
 
             $dbc = FannieDB::get($FANNIE_OP_DB);
 
@@ -103,9 +101,11 @@ class HouseCouponEditor extends FanniePage
             $model->auto($auto);
             $model->save();
 
+            $msgs[] = array('type'=>'success', 'text'=>'Updated coupon settings');
+
             $this->display_function = 'edit_coupon';
 
-            if (FormLib::get_form_value('submit_add_upc') !== '' && FormLib::get_form_value('new_upc') !== ''){
+            if (FormLib::get_form_value('submit_add_upc') !== '' && FormLib::get_form_value('new_upc') !== '') {
                 /**
                   Add (or update) a UPC
                 */
@@ -116,11 +116,12 @@ class HouseCouponEditor extends FanniePage
                 if ($dbc->num_rows($check) == 0){
                     $query = $dbc->prepare_statement("INSERT INTO houseCouponItems VALUES (?,?,?)");
                     $dbc->exec_statement($query,array($this->coupon_id,$upc,$type));
-                }
-                else {
+                    $msgs[] = array('type'=>'success', 'text'=>'Added item ' . $upc);
+                } else {
                     $query = $dbc->prepare_statement("UPDATE houseCouponItems SET type=?
                         WHERE upc=? AND coupID=?");
                     $dbc->exec_statement($query,array($type,$upc,$this->coupon_id));
+                    $msgs[] = array('type'=>'success', 'text'=>'Updated item ' . $upc);
                 }
             }
             if (FormLib::get_form_value('submit_add_dept') !== '' && FormLib::get_form_value('new_dept') !== ''){
@@ -134,26 +135,35 @@ class HouseCouponEditor extends FanniePage
                 if ($dbc->num_rows($check) == 0){
                     $query = $dbc->prepare_statement("INSERT INTO houseCouponItems VALUES (?,?,?)");
                     $dbc->exec_statement($query,array($this->coupon_id,$dept,$type));
-                }
-                else {
+                    $msgs[] = array('type'=>'success', 'text'=>'Added department ' . $dept);
+                } else {
                     $query = $dbc->prepare_statement("UPDATE houseCouponItems SET type=?
                         WHERE upc=? AND coupID=?");
                     $dbc->exec_statement($query,array($type,$dept,$this->coupon_id));
+                    $msgs[] = array('type'=>'success', 'text'=>'Updated department ' . $dept);
                 }
-            }
-            elseif (FormLib::get_form_value('submit_delete_upc') !== '' || FormLib::get_form_value('submit_delete_dept') !== ''){
+            } elseif (FormLib::get_form_value('submit_delete_upc') !== '' || FormLib::get_form_value('submit_delete_dept') !== '') {
                 /**
                   Delete UPCs and departments
                 */
                 $query = $dbc->prepare_statement("DELETE FROM houseCouponItems
                     WHERE upc=? AND coupID=?");
-                foreach(FormLib::get_form_value('del',array()) as $upc){
+                foreach (FormLib::get_form_value('del',array()) as $upc) {
                     $dbc->exec_statement($query,array($upc,$this->coupon_id));
+                    $msgs[] = array('type'=>'success', 'text'=>'Deleted ' . $upc);
                 }
+            }
+
+            foreach ($msgs as $msg) {
+                $alert = '<div class="alert alert-' . $msg['type'] . '" role="alert">'
+                    . '<button type="button" class="close" data-dismiss="alert">'
+                    . '<span>&times;</span></button>'
+                    . $msg['text'] . '</div>';
+                $this->add_onload_command("\$('div.navbar-default').after('{$alert}');");
             }
         }
 
-        return True;
+        return true;
     }
 
     function body_content(){
@@ -162,15 +172,22 @@ class HouseCouponEditor extends FanniePage
     }
 
     function list_house_coupons(){
-        global $FANNIE_OP_DB;
+        global $FANNIE_OP_DB, $FANNIE_URL;
+        $this->add_script($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.js?v=1');
+        $this->add_css_file($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.css');
         $dbc = FannieDB::get($FANNIE_OP_DB);
         
         $ret = '<form action="HouseCouponEditor.php" method="get">';
-        $ret .= '<input type="submit" name="new_coupon_submit" value="New Coupon" />';
+        $ret .= '<p>';
+        $ret .= '<button type="submit" name="new_coupon_submit" 
+            class="btn btn-default" value="New Coupon">New Coupon</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="submit" name="explain_submit" value="Explanation of Settings" />';
+        $ret .= '<button type="button" class="fancybox-btn btn btn-default"
+            href="explainify.html">Explanation of Settings</button>';
+        $this->add_onload_command('$(\'.fancybox-btn\').fancybox();');
+        $ret .= '</p>';
         $ret .= '</form>';
-        $ret .= '<table cellpadding="4" cellspacing="0" border="1" />';
+        $ret .= '<table class="table">';
         $ret .= '<tr><th>ID</th><th>Value</th><th>Expires</th></tr>';
         $model = new HouseCouponsModel($dbc);
         foreach($model->find('coupID') as $obj) {
@@ -220,40 +237,43 @@ class HouseCouponEditor extends FanniePage
         $description = $model->description();
         $auto = $model->auto();
 
-        $ret = '<form action="HouseCouponEditor.php" method="post">';
+        $ret = '<form class="form-horizontal" action="HouseCouponEditor.php" method="post">';
         $ret .= '<input type="hidden" name="cid" value="'.$cid.'" />';
 
-        $ret .= sprintf('<table cellspacing=0 cellpadding=4 border=0>
-            <tr>
-                <th>Coupon ID#</th>
-                <td colspan="3">%s</td>
-                <th>UPC</th>
-                <td>%s</td>
-            </tr>
-            <tr>
-                <th>Label</th>
-                <td colspan=3><input type=text name=description value="%s" size=30 /></td>
-                <th>Limit</th>
-                <td><input type=text name=limit size=3 value="%s" /></td>
-            </tr>
-            <tr>
-                <th>Begins</th>
-                <td colspan="3">
-                    <input type=text name=starts value="%s" size=12 
-                        id="starts"
-                </td>
-                <th>Expires</th>
-                <td>
-                    <input type=text name=expires value="%s" size=12 
-                        id="expires"
-                </td>
-            </tr>
-            <tr>
-                <th><label for="memberonly">Member-only</label></th>
-                <td><input type=checkbox name=memberonly id=memberonly value="1" %s /></td>
-                <th align="right"><label for="autoapply">Auto-apply</label></th>
-                <td><input type=checkbox name=autoapply id=autoapply value="1" %s /></td>
-                <th>Department</th><td><select name=dept>',
+        $ret .= sprintf('
+            <div class="row">
+                <div class="col-sm-1 text-right">Coupon ID#</div>
+                <div class="col-sm-3 text-left">%s</div>
+                <div class="col-sm-1 text-right">UPC</div>
+                <div class="col-sm-3 text-left">%s</div>
+            </div>
+            <div class="row">
+                <label class="col-sm-1 control-label">Label</label>
+                <div class="col-sm-3"><input type=text name=description value="%s" class="form-control" /></div>
+                <label class="col-sm-1 control-label">Limit</label>
+                <div class="col-sm-3"><input type=text name=limit class="form-control" value="%s" /></div>
+            </div>
+            <div class="row">
+                <label class="col-sm-1 control-label">Begins</label>
+                <div class="col-sm-3">
+                    <input type=text name=starts value="%s" 
+                        id="starts" class="form-control" />
+                </div>
+                <label class="col-sm-1 control-label">Expires</label>
+                <div class="col-sm-3">
+                    <input type=text name=expires value="%s" 
+                        id="expires" class="form-control" />
+                </div>
+            </div>
+            <div class="row">
+                <label class="col-sm-2">Member Only
+                <input type=checkbox name=memberonly id=memberonly value="1" %s />
+                </label>
+                <label class="col-sm-2">Auto-apply
+                <input type=checkbox name=autoapply id=autoapply value="1" %s />
+                </label>
+                <label class="col-sm-1 control-label">Department</label>
+                <div class="col-sm-3"><select class="form-control" name=dept>',
             $cid,"00499999".str_pad($cid,5,'0',STR_PAD_LEFT),$description,
             $limit,
             $starts, $expires,
@@ -265,7 +285,8 @@ class HouseCouponEditor extends FanniePage
             if ($k == $dept) $ret .= " selected";
             $ret .= ">$k $v</option>";
         }
-        $ret .= "</select></td></tr>";
+        $ret .= "</select></div>
+            </div>";
 
         $mts = array(
             'Q'=>'Quantity (at least)',
@@ -277,16 +298,20 @@ class HouseCouponEditor extends FanniePage
             '$+'=>'Total (more than $)',
             ''=>'No minimum'
         );
-        $ret .= "<tr><th>Minimum Type</th><td colspan=3>
-            <select name=mtype>";
+        $ret .= '<div class="row">
+            <label class="col-sm-1 control-label">Minimum Type</label>
+            <div class="col-sm-3">
+            <select class="form-control" name=mtype>';
         foreach($mts as $k=>$v){
             $ret .= "<option value=\"$k\"";
             if ($k == $mType) $ret .= " selected";
             $ret .= ">$v</option>";
         }
-        $ret .= "</select></td><th>Minimum value</th>
-            <td><input type=text name=mval value=\"$mVal\"
-            size=5 /></td></tr>";
+        $ret .= "</select></div>
+            <label class=\"col-sm-1 control-label\">Minimum value</label>
+            <div class=\"col-sm-3\"><input class=\"form-control\" type=text name=mval value=\"$mVal\"
+             /></div>
+             </div>";
 
         $dts = array('Q'=>'Quantity Discount',
             'P'=>'Set Price Discount',
@@ -300,29 +325,35 @@ class HouseCouponEditor extends FanniePage
             '%C'=>'Percent Discount (Capped)',
             'AD'=>'All Discount (Department)',
         );
-        $ret .= "<tr><th>Discount Type</th><td colspan=3>
-            <select name=dtype>";
+        $ret .= '<div class="row">
+            <label class="col-sm-1 control-label">Discount Type</label>
+            <div class="col-sm-3">
+            <select class="form-control" name=dtype>';
         foreach($dts as $k=>$v){
             $ret .= "<option value=\"$k\"";
             if ($k == $dType) $ret .= " selected";
             $ret .= ">$v</option>";
         }
-        $ret .= "</select></td><th>Discount value</th>
-            <td><input type=text name=dval value=\"$dVal\"
-            size=5 /></td></tr>";
+        $ret .= "</select></div>
+            <label class=\"col-sm-1 control-label\">Discount value</label>
+            <div class=\"col-sm-3\"><input type=text name=dval value=\"$dVal\"
+            class=\"form-control\" /></div>
+            </div>";
 
-        $ret .= "</table>";
-        $ret .= "<br /><input type=submit name=submit_save value=Save />";
-        $ret .= ' | <input type="submit" value="Back" onclick="location=\'HouseCouponEditor.php\';return false;" />';
+        $ret .= "<br /><button type=submit name=submit_save value=Save class=\"btn btn-default\">Save</button>";
+        $ret .= ' | <button type="button" value="Back" class="btn btn-default" 
+            onclick="location=\'HouseCouponEditor.php\';return false;">Back</button>';
 
-        if ($mType == "Q" || $mType == "Q+" || $mType == "M"){
+        if ($mType == "Q" || $mType == "Q+" || $mType == "M") {
             $ret .= "<hr />";
-            $ret .= "<b>Add UPC</b>: <input type=text size=13 name=new_upc />
-            <select name=newtype><option>BOTH</option><option>QUALIFIER</option>
-            <option>DISCOUNT</option></select>
-            <input type=submit name=submit_add_upc value=Add />";
-            $ret .= "<br /><br />";
-            $ret .= "<table cellspacing=0 cellpadding=4 border=1>
+            $ret .= '<div class="form-group form-inline col-sm-6">
+                <label class="control-label">Add UPC</label>
+                <input type=text class="form-control" name=new_upc />
+                <select class="form-control"name=newtype><option>BOTH</option><option>QUALIFIER</option>
+                    <option>DISCOUNT</option></select>
+                <button type=submit name=submit_add_upc value=Add class="btn btn-default">Add</button>
+                </div>';
+            $ret .= "<table class=\"table\"
             <tr><th colspan=4>Items</th></tr>";
             $query = $dbc->prepare_statement("SELECT h.upc,p.description,h.type FROM
                 houseCouponItems as h LEFT JOIN products AS
@@ -335,21 +366,23 @@ class HouseCouponEditor extends FanniePage
                     $row[0],$row[1],$row[2],$row[0]);
             }
             $ret .= "</table>";
-            $ret .= "<br />";
-            $ret .= "<input type=submit name=submit_delete_upc value=\"Delete Selected Items\" />";
-        } else if ($mType == "D" || $mType == "D+" || $dType == '%D'){
+            $ret .= "<p><button type=submit name=submit_delete_upc value=\"1\"
+                class=\"btn btn-default\">Delete Selected Items</button></p>";
+        } elseif ($mType == "D" || $mType == "D+" || $dType == '%D') {
             $ret .= "<hr />";
-            $ret .= "<b>Add Dept</b>: <select name=new_dept>";
+            $ret .= '<div class="form-group form-inline col-sm-6">
+                <label class="control-label">Add Dept</label>
+                <select class="form-control" name=new_dept>';
             foreach($depts as $k=>$v){
                 $ret .= "<option value=\"$k\"";
                 $ret .= ">$k $v</option>";
             }   
             $ret .= "</select> ";
-            $ret .= "<select name=newtype><option>BOTH</option>
-            </select>
-            <input type=submit name=submit_add_dept value=Add />";
-            $ret .= "<br /><br />";
-            $ret .= "<table cellspacing=0 cellpadding=4 border=1>
+            $ret .= '<select class="form-control" name=newtype><option>BOTH</option>
+                </select>
+                <button type=submit name=submit_add_dept value=Add class="btn btn-default">Add</button>
+                </div>';
+            $ret .= "<table class=\"table\">
             <tr><th colspan=4>Items</th></tr>";
             $query = $dbc->prepare_statement("SELECT h.upc,d.dept_name,h.type FROM
                 houseCouponItems as h LEFT JOIN departments as d
@@ -362,8 +395,8 @@ class HouseCouponEditor extends FanniePage
                     $row[0],$row[1],$row[2],$row[0]);
             }
             $ret .= "</table>";
-            $ret .= "<br />";
-            $ret .= "<input type=submit name=submit_delete_dept value=\"Delete Selected Delete\" />";
+            $ret .= "<p><button type=submit name=submit_delete_dept value=\"1\"
+                class=\"btn btn-default\">Delete Selected Departments</button></p>";
         }
 
         $this->add_onload_command("\$('#starts').datepicker();\n");
