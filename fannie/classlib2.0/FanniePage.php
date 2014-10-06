@@ -408,7 +408,7 @@ class FanniePage
             }
             
             $js_content = $this->javascriptContent();
-            if (!empty($js_content) || !empty($this->onload_commands)) {
+            if (!empty($js_content) || !empty($this->onload_commands) || $this->themed) {
                 echo '<script type="text/javascript">';
                 echo $js_content;
                 echo "\n\$(document).ready(function(){\n";
