@@ -415,6 +415,18 @@ class FanniePage
                 foreach($this->onload_commands as $oc)
                     echo $oc."\n";
                 echo "});\n";
+                if ($this->themed) {
+                    ?>
+function showBootstrapAlert(selector, type, msg)
+{
+    var alertbox = '<div class="alert alert-' + type + '" role="alert">';
+    alertbox += '<button type="button" class="close" data-dismiss="alert">';
+    alertbox += '<span>&times;</span></button>';
+    alertbox += msg + '</div>';
+    $(selector).append(alertbox);
+}
+                    <?php
+                }
                 echo '</script>';
             }
 
