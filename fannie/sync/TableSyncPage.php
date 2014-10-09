@@ -40,6 +40,7 @@ class TableSyncPage extends FanniePage {
 
     protected $title = "Fannie : Sync Data";
     protected $header = "Syncing data";
+    public $themed = true;
 
     private $errors = array();
     private $results = '';
@@ -63,7 +64,7 @@ class TableSyncPage extends FanniePage {
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $this->results = "<p style='font-family:Arial; font-size:1.0em;'>Syncing table $table <ul>";
+        $this->results = "<p>Syncing table $table <ul>";
 
         if (file_exists("special/$table.php")){
             ob_start();
@@ -105,7 +106,7 @@ class TableSyncPage extends FanniePage {
     function body_content(){
         $ret = '';
         if (count($this->errors) > 0){
-            $ret .= '<blockquote style="border: solid 1px red; padding: 4px;"><ul>';    
+            $ret .= '<blockquote><ul>';
             foreach($this->errors as $e)
                 $ret .= '<li>'.$e.'</li>';  
             $ret .= '</ul><a href="SyncIndexPage.php">Try Again</a></blockquote>';
