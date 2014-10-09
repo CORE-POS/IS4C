@@ -34,6 +34,7 @@ class LogViewer extends FanniePage
 	protected $auth_classes = array('admin');
 
     public $description = '[Log Viewer] shows Fannie\'s log files through the web.';
+    public $themed = true;
 
 	private $mode = 'list';
 
@@ -135,9 +136,11 @@ class LogViewer extends FanniePage
 				$this->add_onload_command($highlite_cmd);
 			}
 		
-			$ret .= '<pre class="highlight" style="background: #ccc; border: solid 1px black; padding: 1em;">';
+            $ret .= '<code>';
+			$ret .= '<pre class="highlight">';
 			$ret .= $log;
 			$ret .= '</pre>';
+            $ret .= '</code>';
 		}
 		
 		return $ret;
