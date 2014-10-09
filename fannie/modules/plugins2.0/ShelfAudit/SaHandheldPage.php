@@ -289,7 +289,7 @@ onfocus="paint_focus('upc_in');"
                 echo $this->current_item_data['desc'];
                 echo '</span>';
                 echo '<br />';
-                printf('<input type="number" size="3" value="%d" %s
+                printf('<input type="number" size="3" value="%.2f" %s
                     onfocus="paint_focus(\'cur_qty\');$(this).select();" 
                     onkeyup="qty_typed(event);" id="cur_qty" />
                     <input type="hidden" id="cur_upc" value="%s" />',

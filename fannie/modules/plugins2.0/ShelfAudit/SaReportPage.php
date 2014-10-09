@@ -123,6 +123,8 @@ class SaReportPage extends FanniePage {
             CASE WHEN d.dept_no IS NULL THEN \'n/a\' ELSE d.dept_no END as dept_no,
             CASE WHEN d.salesCode IS NULL THEN \'n/a\' ELSE d.salesCode END as salesCode,
 
+            CASE WHEN p.cost = 0 AND v.cost IS NOT NULL THEN v.cost ELSE p.cost END as cost,
+
             p.normal_price as normal_retail,
 
             CASE WHEN p.discounttype > 0 THEN p.special_price
@@ -247,24 +249,25 @@ table tr:hover {
     }
 
     function csv_content(){
-        $ret = "UPC,Description,Account#,Dept#,\"Dept Name\",Qty,Normal Retail,Current Retail,Status,Total\r\n";
+        $ret = "UPC,Description,Account#,Dept#,\"Dept Name\",Qty,Cost,Unit Cost Total,Normal Retail,Current Retail,Status,Current Retail Total\r\n";
         $totals = array();
         foreach($this->scans as $row){
             $ret .= sprintf("%s,\"%s\",%s,%s,%s,%.2f,%.2f,%.2f,%s,%.2f\r\n",
                 $row['upc'],$row['description'],$row['salesCode'],$row['dept_no'],
-                $row['dept_name'],$row['quantity'],$row['normal_retail'],
-                $row['actual_retail'],
+                $row['dept_name'],$row['quantity'],$row['cost'], ($row['quantity']*$row['cost']),
+                $row['normal_retail'], $row['actual_retail'],
                 $row['retailstatus'],($row['quantity']*$row['normal_retail'])
             );
             if (!isset($totals[$row['salesCode']]))
-                $totals[$row['salesCode']] = array('qty'=>0.0,'ttl'=>0.0);
+                $totals[$row['salesCode']] = array('qty'=>0.0,'ttl'=>0.0,'costTtl'=>0.0);
             $totals[$row['salesCode']]['qty'] += $row['quantity'];
             $totals[$row['salesCode']]['ttl'] += ($row['quantity']*$row['normal_retail']);
+            $totals[$row['salesCode']]['costTtl'] += ($row['quantity']*$row['cost']);
         }
         $ret .= ",,,,,,,,\r\n";
         foreach($totals as $code => $info){
-            $ret .= sprintf("TOTAL,,%s,,,%.2f,,,%.2f\r\n",
-                    $code, $info['qty'], $info['ttl']);
+            $ret .= sprintf("TOTAL,,%s,,,%.2f,,%.2f,,,%.2f\r\n",
+                    $code, $info['qty'], $info['costTtl'], $info['ttl']);
         }
         return $ret;
     }
@@ -312,10 +315,12 @@ table tr:hover {
                     <th>UPC</th>
                     <th>Description</th>
                     <th>Qty</th>
-                    <th>Each (Normal)</th>
-                    <th>Each (Current)</th>
+                    <th>Unit Cost</th>
+                    <th>Total Cost</th>
+                    <th>Retail (Normal)</th>
+                    <th>Retail (Current)</th>
                     <th>Sale</th>
-                    <th>Total</th>
+                    <th>Total Retail</th>
                     <th>Delete</th>
                 </tr>
             </thead>
@@ -325,6 +330,8 @@ table tr:hover {
                     <td id="col_b">'.$row['upc'].'</td>
                     <td id="col_c">'.$row['description'].'</td>
                     <td id="col_d" class="right">'.$row['quantity'].'</td>
+                    <td id="col_e" class="right">'.money_format('%.2n', $row['cost']).'</td>
+                    <td id="col_h" class="right">'.money_format('%!.2n', ($row['quantity']*$row['cost'])).'</td>
                     <td id="col_e" class="right">'.money_format('%.2n', $row['normal_retail']).'</td>
                     <td id="col_f" class="right">'.money_format('%.2n', $row['atual_retail']).'</td>
                     <td id="col_g">'.(($row['retailstatus'])?$row['retailstatus']:'&nbsp;').'</td>
@@ -356,10 +363,12 @@ table tr:hover {
                     <th>UPC</th>
                     <th>Description</th>
                     <th>Qty</th>
-                    <th>Each (Normal)</th>
-                    <th>Each (Current)</th>
+                    <th>Unit Cost</th>
+                    <th>Total Cost</th>
+                    <th>Retail (Normal)</th>
+                    <th>Retail (Current)</th>
                     <th>Sale</th>
-                    <th>Total</th>
+                    <th>Total Retail</th>
                     <th>Delete</th>
                 </tr>
             </thead>
@@ -369,6 +378,8 @@ table tr:hover {
                     <td id="col_b">'.$row['upc'].'</td>
                     <td id="col_c">'.$row['description'].'</td>
                     <td id="col_d" class="right">'.$row['quantity'].'</td>
+                    <td id="col_e" class="right">'.money_format('%.2n', $row['cost']).'</td>
+                    <td id="col_h" class="right">'.money_format('%!.2n', ($row['quantity']*$row['cost'])).'</td>
                     <td id="col_e" class="right">'.money_format('%.2n', $row['normal_retail']).'</td>
                     <td id="col_f" class="right">'.money_format('%.2n', $row['actual_retail']).'</td>
                     <td id="col_g">'.(($row['retailstatus'])?$row['retailstatus']:'&nbsp;').'</td>
@@ -386,6 +397,8 @@ table tr:hover {
                     <td id="col_b">'.$row['upc'].'</td>
                     <td id="col_c">'.$row['description'].'</td>
                     <td id="col_d" class="right">'.$row['quantity'].'</td>
+                    <td id="col_e" class="right">'.money_format('%.2n', $row['cost']).'</td>
+                    <td id="col_h" class="right">'.money_format('%!.2n', ($row['quantity']*$row['cost'])).'</td>
                     <td id="col_e" class="right">'.money_format('%.2n', $row['normal_retail']).'</td>
                     <td id="col_f" class="right">'.money_format('%.2n', $row['actual_retail']).'</td>
                     <td id="col_g">'.(($row['retailstatus'])?$row['retailstatus']:'&nbsp;').'</td>
