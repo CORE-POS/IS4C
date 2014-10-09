@@ -119,7 +119,9 @@ class FannieUploadPage extends FanniePage
             $try = $this->processUpload();
             if ($try) {
                 $this->content_function = 'basicPreview';
-                $this->window_dressing = False;
+                if (!$this->themed) {
+                    $this->window_dressing = false;
+                }
                 $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
             } else {
                 $this->content_function = 'uploadError';
@@ -513,9 +515,11 @@ class FannieUploadPage extends FanniePage
         return sprintf('
         <form id="FannieUploadForm" enctype="multipart/form-data" 
             action="%s" method="post">
+        <p>
         <input type="hidden" name="MAX_FILE_SIZE" value="2097152" />
         Filename: <input type="file" id="%s" name="%s" />
-        <input type="submit" value="Upload File" />
+        <button type="submit" class="btn btn-default">Upload File</button>
+        </p>
         </form>', $_SERVER['PHP_SELF'],
         $this->upload_field_name,
         $this->upload_field_name);
@@ -545,7 +549,11 @@ class FannieUploadPage extends FanniePage
         }
         $ret .= sprintf('<form action="%s" method="post">',$_SERVER['PHP_SELF']);
         $ret .= $this->preview_content();
-        $ret .= '<table cellpadding="4" cellspacing="0" border="1">';
+        if ($this->themed) {
+            $ret .= '<table class="table">';
+        } else {
+            $ret .= '<table cellpadding="4" cellspacing="0" border="1">';
+        }
 
         /* Read the first five rows from the file
            for a preview. Determine row width at
@@ -582,7 +590,7 @@ class FannieUploadPage extends FanniePage
         $ret .= $table . '</table>';
         $ret .= sprintf('<input type="hidden" name="upload_file_name" value="%s" />',
                 $this->upload_file_name);
-        $ret .= '<input type="submit" value="Continue" />';
+        $ret .= '<p><button type="submit" class="btn btn-default">Continue</button></p>';
         $ret .= '</form>';
 
         return $ret;
