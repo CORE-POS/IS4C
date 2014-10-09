@@ -27,84 +27,184 @@ if (!class_exists('FannieAPI')) {
 }
 include('ajax.php');
 
-class TenderEditor extends FanniePage {
+class TenderEditor extends FanniePage 
+{
 
     protected $title = "Fannie : Tenders";
     protected $header = "Tenders";
     protected $must_authenticate = True;
     protected $auth_classes = array('tenders');
     public $description = '[Tenders] creates and updates tender types.';
+    public $themed = true;
 
     function javascript_content(){
         ob_start();
         ?>
 function saveCode(val,t_id){
+    var elem = $(this);
+    var orig = this.defaultValue;
     $.ajax({url:'ajax.php',
         cache:false,
         data: 'saveCode='+val+'&id='+t_id,
         success: function(data){
-            if (data != "")
-                alert(data);
+            var timeout=1500;
+            if (data == "") {
+                data = 'Saved!';
+            } else {
+                elem.val(orig);
+                timeout = 3000;
+            }
+            elem.popover({
+                html: true,
+                content: data,
+                placement: 'auto bottom'
+            });
+            elem.popover('show');
+            setTimeout(function(){elem.popover('destroy') }, timeout);
         }   
     });
 }
 function saveName(val,t_id){
+    var elem = $(this);
+    var orig = this.defaultValue;
     $.ajax({url:'ajax.php',
         cache:false,
         data: 'saveName='+val+'&id='+t_id,
         success: function(data){
-            if (data != "")
-                alert(data);
-        }   
+            var timeout=1500;
+            if (data == "") {
+                data = 'Saved!';
+            } else {
+                elem.val(orig);
+                timeout = 3000;
+            }
+            elem.popover({
+                html: true,
+                content: data,
+                placement: 'auto bottom'
+            });
+            elem.popover('show');
+            setTimeout(function(){elem.popover('destroy') }, timeout);
+        }
     });
 }
 function saveType(val,t_id){
+    var elem = $(this);
+    var orig = this.defaultValue;
     $.ajax({url:'ajax.php',
         cache:false,
         data: 'saveType='+val+'&id='+t_id,
         success: function(data){
-            if (data != "")
-                alert(data);
+            var timeout=1500;
+            if (data == "") {
+                data = 'Saved!';
+            } else {
+                elem.val(orig);
+                timeout = 3000;
+            }
+            elem.popover({
+                html: true,
+                content: data,
+                placement: 'auto bottom'
+            });
+            elem.popover('show');
+            setTimeout(function(){elem.popover('destroy') }, timeout);
         }   
     });
 }
 function saveCMsg(val,t_id){
+    var elem = $(this);
+    var orig = this.defaultValue;
     $.ajax({url:'ajax.php',
         cache:false,
         data: 'saveCMsg='+val+'&id='+t_id,
         success: function(data){
-            if (data != "")
-                alert(data);
+            var timeout=1500;
+            if (data == "") {
+                data = 'Saved!';
+            } else {
+                elem.val(orig);
+                timeout = 3000;
+            }
+            elem.popover({
+                html: true,
+                content: data,
+                placement: 'auto bottom'
+            });
+            elem.popover('show');
+            setTimeout(function(){elem.popover('destroy') }, timeout);
         }   
     });
 }
 function saveMin(val,t_id){
+    var elem = $(this);
+    var orig = this.defaultValue;
     $.ajax({url:'ajax.php',
         cache:false,
         data: 'saveMin='+val+'&id='+t_id,
         success: function(data){
-            if (data != "")
-                alert(data);
+            var timeout=1500;
+            if (data == "") {
+                data = 'Saved!';
+            } else {
+                elem.val(orig);
+                timeout = 3000;
+            }
+            elem.popover({
+                html: true,
+                content: data,
+                placement: 'auto bottom'
+            });
+            elem.popover('show');
+            setTimeout(function(){elem.popover('destroy') }, timeout);
         }   
     });
 }
 function saveMax(val,t_id){
+    var elem = $(this);
+    var orig = this.defaultValue;
     $.ajax({url:'ajax.php',
         cache:false,
         data: 'saveMax='+val+'&id='+t_id,
         success: function(data){
-            if (data != "")
-                alert(data);
+            var timeout=1500;
+            if (data == "") {
+                data = 'Saved!';
+            } else {
+                elem.val(orig);
+                timeout = 3000;
+            }
+            elem.popover({
+                html: true,
+                content: data,
+                placement: 'auto bottom'
+            });
+            elem.popover('show');
+            setTimeout(function(){elem.popover('destroy') }, timeout);
         }   
     });
 }
 function saveRLimit(val,t_id){
+    var elem = $(this);
+    var orig = this.defaultValue;
     $.ajax({url:'ajax.php',
         cache:false,
         data: 'saveRLimit='+val+'&id='+t_id,
         success: function(data){
-            if (data != "")
-                alert(data);
+            var timeout=1500;
+            if (data == "") {
+                data = 'Saved!';
+            } else {
+                elem.val(orig);
+                timeout = 3000;
+            }
+            elem.popover({
+                html: true,
+                content: data,
+                placement: 'auto bottom'
+            });
+            elem.popover('show');
+            setTimeout(function(){elem.popover('destroy') }, timeout);
         }   
     });
 }
@@ -121,8 +221,10 @@ function addTender(){
         return ob_get_clean();
     }
 
-    function body_content(){
-        $ret = '<div id="mainDisplay">';
+    function body_content()
+    {
+        $ret = '<div id="alert-area"></div>';
+        $ret .= '<div id="mainDisplay">';
         $ret .= getTenderTable();
         $ret .= '</div>';
         return $ret;
