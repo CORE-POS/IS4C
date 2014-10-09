@@ -232,6 +232,7 @@ class BatchReport extends FannieReportPage
         echo '<input type="checkbox" name="excel" value="xls" /></label></p>';
         echo '<p><button type="submit" class="btn btn-default">Run Report</button></p>';
         echo '</div>';
+        echo '</div>';
 
         echo '</form>';
 
