@@ -36,28 +36,7 @@ class DepartmentMovementReport extends FannieReportPage
 
     public $description = '[Department Movement] lists sales for a department or group of departments over a given date range.';
     public $report_set = 'Movement Reports';
-
-    /**
-      Add a javascript function for the form
-      This could probably be re-done in jQuery and
-      just inlined directly into the form
-    */
-    function javascript_content()
-    {
-        if ($this->content_function == "form_content") {
-            ob_start();
-            ?>
-            function swap(src,dst){
-                var val = document.getElementById(src).value;
-                document.getElementById(dst).value = val;
-            }
-            <?php
-            $js = ob_get_contents();
-            ob_end_clean();
-
-            return $js;
-        }
-    }
+    public $themed = true;
 
     /**
       Lots of options on this report.
@@ -337,78 +316,88 @@ class DepartmentMovementReport extends FannieReportPage
             $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";
         }
 ?>
-<div id=main>    
-<form method = "get" action="DepartmentMovementReport.php">
-    <table border="0" cellspacing="0" cellpadding="5">
-        <tr>
-            <td><b>Select Buyer/Dept</b></td>
-            <td><select id=buyer name=buyer>
+<div class="well">Selecting a Buyer/Dept overrides Department Start/Department End, but not Date Start/End.
+        To run reports for a specific department(s) leave Buyer/Dept or set it to 'blank'
+</div>
+<form method = "get" action="DepartmentMovementReport.php" class="form-horizontal">
+<div class="row">
+    <div class="col-sm-5">
+        <div class="form-group">
+            <label class="control-label col-sm-4">Select Buyer/Dept</label>
+            <div class="col-sm-8">
+            <select id=buyer name=buyer class="form-control">>
                <option value=0 >
                <?php echo $deptSubList; ?>
                <option value=-2 >All Retail</option>
                <option value=-1 >All</option>
-               </select>
-             </td>
-            <td><b>Send to Excel</b></td>
-            <td><input type=checkbox name=excel id=excel value=1>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <?php $ret=FormLib::storePicker();echo $ret['html']; ?>
-            </td>
-        </tr>
-        <tr>
-            <td colspan=5><i>Selecting a Buyer/Dept overrides Department Start/Department End, but not Date Start/End.
-            To run reports for a specific department(s) leave Buyer/Dept or set it to 'blank'</i></td>
-        </tr>
-        <tr> 
-            <td> <p><b>Department Start</b></p>
-            <p><b>End</b></p></td>
-            <td> <p>
-             <select id=deptStartSel onchange="swap('deptStartSel','deptStart');">
-            <?php echo $deptsList ?>
+           </select>
+           </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-4">Department Start</label>
+            <div class="col-sm-6">
+            <select id=deptStartSel onchange="$('#deptStart').val(this.value);" class="form-control col-sm-6">
+                <?php echo $deptsList ?>
             </select>
-            <input type=text name=deptStart id=deptStart size=5 value=1 />
-            </p>
-            <p>
-            <select id=deptEndSel onchange="swap('deptEndSel','deptEnd');">
-            <?php echo $deptsList ?>
-            </select>
-            <input type=text name=deptEnd id=deptEnd size=5 value=1 />
-            </p></td>
-
-             <td>
-            <p><b>Date Start</b> </p>
-                 <p><b>End</b></p>
-               </td>
-                    <td>
-                     <p>
-                       <input type=text id=date1 name=date1 />
-                       </p>
-                       <p>
-                        <input type=text id=date2 name=date2 />
-                 </p>
-               </td>
-
-        </tr>
-        <tr> 
-            <td><b>Sum movement by?</b></td>
-            <td> <select name="sort" size="1">
-            <option>PLU</option>
-            <option>Date</option>
-            <option>Department</option>
-            <option>Weekday</option>
-            </select> 
-            </td>
-            <td colspan=2 rowspan=2>
+            </div>
+            <div class="col-sm-2">
+            <input type=number name=deptStart id=deptStart size=5 value=1 class="form-control col-sm-2" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-4">Department End</label>
+            <div class="col-sm-6">
+                <select id=deptEndSel onchange="$('#deptEnd').val(this.value);" class="form-control">
+                    <?php echo $deptsList ?>
+                </select>
+            </div>
+            <div class="col-sm-2">
+                <input type=number name=deptEnd id=deptEnd size=5 value=1 class="form-control" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Sum movement by?</label>
+            <div class="col-sm-8">
+                <select name="sort" class="form-control">
+                    <option>PLU</option>
+                    <option>Date</option>
+                    <option>Department</option>
+                <option>Weekday</option>
+                </select> 
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-4">Save to Excel
+                <input type=checkbox name=excel id=excel value=1>
+            </label>
+            <label class="col-sm-4 control-label">Store</label>
+            <div class="col-sm-4">
+                <?php $ret=FormLib::storePicker();echo $ret['html']; ?>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-5">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Start Date</label>
+            <div class="col-sm-8">
+                <input type=text id=date1 name=date1 class="form-control" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-4 control-label">End Date</label>
+            <div class="col-sm-8">
+                <input type=text id=date2 name=date2 class="form-control" required />
+            </div>
+        </div>
+        <div class="form-group">
             <?php echo FormLib::date_range_picker(); ?>                            
-            </td>
-        </tr>
-        <tr> 
-            <td> <input type=submit name=submit value="Submit"> </td>
-            <td> <input type=reset name=reset value="Start Over"> </td>
-            <td>&nbsp;</td>
-            <td>&nbsp;</td>
-        </tr>
-    </table>
+        </div>
+    </div>
+</div>
+    <p>
+        <button type=submit name=submit value="Submit" class="btn btn-default">Submit</button>
+        <button type=reset name=reset class="btn btn-default">Start Over</button>
+    </p>
 </form>
 <?php
         $this->add_onload_command('$(\'#date1\').datepicker();');
@@ -418,4 +407,3 @@ class DepartmentMovementReport extends FannieReportPage
 
 FannieDispatch::conditionalExec(false);
 
-?>

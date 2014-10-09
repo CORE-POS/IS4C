@@ -185,7 +185,7 @@ class FormLib
         $stores = new StoresModel($dbc);
         $current = FormLib::get($field_name, 0);
         $labels = array(0 => _('All Stores'));
-        $ret = '<select name="' . $field_name . '">';
+        $ret = '<select name="' . $field_name . '" class="form-control">';
         $ret .= '<option value="0">' . $labels[0] . '</option>';
         foreach($stores->find('storeID') as $store) {
             $ret .= sprintf('<option %s value="%d">%s</option>',
