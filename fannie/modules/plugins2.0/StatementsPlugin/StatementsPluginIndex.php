@@ -37,6 +37,7 @@ class StatementsPluginIndex extends FannieRESTfulPage
         $this->__routes[] = 'get<equityTab>';
         $this->__routes[] = 'get<arTab>';
         $this->__routes[] = 'get<termTab>';
+        $this->__routes[] = 'post<csv>';
 
         return parent::preprocess();
     }
@@ -58,6 +59,23 @@ class StatementsPluginIndex extends FannieRESTfulPage
     public function get_termTab_handler()
     {
         echo $this->termForm();
+
+        return false;
+    }
+
+    public function post_csv_handler()
+    {
+        $json = json_decode($this->csv);
+
+        header('Content-Type: application/ms-excel');
+        header('Content-Disposition: attachment; filename="'.$json->name.'.csv"');
+        
+        foreach ($json->records as $record) {
+            for ($i=0; $i<count($record); $i++) {
+                echo '"' . $record[$i] . '"';
+                echo ($i < count($record)-1) ? ',' : "\r\n"; 
+            }
+        }
 
         return false;
     }
@@ -114,6 +132,7 @@ class StatementsPluginIndex extends FannieRESTfulPage
         $ret .= '<button type="button" onclick="$(\'#welcomeAccounts option\').each(function(){$(this).attr(\'selected\', \'selected\');});
                     return false;">Select All</button>';
         $ret .= '<button type="submit">Print</button>';
+        $ret .= '<button type="button" onclick="exportCSV(\'welcome\', \'#welcomeAccounts\');">Export List</button>';
 
         $ret .= '<br />';
 
@@ -165,6 +184,7 @@ class StatementsPluginIndex extends FannieRESTfulPage
         $ret .= '<button type="button" onclick="$(\'#reminderAccounts option\').each(function(){$(this).attr(\'selected\', \'selected\');});
                     return false;">Select All</button>';
         $ret .= '<button type="submit">Print</button>';
+        $ret .= '<button type="button" onclick="exportCSV(\'reminder\', \'#reminderAccounts\');">Export List</button>';
 
         $ret .= '<br />';
 
@@ -229,6 +249,7 @@ class StatementsPluginIndex extends FannieRESTfulPage
         $ret .= '<button type="button" onclick="$(\'#arAccounts option\').each(function(){$(this).attr(\'selected\', \'selected\');});
                     return false;">Select All</button>';
         $ret .= '<button type="submit">Print</button>';
+        $ret .= '<button type="button" onclick="exportCSV(\'ar_statements\', \'#arAccounts\');">Export List</button>';
 
         $ret .= '<br />';
 
@@ -272,6 +293,7 @@ class StatementsPluginIndex extends FannieRESTfulPage
         $ret .= '<button type="button" onclick="$(\'#termAccounts option\').each(function(){$(this).attr(\'selected\', \'selected\');});
                     return false;">Select All</button>';
         $ret .= '<button type="submit">Print</button>';
+        $ret .= '<button type="button" onclick="exportCSV(\'term_letters\', \'#termAccounts\');">Export List</button>';
 
         $ret .= '<br />';
 
@@ -281,6 +303,33 @@ class StatementsPluginIndex extends FannieRESTfulPage
         $ret .= '</form>';
 
         return $ret;
+    }
+
+    public function javascript_content()
+    {
+        ob_start();
+        ?>
+        function exportCSV(name, select_elem)
+        {
+            var data = []
+            $(select_elem+' option').each(function(){
+                var record = [
+                    $(this).val(),
+                    $(this).html()
+                ];
+                data[data.length] = record;
+            });
+            var obj = {
+                name: name+".csv",
+                records: data
+            };
+            var form = $('<form method="post"/>');
+            var field = $('<input name="csv" type="hidden"/>').val(JSON.stringify(obj));
+            form.append(field);
+            form.appendTo('body').submit();
+        }
+        <?php
+        return ob_get_clean();
     }
 
 }

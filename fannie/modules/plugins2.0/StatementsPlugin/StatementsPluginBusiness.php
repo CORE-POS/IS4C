@@ -122,15 +122,17 @@ class StatementsPluginBusiness extends FannieRESTfulPage
 
         $stateDate = date("d F, Y",mktime(0,0,0,date('n'),0,date('Y')));
 
-        $pdf = new FPDF();
+        $pdf = new FPDF('P', 'mm', 'Letter');
+        $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
+        $pdf->SetAutoPageBreak(false);
 
         //Meat of the statement
         $rowNum=0;
         while ($memberW = $dbc->fetch_row($memberR)) {
             $pdf->AddPage();
-            $pdf->Image('letterhead_bw.png',10,10, 50);
-            $pdf->SetFont('Arial','','12');
-            $pdf->SetLeftMargin(65);
+            $pdf->Image('new_letterhead_horizontal.png',5,10, 200);
+            $pdf->SetFont('Gill','','12');
+            $pdf->Ln(45);
 
             $pdf->Cell(10,5,sprintf("Invoice #: %s-%s",$memberW['card_no'],date("ymd")),0,1,'L');
             $pdf->Cell(10,5,$stateDate,0);
@@ -171,12 +173,10 @@ class StatementsPluginBusiness extends FannieRESTfulPage
             $priorBalance = is_array($priorW) ? $priorW['priorBalance'] : 0;
 
             $indent = 10;
-            $columns = array(50, 25, 20, 20);
+            $columns = array(75, 35, 30, 30);
             $pdf->Cell($indent,8,'');
             $pdf->SetFillColor(200);
-            $pdf->SetFont('Arial','B','12');   
             $pdf->Cell(40,8,'Balance Forward',0,0,'L',1);
-            $pdf->SetFont('Arial','','12');   
             $pdf->Cell(25,8,'$ ' . sprintf("%.2f",$priorBalance),0,0,'L');
             $pdf->Ln(8);
  
@@ -238,9 +238,7 @@ class StatementsPluginBusiness extends FannieRESTfulPage
             $pdf->Ln(15);
             $pdf->Cell($indent,8,'');
             $pdf->SetFillColor(200);
-            $pdf->SetFont('Arial','B','14');   
             $pdf->Cell(35,8,'Amount Due',0,0,'L',1);
-            $pdf->SetFont('Arial','','14');   
             $pdf->Cell(25,8,'$ ' . sprintf("%.2f",$memberW['balance']),0,0,'L');
 
             if ($gazette) {
