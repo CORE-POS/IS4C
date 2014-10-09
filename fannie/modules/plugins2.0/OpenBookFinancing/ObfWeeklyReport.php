@@ -774,15 +774,21 @@ class ObfWeeklyReport extends FannieReportPage
         ');
 
         $args1 = array(
-            date('Y-01-01 00:00:00', $end_ts),
+            date('Y-07-01 00:00:00', $end_ts),
             date('Y-m-d 23:59:59', $end_ts),
         );
+        if (date('n', $end_ts) < 7) {
+            $args1[0] = (date('Y', $end_ts) - 1) . '-07-01 00:00:00';
+        }
 
         $last_year = mktime(0, 0, 0, date('n',$end_ts), date('j',$end_ts), date('Y',$end_ts)-1);
         $args2 = array(
-            date('Y-01-01 00:00:00', $last_year),
+            date('Y-07-01 00:00:00', $last_year),
             date('Y-m-d 23:59:59', $last_year),
         );
+        if (date('n', $last_year) < 7) {
+            $args2[0] = (date('Y', $last_year) - 1) . '-07-01 00:00:00';
+        }
 
         $args3 = array(
             date('Y-m-d 00:00:00', $start_ts),
