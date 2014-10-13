@@ -28,11 +28,11 @@ $header = "Patronage Tools";
 include($FANNIE_ROOT.'src/header.html');
 ?>
 <ul>
-<li><a href="working.php">Create working table</a></li>
-<li><a href="gross.php">Calculate gross purchases</a></li>
-<li><a href="rewards.php">Calculate rewards</a></li>
-<li><a href="net.php">Update net purchases</a></li>
-<li><a href="report.php">Report of loaded info</a></li>
+<li><a href="CreatePatronageSnapshot.php">Create working table</a></li>
+<li><a href="PatronageGrossPurchases.php">Calculate gross purchases</a></li>
+<li><a href="PatronageCalcRewards.php">Calculate rewards</a></li>
+<li><a href="PatronageCalcNet.php">Update net purchases</a></li>
+<li><a href="DraftPatronageReport.php">Report of loaded info</a></li>
 <li><a href="upload.php">Upload rebates</a></li>
 </ul>
 <?php

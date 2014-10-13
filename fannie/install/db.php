@@ -62,7 +62,7 @@ function create_if_needed($con,$dbms,$db_name,$table_name,$stddb){
     columns
 */
 function duplicate_structure($dbms,$table1,$table2){
-    if (strstr($dbms,"MYSQL")){
+    if (strstr($dbms,"MYSQL") || $dbms == 'PDO'){
         return "CREATE TABLE `$table2` LIKE `$table1`";
     }
     elseif ($dbms == "MSSQL"){

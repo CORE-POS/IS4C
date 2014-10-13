@@ -24,22 +24,38 @@ include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
-if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
-    return;
+
+class PatronageCalcNet extends FannieRESTfulPage
+{
+    protected $title = "Fannie :: Patronage Tools";
+    protected $header = "Update Net Purchases";
+    public $themed = true;
+
+    public function get_view()
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+
+        ob_start();
+        $q = $dbc->prepare_statement("UPDATE patronage_workingcopy SET
+            net_purch = purchase + discounts + rewards");
+        $r = $dbc->exec_statement($q);
+        if ($r) {
+            echo '<div class="alert alert-success">';
+            echo 'Net purchases updated';
+            echo '</div>';
+        } else {
+            echo '<div class="alert alert-danger">';
+            echo 'An error occurred!';
+            echo '</div>';
+        }
+
+        echo '<br /><br />';
+        echo '<a href="index.php">Patronage Menu</a>';
+
+        return ob_get_clean();
+    }
 }
-$dbc = FannieDB::get($FANNIE_OP_DB);
 
-$page_title = "Fannie :: Patronage Tools";
-$header = "Update Net Purchases";
+FannieDispatch::conditionalExec();
 
-include($FANNIE_ROOT.'src/header.html');
-
-$q = $dbc->prepare_statement("UPDATE patronage_workingcopy SET
-    net_purch = purchase + discounts + rewards");
-$r = $dbc->exec_statement($q);
-echo '<i>Net purchases updated</i>';
-
-echo '<br /><br />';
-echo '<a href="index.php">Patronage Menu</a>';
-include($FANNIE_ROOT.'src/footer.html');
-?>
