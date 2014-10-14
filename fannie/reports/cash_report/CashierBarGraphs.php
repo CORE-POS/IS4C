@@ -128,7 +128,14 @@ class CashierBarGraphs extends FannieRESTfulPage
         include_once('graph.php');
 
         /* clear out ony ld images */
-        exec("rm -f image_area/*cash_report*.png");
+        $dh = opendir('image_area');
+        while ( ($file = readdir($dh)) !== false ) {
+            if ($file[0] == '.') continue;
+            if (substr($file, -4) == '.png' && strstr($file, 'cash_report')) {
+                unlink('image_area/' . $file);
+            }
+        }
+        closedir($dh);
 
         /* generate a reasonably unique session key */
         $session_key = '';
