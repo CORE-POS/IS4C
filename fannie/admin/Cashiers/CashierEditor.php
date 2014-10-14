@@ -34,6 +34,7 @@ class CashierEditor extends FanniePage {
     protected $auth_classes = array('editcashiers');
 
     public $description = '[Edit Cashier] is for managing existing cashiers.';
+    public $themed = true;
 
     private $messages = '';
 
@@ -41,7 +42,7 @@ class CashierEditor extends FanniePage {
         global $FANNIE_OP_DB;
         $emp_no = FormLib::get_form_value('emp_no',0);
 
-        if (FormLib::get_form_value('fname') !== ''){
+        if (FormLib::get_form_value('fname') !== '') {
             $fn = FormLib::get_form_value('fname');
             $ln = FormLib::get_form_value('lname');
             $passwd = FormLib::get_form_value('passwd');
@@ -58,14 +59,21 @@ class CashierEditor extends FanniePage {
             $employee->frontendsecurity($fes);
             $employee->backendsecurity($fes);
             $employee->EmpActive($active);
-            $employee->save();
+            $saved = $employee->save();
 
-            $this->messages = "Cashier Updated. <a href=ViewCashiersPage.php>Back to List of Cashiers</a>";
+            if ($saved) {
+                $message = "Cashier Updated. <a href=ViewCashiersPage.php>Back to List of Cashiers</a>";
+                $this->add_onload_command("showBootstrapAlert('#alert-area', 'success', '$message');\n");
+            } else {
+                $this->add_onload_command("showBootstrapAlert('#alert-area', 'danger', 'Error saving cashier');\n");
+            }
         }
-        return True;
+
+        return true;
     }
 
-    function body_content(){
+    function body_content()
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $ret = '';
@@ -81,27 +89,38 @@ class CashierEditor extends FanniePage {
         $employee->emp_no($emp_no);
         $employee->load();
 
-        $ret .= "<form action=CashierEditor.php method=post>";
-        $ret .= "<table cellspacing=4 cellpadding=4>";
-        $ret .= "<tr><th>First Name</th><td><input type=text name=fname value=\"".$employee->FirstName()."\" /></td>";
-        $ret .= "<th>Last Name</th><td><input type=text name=lname value=\"".$employee->LastName()."\" /></td></tr>";
-        $ret .= "<tr><th>Password</th><td><input type=text name=passwd value=\"".$employee->CashierPassword()."\" /></td>";
-        $ret .= "<th>Privileges</th><td><select name=fes>";
-        if ($employee->frontendsecurity() <= 20){
-            $ret .= "<option value=20 selected>Regular</option>";
-            $ret .= "<option value=30>Manager</option>";
-        }
-        else {
-            $ret .= "<option value=20>Regular</option>";
-            $ret .= "<option value=30 selected>Manager</option>";
-        }
-        $ret .= "</select></td></tr>";
-        $ret .= "<tr><th>Active</th><td><input type=checkbox name=active ".($employee->EmpActive()==1?'checked':'')." /></td>";
-        $ret .= "<td colspan=2><input type=submit value=Save /></td></tr>";
-        $ret .= "<input type=hidden name=emp_no value=$emp_no />";
-        $ret .= "</table></form>";
+        ob_start();
+        ?>
+        <div id="alert-area"></div>
+        <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
+        <label>First Name</label>
+        <input type="text" name="fname" value="<?php echo $employee->FirstName(); ?>"
+            class="form-control" required />
+        <label>Last Name</label>
+        <input type="text" name="lname" value="<?php echo $employee->LastName(); ?>"
+            class="form-control" />
+        <label>Password</label>
+        <input type="text" name="passwd" value="<?php echo $employee->CashierPassword(); ?>"
+            class="form-control" required />
+        <label>Privileges</label>
+        <select name="fes" class="form-control">
+        <option value="20" <?php echo $employee->frontendsecurity() <= 20 ? 'selected' : '' ?>>Regular</option>
+        <option value="30" <?php echo $employee->frontendsecurity() > 20 ? 'selected' : '' ?>>Manager</option>
+        </select>
+        <label>Active
+            <input type="checkbox" name="active" class="checkbox-inline"
+                <?php echo $employee->EmpActive()==1 ? 'checked' : ''; ?> />
+        </label>
+        <p>
+            <button type="submit" class="btn btn-default">Save</button>
+            <button type="button" class="btn btn-default"
+                onclick="location='ViewCashiersPage.php';return false;">Back</button>
+        </p>
+        <input type="hidden" name="emp_no" value="<?php echo $emp_no; ?>" />
+        </form>
+        <?php
 
-        return $ret;
+        return ob_get_clean();
     }
 }
 

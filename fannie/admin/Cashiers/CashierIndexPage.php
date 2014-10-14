@@ -34,6 +34,7 @@ class CashierIndexPage extends FanniePage {
     protected $auth_classes = array('editcashiers');
 
     public $description = '[Cashier Menu] lists pages related to cashier management.';
+    public $themed = true;
 
     function body_content(){
         ob_start();

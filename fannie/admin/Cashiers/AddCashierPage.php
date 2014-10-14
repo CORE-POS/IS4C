@@ -26,7 +26,8 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class AddCashierPage extends FanniePage {
+class AddCashierPage extends FanniePage 
+{
 
     protected $title = "Fannie : Add Cashier";
     protected $header = "Add Cashier";
@@ -34,12 +35,13 @@ class AddCashierPage extends FanniePage {
     protected $auth_classes = array('editcashiers');
 
     public $description = '[Add Cashier] is the tool to create new cashiers.';
+    public $themed = true;
 
-    private $messages = '';
-
-    function preprocess(){
+    function preprocess()
+    {
         global $FANNIE_OP_DB;
-        if (FormLib::get_form_value('fname') !== ''){
+        if (FormLib::get_form_value('fname') !== '')
+        {
             $fn = FormLib::get_form_value('fname');
             $ln = FormLib::get_form_value('lname');
             $fes = FormLib::get_form_value('fes');
@@ -73,31 +75,32 @@ class AddCashierPage extends FanniePage {
             $employee->backendsecurity($fes);
             $employee->save();
 
-            $this->messages = sprintf("Cashier Created<br />Name:%s<br />Emp#:%d<br />Password:%d",
+            $message = sprintf("Cashier Created<br />Name:%s<br />Emp#:%d<br />Password:%d",
                 $fn.' '.$ln,$emp_no,$passwd);
+            $this->add_onload_command("showBootstrapAlert('#alert-area', 'success', '$message');\n");
         }
-        return True;
+
+        return true;
     }
 
-    function body_content(){
-        $ret = '';
-        if (!empty($this->messages)){
-            $ret .= '<blockquote style="background: solid 1x black; 
-                padding: 5px; margin: 5px;">';
-            $ret .= $this->messages;
-            $ret .= '</blockquote>';
-        }   
+    function body_content()
+    {
         ob_start();
         ?>
+        <div id="alert-area"></div>
         <form action="AddCashierPage.php" method="post">
-        <table cellspacing=4 cellpadding=4 border=0>
-        <tr><th>First Name</th><td><input type=text name=fname /></td></tr>
-        <tr><th>Last Name</th><td><input type=text name=lname /></td></tr>
-        <tr><th>Privileges</th><td><select name=fes>
-        <option value=20>Regular</option>
-        <option value=30>Manager</option>
-        </select></td></tr></table>
-        <input type="submit" value="Create Cashier" />
+        <label>First Name</label>
+        <input type=text name=fname required class="form-control" />
+        <label>Last Name</label>
+        <input type=text name=lname required class="form-control" />
+        <label>Privileges</label>
+        <select name="fes" class="form-control">
+            <option value=20>Regular</option>
+            <option value=30>Manager</option>
+        </select>
+        <p>
+            <button type="submit" class="btn btn-default">Create Cashier</button>
+        </p>
         </form>
         <?php
         $ret .= ob_get_clean();
