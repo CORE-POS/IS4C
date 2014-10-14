@@ -425,6 +425,23 @@ function showBootstrapAlert(selector, type, msg)
     alertbox += msg + '</div>';
     $(selector).append(alertbox);
 }
+function showBootstrapPopover(element, original_value, error_message)
+{
+    var timeout = 1500;
+    if (error_message == '') {
+        error_message = 'Saved!';
+    } else {
+        element.val(original_value);
+        timeout = 3000;
+    }
+    element.popover({
+        html: true,
+        content: error_message,
+        placement: 'auto bottom'
+    });
+    element.popover('show');
+    setTimeout(function(){element.popover('destroy');}, timeout);
+}
                     <?php
                 }
                 echo '</script>';
