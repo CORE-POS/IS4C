@@ -30,6 +30,7 @@ class MemImportIndex extends FanniePage {
     protected $header = "Import Member Information";
 
     public $description = '[Member Import Menu] lists tools for importing member information.';
+    public $themed = true;
     
     function body_content(){
         ob_start();

@@ -33,6 +33,7 @@ class MemNameNumImportPage extends FannieUploadPage
 {
     protected $title = "Fannie :: Member Tools";
     protected $header = "Import Member Names &amp; Numbers";
+    public $themed = true;
 
     public $description = '[Member Names and Numbers] loads member names and numbers. This is the
     starting point for importing existing member information. Member numbers need to be established
@@ -65,8 +66,7 @@ class MemNameNumImportPage extends FannieUploadPage
         )
     );
 
-
-    private $details = '';
+    private $stats = array('imported'=>0, 'errors'=>array());
     
     function process_file($linedata)
     {
@@ -153,9 +153,9 @@ class MemNameNumImportPage extends FannieUploadPage
         
             $insR = $model->save();
             if ($insR === false) {
-                $this->details .= "<b>Error importing member $cardno ($fn $ln)</b><br />";
+                $this->stats['errors'][] = "Error importing member $cardno ($fn $ln)";
             } else {
-                $this->details .= "Imported member $cardno ($fn $ln)<br />";
+                $this->stats['imported']++;
             }
 
             if ($pn == 1) {
@@ -179,7 +179,18 @@ class MemNameNumImportPage extends FannieUploadPage
 
     function results_content()
     {
-        return $this->details .= 'Import completed successfully';
+        $ret = '
+            <p>Import Complete</p>
+            <div class="alert alert-success">' . $this->stats['imported'] . ' records imported</div>';
+        if ($this->stats['errors']) {
+            $ret .= '<div class="alert alert-error"><ul>';
+            foreach ($this->stats['errors'] as $error) {
+                $ret .= '<li>' . $error . '</li>';
+            }
+            $ret .= '</ul></div>';
+        }
+
+        return $ret;
     }
 }
 

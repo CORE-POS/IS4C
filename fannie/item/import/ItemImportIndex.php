@@ -30,6 +30,7 @@ class ItemImportIndex extends FanniePage {
     protected $header = "Import Product Information";
 
     public $description = '[Item Import Menu] lists options for importing item related data.';
+    public $themed = true;
 
     function body_content(){
         ob_start();
