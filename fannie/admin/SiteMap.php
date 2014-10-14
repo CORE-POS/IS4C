@@ -33,6 +33,7 @@ class SiteMap extends FannieRESTfulPage
 
     public $must_authenticate = true;
     public $auth_classes = array('admin');
+    public $themed = true;
 
     public $description = '[Site Map] is a list of all known pages. It\'s very likely the page
     you\'re on right now!';
@@ -55,6 +56,7 @@ class SiteMap extends FannieRESTfulPage
             $sets[$obj->page_set][$p] = array(
                'url' => $url,
                'info' => $obj->description, 
+               'class' => $obj->themed ? 'alert-success' : 'alert-danger',
             );
         }
 
@@ -73,7 +75,8 @@ class SiteMap extends FannieRESTfulPage
                 if ($linked === $description) {
                     $linked .= ' (<a href="' . $url . '">Link</a>)';
                 }
-                $ret .= '<li>' . $linked . '</li>';
+                $ret .= '<li class="' . $sets[$set_name][$page_key]['class'] . '">' 
+                    . $linked . '</li>';
             }
             $ret .= '</ul>';
             $ret .= '</li>';
