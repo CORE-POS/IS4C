@@ -29,6 +29,7 @@ class PatronageGrossPurchases extends FannieRESTfulPage
 {
     protected $title = "Fannie :: Patronage Tools";
     protected $header = "Calculate Gross Purchases &amp; Discounts";
+    public $description = '[Patronage Totals] calculates total purchases and discounts for work-in-progress patronage data.';
     public $themed = true;
 
     protected function get_id_handler()

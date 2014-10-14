@@ -30,6 +30,8 @@ class CreatePatronageSnapshot extends FannieRESTfulPage
     protected $header = 'Create Patronage Snapshot';
     protected $title = 'Create Patronage Snapshot';
     public $themed = true;
+    public $description = '[Patronage Snapshot] extracts a year of summarized transaction data into a working table
+    to perform further patronage calculations and adjustments.';
 
     public function preprocess()
     {

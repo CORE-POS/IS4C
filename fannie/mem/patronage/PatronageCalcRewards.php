@@ -29,6 +29,7 @@ class PatronageCalcRewards extends FannieRESTfulPage
 {
     protected $title = "Fannie :: Patronage Tools";
     protected $header = "Calculate Rewards";
+    public $description = '[Patronage Rewards] calculates the rewards column for work-in-progress patronage data.';
     public $themed = true;
 
     public function get_id_handler()

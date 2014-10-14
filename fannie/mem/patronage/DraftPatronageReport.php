@@ -27,9 +27,10 @@ if (!class_exists('FannieAPI')) {
 
 class DraftPatronageReport extends FannieReportPage
 {
-
     protected $title = "Fannie :: Patronage Tools";
     protected $header = "Working Copy Report";
+
+    public $description = '[Draft Patronage Report] shows work-in-progress calculated annual patronage.';
 
     protected $content_function = 'report_content';
     protected $report_headers = array('#', 'Last Name', 'First Name', 'Active', 'Type',

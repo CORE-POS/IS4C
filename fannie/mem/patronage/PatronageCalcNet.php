@@ -29,6 +29,7 @@ class PatronageCalcNet extends FannieRESTfulPage
 {
     protected $title = "Fannie :: Patronage Tools";
     protected $header = "Update Net Purchases";
+    public $description = '[Patronage Netted] calculates net patronage for work-in-progress annual patronage data.';
     public $themed = true;
 
     public function get_view()
