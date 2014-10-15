@@ -41,6 +41,7 @@ class InstallUpdatesPage extends \COREPOS\Fannie\API\InstallPage {
     public $description = "
     Class for the Updates install and config options page.
     ";
+    public $themed = true;
 
     // This replaces the __construct() in the parent.
     public function __construct() {
@@ -103,27 +104,27 @@ class InstallUpdatesPage extends \COREPOS\Fannie\API\InstallPage {
 <?php
         if (FormLib::get_form_value('mupdate') !== ''){
             $updateClass = FormLib::get_form_value('mupdate');
-            echo '<div style="border: solid 1px #999; padding:10px;">';
+            echo '<div class="well">';
             echo 'Attempting to update model: "'.$updateClass.'"<br />';
             if (!class_exists($updateClass))
-                echo 'Error: class not found<br />';
+                echo '<div class="alert alert-danger">Error: class not found</div>';
             elseif(!is_subclass_of($updateClass, 'BasicModel'))
-                echo 'Error: not a valid model<br />';  
+                echo '<div class="alert alert-danger">Error: not a valid model</div>';
             else {
                 $updateModel = new $updateClass(null);
                 $db_name = $this->normalize_db_name($updateModel->preferredDB());
                 if ($db_name === False)
-                    echo 'Error: requested database unknown';
+                    echo '<div class="alert alert-danger">Error: requested database unknown</div>';
                 else {
                     ob_start();
                     $changes = $updateModel->normalize($db_name, BasicModel::NORMALIZE_MODE_APPLY);
                     $details = ob_get_clean();
                     if ($changes === False)
-                        echo 'An error occurred.';
+                        echo '<div class="alert alert-danger">An error occured applying the update</div>';
                     else
-                        echo 'Update complete.';
+                        echo '<div class="alert alert-success">Update complete</div>';
                     printf(' <a href="" onclick="$(\'#updateDetails\').toggle();return false;"
-                        >Details</a><pre style="display:none;" id="updateDetails">%s</pre>',
+                        >Details</a><pre class="collapse" id="updateDetails">%s</pre>',
                         $details);
                 }
             }
@@ -158,7 +159,7 @@ class InstallUpdatesPage extends \COREPOS\Fannie\API\InstallPage {
                 $reflector = new ReflectionClass($class);
                 $model_file = $reflector->getFileName();
                 printf(' <a href="" onclick="$(\'#mDetails%s\').toggle();return false;"
-                    >Details</a><br /><pre style="display:none;" id="mDetails%s">%s</pre><br />
+                    >Details</a><br /><pre class="collapse" id="mDetails%s">%s</pre><br />
                     To apply changes <a href="InstallUpdatesPage.php?mupdate=%s">Click Here</a>
                     or run the following command:<br />
                     <pre>php %s --update %s %s</pre>
@@ -169,7 +170,7 @@ class InstallUpdatesPage extends \COREPOS\Fannie\API\InstallPage {
             }
             else if ($changes < 0 || $changes === False){
                 printf(' <a href="" onclick="$(\'#mDetails%s\').toggle();return false;"
-                    >Details</a><br /><pre style="display:none;" id="mDetails%s">%s</pre></li>',
+                    >Details</a><br /><pre class="collapse" id="mDetails%s">%s</pre></li>',
                     $class, $class, $details
                 );
             }

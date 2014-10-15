@@ -52,6 +52,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
     Creates databases and tables, creates and re-creates views.
     Should be run after every upgrade.
     ";
+    public $themed = true;
 
     // This replaces the __construct() in the parent.
     public function __construct() {
@@ -60,7 +61,6 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         FanniePage::__construct();
 
         // Link to a file of CSS by using a function.
-        $this->add_css_file("../src/style.css");
         $this->add_css_file("../src/javascript/jquery-ui.css");
         $this->add_css_file("../src/css/install.css");
 
@@ -139,35 +139,35 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         if (is_writable($FILEPATH.'config.php')) {
             confset('FANNIE_ROOT',"'$FILEPATH'");
             confset('FANNIE_URL',"'$URL'");
-            echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
+            echo "<div class=\"alert alert-success\"><i>config.php</i> is writeable</div>";
             echo "<hr />";
         } else {
-            echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
-            echo "<blockquote>";
+            echo "<div class=\"alert alert-danger\"><b>Error</b>: config.php is not writeable</div>";
+            echo "<div class=\"well\">";
             echo "config.php ({$FILEPATH}config.php) is Fannie's main configuration file.";
             echo "<ul>";
             echo "<li>If this file exists, ensure it is writable by the user running PHP (see above)";
             echo "<li>If the file does not exist, copy config.dist.php ({$FILEPATH}config.dist.php) to config.php";
             echo "<li>If neither file exists, create a new config.php ({$FILEPATH}config.php) containing:";
             echo "</ul>";
-            echo "<pre style=\"font:fixed;background:#ccc;\">
+            echo "<pre>
 &lt;?php
 ?&gt;
 </pre>";
-            echo "</blockquote>";
-            echo '<input type="submit" value="Refresh this page" />';
+            echo "</div>";
+            echo '<button type="submit" class="btn btn-default">Refresh this page</button>';
             echo "</form>";
             return ob_get_clean();
         }
 
         if (!is_dir(dirname(__FILE__) . '/../vendor')) {
-            echo "<span style=\"color:red;\"><b>Warning</b>: dependencies appear to be missing.</span>";
-            echo '<blockquote>';
+            echo "<div class=\"alert alert-danger\"><b>Warning</b>: dependencies appear to be missing.</div>";
+            echo '<div class=\"well\">';
             echo 'Install <a href="https://getcomposer.org/">Composer</a> then run ';
-            echo "<pre style=\"font:fixed;background:#ccc;\">";
+            echo "<pre>";
             echo '$ cd "' . $FILEPATH . "\"\n";
             echo '$ /path/to/composer.phar update';
-            echo '</pre>';
+            echo '</div>';
         } else {
             $json = file_get_contents(dirname(__FILE__) . '/../composer.json');
             $obj = json_decode($json);
@@ -175,15 +175,15 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             foreach (get_object_vars($obj->require) as $package => $version) {
                 if (!is_dir(dirname(__FILE__) . '/../vendor/' . $package)) {
                     $missing = true;
-                    echo "<span style=\"color:red;\"><b>Warning</b>: package " . $package . " is not installed.</span><br />";
+                    echo "<div class=\"alert alert-danger\"><b>Warning</b>: package " . $package . " is not installed.</div>";
                 }
             }
             if ($missing) {
-                echo 'Install dependencies by running';
-                echo "<pre style=\"font:fixed;background:#ccc;\">";
+                echo '<div class="well">Install dependencies by running';
+                echo "<pre>";
                 echo '$ cd "' . $FILEPATH . "\"\n";
                 echo '$ /path/to/composer.phar update';
-                echo '</pre>';
+                echo '</pre></div>';
             }
         }
 
@@ -201,13 +201,13 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             $supportedTypes['MSSQL'] = 'MSSQL';
 
         if (count($supportedTypes) == 0) {
-            echo "<span style=\"color:red;\"><b>Error</b>: no database driver available</span>";
-            echo "<blockquote>";
+            echo "<div class=\"alert alert-danger\"><b>Error</b>: no database driver available</div>";
+            echo "<div class=\"well\">";
             echo 'Install at least one of the following PHP extensions: pdo_mysql, mysqli, mysql,
                 or mssql. If you installed one or more of these and are still seeing this
                 error, make sure they are enabled in your PHP configuration and try 
                 restarting your web server.';
-            echo "</blockquote>";
+            echo "</div>";
             exit;
         }
         $db_keys = array_keys($supportedTypes);
@@ -241,15 +241,14 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             . '</td></tr>';;
         echo '</table>';
 
-        echo '<br />Testing Operational DB connection:';
         $sql = db_test_connect($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
                 $FANNIE_OP_DB,$FANNIE_SERVER_USER,
                 $FANNIE_SERVER_PW);
         $createdOps = false;
         if ($sql === false) {
-            echo "<span style=\"color:red;\">Failed</span>";
+            echo "<div class=\"alert alert-danger\">Testing Operational DB connection failed</div>";
         } else {
-            echo "<span style=\"color:green;\">Succeeded</span>";
+            echo "<div class=\"alert alert-success\">Testing Operational DB connection succeeded</div>";
             $msgs = $this->create_op_dbs($sql);
             $createdOps = true;
             foreach ($msgs as $msg) {
@@ -267,15 +266,14 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             }
         }
 
-        echo '<br />Testing Transaction DB connection:';
         $sql = db_test_connect($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
                 $FANNIE_TRANS_DB,$FANNIE_SERVER_USER,
                 $FANNIE_SERVER_PW);
         $createdTrans = false;
         if ($sql === false) {
-            echo "<span style=\"color:red;\">Failed</span>";
+            echo "<div class=\"alert alert-danger\">Testing Transaction DB connection failed</div>";
         } else {
-            echo "<span style=\"color:green;\">Succeeded</span>";
+            echo "<div class=\"alert alert-success\">Testing Transaction DB connection succeeded</div>";
             $msgs = $this->create_trans_dbs($sql);
             foreach ($msgs as $msg) {
                 if ($msg['error'] == 0) continue;
@@ -316,14 +314,13 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         echo '</table>';
 
         //local archiving - set up now
-        echo "<br />Testing Transaction DB connection:";
         $sql = db_test_connect($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
                 $FANNIE_ARCHIVE_DB,$FANNIE_SERVER_USER,
                 $FANNIE_SERVER_PW);
         if ($sql === false) {
-            echo "<span style=\"color:red;\">Failed</span>";
+            echo "<div class=\"alert alert-danger\">Testing Archive DB connection failed</div>";
         } else {
-            echo "<span style=\"color:green;\">Succeeded</span>";
+            echo "<div class=\"alert alert-success\">Testing Archive DB connection succeeded</div>";
             $msgs = $this->create_archive_dbs($sql);
             foreach ($msgs as $msg) {
                 if ($msg['error'] == 0) continue;
@@ -365,8 +362,8 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
 
         $conf = 'array(';
         for($i=0; $i<$FANNIE_NUM_LANES; $i++){
-            $style = ($i == 0)?'block':'none';
-            echo "<div id=\"lanedef$i\" style=\"display:$style;\">";
+            $style = ($i == 0)?'':'class="collapse"';
+            echo "<div id=\"lanedef$i\" $style>";
             if (!isset($FANNIE_LANES[$i])) $FANNIE_LANES[$i] = array();
             $conf .= 'array(';
 
@@ -559,7 +556,9 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         echo '</table>';
         ?>
         <hr />
-        <input type=submit value="Re-run" />
+        <p>
+            <button type="submit" class="btn btn-default">Save Configuration</button>
+        </p>
         </form>
 
 

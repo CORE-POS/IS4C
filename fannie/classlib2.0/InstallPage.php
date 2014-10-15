@@ -36,6 +36,7 @@ class InstallPage extends \FanniePage
     public $description = "
     Base class for install-and-config pages not using Admin menu.
     ";
+    public $page_set = 'Installation';
 
     public function __construct() 
     {
@@ -56,7 +57,9 @@ class InstallPage extends \FanniePage
         ob_start();
         $page_title = $this->title;
         $header = $this->header;
-        if (isset($FANNIE_WINDOW_DRESSING) && $FANNIE_WINDOW_DRESSING == True) {
+        if ($this->themed) {
+            echo parent::getHeader(); 
+        } elseif (isset($FANNIE_WINDOW_DRESSING) && $FANNIE_WINDOW_DRESSING == True) {
             include($FANNIE_ROOT.'src/header.html');
         } else {
             include($FANNIE_ROOT.'src/header_install.html');
@@ -72,7 +75,9 @@ class InstallPage extends \FanniePage
     function getFooter(){
         global $FANNIE_ROOT, $FANNIE_AUTH_ENABLED, $FANNIE_URL, $FANNIE_WINDOW_DRESSING;
         ob_start();
-        if (isset($FANNIE_WINDOW_DRESSING) && $FANNIE_WINDOW_DRESSING == True) {
+        if ($this->themed) {
+            echo parent::getFooter(); 
+        } elseif (isset($FANNIE_WINDOW_DRESSING) && $FANNIE_WINDOW_DRESSING == True) {
             include($FANNIE_ROOT.'src/footer.html');
         } else {
             include($FANNIE_ROOT.'src/footer_install.html');

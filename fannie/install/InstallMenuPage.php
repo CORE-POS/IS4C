@@ -39,6 +39,7 @@ class InstallMenuPage extends \COREPOS\Fannie\API\InstallPage {
     public $description = "
     Class for the Menu install and config options page.
     ";
+    public $themed = true;
 
     // This replaces the __construct() in the parent.
     public function __construct() {
@@ -96,10 +97,10 @@ class InstallMenuPage extends \COREPOS\Fannie\API\InstallPage {
         <?php
 
         if (is_writable('../config.php')){
-            echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
+            echo "<div class=\"alert alert-success\"><i>config.php</i> is writeable</div>";
         }
         else {
-            echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
+            echo "<div class=\"alert alert-danger\"><b>Error</b>: config.php is not writeable</div>";
             echo "<br />Full path is: ".'../config.php'."<br />";
             if (function_exists('posix_getpwuid')){
                 $chk = posix_getpwuid(posix_getuid());
@@ -121,19 +122,9 @@ class InstallMenuPage extends \COREPOS\Fannie\API\InstallPage {
         <b>Show Admin menu</b>
         <!-- "windowdressing" is the term used in Class Lib 2.0 for the heading and navigation menu.
              Use this to set the value of $window_dressing. -->
-        <select name=FANNIE_WINDOW_DRESSING>
-        <?php
-        if (!isset($FANNIE_WINDOW_DRESSING)) $FANNIE_WINDOW_DRESSING = False;
-        if (isset($_REQUEST['FANNIE_WINDOW_DRESSING'])) $FANNIE_WINDOW_DRESSING = $_REQUEST['FANNIE_WINDOW_DRESSING'];
-        if ($FANNIE_WINDOW_DRESSING === True || $FANNIE_WINDOW_DRESSING == 'Yes'){
-            confset('FANNIE_WINDOW_DRESSING','True');
-            echo "<option selected>Yes</option><option>No</option>";
-        }
-        else{
-            confset('FANNIE_WINDOW_DRESSING','False');
-            echo "<option>Yes</option><option selected>No</option>";
-        }
-        echo "</select>";
+        <?php 
+        echo installSelectField('FANNIE_WINDOW_DRESSING', $FANNIE_WINDOW_DRESSING,
+                    array(1 => 'Yes', 0 => 'No'), false);
         ?>
         </p>
 
@@ -197,7 +188,8 @@ class InstallMenuPage extends \COREPOS\Fannie\API\InstallPage {
         
         $saveStr = 'array(';
         $menu_number = 0;
-        $select = '<select onchange="$(this).next(\'input\').val($(this).val());">
+        $select = '<select onchange="$(this).next(\'input\').val($(this).val());"
+                        class="form-control">
                 <option value="">URL</option>';
         $opts = array('__header__'=>'Section Header', '__divider__'=>'Divider Line');
         foreach ($FANNIE_MENU as $menu => $content) {
@@ -206,8 +198,9 @@ class InstallMenuPage extends \COREPOS\Fannie\API\InstallPage {
             echo '<ul id="menuset' . $menu_number . '">';
             foreach ($content as $m_title => $m_url) {
                 $saveStr .= "'" . str_replace("'", "\\'", $m_title) . "' => '" . $m_url . "',";
-                echo '<li>';
-                printf('<input type="text" name="m_title%d[]" value="%s" />', $menu_number, $m_title); 
+                echo '<li class="form-inline">';
+                printf('<input type="text" name="m_title%d[]" value="%s" class="form-control" />', 
+                    $menu_number, $m_title); 
                 echo $select;
                 foreach ($opts as $key => $val) {
                     printf('<option %s value="%s">%s</option>',
@@ -215,21 +208,23 @@ class InstallMenuPage extends \COREPOS\Fannie\API\InstallPage {
                         $key, $val);
                 }
                 echo '</select>';
-                printf('<input type="text" name="m_url%d[]" value="%s" />', $menu_number, $m_url); 
+                printf('<input type="text" name="m_url%d[]" value="%s" class="form-control" />', 
+                    $menu_number, $m_url); 
                 echo ' [ <a href="" onclick="$(this).parent().remove(); return false;">Remove Entry</a> ]';
                 echo '</li>';
             }
             $saveStr .= '),';
             echo '</ul>';
-            $newEntry = sprintf('<li><input type="text" name="m_title%d[]" value="" />%s',
-                        $menu_number, $select);
+            $newEntry = sprintf('<li class="form-inline">
+                            <input type="text" name="m_title%d[]" value="" class="form-control" />%s',
+                            $menu_number, $select);
             foreach ($opts as $key => $val) {
                 $newEntry .= sprintf('<option value="%s">%s</option>', $key, $val);
             }
-            $newEntry .= sprintf('</select><input type="text" name="m_url%d[]" value="" />
+            $newEntry .= sprintf('</select><input type="text" name="m_url%d[]" value="" class="form-control" />
                     [ <a href="" onclick="$(this).parent().remove(); return false;">Remove Entry</a> ]
                     </li>', $menu_number);
-            echo '<div id="newEntry' . $menu_number . '" style="display:none;">';
+            echo '<div id="newEntry' . $menu_number . '" class="collapse">';
             echo $newEntry;
             echo '</div>';
             printf('[ <a href="" onclick="$(\'ul#menuset%d\').append($(\'#newEntry%d\').html()); return false;">Add New Entry</a>
@@ -242,7 +237,9 @@ class InstallMenuPage extends \COREPOS\Fannie\API\InstallPage {
         confset('FANNIE_MENU', $saveStr);
         ?>
         <hr />
-        <input type=submit value="Refresh" />
+        <p>
+            <button type="submit" name="psubmit" value="1" class="btn btn-default">Save Configuration</button>
+        </p>
         </form>
         </body>
         </html>
