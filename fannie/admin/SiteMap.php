@@ -43,6 +43,11 @@ class SiteMap extends FannieRESTfulPage
         global $FANNIE_ROOT, $FANNIE_URL;
         $pages = FannieAPI::listModules('FanniePage');
         $sets = array();
+        $theme_stats = array(
+            'done' => 0,
+            'total' => 0,
+            'plugin' => 0,
+        );
         foreach ($pages as $p) {
             $obj = new $p();
             if (!$obj->discoverable) {
@@ -58,11 +63,26 @@ class SiteMap extends FannieRESTfulPage
                'info' => $obj->description, 
                'class' => $obj->themed ? 'alert-success' : 'alert-danger',
             );
+            $theme_stats['total']++;
+            if ($obj->themed) {
+                $theme_stats['done']++;
+            }
+            if (strstr($obj->page_set, 'Plugin')) {
+                $theme_stats['plugin']++;
+            }
         }
+
+        $ret = '';
+        $ret .= '<div class="alert alert-info">';
+        $ret .= sprintf('New UI completion percent: <strong>%.2f%%</strong><br />', 
+            ((float)$theme_stats['done']) / $theme_stats['total'] * 100);
+        $ret .= sprintf('Excluding plugins: <strong>%.2f%%</strong><br />', 
+            ((float)$theme_stats['done']) / ($theme_stats['total'] - $theme_stats['plugin']) * 100);
+        $ret .= '</div>';
 
         $keys = array_keys($sets);
         sort($keys);
-        $ret = '<ul>';
+        $ret .= '<ul>';
         foreach ($keys as $set_name) {
             $ret .= '<li>' . $set_name;
             $ret .= '<ul>';
