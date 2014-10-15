@@ -26,12 +26,14 @@ if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class CoopDealsUploadPage extends FannieUploadPage {
+class CoopDealsUploadPage extends FannieUploadPage 
+{
     public $title = "Fannie - Co+op Deals sales";
     public $header = "Upload Co+op Deals file";
 
     public $description = '[Co+op Deals Import] loads sales information from Co+op Deals pricing spreadsheets.
     This data can be used to create sales batches.';
+    public $themed = true;
 
     protected $preview_opts = array(
         'upc' => array(
@@ -127,10 +129,10 @@ class CoopDealsUploadPage extends FannieUploadPage {
     }
 
     function form_content(){
-        return '<p>Upload a CSV or Excel (XLS, not XLSX) file containing Co+op Deals
+        return '<div class="well">Upload a CSV or Excel (XLS, not XLSX) file containing Co+op Deals
             Sale information. The file needs to contain UPCs, sale prices,
             and a column indicating A, B, or TPR (or some combination of the
-            three).</p>';
+            three).</div>';
     }
 
     function preview_content(){
@@ -138,8 +140,8 @@ class CoopDealsUploadPage extends FannieUploadPage {
     }
 
     function results_content(){
-        $ret = "Sales data import complete<p />";
-        $ret .= "<a href=\"CoopDealsReviewPage.php\">Review data &amp; set up sales</a>";
+        $ret = "<p>Sales data import complete</p>";
+        $ret .= "<p><a href=\"CoopDealsReviewPage.php\">Review data &amp; set up sales</a></p>";
         return $ret;
     }
 }

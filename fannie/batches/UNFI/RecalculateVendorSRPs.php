@@ -36,6 +36,7 @@ class RecalculateVendorSRPs extends FanniePage {
 
     public $description = '[Calculate Vendor SRPs] recalculates item SRPs based on vendor
     specific margin goals.';
+    public $themed = true;
 
     private $mode = 'form';
 
@@ -113,11 +114,18 @@ class RecalculateVendorSRPs extends FanniePage {
         ob_start();
         ?>
         <form action=RecalculateVendorSRPs.php method=get>
-        Recalculate SRPs from margins for which vendor?<br />
-        <select name=vendorID><?php echo $opts; ?></select>
-        <input type=submit value="Recalculate" />
+        <p>
+        <label>Recalculate SRPs from margins for which vendor?</label>
+        <select id="vendor-id" name=vendorID class="form-control">
+            <?php echo $opts; ?></select>
+        <button type=submit class="btn btn-default">Recalculate</button>
+        <button type="button" onclick="location='VendorPricingIndex.php';return false;"
+            class="btn btn-default">Back</button>
+        </p>
         </form>
         <?php
+        $this->add_onload_command('$(\'#vendor-id\').focus();');
+
         return ob_get_clean();
     }
 }

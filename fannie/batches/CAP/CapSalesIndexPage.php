@@ -32,6 +32,7 @@ class CapSalesIndexPage extends FanniePage {
 
     public $description = '[Co+op Deals Menu] lists options for importing and creating
     Co+op Deals batches.';
+    public $themed = true;
 
     function body_content(){
         ob_start();

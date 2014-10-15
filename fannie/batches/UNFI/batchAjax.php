@@ -50,16 +50,6 @@ case 'newPrice':
     $price = FormLib::get_form_value('price',0);
     $sP = $dbc->prepare_statement("UPDATE vendorSRPs SET srp=? WHERE upc=? AND vendorID=?");
     $dbc->exec_statement($sP,array($price,$upc,$vid));
-    $model = new BatchListModel($dbc);
-    $model->batchID($bid);
-    $model->upc($upc);
-    $model->salePrice($price);
-    $model->save();
-    $tag = new ShelftagsModel($tag);
-    $tag->id($sid);
-    $tag->upc($upc);
-    $tag->normal_price($price);
-    $tag->save();
     echo "New Price Applied";
     break;
 case 'batchAdd':

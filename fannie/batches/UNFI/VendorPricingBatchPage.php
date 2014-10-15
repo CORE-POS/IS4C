@@ -32,15 +32,16 @@ class VendorPricingBatchPage extends FanniePage {
 
     public $description = '[Vendor Price Change] creates a price change batch for a given
     vendor and edits it based on catalog cost information.';
+    public $themed = true;
 
     private $mode = 'start';
 
-    function preprocess(){
+    function preprocess()
+    {
         global $FANNIE_URL;
 
         if (FormLib::get_form_value('vid') !== ''){
             $this->mode = 'edit';
-            $this->window_dressing = False;
             $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
         }
 
@@ -151,11 +152,12 @@ function reprice(upc){
     var elem = $('#row'+upc).find('.srp');
     var srp = elem.html();
 
-    var content = "<input type=\"text\" id=\"newprice"+upc+"\" value=\""+srp+"\" size=\"4\" />";
-    var content2 = "<input type=\"submit\" value=\"Save\" onclick=\"saveprice('"+upc+"');\" />";
+    var content = "<div class=\"form-inline input-group\"><span class=\"input-group-addon\">$</span>";
+    content += "<input type=\"text\" id=\"newprice"+upc+"\" value=\""+srp+"\" class=\"form-control\" size=4 /></div>";
+    var content2 = "<button type=\"button\" onclick=\"saveprice('"+upc+"');\" class=\"btn btn-default\">Save</button>";
     elem.html(content);
     $('#row'+upc).find('.dmargin').html(content2);
-    $('#newprice'+upc).focus();
+    $('#newprice'+upc).focus().select();
 }
 
 function saveprice(upc){
@@ -275,7 +277,7 @@ function saveprice(upc){
         $prep = $dbc->prepare_statement($query);
         $result = $dbc->exec_statement($prep,$args);
 
-        $ret .= "<table cellspacing=0 cellpadding=4 border=0>";
+        $ret .= "<table class=\"table\">";
         $ret .= "<tr><td colspan=3>&nbsp;</td><th colspan=2>Current</th>
             <th colspan=2>Vendor</th></tr>";
         $ret .= "<tr><th>UPC</th><th>Our Description</th><th>Cost</th>
@@ -322,7 +324,8 @@ function saveprice(upc){
         return $ret;
     }
 
-    function start_content(){
+    function start_content()
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
@@ -342,22 +345,24 @@ function saveprice(upc){
 
         ob_start();
         ?>
-        Select a vendor &amp; a department:
-        <form action=VendorPricingBatchPage.php method=post>
-        <select name=vid>
+        <form action=VendorPricingBatchPage.php method="get">
+        <label>Select a Vendor</label>
+        <select name=vid class="form-control">
         <?php echo $vopts; ?>
         </select>
-        <br />
-        <select name=super>
+        <label>and a Department</label>
+        <select name=super class="form-control">
         <?php echo $opts; ?>
         </select>
-        <br>
-        Show all items <select name=filter>
+        <label>Show all items</label>
+        <select name=filter class="form-control">
         <option>No</option>
         <option>Yes</option>
         </select>
         <br />
-        <input type=submit value=Continue name="continueBtn" />
+        <p>
+        <button type=submit class="btn btn-default">Continue</button>
+        </p>
         </form>
         <?php
 

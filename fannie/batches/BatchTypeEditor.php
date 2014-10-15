@@ -37,11 +37,14 @@ class BatchTypeEditor extends FanniePage {
     protected $header = 'Sales Batches';
 
     public $description = '[Batch Type Editor] manages different kinds of batches.';
+    public $themed = true;
 
-    function preprocess(){
+    function preprocess()
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
+        $json = array('error'=>'');
         if (FormLib::get_form_value('saveDesc') !== ''){
             $q = $dbc->prepare_statement("UPDATE batchType
                 SET typeDesc=? WHERE batchTypeID=?");
@@ -49,7 +52,11 @@ class BatchTypeEditor extends FanniePage {
                 FormLib::get_form_value('saveDesc'),
                 FormLib::get_form_value('bid')
             ));
-            echo "Desc saved";
+            if ($r === false) {
+                $json['error'] = 'Error saving sale type';
+            }
+            echo json_encode($json);
+
             return False; // ajax call
         }
         if (FormLib::get_form_value('saveType') !== ''){
@@ -59,7 +66,11 @@ class BatchTypeEditor extends FanniePage {
                 FormLib::get_form_value('saveType'),
                 FormLib::get_form_value('bid')
             ));
-            echo "Desc saved";
+            if ($r === false) {
+                $json['error'] = 'Error saving description';
+            }
+            echo json_encode($json);
+
             return False; // ajax call
         }
         if (FormLib::get_form_value('addtype') !== ''){
@@ -84,22 +95,30 @@ class BatchTypeEditor extends FanniePage {
         ob_start();
         ?>
 function saveDesc(val,bid){
+    var elem = $(this);
+    var orig = this.defaultValue;
     $.ajax({
         url: 'BatchTypeEditor.php',
         cache: false,
         type: 'post',
         data: 'saveDesc='+val+'&bid='+bid,
+        dataType: 'json',
         success: function(data){
+            showBootstrapPopover(elem, orig, data.error);
         }
     });
 }
 function saveType(val,bid){
+    var elem = $(this);
+    var orig = this.defaultValue;
     $.ajax({
         url: 'BatchTypeEditor.php',
         cache: false,
         type: 'post',
         data: 'saveType='+val+'&bid='+bid,
+        dataType: 'json',
         success: function(data){
+            showBootstrapPopover(elem, orig, data.error);
         }
     });
 }
@@ -113,12 +132,12 @@ function saveType(val,bid){
         $q = $dbc->prepare_statement("SELECT batchTypeID,typeDesc,discType FROM batchType ORDER BY batchTypeID");
         $r = $dbc->exec_statement($q);
 
-        $ret = '<table cellspacing="0" cellpadding="4" border="1">';
+        $ret = '<table class="table">';
         $ret .= '<tr><th>ID#</th><th>Description</th><th>Discount Type</th><th>&nbsp;</td></tr>';
         while($w = $dbc->fetch_row($r)){
             $ret .= sprintf('<tr><td>%d</td>
-                <td><input type="text" onchange="saveDesc(this.value,%d)" value="%s" /></td>
-                <td><select onchange="saveType($(this).val(),%d);">',
+                <td><input type="text" class="form-control" onchange="saveDesc.call(this,this.value,%d)" value="%s" /></td>
+                <td><select onchange="saveType.call(this, $(this).val(),%d);" class="form-control">',
                 $w['batchTypeID'],$w['batchTypeID'],$w['typeDesc'],$w['batchTypeID']);
         $found = False;
         foreach($this->price_methods as $id=>$desc){
@@ -138,7 +157,8 @@ function saveType(val,bid){
         }
         $ret .= '</table>';
 
-        $ret .= '<br /><a href="BatchTypeEditor.php?addtype=yes">Create New Type</a>';
+        $ret .= '<p><button onclick="location=\'BatchTypeEditor.php?addtype=yes\';"
+            class="btn btn-default">Create New Type</button></p>';
 
         return $ret;
     }
