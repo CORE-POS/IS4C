@@ -32,7 +32,7 @@ if (!isset($FANNIE_CHARSET) || empty($FANNIE_CHARSET)) {
 <div style="margin-left:3em;margin-right:3em;">
     
     <div>
-        <table cellspacing="0" cellpadding="0"> <!-- yes. sick of fighting with floating divs... -->
+        <table> <!-- yes. sick of fighting with floating divs... -->
         <tr><td>
             <?php if (isset($FANNIE_CSS_LOGO) && !empty($FANNIE_CSS_LOGO)) { ?>
             <img src="<?php echo $FANNIE_CSS_LOGO; ?>" alt="logo" />
@@ -46,7 +46,7 @@ if (!isset($FANNIE_CHARSET) || empty($FANNIE_CHARSET)) {
         } ?>
         </div>
         <div style="font-size:20px;" class="secondaryColor">
-        IT CORE maintenance & reporting
+        IT CORE maintenance &amp; reporting
         </div>
         </td></tr>
         </table>
@@ -94,6 +94,6 @@ if (!isset($FANNIE_CHARSET) || empty($FANNIE_CHARSET)) {
             </ul>
         </div>
         <div class="h3 primaryColor">
-            &nbsp;&nbsp;<?php echo $header; ?>
+            <?php echo $header; ?>
         </div>
         <div>
