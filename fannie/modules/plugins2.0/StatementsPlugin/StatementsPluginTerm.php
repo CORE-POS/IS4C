@@ -68,17 +68,16 @@ class StatementsPluginTerm extends FannieRESTfulPage
 
         $today = date("F j, Y");
 
-        $pdf = new FPDF();
+        $pdf = new FPDF('P', 'mm', 'Letter');
         $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
         $pdf->AddFont('Gill', 'B', 'GillSansMTPro-Medium.php');
 
         //Meat of the statement
         while ($memberW = $dbc->fetch_row($memberR)){
             $pdf->AddPage();
-            $pdf->Image('letterhead_bw.png',10,10, 50);
-            $pdf->SetLeftMargin(65);
-
+            $pdf->Image('new_letterhead_horizontal.png',5,10, 200);
             $pdf->SetFont('Gill','','12');
+            $pdf->Ln(45);
 
             $pdf->Cell(10,10,$today,0);
             $pdf->Ln(15);
