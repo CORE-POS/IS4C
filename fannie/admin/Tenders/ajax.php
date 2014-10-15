@@ -134,15 +134,23 @@ function getTenderTable(){
             <td><input size="10" maxlength="255" value="%s"
                 class="form-control"
                 onchange="saveCMsg.call(this, this.value,%d);" /></td>
-            <td><input size="6" maxlength="10" value="%.2f"
+            <td><div class="input-group">
+                <span class="input-group-addon">$</span>
+                <input size="6" maxlength="10" value="%.2f"
                 class="form-control"
-                onchange="saveMin.call(this, this.value,%d);" /></td>
-            <td><input size="6" maxlength="10" value="%.2f"
+                onchange="saveMin.call(this, this.value,%d);" />
+            </div></td>
+            <td><div class="input-group">
+                <span class="input-group-addon">$</span>
+                <input size="6" maxlength="10" value="%.2f"
                 class="form-control"
-                onchange="saveMax.call(this, this.value,%d);" /></td>
-            <td><input size="6" maxlength="10" value="%.2f"
+                onchange="saveMax.call(this, this.value,%d);" />
+            </div></td>
+            <td><div class="input-group"><span class="input-group-addon">$</span>
+                <input size="6" maxlength="10" value="%.2f"
                 class="form-control"
-                onchange="saveRLimit.call(this, this.value,%d);" /></td>
+                onchange="saveRLimit.call(this, this.value,%d);" />
+            </div></td>
             </tr>',
             $row->TenderCode(),$row->TenderID(),
             $row->TenderName(),$row->TenderID(),
