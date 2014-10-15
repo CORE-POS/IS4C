@@ -348,7 +348,7 @@ function showGraph(i) {
             <label class="control-label col-sm-4">Select Buyer/Dept</label>
             <div class="col-sm-8">
             <select id=buyer name=buyer class="form-control">>
-               <option value=0 >
+               <option value="" >
                <?php echo $deptSubList; ?>
                <option value=-2 >All Retail</option>
                <option value=-1 >All</option>
