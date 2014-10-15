@@ -32,8 +32,7 @@ class MemCorrectionIndex extends FanniePage {
     protected $header='Make Member Corrections';
 
     public $description = '[Member Correction Menu] lists tools for correcting account imbalances.';
-
-    private $msgs = '';
+    public $themed = true;
 
     function body_content(){
         ob_start();
