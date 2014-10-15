@@ -31,6 +31,7 @@ class CreateTagsByManu extends FanniePage {
     private $msgs = '';
 
     public $description = '[Brand Shelf Tags] generates a set of shelf tags for brand or UPC prefix.';
+    public $themed = true;
 
     function preprocess(){
         global $FANNIE_OP_DB;
@@ -112,8 +113,7 @@ class CreateTagsByManu extends FanniePage {
 
         $ret = '';
         if (!empty($this->msgs)){
-            $ret .= '<blockquote style="border:solid 1px black; padding:5px;
-                    margin:5px;">';
+            $ret .= '<div class="alert alert-success">';
             $ret .= $this->msgs;
             $ret .= '</blockquote>';
         }
@@ -121,21 +121,24 @@ class CreateTagsByManu extends FanniePage {
         ob_start();
         ?>
         <form action="CreateTagsByManu.php" method="get">
-        <table>
-        <tr> 
-            <td align="right"> <p><b>Name or UPC prefix</b></p></td>
-            <td> 
-            </p>
-            <input type=text name=manufacturer />
-            </p></td>
-        </tr>
-        <tr>
-            <td><p><b>Page:</b> <select name="sID"><?php echo $deptSubList; ?></select></p></td>
-            <td align="right"><input type="submit" value="Create Shelftags" />
-        </tr>
-        </table>
+        <div class="form-group">
+            <label>Name or UPC prefix</label>
+            <input type="text" name="manufacturer" id="manu-field" 
+                class="form-control" required />
+        </div>
+        <div class="form-group">
+        <label>Page</label>
+        <select name="sID" class="form-control">
+            <?php echo $deptSubList; ?>
+        </select>
+        </div>
+        <p>
+            <button type="submit" class="btn btn-default">Create Shelftags</button>
+        </p>
         </form>
         <?php
+        $this->add_onload_command('$(\'#manu-field\').focus();');
+
         return $ret.ob_get_clean();
     }
 }

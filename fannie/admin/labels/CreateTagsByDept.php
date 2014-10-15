@@ -33,6 +33,7 @@ class CreateTagsByDept extends FanniePage {
 
     public $description = '[Department Shelf Tags] generates a set of shelf tags for given POS
     department(s).';
+    public $themed = true;
 
     private $msgs = '';
 
@@ -98,7 +99,8 @@ class CreateTagsByDept extends FanniePage {
         return True;
     }
 
-    function body_content(){
+    function body_content()
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
@@ -119,39 +121,48 @@ class CreateTagsByDept extends FanniePage {
 
         $ret = '';
         if (!empty($this->msgs)){
-            $ret .= '<blockquote style="border:solid 1px black; padding:5px;
-                    margin:5px;">';
+            $ret .= '<div class="alert alert-success">';
             $ret .= $this->msgs;
-            $ret .= '</blockquote>';
+            $ret .= '</div>';
         }
 
         ob_start();
         ?>
         <form action="CreateTagsByDept.php" method="get">
-        <table>
-        <tr> 
-            <td align="right">
-                <p><b>Department Start</b></p>
-                <p><b>End</b></p>
-            </td>
-            <td>
-                <p><select id=deptStartSel onchange="$('#deptStart').val($(this).val());">
+        <div class="row form-group form-horizontal"> 
+            <label class="col-sm-2">Department Start</label>
+            <div class="col-sm-4">
+                <select onchange="$('#deptStart').val($(this).val());"
+                    class="form-control">
                     <?php echo "$deptsList\n" ?>
                 </select>
-                <input type=text name=deptStart id=deptStart size=5 value=1 />
-                </p>
-                <p><select id=deptEndSel onchange="$('#deptEnd').val($(this).val());">
+            </div>
+            <div class="col-sm-2">
+                <input type=text name=deptStart id=deptStart class="form-control" value=1 />
+            </div>
+        </div>
+        <div class="row form-group form-horizontal"> 
+            <label class="col-sm-2">Department End</label>
+            <div class="col-sm-4">
+                <select onchange="$('#deptEnd').val($(this).val());"
+                    class="form-control">
                     <?php echo "$deptsList\n" ?>
                 </select>
-                <input type=text name=deptEnd id=deptEnd size=5 value=1 />
-                </p>
-            </td>
-        </tr>
-        <tr>
-            <td><p><b>Page:</b> <select name="sID"><?php echo $deptSubList; ?></select></p></td>
-            <td align="right"><input type="submit" value="Create Shelftags" /></td>
-        </tr>
-        </table>
+            </div>
+            <div class="col-sm-2">
+                <input type=text name=deptEnd id=deptEnd class="form-control" value=1 />
+            </div>
+        </div>
+        <div class="row form-group form-horizontal">
+            <label class="col-sm-2">Page</label>
+            <div class="col-sm-4">
+                <select name="sID" class="form-control">
+                    <?php echo $deptSubList; ?></select>
+            </div>
+            <div class="col-sm-2">
+                <button type="submit" class="btn btn-default">Create Shelftags</button>
+            </div>
+        </div>
         </form>
         <?php
         return $ret.ob_get_clean();
