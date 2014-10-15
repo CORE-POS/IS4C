@@ -33,6 +33,7 @@ class LikeCodePriceUploadPage extends FannieUploadPage
 
     public $description = '[Like Code Prices] uploads a spreadsheet of like codes and prices
     and immediately updates the prices for those like coded items.';
+    public $themed = true;
 
     protected $preview_opts = array(
         'likecode' => array(
@@ -80,6 +81,7 @@ class LikeCodePriceUploadPage extends FannieUploadPage
                                 ( SELECT u.upc 
                                   FROM upcLike AS u
                                   WHERE u.likeCode=? )');
+        $this->stats = array('done' => 0, 'error' => array());
         foreach($linedata as $line) {
             $lc = trim($line[$lc_index]);
             $price =  trim($line[$price_index], ' $');  
@@ -98,7 +100,9 @@ class LikeCodePriceUploadPage extends FannieUploadPage
             }
             if ($try === false) {
                 $ret = false;
-                $this->error_details .= ' Problem updating LC# ' . $lc . ';';
+                $this->stats['error'][] = ' Problem updating LC# ' . $lc . ';';
+            } else {
+                $this->stats['done']++;
             }
         }
 
@@ -107,18 +111,28 @@ class LikeCodePriceUploadPage extends FannieUploadPage
 
     function form_content()
     {
-        return '<fieldset><legend>Instructions</legend>
+        return '<div class="well"><legend>Instructions</legend>
         Upload a CSV or XLS file containing likecode #s and prices. Cost 
         may also optionally be included.
         <br />A preview helps you to choose and map columns to the database.
         <br />The uploaded file will be deleted after the load.
-        </fieldset><br />';
+        </div><br />';
     }
 
     function results_content()
     {
         SyncLanes::pushTable('products');
-        return 'Import completed successfully';
+        $ret = '<p>Import Complete</p>';
+        $ret .= '<div class="alert alert-success">Updated ' . $this->stats['done'] . ' likecodes</div>';
+        if (count($this->stats['error']) > 0) {
+            $ret .= '<div class="alert alert-danger"><ul>';
+            foreach ($this->stats['error'] as $error) {
+                $ret .= '<li>' . $error . '</li>';
+            }
+            $ret .= '</ul></div>';
+        }
+
+        return $ret;
     }
 }
 

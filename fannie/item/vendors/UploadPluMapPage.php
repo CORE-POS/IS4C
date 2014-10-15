@@ -34,6 +34,7 @@ class UploadPluMapPage extends FannieUploadPage {
     public $description = '[Vendor PLU Map] loads a list of vendor SKUs and the corresponding
     POS UPC used to sell the item. Typically these are things like bulk PLUs but any UPC is
     permitted.';
+    public $themed = true;
 
     protected $preview_opts = array(
         'sku' => array(
@@ -84,6 +85,7 @@ class UploadPluMapPage extends FannieUploadPage {
         $chkP = $dbc->prepare_statement('SELECT upc FROM vendorSKUtoPLU WHERE sku=? AND upc=? AND vendorID=?');
         $pluP = $dbc->prepare_statement('SELECT upc FROM vendorSKUtoPLU WHERE sku=? AND vendorID=?');
 
+        $this->stats = array('done' => 0, 'error' => array());
         foreach($linedata as $data){
             if (!is_array($data)) continue;
 
@@ -100,11 +102,17 @@ class UploadPluMapPage extends FannieUploadPage {
             if ($dbc->num_rows($chkR) > 0) continue; // entry exists
 
             $pluR = $dbc->exec_statement($chkP, array($sku,$plu,$VENDOR_ID));
+            $success = false;
             if ($dbc->num_rows($pluR) == 0){
-                $dbc->exec_statement($insP, array($VENDOR_ID, $sku, $plu));
+                $success = $dbc->exec_statement($insP, array($VENDOR_ID, $sku, $plu));
+            } else {
+                $success = $dbc->exec_statement($upP, array($plu, $sku, $VENDOR_ID));
             }
-            else {
-                $dbc->exec_statement($upP, array($plu, $sku, $VENDOR_ID));
+
+            if ($success) {
+                $this->stats['done']++;
+            } else {
+                $this->stats['error'][] = 'Error updating SKU #' . $sku;
             }
         }
 
@@ -124,10 +132,19 @@ class UploadPluMapPage extends FannieUploadPage {
                 <option value="1">Replace</option></select>';
     }
 
-    function results_content(){
-        $ret = "Mapping updated<p />";
-        $ret .= '<a href="'.$_SERVER['PHP_SELF'].'">Upload Another</a>';
+    function results_content()
+    {
         unset($_SESSION['vid']);
+        $ret = '<p>Mapping complete</p>';
+        $ret .= '<div class="alert alert-success">Updated ' . $this->stats['done'] . ' items</div>';
+        if (count($this->stats['error']) > 0) {
+            $ret .= '<div class="alert alert-danger"><ul>';
+            foreach ($this->stats['error'] as $error) {
+                $ret .= '<li>' . $error . '</li>';
+            }
+            $ret .= '</ul></div>';
+        }
+
         return $ret;
     }
 
@@ -136,20 +153,20 @@ class UploadPluMapPage extends FannieUploadPage {
         $vid = FormLib::get_form_value('vid');
         if ($vid === ''){
             $this->add_onload_command("\$('#FannieUploadForm').remove();");
-            return '<span style="color:red;">Error: No Vendor Selected</span>';
+            return '<div class="alert alert-danger">Error: No Vendor Selected</div>';
         }
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $vp = $dbc->prepare_statement('SELECT vendorName FROM vendors WHERE vendorID=?');
         $vr = $dbc->exec_statement($vp,array($vid));
         if ($dbc->num_rows($vr)==0){
             $this->add_onload_command("\$('#FannieUploadForm').remove();");
-            return '<span style="color:red;">Error: No Vendor Found</span>';
+            return '<div class="alert alert-danger">Error: No Vendor Found</div>';
         }
         $vrow = $dbc->fetch_row($vr);
         $_SESSION['vid'] = $vid;
-        return '<fieldset><legend>Instructions</legend>
+        return '<div class="well"><legend>Instructions</legend>
             Upload a PLU and SKU file for <i>'.$vrow['vendorName'].'</i> ('.$vid.'). File
-            can be CSV, XLS, or XLSX.</fieldset><br />';
+            can be CSV, XLS, or XLSX.</div><br />';
     }
 
     public function preprocess()
