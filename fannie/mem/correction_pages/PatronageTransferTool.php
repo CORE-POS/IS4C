@@ -145,7 +145,7 @@ class PatronageTransferTool extends FanniePage {
         $ret .= "<button type=\"submit\" name=\"submit2\" value=\"Confirm\" 
                     class=\"btn btn-default\">Confirm</button>";
         $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-        $ret .= "<input type=\"submit\" name=\"submit2\" value=\"Confirm\" />";
+        $ret .= "<button type=\"buton\" class=\"btn btn-default\" onclick=\"back(); return false;\">Back</button>";
         $ret .= "</form>";
         
         return $ret;
