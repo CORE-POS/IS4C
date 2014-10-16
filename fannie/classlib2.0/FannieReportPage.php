@@ -117,6 +117,11 @@ class FannieReportPage extends FanniePage
     */
     protected $sort_direction = 0;
 
+    /**
+      Disable inclusion of jquery. In rare cases the report 
+      content may be embedded in a page that already included
+      jquery and multiple copies included can cause problems.
+    */
     protected $no_jquery = false;
 
     /**
