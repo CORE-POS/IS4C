@@ -21,8 +21,13 @@
 
 *********************************************************************************/
 
-class AR extends MemberModule 
+class AR extends \COREPOS\Fannie\API\member\MemberModule 
 {
+
+    public function width()
+    {
+        return parent::META_WIDTH_THIRD;
+    }
 
     function showEditForm($memNum,$country="US")
     {
@@ -50,21 +55,31 @@ class AR extends MemberModule
         }
 
 
-        $ret = "<fieldset><legend>A/R</legend>";
-        $ret .= "<table class=\"MemFormTable\" 
-            border=\"0\">";
+        $ret = "<div class=\"container-fluid\"><h4>A/R</h4>";
 
-        $ret .= "<tr><th>Limit</th>";
-        $ret .= sprintf('<td><input name="AR_limit" size="4" value="%d" />
-                </td>',$limit);
-        $ret .= "<th>Current Balance</th>";
-        $ret .= sprintf('<td>%.2f</td>',$infoW['balance']); 
+        $ret .= '<div class="row form-group form-inline">';
+        $ret .= '<span class="label primaryBackground">Limit</span> ';
+        $ret .= '<div class="input-group"><span class="input-group-addon">$</span>';
+        $ret .= sprintf('<input name="AR_limit" value="%d" class="form-control" />
+                ',$limit);
+        $ret .= '</div>';
+        $ret .= '</div>';
 
-        $ret .= "<td><a href=\"{$FANNIE_URL}reports/AR/index.php?memNum=$memNum\">History</a></td></tr>";
-        $ret .= "<tr><td colspan=\"2\"><a href=\"{$FANNIE_URL}mem/correction_pages/MemArTransferTool.php?memIN=$memNum\">Transfer A/R</a></td>";
-        $ret .= "<td><a href=\"{$FANNIE_URL}mem/correction_pages/MemArEquitySwapTool.php?memIN=$memNum\">Convert A/R</a></td></tr>";
+        $ret .= '<div class="row form-group">';
+        $ret .= '<span class="label primaryBackground">Current Balance</span> ';
+        $ret .= sprintf('%.2f',$infoW['balance']); 
+        $ret .= ' ';
+        $ret .= "<a href=\"{$FANNIE_URL}reports/AR/index.php?memNum=$memNum\">History</a>";
+        $ret .= '</div>';
 
-        $ret .= "</table></fieldset>";
+        $ret .= '<div class="row form-group">';
+        $ret .= "<a href=\"{$FANNIE_URL}mem/correction_pages/MemArTransferTool.php?memIN=$memNum\">Transfer A/R</a>";
+        $ret .= ' ';
+        $ret .= "<a href=\"{$FANNIE_URL}mem/correction_pages/MemArEquitySwapTool.php?memIN=$memNum\">Convert A/R</a>";
+        $ret .= '</div>';
+
+        $ret .= '</div>';
+
         return $ret;
     }
 

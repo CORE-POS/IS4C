@@ -21,9 +21,15 @@
 
 *********************************************************************************/
 
-class HouseholdMembers extends MemberModule {
+class HouseholdMembers extends \COREPOS\Fannie\API\member\MemberModule {
 
-    function showEditForm($memNum, $country="US"){
+    public function width()
+    {
+        return parent::META_WIDTH_HALF;
+    }
+
+    function showEditForm($memNum, $country="US")
+    {
         global $FANNIE_URL;
 
         $dbc = $this->db();
@@ -34,33 +40,36 @@ class HouseholdMembers extends MemberModule {
                 ORDER BY c.personNum");
         $infoR = $dbc->exec_statement($infoQ,array($memNum));
 
-        $ret = "<fieldset><legend>Household Members</legend>";
-        $ret .= "<table class=\"MemFormTable\" 
-            border=\"0\">";
+        $ret = "<div class=\"container-fluid\"><h4>Household Members</h4>";
         
         $count = 0; 
         while($infoW = $dbc->fetch_row($infoR)){
-            $ret .= sprintf('<tr><th>First Name</th>
-                <td><input name="HouseholdMembers_fn[]"
-                maxlength="30" value="%s" /></td>
-                <th>Last Name</th>
-                <td><input name="HouseholdMembers_ln[]"
-                maxlength="30" value="%s" /></td></tr>',
+            $ret .= sprintf('
+                <div class="row form-inline form-group">
+                <span class="label primaryBackground">Name</span>
+                <input name="HouseholdMembers_fn[]" placeholder="First"
+                    maxlength="30" value="%s" class="form-control" />
+                <input name="HouseholdMembers_ln[]" placeholder="Last"
+                    maxlength="30" value="%s" class="form-control" />
+                </div>',
                 $infoW['FirstName'],$infoW['LastName']);
             $count++;
         }
 
-        while($count < 3){
-            $ret .= sprintf('<tr><th>First Name</th>
-                <td><input name="HouseholdMembers_fn[]"
-                maxlength="30" value="" /></td>
-                <th>Last Name</th>
-                <td><input name="HouseholdMembers_ln[]"
-                maxlength="30" value="" /></td></tr>');
+        while ($count < 3) {
+            $ret .= sprintf('
+                <div class="row form-inline form-group">
+                <span class="label primaryBackground">Name</span>
+                <input name="HouseholdMembers_fn[]" placeholder="First"
+                    maxlength="30" value="" class="form-control" />
+                <input name="HouseholdMembers_ln[]" placeholder="Last"
+                    maxlength="30" value="" class="form-control" />
+                </div>');
             $count++;
         }
 
-        $ret .= "</table></fieldset>";
+        $ret .= "</div>";
+
         return $ret;
     }
 

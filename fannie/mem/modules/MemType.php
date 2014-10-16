@@ -21,7 +21,12 @@
 
 *********************************************************************************/
 
-class MemType extends MemberModule {
+class MemType extends \COREPOS\Fannie\API\member\MemberModule {
+
+    public function width()
+    {
+        return parent::META_WIDTH_HALF;
+    }
 
     function showEditForm($memNum, $country="US"){
         global $FANNIE_URL;
@@ -35,12 +40,11 @@ class MemType extends MemberModule {
                 ORDER BY n.memType");
         $infoR = $dbc->exec_statement($infoQ,array($memNum));
 
-        $ret = "<fieldset class='memOneRow'><legend>Membership Type</legend>";
-        $ret .= "<table class=\"MemFormTable\" 
-            border=\"0\">";
+        $ret = "<div class=\"container-fluid\"><h4>Membership Type</h4>";
 
-        $ret .= "<tr><th>Type</th>";
-        $ret .= '<td><select name="MemType_type">';
+        $ret .= '<div class="row form-group form-inline">';
+        $ret .= '<span class="label primaryBackground">Type</span> ';
+        $ret .= '<select name="MemType_type" class="form-control">';
         $disc = 0;
         while($infoW = $dbc->fetch_row($infoR)){
             $ret .= sprintf("<option value=%d %s>%s</option>",
@@ -49,16 +53,14 @@ class MemType extends MemberModule {
                 $infoW[2]);
             $disc = $infoW[3];
         }
-        $ret .= "</select></td>";
+        $ret .= "</select> ";
         
-        $ret .= "<th>Discount</th>";
-        /*
-        $ret .= sprintf('<td><input name="MemType_discount" value="%d"
-                size="4" /></td></tr>',$disc);  
-        */
-        $ret .= sprintf('<td>%d%%</td></tr>',$disc);
+        $ret .= '<span class="label primaryBackground">Discount</span> ';
+        $ret .= sprintf('%d%%',$disc);
+        $ret .= '</div>';
 
-        $ret .= "</table></fieldset>";
+        $ret .= '</div>';
+
         return $ret;
     }
 

@@ -21,8 +21,15 @@
 
 *********************************************************************************/
 
-class MemberModule 
+namespace COREPOS\Fannie\API\member
 {
+
+class MemberModule
+{
+
+    const META_WIDTH_FULL = 100;
+    const META_WIDTH_HALF = 50;
+    const META_WIDTH_THIRD = 33;
 
     /**
       Get connection to member database
@@ -35,7 +42,12 @@ class MemberModule
             include_once(dirname(__FILE__) . '/../data/FannieDB.php');
         }
 
-        return FannieDB::get($FANNIE_OP_DB);
+        return \FannieDB::get($FANNIE_OP_DB);
+    }
+
+    public function width()
+    {
+        return self::META_WIDTH_FULL;
     }
 
     /**
@@ -129,3 +141,10 @@ class MemberModule
     }
 }
 
+}
+
+namespace 
+{
+    // global namespace wrapper class
+    class MemberModule extends \COREPOS\Fannie\API\member\MemberModule {}
+}

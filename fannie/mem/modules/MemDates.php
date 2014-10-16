@@ -21,7 +21,12 @@
 
 *********************************************************************************/
 
-class MemDates extends MemberModule {
+class MemDates extends \COREPOS\Fannie\API\member\MemberModule {
+
+    public function width()
+    {
+        return parent::META_WIDTH_HALF;
+    }
 
     function showEditForm($memNum, $country="US"){
         global $FANNIE_URL;
@@ -34,20 +39,31 @@ class MemDates extends MemberModule {
         $infoR = $dbc->exec_statement($infoQ,array($memNum));
         $infoW = $dbc->fetch_row($infoR);
 
-        $ret = "<fieldset class='memOneRow'><legend>Membership Dates</legend>";
-        $ret .= "<table class=\"MemFormTable\" 
-            border=\"0\">";
+        if (date('Y', strtotime($infoW['start_date'])) > 1900) {
+            $infoW['start_date'] = date('Y-m-d', strtotime($infoW['start_date']));
+        } else {
+            $infoW['start_date'] = '';
+        }
+        if (date('Y', strtotime($infoW['end_date'])) > 1900) {
+            $infoW['end_date'] = date('Y-m-d', strtotime($infoW['end_date']));
+        } else {
+            $infoW['end_date'] = '';
+        }
 
-        $ret .= "<tr><th>Start Date</th>";
-        $ret .= sprintf('<td><input name="MemDates_start" size="10"
+        $ret = "<div class=\"container-fluid\"><h4>Membership Dates</h4>";
+
+        $ret .= '<div class="row form-group form-inline">';
+        $ret .= '<span class="label primaryBackground">Start</span>';
+        $ret .= sprintf('<input name="MemDates_start"
                 maxlength="10" value="%s" id="MemDates_start"
-                /></td>',$infoW['start_date']); 
-        $ret .= "<th>End Date</th>";
-        $ret .= sprintf('<td><input name="MemDates_end" size="10"
+                class="form-control" />',$infoW['start_date']); 
+        $ret .= '<span class="label primaryBackground">End</span>';
+        $ret .= sprintf('<input name="MemDates_end" 
                 maxlength="10" value="%s" id="MemDates_end"
-                /></td></tr>',$infoW['end_date']);  
+                class="form-control" />',$infoW['end_date']);  
+        $ret .= '</div>';
 
-        $ret .= "</table></fieldset>";
+        $ret .= "</div>";
 
         return $ret;
     }
