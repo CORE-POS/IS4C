@@ -117,6 +117,8 @@ class FannieReportPage extends FanniePage
     */
     protected $sort_direction = 0;
 
+    protected $no_jquery = false;
+
     /**
       Column containing chart labels.
     */
@@ -672,7 +674,9 @@ class FannieReportPage extends FanniePage
                 foreach($this->report_end_content() as $line) {
                     $ret .= (substr($line,0,1)=='<'?'':'<br />').$line;
                 }
-                $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
+                if (!$this->no_jquery) {
+                    $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
+                }
                 $this->add_script($FANNIE_URL.'src/javascript/tablesorter/jquery.tablesorter.js');
                 $sort = sprintf('[[%d,%d]]',$this->sort_column,$this->sort_direction);
                 if ($this->sortable) {

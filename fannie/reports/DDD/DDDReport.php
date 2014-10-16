@@ -29,6 +29,7 @@ if (!class_exists('FannieAPI')) {
 class DDDReport extends FannieReportPage 
 {
     public $description = '[Shrink Reports] lists items marked as DDD/shrink at the registers.';
+    public $themed = true;
 
     protected $title = "Fannie : DDD Report";
     protected $header = "DDD Report";
@@ -132,25 +133,26 @@ class DDDReport extends FannieReportPage
         $this->add_onload_command('$(\'#date1\').datepicker();');
         $this->add_onload_command('$(\'#date2\').datepicker();');
         return '
-            <form method="get" action="DDDReport.php">
-            <table>
-            <tr>
-                <td colspan="3"><i>Dates are optional; omit for last quarter (including today)</i></td>
-            </tr>
-            <tr>
-                <th>Start Date</th>
-                <td><input type="text" id="date1" name="date1" /></td>
-                <td rowspan="2">' . FormLib::dateRangePicker() . '</td>
-            </tr>
-            <tr>
-                <th>End Date</th>
-                <td><input type="text" id="date2" name="date2" /></td>
-            </tr>
-            <tr>
-                <td><input type="submit" name="submitted" value="Get Report" /></td>
-            </tr>
-            </table>
-            </form>';
+<div class="well">Dates are optional; omit for last quarter</div>
+<div class="col-sm-4">
+    <div class="form-group">
+    <label>Date Start</label>
+    <input type=text id=date1 name=date1 class="form-control" />
+    </div>
+    <div class="form-group">
+    <label>Date End</label>
+    <input type=text id=date2 name=date2 class="form-control" />
+    </div>
+    <p>
+    <button type=submit name=submit class="btn btn-default">Submit</button>
+    <button type=reset name=reset class="btn btn-default">Start Over</button>
+    </p>
+</div>
+<div class="col-sm-4">'
+    . FormLib::date_range_picker() . '
+</div>
+</form>
+        ';
     }
 }
 
