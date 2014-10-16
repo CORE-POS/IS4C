@@ -29,14 +29,13 @@ if (!function_exists('addProductAllLanes')) {
     include('laneUpdates.php');
 }
 
-class ItemEditorPage extends FanniePage 
+class ItemEditorPage_reference extends FanniePage 
 {
 
     private $mode = 'search';
     private $msgs = '';
 
     public $description = '[Item Editor] is the primary item editing tool.';
-    public $themed = true;
 
     function preprocess()
     {
@@ -81,7 +80,7 @@ class ItemEditorPage extends FanniePage
         }
 
         $this->title = _('Fannie') . ' - ' . _('Item Maintenance');
-        $this->header = '';//_('Item Maintenance');
+        $this->header = _('Item Maintenance');
 
         if (FormLib::get_form_value('searchupc') !== '') {
             $this->mode = 'search_results';
@@ -116,23 +115,17 @@ class ItemEditorPage extends FanniePage
             $ret .= $this->msgs;
             $ret .= '</blockquote>';
         }
-        $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method=get>';
-        $ret .= '
-            <div class="container-fluid">
-            <div class="row form-group form-inline">
-            <input name=searchupc type=text id=upc
-                class="form-control" /> 
+        $ret .= '<form action="ItemEditorPage.php" method=get>';
+        $ret .= '<input name=searchupc type=text id=upc> 
             ' . _('Enter') .' 
-            <select name="ntype" class="form-control">
+            <select name="ntype">
             <option>UPC</option>
             <option>SKU</option>
             <option>Brand Prefix</option>
             </select> 
-            ' . _('or product name here') 
-            . '</div></div>';
+            ' . _('or product name here') . '<br>';
 
-        $ret .= '<p><button name=searchBtn type=submit
-                    class="btn btn-default">Go</button></p>';
+        $ret .= '<input name=searchBtn type=submit value=Go> ';
         $ret .= '</form>';
         $ret .= '<p><a href="AdvancedItemSearch.php">' . _('Advanced Search') . '</a>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
@@ -201,8 +194,7 @@ class ItemEditorPage extends FanniePage
           Query somehow failed. Unlikely. Show error and search box again.
         */
         if ($result === false) {
-            $this->msgs = '<div class="alert alert-danger">' . _('Error searching for') 
-                . ' ' . $upc . '</div>';
+            $this->msgs = '<span style="color:red;">' . _('Error searching for') . ':</span> '.$upc;
             return $this->search_form();
         }
 
@@ -213,8 +205,7 @@ class ItemEditorPage extends FanniePage
           so show error and search box again.
         */
         if ($num == 0 && !is_numeric($upc)) {
-            $this->msgs = '<div class="alert alert-danger">' . _('Error searching for') 
-                . ' ' . $upc . '</div>';
+            $this->msgs = '<span style="color:red;">' . _('Error searching for') . ':</span> '.$upc;
             return $this->search_form();
         }
 
@@ -256,14 +247,13 @@ class ItemEditorPage extends FanniePage
         $ret .= '<tbody>';
         foreach ($results as $upc => $data) {
             $ret .= sprintf('<tr>
-                            <td><a href="%s?searchupc=%s">%s</a></td>
+                            <td><a href="ItemEditorPage.php?searchupc=%s">%s</a></td>
                             <td>%s</td>
                             <td>%s</td>
                             <td>%.2f</td>
                             <td>%s</td>
                             <td>%s</td>
                             </tr>',
-                            $_SERVER['PHP_SELF'],
                             $upc, $upc, 
                             $data['description'],
                             $data['manufacturer'],
@@ -308,52 +298,29 @@ class ItemEditorPage extends FanniePage
         }
 
         // remove action so form cannot be submitted by pressing enter
-        $ret = '<form action="' . ($authorized ? $_SERVER['PHP_SELF'] : '') . '" method="post">';
-        $ret .= '<div class="container"><div id="alert-area">';
+        $ret = '<form action="' . ($authorized ? 'ItemEditorPage.php' : '') . '" method="post">';
 
         uasort($FANNIE_PRODUCT_MODULES, array('ItemEditorPage', 'sortModules'));
         $count = 0;
         $mod_js = '';
-        $current_width = 100;
         foreach ($FANNIE_PRODUCT_MODULES as $class => $params) {
             $mod = new $class();
-            if ($current_width + $mod->width() > 100) {
-                $ret .= '</div><div class="row">';
-                $current_width = 0;
-                $count++;
-            }
-            switch ($mod->width()) {
-                case \COREPOS\Fannie\API\item\ItemModule::META_WIDTH_THIRD:
-                    $ret .= '<div class="col-sm-4">' . "\n";
-                    break;
-                case \COREPOS\Fannie\API\item\ItemModule::META_WIDTH_HALF:
-                    $ret .= '<div class="col-sm-6">' . "\n";
-                    break;
-                case \COREPOS\Fannie\API\item\ItemModule::META_WIDTH_FULL:
-                default:
-                    $ret .= '<div class="col-sm-12">' . "\n";
-                    break;
-            }
             $ret .= $mod->ShowEditForm($upc, $params['show'], $params['expand']);
-            $ret .= '</div>' . "\n";
             $shown[$class] = true;
             $mod_js .= $mod->getFormJavascript($upc);
 
-            if ($count == 1 && $current_width == 0) { // show links after first mod
+            if ($count == 0) { // show links after first mod
 
-                $ret .= '<p>';
                 if (!$authorized) {
-                    $ret .= sprintf('<a href="%sauth/ui/loginform.php?redirect=%s?searchupc=%s">Login
-                                to edit</a>', $FANNIE_URL, $_SERVER['PHP_SELF'], $upc);
+                    $ret .= sprintf('<a href="%sauth/ui/loginform.php?redirect=%sitem/ItemEditorPage.php?searchupc=%s">Login
+                                to edit</a>', $FANNIE_URL, $FANNIE_URL, $upc);
                 } else if ($isNew) {
-                    $ret .= '<button type="submit" name="createBtn" value="1"
-                                class="btn btn-default">Create Item</button>';
+                    $ret .= '<input type="submit" name="createBtn" value="Create Item" />';
                 } else {
-                    $ret .= '<button type="submit" name="updateBtn" value="1"
-                                class="btn btn-default">Update Item</button>';
+                    $ret .= '<input type="submit" name="updateBtn" value="Update Item" />';
                 }
                 $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    <a href="' . $_SERVER['PHP_SELF'] . '">Back</a>';
+                    <a href="ItemEditorPage.php">Back</a>';
                 if (!$isNew) {
                     $this->add_script($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.js?v=1');
                     $this->add_css_file($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.css');
@@ -370,13 +337,10 @@ class ItemEditorPage extends FanniePage
                     $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
                     $ret .= '<a href="" onclick="'.$js.'return false;">Shelf Tag</a>';
                 }
-                $ret .= '</p>';
             }
 
-            $current_width += $mod->width();
+            $count++;
         }
-        $ret .= '</div>'; // close last row
-        $ret .= '</div>'; // close fluid-container
 
         if (isset($shown['BaseItemModule'])) {
             $this->add_onload_command("bindAutoComplete('#brand_field', '$ws', 'brand');\n");
@@ -452,7 +416,7 @@ class ItemEditorPage extends FanniePage
             }
         }
 
-        $ret = "<table class=\"table\">";
+        $ret = "<table border=0>";
         foreach ($FANNIE_PRODUCT_MODULES as $class => $params) {
             $mod = new $class();
             $rows = $mod->summaryRows($upc);

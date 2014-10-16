@@ -30,12 +30,13 @@ class ExtraInfoModule extends ItemModule
     {
         $upc = BarcodeLib::padUPC($upc);
 
-        $ret = '<fieldset id="ExtraInfoFieldset">';
-        $ret .=  "<legend onclick=\"\$('#ExtraInfoFieldsetContent').toggle();\">
-                <a href=\"\" onclick=\"return false;\">Extra Info</a>
-                </legend>";
-        $css = ($expand_mode == 1) ? '' : 'display:none;';
-        $ret .= '<div id="ExtraInfoFieldsetContent" style="' . $css . '">';
+        $ret = '<div id="ExtraInfoFieldset" class="panel panel-default">';
+        $ret .=  "<div class=\"panel-heading\">
+                <a href=\"\" onclick=\"\$('#ExtraInfoFieldsetContent').toggle();return false;\">
+               Extra Info
+                </a></div>";
+        $css = ($expand_mode == 1) ? '' : ' collapse';
+        $ret .= '<div id="ExtraInfoFieldsetContent" class="panel-body' . $css . '">';
 
         $info = array('cost'=>0.00,'deposit'=>0,'local'=>0,'inUse'=>1,'modified'=>'Unknown','idEnforced'=>0);
         $dbc = $this->db();
@@ -55,14 +56,14 @@ class ExtraInfoModule extends ItemModule
             $local_opts[1] = 'Yes'; // generic local if no origins defined
         }
 
-        $localSelect = '<select name="local">';
+        $localSelect = '<select name="local" class="form-control">';
         foreach($local_opts as $id => $val) {
             $localSelect .= sprintf('<option value="%d" %s>%s</option>',
                 $id, ($id == $info['local']?'selected':''), $val);
         }
         $localSelect .= '</select>';
 
-        $ageSelect = '<select name="idReq">';
+        $ageSelect = '<select name="idReq" class="form-control">';
         $ages = array('n/a'=>0, 18=>18, 21=>21);
         foreach($ages as $label => $age) {
             $ageSelect .= sprintf('<option %s value="%d">%s</option>',
@@ -71,13 +72,13 @@ class ExtraInfoModule extends ItemModule
         }
         $ageSelect .= '</select>';
         
-        $ret .= "<table style=\"margin-top:5px;margin-bottom:5px;\" border=1 cellpadding=5 cellspacing=0 width='100%'><tr>";
+        $ret .= "<table class=\"table table-bordered\" width='100%'><tr>";
         $ret .= '<tr><th>Deposit'.FannieHelp::ToolTip('PLU/UPC of linked deposit item').'</th>
             <th>Age Req.</th>
             <th>Local</th>
             <th>In Use'.FannieHelp::ToolTip('Uncheck to temporarily disable').'</th></tr>';
         $ret .= sprintf('<tr>
-                <td align="center"><input type="text" size="5" value="%d" name="deposit" /></td>
+                <td align="center"><input type="text" class="form-control" value="%d" name="deposit" /></td>
                 <td align="center">%s</td>
                 <td align="center">%s</td>
                 <td align="center"><input type="checkbox" name="inUse" value="1" %s /></td></tr>',
@@ -87,7 +88,7 @@ class ExtraInfoModule extends ItemModule
         );
         $ret .= '</table>
                 </div>
-                </fieldset>';
+                </div>';
 
         return $ret;
     }

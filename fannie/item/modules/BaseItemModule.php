@@ -31,8 +31,7 @@ class BaseItemModule extends ItemModule {
         global $FANNIE_URL, $FANNIE_PRODUCT_MODULES;
         $upc = BarcodeLib::padUPC($upc);
 
-        $ret = '<fieldset id="BaseItemFieldset">';
-        $ret .=  "<legend>Item</legend>";
+        $ret = '<div id="BaseItemFieldset">';
 
         $dbc = $this->db();
         $p = $dbc->prepare_statement('SELECT
@@ -82,7 +81,7 @@ class BaseItemModule extends ItemModule {
 
             /* find previous and next items in department */
             $pnP = $dbc->prepare_statement('SELECT upc FROM products WHERE department=? ORDER BY upc');
-            $pnR = $dbc->exec_statement($pnP,array($upc));
+            $pnR = $dbc->exec_statement($pnP,array($product->department()));
             $passed_it = False;
             while($pnW = $dbc->fetch_row($pnR)){
                 if (!$passed_it && $upc != $pnW[0])
@@ -101,10 +100,9 @@ class BaseItemModule extends ItemModule {
                 $lcW = $dbc->fetch_row($lcR);
                 $likeCode = $lcW['likeCode'];
             }
-        }
-        else {
+        } else {
             // new item
-            $ret .= "<span style=\"color:red;\">Item not found.  You are creating a new one.  </span>";
+            $ret .= "<div class=\"alert alert-warning\">Item not found.  You are creating a new one.</div>";
 
             /**
               Check for entries in the vendorItems table to prepopulate
@@ -169,12 +167,12 @@ class BaseItemModule extends ItemModule {
             }
         }
 
-        $ret .= "<table border=1 cellpadding=5 cellspacing=0>";
+        $ret .= "<table class=\"table table-bordered\">";
 
-        $ret .= '<tr><td align=right><b>UPC</b></td><td style="color:red;">'.$upc;
+        $ret .= '<tr><td class="text-right"><b>UPC</b></td><td style="color:red;">'.$upc;
         $ret .= '<input type=hidden value="'.$upc.'" id=upc name=upc />';
-        if ($prevUPC) $ret .= " <a style=\"font-size:85%;\" href=itemMaint.php?upc=$prevUPC>Previous</a>";
-        if ($nextUPC) $ret .= " <a style=\"font-size:85%;\" href=itemMaint.php?upc=$nextUPC>Next</a>";
+        if ($prevUPC) $ret .= " <a class=\"small\" href=itemMaint.php?upc=$prevUPC>Previous</a>";
+        if ($nextUPC) $ret .= " <a class=\"small\" href=itemMaint.php?upc=$nextUPC>Next</a>";
         $ret .= '</td>';
 
         // system for store-level records not refined yet; might go here
@@ -185,28 +183,40 @@ class BaseItemModule extends ItemModule {
         $ret .= '</tr><tr>';
 
         $limit = 35 - strlen(isset($rowItem['description'])?$rowItem['description']:'');
-        $ret .= '<td><b>Description</b></td><td><input type=text size=30 value="'
-            .(isset($rowItem['description'])?$rowItem['description']:'')
-            .'" onkeyup="$(\'#dcounter\').html(35-(this.value.length));" '
-            .' name=descript maxlength=35 id=descript>
-            <span id=dcounter>'.$limit.'</span></td>'; 
+        $ret .= sprintf('<td><b>Description</b></td>
+                <td><div class="input-group">
+                    <input type="text" maxlength="30" class="form-control"
+                    name="descript" id="descript" value="%s"
+                    onkeyup="$(\'#dcounter\').html(35-(this.value.length));"
+                    /><span id="dcounter" class="input-group-addon">%d</span>
+                </div></td>',
+                (isset($rowItem['description'])?$rowItem['description']:''),
+                $limit);
 
         /**
           Drop down box changes price field from single price to
           X for $Y style pricing
         */
-        if (!isset($rowItem['pricemethod'])) $rowItem['pricemethod'] = 0;
-        $ret .= '<td><b>Price</b></td>';
-        $ret .= sprintf('<td>$<input id="price" name="price" type="text" size="6" value="%.2f" />
-                </td>', (isset($rowItem['normal_price']) ? $rowItem['normal_price'] : 0)
-        );
+        if (!isset($rowItem['pricemethod'])) {
+            $rowItem['pricemethod'] = 0;
+        }
+        $ret .= sprintf('<td><b>Price</b></td>
+                    <td><div class="input-group">
+                        <span class="input-group-addon">$</span>
+                        <input type="text" id="price" name="price"
+                            class="form-control" value="%.2f" />
+                    </div></td>',
+                    (isset($rowItem['normal_price']) ? $rowItem['normal_price'] : 0));
 
         $ret .= '</tr><tr>';
 
-        $ret .= '<tr><td><b>Package Size</b></td><td><input type="text" name="size" size="4"
+        $ret .= '<tr><td><b>Package Size</b></td><td>
+                <div class="form-inline">
+                <input type="text" name="size" class="form-control" size=4
                 value="'.(isset($rowItem['size'])?$rowItem['size']:'').'" />';
-        $ret .= '<b>Unit of measure</b> <input type="text" name="unitm" size="4"
-                value="'.(isset($rowItem['unitofmeasure'])?$rowItem['unitofmeasure']:'').'" /></td>';
+        $ret .= ' <b>Unit of measure</b> <input type="text" name="unitm" class="form-control" size=4
+                value="'.(isset($rowItem['unitofmeasure'])?$rowItem['unitofmeasure']:'').'" />
+                </div></td>';
         $ret .= '<td style="color:darkmagenta;">Last modified</td>
             <td style="color:darkmagenta;">'. (isset($rowItem['modified']) ? $rowItem['modified'] : '') . '</td>';
         $ret .= '</tr>';
@@ -217,9 +227,9 @@ class BaseItemModule extends ItemModule {
                     value="'. (isset($rowItem['ldesc']) ? $rowItem['ldesc'] : '') . '" /></td><td>&nbsp;</td></tr>';
         }
 
-        $ret .="<td align=right><b>Brand</b></td><td><input type=text name=manufacturer size=30 value=\""
+        $ret .="<td align=right><b>Brand</b></td><td><input type=text name=manufacturer value=\""
             .(isset($rowItem['manufacturer'])?$rowItem['manufacturer']:"")
-            ."\" id=\"brand_field\" /></td>";
+            ."\" id=\"brand_field\" class=\"form-control\" /></td>";
         /**
           Check products.default_vendor_id to see if it is a 
           valid reference to the vendors table
@@ -237,9 +247,10 @@ class BaseItemModule extends ItemModule {
           entry OR if no vendor entry exists. Only allow free text
           if it's already in place
         */
-        $ret .= "<td align=right><button type=\"button\" id=\"newVendorButton\">+</button> <b>Vendor</b></td><td>";
+        $ret .= "<td align=right><button type=\"button\" id=\"newVendorButton\"
+                class=\"btn btn-default\">+</button> <b>Vendor</b></td><td>";
         if ($normalizedVendorID || empty($rowItem['distributor'])) {
-            $ret .= '<select name="distributor" class="chosen-select">';
+            $ret .= '<select name="distributor" class="chosen-select form-control">';
             $ret .= '<option value="0"></option>';
             $vendors = new VendorsModel($dbc);
             foreach ($vendors->find('vendorName') as $v) {
@@ -251,16 +262,15 @@ class BaseItemModule extends ItemModule {
         } else {
             $ret .= "<input type=text name=distributor size=8 value=\""
                 .(isset($rowItem['distributor'])?$rowItem['distributor']:"")
-                ."\" id=\"vendor_field\" />";
+                ."\" id=\"vendor_field\" class=\"form-control\" />";
         }
         $ret .= '</td>';
         $ret .= '</tr>';
 
-        $ret .= '<div id="newVendorDialog" title="Create new Vendor">';
-        $ret .= '<span id="newVendorAlert" style="color:red;"></span>';
+        $ret .= '<div id="newVendorDialog" title="Create new Vendor" class="collapse">';
         $ret .= '<fieldset>';
         $ret .= '<label for="newVendorName">Vendor Name</label>';
-        $ret .= '<input type="text" name="newVendorName" id="newVendorName" style="display:block;" />';
+        $ret .= '<input type="text" name="newVendorName" id="newVendorName" class="form-control" />';
         $ret .= '</fieldset>';
         $ret .= '</div>';
 
@@ -280,23 +290,23 @@ class BaseItemModule extends ItemModule {
                 $batch = $dbc->fetch_row($batchR);
             }
 
-            $ret .= '<tr>';
-            $ret .= sprintf("<td style=\"color:green;\"><b>Sale Price:</b></td>
-                <td style=\"color:green;\">%.2f (<em>Batch: <a href=\"%sbatches/newbatch/BatchManagementTool.php?startAt=%d\">%s</a></em>)</td>",
+            $ret .= '<tr class="alert-success">';
+            $ret .= sprintf("<td><strong>Sale Price:</strong></td>
+                <td>%.2f (<em>Batch: <a href=\"%sbatches/newbatch/BatchManagementTool.php?startAt=%d\">%s</a></em>)</td>",
                 $rowItem['special_price'], $FANNIE_URL, $batch['batchID'], $batch['batchName']);
             list($date,$time) = explode(' ',$rowItem['end_date']);
-            $ret .= "<td style=\"color:green;\">End Date:</td>
-                <td style=\"color:green;\">$date 
+            $ret .= "<td>End Date:</td>
+                <td>$date 
                 (<a href=\"EndItemSale.php?id=$upc\">Unsale Now</a>)</td>";
             $ret .= '</tr>';
         }
         $ret .= "</table>";
 
-        $ret .= "<table style=\"margin-top:5px;margin-bottom:5px;\" border=1 cellpadding=5 cellspacing=0 width='100%'>";
-        $ret .= "<tr><th>Dept</th><th>Tax</th><th>FS</th>
-            <th>Scale".FannieHelp::ToolTip('Item sold by weight')."</th>
-            <th>QtyFrc".FannieHelp::ToolTip('Cashier must enter quantity')."</th>
-            <th>NoDisc".FannieHelp::ToolTip('Item not subject to % discount')."</th></tr>";
+        $ret .= "<table class=\"table table-bordered\">";
+        $ret .= '<tr><th>Dept</th><th>Tax</th><th><label for="FS">FS</label></th>
+            <th><label for="scale-checkbox">Scale</label>'.FannieHelp::ToolTip('Item sold by weight').'</th>
+            <th><label for="qty-checkbox">QtyFrc</label>'.FannieHelp::ToolTip('Cashier must enter quantity').'</th>
+            <th><label for="no-disc-checkbox">NoDisc</label>'.FannieHelp::ToolTip('Item not subject to % discount').'</th></tr>';
 
         $depts = array();
         $subs = array();
@@ -317,18 +327,19 @@ class BaseItemModule extends ItemModule {
         }
 
         $ret .= "<tr align=top>";
-        $ret .= "<td align=left>";  
-        $ret .= '<select name="department" id="department" onchange="chainSelects(this.value);">';
+        $ret .= "<td align=left><div class=\"form-inline\">";
+        $ret .= '<select name="department" id="department" 
+            class="form-control" onchange="chainSelects(this.value);">';
         foreach($depts as $id => $name){
             $ret .= sprintf('<option %s value="%d">%d %s</option>',
                     ($id == $rowItem['department'] ? 'selected':''),
                     $id,$id,$name);
         }
         $ret .= '</select>';
-        $ret .= '<select name="subdept" id="subdept">';
+        $ret .= '<select name="subdept" id="subdept" class="form-control">';
         $ret .= isset($subs[$rowItem['department']]) ? $subs[$rowItem['department']] : '<option value="0">None</option>';
         $ret .= '</select>';
-        $ret .= '</td>';
+        $ret .= '</div></td>';
 
         $taxQ = $dbc->prepare_statement('SELECT id,description FROM taxrates ORDER BY id');
         $taxR = $dbc->exec_statement($taxQ);
@@ -336,7 +347,7 @@ class BaseItemModule extends ItemModule {
         while ($taxW = $dbc->fetch_row($taxR))
             array_push($rates,array($taxW[0],$taxW[1]));
         array_push($rates,array("0","NoTax"));
-        $ret .= '<td align="left"><select name="tax" id="tax">';
+        $ret .= '<td align="left"><select name="tax" id="tax" class="form-control">';
         foreach($rates as $r){
             $ret .= sprintf('<option %s value="%d">%s</option>',
                 (isset($rowItem['tax'])&&$rowItem['tax']==$r[0]?'selected':''),
@@ -347,17 +358,20 @@ class BaseItemModule extends ItemModule {
         $ret .= sprintf('<td align="center"><input type="checkbox" value="1" name="FS" id="FS" %s /></td>',
                 (isset($rowItem['foodstamp']) && $rowItem['foodstamp']==1 ? 'checked' : ''));
 
-        $ret .= sprintf('<td align="center"><input type="checkbox" value="1" name="Scale" %s /></td>',
+        $ret .= sprintf('<td align="center"><input type="checkbox" value="1" 
+                    name="Scale" id="scale-checkbox" %s /></td>',
                 (isset($rowItem['scale']) && $rowItem['scale']==1 ? 'checked' : ''));
 
-        $ret .= sprintf('<td align="center"><input type="checkbox" value="1" name="QtyFrc" %s /></td>',
+        $ret .= sprintf('<td align="center"><input type="checkbox" value="1" 
+                    name="QtyFrc" id="qty-checkbox" %s /></td>',
                 (isset($rowItem['qttyEnforced']) && $rowItem['qttyEnforced']==1 ? 'checked' : ''));
 
-        $ret .= sprintf('<td align="center"><input type="checkbox" value="0" id="NoDisc" name="NoDisc" %s /></td>',
+        $ret .= sprintf('<td align="center"><input type="checkbox" value="0" 
+                name="NoDisc" id="no-disc-checkbox" %s /></td>',
                 (isset($rowItem['discount']) && $rowItem['discount']==0 ? 'checked' : ''));
 
         $ret .= '</tr>';
-        $ret .= '</table></fieldset>';
+        $ret .= '</table></div>';
         return $ret;
     }
 

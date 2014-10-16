@@ -31,12 +31,13 @@ class VendorItemModule extends ItemModule {
         global $FANNIE_CSS_PRIMARY_COLOR;
         $upc = BarcodeLib::padUPC($upc);
 
-        $ret = '<fieldset id="VendorItemsFieldset">';
-        $ret .=  "<legend onclick=\"\$('#VendorItemsFieldsetContent').toggle();\">
-                <a href=\"\" onclick=\"return false;\">Vendor Items</a>
-                </legend>";
-        $css = ($expand_mode == 1) ? '' : 'display:none;';
-        $ret .= '<div id="VendorItemsFieldsetContent" style="' . $css . '">';
+        $ret = '<div id="VendorItemsFieldset" class="panel panel-default">';
+        $ret .=  "<div class=\"panel-heading\">
+                <a href=\"\" onclick=\"\$('#VendorItemsFieldsetContent').toggle(); return false;\">
+                Vendor Items
+                </a></div>";
+        $css = ($expand_mode == 1) ? '' : ' collapse';
+        $ret .= '<div id="VendorItemsFieldsetContent" class="panel-body' . $css . '">';
 
         $dbc = $this->db();
         $p = $dbc->prepare_statement('SELECT vendorID,vendorName FROM vendors ORDER BY vendorName');
@@ -54,7 +55,8 @@ class VendorItemModule extends ItemModule {
         $matched = false;
         $hilite = 'style="color:' . $FANNIE_CSS_PRIMARY_COLOR . ';"';
 
-        $ret .= '<select onchange="$(\'.vtable\').hide();$(\'#vtable\'+this.value).show();">';
+        $ret .= '<select class="form-control"
+            onchange="$(\'.vtable\').hide();$(\'#vtable\'+this.value).show();">';
         foreach ($vendors as $id => $name) {
             $ret .= sprintf('<option %s value="%d">%s%s</option>',
                         ($my_vendor == $id ? 'selected ' . $hilite : ''),
@@ -76,19 +78,21 @@ class VendorItemModule extends ItemModule {
                 $style = 'display:table;';
                 $cost_class = 'class="default_vendor_cost"';
             }
-            $ret .= "<table style=\"margin-top:5px;margin-bottom:5px;$style\" 
-                    border=1 id=\"vtable$id\"
-                    cellpadding=5 cellspacing=0 class=\"vtable\">";
+            $ret .= "<table id=\"vtable$id\"
+                     class=\"vtable table table-bordered\">";
             $row = array('cost'=>0,'sku'=>'','units'=>1);
             $res = $dbc->exec_statement($prep,array($id,$upc)); 
             if ($dbc->num_rows($res) > 0)
                 $row = $dbc->fetch_row($res);
-            $ret .= '<tr><th>SKU</th><td><input type="text" size="8" name="v_sku[]"
+            $ret .= '<tr><th>SKU</th><td><input type="text" class="form-control" name="v_sku[]"
                     value="'.$row['sku'].'" /></td>';
-            $ret .= sprintf('<th>Unit Cost</th><td>$<input type="text" size="6"
-                    name="v_cost[]" id="vcost%d" %s value="%.2f" onchange="vprice(%d);" /></td></tr>',
+            $ret .= sprintf('<th>Unit Cost</th><td>
+                    <div class="input-group">
+                    <span class="input-group-addon">$</span><input type="text" 
+                    name="v_cost[]" id="vcost%d" %s value="%.2f" onchange="vprice(%d);" 
+                    class="form-control" /></div></td></tr>',
                     $id, $cost_class, $row['cost'], $id);
-            $ret .= '<tr><th>Units/Case</th><td><input type="text" size="4" name="v_units[]"
+            $ret .= '<tr><th>Units/Case</th><td><input type="text" class="form-control" name="v_units[]"
                     id="vunits'.$id.'" value="'.$row['units'].'" 
                     onchange="vprice('.$id.');" /></td>';
             $ret .= sprintf('<th>Case Cost</th><td id="vcc%d">$%.2f</td></tr>',
@@ -101,7 +105,8 @@ class VendorItemModule extends ItemModule {
         }
         
         $ret .= '</div>';
-        $ret .= '</fieldset>';
+        $ret .= '</div>';
+
         return $ret;
     }
 

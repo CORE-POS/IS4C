@@ -37,24 +37,26 @@ class LikeCodeModule extends ItemModule {
             $w = $dbc->fetch_row($r);
             $myLC = $w['likeCode'];
         }
-        $ret = '<fieldset id="LikeCodeFieldSet">';
-        $ret .=  "<legend onclick=\"\$('#LikeCodeFieldsetContent').toggle();\">
-                <a href=\"\" onclick=\"return false;\">Likecode</a>
-                </legend>";
+        $ret = '<div id="LikeCodeFieldSet" class="panel panel-default">';
+        $ret .=  "<div class=\"panel-heading\">
+                <a href=\"\" onclick=\"\$('#LikeCodeFieldsetContent').toggle();return false;\">
+                Likecode
+                </a></div>";
         $style = '';
         if ($expand_mode == 1) {
             $style = '';
         } else if ($expand_mode == 2 && $myLC != -1) {
             $style = '';
         } else {
-            $style = 'display:none;';
+            $style = ' collapse';
         }
-        $ret .= '<div id="LikeCodeFieldsetContent" style="' . $style . '">';
+        $ret .= '<div id="LikeCodeFieldsetContent" class="panel-body' . $style . '">';
 
-
-        $ret .= "<table border=0><tr><td><b>Like code</b> <button type=\"button\" id=\"lcAddButton\">+</button> ";
-        $ret .= "<select name=likeCode id=\"likeCodeSelect\" style=\"{width: 175px;}\"
-                onchange=\"updateLcModList(this.value);\" class=\"chosenSelect\">";
+        $ret .= "<div class=\"form-group form-inline\">
+                <b>Like code</b> <button type=\"button\" id=\"lcAddButton\"
+                class=\"btn btn-default\">+</button> ";
+        $ret .= "<select name=likeCode id=\"likeCodeSelect\" 
+                onchange=\"updateLcModList(this.value);\" class=\"chosenSelect form-control\">";
         $ret .= "<option value=-1>(none)</option>";
     
         $p = $dbc->prepare_statement('SELECT likeCode, likeCodeDesc FROM likeCodes ORDER BY likeCode');
@@ -65,25 +67,25 @@ class LikeCodeModule extends ItemModule {
                 $w['likeCode'],$w['likeCode'],$w['likeCodeDesc']
             );
         }
-        $ret .= "</select></td>";
-        $ret .= "<td><input type=checkbox name=LikeCodeNoUpdate value='noupdate'>Check to not update like code items</td>
-            </tr><tr>";
-        $ret .= '<td id="LikeCodeItemList">';
-        $ret .= $this->LikeCodeItems($myLC, $upc);
-        $ret .= '</td>';
-        $ret .= '<td id="LikeCodeHistoryLink" valign="top">';
-        $ret .= $this->HistoryLink($myLC);  
-        $ret .= '</td>';
-        $ret .= '</tr></table></fieldset>';
+        $ret .= "</select>";
+        $ret .= " <label><input type=checkbox name=LikeCodeNoUpdate value='noupdate'>Check to not update like code items</label>";
+        $ret .= ' <span id="LikeCodeHistoryLink">' . $this->HistoryLink($myLC) . '</span>';
+        $ret .= '</div>';
 
-        $ret .= '<div id="addLikeCodeDialog" title="Add Like Code">';
-        $ret .= '<span id="addLikeAreaAlert" style="color:red;"></span>';
+        $ret .= '<div id="LikeCodeItemList">';
+        $ret .= $this->LikeCodeItems($myLC, $upc);
+        $ret .= '</div>';
+
+        $ret .= '<div id="addLikeCodeDialog" title="Add Like Code" class="collapse">';
         $ret .= '<fieldset>';
         $ret .= '<label for="newLikeID">LC #</label>';
-        $ret .= '<input type="text" name="newLC" id="newLikeID" style="display:block;" />';
+        $ret .= '<input type="text" name="newLC" id="newLikeID" class="form-control" />';
         $ret .= '<label for="newLikeName">LC Name</label>';
-        $ret .= '<input type="text" name="lcName" id="newLikeName" style="display:block;" />';
+        $ret .= '<input type="text" name="lcName" id="newLikeName" class="form-control" />';
         $ret .= '</fieldset>';
+        $ret .= '</div>';
+
+        $ret .= '</div>';
         $ret .= '</div>';
 
         return $ret;
@@ -131,6 +133,11 @@ class LikeCodeModule extends ItemModule {
         ob_start();
         ?>
         function updateLcModList(val){
+            if (val == -1) {
+                $('#LikeCodeItemList').hide();
+                $('#LikeCodeHistoryLink').hide();
+                return true;
+            }
             $.ajax({
                 url: '<?php echo $FANNIE_URL; ?>item/modules/LikeCodeModule.php',
                 data: 'lc='+val,
@@ -221,7 +228,7 @@ class LikeCodeModule extends ItemModule {
     private function LikeCodeItems($lc, $upc='nomatch'){
         if ($lc == -1) return '';
         $ret = "<b>Like Code Linked Items</b><div id=lctable>";
-        $ret .= "<table border=0 bgcolor=\"#FFFFCC\">";
+        $ret .= "<table class=\"alert alert-warning table\">";
         $dbc = $this->db();
         $p = $dbc->prepare_statement("SELECT p.upc,p.description FROM
             products AS p INNER JOIN upcLike AS u ON

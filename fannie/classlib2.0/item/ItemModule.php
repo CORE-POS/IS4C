@@ -21,8 +21,14 @@
 
 *********************************************************************************/
 
+namespace COREPOS\Fannie\API\item
+{
+
 class ItemModule 
 {
+    const META_WIDTH_FULL = 100;
+    const META_WIDTH_HALF = 50;
+    const META_WIDTH_THIRD = 33;
 
     public function db()
     {
@@ -31,7 +37,12 @@ class ItemModule
             include_once($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
         }
 
-        return FannieDB::get($FANNIE_OP_DB);
+        return \FannieDB::get($FANNIE_OP_DB);
+    }
+
+    public function width()
+    {
+        return self::META_WIDTH_FULL;
     }
 
     public function showEditForm($upc, $display_mode=1, $expand_mode=1)
@@ -73,5 +84,13 @@ class ItemModule
     {
 
     }
+}
+
+}
+
+namespace 
+{
+    // global namespace wrapper class
+    class ItemModule extends \COREPOS\Fannie\API\item\ItemModule {}
 }
 

@@ -53,12 +53,13 @@ class ScaleItemModule extends ItemModule {
             $css = 'display:none;';
         }
 
-        $ret = '<fieldset id="ScaleItemFieldset">';
-        $ret .=  "<legend onclick=\"\$('#ScaleFieldsetContent').toggle();\">
-                <a href=\"\" onclick=\"return false;\">Scale</a>
-                </legend>";
+        $ret = '<div id="ScaleItemFieldset" class="panel panel-default">';
+        $ret .=  "<div class=\"panel-heading\">
+                <a href=\"\" onclick=\"\$('#ScaleFieldsetContent').toggle();return false;\">
+                Scale</a>
+                </div>";
         $css = ($expand_mode == 1) ? '' : 'display:none;';
-        $ret .= '<div id="ScaleFieldsetContent" style="' . $css . '">';
+        $ret .= '<div id="ScaleFieldsetContent" class="panel-body" style="' . $css . '">';
         
         $p = $dbc->prepare_statement('SELECT description FROM products WHERE upc=?');
         $r = $dbc->exec_statement($p,array($upc));
@@ -69,38 +70,38 @@ class ScaleItemModule extends ItemModule {
         }
 
         $ret .= sprintf('<input type="hidden" name="s_plu" value="%s" />',$upc);
-        $ret .= "<table style=\"background:#ffffcc;\" cellpadding=5 cellspacing=0 border=1>";
+        $ret .= "<table style=\"background:#ffffcc;\" class=\"table\">";
         $ret .= sprintf("<tr><th colspan=2>Longer description</th><td colspan=5><input size=35 
-                type=text name=s_longdesc maxlength=100 value=\"%s\" /></td></tr>",
+                type=text name=s_longdesc maxlength=100 value=\"%s\" 
+                class=\"form-control\" /></td></tr>",
                 ($reg_description == $scale['itemdesc'] ? '': $scale['itemdesc']));
 
         $ret .= "<tr><th>Weight</th><th>By Count</th><th>Tare</th><th>Shelf Life</th>";
         $ret .= "<th>Net Wt (oz)</th><th>Label</th><th>Safehandling</th></tr>";         
 
-        $ret .= '<tr><td>';
+        $ret .= '<tr><td><select name="s_type" class="form-control" size="2">';
         if ($scale['weight']==0){
-            $ret .= "<input type=radio name=s_type value=\"Random Weight\" checked /> Random<br />";
-            $ret .= "<input type=radio name=s_type value=\"Fixed Weight\" /> Fixed<br />";
+            $ret .= "<option value=\"Random Weight\" selected /> Random</option>";
+            $ret .= "<option value=\"Fixed Weight\" /> Fixed</option>";
+        } else {
+            $ret .= "<option value=\"Random Weight\" /> Random</option>";
+            $ret .= "<option value=\"Fixed Weight\" selected /> Fixed</option>";
         }
-        else {
-            $ret .= "<input type=radio name=s_type value=\"Random Weight\" /> Random<br />";
-            $ret .= "<input type=radio name=s_type value=\"Fixed Weight\" checked /> Fixed<br />";
-        }
-        $ret .= '</td>';
+        $ret .= '</select></td>';
 
         $ret .= sprintf("<td align=center><input type=checkbox value=1 name=s_bycount %s /></td>",
                 ($scale['bycount']==1?'checked':''));
 
-        $ret .= sprintf("<td align=center><input type=text size=5 name=s_tare value=\"%s\" /></td>",
+        $ret .= sprintf("<td align=center><input type=text class=\"form-control\" name=s_tare value=\"%s\" /></td>",
                 $scale['tare']);
 
-        $ret .= sprintf("<td align=center><input type=text size=5 name=s_shelflife value=\"%s\" /></td>",
+        $ret .= sprintf("<td align=center><input type=text class=\"form-control\" name=s_shelflife value=\"%s\" /></td>",
                 $scale['shelflife']);
 
-        $ret .= sprintf("<td align=center><input type=text size=5 name=s_netwt value=\"%s\" /></td>",
+        $ret .= sprintf("<td align=center><input type=text class=\"form-control\" name=s_netwt value=\"%s\" /></td>",
                 $scale['netWeight']);
 
-        $ret .= "<td><select name=s_label size=2>";
+        $ret .= "<td><select name=s_label size=2 class=\"form-control\">";
         if ($scale['label']==133 || $scale['label']==63){
             $ret .= "<option value=horizontal selected>Horizontal</option>";
             $ret .= "<option value=vertical>Vertical</option>";
@@ -116,8 +117,9 @@ class ScaleItemModule extends ItemModule {
         $ret .= '</tr>';    
 
         $ret .= "<tr><td colspan=7>";
-        $ret .= '<div style="float: left;">';
-        $ret .= "<b>Expanded text:<br /><textarea name=s_text rows=4 cols=45>";
+        $ret .= '<div class="col-sm-6">';
+        $ret .= "<b>Expanded text:<br />
+            <textarea name=s_text rows=4 cols=45 class=\"form-control\">";
         $ret .= $scale['text'];
         $ret .= "</textarea>";
         $ret .= '</div>';
@@ -131,7 +133,7 @@ class ScaleItemModule extends ItemModule {
                                     INNER JOIN superdepts AS s ON p.department=s.dept_ID
                                 WHERE p.upc=?
                                     AND s.superID=?');
-        $ret .= '<div style="float: left;">';
+        $ret .= '<div class="col-sm-6">';
         foreach ($scales->find('description') as $scale) {
             $checked = false;
             $mapR = $dbc->execute($mapP, array($scale->serviceScaleID(), $upc));
@@ -153,10 +155,9 @@ class ScaleItemModule extends ItemModule {
                             $scale->serviceScaleID(), $scale->description());
         }
         $ret .= '</div>';
-        $ret .= '<div style="clear:left;"></div>';
         $ret .= "</td></tr>";
 
-        $ret .= '</table></div></fieldset>';
+        $ret .= '</table></div></div>';
         return $ret;
     }
 

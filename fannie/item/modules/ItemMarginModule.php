@@ -32,22 +32,27 @@ class ItemMarginModule extends ItemModule {
         $product = new ProductsModel($db);
         $product->upc($upc);
         $product->load();
-        $ret = '<fieldset id="ItemMarginFieldset">';
-        $ret .=  "<legend onclick=\"\$('#ItemMarginContents').toggle();\">
-                <a href=\"\" onclick=\"return false;\">Margin</a>
-                </legend>";
-        $css = ($expand_mode == 1) ? '' : 'display:none;';
-        $ret .= '<div id="ItemMarginContents" style="' . $css . '">';
-        $ret .= '<div id="ItemMarginMeter" style="float:left;">';
+        $ret = '<div id="ItemMarginFieldset" class="panel panel-default">';
+        $ret .=  "<div class=\"panel-heading\">
+                <a href=\"\" onclick=\"\$('#ItemMarginContents').toggle();return false;\">
+                Margin
+                </a></div>";
+        $css = ($expand_mode == 1) ? '' : ' collapse';
+        $ret .= '<div id="ItemMarginContents" class="panel-body' . $css . '">';
+        $ret .= '<div id="ItemMarginFields" class="col-sm-5 form-group form-inline">';
+        $ret .= '<b>Unit Cost</b> <div class="input-group">';
+        $ret .= sprintf('<span class="input-group-addon">$</span>
+            <input type="text" size="6" value="%.2f" name="cost" 
+            class="form-control" id="cost" /> ', $product->cost());
+        $ret .= '<span class="input-group-addon">' . FannieHelp::ToolTip('Cost from current vendor')
+            .'</span>';
+        $ret .= '</div>';
+        $ret .= '</div>';
+        $ret .= '<div id="ItemMarginMeter" class="col-sm-5">';
         $ret .= $this->calculateMargin($product->normal_price(),$product->cost(),$product->department(), $upc);
         $ret .= '</div>';
-        $ret .= '<div id="ItemMarginFields" style="float:left;margin-left:2em;">';
-        $ret .= '<label for="cost" style="font-weight:bold;">Unit Cost</label>: ';
-        $ret .= sprintf('$<input type="text" size="6" value="%.2f" name="cost" id="cost" /> ', $product->cost());
-        $ret .= FannieHelp::ToolTip('Cost from current vendor');
         $ret .= '</div>';
         $ret .= '</div>';
-        $ret .= '</fieldset>';
 
         return $ret;
     }
@@ -105,12 +110,12 @@ class ItemMarginModule extends ItemModule {
         if ($price != 0)
             $actual = (($price-$cost)/$price)*100;
         if ($actual > $dm && is_numeric($dm)){
-            $ret .= sprintf("<span style=\"color:green;\">Current margin on this item is %.2f%%</span><br />",
+            $ret .= sprintf("<span class=\"alert-success\">Current margin on this item is %.2f%%</span><br />",
                 $actual);
         } elseif (!is_numeric($price)) {
-            $ret .= "<span style=\"color:green;\">No price has been saved for this item</span><br />";
+            $ret .= "<span class=\"alert-success\">No price has been saved for this item</span><br />";
         } else {
-            $ret .= sprintf("<span style=\"color:red;\">Current margin on this item is %.2f%%</span><br />",
+            $ret .= sprintf("<span class=\"alert-danger\">Current margin on this item is %.2f%%</span><br />",
                 $actual);
             $srp = $this->getSRP($cost,$dm/100.0);
             $ret .= sprintf("Suggested price: \$%.2f ",$srp);
@@ -136,8 +141,6 @@ class ItemMarginModule extends ItemModule {
                 }
             });
         }
-        $('#price').change(updateMarginMod);
-        $('#cost').change(updateMarginMod);
         <?php
         return ob_get_clean();
     }
