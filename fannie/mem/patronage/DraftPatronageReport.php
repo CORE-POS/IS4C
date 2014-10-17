@@ -31,6 +31,7 @@ class DraftPatronageReport extends FannieReportPage
     protected $header = "Working Copy Report";
 
     public $description = '[Draft Patronage Report] shows work-in-progress calculated annual patronage.';
+    public $themed = true;
 
     protected $content_function = 'report_content';
     protected $report_headers = array('#', 'Last Name', 'First Name', 'Active', 'Type',

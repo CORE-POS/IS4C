@@ -208,5 +208,99 @@ class FormLib
         );
     }
 
+    /**
+      Generate a very standard form with date and department fields
+      @param $departments [array] of DepartmentModels
+      @param $supers [array] of SuperDeptNamesModels
+        [optional] default empty array
+      @param $fake_supers [boolean] include -1 and -2 as All Retail and All
+        [optional] default false
+      @return [string] html form
+    */
+    public static function dateAndDepartmentForm($departments, $supers=array(), $fake_supers=false)
+    {
+        ob_start();
+        ?>
+<?php if (count($supers) > 0) { ?>
+<div class="well">Selecting a Buyer/Dept overrides Department Start/Department End, but not Date Start/End.
+        To run reports for a specific department(s) leave Buyer/Dept or set it to 'blank'
+</div>
+<?php } ?>
+<form method="get" action="<?php echo $_SERVER['PHP_SELF']; ?>" class="form-horizontal">
+<div class="row">
+    <div class="col-sm-5">
+    <?php if (count($supers) > 0) { ?>
+        <div class="form-group">
+            <label class="control-label col-sm-4">Select Buyer/Dept</label>
+            <div class="col-sm-8">
+            <select id="buyer-select" name="buyer" class="form-control">
+                <option value=""></option>
+                <?php foreach ($supers as $s) { ?>
+                <option value="<?php echo $s->superID(); ?>"><?php echo $s->super_name(); ?></option>
+                <?php } ?>
+                <?php if ($fake_supers) { ?>
+                <option value=-2 >All Retail</option>
+                <option value=-1 >All</option>
+                <?php } ?>
+            </select>
+            </div>
+        </div>
+    <?php } ?>
+        <div class="form-group">
+            <label class="control-label col-sm-4">Department Start</label>
+            <div class="col-sm-6">
+            <select onchange="$('#dept-start').val(this.value);" class="form-control">
+            <?php foreach ($departments as $d) { ?>
+            <option value="<?php echo $d->dept_no(); ?>"><?php echo $d->dept_no(); ?>
+                <?php echo $d->dept_name(); ?></option>
+            <?php } ?>
+            </select>
+            </div>
+            <div class="col-sm-2">
+            <input type="number" name="deptStart" id="dept-start" value="1" class="form-control" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-4">Department End</label>
+            <div class="col-sm-6">
+            <select onchange="$('#dept-end').val(this.value);" class="form-control">
+            <?php foreach ($departments as $d) { ?>
+            <option value="<?php echo $d->dept_no(); ?>"><?php echo $d->dept_no(); ?>
+                <?php echo $d->dept_name(); ?></option>
+            <?php } ?>
+            </select>
+            </div>
+            <div class="col-sm-2">
+            <input type="number" name="deptEnd" id="dept-end" value="1" class="form-control" />
+            </div>
+        </div>
+        <div id="date-dept-form-left-col"></div>
+    </div>
+    <div class="col-sm-5">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Start Date</label>
+            <div class="col-sm-8">
+                <input type="text" id="date1" name="date1" class="form-control" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-4 control-label">End Date</label>
+            <div class="col-sm-8">
+                <input type="text" id="date2" name="date2" class="form-control" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <?php echo FormLib::date_range_picker(); ?>                            
+        </div>
+    </div>
+</div>
+<p>
+    <button type="submit" class="btn btn-default">Submit</button>
+    <button type="reset" class="btn btn-default">Start Over</button>
+</p>
+        <?php
+        return ob_get_clean();
+    }
+
 }
 

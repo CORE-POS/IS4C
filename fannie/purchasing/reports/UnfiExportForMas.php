@@ -35,6 +35,7 @@ class UnfiExportForMas extends FannieReportPage
 
     public $page_set = 'Reports';
     public $description = '[MAS Invoice Export] exports vendor invoices for MAS90.';
+    public $themed = true;
 
     function preprocess(){
         /**
@@ -133,33 +134,26 @@ class UnfiExportForMas extends FannieReportPage
     {
         ob_start();
         ?>
-<div id=main>   
 <form method = "get" action="UnfiExportForMas.php">
-    <table border="0" cellspacing="0" cellpadding="5">
-        <tr> 
-             <td>
-            <p><b>Date Start</b> </p>
-                 <p><b>End</b></p>
-               </td>
-                    <td>
-                     <p>
-                       <input type=text id=date1 name=date1 />
-                       </p>
-                       <p>
-                        <input type=text id=date2 name=date2 />
-                 </p>
-               </td>
-            <td colspan=2 rowspan=2>
-            <?php echo FormLib::date_range_picker(); ?>                         
-            </td>
-        </tr>
-        <tr> 
-            <td> <input type=submit name=submit value="Submit"> </td>
-            <td> <input type=reset name=reset value="Start Over"> </td>
-            <td>&nbsp;</td>
-            <td>&nbsp;</td>
-        </tr>
-    </table>
+<div class="col-sm-5">
+    <div class="form-group">
+        <label>Date Start</label>
+            <input type=text id=date1 name=date1 
+                class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label>Date End</label>
+            <input type=text id=date2 name=date2 
+                class="form-control" required />
+    </div>
+    <p>
+        <button type="submit" class="btn btn-default">Submit</button>
+        <button type="reset" class="btn btn-default">Start Over</button>
+    </p>
+</div>
+<div class="col-sm-5">
+    <?php echo FormLib::date_range_picker(); ?>                         
+</div>
 </form>
 <?php
         $this->add_onload_command('$(\'#date1\').datepicker();');

@@ -325,7 +325,7 @@ class DepartmentMovementReport extends FannieReportPage
         <div class="form-group">
             <label class="control-label col-sm-4">Select Buyer/Dept</label>
             <div class="col-sm-8">
-            <select id=buyer name=buyer class="form-control">>
+            <select id=buyer name=buyer class="form-control">
                <option value=0 >
                <?php echo $deptSubList; ?>
                <option value=-2 >All Retail</option>
