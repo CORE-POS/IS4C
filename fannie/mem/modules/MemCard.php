@@ -41,7 +41,9 @@ class MemCard extends \COREPOS\Fannie\API\member\MemberModule {
             return "Error: problem checking for Member Card<br />";
         }
 
-        $ret = "<div class=\"container-fluid\"><h4>Membership Card</h4>";
+        $ret = "<div class=\"panel panel-default\">
+            <div class=\"panel-heading\">Membership Card</div>
+            <div class=\"panel-body\">";
         if ( $dbc->num_rows($infoR) > 0 ) {
             $infoW = $dbc->fetch_row($infoR);
             $upc = $infoW['upc'];
@@ -53,12 +55,13 @@ class MemCard extends \COREPOS\Fannie\API\member\MemberModule {
             $upc = "";
         }
 
-        $ret .= '<div class="row form-group form-inline">
+        $ret .= '<div class="form-group form-inline">
             <span class="label primaryBackground">Card#</span>
             <input type="text" name="memberCard" class="form-control"
                 value="' . $upc . '" />
             </div>';
 
+        $ret .= "</div>";
         $ret .= "</div>";
 
         return $ret;

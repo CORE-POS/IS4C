@@ -47,9 +47,11 @@ class ContactPref extends \COREPOS\Fannie\API\member\MemberModule {
         }
 
         // Compose the display/edit block.
-        $ret = "<div class=\"container-fluid\"><h4>Member Contact Preference</h4>";
+        $ret = "<div class=\"panel panel-default\">
+            <div class=\"panel-heading\">Member Contact Preference</div>
+            <div class=\"panel-body\">";
 
-        $ret .= '<div class="row form-group form-inline">
+        $ret .= '<div class="form-group form-inline">
             <span class="label primaryBackground">Preference</span>';
         $ret .= '<select name="MemContactPref" class="form-control">';
         while ($infoW = $dbc->fetch_row($infoR)) {
@@ -60,6 +62,7 @@ class ContactPref extends \COREPOS\Fannie\API\member\MemberModule {
         }
         $ret .= "</select></div>";
 
+        $ret .= "</div>";
         $ret .= "</div>";
 
         return $ret;

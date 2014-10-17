@@ -50,9 +50,11 @@ class MemDates extends \COREPOS\Fannie\API\member\MemberModule {
             $infoW['end_date'] = '';
         }
 
-        $ret = "<div class=\"container-fluid\"><h4>Membership Dates</h4>";
+        $ret = "<div class=\"panel panel-default\">
+            <div class=\"panel-heading\">Membership Dates</div>
+            <div class=\"panel-body\">";
 
-        $ret .= '<div class="row form-group form-inline">';
+        $ret .= '<div class="form-group form-inline">';
         $ret .= '<span class="label primaryBackground">Start</span>';
         $ret .= sprintf('<input name="MemDates_start"
                 maxlength="10" value="%s" id="MemDates_start"
@@ -63,6 +65,7 @@ class MemDates extends \COREPOS\Fannie\API\member\MemberModule {
                 class="form-control" />',$infoW['end_date']);  
         $ret .= '</div>';
 
+        $ret .= "</div>";
         $ret .= "</div>";
 
         return $ret;

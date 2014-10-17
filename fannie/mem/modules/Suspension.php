@@ -56,26 +56,31 @@ class Suspension extends \COREPOS\Fannie\API\member\MemberModule {
             $reason = rtrim($reason,", ");
         }
 
-        $ret = "<div class=\"container-fluid\"><h4>Active Status</h4>";
+        $ret = "<div class=\"panel panel-default\">
+            <div class=\"panel-heading\">Active Status</div>
+            <div class=\"panel-body\">";
 
-        $ret .= '<div class="row form-group">
+        $ret .= '<div class="form-group">
             <span class="label primaryBackground">Current Status</span>';
         $ret .= ' <strong>' . $status . '</strong>';
         $ret .= '</div>';
 
         if (!empty($reason)) {
-            $ret .= '<div class="row form-group">
+            $ret .= '<div class="form-group">
                 <span class="label primaryBackground">Reason</span>';
             $ret .= ' <strong>' . $reason . '</strong>';
             $ret .= '</div>';
         }
         
-        $ret .= '<div class="row form-group">';
+        $ret .= '<div class="form-group">';
         $ret .= "<a href=\"{$FANNIE_URL}reports/SuspensionHistory/index.php?memNum=$memNum\">History</a>";
+        $ret .= ' | ';
         $ret .= "<a href=\"{$FANNIE_URL}mem/MemStatusEditor.php?memID=$memNum\">Change Status</a>";
         $ret .= '</div>';
 
         $ret .= "</div>";
+        $ret .= "</div>";
+
         return $ret;
     }
 }

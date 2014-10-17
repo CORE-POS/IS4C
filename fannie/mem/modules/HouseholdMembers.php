@@ -40,12 +40,14 @@ class HouseholdMembers extends \COREPOS\Fannie\API\member\MemberModule {
                 ORDER BY c.personNum");
         $infoR = $dbc->exec_statement($infoQ,array($memNum));
 
-        $ret = "<div class=\"container-fluid\"><h4>Household Members</h4>";
+        $ret = "<div class=\"panel panel-default\">
+            <div class=\"panel-heading\">Household Members</div>
+            <div class=\"panel-body\">";
         
         $count = 0; 
         while($infoW = $dbc->fetch_row($infoR)){
             $ret .= sprintf('
-                <div class="row form-inline form-group">
+                <div class="form-inline form-group">
                 <span class="label primaryBackground">Name</span>
                 <input name="HouseholdMembers_fn[]" placeholder="First"
                     maxlength="30" value="%s" class="form-control" />
@@ -58,7 +60,7 @@ class HouseholdMembers extends \COREPOS\Fannie\API\member\MemberModule {
 
         while ($count < 3) {
             $ret .= sprintf('
-                <div class="row form-inline form-group">
+                <div class="form-inline form-group">
                 <span class="label primaryBackground">Name</span>
                 <input name="HouseholdMembers_fn[]" placeholder="First"
                     maxlength="30" value="" class="form-control" />
@@ -68,6 +70,7 @@ class HouseholdMembers extends \COREPOS\Fannie\API\member\MemberModule {
             $count++;
         }
 
+        $ret .= "</div>";
         $ret .= "</div>";
 
         return $ret;

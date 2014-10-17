@@ -48,9 +48,11 @@ class Notes extends \COREPOS\Fannie\API\member\MemberModule {
             $recentDate = $temp['stamp'];
         }
 
-        $ret = "<div class=\"container-fluid\"><h4>Notes</h4>";
+        $ret = "<div class=\"panel panel-default\">
+            <div class=\"panel-heading\">Notes</div>
+            <div class=\"panel-body\">";
 
-        $ret .= '<div class="row form-group">';
+        $ret .= '<div class="form-group">';
         $ret .= "<span class=\"label primaryBackground\">Additional Notes</span>";
         if ($dbc->num_rows($infoR) > 1) {
             $ret .= ' <button type="button" onclick="$(\'#noteHistory\').toggle();"
@@ -73,6 +75,7 @@ class Notes extends \COREPOS\Fannie\API\member\MemberModule {
         }
         $ret .= "</table>\n";
 
+        $ret .= "</div>\n";
         $ret .= "</div>\n";
 
         return $ret;

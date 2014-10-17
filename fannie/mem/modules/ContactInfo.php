@@ -46,9 +46,11 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
                 break;
         }
 
-        $ret = "<div class=\"container-fluid\"><h4>Contact Info</h4>";
+        $ret = "<div class=\"panel panel-default\">
+            <div class=\"panel-heading\">Contact Info</div>
+            <div class=\"panel-body\">";
 
-        $ret .= '<div class="row form-group form-inline">';
+        $ret .= '<div class="form-group form-inline">';
         $ret .= '<span class="label primaryBackground">First Name</span>';
         $ret .= sprintf('<input name="ContactInfo_fn" maxlength="30"
                 value="%s" class="form-control" />',$infoW['FirstName']);
@@ -59,7 +61,7 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
                     $memNum);
         $ret .= '</div>';
 
-        $ret .= '<div class="row form-group form-inline">';
+        $ret .= '<div class="form-group form-inline">';
         $addrs = strstr($infoW['street'],"\n")?explode("\n",$infoW['street']):array($infoW['street'],'');
         $ret .= '<span class="label primaryBackground">Address</span>';
         $ret .= sprintf('<input name="ContactInfo_addr1" maxlength="125"
@@ -72,7 +74,7 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
                 %s class="checkbox-inline" /></label>',($infoW['ads_OK']==1?'checked':''));
         $ret .= '</div>';
         
-        $ret .= '<div class="row form-group form-inline">';
+        $ret .= '<div class="form-group form-inline">';
         $ret .= '<span class="label primaryBackground">City</span>';
         $ret .= sprintf('<input name="ContactInfo_city" maxlength="20"
                 value="%s" class="form-control" />',$infoW['city']);
@@ -84,7 +86,7 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
                 value="%s" class="form-control" />',$infoW['zip']);
         $ret .= '</div>';
 
-        $ret .= '<div class="row form-group form-inline">';
+        $ret .= '<div class="form-group form-inline">';
         $ret .= '<span class="label primaryBackground">Phone</span>';
         $ret .= sprintf('<input name="ContactInfo_ph1" maxlength="30"
                 value="%s" class="form-control" />',$infoW['phone']);
@@ -97,6 +99,8 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
         $ret .= "</div>";
 
         $ret .= "</div>";
+        $ret .= "</div>";
+
         return $ret;
     }
 

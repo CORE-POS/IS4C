@@ -44,22 +44,25 @@ class Equity extends \COREPOS\Fannie\API\member\MemberModule {
             $equity = $w['payments'];
         }
 
-        $ret = "<div class=\"container-fluid\"><h4>Equity</h4>";
+        $ret = "<div class=\"panel panel-default\">
+            <div class=\"panel-heading\">Equity</div>
+            <div class=\"panel-body\">";
 
-        $ret .= '<div class="row form-group">';
+        $ret .= '<div class="form-group">';
         $ret .= '<span class="label primaryBackground">Stock Purchased</span> ';
         $ret .= sprintf('%.2f',$equity);
         $ret .= " <a href=\"{$FANNIE_URL}reports/Equity/index.php?memNum=$memNum\">History</a>";
         $ret .= '</div>';
 
-        $ret .= '<div class="row form-group">';
+        $ret .= '<div class="form-group">';
         $ret .= "<a href=\"{$FANNIE_URL}mem/correction_pages/MemEquityTransferTool.php?memIN=$memNum\">Transfer Equity</a>";
-        $ret .= ' ';
+        $ret .= ' | ';
         $ret .= "<a href=\"{$FANNIE_URL}mem/correction_pages/MemArEquitySwapTool.php?memIN=$memNum\">Convert Equity</a>";
         $ret .= '</div>';
 
-
         $ret .= "</div>";
+        $ret .= "</div>";
+
         return $ret;
     }
 }

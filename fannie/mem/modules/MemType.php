@@ -40,9 +40,11 @@ class MemType extends \COREPOS\Fannie\API\member\MemberModule {
                 ORDER BY n.memType");
         $infoR = $dbc->exec_statement($infoQ,array($memNum));
 
-        $ret = "<div class=\"container-fluid\"><h4>Membership Type</h4>";
+        $ret = "<div class=\"panel panel-default\">
+            <div class=\"panel-heading\">Membership Type</div>
+            <div class=\"panel-body\">";
 
-        $ret .= '<div class="row form-group form-inline">';
+        $ret .= '<div class="form-group form-inline">';
         $ret .= '<span class="label primaryBackground">Type</span> ';
         $ret .= '<select name="MemType_type" class="form-control">';
         $disc = 0;
@@ -59,6 +61,7 @@ class MemType extends \COREPOS\Fannie\API\member\MemberModule {
         $ret .= sprintf('%d%%',$disc);
         $ret .= '</div>';
 
+        $ret .= '</div>';
         $ret .= '</div>';
 
         return $ret;

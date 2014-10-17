@@ -55,9 +55,11 @@ class AR extends \COREPOS\Fannie\API\member\MemberModule
         }
 
 
-        $ret = "<div class=\"container-fluid\"><h4>A/R</h4>";
+        $ret = "<div class=\"panel panel-default\">
+            <div class=\"panel-heading\">A/R</div>
+            <div class=\"panel-body\">";
 
-        $ret .= '<div class="row form-group form-inline">';
+        $ret .= '<div class="form-group form-inline">';
         $ret .= '<span class="label primaryBackground">Limit</span> ';
         $ret .= '<div class="input-group"><span class="input-group-addon">$</span>';
         $ret .= sprintf('<input name="AR_limit" value="%d" class="form-control" />
@@ -65,19 +67,20 @@ class AR extends \COREPOS\Fannie\API\member\MemberModule
         $ret .= '</div>';
         $ret .= '</div>';
 
-        $ret .= '<div class="row form-group">';
+        $ret .= '<div class="form-group">';
         $ret .= '<span class="label primaryBackground">Current Balance</span> ';
         $ret .= sprintf('%.2f',$infoW['balance']); 
         $ret .= ' ';
         $ret .= "<a href=\"{$FANNIE_URL}reports/AR/index.php?memNum=$memNum\">History</a>";
         $ret .= '</div>';
 
-        $ret .= '<div class="row form-group">';
+        $ret .= '<div class="form-group">';
         $ret .= "<a href=\"{$FANNIE_URL}mem/correction_pages/MemArTransferTool.php?memIN=$memNum\">Transfer A/R</a>";
-        $ret .= ' ';
+        $ret .= ' | ';
         $ret .= "<a href=\"{$FANNIE_URL}mem/correction_pages/MemArEquitySwapTool.php?memIN=$memNum\">Convert A/R</a>";
         $ret .= '</div>';
 
+        $ret .= '</div>';
         $ret .= '</div>';
 
         return $ret;
