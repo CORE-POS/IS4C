@@ -110,7 +110,7 @@ class FanniePage
             $this->addCssFile($FANNIE_URL . 'src/javascript/bootstrap-default/css/bootstrap-theme.min.css?id=20140922');
             //$this->addCssFile($FANNIE_URL . 'src/style.css');
             $this->addCssFile($FANNIE_URL . 'src/css/configurable.php');
-            $this->addScript($FANNIE_URL . 'src/javascript/jquery/jquery.min.js');
+            $this->addFirstScript($FANNIE_URL . 'src/javascript/jquery/jquery.min.js');
             $this->addScript($FANNIE_URL . 'src/javascript/jquery-ui.js');
             $this->addScript($FANNIE_URL . 'src/javascript/bootstrap/js/bootstrap.min.js');
             if (!file_exists(dirname(__FILE__) . '/../src/javascript/bootstrap/js/bootstrap.min.js')) {
@@ -202,6 +202,15 @@ class FanniePage
     public function addScript($file_url, $type='text/javascript')
     {
         $this->scripts[$file_url] = $type;
+    }
+
+    private function addFirstScript($file_url, $type='text/javascript')
+    {
+        $new = array($file_url => $type);
+        foreach ($this->scripts as $url => $t) {
+            $new[$url] = $t;
+        }
+        $this->scripts = $new;
     }
 
     public function add_script($file_url,$type="text/javascript")
