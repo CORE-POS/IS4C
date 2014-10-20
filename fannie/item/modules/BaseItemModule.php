@@ -31,7 +31,7 @@ class BaseItemModule extends ItemModule {
         global $FANNIE_URL, $FANNIE_PRODUCT_MODULES;
         $upc = BarcodeLib::padUPC($upc);
 
-        $ret = '<div id="BaseItemFieldset">';
+        $ret = '<div id="BaseItemFieldset" class="panel panel-default">';
 
         $dbc = $this->db();
         $p = $dbc->prepare_statement('SELECT
@@ -63,7 +63,7 @@ class BaseItemModule extends ItemModule {
         $prevUPC = False;
         $nextUPC = False;
         $likeCode = False;
-        if($dbc->num_rows($r) > 0){
+        if ($dbc->num_rows($r) > 0) {
             //existing item
             $rowItem = $dbc->fetch_row($r);
 
@@ -101,8 +101,26 @@ class BaseItemModule extends ItemModule {
                 $likeCode = $lcW['likeCode'];
             }
         } else {
-            // new item
-            $ret .= "<div class=\"alert alert-warning\">Item not found.  You are creating a new one.</div>";
+            // default values for form fields
+            $rowItem = array(
+                'description' => '',
+                'normal_price' => 0,
+                'pricemethod' => 0,
+                'size' => '',
+                'unitofmeasure' => '',
+                'modified' => '',
+                'ledesc' => '',
+                'manufacturer' => '',
+                'distributor' => '',
+                'default_vendor_id' => 0,
+                'department' => 0,
+                'subdept' => 0,
+                'tax' => 0,
+                'foodstamp' => 0,
+                'scale' => 0,
+                'qttyEnforced' => 0,
+                'discount' => 1,
+            );
 
             /**
               Check for entries in the vendorItems table to prepopulate
@@ -167,69 +185,62 @@ class BaseItemModule extends ItemModule {
             }
         }
 
-        $ret .= "<table class=\"table table-bordered\">";
+        $ret .= '
+            <div class="panel-heading">
+                <strong>UPC</strong>
+                <span class="alert-danger">' . $upc . '</span>
+                <input type="hidden" id="upc" name="upc" value="' . $upc . '" />';
+        if ($prevUPC) {
+            $ret .= ' <a class="small" href="ItemEditor.php?searchupc=' . $prevUPC . '">Previous</a>';
+        }
+        if ($nextUPC) {
+            $ret .= ' <a class="small" href="ItemEditor.php?searchupc=' . $nextUPC . '">Next</a>';
+        }
+        $ret .= '</div>'; // end panel-heading
 
-        $ret .= '<tr><td class="text-right"><b>UPC</b></td><td style="color:red;">'.$upc;
-        $ret .= '<input type=hidden value="'.$upc.'" id=upc name=upc />';
-        if ($prevUPC) $ret .= " <a class=\"small\" href=itemMaint.php?upc=$prevUPC>Previous</a>";
-        if ($nextUPC) $ret .= " <a class=\"small\" href=itemMaint.php?upc=$nextUPC>Next</a>";
-        $ret .= '</td>';
+        $ret .= '<div class="panel-body">';
+
+        if ($dbc->num_rows($r) == 0) {
+            // new item
+            $ret .= "<div class=\"alert alert-warning\">Item not found.  You are creating a new one.</div>";
+        }
 
         // system for store-level records not refined yet; might go here
-        $ret .= '<td colspan=2>';
         $ret .= '<input type="hidden" name="store_id" value="0" />';
-        $ret .= '&nbsp;</td>';
-
-        $ret .= '</tr><tr>';
 
         $limit = 35 - strlen(isset($rowItem['description'])?$rowItem['description']:'');
-        $ret .= sprintf('<td><b>Description</b></td>
-                <td><div class="input-group">
+        $ret .= 
+            '<div class="form-group form-inline">
+                <label>Description</label>
+                <div class="input-group">
                     <input type="text" maxlength="30" class="form-control"
-                    name="descript" id="descript" value="%s"
-                    onkeyup="$(\'#dcounter\').html(35-(this.value.length));"
-                    /><span id="dcounter" class="input-group-addon">%d</span>
-                </div></td>',
-                (isset($rowItem['description'])?$rowItem['description']:''),
-                $limit);
-
-        /**
-          Drop down box changes price field from single price to
-          X for $Y style pricing
-        */
-        if (!isset($rowItem['pricemethod'])) {
-            $rowItem['pricemethod'] = 0;
-        }
-        $ret .= sprintf('<td><b>Price</b></td>
-                    <td><div class="input-group">
-                        <span class="input-group-addon">$</span>
-                        <input type="text" id="price" name="price"
-                            class="form-control" value="%.2f" />
-                    </div></td>',
-                    (isset($rowItem['normal_price']) ? $rowItem['normal_price'] : 0));
-
-        $ret .= '</tr><tr>';
-
-        $ret .= '<tr><td><b>Package Size</b></td><td>
-                <div class="form-inline">
-                <input type="text" name="size" class="form-control" size=4
-                value="'.(isset($rowItem['size'])?$rowItem['size']:'').'" />';
-        $ret .= ' <b>Unit of measure</b> <input type="text" name="unitm" class="form-control" size=4
-                value="'.(isset($rowItem['unitofmeasure'])?$rowItem['unitofmeasure']:'').'" />
-                </div></td>';
-        $ret .= '<td style="color:darkmagenta;">Last modified</td>
-            <td style="color:darkmagenta;">'. (isset($rowItem['modified']) ? $rowItem['modified'] : '') . '</td>';
-        $ret .= '</tr>';
+                        name="descript" id="descript" value="' . $rowItem['description'] . '"
+                        onkeyup="$(\'#dcounter\').html(35-(this.value.length));" />
+                    <span id="dcounter" class="input-group-addon">' . $limit . '</span>
+                </div>
+                <label>Price</label>
+                <div class="input-group">
+                    <span class="input-group-addon">$</span>
+                    <input type="text" id="price" name="price" class="form-control"
+                        value="' . sprintf('%.2f', $rowItem['normal_price']) . '" />
+                </div>
+            </div>';
 
         // no need to display this field twice
         if (!isset($FANNIE_PRODUCT_MODULES['ProdUserModule'])) {
-            $ret .= '<tr><td><b>Long Desc.</b><td colspan="2"><input type="text" size="60" name="puser_description"
-                    value="'. (isset($rowItem['ldesc']) ? $rowItem['ldesc'] : '') . '" /></td><td>&nbsp;</td></tr>';
+            $ret .= '
+                <div class="form-group form-inline">
+                    <label>Long Desc.</label>
+                    <input type="text" size="60" name="puser_description"
+                        value="' . $rowItem['ldesc'] . '" class="form-control" />
+                </div>';
         }
 
-        $ret .="<td align=right><b>Brand</b></td><td><input type=text name=manufacturer value=\""
-            .(isset($rowItem['manufacturer'])?$rowItem['manufacturer']:"")
-            ."\" id=\"brand_field\" class=\"form-control\" /></td>";
+        $ret .= '
+            <div class="form-group form-inline">
+                <label>Brand</label>
+                <input type="text" name="manufacturer" class="form-control"
+                    value="' . $rowItem['manufacturer'] . '" id="brand-field" />';
         /**
           Check products.default_vendor_id to see if it is a 
           valid reference to the vendors table
@@ -247,10 +258,10 @@ class BaseItemModule extends ItemModule {
           entry OR if no vendor entry exists. Only allow free text
           if it's already in place
         */
-        $ret .= "<td align=right><button type=\"button\" id=\"newVendorButton\"
-                class=\"btn btn-default\">+</button> <b>Vendor</b></td><td>";
+        $ret .= ' <label>Vendor</label> ';
         if ($normalizedVendorID || empty($rowItem['distributor'])) {
-            $ret .= '<select name="distributor" class="chosen-select form-control">';
+            $ret .= '<select name="distributor" class="chosen-select form-control"
+                        id="vendor_field">';
             $ret .= '<option value="0"></option>';
             $vendors = new VendorsModel($dbc);
             foreach ($vendors->find('vendorName') as $v) {
@@ -264,8 +275,9 @@ class BaseItemModule extends ItemModule {
                 .(isset($rowItem['distributor'])?$rowItem['distributor']:"")
                 ."\" id=\"vendor_field\" class=\"form-control\" />";
         }
-        $ret .= '</td>';
-        $ret .= '</tr>';
+        $ret .= ' <button type="button" id="newVendorButton"
+                    class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>';
+        $ret .= '</div>'; // end row
 
         $ret .= '<div id="newVendorDialog" title="Create new Vendor" class="collapse">';
         $ret .= '<fieldset>';
@@ -290,33 +302,32 @@ class BaseItemModule extends ItemModule {
                 $batch = $dbc->fetch_row($batchR);
             }
 
-            $ret .= '<tr class="alert-success">';
-            $ret .= sprintf("<td><strong>Sale Price:</strong></td>
-                <td>%.2f (<em>Batch: <a href=\"%sbatches/newbatch/BatchManagementTool.php?startAt=%d\">%s</a></em>)</td>",
+            $ret .= '<div class="alert-success">';
+            $ret .= sprintf("<strong>Sale Price:</strong>
+                %.2f (<em>Batch: <a href=\"%sbatches/newbatch/BatchManagementTool.php?startAt=%d\">%s</a></em>)",
                 $rowItem['special_price'], $FANNIE_URL, $batch['batchID'], $batch['batchName']);
             list($date,$time) = explode(' ',$rowItem['end_date']);
-            $ret .= "<td>End Date:</td>
-                <td>$date 
-                (<a href=\"EndItemSale.php?id=$upc\">Unsale Now</a>)</td>";
-            $ret .= '</tr>';
+            $ret .= "<strong>End Date:</strong>
+                    $date 
+                    (<a href=\"EndItemSale.php?id=$upc\">Unsale Now</a>)";
+            $ret .= '</div>';
         }
-        $ret .= "</table>";
 
-        $ret .= "<table class=\"table table-bordered\">";
+        /*
         $ret .= '<tr><th>Dept</th><th>Tax</th><th><label for="FS">FS</label></th>
             <th><label for="scale-checkbox">Scale</label>'.FannieHelp::ToolTip('Item sold by weight').'</th>
             <th><label for="qty-checkbox">QtyFrc</label>'.FannieHelp::ToolTip('Cashier must enter quantity').'</th>
             <th><label for="no-disc-checkbox">NoDisc</label>'.FannieHelp::ToolTip('Item not subject to % discount').'</th></tr>';
+        */
 
         $depts = array();
         $subs = array();
-        if (!isset($rowItem['subdept'])) $rowItem['subdept'] = 0;
         $p = $dbc->prepare_statement('SELECT dept_no,dept_name,subdept_no,subdept_name,dept_ID 
                 FROM departments AS d
                 LEFT JOIN subdepts AS s ON d.dept_no=s.dept_ID
                 ORDER BY d.dept_no, s.subdept_name');
         $r = $dbc->exec_statement($p);
-        while($w = $dbc->fetch_row($r)){
+        while ($w = $dbc->fetch_row($r)) {
             if (!isset($depts[$w['dept_no']])) $depts[$w['dept_no']] = $w['dept_name'];
             if ($w['subdept_no'] == '') continue;
             if (!isset($subs[$w['dept_ID']]))
@@ -326,11 +337,12 @@ class BaseItemModule extends ItemModule {
                     $w['subdept_no'],$w['subdept_no'],$w['subdept_name']);
         }
 
-        $ret .= "<tr align=top>";
-        $ret .= "<td align=left><div class=\"form-inline\">";
-        $ret .= '<select name="department" id="department" 
-            class="form-control" onchange="chainSelects(this.value);">';
-        foreach($depts as $id => $name){
+        $ret .= '
+            <div class="form-group form-inline">
+                <label>Dept</label>
+                <select name="department" id="department" 
+                    class="form-control" onchange="chainSelects(this.value);">';
+        foreach ($depts as $id => $name){
             $ret .= sprintf('<option %s value="%d">%d %s</option>',
                     ($id == $rowItem['department'] ? 'selected':''),
                     $id,$id,$name);
@@ -339,39 +351,62 @@ class BaseItemModule extends ItemModule {
         $ret .= '<select name="subdept" id="subdept" class="form-control">';
         $ret .= isset($subs[$rowItem['department']]) ? $subs[$rowItem['department']] : '<option value="0">None</option>';
         $ret .= '</select>';
-        $ret .= '</div></td>';
 
         $taxQ = $dbc->prepare_statement('SELECT id,description FROM taxrates ORDER BY id');
         $taxR = $dbc->exec_statement($taxQ);
         $rates = array();
-        while ($taxW = $dbc->fetch_row($taxR))
+        while ($taxW = $dbc->fetch_row($taxR)) {
             array_push($rates,array($taxW[0],$taxW[1]));
+        }
         array_push($rates,array("0","NoTax"));
-        $ret .= '<td align="left"><select name="tax" id="tax" class="form-control">';
+        $ret .= ' <label>Tax</label>
+            <select name="tax" id="tax" class="form-control">';
         foreach($rates as $r){
             $ret .= sprintf('<option %s value="%d">%s</option>',
                 (isset($rowItem['tax'])&&$rowItem['tax']==$r[0]?'selected':''),
                 $r[0],$r[1]);
         }
-        $ret .= '</select></td>';
+        $ret .= '</select></div>';
 
-        $ret .= sprintf('<td align="center"><input type="checkbox" value="1" name="FS" id="FS" %s /></td>',
-                (isset($rowItem['foodstamp']) && $rowItem['foodstamp']==1 ? 'checked' : ''));
+        $ret .= '
+            <div class="form-group form-inline">
+                <label>FS
+                <input type="checkbox" value="1" name="FS" id="FS"
+                    ' . ($rowItem['foodstamp'] == 1 ? 'checked' : '') . ' />
+                </label>
+                |
+                <label>Scale
+                <input type="checkbox" value="1" name="Scale" id="scale-checkbox"
+                    ' . ($rowItem['scale'] == 1 ? 'checked' : '') . ' />
+                </label>
+                |
+                <label>QtyFrc
+                <input type="checkbox" value="1" name="QtyFrc" id="qty-checkbox"
+                    ' . ($rowItem['qttyEnforced'] == 1 ? 'checked' : '') . ' />
+                </label>
+                |
+                <label>NoDisc
+                <input type="checkbox" value="1" name="NoDisc" id="no-disc-checkbox"
+                    ' . ($rowItem['discount'] == 0 ? 'checked' : '') . ' />
+                </label>
+                |
+                <label style="color:darkmagenta;">Last modified</label>
+                <span style="color:darkmagenta;">'. $rowItem['modified'] . '</span>
+            </div>';
 
-        $ret .= sprintf('<td align="center"><input type="checkbox" value="1" 
-                    name="Scale" id="scale-checkbox" %s /></td>',
-                (isset($rowItem['scale']) && $rowItem['scale']==1 ? 'checked' : ''));
+        $ret .= '
+            <div class="form-group form-inline">
+                <label>Package Size</label>
+                <input type="text" name="size" class="form-control"
+                    value="' . $rowItem['size'] . '" />
+                <label>Unit of measure</label>
+                <input type="text" name="unitm" class="form-control"
+                    value="' . $rowItem['unitofmeasure'] . '" />
+            </div>';
 
-        $ret .= sprintf('<td align="center"><input type="checkbox" value="1" 
-                    name="QtyFrc" id="qty-checkbox" %s /></td>',
-                (isset($rowItem['qttyEnforced']) && $rowItem['qttyEnforced']==1 ? 'checked' : ''));
+        $ret .= '</div>'; // end panel-body
+        $ret .= '</div>'; // end panel
 
-        $ret .= sprintf('<td align="center"><input type="checkbox" value="0" 
-                name="NoDisc" id="no-disc-checkbox" %s /></td>',
-                (isset($rowItem['discount']) && $rowItem['discount']==0 ? 'checked' : ''));
-
-        $ret .= '</tr>';
-        $ret .= '</table></div>';
         return $ret;
     }
 
@@ -471,7 +506,15 @@ class BaseItemModule extends ItemModule {
                     success: function(resp){
                         if (resp.vendorID) {
                             v_dialog.dialog("close");
+                            var v_field = $('#vendor_field');
+                            if (v_field.hasClass('chosen-select')) {
+                                var newopt = $('<option/>').attr('id', resp.vendorID).html(resp.vendorName);
+                                v_field.append(newopt);
+                            }
                             $('#vendor_field').val(resp.vendorName);
+                            if (v_field.hasClass('chosen-select')) {
+                                v_field.trigger('chosen:updated');
+                            }
                         } else if (resp.error) {
                             $('#newVendorAlert').html(resp.error);
                         } else {
