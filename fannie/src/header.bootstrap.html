@@ -27,6 +27,23 @@ if (!isset($FANNIE_CHARSET) || empty($FANNIE_CHARSET)) {
 <meta http-equiv="Content-Type" content="text/html; charset=<?php echo $FANNIE_CHARSET; ?>">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?php echo $page_title; ?></title>
+<script type="text/javascript">
+function smartToggle()
+{
+    /**
+      Hack to combine bootstrap screensize hidden* classes and collapse classes
+      Nav bar initially renders with .collapse.in (shown) and .hidden-xs
+      On extra small device, the result is a hidden menu. On the first click, remove
+      the hidden-xs class so all further toggling is handled by collapse but
+      also remove the "in" class. This hides the nav from collapse's perspective
+      so the first data-toggle shows it instead of hides it.
+    */
+    if ($('.device-xs').is(':visible') && $('.navbar-default').hasClass('hidden-xs')) {
+        $('.navbar-default').removeClass('hidden-xs');
+        $('.navbar-default').removeClass('in');
+    }
+}
+</script>
 </head>
 <body>
 <div style="margin-left:3em;margin-right:3em;">
@@ -39,13 +56,19 @@ if (!isset($FANNIE_CHARSET) || empty($FANNIE_CHARSET)) {
             <?php } ?>
         </td>
         <td>
-        <div style="font-size:28px;" class="primaryColor">
+        <div style="font-size:28px;" class="primaryColor"
+            data-toggle="collapse" data-target=".navbar-default"
+            onclick="smartToggle();">
         Fannie
         <?php if (isset($FANNIE_CUSTOM_TITLE) && !empty($FANNIE_CUSTOM_TITLE)) {
             echo ' - ' . $FANNIE_CUSTOM_TITLE;
         } ?>
         </div>
-        <div style="font-size:20px;" class="secondaryColor">
+        <!-- this span is for detecting bootstrap screensize -->
+        <span class="device-xs visible-xs"></span>
+        <div style="font-size:20px;" class="secondaryColor"
+            data-toggle="collapse" data-target=".navbar-default"
+            onclick="smartToggle();">
         IT CORE maintenance &amp; reporting
         </div>
         </td></tr>
@@ -53,7 +76,7 @@ if (!isset($FANNIE_CHARSET) || empty($FANNIE_CHARSET)) {
     </div>
     <div class="secondaryBorder container-fluid" style="border-width: 1px; border-style: solid;">
 
-        <div class="navbar navbar-default">
+        <div class="navbar navbar-default collapse in hidden-xs">
             <ul class="nav navbar-nav">
             <?php
             if (!is_array($FANNIE_MENU) || count($FANNIE_MENU) == 0) {
