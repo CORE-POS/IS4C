@@ -1,6 +1,5 @@
 config.php.bak
 auth/shadowread/shadowread
-src/javascript/linea
 vendor
 src/javascript/require*
 src/javascript/bootstrap/
