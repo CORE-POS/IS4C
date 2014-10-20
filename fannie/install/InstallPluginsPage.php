@@ -206,7 +206,7 @@ foreach($mods as $m){
             echo '<br />';
             //confset($field,"'".$CORE_LOCAL->get($field)."'");
         }
-        if (isset($_REQUEST['psubmit'])) {
+        if ($enabled && isset($_REQUEST['psubmit'])) {
             $instance->setting_change();
         }
         echo '</div>';
@@ -247,6 +247,6 @@ confset('FANNIE_PLUGIN_SETTINGS',$saveStr);
 // InstallPluginsPage
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
 ?>

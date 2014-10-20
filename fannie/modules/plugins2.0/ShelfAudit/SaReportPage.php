@@ -30,10 +30,11 @@ include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 */
 class SaReportPage extends FanniePage {
 
-    protected $window_dressing = False;
-
     public $page_set = 'Plugin :: Shelf Audit';
     public $description = '[Quantity Report] lists the entered quantites on hand.';
+    public $themed = true;
+    protected $title = 'ShelfAudit Live Report';
+    protected $header = '';
 
     private $status = '';
     private $sql_actions = '';
@@ -173,44 +174,29 @@ class SaReportPage extends FanniePage {
     function css_content(){
         ob_start();
         ?>
-body {
- width: 768px;
- margin: auto;
- font-family: Helvetica, sans, Arial, sans-serif;
- background-color: #F9F9F9;
-}
-
 #bdiv {
     width: 768px;
     margin: auto;
     text-align: center;
 }
 
-body p,
-body div {
- border: 1px solid #CfCfCf;
- background-color: #EFEFEF;
- line-height: 1.5;
- margin: 0px;
-}
-
-body table {
+body table.shelf-audit {
  font-size: small;
  text-align: center;
  border-collapse: collapse;
  width: 100%;
 }
 
-body table caption {
+body table.shelf-audit caption {
  font-family: sans-mono, Helvetica, sans, Arial, sans-serif;
  margin-top: 1em;
 }
 
-body table th {
+body table.shelf-audit th {
  border-bottom: 2px solid #090909;
 }
 
-table tr:hover {
+table.shelf-audit tr:hover {
  background-color:#CFCFCF;
 }
 
@@ -275,10 +261,6 @@ table tr:hover {
     function body_content(){
         ob_start();
         ?>
-<html>
-    <head>
-    </head>
-    <body>
         <div id="bdiv">
             <p><a href="#" onclick="window.open('SaScanningPage.php','scan','width=320, height=200, location=no, menubar=no, status=no, toolbar=no, scrollbars=no, resizable=no');">Enter a new scan</a></p>
             <p><a href="SaHandheldPage.php">Alternate Scan Page</a></p>
@@ -295,6 +277,7 @@ table tr:hover {
         $table = '';
         $view = FormLib::get_form_value('view','dept');
         $counter = ($view == 'dept') ? 'd' : 's';
+        $counter_total = 0;
         foreach($this->scans as $row) {
             
             if (!isset($counter_number)) {
@@ -307,7 +290,7 @@ table tr:hover {
                 else { $caption='Section #'.$row['section']; }
                 
                 $table .= '
-        <table>
+        <table class="table shelf-audit">
             <caption>'.$caption.'</caption>
             <thead>
                 <tr>
@@ -355,7 +338,7 @@ table tr:hover {
                 </tr>
             </tfoot>
         </table>
-        <table>
+        <table class="table shelf-audit">
             <caption>'.$caption.'</caption>
             <thead>
                 <tr>
@@ -418,14 +401,13 @@ table tr:hover {
                 </tr>
             </tfoot>
         </table>
+        </div>
 ';
         if (!empty($table))
             print_r($table);
         ?>
-        </div>
-        </body>
-        </html>
         <?php
+
         return ob_get_clean();
     }
 }

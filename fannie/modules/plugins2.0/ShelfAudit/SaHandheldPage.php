@@ -28,7 +28,6 @@ include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
   @class SaHandheldPage
 */
 class SaHandheldPage extends FanniePage {
-    protected $window_dressing = False;
     private $section=0;
     private $current_item_data=array();
     private $linea_ios_mode = False;
@@ -36,6 +35,9 @@ class SaHandheldPage extends FanniePage {
     public $page_set = 'Plugin :: Shelf Audit';
     public $description = '[Handheld] is an interface for scanning and entering quantities on
     hand using a handheld device.';
+    public $themed = true;
+    protected $title = 'ShelfAudit Inventory';
+    protected $header = '';
 
     private function linea_support_available(){
         global $FANNIE_ROOT;
@@ -52,7 +54,7 @@ class SaHandheldPage extends FanniePage {
         /**
           Store session in browser section.
         */
-        if (ini_get('session.auto_start')==0 && !headers_sent() && php_sapi_name() != 'cli') {
+        if (ini_get('session.auto_start')==0 && !headers_sent() && php_sapi_name() != 'cli' && session_id() == '') {
             @session_start();
         }
         if (!isset($_SESSION['SaPluginSection']))
@@ -254,6 +256,7 @@ ScannerDevice.registerListener(Device);
         ob_start();
         $elem = '#upc_in';
         if (isset($this->current_item_data['upc']) && isset($this->current_item_data['desc'])) $elem = '#cur_qty';
+        $this->add_onload_command('$(\'#upc_in\').focus();');
         ?>
 <html>
 <head>
@@ -278,11 +281,11 @@ onfocus="paint_focus('upc_in');"
         <?php
         if (isset($this->current_item_data['upc'])){
             if (!isset($this->current_item_data['desc'])){
-                echo '<span class="error">Item not found (';
-                echo $this->current_item_data['desc'];
-                echo ')</span>';
-            }
-            else {
+                echo '<div class="alert alert-danger">Item not found (';
+                echo $this->current_item_data['upc'];
+                echo ')</div>';
+            } else {
+                echo '<p>';
                 echo '<span class="itemInfo">';
                 echo $this->current_item_data['upc'];
                 echo ' ';
@@ -307,6 +310,7 @@ onfocus="paint_focus('upc_in');"
                         <input type="submit" value="-%d" onclick="update_qty(%d)" class="subButton" />',
                         $s,$s,$s,-1*$s);
                 }
+                echo '</p>';
             }
         }
         return ob_get_clean();

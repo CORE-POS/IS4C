@@ -35,6 +35,9 @@ class SaScanningPage extends FanniePage {
     public $page_set = 'Plugin :: Shelf Audit';
     public $description = '[Alt. Scanning] is an older interface for entering quantities
     on hand';
+    public $themed = true;
+    protected $header = '';
+    protected $title = 'ShelfAudit Old Scanning Page';
 
     private $status='';
     private $section=0;
@@ -46,7 +49,7 @@ class SaScanningPage extends FanniePage {
         /**
           Store session in browser section.
         */
-        if (ini_get('session.auto_start')==0 && !headers_sent() && php_sapi_name() != 'cli') {
+        if (ini_get('session.auto_start')==0 && !headers_sent() && php_sapi_name() != 'cli' && session_id() == '') {
             @session_start();
         }
         if (!isset($_SESSION['SaPluginSection']))
