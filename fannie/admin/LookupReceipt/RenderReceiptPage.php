@@ -6,17 +6,56 @@ if (!class_exists('FannieAPI')) {
 
 class RenderReceiptPage extends FanniePage {
 
-    protected $window_dressing = False;
+    protected $window_dressing = true;
 
     public $description = '[Reprint Receipt] show a POS transaction receipt.';
+    public $themed = true;
 
-    function body_content(){
+    /**
+      Uses parent method to setup all javascript and css includes
+      but returns an ultra simple header. Receipt page needs
+      to be printable on paper
+    */
+    public function getHeader()
+    {
+        parent::getHeader();
+        return '
+            <!doctype html>
+            <html>
+            <head>
+                <title>Reprint Receipt</title>
+            </head>
+            <body>
+            <div class="container-fluid">';
+    }
+
+    /**
+      Simple footer matches simple header
+    */
+    public function getFooter()
+    {
+        return '</div></body></html>';
+    }
+
+    function body_content()
+    {
         ob_start();
         ?>
-        <form action=RenderReceiptPage.php method=post>
-        Date: <input type=text name=date><br>
-        Receipt Num: <input type=text name=receipt><br>
-        <input type=submit name=submit>
+        <form action=RenderReceiptPage.php method=post
+            class="hidden-print">
+        <p>
+        <div class="form-group form-inline">
+            <label>Date</label>:
+            <input type=text name=date id="date-field"
+                class="form-control" />
+            <label>Receipt Num</label>:
+            <input type=text name=receipt id="trans-field"
+                class="form-control" />
+            <button type=submit class="btn btn-default">Find Receipt</button>
+        </div>
+        </p>
+        </form>
+        <hr class="hidden-print" />
         <?php
         $ret = ob_get_clean();
         $transNum = FormLib::get_form_value('receipt');
@@ -50,14 +89,21 @@ class RenderReceiptPage extends FanniePage {
         }
 
         if ($date1 !== '' && $transNum !== ''){
+            $ret .= '<p>';
             $ret .= $this->receiptHeader($date1,$transNum);
             $ret .= $this->ccInfo($date1, $transNum);
             $ret .= $this->signatures($date1, $transNum);
+            $ret .= '</p>';
+            $this->add_onload_command("\$('#date-field').val('$date1');\n");
+            $this->add_onload_command("\$('#trans-field').val('$transNum');\n");
         }
+        $this->add_onload_command("\$('#date-field').datepicker();\n");
+
         return $ret;
     }
 
-    function receiptHeader($date,$trans) {
+    function receiptHeader($date,$trans) 
+    {
         global $FANNIE_ARCHIVE_DB, $FANNIE_TRANS_DB, $FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_METHOD;
         $dbconn = ($FANNIE_SERVER_DBMS=='MSSQL')?'.dbo.':'.';
 
@@ -121,7 +167,8 @@ class RenderReceiptPage extends FanniePage {
         return $this->receipt_to_table($query1,$args,0,'FFFFFF');
     }
 
-    function receipt_to_table($query,$args,$border,$bgcolor){
+    function receipt_to_table($query,$args,$border,$bgcolor)
+    {
         global $FANNIE_TRANS_DB, $FANNIE_COOP_ID;
 
         $dbc = FannieDB::get($FANNIE_TRANS_DB);
@@ -192,13 +239,14 @@ class RenderReceiptPage extends FanniePage {
         $ret .= "<tr><td colspan=4 align=center>--------------------------------------------------------</td></tr>";
         $ret .= "<tr><td colspan=4 align=center>Reprinted Transaction</td></tr>";
         $ret .= "<tr><td colspan=4 align=center>--------------------------------------------------------</td></tr>";
-        $ret .= "<tr><td colspan=4 align=center>" . _('Owner') . "#: {$row2['memberID']}</td</tr>";
+        $ret .= "<tr><td colspan=4 align=center>" . _('Owner') . "#: {$row2['memberID']}</td></tr>";
         $ret .= "</table>\n";
 
         return $ret;
     }
 
-    function ccInfo($date1, $transNum){
+    function ccInfo($date1, $transNum)
+    {
         global $FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB;
         $dbconn = ($FANNIE_SERVER_DBMS=='MSSQL')?'.dbo.':'.';
         $dbc = FannieDB::get($FANNIE_TRANS_DB);

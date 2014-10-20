@@ -158,7 +158,6 @@ class VendorIndexPage extends FanniePage {
 
         $itemQ = $dbc->prepare_statement("SELECT COUNT(*) FROM vendorDepartments WHERE vendorID=?");
         $itemR = $dbc->exec_statement($itemQ,array($id));
-        $num = array_pop($dbc->fetch_row($itemR));
         $num = 0;
         if ($itemR && $row = $dbc->fetch_row($itemR)) {
             $num = $row[0];
@@ -257,7 +256,8 @@ class VendorIndexPage extends FanniePage {
         echo $id;
     }
 
-    function body_content(){
+    function body_content()
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $vendors = "<option value=\"\">Select a vendor...</option>";

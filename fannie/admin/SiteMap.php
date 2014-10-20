@@ -47,6 +47,7 @@ class SiteMap extends FannieRESTfulPage
             'done' => 0,
             'total' => 0,
             'plugin' => 0,
+            'plugin_done' => 0,
         );
         foreach ($pages as $p) {
             $obj = new $p();
@@ -69,6 +70,9 @@ class SiteMap extends FannieRESTfulPage
             }
             if (strstr($obj->page_set, 'Plugin')) {
                 $theme_stats['plugin']++;
+                if ($obj->themed) {
+                    $theme_Status['plugin_done']++;
+                }
             }
         }
 
@@ -77,7 +81,7 @@ class SiteMap extends FannieRESTfulPage
         $ret .= sprintf('New UI completion percent: <strong>%.2f%%</strong><br />', 
             ((float)$theme_stats['done']) / $theme_stats['total'] * 100);
         $ret .= sprintf('Excluding plugins: <strong>%.2f%%</strong><br />', 
-            ((float)$theme_stats['done']) / ($theme_stats['total'] - $theme_stats['plugin']) * 100);
+            ((float)($theme_stats['done']-$theme_stats['plugin_done'])) / ($theme_stats['total'] - $theme_stats['plugin']) * 100);
         $ret .= '</div>';
 
         $keys = array_keys($sets);

@@ -43,10 +43,12 @@ class UploadAnyFile extends FanniePage {
 
     public $description = '[Generic Upload] simply uploads a file to temporary storage
     on the server.';
+    public $themed = true;
 
     private $tpath;
     
-    function preprocess(){
+    function preprocess()
+    {
         $this->tpath = sys_get_temp_dir()."/misc/";
         $this->mode = 'form';
         /* Is this a request-to-upload or an initial display of the form? */
@@ -70,12 +72,15 @@ class UploadAnyFile extends FanniePage {
         closedir($dh);
         */
 
-        if ($_FILES['upload']['error'] != UPLOAD_ERR_OK){
-            $msg = "Error uploading file<br />";
+        if ($_FILES['upload']['error'] != UPLOAD_ERR_OK) {
+            $msg = '<div class="alert alert-danger">';
+            $msg .= "Error uploading file<br />";
             $msg .= "Error code is: ".$_FILES['upload']['error'].'<br />';
             $msg .= '<a href="http://www.php.net/manual/en/features.file-upload.errors.php">Details</a>';
-        }
+            $msg .= '</div>';
 
+            return $msg;
+        }
 
         $tmpfile = $_FILES['upload']['tmp_name'];
         $path_parts = pathinfo($_FILES['upload']['name']);
@@ -96,39 +101,49 @@ class UploadAnyFile extends FanniePage {
 
         $out = move_uploaded_file($tmpfile, $this->tpath."{$path_parts['basename']}");
 
-        return "Done. File is in ".$this->tpath.$path_parts['basename']."<br />
-            This directory may be deleted on reboot.<br />";
+        return "<div class=\"alert alert-success\">
+            Done. File is in ".$this->tpath.$path_parts['basename']."<br />
+            This directory may be deleted on reboot.
+            </div>";
     }
 
     /**
       Call appropriate method depending on whether the
       form has been submitted.
     */
-    function body_content(){
-        if ($this->mode == 'form')
+    function body_content()
+    {
+        if ($this->mode == 'form') {
             return $this->upload_form();
-        elseif ($this->mode == 'process')
+        } elseif ($this->mode == 'process') {
             return $this->process_file();
-        else
-            return 'An unknown error occurred.';
+        } else {
+            return '<div class="alert alert-danger">An unknown error occurred.</div>';
+        }
     }
     
     /**
       Draw upload form
       @return HTML string containing form
     */
-    function upload_form(){
+    function upload_form()
+    {
         ob_start();
         ?>
+        <div class="well">
+        Best if the file is &lt;2MB.</br />
+        The file will be placed in <?php echo $this->tpath; ?>
+        </div>
+        <p>
         <form enctype="multipart/form-data" action="UploadAnyFile.php" method="post">
         <input type="hidden" name="MAX_FILE_SIZE" value="20971520" />
         <input type="hidden" name="doUpload" value="x" />
         Filename: <input type="file" id="file" name="upload" />
-        <input type="submit" value="Upload File" />
-        <br />Best if the file is &lt;2MB.
-        <br />The file will be placed in <?php echo $this->tpath; ?>
+        <button type="submit" class="btn btn-default">Upload File</button>
         </form>
+        </p>
         <?php
+
         return ob_get_clean();
     }
 }
