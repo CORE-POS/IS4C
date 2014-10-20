@@ -31,13 +31,15 @@ include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
   provide a button to apply that change
 */
 class SaPriceChangePage extends FannieRESTfulPage {
-    protected $window_dressing = False;
     private $section=0;
     private $current_item_data=array();
     private $linea_ios_mode = False;
     public $page_set = 'Plugin :: Shelf Audit';
     public $description = '[Price Change] checks for available price change batches
     on a given item and applies them.';
+    public $themed = true;
+    protected $title = 'ShelfAudit Price Check';
+    protected $header = '';
 
     private function linea_support_available(){
         global $FANNIE_ROOT;
@@ -88,15 +90,17 @@ class SaPriceChangePage extends FannieRESTfulPage {
         $prodR = $dbc->exec_statement($prodQ, array($upc));
 
         if ($dbc->num_rows($prodR) == 0){
-            echo '<span class="error">No item found for: '.$upc.'</span>';
+            echo '<div class="alert alert-danger">No item found for: '.$upc.'</div>';
             return False;
         }
 
         $prodW = $dbc->fetch_row($prodR);
 
+        echo '<div class="alert alert-info">';
         echo '<span class="o_upc">'.$prodW['upc'].'</span> ';
         echo '<span class="o_desc">'.$prodW['description'].'</span> ';
         echo '<span class="o_price">'.sprintf('$%.2f',$prodW['normal_price']).'</span>';
+        echo '</div>';
         
         $pendR = 0;
         if ($dbc->table_exists('batchListTest')){

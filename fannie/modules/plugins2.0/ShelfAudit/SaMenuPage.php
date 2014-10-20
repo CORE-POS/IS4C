@@ -28,10 +28,12 @@ include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
   @class SaMenuPage
 */
 class SaMenuPage extends FannieRESTfulPage {
-    protected $window_dressing = False;
 
     public $page_set = 'Plugin :: Shelf Audit';
     public $description = '[Menu] lists handheld-friendly pages for navigation.';
+    public $themed = true;
+    protected $title = 'ShelfAudit Menu';
+    protected $header = '';
 
     function css_content(){
         ob_start();
@@ -54,6 +56,7 @@ input[type="submit"] {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
+<p>
 <input type="submit" value="Inventory"
     onclick="location='SaHandheldPage.php';return false;" />
 <hr />
@@ -65,6 +68,7 @@ input[type="submit"] {
 <hr />
 <input type="submit" value="Shelf Location"
     onclick="location='../../../item/mapping/index.php';return false;" />
+</p>
 </body>
 </html>
         <?php
