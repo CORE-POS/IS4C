@@ -34,6 +34,7 @@ class OriginEditor extends FannieRESTfulPage
 
     public $description = '[Origins Editor] manages complex data about where items come from
     geographically.';
+    public $themed = true;
 
     public function preprocess()
     {
@@ -246,20 +247,24 @@ class OriginEditor extends FannieRESTfulPage
 
         $ret = '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
         $ret .= '<h3>Edit Countries</h3>';
-        $ret .= '<input type="submit" value="Save Countries" />';
+        $ret .= '<p>';
+        $ret .= '<button type="submit" class="btn btn-default">Save Countries</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="button" value="Create New Entry" onclick="location=\'OriginEditor.php?new_country\';return false;" />';
+        $ret .= '<button type="button" value="Create New Entry" class="btn btn-default"
+                    onclick="location=\'OriginEditor.php?new_country\';return false;">Create New Entry</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="button" value="Home" onclick="location=\'OriginEditor.php\';return false;" />';
-        $ret .= '<table cellspacing="0" cellpadding="4" border="1">';
+        $ret .= '<button type="button" value="Home" class="btn btn-default"
+                    onclick="location=\'OriginEditor.php\';return false;">Home</button>';
+        $ret .= '</p>';
+        $ret .= '<table class="table">';
         $ret .= '<tr><th>Name</th><th>Abbreviation</th>
                 <th><img alt="delete" src="' . $FANNIE_URL . 'src/img/buttons/trash.png' . '" /></th>
                 </tr>';
         foreach ($countries->find('name') as $c) {
             $ret .= sprintf('<tr>
                             <input type="hidden" name="countryID[]" value="%d" />
-                            <td><input type="text" name="name[]" value="%s" /></td>
-                            <td><input type="text" name="abbr[]" value="%s" /></td>
+                            <td><input type="text" name="name[]" class="form-control" value="%s" /></td>
+                            <td><input type="text" name="abbr[]" class="form-control" value="%s" /></td>
                             <td><input type="checkbox" name="delete[]" value="%d" /></td>
                             </tr>',
                             $c->countryID(),
@@ -269,9 +274,12 @@ class OriginEditor extends FannieRESTfulPage
             );
         }
         $ret .= '</table>';
-        $ret .= '<input type="submit" value="Save Countries" />';
+        $ret .= '<p>';
+        $ret .= '<button type="submit" class="btn btn-default">Save Countries</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="button" value="Home" onclick="location=\'OriginEditor.php\';return false;" />';
+        $ret .= '<button type="button" value="Home" class="btn btn-default"
+                    onclick="location=\'OriginEditor.php\';return false;">Home</button>';
+        $ret .= '</p>';
         $ret .= '</form>';
 
         return $ret;
@@ -285,20 +293,24 @@ class OriginEditor extends FannieRESTfulPage
 
         $ret = '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
         $ret .= '<h3>Edit States &amp; Provinces</h3>';
-        $ret .= '<input type="submit" value="Save" />';
+        $ret .= '<p>';
+        $ret .= '<button type="submit" class="btn btn-default">Save</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="button" value="Create New Entry" onclick="location=\'OriginEditor.php?new_state\';return false;" />';
+        $ret .= '<button type="button" value="Create New Entry" class="btn btn-default"
+                    onclick="location=\'OriginEditor.php?new_state\';return false;">Create New Entry</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="button" value="Home" onclick="location=\'OriginEditor.php\';return false;" />';
-        $ret .= '<table cellspacing="0" cellpadding="4" border="1">';
+        $ret .= '<button type="button" value="Home" class="btn btn-default"
+                    onclick="location=\'OriginEditor.php\';return false;">Home</button>';
+        $ret .= '</p>';
+        $ret .= '<table class="table">';
         $ret .= '<tr><th>Name</th><th>Abbreviation</th>
                 <th><img alt="delete" src="' . $FANNIE_URL . 'src/img/buttons/trash.png' . '" /></th>
                 </tr>';
         foreach ($states->find('name') as $s) {
             $ret .= sprintf('<tr>
                             <input type="hidden" name="stateID[]" value="%d" />
-                            <td><input type="text" name="name[]" value="%s" /></td>
-                            <td><input type="text" name="abbr[]" value="%s" /></td>
+                            <td><input type="text" name="name[]" class="form-control" value="%s" /></td>
+                            <td><input type="text" name="abbr[]" class="form-control" value="%s" /></td>
                             <td><input type="checkbox" name="delete[]" value="%d" /></td>
                             </tr>',
                             $s->stateProvID(),
@@ -308,9 +320,12 @@ class OriginEditor extends FannieRESTfulPage
             );
         }
         $ret .= '</table>';
-        $ret .= '<input type="submit" value="Save" />';
+        $ret .= '<p>';
+        $ret .= '<button type="submit" class="btn btn-default">Save</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="button" value="Home" onclick="location=\'OriginEditor.php\';return false;" />';
+        $ret .= '<button type="button" value="Home" class="btn btn-default"
+                    onclick="location=\'OriginEditor.php\';return false;">Home</button>';
+        $ret .= '</p>';
         $ret .= '</form>';
 
         return $ret;
@@ -324,19 +339,23 @@ class OriginEditor extends FannieRESTfulPage
 
         $ret = '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
         $ret .= '<h3>Edit Custom Regions</h3>';
-        $ret .= '<input type="submit" value="Save Regions" />';
+        $ret .= '<p>';
+        $ret .= '<button type="submit" class="btn btn-default">Save Regions</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="button" value="Create New Entry" onclick="location=\'OriginEditor.php?new_custom\';return false;" />';
+        $ret .= '<button type="button" value="Create New Entry" class="btn btn-default"
+                    onclick="location=\'OriginEditor.php?new_custom\';return false;">Create New Entry</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="button" value="Home" onclick="location=\'OriginEditor.php\';return false;" />';
-        $ret .= '<table cellspacing="0" cellpadding="4" border="1">';
+        $ret .= '<button type="button" value="Home" class="btn btn-default"
+                    onclick="location=\'OriginEditor.php\';return false;">Home</button>';
+        $ret .= '</p>';
+        $ret .= '<table class="table">';
         $ret .= '<tr><th>Name</th>
                 <th><img alt="delete" src="' . $FANNIE_URL . 'src/img/buttons/trash.png' . '" /></th>
                 </tr>';
         foreach ($customs->find('name') as $c) {
             $ret .= sprintf('<tr>
                             <input type="hidden" name="customID[]" value="%d" />
-                            <td><input type="text" name="name[]" value="%s" /></td>
+                            <td><input type="text" name="name[]" class="form-control" value="%s" /></td>
                             <td><input type="checkbox" name="delete[]" value="%d" /></td>
                             </tr>',
                             $c->customID(),
@@ -345,9 +364,12 @@ class OriginEditor extends FannieRESTfulPage
             );
         }
         $ret .= '</table>';
-        $ret .= '<input type="submit" value="Save Regions" />';
+        $ret .= '<p>';
+        $ret .= '<button type="submit" class="btn btn-default">Save Regions</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="button" value="Home" onclick="location=\'OriginEditor.php\';return false;" />';
+        $ret .= '<button type="button" value="Home" class="btn btn-default"
+                    onclick="location=\'OriginEditor.php\';return false;">Home</button>';
+        $ret .= '</p>';
         $ret .= '</form>';
 
         return $ret;
@@ -378,7 +400,7 @@ class OriginEditor extends FannieRESTfulPage
         $origins = new OriginsModel($dbc);
         $ret = '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
         $ret .= '<h3>Edit Origins</h3>';
-        $ret .= '<table cellspacing="0" cellpadding="4" border="1">';
+        $ret .= '<table class="table">';
         $ret .= '<tr>
                 <th>Short Name</th>
                 <th>Full Name</th>
@@ -397,7 +419,7 @@ class OriginEditor extends FannieRESTfulPage
                             $o->name()
             );
 
-            $ret .= '<td><select name="custom[]"><option value="">n/a</option>';
+            $ret .= '<td><select name="custom[]" class="form-control"><option value="">n/a</option>';
             foreach ($customs as $id => $label) {
                 $ret .= sprintf('<option %s value="%d">%s</option>',
                             ($id == $o->customID() ? 'selected' : ''),
@@ -405,7 +427,7 @@ class OriginEditor extends FannieRESTfulPage
             }
             $ret .= '</select></td>';
 
-            $ret .= '<td><select name="state[]"><option value="">n/a</option>';
+            $ret .= '<td><select name="state[]" class="form-control"><option value="">n/a</option>';
             foreach ($states as $id => $label) {
                 $ret .= sprintf('<option %s value="%d">%s</option>',
                             ($id == $o->stateProvID() ? 'selected' : ''),
@@ -413,7 +435,7 @@ class OriginEditor extends FannieRESTfulPage
             }
             $ret .= '</select></td>';
 
-            $ret .= '<td><select name="country[]"><option value="">n/a</option>';
+            $ret .= '<td><select name="country[]" class="form-control"><option value="">n/a</option>';
             foreach ($countries as $id => $label) {
                 $ret .= sprintf('<option %s value="%d">%s</option>',
                             ($id == $o->countryID() ? 'selected' : ''),
@@ -427,35 +449,35 @@ class OriginEditor extends FannieRESTfulPage
             $ret .= '</tr>';
         }
         $ret .= '</table>';
-        $ret .= '<input type="submit" value="Save Origins" />';
+        $ret .= '<p><button type="submit" class="btn btn-default">Save Origins</button></p>';
         $ret .= '</form>';
 
         $ret .= '<hr />';
 
         $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
         $ret .= '<h3>Create New Origin</h3>';
-        $ret .= '<table cellspacing="0" cellpadding="4" border="1">';
+        $ret .= '<table class="table">';
         $ret .= '<tr>
                 <th><a href="' . $_SERVER['PHP_SELF'] . '?custom=1">Region</a></th>
                 <th><a href="' . $_SERVER['PHP_SELF'] . '?state=1">State/Prov</a></th>
                 <th><a href="' . $_SERVER['PHP_SELF'] . '?country=1">Country</a></th>
                 </tr>';
         $ret .= '<tr>';
-        $ret .= '<td><select name="newCustom"><option value="">n/a</option>';
+        $ret .= '<td><select name="newCustom" class="form-control"><option value="">n/a</option>';
         foreach ($customs as $id => $label) {
             $ret .= sprintf('<option value="%d">%s</option>',
                         $id, $label);
         }
         $ret .= '</select></td>';
 
-        $ret .= '<td><select name="newState"><option value="">n/a</option>';
+        $ret .= '<td><select name="newState" class="form-control"><option value="">n/a</option>';
         foreach ($states as $id => $label) {
             $ret .= sprintf('<option value="%d">%s</option>',
                         $id, $label);
         }
         $ret .= '</select></td>';
 
-        $ret .= '<td><select name="newCountry"><option value="">n/a</option>';
+        $ret .= '<td><select name="newCountry" class="form-control"><option value="">n/a</option>';
         foreach ($countries as $id => $label) {
             $ret .= sprintf('<option value="%d">%s</option>',
                         $id, $label);
@@ -463,7 +485,7 @@ class OriginEditor extends FannieRESTfulPage
         $ret .= '</select></td>';
         $ret .= '</tr>';
         $ret .= '</table>';
-        $ret .= '<input type="submit" value="Create" />';
+        $ret .= '<p><button type="submit" class="btn btn-default">Create</button></p>';
         $ret .= '</form>';
 
         return $ret;

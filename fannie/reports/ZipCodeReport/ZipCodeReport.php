@@ -24,11 +24,13 @@
 include(dirname(__FILE__) . '/../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-class ZipCodeReport extends FannieReportPage {
+class ZipCodeReport extends FannieReportPage 
+{
 
     public $description = '[Zip Code Report] lists number of customers and sales total by postal code
         for a given date range.';
     public $report_set = 'Membership';
+    public $themed = true;
 
     protected $title = "Fannie : Zip Code Report";
     protected $header = "Zip Code Report";
@@ -131,28 +133,34 @@ class ZipCodeReport extends FannieReportPage {
         $this->add_onload_command('$(\'#date1\').datepicker();');
         $this->add_onload_command('$(\'#date2\').datepicker();');
         return '<form action="ZipCodeReport.php" method="get">
-            <table>
-            <tr>
-                <th>Start Date</th>
-                <td><input type="text" name="date1" id="date1" /></td>  
-                <td rowspan="4">' . FormLib::dateRangePicker() . '</td>
-            </tr>
-            <tr>
-                <th>End Date</th>
-                <td><input type="text" name="date2" id="date2" /></td>  
-            </tr>
-            <tr>
-                <th>Based on</th>
-                <td><select name="rtype"><option>Purchases</option><option>Join Date</option></select></td>
-            </tr>
-            <tr>
-                <th>Exclude #(s)</th>
-                <td><input type="text" name="excludes" /></td>
-            </tr>
-            <tr>
-                <td colspan="2"><input type="submit" value="Get Report" /></td>
-            </tr>
-            </table>
+            <div class="col-sm-5">
+            <div class"form-group">
+                <label>Start Date</label>
+                <input type="text" name="date1" id="date1" 
+                    class="form-control" required/>
+            </div>
+            <div class="form-group">
+                <label>End Date</label>
+                <input type="text" name="date2" id="date2" 
+                    class="form-control" required />
+            </div>
+            <div class="form-group">
+                <label>Based on</label>
+                <select name="rtype" class="form-control">
+                    <option>Purchases</option><option>Join Date</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Exclude #(s)</label>
+                <input type="text" name="excludes" class="form-control" />
+            </div>
+            <p>
+               <button type="submit" class="btn btn-default">Get Report</button>
+            </p>
+            </div>
+            <div class="col-sm-5">
+                ' . FormLib::dateRangePicker() . '
+            </div>
             </form>';   
     }
 

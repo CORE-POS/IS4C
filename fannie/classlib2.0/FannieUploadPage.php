@@ -455,9 +455,10 @@ class FannieUploadPage extends FanniePage
     */
     protected function uploadError()
     {
-        return sprintf('Something went wrong uploading the file. 
+        return sprintf('<div class="alert alert-danger">
+            Something went wrong uploading the file. 
             Details: <em>%s</em>. 
-            <a href="%s">Try again</a>?',
+            <a href="%s">Try again</a>?</div>',
             $this->error_details,
             $_SERVER['PHP_SELF']);
     }
@@ -468,9 +469,10 @@ class FannieUploadPage extends FanniePage
     */
     protected function processingError()
     {
-        return sprintf('Something went wrong processing the file. 
+        return sprintf('<div class="alert alert-danger">
+            Something went wrong processing the file. 
             Details: <em>%s</em>. 
-            <a href="%s">Try again</a>?',
+            <a href="%s">Try again</a>?</div>',
             $this->error_details,
             $_SERVER['PHP_SELF']);
     }
@@ -543,7 +545,7 @@ class FannieUploadPage extends FanniePage
         $ret = '<h3>Select columns</h3>';
         /* show any errors */
         if ($this->error_details != 'n/a' && $this->error_details != '') {
-            $ret .= '<ul style="border: solid 1px red;">';
+            $ret .= '<ul class="alert alert-danger">';
             $ret .= $this->error_details;
             $ret .= '</ul>';
         }

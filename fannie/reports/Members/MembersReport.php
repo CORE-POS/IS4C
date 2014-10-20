@@ -13,7 +13,7 @@ class MembersReport extends FannieReportPage
     protected $no_sort_but_style = true;
 
     public $description = '[Members Report] lists members by type with active status and equity balance';
-    public $report_set = 'Members';
+    public $report_set = 'Membership';
     public $themed = true;
 
     function fetch_report_data()

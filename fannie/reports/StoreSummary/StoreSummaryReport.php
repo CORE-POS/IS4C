@@ -38,8 +38,10 @@ class StoreSummaryReport extends FannieReportPage {
        relies on department margins being accurate.";
 
     public $report_set = 'Sales Reports';
+    public $themed = true;
 
-    function preprocess(){
+    function preprocess()
+    {
 
         $this->title = "Fannie : Store Summary Report";
         $this->header = "Store Summary Report";
@@ -496,43 +498,40 @@ class StoreSummaryReport extends FannieReportPage {
         }
         ?>
         <form action=StoreSummaryReport.php method=get>
-        <table cellspacing=4 cellpadding=4 border=0>
-        <tr>
-        <th>Start Date</th>
-        <td><input type=text id=date1 name=date1 value="<?php echo $lastMonday; ?>" /></td>
-        <td rowspan="2">
-        <?php echo FormLib::date_range_picker(); ?>
-        </td>
-        </tr><tr>
-        <th>End Date</th>
-        <td><input type=text id=date2 name=date2 value="<?php echo $lastSunday; ?>" /></td>
-        </tr>
-        <tr style='vertical-align:top;'>
-        <td colspan=2>
-        <select name=dept>
-            <option value=0>Use department settings at time of sale</option>
-            <option value=1>Use current department settings</option>
-        </select>
-        </td>
-        <td>
-        <fieldset>
-        <div style='float:left; height:2.0em;'><input type=checkbox name=sortable id=sortable /></div>
-        <p class='explain' style='margin:0.5em 0em 0em 0.5em;'>Sortable</p>
-        </fieldset>
-        </td>
-        </tr>
-        <tr>
-        <td colspan=1> &nbsp; </td>
-        <td colspan=1><!--Excel <input type=checkbox name=excel />
-        &nbsp; &nbsp; &nbsp; --><input type=submit name=submit value="Submit" /></td>
-        <td colspan=1>
-        <fieldset>
-        <div style='float:left; height:2.0em;'><input type=checkbox name=show_zero id=show_zero /></div>
-        <p class='explain' style='margin:0.5em 0em 0em 0.5em;'>Show SuperDepts with $0 or net $0 sales.</p>
-        </fieldset>
-        </td>
-        </tr>
-        </table>
+        <div class="col-sm-5">
+            <div class="form-group">
+                <label>Start Date</label>
+                <input type=text id=date1 name=date1 class="form-control" 
+                    value="<?php echo $lastMonday; ?>" />
+            </div>
+            <div class="form-group">
+                <label>End Date</label>
+                <input type=text id=date2 name=date2 class="form-control" 
+                    value="<?php echo $lastSunday; ?>" />
+            </div>
+            <div class="form-group">
+                <select name=dept class="form-control">
+                <option value=0>Use department settings at time of sale</option>
+                <option value=1>Use current department settings</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Sortable
+                    <input type="checkbox" name="sortable" />
+                </label>
+            </div>
+            <div class="form-group">
+                <label>Show SuperDepts with $0 or net $0 sales
+                    <input type="checkbox" name="sortable" />
+                </label>
+            </div>
+            <p>
+                <button type="submit" class="btn btn-default">Submit</button>
+            </p>
+        </div>
+        <div class="col-sm-5">
+            <?php echo FormLib::date_range_picker(); ?>
+        </div>
         </form>
         <?php
         $this->add_onload_command('$(\'#date1\').datepicker();');

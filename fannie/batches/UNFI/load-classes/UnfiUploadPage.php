@@ -30,6 +30,7 @@ class UnfiUploadPage extends FannieUploadPage {
 
     public $title = "Fannie - UNFI Prices";
     public $header = "Upload UNFI price file";
+    public $themed = true;
 
     public $description = '[UNFI Catalog Import] specialized vendor import tool. Column choices
     default to UNFI price file layout.';
@@ -276,8 +277,8 @@ class UnfiUploadPage extends FannieUploadPage {
     function results_content(){
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $ret = "Price data import complete<p />";
-        $ret .= '<a href="'.$_SERVER['PHP_SELF'].'">Upload Another</a>';
+        $ret = "<p>Price data import complete</p>";
+        $ret .= '<p><a href="'.$_SERVER['PHP_SELF'].'">Upload Another</a></p>';
 
         /** Changed 22Jan14
             PLU substitution by SKU happens during import

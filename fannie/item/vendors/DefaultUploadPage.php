@@ -26,10 +26,11 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class DefaultUploadPage extends FannieUploadPage {
-
+class DefaultUploadPage extends FannieUploadPage 
+{
     public $title = "Fannie - Load Vendor Prices";
     public $header = "Upload Vendor price file";
+    public $themed = true;
 
     public $description = '[Vendor Catalog Import] is the default tool for loading or updating vendor item data
     via spreadsheet.';
@@ -276,11 +277,11 @@ class DefaultUploadPage extends FannieUploadPage {
 
     function results_content()
     {
-        $ret = "Price data import complete<p />";
-        $ret .= '<a href="'.$_SERVER['PHP_SELF'].'">Upload Another</a>';
+        $ret = "<p>Price data import complete</p>";
         unset($_SESSION['vid']);
         unset($_SESSION['vUploadCheckDigits']);
         unset($_SESSION['vUploadChangeCosts']);
+
         return $ret;
     }
 
@@ -290,20 +291,20 @@ class DefaultUploadPage extends FannieUploadPage {
         $vid = FormLib::get_form_value('vid');
         if ($vid === ''){
             $this->add_onload_command("\$('#FannieUploadForm').remove();");
-            return '<span style="color:red;">Error: No Vendor Selected</span>';
+            return '<div class="alert alert-danger">Error: No Vendor Selected</div>';
         }
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $vp = $dbc->prepare_statement('SELECT vendorName FROM vendors WHERE vendorID=?');
         $vr = $dbc->exec_statement($vp,array($vid));
         if ($dbc->num_rows($vr)==0){
             $this->add_onload_command("\$('#FannieUploadForm').remove();");
-            return '<span style="color:red;">Error: No Vendor Found</span>';
+            return '<div class="alert alert-danger">Error: No Vendor Found</div>';
         }
         $vrow = $dbc->fetch_row($vr);
         $_SESSION['vid'] = $vid;
-        return '<fieldset><legend>Instructions</legend>
+        return '<div class="well"><legend>Instructions</legend>
             Upload a price file for <i>'.$vrow['vendorName'].'</i> ('.$vid.'). File must be
-            CSV. Files &gt; 2MB may be zipped.</fieldset><br />';
+            CSV. Files &gt; 2MB may be zipped.</div>';
     }
 
     public function preprocess()

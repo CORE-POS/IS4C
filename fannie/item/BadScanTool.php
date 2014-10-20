@@ -33,18 +33,19 @@ class BadScanTool extends FannieRESTfulPage
 
     public $description = '[Bad Scan Tool] shows information about UPCs that were scanned
     at the lanes but not found in POS.';
+    public $themed = true;
 
-    private $date_restrict = false;
+    private $date_restrict = true;
 
     function preprocess()
     {
-        $this->__routes[] = 'get<lastweek>';
+        $this->__routes[] = 'get<lastquarter>';
         return parent::preprocess();
     }
 
-    function get_lastweek_view()
+    function get_lastquarter_view()
     {
-        $this->date_restrict = true;
+        $this->date_restrict = false;
 
         return $this->get_view();
     }
@@ -101,15 +102,18 @@ class BadScanTool extends FannieRESTfulPage
         }
 
         $ret = '';
-        if ($this->date_restrict) {
-            $ret .= '<a href="BadScanTool.php">View Last Quarter</a>';
-            $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-            $ret .= 'Viewing Last Week';
-        } else {
-            $ret .= 'Viewing Last Quarter';
-            $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-            $ret .= '<a href="BadScanTool.php?lastweek=1">View Last Week</a>';
-        }
+        $ret .= '<div class="nav">';
+        $ret .= '<a href="BadScanTool.php?lastquarter=1"
+                    class="btn btn-default navbar-btn'
+                    . (!$this->date_restrict ? ' active' : '')
+                    . '">View Last Quarter</a>';
+        $ret .= ' ';
+        $ret .= '<a href="BadScanTool.php"
+                    class="btn btn-default navbar-btn'
+                    . ($this->date_restrict ? ' active' : '')
+                    . '">View Last Week</a>';
+        $ret .= '</div>';
+
         $ret .= '<br /><b>Show</b>: ';
         $ret .= '<input type="radio" name="rdo" id="rdoa" onclick="showAll();" /> 
                     <label for="rdoa">All</label>';
@@ -120,13 +124,15 @@ class BadScanTool extends FannieRESTfulPage
         $ret .= '<input type="radio" name="rdo" id="rdof" onclick="showFixable();" checked /> 
                     <label for="rdof">Fixable</label>';
         $ret .= '<br />';
-        $ret .= '<span style="color: green;">Green items have been entered in POS</span>. ';
-        $ret .= '<span style="color: red;">Red items can be added from vendor catalogs</span>. ';
-        $ret .= '<span style="color: blue;">Blue items can also be added from vendor catalogs but
+        $ret .= '<div class="well">';
+        $ret .= '<span class="alert-success">Green items have been entered in POS</span>. ';
+        $ret .= '<span class="alert-danger">Red items can be added from vendor catalogs</span>. ';
+        $ret .= '<span class="alert-info">Blue items can also be added from vendor catalogs but
                 may not be needed. All scans are within a 5 minute window. May indicate a special
                 order case scanned by mistake or a bulk purchase in a barcoded container.</span> ';
         $ret .= 'Other items are not identifiable with available information';
-        $ret .= '<table id="scantable" cellspacing="0" cellpadding="4" border=1">';
+        $ret .= '</div>';
+        $ret .= '<table id="scantable" class="table">';
         $ret .= '<tr id="tableheader"><th>UPC</th><th># Scans</th><th>Oldest</th><th>Newest</th>
                 <th>In POS</th><th>In Vendor Catalog</th><th>SRP</th></tr>';
         $scanCount = 0;
@@ -139,18 +145,18 @@ class BadScanTool extends FannieRESTfulPage
             $fixButton = '';
             $span = strtotime($row['newest']) - strtotime($row['oldest']);
             if (!empty($row['prod'])) {
-                $css = 'class="fixed" style="display:none;"';
+                $css = 'class="fixed alert alert-success collapse"'; 
             } else if (!empty($row['vend']) && !empty($row['srp'])) {
                 if ($span > 300) {
-                    $css = 'class="fixable"';
+                    $css = 'class="fixable alert alert-danger"';
                 } else {
-                    $css = 'class="semiFixable"';
+                    $css = 'class="semiFixable alert alert-info"';
                 }
                 $fixButton = ' <a href="ItemEditorPage.php?searchupc= ' . $row['upc'] . '" target="_new' . $row['upc'] . '">ADD</a>';
             } else if ($row['instances'] == 1) {
-                $css = 'class="loner" style="display:none;"';
+                $css = 'class="loner collapse"';
             } else {
-                $css = 'style="display:none;"';
+                $css = 'class="collapse"';
             }
             $ret .= sprintf('<tr %s><td>%s</td><td>%d</td><td>%s</td><td>%s</td>
                             <td>%s</td><td>%s</td><td>%s</td></tr>',
@@ -205,21 +211,6 @@ function showMultiple() {
     function css_content()
     {
         return '
-            tr.fixed td {
-                background: green;
-                color: white;
-            }
-            tr.fixable td {
-                background: red;
-                color: white;
-            }
-            tr.semiFixable td {
-                background: blue;
-                color: white;
-            }
-            tr.fixable a, tr.semiFixable a {
-                color: white;
-            }
             div#ratio {
                 margin: 10px;
                 font-size: 125%;
