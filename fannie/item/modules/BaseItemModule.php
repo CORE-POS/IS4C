@@ -637,11 +637,11 @@ class BaseItemModule extends ItemModule {
         $model = new ProductsModel($dbc);
         $model->upc($upc);
         if ($model->load()) {
-            $row1 = '<th align="right">UPC</th>
+            $row1 = '<th>UPC</th>
                 <td><a href="ItemEditorPage.php?searchupc=' . $upc . '">' . $upc . '</td>
-                <td colspan="2" align="right"><a href="" onclick="window.open(\'addShelfTag.php?upc=' . $upc . '\',
-                    \'New Shelftag\', \'location=0,status=1,scrollbars=1,width=300,height=200\'); return false;"
-                    >Shelf Tag</a></td>';
+                <td>
+                    <a class="iframe fancyboxLink" href="addShelfTag.php?upc='.$upc.'" title="Create Shelf Tag">Shelf Tag</a>
+                </td>';
             $row2 = '<th>Description</th><td>' . $model->description() . '</td>
                      <th>Price</th><td>$' . $model->normal_price() . '</td>';
 

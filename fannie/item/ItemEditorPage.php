@@ -144,6 +144,10 @@ class ItemEditorPage extends FanniePage
         $this->add_onload_command("bindAutoComplete('#upc', '$ws', 'item');\n");
         $this->add_onload_command('$(\'#upc\').focus();');
 
+        $this->add_script($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.js?v=1');
+        $this->add_css_file($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.css');
+        $this->add_onload_command('$(\'.fancyboxLink\').fancybox({\'width\':\'85%;\'});');
+
         return $ret;
     }
 
@@ -366,9 +370,8 @@ class ItemEditorPage extends FanniePage
                     $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
                     $ret .= '<a class="iframe fancyboxLink" href="'.$FANNIE_URL.'reports/RecentSales/?upc='.$upc.'" title="Sales History">Sales History</a>';
 
-                    $js = "window.open('addShelfTag.php?upc=$upc', 'New Shelftag','location=0,status=1,scrollbars=1,width=300,height=220');";
                     $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-                    $ret .= '<a href="" onclick="'.$js.'return false;">Shelf Tag</a>';
+                    $ret .= '<a class="iframe fancyboxLink" href="'.$FANNIE_URL.'item/addShelfTag.php?upc='.$upc.'" title="Create Shelf Tag">Shelf Tag</a>';
                 }
                 $ret .= '</p>';
             }
@@ -406,7 +409,7 @@ class ItemEditorPage extends FanniePage
             $ret .= "\n</script>\n";
         }
 
-        $this->add_onload_command('$(\'.fancyboxLink\').fancybox();');
+        $this->add_onload_command('$(\'.fancyboxLink\').fancybox({\'width\':\'85%;\'});');
         $this->add_onload_command('$(\'#price\').focus();');
         
         return $ret;
