@@ -28,6 +28,7 @@ class OriginsModel extends BasicModel
 {
 
     protected $name = "origins";
+    protected $preferred_db = 'op';
 
     protected $columns = array(
     'originID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),

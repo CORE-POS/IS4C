@@ -71,7 +71,7 @@ class SiteMap extends FannieRESTfulPage
             if (strstr($obj->page_set, 'Plugin')) {
                 $theme_stats['plugin']++;
                 if ($obj->themed) {
-                    $theme_Status['plugin_done']++;
+                    $theme_stats['plugin_done']++;
                 }
             }
         }
