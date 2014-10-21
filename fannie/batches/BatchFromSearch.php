@@ -267,7 +267,7 @@ class BatchFromSearch extends FannieRESTfulPage
             $ret .= '<option>' . $row['super_name'] . '</option>';
         }
         $ret .= '<option>IT</option></select>
-                <button type="button" name="createBatch" value="1"
+                <button type="submit" name="createBatch" value="1"
                     class="btn btn-default">Create Batch</button>
                 </div>';
 
