@@ -408,7 +408,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
     }
 
     private function streamOutput($data) {
-        $ret = $dataStr;
+        $ret = '';
         $ret .= '<table class="table">';
         $ret .= '<tr>
                 <th><input type="checkbox" onchange="toggleAll(this, \'.upcCheckBox\');" /></th>
@@ -551,7 +551,7 @@ function formReset()
         global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $ret .= '<div class="col-sm-10">';
+        $ret = '<div class="col-sm-10">';
 
         $ret .= '<form method="post" id="searchform" onsubmit="getResults(); return false;" onreset="formReset();">';
 

@@ -40,7 +40,7 @@ class ReportModel extends BasicModel
     public function pushToLanes(){}
     public function deleteFromLanes(){}
 
-    public function find($sort='')
+    public function find($sort='', $reverse=false)
     {
         $sql = 'SELECT ';
         foreach($this->columns as $name => $definition) {
