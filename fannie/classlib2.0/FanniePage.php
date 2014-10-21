@@ -63,6 +63,12 @@ class FanniePage
     protected $scripts = array();
     protected $css_files = array();
 
+    /**
+      Include javascript necessary to integrate linea
+      scanner device
+    */
+    protected $enable_linea = false;
+
     protected $error_text;
 
     public function __construct()
@@ -118,6 +124,11 @@ class FanniePage
             }
         } else {
             include(dirname(__FILE__) . '/../src/header.html');
+        }
+
+        if ($this->enable_linea) {
+            $this->addScript($FANNIE_URL . 'src/javascript/linea/cordova-2.2.0.js');
+            $this->addScript($FANNIE_URL . 'src/javascript/linea/ScannerLib-Linea-2.0.0.js');
         }
 
         return ob_get_clean();
@@ -192,6 +203,52 @@ class FanniePage
     public function javascriptContent()
     {
         return $this->javascript_content();
+    }
+
+    protected function lineaJS()
+    {
+        ob_start();
+        ?>
+/**
+  Enable linea scanner on page
+  @param selector - jQuery selector for the element where
+    barcode data should be entered
+  @param callback [optional] function called after
+    barcode scan
+
+  If the callback is omitted, the parent <form> of the
+  selector's element is submitted.
+*/
+function enableLinea(selector, callback)
+{
+    Device = new ScannerDevice({
+        barcodeData: function (data, type){
+            var upc = data.substring(0,data.length-1);
+            if ($(selector).length > 0){
+                $(selector).val(upc);
+                if (typeof callback === 'function') {
+                    callback();
+                } else {
+                    $(selector).closest('form').submit();
+                }
+            }
+        },
+        magneticCardData: function (track1, track2, track3){
+        },
+        magneticCardRawData: function (data){
+        },
+        buttonPressed: function (){
+        },
+        buttonReleased: function (){
+        },
+        connectionState: function (state){
+        }
+    });
+    ScannerDevice.registerListener(Device);
+}
+        <?php
+
+        return ob_get_clean();
     }
 
     /**
@@ -452,6 +509,9 @@ function showBootstrapPopover(element, original_value, error_message)
     setTimeout(function(){element.popover('destroy');}, timeout);
 }
                     <?php
+                }
+                if ($this->enable_linea) {
+                    echo $this->lineaJS();
                 }
                 echo '</script>';
             }
