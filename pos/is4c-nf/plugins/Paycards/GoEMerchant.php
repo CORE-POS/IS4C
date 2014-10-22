@@ -129,12 +129,12 @@ class GoEMerchant extends BasicCCModule
                             "Swipe again or type in manually",
                             "[clear] to cancel");
                         return $json;
-                    } else if (PaycardLib::paycard_accepted($this->trans_pan['pan'],  !PaycardLib::paycard_live(PaycardLib::PAYCARD_TYPE_CREDIT)) != 1) {
-                        PaycardLib::paycard_reset();
+                    } else if (!PaycardLib::paycard_accepted($this->trans_pan['pan'], false)) {
                         $json['output'] = PaycardLib::paycard_msgBox(PaycardLib::PAYCARD_TYPE_CREDIT,
                             "Unsupported Card Type",
                             "We cannot process " . $CORE_LOCAL->get("paycard_issuer") . " cards",
                             "[clear] to cancel");
+                        PaycardLib::paycard_reset();
                         return $json;
                     } else if (PaycardLib::paycard_validExpiration($CORE_LOCAL->get("paycard_exp")) != 1) {
                         PaycardLib::paycard_reset();

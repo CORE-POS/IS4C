@@ -187,22 +187,18 @@ static public function paycard_info($pan) {
 /**
   Check whether a given card is accepted
   @param $pan the card number
-  @param $acceptTest boolean
+  @param $ebt [boolean, default true] 
   @return 
    - 1 if accepted
    - 0 if not accepted
-
-  $acceptTest controls the behavior with
-  testing cards. True makes test cards
-  accepted.
 */
-static public function paycard_accepted($pan, $acceptTest) {
+static public function paycard_accepted($pan, $ebt=true) {
 	$info = self::paycard_info($pan);
-	/*
-	if( $info['test'] && $acceptTest)
-		return 1;
-	 */
-	return ($info['accepted'] ? 1 : 0);
+    if (!$ebt && substr($info['issuer'], 0, 3) == 'EBT') {
+        return 0;
+    } else {
+        return ($info['accepted'] ? 1 : 0);
+    }
 } // paycard_accepted()
 
 
