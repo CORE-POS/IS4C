@@ -263,10 +263,15 @@ static public function printReceiptHeader($dateTimeStamp, $ref) {
 				$CORE_LOCAL->set('ImageCache',$img_cache);
 				$receipt .= "\n";
 			}
-		}
-		else {
-			$bold = ($i==1) ? True : False;
-			$receipt .= self::$PRINT_OBJ->centerString($CORE_LOCAL->get("receiptHeader$i"), $bold);
+		} else {
+            /** put first header line in larger font **/
+            if ($i == 1) {
+                $receipt .= self::$PRINT_OBJ->TextStyle(true, false, true);
+                $receipt .= self::$PRINT_OBJ->centerString($CORE_LOCAL->get("receiptHeader$i"), true);
+                $receipt .= self::$PRINT_OBJ->TextStyle(true);
+            } else {
+                $receipt .= self::$PRINT_OBJ->centerString($CORE_LOCAL->get("receiptHeader$i"), false);
+            }
 			$receipt .= "\n";
 		}
 	}
