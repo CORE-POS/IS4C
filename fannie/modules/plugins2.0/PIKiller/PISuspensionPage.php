@@ -226,8 +226,7 @@ class PISuspensionPage extends PIKillerPage {
 
                 $this->__models['suspended']->delete();
             }
-        }
-        else if (isset($this->__models['suspended'])){
+        } else if (isset($this->__models['suspended'])){
             // account already suspended
             // add history/log record, update suspended record
             $m_status = 0;
@@ -239,6 +238,7 @@ class PISuspensionPage extends PIKillerPage {
                 $m_status = 1;
             }
             $this->__models['suspended']->reasoncode($code);
+            $this->__models['suspended']->save();
 
             $history = new SuspensionHistoryModel($dbc);
             $history->username($this->current_user);
