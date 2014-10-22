@@ -375,6 +375,7 @@ class Void extends Parser
                         tax,
                         VolSpecial,
                         matched,
+                        scale,
                         trans_id
                       FROM localtemptrans 
                       WHERE upc = '" . $upc . "'"; 
@@ -390,7 +391,6 @@ class Void extends Parser
         $result = $db->query($query_upc);
         $row = $db->fetch_array($result);
 
-        $ItemQtty = $row["ItemQtty"];
         $foodstamp = MiscLib::nullwrap($row["foodstamp"]);
         $discounttype = MiscLib::nullwrap($row["discounttype"]);
         $mixMatch = MiscLib::nullwrap($row["mixMatch"]);
@@ -428,10 +428,14 @@ class Void extends Parser
         $total = $quantity * $unitPrice;
         if ($row['unitPrice'] == 0) {
             $total = $quantity * $row['total'];
-        } else if ($row['total'] != $total) {
-            // I think this always happens
-            // Unit Price times negative quantity shouldn't
-            // match previous price
+        } else if ($row['total'] != $total && $row['scale'] == 1) {
+            /**
+              If the total does not match quantity times unit price,
+              the cashier probably manually specified a quantity
+              i.e., VD{qty}*{upc}. This is probably OK for non-weight
+              items. Each record should be the same and voiding multiple
+              in one line will usually be fine.
+            */
             $total = -1*$row['total'];
         }
     
