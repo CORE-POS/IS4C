@@ -182,6 +182,7 @@ function forceBatch($batchID)
             p.specialpricemethod,
             p.specialquantity,
             p.specialgroupprice,
+            p.discounttype,
             p.mixmatchcode,
             p.start_date,
             p.end_date
@@ -196,6 +197,7 @@ function forceBatch($batchID)
             p.specialpricemethod,
             p.specialquantity,
             p.specialgroupprice,
+            p.discounttype,
             p.mixmatchcode,
             p.start_date,
             p.end_date
@@ -226,6 +228,7 @@ function forceBatch($batchID)
             p.specialpricemethod = ?,
             p.specialquantity = ?,
             p.specialgroupprice = ?,
+            p.discounttype = ?,
             p.mixmatchcode = ?,
             p.start_date = ?,
             p.end_date = ?
@@ -254,6 +257,7 @@ function forceBatch($batchID)
                 $data['specialpricemethod'],
                 $data['specialquantity'],
                 $data['specialgroupprice'],
+                $data['discounttype'],
                 $data['mixmatchcode'],
                 $data['start_date'],
                 $data['end_date'],
