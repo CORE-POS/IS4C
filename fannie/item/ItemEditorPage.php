@@ -37,6 +37,7 @@ class ItemEditorPage extends FanniePage
 
     public $description = '[Item Editor] is the primary item editing tool.';
     public $themed = true;
+    protected $enable_linea = true;
 
     function preprocess()
     {
@@ -147,6 +148,9 @@ class ItemEditorPage extends FanniePage
         $this->add_script($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.js?v=1');
         $this->add_css_file($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.css');
         $this->add_onload_command('$(\'.fancyboxLink\').fancybox({\'width\':\'85%;\'});');
+
+        // bind scanner to UPC field
+        $this->add_onload_command("enableLinea('#upc');\n");
 
         return $ret;
     }
