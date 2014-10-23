@@ -58,7 +58,7 @@ class BatchManagementTool extends FanniePage
         /**
           Bounce users to new page
         */
-        $url = 'BatchListPage.php');
+        $url = 'BatchListPage.php';
         if (FormLib::get('startAt') !== '') {
             $url = 'EditBatchPage.php?id=' . FormLib::get('startAt');
         }
