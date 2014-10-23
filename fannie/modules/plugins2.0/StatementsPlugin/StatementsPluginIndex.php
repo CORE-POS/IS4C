@@ -28,6 +28,7 @@ if (!class_exists('FannieAPI')) {
 
 class StatementsPluginIndex extends FannieRESTfulPage 
 {
+    public $page_set = 'Plugin :: StatementsPlugin';
 
     protected $header = 'Statements';
     protected $title = 'Statements';

@@ -10,6 +10,7 @@ $OFFSET_DEPT = 703;
 
 class WfcAbandonEquityImport extends FannieUploadPage 
 {
+    public $page_set = 'Plugin :: WfcAbandonEquity';
 
     protected $preview_opts = array(
         'card_no' => array(

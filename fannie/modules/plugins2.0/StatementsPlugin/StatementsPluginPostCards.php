@@ -31,6 +31,8 @@ if (!class_exists('FPDF')) {
 
 class StatementsPluginPostCards extends FannieRESTfulPage
 {
+    public $page_set = 'Plugin :: StatementsPlugin';
+
     public function post_id_handler()
     {
         global $FANNIE_OP_DB;

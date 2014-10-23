@@ -43,6 +43,8 @@ $BILLING_NONMEMBER = array(
 
 class WfcGazetteBillingPage extends FannieUploadPage {
 
+    public $page_set = 'Plugin :: WfcGazetteBilling';
+
     protected $preview_opts = array(
         'phone' => array(
             'name' => 'phone',

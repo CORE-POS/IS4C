@@ -28,5 +28,6 @@ if (!class_exists('FannieAPI'))
 class PIKiller extends FanniePlugin {
 
     public $plugin_description = 'Plugin for managing members. Pre-dates CORE.';
+    public $plugin_settings = array();
 
 }
