@@ -65,6 +65,8 @@ class HourlySalesReport extends FannieReportPage
             $ret[] = 'Department '.$deptStart.' to '.$deptEnd;
         } else if ($buyer == -1) {
             $ret[] = 'All Super Departments';
+        } else if ($buyer == -2) {
+            $ret[] = 'All Retail Super Departments';
         } else {
             $ret[] = 'Super Department '.$buyer;
         }
@@ -119,7 +121,9 @@ class HourlySalesReport extends FannieReportPage
         $args = array($date1.' 00:00:00', $date2.' 23:59:59');
         $where = ' 1=1 ';
         if ($buyer !== '') {
-            if ($buyer != -1) {
+            if ($buyer == -2) {
+                $where = ' s.superID != 0 ';
+            } elseif ($buyer != -1) {
                 $where = ' s.superID=? ';
                 $args[] = $buyer;
             }
@@ -148,8 +152,11 @@ class HourlySalesReport extends FannieReportPage
                     sum(d.total) AS ttl, avg(d.total) as avg
                   FROM $dlog AS d ";
         // join only needed with specific buyer
+        // or all retail
         if ($buyer !== '' && $buyer > -1) {
             $query .= 'LEFT JOIN superdepts AS s ON d.department=s.dept_ID ';
+        } elseif ($buyer !== '' && $buyer == -2) {
+            $query .= 'LEFT JOIN MasterSuperDepts AS s ON d.department=s.dept_ID ';
         }
         $query .= "WHERE d.trans_type IN ('I','D')
                     AND d.tdate BETWEEN ? AND ?
