@@ -40,6 +40,7 @@ if (!function_exists('ArrayToCsv')) {
 class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool 
 {
     public $description = '[Product List] is a cross between a report and a tool. It lists current item prices and status flags for a department or set of departments but also allows editing.';
+    public $themed = true;
 
     protected $title = 'Fannie - Product List';
     protected $header = 'Product List';
@@ -111,11 +112,11 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         var localObj = <?php echo json_encode($local_opts); ?>;
         function edit(upc){
             var desc = $('tr#'+upc+' .td_desc').html();
-            var content = "<input type=text class=in_desc value=\""+desc+"\" />";   
+            var content = "<input type=text class=\"in_desc form-control input-sm\" size=10 value=\""+desc+"\" />";   
             $('tr#'+upc+' .td_desc').html(content);
 
             var dept = $('tr#'+upc+' .td_dept').html();
-            var content = '<select class=in_dept style="width:8em;"><optgroup style="font-size: 90%;">';
+            var content = '<select class=\"in_dept form-control input-sm\"><optgroup style="font-size: 90%;">';
             for(dept_no in deptObj){
                 content += "<option value=\""+dept_no+"\" "+((dept==deptObj[dept_no])?'selected':'')+">";
                 content += deptObj[dept_no]+"</option>";
@@ -124,19 +125,19 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             $('tr#'+upc+' .td_dept').html(content);
 
             var supplier = $('tr#'+upc+' .td_supplier').html();
-            var content = "<input type=text class=in_supplier size=10 value=\""+supplier+"\" />";   
+            var content = "<input type=text class=\"in_supplier form-control input-sm\" size=10 value=\""+supplier+"\" />";   
             $('tr#'+upc+' .td_supplier').html(content);
 
             var cost = $('tr#'+upc+' .td_cost').html();
-            var content = "<input type=text class=in_cost size=4 value=\""+cost+"\" />";    
+            var content = "<input type=text class=\"in_cost form-control input-sm\" size=4 value=\""+cost+"\" />";    
             $('tr#'+upc+' .td_cost').html(content);
 
             var price = $('tr#'+upc+' .td_price').html();
-            var content = "<input type=text class=in_price size=4 value=\""+price+"\" />";  
+            var content = "<input type=text class=\"in_price form-control input-sm\" size=4 value=\""+price+"\" />";  
             $('tr#'+upc+' .td_price').html(content);
 
             var tax = $('tr#'+upc+' .td_tax').html();
-            var content = '<select class=in_tax>';
+            var content = '<select class=\"in_tax form-control input-sm\">';
             for (ch in taxObj){
                 var sel = (tax == ch) ? 'selected' : '';
                 content += "<option value=\""+ch+":"+taxObj[ch][0]+"\" "+sel+">";
@@ -158,7 +159,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
 
             var local = $('tr#'+upc+' .td_local').html();
             //var content = "<input type=checkbox class=in_local "+((local=='X')?'checked':'')+" />";
-            var content = '<select class=in_local>';
+            var content = '<select class=\"in_local form-control input-sm\">';
             for (ch in localObj){
                 var sel = (local == ch) ? 'selected' : '';
                 content += "<option value=\""+ch+":"+localObj[ch][0]+"\" "+sel+">";
@@ -263,9 +264,9 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 if ($(this).find('.hidden_upc').length != 0) {
                     var upc = $(this).find('.hidden_upc').val();
                     $(this).find('.clickable').click(function() {
-                        if ($(this).find('input:text').length == 0) {
+                        if ($(this).find(':input').length == 0) {
                             edit(upc);
-                            $(this).find('input:text').select();
+                            $(this).find(':input').select();
                         }
                     });
                 }
@@ -526,19 +527,20 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             return 'No data found!';
         }
 
-        $ret .= "<table border=1 cellspacing=0 cellpadding =3><tr>\n"; 
+        $ret .= '<table class="table table-striped table-bordered">
+            <tr>';
         if (!$this->excel){
-            $ret .= sprintf('<tr><th><a href="%s&sort=UPC">UPC</a></th>
+            $ret .= sprintf('<th><a href="%s&sort=UPC">UPC</a></th>
                     <th><a href="%s&sort=Description">Description</a></th>
                     <th><a href="%s&sort=Department">Department</a></th>
                     <th><a href="%s&sort=Vendor">' . _('Supplier') . '</a></th>
-                    <th style="width:4em;"><a href="%s&sort=Cost">Cost</a></th>
-                    <th style="width:4em;"><a href="%s&sort=Price">Price</a></th>',
+                    <th><a href="%s&sort=Cost">Cost</a></th>
+                    <th><a href="%s&sort=Price">Price</a></th>',
                     $page_url,$page_url,$page_url,$page_url,$page_url,$page_url);
         }
         else
             $ret .= "<th>UPC</th><th>Description</th><th>Dept</th><th>" . _('Supplier') . "</th><th>Cost</th><th>Price</th>";
-        $ret .= "<th style=\"width:5em;\">Tax</th><th>FS</th><th>Disc</th><th>Wg'd</th><th style=\"width:5em;\">Local</th>";
+        $ret .= "<th>Tax</th><th>FS</th><th>Disc</th><th>Wg'd</th><th>Local</th>";
         if (!$this->excel && $this->canEditItems !== False)
             $ret .= '<th>&nbsp;</th>';
         $ret .= "</tr>";
@@ -587,7 +589,8 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         return $ret;
     }
 
-    function form_content(){
+    function form_content()
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $deptQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
@@ -605,96 +608,113 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         }
         ob_start();
         ?>
-        <div id=textwlogo> 
-        <form method = "get" action="ProductListPage.php">
-        <b>Report by</b>:
-        <input type=radio name=supertype value=dept checked  id="supertypeD"
-            onclick="$('#dept1').show();$('#dept2').show();$('#manu').hide();" /> 
-            <label for="supertypeD">Department</label>
-        <input type=radio name=supertype value=manu id="supertypeM"
-            onclick="$('#dept1').hide();$('#dept2').hide();$('#manu').show();" /> 
-            <label for="supertypeM"><?php echo _('Manufacturer'); ?></label>
-        <table border="0" cellspacing="0" cellpadding="5">
-        <tr class=dept id=dept1>
-            <td valign=top><p><b>Buyer<br />(SuperDept)</b></p></td>
-            <td><p><select name=deptSub>
-            <option value=0></option>
-            <?php
-            foreach($supers as $id => $name)
-                printf('<option value="%d">%s</option>',$id,$name); 
-            ?>
-            </select></p>
-            <i>Selecting a Buyer/SuperDept overrides Department Start/Department End.
-            <br />To run reports for a specific department(s) leave Buyer/SuperDept empty or set it to 'blank'</i></td>
-
-        </tr>
-        <tr class=dept id=dept2 valign=top> 
-            <td > <p><b>Department Start</b></p>
-            <p style='margin-top:1.5em;'>
-            <b>Department End</b></p></td>
-            <td> <p>
-            <select id=deptStartSelect onchange="$('#deptStart').val(this.value);">
-            <?php
-            foreach($depts as $id => $name)
-                printf('<option value="%d">%d %s</option>',$id,$id,$name);  
-            ?>
-            </select>
-            <input type=text size= 5 id=deptStart name=deptStart value=1>
-            </p>
+        <form method="get" action="ProductListPage.php">
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="active"><a href="#dept-tab" data-toggle="tab"
+                onclick="$('#supertype').val('dept');">By Department</a></li>
+            <li><a href="#manu-tab" data-toggle="tab"
+                onclick="$('#supertype').val('manu');">By Brand</a></li>
+        </ul>
+        <input id="supertype" name="supertype" type="hidden" value="dept" />
+        <div class="tab-content">
             <p>
-            <select id=deptEndSelect onchange="$('#deptEnd').val(this.value);">
-            <?php
-            foreach($depts as $id => $name)
-                printf('<option value="%d">%d %s</option>',$id,$id,$name);  
-            ?>
-            </select>
-            <input type=text size= 5 id=deptEnd name=deptEnd value=1>
-            </p></td>
-        </tr>
-        <tr class=manu id=manu style="display:none;" valign="top">
-            <td><p><b><?php echo _('Manufacturer'); ?></b></p>
-            <td><p>
-            <input type=text name=manufacturer />
-            </p>
-            <p>
-            <input type=radio name=mtype value=prefix checked />UPC prefix
-            <input type=radio name=mtype value=name /><?php echo _('Manufacturer name'); ?>
-            </p></td>
-        </tr>
-        <tr> 
-            <td><b>Sort report by?</b></td>
-            <td> <select name="sort" size="1">
+            <div class="tab-pane active" id="dept-tab">
+                <div class="well">
+                Selecting a Buyer/SuperDept overrides Department Start/Department End.
+                To run reports for a specific department(s) leave Buyer/SuperDept empty or set it to 'blank'
+                </div>
+                <div class="row form-group form-horizontal">
+                    <label class="control-label col-sm-2">Buyer (SuperDept)</label>
+                    <div class="col-sm-5">
+                        <select name=deptSub class="form-control">
+                            <option value=0></option>
+                            <?php
+                            foreach($supers as $id => $name)
+                                printf('<option value="%d">%s</option>',$id,$name); 
+                            ?>
+                        </select>
+                    </div>
+                </div>
+                <div class="row form-group form-horizontal">
+                    <label class="control-label col-sm-2">Department Start</label>
+                    <div class="col-sm-4">
+                        <select onchange="$('#deptStart').val(this.value);" class="form-control">
+                        <?php
+                        foreach($depts as $id => $name)
+                            printf('<option value="%d">%d %s</option>',$id,$id,$name);  
+                        ?>
+                        </select>
+                    </div>
+                    <div class="col-sm-1">
+                    <input type=number id=deptStart name=deptStart 
+                        class="form-control" value=1>
+                    </div>
+                </div>
+                <div class="form-group form-horizontal row">
+                    <label class="control-label col-sm-2">Department End</label>
+                    <div class="col-sm-4">
+                        <select onchange="$('#deptEnd').val(this.value);" class="form-control">
+                        <?php
+                        foreach($depts as $id => $name)
+                            printf('<option value="%d">%d %s</option>',$id,$id,$name);  
+                        ?>
+                        </select>
+                    </div>
+                    <div class="col-sm-1">
+                        <input type=number id=deptEnd name=deptEnd 
+                            class="form-control" value=1>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane" id="manu-tab">
+                <div class="form-group form-inline">
+                    <label><?php echo _('Manufacturer'); ?></label>
+                    <input type=text name=manufacturer class="form-control" />
+                </div>
+                <div class="form-group form-inline">
+                    <label><input type=radio name=mtype value=prefix checked />
+                        UPC prefix</label>
+                    <label><input type=radio name=mtype value=name />
+                        <?php echo _('Manufacturer name'); ?></label>
+                </div>
+            </div>
+        </p>
+        </div>
+        <div class="form-group form-inline">
+            <label>Sort by</label>
+            <select name="sort" class="form-control">
                 <option>Department</option>
                 <option>UPC</option>
                 <option>Description</option>
             </select> 
-            <input type=checkbox name=excel /> <b>Excel</b></td>
-            <td>&nbsp;</td>
-            <td>&nbsp; </td>
-            </tr>
-            <td>&nbsp;</td>
-            <td>&nbsp; </td>
-        </tr>
-        <tr> 
-            <td> <input type=submit name=submit value="Submit"> </td>
-            <td> <input type=reset name=reset value="Start Over"> </td>
-            <td>&nbsp;</td>
-            <td>&nbsp;</td>
-        </tr>
-        </table>
-        </form>
+            <label>
+                <input type=checkbox name=excel />
+                Excel
+            </label>
         </div>
+        <p> 
+            <button type=submit name=submit class="btn btn-default">Submit</button>
+            <button type=reset id="reset-btn" class="btn btn-default">Start Over</button>
+        </p>
+        </form>
         <?php
+
         return ob_get_clean();
     }
 
-    function body_content(){
+    function body_content()
+    {
         if ($this->mode == 'form')
             return $this->form_content();
         else if ($this->mode == 'list')
             return $this->list_content();
         else
             return 'Unknown error occurred';
+    }
+
+    function css_content()
+    {
+        return '';
     }
 }
 
