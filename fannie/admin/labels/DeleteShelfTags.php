@@ -94,7 +94,7 @@ class DeleteShelfTags extends FanniePage
             return true;
         } else {
             $this->messages = '<div class="alert alert-danger">
-                <a href="DeleteShelfTags.php?id=$id&submit=1">Click 
+                <a href="DeleteShelfTags.php?id=' . $id . '&submit=1">Click 
                 here to clear barcodes</a></div>';
             return true;
         }
