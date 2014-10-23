@@ -451,12 +451,14 @@ function getResults() {
         dstr += '&u[]='+$(this).val();
     });
 
-    $('#resultArea').html('Searching');
+    $('.progress').show();
+    $('#resultArea').html('');
     $.ajax({
         url: 'AdvancedItemSearch.php',
         type: 'get',
         data: 'search=1&' + dstr,
         success: function(data) {
+            $('.progress').hide();
             $('#resultArea').html(data);
         }
     });
@@ -536,13 +538,6 @@ function formReset()
     public function css_content()
     {
         return '
-            #searchform input, select {
-                margin: 3px;
-            }
-            #searchform input.checkbox-inline {
-                margin-left: 0px;
-                margin-right: 10px;
-            }
             ';
     }
 
@@ -555,27 +550,33 @@ function formReset()
 
         $ret .= '<form method="post" id="searchform" onsubmit="getResults(); return false;" onreset="formReset();">';
 
-        $ret .= '<div class="form form-inline">';
+        $ret .= '<div class="form form-horizontal">';
 
         $ret .= '<div class="form-group">
-            <label class="control-label">UPC</label>
-            <input type="text" name="upc" class="form-control input-sm" 
-                placeholder="UPC or PLU" /></div>';
+            <label class="col-sm-1 control-label">UPC</label>
+            <div class="col-sm-3">
+                <input type="text" name="upc" class="form-control input-sm" 
+                    placeholder="UPC or PLU" />
+            </div>';
 
-        $ret .= '<div class="form-group">
-            <label class="control-label">Description</label>
+        $ret .= '
+            <label class="col-sm-1 control-label">Descript.</label>
+            <div class="col-sm-3">
             <input type="text" name="description" class="form-control input-sm" 
                 placeholder="Item Description" />
             </div>';
 
-        $ret .= '<div class="form-group">
-            <label class="control-label">Brand</label>
+        $ret .= '
+            <label class="col-sm-1 control-label">Brand</label>
+            <div class="col-sm-3">
             <input type="text" name="brand" class="form-control input-sm" 
                 placeholder="Brand Name" />
-            </div>';
+            </div>
+        </div>';
 
         $ret .= '<div class="form-group">
-            <label class="control-label">Super Dept</label>
+            <label class="col-sm-1 control-label small">Super Dept</label>
+            <div class="col-sm-3">
             <select name="superID" class="form-control input-sm"><option value="">Select Super...</option>';
         $supers = $dbc->query('SELECT superID, super_name FROM superDeptNames order by superID');
         while($row = $dbc->fetch_row($supers)) {
@@ -583,8 +584,9 @@ function formReset()
         }
         $ret .= '</select></div>';
 
-        $ret .= '<div class="form-group">
-            <label class="control-label">Dept Start</label>
+        $ret .= '
+            <label class="col-sm-1 control-label small">Dept Start</label>
+            <div class="col-sm-3">
             <select name="deptStart" class="form-control input-sm"><option value="">Select Start...</option>';
         $supers = $dbc->query('SELECT dept_no, dept_name FROM departments order by dept_no');
         while($row = $dbc->fetch_row($supers)) {
@@ -592,31 +594,37 @@ function formReset()
         }
         $ret .= '</select></div>';
 
-        $ret .= '<div class="form-group">
-            <label class="control-label">Dept End</label>
+        $ret .= '
+            <label class="col-sm-1 control-label small">Dept End</label>
+            <div class="col-sm-3">
             <select name="deptEnd" class="form-control input-sm"><option value="">Select End...</option>';
         $supers = $dbc->query('SELECT dept_no, dept_name FROM departments order by dept_no');
         while($row = $dbc->fetch_row($supers)) {
             $ret .= sprintf('<option value="%d">%d %s</option>', $row['dept_no'], $row['dept_no'], $row['dept_name']);
         }
         $ret .= '</select></div>';
+        $ret .= '</div>'; // end row
 
         $ret .= '<div class="form-group">
-            <label class="control-label">Modified</label>';
-        $ret .= '<select class="form-control input-sm" name="modOp"><option>On</option><option>Before</option><option>After</option></select>';
-        $ret .= ' <input type="text" name="modDate" id="modDate" class="form-control input-sm" 
+            <label class="col-sm-1 control-label">Modified</label>';
+        $ret .= '<div class="col-sm-2">
+            <select class="form-control input-sm" name="modOp"><option>On</option><option>Before</option><option>After</option></select>
+            </div>';
+        $ret .= '<div class="col-sm-2">
+            <input type="text" name="modDate" id="modDate" class="form-control input-sm" 
                     placeholder="Modified date" /></div>';
         $this->add_onload_command("\$('#modDate').datepicker();\n");
 
-        $ret .= '<div class="form-group">
-                <label class="control-label">Movement</label>
+        $ret .= '
+                <label class="col-sm-1 control-label small">Movement</label>
+                <div class="col-sm-2">
                 <select name="soldOp" class="form-control input-sm"><option value="">n/a</option><option value="7">Last 7 days</option>
                     <option value="30">Last 30 days</option><option value="90">Last 90 days</option></select>
                 </div>';
 
-
-        $ret .= '<div class="form-group">
-                    <label class="control-label">Vendor</label>
+        $ret .= '
+                    <label class="col-sm-1 control-label">Vendor</label>
+                    <div class="col-sm-3">
                     <select name="vendor" class="form-control input-sm"
                     onchange="if(this.value===\'\') $(\'#vendorSale\').attr(\'disabled\',\'disabled\'); else $(\'#vendorSale\').removeAttr(\'disabled\');" >
                     <option value="">Any</option>';
@@ -625,19 +633,22 @@ function formReset()
             $ret .= sprintf('<option value="%d">%s</option>', $row['vendorID'], $row['vendorName']);
         }
         $ret .= '</select></div>';
+        $ret .= '</div>'; // end row
 
         $ret .= ' <div class="form-group">
-            <label>Origin</label> ';
-        $ret .= '<select name="originID" class="form-control input-sm"><option value="0">Any Origin</option>';
+            <label class="col-sm-1 control-label">Origin</label> ';
+        $ret .= '<div class="col-sm-3">
+            <select name="originID" class="form-control input-sm"><option value="0">Any Origin</option>';
         $origins = $dbc->query('SELECT originID, shortName FROM origins WHERE local=0 ORDER BY shortName');
         while($row = $dbc->fetch_row($origins)) {
             $ret .= sprintf('<option value="%d">%s</option>', $row['originID'], $row['shortName']);
         }
         $ret .= '</select></div>';
 
-        $ret .= '<div class="form-group">
-                <label>Likecode</label> ';
-        $ret .= '<select name="likeCode" class="form-control input-sm"><option value="">Choose Like Code</option>
+        $ret .= '
+                <label class="col-sm-1 control-label">Likecode</label> ';
+        $ret .= '<div class="col-sm-3">
+            <select name="likeCode" class="form-control input-sm"><option value="">Choose Like Code</option>
                 <option value="ANY">In Any Likecode</option>
                 <option value="NONE">Not in a Likecode</option>';
         $lcs = $dbc->query('SELECT likeCode, likeCodeDesc FROM likeCodes ORDER BY likeCode');
@@ -646,8 +657,21 @@ function formReset()
         }
         $ret .= '</select></div>';
 
+        $ret .= '
+            <label class="col-sm-2 small" for="vendorSale">
+            On Vendor Sale
+            <input type="checkbox" id="vendorSale" name="vendorSale" class="checkbox-inline" disabled />
+            </label>';
+        $ret .= '
+                <label class="col-sm-2 small" for="in_use">
+                InUse
+				<input type="checkbox" name="in_use" id="in_use" value="1" class="checkbox-inline" />
+                </label>
+                </div>'; 
+
         $ret .= '<div class="form-group">
-            <label class="control-label">Tax</label>
+            <label class="col-sm-1 control-label">Tax</label>
+            <div class="col-sm-2">
             <select name="tax" class="form-control input-sm"><option value="">Any</option><option value="0">NoTax</option>';
         $taxes = $dbc->query('SELECT id, description FROM taxrates');
         while($row = $dbc->fetch_row($taxes)) {
@@ -655,8 +679,9 @@ function formReset()
         }
         $ret .= '</select></div>';
 
-        $ret .= '<div class="form-group">
-            <label class="control-label">Local</label>
+        $ret .= '
+            <label class="col-sm-1 control-label">Local</label>
+            <div class="col-sm-2">
             <select name="local" class="form-control input-sm"><option value="">Any</option><option value="0">No</option>';
         $origins = $dbc->query('SELECT originID, shortName FROM originName WHERE local=1');
         while($row = $dbc->fetch_row($origins)) {
@@ -664,30 +689,19 @@ function formReset()
         }
         $ret .= '</select></div>';
 
-        $ret .= '<div class="form-group">
-            <label class="control-label">FS</label>
+        $ret .= '
+            <label class="col-sm-1 control-label">FS</label>
+            <div class="col-sm-2">
             <select name="fs" class="form-control input-sm">
             <option value="">Any</option><option value="1">Yes</option><option value="0">No</option></select>
             </div>';
-        $ret .= '<div class="form-group">
-            <label class="control-label">Discountable</label>
+        $ret .= '
+            <label class="col-sm-1 control-label">%Disc</label>
+            <div class="col-sm-2">
             <select name="discountable" class="form-control input-sm">
             <option value="">Any</option><option value="1">Yes</option><option value="0">No</option></select>
             </div>';
-
-        $ret .= '<div class="form-group">
-                <label for="in_use">
-                InUse
-				<input type="checkbox" name="in_use" id="in_use" value="1" class="checkbox-inline" />
-                </label>
-                </div>'; 
-
-        $ret .= '<div class="form-group">
-            <label for="vendorSale">
-            On Vendor Special
-            <input type="checkbox" id="vendorSale" name="vendorSale" class="checkbox-inline" disabled />
-            </label>
-            </div>';
+        $ret .= '</div>'; // end row
 
         $ret .= '<div class="form-group">
             <label for="serviceScale">
@@ -696,18 +710,18 @@ function formReset()
             </label>
             </div>';
 
-
-
         $ret .= '<div class="form-group">
-                <label>In Sale Batch</label>
+                <label class="col-sm-1 control-label small">In Sale Batch</label>
+                <div class="col-sm-2">
                 <select name="onsale" class="form-control input-sm"
                     onchange="if(this.value===\'\') $(\'.saleField\').attr(\'disabled\',\'disabled\'); else $(\'.saleField\').removeAttr(\'disabled\');" >
                     <option value="">Any</option>';
         $ret .= '<option value="1">Yes</option><option value="0">No</option>';
         $ret .= '</select></div>';
 
-        $ret .= '<div class="form-group">
-            <label>Sale Type</label>
+        $ret .= '
+            <label class="col-sm-1 control-label small">Sale Type</label>
+            <div class="col-sm-2">
             <select disabled class="saleField form-control input-sm" name="saletype">
             <option value="">Any Sale Type</option>';
         $vendors = $dbc->query('SELECT batchTypeID, typeDesc FROM batchType WHERE discType <> 0');
@@ -716,24 +730,25 @@ function formReset()
         }
         $ret .= '</select></div>';
 
-        $ret .= '<div class="form-group">
-                <label>
+        $ret .= '<div class="col-sm-6">
+                <label class="small">
                 All Sales
                 <input type="checkbox" disabled class="saleField checkbox-inline" name="sale_all" id="sale_all" value="1" /> 
-                </label> ';
-        $ret .= '<label>
+                </label> | ';
+        $ret .= '<label class="small">
                 Past Sales
                 <input type="checkbox" disabled class="saleField checkbox-inline" name="sale_past" id="sale_past" value="1" /> 
-                </label> ';
-        $ret .= '<label>
+                </label> | ';
+        $ret .= '<label class="small">
                 Current Sales
                 <input type="checkbox" disabled class="saleField checkbox-inline" name="sale_current" id="sale_current" value="1" /> 
-                </label> ';
-        $ret .= '<label>
+                </label> | ';
+        $ret .= '<label class="small">
                 Upcoming Sales
                 <input type="checkbox" disabled class="saleField checkbox-inline" name="sale_upcoming" id="sale_upcoming" value="1" /> 
                 </label>
                 </div>';
+        $ret .= '</div>'; // end row
         
         $ret .= '</div>';
 
@@ -743,6 +758,13 @@ function formReset()
         $ret .= '</form>';
 
         $ret .= '<hr />';
+        $ret .= '
+            <div class="progress collapse">
+                <div class="progress-bar progress-bar-striped active"  role="progressbar" 
+                    aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+                    <span class="sr-only">Searching</span>
+                </div>
+            </div>';
         $ret .= '<div id="resultArea"></div>';
 
         $ret .= '</div>'; // end col-sm-10
