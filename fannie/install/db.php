@@ -154,7 +154,7 @@ function loaddata($sql, $table)
                 $success = false;
                 echo "<br><small style='color:red;'>"
                     . (strlen($error)? $error : 'Unknown error')
-                    . " executing:<br><code>{$query}</code></small><br>\n";
+                    . " executing:<br><code>{$prep[0]}</code></small><br>\n";
             } else {
                 if (++$loaded % 100 === 0) {
                     echo "<br>\n";
