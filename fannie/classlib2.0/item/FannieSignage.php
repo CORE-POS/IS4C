@@ -404,17 +404,20 @@ class FannieSignage
     public function listItems()
     {
         global $FANNIE_URL;
-        $ret = '<table>';
+        $ret = '<table class="table">';
         $ret .= '<tr><th>UPC</th><th>Brand</th><th>Description</th><th>Price</th><th>Origin</th></tr>';
         $data = $this->loadItems();
         foreach ($data as $item) {
             $ret .= sprintf('<tr>
                             <td><a href="%sitem/ItemEditorPage.php?searchupc=%s" target="_edit%s">%s</a></td>
                             <input type="hidden" name="update_upc[]" value="%d" />
-                            <td><input class="FannieSignageField" type="text" name="update_brand[]" value="%s" /></td>
-                            <td><input class="FannieSignageField" type="text" name="update_desc[]" value="%s" /></td>
+                            <td><input class="FannieSignageField form-control" type="text" 
+                                name="update_brand[]" value="%s" /></td>
+                            <td><input class="FannieSignageField form-control" type="text" 
+                                name="update_desc[]" value="%s" /></td>
                             <td>%.2f</td>
-                            <td><input class="FannieSignageField" type="text" name="update_origin[]" value="%s" /></td>
+                            <td><input class="FannieSignageField form-control" type="text" 
+                                name="update_origin[]" value="%s" /></td>
                             </tr>',
                             $FANNIE_URL,
                             $item['upc'], $item['upc'], $item['upc'],
