@@ -243,13 +243,21 @@ static public function printReceiptHeader($dateTimeStamp, $ref) {
 	for ($i=1; $i <= $CORE_LOCAL->get("receiptHeaderCount"); $i++){
 
 		/**
+          If the receipt header line includes non-printable characters,
+          send it to the receipt printer exactly as-is.
+          If the receipt header line is "nv" and a number, print the
+          corresponding image # from the printer's nonvolatile RAM.
 		  If the receipt header line is a .bmp file (and it exists),
 		  print it on the receipt. Otherwise just print the line of
 		  text centered.
 		*/
 		$headerLine = $CORE_LOCAL->get("receiptHeader".$i);
 		$graphics_path = MiscLib::base_url().'graphics';
-		if (substr($headerLine,-4) == ".bmp" && file_exists($graphics_path.'/'.$headerLine)){
+        if (!ctype_print($headerLine)) {
+            $receipt .= self::$PRINT_OBJ->rawEscCommand($headerLine) . "\n";
+        } elseif (preg_match('/nv(\d{1,3})/i', $headerLine, $match)) {
+            $receipt .= self::$PRINT_OBJ->renderBitmapFromRam((int)$match[1]);
+		} elseif (substr($headerLine,-4) == ".bmp" && file_exists($graphics_path.'/'.$headerLine)){
 			// save image bytes in cache so they're not recalculated
 			// on every receipt
 			$img_file = $graphics_path.'/'.$headerLine;
