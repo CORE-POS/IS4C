@@ -148,6 +148,10 @@ class FanniePage
         ob_start();
         if ($this->themed) {
             include($FANNIE_ROOT.'src/footer.bootstrap.html');
+            $modal = $this->helpModal();
+            if ($modal) {
+                echo "\n" . $modal . "\n";
+            }
         } else {
             include($FANNIE_ROOT.'src/footer.html');
         }
@@ -423,6 +427,46 @@ function enableLinea(selector, callback)
         }
 
         return true;
+    }
+
+    /**
+      Helper method to wrap helpContent()
+      in markup for a bootstrap modal dialog.
+    */
+    protected function helpModal()
+    {
+        $help = $this->helpContent();
+        if (!$help) {
+            return false;
+        }
+
+        return '
+            <div class="modal modal-lg" id="help-modal" role="modal">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">
+                                <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+                            </button>
+                            <h4>' . $this->title . '</h4>
+                        </div>
+                        <div class="modal-body">' . $help . '</div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>';
+    }
+
+    /**
+      User-facing help text explaining how to 
+      use a page.
+      @return [string] html content
+    */
+    public function helpContent()
+    {
+        return false;
     }
 
     /**

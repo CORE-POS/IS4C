@@ -211,6 +211,7 @@ class ItemEditorPage extends FanniePage
         if ($result === false) {
             $this->msgs = '<div class="alert alert-danger">' . _('Error searching for') 
                 . ' ' . $upc . '</div>';
+            $this->mode = 'search'; // mode drives appropriate help text
             return $this->search_form();
         }
 
@@ -223,6 +224,7 @@ class ItemEditorPage extends FanniePage
         if ($num == 0 && !is_numeric($upc)) {
             $this->msgs = '<div class="alert alert-danger">' . _('Error searching for') 
                 . ' ' . $upc . '</div>';
+            $this->mode = 'search'; // mode drives appropriate help text
             return $this->search_form();
         }
 
@@ -234,6 +236,7 @@ class ItemEditorPage extends FanniePage
             while($row = $dbc->fetch_row($result)) {
                 $items[$row['upc']] = $row;
             }
+            $this->mode = 'many'; // mode drives appropriate help text
             return $this->multiple_results($items);
         }
 
@@ -246,9 +249,11 @@ class ItemEditorPage extends FanniePage
         if ($num == 0) {
             $actualUPC = BarcodeLib::padUPC($upc);
             $new = true;
+            $this->mode = 'new'; // mode drives appropriate help text
         } else {
             $row = $dbc->fetch_row($result);
             $actualUPC = $row['upc'];
+            $this->mode = 'edit'; // mode drives appropriate help text
         }
 
         return $this->edit_form($actualUPC,$new);
@@ -472,6 +477,52 @@ class ItemEditorPage extends FanniePage
         return $ret;
     }
 
+    public function helpContent()
+    {
+        $ret = '<p>This tool is for adding or editing an item</p>';
+        if ($this->mode == 'search') {
+            $ret .= '<p>
+                To create a new item, simply enter the UPC. To search for an
+                existing item, enter the UPC or part of the description. You
+                can also search by vendor SKU or manufacturer UPC prefix by
+                changing the UPC dropdown.
+                </p>';
+        } elseif ($this->mode == 'many') {
+            $ret .= '<p>Multiple results found. Click the UPC to edit that item
+                or use the browser\'s back button to try a different search</p>';
+        } elseif ($this->mode == 'new') {
+            $ret .= '<p>
+                Creating a <strong>new</strong> item. Minimum required fields are
+                description, price, and department (dept). Tax, foodstamp, and scale
+                settings will be automatically assigned based on the depatment\'s
+                defaults.
+                </p>';
+        } elseif ($this->mode == 'edit') {
+            $ret .= '<p>
+                Editing an <strong>existing</strong> item. Changes made here will be
+                sent to the lanes immediately.
+                </p>';
+        }
+
+        if ($this->mode == 'new' || $this->mode == 'edit') {
+            $ret .= '<ul>
+                    <li>Description appears on the lane screen & receipt</li>
+                    <li>Price is the current retail price</li>
+                    <li>Brand is solely for backend reporting and organization</li>
+                    <li>Vendor indicates the default supplier for the item</li>
+                    <li>Department (Dept) is the primary item categorization system.</li> 
+                    <li>Tax sets sale tax rate</li>
+                    <li>Checking FS indicates the item is eligible for purchase with foodstamps</li>
+                    <li>Checking Scale indicates the item should be weighed at checkout.</li>
+                    <li>Checking QtyFrc causes the lane to prompt the cashier for a quantity
+                        when the item is entered</li>
+                    <li>Checking NoDisc indicates the item is not eligible for transaction
+                        level percent discounts (e.g., a member discount)</li>
+                </ul>';
+        }
+
+        return $ret;
+    }
 }
 
 FannieDispatch::conditionalExec(false);
