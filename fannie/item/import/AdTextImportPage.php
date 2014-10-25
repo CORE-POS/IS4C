@@ -208,6 +208,18 @@ class AdTextImportPage extends FannieUploadPage
             . $this->form_content()
             . $this->basicForm();
     }
+
+    public function helpContent()
+    {
+        return '<p>Import alternate brands and descriptions for products.
+            These are typically more verbose versions. Often the full 
+            name of an item will not fit well on a receipt but it\'s still
+            useful to have the full name in the system for things like 
+            sale signs.</p>
+            <p>The default column layout matches NCGA Co+op Deal sign data
+            spreadsheets.</p>'
+            . parent::helpContent();
+    }
 }
 
 FannieDispatch::conditionalExec();

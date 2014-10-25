@@ -164,6 +164,20 @@ function loadlc(id){
         return ob_get_clean();
     }
 
+    public function helpContent()
+    {
+        return '<p>Like codes are used to group multiple items
+            together and treat them as a single item. Editing any
+            item that belongs to a like code will update all items
+            that belong to that like code. A common use case is produce
+            where the same fruit or vegetable is sourced from multiple
+            vendors with differing PLUs and/or UPCs. Using like code
+            ensures consistency since changes are automatically applied
+            to all items in the like code.</p>
+            <p>This tool is just for creating, renaming, and deleting
+            like codes. Use the item editor to assign a particular item
+            to a like code.</p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

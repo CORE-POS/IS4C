@@ -716,6 +716,25 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
     {
         return '';
     }
+
+    function helpContent()
+    {
+        $ret = '<p>This tool lists basic attributes for a set of product. The list
+            can be downloaded as a spreadsheet. The web list also provides
+            editing.</p>';
+        if ($this->mode == 'form') {
+            $ret .= '<p>Products can be selected by department, super department,
+                brand name, or brand UPC prefix.</p>';
+        } elseif ($this->mode == 'list') {
+            $ret .= '<p>Use column headers to sort the list. Click the pencil icon
+                to edit a row. You can also click description, department, vendor,
+                cost, or price to begin editing. If editing is not available, you
+                probably need to log in. To save, click the disk icon or press
+                enter.</p>';
+        }
+
+        return $ret;
+    }
 }
 
 FannieDispatch::conditionalExec(false);

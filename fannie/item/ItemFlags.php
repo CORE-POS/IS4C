@@ -148,6 +148,15 @@ class ItemFlags extends FanniePage {
         echo '</form>';
     }
 
+    public function helpContent()
+    {
+        return '<p>Product Flags are custom attributes that can
+            be attached to products. Each flag is a yes/no setting.
+            Most systems should support at least 30 flags. Flags
+            can add new settings that are not built-in such as
+            gluten-free or organic.</p>';
+    }
+
 }
 
 FannieDispatch::conditionalExec();

@@ -255,6 +255,31 @@ class SuperDeptEditor extends FanniePage {
 
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>Super Departments are the highest level of catgorization.
+            Each super department contains one or more departments.</p>
+            <p>To create a new super department, choose <i>Create new super
+            department</i> from the <i>Select super department</i> drop down.</p>
+            <p>To add a department to a super department, first select the super
+            department then select the department in the <i>non-members</i>
+            list. Click the left arrow (&lt;&lt;) to move the department over
+            to the members list.</p>
+            <p>To remove a department from a super department, first select the super
+            department then select the department in the <i>members</i>
+            list. Click the right arrow (&gt;&gt;) to move the department over
+            to the non-members list.</p>
+            <p>A department may belong to more than one super department
+            <strong>however</strong> in that case the lowest-number super department
+            is considered the department\'s <i>home</i> super department. This
+            convention is necessary when viewing store-wide sales by super
+            department. These reports use only the <i>home</i> super department
+            to avoid counting a department\'s sales multiple times.</p>
+            <p>By convention super department #0 (zero) is used for departments
+            that are not considered sales. Examples of things that may fit
+            well in super department #0 are gift cards and member equity.</p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);
