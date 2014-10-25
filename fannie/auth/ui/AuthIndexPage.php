@@ -70,20 +70,20 @@ class AuthIndexPage extends FanniePage {
                 echo '<li><a href="AuthUsersPage.php?reset=1">Reset a User\'s password</a></li>';
             }
             echo "<br />";
-            echo "<li><a href=viewGroups.php>View Groups</a></li>";
-            echo "<li><a href=groupDetail.php>View Details of a Group</a></li>";
-            echo "<li><a href=addGroup.php>Create a Group</a></li>";
-            echo "<li><a href=addGroupUser.php>Add User to Group</a></li>";
-            echo "<li><a href=addGroupAuth.php>Add authorization to a Group</a></li>";
-            echo "<li><a href=deleteGroup.php>Delete a Group</a></li>";
-            echo "<li><A href=deleteGroupUser.php>Delete User from Group</a></li>";
-            echo "<li><A href=deleteGroupAuth.php>Delete a Group's authorizations</a></li>";
+            echo '<li><a href="AuthGroupsPage.php">View Groups</a></li>';
+            echo '<li><a href="AuthGroupsPage.php?detail=1">View Details of a Group</a></li>';
+            echo '<li><a href="AuthGroupsPage.php?new=1">Create a Group</a></li>';
+            echo '<li><a href="AuthGroupsPage.php?newUser=1">Add User to a Group</a></li>';
+            echo '<li><a href="AuthGroupsPage.php?newAuth=1">Add Authorization to a Group</a></li>';
+            echo '<li><a href="AuthGroupsPage.php?remove=1">Delete a Group</a></li>';
+            echo '<li><a href="AuthGroupsPage.php?removeUser=1">Delete User from Group</a></li>';
+            echo '<li><a href="AuthGroupsPage.php?removeAuth=1">Delete Authorization from Group</a></li>';
             echo "<br />";
             echo "<li><a href=AuthPosePage.php>Switch User</a></li>";
         }
         // The 'limited' options
         if (!$FANNIE_AUTH_SHADOW && !$FANNIE_AUTH_LDAP)
-            echo "<li><a href=changepass.php>Change password</a></li>";
+            echo "<li><a href=AuthChangePassword.php>Change password</a></li>";
         echo "</ul>";
 
         return ob_get_clean();
