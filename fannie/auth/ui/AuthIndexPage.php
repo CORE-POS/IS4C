@@ -60,14 +60,15 @@ class AuthIndexPage extends FanniePage {
             echo '<li><a href="AuthClassesPage.php?edit=1">Edit authorization classes</a></li>';
             echo '<li><a href="AuthClassesPage.php?remove=1">Delete authorization classes</a></li>';
             echo "<br />";
-            echo "<li><a href=viewUsers.php>View Users</a></li>";
-            echo "<li><a href=viewAuths.php>View a User's authorizations</a></li>";
-            echo "<li><a href=createUser.php>Create User</a></li>";
-            echo "<li><a href=addAuth.php>Add authorization to a User</a></li>";
-            echo "<li><a href=deleteUser.php>Delete User</a></li>";
-            echo "<li><a href=deleteAuth.php>Delete a User's authorizations</a></li>";
-            if (!$FANNIE_AUTH_SHADOW && !$FANNIE_AUTH_LDAP)
-                echo "<li><a href=resetUserPassword.php>Reset a User's password</a></li>";
+            echo '<li><a href="AuthUsersPage.php">View Users</a></li>';
+            echo '<li><a href="AuthUsersPage.php?detail=1">View User\'s Authoriztions</a></li>';
+            echo '<li><a href="AuthUsersPage.php?new=1">Create User</a></li>';
+            echo '<li><a href="AuthUsersPage.php?newAuth=1">Add Authorization to User</a></li>';
+            echo '<li><a href="AuthUsersPage.php?remove=1">Delete User</a></li>';
+            echo '<li><a href="AuthUsersPage.php?removeAuth=1">Delete Authorization from User</a></li>';
+            if (!$FANNIE_AUTH_SHADOW && !$FANNIE_AUTH_LDAP) {
+                echo '<li><a href="AuthUsersPage.php?reset=1">Reset a User\'s password</a></li>';
+            }
             echo "<br />";
             echo "<li><a href=viewGroups.php>View Groups</a></li>";
             echo "<li><a href=groupDetail.php>View Details of a Group</a></li>";
@@ -78,7 +79,7 @@ class AuthIndexPage extends FanniePage {
             echo "<li><A href=deleteGroupUser.php>Delete User from Group</a></li>";
             echo "<li><A href=deleteGroupAuth.php>Delete a Group's authorizations</a></li>";
             echo "<br />";
-            echo "<li><a href=pose.php>Switch User</a></li>";
+            echo "<li><a href=AuthPosePage.php>Switch User</a></li>";
         }
         // The 'limited' options
         if (!$FANNIE_AUTH_SHADOW && !$FANNIE_AUTH_LDAP)
