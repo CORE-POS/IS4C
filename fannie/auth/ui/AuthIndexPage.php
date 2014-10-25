@@ -37,6 +37,7 @@ class AuthIndexPage extends FanniePage {
     public $description = "
     Class for the Authorization User Interface index page.
     ";
+    public $themed = true;
     
     function body_content(){
 
@@ -54,10 +55,10 @@ class AuthIndexPage extends FanniePage {
         echo "Welcome $this->current_user";
         echo "<ul>";
         if ($options == 'all'){
-            echo "<li><a href=viewClasses.php>View authorization classes</a></li>";
-            echo "<li><a href=createClass.php>Create authorization class</a></li>";
-            echo "<li><a href=editClassNotes.php>Edit authorization class</a></li>";
-            echo "<li><a href=deleteClass.php>Delete authorization class</a></li>";
+            echo '<li><a href="AuthClassesPage.php">View authorization classes</a></li>';
+            echo '<li><a href="AuthClassesPage.php?new=1">Create authorization classes</a></li>';
+            echo '<li><a href="AuthClassesPage.php?edit=1">Edit authorization classes</a></li>';
+            echo '<li><a href="AuthClassesPage.php?remove=1">Delete authorization classes</a></li>';
             echo "<br />";
             echo "<li><a href=viewUsers.php>View Users</a></li>";
             echo "<li><a href=viewAuths.php>View a User's authorizations</a></li>";

@@ -177,7 +177,7 @@ function showClasses(){
   }
 
   echo "Showing authorization classes";
-  echo "<table cellspacing=0 cellpadding=4 border=1><tr>";
+  echo "<table class=\"table\"><tr>";
   echo "<th>Authorization class</th><th>Notes</th>";
   echo "</tr>";
   $sql = dbconnect();
