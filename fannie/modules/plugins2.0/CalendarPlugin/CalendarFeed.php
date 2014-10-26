@@ -8,7 +8,22 @@ if (!class_exists('FannieAPI')) {
 class CalendarFeed extends FannieRESTfulPage
 {
     protected $window_dressing = false;
-    public $page_set = 'Plugin :: CalendarPlugin';
+    public $page_set = 'Plugin :: Calendar';
+    public $description = '[Feed] outputs iCalendar format data for calendar events.';
+    public $themed = true;
+
+    /**
+      Need to forcibly turn off menu
+      since this page isn't html at all
+    */
+    public function getHeader()
+    {
+        return '';
+    }
+    public function getFooter()
+    {
+        return '';
+    }
 
     public function preprocess()
     {

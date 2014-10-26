@@ -35,6 +35,7 @@ class ObfQuarterEntryPage extends FannieRESTfulPage
 
     public $page_set = 'Plugin :: Open Book Financing';
     public $description = '[Quarter Entry] sets sales and labor goals by quarter.';
+    public $themed = true;
 
     public function javascript_content()
     {
@@ -100,7 +101,8 @@ class ObfQuarterEntryPage extends FannieRESTfulPage
         if (!is_object($this->currentModel)) {
             $this->currentModel = new ObfQuartersModel($dbc);
         }
-        $select = '<select name="id" onchange="location=\'' . $_SERVER['PHP_SELF'] . '?id=\' + this.value;">';
+        $select = '<select name="id" class="form-control" 
+                    onchange="location=\'' . $_SERVER['PHP_SELF'] . '?id=\' + this.value;">';
         $select .= '<option value="">New Entry</option>';
         $first = true;
         foreach($model->find('obfWeekID', true) as $obj) {
@@ -110,34 +112,40 @@ class ObfQuarterEntryPage extends FannieRESTfulPage
         }
         $select .= '</select>';
 
-        $ret = '<b>Quarter</b>: ' . $select 
+        $ret = '<div class="form-group form-inline">
+                <label>Quarter</label>: ' . $select 
                 . '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
-                . '<button onclick="location=\'ObfIndexPage.php\';return false;">Home</button>'
-                . '<br /><br />';
+                . '<button type="button" class="btn btn-default"
+                    onclick="location=\'ObfIndexPage.php\';return false;">Home</button>'
+                . '</div>';
 
         $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
-        $ret .= '<table cellpadding="4" cellspacing="0" border="1">';
+        $ret .= '<table class="table">';
         $ret .= '<tr><th>Name</th><th>Year</th>
                 <th># of Weeks</th><th>Sales Goal ($)</th>
                 <th>Labor Goal ($)</th></tr>';
 
         $ret .= '<tr>';
-        $ret .= '<td><input type="text" size="12" name="name" id="name"
+        $ret .= '<td><input type="text" class="form-control" required name="name" id="name"
                         value="' . $this->currentModel->name() . '"
                         onchange="getPrevYear(this.value);" /></td>';
-        $ret .= '<td><input type="text" size="4" name="year" id="year"
+        $ret .= '<td><input type="number" class="form-control" required name="year" id="year"
                         value="' . $this->currentModel->year() . '" /></td>';
-        $ret .= sprintf('<td><input type="text" size="3" name="weeks"
+        $ret .= sprintf('<td><input type="number" required class="form-control" name="weeks"
                             value="%d" /></td>', $this->currentModel->weeks());
-        $ret .= sprintf('<td><input type="text" size="10" name="sales"
-                            value="%.2f" /></td>', $this->currentModel->salesTarget());
-        $ret .= sprintf('<td><input type="text" size="10" name="labor"
-                            value="%.2f" /></td>', $this->currentModel->laborTarget());
+        $ret .= sprintf('<td><div class="input-group">
+            <span class="input-group-addon">$</span>
+            <input type="number" required class="form-control" name="sales" value="%.2f" />
+            </div></td>', $this->currentModel->salesTarget());
+        $ret .= sprintf('<td><div class="input-group">
+            <span class="input-group-addon">$</span>
+            <input type="number" class="form-control" required name="labor" value="%.2f" />
+            </div></td>', $this->currentModel->laborTarget());
         $ret .= '</tr>';
         
         $ret .= '</table>';
 
-        $ret .= '<input type="submit" value="Save" />';
+        $ret .= '<p><button type="submit" class="btn btn-default">Save</button></p>';
         $ret .= '</form>';
 
         return $ret;

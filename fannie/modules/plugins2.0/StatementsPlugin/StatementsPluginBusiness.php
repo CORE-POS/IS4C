@@ -10,6 +10,8 @@ if (!class_exists('FPDF')) {
 class StatementsPluginBusiness extends FannieRESTfulPage
 {
     public $page_set = 'Plugin :: StatementsPlugin';
+    public $description = '[Business Statement PDF] generates business invoices';
+    public $themed = true;
 
     public function post_id_handler()
     {

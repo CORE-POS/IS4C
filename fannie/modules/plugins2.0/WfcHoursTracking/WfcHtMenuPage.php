@@ -33,6 +33,7 @@ class WfcHtMenuPage extends FanniePage
 
     public $page_set = 'Plugin :: WFC Hours Tracking';
     public $description = '[Menu] for plugin pages.';
+    public $themed = true;
 
     protected $header = 'Menu';
     protected $title = 'Menu';
