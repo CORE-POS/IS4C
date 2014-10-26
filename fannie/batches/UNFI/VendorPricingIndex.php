@@ -56,7 +56,12 @@ class VendorPricingIndex extends FanniePage {
         <?php
         return ob_get_clean();
     }
-
+    
+    public function helpContent()
+    {
+        return '<p>These tools are for managing pries based on vendor item costs 
+            and store margin targets</p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

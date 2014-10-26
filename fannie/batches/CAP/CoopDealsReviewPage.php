@@ -225,6 +225,19 @@ html;
 
         return $ret;
     }
+    
+    public function helpContent()
+    {
+        return '<p>This tool creates A, B, and TPR batches. The TPR batches will
+            start on <em>A Start</em> and end on <em>B End</em>. The Month field
+            is used in batch names. For example, if Month is <em>January</em>, 
+            batches will have names like <em>Co+op Deals January A</em>.</p>
+            <p><em>Group sale batches by superdepartment</em> means create 
+            separate sales batches for each appicable superdepartment rather
+            than having a single A batch, single B batch, and single TPR
+            batch.</p>
+            ';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

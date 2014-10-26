@@ -538,6 +538,24 @@ class CronManagementPage extends FanniePage
         ';
     }
 
+    public function helpContent()
+    {
+        return '<p>Scheduled Tasks are background jobs that run periodically
+            based on this schedule. Note this interface only works on Linux
+            and other systems with cron.</p>
+            <p>When reading the schedule fields, asterisk (*) means <em>all</em>.
+            For example, setting the last three fields to asterisk means run 
+            daily at the time specified by hour & minutes.</p>
+            <p>Clicking on the right-hand command name shows a bit more information
+            about what that particular task does.</p>
+            <p>Entering an e-mail address will send any task-related error
+            messages to that address.</p>
+            <p>The <em>Advanced View</em> provides five text fields for scheduling
+            instead of dropdowns. This is for experienced users who want to use
+            more advanced cron settings.</p>'
+            ;
+    }
+
 }
 
 FannieDispatch::conditionalExec(false);

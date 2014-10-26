@@ -144,6 +144,13 @@ class CoopDealsUploadPage extends FannieUploadPage
         $ret .= "<p><a href=\"CoopDealsReviewPage.php\">Review data &amp; set up sales</a></p>";
         return $ret;
     }
+
+    public function helpContent()
+    {
+        return '<p>Default column selections correspond to the
+            tab/worksheet that lists all A, B, and TPR items</p>'
+            . parent::helpContent();
+    }
 }
 
 FannieDispatch::conditionalExec(false);

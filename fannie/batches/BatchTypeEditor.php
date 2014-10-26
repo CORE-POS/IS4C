@@ -152,8 +152,8 @@ function saveType(val,bid){
             $ret .= sprintf('<option value="%d" selected>%d (Custom)</option>',$w['discType'],$w['discType']);
         $ret .= '</select></td>';
         $ret .= sprintf('<td><a href="BatchTypeEditor.php?deltype=yes&bid=%d"
-                onclick="return confirm(\'Are you sure?\');">Delete</a>
-            </td></tr>',$w['batchTypeID']);
+                onclick="return confirm(\'Are you sure?\');">%s</a>
+            </td></tr>',$w['batchTypeID'], FannieUI::deleteIcon());
         }
         $ret .= '</table>';
 
@@ -161,6 +161,27 @@ function saveType(val,bid){
             class="btn btn-default">Create New Type</button></p>';
 
         return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>Batch types control what kind of change a batch makes and
+            may also be used for organization. Discount type controls the
+            batch type\'s behavior. You may have multiple batch types with
+            identical discount type for organizational purposes.</p>
+            <p>Discount type zero is not a sale at all. Price change batches
+            update items\' regular price. The biggest advantage of changing
+            regular prices via batches is that shelf tags can be prepared
+            ahead of time before the new prices are applied.</p>
+            <p>Sale for Everyone causes items to ring up at the sale price
+            for the duration of the batch.</p>
+            <p>Sale for Members causes items to ring up at the sale price
+            for the duration of the batch but only if the customer is a
+            member. What price the item rings up at initially depends whether
+            or not the member\'s number has been entered. Prices will be
+            adjusted as needed if the member\'s number is entered after the
+            item is scanned.</p>
+            ';
     }
 }
 

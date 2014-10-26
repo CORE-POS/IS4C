@@ -89,25 +89,42 @@ class AddCashierPage extends FanniePage
         ?>
         <div id="alert-area"></div>
         <form action="AddCashierPage.php" method="post">
-        <label>First Name</label>
-        <input type=text name=fname required class="form-control" />
-        <label>Last Name</label>
-        <input type=text name=lname required class="form-control" />
-        <label>Privileges</label>
-        <select name="fes" class="form-control">
-            <option value=20>Regular</option>
-            <option value=30>Manager</option>
-        </select>
+        <div class="form-group">
+            <label>First Name</label>
+            <input type=text name=fname required class="form-control" />
+        </div>
+        <div class="form-group">
+            <label>Last Name</label>
+            <input type=text name=lname class="form-control" />
+        </div>
+        <div class="form-group">
+            <label>Privileges</label>
+            <select name="fes" class="form-control">
+                <option value=20>Regular</option>
+                <option value=30>Manager</option>
+            </select>
+        </div>
         <p>
             <button type="submit" class="btn btn-default">Create Cashier</button>
         </p>
         </form>
         <?php
-        $ret .= ob_get_clean();
+        $ret = ob_get_clean();
+        $this->add_onload_command("\$('input.form-control:first').focus();\n");
+
         return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>Create a new cashier. First name is required; last name
+            is not. Which operations require <em>Manager</em> privileges
+            depends on local lane configuration. The cashier\'s password
+            is randomly generated.</p>
+            ';
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
 ?>

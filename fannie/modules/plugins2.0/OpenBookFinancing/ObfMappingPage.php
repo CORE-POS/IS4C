@@ -119,7 +119,7 @@ class ObfMappingPage extends FannieRESTfulPage
                  </tr>';
         foreach($model->find() as $cat) {
             $ret .= '<tr><th colspan="2">' . $cat->name() . '</th>
-                    <td><img alt="delete" src="' . $FANNIE_URL . 'src/img/buttons/trash.png" />
+                    <td>' . FannieUI::deleteIcon('Check box for row to delete') . '
                     </td></tr>';
             $map->obfCategoryID($cat->obfCategoryID());
             foreach($map->find() as $obj) {
@@ -167,7 +167,6 @@ class ObfMappingPage extends FannieRESTfulPage
         $ret .= '</form>';
         $ret .= '</div>';
         $ret .= '<div class="panel-footer">Note: percentages are sales growth targets for categories</div>';
-        $ret .= '</div>';
         $ret .= '</div>';
         $ret .= '</div>';
 

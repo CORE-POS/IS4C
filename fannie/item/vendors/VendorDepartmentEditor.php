@@ -119,25 +119,22 @@ class VendorDepartmentEditor extends FanniePage {
                 <td id=margintd%d>%.2f%%</td>
                 <td id=button%d>
                     <a href=\"\" onclick=\"edit(%d);return false;\"
-                        class=\"edit-link\">
-                    <img src=\"%s\" alt=\"Edit\" border=0 /></a>
+                        class=\"edit-link\">%s<a>
                     <a href=\"\" onclick=\"save(%d);return false;\"
-                        class=\"save-link collapse\">
-                    <img src=\"%s\" alt=\"Save\" border=0 /></a>
+                        class=\"save-link collapse\">%s</a>
                 </td>
-                <td><a href=\"\" onclick=\"deleteCat(%d,'%s');return false\">
-                <img src=\"%s\" alt=\"Delete\" border=0 /></a></td>
+                <td><a href=\"\" onclick=\"deleteCat(%d,'%s');return false\">%s</a></td>
                 </tr>",
                 $did,
                 $did, $did,
                 $name, $did,
                 0,
                 $did, $did,
-                $FANNIE_URL.'src/img/buttons/b_edit.png',
+                FannieUI::editIcon(),
                 $did,
-                $FANNIE_URL.'src/img/buttons/b_save.png',
+                FannieUI::saveIcon(),
                 $did, $name,
-                $FANNIE_URL.'src/img/buttons/b_drop.png');
+                FannieUI::deleteIcon());
             $json['row'] = $new_row;
         } else {
             $json['error'] = 'Error creating new department';
@@ -216,25 +213,22 @@ class VendorDepartmentEditor extends FanniePage {
                 <td id=margintd%d>%.2f%%</td>
                 <td id=button%d>
                     <a href=\"\" onclick=\"edit(%d);return false;\"
-                        class=\"edit-link\">
-                    <img src=\"%s\" alt=\"Edit\" border=0 /></a>
+                        class=\"edit-link\">%s</a>
                     <a href=\"\" onclick=\"save(%d);return false;\"
-                        class=\"save-link collapse\">
-                    <img src=\"%s\" alt=\"Save\" border=0 /></a>
+                        class=\"save-link collapse\">%s</a>
                 </td>
-                <td><a href=\"\" onclick=\"deleteCat(%d,'%s');return false\">
-                <img src=\"%s\" alt=\"Delete\" border=0 /></a></td>
+                <td><a href=\"\" onclick=\"deleteCat(%d,'%s');return false\">%s</a></td>
                 </tr>",
                 $row['deptID'],
                 $row['deptID'],$row['deptID'],
                 $row['name'],$row['deptID'],
                 $row['margin']*100,
                 $row['deptID'],$row['deptID'],
-                $FANNIE_URL.'src/img/buttons/b_edit.png',
+                FannieUI::editIcon(),
                 $row['deptID'],
-                $FANNIE_URL.'src/img/buttons/b_save.png',
+                FannieUI::saveIcon(),
                 $row['deptID'],$row['name'],
-                $FANNIE_URL.'src/img/buttons/b_drop.png');
+                FannieUI::deleteIcon());
         }
         $ret .= "</table>";
 

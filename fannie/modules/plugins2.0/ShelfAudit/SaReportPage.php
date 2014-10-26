@@ -319,7 +319,8 @@ table.shelf-audit tr:hover {
                     <td id="col_f" class="right">'.money_format('%.2n', $row['atual_retail']).'</td>
                     <td id="col_g">'.(($row['retailstatus'])?$row['retailstatus']:'&nbsp;').'</td>
                     <td id="col_h" class="right">'.money_format('%!.2n', ($row['quantity']*$row['normal_retail'])).'</td>
-                    <td id="col_i"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'"><img src="../../../src/img/buttons/trash.png" border="0"/></a></td>
+                    <td id="col_i"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'">'
+                        . FannieUI::deleteIcon() . '</td>
                 </tr>';
             } else if ($counter_number!=$row['section'] && $counter_number!=$row['dept_no']) {
                 if ($counter=='d') { $counter_number=$row['dept_no']; }
@@ -367,7 +368,8 @@ table.shelf-audit tr:hover {
                     <td id="col_f" class="right">'.money_format('%.2n', $row['actual_retail']).'</td>
                     <td id="col_g">'.(($row['retailstatus'])?$row['retailstatus']:'&nbsp;').'</td>
                     <td id="col_h" class="right">'.money_format('%!.2n', ($row['quantity']*$row['normal_retail'])).'</td>
-                    <td id="col_i"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'"><img src="../../../src/img/buttons/trash.png" border="0"/></a></td>
+                    <td id="col_i"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'">'
+                        . FannieUI::deleteIcon() . '</td>
                 </tr>';
                 
                 $counter_total=$row['quantity']*$row['normal_retail'];
@@ -386,7 +388,8 @@ table.shelf-audit tr:hover {
                     <td id="col_f" class="right">'.money_format('%.2n', $row['actual_retail']).'</td>
                     <td id="col_g">'.(($row['retailstatus'])?$row['retailstatus']:'&nbsp;').'</td>
                     <td id="col_h" class="right">'.money_format('%!.2n', ($row['quantity']*$row['normal_retail'])).'</td>
-                    <td id="col_i"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'"><img src="../../../src/img/buttons/trash.png" border="0"/></a></td>
+                    <td id="col_i"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'">'
+                        . FannieUI::deleteIcon() . '</td>
                 </tr>';
             }
         }

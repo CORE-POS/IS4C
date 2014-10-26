@@ -44,6 +44,12 @@ class CapSalesIndexPage extends FanniePage {
         <?php
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>Upload Co+op Deals item data spreadsheet then review the
+            data to assign sale start and end dates.</p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

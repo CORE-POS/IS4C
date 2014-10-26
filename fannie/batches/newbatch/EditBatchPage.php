@@ -963,13 +963,14 @@ class EditBatchPage extends FannieRESTfulPage
             $ret .= sprintf('<input text="text" class="form-control" name="price" value="%.2f" />', $fetchW['salePrice']);
             $ret .= '</div></div></td>';
             $ret .= "<td bgcolor=$colors[$c] id=editLink{$fetchW['upc']}>
-                <a href=\"\" class=\"edit\" onclick=\"editUpcPrice('{$fetchW['upc']}'); return false;\"><img 
-                    src=\"{$FANNIE_URL}src/img/buttons/b_edit.png\" alt=\"Edit\" /></a>
-                <a href=\"\" class=\"save collapse\" onclick=\"saveUpcPrice('{$fetchW['upc']}'); return false;\"><img 
-                    src=\"{$FANNIE_URL}src/img/buttons/b_save.png\" alt=\"Save\" /></a>
+                <a href=\"\" class=\"edit\" onclick=\"editUpcPrice('{$fetchW['upc']}'); return false;\">
+                    " . FannieUI::editIcon() . "</a>
+                <a href=\"\" class=\"save collapse\" onclick=\"saveUpcPrice('{$fetchW['upc']}'); return false;\">
+                    " . FannieUI::saveIcon() . "</a>
                 </td>";
             $ret .= "<td bgcolor=$colors[$c]><a href=\"\" 
-                onclick=\"deleteUPC.call(this, $id, '{$fetchW['upc']}'); return false;\"><img src=\"{$FANNIE_URL}src/img/buttons/b_drop.png\" alt=\"Delete\" /></a>
+                onclick=\"deleteUPC.call(this, $id, '{$fetchW['upc']}'); return false;\">"
+                . FannieUI::deleteIcon() . "</a>
                 </td>";
             if ($fetchW['isCut'] == 1) {
                 $ret .= "<td bgcolor=$colors[$c] id=cpLink{$fetchW['upc']}>
@@ -1125,7 +1126,8 @@ class EditBatchPage extends FannieRESTfulPage
                     <img src=\"{$FANNIE_URL}src/img/buttons/arrow_up.gif\" alt=\"Make Qualifying Item\" />
                     </a>
                 </td>";
-            $ret .= "<td bgcolor=$colors[$c]><a href=\"\" onclick=\"deleteUPC.call(this, $id, '$fetchW[0]'); return false;\"><img src=\"{$FANNIE_URL}src/img/buttons/b_drop.png\" alt=\"Delete\" /></a></td>";
+            $ret .= "<td bgcolor=$colors[$c]><a href=\"\" onclick=\"deleteUPC.call(this, $id, '$fetchW[0]'); return false;\">"
+                . FannieUI::deleteIcon() . '</a></td>';
             $ret .= "</tr>";
 
             if (substr($fetchW['upc'], 0, 2) == "LC") {
@@ -1190,7 +1192,8 @@ class EditBatchPage extends FannieRESTfulPage
                     <img src=\"{$FANNIE_URL}src/img/buttons/arrow_up.gif\" alt=\"Make Qualifying Item\" />
                     </a>
                 </td>";
-            $ret .= "<td bgcolor=$colors[$c]><a href=\"\" onclick=\"deleteUPC.call(this, $id, '$fetchW[0]'); return false;\"><img src=\"{$FANNIE_URL}src/img/buttons/b_drop.png\" alt=\"Delete\" /></a></td>";
+            $ret .= "<td bgcolor=$colors[$c]><a href=\"\" onclick=\"deleteUPC.call(this, $id, '$fetchW[0]'); return false;\">"
+                . FannieUI::deleteIcon() . '</a></td>';
             $ret .= "</tr>";
 
             if (substr($fetchW['upc'], 0, 2) == "LC") {
@@ -1251,6 +1254,32 @@ class EditBatchPage extends FannieRESTfulPage
         $this->add_onload_command('$(\'#addItemUPC\').focus()');
 
         return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>Add one or more items to the batch. Enter a UPC by default or check
+            the likecode option to add items by likecode. Next enter a price. Note that if
+            you enter an incorrect UPC (or likecode) you can simply press enter with the price
+            field blank to skip that item and enter another UPC (or likecode)</p>
+            <p><em>Force Batch</em> will apply the batch prices immediately and push those
+            changes to the lanes. Forcing a batch will ignore start and end dates.</p>
+            <p><em>Stop Sale</em> will take items off sale immediately. However, 
+            depending on start and end dates the batch may be reapplied on the next automated
+            batch update. Change the dates or delete the batch after stopping the sale
+            if needed.</p>
+            <p><em>Auto-tag</em> creates shelf tags for the batch using the batch price
+            and vendor catalog data. This is primarily used with price change batches.
+            <em>Print shelf tags</em> of course shows the actual tags.</p>
+            <p><em>Add Limit</em> creates a per-transaction limit on each item in the
+            batch. Setting a limit of one for example means the sale price only applies
+            once per transaction. Additional identical items ring up at regular price. This limit
+            applies to each item individually rather than all items in the batch 
+            collectively. These limits cannot be used for volume sale price (i.e., 2-for-$1).</p>
+            <p><em>Cut</em> and <em>Paste</em> can move items items from one batch to
+            another. This feature requires user authentication so that each user has their
+            own clipboard and don\'t interfere with each oter.</p>
+            ';
     }
 }
 

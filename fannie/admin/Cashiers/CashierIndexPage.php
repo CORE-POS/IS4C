@@ -47,6 +47,12 @@ class CashierIndexPage extends FanniePage {
         <?php
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>Tools for managing cashier accounts used to log
+            into the lanes.</p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

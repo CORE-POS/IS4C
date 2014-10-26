@@ -89,7 +89,17 @@ class DeleteTenderPage extends FanniePage
         $ret .= '<p><button type="submit" class="btn btn-default">Delete Selected Tender</button></p>';
         $ret .= '<p><button type="button" class="btn btn-default" onclick="location=\'TenderEditor.php\';">Back to Tenders</button></p>';
         $ret .= "</form>";
+        $this->add_onload_command("\$('select.form-control').focus();\n");
+
         return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>Deleting a tender will not remove it from the lanes
+            until the next time tenders are synced. Deleting a tender 
+            that has been used in the past may create problems with some
+            reports on historical data where that tender was used.</p>';
     }
 }
 

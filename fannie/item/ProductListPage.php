@@ -167,8 +167,8 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             }
             $('tr#'+upc+' .td_local').html(content);
 
-            var lnk = "<img src=\"<?php echo $FANNIE_URL;?>src/img/buttons/b_save.png\" alt=\"Save\" border=0 />";
-            $('tr#'+upc+' .td_cmd').html("<a href=\"\" onclick=\"save('"+upc+"');return false;\">"+lnk+"</a>");
+            $('tr#'+upc+' .td_cmd .edit-link').hide();
+            $('tr#'+upc+' .td_cmd .save-link').show();
 
             $('tr#'+upc+' input:text').keydown(function(event) {
                 if (event.which == 13) {
@@ -217,9 +217,8 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             var local = $('tr#'+upc+' .in_local').val().split(':');
             $('tr#'+upc+' .td_local').html(local[0]);
 
-            var lnk = "<img src=\"<?php echo $FANNIE_URL;?>src/img/buttons/b_edit.png\" alt=\"Edit\" border=0 />";
-            var cmd = "<a href=\"\" onclick=\"edit('"+upc+"'); return false;\">"+lnk+"</a>";
-            $('tr#'+upc+' .td_cmd').html(cmd);
+            $('tr#'+upc+' .td_cmd .edit-link').show();
+            $('tr#'+upc+' .td_cmd .save-link').hide();
 
             var dstr = 'ajax=save&upc='+upc+'&desc='+desc+'&dept='+dept+'&price='+price+'&cost='+cost;
             dstr += '&tax='+tax[1]+'&fs='+fs+'&disc='+disc+'&wgt='+wgt+'&supplier='+supplier+'&local='+local[1];
@@ -551,8 +550,8 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             if (!$this->excel){
                 $ret .= "<td align=center class=\"td_upc\"><a href=ItemEditorPage.php?searchupc=$row[0]>$row[0]</a>"; 
                 if ($this->canDeleteItems !== False){
-                    $ret .= "<a href=\"\" onclick=\"deleteCheck('$row[0]','$enc'); return false;\">";
-                    $ret .= "<img src=\"{$FANNIE_URL}src/img/buttons/trash.png\" border=0 /></a>";
+                    $ret .= " <a href=\"\" onclick=\"deleteCheck('$row[0]','$enc'); return false;\">";
+                    $ret .= FannieUI::deleteIcon() . '</a>';
                 }
                 $ret .= '</td>';
                 $ret .= '<input type="hidden" class="hidden_upc" value="'.$row[0].'" />';
@@ -571,9 +570,12 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             $ret .= "<td align=center class=td_local>$row[8]</td>";
             if (!$this->excel && $this->canEditItems !== False){
                 $ret .= "<td align=center class=td_cmd><a href=\"\" 
-                    onclick=\"edit('$row[0]'); return false;\">
-                    <img src=\"{$FANNIE_URL}src/img/buttons/b_edit.png\" alt=\"Edit\" 
-                    border=0 /></a></td>";
+                    class=\"edit-link\"
+                    onclick=\"edit('$row[0]'); return false;\">"
+                    . FannieUI::editIcon() . '</a>
+                    <a href="" class="save-link collapse"
+                    onclick="save(\'' . $row[0] . '\'); return false;">'
+                    . FannieUI::saveIcon() . '</a></td>';
             }
             $ret .= "</tr>\n";
         }

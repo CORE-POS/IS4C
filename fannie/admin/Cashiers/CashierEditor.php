@@ -93,24 +93,34 @@ class CashierEditor extends FanniePage {
         ?>
         <div id="alert-area"></div>
         <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
-        <label>First Name</label>
-        <input type="text" name="fname" value="<?php echo $employee->FirstName(); ?>"
-            class="form-control" required />
-        <label>Last Name</label>
-        <input type="text" name="lname" value="<?php echo $employee->LastName(); ?>"
-            class="form-control" />
-        <label>Password</label>
-        <input type="text" name="passwd" value="<?php echo $employee->CashierPassword(); ?>"
-            class="form-control" required />
-        <label>Privileges</label>
-        <select name="fes" class="form-control">
-        <option value="20" <?php echo $employee->frontendsecurity() <= 20 ? 'selected' : '' ?>>Regular</option>
-        <option value="30" <?php echo $employee->frontendsecurity() > 20 ? 'selected' : '' ?>>Manager</option>
-        </select>
-        <label>Active
-            <input type="checkbox" name="active" class="checkbox-inline"
-                <?php echo $employee->EmpActive()==1 ? 'checked' : ''; ?> />
-        </label>
+        <div class="form-group">
+            <label>First Name</label>
+            <input type="text" name="fname" value="<?php echo $employee->FirstName(); ?>"
+                class="form-control" required />
+        </div>
+        <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" name="lname" value="<?php echo $employee->LastName(); ?>"
+                class="form-control" />
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="text" name="passwd" value="<?php echo $employee->CashierPassword(); ?>"
+                class="form-control" required />
+        </div>
+        <div class="form-group">
+            <label>Privileges</label>
+            <select name="fes" class="form-control">
+            <option value="20" <?php echo $employee->frontendsecurity() <= 20 ? 'selected' : '' ?>>Regular</option>
+            <option value="30" <?php echo $employee->frontendsecurity() > 20 ? 'selected' : '' ?>>Manager</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Active
+                <input type="checkbox" name="active" class="checkbox-inline"
+                    <?php echo $employee->EmpActive()==1 ? 'checked' : ''; ?> />
+            </label>
+        </div>
         <p>
             <button type="submit" class="btn btn-default">Save</button>
             <button type="button" class="btn btn-default"
@@ -119,8 +129,18 @@ class CashierEditor extends FanniePage {
         <input type="hidden" name="emp_no" value="<?php echo $emp_no; ?>" />
         </form>
         <?php
+        $this->add_onload_command("\$('input.form-control:first').focus();\n");
 
         return ob_get_clean();
+    }
+
+    public function helpContent()
+    {
+        return '<p>Edit an existing cashier. <em>First Name</em> and <em>Password</em>
+            are required fields. Which operations require <em>Manager</em> privileges
+            depends on local lane configuration. Only <em>Active</em> cashiers are allowed
+            to log into lanes.</p>'
+            ;
     }
 }
 

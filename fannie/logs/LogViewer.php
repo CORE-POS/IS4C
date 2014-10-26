@@ -185,6 +185,17 @@ class LogViewer extends FanniePage
 
 		return true;
 	}
+
+    public function helpContent()
+    {
+        return '<p>View Fannie\'s logs through the browser</p>
+            <p><em>dayend.log</em> logs information about scheduled
+            tasks run and their results.</p>
+            <p><em>php-errors.log</em> logs developer-oriented information
+            about program warnings and errors.</p>
+            <p><em>queries.log</em> logs developer-oriented information
+            about database errors.</p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);
