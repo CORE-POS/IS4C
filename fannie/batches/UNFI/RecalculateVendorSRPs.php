@@ -128,6 +128,14 @@ class RecalculateVendorSRPs extends FanniePage {
 
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>Recalculate suggested retail prices for items from
+            a given vendor. If margin targets have been assigned to
+            vendor-specific departments, those margins are used. Otherwise
+            POS departments\' margin targets are used.</p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

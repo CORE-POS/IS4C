@@ -404,6 +404,17 @@ class HouseCouponEditor extends FanniePage
 
         return $ret;
     }
+
+    public function helpContent()
+    {
+        $help = file_get_contents('explainify.html');
+        $extract = preg_match('/<body>(.*)<\/body>/ms', $help, $matches);
+        if ($extract) {
+            return $matches[1];
+        } else {
+            return $help;
+        }
+    }
 }
 
 FannieDispatch::conditionalExec(false);

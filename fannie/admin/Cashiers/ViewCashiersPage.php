@@ -120,15 +120,20 @@ function deleteEmp(emp_no,filter){
                     $emp->FirstName().' '.$emp->LastName(),
                     $emp->CashierPassword(),
                     ($emp->frontendsecurity()<=20?'Regular':'Manager'));
-            $ret .= sprintf("<td><a href=\"CashierEditor.php?emp_no=%d\"><img src=\"{$FANNIE_URL}src/img/buttons/b_edit.png\" 
-                alt=\"Edit\" border=0 /></a></td>
-                <td><a href=\"\" onclick=\"deleteEmp(%d,%d); return false;\"><img alt=\"Delete\"
-                src=\"{$FANNIE_URL}src/img/buttons/b_drop.png\" border=0 /></a></td></tr>",
-                $emp->emp_no(),$emp->emp_no(),$filter);
+            $ret .= sprintf("<td><a href=\"CashierEditor.php?emp_no=%d\">%s</a></td>
+                <td><a href=\"\" onclick=\"deleteEmp(%d,%d); return false;\">%s</a></td></tr>",
+                $emp->emp_no(),FannieUI::editIcon(),
+                $emp->emp_no(),$filter, FannieUI::deleteIcon());
         }
         $ret .= "</table>";
 
         return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>View, edit, or delete cashiers. Only <em>Active</em> cashiers can
+            log into the lanes. Click column headers to sort the list.</p>';
     }
 }
 

@@ -35,6 +35,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
 
     public $page_set = 'Plugin :: Open Book Financing';
     public $description = '[Week Entry] sets labor amounts and sales goals by week.';
+    public $themed = true;
 
     public function javascript_content()
     {
@@ -187,7 +188,8 @@ class ObfWeekEntryPage extends FannieRESTfulPage
         if (!is_object($this->weekModel)) {
             $this->weekModel = new ObfWeeksModel($dbc);
         }
-        $select = '<select onchange="location=\'' . $_SERVER['PHP_SELF'] . '?id=\' + this.value;">';
+        $select = '<select class="form-control"
+                    onchange="location=\'' . $_SERVER['PHP_SELF'] . '?id=\' + this.value;">';
         $select .= '<option value="">New Entry</option>';
         foreach($model->find('obfWeekID', true) as $week) {
             $ts = strtotime($week->startDate());
@@ -198,13 +200,15 @@ class ObfWeekEntryPage extends FannieRESTfulPage
         }
         $select .= '</select>';
 
-        $ret = '<b>Week Ending</b>: ' . $select
+        $ret = '<div class="form-group form-inline">
+                <lablel>Week Ending</label>: ' . $select
                 . '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
-                . '<button onclick="location=\'ObfIndexPage.php\';return false;">Home</button>'
-                . '<br /><br />';
+                . '<button type="button" class="btn btn-default"
+                    onclick="location=\'ObfIndexPage.php\';return false;">Home</button>'
+                . '</div>';
 
         $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
-        $ret .= '<table cellpadding="4" cellspacing="0" border="1">';
+        $ret .= '<table class="table">';
         $ret .= '<tr><th>Week End Date</th><th>Previous Year End Date</th>
                 <th>Sales Growth Target</th><th>Quarter</th></tr>';
 
@@ -219,16 +223,18 @@ class ObfWeekEntryPage extends FannieRESTfulPage
             $end2 = date('Y-m-d', mktime(0, 0, 0, date('n', $ts), date('j', $ts)+6, date('Y', $ts)));
         }
         $ret .= '<tr>';
-        $ret .= '<td><input type="text" size="12" name="date1" id="date1"
-                        value="' . $end1 . '"
+        $ret .= '<td><input type="text" class="form-control" name="date1" id="date1"
+                        value="' . $end1 . '" required
                         onchange="getPrevYear(this.value);" /></td>';
         $this->add_onload_command("\$('#date1').datepicker();\n");
-        $ret .= '<td><input type="text" size="12" name="date2" id="date2"
-                        value="' . $end2 . '" /></td>';
-        $ret .= '<td><input type="text" size="6" name="growthTarget" 
-                        value="' . sprintf('%.2f', $this->weekModel->growthTarget() * 100) . '" />%</td>';
+        $ret .= '<td><input type="text" class="form-control" name="date2" id="date2"
+                        value="' . $end2 . '" required /></td>';
+        $ret .= '<td><div class="input-group">
+                <input type="number" class="form-control" name="growthTarget" 
+                    value="' . sprintf('%.2f', $this->weekModel->growthTarget() * 100) . '" />
+                <span class="input-group-addon">%</span></div></td>';
         $this->add_onload_command("\$('#date2').datepicker();\n");
-        $ret .= '<td><select name="quarter">';
+        $ret .= '<td><select name="quarter" class="form-control">';
         $quarters = new ObfQuartersModel($dbc);
         foreach ($quarters->find('obfQuarterID', true) as $q) {
             $ret .= sprintf('<option %s value="%d">%s %s</option>',
@@ -245,7 +251,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
                         $this->weekModel->obfWeekID());
 
             $ret .= '<hr />';
-            $ret .= '<table cellpadding="4" cellspacing="0" border="1">';
+            $ret .= '<table class="table">';
             $ret .= '<tr><th>Group</th><th>Hours</th><th>Wages</th>
                     <th>Labor Goal</th><th>Allocated Hours</th><th>Sales Forecast</th></tr>';
             $categories = new ObfCategoriesModel($dbc);
@@ -266,11 +272,20 @@ class ObfWeekEntryPage extends FannieRESTfulPage
                 }
                 $ret .= sprintf('<tr>
                             <td>%s</td>
-                            <td><input type="text" size="8" name="hours[]" value="%.2f" /></td>
-                            <td><input type="text" size="8" name="wages[]" value="%.2f" /></td>
-                            <td><input type="text" size="8" name="labor[]" value="%.2f" />%%</td>
-                            <td><input type="text" size="8" name="alloc[]" value="%d" /></td>
-                            <td>$<input type="text" size="8" name="sales[]" %s value="%s" /></td>
+                            <td><input type="text" class="form-control" name="hours[]" value="%.2f" /></td>
+                            <td><div class="input-group">
+                                <span class="input-group-addon">$</span>
+                                <input type="text" class="form-control" name="wages[]" value="%.2f" />
+                            </div></td>
+                            <td><div class="input-group">
+                                <input type="text" class="form-control" name="labor[]" value="%.2f" />
+                                <span class="input-group-addon">%%</span>
+                            </div></td>
+                            <td><input type="text" class="form-control" name="alloc[]" value="%d" /></td>
+                            <td><div class="input-group">
+                                <span class="input-group-addon">$</span>
+                                <input type="text" class="form-control" name="sales[]" %s value="%s" />
+                            </div></td>
                             <input type="hidden" name="weekID[]" value="%d" />
                             <input type="hidden" name="catID[]" value="%d" />
                             </tr>',
@@ -288,7 +303,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
             $ret .= '</table>';
         }
 
-        $ret .= '<input type="submit" value="Save" />';
+        $ret .= '<p><button type="submit" class="btn btn-default">Save</button></p>';
         $ret .= '</form>';
 
         return $ret;

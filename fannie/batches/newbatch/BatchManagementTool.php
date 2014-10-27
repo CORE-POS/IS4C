@@ -62,7 +62,10 @@ class BatchManagementTool extends FanniePage
         if (FormLib::get('startAt') !== '') {
             $url = 'EditBatchPage.php?id=' . FormLib::get('startAt');
         }
-        header('Location: ' . $url);
+        // restriction for unit testability
+        if (php_sapi_name() != 'cli') {
+            header('Location: ' . $url);
+        }
         return false;
 
         global $FANNIE_OP_DB;

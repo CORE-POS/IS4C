@@ -65,13 +65,14 @@ class RestrictCouponPage extends FannieRESTfulPage {
         foreach($model->find('upc') as $obj){
             $ret .= sprintf('<tr><td><a href="" onclick="loadcoupon(\'%s\');return false;">%s</a></td>
                     <td>%d</td><td>%s</td>
-                    <td><a href="" onclick="deletecoupon(\'%s\');return false;"><img 
-                    src="%ssrc/img/buttons/trash.png" /></a></td></tr>',
+                    <td><a href="" onclick="deletecoupon(\'%s\');return false;">%s</a></td>
+                    </tr>',
                     $obj->upc(), $obj->upc(), $obj->threshold(),
-                    $obj->reason(), $obj->upc(), $FANNIE_URL
+                    $obj->reason(), $obj->upc(), FannieUI::deleteIcon()
             );
         }
         $ret .= '</table>';
+        $this->add_onload_command("\$('#upc').focus();\n");
 
         return $ret;
     }

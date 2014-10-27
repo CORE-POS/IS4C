@@ -1,16 +1,16 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2009 Whole Foods Co-op
+    Copyright 2014 Whole Foods Co-op
 
     This file is part of Fannie.
 
-    Fannie is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -21,22 +21,27 @@
 
 *********************************************************************************/
 
-require('../login.php');
-include("../../config.php");
-$page_title = 'Fannie : Auth : View Users';
-$header = 'Fannie : Auth : View Users';
+/**
+  @class FannieUI
+  Generator methods for common UI elements' markup
+*/
+class FannieUI 
+{
+    public static function editIcon($alt='Edit')
+    {
+        return '<span class="glyphicon glyphicon-pencil" title="' . $alt . '"></span>';
+    }
 
-include($FANNIE_ROOT."src/header.html");
+    public static function saveIcon($alt='Save')
+    {
+        return '<span class="glyphicon glyphicon-floppy-disk" title="' . $alt . '"></span>';
+    }
 
-if (!validateUser('admin')){
-  return;
+    public static function deleteIcon($alt='Delete')
+    {
+        return '<span class="glyphicon glyphicon-trash" title="' . $alt . '"></span>';
+    }
+
+
+
 }
-
-showUsers();
-
-?>
-<p />
-<a href=menu.php>Main menu</a>
-<?php
-include($FANNIE_ROOT."src/footer.html");
-?>

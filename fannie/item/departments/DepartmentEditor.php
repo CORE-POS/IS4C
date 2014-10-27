@@ -296,6 +296,28 @@ class DepartmentEditor extends FanniePage {
 
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>Departments are the base level of categorization for
+            items. All items must belong to a department.</p>
+            <p>To create a department, choose <i>Create a new department</i>
+            from the <i>Department</i> drop down. To edit an existing department,
+            choose that department from the drop down.</p>
+            <p>Tax, foodstamp, and discount are the defaults for new items added
+            to the department. These values are also used for open rings to the
+            department.</p>
+            <p>Min and max are soft limits. If the cashier open rings a price 
+            outside this range they get a warning but can confirm the price and
+            continue.</p>
+            <p>Margin may be used to calculate suggested retail price for items
+            whose cost is known.</p>
+            <p>Sales codes are yet another form of categorization. Typically this
+            field is used for account numbers or similar identifiers that appear
+            in the accounting software used. It is particularly helpful if the 
+            accounting team and the operational team want to categorize items and
+            sales differently.</p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

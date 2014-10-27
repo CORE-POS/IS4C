@@ -32,6 +32,7 @@ class StaffArDatesPage extends FannieRESTfulPage
 {
     public $page_set = 'Plugin :: Payroll Deductions';
     public $description = '[Schedule] sets dates when payments will be applied.';
+    public $themed = true;
 
     public function preprocess()
     {
@@ -81,12 +82,17 @@ class StaffArDatesPage extends FannieRESTfulPage
         global $FANNIE_URL;
         $this->add_script('js/dates.js');
 
-        $ret = '<div id="mainDisplayDiv">';
+        $ret = '<div id="mainDisplayDiv" class="col-sm-4">';
         $ret .= $this->dateTable();
         $ret .= '</div>';
-        $ret .= '<hr />';
-        $ret .= '<b>Add Date</b>: <input type="text" id="newDate" />
-                <input type="submit" onclick="addDate(); return false;" value="Add" />';
+        $ret .= '<div class="col-sm-6">';
+        $ret .= '<div class="form-group form-inline">';
+        $ret .= '<label>Add Date</label>: <input type="text" id="newDate" class="form-control" />
+                <button type="submit" onclick="addDate(); return false;" 
+                    class="btn btn-default">Add</button>';
+        $ret .= '</div>';
+        $ret .= '</div>';
+        
         $this->add_onload_command("\$('#newDate').datepicker();");
 
         return $ret;
@@ -94,7 +100,7 @@ class StaffArDatesPage extends FannieRESTfulPage
 
     private function dateTable()
     {
-        $ret = '<table cellspacing="0" cellpadding="4" border="1">';
+        $ret = '<table class="table">';
         $dates = $this->getDates();
         foreach($dates as $id => $date) {
             if (strstr($date, ' ')) {

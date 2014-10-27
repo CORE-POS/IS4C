@@ -214,6 +214,9 @@ class FannieAuth
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
+        if (!$dbc->tableExists('userKnownPrivs')) {
+            return false;
+        }
         $notes = str_replace("\n","<br />",$description);
         $chkP = $dbc->prepare('SELECT auth_class
                                FROM userKnownPrivs

@@ -30,6 +30,7 @@ if (!class_exists('FannieAuth'))
 /**
 */
 class TimesheetPlugin extends FanniePlugin {
+    public $page_set = 'Plugin :: TimesheetPlugin';
 
     /**
       Desired settings. These are automatically exposed

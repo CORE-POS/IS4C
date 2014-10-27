@@ -126,8 +126,7 @@ function goToPage(the_id){
             <td style='text-align:right;'>%d</td>
             <td><a href=\"\" onclick=\"goToPage('%d');return false;\">Print</a></td>
             <td><a href=\"DeleteShelfTags.php?id=%d\">Clear</a></td>
-            <td><a href=\"EditShelfTags.php?id=%d\"><img src=\"{$FANNIE_URL}src/img/buttons/b_edit.png\"
-                alt=\"Edit\" border=0 /></td>
+            <td><a href=\"EditShelfTags.php?id=%d\">" . FannieUI::editIcon() . "</td>
             </tr>",
             $row[1],$row[2],$row[0],$row[0],$row[0]);
         }

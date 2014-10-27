@@ -361,7 +361,6 @@ class BatchListPage extends FannieRESTfulPage
         }
         $ret .= "</select></div>";
         $ret .= '<div class="col-sm-1"><button type=submit class="btn btn-default">Create Batch</button></div>';
-        $ret .= "</div>";
         $ret .= '</div>';
         
         $ret .= "<p></p>"; // spacer
@@ -493,15 +492,15 @@ class BatchListPage extends FannieRESTfulPage
             $ret .= "<td bgcolor=$colors[$c] id=owner{$id}>{$fetchW['owner']}</td>";
             $ret .= "<td bgcolor=$colors[$c] id=edit{$id}>
                 <a href=\"\" onclick=\"editBatchLine({$id}); return false;\" class=\"batchEditLink\">
-                    <img src=\"{$FANNIE_URL}src/img/buttons/b_edit.png\" alt=\"Edit\" />
+                    " . FannieUI::editIcon() . "
                 </a>
                 <a href=\"\" onclick=\"saveBatchLine({$id}); return false;\" class=\"batchSaveLink collapse\">
-                    <img src=\"{$FANNIE_URL}src/img/buttons/b_save.png\" alt=\"Save\" />
+                    " . FannieUI::saveIcon() . "
                 </a>
                 </td>";
             $ret .= "<td bgcolor=$colors[$c]><a href=\"\" 
-                onclick=\"deleteBatch({$id},'{$fetchW['batchName']}'); return false;\"><img src=\"{$FANNIE_URL}src/img/buttons/b_drop.png\" 
-                alt=\"Delete\" /></a></td>";
+                onclick=\"deleteBatch({$id},'{$fetchW['batchName']}'); return false;\">"
+                . FannieUI::deleteIcon() . '</a></td>';
             $ret .= "<td bgcolor=$colors[$c]><a href=\"batchReport.php?batchID={$id}\">Report</a></td>";
             $ret .= "</tr>";
             $count++;
@@ -551,6 +550,21 @@ class BatchListPage extends FannieRESTfulPage
         $this->add_onload_command("\$('#newBatchEndDate').datepicker();\n");
 
         return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>Batches apply changes to items on a specified date. They are
+            used to place items on sale for a defined period of time as well as
+            to change retail prices on a set of items in a coordinated manner.</p>
+            <p>Batch Type controls whether it is a sale or price change. There may
+            be several different type of sales. Sale prices will first apply on
+            the start date and will stop the day <em>after</em> the end date (i.e.,
+            the end date is inclusive). Price change batches apply on the start
+            date but end date has no meaning for price changes. Name and owner are
+            for organization of the list.</p>
+            <p>An item may only be in one active sale batch.</p>
+            ';
     }
 }
 

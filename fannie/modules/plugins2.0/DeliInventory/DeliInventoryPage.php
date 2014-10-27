@@ -9,7 +9,7 @@ include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class DeliInventoryPage extends FanniePage
 {
-
+    public $page_set = 'Plugin :: DeliInventory';
     protected $window_dressing = false;
 
     public function preprocess()

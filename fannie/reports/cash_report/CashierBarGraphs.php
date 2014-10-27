@@ -225,6 +225,18 @@ class CashierBarGraphs extends FannieRESTfulPage
 
         return ob_get_clean();
     }
+    public function helpContent()
+    {
+        return '<p>Show bar graphs of cashier performance. Terminology:
+            <ul>
+                <li><em>Rings</em> are line-items added to a transaction.</li>
+                <li><em>Items</em> are the number of items in a transction.
+                    For example, if a cashier enters "2*" then scans a UPC,
+                    that counts as one ring but two items.</li>
+                <li><em>Canceled</em> in this context means voiding a line
+                    in a transaction.</li>
+            </ul>';
+    }
 }
 
 FannieDispatch::conditionalExec();

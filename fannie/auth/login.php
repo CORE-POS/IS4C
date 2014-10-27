@@ -297,7 +297,7 @@ function showUsers(){
     return false;
   }
   echo "Displaying current users";
-  echo "<table cellspacing=2 cellpadding=2 border=1>";
+  echo "<table class=\"table\">";
   echo "<tr><th>Name</th><th>User ID</th></tr>";
   $sql = dbconnect();
   $usersQ = $sql->prepare_statement("select name,uid from Users order by name");

@@ -31,6 +31,10 @@ if (!class_exists('FPDF')) {
 
 class StatementsPluginTerm extends FannieRESTfulPage
 {
+    public $page_set = 'Plugin :: StatementsPlugin';
+    public $description = '[Termination PDF] generates membership termination letters.';
+    public $themed = true;
+
     public function post_id_handler()
     {
         global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_ROOT;

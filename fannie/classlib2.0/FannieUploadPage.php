@@ -787,5 +787,24 @@ class FannieUploadPage extends FanniePage
 
         return $ret;
     }
+
+    public function helpContent()
+    {
+        return '
+        <p><strong>General Import Tool Tips</strong>
+            <ul>
+                <li>CSV, XLS, and XLSX are all supported. However, CSV is most reliable.</li>
+                <li>Maximum file size is usually 2MB. CSV files may be zipped to reduce
+                    file size.</li>
+                <li>The purpose of the preview screen is to specify the format of your
+                    file. It shows the first five rows of data with dropdowns above each
+                    column. Use the dropdowns to specify what (if any) data is present in 
+                    each column. For example, if UPCs are in the 3rd column, set the dropdown
+                    for the third column to UPC.</li>
+                <li>Large files may take awhile to process. Give it 5 or 10 minutes before
+                    deciding it didn\'t work.</li>
+            </ul>
+        </p>';
+    }
 }
 

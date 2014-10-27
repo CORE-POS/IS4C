@@ -64,6 +64,15 @@ class UploadVendorPriceFile extends FanniePage {
         return $ret;
     }
 
+    public function helpContent()
+    {
+        return '<p>Import a spreadsheet containing vendor items and costs.
+            The default tool works fine in many cases, but custom vendor-specific
+            importers can be added to tailor the interface to the spreadsheet
+            format or perform additional vendor-specific operations.</p>
+            ';
+    }
+
 }
 
 FannieDispatch::conditionalExec(false);

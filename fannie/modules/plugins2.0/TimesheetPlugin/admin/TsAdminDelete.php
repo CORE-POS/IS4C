@@ -3,6 +3,7 @@ require_once(dirname(__FILE__).'/../../../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class TsAdminDelete extends FanniePage {
+    public $page_set = 'Plugin :: TimesheetPlugin';
     protected $header = 'Timesheet Management';
     protected $title = 'Fannie - Administration Module';
 

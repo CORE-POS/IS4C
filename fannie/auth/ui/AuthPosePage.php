@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2013 Whole Foods Co-op
+    Copyright 2009 Whole Foods Co-op
 
     This file is part of Fannie.
 
@@ -25,33 +25,49 @@ include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
+if (!function_exists('checkLogin')) {
+    require('../login.php');
+}
 
-class CapSalesIndexPage extends FanniePage {
-    protected $title = "Fannie - CAP sales";
-    protected $header = "CAP Sales";
+class AuthPosePage extends FannieRESTfulPage {
 
-    public $description = '[Co+op Deals Menu] lists options for importing and creating
-    Co+op Deals batches.';
+    protected $must_authenticate = true;
+    protected $auth_classes = array('admin');
+    protected $title = 'Fannie : Auth : Pose';
+    protected $header = 'Fannie : Auth : Pose';
     public $themed = true;
 
-    function body_content(){
-        ob_start();
-        ?>
-        <ul>
-        <li><a href="CoopDealsUploadPage.php">Upload Price File</a></li>
-        <li><a href="CoopDealsReviewPage.php">Review data &amp; create sales batches</a></li>
-        </ul>
-        <?php
-        return ob_get_clean();
+    public function post_id_handler()
+    {
+        pose($this->id);
+        header("Location: AuthIndexPage.php");
+        
+        return false;
     }
 
-    public function helpContent()
+    public function get_view()
     {
-        return '<p>Upload Co+op Deals item data spreadsheet then review the
-            data to assign sale start and end dates.</p>';
+        ob_start();
+        ?>
+<form method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+<label>Username</label>
+<select name="id" class="form-control">
+<?php
+foreach (getUserList() as $uid => $name) {
+    echo "<option>".$name."</option>";
+}
+?>
+</select>
+<p>
+    <button class="btn btn-defaut" type="submit">Pose as User</button>
+</p>
+</form>
+        <?php
+        $this->add_onload_command("\$('select.form-control').focus();\n");
+
+        return ob_get_clean();
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

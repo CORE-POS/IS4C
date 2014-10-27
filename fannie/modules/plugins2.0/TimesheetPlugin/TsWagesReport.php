@@ -3,6 +3,7 @@ require_once(dirname(__FILE__).'/../../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class TsWagesReport extends FanniePage {
+    public $page_set = 'Plugin :: TimesheetPlugin';
 
     function preprocess(){
         $this->header = "Timeclock - Department Totals Report";

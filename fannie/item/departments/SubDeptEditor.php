@@ -168,6 +168,15 @@ class SubDeptEditor extends FanniePage
         
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>A department may contain multiple sub departments.
+            This layer of categorization is strictly for reporting and
+            organization.</p>
+            <p>This field is not supported much in the current release
+            although local customizations or plugins may differ.</p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

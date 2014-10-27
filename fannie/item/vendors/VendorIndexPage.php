@@ -132,8 +132,10 @@ class VendorIndexPage extends FanniePage {
         $ret .= '<div>';
         if ($dbc->num_rows($nameR) < 1)
             $ret .= "<b>Name</b>: Unknown";
-        else
-            $ret .= "<b>Id</b>: $id &nbsp; <b>Name</b>: ".array_pop($dbc->fetch_row($nameR));
+        else {
+            $nameW = $dbc->fetch_row($nameR);
+            $ret .= "<b>Id</b>: $id &nbsp; <b>Name</b>: " . $nameW['vendorName'];
+        }
         $ret .= '</div>';
 
         $itemQ = $dbc->prepare_statement("SELECT COUNT(*) FROM vendorItems WHERE vendorID=?");
@@ -286,6 +288,27 @@ class VendorIndexPage extends FanniePage {
         $this->add_onload_command('vendorchange();');
 
         return ob_get_clean();
+    }
+
+    public function helpContent()
+    {
+        return '<p>Vendors are the entities the store purchases its 
+            products from. The most important data associated with
+            a vendor is their catalog of items. A product that the store
+            sells may correspond to one or more items in one or more
+            catalogs - i.e. the item may be available from more than
+            one vendor and/or may be availalbe in more than one case
+            size. Keeping vendor catalogs up to date with accurate 
+            costs helps manage retail pricing and margin.</p>
+            <p>PLU/SKU mapping is for resolving situations where the
+            store and the vendor use different UPCs. This is often
+            the case with items sold in bulk using a PLU.</p>
+            <p>Vendor Departments are optional. If the vendor\'s
+            catalog is divided into vendor-specific departments,
+            custom margin targeets can be set for those sets of
+            items.</p>
+            <p>Contact Info and Delivery Schedule are wholly optional.
+            Jot down whatever is useful.</p>';
     }
 }
 

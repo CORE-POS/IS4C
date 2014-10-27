@@ -61,6 +61,17 @@ class SyncIndexPage extends FanniePage {
         <?php
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>Send data from the server to the lanes. The sync operations
+            discards current lane-side data and completely replaces it with
+            the server\'s data.</p>
+            <p>The <em>Table</em> dropdown contains the most common options
+            but any other operational table can be sent using the <emOther table</em>
+            field.</p>
+            ';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

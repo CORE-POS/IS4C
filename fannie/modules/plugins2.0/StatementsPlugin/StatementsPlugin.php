@@ -29,6 +29,7 @@ if (!class_exists('FannieAPI')) {
 class StatementsPlugin extends FanniePlugin 
 {
 
+    public $plugin_settings = array();
     public $plugin_description = 'Plugin for mailable member statements.';
 
 }

@@ -25,7 +25,9 @@ include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
-include('ajax.php');
+if (!function_exists('getTenderTable')) {
+    include('ajax.php');
+}
 
 class TenderEditor extends FanniePage 
 {
@@ -228,6 +230,27 @@ function addTender(){
         $ret .= getTenderTable();
         $ret .= '</div>';
         return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>Tenders are different kinds of payment the store accepts.
+            Each field saves when changed.</p>
+            <ul>
+                <li><em>Code</em> is the two letter code used by cashiers to enter
+                the tender. These codes must be unique. While they are editable, using
+                the defaults defined in sample tenders is recommended. In particular,
+                changing CA, MI, CP, IC, EF, or FS could lead to oddities.</li>
+                <li><em>Name</em> appears on screen and on receipt.</li>
+                <li><em>Change Type</em> is the tender code used when the amount tendered
+                exceeds the amount due resulting in a change line. Cash (CA) is
+                most common.</li>
+                <li><em>Change Msg</em> appears on screen and receipts for change lines.</li>
+                <li><em>Min</em> and <em>Max</em> are soft limits. Attempting to tender 
+                an amount outside that range results in a warning.</li>
+                <li><em>Refund Limit</em> is a soft limit on the maximum allowed refund.
+                Attempting to refund a larger amount results in a warning.</li>
+            </ul>';
     }
 }
 

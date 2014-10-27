@@ -33,6 +33,7 @@ class ObfWeeklyReport extends FannieReportPage
 
     public $page_set = 'Plugin :: Open Book Financing';
     public $description = '[Weekly Report] shows sales and labor data for a given week.';
+    public $themed = true;
 
     protected $required_fields = array('weekID');
 
@@ -866,7 +867,9 @@ class ObfWeeklyReport extends FannieReportPage
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
 
         $ret = '<form action="' . $_SERVER['PHP_SELF'] . '" method="get">';
-        $ret .= 'Week Starting: <select name="weekID">';
+        $ret .= '<div class="form-group form-inline">
+            <label>Week Starting</label>: 
+            <select class="form-control" name="weekID">';
         $model = new ObfWeeksModel($dbc);
         foreach ($model->find('startDate', true) as $week) {
             $ret .= sprintf('<option value="%d">%s</option>',
@@ -877,10 +880,12 @@ class ObfWeeklyReport extends FannieReportPage
         }
         $ret .= '</select>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="submit" value="Get Report" />';
+        $ret .= '<button type="submit" class="btn btn-default">Get Report</button>';
+        $ret .= '</div>';
         $ret .= '</form>';
-        $ret .= '<br /><br />
-                <button onclick="location=\'ObfIndexPage.php\';return false;">Home</button>';
+        $ret .= '<p><button class="btn btn-default"
+                onclick="location=\'ObfIndexPage.php\';return false;">Home</button>
+                </p>';
 
         return $ret;
     }

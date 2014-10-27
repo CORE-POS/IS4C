@@ -31,6 +31,10 @@ if (!class_exists('FPDF')) {
 
 class StatementsPluginPostCards extends FannieRESTfulPage
 {
+    public $page_set = 'Plugin :: StatementsPlugin';
+    public $description = '[Postcard PDF] generates 4"x6" pages with address info';
+    public $themed = true;
+
     public function post_id_handler()
     {
         global $FANNIE_OP_DB;

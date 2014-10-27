@@ -350,7 +350,7 @@ function saveprice(upc){
         <select name=vid class="form-control">
         <?php echo $vopts; ?>
         </select>
-        <label>and a Department</label>
+        <label>and a Super Department</label>
         <select name=super class="form-control">
         <?php echo $opts; ?>
         </select>
@@ -368,6 +368,19 @@ function saveprice(upc){
 
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>Review products from the vendor with current vendor cost,
+            retail price, and margin information. The tool creates a price
+            change batch in the background. It will add items to this batch
+            and automatically create shelf tags.</p>
+            <p>The default <em>Show all items</em> setting, No, omits items
+            whose current retail price is identical to the margin-based
+            suggested retail price.</p>
+            ';
+    }
+
 
 }
 
