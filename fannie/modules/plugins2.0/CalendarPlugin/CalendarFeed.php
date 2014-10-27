@@ -25,9 +25,6 @@ class CalendarFeed extends FannieRESTfulPage
         return '';
     }
 
-    public $page_set = 'Plugin :: Calendar';
-    public $description = '[Calendar Plugin] proceeds vCalendar feeds of event data.';
-
     public function preprocess()
     {
         $this->__routes[] = 'get<id><token>';
