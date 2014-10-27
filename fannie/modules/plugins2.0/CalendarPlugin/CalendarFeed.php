@@ -9,6 +9,9 @@ class CalendarFeed extends FannieRESTfulPage
 {
     protected $window_dressing = false;
 
+    public $page_set = 'Plugin :: Calendar';
+    public $description = '[Calendar Plugin] proceeds vCalendar feeds of event data.';
+
     public function preprocess()
     {
         $this->__routes[] = 'get<id><token>';
@@ -93,7 +96,12 @@ class CalendarFeed extends FannieRESTfulPage
     {
         $filename = dirname(__FILE__) . '/ics/' . $this->token . '.ics';
         header('Content-type: text/calendar; charset=utf-8');
-        header('Content-Disposition: attachment; filename=' . basename($filename));
+        header('Content-Disposition: attachment; filename=' . time() . '-' . basename($filename));
+        header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + (60*15)));
+        header('Last-Modified: '.gmdate('D, d M Y H:i:s \G\M\T', filemtime($filename)));
+        header('ETag: ' . sha1_file($filename));
+        header('Cache-Control: private');
+        header_remove('Pragma');
         
         readfile($filename);
 
