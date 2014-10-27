@@ -140,7 +140,7 @@ function deleteUPC(id, upc)
             if (resp.error) {
                 showBootstrapAlert('#inputarea', 'danger', resp.msg);
             } else {
-                clickedElem.nearest('tr').hide();
+                clickedElem.closest('tr').hide();
                 if (/^LC\d+$/.test(upc)) {
                     var lc = upc.substring(2, upc.length);
                     $('.lc-item-'+lc).hide();
