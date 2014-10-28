@@ -46,9 +46,9 @@ function smartToggle()
 </script>
 </head>
 <body>
-<div style="margin-left:3em;margin-right:3em;">
+<div id="fannie-outer-margin" style="margin-left:3em;margin-right:3em;">
     
-    <div>
+    <div class="hidden-print">
         <table> <!-- yes. sick of fighting with floating divs... -->
         <tr><td>
             <?php if (isset($FANNIE_CSS_LOGO) && !empty($FANNIE_CSS_LOGO)) { ?>
@@ -74,9 +74,9 @@ function smartToggle()
         </td></tr>
         </table>
     </div>
-    <div class="secondaryBorder container-fluid" style="border-width: 1px; border-style: solid;">
+    <div class="secondaryBorder container-fluid" id="fannie-main-content" style="border-width: 1px; border-style: solid;">
 
-        <div class="navbar navbar-default collapse in hidden-xs">
+        <div class="navbar navbar-default collapse in hidden-xs hidden-print">
             <ul class="nav navbar-nav">
             <?php
             if (!is_array($FANNIE_MENU) || count($FANNIE_MENU) == 0) {
@@ -125,4 +125,4 @@ function smartToggle()
         <div class="h3 primaryColor">
             <?php echo $header; ?>
         </div>
-        <div>
+        <div class="">

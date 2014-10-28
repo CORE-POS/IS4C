@@ -116,6 +116,7 @@ class FanniePage
             $this->addCssFile($FANNIE_URL . 'src/javascript/bootstrap-default/css/bootstrap-theme.min.css?id=20140922');
             //$this->addCssFile($FANNIE_URL . 'src/style.css');
             $this->addCssFile($FANNIE_URL . 'src/css/configurable.php');
+            $this->addCssFile($FANNIE_URL . 'src/css/print.css');
             $this->addFirstScript($FANNIE_URL . 'src/javascript/jquery/jquery.min.js');
             $this->addScript($FANNIE_URL . 'src/javascript/jquery-ui.js');
             $this->addScript($FANNIE_URL . 'src/javascript/bootstrap/js/bootstrap.min.js');
