@@ -577,7 +577,7 @@ class FannieReportPage extends FanniePage
                     }
                     $ret .= sprintf('<a href="%s%sexcel=csv">Download CSV</a>
                         &nbsp;&nbsp;&nbsp;&nbsp;
-                        <a href="javascript:history:back();">Back</a>',
+                        <a href="javascript:history.back();">Back</a>',
                         $_SERVER['REQUEST_URI'],
                         (strstr($_SERVER['REQUEST_URI'],'?') ===False ? '?' : '&')
                     );
