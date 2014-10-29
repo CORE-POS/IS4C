@@ -32,6 +32,7 @@ class OverShortMAS extends FannieRESTfulPage {
 
     public $page_set = 'Plugin :: Over/Shorts';
     public $description = '[MAS Export] formats over/short info for MAS90 journal entry.';
+    public $themed = true;
 
     function preprocess(){
         $this->__routes[] = 'get<startDate><endDate>';
@@ -285,7 +286,7 @@ class OverShortMAS extends FannieRESTfulPage {
         if (FormLib::get_form_value('excel','') === ''){
             $ret .= sprintf('<a href="OverShortMAS.php?startDate=%s&endDate=%s&excel=yes">Download</a>',
                     $this->startDate, $this->endDate);
-            $ret .= '<table cellpadding="4" cellspacing="0" border="1">';
+            $ret .= '<table class="table table-bordered small">';
             foreach($records as $r){
                 if (preg_match('/\(\d+-\d+-\d+ \d+-\d+-\d+\)/',$r[5])){
                     $tmp = explode(' ',$r[5]);
@@ -320,16 +321,23 @@ class OverShortMAS extends FannieRESTfulPage {
 
     function get_view(){
         global $FANNIE_URL;
-        $this->add_onload_command("\$('#startDate').datepicker();");
-        $this->add_onload_command("\$('#endDate').datepicker();");
+        $this->add_onload_command("\$('#date1').datepicker();");
+        $this->add_onload_command("\$('#date2').datepicker();");
         $ret = '<form action="OverShortMAS.php" method="get">
-            <table>
-            <tr><th>Start</th>
-            <td><input name="startDate" size="10" id="startDate" /></td>
-            </tr><tr><th>End</th>
-            <td><input name="endDate" size="10" id="endDate" /></td>
-            </tr></table>
-            <input type="submit" value="Get Data" />
+            <div class="col-sm-4">
+            <div class="form-group">
+                <label>Start Date</label>
+                <input name="startDate" class="form-control" required id="date1" />
+            </div>
+            <div class="form-group">
+                <label>End Date</label>
+                <input name="endDate" class="form-control" required id="date2" />
+            </div>
+            <p>
+                <button type="submit" class="btn btn-default">Get Data</button>
+            </p>
+            </div>
+            <div class="col-sm-4">' . FormLib::dateRangePicker() . '</div>
             </form>';
         return $ret;
     }

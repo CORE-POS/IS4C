@@ -86,6 +86,17 @@ class MemberStickerPage extends FanniePage {
         </p>
         </form>';
     }
+
+    public function helpContent()
+    {
+        return '<p>Generate a PDF of member numbers. Layout is set for
+            Avery 5267 label stock. Two labels are generated for each 
+            member number - eighty labels to a page / forty unique member 
+            numbers to a page. Two is often convient since one sticker
+            can be attached to the member\'s paperwork and the other
+            to the co-op\'s paperwork.</p>
+            ';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

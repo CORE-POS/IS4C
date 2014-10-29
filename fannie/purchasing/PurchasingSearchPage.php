@@ -131,8 +131,15 @@ class PurchasingSearchPage extends FannieRESTfulPage {
 
         $this->add_onload_command('$(\'#date1\').datepicker();');
         $this->add_onload_command('$(\'#date2\').datepicker();');
+        $this->add_onload_command("\$('.form-control:first').focus();\n");
 
         return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>Enter a UPC or SKU to find orders containing that
+            item. Omit the dates to search all known orders.</p>';
     }
 }
 

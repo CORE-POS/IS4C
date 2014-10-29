@@ -321,6 +321,18 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 
         return $ret;
     }
+
+    public function helpContent()
+    {
+        if (isset($this->id)) {
+            return '<p>Details of a Purchase Order. Coding(s) are driven by POS department
+            <em>Sales Codes</em>. Export outputs the order data in various formats.';
+        } else {
+            return '<p>Click the date link to view a particular purchase order. Use
+                the dropdowns to filter the list. The distinction between <em>All Orders</em>
+                and <em>My Orders</em> only works if user authentication is enabled.</p>';
+        }
+    }
 }
 
 FannieDispatch::conditionalExec();

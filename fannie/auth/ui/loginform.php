@@ -34,7 +34,7 @@ class FannieAuthLoginPage extends FannieRESTfulPage
     protected $title = 'Fannie : Auth';
     protected $header = 'Fannie : Auth';
 
-    public $themed = false;
+    public $themed = true;
 
     public function preprocess()
     {

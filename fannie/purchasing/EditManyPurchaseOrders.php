@@ -242,6 +242,17 @@ class EditManyPurchaseOrders extends FannieRESTfulPage {
             return $dbc->insert_id();
         }
     }
+
+    public function helpContent()
+    {
+        return '
+            <p>Enter UPCs or SKUs. If there are multiple matching items,
+            use the dropdown to specify which. Then enter the number
+            of cases to order.</p>
+            <p>Each time you select an item from a different vendor,
+            a pending order is automatically created for that vendor
+            if one does not already exist.</p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

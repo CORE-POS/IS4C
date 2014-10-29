@@ -79,7 +79,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
         $upcQ = 'SELECT brand, description, size, units, cost, sku
             FROM vendorItems WHERE upc = ? AND vendorID=?';
         $upcP = $dbc->prepare_statement($upcQ);
-        $upcR = $dbc->exec_statement($upcP, array(BarcodeLib::padUPC($this->search)));
+        $upcR = $dbc->exec_statement($upcP, array(BarcodeLib::padUPC($this->search), $this->id));
         while($w = $dbc->fetch_row($upcR)){
             $result = array(
             'sku' => $w['sku'],
@@ -295,12 +295,21 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
         }
         $ret .= '</select>';
         $ret .= '</div>';
-        $ret .= '<div><button type="submit" class="btn btn-default">Go</button>';
+        $ret .= '<p><button type="submit" class="btn btn-default">Go</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;';
         $ret .= '<button type="button" class="btn btn-default"
-            onclick="location=\'PurchasingIndexPage.php\'; return false;">Home</button>';
+            onclick="location=\'PurchasingIndexPage.php\'; return false;">Home</button></p>';
         $ret .= '</form>';
         return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>First choose a vendor. This order will only contain
+            items from the chosen vendor.</p>
+            <p>Next enter UPCs or SKUs. If there are multiple matching items,
+            use the dropdown to specify which. Finally enter the number
+            of cases to order.</p>';
     }
 }
 

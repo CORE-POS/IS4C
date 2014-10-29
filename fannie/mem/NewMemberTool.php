@@ -227,6 +227,17 @@ class NewMemberTool extends FanniePage
 
         return $ret;
     }
+
+    public function helpContent()
+    {
+        return '<p>Create a set of new member accounts. Typically
+            accounts are created ahead of time so there are always
+            several available, un-assigned accounts. When a person
+            signs up for a membership, they are given one of the 
+            available account numbers. This approach ensures that 
+            first transaction is assigned to the correct membership.</p>
+            ';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

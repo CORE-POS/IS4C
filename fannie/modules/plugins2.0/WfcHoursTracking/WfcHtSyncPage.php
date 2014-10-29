@@ -37,6 +37,7 @@ class WfcHtSyncPage extends FanniePage
 
     public $page_set = 'Plugin :: WFC Hours Tracking';
     public $description = '[Sync Accounts] brings unix account in sync with web accounts.';
+    public $themed = true;
 
     public function body_content()
     {

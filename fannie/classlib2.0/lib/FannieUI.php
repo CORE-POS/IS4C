@@ -42,6 +42,15 @@ class FannieUI
         return '<span class="glyphicon glyphicon-trash" title="' . $alt . '"></span>';
     }
 
-
+    public static function loadingBar($id='')
+    {
+        return '
+        <div class="progress" ' . (!empty($id) ? "id=\"$id\"" : '') . '>
+            <div class="progress-bar progress-bar-striped active"  role="progressbar" 
+                aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+                <span class="sr-only">Loading</span>
+            </div>
+        </div>';
+    }
 
 }
