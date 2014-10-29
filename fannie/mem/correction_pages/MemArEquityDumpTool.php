@@ -243,7 +243,8 @@ class MemArEquityDumpTool extends FanniePage {
             ?>
             </select>
             <label>And add to department #</label>
-            <input type="number" name="deptTo" class="form-control" required />
+            <input type="number" name="deptTo" class="form-control" 
+                value="<?php echo $this->DEFAULT_DEPT; ?>" required />
         </div>
         <div class="row form-group form-inline">
             <label>Member #</label>
