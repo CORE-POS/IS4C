@@ -67,12 +67,6 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
 
         if (FormLib::get_form_value('supertype') !== ''){
             $this->mode = 'list';
-            if ( isset($FANNIE_WINDOW_DRESSING) && $FANNIE_WINDOW_DRESSING == True )
-                $this->has_menus(True);
-            else
-                $this->window_dressing = False;
-            if (!$this->excel)
-                $this->add_script($FANNIE_URL.'src/javascript/jquery.js');  
         }
 
         return True;
