@@ -95,22 +95,37 @@ class VendorIndexPage extends FanniePage {
                 echo 'Bad request';
                 break;
             }
+            $web = FormLib::get_form_value('website');
+            if (!empty($web) && substr(strtolower($web),0,4) !== "http") {
+                $web = 'http://'.$web;
+            }
+            /** 29Oct2014 Andy
+                Widen vendors table so additional vendorContacts
+                table can be deprecated in the future
+            */
+            $vModel = new VendorsModel(FannieDB::get($FANNIE_OP_DB));
+            $vModel->vendorID($id);
+            $vModel->shippingMarkup(FormLib::get('shipping', 0) / 100.00);
+            $vModel->phone(FormLib::get_form_value('phone'));
+            $vModel->fax(FormLib::get_form_value('fax'));
+            $vModel->email(FormLib::get_form_value('email'));
+            $vModel->website($web);
+            $vModel->notes(FormLib::get_form_value('notes'));
+            $success = $vModel->save();
+
             $vcModel = new VendorContactModel(FannieDB::get($FANNIE_OP_DB));
             $vcModel->vendorID($id);
             $vcModel->phone(FormLib::get_form_value('phone'));
             $vcModel->fax(FormLib::get_form_value('fax'));
             $vcModel->email(FormLib::get_form_value('email'));
-            $web = FormLib::get_form_value('website');
-            if (!empty($web) && substr(strtolower($web),0,4) !== "http")
-                $web = 'http://'.$web;
             $vcModel->website($web);
             $vcModel->notes(FormLib::get_form_value('notes'));
             $success = $vcModel->save();
             $ret = array('error'=>0, 'msg'=>'');
             if ($success) {
-                $ret['msg'] = 'Saved contact information';
+                $ret['msg'] = 'Saved vendor information';
             } else {
-                $ret['msg'] = 'Error saving contact information';
+                $ret['msg'] = 'Error saving vendor information';
                 $ret['error'] = 1;
             }
             echo json_encode($ret);
@@ -178,8 +193,21 @@ class VendorIndexPage extends FanniePage {
         $vcModel = new VendorContactModel($dbc);
         $vcModel->vendorID($id);
         $vcModel->load();
+        $vModel = new VendorsModel($dbc);
+        $vModel->vendorID($id);
+        $vModel->load();
         $ret .= '<p><div class="form-alerts"></div>';
         $ret .= '<form role="form" class="form-horizontal" onsubmit="saveVC(' . $id . '); return false;" id="vcForm">';
+        $ret .= '<div class="form-group">
+            <label for="vc-shipping" class="control-label col-sm-1">Shipping Markup</label>
+            <div class="col-sm-10">
+                <div class="input-group">
+                    <input type="text" id="vc-shipping" name="shipping" 
+                        class="form-control" value="' . $vModel->shippingMarkup() * 100 . '" />
+                    <span class="input-group-addon">%</span>
+                </div>
+            </div>
+        </div>';
         $ret .= '<div class="form-group">
             <label for="vcPhone" class="control-label col-sm-1">Phone</label>
             <div class="col-sm-10">
@@ -210,7 +238,7 @@ class VendorIndexPage extends FanniePage {
             <textarea class="form-control" rows="5" id="vcNotes">' . $vcModel->notes() . '</textarea>
             </div>
             </div>';
-        $ret .= '<button type="submit" class="btn btn-default">Save Contact Info</button>';
+        $ret .= '<button type="submit" class="btn btn-default">Save Vendor Info</button>';
         $ret .= '</form></p>';
 
         $delivery = new VendorDeliveriesModel($dbc);
@@ -252,8 +280,10 @@ class VendorIndexPage extends FanniePage {
         if ($rw[0] != "")
             $id = $rw[0]+1;
 
-        $insQ = $dbc->prepare_statement("INSERT INTO vendors VALUES (?,?)");
-        $dbc->exec_statement($insQ,array($id,$name));
+        $model = new VendorsModel($dbc);
+        $model->vendorID($id);
+        $model->vendorName($name);
+        $model->save();
 
         echo $id;
     }
