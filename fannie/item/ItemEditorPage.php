@@ -396,7 +396,7 @@ class ItemEditorPage extends FanniePage
             $this->add_onload_command("addVendorDialog();\n");
         }
 
-        if (isset($show['ItemMarginModule'])) {
+        if (isset($shown['ItemMarginModule'])) {
             $this->add_onload_command('$(\'#price\').change(updateMarginMod)');
             $this->add_onload_command('$(\'#cost\').change(updateMarginMod)');
         }
