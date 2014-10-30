@@ -45,6 +45,7 @@ class AddCashierPage extends FanniePage
             $fn = FormLib::get_form_value('fname');
             $ln = FormLib::get_form_value('lname');
             $fes = FormLib::get_form_value('fes');
+            $dob = FormLib::get_form_value('birthdate');
 
             $dbc = FannieDB::get($FANNIE_OP_DB);
             
@@ -73,6 +74,7 @@ class AddCashierPage extends FanniePage
             $employee->EmpActive(1);
             $employee->frontendsecurity($fes);
             $employee->backendsecurity($fes);
+            $employee->birthdate($dob);
             $employee->save();
 
             $message = sprintf("Cashier Created<br />Name:%s<br />Emp#:%d<br />Password:%d",
@@ -104,6 +106,11 @@ class AddCashierPage extends FanniePage
                 <option value=30>Manager</option>
             </select>
         </div>
+        <div class="form-group">
+            <label>Birthdate</label>
+            <input type="text" class="form-control" name="birthdate" id="birth-date-field"
+                placeholder="Optional; for stores selling age-restricted items" />
+        </div>
         <p>
             <button type="submit" class="btn btn-default">Create Cashier</button>
         </p>
@@ -111,6 +118,7 @@ class AddCashierPage extends FanniePage
         <?php
         $ret = ob_get_clean();
         $this->add_onload_command("\$('input.form-control:first').focus();\n");
+        $this->add_onload_command("\$('#birth-date-field').datepicker();\n");
 
         return $ret;
     }

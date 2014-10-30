@@ -48,6 +48,7 @@ class CashierEditor extends FanniePage {
             $passwd = FormLib::get_form_value('passwd');
             $fes = FormLib::get_form_value('fes');
             $active = FormLib::get_form_value('active') !== '' ? 1 : 0;
+            $dob = FormLib::get_form_value('birthdate');
 
             $dbc = FannieDB::get($FANNIE_OP_DB);
             $employee = new EmployeesModel($dbc);
@@ -59,6 +60,7 @@ class CashierEditor extends FanniePage {
             $employee->frontendsecurity($fes);
             $employee->backendsecurity($fes);
             $employee->EmpActive($active);
+            $employee->birthdate($dob);
             $saved = $employee->save();
 
             if ($saved) {
@@ -121,6 +123,12 @@ class CashierEditor extends FanniePage {
                     <?php echo $employee->EmpActive()==1 ? 'checked' : ''; ?> />
             </label>
         </div>
+        <div class="form-group">
+            <label>Birthdate</label>
+            <input type="text" class="form-control" name="birthdate" 
+                id="birth-date-field" value="<?php echo $employee->birthdate(); ?>"
+                placeholder="Optional; for stores selling age-restricted items" />
+        </div>
         <p>
             <button type="submit" class="btn btn-default">Save</button>
             <button type="button" class="btn btn-default"
@@ -130,6 +138,7 @@ class CashierEditor extends FanniePage {
         </form>
         <?php
         $this->add_onload_command("\$('input.form-control:first').focus();\n");
+        $this->add_onload_command("\$('#birth-date-field').datepicker();\n");
 
         return ob_get_clean();
     }
