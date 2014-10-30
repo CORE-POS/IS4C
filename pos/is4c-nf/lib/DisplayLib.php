@@ -775,15 +775,28 @@ static public function drawItems($top_item, $rows, $highlight)
 		$ret .= "</div>";
 	} else {
 
+        /*
 		$query_range = "select trans_id,description,total,comment,status,lineColor
 		       		from screendisplay where trans_id >= ".$top_item." and trans_id <= "
 				.($top_item + $rows)." order by trans_id";
 		$db_range = Database::tDataConnect();
 		$result_range = $db_range->query($query_range);
 		$num_rows = $db_range->num_rows($result_range);
+        */
+        /**
+          30Oct2014 Andy
+          Idea here is to look up the currently displayed items and
+          perform any necessary transformations of the text in PHP instead
+          of tucking that logic inside the screendisplay view. I'm
+          leaving the query above for reference in case I screwed something
+          up and the old method of drawing the screen needs to be
+          quickly re-enabled.
+        */
+        $screenRecords = self::screenDisplay($top_item, $top_item + $rows);
 
-		for ($i = 0; $i < $num_rows; $i++) {
-			$row = $db_range->fetch_array($result_range);
+        foreach ($screenRecords as $row) {
+		//for ($i = 0; $i < $num_rows; $i++) {
+			//$row = $db_range->fetch_array($result_range);
 
 			$trans_id = $row["trans_id"];
 			$description = $row["description"];
@@ -879,6 +892,136 @@ static public function lastpage($readOnly=False)
 		$CORE_LOCAL->set("currenttopid",$top_id);
 	}
 	return self::drawItems($top_id, $lines, $last_id);
+}
+
+/**
+  Select items from the transaction with formatting for on screen display
+  @param $min [int] minimum localtemptrans.trans_id
+  @param $max [int] maximum localtemtprans.trans_id
+  @return array of records
+
+  Each record contains the following keys:
+  - description
+  - comment
+  - total
+  - status
+  - discounttype
+  - trans_status
+  - trans_type
+  - voided
+  - trans_id
+
+  Note: the outer array is indexed by localtemptrans.trans_id
+  instead of zero through array.length.
+*/
+static public function screenDisplay($min, $max)
+{
+    $dbc = Database::tDataConnect();
+    $query = "SELECT l.*, t.description AS tax_description
+              FROM localtemptrans AS l
+                LEFT JOIN taxrates AS t ON l.tax=t.id
+              WHERE l.trans_type <> 'L'
+                AND l.trans_id BETWEEN ? AND ?
+              ORDER BY l.trans_id";
+    $prep = $dbc->prepare($query);
+    $result = $dbc->execute($prep, array($min, $max));
+    $ret = array();
+    while ($row = $dbc->fetch_row($result)) {
+        $record = array();
+
+        if ($row['voided'] == 5 || $row['voided'] == 11 || $row['voided'] == 17 || $row['trans_type'] == 'T') {
+            $record['description'] = '';
+        } else {
+            $record['description'] = $row['description'];
+        }
+
+        if ($row['discounttype'] == 3 && $row['trans_status'] == 'V') {
+            $record['comment'] = $row['ItemQtty'] . ' /' . $row['unitPrice'];
+        } elseif ($row['voided'] == 5) {
+            $record['comment'] = 'Discount';
+        } elseif ($row['trans_status'] == 'M') {
+            $record['comment'] = 'Mbr special';
+        } elseif ($row['trans_status'] == 'S') {
+            $record['comment'] = 'Staff special';
+        } elseif ($row['scale'] != 0 && $row['quantity'] != 0 && $row['unitPrice'] != 0.01) {
+            $record['comment'] = $row['quantity'] . ' @ ' . $row['unitPrice'];
+        } elseif (substr($row['upc'], 0, 2) == '002') {
+            $record['comment'] = $row['ItemQtty'] . ' @ ' . $row['regPrice'];
+        } elseif (abs($row['ItemQtty']) > 1 && abs($row['ItemQtty']) > abs($row['quantity']) && $row['discounttype'] != 3 && $row['quantity'] == 1) {
+            $record['comment'] = $row['volume'] . ' for ' . $row['unitPrice'];
+        } elseif (abs($row['ItemQtty']) > 1 && abs($row['ItemQtty']) > abs($row['quantity']) && $row['discounttype'] != 3 && $row['quantity'] != 1) {
+            $record['comment'] = $row['quantity'] . ' @ ' . $row['volume'] . ' for ' . $row['unitPrice'];
+        } elseif (abs($row['ItemQtty']) > 1 && $row['discounttype'] == 3) {
+            $record['comment'] = $row['ItemQtty'] . ' / ' . $row['unitPrice'];
+        } elseif (abs($row['ItemQtty']) > 1) {
+            $record['comment'] = $row['ItemQtty'] . ' @ ' . $row['unitPrice'];
+        } elseif ($row['voided'] == 3) {
+            $record['comment'] = _('Total ');
+        } elseif ($row['voided'] == 5) {
+            $record['comment'] = _('Discount ');
+        } elseif ($row['voided'] == 7) {
+            $record['comment'] = '';
+        } elseif ($row['voided'] == 11 || $row['voided'] == 17) {
+            $record['comment'] = $row['upc'];
+        } elseif ($row['matched'] > 0) {
+            $record['comment'] = _('1 w/ vol adj');
+        } else {
+            $record['comment'] = '';
+        }
+
+        if ($row['voided'] == 3 || $row['voided'] == 5 || $row['voided'] == 7 || $row['voided'] == 11 || $row['voided'] == 17) {
+            $record['total'] = $row['unitPrice'];
+        } elseif ($row['trans_status'] == 'D') {
+            $record['total'] = '';
+        } else {
+            $record['total'] = $row['total'];
+        }
+
+        if ($row['trans_status'] == 'V') {
+            $record['status'] = 'VD';
+        } elseif ($row['trans_status'] == 'R') {
+            $record['status'] = 'RF';
+        } elseif ($row['trans_status'] == 'C') {
+            $record['status'] = 'MC';
+        } elseif ($row['trans_type'] == 'T' && $row['charflag'] == 'PT') {
+            $record['status'] = 'PC';
+        } elseif ($row['tax'] == 1 && $row['foodstamp'] != 0) {
+            $record['status'] = 'TF';
+        } elseif ($row['tax'] == 1 && $row['foodstamp'] == 0) {
+            $record['status'] = 'T';
+        } elseif ($row['tax'] > 1 && $row['foodstamp'] != 0) {
+            $record['status'] = substr($row['tax_description'], 0 , 1) . 'F';
+        } elseif ($row['tax'] > 1 && $row['foodstamp'] == 0) {
+            $record['status'] = substr($row['tax_description'], 0 , 1);
+        } elseif ($row['tax'] == 0 && $row['foodstamp'] != 0) {
+            $record['status'] = 'F';
+        } else {
+            $record['status'] = '';
+        }
+
+        if ($row['trans_status'] == 'V' || $row['trans_type'] == 'T' || $row['trans_status'] == 'R' || $row['trans_status'] == 'M' || $row['voided'] == 17 || $row['trans_status'] == 'J') {
+            $record['lineColor'] = '800000';
+        } elseif (($row['discounttype'] != 0 && ($row['matched'] > 0 || $row['volDiscType'] <> 0)) 
+            || $row['voided'] == 2 || $row['voided'] == 6 || $row['voided'] == 4 || $row['voided'] == 5 || $row['voided'] == 10 || $row['voided'] == 22) {
+            $record['lineColor'] = '408080';
+        } elseif ($row['voided'] == 3 || $row['voided'] == 11) {
+            $record['lineColor'] = '000000';
+        } elseif ($row['voided'] == 7) {
+            $record['lineColor'] = '800080';
+        } else {
+            $record['lineColor'] = '004080';
+        }
+
+        $record['discounttype'] = $row['discounttype'];
+        $record['trans_type'] = $row['trans_type'];
+        $record['trans_status'] = $row['trans_status'];
+        $record['voided'] = $row['voided'];
+        $record['trans_id'] = $row['trans_id'];
+        
+        $ret[$row['trans_id']] = $record;
+    }
+
+    return $ret;
 }
 
 } // end class DisplayLib
