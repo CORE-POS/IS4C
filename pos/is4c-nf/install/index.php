@@ -562,12 +562,6 @@ function create_trans_dbs($db,$type){
 
     InstallUtilities::createIfNeeded($db, $type, $name, 'localtransarchive', 'trans', $errors);
 
-    /**
-    @deprecated
-    Replaced by localtranstoday TABLE
-    InstallUtilities::createIfNeeded($db, $type, $name, 'localtrans_today', 'trans', $errors);
-    */
-
     InstallUtilities::createIfNeeded($db, $type, $name, 'suspended', 'trans', $errors);
 
     InstallUtilities::createIfNeeded($db, $type, $name, 'localtemptrans', 'trans', $errors);

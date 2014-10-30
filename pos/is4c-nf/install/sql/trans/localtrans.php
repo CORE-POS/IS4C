@@ -51,6 +51,7 @@ are used for.
 $CREATE['trans.localtrans'] = array(
     InstallUtilities::duplicateStructure($dbms,'dtransactions','localtrans'),
     'ALTER TABLE localtrans DROP COLUMN pos_row_id',
+    'ALTER TABLE localtrans DROP COLUMN store_id',
 );
 
 ?>

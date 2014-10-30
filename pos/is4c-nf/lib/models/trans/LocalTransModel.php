@@ -37,6 +37,7 @@ class LocalTransModel extends DTransactionsModel
     {
         // other tables do not need auto_inc column
         unset($this->columns['pos_row_id']);
+        unset($this->columns['store_id']);
     }
 
     /* START ACCESSOR FUNCTIONS */
