@@ -75,11 +75,13 @@ class VendorItemModule extends ItemModule {
         $cost_class = '';
         foreach ($vendors as $id => $name) {
             if ($matched && $id == $my_vendor) {
-                $style = 'display:table;';
+                $table_class = '';
                 $cost_class = 'class="default_vendor_cost"';
+            } else {
+                $table_class = 'collapse';
             }
             $ret .= "<table id=\"vtable$id\"
-                     class=\"vtable table table-bordered\">";
+                     class=\"vtable table table-bordered $table_class\">";
             $row = array('cost'=>0,'sku'=>'','units'=>1);
             $res = $dbc->exec_statement($prep,array($id,$upc)); 
             if ($dbc->num_rows($res) > 0)
