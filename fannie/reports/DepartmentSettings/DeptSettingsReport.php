@@ -171,6 +171,11 @@ class DeptSettingsReport extends FannieReportPage
         return ob_get_clean();
     }
 
+    public function helpContent()
+    {
+        return '<p>This is just a quick list of current margin, tax,
+            and foodstamp settings for a set of POS departments.</p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

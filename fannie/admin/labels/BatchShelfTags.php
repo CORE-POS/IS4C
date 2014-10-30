@@ -96,6 +96,16 @@ class BatchShelfTags extends FanniePage {
 
         return $ret;
     }
+
+    public function helpContent()
+    {
+        return '<p>Select one or more batches and generate a PDF
+            with the associated tags.</p>
+            <p>The dropdown box lists all available shelf tag layouts. The
+            offset value will leave a number of tags at the beginning of
+            the sheet blank. This is intended for re-using partial sheets.</p>
+            ';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

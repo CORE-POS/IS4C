@@ -429,6 +429,20 @@ function showGraph(i) {
 
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>This report shows hourly sales over a range of dates.
+            The rows are always hours. The columns are either calendar
+            dates or named weekdays (e.g., Monday, Tuesday) if grouping
+            by week day.</p>
+            <p>If a <em>Buyer/Dept</em> option is used, the result will
+            be sales from that super department. Otherwise, the result
+            will be sales from the specified department range. Note there
+            are a couple special options in the <em>Buyer/Dept</em> list:
+            <em>All</em> is simply all sales and <em>All Retail</em> is
+            everything except for super department #0 (zero).</p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

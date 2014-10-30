@@ -167,6 +167,14 @@ class CustomerCountReport extends FannieReportPage {
         $this->add_onload_command('$(\'#date1\').datepicker();');
         $this->add_onload_command('$(\'#date2\').datepicker();');
     }
+
+    public function helpContent()
+    {
+        return '<p>This report lists the number of transactions per day
+            broken down by member type. This is the number of <em>total</em>
+            customers not the number of <em>unique</em>. If the same member
+            shops twice in one day that\'s two transactions.</p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

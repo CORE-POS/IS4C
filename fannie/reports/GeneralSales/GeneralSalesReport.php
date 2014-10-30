@@ -312,8 +312,21 @@ function drawPieChart()
         $this->add_onload_command('$(\'#date2\').datepicker();');
     }
 
+    public function helpContent()
+    {
+        return '<p>General Sales is an overview with totals for each POS
+            deaprtment and subtotals for each super department. In this
+            context, individual departments are only counted once under
+            their home super department so that the grand total accurately
+            reflects total sales.</p>
+            <p>The <em>Use department settings...</em> option may change
+            line item totals but should not alter the grand total. If an
+            item used to be in department #1 but now is in department #2,
+            this option controls where its sales appear in the report.</p>';
+    }
+
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
 ?>

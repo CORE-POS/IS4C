@@ -288,6 +288,14 @@ class BatchReport extends FannieReportPage
         }
         return $ret;
     }
+
+    public function helpContent()
+    {
+        return '<p>Show per-item sales data for items in a batch or set
+            of batches over the given date range. The filters just narrow
+            down the list of batches. You still have to make selections in
+            the list.</p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

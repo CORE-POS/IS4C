@@ -342,13 +342,38 @@ class MemberTypeEditor extends FanniePage {
         return ob_get_clean();
     }
 
-    function body_content(){
+    function body_content()
+    {
         return '<div id="mainDisplay">'
             .$this->getTypeTable()
             .'</div>';
     }
+
+    public function helpContent()
+    {
+        return '<p>Some co-ops have more than one type of member.
+            Furthermore, since CORE requires every transaction be 
+            associated with a customer account it is often useful to
+            have an account or accounts set aside for customers
+            who are not members.</p>
+            <p>When creating a new type, provide a unique numeric ID.</p>
+            <ul>
+                <li><em>Description</em> will show up in member editing 
+                and reporting.</li>
+                <li><em>Member</em> indicates whether or not customers of
+                this type are members of the co-op. Checking the box means
+                they are members.</li>
+                <li><em>Discount</em> is a percent discount on transactions.
+                For example, entering 5 will give customers of that type
+                a 5% discount on each transaction.</li>
+                <li><em>Staff</em> is purely for record keeping at this time.
+                It does not control any POS behavior.</li>
+                <li><em>SSI</em> is a flag for low-income customers who
+                receive some kind of benefit.</li>
+            </ul>';
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
 ?>

@@ -258,6 +258,14 @@ class PriceMovementReport extends FannieReportPage
 
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>This report lists a row for each price point
+            each item was sold for in the given date range. Sales
+            totals are for all sales at a particular price during
+            the date range.</p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

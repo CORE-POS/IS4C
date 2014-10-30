@@ -191,6 +191,14 @@ class MemberSearchPage extends FanniePage {
 
         return $ret;
     }
+
+    public function helpContent()
+    {
+        return '<p>Search for member accounts. Member number should always
+            yield a single match or not found. Other kinds of searches may
+            return multiple members. If there are multiple results, click
+            the one you want to view.</p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

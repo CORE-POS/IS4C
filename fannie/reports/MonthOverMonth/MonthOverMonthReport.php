@@ -206,7 +206,13 @@ class MonthOverMonthReport extends FannieReportPage {
 </form>
 <?php
     }
+
+    public function helpContent()
+    {
+        return '<p>This report shows monthly sales totals for a
+            particular item or for all items in a department range.</p>';
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

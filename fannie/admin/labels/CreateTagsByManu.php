@@ -141,6 +141,13 @@ class CreateTagsByManu extends FanniePage {
 
         return $ret.ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>Create shelf tags for all items with
+            a given brand name or UPC prefix. Tags will be queued for
+            printing under the selected super department.</p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

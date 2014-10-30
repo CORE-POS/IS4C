@@ -330,6 +330,17 @@ function doShow(){
 
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>Trends shows per-item, per-day sales. Rows are
+            items, columns are dates. The department range or brand
+            or UPC or like code range controls which set of items
+            appear in the report.</p>
+            <p>Note this report purposely excludes open rings both
+            for performance reasons and to avoid piling on
+            extraneous rows.</p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

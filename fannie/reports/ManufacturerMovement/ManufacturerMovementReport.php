@@ -259,8 +259,25 @@ class ManufacturerMovementReport extends FannieReportPage
         $this->add_onload_command("bindAutoComplete('#manu', '$ws', 'brand');\n");
         $this->add_onload_command('$(\'#manu\').focus();');
     }
+
+    public function helpContent()
+    {
+        return '<p>Show sales for items from a given brand over a
+            date range. <em>Brand</em> can be specified as either
+            a name or a numeric UPC prefix. <em>Sum report by</em>
+            gives different report formats.
+            <ul>
+                <li><em>UPC</em> shows a row for each item. Sales totals
+                are for the entire date range.</li>
+                <li><em>Date</em> show a row for each days. Sales totals
+                are all sales in the brand that day.</li>
+                <li><em>Department</em> shows a row for each POS department.
+                Sales totals are all sales in that particular department
+                for the entire date range.</li>
+            </ul>';
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
 ?>

@@ -280,7 +280,22 @@ function flipover(opt){
 
         return ob_get_clean(); 
     }
-
+    
+    public function helpContent()
+    {
+        return '<p>Correlated Movement shows item sales from a set
+            of transactions. The top department(s) or UPC plus
+            date range find the set of transactions.</p>
+            <p>The report lists all items in those transations.
+            For example, you could find every transaction where
+            a customer bought a cup of coffee. This report will then
+            list every <em>other</em> item that those particular
+            customers purchased with their coffee.</p>
+            <p>The optional result filter trims down that list of
+            other items. Continuing the example, you might apply a 
+            filter to see which bakery items a customer purchased
+            with their coffee.</p>'; 
+    }
 }
 
 FannieDispatch::conditionalExec();

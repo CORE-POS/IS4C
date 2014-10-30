@@ -46,8 +46,10 @@ class OpenRingsReport extends FannieReportPage
         $ret = array();
         if ($buyer === '') {
             $ret[] = 'Department '.$deptStart.' to '.$deptEnd;
-        } else if ($buyer == -1) {
+        } elseif ($buyer == -1) {
             $ret[] = 'All Super Departments';
+        } elseif ($buyer == -2) {
+            $ret[] = 'All Retail Departments';
         } else {
             $ret[] = 'Super Department '.$buyer;
         }
@@ -72,12 +74,14 @@ class OpenRingsReport extends FannieReportPage
         $args = array($date1.' 00:00:00', $date2.' 23:59:59');
         $where = ' 1=1 ';
         if ($buyer !== '') {
-            if ($buyer != -1) {
+            if ($buyer > -1) {
                 $where = ' s.superID=? ';
                 $args[] = $buyer;
+            } elseif ($buyer == -2) {
+                $where = ' s.superID <> 0 ';
             }
         } else {
-            $where = ' t.department BETWEEN ? AND ? ';
+            $where = ' d.department BETWEEN ? AND ? ';
             $args[] = $deptStart;
             $args[] = $deptEnd;
         }
@@ -93,6 +97,8 @@ class OpenRingsReport extends FannieReportPage
         // join only needed with specific buyer
         if ($buyer !== '' && $buyer > -1) {
             $query .= 'LEFT JOIN superdepts AS s ON d.department=s.dept_ID ';
+        } elseif ($buyer == -2) {
+            $query .= 'LEFT JOIN MasterSuperDepts AS s ON d.department=s.dept_ID ';
         }
         $query .= "WHERE trans_type IN ('I','D')
             AND tdate BETWEEN ? AND ?
@@ -172,7 +178,7 @@ class OpenRingsReport extends FannieReportPage
             <label class="control-label col-sm-4">Select Buyer/Dept</label>
             <div class="col-sm-8">
             <select id=buyer name=buyer class="form-control">>
-               <option value=0 >
+               <option value="">
                <?php echo $deptSubList; ?>
                <option value=-2 >All Retail</option>
                <option value=-1 >All</option>
@@ -239,6 +245,15 @@ class OpenRingsReport extends FannieReportPage
         $this->add_onload_command('$(\'#date2\').datepicker();');
 
         return ob_get_clean();
+    }
+
+    public function helpContent()
+    {
+        return '<p>Open Rings are dollar amounts simply tied to a department as
+            opposed to an item with a proper UPC. The report shows the number
+            of open rings and value of those rings for each day in the date range.
+            The percentage is relative to all items sold in that set of departments
+            that day.</p>';
     }
 }
 

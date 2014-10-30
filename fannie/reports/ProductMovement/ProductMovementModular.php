@@ -263,8 +263,15 @@ function showGraph() {
         $this->add_onload_command("bindAutoComplete('#upc', '$ws', 'item');\n");
         $this->add_onload_command('$(\'#upc\').focus();');
     }
+
+    public function helpContent()
+    {
+        return '<p>This report shows per-day total sales for
+            a given item. You can type in item names to find the
+            appropriate UPC if needed.</p>';
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
 ?>

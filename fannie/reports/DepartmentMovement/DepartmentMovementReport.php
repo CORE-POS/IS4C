@@ -403,7 +403,29 @@ class DepartmentMovementReport extends FannieReportPage
         $this->add_onload_command('$(\'#date1\').datepicker();');
         $this->add_onload_command('$(\'#date2\').datepicker();');
     }
+
+    public function helpContent()
+    {
+        return '<p>View sales for given departments by date.
+            The <em>Buyer/Dept</em> setting will be used if specified,
+            otherwise the <em>Department Start</em> to <em>Department
+            End</em> range will be used. The <em>Sum movement by</em>
+            setting has the largest impact on results.
+            <ul>
+                <li><em>PLU</em> shows a row for each item. Sales totals
+                are for the entire date range.</li>
+                <li><em>Date</em> show a row for each days. Sales totals
+                are all sales in the department(s) that day.</li>
+                <li><em>Department</em> shows a row for each POS department.
+                Sales totals are all sales in that particular department
+                for the entire date range.</li>
+                <li><em>Weekday</em> will show at most seven rows for
+                Monday, Tuesday, etc. Sales totals are all sales in
+                the department(s) for Mondays in the date range, Tuesdays
+                in the date range, etc.</li>
+            </ul>';
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

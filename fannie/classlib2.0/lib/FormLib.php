@@ -108,52 +108,52 @@ class FormLib
         $lm = mktime(0,0,0,date('n')-1,1,date('Y'));
         $last_month = array(date('Y-m-01',$lm),date('Y-m-t',$lm));
 
-        $extra_opts = sprintf("
-            <fieldset>
-            <legend>Other dates</legend>
-            <table class=\"table\">
-            <tr style='vertical-align:top;'><td style='margin: 0em 1.0em 0em 0em;'>
-            <label>
-                <input class=\"radio-inline\" id='od10' type='radio' name='other_dates' 
-                    onclick=\"\$('#%s').val('%s');\$('#%s').val('%s')\" > 
-                Today
-            </label>
-            </td><td>
-            <label>
-                <input class=\"radio-inline\" id='od11' type='radio' name='other_dates' 
-                onclick=\"\$('#%s').val('%s');\$('#%s').val('%s')\" >
-                This week
-            </label>
-            </td><td>
-            <label>
-                <input class=\"radio-inline\" id='od12' type='radio' name='other_dates' 
-                    onclick=\"\$('#%s').val('%s');\$('#%s').val('%s')\" >
-                This month
-            </label>
-            </td>
-            </tr><tr>
-            <td rowspan='1'>
-            <label>
-                <input id='od20' type='radio' name='other_dates' value='yesterday'
-                onclick=\"\$('#%s').val('%s');\$('#%s').val('%s')\" >
-                Yesterday
-            </label>
-            </td><td>
-            <label>
-                <input id='od21' type='radio' name='other_dates' value='last_week'
-                onclick=\"\$('#%s').val('%s');\$('#%s').val('%s')\" >
-                Last week
-            </label>
-            </td><td>
-            <label>
-                <input id='od22' type='radio' name='other_dates' value='last_month'
-                onclick=\"\$('#%s').val('%s');\$('#%s').val('%s')\" >
-                Last month
-            </label>
-            </td>
-            </tr>
-            </table>
-            </fieldset>",
+        $extra_opts = sprintf('
+            <div class="panel panel-default">
+                <div class="panel-heading">Other dates</div>
+                <div class="panel-body">
+                <table class="table">
+                <tr><td>
+                <label>
+                    <input class="radio-inline" id="od10" type="radio" name="other_dates" 
+                        onclick="$(\'#%s\').val(\'%s\');$(\'#%s\').val(\'%s\')" /> 
+                    Today
+                </label>
+                </td><td>
+                <label>
+                    <input class="radio-inline" id="od11" type="radio" name="other_dates" 
+                        onclick="$(\'#%s\').val(\'%s\');$(\'#%s\').val(\'%s\')" />
+                    This week
+                </label>
+                </td><td>
+                <label>
+                    <input class="radio-inline" id="od12" type="radio" name="other_dates" 
+                        onclick="$(\'#%s\').val(\'%s\');$(\'#%s\').val(\'%s\')" />
+                    This month
+                </label>
+                </td></tr>
+                <tr><td>
+                <label>
+                    <input class="radio-inline" id="od20" type="radio" name="other_dates" 
+                        onclick="$(\'#%s\').val(\'%s\');$(\'#%s\').val(\'%s\')" />
+                    Yesterday
+                </label>
+                </td><td>
+                <label>
+                    <input class="radio-inline" id="od21" type="radio" name="other_dates" 
+                        onclick="$(\'#%s\').val(\'%s\');$(\'#%s\').val(\'%s\')" />
+                    Last week
+                </label>
+                </td><td>
+                <label>
+                    <input class="radio-inline" id="od22" type="radio" name="other_dates" 
+                        onclick="$(\'#%s\').val(\'%s\');$(\'#%s\').val(\'%s\')" />
+                    Last month
+                </label>
+                </td></tr>
+                </table>
+            </div>
+            </div>',
             $one,$today[0],$two,$today[1],
             $one,$this_week[0],$two,$this_week[1],
             $one,$this_month[0],$two,$this_month[1],

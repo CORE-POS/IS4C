@@ -167,8 +167,15 @@ class CreateTagsByDept extends FanniePage {
         <?php
         return $ret.ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>Create shelf tags for all items in a 
+            POS department range. Tags will be queued for
+            printing under the selected super department.</p>';
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
 ?>

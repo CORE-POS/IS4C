@@ -280,6 +280,19 @@ class ReprintReceiptPage extends FanniePage
 
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>Find a receipt from a previous transaction. All fields are theoretically optional
+            but that will give a very long list of transactions. Fill in a couple values to narrow
+            down the list.</p>
+            <ul>
+                <li>If no date is given, all matching receipts from the past 15 days will be returned</li>
+                <li>A date and a receipt number is sufficient to find any receipt</li>
+                <li>If you have a receipt number, you don\'t need to specify a lane or cashier number</li>
+                <li>ALL fields are optional. You can specify a tender type without an amount (or vice versa)</li>
+            </ul>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

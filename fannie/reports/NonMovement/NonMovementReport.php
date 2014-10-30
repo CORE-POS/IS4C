@@ -196,7 +196,17 @@ class NonMovementReport extends FannieReportPage {
         $this->add_onload_command('$(\'#date1\').datepicker();');
         $this->add_onload_command('$(\'#date2\').datepicker();');
     }
+
+    public function helpContent()
+    {
+        return '<p>This report finds items that have not sold
+            during the date range. It also provides an option
+            to delete items.</p>
+            <p><em>Netted</em> means total sales is not zero.
+            This would exclude items that are rung in then
+            voided.</p>';
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

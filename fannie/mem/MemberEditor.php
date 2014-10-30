@@ -255,8 +255,19 @@ class MemberEditor extends FanniePage {
 
         return $ret;
     }
+
+    public function helpContent()
+    {
+        return '<p>View and edit a member account. The exact fields shown here
+            vary depending on local configuration. Add or remove sets of fields
+            on the <em>Members</em> tab of Fannie\'s install/config page.</p>
+            <p>If you arrived here from a search with multiple results, the
+            <em>Prev Match</em> and <em>Next Match</em> links will navigate
+            through that result set. Similarly, the <em>Save &amp; Next</em>
+            button will save the current member and proceed to the next.</p>';
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
 ?>

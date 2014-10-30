@@ -143,8 +143,23 @@ function goToPage(the_id){
         
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>This page lists shelf tags that have been queued up via
+            the item editor. Shelf tags can also be associated with a batch
+            or generated based on POS department or brand name.</p>
+            <p>The dropdown box lists all available shelf tag layouts. The
+            offset value will leave a number of tags at the beginning of
+            the sheet blank. This is intended for re-using partial sheets.</p>
+            <p>The numeric value is the number of shelf tags currently queued
+            up for that super department. <em>Print</em> will generate the
+            actual shelf tag PDF. <em>Clear</em> will clear the queued up
+            tags for that super department. The pencil icon is for editing
+            the currently queued tags.</p>';
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
 ?>

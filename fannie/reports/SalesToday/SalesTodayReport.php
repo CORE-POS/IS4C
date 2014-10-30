@@ -290,9 +290,15 @@ function drawLineGraph(data, xrange, yrange)
         return ob_get_clean();
     }
 
+    public function helpContent()
+    {
+        return '<p>Hourly Sales for the current day. The drop down menu
+            can switch the report to a single super department.</p>';
+    }
+
 // SalesTodayReport
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
 ?>
