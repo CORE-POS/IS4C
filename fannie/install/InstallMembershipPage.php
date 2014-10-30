@@ -145,11 +145,14 @@ confset('FANNIE_MEMBER_MODULES',$saveStr);
 ?>
 <select multiple name="FANNIE_MEMBER_MODULES[]" size="10" class="form-control">
 <?php
-$dh = opendir("../mem/modules");
 $tmp = array();
-while(($file = readdir($dh)) !== False){
-    if (substr($file,-4) == ".php")
-        $tmp[] = substr($file,0,strlen($file)-4);   
+$modules = FannieAPI::listModules('MemberModule');
+foreach ($modules as $class) {
+    $tmp[] = $class;
+}
+$modules = FannieAPI::listModules('\COREPOS\Fannie\API\member\MemberModule');
+foreach ($modules as $class) {
+    $tmp[] = $class;
 }
 sort($tmp);
 foreach($tmp as $module){

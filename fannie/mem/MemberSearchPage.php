@@ -69,13 +69,15 @@ class MemberSearchPage extends FanniePage {
             /* process each available search and merge the
                results */
             foreach($FANNIE_MEMBER_MODULES as $mm){
-                include('modules/'.$mm.'.php');
-                $instance = new $mm();
-                if ($instance->hasSearch()){
-                    $tmp = $instance->getSearchResults();
-                    foreach($tmp as $id => $label){
-                        if (!isset($this->results[$id]))
-                            $this->results[$id] = $label;
+                if (class_exists($mm)) {
+                    $instance = new $mm();
+                    if ($instance->hasSearch()) {
+                        $tmp = $instance->getSearchResults();
+                        foreach ($tmp as $id => $label) {
+                            if (!isset($this->results[$id])) {
+                                $this->results[$id] = $label;
+                            }
+                        }
                     }
                 }
             }
@@ -141,15 +143,14 @@ class MemberSearchPage extends FanniePage {
         $searchJS = '';
         $load = array();
         foreach ($FANNIE_MEMBER_MODULES as $mm) {
-            if (!class_exists($mm)) {
-                include('modules/'.$mm.'.php');
-            }
-            $instance = new $mm();
-            if ($instance->hasSearch()) {
-                $ret .= $instance->showSearchForm($this->country);
-                $searchJS .= $instance->getSearchJavascript();
-                foreach ($instance->getSearchLoadCommands() as $cmd) {
-                    $load[] = $cmd;
+            if (class_exists($mm)) {
+                $instance = new $mm();
+                if ($instance->hasSearch()) {
+                    $ret .= $instance->showSearchForm($this->country);
+                    $searchJS .= $instance->getSearchJavascript();
+                    foreach ($instance->getSearchLoadCommands() as $cmd) {
+                        $load[] = $cmd;
+                    }
                 }
             }
         }

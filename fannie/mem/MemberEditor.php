@@ -131,10 +131,10 @@ class MemberEditor extends FanniePage {
             if (FormLib::get_form_value('saveBtn',False) !== False){
                 $whichBtn = FormLib::get_form_value('saveBtn');
                 foreach($FANNIE_MEMBER_MODULES as $mm){
-                    if (!class_exists($mm))
-                        include('modules/'.$mm.'.php');
-                    $instance = new $mm();
-                    $this->msgs .= $instance->saveFormData($this->memNum);
+                    if (class_exists($mm)) {
+                        $instance = new $mm();
+                        $this->msgs .= $instance->saveFormData($this->memNum);
+                    }
                 }
 
                 $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -203,7 +203,7 @@ class MemberEditor extends FanniePage {
         $current_width = 100;
         foreach ($FANNIE_MEMBER_MODULES as $mm) {
             if (!class_exists($mm)) {
-                include('modules/'.$mm.'.php');
+                continue;
             }
             $instance = new $mm();
             if ($current_width + $instance->width() > 100) {

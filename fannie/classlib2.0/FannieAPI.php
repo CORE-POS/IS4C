@@ -198,6 +198,7 @@ class FannieAPI
                 $directories[] = dirname(__FILE__).'/../item/modules/';
                 break;
             case 'MemberModule':
+            case '\COREPOS\Fannie\API\member\MemberModule':
                 $directories[] = dirname(__FILE__).'/../mem/modules/';
                 break;
             case 'FannieTask':
