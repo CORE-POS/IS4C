@@ -43,7 +43,8 @@ class ItemMarginModule extends ItemModule {
         $ret .= '<b>Unit Cost</b> <div class="input-group">';
         $ret .= sprintf('<span class="input-group-addon">$</span>
             <input type="text" size="6" value="%.2f" name="cost" 
-            class="form-control" id="cost" /> ', $product->cost());
+            class="form-control" id="cost" onkeydown="nosubmit(event);"
+            nonkeyup="nosubmit(event);" /> ', $product->cost());
         $ret .= '<span class="input-group-addon">' . FannieHelp::ToolTip('Cost from current vendor')
             .'</span>';
         $ret .= '</div>';
@@ -105,6 +106,21 @@ class ItemMarginModule extends ItemModule {
                     $w['vendorName'],
                     $dm);
         }
+
+        $shippingP = $dbc->prepare('
+            SELECT v.shippingMarkup,
+                v.vendorName
+            FROM products AS p
+                INNER JOIN vendors AS v ON p.default_vendor_id = v.vendorID
+            WHERE p.upc=?');
+        $shippingR = $dbc->execute($shippingP, array($upc));
+        if ($shippingR && $dbc->num_rows($shippingR) > 0) {
+            $w = $dbc->fetch_row($shippingR);
+            $ret .= sprintf('Shipping markup for this vendor (%s) is %.2f%%<br />',
+                    $w['vendorName'],
+                    ($w['shippingMarkup']*100));
+            $cost = $cost * (1+$w['shippingMarkup']);
+        }
         
         $actual = 0;
         if ($price != 0)
@@ -140,6 +156,15 @@ class ItemMarginModule extends ItemModule {
                     $('#ItemMarginMeter').html(data);
                 }
             });
+        }
+        function nosubmit(event)
+        {
+            if (event.which == 13) {
+                event.preventDefault();
+                event.stopPropagation();
+                updateMarginMod();
+                return false;
+            }
         }
         <?php
         return ob_get_clean();
