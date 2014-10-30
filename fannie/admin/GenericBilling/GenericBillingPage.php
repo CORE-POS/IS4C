@@ -26,8 +26,8 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class GenericBillingPage extends FannieRESTfulPage {
-
+class GenericBillingPage extends FannieRESTfulPage 
+{
     protected $title = "Fannie : Generic Biling";
     protected $header = "Generic Billing";
 
@@ -224,7 +224,7 @@ function postBilling(){
                 ({$param['columnString']}) VALUES ({$param['valueString']})");
         $sql->exec_statement($prep, $param['arguments']);
 
-        $json['msg'] = printf("Member <b>%d</b> billed <b>$%.2f</b>.<br />
+        $json['msg'] = sprintf("Member <b>%d</b> billed <b>$%.2f</b>.<br />
                 Receipt is %d-%d-%d.",$this->id,$amount,
                 $this->EMP_NO,$this->LANE_NO,$t_no);
         $json['billed'] = 1;
