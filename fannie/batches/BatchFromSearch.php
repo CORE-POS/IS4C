@@ -134,7 +134,7 @@ class BatchFromSearch extends FannieRESTfulPage
                 if ($dbc->num_rows($lookupR) > 0) {
                     $info = $dbc->fetch_row($lookupR);
                 }
-                $ppo = ($info['size'] !== '') ? PriceLib::pricePerUnit($price, $info['size']) : '';
+                $ppo = ($info['size'] !== '') ? \COREPOS\Fannie\API\lib\PriceLib::pricePerUnit($price, $info['size']) : '';
 
                 $tag->id($tagset);
                 $tag->upc($upc);

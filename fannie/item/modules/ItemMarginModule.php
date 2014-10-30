@@ -45,7 +45,8 @@ class ItemMarginModule extends ItemModule {
             <input type="text" size="6" value="%.2f" name="cost" 
             class="form-control" id="cost" onkeydown="nosubmit(event);"
             nonkeyup="nosubmit(event);" /> ', $product->cost());
-        $ret .= '<span class="input-group-addon">' . FannieHelp::ToolTip('Cost from current vendor')
+        $ret .= '<span class="input-group-addon">' 
+            . \COREPOS\Fannie\API\lib\FannieHelp::ToolTip('Cost from current vendor')
             .'</span>';
         $ret .= '</div>';
         $ret .= '</div>';

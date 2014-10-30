@@ -315,9 +315,9 @@ class BaseItemModule extends ItemModule {
 
         /*
         $ret .= '<tr><th>Dept</th><th>Tax</th><th><label for="FS">FS</label></th>
-            <th><label for="scale-checkbox">Scale</label>'.FannieHelp::ToolTip('Item sold by weight').'</th>
-            <th><label for="qty-checkbox">QtyFrc</label>'.FannieHelp::ToolTip('Cashier must enter quantity').'</th>
-            <th><label for="no-disc-checkbox">NoDisc</label>'.FannieHelp::ToolTip('Item not subject to % discount').'</th></tr>';
+            <th><label for="scale-checkbox">Scale</label>'.\COREPOS\Fannie\API\lib\FannieHelp::ToolTip('Item sold by weight').'</th>
+            <th><label for="qty-checkbox">QtyFrc</label>'.\COREPOS\Fannie\API\lib\FannieHelp::ToolTip('Cashier must enter quantity').'</th>
+            <th><label for="no-disc-checkbox">NoDisc</label>'.\COREPOS\Fannie\API\lib\FannieHelp::ToolTip('Item not subject to % discount').'</th></tr>';
         */
 
         $depts = array();

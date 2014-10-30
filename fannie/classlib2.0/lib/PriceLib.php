@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\Fannie\API\lib {
+
 /**
   @class PriceLib
 */
@@ -129,4 +131,9 @@ class PriceLib
     }
 }
 
-?>
+}
+
+namespace {
+    class PriceLib extends \COREPOS\Fannie\API\lib\PriceLib {}
+}
+

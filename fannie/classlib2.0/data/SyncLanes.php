@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\Fannie\API\data {
+
 /**
   @class SyncLanes
 */
@@ -94,7 +96,7 @@ class SyncLanes
             *   to copy records onto each lane
             */
             $server_db = $db=='op' ? $FANNIE_OP_DB : $FANNIE_TRANS_DB;
-            $dbc = FannieDB::get( $server_db );
+            $dbc = \FannieDB::get( $server_db );
             $laneNumber=1;
             foreach($FANNIE_LANES as $lane) {
                 $dbc->add_connection($lane['host'],$lane['type'],
@@ -166,7 +168,7 @@ class SyncLanes
         // use the transfer option in SQLManager to copy
         // records from each lane
         $server_db = $db=='op' ? $FANNIE_OP_DB : $FANNIE_TRANS_DB;
-        $dbc = FannieDB::get( $server_db );
+        $dbc = \FannieDB::get( $server_db );
         if ($truncate & self::TRUNCATE_DESTINATION) {
             $dbc->query("TRUNCATE TABLE $table",$server_db);
         }
@@ -201,5 +203,11 @@ class SyncLanes
     {
         return self::pullTable($table, $db, $truncate);
     }
+}
+
+}
+
+namespace {
+    class SyncLanes extends \COREPOS\Fannie\API\data\SyncLanes {}
 }
 

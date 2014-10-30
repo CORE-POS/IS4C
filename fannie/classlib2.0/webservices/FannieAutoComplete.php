@@ -24,7 +24,7 @@
 namespace COREPOS\Fannie\API\webservices 
 {
 
-class FannieAutoComplete extends \FannieWebService 
+class FannieAutoComplete extends FannieWebService 
 {
     
     public $type = 'json'; // json/plain by default

@@ -26,7 +26,7 @@ if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class ScaleItemUploadPage extends FannieUploadPage 
+class ScaleItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage 
 {
     protected $title = "Fannie :: Product Tools";
     protected $header = "Import Scale Items";

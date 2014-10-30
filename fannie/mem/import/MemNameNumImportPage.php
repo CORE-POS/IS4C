@@ -29,7 +29,7 @@ if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class MemNameNumImportPage extends FannieUploadPage 
+class MemNameNumImportPage extends \COREPOS\Fannie\API\FannieUploadPage 
 {
     protected $title = "Fannie :: Member Tools";
     protected $header = "Import Member Names &amp; Numbers";

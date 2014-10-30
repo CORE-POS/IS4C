@@ -492,15 +492,15 @@ class BatchListPage extends FannieRESTfulPage
             $ret .= "<td bgcolor=$colors[$c] id=owner{$id}>{$fetchW['owner']}</td>";
             $ret .= "<td bgcolor=$colors[$c] id=edit{$id}>
                 <a href=\"\" onclick=\"editBatchLine({$id}); return false;\" class=\"batchEditLink\">
-                    " . FannieUI::editIcon() . "
+                    " . \COREPOS\Fannie\API\lib\FannieUI::editIcon() . "
                 </a>
                 <a href=\"\" onclick=\"saveBatchLine({$id}); return false;\" class=\"batchSaveLink collapse\">
-                    " . FannieUI::saveIcon() . "
+                    " . \COREPOS\Fannie\API\lib\FannieUI::saveIcon() . "
                 </a>
                 </td>";
             $ret .= "<td bgcolor=$colors[$c]><a href=\"\" 
                 onclick=\"deleteBatch({$id},'{$fetchW['batchName']}'); return false;\">"
-                . FannieUI::deleteIcon() . '</a></td>';
+                . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</a></td>';
             $ret .= "<td bgcolor=$colors[$c]><a href=\"batchReport.php?batchID={$id}\">Report</a></td>";
             $ret .= "</tr>";
             $count++;

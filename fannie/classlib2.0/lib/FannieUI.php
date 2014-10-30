@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\Fannie\API\lib {
+
 /**
   @class FannieUI
   Generator methods for common UI elements' markup
@@ -54,3 +56,10 @@ class FannieUI
     }
 
 }
+
+}
+
+namespace {
+    class FannieUI extends \COREPOS\Fannie\API\lib\FannieUI {}
+}
+

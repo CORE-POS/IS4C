@@ -28,7 +28,7 @@ if (!class_exists('FannieAPI')) {
 
 /**
 */
-class OpenBookFinancing extends FanniePlugin 
+class OpenBookFinancing extends \COREPOS\Fannie\API\FanniePlugin 
 {
     public $plugin_settings = array(
     'ObfDatabase' => array('default'=>'OpenBookFinancing','label'=>'Database',

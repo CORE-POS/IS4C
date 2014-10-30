@@ -28,7 +28,7 @@ if (!class_exists('FannieAPI')) {
 
 /**
 */
-class MailChimpSync extends FanniePlugin 
+class MailChimpSync extends \COREPOS\Fannie\API\FanniePlugin 
 {
 
     /**

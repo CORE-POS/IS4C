@@ -73,10 +73,10 @@ class ExtraInfoModule extends ItemModule
         $ageSelect .= '</select>';
         
         $ret .= "<table class=\"table table-bordered\" width='100%'><tr>";
-        $ret .= '<tr><th>Deposit'.FannieHelp::ToolTip('PLU/UPC of linked deposit item').'</th>
+        $ret .= '<tr><th>Deposit'.\COREPOS\Fannie\API\lib\FannieHelp::ToolTip('PLU/UPC of linked deposit item').'</th>
             <th>Age Req.</th>
             <th>Local</th>
-            <th>In Use'.FannieHelp::ToolTip('Uncheck to temporarily disable').'</th></tr>';
+            <th>In Use'.\COREPOS\Fannie\API\lib\FannieHelp::ToolTip('Uncheck to temporarily disable').'</th></tr>';
         $ret .= sprintf('<tr>
                 <td align="center"><input type="text" class="form-control" value="%d" name="deposit" /></td>
                 <td align="center">%s</td>

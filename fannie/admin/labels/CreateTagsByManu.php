@@ -88,7 +88,7 @@ class CreateTagsByManu extends FanniePage {
                 $tag->size($w['pack_size_and_units']);
                 $tag->units($w['units_per_case']);
                 $tag->vendor($w['distributor']);
-                $tag->pricePerUnit(PriceLib::pricePerUnit($w['normal_price'], $w['size']));
+                $tag->pricePerUnit(\COREPOS\Fannie\API\lib\PriceLib::pricePerUnit($w['normal_price'], $w['size']));
                 $tag->save();
                 $prevUPC = $w['upc'];
             }

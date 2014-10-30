@@ -545,7 +545,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 $ret .= "<td align=center class=\"td_upc\"><a href=ItemEditorPage.php?searchupc=$row[0]>$row[0]</a>"; 
                 if ($this->canDeleteItems !== False){
                     $ret .= " <a href=\"\" onclick=\"deleteCheck('$row[0]','$enc'); return false;\">";
-                    $ret .= FannieUI::deleteIcon() . '</a>';
+                    $ret .= \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</a>';
                 }
                 $ret .= '</td>';
                 $ret .= '<input type="hidden" class="hidden_upc" value="'.$row[0].'" />';
@@ -566,10 +566,10 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 $ret .= "<td align=center class=td_cmd><a href=\"\" 
                     class=\"edit-link\"
                     onclick=\"edit('$row[0]'); return false;\">"
-                    . FannieUI::editIcon() . '</a>
+                    . \COREPOS\Fannie\API\lib\FannieUI::editIcon() . '</a>
                     <a href="" class="save-link collapse"
                     onclick="save(\'' . $row[0] . '\'); return false;">'
-                    . FannieUI::saveIcon() . '</a></td>';
+                    . \COREPOS\Fannie\API\lib\FannieUI::saveIcon() . '</a></td>';
             }
             $ret .= "</tr>\n";
         }

@@ -27,7 +27,7 @@ if (!class_exists('FannieAPI'))
 
 /**
 */
-class CoreWarehouse extends FanniePlugin {
+class CoreWarehouse extends \COREPOS\Fannie\API\FanniePlugin {
 
     /**
       Desired settings. These are automatically exposed

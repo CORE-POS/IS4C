@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\Fannie\API\lib {
+
 /**
   @class AuditLib
 */
@@ -40,9 +42,9 @@ class AuditLib
     public static function itemUpdate($upc, $likecode=false)
     {
         global $FANNIE_OP_DB, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = \FannieDB::get($FANNIE_OP_DB);
 
-        $product = new ProductsModel($dbc);
+        $product = new \ProductsModel($dbc);
         $product->upc($upc);
         $product->load();
         $desc = $product->description();
@@ -69,7 +71,7 @@ class AuditLib
         $message .= "Adjust this item?\n";
         $message .= "http://{$_SERVER['SERVER_NAME']}/{$FANNIE_URL}item/ItemEditorPage.php?searchupc=$upc\n";
         $message .= "\n";
-        $username = FannieAuth::checkLogin();
+        $username = \FannieAuth::checkLogin();
         if (!$username) {
             $username = 'unknown';
         }
@@ -89,7 +91,7 @@ class AuditLib
     static public function batchNotification($batchID, $upc, $type, $is_likecode=false)
     {
         global $FANNIE_OP_DB, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = \FannieDB::get($FANNIE_OP_DB);
 
         $lc = '';
         $desc = '';
@@ -131,11 +133,11 @@ class AuditLib
             return false;
         }
 
-        $batch = new BatchesModel($dbc);
+        $batch = new \BatchesModel($dbc);
         $batch->batchID($batchID);
         $batch->load();
 
-        $batchList = new BatchListModel($dbc);
+        $batchList = new \BatchListModel($dbc);
         $batchList->upc($upc);
         $batchList->batchID($batchID);
         $batchList->load();
@@ -170,7 +172,7 @@ class AuditLib
         $message .= "Go to the batch page:\n";
         $message .= "http://{$_SERVER['SERVER_NAME']}{$FANNIE_URL}batches/newbatch/\n";
         $message .= "\n";
-        $username = FannieAuth::checkLogin();
+        $username = \FannieAuth::checkLogin();
         if (!$username) {
             $username = 'unknown';
         }
@@ -191,14 +193,14 @@ class AuditLib
     public static function getAddresses($dept)
     {
         global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = \FannieDB::get($FANNIE_OP_DB);
         
         $query = 'SELECT superID from superdepts WHERE dept_ID=? GROUP BY superID';
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, array($dept));
         $emails = '';
         while($row = $dbc->fetch_row($res)) {
-            $model = new SuperDeptEmailsModel($dbc);
+            $model = new \SuperDeptEmailsModel($dbc);
             $model->superID($row['superID']);
             if (!$model->load()) {
                 continue;
@@ -214,5 +216,11 @@ class AuditLib
 
         return ($emails === '') ? false : $emails;
     }
+}
+
+}
+
+namespace {
+    class AuditLib extends \COREPOS\Fannie\API\lib\AuditLib {}
 }
 

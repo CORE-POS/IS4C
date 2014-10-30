@@ -115,6 +115,12 @@ if (!isset($FANNIE_PLUGIN_SETTINGS)) $FANNIE_PLUGIN_SETTINGS = array();
 if (!is_array($FANNIE_PLUGIN_SETTINGS)) $FANNIE_PLUGIN_SETTINGS = array();
 
 $mods = FannieAPI::ListModules('FanniePlugin');
+$others = FannieAPI::listModules('\COREPOS\Fannie\API\FanniePlugin');
+foreach ($others as $o) {
+    if (!in_array($o, $mods)) {
+        $mods[] = $o;
+    }
+}
 sort($mods);
 
 if (isset($_REQUEST['PLUGINLIST']) || isset($_REQUEST['psubmit'])){
@@ -122,7 +128,7 @@ if (isset($_REQUEST['PLUGINLIST']) || isset($_REQUEST['psubmit'])){
     if (!is_array($oldset)) $oldset = array();
     $newset = isset($_REQUEST['PLUGINLIST']) ? $_REQUEST['PLUGINLIST'] : array();
     foreach($newset as $plugin_class){
-        if (!FanniePlugin::IsEnabled($plugin_class)){
+        if (!\COREPOS\Fannie\API\FanniePlugin::IsEnabled($plugin_class)){
             $obj = new $plugin_class();
             $obj->plugin_enable();
         }

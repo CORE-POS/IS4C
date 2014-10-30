@@ -119,7 +119,7 @@ class ObfMappingPage extends FannieRESTfulPage
                  </tr>';
         foreach($model->find() as $cat) {
             $ret .= '<tr><th colspan="2">' . $cat->name() . '</th>
-                    <td>' . FannieUI::deleteIcon('Check box for row to delete') . '
+                    <td>' . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon('Check box for row to delete') . '
                     </td></tr>';
             $map->obfCategoryID($cat->obfCategoryID());
             foreach($map->find() as $obj) {

@@ -90,7 +90,7 @@ if($vendiN > 0){
         $vendor = $prodExtraW['distributor'];
     }
  }
- $ppo = PriceLib::pricePerUnit($price,$size);
+ $ppo = \COREPOS\Fannie\API\lib\PriceLib::pricePerUnit($price,$size);
 }
 else if ($dbc->table_exists('prodExtra')) {
 $prodExtraQ = $dbc->prepare_statement("select manufacturer,distributor from prodExtra where upc=?");

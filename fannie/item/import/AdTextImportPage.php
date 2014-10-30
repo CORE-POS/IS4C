@@ -25,7 +25,7 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class AdTextImportPage extends FannieUploadPage 
+class AdTextImportPage extends \COREPOS\Fannie\API\FannieUploadPage 
 {
     protected $title = "Fannie :: Product Ad Text";
     protected $header = "Import Product Ad Text";

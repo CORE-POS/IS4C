@@ -29,7 +29,7 @@ $end = date("Y-m-t",$stamp);
 $span = "'$start 00:00:00' AND '$end 23:59:59'";
 $args = array($start.' 00:00:00',$end.' 23:59:59');
 
-$output = DataCache::getFile("monthly");
+$output = \COREPOS\Fannie\API\data\DataCache::getFile("monthly");
 if (!$output || isset($_REQUEST['recache'])){
     if (isset($_REQUEST['recache'])) {
         $_SERVER['REQUEST_URI'] = $_SERVER['PHP_SELF']; // remove recache from URI
@@ -325,7 +325,7 @@ if (!$output || isset($_REQUEST['recache'])){
         </html>";
 
     $output = ob_get_contents();
-    DataCache::putFile("monthly",$output);
+    \COREPOS\Fannie\API\data\DataCache::putFile("monthly",$output);
     ob_end_clean();
 }
 echo $output;

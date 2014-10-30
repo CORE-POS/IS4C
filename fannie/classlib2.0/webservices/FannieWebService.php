@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\Fannie\API\webservices {
+
 class FannieWebService 
 {
     
@@ -31,7 +33,7 @@ class FannieWebService
     */
     public function __construct()
     {
-        $info = new ReflectionClass($this);
+        $info = new \ReflectionClass($this);
         if (basename($_SERVER['PHP_SELF']) == basename($info->getFileName())) {
             $output = $this->run();
             $render_func = 'render'.ucfirst(strtolower($this->type));
@@ -75,5 +77,11 @@ class FannieWebService
         foreach($arr as $a) $ret .= $a;
         return $ret;
     }
+}
+
+}
+
+namespace {
+    class FannieWebService extends \COREPOS\Fannie\API\webservices\FannieWebService {}
 }
 

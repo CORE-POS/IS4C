@@ -26,7 +26,7 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class XlsBatchPage extends FannieUploadPage {
+class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
     protected $title = "Fannie -  Sales Batch";
     protected $header = "Upload Batch file";
 

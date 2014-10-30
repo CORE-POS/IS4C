@@ -46,9 +46,9 @@ class VolumePricingModule extends ItemModule
 
         $ret .= "<table style=\"margin-top:5px;margin-bottom:5px;\" border=1 cellpadding=5 cellspacing=0 width='100%'><tr>";
         $ret .= '<tr><th>Enabled</td>
-            <th># Items'.FannieHelp::ToolTip('# of items in a set').'</th>
-            <th>Price'.FannieHelp::ToolTip('Price for the whole set').'</th>
-            <th>Mix/Match'.FannieHelp::ToolTip('Items with the same Mix/Match all count').'</th></tr>';
+            <th># Items'.\COREPOS\Fannie\API\lib\FannieHelp::ToolTip('# of items in a set').'</th>
+            <th>Price'.\COREPOS\Fannie\API\lib\FannieHelp::ToolTip('Price for the whole set').'</th>
+            <th>Mix/Match'.\COREPOS\Fannie\API\lib\FannieHelp::ToolTip('Items with the same Mix/Match all count').'</th></tr>';
         $ret .= '<tr><td><select name="vp_method">';
         foreach($methods as $value => $label){
             $ret .= sprintf('<option value="%d"%s>%s</option>',

@@ -458,9 +458,9 @@ class ItemEditorPage extends FanniePage
             $lc = FormLib::get('likeCode', -1);
             $no_update = FormLib::get('LikeCodeNoUpdate', false);
             if ($lc != -1 && !$no_update) {
-                AuditLib::itemUpdate($upc, $lc);
+                \COREPOS\Fannie\API\lib\AuditLib::itemUpdate($upc, $lc);
             } else {
-                AuditLib::itemUpdate($upc);
+                \COREPOS\Fannie\API\lib\AuditLib::itemUpdate($upc);
             }
         }
 

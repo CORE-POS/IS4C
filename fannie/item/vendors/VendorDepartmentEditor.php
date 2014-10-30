@@ -130,11 +130,11 @@ class VendorDepartmentEditor extends FanniePage {
                 $name, $did,
                 0,
                 $did, $did,
-                FannieUI::editIcon(),
+                \COREPOS\Fannie\API\lib\FannieUI::editIcon(),
                 $did,
-                FannieUI::saveIcon(),
+                \COREPOS\Fannie\API\lib\FannieUI::saveIcon(),
                 $did, $name,
-                FannieUI::deleteIcon());
+                \COREPOS\Fannie\API\lib\FannieUI::deleteIcon());
             $json['row'] = $new_row;
         } else {
             $json['error'] = 'Error creating new department';
@@ -224,11 +224,11 @@ class VendorDepartmentEditor extends FanniePage {
                 $row['name'],$row['deptID'],
                 $row['margin']*100,
                 $row['deptID'],$row['deptID'],
-                FannieUI::editIcon(),
+                \COREPOS\Fannie\API\lib\FannieUI::editIcon(),
                 $row['deptID'],
-                FannieUI::saveIcon(),
+                \COREPOS\Fannie\API\lib\FannieUI::saveIcon(),
                 $row['deptID'],$row['name'],
-                FannieUI::deleteIcon());
+                \COREPOS\Fannie\API\lib\FannieUI::deleteIcon());
         }
         $ret .= "</table>";
 

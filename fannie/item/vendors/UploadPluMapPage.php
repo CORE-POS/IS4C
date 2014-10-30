@@ -26,7 +26,7 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class UploadPluMapPage extends FannieUploadPage {
+class UploadPluMapPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
     public $title = "Fannie - Load Vendor SKU/PLU mapping";
     public $header = "Upload Vendor SKU/PLU file";

@@ -187,6 +187,13 @@ class SignFromSearch extends FannieRESTfulPage
         $ret = '';
         $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post" id="signform">';
         $mods = FannieAPI::listModules('FannieSignage');
+        $others = FannieAPI::listModules('\COREPOS\Fannie\API\item\FannieSignage');
+        foreach ($others as $o) {
+            if (!in_array($o, $mods)) {
+                $mods[] = $o;
+            }
+        }
+        sort($mods);
         $ret .= '<div class="form-group form-inline">';
         $ret .= '<label>Layout</label>: 
             <select name="signmod" class="form-control" onchange="$(\'#signform\').submit()">';

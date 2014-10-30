@@ -68,7 +68,7 @@ class RestrictCouponPage extends FannieRESTfulPage {
                     <td><a href="" onclick="deletecoupon(\'%s\');return false;">%s</a></td>
                     </tr>',
                     $obj->upc(), $obj->upc(), $obj->threshold(),
-                    $obj->reason(), $obj->upc(), FannieUI::deleteIcon()
+                    $obj->reason(), $obj->upc(), \COREPOS\Fannie\API\lib\FannieUI::deleteIcon()
             );
         }
         $ret .= '</table>';

@@ -181,7 +181,7 @@ class InstallUpdatesPage extends \COREPOS\Fannie\API\InstallPage {
 <p class="ichunk">CORE Updates.</p>
 <em>This is new; consider it alpha-y. Commit any changes before running an update.</em><br />
 <?php
-        $giterate_info = DataCache::check('GiterateTask');
+        $giterate_info = \COREPOS\Fannie\API\data\DataCache::check('GiterateTask');
         if ($giterate_info == false) {
             echo 'Updater has not been run recently. See <b>Check for Updates</b> task';
             echo '<br />';

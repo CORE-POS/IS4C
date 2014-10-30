@@ -1126,6 +1126,12 @@ class BasicModel
        $this->hooks = array();
        if (class_exists('FannieAPI')) {
            $hook_classes = FannieAPI::listModules('BasicModelHook');
+           $others = FannieAPI::listModules('\COREPOS\Fannie\API\data\hooks\BasicModelHook');
+           foreach ($others as $o) {
+               if (!in_array($o, $hook_classes)) {
+                   $hook_classes[] = $o;
+               }
+           }
            foreach($hook_classes as $class) {
                 if (!class_exists($class)) continue;
                 $hook_obj = new $class();

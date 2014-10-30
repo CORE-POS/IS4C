@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\Fannie\API\item {
+
 class FannieSignage 
 {
     protected $items = array();
@@ -58,7 +60,7 @@ class FannieSignage
     public function loadItems()
     {
         global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = \FannieDB::get($FANNIE_OP_DB);
         $args = array();
         if ($this->source == 'shelftags') {
             $query = 'SELECT s.upc,
@@ -276,7 +278,7 @@ class FannieSignage
         while($row = $dbc->fetch_row($result)) {
 
             if ($row['pricePerUnit'] == '') {
-                $row['pricePerUnit'] = PriceLib::pricePerUnit($row['normal_price'], $row['size']);
+                $row['pricePerUnit'] = \COREPOS\Fannie\API\lib\PriceLib::pricePerUnit($row['normal_price'], $row['size']);
             }
 
             if ($row['originName'] != '') {
@@ -332,14 +334,14 @@ class FannieSignage
         $fontsize = isset($args['fontsize']) ? $args['fontsize'] : 9;
 
         $upc = str_pad($upc, 12, '0', STR_PAD_LEFT);
-        if (BarcodeLib::verifyCheckDigit($upc)) {
+        if (\BarcodeLib::verifyCheckDigit($upc)) {
             // if an EAN13 with valid check digit is passed
             // in there's no need to add the zero
             if (strlen($upc) == 12) {
                 $upc = '0' . $upc;
             }
         } else {
-            $check = BarcodeLib::getCheckDigit($upc);
+            $check = \BarcodeLib::getCheckDigit($upc);
             $upc .= $check;
         }
 
@@ -438,16 +440,16 @@ class FannieSignage
         global $FANNIE_OP_DB;
         switch (strtolower($this->source)) {
             case 'shelftags':
-                $model = new ShelftagsModel(FannieDB::get($FANNIE_OP_DB));
+                $model = new \ShelftagsModel(\FannieDB::get($FANNIE_OP_DB));
                 $model->id($this->source_id);
-                $model->upc(BarcodeLib::padUPC($upc));
+                $model->upc(\BarcodeLib::padUPC($upc));
                 $model->brand($brand);
                 $model->description($description);
                 $model->save();
                 break;
             case 'batchbarcodes':
-                $dbc = FannieDB::get($FANNIE_OP_DB);
-                $args = array($brand, $description, BarcodeLib::padUPC($upc));
+                $dbc = \FannieDB::get($FANNIE_OP_DB);
+                $args = array($brand, $description, \BarcodeLib::padUPC($upc));
                 if (!is_array($this->source_id)) {
                     $this->source_id = array($this->source_id);
                 }
@@ -466,13 +468,13 @@ class FannieSignage
                 break;
             case 'batch':
             case '':
-                $model = new ProductUserModel(FannieDB::get($FANNIE_OP_DB));
-                $model->upc(BarcodeLib::padUPC($upc));
+                $model = new \ProductUserModel(\FannieDB::get($FANNIE_OP_DB));
+                $model->upc(\BarcodeLib::padUPC($upc));
                 $model->brand($brand);
                 $model->description($description);
                 $model->save();
-                $model = new ProductsModel(FannieDB::get($FANNIE_OP_DB));
-                $model->upc(BarcodeLib::padUPC($upc));
+                $model = new \ProductsModel(\FannieDB::get($FANNIE_OP_DB));
+                $model->upc(\BarcodeLib::padUPC($upc));
                 $model->brand($brand);
                 $model->save();
                 break;
@@ -481,9 +483,9 @@ class FannieSignage
 
     public function saveItems()
     {
-        $upcs = FormLib::get('update_upc', array());
-        $brands = FormLib::get('update_brand', array());
-        $descs = FormLib::get('update_desc', array());
+        $upcs = \FormLib::get('update_upc', array());
+        $brands = \FormLib::get('update_brand', array());
+        $descs = \FormLib::get('update_desc', array());
         for ($i=0; $i<count($upcs); $i++) {
             if (!isset($brands[$i]) || !isset($descs[$i])) {
                 continue;
@@ -494,7 +496,7 @@ class FannieSignage
 
     public function addOverride($upc, $field_name, $value)
     {
-        $upc = BarcodeLib::padUPC($upc);
+        $upc = \BarcodeLib::padUPC($upc);
         if (!isset($this->overrides[$upc])) {
             $this->overrides[$upc] = array();
         }
@@ -506,3 +508,10 @@ class FannieSignage
 
     }
 }
+
+}
+
+namespace {
+    class FannieSignage extends \COREPOS\Fannie\API\item\FannieSignage {}
+}
+

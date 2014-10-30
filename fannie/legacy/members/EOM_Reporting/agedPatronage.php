@@ -10,7 +10,7 @@ if (isset($_GET['excel'])){
 	$_SERVER['REQUEST_URI'] = $_SERVER['PHP_SELF'];
 }
 
-$cached_output = DataCache::getFile("monthly");
+$cached_output = \COREPOS\Fannie\API\data\DataCache::getFile("monthly");
 if ($cached_output){
 	echo $cached_output;
 	exit;
@@ -141,7 +141,7 @@ while($row = $sql->fetch_row($result)){
 
 $output = ob_get_contents();
 ob_end_clean();
-DataCache::putFile('monthly',$output);
+\COREPOS\Fannie\API\data\DataCache::putFile('monthly',$output);
 echo $output;
 
 ?>

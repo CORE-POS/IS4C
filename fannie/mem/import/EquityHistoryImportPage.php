@@ -29,7 +29,7 @@ if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class EquityHistoryImportPage extends FannieUploadPage {
+class EquityHistoryImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
     protected $title = "Fannie :: Member Tools";
     protected $header = "Import Existing Member Equity";
 

@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\Fannie\API {
+
 /**
   FanniePlugin class
 
@@ -113,7 +115,7 @@ class FanniePlugin
     public function pluginUrl()
     {
         global $FANNIE_URL;
-        $info = new ReflectionClass($this);
+        $info = new \ReflectionClass($this);
 
         return $FANNIE_URL.'modules/plugins2.0/'.basename(dirname($info->getFileName()));
     }
@@ -132,7 +134,7 @@ class FanniePlugin
     */
     public function pluginDir()
     {
-        $info = new ReflectionClass($this);
+        $info = new \ReflectionClass($this);
 
         return dirname($info->getFileName());
     }
@@ -237,3 +239,8 @@ class FanniePlugin
     }
 }
 
+}
+
+namespace {
+    class FanniePlugin extends \COREPOS\Fannie\API\FanniePlugin {}
+}

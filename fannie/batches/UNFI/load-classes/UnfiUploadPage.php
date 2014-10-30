@@ -26,7 +26,7 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class UnfiUploadPage extends FannieUploadPage {
+class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
     public $title = "Fannie - UNFI Prices";
     public $header = "Upload UNFI price file";

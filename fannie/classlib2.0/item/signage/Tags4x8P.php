@@ -21,7 +21,9 @@
 
 *********************************************************************************/
 
-class Tags4x8P extends FannieSignage 
+namespace COREPOS\Fannie\API\item\signage {
+
+class Tags4x8P extends \COREPOS\Fannie\API\item\FannieSignage 
 {
     protected $BIG_FONT = 18;
     protected $MED_FONT = 14;
@@ -29,7 +31,7 @@ class Tags4x8P extends FannieSignage
 
     public function drawPDF()
     {
-        $pdf = new FPDF('P', 'mm', 'Letter');
+        $pdf = new \FPDF('P', 'mm', 'Letter');
         $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
 
         $width = 52; // tag width in mm
@@ -107,5 +109,11 @@ class Tags4x8P extends FannieSignage
 
         $pdf->Output('Tags4x8P.pdf', 'I');
     }
+}
+
+}
+
+namespace {
+    class Tags4x8P extends \COREPOS\Fannie\API\item\signage\Tags4x8P {}
 }
 

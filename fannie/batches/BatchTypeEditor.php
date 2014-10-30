@@ -153,7 +153,7 @@ function saveType(val,bid){
         $ret .= '</select></td>';
         $ret .= sprintf('<td><a href="BatchTypeEditor.php?deltype=yes&bid=%d"
                 onclick="return confirm(\'Are you sure?\');">%s</a>
-            </td></tr>',$w['batchTypeID'], FannieUI::deleteIcon());
+            </td></tr>',$w['batchTypeID'], \COREPOS\Fannie\API\lib\FannieUI::deleteIcon());
         }
         $ret .= '</table>';
 

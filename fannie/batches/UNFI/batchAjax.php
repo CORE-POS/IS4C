@@ -73,7 +73,7 @@ case 'batchAdd':
         v.vendorID=? LEFT JOIN vendors AS b ON v.vendorID=b.vendorID
         WHERE p.upc=?");
     $info = $dbc->fetch_row($dbc->exec_statement($infoQ,array($vid,$upc)));
-    $ppo = PriceLib::pricePerUnit($price,$info['size']);
+    $ppo = \COREPOS\Fannie\API\lib\PriceLib::pricePerUnit($price,$info['size']);
     
     /* create a shelftag */
     $tag = new ShelftagsModel($dbc);

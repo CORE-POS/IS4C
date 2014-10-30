@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\Fannie\API\item {
+
 class HobartDgwLib 
 {
     /* CSV fields for WriteOneItem & ChangeOneItem records
@@ -260,10 +262,10 @@ class HobartDgwLib
     static public function readItemsFromFile($filename)
     {
         global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = \FannieDB::get($FANNIE_OP_DB);
 
-        $product = new ProductsModel($dbc);
-        $scaleItem = new ScaleItemsModel($dbc);
+        $product = new \ProductsModel($dbc);
+        $scaleItem = new \ScaleItemsModel($dbc);
         
         $fp = fopen($filename, 'r');
         // detect column indexes via header line
@@ -354,10 +356,10 @@ class HobartDgwLib
     static public function readTextsFromFile($filename)
     {
         global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = \FannieDB::get($FANNIE_OP_DB);
 
-        $product = new ProductsModel($dbc);
-        $scaleItem = new ScaleItems($dbc);
+        $product = new \ProductsModel($dbc);
+        $scaleItem = new \ScaleItems($dbc);
 
         $number_index = -1;
         $text_index = -1;
@@ -426,5 +428,11 @@ class HobartDgwLib
 
         return $session_key;
     }
+}
+
+}
+
+namespace {
+    class HobartDgwLib extends \COREPOS\Fannie\API\item\HobartDgwLib {}
 }
 

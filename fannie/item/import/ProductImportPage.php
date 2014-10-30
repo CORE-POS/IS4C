@@ -29,7 +29,7 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class ProductImportPage extends FannieUploadPage 
+class ProductImportPage extends \COREPOS\Fannie\API\FannieUploadPage 
 {
     protected $title = "Fannie :: Product Tools";
     protected $header = "Import Products";

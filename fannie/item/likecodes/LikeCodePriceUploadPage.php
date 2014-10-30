@@ -26,7 +26,7 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class LikeCodePriceUploadPage extends FannieUploadPage 
+class LikeCodePriceUploadPage extends \COREPOS\Fannie\API\FannieUploadPage 
 {
     protected $title = "Fannie :: Upload Likecode Prices";
     protected $header = "Upload Likecode Prices";
@@ -121,7 +121,7 @@ class LikeCodePriceUploadPage extends FannieUploadPage
 
     function results_content()
     {
-        SyncLanes::pushTable('products');
+        \COREPOS\Fannie\API\data\SyncLanes::pushTable('products');
         $ret = '<p>Import Complete</p>';
         $ret .= '<div class="alert alert-success">Updated ' . $this->stats['done'] . ' likecodes</div>';
         if (count($this->stats['error']) > 0) {

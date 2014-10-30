@@ -317,7 +317,7 @@ if (!empty($s_plu)){
         $item_info['ByCount'] = 0;
     }
 
-    HobartDgwLib::writeItemsToScales($item_info);
+    \COREPOS\Fannie\API\item\HobartDgwLib::writeItemsToScales($item_info);
 }
 
 $udesc = isset($_REQUEST['u_desc'])?$_REQUEST['u_desc']:'';

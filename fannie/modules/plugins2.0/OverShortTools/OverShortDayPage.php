@@ -547,7 +547,7 @@ body, table, td, th {
         </form>
 
         <div id="loading-bar" class="collapse">
-            <?php echo FannieUI::loadingBar(); ?>
+            <?php echo \COREPOS\Fannie\API\lib\FannieUI::loadingBar(); ?>
         </div>
         <div id="forms"></div>
         <?php

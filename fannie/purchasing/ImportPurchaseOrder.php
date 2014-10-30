@@ -26,7 +26,7 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class ImportPurchaseOrder extends FannieUploadPage 
+class ImportPurchaseOrder extends \COREPOS\Fannie\API\FannieUploadPage 
 {
     protected $title = "Fannie - Purchase Order";
     protected $header = "Upload Purchase Order / Invoice";

@@ -58,7 +58,7 @@ giterate submodule';
     {
         if (!file_exists(dirname(__FILE__) . '/../../../giterate/giterate.py')) {
             echo $this->cronMsg('Cannot check for updates; giterate not found');
-            DataCache::freshen('Update check failed; giterate not found', 'month', 'GiterateTask');
+            \COREPOS\Fannie\API\data\DataCache::freshen('Update check failed; giterate not found', 'month', 'GiterateTask');
             return false;
         }
 
@@ -69,7 +69,7 @@ giterate submodule';
                 $error_msg .= $line . ' ';
             }
             echo $this->cronMsg($error_msg);
-            DataCache::freshen('Update check failed; ' . $error_msg, 'month', 'GiterateTask');
+            \COREPOS\Fannie\API\data\DataCache::freshen('Update check failed; ' . $error_msg, 'month', 'GiterateTask');
             return false;
         } else {
             $current = false;
@@ -92,7 +92,7 @@ giterate submodule';
             if ($need_updates && $next) {
                 $userMsg .= '; New version ' . $next . ' is available';
             }
-            DataCache::freshen($userMsg, 'month', 'GiterateTask');
+            \COREPOS\Fannie\API\data\DataCache::freshen($userMsg, 'month', 'GiterateTask');
 
             return true;
         }

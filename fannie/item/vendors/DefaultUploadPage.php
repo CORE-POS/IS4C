@@ -26,7 +26,7 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class DefaultUploadPage extends FannieUploadPage 
+class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage 
 {
     public $title = "Fannie - Load Vendor Prices";
     public $header = "Upload Vendor price file";

@@ -54,7 +54,7 @@ class BadScanTool extends FannieRESTfulPage
     {
         global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
 
-        $data = DataCache::check();
+        $data = \COREPOS\Fannie\API\data\DataCache::check();
         if (!$data) {
             /**
               Excludes:
@@ -98,7 +98,7 @@ class BadScanTool extends FannieRESTfulPage
             $row = $dbc->fetch_row($result);
             $data['itemTTL'] = $row[0];
 
-            DataCache::freshen($data, 'day');
+            \COREPOS\Fannie\API\data\DataCache::freshen($data, 'day');
         }
 
         $ret = '';

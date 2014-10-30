@@ -21,16 +21,18 @@
 
 *********************************************************************************/
 
-if (!class_exists('FanniePage')) {
+namespace COREPOS\Fannie\API {
+
+if (!class_exists('\FanniePage')) {
     include_once(dirname(__FILE__).'/FanniePage.php');
 }
-if (!class_exists('FormLib')) {
+if (!class_exists('\FormLib')) {
     include_once(dirname(__FILE__).'/lib/FormLib.php');
 }
-if (!class_exists('Spreadsheet_Excel_Reader')) {
+if (!class_exists('\Spreadsheet_Excel_Reader')) {
     include_once(dirname(__FILE__).'/../src/Excel/xls_read/reader.php');
 }
-if (!class_exists('PHPExcel_IOFactory')) {
+if (!class_exists('\PHPExcel_IOFactory')) {
     include_once(dirname(__FILE__).'/../src/Excel/xlsx_read/Classes/PHPExcel.php');
 }
 
@@ -38,7 +40,7 @@ if (!class_exists('PHPExcel_IOFactory')) {
   @class FanniePage
   Class for drawing screens
 */
-class FannieUploadPage extends FanniePage 
+class FannieUploadPage extends \FanniePage 
 {
 
     public $required = true;
@@ -112,7 +114,7 @@ class FannieUploadPage extends FanniePage
     {
         global $FANNIE_URL, $FANNIE_OP_DB;
 
-        $col_select = FormLib::get_form_value('cs','');
+        $col_select = \FormLib::get_form_value('cs','');
 
         if (isset($_FILES[$this->upload_field_name])) {
             /* file upload submitted */
@@ -152,10 +154,10 @@ class FannieUploadPage extends FanniePage
                       Create temporary database table
                       and load all records into the table
                     */
-                    if (FormLib::get('ajaxOp', '') == 'upload') {
+                    if (\FormLib::get('ajaxOp', '') == 'upload') {
                         $ret = array('error'=>0);
                         $fileData = $this->fileToArray();
-                        $offset = FormLib::get('offset', 0);
+                        $offset = \FormLib::get('offset', 0);
                         $chunk_size = 200;
 
                         if (count($fileData) == 0) {
@@ -216,7 +218,7 @@ class FannieUploadPage extends FanniePage
                     }
                 } elseif ($this->use_splits) {
                     /* break file into pieces */
-                    $files = FormLib::get_form_value('f');
+                    $files = \FormLib::get_form_value('f');
                     if ($files === '') {
                         $tempdir = dirname($this->upload_file_name);
                         if (!is_dir($tempdir.'/splits')) {
@@ -345,7 +347,7 @@ class FannieUploadPage extends FanniePage
                 $this->error_details = 'No ZIP support';
                 return false;
             }
-            $za = new ZipArchive();
+            $za = new \ZipArchive();
             if ($za->open($tmpfile) !== true) {
                 unlink($tmpfile);
                 $this->error_details = 'Bad ZIP file';
@@ -663,7 +665,7 @@ class FannieUploadPage extends FanniePage
             <span id="resultsSpan"></span>
             </div>';
         $ret .= '<div id="fieldInfo" style="display:none;">';
-        foreach (FormLib::get('cs', array()) as $column) {
+        foreach (\FormLib::get('cs', array()) as $column) {
             $ret .= sprintf('<input type="hidden" name="cs[]" value="%s" />', $column);
         }
         $ret .= '</div>';
@@ -738,7 +740,7 @@ class FannieUploadPage extends FanniePage
             return array();
         }
 
-        $data = new Spreadsheet_Excel_Reader();
+        $data = new \Spreadsheet_Excel_Reader();
         $data->read($this->upload_file_name);
 
         $sheet = $data->sheets[0];
@@ -769,10 +771,10 @@ class FannieUploadPage extends FanniePage
             return array();
         }
 
-        $objPHPExcel = PHPExcel_IOFactory::load($this->upload_file_name);
+        $objPHPExcel = \PHPExcel_IOFactory::load($this->upload_file_name);
         $sheet = $objPHPExcel->getActiveSheet();
         $rows = $sheet->getHighestRow();
-        $cols = PHPExcel_Cell::columnIndexFromString($sheet->getHighestColumn());
+        $cols = \PHPExcel_Cell::columnIndexFromString($sheet->getHighestColumn());
         $ret = array();
         for ($i=1; $i<=$rows; $i++) {
             $new = array();
@@ -806,5 +808,11 @@ class FannieUploadPage extends FanniePage
             </ul>
         </p>';
     }
+}
+
+}
+
+namespace {
+    class FannieUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {}
 }
 

@@ -266,7 +266,7 @@ class BrowseVendorItems extends FanniePage
             $model->sku($vinfo['sku']);
             $model->size($vinfo['size']);
             $model->units($vinfo['units']);
-            $model->pricePerUnit(PriceLib::pricePerUnit($price, $vinfo['size']));
+            $model->pricePerUnit(\COREPOS\Fannie\API\lib\PriceLib::pricePerUnit($price, $vinfo['size']));
             $model->save();
         }
 

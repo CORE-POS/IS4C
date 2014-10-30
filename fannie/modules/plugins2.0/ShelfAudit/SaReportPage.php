@@ -320,7 +320,7 @@ table.shelf-audit tr:hover {
                     <td id="col_g">'.(($row['retailstatus'])?$row['retailstatus']:'&nbsp;').'</td>
                     <td id="col_h" class="right">'.money_format('%!.2n', ($row['quantity']*$row['normal_retail'])).'</td>
                     <td id="col_i"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'">'
-                        . FannieUI::deleteIcon() . '</td>
+                        . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</td>
                 </tr>';
             } else if ($counter_number!=$row['section'] && $counter_number!=$row['dept_no']) {
                 if ($counter=='d') { $counter_number=$row['dept_no']; }
@@ -369,7 +369,7 @@ table.shelf-audit tr:hover {
                     <td id="col_g">'.(($row['retailstatus'])?$row['retailstatus']:'&nbsp;').'</td>
                     <td id="col_h" class="right">'.money_format('%!.2n', ($row['quantity']*$row['normal_retail'])).'</td>
                     <td id="col_i"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'">'
-                        . FannieUI::deleteIcon() . '</td>
+                        . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</td>
                 </tr>';
                 
                 $counter_total=$row['quantity']*$row['normal_retail'];
@@ -389,7 +389,7 @@ table.shelf-audit tr:hover {
                     <td id="col_g">'.(($row['retailstatus'])?$row['retailstatus']:'&nbsp;').'</td>
                     <td id="col_h" class="right">'.money_format('%!.2n', ($row['quantity']*$row['normal_retail'])).'</td>
                     <td id="col_i"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'">'
-                        . FannieUI::deleteIcon() . '</td>
+                        . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</td>
                 </tr>';
             }
         }

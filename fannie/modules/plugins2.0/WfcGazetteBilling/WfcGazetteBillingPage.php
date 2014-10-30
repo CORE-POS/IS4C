@@ -41,7 +41,7 @@ $BILLING_NONMEMBER = array(
     "1/ 2FULL" => 750
 );
 
-class WfcGazetteBillingPage extends FannieUploadPage {
+class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
     public $page_set = 'Plugin :: WfcGazetteBilling';
     public $description = '[Import Billing Data] to generate AR transactions with appropriate balances.';

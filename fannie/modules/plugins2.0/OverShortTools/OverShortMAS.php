@@ -273,12 +273,12 @@ class OverShortMAS extends FannieRESTfulPage {
 
     function get_startDate_endDate_view(){
         global $FANNIE_URL, $FANNIE_ROOT;
-        $records = DataCache::getFile('daily');
+        $records = \COREPOS\Fannie\API\data\DataCache::getFile('daily');
         if ($records !== False)
             $records = unserialize($records);
         if (!is_array($records)){
             $records = $this->get_data();
-            DataCache::putFile('daily', serialize($records));
+            \COREPOS\Fannie\API\data\DataCache::putFile('daily', serialize($records));
         }
 
         $ret = '';

@@ -26,7 +26,7 @@ if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class CoopDealsUploadPage extends FannieUploadPage 
+class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage 
 {
     public $title = "Fannie - Co+op Deals sales";
     public $header = "Upload Co+op Deals file";

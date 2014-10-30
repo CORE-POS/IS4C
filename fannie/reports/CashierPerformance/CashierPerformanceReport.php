@@ -168,7 +168,8 @@ class CashierPerformanceReport extends FannieReportPage
 <form method = "get" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 <div class="col-sm-4">
     <div class="form-group">
-        <label>Cashier# <?php echo FannieHelp::ToolTip('Leave blank to list all cashiers'); ?></label>
+        <label>Cashier#
+            <?php echo \COREPOS\Fannie\API\lib\FannieHelp::ToolTip('Leave blank to list all cashiers'); ?></label>
         <input type=text name=emp_no id=emp_no  class="form-control" />
     </div>
     <div class="form-group">

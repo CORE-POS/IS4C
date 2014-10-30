@@ -90,7 +90,7 @@ class SyncFromSearch extends FannieRESTfulPage
                     echo '<li class="alert-success">Sending <strong>' . $model->plu() . '</strong></li>';
                     // batch out changes @ 10 items / file
                     if (count($all_items) >= 10) {
-                        HobartDgwLib::writeItemsToScales($all_items, array($scale));
+                        \COREPOS\Fannie\API\item\HobartDgwLib::writeItemsToScales($all_items, array($scale));
                         $all_items = array();
                     }
                 } else {
@@ -100,7 +100,7 @@ class SyncFromSearch extends FannieRESTfulPage
             echo '</ul>';
 
             if (count($all_items) > 0) {
-                HobartDgwLib::writeItemsToScales($all_items, array($scale));
+                \COREPOS\Fannie\API\item\HobartDgwLib::writeItemsToScales($all_items, array($scale));
             }
         } // end loop on scales
         $this->sent_status = ob_get_clean();
@@ -151,7 +151,7 @@ class SyncFromSearch extends FannieRESTfulPage
                     $item_info['RecordType'] = 'ChangeOneItem';
                 }
 
-                HobartDgwLib::writeItemsToScales($item_info, array($scale));
+                \COREPOS\Fannie\API\item\HobartDgwLib::writeItemsToScales($item_info, array($scale));
             }
 
             echo '{error:0}';

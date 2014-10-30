@@ -8,7 +8,7 @@ $EMP_NO = 1001;
 $LANE_NO = 30;
 $OFFSET_DEPT = 703;
 
-class WfcAbandonEquityImport extends FannieUploadPage 
+class WfcAbandonEquityImport extends \COREPOS\Fannie\API\FannieUploadPage 
 {
     public $page_set = 'Plugin :: WfcAbandonEquity';
     public $description = '[Import Abandoned Equity] to debit balances and mark members inactive.';

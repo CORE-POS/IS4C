@@ -122,8 +122,8 @@ function deleteEmp(emp_no,filter){
                     ($emp->frontendsecurity()<=20?'Regular':'Manager'));
             $ret .= sprintf("<td><a href=\"CashierEditor.php?emp_no=%d\">%s</a></td>
                 <td><a href=\"\" onclick=\"deleteEmp(%d,%d); return false;\">%s</a></td></tr>",
-                $emp->emp_no(),FannieUI::editIcon(),
-                $emp->emp_no(),$filter, FannieUI::deleteIcon());
+                $emp->emp_no(),\COREPOS\Fannie\API\lib\FannieUI::editIcon(),
+                $emp->emp_no(),$filter, \COREPOS\Fannie\API\lib\FannieUI::deleteIcon());
         }
         $ret .= "</table>";
 

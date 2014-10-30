@@ -115,7 +115,7 @@ Replaces nightly.tablecache.php';
             $sql->query("DELETE FROM reportDataCache WHERE expires < ".$sql->now());
         }
 
-        $daily = DataCache::fileCacheDir('daily');
+        $daily = \COREPOS\Fannie\API\data\DataCache::fileCacheDir('daily');
         if ($daily) {
             $dh = opendir($daily);
             while ( ($file = readdir($dh)) !== false) {
@@ -126,7 +126,7 @@ Replaces nightly.tablecache.php';
             closedir($dh);
         }
 
-        $monthly = DataCache::fileCacheDir('monthly');
+        $monthly = \COREPOS\Fannie\API\data\DataCache::fileCacheDir('monthly');
         if ($monthly && date('j') == 1) {
             $dh = opendir($monthly);
             while ( ($file = readdir($dh)) !== false) {

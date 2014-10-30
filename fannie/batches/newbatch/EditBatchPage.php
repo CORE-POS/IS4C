@@ -254,7 +254,10 @@ class EditBatchPage extends FannieRESTfulPage
             $model->save();
 
             if (FormLib::get_form_value('audited') == '1') {
-                AuditLib::batchNotification($id, $upc, AuditLib::BATCH_ADD);
+                \COREPOS\Fannie\API\lib\AuditLib::batchNotification(
+                    $id, 
+                    $upc, 
+                    \COREPOS\Fannie\API\lib\AuditLib::BATCH_ADD);
             }
             $json['added'] = 1;
             $json['display'] = $this->showBatchDisplay($id);
@@ -491,8 +494,11 @@ class EditBatchPage extends FannieRESTfulPage
         $upR = $dbc->exec_statement($upQ,array($this->price,$this->upc,$this->id));
 
         if (FormLib::get_form_value('audited') == '1') {
-            AuditLib::batchNotification($this->id, $this->upc, 
-                AuditLib::BATCH_EDIT, (substr($this->upc,0,2)=='LC' ? true : false));
+            \COREPOS\Fannie\API\lib\AuditLib::batchNotification(
+                $this->id, 
+                $this->upc, 
+                \COREPOS\Fannie\API\lib\AuditLib::BATCH_EDIT, 
+                (substr($this->upc,0,2)=='LC' ? true : false));
         }
 
         echo json_encode($json);
@@ -566,7 +572,11 @@ class EditBatchPage extends FannieRESTfulPage
         $delR = $dbc->exec_statement($delQ,array($upc,$id));
 
         if (FormLib::get_form_value('audited') == '1') {
-            AuditLib::batchNotification($id, $upc, AuditLib::BATCH_DELETE, (substr($upc,0,2)=='LC' ? true : false));
+            \COREPOS\Fannie\API\lib\AuditLib::batchNotification(
+                $id, 
+                $upc, 
+                \COREPOS\Fannie\API\lib\AuditLib::BATCH_DELETE, 
+                (substr($upc,0,2)=='LC' ? true : false));
         }
         
         echo json_encode($json);
@@ -964,13 +974,13 @@ class EditBatchPage extends FannieRESTfulPage
             $ret .= '</div></div></td>';
             $ret .= "<td bgcolor=$colors[$c] id=editLink{$fetchW['upc']}>
                 <a href=\"\" class=\"edit\" onclick=\"editUpcPrice('{$fetchW['upc']}'); return false;\">
-                    " . FannieUI::editIcon() . "</a>
+                    " . \COREPOS\Fannie\API\lib\FannieUI::editIcon() . "</a>
                 <a href=\"\" class=\"save collapse\" onclick=\"saveUpcPrice('{$fetchW['upc']}'); return false;\">
-                    " . FannieUI::saveIcon() . "</a>
+                    " . \COREPOS\Fannie\API\lib\FannieUI::saveIcon() . "</a>
                 </td>";
             $ret .= "<td bgcolor=$colors[$c]><a href=\"\" 
                 onclick=\"deleteUPC.call(this, $id, '{$fetchW['upc']}'); return false;\">"
-                . FannieUI::deleteIcon() . "</a>
+                . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . "</a>
                 </td>";
             if ($fetchW['isCut'] == 1) {
                 $ret .= "<td bgcolor=$colors[$c] id=cpLink{$fetchW['upc']}>
@@ -1127,7 +1137,7 @@ class EditBatchPage extends FannieRESTfulPage
                     </a>
                 </td>";
             $ret .= "<td bgcolor=$colors[$c]><a href=\"\" onclick=\"deleteUPC.call(this, $id, '$fetchW[0]'); return false;\">"
-                . FannieUI::deleteIcon() . '</a></td>';
+                . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</a></td>';
             $ret .= "</tr>";
 
             if (substr($fetchW['upc'], 0, 2) == "LC") {
@@ -1193,7 +1203,7 @@ class EditBatchPage extends FannieRESTfulPage
                     </a>
                 </td>";
             $ret .= "<td bgcolor=$colors[$c]><a href=\"\" onclick=\"deleteUPC.call(this, $id, '$fetchW[0]'); return false;\">"
-                . FannieUI::deleteIcon() . '</a></td>';
+                . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</a></td>';
             $ret .= "</tr>";
 
             if (substr($fetchW['upc'], 0, 2) == "LC") {
