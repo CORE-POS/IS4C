@@ -1,7 +1,5 @@
 config.php.bak
 auth/shadowread/shadowread
 vendor
-src/javascript/require*
-src/javascript/bootstrap/
-src/javascript/bootstrap-default/
-src/javascript/jquery/
+src/javascript/composer-components/
+composer.lock

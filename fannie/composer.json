@@ -11,9 +11,9 @@
     "require": {
         "components/jquery": "1.11.1",
         "components/bootstrap": "3.2.*",
-        "components/bootstrap-default": "3.2.*"
+        "components/bootstrap-default": "~3.2"
     },
     "config": {
-        "component-dir": "src/javascript"
+        "component-dir": "src/javascript/composer-components/"
     }
 }

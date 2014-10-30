@@ -110,19 +110,14 @@ class FanniePage
         $header = $this->header;
         if ($this->themed) {
             include(dirname(__FILE__) . '/../src/header.bootstrap.html');
-            $this->addCssFile($FANNIE_URL . 'src/javascript/jquery-ui.css?id=20140625');
-            $this->addCssFile($FANNIE_URL . 'src/javascript/bootstrap/css/bootstrap.min.css?id=20140922');
-            $this->addCssFile($FANNIE_URL . 'src/javascript/bootstrap-default/css/bootstrap.min.css?id=20140922');
-            $this->addCssFile($FANNIE_URL . 'src/javascript/bootstrap-default/css/bootstrap-theme.min.css?id=20140922');
-            //$this->addCssFile($FANNIE_URL . 'src/style.css');
-            $this->addCssFile($FANNIE_URL . 'src/css/configurable.php');
-            $this->addCssFile($FANNIE_URL . 'src/css/print.css');
-            $this->addFirstScript($FANNIE_URL . 'src/javascript/jquery/jquery.min.js');
-            $this->addScript($FANNIE_URL . 'src/javascript/jquery-ui.js');
-            $this->addScript($FANNIE_URL . 'src/javascript/bootstrap/js/bootstrap.min.js');
-            if (!file_exists(dirname(__FILE__) . '/../src/javascript/bootstrap/js/bootstrap.min.js')) {
+            $this->addJQuery();
+            if (!$this->addBootstrap()) {
                 echo '<em>Warning: bootstrap does not appear to be installed. Try running composer update</em>';
             }
+            $this->addScript($FANNIE_URL . 'src/javascript/jquery-ui.js');
+            $this->addCssFile($FANNIE_URL . 'src/javascript/jquery-ui.css?id=20140625');
+            $this->addCssFile($FANNIE_URL . 'src/css/configurable.php');
+            $this->addCssFile($FANNIE_URL . 'src/css/print.css');
         } else {
             include(dirname(__FILE__) . '/../src/header.html');
         }
@@ -134,6 +129,56 @@ class FanniePage
 
         return ob_get_clean();
     }
+
+    /**
+      Add css and js files required for bootstrap.
+      If a version installed via composer is present, that
+      is the version used.
+      @return [boolean] success
+    */
+    public function addBootstrap()
+    {
+        global $FANNIE_URL;
+        $path1 = dirname(__FILE__) . '/../src/javascript/composer-components/';
+        $path2 = dirname(__FILE__) . '/../src/javascript/';
+        if (file_exists($path1 . 'bootstrap/js/bootstrap.min.js')) {
+            $this->addCssFile($FANNIE_URL . 'src/javascript/composer-components/bootstrap/css/bootstrap.min.css');
+            $this->addCssFile($FANNIE_URL . 'src/javascript/composer-components/bootstrap-default/css/bootstrap.min.css');
+            $this->addCssFile($FANNIE_URL . 'src/javascript/composer-components/bootstrap-default/css/bootstrap-theme.min.css');
+            $this->addScript($FANNIE_URL . 'src/javascript/composer-components/bootstrap/js/bootstrap.min.js');
+        } elseif (file_exists($path2 . 'bootstrap/js/bootstrap.min.js')) {
+            $this->addCssFile($FANNIE_URL . 'src/javascript/bootstrap/css/bootstrap.min.css');
+            $this->addCssFile($FANNIE_URL . 'src/javascript/bootstrap-default/css/bootstrap.min.css');
+            $this->addCssFile($FANNIE_URL . 'src/javascript/bootstrap-default/css/bootstrap-theme.min.css');
+            $this->addScript($FANNIE_URL . 'src/javascript/bootstrap/js/bootstrap.min.js');
+        } else {
+            return false; // bootstrap not found!
+        }
+
+        return true;
+    }
+
+    /**
+      Add jquery js file to the page
+      If present, the version installed via composer is used
+      @return [boolean] success
+    */
+    public function addJQuery()
+    {
+        global $FANNIE_URL;
+        $path1 = dirname(__FILE__) . '/../src/javascript/composer-components/';
+        $path2 = dirname(__FILE__) . '/../src/javascript/';
+        if (file_exists($path1 . 'jquery/jquery.min.js')) {
+            $this->addFirstScript($FANNIE_URL . 'src/javascript/composer-components/jquery/jquery.min.js');
+        } elseif (file_exists($path2 . 'jquery.js')) {
+            $this->addFirstScript($FANNIE_URL . 'src/javascript/jquery.js');
+        } else {
+            return false;
+        }
+
+        return true;
+    }
+
     public function get_header()
     {
         return $this->getHeader();
