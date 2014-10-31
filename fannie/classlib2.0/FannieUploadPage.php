@@ -129,7 +129,7 @@ class FannieUploadPage extends \FanniePage
                 $this->content_function = 'uploadError';
             }
         } else if (is_array($col_select)) {
-            $this->upload_file_name = FormLib::get_form_value('upload_file_name','');
+            $this->upload_file_name = \FormLib::get_form_value('upload_file_name','');
             
             /* column selections submitted */
             for($i=0;$i<count($col_select);$i++) {
