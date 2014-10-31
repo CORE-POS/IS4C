@@ -92,10 +92,6 @@ class InstallUtilities extends LibraryClass
     static public function confsave($key,$value,$prefer_local=False)
     {
         global $CORE_LOCAL;
-        // do nothing if page isn't a form submit (i.e. user didn't press save)
-        if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] !== 'POST') {
-            return null;
-        }
         // lane #0 is the server config editor
         // no ini.php file to write values to
         if ($CORE_LOCAL->get('laneno') == 0) {
@@ -162,9 +158,6 @@ class InstallUtilities extends LibraryClass
             return false;	// ini-local.php is overriding ini.php with bad data!
         }
         if ($written_global || $written_local) {
-            if ($written_global && $key != 'laneno') {
-                self::confToDb($key, $value);
-            }
             return true;	// successfully written somewhere relevant
         }
 
@@ -185,9 +178,6 @@ class InstallUtilities extends LibraryClass
             $added_local = file_put_contents($append_path, $new_local);
         }
         if ($added_global || $added_local){
-            if ($added_global && $key != 'laneno') {
-                self::confToDb($key, $value);
-            }
             return true;	// successfully appended somewhere relevant
         }
 
@@ -244,7 +234,6 @@ class InstallUtilities extends LibraryClass
             $save_as_array = 1;
         }
 
-        /** temp
         if ($sql !== false) {
             $prep = $sql->prepare_statement('SELECT param_value FROM parameters
                                         WHERE param_key=? AND lane_id=?');
@@ -259,7 +248,6 @@ class InstallUtilities extends LibraryClass
                 $sql->exec_statement($prep, array($CORE_LOCAL->get('laneno'), $key, $value, $save_as_array));
             }
         }
-        */
 
         // maintain ini.php value too
         if (self::confExists($key)) {
@@ -286,130 +274,6 @@ class InstallUtilities extends LibraryClass
             }
 
             self::confsave($key, $value);
-        }
-    }
-
-    /**
-      Save value to opdata.lane_config
-      @param $key string key
-      @param $value string value
-
-      Called automatically by InstallUtilities::confsave().
-    */
-    static public function confToDb($key, $value)
-    {
-        global $CORE_LOCAL;
-        $sql = self::dbTestConnect($CORE_LOCAL->get('localhost'),
-                $CORE_LOCAL->get('DBMS'),
-                $CORE_LOCAL->get('pDatabase'),
-                $CORE_LOCAL->get('localUser'),
-                $CORE_LOCAL->get('localPass'));
-        if ($sql !== False){
-            $q = $sql->prepare_statement("SELECT value FROM lane_config 
-                WHERE keycode=?");
-            $r = $sql->exec_statement($q, array($key));
-            if ($r === False) return False; // old table format
-            if ($sql->num_rows($r) == 0){
-                $ins = $sql->prepare_statement('INSERT INTO lane_config
-                    (keycode, value) VALUES (?, ?)');
-                $sql->exec_statement($ins, array($key, $value));
-            }
-            else {
-                $up = $sql->prepare_statement('UPDATE lane_config SET
-                    value=? WHERE keycode=?');
-                $sql->exec_statement($up, array($value, $key));
-            }
-        }
-    }
-
-    /**
-      Rewrite ini.php with values from
-      opdata.lane_config
-    */
-    static public function writeConfFromDb()
-    {
-        global $CORE_LOCAL;
-        $sql = self::dbTestConnect($CORE_LOCAL->get('localhost'),
-                $CORE_LOCAL->get('DBMS'),
-                $CORE_LOCAL->get('pDatabase'),
-                $CORE_LOCAL->get('localUser'),
-                $CORE_LOCAL->get('localPass'));
-        if ($sql !== false) {
-            $q = 'SELECT keycode, value FROM lane_config';
-            $r = $sql->query($q);
-            while($w = $db->fetch_row($r)) {
-                InstallUtilities::confsave($w['keycode'], $w['value']);
-            }
-        }
-    }
-
-    /**
-      Copy values from opdata.lane_config to the
-      server's lane_config table.
-    */
-    static public function sendConfToServer()
-    {
-        global $CORE_LOCAL;
-        $sql = self::dbTestConnect($CORE_LOCAL->get('localhost'),
-                $CORE_LOCAL->get('DBMS'),
-                $CORE_LOCAL->get('pDatabase'),
-                $CORE_LOCAL->get('localUser'),
-                $CORE_LOCAL->get('localPass'));
-        $mine = array();
-        if ($sql !== false) {
-            $q = 'SELECT keycode, value FROM lane_config';
-            $r = $sql->query($q);
-            while($w = $sql->fetch_row($r)) {
-                $mine[$w['keycode']] = $w['value'];
-            }
-        }
-
-        $sql = self::dbTestConnect($CORE_LOCAL->get('mServer'),
-                $CORE_LOCAL->get('mDBMS'),
-                $CORE_LOCAL->get('mDatabase'),
-                $CORE_LOCAL->get('mUser'),
-                $CORE_LOCAL->get('mPass'));
-        if ($sql !== false) {
-            $chk = $sql->prepare_statement('SELECT value FROM
-                    lane_config WHERE keycode=?');
-            $ins = $sql->prepare_statement('INSERT INTO lane_config
-                    (keycode, value) VALUES (?, ?)');
-            $up = $sql->prepare_statement('UPDATE lane_config SET
-                    value=? WHERE keycode=?');
-            foreach($mine as $key => $value) {
-                $exists = $sql->exec_statement($chk, array($key));
-                if ($sql->num_rows($exists) == 0) {
-                    $sql->exec_statement($ins, array($key, $value));
-                } else {
-                    $sql->exec_statement($up, array($value, $key));
-                }
-            }
-        }
-    }
-
-    /**
-      Fetch values from the server's lane_config table
-      Write them to ini.php and opdata.lane_config.
-    */
-    static public function getConfFromServer()
-    {
-        global $CORE_LOCAL;
-        $sql = self::dbTestConnect($CORE_LOCAL->get('mServer'),
-                $CORE_LOCAL->get('mDBMS'),
-                $CORE_LOCAL->get('mDatabase'),
-                $CORE_LOCAL->get('mUser'),
-                $CORE_LOCAL->get('mPass'));
-        $theirs = array();
-        if ($sql !== false) {
-            $q = 'SELECT keycode, value FROM lane_config';
-            $r = $sql->query($q);
-            while($w = $sql->fetch_row($r)) {
-                $theirs[$w['keycode']] = $w['value'];
-            }
-        }
-
-        foreach($theirs as $key => $value){
-            InstallUtilities::confsave($key, $value);
         }
     }
 
@@ -906,6 +770,86 @@ class InstallUtilities extends LibraryClass
 
         return $ret;
     }
+    
+    public static function validateConfiguration()
+    {
+        global $CORE_LOCAL;
+        /**
+          Opposite of normal. Load the parameters table values
+          first, then include ini.php second. If the resulting
+          $CORE_LOCAL does not match the paramters table, that
+          means ini.php overwrote a setting with a different
+          value.
+        */
+        CoreState::loadParams();
+        include(dirname(__FILE__) . '/../ini.php');
 
+        $dbc = Database::pDataConnect();
+
+        /**
+          Again backwards. Check lane-specific parameters first
+        */
+        $parameters = new ParametersModel($dbc);
+        $parameters->store_id(0);
+        $parameters->lane_id($CORE_LOCAL->get('laneno'));
+        $checked = array();
+        $wrong = array();
+        foreach ($parameters->find() as $param) {
+            $p_value = $param->materializeValue();
+            $checked[$param->param_key()] = true;
+            $i_value = $CORE_LOCAL->get($param->param_key());
+            if (is_numeric($i_value) && is_numeric($p_value) && $i_value == $p_value) {
+                // allow loose comparison on numbers
+                // i.e., permit integer 1 equal string '1'
+                continue;
+            }
+            if ($p_value !== $i_value) {
+                printf('<span style="color:red;">Setting mismatch for</span>
+                    <a href="" onclick="$(this).next().toggle(); return false;">%s</a>
+                    <span style="display:none;"> parameters says %s, ini.php says %s</span></p>',
+                    $param->param_key(), print_r($p_value, true), print_r($i_value, true)
+                );
+                $wrong[$param->param_key()] = $p_value;
+            }
+        }
+
+        /**
+          Now check global parameters
+        */
+        $parameters->reset();
+        $parameters->store_id(0);
+        $parameters->lane_id(0);
+        foreach ($parameters->find() as $param) {
+            if (isset($checked[$param->param_key()])) {
+                // setting has a lane-specific parameters
+                // value. no need to check this one.
+                continue;
+            }
+            $p_value = $param->materializeValue();
+            $i_value = $CORE_LOCAL->get($param->param_key());
+            if (is_numeric($i_value) && is_numeric($p_value) && $i_value == $p_value) {
+                // allow loose comparison on numbers
+                // i.e., permit integer 1 equal string '1'
+                continue;
+            }
+            if ($p_value !== $i_value) {
+                printf('<p>Setting mismatch for 
+                    <a href="" onclick=$(this).next.toggle();return false;">%s</a>
+                    <span style="display:none;"> parameters says %s, ini.php says %s</span></p>',
+                    $param->param_key(), print_r($p_value, true), print_r($i_value, true)
+                );
+                $wrong[$param->param_key()] = $p_value;
+            }
+        }
+
+        /**
+          Finally, re-save any conflicting values.
+          This should rewrite them in ini.php if that
+          file is writable.
+        */
+        foreach ($wrong as $key => $value) {
+            self::paramSave($key, $value);
+        }
+    }
 }
 
