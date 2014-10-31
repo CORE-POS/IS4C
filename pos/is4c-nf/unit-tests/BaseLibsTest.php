@@ -164,7 +164,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 		*/
 
 		$ph = new PrintHandler();
-		$file = dirname(__FILE__).'/../graphics/WFC_Logo.bmp';
+		$file = dirname(__FILE__).'/../graphics/WfcLogo2014.bmp';
 
 		$this->assertFileExists($file);
 		$bitmap = $ph->RenderBitmapFromFile($file);
