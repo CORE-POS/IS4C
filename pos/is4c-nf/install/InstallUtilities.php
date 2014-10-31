@@ -260,7 +260,7 @@ class InstallUtilities extends LibraryClass
         }
 
         // maintain ini.php value too
-        if (True || self::confExists($key)) {
+        if (self::confExists($key)) {
             // tweak value for safe output to ini.php
             if ($save_as_array == 1 && $value !== '') {
                 $saveStr = 'array(';
@@ -713,15 +713,13 @@ class InstallUtilities extends LibraryClass
             $current_value = implode(', ', $current_value);
         }
         
-        $style = isset($attributes['style']) ? $attributes['style'] : '';
         if ($storage == self::INI_SETTING) {
-            $style .= 'background-color: #ffff66';
+            $attributes['title'] = 'Stored in ini.php';
         } elseif (self::confExists($name)) {
-            $style .= 'background-color: #66ff33';
+            $attributes['title'] = 'Stored in ini and DB';
         } else {
-            $style .= 'background-color: #3399ff';
+            $attributes['title'] = 'Stored in opdata.parameters';
         }
-        $attributes['style'] = $style;
 
         $ret = sprintf('<input name="%s" value="%s"',
             $name, $current_value);
@@ -810,15 +808,13 @@ class InstallUtilities extends LibraryClass
             self::paramSave($name, $current_value);
         }
 
-        $style = isset($attributes['style']) ? $attributes['style'] : '';
         if ($storage == self::INI_SETTING) {
-            $style .= 'background-color: #ffff66;';
+            $attributes['title'] = 'Stored in ini.php';
         } elseif (self::confExists($name)) {
-            $style .= 'background-color: #66ff33;';
+            $attributes['title'] = 'Stored in ini and DB';
         } else {
-            $style .= 'background-color: #3399ff;';
+            $attributes['title'] = 'Stored in opdata.parameters';
         }
-        $attributes['style'] = $style;
 
         $ret = '<select name="' . $name . ($is_array ? '[]' : '') . '" ';
         foreach ($attributes as $name => $value) {
@@ -888,13 +884,12 @@ class InstallUtilities extends LibraryClass
             self::paramSave($name, $current_value);
         }
 
-        $color = '';
         if ($storage == self::INI_SETTING) {
-            $color .= '#ffff66';
+            $attributes['title'] = 'Stored in ini.php';
         } elseif (self::confExists($name)) {
-            $color .= '#66ff33';
+            $attributes['title'] = 'Stored in ini and DB';
         } else {
-            $color .= '#3399ff';
+            $attributes['title'] = 'Stored in opdata.parameters';
         }
 
         $ret = '<fieldset class="toggle">' . "\n";
@@ -905,7 +900,7 @@ class InstallUtilities extends LibraryClass
         $ret .= "\n";
         $ret .= sprintf('<label for="%s" onclick="">%s: </label>', $name, $label);
         $ret .= "\n";
-        $ret .= '<span class="toggle-button" style="border: solid 3px black; background:' . $color . ';"></span></fieldset>' . "\n";
+        $ret .= '<span class="toggle-button" style="border: solid 3px black;"></span></fieldset>' . "\n";
 
         return $ret;
     }
