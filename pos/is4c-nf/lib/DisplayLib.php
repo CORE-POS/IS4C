@@ -782,6 +782,10 @@ static public function drawItems($top_item, $rows, $highlight)
 		$db_range = Database::tDataConnect();
 		$result_range = $db_range->query($query_range);
 		$num_rows = $db_range->num_rows($result_range);
+        $screenRecords = array();
+		for ($i = 0; $i < $num_rows; $i++) {
+			$screenRecords[] = $db_range->fetch_array($result_range);
+        }
         */
         /**
           30Oct2014 Andy
@@ -795,8 +799,6 @@ static public function drawItems($top_item, $rows, $highlight)
         $screenRecords = self::screenDisplay($top_item, $top_item + $rows);
 
         foreach ($screenRecords as $row) {
-		//for ($i = 0; $i < $num_rows; $i++) {
-			//$row = $db_range->fetch_array($result_range);
 
 			$trans_id = $row["trans_id"];
 			$description = $row["description"];
