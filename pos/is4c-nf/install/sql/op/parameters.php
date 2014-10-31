@@ -14,10 +14,6 @@ Depends on:
 
 Use:
 Partial replacement for ini.php.
-This differs from the lane_config table.
-This contains actual values where as lane_config
-contains PHP code snippets that can
-be written to a file.
 
 Values with store_id=0 (or NULL) and lane_id=0 (or NULL)
 are applied first, then values with the lane's own

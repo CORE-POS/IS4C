@@ -2,6 +2,7 @@
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
 include('../ini.php');
+CoreState::loadParams();
 include('InstallUtilities.php');
 ?>
 <html>
@@ -291,7 +292,7 @@ save 5%.
 </td></tr>
 <tr><td colspan=2>
 <hr />	<p>Special Department modules add extra steps to open rings in specific departments.
-	Enter department number(s) that each module should apply to.</p>
+	Enter department number(s) that each module should apply to.*</p>
 </td></tr>
 <tr><td>
 <?php
