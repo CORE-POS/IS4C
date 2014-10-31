@@ -130,6 +130,7 @@ if (isset($_REQUEST['toids'])){
         $pdf->SetX($x);
         
         $upc = "454".str_pad($oid,6,'0',STR_PAD_LEFT).str_pad($tid,2,'0',STR_PAD_LEFT);
+        $upc .= BarcodeLib::getCheckDigit($upc);
 
         $pdf = FannieSignage::drawBarcode($upc, $pdf, $x+30, $y+95, array('height'=>14,'fontsize'=>8));
 
