@@ -66,23 +66,36 @@ class LikeCodePriceUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $cost_index = $this->get_column_index('cost');
 
         $ret = true;
-        $update = $dbc->prepare('UPDATE products AS p
-                            SET p.normal_price = ?,
-                                p.modified = ' . $dbc->now() . '
-                            WHERE p.upc IN
-                                ( SELECT u.upc 
-                                  FROM upcLike AS u
-                                  WHERE u.likeCode=? )');
-        $updateWithCost = $dbc->prepare('UPDATE products AS p
-                            SET p.normal_price = ?,
-                                p.cost = ?,
-                                p.modified = ' . $dbc->now() . '
-                            WHERE p.upc IN
-                                ( SELECT u.upc 
-                                  FROM upcLike AS u
-                                  WHERE u.likeCode=? )');
+        $update = $dbc->prepare('
+            UPDATE products AS p
+                INNER JOIN upcLike AS u ON p.upc=u.upc
+            SET p.normal_price = ?,
+                p.modified = ' . $dbc->now() . '
+            WHERE u.likeCode=?');
+        $updateWithCost = $dbc->prepare('
+            UPDATE products AS p
+                INNER JOIN upcLike AS u ON p.upc=u.upc
+            SET p.cost = ?,
+                p.modified = ' . $dbc->now() . '
+            WHERE u.likeCode=?');
+        if ($dbc->dbms_name() == 'mssql') {
+            $update = $dbc->prepare('
+                UPDATE products
+                SET normal_price = ?,
+                    modified = ' . $dbc->now() . '
+                FROM products AS p
+                    INNER JOIN upcLike AS u ON p.upc=u.upc
+                WHERE u.likeCode=?');
+            $updateWithCost = $dbc->prepare('
+                UPDATE products
+                SET cost = ?,
+                    modified = ' . $dbc->now() . '
+                FROM products AS p
+                    INNER JOIN upcLike AS u ON p.upc=u.upc
+                WHERE u.likeCode=?');
+        }
         $this->stats = array('done' => 0, 'error' => array());
-        foreach($linedata as $line) {
+        foreach ($linedata as $line) {
             $lc = trim($line[$lc_index]);
             $price =  trim($line[$price_index], ' $');  
             $cost = 0;
