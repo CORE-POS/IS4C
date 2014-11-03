@@ -335,6 +335,13 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         SendReport(BuildCommand(LcdTextColor(0,0,0)));
         SendReport(BuildCommand(LcdTextBackgroundColor(0xff,0xff,0xff)));
         SendReport(BuildCommand(LcdTextBackgroundMode(false)));
+
+        // if logo load NACKs the output is the same as if
+        // the users presses red X button. Change state early
+        // so logo load problem is not misinterpreted by 
+        // previous state handler
+        current_state = STATE_WAIT_FOR_CASHIER;
+
         int x = 25;
         int y = 100;
         if (this.logo_available) {
@@ -342,8 +349,6 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
             y = 190;
         }
         SendReport(BuildCommand(LcdDrawText("waiting for total", x, y)));
-
-        current_state = STATE_WAIT_FOR_CASHIER;
     }
 
     private void SetStateApproved(){
