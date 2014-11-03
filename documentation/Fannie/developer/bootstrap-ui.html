@@ -1,0 +1,201 @@
+<html>
+	<head>
+		<title>Bootstrap UI Tips</title>
+    <link href="../../../fannie/src/javascript/bootstrap/css/bootstrap.min.css"
+        type="text/css" rel="stylesheet">
+    <link href="../../../fannie/src/javascript/bootstrap-default/css/bootstrap.min.css"
+        type="text/css" rel="stylesheet">
+    <link href="../../../fannie/src/javascript/bootstrap-default/css/bootstrap-theme.min.css"
+        type="text/css" rel="stylesheet">
+    <script type="text/javascript" src="../../../fannie/src/javascript/jquery.js"></script>
+    <script type="text/javascript" src="../../../fannie/src/javascript/bootstrap/js/bootstrap.min.js"></script>
+	</head>
+<body class="container">
+	<div style="text-align:center;margin-bottom:10px;font-size:80%;">
+	updated as of: November 3, 2014<br />
+	last author: Andy Theuninck
+	</div>
+    <h1>Using Bootstrap in Fannie</h1>
+    <p>
+    The official docs at <a href="http://getbootstrap.com/">http://getbootstrap.com/</a> are quite good. The sections
+    on CSS, Components, and Javascript are all useful. This is just a collection of quick pointers for starting out.
+    When in doubt consult the real documentation.
+    </p>
+    <h3>Forms</h3>
+    <p>
+    Fannie has a whole lot of forms. This is the most basic way to write a form field:
+    <div class="form-group">
+        <label>Field Name</label>
+        <input type="text" name="field-name" class="form-control" />
+    </div>
+    <pre>
+&lt;div class="form-group"&gt;
+    &lt;label&gt;Field Name&lt;/label&gt;
+    &lt;input type="text" name="field-name" class="form-control" /&gt;
+&lt;/div&gt;
+    </pre>
+    The <em>form-control</em> class provides the rounded edges and general look/feel.
+    The <em>form-group</em> puts some whitespace around the field. The input box will
+    be as wide as the container and the label will be above the input box.
+    </p>
+    <p>There are a couple ways to create a horizontal form. The first is using
+    <em>form-inline</em>. This will auto size elements to fit. Line breaks will
+    happen if lines get too long. Usually <em>form-group</em>s are kept together
+    unless the group is itself extremely long.
+    </p>
+    <p>
+    <div class="form-inline">
+        <div class="form-group">
+            <label>Field 1</label>
+            <input type="text" name="field1" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label>Field 2</label>
+            <input type="text" name="field2" class="form-control" />
+        </div>
+    </div>
+    </p>
+    <pre>
+&lt;p&gt;
+&lt;div class="form-inline"&gt;
+    &lt;div class="form-group"&gt;
+        &lt;label&gt;Field 1&lt;/label&gt;
+        &lt;input type="text" name="field1" class="form-control" /&gt;
+    &lt;/div&gt;
+    &lt;div class="form-group"&gt;
+        &lt;label&gt;Field 2&lt;/label&gt;
+        &lt;input type="text" name="field2" class="form-control" /&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;/p&gt;
+    </pre>
+    <p>Otherwise, you can use the grid system to lay out rows and columns precisely.
+    Width classes can be applied directly to labels but not to inputs. Again 
+    <em>form-group</em> adds whitespace between rows. Using <em>form-horizontal</em>
+    and <em>control-label</em> together right-aligns the labels.</p>
+    <p>
+        <div class="row form-group form-horizontal">
+            <label class="col-sm-2 control-label">Field 1</label>
+            <div class="col-sm-4">
+                <input type="text" name="field1" class="form-control" />
+            </div>
+            <label class="col-sm-2 control-label">Field 2</label>
+            <div class="col-sm-4">
+                <input type="text" name="field2" class="form-control" />
+            </div>
+        </div>
+        <div class="row form-group form-horizontal">
+            <label class="col-sm-2 control-label">Field 3</label>
+            <div class="col-sm-4">
+                <input type="text" name="field3" class="form-control" />
+            </div>
+            <label class="col-sm-2 control-label">Field 4</label>
+            <div class="col-sm-4">
+                <input type="text" name="field4" class="form-control" />
+            </div>
+        </div>
+    </p>
+    <pre>
+&lt;p&gt;
+    &lt;div class="row form-group form-horizontal"&gt;
+        &lt;label class="col-sm-2 control-label"&gt;Field 1&lt;/label&gt;
+        &lt;div class="col-sm-4"&gt;
+            &lt;input type="text" name="field1" class="form-control" /&gt;
+        &lt;/div&gt;
+        &lt;label class="col-sm-2 control-label"&gt;Field 2&lt;/label&gt;
+        &lt;div class="col-sm-4"&gt;
+            &lt;input type="text" name="field2" class="form-control" /&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="row form-group form-horizontal"&gt;
+        &lt;label class="col-sm-2 control-label"&gt;Field 3&lt;/label&gt;
+        &lt;div class="col-sm-4"&gt;
+            &lt;input type="text" name="field3" class="form-control" /&gt;
+        &lt;/div&gt;
+        &lt;label class="col-sm-2 control-label"&gt;Field 4&lt;/label&gt;
+        &lt;div class="col-sm-4"&gt;
+            &lt;input type="text" name="field4" class="form-control" /&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/p&gt;
+</pre>
+    <p>You can attach text directly to an input using the <em>input-group</em>
+    and <em>input-group-addon</em> classes. I find it works best if the <em>input-group</em>
+    element has no other classes. Often that means an extra &lt;div&gt; layer but
+    conflicting rules can cause really confusing output otherwise.
+    </p>
+    <div class="form-group">
+        <div class="input-group">
+            <span class="input-group-addon">$</span>
+            <input type="text" name="money-field" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="input-group">
+            <input type="text" name="percent-field" class="form-control" />
+            <span class="input-group-addon">%</span>
+        </div>
+    </div>
+    <pre>
+&lt;div class="form-group"&gt;
+    &lt;div class="input-group"&gt;
+        &lt;span class="input-group-addon"&gt;$&lt;/span&gt;
+        &lt;input type="text" name="money-field" class="form-control" /&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="form-group"&gt;
+    &lt;div class="input-group"&gt;
+        &lt;input type="text" name="percent-field" class="form-control" /&gt;
+        &lt;span class="input-group-addon"&gt;%&lt;/span&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+    </pre>
+    <p>Buttons are created using <em>btn</em> and <em>btn-default</em> classes.
+    Button elements should always be given a type attribute. Examples:
+    </p>
+    <p>
+        <button type="submit" class="btn btn-default">Submit Button</button> 
+        <button type="button" class="btn btn-default">Not Submit Button</button> 
+        <a href="" class="btn btn-default">Button Shaped Link</a>
+    </p>
+<pre>
+&lt;button type="submit" class="btn btn-default"&gt;Submit Button&lt;/button&gt;
+&lt;button type="button" class="btn btn-default"&gt;Not Submit Button&lt;/button&gt;
+&lt;a href="" class="btn btn-default"&gt;Button Shaped Link&lt;/a&gt;
+</pre>
+    <p>Miscellaneous form notes: the <em>input-sm</em> class makes a form control smaller;
+    <em>input-lg</em> makes a form control bigger. Adding a <em>required</em> attribute
+    to a form control is enforced by most browsers. A <em>placeholder</em> attribute 
+    puts in filler text until the input gets focus. If you need a bit of spacing/padding/margin
+    on an element, wrapping it in paragraph tags (&lt;p&gt;) often works.
+    </p>
+    <h3>Tables</h3>
+    <p>
+    Bootstrap will zero out <em>cellspacing</em> and <em>cellpadding</em> on tables. With tables
+    used for content-alignment the effect isn't always bad. On actual tabluar data, especially with
+    borders, it looks pretty hideous. Adding the class <em>table</em> will apply Bootstrap's default 
+    styling. Adding <em>table-bordered</em> or <em>table-striped</em> does exactly what it sounds like.
+    Boostrap really, <strong>really</strong> wants to make tables 100% width. That actually makes a fair
+    amount of sense in terms of scaling with different screen sizes and usually is not worth fighting with.
+    </p>
+    <h3>Alerts</h3>
+    <p>
+    Bootstrap does contextual colors well. Adding alert classes generally makes elements colorful. Examples:
+    </p>
+    <div class="alert alert-success">The alert-success color</div>
+    <div class="alert alert-danger">The alert-danger color</div>
+<pre>
+&lt;div class="alert alert-success"&gt;The alert-success color&lt;/div&gt;
+&lt;div class="alert alert-danger"&gt;The alert-danger color&lt;/div&gt;
+</pre>
+    <p>The FanniePage class provides a javascript function for adding alerts dynamically:
+    <strong>showBootstrapAlert(selector, severity, message)</strong> where <em>selector</em>
+    is a jQuery selector specifiying where the alert should go, <em>severity</em> is one
+    of the color keywords such as success or danger, and <em>message</em> is the content
+    of the alert.
+    </p>
+<pre>
+showBootstrapAlert('div#some-id', 'success', 'The operation succeeded');
+</pre>
+</body>
+</html>
