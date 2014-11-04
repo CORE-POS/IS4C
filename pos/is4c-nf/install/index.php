@@ -60,11 +60,11 @@ if (!function_exists("socket_create")){
 <br />
 <table id="install" border=0 cellspacing=0 cellpadding=4>
 <?php 
+$register_id_is_mapped = false;
+$store_id_is_mapped = false;
 if (is_array($CORE_LOCAL->get('LaneMap'))) {
     $my_ips = MiscLib::getAllIPs();
     $map = $CORE_LOCAL->get('LaneMap');
-    $register_id_is_mapped = false;
-    $store_id_is_mapped = false;
     foreach ($my_ips as $ip) {
         if (!isset($map[$ip])) {
             continue;
