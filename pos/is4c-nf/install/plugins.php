@@ -2,6 +2,7 @@
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
 include('../ini.php');
+CoreState::loadParams();
 include('InstallUtilities.php');
 ?>
 <html>
@@ -33,13 +34,13 @@ if (isset($_REQUEST['PLUGINLIST']) || isset($_REQUEST['psubmit'])){
 	if (!is_array($oldset)) $oldset = array();
 	$newset = isset($_REQUEST['PLUGINLIST']) ? $_REQUEST['PLUGINLIST'] : array();
 	foreach($newset as $plugin_class){
-		if (!Plugin::isEnabled($plugin_class)){
+		if (!Plugin::isEnabled($plugin_class) && class_exists($plugin_class)){
 			$obj = new $plugin_class();
 			$obj->plugin_enable();
 		}
 	}
 	foreach($oldset as $plugin_class){
-		if (!in_array($plugin_class,$newset)){
+		if (!in_array($plugin_class,$newset) && class_exists($plugin_class)){
 			$obj = new $plugin_class();
 			$obj->plugin_disable();
 		}
