@@ -918,23 +918,17 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
                 'customReports','op');
 
-        /**
-          @deprecated 21Jan14
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'AdSaleDates','op');
-        */
-
         $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
                 'custReceiptMessage','op');
 
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'usageStats','op');
+        $usage = new UsageStatsModel($con);
+        $ret[] = $usage->createIfNeeded($FANNIE_OP_DB);
 
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'ShrinkReasons','op');
+        $shrink = new ShrinkReasonsModel($con);
+        $ret[] = $shrink->createIfNeeded($FANNIE_OP_DB);
 
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'Stores','op');
+        $stores = new StoresModel($con);
+        $ret[] = $stores->createIfNeeded($FANNIE_OP_DB);
 
         $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
                 'parameters','op');

@@ -1,4 +1,7 @@
 <?php
+if (basename($_SERVER['PHP_SELF']) != basename(__FILE__)) {
+    return;
+}
 /* --FUNCTIONALITY- - - - - - - - - - - - - - - - - - - - -
 
  Usage: magic-doc.php[?fn=op|trans/tablename.php]

@@ -28,6 +28,7 @@ class UsageStatsModel extends BasicModel
 {
 
     protected $name = "usageStats";
+    protected $preferred_db = 'op';
 
     protected $columns = array(
     'usageID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),
@@ -37,6 +38,27 @@ class UsageStatsModel extends BasicModel
     'userHash' => array('type'=>'VARCHAR(40)'),
     'ipHash' => array('type'=>'VARCHAR(40)'),
     );
+
+    public function doc()
+    {
+        return '
+Table: usageStats
+
+Columns:
+    usageID int
+    tdate datetime
+    pageName varchar
+    referrer varchar
+    userHash varchar
+    ipHash varchar
+
+Depends on:
+    none
+
+Use:
+Internal usage metrics. Tracks visits
+        ';
+    }
 
     /* START ACCESSOR FUNCTIONS */
 

@@ -37,6 +37,24 @@ class ShrinkReasonsModel extends BasicModel
     'description' => array('type'=>'VARCHAR(30)'),
     );
 
+    public function doc()
+    {
+        return '
+Table: ShrinkReasons
+
+Columns:
+    shrinkReasonID int
+    description varchar
+
+Depends on:
+    none
+
+Use:
+Maintain list of reasons for marking
+shrink
+        ';
+    }
+
     /* START ACCESSOR FUNCTIONS */
 
     public function shrinkReasonID()
