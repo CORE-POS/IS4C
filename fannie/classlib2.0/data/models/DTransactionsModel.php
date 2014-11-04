@@ -269,6 +269,7 @@ class DTransactionsModel extends BasicModel
                 $sql .= $c->identifier_escape($name).",\n";
             }
         }
+        $sql = preg_replace("/,\n$/","\n",$sql);
         $sql .= ' FROM '.$c->identifier_escape($table_name)
             .' WHERE '.$c->identifier_escape('trans_status')
             ." NOT IN ('D','X','Z') AND emp_no <> 9999
