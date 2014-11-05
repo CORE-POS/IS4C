@@ -212,6 +212,20 @@ class DTransactionsModel extends BasicModel
     // normalize()
     }
 
+    public function dlogMode($switch)
+    {
+        if ($switch) {
+            unset($this->columns['datetime']);
+            $tdate = array('tdate'=>array('type'=>'datetime','index'=>True));
+            $trans_num = array('trans_num'=>array('type'=>'VARCHAR(25)'));
+            $this->columns = $tdate + $this->columns + $trans_num;
+        } else {
+            unset($this->columns['tdate']);
+            unset($this->columns['trans_num']);
+            $datetime = array('datetime'=>array('type'=>'datetime','index'=>true));
+        }
+    }
+
     /**
       Rebuild dlog style views
       @param $view_name name of the view
