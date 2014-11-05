@@ -222,7 +222,7 @@ class FannieDispatch
 
     static public function i18n()
     {
-        if (function_exists('bindtextdomain')) {
+        if (function_exists('bindtextdomain') && defined('LC_MESSAGES')) {
             setlocale(LC_MESSAGES, "en_US");
             bindtextdomain('messages', realpath(dirname(__FILE__).'/../locale'));
             bind_textdomain_codeset('messages', 'UTF-8');

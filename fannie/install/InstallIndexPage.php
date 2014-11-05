@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-//ini_set('display_errors','1');
+ini_set('display_errors','1');
 if (!file_exists(dirname(__FILE__).'/../config.php')){
     echo "Missing config file!<br />";
     echo "Create a file named config.php in ".realpath(dirname(__FILE__).'/../').'<br />';
@@ -121,8 +121,11 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
 
         // Path detection: Establish ../../
         $FILEPATH = rtrim(__FILE__,"$self");
+	if (DIRECTORY_SEPARATOR == '\\') {
+	    $FILEPATH = str_replace(DIRECTORY_SEPARATOR, '/', $FILEPATH);
+	}
         $URL = rtrim($_SERVER['SCRIPT_NAME'],"$self");
-        $FILEPATH = rtrim($FILEPATH,'/');
+        $FILEPATH = rtrim($FILEPATH, '/');
         $URL = rtrim($URL,'/');
         $FILEPATH = rtrim($FILEPATH,'install');
         $URL = rtrim($URL,'install');
