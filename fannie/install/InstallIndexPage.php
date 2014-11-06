@@ -252,7 +252,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             echo "<div class=\"alert alert-danger\">Testing Operational DB connection failed</div>";
         } else {
             echo "<div class=\"alert alert-success\">Testing Operational DB connection succeeded</div>";
-            $msgs = $this->create_op_dbs($sql);
+            $msgs = $this->create_op_dbs($sql, $FANNIE_OP_DB);
             $createdOps = true;
             foreach ($msgs as $msg) {
                 if ($msg['error'] == 0) continue;
@@ -573,365 +573,142 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
     }
 
 
-    function create_op_dbs($con){
-        require(dirname(__FILE__).'/../config.php'); 
-
+    public function create_op_dbs($con, $op_db_name)
+    {
         $ret = array();
 
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'employees','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'departments','op');
+        $models = array(
+            // TABLES
+            'AutoCouponsModel',
+            'BatchesModel',
+            'BatchListModel',
+            'BatchCutPasteModel',
+            'BatchBarcodesModel',
+            'BatchTypeModel',
+            'BatchMergeTableModel',
+            'CronBackupModel',
+            'CustdataModel',
+            'CustdataBackupModel',
+            'CustAvailablePrefsModel',
+            'CustPreferencesModel',
+            'CustReceiptMessageModel',
+            'CustomerAccountSuspensionsModel',
+            'CustomReceiptModel',
+            'CustomReportsModel',
+            'DateRestrictModel',
+            'DepartmentsModel',
+            'DisableCouponModel',
+            'EmployeesModel',
+            'HouseCouponsModel',
+            'HouseCouponItemsModel',
+            'HouseVirtualCouponsModel',
+            'LikeCodesModel',
+            'UpcLikeModel',
+            'MemberCardsModel',
+            'MemberNotesModel',
+            'MemDatesModel',
+            'MeminfoModel',
+            'MemtypeModel',
+            'MemContactModel',
+            'MemContactPrefsModel',
+            'OriginsModel',
+            'OriginCountryModel',
+            'OriginStateProvModel',
+            'OriginCustomRegionModel',
+            'ParametersModel',
+            'ProductsModel',
+            'ProductBackupModel',
+            'ProductUserModel',
+            'ProductOriginsMapModel',
+            'ProdExtraModel',
+            'ProdFlagsModel',
+            'ProdPhysicalLocationModel',
+            'ProdUpdateModel',
+            'ProdDepartmentHistoryModel',
+            'ProdPriceHistoryModel',
+            'PurchaseOrderModel',
+            'PurchaseOrderItemsModel',
+            'PurchaseOrderSummaryModel',
+            'ReasoncodesModel',
+            'ScaleItemsModel',
+            'ServiceScalesModel',
+            'ServiceScaleItemMapModel',
+            'ShelftagsModel',
+            'ShrinkReasonsModel',
+            'SubDeptsModel',
+            'SuperDeptsModel',
+            'SuperDeptEmailsModel',
+            'SuperDeptNamesModel',
+            'StoresModel',
+            'SuspensionsModel',
+            'SuspensionHistoryModel',
+            'TaxRatesModel',
+            'TendersModel',
+            'UsageStatsModel',
+            'VendorsModel',
+            'VendorContactModel',
+            'VendorDeliveriesModel',
+            'VendorItemsModel',
+            'VendorSRPsModel',
+            'VendorSKUtoPLUModel',
+            'VendorDepartmentsModel',
+            // VIEWS
+            'SuperMinIdViewModel',
+            'MasterSuperDeptsModel',
+        );
+        foreach ($models as $class) {
+            $obj = new $class($con);
+            $ret[] = $obj->createIfNeeded($op_db_name);
+        }
 
         /**
           @deprecated 22Jan14
           Somewhat deprecated. Others' code may rely on this
           so it's still created
-        */
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+          @update 06Nov14
+          All uses are checked first for existence. Not necessary
+          to create on new install.
+        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$op_db_name,
                 'deptMargin','op');
-
-        /**
-          @deprecated 22Jan14
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'deptSalesCodes','op');
-        */
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'dateRestrict','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'subdepts','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'superdepts','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'superDeptNames','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'superDeptEmails','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'superMinIdView','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'MasterSuperDepts','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'products','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'productBackup','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'likeCodes','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'upcLike','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'taxrates','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'prodExtra','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'prodFlags','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'prodPhysicalLocation','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'productUser','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'prodUpdate','op');
-
-        /**
-          @deprecated 21Jan14
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'prodUpdateArchive','op');
-        */
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'prodPriceHistory','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'prodDepartmentHistory','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'batches','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'batchList','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'batchType','op');
-
-        /**
-          @deprecated 21Jan14
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'batchowner','op');
-        */
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'batchCutPaste','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'batchBarcodes','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'batchMergeTable','op');
-
-        /**
-          @deprecated 21Jan14
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'batchMergeProd','op');
         */
 
         /**
           @deprecated 22Jan14
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'likeCodeView','op');
-        */
-
-        /**
-          @deprecated 21Jan14
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'batchMergeLC','op');
-        */
-
-        /**
-          @deprecated 21Jan14
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'batchPriority30','op');
-        */
-
-        /**
-          @deprecated 21Jan14
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'batchPriority20','op');
-        */
-
-        /**
-          @deprecated 21Jan14
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'batchPriority10','op');
-        */
-
-        /**
-          @deprecated 21Jan14
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'batchPriority0','op');
-        */
-
-        /**
-          @deprecated 21Jan14
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'batchPriority','op');
-        */
-
+          Only used for legacy pages
         $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
                 'unfi','op');
-
-        /**
-          @deprecated 22Jan14
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'unfi_order','op');
         */
-
-        /**
-          @deprecated 22Jan14
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'unfi_diff','op');
-        */
-
-        /**
-          @deprecated 22Jan14
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'unfi_all','op');
-        */
-
-        /**
-          @deprecated 22Jan14
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'unfiCategories','op');
-        */
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'shelftags','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'custdata','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'custdataBackup','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'custAvailablePrefs','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'custPreferences','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'meminfo','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'memtype','op');
 
         /**
           @deprecated 22Jan14
           memtype has sufficient columns now
           table kept around until confirming it can be deleted
-        */
+          @update 06Nov14
+          No longer needs to be created on new installs
         $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
                 'memdefaults','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'memberCards','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'memDates','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'memContact','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'memContactPrefs','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'tenders','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'customReceipt','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'houseCoupons','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'houseVirtualCoupons','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'houseCouponItems','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'autoCoupons','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'disableCoupon','op');
-        
-        /**
-          @deprecated 21Jan14
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'productMargin','op');
         */
 
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'origins','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'originCountry','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'originStateProv','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'originCustomRegion','op');
-
+        /**
+          @deprecated 06Nov14 andy
+          origins table has name fields removing need for view
         $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
                 'originName','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'ProductOriginsMap','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'vendors','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'vendorItems','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'vendorContact','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'vendorDeliveries','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'vendorSKUtoPLU','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'vendorSRPs','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'vendorDepartments','op');
-
-        /**
-         @deprecated 21Jan14
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'vendorLoadScripts','op');
         */
 
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'ServiceScales','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'scaleItems','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'ServiceScaleItemMap','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'PurchaseOrder','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'PurchaseOrderItems','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'PurchaseOrderSummary','op');
-
+        /**
+          @deprecated 06Nov14 andy
+          Relates to old, never finished email statement/invoice function
         $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
                 'emailLog','op');
+        */
 
+        /**
+          @deprecated 06Nov14 andy
+          Relates to old, pre-BasicModel update mechanism
         $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
                 'UpdateLog','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'memberNotes','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'suspensions','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'reasoncodes','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'suspension_history','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'CustomerAccountSuspensions','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'cronBackup','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'customReports','op');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'custReceiptMessage','op');
-
-        $usage = new UsageStatsModel($con);
-        $ret[] = $usage->createIfNeeded($FANNIE_OP_DB);
-
-        $shrink = new ShrinkReasonsModel($con);
-        $ret[] = $shrink->createIfNeeded($FANNIE_OP_DB);
-
-        $stores = new StoresModel($con);
-        $ret[] = $stores->createIfNeeded($FANNIE_OP_DB);
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'parameters','op');
+        */
 
         return $ret;
 

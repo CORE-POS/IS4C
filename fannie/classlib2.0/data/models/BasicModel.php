@@ -227,6 +227,9 @@ class BasicModel
                     $sql .= ' NOT NULL AUTO_INCREMENT';
                 }
                 $inc = true;
+                if (!isset($definition['primary_key']) || !$definition['primary_key']) {
+                    $definition['index'] = true;
+                }
             } elseif (isset($definition['default']) && (
                 is_string($definition['default']) || is_numeric($definition['default'])
             )) {

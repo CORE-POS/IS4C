@@ -13,7 +13,6 @@ Columns:
     frontendsecurity int
     backendsecurity int
     birthdate datetime
-    
 
 Depends on:
     none
