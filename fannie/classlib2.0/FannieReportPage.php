@@ -838,7 +838,6 @@ class FannieReportPage extends FanniePage
             while(array_key_exists($i+$span,$row) && $row[$i+$span] === null && ($i+$span)<count($row)) {
                 $span++;
             }
-            $date = '';
             $styles = $color_styles;
             if ($row[$i] === "" || $row[$i] === null) {
                 $row[$i] = '&nbsp;';
