@@ -116,13 +116,10 @@ if ($validatedUser){
   $uid = $validatedUID;
 }
 elseif ($auditedUser){
-  $auditedUID = getUID($auditedUser);
-  $uid = $auditedUID;
-  require('audit.php');
   if (!empty($likeCode))
-    audit($deptSub,$auditedUser,$upc,$descript,$price,$tax,$FS,$Scale,$NoDisc,$likeCode);
+    \COREPOS\Fannie\API\lib\AuditLib::itemUpdate($upc, $likeCode);
   else
-    audit($deptSub,$auditedUser,$upc,$descript,$price,$tax,$FS,$Scale,$NoDisc);
+    \COREPOS\Fannie\API\lib\AuditLib::itemUpdate($upc);
 }
 if (!$validatedUser && !$auditedUser){
     echo "Please ";

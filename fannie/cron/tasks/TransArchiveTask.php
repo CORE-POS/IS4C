@@ -197,6 +197,7 @@ class TransArchiveTask extends FannieTask
                     }
                     if (!$created_view) {
                         $model = new DTransactionsModel($sql);
+                        $model->dlogMode(true);
                         $model->normalizeLog('dlog' . $str, $table, BasicModel::NORMALIZE_MODE_APPLY);
                         $created_view = true;
                     }
