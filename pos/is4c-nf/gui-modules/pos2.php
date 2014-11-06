@@ -197,7 +197,7 @@ class pos2 extends BasicPage {
 		}
 		var screenLockVar;
 		function enableScreenLock(){
-			screenLockVar = setTimeout('lockScreen()', <?php echo $CORE_LOCAL->get("timeout") ?>);
+			screenLockVar = setTimeout('lockScreen()', <?php printf('%d', $CORE_LOCAL->get("timeout")); ?>);
 		}
 		function lockScreen(){
 			location = '<?php echo $this->page_url; ?>gui-modules/login3.php';
