@@ -192,14 +192,11 @@ if ($validatedUser){
   $uid = $validatedUID;
 }
 elseif ($auditedUser){
-  $auditedUID = getUID($auditedUser);
-  $uid = $auditedUID;
-  include('audit.php');
 /* 2el. Notify dept manager of the new values.  */
   if (!empty($likeCode))
-    audit($sID,$auditedUser,$upc,$descript,$price,$tax,$FS,$Scale,$NoDisc,$likeCode);
+    \COREPOS\Fannie\API\lib\AuditLib::itemUpdate($upc, $likeCode);
   else
-    audit($sID,$auditedUser,$upc,$descript,$price,$tax,$FS,$Scale,$NoDisc);
+    \COREPOS\Fannie\API\lib\AuditLib::itemUpdate($upc);
 }
 
 /* 2. Insert or update per-coop products data  */
