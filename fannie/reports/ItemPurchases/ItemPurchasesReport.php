@@ -33,7 +33,7 @@ class ItemPurchasesReport extends FannieReportPage
     protected $header = "Item Purchases Report";
     protected $report_headers = array('Date','Receipt#','Total ($)','Owner#','Name');
     protected $required_fields = array('date1', 'date2');
-    protected $report_cache = 'day';
+    protected $report_cache = 'none';
 
     public $description = '[Item Purchases] lists each transaction containing a particular item';
     public $themed = true;
@@ -55,13 +55,15 @@ class ItemPurchasesReport extends FannieReportPage
                             DAY(tdate) AS day
                         FROM ' . $dlog . ' AS d
                         WHERE upc=?
+                            AND d.tdate BETWEEN ? AND ?
                         GROUP BY register_no, emp_no, trans_no,
                             YEAR(tdate),
                             MONTH(tdate),
                             DAY(tdate)
                         HAVING SUM(total) <> 0';
         $lookupP = $dbc->prepare($lookupTrans);
-        $lookupR = $dbc->execute($lookupP, array($upc));
+        $lookupR = $dbc->execute($lookupP, 
+            array($upc, $date1 . ' 00:00:00', $date2 . ' 23:59:59'));
 
         $data = array();
         // get trans-specific info
