@@ -277,7 +277,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             echo "<div class=\"alert alert-danger\">Testing Transaction DB connection failed</div>";
         } else {
             echo "<div class=\"alert alert-success\">Testing Transaction DB connection succeeded</div>";
-            $msgs = $this->create_trans_dbs($sql);
+            $msgs = $this->create_trans_dbs($sql, $FANNIE_TRANS_DB);
             foreach ($msgs as $msg) {
                 if ($msg['error'] == 0) continue;
                 echo $msg['error_msg'] . '<br />';
@@ -715,37 +715,51 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
     // create_op_dbs()
     }
 
-    function create_trans_dbs($con)
+    public function create_trans_dbs($con, $trans_db_name)
     {
         require(dirname(__FILE__).'/../config.php'); 
 
         $ret = array();
+        $models = array(
+            // TABLES
+            'ArHistoryModel',
+            'ArHistoryBackupModel',
+            'ArHistorySumModel',
+            'ArEomSummaryModel',
+            'CapturedSignatureModel',
+            'EfsnetRequestModel',
+            'EfsnetRequestModModel',
+            'EfsnetResponseModel',
+            'EfsnetTokensModel',
+            'PaycardTransactionsModel',
+            'SpecialOrdersModel',
+            'SpecialOrderDeptMapModel',
+            'SpecialOrderHistoryModel',
+            'PendingSpecialOrderModel',
+            'CompleteSpecialOrderModel',
+            'StockpurchasesModel',
+            'VoidTransHistoryModel',
+            // VIEWS
+            'CcReceiptViewModel',
+        );
+        foreach ($models as $class) {
+            $obj = new $class($con);
+            $ret[] = $obj->createIfNeeded($trans_db_name);
+        }
 
+        /**
+          @deprecated 7Nov14
+          Not used lane side
         $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
                 'alog','trans');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'PaycardTransactions','trans');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'efsnetRequest','trans');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'efsnetResponse','trans');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'efsnetRequestMod','trans');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'efsnetTokens','trans');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'ccReceiptView','trans');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'voidTransHistory','trans');
+        */
 
         /* invoice stuff is very beta; not documented yet */
+        /**
+          @deprecated 7Nov14
+          This has been hanging around forever without
+          much work. Any new inventory system would
+          be from scratch anyway.
         $invCur = "CREATE TABLE InvDelivery (
             inv_date datetime,
             upc varchar(13),
@@ -823,20 +837,14 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             $prep = $con->prepare_statement($total,$FANNIE_TRANS_DB);
             $con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
         }
-
-
+        */
         
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'ar_history_backup','trans');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'AR_EOM_Summary','trans');
-
+        /**
+          @deprecated 7Nov14
+          No longer used lane side
         $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
                 'lane_config','trans');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'CapturedSignature','trans');
+        */
 
         return $ret;
 
@@ -858,21 +866,6 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
                 'suspended','trans');
 
         $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'SpecialOrders','trans');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'SpecialOrderDeptMap','trans');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'SpecialOrderHistory','trans');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'PendingSpecialOrder','trans');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'CompleteSpecialOrder','trans');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
                 'dlog','trans');
 
         $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
@@ -889,15 +882,6 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
 
         $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
                 'ar_live_balance','trans');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'ar_history','trans');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'ar_history_sum','trans');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'stockpurchases','trans');
 
         /**
           @deprecated 22Jan14

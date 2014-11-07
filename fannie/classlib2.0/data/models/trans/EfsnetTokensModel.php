@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2013 Whole Foods Co-op
+    Copyright 2014 Whole Foods Co-op
 
     This file is part of Fannie.
 
@@ -22,32 +22,64 @@
 *********************************************************************************/
 
 /**
-  @class ArHistoryModel
+  @class EfsnetTokensModel
 */
-class ArHistoryModel extends BasicModel 
+class EfsnetTokensModel extends BasicModel
 {
 
-    protected $name = "ar_history";
+    protected $name = "efsnetTokens";
+    protected $preferred_db = 'trans';
 
     protected $columns = array(
-    'card_no' => array('type'=>'INT','index'=>True),
-    'charges' => array('type'=>'MONEY', 'default'=>0),
-    'payments' => array('type'=>'MONEY', 'default'=>0),
-    'tdate' => array('type'=>'DATETIME'),
-    'trans_num' => array('type'=>'VARCHAR(50)')
+    'expireDay' => array('type'=>'DATETIME'),
+    'refNum' => array('type'=>'VARCHAR(50)', 'primary_key'=>true),
+    'token' => array('type'=>'VARCHAR(100)', 'primary_key'=>true),
+    'processData' => array('type'=>'VARCHAR(255)'),
+    'acqRefData' => array('type'=>'VARCHAR(255)'),
     );
 
-    protected $preferred_db = 'trans';
+    public function doc()
+    {
+        return '
+Table: efsnetTokens
+
+Columns:
+    expireDay datetime
+    refNum varchar
+    token varchar
+    processData varchar
+    acqRefData
+
+Depends on:
+    efsnetRequest (table)
+    efsnetResponse (table)
+
+Use:
+This table logs tokens used for modifying
+later transactions.
+
+expireDay is when(ish) the token is no longer valid
+
+refNum maps to efsnetRequest & efsnetResponse
+records
+
+token is the actual token
+
+processData and acqRefData are additional
+values needed in addition to the token for
+certain kinds of modifying transactions
+        ';
+    }
 
     /* START ACCESSOR FUNCTIONS */
 
-    public function card_no()
+    public function expireDay()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["card_no"])) {
-                return $this->instance["card_no"];
-            } else if (isset($this->columns["card_no"]["default"])) {
-                return $this->columns["card_no"]["default"];
+            if(isset($this->instance["expireDay"])) {
+                return $this->instance["expireDay"];
+            } else if (isset($this->columns["expireDay"]["default"])) {
+                return $this->columns["expireDay"]["default"];
             } else {
                 return null;
             }
@@ -58,7 +90,7 @@ class ArHistoryModel extends BasicModel
                 throw new Exception('Invalid operator: ' . func_get_arg(1));
             }
             $filter = array(
-                'left' => 'card_no',
+                'left' => 'expireDay',
                 'right' => $value,
                 'op' => $op,
                 'rightIsLiteral' => false,
@@ -68,23 +100,23 @@ class ArHistoryModel extends BasicModel
             }
             $this->filters[] = $filter;
         } else {
-            if (!isset($this->instance["card_no"]) || $this->instance["card_no"] != func_get_args(0)) {
-                if (!isset($this->columns["card_no"]["ignore_updates"]) || $this->columns["card_no"]["ignore_updates"] == false) {
+            if (!isset($this->instance["expireDay"]) || $this->instance["expireDay"] != func_get_args(0)) {
+                if (!isset($this->columns["expireDay"]["ignore_updates"]) || $this->columns["expireDay"]["ignore_updates"] == false) {
                     $this->record_changed = true;
                 }
             }
-            $this->instance["card_no"] = func_get_arg(0);
+            $this->instance["expireDay"] = func_get_arg(0);
         }
         return $this;
     }
 
-    public function charges()
+    public function refNum()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["charges"])) {
-                return $this->instance["charges"];
-            } else if (isset($this->columns["charges"]["default"])) {
-                return $this->columns["charges"]["default"];
+            if(isset($this->instance["refNum"])) {
+                return $this->instance["refNum"];
+            } else if (isset($this->columns["refNum"]["default"])) {
+                return $this->columns["refNum"]["default"];
             } else {
                 return null;
             }
@@ -95,7 +127,7 @@ class ArHistoryModel extends BasicModel
                 throw new Exception('Invalid operator: ' . func_get_arg(1));
             }
             $filter = array(
-                'left' => 'charges',
+                'left' => 'refNum',
                 'right' => $value,
                 'op' => $op,
                 'rightIsLiteral' => false,
@@ -105,23 +137,23 @@ class ArHistoryModel extends BasicModel
             }
             $this->filters[] = $filter;
         } else {
-            if (!isset($this->instance["charges"]) || $this->instance["charges"] != func_get_args(0)) {
-                if (!isset($this->columns["charges"]["ignore_updates"]) || $this->columns["charges"]["ignore_updates"] == false) {
+            if (!isset($this->instance["refNum"]) || $this->instance["refNum"] != func_get_args(0)) {
+                if (!isset($this->columns["refNum"]["ignore_updates"]) || $this->columns["refNum"]["ignore_updates"] == false) {
                     $this->record_changed = true;
                 }
             }
-            $this->instance["charges"] = func_get_arg(0);
+            $this->instance["refNum"] = func_get_arg(0);
         }
         return $this;
     }
 
-    public function payments()
+    public function token()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["payments"])) {
-                return $this->instance["payments"];
-            } else if (isset($this->columns["payments"]["default"])) {
-                return $this->columns["payments"]["default"];
+            if(isset($this->instance["token"])) {
+                return $this->instance["token"];
+            } else if (isset($this->columns["token"]["default"])) {
+                return $this->columns["token"]["default"];
             } else {
                 return null;
             }
@@ -132,7 +164,7 @@ class ArHistoryModel extends BasicModel
                 throw new Exception('Invalid operator: ' . func_get_arg(1));
             }
             $filter = array(
-                'left' => 'payments',
+                'left' => 'token',
                 'right' => $value,
                 'op' => $op,
                 'rightIsLiteral' => false,
@@ -142,23 +174,23 @@ class ArHistoryModel extends BasicModel
             }
             $this->filters[] = $filter;
         } else {
-            if (!isset($this->instance["payments"]) || $this->instance["payments"] != func_get_args(0)) {
-                if (!isset($this->columns["payments"]["ignore_updates"]) || $this->columns["payments"]["ignore_updates"] == false) {
+            if (!isset($this->instance["token"]) || $this->instance["token"] != func_get_args(0)) {
+                if (!isset($this->columns["token"]["ignore_updates"]) || $this->columns["token"]["ignore_updates"] == false) {
                     $this->record_changed = true;
                 }
             }
-            $this->instance["payments"] = func_get_arg(0);
+            $this->instance["token"] = func_get_arg(0);
         }
         return $this;
     }
 
-    public function tdate()
+    public function processData()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["tdate"])) {
-                return $this->instance["tdate"];
-            } else if (isset($this->columns["tdate"]["default"])) {
-                return $this->columns["tdate"]["default"];
+            if(isset($this->instance["processData"])) {
+                return $this->instance["processData"];
+            } else if (isset($this->columns["processData"]["default"])) {
+                return $this->columns["processData"]["default"];
             } else {
                 return null;
             }
@@ -169,7 +201,7 @@ class ArHistoryModel extends BasicModel
                 throw new Exception('Invalid operator: ' . func_get_arg(1));
             }
             $filter = array(
-                'left' => 'tdate',
+                'left' => 'processData',
                 'right' => $value,
                 'op' => $op,
                 'rightIsLiteral' => false,
@@ -179,23 +211,23 @@ class ArHistoryModel extends BasicModel
             }
             $this->filters[] = $filter;
         } else {
-            if (!isset($this->instance["tdate"]) || $this->instance["tdate"] != func_get_args(0)) {
-                if (!isset($this->columns["tdate"]["ignore_updates"]) || $this->columns["tdate"]["ignore_updates"] == false) {
+            if (!isset($this->instance["processData"]) || $this->instance["processData"] != func_get_args(0)) {
+                if (!isset($this->columns["processData"]["ignore_updates"]) || $this->columns["processData"]["ignore_updates"] == false) {
                     $this->record_changed = true;
                 }
             }
-            $this->instance["tdate"] = func_get_arg(0);
+            $this->instance["processData"] = func_get_arg(0);
         }
         return $this;
     }
 
-    public function trans_num()
+    public function acqRefData()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["trans_num"])) {
-                return $this->instance["trans_num"];
-            } else if (isset($this->columns["trans_num"]["default"])) {
-                return $this->columns["trans_num"]["default"];
+            if(isset($this->instance["acqRefData"])) {
+                return $this->instance["acqRefData"];
+            } else if (isset($this->columns["acqRefData"]["default"])) {
+                return $this->columns["acqRefData"]["default"];
             } else {
                 return null;
             }
@@ -206,7 +238,7 @@ class ArHistoryModel extends BasicModel
                 throw new Exception('Invalid operator: ' . func_get_arg(1));
             }
             $filter = array(
-                'left' => 'trans_num',
+                'left' => 'acqRefData',
                 'right' => $value,
                 'op' => $op,
                 'rightIsLiteral' => false,
@@ -216,12 +248,12 @@ class ArHistoryModel extends BasicModel
             }
             $this->filters[] = $filter;
         } else {
-            if (!isset($this->instance["trans_num"]) || $this->instance["trans_num"] != func_get_args(0)) {
-                if (!isset($this->columns["trans_num"]["ignore_updates"]) || $this->columns["trans_num"]["ignore_updates"] == false) {
+            if (!isset($this->instance["acqRefData"]) || $this->instance["acqRefData"] != func_get_args(0)) {
+                if (!isset($this->columns["acqRefData"]["ignore_updates"]) || $this->columns["acqRefData"]["ignore_updates"] == false) {
                     $this->record_changed = true;
                 }
             }
-            $this->instance["trans_num"] = func_get_arg(0);
+            $this->instance["acqRefData"] = func_get_arg(0);
         }
         return $this;
     }

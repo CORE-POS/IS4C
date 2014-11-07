@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2013 Whole Foods Co-op
+    Copyright 2014 Whole Foods Co-op
 
     This file is part of Fannie.
 
@@ -22,22 +22,40 @@
 *********************************************************************************/
 
 /**
-  @class StockpurchasesModel
+  @class ArHistorySumModel
 */
-class StockpurchasesModel extends BasicModel 
+class ArHistorySumModel extends BasicModel
 {
 
-    protected $name = "stockpurchases";
-
+    protected $name = "ar_history_sum";
     protected $preferred_db = 'trans';
 
     protected $columns = array(
-    'card_no' => array('type'=>'INT','index'=>True),
-    'stockPurchase' => array('type'=>'MONEY'),
-    'tdate' => array('type'=>'DATETIME'),
-    'trans_num' => array('type'=>'VARCHAR(50)'),
-    'dept' => array('type'=>'INT')
+    'card_no' => array('type'=>'INT', 'primary_key'=>true),
+    'charges' => array('type'=>'MONEY'),
+    'payments' => array('type'=>'MONEY'),
+    'balance' => array('type'=>'MONEY'),
     );
+
+    public function doc()
+    {
+        return '
+Table: ar_history_sum
+
+Columns:
+    card_no int
+    charges dbms currency
+    payments dbms currency
+    balance dbms currency
+
+Depends on:
+    ar_history (table)
+
+Use:
+  Summary of all charges and payments per customer
+  (One row per customer.)
+        ';
+    }
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -78,13 +96,13 @@ class StockpurchasesModel extends BasicModel
         return $this;
     }
 
-    public function stockPurchase()
+    public function charges()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["stockPurchase"])) {
-                return $this->instance["stockPurchase"];
-            } else if (isset($this->columns["stockPurchase"]["default"])) {
-                return $this->columns["stockPurchase"]["default"];
+            if(isset($this->instance["charges"])) {
+                return $this->instance["charges"];
+            } else if (isset($this->columns["charges"]["default"])) {
+                return $this->columns["charges"]["default"];
             } else {
                 return null;
             }
@@ -95,7 +113,7 @@ class StockpurchasesModel extends BasicModel
                 throw new Exception('Invalid operator: ' . func_get_arg(1));
             }
             $filter = array(
-                'left' => 'stockPurchase',
+                'left' => 'charges',
                 'right' => $value,
                 'op' => $op,
                 'rightIsLiteral' => false,
@@ -105,23 +123,23 @@ class StockpurchasesModel extends BasicModel
             }
             $this->filters[] = $filter;
         } else {
-            if (!isset($this->instance["stockPurchase"]) || $this->instance["stockPurchase"] != func_get_args(0)) {
-                if (!isset($this->columns["stockPurchase"]["ignore_updates"]) || $this->columns["stockPurchase"]["ignore_updates"] == false) {
+            if (!isset($this->instance["charges"]) || $this->instance["charges"] != func_get_args(0)) {
+                if (!isset($this->columns["charges"]["ignore_updates"]) || $this->columns["charges"]["ignore_updates"] == false) {
                     $this->record_changed = true;
                 }
             }
-            $this->instance["stockPurchase"] = func_get_arg(0);
+            $this->instance["charges"] = func_get_arg(0);
         }
         return $this;
     }
 
-    public function tdate()
+    public function payments()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["tdate"])) {
-                return $this->instance["tdate"];
-            } else if (isset($this->columns["tdate"]["default"])) {
-                return $this->columns["tdate"]["default"];
+            if(isset($this->instance["payments"])) {
+                return $this->instance["payments"];
+            } else if (isset($this->columns["payments"]["default"])) {
+                return $this->columns["payments"]["default"];
             } else {
                 return null;
             }
@@ -132,7 +150,7 @@ class StockpurchasesModel extends BasicModel
                 throw new Exception('Invalid operator: ' . func_get_arg(1));
             }
             $filter = array(
-                'left' => 'tdate',
+                'left' => 'payments',
                 'right' => $value,
                 'op' => $op,
                 'rightIsLiteral' => false,
@@ -142,23 +160,23 @@ class StockpurchasesModel extends BasicModel
             }
             $this->filters[] = $filter;
         } else {
-            if (!isset($this->instance["tdate"]) || $this->instance["tdate"] != func_get_args(0)) {
-                if (!isset($this->columns["tdate"]["ignore_updates"]) || $this->columns["tdate"]["ignore_updates"] == false) {
+            if (!isset($this->instance["payments"]) || $this->instance["payments"] != func_get_args(0)) {
+                if (!isset($this->columns["payments"]["ignore_updates"]) || $this->columns["payments"]["ignore_updates"] == false) {
                     $this->record_changed = true;
                 }
             }
-            $this->instance["tdate"] = func_get_arg(0);
+            $this->instance["payments"] = func_get_arg(0);
         }
         return $this;
     }
 
-    public function trans_num()
+    public function balance()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["trans_num"])) {
-                return $this->instance["trans_num"];
-            } else if (isset($this->columns["trans_num"]["default"])) {
-                return $this->columns["trans_num"]["default"];
+            if(isset($this->instance["balance"])) {
+                return $this->instance["balance"];
+            } else if (isset($this->columns["balance"]["default"])) {
+                return $this->columns["balance"]["default"];
             } else {
                 return null;
             }
@@ -169,7 +187,7 @@ class StockpurchasesModel extends BasicModel
                 throw new Exception('Invalid operator: ' . func_get_arg(1));
             }
             $filter = array(
-                'left' => 'trans_num',
+                'left' => 'balance',
                 'right' => $value,
                 'op' => $op,
                 'rightIsLiteral' => false,
@@ -179,49 +197,12 @@ class StockpurchasesModel extends BasicModel
             }
             $this->filters[] = $filter;
         } else {
-            if (!isset($this->instance["trans_num"]) || $this->instance["trans_num"] != func_get_args(0)) {
-                if (!isset($this->columns["trans_num"]["ignore_updates"]) || $this->columns["trans_num"]["ignore_updates"] == false) {
+            if (!isset($this->instance["balance"]) || $this->instance["balance"] != func_get_args(0)) {
+                if (!isset($this->columns["balance"]["ignore_updates"]) || $this->columns["balance"]["ignore_updates"] == false) {
                     $this->record_changed = true;
                 }
             }
-            $this->instance["trans_num"] = func_get_arg(0);
-        }
-        return $this;
-    }
-
-    public function dept()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["dept"])) {
-                return $this->instance["dept"];
-            } else if (isset($this->columns["dept"]["default"])) {
-                return $this->columns["dept"]["default"];
-            } else {
-                return null;
-            }
-        } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'dept',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
-        } else {
-            if (!isset($this->instance["dept"]) || $this->instance["dept"] != func_get_args(0)) {
-                if (!isset($this->columns["dept"]["ignore_updates"]) || $this->columns["dept"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["dept"] = func_get_arg(0);
+            $this->instance["balance"] = func_get_arg(0);
         }
         return $this;
     }

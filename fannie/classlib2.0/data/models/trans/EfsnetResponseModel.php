@@ -22,12 +22,12 @@
 *********************************************************************************/
 
 /**
-  @class EfsnetRequestModel
+  @class EfsnetResponseModel
 */
-class EfsnetRequestModel extends BasicModel
+class EfsnetResponseModel extends BasicModel
 {
 
-    protected $name = "efsnetRequest";
+    protected $name = "efsnetResponse";
 
     protected $preferred_db = 'trans';
 
@@ -39,19 +39,69 @@ class EfsnetRequestModel extends BasicModel
     'transID' => array('type'=>'INT'),
     'datetime' => array('type'=>'DATETIME'),
     'refNum' => array('type'=>'VARCHAR(50)'),
-    'live' => array('type'=>'TINYINT'),
-    'mode' => array('type'=>'VARCHAR(32)'),
-    'amount' => array('type'=>'MONEY'),
-    'PAN' => array('type'=>'VARCHAR(19)'),
-    'issuer' => array('type'=>'VARCHAR(16)'),
-    'name' => array('type'=>'VARCHAR(50)'),
-    'manual' => array('type'=>'TINYINT'),
-    'sentPAN' => array('type'=>'TINYINT'),
-    'sentExp' => array('type'=>'TINYINT'),
-    'sentTr1' => array('type'=>'TINYINT'),
-    'sentTr2' => array('type'=>'TINYINT'),
+    'seconds' => array('type'=>'FLOAT'),
+    'commErr' => array('type'=>'INT'),
+    'httpCode' => array('type'=>'INT'),
+    'validResponse' => array('type'=>'SMALLINT'),
+    'xResponseCode' => array('type'=>'VARCHAR(4)'),
+    'xResultCode' => array('type'=>'VARCHAR(8)'),
+    'xResultMessage' => array('type'=>'VARCHAR(100)'),
+    'xTransactionID' => array('type'=>'VARCHAR(12)'),
+    'xApprovalNumber' => array('type'=>'VARCHAR(20)'),
     'efsnetRequestID' => array('type'=>'INT', 'index'=>true),
     );
+
+    public function doc()
+    {
+        return '
+Table: efsnetResponse
+
+Columns:
+    date int
+    cashierNo int
+    laneNo int
+    transNo int
+    transID int
+    datetime datetime
+    refNum varchar
+    seconds float
+    commErr int
+    httpCode int
+    validResponse smallint
+    xResponseCode varchar
+    xResultCode varchar
+    xResultMessage varchar
+    xTransactionID varchar
+    xApprovalNumber varchar
+    efsnetRequestID int
+
+Depends on:
+    efsnetRequest (table)
+
+Use:
+This table logs information that is
+returned from a credit-card payment gateway
+after sending a [non-void] request.
+All current paycard modules use this table
+structure. Future ones don\'t necessarily have
+to, but doing so may enable more code re-use.
+
+Some column usage may vary depending on a
+given gateway\'s requirements and/or formatting,
+but in general:
+
+cashierNo, laneNo, transNo, and transID are
+equivalent to emp_no, register_no, trans_no, and
+trans_id in dtransactions (respectively).
+
+seconds, commErr, and httpCode are curl-related
+entries noting how long the network request took
+and errors that occurred, if any.
+
+the x* columns vary a lot. What to store here 
+depends what the gateway returns.
+        ';
+    }
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -314,13 +364,13 @@ class EfsnetRequestModel extends BasicModel
         return $this;
     }
 
-    public function live()
+    public function seconds()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["live"])) {
-                return $this->instance["live"];
-            } else if (isset($this->columns["live"]["default"])) {
-                return $this->columns["live"]["default"];
+            if(isset($this->instance["seconds"])) {
+                return $this->instance["seconds"];
+            } else if (isset($this->columns["seconds"]["default"])) {
+                return $this->columns["seconds"]["default"];
             } else {
                 return null;
             }
@@ -331,7 +381,7 @@ class EfsnetRequestModel extends BasicModel
                 throw new Exception('Invalid operator: ' . func_get_arg(1));
             }
             $filter = array(
-                'left' => 'live',
+                'left' => 'seconds',
                 'right' => $value,
                 'op' => $op,
                 'rightIsLiteral' => false,
@@ -341,23 +391,23 @@ class EfsnetRequestModel extends BasicModel
             }
             $this->filters[] = $filter;
         } else {
-            if (!isset($this->instance["live"]) || $this->instance["live"] != func_get_args(0)) {
-                if (!isset($this->columns["live"]["ignore_updates"]) || $this->columns["live"]["ignore_updates"] == false) {
+            if (!isset($this->instance["seconds"]) || $this->instance["seconds"] != func_get_args(0)) {
+                if (!isset($this->columns["seconds"]["ignore_updates"]) || $this->columns["seconds"]["ignore_updates"] == false) {
                     $this->record_changed = true;
                 }
             }
-            $this->instance["live"] = func_get_arg(0);
+            $this->instance["seconds"] = func_get_arg(0);
         }
         return $this;
     }
 
-    public function mode()
+    public function commErr()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["mode"])) {
-                return $this->instance["mode"];
-            } else if (isset($this->columns["mode"]["default"])) {
-                return $this->columns["mode"]["default"];
+            if(isset($this->instance["commErr"])) {
+                return $this->instance["commErr"];
+            } else if (isset($this->columns["commErr"]["default"])) {
+                return $this->columns["commErr"]["default"];
             } else {
                 return null;
             }
@@ -368,7 +418,7 @@ class EfsnetRequestModel extends BasicModel
                 throw new Exception('Invalid operator: ' . func_get_arg(1));
             }
             $filter = array(
-                'left' => 'mode',
+                'left' => 'commErr',
                 'right' => $value,
                 'op' => $op,
                 'rightIsLiteral' => false,
@@ -378,23 +428,23 @@ class EfsnetRequestModel extends BasicModel
             }
             $this->filters[] = $filter;
         } else {
-            if (!isset($this->instance["mode"]) || $this->instance["mode"] != func_get_args(0)) {
-                if (!isset($this->columns["mode"]["ignore_updates"]) || $this->columns["mode"]["ignore_updates"] == false) {
+            if (!isset($this->instance["commErr"]) || $this->instance["commErr"] != func_get_args(0)) {
+                if (!isset($this->columns["commErr"]["ignore_updates"]) || $this->columns["commErr"]["ignore_updates"] == false) {
                     $this->record_changed = true;
                 }
             }
-            $this->instance["mode"] = func_get_arg(0);
+            $this->instance["commErr"] = func_get_arg(0);
         }
         return $this;
     }
 
-    public function amount()
+    public function httpCode()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["amount"])) {
-                return $this->instance["amount"];
-            } else if (isset($this->columns["amount"]["default"])) {
-                return $this->columns["amount"]["default"];
+            if(isset($this->instance["httpCode"])) {
+                return $this->instance["httpCode"];
+            } else if (isset($this->columns["httpCode"]["default"])) {
+                return $this->columns["httpCode"]["default"];
             } else {
                 return null;
             }
@@ -405,7 +455,7 @@ class EfsnetRequestModel extends BasicModel
                 throw new Exception('Invalid operator: ' . func_get_arg(1));
             }
             $filter = array(
-                'left' => 'amount',
+                'left' => 'httpCode',
                 'right' => $value,
                 'op' => $op,
                 'rightIsLiteral' => false,
@@ -415,23 +465,23 @@ class EfsnetRequestModel extends BasicModel
             }
             $this->filters[] = $filter;
         } else {
-            if (!isset($this->instance["amount"]) || $this->instance["amount"] != func_get_args(0)) {
-                if (!isset($this->columns["amount"]["ignore_updates"]) || $this->columns["amount"]["ignore_updates"] == false) {
+            if (!isset($this->instance["httpCode"]) || $this->instance["httpCode"] != func_get_args(0)) {
+                if (!isset($this->columns["httpCode"]["ignore_updates"]) || $this->columns["httpCode"]["ignore_updates"] == false) {
                     $this->record_changed = true;
                 }
             }
-            $this->instance["amount"] = func_get_arg(0);
+            $this->instance["httpCode"] = func_get_arg(0);
         }
         return $this;
     }
 
-    public function PAN()
+    public function validResponse()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["PAN"])) {
-                return $this->instance["PAN"];
-            } else if (isset($this->columns["PAN"]["default"])) {
-                return $this->columns["PAN"]["default"];
+            if(isset($this->instance["validResponse"])) {
+                return $this->instance["validResponse"];
+            } else if (isset($this->columns["validResponse"]["default"])) {
+                return $this->columns["validResponse"]["default"];
             } else {
                 return null;
             }
@@ -442,7 +492,7 @@ class EfsnetRequestModel extends BasicModel
                 throw new Exception('Invalid operator: ' . func_get_arg(1));
             }
             $filter = array(
-                'left' => 'PAN',
+                'left' => 'validResponse',
                 'right' => $value,
                 'op' => $op,
                 'rightIsLiteral' => false,
@@ -452,23 +502,23 @@ class EfsnetRequestModel extends BasicModel
             }
             $this->filters[] = $filter;
         } else {
-            if (!isset($this->instance["PAN"]) || $this->instance["PAN"] != func_get_args(0)) {
-                if (!isset($this->columns["PAN"]["ignore_updates"]) || $this->columns["PAN"]["ignore_updates"] == false) {
+            if (!isset($this->instance["validResponse"]) || $this->instance["validResponse"] != func_get_args(0)) {
+                if (!isset($this->columns["validResponse"]["ignore_updates"]) || $this->columns["validResponse"]["ignore_updates"] == false) {
                     $this->record_changed = true;
                 }
             }
-            $this->instance["PAN"] = func_get_arg(0);
+            $this->instance["validResponse"] = func_get_arg(0);
         }
         return $this;
     }
 
-    public function issuer()
+    public function xResponseCode()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["issuer"])) {
-                return $this->instance["issuer"];
-            } else if (isset($this->columns["issuer"]["default"])) {
-                return $this->columns["issuer"]["default"];
+            if(isset($this->instance["xResponseCode"])) {
+                return $this->instance["xResponseCode"];
+            } else if (isset($this->columns["xResponseCode"]["default"])) {
+                return $this->columns["xResponseCode"]["default"];
             } else {
                 return null;
             }
@@ -479,7 +529,7 @@ class EfsnetRequestModel extends BasicModel
                 throw new Exception('Invalid operator: ' . func_get_arg(1));
             }
             $filter = array(
-                'left' => 'issuer',
+                'left' => 'xResponseCode',
                 'right' => $value,
                 'op' => $op,
                 'rightIsLiteral' => false,
@@ -489,23 +539,23 @@ class EfsnetRequestModel extends BasicModel
             }
             $this->filters[] = $filter;
         } else {
-            if (!isset($this->instance["issuer"]) || $this->instance["issuer"] != func_get_args(0)) {
-                if (!isset($this->columns["issuer"]["ignore_updates"]) || $this->columns["issuer"]["ignore_updates"] == false) {
+            if (!isset($this->instance["xResponseCode"]) || $this->instance["xResponseCode"] != func_get_args(0)) {
+                if (!isset($this->columns["xResponseCode"]["ignore_updates"]) || $this->columns["xResponseCode"]["ignore_updates"] == false) {
                     $this->record_changed = true;
                 }
             }
-            $this->instance["issuer"] = func_get_arg(0);
+            $this->instance["xResponseCode"] = func_get_arg(0);
         }
         return $this;
     }
 
-    public function name()
+    public function xResultCode()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["name"])) {
-                return $this->instance["name"];
-            } else if (isset($this->columns["name"]["default"])) {
-                return $this->columns["name"]["default"];
+            if(isset($this->instance["xResultCode"])) {
+                return $this->instance["xResultCode"];
+            } else if (isset($this->columns["xResultCode"]["default"])) {
+                return $this->columns["xResultCode"]["default"];
             } else {
                 return null;
             }
@@ -516,7 +566,7 @@ class EfsnetRequestModel extends BasicModel
                 throw new Exception('Invalid operator: ' . func_get_arg(1));
             }
             $filter = array(
-                'left' => 'name',
+                'left' => 'xResultCode',
                 'right' => $value,
                 'op' => $op,
                 'rightIsLiteral' => false,
@@ -526,23 +576,23 @@ class EfsnetRequestModel extends BasicModel
             }
             $this->filters[] = $filter;
         } else {
-            if (!isset($this->instance["name"]) || $this->instance["name"] != func_get_args(0)) {
-                if (!isset($this->columns["name"]["ignore_updates"]) || $this->columns["name"]["ignore_updates"] == false) {
+            if (!isset($this->instance["xResultCode"]) || $this->instance["xResultCode"] != func_get_args(0)) {
+                if (!isset($this->columns["xResultCode"]["ignore_updates"]) || $this->columns["xResultCode"]["ignore_updates"] == false) {
                     $this->record_changed = true;
                 }
             }
-            $this->instance["name"] = func_get_arg(0);
+            $this->instance["xResultCode"] = func_get_arg(0);
         }
         return $this;
     }
 
-    public function manual()
+    public function xResultMessage()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["manual"])) {
-                return $this->instance["manual"];
-            } else if (isset($this->columns["manual"]["default"])) {
-                return $this->columns["manual"]["default"];
+            if(isset($this->instance["xResultMessage"])) {
+                return $this->instance["xResultMessage"];
+            } else if (isset($this->columns["xResultMessage"]["default"])) {
+                return $this->columns["xResultMessage"]["default"];
             } else {
                 return null;
             }
@@ -553,7 +603,7 @@ class EfsnetRequestModel extends BasicModel
                 throw new Exception('Invalid operator: ' . func_get_arg(1));
             }
             $filter = array(
-                'left' => 'manual',
+                'left' => 'xResultMessage',
                 'right' => $value,
                 'op' => $op,
                 'rightIsLiteral' => false,
@@ -563,23 +613,23 @@ class EfsnetRequestModel extends BasicModel
             }
             $this->filters[] = $filter;
         } else {
-            if (!isset($this->instance["manual"]) || $this->instance["manual"] != func_get_args(0)) {
-                if (!isset($this->columns["manual"]["ignore_updates"]) || $this->columns["manual"]["ignore_updates"] == false) {
+            if (!isset($this->instance["xResultMessage"]) || $this->instance["xResultMessage"] != func_get_args(0)) {
+                if (!isset($this->columns["xResultMessage"]["ignore_updates"]) || $this->columns["xResultMessage"]["ignore_updates"] == false) {
                     $this->record_changed = true;
                 }
             }
-            $this->instance["manual"] = func_get_arg(0);
+            $this->instance["xResultMessage"] = func_get_arg(0);
         }
         return $this;
     }
 
-    public function sentPAN()
+    public function xTransactionID()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["sentPAN"])) {
-                return $this->instance["sentPAN"];
-            } else if (isset($this->columns["sentPAN"]["default"])) {
-                return $this->columns["sentPAN"]["default"];
+            if(isset($this->instance["xTransactionID"])) {
+                return $this->instance["xTransactionID"];
+            } else if (isset($this->columns["xTransactionID"]["default"])) {
+                return $this->columns["xTransactionID"]["default"];
             } else {
                 return null;
             }
@@ -590,7 +640,7 @@ class EfsnetRequestModel extends BasicModel
                 throw new Exception('Invalid operator: ' . func_get_arg(1));
             }
             $filter = array(
-                'left' => 'sentPAN',
+                'left' => 'xTransactionID',
                 'right' => $value,
                 'op' => $op,
                 'rightIsLiteral' => false,
@@ -600,23 +650,23 @@ class EfsnetRequestModel extends BasicModel
             }
             $this->filters[] = $filter;
         } else {
-            if (!isset($this->instance["sentPAN"]) || $this->instance["sentPAN"] != func_get_args(0)) {
-                if (!isset($this->columns["sentPAN"]["ignore_updates"]) || $this->columns["sentPAN"]["ignore_updates"] == false) {
+            if (!isset($this->instance["xTransactionID"]) || $this->instance["xTransactionID"] != func_get_args(0)) {
+                if (!isset($this->columns["xTransactionID"]["ignore_updates"]) || $this->columns["xTransactionID"]["ignore_updates"] == false) {
                     $this->record_changed = true;
                 }
             }
-            $this->instance["sentPAN"] = func_get_arg(0);
+            $this->instance["xTransactionID"] = func_get_arg(0);
         }
         return $this;
     }
 
-    public function sentExp()
+    public function xApprovalNumber()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["sentExp"])) {
-                return $this->instance["sentExp"];
-            } else if (isset($this->columns["sentExp"]["default"])) {
-                return $this->columns["sentExp"]["default"];
+            if(isset($this->instance["xApprovalNumber"])) {
+                return $this->instance["xApprovalNumber"];
+            } else if (isset($this->columns["xApprovalNumber"]["default"])) {
+                return $this->columns["xApprovalNumber"]["default"];
             } else {
                 return null;
             }
@@ -627,7 +677,7 @@ class EfsnetRequestModel extends BasicModel
                 throw new Exception('Invalid operator: ' . func_get_arg(1));
             }
             $filter = array(
-                'left' => 'sentExp',
+                'left' => 'xApprovalNumber',
                 'right' => $value,
                 'op' => $op,
                 'rightIsLiteral' => false,
@@ -637,86 +687,12 @@ class EfsnetRequestModel extends BasicModel
             }
             $this->filters[] = $filter;
         } else {
-            if (!isset($this->instance["sentExp"]) || $this->instance["sentExp"] != func_get_args(0)) {
-                if (!isset($this->columns["sentExp"]["ignore_updates"]) || $this->columns["sentExp"]["ignore_updates"] == false) {
+            if (!isset($this->instance["xApprovalNumber"]) || $this->instance["xApprovalNumber"] != func_get_args(0)) {
+                if (!isset($this->columns["xApprovalNumber"]["ignore_updates"]) || $this->columns["xApprovalNumber"]["ignore_updates"] == false) {
                     $this->record_changed = true;
                 }
             }
-            $this->instance["sentExp"] = func_get_arg(0);
-        }
-        return $this;
-    }
-
-    public function sentTr1()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["sentTr1"])) {
-                return $this->instance["sentTr1"];
-            } else if (isset($this->columns["sentTr1"]["default"])) {
-                return $this->columns["sentTr1"]["default"];
-            } else {
-                return null;
-            }
-        } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'sentTr1',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
-        } else {
-            if (!isset($this->instance["sentTr1"]) || $this->instance["sentTr1"] != func_get_args(0)) {
-                if (!isset($this->columns["sentTr1"]["ignore_updates"]) || $this->columns["sentTr1"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["sentTr1"] = func_get_arg(0);
-        }
-        return $this;
-    }
-
-    public function sentTr2()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["sentTr2"])) {
-                return $this->instance["sentTr2"];
-            } else if (isset($this->columns["sentTr2"]["default"])) {
-                return $this->columns["sentTr2"]["default"];
-            } else {
-                return null;
-            }
-        } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'sentTr2',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
-        } else {
-            if (!isset($this->instance["sentTr2"]) || $this->instance["sentTr2"] != func_get_args(0)) {
-                if (!isset($this->columns["sentTr2"]["ignore_updates"]) || $this->columns["sentTr2"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["sentTr2"] = func_get_arg(0);
+            $this->instance["xApprovalNumber"] = func_get_arg(0);
         }
         return $this;
     }
