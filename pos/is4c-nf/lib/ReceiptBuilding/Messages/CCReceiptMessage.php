@@ -112,10 +112,9 @@ class CCReceiptMessage extends ReceiptMessage {
 
 			$slip .= ReceiptLib::centerString("................................................")."\n";
 			if ($sigSlip){
-				$slip .= ReceiptLib::centerString($CORE_LOCAL->get("chargeSlip1"))."\n"		// store name 
-					.ReceiptLib::centerString($CORE_LOCAL->get("chargeSlip3").", ".$CORE_LOCAL->get("chargeSlip4"))."\n"  // address
-					.ReceiptLib::centerString($CORE_LOCAL->get("chargeSlip5"))."\n"		// merchant code 
-					.ReceiptLib::centerString($CORE_LOCAL->get("receiptHeader2"))."\n\n";	// phone
+                for ($i=1; $i<= $CORE_LOCAL->get('chargeSlipCount'); $i++) {
+                    $slip .= ReceiptLib::centerString($CORE_LOCAL->get("chargeSlip" . $i))."\n";
+                }
 				$slip .= $trantype."\n"			// trans type:  purchase, canceled purchase, refund or canceled refund
 					."Card: ".$cardBrand."  ".$pan."\n"
 					."Reference:  ".$ref."\n"
