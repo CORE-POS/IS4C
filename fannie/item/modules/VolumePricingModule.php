@@ -32,10 +32,10 @@ class VolumePricingModule extends ItemModule
 
         $ret = '<div id="3for1FieldSet" class="panel panel-default">';
         $ret .=  "<div class=\"panel-heading\">
-                <a href=\"\" onclick=\"\$('#3for1FieldSet').toggle();return false;\">
+                <a href=\"\" onclick=\"\$('#VolumeFieldsetContent').toggle();return false;\">
                \"Three for a dollar\"
                 </a></div>";
-        $css = ($expand_mode == 1) ? '' : ' collapse;';
+        $css = ($expand_mode == 1) ? '' : ' collapse';
         $ret .= '<div id="VolumeFieldsetContent" class="panel-body' . $css . '">';
 
         $dbc = $this->db();
