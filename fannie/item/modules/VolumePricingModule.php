@@ -35,8 +35,8 @@ class VolumePricingModule extends ItemModule
                 <a href=\"\" onclick=\"\$('#3for1FieldSet').toggle();return false;\">
                \"Three for a dollar\"
                 </a></div>";
-        $css = ($expand_mode == 1) ? '' : 'display:none;';
-        $ret .= '<div id="VolumeFieldsetContent" class="panel-body" style="' . $css . '">';
+        $css = ($expand_mode == 1) ? '' : ' collapse;';
+        $ret .= '<div id="VolumeFieldsetContent" class="panel-body' . $css . '">';
 
         $dbc = $this->db();
         $model = new ProductsModel($dbc);
