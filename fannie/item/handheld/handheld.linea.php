@@ -279,18 +279,19 @@ if(isset($_REQUEST['upc']) && !empty($_REQUEST['upc'])){
         include('laneUpdates.php');
         include($FANNIE_ROOT.'classlib2.0/data/models/ProductsModel.php');
         $xQ = $dbc->prepare_statement("INSERT INTO prodExtra (upc) VALUES (?");
+        $productsModel = new ProductsModel($dbc);
         foreach($upcs as $upc){
-            $up = array(
-                'normal_price'=>$price,
-                'tax'=>$tax,
-                'foodstamp'=>$fs,
-                'department'=>$dept,
-                'scale'=>$scale,
-                'discount'=>$disc,
-                'qttyEnforced'=>$qttyForce,
-                'description'=>$desc
-            );
-            ProductsModel::update($upc, $up);
+            $productsModel->reset();
+            $productsModel->upc($upc);
+            $productsModel->normal_price($price);
+            $productsModel->tax($tax);
+            $productsModel->foodstamp($fs);
+            $productsModel->department($dept);
+            $productsModel->scale($scale);
+            $productsModel->discount($disc);
+            $productsModel->qttyEnforced($qttyForce);
+            $productsModel->description($desc);
+            $productsModel->save();
             if ($upc == $_REQUEST['upc'] && $_REQUEST['olditem'] == 0){
                 $dbc->exec_statement($xQ,array($upc));
             }

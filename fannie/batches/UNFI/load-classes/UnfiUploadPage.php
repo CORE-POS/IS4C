@@ -148,6 +148,7 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
                     VALUES (?,?,?,?,?,?,?,?,?,?)");
         */
         $srpP = $dbc->prepare_statement("INSERT INTO vendorSRPs (vendorID, upc, srp) VALUES (?,?,?)");
+        $productModel = new ProductsModel($dbc);
 
         /** deprecating unfi_* structures 22Jan14
         $dupeP = $dbc->prepare_statement("SELECT upcc FROM unfi_order WHERE upcc=?");
@@ -220,7 +221,10 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
             // set cost in $PRICEFILE_COST_TABLE
             $dbc->exec_statement($extraP, array($reg_unit,$upc));
-            ProductsModel::update($upc, array('cost'=>$reg_unit), True);
+            $productsModel->reset();
+            $productsModel->upc($upc);
+            $productsModel->cost($reg_unit);
+            $productsModel->save();
             // end $PRICEFILE_COST_TABLE cost tracking
 
             $args = array($brand,($sku===False?'':$sku),($size===False?'':$size),

@@ -74,7 +74,8 @@ class ItemFlagsModule extends ItemModule {
         return $ret;
     }
 
-    function SaveFormData($upc){
+    function SaveFormData($upc)
+    {
         $flags = FormLib::get_form_value('flags',array());
         if (!is_array($flags)) return False;
         $numflag = 0;   
@@ -82,7 +83,10 @@ class ItemFlagsModule extends ItemModule {
             if ($f != (int)$f) continue;
             $numflag = $numflag | (1 << ($f-1));
         }
-        return ProductsModel::update($upc,array('numflag'=>$numflag),True);
+        $model = new ProductsModel($dbc);
+        $model->upc($upc);
+        $model->numflag($numflag);
+        $model->save();
     }
 }
 
