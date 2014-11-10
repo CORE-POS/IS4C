@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2013 Whole Foods Co-op
+    Copyright 2014 Whole Foods Co-op
 
     This file is part of Fannie.
 
@@ -21,380 +21,111 @@
 
 *********************************************************************************/
 
-class DTransactionsModel extends BasicModel 
+/**
+  @class DLogModel
+*/
+class DLog90ViewModel extends DTransactionsModel
 {
 
-    protected $name = 'dtransactions';
-
+    protected $name = "dlog_90_view";
     protected $preferred_db = 'trans';
 
-    protected $columns = array(
-    'datetime'    => array('type'=>'DATETIME','index'=>True),
-    'store_id'    => array('type'=>'SMALLINT', 'index'=>true),
-    'register_no'    => array('type'=>'SMALLINT'),
-    'emp_no'    => array('type'=>'SMALLINT'),
-    'trans_no'    => array('type'=>'INT'),
-    'upc'        => array('type'=>'VARCHAR(13)','index'=>True),
-    'description'    => array('type'=>'VARCHAR(30)'),
-    'trans_type'    => array('type'=>'VARCHAR(1)','index'=>True),
-    'trans_subtype'    => array('type'=>'VARCHAR(2)'),
-    'trans_status'    => array('type'=>'VARCHAR(1)'),
-    'department'    => array('type'=>'SMALLINT','index'=>True),
-    'quantity'    => array('type'=>'DOUBLE'),
-    'scale'        => array('type'=>'TINYINT','default'=>0.00),
-    'cost'        => array('type'=>'MONEY'),
-    'unitPrice'    => array('type'=>'MONEY'),
-    'total'        => array('type'=>'MONEY'),
-    'regPrice'    => array('type'=>'MONEY'),
-    'tax'        => array('type'=>'SMALLINT'),
-    'foodstamp'    => array('type'=>'TINYINT'),
-    'discount'    => array('type'=>'MONEY'),
-    'memDiscount'    => array('type'=>'MONEY'),
-    'discountable'    => array('type'=>'TINYINT'),
-    'discounttype'    => array('type'=>'TINYINT'),
-    'voided'    => array('type'=>'TINYINT'),
-    'percentDiscount'=> array('type'=>'TINYINT'),
-    'ItemQtty'    => array('type'=>'DOUBLE'),
-    'volDiscType'    => array('type'=>'TINYINT'),
-    'volume'    => array('type'=>'TINYINT'),
-    'VolSpecial'    => array('type'=>'MONEY'),
-    'mixMatch'    => array('type'=>'VARCHAR(13)'),
-    'matched'    => array('type'=>'SMALLINT'),
-    'memType'    => array('type'=>'TINYINT'),
-    'staff'        => array('type'=>'TINYINT'),
-    'numflag'    => array('type'=>'INT','default'=>0),
-    'charflag'    => array('type'=>'VARCHAR(2)','default'=>''),
-    'card_no'    => array('type'=>'INT','index'=>True),
-    'trans_id'    => array('type'=>'INT'),
-    'pos_row_id' => array('type'=>'BIGINT UNSIGNED', 'index'=>true),
-    'store_row_id' => array('type'=>'BIGINT UNSIGNED', 'increment'=>true, 'index'=>true),
-    );
-
-    /**
-      Overrides (extends) the base function to check multiple tables that should
-      all have identical or similar structure
-        after doing a normal run of the base.
-    */
-    public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=false)
+    public function __construct($con)
     {
-        global $FANNIE_ARCHIVE_DB, $FANNIE_ARCHIVE_METHOD, $FANNIE_TRANS_DB;
-        $trans_adds = 0;
-        $log_adds = 0;
-
-        //EL If this isn't initialized it is "dlog_15" on the 2nd, preview_only=false run
-        $this->name = 'dtransactions';
-        // check self first
-        $chk = parent::normalize($db_name, $mode, $doCreate);
-        if ($chk !== false) {
-            $trans_adds += $chk;
-        }
-        $this->columns['store_row_id']['increment'] = false;
-        $this->columns['store_row_id']['primary_key'] = false;
-        $this->columns['store_row_id']['index'] = false;
-        $this->columns['pos_row_id']['index'] = false;
-        
-        $this->name = 'transarchive';
-        $chk = parent::normalize($db_name, $mode, $doCreate);
-        if ($chk !== false) {
-            $trans_adds += $chk;
-        }
-
-        $this->name = 'suspended';
-        $tmp1 = $this->columns['store_row_id'];
-        $tmp2 = $this->columns['pos_row_id'];
-        unset($this->columns['store_row_id']);
-        unset($this->columns['pos_row_id']);
-        $chk = parent::normalize($db_name, $mode, $doCreate);
-        if ($chk !== false) {
-            $trans_adds += $chk;
-        }
-        $this->columns['pos_row_id'] = $tmp2;
-        $this->columns['store_row_id'] = $tmp1;
-
-        $this->connection = FannieDB::get($FANNIE_ARCHIVE_DB);
-        if ($FANNIE_ARCHIVE_METHOD == 'partitions') {
-            $this->name = 'bigArchive';
-            $chk = parent::normalize($FANNIE_ARCHIVE_DB, $mode, $doCreate);
-            if ($chk !== false) {
-                $trans_adds += $chk;
-            }
-        } else {
-            $pattern = '/^transArchive\d\d\d\d\d\d$/';
-            $tables = $this->connection->get_tables($FANNIE_ARCHIVE_DB);
-            foreach($tables as $t) {
-                if (preg_match($pattern,$t)) {
-                    $this->name = $t;
-                    $chk = parent::normalize($FANNIE_ARCHIVE_DB, $mode, $doCreate);
-                    if ($chk !== False) {
-                        $trans_adds += $chk;
-                    }
-                }
-            }
-        }
-    
-        // move on to dlog views.
-        // dlog_15 is used for detection since it's the only
-        // actual table.
-        // In the model the datestamp field datetime is swapped out for tdate
-        // and trans_num is tacked on the end
-        $this->connection = FannieDB::get($FANNIE_TRANS_DB);
-        $this->name = 'dlog_15';
         unset($this->columns['datetime']);
         $tdate = array('tdate'=>array('type'=>'datetime','index'=>True));
         $trans_num = array('trans_num'=>array('type'=>'VARCHAR(25)'));
         $this->columns = $tdate + $this->columns + $trans_num;
-        $chk = parent::normalize($db_name, $mode, $doCreate);
-        if ($chk !== false) {
-            $log_adds += $chk;
-        }
-
-        // rebuild views
-        // use BasicModel::normalize in check mode to detect missing columns
-        // the ALTER queries it suggests won't work but the return value is
-        // still correct. If it returns > 0, the view needs to be rebuilt
-        $this->name = 'dlog';
-        ob_start();
-        $chk = parent::normalize($db_name, BasicModel::NORMALIZE_MODE_CHECK);
-        ob_end_clean();
-        if ($chk !== false && $chk > 0) {
-            $log_adds += $chk;
-            $this->normalizeLog('dlog','dtransactions',$mode);
-        }
-        $this->name = 'dlog_90_view';
-        ob_start();
-        $chk = parent::normalize($db_name, BasicModel::NORMALIZE_MODE_CHECK);
-        ob_end_clean();
-        if ($chk !== false && $chk > 0) {
-            $log_adds += $chk;
-            $this->normalizeLog('dlog_90_view','transarchive',$mode);
-        }
-
-        $this->connection = FannieDB::get($FANNIE_ARCHIVE_DB);
-        if ($FANNIE_ARCHIVE_METHOD == 'partitions') {
-            $this->name = 'dlogBig';
-            ob_start();
-            $chk = parent::normalize($FANNIE_ARCHIVE_DB, BasicModel::NORMALIZE_MODE_CHECK);
-            ob_end_clean();
-            if ($chk !== false && $chk > 0) {
-                $log_adds += $chk;
-                $this->normalizeLog('dlogBig','bigArchive',$mode);
-            }
-        } else {
-            $pattern = '/^dlog\d\d\d\d\d\d$/';
-            $tables = $this->connection->get_tables($FANNIE_ARCHIVE_DB);
-            foreach($tables as $t) {
-                if (preg_match($pattern,$t)) {
-                    $this->name = $t;
-                    ob_start();
-                    $chk = parent::normalize($FANNIE_ARCHIVE_DB, BasicModel::NORMALIZE_MODE_CHECK);
-                    ob_end_clean();
-                    if ($chk !== false && $chk > 0) {
-                        $log_adds += $chk;
-                        $this->normalizeLog($t, 'transArchive'.substr($t,4),$mode);
-                    }
-                }
-            }
-        }
-
-        // EL: Need to restore $this-columns to original values.
-        $this->connection = FannieDB::get($FANNIE_TRANS_DB);
-        unset($this->columns['tdate']);
-        unset($this->columns['trans_num']);
-        $datetime = array('datetime'=>array('type'=>'datetime','index'=>true));
-        $this->columns = $datetime + $this->columns;
-        $this->columns['store_row_id']['increment'] = true;
-        $this->columns['store_row_id']['primary_key'] = true;
+        $this->columns['store_row_id']['increment'] = false;
+        $this->columns['store_row_id']['primary_key'] = false;
         $this->columns['store_row_id']['index'] = false;
-        $this->columns['pos_row_id']['index'] = true;
+        $this->columns['pos_row_id']['index'] = false;
 
-        return $log_adds + $trans_adds;
-
-    // normalize()
-    }
-
-    public function dlogMode($switch)
-    {
-        if ($switch) {
-            unset($this->columns['datetime']);
-            $tdate = array('tdate'=>array('type'=>'datetime','index'=>True));
-            $trans_num = array('trans_num'=>array('type'=>'VARCHAR(25)'));
-            $this->columns = $tdate + $this->columns + $trans_num;
-        } else {
-            unset($this->columns['tdate']);
-            unset($this->columns['trans_num']);
-            $datetime = array('datetime'=>array('type'=>'datetime','index'=>true));
-        }
+        parent::__construct($con);
     }
 
     /**
-      Rebuild dlog style views
-      @param $view_name name of the view
-      @param $table_name underlying table
-      @param $mode the normalization mode. See BasicModel.
-
-      The view changes the column "datetime" to "tdate" and
-      adds a "trans_num" column. Otherwise it includes all
-      the columns from dtransactions. Columns "trans_type"
-      and "trans_subtype" still have translations to fix
-      older records but everyting else passes through as-is.
+      Use DTransactionsModel to normalize same-schema tables
     */
-    public function normalizeLog($view_name, $table_name, $mode=BasicModel::NORMALIZE_MODE_CHECK)
+    public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=false)
     {
-        printf("%s view: %s",
-            ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Would recreate":"Recreating", 
-            "$view_name (of table $table_name)\n"
-        );
-        if ($this->connection->table_exists($view_name)) {
-            $sql = 'DROP VIEW '.$this->connection->identifier_escape($view_name);
-            if ($mode == BasicModel::NORMALIZE_MODE_APPLY) {
-                $this->connection->query($sql);
-            }
-        }
-
-        $sql = 'CREATE VIEW '.$this->connection->identifier_escape($view_name).' AS '
-            .'SELECT '
-            .$this->connection->identifier_escape('datetime').' AS '
-            .$this->connection->identifier_escape('tdate').',';
-        $c = $this->connection; // for more concise code below
-        foreach($this->columns as $name => $definition) {
-            if ($name == 'datetime') continue;
-            elseif ($name == 'tdate') continue;
-            elseif ($name == 'trans_num'){
-                // create trans_num field
-                $sql .= $c->concat(
-                $c->convert($c->identifier_escape('emp_no'),'char'),
-                "'-'",
-                $c->convert($c->identifier_escape('register_no'),'char'),
-                "'-'",
-                $c->convert($c->identifier_escape('trans_no'),'char'),
-                ''
-                ).' as trans_num';
-            } elseif($name == 'trans_type') {
-                // type conversion for old records. Newer coupon & discount
-                // records should have correct trans_type when initially created
-                $sql .= "CASE WHEN (trans_subtype IN ('CP','IC') OR upc like('%000000052')) then 'T' 
-                    WHEN upc = 'DISCOUNT' then 'S' else trans_type end as trans_type,\n";
-            } elseif($name == 'trans_subtype'){
-                // type conversion for old records. Probably WFC quirk that can
-                // eventually go away entirely
-                $sql .= "CASE WHEN upc = 'MAD Coupon' THEN 'MA' 
-                   WHEN upc like('%00000000052') THEN 'RR' ELSE trans_subtype END as trans_subtype,\n";
-            } else {
-                $sql .= $c->identifier_escape($name).",\n";
-            }
-        }
-        $sql .= ' FROM '.$c->identifier_escape($table_name)
-            .' WHERE '.$c->identifier_escape('trans_status')
-            ." NOT IN ('D','X','Z') AND emp_no <> 9999
-            AND register_no <> 99";
-        if ($mode == BasicModel::NORMALIZE_MODE_APPLY) {
-            $this->connection->query($sql);
-        }
-
-    // normalizeLog()
+        return 0;
     }
 
-    static public function selectDlog($start, $end=false)
+    public function create()
     {
-        return self::selectStruct(True, $start, $end);
+        ob_start();
+        $this->normalizeLog($this->name, 'transarchive', BasicModel::NORMALIZE_MODE_APPLY);
+        ob_end_clean();
+
+        if ($this->connection->tableExists($this->name)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    static public function select_dlog($start, $end=false)
+    public function save()
     {
-        return self::selectDlog($start, $end);
+        return false;
     }
 
-    static public function selectDtrans($start, $end=false)
+    public function delete()
     {
-        return self::selectStruct(False, $start, $end);
+        return false;
     }
 
-    static public function select_dtrans($start, $end=false)
+    public function doc()
     {
-        return self::selectDtrans($start, $end);
-    }
+        return '
+View: dlog_90_view
 
-    /* Return the SQL FROM parameter for a given date range
-     *  i.e. the table, view or union of tables or views
-     *  in which the transaction records can be found
-     *  most efficiently.
-    */
-    static private function selectStruct($dlog, $start, $end=false)
-    {
-        global $FANNIE_TRANS_DB, $FANNIE_ARCHIVE_DB, $FANNIE_SERVER_DBMS, $FANNIE_ARCHIVE_METHOD;
-        $sep = ($FANNIE_SERVER_DBMS=='MSSQL')?'.dbo.':'.';
+Columns:
+    tdate datetime
+    register_no int
+    emp_no int
+    trans_no int
+    upc varchar
+    trans_type varchar
+    trans_subtype varchar
+    trans_status varchar
+    department int
+    quantity double
+    unitPrice dbms currency
+    total dbms currency
+    tax int
+    foodstamp int
+    ItemQtty double
+    card_no int
+    trans_id int
+    pos_row_id int
+    store_row_id int
+    trans_num varchar
 
-        if ($end === false) {
-            $end = $start;
-        }
-        $start_ts = strtotime($start);
-        $end_ts = strtotime($end);
-    
-        // today. return dlog/dtrans
-        if (date('Y-m-d',$start_ts) == date('Y-m-d')) {
-            return ($dlog) ? $FANNIE_TRANS_DB.$sep.'dlog' : $FANNIE_TRANS_DB.$sep.'dtransactions';
-        }
+Depends on:
+    transarchive (table)
 
-        $days_ago_15 = mktime(0,0,0,date('n'),date('j')-15);    
-        $days_ago_90 = mktime(0,0,0,date('n'),date('j')-90);
-
-        // both in past 15 days => dlog_15. No dtrans equivalent
-        if ($start_ts > $days_ago_15 && $end_ts > $days_ago_15 && $dlog) {
-            return $FANNIE_TRANS_DB.$sep.'dlog_15';
-        }
-
-        // same month 
-        if (date('Y',$start_ts) == date('Y',$end_ts) && date('n',$start_ts) == date('n',$end_ts)) {
-            if ($FANNIE_ARCHIVE_METHOD == 'partitions') {
-                return ($dlog) ? $FANNIE_ARCHIVE_DB.$sep.'dlogBig' : $FANNIE_ARCHIVE_DB.$sep.'bigArchive';
-            } else {
-                $yyyymm = date('Ym',$start_ts);
-                return ($dlog) ? $FANNIE_ARCHIVE_DB.$sep.'dlog'.$yyyymm : $FANNIE_ARCHIVE_DB.$sep.'transArchive'.$yyyymm;
-            }
-        }
-
-        // both in past 90 days => dlog_90_view/transarchive
-        if ($start_ts > $days_ago_90 && $end_ts > $days_ago_90) {
-            return ($dlog) ? $FANNIE_TRANS_DB.$sep.'dlog_90_view' : $FANNIE_TRANS_DB.$sep.'transarchive';
-        }
-
-        //
-        // All further options are in the archive tables
-        //
-        
-        // partitions are simple
-        if ($FANNIE_ARCHIVE_METHOD == 'partitions') {
-            return ($dlog) ? $FANNIE_ARCHIVE_DB.$sep.'dlogBig' : $FANNIE_ARCHIVE_DB.$sep.'bigArchive';
-        }
-
-        // monthly archives. build a union containing both dates.    
-        $endstamp = mktime(0,0,0,date('n',$end_ts),1,date('Y',$end_ts));
-        $startstamp = mktime(0,0,0,date('n',$start_ts),1,date('Y',$start_ts));
-        $union = '(select * from ';        
-        while($startstamp <= $endstamp) {
-            $union .= $FANNIE_ARCHIVE_DB.$sep;
-            $union .= ($dlog) ? 'dlog' : 'transArchive';
-            $union .= date('Ym',$startstamp);
-            $union .= ' union all select * from ';
-            $startstamp = mktime(0,0,0,date('n',$startstamp)+1,1,date('Y',$startstamp));
-        }
-        $union = preg_replace('/ union all select \* from $/','',$union);
-        $union .= ')';
-
-        return $union;
-
-    // selectStruct()
+Use:
+This view applies the same restrictions
+as dlog but to the table transarchive.
+With WFC\'s dayend polling, transarchive
+contains transaction entries from the past
+90 days, hence the name of this view.
+For queries in the given time frame, using
+the view can be faster or simpler than
+alternatives.
+        ';
     }
 
     /* START ACCESSOR FUNCTIONS */
 
-    public function datetime()
+    public function tdate()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["datetime"])) {
-                return $this->instance["datetime"];
-            } else if (isset($this->columns["datetime"]["default"])) {
-                return $this->columns["datetime"]["default"];
+            if(isset($this->instance["tdate"])) {
+                return $this->instance["tdate"];
+            } else if (isset($this->columns["tdate"]["default"])) {
+                return $this->columns["tdate"]["default"];
             } else {
                 return null;
             }
@@ -405,7 +136,7 @@ class DTransactionsModel extends BasicModel
                 throw new Exception('Invalid operator: ' . func_get_arg(1));
             }
             $filter = array(
-                'left' => 'datetime',
+                'left' => 'tdate',
                 'right' => $value,
                 'op' => $op,
                 'rightIsLiteral' => false,
@@ -415,12 +146,12 @@ class DTransactionsModel extends BasicModel
             }
             $this->filters[] = $filter;
         } else {
-            if (!isset($this->instance["datetime"]) || $this->instance["datetime"] != func_get_args(0)) {
-                if (!isset($this->columns["datetime"]["ignore_updates"]) || $this->columns["datetime"]["ignore_updates"] == false) {
+            if (!isset($this->instance["tdate"]) || $this->instance["tdate"] != func_get_args(0)) {
+                if (!isset($this->columns["tdate"]["ignore_updates"]) || $this->columns["tdate"]["ignore_updates"] == false) {
                     $this->record_changed = true;
                 }
             }
-            $this->instance["datetime"] = func_get_arg(0);
+            $this->instance["tdate"] = func_get_arg(0);
         }
         return $this;
     }
@@ -1827,6 +1558,43 @@ class DTransactionsModel extends BasicModel
                 }
             }
             $this->instance["store_row_id"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function trans_num()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["trans_num"])) {
+                return $this->instance["trans_num"];
+            } else if (isset($this->columns["trans_num"]["default"])) {
+                return $this->columns["trans_num"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'trans_num',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["trans_num"]) || $this->instance["trans_num"] != func_get_args(0)) {
+                if (!isset($this->columns["trans_num"]["ignore_updates"]) || $this->columns["trans_num"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["trans_num"] = func_get_arg(0);
         }
         return $this;
     }

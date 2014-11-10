@@ -722,15 +722,21 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         $ret = array();
         $models = array(
             // TABLES
+            'DTransactionsModel',
+            'TransArchiveModel',
+            'SuspendedModel',
+            'DLog15Model',
             'ArHistoryModel',
             'ArHistoryBackupModel',
             'ArHistorySumModel',
             'ArEomSummaryModel',
             'CapturedSignatureModel',
+            'CashPerformDayModel',
             'EfsnetRequestModel',
             'EfsnetRequestModModel',
             'EfsnetResponseModel',
             'EfsnetTokensModel',
+            'EquityHistorySumModel',
             'PaycardTransactionsModel',
             'SpecialOrdersModel',
             'SpecialOrderDeptMapModel',
@@ -740,7 +746,12 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             'StockpurchasesModel',
             'VoidTransHistoryModel',
             // VIEWS
+            'DLogModel',
+            'DLog90ViewModel',
             'CcReceiptViewModel',
+            'StockSumTodayModel',
+            'SuspendedTodayModel',
+            'TenderTapeGenericModel',
         );
         foreach ($models as $class) {
             $obj = new $class($con);
@@ -857,30 +868,6 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         $ret = array();
 
         $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'dtransactions','trans');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'transarchive','trans');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'suspended','trans');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'dlog','trans');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'dlog_90_view','trans');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'dlog_15','trans');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'suspendedtoday','trans');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'TenderTapeGeneric','trans');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
                 'ar_live_balance','trans');
 
         /**
@@ -889,17 +876,11 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
                 'stockSum_purch','trans');
         */
 
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'stockSumToday','trans');
-
         /**
           @deprecated 22Jan14
         $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
                 'newBalanceStockToday_test','trans');
         */
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'equity_history_sum','trans');
 
         $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
                 'equity_live_balance','trans');
@@ -913,14 +894,18 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
                 'unpaid_ar_today','trans');
 
+        /**
+          @deprecated 10Nov2014
         $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
                 'dheader','trans');
+        */
 
+        /**
+          @deprecated 10Nov2014
         $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
                 'dddItems','trans');
+        */
 
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'CashPerformDay','trans');
         /**
           @deprecated 21Jan14
         $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
@@ -964,6 +949,11 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
                 'AR_statementHistory','trans');
 
+        /**
+          @deprecated 7Nov14
+          This has been hanging around forever without
+          much work. Any new inventory system would
+          be from scratch anyway.
         $invSalesView = "CREATE VIEW InvSales AS
             select datetime as inv_date,upc,quantity,total as price
             FROM transarchive WHERE ".$con->monthdiff($con->now(),'datetime')." <= 1
@@ -1083,6 +1073,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             $prep = $con->prepare_statement($cache,$FANNIE_TRANS_DB);
             $con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
         }
+        */
         
         return $ret;
 
