@@ -277,7 +277,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             echo "<div class=\"alert alert-danger\">Testing Transaction DB connection failed</div>";
         } else {
             echo "<div class=\"alert alert-success\">Testing Transaction DB connection succeeded</div>";
-            $msgs = $this->create_trans_dbs($sql, $FANNIE_TRANS_DB);
+            $msgs = $this->create_trans_dbs($sql, $FANNIE_TRANS_DB, $FANNIE_OP_DB);
             foreach ($msgs as $msg) {
                 if ($msg['error'] == 0) continue;
                 echo $msg['error_msg'] . '<br />';
@@ -715,7 +715,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
     // create_op_dbs()
     }
 
-    public function create_trans_dbs($con, $trans_db_name)
+    public function create_trans_dbs($con, $trans_db_name, $op_db_name)
     {
         require(dirname(__FILE__).'/../config.php'); 
 
@@ -756,9 +756,13 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             'TenderTapeGenericModel', // requires dlog
             'UnpaidArBalancesModel',
             'UnpaidArTodayModel', // requires ar_history_today_sum, unpaid_ar_balances
+            'ArLiveBalanceModel', // requires ar_history_today_sum
         );
         foreach ($models as $class) {
             $obj = new $class($con);
+            if (method_exists($obj, 'addExtraDB')) {
+                $obj->addExtraDB($op_db_name);
+            }
             $ret[] = $obj->createIfNeeded($trans_db_name);
         }
 
@@ -870,9 +874,6 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         require(dirname(__FILE__).'/../config.php'); 
 
         $ret = array();
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'ar_live_balance','trans');
 
         /**
           @deprecated 22Jan14

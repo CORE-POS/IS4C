@@ -35,7 +35,7 @@ class InstallTest extends PHPUnit_Framework_TestCase
             include_once(dirname(__FILE__) . '/../install/InstallIndexPage.php');
         }
         $page = new InstallIndexPage();
-        $results = $page->create_trans_dbs($con, 'unit_test_trans');
+        $results = $page->create_trans_dbs($con, 'unit_test_trans', 'unit_test_op');
         $this->assertNotEmpty($results,'create_trans_dbs did not return an array');
         foreach ($results as $result) {
 

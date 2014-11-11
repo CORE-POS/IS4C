@@ -24,10 +24,11 @@
 /**
   @class ArLiveBalanceModel
 */
-class ArLiveBalanceModel extends ViewModel 
+class ArLiveBalanceModel extends SpanningViewModel 
 {
 
     protected $name = "ar_live_balance";
+    protected $preferred_db = 'trans';
 
     protected $columns = array(
     'card_no' => array('type'=>'INT','primary_key'=>True),
@@ -40,6 +41,10 @@ class ArLiveBalanceModel extends ViewModel
     public function definition()
     {
         global $FANNIE_OP_DB;
+        $custdata = $this->findExtraTable('custdata');
+        if ($custdata === false) {
+            return parent::definition();
+        }
 
         return '
             SELECT   
@@ -54,10 +59,34 @@ class ArLiveBalanceModel extends ViewModel
                     + (CASE WHEN t.balance IS NULL THEN 0 ELSE t.balance END)
                     AS balance,
                 (CASE WHEN t.card_no IS NULL THEN 0 ELSE 1 END) AS mark
-            FROM ' . $FANNIE_OP_DB . $this->connection->sep() . 'custdata as c 
+            FROM ' . $custdata . ' AS c
                 LEFT JOIN ar_history_sum AS a ON c.CardNo=a.card_no AND c.personNum=1
                 LEFT JOIN ar_history_today_sum AS t ON c.CardNo = t.card_no AND c.personNum=1
             WHERE c.personNum=1
+        ';
+    }
+
+    public function doc()
+    {
+        return '
+View: ar_live_balance
+
+Columns:
+    card_no int
+    totcharges (calculated)
+    totpayments (calculated)
+    balance (calculated)
+    mark (calculated)
+
+Depends on:
+    core_op.custdata (table)
+    ar_history_sum (table)
+    ar_history_today_sum (view)
+
+Use:
+This view lists real-time store charge
+balances by membership. The column "mark"
+indicates the balance changed today
         ';
     }
 
