@@ -748,10 +748,14 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             // VIEWS
             'DLogModel',
             'DLog90ViewModel',
+            'ArHistoryTodayModel', // requires dlog
+            'ArHistoryTodaySumModel', //requires dlog
             'CcReceiptViewModel',
-            'StockSumTodayModel',
+            'StockSumTodayModel', // requires dlog
             'SuspendedTodayModel',
-            'TenderTapeGenericModel',
+            'TenderTapeGenericModel', // requires dlog
+            'UnpaidArBalancesModel',
+            'UnpaidArTodayModel', // requires ar_history_today_sum, unpaid_ar_balances
         );
         foreach ($models as $class) {
             $obj = new $class($con);
@@ -888,12 +892,6 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
                 'memChargeBalance','trans');
 
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'unpaid_ar_balances','trans');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'unpaid_ar_today','trans');
-
         /**
           @deprecated 10Nov2014
         $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
@@ -940,14 +938,12 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             $FANNIE_TRANS_DB,$FANNIE_SERVER_USER,
             $FANNIE_SERVER_PW);
 
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'ar_history_today','trans');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'ar_history_today_sum','trans');
-
+        /**
+          @deprecated 11Nov14
+          No longer really used; wfc-specific
         $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
                 'AR_statementHistory','trans');
+        */
 
         /**
           @deprecated 7Nov14
