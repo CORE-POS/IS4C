@@ -59,11 +59,11 @@ class GCBalanceReceiptMessage extends ReceiptMessage {
 		$bal = "$".number_format($tempArr["Balance"],2);
 		$pan = $CORE_LOCAL->get("paycard_PAN"); // no need to mask gift card numbers
 		$slip = ReceiptLib::normalFont()
-				.ReceiptLib::centerString(".................................................")."\n"
-				.ReceiptLib::centerString($CORE_LOCAL->get("chargeSlip1"))."\n"		// store name 
-				.ReceiptLib::centerString($CORE_LOCAL->get("chargeSlip3").", ".$CORE_LOCAL->get("chargeSlip4"))."\n"  // address
-				.ReceiptLib::centerString($CORE_LOCAL->get("receiptHeader2"))."\n"	// phone
-				."\n"
+				.ReceiptLib::centerString(".................................................")."\n";
+        for ($i=1; $i<= $CORE_LOCAL->get('chargeSlipCount'); $i++) {
+            $slip .= ReceiptLib::centerString($CORE_LOCAL->get("chargeSlip" . $i))."\n";
+        }
+        $slip .= "\n"
 				."Gift Card Balance\n"
 				."Card: ".$pan."\n"
 				."Date: ".date('m/d/y h:i a')."\n"
