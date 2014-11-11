@@ -174,7 +174,8 @@ class Void extends Parser
         $query = "select upc,VolSpecial,quantity,trans_subtype,unitPrice,
             discount,memDiscount,discountable,scale,numflag,charflag,
             foodstamp,discounttype,total,cost,description,trans_type,
-            department,regPrice,tax,volDiscType,volume,mixMatch,matched
+            department,regPrice,tax,volDiscType,volume,mixMatch,matched,
+            trans_status
                    from localtemptrans where trans_id = ".$item_num;
         $db = Database::tDataConnect();
         $result = $db->query($query);
@@ -187,6 +188,12 @@ class Void extends Parser
         // 11Jun14 Andy => don't know why FS is different. legacy?
         if ($row["trans_subtype"] == "FS") {
             $total = -1 * $row["unitPrice"];
+        } elseif ($row['trans_status'] == 'R' && $row['trans_type'] == 'D') {
+            // set refund flag and let that logic reverse
+            // the total and quantity
+            $CORE_LOCAL->set('refund', 1);
+            $total = $row['total'];
+            $quantity = $row['quantity'];
         }
         $discount = -1 * $row["discount"];
         $memDiscount = -1 * $row["memDiscount"];
