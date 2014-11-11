@@ -79,8 +79,7 @@ class MemberEditor extends FanniePage {
                             $next = $list[$i+1];
                     }
                 }
-            }
-            else {
+            } else {
                 $dbc = FannieDB::get($FANNIE_OP_DB);
                 $prevP = $dbc->prepare_statement('SELECT MAX(CardNo) AS prev
                                                   FROM custdata 
@@ -130,6 +129,7 @@ class MemberEditor extends FanniePage {
             /* form was submitted. save input. */
             if (FormLib::get_form_value('saveBtn',False) !== False){
                 $whichBtn = FormLib::get_form_value('saveBtn');
+                FannieAPI::listModules('MemberModule');
                 foreach($FANNIE_MEMBER_MODULES as $mm){
                     if (class_exists($mm)) {
                         $instance = new $mm();
@@ -201,6 +201,7 @@ class MemberEditor extends FanniePage {
             $ret .= '<div class="alert alert-danger">' . $this->msgs . '</div>';
         }
         $current_width = 100;
+        FannieAPI::listModules('MemberModule');
         foreach ($FANNIE_MEMBER_MODULES as $mm) {
             if (!class_exists($mm)) {
                 continue;
