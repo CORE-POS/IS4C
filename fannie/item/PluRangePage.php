@@ -159,7 +159,7 @@ class PluRangePage extends FannieRESTfulPage
     public function get_length_number_view()
     {
         global $FANNIE_OP_DB;
-        $ret .= '<div class="well">Open range found starting at ' . $this->start_plu . '</div>'; 
+        $ret = '<div class="well">Open range found starting at ' . $this->start_plu . '</div>'; 
         $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
         $ret .= '<input type="hidden" name="start" value="' . $this->start_plu . '" />';
         $ret .= '<input type="hidden" name="number" value="' . $this->number . '" />';

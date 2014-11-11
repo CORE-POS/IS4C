@@ -68,6 +68,7 @@ class MemberSearchPage extends FanniePage {
 
             /* process each available search and merge the
                results */
+            FannieAPI::listModules('MemberModule');
             foreach($FANNIE_MEMBER_MODULES as $mm){
                 if (class_exists($mm)) {
                     $instance = new $mm();
@@ -142,6 +143,7 @@ class MemberSearchPage extends FanniePage {
             </div>';
         $searchJS = '';
         $load = array();
+        FannieAPI::listModules('MemberModule');
         foreach ($FANNIE_MEMBER_MODULES as $mm) {
             if (class_exists($mm)) {
                 $instance = new $mm();

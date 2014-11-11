@@ -101,7 +101,8 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
     protected $use_splits = false;
     protected $use_js = true;
 
-    function process_file($linedata){
+    function process_file($linedata)
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $idP = $dbc->prepare_statement("SELECT vendorID FROM vendors WHERE vendorName='UNFI' ORDER BY vendorID");
@@ -133,6 +134,11 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
         }
 
         $extraP = $dbc->prepare_statement("update prodExtra set cost=? where upc=?");
+        $prodP = $dbc->prepare('
+            UPDATE products
+            SET cost=?,
+                modified=' . $dbc->now() . '
+            WHERE upc=?');
         $itemP = $dbc->prepare_statement("INSERT INTO vendorItems 
                     (brand,sku,size,upc,units,cost,description,vendorDept,vendorID)
                     VALUES (?,?,?,?,?,?,?,?,?)");
@@ -148,13 +154,13 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
                     VALUES (?,?,?,?,?,?,?,?,?,?)");
         */
         $srpP = $dbc->prepare_statement("INSERT INTO vendorSRPs (vendorID, upc, srp) VALUES (?,?,?)");
-        $productModel = new ProductsModel($dbc);
+        $updated_upcs = array();
 
         /** deprecating unfi_* structures 22Jan14
         $dupeP = $dbc->prepare_statement("SELECT upcc FROM unfi_order WHERE upcc=?");
         */
 
-        foreach($linedata as $data){
+        foreach($linedata as $data) {
             if (!is_array($data)) continue;
 
             if (!isset($data[$UPC])) continue;
@@ -221,10 +227,8 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
             // set cost in $PRICEFILE_COST_TABLE
             $dbc->exec_statement($extraP, array($reg_unit,$upc));
-            $productsModel->reset();
-            $productsModel->upc($upc);
-            $productsModel->cost($reg_unit);
-            $productsModel->save();
+            $dbc->exec_statement($prodP, array($reg_unit,$upc));
+            $updated_upcs[] = $upc;
             // end $PRICEFILE_COST_TABLE cost tracking
 
             $args = array($brand,($sku===False?'':$sku),($size===False?'':$size),
@@ -247,7 +251,10 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $dbc->exec_statement($srpP,array($VENDOR_ID,$upc,$srp));
         }
 
-        return True;
+        $updateModel = new ProdUpdateModel($dbc);
+        $updateModel->logManyUpdates($update_upcs, 'EDIT');
+
+        return true;
     }
 
     /* clear tables before processing */
