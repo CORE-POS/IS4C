@@ -124,6 +124,61 @@ class ProdUpdateModel extends BasicModel
         return true;
     }
 
+    /**
+      Log updates to many products at once
+      @param $upcs [array] of UPCs
+      @param $type [string] update type
+      @param $user [string] username
+      @return [boolean] success
+    */
+    public function logManyUpdates($upcs, $type='UNKNOWN', $user=false)
+    {
+        $col_map = array(
+            'description' => 'description',
+            'price' => 'normal_price',
+            'salePrice' => 'special_price',
+            'cost' => 'cost',
+            'dept' => 'department',
+            'tax' => 'tax',
+            'fs' => 'foodstamp',
+            'scale' => 'scale',
+            'modified' => 'modified',
+            'forceQty' => 'qttyEnforced',
+            'noDisc' => 'discount',
+            'inUse' => 'inUse',
+        );
+
+        if (!$user) {
+            $user = FannieAuth::getUID(FannieAuth::checkLogin());
+        }
+
+        $select_cols = '?,?,';
+        $insert_cols = 'updateType,' . $this->connection->identifier_escape('user') . ',';
+        foreach ($col_map as $insert => $select) {
+            $insert_cols .= $this->connection->identifier_escape($insert) . ',';
+            $select_cols .= $this->connection->identifier_escape($select) . ',';
+        }
+        $insert_cols = substr($insert_cols, 0, strlen($insert_cols)-1);
+        $select_cols = substr($select_cols, 0, strlen($select_cols)-1);
+        
+        $args = array($type, $user);
+        $upc_in = '';
+        foreach ($upcs as $upc) {
+            $args[] = $upc;
+            $upc_in .= '?,';
+        }
+        $upc_in = substr($upc_in, 0, strlen($upc_in)-1);
+
+        $query = 'INSERT INTO prodUpdate (' . $insert_cols . ')
+                  SELECT ' . $select_cols . '
+                  FROM products
+                  WHERE upc IN (' . $upc_in . ')';
+        $prep = $this->connection->prepare($query);
+        $res = $this->connection->execute($prep, $args);
+
+        return ($ret) ? true : false;
+    }
+
     public static function add($upc,$fields){
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
