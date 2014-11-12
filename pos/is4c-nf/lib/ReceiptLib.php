@@ -1112,6 +1112,10 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False) {
 		} else {
 			/***** jqh 09/29/05 if receipt isn't full, then display receipt in old style *****/
 			$query="select linetoprint from rp_receipt WHERE " . $where . ' ORDER BY trans_id';
+            if ($arg1 == 'partial') {
+                // partial has to use localtemptrans
+                $query = str_replace('rp_receipt', 'receipt', $query);
+            }
 			$db = Database::tDataConnect();
 			$result = $db->query($query);
 			$num_rows = $db->num_rows($result);
