@@ -37,6 +37,7 @@ class ObfCategoriesModel extends BasicModel
     'laborTarget' => array('type'=>'DOUBLE'),
     'hoursTarget' => array('type'=>'DOUBLE'),
     'averageWage' => array('type'=>'MONEY'),
+    'salesPerLaborHourTarget' => array('type'=>'DOUBLE', 'default'=>0.0),
     );
 
     /* START ACCESSOR FUNCTIONS */
@@ -296,6 +297,43 @@ class ObfCategoriesModel extends BasicModel
                 }
             }
             $this->instance["averageWage"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function salesPerLaborHourTarget()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["salesPerLaborHourTarget"])) {
+                return $this->instance["salesPerLaborHourTarget"];
+            } else if (isset($this->columns["salesPerLaborHourTarget"]["default"])) {
+                return $this->columns["salesPerLaborHourTarget"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'salesPerLaborHourTarget',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["salesPerLaborHourTarget"]) || $this->instance["salesPerLaborHourTarget"] != func_get_args(0)) {
+                if (!isset($this->columns["salesPerLaborHourTarget"]["ignore_updates"]) || $this->columns["salesPerLaborHourTarget"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["salesPerLaborHourTarget"] = func_get_arg(0);
         }
         return $this;
     }

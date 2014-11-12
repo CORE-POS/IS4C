@@ -251,6 +251,39 @@ class ObfWeeklyReport extends FannieReportPage
                                         WHERE w.obfQuarterID=?
                                             AND l.obfCategoryID=?
                                             AND w.endDate <= ?');
+        /**
+          Calculate actual sales growth over
+          the last three weeks with complete
+          year-over-year basis. Used to allocate
+          labor hours using growth trend and
+          sales per labor hour goal
+        */
+        $splhWeeks = '(';
+        $splhWeekQ = '
+            SELECT c.obfWeekID
+            FROM ObfSalesCache AS c
+                INNER JOIN ObfWeeks AS w ON c.obfWeekID=w.obfWeekID
+            GROUP BY c.obfWeekID
+            HAVING SUM(c.actualSales) > 0
+            ORDER BY MAX(w.endDate) DESC';
+        $splhWeekQ = $dbc->add_select_limit($splhWeekQ, 3);
+        $splhWeekR = $dbc->query($splhWeekQ);
+        while ($splhWeekW = $dbc->fetch_row($splhWeekR)) {
+            $splhWeeks .= sprintf('%d,', $splhWeekW['obfWeekID']);
+        }
+        $splhWeeks = substr($splhWeeks, 0, strlen($splhWeeks)-1) . ')';
+        $splhGrowthQ = '
+            SELECT 
+                (SUM(c.actualSales) - SUM(c.lastYearSales)) / SUM(c.actualSales) as avgGrowth,
+                SUM(c.actualSales) AS actualSales,
+                SUM(c.lastYearSales) AS lastYearSales
+            FROM ObfSalesCache AS c
+            WHERE c.obfCategoryID = ?
+                AND c.actualSales > 0
+                AND c.obfWeekID IN ' . $splhWeeks . '
+            GROUP BY c.obfCategoryID';
+        $splhGrowthP = $dbc->prepare($splhGrowthQ);
+        $splh_info = array('actual'=>0.0, 'lastYear' => 0.0);
 
         foreach ($categories->find('name') as $category) {
             $data[] = array($category->name(), '', '', '', '', '', '', '', '',
@@ -330,8 +363,15 @@ class ObfWeeklyReport extends FannieReportPage
             );
             $data[] = $record;
 
+            $splhR = $dbc->execute($splhGrowthP, array($category->obfCategoryID()));
+            $splhW = $dbc->fetch_row($splhR);
+            $splh_info['actual'] += $splhW['actualSales'];
+            $splh_info['lastYear'] += $splhW['lastYearSales'];
+            $splh_sales_projection = $sum[1] * (1 + $splhW['avgGrowth']);
             $average_wage = $labor->hours() == 0 ? 0 : $labor->wages() / ((float)$labor->hours());
-            $proj_hours = $labor->hoursTarget();
+            // use SPLH instead of pre-allocated
+            //$proj_hours = $labor->hoursTarget();
+            $proj_hours = $splh_sales_projection / $category->salesPerLaborHourTarget();
             $proj_wages = $proj_hours * $average_wage;
 
             $quarter = $dbc->execute($quarterLaborP, 
@@ -466,7 +506,12 @@ class ObfWeeklyReport extends FannieReportPage
             if ($labor->hours() != 0) {
                 $average_wage = $labor->wages() / ((float)$labor->hours());
             }
-            $proj_hours = $labor->hoursTarget();
+            // use SPLH instead of pre-allocated
+            //$proj_hours = $labor->hoursTarget();
+            $splh_avg_growth = $this->percentGrowth($splh_info['actual'], $splh_info['lastYear']) / 100.00;
+            $splh_proj_sales = $total_sales[1] * (1 + $splh_avg_growth);
+            $proj_hours = $splh_proj_sales / $c->salesPerLaborHourTarget();
+
             $proj_wages = $proj_hours * $average_wage;
 
             $data[] = array(
