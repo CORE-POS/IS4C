@@ -121,6 +121,14 @@ class BasicModel
     protected $currently_normalizing_lane = false;
 
     /**
+      Cache table definition internally so that repeated
+      calls to find(), save(), etc don't involve multiple
+      extra queries checking table existence and 
+      structure every single time
+    */
+    protected $cached_definition = false;
+
+    /**
       Name of preferred database
     */
     protected $preferred_db = '';
@@ -187,13 +195,22 @@ class BasicModel
         }
     }
 
+    public function getDefinition()
+    {
+        if ($this->cached_definition == false) {
+            $this->cached_definition = $this->tableDefinition($this->name);
+        }
+
+        return $this->cached_definition;
+    }
+
     /**
       Create the table
       @return boolean
     */
     public function create()
     {
-        if ($this->connection->table_exists($this->fq_name)) {
+        if ($this->connection->tableExists($this->fq_name)) {
             return true;
         }
 
@@ -268,6 +285,13 @@ class BasicModel
 
         $result = $this->connection->exec_statement($sql);
 
+        /**
+          Clear out any cached definition
+        */
+        if ($result) {
+            $this->cached_definition = false;
+        }
+
         return ($result === false) ? false : true;
 
     // create()
@@ -290,7 +314,7 @@ class BasicModel
             }
         }
 
-        $table_def = $this->connection->table_definition($this->fq_name);
+        $table_def = $this->getDefinition();
 
         $sql = 'SELECT ';
         foreach($this->columns as $name => $definition) {
@@ -364,7 +388,7 @@ class BasicModel
             $sort = array($sort);
         }
 
-        $table_def = $this->connection->table_definition($this->fq_name);
+        $table_def = $this->getDefinition();
 
         $sql = 'SELECT ';
         foreach($this->columns as $name => $definition) {
@@ -572,7 +596,7 @@ class BasicModel
         $cols = '(';
         $vals = '(';
         $args = array();
-        $table_def = $this->connection->table_definition($this->fq_name);
+        $table_def = $this->getDefinition();
         foreach($this->instance as $column => $value) {
             if (isset($this->columns[$column]['increment']) && $this->columns[$column]['increment']) {
                 // omit autoincrement column from insert
@@ -623,7 +647,7 @@ class BasicModel
         $where = '1=1';
         $set_args = array();
         $where_args = array();
-        $table_def = $this->connection->table_definition($this->fq_name);
+        $table_def = $this->getDefinition();
         foreach($this->instance as $column => $value) {
             if (in_array($column, $this->unique)) {
                 $where .= ' AND '.$this->connection->identifier_escape($column).' = ?';
