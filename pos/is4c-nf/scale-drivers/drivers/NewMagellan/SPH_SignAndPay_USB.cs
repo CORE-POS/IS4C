@@ -65,6 +65,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
     private const int LCD_X_RES = 320;
     private const int LCD_Y_RES = 240;
 
+    private const int STATE_CHANGING_STATE = -1;
     private const int STATE_START_TRANSACTION = 1;
     private const int STATE_SELECT_CARD_TYPE = 2;
     private const int STATE_ENTER_PIN = 3;
@@ -157,7 +158,6 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
                     System.Console.WriteLine("USB device found");
             }
         }
-
     }
 
     public override void Read(){ 
@@ -211,6 +211,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
     }
 
     private void SetStateStart(){
+        current_state = STATE_CHANGING_STATE;
         SendReport(BuildCommand(LcdStopCapture()));
         SendReport(BuildCommand(LcdClearSignature()));
         //SendReport(BuildCommand(LcdSetClipArea(0,0,1,1)));
@@ -230,6 +231,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
     }
 
     private void SetStateReStart(){
+        current_state = STATE_CHANGING_STATE;
         SendReport(BuildCommand(LcdStopCapture()));
         SendReport(BuildCommand(PinpadCancelGetPIN()));
         SendReport(BuildCommand(LcdFillColor(0xff,0xff,0xff)));
@@ -245,6 +247,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
     }
 
     private void SetStateCardType(){
+        current_state = STATE_CHANGING_STATE;
         SendReport(BuildCommand(LcdFillColor(0xff,0xff,0xff)));
         SendReport(BuildCommand(LcdFillRectangle(0,0,LCD_X_RES-1,LCD_Y_RES-1)));
 
@@ -266,6 +269,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
     }
 
     private void SetStateEbtType(){
+        current_state = STATE_CHANGING_STATE;
         SendReport(BuildCommand(LcdFillColor(0xff,0xff,0xff)));
         SendReport(BuildCommand(LcdFillRectangle(0,0,LCD_X_RES-1,LCD_Y_RES-1)));
 
@@ -280,6 +284,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
     }
 
     private void SetStateCashBack(){
+        current_state = STATE_CHANGING_STATE;
         SendReport(BuildCommand(LcdFillColor(0xff,0xff,0xff)));
         SendReport(BuildCommand(LcdFillRectangle(0,0,LCD_X_RES-1,LCD_Y_RES-1)));
 
@@ -300,6 +305,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
     }
 
     private void SetStateGetPin(){
+        current_state = STATE_CHANGING_STATE;
         SendReport(BuildCommand(LcdStopCapture()));
         ack_counter = 0;
 
@@ -308,6 +314,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
     }
 
     private void SetStateWaitForCashier(){
+        current_state = STATE_CHANGING_STATE;
         SendReport(BuildCommand(LcdStopCapture()));
         SendReport(BuildCommand(LcdFillColor(0xff,0xff,0xff)));
         SendReport(BuildCommand(LcdFillRectangle(0,0,LCD_X_RES-1,LCD_Y_RES-1)));
@@ -322,6 +329,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
     }
 
     private void SetStateApproved(){
+        current_state = STATE_CHANGING_STATE;
         SendReport(BuildCommand(LcdStopCapture()));
         SendReport(BuildCommand(LcdFillColor(0xff,0xff,0xff)));
         SendReport(BuildCommand(LcdFillRectangle(0,0,LCD_X_RES-1,LCD_Y_RES-1)));
@@ -335,6 +343,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
     }
 
     private void SetStateGetSignature(){
+        current_state = STATE_CHANGING_STATE;
         SendReport(BuildCommand(LcdStopCapture()));
         SendReport(BuildCommand(LcdClearSignature()));
         SendReport(BuildCommand(LcdFillColor(0xff,0xff,0xff)));
@@ -529,20 +538,18 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
       subsequent writes complete without more blocking.
     */
     private void MonoReadCallback(IAsyncResult iar){
-        byte[] input = (byte[])iar.AsyncState;
-        usb_fs.EndRead(iar);
-        HandleReadData(input);        
         /* Revision: 7May13 - use locks instead
+        */
         try {
-            usb_fs.EndRead(iar);
+	    byte[] input = (byte[])iar.AsyncState;
             HandleReadData(input);        
+            usb_fs.EndRead(iar);
         }
         catch (Exception ex){
             if (this.verbose_mode > 0)
                 System.Console.WriteLine(ex);
             System.Threading.Thread.Sleep(DEFAULT_WAIT_TIMEOUT);
         }
-        */
     }
 
     private void HandleDeviceMessage(byte[] msg){
@@ -976,7 +983,8 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         }
 
         usb_fs.Write(report,0,usb_report_size);
-        ack_event.WaitOne(100, false);
+	System.Threading.Thread.Sleep(100);
+        ack_event.WaitOne(50, false);
     }
 
     private void BitmapOutput(byte[] file){
