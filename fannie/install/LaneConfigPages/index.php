@@ -22,6 +22,11 @@ You are editing a global lane configuration. Errors about writable ini.php files
 can safely be ignored. Settings are saved in the parameters table which can be synced with lanes like any
 other operational database table.
 </p>
+<p>
+<p>
+<a href="LaneTextStringPage.php" class="btn btn-default">Edit Text Strings</a> for receipt headers &amp; footers,
+on screen messages, charge slips, and check endorsing.
+</p>
 <iframe width="100%" 
     style="width:100%;" src="extra_directory_layer/index.php"
     title="Embedded Lane Config"
