@@ -33,7 +33,7 @@ class ItemPurchasesReport extends FannieReportPage
     protected $header = "Item Purchases Report";
     protected $report_headers = array('Date','Receipt#','Total ($)','Owner#','Name');
     protected $required_fields = array('date1', 'date2');
-    protected $report_cache = 'none';
+    protected $report_cache = 'day';
 
     public $description = '[Item Purchases] lists each transaction containing a particular item';
     public $themed = true;
