@@ -124,10 +124,14 @@ class PIMemberPage extends PIKillerPage {
             $dates->save();
         }
 
-        $upc = FormLib::get_form_value('upc');
-        if ($upc != ''){
+        $upc = FormLib::get_form_value('upc', false);
+        if ($upc !== false){
             $card = $this->get_model($dbc, 'MemberCardsModel', array('card_no'=>$this->card_no));
-            $card->upc(str_pad($upc,13,'0',STR_PAD_LEFT));
+            if ($upc != '') {
+                $card->upc(str_pad($upc,13,'0',STR_PAD_LEFT));
+            } else {
+                $card->upc('');
+            }
             $card->save();
             $card->pushToLanes();
         }
