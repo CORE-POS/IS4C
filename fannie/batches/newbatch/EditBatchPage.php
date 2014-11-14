@@ -879,7 +879,8 @@ class EditBatchPage extends FannieRESTfulPage
         
         $ret = "<span class=\"newBatchBlack\"><b>Batch name</b>: $name</span><br />";
         $ret .= "<a href=\"BatchListPage.php\">Back to batch list</a> | ";
-        $ret .= "<a href=\"{$FANNIE_URL}admin/labels/BatchShelfTags.php?batchID%5B%5D=$id\">Print shelf tags</a> | ";
+        $ret .= "<a href=\"\" onclick=\"printSigns();return false;\">Print Sale Signs</a> | ";
+        $ret .= "<a href=\"{$FANNIE_URL}admin/labels/BatchShelfTags.php?batchID%5B%5D=$id\">Print Shelf Tags</a> | ";
         $ret .= "<a href=\"\" onclick=\"generateTags($id); return false;\">Auto-tag</a> | ";
         if ($cp > 0) {
             $ret .= "<a href=\"EditBatchPage.php?id=$id&paste=1\">Paste Items ($cp)</a> | ";
@@ -1002,6 +1003,7 @@ class EditBatchPage extends FannieRESTfulPage
                 $loc .= 'Shelf '.$fetchW['shelf'];
             }
             $ret .= "<td bgcolor=$colors[$c]>".$loc.'</td>';
+            $ret .= '<input type="hidden" class="batch-hidden-upc" value="' . $fetchW['upc'] . '" />';
 
             $ret .= "</tr>";
             if (substr($fetchW['upc'], 0, 2) == "LC") {

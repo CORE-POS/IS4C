@@ -280,3 +280,14 @@ function savePairedPricing(id)
     });
 }
 
+function printSigns()
+{
+    var myform = $('<form action="../../admin/labels/SignFromSearch.php" method="post"/>');
+    $('.batch-hidden-upc').each(function() {
+        var upc_in = $('<input name="u[]" />').val($(this).val());
+        myform.append(upc_in);
+    });
+    $(document.body).append(myform);
+    myform.submit();
+}
+
