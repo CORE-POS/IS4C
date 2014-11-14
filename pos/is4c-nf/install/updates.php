@@ -1,6 +1,8 @@
 <?php
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
+include('../ini.php');
+CoreState::loadParams();
 ?>
 <html>
 <head>

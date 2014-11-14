@@ -26,8 +26,9 @@ ini_set('display_errors','1');
 
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
-if (file_exists('../ini.php'))
+if (file_exists('../ini.php')) {
     include('../ini.php');
+}
 include('InstallUtilities.php');
 ?>
 <html>
@@ -107,7 +108,7 @@ if (is_array($CORE_LOCAL->get('LaneMap'))) {
 }
 ?>
 <tr>
-    <td style="width:30%;">Lane number:</td>
+    <td style="width:30%;">Lane number*:</td>
     <?php if ($CORE_LOCAL->get('laneno') !== '' && $CORE_LOCAL->get('laneno') == 0) { ?>
     <td>0 (Zero)</td>
     <?php } elseif ($register_id_is_mapped) { ?>
@@ -117,7 +118,7 @@ if (is_array($CORE_LOCAL->get('LaneMap'))) {
     <?php } ?>
 </tr>
 <tr>
-    <td>Store number:</td>
+    <td>Store number*:</td>
     <?php if ($CORE_LOCAL->get('store_id') !== '' && $CORE_LOCAL->get('store_id') == 0) { ?>
     <td>0 (Zero)</td>
     <?php } elseif ($store_id_is_mapped) { ?>
@@ -133,11 +134,11 @@ if (is_array($CORE_LOCAL->get('LaneMap'))) {
     </td>
 </tr>
 <tr>
-    <td>Lane database host: </td>
+    <td>Lane database host*: </td>
     <td><?php echo InstallUtilities::installTextField('localhost', '127.0.0.1', InstallUtilities::INI_SETTING); ?></td>
 </tr>
 <tr>
-    <td>Lane database type:</td>
+    <td>Lane database type*:</td>
     <td>
     <?php
     $db_opts = array('mysql'=>'MySQL','mssql'=>'SQL Server',
@@ -148,11 +149,11 @@ if (is_array($CORE_LOCAL->get('LaneMap'))) {
     </td>
 </tr>
 <tr>
-    <td>Lane user name:</td>
+    <td>Lane user name*:</td>
     <td><?php echo InstallUtilities::installTextField('localUser', 'root', InstallUtilities::INI_SETTING); ?></td>
 </tr>
 <tr>
-    <td>Lane password:</td>
+    <td>Lane password*:</td>
     <td>
     <?php
     echo InstallUtilities::installTextField('localPass', '', InstallUtilities::INI_SETTING, true, array('type'=>'password'));
@@ -160,7 +161,7 @@ if (is_array($CORE_LOCAL->get('LaneMap'))) {
     </td>
 </tr>
 <tr>
-    <td>Lane operational DB:</td>
+    <td>Lane operational DB*:</td>
     <td><?php echo InstallUtilities::installTextField('pDatabase', 'opdata', InstallUtilities::INI_SETTING); ?></td>
 </tr>
 <tr>
@@ -215,13 +216,13 @@ if ($sql === False) {
         }
         echo '</div>';
     }
-    //echo "</textarea>";
+
 }
 ?>
 </div> <!-- noteTxt -->
 </td></tr>
 <tr>
-    <td>Lane transaction DB:</td>
+    <td>Lane transaction DB*:</td>
     <td><?php echo InstallUtilities::installTextField('tDatabase', 'translog', InstallUtilities::INI_SETTING); ?></td>
 </tr>
 <tr>
@@ -296,6 +297,13 @@ if ($sql === False ) {
 </td>
 </tr>
 <?php } else { $gotDBs=2; } // end local lane db config that does not apply on lane#0 / server ?> 
+<tr><td colspan="3">
+<?php 
+if ($gotDBs == 2 && $CORE_LOCAL->get('laneno') != 0) {
+    InstallUtilities::validateConfiguration();
+}
+?>
+</td></tr>
 <tr>
     <td>Server database host: </td>
     <td><?php echo InstallUtilities::installTextField('mServer', '127.0.0.1'); ?></td>
@@ -521,14 +529,6 @@ function create_op_dbs($db,$type){
 
     InstallUtilities::createIfNeeded($db, $type, $name, 'unpaid_ar_today', 'op', $errors);
 
-    // Update lane_config structure if needed
-    if ($db->table_exists('lane_config', $name)){
-        $def = $db->table_definition('lane_config', $name);
-        if (!isset($def['keycode']) || !isset($def['value']))
-            $db->query('DROP TABLE lane_config', $name);
-    }
-    InstallUtilities::createIfNeeded($db, $type, $name, 'lane_config', 'op', $errors);
-
     InstallUtilities::createIfNeeded($db, $type, $name, 'parameters', 'op', $errors);
     $chk = $db->query('SELECT param_key FROM parameters', $name);
     if (!$db->fetch_row($chk)) {
@@ -536,6 +536,7 @@ function create_op_dbs($db,$type){
     } else {
         $db->end_query($chk);
     }
+    CoreState::loadParams();
     
     return $errors;
 }
