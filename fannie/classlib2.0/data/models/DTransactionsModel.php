@@ -212,6 +212,20 @@ class DTransactionsModel extends BasicModel
     // normalize()
     }
 
+    public function dlogMode($switch)
+    {
+        if ($switch) {
+            unset($this->columns['datetime']);
+            $tdate = array('tdate'=>array('type'=>'datetime','index'=>True));
+            $trans_num = array('trans_num'=>array('type'=>'VARCHAR(25)'));
+            $this->columns = $tdate + $this->columns + $trans_num;
+        } else {
+            unset($this->columns['tdate']);
+            unset($this->columns['trans_num']);
+            $datetime = array('datetime'=>array('type'=>'datetime','index'=>true));
+        }
+    }
+
     /**
       Rebuild dlog style views
       @param $view_name name of the view
@@ -269,6 +283,7 @@ class DTransactionsModel extends BasicModel
                 $sql .= $c->identifier_escape($name).",\n";
             }
         }
+        $sql = preg_replace("/,\n$/","\n",$sql);
         $sql .= ' FROM '.$c->identifier_escape($table_name)
             .' WHERE '.$c->identifier_escape('trans_status')
             ." NOT IN ('D','X','Z') AND emp_no <> 9999

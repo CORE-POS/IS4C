@@ -137,7 +137,8 @@ class TransArchiveTask extends FannieTask
         foreach ($dates as $date) {
             /* figure out which monthly archive dtransactions data belongs in */
             list($year, $month, $day) = explode('-', $date);
-            $table = 'transArchive'.$year.$month;
+            $yyyymm = $year.$month;
+            $table = 'transArchive'.$yyyymm;
 
             if ($FANNIE_ARCHIVE_METHOD == "partitions") {
                 // we're just partitioning
@@ -180,7 +181,6 @@ class TransArchiveTask extends FannieTask
                         . ' Details: ' . $ex->getMessage(), FannieTask::TASK_WORST_ERROR);
                 }
             } else if (!$sql->table_exists($table)) {
-                // 20Nov12 EL Add "TABLE".
                 $query = "CREATE TABLE $table LIKE $FANNIE_TRANS_DB.dtransactions";
                 if ($sql->dbms_name() == 'mssql') {
                     $query = "SELECT * INTO $table FROM $FANNIE_TRANS_DB.dbo.dtransactions
@@ -197,7 +197,8 @@ class TransArchiveTask extends FannieTask
                     }
                     if (!$created_view) {
                         $model = new DTransactionsModel($sql);
-                        $model->normalizeLog('dlog' . $str, $table, BasicModel::NORMALIZE_MODE_APPLY);
+                        $model->dlogMode(true);
+                        $model->normalizeLog('dlog' . $yyyymm, $table, BasicModel::NORMALIZE_MODE_APPLY);
                         $created_view = true;
                     }
                 } catch (Exception $ex) {
@@ -276,7 +277,7 @@ class TransArchiveTask extends FannieTask
                     ");
                 } catch (Exception $ex) {
                     /**
-                    @severity: tables aren't used for antying
+                    @severity: tables aren't used for anything
                     */
                     echo $this->cronMsg('Summary error with sumRingSalesByDay. Details: '
                         . $ex->getMessage(), FannieTask::TASK_TRIVIAL_ERROR);
