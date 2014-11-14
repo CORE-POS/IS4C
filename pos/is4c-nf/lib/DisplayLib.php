@@ -775,7 +775,6 @@ static public function drawItems($top_item, $rows, $highlight)
 		$ret .= "</div>";
 	} else {
 
-        /*
 		$query_range = "select trans_id,description,total,comment,status,lineColor
 		       		from screendisplay where trans_id >= ".$top_item." and trans_id <= "
 				.($top_item + $rows)." order by trans_id";
@@ -786,7 +785,6 @@ static public function drawItems($top_item, $rows, $highlight)
 		for ($i = 0; $i < $num_rows; $i++) {
 			$screenRecords[] = $db_range->fetch_array($result_range);
         }
-        */
         /**
           30Oct2014 Andy
           Idea here is to look up the currently displayed items and
@@ -795,8 +793,13 @@ static public function drawItems($top_item, $rows, $highlight)
           leaving the query above for reference in case I screwed something
           up and the old method of drawing the screen needs to be
           quickly re-enabled.
+
+          14Nov2014 Andy
+          Disabled for the sake of putting together a release.
+          Will go into testing following the release and be included in
+          the next one
         */
-        $screenRecords = self::screenDisplay($top_item, $top_item + $rows);
+        //$screenRecords = self::screenDisplay($top_item, $top_item + $rows);
 
         foreach ($screenRecords as $row) {
 
