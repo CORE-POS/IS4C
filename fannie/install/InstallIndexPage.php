@@ -313,7 +313,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             echo "<div class=\"alert alert-danger\">Testing Archive DB connection failed</div>";
         } else {
             echo "<div class=\"alert alert-success\">Testing Archive DB connection succeeded</div>";
-            $msgs = $this->create_archive_dbs($sql);
+            $msgs = $this->create_archive_dbs($sql, $FANNIE_ARCHIVE_DB, $FANNIE_ARCHIVE_METHOD);
             foreach ($msgs as $msg) {
                 if ($msg['error'] == 0) continue;
                 echo $msg['error_msg'] . '<br />';
@@ -833,128 +833,56 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
     // create_dlogs()
     }
 
-    function create_archive_dbs($con) {
+    function create_archive_dbs($con, $archive_db_name, $archive_method) 
+    {
         require(dirname(__FILE__).'/../config.php'); 
 
         $ret = array();
-
-        $dstr = date("Ym");
-        $archive = "transArchive".$dstr;
-        $dbconn = ".";
-        if ($FANNIE_SERVER_DBMS == "MSSQL")
-            $dbconn = ".dbo.";
-
-        if ($FANNIE_ARCHIVE_METHOD == "partitions")
-            $archive = "bigArchive";
-
-        $query = "CREATE TABLE $archive LIKE 
-            {$FANNIE_TRANS_DB}{$dbconn}dtransactions";
-        if ($FANNIE_SERVER_DBMS == "MSSQL"){
-            $query = "SELECT TOP 1 * INTO $archive FROM 
-                {$FANNIE_TRANS_DB}{$dbconn}dtransactions";
+        $dbms = strtoupper($con->dbms_name()); // code below expect capitalization
+        $models = array();
+        if ($archive_method == 'partitions') {
+            $models[] = 'BigArchiveModel';
+            $models[] = 'DLogBigModel';
+        } else {
+            $models[] = 'MonthlyArchiveModel';
+            $models[] = 'MonthlyDLogModel';
         }
-        if (!$con->table_exists($archive,$FANNIE_ARCHIVE_DB)){
-            $create = $con->prepare_statement($query,$FANNIE_ARCHIVE_DB);
-            $con->exec_statement($create,array(),$FANNIE_ARCHIVE_DB);
-            // create the first partition if needed
-            if ($FANNIE_ARCHIVE_METHOD == "partitions"){
-                $con->query('ALTER TABLE bigArchive CHANGE COLUMN store_row_id store_row_id BIGINT UNSIGNED');
-                $p = "p".date("Ym");
-                $limit = date("Y-m-d",mktime(0,0,0,date("n")+1,1,date("Y")));
-                $partQ = sprintf("ALTER TABLE `bigArchive` 
-                    PARTITION BY RANGE(TO_DAYS(`datetime`)) 
-                    (PARTITION %s 
-                        VALUES LESS THAN (TO_DAYS('%s'))
-                    )",$p,$limit);
-                $prep = $con->prepare_statement($partQ);
-                $con->exec_statement($prep);
+        foreach ($models as $class) {
+            $obj = new $class($con);
+            if (method_exists($obj, 'setDate')) {
+                $obj->setDate(date('Y'), date('m'));
             }
+            $ret[] = $obj->createIfNeeded($archive_db_name);
         }
 
-        $dlogView = "SELECT
-            datetime AS tdate,
-            register_no,
-            emp_no,
-            trans_no,
-            upc,
-            description,
-            CASE WHEN (trans_subtype IN ('CP','IC') OR upc like('%000000052')) then 'T' WHEN upc = 'DISCOUNT' then 'S' else trans_type end as trans_type,
-            CASE WHEN upc = 'MAD Coupon' THEN 'MA' 
-               WHEN upc like('%00000000052') THEN 'RR' ELSE trans_subtype END as trans_subtype,
-            trans_status,
-            department,
-            quantity,
-            scale,
-            cost,
-            unitPrice,
-            total,
-            regPrice,
-            tax,
-            foodstamp,
-            discount,
-            memDiscount,
-            discountable,
-            discounttype,
-            voided,
-            percentDiscount,
-            ItemQtty,
-            volDiscType,
-            volume,
-            VolSpecial,
-            mixMatch,
-            matched,
-            memType,
-            staff,
-            numflag,
-            charflag,
-            card_no,
-            trans_id,
-            pos_row_id,
-            store_row_id,
-            ".$con->concat(
-                $con->convert('emp_no','char'),"'-'",
-                $con->convert('register_no','char'),"'-'",
-                $con->convert('trans_no','char'),'')
-            ." as trans_num
-            FROM $archive
-            WHERE trans_status NOT IN ('D','X','Z')
-            AND emp_no <> 9999 and register_no <> 99";
-
-        $dlog_view = ($FANNIE_ARCHIVE_METHOD != "partitions") ? "dlog".$dstr : "dlogBig";
-        if (!$con->table_exists($dlog_view,$FANNIE_ARCHIVE_DB)){
-            $prep = $con->prepare_statement("CREATE VIEW $dlog_view AS $dlogView",
-                $FANNIE_ARCHIVE_DB);
-            $con->exec_statement($prep,array(),$FANNIE_ARCHIVE_DB);
-        }
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+        $ret[] = create_if_needed($con,$dbms,$archive_db_name,
                 'sumUpcSalesByDay','arch');
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+        $ret[] = create_if_needed($con,$dbms,$archive_db_name,
                 'sumRingSalesByDay','arch');
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+        $ret[] = create_if_needed($con,$dbms,$archive_db_name,
                 'vRingSalesToday','arch');
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+        $ret[] = create_if_needed($con,$dbms,$archive_db_name,
                 'sumDeptSalesByDay','arch');
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+        $ret[] = create_if_needed($con,$dbms,$archive_db_name,
                 'vDeptSalesToday','arch');
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+        $ret[] = create_if_needed($con,$dbms,$archive_db_name,
                 'sumFlaggedSalesByDay','arch');
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+        $ret[] = create_if_needed($con,$dbms,$archive_db_name,
                 'sumMemSalesByDay','arch');
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+        $ret[] = create_if_needed($con,$dbms,$archive_db_name,
                 'sumMemTypeSalesByDay','arch');
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+        $ret[] = create_if_needed($con,$dbms,$archive_db_name,
                 'sumTendersByDay','arch');
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+        $ret[] = create_if_needed($con,$dbms,$archive_db_name,
                 'sumDiscountsByDay','arch');
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+        $ret[] = create_if_needed($con,$dbms,$archive_db_name,
                 'reportDataCache','arch');
 
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+        $ret[] = create_if_needed($con,$dbms,$archive_db_name,
                 'weeksLastQuarter','arch');
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+        $ret[] = create_if_needed($con,$dbms,$archive_db_name,
                 'productWeeklyLastQuarter','arch');
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+        $ret[] = create_if_needed($con,$dbms,$archive_db_name,
                 'productSummaryLastQuarter','arch');
 
         return $ret;
