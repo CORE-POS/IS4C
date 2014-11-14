@@ -390,9 +390,9 @@ class ObfWeeklyReport extends FannieReportPage
 
             $data[] = array(
                 'Hours',
-                '',
+                $splh_sales_projection,
                 number_format($proj_hours, 0),
-                '',
+                $splhW['avgGrowth'],
                 number_format($labor->hours(), 0),
                 sprintf('%.2f%%', $this->percentGrowth($labor->hours(), $proj_hours)),
                 '',
@@ -445,7 +445,7 @@ class ObfWeeklyReport extends FannieReportPage
             $data[] = array(
                 'Sales per Hour',
                 '',
-                number_format($dept_proj / $proj_hours, 2),
+                number_format($splh_sales_projection / $proj_hours, 2),
                 '',
                 number_format($labor->hours() == 0 ? 0 : $sum[0] / $labor->hours(), 2),
                 sprintf('%.2f%%', $this->percentGrowth(($labor->hours() == 0 ? 0 : $sum[0]/$labor->hours()), $dept_proj/$proj_hours)),
@@ -567,7 +567,7 @@ class ObfWeeklyReport extends FannieReportPage
             $data[] = array(
                 'Sales per Hour',
                 '',
-                sprintf('%.2f', $proj_total / $proj_hours),
+                sprintf('%.2f', $splh_proj_sales / $proj_hours),
                 '',
                 number_format($labor->hours() == 0 ? 0 : $total_sales[0] / $labor->hours(), 2),
                 '',
@@ -690,10 +690,13 @@ class ObfWeeklyReport extends FannieReportPage
 
         $quarter_actual_sph = ($qtd_sales)/($qtd_hours);
         $quarter_proj_sph = ($qtd_plan)/($qtd_proj_hours);
+        // calculate based on rolling weekly sales
+        $splh_avg_growth = $this->percentGrowth($splh_info['actual'], $splh_info['lastYear']) / 100.00;
+        $splh_proj_sales = $total_sales[1] * (1+$splh_avg_growth);
         $data[] = array(
             'Sales per Hour',
             '',
-            sprintf('%.2f', $proj_total / $total_proj_hours),
+            sprintf('%.2f', $splh_proj_sales / $total_proj_hours),
             '',
             number_format($total_hours == 0 ? 0 : $total_sales[0] / $total_hours, 2),
             '',
