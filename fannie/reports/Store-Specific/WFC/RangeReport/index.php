@@ -67,6 +67,7 @@ if(isset($_REQUEST['date']) && isset($_REQUEST['date2'])){
    $ddiff = "'$d1 00:00:00' AND '$d2 23:59:59'";
 }
 $dates = array($d1.' 00:00:00',$d2.' 23:59:59');
+$date_ids = array(date('Ymd', strtotime($d1)), date('Y-m-d', strtotime($d2)));
 
 if (!isset($_GET['excel']))
     echo "<br /><a href=index.php?date=$repDate&date2=$repDate2&excel=yes>Click here for Excel version</a>";
@@ -76,15 +77,15 @@ echo '<br>Report run ' . $today. ' for ' . $repDate." to ".$repDate2."<br />";
 $dlog = DTransactionsModel::selectDlog($repDate,$repDate2);
 //var_dump($dlog);
 $dlog = "trans_archive.dlogBig";
-$ARCH = $FANNIE_SERVER_DBMS=='MSSQL' ? $FANNIE_ARCHIVE_DB.'.dbo.' : $FANNIE_ARCHIVE_DB.'.';
+$WAREHOUSE = $FANNIE_PLUGIN_SETTINGS['WarehouseDatabase'] . ($FANNIE_SERVER_DBMS=='MSSQL' ? '.dbo.' : '.');
 
 $tenderQ = $dbc->prepare_statement("SELECT t.TenderName,-sum(d.total) as total, SUM(d.quantity)
-FROM {$ARCH}sumTendersByDay as d ,tenders as t 
-WHERE d.tdate BETWEEN ? AND ?
-AND d.tender_code = t.TenderCode
+FROM {$WAREHOUSE}sumTendersByDay as d ,tenders as t 
+WHERE d.date_id BETWEEN ? AND ?
+AND d.trans_subtype = t.TenderCode
 and d.total <> 0
 GROUP BY t.TenderName");
-$tenderR = $dbc->exec_statement($tenderQ,$dates);
+$tenderR = $dbc->exec_statement($tenderQ,$date_ids);
 $tenders = array("Cash"=>array(10120,0.0,0),
         "Check"=>array(10120,0.0,0),
         "Credit Card"=>array(10120,0.0,0),
@@ -114,13 +115,13 @@ echo tablify($tenders,array(1,0,2,3),array("Account","Type","Amount","Count"),
          array($ALIGN_LEFT,$ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT),2);
 
 
-$pCodeQ = $dbc->prepare_statement("SELECT d.salesCode,-1*sum(l.total) as total,min(l.dept_ID) 
-FROM {$ARCH}sumDeptSalesByDay as l join departments as d on l.dept_ID = d.dept_no
-WHERE tdate BETWEEN ? AND ?
-AND l.dept_ID < 600 AND l.dept_ID <> 0
+$pCodeQ = $dbc->prepare_statement("SELECT d.salesCode,-1*sum(l.total) as total,min(l.department) 
+FROM {$WAREHOUSE}sumDeptSalesByDay as l join departments as d on l.department = d.dept_no
+WHERE date_id BETWEEN ? AND ?
+AND l.department < 600 AND l.department <> 0
 GROUP BY d.salesCode
 order by d.salesCode");
-$pCodeR = $dbc->exec_statement($pCodeQ,$dates);
+$pCodeR = $dbc->exec_statement($pCodeQ,$date_ids);
 $pCodes = array("41201"=>array(0.0),
         "41205"=>array(0.0),
         "41300"=>array(0.0),
@@ -161,20 +162,20 @@ echo tablify($pCodes,array(0,1),array("pCode","Sales"),
          array($ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY),1);
 
 $saleSumQ = $dbc->prepare_statement("SELECT -1*sum(l.total) as totalSales
-FROM {$ARCH}sumDeptSalesByDay as l
-WHERE tdate BETWEEN ? AND ?
-AND l.dept_ID < 600 AND l.dept_ID <> 0");
-$saleSumR = $dbc->exec_statement($saleSumQ,$dates);
+FROM {$WAREHOUSE}sumDeptSalesByDay as l
+WHERE date_id BETWEEN ? AND ?
+AND l.department < 600 AND l.department <> 0");
+$saleSumR = $dbc->exec_statement($saleSumQ,$date_ids);
 echo "<br /><b><u>Total Sales</u></b><br />";
 echo sprintf("%.2f<br />",array_pop($dbc->fetch_row($saleSumR)));
 
-$otherQ = $dbc->prepare_statement("SELECT d.dept_ID,t.dept_name, -1*sum(total) as total 
-FROM {$ARCH}sumDeptSalesByDay as d join departments as t ON d.dept_ID = t.dept_no
-WHERE tdate BETWEEN ? AND ?
-AND (d.dept_ID >300)AND d.dept_ID <> 0 
-and d.dept_ID <> 610
-and d.dept_ID not between 500 and 599
-GROUP BY d.dept_ID, t.dept_name order by d.dept_ID");
+$otherQ = $dbc->prepare_statement("SELECT d.department,t.dept_name, -1*sum(total) as total 
+FROM {$WAREHOUSE}sumDeptSalesByDay as d join departments as t ON d.department = t.dept_no
+WHERE date_id BETWEEN ? AND ?
+AND (d.department >300)AND d.department <> 0 
+and d.department <> 610
+and d.department not between 500 and 599
+GROUP BY d.department, t.dept_name order by d.department");
 $otherR = $dbc->exec_statement($otherQ,$dates);
 $others = array("600"=>array("64410","SUPPLIES",0.0),
         "604"=>array("&nbsp;","MISC PO",0.0),
@@ -228,11 +229,11 @@ echo "<br /><b><u>Actual Tax Collected</u></b><br />";
 echo sprintf("%.2f<br />",array_pop($dbc->fetch_row($taxSumR)));
 
 $transQ = $dbc->prepare_statement("SELECT SUM(d.total),SUM(d.quantity),SUM(d.transCount),m.memdesc
-    FROM {$ARCH}sumMemTypeSalesByDay as d LEFT JOIN
+    FROM {$WAREHOUSE}sumMemTypeSalesByDay as d LEFT JOIN
     memTypeID as m ON m.memTypeID=d.memType
-    WHERE d.tdate BETWEEN ? AND ?
+    WHERE d.date_id BETWEEN ? AND ?
     GROUP BY d.memType, m.memdesc");
-$transR = $dbc->exec_statement($transQ,$dates);
+$transR = $dbc->exec_statement($transQ,$date_ids);
 $transinfo = array("Member"=>array(0,0.0,0.0,0.0,0.0),
            "Non Member"=>array(0,0.0,0.0,0.0,0.0),
            "Staff Member"=>array(0,0.0,0.0,0.0,0.0),

@@ -855,6 +855,10 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             $ret[] = $obj->createIfNeeded($archive_db_name);
         }
 
+        /**
+          14Nov2014 Andy
+          Removing these structures. Duplicates for most exist
+          in the CoreWarehouse database. 
         $ret[] = create_if_needed($con,$dbms,$archive_db_name,
                 'sumUpcSalesByDay','arch');
         $ret[] = create_if_needed($con,$dbms,$archive_db_name,
@@ -875,6 +879,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
                 'sumTendersByDay','arch');
         $ret[] = create_if_needed($con,$dbms,$archive_db_name,
                 'sumDiscountsByDay','arch');
+        */
         $ret[] = create_if_needed($con,$dbms,$archive_db_name,
                 'reportDataCache','arch');
 
