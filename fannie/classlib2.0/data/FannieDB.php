@@ -55,8 +55,7 @@ class FannieDB
             $previous_db = self::$db->defaultDatabase();
         }
 
-        self::$db->default_db = $db_name;
-        self::$db->query('use '.$db_name);
+        self::$db->setDefaultDB($db_name);
 
         return self::$db;
     }
