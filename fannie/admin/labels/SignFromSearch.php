@@ -167,7 +167,7 @@ class SignFromSearch extends FannieRESTfulPage
             $this->signage_mod = $mod;
             return true;
         } else {
-            $mods = FannieAPI::listModules('FannieSignage');
+            $mods = FannieAPI::listModules('\COREPOS\Fannie\API\item\FannieSignage');
             if (isset($mods[0])) {
                 $this->signage_mod = $mods[0];
                 return true;
