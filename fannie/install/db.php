@@ -80,7 +80,13 @@ function duplicate_structure($dbms,$table1,$table2){
 */
 function dropDeprecatedStructure($con, $db_name, $table_name, $is_view=true)
 {
-    $ret = array('db'=>$db_name,'struct'=>$table_name,'error'=>0,'error_msg'=>'');
+    $ret = array(
+        'db'=>$db_name,
+        'struct'=>$table_name,
+        'error'=>0,
+        'error_msg'=>'',
+        'deprecated'=>true,
+    );
 
     if ($con->table_exists($table_name, $db_name)) {
         $dropQ = 'DROP '.($is_view ? 'VIEW' : 'TABLE').' '

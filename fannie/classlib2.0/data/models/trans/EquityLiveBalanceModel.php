@@ -24,10 +24,11 @@
 /**
   @class EquityLiveBalanceModel
 */
-class EquityLiveBalanceModel extends ViewModel 
+class EquityLiveBalanceModel extends SpanningViewModel 
 {
 
     protected $name = "equity_live_balance";
+    protected $preferred_db = 'trans';
 
     protected $columns = array(
     'memnum' => array('type'=>'INT','primary_key'=>True),
@@ -37,7 +38,11 @@ class EquityLiveBalanceModel extends ViewModel
 
     public function definition()
     {
-        global $FANNIE_OP_DB;
+        $meminfo = $this->findExtraTable('meminfo');
+        if ($meminfo === false) {
+            return parent::definition();
+        }
+
         return '
             SELECT
                 m.card_no AS memnum,
@@ -51,11 +56,32 @@ class EquityLiveBalanceModel extends ViewModel
                     END AS payments,
                 CASE WHEN a.startdate IS NULL THEN b.startdate
                     ELSE a.startdate END AS startdate
-            FROM ' . $FANNIE_OP_DB . $this->connection->sep() . 'meminfo AS m 
+            FROM ' . $meminfo . ' AS m 
                 LEFT JOIN equity_history_sum AS a ON a.card_no=m.card_no
                 LEFT JOIN stockSumToday AS b ON m.card_no=b.card_no
             WHERE a.card_no IS NOT NULL 
                 OR b.card_no IS NOT NULL
+        ';
+    }
+
+    public function doc()
+    {
+        return '
+View: equity_live_balance
+
+Columns:
+    memnum int
+    payments (calculated)
+    startdate datetime
+
+Depends on:
+    core_op.meminfo (table)
+    equit_history_sum (table)
+    stockSum_today (view)
+
+Use:
+This view lists real-time equity
+balances by membership
         ';
     }
 

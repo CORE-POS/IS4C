@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2013 Whole Foods Co-op
+    Copyright 2014 Whole Foods Co-op
 
     This file is part of Fannie.
 
@@ -22,20 +22,19 @@
 *********************************************************************************/
 
 /**
-  @class ArLiveBalanceModel
+  @class MemChargeBalanceModel
 */
-class ArLiveBalanceModel extends SpanningViewModel 
+class MemChargeBalanceModel extends SpanningViewModel
 {
 
-    protected $name = "ar_live_balance";
+    protected $name = "memChargeBalance";
     protected $preferred_db = 'trans';
 
     protected $columns = array(
-    'card_no' => array('type'=>'INT','primary_key'=>True),
-    'totcharges' => array('type'=>'MONEY'),
-    'totpayments' => array('type'=>'MONEY'),
+    'CardNo' => array('type'=>'INT'),
+    'availBal' => array('type'=>'MONEY'),
     'balance' => array('type'=>'MONEY'),
-    'mark' => array('type'=>'TINYINT')
+    'mark' => array('type'=>'INT'),
     );
 
     public function definition()
@@ -46,58 +45,51 @@ class ArLiveBalanceModel extends SpanningViewModel
         }
 
         return '
-            SELECT   
-                c.CardNo AS card_no,
-                (CASE WHEN a.charges IS NULL THEN 0 ELSE a.charges END)
-                    + (CASE WHEN t.charges IS NULL THEN 0 ELSE t.charges END)
-                    AS totcharges,
-                (CASE WHEN a.payments IS NULL THEN 0 ELSE a.payments END)
-                    + (CASE WHEN t.payments IS NULL THEN 0 ELSE t.payments END)
-                    AS totpayments,
-                (CASE WHEN a.balance IS NULL THEN 0 ELSE a.balance END)
-                    + (CASE WHEN t.balance IS NULL THEN 0 ELSE t.balance END)
-                    AS balance,
-                (CASE WHEN t.card_no IS NULL THEN 0 ELSE 1 END) AS mark
-            FROM ' . $custdata . ' AS c
-                LEFT JOIN ar_history_sum AS a ON c.CardNo=a.card_no AND c.personNum=1
-                LEFT JOIN ar_history_today_sum AS t ON c.CardNo = t.card_no AND c.personNum=1
-            WHERE c.personNum=1
-        ';
+        SELECT c.CardNo, 
+            CASE 
+                WHEN a.balance IS NULL THEN c.ChargeLimit
+                ELSE c.ChargeLimit - a.balance END
+            AS availBal,
+            CASE WHEN a.balance is NULL THEN 0 ELSE a.balance END AS balance,
+            CASE WHEN a.mark IS NULL THEN 0 ELSE a.mark END AS mark   
+        FROM ' . $custdata  . ' AS c 
+            LEFT JOIN ar_live_balance AS a ON c.CardNo = a.card_no
+        WHERE c.personNum = 1';
     }
-
+    
     public function doc()
     {
         return '
-View: ar_live_balance
+View: memChargeBalance
 
 Columns:
-    card_no int
-    totcharges (calculated)
-    totpayments (calculated)
+    CardNo int
+    availBal (calculated) 
     balance (calculated)
     mark (calculated)
 
 Depends on:
     core_op.custdata (table)
-    ar_history_sum (table)
-    ar_history_today_sum (view)
+    ar_live_balance (view of t.dtransactions -> .v.dlog)
 
 Use:
 This view lists real-time store charge
-balances by membership. The column "mark"
-indicates the balance changed today
+ balances by membership.
+This view gets pushed to the lanes as a table
+ to speed things up
+The "mark" column indicates an account
         ';
     }
 
     /* START ACCESSOR FUNCTIONS */
 
-    public function card_no()
+    public function CardNo()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["card_no"])) {
-                return $this->instance["card_no"];
-            } else if (isset($this->columns["card_no"]["default"])) {
-                return $this->columns["card_no"]["default"];
+            if(isset($this->instance["CardNo"])) {
+                return $this->instance["CardNo"];
+            } else if (isset($this->columns["CardNo"]["default"])) {
+                return $this->columns["CardNo"]["default"];
             } else {
                 return null;
             }
@@ -108,7 +100,7 @@ indicates the balance changed today
                 throw new Exception('Invalid operator: ' . func_get_arg(1));
             }
             $filter = array(
-                'left' => 'card_no',
+                'left' => 'CardNo',
                 'right' => $value,
                 'op' => $op,
                 'rightIsLiteral' => false,
@@ -118,23 +110,23 @@ indicates the balance changed today
             }
             $this->filters[] = $filter;
         } else {
-            if (!isset($this->instance["card_no"]) || $this->instance["card_no"] != func_get_args(0)) {
-                if (!isset($this->columns["card_no"]["ignore_updates"]) || $this->columns["card_no"]["ignore_updates"] == false) {
+            if (!isset($this->instance["CardNo"]) || $this->instance["CardNo"] != func_get_args(0)) {
+                if (!isset($this->columns["CardNo"]["ignore_updates"]) || $this->columns["CardNo"]["ignore_updates"] == false) {
                     $this->record_changed = true;
                 }
             }
-            $this->instance["card_no"] = func_get_arg(0);
+            $this->instance["CardNo"] = func_get_arg(0);
         }
         return $this;
     }
 
-    public function totcharges()
+    public function availBal()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["totcharges"])) {
-                return $this->instance["totcharges"];
-            } else if (isset($this->columns["totcharges"]["default"])) {
-                return $this->columns["totcharges"]["default"];
+            if(isset($this->instance["availBal"])) {
+                return $this->instance["availBal"];
+            } else if (isset($this->columns["availBal"]["default"])) {
+                return $this->columns["availBal"]["default"];
             } else {
                 return null;
             }
@@ -145,7 +137,7 @@ indicates the balance changed today
                 throw new Exception('Invalid operator: ' . func_get_arg(1));
             }
             $filter = array(
-                'left' => 'totcharges',
+                'left' => 'availBal',
                 'right' => $value,
                 'op' => $op,
                 'rightIsLiteral' => false,
@@ -155,49 +147,12 @@ indicates the balance changed today
             }
             $this->filters[] = $filter;
         } else {
-            if (!isset($this->instance["totcharges"]) || $this->instance["totcharges"] != func_get_args(0)) {
-                if (!isset($this->columns["totcharges"]["ignore_updates"]) || $this->columns["totcharges"]["ignore_updates"] == false) {
+            if (!isset($this->instance["availBal"]) || $this->instance["availBal"] != func_get_args(0)) {
+                if (!isset($this->columns["availBal"]["ignore_updates"]) || $this->columns["availBal"]["ignore_updates"] == false) {
                     $this->record_changed = true;
                 }
             }
-            $this->instance["totcharges"] = func_get_arg(0);
-        }
-        return $this;
-    }
-
-    public function totpayments()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["totpayments"])) {
-                return $this->instance["totpayments"];
-            } else if (isset($this->columns["totpayments"]["default"])) {
-                return $this->columns["totpayments"]["default"];
-            } else {
-                return null;
-            }
-        } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'totpayments',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
-        } else {
-            if (!isset($this->instance["totpayments"]) || $this->instance["totpayments"] != func_get_args(0)) {
-                if (!isset($this->columns["totpayments"]["ignore_updates"]) || $this->columns["totpayments"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["totpayments"] = func_get_arg(0);
+            $this->instance["availBal"] = func_get_arg(0);
         }
         return $this;
     }

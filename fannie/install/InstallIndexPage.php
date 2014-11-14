@@ -282,20 +282,9 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
                 if ($msg['error'] == 0) continue;
                 echo $msg['error_msg'] . '<br />';
             }
-            $msgs = $this->create_dlogs($sql);
-            foreach ($msgs as $msg) {
-                if ($msg['error'] == 0) continue;
-                echo $msg['error_msg'] . '<br />';
-            }
             $createdTrans = true;
         }
         if ($createdOps && $createdTrans) {
-            $msgs = $this->create_delayed_dbs();
-            foreach ($msgs as $msg) {
-                if ($msg['error'] == 0) continue;
-                echo $msg['error_msg'] . '<br />';
-            }
-
             // connected to both databases
             // collapse config fields
             $this->add_onload_command('$(\'#serverConfTable\').hide();');
@@ -710,6 +699,10 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
                 'UpdateLog','op');
         */
 
+        $ret[] = dropDeprecatedStructure($con, $op_db_name, 'expingMems', true);
+
+        $ret[] = dropDeprecatedStructure($con, $op_db_name, 'expingMems_thisMonth', true);
+
         return $ret;
 
     // create_op_dbs()
@@ -757,6 +750,9 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             'UnpaidArBalancesModel',
             'UnpaidArTodayModel', // requires ar_history_today_sum, unpaid_ar_balances
             'ArLiveBalanceModel', // requires ar_history_today_sum
+            'EquityLiveBalanceModel', // requires stockSumToday
+            'MemChargeBalanceModel', // requires ar_live_balance,
+            'HouseCouponThisMonthModel', // requires dlog_90_view
         );
         foreach ($models as $class) {
             $obj = new $class($con);
@@ -773,90 +769,21 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
                 'alog','trans');
         */
 
-        /* invoice stuff is very beta; not documented yet */
-        /**
-          @deprecated 7Nov14
-          This has been hanging around forever without
-          much work. Any new inventory system would
-          be from scratch anyway.
-        $invCur = "CREATE TABLE InvDelivery (
-            inv_date datetime,
-            upc varchar(13),
-            vendor_id int,
-            quantity double,
-            price float,
-            INDEX (upc))";
-        if (!$con->table_exists('InvDelivery',$FANNIE_TRANS_DB)){
-            $prep = $con->prepare_statement($invCur,$FANNIE_TRANS_DB);
-            $con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
-        }
-
-        $invCur = "CREATE TABLE InvDeliveryLM (
-            inv_date datetime,
-            upc varchar(13),
-            vendor_id int,
-            quantity double,
-            price float)";
-        if (!$con->table_exists('InvDeliveryLM',$FANNIE_TRANS_DB)){
-            $prep = $con->prepare_statement($invCur,$FANNIE_TRANS_DB);
-            $con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
-        }
-
-        $invArc = "CREATE TABLE InvDeliveryArchive (
-            inv_date datetime,
-            upc varchar(13),
-            vendor_id int,
-            quantity double,
-            price float,
-            INDEX(upc))";
-        if (!$con->table_exists('InvDeliveryArchive',$FANNIE_TRANS_DB)){
-            $prep = $con->prepare_statement($invArc,$FANNIE_TRANS_DB);
-            $con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
-        }
-
-        $invRecent = "CREATE VIEW InvRecentOrders AS
-            SELECT inv_date,upc,sum(quantity) as quantity,
-            sum(price) as price
-            FROM InvDelivery GROUP BY inv_date,upc
-            UNION ALL
-            SELECT inv_date,upc,sum(quantity) as quantity,
-            sum(price) as price
-            FROM InvDeliveryLM GROUP BY inv_date,upc";
-        if (!$con->table_exists('InvRecentOrders',$FANNIE_TRANS_DB)){
-            $prep = $con->prepare_statement($invRecent,$FANNIE_TRANS_DB);
-            $con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
-        }
-
-        $union = "CREATE VIEW InvDeliveryUnion AS
-            select upc,vendor_id,sum(quantity) as quantity,
-            sum(price) as price,max(inv_date) as inv_date
-            FROM InvDelivery
-            GROUP BY upc,vendor_id
-            UNION ALL
-            select upc,vendor_id,sum(quantity) as quantity,
-            sum(price) as price,max(inv_date) as inv_date
-            FROM InvDeliveryLM
-            GROUP BY upc,vendor_id
-            UNION ALL
-            select upc,vendor_id,sum(quantity) as quantity,
-            sum(price) as price,max(inv_date) as inv_date
-            FROM InvDeliveryArchive
-            GROUP BY upc,vendor_id";
-        if (!$con->table_exists("InvDeliveryUnion",$FANNIE_TRANS_DB)){
-            $prep = $con->prepare_statement($union,$FANNIE_TRANS_DB);
-            $con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
-        }
-
-        $total = "CREATE VIEW InvDeliveryTotals AS
-            select upc,sum(quantity) as quantity,
-            sum(price) as price,max(inv_date) as inv_date
-            FROM InvDeliveryUnion
-            GROUP BY upc";
-        if (!$con->table_exists("InvDeliveryTotals",$FANNIE_TRANS_DB)){
-            $prep = $con->prepare_statement($total,$FANNIE_TRANS_DB);
-            $con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
-        }
-        */
+        $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvDelivery', true);
+        $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvDeliveryLM', true);
+        $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvDeliveryArchive', true);
+        $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvRecentOrders', true);
+        $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvDeliveryUnion', true);
+        $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvDeliveryTotals', true);
+        $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvSales', true);
+        $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvRecentSales', true);
+        $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvSalesArchive', true);
+        $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvSalesUnion', true);
+        $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvSalesTotals', true);
+        $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvSalesAdjustments', true);
+        $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvAdjustTotals', true);
+        $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'Inventory', true);
+        $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvCache', true);
         
         /**
           @deprecated 7Nov14
@@ -876,24 +803,6 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         $ret = array();
 
         /**
-          @deprecated 22Jan14
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'stockSum_purch','trans');
-        */
-
-        /**
-          @deprecated 22Jan14
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'newBalanceStockToday_test','trans');
-        */
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'equity_live_balance','trans');
-
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'memChargeBalance','trans');
-
-        /**
           @deprecated 10Nov2014
         $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
                 'dheader','trans');
@@ -911,170 +820,17 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
                 'CashPerformDay_cache','trans');
         */
 
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'houseCouponThisMonth','trans');
-
+        /**
+          14Nov2014 Andy
+          Not sure this is the correct way to cache & compare
+          product UPCs with vendor SKUs
         $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
                 'skuMovementSummary','trans');
+        */
 
         return $ret;
 
     // create_dlogs()
-    }
-
-    function create_delayed_dbs(){
-        require(dirname(__FILE__).'/../config.php'); 
-
-        $ret = array();
-
-        $con = db_test_connect($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
-            $FANNIE_OP_DB,$FANNIE_SERVER_USER,
-            $FANNIE_SERVER_PW);
-
-        $ret[] = dropDeprecatedStructure($con, $FANNIE_OP_DB, 'expingMems', true);
-
-        $ret[] = dropDeprecatedStructure($con, $FANNIE_OP_DB, 'expingMems_thisMonth', true);
-
-        $con = db_test_connect($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
-            $FANNIE_TRANS_DB,$FANNIE_SERVER_USER,
-            $FANNIE_SERVER_PW);
-
-        /**
-          @deprecated 11Nov14
-          No longer really used; wfc-specific
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'AR_statementHistory','trans');
-        */
-
-        /**
-          @deprecated 7Nov14
-          This has been hanging around forever without
-          much work. Any new inventory system would
-          be from scratch anyway.
-        $invSalesView = "CREATE VIEW InvSales AS
-            select datetime as inv_date,upc,quantity,total as price
-            FROM transarchive WHERE ".$con->monthdiff($con->now(),'datetime')." <= 1
-            AND scale=0 AND trans_status NOT IN ('X','R') 
-            AND trans_type = 'I' AND trans_subtype <> '0'
-            AND register_no <> 99 AND emp_no <> 9999";
-        if (!$con->table_exists("InvSales",$FANNIE_TRANS_DB)){
-            $prep = $con->prepare_statement($invSalesView,$FANNIE_TRANS_DB);
-            $con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
-        }
-
-        $invRecentSales = "CREATE VIEW InvRecentSales AS
-            select t.upc, 
-            max(t.inv_date) as mostRecentOrder,
-            sum(CASE WHEN s.quantity IS NULL THEN 0 ELSE s.quantity END) as quantity,
-            sum(CASE WHEN s.price IS NULL THEN 0 ELSE s.price END) as price
-            from InvDeliveryTotals as t
-            left join InvSales as s
-            on t.upc=s.upc and
-            ".$con->datediff('s.inv_date','t.inv_date')." >= 0
-            group by t.upc";
-        if (!$con->table_exists("InvRecentSales",$FANNIE_TRANS_DB)){
-            $prep = $con->prepare_statement($invRecentSales,$FANNIE_TRANS_DB);
-            $con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
-        }
-
-        $invSales = "CREATE TABLE InvSalesArchive (
-            inv_date datetime,
-            upc varchar(13),
-            quantity double,
-            price float,
-            INDEX(upc))";
-        if (!$con->table_exists('InvSalesArchive',$FANNIE_TRANS_DB)){
-            $prep = $con->prepare_statement($invSales,$FANNIE_TRANS_DB);
-            $con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
-        }
-
-        $union = "CREATE VIEW InvSalesUnion AS
-            select upc,sum(quantity) as quantity,
-            sum(price) as price
-            FROM InvSales
-            WHERE ".$con->monthdiff($con->now(),'inv_date')." = 0
-            GROUP BY upc
-            UNION ALL
-            select upc,sum(quantity) as quantity,
-            sum(price) as price
-            FROM InvSalesArchive
-            GROUP BY upc";
-        if (!$con->table_exists("InvSalesUnion",$FANNIE_TRANS_DB)){
-            $prep = $con->prepare_statement($union,$FANNIE_TRANS_DB);
-            $con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
-        }
-
-        $total = "CREATE VIEW InvSalesTotals AS
-            select upc,sum(quantity) as quantity,
-            sum(price) as price
-            FROM InvSalesUnion
-            GROUP BY upc";
-        if (!$con->table_exists("InvSalesTotals",$FANNIE_TRANS_DB)){
-            $prep = $con->prepare_statement($total,$FANNIE_TRANS_DB);
-            $con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
-        }
-            
-        $adj = "CREATE TABLE InvAdjustments (
-            inv_date datetime,
-            upc varchar(13),
-            diff double,
-            INDEX(upc))";
-        if (!$con->table_exists("InvAdjustments",$FANNIE_TRANS_DB)){
-            $prep = $con->prepare_statement($adj,$FANNIE_TRANS_DB);
-            $con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
-        }
-
-        $adjTotal = "CREATE VIEW InvAdjustTotals AS
-            SELECT upc,sum(diff) as diff,max(inv_date) as inv_date
-            FROM InvAdjustments
-            GROUP BY upc";
-        if (!$con->table_exists("InvAdjustTotals",$FANNIE_TRANS_DB)){
-            $prep = $con->prepare_statement($adjTotal,$FANNIE_TRANS_DB);
-            $con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
-        }
-
-        $opstr = $FANNIE_OP_DB;
-        if ($FANNIE_SERVER_DBMS=="mssql") $opstr .= ".dbo";
-        $inv = "CREATE VIEW Inventory AS
-            SELECT d.upc,
-            d.quantity AS OrderedQty,
-            CASE WHEN s.quantity IS NULL THEN 0
-                ELSE s.quantity END AS SoldQty,
-            CASE WHEN a.diff IS NULL THEN 0
-                ELSE a.diff END AS Adjustments,
-            CASE WHEN a.inv_date IS NULL THEN '1900-01-01'
-                ELSE a.inv_date END AS LastAdjustDate,
-            d.quantity - CASE WHEN s.quantity IS NULL
-                THEN 0 ELSE s.quantity END + CASE WHEN
-                a.diff IS NULL THEN 0 ELSE a.diff END
-                AS CurrentStock
-            FROM InvDeliveryTotals AS d
-            INNER JOIN $opstr.vendorItems AS v 
-            ON d.upc = v.upc
-            LEFT JOIN InvSalesTotals AS s
-            ON d.upc = s.upc LEFT JOIN
-            InvAdjustTotals AS a ON d.upc=a.upc";
-        if (!$con->table_exists("Inventory",$FANNIE_TRANS_DB)){
-            $prep = $con->prepare_statement($inv,$FANNIE_TRANS_DB);
-            $con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
-        }
-
-        $cache = "CREATE TABLE InvCache (
-            upc varchar(13),
-            OrderedQty int,
-            SoldQty int,
-            Adjustments int,
-            LastAdjustDate datetime,
-            CurrentStock int)";
-        if (!$con->table_exists("InvCache",$FANNIE_TRANS_DB)){
-            $prep = $con->prepare_statement($cache,$FANNIE_TRANS_DB);
-            $con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
-        }
-        */
-        
-        return $ret;
-
-    // create_delayed_dbs()
     }
 
     function create_archive_dbs($con) {

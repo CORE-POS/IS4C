@@ -24,7 +24,11 @@ class InstallTest extends PHPUnit_Framework_TestCase
                 'Error creating '.$result['db'].'.'.$result['struct'].': '.$result['error_msg']);
 
             $exists = $con->tableExists($result['struct']);
-            $this->assertEquals(true, $exists, 'Structure ' . $result['struct'] . ' was not created.');
+            if (isset($result['deprecated']) && $result['deprecated']) {
+                $this->assertEquals(false, $exists, 'Deprecated structure ' . $result['struct'] . ' was not removed.');
+            } else {
+                $this->assertEquals(true, $exists, 'Structure ' . $result['struct'] . ' was not created.');
+            }
         }
     }
 
@@ -47,7 +51,11 @@ class InstallTest extends PHPUnit_Framework_TestCase
                 'Error creating '.$result['db'].'.'.$result['struct'].': '.$result['error_msg']);
 
             $exists = $con->tableExists($result['struct']);
-            $this->assertEquals(true, $exists, 'Structure ' . $result['struct'] . ' was not created.');
+            if (isset($result['deprecated']) && $result['deprecated']) {
+                $this->assertEquals(false, $exists, 'Deprecated structure ' . $result['struct'] . ' was not removed.');
+            } else {
+                $this->assertEquals(true, $exists, 'Structure ' . $result['struct'] . ' was not created.');
+            }
         }
     }
 }
