@@ -72,6 +72,8 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_display_lib.html#8cee5ed474eec9fad96a3ec0cf9cdf49">lastpage</a> ($readOnly=False)</td></tr>
 
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_display_lib.html#8393afcb0da07f47ee8054e6023512e4">screenDisplay</a> ($min, $max)</td></tr>
+
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
 Functions for drawing display elements 
@@ -163,6 +165,7 @@ Get the currently displayed items <dl compact><dt><b>Parameters:</b></dt><dd>
 <dl compact><dt><b>Returns:</b></dt><dd>An HTML string</dd></dl>
 This function probably shouldn't be used directly. Call listitems() or <a class="el" href="class_display_lib.html#8cee5ed474eec9fad96a3ec0cf9cdf49">lastpage()</a> instead. 
 <p>
+30Oct2014 Andy Idea here is to look up the currently displayed items and perform any necessary transformations of the text in PHP instead of tucking that logic inside the screendisplay view. I'm leaving the query above for reference in case I screwed something up and the old method of drawing the screen needs to be quickly re-enabled.<p>
 11Mar14 Andy Ancient idea about displaying transaction line-items on credit card terminal screen. Current terminal does not even support this functionality.<p>
 I'm leaving the "get last relevant line" implementation for reference. if (is_object($td) &amp;&amp; !empty($last_item)) { $due = sprintf('%.2f',$CORE_LOCAL-&gt;get("amtdue")); $dueline = 'Subtotal' .str_pad('',22-strlen($due),' ') .$due; $items = ""; $count = 0; for($i=count($last_item)-1;$i&gt;=0;$i--) { $items = ":".$last_item[$i].$items; $count++; if ($count &gt;= 3) break; } for($i=$count;$i&lt;3;$i++) { $items = ": ".$items; } $td-&gt;WriteToScale("display:".$last_item.":".$dueline); } 
 </div>
@@ -621,6 +624,45 @@ Known input values are:<ul>
 
 </div>
 </div><p>
+<a class="anchor" name="8393afcb0da07f47ee8054e6023512e4"></a><!-- doxytag: member="DisplayLib::screenDisplay" ref="8393afcb0da07f47ee8054e6023512e4" args="($min, $max)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static DisplayLib::screenDisplay           </td>
+          <td>(</td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>min</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>max</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"><code> [static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Select items from the transaction with formatting for on screen display <dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>$min</em>&nbsp;</td><td>[int] minimum localtemptrans.trans_id </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$max</em>&nbsp;</td><td>[int] maximum localtemtprans.trans_id </td></tr>
+  </table>
+</dl>
+<dl compact><dt><b>Returns:</b></dt><dd>array of records</dd></dl>
+Each record contains the following keys:<ul>
+<li>description</li><li>comment</li><li>total</li><li>status</li><li>discounttype</li><li>trans_status</li><li>trans_type</li><li>voided</li><li>trans_id</li></ul>
+<p>
+Note: the outer array is indexed by localtemptrans.trans_id instead of zero through array.length. 
+</div>
+</div><p>
 <a class="anchor" name="71b7cf3c5c66045df0373644bb616ca0"></a><!-- doxytag: member="DisplayLib::termdisplaymsg" ref="71b7cf3c5c66045df0373644bb616ca0" args="()" -->
 <div class="memitem">
 <div class="memproto">
@@ -669,7 +711,7 @@ An alias for <a class="el" href="class_display_lib.html#87bf6dd610589566b597ec69
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/DisplayLib.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 14 Nov 2014 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>
