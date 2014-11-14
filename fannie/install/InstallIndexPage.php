@@ -835,11 +835,13 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
 
     function create_archive_dbs($con, $archive_db_name, $archive_method) 
     {
-        require(dirname(__FILE__).'/../config.php'); 
-
         $ret = array();
-        $dbms = strtoupper($con->dbms_name()); // code below expect capitalization
-        $models = array();
+        $models = array(
+            'ReportDataCacheModel',
+            'WeeksLastQuarterModel',
+            'ProductWeeklyLastQuarterModel',
+            'ProductSummaryLastQuarterModel',
+        );
         if ($archive_method == 'partitions') {
             $models[] = 'BigArchiveModel';
             $models[] = 'DLogBigModel';
@@ -859,6 +861,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
           14Nov2014 Andy
           Removing these structures. Duplicates for most exist
           in the CoreWarehouse database. 
+        $dbms = strtoupper($con->dbms_name()); // code below expect capitalization
         $ret[] = create_if_needed($con,$dbms,$archive_db_name,
                 'sumUpcSalesByDay','arch');
         $ret[] = create_if_needed($con,$dbms,$archive_db_name,
@@ -880,15 +883,6 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         $ret[] = create_if_needed($con,$dbms,$archive_db_name,
                 'sumDiscountsByDay','arch');
         */
-        $ret[] = create_if_needed($con,$dbms,$archive_db_name,
-                'reportDataCache','arch');
-
-        $ret[] = create_if_needed($con,$dbms,$archive_db_name,
-                'weeksLastQuarter','arch');
-        $ret[] = create_if_needed($con,$dbms,$archive_db_name,
-                'productWeeklyLastQuarter','arch');
-        $ret[] = create_if_needed($con,$dbms,$archive_db_name,
-                'productSummaryLastQuarter','arch');
 
         return $ret;
 
