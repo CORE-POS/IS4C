@@ -55,6 +55,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
     private int long_pos;
     private FileStream usb_fs;
     private int usb_report_size;
+    private bool logo_available = false;
 
     /** change screen states automatically
         if false, screen only changes in response
@@ -164,6 +165,18 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         GetHandle();
         SendReport(BuildCommand(LcdSetBacklightTimeout(0)));
         SendReport(BuildCommand(EnableAudio()));
+        /**
+          Loading the logo is somewhat time consuming, so you may
+          want to change logo_available to true and recompile once
+          it's on the device. Otherwise it's loaded onto the device
+          each time the driver starts up
+
+          Logo is assumed to be 180x200. Max file size is 32KB.
+        */
+        if (!this.logo_available && File.Exists("logo.jpg")) {
+            SendReport(BuildCommand(LcdStoreImage(1, "logo.jpg")));
+            this.logo_available = true;
+        }
         SetStateStart();
         #if MONO
         MonoRead();
@@ -225,7 +238,13 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         SendReport(BuildCommand(LcdTextColor(0,0,0)));
         SendReport(BuildCommand(LcdTextBackgroundColor(0xff,0xff,0xff)));
         SendReport(BuildCommand(LcdTextBackgroundMode(false)));
-        SendReport(BuildCommand(LcdDrawText("Swipe Card",75,100)));
+        int x = 75;
+        int y = 100;
+        if (this.logo_available) {
+            SendReport(BuildCommand(LcdShowImage(1, 60, 0, 240, 200)));
+            y = 190;
+        }
+        SendReport(BuildCommand(LcdDrawText("Swipe Card", x, y)));
 
         current_state = STATE_START_TRANSACTION;
     }
@@ -323,9 +342,20 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         SendReport(BuildCommand(LcdTextColor(0,0,0)));
         SendReport(BuildCommand(LcdTextBackgroundColor(0xff,0xff,0xff)));
         SendReport(BuildCommand(LcdTextBackgroundMode(false)));
-        SendReport(BuildCommand(LcdDrawText("wait for cashier",35,100)));
 
+        // if logo load NACKs the output is the same as if
+        // the users presses red X button. Change state early
+        // so logo load problem is not misinterpreted by 
+        // previous state handler
         current_state = STATE_WAIT_FOR_CASHIER;
+
+        int x = 25;
+        int y = 100;
+        if (this.logo_available) {
+            SendReport(BuildCommand(LcdShowImage(1, 60, 0, 240, 200)));
+            y = 190;
+        }
+        SendReport(BuildCommand(LcdDrawText("waiting for total", x, y)));
     }
 
     private void SetStateApproved(){
@@ -353,10 +383,13 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         SendReport(BuildCommand(LcdTextColor(0,0,0)));
 
         SendReport(BuildCommand(LcdDrawText(sig_message, 1, 1)));
-        SendReport(BuildCommand(LcdSetClipArea(5,28,310,140,true,new byte[]{0,0,0})));
-        SendReport(BuildCommand(LcdDrawText("please sign",100,146)));
-        SendReport(BuildCommand(LcdCreateColoredButton(BUTTON_SIG_RESET,"Clear",5,180,115,225, new byte[]{0x0,0x0,0x0}, new byte[]{0xee,0x0,0x0})));
-        SendReport(BuildCommand(LcdCreateColoredButton(BUTTON_SIG_ACCEPT,"Done",204,180,314,225, new byte[]{0x0,0x0,0x0}, new byte[]{0x0,0xbb,0x0})));
+        SendReport(BuildCommand(LcdCreateColoredButton(BUTTON_SIG_RESET,"Clear",5,28,115,73, new byte[]{0x0,0x0,0x0}, new byte[]{0xee,0x0,0x0})));
+        SendReport(BuildCommand(LcdCreateColoredButton(BUTTON_SIG_ACCEPT,"Done",204,28,314,73, new byte[]{0x0,0x0,0x0}, new byte[]{0x0,0xbb,0x0})));
+        SendReport(BuildCommand(LcdTextFont(3,12,14)));
+        SendReport(BuildCommand(LcdDrawText("please sign",100,83)));
+        SendReport(BuildCommand(LcdSetClipArea(5,118,310,230,true,new byte[]{0,0,0})));
+        //SendReport(BuildCommand(LcdCreateColoredButton(BUTTON_SIG_RESET,"Clear",5,180,115,225, new byte[]{0x0,0x0,0x0}, new byte[]{0xee,0x0,0x0})));
+        //SendReport(BuildCommand(LcdCreateColoredButton(BUTTON_SIG_ACCEPT,"Done",204,180,314,225, new byte[]{0x0,0x0,0x0}, new byte[]{0x0,0xbb,0x0})));
 
         SendReport(BuildCommand(LcdStartCapture(5)));
 
@@ -365,10 +398,10 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 
     private void RemoveSignatureButtons(){
         SendReport(BuildCommand(LcdFillColor(0xff,0xff,0xff)));
-        SendReport(BuildCommand(LcdFillRectangle(0,145,LCD_X_RES-1,LCD_Y_RES-1)));
+        SendReport(BuildCommand(LcdFillRectangle(0,27,LCD_X_RES-1,115)));
         SendReport(BuildCommand(LcdTextFont(3,12,14)));
         SendReport(BuildCommand(LcdTextColor(0,0,0)));
-        SendReport(BuildCommand(LcdDrawText("approved - thank you",40,155)));
+        SendReport(BuildCommand(LcdDrawText("approved - thank you",40,83)));
     }
 
     private void SetStateGetManualPan(){
@@ -1836,6 +1869,85 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
     
     private byte[] DoBeep(){
         return new byte[7]{0x7b, 0x46, 0x02, 0xff, 0x0, 0xff, 0};
+    }
+
+    private byte[] GetSerialNumber(){
+        return new byte[3]{0x78, 0x46, 0x2};
+    }
+    
+    private byte[] LcdStoreImage(int image_id, string file_name) {
+        string ext;
+        int type = 0;
+        try {
+            ext = Path.GetExtension(file_name);
+        } catch (Exception ex) {
+            if (this.verbose_mode > 0) {
+                System.Console.WriteLine(ex);
+            }
+            return GetSerialNumber(); // using as a no-op
+        }
+        if (ext.ToLower() != ".bmp" && ext.ToLower() != ".jpg" && ext.ToLower() != ".jpeg") {
+            if (this.verbose_mode > 0) {
+                System.Console.WriteLine("Image format " + ext + " not supported");
+            }
+            return GetSerialNumber(); // using as a no-op
+        }
+        if (!File.Exists(file_name)) {
+            if (this.verbose_mode > 0) {
+                System.Console.WriteLine("File not found: " + file_name);
+            }
+            return GetSerialNumber(); // using as a no-op
+        }
+
+        if (ext.ToLower() == ".bmp") {
+            type = 0x1;
+        } else {
+            type = 0x2;
+        }
+        
+        byte[] file_data = File.ReadAllBytes(file_name);
+        byte[] ret = new byte[7 + file_data.Length];
+
+        // Command head
+        ret[0] = 0x8a;
+        ret[1] = 0x46;
+        ret[2] = 0x70;
+
+        ret[3] = (byte)(image_id & 0xff);
+        ret[4] = (byte)( (image_id >> 8) & 0xff);
+
+        ret[5] = (byte)(type & 0xff);
+        ret[6] = (byte)( (type >> 8) & 0xff);
+
+
+        Array.Copy(file_data, 0, ret, 7, file_data.Length);
+
+        return ret;
+    }
+
+    private byte[] LcdShowImage(int image_id, int x_top_left, int y_top_left, int x_bottom_right, int y_bottom_right){
+        byte[] ret = new byte[13];
+        // Command head
+        ret[0] = 0x8a;
+        ret[1] = 0x46;
+        ret[2] = 0x71;
+
+        ret[3] = (byte)(image_id & 0xff);
+        ret[4] = (byte)( (image_id >> 8) & 0xff);
+
+        ret[5] = (byte)(x_top_left & 0xff);
+        ret[6] = (byte)( (x_top_left >> 8) & 0xff);
+
+        ret[7] = (byte)(y_top_left & 0xff);
+        ret[8] = (byte)( (y_top_left >> 8) & 0xff);
+
+        ret[9] = (byte)(x_bottom_right & 0xff);
+        ret[10] = (byte)( (x_bottom_right >> 8) & 0xff);
+
+        ret[11] = (byte)(y_bottom_right & 0xff);
+        ret[12] = (byte)( (y_bottom_right >> 8) & 0xff);
+
+        return ret;
     }
 
     /*

@@ -174,7 +174,8 @@ class Void extends Parser
         $query = "select upc,VolSpecial,quantity,trans_subtype,unitPrice,
             discount,memDiscount,discountable,scale,numflag,charflag,
             foodstamp,discounttype,total,cost,description,trans_type,
-            department,regPrice,tax,volDiscType,volume,mixMatch,matched
+            department,regPrice,tax,volDiscType,volume,mixMatch,matched,
+            trans_status
                    from localtemptrans where trans_id = ".$item_num;
         $db = Database::tDataConnect();
         $result = $db->query($query);
@@ -187,6 +188,12 @@ class Void extends Parser
         // 11Jun14 Andy => don't know why FS is different. legacy?
         if ($row["trans_subtype"] == "FS") {
             $total = -1 * $row["unitPrice"];
+        } elseif ($row['trans_status'] == 'R' && $row['trans_type'] == 'D') {
+            // set refund flag and let that logic reverse
+            // the total and quantity
+            $CORE_LOCAL->set('refund', 1);
+            $total = $row['total'];
+            $quantity = $row['quantity'];
         }
         $discount = -1 * $row["discount"];
         $memDiscount = -1 * $row["memDiscount"];
@@ -375,6 +382,7 @@ class Void extends Parser
                         tax,
                         VolSpecial,
                         matched,
+                        scale,
                         trans_id
                       FROM localtemptrans 
                       WHERE upc = '" . $upc . "'"; 
@@ -390,7 +398,6 @@ class Void extends Parser
         $result = $db->query($query_upc);
         $row = $db->fetch_array($result);
 
-        $ItemQtty = $row["ItemQtty"];
         $foodstamp = MiscLib::nullwrap($row["foodstamp"]);
         $discounttype = MiscLib::nullwrap($row["discounttype"]);
         $mixMatch = MiscLib::nullwrap($row["mixMatch"]);
@@ -428,10 +435,14 @@ class Void extends Parser
         $total = $quantity * $unitPrice;
         if ($row['unitPrice'] == 0) {
             $total = $quantity * $row['total'];
-        } else if ($row['total'] != $total) {
-            // I think this always happens
-            // Unit Price times negative quantity shouldn't
-            // match previous price
+        } else if ($row['total'] != $total && $row['scale'] == 1) {
+            /**
+              If the total does not match quantity times unit price,
+              the cashier probably manually specified a quantity
+              i.e., VD{qty}*{upc}. This is probably OK for non-weight
+              items. Each record should be the same and voiding multiple
+              in one line will usually be fine.
+            */
             $total = -1*$row['total'];
         }
     

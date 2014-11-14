@@ -124,7 +124,7 @@ class MercuryGift extends BasicCCModule
                 );
 
                 return $json;
-            } else if (PaycardLib::paycard_accepted($CORE_LOCAL->get("paycard_PAN"), !PaycardLib::paycard_live(PaycardLib::PAYCARD_TYPE_GIFT)) != 1) {
+            } else if (!PaycardLib::paycard_accepted($CORE_LOCAL->get("paycard_PAN"))) {
                 $json['output'] = PaycardLib::paycard_msgBox(PaycardLib::PAYCARD_TYPE_GIFT,
                                                              "Unsupported Card Type",
                                                              "We cannot process " . $CORE_LOCAL->get("paycard_issuer") . " cards",
@@ -357,7 +357,7 @@ class MercuryGift extends BasicCCModule
                 FROM PaycardTransactions 
                 WHERE dateID=" . $today . "
                     AND empNo=" . $cashier . "
-                    AND cashierNo=" . $lane . "
+                    AND registerNo=" . $lane . "
                     AND transNo=" . $trans . "
                     AND transID=" . $transID . "
                     AND transType='VOID'

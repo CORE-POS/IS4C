@@ -756,6 +756,16 @@ class ESCPOSPrintHandler extends PrintHandler {
 
 		return $slip;
 	}
+
+    /**
+      Show bitmap stored on the printer device itself
+      @param $image_id [int] storage location ID
+      @return [string] receipt text
+    */
+    public function renderBitmapFromRam($image_id)
+    {
+        return chr(28) . 'p' . chr($image_id) . chr(0);
+    }
 	
 } // ESCPOSPrintHandler
 

@@ -70,9 +70,8 @@ class HouseCoupon extends SpecialUPC
         }
 
         $add = $this->getValue($coupID);
-        if ($add['value'] != 0) {
-            TransRecord::addhousecoupon($upc, $add['department'], -1 * $add['value'], $add['description']);
-        }
+        TransRecord::addhousecoupon($upc, $add['department'], -1 * $add['value'], $add['description']);
+
         $json['output'] = DisplayLib::lastpage();
         $json['udpmsg'] = 'goodBeep';
         $json['redraw_footer'] = true;

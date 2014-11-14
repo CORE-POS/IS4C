@@ -3,7 +3,7 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of IT CORE.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,26 +21,43 @@
 
 *********************************************************************************/
 
-if (!class_exists('DTransactionsModel')) {
-    include_once(dirname(__FILE__).'/DTransactionsModel.php');
-}
-
 /**
-  @class LocalTransModel
+  @class ReceiptMessage
 */
-class LocalTransModel extends DTransactionsModel
+class BarcodeTransIdentifierMessage extends ReceiptMessage 
 {
 
-    protected $name = "localtrans";
-
-    public function __construct()
+	public function select_condition()
     {
-        // other tables do not need auto_inc column
-        unset($this->columns['pos_row_id']);
-        unset($this->columns['store_id']);
-    }
+		return '1';
+	}
 
-    /* START ACCESSOR FUNCTIONS */
-    /* END ACCESSOR FUNCTIONS */
+	/**
+	  Generate the message
+	  @param $val the value returned by the object's select_condition()
+	  @param $ref a transaction reference (emp-lane-trans)
+	  @param $reprint boolean
+	  @return [string] message to print on receipt
+	*/
+	public function message($val, $ref, $reprint=false)
+    {
+		list($emp,$reg,$trans) = explode('-', $ref, 3);
+
+        // full identier:
+        // YYYY-MM-DD emp_no-register_no-trans_no
+        $identifier = date('Y-m-d') . ' '
+                . $emp . '-'
+                . $reg . '-'
+                . $trans;
+        
+
+		return "\n" . ReceiptLib::code39($identifier) . "\n";
+	}
+
+	/**
+	  This message has to be printed on paper
+	*/
+	public $paper_only = true;
+
 }
 

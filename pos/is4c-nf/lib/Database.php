@@ -265,9 +265,19 @@ static public function getsubtotals()
      * values > 1000, so use floating point */
     $CORE_LOCAL->set("amtdue",(double)round($CORE_LOCAL->get("runningTotal") - $CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("taxTotal"), 2));
 
-    if ( $CORE_LOCAL->get("fsEligible") > $CORE_LOCAL->get("subtotal") && $CORE_LOCAL->get('subtotal') > 0) {
+    /**
+      If FS eligible amount is greater than the current transaction total
+      and total is positive, limit the eligible amount to the current total.
+      This may not be technically correct but the resulting change causes a lot
+      of headaches depending what kind of change is allowed for earlier tenders,
+      if change is allowed for those tenders at all.
+
+      The other case is a refund to FS. Over-tendering on a refund doesn't make
+      any sense.
+    */
+    if ($CORE_LOCAL->get("fsEligible") > $CORE_LOCAL->get("subtotal") && $CORE_LOCAL->get('subtotal') >= -0.005) {
         $CORE_LOCAL->set("fsEligible",$CORE_LOCAL->get("subtotal"));
-    } else if ( $CORE_LOCAL->get("fsEligible") < $CORE_LOCAL->get("subtotal") && $CORE_LOCAL->get('subtotal') < 0) {
+    } elseif ($CORE_LOCAL->get("fsEligible") < $CORE_LOCAL->get("subtotal") && $CORE_LOCAL->get('subtotal') < 0) {
         $CORE_LOCAL->set("fsEligible",$CORE_LOCAL->get("subtotal"));
     }
 }

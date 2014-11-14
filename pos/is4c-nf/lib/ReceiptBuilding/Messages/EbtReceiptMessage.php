@@ -105,11 +105,10 @@ class EbtReceiptMessage extends ReceiptMessage
 
             $slip .= ReceiptLib::centerString("................................................")."\n";
             // store header
-            $slip .= ReceiptLib::centerString($CORE_LOCAL->get("chargeSlip2"))."\n"  // "wedge copy"
-                    . ReceiptLib::centerString($CORE_LOCAL->get("chargeSlip1"))."\n"  // store name 
-                    . ReceiptLib::centerString($CORE_LOCAL->get("chargeSlip3").", ".$CORE_LOCAL->get("chargeSlip4"))."\n"  // address
-                    . ReceiptLib::centerString($CORE_LOCAL->get("receiptHeader2"))."\n"  // phone
-                    . "\n";
+            for ($i=1; $i<= $CORE_LOCAL->get('chargeSlipCount'); $i++) {
+                $slip .= ReceiptLib::centerString($CORE_LOCAL->get("chargeSlip" . $i))."\n";
+            }
+            $slip .= "\n";
             $col1 = array();
             $col2 = array();
             $col1[] = $row['ebtMode'];

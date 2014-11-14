@@ -118,7 +118,7 @@ class Valutec extends BasicCCModule
                 );
 
                 return $json;
-            } else if( PaycardLib::paycard_accepted($CORE_LOCAL->get("paycard_PAN"), !PaycardLib::paycard_live(PaycardLib::PAYCARD_TYPE_GIFT)) != 1) {
+            } else if( !PaycardLib::paycard_accepted($CORE_LOCAL->get("paycard_PAN"))) {
                 $json['output'] = PaycardLib::paycard_msgBox(PaycardLib::PAYCARD_TYPE_GIFT,
                                                              "Unsupported Card Type",
                                                              "We cannot process " . $CORE_LOCAL->get("paycard_issuer") . " cards",

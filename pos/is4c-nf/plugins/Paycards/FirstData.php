@@ -111,7 +111,7 @@ class FirstData extends BasicCCModule {
 						"Swipe again or type in manually",
 						"[clear] to cancel");
 					return $json;
-				} else if( PaycardLib::paycard_accepted($this->trans_pan['pan'],  !PaycardLib::paycard_live(PaycardLib::PAYCARD_TYPE_CREDIT)) != 1) {
+				} else if( !PaycardLib::paycard_accepted($this->trans_pan['pan'])) {
 					PaycardLib::paycard_reset();
 					$json['output'] = PaycardLib::paycard_msgBox(PaycardLib::PAYCARD_TYPE_CREDIT,
 						"Unsupported Card Type",
