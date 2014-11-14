@@ -291,61 +291,6 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $ret = "<p>Price data import complete</p>";
         $ret .= '<p><a href="'.$_SERVER['PHP_SELF'].'">Upload Another</a></p>';
 
-        /** Changed 22Jan14
-            PLU substitution by SKU happens during import
-            This is more consistent in updating all instances
-            of a given item UPC
-        if ($dbc->table_exists("vendorSKUtoPLU")){
-
-            $idP = $dbc->prepare_statement("SELECT vendorID FROM vendors WHERE vendorName='UNFI' ORDER BY vendorID");
-            $idR = $dbc->exec_statement($idP);
-            $VENDOR_ID=0;
-            if ($dbc->num_rows($idR) > 0)
-                $VENDOR_ID = array_pop($dbc->fetch_row($idR));
-
-            $pluQ1 = $dbc->prepare_statement("UPDATE unfi_order AS u
-                INNER JOIN vendorSKUtoPLU AS p
-                ON u.unfi_sku = p.sku
-                SET u.upcc = p.upc
-                WHERE p.vendorID=?");
-            $pluQ2 = $dbc->prepare_statement("UPDATE vendorItems AS u
-                INNER JOIN vendorSKUtoPLU AS p
-                ON u.sku = p.sku
-                SET u.upc = p.upc
-                WHERE u.vendorID=?");
-            $pluQ3 = $dbc->prepare_statement("UPDATE prodExtra AS x
-                INNER JOIN vendorSKUtoPLU AS p
-                ON x.upc=p.upc
-                INNER JOIN unfi_order AS u
-                ON u.unfi_sku=p.sku
-                SET x.cost = u.vd_cost / u.pack
-                WHERE p.vendorID=?");
-            $args = array($VENDOR_ID);
-            $args2 = array($VENDOR_ID); // kludge
-            if ($FANNIE_SERVER_DBMS == "MSSQL"){
-                $pluQ1 = $dbc->prepare_statement("UPDATE unfi_order SET upcc = p.wfc_plu
-                    FROM unfi_order AS u RIGHT JOIN
-                    UnfiToPLU AS p ON u.unfi_sku = p.unfi_sku
-                    WHERE u.unfi_sku IS NOT NULL");
-                $pluQ2 = $dbc->prepare_statement("UPDATE vendorItems SET upc = p.wfc_plu
-                    FROM vendorItems AS u RIGHT JOIN
-                    UnfiToPLU AS p ON u.sku = p.unfi_sku
-                    WHERE u.sku IS NOT NULL
-                    AND u.vendorID=?");
-                $pluQ3 = $dbc->prepare_statement("UPDATE prodExtra
-                    SET cost = u.vd_cost / u.pack
-                    FROM UnfiToPLU AS p LEFT JOIN
-                    unfi_order AS u ON p.unfi_sku = u.unfi_sku
-                    LEFT JOIN prodExtra AS x
-                    ON p.wfc_plu = x.upc");
-                $args = array();
-            }
-            $dbc->exec_statement($pluQ1,$args);
-            $dbc->exec_statement($pluQ2,$args2);
-            $dbc->exec_statement($pluQ3,$args);
-        }
-        */
-
         return $ret;
     }
 }

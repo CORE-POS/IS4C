@@ -85,9 +85,13 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $ABT = $this->get_column_index('abt');
 
         $rm_checks = (FormLib::get_form_value('rm_cds') != '') ? True : False;
-        $do_skus = $dbc->table_exists("UnfiToPlu");
         $upcP = $dbc->prepare_statement('SELECT upc FROM products WHERE upc=?');
-        $skuP = $dbc->prepare_statement('SELECT wfc_plu FROM UnfiToPlu WHERE upc=?');
+        $skuP = $dbc->prepare_statement('
+            SELECT s.upc 
+            FROM vendorSKUtoPLU AS s
+                INNER JOIN vendors AS v ON s.vendorID=v.vendorID
+            WHERE s.sku=?
+                AND v.vendorName LIKE \'%UNFI%\'');
         $insP = $dbc->prepare_statement('INSERT INTO tempCapPrices VALUES (?,?,?)');
         foreach($linedata as $data){
             if (!is_array($data)) continue;
@@ -105,11 +109,11 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 if ($SKU === False) continue;
                 if ($data[$SUB] != "BULK") continue;
                 if ($data[$SKU] == "direct") continue;
-                if (!$do_skus) continue;
                 $sku = $data[$SKU];
                 $look2 = $dbc->exec_statement($skuP, array($sku));
                 if ($dbc->num_rows($look2) == 0) continue;
-                $upc = array_pop($dbc->fetch_row($look2));
+                $w = $dbc->fetch_row($look2);
+                $upc = $w['upc'];
             }
 
             $price = trim($data[$PRICE],"\$");
