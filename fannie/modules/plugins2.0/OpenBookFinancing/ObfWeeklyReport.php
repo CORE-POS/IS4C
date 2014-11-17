@@ -390,9 +390,9 @@ class ObfWeeklyReport extends FannieReportPage
 
             $data[] = array(
                 'Hours',
-                $splh_sales_projection,
+                '',
                 number_format($proj_hours, 0),
-                $splhW['avgGrowth'],
+                '',
                 number_format($labor->hours(), 0),
                 sprintf('%.2f%%', $this->percentGrowth($labor->hours(), $proj_hours)),
                 '',
