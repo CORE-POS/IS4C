@@ -110,6 +110,17 @@ class PatronageGrossPurchases extends FannieRESTfulPage
 
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>The next step is to pull some initial totals
+            from the compiled member transaction data. Gross purchases
+            is calculated as the sum of all transactions with type I
+            or type D (excepting super department zero transactions that
+            were excluded in the previous step). Discounts is calculated
+            as the sum of all transactions with type S. This is the percent
+            discount that may be assigned to a member\'s account.</p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

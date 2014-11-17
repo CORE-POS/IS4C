@@ -52,7 +52,8 @@ class PIPatronagePage extends PIKillerPage {
         echo '<table border="1" style="background-color:#ffffcc;">';
         echo '<tr><th>FY</th><th>Purchases</th><th>Discounts</th><th>Rewards</th>
             <th>Net Purchases</th><th>Total Patronage</th>
-            <th>Cash Portion</th><th>Equity Portion</th></tr>';
+            <th>Cash Portion</th><th>Equity Portion</th>
+            <th>Check Number</th></tr>';
         foreach($this->__models['patronage'] as $obj){
             printf('<tr>
                 <td>%d</th>
@@ -63,6 +64,7 @@ class PIPatronagePage extends PIKillerPage {
                 <td>%.2f</td>
                 <td>%.2f</td>
                 <td>%.2f</td>
+                <td>%s</td>
                 </tr>',
                 $obj->FY(),
                 $obj->purchase(),
@@ -71,7 +73,8 @@ class PIPatronagePage extends PIKillerPage {
                 $obj->net_purch(),
                 $obj->tot_pat(),
                 $obj->cash_pat(),
-                $obj->equit_pat()
+                $obj->equit_pat(),
+                ($obj->check_number() == '' ? 'n/a' : $obj->check_number())
             );
             $totals['cash'] += $obj->cash_pat();
             $totals['equity'] += $obj->equit_pat();

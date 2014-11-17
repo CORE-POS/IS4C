@@ -155,6 +155,19 @@ class CreatePatronageSnapshot extends FannieRESTfulPage
 
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>The first step of calculating patronage involves
+            compiling member transaction data for the year. This will
+            speed up many subsequent steps since it can be a lot of
+            information to go through.</p>
+            <p>Member purchase totals are organized by transaction
+            type and subtype. Records whose department belong to
+            super department number zero are excluded in keeping with
+            the convention that super department zero contains
+            non-inventory sales.</p>';
+    }
 }
 
 FannieDispatch::conditionalExec();
