@@ -1,20 +1,11 @@
 <?php
 
 $my_menu = array(
-	"YFC Honey" => "DP170",
-	"Hot Coffee" => "DP160",
-	"Seeds" => "DP180",
-	"-------" => "",
-	"SPO Regular" => "DP1100",
-	"SPO Taxable" => "DP1110",
-	"SPO Supplements" => "DP1120",
-	"SPO HBA" => "DP1130",
-	"SPO Beer" => "DP1140",
-	"-------" => "",
-	"Stamps" => "DP2040",
-	"Non-YFC Sales" => "DP2070",
-	"Equity - Associate" => "3010DP",
-	"Equity - Scholarship" => "DP3020"	
+	"2020" => "Certified Local Soup - $8.99",
+	"2022" => "Certified Local Jam - $4.99",
+	"2037" => "Kale Salad Sm. - $4.99",
+	"2038" => "Kale Salad Lg. - $6.99",
+	"2019" => "Parsley Pesto - $6.99"
 );
 
 ?>
