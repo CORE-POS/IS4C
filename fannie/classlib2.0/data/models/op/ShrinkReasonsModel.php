@@ -29,31 +29,11 @@ class ShrinkReasonsModel extends BasicModel
 
     protected $name = "ShrinkReasons";
 
-    protected $preferred_db = 'op';
-    protected $normalize_lanes = true;
-
     protected $columns = array(
     'shrinkReasonID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),
     'description' => array('type'=>'VARCHAR(30)'),
     );
 
-    public function doc()
-    {
-        return '
-Table: ShrinkReasons
-
-Columns:
-    shrinkReasonID int
-    description varchar
-
-Depends on:
-    none
-
-Use:
-Maintain list of reasons for marking
-shrink
-        ';
-    }
 
     /* START ACCESSOR FUNCTIONS */
 
