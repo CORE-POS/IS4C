@@ -386,7 +386,7 @@ class BaseItemModule extends ItemModule {
                 </label>
                 |
                 <label>NoDisc
-                <input type="checkbox" value="1" name="NoDisc" id="no-disc-checkbox"
+                <input type="checkbox" value="0" name="NoDisc" id="no-disc-checkbox"
                     ' . ($rowItem['discount'] == 0 ? 'checked' : '') . ' />
                 </label>
                 |
