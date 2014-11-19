@@ -99,11 +99,17 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             $local_opts[substr($w['shortName'],0,1)] = array($w['originID'],$w['shortName']);
         }
         if (count($local_opts) == 1) $local_opts['X'] = array(1,'Yes'); // generic local if no origins defined
+        $vendors = array('', 'DIRECT');
+        $vModel = new VendorsModel($dbc);
+        foreach ($vModel->find('vendorName') as $v) {
+            $vendors[] = $v->vendorName();
+        }
         ob_start();
         ?>
         var deptObj = <?php echo json_encode($depts); ?>;
         var taxObj = <?php echo json_encode($taxes); ?>;
         var localObj = <?php echo json_encode($local_opts); ?>;
+        var vendorObj = <?php echo json_encode($vendors); ?>;
         function edit(upc){
             var desc = $('tr#'+upc+' .td_desc').html();
             var content = "<input type=text class=\"in_desc form-control input-sm\" size=10 value=\""+desc+"\" />";   
@@ -119,7 +125,12 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             $('tr#'+upc+' .td_dept').html(content);
 
             var supplier = $('tr#'+upc+' .td_supplier').html();
-            var content = "<input type=text class=\"in_supplier form-control input-sm\" size=10 value=\""+supplier+"\" />";   
+            var content = '<select class=\"in_supplier form-control input-sm\"><optgroup style="font-size: 90%;">';
+            for(var i in vendorObj){
+                content += "<option "+((supplier==vendorObj[i])?'selected':'')+">";
+                content += vendorObj[i]+"</option>";
+            }
+            content += '</optgroup></select>';
             $('tr#'+upc+' .td_supplier').html(content);
 
             var cost = $('tr#'+upc+' .td_cost').html();
@@ -189,6 +200,14 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             $('tr#'+upc+' .td_supplier').html(supplier);
 
             var cost = $('tr#'+upc+' .in_cost').val();
+            if (cost.indexOf('/') > -1) {
+                var divisors = cost.split('/');
+                var base = Number(divisors[0]);
+                for (var i = 1; i < divisors.length; i++) {
+                    base /= Number(divisors[i]);
+                }
+                cost = Math.round(base*100)/100.00;
+            }
             $('tr#'+upc+' .td_cost').html(cost);
 
             var price = $('tr#'+upc+' .in_price').val();
@@ -347,6 +366,12 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
 
                 $dbc->execute($extraP, array($upc, $supplier));
             }
+
+            if ($vendorID !== '') {
+                $item = new VendorItemsModel($dbc);
+                $item->createIfMissing($upc, $vendorID);
+                $item->updateCostByUPC($upc, $cost, $vendorID);
+            }
             
             updateProductAllLanes($upc);
             break;  
@@ -424,6 +449,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         $deptStart = FormLib::get_form_value('deptStart',0);
         $deptEnd = FormLib::get_form_value('deptEnd',0);
         $super = FormLib::get_form_value('deptSub',0);
+        $vendorID = FormLib::get('vendor');
 
         $sort = FormLib::get_form_value('sort','Department');   
         $order = 'dept_name';
@@ -436,17 +462,20 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         $ret = 'Report sorted by '.$sort.'<br />';
         if ($supertype == 'dept' && $super == 0){
             $ret .= 'Department '.$deptStart.' to '.$deptEnd.'<br />';
-        }
-        else if ($supertype == 'dept'){
+        } else if ($supertype == 'dept'){
             $ret .= 'Sub department '.$super.'<br />';
-        }
-        else {
+        } else if ($supertype == 'manu') {
             $ret .= _('Manufacturer') . ' ' . $manufacturer . '<br />';
+        } else if ($supertype == 'vendor') {
+            $vendor = new VendorsModel($dbc);
+            $vendor->vendorID($vendorID);
+            $vendor->load();
+            $ret .= 'Vendor ' . $vendor->vendorName() . '<br />';            
         }
         $ret .= date("F j, Y, g:i a").'<br />'; 
         
-        $page_url = sprintf('ProductListPage.php?supertype=%s&deptStart=%s&deptEnd=%s&deptSub=%s&manufacturer=%s&mtype=%s',
-                $supertype, $deptStart, $deptEnd, $super, $manufacturer, $mtype);
+        $page_url = sprintf('ProductListPage.php?supertype=%s&deptStart=%s&deptEnd=%s&deptSub=%s&manufacturer=%s&mtype=%s&vendor=%d',
+                $supertype, $deptStart, $deptEnd, $super, $manufacturer, $mtype, $vendorID);
         if (!$this->excel){
             $ret .= sprintf('<a href="%s&sort=%s&excel=yes">Save to Excel</a> &nbsp; &nbsp; <a href="javascript:history:back();">Back</a><br />',
                 $page_url, $sort);
@@ -486,8 +515,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 WHERE s.superID = ?
                 ORDER BY ".$order;
             $args = array($super);
-        }
-        else if ($supertype == 'manu'){
+        } else if ($supertype == 'manu'){
             $query = "SELECT i.upc,i.description,d.dept_name as department,
                 i.normal_price,                      
                 (CASE WHEN i.tax = 1 THEN 'X' WHEN i.tax=0 THEN '-' ELSE LEFT(t.description,1) END) as Tax,              
@@ -509,6 +537,27 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             }
             $args = array('%'.$manufacturer.'%');
             $query .= "ORDER BY ".$order; 
+        } else if ($supertype == 'vendor'){
+            $query = "SELECT i.upc,i.description,d.dept_name as department,
+                i.normal_price,                      
+                (CASE WHEN i.tax = 1 THEN 'X' WHEN i.tax=0 THEN '-' ELSE LEFT(t.description,1) END) as Tax,              
+                (CASE WHEN i.foodstamp = 1 THEN 'X' ELSE '-' END) as FS,
+                (CASE WHEN i.discount = 0 THEN '-' ELSE 'X'END) as DISC,
+                (CASE WHEN i.scale = 1 THEN 'X' ELSE '-' END) as WGHd,
+                (CASE WHEN i.local > 0 AND o.originID IS NULL THEN 'X' 
+                      WHEN i.local > 0 AND o.originID IS NOT NULL THEN LEFT(o.shortName,1) ELSE '-' END) as local,
+                COALESCE(v.vendorName, z.vendorName) AS distributor,
+                i.cost
+                FROM products as i 
+                    LEFT JOIN departments as d ON i.department = d.dept_no
+                    LEFT JOIN prodExtra as x on i.upc = x.upc
+                    LEFT JOIN originName AS o ON i.local=o.originID
+                    LEFT JOIN taxrates AS t ON t.id = i.tax
+                    LEFT JOIN vendors AS v ON i.default_vendor_id=v.vendorID
+                    LEFT JOIN vendors AS z ON x.distributor=z.vendorName
+                WHERE i.default_vendor_id=? OR z.vendorID=?
+                ORDER BY " . $order;
+            $args = array($vendorID, $vendorID);
         }
         if ($order != "i.upc")
             $query .= ",i.upc";
@@ -610,6 +659,8 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 onclick="$('#supertype').val('dept');">By Department</a></li>
             <li><a href="#manu-tab" data-toggle="tab"
                 onclick="$('#supertype').val('manu');">By Brand</a></li>
+            <li><a href="#vendor-tab" data-toggle="tab"
+                onclick="$('#supertype').val('vendor');">By Vendor</a></li>
         </ul>
         <input id="supertype" name="supertype" type="hidden" value="dept" />
         <div class="tab-content">
@@ -672,6 +723,20 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                         UPC prefix</label>
                     <label><input type=radio name=mtype value=name />
                         <?php echo _('Manufacturer name'); ?></label>
+                </div>
+            </div>
+            <div class="tab-pane" id="vendor-tab">
+                <div class="form-group form-inline">
+                    <label>Vendor</label>
+                    <select name="vendor" class="form-control">
+                    <?php
+                    $vendors = new VendorsModel($dbc);
+                    foreach ($vendors->find('vendorName') as $v) {
+                        printf('<option value="%d">%s</option>',
+                            $v->vendorID(), $v->vendorName());
+                    }
+                    ?>
+                    </select>
                 </div>
             </div>
         </p>

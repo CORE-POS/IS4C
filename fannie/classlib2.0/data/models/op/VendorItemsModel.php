@@ -91,6 +91,66 @@ SKUs.
         ';
     }
 
+    /**
+      Helper: create a vendorItems record for an existing
+      product if one does not exist
+    */
+    public function createIfMissing($upc, $vendorID)
+    {
+        // look for entry directly by UPC or via SKU mapping
+        $findP = $this->connection->prepare('
+            SELECT v.upc
+            FROM vendorItems AS v
+                LEFT JOIN vendorSKUtoPLU AS m ON v.vendorID=m.vendorID AND v.sku=m.sku
+            WHERE v.vendorID=?
+                AND (v.upc=? OR m.upc=?)');
+        $findR = $this->connection->execute($findP, array($vendorID, $upc, $upc));
+        if ($this->connection->num_rows($findR) == 0) {
+            // create item from product
+            $prod = new ProductsModel($this->connection);
+            $prod->upc($upc);
+            $prod->load();
+            $vend = new VendorItemsModel($this->connection);
+            $vend->vendorID($vendorID);
+            $vend->upc($upc);
+            $vend->sku($upc);
+            $vend->brand($prod->brand());
+            $vend->description($prod->description());
+            $vend->cost($prod->cost());
+            $vend->saleCost(0);
+            $vend->vendorDept(0);
+            $vend->units(1);
+            $vend->size($prod->size() . $prod->unitofmeasure());
+            $vend->save();
+        }
+    }
+
+    /**
+      Helper: update vendor costs when updating a product cost
+      if the product has a defined vendor
+    */
+    public function updateCostByUPC($upc, $cost, $vendorID)
+    {
+        $updateP = $this->connection->prepare('
+            UPDATE vendorItems
+            SET cost=?
+            WHERE vendorID=?
+                AND sku=?'); 
+        $skuModel = new VendorSKUtoPLUModel($this->connection);
+        $skuModel->vendorID($vendorID);
+        $skuModel->upc($upc);
+        foreach ($skuModel->find() as $obj) {
+            $this->connection->execute($updateP, array($cost, $vendorID, $obj->sku()));
+        }
+
+        $vModel = new VendorItemsModel($this->connection);
+        $vModel->vendorID($vendorID);
+        $vModel->upc($upc);
+        foreach ($vModel->find() as $obj) {
+            $this->connection->execute($updateP, array($cost, $vendorID, $obj->sku()));
+        }
+    }
+
     /* START ACCESSOR FUNCTIONS */
 
     public function upc()
