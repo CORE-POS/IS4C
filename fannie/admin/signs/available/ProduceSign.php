@@ -21,8 +21,10 @@
 
 *********************************************************************************/
 
-require_once(dirname(__FILE__).'/../../../config.php');
-require_once($FANNIE_ROOT.'admin/signs/available/SignClass.php');
+include(dirname(__FILE__).'/../../../config.php');
+if (!class_exists('SignClass')) {
+    include(dirname(__FILE__) . '/SignClass.php');
+}
 
 class ProduceSign extends SignClass {
 
