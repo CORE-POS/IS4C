@@ -18,7 +18,7 @@ branches:
 # be discoutraged
 env:
     - DB_DRIVER=pdo_mysql
-#    - DB_DRIVER=mysqli
+    - DB_DRIVER=mysqli
 
 before_install:
     - mysql -u root -e "DROP DATABASE IF EXISTS unit_test_op;"
