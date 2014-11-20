@@ -31,7 +31,7 @@ class TasksTest extends PHPUnit_Framework_TestCase
           a new monthly table & view
         */
         $dtrans = new DTransactionsModel(FannieDB::get('unit_test_trans'));
-        $dtrans->datetime('2999-01-01 00:00:00');
+        $dtrans->datetime('1901-01-01 00:00:00');
         $dtrans->save();
 
         $task->run();
@@ -40,8 +40,8 @@ class TasksTest extends PHPUnit_Framework_TestCase
           Verify the task created new monthly table & view
         */
         $archive_db = FannieDB::get('unit_test_archive');
-        $archive_table_exists = $archive_db->tableExists('transArchive299901');
-        $archive_dlog_exists = $archive_db->tableExists('dlog299901');
+        $archive_table_exists = $archive_db->tableExists('transArchive190101');
+        $archive_dlog_exists = $archive_db->tableExists('dlog1901');
         $this->assertEquals('true', $archive_table_exists, 'Monthly archive table not created');
         $this->assertEquals('true', $archive_dlog_exists, 'Monthly dlog view not created');
 
