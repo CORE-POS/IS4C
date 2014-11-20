@@ -41,9 +41,9 @@ class TasksTest extends PHPUnit_Framework_TestCase
         */
         $archive_db = FannieDB::get('unit_test_archive');
         $archive_table_exists = $archive_db->tableExists('transArchive190101');
-        $archive_dlog_exists = $archive_db->tableExists('dlog1901');
-        $this->assertEquals('true', $archive_table_exists, 'Monthly archive table not created');
-        $this->assertEquals('true', $archive_dlog_exists, 'Monthly dlog view not created');
+        $archive_dlog_exists = $archive_db->tableExists('dlog190101');
+        $this->assertEquals(true, $archive_table_exists, 'Monthly archive table not created');
+        $this->assertEquals(true, $archive_dlog_exists, 'Monthly dlog view not created');
 
         /**
           Verify dtransactions was cleared
