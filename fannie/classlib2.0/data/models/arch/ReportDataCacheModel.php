@@ -38,7 +38,6 @@ class ReportDataCacheModel extends BasicModel
 
     public function createIfNeeded($db_name)
     {
-        var_dump('making report data cache');
         return parent::createIfNeeded($db_name);
     }
 
