@@ -20,6 +20,10 @@ env:
     - DB_DRIVER=pdo_mysql
     - DB_DRIVER=mysqli
 
+before_install:
+    - mysql -u root -e "DROP DATABASE IF EXISTS unit_test_op;"
+    - mysql -u root -e "DROP DATABASE IF EXISTS unit_test_trans;"
+    - mysql -u root -e "DROP DATABASE IF EXISTS unit_test_archive;"
 install:
     # create Fannie databases
     - mysql -u root -e "CREATE DATABASE unit_test_op;"
@@ -52,3 +56,7 @@ script:
     - phpunit --bootstrap fannie/unit-tests/bootstrap.php fannie/unit-tests/PluginsTest.php
     - phpunit --bootstrap fannie/unit-tests/bootstrap.php fannie/unit-tests/SQLManagerTest.php
     - phpunit --bootstrap fannie/unit-tests/bootstrap.php fannie/unit-tests/TasksTest.php
+
+after_script:
+    - mysqldump -u root unit_test_trans dtransactions
+    - mysqldump -u root unit_test_archive
