@@ -191,10 +191,10 @@ class BaseItemModule extends ItemModule {
                 <span class="alert-danger">' . $upc . '</span>
                 <input type="hidden" id="upc" name="upc" value="' . $upc . '" />';
         if ($prevUPC) {
-            $ret .= ' <a class="small" href="ItemEditor.php?searchupc=' . $prevUPC . '">Previous</a>';
+            $ret .= ' <a class="small" href="ItemEditorPage.php?searchupc=' . $prevUPC . '">Previous</a>';
         }
         if ($nextUPC) {
-            $ret .= ' <a class="small" href="ItemEditor.php?searchupc=' . $nextUPC . '">Next</a>';
+            $ret .= ' <a class="small" href="ItemEditorPage.php?searchupc=' . $nextUPC . '">Next</a>';
         }
         $ret .= '</div>'; // end panel-heading
 
