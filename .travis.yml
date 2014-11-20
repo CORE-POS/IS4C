@@ -44,11 +44,11 @@ install:
 script:
     # Fannie tests
     # This must run first
-    - phpunit --bootstrap fannie/unit-tests/bootstrap.php fannie/unit-test/InstallTest.php
+    - phpunit --bootstrap fannie/unit-tests/bootstrap.php fannie/unit-tests/InstallTest.php
     # These can run in any order
-    - phpunit --bootstrap fannie/unit-tests/bootstrap.php fannie/unit-test/ItemsTest.php
-    - phpunit --bootstrap fannie/unit-tests/bootstrap.php fannie/unit-test/MembersTest.php
-    - phpunit --bootstrap fannie/unit-tests/bootstrap.php fannie/unit-test/PagesTest.php
-    - phpunit --bootstrap fannie/unit-tests/bootstrap.php fannie/unit-test/PluginsTest.php
-    - phpunit --bootstrap fannie/unit-tests/bootstrap.php fannie/unit-test/SQLManagerTest.php
-    - phpunit --bootstrap fannie/unit-tests/bootstrap.php fannie/unit-test/TasksTest.php
+    - phpunit --bootstrap fannie/unit-tests/bootstrap.php fannie/unit-tests/ItemsTest.php
+    - phpunit --bootstrap fannie/unit-tests/bootstrap.php fannie/unit-tests/MembersTest.php
+    - phpunit --bootstrap fannie/unit-tests/bootstrap.php fannie/unit-tests/PagesTest.php
+    - phpunit --bootstrap fannie/unit-tests/bootstrap.php fannie/unit-tests/PluginsTest.php
+    - phpunit --bootstrap fannie/unit-tests/bootstrap.php fannie/unit-tests/SQLManagerTest.php
+    - phpunit --bootstrap fannie/unit-tests/bootstrap.php fannie/unit-tests/TasksTest.php
