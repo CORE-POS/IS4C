@@ -621,7 +621,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 </div>
                 <div class="row form-group form-horizontal">
                     <label class="control-label col-sm-2">Buyer (SuperDept)</label>
-                    <div class="col-sm-5">
+                    <div class="col-sm-6">
                         <select name=deptSub class="form-control">
                             <option value=0></option>
                             <?php
@@ -634,31 +634,31 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 <div class="row form-group form-horizontal">
                     <label class="control-label col-sm-2">Department Start</label>
                     <div class="col-sm-4">
-                        <select onchange="$('#deptStart').val(this.value);" class="form-control">
+                        <select onchange="$('#deptStart').val(this.value);" class="form-control input-sm">
                         <?php
                         foreach($depts as $id => $name)
                             printf('<option value="%d">%d %s</option>',$id,$id,$name);  
                         ?>
                         </select>
                     </div>
-                    <div class="col-sm-1">
-                    <input type=number id=deptStart name=deptStart 
-                        class="form-control" value=1>
+                    <div class="col-sm-2">
+                    <input type=text id=deptStart name=deptStart 
+                        class="form-control input-sm" value=1>
                     </div>
                 </div>
                 <div class="form-group form-horizontal row">
                     <label class="control-label col-sm-2">Department End</label>
                     <div class="col-sm-4">
-                        <select onchange="$('#deptEnd').val(this.value);" class="form-control">
+                        <select onchange="$('#deptEnd').val(this.value);" class="form-control input-sm">
                         <?php
                         foreach($depts as $id => $name)
                             printf('<option value="%d">%d %s</option>',$id,$id,$name);  
                         ?>
                         </select>
                     </div>
-                    <div class="col-sm-1">
-                        <input type=number id=deptEnd name=deptEnd 
-                            class="form-control" value=1>
+                    <div class="col-sm-2">
+                        <input type=text id=deptEnd name=deptEnd 
+                            class="form-control input-sm" value=1>
                     </div>
                 </div>
             </div>

@@ -82,8 +82,8 @@ class SQLManagerTest extends PHPUnit_Framework_TestCase
 
         $field = $sql->fetch_field($result,0);
         $this->assertNotEquals(False,$field);
-        $this->assertInstanceOf('ADOFieldObject',$field);
-        $this->assertObjectHasAttribute('max_length',$field);
+        $this->assertInternalType('object',$field);
+        $this->assertObjectHasAttribute('name',$field);
         $this->assertEquals(1,$field->max_length);
 
         $now = $sql->now();
