@@ -49,7 +49,7 @@ class TasksTest extends PHPUnit_Framework_TestCase
           Verify dtransactions was cleared
         */
         $trans_db = FannieDB::get('unit_test_trans');
-        $records = $db->query('SELECT * FROM dtransactions');
+        $records = $trans_db->query('SELECT * FROM dtransactions');
         $this->assertEquals(0, $trans_db->num_rows($records), 'dtransactions not cleared');
     }
 }
