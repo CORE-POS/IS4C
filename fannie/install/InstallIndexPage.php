@@ -33,9 +33,15 @@ if (!file_exists(dirname(__FILE__).'/../config.php')){
 }
 
 require(dirname(__FILE__).'/../config.php'); 
-include(dirname(__FILE__).'/util.php');
-include(dirname(__FILE__).'/db.php');
-include_once('../classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include_once(dirname(__FILE__) . '/../classlib2.0/FannieAPI.php');
+}
+if (!function_exists('confset')) {
+    include(dirname(__FILE__).'/util.php');
+}
+if (!function_exists('create_if_neeed')) {
+    include(dirname(__FILE__).'/db.php');
+}
 
 /**
     @class InstallIndexPage
