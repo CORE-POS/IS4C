@@ -29,6 +29,7 @@ install:
     - mysql -u root -e "CREATE DATABASE unit_test_op;"
     - mysql -u root -e "CREATE DATABASE unit_test_trans;"
     - mysql -u root -e "CREATE DATABASE unit_test_archive;"
+    - mysqldump -u root unit_test_archive
     # create default configuration file
     - cp fannie/config.php.dist fannie/config.php
     # add path options

@@ -36,6 +36,12 @@ class ReportDataCacheModel extends BasicModel
     'expires' => array('type'=>'DATETIME'),
     );
 
+    public function createIfNeeded($db_name)
+    {
+        var_dump('making report data cache');
+        return parent::createIfNeeded($db_name);
+    }
+
     public function doc()
     {
         return '
