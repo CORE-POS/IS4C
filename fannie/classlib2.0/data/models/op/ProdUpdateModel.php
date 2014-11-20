@@ -168,6 +168,7 @@ tools/cron jobs/sprocs/etc actually do. They probably
     public function logManyUpdates($upcs, $type='UNKNOWN', $user=false)
     {
         $col_map = array(
+            'upc' => 'p.upc',
             'description' => 'description',
             'price' => 'normal_price',
             'salePrice' => 'special_price',
@@ -180,6 +181,7 @@ tools/cron jobs/sprocs/etc actually do. They probably
             'forceQty' => 'qttyEnforced',
             'noDisc' => 'discount',
             'inUse' => 'inUse',
+            'likeCode' => 'likeCode',
         );
 
         if (!$user) {
@@ -205,90 +207,13 @@ tools/cron jobs/sprocs/etc actually do. They probably
 
         $query = 'INSERT INTO prodUpdate (' . $insert_cols . ')
                   SELECT ' . $select_cols . '
-                  FROM products
-                  WHERE upc IN (' . $upc_in . ')';
+                  FROM products AS p
+                    LEFT JOIN upcLike AS u ON p.upc=u.upc
+                  WHERE p.upc IN (' . $upc_in . ')';
         $prep = $this->connection->prepare($query);
         $res = $this->connection->execute($prep, $args);
 
         return ($ret) ? true : false;
-    }
-
-    public static function add($upc,$fields){
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-        if (!is_numeric($upc))
-            return False;
-        if (!is_int($upc) && !ctype_digit($upc))
-            return False;
-        $upc = substr($upc,0,13);
-        $upc = BarcodeLib::padUPC($upc);
-
-        $args = array();
-        $q = 'INSERT INTO prodUpdate (';
-        // translate some field names from products => prodUpdate
-        foreach($fields as $name => $value){
-            if ($name === 0 || $name === True) continue;
-            switch($name){
-            case 'description':
-            case 'tax':
-            case 'scale':
-            case 'inUse':
-                if ($name === 0 || $name === True)
-                    break; // switch does loose comparison...
-                $q .= $name.',';
-                $args[] = $value;    
-                break;
-            case 'price':
-            case 'normal_price':
-                $q .= 'price,';
-                $args[] = $value;
-                break;
-            case 'dept':
-            case 'department':
-                $q .= 'dept,';
-                $args[] = $value;
-                break;
-            case 'fs':
-            case 'foodstamp':
-                $q .= 'fs,';
-                $args[] = $value;
-                break;
-            case 'forceQty':
-            case 'qttyEnforced':
-                $q .= 'forceQty,';
-                $args[] = $value;
-                break;
-            case 'noDisc':
-            case 'discount':
-                $q .= 'noDisc,';
-                $args[] = $value;
-                break;
-            default:
-                break;
-            }
-        }
-
-        if ($q != 'INSERT INTO prodUpdate ('){
-            $q .= 'upc,';
-            $args[] = $upc;
-
-            $q .= 'user,';
-            $current_user = FannieAuth::checkLogin();
-            $uid = FannieAuth::getUID($current_user);
-            if ($current_user === False || $uid === False)
-                $args[] = 0;
-            else
-                $args[] = $uid;
-
-            $q .= 'modified) VALUES (';
-            foreach($args as $a) $q .= '?,';
-            $q .= $dbc->now().')';
-
-            $insP = $dbc->prepare_statement($q);
-            $insR = $dbc->exec_statement($insP, $args);
-            if ($insR === False) return False;
-        }
-        return True;
     }
 
     /* START ACCESSOR FUNCTIONS */

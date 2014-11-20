@@ -252,7 +252,7 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
         }
 
         $updateModel = new ProdUpdateModel($dbc);
-        $updateModel->logManyUpdates($update_upcs, 'EDIT');
+        $updateModel->logManyUpdates($updated_upcs, ProdUpdateModel::UPDATE_EDIT);
 
         return true;
     }

@@ -69,6 +69,325 @@ those same items revert to normal pricing.
         ';
     }
 
+    /**
+      Start batch immediately
+      @param $id [int] batchID
+
+      This helper method masks some ugly queries
+      that cope with UPC vs Likecode values plus
+      differences in multi-table UPDATE syntax for
+      different SQL flavors. Also provides some
+      de-duplication.
+    */
+    public function forceStartBatch($id)
+    {
+        $batchInfoQ = $this->connection->prepare("SELECT batchType,discountType FROM batches WHERE batchID = ?");
+        $batchInfoR = $this->connection->execute($batchInfoQ,array($id));
+        $batchInfoW = $dbc->fetch_array($batchInfoR);
+
+        $forceQ = "";
+        $forceLCQ = "";
+        if ($batchInfoW['discountType'] != 0) { // item is going on sale
+            $forceQ="
+                UPDATE products AS p
+                    INNER JOIN batchList AS l ON p.upc=l.upc
+                    INNER JOIN batches AS b ON l.batchID=b.batchID
+                SET p.start_date = b.startDate, 
+                    p.end_date=b.endDate,
+                    p.special_price=l.salePrice,
+                    p.specialgroupprice=CASE WHEN l.salePrice < 0 THEN -1*l.salePrice ELSE l.salePrice END,
+                    p.specialpricemethod=l.pricemethod,
+                    p.specialquantity=l.quantity,
+                    p.discounttype=b.discounttype,
+                    p.mixmatchcode = CASE 
+                        WHEN l.pricemethod IN (3,4) AND l.salePrice >= 0 THEN convert(l.batchID,char)
+                        WHEN l.pricemethod IN (3,4) AND l.salePrice < 0 THEN convert(-1*l.batchID,char)
+                        WHEN l.pricemethod = 0 AND l.quantity > 0 THEN concat('b',convert(l.batchID,char))
+                        ELSE p.mixmatchcode 
+                    END 
+                WHERE l.upc not like 'LC%'
+                    and l.batchID = ?";
+                
+            $forceLCQ = "
+                UPDATE products AS p
+                    INNER JOIN upcLike AS v ON v.upc=p.upc
+                    INNER JOIN batchList as l ON l.upc=concat('LC',convert(v.likecode,char))
+                    INNER JOIN batches AS b ON b.batchID=l.batchID
+                SET p.special_price = l.salePrice,
+                    p.end_date = b.endDate,
+                    p.start_date=b.startDate,
+                    p.specialgroupprice=CASE WHEN l.salePrice < 0 THEN -1*l.salePrice ELSE l.salePrice END,
+                    p.specialpricemethod=l.pricemethod,
+                    p.specialquantity=l.quantity,
+                    p.discounttype = b.discounttype,
+                    p.mixmatchcode = CASE 
+                        WHEN l.pricemethod IN (3,4) AND l.salePrice >= 0 THEN convert(l.batchID,char)
+                        WHEN l.pricemethod IN (3,4) AND l.salePrice < 0 THEN convert(-1*l.batchID,char)
+                        WHEN l.pricemethod = 0 AND l.quantity > 0 THEN concat('b',convert(l.batchID,char))
+                        ELSE p.mixmatchcode 
+                    END 
+                WHERE l.upc LIKE 'LC%'
+                    AND l.batchID = ?";
+
+            if ($this->connection->dbms_name() == 'mssql') {
+                $forceQ="UPDATE products
+                    SET start_date = b.startDate, 
+                    end_date=b.endDate,
+                    special_price=l.salePrice,
+                        specialgroupprice=CASE WHEN l.salePrice < 0 THEN -1*l.salePrice ELSE l.salePrice END,
+                    specialpricemethod=l.pricemethod,
+                    specialquantity=l.quantity,
+                    discounttype=b.discounttype,
+                    mixmatchcode = CASE 
+                    WHEN l.pricemethod IN (3,4) AND l.salePrice >= 0 THEN convert(varchar,l.batchID)
+                    WHEN l.pricemethod IN (3,4) AND l.salePrice < 0 THEN convert(varchar,-1*l.batchID)
+                    WHEN l.pricemethod = 0 AND l.quantity > 0 THEN 'b'+convert(varchar,l.batchID)
+                    ELSE p.mixmatchcode 
+                    END 
+                    FROM products as p, 
+                    batches as b, 
+                    batchList as l 
+                    WHERE l.upc = p.upc
+                    and l.upc not like 'LC%'
+                    and b.batchID = l.batchID
+                    and b.batchID = ?";
+
+                $forceLCQ = "update products set special_price = l.salePrice,
+                    end_date = b.endDate,start_date=b.startDate,
+                    discounttype = b.discounttype,
+                    specialpricemethod=l.pricemethod,
+                    specialquantity=l.quantity,
+                            specialgroupprice=CASE WHEN l.salePrice < 0 THEN -1*l.salePrice ELSE l.salePrice END,
+                    mixmatchcode = CASE 
+                        WHEN l.pricemethod IN (3,4) AND l.salePrice >= 0 THEN convert(varchar,l.batchID)
+                        WHEN l.pricemethod IN (3,4) AND l.salePrice < 0 THEN convert(varchar,-1*l.batchID)
+                        WHEN l.pricemethod = 0 AND l.quantity > 0 THEN 'b'+convert(varchar,l.batchID)
+                        ELSE p.mixmatchcode 
+                    END 
+                    from products as p left join
+                    upcLike as v on v.upc=p.upc left join
+                    batchList as l on l.upc='LC'+convert(varchar,v.likecode)
+                    left join batches as b on b.batchID = l.batchID
+                    where b.batchID=?";
+            }
+        } else { // normal price is changing
+            $forceQ = "
+                UPDATE products AS p
+                      INNER JOIN batchList AS l ON l.upc=p.upc
+                SET p.normal_price = l.salePrice,
+                    p.modified = curdate()
+                WHERE l.upc not like 'LC%'
+                    AND l.batchID = ?";
+
+            $forceLCQ = "
+                UPDATE products AS p
+                    INNER JOIN upcLike AS v ON v.upc=p.upc 
+                    INNER JOIN batchList as b on b.upc=concat('LC',convert(v.likecode,char))
+                SET p.normal_price = b.salePrice,
+                    p.modified=curdate()
+                WHERE l.upc LIKE 'LC%'
+                    AND l.batchID = ?";
+
+            if ($this->connection->dbms_name() == 'mssql') {
+                $forceQ = "UPDATE products
+                      SET normal_price = l.salePrice,
+                      modified = getdate()
+                      FROM products as p,
+                      batches as b,
+                      batchList as l
+                      WHERE l.upc = p.upc
+                      AND l.upc not like 'LC%'
+                      AND b.batchID = l.batchID
+                      AND b.batchID = ?";
+
+                $forceLCQ = "update products set normal_price = b.salePrice,
+                    modified=getdate()
+                    from products as p left join
+                    upcLike as v on v.upc=p.upc left join
+                    batchList as b on b.upc='LC'+convert(varchar,v.likecode)
+                    where b.batchID=?";
+            }
+        }
+
+        $forceP = $this->connection->prepare($forceQ);
+        $forceR = $this->connection->execute($forceP,array($id));
+        $forceLCP = $this->connection->prepare($forceLCQ);
+        $forceR = $this->connection->execute($forceLCP,array($id));
+
+        $this->finishForce($id);
+    }
+
+    /**
+      Stop batch immediately
+      @param $id [int] batchID
+    */
+    public function forceStopBatch($id)
+    {
+        // unsale regular items
+        $unsaleQ = "
+            UPDATE products AS p 
+                LEFT JOIN batchList as b ON p.upc=b.upc
+            SET special_price=0,
+                specialpricemethod=0,
+                specialquantity=0,
+                specialgroupprice=0,
+                discounttype=0,
+                start_date='1900-01-01',
+                end_date='1900-01-01'
+            WHERE b.upc NOT LIKE '%LC%'
+                AND b.batchID=?";
+        if ($this->connection->dbms_name() == "mssql") {
+            $unsaleQ = "UPDATE products SET special_price=0,
+                specialpricemethod=0,specialquantity=0,
+                specialgroupprice=0,discounttype=0,
+                start_date='1900-01-01',end_date='1900-01-01'
+                FROM products AS p, batchList as b
+                WHERE p.upc=b.upc AND b.upc NOT LIKE '%LC%'
+                AND b.batchID=?";
+        }
+        $prep = $this->connection->prepare($unsaleQ);
+        $unsaleR = $this->connection->execute($prep,array($id));
+
+        $unsaleLCQ = "
+            UPDATE products AS p 
+                LEFT JOIN upcLike AS v ON v.upc=p.upc 
+                LEFT JOIN batchList AS l ON l.upc=concat('LC',convert(v.likeCode,char))
+            SET special_price=0,
+                specialpricemethod=0,
+                specialquantity=0,
+                specialgroupprice=0,
+                p.discounttype=0,
+                start_date='1900-01-01',
+                end_date='1900-01-01'
+            WHERE l.upc LIKE '%LC%'
+                AND l.batchID=?";
+        if ($this->connection->dbms_name() == "mssql") {
+            $unsaleLCQ = "UPDATE products
+                SET special_price=0,
+                specialpricemethod=0,specialquantity=0,
+                specialgroupprice=0,discounttype=0,
+                start_date='1900-01-01',end_date='1900-01-01'
+                FROM products AS p LEFT JOIN
+                upcLike AS v ON v.upc=p.upc LEFT JOIN
+                batchList AS l ON l.upc=concat('LC',convert(v.likeCode,char))
+                WHERE l.upc LIKE '%LC%'
+                AND l.batchID=?";
+        }
+        $prep = $this->connection->prepare($unsaleLCQ);
+        $unsaleLCR = $this->connection->execute($prep,array($id));
+
+        $this->finishForce($id);
+    }
+
+    /**
+      Cleanup after forcibly starting or stopping a sales batch
+      - Update lane item records to reflect on/off sale
+      - Log changes to prodUpdate
+      @param $id [int] batchID
+      
+      Separate method since it's identical for starting
+      and stopping  
+    */
+    private function finishForce($id)
+    {
+        global $FANNIE_LANES;
+        $columnsP = $this->connection->prepare('
+            SELECT p.upc,
+                p.normal_price,
+                p.special_price,
+                p.modified,
+                p.specialpricemethod,
+                p.specialquantity,
+                p.specialgroupprice,
+                p.discounttype,
+                p.mixmatchcode,
+                p.start_date,
+                p.end_date
+            FROM products AS p
+                INNER JOIN batchList AS b ON p.upc=b.upc
+            WHERE b.batchID=?');
+        $lcColumnsP = $this->connection->prepare('
+            SELECT p.upc,
+                p.normal_price,
+                p.special_price,
+                p.modified,
+                p.specialpricemethod,
+                p.specialquantity,
+                p.specialgroupprice,
+                p.discounttype,
+                p.mixmatchcode,
+                p.start_date,
+                p.end_date
+            FROM products AS p
+                INNER JOIN upcLike AS u ON p.upc=u.upc
+                INNER JOIN batchList AS b 
+                    ON b.upc = ' . $this->connection->concat("'LC'", $this->connection->convert('u.likeCode', 'CHAR'), '') . '
+            WHERE b.batchID=?');
+
+        /**
+          Get changed columns for each product record
+        */
+        $upcs = array();
+        $columnsR = $this->connection->execute($columnsP, array($id));
+        while ($w = $this->connection->fetch_row($columnsR)) {
+            $upcs[$w['upc']] = $w;
+        }
+        $columnsR = $this->connection->execute($lcColumnsP, array($id));
+        while ($w = $this->connection->fetch_row($columnsR)) {
+            $upcs[$w['upc']] = $w;
+        }
+
+        $updateQ = '
+            UPDATE products AS p SET
+                p.normal_price = ?,
+                p.special_price = ?,
+                p.modified = ?,
+                p.specialpricemethod = ?,
+                p.specialquantity = ?,
+                p.specialgroupprice = ?,
+                p.discounttype = ?,
+                p.mixmatchcode = ?,
+                p.start_date = ?,
+                p.end_date = ?
+            WHERE p.upc = ?';
+
+        /**
+          Update all records on each lane before proceeding
+          to the next lane. Hopefully faster / more efficient
+        */
+        for ($i = 0; $i < count($FANNIE_LANES); $i++) {
+            $lane_sql = new SQLManager($FANNIE_LANES[$i]['host'],$FANNIE_LANES[$i]['type'],
+                $FANNIE_LANES[$i]['op'],$FANNIE_LANES[$i]['user'],
+                $FANNIE_LANES[$i]['pw']);
+            
+            if (!isset($lane_sql->connections[$FANNIE_LANES[$i]['op']]) || $lane_sql->connections[$FANNIE_LANES[$i]['op']] === false) {
+                // connect failed
+                continue;
+            }
+
+            $updateP = $lane_sql->prepare($updateQ);
+            foreach ($upcs as $upc => $data) {
+                $lane_sql->execute($updateP, array(
+                    $data['normal_price'],
+                    $data['special_price'],
+                    $data['modified'],
+                    $data['specialpricemethod'],
+                    $data['specialquantity'],
+                    $data['specialgroupprice'],
+                    $data['discounttype'],
+                    $data['mixmatchcode'],
+                    $data['start_date'],
+                    $data['end_date'],
+                    $upc,
+                ));
+            }
+        }
+
+        $update = new ProdUpdateModel($this->connection);
+        $updateType = ($batchInfoW['discountType'] == 0) ? ProdUpdateModel::UPDATE_PC_BATCH : ProdUpdateModel::UPDATE_BATCH;
+        $update->logManyUpdates(array_keys($upcs), $updateType);
+    }
+
     protected function hookAddColumnowner()
     {
         // copy existing values from batchowner.owner to
