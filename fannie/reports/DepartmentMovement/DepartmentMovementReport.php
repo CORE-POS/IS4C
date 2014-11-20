@@ -321,7 +321,7 @@ class DepartmentMovementReport extends FannieReportPage
 </div>
 <form method = "get" action="DepartmentMovementReport.php" class="form-horizontal">
 <div class="row">
-    <div class="col-sm-5">
+    <div class="col-sm-6">
         <div class="form-group">
             <label class="control-label col-sm-4">Select Buyer/Dept</label>
             <div class="col-sm-8">
@@ -336,23 +336,23 @@ class DepartmentMovementReport extends FannieReportPage
         <div class="form-group">
             <label class="control-label col-sm-4">Department Start</label>
             <div class="col-sm-6">
-            <select id=deptStartSel onchange="$('#deptStart').val(this.value);" class="form-control col-sm-6">
+            <select id=deptStartSel onchange="$('#deptStart').val(this.value);" class="form-control col-sm-6 input-sm">
                 <?php echo $deptsList ?>
             </select>
             </div>
             <div class="col-sm-2">
-            <input type=number name=deptStart id=deptStart size=5 value=1 class="form-control col-sm-2" />
+            <input type=text name=deptStart id=deptStart value=1 class="form-control col-sm-2 input-sm" />
             </div>
         </div>
         <div class="form-group">
             <label class="control-label col-sm-4">Department End</label>
             <div class="col-sm-6">
-                <select id=deptEndSel onchange="$('#deptEnd').val(this.value);" class="form-control">
+                <select id=deptEndSel onchange="$('#deptEnd').val(this.value);" class="form-control input-sm">
                     <?php echo $deptsList ?>
                 </select>
             </div>
             <div class="col-sm-2">
-                <input type=number name=deptEnd id=deptEnd size=5 value=1 class="form-control" />
+                <input type=text name=deptEnd id=deptEnd value=1 class="form-control input-sm" />
             </div>
         </div>
         <div class="form-group">
