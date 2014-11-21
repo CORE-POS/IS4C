@@ -271,7 +271,7 @@ if ($sql === False ) {
         }
     }
 
-    $transErrors = create_trans_dbs($sql,$CORE_LOCAL->get('DBMS'));
+    $transErrors = create_trans_dbs($sql, $CORE_LOCAL->get('tDatabase'));
     $gotDBs++;
     if (!empty($transErrors)){
         echo '<div class="db_create_errors" style="border: solid 1px red;padding:5px;">';
@@ -433,10 +433,11 @@ printf("<tr><td>(Add)</td><td><input type=text name=TAX_RATE[] value=\"\" /></td
 </div> <!--    wrapper -->
 <?php
 
-function create_trans_dbs($db,$type){
+function create_trans_dbs($db, $name)
+{
     global $CORE_LOCAL;
-    $name = $CORE_LOCAL->get('tDatabase');
     $errors = array();
+    $type = $db->dbms_name();
 
     if ($CORE_LOCAL->get('laneno') == 0) {
         $errors[] = array(
@@ -447,47 +448,51 @@ function create_trans_dbs($db,$type){
 
         return $errors;
     }
-    
-    InstallUtilities::createIfNeeded($db, $type, $name, 'dtransactions', 'trans', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'localtrans', 'trans', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'localtransarchive', 'trans', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'suspended', 'trans', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'localtemptrans', 'trans', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'taxrates', 'trans', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'localtranstoday', 'trans', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'memdiscountadd', 'trans', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'memdiscountremove', 'trans', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'screendisplay', 'trans', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'staffdiscountadd', 'trans', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'staffdiscountremove', 'trans', $errors);
-
-    /**
-     @deprecated 10Mar14 by Andy
-     View layer isn't necessary; can query suspended table directly
-    InstallUtilities::createIfNeeded($db, $type, $name, 'suspendedtoday', 'trans', $errors);
-    */
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'couponApplied', 'trans', $errors);
 
     /* lttsummary, lttsubtotals, and subtotals
      * always get rebuilt to account for tax rate
      * changes */
-    include('buildLTTViews.php');
-    $errors = buildLTTViews($db,$type,$errors);
+    if (!function_exists('buildLTTViews')) {
+        include(dirname(__FILE__) . '/buildLTTViews.php');
+    }
 
-    InstallUtilities::createIfNeeded($db, $type, $name, 'taxView', 'trans', $errors);
-
+    $models = array(
+        'DTransactionsModel',
+        'LocalTransModel',
+        'LocalTransArchiveModel',
+        'LocalTransTodayModel',
+        'LocalTempTransModel',
+        'SuspendedModel',
+        'TaxRatesModel',
+        'CouponAppliedModel',
+        'EfsnetRequestModel',
+        'EfsnetRequestModModel',
+        'EfsnetResponseModel',
+        'EfsnetTokensModel',
+        'PaycardTransactionsModel',
+        'CapturedSignatureModel',
+        // placeholder,
+        '__LTT__',
+        // Views
+        'MemDiscountAddModel',
+        'MemDiscountRemoveModel',
+        'StaffDiscountAddModel',
+        'StaffDiscountRemoveModel',
+        'ScreenDisplayModel',
+        'TaxViewModel',
+    );
+    foreach ($models as $class) {
+        if ($class == '__LTT__') {
+            $errors = buildLTTViews($db,$type,$errors);
+            continue;
+        }
+        $obj = new $class($db);
+        $created = $obj->createIfNeeded($name);
+        if ($created !== true) {
+            $errors[] = $created;
+        }
+    }
+    
     $lttR = "CREATE view ltt_receipt as 
         select
         l.description as description,
@@ -959,16 +964,6 @@ function create_trans_dbs($db,$type){
         InstallUtilities::dbStructureModify($db,'rp_receipt',$rprV,$errors);
     }
 
-    InstallUtilities::createIfNeeded($db, $type, $name, 'PaycardTransactions', 'trans', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'efsnetRequest', 'trans', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'efsnetRequestMod', 'trans', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'efsnetResponse', 'trans', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'efsnetTokens', 'trans', $errors);
-
     $ccV = "CREATE view ccReceiptView 
         AS 
         select
@@ -1045,21 +1040,6 @@ function create_trans_dbs($db,$type){
           and m.mode='void'";
     if(!$db->table_exists('ccReceiptView',$name)){
         InstallUtilities::dbStructureModify($db,'ccReceiptView',$ccV,$errors);
-    }
-
-    $sigCaptureTable = "CREATE TABLE CapturedSignature (
-        tdate datetime,
-        emp_no int,
-        register_no int,
-        trans_no int,
-        trans_id int,
-        filetype char(3),
-        filecontents blob)";
-    if($type == "mssql"){
-        $sigCaptureTable = str_replace("blob","image",$sigCaptureTable);
-    }
-    if (!$db->table_exists("CapturedSignature")){
-        InstallUtilities::dbStructureModify($db,'CapturedSignature',$sigCaptureTable,$errors);
     }
 
     $lttG = "CREATE  view ltt_grouped as
@@ -2503,9 +2483,6 @@ function create_min_server($db,$type){
     if (!$db->table_exists("TenderTapeGeneric",$name)){
         InstallUtilities::dbStructureModify($db,'TenderTapeGeneric',$ttG,$errors);
     }
-
-    // re-use definition to create lane_config on server
-    InstallUtilities::createIfNeeded($db, $type, $name, 'lane_config', 'op', $errors);
 
     return $errors;
 }
