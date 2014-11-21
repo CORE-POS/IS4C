@@ -29,9 +29,6 @@ if (!function_exists('checkLogin')) {
     include_once($FANNIE_ROOT . 'auth/login.php');
 }
 if (!function_exists("updateProductAllLanes")) include($FANNIE_ROOT.'item/laneUpdates.php');
-if (!function_exists('forceBatch')) {
-    include('forceBatch.php');
-}
 
 class BatchListPage extends FannieRESTfulPage 
 {
@@ -169,77 +166,24 @@ class BatchListPage extends FannieRESTfulPage
         $json = array('error'=>0,'msg'=>'Deleted batch #' . $this->id);
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $unsaleQ = "
-            UPDATE products AS p 
-                LEFT JOIN batchList as b ON p.upc=b.upc
-            SET special_price=0,
-                specialpricemethod=0,
-                specialquantity=0,
-                specialgroupprice=0,
-                discounttype=0,
-                start_date='1900-01-01',
-                end_date='1900-01-01'
-            WHERE b.upc NOT LIKE '%LC%'
-                AND b.batchID=?";
-        if ($dbc->dbms_name()=="mssql"){
-            $unsaleQ = "UPDATE products SET special_price=0,
-                specialpricemethod=0,specialquantity=0,
-                specialgroupprice=0,discounttype=0,
-                start_date='1900-01-01',end_date='1900-01-01'
-                FROM products AS p, batchList as b
-                WHERE p.upc=b.upc AND b.upc NOT LIKE '%LC%'
-                AND b.batchID=?";
-        }
-        $prep = $dbc->prepare_statement($unsaleQ);
-        $unsaleR = $dbc->exec_statement($prep,array($this->id));
+        $batch = new BatchesModel($dbc);
+        $batch->forceStopBatch($this->id);
 
-        $unsaleLCQ = "
-            UPDATE products AS p 
-                LEFT JOIN upcLike AS v ON v.upc=p.upc 
-                LEFT JOIN batchList AS l ON l.upc=concat('LC',convert(v.likeCode,char))
-            SET special_price=0,
-                specialpricemethod=0,
-                specialquantity=0,
-                specialgroupprice=0,
-                p.discounttype=0,
-                start_date='1900-01-01',
-                end_date='1900-01-01'
-            WHERE l.upc LIKE '%LC%'
-                AND l.batchID=?";
-        if ($dbc->dbms_name()=="mssql") {
-            $unsaleLCQ = "UPDATE products
-                SET special_price=0,
-                specialpricemethod=0,specialquantity=0,
-                specialgroupprice=0,discounttype=0,
-                start_date='1900-01-01',end_date='1900-01-01'
-                FROM products AS p LEFT JOIN
-                upcLike AS v ON v.upc=p.upc LEFT JOIN
-                batchList AS l ON l.upc=concat('LC',convert(v.likeCode,char))
-                WHERE l.upc LIKE '%LC%'
-                AND l.batchID=?";
-        }
-        $prep = $dbc->prepare_statement($unsaleLCQ);
-        $unsaleLCR = $dbc->exec_statement($prep,array($this->id));
-        if ($unsaleLCR === false) {
+        $delQ = $dbc->prepare_statement("delete from batches where batchID=?");
+        $batchR = $dbc->exec_statement($delQ,array($this->id));
+    
+        $delQ = $dbc->prepare_statement("delete from batchList where batchID=?");
+        $itemR = $dbc->exec_statement($delQ,array($this->id));
+        if ($itemR !== false && $batchR === false) {
             $json['error'] = 1;
-            $json['msg'] = 'An error occurred taking items off sale';
-        } else {
-            $delQ = $dbc->prepare_statement("delete from batches where batchID=?");
-            $batchR = $dbc->exec_statement($delQ,array($this->id));
-        
-            $delQ = $dbc->prepare_statement("delete from batchList where batchID=?");
-            $itemR = $dbc->exec_statement($delQ,array($this->id));
-            if ($itemR !== false && $batchR === false) {
-                $json['error'] = 1;
-                $json['msg'] = 'Items were unsaled and removed from the batch, but the batch could not be deleted';
-            } elseif ($itemR === false && $batchR !== false) {
-                $json['error'] = 1;
-                $json['msg'] = 'Items were unsaled and the batch was deleted, but some orphaned items remain in the batchList table.'
-                    . ' This probably is not a big deal unless it happens often.';
-            } elseif ($itemR === false && $batchR === false) {
-                $json['error'] = 1;
-                $json['msg'] = 'Items were unsaled but an error occurred deleting the batch.';
-            }
+            $json['msg'] = 'Items were unsaled and removed from the batch, but the batch could not be deleted';
+        } elseif ($itemR === false && $batchR !== false) {
+            $json['error'] = 1;
+            $json['msg'] = 'Items were unsaled and the batch was deleted, but some orphaned items remain in the batchList table.'
+                . ' This probably is not a big deal unless it happens often.';
+        } elseif ($itemR === false && $batchR === false) {
+            $json['error'] = 1;
+            $json['msg'] = 'Items were unsaled but an error occurred deleting the batch.';
         }
 
         echo json_encode($json);

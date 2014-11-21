@@ -44,7 +44,8 @@ class VendorIndexPage extends FanniePage {
 
     public $description = '[Vendor Editor] creates or update information about vendors.';
 
-    function preprocess(){
+    function preprocess()
+    {
 
         $ajax = FormLib::get_form_value('action');
         if ($ajax !== ''){
@@ -52,10 +53,20 @@ class VendorIndexPage extends FanniePage {
             return False;
         }       
 
+        $auto = FormLib::get('autoAdd', 0);
+        if ($auto == 1) {
+            $vendor = FormLib::get('vid');
+            $this->autoPopulate($vendor);
+            header('Location: VendorIndexPage.php?vid=' . $vendor);
+
+            return false;
+        }
+
         return True;
     }
 
-    function ajax_callbacks($action){
+    function ajax_callbacks($action)
+    {
         global $FANNIE_OP_DB;
         switch($action){
         case 'vendorDisplay':
@@ -136,6 +147,48 @@ class VendorIndexPage extends FanniePage {
         }
     }
 
+    private function autoPopulate($vendorID)
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        
+        $query = '
+            SELECT p.upc,
+                p.upc AS sku,
+                p.brand,
+                p.description,
+                p.size,
+                p.unitofmeasure,
+                p.cost,
+                0.00 AS saleCost,
+                0 AS vendorDept
+            FROM products AS p
+                INNER JOIN vendors AS v ON p.default_vendor_id=v.vendorID
+            WHERE v.vendorID=?
+                AND p.upc NOT IN (
+                    SELECT upc FROM vendorItems WHERE vendorID=?
+                ) AND p.upc NOT IN (
+                    SELECT upc FROM vendorSKUtoPLU WHERE vendorID=?
+                )';
+        $prep = $dbc->prepare($query);
+        $args = array($vendorID, $vendorID, $vendorID);
+        $result = $dbc->execute($prep, $args);
+        $item = new VendorItemsModel($dbc);
+        while ($row = $dbc->fetch_row($result)) {
+            $item->vendorID($vendorID);
+            $item->upc($row['upc']);
+            $item->sku($row['sku']);
+            $item->brand($row['brand']);
+            $item->description($row['description']);
+            $item->units(1);
+            $item->size($row['size'] . $row['unitofmeasure']);
+            $item->cost($row['cost']);
+            $item->saleCost(0);
+            $item->vendorDept(0);
+            $item->save();
+        }
+    }
+
     private function getVendorInfo($id)
     {
         global $FANNIE_OP_DB,$FANNIE_ROOT;
@@ -166,9 +219,15 @@ class VendorIndexPage extends FanniePage {
             $ret .= "This vendor contains $num items";
             $ret .= "<br />";
             $ret .= "<a href=\"BrowseVendorItems.php?vid=$id\">Browse vendor catalog</a>";  
+            if ($num <= 500) {
+                $ret .= "<br />";
+                $ret .= "<a href=\"EditVendorItems.php?id=$id\">Edit vendor catalog</a>";  
+            }
         }
         $ret .= "<br />";
-        $ret .= "<a href=\"DefaultUploadPage.php?vid=$id\">Update vendor catalog</a>";
+        $ret .= "<a href=\"DefaultUploadPage.php?vid=$id\">Upload new vendor catalog</a>";
+        $ret .= "<br />";
+        $ret .= "<a href=\"VendorIndexPage.php?vid=$id&autoAdd=1\">Add existing items to catalog</a>";
         $ret .= "<br />";
         $ret .= "<a href=\"UploadPluMapPage.php?vid=$id\">Update PLU/SKU mapping</a>";
         $ret .= "</p>";

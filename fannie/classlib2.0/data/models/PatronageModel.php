@@ -40,8 +40,14 @@ class PatronageModel extends BasicModel
     'tot_pat' => array('type'=>'MONEY'),
     'cash_pat' => array('type'=>'MONEY'),
     'equit_pat' => array('type'=>'MONEY'),
-    'FY' => array('type'=>'SMALLINT','primary_key'=>True,'default'=>0)
+    'FY' => array('type'=>'SMALLINT','primary_key'=>True,'default'=>0),
+    'check_number' => array('type'=>'INT'),
     );
+
+    public function gumPayoffID($id)
+    {
+        // stub function so I can call GumLib::allocateCheck
+    }
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -374,6 +380,43 @@ class PatronageModel extends BasicModel
                 }
             }
             $this->instance["FY"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function check_number()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["check_number"])) {
+                return $this->instance["check_number"];
+            } else if (isset($this->columns["check_number"]["default"])) {
+                return $this->columns["check_number"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'check_number',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["check_number"]) || $this->instance["check_number"] != func_get_args(0)) {
+                if (!isset($this->columns["check_number"]["ignore_updates"]) || $this->columns["check_number"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["check_number"] = func_get_arg(0);
         }
         return $this;
     }

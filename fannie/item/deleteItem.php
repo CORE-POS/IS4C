@@ -78,14 +78,10 @@ if (isset($_REQUEST['upc']) && !isset($_REQUEST['deny'])){
         }
     }
     else if (isset($_REQUEST['confirm'])){
-        $update = new ProdUpdateModel($dbc);
-        $update->upc($upc);
-        $update->logUpdate(ProdUpdateModel::UPDATE_DELETE);
+        $model = new ProductsModel($dbc);
+        $model->upc($upc);
+        $model->delete();
 
-        ProductsModel::staticDelete($upc);
-
-        $delxQ = $dbc->prepare_statement("DELETE FROM prodExtra WHERE upc=?");
-        $dbc->exec_statement($delxQ,array($upc));
         if ($dbc->table_exists("scaleItems")){
             $scaleQ = $dbc->prepare_statement("DELETE FROM scaleItems WHERE plu=?");
             $dbc->exec_statement($scaleQ,array($upc));

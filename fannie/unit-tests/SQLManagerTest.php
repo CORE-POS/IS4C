@@ -151,7 +151,9 @@ class SQLManagerTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('',$error);
 
         /* bad query on purpose */
+        ob_start();
         $fail = $sql->query("DO NOT SELECT 1");
+        ob_end_clean();
         $this->assertEquals(False,$fail);
 
         $error = $sql->error();

@@ -39,10 +39,12 @@ class EndItemSale extends FannieRESTfulPage {
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $upc = BarcodeLib::padUPC($this->id);
 
-        $prodP = $dbc->prepare_statement('UPDATE products SET
-                discounttype=0, special_price=0
-                WHERE upc=?');
-        $prodR = $dbc->exec_statement($prodP, array($upc));
+        $model = new ProductsModel($dbc);
+        $model->upc($upc);
+        $model->discounttype(0);
+        $model->special_price(0);
+        $model->modified(date('Y-m-d H:i:s'));
+        $model->save();
 
         $batchID = FormLib::get_form_value('batchID');
         $batchUPC = FormLib::get_form_value('batchUPC');

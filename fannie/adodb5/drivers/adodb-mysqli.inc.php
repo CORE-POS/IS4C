@@ -613,12 +613,22 @@ class ADODB_mysqli extends ADOConnection {
 		if (!$this->metaColumnsSQL)
 			return $false;
 
+		$this->_findschema($table,$schema);
+		if ($schema) {
+			$dbName = $this->database;
+			$this->SelectDB($schema);
+		}
 		global $ADODB_FETCH_MODE;
 		$save = $ADODB_FETCH_MODE;
 		$ADODB_FETCH_MODE = ADODB_FETCH_NUM;
 		if ($this->fetchMode !== false)
 			$savem = $this->SetFetchMode(false);
 		$rs = $this->Execute(sprintf($this->metaColumnsSQL,$table));
+
+		if ($schema) {
+			$this->SelectDB($dbName);
+		}
+
 		if (isset($savem)) $this->SetFetchMode($savem);
 		$ADODB_FETCH_MODE = $save;
 		if (!is_object($rs))

@@ -52,5 +52,6 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $records = $trans_db->query('SELECT * FROM dtransactions');
         $this->assertEquals(0, $trans_db->num_rows($records), 'dtransactions not cleared');
     }
+
 }
 

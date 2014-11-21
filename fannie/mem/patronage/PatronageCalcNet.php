@@ -56,6 +56,14 @@ class PatronageCalcNet extends FannieRESTfulPage
 
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>Net purchases is gross purchases less discounts and
+            any other rewards. This page recalculates net purchases and should
+            be run any time that gross purchases, discounts, or rewards are
+            updated.</p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

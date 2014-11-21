@@ -161,6 +161,20 @@ class SQLManager
 		return $con->Close();
 	}
 
+    public function setDefaultDB($db_name)
+    {
+        /** verify connection **/
+        if (!isset($this->connections[$db_name])) {
+            return false;
+        }
+
+        $this->default_db = $db_name;
+        if ($this->isConnected()) {
+            $this->query('use ' . $db_name, $db_name);
+            $this->connections[$db_name]->database = $db_name;
+        }
+    }
+
 	/**
 	  Execute a query
 	  @param $query_text The query
