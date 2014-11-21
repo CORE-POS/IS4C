@@ -873,7 +873,7 @@ class InstallUtilities extends LibraryClass
       @param $name [string] database name
       @return [array] of error messages
     */
-    public function createOpDBs($db, $name)
+    public static function createOpDBs($db, $name)
     {
         global $CORE_LOCAL;
         $errors = array();
