@@ -70,7 +70,7 @@ class MemNameNumImportPage extends \COREPOS\Fannie\API\FannieUploadPage
     
     function process_file($linedata)
     {
-        global $FANNIE_OP_DB;
+        global $FANNIE_OP_DB, $FANNIE_NAMES_PER_MEM;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $mn_index = $this->get_column_index('memnum');
@@ -139,13 +139,17 @@ class MemNameNumImportPage extends \COREPOS\Fannie\API\FannieUploadPage
             $model->SSI($SSI);
 
             // determine person number
-            $perR = $dbc->exec_statement($perP,array($cardno));
-            $pn = 1;
-            if ($dbc->num_rows($perR) > 0) {
-                $row = $dbc->fetch_row($perR);
-                $pn = $row[0] + 1;
+            if ($FANNIE_NAMES_PER_MEM == 1) {
+                $model->personNum(1);
+            } else {
+                $perR = $dbc->exec_statement($perP,array($cardno));
+                $pn = 1;
+                if ($dbc->num_rows($perR) > 0) {
+                    $row = $dbc->fetch_row($perR);
+                    $pn = $row[0] + 1;
+                }
+                $model->personNum($pn);
             }
-            $model->personNum($pn);
 
             $model->CashBack(0);
             $model->Balance(0);
