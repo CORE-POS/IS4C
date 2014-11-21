@@ -133,6 +133,7 @@ class DDDReport extends FannieReportPage
         $this->add_onload_command('$(\'#date1\').datepicker();');
         $this->add_onload_command('$(\'#date2\').datepicker();');
         return '
+        <form action="' . $_SERVER['PHP_SELF'] . '" method="get">
 <div class="well">Dates are optional; omit for last quarter</div>
 <div class="col-sm-4">
     <div class="form-group">
@@ -144,7 +145,7 @@ class DDDReport extends FannieReportPage
     <input type=text id=date2 name=date2 class="form-control" />
     </div>
     <p>
-    <button type=submit name=submit class="btn btn-default">Submit</button>
+    <button type=submit name=submitted value=1 class="btn btn-default">Submit</button>
     <button type=reset name=reset class="btn btn-default">Start Over</button>
     </p>
 </div>

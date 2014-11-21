@@ -77,7 +77,6 @@ class NonMovementReport extends FannieReportPage {
 
         $tempName = "TempNoMove";
         $dlog = DTransactionsModel::selectDlog($date1,$date2);
-        $sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumUpcSalesByDay";
 
         $tempQ = $dbc->prepare_statement("CREATE TABLE $tempName (upc varchar(13))");
         $dbc->exec_statement($tempQ);

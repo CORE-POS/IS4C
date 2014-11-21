@@ -198,7 +198,7 @@ class BasicModel
     public function getDefinition()
     {
         if ($this->cached_definition == false) {
-            $this->cached_definition = $this->connection->tableDefinition($this->name);
+            $this->cached_definition = $this->connection->tableDefinition($this->fq_name);
         }
 
         return $this->cached_definition;
@@ -244,6 +244,9 @@ class BasicModel
                     $sql .= ' NOT NULL AUTO_INCREMENT';
                 }
                 $inc = true;
+                if (!isset($definition['primary_key']) || !$definition['primary_key']) {
+                    $definition['index'] = true;
+                }
             } elseif (isset($definition['default']) && (
                 is_string($definition['default']) || is_numeric($definition['default'])
             )) {
@@ -295,6 +298,27 @@ class BasicModel
         return ($result === false) ? false : true;
 
     // create()
+    }
+
+    /**
+      Create structure only if it does not exist
+      @param $db_name [string] database name
+      @return [keyed array]
+        db => database name
+        struct => table/view name
+        error => [int] error code
+        error_msg => error details
+    */
+    public function createIfNeeded($db_name)
+    {
+        $this->fq_name = $db_name . $this->connection->sep() . $this->name;
+        $ret = array('db'=>$db_name,'struct'=>$this->name,'error'=>0,'error_msg'=>'');
+        if (!$this->create()) {
+            $ret['error'] = 3;
+            $ret['error_msg'] = $this->connection->error($db_name);
+        }
+
+        return $ret;
     }
 
     /**
@@ -1164,6 +1188,15 @@ class BasicModel
                 }
            }
        }
+    }
+
+    /**
+      Return information about the table/view
+      this model deals with
+    */
+    public function doc()
+    {
+        return 'This model has yet to be documented';
     }
 
     /**

@@ -76,7 +76,6 @@ class ProductMovementModular extends FannieReportPage
         }
 
         $dlog = DTransactionsModel::selectDlog($date1,$date2);
-        $sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumUpcSalesByDay";
 
         $query = "SELECT 
                     MONTH(t.tdate),

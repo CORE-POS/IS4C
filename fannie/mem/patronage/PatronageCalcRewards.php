@@ -113,6 +113,13 @@ class PatronageCalcRewards extends FannieRESTfulPage
         return ob_get_clean();
     }
 
+    public function helpContent()
+    {
+        return '<p>Rewards are a catch-all for other benefits
+            received by members throughout the year. In store coupons
+            are probably the most common entry here. Leaving rewards
+            at zero is also perfectly fine.</p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

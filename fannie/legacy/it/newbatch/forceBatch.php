@@ -263,11 +263,7 @@ function forceBatch($batchID)
 
     $update = new ProdUpdateModel($sql);
     $updateType = ($batchInfoW['discountType'] == 0) ? ProdUpdateModel::UPDATE_PC_BATCH : ProdUpdateModel::UPDATE_BATCH;
-    foreach ($upcs as $u => $data) {
-        $update->reset();
-        $update->upc($u);
-        $update->logUpdate($updateType);
-    }
+    $update->logManyUpdates(array_keys($upcs), $updateType);
 }
 
 ?>

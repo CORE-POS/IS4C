@@ -42,6 +42,9 @@ class ItemEditorPage extends FanniePage
     function preprocess()
     {
         global $FANNIE_PRODUCT_MODULES;
+        if (!is_array($FANNIE_PRODUCT_MODULES)) {
+            $FANNIE_PRODUCT_MODULES = array('BaseItemModule' => array('seq'=>0, 'show'=>1, 'expand'=>1));
+        }
         /*
           Convert old settings to new format.
         */

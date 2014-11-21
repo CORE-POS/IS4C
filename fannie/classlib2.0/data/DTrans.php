@@ -299,5 +299,32 @@ class DTrans
         return ' LEFT JOIN ' . $table . ' AS ' . $tender_alias
                 . ' ON ' . $tender_alias . '.TenderCode = ' . $dlog_alias . '.trans_subtype ';
     }
+
+    /**
+      Get an available dtransactions.trans_no value
+      @param $connection [SQLManager] database connection
+      @param $emp_no [int] employee number
+      @param $register_no [int] register number
+      @return [int] trans_no
+    */
+    public static function getTransNo($connection, $emp_no, $register_no)
+    {
+        $prep = $connection->prepare('
+            SELECT MAX(trans_no) AS trans
+            FROM dtransactions
+            WHERE emp_no=?
+                AND register_no=?');
+        $result = $connection->execute($prep, array($emp_no, $register_no));
+        if (!$result || $connection->num_rows($result) == 0) {
+            return 1;
+        } else {
+            $row = $connection->fetch_row($result);
+            if ($row['trans'] == '') {
+                return 1;
+            } else {
+                return $row['trans'] + 1;
+            }
+        }
+    }
 }
 
