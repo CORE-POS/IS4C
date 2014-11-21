@@ -26,6 +26,7 @@ env:
         - DB_DRIVER=mysqli
 
 install:
+    - echo $TRAVIS_BRANCH
     - if [ '$TRAVIS_BRANCH' != 'posDevelop' ] ; then sh fannie/unit-tests/travis-init.sh; fi
     - if [ '$TRAVIS_BRANCH' != 'fannieDevelop' ] ; then sh pos/is4c-nf/unit-tests/travis-init.sh; fi
 
