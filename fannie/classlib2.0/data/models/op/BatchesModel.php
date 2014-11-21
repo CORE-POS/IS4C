@@ -83,7 +83,7 @@ those same items revert to normal pricing.
     {
         $batchInfoQ = $this->connection->prepare("SELECT batchType,discountType FROM batches WHERE batchID = ?");
         $batchInfoR = $this->connection->execute($batchInfoQ,array($id));
-        $batchInfoW = $dbc->fetch_array($batchInfoR);
+        $batchInfoW = $this->connection->fetch_array($batchInfoR);
 
         $forceQ = "";
         $forceLCQ = "";
