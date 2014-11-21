@@ -185,6 +185,29 @@ class BasicModel
     }
 
     /**
+      Create structure only if it does not exist
+      @param $db_name [string] database name
+      @return [keyed array]
+        db => database name
+        struct => table/view name
+        error => [int] error code
+        details => error details
+    */
+    public function createIfNeeded($db_name)
+    {
+        $this->fq_name = $db_name . $this->connection->sep() . $this->name;
+        $ret = array('db'=>$db_name,'struct'=>$this->name,'error'=>0,'details'=>'');
+        if (!$this->create()) {
+            $ret['error'] = 3;
+            $ret['details'] = $this->connection->error($db_name);
+        } else {
+            $ret = true;
+        }
+
+        return $ret;
+    }
+
+    /**
       Populate instance with database values
       Requires a uniqueness constraint. Assign
       those columns before calling load().

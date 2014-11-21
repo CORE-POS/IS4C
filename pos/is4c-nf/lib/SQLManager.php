@@ -80,6 +80,7 @@ class SQLManager
     public $default_db;
 
     private $TYPE_MYSQL = 'MYSQL';
+    private $TYPE_MYSQLI = 'MYSQLI';
     private $TYPE_MSSQL = 'MSSQL'; 
     private $TYPE_PGSQL = 'PGSQL';
 
@@ -1431,6 +1432,11 @@ class SQLManager
         }
 
         return $str;
+    }
+
+    public function identifierEscape($str, $which_connection='')
+    {
+        return $this->identifier_escape($str, $which_connection);
     }
 
     public function identifier_escape($str, $which_connection='')

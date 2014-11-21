@@ -12,6 +12,7 @@ services:
 branches:
     only:
         - fannieDevelop
+        - posDevelop
 
 # test both msyqli and PDO 
 # using deprecated mysql should really
@@ -39,3 +40,6 @@ script:
     - if [ '$TRAVIS_BRANCH' != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/PluginsTest.php; fi
     - if [ '$TRAVIS_BRANCH' != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/SQLManagerTest.php; fi
     - if [ '$TRAVIS_BRANCH' != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/TasksTest.php; fi
+    # POS tests
+    # This must run first
+    - if [ '$TRAVIS_BRANCH' != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/InstallTest.php; fi

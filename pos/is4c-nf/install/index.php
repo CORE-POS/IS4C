@@ -197,7 +197,7 @@ if ($sql === False) {
 } else {
     echo "<span class='success'>Succeeded</span><br />";
     //echo "<textarea rows=3 cols=80>";
-    $opErrors = create_op_dbs($sql,$CORE_LOCAL->get('DBMS'));
+    $opErrors = InstallUtilities::createOpDBs($sql, $CORE_LOCAL->get('pDatabase'));
     $gotDBs++;
     if (!empty($opErrors)){
         echo '<div class="db_create_errors" style="border: solid 1px red;padding:5px;">';
@@ -432,114 +432,6 @@ printf("<tr><td>(Add)</td><td><input type=text name=TAX_RATE[] value=\"\" /></td
 </table>
 </div> <!--    wrapper -->
 <?php
-
-function create_op_dbs($db,$type){
-    global $CORE_LOCAL;
-    $name = $CORE_LOCAL->get('pDatabase');
-    $errors = array();
-
-    if ($CORE_LOCAL->get('laneno') == 0) {
-        $errors[] = array(
-            'struct' => 'No structures created for lane #0',
-            'query' => 'None',
-            'details' => 'Zero is reserved for server',
-        );
-
-        return $errors;
-    }
-    
-    InstallUtilities::createIfNeeded($db, $type, $name, 'couponcodes', 'op', $errors);
-    $chk = $db->query('SELECT Code FROM couponcodes', $name);
-    if (!$db->fetch_row($chk)){
-        InstallUtilities::loadSampleData($db,'couponcodes');
-    }
-    else {
-        $db->end_query($chk);
-    }
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'custdata', 'op', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'memtype', 'op', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'memberCards', 'op', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'custPreferences', 'op', $errors);
-
-    $cardsViewQ = "CREATE VIEW memberCardsView AS 
-        SELECT ".$db->concat("'".$CORE_LOCAL->get('memberUpcPrefix')."'",'c.CardNo','')." as upc, 
-        c.CardNo as card_no FROM custdata c";
-    if (!$db->table_exists('memberCardsView',$name)){
-        InstallUtilities::dbStructureModify($db,'memberCardsView',$cardsViewQ,$errors);
-    }
-    
-    InstallUtilities::createIfNeeded($db, $type, $name, 'departments', 'op', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'employees', 'op', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'globalvalues', 'op', $errors);
-    $chk = $db->query('SELECT CashierNo FROM globalvalues', $name);
-    if ($db->num_rows($chk) != 1){
-        $db->query('TRUNCATE TABLE globalvalues');
-        InstallUtilities::loadSampleData($db,'globalvalues');
-    }
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'drawerowner', 'op', $errors);
-    $chk = $db->query('SELECT drawer_no FROM drawerowner', $name);
-    if ($db->num_rows($chk) == 0){
-        $db->query('INSERT INTO drawerowner (drawer_no) VALUES (1)', $name);
-        $db->query('INSERT INTO drawerowner (drawer_no) VALUES (2)', $name);
-    }
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'products', 'op', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'dateRestrict', 'op', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'tenders', 'op', $errors);
-    $chk = $db->query('SELECT TenderID FROM tenders', $name);
-    if ($db->num_rows($chk) == 0){
-        InstallUtilities::loadSampleData($db,'tenders');
-    }
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'subdepts', 'op', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'MasterSuperDepts', 'op', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'customReceipt', 'op', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'custReceiptMessage', 'op', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'disableCoupon', 'op', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'houseCoupons', 'op', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'houseVirtualCoupons', 'op', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'houseCouponItems', 'op', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'autoCoupons', 'op', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'ShrinkReasons', 'op', $errors);
-
-    /**
-      @deprecated 3Jan14
-      Only used in PrehLib::chargeOk()
-      Not really necessary to have a dedicated view
-    */
-    //InstallUtilities::createIfNeeded($db, $type, $name, 'memchargebalance', 'op', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'unpaid_ar_today', 'op', $errors);
-
-    InstallUtilities::createIfNeeded($db, $type, $name, 'parameters', 'op', $errors);
-    $chk = $db->query('SELECT param_key FROM parameters', $name);
-    if (!$db->fetch_row($chk)) {
-        InstallUtilities::loadSampleData($db, 'parameters');
-    } else {
-        $db->end_query($chk);
-    }
-    CoreState::loadParams();
-    
-    return $errors;
-}
 
 function create_trans_dbs($db,$type){
     global $CORE_LOCAL;

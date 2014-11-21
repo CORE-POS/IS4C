@@ -277,14 +277,22 @@ class InstallUtilities extends LibraryClass
         }
     }
 
-    static public function loadSampleData($sql, $table)
+    /**
+      Load sample data into the table
+      @param $sql [SQLManager object] connected to database
+      @param $table [string] table name
+      @param $quiet [boolean, default false] suppress output
+      @return [boolean] success
+    */
+    static public function loadSampleData($sql, $table, $quiet=false)
     {
         $success = true; 
         $loaded = 0;
+        ob_start();
         echo "Loading `$table` ";
-        if (file_exists("data/$table.sql")) {
+        if (file_exists(dirname(__FILE__) . "/data/$table.sql")) {
             echo "from data/$table.sql<br>\n";
-            $fp = fopen("data/$table.sql","r");
+            $fp = fopen(dirname(__FILE__) . "/data/$table.sql","r");
             while($line = fgets($fp)) {
                 $query = "INSERT INTO $table VALUES $line";
                 $try = $sql->query("INSERT INTO $table VALUES $line");
@@ -305,9 +313,9 @@ class InstallUtilities extends LibraryClass
             fclose($fp);
             echo ($success? ' success!' : "<br>\n'$table' load " . ($loaded? 'partial success;' : 'failed;'))
                 . " $loaded " . ($loaded == 1? 'record was' : 'records were') . " loaded.<br>\n";
-        } else if (file_exists("data/$table.csv")) {
+        } else if (file_exists(dirname(__FILE__) . "/data/$table.csv")) {
             echo "from data/$table.csv ";
-            $path = realpath("data/$table.csv");
+            $path = realpath(dirname(__FILE__) . "/data/$table.csv");
             $query = "LOAD DATA LOCAL INFILE
                     '$path'
                     INTO TABLE $table
@@ -330,7 +338,7 @@ class InstallUtilities extends LibraryClass
                 echo "succeeded!<br>\n";
             } else {
                 echo "line-by-line<br>\n";
-                $fp = fopen("data/$table.csv",'r');
+                $fp = fopen($path, 'r');
                 $stmt = false;
                 while(!feof($fp)) {
                     $line = fgetcsv($fp);
@@ -376,6 +384,13 @@ class InstallUtilities extends LibraryClass
         } else {
             echo "<br><span style='color:red;'>Table data not found in either {$table}.sql or {$table}.csv</span><br>\n";
         }
+
+        $verbose = ob_get_clean();
+        if (!$quiet) {
+            echo $verbose;
+        }
+
+        return $success;
     }
 
     static public function dbTestConnect($host,$type,$db,$user,$pw)
@@ -850,6 +865,97 @@ class InstallUtilities extends LibraryClass
         foreach ($wrong as $key => $value) {
             self::paramSave($key, $value);
         }
+    }
+
+    /**
+      Create opdata tables and views
+      @param $db [SQLManager] database connection
+      @param $name [string] database name
+      @return [array] of error messages
+    */
+    public function createOpDBs($db, $name)
+    {
+        global $CORE_LOCAL;
+        $errors = array();
+
+        if ($CORE_LOCAL->get('laneno') == 0) {
+            $errors[] = array(
+                'struct' => 'No structures created for lane #0',
+                'query' => 'None',
+                'details' => 'Zero is reserved for server',
+            );
+
+            return $errors;
+        }
+
+        $models = array(
+            'AutoCouponsModel',
+            'CouponCodesModel',
+            'CustdataModel',
+            'CustPreferencesModel',
+            'CustReceiptMessageModel',
+            'CustomReceiptModel',
+            'DateRestrictModel',
+            'DepartmentsModel',
+            'DisableCouponModel',
+            'DrawerOwnerModel',
+            'EmployeesModel',
+            'GlobalValuesModel',
+            'HouseCouponsModel',
+            'HouseCouponItemsModel',
+            'HouseVirtualCouponsModel',
+            'MasterSuperDeptsModel',
+            'MemberCardsModel',
+            'MemtypeModel',
+            'ParametersModel',
+            'ProductsModel',
+            'ShrinkReasonsModel',
+            'SubDeptsModel',
+            'TendersModel',
+            'UnpaidArTodayModel',
+            // depends on custdata
+            'MemberCardsViewModel',
+        );
+        foreach ($models as $class) {
+            $obj = new $class($db);
+            $created = $obj->createIfNeeded($name);
+            if ($created !== true) {
+                $errors[] = $created;
+            }
+        }
+        
+        $sample_data = array(
+            'couponcodes',
+            'globalvalues',
+            'parameters',
+            'tenders',
+        );
+
+        foreach ($sample_data as $table) {
+            $chk = $db->query('SELECT * FROM ' . $table, $name);
+            if (!$db->fetch_row($chk)){
+                $loaded = self::loadSampleData($db, $table, true);
+                if (!$loaded) {
+                    $errors[] = array(
+                        'struct' => $table,
+                        'query' => 'None',
+                        'details' => 'Failed loading sample data',
+                    );
+                }
+            } else {
+                $db->end_query($chk);
+            }
+        }
+
+        $chk = $db->query('SELECT drawer_no FROM drawerowner', $name);
+        if ($db->num_rows($chk) == 0){
+            $db->query('INSERT INTO drawerowner (drawer_no) VALUES (1)', $name);
+            $db->query('INSERT INTO drawerowner (drawer_no) VALUES (2)', $name);
+        }
+
+        CoreState::loadParams();
+        
+        return $errors;
     }
 }
 
