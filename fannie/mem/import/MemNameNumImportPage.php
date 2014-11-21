@@ -153,9 +153,9 @@ class MemNameNumImportPage extends FannieUploadPage
         
             $insR = $model->save();
             if ($insR === false) {
-                $this->details .= "<b>Error importing member $cardno ($fn $ln)</b><br />";
+                $this->details .= "<b>Error importing member $cardno (".$line[$fn_index]." ".$line[$ln_index].")</b><br />";
             } else {
-                $this->details .= "Imported member $cardno ($fn $ln)<br />";
+                $this->details .= "Imported member $cardno (".$line[$fn_index]." ".$line[$ln_index].")<br />";
             }
 
             if ($pn == 1) {
