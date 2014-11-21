@@ -19,45 +19,22 @@ branches:
 env:
     global:
         - F_TEST="phpunit --bootstrap fannie/unit-tests/bootstrap.php"
+        - P_TEST="phpunit --bootstrap pos/is4c-nf/unit-tests/bootstrap.php"
     matrix:
         - DB_DRIVER=pdo_mysql
         - DB_DRIVER=mysqli
 
-before_install:
-    - if [ '$TRAVIS_BRANCH' != 'posDevelop'] ; then mysql -u root -e "DROP DATABASE IF EXISTS unit_test_op;"; fi
-    - if [ '$TRAVIS_BRANCH' != 'posDevelop'] ; then mysql -u root -e "DROP DATABASE IF EXISTS unit_test_trans;"; fi
-    - if [ '$TRAVIS_BRANCH' != 'posDevelop'] ; then mysql -u root -e "DROP DATABASE IF EXISTS unit_test_archive;"; fi
-    - if [ '$TRAVIS_BRANCH' != 'fannieDevelop'] ; then mysql -u root -e "DROP DATABASE IF EXISTS unit_test_opdata;"; fi
-    - if [ '$TRAVIS_BRANCH' != 'fannieDevelop'] ; then mysql -u root -e "DROP DATABASE IF EXISTS unit_test_translog;"; fi
 install:
-    # create Fannie databases
-    - mysql -u root -e "CREATE DATABASE unit_test_op;"
-    - mysql -u root -e "CREATE DATABASE unit_test_trans;"
-    - mysql -u root -e "CREATE DATABASE unit_test_archive;"
-    # create default configuration file
-    - cp fannie/config.php.dist fannie/config.php
-    # add path options
-    - echo "\$FANNIE_ROOT = '"`pwd`"/fannie/';" >> fannie/config.php
-    - echo "\$FANNIE_URL = '/fannie/';" >> fannie/config.php
-    # add database options
-    - echo "\$FANNIE_SERVER = '127.0.0.1';" >> fannie/config.php
-    - echo "\$FANNIE_SERVER_USER = 'root';" >> fannie/config.php
-    - echo "\$FANNIE_SERVER_PW = '';" >> fannie/config.php
-    - echo "\$FANNIE_OP_DB = 'unit_test_op';" >> fannie/config.php
-    - echo "\$FANNIE_TRANS_DB = 'unit_test_trans';" >> fannie/config.php
-    - echo "\$FANNIE_ARCHIVE_DB = 'unit_test_archive';" >> fannie/config.php
-    - echo "\$FANNIE_ARCHIVE_METHOD = 'partitions';" >> fannie/config.php
-    # set database driver based on environment variable
-    - echo "\$FANNIE_SERVER_DBMS = '$DB_DRIVER';" >> fannie/config.php
+    - if [ '$TRAVIS_BRANCH' != 'posDevelop'] ; then fannie/unit-tests/travis-init.sh; fi
 
 script:
     # Fannie tests
     # This must run first
     - if [ '$TRAVIS_BRANCH' != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/InstallTest.php; fi
     # These can run in any order
-    - phpunit --bootstrap fannie/unit-tests/bootstrap.php fannie/unit-tests/ItemsTest.php
-    - phpunit --bootstrap fannie/unit-tests/bootstrap.php fannie/unit-tests/MembersTest.php
-    - phpunit --bootstrap fannie/unit-tests/bootstrap.php fannie/unit-tests/PagesTest.php
-    - phpunit --bootstrap fannie/unit-tests/bootstrap.php fannie/unit-tests/PluginsTest.php
-    - phpunit --bootstrap fannie/unit-tests/bootstrap.php fannie/unit-tests/SQLManagerTest.php
-    - phpunit --bootstrap fannie/unit-tests/bootstrap.php fannie/unit-tests/TasksTest.php
+    - if [ '$TRAVIS_BRANCH' != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/ItemsTest.php; fi
+    - if [ '$TRAVIS_BRANCH' != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/MembersTest.php; fi
+    - if [ '$TRAVIS_BRANCH' != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/PagesTest.php; fi
+    - if [ '$TRAVIS_BRANCH' != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/PluginsTest.php; fi
+    - if [ '$TRAVIS_BRANCH' != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/SQLManagerTest.php; fi
+    - if [ '$TRAVIS_BRANCH' != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/TasksTest.php; fi
