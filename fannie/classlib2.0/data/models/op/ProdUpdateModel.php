@@ -192,7 +192,8 @@ tools/cron jobs/sprocs/etc actually do. They probably
         $insert_cols = 'updateType,' . $this->connection->identifier_escape('user') . ',';
         foreach ($col_map as $insert => $select) {
             $insert_cols .= $this->connection->identifier_escape($insert) . ',';
-            $select_cols .= $this->connection->identifier_escape($select) . ',';
+            // identifier escape does not handle alias prefix
+            $select_cols .= ($select == 'p.upc' ? $select :$this->connection->identifier_escape($select)) . ',';
         }
         $insert_cols = substr($insert_cols, 0, strlen($insert_cols)-1);
         $select_cols = substr($select_cols, 0, strlen($select_cols)-1);

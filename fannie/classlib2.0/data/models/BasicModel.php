@@ -198,7 +198,7 @@ class BasicModel
     public function getDefinition()
     {
         if ($this->cached_definition == false) {
-            $this->cached_definition = $this->connection->tableDefinition($this->name);
+            $this->cached_definition = $this->connection->tableDefinition($this->fq_name);
         }
 
         return $this->cached_definition;
