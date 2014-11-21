@@ -27,20 +27,20 @@ env:
 
 install:
     - echo $TRAVIS_BRANCH
-    - if [ '$TRAVIS_BRANCH' != 'posDevelop' ] ; then sh fannie/unit-tests/travis-init.sh; fi
-    - if [ '$TRAVIS_BRANCH' != 'fannieDevelop' ] ; then sh pos/is4c-nf/unit-tests/travis-init.sh; fi
+    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ] ; then sh fannie/unit-tests/travis-init.sh; fi
+    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ] ; then sh pos/is4c-nf/unit-tests/travis-init.sh; fi
 
 script:
     # Fannie tests
     # This must run first
-    - if [ '$TRAVIS_BRANCH' != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/InstallTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/InstallTest.php; fi
     # These can run in any order
-    - if [ '$TRAVIS_BRANCH' != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/ItemsTest.php; fi
-    - if [ '$TRAVIS_BRANCH' != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/MembersTest.php; fi
-    - if [ '$TRAVIS_BRANCH' != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/PagesTest.php; fi
-    - if [ '$TRAVIS_BRANCH' != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/PluginsTest.php; fi
-    - if [ '$TRAVIS_BRANCH' != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/SQLManagerTest.php; fi
-    - if [ '$TRAVIS_BRANCH' != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/TasksTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/ItemsTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/MembersTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/PagesTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/PluginsTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/SQLManagerTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/TasksTest.php; fi
     # POS tests
     # This must run first
-    - if [ '$TRAVIS_BRANCH' != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/InstallTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/InstallTest.php; fi

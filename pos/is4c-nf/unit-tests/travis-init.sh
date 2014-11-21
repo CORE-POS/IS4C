@@ -18,7 +18,7 @@ echo "\$CORE_LOCAL->set('localUser', 'root');\n" >> pos/is4c-nf/ini.php
 echo "\$CORE_LOCAL->set('localPass', '');\n" >> pos/is4c-nf/ini.php
 echo "\$CORE_LOCAL->set('pDatabase', 'unit_test_opdata');\n" >> pos/is4c-nf/ini.php
 echo "\$CORE_LOCAL->set('tDatabase', 'unit_test_translog');\n" >> pos/is4c-nf/ini.php
-if [ '$DB_DRIVER' = 'pdo_mysql' ]; then
+if [ "$DB_DRIVER" = 'pdo_mysql' ]; then
     echo "\$CORE_LOCAL->set('DBMS', 'pdomysql');\n" >> pos/is4c-nf/ini.php
 else
     echo "\$CORE_LOCAL->set('DBMS', 'mysql');\n" >> pos/is4c-nf/ini.php
