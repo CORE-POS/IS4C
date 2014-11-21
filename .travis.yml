@@ -17,13 +17,18 @@ branches:
 # using deprecated mysql should really
 # be discoutraged
 env:
-    - DB_DRIVER=pdo_mysql
-    - DB_DRIVER=mysqli
+    global:
+        - F_TEST="phpunit --bootstrap fannie/unit-tests/bootstrap.php"
+    matrix:
+        - DB_DRIVER=pdo_mysql
+        - DB_DRIVER=mysqli
 
 before_install:
-    - mysql -u root -e "DROP DATABASE IF EXISTS unit_test_op;"
-    - mysql -u root -e "DROP DATABASE IF EXISTS unit_test_trans;"
-    - mysql -u root -e "DROP DATABASE IF EXISTS unit_test_archive;"
+    - if [ '$TRAVIS_BRANCH' != 'posDevelop'] ; then mysql -u root -e "DROP DATABASE IF EXISTS unit_test_op;"; fi
+    - if [ '$TRAVIS_BRANCH' != 'posDevelop'] ; then mysql -u root -e "DROP DATABASE IF EXISTS unit_test_trans;"; fi
+    - if [ '$TRAVIS_BRANCH' != 'posDevelop'] ; then mysql -u root -e "DROP DATABASE IF EXISTS unit_test_archive;"; fi
+    - if [ '$TRAVIS_BRANCH' != 'fannieDevelop'] ; then mysql -u root -e "DROP DATABASE IF EXISTS unit_test_opdata;"; fi
+    - if [ '$TRAVIS_BRANCH' != 'fannieDevelop'] ; then mysql -u root -e "DROP DATABASE IF EXISTS unit_test_translog;"; fi
 install:
     # create Fannie databases
     - mysql -u root -e "CREATE DATABASE unit_test_op;"
@@ -48,7 +53,7 @@ install:
 script:
     # Fannie tests
     # This must run first
-    - phpunit --bootstrap fannie/unit-tests/bootstrap.php fannie/unit-tests/InstallTest.php
+    - if [ '$TRAVIS_BRANCH' != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/InstallTest.php; fi
     # These can run in any order
     - phpunit --bootstrap fannie/unit-tests/bootstrap.php fannie/unit-tests/ItemsTest.php
     - phpunit --bootstrap fannie/unit-tests/bootstrap.php fannie/unit-tests/MembersTest.php
