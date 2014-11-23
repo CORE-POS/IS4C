@@ -44,7 +44,8 @@ class SimpleBackupTask extends FannieTask
 
     public function run()
     {
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_ARCHIVE_DB, $FANNIE_PLUGIN_SETTINGS;
+        global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_ARCHIVE_DB, $FANNIE_PLUGIN_SETTINGS,
+			$FANNIE_SERVER, $FANNIE_SERVER_USER, $FANNIE_SERVER_PW;
 
         $dbs = array($FANNIE_OP_DB,$FANNIE_TRANS_DB,$FANNIE_ARCHIVE_DB);
         foreach ($dbs as $db) {
@@ -79,7 +80,7 @@ class SimpleBackupTask extends FannieTask
 
             $gzip = realpath($FANNIE_PLUGIN_SETTINGS['SimpleBackupBinPath']."/mysqldump");
             if ($FANNIE_PLUGIN_SETTINGS['SimpleBackupGZ'] == 1 && $gzip !== false) {
-                $cmd .= ' | ' . escapeshellcmd($gzip);
+                // $cmd .= ' | ' . escapeshellcmd($gzip);
                 $outfile .= '.gz';
             }
 
