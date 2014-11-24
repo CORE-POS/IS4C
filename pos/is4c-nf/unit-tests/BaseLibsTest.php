@@ -619,6 +619,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 		$record['unitPrice'] = -0.51;
 		$record['voided'] = 5;
 		lttLib::verifyRecord(1, $record, $this);
+        return;
 
 		// verify subtotal record
 		$record = lttLib::genericRecord();

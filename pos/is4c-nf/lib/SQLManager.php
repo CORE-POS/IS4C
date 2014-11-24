@@ -257,6 +257,9 @@ class SQLManager
         if ($which_connection == '') {
             $which_connection=$this->default_db;
         }
+        if (!isset($this->db_types[$which_connection])) {
+            return false;
+        }
         $result = false;
         switch($this->db_types[$which_connection]) {
             case $this->TYPE_MYSQL:

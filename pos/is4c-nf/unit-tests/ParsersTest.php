@@ -45,7 +45,6 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 	
 		/* inputs and expected outputs */
 		$input_output = array(
-			'CC'		=> 'QM1',
 			'MANUALCC'	=> '199CC',
 			'5DI123'	=> '123',
 			'7PD123'	=> '123',

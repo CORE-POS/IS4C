@@ -198,10 +198,10 @@ class BasicModel
         $this->fq_name = $db_name . $this->connection->sep() . $this->name;
         $ret = array('db'=>$db_name,'struct'=>$this->name,'error'=>0,'details'=>'');
         if (!$this->create()) {
-            $ret['error'] = 3;
+            $ret['error'] = 1;
             $ret['details'] = $this->connection->error($db_name);
-        } else {
-            $ret = true;
+            $reflect = new ReflectionClass($this);
+            $ret['query'] = $reflect->getName() . '::create()';
         }
 
         return $ret;

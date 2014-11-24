@@ -925,7 +925,22 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False) {
 		$second = false;
 
 		// lookup trans information
-		$queryHeader = "select * from rp_receipt_header where " . $where;
+        $queryHeader = "
+            SELECT
+                MIN(datetime) AS dateTimeStamp,
+                MAX(card_no) AS card_no,
+                SUM(CASE WHEN upc='0000000008005' THEN total ELSE 0 END) AS couponTotal,
+                SUM(CASE WHEN upc='DISCOUNT' THEN total ELSE 0 END) AS transDiscount,
+                SUM(CASE WHEN trans_subtype IN ('MI','CX') THEN total ELSE 0 END) AS chargeTotal,
+                SUM(CASE WHEN discounttype=1 THEN discount ELSE 0 END) AS discountTTL,
+                SUM(CASE WHEN discounttype=2 THEN memDiscount ELSE 0 END) AS memSpecial
+            FROM localtranstoday
+            WHERE " . $where . "
+                AND datetime >= " . $db->curdate() . "
+            GROUP BY register_no,
+                emp_no,
+                trans_no";
+
 		$db = Database::tDataConnect();
 		$header = $db->query($queryHeader);
 		$row = $db->fetch_row($header);
