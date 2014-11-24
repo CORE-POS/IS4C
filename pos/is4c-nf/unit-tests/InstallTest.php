@@ -9,6 +9,10 @@ class InstallTest extends PHPUnit_Framework_TestCase
     {
         global $CORE_LOCAL;
         $db = Database::pDataConnect();
+        $info = $db->query("SHOW VARIABLES LIKE '%collat%'");
+        while ($row = $db->fetch_row($info)) {
+            print_r($row);
+        }
         $errors = InstallUtilities::createOpDBs($db, $CORE_LOCAL->get('pDatabase'));
 
         $this->assertInternalType('array', $errors);
@@ -41,6 +45,12 @@ class InstallTest extends PHPUnit_Framework_TestCase
             $this->assertEquals(true, $exists, 'Failed to create ' . $error['struct']
                 . ', ' . print_r($error, true));
             */
+            if ($error['struct'] == 'ltt_grouped') {
+                $collation = $db->query('show full columns from ltt_grouped');
+                while ($row = $db->fetch_row($collation)) {
+                    print_r($row);
+                }
+            }
         }
     }
 }
