@@ -59,3 +59,4 @@ script:
 
 after_script:
     - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ] ; then mysqldump -u root unit_test_translog; fi
+    - mysqldump -u root unit_test_translog
