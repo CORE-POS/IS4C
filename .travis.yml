@@ -45,7 +45,7 @@ script:
     # This must run first
     - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/InstallTest.php; fi
     # These can run in any order
-    - mysqldump -u root unit_test_translog
+    - mysqldump -u root unit_test_translog -e "SHOW CREATE VIEW ltt_grouped"
     #- if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/BaseLibsTest.php; fi
     #- if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/FooterBoxesTest.php; fi
     #- if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/KickersTest.php; fi
