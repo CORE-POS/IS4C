@@ -481,12 +481,15 @@ class InstallUtilities extends LibraryClass
         $error = array(
             'struct' => $struct_name,
             'error' => 0,
+            'query' => '',
+            'details' => '',
         );
         foreach ($queries as $query) {
             ob_start();
             $try = @$sql->query($query);
             ob_end_clean();
             if ($try === false){
+                $error['query'] .= $query . '; ';
                 if (stristr($query, "DROP ") && stristr($query,"VIEW ")) {
                     /* suppress unimportant errors
                     $errors[] = array(
@@ -497,8 +500,7 @@ class InstallUtilities extends LibraryClass
                     */
                 } else {
                     $error['error'] = 1;
-                    $error['query'] = $query;
-                    $error['details'] = $sql->error();
+                    $error['details'] = $sql->error() . '; ';
                     $error['important'] = true;
                 }
             }
