@@ -1580,30 +1580,6 @@ class InstallUtilities extends LibraryClass
             self::dbStructureModify($db,'ltt_grouped',$lttG,$errors);
         }
 
-        $exists = $db->table_exists('ltt_grouped');
-        if ($exists) {
-            echo "Created ltt_grouped\n";
-            $result = $db->query("SHOW FULL COLUMNS FROM ltt_grouped");
-            if (!$result) {
-                echo "Grouped columns error: " . $db->error() . "\n";
-            } else {
-                while ($row = $db->fetch_row($result)) {
-                    print_r($row);
-                }
-            }
-            $result = $db->query("SHOW FULL COLUMNS FROM localtemptrans");
-            if (!$result) {
-                echo "LTT Columns error: " . $db->error() . "\n";
-            } else {
-                while ($row = $db->fetch_row($result)) {
-                    print_r($row);
-                }
-            }
-        } else {
-            echo "Not created ltt_grouped\n";
-        }
-
-
         $lttreorderG = "CREATE   view ltt_receipt_reorder_g as
         select 
         l.description as description,

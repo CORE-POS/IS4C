@@ -32,12 +32,12 @@ class InstallTest extends PHPUnit_Framework_TestCase
 
         $this->assertInternalType('array', $errors);
         foreach ($errors as $error) {
+            /**
             $this->assertInternalType('array', $error, 'Invalid status entry');
             $this->assertArrayHasKey('error', $error, 'Status entry missing key: error');
             $this->assertEquals(0, $error['error'], 'Error creating ' . $error['struct']
                 . ', ' . print_r($error, true));
             $exists = $db->table_exists($error['struct']);
-            /**
             $this->assertEquals(true, $exists, 'Failed to create ' . $error['struct']
                 . ', ' . print_r($error, true));
             */
