@@ -48,7 +48,8 @@ class InstallTest extends PHPUnit_Framework_TestCase
             if ($error['struct'] == 'ltt_grouped') {
                 $collation = $db->query('show full columns from ltt_grouped');
                 if (!$collation) {
-                    print_r($db->error());
+                    print_r('ltt_grouped problem: ' . $db->error());
+                    print_r($error);
                 } else {
                     while ($row = $db->fetch_row($collation)) {
                         print_r($row);
