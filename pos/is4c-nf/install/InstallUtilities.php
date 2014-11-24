@@ -1493,14 +1493,11 @@ class InstallUtilities extends LibraryClass
         union all
 
         select     upc,
-            'fake' AS description,"
-            /*
             case when discounttype=1 then
             ".$db->concat("' > you saved \$'",'CAST(CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2)) AS char(20))',"'  <'",'')."
             when discounttype=2 then
             ".$db->concat("' > you saved \$'",'CAST(CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2)) AS char(20))',"'  Member Special <'",'')."
             end as description,
-            */ . "
             trans_type,'0' as trans_subtype,0 as itemQtty,discounttype,volume,
             'D' as trans_status,
             2 as voided,

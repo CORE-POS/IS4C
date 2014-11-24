@@ -28,6 +28,11 @@ class InstallTest extends PHPUnit_Framework_TestCase
         $db = Database::tDataConnect();
         $errors = InstallUtilities::createTransDBs($db, $CORE_LOCAL->get('tDatabase'));
 
+        $sets = $db->query("SHOW VARIABLES LIKE '%character_set%'");
+        while ($row = $db->fetch_row($sets)) {
+            print_r($row);
+        }
+
         $this->assertInternalType('array', $errors);
 
         $this->assertInternalType('array', $errors);
