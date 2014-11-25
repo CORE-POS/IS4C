@@ -28,7 +28,7 @@
 class YPSI_Kicker extends Kicker 
 {
 
-    public function doKick()
+    public function doKick($trans_num)
     {
         global $CORE_LOCAL;
         $db = Database::tDataConnect();

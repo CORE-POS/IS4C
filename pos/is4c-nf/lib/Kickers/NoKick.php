@@ -33,7 +33,7 @@ class NoKick
       Determine whether to open the drawer
       @return boolean
     */
-    public function doKick()
+    public function doKick($trans_num)
     {
         return false;
     }
