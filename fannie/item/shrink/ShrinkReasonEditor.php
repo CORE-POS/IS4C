@@ -31,6 +31,7 @@ class ShrinkReasonEditor extends FannieRESTfulPage
     protected $header = 'Shrink Reasons Editor';
     protected $title = 'Shrink Reasons Editor';
     public $themed = true;
+    public $description = '[Shrink Reasons] edits the list of reasons attached to items entered as shrink.';
 
     public function preprocess()
     {
