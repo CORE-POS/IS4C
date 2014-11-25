@@ -350,8 +350,10 @@ class EditBatchPage extends FannieRESTfulPage
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $limitQ = $dbc->prepare_statement("UPDATE batchList SET quantity=? WHERE batchID=?");
-        $dbc->exec_statement($limitQ,array($this->limit,$this->id));
+        $batches = new BatchesModel($dbc);
+        $batches->batchID($this->id);
+        $batches->transLimit($this->limit);
+        $batches->save();
 
         return false;
     }
@@ -727,29 +729,8 @@ class EditBatchPage extends FannieRESTfulPage
             return $this->showPairedBatchDisplay($id,$name);
         }
 
-        $limitQ = $dbc->prepare_statement("select max(quantity),max(pricemethod) from batchList WHERE batchID=?");
-        $limitR = $dbc->exec_statement($limitQ,array($id));
-        $hasLimit = False;
-        $canHaveLimit = False;
-        $limit = 0;
-        if ($dbc->num_rows($limitR) > 0){
-            $limitW = $dbc->fetch_row($limitR);
-            $limit = $limitW[0];
-            $pm = $limitW[1];
-            if ($pm > 0){
-                // no limits with grouped sales
-                $canHaveLimit = False;
-                $p = $dbc->prepare_statement("UPDATE batchList SET quantity=0 WHERE pricemethod=0
-                    AND batchID=?");
-                $dbc->exec_statement($p,array($id));
-            }
-            else {
-                $canHaveLimit = True;
-                if ($limit > 0){
-                    $hasLimit = True;
-                }
-            }
-        }
+        $limit = $model->transLimit();
+        $hasLimit = $limit > 0 ? true : false;
 
         $saleHeader = "Sale Price";
         if ($dtype == 3) {
@@ -809,15 +790,10 @@ class EditBatchPage extends FannieRESTfulPage
         if ($dtype != 0) {
             $ret .= "<a href=\"\" onclick=\"unsaleNow($id); return false;\">Stop Sale</a> | ";
         }
-        if (!$canHaveLimit) {
-            $ret .= "No limit";
-            $ret .= " <span id=\"currentLimit\" style=\"color:#000;\"></span>";
-        } else {
-            $ret .= "<span id=\"edit-limit-link\"><a href=\"\" 
-                onclick=\"editTransLimit(); return false;\">" . ($hasLimit ? 'Edit' : 'Add' ) . " Limit</a></span>";
-            $ret .= "<span id=\"save-limit-link\" class=\"collapse\"><a href=\"\" onclick=\"saveTransLimit($id); return false;\">Save Limit</a></span>";
-            $ret .= " <span class=\"form-group form-inline\" id=\"currentLimit\" style=\"color:#000;\"></span>";
-        }
+        $ret .= "<span id=\"edit-limit-link\"><a href=\"\" 
+            onclick=\"editTransLimit(); return false;\">" . ($hasLimit ? 'Edit' : 'Add' ) . " Limit</a></span>";
+        $ret .= "<span id=\"save-limit-link\" class=\"collapse\"><a href=\"\" onclick=\"saveTransLimit($id); return false;\">Save Limit</a></span>";
+        $ret .= " <span class=\"form-group form-inline\" id=\"currentLimit\" style=\"color:#000;\">{$limit}</span>";
         $ret .= "<br />";
         $ret .= "<table id=yeoldetable class=\"table\">";
         $ret .= "<tr>";

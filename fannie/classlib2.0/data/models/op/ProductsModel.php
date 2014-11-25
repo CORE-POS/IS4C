@@ -51,6 +51,7 @@ class ProductsModel extends BasicModel
     'specialpricemethod'=>array('type'=>'SMALLINT'),
     'specialgroupprice'=>array('type'=>'MONEY'),
     'specialquantity'=>array('type'=>'SMALLINT'),
+    'special_limit'=>array('type'=>'TINYINT','default'=>0),
     'start_date'=>array('type'=>'DATETIME'),
     'end_date'=>array('type'=>'DATETIME'),
     'department'=>array('type'=>'SMALLINT','index'=>true),
@@ -105,6 +106,7 @@ Columns:
     specialpricemethod smallint
     specialgroupprice double
     specialquantity smallint
+    special_limit tinyint
     start_date datetime
     end_date datetime
     department smallint
@@ -176,7 +178,12 @@ the second 50% off
     quantity => 2
 If discounttype is greater than zero, the special*
 columns get used instead but otherwise behavior
-should be similar.
+should be similar. The special_limit column puts a
+per-transaction limit on sale pricing with zero
+indicating no limit. With a limit of one, the first
+item will ring up using the special* columns and
+all subsequent items will use the normal pricing
+columns.
 
 start_date and end_date indicate the start and end
 of a sale. The current register code does not check

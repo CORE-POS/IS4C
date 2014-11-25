@@ -51,10 +51,18 @@ class SalesBatchTask extends FannieTask
                                     INNER JOIN products AS p ON u.upc=p.upc
                                 WHERE likeCode=?');
         $product = new ProductsModel($dbc);
+        $b_def = $dbc->tableDefinition('batches');
 
         // lookup current batches
-        $query = 'SELECT l.upc, l.batchID, l.pricemethod, l.salePrice, l.quantity,
-                        b.startDate, b.endDate, b.discounttype
+        $query = 'SELECT l.upc, 
+                    l.batchID, 
+                    l.pricemethod, 
+                    l.salePrice, 
+                    l.quantity,
+                    b.startDate, 
+                    b.endDate, 
+                    b.discounttype
+                    ' . (isset($b_def['transLimit']) ? ',b.transLimit' : ',0 AS transLimit') . '
                   FROM batches AS b
                     INNER JOIN batchList AS l ON b.batchID = l.batchID
                   WHERE b.discounttype <> 0
@@ -62,7 +70,7 @@ class SalesBatchTask extends FannieTask
                     AND b.endDate >= ?';
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, array($now, $now));
-        while($row = $dbc->fetch_row($result)) {
+        while ($row = $dbc->fetch_row($result)) {
             // all items affected by this bathcList record
             // could be more than one in the case of likecodes
             $item_upcs = array();
@@ -72,6 +80,7 @@ class SalesBatchTask extends FannieTask
             $specialpricemethod = $row['pricemethod'];
             $specialgroupprice = abs($row['salePrice']);
             $specialquantity = $row['quantity'];
+            $special_limit = $row['transLimit'];
             $start_date = $row['startDate'];
             $end_date = $row['endDate'];
             $discounttype = $row['discounttype'];
@@ -103,7 +112,7 @@ class SalesBatchTask extends FannieTask
 
             // check each item to see if it is on
             // sale with the correct parameters
-            foreach($item_upcs as $upc) {
+            foreach ($item_upcs as $upc) {
                 $product->reset();
                 $product->upc($upc);
                 echo $this->cronMsg('Checking item ' . $upc);
@@ -143,6 +152,13 @@ class SalesBatchTask extends FannieTask
                     echo $this->cronMsg("\tspecialquantity will be updated");
                     $changed = true;
                     $product->specialquantity($specialquantity);
+                }
+                if ($product->special_limit() == $special_limit) {
+                    echo $this->cronMsg("\tspecial_limit is correct");
+                } else {
+                    echo $this->cronMsg("\tspecial_limit will be updated");
+                    $changed = true;
+                    $product->special_limit($special_limit);
                 }
                 if ($product->start_date() == $start_date) {
                     echo $this->cronMsg("\tstart_date is correct");

@@ -39,6 +39,7 @@ class BatchesModel extends BasicModel
     'discountType' => array('type'=>'SMALLINT'),
     'priority' => array('type'=>'INT'),
     'owner' => array('type'=>'VARCHAR(50)'),
+    'transLimit' => array('type'=>'TINYINT', 'default'=>0),
     );
 
     public function doc()
@@ -55,6 +56,7 @@ Columns:
     discountType int
     priority int
     owner varchar
+    transLimit int
 
 Depends on:
     batchType
@@ -87,6 +89,10 @@ those same items revert to normal pricing.
 
         $forceQ = "";
         $forceLCQ = "";
+        // verify limit columns exist
+        $b_def = $this->connection->tableDefinition($this->name);
+        $p_def = $this->connection->tableDefinition('products');
+        $has_limit = (isset($b_def['transLimit']) && isset($p_def['special_limit'])) ? true : false;
         if ($batchInfoW['discountType'] != 0) { // item is going on sale
             $forceQ="
                 UPDATE products AS p
@@ -98,6 +104,7 @@ those same items revert to normal pricing.
                     p.specialgroupprice=CASE WHEN l.salePrice < 0 THEN -1*l.salePrice ELSE l.salePrice END,
                     p.specialpricemethod=l.pricemethod,
                     p.specialquantity=l.quantity,
+                    " . ($has_limit ? 'p.special_limit=b.transLimit,' : '') . "
                     p.discounttype=b.discounttype,
                     p.mixmatchcode = CASE 
                         WHEN l.pricemethod IN (3,4) AND l.salePrice >= 0 THEN convert(l.batchID,char)
@@ -119,6 +126,7 @@ those same items revert to normal pricing.
                     p.specialgroupprice=CASE WHEN l.salePrice < 0 THEN -1*l.salePrice ELSE l.salePrice END,
                     p.specialpricemethod=l.pricemethod,
                     p.specialquantity=l.quantity,
+                    " . ($has_limit ? 'p.special_limit=b.transLimit,' : '') . "
                     p.discounttype = b.discounttype,
                     p.mixmatchcode = CASE 
                         WHEN l.pricemethod IN (3,4) AND l.salePrice >= 0 THEN convert(l.batchID,char)
@@ -137,6 +145,7 @@ those same items revert to normal pricing.
                         specialgroupprice=CASE WHEN l.salePrice < 0 THEN -1*l.salePrice ELSE l.salePrice END,
                     specialpricemethod=l.pricemethod,
                     specialquantity=l.quantity,
+                    " . ($has_limit ? 'special_limit=b.transLimit,' : '') . "
                     discounttype=b.discounttype,
                     mixmatchcode = CASE 
                     WHEN l.pricemethod IN (3,4) AND l.salePrice >= 0 THEN convert(varchar,l.batchID)
@@ -157,7 +166,8 @@ those same items revert to normal pricing.
                     discounttype = b.discounttype,
                     specialpricemethod=l.pricemethod,
                     specialquantity=l.quantity,
-                            specialgroupprice=CASE WHEN l.salePrice < 0 THEN -1*l.salePrice ELSE l.salePrice END,
+                    specialgroupprice=CASE WHEN l.salePrice < 0 THEN -1*l.salePrice ELSE l.salePrice END,
+                    " . ($has_limit ? 'special_limit=b.transLimit,' : '') . "
                     mixmatchcode = CASE 
                         WHEN l.pricemethod IN (3,4) AND l.salePrice >= 0 THEN convert(varchar,l.batchID)
                         WHEN l.pricemethod IN (3,4) AND l.salePrice < 0 THEN convert(varchar,-1*l.batchID)
@@ -214,7 +224,7 @@ those same items revert to normal pricing.
         $forceLCP = $this->connection->prepare($forceLCQ);
         $forceR = $this->connection->execute($forceLCP,array($id));
 
-        $this->finishForce($id);
+        $this->finishForce($id, $has_limit);
     }
 
     /**
@@ -223,6 +233,11 @@ those same items revert to normal pricing.
     */
     public function forceStopBatch($id)
     {
+        // verify limit columns exist
+        $b_def = $this->connection->tableDefinition($this->name);
+        $p_def = $this->connection->tableDefinition('products');
+        $has_limit = (isset($b_def['transLimit']) && isset($p_def['special_limit'])) ? true : false;
+
         // unsale regular items
         $unsaleQ = "
             UPDATE products AS p 
@@ -232,6 +247,7 @@ those same items revert to normal pricing.
                 specialquantity=0,
                 specialgroupprice=0,
                 discounttype=0,
+                " . ($has_limit ? 'special_limit=0,' : '') . "
                 start_date='1900-01-01',
                 end_date='1900-01-01'
             WHERE b.upc NOT LIKE '%LC%'
@@ -240,6 +256,7 @@ those same items revert to normal pricing.
             $unsaleQ = "UPDATE products SET special_price=0,
                 specialpricemethod=0,specialquantity=0,
                 specialgroupprice=0,discounttype=0,
+                " . ($has_limit ? 'special_limit=0,' : '') . "
                 start_date='1900-01-01',end_date='1900-01-01'
                 FROM products AS p, batchList as b
                 WHERE p.upc=b.upc AND b.upc NOT LIKE '%LC%'
@@ -256,6 +273,7 @@ those same items revert to normal pricing.
                 specialpricemethod=0,
                 specialquantity=0,
                 specialgroupprice=0,
+                " . ($has_limit ? 'special_limit=0,' : '') . "
                 p.discounttype=0,
                 start_date='1900-01-01',
                 end_date='1900-01-01'
@@ -266,6 +284,7 @@ those same items revert to normal pricing.
                 SET special_price=0,
                 specialpricemethod=0,specialquantity=0,
                 specialgroupprice=0,discounttype=0,
+                " . ($has_limit ? 'special_limit=0,' : '') . "
                 start_date='1900-01-01',end_date='1900-01-01'
                 FROM products AS p LEFT JOIN
                 upcLike AS v ON v.upc=p.upc LEFT JOIN
@@ -276,7 +295,7 @@ those same items revert to normal pricing.
         $prep = $this->connection->prepare($unsaleLCQ);
         $unsaleLCR = $this->connection->execute($prep,array($id));
 
-        $this->finishForce($id);
+        $this->finishForce($id, $has_limit);
     }
 
     /**
@@ -284,11 +303,13 @@ those same items revert to normal pricing.
       - Update lane item records to reflect on/off sale
       - Log changes to prodUpdate
       @param $id [int] batchID
+      @param $has_limit [boolean] products.special_limit and batches.transLimit
+        columns are present
       
       Separate method since it's identical for starting
       and stopping  
     */
-    private function finishForce($id)
+    private function finishForce($id, $has_limit=true)
     {
         global $FANNIE_LANES;
         $columnsP = $this->connection->prepare('
@@ -299,6 +320,7 @@ those same items revert to normal pricing.
                 p.specialpricemethod,
                 p.specialquantity,
                 p.specialgroupprice,
+                ' . ($has_limit ? 'p.special_limit,' : '') . '
                 p.discounttype,
                 p.mixmatchcode,
                 p.start_date,
@@ -314,6 +336,7 @@ those same items revert to normal pricing.
                 p.specialpricemethod,
                 p.specialquantity,
                 p.specialgroupprice,
+                ' . ($has_limit ? 'p.special_limit,' : '') . '
                 p.discounttype,
                 p.mixmatchcode,
                 p.start_date,
@@ -349,6 +372,7 @@ those same items revert to normal pricing.
                 p.mixmatchcode = ?,
                 p.start_date = ?,
                 p.end_date = ?
+                ' . ($has_limit ? ',p.special_limit = ?' : '') . '
             WHERE p.upc = ?';
 
         /**
@@ -367,7 +391,7 @@ those same items revert to normal pricing.
 
             $updateP = $lane_sql->prepare($updateQ);
             foreach ($upcs as $upc => $data) {
-                $lane_sql->execute($updateP, array(
+                $args = array(
                     $data['normal_price'],
                     $data['special_price'],
                     $data['modified'],
@@ -378,8 +402,12 @@ those same items revert to normal pricing.
                     $data['mixmatchcode'],
                     $data['start_date'],
                     $data['end_date'],
-                    $upc,
-                ));
+                );
+                if ($has_limit) {
+                    $args[] = $data['special_limit'];
+                }
+                $args[] = $upc;
+                $lane_sql->execute($updateP, $args);
             }
         }
 
@@ -700,6 +728,43 @@ those same items revert to normal pricing.
                 }
             }
             $this->instance["owner"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function transLimit()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["transLimit"])) {
+                return $this->instance["transLimit"];
+            } else if (isset($this->columns["transLimit"]["default"])) {
+                return $this->columns["transLimit"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'transLimit',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["transLimit"]) || $this->instance["transLimit"] != func_get_args(0)) {
+                if (!isset($this->columns["transLimit"]["ignore_updates"]) || $this->columns["transLimit"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["transLimit"] = func_get_arg(0);
         }
         return $this;
     }
