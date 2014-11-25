@@ -1,7 +1,7 @@
 <?php
 
 if (!class_exists("LocalStorage")) {
-    include_once($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/LocalStorage.php");
+    include_once(realpath(dirname(__FILE__).'/LocalStorage.php'));
 }
 
 /**
@@ -40,6 +40,12 @@ class SQLiteStorage extends LocalStorage
         $row = $row[0];
         if (strstr($row[0],chr(255))) {
             return explode(chr(255),$row[0]);
+        } elseif ($row[0] === 'FALSE') {
+            return false;
+        } elseif ($row[0] === 'TRUE') {
+            return true;
+        } elseif (preg_match('/^\d+$/', $row[0])) {
+            return (int)$row[0];
         } else {
             return $row[0];
         }
@@ -59,6 +65,10 @@ class SQLiteStorage extends LocalStorage
                         $temp.=$v.chr(255);
                     }
                     $val = substr($temp,0,strlen($temp)-1);
+                } elseif ($val === false) {
+                    $val = 'FALSE';
+                } elseif ($val === true) {
+                    $val = 'TRUE';
                 }
                 $check = sqlite_query("SELECT valstr FROM is4c_local WHERE keystr='$key'",$this->db);
                 if (sqlite_num_rows($check) == 0) {

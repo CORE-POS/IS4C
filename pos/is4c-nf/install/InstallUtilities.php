@@ -1453,7 +1453,17 @@ class InstallUtilities extends LibraryClass
             self::dbStructureModify($db,'rp_receipt',$rprV,$errors);
         }
 
-        // lookup database collatoin
+        /* Lookup database collation
+          For reasons that make zero sense, when creating views
+          in the travis-ci test database, MySQL *sometimes* uses
+          a collation other than the default when casting numbers
+          to strings. This then results in weird collation errors.
+          Looking up the local DB server setting ensures that CORE
+          still abides by local preferences when explicitly requesting
+          a specific collation. None of this should be necessary
+          but finding the bug or undocumented "feature" of MySQL 
+          causing this is a waste of time.
+        */
         $mysql_collation = $db->query('SELECT @@collation_database', $name);
         $mysql_collation = $db->fetch_row($mysql_collation);
         $mysql_collation = $mysql_collation[0];
