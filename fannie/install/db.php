@@ -88,6 +88,9 @@ function dropDeprecatedStructure($con, $db_name, $table_name, $is_view=true)
         'deprecated'=>true,
     );
 
+    // SQLManager can actually check this now
+    $is_view = $con->isView($table_name, $db_name);
+
     if ($con->table_exists($table_name, $db_name)) {
         $dropQ = 'DROP '.($is_view ? 'VIEW' : 'TABLE').' '
                 .$con->identifier_escape($table_name, $db_name);
