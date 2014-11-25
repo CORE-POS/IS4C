@@ -1494,9 +1494,9 @@ class InstallUtilities extends LibraryClass
 
         select     upc,
             case when discounttype=1 then
-            ".$db->concat("' > you saved \$'",'CAST(CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2)) AS char(20)) COLLATE utf8_general_ci',"'  <'",'')."
+            ".$db->concat("' > you saved \$'",'CAST(CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2)) AS char(20)) COLLATE @@collation_database',"'  <'",'')."
             when discounttype=2 then
-            ".$db->concat("' > you saved \$'",'CAST(CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2)) AS char(20)) COLLATE utf8_general_ci',"'  Member Special <'",'')."
+            ".$db->concat("' > you saved \$'",'CAST(CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2)) AS char(20)) COLLATE @@collation_database',"'  Member Special <'",'')."
             end as description,
             trans_type,'0' as trans_subtype,0 as itemQtty,discounttype,volume,
             'D' as trans_status,
@@ -1578,15 +1578,6 @@ class InstallUtilities extends LibraryClass
         self::dbStructureModify($db,'ltt_grouped','DROP VIEW ltt_grouped',$errors);
         if(!$db->table_exists('ltt_grouped',$name)){
             self::dbStructureModify($db,'ltt_grouped',$lttG,$errors);
-        }
-
-        $testR = $db->query("SHOW FULL COLUMNS FROM ltt_grouped");
-        if (!$testR) {
-            print_r($db->error());
-        } else {
-            while ($w = $db->fetch_row($testR)) {
-                print_r($w);
-            }
         }
 
         $lttreorderG = "CREATE   view ltt_receipt_reorder_g as
@@ -2087,9 +2078,9 @@ class InstallUtilities extends LibraryClass
             select     register_no,emp_no,trans_no,card_no,
                 upc,
                 case when discounttype=1 then
-                ".$db->concat("' > you saved \$'",'CAST(CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2)) AS char(20))',"'  <'",'')."
+                ".$db->concat("' > you saved \$'",'CAST(CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2)) AS char(20)) COLLATE @@collation_database',"'  <'",'')."
                 when discounttype=2 then
-                ".$db->concat("' > you saved \$'",'CAST(CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2)) AS char(20))',"'  Member Special <'",'')."
+                ".$db->concat("' > you saved \$'",'CAST(CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2)) AS char(20)) COLLATE @@collation_database',"'  Member Special <'",'')."
                 end as description,
                 trans_type,'0' as trans_subtype,0 as itemQtty,discounttype,volume,
                 'D' as trans_status,
@@ -2246,7 +2237,7 @@ class InstallUtilities extends LibraryClass
             AND trans_type <> 'L'
             and not (trans_status='M' and total=CAST('0.00' AS decimal))
 
-            union
+            union all
 
             select
             0 as register_no, 0 as emp_no,0 as trans_no,0 as card_no,
@@ -2324,7 +2315,7 @@ class InstallUtilities extends LibraryClass
             AND trans_type <> 'L'
             and not (trans_status='M' and total=convert(money,'0.00'))
 
-            union
+            union all
 
             select
             0 as register_no, 0 as emp_no,0 as trans_no,0 as card_no,
