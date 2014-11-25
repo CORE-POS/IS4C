@@ -1580,6 +1580,36 @@ class InstallUtilities extends LibraryClass
             self::dbStructureModify($db,'ltt_grouped',$lttG,$errors);
         }
 
+        $testQ = "CREATE VIEW testView AS
+        select     upc,
+            case when discounttype=1 then
+            ".$db->concat("' > you saved \$'",'CAST(CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2)) AS char(20))',"'  <'",'')."
+            when discounttype=2 then
+            ".$db->concat("' > you saved \$'",'CAST(CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2)) AS char(20))',"'  Member Special <'",'')."
+            end as description,
+            trans_type,'0' as trans_subtype,0 as itemQtty,discounttype,volume,
+            'D' as trans_status,
+            2 as voided,
+            department,0 as quantity,matched,min(trans_id)+1 as trans_id,
+            scale,0 as unitprice,
+            0 as total,
+            0 as regPrice,0 as tax,0 as foodstamp,charflag,
+            case when trans_status='d' or scale=1 then trans_id else scale end as grouper
+        from localtemptrans
+        where description not like '** YOU SAVED %' and (discounttype=1 or discounttype=2)
+        AND trans_type <> 'L'
+        group by upc,description,trans_type,trans_subtype,discounttype,volume,
+            department,scale,matched,
+            case when trans_status='d' or scale=1 then trans_id else scale end
+        having CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2))<>0";
+        if(!$db->table_exists('testView',$name)){
+            self::dbStructureModify($db,'testView',$testQ,$errors);
+        }
+        $testR = $db->query("SHOW FULL COLUMNS FROM testView");
+        while ($w = $db->fetch_row($testR)) {
+            print_r($w);
+        }
+
         $lttreorderG = "CREATE   view ltt_receipt_reorder_g as
         select 
         l.description as description,
