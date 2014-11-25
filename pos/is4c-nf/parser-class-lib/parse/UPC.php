@@ -173,6 +173,12 @@ class UPC extends Parser {
         } else {
             $query .= ', \'\' AS formatted_name';
         }
+        // New column 25Nov14
+        if (isset($table['special_limit'])) {
+            $query .= ', special_limit';
+        } else {
+            $query .= ', 0 AS special_limit';
+        }
 		$query .= " FROM products WHERE upc = '".$upc."'";
 		$result = $db->query($query);
 		$num_rows = $db->num_rows($result);
@@ -444,6 +450,32 @@ class UPC extends Parser {
 			$discountable = ($discountable == 0) ? 1 : 0;
 		}
 		$row['discount'] = $discountable;
+
+        /**
+          Enforce per-transaction sale limits
+        */
+        if ($row['special_limit'] > 0) {
+            $appliedQ = "
+                SELECT SUM(quantity) AS saleQty
+                FROM " . $CORE_LOCAL->get('tDatabase') . $db->sep() . "localtemptrans
+                WHERE discounttype <> 0
+                    AND (
+                        upc='{$row['upc']}'
+                        OR (mixMatch='{$row['mixmatchcode']}' AND mixMatch<>''
+                            AND mixMatch<>'0' AND mixMatch IS NOT NULL)
+                    )";
+            $appliedR = $db->query($appliedQ);
+            if ($appliedR && $db->num_rows($appliedR)) {
+                $appliedW = $db->fetch_row($appliedR);
+                if (($appliedW['saleQty']+$quantity) > $row['special_limit']) {
+                    $row['discounttype'] = 0;
+                    $row['special_price'] = 0;
+                    $row['specialpricemethod'] = 0;
+                    $row['specialquantity'] = 0;
+                    $row['specialgroupprice'] = 0;
+                }
+            }
+        }
 
 		/*
 			BEGIN: figure out discounts by type
