@@ -19,11 +19,11 @@ class SQLiteStorage extends LocalStorage
     public function SQLiteStorage()
     {
         $this->db = $this->conn();
-        $result = sqlite_query("SELECT name FROM sqlite_master WHERE type='table' AND name='is4c_local'", $this->db);
+        $result = sqlite_query($this->db, "SELECT name FROM sqlite_master WHERE type='table' AND name='is4c_local'");
 
         if (sqlite_num_rows($result) == 0) {
-            $result = sqlite_query("CREATE TABLE is4c_local (keystr varchar(255), valstr varchar(255),
-                        PRIMARY KEY (keystr) )",$this->db);
+            $result = sqlite_query($this->db, "CREATE TABLE is4c_local (keystr varchar(255), valstr varchar(255),
+                        PRIMARY KEY (keystr) )");
         }
     }    
 
@@ -33,7 +33,7 @@ class SQLiteStorage extends LocalStorage
             return $this->immutables[$key];
         }
 
-        $row = sqlite_array_query("SELECT valstr FROM is4c_local WHERE keystr='$key'",$this->db);
+        $row = sqlite_array_query($this->db, "SELECT valstr FROM is4c_local WHERE keystr='$key'");
         if (!$row) {
             return "";
         }
@@ -57,7 +57,7 @@ class SQLiteStorage extends LocalStorage
             $this->immutableSet($key,$val);
         } else {
             if (empty($val)) {
-                sqlite_query("DELETE FROM is4c_local WHERE keystr='$key'",$this->db);
+                sqlite_query($this->db, "DELETE FROM is4c_local WHERE keystr='$key'");
             } else {
                 if (is_array($val)) {
                     $temp = "";
@@ -70,12 +70,11 @@ class SQLiteStorage extends LocalStorage
                 } elseif ($val === true) {
                     $val = 'TRUE';
                 }
-                $check = sqlite_query("SELECT valstr FROM is4c_local WHERE keystr='$key'",$this->db);
+                $check = sqlite_query($this->db, "SELECT valstr FROM is4c_local WHERE keystr='$key'");
                 if (sqlite_num_rows($check) == 0) {
-                    //echo "INSERT INTO is4c_local VALUES ('$key','$val')";
-                    sqlite_query("INSERT INTO is4c_local VALUES ('$key','$val')",$this->db);
+                    sqlite_query($this->db, "INSERT INTO is4c_local VALUES ('$key','$val')");
                 } else {
-                    sqlite_query("UPDATE is4c_local SET valstr='$val' WHERE keystr='$key'",$this->db);
+                    sqlite_query($this->db, "UPDATE is4c_local SET valstr='$val' WHERE keystr='$key'");
                 }
             }
         }
