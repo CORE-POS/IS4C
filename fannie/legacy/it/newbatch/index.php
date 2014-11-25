@@ -243,7 +243,7 @@ if (isset($_GET['action'])){
 
             $update = new ProdUpdateModel($sql);
             $update->upc($upc);
-            $update->logUpdate(ProdUpdate::UPDATE_BATCH);
+            $update->logUpdate(ProdUpdateModel::UPDATE_BATCH);
 		} else {
 			$lc = substr($upc,2);
 			$unsaleQ = $sql->prepare("UPDATE products AS p LEFT JOIN upcLike as u on p.upc=u.upc
@@ -267,7 +267,7 @@ if (isset($_GET['action'])){
 
                 $update = new ProdUpdateModel($sql);
                 $update->upc($upc);
-                $update->logUpdate(ProdUpdate::UPDATE_BATCH);
+                $update->logUpdate(ProdUpdateModel::UPDATE_BATCH);
             }
 		}
 
