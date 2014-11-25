@@ -445,11 +445,11 @@ class SQLManager
         }
         switch($this->db_types[$which_connection]) {
             case $this->TYPE_MYSQL:
-                return mysql_num_rows($result_object);
+                return $result_object === false ? 0 : mysql_num_rows($result_object);
             case $this->TYPE_MSSQL:
-                return mssql_num_rows($result_object);
+                return $result_object === false ? 0 : mssql_num_rows($result_object);
             case $this->TYPE_PGSQL:
-                return pg_num_rows($result_object);
+                return $result_object === false ? 0 : pg_num_rows($result_object);
             case $this->TYPE_PDOMY:
             case $this->TYPE_PDOMS:
             case $this->TYPE_PDOPG:
@@ -951,7 +951,12 @@ class SQLManager
         switch($this->db_types[$which_connection]) {
             case $this->TYPE_PDOMY:
             case $this->TYPE_MYSQL:
-                $result = $this->query("SHOW TABLES FROM $which_connection 
+                if (strstr($table_name, '.')) {
+                    list($schema, $table_name) = explode('.', $table_name, 2);
+                } else {
+                    $schema = $which_connection;
+                }
+                $result = $this->query("SHOW TABLES FROM $schema 
                             LIKE '$table_name'",$which_connection);
                 if ($this->num_rows($result) > 0) {
                     return true;
