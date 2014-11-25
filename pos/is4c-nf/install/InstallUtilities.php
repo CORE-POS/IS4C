@@ -1453,6 +1453,12 @@ class InstallUtilities extends LibraryClass
             self::dbStructureModify($db,'rp_receipt',$rprV,$errors);
         }
 
+        // lookup database collatoin
+        $mysql_collation = $db->query('SELECT @@collation_database', $name);
+        $mysql_collation = $db->fetch_row($mysql_collation);
+        $mysql_collation = $mysql_collation[0];
+
+
         $lttG = "CREATE  view ltt_grouped as
         select     upc,description,trans_type,trans_subtype,sum(itemQtty)as itemqtty,
             discounttype,volume,
@@ -1494,9 +1500,9 @@ class InstallUtilities extends LibraryClass
 
         select     upc,
             case when discounttype=1 then
-            ".$db->concat("' > you saved \$'",'CAST(CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2)) AS char(20)) COLLATE @@collation_database',"'  <'",'')."
+            ".$db->concat("' > you saved \$'",'CAST(CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2)) AS char(20)) COLLATE ' . $mysql_collation,"'  <'",'')."
             when discounttype=2 then
-            ".$db->concat("' > you saved \$'",'CAST(CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2)) AS char(20)) COLLATE @@collation_database',"'  Member Special <'",'')."
+            ".$db->concat("' > you saved \$'",'CAST(CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2)) AS char(20)) COLLATE ' . $mysql_collation,"'  Member Special <'",'')."
             end as description,
             trans_type,'0' as trans_subtype,0 as itemQtty,discounttype,volume,
             'D' as trans_status,
@@ -2078,9 +2084,9 @@ class InstallUtilities extends LibraryClass
             select     register_no,emp_no,trans_no,card_no,
                 upc,
                 case when discounttype=1 then
-                ".$db->concat("' > you saved \$'",'CAST(CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2)) AS char(20)) COLLATE @@collation_database',"'  <'",'')."
+                ".$db->concat("' > you saved \$'",'CAST(CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2)) AS char(20)) COLLATE ' . $mysql_collation,"'  <'",'')."
                 when discounttype=2 then
-                ".$db->concat("' > you saved \$'",'CAST(CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2)) AS char(20)) COLLATE @@collation_database',"'  Member Special <'",'')."
+                ".$db->concat("' > you saved \$'",'CAST(CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2)) AS char(20)) COLLATE ' . $mysql_collation,"'  Member Special <'",'')."
                 end as description,
                 trans_type,'0' as trans_subtype,0 as itemQtty,discounttype,volume,
                 'D' as trans_status,
