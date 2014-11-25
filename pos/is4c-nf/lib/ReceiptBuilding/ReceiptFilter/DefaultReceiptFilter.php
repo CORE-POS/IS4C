@@ -73,7 +73,7 @@ class DefaultReceiptFilter
 				if (!isset($reverseMap[$row['category']])) {
 					$reverseMap[$row['category']] = true;
                 }
-                if ($row['trans_type'] == 'I' && $row['matched'] == 0 && $row['scale'] == 0) {
+                if ($row['trans_type'] == 'I' && $row['matched'] == 0 && $row['scale'] == 0 && $row['trans_status'] != 'D') {
                     // merge duplicate items
                     $merged = false;
                     for ($i=0; $i<count($returnset); $i++) {
