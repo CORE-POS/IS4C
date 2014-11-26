@@ -544,9 +544,9 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1)
         $vendor_upc = $row['upc'];
         $skuMatch = $row['skuMatch'];
     }
-    if (!empty($vendor_upc)) $ins_array['upc'] = "'$vendor_upc'";
+    if (!empty($vendor_upc)) $ins_array['upc'] = "$vendor_upc";
     if ($skuMatch == 1) {
-        $ins_array['upc'] = "'$vendor_upc'";
+        $ins_array['upc'] = "$vendor_upc";
         $upc = $vendor_upc;
     }
     $ins_array['quantity'] = $caseSize;
