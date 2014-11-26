@@ -430,7 +430,7 @@ class EditBatchPage extends FannieRESTfulPage
 
         echo json_encode($json);
 
-        return $ret;
+        return false;
     }
 
     protected function delete_id_upc_handler()

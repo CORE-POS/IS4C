@@ -224,7 +224,8 @@ those same items revert to normal pricing.
         $forceLCP = $this->connection->prepare($forceLCQ);
         $forceR = $this->connection->execute($forceLCP,array($id));
 
-        $this->finishForce($id, $has_limit);
+        $updateType = ($batchInfoW['discountType'] == 0) ? ProdUpdateModel::UPDATE_PC_BATCH : ProdUpdateModel::UPDATE_BATCH;
+        $this->finishForce($id, $updateType, $has_limit);
     }
 
     /**
@@ -295,7 +296,8 @@ those same items revert to normal pricing.
         $prep = $this->connection->prepare($unsaleLCQ);
         $unsaleLCR = $this->connection->execute($prep,array($id));
 
-        $this->finishForce($id, $has_limit);
+        $updateType = ProdUpdateModel::UPDATE_PC_BATCH;
+        $this->finishForce($id, $updateType, $has_limit);
     }
 
     /**
@@ -303,13 +305,14 @@ those same items revert to normal pricing.
       - Update lane item records to reflect on/off sale
       - Log changes to prodUpdate
       @param $id [int] batchID
+      @param $updateType [cost] ProdUpdateModel update type
       @param $has_limit [boolean] products.special_limit and batches.transLimit
         columns are present
       
       Separate method since it's identical for starting
       and stopping  
     */
-    private function finishForce($id, $has_limit=true)
+    private function finishForce($id, $updateType, $has_limit=true)
     {
         global $FANNIE_LANES;
         $columnsP = $this->connection->prepare('
@@ -412,7 +415,6 @@ those same items revert to normal pricing.
         }
 
         $update = new ProdUpdateModel($this->connection);
-        $updateType = ($batchInfoW['discountType'] == 0) ? ProdUpdateModel::UPDATE_PC_BATCH : ProdUpdateModel::UPDATE_BATCH;
         $update->logManyUpdates(array_keys($upcs), $updateType);
     }
 
