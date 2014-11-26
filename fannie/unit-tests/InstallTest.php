@@ -104,6 +104,32 @@ class InstallTest extends PHPUnit_Framework_TestCase
                 $this->assertEquals(true, $exists, 'Structure ' . $result['struct'] . ' was not created.');
             }
         }
+    }
 
+    public function testSampleData()
+    {
+        $con = FannieDB::get('unit_test_op');
+
+        $samples = array(
+            'custdata',
+            'departments',
+            'employees',
+            'memtype',
+            'originCountry',
+            'originStateProv',
+            'products',
+            'superdepts',
+            'superDeptNames',
+            'tenders',
+        );
+
+        foreach ($samples as $sample) {
+            $con->query('TRUNCATE TABLE ' . $con->identifierEscape($sample));
+            ob_start();
+            $loaded = \COREPOS\Fannie\API\data\DataLoad::loadSampleData($con, $sample);
+            $output = ob_get_clean();
+
+            $this->assertEquals(true, $loaded, 'Error loading ' . $sample . ' (' . $output . ')');
+        }
     }
 }
