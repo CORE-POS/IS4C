@@ -42,6 +42,8 @@ class PatronageModel extends BasicModel
     'equit_pat' => array('type'=>'MONEY'),
     'FY' => array('type'=>'SMALLINT','primary_key'=>True,'default'=>0),
     'check_number' => array('type'=>'INT'),
+    'cashed_date' => array('type'=>'DATETIME'),
+    'cashed_here' => array('type'=>'TINYINT', 'default'=>0),
     );
 
     public function gumPayoffID($id)
@@ -417,6 +419,80 @@ class PatronageModel extends BasicModel
                 }
             }
             $this->instance["check_number"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function cashed_date()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["cashed_date"])) {
+                return $this->instance["cashed_date"];
+            } else if (isset($this->columns["cashed_date"]["default"])) {
+                return $this->columns["cashed_date"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'cashed_date',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["cashed_date"]) || $this->instance["cashed_date"] != func_get_args(0)) {
+                if (!isset($this->columns["cashed_date"]["ignore_updates"]) || $this->columns["cashed_date"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["cashed_date"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function cashed_here()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["cashed_here"])) {
+                return $this->instance["cashed_here"];
+            } else if (isset($this->columns["cashed_here"]["default"])) {
+                return $this->columns["cashed_here"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'cashed_here',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["cashed_here"]) || $this->instance["cashed_here"] != func_get_args(0)) {
+                if (!isset($this->columns["cashed_here"]["ignore_updates"]) || $this->columns["cashed_here"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["cashed_here"] = func_get_arg(0);
         }
         return $this;
     }

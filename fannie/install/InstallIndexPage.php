@@ -611,6 +611,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             'OriginStateProvModel',
             'OriginCustomRegionModel',
             'ParametersModel',
+            'PatronageModel',
             'ProductsModel',
             'ProductBackupModel',
             'ProductUserModel',
