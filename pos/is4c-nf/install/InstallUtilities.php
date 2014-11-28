@@ -286,6 +286,7 @@ class InstallUtilities extends LibraryClass
     */
     static public function loadSampleData($sql, $table, $quiet=false)
     {
+        global $CORE_LOCAL;
         $success = true; 
         $loaded = 0;
         ob_start();
@@ -315,8 +316,12 @@ class InstallUtilities extends LibraryClass
                 . " $loaded " . ($loaded == 1? 'record was' : 'records were') . " loaded.<br>\n";
         } else if (file_exists(dirname(__FILE__) . "/data/$table.csv")) {
             echo "from data/$table.csv ";
+            $LOCAL = 'LOCAL';
+            if ($CORE_LOCAL->get('localhost') == '127.0.0.1' || $CORE_LOCAL->get('localhost') == 'localhost') {
+                $LOCAL = '';
+            }
             $path = realpath(dirname(__FILE__) . "/data/$table.csv");
-            $query = "LOAD DATA LOCAL INFILE
+            $query = "LOAD DATA $LOCAL INFILE
                     '$path'
                     INTO TABLE $table
                     FIELDS TERMINATED BY ','
