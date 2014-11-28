@@ -963,13 +963,15 @@ static public function screenDisplay($min, $max)
         } elseif ($row['voided'] == 3) {
             $record['comment'] = _('Total ');
         } elseif ($row['voided'] == 5) {
-            $record['comment'] = _('Discount ');
+            $record['comment'] = _('Discount');
         } elseif ($row['voided'] == 7) {
             $record['comment'] = '';
         } elseif ($row['voided'] == 11 || $row['voided'] == 17) {
             $record['comment'] = $row['upc'];
         } elseif ($row['matched'] > 0) {
             $record['comment'] = _('1 w/ vol adj');
+        } elseif ($row['trans_type'] == 'T') {
+            $record['comment'] = $row['description'];
         } else {
             $record['comment'] = '';
         }
@@ -1006,7 +1008,7 @@ static public function screenDisplay($min, $max)
 
         if ($row['trans_status'] == 'V' || $row['trans_type'] == 'T' || $row['trans_status'] == 'R' || $row['trans_status'] == 'M' || $row['voided'] == 17 || $row['trans_status'] == 'J') {
             $record['lineColor'] = '800000';
-        } elseif (($row['discounttype'] != 0 && ($row['matched'] > 0 || $row['volDiscType'] <> 0)) 
+        } elseif (($row['discounttype'] != 0 && ($row['matched'] > 0 || $row['volDiscType'] == 0)) 
             || $row['voided'] == 2 || $row['voided'] == 6 || $row['voided'] == 4 || $row['voided'] == 5 || $row['voided'] == 10 || $row['voided'] == 22) {
             $record['lineColor'] = '408080';
         } elseif ($row['voided'] == 3 || $row['voided'] == 11) {

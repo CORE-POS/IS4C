@@ -46,6 +46,7 @@ script:
     - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/InstallTest.php; fi
     # These can run in any order
     - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/BaseLibsTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/DisplayTest.php; fi
     - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/FooterBoxesTest.php; fi
     - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/KickersTest.php; fi
     - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/LocalStorageTest.php; fi
