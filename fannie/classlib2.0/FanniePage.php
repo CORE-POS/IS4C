@@ -515,6 +515,11 @@ function enableLinea(selector, callback)
         return false;
     }
 
+    public function unitTest($phpunit)
+    {
+
+    }
+
     /**
       Check for input and display the page
     */
