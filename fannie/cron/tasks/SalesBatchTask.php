@@ -46,6 +46,20 @@ class SalesBatchTask extends FannieTask
         $now = date('Y-m-d 00:00:00');
         $sale_upcs = array();
 
+        // ensure likecode items are mixmatch-able
+        if ($dbc->dbms_name() == 'mssql') {
+            $dbc->query("UPDATE products
+                SET mixmatchcode=convert(varchar,u.likecode+500)
+                FROM 
+                products AS p
+                INNER JOIN upcLike AS u
+                ON p.upc=u.upc");
+        } else {
+            $dbc->query("UPDATE products AS p
+                INNER JOIN upcLike AS u ON p.upc=u.upc
+                SET p.mixmatchcode=convert(u.likeCode+500,char)");
+        }
+
         $likeP = $dbc->prepare('SELECT u.upc 
                                 FROM upcLike AS u
                                     INNER JOIN products AS p ON u.upc=p.upc
