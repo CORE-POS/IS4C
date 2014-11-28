@@ -49,6 +49,42 @@ class PatronageChecks extends FannieRESTfulPage
             <p>This process may take several minutes to finish.</p>';
     }
 
+    public function preprocess()
+    {
+        $this->__routes[] = 'get<reprint><mem><fy>';
+
+        return parent::preprocess();
+    }
+
+    public function get_reprint_mem_fy_handler()
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $custdata = new CustdataModel($dbc);
+        $meminfo = new MeminfoModel($dbc);
+        $custdata->CardNo($this->mem);
+        $custdata->personNum(1);
+        $custdata->load();
+        $meminfo->card_no($this->mem);
+        $meminfo->load();
+        $patronage = new PatronageModel($dbc);
+        $patronage->cardno($this->mem);
+        $patronage->FY($this->fy);
+        $patronage->load();
+
+        $pdf = new FPDF('P', 'mm', 'Letter');
+        $pdf->SetMargins(6.35, 6.35, 6.35); // quarter-inch margins
+        $pdf->SetAutoPageBreak(false);
+        $pdf->AddPage();
+        $pdf->Image('rebate_body.png', 10, 0, 190);
+        $check = new GumCheckTemplate($custdata, $meminfo, $patronage->cash_pat(), 'Rebate ' . $this->fy, $patronage->check_number());
+        $check->renderAsPDF($pdf);
+
+        $pdf->Output('Rebate_' . $this->mem . '_' . $this->fy . '.pdf', 'I');
+
+        return false;
+    }
+
     public function post_handler()
     {
         global $FANNIE_OP_DB;
