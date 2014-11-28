@@ -45,5 +45,31 @@ class InstallTest extends PHPUnit_Framework_TestCase
                 . ', ' . print_r($error, true));
         }
     }
+
+	public function testSampleData()
+    {
+        $samples = array(
+            'couponcodes',
+            'custdata',
+            'departments',
+            'employees',
+            'globalvalues',
+            'MasterSuperDepts',
+            'parameters',
+            'products',
+            'subdepts',
+            'tenders',
+        );
+        $dbc = Database::pDataConnect();
+
+        foreach ($samples as $sample) {
+            ob_start();
+            $dbc->query('TRUNCATE TABLE ' . $dbc->identifier_escape($sample));
+            $loaded = InstallUtilities::loadSampleData($dbc, $sample, false);
+            $output = ob_get_clean();
+
+            $this->assertEquals(true, $loaded, 'Error with sample data for ' . $sample . ' (' . $output . ')');
+        }
+    }
 }
 
