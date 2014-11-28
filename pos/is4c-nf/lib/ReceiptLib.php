@@ -925,10 +925,11 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False) {
 		$second = false;
 
 		// lookup trans information
+		$db = Database::tDataConnect();
         $queryHeader = "
             SELECT
                 MIN(datetime) AS dateTimeStamp,
-                MAX(card_no) AS card_no,
+                MAX(card_no) AS memberID,
                 SUM(CASE WHEN upc='0000000008005' THEN total ELSE 0 END) AS couponTotal,
                 SUM(CASE WHEN upc='DISCOUNT' THEN total ELSE 0 END) AS transDiscount,
                 SUM(CASE WHEN trans_subtype IN ('MI','CX') THEN total ELSE 0 END) AS chargeTotal,
@@ -941,7 +942,6 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False) {
                 emp_no,
                 trans_no";
 
-		$db = Database::tDataConnect();
 		$header = $db->query($queryHeader);
 		$row = $db->fetch_row($header);
 		$dateTimeStamp = $row["dateTimeStamp"];
