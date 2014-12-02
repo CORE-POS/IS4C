@@ -616,7 +616,11 @@ function mathField(elem)
 }
 function standardFieldMarkup()
 {
-    $('input.date-field').datepicker();
+    $('input.date-field').datepicker({
+        dateFormat: 'yy-mm-dd',    
+        changeYear: true,
+        yearRange: "c-10:c+10",
+    });
     $('input.math-field').change(function (event) {
         mathField(event.target);
     });
