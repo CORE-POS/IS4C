@@ -1015,18 +1015,18 @@ class FannieReportPage extends FanniePage
     */
     function drawPage()
     {
-        /** Use FanniePage::drawPage for the plain old html
-            version of the page
-        */
-        if ($this->content_function == 'form_content') {
-            return parent::drawPage();
-        }
-
         global $FANNIE_WINDOW_DRESSING;
 
         if (!$this->checkAuth() && $this->must_authenticate) {
             $this->loginRedirect();
         } elseif ($this->preprocess()) {
+
+            /** Use FanniePage::drawPage for the plain old html
+                version of the page
+            */
+            if ($this->content_function == 'form_content') {
+                return parent::drawPage();
+            }
 
             /**
               Global setting overrides default behavior
