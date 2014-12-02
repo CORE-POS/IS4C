@@ -739,14 +739,14 @@ class SQLManager
 		$unquoted = array("money"=>1,"real"=>1,"numeric"=>1,
 			"float4"=>1,"float8"=>1,"bit"=>1);
 		$strings = array("varchar"=>1,"nvarchar"=>1,"string"=>1,
-			"char"=>1);
+			"char"=>1, 'var_string'=>1);
 		$dates = array("datetime"=>1);
 		$queries = array();
 
 		while($row = $this->fetch_array($result,$source_db)) {
 			$full_query = $insert_query." VALUES (";
 			for ($i=0; $i<$num_fields; $i++) {
-				$type = $this->fieldType($result,$i,$source_db);
+				$type = strtolower($this->fieldType($result,$i,$source_db));
 				if ($row[$i] == "" && strstr(strtoupper($type),"INT")) {
 					$row[$i] = 0;	
 				} elseif ($row[$i] == "" && isset($unquoted[$type])) {
