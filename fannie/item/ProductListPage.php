@@ -199,15 +199,8 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             var supplier = $('tr#'+upc+' .in_supplier').val();
             $('tr#'+upc+' .td_supplier').html(supplier);
 
+            mathField($('tr#'+upc+' .in_cost').get(0));
             var cost = $('tr#'+upc+' .in_cost').val();
-            if (cost.indexOf('/') > -1) {
-                var divisors = cost.split('/');
-                var base = Number(divisors[0]);
-                for (var i = 1; i < divisors.length; i++) {
-                    base /= Number(divisors[i]);
-                }
-                cost = Math.round(base*100)/100.00;
-            }
             $('tr#'+upc+' .td_cost').html(cost);
 
             var price = $('tr#'+upc+' .in_price').val();
