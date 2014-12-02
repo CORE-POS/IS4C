@@ -296,7 +296,7 @@ class ImportPurchaseOrder extends \COREPOS\Fannie\API\FannieUploadPage
         </div>
         <div class="form-group col-sm-6">
             <label class="control-label col-sm-3">Order Date</label>
-            <div class="col-sm-9"><input type="text" class="form-control" name="orderDate" id="orderDate" /></div>
+            <div class="col-sm-9"><input type="text" class="form-control date-field" name="orderDate" id="orderDate" /></div>
         </div>
         <div class="form-group col-sm-6">
             <label class="control-label col-sm-3">PO#/Invoice#</label>
@@ -304,7 +304,7 @@ class ImportPurchaseOrder extends \COREPOS\Fannie\API\FannieUploadPage
         </div>
         <div class="form-group col-sm-6">
             <label class="control-label col-sm-3">Recv'd Date</label>
-            <div class="col-sm-9"><input type="text" class="form-control" name="recvDate" id="recvDate" /></div>
+            <div class="col-sm-9"><input type="text" class="form-control date-field" name="recvDate" id="recvDate" /></div>
         </div>
         <div class="form-group col-sm-6">
             <label class="control-label col-sm-3">Filename</label>
@@ -316,8 +316,6 @@ class ImportPurchaseOrder extends \COREPOS\Fannie\API\FannieUploadPage
                 onclick="location='PurchasingIndexPage.php'; return false;">Home</button>
         </div>
         <?php
-        $this->add_onload_command("\$('#orderDate').datepicker();");
-        $this->add_onload_command("\$('#recvDate').datepicker();");
 
         return ob_get_clean();
     }

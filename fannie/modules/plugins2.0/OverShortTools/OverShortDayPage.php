@@ -529,13 +529,12 @@ body, table, td, th {
 
     function body_content(){
         global $FANNIE_URL;
-        $this->add_onload_command("\$('#date').datepicker();");
         $user = FannieAuth::checkLogin();
         ob_start();
         ?>
         <form style='margin-top:1.0em;' id="osForm" onsubmit="setdate(); return false;" >
         <div class="form-group form-inline">
-        <label>Date</label>:<input class="form-control" type=text id=date name=arg />
+        <label>Date</label>:<input class="form-control date-field" type=text id=date name=arg />
         <?php
         $_REQUEST['store'] = 1;
         $sp = FormLib::storePicker();

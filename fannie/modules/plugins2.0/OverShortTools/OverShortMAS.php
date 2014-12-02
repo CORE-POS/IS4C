@@ -324,17 +324,15 @@ class OverShortMAS extends FannieRESTfulPage {
 
     function get_view(){
         global $FANNIE_URL;
-        $this->add_onload_command("\$('#date1').datepicker();");
-        $this->add_onload_command("\$('#date2').datepicker();");
         $ret = '<form action="OverShortMAS.php" method="get">
             <div class="col-sm-4">
             <div class="form-group">
                 <label>Start Date</label>
-                <input name="startDate" class="form-control" required id="date1" />
+                <input name="startDate" class="form-control date-field" required id="date1" />
             </div>
             <div class="form-group">
                 <label>End Date</label>
-                <input name="endDate" class="form-control" required id="date2" />
+                <input name="endDate" class="form-control date-field" required id="date2" />
             </div>
             <p>
                 <button type="submit" class="btn btn-default">Get Data</button>

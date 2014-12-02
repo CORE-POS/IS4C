@@ -296,8 +296,8 @@ class BatchListPage extends FannieRESTfulPage
         }
         $ret .= "</select></div>";
         $ret .= '<div class="col-sm-2"><input class="form-control" type=text id=newBatchName name="newName" /></div>';
-        $ret .= '<div class="col-sm-2"><input class="form-control" type=text id=newBatchStartDate name="newStart" /></div>';
-        $ret .= '<div class="col-sm-2"><input class="form-control" type=text id=newBatchEndDate name="newEnd" /></div>';
+        $ret .= '<div class="col-sm-2"><input class="form-control date-field" type=text id=newBatchStartDate name="newStart" /></div>';
+        $ret .= '<div class="col-sm-2"><input class="form-control date-field" type=text id=newBatchEndDate name="newEnd" /></div>';
         $ret .= '<div class="col-sm-2"><select class="form-control" id=newBatchOwner name="newOwner">';
         $ret .= '<option value=""></option>';
         foreach ($owners as $o) {
@@ -489,9 +489,6 @@ class BatchListPage extends FannieRESTfulPage
         $ret = ob_get_clean();
     
         $ret .= "<input type=hidden id=buttonimgpath value=\"{$FANNIE_URL}src/img/buttons/\" />";
-
-        $this->add_onload_command("\$('#newBatchStartDate').datepicker();\n");
-        $this->add_onload_command("\$('#newBatchEndDate').datepicker();\n");
 
         return $ret;
     }

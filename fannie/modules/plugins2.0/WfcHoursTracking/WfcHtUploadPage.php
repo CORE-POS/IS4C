@@ -258,8 +258,8 @@ class WfcHtUploadPage extends FanniePage
 <input type="hidden" name="MAX_FILE_SIZE" value="2097152" />
 <div class="form-group">
 <label>Pay Period</label>: 
-<input type=text placeholder="Start Date" name=start id="start" class="form-control" required />
-<input type=text name=end id="end" placeholder="End Date" class="form-control" required />
+<input type=text placeholder="Start Date" name=start id="start" class="form-control date-field" required />
+<input type=text name=end id="end" placeholder="End Date" class="form-control date-field" required />
 </div>
 <div class="form-group">
 <label>Holiday Hours</label>:
@@ -272,8 +272,6 @@ Filename: <input type="file" id="file" name="upload" />
 </div>
 </form>
         ';
-        $this->add_onload_command("\$('#start').datepicker();\n");
-        $this->add_onload_command("\$('#end').datepicker();\n");
     }
 
     public function body_content()

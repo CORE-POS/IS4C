@@ -76,11 +76,11 @@ class CashierRecordsReport extends FannieReportPage
 <div class="col-sm-4">
     <div class="form-group">
     <label>Date Start</label>
-    <input type=text id=date1 name=date1 class="form-control" />
+    <input type=text id=date1 name=date1 class="form-control date-field" />
     </div>
     <div class="form-group">
     <label>Date End</label>
-    <input type=text id=date2 name=date2 class="form-control" />
+    <input type=text id=date2 name=date2 class="form-control date-field" />
     </div>
     <p>
     <button type=submit name=submit class="btn btn-default">Submit</button>
@@ -92,8 +92,6 @@ class CashierRecordsReport extends FannieReportPage
 </div>
 </form>
 <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
 
         return ob_get_clean();
     }

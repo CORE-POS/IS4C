@@ -247,9 +247,9 @@ function flipover(opt){
     </div>
     <div class="col-sm-6">
         <label class="control-label">Start date</label>
-        <input type="text" id="date1" name="date1" class="form-control" />
+        <input type="text" id="date1" name="date1" class="form-control date-field" />
         <label class="control-label">End date</label>
-        <input type="text" id="date2" name="date2" class="form-control" />
+        <input type="text" id="date2" name="date2" class="form-control date-field" />
     </div>
 </div>
 <hr />
@@ -275,8 +275,6 @@ function flipover(opt){
 </p>
 </form>
         <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
 
         return ob_get_clean(); 
     }

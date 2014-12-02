@@ -148,11 +148,13 @@ class CustomerCountReport extends FannieReportPage {
 <div class="col-sm-6">
 <p>
     <label>Start Date</label>
-    <input type=text id=date1 name=date1 value="<?php echo $lastMonday; ?>" class="form-control" required />
+    <input type=text id=date1 name=date1 value="<?php echo $lastMonday; ?>"
+        class="form-control date-field" required />
 </p>
 <p>
     <label>End Date</label>
-    <input type=text id=date2 name=date2 value="<?php echo $lastSunday; ?>" class="form-control" required />
+    <input type=text id=date2 name=date2 value="<?php echo $lastSunday; ?>" 
+        class="form-control date-field" required />
 </p>
 <p>
     <button type=submit name=submit value="Submit" class="btn btn-default">Submit</button>
@@ -164,8 +166,6 @@ class CustomerCountReport extends FannieReportPage {
 </div>
 </form>
 <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
     }
 
     public function helpContent()

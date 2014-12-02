@@ -101,8 +101,6 @@ class RecallReport extends FannieReportPage
         
     public function form_content()
     {
-        $this->add_onload_command("\$('#date1').datepicker({dateFormat:'yy-mm-dd'});\n");
-        $this->add_onload_command("\$('#date2').datepicker({dateFormat:'yy-mm-dd'});\n");
         $this->add_onload_command('$(\'#upc\').focus();');
         return '
             <form action=RecallReport.php method=get>
@@ -115,12 +113,12 @@ class RecallReport extends FannieReportPage
             <div class="form-group">
                 <label>Start date</label>
                 <input type=text name=date1 id="date1" required
-                    class="form-control" />
+                    class="form-control date-field" />
             </div>
             <div class="form-group">
                 <label>End date</label>
                 <input type=text name=date2 id="date2" required
-                    class="form-control" />
+                    class="form-control date-field" />
             </div>
             <div class="form-group">
                 <button type=submit name=submit value="Get Report" 

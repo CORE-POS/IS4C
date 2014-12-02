@@ -382,7 +382,7 @@ class PcDailyReport extends FannieReportPage
     public function form_content()
     {
         global $FANNIE_URL;
-        $this->add_onload_command('$(\'#date\').datepicker();');
+        $this->add_onload_command('$(\'#date\').datepicker({dateFormat:\'yy-mm-dd\'});');
         return '<form method="get" action="PcDailyReport.php">
             <div class="col-sm-6">
             <div class="row form-group form-inline">
