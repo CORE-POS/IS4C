@@ -232,6 +232,8 @@ class VendorDepartmentEditor extends FanniePage {
         }
         $ret .= "</table>";
 
+        $ret .= '<p><a href="VendorIndexPage.php?vid=' . $id . '" class="btn btn-default">Home</a></p>';
+
         return $ret;
     }
 }

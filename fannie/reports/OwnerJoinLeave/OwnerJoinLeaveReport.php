@@ -267,8 +267,6 @@ class OwnerJoinLeaveReport extends FannieReportPage
 
     public function form_content()
     {
-        $this->add_onload_command("\$('#date1').datepicker({dateFormat:'yy-mm-dd'});\n");
-        $this->add_onload_command("\$('#date2').datepicker({dateFormat:'yy-mm-dd'});\n");
         return '
             <form method="get" action="' . $_SERVER['PHP_SELF'] . '">
             <div class="row">
@@ -276,12 +274,12 @@ class OwnerJoinLeaveReport extends FannieReportPage
                 <div class="form-group">
                     <label for="date1">Start Date</label>
                     <input type="text" name="date1" id="date1" 
-                        class="form-control" required />
+                        class="form-control date-field" required />
                 </div>
                 <div class="form-group">
                     <label for="date2">End Date</label>
                     <input type="text" name="date2" id="date2"
-                        class="form-control" required />
+                        class="form-control date-field" required />
                 </div>
             </div>
             <div class="col-sm-5">

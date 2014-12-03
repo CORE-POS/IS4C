@@ -163,7 +163,8 @@ function reprice(upc){
 function saveprice(upc){
     var srp = parseFloat($('#newprice'+upc).val());
     var cost = parseFloat($('#row'+upc).find('.cost').html());
-    var newmargin = ((srp - cost) / srp) * 100;
+    var shipping = parseFloat($('#row'+upc).find('.shipping').html()) / 100.00;
+    var newmargin = ((srp - ((1+shipping)*cost)) / srp) * 100;
     newmargin = Math.round(newmargin*100)/100;
 
     $('#row'+upc).find('.srp').html(srp);
@@ -239,17 +240,23 @@ function saveprice(upc){
         $br = $dbc->exec_statement($bq,array($batchID));
         while($bw = $dbc->fetch_row($br)) $batchUPCs[$bw[0]] = True;
 
-        $query = "SELECT p.upc,p.description,v.cost,p.normal_price,
-            (p.normal_price - v.cost)/p.normal_price AS current_margin,
+        $query = "SELECT p.upc,
+            p.description,
+            v.cost,
+            b.shippingMarkup,
+            p.normal_price,
+            (p.normal_price - ((1+b.shippingMarkup)*v.cost))
+                / p.normal_price AS current_margin,
             s.srp,
-            (s.srp - v.cost)/s.srp AS desired_margin,
-            v.vendorDept,x.variable_pricing
-            FROM products AS p INNER JOIN vendorItems AS v
-            ON p.upc=v.upc AND v.vendorID=?
-            INNER JOIN vendorSRPs AS s ON
-            v.upc=s.upc AND v.vendorID=s.vendorID
-            INNER JOIN vendors as b ON v.vendorID=b.vendorID
-            LEFT JOIN prodExtra AS x on p.upc=x.upc ";
+            (s.srp - ((1+b.shippingMarkup)*v.cost))
+                / s.srp AS desired_margin,
+            v.vendorDept,
+            x.variable_pricing
+            FROM products AS p 
+                INNER JOIN vendorItems AS v ON p.upc=v.upc AND v.vendorID=?
+                INNER JOIN vendorSRPs AS s ON v.upc=s.upc AND v.vendorID=s.vendorID
+                INNER JOIN vendors as b ON v.vendorID=b.vendorID
+                LEFT JOIN prodExtra AS x on p.upc=x.upc ";
         $args = array($vendorID);
         if ($superID != 99){
             $query .= " LEFT JOIN MasterSuperDepts AS m
@@ -278,9 +285,10 @@ function saveprice(upc){
         $result = $dbc->exec_statement($prep,$args);
 
         $ret .= "<table class=\"table\">";
-        $ret .= "<tr><td colspan=3>&nbsp;</td><th colspan=2>Current</th>
+        $ret .= "<tr><td colspan=3>&nbsp;</td><th colspan=3>Current</th>
             <th colspan=2>Vendor</th></tr>";
         $ret .= "<tr><th>UPC</th><th>Our Description</th><th>Cost</th>
+            <th>Shipping</th>
             <th>Price</th><th>Margin</th><th>SRP</th>
             <th>Margin</th><th>Cat</th><th>Var</th>
             <th>Batch</th></tr>";
@@ -294,6 +302,7 @@ function saveprice(upc){
                 <td class=\"sub\">%s</td>
                 <td class=\"sub\">%s</td>
                 <td class=\"sub cost\">%.3f</td>
+                <td class=\"sub shipping\">%.2f%%</td>
                 <td class=\"sub price\">%.2f</td>
                 <td class=\"sub cmargin\">%.2f%%</td>
                 <td onclick=\"reprice('%s');\" class=\"sub srp\">%.2f</td>
@@ -307,6 +316,7 @@ function saveprice(upc){
                 $row['upc'],
                 $row['description'],
                 $row['cost'],
+                $row['shippingMarkup']*100,
                 $row['normal_price'],
                 100*$row['current_margin'],
                 $row['upc'],
@@ -337,7 +347,7 @@ function saveprice(upc){
         while($row = $dbc->fetch_row($res))
             $opts .= "<option value=$row[0]>$row[1]</option>";
 
-        $p = $dbc->prepare_statement("SELECT vendorID,vendorName FROM vendors");
+        $p = $dbc->prepare_statement("SELECT vendorID,vendorName FROM vendors ORDER BY vendorName");
         $res = $dbc->exec_statement($p);
         $vopts = "";
         while($w = $dbc->fetch_row($res))

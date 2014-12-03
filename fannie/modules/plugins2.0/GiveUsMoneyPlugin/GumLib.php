@@ -93,9 +93,13 @@ class GumLib
       Create an entry in GumPayoffs representing a new check
       @param $map_model a model for a mapping table (e.g., GumLoanPayoffMapModel)
         where the new gumPayoffID can be saved
+      @param $mapped [boolean, default true] save a reference in the $map_model
+        Set to false if simply allocating a check number for use from
+        outside the plugin. Turning off mapping will return the check
+        number rather than the gumPayoffID
       @return [int] gumPayoffID or [boolean] false on failure
     */
-    public static function allocateCheck($map_model)
+    public static function allocateCheck($map_model, $mapped=true)
     {
         global $FANNIE_PLUGIN_SETTINGS;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB']);
@@ -132,6 +136,9 @@ class GumLib
         $payoff = new GumPayoffsModel($dbc);
         $payoff->checkNumber($cn);
         $id = $payoff->save();
+        if (!$mapped) {
+            return $cn;
+        }
         if ($id !== false) {
             $map_model->gumPayoffID($id);
             $finish = $map_model->save();

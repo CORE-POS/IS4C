@@ -88,6 +88,7 @@ class OverShortMAS extends FannieRESTfulPage {
         'RR' => 63380,  
         'OB' => 66600,
         'AD' => 66600,
+        'RB' => 31140,
         'NCGA' => 66600,
         'Member Discounts' => 66600,
         'Staff Discounts' => 61170,
@@ -97,13 +98,15 @@ class OverShortMAS extends FannieRESTfulPage {
         $args = array($this->startDate.' 00:00:00', $this->endDate.' 23:59:59');
 
         $tenderQ = "SELECT SUM(total) AS amount,
-                CASE WHEN trans_subtype IN ('CA','CK') THEN 'CA'
+                CASE WHEN description='REBATE CHECK' THEN 'RB'
+                WHEN trans_subtype IN ('CA','CK') THEN 'CA'
                 WHEN trans_subtype IN ('CC','AX') THEN 'CC'
                 WHEN trans_subtype IN ('EF','EC') THEN 'EF'
                 WHEN trans_subtype = 'IC' AND upc='0049999900001' THEN 'OB'
                 WHEN trans_subtype = 'IC' AND upc='0049999900002' THEN 'AD'
                 ELSE trans_subtype END as type,
-                MAX(CASE WHEN d.upc IN ('0049999900001','0049999900002') THEN d.description ELSE TenderName END) as name
+                MAX(CASE WHEN d.upc IN ('0049999900001','0049999900002') OR description='REBATE CHECK' 
+                    THEN d.description ELSE TenderName END) as name
                 FROM $dlog AS d LEFT JOIN
                 tenders AS t ON d.trans_subtype=t.TenderCode
                 WHERE trans_type='T'
@@ -321,17 +324,15 @@ class OverShortMAS extends FannieRESTfulPage {
 
     function get_view(){
         global $FANNIE_URL;
-        $this->add_onload_command("\$('#date1').datepicker();");
-        $this->add_onload_command("\$('#date2').datepicker();");
         $ret = '<form action="OverShortMAS.php" method="get">
             <div class="col-sm-4">
             <div class="form-group">
                 <label>Start Date</label>
-                <input name="startDate" class="form-control" required id="date1" />
+                <input name="startDate" class="form-control date-field" required id="date1" />
             </div>
             <div class="form-group">
                 <label>End Date</label>
-                <input name="endDate" class="form-control" required id="date2" />
+                <input name="endDate" class="form-control date-field" required id="date2" />
             </div>
             <p>
                 <button type="submit" class="btn btn-default">Get Data</button>

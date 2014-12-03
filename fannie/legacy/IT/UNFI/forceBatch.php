@@ -26,23 +26,78 @@ $forceQ = $sql->prepare("UPDATE products AS p
 //echo $forceQ;
 $forceR = $sql->execute($forceQ, array($batchID));
 
-$upcQ = $sql->prepare('SELECT upc FROM batchListTest WHERE batchID=?');
-$upcR = $sql->execute($upcQ, array($batchID));
-$prodUpdate = new ProdUpdateModel($sql);
-while($upcW = $sql->fetch_row($upcR)) {
-    $prodUpdate->reset();
-    $prodUpdate->upc($upcW['upc']);
-    $prodUpdate->logUpdate(ProdUpdateModel::UPDATE_PC_BATCH);
+$columnsP = $sql->prepare('
+    SELECT p.upc,
+        p.normal_price,
+        p.special_price,
+        p.modified,
+        p.specialpricemethod,
+        p.specialquantity,
+        p.specialgroupprice,
+        p.discounttype,
+        p.mixmatchcode,
+        p.start_date,
+        p.end_date
+    FROM products AS p
+        INNER JOIN batchListTest AS b ON p.upc=b.upc
+        WHERE b.batchID=?');
+/**
+  Get changed columns for each product record
+*/
+$upcs = array();
+$columnsR = $sql->execute($columnsP, array($batchID));
+while ($w = $sql->fetch_row($columnsR)) {
+    $upcs[$w['upc']] = $w;
+}
+$updateQ = '
+    UPDATE products AS p SET
+        p.normal_price = ?,
+        p.special_price = ?,
+        p.modified = ?,
+        p.specialpricemethod = ?,
+        p.specialquantity = ?,
+        p.specialgroupprice = ?,
+        p.discounttype = ?,
+        p.mixmatchcode = ?,
+        p.start_date = ?,
+        p.end_date = ?
+    WHERE p.upc = ?';
+/**
+  Update all records on each lane before proceeding
+  to the next lane. Hopefully faster / more efficient
+*/
+for ($i = 0; $i < count($FANNIE_LANES); $i++) {
+    $lane_sql = new SQLManager($FANNIE_LANES[$i]['host'],$FANNIE_LANES[$i]['type'],
+        $FANNIE_LANES[$i]['op'],$FANNIE_LANES[$i]['user'],
+        $FANNIE_LANES[$i]['pw']);
+    
+    if (!isset($lane_sql->connections[$FANNIE_LANES[$i]['op']]) || $lane_sql->connections[$FANNIE_LANES[$i]['op']] === false) {
+        // connect failed
+        continue;
+    }
+
+    $updateP = $lane_sql->prepare($updateQ);
+    foreach ($upcs as $upc => $data) {
+        $lane_sql->execute($updateP, array(
+            $data['normal_price'],
+            $data['special_price'],
+            $data['modified'],
+            $data['specialpricemethod'],
+            $data['specialquantity'],
+            $data['specialgroupprice'],
+            $data['discounttype'],
+            $data['mixmatchcode'],
+            $data['start_date'],
+            $data['end_date'],
+            $upc,
+        ));
+    }
 }
 
-$all = $sql->prepare('SELECT upc FROM batchListTest WHERE batchID=?');
-$all = $sql->execute($all, array($batchID));
-while($row = $sql->fetch_row($all)) {
-    $model = new ProductsModel($row['upc']);
-    $model->pushToLanes();
-}
+$update = new ProdUpdateModel($sql);
+$updateType = ($batchInfoW['discountType'] == 0) ? ProdUpdateModel::UPDATE_PC_BATCH : ProdUpdateModel::UPDATE_BATCH;
+$update->logManyUpdates(array_keys($upcs), $updateType);
 
 echo "Batch $batchID has been forced";
 
 ?>
-

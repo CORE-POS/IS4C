@@ -283,11 +283,11 @@ function drawPieChart()
             <div class="col-sm-6">
                 <p>
                     <label>Start Date</label>
-                    <input class="form-control" type=text id=date1 name=date1 value="<?php echo $lastMonday; ?>" />
+                    <input class="form-control date-field" type=text id=date1 name=date1 value="<?php echo $lastMonday; ?>" />
                 </p>
                 <p>
                     <label>End Date</label>
-                    <input class="form-control" type=text id=date2 name=date2 value="<?php echo $lastSunday; ?>" />
+                    <input class="form-control date-field" type=text id=date2 name=date2 value="<?php echo $lastSunday; ?>" />
                 </p>
             </div>
             <div class="col-sm-6">
@@ -308,8 +308,6 @@ function drawPieChart()
         </p>
         </form>
         <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
     }
 
     public function helpContent()

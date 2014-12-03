@@ -280,13 +280,13 @@ class FormLib
         <div class="form-group">
             <label class="col-sm-4 control-label">Start Date</label>
             <div class="col-sm-8">
-                <input type="text" id="date1" name="date1" class="form-control" required />
+                <input type="text" id="date1" name="date1" class="form-control date-field" required />
             </div>
         </div>
         <div class="form-group">
             <label class="col-sm-4 control-label">End Date</label>
             <div class="col-sm-8">
-                <input type="text" id="date2" name="date2" class="form-control" required />
+                <input type="text" id="date2" name="date2" class="form-control date-field" required />
             </div>
         </div>
         <div class="form-group">

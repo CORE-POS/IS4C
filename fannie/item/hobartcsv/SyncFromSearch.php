@@ -194,7 +194,7 @@ class SyncFromSearch extends FannieRESTfulPage
         $item_info = array(
             'RecordType' => 'ChangeOneItem',
             'PLU' => $s_plu,
-            'Description' => $model->itemdesc(),
+            'Description' => $model->mergeDescription(),
             'Tare' => $model->tare(),
             'ShelfLife' => $model->shelflife(),
             'Price' => $model->price(),
@@ -284,7 +284,7 @@ class SyncFromSearch extends FannieRESTfulPage
                             </tr>',
                             $model->plu(),
                             $model->plu(),
-                            $model->itemdesc(),
+                            $model->mergeDescription(),
                             $model->price(),
                             $model->modified(),
                             $model->plu(),

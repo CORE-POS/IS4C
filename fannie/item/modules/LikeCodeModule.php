@@ -120,8 +120,26 @@ class LikeCodeModule extends ItemModule {
            in the like code */
         $upcP = $dbc->prepare_statement('SELECT upc FROM upcLike WHERE likeCode=? AND upc<>?');
         $upcR = $dbc->exec_statement($upcP,array($lc,$upc));
-        while($upcW = $dbc->fetch_row($upcR)){
-            ProductsModel::update($upcW['upc'],$values, true);
+        $model = new ProductsModel($dbc);
+        $model->upc($upc);
+        $model->mixmatchcode($lc+500);
+        $model->save();
+        while ($upcW = $dbc->fetch_row($upcR)) {
+            $model->reset();
+            $model->upc($upcW['upc']);
+            $model->normal_price($values['normal_price']);
+            $model->pricemethod($values['pricemethod']);
+            $model->groupprice($values['groupprice']);
+            $model->quantity($values['quantity']);
+            $model->department($values['department']);
+            $model->scale($values['scale']);
+            $model->tax($values['tax']);
+            $model->foodstamp($values['foodstamp']);
+            $model->discount($values['discount']);
+            $model->qttyEnforced($values['qttyEnforced']);
+            $model->local($values['local']);
+            $model->mixmatchcode($lc+500);
+            $model->save();
             updateProductAllLanes($upcW['upc']);
         }
         return True;

@@ -123,76 +123,63 @@ $db = new SQLManager($FANNIE_SERVER,
 if (isset($_REQUEST['employees'])){
     echo "Loading employees";
     $db->query("TRUNCATE TABLE employees");
-    loaddata($db,'employees');  
+    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'employees');  
 }
 elseif(isset($_REQUEST['custdata'])){
     echo "Loading custdata";
     $db->query("TRUNCATE TABLE custdata");
-    loaddata($db,'custdata');
+    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'custdata');
 }
 elseif(isset($_REQUEST['memtype'])){
     echo "Loading memtype";
     $db->query("TRUNCATE TABLE memtype");
-    loaddata($db,'memtype');
-    if ($db->tableExists('memdefaults')) {
-        echo "Loading memdefaults";
-        $db->query("TRUNCATE TABLE memdefaults");
-        loaddata($db,'memdefaults');
-    }
+    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'memtype');
 }
 elseif(isset($_REQUEST['products'])){
     echo "Loading products";
     $db->query("TRUNCATE TABLE products");
-    loaddata($db,'products');
+    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'products');
 }
 elseif(isset($_REQUEST['depts'])){
     echo "Loading departments";
     $db->query("TRUNCATE TABLE departments");
-    loaddata($db,'departments');
+    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'departments');
     /* subdepts sample data is of questionable use
     echo "<br />Loading subdepts";
     $db->query("TRUNCATE TABLE subdepts");
-    loaddata($db,'subdepts');
+    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'subdepts');
     */
 }
-elseif(isset($_REQUEST['memtype'])){
-    echo "Loading memtype";
-    $db->query("TRUNCATE TABLE memtype");
-    loaddata($db,'memtype');
-    echo "Loading memdefaults";
-    $db->query("TRUNCATE TABLE memdefaults");
-    loaddata($db,'memdefaults');
-}
 elseif (isset($_REQUEST['superdepts'])){
-    echo "Loadintg super departments";
+    echo "Loading super departments";
     $db->query("TRUNCATE TABLE superdepts");
-    loaddata($db,'superdepts');
+    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'superdepts');
     $db->query("TRUNCATE TABLE superDeptNames");
-    loaddata($db,'superDeptNames');
+    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'superDeptNames');
 }
 elseif (isset($_REQUEST['tenders'])){
-    echo "Loadintg tenders";
+    echo "Loading tenders";
     $db->query("TRUNCATE TABLE tenders");
-    loaddata($db,'tenders');
+    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'tenders');
 }
 elseif (isset($_REQUEST['authentication'])){
     echo "Loading authentication info";
     $db->query("TRUNCATE TABLE userKnownPrivs");
-    loaddata($db,'userKnownPrivs');
+    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'userKnownPrivs');
 }
 elseif (isset($_REQUEST['origin'])){
     echo "Loading country info";
     $db->query("TRUNCATE TABLE originCountry");
-    loaddata($db,'originCountry');
+    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'originCountry');
     echo "<br />Loading state/province info";
     $db->query("TRUNCATE TABLE originStateProv");
-    loaddata($db,'originStateProv');
+    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'originStateProv');
 } else if (isset($_REQUEST['authGroups'])) {
     echo "Loading authentication groups";
     $db->query("TRUNCATE TABLE userGroups");
-    loaddata($db,'userGroups');
+    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'userGroups');
     $db->query("TRUNCATE TABLE userGroupPrivs");
-    loaddata($db,'userGroupPrivs');
+    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'userGroupPrivs');
     // give "Administrators" group all permissions
     $db->query("INSERT userGroupPrivs SELECT 
             1, auth_class, 'all', 'all'
@@ -272,8 +259,6 @@ Load default place-of-origin information<br />
 
     // body_content
     }
-
-// InstallSampleDataPage
 }
 
 FannieDispatch::conditionalExec(false);

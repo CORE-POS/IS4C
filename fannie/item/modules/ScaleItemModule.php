@@ -166,9 +166,9 @@ class ScaleItemModule extends ItemModule {
         /* check if data was submitted */
         if (FormLib::get('s_plu') === '') return False;
 
-        $desc = FormLib::get('description','');
+        $desc = FormLib::get('descript','');
         $longdesc = FormLib::get('s_longdesc','');
-        if ($longdesc !== '') $desc = $longdesc;
+        if (trim($longdesc) !== '') $desc = $longdesc;
         $price = FormLib::get('price',0);
         $tare = FormLib::get('s_tare',0);
         $shelf = FormLib::get('s_shelflife',0);

@@ -188,7 +188,7 @@ class PatronageTransferTool extends FanniePage {
         <div class="container">
         <div class="form-group">
             <label>Date</label>
-            <input type="text" id="date" name="date" class="form-control" required />
+            <input type="text" id="date" name="date" class="form-control date-field" required />
         </div>
         <div class="form-group">
             <label>Receipt #</label>
@@ -206,7 +206,6 @@ class PatronageTransferTool extends FanniePage {
         </div>
         </form>
         <?php
-        $this->add_onload_command('$(\'#date\').datepicker();');
 
         return ob_get_clean();
     }

@@ -54,12 +54,16 @@ set_time_limit(0);
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
         $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
+$b_def = $sql->tableDefinition('batches');
+$p_def = $sql->tableDefinition('products');
+$has_limit = (isset($b_def['transLimit']) && isset($p_def['special_limit'])) ? true : false;
 // unsale everything  
 $sql->query("UPDATE products SET
         special_price=0,
         specialpricemethod=0,
         specialquantity=0,
         specialgroupprice=0,
+        " . ($has_limit ? 'special_limit=0,' : '') . "
         discounttype=0,
         start_date='1900-01-01',
         end_date='1900-01-01'");
@@ -78,6 +82,7 @@ if (strstr($FANNIE_SERVER_DBMS,"MYSQL")){
         p.specialpricemethod = l.pricemethod,
         p.specialgroupprice=CASE WHEN l.salePrice < 0 THEN -1*l.salePrice ELSE l.salePrice END,
         p.specialquantity = l.quantity,
+        " . ($has_limit ? 'p.special_limit=b.transLimit,' : '') . "
         p.start_date = b.startDate,
         p.end_date = b.endDate,
         p.discounttype = b.discounttype,
@@ -99,6 +104,7 @@ if (strstr($FANNIE_SERVER_DBMS,"MYSQL")){
         p.specialgroupprice=CASE WHEN l.salePrice < 0 THEN -1*l.salePrice ELSE l.salePrice END,
         p.specialquantity=l.quantity,
         p.specialpricemethod=l.pricemethod,
+        " . ($has_limit ? 'p.special_limit=b.transLimit,' : '') . "
         p.discounttype = b.discounttype,
         p.mixmatchcode = CASE 
             WHEN l.pricemethod IN (3,4) AND l.salePrice >= 0 THEN convert(l.batchID,char)
@@ -122,6 +128,7 @@ else {
         specialpricemethod = l.pricemethod,
         specialgroupprice=CASE WHEN l.salePrice < 0 THEN -1*l.salePrice ELSE l.salePrice END,
         specialquantity = l.quantity,
+        " . ($has_limit ? 'special_limit=b.transLimit,' : '') . "
         start_date = b.startDate,
         end_date = b.endDate,
         discounttype = b.discountType,
@@ -141,6 +148,7 @@ else {
         specialgroupprice=CASE WHEN l.salePrice < 0 THEN -1*l.salePrice ELSE l.salePrice END,
         specialquantity=l.quantity,
         specialpricemethod=l.pricemethod,
+        " . ($has_limit ? 'special_limit=b.transLimit,' : '') . "
         discounttype = b.discounttype,
         mixmatchcode = CASE 
             WHEN l.pricemethod IN (3,4) AND l.salePrice >= 0 THEN convert(varchar,b.batchID)

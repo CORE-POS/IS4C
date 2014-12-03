@@ -223,17 +223,15 @@ class ObfWeekEntryPage extends FannieRESTfulPage
             $end2 = date('Y-m-d', mktime(0, 0, 0, date('n', $ts), date('j', $ts)+6, date('Y', $ts)));
         }
         $ret .= '<tr>';
-        $ret .= '<td><input type="text" class="form-control" name="date1" id="date1"
+        $ret .= '<td><input type="text" class="form-control date-field" name="date1" id="date1"
                         value="' . $end1 . '" required
                         onchange="getPrevYear(this.value);" /></td>';
-        $this->add_onload_command("\$('#date1').datepicker();\n");
-        $ret .= '<td><input type="text" class="form-control" name="date2" id="date2"
+        $ret .= '<td><input type="text" class="form-control date-field" name="date2" id="date2"
                         value="' . $end2 . '" required /></td>';
         $ret .= '<td><div class="input-group">
                 <input type="number" class="form-control" name="growthTarget" 
                     value="' . sprintf('%.2f', $this->weekModel->growthTarget() * 100) . '" />
                 <span class="input-group-addon">%</span></div></td>';
-        $this->add_onload_command("\$('#date2').datepicker();\n");
         $ret .= '<td><select name="quarter" class="form-control">';
         $quarters = new ObfQuartersModel($dbc);
         foreach ($quarters->find('obfQuarterID', true) as $q) {

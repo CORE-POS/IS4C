@@ -347,6 +347,7 @@ class BrowseVendorItems extends FanniePage
         </div>
         <input type="hidden" id="vendorID" value="<?php echo $vid; ?>" />
         <input type="hidden" id="urlpath" value="<?php echo $FANNIE_URL; ?>" />
+        <p><a href="VendorIndexPage.php?vid=<?php echo $vid; ?>" class="btn btn-default">Home</a></p>
         <?php
         
         $this->add_script('browse.js');

@@ -1,11 +1,9 @@
 <?php
 
-if (basename($_SERVER['PHP_SELF']) != basename(__FILE__)) {
-    return;
-}
-
 include(dirname(__FILE__).'/../../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class DeliInventoryPage extends FanniePage
 {

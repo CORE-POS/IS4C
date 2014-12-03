@@ -188,9 +188,6 @@ class MarginMovementReport extends FannieReportPage
             . '</div>';
         $this->add_onload_command("\$('#date-dept-form-left-col').after('$checkbox');\n");
 
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
-
         return $form;
     }
 }

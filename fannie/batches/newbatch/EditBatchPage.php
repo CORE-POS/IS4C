@@ -29,9 +29,6 @@ if (!function_exists('checkLogin')) {
     include_once($FANNIE_ROOT . 'auth/login.php');
 }
 if (!function_exists("updateProductAllLanes")) include($FANNIE_ROOT.'item/laneUpdates.php');
-if (!function_exists('forceBatch')) {
-    include('forceBatch.php');
-}
 
 class EditBatchPage extends FannieRESTfulPage 
 {
@@ -325,7 +322,10 @@ class EditBatchPage extends FannieRESTfulPage
 
     protected function post_id_force_handler()
     {
-        forceBatch($this->id);
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $model = new BatchesModel($dbc);
+        $model->forceStartBatch($this->id);
         $json = array('error'=>0, 'msg'=>'Batch #' . $this->id . ' has been applied');
         echo json_encode($json);
 
@@ -336,85 +336,10 @@ class EditBatchPage extends FannieRESTfulPage
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
+        $model = new BatchesModel($dbc);
+        $model->forceStopBatch($this->id);
 
-        // unsale regular items
-        $unsaleQ = "UPDATE products AS p LEFT JOIN batchList as b
-            ON p.upc=b.upc
-            SET special_price=0,
-            specialpricemethod=0,specialquantity=0,
-            specialgroupprice=0,discounttype=0,
-            start_date='1900-01-01',end_date='1900-01-01'
-            WHERE b.upc NOT LIKE '%LC%'
-            AND b.batchID=?";
-        if ($dbc->dbms_name() == "mssql") {
-            $unsaleQ = "UPDATE products SET special_price=0,
-                specialpricemethod=0,specialquantity=0,
-                specialgroupprice=0,discounttype=0,
-                start_date='1900-01-01',end_date='1900-01-01'
-                FROM products AS p, batchList as b
-                WHERE p.upc=b.upc AND b.upc NOT LIKE '%LC%'
-                AND b.batchID=?";
-        }
-        $prep = $dbc->prepare_statement($unsaleQ);
-        $unsaleR = $dbc->exec_statement($prep,array($this->id));
-
-        // unsale likecode items items
-        $unsaleLCQ = "UPDATE products AS p LEFT JOIN
-            upcLike AS v ON v.upc=p.upc LEFT JOIN
-            batchList AS l ON l.upc=concat('LC',convert(v.likeCode,char))
-            SET special_price=0,
-            specialpricemethod=0,specialquantity=0,
-            specialgroupprice=0,p.discounttype=0,
-            start_date='1900-01-01',end_date='1900-01-01'
-            WHERE l.upc LIKE '%LC%'
-            AND l.batchID=?";
-        if ($dbc->dbms_name() == "mssql") {
-            $unsaleLCQ = "UPDATE products
-                SET special_price=0,
-                specialpricemethod=0,specialquantity=0,
-                specialgroupprice=0,discounttype=0,
-                start_date='1900-01-01',end_date='1900-01-01'
-                FROM products AS p LEFT JOIN
-                upcLike AS v ON v.upc=p.upc LEFT JOIN
-                batchList AS l ON l.upc=concat('LC',convert(v.likeCode,char))
-                WHERE l.upc LIKE '%LC%'
-                AND l.batchID=?";
-        }
-        $prep = $dbc->prepare_statement($unsaleLCQ);
-        $unsaleLCR = $dbc->exec_statement($prep,array($this->id));
-
-        // find all affected UPCs
-        $itemQ = 'SELECT l.upc
-                  FROM batchList AS l 
-                  WHERE l.batchID=?';
-        $itemP = $dbc->prepare($itemQ);
-        $likeQ = 'SELECT u.upc
-                  FROM upcLike AS u
-                    INNER JOIN products AS p ON u.upc=p.upc
-                  WHERE u.likeCode=?';
-        $likeP = $dbc->prepare($likeQ);
-        $items = array();
-        $itemR = $dbc->execute($itemP, array($this->id));
-        while ($itemW = $dbc->fetch_row($itemR)) {
-            if (substr($itemW['upc'], 0, 2) == 'LC') {
-                $likeCode = substr($itemW['upc'], 2);
-                $likeR = $dbc->execute($likeP, array($likeCode));
-                while ($likeW = $dbc->fetch_row($likeR)) {
-                    $items[] = $likeW['upc'];
-                }
-            } else {
-                $items[] = $itemW['upc'];
-            }
-        }
-
-        // push changed items to lanes
-        $model = new ProductsModel($dbc);
-        foreach ($items as $item) {
-            $model->upc($item);
-            $model->pushToLanes();
-        }
-
-        $json = array('error'=>0, 'msg'=> count($items) . ' taken off sale');
+        $json = array('error'=>0, 'msg'=> 'Batch items taken off sale');
         echo json_encode($json);
 
         return false;
@@ -425,8 +350,10 @@ class EditBatchPage extends FannieRESTfulPage
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $limitQ = $dbc->prepare_statement("UPDATE batchList SET quantity=? WHERE batchID=?");
-        $dbc->exec_statement($limitQ,array($this->limit,$this->id));
+        $batches = new BatchesModel($dbc);
+        $batches->batchID($this->id);
+        $batches->transLimit($this->limit);
+        $batches->save();
 
         return false;
     }
@@ -503,7 +430,7 @@ class EditBatchPage extends FannieRESTfulPage
 
         echo json_encode($json);
 
-        return $ret;
+        return false;
     }
 
     protected function delete_id_upc_handler()
@@ -517,16 +444,13 @@ class EditBatchPage extends FannieRESTfulPage
         
         if (substr($upc,0,2) != 'LC') {
             // take the item off sale if this batch is currently on sale
-            $unsaleQ = "UPDATE products AS p LEFT JOIN batchList as b on p.upc=b.upc
-                    set p.discounttype=0,special_price=0,start_date=0,end_date=0 
-                    WHERE p.upc=? and b.batchID=?";
-            if ($dbc->dbms_name() == "mssql") {
-                $unsaleQ = "update products set discounttype=0,special_price=0,start_date=0,end_date=0 
-                        from products as p, batches as b where
-                        p.upc=? and b.batchID=? and b.startDate=p.start_date and b.endDate=p.end_date";
-            }
-            $unsaleP = $dbc->prepare_statement($unsaleQ);
-            $unsaleR = $dbc->exec_statement($unsaleP,array($upc,$id));
+            $product = new ProductsModel($dbc);
+            $product->upc($upc);
+            $product->discounttype(0);
+            $product->special_price(0);
+            $product->start_date(0);
+            $product->end_date(0);
+            $unsaleR = $product->save();
 
             if ($unsaleR === false) {
                 $json['error'] = 1;
@@ -536,25 +460,23 @@ class EditBatchPage extends FannieRESTfulPage
             updateProductAllLanes($upc);
         } else {
             $lc = substr($upc,2);
-            $unsaleQ = "UPDATE products AS p LEFT JOIN upcLike as u on p.upc=u.upc
-                    LEFT JOIN batchList as b ON b.upc=concat('LC',convert(u.likeCode,char))
-                    set p.discounttype=0,special_price=0,start_date=0,end_date=0 
-                    WHERE u.likeCode=? and b.batchID=?";
-            if ($dbc->dbms_name() == "mssql") {
-                $unsaleQ = "update products set discounttype=0,special_price=0,start_date=0,end_date=0
-                    from products as p, batches as b, upcLike as u
-                    where u.likecode=? and u.upc=p.upc and b.startDate=p.start_date and b.endDate=p.end_date
-                    and b.batchID=?";
+            $upcLike = new UpcLikeModel($dbc);
+            $upcLike->likeCode($lc);
+            $unsaleR = true;
+            foreach ($upcLike->find() as $u) {
+                $product = new ProductsModel($dbc);
+                $product->upc($u->upc());
+                $product->discounttype(0);
+                $product->special_price(0);
+                $product->start_date(0);
+                $product->end_date(0);
+                $unsaleR = $product->save();
             }
-            $unsaleP = $dbc->prepare_statement($unsaleQ);
-            $unsaleR = $dbc->exec_statement($unsaleP,array($lc,$id));
 
             if ($unsaleR === false) {
                 $json['error'] = 1;
                 $json['msg'] = 'Error taking like code ' . $lc . ' off sale';
             }
-
-            //syncProductsAllLanes();
         }
 
         $delQ = $dbc->prepare_statement("delete from batchList where batchID=? and upc=?");
@@ -807,29 +729,8 @@ class EditBatchPage extends FannieRESTfulPage
             return $this->showPairedBatchDisplay($id,$name);
         }
 
-        $limitQ = $dbc->prepare_statement("select max(quantity),max(pricemethod) from batchList WHERE batchID=?");
-        $limitR = $dbc->exec_statement($limitQ,array($id));
-        $hasLimit = False;
-        $canHaveLimit = False;
-        $limit = 0;
-        if ($dbc->num_rows($limitR) > 0){
-            $limitW = $dbc->fetch_row($limitR);
-            $limit = $limitW[0];
-            $pm = $limitW[1];
-            if ($pm > 0){
-                // no limits with grouped sales
-                $canHaveLimit = False;
-                $p = $dbc->prepare_statement("UPDATE batchList SET quantity=0 WHERE pricemethod=0
-                    AND batchID=?");
-                $dbc->exec_statement($p,array($id));
-            }
-            else {
-                $canHaveLimit = True;
-                if ($limit > 0){
-                    $hasLimit = True;
-                }
-            }
-        }
+        $limit = $model->transLimit();
+        $hasLimit = $limit > 0 ? true : false;
 
         $saleHeader = "Sale Price";
         if ($dtype == 3) {
@@ -889,15 +790,10 @@ class EditBatchPage extends FannieRESTfulPage
         if ($dtype != 0) {
             $ret .= "<a href=\"\" onclick=\"unsaleNow($id); return false;\">Stop Sale</a> | ";
         }
-        if (!$canHaveLimit) {
-            $ret .= "No limit";
-            $ret .= " <span id=\"currentLimit\" style=\"color:#000;\"></span>";
-        } else {
-            $ret .= "<span id=\"edit-limit-link\"><a href=\"\" 
-                onclick=\"editTransLimit(); return false;\">" . ($hasLimit ? 'Edit' : 'Add' ) . " Limit</a></span>";
-            $ret .= "<span id=\"save-limit-link\" class=\"collapse\"><a href=\"\" onclick=\"saveTransLimit($id); return false;\">Save Limit</a></span>";
-            $ret .= " <span class=\"form-group form-inline\" id=\"currentLimit\" style=\"color:#000;\"></span>";
-        }
+        $ret .= "<span id=\"edit-limit-link\"><a href=\"\" 
+            onclick=\"editTransLimit(); return false;\">" . ($hasLimit ? 'Edit' : 'Add' ) . " Limit</a></span>";
+        $ret .= "<span id=\"save-limit-link\" class=\"collapse\"><a href=\"\" onclick=\"saveTransLimit($id); return false;\">Save Limit</a></span>";
+        $ret .= " <span class=\"form-group form-inline\" id=\"currentLimit\" style=\"color:#000;\">{$limit}</span>";
         $ret .= "<br />";
         $ret .= "<table id=yeoldetable class=\"table\">";
         $ret .= "<tr>";

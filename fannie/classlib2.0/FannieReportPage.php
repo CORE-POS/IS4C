@@ -200,6 +200,11 @@ class FannieReportPage extends FanniePage
     
     }
 
+    function bodyContent()
+    {
+        return $this->form_content();
+    }
+
     /**
       Define the report display
       @return An HTML string
@@ -1015,6 +1020,13 @@ class FannieReportPage extends FanniePage
         if (!$this->checkAuth() && $this->must_authenticate) {
             $this->loginRedirect();
         } elseif ($this->preprocess()) {
+
+            /** Use FanniePage::drawPage for the plain old html
+                version of the page
+            */
+            if ($this->content_function == 'form_content') {
+                return parent::drawPage();
+            }
 
             /**
               Global setting overrides default behavior
