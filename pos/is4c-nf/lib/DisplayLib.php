@@ -798,6 +798,12 @@ static public function drawItems($top_item, $rows, $highlight)
           Disabled for the sake of putting together a release.
           Will go into testing following the release and be included in
           the next one
+
+          03Dec2014 Andy
+          Axing screen display isn't a super high priority right now
+          With better unit testing in place, I want to write more tests
+          to verify this method behaves the same as the screendisplay via.
+          No ETA at this point.
         */
         //$screenRecords = self::screenDisplay($top_item, $top_item + $rows);
 
