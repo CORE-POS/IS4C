@@ -34,6 +34,7 @@ class EquityHistorySumModel extends BasicModel
     'card_no' => array('type'=>'INT', 'primary_key'=>true),
     'payments' => array('type'=>'MONEY'),
     'startdate' => array('type'=>'DATETIME'),
+    'mostRecent' => array('type'=>'DATETIME'),
     );
 
     public function doc()
