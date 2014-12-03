@@ -168,6 +168,43 @@ Use:
         }
         return $this;
     }
+
+    public function mostRecent()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["mostRecent"])) {
+                return $this->instance["mostRecent"];
+            } else if (isset($this->columns["mostRecent"]["default"])) {
+                return $this->columns["mostRecent"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'mostRecent',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["mostRecent"]) || $this->instance["mostRecent"] != func_get_args(0)) {
+                if (!isset($this->columns["mostRecent"]["ignore_updates"]) || $this->columns["mostRecent"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["mostRecent"] = func_get_arg(0);
+        }
+        return $this;
+    }
     /* END ACCESSOR FUNCTIONS */
 }
 
