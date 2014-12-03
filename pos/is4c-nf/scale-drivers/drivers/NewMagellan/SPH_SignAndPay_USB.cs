@@ -692,7 +692,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
                     SendReport(BuildCommand(LcdGetBitmapSig()));
                 }
             }
-            else if (msg.Length > 1024){
+            else if (msg.Length > 512){
                 BitmapOutput(msg);
                 sig_message = "";
             }
@@ -751,6 +751,9 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
             }
             break;
         default:
+            if (this.verbose_mode > 0) {
+                System.Console.WriteLine("The driver has become confused!");
+            }
             break;
         }
     }

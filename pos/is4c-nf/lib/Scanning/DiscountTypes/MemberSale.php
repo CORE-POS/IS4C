@@ -39,7 +39,9 @@ class MemberSale extends DiscountType
         $ret['discount'] = 0;
         $ret['memDiscount'] = MiscLib::truncate2(($ret['regPrice'] - $row['special_price']) * $quantity);
 
-        if ($CORE_LOCAL->get("isMember") == 1 || $CORE_LOCAL->get("memberID") == $CORE_LOCAL->get("visitingMem")) {
+        if ($CORE_LOCAL->get("isMember") == 1 || (
+            $CORE_LOCAL->get("memberID") == $CORE_LOCAL->get("visitingMem") && $CORE_LOCAL->get('visitingMem') !== ''
+            )) {
             $ret["unitPrice"] = $row['special_price'];
         }
 

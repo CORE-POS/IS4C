@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2013 Whole Foods Co-op
+    Copyright 2014 Whole Foods Co-op
 
     This file is part of Fannie.
 
@@ -22,49 +22,72 @@
 *********************************************************************************/
 
 /**
-  @class SubDeptsModel
+  @class MasterSuperDeptsModel
 */
-class SubDeptsModel extends BasicModel
+class MasterSuperDeptsModel extends BasicModel
 {
 
-    protected $name = "subdepts";
+    protected $name = "MasterSuperDepts";
+
     protected $preferred_db = 'op';
 
     protected $columns = array(
-    'subdept_no' => array('type'=>'SMALLINT', 'primary_key'=>true),
-    'subdept_name' => array('type'=>'VARCHAR(30)', 'index'=>true),
-    'dept_ID' => array('type'=>'SMALLINT', 'primary_key'=>true),
-	);
+    'superID' => array('type'=>'INT'),
+    'super_name' => array('type'=>'VARCHAR(50)'),
+    'dept_ID' => array('type'=>'INT'),
+    );
+
+    public function doc()
+    {
+        return '
+Table: MasterSuperDepts
+
+Columns:
+    superID int
+    super_name var_char
+    dept_ID int
+
+Depends on:
+    SuperMinIdView (view)
+    superDeptNames (table)
+
+Use:
+A department may belong to more than one superdepartment, but
+has one "master" superdepartment. This avoids duplicating
+rows in some reports. By convention, a department\'s
+"master" superdepartment is the one with the lowest superID.
+        ';
+    }
 
     /* START ACCESSOR FUNCTIONS */
 
-    public function subdept_no()
+    public function superID()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["subdept_no"])) {
-                return $this->instance["subdept_no"];
-            } elseif(isset($this->columns["subdept_no"]["default"])) {
-                return $this->columns["subdept_no"]["default"];
+            if(isset($this->instance["superID"])) {
+                return $this->instance["superID"];
+            } elseif(isset($this->columns["superID"]["default"])) {
+                return $this->columns["superID"]["default"];
             } else {
                 return null;
             }
         } else {
-            $this->instance["subdept_no"] = func_get_arg(0);
+            $this->instance["superID"] = func_get_arg(0);
         }
     }
 
-    public function subdept_name()
+    public function super_name()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["subdept_name"])) {
-                return $this->instance["subdept_name"];
-            } elseif(isset($this->columns["subdept_name"]["default"])) {
-                return $this->columns["subdept_name"]["default"];
+            if(isset($this->instance["super_name"])) {
+                return $this->instance["super_name"];
+            } elseif(isset($this->columns["super_name"]["default"])) {
+                return $this->columns["super_name"]["default"];
             } else {
                 return null;
             }
         } else {
-            $this->instance["subdept_name"] = func_get_arg(0);
+            $this->instance["super_name"] = func_get_arg(0);
         }
     }
 

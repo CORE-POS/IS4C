@@ -45,7 +45,6 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 	
 		/* inputs and expected outputs */
 		$input_output = array(
-			'CC'		=> 'QM1',
 			'MANUALCC'	=> '199CC',
 			'5DI123'	=> '123',
 			'7PD123'	=> '123',
@@ -84,24 +83,328 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals(1, $CORE_LOCAL->get('toggleDiscountable'));
 	}
 
-	function testParsers(){
+	function testParsers()
+    {
 		global $CORE_LOCAL;
 
 		/* inputs and expected outputs */
 		$input_output = array(
+        'WillNotMatchAnythingEver' => array(),
 		);
 
 		$chain = Parser::get_parse_chain();
 		foreach($input_output as $input => $output){
+            $actual = $output;
 			foreach($chain as $class){
 				$obj = new $class();
 				$chk = $obj->check($input);
 				$this->assertInternalType('boolean',$chk);
 				if ($chk){
-					$input = $obj->parse($input);
+					$actual = $obj->parse($input);
+                    break;
 				}
 			}
-			$this->assertEquals($output, $input);
+            $this->assertEquals($output, $actual);
 		}
 	}
+
+    function testItemsEntry()
+    {
+        global $CORE_LOCAL;
+		$CORE_LOCAL->set('mfcoupon',0);
+		$CORE_LOCAL->set('itemPD',0);
+		$CORE_LOCAL->set('multiple',0);
+		$CORE_LOCAL->set('quantity',0);
+		$CORE_LOCAL->set('refund',0);
+		$CORE_LOCAL->set('toggletax',0);
+		$CORE_LOCAL->set('togglefoodstamp',0);
+		$CORE_LOCAL->set('toggleDiscountable',0);
+		$CORE_LOCAL->set('nd',0);
+
+        // test regular price item
+        lttLib::clear();
+        $u = new UPC();
+        $this->assertEquals(true, $u->check('666'));
+        $json = $u->parse('666');
+        $this->assertInternalType('array', $json);
+        $record = lttLib::genericRecord();
+        $record['upc'] = '0000000000666';
+        $record['description'] = 'EXTRA BAG';
+        $record['trans_type'] = 'I';
+        $record['department'] = 13;
+        $record['tax'] = 1;
+        $record['quantity'] = 1;
+        $record['unitPrice'] = 0.05;
+        $record['total'] = 0.05;
+        $record['regPrice'] = 0.05;
+        $record['ItemQtty'] = 1;
+        lttLib::verifyRecord(1, $record, $this);
+        $CORE_LOCAL->set('currentid', 1);
+        $v = new Void();
+        $this->assertEquals(true, $v->check('VD'));
+        $json = $v->parse('VD');
+        $this->assertInternalType('array', $json);
+        $record['total'] *= -1;
+        $record['quantity'] *= -1;
+        $record['ItemQtty'] *= -1;
+        $record['voided'] = 1;
+        $record['trans_status'] = 'V';
+        lttLib::verifyRecord(2, $record, $this);
+
+        // test quantity multiplier
+        lttLib::clear();
+        $CORE_LOCAL->set('quantity', 2);
+        $CORE_LOCAL->set('multiple', 1);
+        $u = new UPC();
+        $this->assertEquals(true, $u->check('666'));
+        $json = $u->parse('666');
+        $this->assertInternalType('array', $json);
+        $record = lttLib::genericRecord();
+        $record['upc'] = '0000000000666';
+        $record['description'] = 'EXTRA BAG';
+        $record['trans_type'] = 'I';
+        $record['department'] = 13;
+        $record['tax'] = 1;
+        $record['quantity'] = 2;
+        $record['unitPrice'] = 0.05;
+        $record['total'] = 0.10;
+        $record['regPrice'] = 0.05;
+        $record['ItemQtty'] = 2;
+        lttLib::verifyRecord(1, $record, $this);
+        $CORE_LOCAL->set('currentid', 1);
+        $v = new Void();
+        $this->assertEquals(true, $v->check('VD'));
+        $json = $v->parse('VD');
+        $this->assertInternalType('array', $json);
+        $record['total'] *= -1;
+        $record['quantity'] *= -1;
+        $record['ItemQtty'] *= -1;
+        $record['voided'] = 1;
+        $record['trans_status'] = 'V';
+        lttLib::verifyRecord(2, $record, $this);
+
+        // test refund
+        lttLib::clear();
+        $CORE_LOCAL->set('quantity', 0);
+        $CORE_LOCAL->set('multiple', 0);
+        $CORE_LOCAL->set('refund', 1);
+        $CORE_LOCAL->set('refundComment', 'TEST REFUND');
+        $u = new UPC();
+        $this->assertEquals(true, $u->check('666'));
+        $json = $u->parse('666');
+        $this->assertInternalType('array', $json);
+        $record = lttLib::genericRecord();
+        $record['upc'] = '0000000000666';
+        $record['description'] = 'EXTRA BAG';
+        $record['trans_type'] = 'I';
+        $record['trans_status'] = 'R';
+        $record['department'] = 13;
+        $record['tax'] = 1;
+        $record['quantity'] = -1;
+        $record['unitPrice'] = 0.05;
+        $record['total'] = -0.05;
+        $record['regPrice'] = 0.05;
+        $record['ItemQtty'] = 1;
+        lttLib::verifyRecord(1, $record, $this);
+        $CORE_LOCAL->set('currentid', 1);
+        $v = new Void();
+        $this->assertEquals(true, $v->check('VD'));
+        $json = $v->parse('VD');
+        $this->assertInternalType('array', $json);
+        $record['total'] *= -1;
+        $record['quantity'] *= -1;
+        $record['ItemQtty'] *= -1;
+        $record['voided'] = 1;
+        $record['trans_status'] = 'V';
+        lttLib::verifyRecord(2, $record, $this);
+
+        // test sale item
+        lttLib::clear();
+        $CORE_LOCAL->set('refund', 0);
+        $CORE_LOCAL->set('refundComment', '');
+        $u = new UPC();
+        $this->assertEquals(true, $u->check('4627'));
+        $json = $u->parse('4627');
+        $this->assertInternalType('array', $json);
+        $record = lttLib::genericRecord();
+        $record['upc'] = '0000000004627';
+        $record['description'] = 'PKALE';
+        $record['trans_type'] = 'I';
+        $record['department'] = 513;
+        $record['foodstamp'] = 1;
+        $record['discounttype'] = 1;
+        $record['discountable'] = 1;
+        $record['quantity'] = 1;
+        $record['cost'] = 1.30;
+        $record['unitPrice'] = 1.99;
+        $record['total'] = 1.99;
+        $record['regPrice'] = 2.29;
+        $record['discount'] = 0.30;
+        $record['ItemQtty'] = 1;
+        $record['mixMatch'] = '943';
+        lttLib::verifyRecord(1, $record, $this);
+        $drecord = lttLib::genericRecord();
+        $drecord['description'] = '** YOU SAVED $0.30 **';
+        $drecord['trans_type'] = 'I';
+        $drecord['department'] = 513;
+        $drecord['trans_status'] = 'D';
+        $drecord['voided'] = 2;
+        lttLib::verifyRecord(2, $drecord, $this);
+        $CORE_LOCAL->set('currentid', 1);
+        $v = new Void();
+        $this->assertEquals(true, $v->check('VD'));
+        $json = $v->parse('VD');
+        $this->assertInternalType('array', $json);
+        $record['total'] *= -1;
+        $record['quantity'] *= -1;
+        $record['ItemQtty'] *= -1;
+        $record['voided'] = 1;
+        $record['trans_status'] = 'V';
+        $record['discount'] *= -1;
+        lttLib::verifyRecord(3, $record, $this);
+
+        // test member sale
+        lttLib::clear();
+        $CORE_LOCAL->set('isMember', 1);
+        $u = new UPC();
+        $this->assertEquals(true, $u->check('0003049488122'));
+        $json = $u->parse('0003049488122');
+        $this->assertInternalType('array', $json);
+        $record = lttLib::genericRecord();
+        $record['upc'] = '0003049488122';
+        $record['description'] = 'MINERAL WATER';
+        $record['trans_type'] = 'I';
+        $record['department'] = 188;
+        $record['foodstamp'] = 1;
+        $record['discounttype'] = 2;
+        $record['discountable'] = 1;
+        $record['quantity'] = 1;
+        $record['cost'] = 2.06;
+        $record['unitPrice'] = 2.49;
+        $record['total'] = 2.49;
+        $record['regPrice'] = 3.15;
+        $record['memDiscount'] = 0.66;
+        $record['ItemQtty'] = 1;
+        lttLib::verifyRecord(1, $record, $this);
+        $drecord = lttLib::genericRecord();
+        $drecord['description'] = '** YOU SAVED $0.66 **';
+        $drecord['trans_type'] = 'I';
+        $drecord['department'] = 188;
+        $drecord['trans_status'] = 'D';
+        $drecord['voided'] = 2;
+        lttLib::verifyRecord(2, $drecord, $this);
+        $CORE_LOCAL->set('currentid', 1);
+        $v = new Void();
+        $this->assertEquals(true, $v->check('VD'));
+        $json = $v->parse('VD');
+        $this->assertInternalType('array', $json);
+        $record['total'] *= -1;
+        $record['quantity'] *= -1;
+        $record['ItemQtty'] *= -1;
+        $record['voided'] = 1;
+        $record['trans_status'] = 'V';
+        $record['memDiscount'] *= -1;
+        lttLib::verifyRecord(3, $record, $this);
+
+        // test member sale as non-member
+        lttLib::clear();
+        $CORE_LOCAL->set('isMember', 0);
+        $u = new UPC();
+        $this->assertEquals(true, $u->check('0003049488122'));
+        $json = $u->parse('0003049488122');
+        $this->assertInternalType('array', $json);
+        $record = lttLib::genericRecord();
+        $record['upc'] = '0003049488122';
+        $record['description'] = 'MINERAL WATER';
+        $record['trans_type'] = 'I';
+        $record['department'] = 188;
+        $record['foodstamp'] = 1;
+        $record['discounttype'] = 2;
+        $record['discountable'] = 1;
+        $record['quantity'] = 1;
+        $record['cost'] = 2.06;
+        $record['unitPrice'] = 3.15;
+        $record['total'] = 3.15;
+        $record['regPrice'] = 3.15;
+        $record['memDiscount'] = 0.66;
+        $record['ItemQtty'] = 1;
+        lttLib::verifyRecord(1, $record, $this);
+        $CORE_LOCAL->set('currentid', 1);
+        $v = new Void();
+        $this->assertEquals(true, $v->check('VD'));
+        $json = $v->parse('VD');
+        $this->assertInternalType('array', $json);
+        $record['total'] *= -1;
+        $record['quantity'] *= -1;
+        $record['ItemQtty'] *= -1;
+        $record['voided'] = 1;
+        $record['trans_status'] = 'V';
+        $record['memDiscount'] *= -1;
+        lttLib::verifyRecord(2, $record, $this);
+    }
+
+    function testOpenRings()
+    {
+        global $CORE_LOCAL;
+        lttLib::clear();
+        $d = new DeptKey();
+        $this->assertEquals(true, $d->check('100DP10'));
+        $json = $d->parse('100DP10');
+        $this->assertInternalType('array', $json);
+        $record = lttLib::genericRecord();
+        $record['upc'] = '1DP1';
+        $record['description'] = 'BBAKING';
+        $record['trans_type'] = 'D';
+        $record['department'] = 1;
+        $record['quantity'] = 1;
+        $record['foodstamp'] = 1;
+        $record['unitPrice'] = 1.00;
+        $record['total'] = 1.00;
+        $record['regPrice'] = 1.00;
+        $record['ItemQtty'] = 1;
+        lttLib::verifyRecord(1, $record, $this);
+        $CORE_LOCAL->set('currentid', 1);
+        $v = new Void();
+        $this->assertEquals(true, $v->check('VD'));
+        $json = $v->parse('VD');
+        $this->assertInternalType('array', $json);
+        $record['total'] *= -1;
+        $record['quantity'] *= -1;
+        $record['ItemQtty'] *= -1;
+        $record['voided'] = 1;
+        $record['trans_status'] = 'V';
+        lttLib::verifyRecord(2, $record, $this);
+
+        lttLib::clear();
+        $CORE_LOCAL->set('refund', 1);
+        $CORE_LOCAL->set('refundComment', 'TEST REFUND');
+        $d = new DeptKey();
+        $this->assertEquals(true, $d->check('100DP10'));
+        $json = $d->parse('100DP10');
+        $this->assertInternalType('array', $json);
+        $record = lttLib::genericRecord();
+        $record['upc'] = '1DP1';
+        $record['description'] = 'BBAKING';
+        $record['trans_type'] = 'D';
+        $record['trans_status'] = 'R';
+        $record['department'] = 1;
+        $record['quantity'] = -1;
+        $record['foodstamp'] = 1;
+        $record['unitPrice'] = 1.00;
+        $record['total'] = -1.00;
+        $record['regPrice'] = 1.00;
+        $record['ItemQtty'] = 1;
+        lttLib::verifyRecord(1, $record, $this);
+        $CORE_LOCAL->set('currentid', 1);
+        $v = new Void();
+        $this->assertEquals(true, $v->check('VD'));
+        $json = $v->parse('VD');
+        $this->assertInternalType('array', $json);
+        $record['total'] *= -1;
+        $record['quantity'] *= -1;
+        $record['ItemQtty'] *= -1;
+        $record['voided'] = 1;
+        $record['trans_status'] = 'V';
+        lttLib::verifyRecord(2, $record, $this);
+    }
 }

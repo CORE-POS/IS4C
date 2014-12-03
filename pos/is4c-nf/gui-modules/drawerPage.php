@@ -36,10 +36,14 @@ class drawerPage extends NoInputPage {
 		$this->available = ReceiptLib::availableDrawers();
 		$this->is_admin = False;
 		$db = Database::pDataConnect();
-		$chk = $db->query('SELECT frontendsecurity FROM employees 
-				WHERE emp_no='.$CORE_LOCAL->get('CashierNo'));
+		$chk = $db->query('
+            SELECT frontendsecurity 
+            FROM employees 
+			WHERE emp_no=' . ((int)$CORE_LOCAL->get('CashierNo'))
+        );
 		if ($db->num_rows($chk) > 0){
-			$sec = array_pop($db->fetch_row($chk));
+            $w = $db->fetch_row($chk);
+            $sec = $w['frontendsecurity'];
 			if ($sec >= 30) $this->is_admin = True;
 		}
 
