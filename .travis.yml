@@ -34,13 +34,13 @@ script:
     # This must run first
     - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/InstallTest.php; fi
     # These can run in any order
-    - if [ '$TRAVIS_BRANCH' != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/ItemsTest.php; fi
-    - if [ '$TRAVIS_BRANCH' != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/MembersTest.php; fi
-    - if [ '$TRAVIS_BRANCH' != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/ModelsTest.php; fi
-    - if [ '$TRAVIS_BRANCH' != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/PagesTest.php; fi
-    - if [ '$TRAVIS_BRANCH' != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/PluginsTest.php; fi
-    - if [ '$TRAVIS_BRANCH' != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/SQLManagerTest.php; fi
-    - if [ '$TRAVIS_BRANCH' != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/TasksTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/ItemsTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/MembersTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/ModelsTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/PagesTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/PluginsTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/SQLManagerTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/TasksTest.php; fi
     # POS tests
     # This must run first
     - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/InstallTest.php; fi
