@@ -425,14 +425,29 @@ class BatchListPage extends FannieRESTfulPage
         $count = 0;
         $lastBatchID = 0;
         while ($fetchW = $dbc->fetch_array($fetchR)) {
+            /**
+              strtotime() and date() are not reciprocal functions
+              date('Y-m-d', strtotime('0000-00-00')) results in
+              -0001-11-30 instead of the expected 0000-00-00
+            */
+            if ($fetchW['startDate'] == '0000-00-00 00:00:00') {
+                $fetchW['startDate'] = '';
+            }
+            if ($fetchW['endDate'] == '0000-00-00 00:00:00') {
+                $fetchW['endDate'] = '';
+            }
             $c = ($c + 1) % 2;
             $id = $fetchW['batchID'];
             $ret .= '<tr id="batchRow' . $fetchW['batchID'] . '" class="batchRow">';
             $ret .= "<td bgcolor=$colors[$c] id=name{$id}><a id=namelink{$id} 
                 href=\"EditBatchPage.php?id={$id}\">{$fetchW['batchName']}</a></td>";
             $ret .= "<td bgcolor=$colors[$c] id=type{$id}>" . $fetchW['typeDesc'] . "</td>";
-            $ret .= "<td bgcolor=$colors[$c] id=startdate{$id}>" . date('Y-m-d', strtotime($fetchW['startDate'])) . "</td>";
-            $ret .= "<td bgcolor=$colors[$c] id=enddate{$id}>" . date('Y-m-d', strtotime($fetchW['endDate'])) . "</td>";
+            $ret .= "<td bgcolor=$colors[$c] id=startdate{$id}>" 
+                . (strtotime($fetchW['startDate']) ? date('Y-m-d', strtotime($fetchW['startDate'])) : '')
+                . "</td>";
+            $ret .= "<td bgcolor=$colors[$c] id=enddate{$id}>" 
+                . (strtotime($fetchW['endDate']) ? date('Y-m-d', strtotime($fetchW['endDate'])) : '')
+                . "</td>";
             $ret .= "<td bgcolor=$colors[$c] id=owner{$id}>{$fetchW['owner']}</td>";
             $ret .= "<td bgcolor=$colors[$c] id=edit{$id}>
                 <a href=\"\" onclick=\"editBatchLine({$id}); return false;\" class=\"batchEditLink\">
