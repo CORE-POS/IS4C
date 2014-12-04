@@ -166,6 +166,8 @@ Get the currently displayed items <dl compact><dt><b>Parameters:</b></dt><dd>
 This function probably shouldn't be used directly. Call listitems() or <a class="el" href="class_display_lib.html#8cee5ed474eec9fad96a3ec0cf9cdf49">lastpage()</a> instead. 
 <p>
 30Oct2014 Andy Idea here is to look up the currently displayed items and perform any necessary transformations of the text in PHP instead of tucking that logic inside the screendisplay view. I'm leaving the query above for reference in case I screwed something up and the old method of drawing the screen needs to be quickly re-enabled.<p>
+14Nov2014 Andy Disabled for the sake of putting together a release. Will go into testing following the release and be included in the next one<p>
+03Dec2014 Andy Axing screen display isn't a super high priority right now With better unit testing in place, I want to write more tests to verify this method behaves the same as the screendisplay via. No ETA at this point.<p>
 11Mar14 Andy Ancient idea about displaying transaction line-items on credit card terminal screen. Current terminal does not even support this functionality.<p>
 I'm leaving the "get last relevant line" implementation for reference. if (is_object($td) &amp;&amp; !empty($last_item)) { $due = sprintf('%.2f',$CORE_LOCAL-&gt;get("amtdue")); $dueline = 'Subtotal' .str_pad('',22-strlen($due),' ') .$due; $items = ""; $count = 0; for($i=count($last_item)-1;$i&gt;=0;$i--) { $items = ":".$last_item[$i].$items; $count++; if ($count &gt;= 3) break; } for($i=$count;$i&lt;3;$i++) { $items = ": ".$items; } $td-&gt;WriteToScale("display:".$last_item.":".$dueline); } 
 </div>
@@ -711,7 +713,7 @@ An alias for <a class="el" href="class_display_lib.html#87bf6dd610589566b597ec69
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/DisplayLib.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 14 Nov 2014 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 4 Dec 2014 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

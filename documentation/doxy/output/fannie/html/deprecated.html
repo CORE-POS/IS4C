@@ -53,132 +53,72 @@
 <dd>Temporary compat for function normalization </dd>
 </dl>
 <p>
-<a class="anchor" name="_deprecated000028"></a> <dl>
+<a class="anchor" name="_deprecated000016"></a> <dl>
 <dt>Member <a class="el" href="class_install_index_page.html#cadd87589daa59e01b37da5a085a7b9d">InstallIndexPage::create_dlogs</a> ($con) </dt>
-<dd>22Jan14 $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB, 'stockSum_purch','trans'); </dd>
+<dd>10Nov2014 $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB, 'dheader','trans'); </dd>
 </dl>
 <p>
-<a class="anchor" name="_deprecated000028"></a> <dl>
+<a class="anchor" name="_deprecated000016"></a> <dl>
 <dt>Member <a class="el" href="class_install_index_page.html#cadd87589daa59e01b37da5a085a7b9d">InstallIndexPage::create_dlogs</a> ($con) </dt>
-<dd>22Jan14 $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB, 'newBalanceStockToday_test','trans'); </dd>
+<dd>10Nov2014 $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB, 'dddItems','trans'); </dd>
 </dl>
 <p>
-<a class="anchor" name="_deprecated000028"></a> <dl>
+<a class="anchor" name="_deprecated000016"></a> <dl>
 <dt>Member <a class="el" href="class_install_index_page.html#cadd87589daa59e01b37da5a085a7b9d">InstallIndexPage::create_dlogs</a> ($con) </dt>
 <dd>21Jan14 $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB, 'CashPerformDay_cache','trans'); </dd>
 </dl>
 <p>
 <a class="anchor" name="_deprecated000008"></a> <dl>
-<dt>Member <a class="el" href="class_install_index_page.html#716209de24b0d43473404ea0278b527d">InstallIndexPage::create_op_dbs</a> ($con) </dt>
-<dd>22Jan14 Somewhat deprecated. Others' code may rely on this so it's still created </dd>
+<dt>Member <a class="el" href="class_install_index_page.html#c7642f2bea6a0699e9df1bb927162f71">InstallIndexPage::create_op_dbs</a> ($con, $op_db_name) </dt>
+<dd>22Jan14 Somewhat deprecated. Others' code may rely on this so it's still created  06Nov14 All uses are checked first for existence. Not necessary to create on new install. $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$op_db_name, 'deptMargin','op'); </dd>
 </dl>
 <p>
 <a class="anchor" name="_deprecated000008"></a> <dl>
-<dt>Member <a class="el" href="class_install_index_page.html#716209de24b0d43473404ea0278b527d">InstallIndexPage::create_op_dbs</a> ($con) </dt>
-<dd>22Jan14 $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB, 'deptSalesCodes','op'); </dd>
+<dt>Member <a class="el" href="class_install_index_page.html#c7642f2bea6a0699e9df1bb927162f71">InstallIndexPage::create_op_dbs</a> ($con, $op_db_name) </dt>
+<dd>22Jan14 Only used for legacy pages $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB, 'unfi','op'); </dd>
 </dl>
 <p>
 <a class="anchor" name="_deprecated000008"></a> <dl>
-<dt>Member <a class="el" href="class_install_index_page.html#716209de24b0d43473404ea0278b527d">InstallIndexPage::create_op_dbs</a> ($con) </dt>
-<dd>21Jan14 $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB, 'prodUpdateArchive','op'); </dd>
+<dt>Member <a class="el" href="class_install_index_page.html#c7642f2bea6a0699e9df1bb927162f71">InstallIndexPage::create_op_dbs</a> ($con, $op_db_name) </dt>
+<dd>22Jan14 memtype has sufficient columns now table kept around until confirming it can be deleted  06Nov14 No longer needs to be created on new installs $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB, 'memdefaults','op'); </dd>
 </dl>
 <p>
 <a class="anchor" name="_deprecated000008"></a> <dl>
-<dt>Member <a class="el" href="class_install_index_page.html#716209de24b0d43473404ea0278b527d">InstallIndexPage::create_op_dbs</a> ($con) </dt>
-<dd>21Jan14 $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB, 'batchowner','op'); </dd>
+<dt>Member <a class="el" href="class_install_index_page.html#c7642f2bea6a0699e9df1bb927162f71">InstallIndexPage::create_op_dbs</a> ($con, $op_db_name) </dt>
+<dd>06Nov14 andy origins table has name fields removing need for view $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB, 'originName','op'); </dd>
 </dl>
 <p>
 <a class="anchor" name="_deprecated000008"></a> <dl>
-<dt>Member <a class="el" href="class_install_index_page.html#716209de24b0d43473404ea0278b527d">InstallIndexPage::create_op_dbs</a> ($con) </dt>
-<dd>21Jan14 $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB, 'batchMergeProd','op'); </dd>
+<dt>Member <a class="el" href="class_install_index_page.html#c7642f2bea6a0699e9df1bb927162f71">InstallIndexPage::create_op_dbs</a> ($con, $op_db_name) </dt>
+<dd>06Nov14 andy Relates to old, never finished email statement/invoice function $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB, 'emailLog','op'); </dd>
 </dl>
 <p>
 <a class="anchor" name="_deprecated000008"></a> <dl>
-<dt>Member <a class="el" href="class_install_index_page.html#716209de24b0d43473404ea0278b527d">InstallIndexPage::create_op_dbs</a> ($con) </dt>
-<dd>22Jan14 $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB, 'likeCodeView','op'); </dd>
+<dt>Member <a class="el" href="class_install_index_page.html#c7642f2bea6a0699e9df1bb927162f71">InstallIndexPage::create_op_dbs</a> ($con, $op_db_name) </dt>
+<dd>06Nov14 andy Relates to old, pre-BasicModel update mechanism $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB, 'UpdateLog','op'); </dd>
 </dl>
 <p>
-<a class="anchor" name="_deprecated000008"></a> <dl>
-<dt>Member <a class="el" href="class_install_index_page.html#716209de24b0d43473404ea0278b527d">InstallIndexPage::create_op_dbs</a> ($con) </dt>
-<dd>21Jan14 $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB, 'batchMergeLC','op'); </dd>
+<a class="anchor" name="_deprecated000014"></a> <dl>
+<dt>Member <a class="el" href="class_install_index_page.html#fa08f3b00321945be7ed77fdbad5ebc2">InstallIndexPage::create_trans_dbs</a> ($con, $trans_db_name, $op_db_name) </dt>
+<dd>7Nov14 Not used lane side $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB, 'alog','trans'); </dd>
 </dl>
 <p>
-<a class="anchor" name="_deprecated000008"></a> <dl>
-<dt>Member <a class="el" href="class_install_index_page.html#716209de24b0d43473404ea0278b527d">InstallIndexPage::create_op_dbs</a> ($con) </dt>
-<dd>21Jan14 $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB, 'batchPriority30','op'); </dd>
+<a class="anchor" name="_deprecated000014"></a> <dl>
+<dt>Member <a class="el" href="class_install_index_page.html#fa08f3b00321945be7ed77fdbad5ebc2">InstallIndexPage::create_trans_dbs</a> ($con, $trans_db_name, $op_db_name) </dt>
+<dd>7Nov14 No longer used lane side $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB, 'lane_config','trans'); </dd>
 </dl>
 <p>
-<a class="anchor" name="_deprecated000008"></a> <dl>
-<dt>Member <a class="el" href="class_install_index_page.html#716209de24b0d43473404ea0278b527d">InstallIndexPage::create_op_dbs</a> ($con) </dt>
-<dd>21Jan14 $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB, 'batchPriority20','op'); </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000008"></a> <dl>
-<dt>Member <a class="el" href="class_install_index_page.html#716209de24b0d43473404ea0278b527d">InstallIndexPage::create_op_dbs</a> ($con) </dt>
-<dd>21Jan14 $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB, 'batchPriority10','op'); </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000008"></a> <dl>
-<dt>Member <a class="el" href="class_install_index_page.html#716209de24b0d43473404ea0278b527d">InstallIndexPage::create_op_dbs</a> ($con) </dt>
-<dd>21Jan14 $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB, 'batchPriority0','op'); </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000008"></a> <dl>
-<dt>Member <a class="el" href="class_install_index_page.html#716209de24b0d43473404ea0278b527d">InstallIndexPage::create_op_dbs</a> ($con) </dt>
-<dd>21Jan14 $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB, 'batchPriority','op'); </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000008"></a> <dl>
-<dt>Member <a class="el" href="class_install_index_page.html#716209de24b0d43473404ea0278b527d">InstallIndexPage::create_op_dbs</a> ($con) </dt>
-<dd>22Jan14 $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB, 'unfi_order','op'); </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000008"></a> <dl>
-<dt>Member <a class="el" href="class_install_index_page.html#716209de24b0d43473404ea0278b527d">InstallIndexPage::create_op_dbs</a> ($con) </dt>
-<dd>22Jan14 $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB, 'unfi_diff','op'); </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000008"></a> <dl>
-<dt>Member <a class="el" href="class_install_index_page.html#716209de24b0d43473404ea0278b527d">InstallIndexPage::create_op_dbs</a> ($con) </dt>
-<dd>22Jan14 $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB, 'unfi_all','op'); </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000008"></a> <dl>
-<dt>Member <a class="el" href="class_install_index_page.html#716209de24b0d43473404ea0278b527d">InstallIndexPage::create_op_dbs</a> ($con) </dt>
-<dd>22Jan14 $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB, 'unfiCategories','op'); </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000008"></a> <dl>
-<dt>Member <a class="el" href="class_install_index_page.html#716209de24b0d43473404ea0278b527d">InstallIndexPage::create_op_dbs</a> ($con) </dt>
-<dd>22Jan14 memtype has sufficient columns now table kept around until confirming it can be deleted </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000008"></a> <dl>
-<dt>Member <a class="el" href="class_install_index_page.html#716209de24b0d43473404ea0278b527d">InstallIndexPage::create_op_dbs</a> ($con) </dt>
-<dd>21Jan14 $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB, 'productMargin','op'); </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000008"></a> <dl>
-<dt>Member <a class="el" href="class_install_index_page.html#716209de24b0d43473404ea0278b527d">InstallIndexPage::create_op_dbs</a> ($con) </dt>
-<dd>21Jan14 $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB, 'vendorLoadScripts','op'); </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000008"></a> <dl>
-<dt>Member <a class="el" href="class_install_index_page.html#716209de24b0d43473404ea0278b527d">InstallIndexPage::create_op_dbs</a> ($con) </dt>
-<dd>21Jan14 $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB, 'AdSaleDates','op'); </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000054"></a> <dl>
+<a class="anchor" name="_deprecated000047"></a> <dl>
 <dt>Member <a class="el" href="class_process.html#814f7830c61e34687863ca05c32085e2">Process::getStdin</a> () </dt>
 <dd>Deprecated since version 2.5, to be removed in 3.0. This method is deprecated in favor of getInput. </dd>
 </dl>
 <p>
-<a class="anchor" name="_deprecated000055"></a> <dl>
+<a class="anchor" name="_deprecated000048"></a> <dl>
 <dt>Member <a class="el" href="class_process.html#2cd4fced36debb0755b8905cd68b7c4b">Process::setStdin</a> ($stdin) </dt>
 <dd>Deprecated since version 2.5, to be removed in 3.0. This method is deprecated in favor of setInput.<p>
 </dd>
 </dl>
-<hr size="1"><address style="align: right;"><small>Generated on 14 Nov 2014 for CORE POS - Fannie by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 4 Dec 2014 for CORE POS - Fannie by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>
