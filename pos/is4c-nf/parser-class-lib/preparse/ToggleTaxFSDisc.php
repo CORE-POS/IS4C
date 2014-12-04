@@ -53,7 +53,7 @@ class ToggleTaxFSDisc extends PreParser
         }
 
         if (strstr($str, 'DN')) {
-			$this->tfd = $this->tfd | $this->DISCOUNT;
+			$this->tfd = $this->tfd | $this->DISC;
             $parts = explode('DN', $str, 2);
             foreach ($parts as $p) {
                 $this->remainder .= $p;
