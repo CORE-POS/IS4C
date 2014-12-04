@@ -84,7 +84,8 @@ class InstallMenuPage extends \COREPOS\Fannie\API\InstallPage {
     }
     */
 
-    function body_content(){
+    function body_content()
+    {
         include('../config.php'); 
         ob_start();
         ?>
@@ -185,6 +186,36 @@ class InstallMenuPage extends \COREPOS\Fannie\API\InstallPage {
                 $FANNIE_MENU[$VALID_MENUS[$i]][$p_title] = $p_url;
             }
         }
+
+        if (FormLib::get('import-menu') !== '') {
+            $import = FormLib::get('import-menu');
+            $json = json_decode($import, true);
+            if ($json === null) {
+                echo '<div class="alert alert-danger">Menu Import is not valid JSON</div>';
+            } else {
+                $valid = true;
+                foreach ($json as $menu => $content) {
+                    if (!in_array($menu, $VALID_MENUS)) {
+                        echo '<div class="alert alert-danger"><strong>' 
+                            . $menu . '</strong> is not a valid top-level menu</div>';
+                        $valid = false;
+                        break;
+                    } elseif (!is_array($content)) {
+                        echo '<div class="alert alert-danger">Entries for <strong>'
+                            . $menu . '</strong> are not valid. It should be a JSON
+                            object with keys representing menu titles and values
+                            represeting URLs or the special values __header__ and
+                            __divider__</div>';
+                        $valid = false;
+                        break;
+                    }
+                }
+                if ($valid) {
+                    $FANNIE_MENU = $json;
+                    echo '<div class="alert alert-success">Imported menu</div>';
+                }
+            }
+        }
         
         $saveStr = 'array(';
         $menu_number = 0;
@@ -237,6 +268,16 @@ class InstallMenuPage extends \COREPOS\Fannie\API\InstallPage {
         confset('FANNIE_MENU', $saveStr);
         ?>
         <hr />
+        <div class="form-group">
+        <label>Hand-editable Menu / Export</label>
+        <textarea class="form-control" rows="15">
+<?php echo $this->prettyJSON(json_encode($FANNIE_MENU)); ?>
+        </textarea>
+        </div>
+        <div class="form-group">
+        <label>Import Menu (use same JSON format)</label>
+        <textarea name="import-menu" class="form-control" rows="15"></textarea>
+        </div>
         <p>
             <button type="submit" name="psubmit" value="1" class="btn btn-default">Save Configuration</button>
         </p>
@@ -339,6 +380,55 @@ class InstallMenuPage extends \COREPOS\Fannie\API\InstallPage {
         printf('URL:<input type="text" size="50" name="url%s[]" value="" /></li>',$parent);
         echo '<br />';
         echo '</ul>'."\n";
+    }
+
+    private function prettyJSON($json)
+    {
+        $result= '';
+        $pos = 0;
+        $strLen= strlen($json);
+        $indentStr = '    ';
+        $newLine = "\n";
+        $prevChar= '';
+        $outOfQuotes = true;
+
+        for ($i=0; $i<=$strLen; $i++) {
+            // Grab the next character in the string.
+            $char = substr($json, $i, 1);
+
+            // Are we inside a quoted string?
+            if ($char == '"' && $prevChar != '\\') {
+                $outOfQuotes = !$outOfQuotes;
+            // If this character is the end of an element, 
+            // output a new line and indent the next line.
+            } else if (($char == '}' || $char == ']') && $outOfQuotes) {
+                $result .= $newLine;
+                $pos--;
+                for ($j=0; $j<$pos; $j++) {
+                    $result .= $indentStr;
+                }
+            }
+
+            // Add the character to the result string.
+            $result .= $char;
+
+            // If the last character was the beginning of an element, 
+            // output a new line and indent the next line.
+            if (($char == ',' || $char == '{' || $char == '[') && $outOfQuotes) {
+                $result .= $newLine;
+                if ($char == '{' || $char == '[') {
+                    $pos ++;
+                }
+
+                for ($j = 0; $j < $pos; $j++) {
+                    $result .= $indentStr;
+                }
+            }
+
+            $prevChar = $char;
+        }
+
+        return $result;
     }
 
 // InstallMenuPage
