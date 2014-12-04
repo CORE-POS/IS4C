@@ -184,10 +184,27 @@ class InstallUtilities extends LibraryClass
         return false;	// didn't manage to write anywhere!
     }
 
+    static public function confRemove($key, $local=false)
+    {
+        $path_global = '../ini.php';
+        $path_local = '../ini-local.php';
+
+        $orig_setting = '|\$CORE_LOCAL->set\([\'"]'.$key.'[\'"],\s*(.+)\);[\r\n]|';
+        $current_conf = ($local) ? file_get_contents($path_local) : file_get_contents($path_global);
+        if (preg_match($orig_setting, $current_conf) == 1) {
+            $removed = preg_replace($orig_setting, '', $current_conf);
+            file_put_contents($local ? $path_local : $path_global, $removed);
+        }
+    }
+
     static public function confExists($key, $local=False)
     {
         $path_global = '../ini.php';
         $path_local = '../ini-local.php';
+
+        if (!file_exists($local ? $path_local : $path_global)) {
+            return false;
+        }
 
         $orig_setting = '|\$CORE_LOCAL->set\([\'"]'.$key.'[\'"],\s*(.+)\);[\r\n]|';
         $current_conf = ($local) ? file_get_contents($path_local) : file_get_contents($path_global);
@@ -922,6 +939,7 @@ class InstallUtilities extends LibraryClass
             'ParametersModel',
             'ProductsModel',
             'ShrinkReasonsModel',
+            'SpecialDeptMapModel',
             'SubDeptsModel',
             'TendersModel',
             'UnpaidArTodayModel',
