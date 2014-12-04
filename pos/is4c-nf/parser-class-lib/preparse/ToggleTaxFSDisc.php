@@ -27,9 +27,9 @@ class ToggleTaxFSDisc extends PreParser
 	private $tfd;
 	private $remainder;
 
-	private $TAX = 4;
-	private $FS = 2;
-	private $DISC = 1;
+	public $TAX = 4;
+	public $FS = 2;
+	public $DISC = 1;
 
 	// use bit-masks to determine the which toggles
 	// should be enabled
