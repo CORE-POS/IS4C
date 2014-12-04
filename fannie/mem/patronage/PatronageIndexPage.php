@@ -51,7 +51,11 @@ class PatronageIndexPage extends FannieRESTfulPage
             use <em>Upload rebates</em> to import a spreadsheet that has distribution
             amounts. This should probably be the data exported from <em>Report of loaded info</em>
             with additional columns for distributions.</p>
-            <p>Print Checks does exactly what it says.</p>';
+            <p>Add Omitted Member creates a patronage record for a member who was not
+            included in the original patronage allocation.</p>
+            <p>Print Checks does exactly what it says.</p>
+            <p>Upload Check Numbers takes a spreadsheet of check numbers provided by the bank
+            and marks those patronage checks as cashed.</p>';
     }
 
     public function get_view()
@@ -64,8 +68,10 @@ class PatronageIndexPage extends FannieRESTfulPage
             <li><a href="PatronageCalcNet.php">Update net purchases</a></li>
             <li><a href="DraftPatronageReport.php">Report of loaded info</a></li>
             <li><a href="AllocatePatronagePage.php">Allocate Patronage</a></li>
+            <li><a href="AddPatronageEntryPage.php">Add Omitted Member</a></li>
             <li><a href="PatronageUploadPage.php">Upload rebates</a></li>
             <li><a href="PatronageChecks.php">Print Checks</a></li>
+            <li><a href="PatronageCheckNumbersUploadPage.php">Upload Check Numbers</a></li>
             </ul>';
     }
 }

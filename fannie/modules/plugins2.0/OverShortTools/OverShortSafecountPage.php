@@ -497,8 +497,8 @@ class OverShortSafecountPage extends FanniePage {
         $this->add_script($FANNIE_URL.'src/javascript/jquery-ui.js');
         $this->add_css_file($FANNIE_URL.'src/style.css');
         $this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
-        $this->add_onload_command("\$('#startDate').datepicker();");
-        $this->add_onload_command("\$('#endDate').datepicker();");
+        $this->add_onload_command("\$('#startDate').datepicker({dateFormat:'yy-mm-dd'});");
+        $this->add_onload_command("\$('#endDate').datepicker({dateFormat:'yy-mm-dd'});");
         ob_start();
         ?>
         <html>

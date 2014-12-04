@@ -219,29 +219,17 @@ class PriceHistoryReport extends FannieReportPage
 <div class="col-sm-6">
     <p>
         <label>Start Date</label>
-        <input type="text" id="date1" name="date1" class="form-control" required />
+        <input type="text" id="date1" name="date1" class="form-control date-field" required />
     </p>
     <p>
         <label>End Date</label>
-        <input type="text" id="date2" name="date2" class="form-control" required />
+        <input type="text" id="date2" name="date2" class="form-control date-field" required />
     </p>
     <p>
         <?php echo FormLib::dateRangePicker(); ?>
     </p>
 </div>
 </form>
-        <?php
-        return ob_get_clean();
-    }
-
-    public function javascript_content()
-    {
-        ob_start();
-        ?>
-$(document).ready(function(){
-    $('#date1').datepicker();
-    $('#date2').datepicker();
-});
         <?php
         return ob_get_clean();
     }

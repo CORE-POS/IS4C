@@ -195,12 +195,12 @@ class VendorMovementReport extends FannieReportPage
     <div class="form-group">
         <label>Start Date</label>
         <input type=text name=date1 id=date1 
-            class="form-control" required />
+            class="form-control date-field" required />
     </div>
     <div class="form-group">
         <label>End Date</label>
         <input type=text name=date2 id=date2 
-            class="form-control" required />
+            class="form-control date-field" required />
     </div>
     <div class="form-group">
         <label>Sum report by</label>
@@ -224,8 +224,6 @@ class VendorMovementReport extends FannieReportPage
 </div>
 </form>
 <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
         $this->add_onload_command('$(\'#vendor\').focus();');
     }
 }

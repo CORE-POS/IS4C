@@ -58,25 +58,17 @@ class MemDates extends \COREPOS\Fannie\API\member\MemberModule {
         $ret .= '<span class="label primaryBackground">Start</span>';
         $ret .= sprintf('<input name="MemDates_start"
                 maxlength="10" value="%s" id="MemDates_start"
-                class="form-control" />',$infoW['start_date']); 
+                class="form-control date-field" />',$infoW['start_date']); 
         $ret .= '<span class="label primaryBackground">End</span>';
         $ret .= sprintf('<input name="MemDates_end" 
                 maxlength="10" value="%s" id="MemDates_end"
-                class="form-control" />',$infoW['end_date']);  
+                class="form-control date-field" />',$infoW['end_date']);  
         $ret .= '</div>';
 
         $ret .= "</div>";
         $ret .= "</div>";
 
         return $ret;
-    }
-
-    public function getEditLoadCommands()
-    {
-        return array(
-            "\$('#MemDates_start').datepicker();\n",
-            "\$('#MemDates_end').datepicker();\n",
-        );
     }
 
     function saveFormData($memNum){

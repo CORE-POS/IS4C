@@ -174,11 +174,11 @@ class CashierPerformanceReport extends FannieReportPage
     </div>
     <div class="form-group">
         <label>Date Start</label>
-        <input type=text id=date1 name=date1 class="form-control" required />
+        <input type=text id=date1 name=date1 class="form-control date-field" required />
     </div>
     <div class="form-group">
         <label>End Start</label>
-        <input type=text id=date2 name=date2 class="form-control" required />
+        <input type=text id=date2 name=date2 class="form-control date-field" required />
     </div>
     <div class="form-group">
         <input type="checkbox" name="excel" id="excel" value="xls" />
@@ -194,8 +194,6 @@ class CashierPerformanceReport extends FannieReportPage
 </div>
 </form>
 <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
     }
 }
 

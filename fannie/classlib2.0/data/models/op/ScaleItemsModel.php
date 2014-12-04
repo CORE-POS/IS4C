@@ -86,6 +86,20 @@ DataGateWeigh file wants to see in a CSV
         return parent::save();
     }
 
+    public function mergeDescription()
+    {
+        if ($this->itemdesc() != '') {
+            return $this->itemdesc();
+        } else {
+            $p = new ProductsModel($this->connection);
+            $p->upc($this->plu());
+            if ($p->load()) {
+                return $p->description();
+            }
+        }
+        return $this->itemdesc();
+    }
+
     /**
       Custom normalization:
       The original version of scaleItems contained a column named "class".

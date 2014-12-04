@@ -54,6 +54,80 @@ numflag column
     }
 
     /* START ACCESSOR FUNCTIONS */
+
+    public function bit_number()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["bit_number"])) {
+                return $this->instance["bit_number"];
+            } else if (isset($this->columns["bit_number"]["default"])) {
+                return $this->columns["bit_number"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'bit_number',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["bit_number"]) || $this->instance["bit_number"] != func_get_args(0)) {
+                if (!isset($this->columns["bit_number"]["ignore_updates"]) || $this->columns["bit_number"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["bit_number"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function description()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["description"])) {
+                return $this->instance["description"];
+            } else if (isset($this->columns["description"]["default"])) {
+                return $this->columns["description"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'description',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["description"]) || $this->instance["description"] != func_get_args(0)) {
+                if (!isset($this->columns["description"]["ignore_updates"]) || $this->columns["description"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["description"] = func_get_arg(0);
+        }
+        return $this;
+    }
     /* END ACCESSOR FUNCTIONS */
 }
 

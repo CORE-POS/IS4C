@@ -257,12 +257,12 @@ class HouseCouponEditor extends FanniePage
                 <label class="col-sm-1 control-label">Begins</label>
                 <div class="col-sm-3">
                     <input type=text name=starts value="%s" 
-                        id="starts" class="form-control" />
+                        id="starts" class="form-control date-field" />
                 </div>
                 <label class="col-sm-1 control-label">Expires</label>
                 <div class="col-sm-3">
                     <input type=text name=expires value="%s" 
-                        id="expires" class="form-control" />
+                        id="expires" class="form-control date-field" />
                 </div>
             </div>
             <div class="row">
@@ -398,9 +398,6 @@ class HouseCouponEditor extends FanniePage
             $ret .= "<p><button type=submit name=submit_delete_dept value=\"1\"
                 class=\"btn btn-default\">Delete Selected Departments</button></p>";
         }
-
-        $this->add_onload_command("\$('#starts').datepicker();\n");
-        $this->add_onload_command("\$('#expires').datepicker();\n");
 
         return $ret;
     }

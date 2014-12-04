@@ -104,8 +104,6 @@ class ProductHistoryReport extends FannieReportPage
     
     public function form_content()
     {
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
         return '
             <form method="get" action="ProductHistoryReport.php">
             <div class="well">Dates are optional; omit for full history</div>
@@ -116,11 +114,11 @@ class ProductHistoryReport extends FannieReportPage
             </div>
             <div class="form-group">
                 <label>Start Date</label>
-                <input type="text" id="date1" name="date1" class="form-control" />
+                <input type="text" id="date1" name="date1" class="form-control date-field" />
             </div>
             <div class="form-group">
                 <label>End Date</label>
-                <input type="text" id="date2" name="date2" class="form-control" />
+                <input type="text" id="date2" name="date2" class="form-control date-field" />
             </div>
             <p>
                 <button type="submit" class="btn btn-default">Get Report</button>

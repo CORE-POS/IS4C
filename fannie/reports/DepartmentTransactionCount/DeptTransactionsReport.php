@@ -120,9 +120,6 @@ class DeptTransactionsReport extends FannieReportPage
 
         $form = FormLib::dateAndDepartmentForm($d_list, $s_list);
 
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
-
         return $form;
     }
 }

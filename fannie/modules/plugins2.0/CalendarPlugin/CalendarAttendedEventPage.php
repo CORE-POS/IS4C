@@ -89,9 +89,8 @@ class CalendarAttendedEventPage extends FannieRESTfulPage
 
         $ret .= '<div class="form-group">
             <label>Date</label>: 
-            <input type="text" class="form-control" id="datestr" 
+            <input type="text" class="form-control date-field" id="datestr" 
                 required name="datestr" /></div>';
-        $this->add_onload_command("\$('#datestr').datepicker();\n");
 
         $ret .= '<div class="form-group">
             <label>Max Attendees</label>: 

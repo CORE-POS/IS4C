@@ -133,12 +133,12 @@ class ItemPurchasesReport extends FannieReportPage
     <div class="form-group">
         <label>Start Date</label>
         <input type=text id=date1 name=date1 
-            class="form-control" required />
+            class="form-control date-field" required />
     </div>
     <div class="form-group">
         <label>End Date</label>
         <input type=text id=date2 name=date2 
-            class="form-control" required />
+            class="form-control date-field" required />
     </div>
     <p>
         <button type=submit class="btn btn-default">Submit</button>
@@ -150,8 +150,6 @@ class ItemPurchasesReport extends FannieReportPage
 </div>
 </form>
 <?php
-        $this->add_onload_command("\$('#date1').datepicker({dateFormat:'yy-mm-dd'});\n");
-        $this->add_onload_command("\$('#date2').datepicker({dateFormat:'yy-mm-dd'});\n");
         $this->add_onload_command('$(\'#upc-field\').focus();');
     }
 }

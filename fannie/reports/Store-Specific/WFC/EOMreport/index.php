@@ -286,7 +286,7 @@ if (!$output || isset($_REQUEST['recache'])){
     echo '<table><td width=120><u><font size=2><b>pCode</b></u></font></td>
           <td width=120><u><font size=2><b>Retail</b></u></font></td>
           <td>Dept Number</td><td>WholeSale</td></table>';
-    select_to_table($query2,$args,0,'ffffff');
+    select_to_table($query23,$args,0,'ffffff');
     select_to_table($query22,$args,0,'ffffff');
     echo '<br>';
     echo 'Transactions';

@@ -139,12 +139,12 @@ class UnfiExportForMas extends FannieReportPage
     <div class="form-group">
         <label>Date Start</label>
             <input type=text id=date1 name=date1 
-                class="form-control" required />
+                class="form-control date-field" required />
     </div>
     <div class="form-group">
         <label>Date End</label>
             <input type=text id=date2 name=date2 
-                class="form-control" required />
+                class="form-control date-field" required />
     </div>
     <p>
         <button type="submit" class="btn btn-default">Submit</button>
@@ -156,8 +156,6 @@ class UnfiExportForMas extends FannieReportPage
 </div>
 </form>
 <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
 
         return ob_get_clean();
     }

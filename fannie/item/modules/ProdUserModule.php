@@ -60,6 +60,18 @@ class ProdUserModule extends ItemModule
                 . '<input type="text" class="form-control" id="lf_desc" name="lf_desc" value="' . $model->description() . '" />'
                 . '</div>';
 
+        if ($dbc->tableExists('productExpires')) {
+            $e = new ProductExpiresModel($dbc);
+            $e->upc($upc);
+            $e->load();
+            $ret .= '<div class="form-group form-inline">'
+                    . '<label>Expires</label> '
+                    . '<input type="text" class="form-control date-field" id="lf_expires" name="lf_expires" 
+                        value="' . ($e->expires() == '' ? '' : date('Y-m-d', strtotime($e->expires()))) . '" />'
+                    . '</div>';
+        }
+
+
         $otherOriginBlock = '<div class=form-inline><select name=otherOrigin[] class=form-control><option value=0>n/a</option>';
 
         $ret .= '<div class="form-group form-inline">'
@@ -130,6 +142,13 @@ class ProdUserModule extends ItemModule
         $model->brand($brand);
         $model->description($desc);
         $model->long_text($text);
+
+        if ($dbc->tableExists('productExpires')) {
+            $e = new ProductExpiresModel($dbc);
+            $e->upc($upc);
+            $e->expires(FormLib::getDate('lf_expires', date('Y-m-d')));
+            $e->save();
+        }
 
         $multiOrigin = FormLib::get('otherOrigin', array());
         $originMap = array();

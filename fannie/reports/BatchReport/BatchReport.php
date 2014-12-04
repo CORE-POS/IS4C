@@ -224,9 +224,9 @@ class BatchReport extends FannieReportPage
         echo '</div>';
         echo '<div class="col-sm-7">';
         echo '<label>Start Date</label>';
-        echo '<input class="form-control" name="date1" id="date1" />';
+        echo '<input class="form-control date-field" name="date1" id="date1" />';
         echo '<label>End Date</label>';
-        echo '<input class="form-control" name="date2" id="date2" />';
+        echo '<input class="form-control date-field" name="date2" id="date2" />';
         echo '<p><label>Excel ';
         echo '<input type="checkbox" name="excel" value="xls" /></label></p>';
         echo '<p><button type="submit" class="btn btn-default">Run Report</button></p>';
@@ -234,9 +234,6 @@ class BatchReport extends FannieReportPage
         echo '</div>';
 
         echo '</form>';
-
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
     }
 
     function report_description_content()
@@ -276,8 +273,8 @@ class BatchReport extends FannieReportPage
                     to: 
                     <input type=\"text\" name=\"date2\" size=\"10\" value=\"$bEnd\" id=\"date2\" />
                     </span><input type=\"submit\" value=\"Change Dates\" />";
-            $this->add_onload_command("\$('#date1').datepicker();");
-            $this->add_onload_command("\$('#date2').datepicker();");
+            $this->add_onload_command("\$('#date1').datepicker({dateFormat:'yy-mm-dd'});");
+            $this->add_onload_command("\$('#date2').datepicker({dateFormat:'yy-mm-dd'});");
             foreach($batchID as $bID) {
                 $ret[] = sprintf('<input type="hidden" name="batchID[]" value="%d" />', $bID);
             }

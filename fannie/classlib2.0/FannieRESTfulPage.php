@@ -254,4 +254,45 @@ class FannieRESTfulPage extends FanniePage {
     {
         return $this->getModel($database_connection, $class, $params, $find);
     }
+
+    public function unitTest($phpunit)
+    {
+        $this->__routes = array(
+            'get',
+            'get<id>',
+            'post',
+            'post<id>',
+            'get<other>',
+            'get<id><other>',
+        );
+
+        $_REQUEST['_method'] = 'get';
+        $this->readRoutes(); 
+        $phpunit->assertEquals('get', $this->__route_stem);
+
+        $_REQUEST['id'] = -99;
+        $this->readRoutes(); 
+        $phpunit->assertEquals('get_id', $this->__route_stem);
+
+        $_REQUEST['other'] = -99;
+        $this->readRoutes(); 
+        $phpunit->assertEquals('get_id_other', $this->__route_stem);
+
+        unset($_REQUEST['id']);
+        $this->readRoutes(); 
+        $phpunit->assertEquals('get_other', $this->__route_stem);
+
+        $_REQUEST['_method'] = 'post';
+        $this->readRoutes(); 
+        $phpunit->assertEquals('post', $this->__route_stem);
+
+        $_REQUEST['id'] = -99;
+        $this->readRoutes(); 
+        $phpunit->assertEquals('post_id', $this->__route_stem);
+
+        $keys = array_keys($_REQUEST);
+        foreach ($keys as $k) {
+            unset($_REQUEST[$k]);
+        }
+    }
 }

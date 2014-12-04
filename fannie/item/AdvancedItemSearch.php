@@ -611,9 +611,8 @@ function formReset()
             <select class="form-control input-sm" name="modOp"><option>On</option><option>Before</option><option>After</option></select>
             </div>';
         $ret .= '<div class="col-sm-2">
-            <input type="text" name="modDate" id="modDate" class="form-control input-sm" 
+            <input type="text" name="modDate" id="modDate" class="form-control input-sm date-field" 
                     placeholder="Modified date" /></div>';
-        $this->add_onload_command("\$('#modDate').datepicker();\n");
 
         $ret .= '
                 <label class="col-sm-1 control-label small">Movement</label>

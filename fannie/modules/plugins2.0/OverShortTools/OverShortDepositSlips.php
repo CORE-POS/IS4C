@@ -309,12 +309,12 @@ class OverShortDepositSlips extends FanniePage
             <div class="panel-body">
                 <div class="form-group">
                     <label>Start Date</label>
-                    <input type="text" class="form-control" id="startDate"
+                    <input type="text" class="form-control date-field" id="startDate"
                         name="startDate" required />
                 </div>
                 <div class="form-group">
                     <label>End Date</label>
-                    <input type="text" class="form-control" id="endDate"
+                    <input type="text" class="form-control date-field" id="endDate"
                         name="endDate" required />
                 </div>
             </div>
@@ -348,8 +348,6 @@ class OverShortDepositSlips extends FanniePage
         </p>
         </form>
         <?php
-        $this->add_onload_command("\$('#startDate').datepicker();\n");
-        $this->add_onload_command("\$('#endDate').datepicker();\n");
 
         return ob_get_clean();
     }

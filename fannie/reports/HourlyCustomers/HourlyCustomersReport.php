@@ -45,13 +45,12 @@ class HourlyCustomersReport extends FannieReportPage
 <form method=get action="<?php echo $_SERVER["PHP_SELF"]; ?>" >
 <div class="well">Get transactions per hour for what date (YYYY-MM-DD)?</div>
 <input type=text name=date id="date" required
-    class="form-control" placeholder="Date" />
+    class="form-control date-field" placeholder="Date" />
 <p>
 <button type=submit class="btn btn-default">Generate</button>
 </p>
 </form>
         <?php
-        $this->add_onload_command('$(\'#date\').datepicker();');
 
         return ob_get_clean();
     }

@@ -108,7 +108,7 @@ class AddCashierPage extends FanniePage
         </div>
         <div class="form-group">
             <label>Birthdate</label>
-            <input type="text" class="form-control" name="birthdate" id="birth-date-field"
+            <input type="text" class="form-control date-field" name="birthdate" id="birth-date-field"
                 placeholder="Optional; for stores selling age-restricted items" />
         </div>
         <p>
@@ -118,7 +118,6 @@ class AddCashierPage extends FanniePage
         <?php
         $ret = ob_get_clean();
         $this->add_onload_command("\$('input.form-control:first').focus();\n");
-        $this->add_onload_command("\$('#birth-date-field').datepicker();\n");
 
         return $ret;
     }

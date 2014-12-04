@@ -37,18 +37,13 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_install_index_page.html#e5a4982359268fc31bb7dc044d1ba764">body_content</a> ()</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_install_index_page.html#716209de24b0d43473404ea0278b527d">create_op_dbs</a> ($con)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_install_index_page.html#c7642f2bea6a0699e9df1bb927162f71">create_op_dbs</a> ($con, $op_db_name)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="fadf9a5b0d1c19c8e41dd3dac9bc2293"></a><!-- doxytag: member="InstallIndexPage::create_trans_dbs" ref="fadf9a5b0d1c19c8e41dd3dac9bc2293" args="($con)" -->
-&nbsp;</td><td class="memItemRight" valign="bottom"><b>create_trans_dbs</b> ($con)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_install_index_page.html#fa08f3b00321945be7ed77fdbad5ebc2">create_trans_dbs</a> ($con, $trans_db_name, $op_db_name)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_install_index_page.html#cadd87589daa59e01b37da5a085a7b9d">create_dlogs</a> ($con)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="84a02ca91bd3a8c729611763925c0a53"></a><!-- doxytag: member="InstallIndexPage::create_delayed_dbs" ref="84a02ca91bd3a8c729611763925c0a53" args="()" -->
-&nbsp;</td><td class="memItemRight" valign="bottom"><b>create_delayed_dbs</b> ()</td></tr>
-
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="b38cf132289d3c1a430c6c9976e706b4"></a><!-- doxytag: member="InstallIndexPage::create_archive_dbs" ref="b38cf132289d3c1a430c6c9976e706b4" args="($con)" -->
-&nbsp;</td><td class="memItemRight" valign="bottom"><b>create_archive_dbs</b> ($con)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_install_index_page.html#695a83f6ac1f071ed85f60cd5d3bcf5f">create_archive_dbs</a> ($con, $archive_db_name, $archive_method)</td></tr>
 
 <tr><td colspan="2"><br><h2>Public Attributes</h2></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><b>$description</b></td></tr>
@@ -90,6 +85,41 @@ Define any javascript needed <dl compact><dt><b>Returns:</b></dt><dd>A javascrip
 Detect databases that are supported 
 </div>
 </div><p>
+<a class="anchor" name="695a83f6ac1f071ed85f60cd5d3bcf5f"></a><!-- doxytag: member="InstallIndexPage::create_archive_dbs" ref="695a83f6ac1f071ed85f60cd5d3bcf5f" args="($con, $archive_db_name, $archive_method)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">InstallIndexPage::create_archive_dbs           </td>
+          <td>(</td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>con</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>archive_db_name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>archive_method</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
 <a class="anchor" name="cadd87589daa59e01b37da5a085a7b9d"></a><!-- doxytag: member="InstallIndexPage::create_dlogs" ref="cadd87589daa59e01b37da5a085a7b9d" args="($con)" -->
 <div class="memitem">
 <div class="memproto">
@@ -110,7 +140,7 @@ Detect databases that are supported
 
 </div>
 </div><p>
-<a class="anchor" name="716209de24b0d43473404ea0278b527d"></a><!-- doxytag: member="InstallIndexPage::create_op_dbs" ref="716209de24b0d43473404ea0278b527d" args="($con)" -->
+<a class="anchor" name="c7642f2bea6a0699e9df1bb927162f71"></a><!-- doxytag: member="InstallIndexPage::create_op_dbs" ref="c7642f2bea6a0699e9df1bb927162f71" args="($con, $op_db_name)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -118,9 +148,53 @@ Detect databases that are supported
           <td class="memname">InstallIndexPage::create_op_dbs           </td>
           <td>(</td>
           <td class="paramtype">$&nbsp;</td>
-          <td class="paramname"> <em>con</em>          </td>
-          <td>&nbsp;)&nbsp;</td>
-          <td width="100%"></td>
+          <td class="paramname"> <em>con</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>op_db_name</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="fa08f3b00321945be7ed77fdbad5ebc2"></a><!-- doxytag: member="InstallIndexPage::create_trans_dbs" ref="fa08f3b00321945be7ed77fdbad5ebc2" args="($con, $trans_db_name, $op_db_name)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">InstallIndexPage::create_trans_dbs           </td>
+          <td>(</td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>con</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>trans_db_name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>op_db_name</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
         </tr>
       </table>
 </div>
@@ -174,7 +248,7 @@ Define any CSS needed <dl compact><dt><b>Returns:</b></dt><dd>A CSS string </dd>
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>fannie/install/InstallIndexPage.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 14 Nov 2014 for CORE POS - Fannie by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 4 Dec 2014 for CORE POS - Fannie by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

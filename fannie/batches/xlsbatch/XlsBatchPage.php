@@ -183,7 +183,7 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
             </div>
             <label class="col-sm-2 control-label">Start Date</label>
             <div class="col-sm-4">
-                <input type="text" name="date1" id="date1" class="form-control" />
+                <input type="text" name="date1" id="date1" class="form-control date-field" />
             </div>
         </div>
         <div class="row form-group form-horizontal">
@@ -193,7 +193,7 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
             </div>
             <label class="col-sm-2 control-label">End Date</label>
             <div class="col-sm-4">
-                <input type="text" name="date2" id="date2" class="form-control" />
+                <input type="text" name="date2" id="date2" class="form-control date-field" />
             </div>
         </div>
         <div class="row form-group form-horizontal">
@@ -217,8 +217,6 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         </div>
         </form>
         <?php
-        $this->add_onload_command("\$('#date1').datepicker();\n");
-        $this->add_onload_command("\$('#date2').datepicker();\n");
 
         return ob_get_clean();
     }

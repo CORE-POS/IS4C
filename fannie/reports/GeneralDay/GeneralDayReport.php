@@ -290,7 +290,7 @@ class GeneralDayReport extends FannieReportPage
         <div class="form-group">
         <label>Date</label>
         <input type=text id=date1 name=date1 
-            class="form-control" required />
+            class="form-control date-field" required />
         </div>
         <label>Excel <input type=checkbox name=excel /></label>
         <p>
@@ -299,7 +299,6 @@ class GeneralDayReport extends FannieReportPage
         </p>
         </form>
         <?php
-        $this->add_onload_command("\$('#date1').datepicker();\n");
     }
 }
 
