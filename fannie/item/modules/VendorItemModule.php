@@ -140,24 +140,54 @@ class VendorItemModule extends ItemModule {
                     VALUES (?,?,?,?,?)');
         $upP = $dbc->prepare_statement('UPDATE vendorItems SET cost=?,units=?,sku=? WHERE
                     upc=? AND vendorID=?');
+        $initP = $dbc->prepare('
+            UPDATE vendorItems
+            SET brand=?,
+                description=?,
+                vendorDept=0
+            WHERE upc=?
+                AND vendorID=?');
+        $prod = new ProductsModel($dbc);
+        $prod->upc($upc);
+        $prod->load();
     
-        $ret = True;
+        $ret = true;
         for ($i=0;$i<count($ids);$i++){
-            if (!isset($skus[$i]) || !isset($costs[$i]) || !isset($units[$i]))
+            if (!isset($skus[$i]) || !isset($costs[$i]) || !isset($units[$i])) {
                 continue; // bad submit
-            if (empty($skus[$i]) || empty($costs[$i]))
+            }
+            // always create record for the default vendor
+            if ($ids[$i] == $prod->default_vendor_id()) {
+                if (empty($skus[$i])) {
+                    $skus[$i] = $prod->upc();
+                }
+                if (empty($costs[$i])) {
+                    $costs[$i] = $prod->cost();
+                }
+                if (empty($units[$i])) {
+                    $units[$i] = 1;
+                }
+            }
+            if (empty($skus[$i]) || empty($costs[$i])) {
                 continue; // no submission. don't create a record
+            }
 
             $chkR = $dbc->exec_statement($chkP,array($ids[$i],$upc));
             if ($dbc->num_rows($chkR) == 0){
                 $try = $dbc->exec_statement($insP,array($upc,$ids[$i],
                     $costs[$i],$units[$i],$skus[$i]));
-                if ($try === False) $ret = False;
-            }
-            else {
+                if ($try === false) {
+                    $ret = false;
+                } else {
+                    // initialize new record with product's brand
+                    // and description so it isn't blank
+                    $dbc->execute($initP, array($prod->brand(), $prod->description(),
+                        $upc, $ids[$i]));
+                }
+            } else {
                 $try = $dbc->exec_statement($upP,array($costs[$i],
                     $units[$i],$skus[$i],$upc,$ids[$i]));
-                if ($try === False) $ret = False;
+                if ($try === false) $ret = false;
             }
         }
 
