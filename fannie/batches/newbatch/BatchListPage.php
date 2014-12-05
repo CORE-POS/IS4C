@@ -362,13 +362,13 @@ class BatchListPage extends FannieRESTfulPage
             $ret .= "All<br />";
         }
 
-        $ret .= '<table class="table">';
+        $ret .= '<table class="table tablesorter"><thead>';
         $ret .= "<tr><th bgcolor=$colors[$c]>Batch Name</th>";
         $ret .= "<th bgcolor=$colors[$c]>Type</th>";
         $ret .= "<th bgcolor=$colors[$c]>Start date</th>";
         $ret .= "<th bgcolor=$colors[$c]>End date</th>";
         $ret .= "<th bgcolor=$colors[$c]>Owner/Super Dept.</th>";
-        $ret .= "<th colspan=\"3\">&nbsp;</th></tr>";
+        $ret .= "<th colspan=\"3\">&nbsp;</th></tr></thead><tbody>";
         
         // owner column might be in different places
         // depending if schema is up to date
@@ -466,7 +466,7 @@ class BatchListPage extends FannieRESTfulPage
             $lastBatchID = $fetchW[4];
         }
         
-        $ret .= "</table>";
+        $ret .= "</tbody></table>";
 
         if (is_numeric($maxBatchID)) {
             $ret .= sprintf("<a href=\"\" 
@@ -489,6 +489,7 @@ class BatchListPage extends FannieRESTfulPage
     {
         global $FANNIE_URL;
         $this->add_script('list.js');
+        $this->add_script('../../src/javascript/tablesorter/jquery.tablesorter.min.js');
         $this->add_css_file('index.css');
         ob_start();
         ?>
@@ -504,6 +505,7 @@ class BatchListPage extends FannieRESTfulPage
         $ret = ob_get_clean();
     
         $ret .= "<input type=hidden id=buttonimgpath value=\"{$FANNIE_URL}src/img/buttons/\" />";
+        $this->add_onload_command("\$('.tablesorter').tablesorter();");
 
         return $ret;
     }
