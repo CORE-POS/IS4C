@@ -497,6 +497,13 @@ function goToEdit() {
         $('#actionForm').submit();
     }
 }
+function goToList() {
+    if (getItems()) {
+        $('#actionForm').attr('action', 'ProductListPage.php');
+        $('#actionForm').append('<input type="hidden" name="supertype" id="supertype-field" value="upc" />');
+        $('#actionForm').submit();
+    }
+}
 function goToSigns() {
     if (getItems()) {
         $('#actionForm').attr('action', '../admin/labels/SignFromSearch.php');
@@ -775,7 +782,9 @@ function formReset()
         $ret .= '<p><button type="submit" class="btn btn-default btn-xs" 
             onclick="goToBatch();">Price or Sale Batch</button></p>';
         $ret .= '<p><button type="submit" class="btn btn-default btn-xs" 
-            onclick="goToEdit();">Edit Items</button></p>';
+            onclick="goToEdit();">Group Edit Items</button></p>';
+        $ret .= '<p><button type="submit" class="btn btn-default btn-xs" 
+            onclick="goToList();">Product List Tool</button></p>';
         $ret .= '<p><button class="btn btn-default btn-xs" type="submit" 
             onclick="goToSigns();">Tags/Signs</button></p>';
         $ret .= '<p><button class="btn btn-default btn-xs" type="submit" 
