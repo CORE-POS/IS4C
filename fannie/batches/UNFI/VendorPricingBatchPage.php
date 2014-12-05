@@ -26,7 +26,8 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class VendorPricingBatchPage extends FanniePage {
+class VendorPricingBatchPage extends FanniePage 
+{
     protected $title = "Fannie - Create Price Change Batch";
     protected $header = "Create Price Change Batch";
 
@@ -196,11 +197,11 @@ function saveprice(upc){
             $r = $dbc->exec_statement($p,array($superID));
             $sn = array_pop($dbc->fetch_row($r));
         }
-        $p = $dbc->prepare_statement("SELECT vendorName FROM vendors WHERE vendorID=?");
-        $r = $dbc->exec_statement($p,array($vendorID));
-        $vn = array_pop($dbc->fetch_row($r));
+        $vendor = new VendorsModel($dbc);
+        $vendor->vendorID($vendorID);
+        $vendor->load();
 
-        $batchName = $sn." ".$vn." PC ".date('m/d/y');
+        $batchName = $sn." ".$vendor->vendorName()." PC ".date('m/d/y');
 
         /* find a price change batch type */
         $typeP = $dbc->prepare_statement('SELECT MIN(batchTypeID) FROM batchType WHERE discType=0');
@@ -263,21 +264,13 @@ function saveprice(upc){
                 ON p.department=m.dept_ID ";
         }
         $query .= "WHERE v.cost > 0 ";
-        if ($superID != 99){
+        if ($superID != 99) {
             $query .= " AND m.superID=? ";
             $args[] = $superID;
         }
-        if ($filter === False)
+        if ($filter === false) {
             $query .= " AND p.normal_price <> s.srp ";
-
-        // use distributor field from price change page
-        // as "preferred vendor". default is UNFI
-        if ($vn != "UNFI"){
-            $query .= " AND x.distributor = ? ";
-            $args[] = $vn;
         }
-        else 
-            $query .= " AND (x.distributor='UNFI' or x.distributor <> b.vendorName) ";
 
         $query .= " ORDER BY p.upc";
 
