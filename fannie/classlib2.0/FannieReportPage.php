@@ -268,7 +268,7 @@ class FannieReportPage extends FanniePage
                     $footers = $this->calculate_footers($report_data);
                     $this->header_index = 0;
                     if (!empty($this->report_headers)) {
-                        $headers1 = $this->select_headers(True);
+                        $headers1 = $this->select_headers(true);
                         $xlsdata[] = $headers1;
                     }
                     $report_data = $this->xlsMeta($report_data);
@@ -850,7 +850,7 @@ class FannieReportPage extends FanniePage
                 // auto-link UPCs to edit tool
                 $row[$i] = sprintf('<a target="_new%s" href="%sitem/itemMaint.php?upc=%s">%s</a>',
                     $row[$i],$FANNIE_URL,$row[$i],$row[$i]);
-            } else if (preg_match('/^\d\d\d\d-\d\d-\d\d$/', $row[$i])) {
+            } else if (!$date && preg_match('/^\d\d\d\d-\d\d-\d\d$/', $row[$i])) {
                 // cell contains a date column
                 $date = $row[$i];
             } else if ($date && preg_match('/^\d+-\d+-\d+$/', $row[$i])) {
