@@ -196,6 +196,8 @@ private static String MAGELLAN_OUTPUT_DIR = "ss-output/";
 			return "GS1~"+s.Substring(3);
 		else if (s.Substring(0,5) == "S08B1")
 			return s.Substring(5);
+		else if (s.Substring(0,5) == "S08B3")
+			return s.Substring(5);
 		else
 			return s;
 
