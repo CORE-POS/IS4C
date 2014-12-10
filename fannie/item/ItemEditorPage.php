@@ -394,7 +394,7 @@ class ItemEditorPage extends FanniePage
         $ret .= '</div>'; // close fluid-container
 
         if (isset($shown['BaseItemModule'])) {
-            $this->add_onload_command("bindAutoComplete('#brand_field', '$ws', 'brand');\n");
+            $this->add_onload_command("bindAutoComplete('#brand-field', '$ws', 'brand');\n");
             $this->add_onload_command("bindAutoComplete('#vendor_field', '$ws', 'vendor');\n");
             $this->add_onload_command("addVendorDialog();\n");
         }
