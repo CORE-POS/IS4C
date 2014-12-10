@@ -156,7 +156,16 @@ for($i=$count;$i<5;$i++){
 	$cust->delete();
 }
 
-MeminfoModel::update($memNum, $MI_FIELDS);
+$meminfo = new MeminfoModel($sql);
+$meminfo->card_no($memNum);
+$meminfo->street($MI_FIELDS['street']);
+$meminfo->city($MI_FIELDS['city']);
+$meminfo->state($MI_FIELDS['state']);
+$meminfo->phone($MI_FIELDS['phone']);
+$meminfo->email_2($MI_FIELDS['email_2']);
+$meminfo->email_1($MI_FIELDS['email_1']);
+$meminfo->ads_OK($MI_FIELDS['ads_OK']);
+$meminfo->save();
 
 /* general note handling */
 $notetext = $_POST['notetext'];

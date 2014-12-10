@@ -99,6 +99,7 @@ class MemNameNumImportPage extends \COREPOS\Fannie\API\FannieUploadPage
         $perP = $dbc->prepare_statement("SELECT MAX(personNum) FROM custdata WHERE CardNo=?");
         $dateP = $dbc->prepare_statement('INSERT INTO memDates (card_no) VALUES (?)');
         $model = new CustdataModel($dbc);
+        $meminfo = new MeminfoModel($dbc);
         foreach($linedata as $line) {
             // get info from file and member-type default settings
             // if applicable
@@ -163,7 +164,8 @@ class MemNameNumImportPage extends \COREPOS\Fannie\API\FannieUploadPage
             }
 
             if ($pn == 1) {
-                MeminfoModel::update($cardno,array());
+                $meminfo->card_no($cardno);
+                $meminfo->save();
                 $dbc->exec_statement($dateP,array($cardno));
             }
         }

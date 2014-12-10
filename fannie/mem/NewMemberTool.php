@@ -206,6 +206,7 @@ class NewMemberTool extends FanniePage
         $model->staff($defaults['staff']);
         $model->SSI($defaults['ssi']);
         $model->memType($mtype);
+        $meminfo = new MeminfoModel($dbc);
 
         $chkP = $dbc->prepare_statement('SELECT CardNo FROM custdata WHERE CardNo=?');
         $mdP = $dbc->prepare_statement("INSERT INTO memDates VALUES (?,NULL,NULL)");
@@ -220,7 +221,9 @@ class NewMemberTool extends FanniePage
             $model->CardNo($i);
             $model->blueLine($i.' '.$name);
             $model->save();
-            MeminfoModel::update($i, array());
+            $meminfo->card_no($i);
+            $meminfo->save();
+
             $dbc->exec_statement($mdP, array($i));
             $dbc->exec_statement($mcP, array($i));
         }

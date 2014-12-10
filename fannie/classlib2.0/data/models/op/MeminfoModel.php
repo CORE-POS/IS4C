@@ -51,7 +51,23 @@ class MeminfoModel extends BasicModel
     'email_1' => array('type'=>'VARCHAR(50)'),
     'email_2' => array('type'=>'VARCHAR(50)'),
     'ads_OK' => array('type'=>'TINYINT','default'=>1),
+    'modified'=>array('type'=>'DATETIME','ignore_updates'=>true),
     );
+
+    public function save()
+    {
+        $stack = debug_backtrace();
+        $lane_push = false;
+        if (isset($stack[1]) && $stack[1]['function'] == 'pushToLanes') {
+            $lane_push = true;
+        }
+
+        if ($this->record_changed && !$lane_push) {
+            $this->modified(date('Y-m-d H:i:s'));
+        }
+
+        return parent::save();
+    }
 
     public function doc()
     {
@@ -109,6 +125,25 @@ so better to not use them in favour of custdata.
 - ads_OK EL: Perhaps: flag for whether OK to send ads.
   Don\'t know whether implemented for this or any purpose.
         ';
+    }
+
+    /**
+      Use custdata to set initial change timestamps
+    */
+    public function hookAddColumnmodified()
+    {
+        if ($this->connection->dbmsName() == 'mssql') {
+            $this->connection->query('
+                UPDATE meminfo
+                SET m.modified=c.LastChange
+                FROM meminfo AS m
+                    INNER JOIN custdata AS c ON m.card_no=c.CardNo AND c.personNum=1');
+        } else {
+            $this->connection->query('
+                UPDATE meminfo AS m
+                    INNER JOIN custdata AS c ON m.card_no=c.CardNo AND c.personNum=1
+                SET m.modified=c.LastChange');
+        }
     }
 
     /* START ACCESSOR FUNCTIONS */
@@ -590,6 +625,43 @@ so better to not use them in favour of custdata.
                 }
             }
             $this->instance["ads_OK"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function modified()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["modified"])) {
+                return $this->instance["modified"];
+            } else if (isset($this->columns["modified"]["default"])) {
+                return $this->columns["modified"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'modified',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["modified"]) || $this->instance["modified"] != func_get_args(0)) {
+                if (!isset($this->columns["modified"]["ignore_updates"]) || $this->columns["modified"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["modified"] = func_get_arg(0);
         }
         return $this;
     }

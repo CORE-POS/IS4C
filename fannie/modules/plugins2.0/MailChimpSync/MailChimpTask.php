@@ -105,6 +105,7 @@ class MailChimpTask extends FannieTask
                 $email = $record[$columns['EMAIL ADDRESS']];
                 $fn = $record[$columns['FIRST NAME']];
                 $ln = $record[$columns['LAST NAME']];
+                $changed = isset($record[$columns['LAST_CHANGED']]) ? $record[$columns['LAST_CHANGED']] : 0;
 
                 /** MailChimp has a POS member number tag **/
                 if (!empty($card_no)) {
@@ -121,6 +122,19 @@ class MailChimpTask extends FannieTask
                             $custdata->personNum(1);
                             $custdata->load();
                             $update = array();
+                            $meminfo->reset();
+                            $meminfo->card_no($card_no);
+                            $meminfo->load();
+                            if ($meminfo->email_1() != $email && strtotime($changed) > strtotime($meminfo->modified())) {
+                                echo $this->cronMsg(printf("MISMATCH: POS says %s, MailChimp says %s, Mailchimp is newer",
+                                $meminfo->email_1(), $email));
+                                $meminfo->email_1($email);
+                                $meminfo->save();
+                            } elseif ($meminfo->email_1() != $email) {
+                                $update['EMAIL'] = $meminfo->email_1();
+                                echo $this->cronMsg(printf("MISMATCH: POS says %s, MailChimp says %s, POS is newer",
+                                $meminfo->email_1(), $email));
+                            }
                             if (strtoupper(trim($custdata->FirstName())) != strtoupper($fn)) {
                                 echo $this->cronMsg(sprintf("MISMATCH: POS says %s, MailChimp says %s",
                                     $custdata->FirstName(), $fn));
@@ -133,22 +147,12 @@ class MailChimpTask extends FannieTask
                             }
                             if (count($update) > 0) {
                                 $email_struct = array(
-                                    'email' => $email,
                                     'euid' => $record[$columns['EUID']],
                                     'leid' => $record[$columns['LEID']],
                                 );
                                 echo $this->cronMsg(sprintf("Updating name field(s) for member #%d", $card_no));
                                 $mc->lists->updateMember($LISTID, $email_struct, $update, '', false);
                                 sleep(1);
-                            }
-                            $meminfo->reset();
-                            $meminfo->card_no($card_no);
-                            $meminfo->load();
-                            if ($meminfo->email_1() != $email) {
-                                echo $this->cronMsg(printf("MISMATCH: POS says %s, MailChimp says %s",
-                                $meminfo->email_1(), $email));
-                                $meminfo->email_1($email);
-                                $meminfo->save();
                             }
                             break;
                         /**
