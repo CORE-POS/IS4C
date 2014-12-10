@@ -261,7 +261,7 @@ class BaseItemModule extends ItemModule {
         $ret .= ' <label>Vendor</label> ';
         if ($normalizedVendorID || empty($rowItem['distributor'])) {
             $ret .= '<select name="distributor" class="chosen-select form-control"
-                        id="vendor_field">';
+                        id="vendor_field" onchange="vendorChanged();">';
             $ret .= '<option value="0"></option>';
             $vendors = new VendorsModel($dbc);
             foreach ($vendors->find('vendorName') as $v) {
@@ -460,6 +460,21 @@ class BaseItemModule extends ItemModule {
 
             });
         }
+        function vendorChanged()
+        {
+            var newVal = $('#vendor_field').val();
+            $.ajax({
+                url: '<?php echo $FANNIE_URL; ?>item/modules/BaseItemModule.php',
+                data: 'vendorChanged='+newVal,
+                dataType: 'json',
+                cache: false,
+                success: function(resp) {
+                    if (!resp.error) {
+                        $('#local-origin-id').val(resp.localID);
+                    }
+                }
+            });
+        }
         function addVendorDialog()
         {
             var v_dialog = $('#newVendorDialog').dialog({
@@ -600,22 +615,18 @@ class BaseItemModule extends ItemModule {
             $arr['manufacturer'] = $dbc->escape(str_replace("'",'',FormLib::get_form_value('manufacturer')));
             $arr['distributor'] = $dbc->escape(str_replace("'",'',FormLib::get_form_value('distributor')));
             $arr['location'] = 0;
-
-            $checkP = $dbc->prepare_statement('SELECT upc FROM prodExtra WHERE upc=?');
-            $checkR = $dbc->exec_statement($checkP,array($upc));
-            if ($dbc->num_rows($checkR) == 0){
-                // if prodExtra record doesn't exist, needs more values
-                $arr['upc'] = $dbc->escape($upc);
-                $arr['variable_pricing'] = 0;
-                $arr['margin'] = 0;
-                $arr['case_quantity'] = "''";
-                $arr['case_cost'] = 0.00;
-                $arr['case_info'] = "''";
-                $dbc->smart_insert('prodExtra',$arr);
+            $extra = new ProdExtraModel($dbc);
+            $extra->upc($upc);
+            if (!$extra->load()) {
+                $extra->variable_pricing(0);
+                $extra->margin(0);
+                $extra->case_quantity('');
+                $extra->case_cost(0.00);
+                $extra->case_info('');
             }
-            else {
-                $dbc->smart_update('prodExtra',$arr,"upc='$upc'");
-            }
+            $extra->manufacturer(str_replace("'",'',FormLib::get('manufacturer')));
+            $extra->distributor(str_replace("'",'',FormLib::get('distributor')));
+            $extra->save();
         }
 
         if (!isset($FANNIE_PRODUCT_MODULES['ProdUserModule'])) {
@@ -655,7 +666,7 @@ class BaseItemModule extends ItemModule {
                     $json['vendorName'] = $name;
                 }
             }
-        } else {
+        } elseif (FormLib::get('dept_defaults') !== '') {
             $json = array('tax'=>0,'fs'=>False,'nodisc'=>False);
             $dept = FormLib::get_form_value('dept_defaults','');
             $p = $db->prepare_statement('SELECT dept_tax,dept_fs,dept_discount
@@ -666,6 +677,16 @@ class BaseItemModule extends ItemModule {
                 $json['tax'] = $w['dept_tax'];
                 if ($w['dept_fs'] == 1) $json['fs'] = True;
                 if ($w['dept_discount'] == 0) $json['nodisc'] = True;
+            }
+        } elseif (FormLib::get('vendorChanged') !== '') {
+            $v = new VendorsModel($db);
+            $v->vendorName(FormLib::get('vendorChanged'));
+            $matches = $v->find();
+            $json = array('error'=>false);
+            if (count($matches) == 1) {
+                $json['localID'] = $matches[0]->localOriginID();
+            } else {
+                $json['error'] = true;
             }
         }
 
