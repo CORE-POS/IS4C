@@ -480,7 +480,6 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 <input type="hidden" name="supertype" value="' . $supertype . '" />
                 <input type="hidden" name="deptStart" value="' . $deptStart . '" />
                 <input type="hidden" name="deptEnd" value="' . $deptEnd . '" />
-                <input type="hidden" name="deptSub" value="' . $deptSub . '" />
                 <input type="hidden" name="deptSub" value="' . $super . '" />
                 <input type="hidden" name="manufacturer" value="' . $manufacturer . '" />
                 <input type="hidden" name="mtype" value="' . $mtype . '" />
