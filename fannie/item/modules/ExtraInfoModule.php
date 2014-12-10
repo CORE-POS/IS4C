@@ -56,7 +56,7 @@ class ExtraInfoModule extends ItemModule
             $local_opts[1] = 'Yes'; // generic local if no origins defined
         }
 
-        $localSelect = '<select name="local" class="form-control">';
+        $localSelect = '<select name="local" id="local-origin-id" class="form-control">';
         foreach($local_opts as $id => $val) {
             $localSelect .= sprintf('<option value="%d" %s>%s</option>',
                 $id, ($id == $info['local']?'selected':''), $val);
