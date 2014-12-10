@@ -302,5 +302,377 @@ class FormLib
         return ob_get_clean();
     }
 
+    /**
+      Build a standardized set of for querying items
+      Currently includes tabs for:
+      * department / superdepartment
+      * brand
+      * vendor
+      * like code
+    */
+    public function standardItemFields()
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        ob_start();
+        ?>
+        <div class="col-sm-5">
+            <ul class="nav nav-tabs" role="tablist">
+                <li class="active"><a href="#dept-tab" data-toggle="tab"
+                    onclick="$('#supertype').val('dept');">Department</a></li>
+                <li><a href="#manu-tab" data-toggle="tab"
+                    onclick="$('#supertype').val('manu');">Brand</a></li>
+                <li><a href="#vendor-tab" data-toggle="tab"
+                    onclick="$('#supertype').val('vendor');">Vendor</a></li>
+                <li><a href="#likecode-tab" data-toggle="tab"
+                    onclick="$('#supertype').val('likecode');">Like Code</a></li>
+            </ul>
+            <input id="supertype" name="lookup-type" type="hidden" value="dept" />
+            <div class="tab-content"><p>
+                <div class="tab-pane active" id="dept-tab">
+                    <div class="well">
+                    Selecting a Buyer/SuperDept overrides Department Start/Department End.
+                    To run reports for a specific department(s) leave Buyer/SuperDept empty or set it to 'blank'
+                    </div>
+                    <div class="row form-group form-horizontal">
+                        <label class="control-label col-sm-3">Buyer (SuperDept)</label>
+                        <div class="col-sm-8">
+                            <select name=deptSub class="form-control">
+                                <option value=""></option>
+                                <?php
+                                $supers = $dbc->query('
+                                    SELECT superID, super_name
+                                    FROM superDeptNames
+                                    ORDER BY superID');         
+                                while ($row = $dbc->fetch_row($supers)) {
+                                    printf('<option value="%d">%s</option>',
+                                        $row['superID'], $row['super_name']);
+                                }
+                                ?>
+                                <option value="-2">All Retail</option>
+                                <option value="-1">All</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row form-group form-horizontal">
+                        <label class="control-label col-sm-3">Department Start</label>
+                        <div class="col-sm-6">
+                            <select onchange="$('#deptStart').val(this.value);" class="form-control input-sm">
+                            <?php
+                            $depts = array();
+                            $res = $dbc->query('
+                                SELECT dept_no, dept_name
+                                FROM departments
+                                ORDER BY dept_no');
+                            while ($w = $dbc->fetch_row($res)) {
+                                $depts[$w['dept_no']] = $w['dept_name'];
+                            }
+                            foreach ($depts as $id => $name) {
+                                printf('<option value="%d">%d %s</option>',
+                                    $id, $id, $name);
+                            }
+                            ?>
+                            </select>
+                        </div>
+                        <div class="col-sm-2">
+                            <input type=text id=deptStart name=dept-start 
+                                class="form-control input-sm" value=1>
+                        </div>
+                    </div>
+                    <div class="form-group form-horizontal row">
+                        <label class="control-label col-sm-3">Department End</label>
+                        <div class="col-sm-6">
+                            <select onchange="$('#deptEnd').val(this.value);" class="form-control input-sm">
+                            <?php
+                            foreach ($depts as $id => $name) {
+                                printf('<option value="%d">%d %s</option>',
+                                    $id, $id, $name);
+                            }
+                            ?>
+                            </select>
+                        </div>
+                        <div class="col-sm-2">
+                            <input type=text id=deptEnd name=dept-end 
+                                class="form-control input-sm" value=1>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane" id="manu-tab">
+                    <div class="form-group form-inline">
+                        <label><?php echo _('Brand'); ?></label>
+                        <input type=text name=manufacturer class="form-control" />
+                    </div>
+                    <div class="form-group form-inline">
+                        <label><input type=radio name=mtype value=prefix checked />
+                            UPC prefix</label>
+                        <label><input type=radio name=mtype value=name />
+                            <?php echo _('Brand name'); ?></label>
+                    </div>
+                </div>
+                <div class="tab-pane" id="vendor-tab">
+                    <div class="form-group form-inline">
+                        <label>Vendor</label>
+                        <select name="vendor" class="form-control">
+                        <?php
+                        $vendors = $dbc->query('
+                            SELECT vendorID, vendorName
+                            FROM vendors
+                            ORDER BY vendorName');
+                        while ($w = $dbc->fetch_row($vendors)) {
+                            printf('<option value="%d">%s</option>',
+                                $w['vendorID'], $w['vendorName']);
+                        }
+                        ?>
+                        </select>
+                    </div>
+                </div>
+                <div class="tab-pane" id="likecode-tab">
+                    <div class="row form-group form-horizontal">
+                        <label class="control-label col-sm-3">Likecode Start</label>
+                        <div class="col-sm-6">
+                            <select onchange="$('#lc-start').val(this.value);" class="form-control input-sm">
+                            <?php
+                            $likecodes = $dbc->query('
+                                SELECT likeCode, likeCodeDesc
+                                FROM likeCodes
+                                ORDER BY likeCode');
+                            $lc_list = array();
+                            while ($w = $dbc->fetch_row($likecodes)) {
+                                $lc_list[$w['likeCode']] = $w['likeCodeDesc'];
+                            }
+                            foreach ($lc_list as $id => $name) {
+                                printf('<option value="%d">%d %s</option>',
+                                    $id, $id, $name);
+                            }
+                            ?>
+                            </select>
+                        </div>
+                        <div class="col-sm-2">
+                            <input type=text id=lc-start name=lc-start 
+                                class="form-control input-sm" value=1>
+                        </div>
+                    </div>
+                    <div class="row form-group form-horizontal">
+                        <label class="control-label col-sm-3">Likecode End</label>
+                        <div class="col-sm-6">
+                            <select onchange="$('#lc-end').val(this.value);" class="form-control input-sm">
+                            <?php
+                            foreach ($lc_list as $id => $name) {
+                                printf('<option value="%d">%d %s</option>',
+                                    $id, $id, $name);
+                            }
+                            ?>
+                            </select>
+                        </div>
+                        <div class="col-sm-2">
+                            <input type=text id=lc-end name=lc-end 
+                                class="form-control input-sm" value=1>
+                        </div>
+                    </div>
+                </div>
+            </p></div>
+        </div>
+        <?php
+
+        return ob_get_clean();
+    }
+
+    /**
+      Generate standard date fields with date_range_picker
+    */
+    public function standardDateFields()
+    {
+        return '
+        <div class="col-sm-5 form-horizontal">
+            <div class="form-group">
+                <label class="col-sm-4 control-label">Start Date</label>
+                <div class="col-sm-8">
+                    <input type="text" id="date1" name="date1" class="form-control date-field" required />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-4 control-label">End Date</label>
+                <div class="col-sm-8">
+                    <input type="text" id="date2" name="date2" class="form-control date-field" required />
+                </div>
+            </div>
+            <div class="form-group">
+                ' . self::date_range_picker() . '
+            </div>
+        </div>
+        ';
+    }
+
+    /**
+      Generate FROM and WHERE clauses with appropriate parameters
+      and joins based on the standard form submissions.
+      @return [keyed array]
+      - query [string] from and where clauses
+      - args [array] corresponding parameters
+    */
+    public function standardItemFromWhere()
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $start_date = self::getDate('date1', date('Y-m-d'));
+        $end_date = self::getDate('date2', date('Y-m-d'));
+        $dlog = DTransactionsModel::selectDlog($start_date, $end_date);
+        $lookupType = self::get('lookup-type', 'dept');
+
+        $query = '
+            FROM ' . $dlog . ' AS t 
+                LEFT JOIN departments AS d ON t.department=d.dept_no
+                LEFT JOIN products AS p ON t.upc=p.upc 
+                LEFT JOIN MasterSuperDepts AS m ON t.department=m.dept_ID 
+                LEFT JOIN vendors AS v ON p.default_vendor_id=v.vendorID
+                LEFT JOIN prodExtra AS x ON t.upc=x.upc ';
+        $args = array();
+        switch ($lookupType) {
+            case 'dept':
+                $super = FormLib::get('super-dept');
+                if ($super !== '' && $super >= 0) {
+                    $query .= ' LEFT JOIN superdepts AS s ON t.department=s.dept_ID ';
+                }
+                break;
+            case 'manu':
+                break;
+            case 'vendor':
+                $query .= ' LEFT JOIN vendors AS z ON x.distributor=z.vendorName ';
+                break;
+            case 'likecode':
+                $query .= ' LEFT JOIN upcLike AS u ON t.upc=u.upc ';
+                break;
+        }
+
+        $query .= ' WHERE t.tdate BETWEEN ? AND ? ';
+        $args[] = $start_date . ' 00:00:00';
+        $args[] = $end_date . ' 23:59:59';
+
+        switch ($lookupType) {
+            case 'dept':
+                $super = FormLib::get('super-dept');
+                if ($super !== '' && $super >= 0) {
+                    $query .= ' AND s.superID=? ';
+                    $args[] = $super;
+                    /**
+                      Using an extra query here to look up the
+                      matching department numbers add adding them
+                      to the query leads to better index utilization
+                      and performance when querying transaction
+                      history
+                    */
+                    $optimizeP = $dbc->prepare('
+                        SELECT dept_ID
+                        FROM superdepts
+                        WHERE superID=?');
+                    $optimizeR = $dbc->execute($optimizeP, array($super));
+                    $dept_in = '';
+                    while ($optimizeW = $dbc->fetch_row($optimizeR)) {
+                        $dept_in .= '?,';
+                        $args[] = $optimizeW['dept_ID'];
+                    }
+                    if ($dept_in !== '') {
+                        $dept_in = substr($dept_in, 0, strlen($dept_in)-1);
+                        $query .= ' AND t.department IN (' . $dept_in . ') ';
+                    }
+                } elseif ($super !== '' && $super == -2) {
+                    $query .= ' AND m.superID <> 0 ';
+                    $optimizeP = $dbc->prepare('
+                        SELECT dept_ID
+                        FROM MasterSuperDepts
+                        WHERE superID<>0');
+                    $optimizeR = $dbc->execute($optimizeP);
+                    $dept_in = '';
+                    while ($optimizeW = $dbc->fetch_row($optimizeR)) {
+                        $dept_in .= '?,';
+                        $args[] = $optimizeW['dept_ID'];
+                    }
+                    if ($dept_in !== '') {
+                        $dept_in = substr($dept_in, 0, strlen($dept_in)-1);
+                        $query .= ' AND t.department IN (' . $dept_in . ') ';
+                    }
+                } elseif ($super === '') {
+                    $query .= ' AND t.department BETWEEN ? AND ? ';
+                    $args[] = FormLib::get('dept-start', 1);
+                    $args[] = FormLib::get('dept-end', 1);
+                }
+                break;
+            case 'manu':
+                $mtype = FormLib::get('mtype');
+                if ($mtype == 'prefix') {
+                    $query .= ' AND t.upc LIKE ? ';
+                    $args[] = '%' . FormLib::get('manufacturer') . '%';
+                } else {
+                    $query .= ' AND (p.brand LIKE ? OR x.manufacturer LIKE ?) ';
+                    $manu = '%' . FormLib::get('manufacturer') . '%';
+                    $args[] = $manu;
+                    $args[] = $manu;
+                    $optimizeP = $dbc->prepare('
+                        SELECT p.department
+                        FROM products AS p
+                            LEFT JOIN prodExtra AS x ON p.upc=x.upc
+                        WHERE (p.brand LIKE ? OR x.manufacturer LIKE ?)
+                        GROUP BY p.department');
+                    $optimizeR = $dbc->execute($optimizeP, array($manu, $manu));
+                    $dept_in = '';
+                    while ($optimizeW = $dbc->fetch_row($optimizeR)) {
+                        $dept_in .= '?,';
+                        $args[] = $optimizeW['department'];
+                    }
+                    if ($dept_in !== '') {
+                        $dept_in = substr($dept_in, 0, strlen($dept_in)-1);
+                        $query .= ' AND t.department IN (' . $dept_in . ') ';
+                    }
+                }
+                break;
+            case 'vendor':
+                $query .= ' AND (p.default_vendor_id=? OR z.vendorID=?) ';
+                $vID = FormLib::get('vendor', 1);
+                $args[] = $vID;
+                $args[] = $vID;
+                $optimizeP = $dbc->prepare('
+                    SELECT p.department
+                    FROM products AS p
+                        LEFT JOIN prodExtra AS x ON p.upc=x.upc
+                        LEFT JOIN vendors AS v ON x.distributor=v.vendorName
+                    WHERE (p.default_vendor_id=? OR v.vendorID=?
+                    GROUP BY p.department');
+                $optimizeR = $dbc->execute($optimizeP, array($vID, $vID));
+                $dept_in = '';
+                while ($optimizeW = $dbc->fetch_row($optimizeR)) {
+                    $dept_in .= '?,';
+                    $args[] = $optimizeW['department'];
+                }
+                if ($dept_in !== '') {
+                    $dept_in = substr($dept_in, 0, strlen($dept_in)-1);
+                    $query .= ' AND t.department IN (' . $dept_in . ') ';
+                }
+                break;
+            case 'likecode':
+                $query .= ' AND u.likeCode BETWEEN ? AND ? ';
+                $args[] = FormLib::get('lc-start', 1);
+                $args[] = FormLib::get('lc-end', 1);
+                $optimizeP = $dbc->prepare('
+                    SELECT p.department
+                    FROM products AS p
+                        INNER JOIN upcLike AS u ON p.upc=u.upc
+                    WHERE u.likeCode BETWEEN ? AND ?
+                    GROUP BY p.department');
+                $optimizeR = $dbc->execute($optimizeP, array(FormLib::get('lc-start', 1), FormLib::get('lc-end', 1)));
+                $dept_in = '';
+                while ($optimizeW = $dbc->fetch_row($optimizeR)) {
+                    $dept_in .= '?,';
+                    $args[] = $optimizeW['department'];
+                }
+                if ($dept_in !== '') {
+                    $dept_in = substr($dept_in, 0, strlen($dept_in)-1);
+                    $query .= ' AND t.department IN (' . $dept_in . ') ';
+                }
+                break;
+        }
+
+        return array('query'=>$query, 'args'=>$args);
+    }
+
 }
 
