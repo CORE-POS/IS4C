@@ -45,6 +45,9 @@ class MemDiscountRemoveModel extends LocalTransModel
     /* disabled because it's a view */
     public function create()
     { 
+        if ($this->connection->isView($this->name)) {
+            return true;
+        }
         $viewSQL = "CREATE view memdiscountremove as
             Select 
             max(datetime) as datetime, 

@@ -97,7 +97,7 @@ class RenderReceiptPage extends FanniePage {
             $this->add_onload_command("\$('#date-field').val('$date1');\n");
             $this->add_onload_command("\$('#trans-field').val('$transNum');\n");
         }
-        $this->add_onload_command("\$('#date-field').datepicker();\n");
+        $this->add_onload_command("\$('#date-field').datepicker({dateFormat:'yy-mm-dd'});\n");
 
         return $ret;
     }

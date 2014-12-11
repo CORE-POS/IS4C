@@ -124,12 +124,14 @@ class DepartmentMovementReport extends FannieReportPage
                       SUM(CASE WHEN trans_status IN('','0') THEN 1 WHEN trans_status='V' THEN -1 ELSE 0 END) as rings,"
                       . DTrans::sumQuantity('t')." as qty,
                       SUM(t.total) AS total,
-                      d.dept_no,d.dept_name,s.superID,x.distributor
+                      d.dept_no,d.dept_name,s.superID,
+                      COALESCE(v.vendorName,x.distributor) AS distributor
                       FROM $dlog as t "
                       . DTrans::joinProducts()
                       . DTrans::joinDepartments()
                       . "LEFT JOIN $superTable AS s ON t.department = s.dept_ID
                       LEFT JOIN prodExtra as x on t.upc = x.upc
+                      LEFT JOIN vendors AS v ON p.default_vendor_id=v.vendorID
                       WHERE $filter_condition
                       AND t.trans_type IN ('I', 'D')
                       AND tdate BETWEEN ? AND ?
@@ -137,7 +139,7 @@ class DepartmentMovementReport extends FannieReportPage
                       AND " . DTrans::isStoreID($store, 't') . "
                       GROUP BY t.upc,
                           CASE WHEN p.description IS NULL THEN t.description ELSE p.description END,
-                      d.dept_no,d.dept_name,s.superID,x.distributor ORDER BY SUM(t.total) DESC";
+                      d.dept_no,d.dept_name,s.superID,distributor ORDER BY SUM(t.total) DESC";
                 break;
             case 'Department':
                 $query =  "SELECT t.department,d.dept_name,"
@@ -380,13 +382,13 @@ class DepartmentMovementReport extends FannieReportPage
         <div class="form-group">
             <label class="col-sm-4 control-label">Start Date</label>
             <div class="col-sm-8">
-                <input type=text id=date1 name=date1 class="form-control" required />
+                <input type=text id=date1 name=date1 class="form-control date-field" required />
             </div>
         </div>
         <div class="form-group">
             <label class="col-sm-4 control-label">End Date</label>
             <div class="col-sm-8">
-                <input type=text id=date2 name=date2 class="form-control" required />
+                <input type=text id=date2 name=date2 class="form-control date-field" required />
             </div>
         </div>
         <div class="form-group">
@@ -400,8 +402,6 @@ class DepartmentMovementReport extends FannieReportPage
     </p>
 </form>
 <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
     }
 
     public function helpContent()

@@ -227,7 +227,7 @@ class ReverseTransPage extends FannieRESTfulPage {
         <div class="row form-group form-horizontal">
             <label class="col-sm-1">Date</label>
             <div class="col-sm-5">
-                <input type="text" id="rdate" class="form-control" required />
+                <input type="text" id="rdate" class="form-control date-field" required />
             </div>
         </div>
         <div class="row form-group form-horizontal">
@@ -243,7 +243,6 @@ class ReverseTransPage extends FannieRESTfulPage {
         <div id=contentarea>
         </div>
         <?php
-        $this->add_onload_command("\$('#rdate').datepicker();\n");
 
         return ob_get_clean();
     }

@@ -115,9 +115,11 @@ class FanniePage
                 echo '<em>Warning: bootstrap does not appear to be installed. Try running composer update</em>';
             }
             $this->addScript($FANNIE_URL . 'src/javascript/jquery-ui.js');
+            $this->addScript($FANNIE_URL . 'src/javascript/calculator.js');
             $this->addCssFile($FANNIE_URL . 'src/javascript/jquery-ui.css?id=20140625');
             $this->addCssFile($FANNIE_URL . 'src/css/configurable.php');
             $this->addCssFile($FANNIE_URL . 'src/css/print.css');
+            $this->add_onload_command('standardFieldMarkup();');
         } else {
             include(dirname(__FILE__) . '/../src/header.html');
         }
@@ -515,6 +517,11 @@ function enableLinea(selector, callback)
         return false;
     }
 
+    public function unitTest($phpunit)
+    {
+
+    }
+
     /**
       Check for input and display the page
     */
@@ -597,6 +604,26 @@ function showBootstrapPopover(element, original_value, error_message)
     });
     element.popover('show');
     setTimeout(function(){element.popover('destroy');}, timeout);
+}
+function mathField(elem)
+{
+    try {
+        console.log(elem);
+        console.log(elem.value);
+        var newval = calculator.parse(elem.value);
+        elem.value = newval;
+    } catch (e) { }
+}
+function standardFieldMarkup()
+{
+    $('input.date-field').datepicker({
+        dateFormat: 'yy-mm-dd',    
+        changeYear: true,
+        yearRange: "c-10:c+10",
+    });
+    $('input.math-field').change(function (event) {
+        mathField(event.target);
+    });
 }
                     <?php
                 }

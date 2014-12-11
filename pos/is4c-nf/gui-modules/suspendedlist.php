@@ -72,7 +72,7 @@ class suspendedlist extends NoInputPage {
 			$result = $db_a->query($query_local);
 		}
 
-		$num_rows = $db_a->num_rows($result);
+		$num_rows = $result ? $db_a->num_rows($result) : 0;
 		
 		/* if there are suspended transactions available, 
 		 * store the result and row count as class variables

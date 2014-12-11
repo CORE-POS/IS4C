@@ -153,7 +153,7 @@ if ($FANNIE_AUTH_ENABLED){
                         // populate known privileges table automatically
                         $db = FannieDB::get($FANNIE_OP_DB);
                         ob_start(); // don't care about primary key errors
-                        loaddata($db, 'userKnownPrivs');
+                        \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db, 'userKnownPrivs');
                         ob_end_clean();
                         // loaddata() has no return value; success assumed.
                         echo "Table {$FANNIE_OP_DB}.userKnownPrivs has been populated with the standard privilege set.<br />";

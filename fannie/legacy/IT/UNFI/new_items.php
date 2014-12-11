@@ -1,11 +1,11 @@
 <?php
 include('../../../config.php');
+if (!class_exists('FannieAPI'))
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 require($FANNIE_ROOT.'src/SQLManager.php');
 include('../../db.php');
 require($FANNIE_ROOT.'item/pricePerOunce.php');
-if (!class_exists('FannieAPI'))
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 if (isset($_GET["action"])){
 	$out = $_GET["action"]."`";
@@ -182,6 +182,7 @@ for ($i=0; $i<count($depts); $i++){
         $product->tax($tax);
         $product->foodstamp($fs);
         $product->cost($costs[$i]);
+        $product->default_vendor_id(1);
         $product->save();
 
 		$sql->execute($xtraP, array($upcs[$i], $brands[$i], $costs[$i]));

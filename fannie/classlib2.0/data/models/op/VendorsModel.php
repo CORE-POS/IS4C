@@ -38,7 +38,8 @@ class VendorsModel extends BasicModel
     'fax' => array('type'=>'VARCHAR(15)'),
     'email' => array('type'=>'VARCHAR(50)'),
     'website' => array('type'=>'VARCHAR(100)'),
-    'notes' => array('type'=>'TEXT')
+    'notes' => array('type'=>'TEXT'),
+    'localOriginID' => array('type'=>'INT', 'default'=>0),
     );
 
     public function doc()
@@ -352,6 +353,43 @@ List of known vendors. Pretty simple.
                 }
             }
             $this->instance["notes"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function localOriginID()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["localOriginID"])) {
+                return $this->instance["localOriginID"];
+            } else if (isset($this->columns["localOriginID"]["default"])) {
+                return $this->columns["localOriginID"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'localOriginID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["localOriginID"]) || $this->instance["localOriginID"] != func_get_args(0)) {
+                if (!isset($this->columns["localOriginID"]["ignore_updates"]) || $this->columns["localOriginID"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["localOriginID"] = func_get_arg(0);
         }
         return $this;
     }

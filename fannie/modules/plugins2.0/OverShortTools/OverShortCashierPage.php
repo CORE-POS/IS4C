@@ -331,7 +331,6 @@ class OverShortCashierPage extends FanniePage {
         global $FANNIE_URL;
         ob_start();
         $this->add_script('js/cashier.js'); 
-        $this->add_onload_command("\$('#date').datepicker();");
         if (!$this->window_dressing) {
             echo "<html>";
             echo "<head><title>{$this->title}</title>";
@@ -341,7 +340,7 @@ class OverShortCashierPage extends FanniePage {
         ?>
         <div id=input class="form-inline form-group">
         <form id="osForm" style='margin-top:1.0em;' onsubmit="loadCashier(); return false;">
-        <label>Date</label>:<input class="form-control" type=text name=date id=date required />
+        <label>Date</label>:<input class="form-control date-field" type=text name=date id=date required />
         <label>Cashier</label>:<input type=text name=empno id=empno class="form-control" required />
         <?php
         $_REQUEST['store'] = 1;

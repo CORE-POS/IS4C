@@ -170,7 +170,8 @@ class AdvancedItemSearch extends FannieRESTfulPage
 
         $vendorID = FormLib::get('vendor');
         if ($vendorID !== '') {
-            $where .= ' AND v.vendorID=? ';
+            $where .= ' AND (v.vendorID=? OR p.default_vendor_id=?)';
+            $args[] = $vendorID;
             $args[] = $vendorID;
             if (!strstr($from, 'vendorItems')) {
                 $from .= ' LEFT JOIN vendorItems AS v ON p.upc=v.upc ';
@@ -497,6 +498,13 @@ function goToEdit() {
         $('#actionForm').submit();
     }
 }
+function goToList() {
+    if (getItems()) {
+        $('#actionForm').attr('action', 'ProductListPage.php');
+        $('#actionForm').append('<input type="hidden" name="supertype" id="supertype-field" value="upc" />');
+        $('#actionForm').submit();
+    }
+}
 function goToSigns() {
     if (getItems()) {
         $('#actionForm').attr('action', '../admin/labels/SignFromSearch.php');
@@ -611,9 +619,8 @@ function formReset()
             <select class="form-control input-sm" name="modOp"><option>On</option><option>Before</option><option>After</option></select>
             </div>';
         $ret .= '<div class="col-sm-2">
-            <input type="text" name="modDate" id="modDate" class="form-control input-sm" 
+            <input type="text" name="modDate" id="modDate" class="form-control input-sm date-field" 
                     placeholder="Modified date" /></div>';
-        $this->add_onload_command("\$('#modDate').datepicker();\n");
 
         $ret .= '
                 <label class="col-sm-1 control-label small">Movement</label>
@@ -776,7 +783,9 @@ function formReset()
         $ret .= '<p><button type="submit" class="btn btn-default btn-xs" 
             onclick="goToBatch();">Price or Sale Batch</button></p>';
         $ret .= '<p><button type="submit" class="btn btn-default btn-xs" 
-            onclick="goToEdit();">Edit Items</button></p>';
+            onclick="goToEdit();">Group Edit Items</button></p>';
+        $ret .= '<p><button type="submit" class="btn btn-default btn-xs" 
+            onclick="goToList();">Product List Tool</button></p>';
         $ret .= '<p><button class="btn btn-default btn-xs" type="submit" 
             onclick="goToSigns();">Tags/Signs</button></p>';
         $ret .= '<p><button class="btn btn-default btn-xs" type="submit" 

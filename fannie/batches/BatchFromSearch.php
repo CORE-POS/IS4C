@@ -249,16 +249,14 @@ class BatchFromSearch extends FannieRESTfulPage
                 . '" />';
 
         $ret .= '
-                <label>Start</label>: <input type="text" class="form-control" id="startDate" value="'
+                <label>Start</label>: <input type="text" class="form-control date-field" id="startDate" value="'
                 . date('Y-m-d') . '" name="startDate" />
                 ';
-        $this->add_onload_command("\$('#startDate').datepicker();\n");
 
         $ret .= '
-                <label>End</label>: <input type="text" class="form-control" id="endDate" value="'
+                <label>End</label>: <input type="text" class="form-control date-field" id="endDate" value="'
                 . date('Y-m-d') . '" name="endDate" />
                 </div>';
-        $this->add_onload_command("\$('#endDate').datepicker();\n");
 
         $owners = $dbc->query('SELECT super_name FROM MasterSuperDepts GROUP BY super_name ORDER BY super_name');
         $ret .= '<div class="form-group form-inline">

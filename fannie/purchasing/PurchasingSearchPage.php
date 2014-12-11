@@ -108,12 +108,12 @@ class PurchasingSearchPage extends FannieRESTfulPage {
 
         $ret .= '<div class="form-group">';
         $ret .= '<label for="date1" class="col-sm-3 control-label">Start Date</label>';
-        $ret .= '<div class="col-sm-9"><input class="form-control" type="text" id="date1" name="date1" /></div>';
+        $ret .= '<div class="col-sm-9"><input class="form-control date-field" type="text" id="date1" name="date1" /></div>';
         $ret .= '</div>';
 
         $ret .= '<div class="form-group">';
         $ret .= '<label for="date2" class="col-sm-3 control-label">End Date</label>';
-        $ret .= '<div class="col-sm-9"><input class="form-control" type="text" id="date2" name="date2" /></div>';
+        $ret .= '<div class="col-sm-9"><input class="form-control date-field" type="text" id="date2" name="date2" /></div>';
         $ret .= '</div>';
 
         $ret .= '</div>';
@@ -129,8 +129,6 @@ class PurchasingSearchPage extends FannieRESTfulPage {
                 Dates</a>)</p>';
         $ret .= '</form>';
 
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
         $this->add_onload_command("\$('.form-control:first').focus();\n");
 
         return $ret;

@@ -194,7 +194,7 @@ class SyncFromSearch extends FannieRESTfulPage
         $item_info = array(
             'RecordType' => 'ChangeOneItem',
             'PLU' => $s_plu,
-            'Description' => $model->itemdesc(),
+            'Description' => $model->mergeDescription(),
             'Tare' => $model->tare(),
             'ShelfLife' => $model->shelflife(),
             'Price' => $model->price(),
@@ -210,6 +210,7 @@ class SyncFromSearch extends FannieRESTfulPage
         }
         if ($model->weight() == 1) {
             $item_info['Type'] = 'Fixed Weight';
+            $item_info['ByCount'] = 1;
         } else {
             $item_info['Type'] = 'Random Weight';
         }
@@ -284,7 +285,7 @@ class SyncFromSearch extends FannieRESTfulPage
                             </tr>',
                             $model->plu(),
                             $model->plu(),
-                            $model->itemdesc(),
+                            $model->mergeDescription(),
                             $model->price(),
                             $model->modified(),
                             $model->plu(),

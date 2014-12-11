@@ -152,7 +152,17 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
         }
         if (FormLib::get_form_value('ContactInfo_addr2','') !== '')
             $MI_FIELDS['street'] .= "\n".FormLib::get_form_value('ContactInfo_addr2');
-        $test1 = MeminfoModel::update($memNum, $MI_FIELDS);
+
+        $meminfo = new MeminfoModel($dbc);
+        $meminfo->card_no($memNum);
+        $meminfo->street($MI_FIELDS['street']);
+        $meminfo->city($MI_FIELDS['city']);
+        $meminfo->state($MI_FIELDS['state']);
+        $meminfo->phone($MI_FIELDS['phone']);
+        $meminfo->email_2($MI_FIELDS['email_2']);
+        $meminfo->email_1($MI_FIELDS['email_1']);
+        $meminfo->ads_OK($MI_FIELDS['ads_OK']);
+        $test1 = $meminfo->save();
 
         $CUST_FIELDS = array(
             'personNum' => array(1),

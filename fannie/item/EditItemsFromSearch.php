@@ -318,7 +318,7 @@ class EditItemsFromSearch extends FannieRESTfulPage
         $ret .= '</table>';
 
         $ret .= '<p>';
-        $ret .= '<button type="submit" name="save" value="1">Save Changes</button>';
+        $ret .= '<button type="submit" name="save" class="btn btn-default" value="1">Save Changes</button>';
         $ret .= '</form>';
 
         return $ret;

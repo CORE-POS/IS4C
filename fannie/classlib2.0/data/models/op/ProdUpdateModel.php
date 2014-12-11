@@ -214,7 +214,7 @@ tools/cron jobs/sprocs/etc actually do. They probably
         $prep = $this->connection->prepare($query);
         $res = $this->connection->execute($prep, $args);
 
-        return ($ret) ? true : false;
+        return ($res) ? true : false;
     }
 
     /* START ACCESSOR FUNCTIONS */

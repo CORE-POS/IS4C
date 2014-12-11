@@ -110,11 +110,13 @@ class VendorIndexPage extends FanniePage {
             if (!empty($web) && substr(strtolower($web),0,4) !== "http") {
                 $web = 'http://'.$web;
             }
+            $localID = FormLib::get_form_value('local-origin-id', 0);
             /** 29Oct2014 Andy
                 Widen vendors table so additional vendorContacts
                 table can be deprecated in the future
             */
-            $vModel = new VendorsModel(FannieDB::get($FANNIE_OP_DB));
+            $dbc = FannieDB::get($FANNIE_OP_DB);
+            $vModel = new VendorsModel($dbc);
             $vModel->vendorID($id);
             $vModel->shippingMarkup(FormLib::get('shipping', 0) / 100.00);
             $vModel->phone(FormLib::get_form_value('phone'));
@@ -122,9 +124,10 @@ class VendorIndexPage extends FanniePage {
             $vModel->email(FormLib::get_form_value('email'));
             $vModel->website($web);
             $vModel->notes(FormLib::get_form_value('notes'));
+            $vModel->localOriginID($localID);
             $success = $vModel->save();
 
-            $vcModel = new VendorContactModel(FannieDB::get($FANNIE_OP_DB));
+            $vcModel = new VendorContactModel($dbc);
             $vcModel->vendorID($id);
             $vcModel->phone(FormLib::get_form_value('phone'));
             $vcModel->fax(FormLib::get_form_value('fax'));
@@ -197,13 +200,11 @@ class VendorIndexPage extends FanniePage {
 
         $nameQ = $dbc->prepare_statement("SELECT vendorName FROM vendors WHERE vendorID=?");
         $nameR = $dbc->exec_statement($nameQ,array($id));
+        $model = new VendorsModel($dbc);
+        $model->vendorID($id);
+        $model->load();
         $ret .= '<div>';
-        if ($dbc->num_rows($nameR) < 1)
-            $ret .= "<b>Name</b>: Unknown";
-        else {
-            $nameW = $dbc->fetch_row($nameR);
-            $ret .= "<b>Id</b>: $id &nbsp; <b>Name</b>: " . $nameW['vendorName'];
-        }
+        $ret .= "<b>Id</b>: $id &nbsp; <b>Name</b>: " . $model->vendorName();
         $ret .= '</div>';
 
         $itemQ = $dbc->prepare_statement("SELECT COUNT(*) FROM vendorItems WHERE vendorID=?");
@@ -252,9 +253,6 @@ class VendorIndexPage extends FanniePage {
         $vcModel = new VendorContactModel($dbc);
         $vcModel->vendorID($id);
         $vcModel->load();
-        $vModel = new VendorsModel($dbc);
-        $vModel->vendorID($id);
-        $vModel->load();
         $ret .= '<p><div class="form-alerts"></div>';
         $ret .= '<form role="form" class="form-horizontal" onsubmit="saveVC(' . $id . '); return false;" id="vcForm">';
         $ret .= '<div class="form-group">
@@ -262,7 +260,7 @@ class VendorIndexPage extends FanniePage {
             <div class="col-sm-10">
                 <div class="input-group">
                     <input type="text" id="vc-shipping" name="shipping" 
-                        class="form-control" value="' . $vModel->shippingMarkup() * 100 . '" />
+                        class="form-control" value="' . $model->shippingMarkup() * 100 . '" />
                     <span class="input-group-addon">%</span>
                 </div>
             </div>
@@ -290,6 +288,21 @@ class VendorIndexPage extends FanniePage {
             <div class="col-sm-10">
             <input type="text" class="form-control" id="vcWebsite" name="website" value="' . $vcModel->website() . '" />
             </div>
+            </div>';
+        $ret .= '<div class="form-group">
+            <label for="vc-local-id" class="control-label col-sm-1">Local</label>
+            <div class="col-sm-10">
+                <select class="form-control" name="local-origin-id">
+                <option value="0">No</option>';
+        $origins = new OriginsModel($dbc);
+        $origins->local(1);
+        foreach ($origins->find('shortName') as $origin) {
+            $ret .= sprintf('<option %s value="%d">%s</option>',
+                ($origin->originID() == $model->localOriginID() ? 'selected' : ''),
+                $origin->originID(), $origin->shortName());
+        }
+        $ret .= '</select>
+                </div>
             </div>';
         $ret .= '<div class="form-group">
             <label for="vcNotes" class="control-label col-sm-1">Ordering Notes</label>

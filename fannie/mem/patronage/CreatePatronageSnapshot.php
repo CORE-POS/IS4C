@@ -131,9 +131,9 @@ class CreatePatronageSnapshot extends FannieRESTfulPage
         </div>
         <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="get">
         <label>Start Date</label>
-        <input type="text" name="date1" id="date1" class="form-control" required />
+        <input type="text" name="date1" id="date1" class="form-control date-field" required />
         <label>End Date</label>
-        <input type="text" name="date2" id="date2" class="form-control" required />
+        <input type="text" name="date2" id="date2" class="form-control date-field" required />
         <label>Member Type(s)</label>
         <div class="form-group well">
         <?php
@@ -149,9 +149,6 @@ class CreatePatronageSnapshot extends FannieRESTfulPage
         echo '</div>';
         echo '<p><button type="submit" class="btn btn-default">Create Table</button></p>';
         echo '</form>';
-
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
 
         return ob_get_clean();
     }

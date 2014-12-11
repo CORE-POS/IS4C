@@ -31,6 +31,7 @@ class ShrinkTool extends FannieRESTfulPage
     protected $header = 'Enter Shrink';
     protected $title = 'Enter Shrink';
     public $themed = true;
+    public $description = '[Shrink Entry] adds items to shrink counts. Duplicates lane functionality to allow backend entry.';
 
     public function preprocess()
     {
@@ -61,6 +62,7 @@ class ShrinkTool extends FannieRESTfulPage
         $record['total'] = $this->qty * $this->price;
         $record['cost'] = $this->qty * $this->cost;
         $record['numflag'] = $this->reason;
+        $record['charflag'] = strlen(FormLib::get('type') > 0) ? strtoupper(substr(FormLib::get('type'), 0, 1)) : '';
         $record['trans_status'] = 'Z';
 
         $info = DTrans::parameterize($record, 'datetime', $dbc->now());
@@ -144,6 +146,13 @@ class ShrinkTool extends FannieRESTfulPage
                     $reason->shrinkReasonID(), $reason->description());
         }
         $ret .= '</select>
+            </div>
+            <div class="form-group form-inline">
+                <label>Type</label>
+                <select name="type" class="form-control">
+                    <option>Loss</option>
+                    <option>Contribute</option>
+                </select>
             </div>
             <p>
                 <button type="submit" class="btn btn-default">Enter Shrink</button>

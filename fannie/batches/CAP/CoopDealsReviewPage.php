@@ -184,21 +184,21 @@ class CoopDealsReviewPage extends FanniePage
         <div class="row form-horizontal form-group">
             <label class="col-sm-2 control-label">A Start</label>
             <div class="col-sm-4">
-                <input type="text" name="start" id="start" class="form-control" />
+                <input type="text" name="start" id="start" class="form-control date-field" />
             </div>
             <label class="col-sm-2 control-label">B Start</label>
             <div class="col-sm-4">
-                <input type="text" name="bstart" id="bstart" class="form-control" />
+                <input type="text" name="bstart" id="bstart" class="form-control date-field" />
             </div>
         </div>
         <div class="row form-horizontal form-group">
             <label class="col-sm-2 control-label">A End</label>
             <div class="col-sm-4">
-                <input type="text" name="end" id="end" class="form-control" />
+                <input type="text" name="end" id="end" class="form-control date-field" />
             </div>
             <label class="col-sm-2 control-label">B End</label>
             <div class="col-sm-4">
-                <input type="text" name="bend" id="bend" class="form-control" />
+                <input type="text" name="bend" id="bend" class="form-control date-field" />
             </div>
         </div>
         <div class="row form-horizontal form-group">
@@ -217,11 +217,6 @@ class CoopDealsReviewPage extends FanniePage
         </p>
         </form>
 html;
-
-        $this->add_onload_command("\$('#start').datepicker();\n");
-        $this->add_onload_command("\$('#end').datepicker();\n");
-        $this->add_onload_command("\$('#bstart').datepicker();\n");
-        $this->add_onload_command("\$('#bend').datepicker();\n");
 
         return $ret;
     }

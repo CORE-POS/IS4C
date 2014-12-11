@@ -32,8 +32,8 @@ class EquityLiveBalanceModel extends SpanningViewModel
 
     protected $columns = array(
     'memnum' => array('type'=>'INT','primary_key'=>True),
-    'payments' => array('type','MONEY'),
-    'startdate' => array('type','DATETIME')
+    'payments' => array('type'=>'MONEY'),
+    'startdate' => array('type'=>'DATETIME')
     );
 
     public function definition()

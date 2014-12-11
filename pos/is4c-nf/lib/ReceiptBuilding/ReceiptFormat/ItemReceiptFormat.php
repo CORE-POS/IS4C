@@ -42,7 +42,9 @@ class ItemReceiptFormat extends DefaultReceiptFormat
 		} else if ($row['trans_status'] == 'D') {
 			// a "YOU SAVED" line
 			$description = strtolower($row['description']);
-			$description = str_replace("**"," >",$description);
+            if (strstr($description, '**')) {
+                $description = ' >' . trim($description, '*') . '< ';
+            }
 			return $description;
 		} else if ($row['trans_status'] == 'M') {
 			// member special line

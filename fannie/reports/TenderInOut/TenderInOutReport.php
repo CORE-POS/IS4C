@@ -119,12 +119,12 @@ class TenderInOutReport extends FannieReportPage
     <div class="form-group"> 
         <label>Date Start</label>
         <input type=text id=date1 name=date1 required
-            class="form-control" />
+            class="form-control date-field" />
     </div>
     <div class="form-group"> 
         <label>Date End</label>
         <input type=text id=date2 name=date2 required
-            class="form-control" />
+            class="form-control date-field" />
     </div>
     <div class="form-group"> 
         <input type="checkbox" name="excel" id="excel" value="xls" />
@@ -142,8 +142,6 @@ class TenderInOutReport extends FannieReportPage
 </div>
 </form>
         <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
 
         return ob_get_clean();
     }

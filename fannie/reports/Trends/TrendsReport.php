@@ -306,13 +306,13 @@ function doShow(){
     <div class="row">
         <label class="col-sm-4 control-label">Start Date</label>
         <div class="col-sm-8">
-            <input type=text id=date1 name=date1 class="form-control" required />
+            <input type=text id=date1 name=date1 class="form-control date-field" required />
         </div>
     </div>
     <div class="row">
         <label class="col-sm-4 control-label">End Date</label>
         <div class="col-sm-8">
-            <input type=text id=date2 name=date2 class="form-control" required />
+            <input type=text id=date2 name=date2 class="form-control date-field" required />
         </div>
     </div>
     <div class="row">
@@ -321,8 +321,6 @@ function doShow(){
 </div>
 </form>
         <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
         $this->add_script($FANNIE_URL . 'item/autocomplete.js');
         $ws = $FANNIE_URL . 'ws/';
         $this->add_onload_command("bindAutoComplete('#brand-field', '$ws', 'brand');\n");

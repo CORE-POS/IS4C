@@ -63,7 +63,7 @@ class DTransactionsModel extends BasicModel
     'memType'    => array('type'=>'TINYINT'),
     'staff'        => array('type'=>'TINYINT'),
     'numflag'    => array('type'=>'INT','default'=>0),
-    'charflag'    => array('type'=>'INT','default'=>''),
+    'charflag'    => array('type'=>'VARCHAR(2)','default'=>"''"),
     'card_no'    => array('type'=>'INT','index'=>True),
     'trans_id'    => array('type'=>'TINYINT'),
     'pos_row_id' => array('type'=>'BIGINT UNSIGNED', 'increment'=>true, 'primary_key'=>true),

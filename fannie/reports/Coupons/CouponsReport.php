@@ -99,25 +99,29 @@ class CouponsReport extends FannieReportPage {
         ?>
 <form action=CouponsReport.php method=get>
 <div class="col-sm-4">
-<label>Start Date</label>
-<input type=text id="date1" name=date1 
-    class="form-control" value="<?php echo $lastMonday; ?>" />
-<label>End Date</label>
-<input type=text id="date2" name=date2 
-    class="form-control" value="<?php echo $lastSunday; ?>" />
-<label>
-    Excel <input type=checkbox name=excel value="xls" />
-</label>
-<button type=submit name=submit value="Submit" 
-    class="btn btn-default">Submit</button>
+<div class="form-group">
+    <label>Start Date</label>
+    <input type=text id="date1" name=date1 
+        class="form-control date-field" value="<?php echo $lastMonday; ?>" />
+</div>
+<div class="form-group">
+    <label>End Date</label>
+    <input type=text id="date2" name=date2 
+        class="form-control date-field" value="<?php echo $lastSunday; ?>" />
+</div>
+<div class="form-group">
+    <label>
+        Excel <input type=checkbox name=excel value="xls" />
+    </label>
+    <button type=submit name=submit value="Submit" 
+        class="btn btn-default">Submit</button>
+</div>
 </div>
 <div class="col-sm-4">
 <?php echo FormLib::date_range_picker(); ?>
 </div>
 </form>
         <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
 
         return ob_get_clean();
     }

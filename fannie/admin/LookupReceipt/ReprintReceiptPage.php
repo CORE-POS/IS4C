@@ -210,9 +210,9 @@ class ReprintReceiptPage extends FanniePage
 <div class="container"> 
 <div class="row form-group form-inline">
     <label>Date*</label>
-    <input type="text" name="date" class="form-control" id="date"
+    <input type="text" name="date" class="form-control date-field" id="date"
         placeholder="Date" />
-    <input type="text" name="date2" class="form-control" id="date2"
+    <input type="text" name="date2" class="form-control date-field" id="date2"
         placeholder="2nd Date (optional)" />
     <label>Receipt #</label>
     <input type="text" name="trans_num" class="form-control" />
@@ -275,8 +275,6 @@ class ReprintReceiptPage extends FanniePage
 </div>
 </form>
         <?php
-        $this->add_onload_command("\$('#date').datepicker();\n");
-        $this->add_onload_command("\$('#date2').datepicker();\n");
 
         return ob_get_clean();
     }

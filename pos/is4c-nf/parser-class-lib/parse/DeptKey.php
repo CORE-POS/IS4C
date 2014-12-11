@@ -74,6 +74,11 @@ class DeptKey extends Parser
 
 		/* apply any appropriate special dept modules */
 		$deptmods = $CORE_LOCAL->get('SpecialDeptMap');
+        $db = Database::pDataConnect();
+        if (!is_array($deptmods) && $db->table_exists('SpecialDeptMap')) {
+            $model = new SpecialDeptMapModel($db);
+            $deptmods = $model->buildMap();
+        }
 		$index = (int)($dept/10);
 		if (is_array($deptmods) && isset($deptmods[$index])) {
 			foreach($deptmods[$index] as $mod) {

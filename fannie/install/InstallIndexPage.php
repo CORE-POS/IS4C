@@ -611,6 +611,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             'OriginStateProvModel',
             'OriginCustomRegionModel',
             'ParametersModel',
+            'PatronageModel',
             'ProductsModel',
             'ProductBackupModel',
             'ProductUserModel',
@@ -630,6 +631,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             'ServiceScaleItemMapModel',
             'ShelftagsModel',
             'ShrinkReasonsModel',
+            'SpecialDeptMapModel',
             'SubDeptsModel',
             'SuperDeptsModel',
             'SuperDeptEmailsModel',
@@ -775,21 +777,21 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
                 'alog','trans');
         */
 
-        $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvDelivery', true);
-        $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvDeliveryLM', true);
-        $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvDeliveryArchive', true);
+        $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvDelivery', false);
+        $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvDeliveryLM', false);
+        $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvDeliveryArchive', false);
         $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvRecentOrders', true);
         $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvDeliveryUnion', true);
         $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvDeliveryTotals', true);
         $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvSales', true);
         $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvRecentSales', true);
-        $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvSalesArchive', true);
+        $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvSalesArchive', false);
         $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvSalesUnion', true);
         $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvSalesTotals', true);
         $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvSalesAdjustments', true);
         $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvAdjustTotals', true);
         $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'Inventory', true);
-        $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvCache', true);
+        $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvCache', false);
         
         /**
           @deprecated 7Nov14

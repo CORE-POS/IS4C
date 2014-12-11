@@ -87,14 +87,12 @@ class StaffArDatesPage extends FannieRESTfulPage
         $ret .= '</div>';
         $ret .= '<div class="col-sm-6">';
         $ret .= '<div class="form-group form-inline">';
-        $ret .= '<label>Add Date</label>: <input type="text" id="newDate" class="form-control" />
+        $ret .= '<label>Add Date</label>: <input type="text" id="newDate" class="form-control date-field" />
                 <button type="submit" onclick="addDate(); return false;" 
                     class="btn btn-default">Add</button>';
         $ret .= '</div>';
         $ret .= '</div>';
         
-        $this->add_onload_command("\$('#newDate').datepicker();");
-
         return $ret;
     }
 

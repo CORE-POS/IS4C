@@ -130,19 +130,17 @@ class ZipCodeReport extends FannieReportPage
 
     function form_content(){
         global $FANNIE_URL;
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
         return '<form action="ZipCodeReport.php" method="get">
             <div class="col-sm-5">
             <div class"form-group">
                 <label>Start Date</label>
                 <input type="text" name="date1" id="date1" 
-                    class="form-control" required/>
+                    class="form-control date-field" required/>
             </div>
             <div class="form-group">
                 <label>End Date</label>
                 <input type="text" name="date2" id="date2" 
-                    class="form-control" required />
+                    class="form-control date-field" required/>
             </div>
             <div class="form-group">
                 <label>Based on</label>

@@ -297,23 +297,60 @@ save 5%.
 <tr><td>
 <?php
 $sdepts = AutoLoader::listModules('SpecialDept');
+$db = Database::pDataConnect();
+$specialDeptMapExists = $db->table_exists('SpecialDeptMap');
+$mapModel = new SpecialDeptMapModel($db);
 $sconf = $CORE_LOCAL->get('SpecialDeptMap');
+/**
+  If a mapping exists and the new table is available,
+  migrate existing settings to the table and remove
+  the setting from ini and/or ini-local
+*/
+if (is_array($sconf) && $specialDeptMapExists) {
+    $mapModel->initTable($sconf);
+    if (InstallUtilities::confExists('SpecialDeptMap')) {
+        InstallUtilities::confRemove('SpecialDeptMap');
+    }
+    if (InstallUtilities::confExists('SpecialDeptMap', true)) {
+        InstallUtilities::confRemove('SpecialDeptMap', true);
+    }
+}
 if (!is_array($sconf)) $sconf = array();
-if (isset($_REQUEST['SDEPT_MAP_LIST'])){
-	$sconf = array();
-	for($i=0;$i<count($_REQUEST['SDEPT_MAP_NAME']);$i++){
+if (isset($_REQUEST['SDEPT_MAP_LIST'])) {
+    if ($specialDeptMapExists) {
+        $db->query('TRUNCATE TABLE SpecialDeptMap');
+    } else {
+        $sconf = array();
+    }
+	for ($i=0;$i<count($_REQUEST['SDEPT_MAP_NAME']);$i++) {
 		if (!isset($_REQUEST['SDEPT_MAP_LIST'][$i])) continue;
 		if (empty($_REQUEST['SDEPT_MAP_LIST'][$i])) continue;
 
 		$class = $_REQUEST['SDEPT_MAP_NAME'][$i];
-		$obj = new $class();
 		$ids = preg_split('/\D+/',$_REQUEST['SDEPT_MAP_LIST'][$i]);
-		foreach($ids as $id)
-			$sconf = $obj->register($id,$sconf);
+		foreach ($ids as $id) {
+            if ($specialDeptMapExists) {
+                $mapModel->reset();
+                $mapModel->specialDeptModuleName($class);
+                $mapModel->dept_no($id);
+                $mapModel->save();
+            } else {
+                $obj = new $class();
+                $sconf = $obj->register($id,$sconf);
+            }
+        }
 	}
-	$CORE_LOCAL->set('SpecialDeptMap',$sconf);
+    if (!$specialDeptMapExists) {
+        $CORE_LOCAL->set('SpecialDeptMap',$sconf);
+    }
 }
-foreach($sdepts as $sd){
+if ($specialDeptMapExists) {
+    $mapModel->reset();
+    $sconf = $mapModel->buildMap();
+} else {
+    $sconf = $CORE_LOCAL->get('SpecialDeptMap');
+}
+foreach ($sdepts as $sd) {
 	$list = "";
 	foreach($sconf as $id => $mods){
 		if (in_array($sd,$mods))
@@ -327,16 +364,18 @@ foreach($sdepts as $sd){
 		</td></tr>',
 		$obj->help_summary,$sd,$list,$sd);
 }
-$saveStr = 'array(';
-foreach($sconf as $id => $mods){
-	if (empty($mods)) continue;
-	$saveStr .= $id.'=>array(';
-	foreach($mods as $m)
-		$saveStr .= '\''.$m.'\',';
-	$saveStr = rtrim($saveStr,',').'),';
+if (!$specialDeptMapExists) {
+    $saveStr = 'array(';
+    foreach($sconf as $id => $mods){
+        if (empty($mods)) continue;
+        $saveStr .= $id.'=>array(';
+        foreach($mods as $m)
+            $saveStr .= '\''.$m.'\',';
+        $saveStr = rtrim($saveStr,',').'),';
+    }
+    $saveStr = rtrim($saveStr,',').')';
+    InstallUtilities::confsave('SpecialDeptMap',$saveStr);
 }
-$saveStr = rtrim($saveStr,',').')';
-InstallUtilities::confsave('SpecialDeptMap',$saveStr);
 ?>
 </td></tr>
 <tr><td colspan=2>

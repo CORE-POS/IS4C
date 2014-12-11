@@ -230,7 +230,7 @@ static public function twoPairs()
   to determine all available IP addresses
   @return [array] of [string] IP addresses
 */
-function getAllIPs()
+static public function getAllIPs()
 {
     /**
       First: use OS utilities to check IP(s)
