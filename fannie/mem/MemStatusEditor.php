@@ -201,9 +201,9 @@ class MemStatusEditor extends FanniePage {
                 $cas_model->reasonCode($reason);
                 $cas_model->username($this->current_user);
                 $cas_model->tdate(date('Y-m-d H:i:s'));
-                $model->suspensionTypeID($m_status);
+                $cas_model->suspensionTypeID($m_status);
 
-                $current_id = $model->save();
+                $current_id = $cas_model->save();
             }
 
         } else {
@@ -245,7 +245,7 @@ class MemStatusEditor extends FanniePage {
             $cas_model->suspensionTypeID( substr($type, 0, 1) == 'T' ? 2 : 1 );
             $cas_model->tdate(date('Y-m-d H:i:s'));
             $cas_model->username($this->current_user);
-            $cas_mode->reasonCode($reason);
+            $cas_model->reasonCode($reason);
             $cas_model->active(1);
             $current_id = $cas_model->save();
         }
