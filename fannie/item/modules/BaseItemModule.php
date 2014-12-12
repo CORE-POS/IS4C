@@ -50,6 +50,7 @@ class BaseItemModule extends ItemModule {
                                         p.scale,
                                         p.qttyEnforced,
                                         p.discount,
+                                        p.line_item_discountable,
                                         p.brand AS manufacturer,
                                         x.distributor,
                                         u.description as ldesc,
@@ -196,6 +197,8 @@ class BaseItemModule extends ItemModule {
         if ($nextUPC) {
             $ret .= ' <a class="small" href="ItemEditorPage.php?searchupc=' . $nextUPC . '">Next</a>';
         }
+        $ret .= ' <label style="color:darkmagenta;">Modified</label>
+                <span style="color:darkmagenta;">'. $rowItem['modified'] . '</span>';
         $ret .= '</div>'; // end panel-heading
 
         $ret .= '<div class="panel-body">';
@@ -313,22 +316,26 @@ class BaseItemModule extends ItemModule {
             $ret .= '</div>';
         }
 
-        /*
-        $ret .= '<tr><th>Dept</th><th>Tax</th><th><label for="FS">FS</label></th>
-            <th><label for="scale-checkbox">Scale</label>'.\COREPOS\Fannie\API\lib\FannieHelp::ToolTip('Item sold by weight').'</th>
-            <th><label for="qty-checkbox">QtyFrc</label>'.\COREPOS\Fannie\API\lib\FannieHelp::ToolTip('Cashier must enter quantity').'</th>
-            <th><label for="no-disc-checkbox">NoDisc</label>'.\COREPOS\Fannie\API\lib\FannieHelp::ToolTip('Item not subject to % discount').'</th></tr>';
-        */
-
         $depts = array();
         $subs = array();
-        $p = $dbc->prepare_statement('SELECT dept_no,dept_name,subdept_no,subdept_name,dept_ID 
-                FROM departments AS d
+        $p = $dbc->prepare_statement('
+            SELECT dept_no,
+                dept_name,
+                subdept_no,
+                subdept_name,
+                s.dept_ID,
+                m.superID
+            FROM departments AS d
                 LEFT JOIN subdepts AS s ON d.dept_no=s.dept_ID
-                ORDER BY d.dept_no, s.subdept_name');
+                LEFT JOIN MasterSuperDepts AS m ON d.dept_no=m.dept_ID
+            ORDER BY d.dept_no, s.subdept_name');
         $r = $dbc->exec_statement($p);
+        $superID = '';
         while ($w = $dbc->fetch_row($r)) {
             if (!isset($depts[$w['dept_no']])) $depts[$w['dept_no']] = $w['dept_name'];
+            if ($w['dept_no'] == $rowItem['department']) {
+                $superID = $w['superID'];
+            }
             if ($w['subdept_no'] == '') continue;
             if (!isset($subs[$w['dept_ID']]))
                 $subs[$w['dept_ID']] = '';
@@ -340,6 +347,14 @@ class BaseItemModule extends ItemModule {
         $ret .= '
             <div class="form-group form-inline">
                 <label>Dept</label>
+                <select id="super-dept" class="form-control" onchange="chainSuper(this.value);">';
+        $names = new SuperDeptNamesModel($dbc);
+        foreach ($names->find('superID') as $obj) {
+            $ret .= sprintf('<option %s value="%d">%s</option>',
+                    $obj->superID() == $superID ? 'selected' : '',
+                    $obj->superID(), $obj->super_name());
+        }
+        $ret .= '</select>
                 <select name="department" id="department" 
                     class="form-control" onchange="chainSelects(this.value);">';
         foreach ($depts as $id => $name){
@@ -351,6 +366,7 @@ class BaseItemModule extends ItemModule {
         $ret .= '<select name="subdept" id="subdept" class="form-control">';
         $ret .= isset($subs[$rowItem['department']]) ? $subs[$rowItem['department']] : '<option value="0">None</option>';
         $ret .= '</select>';
+        $ret .= '</div>';
 
         $taxQ = $dbc->prepare_statement('SELECT id,description FROM taxrates ORDER BY id');
         $taxR = $dbc->exec_statement($taxQ);
@@ -359,17 +375,17 @@ class BaseItemModule extends ItemModule {
             array_push($rates,array($taxW[0],$taxW[1]));
         }
         array_push($rates,array("0","NoTax"));
-        $ret .= ' <label>Tax</label>
+        $ret .= ' <div class="form-group form-inline">
+            <label>Tax</label>
             <select name="tax" id="tax" class="form-control">';
         foreach($rates as $r){
             $ret .= sprintf('<option %s value="%d">%s</option>',
                 (isset($rowItem['tax'])&&$rowItem['tax']==$r[0]?'selected':''),
                 $r[0],$r[1]);
         }
-        $ret .= '</select></div>';
+        $ret .= '</select>';
 
         $ret .= '
-            <div class="form-group form-inline">
                 <label>FS
                 <input type="checkbox" value="1" name="FS" id="FS"
                     ' . ($rowItem['foodstamp'] == 1 ? 'checked' : '') . ' />
@@ -385,14 +401,27 @@ class BaseItemModule extends ItemModule {
                     ' . ($rowItem['qttyEnforced'] == 1 ? 'checked' : '') . ' />
                 </label>
                 |
-                <label>NoDisc
-                <input type="checkbox" value="0" name="NoDisc" id="no-disc-checkbox"
-                    ' . ($rowItem['discount'] == 0 ? 'checked' : '') . ' />
-                </label>
-                |
-                <label style="color:darkmagenta;">Last modified</label>
-                <span style="color:darkmagenta;">'. $rowItem['modified'] . '</span>
-            </div>';
+                <label>Discount</label>
+                <select id="discount-select" name="discount" class="form-control">';
+        $disc_opts = array(
+            0 => 'No',
+            1 => 'Yes',
+            2 => 'Trans Only',
+            3 => 'Line Only',
+        );
+        if ($rowItem['discount'] == 1 && $rowItem['line_item_discountable'] == 1) {
+            $rowItem['discount'] = 1;
+        } elseif ($rowItem['discount'] == 1 && $rowItem['line_item_discountable'] == 0) {
+            $rowItem['discount'] = 2;
+        } elseif ($rowItem['discount'] == 0 && $rowItem['line_item_discountable'] == 1) {
+            $rowItem['discount'] = 3;
+        } 
+        foreach ($disc_opts as $id => $val) {
+            $ret .= sprintf('<option %s value="%d">%s</option>',
+                        ($id == $rowItem['discount'] ? 'selected' : ''),
+                        $id, $val);
+        }
+        $ret .= '</select></div>';
 
         $ret .= '
             <div class="form-group form-inline">
@@ -433,6 +462,35 @@ class BaseItemModule extends ItemModule {
         $json = count($subs) == 0 ? '{}' : json_encode($subs);
         ob_start();
         ?>
+        function chainSuper(val) {
+            var req = {
+                jsonrpc: '2.0',
+                method: '\\COREPOS\\Fannie\\API\\webservices\\FannieDeptLookup',
+                id: new Date().getTime(),
+                params: {
+                    'type' : 'children',
+                    'superID' : val
+                }
+            };
+            $.ajax({
+                url: '<?php echo $FANNIE_URL; ?>ws/',
+                type: 'post',
+                data: JSON.stringify(req),
+                dataType: 'json',
+                contentType: 'application/json',
+                success: function(resp) {
+                    if (resp.result) {
+                        $('#department').empty();
+                        for (var i=0; i<resp.result.length; i++) {
+                            var opt = $('<option>').val(resp.result[i]['id'])
+                                .html(resp.result[i]['id'] + ' ' + resp.result[i]['name']);
+                            $('#department').append(opt);
+                        }
+                        chainSelects($('#department').val());
+                    }
+                }
+            });
+        }
         function chainSelects(val){
             var lookupTable = <?php echo $json; ?>;
             if (val in lookupTable)
@@ -448,14 +506,15 @@ class BaseItemModule extends ItemModule {
                     if (data.tax)
                         $('#tax').val(data.tax);
                     if (data.fs)
-                        $('#FS').attr('checked','checked');
+                        $('#FS').prop('checked',true);
                     else{
-                        $('#FS').removeAttr('checked');
+                        $('#FS').prop('checked', false);
                     }
-                    if (data.nodisc)
-                        $('#NoDisc').attr('checked','checked');
-                    else
-                        $('#NoDisc').removeAttr('checked');
+                    if (data.nodisc) {
+                        $('#discount-select').val(0);
+                    } else {
+                        $('#discount-select').val(1);
+                    }
                 }
 
             });
@@ -571,7 +630,25 @@ class BaseItemModule extends ItemModule {
         $model->foodstamp(FormLib::get_form_value('FS',0));
         $model->scale(FormLib::get_form_value('Scale',0));
         $model->qttyEnforced(FormLib::get_form_value('QtyFrc',0));
-        $model->discount(FormLib::get_form_value('NoDisc',1));
+        $discount_setting = FormLib::get('discount', 1);
+        switch ($discount_setting) {
+            case 0:
+                $model->discount(0);
+                $model->line_item_discountable(0);
+                break;
+            case 1:
+                $model->discount(1);
+                $model->line_item_discountable(1);
+                break;
+            case 2:
+                $model->discount(1);
+                $model->line_item_discountable(0);
+                break;
+            case 3:
+                $model->discount(0);
+                $model->line_item_discountable(1);
+                break;
+        }
         $model->normal_price(FormLib::get_form_value('price',0.00));
         $model->description(str_replace("'", '', FormLib::get_form_value('descript','')));
         $model->brand(str_replace("'", '', FormLib::get('manufacturer', '')));
