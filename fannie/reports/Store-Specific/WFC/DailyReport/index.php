@@ -90,6 +90,7 @@ $tenderR = $dbc->exec_statement($tenderQ, $store_dates);
 $tenders = array("Cash"=>array(10120,0.0,0),
         "Check"=>array(10120,0.0,0),
         "Electronic Check"=>array(10120,0.0,0),
+        "Rebate Check"=>array(10120,0.0,0),
         "Credit Card"=>array(10120,0.0,0),
         "EBT CASH."=>array(10120,0.0,0),
         "EBT FS"=>array(10120,0.0,0),
@@ -155,6 +156,29 @@ if ($store != 50) {
     }
     echo '<br /><b>Integrated CC Supplement</b>';
     echo tablify($cTallies,array(0,1,2),array('Processor','Amount','Count'),
+        array($ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT),1);
+
+    $couponQ = "
+        SELECT SUM(-d.total) AS ttl,
+            COUNT(d.total) AS num,
+            CASE WHEN d.upc='PATREBDISC' THEN 'Rebate Check Discount' ELSE d.description END as name
+        FROM $dlog AS d
+        WHERE trans_type='T'
+            AND trans_subtype='IC'
+            AND d.tdate BETWEEN ? AND ?
+            AND " . DTrans::isStoreID($store, 'd') . "
+        GROUP BY
+            CASE WHEN d.upc='PATREBDISC' THEN 'Rebate Check Discount' ELSE d.description END
+        ORDER BY
+            CASE WHEN d.upc='PATREBDISC' THEN 'Rebate Check Discount' ELSE d.description END";
+    $couponP = $dbc->prepare($couponQ);
+    $couponR = $dbc->execute($couponP, $store_dates);
+    $coupons = array();
+    echo '<br /><b>InStore Coupon Supplement</b>';
+    while ($couponsW = $dbc->fetch_row($couponR)) {
+        $coupons[$couponsW['name']] = array($couponsW['ttl'], $couponsW['num']);
+    }
+    echo tablify($coupons, array(0,1,2), array('Name','Amount','Count'),
         array($ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT),1);
 }
 
