@@ -312,10 +312,89 @@ class FormLib
     */
     public function standardItemFields()
     {
-        global $FANNIE_OP_DB;
+        global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         ob_start();
         ?>
+        <script type="text/javascript">
+        function filterDepartments(superID) {
+            if (superID === '') {
+                superID = -1;
+            }
+            var req = {
+                jsonrpc: '2.0',
+                method: '\\COREPOS\\Fannie\\API\\webservices\\FannieDeptLookup',
+                id: new Date().getTime(),
+                params: {
+                    'type' : 'children',
+                    'superID' : superID
+                }
+            };
+            $.ajax({
+                url: '<?php echo $FANNIE_URL; ?>ws/',
+                type: 'post',
+                data: JSON.stringify(req),
+                dataType: 'json',
+                contentType: 'application/json',
+                success: function(resp) {
+                    if (resp.result) {
+                        $('#dept-start-select').empty();
+                        $('#dept-end-select').empty();
+                        for (var i=0; i<resp.result.length; i++) {
+                            var opt = $('<option>').val(resp.result[i]['id'])
+                                .html(resp.result[i]['id'] + ' ' + resp.result[i]['name']);
+                            $('#dept-start-select').append(opt.clone());
+                            $('#dept-end-select').append(opt);
+                        }
+                        if (resp.result.length > 0) {
+                            $('#dept-start-select').val(resp.result[0]['id']);
+                            $('#deptStart').val(resp.result[0]['id']);
+                            $('#dept-end-select').val(resp.result[resp.result.length-1]['id']);
+                            $('#deptEnd').val(resp.result[resp.result.length-1]['id']);
+                            filterSubs();
+                        } else {
+                            $('#deptStart').val('');
+                            $('#deptEnd').val('');
+                        }
+                    }
+                }
+            });
+        }
+        function filterSubs()
+        {
+            var range = [ $('#deptStart').val(), $('#deptEnd').val() ];
+            var req = {
+                jsonrpc: '2.0',
+                method: '\\COREPOS\\Fannie\\API\\webservices\\FannieDeptLookup',
+                id: new Date().getTime(),
+                params: {
+                    'type' : 'children',
+                    'dept_no' : range
+                }
+            };
+            $.ajax({
+                url: '<?php echo $FANNIE_URL; ?>ws/',
+                type: 'post',
+                data: JSON.stringify(req),
+                dataType: 'json',
+                contentType: 'application/json',
+                success: function(resp) {
+                    if (resp.result) {
+                        $('#sub-start').empty();
+                        $('#sub-end').empty();
+                        $('#sub-start').append($('<option value="">Select Sub</option>'));
+                        $('#sub-end').append($('<option value="">Select Sub</option>'));
+                        for (var i=0; i<resp.result.length; i++) {
+                            var opt = $('<option>').val(resp.result[i]['id'])
+                                .html(resp.result[i]['id'] + ' ' + resp.result[i]['name']);
+                            $('#sub-start').append(opt.clone());
+                            $('#sub-end').append(opt);
+                        }
+                    }
+                }
+            });
+        }
+        </script>
         <div class="col-sm-5">
             <ul class="nav nav-tabs" role="tablist">
                 <li class="active"><a href="#dept-tab" data-toggle="tab"
@@ -330,14 +409,10 @@ class FormLib
             <input id="supertype" name="lookup-type" type="hidden" value="dept" />
             <div class="tab-content"><p>
                 <div class="tab-pane active" id="dept-tab">
-                    <div class="well">
-                    Selecting a Buyer/SuperDept overrides Department Start/Department End.
-                    To run reports for a specific department(s) leave Buyer/SuperDept empty or set it to 'blank'
-                    </div>
                     <div class="row form-group form-horizontal">
                         <label class="control-label col-sm-3">Buyer (SuperDept)</label>
                         <div class="col-sm-8">
-                            <select name=deptSub class="form-control">
+                            <select name=super-dept class="form-control" onchange="filterDepartments(this.value);">
                                 <option value=""></option>
                                 <?php
                                 $supers = $dbc->query('
@@ -355,9 +430,10 @@ class FormLib
                         </div>
                     </div>
                     <div class="row form-group form-horizontal">
-                        <label class="control-label col-sm-3">Department Start</label>
+                        <label class="control-label col-sm-3">Dept. Start</label>
                         <div class="col-sm-6">
-                            <select onchange="$('#deptStart').val(this.value);" class="form-control input-sm">
+                            <select onchange="$('#deptStart').val(this.value); filterSubs();" 
+                                id="dept-start-select" class="form-control input-sm">
                             <?php
                             $depts = array();
                             $res = $dbc->query('
@@ -380,9 +456,10 @@ class FormLib
                         </div>
                     </div>
                     <div class="form-group form-horizontal row">
-                        <label class="control-label col-sm-3">Department End</label>
+                        <label class="control-label col-sm-3">Dept. End</label>
                         <div class="col-sm-6">
-                            <select onchange="$('#deptEnd').val(this.value);" class="form-control input-sm">
+                            <select onchange="$('#deptEnd').val(this.value); filterSubs();"
+                                id="dept-end-select" class="form-control input-sm">
                             <?php
                             foreach ($depts as $id => $name) {
                                 printf('<option value="%d">%d %s</option>',
@@ -394,6 +471,22 @@ class FormLib
                         <div class="col-sm-2">
                             <input type=text id=deptEnd name=dept-end 
                                 class="form-control input-sm" value=1>
+                        </div>
+                    </div>
+                    <div class="form-group form-horizontal row">
+                        <label class="control-label col-sm-3">Sub Start</label>
+                        <div class="col-sm-6">
+                            <select id="sub-start" name="sub-start" class="form-control">
+                            <option value="">Select dept</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group form-horizontal row">
+                        <label class="control-label col-sm-3">Sub End</label>
+                        <div class="col-sm-6">
+                            <select id="sub-end" name="sub-end" class="form-control">
+                            <option value="">Select dept</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -524,6 +617,7 @@ class FormLib
                 LEFT JOIN departments AS d ON t.department=d.dept_no
                 LEFT JOIN products AS p ON t.upc=p.upc 
                 LEFT JOIN MasterSuperDepts AS m ON t.department=m.dept_ID 
+                LEFT JOIN subdepts AS b ON t.department=b.dept_ID
                 LEFT JOIN vendors AS v ON p.default_vendor_id=v.vendorID
                 LEFT JOIN prodExtra AS x ON t.upc=x.upc ';
         $args = array();
@@ -554,47 +648,28 @@ class FormLib
                 if ($super !== '' && $super >= 0) {
                     $query .= ' AND s.superID=? ';
                     $args[] = $super;
-                    /**
-                      Using an extra query here to look up the
-                      matching department numbers add adding them
-                      to the query leads to better index utilization
-                      and performance when querying transaction
-                      history
-                    */
-                    $optimizeP = $dbc->prepare('
-                        SELECT dept_ID
-                        FROM superdepts
-                        WHERE superID=?');
-                    $optimizeR = $dbc->execute($optimizeP, array($super));
-                    $dept_in = '';
-                    while ($optimizeW = $dbc->fetch_row($optimizeR)) {
-                        $dept_in .= '?,';
-                        $args[] = $optimizeW['dept_ID'];
-                    }
-                    if ($dept_in !== '') {
-                        $dept_in = substr($dept_in, 0, strlen($dept_in)-1);
-                        $query .= ' AND t.department IN (' . $dept_in . ') ';
+                    if (FormLib::get('dept-start') !== '' && FormLib::get('dept-end') !== '') {
+                        $query .= ' AND t.department BETWEEN ? AND ? ';
+                        $args[] = FormLib::get('dept-start');
+                        $args[] = FormLib::get('dept-end');
                     }
                 } elseif ($super !== '' && $super == -2) {
                     $query .= ' AND m.superID <> 0 ';
-                    $optimizeP = $dbc->prepare('
-                        SELECT dept_ID
-                        FROM MasterSuperDepts
-                        WHERE superID<>0');
-                    $optimizeR = $dbc->execute($optimizeP);
-                    $dept_in = '';
-                    while ($optimizeW = $dbc->fetch_row($optimizeR)) {
-                        $dept_in .= '?,';
-                        $args[] = $optimizeW['dept_ID'];
-                    }
-                    if ($dept_in !== '') {
-                        $dept_in = substr($dept_in, 0, strlen($dept_in)-1);
-                        $query .= ' AND t.department IN (' . $dept_in . ') ';
+                    if (FormLib::get('dept-start') !== '' && FormLib::get('dept-end') !== '') {
+                        $query .= ' AND t.department BETWEEN ? AND ? ';
+                        $args[] = FormLib::get('dept-start');
+                        $args[] = FormLib::get('dept-end');
                     }
                 } elseif ($super === '') {
                     $query .= ' AND t.department BETWEEN ? AND ? ';
                     $args[] = FormLib::get('dept-start', 1);
                     $args[] = FormLib::get('dept-end', 1);
+                }
+                if (FormLib::get('sub-start') !== '' && FormLib::get('sub-end') !== '') {
+                    $query .= ' AND b.subdept_no BETWEEN ? AND ? 
+                                AND p.subdept=b.subdept_no ';
+                    $args[] = FormLib::get('sub-start');
+                    $args[] = FormLib::get('sub-end');
                 }
                 break;
             case 'manu':

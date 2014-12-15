@@ -62,14 +62,14 @@ class SmartMovementReport extends FannieReportPage
                         SUM(t.total) AS total,
                         t.department,
                         d.dept_name,
-                        m.superID,
+                        m.super_name,
                         COALESCE(v.vendorName,x.distributor) AS distributor
                     " . $from_where['query'] . "
                     GROUP BY t.upc,
                         CASE WHEN p.description IS NULL THEN t.description ELSE p.description END,
                         t.department,
                         d.dept_name,
-                        m.superID,
+                        m.super_name,
                         COALESCE(v.vendorName,x.distributor)
                     ORDER BY SUM(t.total) DESC";
                 break;
@@ -133,7 +133,7 @@ class SmartMovementReport extends FannieReportPage
                         sprintf('%.2f', $row['total']),
                         $row['department'],
                         $row['dept_name'],
-                        $row['superID'],
+                        $row['super_name'],
                         $row['distributor'],
                     );
                     break;
