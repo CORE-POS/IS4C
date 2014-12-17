@@ -269,6 +269,86 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             }
             });
         }
+        function chainSuper(superID)
+        {
+            if (superID === '' || superID === '0') {
+                superID = -1;
+            }
+            var req = {
+                jsonrpc: '2.0',
+                method: '\\COREPOS\\Fannie\\API\\webservices\\FannieDeptLookup',
+                id: new Date().getTime(),
+                params: {
+                    'type' : 'children',
+                    'superID' : superID
+                }
+            };
+            $.ajax({
+                url: '../ws/',
+                type: 'post',
+                data: JSON.stringify(req),
+                dataType: 'json',
+                contentType: 'application/json',
+                success: function(resp) {
+                    if (resp.result) {
+                        $('#dept-start-select').empty();
+                        $('#dept-end-select').empty();
+                        for (var i=0; i<resp.result.length; i++) {
+                            var opt = $('<option>').val(resp.result[i]['id'])
+                                .html(resp.result[i]['id'] + ' ' + resp.result[i]['name']);
+                            $('#dept-start-select').append(opt.clone());
+                            $('#dept-end-select').append(opt);
+                        }
+                    }
+                    // selecting the blank entry should reset the form to its
+                    // initial state with both department selects containing the
+                    // full list and set to one
+                    if (resp.result.length > 0 && superID != -1) {
+                        $('#dept-start-select').val(resp.result[0]['id']);
+                        $('#deptStart').val(resp.result[0]['id']);
+                        $('#dept-end-select').val(resp.result[resp.result.length-1]['id']);
+                        $('#deptEnd').val(resp.result[resp.result.length-1]['id']);
+                    } else if (resp.result.length > 0) {
+                        $('#deptStart').val($('#dept-start-select').val());
+                        $('#deptEnd').val($('#dept-end-select').val());
+                    }
+                }
+            });
+        }
+        function filterSubs()
+        {
+            var range = [ $('#deptStart').val(), $('#deptEnd').val() ];
+            var req = {
+                jsonrpc: '2.0',
+                method: '\\COREPOS\\Fannie\\API\\webservices\\FannieDeptLookup',
+                id: new Date().getTime(),
+                params: {
+                    'type' : 'children',
+                    'dept_no' : range
+                }
+            };
+            $.ajax({
+                url: '../ws/',
+                type: 'post',
+                data: JSON.stringify(req),
+                dataType: 'json',
+                contentType: 'application/json',
+                success: function(resp) {
+                    if (resp.result) {
+                        $('#sub-start').empty();
+                        $('#sub-end').empty();
+                        $('#sub-start').append($('<option value="">Select Sub</option>'));
+                        $('#sub-end').append($('<option value="">Select Sub</option>'));
+                        for (var i=0; i<resp.result.length; i++) {
+                            var opt = $('<option>').val(resp.result[i]['id'])
+                                .html(resp.result[i]['id'] + ' ' + resp.result[i]['name']);
+                            $('#sub-start').append(opt.clone());
+                            $('#sub-end').append(opt);
+                        }
+                    }
+                }
+            });
+        }
         <?php if ($this->canEditItems) { ?>
         $(document).ready(function(){
             $('tr').each(function(){
@@ -449,9 +529,12 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         $mtype = FormLib::get_form_value('mtype','prefix');
         $deptStart = FormLib::get_form_value('deptStart',0);
         $deptEnd = FormLib::get_form_value('deptEnd',0);
+        $subStart = FormLib::get('sub-start', 0);
+        $subEnd = FormLib::get('sub-end', 0);
         $super = FormLib::get_form_value('deptSub',0);
         $vendorID = FormLib::get('vendor');
         $upc_list = FormLib::get('u', array());
+        $inUse = FormLib::get('inUse', 0);
 
         $sort = FormLib::get_form_value('sort','Department');   
         $order = 'dept_name';
@@ -480,10 +563,13 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 <input type="hidden" name="supertype" value="' . $supertype . '" />
                 <input type="hidden" name="deptStart" value="' . $deptStart . '" />
                 <input type="hidden" name="deptEnd" value="' . $deptEnd . '" />
+                <input type="hidden" name="sub-start" value="' . $subStart . '" />
+                <input type="hidden" name="sub-end" value="' . $subEnd . '" />
                 <input type="hidden" name="deptSub" value="' . $super . '" />
                 <input type="hidden" name="manufacturer" value="' . $manufacturer . '" />
                 <input type="hidden" name="mtype" value="' . $mtype . '" />
                 <input type="hidden" name="vendor" value="' . $vendorID . '" />
+                <input type="hidden" name="inUse" value="' . $inUse . '" />
                 <input type="hidden" name="excel" value="yes" />';
             if (is_array($upc_list)) {
                 foreach ($upc_list as $u) {
@@ -528,6 +614,16 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         if ($supertype == 'dept' && $super != 0) {
             $query .= ' WHERE s.superID=? ';
             $args = array($super);
+            if ($deptStart != 0 && $deptEnd != 0) {
+                $query .= ' AND i.department BETWEEN ? AND ? ';
+                $args[] = $deptStart;
+                $args[] = $deptEnd;
+            }
+            if ($subStart != 0 && $subEnd != 0) {
+                $query .= ' AND i.subdept BETWEEN ? AND ? ';
+                $args[] = $subStart;
+                $args[] = $subEnd;
+            }
         } elseif ($supertype == 'manu' && $mtype == 'prefix') {
             $query .= ' WHERE i.upc LIKE ? ';
             $args = array('%' . $manufacturer . '%');
@@ -548,6 +644,16 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         } else {
             $query .= ' WHERE i.department BETWEEN ? AND ? ';
             $args = array($deptStart, $deptEnd);
+            if ($subStart != 0 && $subEnd != 0) {
+                $query .= ' AND i.subdept BETWEEN ? AND ? ';
+                $args[] = $subStart;
+                $args[] = $subEnd;
+            }
+        }
+        if ($inUse == 1) {
+            $query .= ' AND i.inUse=1 ';
+        } else {
+            $query .= ' AND i.inUse=0 ';
         }
         /** finish building query w/ order clause **/
         $query .= 'ORDER BY ' . $order;
@@ -654,14 +760,10 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         <div class="tab-content">
             <p>
             <div class="tab-pane active" id="dept-tab">
-                <div class="well">
-                Selecting a Buyer/SuperDept overrides Department Start/Department End.
-                To run reports for a specific department(s) leave Buyer/SuperDept empty or set it to 'blank'
-                </div>
                 <div class="row form-group form-horizontal">
                     <label class="control-label col-sm-2">Buyer (SuperDept)</label>
                     <div class="col-sm-6">
-                        <select name=deptSub class="form-control">
+                        <select name=deptSub class="form-control" onchange="chainSuper(this.value);">
                             <option value=0></option>
                             <?php
                             foreach($supers as $id => $name)
@@ -673,7 +775,8 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 <div class="row form-group form-horizontal">
                     <label class="control-label col-sm-2">Department Start</label>
                     <div class="col-sm-4">
-                        <select onchange="$('#deptStart').val(this.value);" class="form-control input-sm">
+                        <select onchange="$('#deptStart').val(this.value); filterSubs();" 
+                            id="dept-start-select" class="form-control input-sm">
                         <?php
                         foreach($depts as $id => $name)
                             printf('<option value="%d">%d %s</option>',$id,$id,$name);  
@@ -682,13 +785,15 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                     </div>
                     <div class="col-sm-2">
                     <input type=text id=deptStart name=deptStart 
-                        class="form-control input-sm" value=1>
+                        class="form-control input-sm" value=1
+                        onchange="$('#dept-start-select').val(this.value); filterSubs();" />
                     </div>
                 </div>
                 <div class="form-group form-horizontal row">
                     <label class="control-label col-sm-2">Department End</label>
                     <div class="col-sm-4">
-                        <select onchange="$('#deptEnd').val(this.value);" class="form-control input-sm">
+                        <select onchange="$('#deptEnd').val(this.value); filterSubs();" 
+                            id="dept-end-select" class="form-control input-sm">
                         <?php
                         foreach($depts as $id => $name)
                             printf('<option value="%d">%d %s</option>',$id,$id,$name);  
@@ -697,7 +802,24 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                     </div>
                     <div class="col-sm-2">
                         <input type=text id=deptEnd name=deptEnd 
-                            class="form-control input-sm" value=1>
+                            class="form-control input-sm" value=1
+                            onchange="$('#dept-end-select').val(this.value); filterSubs();" />
+                    </div>
+                </div>
+                <div class="row form-group form-horizontal">
+                    <label class="control-label col-sm-2">Sub Start</label>
+                    <div class="col-sm-6">
+                        <select name="sub-start" id="sub-start" class="form-control">
+                            <option value="">Select sub department</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row form-group form-horizontal">
+                    <label class="control-label col-sm-2">Sub End</label>
+                    <div class="col-sm-6">
+                        <select name="sub-end" id="sub-end" class="form-control">
+                            <option value="">Select sub department</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -736,6 +858,11 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 <option>UPC</option>
                 <option>Description</option>
             </select> 
+            <label>
+                <input type=checkbox name="inUse" value="1" checked />
+                In Use
+            </label>
+            |
             <label>
                 <input type=checkbox name=excel />
                 Excel
