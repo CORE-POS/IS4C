@@ -188,13 +188,22 @@ class HouseCouponEditor extends FanniePage
         $ret .= '</p>';
         $ret .= '</form>';
         $ret .= '<table class="table">';
-        $ret .= '<tr><th>ID</th><th>Value</th><th>Expires</th></tr>';
+        $ret .= '<tr><th>ID</th><th>Name</th><th>Value</th><th>Expires</th></tr>';
         $model = new HouseCouponsModel($dbc);
         foreach($model->find('coupID') as $obj) {
+            if (strstr($obj->endDate(), ' ')) {
+                $tmp = explode(' ', $obj->endDate());
+                $obj->endDate($tmp[0]);
+            }
             $ret .= sprintf('<tr><td>#%d <a href="HouseCouponEditor.php?edit_id=%d">Edit</a></td>
-                    <td>%s</td><td>%.2f%s</td><td>%s</td></tr>',
+                    <td>%s</td><td>%.2f%s</td><td>%s</td>
+                    <td><a href="%sws/barcode-pdf/?upc=%s&name=%s"
+                        class="btn btn-default">Print Barcode</a></tr>',
                     $obj->coupID(),$obj->coupID(),$obj->description(),
-                    $obj->discountValue(), $obj->discountType(), $obj->endDate());
+                    $obj->discountValue(), $obj->discountType(), $obj->endDate(),
+                    $FANNIE_URL,
+                    ('499999' . str_pad($obj->coupID(), 5, '0', STR_PAD_LEFT)),
+                    urlencode($obj->description()));
         }
         $ret .= '</table>';
         
@@ -204,7 +213,7 @@ class HouseCouponEditor extends FanniePage
 
     function edit_coupon(){
         global $FANNIE_URL;
-        global $FANNIE_OP_DB;
+        global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         
         $depts = array();
@@ -245,7 +254,9 @@ class HouseCouponEditor extends FanniePage
                 <div class="col-sm-1 text-right">Coupon ID#</div>
                 <div class="col-sm-3 text-left">%s</div>
                 <div class="col-sm-1 text-right">UPC</div>
-                <div class="col-sm-3 text-left">%s</div>
+                <div class="col-sm-3 text-left">
+                    <a href="%sws/barcode-pdf/?upc=%s&name=%s">%s</a>
+                </div>
             </div>
             <div class="row">
                 <label class="col-sm-1 control-label">Label</label>
@@ -274,7 +285,12 @@ class HouseCouponEditor extends FanniePage
                 </label>
                 <label class="col-sm-1 control-label">Department</label>
                 <div class="col-sm-3"><select class="form-control" name=dept>',
-            $cid,"00499999".str_pad($cid,5,'0',STR_PAD_LEFT),$description,
+            $cid,
+            $FANNIE_URL,
+            "00499999".str_pad($cid,5,'0',STR_PAD_LEFT),
+            urlencode($description),
+            "00499999".str_pad($cid,5,'0',STR_PAD_LEFT),
+            $description,
             $limit,
             $starts, $expires,
             ($mem==1?'checked':''),
