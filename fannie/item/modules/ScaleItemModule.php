@@ -41,7 +41,7 @@ class ScaleItemModule extends ItemModule {
             $found = true;
         }
 
-        if (!$found && $display_mode == 2) {
+        if (!$found && $display_mode == 2 && substr($upc, 0, 3) != '002') {
             return '';
         }
         $css = '';
@@ -58,7 +58,6 @@ class ScaleItemModule extends ItemModule {
                 <a href=\"\" onclick=\"\$('#ScaleFieldsetContent').toggle();return false;\">
                 Scale</a>
                 </div>";
-        $css = ($expand_mode == 1) ? '' : 'display:none;';
         $ret .= '<div id="ScaleFieldsetContent" class="panel-body" style="' . $css . '">';
         
         $p = $dbc->prepare_statement('SELECT description FROM products WHERE upc=?');
