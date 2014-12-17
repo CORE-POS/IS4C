@@ -1,13 +1,17 @@
 <?php
 
 include('../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
+}
 include($FANNIE_ROOT.'src/SQLManager.php');
 include('../db.php');
 
 $query = "select c.CardNo, c.LastName, c.FirstName, m.street, m.city, m.state, m.zip, e.payments
-	  from custdata as c left join meminfo as m on c.CardNo=m.card_no
-      left join is4c_trans.equity_history_sum as e ON c.CardNo=e.card_no
-	  where c.personNum = 1 and c.memType in (1,3)
+	  from custdata as c 
+        left join meminfo as m on c.CardNo=m.card_no
+        left join is4c_trans.equity_history_sum as e ON c.CardNo=e.card_no
+	  where c.personNum = 1
 	  AND c.Type='PC'
 	  AND LastName <> 'NEW MEMBER'
 	  order by ".$sql->convert('c.CardNo','INT');
