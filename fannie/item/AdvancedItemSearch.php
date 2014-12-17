@@ -534,6 +534,40 @@ function formReset()
     $('#vendorSale').attr('disabled', 'disabled');
     $('.saleField').attr('disabled', 'disabled');
 }
+function chainSuper(superID)
+{
+    if (superID === '') {
+        superID = -1;
+    }
+    var req = {
+        jsonrpc: '2.0',
+        method: '\\COREPOS\\Fannie\\API\\webservices\\FannieDeptLookup',
+        id: new Date().getTime(),
+        params: {
+            'type' : 'children',
+            'superID' : superID
+        }
+    };
+    $.ajax({
+        url: '../ws/',
+        type: 'post',
+        data: JSON.stringify(req),
+        dataType: 'json',
+        contentType: 'application/json',
+        success: function(resp) {
+            if (resp.result) {
+                $('#dept-start').empty().append('<option value="">Select Start...</option>');
+                $('#dept-end').empty().append('<option value="">Select End...</option>');
+                for (var i=0; i<resp.result.length; i++) {
+                    var opt = $('<option>').val(resp.result[i]['id'])
+                        .html(resp.result[i]['id'] + ' ' + resp.result[i]['name']);
+                    $('#dept-start').append(opt.clone());
+                    $('#dept-end').append(opt);
+                }
+            }
+        }
+    });
+}
         <?php
         return ob_get_clean();
     }
@@ -578,14 +612,15 @@ function formReset()
             <label class="col-sm-1 control-label">Brand</label>
             <div class="col-sm-3">
             <input type="text" name="brand" class="form-control input-sm" 
-                placeholder="Brand Name" />
+                placeholder="Brand Name" id="brand-field" />
             </div>
         </div>';
 
         $ret .= '<div class="form-group">
             <label class="col-sm-1 control-label small">Super Dept</label>
             <div class="col-sm-3">
-            <select name="superID" class="form-control input-sm"><option value="">Select Super...</option>';
+            <select name="superID" class="form-control input-sm" onchange="chainSuper(this.value);" >
+                <option value="">Select Super...</option>';
         $supers = $dbc->query('SELECT superID, super_name FROM superDeptNames order by superID');
         while($row = $dbc->fetch_row($supers)) {
             $ret .= sprintf('<option value="%d">%s</option>', $row['superID'], $row['super_name']);
@@ -595,7 +630,8 @@ function formReset()
         $ret .= '
             <label class="col-sm-1 control-label small">Dept Start</label>
             <div class="col-sm-3">
-            <select name="deptStart" class="form-control input-sm"><option value="">Select Start...</option>';
+            <select name="deptStart" id="dept-start" class="form-control input-sm">
+                <option value="">Select Start...</option>';
         $supers = $dbc->query('SELECT dept_no, dept_name FROM departments order by dept_no');
         while($row = $dbc->fetch_row($supers)) {
             $ret .= sprintf('<option value="%d">%d %s</option>', $row['dept_no'], $row['dept_no'], $row['dept_name']);
@@ -605,7 +641,8 @@ function formReset()
         $ret .= '
             <label class="col-sm-1 control-label small">Dept End</label>
             <div class="col-sm-3">
-            <select name="deptEnd" class="form-control input-sm"><option value="">Select End...</option>';
+            <select name="deptEnd" id="dept-end" class="form-control input-sm">
+                <option value="">Select End...</option>';
         $supers = $dbc->query('SELECT dept_no, dept_name FROM departments order by dept_no');
         while($row = $dbc->fetch_row($supers)) {
             $ret .= sprintf('<option value="%d">%d %s</option>', $row['dept_no'], $row['dept_no'], $row['dept_name']);
@@ -635,8 +672,8 @@ function formReset()
                     <select name="vendor" class="form-control input-sm"
                     onchange="if(this.value===\'\') $(\'#vendorSale\').attr(\'disabled\',\'disabled\'); else $(\'#vendorSale\').removeAttr(\'disabled\');" >
                     <option value="">Any</option>';
-        $vendors = $dbc->query('SELECT vendorID, vendorName FROM vendors');
-        while($row = $dbc->fetch_row($vendors)) {
+        $vendors = $dbc->query('SELECT vendorID, vendorName FROM vendors ORDER BY vendorName');
+        while ($row = $dbc->fetch_row($vendors)) {
             $ret .= sprintf('<option value="%d">%s</option>', $row['vendorID'], $row['vendorName']);
         }
         $ret .= '</select></div>';
@@ -807,9 +844,10 @@ function formReset()
         $ret .= '</div>';
         $ret .= '<form method="post" id="actionForm" target="__advs_act"></form>';
         $ret .= '</div>';
-        
-        $ret .= '</body></html>';
 
+        $this->add_script('autocomplete.js');
+        $this->add_onload_command("bindAutoComplete('#brand-field', '../ws/', 'brand');\n");
+        
         return $ret;
     }
 
