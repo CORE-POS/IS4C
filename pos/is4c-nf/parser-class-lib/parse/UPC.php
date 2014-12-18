@@ -380,7 +380,7 @@ class UPC extends Parser {
 		/* quantity required for this item. Send to
 		   entry page if one wasn't provided */
 		$qttyEnforced = $row["qttyEnforced"];
-		if (($qttyEnforced == 1) && ($CORE_LOCAL->get("multiple") == 0) && ($CORE_LOCAL->get("msgrepeat") == 0) && $CORE_LOCAL->get('qttyvalid') == 0) {
+		if (($qttyEnforced == 1) && ($CORE_LOCAL->get("multiple") == 0) && ($CORE_LOCAL->get("msgrepeat" == 0) || $CORE_LOCAL->get('qttyvalid') == 0)) {
 			$ret['main_frame'] = $my_url."gui-modules/qtty2.php";
 			return $ret;
 		}
