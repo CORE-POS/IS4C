@@ -16,6 +16,10 @@
         {
             "type": "vcs",
             "url": "https://github.com/CORE-POS/SqlManager"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/gohanman/PHP-XPDF"
         }
     ],
     "require": {
@@ -23,7 +27,8 @@
         "components/bootstrap": "3.2.*",
         "components/bootstrap-default": "~3.2",
         "adodb/adodb-php": "dev-master",
-        "gohanman/sql-manager": "dev-master"
+        "gohanman/sql-manager": "dev-master",
+        "php-xpdf/php-xpdf" : "dev-master"
     },
     "config": {
         "component-dir": "src/javascript/composer-components/"
