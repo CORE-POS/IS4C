@@ -39,7 +39,8 @@
         "components/bootstrap-default": "~3.2",
         "adodb/adodb-php": "dev-master",
         "gohanman/sql-manager": "dev-master",
-        "php-xpdf/php-xpdf" : "dev-master"
+        "php-xpdf/php-xpdf" : "dev-master",
+        "phpmailer/phpmailer": "~5.2"
     },
     "config": {
         "component-dir": "fannie/src/javascript/composer-components/"
