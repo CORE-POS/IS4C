@@ -1,14 +1,25 @@
 {
-    "name": "core-pos/fannie",
-    "description": "Backend tools for CORE-POS point of sale system",
+    "name": "core-pos/core-pos",
+    "description": "A Point of Sale System for Co-ops",
     "license": "GPL",
+    "type": "package",
+    "homepage": "https://github.com/CORE-POS/IS4C",
     "authors": [
         {
             "name": "Andy Theuninck",
-            "email": "andy@gohanman.com"
+            "email": "andy@wholefoods.coop"
         }
     ],
+    "support": {
+        "issues": "https://github.com/CORE-POS/IS4C/issues",
+        "wiki": "https://github.com/CORE-POS/IS4C/wiki",
+        "source": "https://github.com/CORE-POS/IS4C"
+    },
     "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/CORE-POS/IS4C"
+        },
         {
             "type": "vcs",
             "url": "https://github.com/gohanman/adodb"
@@ -31,6 +42,6 @@
         "php-xpdf/php-xpdf" : "dev-master"
     },
     "config": {
-        "component-dir": "src/javascript/composer-components/"
+        "component-dir": "fannie/src/javascript/composer-components/"
     }
 }

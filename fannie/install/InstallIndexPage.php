@@ -169,8 +169,8 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             return ob_get_clean();
         }
 
-        if (!is_dir(dirname(__FILE__) . '/../vendor')) {
-            echo "<div class=\"alert alert-danger\"><b>Warning</b>: dependencies appear to be missing.</div>";
+        if (!is_dir(dirname(__FILE__) . '/../../vendor')) {
+            echo "<div class=\"alert alert-warning\"><b>Warning</b>: dependencies appear to be missing.</div>";
             echo '<div class=\"well\">';
             echo 'Install <a href="https://getcomposer.org/">Composer</a> then run ';
             echo "<pre>";
@@ -178,11 +178,11 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             echo '$ /path/to/composer.phar update';
             echo '</div>';
         } else {
-            $json = file_get_contents(dirname(__FILE__) . '/../composer.json');
+            $json = file_get_contents(dirname(__FILE__) . '/../../composer.json');
             $obj = json_decode($json);
             $missing = false;
             foreach (get_object_vars($obj->require) as $package => $version) {
-                if (!is_dir(dirname(__FILE__) . '/../vendor/' . $package)) {
+                if (!is_dir(dirname(__FILE__) . '/../../vendor/' . $package)) {
                     $missing = true;
                     echo "<div class=\"alert alert-danger\"><b>Warning</b>: package " . $package . " is not installed.</div>";
                 }
@@ -190,7 +190,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             if ($missing) {
                 echo '<div class="well">Install dependencies by running';
                 echo "<pre>";
-                echo '$ cd "' . $FILEPATH . "\"\n";
+                echo '$ cd "' . substr($FILEPATH, 0, strlen($FILEPATH)-7) . "\"\n";
                 echo '$ /path/to/composer.phar update';
                 echo '</pre></div>';
             }

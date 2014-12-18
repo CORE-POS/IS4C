@@ -31,8 +31,8 @@
  communication
 */
 if (!function_exists("ADONewConnection")) {
-    if (file_exists(dirname(__FILE__) . '/../vendor/adodb/adodb-php/adodb.inc.php')) {
-        include(dirname(__FILE__) . '/../vendor/adodb/adodb-php/adodb.inc.php');
+    if (file_exists(dirname(__FILE__) . '/../../vendor/adodb/adodb-php/adodb.inc.php')) {
+        include(dirname(__FILE__) . '/../../vendor/adodb/adodb-php/adodb.inc.php');
     } else {
         include(dirname(__FILE__).'/../adodb5/adodb.inc.php');
     }
