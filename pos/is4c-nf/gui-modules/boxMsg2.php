@@ -32,10 +32,11 @@ class boxMsg2 extends BasicPage {
 			var str = $('#reginput').val();
 			var endorseType = $('#endorseType').val();
 			var endorseAmt = $('#endorseAmt').val();
+            var cmd = $('#repeat-cmd').val();
 			$.ajax({
 				url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-decision.php',
 				type: 'get',
-				data: 'input='+str,
+				data: 'input='+str+'&cmd='+encodeURIComponent(cmd),
 				dataType: 'json',
 				cache: false,
 				success: function(data){
@@ -95,6 +96,13 @@ class boxMsg2 extends BasicPage {
 		echo '<input type="hidden" id="endorseAmt" value="'
 			.(isset($_REQUEST['endorseAmt'])?$_REQUEST['endorseAmt']:'')
 			.'" />';
+        /**
+          Encode the last command entered in the page. With payment
+          terminals facing the customer, input processing may happen
+          in the background and alter the value of strEntered
+        */
+        echo '<input type="hidden" id="repeat-cmd" value="'
+            . $CORE_LOCAL->get('strEntered') . '" />';
 		
 		$CORE_LOCAL->set("boxMsg",'');
 		$CORE_LOCAL->set("msgrepeat",2);
