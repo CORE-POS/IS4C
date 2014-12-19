@@ -15,24 +15,24 @@
         "wiki": "https://github.com/CORE-POS/IS4C/wiki",
         "source": "https://github.com/CORE-POS/IS4C"
     },
-    "repositories": [
-        {
+    "repositories": {
+        "core-pos": {
             "type": "vcs",
             "url": "https://github.com/CORE-POS/IS4C"
         },
-        {
+        "adodb": {
             "type": "vcs",
             "url": "https://github.com/gohanman/adodb"
         },
-        {
+        "sqlmanager": {
             "type": "vcs",
             "url": "https://github.com/CORE-POS/SqlManager"
         },
-        {
+        "xpdf": {
             "type": "vcs",
             "url": "https://github.com/gohanman/PHP-XPDF"
         }
-    ],
+    },
     "require": {
         "components/jquery": "1.11.1",
         "components/bootstrap": "3.2.*",
@@ -40,7 +40,8 @@
         "adodb/adodb-php": "dev-master",
         "gohanman/sql-manager": "dev-master",
         "php-xpdf/php-xpdf" : "dev-master",
-        "phpmailer/phpmailer": "~5.2"
+        "phpmailer/phpmailer": "~5.2",
+        "psr/log": "~1.0"
     },
     "config": {
         "component-dir": "fannie/src/javascript/composer-components/"
