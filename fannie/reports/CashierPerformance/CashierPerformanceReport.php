@@ -54,7 +54,7 @@ class CashierPerformanceReport extends FannieReportPage
         $detailP = $dbc->prepare('
             SELECT SUM(CASE WHEN transInterval > 600 THEN 600 ELSE transInterval END) AS seconds,
                 COUNT(*) AS numTrans
-            FROM ' . $FANNIE_TRANS_DB . $dbc->sep() . 'CashPerformDay_cache
+            FROM ' . $FANNIE_TRANS_DB . $dbc->sep() . 'CashPerformDay
             WHERE proc_date BETWEEN ? AND ?
                 AND emp_no = ?
         ');
