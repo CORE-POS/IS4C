@@ -230,6 +230,129 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals(False,$so->is_special('0001234512345'));
 	}
 
+    public function testHouseCoupons()
+    {
+		if (!class_exists('lttLib')) {
+            include (dirname(__FILE__) . '/lttLib.php');
+        }
+
+        /**
+          TEST 1: minType M, discountType Q
+        */
+        lttLib::clear();
+        $upc = new UPC();
+        $upc->parse('0000000000111');
+        $upc->parse('0000000000234');
+
+        $hc = new HouseCoupon();
+        $hc->handle('0049999900001', array());
+        $record = lttLib::genericRecord();
+        $record['upc'] = '0049999900001';
+        $record['description'] = 'MIXED+QUANTITY';
+        $record['trans_type'] = 'I';
+        $record['trans_subtype'] = 'IC';
+        $record['trans_status'] = 'C';
+        $record['quantity'] = 1;
+        $record['ItemQtty'] = 1;
+        $record['unitPrice'] = -2.39;
+        $record['total'] = -2.39;
+        $record['regPrice'] = -2.39;
+		lttLib::verifyRecord(3, $record, $this);
+
+        /**
+          TEST 2: no minimum, discountType %D 
+        */
+        lttLib::clear();
+        $upc = new UPC();
+        $upc->parse('0000000001009');
+        $upc->parse('0000000001011');
+
+        $hc = new HouseCoupon();
+        $hc->handle('0049999900002', array());
+        $record = lttLib::genericRecord();
+        $record['upc'] = '0049999900002';
+        $record['description'] = '%DEPARTMENT';
+        $record['trans_type'] = 'I';
+        $record['trans_subtype'] = 'IC';
+        $record['trans_status'] = 'C';
+        $record['quantity'] = 1;
+        $record['ItemQtty'] = 1;
+        $record['unitPrice'] = -0.75;
+        $record['total'] = -0.75;
+        $record['regPrice'] = -0.75;
+		lttLib::verifyRecord(3, $record, $this);
+
+        /**
+          TEST 3: minimum D, discountType F 
+        */
+        lttLib::clear();
+        $dept = new DeptKey();
+        $dept->parse('2300DP10');
+        $dept->parse('200DP10');
+
+        $hc = new HouseCoupon();
+        $hc->handle('0049999900003', array());
+        $record = lttLib::genericRecord();
+        $record['upc'] = '0049999900003';
+        $record['description'] = '5OFF25DEPT';
+        $record['trans_type'] = 'I';
+        $record['trans_subtype'] = 'IC';
+        $record['trans_status'] = 'C';
+        $record['quantity'] = 1;
+        $record['ItemQtty'] = 1;
+        $record['unitPrice'] = -5.00;
+        $record['total'] = -5.00;
+        $record['regPrice'] = -5.00;
+		lttLib::verifyRecord(3, $record, $this);
+
+        /**
+          TEST 4: minimum MX, discountType F 
+        */
+        lttLib::clear();
+        $dept = new DeptKey();
+        $dept->parse('900DP10');
+        $upc = new UPC();
+        $upc->parse('0000000000234');
+
+        $hc = new HouseCoupon();
+        $hc->handle('0049999900004', array());
+        $record = lttLib::genericRecord();
+        $record['upc'] = '0049999900004';
+        $record['description'] = 'MIXCROSS';
+        $record['trans_type'] = 'I';
+        $record['trans_subtype'] = 'IC';
+        $record['trans_status'] = 'C';
+        $record['quantity'] = 1;
+        $record['ItemQtty'] = 1;
+        $record['unitPrice'] = -1.00;
+        $record['total'] = -1.00;
+        $record['regPrice'] = -1.00;
+		lttLib::verifyRecord(3, $record, $this);
+
+        /**
+          TEST 5: minType Q, discountType PI 
+        */
+        lttLib::clear();
+        $upc = new UPC();
+        $upc->parse('0000000000111');
+        $upc->parse('0000000000234');
+
+        $hc = new HouseCoupon();
+        $hc->handle('0049999900005', array());
+        $record = lttLib::genericRecord();
+        $record['upc'] = '0049999900005';
+        $record['description'] = 'PERITEM';
+        $record['trans_type'] = 'I';
+        $record['trans_subtype'] = 'IC';
+        $record['trans_status'] = 'C';
+        $record['quantity'] = 1;
+        $record['ItemQtty'] = 1;
+        $record['unitPrice'] = -1.00;
+        $record['total'] = -1.00;
+        $record['regPrice'] = -1.00;
+		lttLib::verifyRecord(3, $record, $this);
+    }
+
 	public function testSpecialDepts(){
 		global $CORE_LOCAL;
 

@@ -239,7 +239,36 @@ class HouseCoupon extends SpecialUPC
                     where h.coupID = $coupID
                     and h.type = 'DISCOUNT'";
                 $min2R = $transDB->query($min2Q);
-                $min2W = $transDB->fetch_row($minR);
+                $min2W = $transDB->fetch_row($min2R);
+                $validQtty2 = $min2W[0];
+
+                if ($validQtty < $infoW["minValue"] || $validQtty2 <= 0) {
+                    return DisplayLib::boxMsg(_("coupon requirements not met"));
+                }
+                break;
+            case 'MX': // must purchase at least $ from qualifying departments
+                       // and some quantity discount items
+                       // (mix "cross")
+                $minQ = "select case when sum(total) is null
+                    then 0 else sum(total) end
+                    from localtemptrans
+                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
+                    as h on l.department = h.upc
+                    where h.coupID = " . $coupID . "
+                        AND h.type='QUALIFIER'";
+                $minR = $transDB->query($minQ);
+                $minW = $transDB->fetch_row($minR);
+                $validQtty = $minW[0];
+
+                $min2Q = "select case when sum(ItemQtty) is null then 0 else
+                    sum(ItemQtty) end
+                    from localtemptrans
+                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
+                    as h on l.upc = h.upc
+                    where h.coupID = $coupID
+                    and h.type = 'DISCOUNT'";
+                $min2R = $transDB->query($min2Q);
+                $min2W = $transDB->fetch_row($min2R);
                 $validQtty2 = $min2W[0];
 
                 if ($validQtty < $infoW["minValue"] || $validQtty2 <= 0) {
@@ -482,6 +511,20 @@ class HouseCoupon extends SpecialUPC
                 $valR = $transDB->query($valQ);
                 $row = $transDB->fetch_row($valR);
                 $value = $row[1] * $value;
+                break;
+            case 'PI': // per-item discount
+                    // take of the request amount times the
+                    // number of matching items.
+                $value = $infoW["discountValue"];
+                $valQ = "
+                    SELECT 
+                       SUM(CASE WHEN ItemQtty IS NULL THEN 0 ELSE ItemQtty END) AS qty
+                    FROM localtemptrans AS l
+                        LEFT JOIN " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems AS h ON l.upc = h.upc
+                    WHERE h.coupID = " . $coupID ;
+                $valR = $transDB->query($valQ);
+                $row = $transDB->fetch_row($valR);
+                $value = $row['qty'] * $value;
                 break;
             case "F": // completely flat; no scaling for weight
                 $value = $infoW["discountValue"];

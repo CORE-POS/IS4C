@@ -54,6 +54,8 @@ class InstallTest extends PHPUnit_Framework_TestCase
             'departments',
             'employees',
             'globalvalues',
+            'houseCoupons',
+            'houseCouponItems',
             'MasterSuperDepts',
             'parameters',
             'products',
