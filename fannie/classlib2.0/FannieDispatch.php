@@ -81,8 +81,7 @@ class FannieDispatch
     */
     static public function errorHandler($errno, $errstr, $errfile='', $errline=0, $errcontext=array())
     {
-        include(dirname(__FILE__).'/../config.php');
-        $logged = $FANNIE_CUSTOM_ERRORS == 2 ? true : false;
+        $logged = FannieConfig::factory()->get('CUSTOM_ERRORS') == 2 ? true : false;
 
         if ($logged) {
             ob_start();
@@ -112,8 +111,7 @@ class FannieDispatch
     */
     static public function exceptionHandler($exception)
     {
-        include(dirname(__FILE__).'/../config.php');
-        $logged = $FANNIE_CUSTOM_ERRORS == 2 ? true : false;
+        $logged = FannieConfig::factory()->get('CUSTOM_ERRORS') == 2 ? true : false;
 
         if ($logged) {
             ob_start();
@@ -190,15 +188,15 @@ class FannieDispatch
     */
     static public function logUsage()
     {
-        global $FANNIE_OP_DB;
+        $op_db = FannieConfig::factory()->get('OP_DB');
 
         if (php_sapi_name() === 'cli') {
             // don't log cli usage
             return false;
         }
 
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-        if (!$dbc || !isset($dbc->connections[$FANNIE_OP_DB]) || $dbc->connections[$FANNIE_OP_DB] == false) {
+        $dbc = FannieDB::get($op_db);
+        if (!$dbc || !isset($dbc->connections[$op_db]) || $dbc->connections[$op_db] == false) {
             // database unavailable
             return false;
         }
@@ -234,45 +232,6 @@ class FannieDispatch
       Render the current page if appropriate
       The page is only shown if it's accessed
       directly rather than through an include().
-    */
-    static public function go()
-    {
-        $bt = debug_backtrace();
-        // go() is the only function on the stack
-        if (count($bt) == 1) {
-
-            // log PHP errors local to Fannie
-            $elog = realpath(dirname(__FILE__).'/../logs/').'/php-errors.log';
-            ini_set('error_log', $elog);
-    
-            // use stack traces if desired
-            include(dirname(__FILE__).'/../config.php');
-            if (isset($FANNIE_CUSTOM_ERRORS) && $FANNIE_CUSTOM_ERRORS) {
-                set_error_handler(array('FannieDispatch','errorHandler'));
-                set_exception_handler(array('FannieDispatch','exceptionHandler'));
-                register_shutdown_function(array('FannieDispatch','catchFatal'));
-            }
-
-            // initialize locale & gettext
-            self::i18n();
-            // write URL log
-            self::logUsage();
-
-            $page = basename($_SERVER['PHP_SELF']);
-            $class = substr($page,0,strlen($page)-4);
-            if (class_exists($class)) {
-                $obj = new $class();
-                $obj->draw_page();
-            } else {
-                trigger_error('Missing class '.$class, E_USER_NOTICE);
-            }
-        }
-    }
-
-    /**
-      Render the current page if appropriate
-      The page is only shown if it's accessed
-      directly rather than through an include().
 
       @param $custom_errors @deprecated
         This behavior is controlled by config variable
@@ -283,6 +242,7 @@ class FannieDispatch
     */
     static public function conditionalExec($custom_errors=true)
     {
+        $config = FannieConfig::factory();
         $bt = debug_backtrace();
         // conditionalExec() is the only function on the stack
         if (count($bt) == 1) {
@@ -293,7 +253,7 @@ class FannieDispatch
     
             // use stack traces if desired
             include(dirname(__FILE__).'/../config.php');
-            if (isset($FANNIE_CUSTOM_ERRORS) && $FANNIE_CUSTOM_ERRORS) {
+            if ($config->get('CUSTOM_ERRORS', 0)) {
                 set_error_handler(array('FannieDispatch','errorHandler'));
                 set_exception_handler(array('FannieDispatch','exceptionHandler'));
                 register_shutdown_function(array('FannieDispatch','catchFatal'));
@@ -309,6 +269,7 @@ class FannieDispatch
             $class = substr($page,0,strlen($page)-4);
             if ($class != 'index' && class_exists($class)) {
                 $obj = new $class();
+                $obj->setConfig($config);
                 $obj->draw_page();
             } else {
                 trigger_error('Missing class '.$class, E_USER_NOTICE);

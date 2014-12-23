@@ -41,7 +41,7 @@ class ItemEditorPage extends FanniePage
 
     function preprocess()
     {
-        global $FANNIE_PRODUCT_MODULES;
+        $FANNIE_PRODUCT_MODULES = $this->config->get('PRODUCT_MODULES');
         if (!is_array($FANNIE_PRODUCT_MODULES)) {
             $FANNIE_PRODUCT_MODULES = array('BaseItemModule' => array('seq'=>0, 'show'=>1, 'expand'=>1));
         }
@@ -113,7 +113,7 @@ class ItemEditorPage extends FanniePage
 
     function search_form()
     {
-        global $FANNIE_URL;
+        $FANNIE_URL = $this->config->get('URL');
         $ret = '';
         if (!empty($this->msgs)) {
             $ret .= '<blockquote style="border:solid 1px black;">';
@@ -160,8 +160,7 @@ class ItemEditorPage extends FanniePage
 
     function search_results()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
         $upc = FormLib::get_form_value('searchupc');
         $numType = FormLib::get_form_value('ntype','UPC');
 
@@ -264,7 +263,7 @@ class ItemEditorPage extends FanniePage
 
     function multiple_results($results)
     {
-        global $FANNIE_URL;
+        $FANNIE_URL = $this->config->get('URL');
         $ret = '<table id="itemSearchResults" class="tablesorter">';
         $ret .= '<thead><tr>
             <th>UPC</th><th>Description</th><th>Brand</th><th>Reg. Price</th><th>Sale Price</th><th>Modified</th>
@@ -310,7 +309,8 @@ class ItemEditorPage extends FanniePage
 
     function edit_form($upc,$isNew)
     {
-        global $FANNIE_PRODUCT_MODULES, $FANNIE_URL;
+        $FANNIE_PRODUCT_MODULES = $this->config->get('PRODUCT_MODULES');
+        $FANNIE_URL = $this->config->get('URL');
         $shown = array();
 
         $this->add_script('autocomplete.js');
@@ -429,7 +429,8 @@ class ItemEditorPage extends FanniePage
 
     function save_item($isNew)
     {
-        global $FANNIE_OP_DB, $FANNIE_PRODUCT_MODULES;
+        $FANNIE_PRODUCT_MODULES = $this->config->get('PRODUCT_MODULES');
+        $FANNIE_URL = $this->config->get('URL');
 
         $upc = FormLib::get_form_value('upc','');
         if ($upc === '' || !is_numeric($upc)) {

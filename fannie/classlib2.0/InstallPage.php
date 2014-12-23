@@ -53,16 +53,15 @@ class InstallPage extends \FanniePage
     */
     function getHeader()
     {
-        global $FANNIE_ROOT, $FANNIE_WINDOW_DRESSING;
         ob_start();
         $page_title = $this->title;
         $header = $this->header;
         if ($this->themed) {
             echo parent::getHeader(); 
-        } elseif (isset($FANNIE_WINDOW_DRESSING) && $FANNIE_WINDOW_DRESSING == True) {
-            include($FANNIE_ROOT.'src/header.html');
+        } elseif ($this->config->get('WINDOW_DRESSING')) {
+            include(dirname(__FILE__) . '/../src/header.html');
         } else {
-            include($FANNIE_ROOT.'src/header_install.html');
+            include(dirname(__FILE__) . '/../src/header_install.html');
         }
 
         return ob_get_clean();
@@ -72,15 +71,17 @@ class InstallPage extends \FanniePage
       Get the standard install-page footer
       @return An HTML string
     */
-    function getFooter(){
-        global $FANNIE_ROOT, $FANNIE_AUTH_ENABLED, $FANNIE_URL, $FANNIE_WINDOW_DRESSING;
+    function getFooter()
+    {
+        $FANNIE_AUTH_ENABLED = $this->config->get('AUTH_ENABLED');
+        $FANNIE_URL = $this->config->get('URL');
         ob_start();
         if ($this->themed) {
             echo parent::getFooter(); 
-        } elseif (isset($FANNIE_WINDOW_DRESSING) && $FANNIE_WINDOW_DRESSING == True) {
-            include($FANNIE_ROOT.'src/footer.html');
+        } elseif ($this->config->get('WINDOW_DRESSING')) {
+            include(dirname(__FILE__) . '/../src/footer.html');
         } else {
-            include($FANNIE_ROOT.'src/footer_install.html');
+            include(dirname(__FILE__) . '/../src/footer_install.html');
         }
 
         return ob_get_clean();
