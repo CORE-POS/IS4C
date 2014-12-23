@@ -337,7 +337,8 @@ class HouseCoupon extends SpecialUPC
             from localtemptrans where
             upc = '" . $upc . "'" ;
         $limitR = $transDB->query($limitQ);
-        $times_used = array_pop($transDB->fetch_row($limitR));
+        $limitW = $transDB->fetch_row($limitR);
+        $times_used = $limitW[0];
         if ($times_used >= $infoW["limit"]) {
             return DisplayLib::boxMsg(_("coupon already applied"));
         }
