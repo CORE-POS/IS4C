@@ -1574,6 +1574,50 @@ class MercuryE2E extends BasicCCModule
 
             // read key segment
             $ret['Key'] = substr($str,$pos,20);
+        } elseif (strlen($str) > 4 && substr($str, 0, 4) == "23.0") {
+            // Ingenico style
+            $data = substr($str, 4);
+            $tracks = explode(chr(28), $data);
+            $track1 = false;
+            $track2 = false;
+            $track3 = $tracks[count($tracks)-1];
+            if ($tracks[0][0] == '%') {
+                $track1 = $tracks[0];
+            } elseif ($tracks[0][0] == ';') {
+                $track2 = $tracks[0];
+            }
+            if ($track2 === false && $tracks[1][0] == ';') {
+                $track2 = $tracks[1];
+            }
+
+            if ($track1 !== false) {
+                $pieces = explode('^', $track1);
+                $masked = ltrim($pieces[0], '%');
+                $ret['Issuer'] = PaycardLib::paycard_issuer($masked);
+                $ret['Last4'] = substr($masked, -4);
+                if (count($pieces) >= 3) {
+                    $ret['Name'] = $pieces[1];
+                }
+            } elseif ($track2 !== false) {
+                list($start, $end) = explode('=', $track2, 2);
+                $masked = ltrim($start, ';');
+                $ret['Issuer'] = PaycardLib::paycard_issuer($masked);
+                $ret['Last4'] = substr($masked, -4);
+            }
+
+            if (strstr($track3, ';')) {
+                list($e2e, $actual_track3) = explode(';', $track3, 2);
+                $track3 = $e2e;
+            }
+
+            $pieces = explode(':', $track3);
+            if (count($pieces) == 4) {
+                $ret['Block'] = $pieces[2];
+                $ret['Key'] = $pieces[3];
+            } elseif (count($pieces) == 2 && $track1 === false) {
+                $ret['Block'] = $pieces[0];
+                $ret['Key'] = $pieces[1];
+            }
         }
 
         return $ret;

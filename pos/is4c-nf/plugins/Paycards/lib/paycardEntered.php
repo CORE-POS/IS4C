@@ -39,8 +39,7 @@ class paycardEntered extends Parser {
 			$this->swipetype = PaycardLib::PAYCARD_TYPE_UNKNOWN;
 			$this->manual = False;
 			return True;
-		}
-		elseif (substr($str,0,8) == "02E60080" || substr($str,0,7)=="2E60080"){
+		} elseif (substr($str,0,8) == "02E60080" || substr($str,0,7)=="2E60080" || substr($str, 0, 5) == "23.0%" || substr($str, 0, 5) == "23.0;") {
 			$this->swipestr = $str;
 			$this->swipetype = PaycardLib::PAYCARD_TYPE_ENCRYPTED;
 			$this->manual = False;
