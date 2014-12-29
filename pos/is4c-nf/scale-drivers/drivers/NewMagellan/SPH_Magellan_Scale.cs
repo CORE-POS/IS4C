@@ -49,7 +49,6 @@ namespace SPH {
 
 public class SPH_Magellan_Scale : SerialPortHandler {
 	private bool got_weight;
-private static String MAGELLAN_OUTPUT_DIR = "ss-output/";
 
 	public SPH_Magellan_Scale(string p) : base(p){
 		sp = new SerialPort();

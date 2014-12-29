@@ -283,6 +283,9 @@ public class SPH_iSC250_IP : SerialPortHandler {
             case "termApproved":
                 SendToDevice(ApprovalCommand("000000"));
                 break;
+            case "termTotal":
+                SendToDevice(AmountCommand("100"));
+                break;
         }
     }
 
