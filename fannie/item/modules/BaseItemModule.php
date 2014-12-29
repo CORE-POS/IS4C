@@ -443,6 +443,9 @@ class BaseItemModule extends ItemModule {
     {
         global $FANNIE_URL;
         $dbc = $this->db();
+        $prod = new ProductsModel($dbc);
+        $prod->upc($upc);
+        $prod->load();
 
         $p = $dbc->prepare_statement('SELECT dept_no,dept_name,subdept_no,subdept_name,dept_ID 
                 FROM departments AS d
@@ -455,7 +458,7 @@ class BaseItemModule extends ItemModule {
             if (!isset($subs[$w['dept_ID']]))
                 $subs[$w['dept_ID']] = '';
             $subs[$w['dept_ID']] .= sprintf('<option %s value="%d">%d %s</option>',
-                    ($w['subdept_no'] == $rowItem['subdept'] ? 'selected':''),
+                    ($w['subdept_no'] == $prod->subdept() ? 'selected':''),
                     $w['subdept_no'],$w['subdept_no'],$w['subdept_name']);
         }
 
