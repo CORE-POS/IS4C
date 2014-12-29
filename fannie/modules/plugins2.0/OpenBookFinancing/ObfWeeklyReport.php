@@ -792,8 +792,8 @@ class ObfWeeklyReport extends FannieReportPage
             'meta_foreground' => 'black',
         );
 
-        $plan_personnel = $quarterW['plan'] * 0.2155;
-        $bonus = ($qtd_sales * 0.2155) - ($qtd_wages * $p_est);
+        $plan_personnel = $quarterW['plan'] * 0.2081;
+        $bonus = ($qtd_sales * 0.2081) - ($qtd_wages * $p_est);
         if ($bonus < 0) {
             $bonus = 0;
         } else if ($bonus > 35000) {
