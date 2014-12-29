@@ -209,7 +209,7 @@ class FanniePage
                 echo "\n" . $modal . "\n";
             }
         } else {
-            include($dirname(__FILE__) . '/../src/footer.html');
+            include(dirname(__FILE__) . '/../src/footer.html');
         }
 
         return ob_get_clean();
