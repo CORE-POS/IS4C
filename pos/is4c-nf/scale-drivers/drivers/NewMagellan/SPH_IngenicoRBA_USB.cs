@@ -44,7 +44,8 @@ using USBLayer;
 
 namespace SPH {
 
-public class SPH_IngenicoRBA_USB : SPH_Ingenico_i6550 {
+public class SPH_IngenicoRBA_USB : SPH_IngenicoRBA_RS232 
+{
 
 	/**
 	 * USB protocol notes
@@ -200,9 +201,14 @@ public class SPH_IngenicoRBA_USB : SPH_Ingenico_i6550 {
 		// needs changes for mono. Async probably still doesn't work.
 		GetHandle();
         AsyncRead();
-        ConfirmedWrite(OnlineMessage());
-        ConfirmedWrite(GetLRC(SwipeCardScreen()));
+        WriteMessageToDevice(OnlineMessage());
+        WriteMessageToDevice(SwipeCardScreen());
 	}
+
+    public void WriteMessagetoDevice(byte[] msg)
+    {
+        ConfirmedWrite(msg);
+    }
 
     private void AsyncRead()
     {
@@ -258,7 +264,7 @@ public class SPH_IngenicoRBA_USB : SPH_Ingenico_i6550 {
                     SendAck();
                     byte[] sliced = new byte[input.Length - 2];
                     Array.Copy(input, 2, sliced, 0, sliced.Length);
-                    HandleMessage(sliced);
+                    HandleMessageFromDevice(sliced);
                 }
             } else if (input.Length > 3 && input[1]+2 <= usb_report_size && input[2] == 0x2) {
                 // single report message
@@ -267,7 +273,7 @@ public class SPH_IngenicoRBA_USB : SPH_Ingenico_i6550 {
                 SendAck();
                 byte[] sliced = new byte[input.Length - 2];
                 Array.Copy(input, 2, sliced, 0, sliced.Length);
-                HandleMessage(sliced);
+                HandleMessageFromDevice(sliced);
             } else if (input.Length > 3 && input[1]+2 > usb_report_size && input[2] == 0x2) {
                 // long message begins
                 read_continues = true;
@@ -387,40 +393,7 @@ public class SPH_IngenicoRBA_USB : SPH_Ingenico_i6550 {
         }
     }
 
-    /**
-      Wrapper for compatibility with 
-      SPH_Ingenico_i6550. Doesn't do anything
-      to the value
-    */
-    private byte[] GetLRC(byte[] input)
-    {
-        return input;
-    }
-
-	private byte[] OnlineMessage()
-    {
-		byte[] msg = new byte[13];
-		msg[0] = 0x2; // STX
-
-		msg[1] = 0x30; // Online Code
-		msg[2] = 0x31;
-		msg[3] = 0x2e;
-
-        // blank application id and parameter id
-		msg[4] = 0x30;
-		msg[5] = 0x30;
-		msg[6] = 0x30;
-		msg[7] = 0x30;
-		msg[8] = 0x30;
-		msg[9] = 0x30;
-		msg[10] = 0x30;
-		msg[11] = 0x30;
-
-		msg[12] = 0x3; // ETX
-
-		return msg;
-	}
-
 }
 
 }
+

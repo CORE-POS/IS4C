@@ -8,7 +8,7 @@ set CC=csc /platform:x86 /nologo
 %CC% /target:library ^
 /r:DelegateForm.dll /r:Bitmap.dll /r:USBLayer.dll /r:DSIPDCXLib.dll /r:AxDSIPDCXLib.dll ^
 /out:SPH.dll ^
-SerialPortHandler.cs SPH_Magellan_Scale.cs SPH_Ingenico_i6550.cs SPH_SignAndPay_USB.cs SPH_IngenicoRBA_USB.cs SPH_Datacap_PDCX.cs
+SerialPortHandler.cs SPH_Magellan_Scale.cs SPH_IngenicoRBA_RS232.cs SPH_SignAndPay_USB.cs SPH_IngenicoRBA_USB.cs SPH_Datacap_PDCX.cs
 
 %CC% /target:exe /r:DelegateForm.dll /r:UDPMsgBox.dll /r:SPH.dll /out:pos.exe Magellan.cs
 @echo off

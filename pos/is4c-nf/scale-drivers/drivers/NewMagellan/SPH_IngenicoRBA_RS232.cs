@@ -199,10 +199,24 @@ public class Signature {
 
 }
 
-public class SPH_Ingenico_i6550 : SerialPortHandler {
+/**
+  This class contains all the functionality for building
+  and dealing with RBA protocl messages. Subclasses that
+  handle a different hardware interface are responsible for
+  the following:
+  - method Read() that gets ACK, NACK, and message bytes
+    from the device. The subclass is responsible for sending
+    its own ACKs and NACKs. The message bytes starting with 
+    STX and ending with ETX followed by LRC should be passed
+    to the HandleMessageFromDevice() method.
+  - method WriteMessageToDevice() is responsible for sending
+    an array of bytes to the device. This method must add an
+    LRC byte at the end as the parameter does not include it
+*/
+public class SPH_IngenicoRBA_RS232 : SerialPortHandler 
+{
 	private const int application_id = 230;
 	private const int parameter_id = 230;
-	private const bool VERBOSE = true;
 	private byte[] last_message;
     /** not used with on-demand implementation
 	private string terminal_serial_number;
@@ -215,7 +229,8 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 
 	private static String MAGELLAN_OUTPUT_DIR = "ss-output/";
 
-	public SPH_Ingenico_i6550(string p) : base(p){
+	public SPH_IngenicoRBA_RS232(string p) : base(p)
+    {
 		last_message = null;
 		getting_signature = false;	
 
@@ -231,39 +246,48 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 		
 		sp.Open();
 
-		ConfirmedWrite(GetLRC(OfflineMessage()));
-		ConfirmedWrite(GetLRC(OnlineMessage()));
+		WriteMessageToDevice(OfflineMessage());
+		WriteMessageToDevice(OnlineMessage());
 		HandleMsg("termReset");
 	}
 
-	private void ByteWrite(byte[] b){
+    /**
+      Simple wrapper to write an array of bytes
+    */
+	private void ByteWrite(byte[] b)
+    {
 		sp.Write(b,0,b.Length);
 	}
 
 	// Waits for acknowledgement from device & resends
 	// if necessary. Should probably be used instead
 	// of ByteWrite for most messages.
-	private void ConfirmedWrite(byte[] b){
-		if (VERBOSE)
+	private void ConfirmedWrite(byte[] b)
+    {
+		if (this.verbose_mode > 0) {
 			System.Console.WriteLine("Tried to write");
+        }
 
 		int count=0;
-		while(last_message != null && count++ < 5)
+		while(last_message != null && count++ < 5) {
 			Thread.Sleep(10);
+        }
 		last_message = b;
 		ByteWrite(b);
 
-		if (VERBOSE)
+		if (this.verbose_mode > 0) {
 			System.Console.WriteLine("wrote");
+        }
 	}
 
 	// computes check character and appends it
 	// to the array
-	private byte[] GetLRC(byte[] b){
+	private byte[] GetLRC(byte[] b)
+    {
 		byte[] ret = new byte[b.Length+1];
 		ret[0] = b[0]; // STX
 		byte lrc = 0;
-		for(int i=1; i < b.Length; i++){
+		for (int i=1; i < b.Length; i++) {
 			lrc ^= b[i];
 			ret[i] = b[i];
 		}
@@ -273,71 +297,83 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 	}
 
 	// see if array has a valid check character
-	private bool CheckLRC(byte[] b){
+	private bool CheckLRC(byte[] b)
+    {
 		byte lrc = 0;
-		for(int i=1; i < b.Length-1; i++)
+		for (int i=1; i < b.Length-1; i++) {
 			lrc ^= b[i];
-		return (lrc == b[b.Length-1])?true:false;
+        }
+		return (lrc == b[b.Length-1]) ? true : false;
 	}
 
 
 	// main read loop
-	override public void Read(){
+	override public void Read()
+    {
 		ArrayList bytes = new ArrayList();
-		while(SPH_Running){
+		while (SPH_Running) {
 			try {
 				int b = sp.ReadByte();
-				if (b == 0x06){
+				if (b == 0x06) {
 					// ACK
-					if (VERBOSE)
+					if (this.verbose_mode > 0) {
 						System.Console.WriteLine("ACK!");
+                    }
 					last_message = null;
-				}
-				else if (b == 0x15){
+				} else if (b == 0x15) {
 					// NAK
 					// re-send
-					if (VERBOSE)
+					if (this.verbose_mode > 0) {
 						System.Console.WriteLine("NAK!");
+                    }
 					ByteWrite(last_message);
-				}
-				else {
+				} else {
 					// part of a message
 					// force to be byte-sized
 					bytes.Add(b & 0xff); 
 				}
-				if (bytes.Count > 2 && (int)bytes[bytes.Count-2] == 0x3){
+				if (bytes.Count > 2 && (int)bytes[bytes.Count-2] == 0x3) {
 					// end of message, send ACK
 					ByteWrite(new byte[1]{0x6}); 
 					// convoluted casting required to get
 					// values out of ArrayList and into
 					// a byte array
 					byte[] buffer = new byte[bytes.Count];
-					for(int i=0; i<bytes.Count; i++){
+					for (int i=0; i<bytes.Count; i++) {
 						buffer[i] = (byte)((int)bytes[i] & 0xff);
 					}
 					// deal with message, clear arraylist for the
 					// next one
-					HandleMessage(buffer);
+					HandleMessageFromDevice(buffer);
 					bytes.Clear();
 				}
-			}
-			catch{}
+			} catch (Exception ex) {
+                if (this.verbose_mode > 0) {
+                    System.Console.WriteLine(ex);
+                }
+            }
 		}
 		
-		if (VERBOSE)
+		if (this.verbose_mode > 0) {
 			System.Console.WriteLine("Crashed?");
+        }
 	}
 
-	// deal to messages from the device
-	public void HandleMessage(byte[] buffer){
+	/**
+      Handle messages from the device
+      @param buffer - the message
+    */
+	public void HandleMessageFromDevice(byte[] buffer)
+    {
         System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
-		if (VERBOSE){
+		if (this.verbose_mode > 0) {
 			System.Console.WriteLine("Received:");
-			foreach(byte b in buffer){
-				if (b < 10)
+			foreach (byte b in buffer) {
+				if (b < 10) {
 					System.Console.Write("0{0} ",b);
-				else
+				} else {
 					System.Console.Write("{0} ",b);
+                }
 			}
 			System.Console.WriteLine();
 
@@ -348,100 +384,120 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 		}
 
 		int code = ((buffer[1]-0x30)*10) + (buffer[2]-0x30);
-		switch(code){
-		case 1: break; 	// online response from device
-		case 4: break; 	// set payment response from device
-		case 11:	// status response from device
-			int status = ((buffer[4]-0x30)*10) + (buffer[5]-0x30);
-			if (status == 11){ // signature ready
-				ConfirmedWrite(GetLRC(GetVariableMessage("000712")));
-			}
-			else if (status == 6){
-				ConfirmedWrite(GetLRC(GetVariableMessage("000712")));
-			}
-			else if (status == 10){
-				Thread.Sleep(500);
-				ConfirmedWrite(GetLRC(StatusRequestMessage()));
-			}
-			break;
-        case 23:
-            // get card info repsponse
-            string card_msg = enc.GetString(buffer);
-            card_msg = card_msg.Substring(1, card_msg.Length - 2); // trim STX, ETX, LRC 
-            PushOutput("PANCACHE:" + card_msg);
-            if (card_msg.Contains("%") && card_msg.Contains("^")) {
-                string[] parts = card_msg.Split(new char[]{'%'}, 2);
-                parts = parts[1].Split(new char[]{'^'}, 2);
-                masked_pan = parts[0];
-            } else if (card_msg.Contains(";") && card_msg.Contains("=")) {
-                string[] parts = card_msg.Split(new char[]{';'}, 2);
-                parts = parts[1].Split(new char[]{'='}, 2);
-                masked_pan = parts[0];
+		switch (code) {
+            case 1: break; 	// online response from device
+            case 4: break; 	// set payment response from device
+
+            case 11:	
+                // status response from device
+                int status = ((buffer[4]-0x30)*10) + (buffer[5]-0x30);
+                if (status == 11) { // signature ready
+                    WriteMessageToDevice(GetVariableMessage("000712"));
+                } else if (status == 6) {
+                    WriteMessageToDevice(GetVariableMessage("000712"));
+                } else if (status == 10) {
+                    Thread.Sleep(500);
+                    WriteMessageToDevice(StatusRequestMessage());
+                }
+                break;
+
+            case 23:
+                // get card info repsponse
+                string card_msg = enc.GetString(buffer);
+                card_msg = card_msg.Substring(1, card_msg.Length - 2); // trim STX, ETX, LRC 
+                PushOutput("PANCACHE:" + card_msg);
+                if (card_msg.Contains("%") && card_msg.Contains("^")) {
+                    string[] parts = card_msg.Split(new char[]{'%'}, 2);
+                    parts = parts[1].Split(new char[]{'^'}, 2);
+                    masked_pan = parts[0];
+                } else if (card_msg.Contains(";") && card_msg.Contains("=")) {
+                    string[] parts = card_msg.Split(new char[]{';'}, 2);
+                    parts = parts[1].Split(new char[]{'='}, 2);
+                    masked_pan = parts[0];
+                }
+                if (auto_state_change) {
+                    WriteMessageToDevice(GetCardType());
+                }
+                break;
+
+                case 24:
+                    // response from a form message
+                    // should normally mean "card type selected"
+                    // if the buffer is undersized or the status byte
+                    // is not ASCII zero, go back the beginning
+                    // otherwise see which type was selected
+                    if (buffer.Length < 6 || buffer[4] != 0x30) {
+                        WriteMessageToDevice(SwipeCardScreen());
+                    } else if (buffer[5] == 0x41) {
+                        PushOutput("TERM:Debit");
+                        if (auto_state_change) {
+                            WriteMessageToDevice(PinEntryScreen());
+                        }
+                    } else if (buffer[5] == 0x42) {
+                        PushOutput("TERM:Credit");
+                        if (auto_state_change) {
+                            WriteMessageToDevice(TermWaitScreen());
+                        }
+                    } else if (buffer[5] == 0x43) {
+                        PushOutput("TERM:EbtCash");
+                        if (auto_state_change) {
+                            WriteMessageToDevice(PinEntryScreen());
+                        }
+                    } else if (buffer[5] == 0x44) {
+                        PushOutput("TERM:EbtFood");
+                        if (auto_state_change) {
+                            WriteMessageToDevice(PinEntryScreen());
+                        }
+                    }
+                    break;
+
+                case 29:	
+                    // get variable response from device
+                    status = buffer[4] - 0x30;
+                    int var_code = 0;
+                    for (int i=0;i<6;i++) {
+                        var_code = var_code*10 + (buffer[i+6]-0x30);
+                    }
+                    if (var_code == 712) {
+                        ParseSigLengthMessage(status,buffer);
+                    } else if (var_code >= 700 && var_code <= 709) {
+                        ParseSigBlockMessage(status,buffer);
+                    }
+                    break;
+
+                case 31:
+                    // PIN entry response
+                    if (buffer.Length < 5 || buffer[4] != 0) {
+                        // problem; start over
+                        WriteMessageToDevice(SwipeCardScreen());
+                    } else {
+                        string pin_msg = enc.GetString(buffer);
+                        // trim STX, command prefix, status byte, ETX, and LRC
+                        pin_msg = pin_msg.Substring(5, pin_msg.Length - 7);
+                        PushOutput("PINCACHE:" + pin_msg);
+                        if (auto_state_change) {
+                            WriteMessageToDevice(TermWaitScreen());
+                        }
+                    }
+                    break;
+
+                case 50:	
+                    // auth request from device
+                    ParseAuthMessage(buffer);
+                    break;
             }
-            if (auto_state_change) {
-                ConfirmedWrite(GetLRC(GetCardType()));
-            }
-            break;
-        case 24:
-            // response from a form message
-            // should normally mean "card type selected"
-            if (buffer.Length < 6 || buffer[4] != 0x30) {
-                // invalid response => start over from scratch
-                ConfirmedWrite(GetLRC(SwipeCardScreen()));
-            } else if (buffer[5] == 0x41) {
-                PushOutput("TERM:Debit");
-                if (auto_state_change) {
-                    ConfirmedWrite(GetLRC(PinEntryScreen()));
-                }
-            } else if (buffer[5] == 0x42) {
-                PushOutput("TERM:Credit");
-                if (auto_state_change) {
-                    ConfirmedWrite(GetLRC(TermWaitScreen()));
-                }
-            } else if (buffer[5] == 0x43) {
-                PushOutput("TERM:EbtCash");
-                if (auto_state_change) {
-                    ConfirmedWrite(GetLRC(PinEntryScreen()));
-                }
-            } else if (buffer[5] == 0x44) {
-                PushOutput("TERM:EbtFood");
-                if (auto_state_change) {
-                    ConfirmedWrite(GetLRC(PinEntryScreen()));
-                }
-            }
-            break;
-		case 29:	// get variable response from device
-			status = buffer[4] - 0x30;
-			int var_code = 0;
-			for(int i=0;i<6;i++)
-				var_code = var_code*10 + (buffer[i+6]-0x30);
-			if (var_code == 712)
-				ParseSigLengthMessage(status,buffer);
-			else if (var_code >= 700 && var_code <= 709)
-				ParseSigBlockMessage(status,buffer);
-			break;
-        case 31:
-            // PIN entry response
-            if (buffer.Length < 5 || buffer[4] != 0) {
-                // problem; start over
-                ConfirmedWrite(GetLRC(SwipeCardScreen()));
-            } else {
-                string pin_msg = enc.GetString(buffer);
-                // trim STX, command prefix, status byte, ETX, and LRC
-                pin_msg = pin_msg.Substring(5, pin_msg.Length - 7);
-                PushOutput("PINCACHE:" + pin_msg);
-                if (auto_state_change) {
-                    ConfirmedWrite(GetLRC(TermWaitScreen()));
-                }
-            }
-            break;
-		case 50:	// auth request from device
-			ParseAuthMessage(buffer);
-			break;
-		}
 	}
 
-	override public void HandleMsg(String msg){
+    /**
+        Write a message to the device
+    */
+    public void WriteMessageToDevice(byte[] msg)
+    {
+        ConfirmedWrite(GetLRC(msg));
+    }
+
+	override public void HandleMsg(String msg)
+    {
         // optional predicate for "termSig" message
         // predicate string is displayed on sig capture screen
         if (msg.Length > 7 && msg.Substring(0, 7) == "termSig") {
@@ -452,36 +508,39 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 		if (msg == "termReset" || msg == "termReboot") {
 			last_message = null;
 			getting_signature = false;
-			ByteWrite(GetLRC(HardResetMessage())); // force, no matter what
+			WriteMessageToDevice(HardResetMessage());
+            WriteMessageToDevice(SwipeCardScreen());
 
-			if (VERBOSE)
+			if (this.verbose_mode > 0) {
 				System.Console.WriteLine("Sent reset");
+            }
 
-            ConfirmedWrite(GetLRC(SwipeCardScreen()));
 		} else if (!getting_signature && msg == "termSig") {
-			ConfirmedWrite(GetLRC(SigRequestMessage()));
+			WriteMessageToDevice(SigRequestMessage());
 			getting_signature = true;	
 			last_message = null;
-			ConfirmedWrite(GetLRC(StatusRequestMessage()));
+			WriteMessageToDevice(StatusRequestMessage());
 		} else if (!getting_signature && (msg == "termGetType" || msg == "termGetTypeWithFS")) {
-            ConfirmedWrite(GetLRC(GetCardType()));
+            WriteMessageToDevice(GetCardType());
         } else if (!getting_signature && msg == "termWait") {
-            ConfirmedWrite(GetLRC(TermWaitScreen()));
+            WriteMessageToDevice(TermWaitScreen());
         } else if (!getting_signature && msg == "termApproved") {
-            ConfirmedWrite(GetLRC(TermApprovedScreen()));
+            WriteMessageToDevice(TermApprovedScreen());
         } else if (!getting_signature && msg == "termGetPin") {
-            ConfirmedWrite(GetLRC(PinEntryScreen()));
+            WriteMessageToDevice(PinEntryScreen());
         }
 
-		if (VERBOSE)
+		if (this.verbose_mode > 0) {
 			System.Console.WriteLine(msg);
+        }
 	}
 
 	/***********************************************
 	 * Messages
 	***********************************************/
 
-	private byte[] OnlineMessage(){
+	protected byte[] OnlineMessage()
+    {
 		byte[] msg = new byte[13];
 		msg[0] = 0x2; // STX
 
@@ -514,7 +573,8 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 		return msg;
 	}
 
-	private byte[] OfflineMessage(){
+	protected byte[] OfflineMessage()
+    {
 		byte[] msg = new byte[9];
 		msg[0] = 0x2; // STX
 
@@ -532,7 +592,8 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 		return msg;
 	}
 
-	private byte[] HardResetMessage(){
+	protected byte[] HardResetMessage()
+    {
 		byte[] msg = new byte[5];
 		msg[0] = 0x2; // STX
 
@@ -545,7 +606,8 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 		return msg;
 	}
 
-	private byte[] StatusRequestMessage(){
+	protected byte[] StatusRequestMessage()
+    {
 		byte[] msg = new byte[5];
 		msg[0] = 0x2; // STX
 
@@ -563,7 +625,8 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
       Not used in current implementation. Commented to
       reduce compilation warnings.
       29Dec2014
-	private byte[] SetPaymentTypeMessage(string ptype){
+	protected byte[] SetPaymentTypeMessage(string ptype)
+    {
 		byte[] p = new System.Text.ASCIIEncoding().GetBytes(ptype);
 		byte[] msg = new byte[7];
 		msg[0] = 0x2; // STX
@@ -586,7 +649,8 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
       Not used in current implementation. Commented to
       reduce compilation warnings.
       29Dec2014
-	private byte[] AmountMessage(string amt){
+	protected byte[] AmountMessage(string amt)
+    {
 		byte[] a = new System.Text.ASCIIEncoding().GetBytes(amt);
 		byte[] msg = new byte[4 + a.Length + 1];
 		msg[0] = 0x2; // STX
@@ -604,7 +668,8 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 	}
     */
 
-	private byte[] SigRequestMessage(){
+	protected byte[] SigRequestMessage()
+    {
 		string display = "Please sign";
 		byte[] m = new System.Text.ASCIIEncoding().GetBytes(display);
 		byte[] msg = new byte[4 + m.Length + 1]; 
@@ -615,8 +680,9 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 		msg[2] = 0x30;
 		msg[3] = 0x2e;
 
-		for(int i=0; i < m.Length; i++)
+		for (int i=0; i < m.Length; i++) {
 			msg[i+4] = m[i];
+        }
 
 		msg[msg.Length-1] = 0x3; // ETX
 
@@ -624,7 +690,8 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 	}
 
 	// var_code should be length 6
-	private byte[] GetVariableMessage(string var_code){
+	protected byte[] GetVariableMessage(string var_code)
+    {
 		System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
 
 		byte[] msg = new byte[13];
@@ -638,13 +705,15 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 		msg[5] = 0x30; // but example says it should be ASII 10
 
 		byte[] tmp = enc.GetBytes(var_code);
-		for(int i=0; i<tmp.Length;i++)
+		for (int i=0; i<tmp.Length;i++) {
 			msg[i+6] = tmp[i];
+        }
 
 		msg[12] = 0x3; // ETX
 
-		if (VERBOSE)
+		if (this.verbose_mode > 0) {
 			System.Console.WriteLine("Sent: "+enc.GetString(msg));
+        }
 
 		return msg;
 	}
@@ -654,7 +723,8 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
       Not used in current implementation. Commented to
       reduce compilation warnings.
       29Dec2014
-	private byte[] SetVariableMessage(string var_code, string var_value){
+	protected byte[] SetVariableMessage(string var_code, string var_value)
+    {
 		System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
 
 		byte[] valbytes = enc.GetBytes(var_value);
@@ -677,7 +747,7 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 
 		msg[msg.Length-1] = 0x3; //ETX
 
-		if (VERBOSE)
+		if (this.verbose_mode > 0)
 			System.Console.WriteLine("Sent: "+enc.GetString(msg));
 
 		return msg;
@@ -688,7 +758,8 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
       Not used in current implementation. Commented to
       reduce compilation warnings.
       29Dec2014
-	private byte[] AuthMessage(string approval_code){
+	protected byte[] AuthMessage(string approval_code)
+    {
 		System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
 		string display_message = "Thank You!";
 
@@ -744,7 +815,8 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
       Not used in current implementation. Commented to
       reduce compilation warnings.
       29Dec2014
-	private byte[] ConfigWriteMessage(string group_num, string index_num, string val){
+	protected byte[] ConfigWriteMessage(string group_num, string index_num, string val)
+    {
 		System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
 		byte[] gb = enc.GetBytes(group_num);
 		byte[] ib = enc.GetBytes(index_num);
@@ -909,66 +981,67 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
         return msg;
     }
 
-	protected void ParseSigLengthMessage(int status, byte[] msg){
-		if (status == 2){
+	protected void ParseSigLengthMessage(int status, byte[] msg)
+    {
+		if (status == 2) {
 			int num_blocks = 0;
 			int pos = 12;
-			while(msg[pos] != 0x3){
+			while (msg[pos] != 0x3) {
 				num_blocks = (num_blocks*10) + (msg[pos]-0x30);
 				pos++;
 			}
-			if (num_blocks == 0){
+			if (num_blocks == 0) {
 				// should never happen, but just in case...
-				ConfirmedWrite(GetLRC(StatusRequestMessage()));
-			}
-			else {
+				WriteMessageToDevice(StatusRequestMessage());
+			} else {
 				sig_object = new Signature(num_blocks);
-				ConfirmedWrite(GetLRC(GetVariableMessage("000700")));
+				WriteMessageToDevice(GetVariableMessage("000700"));
 			}
-		}
-		else {
+		} else {
 			// didn't get data; re-request
-			ConfirmedWrite(GetLRC(GetVariableMessage("000712")));
+			WriteMessageToDevice(GetVariableMessage("000712"));
 		}
 	}
 
-	protected void ParseSigBlockMessage(int status, byte[] msg){
+	protected void ParseSigBlockMessage(int status, byte[] msg)
+    {
 		System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
 		
-		if (status == 2){
+		if (status == 2) {
 			byte[] var_data = new byte[msg.Length-14];
-			for(int i=0;i<var_data.Length;i++){
+			for (int i=0;i<var_data.Length;i++) {
 				var_data[i] = msg[i+12];
 			}
 			sig_object.WriteBlock(msg[11]-0x30,var_data);
 			msg[11]++; // move to next sig block
 		}
 
-		if(sig_object.SigFull()){
+		if (sig_object.SigFull()) {
 			// signature capture complete
 			string sigfile="";
-			try{
+			try {
                 char sep = System.IO.Path.DirectorySeparatorChar;
                 sigfile = sig_object.BuildImage(MAGELLAN_OUTPUT_DIR+sep+"tmp");
 			} catch (Exception e) {
-				if (VERBOSE)
+				if (this.verbose_mode > 0) {
 					System.Console.WriteLine(e);
+                }
 			}
 			getting_signature = false;
             FileInfo fi = new FileInfo(sigfile);
 			PushOutput("TERMBMP" + fi.Name + ".bmp");
-			ConfirmedWrite(GetLRC(HardResetMessage()));
-		}
-		else {
+			HandleMsg("termReset");
+		} else {
 			// get the next sig block or re-request the
 			// current one
 			string var_num = enc.GetString(new byte[6]
 					{msg[6],msg[7],msg[8],msg[9],msg[10],msg[11]});
-			ConfirmedWrite(GetLRC(GetVariableMessage(var_num)));
+			WriteMessageToDevice(GetVariableMessage(var_num));
 		}
 	}
 
-	private void ParseAuthMessage(byte[] msg){
+	protected void ParseAuthMessage(byte[] msg)
+    {
 		System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
 		
 		// skipping 0 (stx), 1-3 (message #)
@@ -1075,24 +1148,12 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 		}
 
 		PushOutput(stripe);
-
-		if (VERBOSE)
-			System.Console.WriteLine(stripe);
 		stripe = null;
 	}
 
-	private void PushOutput(string s){
-		int ticks = Environment.TickCount;
-		char sep = System.IO.Path.DirectorySeparatorChar;
-		while(File.Exists(MAGELLAN_OUTPUT_DIR+sep+ticks))
-			ticks++;
-
-		TextWriter sw = new StreamWriter(MAGELLAN_OUTPUT_DIR+sep+"tmp"+sep+ticks);
-		sw = TextWriter.Synchronized(sw);
-		sw.WriteLine(s);
-		sw.Close();
-		File.Move(MAGELLAN_OUTPUT_DIR+sep+"tmp"+sep+ticks,
-			  MAGELLAN_OUTPUT_DIR+sep+ticks);
+	private void PushOutput(string s)
+    {
+        parent.MsgSend(s);
 	}
 }
 
