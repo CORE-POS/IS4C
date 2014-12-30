@@ -1577,7 +1577,7 @@ class MercuryE2E extends BasicCCModule
         } elseif (strlen($str) > 4 && substr($str, 0, 4) == "23.0") {
             // Ingenico style
             $data = substr($str, 4);
-            $tracks = explode(chr(28), $data);
+            $tracks = explode('@@', $data);
             $track1 = false;
             $track2 = false;
             $track3 = $tracks[count($tracks)-1];
@@ -1629,6 +1629,10 @@ class MercuryE2E extends BasicCCModule
             // idtech
             $ret['key'] = substr($str,4,16);
             $ret['block'] = substr($str,-16);
+        } else {
+            // ingenico
+            $ret['key'] = substr($str, -20);
+            $ret['block'] = substr($str, 0, 16);
         }
 
         return $ret;

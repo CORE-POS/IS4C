@@ -174,8 +174,7 @@ static public function paycard_info($pan) {
 		else if( $iin>=6007600 && $iin<=6007609) { $issuer="EBT (PA)";   $accepted=$ebt_accept; }
 		else if( $iin>=6104700 && $iin<=6104709) { $issuer="EBT (SC)";   $accepted=$ebt_accept; }
 		else if( $iin>=6100980 && $iin<=6100989) { $issuer="EBT (TX)";   $accepted=$ebt_accept; }
-	}
-	else if (substr($pan,0,8) == "02E60080"){
+    } else if (substr($pan,0,8) == "02E60080" || substr($pan, 0, 5) == "23.0%" || substr($pan, 0, 5) == "23.0;") {
 		$type = self::PAYCARD_TYPE_ENCRYPTED;
 		$accepted = true;
 	}

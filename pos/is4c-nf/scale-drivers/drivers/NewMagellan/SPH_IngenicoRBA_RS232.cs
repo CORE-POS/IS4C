@@ -347,6 +347,8 @@ public class SPH_IngenicoRBA_RS232 : SerialPortHandler
 					HandleMessageFromDevice(buffer);
 					bytes.Clear();
 				}
+            } catch (TimeoutException) {
+                // expected; not an issue
 			} catch (Exception ex) {
                 if (this.verbose_mode > 0) {
                     System.Console.WriteLine(ex);
@@ -403,13 +405,17 @@ public class SPH_IngenicoRBA_RS232 : SerialPortHandler
 
             case 23:
                 // get card info repsponse
+                if (buffer[4] != 0x30) { // invalid status
+                    break;
+                }
                 string card_msg = enc.GetString(buffer);
-                card_msg = card_msg.Substring(1, card_msg.Length - 2); // trim STX, ETX, LRC 
+                card_msg = card_msg.Substring(1, card_msg.Length - 3); // trim STX, ETX, LRC 
+                card_msg = card_msg.Replace(new String((char)0x1c, 1), "@@");
                 PushOutput("PANCACHE:" + card_msg);
                 if (card_msg.Contains("%") && card_msg.Contains("^")) {
                     string[] parts = card_msg.Split(new char[]{'%'}, 2);
                     parts = parts[1].Split(new char[]{'^'}, 2);
-                    masked_pan = parts[0];
+                    masked_pan = parts[0].Substring(1);
                 } else if (card_msg.Contains(";") && card_msg.Contains("=")) {
                     string[] parts = card_msg.Split(new char[]{';'}, 2);
                     parts = parts[1].Split(new char[]{'='}, 2);
@@ -467,7 +473,7 @@ public class SPH_IngenicoRBA_RS232 : SerialPortHandler
 
                 case 31:
                     // PIN entry response
-                    if (buffer.Length < 5 || buffer[4] != 0) {
+                    if (buffer.Length < 5 || buffer[4] != 0x30) {
                         // problem; start over
                         WriteMessageToDevice(SwipeCardScreen());
                     } else {
@@ -958,7 +964,8 @@ public class SPH_IngenicoRBA_RS232 : SerialPortHandler
 
         msg[4] = 0x44; // DUKPT, default settings
         msg[5] = 0x2a;
-        msg[6] = 0x30;
+
+        msg[6] = 0x31;
         msg[7] = 0x1c; 
 
         int pos = 8;
