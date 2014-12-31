@@ -68,10 +68,18 @@ div#boxMsg .boxMsgBody { padding: 10px 0 0px 0; text-align: left;}
 div#boxMsg .boxMsgBody .msgicon { width: 16%; float: left;}
 div#boxMsg .boxMsgBody .msgtext { text-align: left; padding-left: 15px;
 				  float: left; width: 75%; }
+div#boxMsg .boxMsgButtons { margin-left: 5px; margin-right: 5px; }
 div .listbox {float: left; padding: 10px 10px 0 0; }
 div .listboxText {float: left; font-weight: bold; }
 div .farewellMsg {text-align: center; font-weight: bold; 
 		  font-size: 120%; line-height: 1.4em;}
+button.pos-button {
+    border: solid 1px #000000;
+    padding: 4px;
+    margin: 3px;
+    font-weight: bold;
+    line-height: 2em;
+}
 /*********************************************
  * Initial login page 
 *********************************************/

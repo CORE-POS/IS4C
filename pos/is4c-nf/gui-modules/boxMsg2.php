@@ -85,7 +85,8 @@ class boxMsg2 extends BasicPage {
 		<div class="baseHeight">
 
 		<?php
-		echo DisplayLib::boxMsg($CORE_LOCAL->get("boxMsg"),"",True);
+        $buttons = is_array($CORE_LOCAL->get('boxMsgButtons')) ? $CORE_LOCAL->get('boxMsgButtons') : array();
+		echo DisplayLib::boxMsg($CORE_LOCAL->get("boxMsg"), "", true, $buttons);
 		echo "</div>";
 		echo "<div id=\"footer\">";
 		echo DisplayLib::printfooter();
@@ -105,6 +106,7 @@ class boxMsg2 extends BasicPage {
             . $CORE_LOCAL->get('strEntered') . '" />';
 		
 		$CORE_LOCAL->set("boxMsg",'');
+		$CORE_LOCAL->set("boxMsgButtons", array());
 		$CORE_LOCAL->set("msgrepeat",2);
 		if (!isset($_REQUEST['quiet']))
 			MiscLib::errorBeep();
