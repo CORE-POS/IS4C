@@ -229,6 +229,10 @@ public class SPH_IngenicoRBA_RS232 : SerialPortHandler
 
 	private static String MAGELLAN_OUTPUT_DIR = "ss-output/";
 
+    // spacing matters on these
+    private const string EBT_CA = "1 0 4  0  14 10000 1 1 1 0      0 132 0 1 0 D 0 0 406";
+    private const string EBT_FS = "1 0 4  0  14     0 1 1 1 0      0 133 0 1 0 D 0 0 406";
+
 	public SPH_IngenicoRBA_RS232(string p) : base(p)
     {
 		last_message = null;
@@ -246,9 +250,6 @@ public class SPH_IngenicoRBA_RS232 : SerialPortHandler
 		
 		sp.Open();
 
-		WriteMessageToDevice(OfflineMessage());
-		WriteMessageToDevice(OnlineMessage());
-		HandleMsg("termReset");
 	}
 
     /**
@@ -256,6 +257,18 @@ public class SPH_IngenicoRBA_RS232 : SerialPortHandler
     */
 	private void ByteWrite(byte[] b)
     {
+        if (this.verbose_mode > 1) {
+            System.Console.WriteLine("Sent:");
+            foreach (byte a in b) {
+                if (a < 10) {
+                    System.Console.Write("0{0} ",a);
+                    } else {
+                        System.Console.Write("{0} ",a);
+                    }
+            }
+            System.Console.WriteLine();
+        }
+
 		sp.Write(b,0,b.Length);
 	}
 
@@ -269,7 +282,7 @@ public class SPH_IngenicoRBA_RS232 : SerialPortHandler
         }
 
 		int count=0;
-		while(last_message != null && count++ < 5) {
+		while (last_message != null && count++ < 5) {
 			Thread.Sleep(10);
         }
 		last_message = b;
@@ -310,6 +323,21 @@ public class SPH_IngenicoRBA_RS232 : SerialPortHandler
 	// main read loop
 	override public void Read()
     {
+		WriteMessageToDevice(OfflineMessage());
+        // enable ebt cash
+        WriteMessageToDevice(WriteConfigMessage("11", "3", EBT_CA));
+        // enable ebt food
+        WriteMessageToDevice(WriteConfigMessage("11", "4", EBT_FS));
+        // mute beep volume
+        WriteMessageToDevice(WriteConfigMessage("7", "14", "5"));
+        // new style save/restore state
+        WriteMessageToDevice(WriteConfigMessage("7", "15", "1"));
+        // do not show messages between screens
+        WriteMessageToDevice(WriteConfigMessage("7", "1", "0"));
+        WriteMessageToDevice(WriteConfigMessage("7", "9", "1"));
+		WriteMessageToDevice(OnlineMessage());
+		HandleMsg("termReset");
+
 		ArrayList bytes = new ArrayList();
 		while (SPH_Running) {
 			try {
@@ -406,12 +434,16 @@ public class SPH_IngenicoRBA_RS232 : SerialPortHandler
             case 23:
                 // get card info repsponse
                 if (buffer[4] != 0x30) { // invalid status
+                    HandleMsg("termReset");
                     break;
                 }
                 string card_msg = enc.GetString(buffer);
                 card_msg = card_msg.Substring(1, card_msg.Length - 3); // trim STX, ETX, LRC 
                 card_msg = card_msg.Replace(new String((char)0x1c, 1), "@@");
                 PushOutput("PANCACHE:" + card_msg);
+                if (this.verbose_mode > 0) {
+                    System.Console.WriteLine(card_msg);
+                }
                 if (card_msg.Contains("%") && card_msg.Contains("^")) {
                     string[] parts = card_msg.Split(new char[]{'%'}, 2);
                     parts = parts[1].Split(new char[]{'^'}, 2);
@@ -516,6 +548,7 @@ public class SPH_IngenicoRBA_RS232 : SerialPortHandler
 			getting_signature = false;
 			WriteMessageToDevice(HardResetMessage());
             WriteMessageToDevice(SwipeCardScreen());
+            WriteMessageToDevice(SaveStateMessage());
 
 			if (this.verbose_mode > 0) {
 				System.Console.WriteLine("Sent reset");
@@ -821,17 +854,18 @@ public class SPH_IngenicoRBA_RS232 : SerialPortHandler
       Not used in current implementation. Commented to
       reduce compilation warnings.
       29Dec2014
-	protected byte[] ConfigWriteMessage(string group_num, string index_num, string val)
+    */
+	protected byte[] WriteConfigMessage(string group_num, string index_num, string val)
     {
 		System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
 		byte[] gb = enc.GetBytes(group_num);
 		byte[] ib = enc.GetBytes(index_num);
 		byte[] vb = enc.GetBytes(val);
 
-		byte[] msg = new byte[4 + gb.Length + ib.Length + vb.Length + 2];
+		byte[] msg = new byte[4 + gb.Length + ib.Length + vb.Length + 4];
 
 		msg[0] = 0x2; // STX
-		msg[1] = 0x30; // Write Code
+		msg[1] = 0x36; // Write Code
 		msg[2] = 0x30;
 		msg[3] = 0x2e;
 
@@ -858,7 +892,38 @@ public class SPH_IngenicoRBA_RS232 : SerialPortHandler
 		msg[msg.Length-1] = 0x3; // ETX
 		return msg;
 	}
-    */
+
+    protected byte[] ReadConfigMessage(string group_num, string index_num)
+    {
+		System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
+		byte[] gb = enc.GetBytes(group_num);
+		byte[] ib = enc.GetBytes(index_num);
+
+		byte[] msg = new byte[4 + gb.Length + ib.Length + 3];
+
+		msg[0] = 0x2; // STX
+		msg[1] = 0x36; // Write Code
+		msg[2] = 0x31;
+		msg[3] = 0x2e;
+
+		int pos = 4;
+		// group number
+		for (int i=0; i<gb.Length; i++) {
+			msg[pos++] = gb[i];
+        }
+
+		msg[pos++] = 0x1d; // ASII GS delimiter
+
+		// index number
+		for (int i=0; i<ib.Length; i++) {
+			msg[pos++] = ib[i];
+        }
+
+		msg[pos++] = 0x1d; // ASII GS delimiter
+		msg[msg.Length-1] = 0x3; // ETX
+
+		return msg;
+    }
 
     protected byte[] SwipeCardScreen()
     {
@@ -985,7 +1050,14 @@ public class SPH_IngenicoRBA_RS232 : SerialPortHandler
 
         msg[pos] = 0x3;
 
+        System.Console.WriteLine("get pin for:" + masked_pan);
+
         return msg;
+    }
+
+    protected byte[] SaveStateMessage()
+    {
+        return new byte[6]{ 0x2, 0x33, 0x34, 0x2e, 0x53, 0x3 };
     }
 
 	protected void ParseSigLengthMessage(int status, byte[] msg)
