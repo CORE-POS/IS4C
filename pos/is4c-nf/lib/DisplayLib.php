@@ -173,12 +173,15 @@ static public function plainmsg($strmsg)
   @param $strmsg the message
   @param $icon graphic icon file
   @param $noBeep don't send a scale beep
+  @param $buttons keyed array of touchable/clickable buttons
+    - key is the text shown on the button
+    - value is javascript executed onclick
   @return An HTML string
 
   This function will include the header
   printheaderb(). 
 */
-static public function msgbox($strmsg, $icon,$noBeep=False) 
+static public function msgbox($strmsg, $icon, $noBeep=false, $buttons=array()) 
 {
 	global $CORE_LOCAL;
 
@@ -186,13 +189,29 @@ static public function msgbox($strmsg, $icon,$noBeep=False)
 	$ret .= "<div id=\"boxMsg\" class=\"centeredDisplay\">";
 	$ret .= "<div class=\"boxMsgAlert coloredArea\">";
 	$ret .= $CORE_LOCAL->get("alertBar");
+    if ($CORE_LOCAL->get('alertBar') == '') {
+        $ret .= 'Alert';
+    }
 	$ret .= "</div>";
-	$ret .= "<div class=\"boxMsgBody\">";
-	$ret .= "<div class=\"msgicon\"><img src=\"$icon\" /></div>";
-	$ret .= "<div class=\"msgtext\">";
-	$ret .= $strmsg;
-	$ret .= "</div><div class=\"clear\"></div></div>";
-	$ret .= "</div>";
+	$ret .= "
+        <div class=\"boxMsgBody\">
+            <div class=\"msgicon\"><img src=\"$icon\" /></div>
+	        <div class=\"msgtext\">"
+	            . $strmsg . "
+	        </div>
+            <div class=\"clear\"></div>
+        </div>";
+    if (!empty($buttons)) {
+        $ret .= '<div class="boxMsgBody boxMsgButtons">';
+        foreach ($buttons as $label => $action) {
+            $label = preg_replace('/(\[.+?\])/', '<span class="smaller">\1</span>', $label);
+            $ret .= sprintf('<button type="button" class="pos-button coloredArea" 
+                        onclick="%s">%s</button>',
+                        $action, $label);
+        }
+        $ret .= '</div>';
+    }
+	$ret .= "</div>"; // close #boxMsg
 
     // input has probably already been marked up for display. 
     // no need to re-wrap in various <div>s
@@ -214,27 +233,37 @@ static public function msgbox($strmsg, $icon,$noBeep=False)
 /**
   Get a centered message box with "crossD" graphic
   @param $strmsg the message
+  @param $buttons see msgbox()
   @return An HTML string
 
   An alias for msgbox().
 */
-static public function xboxMsg($strmsg) 
+static public function xboxMsg($strmsg, $buttons=array()) 
 {
-	return self::msgbox($strmsg, MiscLib::base_url()."graphics/crossD.gif");
+	return self::msgbox($strmsg, MiscLib::base_url()."graphics/crossD.gif", false, $buttons);
 }
 
 /**
   Get a centered message box with "exclaimC" graphic
   @param $strmsg the message
-  @param $header does nothing...
+  @param $header title for the box
   @param $noBeep don't beep scale
+  @param $buttons see msgbox()
   @return An HTML string
 
   An alias for msgbox().
 */
-static public function boxMsg($strmsg,$header="",$noBeep=False) 
+static public function boxMsg($strmsg, $header="", $noBeep=false, $buttons=array()) 
 {
-	return self::msgbox($strmsg, MiscLib::base_url()."graphics/exclaimC.gif",$noBeep);
+    global $CORE_LOCAL;
+    $default = $CORE_LOCAL->get('alertBar');
+    if (!empty($header)) {
+        $CORE_LOCAL->set('alertBar', $header);
+    }
+	$ret = self::msgbox($strmsg, MiscLib::base_url()."graphics/exclaimC.gif", $noBeep, $buttons);
+    $CORE_LOCAL->set('alertBar', $default);
+
+    return $ret;
 }
 
 /**
@@ -245,8 +274,12 @@ static public function boxMsg($strmsg,$header="",$noBeep=False)
 */
 static public function inputUnknown() 
 {
-	return self::msgbox("<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			"._("input unknown")."</b>", MiscLib::base_url()."graphics/exclaimC.gif",True);
+	return self::msgbox(
+        "<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" . _("input unknown") . "</b>", 
+        MiscLib::base_url()."graphics/exclaimC.gif", 
+        true,
+        array('[Clear]' => 'parseWrapper(\'CL\');')
+    );
 }
 
 //--------------------------------------------------------------------//

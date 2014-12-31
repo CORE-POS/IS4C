@@ -37,17 +37,36 @@ class StoreChargeTender extends TenderModule
         global $CORE_LOCAL;
         $charge_ok = PrehLib::chargeOk();
     
+        $buttons = array('[clear]' => 'parseWrapper(\'CL\');');
         if ($charge_ok == 0) {
-            return DisplayLib::boxMsg(_("member")." ".$CORE_LOCAL->get("memberID")."<br />".
-                _("is not authorized")."<br />"._("to make charges"));
+            return DisplayLib::boxMsg(
+                _("member") . ' ' . $CORE_LOCAL->get("memberID") . '<br />' .
+                _("is not authorized") . '<br />' ._("to make charges"),
+                'Not Allowed',
+                false,
+                $buttons
+            );
         } else if ($CORE_LOCAL->get("availBal") < 0) {
-            return DisplayLib::boxMsg(_("member")." ".$CORE_LOCAL->get("memberID")."<br />"._("is over limit"));
+            return DisplayLib::boxMsg(
+                _("member") . ' ' . $CORE_LOCAL->get("memberID") . '<br />' .
+                _("is over limit"),
+                'Over Limit',
+                false,
+                $buttons
+            );
         } elseif ((abs($CORE_LOCAL->get("memChargeTotal"))+ $this->amount) >= ($CORE_LOCAL->get("availBal") + 0.005)) {
             $memChargeRemain = $CORE_LOCAL->get("availBal");
             $memChargeCommitted = $memChargeRemain + $CORE_LOCAL->get("memChargeTotal");
-            return DisplayLib::xboxMsg(_("available balance for charge")."<br />"._("is only \$").$memChargeCommitted);
+            return DisplayLib::xboxMsg(
+                _("available balance for charge") . '<br />' .
+                _("is only \$") . $memChargeCommitted,
+                $buttons
+            );
         } elseif(MiscLib::truncate2($CORE_LOCAL->get("amtdue")) < MiscLib::truncate2($this->amount)) {
-            return DisplayLib::xboxMsg(_("charge tender exceeds purchase amount"));
+            return DisplayLib::xboxMsg(
+                _("charge tender exceeds purchase amount"),
+                $buttons
+            );
         }
 
         return true;

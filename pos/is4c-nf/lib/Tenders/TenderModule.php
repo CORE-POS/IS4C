@@ -193,10 +193,13 @@ class TenderModule
         $amt = $this->DefaultTotal();
         $CORE_LOCAL->set('boxMsg',
             '<br />'
-          . 'tender $' . sprintf('%.2f',$amt) . ' as ' . $this->name_string . '<br />'
-          . 'press [enter] to continue<br />'
-          . '<font size="-1">[clear] to cancel</font>');
+          . 'tender $' . sprintf('%.2f',$amt) . ' as ' . $this->name_string 
+        );
         $CORE_LOCAL->set('strEntered', (100*$amt).$this->tender_code);
+        $CORE_LOCAL->set('boxMsgButtons', array(
+            'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
+            'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+        ));
 
         return MiscLib::base_url().'gui-modules/boxMsg2.php?quiet=1';
     }
