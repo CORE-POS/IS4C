@@ -44,7 +44,7 @@ using USBLayer;
 
 namespace SPH {
 
-public class SPH_IngenicoRBA_USB : SPH_IngenicoRBA_RS232 
+public class SPH_IngenicoRBA_USB : SPH_IngenicoRBA_Common
 {
 
 	/**
@@ -71,9 +71,7 @@ public class SPH_IngenicoRBA_USB : SPH_IngenicoRBA_RS232
 
 	private USBWrapper usb_port;
 	private bool read_continues;
-	private byte[] long_buffer;
-    private byte[] last_message;
-	private int long_pos;
+	private System.Collections.Generic.List<byte> long_buffer;
 	private FileStream usb_fs;
 	private int usb_report_size;
 	private byte[] ack;
@@ -143,10 +141,10 @@ public class SPH_IngenicoRBA_USB : SPH_IngenicoRBA_RS232
 	public SPH_IngenicoRBA_USB(string p) : base(p)
     { 
 		read_continues = false;
-		long_pos = 0;
+		long_buffer = new System.Collections.Generic.List<byte>();
 		usb_fs = null;
         verbose_mode = 1;
-        last_message = null;
+        this.port = p;
 		
 		#if MONO
 		usb_devicefile = p;
@@ -205,9 +203,9 @@ public class SPH_IngenicoRBA_USB : SPH_IngenicoRBA_RS232
         WriteMessageToDevice(SwipeCardScreen());
 	}
 
-    public void WriteMessagetoDevice(byte[] msg)
+    public override void WriteMessageToDevice(byte[] msg)
     {
-        ConfirmedWrite(msg);
+        ConfirmedUsbWrite(msg);
     }
 
     private void AsyncRead()
@@ -255,18 +253,18 @@ public class SPH_IngenicoRBA_USB : SPH_IngenicoRBA_RS232
                 System.Console.WriteLine("NACK : DEVICE");
                 // resend message?
             } else if (read_continues && input.Length > 0) {
-                foreach (byte b in input) {
-                    long_buffer[long_pos] = b;
-                    long_pos++;
+                for (int i=2; i < input[1]+2; i++) {
+                    long_buffer.Add(input[i]);
                 }
-                if (long_buffer[long_buffer.Length-2] == 0x3) {
+                if (long_buffer[long_buffer.Count-2] == 0x3) {
                     read_continues = false;
                     SendAck();
-                    byte[] sliced = new byte[input.Length - 2];
-                    Array.Copy(input, 2, sliced, 0, sliced.Length);
+                    byte[] sliced = new byte[long_buffer.Count];
+                    long_buffer.CopyTo(sliced);
+                    long_buffer.Clear();
                     HandleMessageFromDevice(sliced);
                 }
-            } else if (input.Length > 3 && input[1]+2 <= usb_report_size && input[2] == 0x2) {
+            } else if (input.Length > 3 && input[1]+2 <= usb_report_size && input[input[1]] == 0x3 && input[2] == 0x2) {
                 // single report message
 				// 0x1 {message_length_byte} {message_data_bytes}
                 System.Console.WriteLine("ACK : POS");
@@ -274,11 +272,13 @@ public class SPH_IngenicoRBA_USB : SPH_IngenicoRBA_RS232
                 byte[] sliced = new byte[input.Length - 2];
                 Array.Copy(input, 2, sliced, 0, sliced.Length);
                 HandleMessageFromDevice(sliced);
-            } else if (input.Length > 3 && input[1]+2 > usb_report_size && input[2] == 0x2) {
+            } else if (input.Length > 3 && input[1] == 30) {
                 // long message begins
                 read_continues = true;
-                long_buffer = input;
-                long_pos = input.Length;
+                long_buffer.Clear();
+                for (int i=2; i<input[1]+2; i++) {
+                    long_buffer.Add(input[i]);
+                }
             } else {
                 SendNack();
 				System.Console.WriteLine("unknown message");
@@ -324,7 +324,7 @@ public class SPH_IngenicoRBA_USB : SPH_IngenicoRBA_RS232
 		return lrc;
 	}
 
-	private void ConfirmedWrite(byte[] b)
+	private void ConfirmedUsbWrite(byte[] b)
     {
 		/**
 		 * Widen message by one byte to add LRC

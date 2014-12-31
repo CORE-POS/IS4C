@@ -56,7 +56,8 @@ public class Magellan : DelegateForm {
 				sph[i].SetParent(this);
 				sph[i].SetVerbose(verbosity);
 			}
-			catch (Exception){
+			catch (Exception ex){
+                System.Console.WriteLine(ex);
 				System.Console.WriteLine("Warning: could not initialize "+port);
 				System.Console.WriteLine("Ensure the device is connected and you have permission to access it.");
 				sph[i] = null;

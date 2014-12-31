@@ -43,7 +43,7 @@ using CustomForms;
 
 namespace SPH {
 
-public class SPH_IngenicoRBA_IP : SPH_IngenicoRBA_RS232 {
+public class SPH_IngenicoRBA_IP : SPH_IngenicoRBA_Common {
 
     private TcpClient device = null;
     private string device_host = null;
@@ -75,7 +75,7 @@ public class SPH_IngenicoRBA_IP : SPH_IngenicoRBA_RS232 {
         return true;
     }
 	
-	public override  void Read()
+	public override void Read()
     { 
         ReConnect();
 		WriteMessageToDevice(OnlineMessage());
@@ -125,7 +125,7 @@ public class SPH_IngenicoRBA_IP : SPH_IngenicoRBA_RS232 {
     }
 
     // add STX, CRC, and ETX bytes to message
-    public new void WriteMessagetoDevice(byte[] msg)
+    public override void WriteMessageToDevice(byte[] msg)
     {
         byte[] actual = new byte[msg.Length+2];
         actual[0] = 0x2; // STX byte
