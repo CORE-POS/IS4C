@@ -146,8 +146,8 @@ public class Signature {
 	}
 
 	private string DrawSignatureImage(List<Point> Points,string path){
-		int width=2048;
-		int height=512;
+		int width=512;
+		int height=128;
 		Bitmap bmp = new Bitmap(width, height);
 
 		Graphics g = Graphics.FromImage(bmp);
@@ -169,15 +169,22 @@ public class Signature {
 		List<Point> line = new List<Point>();
 		foreach (Point point in Points){
 			if (point.IsEmpty){
-				g.DrawLines(p, line.ToArray());
-				line.Clear();
+                try {
+                    g.DrawLines(p, line.ToArray());
+                    line.Clear();
+                } catch (Exception) {
+                    System.Console.Write("BAD LINE: ");
+                    foreach (Point pt in line) {
+                        System.Console.Write(pt);
+                        System.Console.Write(" ");
+                    }
+                    System.Console.WriteLine("");
+                }
 			}
 			else{
 				line.Add(point);
 			}
 		}
-
-		Image newImage = bmp.GetThumbnailImage(width/5, height/5, null, IntPtr.Zero);
 
 		// silly rigamarole to get a unique file name
 		System.Security.Cryptography.MD5 hasher = System.Security.Cryptography.MD5.Create();
@@ -188,7 +195,7 @@ public class Signature {
 		    sBuilder.Append(hash[i].ToString("x2"));
 		string base_fn = path + "\\" + sBuilder.ToString()+".bmp";
 
-		newImage.Save(base_fn, System.Drawing.Imaging.ImageFormat.Bmp);
+		bmp.Save(base_fn, System.Drawing.Imaging.ImageFormat.Bmp);
 
 		// pass through 1bpp conversion
 		byte[] fixbpp = BitmapBPP.BitmapConverter.To1bpp(base_fn);
@@ -1108,7 +1115,7 @@ public class SPH_IngenicoRBA_RS232 : SerialPortHandler
 			}
 			getting_signature = false;
             FileInfo fi = new FileInfo(sigfile);
-			PushOutput("TERMBMP" + fi.Name + ".bmp");
+			PushOutput("TERMBMP" + fi.Name);
 			HandleMsg("termReset");
 		} else {
 			// get the next sig block or re-request the
