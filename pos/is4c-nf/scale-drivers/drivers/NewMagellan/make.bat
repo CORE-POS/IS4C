@@ -5,10 +5,22 @@ set CC=csc /platform:x86 /nologo
 %CC% /target:library /out:USBLayer.dll USBLayer.cs USB-Win32.cs
 %CC% /target:library /r:DelegateForm.dll /out:UDPMsgBox.dll UDPMsgBox.cs
 
+@echo off
+REM Auto detect whether PDCX DLLs preset
+set PDCX_LIBS=
+set PDCX_FILES=
+if exist DSIPDCXLib.dll (
+    if exist AxDSIPDCXLib.dll (
+        set PDCX_LIBs=/r:DSIPDCXLib.dll /r:AxDSIPDCXLib.dll
+	set PDCX_FILES=SPH_Datacap_PDCX.cs
+    )
+)
+@echo on
+
 %CC% /target:library ^
-/r:DelegateForm.dll /r:Bitmap.dll /r:USBLayer.dll /r:DSIPDCXLib.dll /r:AxDSIPDCXLib.dll ^
+/r:DelegateForm.dll /r:Bitmap.dll /r:USBLayer.dll %PDCX_LIBS% ^
 /out:SPH.dll ^
-SerialPortHandler.cs SPH_Magellan_Scale.cs SPH_IngenicoRBA_RS232.cs SPH_SignAndPay_USB.cs SPH_IngenicoRBA_USB.cs SPH_Datacap_PDCX.cs SPH_IngenicoRBA_Common.cs SPH_IngenicoRBA_IP.cs
+SerialPortHandler.cs SPH_Magellan_Scale.cs SPH_IngenicoRBA_RS232.cs SPH_SignAndPay_USB.cs SPH_IngenicoRBA_USB.cs SPH_IngenicoRBA_Common.cs SPH_IngenicoRBA_IP.cs %PDCX_FILES%
 
 %CC% /target:exe /r:DelegateForm.dll /r:UDPMsgBox.dll /r:SPH.dll /out:pos.exe Magellan.cs
 @echo off
