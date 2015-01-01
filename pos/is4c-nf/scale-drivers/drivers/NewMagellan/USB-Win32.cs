@@ -138,7 +138,7 @@ public class USBWrapper_Win32 : USBWrapper {
 		try {
 			CloseHandle(native_handle);
 		}
-		catch(Exception ex){}
+		catch(Exception){}
 	}
 
 	private String GetDeviceFilename(int vid, int pid){
