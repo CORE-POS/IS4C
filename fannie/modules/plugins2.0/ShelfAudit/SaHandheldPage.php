@@ -211,6 +211,17 @@ function qty_typed(ev){
     }
 }
 
+function doubleBeep()
+{
+    if (typeof cordova.exec != 'function') {
+        setTimeout('doubleBeep()', 500);
+    } else {
+        if (Device) {
+            Device.playSound([500, 100, 0, 100, 1000, 100, 0, 100, 500, 100]);
+        }
+    }
+}
+
         <?php if ($this->linea_ios_mode){ ?>
 Device = new ScannerDevice({
     barcodeData: function (data, type){
@@ -263,6 +274,7 @@ if (isset($this->current_item_data['upc'])){
         echo '<div class="alert alert-danger">Item not found (';
         echo $this->current_item_data['upc'];
         echo ')</div>';
+        $this->add_onload_command('doubleBeep();');
     } else {
         echo '<p>';
         echo $this->current_item_data['upc'];
@@ -274,7 +286,7 @@ if (isset($this->current_item_data['upc'])){
             . '<span id="live-qty">' . $this->current_item_data['qty'] . '</span>';
         echo '</p>';
         echo '<div class="form-group form-inline">';
-        printf('<input type="number" min="0" max="99999" step="0.01" %s
+        printf('<input type="number" min="-99999" max="99999" step="0.01" %s
             onfocus="paint_focus(\'cur_qty\');$(this).select();" 
             onkeyup="qty_typed(event);" id="cur_qty" />
             <input type="hidden" id="cur_upc" value="%s" />',
