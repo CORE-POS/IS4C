@@ -148,22 +148,45 @@ class AdvancedItemSearch extends FannieRESTfulPage
             $args[] = $dept2;
         }
 
+        $hobart = FormLib::get('serviceScale');
+        if ($hobart !== '') {
+            $from .= ' INNER JOIN scaleItems AS h ON h.plu=p.upc ';
+            $where = str_replace('p.modified', 'h.modified', $where);
+        }
+
+
         $modDate = FormLib::get('modDate');
         if ($modDate !== '') {
             switch(FormLib::get('modOp')) {
             case 'Before':
                 $where .= ' AND p.modified < ? ';
                 $args[] = $modDate . ' 00:00:00';
+                if ($hobart !== '') {
+                    $where = str_replace('p.modified', '(p.modified', $where)
+                        . ' OR h.modified < ?) ';
+                    $args[] = $modDate . ' 00:00:00';
+                }
                 break;
             case 'After':
                 $where .= ' AND p.modified > ? ';
                 $args[] = $modDate . ' 23:59:59';
+                if ($hobart !== '') {
+                    $where = str_replace('p.modified', '(p.modified', $where)
+                        . ' OR h.modified > ?) ';
+                    $args[] = $modDate . ' 23:59:59';
+                }
                 break;
             case 'On':
             default:
                 $where .= ' AND p.modified BETWEEN ? AND ? ';
                 $args[] = $modDate . ' 00:00:00';
                 $args[] = $modDate . ' 23:59:59';
+                if ($hobart !== '') {
+                    $where = str_replace('p.modified', '(p.modified', $where)
+                        . ' OR h.modified BETWEEN ? AND ?) ';
+                    $args[] = $modDate . ' 00:00:00';
+                    $args[] = $modDate . ' 23:59:59';
+                }
                 break;
             }
         }
@@ -233,12 +256,6 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 $where .= ' AND u.likeCode=? ';
                 $args[] = $lc;
             }
-        }
-
-        $hobart = FormLib::get('serviceScale');
-        if ($hobart !== '') {
-            $from .= ' INNER JOIN scaleItems AS h ON h.plu=p.upc ';
-            $where = str_replace('p.modified', 'h.modified', $where);
         }
 
         if ($where == '1=1') {
