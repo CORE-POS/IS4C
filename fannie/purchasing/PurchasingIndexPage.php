@@ -43,7 +43,7 @@ class PurchasingIndexPage extends FannieRESTfulPage {
             <li><a href="PurchasingSearchPage.php">Search Orders</a>
             <li><a href="ImportPurchaseOrder.php">Import Order from Spreadsheet</a>
                 <ul>
-                    <li>Custom Alberts PDF Import</li>
+                    <li><a href="importers/AlbertsPdfImport.php">Custom Alberts PDF Import</a></li>
                     <li>Custom RDW PDF Import</li>
                 </ul>
             </li>

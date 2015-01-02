@@ -38,6 +38,8 @@ class AlbertsPdfImport extends FannieRESTfulPage
     public function preprocess()
     {
         $this->__routes[] = 'post<file>';
+        $this->__routes[] = 'post<vendorID><invoice_num><po_num><invoice_date>';
+        $this->__routes[] = 'get<complete>';
 
         return parent::preprocess();
     }
@@ -68,6 +70,61 @@ class AlbertsPdfImport extends FannieRESTfulPage
         }
 
         return true;
+    }
+
+    public function post_vendorID_invoice_num_po_num_invoice_date_handler()
+    {
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+
+        $skus = FormLib::get('sku', array());
+        $upcs = FormLib::get('upc', array());
+        $descriptions = FormLib::get('description', array());
+        $totals = FormLib::get('total', array());
+        $cases = FormLib::get('cases', array());
+        $units = FormLib::get('units', array());
+        $sizes = FormLib::get('size', array());
+        $costs = FormLib::get('cost', array());
+
+        $order = new PurchaseOrderModel($dbc);
+        $order->vendorID($this->vendorID);
+        $order->creationDate($this->invoice_date);
+        $order->placed(1);
+        $order->placedDate($this->invoice_date);
+        $order->vendorOrderID($this->po_num);
+        $order->vendorInvoiceID($this->invoice_num);
+        $orderID = $order->save();
+
+        $item = new PurchaseOrderItemsModel($dbc);
+
+        for ($i=0; $i<count($skus); $i++) {
+            $sku = $skus[$i];
+            $upc = BarcodeLib::padUPC(isset($upcs[$i]) ? $upcs[$i] : '');
+            $qty = isset($cases[$i]) ? $cases[$i] : 1;
+            $caseSize = isset($units[$i]) ? $units[$i] : 1;
+            $unitSize = isset($sizes[$i]) ? $sizes[$i] : '';
+            $unitCost = isset($costs[$i]) ? $costs[$i] : 0;
+            $totalCost = isset($totals[$i]) ? $totals[$i] : 0;
+            $desc = isset($descriptions[$i]) ? substr($descriptions[$i], 0, 50) : '';
+
+            $item->reset();
+            $item->orderID($orderID);
+            $item->sku($sku);
+            $item->quantity($qty);
+            $item->unitCost($unitCost);
+            $item->caseSize($caseSize);
+            $item->receivedDate($this->invoice_date);
+            $item->receivedQty($qty);
+            $item->receivedTotalCost($totalCost);
+            $item->unitSize($unitSize);
+            $item->brand('');
+            $item->description($desc);
+            $item->internalUPC($upc);
+            $item->save();
+        }
+
+        header('Location: ' . $_SERVER['PHP_SELF'] . '?complete=' . $orderID);
+
+        return false;
     }
 
     public function post_file_handler()
@@ -137,7 +194,20 @@ class AlbertsPdfImport extends FannieRESTfulPage
         $items = array();
 
         $lines = explode("\n", $this->file_content);
+        $pattern = '/\d+\s+(\d+)\s+[^0-9]*(\d\d\d+)\s+(.*?)\s\s+(.*?)\s+([0-9-]+)\s+\d+\s+\$?([0-9\.]+)\s+\$?([0-9\.]+)\s+\$?([0-9\.]+)/';
+        echo '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
         echo '<table class="table">';
+        echo '<tr><thead>
+            <th>SKU</th>
+            <th>UPC</th>
+            <th>Description</th>
+            <th>Total Cost</th>
+            <th># Cases</th>
+            <th>Units/Case</th>
+            <th>Unit Size</th>
+            <th>Unit Cost</th>
+            </tr>
+            </thead>';
         for ($i=0; $i<count($lines); $i++) {
             $line = trim($lines[$i]);
             $fields = preg_split('/\s{2,}/', $line);
@@ -148,17 +218,22 @@ class AlbertsPdfImport extends FannieRESTfulPage
                 $invoice_num = $fields[2];
                 $po_num = $fields[3];
                 $invoice_date = $fields[5];
-            } elseif (count($fields) >= 10) {
-                $numCases = $fields[1];
-                $base = 2;
-                if (!preg_match('/^\d{4,}$/', $fields[2]) && preg_match('/^\d{4,}$/', $fields[3])) {
-                    $base = 3;
-                } elseif (!preg_match('/^\d{4,}$/', $fields[2]) && !preg_match('/^\d{4,}$/', $fields[3])) {
-                    // no sku found
-                    continue;
-                } 
-                $sku = $fields[$base];
-                $description = $fields[$base+1];
+            } else {
+                if (!preg_match($pattern, $line, $matches)) {
+                    /**
+                      Excessively wide fields can break the layout and split the single PDF line
+                      into two text lines. Try joining consecutive lines and see if they
+                      match the single-line pattern
+                    */
+                    if ($i+1 < count($lines) && preg_match($pattern, $line . ' ' . $lines[$i+1], $matches)) {
+                        $i++;
+                    } else {
+                        continue;
+                    }
+                }
+                $numCases = $matches[1];
+                $sku = $matches[2];
+                $description = $matches[3];
                 $caseSize = 1;
                 $unitSize = 1;
                 if (preg_match('/(\d+)x\d+/', $description, $m)) {
@@ -167,7 +242,7 @@ class AlbertsPdfImport extends FannieRESTfulPage
                     if (count($tmp) >= 2) {
                         $tmp = explode(' ', $tmp[1], 3);
                         if (count($tmp) >= 2) {
-                            $unitSize = $tmp[0] . $tmp[1];
+                            $unitSize = trim($tmp[0] . $tmp[1], ',');
                         }
                     }
                 } elseif (preg_match('/(\d+) lb/i', $description, $m)) {
@@ -181,7 +256,7 @@ class AlbertsPdfImport extends FannieRESTfulPage
                     $unitSize = 'pt';
                 }
 
-                $upc = $fields[$base+3];
+                $upc = $matches[5];
                 if (strlen($upc) == 5 && $upc[0] == '9') {
                     $upc = substr($upc, 1);
                 } elseif (strstr($upc, '-')) {
@@ -190,16 +265,26 @@ class AlbertsPdfImport extends FannieRESTfulPage
                 $upc = str_replace('-', '', $upc);
                 $upc = BarcodeLib::padUPC($upc);
 
-                $receivedCost = trim($fields[$base+6], '$');
+                $receivedCost = $matches[7];
                 printf('<tr>
-                    <td>%s</td>
-                    <td>%s</td>
-                    <td>%s</td>
-                    <td>%.2f</td>
-                    <td>%s</td>
-                    <td>%s</td>
-                    <td>%s</td>
-                    <td>%.2f</td>
+                    <td><input type="number" class="form-control input-sm" name="sku[]" value="%s" /></td>
+                    <td><input type="number" class="form-control input-sm" name="upc[]" value="%s" /></td>
+                    <td><input type="text" class="form-control input-sm" name="description[]" value="%s" /></td>
+                    <td>
+                        <div class="input-group">
+                            <span class="input-group-addon">$</span>
+                            <input type="text" class="form-control input-sm" name="total[]" value="%.2f" />
+                        </div>
+                    </td>
+                    <td><input type="number" class="form-control input-sm" name="cases[]" value="%s" /></td>
+                    <td><input type="text" class="form-control input-sm" name="units[]" value="%s" /></td>
+                    <td><input type="text" class="form-control input-sm" name="size[]" value="%s" /></td>
+                    <td>
+                        <div class="input-group">
+                            <span class="input-group-addon">$</span>
+                            <input type="text" class="form-control input-sm" name="cost[]" value="%.2f" />
+                        </div>
+                    </td>
                     </tr>',
                     $sku, $upc, $description,
                     $receivedCost,
@@ -211,6 +296,42 @@ class AlbertsPdfImport extends FannieRESTfulPage
             }
         }
         echo '</table>';
+        printf('<div class="form-group">
+            <label>Invoice #</label>
+            <input type="text" name="invoice_num" value="%s" class="form-control" />
+            </div>', $invoice_num); 
+        printf('<div class="form-group">
+            <label>PO #</label>
+            <input type="text" name="po_num" class="form-control" value="%s" />
+            </div>', $po_num); 
+        printf('<div class="form-group">
+            <label>Invoice Date</label>
+            <input type="text" class="form-control date-field" name="invoice_date" value="%s" />
+            </div>', $invoice_date); 
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $vendors = new VendorsModel($dbc);
+        echo '<div class="form-group">
+            <label>Vendor</label>
+            <select class="form-control" name="vendorID">';
+        foreach ($vendors->find('vendorName') as $obj) {
+            printf('<option %s value="%d">%s</option>',
+                (preg_match('/albert/i', $obj->vendorName()) ? 'selected' : ''),
+                $obj->vendorID(), $obj->vendorName());
+        }
+        echo '</select></div>';
+        echo '<p>
+            <button type="submit" class="btn btn-default">Import Invoice</button>
+            </p>';
+        echo '</form>';
+    }
+
+    public function get_complete_view()
+    {
+        return '<div class="alert alert-success">Import complete</div>
+                <p>
+                    <a href="../ViewPurchaseOrders.php?id=' . $this->complete . '"
+                        class="btn btn-default">View Order</a>
+                </p>';
     }
 
     public function get_view()
