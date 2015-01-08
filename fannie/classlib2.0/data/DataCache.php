@@ -98,7 +98,7 @@ class DataCache
 
       See check() for details
     */
-    static public function freshen($data, $ttl='day', $key)
+    static public function freshen($data, $ttl='day', $key=false)
     {
         global $FANNIE_ARCHIVE_DB;
         $dbc = \FannieDB::get($FANNIE_ARCHIVE_DB, $current_db);

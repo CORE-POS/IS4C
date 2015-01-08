@@ -181,21 +181,117 @@ class InstallUpdatesPage extends \COREPOS\Fannie\API\InstallPage {
 <p class="ichunk">CORE Updates.</p>
 <em>This is new; consider it alpha-y. Commit any changes before running an update.</em><br />
 <?php
-        $giterate_info = \COREPOS\Fannie\API\data\DataCache::check('GiterateTask');
-        if ($giterate_info == false) {
-            echo 'Updater has not been run recently. See <b>Check for Updates</b> task';
-            echo '<br />';
-            echo '<a href="../cron/management/CronManagementPage.php">Manage Scheduled Tasks</a>';
-        } else {
-            echo $giterate_info;
-            if (strstr($giterate_info, 'New version ')) {
-                echo '<br />To apply update, run: ';
-                echo '<pre>' . GiterateTask::genCommand() . ' --update</pre>';
+        $version_info = \COREPOS\Fannie\API\data\DataCache::check('CoreReleases');
+        if ($version_info === false) {
+            ini_set('user_agent', 'CORE-POS');
+            $json = file_get_contents('https://api.github.com/repos/CORE-POS/IS4C/tags');
+            if ($json === false && function_exists('curl_init')) {
+                $ch = curl_init('https://api.github.com/repos/CORE-POS/IS4C/tags');
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURL_TIMEOUT, 10);
+                curl_setopt($ch, CURLOPT_USERAGENT, 'CORE-POS');
+                $json = curl_exec($ch);
+                curl_close($ch);
+            }
+
+            if ($json === false) {
+                echo '<div class="alert alert-danger">Error downloading release information</div>';
+            } else {
+                $decoded = json_decode($json, true);
+                if ($decoded === null) {
+                    echo '<div class="alert alert-danger">Downloaded release information is invalid</div>';
+                    var_dump($json);
+                } else {
+                    $version_info = $json;
+                    \COREPOS\Fannie\API\data\DataCache::freshen($version_info, 'day', 'CoreReleases');
+                }
             }
         }
+        $version_info = json_decode($version_info, true);
+        $tags = array();
+        foreach ($version_info as $release) {
+            $tags[] = $release['name'];
+        }
+        usort($tags, array('InstallUpdatesPage', 'versionSort'));
+        $my_version = trim(file_get_contents(dirname(__FILE__) . '/../../VERSION'));
+        if ($tags[count($tags)-1] == $my_version) {
+            echo '<div class="alert alert-success">Up to date</div>';
+        } elseif (!in_array($my_version, $tags)) {
+            echo '<div class="alert alert-warning">Current version <strong>' . $my_version . '</strong> not recognized</div>';
+        } else {
+            echo '<div class="alert alert-info">
+                Current version: <strong>' . $my_version . '</strong><br />
+                Newest version available: <strong>' . $tags[count($tags)-1] . '</strong>
+                </div>';
+            echo '<h3>To get the latest version</h3>';
+            echo '<i>Make note of the big string of letters and numbers produced
+                by the "git log" command. If you want to undo the update, that will be handy</i><br />';
+            echo '<p><code>';
+            $dir = realpath(dirname(__FILE__) . '/../../');
+            echo 'cd "' . $dir . '"<br />';
+            echo 'git log -n1 --pretty=oneline<br />';
+            echo 'git fetch upstream<br />';
+            echo 'git merge upstream/' . $tags[count($tags)-1] . '<br />';
+            echo '</code></p>';
+            echo '<h3>Troubleshooting</h3>';
+            echo '<p>Error message: <i>fatal: \'upstream\' does not appear to be a repository</i><br />';
+            echo 'Solution: add the repository and re-run the update commands above<br />';
+            echo '<code>git remote add upstream https://github.com/CORE-POS/IS4C</code>';
+            echo '</p>';
+            echo '<p>Error message: <i>Automatic merge failed; fix conflicts and then commit the result.</i><br />';
+            echo 'Unfortunately this means the update cannot be applied automatically. If you are a developer
+                you can of course fix the conflicts. If you just need to undo the update attempt and get back
+                to a working state, first try this:<br />
+                <code>git reset --merge</code><br />
+                If problems persist (or you have an old version of git that doesn\'t support that command) use:<br />
+                <code>git reset --hard</code>
+                </p>';
+            echo '<p>Undoing the update<br />
+                If you noted the big string of letters and numbers from "git log", you can go back to that
+                exact point. Replace PREVIOUS with the big string.<br />
+                <code>git reset --merge PREVIOUS</code><br />
+                If not, this should get back to the version you were running before but may not be quite
+                identical.<br />
+                <code>git reset --merge ' . $my_version . '</code>
+                </p>';
+        }
+
         return ob_get_clean();
 
     // body_content
+    }
+
+    private static function versionSort($a, $b) 
+    {
+        $a_valid = preg_match('/^(.*?)(\d+)\D(\d+)\D(\d+)\D/', $a, $a_parts);
+        $b_valid = preg_match('/^(.*?)(\d+)\D(\d+)\D(\d+)\D/', $b, $b_parts);
+        if (!$a_valid && !$b_valid) {
+            return 0;
+        } elseif ($a_valid && !$b_valid) {
+            return 1;
+        } elseif (!$a_valid && $b_valid) {
+            return -1;
+        }
+
+        if ($a_parts[2] > $b_parts[2]) { // major 
+            return 1;
+        } elseif ($a_parts[2] < $b_parts[2]) { // major 
+            return -1;
+        } elseif ($a_parts[3] > $b_parts[3]) { // minor 
+            return 1;
+        } elseif ($a_parts[3] < $b_parts[3]) { // minor
+            return -1;
+        } elseif ($a_parts[4] > $b_parts[4]) { // revision
+            return 1;
+        } elseif ($a_parts[4] < $b_parts[4]) { // revision
+            return -1;
+        } elseif (empty($a_parts[1]) && !empty($b_parts[1])) { // has prefix
+            return 1;
+        } elseif (!empty($a_parts[1]) && empty($b_parts[1])) { // has prefix
+            return -1;
+        } else {
+            return 0;
+        }
     }
 
 // InstallUpdatesPage
