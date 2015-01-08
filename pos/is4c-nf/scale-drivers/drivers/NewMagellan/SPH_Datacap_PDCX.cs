@@ -22,7 +22,7 @@
 
 /*************************************************************
  * SerialPortHandler
- * 	Abstract class to manage a serial port in a separate
+ *     Abstract class to manage a serial port in a separate
  * thread. Allows top-level app to interact with multiple, 
  * different serial devices through one class interface.
  * 
@@ -53,11 +53,11 @@ public class SPH_Datacap_PDCX : SerialPortHandler
     protected string server_list = "x1.mercurydev.net;x2.mercurydev.net";
     protected int LISTEN_PORT = 9000; // acting as a Datacap stand-in
 
-	public SPH_Datacap_PDCX(string p) : base(p)
+    public SPH_Datacap_PDCX(string p) : base(p)
     { 
         verbose_mode = 1;
         device_identifier=p;
-	}
+    }
 
     /**
       Initialize PDCX control with servers
@@ -81,7 +81,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
       Driver strips off headers, feeds XML into the dsiPDCX control,
       then sends the response back to the client.
     */
-	public override void Read()
+    public override void Read()
     { 
         initDevice();
         TcpListener http = new TcpListener(IPAddress.Loopback, LISTEN_PORT);
@@ -120,7 +120,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
                 }
             }
         }
-	}
+    }
 
     /**
       Pull HTTP body out of string. Simply looking
@@ -157,37 +157,37 @@ public class SPH_Datacap_PDCX : SerialPortHandler
         return headers + http_response;
     }
 
-	public override void HandleMsg(string msg)
-	{ 
+    public override void HandleMsg(string msg)
+    { 
         // optional predicate for "termSig" message
         // predicate string is displayed on sig capture screen
         if (msg.Length > 7 && msg.Substring(0, 7) == "termSig") {
             //sig_message = msg.Substring(7);
             msg = "termSig";
         }
-		switch(msg) {
-			case "termReset":
-			case "termReboot":
+        switch(msg) {
+            case "termReset":
+            case "termReboot":
                 ax_control.CancelRequest();
                 initDevice();
-				break;
-			case "termManual":
-				break;
-			case "termApproved":
-				break;
-			case "termSig":
+                break;
+            case "termManual":
+                break;
+            case "termApproved":
+                break;
+            case "termSig":
                 GetSignature();
-				break;
-			case "termGetType":
-				break;
-			case "termGetTypeWithFS":
-				break;
-			case "termGetPin":
-				break;
-			case "termWait":
-				break;
-		}
-	}
+                break;
+            case "termGetType":
+                break;
+            case "termGetTypeWithFS":
+                break;
+            case "termGetPin":
+                break;
+            case "termWait":
+                break;
+        }
+    }
     
     protected string GetSignature()
     {

@@ -22,7 +22,7 @@
 
 /*************************************************************
  * SerialPortHandler
- * 	Abstract class to manage a serial port in a separate
+ *     Abstract class to manage a serial port in a separate
  * thread. Allows top-level app to interact with multiple, 
  * different serial devices through one class interface.
  * 
@@ -48,13 +48,13 @@ public class SPH_IngenicoRBA_IP : SPH_IngenicoRBA_Common {
     private TcpClient device = null;
     private string device_host = null;
 
-	public SPH_IngenicoRBA_IP(string p) : base(p)
+    public SPH_IngenicoRBA_IP(string p) : base(p)
     { 
-		this.SPH_Running = true;
-		this.verbose_mode = 0;
+        this.SPH_Running = true;
+        this.verbose_mode = 0;
         this.device = new TcpClient();
         this.device_host = p;
-	}
+    }
 
     private bool ReConnect()
     {
@@ -74,11 +74,11 @@ public class SPH_IngenicoRBA_IP : SPH_IngenicoRBA_Common {
 
         return true;
     }
-	
-	public override void Read()
+    
+    public override void Read()
     { 
         ReConnect();
-		WriteMessageToDevice(OnlineMessage());
+        WriteMessageToDevice(OnlineMessage());
         HandleMsg("termReset");
         this.device.ReceiveTimeout = 5000;
         NetworkStream stream = device.GetStream();

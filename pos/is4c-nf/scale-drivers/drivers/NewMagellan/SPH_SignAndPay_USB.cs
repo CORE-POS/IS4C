@@ -578,7 +578,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         /* Revision: 7May13 - use locks instead
         */
         try {
-	    byte[] input = (byte[])iar.AsyncState;
+        byte[] input = (byte[])iar.AsyncState;
             HandleReadData(input);        
             usb_fs.EndRead(iar);
         }
@@ -1035,7 +1035,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         }
 
         usb_fs.Write(report,0,usb_report_size);
-	System.Threading.Thread.Sleep(100);
+    System.Threading.Thread.Sleep(100);
         ack_event.WaitOne(50, false);
     }
 
