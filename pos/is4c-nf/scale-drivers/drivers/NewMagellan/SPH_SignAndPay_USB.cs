@@ -135,6 +135,11 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         int pid = 0x2310;
         usb_devicefile = string.Format("{0}&{1}",vid,pid);
         #endif
+        if (auto_state_change) {
+            System.Console.WriteLine("SPH_SignAndPay_USB starting in AUTO mode");
+        } else {
+            System.Console.WriteLine("SPH_SignAndPay_USB starting in COORDINATED mode");
+        }
     }
 
     private void GetHandle(){
@@ -855,8 +860,10 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
             }
             break;
         case "termApproved":
-            lock(usb_lock){
-                SetStateApproved();
+            if (!auto_state_change) {
+                lock(usb_lock){
+                    SetStateApproved();
+                }
             }
             break;
         case "termSig":
@@ -865,30 +872,40 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
             }
             break;
         case "termGetType":
-            lock(usb_lock){
-                this.type_include_fs = false;
-                SetStateCardType();
+            if (!auto_state_change) {
+                lock(usb_lock){
+                    this.type_include_fs = false;
+                    SetStateCardType();
+                }
             }
             break;
         case "termGetTypeWithFS":
-            lock(usb_lock){
-                this.type_include_fs = true;
-                SetStateCardType();
+            if (!auto_state_change) {
+                lock(usb_lock){
+                    this.type_include_fs = true;
+                    SetStateCardType();
+                }
             }
             break;
         case "termCashBack":
-            lock(usb_lock){
-                SetStateCashBack();
+            if (!auto_state_change) {
+                lock(usb_lock){
+                    SetStateCashBack();
+                }
             }
             break;
         case "termGetPin":
-            lock(usb_lock){
-                SetStateGetPin();
+            if (!auto_state_change) {
+                lock(usb_lock){
+                    SetStateGetPin();
+                }
             }
             break;
         case "termWait":
-            lock(usb_lock){
-                SetStateWaitForCashier();
+            if (!auto_state_change) {
+                lock(usb_lock){
+                    SetStateWaitForCashier();
+                }
             }
             break;
         }

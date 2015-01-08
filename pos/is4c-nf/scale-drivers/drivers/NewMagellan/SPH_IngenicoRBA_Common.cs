@@ -242,6 +242,11 @@ public class SPH_IngenicoRBA_Common : SerialPortHandler
     {
         last_message = null;
         getting_signature = false;
+        if (auto_state_change) {
+            System.Console.WriteLine("SPH_Ingenico starting in AUTO mode");
+        } else {
+            System.Console.WriteLine("SPH_Ingenico starting in COORDINATED mode");
+        }
 	}
 
 	// see if array has a valid check character
@@ -430,13 +435,13 @@ public class SPH_IngenicoRBA_Common : SerialPortHandler
 			getting_signature = true;	
 			last_message = null;
 			WriteMessageToDevice(StatusRequestMessage());
-		} else if (!getting_signature && (msg == "termGetType" || msg == "termGetTypeWithFS")) {
+		} else if (!auto_state_change && !getting_signature && (msg == "termGetType" || msg == "termGetTypeWithFS")) {
             WriteMessageToDevice(GetCardType());
-        } else if (!getting_signature && msg == "termWait") {
+        } else if (!auto_state_change && !getting_signature && msg == "termWait") {
             WriteMessageToDevice(TermWaitScreen());
-        } else if (!getting_signature && msg == "termApproved") {
+        } else if (!auto_state_change && !getting_signature && msg == "termApproved") {
             WriteMessageToDevice(TermApprovedScreen());
-        } else if (!getting_signature && msg == "termGetPin") {
+        } else if (!auto_state_change && !getting_signature && msg == "termGetPin") {
             WriteMessageToDevice(PinEntryScreen());
         }
 
