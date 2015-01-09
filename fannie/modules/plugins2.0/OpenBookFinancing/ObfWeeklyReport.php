@@ -38,12 +38,12 @@ class ObfWeeklyReport extends FannieReportPage
     protected $required_fields = array('weekID');
 
     protected $report_headers = array(
-        array('', 'Last Year', 'Plan Goal', '% Store', 'Actual', '% Growth', '% Store', 'Current O/U', 'QTD O/U'),
-        array('', 'Last Year', 'Plan Goal', '% Store', 'Actual', '% Growth', '% Store', 'Current O/U', 'QTD O/U'),
-        array('', 'Last Year', 'Plan Goal', '% Store', 'Actual', '% Growth', '% Store', 'Current O/U', 'QTD O/U'),
-        array('', 'Last Year', 'Plan Goal', '% Store', 'Actual', '% Growth', '% Store', 'Current O/U', 'QTD O/U'),
-        array('', 'Last Year', 'Plan Goal', '% Store', 'Actual', '% Growth', '% Store', 'Current O/U', 'QTD O/U'),
-        array('', 'Last Year', 'Plan Goal', '% Store', 'Actual', '% Growth', '% Store', 'Current O/U', 'QTD O/U'),
+        array('', 'Last Year', 'Plan Goal', '% Store', 'Actual', '% Growth', '% Store', 'Current O/U', 'Long-Term O/U'),
+        array('', 'Last Year', 'Plan Goal', '% Store', 'Actual', '% Growth', '% Store', 'Current O/U', 'Long-Term O/U'),
+        array('', 'Last Year', 'Plan Goal', '% Store', 'Actual', '% Growth', '% Store', 'Current O/U', 'Long-Term O/U'),
+        array('', 'Last Year', 'Plan Goal', '% Store', 'Actual', '% Growth', '% Store', 'Current O/U', 'Long-Term O/U'),
+        array('', 'Last Year', 'Plan Goal', '% Store', 'Actual', '% Growth', '% Store', 'Current O/U', 'Long-Term O/U'),
+        array('', 'Last Year', 'Plan Goal', '% Store', 'Actual', '% Growth', '% Store', 'Current O/U', 'Long-Term O/U'),
         array('', '', 'Plan Goal', '%', 'Actual', '%', 'Est. Bonus', 'Current Year', 'Last Year'),
     );
 
@@ -207,6 +207,7 @@ class ObfWeeklyReport extends FannieReportPage
         $qtd_sales = 0;
         $qtd_hours = 0;
         $qtd_wages = 0;
+        $qtd_laborsales = 0;
         $qtd_proj_hours = 0;
         $qtd_proj_wages = 0;
         $qtd_sales_ou = 0;
@@ -248,7 +249,16 @@ class ObfWeeklyReport extends FannieReportPage
                                             SUM(l.hoursTarget) as hoursTarget
                                         FROM ObfLabor AS l
                                             INNER JOIN ObfWeeks AS w ON l.obfWeekID=w.obfWeekID
-                                        WHERE w.obfQuarterID=?
+                                        WHERE w.obfLaborQuarterID=?
+                                            AND l.obfCategoryID=?
+                                            AND w.endDate <= ?');
+
+        $quarterSplhP = $dbc->prepare('SELECT SUM(c.actualSales) AS actualSales
+                                        FROM ObfLabor AS l
+                                            INNER JOIN ObfWeeks AS w ON l.obfWeekID=w.obfWeekID
+                                            INNER JOIN ObfSalesCache AS c ON c.obfWeekID=l.obfWeekID
+                                                AND c.obfCategoryID=l.obfCategoryID
+                                        WHERE w.obfLaborQuarterID=?
                                             AND l.obfCategoryID=?
                                             AND w.endDate <= ?');
         /**
@@ -375,18 +385,26 @@ class ObfWeeklyReport extends FannieReportPage
             $proj_wages = $proj_hours * $average_wage;
 
             $quarter = $dbc->execute($quarterLaborP, 
-                array($week->obfQuarterID(), $labor->obfCategoryID(), date('Y-m-d 00:00:00', $end_ts))
+                array($week->obfLaborQuarterID(), $labor->obfCategoryID(), date('Y-m-d 00:00:00', $end_ts))
             );
             if ($dbc->num_rows($quarter) == 0) {
-                $quarter = array('hours'=>0, 'wages'=>0, 'laborTarget'=>0, 'hoursTarget'=>0);
+                $quarter = array('hours'=>0, 'wages'=>0, 'laborTarget'=>0, 'hoursTarget'=>0, 'actualSales' => 0);
             } else {
                 $quarter = $dbc->fetch_row($quarter);
             }
+            $qt_splh = $dbc->execute($quarterSplhP,
+                array($week->obfLaborQuarterID(), $labor->obfCategoryID(), date('Y-m-d 00:00:00', $end_ts))
+            );
+            if ($dbc->num_rows($qt_splh)) {
+                $w = $dbc->fetch_row($qt_splh);
+                $quarter['actualSales'] = $w['actualSales'];
+            }
             $qt_average_wage = $quarter['wages'] / ((float)$quarter['hours']);
-            $qt_proj_hours = $quarter['hoursTarget'];
+            $qt_proj_hours = $quarter['actualSales'] / $category->salesPerLaborHourTarget();
             $qt_proj_labor = $qt_proj_hours * $qt_average_wage;
             $qtd_hours += $quarter['hours'];
             $qtd_proj_hours += $qt_proj_hours;
+            $qtd_laborsales += $quarter['actualSales'];
 
             $data[] = array(
                 'Hours',
@@ -489,7 +507,7 @@ class ObfWeeklyReport extends FannieReportPage
             $labor->load();
 
             $quarter = $dbc->execute($quarterLaborP, 
-                array($week->obfQuarterID(), $labor->obfCategoryID(), date('Y-m-d 00:00:00', $end_ts))
+                array($week->obfLaborQuarterID(), $labor->obfCategoryID(), date('Y-m-d 00:00:00', $end_ts))
             );
             if ($dbc->num_rows($quarter) == 0) {
                 $quarter = array('hours'=>0, 'wages'=>0, 'laborTarget'=>0, 'hoursTarget'=>0);
@@ -497,7 +515,7 @@ class ObfWeeklyReport extends FannieReportPage
                 $quarter = $dbc->fetch_row($quarter);
             }
             $qt_average_wage = $quarter['wages'] / ((float)$quarter['hours']);
-            $qt_proj_hours = $quarter['hoursTarget'];
+            $qt_proj_hours = $qtd_laborsales / $c->salesPerLaborHourTarget();
             $qt_proj_labor = $qt_proj_hours * $qt_average_wage;
             $qtd_hours += $quarter['hours'];
             $qtd_proj_hours += $qt_proj_hours;

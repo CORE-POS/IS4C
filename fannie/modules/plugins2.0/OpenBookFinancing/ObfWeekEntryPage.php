@@ -106,6 +106,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
         }
         $model->previousYear(date('Y-m-d', mktime(0, 0, 0, date('n', $prev_ts), date('j', $prev_ts)-6, date('Y', $prev_ts))));
         $model->obfQuarterID(FormLib::get('quarter'));
+        $model->obfLaborQuarterID(FormLib::get('labor-quarter'));
         $model->growthTarget(FormLib::get('growthTarget', 0.00) / 100.00);
 
         $new_id = $model->save();
@@ -132,6 +133,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
         $model->endDate(date('Y-m-d', $end_ts));
         $model->previousYear(date('Y-m-d', mktime(0, 0, 0, date('n', $prev_ts), date('j', $prev_ts)-6, date('Y', $prev_ts))));
         $model->obfQuarterID(FormLib::get('quarter'));
+        $model->obfLaborQuarterID(FormLib::get('labor-quarter'));
         $model->growthTarget(FormLib::get('growthTarget', 0.00) / 100.00);
 
         $model->save();
@@ -187,6 +189,15 @@ class ObfWeekEntryPage extends FannieRESTfulPage
         $model = new ObfWeeksModel($dbc);
         if (!is_object($this->weekModel)) {
             $this->weekModel = new ObfWeeksModel($dbc);
+            $quarterID = '';
+            $laborID = '';
+            foreach ($this->weekModel->find('endDate', true) as $w) {
+                $quarterID = $w->obfQuarterID();
+                $laborID = $w->obfLaborQuarterID();
+                break;
+            }
+            $this->weekModel->obfQuarterID($quarterID);
+            $this->weekModel->obfLaborQuarterID($laborID);
         }
         $select = '<select class="form-control"
                     onchange="location=\'' . $_SERVER['PHP_SELF'] . '?id=\' + this.value;">';
@@ -210,7 +221,8 @@ class ObfWeekEntryPage extends FannieRESTfulPage
         $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
         $ret .= '<table class="table">';
         $ret .= '<tr><th>Week End Date</th><th>Previous Year End Date</th>
-                <th>Sales Growth Target</th><th>Quarter</th></tr>';
+                <th>Sales Growth Target</th><th>Sales Period</th>
+                <th>Labor Period</th></tr>';
 
         $end1 = '';
         if ($this->weekModel->startDate() != '') {
@@ -238,6 +250,14 @@ class ObfWeekEntryPage extends FannieRESTfulPage
         foreach ($quarters->find('obfQuarterID', true) as $q) {
             $ret .= sprintf('<option %s value="%d">%s %s</option>',
                         ($q->obfQuarterID() == $this->weekModel->obfQuarterID() ? 'selected' : ''),
+                        $q->obfQuarterID(), $q->name(), $q->year());
+        }
+        $ret .= '</select></td>';
+        $ret .= '<td><select name="labor-quarter" class="form-control">';
+        $quarters = new ObfQuartersModel($dbc);
+        foreach ($quarters->find('obfQuarterID', true) as $q) {
+            $ret .= sprintf('<option %s value="%d">%s %s</option>',
+                        ($q->obfQuarterID() == $this->weekModel->obfLaborQuarterID() ? 'selected' : ''),
                         $q->obfQuarterID(), $q->name(), $q->year());
         }
         $ret .= '</select></td>';
