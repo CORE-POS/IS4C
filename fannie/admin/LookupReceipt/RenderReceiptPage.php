@@ -156,7 +156,8 @@ class RenderReceiptPage extends FanniePage {
                     then '' 
             end
             as Status,
-            datetime, register_no, emp_no, trans_no, card_no as memberID
+            datetime, register_no, emp_no, trans_no, card_no as memberID,
+            upc
             FROM $table 
             WHERE datetime BETWEEN ? AND ? 
             AND register_no=? AND emp_no=? and trans_no=?
@@ -222,8 +223,11 @@ class RenderReceiptPage extends FanniePage {
         $ret .= "<tr><td align=center colspan=4>Cashier:&nbsp;$emp_no</td></tr>";
         $ret .= "<tr><td colspan=4>&nbsp;</td></tr>";
         $ret .= "<tr align left>\n";
-        foreach($rows as $row){
+        foreach ($rows as $row) {
             $ret .= "<tr><td align=left>";
+            if ($row['description'] == 'BADSCAN') {
+                $row['description'] .= ' (' . $row['upc'] . ')';
+            }
             $ret .= $row["description"]; 
             $ret .= "</td>";
             $ret .= "<td align=right>";
