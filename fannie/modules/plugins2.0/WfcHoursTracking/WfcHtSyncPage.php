@@ -43,7 +43,6 @@ class WfcHtSyncPage extends FanniePage
     {
         global $FANNIE_OP_DB;
 
-        $USER_FILE = '/etc/passwd';
         $EXCLUDE_EMAILS = array(
             'root'=>True,
             'finance'=>True,
@@ -62,10 +61,10 @@ class WfcHtSyncPage extends FanniePage
         $ret = '';
 
         $db = WfcHtLib::hours_dbconnect();
-        $fp = fopen($USER_FILE,'r');
-        $chkQ = $db->prepare_statement("SELECT empID FROM employees WHERE empID=?");
+        $chkQ = $db->prepare_statement("SELECT empID, name FROM employees WHERE empID=?");
         $insQ = $db->prepare_statement("INSERT INTO employees VALUES (?,?,NULL,0,8,NULL,0)");
-        while( ($line = fgets($fp)) !== false ){
+        exec('getent passwd', $users, $exit_code);
+        foreach ($users as $line) {
             // extract users with group 100 from unix passwd file
             $fields = explode(":",$line);
             $uid = $fields[2];
@@ -100,9 +99,13 @@ class WfcHtSyncPage extends FanniePage
                 $new_accounts[$uid] = $shortname;
                 $db->exec_statement($insQ, array($uid, $name));
                 $ret .= "Added ADP entry for $name<br />";
+            } else {
+                echo "$name exists as ";
+                $w = $db->fetch_row($chkR);
+                echo $w['name'] . '<br />';
             }
         }
-        fclose($fp);
+        echo '<hr />';
 
         /**
           Create corresponding POS user accounts
