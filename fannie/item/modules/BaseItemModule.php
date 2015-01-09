@@ -121,6 +121,7 @@ class BaseItemModule extends ItemModule {
                 'scale' => 0,
                 'qttyEnforced' => 0,
                 'discount' => 1,
+                'line_item_discountable' => 1,
             );
 
             /**
