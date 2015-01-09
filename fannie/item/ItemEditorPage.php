@@ -455,7 +455,7 @@ class ItemEditorPage extends FanniePage
         }
 
         /* push updates to the lanes */
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
         updateProductAllLanes($upc);
 
         if ($audited) {
