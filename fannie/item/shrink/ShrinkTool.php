@@ -180,6 +180,8 @@ class ShrinkTool extends FannieRESTfulPage
             </div>
             <p>
                 <button type="submit" class="btn btn-default">Continue</button>
+                |
+                <a href="ShrinkEditor.php" class="btn btn-default">Edit Entries From Today</a>
             </p>
             </form>';
     }
