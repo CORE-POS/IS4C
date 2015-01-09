@@ -221,7 +221,7 @@ class StatementsPluginBusiness extends FannieRESTfulPage
                 } else {
                     $pdf->Cell($columns[3],8,'$ ' . sprintf('(%.2f)',abs($payment-$charges)),0,0,'L');
                 }
-                if ($pdf->GetY() > 265){
+                if ($pdf->GetY() > 245){
                     $pdf->AddPage();
                 } else {
                     $pdf->Ln(5);
@@ -230,7 +230,7 @@ class StatementsPluginBusiness extends FannieRESTfulPage
                     $pdf->SetFontSize(10);
                     $pdf->Cell($indent+10,8,'',0,0,'L');
                     $pdf->Cell(60,8,$lineitem,0,0,'L');
-                    if ($pdf->GetY() > 265) {
+                    if ($pdf->GetY() > 245) {
                         $pdf->AddPage();
                     } else {
                         $pdf->Ln(5);
