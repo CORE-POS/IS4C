@@ -24,7 +24,7 @@
 class FannieDispatch 
 {
 
-    private $logger;
+    private static $logger;
 
     static private function setLogger($l)
     {
