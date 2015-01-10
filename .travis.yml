@@ -35,6 +35,7 @@ script:
     - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/InstallTest.php; fi
     # These can run in any order
     - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/ItemsTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/LogTest.php; fi
     - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/MembersTest.php; fi
     - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/ModelsTest.php; fi
     - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/PagesTest.php; fi

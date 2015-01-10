@@ -73,6 +73,8 @@ class FanniePage
 
     protected $config;
 
+    protected $logger;
+
     public function __construct()
     {
         global $FANNIE_AUTH_DEFAULT, $FANNIE_COOP_ID;
@@ -89,6 +91,11 @@ class FanniePage
     public function setConfig(FannieConfig $fc)
     {
         $this->config = $fc;
+    }
+
+    public function setLogger(FannieLogger $fl)
+    {
+        $this->logger = $fl;
     }
 
     /**
