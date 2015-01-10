@@ -24,7 +24,7 @@ class LogTest extends PHPUnit_Framework_TestCase
         // test non-debug levels first
         foreach ($levels as $id => $level) {
 
-            $pattern = '/^[A-Za-z]{3} \d+ \d\d:\d\d:\d\d \w+ fannie\[\d+\]: \(' . $level . '\) test logging$/';
+            $pattern = '/^[A-Za-z]{3} \d+ \d\d:\d\d:\d\d .+ fannie\[\d+\]: \(' . $level . '\) test logging$/';
 
             // call emergency(), alert(), etc directly
             unlink($tempfile);
@@ -45,8 +45,8 @@ class LogTest extends PHPUnit_Framework_TestCase
             $this->assertRegExp($pattern, $output);
         }
 
-        $pattern = '/^[A-Za-z]{3} \d+ \d\d:\d\d:\d\d \w+ fannie\[\d+\]: \(debug\) test logging$/';
-        $frame = '/^[A-Za-z]{3} \d+ \d\d:\d\d:\d\d \w+ fannie\[\d+\]: \(debug\) Frame \#\d+ .*, Line \d+, function \w+(::)?\w+$/';
+        $pattern = '/^[A-Za-z]{3} \d+ \d\d:\d\d:\d\d .+ fannie\[\d+\]: \(debug\) test logging$/';
+        $frame = '/^[A-Za-z]{3} \d+ \d\d:\d\d:\d\d .+ fannie\[\d+\]: \(debug\) Frame \#\d+ .*, Line \d+, function \w+(::)?\w+$/';
 
         // test debug w/ stack trace
         unlink($tempfile);
