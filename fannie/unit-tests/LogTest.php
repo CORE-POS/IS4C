@@ -8,7 +8,7 @@ class LogTest extends PHPUnit_Framework_TestCase
     public function testLogger()
     {
         $logger = new FannieLogger();
-        $tempfile = tempnam(sys_get_temp_dir, 'FLT');
+        $tempfile = tempnam(sys_get_temp_dir(), 'FLT');
         $context = array('logfile' => $tempfile);
         $message = 'test logging';
         $levels = array(
