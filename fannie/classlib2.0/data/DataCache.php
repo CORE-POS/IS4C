@@ -65,7 +65,7 @@ class DataCache
     */
     static public function check($key=false)
     {
-        $FANNIE_ARCHIVE_DB = FannieConfig::factory()->get('ARCHIVE_DB');
+        $FANNIE_ARCHIVE_DB = \FannieConfig::factory()->get('ARCHIVE_DB');
         $dbc = \FannieDB::get($FANNIE_ARCHIVE_DB, $current_db);
         $table = $FANNIE_ARCHIVE_DB.$dbc->sep()."reportDataCache";
         $hash = $key ? $key : self::genKey();
@@ -100,7 +100,7 @@ class DataCache
     */
     static public function freshen($data, $ttl='day', $key=false)
     {
-        $FANNIE_ARCHIVE_DB = FannieConfig::factory()->get('ARCHIVE_DB');
+        $FANNIE_ARCHIVE_DB = \FannieConfig::factory()->get('ARCHIVE_DB');
         $dbc = \FannieDB::get($FANNIE_ARCHIVE_DB, $current_db);
         if ($ttl != 'day' && $ttl != 'month') {
             return false;

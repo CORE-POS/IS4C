@@ -43,7 +43,7 @@ class DataLoad
     */
     public static function loadSampleData($sql, $table, $search_dir='') 
     {
-        $fannie_host = FannieConfig::factory()->get('SERVER');
+        $fannie_host = \FannieConfig::factory()->get('SERVER');
         $loaded = 0;
         $success = true;
         if (empty($search_dir)) {
