@@ -41,8 +41,8 @@ class AuditLib
     */
     public static function itemUpdate($upc, $likecode=false)
     {
-        global $FANNIE_OP_DB, $FANNIE_URL;
-        $dbc = \FannieDB::get($FANNIE_OP_DB);
+        $conf = \FannieConfig::factory();
+        $dbc = \FannieDB::get($conf->get('OP_DB'));
 
         $product = new \ProductsModel($dbc);
         $product->upc($upc);
@@ -69,7 +69,8 @@ class AuditLib
         }
         $message .= "\n";
         $message .= "Adjust this item?\n";
-        $message .= "http://{$_SERVER['SERVER_NAME']}/{$FANNIE_URL}item/ItemEditorPage.php?searchupc=$upc\n";
+        $url = $conf->get('URL');
+        $message .= "http://{$_SERVER['SERVER_NAME']}/{$url}item/ItemEditorPage.php?searchupc=$upc\n";
         $message .= "\n";
         $username = \FannieAuth::checkLogin();
         if (!$username) {
@@ -90,8 +91,8 @@ class AuditLib
 
     static public function batchNotification($batchID, $upc, $type, $is_likecode=false)
     {
-        global $FANNIE_OP_DB, $FANNIE_URL;
-        $dbc = \FannieDB::get($FANNIE_OP_DB);
+        $conf = \FannieConfig::factory();
+        $dbc = \FannieDB::get($conf->get('OP_DB'));
 
         $lc = '';
         $desc = '';
@@ -170,7 +171,8 @@ class AuditLib
 
         $message .= "\n";
         $message .= "Go to the batch page:\n";
-        $message .= "http://{$_SERVER['SERVER_NAME']}{$FANNIE_URL}batches/newbatch/\n";
+        $url = $conf->get('URL');
+        $message .= "http://{$_SERVER['SERVER_NAME']}{$url}batches/newbatch/\n";
         $message .= "\n";
         $username = \FannieAuth::checkLogin();
         if (!$username) {
@@ -192,8 +194,8 @@ class AuditLib
     */
     public static function getAddresses($dept)
     {
-        global $FANNIE_OP_DB;
-        $dbc = \FannieDB::get($FANNIE_OP_DB);
+        $conf = \FannieConfig::factory();
+        $dbc = \FannieDB::get($conf->get('OP_DB'));
         
         $query = 'SELECT superID from superdepts WHERE dept_ID=? GROUP BY superID';
         $prep = $dbc->prepare($query);

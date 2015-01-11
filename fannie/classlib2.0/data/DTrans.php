@@ -213,11 +213,11 @@ class DTrans
     */
     public static function joinProducts($dlog_alias='t', $product_alias='p', $join_type='left')
     {
-        global $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
+        $conf = FannieConfig::factory();
         $table = 'products';
-        if (isset($FANNIE_OP_DB) && !empty($FANNIE_OP_DB)) {
-            $table = $FANNIE_OP_DB;
-            $table .= ($FANNIE_SERVER_DBMS == 'mssql') ? '.dbo.' : '.';
+        if ($conf->get('OP_DB') != '') {
+            $table = $conf->get('OP_DB');
+            $table .= ($conf->get('SERVER_DBMS') == 'mssql') ? '.dbo.' : '.';
             $table .= 'products';
         }
 
@@ -247,11 +247,11 @@ class DTrans
     */
     public static function joinDepartments($dlog_alias='t', $dept_alias='d')
     {
-        global $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
+        $conf = FannieConfig::factory();
         $table = 'departments';
-        if (isset($FANNIE_OP_DB) && !empty($FANNIE_OP_DB)) {
-            $table = $FANNIE_OP_DB;
-            $table .= ($FANNIE_SERVER_DBMS == 'mssql') ? '.dbo.' : '.';
+        if ($conf->get('OP_DB') != '') {
+            $table = $conf->get('OP_DB');
+            $table .= ($conf->get('SERVER_DBMS') == 'mssql') ? '.dbo.' : '.';
             $table .= 'departments';
         }
 
@@ -267,11 +267,11 @@ class DTrans
     */
     public static function joinCustdata($dlog_alias='t', $cust_alias='c')
     {
-        global $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
+        $conf = FannieConfig::factory();
         $table = 'custdata';
-        if (isset($FANNIE_OP_DB) && !empty($FANNIE_OP_DB)) {
-            $table = $FANNIE_OP_DB;
-            $table .= ($FANNIE_SERVER_DBMS == 'mssql') ? '.dbo.' : '.';
+        if ($conf->get('OP_DB') != '') {
+            $table = $conf->get('OP_DB');
+            $table .= ($conf->get('SERVER_DBMS') == 'mssql') ? '.dbo.' : '.';
             $table .= 'custdata';
         }
 
@@ -288,11 +288,11 @@ class DTrans
     */
     public static function joinTenders($dlog_alias='t', $tender_alias='n')
     {
-        global $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
+        $conf = FannieConfig::factory();
         $table = 'tenders';
-        if (isset($FANNIE_OP_DB) && !empty($FANNIE_OP_DB)) {
-            $table = $FANNIE_OP_DB;
-            $table .= ($FANNIE_SERVER_DBMS == 'mssql') ? '.dbo.' : '.';
+        if ($conf->get('OP_DB') != '') {
+            $table = $conf->get('OP_DB');
+            $table .= ($conf->get('SERVER_DBMS') == 'mssql') ? '.dbo.' : '.';
             $table .= 'tenders';
         }
 

@@ -129,12 +129,22 @@ class BasicModel
     protected $cached_definition = false;
 
     /**
+      Configuration object
+    */
+    protected $config;
+
+    /**
       Name of preferred database
     */
     protected $preferred_db = '';
     public function preferredDB()
     {
         return $this->preferred_db;
+    }
+
+    public function setConfig($c)
+    {
+        $this->config = $c;
     }
 
     /** check for potential changes **/
@@ -172,6 +182,8 @@ class BasicModel
         }
         // fq name not working right now...
         $this->fq_name = $this->name;
+
+        $this->config = FannieConfig::factory();
     }
 
     /**
@@ -706,7 +718,6 @@ class BasicModel
 
     public function pushToLanes()
     {
-        global $FANNIE_LANES;
         // load complete record
         if (!$this->load()) {
             return false;
@@ -714,7 +725,7 @@ class BasicModel
 
         $current = $this->connection;
         // save to each lane
-        foreach($FANNIE_LANES as $lane) {
+        foreach ($this->config->get('LANES', array()) as $lane) {
             $sql = new SQLManager($lane['host'],$lane['type'],$lane['op'],
                         $lane['user'],$lane['pw']);    
             if (!is_object($sql) || $sql->connections[$lane['op']] === false) {
@@ -730,7 +741,6 @@ class BasicModel
 
     public function deleteFromLanes()
     {
-        global $FANNIE_LANES;
         // load complete record
         if (!$this->load()) {
             return false;
@@ -738,7 +748,7 @@ class BasicModel
 
         $current = $this->connection;
         // save to each lane
-        foreach($FANNIE_LANES as $lane) {
+        foreach ($this->config->get('LANES', array()) as $lane) {
             $sql = new SQLManager($lane['host'],$lane['type'],$lane['op'],
                         $lane['user'],$lane['pw']);    
             if (!is_object($sql) || $sql->connections[$lane['op']] === false) {
@@ -754,13 +764,11 @@ class BasicModel
 
     protected function normalizeLanes($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=False)
     {
-        global $FANNIE_LANES, $FANNIE_OP_DB, $FANNIE_TRANS_DB;
-
         // map server db name to lane db name
         $lane_db = false;
-        if ($db_name == $FANNIE_OP_DB) {
+        if ($db_name == $this->config->get('OP_DB')) {
             $lane_db = 'op';
-        } else if ($db_name == $FANNIE_TRANS_DB) {
+        } else if ($db_name == $this->config->get('TRANS_DB')) {
             $lane_db = 'trans';
         }
 
@@ -773,7 +781,7 @@ class BasicModel
         $current = $this->connection;
         $save_fq = $this->fq_name;
         // call normalize() on each lane
-        foreach($FANNIE_LANES as $lane) {
+        foreach ($this->config->get('LANES', array()) as $lane) {
             $sql = new SQLManager($lane['host'],$lane['type'],$lane[$lane_db],
                         $lane['user'],$lane['pw']);    
             if (!is_object($sql) || $sql->connections[$lane[$lane_db]] === false) {
@@ -1380,12 +1388,10 @@ class $name extends " . ($as_view ? 'ViewModel' : 'BasicModel') . "\n");
 
 if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
 
-    $obj = new BasicModel(null);
-
     /* Argument signatures, to php, where BasicModel.php is the first:
-   * 2 args: Generate Accessor Functions: php BasicModel.php <Subclass Filename>\n";
-   * 3 args: Create new Model: php BasicModel.php --new <Model Name>\n";
-   * 4 args: Update Table Structure: php BasicModel.php --update <Database name> <Subclass Filename[[Model].php]>\n";
+     * 2 args: Generate Accessor Functions: php BasicModel.php <Subclass Filename>\n";
+     * 3 args: Create new Model: php BasicModel.php --new <Model Name>\n";
+     * 4 args: Update Table Structure: php BasicModel.php --update <Database name> <Subclass Filename[[Model].php]>\n";
     */
     if (($argc < 2 || $argc > 4) || ($argc == 3 && $argv[1] != "--new" && $argv[1] != '--new-view') || ($argc == 4 && $argv[1] != '--update')) {
         echo "Generate Accessor Functions: php BasicModel.php <Subclass Filename>\n";
@@ -1397,6 +1403,8 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
 
     include(dirname(__FILE__).'/../../../config.php');
     include_once(dirname(__FILE__).'/../../FannieAPI.php');
+
+    $obj = new BasicModel(null);
 
     // Create new Model
     if ($argc == 3) {
