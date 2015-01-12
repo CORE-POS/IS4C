@@ -79,5 +79,14 @@ class CoreLocal
 
         return self::$storage_object->isImmutable($key);
     }
+
+    public static function iteratorKeys()
+    {
+        if (self::$storage_object === null) {
+            self::init();
+        }
+
+        return self::$storage_object->iteratorKeys();
+    }
 }
 
