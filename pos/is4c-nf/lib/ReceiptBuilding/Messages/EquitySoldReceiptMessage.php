@@ -30,8 +30,8 @@ class EquitySoldReceiptMessage extends ReceiptMessage {
 		return "SUM(CASE WHEN department=991 THEN total ELSE 0 END)";
 	}
 
-	public function message($val, $ref, $reprint=False){
-		global $CORE_LOCAL;
+	public function message($val, $ref, $reprint=False)
+    {
 		if ($val <= 0) return '';
 
 		$slip = ReceiptLib::centerString("................................................")."\n\n";
@@ -42,7 +42,7 @@ class EquitySoldReceiptMessage extends ReceiptMessage {
 		$slip .= "Please retain receipt for your records\n\n";
 		$slip .= ReceiptLib::centerString("................................................")."\n\n";
 
-		$CORE_LOCAL->set("equityNoticeAmt",$val);
+		CoreLocal::set("equityNoticeAmt",$val);
 
 		return $slip;
 	}

@@ -28,10 +28,9 @@ class rplist extends NoInputPage
 
     function preprocess()
     {
-        global $CORE_LOCAL;
         if (isset($_REQUEST['selectlist'])) {
             if (!empty($_REQUEST['selectlist'])) {
-                $print_class = $CORE_LOCAL->get('ReceiptDriver');
+                $print_class = CoreLocal::get('ReceiptDriver');
                 if ($print_class === '' || !class_exists($print_class)) {
                     $print_class = 'ESCPOSPrintHandler';
                 }
@@ -70,12 +69,11 @@ class rplist extends NoInputPage
     
     function body_content()
     {
-        global $CORE_LOCAL;
         $db = Database::tDataConnect();
         $query = "select register_no, emp_no, trans_no, "
             ."sum((case when trans_type = 'T' then -1 * total else 0 end)) as total "
-            ."FROM localtranstoday WHERE register_no = " . $CORE_LOCAL->get("laneno")
-            ." AND emp_no = " . $CORE_LOCAL->get("CashierNo")
+            ."FROM localtranstoday WHERE register_no = " . CoreLocal::get("laneno")
+            ." AND emp_no = " . CoreLocal::get("CashierNo")
             ." AND datetime >= " . $db->curdate()
             ." GROUP BY register_no, emp_no, trans_no ORDER BY trans_no DESC";
     

@@ -25,10 +25,10 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class giftcardlist extends NoInputPage {
 
-	function preprocess(){
-		global $CORE_LOCAL;
+	function preprocess()
+    {
 		if (isset($_REQUEST["selectlist"])){
-			$CORE_LOCAL->set("prefix",$_REQUEST["selectlist"]);
+			CoreLocal::set("prefix",$_REQUEST["selectlist"]);
 			$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;
 		}
@@ -43,8 +43,8 @@ class giftcardlist extends NoInputPage {
 		$this->add_onload_command("\$('#selectlist').focus();\n");
 	} // END head() FUNCTION
 
-	function body_content() {
-		global $CORE_LOCAL;
+	function body_content() 
+    {
 		?>
 		<div class="baseHeight">
 		<div class="centeredDisplay colored">

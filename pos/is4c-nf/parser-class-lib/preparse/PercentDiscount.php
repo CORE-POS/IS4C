@@ -27,12 +27,11 @@ class PercentDiscount extends PreParser
    
     function check($str)
     {
-      global $CORE_LOCAL;
       if (strstr($str,"DI")) {
          $split = explode("DI",$str);
          if (is_numeric($split[0])){
             $this->remainder = $split[1];
-            $CORE_LOCAL->set("itemPD",(int)$split[0]);
+            CoreLocal::set("itemPD",(int)$split[0]);
 
             return true;
          }
@@ -40,7 +39,7 @@ class PercentDiscount extends PreParser
          $split = explode("PD",$str);   
          if (is_numeric($split[0]) && strlen($split[1]) > 0){
             $this->remainder = $split[1];
-            $CORE_LOCAL->set("itemPD",(int)$split[0]);
+            CoreLocal::set("itemPD",(int)$split[0]);
 
             return true;
          }

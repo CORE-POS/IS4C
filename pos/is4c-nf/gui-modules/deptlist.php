@@ -28,9 +28,8 @@ class deptlist extends NoInputPage {
 	/**
 	  Input processing function
 	*/
-	function preprocess(){
-		global $CORE_LOCAL;
-
+	function preprocess()
+    {
 		// a selection was made
 		if (isset($_REQUEST['search'])){
 			$entered = strtoupper($_REQUEST['search']);
@@ -40,7 +39,7 @@ class deptlist extends NoInputPage {
 				// javascript causes this input if the
 				// user presses CL{enter}
 				// Redirect to main screen
-				$CORE_LOCAL->set("departmentAmount","0");	
+				CoreLocal::set("departmentAmount","0");	
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
@@ -49,12 +48,12 @@ class deptlist extends NoInputPage {
 				// built department input string and set it
 				// to be the next POS entry
 				// Redirect to main screen
-				$input = $CORE_LOCAL->get("departmentAmount")."DP".$entered."0";
-				$qty = $CORE_LOCAL->get("quantity");
+				$input = CoreLocal::get("departmentAmount")."DP".$entered."0";
+				$qty = CoreLocal::get("quantity");
 				if ($qty != "" & $qty != 1 & $qty != 0)
 					$input = $qty."*".$input;
-				$CORE_LOCAL->set("msgrepeat",1);
-				$CORE_LOCAL->set("strRemembered",$input);
+				CoreLocal::set("msgrepeat",1);
+				CoreLocal::set("strRemembered",$input);
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
@@ -77,8 +76,8 @@ class deptlist extends NoInputPage {
 	  Build a <select> form that submits
 	  back to this script
 	*/
-	function body_content(){
-		global $CORE_LOCAL;
+	function body_content()
+    {
 		$db = Database::pDataConnect();
 		$q = "SELECT dept_no,dept_name FROM departments ORDER BY dept_name";
 		$r = $db->query($q);

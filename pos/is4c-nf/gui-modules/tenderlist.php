@@ -28,9 +28,8 @@ class tenderlist extends NoInputPage {
 	/**
 	  Input processing function
 	*/
-	function preprocess(){
-		global $CORE_LOCAL;
-
+	function preprocess()
+    {
 		// a selection was made
 		if (isset($_REQUEST['search'])){
 			$entered = strtoupper($_REQUEST['search']);
@@ -40,7 +39,7 @@ class tenderlist extends NoInputPage {
 				// javascript causes this input if the
 				// user presses CL{enter}
 				// Redirect to main screen
-				$CORE_LOCAL->set("tenderTotal","0");	
+				CoreLocal::set("tenderTotal","0");	
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
@@ -49,9 +48,9 @@ class tenderlist extends NoInputPage {
 				// built department input string and set it
 				// to be the next POS entry
 				// Redirect to main screen
-				$input = $CORE_LOCAL->get("tenderTotal").$entered;
-				$CORE_LOCAL->set("msgrepeat",1);
-				$CORE_LOCAL->set("strRemembered",$input);
+				$input = CoreLocal::get("tenderTotal").$entered;
+				CoreLocal::set("msgrepeat",1);
+				CoreLocal::set("strRemembered",$input);
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
@@ -73,8 +72,8 @@ class tenderlist extends NoInputPage {
 	  Build a <select> form that submits
 	  back to this script
 	*/
-	function body_content(){
-		global $CORE_LOCAL;
+	function body_content()
+    {
 		$db = Database::pDataConnect();
 		$q = "SELECT TenderCode,TenderName FROM tenders 
 			WHERE MaxAmount > 0
@@ -99,11 +98,11 @@ class tenderlist extends NoInputPage {
 			."</form>"
 			."</div>"
 			."<div class=\"listboxText coloredText centerOffset\">";
-		if ($CORE_LOCAL->get("tenderTotal") >= 0)
+		if (CoreLocal::get("tenderTotal") >= 0)
 			echo _("tendering").' $';
 		else
 			echo _("refunding").' $';
-		printf('%.2f',abs($CORE_LOCAL->get("tenderTotal"))/100);
+		printf('%.2f',abs(CoreLocal::get("tenderTotal"))/100);
 		echo '<br />';
 		echo _("clear to cancel")."</div>"
 			."<div class=\"clear\"></div>";

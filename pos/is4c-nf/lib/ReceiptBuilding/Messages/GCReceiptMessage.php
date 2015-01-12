@@ -39,8 +39,7 @@ class GCReceiptMessage extends ReceiptMessage
 
     protected function varied_message($ref, $reprint=false, $sigSlip=false)
     {
-        global $CORE_LOCAL;
-        if ($CORE_LOCAL->get('autoReprint') == 1) {
+        if (CoreLocal::get('autoReprint') == 1) {
             $sigSlip = true;
         }
         $date = ReceiptLib::build_time(time());
@@ -81,8 +80,8 @@ class GCReceiptMessage extends ReceiptMessage
         while($row = $db->fetch_row($result)){
             $slip .= ReceiptLib::centerString("................................................")."\n";
             // store header
-            for ($i=1; $i<= $CORE_LOCAL->get('chargeSlipCount'); $i++) {
-                $slip .= ReceiptLib::centerString($CORE_LOCAL->get("chargeSlip" . $i))."\n";
+            for ($i=1; $i<= CoreLocal::get('chargeSlipCount'); $i++) {
+                $slip .= ReceiptLib::centerString(CoreLocal::get("chargeSlip" . $i))."\n";
             }
             $slip .= "\n";
             $col1 = array();

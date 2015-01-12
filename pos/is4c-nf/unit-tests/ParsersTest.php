@@ -10,7 +10,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 	/**
 	  Check methods for getting available PreParser and Parser modules
 	*/
-	public function testStatics(){
+	public function testStatics()
+    {
 		$chain = PreParser::get_preparse_chain();
 		$this->assertInternalType('array',$chain);
 		$this->assertNotEmpty($chain);
@@ -28,20 +29,19 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 		}
 	}
 
-	public function testPreParsers(){
-		global $CORE_LOCAL;
-
+	public function testPreParsers()
+    {
 		/* set any needed session variables */
-		$CORE_LOCAL->set('runningTotal',1.99);
-		$CORE_LOCAL->set('mfcoupon',0);
-		$CORE_LOCAL->set('itemPD',0);
-		$CORE_LOCAL->set('multiple',0);
-		$CORE_LOCAL->set('quantity',0);
-		$CORE_LOCAL->set('refund',0);
-		$CORE_LOCAL->set('toggletax',0);
-		$CORE_LOCAL->set('togglefoodstamp',0);
-		$CORE_LOCAL->set('toggleDiscountable',0);
-		$CORE_LOCAL->set('nd',0);
+		CoreLocal::set('runningTotal',1.99);
+		CoreLocal::set('mfcoupon',0);
+		CoreLocal::set('itemPD',0);
+		CoreLocal::set('multiple',0);
+		CoreLocal::set('quantity',0);
+		CoreLocal::set('refund',0);
+		CoreLocal::set('toggletax',0);
+		CoreLocal::set('togglefoodstamp',0);
+		CoreLocal::set('toggleDiscountable',0);
+		CoreLocal::set('nd',0);
 	
 		/* inputs and expected outputs */
 		$input_output = array(
@@ -74,19 +74,17 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 		}
 
 		/* verify correct session values */
-		$this->assertEquals(7, $CORE_LOCAL->get('itemPD'));
-		$this->assertEquals(1, $CORE_LOCAL->get('multiple'));
-		$this->assertEquals(3, $CORE_LOCAL->get('quantity'));
-		$this->assertEquals(1, $CORE_LOCAL->get('refund'));
-		$this->assertEquals(1, $CORE_LOCAL->get('toggletax'));
-		$this->assertEquals(1, $CORE_LOCAL->get('togglefoodstamp'));
-		$this->assertEquals(1, $CORE_LOCAL->get('toggleDiscountable'));
+		$this->assertEquals(7, CoreLocal::get('itemPD'));
+		$this->assertEquals(1, CoreLocal::get('multiple'));
+		$this->assertEquals(3, CoreLocal::get('quantity'));
+		$this->assertEquals(1, CoreLocal::get('refund'));
+		$this->assertEquals(1, CoreLocal::get('toggletax'));
+		$this->assertEquals(1, CoreLocal::get('togglefoodstamp'));
+		$this->assertEquals(1, CoreLocal::get('toggleDiscountable'));
 	}
 
 	function testParsers()
     {
-		global $CORE_LOCAL;
-
 		/* inputs and expected outputs */
 		$input_output = array(
         'WillNotMatchAnythingEver' => array(),
@@ -110,16 +108,15 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testItemsEntry()
     {
-        global $CORE_LOCAL;
-		$CORE_LOCAL->set('mfcoupon',0);
-		$CORE_LOCAL->set('itemPD',0);
-		$CORE_LOCAL->set('multiple',0);
-		$CORE_LOCAL->set('quantity',0);
-		$CORE_LOCAL->set('refund',0);
-		$CORE_LOCAL->set('toggletax',0);
-		$CORE_LOCAL->set('togglefoodstamp',0);
-		$CORE_LOCAL->set('toggleDiscountable',0);
-		$CORE_LOCAL->set('nd',0);
+		CoreLocal::set('mfcoupon',0);
+		CoreLocal::set('itemPD',0);
+		CoreLocal::set('multiple',0);
+		CoreLocal::set('quantity',0);
+		CoreLocal::set('refund',0);
+		CoreLocal::set('toggletax',0);
+		CoreLocal::set('togglefoodstamp',0);
+		CoreLocal::set('toggleDiscountable',0);
+		CoreLocal::set('nd',0);
 
         // test regular price item
         lttLib::clear();
@@ -139,7 +136,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['regPrice'] = 0.05;
         $record['ItemQtty'] = 1;
         lttLib::verifyRecord(1, $record, $this);
-        $CORE_LOCAL->set('currentid', 1);
+        CoreLocal::set('currentid', 1);
         $v = new Void();
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
@@ -153,8 +150,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
         // test quantity multiplier
         lttLib::clear();
-        $CORE_LOCAL->set('quantity', 2);
-        $CORE_LOCAL->set('multiple', 1);
+        CoreLocal::set('quantity', 2);
+        CoreLocal::set('multiple', 1);
         $u = new UPC();
         $this->assertEquals(true, $u->check('666'));
         $json = $u->parse('666');
@@ -171,7 +168,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['regPrice'] = 0.05;
         $record['ItemQtty'] = 2;
         lttLib::verifyRecord(1, $record, $this);
-        $CORE_LOCAL->set('currentid', 1);
+        CoreLocal::set('currentid', 1);
         $v = new Void();
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
@@ -185,10 +182,10 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
         // test refund
         lttLib::clear();
-        $CORE_LOCAL->set('quantity', 0);
-        $CORE_LOCAL->set('multiple', 0);
-        $CORE_LOCAL->set('refund', 1);
-        $CORE_LOCAL->set('refundComment', 'TEST REFUND');
+        CoreLocal::set('quantity', 0);
+        CoreLocal::set('multiple', 0);
+        CoreLocal::set('refund', 1);
+        CoreLocal::set('refundComment', 'TEST REFUND');
         $u = new UPC();
         $this->assertEquals(true, $u->check('666'));
         $json = $u->parse('666');
@@ -206,7 +203,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['regPrice'] = 0.05;
         $record['ItemQtty'] = 1;
         lttLib::verifyRecord(1, $record, $this);
-        $CORE_LOCAL->set('currentid', 1);
+        CoreLocal::set('currentid', 1);
         $v = new Void();
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
@@ -220,8 +217,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
         // test sale item
         lttLib::clear();
-        $CORE_LOCAL->set('refund', 0);
-        $CORE_LOCAL->set('refundComment', '');
+        CoreLocal::set('refund', 0);
+        CoreLocal::set('refundComment', '');
         $u = new UPC();
         $this->assertEquals(true, $u->check('4627'));
         $json = $u->parse('4627');
@@ -250,7 +247,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $drecord['trans_status'] = 'D';
         $drecord['voided'] = 2;
         lttLib::verifyRecord(2, $drecord, $this);
-        $CORE_LOCAL->set('currentid', 1);
+        CoreLocal::set('currentid', 1);
         $v = new Void();
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
@@ -265,7 +262,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
         // test member sale
         lttLib::clear();
-        $CORE_LOCAL->set('isMember', 1);
+        CoreLocal::set('isMember', 1);
         $u = new UPC();
         $this->assertEquals(true, $u->check('0003049488122'));
         $json = $u->parse('0003049488122');
@@ -293,7 +290,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $drecord['trans_status'] = 'D';
         $drecord['voided'] = 2;
         lttLib::verifyRecord(2, $drecord, $this);
-        $CORE_LOCAL->set('currentid', 1);
+        CoreLocal::set('currentid', 1);
         $v = new Void();
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
@@ -308,7 +305,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
         // test member sale as non-member
         lttLib::clear();
-        $CORE_LOCAL->set('isMember', 0);
+        CoreLocal::set('isMember', 0);
         $u = new UPC();
         $this->assertEquals(true, $u->check('0003049488122'));
         $json = $u->parse('0003049488122');
@@ -329,7 +326,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['memDiscount'] = 0.66;
         $record['ItemQtty'] = 1;
         lttLib::verifyRecord(1, $record, $this);
-        $CORE_LOCAL->set('currentid', 1);
+        CoreLocal::set('currentid', 1);
         $v = new Void();
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
@@ -345,7 +342,6 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testOpenRings()
     {
-        global $CORE_LOCAL;
         lttLib::clear();
         $d = new DeptKey();
         $this->assertEquals(true, $d->check('100DP10'));
@@ -363,7 +359,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['regPrice'] = 1.00;
         $record['ItemQtty'] = 1;
         lttLib::verifyRecord(1, $record, $this);
-        $CORE_LOCAL->set('currentid', 1);
+        CoreLocal::set('currentid', 1);
         $v = new Void();
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
@@ -376,8 +372,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         lttLib::verifyRecord(2, $record, $this);
 
         lttLib::clear();
-        $CORE_LOCAL->set('refund', 1);
-        $CORE_LOCAL->set('refundComment', 'TEST REFUND');
+        CoreLocal::set('refund', 1);
+        CoreLocal::set('refundComment', 'TEST REFUND');
         $d = new DeptKey();
         $this->assertEquals(true, $d->check('100DP10'));
         $json = $d->parse('100DP10');
@@ -395,7 +391,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['regPrice'] = 1.00;
         $record['ItemQtty'] = 1;
         lttLib::verifyRecord(1, $record, $this);
-        $CORE_LOCAL->set('currentid', 1);
+        CoreLocal::set('currentid', 1);
         $v = new Void();
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');

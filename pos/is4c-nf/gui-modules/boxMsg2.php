@@ -63,30 +63,30 @@ class boxMsg2 extends BasicPage {
         $this->noscan_parsewrapper_js();
 	}
 
-	function preprocess(){
-		global $CORE_LOCAL;
+	function preprocess()
+    {
 		/**
 		  Bounce through this page and back to pos2.php. This lets
 		  TenderModules use the msgrepeat feature during input parsing.
 		*/
 		if (isset($_REQUEST['autoconfirm'])){
-			$CORE_LOCAL->set('strRemembered', $CORE_LOCAL->get('strEntered'));
-			$CORE_LOCAL->set('msgrepeat', 1);
+			CoreLocal::set('strRemembered', CoreLocal::get('strEntered'));
+			CoreLocal::set('msgrepeat', 1);
 			$this->change_page(MiscLib::base_url().'gui-modules/pos2.php');
 			return False;
 		}
 		return True;
 	}
 
-	function body_content(){
-		global $CORE_LOCAL;
+	function body_content()
+    {
 		$this->input_header("onsubmit=\"return submitWrapper();\"");
 		?>
 		<div class="baseHeight">
 
 		<?php
-        $buttons = is_array($CORE_LOCAL->get('boxMsgButtons')) ? $CORE_LOCAL->get('boxMsgButtons') : array();
-		echo DisplayLib::boxMsg($CORE_LOCAL->get("boxMsg"), "", true, $buttons);
+        $buttons = is_array(CoreLocal::get('boxMsgButtons')) ? CoreLocal::get('boxMsgButtons') : array();
+		echo DisplayLib::boxMsg(CoreLocal::get("boxMsg"), "", true, $buttons);
 		echo "</div>";
 		echo "<div id=\"footer\">";
 		echo DisplayLib::printfooter();
@@ -103,11 +103,11 @@ class boxMsg2 extends BasicPage {
           in the background and alter the value of strEntered
         */
         echo '<input type="hidden" id="repeat-cmd" value="'
-            . $CORE_LOCAL->get('strEntered') . '" />';
+            . CoreLocal::get('strEntered') . '" />';
 		
-		$CORE_LOCAL->set("boxMsg",'');
-		$CORE_LOCAL->set("boxMsgButtons", array());
-		$CORE_LOCAL->set("msgrepeat",2);
+		CoreLocal::set("boxMsg",'');
+		CoreLocal::set("boxMsgButtons", array());
+		CoreLocal::set("msgrepeat",2);
 		if (!isset($_REQUEST['quiet']))
 			MiscLib::errorBeep();
 	} // END body_content() FUNCTION

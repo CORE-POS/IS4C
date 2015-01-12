@@ -33,8 +33,6 @@ class PrehLib extends LibraryClass
 */
 static public function clearMember()
 {
-	global $CORE_LOCAL;
-
 	CoreState::memberReset();
 	$db = Database::tDataConnect();
 	$db->query("UPDATE localtemptrans SET card_no=0,percentDiscount=NULL");
@@ -58,8 +56,6 @@ static public function clearMember()
 */
 static public function memberID($member_number) 
 {
-	global $CORE_LOCAL;
-
 	$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
 		ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
 		SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
@@ -140,8 +136,6 @@ static public function requestInfoCallback($info)
 */
 static public function setAltMemMsg($store, $member, $personNumber, $row, $chargeOk) 
 {
-	global $CORE_LOCAL;
-
     if ($store == 'WEFC_Toronto') {
         if ($chargeOk == 1) {
             if (isset($row['blueLine'])) {
@@ -208,8 +202,6 @@ static public function setAltMemMsg($store, $member, $personNumber, $row, $charg
 */
 static public function setMember($member, $personNumber, $row) 
 {
-	global $CORE_LOCAL;
-
 	$conn = Database::pDataConnect();
 
     $memMsg = '#'.$member;
@@ -319,8 +311,6 @@ static public function setMember($member, $personNumber, $row)
 */
 static public function checkUnpaidAR($cardno)
 {
-	global $CORE_LOCAL;
-
 	// only attempt if server is available
 	// and not the default non-member
 	if ($cardno == CoreLocal::get("defaultNonMem")) return false;
@@ -376,8 +366,6 @@ static public function check_unpaid_ar($cardno)
 */
 static public function checkstatus($num) 
 {
-	global $CORE_LOCAL;
-
 	$ret = array(
 		'voided' => 0,
 		'scaleprice' => 0,
@@ -440,7 +428,6 @@ static public function checkstatus($num)
 */
 static public function tender($right, $strl)
 {
-	global $CORE_LOCAL;
 	$ret = array('main_frame'=>false,
 		'redraw_footer'=>false,
 		'target'=>'.baseHeight',
@@ -558,8 +545,6 @@ static public function tender($right, $strl)
 */
 static public function deptkey($price, $dept,$ret=array()) 
 {
-	global $CORE_LOCAL;
-
 	$intvoided = 0;
 
 	if (CoreLocal::get("quantity") == 0 && CoreLocal::get("multiple") == 0) {
@@ -842,8 +827,6 @@ static public function deptkey($price, $dept,$ret=array())
 */
 static public function ttl() 
 {
-	global $CORE_LOCAL;
-
 	if (CoreLocal::get("memberID") == "0") {
 		return MiscLib::base_url()."gui-modules/memlist.php";
 	} else {
@@ -1007,8 +990,6 @@ static public function ttl()
 */
 static public function omtr_ttl() 
 {
-	global $CORE_LOCAL;
-
 	// Must have gotten member number before totaling.
 	if (CoreLocal::get("memberID") == "0") {
 		return MiscLib::base_url()."gui-modules/memlist.php";
@@ -1140,7 +1121,6 @@ static public function omtr_ttl()
 */
 static public function wicableTotal()
 {
-    global $CORE_LOCAL;
     $db = Database::tDataConnect();
     $products = CoreLocal::get('pDatabase') . $db->sep() . 'products';
 
@@ -1193,7 +1173,6 @@ static public function peekItem($full_record=false)
 */
 static public function finalttl() 
 {
-	global $CORE_LOCAL;
 	if (CoreLocal::get("percentDiscount") > 0) {
         TransRecord::addRecord(array(
             'description' => 'Discount',
@@ -1240,7 +1219,6 @@ static public function finalttl()
 */
 static public function fsEligible() 
 {
-	global $CORE_LOCAL;
 	Database::getsubtotals();
 	if (CoreLocal::get("fsEligible") < 0 && False) {
 		CoreLocal::set("boxMsg","Foodstamp eligible amount inapplicable<P>Please void out earlier tender and apply foodstamp first");
@@ -1312,13 +1290,11 @@ static public function percentDiscount($strl,$json=array())
    1 - Yes
    0 - No
 
-  Sets current balance in $CORE_LOCAL as "balance".
-  Sets available balance in $CORE_LOCAL as "availBal".
+  Sets current balance in session as "balance".
+  Sets available balance in session as "availBal".
 */
 static public function chargeOk() 
 {
-	global $CORE_LOCAL;
-
 	$conn = Database::pDataConnect();
 	$query = "SELECT c.ChargeLimit - c.Balance AS availBal,
         c.Balance, c.ChargeOk

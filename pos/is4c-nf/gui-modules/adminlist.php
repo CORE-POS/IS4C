@@ -26,10 +26,9 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 class adminlist extends NoInputPage {
 
 	private $security;
-	function preprocess(){
-		global $CORE_LOCAL;
-
-		$me = $CORE_LOCAL->get('CashierNo');	
+	function preprocess()
+    {
+		$me = CoreLocal::get('CashierNo');	
 		$this->security = 0;
 		$db = Database::pDataConnect();
 		$chk = $db->prepare_statement('SELECT frontendsecurity FROM employees WHERE emp_no=?');
@@ -49,8 +48,8 @@ class adminlist extends NoInputPage {
 			}
 			elseif ($_REQUEST['selectlist'] == 'SUSPEND'){
 				Database::getsubtotals();
-				if ($CORE_LOCAL->get("LastID") == 0) {
-					$CORE_LOCAL->set("boxMsg",_("no transaction in progress"));
+				if (CoreLocal::get("LastID") == 0) {
+					CoreLocal::set("boxMsg",_("no transaction in progress"));
 					$this->change_page($this->page_url."gui-modules/boxMsg2.php");
 					return False;
 				}
@@ -86,13 +85,13 @@ class adminlist extends NoInputPage {
 			}
 			else if ($_REQUEST['selectlist'] == 'RESUME'){
 				Database::getsubtotals();
-				if ($CORE_LOCAL->get("LastID") != 0) {
-					$CORE_LOCAL->set("boxMsg",_("transaction in progress"));
+				if (CoreLocal::get("LastID") != 0) {
+					CoreLocal::set("boxMsg",_("transaction in progress"));
 					$this->change_page($this->page_url."gui-modules/boxMsg2.php");
 				}
 				elseif (SuspendLib::checksuspended() == 0) {
-					$CORE_LOCAL->set("boxMsg",_("no suspended transaction"));
-					$CORE_LOCAL->set("strRemembered","");
+					CoreLocal::set("boxMsg",_("no suspended transaction"));
+					CoreLocal::set("strRemembered","");
 					$this->change_page($this->page_url."gui-modules/boxMsg2.php");
 				}
 				else {
@@ -121,7 +120,6 @@ class adminlist extends NoInputPage {
 	} // END head() FUNCTION
 
 	function body_content() {
-		global $CORE_LOCAL;
 		?>
 		<div class="baseHeight">
 		<div class="centeredDisplay colored">
@@ -132,7 +130,7 @@ class adminlist extends NoInputPage {
 		<option value=''><?php echo _("Select a Task"); ?>
 		<option value='SUSPEND'>1. <?php echo _("Suspend Transaction"); ?>
 		<option value='RESUME'>2. <?php echo _("Resume Transaction"); ?>
-        <?php if ($CORE_LOCAL->get('SecurityTR') != 30 || $this->security >= 30) { ?>
+        <?php if (CoreLocal::get('SecurityTR') != 30 || $this->security >= 30) { ?>
             <option value='TR'>3. <?php echo _("Tender Report"); ?>
 		<?php } ?>
 		<?php if ($this->security >= 30){ ?>

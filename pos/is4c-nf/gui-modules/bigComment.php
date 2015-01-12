@@ -28,9 +28,8 @@ class bigComment extends NoInputPage {
 	/**
 	  Input processing function
 	*/
-	function preprocess(){
-		global $CORE_LOCAL;
-
+	function preprocess()
+    {
 		// a selection was made
 		if (isset($_REQUEST['comment'])){
 
@@ -66,8 +65,8 @@ class bigComment extends NoInputPage {
 	  Pretty standard javascript for
 	  catching CL typed in a select box
 	*/
-	function head_content(){
-		global $CORE_LOCAL;
+	function head_content()
+    {
 		?>
 		<script type="text/javascript" >
 		var prevKey = -1;
@@ -104,9 +103,8 @@ class bigComment extends NoInputPage {
 	  Build a <select> form that submits
 	  back to this script
 	*/
-	function body_content(){
-		global $CORE_LOCAL;
-
+	function body_content()
+    {
 		echo "<div class=\"baseHeight\">"
 			."<div class=\"listbox\">"
 			."<form name=\"selectform\" method=\"post\" action=\"{$_SERVER['PHP_SELF']}\""

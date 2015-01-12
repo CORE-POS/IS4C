@@ -36,9 +36,9 @@ class NoReceiptPreParse extends PreParser {
 		return False;
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
-		$CORE_LOCAL->set('receiptToggle', 0);
+	function parse($str)
+    {
+		CoreLocal::set('receiptToggle', 0);
 		return $this->remainder;
 	}
 

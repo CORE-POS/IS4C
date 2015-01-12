@@ -107,8 +107,8 @@ class requestInfo extends NoInputPage {
 		return True;
 	}
 
-	function body_content(){
-		global $CORE_LOCAL;
+	function body_content()
+    {
 		?>
 		<div class="baseHeight">
 		<div class="colored centeredDisplay">

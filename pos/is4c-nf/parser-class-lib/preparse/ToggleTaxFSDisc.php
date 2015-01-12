@@ -35,7 +35,6 @@ class ToggleTaxFSDisc extends PreParser
 	// should be enabled
 	function check($str)
     {
-		global $CORE_LOCAL;
         // ignore comments; they may have all sorts of
         // random character cominations
         if (substr($str, 0, 2) == "CM") {
@@ -73,15 +72,14 @@ class ToggleTaxFSDisc extends PreParser
 
 	function parse($str)
     {
-		global $CORE_LOCAL;
 		if ($this->tfd & $this->TAX) {
-			$CORE_LOCAL->set("toggletax",1);
+			CoreLocal::set("toggletax",1);
         }
 		if ($this->tfd & $this->FS) {
-			$CORE_LOCAL->set("togglefoodstamp",1);
+			CoreLocal::set("togglefoodstamp",1);
         }
 		if ($this->tfd & $this->DISC) {
-			$CORE_LOCAL->set("toggleDiscountable",1);
+			CoreLocal::set("toggleDiscountable",1);
         }
 
 		return $this->remainder;	
