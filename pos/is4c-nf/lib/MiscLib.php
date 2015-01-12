@@ -145,8 +145,7 @@ static public function win32()
 */
 static public function scaleObject()
 {
-	global $CORE_LOCAL;
-	$scaleDriver = $CORE_LOCAL->get("scaleDriver");
+	$scaleDriver = CoreLocal::get("scaleDriver");
 	$sd = 0;
 	if ($scaleDriver != ""){
 		$sd = new $scaleDriver();

@@ -37,8 +37,16 @@ $LOCAL_STORAGE_MECHANISM = 'SessionStorage';
 if (!class_exists($LOCAL_STORAGE_MECHANISM)) {
     include(realpath(dirname(__FILE__).'/'.$LOCAL_STORAGE_MECHANISM.".php"));
 }
+if (!class_exists('CoreLocal')) {
+    include(dirname(__FILE__) . '/CoreLocal.php');
+}
+if (!class_exists('WrappedStorage')) {
+    include(dirname(__FILE__) . '/WrappedStorage.php');
+}
+CoreLocal::setHandler($LOCAL_STORAGE_MECHANISM);
+CoreLocal::refresh();
 
-$CORE_LOCAL = new $LOCAL_STORAGE_MECHANISM();
+$CORE_LOCAL = new WrappedStorage();
 global $CORE_LOCAL;
 
 /**
@@ -50,4 +58,3 @@ if (file_exists(dirname(__FILE__).'/../../ini.php')) {
     include_once(realpath(dirname(__FILE__).'/../../ini.php'));
 }
 
-?>

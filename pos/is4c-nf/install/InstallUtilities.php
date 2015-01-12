@@ -303,7 +303,6 @@ class InstallUtilities extends LibraryClass
     */
     static public function loadSampleData($sql, $table, $quiet=false)
     {
-        global $CORE_LOCAL;
         $success = true; 
         $loaded = 0;
         ob_start();
@@ -334,7 +333,7 @@ class InstallUtilities extends LibraryClass
         } else if (file_exists(dirname(__FILE__) . "/data/$table.csv")) {
             echo "from data/$table.csv ";
             $LOCAL = 'LOCAL';
-            if ($CORE_LOCAL->get('localhost') == '127.0.0.1' || $CORE_LOCAL->get('localhost') == 'localhost') {
+            if (CoreLocal::get('localhost') == '127.0.0.1' || CoreLocal::get('localhost') == 'localhost') {
                 $LOCAL = '';
             }
             $path = realpath(dirname(__FILE__) . "/data/$table.csv");
@@ -904,10 +903,9 @@ class InstallUtilities extends LibraryClass
     */
     public static function createOpDBs($db, $name)
     {
-        global $CORE_LOCAL;
         $errors = array();
 
-        if ($CORE_LOCAL->get('laneno') == 0) {
+        if (CoreLocal::get('laneno') == 0) {
             $errors[] = array(
                 'struct' => 'No structures created for lane #0',
                 'query' => 'None',

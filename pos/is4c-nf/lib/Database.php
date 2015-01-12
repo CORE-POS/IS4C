@@ -52,22 +52,25 @@ static private $SQL_CONNECTION = null;
 */
 static public function tDataConnect()
 {
-    global $CORE_LOCAL;
-
     if (self::$SQL_CONNECTION === null){
         /**
           Add both local databases to the connection object
         */
-        self::$SQL_CONNECTION = new SQLManager($CORE_LOCAL->get("localhost"),$CORE_LOCAL->get("DBMS"),$CORE_LOCAL->get("tDatabase"),
-                      $CORE_LOCAL->get("localUser"),$CORE_LOCAL->get("localPass"),False);
-        self::$SQL_CONNECTION->db_types[$CORE_LOCAL->get('pDatabase')] = strtoupper($CORE_LOCAL->get('DBMS'));
-        self::$SQL_CONNECTION->connections[$CORE_LOCAL->get('pDatabase')] = self::$SQL_CONNECTION->connections[$CORE_LOCAL->get('tDatabase')];
+        self::$SQL_CONNECTION = new SQLManager(
+            CoreLocal::get("localhost"),
+            CoreLocal::get("DBMS"),
+            CoreLocal::get("tDatabase"),
+            CoreLocal::get("localUser"),
+            CoreLocal::get("localPass"),
+            false);
+        self::$SQL_CONNECTION->db_types[CoreLocal::get('pDatabase')] = strtoupper(CoreLocal::get('DBMS'));
+        self::$SQL_CONNECTION->connections[CoreLocal::get('pDatabase')] = self::$SQL_CONNECTION->connections[CoreLocal::get('tDatabase')];
     } else {
         /**
           Switch connection object to the requested database
         */
-        self::$SQL_CONNECTION->query('use '.$CORE_LOCAL->get('tDatabase'));
-        self::$SQL_CONNECTION->default_db = $CORE_LOCAL->get('tDatabase');
+        self::$SQL_CONNECTION->query('use ' . CoreLocal::get('tDatabase'));
+        self::$SQL_CONNECTION->default_db = CoreLocal::get('tDatabase');
     }    
 
     return self::$SQL_CONNECTION;
@@ -79,23 +82,26 @@ static public function tDataConnect()
 */
 static public function pDataConnect()
 {
-    global $CORE_LOCAL;
-
     if (self::$SQL_CONNECTION === null){
         /**
           Add both local databases to the connection object
         */
-        self::$SQL_CONNECTION = new SQLManager($CORE_LOCAL->get("localhost"),$CORE_LOCAL->get("DBMS"),$CORE_LOCAL->get("pDatabase"),
-                      $CORE_LOCAL->get("localUser"),$CORE_LOCAL->get("localPass"),False);
-        self::$SQL_CONNECTION->db_types[$CORE_LOCAL->get('tDatabase')] = strtoupper($CORE_LOCAL->get('DBMS'));
-        self::$SQL_CONNECTION->connections[$CORE_LOCAL->get('tDatabase')] = self::$SQL_CONNECTION->connections[$CORE_LOCAL->get('pDatabase')];
+        self::$SQL_CONNECTION = new SQLManager(
+            CoreLocal::get("localhost"),
+            CoreLocal::get("DBMS"),
+            CoreLocal::get("pDatabase"),
+            CoreLocal::get("localUser"),
+            CoreLocal::get("localPass"),
+            false);
+        self::$SQL_CONNECTION->db_types[CoreLocal::get('tDatabase')] = strtoupper(CoreLocal::get('DBMS'));
+        self::$SQL_CONNECTION->connections[CoreLocal::get('tDatabase')] = self::$SQL_CONNECTION->connections[CoreLocal::get('pDatabase')];
     } else {
         /**
           Switch connection object to the requested database
         */
-        self::$SQL_CONNECTION->query('use '.$CORE_LOCAL->get('pDatabase'));
-        self::$SQL_CONNECTION->default_db = $CORE_LOCAL->get('pDatabase');
-    }    
+        self::$SQL_CONNECTION->query('use '. CoreLocal::get('pDatabase'));
+        self::$SQL_CONNECTION->default_db = CoreLocal::get('pDatabase');
+    }
 
     return self::$SQL_CONNECTION;
 }
@@ -106,10 +112,8 @@ static public function pDataConnect()
 */
 static public function mDataConnect()
 {
-    global $CORE_LOCAL;
-
-    $sql = new SQLManager($CORE_LOCAL->get("mServer"),$CORE_LOCAL->get("mDBMS"),$CORE_LOCAL->get("mDatabase"),
-                  $CORE_LOCAL->get("mUser"),$CORE_LOCAL->get("mPass"),False);
+    $sql = new SQLManager(CoreLocal::get("mServer"),CoreLocal::get("mDBMS"),CoreLocal::get("mDatabase"),
+                  CoreLocal::get("mUser"),CoreLocal::get("mPass"),False);
 
     return $sql;
 }
@@ -119,13 +123,11 @@ static public function mDataConnect()
 // getsubtotals() updates the values held in our session variables.
 
 /**
-  Load values from subtotals view into $CORE_LOCAL.
+  Load values from subtotals view into session.
   Essentially refreshes totals in the session.
 */
 static public function getsubtotals() 
 {
-    global $CORE_LOCAL;
-
     $query = "SELECT * FROM subtotals";
     $connection = self::tDataConnect();
     $result = $connection->query($query);
@@ -133,52 +135,52 @@ static public function getsubtotals()
 
     // reset a few variables
     if (!$row || $row["LastID"] == 0) {
-        $CORE_LOCAL->set("ttlflag",0);
-        $CORE_LOCAL->set("fntlflag",0);
+        CoreLocal::set("ttlflag",0);
+        CoreLocal::set("fntlflag",0);
         self::setglobalflags(0);
     }
 
     // LastID => MAX(localtemptrans.trans_id) or zero table is empty
-    $CORE_LOCAL->set("LastID", (!$row || !isset($row['LastID'])) ? 0 : (double)$row["LastID"] );
+    CoreLocal::set("LastID", (!$row || !isset($row['LastID'])) ? 0 : (double)$row["LastID"] );
     // card_no => MAX(localtemptrans.card_no)
     $cn = (!$row || !isset($row['card_no'])) ? "0" : trim($row["card_no"]);
-    if ($cn != "0" || $CORE_LOCAL->get("memberID") == "") {
-        $CORE_LOCAL->set("memberID",$cn);
+    if ($cn != "0" || CoreLocal::get("memberID") == "") {
+        CoreLocal::set("memberID",$cn);
     }
     // runningTotal => SUM(localtemptrans.total)
-    $CORE_LOCAL->set("runningTotal", (!$row || !isset($row['runningTotal'])) ? 0 : (double)$row["runningTotal"] );
+    CoreLocal::set("runningTotal", (!$row || !isset($row['runningTotal'])) ? 0 : (double)$row["runningTotal"] );
     // complicated, but replaced by taxView & LineItemTaxes() method
-    $CORE_LOCAL->set("taxTotal", (!$row || !isset($row['taxTotal'])) ? 0 : (double)$row["taxTotal"] );
+    CoreLocal::set("taxTotal", (!$row || !isset($row['taxTotal'])) ? 0 : (double)$row["taxTotal"] );
     // discountTTL => SUM(localtemptrans.total) where discounttype=1
     // probably not necessary
-    $CORE_LOCAL->set("discounttotal", (!$row || !isset($row['discountTTL'])) ? 0 : (double)$row["discountTTL"] );
+    CoreLocal::set("discounttotal", (!$row || !isset($row['discountTTL'])) ? 0 : (double)$row["discountTTL"] );
     // tenderTotal => SUM(localtemptrans.total) where trans_type=T
-    $CORE_LOCAL->set("tenderTotal", (!$row || !isset($row['tenderTotal'])) ? 0 : (double)$row["tenderTotal"] );
+    CoreLocal::set("tenderTotal", (!$row || !isset($row['tenderTotal'])) ? 0 : (double)$row["tenderTotal"] );
     // memSpecial => SUM(localtemptrans.total) where discounttype=2,3
-    $CORE_LOCAL->set("memSpecial", (!$row || !isset($row['memSpecial'])) ? 0 : (double)$row["memSpecial"] );
+    CoreLocal::set("memSpecial", (!$row || !isset($row['memSpecial'])) ? 0 : (double)$row["memSpecial"] );
     // staffSpecial => SUM(localtemptrans.total) where discounttype=4
-    $CORE_LOCAL->set("staffSpecial", (!$row || !isset($row['staffSpecial'])) ? 0 : (double)$row["staffSpecial"] );
-    if ( $CORE_LOCAL->get("member_subtotal") !== False ) {
+    CoreLocal::set("staffSpecial", (!$row || !isset($row['staffSpecial'])) ? 0 : (double)$row["staffSpecial"] );
+    if ( CoreLocal::get("member_subtotal") !== False ) {
         // percentDiscount => MAX(localtemptrans.percentDiscount)
-        $CORE_LOCAL->set("percentDiscount", (!$row || !isset($row['percentDiscount'])) ? 0 : (double)$row["percentDiscount"] );
+        CoreLocal::set("percentDiscount", (!$row || !isset($row['percentDiscount'])) ? 0 : (double)$row["percentDiscount"] );
     }
     // transDiscount => lttsummary.discountableTTL * lttsummary.percentDiscount
-    $CORE_LOCAL->set("transDiscount", (!$row || !isset($row['transDiscount'])) ? 0 : (double)$row["transDiscount"] );
+    CoreLocal::set("transDiscount", (!$row || !isset($row['transDiscount'])) ? 0 : (double)$row["transDiscount"] );
     // complicated, but replaced by taxView & LineItemTaxes() method
-    $CORE_LOCAL->set("fsTaxExempt", (!$row || !isset($row['fsTaxExempt'])) ? 0 : (double)$row["fsTaxExempt"] );
+    CoreLocal::set("fsTaxExempt", (!$row || !isset($row['fsTaxExempt'])) ? 0 : (double)$row["fsTaxExempt"] );
     // foodstamp total net percentdiscount minus previous foodstamp tenders
-    $CORE_LOCAL->set("fsEligible", (!$row || !isset($row['fsEligible'])) ? 0 : (double)$row["fsEligible"] );
+    CoreLocal::set("fsEligible", (!$row || !isset($row['fsEligible'])) ? 0 : (double)$row["fsEligible"] );
     // chargeTotal => hardcoded to localtemptrans.trans_subtype MI or CX
-    $CORE_LOCAL->set("chargeTotal", (!$row || !isset($row['chargeTotal'])) ? 0 : (double)$row["chargeTotal"] );
+    CoreLocal::set("chargeTotal", (!$row || !isset($row['chargeTotal'])) ? 0 : (double)$row["chargeTotal"] );
     // paymentTotal => hardcoded to localtemptrans.department = 990
-    $CORE_LOCAL->set("paymentTotal", (!$row || !isset($row['paymentTotal'])) ? 0 : (double)$row["paymentTotal"] );
-    $CORE_LOCAL->set("memChargeTotal", $CORE_LOCAL->get("chargeTotal") + $CORE_LOCAL->get("paymentTotal") );
+    CoreLocal::set("paymentTotal", (!$row || !isset($row['paymentTotal'])) ? 0 : (double)$row["paymentTotal"] );
+    CoreLocal::set("memChargeTotal", CoreLocal::get("chargeTotal") + CoreLocal::get("paymentTotal") );
     // discountableTotal => SUM(localtemptrans.total) where discountable > 0
-    $CORE_LOCAL->set("discountableTotal", (!$row || !isset($row['discountableTotal'])) ? 0 : (double)$row["discountableTotal"] );
+    CoreLocal::set("discountableTotal", (!$row || !isset($row['discountableTotal'])) ? 0 : (double)$row["discountableTotal"] );
     // localTotal => SUM(localtemptrans.total) where numflag=1
-    $CORE_LOCAL->set("localTotal", (!$row || !isset($row['localTotal'])) ? 0 : (double)$row["localTotal"] );
+    CoreLocal::set("localTotal", (!$row || !isset($row['localTotal'])) ? 0 : (double)$row["localTotal"] );
     // voidTotal => SUM(localtemptrans.total) where trans_status=V
-    $CORE_LOCAL->set("voidTotal", (!$row || !isset($row['voidTotal'])) ? 0 : (double)$row["voidTotal"] );
+    CoreLocal::set("voidTotal", (!$row || !isset($row['voidTotal'])) ? 0 : (double)$row["voidTotal"] );
 
     /**
       9May14 Andy
@@ -225,12 +227,12 @@ static public function getsubtotals()
         WHERE trans_type <> 'L'
     ";
 
-    $handler_class = $CORE_LOCAL->get('DiscountModule');
+    $handler_class = CoreLocal::get('DiscountModule');
     if ($handler_class === '') $handler_class = 'DiscountModule';
     elseif (!class_exists($handler_class)) $handler_class = 'DiscountModule';
     if (class_exists($handler_class)) {
         $module = new $handler_class();
-        $CORE_LOCAL->set('transDiscount', $module->calculate() );
+        CoreLocal::set('transDiscount', $module->calculate() );
     }
 
     /* ENABLED LIVE 15Aug2013
@@ -250,20 +252,20 @@ static public function getsubtotals()
         $taxTTL += $tax['amount'];
         $exemptTTL += $tax['exempt'];
     }
-    $CORE_LOCAL->set('taxTotal', number_format($taxTTL,2));
-    $CORE_LOCAL->set('fsTaxExempt', number_format(-1*$exemptTTL,2));
+    CoreLocal::set('taxTotal', number_format($taxTTL,2));
+    CoreLocal::set('fsTaxExempt', number_format(-1*$exemptTTL,2));
 
-    if ($CORE_LOCAL->get("TaxExempt") == 1) {
-        $CORE_LOCAL->set("taxable",0);
-        $CORE_LOCAL->set("taxTotal",0);
-        $CORE_LOCAL->set("fsTaxable",0);
-        $CORE_LOCAL->set("fsTaxExempt",0);
+    if (CoreLocal::get("TaxExempt") == 1) {
+        CoreLocal::set("taxable",0);
+        CoreLocal::set("taxTotal",0);
+        CoreLocal::set("fsTaxable",0);
+        CoreLocal::set("fsTaxExempt",0);
     }
 
-    $CORE_LOCAL->set("subtotal",number_format($CORE_LOCAL->get("runningTotal") - $CORE_LOCAL->get("transDiscount"), 2));
+    CoreLocal::set("subtotal",number_format(CoreLocal::get("runningTotal") - CoreLocal::get("transDiscount"), 2));
     /* using a string for amtdue behaves strangely for
      * values > 1000, so use floating point */
-    $CORE_LOCAL->set("amtdue",(double)round($CORE_LOCAL->get("runningTotal") - $CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("taxTotal"), 2));
+    CoreLocal::set("amtdue",(double)round(CoreLocal::get("runningTotal") - CoreLocal::get("transDiscount") + CoreLocal::get("taxTotal"), 2));
 
     /**
       If FS eligible amount is greater than the current transaction total
@@ -275,10 +277,10 @@ static public function getsubtotals()
       The other case is a refund to FS. Over-tendering on a refund doesn't make
       any sense.
     */
-    if ($CORE_LOCAL->get("fsEligible") > $CORE_LOCAL->get("subtotal") && $CORE_LOCAL->get('subtotal') >= -0.005) {
-        $CORE_LOCAL->set("fsEligible",$CORE_LOCAL->get("subtotal"));
-    } elseif ($CORE_LOCAL->get("fsEligible") < $CORE_LOCAL->get("subtotal") && $CORE_LOCAL->get('subtotal') < 0) {
-        $CORE_LOCAL->set("fsEligible",$CORE_LOCAL->get("subtotal"));
+    if (CoreLocal::get("fsEligible") > CoreLocal::get("subtotal") && CoreLocal::get('subtotal') >= -0.005) {
+        CoreLocal::set("fsEligible",CoreLocal::get("subtotal"));
+    } elseif (CoreLocal::get("fsEligible") < CoreLocal::get("subtotal") && CoreLocal::get('subtotal') < 0) {
+        CoreLocal::set("fsEligible",CoreLocal::get("subtotal"));
     }
 }
 
@@ -360,11 +362,9 @@ static public function LineItemTaxes()
 */
 static public function gettransno($CashierNo) 
 {
-    global $CORE_LOCAL;
-
     $connection = self::tDataConnect();
-    $database = $CORE_LOCAL->get("tDatabase");
-    $register_no = $CORE_LOCAL->get("laneno");
+    $database = CoreLocal::get("tDatabase");
+    $register_no = CoreLocal::get("laneno");
     $query = "SELECT max(trans_no) as maxtransno from localtranstoday where emp_no = "
         .((int)$CashierNo)." and register_no = "
         .((int)$register_no).' AND datetime >= ' . $connection->curdate();
@@ -397,19 +397,16 @@ static public function gettransno($CashierNo)
 */
 static public function testremote() 
 {
-    global $CORE_LOCAL;
-
-
-    $intConnected = MiscLib::pingport($CORE_LOCAL->get("mServer"), $CORE_LOCAL->get("mDBMS"));
+    $intConnected = MiscLib::pingport(CoreLocal::get("mServer"), CoreLocal::get("mDBMS"));
     if ($intConnected == 1) {
 
         self::uploadtoServer(); 
 
     } else {
-        $CORE_LOCAL->set("standalone",1);
+        CoreLocal::set("standalone",1);
     }
 
-    return ($CORE_LOCAL->get("standalone") + 1) % 2;
+    return (CoreLocal::get("standalone") + 1) % 2;
 }
 
 /**
@@ -433,60 +430,58 @@ static public function testremote()
 */
 static public function uploadtoServer()
 {
-    global $CORE_LOCAL;
-
     $uploaded = 0;
 
     // new upload method makes use of SQLManager's transfer method
     // to simulate cross-server queries
     $connect = self::tDataConnect();
-    $connect->add_connection($CORE_LOCAL->get("mServer"),
-                $CORE_LOCAL->get("mDBMS"),
-                $CORE_LOCAL->get("mDatabase"),
-                $CORE_LOCAL->get("mUser"),
-                $CORE_LOCAL->get("mPass"),
+    $connect->add_connection(CoreLocal::get("mServer"),
+                CoreLocal::get("mDBMS"),
+                CoreLocal::get("mDatabase"),
+                CoreLocal::get("mUser"),
+                CoreLocal::get("mPass"),
                 False);
-    if (!isset($connect->connections[$CORE_LOCAL->get("mDatabase")]) ||
-        $connect->connections[$CORE_LOCAL->get("mDatabase")] === False){
-        $CORE_LOCAL->set("standalone",1);
+    if (!isset($connect->connections[CoreLocal::get("mDatabase")]) ||
+        $connect->connections[CoreLocal::get("mDatabase")] === False){
+        CoreLocal::set("standalone",1);
         return 0;    
     }
 
     $dt_matches = self::getMatchingColumns($connect,"dtransactions");
 
-    if ($connect->transfer($CORE_LOCAL->get("tDatabase"),
+    if ($connect->transfer(CoreLocal::get("tDatabase"),
         "select {$dt_matches} from dtransactions",
-        $CORE_LOCAL->get("mDatabase"),"insert into dtransactions ({$dt_matches})")) {
+        CoreLocal::get("mDatabase"),"insert into dtransactions ({$dt_matches})")) {
     
         // Moved up
         // DO NOT TRUNCATE; that resets AUTO_INCREMENT
         $connect->query("DELETE FROM dtransactions",
-            $CORE_LOCAL->get("tDatabase"));
+            CoreLocal::get("tDatabase"));
 
         $su_matches = self::getMatchingColumns($connect,"suspended");
-        $su_success = $connect->transfer($CORE_LOCAL->get("tDatabase"),
+        $su_success = $connect->transfer(CoreLocal::get("tDatabase"),
             "select {$su_matches} from suspended",
-            $CORE_LOCAL->get("mDatabase"),
+            CoreLocal::get("mDatabase"),
             "insert into suspended ({$su_matches})");
 
         if ($su_success) {
             $connect->query("truncate table suspended",
-                $CORE_LOCAL->get("tDatabase"));
+                CoreLocal::get("tDatabase"));
             $uploaded = 1;
-            $CORE_LOCAL->set("standalone",0);
+            CoreLocal::set("standalone",0);
         } else {
             $uploaded = 0;
-            $CORE_LOCAL->set("standalone",1);
+            CoreLocal::set("standalone",1);
         }
 
     } else {
         $uploaded = 0;
-        $CORE_LOCAL->set("standalone",1);
+        CoreLocal::set("standalone",1);
     }
 
     if (!self::uploadCCdata()) {
         $uploaded = 0;
-        $CORE_LOCAL->set("standalone",1);
+        CoreLocal::set("standalone",1);
     }
 
     return $uploaded;
@@ -504,9 +499,7 @@ static public function uploadtoServer()
 */
 static public function getMatchingColumns($connection,$table_name,$table2="")
 {
-    global $CORE_LOCAL;
-
-    $local_poll = $connection->table_definition($table_name,$CORE_LOCAL->get("tDatabase"));
+    $local_poll = $connection->table_definition($table_name,CoreLocal::get("tDatabase"));
     if ($local_poll === false) {
         return '';
     }
@@ -515,7 +508,7 @@ static public function getMatchingColumns($connection,$table_name,$table2="")
         $local_cols[$name] = true;
     }
     $remote_poll = $connection->table_definition((!empty($table2)?$table2:$table_name),
-                $CORE_LOCAL->get("mDatabase"));
+                CoreLocal::get("mDatabase"));
     if ($remote_poll === false) {
         return '';
     }
@@ -572,63 +565,61 @@ static public function localMatchingColumns($connection,$table1,$table2)
 */
 static public function uploadCCdata()
 {
-    global $CORE_LOCAL;
-
     $sql = self::tDataConnect();
-    $sql->add_connection($CORE_LOCAL->get("mServer"),
-                $CORE_LOCAL->get("mDBMS"),
-                $CORE_LOCAL->get("mDatabase"),
-                $CORE_LOCAL->get("mUser"),
-                $CORE_LOCAL->get("mPass"),
+    $sql->add_connection(CoreLocal::get("mServer"),
+                CoreLocal::get("mDBMS"),
+                CoreLocal::get("mDatabase"),
+                CoreLocal::get("mUser"),
+                CoreLocal::get("mPass"),
                 False);
 
     // test for success
     $ret = true;
 
     $req_cols = self::getMatchingColumns($sql,"efsnetRequest");
-    if ($sql->transfer($CORE_LOCAL->get("tDatabase"),
+    if ($sql->transfer(CoreLocal::get("tDatabase"),
         "select {$req_cols} from efsnetRequest",
-        $CORE_LOCAL->get("mDatabase"),"insert into efsnetRequest ({$req_cols})")) {
+        CoreLocal::get("mDatabase"),"insert into efsnetRequest ({$req_cols})")) {
 
         // table contains an autoincrementing column
         // do not TRUNCATE; that would reset the counter
         $sql->query("DELETE FROM efsnetRequest",
-            $CORE_LOCAL->get("tDatabase"));
+            CoreLocal::get("tDatabase"));
 
         $res_cols = self::getMatchingColumns($sql,"efsnetResponse");
-        $res_success = $sql->transfer($CORE_LOCAL->get("tDatabase"),
+        $res_success = $sql->transfer(CoreLocal::get("tDatabase"),
             "select {$res_cols} from efsnetResponse",
-            $CORE_LOCAL->get("mDatabase"),
+            CoreLocal::get("mDatabase"),
             "insert into efsnetResponse ({$res_cols})");
         if ($res_success) {
             $sql->query("truncate table efsnetResponse",
-                $CORE_LOCAL->get("tDatabase"));
+                CoreLocal::get("tDatabase"));
         } else {
             // transfer failure
             $ret = false;
         }
 
         $mod_cols = self::getMatchingColumns($sql,"efsnetRequestMod");
-        $mod_success = $sql->transfer($CORE_LOCAL->get("tDatabase"),
+        $mod_success = $sql->transfer(CoreLocal::get("tDatabase"),
             "select {$mod_cols} from efsnetRequestMod",
-            $CORE_LOCAL->get("mDatabase"),
+            CoreLocal::get("mDatabase"),
             "insert into efsnetRequestMod ({$mod_cols})");
         if ($mod_success) {
             $sql->query("truncate table efsnetRequestMod",
-                $CORE_LOCAL->get("tDatabase"));
+                CoreLocal::get("tDatabase"));
         } else {
             // transfer failure
             $ret = false;
         }
 
         $mod_cols = self::getMatchingColumns($sql,"efsnetTokens");
-        $mod_success = $sql->transfer($CORE_LOCAL->get("tDatabase"),
+        $mod_success = $sql->transfer(CoreLocal::get("tDatabase"),
             "select {$mod_cols} from efsnetTokens",
-            $CORE_LOCAL->get("mDatabase"),
+            CoreLocal::get("mDatabase"),
             "insert into efsnetTokens ({$mod_cols})");
         if ($mod_success) {
             $sql->query("truncate table efsnetTokens",
-                $CORE_LOCAL->get("tDatabase"));
+                CoreLocal::get("tDatabase"));
         } else {
             // transfer failure
             $ret = false;
@@ -645,13 +636,13 @@ static public function uploadCCdata()
 
     if ($sql->table_exists('CapturedSignature')) {
         $sig_cols = self::getMatchingColumns($sql, 'CapturedSignature');
-        $sig_success = $sql->transfer($CORE_LOCAL->get("tDatabase"),
+        $sig_success = $sql->transfer(CoreLocal::get("tDatabase"),
             "select {$sig_cols} from CapturedSignature",
-            $CORE_LOCAL->get("mDatabase"),
+            CoreLocal::get("mDatabase"),
             "insert into CapturedSignature ({$sig_cols})");
         if ($sig_success) {
             $sql->query("truncate table CapturedSignature",
-                $CORE_LOCAL->get("tDatabase"));
+                CoreLocal::get("tDatabase"));
         } else {
             // transfer failure
             $ret = false;
@@ -661,13 +652,13 @@ static public function uploadCCdata()
     // newer paycard transactions table
     if ($sql->table_exists('PaycardTransactions')) {
         $ptrans_cols = self::getMatchingColumns($sql, 'PaycardTransactions');
-        $ptrans_success = $sql->transfer($CORE_LOCAL->get('tDatabase'),
+        $ptrans_success = $sql->transfer(CoreLocal::get('tDatabase'),
                                          "SELECT {$ptrans_cols} FROM PaycardTransactions",
-                                         $CORE_LOCAL->get('mDatabase'),
+                                         CoreLocal::get('mDatabase'),
                                          "INSERT INTO PaycardTransactions ($ptrans_cols)"
         );
         if ($ptrans_success) {
-            $sql->query('DELETE FROM PaycardTransactions', $CORE_LOCAL->get('tDatabase'));
+            $sql->query('DELETE FROM PaycardTransactions', CoreLocal::get('tDatabase'));
         } else {
             // transfer failure
             $ret = false;
@@ -678,56 +669,53 @@ static public function uploadCCdata()
 }
 
 /**
-  Read globalvalues settings into $CORE_LOCAL.
+  Read globalvalues settings into session.
 */
 static public function loadglobalvalues() 
 {
-    global $CORE_LOCAL;
-
     $query = "select CashierNo,Cashier,LoggedIn,TransNo,TTLFlag,
         FntlFlag,TaxExempt from globalvalues";
     $db = self::pDataConnect();
     $result = $db->query($query);
     $row = $db->fetch_array($result);
 
-    $CORE_LOCAL->set("CashierNo",$row["CashierNo"]);
-    $CORE_LOCAL->set("cashier",$row["Cashier"]);
-    $CORE_LOCAL->set("LoggedIn",$row["LoggedIn"]);
-    $CORE_LOCAL->set("transno",$row["TransNo"]);
-    $CORE_LOCAL->set("ttlflag",$row["TTLFlag"]);
-    $CORE_LOCAL->set("fntlflag",$row["FntlFlag"]);
-    $CORE_LOCAL->set("TaxExempt",$row["TaxExempt"]);
+    CoreLocal::set("CashierNo",$row["CashierNo"]);
+    CoreLocal::set("cashier",$row["Cashier"]);
+    CoreLocal::set("LoggedIn",$row["LoggedIn"]);
+    CoreLocal::set("transno",$row["TransNo"]);
+    CoreLocal::set("ttlflag",$row["TTLFlag"]);
+    CoreLocal::set("fntlflag",$row["FntlFlag"]);
+    CoreLocal::set("TaxExempt",$row["TaxExempt"]);
 }
 
 /**
-  Set new value in $CORE_LOCAL.
+  Set new value in session.
   @param $param keycode
   @param $val new value
 */
 static public function loadglobalvalue($param,$val)
 {
-    global $CORE_LOCAL;
-    switch(strtoupper($param)) {
+    switch (strtoupper($param)) {
         case 'CASHIERNO':
-            $CORE_LOCAL->set("CashierNo",$val);    
+            CoreLocal::set("CashierNo",$val);    
             break;
         case 'CASHIER':
-            $CORE_LOCAL->set("cashier",$val);
+            CoreLocal::set("cashier",$val);
             break;
         case 'LOGGEDIN':
-            $CORE_LOCAL->set("LoggedIn",$val);
+            CoreLocal::set("LoggedIn",$val);
             break;
         case 'TRANSNO':
-            $CORE_LOCAL->set("transno",$val);
+            CoreLocal::set("transno",$val);
             break;
         case 'TTLFLAG':
-            $CORE_LOCAL->set("ttlflag",$val);
+            CoreLocal::set("ttlflag",$val);
             break;
         case 'FNTLFLAG':
-            $CORE_LOCAL->set("fntlflag",$val);
+            CoreLocal::set("fntlflag",$val);
             break;
         case 'TAXEXEMPT':
-            $CORE_LOCAL->set("TaxExempt",$val);
+            CoreLocal::set("TaxExempt",$val);
             break;
     }
 }
@@ -739,8 +727,6 @@ static public function loadglobalvalue($param,$val)
 */
 static public function setglobalvalue($param, $value) 
 {
-    global $CORE_LOCAL;
-
     $db = self::pDataConnect();
     
     if (!is_numeric($value)) {
@@ -754,7 +740,7 @@ static public function setglobalvalue($param, $value)
 
 /**
   Update many settings in globalvalues table
-  and in $CORE_LOCAL
+  and in session
   @param $arr An array of keys and values
 */
 static public function setglobalvalues($arr)
@@ -865,7 +851,6 @@ static public function changeLttTaxCode($fromName, $toName)
 */
 static public function rotateTempData()
 {
-    global $CORE_LOCAL;
     $connection = Database::tDataConnect();
 
     // LEGACY.
@@ -894,11 +879,11 @@ static public function rotateTempData()
       other mechanism such as triggers or column default values.
     */
     $table_def = $connection->table_definition('dtransactions');
-    if (isset($table_def['store_id']) && $CORE_LOCAL->get('store_id') !== '') {
+    if (isset($table_def['store_id']) && CoreLocal::get('store_id') !== '') {
         $assignQ = sprintf('
             UPDATE dtransactions
             SET store_id = %d',
-            $CORE_LOCAL->get('store_id')
+            CoreLocal::get('store_id')
         );
         $connection->query($assignQ);
     }
