@@ -30,6 +30,9 @@
  across two servers that are useful for lane-server
  communication
 */
+if (!class_exists('FannieAPI')) {
+    include(dirname(__FILE__) . '/../classlib2.0/FannieAPI.php');
+}
 if (!function_exists("ADONewConnection")) {
     if (file_exists(dirname(__FILE__) . '/../../vendor/adodb/adodb-php/adodb.inc.php')) {
         include(dirname(__FILE__) . '/../../vendor/adodb/adodb-php/adodb.inc.php');
