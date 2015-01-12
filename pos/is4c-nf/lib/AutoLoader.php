@@ -51,7 +51,12 @@ class AutoLoader extends LibraryClass
         global $CORE_LOCAL;
 		$map = CoreLocal::get("ClassLookup");
 		if (!is_array($map)) {
-            return;
+            // attempt to build map before giving up
+            self::loadMap();
+            $map = CoreLocal::get("ClassLookup");
+            if (!is_array($map)) {
+                return;
+            }
         }
 
 		if (isset($map[$name]) && !file_exists($map[$name])) {
