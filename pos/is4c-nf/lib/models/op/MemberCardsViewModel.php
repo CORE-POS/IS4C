@@ -34,6 +34,8 @@ class MemberCardsViewModel extends ViewModel
     'card_no' => array('type'=>'INT'),
 	);
 
+    public $preferred_db = 'op';
+
     public function definition()
     {
         global $CORE_LOCAL;

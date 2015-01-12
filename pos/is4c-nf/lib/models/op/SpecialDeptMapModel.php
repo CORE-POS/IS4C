@@ -34,6 +34,8 @@ class SpecialDeptMapModel extends BasicModel
     'dept_no' => array('type'=>'INT', 'primary_key'=>true),
 	);
 
+    public $preferred_db = 'op';
+
     public function buildMap()
     {
         $map = array();
