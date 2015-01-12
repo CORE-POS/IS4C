@@ -133,16 +133,16 @@ if (isset($_REQUEST['PPORT'])) {
     if ($_REQUEST['PPORT'] == 'other' &&
         isset($_REQUEST['otherpport']) &&
         $_REQUEST['otherpport'] != '') {
-        $CORE_LOCAL->set('printerPort',trim($_REQUEST['otherpport']));
+        CoreLocal::set('printerPort',trim($_REQUEST['otherpport']));
         $otherpport = True;
         $otherpportValue = trim($_REQUEST['otherpport']);
     } else {
-        $CORE_LOCAL->set('printerPort',$_REQUEST['PPORT']);
+        CoreLocal::set('printerPort',$_REQUEST['PPORT']);
         $otherpport = False;
         $otherpportValue = "";
     }
 } else {
-    $pport = $CORE_LOCAL->get('printerPort');
+    $pport = CoreLocal::get('printerPort');
     if (isset($pport) && $pport !== False && $pport != "") {
         $pports = array("/dev/lp0","/dev/usb/lp0","LPT1:","fakereceipt.txt");
         if (in_array($pport,$pports)) {
@@ -159,17 +159,17 @@ if (isset($_REQUEST['PPORT'])) {
 }
 ?>
 <input type="radio" name=PPORT value="/dev/lp0" id="div-lp0"
-    <?php if (!$otherpport && $CORE_LOCAL->get('printerPort')=="/dev/lp0")
+    <?php if (!$otherpport && CoreLocal::get('printerPort')=="/dev/lp0")
             echo "checked";
     ?> /><label for="div-lp0">/dev/lp0 (*nix)</label><br />
 <input type="radio" name=PPORT value="/dev/usb/lp0" id="div-usb-lp0"
-    <?php if (!$otherpport && $CORE_LOCAL->get('printerPort')=="/dev/usb/lp0")
+    <?php if (!$otherpport && CoreLocal::get('printerPort')=="/dev/usb/lp0")
             echo "checked"; ?> /><label for="div-usb-lp0">/dev/usb/lp0 (*nix)</label><br />
 <input type="radio" name=PPORT value="LPT1:" id="lpt1-"
-    <?php if (!$otherpport && $CORE_LOCAL->get('printerPort')=="LPT1:")
+    <?php if (!$otherpport && CoreLocal::get('printerPort')=="LPT1:")
                 echo "checked"; ?> /><label for="lpt1-">LPT1: (windows)</label><br />
 <input type="radio" name=PPORT value="fakereceipt.txt" id="fakercpt"
-    <?php if (!$otherpport && $CORE_LOCAL->get('printerPort')=="fakereceipt.txt")
+    <?php if (!$otherpport && CoreLocal::get('printerPort')=="fakereceipt.txt")
                 echo "checked";
     ?> /><label for="fakercpt">fakereceipt.txt</label><br />
 <input type="radio" name=PPORT value="other"
@@ -177,13 +177,13 @@ if (isset($_REQUEST['PPORT'])) {
                 echo "checked";
 ?> /> <input type=text name="otherpport"
     value="<?php echo "$otherpportValue"; ?>"><br />
-<span class='noteTxt' style="top:-110px;"> <?php printf("<p>Current value: <span class='pre'>%s</span></p>",$CORE_LOCAL->get('printerPort')); ?>
+<span class='noteTxt' style="top:-110px;"> <?php printf("<p>Current value: <span class='pre'>%s</span></p>",CoreLocal::get('printerPort')); ?>
 Path to the printer. Select from common values, or enter a custom path.
 Some ubuntu distros might put your USB printer at /dev/usblp0</span>
 </td></tr>
 <?php
 // Write to database.
-InstallUtilities::paramSave('printerPort',$CORE_LOCAL->get('printerPort'));
+InstallUtilities::paramSave('printerPort',CoreLocal::get('printerPort'));
 ?>
 
 <tr>
@@ -225,15 +225,15 @@ InstallUtilities::paramSave('printerPort',$CORE_LOCAL->get('printerPort'));
     <p>The name of your scale driver. Known good values include "ssd" and "NewMagellan".</p>
     <?php
     // try to initialize scale driver
-    if ($CORE_LOCAL->get("scaleDriver") != ""){
-        $classname = $CORE_LOCAL->get("scaleDriver");
+    if (CoreLocal::get("scaleDriver") != ""){
+        $classname = CoreLocal::get("scaleDriver");
         if (!file_exists('../scale-drivers/php-wrappers/'.$classname.'.php'))
             echo "<br /><i>Warning: PHP driver file not found</i>";
         else {
             if (!class_exists($classname))
                 include('../scale-drivers/php-wrappers/'.$classname.'.php');
             $instance = new $classname();
-            @$instance->SavePortConfiguration($CORE_LOCAL->get("scalePort"));
+            @$instance->SavePortConfiguration(CoreLocal::get("scalePort"));
             @$abs_path = substr($_SERVER['SCRIPT_FILENAME'],0,
                     strlen($_SERVER['SCRIPT_FILENAME'])-strlen('install/extra_config.php')-1);
             @$instance->SaveDirectoryConfiguration($abs_path);
@@ -272,7 +272,7 @@ InstallUtilities::paramSave('printerPort',$CORE_LOCAL->get('printerPort'));
 <?php
 $footer_mods = array();
 // get current settings
-$current_mods = $CORE_LOCAL->get("FooterModules");
+$current_mods = CoreLocal::get("FooterModules");
 // replace w/ form post if needed
 // fill in defaults if missing
 if (isset($_REQUEST['FOOTER_MODS'])) $current_mods = $_REQUEST['FOOTER_MODS'];
@@ -395,7 +395,7 @@ InstallUtilities::paramSave('FooterModules',$current_mods);
 <p>Map custom tenders to IS4Cs expected tenders Tender Rpt. column: Include the checked tenders 
 	in the Tender Report (available via Mgrs. Menu [MG])</p></td><td>
 <?php
-$settings = $CORE_LOCAL->get("TenderMap");
+$settings = CoreLocal::get("TenderMap");
 if (!is_array($settings)) $settings = array();
 if (isset($_REQUEST['TenderMapping'])){
 	$saveStr = "array(";
@@ -411,7 +411,7 @@ if (isset($_REQUEST['TenderMapping'])){
 }
 $mods = AutoLoader::listModules('TenderModule');
 //  Tender Report: Desired tenders column
-$settings2 = $CORE_LOCAL->get("TRDesiredTenders");
+$settings2 = CoreLocal::get("TRDesiredTenders");
 if (!is_array($settings2)) $settings2 = array();
 if (isset($_REQUEST['TR_LIST'])){
 	$saveStr2 = "array(";

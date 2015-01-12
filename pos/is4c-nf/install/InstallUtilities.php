@@ -91,10 +91,9 @@ class InstallUtilities extends LibraryClass
     */
     static public function confsave($key,$value,$prefer_local=False)
     {
-        global $CORE_LOCAL;
         // lane #0 is the server config editor
         // no ini.php file to write values to
-        if ($CORE_LOCAL->get('laneno') == 0) {
+        if (CoreLocal::get('laneno') == 0) {
             return null;
         }
 
@@ -221,12 +220,12 @@ class InstallUtilities extends LibraryClass
     */
     static public function paramSave($key, $value) 
     {
-        global $CORE_LOCAL;
-        $sql = self::dbTestConnect($CORE_LOCAL->get('localhost'),
-                $CORE_LOCAL->get('DBMS'),
-                $CORE_LOCAL->get('pDatabase'),
-                $CORE_LOCAL->get('localUser'),
-                $CORE_LOCAL->get('localPass'));
+        $sql = self::dbTestConnect(
+                CoreLocal::get('localhost'),
+                CoreLocal::get('DBMS'),
+                CoreLocal::get('pDatabase'),
+                CoreLocal::get('localUser'),
+                CoreLocal::get('localPass'));
 
         $save_as_array = 0;
         if (is_array($value) && count($value) > 0 && isset($value[0])) {
@@ -254,15 +253,15 @@ class InstallUtilities extends LibraryClass
         if ($sql !== false) {
             $prep = $sql->prepare_statement('SELECT param_value FROM parameters
                                         WHERE param_key=? AND lane_id=?');
-            $exists = $sql->exec_statement($prep, array($key, $CORE_LOCAL->get('laneno')));
+            $exists = $sql->exec_statement($prep, array($key, CoreLocal::get('laneno')));
             if ($sql->num_rows($exists)) {
                 $prep = $sql->prepare_statement('UPDATE parameters SET param_value=?,
                                         is_array=? WHERE param_key=? AND lane_id=?');
-                $sql->exec_statement($prep, array($value, $save_as_array, $key, $CORE_LOCAL->get('laneno')));
+                $sql->exec_statement($prep, array($value, $save_as_array, $key, CoreLocal::get('laneno')));
             } else {
                 $prep = $sql->prepare_statement('INSERT INTO parameters (store_id, lane_id, param_key,
                                         param_value, is_array) VALUES (0, ?, ?, ?, ?)');
-                $sql->exec_statement($prep, array($CORE_LOCAL->get('laneno'), $key, $value, $save_as_array));
+                $sql->exec_statement($prep, array(CoreLocal::get('laneno'), $key, $value, $save_as_array));
             }
         }
 
@@ -533,11 +532,10 @@ class InstallUtilities extends LibraryClass
 
     public static function normalizeDbName($name)
     {
-        global $CORE_LOCAL;
         if ($name == 'op') {
-            return $CORE_LOCAL->get('pDatabase');
+            return CoreLocal::get('pDatabase');
         } else if ($name == 'trans') {
-            return $CORE_LOCAL->get('tDatabase');
+            return CoreLocal::get('tDatabase');
         } else {
             return false;
         }
@@ -557,8 +555,7 @@ class InstallUtilities extends LibraryClass
     */
     static public function installTextField($name, $default_value='', $storage=self::EITHER_SETTING, $quoted=true, $attributes=array())
     {
-        global $CORE_LOCAL;
-        $current_value = $CORE_LOCAL->get($name);
+        $current_value = CoreLocal::get($name);
         if ($current_value === '') {
             $current_value = $default_value;
         }
@@ -604,7 +601,7 @@ class InstallUtilities extends LibraryClass
             }
         }
 
-        $CORE_LOCAL->set($name, $current_value);
+        CoreLocal::set($name, $current_value);
         if ($storage == self::INI_SETTING) {
             if (is_array($current_value)) {
                 $out_value = 'array(' . implode(',', $current_value) . ')';
@@ -664,8 +661,7 @@ class InstallUtilities extends LibraryClass
     */
     static public function installSelectField($name, $options, $default_value='', $storage=self::EITHER_SETTING, $quoted=true, $attributes=array())
     {
-        global $CORE_LOCAL;
-        $current_value = $CORE_LOCAL->get($name);
+        $current_value = CoreLocal::get($name);
         if ($current_value === '') {
             $current_value = $default_value;
         }
@@ -706,7 +702,7 @@ class InstallUtilities extends LibraryClass
             $current_value = $default_value;
         }
         
-        $CORE_LOCAL->set($name, $current_value);
+        CoreLocal::set($name, $current_value);
         if ($storage == self::INI_SETTING) {
             if (!is_numeric($current_value) && strtolower($current_value) !== 'true' && strtolower($current_value !== 'false')) {
                 self::confsave($name, "'" . $current_value . "'");
@@ -761,8 +757,7 @@ class InstallUtilities extends LibraryClass
 
     static public function installCheckboxField($name, $label, $default_value=0, $storage=self::EITHER_SETTING, $choices=array(0, 1))
     {
-        global $CORE_LOCAL;
-        $current_value = $CORE_LOCAL->get($name);
+        $current_value = CoreLocal::get($name);
         if ($current_value === '') {
             $current_value = $default_value;
         }
@@ -782,7 +777,7 @@ class InstallUtilities extends LibraryClass
             $current_value = $choices[0];
         }
 
-        $CORE_LOCAL->set($name, $current_value);
+        CoreLocal::set($name, $current_value);
         if ($storage == self::INI_SETTING) {
             if (!is_numeric($current_value) && strtolower($current_value) !== 'true' && strtolower($current_value !== 'false')) {
                 self::confsave($name, "'" . $current_value . "'");
@@ -991,11 +986,10 @@ class InstallUtilities extends LibraryClass
     */
     public static function createTransDBs($db, $name)
     {
-        global $CORE_LOCAL;
         $errors = array();
         $type = $db->dbms_name();
 
-        if ($CORE_LOCAL->get('laneno') == 0) {
+        if (CoreLocal::get('laneno') == 0) {
             $errors[] = array(
                 'struct' => 'No structures created for lane #0',
                 'query' => 'None',
@@ -1834,7 +1828,7 @@ class InstallUtilities extends LibraryClass
             trans_type,
             upc
             from ltt_receipt_reorder_g r
-            left outer join ".$CORE_LOCAL->get('pDatabase').".MasterSuperDepts d on r.department=d.dept_ID
+            left outer join ".CoreLocal::get('pDatabase').".MasterSuperDepts d on r.department=d.dept_ID
             where r.total<>0 or r.unitPrice=0
             order by sequence";
         
@@ -1886,7 +1880,7 @@ class InstallUtilities extends LibraryClass
                 trans_type,
                 upc
                 from ltt_receipt_reorder_g r
-                left outer join ".$CORE_LOCAL->get('pDatabase')."dbo.MasterSuperDepts
+                left outer join ".CoreLocal::get('pDatabase')."dbo.MasterSuperDepts
                        d on r.department=d.dept_ID
                 where r.total<>0 or r.unitprice=0
                 order by sequence";
@@ -2430,7 +2424,7 @@ class InstallUtilities extends LibraryClass
             upc
 
             from rp_ltt_receipt_reorder_g r
-            left outer join ".$CORE_LOCAL->get('pDatabase').".MasterSuperDepts d 
+            left outer join ".CoreLocal::get('pDatabase').".MasterSuperDepts d 
             on r.department=d.dept_ID
             where r.total<>0 or r.unitPrice=0
             order by register_no,emp_no,trans_no,card_no,sequence";
@@ -2487,7 +2481,7 @@ class InstallUtilities extends LibraryClass
             upc
 
             from rp_ltt_receipt_reorder_g r
-            left outer join ".$CORE_LOCAL->get('pDatabase').".dbo.MasterSuperDepts d 
+            left outer join ".CoreLocal::get('pDatabase').".dbo.MasterSuperDepts d 
             on r.department=d.dept_ID
             where r.total<>0 or r.unitprice=0
             order by register_no,emp_no,trans_no,card_no,sequence";

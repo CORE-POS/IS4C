@@ -120,13 +120,13 @@ if (isset($_REQUEST['RM_MODS'])){
 	foreach($_REQUEST['RM_MODS'] as $m){
 		if ($m != '') $mods[] = $m;
 	}
-	$CORE_LOCAL->set('ReceiptMessageMods', $mods);
+	CoreLocal::set('ReceiptMessageMods', $mods);
 }
-if (!is_array($CORE_LOCAL->get('ReceiptMessageMods'))){
-	$CORE_LOCAL->set('ReceiptMessageMods', array());
+if (!is_array(CoreLocal::get('ReceiptMessageMods'))){
+	CoreLocal::set('ReceiptMessageMods', array());
 }
 $available = AutoLoader::listModules('ReceiptMessage');
-$current = $CORE_LOCAL->get('ReceiptMessageMods');
+$current = CoreLocal::get('ReceiptMessageMods');
 for($i=0;$i<=count($current);$i++){
 	$c = isset($current[$i]) ? $current[$i] : '';
 	echo '<select name="RM_MODS[]">';
@@ -135,7 +135,7 @@ for($i=0;$i<=count($current);$i++){
 		printf('<option %s>%s</option>',($a==$c?'selected':''),$a);
 	echo '</select><br />';
 }
-InstallUtilities::paramSave('ReceiptMessageMods',$CORE_LOCAL->get('ReceiptMessageMods'));
+InstallUtilities::paramSave('ReceiptMessageMods',CoreLocal::get('ReceiptMessageMods'));
 ?>
 </td></tr>
 <tr><td colspan=2 class="submitBtn">

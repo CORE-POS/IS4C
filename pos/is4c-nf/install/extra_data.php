@@ -21,11 +21,11 @@ body {
 <form action=extra_data.php method=post>
 <div class="alert success"><b>
 <?php
-$db = new SQLManager($CORE_LOCAL->get('localhost'),
-	$CORE_LOCAL->get('DBMS'),
-	$CORE_LOCAL->get('pDatabase'),
-	$CORE_LOCAL->get('localUser'),
-	$CORE_LOCAL->get('localPass'));
+$db = new SQLManager(CoreLocal::get('localhost'),
+	CoreLocal::get('DBMS'),
+	CoreLocal::get('pDatabase'),
+	CoreLocal::get('localUser'),
+	CoreLocal::get('localPass'));
 
 if (isset($_REQUEST['employees'])){
 	echo "Loading employees";

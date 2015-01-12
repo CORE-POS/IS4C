@@ -179,13 +179,13 @@ if (isset($_REQUEST['DT_MODS'])) {
             $new_val[] = $r;
         }
     }
-    $CORE_LOCAL->set('DiscountTypeClasses', $new_val);
+    CoreLocal::set('DiscountTypeClasses', $new_val);
 }
-if (!is_array($CORE_LOCAL->get('DiscountTypeClasses'))) {
-	$CORE_LOCAL->set('DiscountTypeClasses', array(), true);
+if (!is_array(CoreLocal::get('DiscountTypeClasses'))) {
+	CoreLocal::set('DiscountTypeClasses', array(), true);
 }
 $discounts = AutoLoader::listModules('DiscountType');
-$dt_conf = $CORE_LOCAL->get("DiscountTypeClasses");
+$dt_conf = CoreLocal::get("DiscountTypeClasses");
 $dt_conf[] = ''; // add blank slot for adding another discounttype
 $i = 64;
 foreach ($dt_conf as $entry) {
@@ -205,7 +205,7 @@ foreach ($dt_conf as $entry) {
     $i++;
 }
 $save = array();
-foreach($CORE_LOCAL->get("DiscountTypeClasses") as $r){
+foreach(CoreLocal::get("DiscountTypeClasses") as $r){
     if ($r !== '' && !in_array($r, DiscountType::$MAP)) {
         $save[] = $r;
     }
@@ -236,13 +236,13 @@ if (isset($_REQUEST['PM_MODS'])) {
             $new_val[] = $r;
         }
     }
-    $CORE_LOCAL->set('PriceMethodClasses', $new_val);
+    CoreLocal::set('PriceMethodClasses', $new_val);
 }
-if (!is_array($CORE_LOCAL->get('PriceMethodClasses'))){
-	$CORE_LOCAL->set('PriceMethodClasses', array(), true);
+if (!is_array(CoreLocal::get('PriceMethodClasses'))){
+	CoreLocal::set('PriceMethodClasses', array(), true);
 }
 $pms = AutoLoader::listModules('PriceMethod');
-$pm_conf = $CORE_LOCAL->get("PriceMethodClasses");
+$pm_conf = CoreLocal::get("PriceMethodClasses");
 $pm_conf[] = ''; // add blank slot for adding another method
 $i = 100;
 foreach ($pm_conf as $entry) {
@@ -262,7 +262,7 @@ foreach ($pm_conf as $entry) {
     $i++;
 }
 $save = array();
-foreach($CORE_LOCAL->get("PriceMethodClasses") as $r){
+foreach(CoreLocal::get("PriceMethodClasses") as $r){
     if ($r !== '' && !in_array($r, PriceMethod::$MAP)) {
         $save[] = $r;
     }
@@ -272,10 +272,10 @@ InstallUtilities::paramSave('PriceMethodClasses',$save);
 <tr><td>
 <b>Sale Items Are Discountable</b>:</td><td>
 <?php
-if (isset($_REQUEST['SALEDISC'])) $CORE_LOCAL->set('DiscountableSaleItems',$_REQUEST['SALEDISC']);
-if ($CORE_LOCAL->get('DiscountableSaleItems') === '') $CORE_LOCAL->set('DiscountableSaleItems', 1);
+if (isset($_REQUEST['SALEDISC'])) CoreLocal::set('DiscountableSaleItems',$_REQUEST['SALEDISC']);
+if (CoreLocal::get('DiscountableSaleItems') === '') CoreLocal::set('DiscountableSaleItems', 1);
 echo '<select name="SALEDISC">';
-if ($CORE_LOCAL->get('DiscountableSaleItems') == 0) {
+if (CoreLocal::get('DiscountableSaleItems') == 0) {
 	echo '<option value="1">Yes</option>';
 	echo '<option value="0" selected>No</option>';
 } else {
@@ -283,7 +283,7 @@ if ($CORE_LOCAL->get('DiscountableSaleItems') == 0) {
 	echo '<option value="0">No</option>';
 }
 echo '</select>';
-InstallUtilities::paramSave('DiscountableSaleItems', $CORE_LOCAL->get('DiscountableSaleItems'));
+InstallUtilities::paramSave('DiscountableSaleItems', CoreLocal::get('DiscountableSaleItems'));
 ?>
 <span class='noteTxt'>
 Items that are on sale are eligible for transaction-level discounts - e.g., members
@@ -300,7 +300,7 @@ $sdepts = AutoLoader::listModules('SpecialDept');
 $db = Database::pDataConnect();
 $specialDeptMapExists = $db->table_exists('SpecialDeptMap');
 $mapModel = new SpecialDeptMapModel($db);
-$sconf = $CORE_LOCAL->get('SpecialDeptMap');
+$sconf = CoreLocal::get('SpecialDeptMap');
 /**
   If a mapping exists and the new table is available,
   migrate existing settings to the table and remove
@@ -341,14 +341,14 @@ if (isset($_REQUEST['SDEPT_MAP_LIST'])) {
         }
 	}
     if (!$specialDeptMapExists) {
-        $CORE_LOCAL->set('SpecialDeptMap',$sconf);
+        CoreLocal::set('SpecialDeptMap',$sconf);
     }
 }
 if ($specialDeptMapExists) {
     $mapModel->reset();
     $sconf = $mapModel->buildMap();
 } else {
-    $sconf = $CORE_LOCAL->get('SpecialDeptMap');
+    $sconf = CoreLocal::get('SpecialDeptMap');
 }
 foreach ($sdepts as $sd) {
 	$list = "";

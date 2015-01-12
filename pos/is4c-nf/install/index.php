@@ -62,9 +62,9 @@ if (!function_exists("socket_create")){
 <?php 
 $register_id_is_mapped = false;
 $store_id_is_mapped = false;
-if (is_array($CORE_LOCAL->get('LaneMap'))) {
+if (is_array(CoreLocal::get('LaneMap'))) {
     $my_ips = MiscLib::getAllIPs();
-    $map = $CORE_LOCAL->get('LaneMap');
+    $map = CoreLocal::get('LaneMap');
     foreach ($my_ips as $ip) {
         if (!isset($map[$ip])) {
             continue;
@@ -76,24 +76,24 @@ if (is_array($CORE_LOCAL->get('LaneMap'))) {
         } elseif (!isset($map[$ip]['store_id'])) {
             echo '<tr><td colspan="3">Error: missing store_id for ' . $ip . '</td></tr>';
         } else {
-            if ($CORE_LOCAL->get('store_id') === '') {
+            if (CoreLocal::get('store_id') === '') {
                 // no store_id set. assign based on IP
-                $CORE_LOCAL->set('store_id', $map[$ip]['store_id']);
+                CoreLocal::set('store_id', $map[$ip]['store_id']);
                 $store_id_is_mapped = true;
-            } else if ($CORE_LOCAL->get('store_id') != $map[$ip]['store_id']) {
+            } else if (CoreLocal::get('store_id') != $map[$ip]['store_id']) {
                 echo '<tr><td colspan="3">Warning: store_id is set to ' 
-                    . $CORE_LOCAL->get('store_id') . '. Based on IP ' . $ip
+                    . CoreLocal::get('store_id') . '. Based on IP ' . $ip
                     . ' it should be set to ' . $map[$ip]['store_id'] . '</td></tr>';
             } else {
                 $store_id_is_mapped = true;
             }
-            if ($CORE_LOCAL->get('laneno') === '') {
+            if (CoreLocal::get('laneno') === '') {
                 // no store_id set. assign based on IP
-                $CORE_LOCAL->set('laneno', $map[$ip]['register_id']);
+                CoreLocal::set('laneno', $map[$ip]['register_id']);
                 $register_id_is_mapped = true;
-            } else if ($CORE_LOCAL->get('laneno') != $map[$ip]['register_id']) {
+            } else if (CoreLocal::get('laneno') != $map[$ip]['register_id']) {
                 echo '<tr><td colspan="3">Warning: register_id is set to ' 
-                    . $CORE_LOCAL->get('laneno') . '. Based on IP ' . $ip
+                    . CoreLocal::get('laneno') . '. Based on IP ' . $ip
                     . ' it should be set to ' . $map[$ip]['register_id'] . '</td></tr>';
             } else {
                 // map entry matches
@@ -109,25 +109,25 @@ if (is_array($CORE_LOCAL->get('LaneMap'))) {
 ?>
 <tr>
     <td style="width:30%;">Lane number*:</td>
-    <?php if ($CORE_LOCAL->get('laneno') !== '' && $CORE_LOCAL->get('laneno') == 0) { ?>
+    <?php if (CoreLocal::get('laneno') !== '' && CoreLocal::get('laneno') == 0) { ?>
     <td>0 (Zero)</td>
     <?php } elseif ($register_id_is_mapped) { ?>
-    <td><?php echo $CORE_LOCAL->get('laneno'); ?> (assigned by IP; cannot be edited)</td>
+    <td><?php echo CoreLocal::get('laneno'); ?> (assigned by IP; cannot be edited)</td>
     <?php } else { ?>
     <td><?php echo InstallUtilities::installTextField('laneno', 99, InstallUtilities::INI_SETTING, false); ?></td>
     <?php } ?>
 </tr>
 <tr>
     <td>Store number*:</td>
-    <?php if ($CORE_LOCAL->get('store_id') !== '' && $CORE_LOCAL->get('store_id') == 0) { ?>
+    <?php if (CoreLocal::get('store_id') !== '' && CoreLocal::get('store_id') == 0) { ?>
     <td>0 (Zero)</td>
     <?php } elseif ($store_id_is_mapped) { ?>
-    <td><?php echo $CORE_LOCAL->get('store_id'); ?> (assigned by IP; cannot be edited)</td>
+    <td><?php echo CoreLocal::get('store_id'); ?> (assigned by IP; cannot be edited)</td>
     <?php } else { ?>
     <td><?php echo InstallUtilities::installTextField('store_id', 1, InstallUtilities::INI_SETTING, false); ?></td>
     <?php } ?>
 </tr>
-<?php if ($CORE_LOCAL->get('laneno') === '' || $CORE_LOCAL->get('laneno') != 0) { ?>
+<?php if (CoreLocal::get('laneno') === '' || CoreLocal::get('laneno') != 0) { ?>
 <tr>
     <td colspan=2 class="tblheader">
     <h3>Database set up</h3>
@@ -170,34 +170,34 @@ if (is_array($CORE_LOCAL->get('LaneMap'))) {
 Testing operational DB Connection:
 <?php
 $gotDBs = 0;
-if ($CORE_LOCAL->get("DBMS") == "mysql")
+if (CoreLocal::get("DBMS") == "mysql")
     $val = ini_set('mysql.connect_timeout',5);
 
-$sql = InstallUtilities::dbTestConnect($CORE_LOCAL->get('localhost'),
-        $CORE_LOCAL->get('DBMS'),
-        $CORE_LOCAL->get('pDatabase'),
-        $CORE_LOCAL->get('localUser'),
-        $CORE_LOCAL->get('localPass'));
+$sql = InstallUtilities::dbTestConnect(CoreLocal::get('localhost'),
+        CoreLocal::get('DBMS'),
+        CoreLocal::get('pDatabase'),
+        CoreLocal::get('localUser'),
+        CoreLocal::get('localPass'));
 if ($sql === False) {
     echo "<span class='fail'>Failed</span>";
     echo '<div class="db_hints" style="margin-left:25px;">';
     if (!function_exists('socket_create')){
         echo '<i>Try enabling PHP\'s socket extension in php.ini for better diagnostics</i>';
     }
-    elseif (@MiscLib::pingport($CORE_LOCAL->get('localhost'),$CORE_LOCAL->get('DBMS'))){
-        echo '<i>Database found at '.$CORE_LOCAL->get('localhost').'. Verify username and password
+    elseif (@MiscLib::pingport(CoreLocal::get('localhost'),CoreLocal::get('DBMS'))){
+        echo '<i>Database found at '.CoreLocal::get('localhost').'. Verify username and password
             and/or database account permissions.</i>';
     }
     else {
         echo '<i>Database does not appear to be listening for connections on '
-            .$CORE_LOCAL->get('localhost').'. Verify host is correct, database is running and
+            .CoreLocal::get('localhost').'. Verify host is correct, database is running and
             firewall is allowing connections.</i>';
     }
     echo '</div>';
 } else {
     echo "<span class='success'>Succeeded</span><br />";
     //echo "<textarea rows=3 cols=80>";
-    $opErrors = InstallUtilities::createOpDBs($sql, $CORE_LOCAL->get('pDatabase'));
+    $opErrors = InstallUtilities::createOpDBs($sql, CoreLocal::get('pDatabase'));
     $opErrors = array_filter($opErrors, function($x){ return $x['error'] != 0; });
     $gotDBs++;
     if (!empty($opErrors)){
@@ -234,11 +234,11 @@ if ($sql === False) {
 <div class="noteTxt">
 Testing transactional DB connection:
 <?php
-$sql = InstallUtilities::dbTestConnect($CORE_LOCAL->get('localhost'),
-        $CORE_LOCAL->get('DBMS'),
-        $CORE_LOCAL->get('tDatabase'),
-        $CORE_LOCAL->get('localUser'),
-        $CORE_LOCAL->get('localPass'));
+$sql = InstallUtilities::dbTestConnect(CoreLocal::get('localhost'),
+        CoreLocal::get('DBMS'),
+        CoreLocal::get('tDatabase'),
+        CoreLocal::get('localUser'),
+        CoreLocal::get('localPass'));
 if ($sql === False ) {
     echo "<span class='fail'>Failed</span>";
     echo '<div class="db_hints" style="margin-left:25px;">';
@@ -275,7 +275,7 @@ if ($sql === False ) {
         }
     }
 
-    $transErrors = InstallUtilities::createTransDBs($sql, $CORE_LOCAL->get('tDatabase'));
+    $transErrors = InstallUtilities::createTransDBs($sql, CoreLocal::get('tDatabase'));
     $transErrors = array_filter($transErrors, function($x){ return $x['error'] != 0; });
     $gotDBs++;
     if (!empty($transErrors)){
@@ -307,7 +307,7 @@ if ($sql === False ) {
 <?php } else { $gotDBs=2; } // end local lane db config that does not apply on lane#0 / server ?> 
 <tr><td colspan="3">
 <?php 
-if ($gotDBs == 2 && $CORE_LOCAL->get('laneno') != 0) {
+if ($gotDBs == 2 && CoreLocal::get('laneno') != 0) {
     InstallUtilities::validateConfiguration();
 }
 ?>
@@ -347,24 +347,24 @@ if ($gotDBs == 2 && $CORE_LOCAL->get('laneno') != 0) {
 <div class="noteTxt">
 Testing server connection:
 <?php
-$sql = InstallUtilities::dbTestConnect($CORE_LOCAL->get('mServer'),
-        $CORE_LOCAL->get('mDBMS'),
-        $CORE_LOCAL->get('mDatabase'),
-        $CORE_LOCAL->get('mUser'),
-        $CORE_LOCAL->get('mPass'));
+$sql = InstallUtilities::dbTestConnect(CoreLocal::get('mServer'),
+        CoreLocal::get('mDBMS'),
+        CoreLocal::get('mDatabase'),
+        CoreLocal::get('mUser'),
+        CoreLocal::get('mPass'));
 if ($sql === False){
     echo "<span class='fail'>Failed</span>";
     echo '<div class="db_hints" style="margin-left:25px;width:350px;">';
     if (!function_exists('socket_create')){
         echo '<i>Try enabling PHP\'s socket extension in php.ini for better diagnostics</i>';
     }
-    elseif (@MiscLib::pingport($CORE_LOCAL->get('mServer'),$CORE_LOCAL->get('DBMS'))){
-        echo '<i>Database found at '.$CORE_LOCAL->get('mServer').'. Verify username and password
+    elseif (@MiscLib::pingport(CoreLocal::get('mServer'),CoreLocal::get('DBMS'))){
+        echo '<i>Database found at '.CoreLocal::get('mServer').'. Verify username and password
             and/or database account permissions.</i>';
     }
     else {
         echo '<i>Database does not appear to be listening for connections on '
-            .$CORE_LOCAL->get('mServer').'. Verify host is correct, database is running and
+            .CoreLocal::get('mServer').'. Verify host is correct, database is running and
             firewall is allowing connections.</i>';
     }
     echo '</div>';
@@ -372,7 +372,7 @@ if ($sql === False){
 else {
     echo "<span class='success'>Succeeded</span><br />";
     //echo "<textarea rows=3 cols=80>";
-    $sErrors = create_min_server($sql,$CORE_LOCAL->get('mDBMS'));
+    $sErrors = create_min_server($sql,CoreLocal::get('mDBMS'));
     $sErrors = array_filter($sErrors, function($x){ return $x['error'] != 0; });
     if (!empty($sErrors)){
         echo '<div class="db_create_errors" style="border: solid 1px red;padding:5px;">';
@@ -409,18 +409,18 @@ descriptions should be DB-legal syntax (e.g., no spaces). A rate of
 <?php
 $rates = array();
 if ($gotDBs == 2) {
-    $sql = new SQLManager($CORE_LOCAL->get('localhost'),
-            $CORE_LOCAL->get('DBMS'),
-            $CORE_LOCAL->get('tDatabase'),
-            $CORE_LOCAL->get('localUser'),
-            $CORE_LOCAL->get('localPass'));
-    if ($CORE_LOCAL->get('laneno') == 0 && $CORE_LOCAL->get('laneno') !== '') {
+    $sql = new SQLManager(CoreLocal::get('localhost'),
+            CoreLocal::get('DBMS'),
+            CoreLocal::get('tDatabase'),
+            CoreLocal::get('localUser'),
+            CoreLocal::get('localPass'));
+    if (CoreLocal::get('laneno') == 0 && CoreLocal::get('laneno') !== '') {
         // server-side rate table is in op database
-        $sql = new SQLManager($CORE_LOCAL->get('localhost'),
-                $CORE_LOCAL->get('DBMS'),
-                $CORE_LOCAL->get('pDatabase'),
-                $CORE_LOCAL->get('localUser'),
-                $CORE_LOCAL->get('localPass'));
+        $sql = new SQLManager(CoreLocal::get('localhost'),
+                CoreLocal::get('DBMS'),
+                CoreLocal::get('pDatabase'),
+                CoreLocal::get('localUser'),
+                CoreLocal::get('localPass'));
     }
     if ($sql->table_exists('taxrates')) {
         $ratesR = $sql->query("SELECT id,rate,description FROM taxrates ORDER BY id");
@@ -447,10 +447,10 @@ printf("<tr><td>(Add)</td><td><input type=text name=TAX_RATE[] value=\"\" /></td
 
 function create_min_server($db,$type){
     global $CORE_LOCAL;
-    $name = $CORE_LOCAL->get('mDatabase');
+    $name = CoreLocal::get('mDatabase');
     $errors = array();
 
-    if ($CORE_LOCAL->get('laneno') == 0) {
+    if (CoreLocal::get('laneno') == 0) {
         $errors[] = array(
             'struct' => 'No structures created for lane #0',
             'query' => 'None',
