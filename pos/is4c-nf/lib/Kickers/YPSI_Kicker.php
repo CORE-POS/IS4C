@@ -30,7 +30,6 @@ class YPSI_Kicker extends Kicker
 
     public function doKick($trans_num)
     {
-        global $CORE_LOCAL;
         $db = Database::tDataConnect();
 
         $query = "select trans_id from localtemptrans where 
@@ -45,8 +44,8 @@ class YPSI_Kicker extends Kicker
         // use session to override default behavior
         // based on specific cashier actions rather
         // than transaction state
-        $override = $CORE_LOCAL->get('kickOverride');
-        $CORE_LOCAL->set('kickOverride',false);
+        $override = CoreLocal::get('kickOverride');
+        CoreLocal::set('kickOverride',false);
         if ($override === true) $ret = true;
 
         return $ret;
@@ -54,8 +53,7 @@ class YPSI_Kicker extends Kicker
 
     public function kickOnSignIn() 
 	{
-        global $CORE_LOCAL;
-        if($CORE_LOCAL->get('training') == 1) {
+        if(CoreLocal::get('training') == 1) {
             return false;
         }
 
@@ -63,8 +61,7 @@ class YPSI_Kicker extends Kicker
     }
     public function kickOnSignOut()
     {
-        global $CORE_LOCAL;
-        if($CORE_LOCAL->get('training') == 1) {
+        if(CoreLocal::get('training') == 1) {
             return false;
         }
 

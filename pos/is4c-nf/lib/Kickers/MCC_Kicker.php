@@ -35,8 +35,7 @@ class MCC_Kicker extends Kicker
     */
     public function doKick($trans_num)
     {
-        global $CORE_LOCAL;
-        if($CORE_LOCAL->get('training') == 1) {
+        if(CoreLocal::get('training') == 1) {
             return false;
         }
         $db = Database::tDataConnect();
@@ -60,8 +59,7 @@ class MCC_Kicker extends Kicker
     */
     public function kickOnSignIn()
     {
-        global $CORE_LOCAL;
-        if($CORE_LOCAL->get('training') == 1) {
+        if(CoreLocal::get('training') == 1) {
             return false;
         }
 
@@ -75,8 +73,7 @@ class MCC_Kicker extends Kicker
     */
     public function kickOnSignOut()
     {
-        global $CORE_LOCAL;
-        if($CORE_LOCAL->get('training') == 1) {
+        if(CoreLocal::get('training') == 1) {
             return false;
         }
 

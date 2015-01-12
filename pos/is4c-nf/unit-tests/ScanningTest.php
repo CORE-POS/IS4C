@@ -5,9 +5,8 @@
  */
 class ScanningTest extends PHPUnit_Framework_TestCase
 {
-	public function testDiscountType(){
-		global $CORE_LOCAL;
-
+	public function testDiscountType()
+    {
 		$defaults = array(
 			'NormalPricing',
 			'EveryoneSale',
@@ -36,7 +35,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 			$this->assertEquals($obj->isStaffSale(),$obj->isStaffOnly());
 		}
 
-		$CORE_LOCAL->set('itemPD',0);
+		CoreLocal::set('itemPD',0);
 		$row = array('normal_price'=>1.99,'special_price'=>'1.49',
 				'specialpricemethod'=>0,
 				'specialquantity'=>0, 'line_item_discountable'=>1);
@@ -71,7 +70,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals(False,$norm->isMemberOnly());
 		$this->assertEquals(False,$norm->isStaffOnly());
 
-		$CORE_LOCAL->set('isMember',1);
+		CoreLocal::set('isMember',1);
 		$norm = new MemberSale();
 		$info = $norm->priceInfo($row, 1);
 		$this->assertInternalType('array',$info);
@@ -87,7 +86,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals(True,$norm->isMemberOnly());
 		$this->assertEquals(False,$norm->isStaffOnly());
 
-		$CORE_LOCAL->set('isStaff',1);
+		CoreLocal::set('isStaff',1);
 		$norm = new StaffSale();
 		$info = $norm->priceInfo($row, 1);
 		$this->assertInternalType('array',$info);
@@ -134,8 +133,8 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals(True,$norm->isMemberOnly());
 		$this->assertEquals(False,$norm->isStaffOnly());
 
-		$CORE_LOCAL->set('isMember',0);
-		$CORE_LOCAL->set('isStaff',0);
+		CoreLocal::set('isMember',0);
+		CoreLocal::set('isStaff',0);
 		$row['special_price'] = 1.49;
 
 		$norm = new MemberSale();
@@ -167,7 +166,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals(0,$info['discount']);
 		$this->assertEquals(1.79,$info['memDiscount']);
 
-		$CORE_LOCAL->set('casediscount',10);
+		CoreLocal::set('casediscount',10);
 		$norm = new CasePriceDiscount();
 		$info = $norm->priceInfo($row, 1);
 		$this->assertInternalType('array',$info);
@@ -353,9 +352,8 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 		lttLib::verifyRecord(3, $record, $this);
     }
 
-	public function testSpecialDepts(){
-		global $CORE_LOCAL;
-
+	public function testSpecialDepts()
+    {
 		$defaults = array(
 			'ArWarnDept',
 			'AutoReprintDept',
@@ -379,7 +377,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 			$this->assertContains($class,$map[1]);
 		}
 
-		$CORE_LOCAL->set('msgrepeat',0);
+		CoreLocal::set('msgrepeat',0);
 
 		// first call should set warn vars
 		$arwarn = new ArWarnDept();
@@ -389,7 +387,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 		$this->assertInternalType('string',$json['main_frame']);
 		$this->assertNotEmpty($json['main_frame']);
 
-		$CORE_LOCAL->set('msgrepeat',1);
+		CoreLocal::set('msgrepeat',1);
 
 		// second call should clear vars and proceed
 		$json = $arwarn->handle(1,1.00,array('main_frame'=>''));
@@ -398,14 +396,14 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 		$this->assertInternalType('string',$json['main_frame']);
 		$this->assertEmpty($json['main_frame']);
 
-		$CORE_LOCAL->set('autoReprint',0);
+		CoreLocal::set('autoReprint',0);
 		$auto = new AutoReprintDept();
 		$json = $auto->handle(1,1.00,array());
 		$this->assertInternalType('array',$json);
-		$this->assertEquals(1,$CORE_LOCAL->get('autoReprint'));	
+		$this->assertEquals(1, CoreLocal::get('autoReprint'));	
 
-		$CORE_LOCAL->set('msgrepeat',0);
-		$CORE_LOCAL->set('memberID',0);
+		CoreLocal::set('msgrepeat',0);
+		CoreLocal::set('memberID',0);
 
 		// error because member is required
 		$eEndorse = new EquityEndorseDept();
@@ -416,7 +414,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 		$this->assertNotEmpty($json['main_frame']);
 
 		// show endorse warning screen
-		$CORE_LOCAL->set('memberID',123);
+		CoreLocal::set('memberID',123);
 		$json = $eEndorse->handle(1,1.00,array('main_frame'=>''));
 		$this->assertInternalType('array',$json);
 		$this->assertArrayHasKey('main_frame',$json);
@@ -424,16 +422,16 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 		$this->assertNotEmpty($json['main_frame']);
 
 		// clear warning and proceed
-		$CORE_LOCAL->set('memberID',123);
-		$CORE_LOCAL->set('msgrepeat', 1);
+		CoreLocal::set('memberID',123);
+		CoreLocal::set('msgrepeat', 1);
 		$json = $eEndorse->handle(1,1.00,array('main_frame'=>''));
 		$this->assertInternalType('array',$json);
 		$this->assertArrayHasKey('main_frame',$json);
 		$this->assertInternalType('string',$json['main_frame']);
 		$this->assertEmpty($json['main_frame']);
 
-		$CORE_LOCAL->set('memberID',0);
-		$CORE_LOCAL->set('msgrepeat', 0);
+		CoreLocal::set('memberID',0);
+		CoreLocal::set('msgrepeat', 0);
 
 		// error because member is required
 		$eWarn = new EquityWarnDept();
@@ -443,10 +441,10 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 		$this->assertInternalType('string',$json['main_frame']);
 		$this->assertNotEmpty($json['main_frame']);
 
-		$CORE_LOCAL->set('memberID',123);
+		CoreLocal::set('memberID',123);
 
 		// show warning screen
-		$CORE_LOCAL->set('memberID',123);
+		CoreLocal::set('memberID',123);
 		$json = $eWarn->handle(1,1.00,array('main_frame'=>''));
 		$this->assertInternalType('array',$json);
 		$this->assertArrayHasKey('main_frame',$json);
@@ -454,8 +452,8 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 		$this->assertNotEmpty($json['main_frame']);
 
 		// clear warning and proceed
-		$CORE_LOCAL->set('memberID',123);
-		$CORE_LOCAL->set('msgrepeat', 1);
+		CoreLocal::set('memberID',123);
+		CoreLocal::set('msgrepeat', 1);
 		$json = $eWarn->handle(1,1.00,array('main_frame'=>''));
 		$this->assertInternalType('array',$json);
 		$this->assertArrayHasKey('main_frame',$json);

@@ -44,5 +44,10 @@ class WrappedStorage extends LocalStorage
     {
         return CoreLocal::set($key, $val, $immutable);
     }
+
+    public function isImmutable($key)
+    {
+        return CoreLocal::isImmutable($key);
+    }
 }
 

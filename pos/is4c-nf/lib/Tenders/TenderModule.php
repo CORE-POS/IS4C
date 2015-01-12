@@ -78,30 +78,28 @@ class TenderModule
     */
     public function errorCheck()
     {
-        global $CORE_LOCAL;
-
         //force negative entered value when the total is negative.
-        if ($CORE_LOCAL->get("amtdue") <0 && $this->amount >= 0) {
+        if (CoreLocal::get("amtdue") <0 && $this->amount >= 0) {
             $this->amount = -1 * $this->amount;
         }
 
-        if ($CORE_LOCAL->get("LastID") == 0) {
+        if (CoreLocal::get("LastID") == 0) {
             return DisplayLib::boxMsg(_("no transaction in progress"));
         } else if ($this->amount > 99999.99) {
             return DisplayLib::boxMsg(
                       _("tender amount of") . " " . $this->amount . "<br />"
                     . _("exceeds allowable limit")
             );
-        } else if ($CORE_LOCAL->get("ttlflag") == 0) {
+        } else if (CoreLocal::get("ttlflag") == 0) {
             return DisplayLib::boxMsg(_("transaction must be totaled before tender can be accepted"));
         } else if ($this->name_string === "") {
             return DisplayLib::inputUnknown();
-        } elseif ((($this->amount < ($CORE_LOCAL->get("amtdue") - 0.005)) || ($this->amount > ($CORE_LOCAL->get("amtdue") + 0.005)))
-                     && $CORE_LOCAL->get("amtdue") < 0 
+        } elseif ((($this->amount < (CoreLocal::get("amtdue") - 0.005)) || ($this->amount > (CoreLocal::get("amtdue") + 0.005)))
+                     && CoreLocal::get("amtdue") < 0 
                      && $this->amount !=0){
             // the return tender needs to be exact because the transaction state can get weird.
             return DisplayLib::xboxMsg(_("return tender must be exact"));
-        } elseif($CORE_LOCAL->get("amtdue")>0 && $this->amount < 0) { 
+        } elseif(CoreLocal::get("amtdue")>0 && $this->amount < 0) { 
             return DisplayLib::xboxMsg(_("Why are you using a negative number for a positve sale?"));
         }
 
@@ -114,26 +112,25 @@ class TenderModule
     */
     public function preReqCheck()
     {
-        global $CORE_LOCAL;
-        if ($this->amount > $this->max_limit && $CORE_LOCAL->get("msgrepeat") == 0) {
-            $CORE_LOCAL->set("boxMsg",
+        if ($this->amount > $this->max_limit && CoreLocal::get("msgrepeat") == 0) {
+            CoreLocal::set("boxMsg",
                 "$" . $this->amount . " " . _("is greater than tender limit for") . " " . $this->name_string
               . "<p>"
               . "<font size='-1'>" . _("clear to cancel") . ", " . _("enter to proceed") . "</font>"
             );
-            $CORE_LOCAL->set('lastRepeat', 'confirmTenderAmount');
+            CoreLocal::set('lastRepeat', 'confirmTenderAmount');
 
             return MiscLib::base_url().'gui-modules/boxMsg2.php';
-        } else if ($CORE_LOCAL->get('msgrepeat') == 1 && $CORE_LOCAL->get('lastRepeat') == 'confirmTenderAmount') {
-            $CORE_LOCAL->set('msgrepeat', 0);
-            $CORE_LOCAL->set('lastRepeat', '');
+        } else if (CoreLocal::get('msgrepeat') == 1 && CoreLocal::get('lastRepeat') == 'confirmTenderAmount') {
+            CoreLocal::set('msgrepeat', 0);
+            CoreLocal::set('lastRepeat', '');
         }
 
-        if ($this->amount - $CORE_LOCAL->get("amtdue") > 0) {
-            $CORE_LOCAL->set("change",$this->amount - $CORE_LOCAL->get("amtdue"));
-            $CORE_LOCAL->set("ChangeType", $this->change_type);
+        if ($this->amount - CoreLocal::get("amtdue") > 0) {
+            CoreLocal::set("change",$this->amount - CoreLocal::get("amtdue"));
+            CoreLocal::set("ChangeType", $this->change_type);
         } else {
-            $CORE_LOCAL->set("change",0);
+            CoreLocal::set("change",0);
         }
 
         return true;
@@ -176,8 +173,7 @@ class TenderModule
     */
     public function defaultTotal()
     {
-        global $CORE_LOCAL;
-        return $CORE_LOCAL->get('amtdue');
+        return CoreLocal::get('amtdue');
     }
 
     /**
@@ -189,14 +185,13 @@ class TenderModule
     */
     public function defaultPrompt()
     {
-        global $CORE_LOCAL;
         $amt = $this->DefaultTotal();
-        $CORE_LOCAL->set('boxMsg',
+        CoreLocal::set('boxMsg',
             '<br />'
           . 'tender $' . sprintf('%.2f',$amt) . ' as ' . $this->name_string 
         );
-        $CORE_LOCAL->set('strEntered', (100*$amt).$this->tender_code);
-        $CORE_LOCAL->set('boxMsgButtons', array(
+        CoreLocal::set('strEntered', (100*$amt).$this->tender_code);
+        CoreLocal::set('boxMsgButtons', array(
             'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
             'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
         ));

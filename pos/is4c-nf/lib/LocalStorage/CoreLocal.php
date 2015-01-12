@@ -70,5 +70,14 @@ class CoreLocal
     {
         self::$mechanism = $m;
     }
+
+    public static function isImmutable($key)
+    {
+        if (self::$storage_object === null) {
+            self::init();
+        }
+
+        return self::$storage_object->isImmutable($key);
+    }
 }
 

@@ -34,16 +34,15 @@ class CheckTender extends TenderModule
     */
     public function errorCheck()
     {
-        global $CORE_LOCAL;
-        if ( $CORE_LOCAL->get("isMember") != 0 && (($this->amount - $CORE_LOCAL->get("amtdue") - 0.005) > $CORE_LOCAL->get("dollarOver")) && ($CORE_LOCAL->get("cashOverLimit") == 1)) {
-            return DisplayLib::boxMsg(_("member check tender cannot exceed total purchase by over $").$CORE_LOCAL->get("dollarOver"));
-        } else if( $CORE_LOCAL->get("store")=="wfc" && $CORE_LOCAL->get("isMember") != 0 && ($this->amount - $CORE_LOCAL->get("amtdue") - 0.005) > 0) { 
+        if ( CoreLocal::get("isMember") != 0 && (($this->amount - CoreLocal::get("amtdue") - 0.005) > CoreLocal::get("dollarOver")) && (CoreLocal::get("cashOverLimit") == 1)) {
+            return DisplayLib::boxMsg(_("member check tender cannot exceed total purchase by over $").CoreLocal::get("dollarOver"));
+        } else if( CoreLocal::get("store")=="wfc" && CoreLocal::get("isMember") != 0 && ($this->amount - CoreLocal::get("amtdue") - 0.005) > 0) { 
             // This should really be a separate tender 
             // module for store-specific behavior
             $db = Database::pDataConnect();
             $q = sprintf("SELECT card_no FROM custReceiptMessage
                 WHERE card_no=%d AND modifier_module='WfcEquityMessage'",
-                $CORE_LOCAL->get('memberID'));
+                CoreLocal::get('memberID'));
             $r = $db->query($q);
             if ($db->num_rows($r) > 0) {
                 return DisplayLib::xboxMsg(_('member check tender cannot exceed total 
@@ -51,10 +50,10 @@ class CheckTender extends TenderModule
             }
 
             // multi use
-            if ($CORE_LOCAL->get('standalone')==0) {
+            if (CoreLocal::get('standalone')==0) {
                 $chkQ = "select trans_num from dlog 
                     where trans_type='T' and trans_subtype in ('CA','CK') 
-                    and card_no=".((int)$CORE_LOCAL->get('memberID'))."
+                    and card_no=".((int)CoreLocal::get('memberID'))."
                     group by trans_num 
                     having sum(case when trans_subtype='CK' then total else 0 end) < 0 
                     and sum(Case when trans_subtype='CA' then total else 0 end) > 0";
@@ -64,7 +63,7 @@ class CheckTender extends TenderModule
                     return DisplayLib::xboxMsg(_('already used check over benefit today'));
                 }
             }
-        } else if( $CORE_LOCAL->get("isMember") == 0  && ($this->amount - $CORE_LOCAL->get("amtdue") - 0.005) > 0) { 
+        } else if( CoreLocal::get("isMember") == 0  && ($this->amount - CoreLocal::get("amtdue") - 0.005) > 0) { 
             return DisplayLib::xboxMsg(_('non-member check tender cannot exceed total purchase'));
         }
 
@@ -77,14 +76,12 @@ class CheckTender extends TenderModule
     */
     public function preReqCheck()
     {
-        global $CORE_LOCAL;
-
-        if ($CORE_LOCAL->get("enableFranking") != 1) {
+        if (CoreLocal::get("enableFranking") != 1) {
             return true;
         }
 
         // check endorsing
-        if ($CORE_LOCAL->get("msgrepeat") == 0) {
+        if (CoreLocal::get("msgrepeat") == 0) {
             return $this->DefaultPrompt();
         }
 
@@ -93,9 +90,8 @@ class CheckTender extends TenderModule
 
     public function add()
     {
-        global $CORE_LOCAL;
         // count rebate and travelers as regular checks
-        if ($CORE_LOCAL->get("store")=="wfc" && ($this->tender_code == "TV" || $this->tender_code == "RC")) {
+        if (CoreLocal::get("store")=="wfc" && ($this->tender_code == "TV" || $this->tender_code == "RC")) {
             $this->tender_code = "CK";
         }
         parent::add();
@@ -103,17 +99,15 @@ class CheckTender extends TenderModule
 
     public function defaultPrompt()
     {
-        global $CORE_LOCAL;
-
-        if ($CORE_LOCAL->get("enableFranking") != 1) {
+        if (CoreLocal::get("enableFranking") != 1) {
             return parent::defaultPrompt();
         }
 
-        $CORE_LOCAL->set('RepeatAgain', false);
+        CoreLocal::set('RepeatAgain', false);
 
-        $ref = trim($CORE_LOCAL->get("CashierNo"))."-"
-            .trim($CORE_LOCAL->get("laneno"))."-"
-            .trim($CORE_LOCAL->get("transno"));
+        $ref = trim(CoreLocal::get("CashierNo"))."-"
+            .trim(CoreLocal::get("laneno"))."-"
+            .trim(CoreLocal::get("transno"));
 
         if ($this->amount === False) {
             $this->amount = $this->defaultTotal();
@@ -123,15 +117,15 @@ class CheckTender extends TenderModule
             ' for $'.sprintf('%.2f',$this->amount).
             "<br />"._("press enter to endorse");
         $msg .= "<p><font size='-1'>"._("clear to cancel")."</font></p>";
-        if ($CORE_LOCAL->get("LastEquityReference") == $ref) {
+        if (CoreLocal::get("LastEquityReference") == $ref) {
             $msg .= "<div style=\"background:#993300;color:#ffffff;
                 margin:3px;padding: 3px;\">
                 There was an equity sale on this transaction. Did it get
                 endorsed yet?</div>";
         }
 
-        $CORE_LOCAL->set("boxMsg",$msg);
-        $CORE_LOCAL->set('strEntered', (100*$this->amount).$this->tender_code);
+        CoreLocal::set("boxMsg",$msg);
+        CoreLocal::set('strEntered', (100*$this->amount).$this->tender_code);
 
         return MiscLib::base_url().'gui-modules/boxMsg2.php?endorse=check&endorseAmt='.$this->amount;
     }
