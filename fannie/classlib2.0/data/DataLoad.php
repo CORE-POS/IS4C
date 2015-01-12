@@ -43,7 +43,7 @@ class DataLoad
     */
     public static function loadSampleData($sql, $table, $search_dir='') 
     {
-        global $FANNIE_SERVER;
+        $fannie_host = \FannieConfig::factory()->get('SERVER');
         $loaded = 0;
         $success = true;
         if (empty($search_dir)) {
@@ -86,7 +86,7 @@ class DataLoad
             fclose($fp);
         } elseif (file_exists($search_dir . "/$table.csv")) {
             $LOCAL = 'LOCAL';
-            if ($FANNIE_SERVER == '127.0.0.1' || $FANNIE_SERVER == 'localhost') {
+            if ($fannie_host == '127.0.0.1' || $fannie_host == 'localhost') {
                 $LOCAL = '';
             }
             $filename = realpath($search_dir . "/$table.csv");

@@ -37,7 +37,6 @@ class FannieDeptLookup extends FannieWebService
     */
     public function run($args)
     {
-        global $FANNIE_OP_DB;
         $ret = array();
         if (!property_exists($args, 'type')) {
             // missing required arguments
@@ -96,7 +95,7 @@ class FannieDeptLookup extends FannieWebService
         }
 
         // lookup results
-        $dbc = \FannieDB::get($FANNIE_OP_DB);
+        $dbc = \FannieDB::get(\FannieConfig::factory()->get('OP_DB'));
         switch (strtolower($args->type)) {
             case 'settings':
                 $model = new DepartmentsModel($dbc);

@@ -37,7 +37,6 @@ class FannieAutoComplete extends FannieWebService
     */
     public function run($args)
     {
-        global $FANNIE_OP_DB;
         $ret = array();
         if (!property_exists($args, 'field') || !property_exists($args, 'search')) {
             // missing required arguments
@@ -55,7 +54,7 @@ class FannieAutoComplete extends FannieWebService
             return $ret;
         }
 
-        $dbc = \FannieDB::get($FANNIE_OP_DB);
+        $dbc = \FannieDB::get(\FannieConfig::factory()->get('OP_DB'));
         switch (strtolower($args->field)) {
             case 'item':
                 $prep = $dbc->prepare('SELECT p.upc,

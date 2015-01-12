@@ -33,44 +33,74 @@
 */
 class FannieBaseLogger 
 {
+
+    protected $log_level_map  = array(
+        0 => 'emergency',
+        1 => 'alert',
+        2 => 'critical',
+        3 => 'error',
+        4 => 'warning',
+        5 => 'notice',
+        6 => 'info',
+        7 => 'debug',
+    );
+
+    const EMERGENCY     = 0;
+    const ALERT         = 1;
+    const CRITICAL      = 2;
+    const ERROR         = 3;
+    const WARNING       = 4;
+    const NOTICE        = 5;
+    const INFO          = 6;
+    const DEBUG         = 7;
+
+    protected function normalizeLevel($level)
+    {
+        if (isset($this->log_level_map[$level])) {
+            return $this->log_level_map[$level];
+        } else {
+            return strtolower($level);
+        }
+    }
+
     public function emergency($message, array $context = array())
     {
-        $this->writeLog($message, $context);
+        $this->writeLog($message, $context, self::EMERGENCY);
     }
 
     public function alert($message, array $context = array())
     {
-        $this->writeLog($message, $context);
+        $this->writeLog($message, $context, self::ALERT);
     }
 
     public function critical($message, array $context = array())
     {
-        $this->writeLog($message, $context);
+        $this->writeLog($message, $context, self::CRITICAL);
     }
 
     public function error($message, array $context = array())
     {
-        $this->writeLog($message, $context);
+        $this->writeLog($message, $context, self::ERROR);
     }
 
     public function warning($message, array $context = array())
     {
-        $this->writeLog($message, $context);
+        $this->writeLog($message, $context, self::WARNING);
     }
 
     public function notice($message, array $context = array())
     {
-        $this->writeLog($message, $context);
+        $this->writeLog($message, $context, self::NOTICE);
     }
 
     public function info($message, array $context = array())
     {
-        $this->writeLog($message, $context);
+        $this->writeLog($message, $context, self::INFO);
     }
 
     public function debug($message, array $context = array())
     {
-        $this->writeLog($message, $context);
+        $this->writeLog($message, $context, self::DEBUG);
     }
 
 
@@ -78,18 +108,48 @@ class FannieBaseLogger
     {
     }
 
-    private function writeLog($message, array $context = array())
+    private function writeLog($message, array $context, $int_level)
     {
-        $file = getLogLocation($file);
+        $file = $this->getLogLocation($int_level);
+        /**
+          The 'logfile' context value just exists for testing
+          purposes. Calling code should not rely on this
+          behavior 
+        */
+        if (isset($context['logfile'])) {
+            $file = $context['logfile'];
+        }
         if ($file) {
+            $date = date('M j H:i:s');
+            $host = gethostname();
+            if ($host === false) {
+                $host = 'localhost';
+            }
+            $pid = getmypid();
+            if ($pid === false) {
+                $pid = 0;
+            }
+            $tag = 'fannie[' . $pid . ']';
             $fp = fopen($file, 'a');
-            fwrite($fp, date('r') . ': ' . $message . "\n");
-            if (isset($context['exception']) && $context['exception'] instanceof Exception) {
-                fwrite($fp, $this->stackTrace($context['exception']->getTrace()));
-                fwrite($fp, "\n");
-            } else {
-                fwrite($fp, $this->stackTrace(debug_backtrace()));
-                fwrite($fp, "\n");
+            $log_line = sprintf('%s %s fannie[%d]: (%s) %s',
+                $date, $host, $pid,
+                $this->log_level_map[$int_level],
+                $message);
+            fwrite($fp, $log_line . "\n");
+            if ($int_level === self::DEBUG) {
+                $stack = array();
+                if (isset($context['exception']) && $context['exception'] instanceof Exception) {
+                    $stack = $this->stackTrace($context['exception']->getTrace());
+                } else {
+                    $stack = $this->stackTrace(debug_backtrace());
+                }
+                foreach ($stack as $frame) {
+                    $log_line = sprintf('%s %s fannie[%d]: (%s) %s',
+                        $date, $host, $pid,
+                        $this->log_level_map[$int_level],
+                        $frame);
+                    fwrite($fp, $log_line . "\n");
+                }
             }
             fclose($fp);
         }
@@ -97,29 +157,39 @@ class FannieBaseLogger
 
     /**
       Get filename for log
+      @param [integer] log level constant
       @return [string] filename or [boolean] false
     */
-    public function getLogLocation()
+    public function getLogLocation($int_level)
     {
-        $default = ini_get('error_log');
-        if (is_writable($default)) {
-            return realpath($default);
+        $filename = 'core.log';
+        // use separate debug log unless 
+        // unified is enabed
+        if ($int_level == self::DEBUG) {
+            $fc = FannieConfig::factory();
+            if ($fc->get('UNIFIED_LOG') != true) {
+                $filename = 'core_debug.log';
+            }
         }
-
-        $temp = sys_get_temp_dir() . '/fannie.log';
-        if (is_writable($temp)) {
-            return realpath($temp);
+        // if the logs directory is not writable, try
+        // failing over to /tmp
+        $dir = dirname(__FILE__) . '/../logs/';
+        if (!is_writable($dir .  $filename)) {
+            $dir = sys_get_temp_dir() . '/';
         }
-
-        return false;
+        if (!is_writable($dir .  $filename)) {
+            return false;
+        } else {
+            return $dir . $filename;
+        }
     }
 
-    private function printStack($stack)
+    private function stackTrace($stack)
     {
-        $ret = '--Stacktrace: ' . "\n";
-        $i = 1;
+        $i = count($stack);
+        $lines = array();
         foreach ($stack as $frame) {
-            $ret .= str_repeat('-', $i*2) . 'Frame #' . $i . "\n";
+            $ret = 'Frame #' . $i . ' - ';
             $line = isset($frame['line']) ? $frame['line'] : 0;
             $file = isset($frame['file']) ? $frame['file'] : 'Unknown file';
             $args = isset($frame['args']) ? $frame['args'] : array();
@@ -127,15 +197,13 @@ class FannieBaseLogger
             if (isset($frame['class'])) {
                 $function = $frame['class'] . '::' . $function;
             }
-            $ret .= str_repeat('-', ($i*2)+1) . 'File ' . $file . ', Line ' . $line 
-                . ', function ' . $function . "\n";
-            $ret .= str_repeat('-', ($i*2)+1) . 'Args:';
-            foreach ($args as $a) {
-                $ret .= $a . ' ';
-            }
-            $ret .= "\n";
-            $i++;
+            $ret .= 'File ' . $file . ', Line ' . $line 
+                . ', function ' . $function;
+            $lines[] = $ret;
+            $i--;
         }
+
+        return $lines;
     }
 }
 
@@ -144,7 +212,7 @@ if (interface_exists('\Psr\Log\LoggerInterface')) {
     {
         public function log($level, $message, array $context = array())
         {
-            switch ($level) {
+            switch ($this->normalizeLevel($level)) {
                 case \Psr\Log\EMERGENCY:
                     $this->emergency($message, $context);
                     break;
@@ -177,7 +245,7 @@ if (interface_exists('\Psr\Log\LoggerInterface')) {
     {
         public function log($level, $message, array $context = array())
         {
-            switch ($level) {
+            switch ($this->normalizeLevel($level)) {
                 case 'emergency':
                     $this->emergency($message, $context);
                     break;

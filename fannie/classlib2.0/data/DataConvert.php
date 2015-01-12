@@ -109,9 +109,7 @@ class DataConvert
     */
     public static function arrayToXls($array)
     {
-        global $FANNIE_ROOT;
-
-        include_once($FANNIE_ROOT.'src/Excel/xls_write/Spreadsheet_Excel_Writer/Writer.php');
+        include_once(dirname(__FILE__) . '/../../src/Excel/xls_write/Spreadsheet_Excel_Writer/Writer.php');
 
         $fn = tempnam(sys_get_temp_dir(),"xlstemp");
         $workbook = new \Spreadsheet_Excel_Writer($fn);

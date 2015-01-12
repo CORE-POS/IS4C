@@ -51,6 +51,8 @@ class FannieTask
 
     protected $config = null;
 
+    protected $logger = null;
+
     public function setThreshold($t)
     {
         $this->error_threshold = $t;
@@ -59,6 +61,11 @@ class FannieTask
     public function setConfig(FannieConfig $fc)
     {
         $this->config = $fc;
+    }
+
+    public function setLogger(FannieLogger $fl)
+    {
+        $this->logger = $fl;
     }
 
     /**
@@ -101,6 +108,7 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
     include(dirname(__FILE__).'/FannieAPI.php');
 
     $config = FannieConfig::factory();
+    $logger = new FannieLogger();
 
     // prepopulate autoloader
     $preload = FannieAPI::listModules('FannieTask');
@@ -121,6 +129,7 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
         $obj->setThreshold($config->get('TASK_THRESHOLD'));
     }
     $obj->setConfig($config);
+    $obj->setLogger($logger);
 
     $obj->run();
 }

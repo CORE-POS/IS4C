@@ -24,6 +24,13 @@
 class FannieDispatch 
 {
 
+    private static $logger;
+
+    static private function setLogger($l)
+    {
+        self::$logger = $l;
+    }
+
     /**
       Helper: get output-appropriate newline
     */
@@ -81,6 +88,12 @@ class FannieDispatch
     */
     static public function errorHandler($errno, $errstr, $errfile='', $errline=0, $errcontext=array())
     {
+        $msg = $errstr . ' Line '
+                . $errline
+                . ', '
+                . $errfile;
+        self::$logger->debug($msg);
+        /*
         $logged = FannieConfig::factory()->get('CUSTOM_ERRORS') == 2 ? true : false;
 
         if ($logged) {
@@ -101,6 +114,7 @@ class FannieDispatch
             fwrite($fp, $error_msg);
             fclose($fp);
         }
+        */
 
         return true;
     }
@@ -111,6 +125,13 @@ class FannieDispatch
     */
     static public function exceptionHandler($exception)
     {
+        $msg = $exception->getMessage()
+                . " Line "
+                . $exception->getLine()
+                . ", "
+                . $exception->getFile();
+        self::$logger->debug($msg);
+        /*
         $logged = FannieConfig::factory()->get('CUSTOM_ERRORS') == 2 ? true : false;
 
         if ($logged) {
@@ -132,6 +153,7 @@ class FannieDispatch
             fwrite($fp, $error_msg . "\n");
             fclose($fp);
         }
+        */
     }
     
     /**
@@ -243,6 +265,8 @@ class FannieDispatch
     static public function conditionalExec($custom_errors=true)
     {
         $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        self::setLogger($logger);
         $bt = debug_backtrace();
         // conditionalExec() is the only function on the stack
         if (count($bt) == 1) {
@@ -270,6 +294,7 @@ class FannieDispatch
             if ($class != 'index' && class_exists($class)) {
                 $obj = new $class();
                 $obj->setConfig($config);
+                $obj->setLogger($logger);
                 $obj->draw_page();
             } else {
                 trigger_error('Missing class '.$class, E_USER_NOTICE);
