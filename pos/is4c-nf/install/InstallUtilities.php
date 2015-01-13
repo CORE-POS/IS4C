@@ -250,6 +250,7 @@ class InstallUtilities extends LibraryClass
             $save_as_array = 1;
         }
 
+        $saved = false;
         if ($sql !== false) {
             $prep = $sql->prepare_statement('SELECT param_value FROM parameters
                                         WHERE param_key=? AND lane_id=?');
@@ -257,11 +258,11 @@ class InstallUtilities extends LibraryClass
             if ($sql->num_rows($exists)) {
                 $prep = $sql->prepare_statement('UPDATE parameters SET param_value=?,
                                         is_array=? WHERE param_key=? AND lane_id=?');
-                $sql->exec_statement($prep, array($value, $save_as_array, $key, CoreLocal::get('laneno')));
+                $saved = $sql->exec_statement($prep, array($value, $save_as_array, $key, CoreLocal::get('laneno')));
             } else {
                 $prep = $sql->prepare_statement('INSERT INTO parameters (store_id, lane_id, param_key,
                                         param_value, is_array) VALUES (0, ?, ?, ?, ?)');
-                $sql->exec_statement($prep, array(CoreLocal::get('laneno'), $key, $value, $save_as_array));
+                $saved = $sql->exec_statement($prep, array(CoreLocal::get('laneno'), $key, $value, $save_as_array));
             }
         }
 
@@ -291,6 +292,8 @@ class InstallUtilities extends LibraryClass
 
             self::confsave($key, $value);
         }
+
+        return ($saved) ? true : false;
     }
 
     /**

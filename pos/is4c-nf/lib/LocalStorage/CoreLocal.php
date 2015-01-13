@@ -34,6 +34,18 @@ class CoreLocal
     private static $storage_object = null;
     private static $mechanism = 'SessionStorage';
 
+    private static $INI_SETTINGS = array(
+        'laneno',
+        'store_id',
+        'localhost',
+        'DBMS',
+        'localUser',
+        'localPass',
+        'pDatabase',
+        'tDatabase',
+        'LaneMap',
+    );
+
     private static function init()
     {
         if (class_exists(self::$mechanism)) {
@@ -64,6 +76,27 @@ class CoreLocal
     public static function refresh()
     {
         self::init();
+        if (file_exists(dirname(__FILE__).'/../../ini.php')) {
+            self::loadPhpIni(dirname(__FILE__).'/../../ini.php');
+        }
+    }
+
+    private static function loadPhpIni($file)
+    {
+        /**
+          UnitTestStorage is backed by a simple array rather
+          than $_SESSION. This loads the ini.php settings into
+          a temporary, *non-global* $CORE_LOCAL and then loops
+          through to add them to the actual global session
+        */
+        $CORE_LOCAL = new UnitTestStorage();
+        include($file);
+        foreach ($CORE_LOCAL as $key => $value) {
+            if (!in_array($key, self::$INI_SETTINGS)) {
+                // setting does not belong in ini.php
+            }
+            self::set($key, $value);
+        }
     }
 
     public static function setHandler($m)

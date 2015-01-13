@@ -32,7 +32,6 @@ class WrappedStorage extends LocalStorage
 {
     public function __construct()
     {
-        CoreLocal::refresh();
     }
 
     public function get($key)

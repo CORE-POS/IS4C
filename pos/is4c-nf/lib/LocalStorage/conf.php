@@ -44,17 +44,10 @@ if (!class_exists('WrappedStorage')) {
     include(dirname(__FILE__) . '/WrappedStorage.php');
 }
 CoreLocal::setHandler($LOCAL_STORAGE_MECHANISM);
-CoreLocal::refresh();
 
 $CORE_LOCAL = new WrappedStorage();
 global $CORE_LOCAL;
 
-/**
-  Settings in ini.php are (or should be) immutable. They're not
-  necessarily saved in the session or session replacement mechanism.
-  Include these settings every time.
-*/
-if (file_exists(dirname(__FILE__).'/../../ini.php')) {
-    include_once(realpath(dirname(__FILE__).'/../../ini.php'));
-}
+// this includes ini.php
+CoreLocal::refresh();
 
