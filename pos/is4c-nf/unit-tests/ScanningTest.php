@@ -463,8 +463,6 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 
 	public function testSpecialUPCs() 
     {
-		global $CORE_LOCAL;
-
 		$defaults = array(
 			'CouponCode',
 			'DatabarCoupon',
