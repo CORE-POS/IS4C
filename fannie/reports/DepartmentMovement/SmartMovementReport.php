@@ -67,6 +67,7 @@ class SmartMovementReport extends FannieReportPage
                     " . $from_where['query'] . "
                     GROUP BY t.upc,
                         CASE WHEN p.description IS NULL THEN t.description ELSE p.description END,
+                        CASE WHEN t.trans_status='R' THEN 'Refund' ELSE 'Sale' END,
                         t.department,
                         d.dept_name,
                         m.super_name,
