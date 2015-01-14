@@ -123,7 +123,11 @@ class ABGroupPM extends PriceMethod
         $q3 = "SELECT sum(matched) FROM localtemptrans WHERE
             mixmatch IN ('$qualMM','$discMM')";
         $r3 = $dbt->query($q3);
-        $matches = ($dbt->num_rows($r3)>0)?array_pop($dbt->fetch_array($r3)):0;
+        $matches = 0;
+        if ($r3 && $dbt->num_rows($r3) > 0) {
+            $w3 = $dbt->fetch_row($r3);
+            $matches = $w3[0];
+        }
 
         // reduce totals by existing matches
         // implicit: quantity required for B = 1
