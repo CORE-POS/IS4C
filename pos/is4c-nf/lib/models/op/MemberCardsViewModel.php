@@ -38,10 +38,9 @@ class MemberCardsViewModel extends ViewModel
 
     public function definition()
     {
-        global $CORE_LOCAL;
         $cardsViewQ = "
             SELECT "
-                . $this->connection->concat("'".$CORE_LOCAL->get('memberUpcPrefix')."'",'c.CardNo','') . " AS upc, 
+                . $this->connection->concat("'".CoreLocal::get('memberUpcPrefix')."'",'c.CardNo','') . " AS upc, 
                 c.CardNo as card_no 
             FROM custdata c";
 

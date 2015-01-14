@@ -74,8 +74,8 @@ class NewMagellan extends ScaleDriverWrapper {
 		}
 	}
 
-	function ReadFromScale(){
-		global $CORE_LOCAL;
+	function ReadFromScale()
+    {
 		$rel = MiscLib::base_url();
 
 		$readfile = $rel.'scale-drivers/drivers/NewMagellan/scanner-scale';

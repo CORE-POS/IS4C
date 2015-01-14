@@ -37,7 +37,6 @@ class AutoCoupon extends TotalAction
     */
     public function apply()
     {
-        global $CORE_LOCAL;
         $db = Database::pDataConnect();
 
         $coupons = array();
@@ -56,7 +55,7 @@ class AutoCoupon extends TotalAction
         }
 
         $hc = new HouseCoupon();
-        $prefix = $CORE_LOCAL->get('houseCouponPrefix');
+        $prefix = CoreLocal::get('houseCouponPrefix');
         if ($prefix == '') {
             $prefix = '00499999';
         }
@@ -76,7 +75,7 @@ class AutoCoupon extends TotalAction
             $upc = $prefix . str_pad($id, 5, '0', STR_PAD_LEFT);
             $upc = str_pad($upc, 13, '0', STR_PAD_LEFT);
             $current = $db->query('SELECT SUM(-total) AS ttl FROM '
-                           .$CORE_LOCAL->get('tDatabase') . $db->sep() . 'localtemptrans
+                           .CoreLocal::get('tDatabase') . $db->sep() . 'localtemptrans
                            WHERE upc=\'' . $upc . '\'');
             $val = 0;
             if ($db->num_rows($current) > 0) {
