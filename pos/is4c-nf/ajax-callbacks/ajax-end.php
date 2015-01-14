@@ -77,7 +77,7 @@ if (strlen($receiptType) > 0) {
     $receiptContent = array();
 
     if ($transFinished) {
-        $kicker_class = ($CORE_LOCAL->get("kickerModule")=="") ? 'Kicker' : $CORE_LOCAL->get('kickerModule');
+        $kicker_class = (CoreLocal::get("kickerModule")=="") ? 'Kicker' : CoreLocal::get('kickerModule');
         $kicker_object = new $kicker_class();
         if (!is_object($kicker_object)) {
             $kicker_object = new Kicker();
@@ -85,7 +85,7 @@ if (strlen($receiptType) > 0) {
         $dokick = $kicker_object->doKick($receiptNum);
     }
 
-    $print_class = $CORE_LOCAL->get('ReceiptDriver');
+    $print_class = CoreLocal::get('ReceiptDriver');
     if ($print_class === '' || !class_exists($print_class)) {
         $print_class = 'ESCPOSPrintHandler';
     }
@@ -99,25 +99,25 @@ if (strlen($receiptType) > 0) {
         $receiptContent[] = ReceiptLib::printReceipt($receiptType, $receiptNum, false, $doEmail);
     }
 
-    if ($CORE_LOCAL->get("ccCustCopy") == 1) {
-        $CORE_LOCAL->set("ccCustCopy",0);
+    if (CoreLocal::get("ccCustCopy") == 1) {
+        CoreLocal::set("ccCustCopy",0);
         $receiptContent[] = ReceiptLib::printReceipt($receiptType, $receiptNum);
     } elseif ($receiptType == "ccSlip" || $receiptType == 'gcSlip') {
         // don't mess with reprints
-    } elseif ($CORE_LOCAL->get("autoReprint") == 1) {
-        $CORE_LOCAL->set("autoReprint",0);
+    } elseif (CoreLocal::get("autoReprint") == 1) {
+        CoreLocal::set("autoReprint",0);
         $receiptContent[] = ReceiptLib::printReceipt($receiptType, $receiptNum, true);
     }
 
     if ($transFinished) {
-        $CORE_LOCAL->set("End",0);
+        CoreLocal::set("End",0);
         $output = $yesSync;
         UdpComm::udpSend("termReset");
         $sd = MiscLib::scaleObject();
         if (is_object($sd)) {
             $sd->ReadReset();
         }
-        $CORE_LOCAL->set('ccTermState','swipe');
+        CoreLocal::set('ccTermState','swipe');
         uploadAndReset($receiptType);
     }
 
@@ -156,13 +156,11 @@ ob_end_flush();
 
 function uploadAndReset($type) 
 {
-    global $CORE_LOCAL;
-
     /** @deprecated 3Jun14
       Handled by TransRecord::finalizeTransaction()
     Database::loadglobalvalues();    
-    $CORE_LOCAL->set("transno",$CORE_LOCAL->get("transno") + 1);
-    Database::setglobalvalue("TransNo", $CORE_LOCAL->get("transno"));
+    CoreLocal::set("transno",CoreLocal::get("transno") + 1);
+    Database::setglobalvalue("TransNo", CoreLocal::get("transno"));
     */
 
     /** @deprecated 3Jun14
@@ -179,12 +177,12 @@ function uploadAndReset($type)
     }
     */
 
-    if ($CORE_LOCAL->get("testremote")==0) {
+    if (CoreLocal::get("testremote")==0) {
         Database::testremote(); 
     }
 
-    if ($CORE_LOCAL->get("TaxExempt") != 0) {
-        $CORE_LOCAL->set("TaxExempt",0);
+    if (CoreLocal::get("TaxExempt") != 0) {
+        CoreLocal::set("TaxExempt",0);
         Database::setglobalvalue("TaxExempt", 0);
     }
 
