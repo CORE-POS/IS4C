@@ -22,7 +22,7 @@ Emp# <input type="text" size="3" name="emp_no" />
 <hr />
 <?php
 if (isset($_REQUEST['t_mod']) && isset($_REQUEST['emp_no'])){
-	$CORE_LOCAL->set('CashierNo',$_REQUEST['emp_no']);
+	CoreLocal::set('CashierNo',$_REQUEST['emp_no']);
 	$tmod = $_REQUEST['t_mod'];
 	echo "Output for $tmod:<br />";
 	echo '<pre>';
