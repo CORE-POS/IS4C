@@ -29,17 +29,17 @@ class ScaleInput extends Parser {
 		return False;
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
+	function parse($str)
+    {
 		if (substr($str,0,3) == "S11"){
 			$weight = substr($str,3);
 			if (is_numeric($weight) || $weight < 9999){
-				$CORE_LOCAL->set("scale",1);
-				$CORE_LOCAL->set("weight",$weight / 100);
+				CoreLocal::set("scale",1);
+				CoreLocal::set("weight",$weight / 100);
 			}
 		}
 		else
-			$CORE_LOCAL->set("scale",0);
+			CoreLocal::set("scale",0);
 
 		$ret = $this->default_json();
 		$ret['scale'] = $str;

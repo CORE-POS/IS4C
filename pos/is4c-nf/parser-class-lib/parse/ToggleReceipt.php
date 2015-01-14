@@ -29,13 +29,13 @@ class ToggleReceipt extends Parser {
 		return False;
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
-		$rt = $CORE_LOCAL->get("receiptToggle");
+	function parse($str)
+    {
+		$rt = CoreLocal::get("receiptToggle");
 		if ($rt == 1)
-			$CORE_LOCAL->set("receiptToggle",0);
+			CoreLocal::set("receiptToggle",0);
 		else
-			$CORE_LOCAL->set("receiptToggle",1);
+			CoreLocal::set("receiptToggle",1);
 		$ret = $this->default_json();
 		// redirect to main screen so receipt icon reloads
 		$ret['main_frame'] = MiscLib::base_url().'gui-modules/pos2.php';

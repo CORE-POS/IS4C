@@ -31,8 +31,8 @@ class AutoTare extends Parser {
 		return False;
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
+	function parse($str)
+    {
 		$ret = $this->default_json();
 
 		$left = substr($str,0,strlen($str)-2);
@@ -41,7 +41,7 @@ class AutoTare extends Parser {
 
 		if (strlen($left) > 4)
 			$ret['output'] = DisplayLib::boxMsg(MiscLib::truncate2($left/100)." "._("tare not supported"));
-		elseif ($left/100 > $CORE_LOCAL->get("weight") && $CORE_LOCAL->get("weight") > 0) 
+		elseif ($left/100 > CoreLocal::get("weight") && CoreLocal::get("weight") > 0) 
 			$ret['output'] = DisplayLib::boxMsg(_("Tare cannot be")."<br />"._("greater than item weight"));
 		else {
 			TransRecord::addTare($left);

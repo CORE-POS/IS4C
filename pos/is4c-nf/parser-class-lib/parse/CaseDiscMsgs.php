@@ -31,15 +31,15 @@ class CaseDiscMsgs extends Parser {
 		return False;
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
+	function parse($str)
+    {
 		$ret = $this->default_json();
 		if ($str == "cdInvalid") 
-			$ret['output'] = DisplayLib::boxMsg($CORE_LOCAL->get("casediscount")._("% case discount invalid"));
+			$ret['output'] = DisplayLib::boxMsg(CoreLocal::get("casediscount")._("% case discount invalid"));
 		elseif ($str == "cdStaffNA") 
 			$ret['output'] = DisplayLib::boxMsg(_("case discount not applicable to staff"));
 		elseif ($str == "cdSSINA") 
-			$ret['output'] = DisplayLib::boxMsg(_("hit 10% key to apply case discount for member")." ".$CORE_LOCAL->get("memberID"));
+			$ret['output'] = DisplayLib::boxMsg(_("hit 10% key to apply case discount for member")." ".CoreLocal::get("memberID"));
 	
 		return $ret;
 	}

@@ -34,11 +34,10 @@ class EndOfShift extends Parser
 
 	function parse($str)
     {
-        global $CORE_LOCAL;
 		$json = $this->default_json();
 
-        $CORE_LOCAL->set("memberID", $CORE_LOCAL->get('defaultNonMem'));
-        $CORE_LOCAL->set("memMsg","End of Shift");
+        CoreLocal::set("memberID", CoreLocal::get('defaultNonMem'));
+        CoreLocal::set("memMsg","End of Shift");
         TransRecord::addRecord(array(
             'upc' => 'ENDOFSHIFT',
             'description' => 'End of Shift',
@@ -50,9 +49,9 @@ class EndOfShift extends Parser
             $json['main_frame'] = $chk;
             return $json;
         }
-        $CORE_LOCAL->set("runningtotal",$CORE_LOCAL->get("amtdue"));
+        CoreLocal::set("runningtotal",CoreLocal::get("amtdue"));
 
-        return PrehLib::tender("CA", $CORE_LOCAL->get("runningtotal") * 100);
+        return PrehLib::tender("CA", CoreLocal::get("runningtotal") * 100);
 	}
 
 	function doc()

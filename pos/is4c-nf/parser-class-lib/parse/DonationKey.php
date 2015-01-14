@@ -34,8 +34,7 @@ class DonationKey extends Parser
 
 	function parse($str)
     {
-		global $CORE_LOCAL;
-        $dept = $CORE_LOCAL->get('roundUpDept');
+        $dept = CoreLocal::get('roundUpDept');
         if ($dept === '') {
             $dept = 701;
         }
@@ -43,7 +42,7 @@ class DonationKey extends Parser
 		$ret = $this->default_json();
 		if ($str == "RU") {
 			Database::getsubtotals();
-			$ttl = $CORE_LOCAL->get("amtdue");	
+			$ttl = CoreLocal::get("amtdue");	
 			$next = ceil($ttl);
 			$amt = sprintf('%.2f',(($ttl == $next) ? 1.00 : ($next - $ttl)));
 			$ret = PrehLib::deptkey($amt*100, $dept.'0', $ret);
