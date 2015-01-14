@@ -121,7 +121,7 @@ class DepartmentMovementReport extends FannieReportPage
             case 'PLU':
                 $query = "SELECT t.upc,
                       CASE WHEN p.description IS NULL THEN t.description ELSE p.description END as description, 
-                      SUM(CASE WHEN trans_status IN('','0') THEN 1 WHEN trans_status='V' THEN -1 ELSE 0 END) as rings,"
+                      SUM(CASE WHEN trans_status IN('','0','R') THEN 1 WHEN trans_status='V' THEN -1 ELSE 0 END) as rings,"
                       . DTrans::sumQuantity('t')." as qty,
                       SUM(t.total) AS total,
                       d.dept_no,d.dept_name,s.superID,
@@ -139,6 +139,7 @@ class DepartmentMovementReport extends FannieReportPage
                       AND " . DTrans::isStoreID($store, 't') . "
                       GROUP BY t.upc,
                           CASE WHEN p.description IS NULL THEN t.description ELSE p.description END,
+                          CASE WHEN t.trans_status = 'R' THEN 'Refund' ELSE 'Sale' END,
                       d.dept_no,d.dept_name,s.superID,distributor ORDER BY SUM(t.total) DESC";
                 break;
             case 'Department':
@@ -150,6 +151,7 @@ class DepartmentMovementReport extends FannieReportPage
                     . "LEFT JOIN $superTable AS s ON s.dept_ID = t.department 
                     WHERE $filter_condition
                     AND tdate BETWEEN ? AND ?
+                    AND t.trans_type IN ('I', 'D')
                     AND $filter_transactions
                     AND " . DTrans::isStoreID($store, 't') . "
                     GROUP BY t.department,d.dept_name ORDER BY SUM(total) DESC";
@@ -164,6 +166,7 @@ class DepartmentMovementReport extends FannieReportPage
                     . "LEFT JOIN $superTable AS s ON s.dept_ID = t.department
                     WHERE $filter_condition
                     AND tdate BETWEEN ? AND ?
+                    AND t.trans_type IN ('I', 'D')
                     AND $filter_transactions
                     AND " . DTrans::isStoreID($store, 't') . "
                     GROUP BY year(tdate),month(tdate),day(tdate) 
@@ -187,6 +190,7 @@ class DepartmentMovementReport extends FannieReportPage
                     . "LEFT JOIN $superTable AS s ON s.dept_ID = t.department 
                     WHERE $filter_condition
                     AND tdate BETWEEN ? AND ?
+                    AND t.trans_type IN ('I', 'D')
                     AND $filter_transactions
                     AND " . DTrans::isStoreID($store, 't') . "
                     GROUP BY $cols
@@ -207,10 +211,13 @@ class DepartmentMovementReport extends FannieReportPage
             if ($groupby == "Date") {
                 $record[] = $row[1]."/".$row[2]."/".$row[0];
                 $record[] = date('l', strtotime($record[0]));
-                $record[] = $row[3];
-                $record[] = $row[4];
+                $record[] = sprintf('%.2f', $row[3]);
+                $record[] = sprintf('%.2f', $row[4]);
             } else {
                 for($i=0;$i<$dbc->num_fields($result);$i++) {
+                    if (preg_match('/^\d+\.\d+$/', $row[$i])) {
+                        $row[$i] = sprintf('%.2f', $row[$i]);
+                    }
                     $record[] .= $row[$i];
                 }
             }
