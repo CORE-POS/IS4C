@@ -21,8 +21,6 @@
 
 *********************************************************************************/
 
-include_once(realpath(dirname(__FILE__)."/../ini.php"));
-
 /**
  @class CoreState
  Setup session variables

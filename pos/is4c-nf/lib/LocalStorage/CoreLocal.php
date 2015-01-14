@@ -94,15 +94,16 @@ class CoreLocal
     public static function refresh()
     {
         self::init();
-        if (file_exists(dirname(__FILE__).'/../../ini.php')) {
-            self::loadPhpIni(dirname(__FILE__).'/../../ini.php');
-        }
+        self::loadIni();
     }
 
     /**
-      Load values from an ini.php config file
+      Load values from an ini file. 
+      Will read the first file found from:
+      1. ini.php
+      2. ini.json
     */
-    private static function loadPhpIni($file)
+    private static function loadIni()
     {
         /**
           UnitTestStorage is backed by a simple array rather
@@ -113,9 +114,13 @@ class CoreLocal
         if (!class_exists('UnitTestStorage')) {
             include(dirname(__FILE__) . '/UnitTestStorage.php');
         }
-        $CORE_LOCAL = new UnitTestStorage();
-        include($file);
-        foreach ($CORE_LOCAL as $key => $value) {
+        $settings = array();
+        if (file_exists(dirname(__FILE__) . '/../../ini.php')) {
+            $settings = self::readIniPhp();
+        } elseif (file_exists(dirname(__FILE__) . '/../../ini.json')) {
+            $settings = self::readIniJson();
+        }
+        foreach ($settings as $key => $value) {
             if (!in_array($key, self::$INI_SETTINGS)) {
                 // setting does not belong in ini.php
                 // eventually these settings should be
@@ -134,12 +139,10 @@ class CoreLocal
     public function migrateSettings()
     {
         if (file_exists(dirname(__FILE__).'/../../ini.php') && class_exists('InstallUtilities')) {
-            $CORE_LOCAL = new UnitTestStorage();
             $file = dirname(__FILE__).'/../../ini.php';
-            include($file);
-            foreach ($CORE_LOCAL as $key => $value) {
+            $settings = self::readIniPhp();
+            foreach ($settings as $key => $value) {
                 if (!in_array($key, self::$INI_SETTINGS)) {
-                    echo "Migrating $key\n";
                     if ($key == 'SpecialDeptMap') {
                         // SpecialDeptMap has a weird array structure
                         // and gets moved to a dedicated table
@@ -159,6 +162,58 @@ class CoreLocal
                 }
             }
         }
+    }
+
+    /**
+      Read the settings from ini.php and return
+      an equivalent JSON string
+    */
+    public static function convertIniPhpToJson()
+    {
+        $php = dirname(__FILE__) . '/../../ini.php';
+        $php = self::readIniPhp();
+        $json = array();
+        foreach ($php as $key => $val) {
+            $json[$key] = $val;
+        }
+
+        return JsonLib::prettyJSON(json_encode($json));
+    }
+
+    /**
+      Read settings from ini.php
+      @return [LocalStorage object] containing the settings  
+    */
+    public static function readIniPhp()
+    {
+        $php = dirname(__FILE__) . '/../../ini.php';
+        $CORE_LOCAL = new UnitTestStorage();
+        if (file_exists($php)) {
+            include($php);
+        }
+
+        return $CORE_LOCAL;
+    }
+
+    /**
+      Read settings from ini.json
+      @return [LocalStorage object] containing the settings  
+    */
+    public static function readIniJson()
+    {
+        $json = dirname(__FILE__) . '/../../ini.json';
+        $ret = new UnitTestStorage();
+        if (file_exists($json)) {
+            $encoded = file_get_contents($json);
+            $decoded = json_decode($encoded, true);
+            if (is_array($decoded)) {
+                foreach ($decoded as $key => $val) {
+                    $ret->set($key, $val);
+                }
+            }
+        }
+
+        return $ret;
     }
 
     /**
