@@ -26,8 +26,8 @@ include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 class PaycardTransListPage extends NoInputPage 
 {
 
-	function preprocess(){
-		global $CORE_LOCAL;
+	function preprocess()
+    {
 		// check for posts before drawing anything, so we can redirect
         if (isset($_REQUEST['selectlist'])) {
             $id = $_REQUEST['selectlist'];
@@ -45,8 +45,8 @@ class PaycardTransListPage extends NoInputPage
 		return True;
 	}
 
-	function body_content(){
-		global $CORE_LOCAL;
+	function body_content()
+    {
         $local = array();
         $other = array();
         $db = Database::tDataConnect();
@@ -55,9 +55,9 @@ class PaycardTransListPage extends NoInputPage
         while($w = $db->fetch_row($localR)) {
             $local['_l' . $w['refNum']] = '(CURRENT)' . $w['PAN'] . ' : ' . sprintf('%.2f', $w['amount']);
         }
-        if ($CORE_LOCAL->get('standalone') == 0) {
+        if (CoreLocal::get('standalone') == 0) {
 
-            $emp = $CORE_LOCAL->get('CashierNo');
+            $emp = CoreLocal::get('CashierNo');
             $db = Database::pDataConnect();
             $empQ = 'SELECT frontendsecurity FROM employees WHERE emp_no=' . ((int)$emp);
             $empR = $db->query($empQ);
@@ -75,8 +75,8 @@ class PaycardTransListPage extends NoInputPage
                         FROM efsnetRequest 
                         WHERE date=' . date('Ymd');
             if (!$supervisor) {
-                $otherQ .= ' AND laneNo=' . ((int)$CORE_LOCAL->get('laneno')) . '
-                           AND cashierNo=' . ((int)$CORE_LOCAL->get('CashierNo'));
+                $otherQ .= ' AND laneNo=' . ((int)CoreLocal::get('laneno')) . '
+                           AND cashierNo=' . ((int)CoreLocal::get('CashierNo'));
             }
             $otherQ .= ' GROUP BY amount, PAN, refNum
                         ORDER BY datetime DESC';

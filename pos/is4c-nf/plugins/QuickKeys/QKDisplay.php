@@ -90,8 +90,8 @@ class QKDisplay extends NoInputPage {
 	} // END head() FUNCTION
 
 	var $plugin_url;
-	function preprocess(){
-		global $CORE_LOCAL;
+	function preprocess()
+    {
 		$plugin_info = new QuickKeys();
 		$this->plugin_url = $plugin_info->plugin_url().'/';
 
@@ -108,13 +108,13 @@ class QKDisplay extends NoInputPage {
 
 				$value = $_REQUEST[md5($choice)];
 
-				$output = $CORE_LOCAL->get("qkInput").$value;
-				$CORE_LOCAL->set("msgrepeat",1);
-				$CORE_LOCAL->set("strRemembered",$output);
-				$CORE_LOCAL->set("currentid",$CORE_LOCAL->get("qkCurrentId"));
+				$output = CoreLocal::get("qkInput").$value;
+				CoreLocal::set("msgrepeat",1);
+				CoreLocal::set("strRemembered",$output);
+				CoreLocal::set("currentid",CoreLocal::get("qkCurrentId"));
 			}
 			if (substr(strtoupper($output),0,2) == "QK"){
-				$CORE_LOCAL->set("qkNumber",substr($output,2));
+				CoreLocal::set("qkNumber",substr($output,2));
 				return True;
 			}
 			else {
@@ -125,16 +125,15 @@ class QKDisplay extends NoInputPage {
 		return True;
 	} // END preprocess() FUNCTION
 
-	function body_content(){
-		global $CORE_LOCAL;
-
+	function body_content()
+    {
 		$this->add_onload_command("setSelected(7);");
 
 		echo "<div class=\"baseHeight\" style=\"border: solid 1px black;\">";
 		echo "<form action=\"".$_SERVER["PHP_SELF"]."\" method=\"post\">";
 
 		include(realpath(dirname(__FILE__)."/quickkeys/keys/"
-			.$CORE_LOCAL->get("qkNumber").".php"));
+			.CoreLocal::get("qkNumber").".php"));
 
 		$num_pages = ceil(count($my_keys)/9.0);
 		$page = $this->offset % $num_pages;

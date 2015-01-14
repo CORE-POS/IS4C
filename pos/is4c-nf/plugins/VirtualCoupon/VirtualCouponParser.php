@@ -30,11 +30,11 @@ class VirtualCouponParser extends Parser {
 		return False;
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
+	function parse($str)
+    {
 		$ret = $this->default_json();
 
-		if ($CORE_LOCAL->get("memberID") == 0){
+		if (CoreLocal::get("memberID") == 0){
 			$ret['output'] = DisplayLib::boxMsg(_("No member selected")."<br />".
 						_("Apply member number first"));
 		}

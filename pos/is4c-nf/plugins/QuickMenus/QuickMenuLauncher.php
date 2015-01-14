@@ -33,15 +33,15 @@ class QuickMenuLauncher extends Parser {
 		return False;
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
+	function parse($str)
+    {
 		$tmp = explode("QM",$str);
 		if (count($tmp) == 2)
-			$CORE_LOCAL->set("qmInput",$tmp[0]);
+			CoreLocal::set("qmInput",$tmp[0]);
 		else
-			$CORE_LOCAL->set("qmInput","");
-		$CORE_LOCAL->set("qmNumber",$tmp[count($tmp)-1]);
-		$CORE_LOCAL->set("qmCurrentId",$CORE_LOCAL->get("currentid"));
+			CoreLocal::set("qmInput","");
+		CoreLocal::set("qmNumber",$tmp[count($tmp)-1]);
+		CoreLocal::set("qmCurrentId",CoreLocal::get("currentid"));
 		$ret = $this->default_json();
 
 		$plugin_info = new QuickMenus();

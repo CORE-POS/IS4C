@@ -21,7 +21,9 @@
 
 *********************************************************************************/
 
-if (!isset($CORE_LOCAL)) include_once(dirname(__FILE__).'/LocalStorage/conf.php');
+if (!defined('CONF_LOADED')) {
+    include_once(dirname(__FILE__).'/LocalStorage/conf.php');
+}
 
 /**
   @class LibraryClass

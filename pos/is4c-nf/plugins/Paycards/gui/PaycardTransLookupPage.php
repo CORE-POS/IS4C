@@ -28,8 +28,6 @@ class PaycardTransLookupPage extends BasicPage
 
 	function preprocess()
     {
-		global $CORE_LOCAL;
-
         if (isset($_REQUEST['doLookup'])) {
             $ref = $_REQUEST['id'];
             $local = $_REQUEST['local'];
@@ -37,7 +35,7 @@ class PaycardTransLookupPage extends BasicPage
 
             $obj = null;
             $resp = array();
-            foreach($CORE_LOCAL->get('RegisteredPaycardClasses') as $rpc) {
+            foreach(CoreLocal::get('RegisteredPaycardClasses') as $rpc) {
                 $obj = new $rpc();
                 if ($obj->myRefNum($ref)) {
                     break;
@@ -68,7 +66,6 @@ class PaycardTransLookupPage extends BasicPage
 
 	function body_content()
     {
-		global $CORE_LOCAL;
 		$this->input_header('onsubmit="lookupFormCallback();return false;"');
 		echo '<div class="baseHeight">';
         $id = $_REQUEST['id'];

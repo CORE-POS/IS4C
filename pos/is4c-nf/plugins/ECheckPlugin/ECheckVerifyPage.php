@@ -28,18 +28,17 @@ class ECheckVerifyPage extends NoInputPage
 
 	function preprocess()
     {
-		global $CORE_LOCAL;
         $amount = $_REQUEST['amount'];
         if (isset($_REQUEST['selectlist'])) {
             $opt = $_REQUEST['selectlist'];
             if ($opt == '' || $opt == 'CL') {
-                $CORE_LOCAL->set('lastRepeat', '');
+                CoreLocal::set('lastRepeat', '');
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 
                 return false;
             } else {
-                $CORE_LOCAL->set('strRemembered', ($amount*100) . $opt);
-                $CORE_LOCAL->set('msgrepeat', 1);
+                CoreLocal::set('strRemembered', ($amount*100) . $opt);
+                CoreLocal::set('msgrepeat', 1);
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 
                 return false;
@@ -77,12 +76,11 @@ class ECheckVerifyPage extends NoInputPage
 
 	function body_content() 
     {
-		global $CORE_LOCAL;
-        $paper = $CORE_LOCAL->get('EcpPaperTender');
+        $paper = CoreLocal::get('EcpPaperTender');
         if ($paper === '') {
             $paper = 'CK';
         }
-        $echeck = $CORE_LOCAL->get('EcpElectronicTender');
+        $echeck = CoreLocal::get('EcpElectronicTender');
         if ($echeck === '') {
             $echeck = 'TK';
         }

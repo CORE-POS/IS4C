@@ -27,7 +27,8 @@ include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
 class QMDisplay extends NoInputPage {
 
-	var $offset;
+	private $offset;
+	private $plugin_url;
 
 	function head_content(){
 		?>
@@ -115,9 +116,8 @@ class QMDisplay extends NoInputPage {
 		<?php
 	} // END head() FUNCTION
 
-	var $plugin_url;
-	function preprocess(){
-		global $CORE_LOCAL;
+	function preprocess()
+    {
 		$plugin_info = new QuickMenus();
 		$this->plugin_url = $plugin_info->plugin_url().'/';
 
@@ -128,13 +128,13 @@ class QMDisplay extends NoInputPage {
 			if ($_REQUEST["clear"] == 0){
 				$value = $_REQUEST['ddQKselect'];
 
-				$output = $CORE_LOCAL->get("qmInput").$value;
-				$CORE_LOCAL->set("msgrepeat",1);
-				$CORE_LOCAL->set("strRemembered",$output);
-				$CORE_LOCAL->set("currentid",$CORE_LOCAL->get("qmCurrentId"));
+				$output = CoreLocal::get("qmInput").$value;
+				CoreLocal::set("msgrepeat",1);
+				CoreLocal::set("strRemembered",$output);
+				CoreLocal::set("currentid",CoreLocal::get("qmCurrentId"));
 			}
 			if (substr(strtoupper($output),0,2) == "QM"){
-				$CORE_LOCAL->set("qmNumber",substr($output,2));
+				CoreLocal::set("qmNumber",substr($output,2));
 				return True;
 			}
 			else {
@@ -145,9 +145,8 @@ class QMDisplay extends NoInputPage {
 		return True;
 	} // END preprocess() FUNCTION
 
-	function body_content(){
-		global $CORE_LOCAL;
-
+	function body_content()
+    {
 		$this->add_onload_command('$(\'#ddQKselect\').focus()');
 
 		echo "<div class=\"baseHeight\" style=\"border: solid 1px black;\">";
@@ -157,15 +156,15 @@ class QMDisplay extends NoInputPage {
           Where can the menu be found?
         */
 		$my_menu = array();
-		if (is_array($CORE_LOCAL->get('qmNumber'))){
+		if (is_array(CoreLocal::get('qmNumber'))){
             /** Calling code provided the menu array via session data */
-			$my_menu = $CORE_LOCAL->get('qmNumber');
-		} else if (file_exists(realpath(dirname(__FILE__)."/quickmenus/".$CORE_LOCAL->get("qmNumber").".php"))) {
+			$my_menu = CoreLocal::get('qmNumber');
+		} else if (file_exists(realpath(dirname(__FILE__)."/quickmenus/".CoreLocal::get("qmNumber").".php"))) {
             /** Old way:
                 Menu is defined in a PHP file
             */
 			include(realpath(dirname(__FILE__)."/quickmenus/"
-				.$CORE_LOCAL->get("qmNumber").".php"));
+				.CoreLocal::get("qmNumber").".php"));
 		} else {
             /** New way:
                 Get menu options from QuickLookups table
@@ -173,7 +172,7 @@ class QMDisplay extends NoInputPage {
             $db = Database::pDataConnect();
             if ($db->table_exists('QuickLookups')) {
                 $model = new QuickLookupsModel($db);
-                $model->lookupSet($CORE_LOCAL->get('qmNumber'));
+                $model->lookupSet(CoreLocal::get('qmNumber'));
                 foreach($model->find(array('sequence', 'label')) as $obj) {
                     $my_menu[$obj->label()] = $obj->action();
                 }

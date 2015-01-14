@@ -33,15 +33,15 @@ class QuickKeyLauncher extends Parser {
 		return False;
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
+	function parse($str)
+    {
 		$tmp = explode("QK",$str);
 		if (count($tmp) == 2)
-			$CORE_LOCAL->set("qkInput",$tmp[0]);
+			CoreLocal::set("qkInput",$tmp[0]);
 		else
-			$CORE_LOCAL->set("qkInput","");
-		$CORE_LOCAL->set("qkNumber",$tmp[count($tmp)-1]);
-		$CORE_LOCAL->set("qkCurrentId",$CORE_LOCAL->get("currentid"));
+			CoreLocal::set("qkInput","");
+		CoreLocal::set("qkNumber",$tmp[count($tmp)-1]);
+		CoreLocal::set("qkCurrentId",CoreLocal::get("currentid"));
 		$ret = $this->default_json();
 
 		$plugin_info = new QuickKeys();

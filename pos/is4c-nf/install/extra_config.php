@@ -127,7 +127,7 @@ include('InstallUtilities.php');
 ?>
 <tr><td><b>Printer port</b>:
 </td><td><?php
-// If values entered on the form are being saved, set CORE_LOCAL
+// If values entered on the form are being saved, set session variable
 //  and flag type of port choice: "other" or not.
 if (isset($_REQUEST['PPORT'])) {
     if ($_REQUEST['PPORT'] == 'other' &&

@@ -38,8 +38,8 @@ class CashDropParser extends Parser {
 		}
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
+	function parse($str)
+    {
 		$ret = $this->default_json();
 		if (substr($str,0,8) == 'DROPDROP'){
             // repeat cashier's input, if any

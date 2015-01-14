@@ -446,7 +446,6 @@ printf("<tr><td>(Add)</td><td><input type=text name=TAX_RATE[] value=\"\" /></td
 <?php
 
 function create_min_server($db,$type){
-    global $CORE_LOCAL;
     $name = CoreLocal::get('mDatabase');
     $errors = array();
 

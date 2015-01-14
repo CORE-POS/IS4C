@@ -51,3 +51,6 @@ global $CORE_LOCAL;
 // this includes ini.php
 CoreLocal::refresh();
 
+if (!defined('CONF_LOADED')) {
+    define('CONF_LOADED', true);
+}

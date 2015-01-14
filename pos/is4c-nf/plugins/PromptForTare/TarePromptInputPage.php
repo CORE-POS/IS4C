@@ -38,7 +38,7 @@
 //include '../gui-class-lib/NoInputPage.php';
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
-class TarePropmtInputPage extends NoInputPage {
+class TarePromptInputPage extends NoInputPage {
 
 	private $request_header = '';
 	private $request_msg = '';
@@ -83,11 +83,10 @@ class TarePropmtInputPage extends NoInputPage {
 			} else {
 				if ($reginput === '' || $reginput === '0'){
 				    // blank. enter default tare.
-				    global $CORE_LOCAL;
-				    if ($CORE_LOCAL->get('DefaultTare') > 0) {
-				    	$reginput = $CORE_LOCAL->get('DefaultTare')*100;
+				    if (CoreLocal::get('DefaultTare') > 0) {
+				    	$reginput = CoreLocal::get('DefaultTare')*100;
 				    } else {
-				    	$CORE_LOCAL->set('tarezero', Ture);
+				    	CoreLocal::set('tarezero', Ture);
 				    	$this->change_page($pos_home.'?reginput='.$item);
 				    	return False;
 				    }
@@ -116,7 +115,6 @@ class TarePropmtInputPage extends NoInputPage {
 	}
 
 	function body_content(){
-		global $CORE_LOCAL;
 		?>
 		<div class="baseHeight">
 		<div class="colored centeredDisplay">

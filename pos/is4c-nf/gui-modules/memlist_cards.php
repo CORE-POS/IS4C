@@ -217,8 +217,8 @@ class memlist_cards extends NoInputPage {
 
 	} // END preprocess() FUNCTION
 
-	function head_content(){
-		global $CORE_LOCAL;
+	function head_content()
+    {
 		if ($this->temp_num_rows > 0){
 			$this->add_onload_command("selectSubmit('#search', '#selectform')\n");
 			$this->add_onload_command("\$('#search').focus();\n");
