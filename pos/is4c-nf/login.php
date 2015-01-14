@@ -35,6 +35,7 @@ if (CoreLocal::get("SessionFirstRun") == "") {
 	CoreLocal::set("SessionFirstRun",1);
 }
 
+CoreLocal::migrateSettings();
 
 /**
   Go to login screen if no one is signed in

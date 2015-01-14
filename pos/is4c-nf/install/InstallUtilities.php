@@ -185,8 +185,8 @@ class InstallUtilities extends LibraryClass
 
     static public function confRemove($key, $local=false)
     {
-        $path_global = '../ini.php';
-        $path_local = '../ini-local.php';
+        $path_global = dirname(__FILE__) . '/../ini.php';
+        $path_local = dirname(__FILE__) .  '/../ini-local.php';
 
         $orig_setting = '|\$CORE_LOCAL->set\([\'"]'.$key.'[\'"],\s*(.+)\);[\r\n]|';
         $current_conf = ($local) ? file_get_contents($path_local) : file_get_contents($path_global);
