@@ -183,7 +183,286 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals(False,$norm->isStaffOnly());
 	}
 
-	public function testSpecialUPCs() {
+    public function testPriceMethods()
+    {
+		if (!class_exists('lttLib')) {
+            include (dirname(__FILE__) . '/lttLib.php');
+        }
+        lttLib::clear();
+
+        $db = Database::pDataConnect();
+        $q = "SELECT * FROM products WHERE upc='0000000000111'";
+        $r = $db->query($q);
+        $row = $db->fetch_row($r);
+        $discount = new NormalPricing();
+        $discount->priceInfo($row, 1);
+        $pm = new BasicPM();
+        $pm->addItem($row, 1, $discount);
+        $record = lttLib::genericRecord();
+        $record['upc'] = '0000000000111';
+        $record['description'] = 'WYNDMERE 5-8 DRAM BOTTLE';
+        $record['trans_type'] = 'I';
+        $record['trans_subtype'] = '';
+        $record['trans_status'] = '';
+        $record['department'] = 103;
+        $record['quantity'] = 1;
+        $record['ItemQtty'] = 1;
+        $record['unitPrice'] = 1.65;
+        $record['total'] = 1.65;
+        $record['regPrice'] = 1.65;
+        $record['tax'] = 1;
+        $record['discountable'] = 1;
+        $record['mixMatch'] = '499';
+		lttLib::verifyRecord(1, $record, $this);
+
+        lttLib::clear();
+
+        $row['pricemethod'] = 1;
+        $row['groupprice'] = 2;
+        $row['quantity'] = 2;
+        $discount = new NormalPricing();
+        $discount->priceInfo($row, 1);
+        $pm = new GroupPM();
+        $pm->addItem($row, 1, $discount);
+        $record = lttLib::genericRecord();
+        $record['upc'] = '0000000000111';
+        $record['description'] = 'WYNDMERE 5-8 DRAM BOTTLE';
+        $record['trans_type'] = 'I';
+        $record['trans_subtype'] = '';
+        $record['trans_status'] = '';
+        $record['department'] = 103;
+        $record['quantity'] = 1;
+        $record['ItemQtty'] = 1;
+        $record['unitPrice'] = 1.00;
+        $record['total'] = 1.00;
+        $record['regPrice'] = 1.65;
+        $record['tax'] = 1;
+        $record['discountable'] = 1;
+        $record['mixMatch'] = '499';
+        $record['volDiscType'] = 1;
+        $record['volume'] = 2;
+        $record['VolSpecial'] = 2.00;
+		lttLib::verifyRecord(1, $record, $this);
+        $pm->addItem($row, 1, $discount);
+        $record = lttLib::genericRecord();
+        $record['upc'] = '0000000000111';
+        $record['description'] = 'WYNDMERE 5-8 DRAM BOTTLE';
+        $record['trans_type'] = 'I';
+        $record['trans_subtype'] = '';
+        $record['trans_status'] = '';
+        $record['department'] = 103;
+        $record['quantity'] = 1;
+        $record['ItemQtty'] = 1;
+        $record['unitPrice'] = 1.00;
+        $record['total'] = 1.00;
+        $record['regPrice'] = 1.65;
+        $record['tax'] = 1;
+        $record['discountable'] = 1;
+        $record['mixMatch'] = '499';
+        $record['volDiscType'] = 1;
+        $record['volume'] = 2;
+        $record['VolSpecial'] = 2.00;
+		lttLib::verifyRecord(2, $record, $this);
+
+        lttLib::clear();
+
+        $row['pricemethod'] = 2;
+        $discount = new NormalPricing();
+        $discount->priceInfo($row, 1);
+        $pm = new QttyEnforcedGroupPM();
+        $pm->addItem($row, 1, $discount);
+        $record = lttLib::genericRecord();
+        $record['upc'] = '0000000000111';
+        $record['description'] = 'WYNDMERE 5-8 DRAM BOTTLE';
+        $record['trans_type'] = 'I';
+        $record['trans_subtype'] = '';
+        $record['trans_status'] = '';
+        $record['department'] = 103;
+        $record['quantity'] = 1;
+        $record['ItemQtty'] = 1;
+        $record['unitPrice'] = 1.65;
+        $record['total'] = 1.65;
+        $record['regPrice'] = 1.65;
+        $record['tax'] = 1;
+        $record['discountable'] = 1;
+        $record['mixMatch'] = '499';
+        $record['volDiscType'] = 2;
+        $record['volume'] = 2;
+        $record['VolSpecial'] = 2.00;
+		lttLib::verifyRecord(1, $record, $this);
+        $pm->addItem($row, 1, $discount);
+        $record = lttLib::genericRecord();
+        $record['upc'] = '0000000000111';
+        $record['description'] = 'WYNDMERE 5-8 DRAM BOTTLE';
+        $record['trans_type'] = 'I';
+        $record['trans_subtype'] = '';
+        $record['trans_status'] = '';
+        $record['department'] = 103;
+        $record['quantity'] = 1;
+        $record['ItemQtty'] = 1;
+        $record['unitPrice'] = 0.35;
+        $record['total'] = 0.35;
+        $record['regPrice'] = 1.65;
+        $record['tax'] = 1;
+        $record['discountable'] = 1;
+        $record['mixMatch'] = '499';
+        $record['volDiscType'] = 2;
+        $record['volume'] = 2;
+        $record['VolSpecial'] = 2.00;
+        $record['discount'] = 1.30;
+        $record['matched'] = 2;
+		lttLib::verifyRecord(2, $record, $this);
+
+        lttLib::clear();
+
+        $db = Database::pDataConnect();
+        $item1 = '0027002000000';
+        $r = $db->query("SELECT * FROM products WHERE upc='$item1'");
+        $row1 = $db->fetch_row($r);
+        $row1['normal_price'] = 9.99;
+        $item2 = '0020140000000';
+        $r = $db->query("SELECT * FROM products WHERE upc='$item2'");
+        $row2 = $db->fetch_row($r);
+        $row2['normal_price'] = 9.99;
+        $discount1 = new NormalPricing();
+        $discount1->priceInfo($row1, 1);
+        $discount2 = new NormalPricing();
+        $discount2->priceInfo($row2, 1);
+        $pm = new SplitABGroupPM();
+        $pm->addItem($row1, 1, $discount1);
+        $record = lttLib::genericRecord();
+        $record['upc'] = '0027002000000';
+        $record['description'] = 'HALF ROAST BEEF AND CHEDDAR';
+        $record['trans_type'] = 'I';
+        $record['trans_subtype'] = '';
+        $record['trans_status'] = '';
+        $record['department'] = 226;
+        $record['quantity'] = 1;
+        $record['ItemQtty'] = 1;
+        $record['unitPrice'] = 9.99;
+        $record['total'] = 9.99;
+        $record['regPrice'] = 9.99;
+        $record['tax'] = 2;
+        $record['foodstamp'] = 1;
+        $record['discountable'] = 1;
+        $record['mixMatch'] = '-2';
+        $record['volDiscType'] = 3;
+        $record['volume'] = 2;
+        $record['VolSpecial'] = 0.50;
+		lttLib::verifyRecord(1, $record, $this);
+        $pm->addItem($row2, 1, $discount2);
+        $record = lttLib::genericRecord();
+        $record['upc'] = '0020140000000';
+        $record['description'] = 'SOUP 16 OZ';
+        $record['trans_type'] = 'I';
+        $record['trans_subtype'] = '';
+        $record['trans_status'] = '';
+        $record['department'] = 66;
+        $record['quantity'] = 1;
+        $record['ItemQtty'] = 1;
+        $record['unitPrice'] = 9.99;
+        $record['total'] = 9.99;
+        $record['regPrice'] = 9.99;
+        $record['tax'] = 2;
+        $record['foodstamp'] = 0;
+        $record['discountable'] = 1;
+        $record['mixMatch'] = '2';
+        $record['volDiscType'] = 3;
+        $record['volume'] = 2;
+        $record['VolSpecial'] = 0.50;
+        $record['matched'] = 2;
+		lttLib::verifyRecord(2, $record, $this);
+        $record = lttLib::genericRecord();
+        $record['upc'] = 'ITEMDISCOUNT';
+        $record['description'] = ' * Item Discount';
+        $record['trans_type'] = 'I';
+        $record['department'] = 66;
+        $record['quantity'] = 1;
+        $record['ItemQtty'] = 1;
+        $record['unitPrice'] = -0.25;
+        $record['total'] = -0.25;
+        $record['regPrice'] = -0.25;
+		lttLib::verifyRecord(3, $record, $this);
+        $record = lttLib::genericRecord();
+        $record['upc'] = 'ITEMDISCOUNT';
+        $record['description'] = ' * Item Discount';
+        $record['trans_type'] = 'I';
+        $record['department'] = 226;
+        $record['quantity'] = 1;
+        $record['ItemQtty'] = 1;
+        $record['unitPrice'] = -0.25;
+        $record['total'] = -0.25;
+        $record['regPrice'] = -0.25;
+		lttLib::verifyRecord(4, $record, $this);
+
+        lttLib::clear();
+
+        $row1['pricemethod'] = 4;
+        $row2['pricemethod'] = 4;
+        $discount1 = new NormalPricing();
+        $discount1->priceInfo($row1, 1);
+        $discount2 = new NormalPricing();
+        $discount2->priceInfo($row2, 1);
+        $pm = new ABGroupPM();
+        $pm->addItem($row2, 1, $discount2);
+        $record = lttLib::genericRecord();
+        $record['upc'] = '0020140000000';
+        $record['description'] = 'SOUP 16 OZ';
+        $record['trans_type'] = 'I';
+        $record['trans_subtype'] = '';
+        $record['trans_status'] = '';
+        $record['department'] = 66;
+        $record['quantity'] = 1;
+        $record['ItemQtty'] = 1;
+        $record['unitPrice'] = 9.99;
+        $record['total'] = 9.99;
+        $record['regPrice'] = 9.99;
+        $record['tax'] = 2;
+        $record['foodstamp'] = 0;
+        $record['discountable'] = 1;
+        $record['mixMatch'] = '2';
+        $record['volDiscType'] = 4;
+        $record['volume'] = 2;
+        $record['VolSpecial'] = 0.50;
+		lttLib::verifyRecord(1, $record, $this);
+        $pm->addItem($row1, 1, $discount1);
+        $record = lttLib::genericRecord();
+        $record['upc'] = '0027002000000';
+        $record['description'] = 'HALF ROAST BEEF AND CHEDDAR';
+        $record['trans_type'] = 'I';
+        $record['trans_subtype'] = '';
+        $record['trans_status'] = '';
+        $record['department'] = 226;
+        $record['quantity'] = 1;
+        $record['ItemQtty'] = 1;
+        $record['unitPrice'] = 9.99;
+        $record['total'] = 9.99;
+        $record['regPrice'] = 9.99;
+        $record['tax'] = 2;
+        $record['discount'] = 0.50;
+        $record['foodstamp'] = 1;
+        $record['discountable'] = 1;
+        $record['mixMatch'] = '-2';
+        $record['volDiscType'] = 4;
+        $record['volume'] = 2;
+        $record['VolSpecial'] = 0.50;
+        $record['matched'] = 2;
+		lttLib::verifyRecord(2, $record, $this);
+        $record = lttLib::genericRecord();
+        $record['upc'] = 'ITEMDISCOUNT';
+        $record['description'] = ' * Item Discount';
+        $record['trans_type'] = 'I';
+        $record['department'] = 226;
+        $record['quantity'] = 1;
+        $record['ItemQtty'] = 1;
+        $record['unitPrice'] = -0.50;
+        $record['total'] = -0.50;
+        $record['regPrice'] = -0.50;
+		lttLib::verifyRecord(3, $record, $this);
+    }
+
+	public function testSpecialUPCs() 
+    {
 		global $CORE_LOCAL;
 
 		$defaults = array(
@@ -228,6 +507,56 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals(True,$so->is_special('0045400010001'));
 		$this->assertEquals(False,$so->is_special('0001234512345'));
 	}
+
+    public function testCouponCode()
+    {
+		if (!class_exists('lttLib')) {
+            include (dirname(__FILE__) . '/lttLib.php');
+        }
+
+        $cc = new CouponCode();
+        $out = $cc->handle('0051234512345', array());
+        $expected_error = DisplayLib::boxMsg(_("product not found")."<br />"._("in transaction"));
+
+        $this->assertArrayHasKey('output', $out);
+        $this->assertEquals($out['output'], $expected_error);
+
+        lttLib::clear();
+        $out = $cc->handle('0051234599210', array());
+        $record = lttLib::genericRecord();
+        $record['upc'] = '0051234599210';
+        $record['description'] = ' * Manufacturers Coupon';
+        $record['trans_type'] = 'I';
+        $record['trans_subtype'] = 'CP';
+        $record['trans_status'] = 'C';
+        $record['quantity'] = 1;
+        $record['ItemQtty'] = 1;
+        $record['unitPrice'] = -0.10;
+        $record['total'] = -0.10;
+        $record['regPrice'] = -0.10;
+		lttLib::verifyRecord(1, $record, $this);
+        
+        lttLib::clear();
+        $db = Database::tDataConnect();
+        $db->query('TRUNCATE TABLE couponApplied');
+        $u = new UPC();
+        $u->parse('0001101312028');
+
+        $out = $cc->handle('0051101399901', array());
+        $record = lttLib::genericRecord();
+        $record['upc'] = '0051101399901';
+        $record['description'] = ' * Manufacturers Coupon';
+        $record['trans_type'] = 'I';
+        $record['trans_subtype'] = 'CP';
+        $record['trans_status'] = 'C';
+        $record['department'] = 181;
+        $record['quantity'] = 1;
+        $record['ItemQtty'] = 1;
+        $record['unitPrice'] = -4.59;
+        $record['total'] = -4.59;
+        $record['regPrice'] = -4.59;
+		lttLib::verifyRecord(2, $record, $this);
+    }
 
     public function testHouseCoupons()
     {
@@ -350,6 +679,8 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $record['total'] = -1.00;
         $record['regPrice'] = -1.00;
 		lttLib::verifyRecord(3, $record, $this);
+
+        lttLib::clear();
     }
 
 	public function testSpecialDepts()
