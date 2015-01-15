@@ -21,9 +21,8 @@
 
 *********************************************************************************/
 
-include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(dirname(__FILE__) . '/../../classlib2.0/FannieAPI.php');
 }
 
 class DepartmentMovementReport extends FannieReportPage 
@@ -43,8 +42,7 @@ class DepartmentMovementReport extends FannieReportPage
     */
     function fetch_report_data()
     {
-        global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
         $date1 = FormLib::getDate('date1',date('Y-m-d'));
         $date2 = FormLib::getDate('date2',date('Y-m-d'));
         $deptStart = FormLib::get_form_value('deptStart','');
@@ -306,8 +304,7 @@ class DepartmentMovementReport extends FannieReportPage
 
     function form_content()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
         $deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
         $deptsR = $dbc->exec_statement($deptsQ);
         $deptsList = "";
