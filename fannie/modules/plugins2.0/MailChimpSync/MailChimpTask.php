@@ -105,7 +105,7 @@ class MailChimpTask extends FannieTask
                 $email = $record[$columns['EMAIL ADDRESS']];
                 $fn = $record[$columns['FIRST NAME']];
                 $ln = $record[$columns['LAST NAME']];
-                $changed = isset($record[$columns['LAST_CHANGED']]) ? $record[$columns['LAST_CHANGED']] : 0;
+                $changed = isset($columns['LAST_CHANGED']) && isset($record[$columns['LAST_CHANGED']]) ? $record[$columns['LAST_CHANGED']] : 0;
 
                 /** MailChimp has a POS member number tag **/
                 if (!empty($card_no)) {
