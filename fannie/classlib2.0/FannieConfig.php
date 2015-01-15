@@ -72,5 +72,13 @@ class FannieConfig
             return $default;
         }
     }
+
+    public static function config($name, $default='')
+    {
+        $obj = self::factory();
+
+        return $obj->get($name, $default);
+    }
+
 }
 

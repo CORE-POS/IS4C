@@ -1,7 +1,7 @@
 <?php
 include('../../config.php');
-include_once($FANNIE_ROOT.'src/SQLManager.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once($FANNIE_ROOT.'src/SQLManager.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
 $sql = $dbc;
 
@@ -56,7 +56,10 @@ $cust->Type('REG');
 $cust->Staff(0);
 $cust->Discount(0);
 
-MemberCardsModel::update($memNum,$_REQUEST['cardUPC']);
+$cards = new MemberCardsModel($dbc);
+$cards->card_no($memNum);
+$cards->upc($_REQUEST['cardUPC']);
+$cards->save();
 
 $mcP = $sql->prepare("UPDATE memContact SET pref=? WHERE card_no=?");
 $sql->execute($mcP, array($MI_FIELDS['ads_OK'], $memNum));
@@ -104,7 +107,12 @@ $meminfo->email_2($MI_FIELDS['email_2']);
 $meminfo->email_1($MI_FIELDS['email_1']);
 $meminfo->ads_OK($MI_FIELDS['ads_OK']);
 $meminfo->save();
-MemDatesModel::update($memNum, $_POST['startDate'], $_POST['endDate']);
+
+$memdate = new MemDatesModel($dbc);
+$memdate->card_no($memNum);
+$memdate->start_date($_POST['startDate']);
+$memdate->end_date($_POST['endDate']);
+$memdate->save();
 
 // FIRE ALL UPDATE
 include('custUpdates.php');

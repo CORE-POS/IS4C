@@ -59,7 +59,10 @@ class SyncLanes
     */
     static public function pushTable($table,$db='op',$truncate=self::TRUNCATE_DESTINATION)
     {
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_LANES;
+        $config = \FannieConfig::factory();
+        $op_db = $config->get('OP_DB');
+        $trans_db = $config->get('TRANS_DB');
+        $lanes = $config->get('LANES');
 
         $ret = array('sending'=>True,'messages'=>'');
 
@@ -95,10 +98,10 @@ class SyncLanes
             /* use the transfer option in SQLManager
             *   to copy records onto each lane
             */
-            $server_db = $db=='op' ? $FANNIE_OP_DB : $FANNIE_TRANS_DB;
+            $server_db = $db=='op' ? $op_db : $trans_db;
             $dbc = \FannieDB::get( $server_db );
             $laneNumber=1;
-            foreach($FANNIE_LANES as $lane) {
+            foreach($lanes as $lane) {
                 $dbc->add_connection($lane['host'],$lane['type'],
                     $lane[$db],$lane['user'],$lane['pw']);
                 if ($dbc->connections[$lane[$db]]) {
@@ -146,7 +149,10 @@ class SyncLanes
     */
     static public function pullTable($table,$db='trans',$truncate=self::TRUNCATE_SOURCE)
     {
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_LANES;
+        $config = \FannieConfig::factory();
+        $op_db = $config->get('OP_DB');
+        $trans_db = $config->get('TRANS_DB');
+        $lanes = $config->get('LANES');
 
         $ret = array('sending'=>True,'messages'=>'');
 
@@ -167,13 +173,13 @@ class SyncLanes
 
         // use the transfer option in SQLManager to copy
         // records from each lane
-        $server_db = $db=='op' ? $FANNIE_OP_DB : $FANNIE_TRANS_DB;
+        $server_db = $db=='op' ? $op_db : $trans_db;
         $dbc = \FannieDB::get( $server_db );
         if ($truncate & self::TRUNCATE_DESTINATION) {
             $dbc->query("TRUNCATE TABLE $table",$server_db);
         }
         $laneNumber=1;
-        foreach($FANNIE_LANES as $lane) {
+        foreach($lanes as $lane) {
             $dbc->add_connection($lane['host'],$lane['type'],
                 $lane[$db],$lane['user'],$lane['pw']);
             if ($dbc->connections[$lane[$db]]) {

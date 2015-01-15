@@ -77,11 +77,12 @@ class FanniePage
 
     public function __construct()
     {
-        global $FANNIE_AUTH_DEFAULT, $FANNIE_COOP_ID;
-        if (isset($FANNIE_AUTH_DEFAULT) && !$this->must_authenticate) {
-            $this->must_authenticate = $FANNIE_AUTH_DEFAULT;
+        $auth_default = FannieConfig::config('AUTH_DEFAULT', false);
+        $coop_id = FannieConfig::config('COOP_ID');
+        if ($auth_default && !$this->must_authenticate) {
+            $this->must_authenticate = $auth_default;
         }
-        if (isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto') {
+        if (isset($coop_id) && $coop_id == 'WEFC_Toronto') {
             $this->auth_classes[] = 'admin';
         }
         /*

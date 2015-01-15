@@ -179,8 +179,8 @@ class FormLib
     */
     public static function storePicker($field_name='store')
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB, $previous);
+        $op_db = FannieConfig::config('OP_DB');
+        $dbc = FannieDB::get($op_db, $previous);
 
         $stores = new StoresModel($dbc);
         $current = FormLib::get($field_name, 0);
@@ -198,7 +198,7 @@ class FormLib
         $ret .= '</select>';
 
         // restore previous selected database
-        if ($previous != $FANNIE_OP_DB) {
+        if ($previous != $op_db) {
             FannieDB::get($previous);
         }
 
@@ -312,8 +312,8 @@ class FormLib
     */
     public function standardItemFields()
     {
-        global $FANNIE_OP_DB, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
+        $url_stem = FannieConfig::config('URL');
         ob_start();
         ?>
         <script type="text/javascript">
@@ -331,7 +331,7 @@ class FormLib
                 }
             };
             $.ajax({
-                url: '<?php echo $FANNIE_URL; ?>ws/',
+                url: '<?php echo $url_stem; ?>ws/',
                 type: 'post',
                 data: JSON.stringify(req),
                 dataType: 'json',
@@ -373,7 +373,7 @@ class FormLib
                 }
             };
             $.ajax({
-                url: '<?php echo $FANNIE_URL; ?>ws/',
+                url: '<?php echo $url_stem; ?>ws/',
                 type: 'post',
                 data: JSON.stringify(req),
                 dataType: 'json',
@@ -605,8 +605,8 @@ class FormLib
     */
     public function standardItemFromWhere()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $op_db = FannieConfig::config('OP_DB');
+        $dbc = FannieDB::get($op_db);
         $start_date = self::getDate('date1', date('Y-m-d'));
         $end_date = self::getDate('date2', date('Y-m-d'));
         $dlog = DTransactionsModel::selectDlog($start_date, $end_date);

@@ -276,7 +276,6 @@ class FannieDispatch
             ini_set('error_log', $elog);
     
             // use stack traces if desired
-            include(dirname(__FILE__).'/../config.php');
             if ($config->get('CUSTOM_ERRORS', 0)) {
                 set_error_handler(array('FannieDispatch','errorHandler'));
                 set_exception_handler(array('FannieDispatch','exceptionHandler'));

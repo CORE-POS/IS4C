@@ -1401,7 +1401,6 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
         exit;
     }
 
-    include(dirname(__FILE__).'/../../../config.php');
     include_once(dirname(__FILE__).'/../../FannieAPI.php');
 
     $obj = new BasicModel(null);

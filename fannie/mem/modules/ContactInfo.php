@@ -164,12 +164,12 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
         $meminfo->ads_OK($MI_FIELDS['ads_OK']);
         $test1 = $meminfo->save();
 
-        $CUST_FIELDS = array(
-            'personNum' => array(1),
-            'FirstName' => array(FormLib::get_form_value('ContactInfo_fn')),
-            'LastName' => array(FormLib::get_form_value('ContactInfo_ln'))
-        );
-        $test2 = CustdataModel::update($memNum, $CUST_FIELDS);
+        $custdata = new CustdataModel($dbc);
+        $custdata->CardNo($memNum);
+        $custdata->personNum(1);
+        $custdata->FirstName(FormLib::get('ContactInfo_fn'));
+        $custdata->LastName(FormLib::get('ContactInfo_ln'));
+        $test2 = $custdata->save();
 
         if ($test1 === False || $test2 === False)
             return "Error: problem saving Contact Information<br />";

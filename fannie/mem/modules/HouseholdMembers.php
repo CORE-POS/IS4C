@@ -76,45 +76,54 @@ class HouseholdMembers extends \COREPOS\Fannie\API\member\MemberModule {
         return $ret;
     }
 
-    function saveFormData($memNum){
-        global $FANNIE_ROOT;
+    function saveFormData($memNum)
+    {
         $dbc = $this->db();
-        if (!class_exists("CustdataModel"))
-            include($FANNIE_ROOT.'classlib2.0/data/models/CustdataModel.php');
-
-        $CUST_FIELDS = array('personNum'=>array(),'FirstName'=>array(),'LastName'=>array());
+        if (!class_exists("CustdataModel")) {
+            include(dirname(__FILE__) . '/../../classlib2.0/data/models/CustdataModel.php');
+        }
 
         /**
-          Model needs all names, so lookup primary member
+          Use primary member for default column values
         */
-        $lookupP = $dbc->prepare_statement("SELECT FirstName,LastName FROM custdata WHERE
-                personNum=1 AND CardNo=?");
-        $lookupR = $dbc->exec_statement($lookupP, array($memNum));
-        if ($dbc->num_rows($lookupR) == 0){
+        $custdata = new CustdataModel($dbc);
+        $custdata->CardNo($memNum);
+        $custdata->personNum(1);
+        if (!$custdata->load()) {
             return "Error: Problem saving household members<br />"; 
         }
-        $lookupW = $dbc->fetch_row($lookupR);
-        $CUST_FIELDS['personNum'][] = 1;
-        $CUST_FIELDS['FirstName'][] = $lookupW['FirstName'];
-        $CUST_FIELDS['LastName'][] = $lookupW['LastName'];
 
         $fns = FormLib::get_form_value('HouseholdMembers_fn',array());
         $lns = FormLib::get_form_value('HouseholdMembers_ln',array());
         $pn = 2;
-        for($i=0; $i<count($lns); $i++){
-            if (empty($fns[$i]) && empty($lns[$i])) continue;
+        $errors = false;
+        for ($i=0; $i<count($lns); $i++) {
+            if (empty($fns[$i]) && empty($lns[$i])) {
+                continue;
+            }
 
-            $CUST_FIELDS['personNum'][] = $pn;
-            $CUST_FIELDS['FirstName'][] = $fns[$i];
-            $CUST_FIELDS['LastName'][] = $lns[$i];
+            $custdata->personNum($pn);
+            $custdata->FirstName($fns[$i]);
+            $custdata->LastName($lns[$i]);
+            if (!$custdata->save()) {
+                $errors = true;
+            }
 
             $pn++;
         }
 
-        $test = CustdataModel::update($memNum, $CUST_FIELDS);
+        /**
+          Remove any names outside the set that just saved
+        */
+        $clearP = $dbc->prepare('
+            DELETE FROM custdata
+            WHERE CardNo=?
+                AND personNum >= ?');
+        $clearR = $dbc->execute($clearP, array($memNum, $pn));
 
-        if ($test === False)
+        if ($errors) {
             return "Error: Problem saving household members<br />"; 
+        }
 
         return '';
     }

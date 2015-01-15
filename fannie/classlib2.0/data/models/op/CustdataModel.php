@@ -1019,119 +1019,9 @@ Maintenance:
     }
     /* END ACCESSOR FUNCTIONS */
 
-    /**
-      5Jul13 static stuff is legacy functionality
-      that predates the BasicModel class.
-      Can be removed when no calls to these functions
-      remain in Fannie.
-    */
-    
-    /**
-      Update custdata record(s) for an account
-      @param $card_no the member number
-      @param $fields array of column names and values
-
-      The values for personNum, LastName, and FirstName
-      should be arrays. 
-    */
-    static public function update($card_no,$fields)
-    {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-        $ret = true;
-
-        /** deal with number of names first */
-        if (isset($fields['personNum']) && is_array($fields['personNum'])) {
-
-            /** delete secondary members */
-            $delQ = "DELETE FROM custdata WHERE personNum > 1 AND CardNo=?";
-            $delP = $dbc->prepare_statement($delQ);
-            $delR = $dbc->exec_statement($delP,array($card_no));
-
-            /** create records for secondary members
-                based on the primary member */
-            $insQ = "INSERT INTO custdata (CardNo,personNum,LastName,FirstName,
-                CashBack,Balance,Discount,MemDiscountLimit,ChargeOk,
-                WriteChecks,StoreCoupons,Type,memType,staff,SSI,Purchases,
-                NumberOfChecks,memCoupons,blueLine,Shown)
-                SELECT  CardNo,?,?,?,
-                CashBack,Balance,Discount,MemDiscountLimit,ChargeOk,
-                WriteChecks,StoreCoupons,Type,memType,staff,SSI,Purchases,
-                NumberOfChecks,memCoupons,?,Shown
-                FROM custdata WHERE personNum=1 AND CardNo=?";
-            $insP = $dbc->prepare_statement($insQ);
-            for($i=0;$i<count($fields['personNum']);$i++) {
-                $pn = $i+1;
-                $ln = isset($fields['LastName'][$i])?$fields['LastName'][$i]:'';
-                $fn = isset($fields['FirstName'][$i])?$fields['FirstName'][$i]:'';
-                if ($pn == 1) {
-                    /** update primary member */
-                    $upQ = "UPDATE custdata SET LastName=?,FirstName=?,blueLine=?
-                        WHERE personNum=1 AND CardNo=?";
-                    $upP = $dbc->prepare_statement($upQ);
-                    $args = array($ln,$fn,$card_no." ".$ln,$card_no);
-                    $upR = $dbc->exec_statement($upP,$args);
-                    if ($upR === False) $ret = false;
-                } else {
-                    /** create/re-create secondary member */
-                    $insR = $dbc->exec_statement($insP,
-                        array($pn,$ln,$fn,$card_no." ".$ln,$card_no));
-                    if ($insR === False) $ret = false;
-                }
-            }
-        }
-
-        /** update all other fields for the account
-            The switch statement is to filter out
-            bad input */
-        $updateQ = "UPDATE custdata SET ";
-        $updateArgs = array();
-        foreach($fields as $name => $value) {
-            switch($name) {
-                case 'CashBack':
-                case 'Balance':
-                case 'Discount':
-                case 'MemDiscountLimit':
-                case 'ChargeOk':
-                case 'WriteChecks':
-                case 'StoreCoupons':
-                case 'Type':
-                case 'memType':
-                case 'staff':
-                case 'SSI':
-                case 'Purchases':
-                case 'NumberOfChecks':
-                case 'memCoupons':    
-                case 'Shown':
-                    if ($name === 0 || $name === true) {
-                        break; // switch does loose comparison...
-                    }
-                    $updateQ .= $name." = ?,";
-                    $updateArgs[] = $value;
-                break;
-                default:
-                    break;
-            }
-        }
-
-        /** if only name fields were provided, there's
-            nothing to do here */
-        if ($updateQ != "UPDATE custdata SET ") {
-            $updateQ = rtrim($updateQ,",");
-            $updateQ .= " WHERE CardNo=?";
-            $updateArgs[] = $card_no;
-
-            $updateP = $dbc->prepare_statement($updateQ);
-            $updateR = $dbc->exec_statement($updateP,$updateArgs);
-            if ($updateR === false) $ret = false;
-        }
-
-        return $ret;
-    }
-
     protected function hookAddColumnChargeLimit()
     {
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
+        $config = FannieConfig::Factory();
 
         $sql = 'UPDATE '.$this->connection->identifier_escape($this->name).' SET ChargeLimit=MemDiscountLimit';
         $this->connection->query($sql);
@@ -1149,7 +1039,7 @@ Maintenance:
             $this->connection->query($viewSQL);
 
         } else {
-            $this->connection->query('USE '.$this->connection->identifier_escape($FANNIE_TRANS_DB)); 
+            $this->connection->query('USE '.$this->connection->identifierEscape($config->get('TRANS_DB'))); 
 
             $viewSQL = 'CREATE VIEW memChargeBalance AS
                 SELECT c.CardNo, 
@@ -1157,14 +1047,14 @@ Maintenance:
                     ELSE c.ChargeLimit - a.balance END) AS availBal,
                 (CASE WHEN a.balance IS NULL THEN 0 ELSE a.balance END) AS balance,
                 CASE WHEN a.mark IS NULL THEN 0 ELSE a.mark END AS mark   
-                FROM '.$FANNIE_OP_DB.$this->connection->sep().'custdata AS c 
+                FROM '.$config->get('OP_DB').$this->connection->sep().'custdata AS c 
                 LEFT JOIN ar_live_balance AS a ON c.CardNo = a.card_no
                 WHERE c.personNum = 1';
 
             $this->connection->query('DROP VIEW memChargeBalance');
             $this->connection->query($viewSQL);
 
-            $this->connection->query('USE '.$this->connection->identifier_escape($FANNIE_OP_DB)); 
+            $this->connection->query('USE '.$this->connection->identifierEscape($config->get('OP_DB'))); 
         }
     }
 }

@@ -1,16 +1,13 @@
 <?php
-include(dirname(__FILE__).'/../config.php');
-include(dirname(__FILE__).'/../src/SQLManager.php');
 
 /**
  * @backupGlobals disabled
  */
 class SQLManagerTest extends PHPUnit_Framework_TestCase
 {
-    public function testMethods(){
-        include(dirname(__FILE__).'/../config.php');
-        $sql = new SQLManager($FANNIE_SERVER, $FANNIE_SERVER_DBMS, '',
-            $FANNIE_SERVER_USER, $FANNIE_SERVER_PW);
+    public function testMethods()
+    {
+        $sql = FannieDB::get('');
 
         /* test create connection */
         $this->assertInstanceOf('SQLManager',$sql);

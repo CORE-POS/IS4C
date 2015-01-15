@@ -77,7 +77,10 @@ class DTransactionsModel extends BasicModel
     */
     public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=false)
     {
-        global $FANNIE_ARCHIVE_DB, $FANNIE_ARCHIVE_METHOD, $FANNIE_TRANS_DB;
+        $config = FannieConfig::factory();
+        $FANNIE_TRANS_DB = $config->get('TRANS_DB');
+        $FANNIE_ARCHIVE_DB = $config->get('ARCHIVE_DB');
+        $FANNIE_ARCHIVE_METHOD = $config->get('ARCHIVE_METHOD');
         $trans_adds = 0;
         $log_adds = 0;
 
@@ -322,8 +325,11 @@ class DTransactionsModel extends BasicModel
     */
     static private function selectStruct($dlog, $start, $end=false)
     {
-        global $FANNIE_TRANS_DB, $FANNIE_ARCHIVE_DB, $FANNIE_SERVER_DBMS, $FANNIE_ARCHIVE_METHOD;
-        $sep = ($FANNIE_SERVER_DBMS=='MSSQL')?'.dbo.':'.';
+        $config = FannieConfig::factory();
+        $sep = ($config->get('SERVER_DBMS') == 'MSSQL') ? '.dbo.' : '.';
+        $FANNIE_TRANS_DB = $config->get('TRANS_DB');
+        $FANNIE_ARCHIVE_DB = $config->get('ARCHIVE_DB');
+        $FANNIE_ARCHIVE_METHOD = $config->get('ARCHIVE_METHOD');
 
         if ($end === false) {
             $end = $start;
