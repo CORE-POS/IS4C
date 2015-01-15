@@ -152,14 +152,19 @@ class LogViewer extends FanniePage
             return false;
         }
 
-        $content = file_get_contents($fn);
-        if ($num_lines > 0) {
-            $lines = explode("\n", $content);
-            $subset = array_slice($lines, -1 * $num_lines);
-            $content = implode("\n", $subset);
-        }
+        if ($num_lines == 0) {
+            return file_get_contents($fn);
+        } else {
+            $ret = '';
+            $fp = fopen($fn, 'r');
+            $line = 0;
+            while (!feof($fp) && $line < $num_lines) {
+                $ret .= fgets($fp);
+                $line++;
+            }
 
-        return $content;
+            return $ret;
+        }
     }
 
 	private function doRotate($fn)
