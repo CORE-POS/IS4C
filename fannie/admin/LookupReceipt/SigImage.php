@@ -34,6 +34,11 @@ class SigImage
     {
     }
 
+    public function setLogger()
+    {
+    }
+
+
     public function draw_page()
     {
         include(dirname(__FILE__).'/../../config.php');
