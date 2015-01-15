@@ -195,7 +195,7 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
         return '
             <div class="row form-group form-inline">
                 <label>First Name</label>
-                <input type="text: name="ContactInfo_fn"
+                <input type="text" name="ContactInfo_fn"
                     id="s_fn" class="form-control" />
                 <label>Last Name</label> 
                 <input type="text" name="ContactInfo_ln" id="s_ln" 
@@ -234,7 +234,8 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
         );
     }
 
-    function getSearchResults(){
+    function getSearchResults()
+    {
         $dbc = $this->db();
 
         $fn = FormLib::get_form_value('ContactInfo_fn');
@@ -278,10 +279,11 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
 
         $ret = array();
         if (!empty($where)){
+            echo $where;
             $q = $dbc->prepare_statement("SELECT CardNo,FirstName,LastName FROM
                 custdata as c LEFT JOIN meminfo AS m
                 ON c.CardNo = m.card_no
-                WHERE 1=1 $where ORDER BY m.card_no");
+                WHERE 1=1 $where ORDER BY m.card_no, c.personNum DESC");
             $r = $dbc->exec_statement($q,$args);
             if ($dbc->num_rows($r) > 0){
                 while($w = $dbc->fetch_row($r)){
