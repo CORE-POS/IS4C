@@ -21,11 +21,12 @@
 
 *********************************************************************************/
 
-include_once(dirname(__FILE__).'/../../config.php');
-include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
+}
 
-class ItemMarginModule extends ItemModule {
-    
+class ItemMarginModule extends ItemModule 
+{
     public function showEditForm($upc, $display_mode=1, $expand_mode=1)
     {
         $db = $this->db();
@@ -144,13 +145,12 @@ class ItemMarginModule extends ItemModule {
 
     public function getFormJavascript($upc)
     {
-        global $FANNIE_URL;
         ob_start();
         ?>
         function updateMarginMod(){
             $('.default_vendor_cost').val($('#cost').val());
             $.ajax({
-                url: '<?php echo $FANNIE_URL; ?>item/modules/ItemMarginModule.php',
+                url: '<?php echo FannieConfig::config('URL'); ?>item/modules/ItemMarginModule.php',
                 data: 'p='+$('#price').val()+'&d='+$('#department').val()+'&c='+$('#cost').val()+'&u=<?php echo $upc; ?>',
                 cache: false,
                 success: function(data){

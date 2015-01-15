@@ -21,14 +21,16 @@
 
 *********************************************************************************/
 
-include_once(dirname(__FILE__).'/../../config.php');
-include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
+}
 
-class BaseItemModule extends ItemModule {
+class BaseItemModule extends ItemModule 
+{
 
     public function showEditForm($upc, $display_mode=1, $expand_mode=1)
     {
-        global $FANNIE_URL, $FANNIE_PRODUCT_MODULES;
+        $FANNIE_PRODUCT_MODULES = FannieConfig::config('PRODUCT_MODULES', array());
         $upc = BarcodeLib::padUPC($upc);
 
         $ret = '<div id="BaseItemFieldset" class="panel panel-default">';
@@ -309,7 +311,7 @@ class BaseItemModule extends ItemModule {
             $ret .= '<div class="alert-success">';
             $ret .= sprintf("<strong>Sale Price:</strong>
                 %.2f (<em>Batch: <a href=\"%sbatches/newbatch/BatchManagementTool.php?startAt=%d\">%s</a></em>)",
-                $rowItem['special_price'], $FANNIE_URL, $batch['batchID'], $batch['batchName']);
+                $rowItem['special_price'], FannieConfig::config('URL'), $batch['batchID'], $batch['batchName']);
             list($date,$time) = explode(' ',$rowItem['end_date']);
             $ret .= "<strong>End Date:</strong>
                     $date 
@@ -442,7 +444,7 @@ class BaseItemModule extends ItemModule {
 
     public function getFormJavascript($upc)
     {
-        global $FANNIE_URL;
+        $FANNIE_URL = FannieConfig::config('URL');
         $dbc = $this->db();
         $prod = new ProductsModel($dbc);
         $prod->upc($upc);
@@ -608,8 +610,9 @@ class BaseItemModule extends ItemModule {
         return ob_get_clean();
     }
 
-    function SaveFormData($upc){
-        global $FANNIE_PRODUCT_MODULES;
+    function SaveFormData($upc)
+    {
+        $FANNIE_PRODUCT_MODULES = FannieConfig::config('PRODUCT_MODULES', array());
         $upc = BarcodeLib::padUPC($upc);
         $dbc = $this->db();
 
@@ -776,7 +779,6 @@ class BaseItemModule extends ItemModule {
 
     function summaryRows($upc)
     {
-        global $FANNIE_OP_DB;
         $dbc = $this->db();
 
         $model = new ProductsModel($dbc);

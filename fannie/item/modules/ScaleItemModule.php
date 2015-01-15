@@ -21,10 +21,8 @@
 
 *********************************************************************************/
 
-include_once(dirname(__FILE__).'/../../classlib2.0/item/ItemModule.php');
-include_once(dirname(__FILE__).'/../../classlib2.0/lib/FormLib.php');
-
-class ScaleItemModule extends ItemModule {
+class ScaleItemModule extends ItemModule 
+{
 
     public function showEditForm($upc, $display_mode=1, $expand_mode=1)
     {
@@ -301,4 +299,3 @@ class ScaleItemModule extends ItemModule {
     }
 }
 
-?>

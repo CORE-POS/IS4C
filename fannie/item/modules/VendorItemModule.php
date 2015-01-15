@@ -21,14 +21,15 @@
 
 *********************************************************************************/
 
-if (!class_exists('FannieAPI'))
+if (!class_exists('FannieAPI')) {
     include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
+}
 
 class VendorItemModule extends ItemModule {
 
     public function showEditForm($upc, $display_mode=1, $expand_mode=1)
     {
-        global $FANNIE_CSS_PRIMARY_COLOR;
+        $FANNIE_CSS_PRIMARY_COLOR = FannieConfig::config('CSS_PRIMARY_COLOR');
         $upc = BarcodeLib::padUPC($upc);
 
         $ret = '<div id="VendorItemsFieldset" class="panel panel-default">';
@@ -195,4 +196,3 @@ class VendorItemModule extends ItemModule {
     }
 }
 
-?>

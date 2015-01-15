@@ -21,8 +21,6 @@
 
 *********************************************************************************/
 
-include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
-
 class ExtraInfoModule extends ItemModule 
 {
 

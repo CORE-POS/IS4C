@@ -21,14 +21,12 @@
 
 *********************************************************************************/
 
-include_once(dirname(__FILE__).'/../../classlib2.0/item/ItemModule.php');
-include_once(dirname(__FILE__).'/../../classlib2.0/lib/FormLib.php');
-
-class ItemLinksModule extends ItemModule {
+class ItemLinksModule extends ItemModule 
+{
 
     public function showEditForm($upc, $display_mode=1, $expand_mode=1)
     {
-        global $FANNIE_URL;
+        $FANNIE_URL = FannieConfig::config('URL');
         $upc = BarcodeLib::padUPC($upc);
 
         $dbc = $this->db();
@@ -88,4 +86,3 @@ class ItemLinksModule extends ItemModule {
 
 }
 
-?>
