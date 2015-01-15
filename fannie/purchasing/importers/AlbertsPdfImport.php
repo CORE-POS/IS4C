@@ -94,6 +94,13 @@ class AlbertsPdfImport extends FannieRESTfulPage
         $order->vendorInvoiceID($this->invoice_num);
         $orderID = $order->save();
 
+        $checkP = $dbc->prepare('
+            SELECT v.sku
+            FROM vendorItems AS v
+            WHERE v.vendorID=?
+                AND v.sku=?');
+        $vendorItem = new VendorItemsModel($dbc);
+
         $item = new PurchaseOrderItemsModel($dbc);
 
         for ($i=0; $i<count($skus); $i++) {
@@ -120,6 +127,23 @@ class AlbertsPdfImport extends FannieRESTfulPage
             $item->description($desc);
             $item->internalUPC($upc);
             $item->save();
+
+            /**
+              Add entries to vendor catalog if they don't exist
+            */
+            $checkR = $dbc->execute($checkP, array($this->vendorID, $sku));
+            if ($checkR && $dbc->numRows($checkR) == 0) {
+                $vendorItem->vendorID($this->vendorID);
+                $vendorItem->sku($sku);
+                $vendorItem->upc($upc);
+                $vendorItem->description($desc);
+                $vendorItem->brand('');
+                $vendorItem->units($caseSize);
+                $vendorItem->size($unitSize);
+                $vendorItem->cost($unitCost);
+                $vendorItem->vendorDept(0);
+                $vendorItem->save();
+            }
         }
 
         header('Location: ' . $_SERVER['PHP_SELF'] . '?complete=' . $orderID);
