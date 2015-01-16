@@ -204,7 +204,8 @@ class SQLManager
 
             $this->QUERY_LOG->debug('Failed Query on ' . $_SERVER['PHP_SELF']);
             $this->QUERY_LOG->debug($query_text);
-            $this->QUERY_LOG->debug($this->error($which_connection));
+            $errorMsg = $this->error($which_connection);
+            $this->QUERY_LOG->debug($errorMsg);
 
             if ($this->throw_on_fail) {
                 throw new Exception($errorMsg);
@@ -1525,6 +1526,10 @@ class SQLManager
         
         $definition1 = $this->table_definition($table1, $which_connection);
         $definition2 = $this->table_definition($table2, $which_connection);
+        if (!is_array($definition1) || ! is_array($definition2)) {
+            return array();
+        }
+
         $matches = array();
         foreach($definition1 as $col_name => $info) {
             if (isset($definition2[$col_name])) {

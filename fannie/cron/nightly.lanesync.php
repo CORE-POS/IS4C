@@ -47,7 +47,7 @@
 
 include('../config.php');
 include($FANNIE_ROOT.'src/cron_msg.php');
-include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 
 set_time_limit(0);

@@ -104,6 +104,7 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
         exit;
     }
 
+    include(dirname(__FILE__).'/../config.php');
     include(dirname(__FILE__).'/FannieAPI.php');
 
     $config = FannieConfig::factory();
