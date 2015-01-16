@@ -81,7 +81,9 @@ class SalesBatchTask extends FannieTask
                     INNER JOIN batchList AS l ON b.batchID = l.batchID
                   WHERE b.discounttype <> 0
                     AND b.startDate <= ?
-                    AND b.endDate >= ?';
+                    AND b.endDate >= ?
+                  ORDER BY l.upc,
+                    l.salePrice DESC';
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, array($now, $now));
         while ($row = $dbc->fetch_row($result)) {
