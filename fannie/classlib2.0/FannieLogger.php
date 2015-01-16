@@ -111,6 +111,11 @@ class FannieBaseLogger
     private function writeLog($message, array $context, $int_level)
     {
         $file = $this->getLogLocation($int_level);
+        $verbose_debug = false;
+        if (class_exists('FannieConfig') && FannieConfig::config('CUSTOM_ERRORS') >= 1) {
+            $verbose_debug = true;
+        }
+
         /**
           The 'logfile' context value just exists for testing
           purposes. Calling code should not rely on this
@@ -136,7 +141,7 @@ class FannieBaseLogger
                 $this->log_level_map[$int_level],
                 $message);
             fwrite($fp, $log_line . "\n");
-            if ($int_level === self::DEBUG) {
+            if ($int_level === self::DEBUG && $verbose_debug) {
                 $stack = array();
                 if (isset($context['exception']) && $context['exception'] instanceof Exception) {
                     $stack = $this->stackTrace($context['exception']->getTrace());
@@ -162,14 +167,9 @@ class FannieBaseLogger
     */
     public function getLogLocation($int_level)
     {
-        $filename = 'core.log';
-        // use separate debug log unless 
-        // unified is enabed
+        $filename = 'fannie.log';
         if ($int_level == self::DEBUG) {
-            $fc = FannieConfig::factory();
-            if ($fc->get('UNIFIED_LOG') != true) {
-                $filename = 'core_debug.log';
-            }
+            $filename = 'debug_fannie.log';
         }
         // if the logs directory is not writable, try
         // failing over to /tmp
@@ -177,11 +177,8 @@ class FannieBaseLogger
         if (!is_writable($dir .  $filename)) {
             $dir = sys_get_temp_dir() . '/';
         }
-        if (!is_writable($dir .  $filename)) {
-            return false;
-        } else {
-            return $dir . $filename;
-        }
+
+        return $dir . $filename;
     }
 
     private function stackTrace($stack)
@@ -213,28 +210,28 @@ if (interface_exists('\Psr\Log\LoggerInterface')) {
         public function log($level, $message, array $context = array())
         {
             switch ($this->normalizeLevel($level)) {
-                case \Psr\Log\EMERGENCY:
+                case \Psr\Log\LogLevel::EMERGENCY:
                     $this->emergency($message, $context);
                     break;
-                case \Psr\Log\ALERT:
+                case \Psr\Log\LogLevel::ALERT:
                     $this->alert($message, $context);
                     break;
-                case \Psr\Log\CRITICAL:
+                case \Psr\Log\LogLevel::CRITICAL:
                     $this->critical($message, $context);
                     break;
-                case \Psr\Log\ERROR:
+                case \Psr\Log\LogLevel::ERROR:
                     $this->error($message, $context);
                     break;
-                case \Psr\Log\WARNING:
+                case \Psr\Log\LogLevel::WARNING:
                     $this->warning($message, $context);
                     break;
-                case \Psr\Log\NOTICE:
+                case \Psr\Log\LogLevel::NOTICE:
                     $this->notice($message, $context);
                     break;
-                case \Psr\Log\INFO:
+                case \Psr\Log\LogLevel::INFO:
                     $this->info($message, $context);
                     break;
-                case \Psr\Log\DEBUG:
+                case \Psr\Log\LogLevel::DEBUG:
                     $this->debug($message, $context);
                     break;
             }

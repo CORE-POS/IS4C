@@ -32,57 +32,6 @@ class FannieDispatch
     }
 
     /**
-      Helper: get output-appropriate newline
-    */
-    static private function nl($logged=false)
-    {
-        if (php_sapi_name() == 'cli' || $logged) { 
-            return "\n";
-        } else {
-            return "<br />";
-        }
-    }
-    
-    /**
-      Helper: get output-appropriate tab
-    */
-    static private function tab($logged=false)
-    {
-        if (php_sapi_name() == 'cli' || $logged) {
-            return "\t";
-        } else {
-            return "<li>";
-        }
-    }
-
-    /**
-      Helper: tabs in html are implemented with <li> tags
-      but the first block of a given indentation level
-      needs a <ul> tag
-    */
-    static private function indent($logged=false)
-    {
-        if (php_sapi_name() == 'cli' || $logged) {
-            return "";
-        } else {
-            return "<ul>";
-        }
-    }
-
-    /**
-      Helper: reverse of indent()
-    */
-    static private function outdent($logged=false)
-    {
-        if (php_sapi_name() == 'cli' || $logged) {
-            return "";
-        } else {
-            return "</ul>";
-        }
-    }
-
-
-    /**
       Error handler function. Can register as PHP's error
       handling function and use Fannie's output format
     */
@@ -93,28 +42,6 @@ class FannieDispatch
                 . ', '
                 . $errfile;
         self::$logger->debug($msg);
-        /*
-        $logged = FannieConfig::factory()->get('CUSTOM_ERRORS') == 2 ? true : false;
-
-        if ($logged) {
-            ob_start();
-        }
-
-        echo $errstr . ' Line '
-            . $errline
-            . ', '
-            . $errfile
-            . self::nl($logged);
-        self::printStack(debug_backtrace(), $logged);
-
-        if ($logged) {
-            $error_msg = ob_get_clean();
-            $log_file = ini_get('error_log');
-            $fp = fopen($log_file, 'a');
-            fwrite($fp, $error_msg);
-            fclose($fp);
-        }
-        */
 
         return true;
     }
@@ -131,67 +58,8 @@ class FannieDispatch
                 . ", "
                 . $exception->getFile();
         self::$logger->debug($msg);
-        /*
-        $logged = FannieConfig::factory()->get('CUSTOM_ERRORS') == 2 ? true : false;
-
-        if ($logged) {
-            ob_start();
-        }
-
-        echo $exception->getMessage()
-            . " Line "
-            . $exception->getLine()
-            . ", "
-            . $exception->getFile()
-            . self::nl($logged);
-        self::printStack($exception->getTrace(), $logged);
-
-        if ($logged) {
-            $error_msg = ob_get_clean();
-            $log_file = ini_get('error_log');
-            $fp = fopen($log_file, 'a');
-            fwrite($fp, $error_msg . "\n");
-            fclose($fp);
-        }
-        */
     }
     
-    /**
-      Print entire call stack
-      @param $stack [array] current call stack
-    */
-    static public function printStack($stack, $logged=false)
-    {
-        echo "STACK:" . self::nl($logged);
-        $i = 1;
-        foreach ($stack as $frame) {
-            if (!isset($frame['line'])) $frame['line']=0;
-            if (!isset($frame['file'])) $frame['file']='File not given';
-            if (!isset($frame['args'])) $frame['args'] =array();
-            if (isset($frame['class'])) $frame['function'] = $frame['class'].'::'.$frame['function'];
-            echo self::indent($logged);
-            echo "Frame $i" . self::nl($logged);
-            echo self::tab($logged) . $frame['function'] . '(';
-            $args = '';
-            foreach($frame['args'] as $arg) {
-                $args .= $arg.', ';
-            }
-            $args = rtrim($args);
-            $args = rtrim($args,',');
-            echo $args . ')' . self::nl($logged);
-            echo self::tab($logged)
-                . 'Line '
-                . $frame['line']
-                . ', '
-                . $frame['file']
-                . self::nl($logged);
-            $i++;
-        }
-        for ($j=0; $j < ($i-1); $j++) {
-            echo self::outdent($logged);
-        }
-    }
-
     /**
       Try to print a call stack on fatal errors
       if the environment / configuration permits
@@ -248,6 +116,13 @@ class FannieDispatch
             bind_textdomain_codeset('messages', 'UTF-8');
             textdomain('messages');
         }
+    }
+
+    static public function setErrorHandlers()
+    {
+        set_error_handler(array('FannieDispatch','errorHandler'));
+        set_exception_handler(array('FannieDispatch','exceptionHandler'));
+        register_shutdown_function(array('FannieDispatch','catchFatal'));
     }
 
     /**

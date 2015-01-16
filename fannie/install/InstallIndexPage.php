@@ -425,38 +425,29 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         $log = new LogViewer();
         ?>
         <ul>
-        <li><?php check_writeable('../logs/queries.log'); ?>
+        <li><?php check_writeable('../logs/fannie.log'); ?>
             <ul>
-            <li>Contains failed database queries</li>
-            <li>
-            <a href="" onclick="$('#queryLogView').toggle(); return false;">See Recent Entries</a>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <a href="../logs/LogViewer.php?logfile=<?php echo base64_encode('queries.log'); ?>">View Entire Log</a>
-            <?php $queries = $log->getLogFile('../logs/queries.log', 100); ?>
-            <pre id="queryLogView" class="tailedLog highlight"><?php echo $queries; ?></pre>
-            </li>
-            </ul>  
-        <li><?php check_writeable('../logs/php-errors.log'); ?>
-            <ul>
-            <li>Contains PHP notices, warnings, and errors</li>
-            <li>
-            <a href="" onclick="$('#phpLogView').toggle(); return false;">See Recent Entries</a>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <a href="../logs/LogViewer.php?logfile=<?php echo base64_encode('php-errors.log'); ?>">View Entire Log</a>
-            <?php $phplog = $log->getLogFile('../logs/php-errors.log', 100); ?>
-            <pre id="phpLogView" class="tailedLog highlight"><?php echo $phplog; ?></pre>
-            </li>
-            </ul>
-        <li><?php check_writeable('../logs/dayend.log'); ?>
-            <ul>
-            <li>Contains output from scheduled tasks</li>
+            <li>Contains info, notice, warning, error, critical, alert, and emergency level messages.</li>
             <li>
             <a href="" onclick="$('#dayendLogView').toggle(); return false;">See Recent Entries</a>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <a href="../logs/LogViewer.php?logfile=<?php echo base64_encode('dayend.log'); ?>">View Entire Log</a>
-            <?php $dayend = $log->getLogFile('../logs/dayend.log', 100); ?>
+            <a href="../logs/LogViewer.php?logfile=<?php echo base64_encode('fannie.log'); ?>">View Entire Log</a>
+            <?php $dayend = $log->getLogFile('../logs/fannie.log', 100); ?>
             <pre id="dayendLogView" class="tailedLog highlight"><?php echo $dayend; ?></pre>
             </li>
+            <li>If this file is missing, messages may be written to legacy log file dayend.log</li>
+            </ul>  
+        <li><?php check_writeable('../logs/debug_fannie.log'); ?>
+            <ul>
+            <li>Contains debug level messages including failed queries and PHP notice/warning/error messages.</li>
+            <li>
+            <a href="" onclick="$('#dayendLogView').toggle(); return false;">See Recent Entries</a>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="../logs/LogViewer.php?logfile=<?php echo base64_encode('debug_fannie.log'); ?>">View Entire Log</a>
+            <?php $dayend = $log->getLogFile('../logs/debug_fannie.log', 100); ?>
+            <pre id="dayendLogView" class="tailedLog highlight"><?php echo $dayend; ?></pre>
+            </li>
+            <li>If this file is missing, messages may be written to legacy log file php_errors.log &amp; queries.log</li>
             </ul>  
         </ul>
         <?php
@@ -471,25 +462,30 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             . '</td></tr>';
 
         $errorOpts = array(
-            1 => 'Yes (displayed)',
-            2 => 'Yes (logged)',
+            1 => 'Yes',
             0 => 'No',
         );
-        echo '<tr><td align="right">Verbose Error Messages</td>'
+        if ($FANNIE_CUSTOM_ERRORS > 1) {
+            $FANNIE_CUSTOM_ERRORS = 1;
+        }
+        echo '<tr><td align="right">Verbose Debug Messages</td>'
             . '<td>' . installSelectField('FANNIE_CUSTOM_ERRORS', $FANNIE_CUSTOM_ERRORS, $errorOpts, false, false)
             . '</td></tr>';
 
         $taskOpts = array(
             99 => 'Never email on error',
-            1  => 'All Errors',
-            2  => 'Small Errors and bigger',
-            3  => 'Medium Errors and bigger',
-            4  => 'Large Errors and bigger',
-            5  => 'Only the Worst Errors',
+            0  => 'Emergency',
+            1  => 'Alert',
+            2  => 'Critical',
+            3  => 'Error',
+            4  => 'Warning',
+            5  => 'Notice',
+            6  => 'Info',
+            7  => 'Debug',
         );
 
         echo '<tr><td>Task Error Severity resulting in emails</td>'
-            . '<td>' . installSelectField('FANNIE_TASK_THRESHOLD', $FANNIE_TASK_THRESHOLD, $taskOpts, 4, false)
+            . '<td>' . installSelectField('FANNIE_TASK_THRESHOLD', $FANNIE_TASK_THRESHOLD, $taskOpts, 99, false)
             . '</td></tr>';
 
         echo '</table>';

@@ -96,7 +96,7 @@ class SpinsSubmitTask extends FannieTask
 
         $lastDay = date("M d, Y", $end) . ' 11:59PM'; 
 
-        echo $this->cronMsg('SPINS data for week #' . $spins_week . '(' . date('Y-m-d', $start) . ' to ' . date('Y-m-d', $end) . ')');
+        $this->cronMsg('SPINS data for week #' . $spins_week . '(' . date('Y-m-d', $start) . ' to ' . date('Y-m-d', $end) . ')', FannieLogger::INFO);
 
         // Odd "CASE" statement is to deal with special order
         // line items the have case size & number of cases
@@ -133,22 +133,22 @@ class SpinsSubmitTask extends FannieTask
             $conn_id = ftp_connect('ftp.spins.com');
             $login_id = ftp_login($conn_id, $FANNIE_PLUGIN_SETTINGS['SpinsFtpUser'], $FANNIE_PLUGIN_SETTINGS['SpinsFtpPw']);
             if (!$conn_id || !$login_id) {
-                echo $this->cronMsg('FTP Connection failed');
+                $this->cronMsg('FTP Connection failed', FannieLogger::ERROR);
             } else {
                 ftp_chdir($conn_id, "data");
                 ftp_pasv($conn_id, true);
                 $uploaded = ftp_put($conn_id, $filename, $outfile, FTP_ASCII);
                 if (!$uploaded) {
-                    echo $this->cronMsg('FTP upload failed');
+                    $this->cronMsg('FTP upload failed', FannieLogger::ERROR);
                 } else {
-                    echo $this->cronMsg('FTP upload successful');
+                    $this->cronMsg('FTP upload successful', FannieLogger::INFO);
                 }
                 ftp_close($conn_id);
             }
             unlink($outfile);
         } else {
             rename($outfile, './' . $filename);    
-            echo $this->cronMsg('Generated file: ' . $filename);
+            $this->cronMsg('Generated file: ' . $filename, FannieLogger::INFO);
         }
     }
 }

@@ -39,7 +39,7 @@ if (!class_exists('FannieAPI')) {
    This tool helps by:
    1. Listing available scripts
    2. Automatically changing to fannie's "cron" directory
-   3. Directing logging to fannie's logs/dayend.log
+   3. Directing logging to fannie's logs/fannie.log
 
    Hiding path management makes the list of tasks
    easier to look at, but also insures a script can
@@ -108,6 +108,7 @@ class CronManagementPage extends FanniePage
                 $dbc->exec_statement($trun);
                 $prep = $dbc->prepare_statement('INSERT INTO cronBackup VALUES ('.$dbc->now().', ?)');
                 $dbc->exec_statement($prep,array(file_get_contents($tmpfn)));
+                $crontab = file_get_contents($tmpfn);
 
                 unlink($tmpfn);
                 $this->add_onload_command("showBootstrapAlert('#alert-area', 'success', 'Enabled " . count($indexes) . " tasks');\n");
@@ -137,12 +138,12 @@ class CronManagementPage extends FanniePage
         $ret .= '</p>';
 
         $ret .= '<p>';
-        if (!is_writable($FANNIE_ROOT.'logs/dayend.log')) {
-            $ret .= "<i>Warning: dayend.log ({$FANNIE_ROOT}logs/dayend.log)
+        if (!is_writable($FANNIE_ROOT.'logs/fannie.log')) {
+            $ret .= "<i>Warning: fannie.log ({$FANNIE_ROOT}logs/fannie.log)
                 is not writable. Logging task results may
                 not work</i>";
          } else {
-            $ret .= "Default logging will be to {$FANNIE_ROOT}logs/dayend.log";
+            $ret .= "Default logging will be to {$FANNIE_ROOT}logs/fannie.log";
          }
         $ret .= '</p>';
 
@@ -167,7 +168,7 @@ class CronManagementPage extends FanniePage
         $ret .= "<tr><th>Enabled</th><th>Min</th><th>Hour</th><th>Day</th><th>Month</th><th>Wkdy</th><th>Command/Help</th></tr>";
         $i = 0;
         foreach ($tasks as $task) {
-            $cmd = 'php '.realpath(dirname(__FILE__).'/../../classlib2.0/FannieTask.php').' '.$task.' >> '.$FANNIE_ROOT.'logs/dayend.log';;
+            $cmd = 'php '.realpath(dirname(__FILE__).'/../../classlib2.0/FannieTask.php').' '.$task.' >> '.$FANNIE_ROOT.'logs/fannie.log';;
             $simple = $this->simpleRow($task, $task, $cmd, $tab, $i);
             if ($simple !== false && $mode == 'simple') {
                 $ret .= $simple;
@@ -188,7 +189,7 @@ class CronManagementPage extends FanniePage
             $nicename = rtrim($nicename,'.');
             $nicename = str_replace('.',' ',$nicename);
 
-            $cmd = "cd {$FANNIE_ROOT}cron && php ./{$shortname} >> {$FANNIE_ROOT}logs/dayend.log";
+            $cmd = "cd {$FANNIE_ROOT}cron && php ./{$shortname} >> {$FANNIE_ROOT}logs/fannie.log";
 
             $simple = $this->simpleRow($shortname,$nicename,$cmd,$tab,$i);
             if ($simple !== false && $mode == 'simple') {
@@ -492,7 +493,9 @@ class CronManagementPage extends FanniePage
             $tmp = preg_split("/\s+/",$line,6);
             if (count($tmp) == 6) {
                 if (strstr($tmp[5], 'FannieTask')) {
-                    $sn = str_replace(" >> {$FANNIE_ROOT}logs/dayend.log","",$tmp[5]);
+                    $sn = str_replace(" >> {$FANNIE_ROOT}logs/fannie.log","",$tmp[5]);
+                    $sn = str_replace(" >> {$FANNIE_ROOT}logs/dayend.log","",$sn);
+                    $tmp[5] = str_replace(" >> {$FANNIE_ROOT}logs/dayend.log", " >> {$FANNIE_ROOT}logs/fannie.log", $tmp[5]);
                     $parts = explode(' ', $sn);
                     $sn = $parts[count($parts)-1];
                     $ret['tasks'][$sn] = array(
@@ -505,7 +508,9 @@ class CronManagementPage extends FanniePage
                     );
                 } else {
                     $sn = str_replace("cd {$FANNIE_ROOT}cron && php ./","",$tmp[5]);
+                    $sn = str_replace(" >> {$FANNIE_ROOT}logs/fannie.log","",$sn);
                     $sn = str_replace(" >> {$FANNIE_ROOT}logs/dayend.log","",$sn);
+                    $tmp[5] = str_replace(" >> {$FANNIE_ROOT}logs/dayend.log", " >> {$FANNIE_ROOT}logs/fannie.log", $tmp[5]);
                     $ret['jobs'][$sn] = array(
                         'min' => $tmp[0],
                         'hour' => $tmp[1],

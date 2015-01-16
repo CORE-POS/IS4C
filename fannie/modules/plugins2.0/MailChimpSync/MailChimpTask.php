@@ -40,7 +40,7 @@ class MailChimpTask extends FannieTask
         $APIKEY = $FANNIE_PLUGIN_SETTINGS['MailChimpApiKey'];
         $LISTID = $FANNIE_PLUGIN_SETTINGS['MailChimpListID'];
         if (empty($APIKEY) || empty($LISTID)) {
-            echo $this->cronMsg('Missing API key or List ID');
+            $this->cronMsg('Missing API key or List ID', FannieLogger::NOTICE);
             return false;
         }
 
@@ -71,7 +71,7 @@ class MailChimpTask extends FannieTask
             }
 
             if ($field_id === false) {
-                echo $this->cronMsg('Error: could not locate / create owner number field!');
+                $this->cronMsg('Error: could not locate / create owner number field!', FannieLogger::NOTICE);
                 return false;
             }
         } // end create owner number field if needed
@@ -84,7 +84,7 @@ class MailChimpTask extends FannieTask
         */
         foreach ($statuses as $status) {
 
-            echo $this->cronMsg('==== Checking ' . $status . ' emails ====');
+            $this->cronMsg('==== Checking ' . $status . ' emails ====', FannieLogger::INFO);
 
             $full_list = $mc->lists->export($LISTID, $status);
             $headers = array_shift($full_list);
@@ -126,23 +126,23 @@ class MailChimpTask extends FannieTask
                             $meminfo->card_no($card_no);
                             $meminfo->load();
                             if ($meminfo->email_1() != $email && strtotime($changed) > strtotime($meminfo->modified())) {
-                                echo $this->cronMsg(printf("MISMATCH: POS says %s, MailChimp says %s, Mailchimp is newer",
-                                $meminfo->email_1(), $email));
+                                $this->cronMsg(sprintf("MISMATCH: POS says %s, MailChimp says %s, Mailchimp is newer",
+                                $meminfo->email_1(), $email), FannieLogger::INFO);
                                 $meminfo->email_1($email);
                                 $meminfo->save();
                             } elseif ($meminfo->email_1() != $email) {
                                 $update['EMAIL'] = $meminfo->email_1();
-                                echo $this->cronMsg(printf("MISMATCH: POS says %s, MailChimp says %s, POS is newer",
-                                $meminfo->email_1(), $email));
+                                $this->cronMsg(sprintf("MISMATCH: POS says %s, MailChimp says %s, POS is newer",
+                                $meminfo->email_1(), $email), FannieLogger::INFO);
                             }
                             if (strtoupper(trim($custdata->FirstName())) != strtoupper($fn)) {
-                                echo $this->cronMsg(sprintf("MISMATCH: POS says %s, MailChimp says %s",
-                                    $custdata->FirstName(), $fn));
+                                $this->cronMsg(sprintf("MISMATCH: POS says %s, MailChimp says %s",
+                                    $custdata->FirstName(), $fn), FannieLogger::INFO);
                                 $update['FNAME'] = trim($custdata->FirstName());
                             }
                             if (strtoupper(trim($custdata->LastName())) != strtoupper($ln)) {
-                                echo $this->cronMsg(sprintf("MISMATCH: POS says %s, MailChimp says %s",
-                                    $custdata->LastName(), $ln));
+                                $this->cronMsg(sprintf("MISMATCH: POS says %s, MailChimp says %s",
+                                    $custdata->LastName(), $ln), FannieLogger::INFO);
                                 $update['LNAME'] = trim($custdata->LastName());
                             }
                             if (count($update) > 0) {
@@ -150,7 +150,7 @@ class MailChimpTask extends FannieTask
                                     'euid' => $record[$columns['EUID']],
                                     'leid' => $record[$columns['LEID']],
                                 );
-                                echo $this->cronMsg(sprintf("Updating name field(s) for member #%d", $card_no));
+                                $this->cronMsg(sprintf("Updating name field(s) for member #%d", $card_no), FannieLogger::INFO);
                                 $mc->lists->updateMember($LISTID, $email_struct, $update, '', false);
                                 sleep(1);
                             }
@@ -172,7 +172,7 @@ class MailChimpTask extends FannieTask
                             $meminfo->card_no($card_no);
                             $meminfo->email_1('');
                             $meminfo->save();
-                            echo $this->cronMsg(sprintf('CLEANING Member %d, email %s', $card_no, $email));
+                            $this->cronMsg(sprintf('CLEANING Member %d, email %s', $card_no, $email), FannieLogger::INFO);
                             $cleans[] = $record;
                             break;
                     }
@@ -211,7 +211,7 @@ class MailChimpTask extends FannieTask
                                     'euid' => $record[$columns['EUID']],
                                     'leid' => $record[$columns['LEID']],
                                 );
-                                echo $this->cronMsg("Assigning member # to account " . $email);
+                                $this->cronMsg("Assigning member # to account " . $email, FannieLogger::INFO);
                                 $mc->lists->updateMember($LISTID, $email_struct, $update, '', false);
                                 sleep(1);
                                 $memlist .= sprintf('%d,', $update['CARDNO']);
@@ -226,12 +226,12 @@ class MailChimpTask extends FannieTask
                         */
                         case 'unsubscribed':
                             $meminfo->reset();
-                            echo $this->cronMsg('Checking unsubscribed ' . $email);
+                            $this->cronMsg('Checking unsubscribed ' . $email, FannieLogger::INFO);
                             $meminfo->email_1($email);
                             $matches = $meminfo->find();
                             foreach ($matches as $opted_out) {
                                 $memlist .= sprintf('%d,', $opted_out->card_no());
-                                echo $this->cronMsg('Excluding member ' . $opted_out->card_no());
+                                $this->cronMsg('Excluding member ' . $opted_out->card_no(), FannieLogger::INFO);
                             }
                             break;
                         /**
@@ -244,7 +244,7 @@ class MailChimpTask extends FannieTask
                             foreach ($meminfo->find() as $bad_address) {
                                 $bad_address->email_1('');
                                 $bad_address->save();
-                                echo $this->cronMsg(sprintf('CLEANING untagged member %d, email %s', $bad_address->card_no(), $email));
+                                $this->cronMsg(sprintf('CLEANING untagged member %d, email %s', $bad_address->card_no(), $email), FannieLogger::INFO);
                             }
                             $cleans[] = $record;
                             break;
@@ -271,7 +271,7 @@ class MailChimpTask extends FannieTask
             $removal_batch[] = $email_struct;
         }
         if (count($removal_batch) > 0) {
-            echo $this->cronMsg(sprintf('Removing %d addresses with status "cleaned"', count($removal_batch)));
+            $this->cronMsg(sprintf('Removing %d addresses with status "cleaned"', count($removal_batch)), FannieLogger::INFO);
             $result = $mc->lists->batchUnsubscribe($LISTID, $removal_batch, true, false, false);
         }
 
@@ -312,7 +312,7 @@ class MailChimpTask extends FannieTask
             $add_batch[] = $new;
         }
         if (count($add_batch) > 0) {
-            echo $this->cronMsg(sprintf('Adding %d new members', count($add_batch)));
+            $this->cronMsg(sprintf('Adding %d new members', count($add_batch)), FannieLogger::INFO);
             $added = $mc->lists->batchSubscribe($LISTID, $add_batch, false, true);
 
         }

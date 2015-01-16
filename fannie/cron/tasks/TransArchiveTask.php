@@ -75,12 +75,12 @@ class TransArchiveTask extends FannieTask
             @severity: this query should not fail unless
             the database server is down or inaccessible
             */
-            echo $this->cronMsg('Failed to find dates in dtransactions. Details: '
-                . $ex->getMessage(), FannieTask::TASK_WORST_ERROR);
+            $this->cronMsg('Failed to find dates in dtransactions. Details: '
+                . $ex->getMessage(), FannieLogger::ALERT);
         }
 
         if (count($dates) == 0) {
-            echo $this->cronMsg('No data to rotate');
+            $this->cronMsg('No data to rotate', FannieLogger::INFO);
 
             return true;
         }
@@ -98,8 +98,8 @@ class TransArchiveTask extends FannieTask
                 @severity: generally should not fail, but this isn't
                 as important as the long-term archive table(s)
                 */
-                echo $this->cronMsg('Failed to archive ' . $date . ' in transarchive (last quarter table)
-                    Details: ' . $ex->getMessage(), FannieTask::TASK_MEDIUM_ERROR);
+                $this->cronMsg('Failed to archive ' . $date . ' in transarchive (last quarter table)
+                    Details: ' . $ex->getMessage(), FannieLogger::ERROR);
             }
         }
         try {
@@ -110,8 +110,8 @@ class TransArchiveTask extends FannieTask
             performance issues may eventually crop up if the table
             gets very large.
             */
-            echo $this->cronMsg('Failed to trim transarchive (last quarter table)
-                Details: ' . $ex->getMessage(), FannieTask::TASK_MEDIUM_ERROR);
+            $this->cronMsg('Failed to trim transarchive (last quarter table)
+                Details: ' . $ex->getMessage(), FannieLogger::ERROR);
         }
 
         /* reload all the small snapshot */
@@ -126,8 +126,8 @@ class TransArchiveTask extends FannieTask
             @severity: no long term impact but may lead
             to reporting oddities
             */
-            echo $this->cronMsg('Failed to reload dlog_15. Details: '
-                . $ex->getMessage(), FannieTask::TASK_MEDIUM_ERROR);
+            $this->cronMsg('Failed to reload dlog_15. Details: '
+                . $ex->getMessage(), FannieLogger::ERROR);
         }
 
         $added_partition = false;
@@ -160,8 +160,8 @@ class TransArchiveTask extends FannieTask
                         @severity lack of partitions will eventually
                         cause performance problems in large data sets
                         */
-                        echo $this->cronMsg("Error creating new partition $partition_name. Details: "
-                            . $ex->getMessage(), FannieTask::TASK_MEDIUM_ERROR);
+                        $this->cronMsg("Error creating new partition $partition_name. Details: "
+                            . $ex->getMessage(), FannieLogger::ERROR);
                     }
                 }
         
@@ -177,8 +177,8 @@ class TransArchiveTask extends FannieTask
                     @severity: transaction data was not archived.
                     absolutely needs to be addressed.
                     */
-                    echo $this->cronMsg('Failed to properly archive transaction data for ' . $date
-                        . ' Details: ' . $ex->getMessage(), FannieTask::TASK_WORST_ERROR);
+                    $this->cronMsg('Failed to properly archive transaction data for ' . $date
+                        . ' Details: ' . $ex->getMessage(), FannieLogger::ALERT);
                 }
             } else if (!$sql->table_exists($table)) {
                 $query = "CREATE TABLE $table LIKE $FANNIE_TRANS_DB.dtransactions";
@@ -207,8 +207,8 @@ class TransArchiveTask extends FannieTask
                     proper transaction archiving. absolutely needs
                     to be addressed.
                     */
-                    echo $this->cronMsg("Error creating new archive structure $table Details: "
-                        . $ex->getMessage(), FannieTask::TASK_WORST_ERROR);
+                    $this->cronMsg("Error creating new archive structure $table Details: "
+                        . $ex->getMessage(), FannieLogger::ALERT);
                 }
             } else {
                 $query = "INSERT INTO " . $table . "
@@ -221,8 +221,8 @@ class TransArchiveTask extends FannieTask
                     @severity: transaction data was not archived.
                     absolutely needs to be addressed.
                     */
-                    echo $this->cronMsg('Failed to properly archive transaction data for ' . $date
-                        . ' Details: ' . $ex->getMessage(), FannieTask::TASK_WORST_ERROR);
+                    $this->cronMsg('Failed to properly archive transaction data for ' . $date
+                        . ' Details: ' . $ex->getMessage(), FannieLogger::ALERT);
                 }
             }
 
@@ -241,8 +241,8 @@ class TransArchiveTask extends FannieTask
             create duplicate archive records if this is
             failing and queries above are not
             */
-            echo $this->cronMsg("Error clearing dtransactions. Details: "
-                . $ex->getMessage(), FannieTask::TASK_LARGE_ERROR);
+            $this->cronMsg("Error clearing dtransactions. Details: "
+                . $ex->getMessage(), FannieLogger::ALERT);
         }
     }
 }

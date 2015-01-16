@@ -77,23 +77,26 @@ class FannieTask
     }
 
     /**
-      Format message with date information
-      and task's class name
+      Write message to log and if necessary raise it to stderr
+      to trigger an email
       @param $str message string
-      @param $severity [optional, default zero] message importance
-      @return formatted string
+      @param $severity [optional, default 6/info] message importance
+      @return empty string
     */
-    public function cronMsg($str, $severity=0)
+    public function cronMsg($str, $severity=6)
     {
         $info = new ReflectionClass($this);
         $msg = date('r').': '.$info->getName().': '.$str."\n";
 
+        echo 'Writing log' . "\n";
+        $this->logger->log($severity, $info->getName() . ': ' . $str); 
+
         // raise message into stderr
-        if ($severity >= $this->error_threshold) {
+        if ($severity <= $this->error_threshold) {
             file_put_contents('php://stderr', $msg, FILE_APPEND);
         }
 
-        return $msg;
+        return '';
     }
 }
 

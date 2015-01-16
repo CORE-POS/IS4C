@@ -43,6 +43,11 @@ class PatronageCheckTask extends FannieTask
         global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
+        if (!$dbc->isConnected()) {
+            $this->cronMsg('No database connection', FannieLogger::ALERT);
+            return false;
+        }
+
         $query = "
             SELECT MAX(tdate) AS tdate,
                 card_no

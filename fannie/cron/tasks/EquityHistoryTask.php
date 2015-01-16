@@ -93,7 +93,7 @@ Deprecates nightly.equity.php.';
             $try = $dbc->execute($addP, array($lookupW['card_no'], $lookupW['total'], $lookupW['tdate'],
                                                 $lookupW['trans_num'], $lookupW['department']));
             if ($try === false) {
-                echo $this->cronMsg('Error adding equity entry '.$lookupW['tdate']. ' '.$lookupW['trans_num']);
+                $this->cronMsg('Error adding equity entry '.$lookupW['tdate']. ' '.$lookupW['trans_num'], FannieLogger::ERROR);
             }
         }
 
@@ -108,7 +108,7 @@ Deprecates nightly.equity.php.';
         }
         $try = $dbc->query($query);
         if ($try === false) {
-            echo $this->cronMsg('Error rebuilding equity_history_sum table');
+            $this->cronMsg('Error rebuilding equity_history_sum table', FannieLogger::ERROR);
         }
     }
 }
