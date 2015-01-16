@@ -146,17 +146,8 @@ class FannieDispatch
         // conditionalExec() is the only function on the stack
         if (count($bt) == 1) {
 
-            // log PHP errors local to Fannie
-            $elog = realpath(dirname(__FILE__).'/../logs/').'/php-errors.log';
-            ini_set('error_log', $elog);
-    
-            // use stack traces if desired
-            if ($config->get('CUSTOM_ERRORS', 0)) {
-                set_error_handler(array('FannieDispatch','errorHandler'));
-                set_exception_handler(array('FannieDispatch','exceptionHandler'));
-                register_shutdown_function(array('FannieDispatch','catchFatal'));
-            }
-
+            // setup error logging
+            self::setErrorHandlers();
             // initialize locale & gettext
             self::i18n();
             // write URL log

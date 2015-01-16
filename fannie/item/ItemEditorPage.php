@@ -383,6 +383,9 @@ class ItemEditorPage extends FanniePage
 
                     $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
                     $ret .= '<a class="iframe fancyboxLink" href="'.$FANNIE_URL.'item/addShelfTag.php?upc='.$upc.'" title="Create Shelf Tag">Shelf Tag</a>';
+
+                    $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+                    $ret .=  '<a href="' . $FANNIE_URL . 'item/CloneItemPage.php?id=' . $upc . '" title="Clone Item">Clone Item</a>';
                 }
                 $ret .= '</p>';
             }
