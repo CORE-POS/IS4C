@@ -21,6 +21,25 @@ if (!isset($FANNIE_CHARSET) || empty($FANNIE_CHARSET)) {
 <meta http-equiv="Content-Type" content="text/html; charset=<?php echo $FANNIE_CHARSET; ?>">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?php echo $page_title; ?></title>
+<?php
+$path1 = dirname(__FILE__) . '/javascript/composer-components/';
+$path2 = dirname(__FILE__) . '/javascript/';
+if (file_exists($path1 . 'bootstrap/js/bootstrap.min.js')) {
+    printf('<link rel="stylesheet" type="text/css" href="%ssrc/javascript/composer-components/bootstrap/css/bootstrap.min.css">', $path);
+    echo "\n";
+    printf('<link rel="stylesheet" type="text/css" href="%ssrc/javascript/composer-components/bootstrap-default/css/bootstrap.min.css">', $path);
+    echo "\n";
+    printf('<link rel="stylesheet" type="text/css" href="%ssrc/javascript/composer-components/bootstrap-default/css/bootstrap-theme.min.css">', $path);
+    echo "\n";
+} elseif (file_exists($path2 . 'bootstrap/js/bootstrap.min.js')) {
+    printf('<link rel="stylesheet" type="text/css" href="%ssrc/javascript/bootstrap/css/bootstrap.min.css">', $path);
+    echo "\n";
+    printf('<link rel="stylesheet" type="text/css" href="%ssrc/javascript/bootstrap-default/css/bootstrap.min.css">', $path);
+    echo "\n";
+    printf('<link rel="stylesheet" type="text/css" href="%ssrc/javascript/bootstrap-default/css/bootstrap-theme.min.css">', $path);
+    echo "\n";
+}
+?>
 <script type="text/javascript">
 function smartToggle()
 {

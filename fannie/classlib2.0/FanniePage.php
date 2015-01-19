@@ -159,14 +159,8 @@ class FanniePage
         $path1 = dirname(__FILE__) . '/../src/javascript/composer-components/';
         $path2 = dirname(__FILE__) . '/../src/javascript/';
         if (file_exists($path1 . 'bootstrap/js/bootstrap.min.js')) {
-            $this->addCssFile($url . 'src/javascript/composer-components/bootstrap/css/bootstrap.min.css');
-            $this->addCssFile($url . 'src/javascript/composer-components/bootstrap-default/css/bootstrap.min.css');
-            $this->addCssFile($url . 'src/javascript/composer-components/bootstrap-default/css/bootstrap-theme.min.css');
             $this->addScript($url . 'src/javascript/composer-components/bootstrap/js/bootstrap.min.js');
         } elseif (file_exists($path2 . 'bootstrap/js/bootstrap.min.js')) {
-            $this->addCssFile($url . 'src/javascript/bootstrap/css/bootstrap.min.css');
-            $this->addCssFile($url . 'src/javascript/bootstrap-default/css/bootstrap.min.css');
-            $this->addCssFile($url . 'src/javascript/bootstrap-default/css/bootstrap-theme.min.css');
             $this->addScript($url . 'src/javascript/bootstrap/js/bootstrap.min.js');
         } else {
             return false; // bootstrap not found!
