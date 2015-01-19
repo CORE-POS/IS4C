@@ -110,7 +110,7 @@ class ScaleItemModule extends ItemModule
         $ret .= '</select></td>';
 
         $ret .= sprintf("<td align=center><input type=checkbox value=1 name=s_graphics %s /></td>",
-                ($scale['graphics']==1?'checked':''));
+                ($scale['graphics']>0?'checked':''));
         $ret .= '</tr>';    
 
         $ret .= "<tr><td colspan=7>";
@@ -177,14 +177,17 @@ class ScaleItemModule extends ItemModule
         $label = FormLib::get('s_label','horizontal');
         $netWeight = FormLib::get('s_netwt', 0);
 
-        if ($label == "horizontal" && $type == "Random Weight")
+        if ($graphics) {
+            $label = 53;
+        } elseif ($label == "horizontal" && $type == "Random Weight") {
             $label = 133;
-        elseif ($label == "horizontal" && $type == "Fixed Weight")
+        } elseif ($label == "horizontal" && $type == "Fixed Weight") {
             $label = 63;
-        elseif ($label == "vertical" && $type == "Random Weight")
+        } elseif ($label == "vertical" && $type == "Random Weight") {
             $label = 103;
-        elseif ($label == "vertical" && $type == "Fixed Weight")
+        } elseif ($label == "vertical" && $type == "Fixed Weight") {
             $label = 23;
+        }
 
         $dbc = $this->db();
 
@@ -231,8 +234,12 @@ class ScaleItemModule extends ItemModule
         $scaleItem->save();
 
         // extract scale PLU
-        preg_match("/002(\d\d\d\d)0/",$upc,$matches);
+        preg_match("/^002(\d\d\d\d)0/",$upc,$matches);
         $s_plu = $matches[1];
+        if ($s_plu == '0000') {
+            preg_match("/^0020(\d\d\d\d)/",$upc,$matches);
+            $s_plu = $matches[1];
+        }
 
         $item_info = array(
             'RecordType' => $action,
