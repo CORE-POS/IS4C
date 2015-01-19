@@ -166,7 +166,7 @@ function logout(){
         $upR = $sql->exec_statement($upP,array($name));
     }
 
-    setcookie('session_data','',time()+(60*600),'/');
+    setcookie('session_data','',0,'/');
     return true;
 }
 
@@ -432,7 +432,7 @@ function refreshSession(){
   return true;
   if (!isset($_COOKIE['session_data']))
     return false;
-  setcookie('session_data',$_COOKIE['session_data'],time()+(60*600),'/');
+  setcookie('session_data',$_COOKIE['session_data'],0,'/');
   return true;
 }
 

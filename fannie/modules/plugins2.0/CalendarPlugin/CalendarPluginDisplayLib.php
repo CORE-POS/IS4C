@@ -38,7 +38,7 @@ $DAY_NAMES = array(
 class CalendarPluginDisplayLib {
 
     public static function monthView($id,$month,$year,$uid){
-        global $DAY_NAMES, $FANNIE_OP_DB;
+        global $DAY_NAMES, $FANNIE_OP_DB, $FANNIE_URL;
 
         $EDIT = CalendarPluginPermissions::can_write($uid,$id);
         $OWNER = CalendarPluginPermissions::is_owner($uid,$id);
@@ -233,7 +233,9 @@ class CalendarPluginDisplayLib {
             $ret .= " || <a href=?view=prefs&calID=$id>Settings for this calendar</a>\n";
         }
         $token = sha1($calendarModel->calendarID() . 'FannieCalendar' . $calendarModel->name());
-        $ret .= sprintf(' || <a href="CalendarFeed.php?id=%d&token=%s">Feed URL</a>',
+        $ret .= sprintf(' || <a href="webcal://%s%smodules/plugins2.0/CalendarPlugin/CalendarFeed.php?id=%d&token=%s">Feed URL</a>',
+                            $_SERVER['HTTP_HOST'], $FANNIE_URL, $id, $token);
+        $ret .= sprintf(' || <a href="CalendarFeed.php?id=%d&token=%s&export=1">Export URL</a>',
                             $id, $token);
         $ret .= "</div>\n";
         $ret .= '</body></html>';
@@ -365,7 +367,7 @@ class CalendarPluginDisplayLib {
         $ret .= "<div class=indexTitle>Your Calendars</div>";
         $ret .= "<div id=yours>";
         foreach($yours as $k=>$v){
-            $ret .= "<p class=\"index\"><a href=\"?calID=$k&view=week\">$v</a></p>";
+            $ret .= "<p class=\"index\"><a href=\"?calID=$k&view=month\">$v</a></p>";
         }
         $ret .= "</div>";
         $ret .= "<p class=\"index\" id=\"indexCreateNew\">";
@@ -378,7 +380,7 @@ class CalendarPluginDisplayLib {
         $ret .= "<div class=indexTitle>Other Calendars</div>";
         $ret .= "<div id=theirs>";
         foreach($theirs as $k=>$v){
-            $ret .= "<p class=\"index\"><a href=\"?calID=$k&view=week\">$v</a></p>";
+            $ret .= "<p class=\"index\"><a href=\"?calID=$k&view=month\">$v</a></p>";
         }
         $ret .= "</div>";
 

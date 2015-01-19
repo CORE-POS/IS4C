@@ -67,7 +67,9 @@ class CalendarAjax extends FannieWebService {
                     $event->uid($uid);
                     $event->eventText($text);
                     if (!empty($text)) {
-                        $event->save();
+                        $eventID = $event->save();
+                        $data = array();
+                        echo $eventID;
                     }
                 }
 

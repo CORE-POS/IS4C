@@ -38,6 +38,8 @@ class CalendarMainPage extends FanniePage {
     protected $must_authenticate = True;
     private $uid;
 
+    public $themed = true;
+
     function preprocess(){
         global $FANNIE_URL;
         $this->uid = ltrim(FannieAuth::getUID($this->current_user),"0");
