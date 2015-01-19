@@ -534,7 +534,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         $super = FormLib::get_form_value('deptSub',0);
         $vendorID = FormLib::get('vendor');
         $upc_list = FormLib::get('u', array());
-        $inUse = FormLib::get('inUse', 0);
+        $inUse = FormLib::get('inUse', 1);
 
         $sort = FormLib::get_form_value('sort','Department');   
         $order = 'dept_name';
