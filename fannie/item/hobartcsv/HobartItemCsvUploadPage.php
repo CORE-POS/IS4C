@@ -114,6 +114,9 @@ class HobartItemCsvUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         foreach ($linedata as $line) {
             // get info from file and member-type default settings
             // if applicable
+            if (!isset($line[$barcode_index])) {
+                continue;
+            }
             $barcode_segment = $line[$barcode_index];
             if (!is_numeric($barcode_segment)) {
                 continue;
