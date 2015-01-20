@@ -112,7 +112,7 @@ class EditBatchPage extends FannieRESTfulPage
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $id = $this->id;
-        $upc = $this->addUPC;
+        $upc = trim($this->addUPC);
         $upc = BarcodeLib::padUPC($upc);
 
         $json = array(
