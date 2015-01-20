@@ -135,7 +135,13 @@ class ItemEditorPage extends FanniePage
             . '</div></div>';
 
         $ret .= '<p><button name=searchBtn type=submit
-                    class="btn btn-default">Go</button></p>';
+                    class="btn btn-default">Go</button>
+                 &nbsp;&nbsp;&nbsp;&nbsp;
+                 <label>
+                    <input type="checkbox" name="inUse" value="1" />
+                    Include items that are not inUse
+                 </label>
+                 </p>';
         $ret .= '</form>';
         $ret .= '<p><a href="AdvancedItemSearch.php">' . _('Advanced Search') . '</a>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
@@ -162,6 +168,7 @@ class ItemEditorPage extends FanniePage
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $upc = FormLib::get_form_value('searchupc');
         $numType = FormLib::get_form_value('ntype','UPC');
+        $inUseFlag = FormLib::get('inUse', false);
 
         $query = "";
         $args = array();
@@ -174,6 +181,9 @@ class ItemEditorPage extends FanniePage
                         left join prodExtra as x on p.upc=x.upc 
                         WHERE v.sku LIKE ?";
                     $args[] = '%'.$upc;
+                    if (!$inUseFlag) {
+                        $query .= ' AND inUse=1 ';
+                    }
                     break;
                 case 'Brand Prefix':
                     $query = "SELECT p.*,x.distributor,p.brand AS manufacturer 
@@ -182,6 +192,9 @@ class ItemEditorPage extends FanniePage
                         WHERE p.upc like ?
                         ORDER BY p.upc";
                     $args[] = '%'.$upc.'%';
+                    if (!$inUseFlag) {
+                        $query .= ' AND inUse=1 ';
+                    }
                     break;
                 case 'UPC':
                 default:
@@ -198,8 +211,11 @@ class ItemEditorPage extends FanniePage
             $query = "SELECT p.*,x.distributor,p.brand AS manufacturer 
                 FROM products AS p LEFT JOIN 
                 prodExtra AS x ON p.upc=x.upc
-                WHERE description LIKE ?
-                ORDER BY description";
+                WHERE description LIKE ? ";
+            if (!$inUseFlag) {
+                $query .= ' AND inUse=1 ';
+            }
+            $query .= " ORDER BY description";
             $args[] = '%'.$upc.'%';    
         }
 
