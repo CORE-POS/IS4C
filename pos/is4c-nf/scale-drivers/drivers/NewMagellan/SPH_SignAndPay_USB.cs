@@ -1013,7 +1013,6 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
                 }
 
                 usb_fs.Write(report,0,usb_report_size);
-                System.Threading.Thread.Sleep(100);
 
                 for(int j=0;j<usb_report_size;j++) report[j] = 0;
                 size=0;
@@ -1035,8 +1034,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         }
 
         usb_fs.Write(report,0,usb_report_size);
-    System.Threading.Thread.Sleep(100);
-        ack_event.WaitOne(50, false);
+        System.Threading.Thread.Sleep(50);
     }
 
     private void BitmapOutput(byte[] file){
