@@ -63,6 +63,7 @@ class CpwInvoiceImport extends FannieRESTfulPage
         $order->placedDate($this->invoice_date);
         $order->vendorOrderID($this->po_num);
         $order->vendorInvoiceID($this->invoice_num);
+        $order->userID(0);
         $orderID = $order->save();
 
         $checkP = $dbc->prepare('

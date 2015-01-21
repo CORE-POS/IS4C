@@ -26,24 +26,25 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class UnfiExportForMas extends FannieReportPage 
+class LocalInvoicesReport extends FannieReportPage 
 {
 
-    protected $report_headers = array('Vendor', 'Inv#', 'Date', 'Inv Ttl', 'Code Ttl', 'Code');
+    protected $report_headers = array('Vendor', 'Inv#', 'Date', 'Inv Ttl', 'Origin SubTtl', 'Origin');
     protected $sortable = false;
     protected $no_sort_but_style = true;
 
     public $page_set = 'Reports';
-    public $description = '[MAS Invoice Export] exports vendor invoices for MAS90.';
+    public $description = '[Local Invoice Report] show local item totals for invoices.';
     public $themed = true;
 
-    function preprocess(){
+    function preprocess()
+    {
         /**
           Set the page header and title, enable caching
         */
         $this->report_cache = 'none';
-        $this->title = "Fannie : Invoice Export";
-        $this->header = "Invoice Export";
+        $this->title = "Fannie : Local Invoices";
+        $this->header = "Local Invoices";
 
         if (isset($_REQUEST['date1'])) {
             /**
@@ -70,52 +71,52 @@ class UnfiExportForMas extends FannieReportPage
     /**
       Lots of options on this report.
     */
-    function fetch_report_data(){
+    function fetch_report_data()
+    {
         global $FANNIE_OP_DB;
         $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
         $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $departments = $dbc->tableDefinition('departments');
-        $codingQ = 'SELECT o.orderID, d.salesCode, i.vendorInvoiceID, 
+        $codingQ = 'SELECT o.orderID,
+                    i.vendorInvoiceID, 
                     SUM(o.receivedTotalCost) as rtc,
-                    MAX(o.receivedDate) AS rdate
+                    MAX(o.receivedDate) AS rdate,
+                    CASE WHEN g.name IS NULL THEN \'Non-Local\' ELSE g.name END as originName,
+                    v.vendorName
                     FROM PurchaseOrderItems AS o
                     LEFT JOIN PurchaseOrder as i ON o.orderID=i.orderID
-                    LEFT JOIN products AS p ON o.internalUPC=p.upc ';
-        if (isset($departments['salesCode'])) {
-            $codingQ .= ' LEFT JOIN departments AS d ON p.department=d.dept_no ';
-        } else if ($dbc->tableExists('deptSalesCodes')) {
-            $codingQ .= ' LEFT JOIN deptSalesCodes AS d ON p.department=d.dept_ID ';
+                    LEFT JOIN products AS p ON o.internalUPC=p.upc 
+                    LEFT JOIN origins AS g ON p.local=g.originID 
+                    LEFT JOIN vendors AS v ON i.vendorID=v.vendorID 
+                WHERE i.userID=0
+                    AND o.receivedDate BETWEEN ? AND ? ';
+        $vendorID = FormLib::get('vendorID');
+        $args = array($date1 . ' 00:00:00', $date2 . ' 23:59:59');
+        if ($vendorID !== '') {
+            $codingQ .= ' AND i.vendorID=? ';
+            $args[] = $vendorID;
         }
-        $codingQ .= 'WHERE i.vendorID=? AND i.userID=0
-                    AND o.receivedDate BETWEEN ? AND ?
-                    GROUP BY o.orderID, d.salesCode, i.vendorInvoiceID
-                    ORDER BY rdate, i.vendorInvoiceID, d.salesCode';
+        $codingQ .= 'GROUP BY o.orderID, i.vendorInvoiceID, g.name
+                    ORDER BY rdate, i.vendorInvoiceID, g.name';
         $codingP = $dbc->prepare($codingQ);
 
         $report = array();
         $invoice_sums = array();
-        $vendorID = FormLib::get('vendorID');
-        $codingR = $dbc->execute($codingP, array($vendorID, $date1.' 00:00:00', $date2.' 23:59:59'));
+        $codingR = $dbc->execute($codingP, $args);
         while($codingW = $dbc->fetch_row($codingR)) {
             if ($codingW['rtc'] == 0) {
                 // skip zero lines (tote charges)
                 continue;
             }
-            $code = $codingW['salesCode'];
-            if (substr($code,0,1) == "4") {
-                $code = '5'.substr($code, 1);
-            } else if (empty($code) && $this->report_format == 'html') {
-                $code = 'n/a';
-            }
             $record = array(
-                'UNFI',
+                $codingW['vendorName'],
                 $codingW['vendorInvoiceID'],
                 $codingW['rdate'],
                 0.00,
                 sprintf('%.2f', $codingW['rtc']),
-                $code,
+                $codingW['originName'],
             );
             if (!isset($invoice_sums[$codingW['vendorInvoiceID']])) {
                 $invoice_sums[$codingW['vendorInvoiceID']] = 0;
@@ -130,13 +131,39 @@ class UnfiExportForMas extends FannieReportPage
 
         return $report;
     }
+
+    public function calculate_footers($data)
+    {
+        $sums = array();
+        foreach ($data as $row) {
+            $locale = $row[5];
+            if (!isset($sums[$row['5']])) {
+                $sums[$row[5]] = 0.00;
+            }
+            $sums[$row[5]] += $row[4];
+        }
+
+        $ret = array();
+        foreach ($sums as $label => $ttl) {
+            $ret[] = array(
+                $label . ' Total',
+                '',
+                '',
+                '',
+                sprintf('%.2f', $ttl),
+                '',
+            );
+        }
+
+        return $ret;
+    }
     
     function form_content()
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         ob_start();
         ?>
-<form method = "get" action="UnfiExportForMas.php">
+<form method = "get" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 <div class="col-sm-5">
     <div class="form-group">
         <label>Date Start</label>
@@ -151,11 +178,11 @@ class UnfiExportForMas extends FannieReportPage
     <div class="form-group">
         <label>Vendor</label>
         <select name="vendorID" class="form-control">
+        <option value="">All</option>
         <?php
         $vendors = new VendorsModel($dbc);
         foreach ($vendors->find('vendorName') as $obj) {
-            printf('<option %s value="%d">%s</option>',
-                ($obj->vendorName() == 'UNFI' ? 'selected' : ''),
+            printf('<option value="%d">%s</option>',
                 $obj->vendorID(), $obj->vendorName());
         }
         ?>
