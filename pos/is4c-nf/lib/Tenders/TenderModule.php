@@ -83,24 +83,44 @@ class TenderModule
             $this->amount = -1 * $this->amount;
         }
 
+        $clearButton = array('OK [clear]' => 'parseWrapper(\'CL\');');
+
         if (CoreLocal::get("LastID") == 0) {
-            return DisplayLib::boxMsg(_("no transaction in progress"));
+            return DisplayLib::boxMsg(
+                _("no transaction in progress"),
+                '',
+                false,
+                $clearButton
+            );
         } else if ($this->amount > 99999.99) {
             return DisplayLib::boxMsg(
-                      _("tender amount of") . " " . $this->amount . "<br />"
-                    . _("exceeds allowable limit")
+                _("tender amount of") . " " . $this->amount . "<br />" . _("exceeds allowable limit"),
+                '',
+                false,
+                $clearButton
             );
         } else if (CoreLocal::get("ttlflag") == 0) {
-            return DisplayLib::boxMsg(_("transaction must be totaled before tender can be accepted"));
+            return DisplayLib::boxMsg(
+                _("transaction must be totaled before tender can be accepted"),
+                '',
+                false,
+                array('Total [subtotal]' => 'parseWrapper(\'TL\');$(\'#reginput\').focus();', 'Dimiss [clear]' => 'parseWrapper(\'CL\');')
+            );
         } else if ($this->name_string === "") {
             return DisplayLib::inputUnknown();
         } elseif ((($this->amount < (CoreLocal::get("amtdue") - 0.005)) || ($this->amount > (CoreLocal::get("amtdue") + 0.005)))
                      && CoreLocal::get("amtdue") < 0 
                      && $this->amount !=0){
             // the return tender needs to be exact because the transaction state can get weird.
-            return DisplayLib::xboxMsg(_("return tender must be exact"));
+            return DisplayLib::xboxMsg(
+                _("return tender must be exact"),
+                $clearButton
+            );
         } elseif(CoreLocal::get("amtdue")>0 && $this->amount < 0) { 
-            return DisplayLib::xboxMsg(_("Why are you using a negative number for a positve sale?"));
+            return DisplayLib::xboxMsg(
+                _("Why are you using a negative number for a positve sale?"),
+                $clearButton
+            );
         }
 
         return true;
@@ -115,10 +135,12 @@ class TenderModule
         if ($this->amount > $this->max_limit && CoreLocal::get("msgrepeat") == 0) {
             CoreLocal::set("boxMsg",
                 "$" . $this->amount . " " . _("is greater than tender limit for") . " " . $this->name_string
-              . "<p>"
-              . "<font size='-1'>" . _("clear to cancel") . ", " . _("enter to proceed") . "</font>"
             );
             CoreLocal::set('lastRepeat', 'confirmTenderAmount');
+            CoreLocal::set('boxMsgButtons', array(
+                'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
+                'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+            ));
 
             return MiscLib::base_url().'gui-modules/boxMsg2.php';
         } else if (CoreLocal::get('msgrepeat') == 1 && CoreLocal::get('lastRepeat') == 'confirmTenderAmount') {

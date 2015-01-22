@@ -125,13 +125,19 @@ class login2 extends BasicPage
 
 		?>
 		<div id="loginTopBar">
-			<div class="name">I S 4 C</div>
-			<div class="version">P H P &nbsp; D E V E L O P M E N T
-			&nbsp; V E R S I O N &nbsp; 2 .0 .0</div>
-			<div class="welcome coloredArea"><?php echo _("W E L C O M E"); ?></div>
+			<div class="name" style="border-radius: 4px 4px 0px 0px;">
+                I S 4 C
+            </div>
+			<div class="version">
+                P H P &nbsp; D E V E L O P M E N T
+                &nbsp; V E R S I O N &nbsp; 2 .0 .0
+            </div>
+			<div class="welcome coloredArea" style="border-radius: 0px 0px 4px 4px;">
+                <?php echo _("W E L C O M E"); ?>
+            </div>
 		</div>
 		<div id="loginCenter">
-		<div class="box <?php echo $this->box_css_class; ?>">
+		<div class="box <?php echo $this->box_css_class; ?> rounded">
 				<b><?php echo _("log in"); ?></b>
 				<form id="formlocal" name="form" method="post" autocomplete="off" 
 					action="<?php echo $_SERVER['PHP_SELF']; ?>">

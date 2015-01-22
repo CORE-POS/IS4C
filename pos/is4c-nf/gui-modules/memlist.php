@@ -224,9 +224,10 @@ class memlist extends NoInputPage
 			echo "
 			<div class=\"colored centeredDisplay\">
 				<span class=\"larger\">
-			{$message}<br />".
-			_("enter member number or name").
-			"</span>
+                    {$message} <br />" .
+                    _("enter member number or name") . "
+			    </span>
+                <br />
 				<input type=\"text\" name=\"search\" size=\"15\"
 			       	onblur=\"\$('#reginput').focus();\" id=\"reginput\" />
 				<br />press [enter] to cancel
@@ -236,7 +237,7 @@ class memlist extends NoInputPage
              * otherwise, put results in a select box
              */
 			echo "
-			<div class=\"colored centeredDisplay\">
+			<div class=\"colored centeredDisplay rounded\">
 				<span class=\"larger\">";
 			if (!$this->submitted) {
 				echo _("member search")."<br />"._("enter member number or name");
@@ -244,10 +245,14 @@ class memlist extends NoInputPage
 				echo _("no match found")."<br />"._("next search or member number");
             }
 			echo "</span>
+                <p>
 				<input type=\"text\" name=\"search\" size=\"15\"
 			       	onblur=\"\$('#reginput').focus();\" id=\"reginput\" />
-				<br />
-				press [enter] to cancel
+				</p>
+                <button class=\"pos-button\" type=\"button\"
+                    onclick=\"\$('#reginput').val('');\$('#selectform').submit();\">
+                    Cancel [enter]
+                </button>
 			</div>";
 		} else {
 			echo "<div class=\"listbox\">"

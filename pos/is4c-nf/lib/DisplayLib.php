@@ -201,9 +201,10 @@ static public function msgbox($strmsg, $icon, $noBeep=false, $buttons=array())
         $ret .= '<div class="boxMsgBody boxMsgButtons">';
         foreach ($buttons as $label => $action) {
             $label = preg_replace('/(\[.+?\])/', '<span class="smaller">\1</span>', $label);
-            $ret .= sprintf('<button type="button" class="pos-button coloredArea" 
+            $color = preg_match('/\[clear\]/i', $label) ? 'errorColoredArea' : 'coloredArea';
+            $ret .= sprintf('<button type="button" class="pos-button %s" 
                         onclick="%s">%s</button>',
-                        $action, $label);
+                        $color, $action, $label);
         }
         $ret .= '</div>';
     }
