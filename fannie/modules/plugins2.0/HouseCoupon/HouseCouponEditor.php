@@ -41,13 +41,13 @@ class HouseCouponEditor extends FanniePage
     private $display_function;
     private $coupon_id;
 
-    function preprocess(){
-        global $FANNIE_OP_DB;
-        $this->display_function = 'list_house_coupons';
+    public function preprocess()
+    {
+        $this->display_function = 'listHouseCoupons';
 
         $msgs = array();
         if (FormLib::get('ajax-add') !== '') {
-            $dbc = FannieDB::get($FANNIE_OP_DB);
+            $dbc = FannieDB::get($this->config->get('OP_DB'));
             $id = FormLib::get('id');
             $upc = FormLib::get('new_upc');
             $dept = FormLib::get('new_dept');
@@ -101,9 +101,9 @@ class HouseCouponEditor extends FanniePage
 
         } elseif (FormLib::get_form_value('edit_id','') !== '') {
             $this->coupon_id = (int)FormLib::get_form_value('edit_id',0);
-            $this->display_function = 'edit_coupon';
+            $this->display_function = 'editCoupon';
         } elseif (FormLib::get_form_value('new_coupon_submit') !== '') {
-            $dbc = FannieDB::get($FANNIE_OP_DB);
+            $dbc = FannieDB::get($this->config->get('OP_DB'));
 
             $maxQ = $dbc->prepare_statement("SELECT max(coupID) from houseCoupons");
             $max = array_pop($dbc->fetch_row($dbc->exec_statement($maxQ)));
@@ -112,7 +112,7 @@ class HouseCouponEditor extends FanniePage
             $insQ = $dbc->prepare_statement("INSERT INTO houseCoupons (coupID) values (?)");
             $dbc->exec_statement($insQ,array($this->coupon_id));
 
-            $this->display_function='edit_coupon';
+            $this->display_function='editCoupon';
 
             $msgs[] = array('type'=>'success', 'text'=>'Created new coupon');
             
@@ -123,7 +123,7 @@ class HouseCouponEditor extends FanniePage
           || FormLib::get_form_value('submit_add_dept') !== ''
           || FormLib::get_form_value('submit_delete_dept') !== '' ) {
 
-            $dbc = FannieDB::get($FANNIE_OP_DB);
+            $dbc = FannieDB::get($this->config->get('OP_DB'));
 
             $this->coupon_id = FormLib::get_form_value('cid',0);
             $expires = FormLib::get_form_value('expires');
@@ -156,7 +156,7 @@ class HouseCouponEditor extends FanniePage
 
             $msgs[] = array('type'=>'success', 'text'=>'Updated coupon settings');
 
-            $this->display_function = 'edit_coupon';
+            $this->display_function = 'editCoupon';
 
             if (FormLib::get_form_value('submit_delete_upc') !== '' || FormLib::get_form_value('submit_delete_dept') !== '') {
                 /**
@@ -182,16 +182,19 @@ class HouseCouponEditor extends FanniePage
         return true;
     }
 
-    function body_content(){
+    public  function body_content()
+    {
         $func = $this->display_function;
+
         return $this->$func();
     }
 
-    function list_house_coupons(){
-        global $FANNIE_OP_DB, $FANNIE_URL;
+    private function listHouseCoupons()
+    {
+        $FANNIE_URL = $this->config->get('URL');
         $this->add_script($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.js?v=1');
         $this->add_css_file($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.css');
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
         
         $ret = '<form action="HouseCouponEditor.php" method="get">';
         $ret .= '<p>';
@@ -211,26 +214,46 @@ class HouseCouponEditor extends FanniePage
                 $tmp = explode(' ', $obj->endDate());
                 $obj->endDate($tmp[0]);
             }
+            $report_dates = array(
+                date('Y-m-d', strtotime($obj->startDate())),
+                date('Y-m-d', strtotime($obj->endDate())),
+            );
+            /**
+              If coupon period is more than 45 days, use the current month
+              as a reporting period
+            */
+            if (strtotime($report_dates[1]) - strtotime($report_dates[0]) > (86400 * 45)) {
+                $report_dates = array(date('Y-m-01'), date('Y-m-t'));
+            }
             $ret .= sprintf('<tr><td>#%d <a href="HouseCouponEditor.php?edit_id=%d">Edit</a></td>
                     <td>%s</td><td>%.2f%s</td><td>%s</td>
-                    <td><a href="%sws/barcode-pdf/?upc=%s&name=%s"
-                        class="btn btn-default">Print Barcode</a></tr>',
+                    <td>
+                        <a href="%sws/barcode-pdf/?upc=%s&name=%s"
+                        class="btn btn-default">Print Barcode</a>
+                        <a href="%sreports/ProductMovement/ProductMovementModular.php?upc=%s&date1=%s&date2=%s"
+                        class="btn btn-default">Usage Report</a>
+                    </tr>',
                     $obj->coupID(),$obj->coupID(),$obj->description(),
                     $obj->discountValue(), $obj->discountType(), $obj->endDate(),
                     $FANNIE_URL,
                     ('499999' . str_pad($obj->coupID(), 5, '0', STR_PAD_LEFT)),
-                    urlencode($obj->description()));
+                    urlencode($obj->description()),
+                    $FANNIE_URL,
+                    ('499999' . str_pad($obj->coupID(), 5, '0', STR_PAD_LEFT)),
+                    $report_dates[0],
+                    $report_dates[1]
+                );
         }
         $ret .= '</table>';
         
         $dbc->close();
+
         return $ret;
     }
 
-    function edit_coupon(){
-        global $FANNIE_URL;
-        global $FANNIE_OP_DB, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+    private function editCoupon()
+    {
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
         
         $depts = array();
         $query = $dbc->prepare_statement("SELECT dept_no,dept_name FROM departments ORDER BY dept_no");
@@ -302,7 +325,7 @@ class HouseCouponEditor extends FanniePage
                 <label class="col-sm-1 control-label">Department</label>
                 <div class="col-sm-3"><select class="form-control" name=dept>',
             $cid,
-            $FANNIE_URL,
+            $this->config->get('URL'),
             "00499999".str_pad($cid,5,'0',STR_PAD_LEFT),
             urlencode($description),
             "00499999".str_pad($cid,5,'0',STR_PAD_LEFT),
@@ -440,8 +463,7 @@ class HouseCouponEditor extends FanniePage
 
     private function couponItemTable($id)
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
         $hc = new HouseCouponsModel($dbc);
         $hc->coupID($id);
         $hc->load();
@@ -501,5 +523,5 @@ class HouseCouponEditor extends FanniePage
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
