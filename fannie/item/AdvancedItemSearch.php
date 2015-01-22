@@ -193,8 +193,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
 
         $vendorID = FormLib::get('vendor');
         if ($vendorID !== '') {
-            $where .= ' AND (v.vendorID=? OR p.default_vendor_id=?)';
-            $args[] = $vendorID;
+            $where .= ' AND v.vendorID=? ';
             $args[] = $vendorID;
             if (!strstr($from, 'vendorItems')) {
                 $from .= ' LEFT JOIN vendorItems AS v ON p.upc=v.upc ';
