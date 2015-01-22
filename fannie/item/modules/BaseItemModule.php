@@ -173,7 +173,8 @@ class BaseItemModule extends ItemModule
             while(strlen($search) >= 8){
                 $searchR = $dbc->exec_statement($searchP,array($search.'%'));
                 if ($dbc->num_rows($searchR) > 0){
-                    $rowItem['department'] = array_pop($dbc->fetch_row($searchR));
+                    $searchW = $dbc->fetch_row($searchR);
+                    $rowItem['department'] = $searchW['department'];
                     $settingP = $dbc->prepare_statement('SELECT dept_tax,dept_fs,dept_discount
                                 FROM departments WHERE dept_no=?');
                     $settingR = $dbc->exec_statement($settingP,array($rowItem['department']));
