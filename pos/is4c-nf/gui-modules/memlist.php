@@ -268,15 +268,9 @@ class memlist extends NoInputPage
 				}
 				echo '>'.$label.'</option>';
             }
-			echo "</select></div><!-- /.listbox -->"
-				."<div class=\"listboxText coloredText centerOffset\">"
-				. _("use arrow keys to navigate")
-                . '<p><button type="submit" class="pos-button errorColoredArea"
-                    onclick="$(\'#search option:selected\').val(\'\');">
-                    Cancel <span class="smaller">[clear]</span>
-                    </button></p>'
-                ."</div><!-- /.listboxText coloredText .centerOffset -->"
-                . '<div class="listboxText">'
+			echo "</select></div><!-- /.listbox -->";
+            if (CoreLocal::get('touchscreen')) {
+                echo '<div class="listboxText">'
                 . '<button type="button" class="pos-button coloredArea"
                     onclick="pageUp(\'#search\');">
                     Page Up
@@ -296,7 +290,15 @@ class memlist extends NoInputPage
                     onclick="pageDown(\'#search\');">
                     Page Down
                    </button>'
-                . '</div>'
+                . '</div>';
+            }
+			echo "<div class=\"listboxText coloredText centerOffset\">"
+				. _("use arrow keys to navigate")
+                . '<p><button type="submit" class="pos-button errorColoredArea"
+                    onclick="$(\'#search option:selected\').val(\'\');">
+                    Cancel <span class="smaller">[clear]</span>
+                    </button></p>'
+                ."</div><!-- /.listboxText coloredText .centerOffset -->"
 				."<div class=\"clear\"></div>";
 		}
 		echo "</form></div>";
