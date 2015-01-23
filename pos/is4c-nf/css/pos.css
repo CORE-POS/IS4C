@@ -10,6 +10,7 @@ div#boundingBox { width: 675px; }
 *********************************************/
 .coloredArea { background: #004080; color: #ffffff; }
 .colored { background: #004080; color: #ffffff; } /* compat */
+.coloredBorder { border: solid 1px #004080 !important; }
 .errorColoredArea { background: #800000; color: #ffffff; }
 .errorColored { background: #800000; color: #ffffff; } /* compat */
 .lightestColorText { color: #808080; }
@@ -94,7 +95,6 @@ button.pos-button {
     padding: 6px 12px;
     text-align: center;
     vertical-align: middle;
-    white-space: nowrap;
     margin-right: 5px;
 }
 /*********************************************
@@ -136,11 +136,9 @@ div#scaleBottom { width: 118px; color: #000000; background: #eeeeee; font-weight
 div.qkRow { width: 100%; clear: left; text-align: center; }
 div.qkBox { width: 23%; float: left;  padding: 10px; text-align: center; }
 div.qkBox div { width: 75px; padding: 5px 0 5px 0; margin-left:auto; margin-right:auto;}
-input.quick_button { width: 65px; height: 55px; 
-	border: outset 3px #004080; color: #004080;
-	background-color: #ffffff; }
+.quick_button { width: 65px; height: 55px; }
 div.qkArrowBox { width: 20px; float: left; padding-top: 25px;}
-input.qkArrow { width: 50px; height: 30px; border: outset 3px #004080;
+button.qkArrow { width: 50px; height: 30px; border: outset 3px #004080;
 	color: #004080; background-color: #ffffff; }
 
 /*********************************************

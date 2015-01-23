@@ -324,30 +324,40 @@ class pos2 extends BasicPage {
 		echo DisplayLib::printfooter();
 		echo "</div>";
 
-		if (CoreLocal::get("touchscreen") === True){
+		if (CoreLocal::get("touchscreen")) {
 			echo '<div style="text-align: center;">
-			<input type="submit" value="Items"
-				class="quick_button"
+			<button type="submit" 
+				class="quick_button pos-button coloredBorder"
 				style="margin: 0 10px 0 0;"
-				onclick="parseWrapper(\'QK0\');" />
-			<input type="submit" value="Total"
-				class="quick_button"
+				onclick="parseWrapper(\'QK0\');">
+                Items
+            </button>
+			<button type="submit"
+				class="quick_button pos-button coloredBorder"
 				style="margin: 0 10px 0 0;"
-				onclick="parseWrapper(\'QK4\');" />
-			<input type="submit" value="Tender"
-				class="quick_button"
+				onclick="parseWrapper(\'QK4\');">
+                Total
+            </button>
+			<button type="submit" 
+				class="quick_button pos-button coloredBorder"
 				style="margin: 0 10px 0 0;"
-				onclick="parseWrapper(\'QK2\');" />
-			<input type="submit" value="Member"
-				class="quick_button"
+				onclick="parseWrapper(\'QK2\');">
+                Tender
+            </button>
+			<button type="submit" 
+				class="quick_button pos-button coloredBorder"
 				style="margin: 0 10px 0 0;"
-				onclick="parseWrapper(\'QK5\');" />
-			<input type="submit" value="Misc"
-				class="quick_button"
+				onclick="parseWrapper(\'QK5\');">
+                Member
+            </button>
+			<button type="submit"
+				class="quick_button pos-button coloredBorder"
 				style="margin: 0 10px 0 0;"
-				onclick="parseWrapper(\'QK6\');" />
+				onclick="parseWrapper(\'QK6\');">
+                Misc
+            </button>
 			</div>';
-		}
+        }
 	} // END body_content() FUNCTION
 }
 

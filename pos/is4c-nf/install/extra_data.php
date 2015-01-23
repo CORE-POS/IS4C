@@ -49,6 +49,10 @@ elseif(isset($_REQUEST['depts'])){
 	echo "<br />Loading super departments";
 	$db->query("TRUNCATE TABLE MasterSuperDepts");
 	InstallUtilities::loadSampleData($db,'MasterSuperDepts');
+} elseif(isset($_REQUEST['quicklookups'])){
+	echo "Loading QuickLookups";
+	$db->query("TRUNCATE TABLE QuickLookups");
+	InstallUtilities::loadSampleData($db,'QuickLookups');
 }
 ?>
 </b></div>
@@ -78,6 +82,12 @@ You can also ring amounts directly to a department. Not needed,
 strictly speaking, for a basic lane (Ring up items, total, 
 accept tender, provide change).</p>
 <input type=submit name=depts value="Load sample departments" />
+<?php if ($db->table_exists('QuickLookups')) { ?>
+<hr />
+<b>Quick Lookups</b>
+<p>Basic menus for QuickKeys and QuickLookups plugins</p>
+<input type=submit name=quicklookups value="Load sample menus" />
+<?php } ?>
 </form>
 </div> <!--	wrapper -->
 </body>
