@@ -270,7 +270,33 @@ class memlist extends NoInputPage
             }
 			echo "</select></div><!-- /.listbox -->"
 				."<div class=\"listboxText coloredText centerOffset\">"
-				._("use arrow keys to navigate")."<p>"._("clear to cancel")."</div><!-- /.listboxText coloredText .centerOffset -->"
+				. _("use arrow keys to navigate")
+                . '<p><button type="submit" class="pos-button errorColoredArea"
+                    onclick="$(\'#search option:selected\').val(\'\');">
+                    Cancel <span class="smaller">[clear]</span>
+                    </button></p>'
+                ."</div><!-- /.listboxText coloredText .centerOffset -->"
+                . '<div class="listboxText">'
+                . '<button type="button" class="pos-button coloredArea"
+                    onclick="pageUp(\'#search\');">
+                    Page Up
+                   </button>'
+                . '<br /><br />'
+                . '<button type="button" class="pos-button coloredArea"
+                    onclick="scrollUp(\'#search\');">
+                    Up
+                   </button>'
+                . '<br /><br />'
+                . '<button type="button" class="pos-button coloredArea"
+                    onclick="scrollDown(\'#search\');">
+                    Down
+                   </button>'
+                . '<br /><br />'
+                . '<button type="button" class="pos-button coloredArea"
+                    onclick="pageDown(\'#search\');">
+                    Page Down
+                   </button>'
+                . '</div>'
 				."<div class=\"clear\"></div>";
 		}
 		echo "</form></div>";
