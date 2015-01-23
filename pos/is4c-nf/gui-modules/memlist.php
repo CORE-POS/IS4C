@@ -270,31 +270,34 @@ class memlist extends NoInputPage
             }
 			echo "</select></div><!-- /.listbox -->";
             if (CoreLocal::get('touchscreen')) {
-                echo '<div class="listboxText">'
+                echo '<div class="listbox listboxText">'
                 . '<button type="button" class="pos-button coloredArea"
                     onclick="pageUp(\'#search\');">
-                    Page Up
+                    <img src="../graphics/pageup.png" width="16" height="16" />
                    </button>'
                 . '<br /><br />'
                 . '<button type="button" class="pos-button coloredArea"
                     onclick="scrollUp(\'#search\');">
-                    Up
+                    <img src="../graphics/up.png" width="16" height="16" />
                    </button>'
                 . '<br /><br />'
                 . '<button type="button" class="pos-button coloredArea"
                     onclick="scrollDown(\'#search\');">
-                    Down
+                    <img src="../graphics/down.png" width="16" height="16" />
                    </button>'
                 . '<br /><br />'
                 . '<button type="button" class="pos-button coloredArea"
                     onclick="pageDown(\'#search\');">
-                    Page Down
+                    <img src="../graphics/pagedown.png" width="16" height="16" />
                    </button>'
                 . '</div>';
             }
 			echo "<div class=\"listboxText coloredText centerOffset\">"
 				. _("use arrow keys to navigate")
-                . '<p><button type="submit" class="pos-button errorColoredArea"
+                . '<p><button type="submit" class="pos-button wide-button coloredArea">
+                    OK <span class="smaller">[enter]</span>
+                    </button></p>'
+                . '<p><button type="submit" class="pos-button wide-button errorColoredArea"
                     onclick="$(\'#search option:selected\').val(\'\');">
                     Cancel <span class="smaller">[clear]</span>
                     </button></p>'

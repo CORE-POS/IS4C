@@ -97,6 +97,9 @@ button.pos-button {
     vertical-align: middle;
     margin-right: 5px;
 }
+button.wide-button {
+    width: 125px;
+}
 /*********************************************
  * Initial login page 
 *********************************************/
