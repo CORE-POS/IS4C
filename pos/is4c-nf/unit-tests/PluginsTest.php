@@ -11,7 +11,7 @@ class PluginsTest extends PHPUnit_Framework_TestCase
         $iter = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path), RecursiveIteratorIterator::CHILD_FIRST, 2);
         // a handful of need to be checked early to avoid duplicate definition
         // since another file includes it
-        $first = array('Plugin'=>'', 'xmlData'=>'', 'PaycardLib'=>'', 'BasicCCModule'=>'', 'quickkey'=>'');
+        $first = array('Plugin'=>'', 'xmlData'=>'', 'PaycardLib'=>'', 'PaycardProcessPage'=>'', 'BasicCCModule'=>'', 'quickkey'=>'');
         $files = array();
         foreach ($iter as $file) {
             if (is_dir($file)) {
