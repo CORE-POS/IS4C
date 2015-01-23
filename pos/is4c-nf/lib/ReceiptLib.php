@@ -1017,12 +1017,36 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
 			$member = trim(CoreLocal::get("memberID"));
 			$your_discount = CoreLocal::get("transDiscount");
 
-			if (CoreLocal::get("transDiscount") + 
-			   CoreLocal::get("specials") > 0 ) {
-				$receipt['any'] .= 'TODAY YOU SAVED = $'.
-					number_format($your_discount + CoreLocal::get("specials"),2).
-					"\n";
-			}
+            $savingsMode = CoreLocal::get('ReceiptSavingsMode');
+            $memberSaleSavings = CoreLocal::get('memSpecial');
+            $everyoneSaleSavings = CoreLocal::get('discounttotal');
+            $percentDiscountSavings = CoreLocal::get('transDiscount');
+            if ($savingsMode == 'unified' || $savingsMode === '') {
+                /**
+                  Show all savings on a single line
+                */
+                if ($memberSaleSavings + $everyoneSaleSavings + $percentDiscountSavings > 0) {
+                    $receipt['any'] .= 'TODAY YOU SAVED = $'
+                        . number_format($memberSaleSavings + $everyoneSaleSavings + $percentDiscountSavings, 2)
+                        . "\n";
+                }
+			} elseif ($savingsMode == 'separate' || $savingsMode == 'couldhave') {
+                /**
+                  Show discounts on separate lines;
+                  Optionally show non-members what they could have saved
+                */
+                if ($percentDiscountSavings > 0) {
+                    $receipt['any'] .= _('DISCOUNT SAVINGS = $') . number_format($percentDiscountSavings, 2) . "\n";
+                }
+                if ($everyoneSaleSavings > 0) {
+                    $receipt['any'] .= _('SALE SAVINGS = $') . number_format($everyoneSaleSavings, 2) . "\n";
+                }
+                if ($memberSaleSavings > 0 && trim(CoreLocal::get("memberID")) != CoreLocal::get("defaultNonMem")) {
+                    $receipt['any'] .= _('OWNER SALE SAVINGS = $') . number_format($memberSaleSavings, 2) . "\n";
+                } elseif ($memberSaleSavings > 0 && $savingsMode == 'couldhave') {
+                    $receipt['any'] .= _('OWNER COULD HAVE SAVED = $') . number_format($memberSaleSavings, 2) . "\n";
+                }
+            }
 			$receipt['any'] .= self::localTTL();
 			//$receipt['any'] .= self::graphedLocalTTL();
 			$receipt['any'] .= "\n";

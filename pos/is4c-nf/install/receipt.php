@@ -52,6 +52,27 @@ include('InstallUtilities.php');
     </td>
 </tr>
 <tr>
+    <td><b>List Savings</b>: </td>
+    <td>
+    <?php
+    $receipts = array(
+        'unified' => 'Single Line',
+        'separate' => 'Separately',
+        'couldhave' => 'Separately (with "could have")',
+        'omit' => 'Do not print',
+    );
+    echo InstallUtilities::installSelectField('ReceiptSavingsMode', $receipts, 'unified');
+    ?>
+    <span class='noteTxt'>
+    The receipt optionally lists savings from 1) a customer's percent discount,
+    2) sale prices for all customers, and 3) sale prices just for members.
+    The total can be listed as a single lump sum, as three separate line items,
+    or omitted entirely. The "could have" option will list the member-only sale savings
+    on non-member receipts as an amount they "could have" saved.
+    </span>
+    </td>
+</tr>
+<tr>
 	<td><b>Receipt Driver</b>:</td>
 	<td>
     <?php
