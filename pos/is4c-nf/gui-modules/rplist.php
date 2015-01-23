@@ -41,7 +41,7 @@ class rplist extends NoInputPage
                 }
                 if(is_array($receipt)) {
                     if (!empty($receipt['any'])) {
-                        $EMAIL_OBJ->writeLine($receipt['any']);
+                        $PRINT_OBJ->writeLine($receipt['any']);
                     }
                     if (!empty($receipt['print'])) {
                         $PRINT_OBJ->writeLine($receipt['print']);
