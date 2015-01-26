@@ -458,11 +458,22 @@ static public function addcomment($comment)
 /**
   Add a change record (a special type of tender record)
   @param $dblcashreturn the change amount
+  @param $strtendercode [default 'CA']
+  @param $strchangemsg [default 'Change']
 */
-static public function addchange($dblcashreturn,$strtendercode='CA') 
+static public function addchange($dblcashreturn, $strtendercode='CA', $strchangemsg='Change') 
 {
+    /**
+      Avoiding writing blank records if opdata.tenders.ChangeMsg happens to be blank or null
+    */
+    if (empty($strchangemsg)) {
+        $strchangemsg = 'Change';
+    }
+    if (empty($strtendercode)) {
+        $strtendercode = 'CA';
+    }
     self::addRecord(array(
-        'description' => 'Change',
+        'description' => $strchangemsg,
         'trans_type' => 'T',
         'trans_subtype' => $strtendercode,
         'total' => $dblcashreturn,

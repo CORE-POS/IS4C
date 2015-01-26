@@ -65,7 +65,7 @@ class TenderModule
             $this->max_limit = $row['MaxAmount'];
         } else {
             $this->name_string = '';
-            $this->change_string = '';
+            $this->change_string = 'Change';
             $this->min_limit = 0;
             $this->max_limit = 0;
             $this->change_type = 'CA';
@@ -178,6 +178,15 @@ class TenderModule
     public function changeType()
     {
         return $this->change_type;
+    }
+
+    /**
+      What description should be used for change records associated with this tender
+      @return string change description
+    */
+    public function changeMsg()
+    {
+        return $this->change_string;
     }
 
     /**

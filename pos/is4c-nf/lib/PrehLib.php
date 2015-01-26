@@ -513,7 +513,7 @@ static public function tender($right, $strl)
 
 		CoreLocal::set("change",-1 * CoreLocal::get("amtdue"));
 		$cash_return = CoreLocal::get("change");
-		TransRecord::addchange($cash_return,$tender_object->ChangeType());
+		TransRecord::addchange($cash_return, $tender_object->ChangeType(), $tender_object->ChangeMsg());
 					
 		CoreLocal::set("End",1);
 		$ret['receipt'] = 'full';
