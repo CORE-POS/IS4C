@@ -306,8 +306,8 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                     if (resp.result.length > 0 && superID != -1) {
                         $('#dept-start-select').val(resp.result[0]['id']);
                         $('#deptStart').val(resp.result[0]['id']);
-                        $('#dept-end-select').val(resp.result[resp.result.length-1]['id']);
-                        $('#deptEnd').val(resp.result[resp.result.length-1]['id']);
+                        $('#dept-end-select').val(resp.result[0]['id']);
+                        $('#deptEnd').val(resp.result[0]['id']);
                     } else if (resp.result.length > 0) {
                         $('#deptStart').val($('#dept-start-select').val());
                         $('#deptEnd').val($('#dept-end-select').val());
@@ -337,8 +337,8 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                     if (resp.result) {
                         $('#sub-start').empty();
                         $('#sub-end').empty();
-                        $('#sub-start').append($('<option value="">Select Sub</option>'));
-                        $('#sub-end').append($('<option value="">Select Sub</option>'));
+                        $('#sub-start').append($('<option value="">Select sub department</option>'));
+                        $('#sub-end').append($('<option value="">Select sub department</option>'));
                         for (var i=0; i<resp.result.length; i++) {
                             var opt = $('<option>').val(resp.result[i]['id'])
                                 .html(resp.result[i]['id'] + ' ' + resp.result[i]['name']);
@@ -578,7 +578,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             }
             $ret .= '</form>';
             $ret .= sprintf('<a href="" onclick="$(\'#excel-form\').submit();return false;">Save to Excel</a> 
-                &nbsp; &nbsp; <a href="javascript:history:back();">Back</a><br />',
+                &nbsp; &nbsp; <a href="javascript:back();">Back</a><br />',
                 $page_url, $sort);
         }
 
@@ -745,6 +745,21 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         while ($superW = $dbc->fetch_row($superR)){
             $supers[$superW['superID']] = $superW['super_name'];
         }
+        $subs = array();
+        if (count($depts) > 0) {
+            $dept_numbers = array_keys($depts);
+            $first = $dept_numbers[0];
+            $subsP = $dbc->prepare('
+                SELECT subdept_no,
+                    subdept_name
+                FROM subdepts
+                WHERE dept_ID=?
+                ORDER BY subdept_no');
+            $subsR = $dbc->execute($subsP, array($first));
+            while ($subsW = $dbc->fetch_row($subsR)) {
+                $subs[$subsW['subdept_no']] = $subsW['subdept_name'];
+            }
+        }
         ob_start();
         ?>
         <form method="get" action="ProductListPage.php">
@@ -761,7 +776,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             <p>
             <div class="tab-pane active" id="dept-tab">
                 <div class="row form-group form-horizontal">
-                    <label class="control-label col-sm-2">Buyer (SuperDept)</label>
+                    <label class="control-label col-sm-2">SuperDept (Buyer)</label>
                     <div class="col-sm-6">
                         <select name=deptSub class="form-control" onchange="chainSuper(this.value);">
                             <option value=0></option>
@@ -775,10 +790,10 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 <div class="row form-group form-horizontal">
                     <label class="control-label col-sm-2">Department Start</label>
                     <div class="col-sm-4">
-                        <select onchange="$('#deptStart').val(this.value); filterSubs();" 
+                        <select onchange="$('#deptStart').val(this.value); $('#dept-end-select').val(this.value); $('#deptEnd').val(this.value); filterSubs();" 
                             id="dept-start-select" class="form-control input-sm">
                         <?php
-                        foreach($depts as $id => $name)
+                        foreach ($depts as $id => $name)
                             printf('<option value="%d">%d %s</option>',$id,$id,$name);  
                         ?>
                         </select>
@@ -795,7 +810,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                         <select onchange="$('#deptEnd').val(this.value); filterSubs();" 
                             id="dept-end-select" class="form-control input-sm">
                         <?php
-                        foreach($depts as $id => $name)
+                        foreach ($depts as $id => $name)
                             printf('<option value="%d">%d %s</option>',$id,$id,$name);  
                         ?>
                         </select>
@@ -809,8 +824,13 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 <div class="row form-group form-horizontal">
                     <label class="control-label col-sm-2">Sub Start</label>
                     <div class="col-sm-6">
-                        <select name="sub-start" id="sub-start" class="form-control">
+                        <select name="sub-start" id="sub-start" onchange="$('#sub-end').val(this.value);" class="form-control">
                             <option value="">Select sub department</option>
+                            <?php
+                            foreach ($subs as $id => $name) {
+                                printf('<option value="%d">%d %s</option>', $id, $id, $name);
+                            }
+                            ?>
                         </select>
                     </div>
                 </div>
@@ -819,6 +839,11 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                     <div class="col-sm-6">
                         <select name="sub-end" id="sub-end" class="form-control">
                             <option value="">Select sub department</option>
+                            <?php
+                            foreach ($subs as $id => $name) {
+                                printf('<option value="%d">%d %s</option>', $id, $id, $name);
+                            }
+                            ?>
                         </select>
                     </div>
                 </div>
