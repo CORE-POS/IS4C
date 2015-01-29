@@ -48,6 +48,12 @@ class WFCFixup extends PreParser {
         } else if (($as_upc == '0000000001112' || $as_upc == '0000000001113') && CoreLocal::get('msgrepeat') == 0) {
             $this->remainder = 'QM708';
             return true;
+        } elseif (preg_match('/(\d+)\*0*1112/', $str, $matches) && CoreLocal::get('msgrepeat') == 0) {
+            $this->remainder = $matches[1] . '*QM708';
+            return true;
+        } elseif (preg_match('/(\d+)\*0*1113/', $str, $matches) && CoreLocal::get('msgrepeat') == 0) {
+            $this->remainder = $matches[1] . '*QM708';
+            return true;
         }
 		return False;
 	}
