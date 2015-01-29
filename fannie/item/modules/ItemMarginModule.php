@@ -32,7 +32,17 @@ class ItemMarginModule extends ItemModule
         $db = $this->db();
         $product = new ProductsModel($db);
         $product->upc($upc);
-        $product->load();
+        if (!$product->load()) {
+            /**
+              Lookup vendor cost on new items
+            */
+            $vendor = new VendorItemsModel($db);
+            $vendor->upc($upc);
+            foreach ($vendor->find('vendorID') as $v) {
+                $product->cost($v->cost());
+                break;
+            }
+        }
         $ret = '<div id="ItemMarginFieldset" class="panel panel-default">';
         $ret .=  "<div class=\"panel-heading\">
                 <a href=\"\" onclick=\"\$('#ItemMarginContents').toggle();return false;\">
