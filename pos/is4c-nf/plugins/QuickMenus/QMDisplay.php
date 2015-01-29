@@ -21,8 +21,6 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','1');
-
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
 class QMDisplay extends NoInputPage {
