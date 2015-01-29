@@ -70,6 +70,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
     function get_search_handler()
     {
         global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 
         /**
           Step 1:
@@ -121,11 +122,24 @@ class AdvancedItemSearch extends FannieRESTfulPage
 
         $superID = FormLib::get('superID');
         if ($superID !== '') {
-            if (!strstr($from, 'superdepts')) {
-                $from .= ' LEFT JOIN superdepts AS s ON p.department = s.dept_ID ';
+            /**
+              Unroll superdepartment into a list of department
+              numbers so products.department index can be utilizied
+            */
+            $superP = $dbc->prepare('
+                SELECT dept_ID
+                FROM superdepts
+                WHERE superID=?'
+            );
+            $superR = $dbc->execute($superP, array($superID));
+            if ($superR && $dbc->numRows($superR) > 0) {
+                $where .= ' AND p.department IN (';
+                while ($superW = $dbc->fetch_row($superR)) {
+                    $where .= '?,';
+                    $args[] = $superW['dept_ID'];
+                }
+                $where = substr($where, 0, strlen($where)-1) . ') ';
             }
-            $where .= ' AND s.superID = ? ';
-            $args[] = $superID;
         }
 
         $dept1 = FormLib::get('deptStart');
@@ -262,12 +276,12 @@ class AdvancedItemSearch extends FannieRESTfulPage
             return false;
         }
 
-        $dbc = FannieDB::get($FANNIE_OP_DB);
         $query = 'SELECT p.upc, p.description, m.super_name, p.department, d.dept_name,
                  p.normal_price, p.special_price,
                  CASE WHEN p.discounttype > 0 THEN \'X\' ELSE \'-\' END as onSale,
                  0 as selected
                  FROM ' . $from . ' WHERE ' . $where;
+        $query = $dbc->addSelectLimit($query, 1000);
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $args);
 
@@ -424,14 +438,15 @@ class AdvancedItemSearch extends FannieRESTfulPage
         return true;
     }
 
-    private function streamOutput($data) {
+    private function streamOutput($data) 
+    {
         $ret = '';
-        $ret .= '<table class="table">';
-        $ret .= '<tr>
+        $ret .= '<table class="table search-table">';
+        $ret .= '<thead><tr>
                 <th><input type="checkbox" onchange="toggleAll(this, \'.upcCheckBox\');" /></th>
                 <th>UPC</th><th>Desc</th><th>Super</th><th>Dept</th>
                 <th>Retail</th><th>On Sale</th><th>Sale</th>
-                </tr>';
+                </tr></thead><tbody>';
         foreach($data as $upc => $record) {
             $ret .= sprintf('<tr>
                             <td><input type="checkbox" name="u[]" class="upcCheckBox" value="%s" %s /></td>
@@ -453,7 +468,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
                             $record['special_price']
             );
         }
-        $ret .= '</table>';
+        $ret .= '</tbody></table>';
 
         return $ret;
     }
@@ -477,6 +492,7 @@ function getResults() {
         success: function(data) {
             $('.progress').hide();
             $('#resultArea').html(data);
+            $('.search-table').tablesorter();
         }
     });
 }
@@ -596,6 +612,10 @@ function chainSuper(superID)
     public function css_content()
     {
         return '
+                .search-table thead th {
+                    cursor: hand;
+                    cursor: pointer;
+                }
             ';
     }
 
@@ -725,7 +745,7 @@ function chainSuper(superID)
         $ret .= '
                 <label class="col-sm-2 small" for="in_use">
                 InUse
-				<input type="checkbox" name="in_use" id="in_use" value="1" class="checkbox-inline" />
+				<input type="checkbox" name="in_use" id="in_use" value="1" checked class="checkbox-inline" />
                 </label>
                 </div>'; 
 
@@ -863,6 +883,7 @@ function chainSuper(superID)
 
         $this->add_script('autocomplete.js');
         $this->add_onload_command("bindAutoComplete('#brand-field', '../ws/', 'brand');\n");
+        $this->addScript('../src/javascript/tablesorter/jquery.tablesorter.js');
         
         return $ret;
     }
