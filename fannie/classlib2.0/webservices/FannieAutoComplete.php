@@ -57,18 +57,28 @@ class FannieAutoComplete extends FannieWebService
         $dbc = \FannieDB::get(\FannieConfig::factory()->get('OP_DB'));
         switch (strtolower($args->field)) {
             case 'item':
-                $prep = $dbc->prepare('SELECT p.upc,
-                                        p.description
-                                       FROM products AS p
-                                        LEFT JOIN productUser AS u ON u.upc=p.upc
-                                       WHERE p.description LIKE ?
-                                        OR p.brand LIKE ?
-                                        OR u.description LIKE ?
-                                        OR u.brand LIKE ?
-                                       ORDER BY p.description');
-                $term = '%' . $args->search . '%';
-                $res = $dbc->execute($prep, array($term, $term, $term, $term));
-                while ($row = $dbc->fetch_row($res)) {
+                $res = false;
+                if (!is_numeric($args->search)) {
+                    $prep = $dbc->prepare('SELECT p.upc,
+                                            p.description
+                                           FROM products AS p
+                                            LEFT JOIN productUser AS u ON u.upc=p.upc
+                                           WHERE p.description LIKE ?
+                                            OR p.brand LIKE ?
+                                            OR u.description LIKE ?
+                                            OR u.brand LIKE ?
+                                           ORDER BY p.description');
+                    $term = '%' . $args->search . '%';
+                    $res = $dbc->execute($prep, array($term, $term, $term, $term));
+                } elseif (ltrim($args->search, '0') != '') {
+                    $prep = $dbc->prepare('
+                        SELECT p.upc,
+                            p.upc AS description
+                        FROM products AS p
+                        WHERE p.upc LIKE ?');
+                    $res = $dbc->execute($prep, array('%'.$args->search . '%'));
+                }
+                while ($res && $row = $dbc->fetch_row($res)) {
                     $ret[] = array(
                         'label' => $row['description'],
                         'value' => $row['upc'],
