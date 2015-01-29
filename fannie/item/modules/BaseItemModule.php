@@ -351,7 +351,7 @@ class BaseItemModule extends ItemModule
         $ret .= '
             <div class="form-group form-inline">
                 <label>Dept</label>
-                <select id="super-dept" class="form-control" onchange="chainSuper(this.value);">';
+                <select id="super-dept" class="form-control chosen-select" onchange="chainSuper(this.value);">';
         $names = new SuperDeptNamesModel($dbc);
         foreach ($names->find('superID') as $obj) {
             $ret .= sprintf('<option %s value="%d">%s</option>',
@@ -360,14 +360,14 @@ class BaseItemModule extends ItemModule
         }
         $ret .= '</select>
                 <select name="department" id="department" 
-                    class="form-control" onchange="chainSelects(this.value);">';
+                    class="form-control chosen-select" onchange="chainSelects(this.value);">';
         foreach ($depts as $id => $name){
             $ret .= sprintf('<option %s value="%d">%d %s</option>',
                     ($id == $rowItem['department'] ? 'selected':''),
                     $id,$id,$name);
         }
         $ret .= '</select>';
-        $ret .= '<select name="subdept" id="subdept" class="form-control">';
+        $ret .= '<select name="subdept" id="subdept" class="form-control chosen-select">';
         $ret .= isset($subs[$rowItem['department']]) ? $subs[$rowItem['department']] : '<option value="0">None</option>';
         $ret .= '</select>';
         $ret .= '</div>';
@@ -493,6 +493,7 @@ class BaseItemModule extends ItemModule
                                 .html(resp.result[i]['id'] + ' ' + resp.result[i]['name']);
                             $('#department').append(opt);
                         }
+                        $('#department').trigger('chosen:updated');
                         chainSelects($('#department').val());
                     }
                 }
@@ -500,10 +501,12 @@ class BaseItemModule extends ItemModule
         }
         function chainSelects(val){
             var lookupTable = <?php echo $json; ?>;
-            if (val in lookupTable)
+            if (val in lookupTable) {
                 $('#subdept').html(lookupTable[val]);
-            else
+                $('#subdept').trigger('chosen:updated');
+            } else {
                 $('#subdept').html('<option value=0>None</option>');
+            }
             $.ajax({
                 url: '<?php echo $FANNIE_URL; ?>item/modules/BaseItemModule.php',
                 data: 'dept_defaults='+val,
