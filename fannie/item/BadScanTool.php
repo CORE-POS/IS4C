@@ -55,7 +55,7 @@ class BadScanTool extends FannieRESTfulPage
         global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
 
         $data = \COREPOS\Fannie\API\data\DataCache::check();
-        if (!$data) {
+        if (true || !$data) {
             /**
               Excludes:
               Values with spaces (fixed in lanecode going forward)
@@ -132,9 +132,10 @@ class BadScanTool extends FannieRESTfulPage
                 order case scanned by mistake or a bulk purchase in a barcoded container.</span> ';
         $ret .= 'Other items are not identifiable with available information';
         $ret .= '</div>';
-        $ret .= '<table id="scantable" class="table">';
+        $ret .= '<table id="scantable" class="table"><thead>';
         $ret .= '<tr id="tableheader"><th>UPC</th><th># Scans</th><th>Oldest</th><th>Newest</th>
                 <th>In POS</th><th>In Vendor Catalog</th><th>SRP</th></tr>';
+        $ret .= '</thead><tbody>';
         $scanCount = 0;
         foreach($data as $row) {
             if (count($row) == 1) {
@@ -159,21 +160,29 @@ class BadScanTool extends FannieRESTfulPage
                 $css = 'class="collapse"';
             }
             $ret .= sprintf('<tr %s><td>%s</td><td>%d</td><td>%s</td><td>%s</td>
-                            <td>%s</td><td>%s</td><td>%s</td></tr>',
+                            <td>%s</td><td>%s</td><td>%s</td>
+                            <td><a href="OpenRingReceipts.php?upc=%s&date1=%s&date2=%s">View Receipts</a></td>
+                            </tr>',
                             $css,
                             $row['upc'], $row['instances'], $row['oldest'], $row['newest'],
                             (!empty($row['prod']) ? "Yes ({$row['prod']})" : 'No'),
                             (!empty($row['vend']) ? "Yes ({$row['vendorName']} {$row['vend']})" : 'No'),
-                            (!empty($row['srp']) ? $row['srp'] . $fixButton : 'n/a')
+                            (!empty($row['srp']) ? $row['srp'] . $fixButton : 'n/a'),
+                            $row['upc'],
+                            $row['oldest'],
+                            $row['newest']
             );
             $scanCount += $row['instances'];
         }
-        $ret .= '</table>';
+        $ret .= '</tbody></table>';
 
 
         $ret .= '<div id="ratio">';
         $ret .= sprintf('Approx. bad scan rate: %.2f%%', ((float)$scanCount) / ((float)$data['itemTTL']) * 100);
         $ret .= '</div>';
+
+        $this->addScript('../src/javascript/tablesorter/jquery.tablesorter.min.js');
+        $this->addOnloadCommand("\$('#scantable').tablesorter();\n");
 
         return $ret;
     }
@@ -214,6 +223,10 @@ function showMultiple() {
             div#ratio {
                 margin: 10px;
                 font-size: 125%;
+            }
+            #scantable thead th {
+                cursor: hand;
+                cursor: pointer;
             }
         ';
     }

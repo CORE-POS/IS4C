@@ -40,8 +40,76 @@ class OpenRingReceipts extends FannieRESTfulPage
     public function preprocess()
     {
         $this->__routes[] = 'get<date1><date2>';
+        $this->__routes[] = 'get<upc><date1><date2>';
 
         return parent::preprocess();
+    }
+
+    public function get_upc_date1_date2_handler()
+    {
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $dlog = DTransactionsModel::selectDlog($this->date1, $this->date2);
+        $dtrans = DTransactionsModel::selectDtrans($this->date1, $this->date2);
+
+        $badP = $dbc->prepare("
+            SELECT YEAR(datetime) AS year,
+                MONTH(datetime) AS month,
+                DAY(datetime) AS day,
+                emp_no,
+                register_no,
+                trans_no
+            FROM " . $dtrans . " AS d
+            WHERE trans_type = 'L'
+                AND upc = ?
+                AND datetime BETWEEN ? AND ?
+                AND description='BADSCAN'
+                AND emp_no <> 9999
+                AND register_no <> 99");
+        $args = array(
+            BarcodeLib::padUPC($this->upc),
+            date('Y-m-d 00:00:00', strtotime($this->date1)),
+            date('Y-m-d 23:59:59', strtotime($this->date2)),
+        );
+
+        $openP = $dbc->prepare("
+            SELECT upc,
+                description,
+                department,
+                dept_name
+            FROM " . $dlog . " AS d
+                LEFT JOIN departments AS t ON d.department=t.dept_no
+            WHERE tdate BETWEEN ? AND ?
+                AND emp_no=?
+                AND register_no=?
+                AND trans_no=?
+                AND trans_type = 'D'
+            GROUP BY d.upc,
+                d.description,
+                d.department,
+                t.dept_name");
+        $badR = $dbc->execute($badP, $args);
+        $this->receipts = array();
+        while ($badW = $dbc->fetch_row($badR)) {
+            $openArgs = array(
+                date('Y-m-d 00:00:00', mktime(0, 0, 0, $badW['month'], $badW['day'], $badW['year'])),
+                date('Y-m-d 23:59:59', mktime(0, 0, 0, $badW['month'], $badW['day'], $badW['year'])),
+                $badW['emp_no'],
+                $badW['register_no'],
+                $badW['trans_no'],
+            );
+            $openR = $dbc->execute($openP, $openArgs);
+            $receipt = array(
+                'date' => date('Y-m-d', mktime(0, 0, 0, $badW['month'], $badW['day'], $badW['year'])),
+                'trans' => $badW['emp_no'] . '-' . $badW['register_no'] . '-' . $badW['trans_no'],
+                'rings' => array(),
+            );
+            while ($openW = $dbc->fetch_row($openR)) {
+                $receipt['rings'][] = $openW;
+            }
+            $this->receipts[] = $receipt;
+        }
+
+        return true;
     }
     
     public function get_date1_date2_handler()
@@ -98,6 +166,9 @@ class OpenRingReceipts extends FannieRESTfulPage
                     $openW['register_no'],
                     $openW['trans_no'],
                 );
+                if (FormLib::get('upc') != '') {
+                    $args[] = FormLib::get('upc');
+                }
                 $badR = $dbc->execute($badP, $args);
                 if (!$badR || $dbc->num_rows($badR) == 0) {
                     continue;
@@ -112,6 +183,44 @@ class OpenRingReceipts extends FannieRESTfulPage
         return true;
     }
 
+    public function get_upc_date1_date2_view()
+    {
+        if (!is_array($this->receipts) || count($this->receipts) == 0) {
+            return '<div class="alert alert-danger">No matches found</div>';
+        }
+
+        $ret = '<table class="table">';
+        foreach ($this->receipts as $receipt) {
+            $ret .= sprintf('<tr>
+                        <th>%s</th>
+                        <th>%s</th>
+                        <th><a href="../admin/LookupReceipt/RenderReceiptPage.php?date=%s&receipt=%s"
+                            class="btn btn-default">View Receipt</a></th>',
+                        $receipt['date'],
+                        $receipt['trans'], 
+                        $receipt['date'],
+                        $receipt['trans']
+                    );
+            foreach ($receipt['rings'] as $item) {
+                $ret .= sprintf('<tr>
+                        <td>&nbsp;</td>
+                        <td>%s</td>
+                        <td>%s</td>
+                        <td>%d</td>
+                        <td>%s</td>
+                        </tr>',
+                        $item['upc'],
+                        $item['description'],
+                        $item['department'],
+                        $item['dept_name']
+                );
+            }
+        }
+        $ret .= '</table>';
+
+        return $ret;
+    }
+    
     public function get_date1_date2_view()
     {
         $ret = '';
