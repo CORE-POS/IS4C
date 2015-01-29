@@ -219,6 +219,7 @@ class ItemEditorPage extends FanniePage
             $args[] = '%'.$upc.'%';    
         }
 
+        $query = $dbc->addSelectLimit($query, 500);
         $prep = $dbc->prepare_statement($query);
         $result = $dbc->exec_statement($query,$args);
 
