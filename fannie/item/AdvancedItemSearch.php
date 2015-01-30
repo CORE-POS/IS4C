@@ -281,7 +281,6 @@ class AdvancedItemSearch extends FannieRESTfulPage
                  CASE WHEN p.discounttype > 0 THEN \'X\' ELSE \'-\' END as onSale,
                  0 as selected
                  FROM ' . $from . ' WHERE ' . $where;
-        $query = $dbc->addSelectLimit($query, 1000);
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $args);
 
@@ -492,7 +491,7 @@ function getResults() {
         success: function(data) {
             $('.progress').hide();
             $('#resultArea').html(data);
-            $('.search-table').tablesorter();
+            $('.search-table').tablesorter({headers: { 0: { sorter:false } } });
         }
     });
 }
