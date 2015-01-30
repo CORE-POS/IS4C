@@ -565,6 +565,11 @@ static public function localMatchingColumns($connection,$table1,$table2)
 */
 static public function uploadCCdata()
 {
+	if (!in_array("Paycards",CoreLocal::get("PluginList"))) {
+        // plugin not enabled; nothing to upload
+        return true;
+    }
+
     $sql = self::tDataConnect();
     $sql->add_connection(CoreLocal::get("mServer"),
                 CoreLocal::get("mDBMS"),
