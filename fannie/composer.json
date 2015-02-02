@@ -23,7 +23,7 @@
         "components/bootstrap": "3.2.*",
         "components/bootstrap-default": "~3.2",
         "adodb/adodb-php": "dev-master",
-        "gohanman/sql-manager": "dev-master"
+        "core-pos/sql-manager": "dev-master"
     },
     "config": {
         "component-dir": "src/javascript/composer-components/"
