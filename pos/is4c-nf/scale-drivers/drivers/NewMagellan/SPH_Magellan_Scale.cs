@@ -97,15 +97,16 @@ public class SPH_Magellan_Scale : SerialPortHandler {
         }
     }
 
-    override public void Read(){
+    override public void Read()
+    {
         string buffer = "";
         if (this.verbose_mode > 0)
             System.Console.WriteLine("Reading serial data");
         sp.Write("S14\r");
-        while(SPH_Running){
+        while (SPH_Running) {
             try {
                 int b = sp.ReadByte();
-                if (b == 13){
+                if (b == 13) {
                     if (this.verbose_mode > 0)
                         System.Console.WriteLine("RECV FROM SCALE: "+buffer);
                     buffer = this.ParseData(buffer);
@@ -115,13 +116,13 @@ public class SPH_Magellan_Scale : SerialPortHandler {
                         this.PushOutput(buffer);
                     }
                     buffer = "";
-                }
-                else{
+                } else {
                     buffer += ((char)b).ToString();
                 }
 
+            } catch {
+                Thread.Sleep(100);
             }
-            catch{}
         }
     }
 
