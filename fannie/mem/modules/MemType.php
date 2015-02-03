@@ -28,17 +28,39 @@ class MemType extends \COREPOS\Fannie\API\member\MemberModule {
         return parent::META_WIDTH_HALF;
     }
 
-    function showEditForm($memNum, $country="US"){
-        global $FANNIE_URL;
-
+    function showEditForm($memNum, $country="US")
+    {
         $dbc = $this->db();
         
-        $infoQ = $dbc->prepare_statement("SELECT c.memType,n.memType,n.memDesc,c.discount
-                FROM custdata AS c, 
-                memtype AS n 
-                WHERE c.CardNo=? AND c.personNum=1
-                ORDER BY n.memType");
+        $infoQ = $dbc->prepare_statement("
+            SELECT c.memType AS custdataType,
+                n.memType,
+                n.memDesc,
+                c.discount AS custdataDiscount,
+                n.discount AS memTypeDiscount
+            FROM custdata AS c
+                CROSS JOIN memtype AS n 
+            WHERE c.CardNo=? AND c.personNum=1
+            ORDER BY n.memType");
         $infoR = $dbc->exec_statement($infoQ,array($memNum));
+
+        /**
+          Check parameters setting to decide whether
+          the discount value from custdata should be
+          displayed vs the discount value from memtype
+        */
+        $modeR = $dbc->query("
+            SELECT p.param_value
+            FROM parameters AS p
+            WHERE param_key='useMemTypeTable'
+                AND store_id=0
+                AND lane_id=0");
+        $discount_mode = 'custdata.discount';
+        if ($modeR && $modeW = $dbc->fetch_row($modeR)) {
+            if ($modeW['param_value'] == 1) {
+                $discount_mode = 'memtype.discount';
+            }
+        }
 
         $ret = "<div class=\"panel panel-default\">
             <div class=\"panel-heading\">Membership Type</div>
@@ -50,10 +72,14 @@ class MemType extends \COREPOS\Fannie\API\member\MemberModule {
         $disc = 0;
         while($infoW = $dbc->fetch_row($infoR)){
             $ret .= sprintf("<option value=%d %s>%s</option>",
-                $infoW[1],
-                ($infoW[0]==$infoW[1]?'selected':''),
-                $infoW[2]);
-            $disc = $infoW[3];
+                $infoW['memType'],
+                ($infoW['custdataType'] == $infoW['memType'] ? 'selected' : ''),
+                $infoW['memDesc']);
+            if ($discount_mode == 'custdata.discount') {
+                $disc = $infoW['custdataDiscount'];
+            } elseif ($infoW['custdataType'] == $infoW['memType']) {
+                $disc = $infoW['memTypeDiscount'];
+            }
         }
         $ret .= "</select> ";
         
@@ -67,11 +93,9 @@ class MemType extends \COREPOS\Fannie\API\member\MemberModule {
         return $ret;
     }
 
-    function saveFormData($memNum){
-        global $FANNIE_ROOT;
+    function saveFormData($memNum)
+    {
         $dbc = $this->db();
-        if (!class_exists("CustdataModel"))
-            include($FANNIE_ROOT.'classlib2.0/data/models/CustdataModel.php');
 
         $mtype = FormLib::get_form_value('MemType_type',0);
 
