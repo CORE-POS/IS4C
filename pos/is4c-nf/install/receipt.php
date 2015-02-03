@@ -73,6 +73,24 @@ include('InstallUtilities.php');
     </td>
 </tr>
 <tr>
+    <td><b>List Local Items</b>: </td>
+    <td>
+    <?php
+    $local = array(
+        'total' => 'As $ Amount',
+        'percent' => 'As % of Purchase',
+        'omit' => 'Do not print',
+    );
+    echo InstallUtilities::installSelectField('ReceiptLocalMode', $local, 'total');
+    ?>
+    <span class='noteTxt'>
+    Display information about items in the transaction marked "local". This
+    can be displayed as the total dollar value or as a percent of all
+    items on the receipt.
+    </span>
+    </td>
+</tr>
+<tr>
 	<td><b>Receipt Driver</b>:</td>
 	<td>
     <?php

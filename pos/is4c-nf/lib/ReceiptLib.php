@@ -1047,8 +1047,16 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
                     $receipt['any'] .= _('OWNER COULD HAVE SAVED = $') . number_format($memberSaleSavings, 2) . "\n";
                 }
             }
-            $receipt['any'] .= self::localTTL();
-            //$receipt['any'] .= self::graphedLocalTTL();
+
+            /**
+              List local total as defined by settings
+              Default to $ total if no setting exists
+            */
+            if (CoreLocal::get('ReceiptLocalMode') == 'total' || CoreLocal::get('ReceiptLocalMode') == '') {
+                $receipt['any'] .= self::localTTL();
+            } elseif (CoreLocal::get('ReceiptLocalMode') == 'percent') {
+                $receipt['any'] .= self::graphedLocalTTL();
+            }
             $receipt['any'] .= "\n";
     
             if (trim(CoreLocal::get("memberID")) != CoreLocal::get("defaultNonMem")) {
