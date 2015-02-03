@@ -264,7 +264,7 @@ class RenderReceiptPage extends FanniePage {
             q.refNum
             FROM {$FANNIE_TRANS_DB}{$dbconn}efsnetRequest AS q LEFT JOIN 
             {$FANNIE_TRANS_DB}{$dbconn}efsnetResponse AS r
-            ON q.refNum=r.refNum  WHERE q.date=? AND
+            ON q.refNum=r.refNum  AND q.date=r.date WHERE q.date=? AND
             q.cashierNo=? AND q.laneNo=? AND q.transNo=?
             and commErr=0
             UNION ALL 
@@ -280,7 +280,8 @@ class RenderReceiptPage extends FanniePage {
               and q.transNo=m.transNo
               and q.transID=m.transID
             join {$FANNIE_TRANS_DB}{$dbconn}efsnetResponse AS r
-            ON q.refNum=r.refNum  WHERE q.date=? AND
+            ON q.refNum=r.refNum  AND q.date=r.date 
+            WHERE q.date=? AND
             q.cashierNo=? AND q.laneNo=? AND q.transNo=?
             and m.validResponse=1 and 
             (m.xResponseCode=0 or m.xResultMessage like '%APPROVE%')
