@@ -76,7 +76,7 @@ class MemNameNumImportPage extends \COREPOS\Fannie\API\FannieUploadPage
         $mn_index = $this->get_column_index('memnum');
         $fn_index = $this->get_column_index('fn');
         $ln_index = $this->get_column_index('ln');
-        $t_index = $this->get_column_index('mtype');
+        $t_index = $this->get_column_index('memtype');
 
         $defaults_table = array();
         // get defaults directly from the memtype table if possible
