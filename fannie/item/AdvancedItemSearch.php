@@ -89,6 +89,11 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 $upc = str_replace('*', '%', $upc);
                 $where .= ' AND p.upc LIKE ? ';
                 $args[] = $upc;
+            } elseif (substr(BarcodeLib::padUPC($upc), 0, 8) == '00499999') {
+                $couponID = (int)substr(BarcodeLib::padUPC($upc), 8);
+                $from .= ' LEFT JOIN houseCouponItems AS h ON p.upc=h.upc ';
+                $where .= ' AND h.coupID=? ';
+                $args[] = $couponID;
             } else {
                 $upc = str_pad($upc, 13, '0', STR_PAD_LEFT);
                 $where .= ' AND p.upc = ? ';
@@ -284,6 +289,11 @@ class AdvancedItemSearch extends FannieRESTfulPage
                  FROM ' . $from . ' WHERE ' . $where;
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $args);
+
+        if ($dbc->numRows($result) > 2500) {
+            echo 'Too many results';
+            return false;
+        }
 
         $items = array();
         while($row = $dbc->fetch_row($result)) {
@@ -890,6 +900,8 @@ function chainSuper(superID)
             <div class="panel-heading">Report on Items</div>
             <div class="panel-body">';
         $ret .= '<select id="reportURL" class="form-control input-sm">';
+        $ret .= sprintf('<option value="%sreports/DepartmentMovement/SmartMovementReport.php?date1=%s&date2=%s&lookup-type=u">
+                        Movement</option>', $FANNIE_URL, date('Y-m-d'), date('Y-m-d'));
         $ret .= sprintf('<option value="%sreports/from-search/PercentageOfSales/PercentageOfSalesReport.php">
                         %% of Sales</option>', $FANNIE_URL);
         $ret .= '</select> ';

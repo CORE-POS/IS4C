@@ -603,7 +603,7 @@ class FormLib
       - query [string] from and where clauses
       - args [array] corresponding parameters
     */
-    public function standardItemFromWhere()
+    static public function standardItemFromWhere()
     {
         $op_db = FannieConfig::config('OP_DB');
         $dbc = FannieDB::get($op_db);
@@ -743,6 +743,18 @@ class FormLib
                     $dept_in = substr($dept_in, 0, strlen($dept_in)-1);
                     $query .= ' AND t.department IN (' . $dept_in . ') ';
                 }
+                break;
+            case 'u':
+                $upcs = FormLib::get('u', array());
+                if (count($upcs) == 0) {
+                    $upcs[] = 'NOTREALUPC';
+                }
+                $query .= ' AND t.upc IN (';
+                foreach ($upcs as $u) {
+                    $query .= '?,';
+                    $args[] = BarcodeLib::padUPC($u);
+                }
+                $query = substr($query, 0, strlen($query)-1) . ') ';
                 break;
         }
 
