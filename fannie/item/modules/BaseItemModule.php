@@ -273,7 +273,7 @@ class BaseItemModule extends ItemModule
             <tr>
                 <th>Brand</th>
                 <td colspan="3">
-                    <input type="text" name="manufacturer" class="form-control"
+                    <input type="text" name="manufacturer" class="form-control input-sm"
                         value="' . $rowItem['manufacturer'] . '" id="brand-field" />
                 </td>';
         /**
@@ -337,7 +337,7 @@ class BaseItemModule extends ItemModule
                 $batch = $dbc->fetch_row($batchR);
             }
 
-            $ret .= '<td class="alert-success">';
+            $ret .= '<td class="alert-success" colspan="8">';
             $ret .= sprintf("<strong>Sale Price:</strong>
                 %.2f (<em>Batch: <a href=\"%sbatches/newbatch/BatchManagementTool.php?startAt=%d\">%s</a></em>)",
                 $rowItem['special_price'], FannieConfig::config('URL'), $batch['batchID'], $batch['batchName']);
@@ -408,7 +408,7 @@ class BaseItemModule extends ItemModule
         }
         array_push($rates,array("0","NoTax"));
         $ret .= '<tr>
-            <th>Tax</th>
+            <th class="small">Tax</th>
             <td>
             <select name="tax" id="tax" class="form-control input-sm">';
         foreach($rates as $r){
@@ -418,7 +418,7 @@ class BaseItemModule extends ItemModule
         }
         $ret .= '</select></td>';
 
-        $ret .= '<td colspan="3">
+        $ret .= '<td colspan="3" class="small">
                 <label>FS
                 <input type="checkbox" value="1" name="FS" id="FS"
                     ' . ($rowItem['foodstamp'] == 1 ? 'checked' : '') . ' />
@@ -434,7 +434,7 @@ class BaseItemModule extends ItemModule
                     ' . ($rowItem['qttyEnforced'] == 1 ? 'checked' : '') . ' />
                 </label>
                 </td>
-                <th>Discount</th>
+                <th class="small">Discount</th>
                 <td>
                 <select id="discount-select" name="discount" class="form-control input-sm">';
         $disc_opts = array(
@@ -460,29 +460,29 @@ class BaseItemModule extends ItemModule
         $jsVendorID = $rowItem['default_vendor_id'] > 0 ? $rowItem['default_vendor_id'] : 'no-vendor';
         $ret .= '
             <tr>
-                <th>Pack Size</th>
+                <th class="small">Pack Size</th>
                 <td>
-                    <input type="text" name="size" class="form-control"
+                    <input type="text" name="size" class="form-control input-sm"
                         value="' . $rowItem['size'] . '" 
                         onchange="$(\'#vsize' . $jsVendorID . '\').val(this.value);" 
                         id="product-pack-size" />
                 </td>
-                <th>Case Size</th>
+                <th class="small">Case Size</th>
                 <td>
-                    <input type="text" name="caseSize" class="form-control"
+                    <input type="text" name="caseSize" class="form-control input-sm"
                         value="' . $rowItem['caseSize'] . '" 
                         onchange="$(\'#vunits' . $jsVendorID . '\').val(this.value);" 
                         ' . ($jsVendorID == 'no-vendor' ? 'disabled' : '') . '
                         id="product-case-size" />
                 </td>
-                <th>Unit of measure</th>
+                <th class="small">Unit of measure</th>
                 <td>
-                    <input type="text" name="unitm" class="form-control"
+                    <input type="text" name="unitm" class="form-control input-sm"
                         value="' . $rowItem['unitofmeasure'] . '" />
                 </td>
-                <th>SKU</th>
+                <th class="small">SKU</th>
                 <td>
-                    <input type="text" name="vendorSKU" class="form-control"
+                    <input type="text" name="vendorSKU" class="form-control input-sm"
                         value="' . $rowItem['sku'] . '" 
                         onchange="$(\'#vsku' . $jsVendorID . '\').val(this.value);" 
                         ' . ($jsVendorID == 'no-vendor' ? 'disabled' : '') . '
