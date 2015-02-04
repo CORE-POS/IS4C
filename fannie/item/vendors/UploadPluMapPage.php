@@ -101,7 +101,7 @@ class UploadPluMapPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $chkR = $dbc->exec_statement($chkP, array($sku,$plu,$VENDOR_ID));
             if ($dbc->num_rows($chkR) > 0) continue; // entry exists
 
-            $pluR = $dbc->exec_statement($chkP, array($sku,$plu,$VENDOR_ID));
+            $pluR = $dbc->exec_statement($pluP, array($sku,$VENDOR_ID));
             $success = false;
             if ($dbc->num_rows($pluR) == 0){
                 $success = $dbc->exec_statement($insP, array($VENDOR_ID, $sku, $plu));
@@ -127,10 +127,14 @@ class UploadPluMapPage extends \COREPOS\Fannie\API\FannieUploadPage {
         return True;
     }
 
+    /**
+      This option is rather unsafe. Removing the existing map
+      is probably a bad idea in most cases.
     function preview_content(){
         return 'Mode <select name="map_mode"><option value="0">Update</option>
                 <option value="1">Replace</option></select>';
     }
+    */
 
     function results_content()
     {
