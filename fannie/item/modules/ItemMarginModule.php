@@ -50,17 +50,6 @@ class ItemMarginModule extends ItemModule
                 </a></div>";
         $css = ($expand_mode == 1) ? '' : ' collapse';
         $ret .= '<div id="ItemMarginContents" class="panel-body' . $css . '">';
-        $ret .= '<div id="ItemMarginFields" class="col-sm-5 form-group form-inline">';
-        $ret .= '<b>Unit Cost</b> <div class="input-group">';
-        $ret .= sprintf('<span class="input-group-addon">$</span>
-            <input type="text" size="6" value="%.2f" name="cost" 
-            class="form-control" id="cost" onkeydown="nosubmit(event);"
-            nonkeyup="nosubmit(event);" /> ', $product->cost());
-        $ret .= '<span class="input-group-addon">' 
-            . \COREPOS\Fannie\API\lib\FannieHelp::ToolTip('Cost from current vendor')
-            .'</span>';
-        $ret .= '</div>';
-        $ret .= '</div>';
         $ret .= '<div id="ItemMarginMeter" class="col-sm-5">';
         $ret .= $this->calculateMargin($product->normal_price(),$product->cost(),$product->department(), $upc);
         $ret .= '</div>';
@@ -158,7 +147,6 @@ class ItemMarginModule extends ItemModule
         ob_start();
         ?>
         function updateMarginMod(){
-            $('.default_vendor_cost').val($('#cost').val());
             $.ajax({
                 url: '<?php echo FannieConfig::config('URL'); ?>item/modules/ItemMarginModule.php',
                 data: 'p='+$('#price').val()+'&d='+$('#department').val()+'&c='+$('#cost').val()+'&u=<?php echo $upc; ?>',
@@ -185,19 +173,15 @@ class ItemMarginModule extends ItemModule
     {
         $upc = BarcodeLib::padUPC($upc);
         $cost = FormLib::get_form_value('cost',0.00);
-
         $dbc = $this->db();
-        $pm = new ProductsModel($dbc);
-        $pm->upc($upc);
-        $pm->cost($cost);
-        $r1 = $pm->save();
 
+        $r2 = true;
         if ($dbc->tableExists('prodExtra')) {
             $p = $dbc->prepare_statement('UPDATE prodExtra SET cost=? WHERE upc=?');
             $r2 = $dbc->exec_statement($p,array($cost,$upc));
         }
 
-        if ($r1 === false || $r2 === false) {
+        if (!$r2) {
             return false;
         } else {
             return true;    
