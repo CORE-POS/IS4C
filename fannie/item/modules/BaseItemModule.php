@@ -131,18 +131,31 @@ class BaseItemModule extends ItemModule
                 'qttyEnforced' => 0,
                 'discount' => 1,
                 'line_item_discountable' => 1,
+                'caseSize' => '',
+                'sku' => '',
             );
 
             /**
               Check for entries in the vendorItems table to prepopulate
               fields for the new item
             */
-            $vendorP = "SELECT description,brand as manufacturer,cost,
-                vendorName as distributor,margin,i.vendorID,srp,
-                i.vendorID as default_vendor_id
-                FROM vendorItems AS i LEFT JOIN vendors AS v ON i.vendorID=v.vendorID
-                LEFT JOIN vendorDepartments AS d ON i.vendorDept=d.deptID
-                LEFT JOIN vendorSRPs AS s ON s.upc=i.upc AND s.vendorID=i.vendorID
+            $vendorP = "
+                SELECT 
+                    i.description,
+                    i.brand as manufacturer,
+                    i.cost,
+                    v.vendorName as distributor,
+                    d.margin,
+                    i.vendorID,
+                    s.srp,
+                    i.size,
+                    i.units,
+                    i.sku,
+                    i.vendorID as default_vendor_id
+                FROM vendorItems AS i 
+                    LEFT JOIN vendors AS v ON i.vendorID=v.vendorID
+                    LEFT JOIN vendorDepartments AS d ON i.vendorDept=d.deptID
+                    LEFT JOIN vendorSRPs AS s ON s.upc=i.upc AND s.vendorID=i.vendorID
                 WHERE i.upc=?";
             $args = array($upc);
             $vID = FormLib::get_form_value('vid','');
@@ -162,6 +175,10 @@ class BaseItemModule extends ItemModule
                 $rowItem['cost'] = $v['cost'];
                 $rowItem['distributor'] = $v['distributor'];
                 $rowItem['normal_price'] = $v['srp'];
+                $rowItem['default_vendor_id'] = $v['vendorID'];
+                $rowItem['size'] = $v['size'];
+                $rowItem['caseSize'] = $v['units'];
+                $rowItem['sku'] = $v['sku'];
 
                 while($v = $dbc->fetch_row($vendorR)){
                     printf('This product is also in <a href="?searchupc=%s&vid=%d">%s</a><br />',
