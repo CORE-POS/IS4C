@@ -218,6 +218,28 @@ class FannieAutoComplete extends FannieWebService
 
                 return $ret;
 
+            case 'sku':
+                $query = 'SELECT sku
+                          FROM vendorItems
+                          WHERE sku LIKE ? ';
+                $param = array($args->search . '%');
+                if (property_exists($args, 'vendor_id')) {
+                    $query .= ' AND vendorID=? ';
+                    $param[] = $args->vendor_id;
+                }
+                $query .= 'GROUP BY sku
+                          ORDER BY sku';
+                $prep = $dbc->prepare($query);
+                $res = $dbc->execute($prep, $param);
+                while ($row = $dbc->fetch_row($res)) {
+                    $ret[] = $row['sku'];
+                    if (count($ret) > 50) {
+                        break;
+                    }
+                }
+
+                return $ret;
+
             default:
                 return $ret;
         }
