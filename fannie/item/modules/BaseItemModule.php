@@ -253,7 +253,7 @@ class BaseItemModule extends ItemModule
             '<tr>
                 <th>Description</th>
                 <td colspan="5">
-                    <div class="input-group">
+                    <div class="input-group" style="width:100%;">
                         <input type="text" maxlength="30" class="form-control"
                             name="descript" id="descript" value="' . $rowItem['description'] . '"
                             onkeyup="$(\'#dcounter\').html(35-(this.value.length));" />
@@ -320,7 +320,7 @@ class BaseItemModule extends ItemModule
         */
         $ret .= ' <th class="text-right">Vendor</th> ';
         if ($normalizedVendorID || empty($rowItem['distributor'])) {
-            $ret .= '<td colspan="3"><select name="distributor" class="chosen-select form-control"
+            $ret .= '<td colspan="3" class="form-inline"><select name="distributor" class="chosen-select form-control"
                         id="vendor_field" onchange="vendorChanged();">';
             $ret .= '<option value="0">Select a vendor</option>';
             $vendors = new VendorsModel($dbc);
@@ -457,17 +457,17 @@ class BaseItemModule extends ItemModule
                 <input type="checkbox" value="1" name="FS" id="FS"
                     ' . ($rowItem['foodstamp'] == 1 ? 'checked' : '') . ' />
                 </label>
-                |
+                &nbsp;&nbsp;&nbsp;&nbsp;
                 <label>Scale
                 <input type="checkbox" value="1" name="Scale" id="scale-checkbox"
                     ' . ($rowItem['scale'] == 1 ? 'checked' : '') . ' />
                 </label>
-                |
+                &nbsp;&nbsp;&nbsp;&nbsp;
                 <label>QtyFrc
                 <input type="checkbox" value="1" name="QtyFrc" id="qty-checkbox"
                     ' . ($rowItem['qttyEnforced'] == 1 ? 'checked' : '') . ' />
                 </label>
-                |
+                &nbsp;&nbsp;&nbsp;&nbsp;
                 <label>InUse
                 <input type="checkbox" value="1" name="prod-in-use" id="in-use-checkbox"
                     ' . ($rowItem['inUse'] == 1 ? 'checked' : '') . ' 

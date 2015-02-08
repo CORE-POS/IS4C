@@ -1,3 +1,6 @@
 .price-field {
     width: 4.5em !important;
 }
+.input-group-chrome {
+    width: 100%;
+}
