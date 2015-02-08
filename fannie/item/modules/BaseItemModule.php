@@ -62,7 +62,11 @@ class BaseItemModule extends ItemModule
                                         u.description as ldesc,
                                         p.default_vendor_id,
                                         v.units AS caseSize,
-                                        v.sku
+                                        v.sku,
+                                        p.inUse,
+                                        p.idEnforced,
+                                        p.local,
+                                        p.deposit
                                       FROM products AS p 
                                         LEFT JOIN prodExtra AS x ON p.upc=x.upc 
                                         LEFT JOIN productUser AS u ON p.upc=u.upc 
@@ -133,6 +137,10 @@ class BaseItemModule extends ItemModule
                 'line_item_discountable' => 1,
                 'caseSize' => '',
                 'sku' => '',
+                'inUse' => 1,
+                'idEnforced' => 0,
+                'local' => 0,
+                'deposit' => 0,
             );
 
             /**
@@ -244,7 +252,7 @@ class BaseItemModule extends ItemModule
         $ret .= 
             '<tr>
                 <th>Description</th>
-                <td colspan="3">
+                <td colspan="5">
                     <div class="input-group">
                         <input type="text" maxlength="30" class="form-control"
                             name="descript" id="descript" value="' . $rowItem['description'] . '"
@@ -252,11 +260,11 @@ class BaseItemModule extends ItemModule
                         <span id="dcounter" class="input-group-addon">' . $limit . '</span>
                     </div>
                 </td>
-                <th>Cost</th>
+                <th class="text-right">Cost</th>
                 <td>
                     <div class="input-group">
                         <span class="input-group-addon">$</span>
-                        <input type="text" id="cost" name="cost" class="form-control"
+                        <input type="text" id="cost" name="cost" class="form-control price-field"
                             value="' . sprintf('%.2f', $rowItem['cost']) . '" 
                             onkeydown="if (typeof nosubmit == \'function\') nosubmit(event);"
                             onkeyup="if (typeof nosubmit == \'function\') nosubmit(event);" 
@@ -264,11 +272,11 @@ class BaseItemModule extends ItemModule
                         />
                     </div>
                 </td>
-                <th>Price</th>
+                <th class="text-right">Price</th>
                 <td>
                     <div class="input-group">
                         <span class="input-group-addon">$</span>
-                        <input type="text" id="price" name="price" class="form-control"
+                        <input type="text" id="price" name="price" class="form-control price-field"
                             value="' . sprintf('%.2f', $rowItem['normal_price']) . '" />
                     </div>
                 </td>
@@ -288,8 +296,8 @@ class BaseItemModule extends ItemModule
 
         $ret .= '
             <tr>
-                <th>Brand</th>
-                <td colspan="3">
+                <th class="text-right">Brand</th>
+                <td colspan="5">
                     <input type="text" name="manufacturer" class="form-control input-sm"
                         value="' . $rowItem['manufacturer'] . '" id="brand-field" />
                 </td>';
@@ -310,7 +318,7 @@ class BaseItemModule extends ItemModule
           entry OR if no vendor entry exists. Only allow free text
           if it's already in place
         */
-        $ret .= ' <th>Vendor</th> ';
+        $ret .= ' <th class="text-right">Vendor</th> ';
         if ($normalizedVendorID || empty($rowItem['distributor'])) {
             $ret .= '<td colspan="3"><select name="distributor" class="chosen-select form-control"
                         id="vendor_field" onchange="vendorChanged();">';
@@ -394,7 +402,7 @@ class BaseItemModule extends ItemModule
         }
 
         $ret .= '<tr>
-                <th>Dept</th>
+                <th class="text-right">Dept</th>
                 <td colspan="7" class="form-inline">
                 <select id="super-dept" class="form-control chosen-select" onchange="chainSuper(this.value);">';
         $names = new SuperDeptNamesModel($dbc);
@@ -415,7 +423,16 @@ class BaseItemModule extends ItemModule
         $ret .= '<select name="subdept" id="subdept" class="form-control chosen-select">';
         $ret .= isset($subs[$rowItem['department']]) ? $subs[$rowItem['department']] : '<option value="0">None</option>';
         $ret .= '</select>';
-        $ret .= '</td></tr>';
+        $ret .= '</td>
+                <th class="small text-right">SKU</th>
+                <td colspan="2">
+                    <input type="text" name="vendorSKU" class="form-control input-sm"
+                        value="' . $rowItem['sku'] . '" 
+                        onchange="$(\'#vsku' . $jsVendorID . '\').val(this.value);" 
+                        ' . ($jsVendorID == 'no-vendor' ? 'disabled' : '') . '
+                        id="product-sku-field" />
+                </td>
+                </tr>';
 
         $taxQ = $dbc->prepare_statement('SELECT id,description FROM taxrates ORDER BY id');
         $taxR = $dbc->exec_statement($taxQ);
@@ -425,7 +442,7 @@ class BaseItemModule extends ItemModule
         }
         array_push($rates,array("0","NoTax"));
         $ret .= '<tr>
-            <th class="small">Tax</th>
+            <th class="small text-right">Tax</th>
             <td>
             <select name="tax" id="tax" class="form-control input-sm">';
         foreach($rates as $r){
@@ -435,7 +452,7 @@ class BaseItemModule extends ItemModule
         }
         $ret .= '</select></td>';
 
-        $ret .= '<td colspan="3" class="small">
+        $ret .= '<td colspan="4" class="small">
                 <label>FS
                 <input type="checkbox" value="1" name="FS" id="FS"
                     ' . ($rowItem['foodstamp'] == 1 ? 'checked' : '') . ' />
@@ -450,9 +467,15 @@ class BaseItemModule extends ItemModule
                 <input type="checkbox" value="1" name="QtyFrc" id="qty-checkbox"
                     ' . ($rowItem['qttyEnforced'] == 1 ? 'checked' : '') . ' />
                 </label>
+                |
+                <label>InUse
+                <input type="checkbox" value="1" name="prod-in-use" id="in-use-checkbox"
+                    ' . ($rowItem['inUse'] == 1 ? 'checked' : '') . ' 
+                    onchange="$(\'#extra-in-use-checkbox\').prop(\'checked\', $(this).prop(\'checked\'));" />
+                </label>
                 </td>
-                <th class="small">Discount</th>
-                <td>
+                <th class="small text-right">Discount</th>
+                <td class="col-sm-1">
                 <select id="discount-select" name="discount" class="form-control input-sm">';
         $disc_opts = array(
             0 => 'No',
@@ -472,20 +495,29 @@ class BaseItemModule extends ItemModule
                         ($id == $rowItem['discount'] ? 'selected' : ''),
                         $id, $val);
         }
-        $ret .= '</select></td></tr>';
+        $ret .= '</select></td>
+                <th class="small text-right">Deposit</th>
+                <td colspan="2">
+                    <input type="text" name="deposit-upc" class="form-control input-sm"
+                        value="' . ($rowItem['deposit'] != 0 ? $rowItem['deposit'] : '') . '" 
+                        placeholder="Deposit Item PLU/UPC"
+                        onchange="$(\'#deposit\').val(this.value);"
+                        id="deposit-upc" />
+                </td>
+                </tr>';
 
         $jsVendorID = $rowItem['default_vendor_id'] > 0 ? $rowItem['default_vendor_id'] : 'no-vendor';
         $ret .= '
             <tr>
-                <th class="small">Pack Size</th>
-                <td>
+                <th class="small text-right">Pack Size</th>
+                <td class="col-sm-1">
                     <input type="text" name="size" class="form-control input-sm"
                         value="' . $rowItem['size'] . '" 
                         onchange="$(\'#vsize' . $jsVendorID . '\').val(this.value);" 
                         id="product-pack-size" />
                 </td>
                 <th class="small">Case Size</th>
-                <td>
+                <td class="col-sm-1">
                     <input type="text" name="caseSize" class="form-control input-sm"
                         value="' . $rowItem['caseSize'] . '" 
                         onchange="$(\'#vunits' . $jsVendorID . '\').val(this.value);" 
@@ -493,18 +525,42 @@ class BaseItemModule extends ItemModule
                         id="product-case-size" />
                 </td>
                 <th class="small">Unit of measure</th>
-                <td>
+                <td class="col-sm-1">
                     <input type="text" name="unitm" class="form-control input-sm"
                         value="' . $rowItem['unitofmeasure'] . '" />
                 </td>
-                <th class="small">SKU</th>
-                <td>
-                    <input type="text" name="vendorSKU" class="form-control input-sm"
-                        value="' . $rowItem['sku'] . '" 
-                        onchange="$(\'#vsku' . $jsVendorID . '\').val(this.value);" 
-                        ' . ($jsVendorID == 'no-vendor' ? 'disabled' : '') . '
-                        id="product-sku-field" />
+                <th class="small">Age Req</th>
+                <td class="col-sm-1">
+                    <select name="id-enforced" id="id-enforced" class="form-control input-sm"
+                        onchange="$(\'#idReq\').val(this.value);">';
+        $ages = array('n/a'=>0, 18=>18, 21=>21);
+        foreach($ages as $label => $age) {
+            $ret .= sprintf('<option %s value="%d">%s</option>',
+                            ($age == $rowItem['idEnforced'] ? 'selected' : ''),
+                            $age, $label);
+        }
+        $ret .= '</select>
                 </td>
+                <th class="small text-right">Local</th>
+                <td>
+                    <select name="prod-local" id="prod-local" class="form-control input-sm"
+                        onchange="$(\'#local-origin-id\').val(this.value);">';
+        $local_opts = array(0=>'No');
+        $p = $dbc->prepare_statement('SELECT originID,shortName FROM originName WHERE local=1 ORDER BY originID');
+        $r = $dbc->exec_statement($p);
+        while ($w = $dbc->fetch_row($r)) {
+            $local_opts[$w['originID']] = $w['shortName'];  
+        }
+        if (count($local_opts) == 1) {
+            $local_opts[1] = 'Yes'; // generic local if no origins defined
+        }
+        foreach($local_opts as $id => $val) {
+            $ret .= sprintf('<option value="%d" %s>%s</option>',
+                $id, ($id == $rowItem['local']?'selected':''), $val);
+        }
+        $ret .= '</select>
+                </td>
+                </tr>
             </div>';
         $ret .= '</table>';
 
@@ -772,6 +828,14 @@ class BaseItemModule extends ItemModule
             break;
         }
         $model->default_vendor_id($vendorID);
+        $model->inUse(FormLib::get('prod-in-use',0));
+        $model->idEnforced(FormLib::get('id-enforced', 0));
+        $model->local(FormLib::get('prod-local', 0));
+        $deposit = FormLib::get('deposit-upc', 0);
+        if ($deposit == '') {
+            $deposit = 0;
+        }
+        $model->deposit($deposit);
 
         $model->save();
 

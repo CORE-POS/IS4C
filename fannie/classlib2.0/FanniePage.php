@@ -133,6 +133,7 @@ class FanniePage
             $this->addScript($url . 'src/javascript/calculator.js');
             $this->addCssFile($url . 'src/javascript/jquery-ui.css?id=20140625');
             $this->addCssFile($url . 'src/css/configurable.php');
+            $this->addCssFile($url . 'src/css/core.css');
             $this->addCssFile($url . 'src/css/print.css');
             $this->add_onload_command('standardFieldMarkup();');
         } else {

@@ -50,18 +50,20 @@ class ExtraInfoModule extends ItemModule
         while($w = $dbc->fetch_row($r)) {
             $local_opts[$w['originID']] = $w['shortName'];  
         }
-        if (count($local_opts) == 0) {
+        if (count($local_opts) == 1) {
             $local_opts[1] = 'Yes'; // generic local if no origins defined
         }
 
-        $localSelect = '<select name="local" id="local-origin-id" class="form-control">';
+        $localSelect = '<select name="local" id="local-origin-id" class="form-control"
+            onchange="$(\'#prod-local\').val(this.value);">';
         foreach($local_opts as $id => $val) {
             $localSelect .= sprintf('<option value="%d" %s>%s</option>',
                 $id, ($id == $info['local']?'selected':''), $val);
         }
         $localSelect .= '</select>';
 
-        $ageSelect = '<select name="idReq" class="form-control">';
+        $ageSelect = '<select name="idReq" id="idReq" class="form-control"
+            onchange="$(\'#id-enforced\').val(this.value);">';
         $ages = array('n/a'=>0, 18=>18, 21=>21);
         foreach($ages as $label => $age) {
             $ageSelect .= sprintf('<option %s value="%d">%s</option>',
@@ -76,10 +78,14 @@ class ExtraInfoModule extends ItemModule
             <th>Local</th>
             <th>In Use'.\COREPOS\Fannie\API\lib\FannieHelp::ToolTip('Uncheck to temporarily disable').'</th></tr>';
         $ret .= sprintf('<tr>
-                <td align="center"><input type="text" class="form-control" value="%d" name="deposit" /></td>
+                <td align="center"><input type="text" class="form-control" value="%d" name="deposit" 
+                    id="deposit" onchange="$(\'#deposit-upc\').val(this.value);" /></td>
                 <td align="center">%s</td>
                 <td align="center">%s</td>
-                <td align="center"><input type="checkbox" name="inUse" value="1" %s /></td></tr>',
+                <td align="center">
+                    <input type="checkbox" id="extra-in-use-checkbox" name="inUse" value="1" %s 
+                        onchange="$(\'#in-use-checkbox\').prop(\'checked\', $(this).prop(\'checked\'));" />
+                </td></tr>',
                 $info['deposit'],
                 $ageSelect,$localSelect,
                 ($info['inUse']==1 ? 'checked': '')
