@@ -84,6 +84,8 @@ function addInvoiceLine()
     row.append($('<td>').append(remove));
 
     row.prependTo('#invoice-table tbody');
+
+    row.find('input:first').focus();
 }
 
 function skuLookup(sku, elem)

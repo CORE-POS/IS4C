@@ -157,7 +157,8 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         return false;
     }
 
-    function get_id_view(){
+    function get_id_view()
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
@@ -240,11 +241,11 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         $model = new PurchaseOrderItemsModel($dbc);
         $model->orderID($this->id);
 
-        $ret .= '<table class="table">';
+        $ret .= '<table class="table tablesorter"><thead>';
         $ret .= '<tr><th>SKU</th><th>Brand</th><th>Description</th>
             <th>Unit Size</th><th>Units/Case</th><th>Cases</th>
             <th>Est. Cost</th><th>&nbsp;</th><th>Received</th>
-            <th>Rec. Qty</th><th>Rec. Cost</th></tr>';
+            <th>Rec. Qty</th><th>Rec. Cost</th></tr></thead><tbody>';
         foreach($model->find() as $obj){
             $ret .= sprintf('<tr><td>%s</td><td>%s</td><td>%s</td>
                     <td>%s</td><td>%s</td><td>%d</td><td>%.2f</td>
@@ -256,14 +257,16 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
                     $obj->unitSize(), $obj->caseSize(),
                     $obj->quantity(),
                     ($obj->quantity() * $obj->caseSize() * $obj->unitCost()),
-                    $obj->receivedDate(),
+                    date('Y-m-d', strtotime($obj->receivedDate())),
                     $obj->receivedQty(),
                     $obj->receivedTotalCost()
             );
         }
-        $ret .= '</table>';
+        $ret .= '</tbody></table>';
 
         $this->add_script('js/view.js');
+        $this->add_script('../src/javascript/tablesorter/jquery.tablesorter.min.js');
+        $this->addOnloadCommand("\$('.tablesorter').tablesorter();\n");
 
         return $ret;
     }
