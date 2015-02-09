@@ -99,9 +99,6 @@ class AlbertsPdfImport extends FannieRESTfulPage
             SELECT v.sku
             FROM vendorItems AS v
             WHERE v.vendorID=?
-                AND v.upc <> \'0000000000000\'
-                AND v.upc <> \'\'
-                AND v.upc IS NOT NULL
                 AND v.sku=?');
         $vendorItem = new VendorItemsModel($dbc);
 
