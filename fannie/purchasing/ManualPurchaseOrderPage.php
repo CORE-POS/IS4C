@@ -178,7 +178,7 @@ class ManualPurchaseOrderPage extends FannieRESTfulPage
         $vendor->vendorID($this->id);
         $vendor->load();
 
-        $ret = '<p>New <strong>' . $vendor->vendorName() . '</strong> order</p>';
+        $ret = '<p id="vendor-name">New <strong>' . $vendor->vendorName() . '</strong> order</p>';
         $ret .= '<div id="alert-area"></div>';
         $ret .= '<form id="order-form" onsubmit="saveOrder(); return false;">
             <input type="hidden" id="vendor-id" name="id" value="' . $this->id . '" />
@@ -191,6 +191,7 @@ class ManualPurchaseOrderPage extends FannieRESTfulPage
                 <label>Inv. #</label>
                 <input type="text" name="inv-number" class="form-control" />
             </div>';
+        $ret .= '<div class="collapse" id="delete-html">' . FannieUI::deleteIcon() . '</div>';
         $ret .= '<div class="form-group">
             <button type="button" class="btn btn-default" onclick="addInvoiceLine();">Add Line</button>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;

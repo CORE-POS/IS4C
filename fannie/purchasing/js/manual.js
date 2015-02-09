@@ -6,6 +6,8 @@ function addInvoiceLine()
     var sku = $('<input type="text" name="sku[]" required />')
         .addClass('form-control')
         .addClass('item-sku')
+        .addClass('upc-field')
+        .addClass('input-sm')
         .autocomplete({
             source: function(request, callback) {
                 vendorAutoComplete('../ws/', 'sku', request.term, vendor_id, callback);
@@ -21,6 +23,8 @@ function addInvoiceLine()
     var upc = $('<input type="text" name="upc[]" required />')
         .addClass('form-control')
         .addClass('item-upc')
+        .addClass('input-sm')
+        .addClass('upc-field')
         .autocomplete({
             source: function(request, callback) {
                 vendorAutoComplete('../ws/', 'item', request.term, vendor_id, callback);
@@ -35,25 +39,36 @@ function addInvoiceLine()
 
     var qty = $('<input type="text" name="cases[]" required />')
         .val(1)
+        .addClass('input-sm')
         .addClass('form-control');
-    row.append($('<td>').append(qty));
+    row.append($('<td>').addClass('col-sm-1').append(qty));
 
     var caseSize = $('<input type="text" name="case-size[]" required />')
         .val(1)
         .addClass('item-units')
+        .addClass('input-sm')
         .addClass('form-control');
-    row.append($('<td>').append(caseSize));
+    row.append($('<td>').addClass('col-sm-1').append(caseSize));
 
-    var total = $('<input type="text" name="total[]" required />').addClass('form-control');
+    var total = $('<input type="text" name="total[]" required />')
+        .addClass('price-field')
+        .addClass('input-sm')
+        .addClass('form-control');
     row.append($('<td>').append(total));
 
     var brand = $('<input type="text" name="brand[]" required />')
+        .val($('#vendor-name strong').html())
         .addClass('item-brand')
+        .addClass('input-sm')
         .addClass('form-control');
     row.append($('<td>').append(brand));
 
     var description = $('<input type="text" name="description[]" required />')
+        .hover(function() {
+            $(this).prop('title', $(this).val());
+        })
         .addClass('item-description')
+        .addClass('input-sm')
         .addClass('form-control');
     row.append($('<td>').append(description));
 
@@ -61,7 +76,8 @@ function addInvoiceLine()
         .addClass('btn')
         .addClass('btn-default')
         .addClass('alert-danger')
-        .html('Remove Line')
+        .addClass('btn-sm')
+        .html($('#delete-html').html())
         .click(function() {
             $(this).closest('tr').remove();
         });
@@ -110,9 +126,15 @@ function doLookup(mode, term, elem)
                 } else if (mode == 'upc') {
                     elem.closest('tr').find('.item-sku').val(data.result.sku);
                 }
-                elem.closest('tr').find('.item-units').val(data.result.units);
-                elem.closest('tr').find('.item-brand').val(data.result.brand);
-                elem.closest('tr').find('.item-description').val(data.result.description);
+                if (data.result.units != '') {
+                    elem.closest('tr').find('.item-units').val(data.result.units);
+                }
+                if (data.result.brand != '') {
+                    elem.closest('tr').find('.item-brand').val(data.result.brand);
+                }
+                if (data.result.description != '') {
+                    elem.closest('tr').find('.item-description').val(data.result.description);
+                }
             }
         },
     });
