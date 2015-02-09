@@ -22,8 +22,8 @@
 
 class NM_Ingenico extends ScaleDriverWrapper {
 
-	function ReadFromScale(){
-		global $CORE_LOCAL;
+	function ReadFromScale()
+    {
 		$rel = MiscLib::base_url();
 
 		$input = "";

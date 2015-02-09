@@ -5,9 +5,9 @@
 class PagesTest extends PHPUnit_Framework_TestCase
 {
 
-	public function testDrawing(){
-		global $CORE_LOCAL;
-		$CORE_LOCAL->set('Debug_Redirects', 1, True);
+	public function testDrawing()
+    {
+		CoreLocal::set('Debug_Redirects', 1, True);
 
 		$dh = opendir(dirname(__FILE__).'/../gui-modules');
 		$pages = array();

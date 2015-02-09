@@ -32,8 +32,6 @@ class PriceCheckPage extends NoInputPage
 
 	function preprocess()
     {
-		global $CORE_LOCAL;
-
 		$this->upc = "";
 		$this->found = false;
 		$this->pricing = array('sale'=>false,'actual_price'=>'','memPrice'=>'',
@@ -70,7 +68,7 @@ class PriceCheckPage extends NoInputPage
 				$discounttype = MiscLib::nullwrap($row["discounttype"]);
                 $DiscountObject = null;
                 // see UPC parser for explanation
-                $DTClasses = $CORE_LOCAL->get("DiscountTypeClasses");
+                $DTClasses = CoreLocal::get("DiscountTypeClasses");
                 if ($row['discounttype'] < 64 && isset(DiscountType::$MAP[$row['discounttype']])) {
                     $class = DiscountType::$MAP[$row['discounttype']];
                     $DiscountObject = new $class();
@@ -105,8 +103,8 @@ class PriceCheckPage extends NoInputPage
 
 			// user hit enter and there is a valid UPC present
 			if (isset($_REQUEST['reginput']) && $_REQUEST['reginput']=='' && $this->found){
-				$CORE_LOCAL->set("msgrepeat",1);
-				$CORE_LOCAL->set("strRemembered",$this->upc);
+				CoreLocal::set("msgrepeat",1);
+				CoreLocal::set("strRemembered",$this->upc);
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 
 				return false;
@@ -124,7 +122,6 @@ class PriceCheckPage extends NoInputPage
 
 	function body_content()
     {
-		global $CORE_LOCAL;
 		$this->add_onload_command("\$('#reginput').focus();\n");
 		$info = _("price check");
 		$inst = array(

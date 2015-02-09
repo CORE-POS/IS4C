@@ -44,14 +44,12 @@ class CouponCode extends SpecialUPC
 
     public function isSpecial($upc)
     {
-        global $CORE_LOCAL;
-
         $upcPrefix = '005';
-        if ($CORE_LOCAL->get('UpcIncludeCheckDigits') == 1) {
+        if (CoreLocal::get('UpcIncludeCheckDigits') == 1) {
             $upcPrefix = '05';
         }
         $eanPrefix = '099';
-        if ($CORE_LOCAL->get('EanIncludeCheckDigits') == 1) {
+        if (CoreLocal::get('EanIncludeCheckDigits') == 1) {
             $eanPrefix = '99';
         }
 
@@ -68,8 +66,6 @@ class CouponCode extends SpecialUPC
 
     public function handle($upc,$json)
     {
-        global $CORE_LOCAL;
-
         /**
           Adjust string index of pieces
           based on whether check digits
@@ -78,8 +74,8 @@ class CouponCode extends SpecialUPC
         $man_id_start = 3;
         $fam_start = 8;
         $val_start = 11;
-        if ( ($this->ean && $CORE_LOCAL->get('EanIncludeCheckDigits') == 1) ||
-             (!$this->ean && $CORE_LOCAL->get('UpcIncludeCheckDigits') == 1)
+        if ( ($this->ean && CoreLocal::get('EanIncludeCheckDigits') == 1) ||
+             (!$this->ean && CoreLocal::get('UpcIncludeCheckDigits') == 1)
            ) {
             $man_id_start = 2;
             $fam_start = 9;
@@ -134,8 +130,8 @@ class CouponCode extends SpecialUPC
             // (since that's what would happen anyway when the
             // confused cashier does a generic coupon tender)
             $value = MiscLib::truncate2($value);
-            $CORE_LOCAL->set("couponupc",$upc);
-            $CORE_LOCAL->set("couponamt",$value);
+            CoreLocal::set("couponupc",$upc);
+            CoreLocal::set("couponamt",$value);
 
             $dept = 0;
             $db = Database::tDataConnect();

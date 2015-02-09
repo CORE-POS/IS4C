@@ -41,13 +41,12 @@ class Refund extends PreParser
 
 	function parse($str)
     {
-		global $CORE_LOCAL;
 		$remainder = "";
         $parts = explode('RF', $str, 2);
         foreach ($parts as $p) {
             $remainder .= $p;
         }
-		$CORE_LOCAL->set("refund",1);
+		CoreLocal::set("refund",1);
 
 		return $remainder;
 	}

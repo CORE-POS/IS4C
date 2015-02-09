@@ -5,12 +5,12 @@
  */
 class LocalStorageTest extends PHPUnit_Framework_TestCase
 {
-	public function testAll(){
-		global $CORE_LOCAL;
-
+	public function testAll()
+    {
 		$defaults = array(
 			'SessionStorage',
-			'UnitTestStorage'
+			'UnitTestStorage',
+            'WrappedStorage',
 		);
 
         /**
@@ -21,7 +21,7 @@ class LocalStorageTest extends PHPUnit_Framework_TestCase
 			$defaults[] = 'SQLiteStorage';
         */
 
-		foreach($defaults as $class){
+		foreach ($defaults as $class) {
 			$obj = new $class();
 			$this->assertInstanceOf('LocalStorage',$obj);
 

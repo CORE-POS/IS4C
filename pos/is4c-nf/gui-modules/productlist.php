@@ -30,14 +30,13 @@ class productlist extends NoInputPage {
 	var $temp_num_rows;
 	var $boxSize;
 
-	function preprocess(){
-		global $CORE_LOCAL;
-
+	function preprocess()
+    {
 		$entered = "";
 		if (isset($_REQUEST["search"]))
 			$entered = strtoupper(trim($_REQUEST["search"]));
-		elseif ($CORE_LOCAL->get("pvsearch") != "")
-			$entered = strtoupper(trim($CORE_LOCAL->get("pvsearch")));
+		elseif (CoreLocal::get("pvsearch") != "")
+			$entered = strtoupper(trim(CoreLocal::get("pvsearch")));
 		else{
 			$this->temp_num_rows = 0;
 			return True;
@@ -51,8 +50,8 @@ class productlist extends NoInputPage {
 
 		// picked an item from the list
 		if (is_numeric($entered) && strlen($entered) == 13){
-			$CORE_LOCAL->set("msgrepeat",1);
-			$CORE_LOCAL->set("strRemembered",$entered);
+			CoreLocal::set("msgrepeat",1);
+			CoreLocal::set("strRemembered",$entered);
 			$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;
 		}
@@ -124,8 +123,8 @@ class productlist extends NoInputPage {
 		}
 	} // END head() FUNCTION
 
-	function body_content(){
-		global $CORE_LOCAL;
+	function body_content()
+    {
 		$result = $this->temp_result;
 		$num_rows = $this->temp_num_rows;
 

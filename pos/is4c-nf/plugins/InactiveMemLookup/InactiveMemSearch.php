@@ -23,8 +23,8 @@
 
 class InactiveMemSearch extends MemberLookup {
 
-	public function lookup_by_number($num){
-		global $CORE_LOCAL;
+	public function lookup_by_number($num)
+    {
 		$dbc = Database::pDataConnect();
 		$query = $dbc->prepare_statement('SELECT CardNo, personNum,
 			LastName, FirstName FROM custdata
@@ -36,8 +36,8 @@ class InactiveMemSearch extends MemberLookup {
 		$ret = $this->default_value();
 		$i = 1;
 		while($w = $dbc->fetch_row($result)){
-			if ($CORE_LOCAL->get('InactiveMemUsage') == 1)
-				$key = $CORE_LOCAL->get('defaultNonMem').'::'.$i;
+			if (CoreLocal::get('InactiveMemUsage') == 1)
+				$key = CoreLocal::get('defaultNonMem').'::'.$i;
 			else
 				$key = $w['CardNo'].'::'.$w['personNum'];
 			$val = $w['CardNo'].'(CSC) '.$w['LastName'].', '.$w['FirstName'];
@@ -47,8 +47,8 @@ class InactiveMemSearch extends MemberLookup {
 		return $ret;
 	}
 
-	public function lookup_by_text($text){
-		global $CORE_LOCAL;
+	public function lookup_by_text($text)
+    {
 		$dbc = Database::pDataConnect();
 		$query = $dbc->prepare_statement('SELECT CardNo, personNum,
 			LastName, FirstName FROM custdata
@@ -59,8 +59,8 @@ class InactiveMemSearch extends MemberLookup {
 		$ret = $this->default_value();
 		$i=1;
 		while($w = $dbc->fetch_row($result)){
-			if ($CORE_LOCAL->get('InactiveMemUsage') == 1)
-				$key = $CORE_LOCAL->get('defaultNonMem').'::'.$i;
+			if (CoreLocal::get('InactiveMemUsage') == 1)
+				$key = CoreLocal::get('defaultNonMem').'::'.$i;
 			else
 				$key = $w['CardNo'].'::'.$w['personNum'];
 			$val = $w['CardNo'].'(CSC) '.$w['LastName'].', '.$w['FirstName'];

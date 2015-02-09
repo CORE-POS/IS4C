@@ -29,8 +29,8 @@ class RRR extends Parser {
 		return False;
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
+	function parse($str)
+    {
 		$ret = $this->default_json();
 		$qty = 1;
 		if ($str != "RRR"){
@@ -44,7 +44,7 @@ class RRR extends Parser {
 		$ret['udpmsg'] = 'goodBeep';
 
 		Database::getsubtotals();
-		if ($CORE_LOCAL->get("runningTotal") == 0) {
+		if (CoreLocal::get("runningTotal") == 0) {
             TransRecord::finalizeTransaction(true);
 		}
 

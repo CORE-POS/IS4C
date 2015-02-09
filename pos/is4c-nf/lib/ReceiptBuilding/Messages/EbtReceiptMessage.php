@@ -34,8 +34,6 @@ class EbtReceiptMessage extends ReceiptMessage
 
     public function message($val, $ref, $reprint=false)
     {
-        global $CORE_LOCAL;
-
         $date = ReceiptLib::build_time(time());
         list($emp, $reg, $trans) = explode('-',$ref);
         $slip = '';
@@ -105,8 +103,8 @@ class EbtReceiptMessage extends ReceiptMessage
 
             $slip .= ReceiptLib::centerString("................................................")."\n";
             // store header
-            for ($i=1; $i<= $CORE_LOCAL->get('chargeSlipCount'); $i++) {
-                $slip .= ReceiptLib::centerString($CORE_LOCAL->get("chargeSlip" . $i))."\n";
+            for ($i=1; $i<= CoreLocal::get('chargeSlipCount'); $i++) {
+                $slip .= ReceiptLib::centerString(CoreLocal::get("chargeSlip" . $i))."\n";
             }
             $slip .= "\n";
             $col1 = array();
@@ -120,12 +118,12 @@ class EbtReceiptMessage extends ReceiptMessage
             $balance = 'unknown';
             $ebt_type = substr(strtoupper($row['ebtMode']), 0, 5);
             if ($ebt_type == 'EBT F' || $ebt_type == 'EBTFO') {
-                if (is_numeric($CORE_LOCAL->get('EbtFsBalance'))) {
-                    $balance = sprintf('%.2f', $CORE_LOCAL->get('EbtFsBalance'));
+                if (is_numeric(CoreLocal::get('EbtFsBalance'))) {
+                    $balance = sprintf('%.2f', CoreLocal::get('EbtFsBalance'));
                 }
             } else if ($ebt_type == 'EBT C' || $ebt_type == 'EBTCA') {
-                if (is_numeric($CORE_LOCAL->get('EbtCaBalance'))) {
-                    $balance = sprintf('%.2f', $CORE_LOCAL->get('EbtCaBalance'));
+                if (is_numeric(CoreLocal::get('EbtCaBalance'))) {
+                    $balance = sprintf('%.2f', CoreLocal::get('EbtCaBalance'));
                 }
             }
             $col1[] = "New Balance: " . $balance;

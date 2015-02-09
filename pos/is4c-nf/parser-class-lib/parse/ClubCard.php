@@ -29,15 +29,15 @@ class ClubCard extends Parser {
 		return False;
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
+	function parse($str)
+    {
 		$query = "select upc,description,VolSpecial,quantity,
 			total,discount,memDiscount,discountable,
 			unitPrice,scale,foodstamp,voided,discounttype,
 			trans_type,trans_status,department,regPrice,
 			tax,volume,volDiscType
 			from localtemptrans where 
-			trans_id = " . $CORE_LOCAL->get("currentid");	
+			trans_id = " . CoreLocal::get("currentid");	
 		$connection = Database::tDataConnect();
 		$result = $connection->query($query);
 		$num_rows = $connection->num_rows($result);
@@ -51,7 +51,7 @@ class ClubCard extends Parser {
 
 			$dblTotal = MiscLib::truncate2(-1 * 0.5 * $row["total"]); 		// invoked truncate2 rounding function to fix half-penny errors apbw 3/7/05
 
-			$strCardNo = $CORE_LOCAL->get("memberID");
+			$strCardNo = CoreLocal::get("memberID");
 			$dblDiscount = $row["discount"];
 			$dblmemDiscount = $row["memDiscount"];
 			$intDiscountable = $row["discountable"];
@@ -72,9 +72,9 @@ class ClubCard extends Parser {
 				DisplayLib::boxMsg("Item cannot be discounted");
 			} elseif (strncasecmp($strDescription, "Club Card", 9) == 0 ) {		//----- edited by abpw 2/15/05 -----
 				DisplayLib::boxMsg(_("Item cannot be discounted"));
-			} elseif ($CORE_LOCAL->get("tenderTotal") < 0 and $intFoodStamp == 1 and (-1 * $dblTotal) > $CORE_LOCAL->get("fsEligible")) {
+			} elseif (CoreLocal::get("tenderTotal") < 0 and $intFoodStamp == 1 and (-1 * $dblTotal) > CoreLocal::get("fsEligible")) {
 				DisplayLib::boxMsg(_("Item already paid for"));
-			} elseif ($CORE_LOCAL->get("tenderTotal") < 0 and (-1 * $dblTotal) > ($CORE_LOCAL->get("runningTotal") - $CORE_LOCAL->get("taxTotal"))) {
+			} elseif (CoreLocal::get("tenderTotal") < 0 and (-1 * $dblTotal) > (CoreLocal::get("runningTotal") - CoreLocal::get("taxTotal"))) {
 				DisplayLib::boxMsg(_("Item already paid for"));
 			} 
 			else {
@@ -102,12 +102,12 @@ class ClubCard extends Parser {
                     'VolSpecial' => $dblVolSpecial,
                 ));
 
-				$update = "update localtemptrans set voided = 20 where trans_id = " . $CORE_LOCAL->get("currentid");
+				$update = "update localtemptrans set voided = 20 where trans_id = " . CoreLocal::get("currentid");
 				$connection = Database::tDataConnect();
 				$connection->query($update);
 
-				$CORE_LOCAL->set("TTLflag",0);
-				$CORE_LOCAL->set("TTLRequested",0);
+				CoreLocal::set("TTLflag",0);
+				CoreLocal::set("TTLRequested",0);
 
 				DisplayLib::lastpage();
 			}

@@ -35,9 +35,7 @@ class ManagerApproveTender extends TenderModule
     */
     public function errorCheck()
     {
-        global $CORE_LOCAL;
-
-        if (MiscLib::truncate2($CORE_LOCAL->get("amtdue")) < MiscLib::truncate2($this->amount)) {
+        if (MiscLib::truncate2(CoreLocal::get("amtdue")) < MiscLib::truncate2($this->amount)) {
             return DisplayLib::xboxMsg(_("tender exceeds purchase amount"));
         }
 
@@ -50,14 +48,13 @@ class ManagerApproveTender extends TenderModule
     */
     public function preReqCheck()
     {
-        global $CORE_LOCAL;
         $my_url = MiscLib::base_url();
 
-        if ($CORE_LOCAL->get("approvetender") != 1) {
-            $CORE_LOCAL->set("approvetender",1);
+        if (CoreLocal::get("approvetender") != 1) {
+            CoreLocal::set("approvetender",1);
             return $my_url."gui-modules/adminlogin.php?class=ManagerApproveTender";
         } else {
-            $CORE_LOCAL->set("approvetender",0);
+            CoreLocal::set("approvetender",0);
             return true;
         }
     }
@@ -71,13 +68,12 @@ class ManagerApproveTender extends TenderModule
 
     static public function adminLoginCallback($success)
     {
-        global $CORE_LOCAL;
         if ($success) {
-            $CORE_LOCAL->set('strRemembered', $CORE_LOCAL->get('strEntered'));    
-            $CORE_LOCAL->set('msgrepeat', 1);
+            CoreLocal::set('strRemembered', CoreLocal::get('strEntered'));    
+            CoreLocal::set('msgrepeat', 1);
             return true;
         } else {
-            $CORE_LOCAL->set('approvetender', 0);
+            CoreLocal::set('approvetender', 0);
             return false;
         }
     }

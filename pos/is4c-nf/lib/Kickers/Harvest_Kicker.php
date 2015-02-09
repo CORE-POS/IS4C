@@ -25,8 +25,7 @@ class Harvest_Kicker extends Kicker {
 
     public function doKick($trans_num)
     {
-		global $CORE_LOCAL;
-		if($CORE_LOCAL->get('training') == 1) return False;
+		if(CoreLocal::get('training') == 1) return False;
 
 		$db = Database::tDataConnect();
 
@@ -47,14 +46,12 @@ class Harvest_Kicker extends Kicker {
 	}
 
 	function kickOnSignIn(){
-		global $CORE_LOCAL;
-		if($CORE_LOCAL->get('training') == 1) return False;
+		if(CoreLocal::get('training') == 1) return False;
 		return True;
 	}
 
 	function kickOnSignOut(){
-		global $CORE_LOCAL;
-		if($CORE_LOCAL->get('training') == 1) return False;
+		if(CoreLocal::get('training') == 1) return False;
 		return True;
 	}
 }

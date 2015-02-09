@@ -21,7 +21,9 @@
 
 *********************************************************************************/
 
-if (!isset($CORE_LOCAL)) include_once(dirname(__FILE__).'/LocalStorage/conf.php');
+if (!defined('CONF_LOADED')) {
+    include_once(dirname(__FILE__).'/LocalStorage/conf.php');
+}
 
 /**
   @class LibraryClass
@@ -48,10 +50,15 @@ class AutoLoader extends LibraryClass
 	*/
 	static public function loadClass($name)
     {
-		global $CORE_LOCAL;
-		$map = $CORE_LOCAL->get("ClassLookup");
+        global $CORE_LOCAL;
+		$map = CoreLocal::get("ClassLookup");
 		if (!is_array($map)) {
-            return;
+            // attempt to build map before giving up
+            self::loadMap();
+            $map = CoreLocal::get("ClassLookup");
+            if (!is_array($map)) {
+                return;
+            }
         }
 
 		if (isset($map[$name]) && !file_exists($map[$name])) {
@@ -59,7 +66,7 @@ class AutoLoader extends LibraryClass
 			// rebuild map to see if the class is
 			// gone or the file just moved
 			self::loadMap();
-			$map = $CORE_LOCAL->get("ClassLookup");
+			$map = CoreLocal::get("ClassLookup");
 			if (!is_array($map)) {
                 return;
             }
@@ -68,7 +75,7 @@ class AutoLoader extends LibraryClass
 			// rebuild map to see if the definition
 			// file has been added
 			self::loadMap();
-			$map = $CORE_LOCAL->get("ClassLookup");
+			$map = CoreLocal::get("ClassLookup");
 			if (!is_array($map)) {
                 return;
             }
@@ -87,11 +94,10 @@ class AutoLoader extends LibraryClass
 	*/
 	static public function loadMap()
     {
-		global $CORE_LOCAL;
 		$class_map = array();
 		$search_path = realpath(dirname(__FILE__).'/../');
 		self::recursiveLoader($search_path, $class_map);
-		$CORE_LOCAL->set("ClassLookup",$class_map);
+		CoreLocal::set("ClassLookup",$class_map);
 	}
 
 	/**

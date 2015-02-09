@@ -23,13 +23,14 @@
 
 class AnnualMeetingParser extends Parser {
 
-	var $plus = array('1042','1041');
-	var $descriptions = array(
+	private $plus = array('1042','1041');
+	private $descriptions = array(
 		'1042' => 'OWNER MEAL',
 		'1041' => 'GUEST MEAL'
 	);
 
-	function check($str){
+	function check($str)
+    {
 		if (strlen($str) < 4) return False;
 		$plu = substr($str,0,4);
 		if (in_array($plu, $this->plus)){
@@ -47,11 +48,11 @@ class AnnualMeetingParser extends Parser {
 		return False;
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
+	function parse($str)
+    {
 		$ret = $this->default_json();
 		if (strlen($str)==4){
-			$CORE_LOCAL->set('qmInput',$str);
+			CoreLocal::set('qmInput',$str);
 			$desc = $this->descriptions[$str];
 			$opts = array(
 				$desc.' (Steak)' => 'M',
@@ -61,7 +62,7 @@ class AnnualMeetingParser extends Parser {
 			if ($str == 1041){
 				$opts[$desc.' (Kids)'] = 'K';
 			}
-			$CORE_LOCAL->set('qmNumber', $opts);
+			CoreLocal::set('qmNumber', $opts);
 			$plugin_info = new QuickMenus();
 			$ret['main_frame'] = $plugin_info->plugin_url().'/QMDisplay.php';
 			return $ret;

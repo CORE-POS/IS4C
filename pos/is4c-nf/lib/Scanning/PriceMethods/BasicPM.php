@@ -35,13 +35,12 @@ class BasicPM extends PriceMethod
 
     private $error_msg = '';
 
-    function addItem($row,$quantity,$priceObj)
+    function addItem($row, $quantity, $priceObj)
     {
-        global $CORE_LOCAL;
         if ($quantity == 0) return False;
 
         // enforce limit on discounting sale items
-        $dsi = $CORE_LOCAL->get('DiscountableSaleItems');
+        $dsi = CoreLocal::get('DiscountableSaleItems');
         if ($dsi == 0 && $dsi !== '' && $priceObj->isSale()) {
             $row['discount'] = 0;
         }

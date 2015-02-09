@@ -65,7 +65,12 @@ class ItemReceiptFormat extends DefaultReceiptFormat
 				$comment = 'w/ vol adj';
 			}
 
-			if ($row['numflag'] > 0) $row['description'] .= '*';
+            /**
+              Identify local items on receipt if displaying a local total
+            */
+			if ($row['numflag'] > 0 && CoreLocal::get('ReceiptLocalMode') != 'omit') {
+                $row['description'] .= '*';
+            }
 
 			return $this->align($row['description'],$comment,$row['total'],$this->flags($row));
 		}

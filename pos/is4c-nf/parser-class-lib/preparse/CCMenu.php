@@ -27,13 +27,12 @@ class CCMenu extends PreParser {
     
     function check($str)
     {
-        global $CORE_LOCAL;
-        $plugins = $CORE_LOCAL->get('PluginList');
+        $plugins = CoreLocal::get('PluginList');
         if ($str == "CC" && is_array($plugins) && in_array('Paycards', $plugins)){
             $this->remainder = "QM1";
             return true;
         } elseif ($str == "MANUALCC") {
-            $this->remainder = ("".$CORE_LOCAL->get("runningTotal") * 100)."CC";
+            $this->remainder = ("".CoreLocal::get("runningTotal") * 100)."CC";
             return true;
         }
 

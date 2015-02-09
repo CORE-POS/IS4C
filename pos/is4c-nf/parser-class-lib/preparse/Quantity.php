@@ -29,15 +29,15 @@ class Quantity extends PreParser {
 		return False;
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
+	function parse($str)
+    {
 		if (!strpos($str,"**") && strpos($str,"*") != 0 &&
 		    strpos($str,"*") != strlen($str)-1){
 			$split = explode("*",$str);
 			if (is_numeric($split[0]) &&
 			   (strpos($split[1],"DP") || is_numeric($split[1]))){
-				   $CORE_LOCAL->set("quantity",$split[0]);
-				   $CORE_LOCAL->set("multiple",1);
+				   CoreLocal::set("quantity",$split[0]);
+				   CoreLocal::set("multiple",1);
 				   $str = $split[1];
 			}
 		}

@@ -26,7 +26,7 @@
   WFC barcoded member ID implementation
 
   Checks for UPC prefix specified
-  by memberUpcPrefix in $CORE_LOCAL.
+  by memberUpcPrefix in session
 
   Looks up member number via memberCards table
 */
@@ -35,8 +35,7 @@ class MemberBarcode extends SpecialUPC
 
 	public function isSpecial($upc)
     {
-		global $CORE_LOCAL;
-		$prefix = $CORE_LOCAL->get("memberUpcPrefix");
+		$prefix = CoreLocal::get("memberUpcPrefix");
 		if (substr($upc,0,strlen($prefix)) == $prefix) {
 			return true;
         }
@@ -46,8 +45,6 @@ class MemberBarcode extends SpecialUPC
 
 	public function handle($upc,$json)
     {
-		global $CORE_LOCAL;
-
 		$db = Database::pDataConnect();
 		$query = "select card_no from memberCards where upc='$upc'";
 		$result = $db->query($query);
@@ -58,7 +55,7 @@ class MemberBarcode extends SpecialUPC
 		}
 
 		$row = $db->fetch_array($result);
-		$CORE_LOCAL->set("memberCardUsed",1);
+		CoreLocal::set("memberCardUsed",1);
 		$json = PrehLib::memberID($row[0]);
 		return $json;
 	}

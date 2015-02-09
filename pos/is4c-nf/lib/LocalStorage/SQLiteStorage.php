@@ -81,6 +81,17 @@ class SQLiteStorage extends LocalStorage
         $this->debug();
     }
 
+    public function iteratorKeys()
+    {
+        $data = sqlite_array_query($this->db, 'SELECT keystr FROM is4c_local', SQLITE_NUM);
+        $keys = array();
+        foreach ($data as $row) {
+            $keys[] = $row[0];
+        }
+
+        return array_merge(parent::iteratorKeys(), $keys);
+    }
+
     private function conn()
     {
         return sqlite_open(dirname(__FILE__).'/SQLiteDB/db',0666);

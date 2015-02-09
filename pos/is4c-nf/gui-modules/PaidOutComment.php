@@ -25,27 +25,27 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class PaidOutComment extends NoInputPage {
 
-	function preprocess(){
-		global $CORE_LOCAL;
+	function preprocess()
+    {
 		if (isset($_REQUEST["selectlist"])){
 			$input = $_REQUEST["selectlist"];
 			if ($input == "CL"){
-				$CORE_LOCAL->set("msgrepeat",0);
-				$CORE_LOCAL->set("strRemembered","");
-				$CORE_LOCAL->set("refundComment","");
+				CoreLocal::set("msgrepeat",0);
+				CoreLocal::set("strRemembered","");
+				CoreLocal::set("refundComment","");
 			}
 			else if ($input == "Other"){
 				return True;
 			}
 			else {
 				$input = str_replace("'","",$input);
-				$CORE_LOCAL->set("strRemembered",$CORE_LOCAL->get("refundComment"));
+				CoreLocal::set("strRemembered",CoreLocal::get("refundComment"));
 				// add comment calls additem(), which wipes
 				// out refundComment; save it
 				TransRecord::addcomment("PO: ".$input);
-				$CORE_LOCAL->set("refundComment",$CORE_LOCAL->get("strRemembered"));
-				$CORE_LOCAL->set("msgrepeat",1);
-				//$CORE_LOCAL->set("refund",1);
+				CoreLocal::set("refundComment",CoreLocal::get("strRemembered"));
+				CoreLocal::set("msgrepeat",1);
+				//CoreLocal::set("refund",1);
 			}
 			$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;
@@ -60,8 +60,8 @@ class PaidOutComment extends NoInputPage {
 		<?php
 	} // END head() FUNCTION
 
-	function body_content() {
-		global $CORE_LOCAL;
+	function body_content() 
+    {
 		?>
 		<div class="baseHeight">
 		<div class="centeredDisplay colored">

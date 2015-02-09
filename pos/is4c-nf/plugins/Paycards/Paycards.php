@@ -183,8 +183,7 @@ messages from POS?',
 
     public function plugin_transaction_reset()
     {
-        global $CORE_LOCAL;
-        $CORE_LOCAL->set('paycardTendered', false);
+        CoreLocal::set('paycardTendered', false);
     }
 
 }

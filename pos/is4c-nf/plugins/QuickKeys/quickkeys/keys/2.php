@@ -23,5 +23,3 @@ $my_keys = array(
 	new quickkey("Ext. Cash\nBack","XB")
 );
 
-?>
-

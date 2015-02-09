@@ -31,23 +31,27 @@
 
 $elog = realpath(dirname(__FILE__).'/../../log/').'/php-errors.log';
 ini_set('error_log',$elog);
+ini_set('display_errors', false);
 
 $LOCAL_STORAGE_MECHANISM = 'SessionStorage';
 
 if (!class_exists($LOCAL_STORAGE_MECHANISM)) {
     include(realpath(dirname(__FILE__).'/'.$LOCAL_STORAGE_MECHANISM.".php"));
 }
+if (!class_exists('CoreLocal')) {
+    include(dirname(__FILE__) . '/CoreLocal.php');
+}
+if (!class_exists('WrappedStorage')) {
+    include(dirname(__FILE__) . '/WrappedStorage.php');
+}
+CoreLocal::setHandler($LOCAL_STORAGE_MECHANISM);
 
-$CORE_LOCAL = new $LOCAL_STORAGE_MECHANISM();
+$CORE_LOCAL = new WrappedStorage();
 global $CORE_LOCAL;
 
-/**
-  Settings in ini.php are (or should be) immutable. They're not
-  necessarily saved in the session or session replacement mechanism.
-  Include these settings every time.
-*/
-if (file_exists(dirname(__FILE__).'/../../ini.php')) {
-    include_once(realpath(dirname(__FILE__).'/../../ini.php'));
-}
+// this includes ini.php
+CoreLocal::refresh();
 
-?>
+if (!defined('CONF_LOADED')) {
+    define('CONF_LOADED', true);
+}

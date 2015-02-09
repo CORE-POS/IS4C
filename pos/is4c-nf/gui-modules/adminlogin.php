@@ -42,8 +42,8 @@ class adminlogin extends NoInputPage {
 	var $msg;
 	var $heading;
 
-	function preprocess(){
-		global $CORE_LOCAL;
+	function preprocess()
+    {
 		$this->box_color="coloredArea";
 		$this->msg = _("enter admin password");
 
@@ -110,7 +110,7 @@ class adminlogin extends NoInputPage {
 						'charflag' => 'PW',
 						'num_flag' => $row['emp_no']
 					));
-                    if ($CORE_LOCAL->get('LoudLogins') == 1) {
+                    if (CoreLocal::get('LoudLogins') == 1) {
                         UdpComm::udpSend('goodBeep');
                     }
 					$result = $class::adminLoginCallback(True);
@@ -130,7 +130,7 @@ class adminlogin extends NoInputPage {
 						'charflag' => 'PW'
 					));
 
-                    if ($CORE_LOCAL->get('LoudLogins') == 1) {
+                    if (CoreLocal::get('LoudLogins') == 1) {
                         UdpComm::udpSend('twoPairs');
                     }
 				}
@@ -145,8 +145,8 @@ class adminlogin extends NoInputPage {
 		$this->scanner_scale_polling(True);
 	}
 
-	function body_content(){
-		global $CORE_LOCAL;
+	function body_content()
+    {
 		?>
 		<div class="baseHeight">
 		<div class="<?php echo $this->box_color; ?> centeredDisplay">

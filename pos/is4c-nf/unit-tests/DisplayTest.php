@@ -7,7 +7,6 @@ class DisplayTest extends PHPUnit_Framework_TestCase
 
 	public function testScreenDisplay()
     {
-        global $CORE_LOCAL;
         lttLib::clear();
         $u = new UPC();
         $u->check('666');
@@ -61,10 +60,10 @@ class DisplayTest extends PHPUnit_Framework_TestCase
             $this->compareArrays($records[$i], $view[$i]);
         }
 
-        $CORE_LOCAL->set('memberID', 1);
-        $CORE_LOCAL->set('isMember', 1);
-        $CORE_LOCAL->set('percentDiscount', 10);
-        $CORE_LOCAL->set('memType', 1);
+        CoreLocal::set('memberID', 1);
+        CoreLocal::set('isMember', 1);
+        CoreLocal::set('percentDiscount', 10);
+        CoreLocal::set('memType', 1);
         PrehLib::ttl();
 
         $notify = array(
@@ -117,8 +116,8 @@ class DisplayTest extends PHPUnit_Framework_TestCase
             $this->compareArrays($records[$i], $view[$i]);
         }
 
-        $CORE_LOCAL->set('quantity', 2);
-        $CORE_LOCAL->set('multiple', 1);
+        CoreLocal::set('quantity', 2);
+        CoreLocal::set('multiple', 1);
         $u = new UPC();
         $u->check('4627');
         $u->parse('4627');
@@ -159,9 +158,9 @@ class DisplayTest extends PHPUnit_Framework_TestCase
             $this->compareArrays($records[$i], $view[$i]);
         }
 
-        $CORE_LOCAL->set('quantity', 0);
-        $CORE_LOCAL->set('multiple', 0);
-        $CORE_LOCAL->set('currentid', 1);
+        CoreLocal::set('quantity', 0);
+        CoreLocal::set('multiple', 0);
+        CoreLocal::set('currentid', 1);
         $v = new Void();
         $v->check('VD');
         $v->parse('VD');

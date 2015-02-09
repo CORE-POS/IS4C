@@ -22,7 +22,7 @@
 
 /*************************************************************
  * SerialPortHandler
- * 	Abstract class to manage a serial port in a separate
+ *     Abstract class to manage a serial port in a separate
  * thread. Allows top-level app to interact with multiple, 
  * different serial devices through one class interface.
  * 
@@ -43,21 +43,18 @@ using CustomForms;
 
 namespace SPH {
 
-public class SPH_iSC250_IP : SerialPortHandler {
+public class SPH_IngenicoRBA_IP : SPH_IngenicoRBA_Common {
 
     private TcpClient device = null;
     private string device_host = null;
 
-	private string terminal_serial_number;
-	private string pos_trans_no;
-
-	public SPH_iSC250_IP(string p) : base(p)
+    public SPH_IngenicoRBA_IP(string p) : base(p)
     { 
-		this.SPH_Running = true;
-		this.verbose_mode = 0;
+        this.SPH_Running = true;
+        this.verbose_mode = 0;
         this.device = new TcpClient();
         this.device_host = p;
-	}
+    }
 
     private bool ReConnect()
     {
@@ -77,11 +74,12 @@ public class SPH_iSC250_IP : SerialPortHandler {
 
         return true;
     }
-	
-	public override  void Read()
+    
+    public override void Read()
     { 
         ReConnect();
-        SendToDevice(OnlineCommand());
+        WriteMessageToDevice(OnlineMessage());
+        HandleMsg("termReset");
         this.device.ReceiveTimeout = 5000;
         NetworkStream stream = device.GetStream();
         byte[] buffer = new byte[512];
@@ -110,37 +108,24 @@ public class SPH_iSC250_IP : SerialPortHandler {
                             // send ACK to device
                             stream.Write(new byte[]{0x6}, 0, 1);
                             // deal with the data received
-                            ParseDeviceMessage(copy);
+                            HandleMessageFromDevice(copy);
                         }
                     }
                 }
             } catch (TimeoutException) {
                 // timeout is fine; just loop
             } catch (Exception ex) {
-                System.Console.WriteLine("Socket Excpetion: " + ex.ToString());
+                System.Console.WriteLine("Socket Exception: " + ex.ToString());
             }
         }
 
         if (this.device.Connected) {
-            SendToDevice(OfflineCommand());
-        }
-    }
-
-    private void ParseDeviceMessage(byte[] data)
-    {
-        int message_code = ((data[1]-0x30)*10) + (data[2]-0x30);
-        switch (message_code) {
-            case 1:
-                // response after sending online command
-                break;
-            case 50:
-                // card & transaction data
-                break;
+            WriteMessageToDevice(OfflineMessage());
         }
     }
 
     // add STX, CRC, and ETX bytes to message
-    private void SendToDevice(byte[] msg)
+    public override void WriteMessageToDevice(byte[] msg)
     {
         byte[] actual = new byte[msg.Length+2];
         actual[0] = 0x2; // STX byte
@@ -157,135 +142,6 @@ public class SPH_iSC250_IP : SerialPortHandler {
         NetworkStream stream = device.GetStream();
         stream.Write(actual, 0, actual.Length);
     }
-
-    private byte[] OnlineCommand()
-    {
-        // ASCII: 01.00000000
-        return new byte[]{
-            0x30,
-            0x31,
-            0x2e,
-            0x30,
-            0x30,
-            0x30,
-            0x30,
-            0x30,
-            0x30,
-            0x30,
-            0x30
-        };
-    }
-
-    private byte[] OfflineCommand()
-    {
-        // ASCII: 00.00000000
-        return new byte[]{
-            0x30,
-            0x30,
-            0x2e,
-            0x30,
-            0x30,
-            0x30,
-            0x30
-        };
-    }
-
-    private byte[] ResetCommand()
-    {
-        // ASCII: 10.
-        return new byte[]{
-            0x31,
-            0x30,
-            0x2e
-        };
-    }
-
-	// amount format: 5.99 = 599 (just like POS input)
-    private byte[] AmountCommand(string amt)
-    {
-		byte[] a = new System.Text.ASCIIEncoding().GetBytes(amt);
-		byte[] msg = new byte[3 + a.Length];
-
-        msg[0] = 0x31;
-        msg[1] = 0x33;
-        msg[2] = 0x2e;
-
-        for (int i=0; i < a.Length; i++) {
-            msg[i+3] = a[i];
-        }
-
-        return msg;
-    }
-
-    private byte[] ApprovalCommand(string approval_code)
-    {
-		System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
-		string display_message = "Thank You!";
-        if (approval_code.Length != 6) {
-            approval_code = "000000";
-        }
-
-        byte[] msg = new byte[31 + display_message.Length];
-
-		msg[0] = 0x35; // Auth Code
-		msg[1] = 0x30;
-		msg[2] = 0x2e;
-
-		byte[] tmp = enc.GetBytes(terminal_serial_number);
-        for (int i=0; i<8; i++) {
-            msg[i+3] = tmp[i];
-        }
-
-        msg[11] = 0x0;
-
-		tmp = enc.GetBytes(pos_trans_no);
-        for (int i=0; i<4; i++) {
-            msg[i+12] = tmp[i];
-        }
-
-        if (approval_code == "denied") {
-            msg[17] = 0x45;
-            msg[18] = 0x3f;
-        } else {
-            msg[17] = 0x41;
-            msg[18] = 0x3f;
-        }
-
-		tmp = enc.GetBytes(approval_code);
-		for (int i=0;i<6;i++) {
-			msg[i+18] = tmp[i];
-        }
-
-		string today = String.Format("(0:yyMMdd)",DateTime.Today);
-		tmp = enc.GetBytes(today);
-		for (int i=0;i<4;i++) {
-			msg[i+24] = tmp[i];
-        }
-
-		tmp = enc.GetBytes(display_message);
-		for (int i=0;i<tmp.Length;i++) {
-			msg[i+30] = tmp[i];
-        }
-
-        msg[msg.Length-1] = 0x1c; // Field separator
-
-        return msg;
-    }
-
-
-	public override void HandleMsg(string msg)
-    {
-        switch (msg) {
-            case "termReset":
-            case "termReboot":
-                SendToDevice(ResetCommand());
-                break;
-            case "termApproved":
-                SendToDevice(ApprovalCommand("000000"));
-                break;
-        }
-    }
-
 }
 
 }
