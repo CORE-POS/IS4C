@@ -135,7 +135,7 @@ class SkuMapPage extends FannieRESTfulPage
                 p.description as storeDescript
             FROM vendorSKUtoPLU AS m
                 LEFT JOIN products AS p ON p.upc=m.upc
-                LEFT JOIN vendorItems AS v ON v.upc=m.upc AND v.vendorID=m.vendorID
+                LEFT JOIN vendorItems AS v ON v.sku=m.sku AND v.vendorID=m.vendorID
             WHERE m.vendorID = ?
             ORDER BY m.upc
         ");
