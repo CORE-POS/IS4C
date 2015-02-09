@@ -59,8 +59,8 @@ class FannieSignage
 
     public function loadItems()
     {
-        global $FANNIE_OP_DB;
-        $dbc = \FannieDB::get($FANNIE_OP_DB);
+        $op_db = \FannieConfig::factory()->get('OP_DB');
+        $dbc = \FannieDB::get($op_db);
         $args = array();
         if ($this->source == 'shelftags') {
             $query = 'SELECT s.upc,
@@ -405,7 +405,7 @@ class FannieSignage
 
     public function listItems()
     {
-        global $FANNIE_URL;
+        $url = \FannieConfig::factory()->get('URL');
         $ret = '<table class="table">';
         $ret .= '<tr><th>UPC</th><th>Brand</th><th>Description</th><th>Price</th><th>Origin</th></tr>';
         $data = $this->loadItems();
@@ -421,7 +421,7 @@ class FannieSignage
                             <td><input class="FannieSignageField form-control" type="text" 
                                 name="update_origin[]" value="%s" /></td>
                             </tr>',
-                            $FANNIE_URL,
+                            $url,
                             $item['upc'], $item['upc'], $item['upc'],
                             $item['upc'],
                             $item['brand'],
@@ -437,10 +437,10 @@ class FannieSignage
 
     public function updateItem($upc, $brand, $description)
     {
-        global $FANNIE_OP_DB;
+        $op_db = \FannieConfig::factory()->get('OP_DB');
         switch (strtolower($this->source)) {
             case 'shelftags':
-                $model = new \ShelftagsModel(\FannieDB::get($FANNIE_OP_DB));
+                $model = new \ShelftagsModel(\FannieDB::get($op_db));
                 $model->id($this->source_id);
                 $model->upc(\BarcodeLib::padUPC($upc));
                 $model->brand($brand);
@@ -448,7 +448,7 @@ class FannieSignage
                 $model->save();
                 break;
             case 'batchbarcodes':
-                $dbc = \FannieDB::get($FANNIE_OP_DB);
+                $dbc = \FannieDB::get($op_db);
                 $args = array($brand, $description, \BarcodeLib::padUPC($upc));
                 if (!is_array($this->source_id)) {
                     $this->source_id = array($this->source_id);
@@ -468,12 +468,12 @@ class FannieSignage
                 break;
             case 'batch':
             case '':
-                $model = new \ProductUserModel(\FannieDB::get($FANNIE_OP_DB));
+                $model = new \ProductUserModel(\FannieDB::get($op_db));
                 $model->upc(\BarcodeLib::padUPC($upc));
                 $model->brand($brand);
                 $model->description($description);
                 $model->save();
-                $model = new \ProductsModel(\FannieDB::get($FANNIE_OP_DB));
+                $model = new \ProductsModel(\FannieDB::get($op_db));
                 $model->upc(\BarcodeLib::padUPC($upc));
                 $model->brand($brand);
                 $model->save();

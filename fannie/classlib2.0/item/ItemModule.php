@@ -32,12 +32,11 @@ class ItemModule
 
     public function db()
     {
-        global $FANNIE_ROOT,$FANNIE_OP_DB;
         if (!class_exists('FannieDB')) {
-            include_once($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
+            include_once(dirname(__FILE__) . '/../data/FannieDB.php');
         }
 
-        return \FannieDB::get($FANNIE_OP_DB);
+        return \FannieDB::get(\FannieConfig::factory()->get('OP_DB'));
     }
 
     public function width()

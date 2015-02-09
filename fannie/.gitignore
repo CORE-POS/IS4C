@@ -1,5 +1,3 @@
 config.php.bak
 auth/shadowread/shadowread
-vendor
 src/javascript/composer-components/
-composer.lock

@@ -40,7 +40,7 @@ if (!class_exists('FannieAPI')) {
 // $db =$dbc->connect('localhost',$_SESSION["mUser"],$_SESSION["mPass"]);
 // $dbc->select_db('is4c_op',$db);
 
-function select_to_table($query,$args,$border,$bgcolor)
+function select_to_table($query,$args,$border,$bgcolor, $no_end=false)
 {
 	global $FANNIE_OP_DB;
     $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -79,8 +79,11 @@ function select_to_table($query,$args,$border,$bgcolor)
 			}
 			echo "</font></td>\n";
 		} echo "</tr>\n";
-	} echo "</table>\n";
-	echo "</font>";
+	} 
+    if (!$no_end) {
+        echo "</table>\n";
+        echo "</font>";
+    }
 }
 
 /* -------------------------------end select_to_table-------------------*/ 

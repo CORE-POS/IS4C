@@ -194,12 +194,6 @@ class GumEmailPage extends FannieRESTfulPage
         $log->uid($uid);
         $log->messageType('Statement (' . $this->id . ')');
 
-        if (!class_exists('SMTP')) {
-            include($FANNIE_ROOT . 'src/PHPMailer/class.smtp.php');
-        }
-        if (!class_exists('PHPMailer')) {
-            include($FANNIE_ROOT . 'src/PHPMailer/class.phpmailer.php');
-        }
         $mail = new PHPMailer();
         $mail->isSMTP();
         $mail->Host = '127.0.0.1';

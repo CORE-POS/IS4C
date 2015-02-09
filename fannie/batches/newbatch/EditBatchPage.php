@@ -112,7 +112,7 @@ class EditBatchPage extends FannieRESTfulPage
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $id = $this->id;
-        $upc = $this->addUPC;
+        $upc = trim($this->addUPC);
         $upc = BarcodeLib::padUPC($upc);
 
         $json = array(
@@ -780,6 +780,21 @@ class EditBatchPage extends FannieRESTfulPage
         
         $ret = "<span class=\"newBatchBlack\"><b>Batch name</b>: $name</span><br />";
         $ret .= "<a href=\"BatchListPage.php\">Back to batch list</a> | ";
+        $ret .= sprintf('<input type="hidden" id="batch-discount-type" value="%d" />', $model->discounttype());
+        /**
+          Price change batches probably want the upcoming retail
+          rather than the current retail. Current sales will want
+          the current sale price; future sales will want the future
+          sale price. Past sales probably won't print signs under
+          normal circumstances.
+        */
+        $future_mode = false;
+        if ($model->discounttype() == 0) {
+            $future_mode = true;
+        } elseif (strtotime($model->startDate()) >= strtotime(mktime(0,0,0,date('n'),date('j'),date('Y')))) {
+            $future_mode = true;
+        }
+        $ret .= sprintf('<input type="hidden" id="batch-future-mode" value="%d" />', $future_mode ? 1 : 0);
         $ret .= "<a href=\"\" onclick=\"printSigns();return false;\">Print Sale Signs</a> | ";
         $ret .= "<a href=\"{$FANNIE_URL}admin/labels/BatchShelfTags.php?batchID%5B%5D=$id\">Print Shelf Tags</a> | ";
         $ret .= "<a href=\"\" onclick=\"generateTags($id); return false;\">Auto-tag</a> | ";

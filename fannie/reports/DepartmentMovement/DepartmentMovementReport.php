@@ -21,9 +21,8 @@
 
 *********************************************************************************/
 
-include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(dirname(__FILE__) . '/../../classlib2.0/FannieAPI.php');
 }
 
 class DepartmentMovementReport extends FannieReportPage 
@@ -43,8 +42,7 @@ class DepartmentMovementReport extends FannieReportPage
     */
     function fetch_report_data()
     {
-        global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
         $date1 = FormLib::getDate('date1',date('Y-m-d'));
         $date2 = FormLib::getDate('date2',date('Y-m-d'));
         $deptStart = FormLib::get_form_value('deptStart','');
@@ -121,15 +119,17 @@ class DepartmentMovementReport extends FannieReportPage
             case 'PLU':
                 $query = "SELECT t.upc,
                       CASE WHEN p.description IS NULL THEN t.description ELSE p.description END as description, 
-                      SUM(CASE WHEN trans_status IN('','0') THEN 1 WHEN trans_status='V' THEN -1 ELSE 0 END) as rings,"
+                      SUM(CASE WHEN trans_status IN('','0','R') THEN 1 WHEN trans_status='V' THEN -1 ELSE 0 END) as rings,"
                       . DTrans::sumQuantity('t')." as qty,
                       SUM(t.total) AS total,
-                      d.dept_no,d.dept_name,s.superID,x.distributor
+                      d.dept_no,d.dept_name,s.superID,
+                      COALESCE(v.vendorName,x.distributor) AS distributor
                       FROM $dlog as t "
                       . DTrans::joinProducts()
                       . DTrans::joinDepartments()
                       . "LEFT JOIN $superTable AS s ON t.department = s.dept_ID
                       LEFT JOIN prodExtra as x on t.upc = x.upc
+                      LEFT JOIN vendors AS v ON p.default_vendor_id=v.vendorID
                       WHERE $filter_condition
                       AND t.trans_type IN ('I', 'D')
                       AND tdate BETWEEN ? AND ?
@@ -137,7 +137,8 @@ class DepartmentMovementReport extends FannieReportPage
                       AND " . DTrans::isStoreID($store, 't') . "
                       GROUP BY t.upc,
                           CASE WHEN p.description IS NULL THEN t.description ELSE p.description END,
-                      d.dept_no,d.dept_name,s.superID,x.distributor ORDER BY SUM(t.total) DESC";
+                          CASE WHEN t.trans_status = 'R' THEN 'Refund' ELSE 'Sale' END,
+                      d.dept_no,d.dept_name,s.superID,distributor ORDER BY SUM(t.total) DESC";
                 break;
             case 'Department':
                 $query =  "SELECT t.department,d.dept_name,"
@@ -148,6 +149,7 @@ class DepartmentMovementReport extends FannieReportPage
                     . "LEFT JOIN $superTable AS s ON s.dept_ID = t.department 
                     WHERE $filter_condition
                     AND tdate BETWEEN ? AND ?
+                    AND t.trans_type IN ('I', 'D')
                     AND $filter_transactions
                     AND " . DTrans::isStoreID($store, 't') . "
                     GROUP BY t.department,d.dept_name ORDER BY SUM(total) DESC";
@@ -162,6 +164,7 @@ class DepartmentMovementReport extends FannieReportPage
                     . "LEFT JOIN $superTable AS s ON s.dept_ID = t.department
                     WHERE $filter_condition
                     AND tdate BETWEEN ? AND ?
+                    AND t.trans_type IN ('I', 'D')
                     AND $filter_transactions
                     AND " . DTrans::isStoreID($store, 't') . "
                     GROUP BY year(tdate),month(tdate),day(tdate) 
@@ -185,6 +188,7 @@ class DepartmentMovementReport extends FannieReportPage
                     . "LEFT JOIN $superTable AS s ON s.dept_ID = t.department 
                     WHERE $filter_condition
                     AND tdate BETWEEN ? AND ?
+                    AND t.trans_type IN ('I', 'D')
                     AND $filter_transactions
                     AND " . DTrans::isStoreID($store, 't') . "
                     GROUP BY $cols
@@ -205,10 +209,13 @@ class DepartmentMovementReport extends FannieReportPage
             if ($groupby == "Date") {
                 $record[] = $row[1]."/".$row[2]."/".$row[0];
                 $record[] = date('l', strtotime($record[0]));
-                $record[] = $row[3];
-                $record[] = $row[4];
+                $record[] = sprintf('%.2f', $row[3]);
+                $record[] = sprintf('%.2f', $row[4]);
             } else {
                 for($i=0;$i<$dbc->num_fields($result);$i++) {
+                    if (preg_match('/^\d+\.\d+$/', $row[$i])) {
+                        $row[$i] = sprintf('%.2f', $row[$i]);
+                    }
                     $record[] .= $row[$i];
                 }
             }
@@ -297,8 +304,7 @@ class DepartmentMovementReport extends FannieReportPage
 
     function form_content()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
         $deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
         $deptsR = $dbc->exec_statement($deptsQ);
         $deptsList = "";

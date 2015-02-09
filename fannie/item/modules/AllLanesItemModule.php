@@ -21,13 +21,12 @@
 
 *********************************************************************************/
 
-include_once(dirname(__FILE__).'/../../classlib2.0/item/ItemModule.php');
-
-class AllLanesItemModule extends ItemModule {
+class AllLanesItemModule extends ItemModule 
+{
 
     public function showEditForm($upc, $display_mode=1, $expand_mode=1)
     {
-        global $FANNIE_LANES;
+        $FANNIE_LANES = FannieConfig::config('LANES');
         $upc = BarcodeLib::padUPC($upc);
         $queryItem = "SELECT * FROM products WHERE upc = ?";
 

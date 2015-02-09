@@ -62,7 +62,7 @@ class ShrinkTool extends FannieRESTfulPage
         $record['total'] = $this->qty * $this->price;
         $record['cost'] = $this->qty * $this->cost;
         $record['numflag'] = $this->reason;
-        $record['charflag'] = strlen(FormLib::get('type') > 0) ? strtoupper(substr(FormLib::get('type'), 0, 1)) : '';
+        $record['charflag'] = strlen(FormLib::get('type')) > 0 ? strtoupper(substr(FormLib::get('type'), 0, 1)) : '';
         $record['trans_status'] = 'Z';
 
         $info = DTrans::parameterize($record, 'datetime', $dbc->now());
@@ -180,6 +180,8 @@ class ShrinkTool extends FannieRESTfulPage
             </div>
             <p>
                 <button type="submit" class="btn btn-default">Continue</button>
+                |
+                <a href="ShrinkEditor.php" class="btn btn-default">Edit Entries From Today</a>
             </p>
             </form>';
     }

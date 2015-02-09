@@ -82,8 +82,27 @@ if (!$output || isset($_REQUEST['recache'])){
     AND d.trans_type='T'
     AND d.trans_subtype <> 'MA'
     and t.TenderName <> 'MAD Coupon'
+    AND d.trans_subtype <> 'IC'
     and d.total <> 0
     GROUP BY t.TenderName";
+
+    $queryStoreCoupons = "
+        SELECT 
+            CASE 
+                WHEN h.description is NOT NULL THEN h.description
+                WHEN d.upc <> '0' THEN d.upc
+                ELSE 'Generic InStore Coupon'
+            END as TenderName,
+            -sum(d.total) as total, 
+            COUNT(d.total)
+        FROM $dlog AS d
+            LEFT JOIN houseCoupons AS h ON d.upc=concat('00499999', lpad(convert(h.coupID, char), 5, '0'))
+        WHERE d.tdate BETWEEN ? AND ?
+            AND d.trans_status <>'X'  
+            AND d.trans_type='T'
+            AND d.trans_subtype = 'IC'
+            and d.total <> 0
+        GROUP BY TenderName";
 
     $query3 = "SELECT c.salesCode,s.superID,sum(l.total) as total 
     FROM $dlog as l left join MasterSuperDepts AS s ON
@@ -248,7 +267,8 @@ if (!$output || isset($_REQUEST['recache'])){
     echo '<table><td width=120><u><font size=2><b>Type</b></u></font></td>
           <td width=120><u><font size=2><b>Amount</b></u></font></td>
           <td width=120><u><font size=2><b>Count</b></u></font></td></table>';
-    select_to_table($query2,$args,0,'ffffff');
+    select_to_table($query2,$args,0,'ffffff', true);
+    select_to_table($queryStoreCoupons,$args,0,'ffffff');
     echo '<br>';
     echo 'Sales';
     echo '<br>------------------------------';

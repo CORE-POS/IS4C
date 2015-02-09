@@ -167,6 +167,10 @@ tools/cron jobs/sprocs/etc actually do. They probably
     */
     public function logManyUpdates($upcs, $type='UNKNOWN', $user=false)
     {
+        if (count($upcs) == 0) {
+            // nothing to log
+            return true;
+        }
         $col_map = array(
             'upc' => 'p.upc',
             'description' => 'description',
@@ -214,7 +218,7 @@ tools/cron jobs/sprocs/etc actually do. They probably
         $prep = $this->connection->prepare($query);
         $res = $this->connection->execute($prep, $args);
 
-        return ($ret) ? true : false;
+        return ($res) ? true : false;
     }
 
     /* START ACCESSOR FUNCTIONS */

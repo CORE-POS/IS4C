@@ -114,10 +114,10 @@ class FanniePlugin
     */
     public function pluginUrl()
     {
-        global $FANNIE_URL;
+        $url = \FannieConfig::factory()->get('URL');
         $info = new \ReflectionClass($this);
 
-        return $FANNIE_URL.'modules/plugins2.0/'.basename(dirname($info->getFileName()));
+        return $url . 'modules/plugins2.0/'.basename(dirname($info->getFileName()));
     }
 
     /**
@@ -205,12 +205,12 @@ class FanniePlugin
     */
     public static function isEnabled($plugin)
     {
-        global $FANNIE_PLUGIN_LIST;
-        if (!is_array($FANNIE_PLUGIN_LIST)) {
+        $plugin_list = \FannieConfig::factory()->get('PLUGIN_LIST');
+        if (!is_array($plugin_list)) {
             return false;
         }
 
-        return (in_array($plugin, $FANNIE_PLUGIN_LIST)) ? true : false;
+        return (in_array($plugin, $plugin_list)) ? true : false;
     }
 
     /**

@@ -71,17 +71,32 @@ class FanniePage
 
     protected $error_text;
 
+    protected $config;
+
+    protected $logger;
+
     public function __construct()
     {
-        global $FANNIE_AUTH_DEFAULT, $FANNIE_COOP_ID;
-        if (isset($FANNIE_AUTH_DEFAULT) && !$this->must_authenticate) {
-            $this->must_authenticate = $FANNIE_AUTH_DEFAULT;
+        $auth_default = FannieConfig::config('AUTH_DEFAULT', false);
+        $coop_id = FannieConfig::config('COOP_ID');
+        if ($auth_default && !$this->must_authenticate) {
+            $this->must_authenticate = $auth_default;
         }
-        if (isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto') {
+        if (isset($coop_id) && $coop_id == 'WEFC_Toronto') {
             $this->auth_classes[] = 'admin';
         }
         /*
         */
+    }
+
+    public function setConfig(FannieConfig $fc)
+    {
+        $this->config = $fc;
+    }
+
+    public function setLogger(FannieLogger $fl)
+    {
+        $this->logger = $fl;
     }
 
     /**
@@ -104,7 +119,7 @@ class FanniePage
     */
     public function getHeader()
     {
-        global $FANNIE_URL;
+        $url = $this->config->get('URL');
         ob_start();
         $page_title = $this->title;
         $header = $this->header;
@@ -114,19 +129,20 @@ class FanniePage
             if (!$this->addBootstrap()) {
                 echo '<em>Warning: bootstrap does not appear to be installed. Try running composer update</em>';
             }
-            $this->addScript($FANNIE_URL . 'src/javascript/jquery-ui.js');
-            $this->addScript($FANNIE_URL . 'src/javascript/calculator.js');
-            $this->addCssFile($FANNIE_URL . 'src/javascript/jquery-ui.css?id=20140625');
-            $this->addCssFile($FANNIE_URL . 'src/css/configurable.php');
-            $this->addCssFile($FANNIE_URL . 'src/css/print.css');
+            $this->addScript($url . 'src/javascript/jquery-ui.js');
+            $this->addScript($url . 'src/javascript/calculator.js');
+            $this->addCssFile($url . 'src/javascript/jquery-ui.css?id=20140625');
+            $this->addCssFile($url . 'src/css/configurable.php');
+            $this->addCssFile($url . 'src/css/core.css');
+            $this->addCssFile($url . 'src/css/print.css');
             $this->add_onload_command('standardFieldMarkup();');
         } else {
             include(dirname(__FILE__) . '/../src/header.html');
         }
 
         if ($this->enable_linea) {
-            $this->addScript($FANNIE_URL . 'src/javascript/linea/cordova-2.2.0.js');
-            $this->addScript($FANNIE_URL . 'src/javascript/linea/ScannerLib-Linea-2.0.0.js');
+            $this->addScript($url . 'src/javascript/linea/cordova-2.2.0.js');
+            $this->addScript($url . 'src/javascript/linea/ScannerLib-Linea-2.0.0.js');
         }
 
         return ob_get_clean();
@@ -140,19 +156,13 @@ class FanniePage
     */
     public function addBootstrap()
     {
-        global $FANNIE_URL;
+        $url = $this->config->get('URL');
         $path1 = dirname(__FILE__) . '/../src/javascript/composer-components/';
         $path2 = dirname(__FILE__) . '/../src/javascript/';
         if (file_exists($path1 . 'bootstrap/js/bootstrap.min.js')) {
-            $this->addCssFile($FANNIE_URL . 'src/javascript/composer-components/bootstrap/css/bootstrap.min.css');
-            $this->addCssFile($FANNIE_URL . 'src/javascript/composer-components/bootstrap-default/css/bootstrap.min.css');
-            $this->addCssFile($FANNIE_URL . 'src/javascript/composer-components/bootstrap-default/css/bootstrap-theme.min.css');
-            $this->addScript($FANNIE_URL . 'src/javascript/composer-components/bootstrap/js/bootstrap.min.js');
+            $this->addScript($url . 'src/javascript/composer-components/bootstrap/js/bootstrap.min.js');
         } elseif (file_exists($path2 . 'bootstrap/js/bootstrap.min.js')) {
-            $this->addCssFile($FANNIE_URL . 'src/javascript/bootstrap/css/bootstrap.min.css');
-            $this->addCssFile($FANNIE_URL . 'src/javascript/bootstrap-default/css/bootstrap.min.css');
-            $this->addCssFile($FANNIE_URL . 'src/javascript/bootstrap-default/css/bootstrap-theme.min.css');
-            $this->addScript($FANNIE_URL . 'src/javascript/bootstrap/js/bootstrap.min.js');
+            $this->addScript($url . 'src/javascript/bootstrap/js/bootstrap.min.js');
         } else {
             return false; // bootstrap not found!
         }
@@ -167,13 +177,13 @@ class FanniePage
     */
     public function addJQuery()
     {
-        global $FANNIE_URL;
+        $url = $this->config->get('URL');
         $path1 = dirname(__FILE__) . '/../src/javascript/composer-components/';
         $path2 = dirname(__FILE__) . '/../src/javascript/';
         if (file_exists($path1 . 'jquery/jquery.min.js')) {
-            $this->addFirstScript($FANNIE_URL . 'src/javascript/composer-components/jquery/jquery.min.js');
+            $this->addFirstScript($url . 'src/javascript/composer-components/jquery/jquery.min.js');
         } elseif (file_exists($path2 . 'jquery.js')) {
-            $this->addFirstScript($FANNIE_URL . 'src/javascript/jquery.js');
+            $this->addFirstScript($url . 'src/javascript/jquery.js');
         } else {
             return false;
         }
@@ -192,16 +202,17 @@ class FanniePage
     */
     public function getFooter()
     {
-        global $FANNIE_ROOT, $FANNIE_AUTH_ENABLED, $FANNIE_URL;
+        $FANNIE_AUTH_ENABLED = $this->config->get('AUTH_ENABLED');
+        $FANNIE_URL = $this->config->get('URL');
         ob_start();
         if ($this->themed) {
-            include($FANNIE_ROOT.'src/footer.bootstrap.html');
+            include(dirname(__FILE__) . '/../src/footer.bootstrap.html');
             $modal = $this->helpModal();
             if ($modal) {
                 echo "\n" . $modal . "\n";
             }
         } else {
-            include($FANNIE_ROOT.'src/footer.html');
+            include(dirname(__FILE__) . '/../src/footer.html');
         }
 
         return ob_get_clean();
@@ -369,9 +380,8 @@ function enableLinea(selector, callback)
     */
     public function loginRedirect()
     {
-        global $FANNIE_URL;
         $redirect = $_SERVER['REQUEST_URI'];
-        $url = $FANNIE_URL.'auth/ui/loginform.php';
+        $url = $this->config->get('URL') . 'auth/ui/loginform.php';
         header('Location: '.$url.'?redirect='.$redirect);
     }
 
@@ -436,11 +446,11 @@ function enableLinea(selector, callback)
     */
     public function tableExistsReadinessCheck($database, $table)
     {
-        global $FANNIE_URL;
+        $url = $this->config->get('URL');
         $dbc = FannieDB::get($database);
         if (!$dbc->tableExists($table)) {
             $this->error_text = "<p>Missing table {$database}.{$table}
-                            <br /><a href=\"{$FANNIE_URL}install/\">Click Here</a> to
+                            <br /><a href=\"{$url}install/\">Click Here</a> to
                             create necessary tables.</p>";
             return false;
         }
@@ -460,7 +470,7 @@ function enableLinea(selector, callback)
     */
     public function tableHasColumnReadinessCheck($database, $table, $column)
     {
-        global $FANNIE_URL;
+        $url = $this->config->get('URL');
         if ($this->tableExistsReadinessCheck($database, $table) === false) {
             return false;
         }
@@ -469,7 +479,7 @@ function enableLinea(selector, callback)
         $definition = $dbc->tableDefinition($table);
         if (!isset($definition[$column])) {
             $this->error_text = "<p>Table {$database}.{$table} needs to be updated.
-                            <br /><a href=\"{$FANNIE_URL}install/InstallUpdatesPage.php\">Click Here</a> to
+                            <br /><a href=\"{$url}install/InstallUpdatesPage.php\">Click Here</a> to
                             run updates.</p>";
             return false;
         }
@@ -527,7 +537,9 @@ function enableLinea(selector, callback)
     */
     public function drawPage()
     {
-        global $FANNIE_WINDOW_DRESSING;
+        if (!($this->config instanceof FannieConfig)) {
+            $this->config = FannieConfig::factory();
+        }
 
         if (!$this->checkAuth() && $this->must_authenticate) {
             $this->loginRedirect();
@@ -538,7 +550,7 @@ function enableLinea(selector, callback)
               Global setting overrides default behavior
               to force the menu to appear.
             */
-            if (isset($FANNIE_WINDOW_DRESSING) && $FANNIE_WINDOW_DRESSING) {
+            if ($this->config->get('WINDOW_DRESSING')) {
                 $this->window_dressing = true;
             }
             

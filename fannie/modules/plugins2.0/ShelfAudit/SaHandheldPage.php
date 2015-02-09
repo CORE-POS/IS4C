@@ -135,25 +135,7 @@ class SaHandheldPage extends FanniePage {
     function css_content(){
         ob_start();
         ?>
-input.addButton {
-    width: 60px;
-    height: 50px;
-    background-color: #090;
-    color: #fff;
-    font-weight: bold;
-    font-size: 135%;
-}
-input.subButton {
-    width: 60px;
-    height: 50px;
-    background-color: #900;
-    color: #fff;
-    font-weight: bold;
-    font-size: 135%;
-}
 input#cur_qty {
-    width: 60px;
-    height: 50px;
     font-size: 135%;
     font-weight: bold;
 }
@@ -185,6 +167,9 @@ function update_qty(amt){
         cur = cur+amt;
     $('#cur_qty').val(cur);
 
+    cur += Number($('#old-qty').html());
+    $('#live-qty').html(cur);
+
     // save new quantity, return cursor to upc input
     var args = 'action=save&upc='+$('#cur_upc').val()+'&qty='+cur;
     $.ajax({
@@ -203,7 +188,8 @@ function update_qty(amt){
 }
 
 function qty_typed(ev){
-    var cur = Number($('#cur_qty').val());
+    var cur = Number($('#cur_qty').val()) + Number($('#old-qty').html());
+    $('#live-qty').html(cur);
     // save new quantity, return cursor to upc input
     var args = 'action=save&upc='+$('#cur_upc').val()+'&qty='+cur;
     $.ajax({
@@ -222,6 +208,17 @@ function qty_typed(ev){
     else if (ev.keyCode >= 37 && ev.keyCode <= 40){
         $('#upc_in').focus();
         paint_focus('upc_in');
+    }
+}
+
+function doubleBeep()
+{
+    if (typeof cordova.exec != 'function') {
+        setTimeout('doubleBeep()', 500);
+    } else {
+        if (Device) {
+            Device.playSound([500, 100, 0, 100, 1000, 100, 0, 100, 500, 100]);
+        }
     }
 }
 
@@ -256,63 +253,59 @@ ScannerDevice.registerListener(Device);
         ob_start();
         $elem = '#upc_in';
         if (isset($this->current_item_data['upc']) && isset($this->current_item_data['desc'])) $elem = '#cur_qty';
-        $this->add_onload_command('$(\'#upc_in\').focus();');
+        $this->add_onload_command('$(\'' . $elem . '\').focus();');
         ?>
-<html>
-<head>
-    <title>Scan Inventory</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body onload="$('<?php echo $elem; ?>').focus();">
 <form action="SaHandheldPage.php" method="get" id="upcScanForm">
-<div style="float: left;">
 <a href="SaMenuPage.php">Menu</a><br />
-<b>UPC</b>: <input type="number" size="10" name="upc_in" id="upc_in" 
-onfocus="paint_focus('upc_in');"
-<?php echo ($elem=='#upc_in')?'class="focused"':''; ?> 
-/>
+<div class="form-group form-inline">
+    <div class="input-group">
+        <label class="input-group-addon">UPC</label>
+        <input type="number" size="10" name="upc_in" id="upc_in" 
+            onfocus="paint_focus('upc_in');"
+            <?php echo ($elem=='#upc_in')?'class="focused form-control"':'class="form-control"'; ?> 
+        />
+    </div>
+    <button type="submit" class="btn btn-success" id="goBtn">Go</button>
 </div>
-<div style="float: left;">
-<input type="submit" value="Go" class="addButton" id="goBtn" />
-</div>
-<div style="clear:left;"></div>
 </form>
-<hr />
-        <?php
-        if (isset($this->current_item_data['upc'])){
-            if (!isset($this->current_item_data['desc'])){
-                echo '<div class="alert alert-danger">Item not found (';
-                echo $this->current_item_data['upc'];
-                echo ')</div>';
-            } else {
-                echo '<p>';
-                echo '<span class="itemInfo">';
-                echo $this->current_item_data['upc'];
-                echo ' ';
-                echo $this->current_item_data['desc'];
-                echo '</span>';
-                echo '<br />';
-                printf('<input type="number" size="3" value="%.2f" %s
-                    onfocus="paint_focus(\'cur_qty\');$(this).select();" 
-                    onkeyup="qty_typed(event);" id="cur_qty" />
-                    <input type="hidden" id="cur_upc" value="%s" />',
-                    $this->current_item_data['qty'],
-                    (($elem=='#cur_qty')?'class="focused"':''),
-                    $this->current_item_data['upc']
-                );
-                printf('<input type="submit" value="+%d" onclick="update_qty(%d);" class="addButton" />
-                    <input type="submit" value="-%d" onclick="update_qty(%d);" class="subButton" />',
-                    1,1,1,-1);
-                $used = array(1=>True);
-                foreach($this->current_item_data['case_sizes'] as $s){
-                    if (isset($used[$s])) continue;
-                    printf('<input type="submit" value="+%d" onclick="update_qty(%d)" class="addButton" />
-                        <input type="submit" value="-%d" onclick="update_qty(%d)" class="subButton" />',
-                        $s,$s,$s,-1*$s);
-                }
-                echo '</p>';
-            }
+<?php
+if (isset($this->current_item_data['upc'])){
+    if (!isset($this->current_item_data['desc'])){
+        echo '<div class="alert alert-danger">Item not found (';
+        echo $this->current_item_data['upc'];
+        echo ')</div>';
+        $this->add_onload_command('doubleBeep();');
+    } else {
+        echo '<p>';
+        echo $this->current_item_data['upc'];
+        echo ' ';
+        echo $this->current_item_data['desc'];
+        echo '<br />';
+        echo '<strong>Current Qty</strong>: '
+            . '<span id="old-qty" class="collapse">' . $this->current_item_data['qty'] . '</span>'
+            . '<span id="live-qty">' . $this->current_item_data['qty'] . '</span>';
+        echo '</p>';
+        echo '<div class="form-group form-inline">';
+        printf('<input type="number" min="-99999" max="99999" step="0.01" %s
+            onfocus="paint_focus(\'cur_qty\');$(this).select();" 
+            onkeyup="qty_typed(event);" id="cur_qty" />
+            <input type="hidden" id="cur_upc" value="%s" />',
+            (($elem=='#cur_qty')?'class="focused form-control input-lg"':'class="form-control input-lg"'),
+            $this->current_item_data['upc']
+        );
+        printf('<button type="button" onclick="update_qty(%d);" class="btn btn-success btn-lg">+%d</button>
+            <button type="button" onclick="update_qty(%d);" class="btn btn-danger btn-lg">-%d</button>',
+            1,1,-1,1);
+        $used = array(1=>true);
+        foreach($this->current_item_data['case_sizes'] as $s){
+            if (isset($used[$s])) continue;
+            printf('<button type="button" onclick="update_qty(%d)" class="btn btn-success btn-lg">+%d</button>
+                <button type="button" onclick="update_qty(%d)" class="btn btn-danger btn-lg">-%d</button>',
+                $s,$s,-1*$s,$s);
         }
+        echo '</div>';
+    }
+}
         return ob_get_clean();
     }
 }

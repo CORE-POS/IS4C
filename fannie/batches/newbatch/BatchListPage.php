@@ -362,13 +362,13 @@ class BatchListPage extends FannieRESTfulPage
             $ret .= "All<br />";
         }
 
-        $ret .= '<table class="table">';
+        $ret .= '<table class="table tablesorter"><thead>';
         $ret .= "<tr><th bgcolor=$colors[$c]>Batch Name</th>";
         $ret .= "<th bgcolor=$colors[$c]>Type</th>";
         $ret .= "<th bgcolor=$colors[$c]>Start date</th>";
         $ret .= "<th bgcolor=$colors[$c]>End date</th>";
         $ret .= "<th bgcolor=$colors[$c]>Owner/Super Dept.</th>";
-        $ret .= "<th colspan=\"3\">&nbsp;</th></tr>";
+        $ret .= "<th colspan=\"3\">&nbsp;</th></tr></thead><tbody>";
         
         // owner column might be in different places
         // depending if schema is up to date
@@ -425,14 +425,29 @@ class BatchListPage extends FannieRESTfulPage
         $count = 0;
         $lastBatchID = 0;
         while ($fetchW = $dbc->fetch_array($fetchR)) {
+            /**
+              strtotime() and date() are not reciprocal functions
+              date('Y-m-d', strtotime('0000-00-00')) results in
+              -0001-11-30 instead of the expected 0000-00-00
+            */
+            if ($fetchW['startDate'] == '0000-00-00 00:00:00') {
+                $fetchW['startDate'] = '';
+            }
+            if ($fetchW['endDate'] == '0000-00-00 00:00:00') {
+                $fetchW['endDate'] = '';
+            }
             $c = ($c + 1) % 2;
             $id = $fetchW['batchID'];
             $ret .= '<tr id="batchRow' . $fetchW['batchID'] . '" class="batchRow">';
             $ret .= "<td bgcolor=$colors[$c] id=name{$id}><a id=namelink{$id} 
                 href=\"EditBatchPage.php?id={$id}\">{$fetchW['batchName']}</a></td>";
             $ret .= "<td bgcolor=$colors[$c] id=type{$id}>" . $fetchW['typeDesc'] . "</td>";
-            $ret .= "<td bgcolor=$colors[$c] id=startdate{$id}>" . date('Y-m-d', strtotime($fetchW['startDate'])) . "</td>";
-            $ret .= "<td bgcolor=$colors[$c] id=enddate{$id}>" . date('Y-m-d', strtotime($fetchW['endDate'])) . "</td>";
+            $ret .= "<td bgcolor=$colors[$c] id=startdate{$id}>" 
+                . (strtotime($fetchW['startDate']) ? date('Y-m-d', strtotime($fetchW['startDate'])) : '')
+                . "</td>";
+            $ret .= "<td bgcolor=$colors[$c] id=enddate{$id}>" 
+                . (strtotime($fetchW['endDate']) ? date('Y-m-d', strtotime($fetchW['endDate'])) : '')
+                . "</td>";
             $ret .= "<td bgcolor=$colors[$c] id=owner{$id}>{$fetchW['owner']}</td>";
             $ret .= "<td bgcolor=$colors[$c] id=edit{$id}>
                 <a href=\"\" onclick=\"editBatchLine({$id}); return false;\" class=\"batchEditLink\">
@@ -451,7 +466,7 @@ class BatchListPage extends FannieRESTfulPage
             $lastBatchID = $fetchW[4];
         }
         
-        $ret .= "</table>";
+        $ret .= "</tbody></table>";
 
         if (is_numeric($maxBatchID)) {
             $ret .= sprintf("<a href=\"\" 
@@ -474,6 +489,7 @@ class BatchListPage extends FannieRESTfulPage
     {
         global $FANNIE_URL;
         $this->add_script('list.js');
+        $this->add_script('../../src/javascript/tablesorter/jquery.tablesorter.min.js');
         $this->add_css_file('index.css');
         ob_start();
         ?>
@@ -489,6 +505,7 @@ class BatchListPage extends FannieRESTfulPage
         $ret = ob_get_clean();
     
         $ret .= "<input type=hidden id=buttonimgpath value=\"{$FANNIE_URL}src/img/buttons/\" />";
+        $this->add_onload_command("\$('.tablesorter').tablesorter();");
 
         return $ret;
     }

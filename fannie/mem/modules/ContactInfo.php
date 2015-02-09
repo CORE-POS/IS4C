@@ -152,14 +152,24 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
         }
         if (FormLib::get_form_value('ContactInfo_addr2','') !== '')
             $MI_FIELDS['street'] .= "\n".FormLib::get_form_value('ContactInfo_addr2');
-        $test1 = MeminfoModel::update($memNum, $MI_FIELDS);
 
-        $CUST_FIELDS = array(
-            'personNum' => array(1),
-            'FirstName' => array(FormLib::get_form_value('ContactInfo_fn')),
-            'LastName' => array(FormLib::get_form_value('ContactInfo_ln'))
-        );
-        $test2 = CustdataModel::update($memNum, $CUST_FIELDS);
+        $meminfo = new MeminfoModel($dbc);
+        $meminfo->card_no($memNum);
+        $meminfo->street($MI_FIELDS['street']);
+        $meminfo->city($MI_FIELDS['city']);
+        $meminfo->state($MI_FIELDS['state']);
+        $meminfo->phone($MI_FIELDS['phone']);
+        $meminfo->email_2($MI_FIELDS['email_2']);
+        $meminfo->email_1($MI_FIELDS['email_1']);
+        $meminfo->ads_OK($MI_FIELDS['ads_OK']);
+        $test1 = $meminfo->save();
+
+        $custdata = new CustdataModel($dbc);
+        $custdata->CardNo($memNum);
+        $custdata->personNum(1);
+        $custdata->FirstName(FormLib::get('ContactInfo_fn'));
+        $custdata->LastName(FormLib::get('ContactInfo_ln'));
+        $test2 = $custdata->save();
 
         if ($test1 === False || $test2 === False)
             return "Error: problem saving Contact Information<br />";
@@ -185,7 +195,7 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
         return '
             <div class="row form-group form-inline">
                 <label>First Name</label>
-                <input type="text: name="ContactInfo_fn"
+                <input type="text" name="ContactInfo_fn"
                     id="s_fn" class="form-control" />
                 <label>Last Name</label> 
                 <input type="text" name="ContactInfo_ln" id="s_ln" 
@@ -224,7 +234,8 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
         );
     }
 
-    function getSearchResults(){
+    function getSearchResults()
+    {
         $dbc = $this->db();
 
         $fn = FormLib::get_form_value('ContactInfo_fn');
@@ -268,10 +279,11 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
 
         $ret = array();
         if (!empty($where)){
+            echo $where;
             $q = $dbc->prepare_statement("SELECT CardNo,FirstName,LastName FROM
                 custdata as c LEFT JOIN meminfo AS m
                 ON c.CardNo = m.card_no
-                WHERE 1=1 $where ORDER BY m.card_no");
+                WHERE 1=1 $where ORDER BY m.card_no, c.personNum DESC");
             $r = $dbc->exec_statement($q,$args);
             if ($dbc->num_rows($r) > 0){
                 while($w = $dbc->fetch_row($r)){

@@ -36,10 +36,10 @@ class VendorItemsModel extends BasicModel
     'brand' => array('type'=>'VARCHAR(50)'),
     'description' => array('type'=>'VARCHAR(50)'),
     'size' => array('type'=>'VARCHAR(25)'),
-    'units' => array('type'=>'INT'),
+    'units' => array('type'=>'DOUBLE', 'default'=>1),
     'cost' => array('type'=>'MONEY'),
     'saleCost' => array('type'=>'MONEY', 'default'=>0),
-    'vendorDept' => array('type'=>'INT'),
+    'vendorDept' => array('type'=>'INT', 'default'=>0),
     'vendorID' => array('type'=>'INT','index'=>True,'primary_key'=>True)
     );
 

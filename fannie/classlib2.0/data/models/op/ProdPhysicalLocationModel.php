@@ -35,7 +35,7 @@ class ProdPhysicalLocationModel extends BasicModel
     'store_id' => array('type'=>'SMALLINT', 'default'=>0),
     'section' => array('type'=>'SMALLINT', 'default'=>0),
     'subsection' => array('type'=>'SMALLINT', 'default'=>0),
-    'shelfset' => array('type'=>'SMALLINT', 'default'=>0),
+    'shelf_set' => array('type'=>'SMALLINT', 'default'=>0),
     'shelf' => array('type'=>'SMALLINT', 'default'=>0),
     'location' => array('type'=>'INT', 'default'=>0),
     );
@@ -230,13 +230,13 @@ Location is the horizontal location on the shelf.
         return $this;
     }
 
-    public function shelfset()
+    public function shelf_set()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["shelfset"])) {
-                return $this->instance["shelfset"];
-            } else if (isset($this->columns["shelfset"]["default"])) {
-                return $this->columns["shelfset"]["default"];
+            if(isset($this->instance["shelf_set"])) {
+                return $this->instance["shelf_set"];
+            } else if (isset($this->columns["shelf_set"]["default"])) {
+                return $this->columns["shelf_set"]["default"];
             } else {
                 return null;
             }
@@ -247,7 +247,7 @@ Location is the horizontal location on the shelf.
                 throw new Exception('Invalid operator: ' . func_get_arg(1));
             }
             $filter = array(
-                'left' => 'shelfset',
+                'left' => 'shelf_set',
                 'right' => $value,
                 'op' => $op,
                 'rightIsLiteral' => false,
@@ -257,12 +257,12 @@ Location is the horizontal location on the shelf.
             }
             $this->filters[] = $filter;
         } else {
-            if (!isset($this->instance["shelfset"]) || $this->instance["shelfset"] != func_get_args(0)) {
-                if (!isset($this->columns["shelfset"]["ignore_updates"]) || $this->columns["shelfset"]["ignore_updates"] == false) {
+            if (!isset($this->instance["shelf_set"]) || $this->instance["shelf_set"] != func_get_args(0)) {
+                if (!isset($this->columns["shelf_set"]["ignore_updates"]) || $this->columns["shelf_set"]["ignore_updates"] == false) {
                     $this->record_changed = true;
                 }
             }
-            $this->instance["shelfset"] = func_get_arg(0);
+            $this->instance["shelf_set"] = func_get_arg(0);
         }
         return $this;
     }

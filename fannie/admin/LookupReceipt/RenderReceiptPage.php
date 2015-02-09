@@ -156,7 +156,8 @@ class RenderReceiptPage extends FanniePage {
                     then '' 
             end
             as Status,
-            datetime, register_no, emp_no, trans_no, card_no as memberID
+            datetime, register_no, emp_no, trans_no, card_no as memberID,
+            upc
             FROM $table 
             WHERE datetime BETWEEN ? AND ? 
             AND register_no=? AND emp_no=? and trans_no=?
@@ -222,8 +223,11 @@ class RenderReceiptPage extends FanniePage {
         $ret .= "<tr><td align=center colspan=4>Cashier:&nbsp;$emp_no</td></tr>";
         $ret .= "<tr><td colspan=4>&nbsp;</td></tr>";
         $ret .= "<tr align left>\n";
-        foreach($rows as $row){
+        foreach ($rows as $row) {
             $ret .= "<tr><td align=left>";
+            if ($row['description'] == 'BADSCAN') {
+                $row['description'] .= ' (' . $row['upc'] . ')';
+            }
             $ret .= $row["description"]; 
             $ret .= "</td>";
             $ret .= "<td align=right>";
@@ -260,7 +264,7 @@ class RenderReceiptPage extends FanniePage {
             q.refNum
             FROM {$FANNIE_TRANS_DB}{$dbconn}efsnetRequest AS q LEFT JOIN 
             {$FANNIE_TRANS_DB}{$dbconn}efsnetResponse AS r
-            ON q.refNum=r.refNum  WHERE q.date=? AND
+            ON q.refNum=r.refNum  AND q.date=r.date WHERE q.date=? AND
             q.cashierNo=? AND q.laneNo=? AND q.transNo=?
             and commErr=0
             UNION ALL 
@@ -276,7 +280,8 @@ class RenderReceiptPage extends FanniePage {
               and q.transNo=m.transNo
               and q.transID=m.transID
             join {$FANNIE_TRANS_DB}{$dbconn}efsnetResponse AS r
-            ON q.refNum=r.refNum  WHERE q.date=? AND
+            ON q.refNum=r.refNum  AND q.date=r.date 
+            WHERE q.date=? AND
             q.cashierNo=? AND q.laneNo=? AND q.transNo=?
             and m.validResponse=1 and 
             (m.xResponseCode=0 or m.xResultMessage like '%APPROVE%')

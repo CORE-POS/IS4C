@@ -23,11 +23,8 @@
 
 namespace COREPOS\Fannie\API {
 
-if (!class_exists('\FanniePage')) {
-    include_once(dirname(__FILE__).'/FanniePage.php');
-}
-if (!class_exists('\FormLib')) {
-    include_once(dirname(__FILE__).'/lib/FormLib.php');
+if (!class_exists('\FannieAPI')) {
+    include_once(dirname(__FILE__).'/FannieAPI.php');
 }
 if (!class_exists('\Spreadsheet_Excel_Reader')) {
     include_once(dirname(__FILE__).'/../src/Excel/xls_read/reader.php');
@@ -112,8 +109,6 @@ class FannieUploadPage extends \FanniePage
     */
     public function preprocess()
     {
-        global $FANNIE_URL, $FANNIE_OP_DB;
-
         $col_select = \FormLib::get_form_value('cs','');
 
         if (isset($_FILES[$this->upload_field_name])) {
@@ -124,7 +119,7 @@ class FannieUploadPage extends \FanniePage
                 if (!$this->themed) {
                     $this->window_dressing = false;
                 }
-                $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
+                $this->add_script($this->config->get('URL') . 'src/javascript/jquery.js');
             } else {
                 $this->content_function = 'uploadError';
             }
@@ -281,7 +276,7 @@ class FannieUploadPage extends \FanniePage
             } else { // selected columns were invalid; redisplay preview screen
                 $this->content_function = 'basicPreview';
                 $this->window_dressing = False;
-                $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
+                $this->add_script($this->config->get('URL') . 'src/javascript/jquery.js');
             }
         }
 

@@ -21,16 +21,15 @@
 
 *********************************************************************************/
 
-include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(dirname(__FILE__) . '/../../classlib2.0/FannieAPI.php');
 }
 if (!function_exists('checkLogin')) {
     require('../login.php');
 }
 
-class AuthClassesPage extends FannieRESTfulPage {
-
+class AuthClassesPage extends FannieRESTfulPage 
+{
     protected $must_authenticate = true;
     protected $auth_classes = array('admin');
     protected $title = 'Fannie : Auth : Classes';
@@ -53,8 +52,7 @@ class AuthClassesPage extends FannieRESTfulPage {
 
     public function post_id_handler()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
         $notes = FormLib::get('notes');
         $checkP = $dbc->prepare('
             SELECT auth_class

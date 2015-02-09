@@ -66,7 +66,7 @@ class ProductsModel extends BasicModel
     'tareweight'=>array('type'=>'DOUBLE'),
     'discount'=>array('type'=>'SMALLINT'),
     'discounttype'=>array('type'=>'TINYINT'),
-    'line_item_discountable'=>array('type'=>'TINYINT', 'default'=>0),
+    'line_item_discountable'=>array('type'=>'TINYINT', 'default'=>1),
     'unitofmeasure'=>array('type'=>'VARCHAR(15)'),
     'wicable'=>array('type'=>'SMALLINT'),
     'qttyEnforced'=>array('type'=>'TINYINT'),

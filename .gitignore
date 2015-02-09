@@ -33,3 +33,5 @@ fannie/locale/*.pot
 *.dll
 *.exe
 fannie/INSTALL
+vendor
+composer.lock

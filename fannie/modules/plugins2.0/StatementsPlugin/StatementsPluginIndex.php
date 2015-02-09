@@ -108,11 +108,12 @@ class StatementsPluginIndex extends FannieRESTfulPage
 
         $query = 'SELECT m.card_no,
                     c.LastName,
-                    ' . $dbc->monthdiff($dbc->now(), 'm.start_date') . ' AS monthdiff
+                    ' . $dbc->monthdiff($dbc->now(), 'h.mostRecent') . ' AS monthdiff
                   FROM memDates AS m
                     INNER JOIN custdata AS c ON m.card_no=c.CardNo AND c.personNum=1
                     INNER JOIN ' . $FANNIE_TRANS_DB . $dbc->sep() . 'equity_live_balance AS e ON m.card_no=e.memnum
-                  WHERE m.start_date >= ?
+                    INNER JOIN ' . $FANNIE_TRANS_DB . $dbc->sep() . 'equity_history_sum AS h ON m.card_no=h.card_no
+                  WHERE h.mostRecent >= ?
                     AND e.payments >= 100';
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, array(date('Y-m-d', $cutoff)));

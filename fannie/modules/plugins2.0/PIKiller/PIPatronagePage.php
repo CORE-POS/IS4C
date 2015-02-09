@@ -61,6 +61,10 @@ class PIPatronagePage extends PIKillerPage {
                 $reprint_link = sprintf('<a href="../../../mem/patronage/PatronageChecks.php?reprint=1&mem=%d&fy=%d">Reprint</a>',
                     $obj->cardno(), $obj->FY());
             }
+            $cashed_stamp = strtotime($obj->cashed_date());
+            if ($obj->cashed_date() != '' && $cashed_stamp) {
+                $obj->cashed_date(date('Y-m-d', $cashed_stamp));
+            }
             printf('<tr>
                 <td>%d</th>
                 <td>%.2f</td>
@@ -84,7 +88,7 @@ class PIPatronagePage extends PIKillerPage {
                 $obj->cash_pat(),
                 $obj->equit_pat(),
                 ($obj->check_number() == '' ? 'n/a' : $obj->check_number()),
-                ($obj->cashed_date() == '' ? 'n/a' : $obj->cashed_date),
+                ($obj->cashed_date() == '' ? 'n/a' : $obj->cashed_date()),
                 ($obj->cashed_here() == 1 ? 'Yes' : 'No'),
                 $reprint_link
             );

@@ -39,10 +39,7 @@ class ArHistoryTodaySumModel extends ViewModel
 
     public function definition()
     {
-        include(dirname(__FILE__) . '/../../../../config.php');
-        if (!isset($FANNIE_AR_DEPARTMENTS)) {
-            $FANNIE_AR_DEPARTMENTS = '';
-        }
+        $FANNIE_AR_DEPARTMENTS = FannieConfig::config('AR_DEPARTMENTS', '');
         $ret = preg_match_all('/[0-9]+/', $FANNIE_AR_DEPARTMENTS, $depts);
         if ($ret == 0) {
             $depts = array(-999);

@@ -43,6 +43,9 @@ class EfsnetRequestModModel extends BasicModel
     'origTransactionID' => array('type'=>'VARCHAR(12)'),
     'mode' => array('type'=>'VARCHAR(32)'),
     'altRoute' => array('type'=>'TINYINT'),
+    'seconds' => array('type'=>'FLOAT'),
+    'commErr' => array('type'=>'INT'),
+    'httpCode' => array('type'=>'INT'),
     'validResponse' => array('type'=>'SMALLINT'),
     'xResponseCode' => array('type'=>'VARCHAR(4)'),
     'xResultCode' => array('type'=>'VARCHAR(8)'),
@@ -513,6 +516,117 @@ depends what the gateway returns.
                 }
             }
             $this->instance["altRoute"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function seconds()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["seconds"])) {
+                return $this->instance["seconds"];
+            } else if (isset($this->columns["seconds"]["default"])) {
+                return $this->columns["seconds"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'seconds',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["seconds"]) || $this->instance["seconds"] != func_get_args(0)) {
+                if (!isset($this->columns["seconds"]["ignore_updates"]) || $this->columns["seconds"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["seconds"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function commErr()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["commErr"])) {
+                return $this->instance["commErr"];
+            } else if (isset($this->columns["commErr"]["default"])) {
+                return $this->columns["commErr"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'commErr',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["commErr"]) || $this->instance["commErr"] != func_get_args(0)) {
+                if (!isset($this->columns["commErr"]["ignore_updates"]) || $this->columns["commErr"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["commErr"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function httpCode()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["httpCode"])) {
+                return $this->instance["httpCode"];
+            } else if (isset($this->columns["httpCode"]["default"])) {
+                return $this->columns["httpCode"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'httpCode',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["httpCode"]) || $this->instance["httpCode"] != func_get_args(0)) {
+                if (!isset($this->columns["httpCode"]["ignore_updates"]) || $this->columns["httpCode"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["httpCode"] = func_get_arg(0);
         }
         return $this;
     }

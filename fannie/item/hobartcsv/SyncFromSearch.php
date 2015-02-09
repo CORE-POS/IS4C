@@ -210,6 +210,7 @@ class SyncFromSearch extends FannieRESTfulPage
         }
         if ($model->weight() == 1) {
             $item_info['Type'] = 'Fixed Weight';
+            $item_info['ByCount'] = 1;
         } else {
             $item_info['Type'] = 'Random Weight';
         }

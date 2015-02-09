@@ -21,11 +21,10 @@
 
 *********************************************************************************/
 
-require(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(dirname(__FILE__) . '/../classlib2.0/FannieAPI.php');
 }
-if (!function_exists('addProductAllLanes')) {
+if (!function_exists('updateProductAllLanes')) {
     include('laneUpdates.php');
 }
 
@@ -41,7 +40,7 @@ class ItemEditorPage extends FanniePage
 
     function preprocess()
     {
-        global $FANNIE_PRODUCT_MODULES;
+        $FANNIE_PRODUCT_MODULES = $this->config->get('PRODUCT_MODULES');
         if (!is_array($FANNIE_PRODUCT_MODULES)) {
             $FANNIE_PRODUCT_MODULES = array('BaseItemModule' => array('seq'=>0, 'show'=>1, 'expand'=>1));
         }
@@ -113,7 +112,7 @@ class ItemEditorPage extends FanniePage
 
     function search_form()
     {
-        global $FANNIE_URL;
+        $FANNIE_URL = $this->config->get('URL');
         $ret = '';
         if (!empty($this->msgs)) {
             $ret .= '<blockquote style="border:solid 1px black;">';
@@ -136,7 +135,13 @@ class ItemEditorPage extends FanniePage
             . '</div></div>';
 
         $ret .= '<p><button name=searchBtn type=submit
-                    class="btn btn-default">Go</button></p>';
+                    class="btn btn-default">Go</button>
+                 &nbsp;&nbsp;&nbsp;&nbsp;
+                 <label>
+                    <input type="checkbox" name="inUse" value="1" />
+                    Include items that are not inUse
+                 </label>
+                 </p>';
         $ret .= '</form>';
         $ret .= '<p><a href="AdvancedItemSearch.php">' . _('Advanced Search') . '</a>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
@@ -160,10 +165,10 @@ class ItemEditorPage extends FanniePage
 
     function search_results()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
         $upc = FormLib::get_form_value('searchupc');
         $numType = FormLib::get_form_value('ntype','UPC');
+        $inUseFlag = FormLib::get('inUse', false);
 
         $query = "";
         $args = array();
@@ -176,6 +181,9 @@ class ItemEditorPage extends FanniePage
                         left join prodExtra as x on p.upc=x.upc 
                         WHERE v.sku LIKE ?";
                     $args[] = '%'.$upc;
+                    if (!$inUseFlag) {
+                        $query .= ' AND inUse=1 ';
+                    }
                     break;
                 case 'Brand Prefix':
                     $query = "SELECT p.*,x.distributor,p.brand AS manufacturer 
@@ -184,6 +192,9 @@ class ItemEditorPage extends FanniePage
                         WHERE p.upc like ?
                         ORDER BY p.upc";
                     $args[] = '%'.$upc.'%';
+                    if (!$inUseFlag) {
+                        $query .= ' AND inUse=1 ';
+                    }
                     break;
                 case 'UPC':
                 default:
@@ -200,11 +211,15 @@ class ItemEditorPage extends FanniePage
             $query = "SELECT p.*,x.distributor,p.brand AS manufacturer 
                 FROM products AS p LEFT JOIN 
                 prodExtra AS x ON p.upc=x.upc
-                WHERE description LIKE ?
-                ORDER BY description";
+                WHERE description LIKE ? ";
+            if (!$inUseFlag) {
+                $query .= ' AND inUse=1 ';
+            }
+            $query .= " ORDER BY description";
             $args[] = '%'.$upc.'%';    
         }
 
+        $query = $dbc->addSelectLimit($query, 500);
         $prep = $dbc->prepare_statement($query);
         $result = $dbc->exec_statement($query,$args);
 
@@ -264,7 +279,7 @@ class ItemEditorPage extends FanniePage
 
     function multiple_results($results)
     {
-        global $FANNIE_URL;
+        $FANNIE_URL = $this->config->get('URL');
         $ret = '<table id="itemSearchResults" class="tablesorter">';
         $ret .= '<thead><tr>
             <th>UPC</th><th>Description</th><th>Brand</th><th>Reg. Price</th><th>Sale Price</th><th>Modified</th>
@@ -310,7 +325,8 @@ class ItemEditorPage extends FanniePage
 
     function edit_form($upc,$isNew)
     {
-        global $FANNIE_PRODUCT_MODULES, $FANNIE_URL;
+        $FANNIE_PRODUCT_MODULES = $this->config->get('PRODUCT_MODULES');
+        $FANNIE_URL = $this->config->get('URL');
         $shown = array();
 
         $this->add_script('autocomplete.js');
@@ -384,6 +400,9 @@ class ItemEditorPage extends FanniePage
 
                     $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
                     $ret .= '<a class="iframe fancyboxLink" href="'.$FANNIE_URL.'item/addShelfTag.php?upc='.$upc.'" title="Create Shelf Tag">Shelf Tag</a>';
+
+                    $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+                    $ret .=  '<a href="' . $FANNIE_URL . 'item/CloneItemPage.php?id=' . $upc . '" title="Clone Item">Clone Item</a>';
                 }
                 $ret .= '</p>';
             }
@@ -394,7 +413,7 @@ class ItemEditorPage extends FanniePage
         $ret .= '</div>'; // close fluid-container
 
         if (isset($shown['BaseItemModule'])) {
-            $this->add_onload_command("bindAutoComplete('#brand_field', '$ws', 'brand');\n");
+            $this->add_onload_command("bindAutoComplete('#brand-field', '$ws', 'brand');\n");
             $this->add_onload_command("bindAutoComplete('#vendor_field', '$ws', 'vendor');\n");
             $this->add_onload_command("addVendorDialog();\n");
         }
@@ -429,7 +448,8 @@ class ItemEditorPage extends FanniePage
 
     function save_item($isNew)
     {
-        global $FANNIE_OP_DB, $FANNIE_PRODUCT_MODULES;
+        $FANNIE_PRODUCT_MODULES = $this->config->get('PRODUCT_MODULES');
+        $FANNIE_URL = $this->config->get('URL');
 
         $upc = FormLib::get_form_value('upc','');
         if ($upc === '' || !is_numeric($upc)) {
@@ -454,7 +474,7 @@ class ItemEditorPage extends FanniePage
         }
 
         /* push updates to the lanes */
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
         updateProductAllLanes($upc);
 
         if ($audited) {

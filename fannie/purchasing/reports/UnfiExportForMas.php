@@ -88,7 +88,7 @@ class UnfiExportForMas extends FannieReportPage
         } else if ($dbc->tableExists('deptSalesCodes')) {
             $codingQ .= ' LEFT JOIN deptSalesCodes AS d ON p.department=d.dept_ID ';
         }
-        $codingQ .= 'WHERE i.vendorID=1 AND i.userID=0
+        $codingQ .= 'WHERE i.vendorID=? AND i.userID=0
                     AND o.receivedDate BETWEEN ? AND ?
                     GROUP BY o.orderID, d.salesCode, i.vendorInvoiceID
                     ORDER BY rdate, i.vendorInvoiceID, d.salesCode';
@@ -96,7 +96,8 @@ class UnfiExportForMas extends FannieReportPage
 
         $report = array();
         $invoice_sums = array();
-        $codingR = $dbc->execute($codingP, array($date1.' 00:00:00', $date2.' 23:59:59'));
+        $vendorID = FormLib::get('vendorID');
+        $codingR = $dbc->execute($codingP, array($vendorID, $date1.' 00:00:00', $date2.' 23:59:59'));
         while($codingW = $dbc->fetch_row($codingR)) {
             if ($codingW['rtc'] == 0) {
                 // skip zero lines (tote charges)
@@ -132,6 +133,7 @@ class UnfiExportForMas extends FannieReportPage
     
     function form_content()
     {
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
         ob_start();
         ?>
 <form method = "get" action="UnfiExportForMas.php">
@@ -145,6 +147,19 @@ class UnfiExportForMas extends FannieReportPage
         <label>Date End</label>
             <input type=text id=date2 name=date2 
                 class="form-control date-field" required />
+    </div>
+    <div class="form-group">
+        <label>Vendor</label>
+        <select name="vendorID" class="form-control">
+        <?php
+        $vendors = new VendorsModel($dbc);
+        foreach ($vendors->find('vendorName') as $obj) {
+            printf('<option %s value="%d">%s</option>',
+                ($obj->vendorName() == 'UNFI' ? 'selected' : ''),
+                $obj->vendorID(), $obj->vendorName());
+        }
+        ?>
+        </select>
     </div>
     <p>
         <button type="submit" class="btn btn-default">Submit</button>

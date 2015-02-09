@@ -88,7 +88,10 @@ class PatronageCheckNumbersUploadPage extends \COREPOS\Fannie\API\FannieUploadPa
                     // spreadsheet-supplied date
                     $tdate = date('Y-m-d');
                     if ($td_index !== false && $line[$td_index] != '') {
-                        $tdate = $line[$td_index];
+                        $stamp = strtotime($line[$td_index]);
+                        if ($stamp) {
+                            $tdate = date('Y-m-d', $stamp);
+                        }
                     }
                     $obj->cashed_date($tdate);
                     $updated = $obj->save();

@@ -41,12 +41,25 @@ class PurchasingIndexPage extends FannieRESTfulPage {
         return '<ul>
             <li><a href="ViewPurchaseOrders.php">View Orders</a>
             <li><a href="PurchasingSearchPage.php">Search Orders</a>
-            <li><a href="ImportPurchaseOrder.php">Import Order</a>
+            <li>Import Order
+                <ul>
+                    <li><a href="ManualPurchaseOrderPage.php">Manually</a></li>
+                    <li><a href="ImportPurchaseOrder.php">From Spreadsheet</a></li>
+                    <li><a href="importers/AlbertsPdfImport.php">Custom Alberts PDF Import</a></li>
+                    <li><a href="importers/CpwInvoiceImport.php">Custom CPW XLS Import</a></li>
+                    <li>Custom RDW PDF Import</li>
+                </ul>
             </li>
             <li>Create Order
                 <ul>
                 <li><a href="EditOnePurchaseOrder.php">By Vendor</a></li>
                 <li><a href="EditManyPurchaseOrders.php">By Item</a></li>
+                </ul>
+            </li>
+            <li>Reports
+                <ul>
+                <li><a href="reports/UnfiExportForMas.php">UNFI Export for MAS90</li>
+                <li><a href="reports/LocalInvoicesReport.php">Local Item Purchases Report</li>
                 </ul>
             </li>
             </ul>';

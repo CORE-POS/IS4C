@@ -226,6 +226,8 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
                     $ph = '218-726-1392';
                 elseif (strstr($cn, 'ENDION')) {
                     $ph = '218-623-1872';
+                } elseif (strstr($cn, 'GIFT CARDS')) {
+                    $ph = '218.623.1872';
                 }
             }
 

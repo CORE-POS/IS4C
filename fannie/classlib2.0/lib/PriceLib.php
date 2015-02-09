@@ -31,8 +31,7 @@ class PriceLib
 
     public static function pricePerUnit($price,$sizeStr)
     {
-        global $FANNIE_COUNTRY;
-        $country = (isset($FANNIE_COUNTRY)&&!empty($FANNIE_COUNTRY))?$FANNIE_COUNTRY:'US';
+        $country = \FannieConfig::factory()->get('COUNTRY', 'US');
 
         $num = "";
         $unit = "";

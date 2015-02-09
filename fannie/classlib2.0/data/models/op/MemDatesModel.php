@@ -176,43 +176,5 @@ Both date fields optional.
     }
     /* END ACCESSOR FUNCTIONS */
 
-    /**
-      5Jul13 static stuff is legacy functionality
-      that predates the BasicModel class.
-      Can be removed when no calls to these functions
-      remain in Fannie.
-    */
-    
-    /**
-      Update memDates record for an account
-      @param $card_no the member number
-      @param $start the starting date
-      @param $end the ending date
-    */
-    public static function update($card_no,$start,$end)
-    {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-        self::initRecord($dbc,$card_no);
-
-        $upP = $dbc->prepare_statement("UPDATE memDates SET start_date=?,
-                end_date=? WHERE card_no=?");
-        $upR = $dbc->exec_statement($upP, array($start,$end,$card_no));
-
-        return $upR;
-    }
-
-    private static function initRecord($dbc,$card_no)
-    {
-        $q = $dbc->prepare_statement("SELECT card_no FROM memDates WHERE card_no=?");
-        $r = $dbc->exec_statement($q,array($card_no));
-
-        if ($dbc->num_rows($r) == 0) {
-            $ins = $dbc->prepare_statement("INSERT INTO memDates (card_no,
-                start_date,end_date) VALUES (?, NULL, NULL)");
-            $dbc->exec_statement($ins,array($card_no));
-        }
-    }
-
 }
 

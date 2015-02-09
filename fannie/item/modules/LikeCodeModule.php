@@ -21,14 +21,16 @@
 
 *********************************************************************************/
 
-include_once(dirname(__FILE__).'/../../config.php');
-include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
+}
 
-class LikeCodeModule extends ItemModule {
+class LikeCodeModule extends ItemModule 
+{
 
     public function showEditForm($upc, $display_mode=1, $expand_mode=1)
     {
-        global $FANNIE_URL;
+        $FANNIE_URL = FannieConfig::config('URL');
         $dbc = $this->db();
         $p = $dbc->prepare_statement('SELECT likeCode FROM upcLike WHERE upc=?');
         $r = $dbc->exec_statement($p,array($upc));
@@ -147,7 +149,7 @@ class LikeCodeModule extends ItemModule {
 
     public function getFormJavascript($upc)
     {
-        global $FANNIE_URL;
+        $FANNIE_URL = FannieConfig::config('URL');
         ob_start();
         ?>
         function updateLcModList(val){
@@ -234,16 +236,19 @@ class LikeCodeModule extends ItemModule {
         return ob_get_clean();
     }
 
-    private function HistoryLink($lc){
-        global $FANNIE_URL;
+    private function HistoryLink($lc)
+    {
+        $FANNIE_URL = FannieConfig::config('URL');
         if ($lc == -1) return '';
         $ret = '<a href="'.$FANNIE_URL.'reports/RecentSales/?likecode='.$lc.'" 
                 title="Likecode Sales History" class="iframe fancyboxLink">';
         $ret .= 'Likecode Sales History</a>';
+
         return $ret;
     }
 
-    private function LikeCodeItems($lc, $upc='nomatch'){
+    private function LikeCodeItems($lc, $upc='nomatch')
+    {
         if ($lc == -1) return '';
         $ret = "<b>Like Code Linked Items</b><div id=lctable>";
         $ret .= "<table class=\"alert alert-warning table\">";
@@ -267,7 +272,6 @@ class LikeCodeModule extends ItemModule {
 
     function AjaxCallback()
     {
-        global $FANNIE_OP_DB;
         $lc = FormLib::get_form_value('lc',-1);
         $newLC = FormLib::get('newLC', false);
         $json = array();
@@ -285,7 +289,7 @@ class LikeCodeModule extends ItemModule {
                 $json['error'] .= '<li>' . $newLC . ' is not a number</li>';
             }
             if (empty($json['error'])) {
-                $dbc = FannieDB::get($FANNIE_OP_DB);
+                $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
                 $chkP = $dbc->prepare('
                     SELECT likeCode
                     FROM likeCodes
@@ -328,4 +332,3 @@ if (basename($_SERVER['SCRIPT_NAME']) == basename(__FILE__)){
     $obj->AjaxCallback();   
 }
 
-?>

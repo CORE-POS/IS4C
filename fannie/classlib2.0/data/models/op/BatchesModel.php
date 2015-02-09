@@ -314,7 +314,6 @@ those same items revert to normal pricing.
     */
     private function finishForce($id, $updateType, $has_limit=true)
     {
-        global $FANNIE_LANES;
         $columnsP = $this->connection->prepare('
             SELECT p.upc,
                 p.normal_price,
@@ -382,6 +381,7 @@ those same items revert to normal pricing.
           Update all records on each lane before proceeding
           to the next lane. Hopefully faster / more efficient
         */
+        $FANNIE_LANES = FannieConfig::config('LANES');
         for ($i = 0; $i < count($FANNIE_LANES); $i++) {
             $lane_sql = new SQLManager($FANNIE_LANES[$i]['host'],$FANNIE_LANES[$i]['type'],
                 $FANNIE_LANES[$i]['op'],$FANNIE_LANES[$i]['user'],

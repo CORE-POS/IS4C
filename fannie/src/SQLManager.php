@@ -30,9 +30,12 @@
  across two servers that are useful for lane-server
  communication
 */
+if (!class_exists('FannieAPI')) {
+    include(dirname(__FILE__) . '/../classlib2.0/FannieAPI.php');
+}
 if (!function_exists("ADONewConnection")) {
-    if (file_exists(dirname(__FILE__) . '/../vendor/adodb/adodb-php/adodb.inc.php')) {
-        include(dirname(__FILE__) . '/../vendor/adodb/adodb-php/adodb.inc.php');
+    if (file_exists(dirname(__FILE__) . '/../../vendor/adodb/adodb-php/adodb.inc.php')) {
+        include(dirname(__FILE__) . '/../../vendor/adodb/adodb-php/adodb.inc.php');
     } else {
         include(dirname(__FILE__).'/../adodb5/adodb.inc.php');
     }
@@ -64,7 +67,7 @@ class SQLManager
 	*/
 	public function SQLManager($server,$type,$database,$username,$password='',$persistent=false, $new=false)
     {
-		$this->QUERY_LOG = dirname(__FILE__)."/../logs/queries.log";
+		$this->QUERY_LOG = new FannieLogger();
 		$this->connections=array();
 		$this->default_db = $database;
 		$this->addConnection($server,$type,$database,$username,$password,$persistent,$new);
@@ -187,7 +190,6 @@ class SQLManager
 	*/
 	public function query($query_text,$which_connection='',$params=false)
     {
-		$ql = $this->QUERY_LOG;
 		if ($which_connection == '') {
 			$which_connection=$this->default_db;
         }
@@ -200,16 +202,10 @@ class SQLManager
 				$query_text = $query_text[0];
             }
 
-			$errorMsg = $_SERVER['PHP_SELF'] . ': ' . date('r') . ': ' . $query_text . "\n";
-			$errorMsg .= $this->error($which_connection) . "\n\n";
-
-            if (is_writable($ql)) {
-                $fp = fopen($ql,'a');
-                fwrite($fp, $errorMsg);
-                fclose($fp);
-            } else {
-                echo str_replace("\n", '<br />', $errorMsg);
-            }
+            $this->QUERY_LOG->debug('Failed Query on ' . $_SERVER['PHP_SELF']);
+            $this->QUERY_LOG->debug($query_text);
+            $errorMsg = $this->error($which_connection);
+            $this->QUERY_LOG->debug($errorMsg);
 
             if ($this->throw_on_fail) {
                 throw new Exception($errorMsg);
@@ -1510,15 +1506,9 @@ class SQLManager
 	*/  
 	public function logger($str)
     {
-		$ql = $this->QUERY_LOG;
-		if (is_writable($ql)) {
-			$fp = fopen($ql,'a');
-			fputs($fp,$_SERVER['PHP_SELF'].": ".date('r').': '.$str."\n");
-			fclose($fp);
-			return true;
-		} else {
-			return false;
-		}
+        $this->QUERY_LOG->debug($_SERVER['PHP_SELF'] . ' - QUERY - ' . $str);
+
+        return true;
 	}
 
     /**
@@ -1536,6 +1526,10 @@ class SQLManager
         
         $definition1 = $this->table_definition($table1, $which_connection);
         $definition2 = $this->table_definition($table2, $which_connection);
+        if (!is_array($definition1) || ! is_array($definition2)) {
+            return array();
+        }
+
         $matches = array();
         foreach($definition1 as $col_name => $info) {
             if (isset($definition2[$col_name])) {

@@ -53,13 +53,14 @@ class TableSyncPage extends FanniePage {
         if ($table === '' && $othertable !== '')
             $table = $othertable;
 
-        if (empty($table)){
+        if (empty($table)) {
             $this->errors[] = "Error: no table was specified";
-            return True;
-        }
-        elseif (ereg("[^A-Za-z0-9_]",$table)){
+
+            return true;
+        } elseif (preg_match('/[^A-Za-z0-9_]/', $table)){
             $this->errors[] = "Error: \"$table\" contains illegal characters";
-            return True;
+
+            return true;
         }
 
         $dbc = FannieDB::get($FANNIE_OP_DB);

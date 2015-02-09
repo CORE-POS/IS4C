@@ -71,21 +71,24 @@ class MemDates extends \COREPOS\Fannie\API\member\MemberModule {
         return $ret;
     }
 
-    function saveFormData($memNum){
-        global $FANNIE_ROOT;
+    function saveFormData($memNum)
+    {
         $dbc = $this->db();
-        if (!class_exists("MemDatesModel"))
-            include($FANNIE_ROOT.'classlib2.0/data/models/MemDatesModel.php');
+        if (!class_exists("MemDatesModel")) {
+            include(dirname(__FILE__) . '/../../classlib2.0/data/models/MemDatesModel.php');
+        }
         
-        $test = MemDatesModel::update($memNum,
-                FormLib::get_form_value('MemDates_start'),
-                FormLib::get_form_value('MemDates_end')
-        );
+        $memdate = new MemDatesModel($dbc);
+        $memdate->card_no($memNum);
+        $memdate->start_date(FormLib::get('MemDates_start'));
+        $memdate->end_date(FormLib::get('MemDates_end'));
+        $test = $memdate->save();
 
-        if ($test === False)
+        if ($test === false) {
             return "Error: problem saving start/end dates<br />";
-        else
+        } else {
             return "";
+        }
     }
 }
 

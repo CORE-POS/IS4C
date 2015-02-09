@@ -21,7 +21,6 @@
 
 *********************************************************************************/
 
-include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
     include_once(dirname(__FILE__) . '/../../classlib2.0/FannieAPI.php');
 }
@@ -42,9 +41,8 @@ class AuthIndexPage extends FanniePage {
     ";
     public $themed = true;
     
-    function body_content(){
-
-    global $FANNIE_AUTH_SHADOW, $FANNIE_AUTH_LDAP;
+    function body_content()
+    {
         $priv = validateUserQuiet('admin');
         $options = 'all';
         if (!$priv){
@@ -69,7 +67,7 @@ class AuthIndexPage extends FanniePage {
             echo '<li><a href="AuthUsersPage.php?newAuth=1">Add Authorization to User</a></li>';
             echo '<li><a href="AuthUsersPage.php?remove=1">Delete User</a></li>';
             echo '<li><a href="AuthUsersPage.php?removeAuth=1">Delete Authorization from User</a></li>';
-            if (!$FANNIE_AUTH_SHADOW && !$FANNIE_AUTH_LDAP) {
+            if (!$this->config->get('AUTH_SHADOW', false) && !$this->config->get('AUTH_LDAP', false)) {
                 echo '<li><a href="AuthUsersPage.php?reset=1">Reset a User\'s password</a></li>';
             }
             echo "<br />";
@@ -85,8 +83,9 @@ class AuthIndexPage extends FanniePage {
             echo "<li><a href=AuthPosePage.php>Switch User</a></li>";
         }
         // The 'limited' options
-        if (!$FANNIE_AUTH_SHADOW && !$FANNIE_AUTH_LDAP)
+        if (!$this->config->get('AUTH_SHADOW', false) && !$this->config->get('AUTH_LDAP', false)) { 
             echo "<li><a href=AuthChangePassword.php>Change password</a></li>";
+        }
         echo "</ul>";
 
         return ob_get_clean();
@@ -99,5 +98,4 @@ if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
     $obj = new AuthIndexPage();
     $obj->draw_page();
 }
-?>
 

@@ -85,7 +85,8 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         return False;
     }
 
-    function get_orders($placed){
+    function get_orders($placed)
+    {
         global $FANNIE_OP_DB;   
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
@@ -115,9 +116,9 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         $prep = $dbc->prepare_statement($query);
         $result = $dbc->exec_statement($prep, $args);
 
-        $ret = '<table class="table">';
-        $ret .= '<tr><th>Created</th><th>Vendor</th><th># Items</th><th>Est. Cost</th>
-            <th>Placed</th><th>Received</th><th>Rec. Cost</th></tr>';
+        $ret = '<table class="table table-striped table-bordered tablesorter">';
+        $ret .= '<thead><tr><th>Created</th><th>Vendor</th><th># Items</th><th>Est. Cost</th>
+            <th>Placed</th><th>Received</th><th>Rec. Cost</th></tr></thead><tbody>';
         $count = 1;
         while($w = $dbc->fetch_row($result)){
             $ret .= sprintf('<tr><td><a href="ViewPurchaseOrders.php?id=%d">%s</a></td>
@@ -131,7 +132,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
                     (!empty($w['receivedCost']) ? $w['receivedCost'] : 0.00)
             );
         }
-        $ret .= '</table>';
+        $ret .= '</tbody></table>';
 
         return $ret;
     }
@@ -156,7 +157,8 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         return false;
     }
 
-    function get_id_view(){
+    function get_id_view()
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
@@ -239,11 +241,11 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         $model = new PurchaseOrderItemsModel($dbc);
         $model->orderID($this->id);
 
-        $ret .= '<table class="table">';
+        $ret .= '<table class="table tablesorter"><thead>';
         $ret .= '<tr><th>SKU</th><th>Brand</th><th>Description</th>
             <th>Unit Size</th><th>Units/Case</th><th>Cases</th>
             <th>Est. Cost</th><th>&nbsp;</th><th>Received</th>
-            <th>Rec. Qty</th><th>Rec. Cost</th></tr>';
+            <th>Rec. Qty</th><th>Rec. Cost</th></tr></thead><tbody>';
         foreach($model->find() as $obj){
             $ret .= sprintf('<tr><td>%s</td><td>%s</td><td>%s</td>
                     <td>%s</td><td>%s</td><td>%d</td><td>%.2f</td>
@@ -255,22 +257,26 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
                     $obj->unitSize(), $obj->caseSize(),
                     $obj->quantity(),
                     ($obj->quantity() * $obj->caseSize() * $obj->unitCost()),
-                    $obj->receivedDate(),
+                    date('Y-m-d', strtotime($obj->receivedDate())),
                     $obj->receivedQty(),
                     $obj->receivedTotalCost()
             );
         }
-        $ret .= '</table>';
+        $ret .= '</tbody></table>';
 
         $this->add_script('js/view.js');
+        $this->add_script('../src/javascript/tablesorter/jquery.tablesorter.min.js');
+        $this->addOnloadCommand("\$('.tablesorter').tablesorter();\n");
 
         return $ret;
     }
 
-    function get_view(){
+    public function get_view()
+    {
         $init = FormLib::get('init', 'placed');
 
-        $ret = '<b>Status</b><select id="orderStatus" onchange="fetchOrders();">';
+        $ret = '<div class="form-group form-inline">
+            <label>Status</label> <select id="orderStatus" onchange="fetchOrders();" class="form-control">';
         $status = array('pending', 'placed');
         foreach ($status as $s) {
             $ret .= sprintf('<option %s value="%s">%s</option>',
@@ -281,7 +287,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 
-        $ret .= '<b>Showing</b><select id="orderShow" onchange="fetchOrders();">';
+        $ret .= '<label>Showing</label> <select id="orderShow" onchange="fetchOrders();" class="form-control">';
         if ($this->show_all)
             $ret .= '<option value="0">My Orders</option><option selected value="1">All Orders</option>';
         else
@@ -290,7 +296,8 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
         
-        $ret .= '<select id="viewMonth" onchange="fetchOrders();">';
+        $ret .= '<label>From</label> ';
+        $ret .= '<select id="viewMonth" onchange="fetchOrders();" class="form-control">';
         $month = date('n');
         for($i=1; $i<= 12; $i++) {
             $label = date('F', mktime(0, 0, 0, $i)); 
@@ -301,7 +308,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         $ret .= '</select>';
 
         $ret .= '&nbsp;';
-        $ret .= '<select id="viewYear" onchange="fetchOrders();">';
+        $ret .= '<select id="viewYear" onchange="fetchOrders();" class="form-control">';
         $year = date('Y');
         for($i = $year; $i >= 2013; $i--) {
             $ret .= '<option>' . $i . '</option>';
@@ -312,14 +319,26 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 
         $ret .= '<button class="btn btn-default" onclick="location=\'PurchasingIndexPage.php\'; return false;">Home</button>';
 
+        $ret .= '</div>';
+
         $ret .= '<hr />';
         
         $ret .= '<div id="ordersDiv"></div>';   
 
+        $this->add_script('../src/javascript/tablesorter/jquery.tablesorter.min.js');
         $this->add_script('js/view.js');
         $this->add_onload_command("fetchOrders();\n");
 
         return $ret;
+    }
+
+    public function css_content()
+    {
+        return '
+            .tablesorter thead th {
+                cursor: hand;
+                cursor: pointer;
+            }';
     }
 
     public function helpContent()
