@@ -62,7 +62,7 @@ class AutoCoupon extends TotalAction
 
         foreach($coupons as $id => $description) {
 
-            if ($hc->checkQualifications($id) !== true) {
+            if ($hc->checkQualifications($id, true) !== true) {
                 // member or transaction does not meet requirements
                 // for auto-coupon purposes, this isn't really an 
                 // error. no feedback necessary

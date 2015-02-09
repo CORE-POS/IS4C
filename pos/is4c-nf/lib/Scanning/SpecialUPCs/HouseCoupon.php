@@ -123,20 +123,22 @@ class HouseCoupon extends SpecialUPC
       Validate coupon exists, is not expired, and
       transaction meets required qualifications
       @param $id [int] coupon ID
+      @param $quiet [boolean] just return false rather than
+        an error message on failure
       @return [boolean] true or [string] error message
     */
-    public function checkQualifications($id)
+    public function checkQualifications($id, $quiet=false)
     {
         $infoW = $this->lookupCoupon($id);
         if ($infoW === false) {
-            return DisplayLib::boxMsg(_("coupon not found"));
+            return $quiet ? false : DisplayLib::boxMsg(_("coupon not found"));
         }
 
         if ($infoW["expired"] < 0) {
             $expired = substr($infoW["endDate"], 0, strrpos($infoW["endDate"], " "));
-            return DisplayLib::boxMsg(_("coupon expired") . " " . $expired);
+            return $quiet ? false : DisplayLib::boxMsg(_("coupon expired") . " " . $expired);
         } else if ($infoW['preStart'] > 0) {
-            return DisplayLib::boxMsg(_("coupon not available yet"));
+            return $quiet ? false : DisplayLib::boxMsg(_("coupon not available yet"));
         }
 
         /* check for member-only, longer use tracking
@@ -150,7 +152,7 @@ class HouseCoupon extends SpecialUPC
             $is_mem = false;
         }
         if ($infoW["memberOnly"] == 1 && !$is_mem) {
-            return DisplayLib::boxMsg(_("Member only coupon") . "<br />" .
+            return $quiet ? false : DisplayLib::boxMsg(_("Member only coupon") . "<br />" .
                         _("Apply member number first"));
         }
 
@@ -169,7 +171,7 @@ class HouseCoupon extends SpecialUPC
                 $minW = $transDB->fetch_row($minR);
                 $validQtty = $minW[0];
                 if ($validQtty < $infoW["minValue"]) {
-                    return DisplayLib::boxMsg(_("coupon requirements not met"));
+                    return $quiet ? false : DisplayLib::boxMsg(_("coupon requirements not met"));
                 }
                 break;
             case "Q+": // must purchase more than X
@@ -183,7 +185,7 @@ class HouseCoupon extends SpecialUPC
                 $minW = $transDB->fetch_row($minR);
                 $validQtty = $minW[0];
                 if ($validQtty <= $infoW["minValue"]) {
-                    return DisplayLib::boxMsg(_("coupon requirements not met"));
+                    return $quiet ? false : DisplayLib::boxMsg(_("coupon requirements not met"));
                 }
                 break;
             case 'D': // must at least purchase from department
@@ -197,7 +199,7 @@ class HouseCoupon extends SpecialUPC
                 $minW = $transDB->fetch_row($minR);
                 $validQtty = $minW[0];
                 if ($validQtty < $infoW["minValue"]) {
-                    return DisplayLib::boxMsg(_("coupon requirements not met"));
+                    return $quiet ? false : DisplayLib::boxMsg(_("coupon requirements not met"));
                 }
                 break;
             case 'D+': // must more than purchase from department 
@@ -211,7 +213,7 @@ class HouseCoupon extends SpecialUPC
                 $minW = $transDB->fetch_row($minR);
                 $validQtty = $minW[0];
                 if ($validQtty <= $infoW["minValue"]) {
-                    return DisplayLib::boxMsg(_("coupon requirements not met"));
+                    return $quiet ? false : DisplayLib::boxMsg(_("coupon requirements not met"));
                 }
                 break;
             case 'M': // must purchase at least X qualifying items
@@ -239,7 +241,7 @@ class HouseCoupon extends SpecialUPC
                 $validQtty2 = $min2W[0];
 
                 if ($validQtty < $infoW["minValue"] || $validQtty2 <= 0) {
-                    return DisplayLib::boxMsg(_("coupon requirements not met"));
+                    return $quiet ? false : DisplayLib::boxMsg(_("coupon requirements not met"));
                 }
                 break;
             case 'MX': // must purchase at least $ from qualifying departments
@@ -268,7 +270,7 @@ class HouseCoupon extends SpecialUPC
                 $validQtty2 = $min2W[0];
 
                 if ($validQtty < $infoW["minValue"] || $validQtty2 <= 0) {
-                    return DisplayLib::boxMsg(_("coupon requirements not met"));
+                    return $quiet ? false : DisplayLib::boxMsg(_("coupon requirements not met"));
                 }
                 break;
             case '$': // must purchase at least $ total items
@@ -278,7 +280,7 @@ class HouseCoupon extends SpecialUPC
                 $minW = $transDB->fetch_row($minR);
                 $validAmt = $minW[0];
                 if ($validAmt < $infoW["minValue"]) {
-                    return DisplayLib::boxMsg(_("coupon requirements not met"));
+                    return $quiet ? false : DisplayLib::boxMsg(_("coupon requirements not met"));
                 }
                 break;
             case '$+': // must purchase more than $ total items
@@ -288,14 +290,14 @@ class HouseCoupon extends SpecialUPC
                 $minW = $transDB->fetch_row($minR);
                 $validAmt = $minW[0];
                 if ($validAmt <= $infoW["minValue"]) {
-                    return DisplayLib::boxMsg(_("coupon requirements not met"));
+                    return $quiet ? false : DisplayLib::boxMsg(_("coupon requirements not met"));
                 }
                 break;
             case '': // no minimum
             case ' ':
                 break;
             default:
-                return DisplayLib::boxMsg(_("unknown minimum type") . " " . $infoW["minType"]);
+                return $quiet ? false : DisplayLib::boxMsg(_("unknown minimum type") . " " . $infoW["minType"]);
         }
 
         return true;
