@@ -21,18 +21,58 @@
 
 *********************************************************************************/
 
-class UPC extends Parser {
-	function check($str){
-		if (is_numeric($str) && strlen($str) < 16)
-			return True;
-		else if (substr($str,0,4) == "GS1~")
-			return True;
-		return False;
+class UPC extends Parser 
+{
+
+    private $source = 'keyed';
+
+    /**
+      The default case is pretty simple. A numeric string
+      is checked as a UPC.
+      
+      The 0XA prefix indicates a scanned value from the scale.
+      This prefix was selected because PHP's validation still
+      considers the whole string a [hex] number. That helps with
+      overall input validation. A complex entry like:
+          5*0XA001234567890
+      Is handled correctly because there's a "number" on both 
+      sides of asterisk. The prefix is then stripped off by
+      this parser to get the actual UPC value.
+
+      The GS1~ prefix is an old artificat of wedge compatibility.
+      Using something like 0XB instead would probably be
+      an improvement.
+    */
+	function check($str)
+    {
+		if (is_numeric($str) && strlen($str) < 16) {
+			return true;
+        } elseif (substr($str,0,3) == '0XA' && is_numeric($substr($str, 3))) {
+            return true;
+		} elseif (substr($str,0,4) == "GS1~" && is_numeric(substr($str, 4))) {
+			return true;
+        }
+
+		return false;
 	}
 
-	function parse($str){
-		if (substr($str,0,4) == "GS1~")
+	function parse($str)
+    {
+		if (substr($str,0,4) == "GS1~") {
 			$str = $this->fixGS1($str);
+            $this->source = 'scanned';
+        } elseif (substr($str, 0, 3) == '0XA') {
+            $str = substr($str, 3);
+            $this->source = 'scanned';
+        }
+
+        /**
+          Do not apply scanned items if
+          tare has been entered
+        */
+        if (CoreLocal::get('tare') > 0 && $this->source == 'scanned') {
+            return $this->default_json();
+        }
 
 		return $this->upcscanned($str);
 	}

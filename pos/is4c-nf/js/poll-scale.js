@@ -30,6 +30,14 @@ function scalePollSuccess(data){
 		else if ($('#reginput').length != 0 && data.scans){
 			// barcode scan input
 			var v = $('#reginput').val();
+            var url = document.URL;
+            data.scans += ''; // convert to string
+            // only add prefix when working on the main page
+            // other pages that use scans (e.g., barcode as password)
+            // may not be expecting this behavior
+            if (url.substring(url.length - 8) == 'pos2.php' && data.scans.substring(0, 3) != 'OXA') {
+                data.scans = '0XA' + data.scans;
+            }
 			parseWrapper(v+data.scans);
 			//return; // why is this here? scale needs to keep polling...
 		}
