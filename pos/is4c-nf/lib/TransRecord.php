@@ -757,7 +757,7 @@ static public function addTransDiscount()
     self::addRecord(array(
         'upc' => 'DISCOUNT',
         'description' => 'Discount',
-        'trans_type' => 'I',
+        'trans_type' => 'S',
         'quantity' => 1,
         'unitPrice' => MiscLib::truncate2(-1 * CoreLocal::get('transDiscount')),
         'total' => MiscLib::truncate2(-1 * CoreLocal::get('transDiscount')),

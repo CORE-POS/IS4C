@@ -862,7 +862,6 @@ static public function rotateTempData()
     // these records should be written correctly from the start
     // could go away with verification of above.
     $connection->query("update localtemptrans set trans_type = 'T' where trans_subtype IN ('CP','IC')");
-    $connection->query("update localtemptrans set upc = 'DISCOUNT', description = upc, department = 0, trans_type='S' where trans_status = 'S'");
 
     $connection->query("insert into localtrans select * from localtemptrans");
     // localtranstoday converted from view to table
