@@ -231,7 +231,7 @@ class InstallUpdatesPage extends \COREPOS\Fannie\API\InstallPage {
             echo 'cd "' . $dir . '"<br />';
             echo 'git log -n1 --pretty=oneline<br />';
             echo 'git fetch upstream<br />';
-            echo 'git merge upstream/' . $tags[count($tags)-1] . '<br />';
+            echo 'git merge ' . $tags[count($tags)-1] . '<br />';
             echo '</code></p>';
             echo '<h3>Troubleshooting</h3>';
             echo '<p>Error message: <i>fatal: \'upstream\' does not appear to be a repository</i><br />';
