@@ -172,7 +172,7 @@ class FannieUploadPage extends \FanniePage
                         // Extract lines & process
                         $lines = array();
                         for ($i=$offset; $i<count($fileData); $i++) {
-                            if (count($fileData[$i]) != $num_columns) {
+                            if (count($fileData[$i]) < $num_columns-2 || count($fileData[$i]) > $num_columns+2) {
                                 continue;
                             }
                             $lines[] = $fileData[$i];
@@ -185,7 +185,7 @@ class FannieUploadPage extends \FanniePage
                         $done = ($offset + $chunk_size) > count($fileData) ? true : false;
 
                         if (count($lines) == 0 && !$done) {
-                            $ret['error'] = 'Upload into database failed';
+                            $ret['error'] .= 'Upload into database failed';
                             unlink($this->upload_file_name);
                             echo json_encode($ret);
                             return false;
