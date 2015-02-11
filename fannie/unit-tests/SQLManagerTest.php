@@ -1,16 +1,13 @@
 <?php
-include(dirname(__FILE__).'/../config.php');
-include(dirname(__FILE__).'/../src/SQLManager.php');
 
 /**
  * @backupGlobals disabled
  */
 class SQLManagerTest extends PHPUnit_Framework_TestCase
 {
-    public function testMethods(){
-        include(dirname(__FILE__).'/../config.php');
-        $sql = new SQLManager($FANNIE_SERVER, $FANNIE_SERVER_DBMS, '',
-            $FANNIE_SERVER_USER, $FANNIE_SERVER_PW);
+    public function testMethods()
+    {
+        $sql = FannieDB::get('');
 
         /* test create connection */
         $this->assertInstanceOf('SQLManager',$sql);
@@ -82,8 +79,8 @@ class SQLManagerTest extends PHPUnit_Framework_TestCase
 
         $field = $sql->fetch_field($result,0);
         $this->assertNotEquals(False,$field);
-        $this->assertInstanceOf('ADOFieldObject',$field);
-        $this->assertObjectHasAttribute('max_length',$field);
+        $this->assertInternalType('object',$field);
+        $this->assertObjectHasAttribute('name',$field);
         $this->assertEquals(1,$field->max_length);
 
         $now = $sql->now();
@@ -151,7 +148,9 @@ class SQLManagerTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('',$error);
 
         /* bad query on purpose */
+        ob_start();
         $fail = $sql->query("DO NOT SELECT 1");
+        ob_end_clean();
         $this->assertEquals(False,$fail);
 
         $error = $sql->error();

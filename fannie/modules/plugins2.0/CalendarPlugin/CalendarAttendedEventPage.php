@@ -42,6 +42,7 @@ class CalendarAttendedEventPage extends FannieRESTfulPage
 
     public $page_set = 'Plugin :: Calendar';
     public $description = '[Attended Event] is a calendar entry with an attendee list attached.';
+    public $themed = true;
 
     public function preprocess()
     {
@@ -75,7 +76,9 @@ class CalendarAttendedEventPage extends FannieRESTfulPage
         }
 
         $ret = '<form action="CalendarAttendedEventPage.php" method="post">';
-        $ret .= '<div style="margin:5px;"><b>Calendar</b>: <select name="calendarID">';
+        $ret .= '<div class"form-group">
+            <label>Calendar</label>: 
+            <select name="calendarID" class="form-control">';
         $cal = new CalendarsModel($dbc);
         foreach($calIDs as $id) {
             $cal->calendarID($id);
@@ -84,20 +87,25 @@ class CalendarAttendedEventPage extends FannieRESTfulPage
         }
         $ret .= '</select></div>';
 
-        $ret .= '<div style="margin:5px;"><b>Date</b>: 
-            <input type="text" size="10" id="datestr" name="datestr" /></div>';
-        $this->add_onload_command("\$('#datestr').datepicker();\n");
+        $ret .= '<div class="form-group">
+            <label>Date</label>: 
+            <input type="text" class="form-control date-field" id="datestr" 
+                required name="datestr" /></div>';
 
-        $ret .= '<div style="margin:5px;"><b>Max Attendees</b>: 
-            <input type="text" size="4" name="limit" /></div>';
+        $ret .= '<div class="form-group">
+            <label>Max Attendees</label>: 
+            <input type="number" class="form-control" required name="limit" />
+            </div>';
 
-        $ret .= '<div style="margin:5px;"><b>Event Description</b>:<br /> 
-                <textarea name="text" rows="10" cols="40"></textarea></div>';
+        $ret .= '<div class="form-group">
+                <label>Event Description</label>:
+                <textarea name="text" class="form-control"></textarea>
+                </div>';
 
-        $ret .= '<input type="submit" value="Create Event" />';
+        $ret .= '<p><button type="submit" class="btn btn-default">Create Event</button></p>';
         $ret .= '</form>';
 
-        $ret .= '<div style="margin-top:20px"><a href="CalendarMainPage.php">Home</a></div>';
+        $ret .= '<p><a class="btn btn-default" href="CalendarMainPage.php">Home</a></p>';
 
         return $ret;
     }

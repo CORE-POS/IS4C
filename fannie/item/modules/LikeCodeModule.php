@@ -21,14 +21,16 @@
 
 *********************************************************************************/
 
-include_once(dirname(__FILE__).'/../../config.php');
-include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
+}
 
-class LikeCodeModule extends ItemModule {
+class LikeCodeModule extends ItemModule 
+{
 
     public function showEditForm($upc, $display_mode=1, $expand_mode=1)
     {
-        global $FANNIE_URL;
+        $FANNIE_URL = FannieConfig::config('URL');
         $dbc = $this->db();
         $p = $dbc->prepare_statement('SELECT likeCode FROM upcLike WHERE upc=?');
         $r = $dbc->exec_statement($p,array($upc));
@@ -37,24 +39,26 @@ class LikeCodeModule extends ItemModule {
             $w = $dbc->fetch_row($r);
             $myLC = $w['likeCode'];
         }
-        $ret = '<fieldset id="LikeCodeFieldSet">';
-        $ret .=  "<legend onclick=\"\$('#LikeCodeFieldsetContent').toggle();\">
-                <a href=\"\" onclick=\"return false;\">Likecode</a>
-                </legend>";
+        $ret = '<div id="LikeCodeFieldSet" class="panel panel-default">';
+        $ret .=  "<div class=\"panel-heading\">
+                <a href=\"\" onclick=\"\$('#LikeCodeFieldsetContent').toggle();return false;\">
+                Likecode
+                </a></div>";
         $style = '';
         if ($expand_mode == 1) {
             $style = '';
         } else if ($expand_mode == 2 && $myLC != -1) {
             $style = '';
         } else {
-            $style = 'display:none;';
+            $style = ' collapse';
         }
-        $ret .= '<div id="LikeCodeFieldsetContent" style="' . $style . '">';
+        $ret .= '<div id="LikeCodeFieldsetContent" class="panel-body' . $style . '">';
 
-
-        $ret .= "<table border=0><tr><td><b>Like code</b> <button type=\"button\" id=\"lcAddButton\">+</button> ";
-        $ret .= "<select name=likeCode style=\"{width: 175px;}\"
-                onchange=\"updateLcModList(this.value);\">";
+        $ret .= "<div class=\"form-group form-inline\">
+                <b>Like code</b> <button type=\"button\" id=\"lcAddButton\"
+                class=\"btn btn-default\">+</button> ";
+        $ret .= "<select name=likeCode id=\"likeCodeSelect\" 
+                onchange=\"updateLcModList(this.value);\" class=\"chosenSelect form-control\">";
         $ret .= "<option value=-1>(none)</option>";
     
         $p = $dbc->prepare_statement('SELECT likeCode, likeCodeDesc FROM likeCodes ORDER BY likeCode');
@@ -65,25 +69,25 @@ class LikeCodeModule extends ItemModule {
                 $w['likeCode'],$w['likeCode'],$w['likeCodeDesc']
             );
         }
-        $ret .= "</select></td>";
-        $ret .= "<td><input type=checkbox name=LikeCodeNoUpdate value='noupdate'>Check to not update like code items</td>
-            </tr><tr>";
-        $ret .= '<td id="LikeCodeItemList">';
-        $ret .= $this->LikeCodeItems($myLC, $upc);
-        $ret .= '</td>';
-        $ret .= '<td id="LikeCodeHistoryLink" valign="top">';
-        $ret .= $this->HistoryLink($myLC);  
-        $ret .= '</td>';
-        $ret .= '</tr></table></fieldset>';
+        $ret .= "</select>";
+        $ret .= " <label><input type=checkbox name=LikeCodeNoUpdate value='noupdate'>Check to not update like code items</label>";
+        $ret .= ' <span id="LikeCodeHistoryLink">' . $this->HistoryLink($myLC) . '</span>';
+        $ret .= '</div>';
 
-        $ret .= '<div id="addLikeCodeDialog" title="Add Like Code">';
-        $ret .= '<span id="addLikeAreaAlert" style="color:red;"></span>';
+        $ret .= '<div id="LikeCodeItemList">';
+        $ret .= $this->LikeCodeItems($myLC, $upc);
+        $ret .= '</div>';
+
+        $ret .= '<div id="addLikeCodeDialog" title="Add Like Code" class="collapse">';
         $ret .= '<fieldset>';
         $ret .= '<label for="newLikeID">LC #</label>';
-        $ret .= '<input type="text" name="newLC" id="newLikeID" style="display:block;" />';
+        $ret .= '<input type="text" name="newLC" id="newLikeID" class="form-control" />';
         $ret .= '<label for="newLikeName">LC Name</label>';
-        $ret .= '<input type="text" name="lcName" id="newLikeName" style="display:block;" />';
+        $ret .= '<input type="text" name="lcName" id="newLikeName" class="form-control" />';
         $ret .= '</fieldset>';
+        $ret .= '</div>';
+
+        $ret .= '</div>';
         $ret .= '</div>';
 
         return $ret;
@@ -118,8 +122,26 @@ class LikeCodeModule extends ItemModule {
            in the like code */
         $upcP = $dbc->prepare_statement('SELECT upc FROM upcLike WHERE likeCode=? AND upc<>?');
         $upcR = $dbc->exec_statement($upcP,array($lc,$upc));
-        while($upcW = $dbc->fetch_row($upcR)){
-            ProductsModel::update($upcW['upc'],$values, true);
+        $model = new ProductsModel($dbc);
+        $model->upc($upc);
+        $model->mixmatchcode($lc+500);
+        $model->save();
+        while ($upcW = $dbc->fetch_row($upcR)) {
+            $model->reset();
+            $model->upc($upcW['upc']);
+            $model->normal_price($values['normal_price']);
+            $model->pricemethod($values['pricemethod']);
+            $model->groupprice($values['groupprice']);
+            $model->quantity($values['quantity']);
+            $model->department($values['department']);
+            $model->scale($values['scale']);
+            $model->tax($values['tax']);
+            $model->foodstamp($values['foodstamp']);
+            $model->discount($values['discount']);
+            $model->qttyEnforced($values['qttyEnforced']);
+            $model->local($values['local']);
+            $model->mixmatchcode($lc+500);
+            $model->save();
             updateProductAllLanes($upcW['upc']);
         }
         return True;
@@ -127,10 +149,15 @@ class LikeCodeModule extends ItemModule {
 
     public function getFormJavascript($upc)
     {
-        global $FANNIE_URL;
+        $FANNIE_URL = FannieConfig::config('URL');
         ob_start();
         ?>
         function updateLcModList(val){
+            if (val == -1) {
+                $('#LikeCodeItemList').hide();
+                $('#LikeCodeHistoryLink').hide();
+                return true;
+            }
             $.ajax({
                 url: '<?php echo $FANNIE_URL; ?>item/modules/LikeCodeModule.php',
                 data: 'lc='+val,
@@ -209,19 +236,22 @@ class LikeCodeModule extends ItemModule {
         return ob_get_clean();
     }
 
-    private function HistoryLink($lc){
-        global $FANNIE_URL;
+    private function HistoryLink($lc)
+    {
+        $FANNIE_URL = FannieConfig::config('URL');
         if ($lc == -1) return '';
         $ret = '<a href="'.$FANNIE_URL.'reports/RecentSales/?likecode='.$lc.'" 
                 title="Likecode Sales History" class="iframe fancyboxLink">';
         $ret .= 'Likecode Sales History</a>';
+
         return $ret;
     }
 
-    private function LikeCodeItems($lc, $upc='nomatch'){
+    private function LikeCodeItems($lc, $upc='nomatch')
+    {
         if ($lc == -1) return '';
         $ret = "<b>Like Code Linked Items</b><div id=lctable>";
-        $ret .= "<table border=0 bgcolor=\"#FFFFCC\">";
+        $ret .= "<table class=\"alert alert-warning table\">";
         $dbc = $this->db();
         $p = $dbc->prepare_statement("SELECT p.upc,p.description FROM
             products AS p INNER JOIN upcLike AS u ON
@@ -242,7 +272,6 @@ class LikeCodeModule extends ItemModule {
 
     function AjaxCallback()
     {
-        global $FANNIE_OP_DB;
         $lc = FormLib::get_form_value('lc',-1);
         $newLC = FormLib::get('newLC', false);
         $json = array();
@@ -260,7 +289,7 @@ class LikeCodeModule extends ItemModule {
                 $json['error'] .= '<li>' . $newLC . ' is not a number</li>';
             }
             if (empty($json['error'])) {
-                $dbc = FannieDB::get($FANNIE_OP_DB);
+                $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
                 $chkP = $dbc->prepare('
                     SELECT likeCode
                     FROM likeCodes
@@ -303,4 +332,3 @@ if (basename($_SERVER['SCRIPT_NAME']) == basename(__FILE__)){
     $obj->AjaxCallback();   
 }
 
-?>

@@ -63,8 +63,8 @@ class login3 extends BasicPage {
 		$this->default_parsewrapper_js('scannerInput');
 	}
 
-	function body_content(){
-		global $CORE_LOCAL;
+	function body_content()
+    {
 		$this->input_header();
 		echo DisplayLib::printheaderb();
 		?>

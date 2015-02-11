@@ -29,8 +29,8 @@
 */
 class AllItemProductUserSearch extends ProductSearch {
 
-	public function search($str){
-        global $CORE_LOCAL;
+	public function search($str)
+    {
 		$ret = array();
 		$sql = Database::pDataConnect();
         if (!$sql->table_exists('productUser')) {
@@ -52,7 +52,7 @@ class AllItemProductUserSearch extends ProductSearch {
 		//	 $query .= " AND p.upc LIKE ('0000000%')";
         // 'listAllProducts'
         /*
-         if ($CORE_LOCAL->get("store") != "WEFC_Toronto") {
+         if (CoreLocal::get("store") != "WEFC_Toronto") {
 			 $query .= " AND p.upc LIKE ('0000000%')";
          }
         */
@@ -63,6 +63,4 @@ class AllItemProductUserSearch extends ProductSearch {
 		return $ret;
 	}
 }
-
-?>
 

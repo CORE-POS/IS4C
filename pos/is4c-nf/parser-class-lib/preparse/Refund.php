@@ -21,24 +21,33 @@
 
 *********************************************************************************/
 
-class Refund extends PreParser {
+class Refund extends PreParser 
+{
 	
-	function check($str){
-		if (substr($str,0,2) == "RF")
-			return True;
-		elseif (substr($str,-2) == "RF")
-			return True;
-		return False;
+	function check($str)
+    {
+        // ignore comments; they may have all sorts of
+        // random character cominations
+        if (substr($str, 0, 2) == "CM") {
+            return false;
+        }
+
+        if (strstr($str, 'RF')) {
+            return true;
+        } else {
+            return false;
+        }
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
+	function parse($str)
+    {
 		$remainder = "";
-		if (substr($str,0,2) == "RF")
-			$remainder = substr($str,2);
-		else
-			$remainder = substr($str,0,-2);
-		$CORE_LOCAL->set("refund",1);
+        $parts = explode('RF', $str, 2);
+        foreach ($parts as $p) {
+            $remainder .= $p;
+        }
+		CoreLocal::set("refund",1);
+
 		return $remainder;
 	}
 

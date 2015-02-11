@@ -26,12 +26,14 @@ if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class CoopDealsUploadPage extends FannieUploadPage {
+class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage 
+{
     public $title = "Fannie - Co+op Deals sales";
     public $header = "Upload Co+op Deals file";
 
     public $description = '[Co+op Deals Import] loads sales information from Co+op Deals pricing spreadsheets.
     This data can be used to create sales batches.';
+    public $themed = true;
 
     protected $preview_opts = array(
         'upc' => array(
@@ -83,9 +85,13 @@ class CoopDealsUploadPage extends FannieUploadPage {
         $ABT = $this->get_column_index('abt');
 
         $rm_checks = (FormLib::get_form_value('rm_cds') != '') ? True : False;
-        $do_skus = $dbc->table_exists("UnfiToPlu");
         $upcP = $dbc->prepare_statement('SELECT upc FROM products WHERE upc=?');
-        $skuP = $dbc->prepare_statement('SELECT wfc_plu FROM UnfiToPlu WHERE upc=?');
+        $skuP = $dbc->prepare_statement('
+            SELECT s.upc 
+            FROM vendorSKUtoPLU AS s
+                INNER JOIN vendors AS v ON s.vendorID=v.vendorID
+            WHERE s.sku=?
+                AND v.vendorName LIKE \'%UNFI%\'');
         $insP = $dbc->prepare_statement('INSERT INTO tempCapPrices VALUES (?,?,?)');
         foreach($linedata as $data){
             if (!is_array($data)) continue;
@@ -103,11 +109,11 @@ class CoopDealsUploadPage extends FannieUploadPage {
                 if ($SKU === False) continue;
                 if ($data[$SUB] != "BULK") continue;
                 if ($data[$SKU] == "direct") continue;
-                if (!$do_skus) continue;
                 $sku = $data[$SKU];
                 $look2 = $dbc->exec_statement($skuP, array($sku));
                 if ($dbc->num_rows($look2) == 0) continue;
-                $upc = array_pop($dbc->fetch_row($look2));
+                $w = $dbc->fetch_row($look2);
+                $upc = $w['upc'];
             }
 
             $price = trim($data[$PRICE],"\$");
@@ -127,10 +133,10 @@ class CoopDealsUploadPage extends FannieUploadPage {
     }
 
     function form_content(){
-        return '<p>Upload a CSV or Excel (XLS, not XLSX) file containing Co+op Deals
+        return '<div class="well">Upload a CSV or Excel (XLS, not XLSX) file containing Co+op Deals
             Sale information. The file needs to contain UPCs, sale prices,
             and a column indicating A, B, or TPR (or some combination of the
-            three).</p>';
+            three).</div>';
     }
 
     function preview_content(){
@@ -138,9 +144,16 @@ class CoopDealsUploadPage extends FannieUploadPage {
     }
 
     function results_content(){
-        $ret = "Sales data import complete<p />";
-        $ret .= "<a href=\"CoopDealsReviewPage.php\">Review data &amp; set up sales</a>";
+        $ret = "<p>Sales data import complete</p>";
+        $ret .= "<p><a href=\"CoopDealsReviewPage.php\">Review data &amp; set up sales</a></p>";
         return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>Default column selections correspond to the
+            tab/worksheet that lists all A, B, and TPR items</p>'
+            . parent::helpContent();
     }
 }
 

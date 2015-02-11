@@ -5,8 +5,7 @@ function catchange(){
 	$('#contentarea').html('');
 	if (did == ""){
 		$('#brandselect').html("<option value=\"\">Select a department first...</option>");
-	}
-	else {
+	} else {
 		$.ajax({
 			url: 'BrowseVendorItems.php',
 			type: 'post',
@@ -17,6 +16,7 @@ function catchange(){
 			},
 			success: function(resp){
 				$('#brandselect').html(resp);
+                $('#brandselect').focus();
 			}
 		});
 	}
@@ -52,17 +52,19 @@ function brandchange() {
 
 	if (brand == ""){
 		$('#contentarea').html('');
-	}
-	else {
+	} else {
+        $('#loading-bar').show();
 		$.ajax({
 			url: 'BrowseVendorItems.php',
 			type: 'post',
 			data: 'vid='+vid+'&deptID='+did+'&brand='+brand+'&action=showCategoryItems',
             dataType: 'json',
 			error: function(e1,e2){
-				alert('Error loading XML document');
+				$('#loading-bar').hide();
+                showBootstrapAlert('#contentarea', 'danger', 'Error loading items');
 			},
 			success: function(resp){
+				$('#loading-bar').hide();
                 if (resp.items) {
                     $('#contentarea').html(resp.items);
                 }

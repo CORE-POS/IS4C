@@ -32,8 +32,10 @@ class VendorDepartmentEditor extends FanniePage {
 
     public $description = '[Vendor Departments] manages vendor-specific departments or categories.
     These are distinct from POS departments.';
+    public $themed = true;
 
-    function preprocess(){
+    function preprocess()
+    {
 
         $ajax = FormLib::get_form_value('action');
         if ($ajax !== ''){
@@ -44,24 +46,30 @@ class VendorDepartmentEditor extends FanniePage {
         return True;
     }
 
-    function ajax_callbacks($action){
+    function ajax_callbacks($action)
+    {
         global $FANNIE_OP_DB;
+        $json = array('error' => 0);
         switch($action){
         case 'createCat':
-            $this->createVendorDepartment(
+            $json = $this->createVendorDepartment(
                 FormLib::get_form_value('vid'),
                 FormLib::get_form_value('deptID'),
                 FormLib::get_form_value('name')
             );
+            echo json_encode($json);
             break;
         case 'deleteCat':
             $dbc = FannieDB::get($FANNIE_OP_DB);
             $q = $dbc->prepare_statement("DELETE FROM vendorDepartments
                 WHERE vendorID=? AND deptID=?");
-            $dbc->exec_statement($q,
-                array(FormLib::get_form_value('vid'),
-                FormLib::get_form_value('deptID')) );
-            echo "Department deleted";
+            $gone = $dbc->exec_statement($q,
+                    array(FormLib::get_form_value('vid'),
+                        FormLib::get_form_value('deptID')) );
+            if (!$gone) {
+                $json['error'] = 'Error deleting #' + FormLib::get('deptID');
+            }
+            echo json_encode($json);
             break;
         case 'updateCat':
             $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -74,8 +82,11 @@ class VendorDepartmentEditor extends FanniePage {
                 FormLib::get_form_value('vid'),
                 FormLib::get_form_value('deptID')
             );
-            $dbc->exec_statement($q,$args);
-            echo 'Saved';
+            $saved = $dbc->exec_statement($q,$args);
+            if ($saved === false) {
+                $json['error'] = 'Error saving #' . FormLib::get('deptID');
+            }
+            echo json_encode($json);
             break;
         default:
             echo 'bad request';
@@ -83,45 +94,79 @@ class VendorDepartmentEditor extends FanniePage {
         }
     }
 
-    private function createVendorDepartment($vid,$did,$name){
-        global $FANNIE_OP_DB;
+    private function createVendorDepartment($vid,$did,$name)
+    {
+        global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
+        $json = array('error' => 0);
         
         $chkQ = $dbc->prepare_statement("SELECT * FROM vendorDepartments WHERE
                 vendorID=? AND deptID=?");
         $chkR = $dbc->exec_statement($chkQ,array($vid,$did));
-        if ($dbc->num_rows($chkR) > 0){
-            echo "Number #$did is already in use!";
-            return;
+        if ($dbc->num_rows($chkR) > 0) {
+            $json['error'] = "Number #$did is already in use!";
         }
 
         $insQ = $dbc->prepare_statement("INSERT INTO vendorDepartments (vendorID,deptID,
             name,margin,testing,posDeptID) VALUES (?,?,
             ?,0.00,0.00,0)");
         $insR = $dbc->exec_statement($insQ,array($vid,$did,$name));
+
+        if ($insR) {
+            $new_row .= sprintf("<tr id=\"row-%d\">
+                <td>%d</td>
+                <td id=nametd%d>%s</td>
+                <td id=margintd%d>%.2f%%</td>
+                <td id=button%d>
+                    <a href=\"\" onclick=\"edit(%d);return false;\"
+                        class=\"edit-link\">%s<a>
+                    <a href=\"\" onclick=\"save(%d);return false;\"
+                        class=\"save-link collapse\">%s</a>
+                </td>
+                <td><a href=\"\" onclick=\"deleteCat(%d,'%s');return false\">%s</a></td>
+                </tr>",
+                $did,
+                $did, $did,
+                $name, $did,
+                0,
+                $did, $did,
+                \COREPOS\Fannie\API\lib\FannieUI::editIcon(),
+                $did,
+                \COREPOS\Fannie\API\lib\FannieUI::saveIcon(),
+                $did, $name,
+                \COREPOS\Fannie\API\lib\FannieUI::deleteIcon());
+            $json['row'] = $new_row;
+        } else {
+            $json['error'] = 'Error creating new department';
+        }
     
-        echo "Department created";
+        return $json;
     }
 
-    function body_content(){
+    function body_content()
+    {
         global $FANNIE_URL;
         $vid = FormLib::get_form_value('vid');
-        if ($vid === '')
-            return "<i>Error: no vendor selected</i>";
+        if ($vid === '') {
+            return '<div class="alert alert-danger">Error: no vendor selected</div>';
+        }
 
         ob_start();
         ?>
+        <div id="alert-area"></div>
         <div id="newdeptdiv">
-        <a href="" onclick="$('#newform').show(); return false;">New vendor department</a>
-        <div id="newform" style="display:none;">
-        <p />
-        <b>No.</b> <input type=text size=4 id=newno />
-        &nbsp;&nbsp;&nbsp;
-        <b>Name</b> <input type=text id=newname />
-        <p />
-        <input onclick="newdept();" type=submit value="Add department" />
-        &nbsp;&nbsp;&nbsp;
-        <a href="" onclick="$('#newform').hide(); return false;">Cancel</a>
+        <a href="" onclick="$('#newform').show();$('#newno').focus(); return false;">New vendor department</a>
+        <div id="newform" class="collapse">
+            <div class="form-group">
+                <label>No.</label>
+                <input type=number id=newno class="form-control" />
+                <label>Name</label>
+                <input type=text id=newname class="form-control" />
+            </div>
+            <button onclick="newdept();return false;" type=submit 
+                class="btn btn-default">Add department</button>
+            &nbsp;&nbsp;&nbsp;
+            <a href="" onclick="$('#newform').hide(); return false;">Cancel</a>
         </div>
         </div>
         <hr />
@@ -129,7 +174,6 @@ class VendorDepartmentEditor extends FanniePage {
         <?php echo $this->vendorDeptDisplay($vid); ?>
         </div>
         <input type="hidden" id="vendorID" value="<?php echo $vid; ?>" />
-        <input type="hidden" id="urlpath" value="<?php echo $FANNIE_URL; ?>" />
         <?php
 
         $this->add_script('vdepts.js');
@@ -137,7 +181,8 @@ class VendorDepartmentEditor extends FanniePage {
         return ob_get_clean();
     }
 
-    private function vendorDeptDisplay($id){
+    private function vendorDeptDisplay($id)
+    {
         global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         
@@ -145,32 +190,50 @@ class VendorDepartmentEditor extends FanniePage {
         $nameR = $dbc->exec_statement($nameQ,array($id));
         $name = array_pop($dbc->fetch_row($nameR));
 
-        $ret = "<b>Departments in $name</b><br />";
-        $ret .= "<table cellspacing=0 cellpadding=4 border=1>";
+        $ret = "<strong>Departments in $name</strong><br />";
+        $ret .= "<table class=\"table\">"; 
         $ret .= "<tr><th>No.</th><th>Name</th><th>Margin</th>
             <th>&nbsp;</th><th>&nbsp;</th></tr>";
 
-        $deptQ = $dbc->prepare_statement("SELECT * FROM vendorDepartments WHERE vendorID=?
-            ORDER BY deptID");;
+        $deptQ = $dbc->prepare_statement("
+            SELECT vendorID,
+                deptID,
+                name,
+                margin,
+                testing,
+                posDeptID
+            FROM vendorDepartments
+            WHERE vendorID=?
+            ORDER BY deptID");
         $deptR = $dbc->exec_statement($deptQ,array($id));
         while($row = $dbc->fetch_row($deptR)){
-            $ret .= sprintf("<tr>
+            $ret .= sprintf("<tr id=\"row-%d\">
                 <td>%d</td>
                 <td id=nametd%d>%s</td>
                 <td id=margintd%d>%.2f%%</td>
-                <td id=button%d><a href=\"\" onclick=\"edit(%d);return false;\">
-                <img src=\"%s\" alt=\"Edit\" border=0 /></a></td>
-                <td><a href=\"\" onclick=\"deleteCat(%d,'%s');return false\">
-                <img src=\"%s\" alt=\"Delete\" border=0 /></a></td>
+                <td id=button%d>
+                    <a href=\"\" onclick=\"edit(%d);return false;\"
+                        class=\"edit-link\">%s</a>
+                    <a href=\"\" onclick=\"save(%d);return false;\"
+                        class=\"save-link collapse\">%s</a>
+                </td>
+                <td><a href=\"\" onclick=\"deleteCat(%d,'%s');return false\">%s</a></td>
                 </tr>",
-                $row[1],$row[1],$row[2],$row[1],
-                $row[3]*100,
-                $row[1],$row[1],
-                $FANNIE_URL.'src/img/buttons/b_edit.png',
-                $row[1],$row[2],
-                $FANNIE_URL.'src/img/buttons/b_drop.png');
+                $row['deptID'],
+                $row['deptID'],$row['deptID'],
+                $row['name'],$row['deptID'],
+                $row['margin']*100,
+                $row['deptID'],$row['deptID'],
+                \COREPOS\Fannie\API\lib\FannieUI::editIcon(),
+                $row['deptID'],
+                \COREPOS\Fannie\API\lib\FannieUI::saveIcon(),
+                $row['deptID'],$row['name'],
+                \COREPOS\Fannie\API\lib\FannieUI::deleteIcon());
         }
         $ret .= "</table>";
+
+        $ret .= '<p><a href="VendorIndexPage.php?vid=' . $id . '" class="btn btn-default">Home</a></p>';
+
         return $ret;
     }
 }

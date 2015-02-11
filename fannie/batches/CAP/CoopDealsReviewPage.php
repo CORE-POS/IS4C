@@ -34,6 +34,7 @@ class CoopDealsReviewPage extends FanniePage
 
     public $description = '[Co+op Deals Review] lists the currently load Co+op Deals data
     and can create sales batches from that data.';
+    public $themed = true;
     
     private $mode = 'form';
 
@@ -137,8 +138,8 @@ class CoopDealsReviewPage extends FanniePage
             $list->save();
         }
 
-        $ret = "New sales batches have been created!<p />";
-        $ret .= "<a href=\"../newbatch/\">View batches</a>";    
+        $ret = "<p>New sales batches have been created!</p>";
+        $ret .= "<p><a href=\"../newbatch/\">View batches</a></p>";
 
         return $ret;
     }
@@ -163,7 +164,7 @@ class CoopDealsReviewPage extends FanniePage
         $result = $dbc->exec_statement($query);
 
         $ret = "<form action=CoopDealsReviewPage.php method=post>
-        <table cellpadding=4 cellspacing=0 border=1>
+        <table class=\"table\">
         <tr><th>UPC</th><th>Desc</th><th>Sale Price</th><th>Batch</th></tr>\n";
         while ($row = $dbc->fetch_row($result)) {
             $ret .= sprintf('<tr>
@@ -180,32 +181,57 @@ class CoopDealsReviewPage extends FanniePage
         }
         $ret .= <<<html
         </table><p />
-        <table cellpadding=4 cellspacing=0><tr>
-        <td><b>A Start</b></td><td><input type=text name=start id=start /></td>
-        </tr><tr>
-        <td><b>A End</b></td><td><input type=text name=end id=end /></td>
-        </tr><tr>
-        <td><b>B Start</b></td><td><input type=text name=bstart id=bstart /></td>
-        </tr><tr>
-        <td><b>B End</b></td><td><input type=text name=bend id=bend /></td>
-        </tr><tr>
-        <td><b>Month</b></td><td><input type=text name=naming /></td>
-        </tr></table>
-        <label>
-            <input type="checkbox" name="group_by_superdepts" checked="true" 
-                onchange="$('.superNameSpan').toggle(); " />
-            Group sale batches by Superdepartment
-         </label><br />
-        <input type=submit value="Create Batch(es)" />
+        <div class="row form-horizontal form-group">
+            <label class="col-sm-2 control-label">A Start</label>
+            <div class="col-sm-4">
+                <input type="text" name="start" id="start" class="form-control date-field" />
+            </div>
+            <label class="col-sm-2 control-label">B Start</label>
+            <div class="col-sm-4">
+                <input type="text" name="bstart" id="bstart" class="form-control date-field" />
+            </div>
+        </div>
+        <div class="row form-horizontal form-group">
+            <label class="col-sm-2 control-label">A End</label>
+            <div class="col-sm-4">
+                <input type="text" name="end" id="end" class="form-control date-field" />
+            </div>
+            <label class="col-sm-2 control-label">B End</label>
+            <div class="col-sm-4">
+                <input type="text" name="bend" id="bend" class="form-control date-field" />
+            </div>
+        </div>
+        <div class="row form-horizontal form-group">
+            <label class="col-sm-2 control-label">Month</label>
+            <div class="col-sm-4">
+                <input type="text" name="naming" class="form-control" />
+            </div>
+            <label class="col-sm-6">
+                <input type="checkbox" name="group_by_superdepts" checked="true" 
+                    onchange="$('.superNameSpan').toggle(); " />
+                Group sale batches by Superdepartment
+            </label>
+        </div>
+        <p>    
+            <button type=submit class="btn btn-default">Create Batch(es)</button>
+        </p>
         </form>
 html;
 
-        $this->add_onload_command("\$('#start').datepicker();\n");
-        $this->add_onload_command("\$('#end').datepicker();\n");
-        $this->add_onload_command("\$('#bstart').datepicker();\n");
-        $this->add_onload_command("\$('#bend').datepicker();\n");
-
         return $ret;
+    }
+    
+    public function helpContent()
+    {
+        return '<p>This tool creates A, B, and TPR batches. The TPR batches will
+            start on <em>A Start</em> and end on <em>B End</em>. The Month field
+            is used in batch names. For example, if Month is <em>January</em>, 
+            batches will have names like <em>Co+op Deals January A</em>.</p>
+            <p><em>Group sale batches by superdepartment</em> means create 
+            separate sales batches for each appicable superdepartment rather
+            than having a single A batch, single B batch, and single TPR
+            batch.</p>
+            ';
     }
 }
 

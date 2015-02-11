@@ -33,11 +33,12 @@ class VendorPricingIndex extends FanniePage {
 
     public $description = '[Vendor Pricing Menu] lists tools for managing vendor
     cost information and making price changes when costs change.';
+    public $themed = true;
 
     function body_content(){
         ob_start();
         ?>
-        <table cellspacing=0 cellpadding=3 border=1>
+        <table class="table">
         <tr>
             <td><a href=RecalculateVendorSRPs.php>Recalculate SRPs</a></td>
             <td>Re-compute SRPs for the vendor price change page based on
@@ -55,7 +56,12 @@ class VendorPricingIndex extends FanniePage {
         <?php
         return ob_get_clean();
     }
-
+    
+    public function helpContent()
+    {
+        return '<p>These tools are for managing pries based on vendor item costs 
+            and store margin targets</p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

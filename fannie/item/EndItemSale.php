@@ -32,16 +32,19 @@ class EndItemSale extends FannieRESTfulPage {
     protected $title = 'Take item off sale';
 
     public $description = '[Take Item Off Sale] immediately stops sale pricing an item.';
+    public $themed = true;
 
     function post_id_handler(){
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $upc = BarcodeLib::padUPC($this->id);
 
-        $prodP = $dbc->prepare_statement('UPDATE products SET
-                discounttype=0, special_price=0
-                WHERE upc=?');
-        $prodR = $dbc->exec_statement($prodP, array($upc));
+        $model = new ProductsModel($dbc);
+        $model->upc($upc);
+        $model->discounttype(0);
+        $model->special_price(0);
+        $model->modified(date('Y-m-d H:i:s'));
+        $model->save();
 
         $batchID = FormLib::get_form_value('batchID');
         $batchUPC = FormLib::get_form_value('batchUPC');
@@ -71,28 +74,29 @@ class EndItemSale extends FannieRESTfulPage {
                         ON p.upc=u.upc WHERE p.upc=?');
         $itemR = $dbc->exec_statement($itemP, array($upc));
         if ($dbc->num_rows($itemR)==0)
-            return 'Item not found';
+            return '<div class="alert alert-danger">Item not found</div>';
         $itemW = $dbc->fetch_row($itemR);
         $ret = '<form method="post" action="EndItemSale.php">
             <input type="hidden" name="id" value="'.$upc.'" />';
-        $ret .= sprintf('%s is currently on sale for $%.2f', $itemW['description'], $itemW['special_price']);
+        $ret .= sprintf('<p>%s is currently on sale for $%.2f', $itemW['description'], $itemW['special_price']);
 
         $batchP = $dbc->prepare_statement("SELECT b.batchName, b.batchID, l.upc FROM batches AS b 
             LEFT JOIN batchList as l
             on b.batchID=l.batchID WHERE '".date('Y-m-d')."' BETWEEN b.startDate
             AND b.endDate AND (l.upc=? OR l.upc=?)");
         $batchR = $dbc->exec_statement($batchP,array($upc,'LC'.$itemW['lc']));
-        if ($dbc->num_rows($batchR) == 0){
-            $ret .= '<br />The item does not appear to be in an active batch';
-        }
-        else {
+        if ($dbc->num_rows($batchR) == 0) {
+            $ret .= '<div class="alert alert-warning">The item does not appear to be in an active batch</div>';
+        } else {
             $batchW = $dbc->fetch_row($batchR);
-            $ret .= '<br />The item will be removed from the batch <i>'.$batchW['batchName'].'</i>';
+            $ret .= '<br />The item will be removed from the batch <strong>'.$batchW['batchName'].'</strong>';
             $ret .= sprintf('<input type="hidden" name="batchID" value="%d" />
                     <input type="hidden" name="batchUPC" value="%s" />',
                     $batchW['batchID'],$batchW['upc']);
         }
-        $ret .= '<br /><input type="submit" value="Take item off sale" id="button" />';
+        $ret .= '<br /><button type="submit" class="btn btn-default" id="button">Take item off sale</button>';
+        $ret .= '</p>';
+
         return $ret;
     }
 

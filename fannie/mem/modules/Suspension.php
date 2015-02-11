@@ -24,7 +24,12 @@
 /* 17Aug12 flathat Add titles to un-coded "History" and "Change Status" links.
 */
 
-class Suspension extends MemberModule {
+class Suspension extends \COREPOS\Fannie\API\member\MemberModule {
+
+    public function width()
+    {
+        return parent::META_WIDTH_THIRD;
+    }
 
     function showEditForm($memNum,$country="US"){
         global $FANNIE_URL;
@@ -51,20 +56,31 @@ class Suspension extends MemberModule {
             $reason = rtrim($reason,", ");
         }
 
-        $ret = "<fieldset><legend>Active Status</legend>";
-        $ret .= "<table class=\"MemFormTable\" 
-            border=\"0\">";
+        $ret = "<div class=\"panel panel-default\">
+            <div class=\"panel-heading\">Active Status</div>
+            <div class=\"panel-body\">";
 
-        $ret .= "<tr><th>Current Status</th>";
-        $ret .= "<td>$status</td>";
-        if (!empty($reason)){
-            $ret .= "<th>Reason</th>";
-            $ret .= "<td>$reason</td></tr>";
+        $ret .= '<div class="form-group">
+            <span class="label primaryBackground">Current Status</span>';
+        $ret .= ' <strong>' . $status . '</strong>';
+        $ret .= '</div>';
+
+        if (!empty($reason)) {
+            $ret .= '<div class="form-group">
+                <span class="label primaryBackground">Reason</span>';
+            $ret .= ' <strong>' . $reason . '</strong>';
+            $ret .= '</div>';
         }
-        $ret .= "<tr><td><a href=\"{$FANNIE_URL}reports/SuspensionHistory/index.php?memNum=$memNum\">History</a></td>";
-        $ret .= "<td><a href=\"{$FANNIE_URL}mem/MemStatusEditor.php?memID=$memNum\">Change Status</a></td></tr>";
+        
+        $ret .= '<div class="form-group">';
+        $ret .= "<a href=\"{$FANNIE_URL}reports/SuspensionHistory/index.php?memNum=$memNum\">History</a>";
+        $ret .= ' | ';
+        $ret .= "<a href=\"{$FANNIE_URL}mem/MemStatusEditor.php?memID=$memNum\">Change Status</a>";
+        $ret .= '</div>';
 
-        $ret .= "</table></fieldset>";
+        $ret .= "</div>";
+        $ret .= "</div>";
+
         return $ret;
     }
 }

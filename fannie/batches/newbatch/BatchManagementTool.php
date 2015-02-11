@@ -43,6 +43,10 @@ class BatchManagementTool extends FanniePage
 
     public $description = '[Sales Batches] is the primary tool for creating, editing, and managing 
     sale and price change batches.';
+    // not really but for the sake of stats
+    // this just redirects to the replacement so it's
+    // effectively themed
+    public $themed = true;
 
     private $audited = 1;
     private $con = null;
@@ -51,6 +55,19 @@ class BatchManagementTool extends FanniePage
 
     function preprocess()
     {
+        /**
+          Bounce users to new page
+        */
+        $url = 'BatchListPage.php';
+        if (FormLib::get('startAt') !== '') {
+            $url = 'EditBatchPage.php?id=' . FormLib::get('startAt');
+        }
+        // restriction for unit testability
+        if (php_sapi_name() != 'cli') {
+            header('Location: ' . $url);
+        }
+        return false;
+
         global $FANNIE_OP_DB;
         // maintain user logins longer
         refreshSession();
@@ -754,8 +771,10 @@ class BatchManagementTool extends FanniePage
             }
 
             // push changed items to lanes
+            $model = new ProductsModel($dbc);
             foreach ($items as $item) {
-                updateProductAllLanes($item);
+                $model->upc($item);
+                $model->pushToLanes();
             }
             break;
         default:

@@ -29,7 +29,8 @@ if (!class_exists('FannieAuth'))
 
 /**
 */
-class TimesheetPlugin extends FanniePlugin {
+class TimesheetPlugin extends \COREPOS\Fannie\API\FanniePlugin {
+    public $page_set = 'Plugin :: TimesheetPlugin';
 
     /**
       Desired settings. These are automatically exposed

@@ -180,7 +180,6 @@ class BasicPage {
 	  other attributes
 	*/
 	function input_header($action=""){
-		global $CORE_LOCAL;
 		$my_url = $this->page_url;
 		if (empty($action))
 			$action = "action=\"".$_SERVER['PHP_SELF']."\"";
@@ -194,7 +193,7 @@ class BasicPage {
 		// a giant PHP warning for the moment
 		$time = strftime("%m/%d/%y %I:%M %p", time());
 
-		$CORE_LOCAL->set("repeatable",0);
+		CoreLocal::set("repeatable",0);
 		?>
 		<script type="text/javascript">
 		function betterDate() {
@@ -223,49 +222,49 @@ class BasicPage {
 		}
 		</script>
 		<div id="inputArea">
-			<div class="inputform <?php echo ($CORE_LOCAL->get("training")==1?'training':''); ?>">
+			<div class="inputform <?php echo (CoreLocal::get("training")==1?'training':''); ?>">
 				<form name="form" id="formlocal" method="post" autocomplete="off"
 					<?php echo $action; ?> >
 				<input name="reginput" value="" onblur="$('#reginput').focus();"
 					type="<?php echo $inputType; ?>" id="reginput"  />
 				</form>
 			</div>
-			<div class="notices coloredText <?php echo ($CORE_LOCAL->get("training")==1?'training':''); ?>">
+			<div class="notices coloredText <?php echo (CoreLocal::get("training")==1?'training':''); ?>">
 			<?php
-			if ($CORE_LOCAL->get("training") == 1) {
+			if (CoreLocal::get("training") == 1) {
 				echo "<span class=\"text\">"._("training")." </span>"
 				     ."<img alt=\"training\" src='{$my_url}graphics/BLUEDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
-			elseif ($CORE_LOCAL->get("standalone") == 0) {
+			elseif (CoreLocal::get("standalone") == 0) {
 				echo "<img alt=\"online\" src='{$my_url}graphics/GREENDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
 			else {
 				echo "<span class=\"text\">stand alone</span>"
 				     ."<img alt=\"standalone\" src='{$my_url}graphics/REDDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
-			if ($CORE_LOCAL->get("receiptToggle")==1){
+			if (CoreLocal::get("receiptToggle")==1){
 				echo "<img id=\"receipticon\" alt=\"receipt\" src='{$my_url}graphics/receipt.gif'>&nbsp;&nbsp;&nbsp;";
 			}
 			else {
 				echo "<img id=\"receipticon\" alt=\"no receipt\" src='{$my_url}graphics/noreceipt.gif'>&nbsp;&nbsp;&nbsp;";
 			}
-			if ($CORE_LOCAL->get("CCintegrate") == 1 && $CORE_LOCAL->get("training") == 0) {
-			   if ($CORE_LOCAL->get("CachePanEncBlock")=="")
+			if (CoreLocal::get("CCintegrate") == 1 && CoreLocal::get("training") == 0) {
+			   if (CoreLocal::get("CachePanEncBlock")=="")
 				   echo "<img alt=\"cc mode\" src='{$my_url}graphics/ccIn.gif'>&nbsp;";
 			   else
 				   echo "<img alt=\"cc available\" src='{$my_url}graphics/ccInLit.gif'>&nbsp;";
-			} elseif ($CORE_LOCAL->get("CCintegrate") == 1 && $CORE_LOCAL->get("training") == 1) {
-			   if ($CORE_LOCAL->get("CachePanEncBlock")=="")
+			} elseif (CoreLocal::get("CCintegrate") == 1 && CoreLocal::get("training") == 1) {
+			   if (CoreLocal::get("CachePanEncBlock")=="")
 				   echo "<img alt=\"cc test mode\" src='{$my_url}graphics/ccTest.gif'>&nbsp;";
 			   else
 				   echo "<img alt=\"cc available (test)\" src='{$my_url}graphics/ccTestLit.gif'>&nbsp;";
 			}
 
 			echo "<span id=\"timeSpan\" class=\"time\">".$time."</span>\n";
-			if ($CORE_LOCAL->get("prefix") != ""){
+			if (CoreLocal::get("prefix") != ""){
 				$this->add_onload_command("\$('#reginput').val('"
-					.$CORE_LOCAL->get("prefix")."');\n");
-				$CORE_LOCAL->set("prefix","");
+					.CoreLocal::get("prefix")."');\n");
+				CoreLocal::set("prefix","");
 			}
 			?>
 
@@ -279,14 +278,14 @@ class BasicPage {
 	  Display the standard header without input box
 	  @return None
 	*/
-	function noinput_header(){
-		global $CORE_LOCAL;
+	function noinput_header()
+    {
 		$my_url = $this->page_url;
 		$this->add_onload_command("betterDate();\n");
 		
 		$time = strftime("%m/%d/%y %I:%M %p", time());
 
-		$CORE_LOCAL->set("repeatable",0);
+		CoreLocal::set("repeatable",0);
 		?>
 		<script type="text/javascript">
 		function betterDate() {
@@ -320,24 +319,24 @@ class BasicPage {
 			</div>
 			<div class="notices coloredText">
 			<?php	
-			if ($CORE_LOCAL->get("training") == 1) {
+			if (CoreLocal::get("training") == 1) {
 				echo "<span class=\"text\">"._("training")." </span>"
 				     ."<img alt=\"training\" src='{$my_url}graphics/BLUEDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
-			elseif ($CORE_LOCAL->get("standalone") == 0) {
+			elseif (CoreLocal::get("standalone") == 0) {
 				echo "<img alt=\"online\" src='{$my_url}graphics/GREENDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
 			else {
 				echo "<span class=\"text\">stand alone</span>"
 				     ."<img alt=\"standalone\" src='{$my_url}graphics/REDDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
-			if ($CORE_LOCAL->get("CCintegrate") == 1 && $CORE_LOCAL->get("training") == 0) {
-			   if ($CORE_LOCAL->get("CachePanEncBlock")=="")
+			if (CoreLocal::get("CCintegrate") == 1 && CoreLocal::get("training") == 0) {
+			   if (CoreLocal::get("CachePanEncBlock")=="")
 				   echo "<img alt=\"cc mode\" src='{$my_url}graphics/ccIn.gif'>&nbsp;";
 			   else
 				   echo "<img alt=\"cc available\" src='{$my_url}graphics/ccInLit.gif'>&nbsp;";
-			} elseif ($CORE_LOCAL->get("CCintegrate") == 1 && $CORE_LOCAL->get("training") == 1) {
-			   if ($CORE_LOCAL->get("CachePanEncBlock")=="")
+			} elseif (CoreLocal::get("CCintegrate") == 1 && CoreLocal::get("training") == 1) {
+			   if (CoreLocal::get("CachePanEncBlock")=="")
 				   echo "<img alt=\"cc test mode\" src='{$my_url}graphics/ccTest.gif'>&nbsp;";
 			   else
 				   echo "<img alt=\"cc available (test)\" src='{$my_url}graphics/ccTestLit.gif'>&nbsp;";
@@ -381,11 +380,10 @@ class BasicPage {
 	*/
 	function scanner_scale_polling($include_scans=true)
     {
-        global $CORE_LOCAL;
 		if (!$include_scans) {
             return '';
         }
-        $scaleDriver = $CORE_LOCAL->get("scaleDriver");
+        $scaleDriver = CoreLocal::get("scaleDriver");
         if ($scaleDriver == '' || !class_exists($scaleDriver)) {
             return '';
         }
@@ -415,9 +413,9 @@ class BasicPage {
 	  Use this function instead of manual redirects
 	  to allow debug output.
 	*/
-	function change_page($url){
-		global $CORE_LOCAL;
-		if ($CORE_LOCAL->get("Debug_Redirects") == 1){
+	function change_page($url)
+    {
+		if (CoreLocal::get("Debug_Redirects") == 1){
 			$stack = debug_backtrace();
 			printf('Follow redirect to <a href="%s">%s</a>',$url,$url);
 			echo '<hr />Stack:';

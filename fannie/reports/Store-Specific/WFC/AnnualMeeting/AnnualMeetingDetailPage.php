@@ -2,7 +2,7 @@
 include('../../../../config.php');
 include_once($FANNIE_ROOT.'src/SQLManager.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include($FANNIE_ROOT.'src/Credentials/OutsideDB.is4c.php');
+include($FANNIE_ROOT.'src/Credentials/OutsideDB.tunneled.php');
 
 class AnnualMeetingDetailPage extends FannieRESTfulPage {
     protected $header = "Annual Meeting Registration";
@@ -142,7 +142,7 @@ else if (isset($_REQUEST['memnum'])){
         $fannieDB = FannieDB::get($FANNIE_OP_DB);
         // POS registrations from today
         $hereQ = "SELECT MIN(tdate) AS tdate,d.card_no,".
-            $fannieDB->concat('c.FirstName',' ','c.LastName','')." as name,
+            $fannieDB->concat('c.FirstName',"' '",'c.LastName','')." as name,
             m.phone, m.email_1 as email,
             SUM(CASE WHEN charflag IN ('M','V','S') THEN quantity ELSE 0 END)-1 as guest_count,
             SUM(CASE WHEN charflag IN ('K') THEN quantity ELSE 0 END) as child_count,
@@ -152,7 +152,7 @@ else if (isset($_REQUEST['memnum'])){
             'pos' AS source
             FROM ".$FANNIE_TRANS_DB.$fannieDB->sep()."dlog AS d
             LEFT JOIN custdata AS c ON c.CardNo=d.card_no AND c.personNum=1
-            LEFT JOIN meminfo AS m ON d.card_no=c.card_no
+            LEFT JOIN meminfo AS m ON d.card_no=m.card_no
             WHERE upc IN ('0000000001041','0000000001042')
             AND d.card_no = ?
             ORDER BY MIN(tdate)";

@@ -37,9 +37,6 @@
 </map>
 <a href="class_misc_lib-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
 <tr><td></td></tr>
-<tr><td colspan="2"><br><h2>Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_misc_lib.html#52b9ae65d48b7c37c5cef1810072430e">getAllIPs</a> ()</td></tr>
-
 <tr><td colspan="2"><br><h2>Static Public Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_misc_lib.html#1181d41f12095bdaee5be52dcf4f2d0d">baseURL</a> ($check_file=&quot;css/pos.css&quot;)</td></tr>
 
@@ -65,6 +62,8 @@ static&nbsp;</td><td class="memItemRight" valign="bottom"><b>base_url</b> ($chec
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_misc_lib.html#1d3d5bcdbc5e8ea770d309c3903569dc">errorBeep</a> ()</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_misc_lib.html#f7e14a2a9890fcf13108fc8308c2a167">twoPairs</a> ()</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_misc_lib.html#f9c1ddf1c385a62d9b4f54e220db4175">getAllIPs</a> ()</td></tr>
 
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
@@ -116,16 +115,16 @@ Path detection. Find the relative URL for POS root. <dl compact><dt><b>Parameter
 Send error beep message to the scale 
 </div>
 </div><p>
-<a class="anchor" name="52b9ae65d48b7c37c5cef1810072430e"></a><!-- doxytag: member="MiscLib::getAllIPs" ref="52b9ae65d48b7c37c5cef1810072430e" args="()" -->
+<a class="anchor" name="f9c1ddf1c385a62d9b4f54e220db4175"></a><!-- doxytag: member="MiscLib::getAllIPs" ref="f9c1ddf1c385a62d9b4f54e220db4175" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">MiscLib::getAllIPs           </td>
+          <td class="memname">static MiscLib::getAllIPs           </td>
           <td>(</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
-          <td width="100%"></td>
+          <td width="100%"><code> [static]</code></td>
         </tr>
       </table>
 </div>
@@ -270,7 +269,7 @@ Send re-poll message to the scale
 
 <p>
 Get the scale wrapper object <dl compact><dt><b>Returns:</b></dt><dd>An <a class="el" href="class_scale_driver_wrapper.html">ScaleDriverWrapper</a> object</dd></dl>
-The driver is chosen via "scaleDriver" in $CORE_LOCAL. If the object cannot be found this returns zero 
+The driver is chosen via "scaleDriver" in session. If the object cannot be found this returns zero 
 </div>
 </div><p>
 <a class="anchor" name="97bac238658a710593f59a640b111c5d"></a><!-- doxytag: member="MiscLib::sigTermObject" ref="97bac238658a710593f59a640b111c5d" args="()" -->
@@ -290,7 +289,7 @@ The driver is chosen via "scaleDriver" in $CORE_LOCAL. If the object cannot be f
 
 <p>
 Get the signature capture wrapper object <dl compact><dt><b>Returns:</b></dt><dd>An <a class="el" href="class_scale_driver_wrapper.html">ScaleDriverWrapper</a> object</dd></dl>
-The driver is chosen via "termDriver" in $CORE_LOCAL. If the object cannot be found this returns zero.<p>
+The driver is chosen via "termDriver" in session. If the object cannot be found this returns zero.<p>
 Signature capture support is very alpha. 
 </div>
 </div><p>
@@ -361,7 +360,7 @@ Guess whether PHP is running on windows <dl compact><dt><b>Returns:</b></dt><dd>
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/MiscLib.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 9 Feb 2015 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

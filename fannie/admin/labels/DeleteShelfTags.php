@@ -37,6 +37,7 @@ class DeleteShelfTags extends FanniePage
     private $messages = '';
 
     public $description = '[Delete Shelf Tags] gets rid of a set of shelf tags.';
+    public $themed = true;
 
     function preprocess()
     {
@@ -48,7 +49,9 @@ class DeleteShelfTags extends FanniePage
         $tags->id($id);
         $current_set = $tags->find();
         if (count($current_set) == 0) {
-            $this->messages = "Barcode table is already empty. <a href='ShelfTagIndex.php'>Click here to continue</a>";
+            $this->messages = '<div class="alert alert-info">
+                Barcode table is already empty. <a href="ShelfTagIndex.php">Click here to continue</a>
+                </div>';
             return true;
         }
 
@@ -84,12 +87,15 @@ class DeleteShelfTags extends FanniePage
                 $tag->id($old_id);
                 $tag->delete();
             }
-            $this->messages = "Barcode table cleared <a href='ShelfTagIndex.php'>Click here to continue</a>";
+            $this->messages = '<div class="alert alert-success">
+                Barcode table cleared <a href="ShelfTagIndex.php">Click here to continue</a>
+                </div>';
 
             return true;
         } else {
-            $this->messages = "<span style=\"color:red;\"><a href='DeleteShelfTags.php?id=$id&submit=1'>Click 
-                here to clear barcodes</a></span>";
+            $this->messages = '<div class="alert alert-danger">
+                <a href="DeleteShelfTags.php?id=' . $id . '&submit=1">Click 
+                here to clear barcodes</a></div>';
             return true;
         }
 

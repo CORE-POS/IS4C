@@ -32,6 +32,7 @@ class OverShortMAS extends FannieRESTfulPage {
 
     public $page_set = 'Plugin :: Over/Shorts';
     public $description = '[MAS Export] formats over/short info for MAS90 journal entry.';
+    public $themed = true;
 
     function preprocess(){
         $this->__routes[] = 'get<startDate><endDate>';
@@ -87,6 +88,7 @@ class OverShortMAS extends FannieRESTfulPage {
         'RR' => 63380,  
         'OB' => 66600,
         'AD' => 66600,
+        'RB' => 31140,
         'NCGA' => 66600,
         'Member Discounts' => 66600,
         'Staff Discounts' => 61170,
@@ -96,13 +98,15 @@ class OverShortMAS extends FannieRESTfulPage {
         $args = array($this->startDate.' 00:00:00', $this->endDate.' 23:59:59');
 
         $tenderQ = "SELECT SUM(total) AS amount,
-                CASE WHEN trans_subtype IN ('CA','CK') THEN 'CA'
+                CASE WHEN description='REBATE CHECK' THEN 'RB'
+                WHEN trans_subtype IN ('CA','CK') THEN 'CA'
                 WHEN trans_subtype IN ('CC','AX') THEN 'CC'
                 WHEN trans_subtype IN ('EF','EC') THEN 'EF'
                 WHEN trans_subtype = 'IC' AND upc='0049999900001' THEN 'OB'
                 WHEN trans_subtype = 'IC' AND upc='0049999900002' THEN 'AD'
                 ELSE trans_subtype END as type,
-                MAX(CASE WHEN d.upc IN ('0049999900001','0049999900002') THEN d.description ELSE TenderName END) as name
+                MAX(CASE WHEN d.upc IN ('0049999900001','0049999900002') OR description='REBATE CHECK' 
+                    THEN d.description ELSE TenderName END) as name
                 FROM $dlog AS d LEFT JOIN
                 tenders AS t ON d.trans_subtype=t.TenderCode
                 WHERE trans_type='T'
@@ -272,12 +276,12 @@ class OverShortMAS extends FannieRESTfulPage {
 
     function get_startDate_endDate_view(){
         global $FANNIE_URL, $FANNIE_ROOT;
-        $records = DataCache::getFile('daily');
+        $records = \COREPOS\Fannie\API\data\DataCache::getFile('daily');
         if ($records !== False)
             $records = unserialize($records);
         if (!is_array($records)){
             $records = $this->get_data();
-            DataCache::putFile('daily', serialize($records));
+            \COREPOS\Fannie\API\data\DataCache::putFile('daily', serialize($records));
         }
 
         $ret = '';
@@ -285,7 +289,7 @@ class OverShortMAS extends FannieRESTfulPage {
         if (FormLib::get_form_value('excel','') === ''){
             $ret .= sprintf('<a href="OverShortMAS.php?startDate=%s&endDate=%s&excel=yes">Download</a>',
                     $this->startDate, $this->endDate);
-            $ret .= '<table cellpadding="4" cellspacing="0" border="1">';
+            $ret .= '<table class="table table-bordered small">';
             foreach($records as $r){
                 if (preg_match('/\(\d+-\d+-\d+ \d+-\d+-\d+\)/',$r[5])){
                     $tmp = explode(' ',$r[5]);
@@ -320,16 +324,21 @@ class OverShortMAS extends FannieRESTfulPage {
 
     function get_view(){
         global $FANNIE_URL;
-        $this->add_onload_command("\$('#startDate').datepicker();");
-        $this->add_onload_command("\$('#endDate').datepicker();");
         $ret = '<form action="OverShortMAS.php" method="get">
-            <table>
-            <tr><th>Start</th>
-            <td><input name="startDate" size="10" id="startDate" /></td>
-            </tr><tr><th>End</th>
-            <td><input name="endDate" size="10" id="endDate" /></td>
-            </tr></table>
-            <input type="submit" value="Get Data" />
+            <div class="col-sm-4">
+            <div class="form-group">
+                <label>Start Date</label>
+                <input name="startDate" class="form-control date-field" required id="date1" />
+            </div>
+            <div class="form-group">
+                <label>End Date</label>
+                <input name="endDate" class="form-control date-field" required id="date2" />
+            </div>
+            <p>
+                <button type="submit" class="btn btn-default">Get Data</button>
+            </p>
+            </div>
+            <div class="col-sm-4">' . FormLib::dateRangePicker() . '</div>
             </form>';
         return $ret;
     }

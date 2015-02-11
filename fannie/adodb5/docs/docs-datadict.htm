@@ -11,7 +11,7 @@
       }
       pre {
         font-size: 9pt;
-         background-color: #EEEEEE; padding: .5em; margin: 0px; 
+         background-color: #EEEEEE; padding: .5em; margin: 0px;
       }
       .toplink {
         font-size: 8pt;
@@ -20,7 +20,7 @@
 </head>
 <body style="background-color: rgb(255, 255, 255);">
 <h2>ADOdb Data Dictionary Library for PHP</h2>
-<p>V5.06 16 Oct 2008  (c) 2000-2009 John Lim (<a
+<p>V5.20dev  ??-???-2014  (c) 2000-2014 John Lim (<a
  href="mailto:jlim#natsoft.com">jlim#natsoft.com</a>).<br>
 AXMLS (c) 2004 ars Cognita, Inc</p>
 <p><font size="1">This software is dual licensed using BSD-Style and
@@ -38,7 +38,7 @@ system for defining databases. You can contact them at
 dcech#phpwerx.net and richtl#arscognita.com.</p>
 <p>Currently the following databases are supported:</p>
 <p> <b>Well-tested:</b> PostgreSQL, MySQL, Oracle, MSSQL.<br>
-<b>Beta-quality:</b> DB2, Informix, Sybase, Interbase, Firebird.<br>
+<b>Beta-quality:</b> DB2, Informix, Sybase, Interbase, Firebird, SQLite.<br>
 <b>Alpha-quality:</b> MS Access (does not support DEFAULT values) and
 generic ODBC.
 </p>
@@ -289,8 +289,8 @@ documentation for a more detailed description of the adoSchema methods,
 including methods and schema elements that are not described in this
 tutorial.</p>
 <h3>XML Schema Version 3</h3>
-<p>In March 2006, we added adodb-xmlschema03.inc.php to the release, which supports version 3 of XML Schema. 
-The adodb-xmlschema.inc.php remains the same as previous releases, and supports version 2 of XML Schema. 
+<p>In March 2006, we added adodb-xmlschema03.inc.php to the release, which supports version 3 of XML Schema.
+The adodb-xmlschema.inc.php remains the same as previous releases, and supports version 2 of XML Schema.
 Version 3 provides some enhancements:
 
 <ul>
@@ -308,7 +308,7 @@ Version 3 provides some enhancements:
   &lt;descr>ATS KnowledgeBase&lt;/descr>
   &lt;opt platform="mysql">TYPE=INNODB&lt;/opt>
   &lt;field name="recid" type="I"/>
-  &lt;field name="organization_code" type="I4"/> 
+  &lt;field name="organization_code" type="I4"/>
   &lt;field name="sub_code" type="C" size="20"/>
   etc...
 </pre>

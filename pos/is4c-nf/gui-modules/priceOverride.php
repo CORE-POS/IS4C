@@ -28,9 +28,9 @@ class PriceOverride extends NoInputPage {
 	var $description;
 	var $price;
 
-	function preprocess(){
-		global $CORE_LOCAL;
-		$line_id = $CORE_LOCAL->get("currentid");
+	function preprocess()
+    {
+		$line_id = CoreLocal::get("currentid");
 		$db = Database::tDataConnect();
 		
 		$q = "SELECT description,total,department FROM localtemptrans
@@ -70,7 +70,7 @@ class PriceOverride extends NoInputPage {
 				}
 				$ttl = ((int)$dollars) + ((int)$cents / 100.0);
 				$ttl = number_format($ttl,2);
-				if ($w['department'] == $CORE_LOCAL->get("BottleReturnDept"))
+				if ($w['department'] == CoreLocal::get("BottleReturnDept"))
 					$ttl = $ttl * -1;
 					
 				$q = sprintf("UPDATE localtemptrans SET unitPrice=%.2f, regPrice=%.2f,
@@ -86,8 +86,8 @@ class PriceOverride extends NoInputPage {
 		return True;
 	}
 	
-	function body_content() {
-		global $CORE_LOCAL;
+	function body_content() 
+    {
 		?>
 		<div class="baseHeight">
 		<div class="centeredDisplay colored">

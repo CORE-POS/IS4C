@@ -29,17 +29,20 @@ class drawerPage extends NoInputPage {
 	var $my_drawer;
 	var $available;
 
-	function preprocess(){
-		global $CORE_LOCAL;
-
+	function preprocess()
+    {
 		$this->my_drawer = ReceiptLib::currentDrawer();
 		$this->available = ReceiptLib::availableDrawers();
 		$this->is_admin = False;
 		$db = Database::pDataConnect();
-		$chk = $db->query('SELECT frontendsecurity FROM employees 
-				WHERE emp_no='.$CORE_LOCAL->get('CashierNo'));
+		$chk = $db->query('
+            SELECT frontendsecurity 
+            FROM employees 
+			WHERE emp_no=' . ((int)CoreLocal::get('CashierNo'))
+        );
 		if ($db->num_rows($chk) > 0){
-			$sec = array_pop($db->fetch_row($chk));
+            $w = $db->fetch_row($chk);
+            $sec = $w['frontendsecurity'];
 			if ($sec >= 30) $this->is_admin = True;
 		}
 
@@ -49,9 +52,9 @@ class drawerPage extends NoInputPage {
 					// no drawer available and not admin
 					// sign out and go back to main login screen
 					Database::setglobalvalue("LoggedIn", 0);
-					$CORE_LOCAL->set("LoggedIn",0);
-					$CORE_LOCAL->set("training",0);
-					$CORE_LOCAL->set("gui-scale","no");
+					CoreLocal::set("LoggedIn",0);
+					CoreLocal::set("training",0);
+					CoreLocal::set("gui-scale","no");
 					$this->change_page($this->page_url."gui-modules/login2.php");
 				}
 				else {
@@ -68,7 +71,7 @@ class drawerPage extends NoInputPage {
 					ReceiptLib::freeDrawer($this->my_drawer);
 				}
 				// switch to the requested drawer
-				ReceiptLib::assignDrawer($CORE_LOCAL->get('CashierNo'),$new_drawer);
+				ReceiptLib::assignDrawer(CoreLocal::get('CashierNo'),$new_drawer);
 				ReceiptLib::drawerKick();
 				$this->my_drawer = $new_drawer;
 			}
@@ -84,7 +87,7 @@ class drawerPage extends NoInputPage {
 							ReceiptLib::freeDrawer($this->my_drawer);
 						}
 						// switch to the requested drawer
-						ReceiptLib::assignDrawer($CORE_LOCAL->get('CashierNo'),$new_drawer);
+						ReceiptLib::assignDrawer(CoreLocal::get('CashierNo'),$new_drawer);
 						ReceiptLib::drawerKick();
 						$this->my_drawer = $new_drawer;
 
@@ -103,12 +106,12 @@ class drawerPage extends NoInputPage {
 		<?php
 	} // END head() FUNCTION
 
-	function body_content() {
-		global $CORE_LOCAL;
+	function body_content() 
+    {
 		$msg = 'You are using drawer #'.$this->my_drawer;
 		if ($this->my_drawer == 0)
 			$msg = 'You do not have a drawer';
-		$num_drawers = ($CORE_LOCAL->get('dualDrawerMode')===1) ? 2 : 1;
+		$num_drawers = (CoreLocal::get('dualDrawerMode')===1) ? 2 : 1;
 		$db = Database::pDataConnect();
 		?>
 		<div class="baseHeight">

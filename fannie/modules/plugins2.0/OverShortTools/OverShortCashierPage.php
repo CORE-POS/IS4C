@@ -29,19 +29,10 @@ class OverShortCashierPage extends FanniePage {
     // 10Nov13 EL Added title and header
     protected $title = 'Over/Short Single Cashier';
     protected $header = 'Over/Short Single Cashier';
-    protected $window_dressing = False;
     protected $auth_classes = array('overshorts');
     public $page_set = 'Plugin :: Over/Shorts';
     public $description = '[Single Cashier] allows viewing and entering tender amounts by cashier.';
-
-    // 10Nov13 EL Added constructor
-    public function __construct() {
-        global $FANNIE_WINDOW_DRESSING;
-        // To set authentication.
-        parent::__construct();
-        if (isset($FANNIE_WINDOW_DRESSING))
-            $this->has_menus($FANNIE_WINDOW_DRESSING);
-    }
+    public $themed = true;
 
     function preprocess(){
         $action = FormLib::get_form_value('action',False);
@@ -73,6 +64,7 @@ class OverShortCashierPage extends FanniePage {
     function displayCashier($date,$empno){
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
+        $store = FormLib::get('store', 0);
 
         $dlog = DTransactionsModel::selectDlog($date);
 
@@ -81,6 +73,7 @@ class OverShortCashierPage extends FanniePage {
         $names = array();
         $counts["SCA"] = 0.00;
 
+        $args = array($empno,$date.' 00:00:00',$date.' 23:59:59');
         $totalsQ = "SELECT 
             CASE WHEN trans_subtype IN ('CC','AX') THEN 'CC' ELSE trans_subtype END
             as trans_subtype,MAX(TenderName) as TenderName,
@@ -90,12 +83,16 @@ class OverShortCashierPage extends FanniePage {
             WHERE emp_no = ?
             AND tdate BETWEEN ? AND ?
             AND trans_type='T'
-            AND d.upc NOT IN ('0049999900001', '0049999900002')
-            GROUP BY 
+            AND d.upc NOT IN ('0049999900001', '0049999900002')";
+        if ($store != 0) {
+            $totalsQ .= ' AND d.store_id = ? ';
+            $args[] = $store;
+        }
+        $totalsQ .= " GROUP BY 
             CASE WHEN trans_subtype IN ('CC','AX') THEN 'CC' ELSE trans_subtype END
             ORDER BY TenderID";
         $totalsP = $dbc->prepare_statement($totalsQ);
-        $totalsR = $dbc->exec_statement($totalsP, array($empno,$date.' 00:00:00',$date.' 23:59:59'));
+        $totalsR = $dbc->exec_statement($totalsP, $args);
         while($totalsW = $dbc->fetch_row($totalsR)){
             if (in_array($totalsW['trans_subtype'], OverShortTools::$EXCLUDE_TENDERS)) {
                 continue;
@@ -122,13 +119,20 @@ class OverShortCashierPage extends FanniePage {
         if (!isset($counts['CK'])) $counts['CK'] = 0.00;
         
         $ret = "";
-        $ret .= "<b>$date</b> - Emp. #$empno</b><br />";    
-        $ret .= "<i>Starting cash</i>: <input type=text onchange=\"resumSheet();\"  id=countSCA size=5 value=\"".$counts['SCA']."\" /><br />";
+        $ret .= "<b>$date</b> - Emp. #$empno<br />";    
+        $ret .= '<div class="form-group form-inline">';
+        $ret .= "<label>Starting cash</label>: 
+            <div class=\"input-group\">
+            <span class=\"input-group-addon\">\$</span>
+            <input class=\"form-control form-control-sm\" type=text onchange=\"resumSheet();\" 
+                id=countSCA value=\"".$counts['SCA']."\" />
+            </div>
+            </div>";
         $posTotal += $counts['SCA'];
         $ret .= "<input type=\"hidden\" class=\"tenderCode\" value=\"CA\" />";
         $ret .= "<input type=\"hidden\" class=\"tenderCode\" value=\"CK\" />";
         $ret .= "<form onsubmit=\"save(); return false;\">";
-        $ret .= "<table cellpadding=4 cellspacing=0 border=1>";
+        $ret .= "<table class=\"table\">";
         $ret .= "<tr class=color><th>Cash</th><td>POS</td><td>Count</td><td>O/S</td>";
         $ret .= "<td>&nbsp;</td>";
         $ret .= "<th>Checks</th><td>POS</td><td>Count</td><td>O/S</td><td>List checks</td></tr>";
@@ -136,7 +140,11 @@ class OverShortCashierPage extends FanniePage {
         $ret .= "<tr>";
         $ret .= "<td>&nbsp;</td>";
         $ret .= "<td id=posCA>".$totals['CA']."</td>";
-        $ret .= "<td><input type=text onchange=\"resumSheet();\"  size=5 id=countCA value=\"".$counts['CA']."\" /></td>";
+        $ret .= "<td><div class=\"input-group\">
+            <span class=\"input-group-addon\">\$</span>
+            <input type=text onchange=\"resumSheet();\" id=countCA 
+                class=\"form-control form-control-sm\" value=\"".$counts['CA']."\" />
+            </div></td>";
         $os = round($counts['CA'] - $totals['CA'] - $counts['SCA'],2);
         $ret .= "<td id=osCA>$os</td>";
 
@@ -162,7 +170,8 @@ class OverShortCashierPage extends FanniePage {
                 $checks .= "$c\n";
         }
         $checks = substr($checks,0,strlen($checks)-1);
-        $ret .= "<td rowspan=7><textarea rows=11 cols=7 id=checklisting onchange=\"resumChecks();\">$checks</textarea></td>";
+        $ret .= "<td rowspan=7><textarea rows=11 cols=7 id=checklisting 
+            class=\"form-control\" onchange=\"resumChecks();\">$checks</textarea></td>";
         $ret .= "</tr>";
 
         $posTotal += $totals['CK'];
@@ -170,7 +179,7 @@ class OverShortCashierPage extends FanniePage {
         $osTotal += $os;
 
         $codes = array_keys($totals);
-        for($i=0;$i<count($codes);$i++){
+        for ($i=0;$i<count($codes);$i++) {
             $code = $codes[$i];
             if ($code == 'CA') continue;
             if ($code == 'CK') continue;
@@ -183,22 +192,26 @@ class OverShortCashierPage extends FanniePage {
                 break;
             }
 
-            $ret .= "<tr><td colspan=9 height=4><span style=\"font-size:1%;\">&nbsp;</span></td></tr>";
+            //$ret .= "<tr><td colspan=9 height=4><span style=\"font-size:1%;\">&nbsp;</span></td></tr>";
 
-            $ret .= "<tr class=color><th>".$names[$code]."</th><td>POS</td><td>Count</td><td>O/S</td>";
+            $ret .= "<tr class=color><th class=\"small\">".$names[$code]."</th><td>POS</td><td>Count</td><td>O/S</td>";
             $ret .= "<input type=\"hidden\" class=\"tenderCode\" value=\"$code\" />";
             $ret .= "<td>&nbsp;</td>";
-            if ($next){
-                $ret .= "<th>".$names[$next]."</th><td>POS</td><td>Count</td><td>O/S</td></tr>";
+            if ($next) {
+                $ret .= "<th class=\"small\">".$names[$next]."</th><td>POS</td><td>Count</td><td>O/S</td></tr>";
                 $ret .= "<input type=\"hidden\" class=\"tenderCode\" value=\"$next\" />";
-            }
-            else
+            } else {
                 $ret .= "<th colspan=\"4\">&nbsp;</th></tr>";
+            }
 
             $ret .= "<tr>";
             $ret .= "<td>&nbsp;</td>";
             $ret .= "<td id=pos$code>".$totals[$code]."</td>";
-            $ret .= "<td><input type=text onchange=\"resumSheet();\"  size=5 id=count$code value=\"".$counts[$code]."\" /></td>";
+            $ret .= "<td><div class=\"input-group\">
+                <span class=\"input-group-addon\">\$</span>
+                <input type=text onchange=\"resumSheet();\" id=count$code 
+                    class=\"form-control form-control-sm\" value=\"".$counts[$code]."\" />
+                </div></td>";
             if (!isset($counts[$code])) $counts[$code] = 0.00;
             $os = round($counts[$code] - $totals[$code],2);
             $ret .= "<td id=osCC>$os</td>";
@@ -209,10 +222,14 @@ class OverShortCashierPage extends FanniePage {
         
             $ret .= "<td>&nbsp;</td>";
 
-            if ($next){
+            if ($next) {
                 $ret .= "<td>&nbsp;</td>";
                 $ret .= "<td id=pos$next>".$totals[$next]."</td>";
-                $ret .= "<td><input type=text onchange=\"resumSheet();\"  size=5 id=count$next value=\"".$counts[$next]."\" /></td>";
+                $ret .= "<td><div class=\"input-group\">
+                    <span class=\"input-group-addon\">\$</span>
+                    <input type=text onchange=\"resumSheet();\" id=count$next 
+                        class=\"form-control form-control-sm\" value=\"".$counts[$next]."\" />
+                    </div></td>";
                 if (!isset($counts[$next])) $counts[$next] = 0.00;
                 $os = round($counts[$next] - $totals[$next],2);
                 $ret .= "<td id=os$next>$os</td>";
@@ -220,9 +237,9 @@ class OverShortCashierPage extends FanniePage {
                 $posTotal += $totals[$next];
                 $countTotal += $counts[$next];
                 $osTotal += $os;
-            }
-            else
+            } else {
                 $ret .= "<td colspan=\"4\">&nbsp;</td>";
+            }
             $ret .= "</tr>";
         }
 
@@ -235,7 +252,7 @@ class OverShortCashierPage extends FanniePage {
         $model->emp_no($empno);
         $model->load();
         $note = str_replace("''","'",$model->note());
-        $ret .= "<td colspan=5 rowspan=2><textarea id=notes rows=4 cols=40>$note</textarea></td></tr>";
+        $ret .= "<td colspan=5 rowspan=2><textarea id=notes class=\"form-control\">$note</textarea></td></tr>";
         $ret .= "<tr>";
         $ret .= "<td>&nbsp;</td>";
         $ret .= "<td id=posT>$posTotal</td>";
@@ -245,7 +262,7 @@ class OverShortCashierPage extends FanniePage {
         $ret .= "</tr>";
 
         $ret .= "</table>";
-        $ret .= "<input type=submit value=Save />";
+        $ret .= "<p><button type=submit class=\"btn btn-default\">Save</button></p>";
         $ret .= "</form>";
 
         $ret .= "<input type=hidden id=current_empno value=\"$empno\" />";
@@ -292,12 +309,20 @@ class OverShortCashierPage extends FanniePage {
     }
     
     function css_content(){
+        /**
+          jQuery-UI datepicker pops *under* other
+          elements for some reason. Issue seems isolated
+          to this particular page.
+        */
         return '
             tr.color {
                 background: #ffffcc;
             }
             body, table, td, th {
               color: #000;
+            }
+            .ui-datepicker {
+                z-index: 100 !important;
             }
         ';  
     }
@@ -306,11 +331,6 @@ class OverShortCashierPage extends FanniePage {
         global $FANNIE_URL;
         ob_start();
         $this->add_script('js/cashier.js'); 
-        $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
-        $this->add_script($FANNIE_URL.'src/javascript/jquery-ui.js');
-        $this->add_css_file($FANNIE_URL.'src/style.css');
-        $this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
-        $this->add_onload_command("\$('#date').datepicker();");
         if (!$this->window_dressing) {
             echo "<html>";
             echo "<head><title>{$this->title}</title>";
@@ -318,11 +338,16 @@ class OverShortCashierPage extends FanniePage {
             echo "<body>";
         }
         ?>
-        <div id=input>
-        <form style='margin-top:1.0em;' onsubmit="loadCashier(); return false;">
-        <b>Date</b>:<input type=text  id=date size=10 />
-        <b>Cashier</b>:<input type=text  id=empno size=5 /> 
-        <input type=submit value="Load Cashier" />
+        <div id=input class="form-inline form-group">
+        <form id="osForm" style='margin-top:1.0em;' onsubmit="loadCashier(); return false;">
+        <label>Date</label>:<input class="form-control date-field" type=text name=date id=date required />
+        <label>Cashier</label>:<input type=text name=empno id=empno class="form-control" required />
+        <?php
+        $_REQUEST['store'] = 1;
+        $sp = FormLib::storePicker();
+        echo $sp['html'];
+        ?>
+        <button type=submit class="btn btn-default">Load Cashier</button>
         </form>
         </div>
 

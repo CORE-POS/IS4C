@@ -11,7 +11,6 @@
     <li><a href="namespaces.html"><span>Namespaces</span></a></li>
     <li id="current"><a href="classes.html"><span>Classes</span></a></li>
     <li><a href="pages.html"><span>Related&nbsp;Pages</span></a></li>
-    <li><a href="examples.html"><span>Examples</span></a></li>
     <li>
       <form action="search.php" method="get">
         <table cellspacing="0" cellpadding="0" border="0">
@@ -36,9 +35,15 @@
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="a6b06a82242fe801a0b70993b36c7db9"></a><!-- doxytag: member="FannieTask::setThreshold" ref="a6b06a82242fe801a0b70993b36c7db9" args="($t)" -->
 &nbsp;</td><td class="memItemRight" valign="bottom"><b>setThreshold</b> ($t)</td></tr>
 
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="fd8d3b1faeeee646dbf267117ee34dcd"></a><!-- doxytag: member="FannieTask::setConfig" ref="fd8d3b1faeeee646dbf267117ee34dcd" args="(FannieConfig $fc)" -->
+&nbsp;</td><td class="memItemRight" valign="bottom"><b>setConfig</b> (FannieConfig $fc)</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="10f75f33dda6ed0d94e2c0368276c930"></a><!-- doxytag: member="FannieTask::setLogger" ref="10f75f33dda6ed0d94e2c0368276c930" args="(FannieLogger $fl)" -->
+&nbsp;</td><td class="memItemRight" valign="bottom"><b>setLogger</b> (FannieLogger $fl)</td></tr>
+
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_fannie_task.html#6087cf38b4f102af397de7ae5a53f5ef">run</a> ()</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_fannie_task.html#025d6dc2ce4e9bfe9a81bd6b29727f7c">cronMsg</a> ($str, $severity=0)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_fannie_task.html#4c5d15e8a4411e539a1d2405e70ce17c">cronMsg</a> ($str, $severity=6)</td></tr>
 
 <tr><td colspan="2"><br><h2>Public Attributes</h2></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="d6f82131edc2fa05f1b19d55a2bcca40"></a><!-- doxytag: member="FannieTask::$name" ref="d6f82131edc2fa05f1b19d55a2bcca40" args="" -->
@@ -71,12 +76,18 @@ const&nbsp;</td><td class="memItemRight" valign="bottom"><b>TASK_WORST_ERROR</b>
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="a47d97bb00908a0c1575bec0ec107365"></a><!-- doxytag: member="FannieTask::$error_threshold" ref="a47d97bb00908a0c1575bec0ec107365" args="" -->
 &nbsp;</td><td class="memItemRight" valign="bottom"><b>$error_threshold</b> = 99</td></tr>
 
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="a7d69331a1c95bfeaa65f373fe85590c"></a><!-- doxytag: member="FannieTask::$config" ref="a7d69331a1c95bfeaa65f373fe85590c" args="" -->
+&nbsp;</td><td class="memItemRight" valign="bottom"><b>$config</b> = null</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="42c404c1d9a6bade2ba89b6289ff126e"></a><!-- doxytag: member="FannieTask::$logger" ref="42c404c1d9a6bade2ba89b6289ff126e" args="" -->
+&nbsp;</td><td class="memItemRight" valign="bottom"><b>$logger</b> = null</td></tr>
+
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
 Base class for scheduled tasks 
 <p>
 <hr><h2>Member Function Documentation</h2>
-<a class="anchor" name="025d6dc2ce4e9bfe9a81bd6b29727f7c"></a><!-- doxytag: member="FannieTask::cronMsg" ref="025d6dc2ce4e9bfe9a81bd6b29727f7c" args="($str, $severity=0)" -->
+<a class="anchor" name="4c5d15e8a4411e539a1d2405e70ce17c"></a><!-- doxytag: member="FannieTask::cronMsg" ref="4c5d15e8a4411e539a1d2405e70ce17c" args="($str, $severity=6)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -90,7 +101,7 @@ Base class for scheduled tasks
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">$&nbsp;</td>
-          <td class="paramname"> <em>severity</em> = <code>0</code></td><td>&nbsp;</td>
+          <td class="paramname"> <em>severity</em> = <code>6</code></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -102,13 +113,13 @@ Base class for scheduled tasks
 <div class="memdoc">
 
 <p>
-Format message with date information and task's class name <dl compact><dt><b>Parameters:</b></dt><dd>
+Write message to log and if necessary raise it to stderr to trigger an email <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>$str</em>&nbsp;</td><td>message string </td></tr>
-    <tr><td valign="top"></td><td valign="top"><em>$severity</em>&nbsp;</td><td>[optional, default zero] message importance </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$severity</em>&nbsp;</td><td>[optional, default 6/info] message importance </td></tr>
   </table>
 </dl>
-<dl compact><dt><b>Returns:</b></dt><dd>formatted string </dd></dl>
+<dl compact><dt><b>Returns:</b></dt><dd>empty string </dd></dl>
 
 </div>
 </div><p>
@@ -156,7 +167,7 @@ Implement task functionality here
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>fannie/classlib2.0/FannieTask.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - Fannie by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 9 Feb 2015 for CORE POS - Fannie by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

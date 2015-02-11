@@ -26,13 +26,14 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class ImportPurchaseOrder extends FannieUploadPage 
+class ImportPurchaseOrder extends \COREPOS\Fannie\API\FannieUploadPage 
 {
     protected $title = "Fannie - Purchase Order";
     protected $header = "Upload Purchase Order / Invoice";
 
     public $description = '[Purchase Order Import] loads a vendor purchase order / invoice 
     from a spreadsheet.';
+    public $themed = true;
 
     protected $preview_opts = array(
         'sku' => array(
@@ -234,9 +235,9 @@ class ImportPurchaseOrder extends FannieUploadPage
             $item->save();
         }
 
-        $ret .= "Import Complete";
+        $ret .= "<p>Import Complete";
         $ret .= '<br />';
-        $ret .= '<a href="ViewPurchaseOrders.php?id=' . $orderID . '">View Order</a>';
+        $ret .= '<a href="ViewPurchaseOrders.php?id=' . $orderID . '">View Order</a></p>';
         $this->results = $ret;
 
         return true;
@@ -286,32 +287,35 @@ class ImportPurchaseOrder extends FannieUploadPage
         $vendors = new VendorsModel($dbc);
         ob_start();
         ?>
-        <form enctype="multipart/form-data" action="ImportPurchaseOrder.php" id="FannieUploadForm" method="post">
-        <table cellspacing=4 cellpadding=4>
-        <tr><th>Vendor</th>
-        <td><select name=vendorID>
-        <?php foreach($vendors->find('vendorName') as $v) printf("<option value=%d>%s</option>",$v->vendorID(), $v->vendorName()); ?>
-        </select></td>
-        <th>Order Date</th><td><input type=text size=10 name=orderDate id="orderDate" /></td></tr>
-        <tr><th>PO#/Invoice#</th><td><input type=text size=15 name=identifier /></td>
-        <th>Recv'd Date</th><td><input type=text size=10 name=recvDate id="recvDate" /></td></tr>
-        <tr><td colspan=4>
-        <input type="hidden" name="MAX_FILE_SIZE" value="2097152" />
-        Filename: <input type="file" id="FannieUploadFile" name="FannieUploadFile" />
-        </td></tr>
-        <tr>
-        <td colspan=2>
-        <input type="submit" value="Upload File" />
-        </td>
-        <td colspan=2>
-        <input type="submit" onclick="location='PurchasingIndexPage.php'; return false;" value="Home" />
-        </td>
-        </tr>
-        </table>
-        </form>
+        <form enctype="multipart/form-data" class="form-horizontal" action="ImportPurchaseOrder.php" id="FannieUploadForm" method="post">
+        <div class="form-group col-sm-6">
+            <label class="control-label col-sm-3">Vendor</label>
+            <div class="col-sm-9"><select name=vendorID class="form-control">
+            <?php foreach($vendors->find('vendorName') as $v) printf("<option value=%d>%s</option>",$v->vendorID(), $v->vendorName()); ?>
+                </select></div>
+        </div>
+        <div class="form-group col-sm-6">
+            <label class="control-label col-sm-3">Order Date</label>
+            <div class="col-sm-9"><input type="text" class="form-control date-field" name="orderDate" id="orderDate" /></div>
+        </div>
+        <div class="form-group col-sm-6">
+            <label class="control-label col-sm-3">PO#/Invoice#</label>
+            <div class="col-sm-9"><input type="text" class="form-control" name="identifier" /></div>
+        </div>
+        <div class="form-group col-sm-6">
+            <label class="control-label col-sm-3">Recv'd Date</label>
+            <div class="col-sm-9"><input type="text" class="form-control date-field" name="recvDate" id="recvDate" /></div>
+        </div>
+        <div class="form-group col-sm-6">
+            <label class="control-label col-sm-3">Filename</label>
+            <div class="col-sm-9"><input type="file" class="form-control" name="FannieUploadFile" id="FannieUploadFile" /></div>
+        </div>
+        <div class="form-group col-sm-6">
+            <button type="submit" class="btn btn-default">Upload File</button>
+            <button type="button" class="btn btn-default" 
+                onclick="location='PurchasingIndexPage.php'; return false;">Home</button>
+        </div>
         <?php
-        $this->add_onload_command("\$('#orderDate').datepicker();");
-        $this->add_onload_command("\$('#recvDate').datepicker();");
 
         return ob_get_clean();
     }

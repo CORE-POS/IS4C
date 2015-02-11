@@ -39,14 +39,13 @@ class Void extends Parser
 
     public function parse($str)
     {
-        global $CORE_LOCAL;
         $ret = $this->default_json();
     
-        if (is_numeric($CORE_LOCAL->get('VoidLimit')) && $CORE_LOCAL->get('VoidLimit') > 0){
+        if (is_numeric(CoreLocal::get('VoidLimit')) && CoreLocal::get('VoidLimit') > 0){
             Database::getsubtotals();
-            if ($CORE_LOCAL->get('voidTotal') > $CORE_LOCAL->get('VoidLimit') && $CORE_LOCAL->get('voidOverride') != 1) {
-                $CORE_LOCAL->set('strRemembered', $CORE_LOCAL->get('strEntered'));
-                $CORE_LOCAL->set('voidOverride', 0);
+            if (CoreLocal::get('voidTotal') > CoreLocal::get('VoidLimit') && CoreLocal::get('voidOverride') != 1) {
+                CoreLocal::set('strRemembered', CoreLocal::get('strEntered'));
+                CoreLocal::set('voidOverride', 0);
                 $ret['main_frame'] = MiscLib::base_url().'gui-modules/adminlogin.php?class=Void';
                 return $ret;
             }
@@ -55,10 +54,10 @@ class Void extends Parser
 
         if (strlen($str) > 2) {
             $ret['output'] = $this->voidupc(substr($str,2));
-        } else if ($CORE_LOCAL->get("currentid") == 0) {
+        } else if (CoreLocal::get("currentid") == 0) {
             $ret['output'] = DisplayLib::boxMsg(_("No Item on Order"));
         } else {
-            $id = $CORE_LOCAL->get("currentid");
+            $id = CoreLocal::get("currentid");
 
             $status = PrehLib::checkstatus($id);
             $this->discounttype = $status['discounttype'];
@@ -110,8 +109,6 @@ class Void extends Parser
     */
     public function voiditem($item_num)
     {
-        global $CORE_LOCAL;
-
         if ($item_num) {
             $query = "SELECT upc, 
                         quantity, 
@@ -169,12 +166,11 @@ class Void extends Parser
     */
     public function voidid($item_num)
     {
-        global $CORE_LOCAL;
-
         $query = "select upc,VolSpecial,quantity,trans_subtype,unitPrice,
             discount,memDiscount,discountable,scale,numflag,charflag,
             foodstamp,discounttype,total,cost,description,trans_type,
-            department,regPrice,tax,volDiscType,volume,mixMatch,matched
+            department,regPrice,tax,volDiscType,volume,mixMatch,matched,
+            trans_status
                    from localtemptrans where trans_id = ".$item_num;
         $db = Database::tDataConnect();
         $result = $db->query($query);
@@ -187,6 +183,12 @@ class Void extends Parser
         // 11Jun14 Andy => don't know why FS is different. legacy?
         if ($row["trans_subtype"] == "FS") {
             $total = -1 * $row["unitPrice"];
+        } elseif ($row['trans_status'] == 'R' && $row['trans_type'] == 'D') {
+            // set refund flag and let that logic reverse
+            // the total and quantity
+            CoreLocal::set('refund', 1);
+            $total = $row['total'];
+            $quantity = $row['quantity'];
         }
         $discount = -1 * $row["discount"];
         $memDiscount = -1 * $row["memDiscount"];
@@ -211,7 +213,7 @@ class Void extends Parser
           Amount to be voided is greater than remaining balance of
           the transaction. Restrict voids if cash is involved.
         */
-        if ($CORE_LOCAL->get("tenderTotal") < 0 && (-1 * $total) > $CORE_LOCAL->get("runningTotal") - $CORE_LOCAL->get("taxTotal")) {
+        if (CoreLocal::get("tenderTotal") < 0 && (-1 * $total) > CoreLocal::get("runningTotal") - CoreLocal::get("taxTotal")) {
             $cash = $db->query("SELECT total FROM localtemptrans WHERE trans_subtype='CA' AND total <> 0");
             if ($db->num_rows($cash) > 0) {
                 return DisplayLib::boxMsg("Item already paid for");
@@ -252,7 +254,7 @@ class Void extends Parser
         ));
 
         if ($row["trans_type"] != "T") {
-            $CORE_LOCAL->set("ttlflag",0);
+            CoreLocal::set("ttlflag",0);
         } else {
             PrehLib::ttl();
         }
@@ -268,8 +270,6 @@ class Void extends Parser
     */
     public function voidupc($upc, $item_num=-1, $silent=false) 
     {
-        global $CORE_LOCAL;
-
         $lastpageflag = 1;
         $deliflag = false;
         $quantity = 0;
@@ -287,7 +287,7 @@ class Void extends Parser
             }
         } else {
             $quantity = 1;
-            $weight = $CORE_LOCAL->get("weight");
+            $weight = CoreLocal::get("weight");
         }
 
         $scaleprice = 0;
@@ -325,8 +325,8 @@ class Void extends Parser
         $row = $db->fetch_array($result);
 
         if (($row["scale"] == 1) && $weight > 0) {
-            $quantity = $weight - $CORE_LOCAL->get("tare");
-            $CORE_LOCAL->set("tare", 0);
+            $quantity = $weight - CoreLocal::get("tare");
+            CoreLocal::set("tare", 0);
         }
 
         $volDiscType = $row["volDiscType"];
@@ -375,6 +375,7 @@ class Void extends Parser
                         tax,
                         VolSpecial,
                         matched,
+                        scale,
                         trans_id
                       FROM localtemptrans 
                       WHERE upc = '" . $upc . "'"; 
@@ -390,7 +391,6 @@ class Void extends Parser
         $result = $db->query($query_upc);
         $row = $db->fetch_array($result);
 
-        $ItemQtty = $row["ItemQtty"];
         $foodstamp = MiscLib::nullwrap($row["foodstamp"]);
         $discounttype = MiscLib::nullwrap($row["discounttype"]);
         $mixMatch = MiscLib::nullwrap($row["mixMatch"]);
@@ -407,11 +407,11 @@ class Void extends Parser
           member status. I'm not sure this is actually
           necessary.
         */
-        if (($CORE_LOCAL->get("isMember") != 1 && $row["discounttype"] == 2) || 
-            ($CORE_LOCAL->get("isStaff") == 0 && $row["discounttype"] == 4)) 
+        if ((CoreLocal::get("isMember") != 1 && $row["discounttype"] == 2) || 
+            (CoreLocal::get("isStaff") == 0 && $row["discounttype"] == 4)) 
             $unitPrice = $row["regPrice"];
-        elseif ((($CORE_LOCAL->get("isMember") == 1 && $row["discounttype"] == 2) || 
-            ($CORE_LOCAL->get("isStaff") != 0 && $row["discounttype"] == 4)) && 
+        elseif (((CoreLocal::get("isMember") == 1 && $row["discounttype"] == 2) || 
+            (CoreLocal::get("isStaff") != 0 && $row["discounttype"] == 4)) && 
             ($row["unitPrice"] == $row["regPrice"])) {
             $db_p = Database::pDataConnect();
             $query_p = "select special_price from products where upc = '".$upc."'";
@@ -428,15 +428,19 @@ class Void extends Parser
         $total = $quantity * $unitPrice;
         if ($row['unitPrice'] == 0) {
             $total = $quantity * $row['total'];
-        } else if ($row['total'] != $total) {
-            // I think this always happens
-            // Unit Price times negative quantity shouldn't
-            // match previous price
+        } else if ($row['total'] != $total && $row['scale'] == 1) {
+            /**
+              If the total does not match quantity times unit price,
+              the cashier probably manually specified a quantity
+              i.e., VD{qty}*{upc}. This is probably OK for non-weight
+              items. Each record should be the same and voiding multiple
+              in one line will usually be fine.
+            */
             $total = -1*$row['total'];
         }
     
         $db = Database::tDataConnect();
-        if ($CORE_LOCAL->get("tenderTotal") < 0 && (-1 * $total) > $CORE_LOCAL->get("runningTotal") - $CORE_LOCAL->get("taxTotal")) {
+        if (CoreLocal::get("tenderTotal") < 0 && (-1 * $total) > CoreLocal::get("runningTotal") - CoreLocal::get("taxTotal")) {
             $cash = $db->query("SELECT total FROM localtemptrans WHERE trans_subtype='CA' AND total <> 0");
             if ($db->num_rows($cash) > 0) {
                 return DisplayLib::boxMsg(_("Item already paid for"));
@@ -478,7 +482,7 @@ class Void extends Parser
             ));
 
             if ($row["trans_type"] != "T") {
-                $CORE_LOCAL->set("ttlflag",0);
+                CoreLocal::set("ttlflag",0);
             }
 
             $db = Database::pDataConnect();
@@ -506,16 +510,15 @@ class Void extends Parser
     
     public static $adminLoginLevel = 30;
 
-    public static function adminLoginCallback($success){
-        global $CORE_LOCAL;
+    public static function adminLoginCallback($success)
+    {
         if ($success){
-            $CORE_LOCAL->set('voidOverride', 1);
-            $CORE_LOCAL->set('msgrepeat', 1);
-            return True;
-        }
-        else{
-            $CORE_LOCAL->set('voidOverride', 0);
-            return False;
+            CoreLocal::set('voidOverride', 1);
+            CoreLocal::set('msgrepeat', 1);
+            return true;
+        } else {
+            CoreLocal::set('voidOverride', 0);
+            return false;
         }
     }
 

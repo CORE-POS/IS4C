@@ -52,8 +52,19 @@ class PIPatronagePage extends PIKillerPage {
         echo '<table border="1" style="background-color:#ffffcc;">';
         echo '<tr><th>FY</th><th>Purchases</th><th>Discounts</th><th>Rewards</th>
             <th>Net Purchases</th><th>Total Patronage</th>
-            <th>Cash Portion</th><th>Equity Portion</th></tr>';
+            <th>Cash Portion</th><th>Equity Portion</th>
+            <th>Check Number</th><th>Cashed Date</th>
+            <th>Cashed Here</th><th>Reprint</th></tr>';
         foreach($this->__models['patronage'] as $obj){
+            $reprint_link = 'n/a';
+            if ($obj->check_number() != '') {
+                $reprint_link = sprintf('<a href="../../../mem/patronage/PatronageChecks.php?reprint=1&mem=%d&fy=%d">Reprint</a>',
+                    $obj->cardno(), $obj->FY());
+            }
+            $cashed_stamp = strtotime($obj->cashed_date());
+            if ($obj->cashed_date() != '' && $cashed_stamp) {
+                $obj->cashed_date(date('Y-m-d', $cashed_stamp));
+            }
             printf('<tr>
                 <td>%d</th>
                 <td>%.2f</td>
@@ -63,6 +74,10 @@ class PIPatronagePage extends PIKillerPage {
                 <td>%.2f</td>
                 <td>%.2f</td>
                 <td>%.2f</td>
+                <td>%s</td>
+                <td>%s</td>
+                <td>%s</td>
+                <td>%s</td>
                 </tr>',
                 $obj->FY(),
                 $obj->purchase(),
@@ -71,7 +86,11 @@ class PIPatronagePage extends PIKillerPage {
                 $obj->net_purch(),
                 $obj->tot_pat(),
                 $obj->cash_pat(),
-                $obj->equit_pat()
+                $obj->equit_pat(),
+                ($obj->check_number() == '' ? 'n/a' : $obj->check_number()),
+                ($obj->cashed_date() == '' ? 'n/a' : $obj->cashed_date()),
+                ($obj->cashed_here() == 1 ? 'Yes' : 'No'),
+                $reprint_link
             );
             $totals['cash'] += $obj->cash_pat();
             $totals['equity'] += $obj->equit_pat();

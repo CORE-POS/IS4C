@@ -31,6 +31,7 @@ class TaxRateEditor extends FanniePage {
     protected $header = "Tax Rates";
 
     public $description = '[Tax Rates] defines applicable sales tax rates.';
+    public $themed = true;
 
     function preprocess(){
         global $FANNIE_OP_DB;
@@ -47,7 +48,12 @@ class TaxRateEditor extends FanniePage {
                 if (empty($desc[$j]) || empty($rate[$j])) continue;
                 if (FormLib::get_form_value('del'.$j) !== '') continue;
 
-                $dbc->exec_statement($p, array($id,$rate[$j],$desc[$j]));
+                $saved = $dbc->exec_statement($p, array($id,$rate[$j],$desc[$j]));
+                if ($saved) {
+                    $this->add_onload_command("showBootstrapAlert('#alert-area', 'success', 'Saved {$desc[$j]}');");
+                } else {
+                    $this->add_onload_command("showBootstrapAlert('#alert-area', 'success', 'Error saving {$desc[$j]}');");
+                }
                 $id++;
             }
         }
@@ -55,35 +61,42 @@ class TaxRateEditor extends FanniePage {
         return True;
     }
 
-    function body_content(){
+    function body_content()
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $taxQ = $dbc->prepare_statement("SELECT id,rate,description 
                 FROM taxrates ORDER BY id");
         $taxR = $dbc->exec_statement($taxQ);
 
-        $ret = '<form action="TaxRateEditor.php" method="post">';
-        $ret .= '<table cellspacing="0" cellpadding="4" border="1">';
+        $ret = '<div id="alert-area"></div>';
+        $ret .= '<form action="TaxRateEditor.php" method="post">';
+        $ret .= '<table class="table">';
         $ret .= '<tr><th>Description</th><th>Rate</th><th>Delete</th></tr>';
         $ret .= '<tr><td>NoTax</th><td>0.00</td><td>&nbsp;</td></tr>';
         $i=0;
         while($taxW = $dbc->fetch_row($taxR)){
-            $ret .= sprintf('<tr><td><input type="text" name="desc[]" value="%s" /></td>
-                <td><input type="text" size="8" name="rate[]" value="%f" /></td>
-                <td><input type="checkbox" name="del%d" /></td></tr>',
+            $ret .= sprintf('
+                <tr>
+                    <td><input type="text" name="desc[]" value="%s" class="form-control" /></td>
+                    <td><input type="text" name="rate[]" value="%f" class="form-control" /></td>
+                    <td><input type="checkbox" name="del%d" /></td>
+                </tr>',
                 $taxW['description'],$taxW['rate'],$i);
             $i++;
         }
-        $ret .= '<tr><td><input type="text" name="desc[]" /></td>
-            <td><input type="text" size="8" name="rate[]" /></td>
+        $ret .= '<tr>
+            <td><input type="text" name="desc[]" class="form-control" /></td>
+            <td><input type="text" name="rate[]" class="form-control" /></td>
             <td>NEW</td></tr>';
         $ret .= "</table>";
-        $ret .= '<br /><input type="submit" value="Save Tax Rates" name="sub" />';
+        $ret .= '<p><button type="submit" value="1" name="sub"
+                        class="btn btn-default">Save Tax Rates</button></p>';
         $ret .= '</form>';
 
         return $ret;
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

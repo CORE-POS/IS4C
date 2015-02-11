@@ -28,9 +28,8 @@
 class RAFC_Kicker extends Kicker 
 {
 
-    public function doKick()
+    public function doKick($trans_num)
     {
-        global $CORE_LOCAL;
         $db = Database::tDataConnect();
 
         $query = "select trans_id from localtemptrans where 
@@ -46,8 +45,8 @@ class RAFC_Kicker extends Kicker
         // use session to override default behavior
         // based on specific cashier actions rather
         // than transaction state
-        $override = $CORE_LOCAL->get('kickOverride');
-        $CORE_LOCAL->set('kickOverride',false);
+        $override = CoreLocal::get('kickOverride');
+        CoreLocal::set('kickOverride',false);
         if ($override === true) $ret = true;
 
         return $ret;

@@ -5,9 +5,8 @@
  */
 class TendersTest extends PHPUnit_Framework_TestCase
 {
-	public function testAll(){
-		global $CORE_LOCAL;
-
+	public function testAll()
+    {
 		$defaults = array(
 			'TenderModule',
 			'CheckTender',
@@ -51,4 +50,26 @@ class TendersTest extends PHPUnit_Framework_TestCase
 		}
 
 	}
+
+    function testTenderDbRecords()
+    {
+        lttLib::clear();
+        $t = new TenderModule('CA', 1.00);
+        $t->add();
+        $record = lttLib::genericRecord();
+        $record['trans_type'] = 'T';
+        $record['trans_subtype'] = 'CA';
+        $record['description'] = 'Cash';
+        $record['total'] = -1.00;
+        lttLib::verifyRecord(1, $record, $this);
+        CoreLocal::set('currentid', 1);
+        $v = new Void();
+        $this->assertEquals(true, $v->check('VD'));
+        $json = $v->parse('VD');
+        $this->assertInternalType('array', $json);
+        $record['total'] *= -1;
+        $record['voided'] = 1;
+        $record['trans_status'] = 'V';
+        lttLib::verifyRecord(2, $record, $this);
+    }
 }

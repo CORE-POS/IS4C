@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\Fannie\API\webservices 
+{
+
 class FannieAutoComplete extends FannieWebService 
 {
     
@@ -34,7 +37,6 @@ class FannieAutoComplete extends FannieWebService
     */
     public function run($args)
     {
-        global $FANNIE_OP_DB;
         $ret = array();
         if (!property_exists($args, 'field') || !property_exists($args, 'search')) {
             // missing required arguments
@@ -52,21 +54,31 @@ class FannieAutoComplete extends FannieWebService
             return $ret;
         }
 
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = \FannieDB::get(\FannieConfig::factory()->get('OP_DB'));
         switch (strtolower($args->field)) {
             case 'item':
-                $prep = $dbc->prepare('SELECT p.upc,
-                                        p.description
-                                       FROM products AS p
-                                        LEFT JOIN productUser AS u ON u.upc=p.upc
-                                       WHERE p.description LIKE ?
-                                        OR p.brand LIKE ?
-                                        OR u.description LIKE ?
-                                        OR u.brand LIKE ?
-                                       ORDER BY p.description');
-                $term = '%' . $args->search . '%';
-                $res = $dbc->execute($prep, array($term, $term, $term, $term));
-                while ($row = $dbc->fetch_row($res)) {
+                $res = false;
+                if (!is_numeric($args->search)) {
+                    $prep = $dbc->prepare('SELECT p.upc,
+                                            p.description
+                                           FROM products AS p
+                                            LEFT JOIN productUser AS u ON u.upc=p.upc
+                                           WHERE p.description LIKE ?
+                                            OR p.brand LIKE ?
+                                            OR u.description LIKE ?
+                                            OR u.brand LIKE ?
+                                           ORDER BY p.description');
+                    $term = '%' . $args->search . '%';
+                    $res = $dbc->execute($prep, array($term, $term, $term, $term));
+                } elseif (ltrim($args->search, '0') != '') {
+                    $prep = $dbc->prepare('
+                        SELECT p.upc,
+                            p.upc AS description
+                        FROM products AS p
+                        WHERE p.upc LIKE ?');
+                    $res = $dbc->execute($prep, array('%'.$args->search . '%'));
+                }
+                while ($res && $row = $dbc->fetch_row($res)) {
                     $ret[] = array(
                         'label' => $row['description'],
                         'value' => $row['upc'],
@@ -206,9 +218,39 @@ class FannieAutoComplete extends FannieWebService
 
                 return $ret;
 
+            case 'sku':
+                $query = 'SELECT sku
+                          FROM vendorItems
+                          WHERE sku LIKE ? ';
+                $param = array($args->search . '%');
+                if (property_exists($args, 'vendor_id')) {
+                    $query .= ' AND vendorID=? ';
+                    $param[] = $args->vendor_id;
+                }
+                $query .= 'GROUP BY sku
+                          ORDER BY sku';
+                $prep = $dbc->prepare($query);
+                $res = $dbc->execute($prep, $param);
+                while ($row = $dbc->fetch_row($res)) {
+                    $ret[] = $row['sku'];
+                    if (count($ret) > 50) {
+                        break;
+                    }
+                }
+
+                return $ret;
+
             default:
                 return $ret;
         }
     }
+}
+
+}
+
+namespace 
+{
+    // global namespace wrapper class
+    class FannieAutoComplete extends \COREPOS\Fannie\API\webservices\FannieAutoComplete {}
 }
 

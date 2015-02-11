@@ -27,7 +27,7 @@ if (!class_exists('FannieAPI'))
 
 /**
 */
-class CoreWarehouse extends FanniePlugin {
+class CoreWarehouse extends \COREPOS\Fannie\API\FanniePlugin {
 
     /**
       Desired settings. These are automatically exposed
@@ -57,8 +57,8 @@ class CoreWarehouse extends FanniePlugin {
 
         $dbc = FannieDB::get($db_name);
         
-        if (!class_exists('WarehouseModel'))
-            include(dirname(__FILE__).'/models/WarehouseModel.php');
+        if (!class_exists('CoreWarehouseModel'))
+            include(dirname(__FILE__).'/models/CoreWarehouseModel.php');
 
         $tables = array(
             'SumDeptSalesByDay',

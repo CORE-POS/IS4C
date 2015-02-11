@@ -25,11 +25,6 @@ if (!class_exists("BasicCCModule")) include_once(realpath(dirname(__FILE__)."/Ba
 if (!class_exists("xmlData")) include_once(realpath(dirname(__FILE__)."/lib/xmlData.php"));
 if (!class_exists("PaycardLib")) include_once(realpath(dirname(__FILE__)."/lib/PaycardLib.php"));
 
-if (!isset($CORE_LOCAL)){
-	include(realpath(dirname(__FILE__)."/lib/LS_Access.php"));
-	$CORE_LOCAL = new LS_Access();
-}
-
 if (!class_exists("AutoLoader")) include_once(realpath(dirname(__FILE__).'/../../lib/AutoLoader.php'));
 
 define('AUTHDOTNET_LOGIN','6Jc5c8QcB');
@@ -42,10 +37,10 @@ class AuthorizeDotNet extends BasicCCModule {
 		else return False;
 	}
 
-	function entered($validate,$json){
-		global $CORE_LOCAL;
+	function entered($validate,$json)
+    {
 		// error checks based on card type
-		if( $CORE_LOCAL->get("CCintegrate") != 1) { // credit card integration must be enabled
+		if( CoreLocal::get("CCintegrate") != 1) { // credit card integration must be enabled
 			PaycardLib::paycard_reset();
 			$json['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_GIFT,
 				"Card Integration Disabled",
@@ -55,15 +50,15 @@ class AuthorizeDotNet extends BasicCCModule {
 		}
 
 		// error checks based on processing mode
-		switch( $CORE_LOCAL->get("paycard_mode")) {
+		switch( CoreLocal::get("paycard_mode")) {
 		case PaycardLib::PAYCARD_MODE_VOID:
 			// use the card number to find the trans_id
 			$dbTrans = PaycardLib::paycard_db();
 			$today = date('Ymd');
 			$pan4 = substr($this->trans_pan['pan'],-4);
-			$cashier = $CORE_LOCAL->get("CashierNo");
-			$lane = $CORE_LOCAL->get("laneno");
-			$trans = $CORE_LOCAL->get("transno");
+			$cashier = CoreLocal::get("CashierNo");
+			$lane = CoreLocal::get("laneno");
+			$trans = CoreLocal::get("transno");
 			$sql = "SELECT transID FROM efsnetRequest WHERE ".$dbTrans->identifier_escape('date')."='".$today."' AND (PAN LIKE '%".$pan4."') " .
 				"AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans;
 			$search = PaycardLib::paycard_db_query($sql, $dbTrans);
@@ -91,14 +86,14 @@ class AuthorizeDotNet extends BasicCCModule {
 						"Swipe again or type in manually",
 						"[clear] to cancel");
 					return $json;
-				} else if( PaycardLib::paycard_accepted($this->trans_pan['pan'], !PaycardLib::paycard_live(PaycardLib::PAYCARD_TYPE_CREDIT)) != 1) {
+				} else if( !PaycardLib::paycard_accepted($this->trans_pan['pan'])) {
 					PaycardLib::paycard_reset();
 					$json['output'] = PaycardLib::paycard_msgBox(PaycardLib::PAYCARD_TYPE_CREDIT,
 						"Unsupported Card Type",
-						"We cannot process " . $CORE_LOCAL->get("paycard_issuer") . " cards",
+						"We cannot process " . CoreLocal::get("paycard_issuer") . " cards",
 						"[clear] to cancel");
 					return $json;
-				} else if( PaycardLib::paycard_validExpiration($CORE_LOCAL->get("paycard_exp")) != 1) {
+				} else if( PaycardLib::paycard_validExpiration(CoreLocal::get("paycard_exp")) != 1) {
 					PaycardLib::paycard_reset();
 					$json['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
 						"Invalid Expiration Date",
@@ -109,8 +104,8 @@ class AuthorizeDotNet extends BasicCCModule {
 			}
 			// set initial variables
 			//getsubtotals();
-			$CORE_LOCAL->set("paycard_amount",$CORE_LOCAL->get("amtdue"));
-			$CORE_LOCAL->set("paycard_id",$CORE_LOCAL->get("LastID")+1); // kind of a hack to anticipate it this way..
+			CoreLocal::set("paycard_amount",CoreLocal::get("amtdue"));
+			CoreLocal::set("paycard_id",CoreLocal::get("LastID")+1); // kind of a hack to anticipate it this way..
 			$plugin_info = new Paycards();
 			$json['main_frame'] = $plugin_info->plugin_url().'/gui/paycardboxMsgAuth.php';
 			return $json;
@@ -124,10 +119,10 @@ class AuthorizeDotNet extends BasicCCModule {
 		return $json;
 	}
 
-	function paycard_void($transID,$laneNo=-1,$transNo=-1,$json=array()) {
-		global $CORE_LOCAL;
+	function paycard_void($transID,$laneNo=-1,$transNo=-1,$json=array()) 
+    {
 		// situation checking
-		if( $CORE_LOCAL->get("CCintegrate") != 1) { // credit card integration must be enabled
+		if( CoreLocal::get("CCintegrate") != 1) { // credit card integration must be enabled
 			PaycardLib::paycard_reset();
 			$json['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
 				"Card Integration Disabled",
@@ -139,9 +134,9 @@ class AuthorizeDotNet extends BasicCCModule {
 		// initialize
 		$dbTrans = PaycardLib::paycard_db();
 		$today = date('Ymd');
-		$cashier = $CORE_LOCAL->get("CashierNo");
-		$lane = $CORE_LOCAL->get("laneno");
-		$trans = $CORE_LOCAL->get("transno");
+		$cashier = CoreLocal::get("CashierNo");
+		$lane = CoreLocal::get("laneno");
+		$trans = CoreLocal::get("transno");
 		if ($laneNo != -1) $lane = $laneNo;
 		if ($transNo != -1) $trans = $transNo;
 	
@@ -253,11 +248,11 @@ class AuthorizeDotNet extends BasicCCModule {
 		}
 	
 		// save the details
-		$CORE_LOCAL->set("paycard_amount",(($request['mode']=='refund') ? -1 : 1) * $request['amount']);
-		$CORE_LOCAL->set("paycard_id",$transID);
-		$CORE_LOCAL->set("paycard_type",PaycardLib::PAYCARD_TYPE_CREDIT);
-		$CORE_LOCAL->set("paycard_mode",PaycardLib::PAYCARD_MODE_VOID);
-		$CORE_LOCAL->set("paycard_name",$request["name"]);
+		CoreLocal::set("paycard_amount",(($request['mode']=='refund') ? -1 : 1) * $request['amount']);
+		CoreLocal::set("paycard_id",$transID);
+		CoreLocal::set("paycard_type",PaycardLib::PAYCARD_TYPE_CREDIT);
+		CoreLocal::set("paycard_mode",PaycardLib::PAYCARD_MODE_VOID);
+		CoreLocal::set("paycard_name",$request["name"]);
 	
 		// display FEC code box
 		$plugin_info = new Paycards();
@@ -265,9 +260,9 @@ class AuthorizeDotNet extends BasicCCModule {
 		return $json;
 	}
 
-	function handleResponse($authResult){
-		global $CORE_LOCAL;
-		switch($CORE_LOCAL->get("paycard_mode")){
+	function handleResponse($authResult)
+    {
+		switch(CoreLocal::get("paycard_mode")){
 		case PaycardLib::PAYCARD_MODE_AUTH:
 			return $this->handleResponseAuth($authResult);
 		case PaycardLib::PAYCARD_MODE_VOID:
@@ -275,16 +270,16 @@ class AuthorizeDotNet extends BasicCCModule {
 		}
 	}
 
-	function handleResponseAuth($authResult){
-		global $CORE_LOCAL;
+	function handleResponseAuth($authResult)
+    {
 		$xml = new xmlData($authResult['response']);
 		// prepare some fields to store the parsed response; we'll add more as we verify it
 		$today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
 		$now = date('Y-m-d H:i:s'); // full timestamp
-		$cashierNo = $CORE_LOCAL->get("CashierNo");
-		$laneNo = $CORE_LOCAL->get("laneno");
-		$transNo = $CORE_LOCAL->get("transno");
-		$transID = $CORE_LOCAL->get("paycard_id");
+		$cashierNo = CoreLocal::get("CashierNo");
+		$laneNo = CoreLocal::get("laneno");
+		$transNo = CoreLocal::get("transno");
+		$transID = CoreLocal::get("paycard_id");
 		$dbTrans = PaycardLib::paycard_db();
 		$sqlColumns =
 			$dbTrans->identifier_escape('date').",cashierNo,laneNo,transNo,transID," .
@@ -343,7 +338,7 @@ class AuthorizeDotNet extends BasicCCModule {
 
 		if( $authResult['curlErr'] != CURLE_OK || $authResult['curlHTTP'] != 200){
 			if ($authResult['curlHTTP'] == '0'){
-				$CORE_LOCAL->set("boxMsg","No response from processor<br />
+				CoreLocal::set("boxMsg","No response from processor<br />
 							The transaction did not go through");
 				return PaycardLib::PAYCARD_ERR_PROC;
 			}	
@@ -352,46 +347,46 @@ class AuthorizeDotNet extends BasicCCModule {
 
 		switch ($xml->get("RESPONSECODE")){
 			case 1: // APPROVED
-				$CORE_LOCAL->set("ccTermOut","approval:".str_pad($xml->get("AUTH_CODE"),6,'0',STR_PAD_RIGHT));
+				CoreLocal::set("ccTermOut","approval:".str_pad($xml->get("AUTH_CODE"),6,'0',STR_PAD_RIGHT));
 				return PaycardLib::PAYCARD_ERR_OK;
 			case 2: // DECLINED
-				$CORE_LOCAL->set("ccTermOut","approval:denied");
-				$CORE_LOCAL->set("boxMsg","Transaction declined");
+				CoreLocal::set("ccTermOut","approval:denied");
+				CoreLocal::set("boxMsg","Transaction declined");
 				if ($xml->get_first("ERRORCODE") == 4)
-					$CORE_LOCAL->set("boxMsg",$CORE_LOCAL.get("boxMsg")."<br />Pick up card)");
+					CoreLocal::set("boxMsg",CoreLocal::get("boxMsg")."<br />Pick up card)");
 				break;
 			case 3: // ERROR
-				$CORE_LOCAL->set("ccTermOut","resettotal");
-				$CORE_LOCAL->set("boxMsg","");
+				CoreLocal::set("ccTermOut","resettotal");
+				CoreLocal::set("boxMsg","");
 				$codes = $xml->get("ERRORCODE");
 				$texts = $xml->get("ERRORTEXT");
 				if (!is_array($codes))
-					$CORE_LOCAL->set("boxMsg","EC$codes: $texts");
+					CoreLocal::set("boxMsg","EC$codes: $texts");
 				else{
 					for($i=0; $i<count($codes);$i++){
-						$CORE_LOCAL->set("boxMsg",$CORE_LOCAL->get("boxMsg")."EC".$codes[$i].": ".$texts[$i]);
+						CoreLocal::set("boxMsg",CoreLocal::get("boxMsg")."EC".$codes[$i].": ".$texts[$i]);
 						if ($i != count($codes)-1) 
-							$CORE_LOCAL->set("boxMsg",$CORE_LOCAL->get("boxMsg")."<br />");
+							CoreLocal::set("boxMsg",CoreLocal::get("boxMsg")."<br />");
 					}
 				}
 				break;
 			default:
-				$CORE_LOCAL->set("boxMsg","An unknown error occurred<br />at the gateway");
+				CoreLocal::set("boxMsg","An unknown error occurred<br />at the gateway");
 		}
 		return PaycardLib::PAYCARD_ERROR_PROC;
 	}
 
-	function handleResponseVoid($authResult){
-		global $CORE_LOCAL;
+	function handleResponseVoid($authResult)
+    {
 		$xml = new xmlData($authResult['response']);
 		// prepare some fields to store the parsed response; we'll add more as we verify it
 		$today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
 		$now = date('Y-m-d H:i:s'); // full timestamp
-		$cashierNo = $CORE_LOCAL->get("CashierNo");
-		$laneNo = $CORE_LOCAL->get("laneno");
-		$transNo = $CORE_LOCAL->get("transno");
-		$transID = $CORE_LOCAL->get("paycard_id");
-		$amount = $CORE_LOCAL->get("paycard_amount");
+		$cashierNo = CoreLocal::get("CashierNo");
+		$laneNo = CoreLocal::get("laneno");
+		$transNo = CoreLocal::get("transno");
+		$transID = CoreLocal::get("paycard_id");
+		$amount = CoreLocal::get("paycard_amount");
 		$amountText = number_format(abs($amount), 2, '.', '');
 
 		// prepare some fields to store the request and the parsed response; we'll add more as we verify it
@@ -448,59 +443,59 @@ class AuthorizeDotNet extends BasicCCModule {
 			case 1: // APPROVED
 				return PaycardLib::PAYCARD_ERR_OK;
 			case 2: // DECLINED
-				$CORE_LOCAL->set("boxMsg","Transaction declined");
+				CoreLocal::set("boxMsg","Transaction declined");
 				if ($xml->get_first("ERRORCODE") == 4)
-					$CORE_LOCAL->set("boxMsg",$CORE_LOCAL->get("boxMsg")."<br />Pick up card");
+					CoreLocal::set("boxMsg",CoreLocal::get("boxMsg")."<br />Pick up card");
 				break;
 			case 3: // ERROR
-				$CORE_LOCAL->set("boxMsg","");
+				CoreLocal::set("boxMsg","");
 				$codes = $xml->get("ERRORCODE");
 				$texts = $xml->get("ERRORTEXT");
 				if (!is_array($codes))
-					$CORE_LOCAL->set("boxMsg","EC$codes: $texts");
+					CoreLocal::set("boxMsg","EC$codes: $texts");
 				else{
 					for($i=0; $i<count($codes);$i++){
-						$CORE_LOCAL->set("boxMsg",$CORE_LOCAL->get("boxMsg")."EC".$codes[$i].": ".$texts[$i]);
+						CoreLocal::set("boxMsg",CoreLocal::get("boxMsg")."EC".$codes[$i].": ".$texts[$i]);
 						if ($i != count($codes)-1) 
-							$CORE_LOCAL->set("boxMsg",$CORE_LOCAL->get("boxMsg")."<br />");
+							CoreLocal::set("boxMsg",CoreLocal::get("boxMsg")."<br />");
 					}
 				}
 				break;
 			default:
-				$CORE_LOCAL->set("boxMsg","An unknown error occurred<br />at the gateway");
+				CoreLocal::set("boxMsg","An unknown error occurred<br />at the gateway");
 		}
 		return PaycardLib::PAYCARD_ERROR_PROC;
 	}
 
-	function cleanup($json){
-		global $CORE_LOCAL;
-		switch($CORE_LOCAL->get("paycard_mode")){
+	function cleanup($json)
+    {
+		switch(CoreLocal::get("paycard_mode")){
 		case PaycardLib::PAYCARD_MODE_AUTH:
 			// cast to string. tender function expects string input
 			// numeric input screws up parsing on negative values > $0.99
-			$amt = "".($CORE_LOCAL->get("paycard_amount")*100);
+			$amt = "".(CoreLocal::get("paycard_amount")*100);
 			$t_type = 'CC';
-			if ($CORE_LOCAL->get('paycard_issuer') == 'American Express')
+			if (CoreLocal::get('paycard_issuer') == 'American Express')
 				$t_type = 'AX';
             // if the transaction has a non-zero efsnetRequestID,
             // include it in the tender line
             $record_id = $this->last_req_id;
             $charflag = ($record_id != 0) ? 'RQ' : '';
 			TransRecord::addFlaggedTender("Credit Card", $t_type, $amt, $record_id, $charflag);
-			$CORE_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>Please verify cardholder signature<p>[enter] to continue<br>\"rp\" to reprint slip<br>[clear] to cancel and void</font>");
-            if ($CORE_LOCAL->get("paycard_amount") <= $CORE_LOCAL->get("CCSigLimit") && $CORE_LOCAL->get("paycard_amount") >= 0) {
-                $CORE_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>No signature required<p>[enter] to continue<br>[void] to cancel and void</font>");
-            } else if ($CORE_LOCAL->get('PaycardsSigCapture') != 1) {
+			CoreLocal::set("boxMsg","<b>Approved</b><font size=-1><p>Please verify cardholder signature<p>[enter] to continue<br>\"rp\" to reprint slip<br>[clear] to cancel and void</font>");
+            if (CoreLocal::get("paycard_amount") <= CoreLocal::get("CCSigLimit") && CoreLocal::get("paycard_amount") >= 0) {
+                CoreLocal::set("boxMsg","<b>Approved</b><font size=-1><p>No signature required<p>[enter] to continue<br>[void] to cancel and void</font>");
+            } else if (CoreLocal::get('PaycardsSigCapture') != 1) {
                 $json['receipt'] = 'ccSlip';
             }
 			break;
 		case PaycardLib::PAYCARD_MODE_VOID:
 			$v = new Void();
-			$v->voidid($CORE_LOCAL->get("paycard_id"));
-			$CORE_LOCAL->set("boxMsg","<b>Voided</b><p><font size=-1>[enter] to continue<br>\"rp\" to reprint slip</font>");
+			$v->voidid(CoreLocal::get("paycard_id"));
+			CoreLocal::set("boxMsg","<b>Voided</b><p><font size=-1>[enter] to continue<br>\"rp\" to reprint slip</font>");
 			break;	
 		}
-		$CORE_LOCAL->set("ccCustCopy",0);
+		CoreLocal::set("ccCustCopy",0);
 
 		return $json;
 	}
@@ -515,8 +510,8 @@ class AuthorizeDotNet extends BasicCCModule {
 		}
 	}	
 
-	function send_auth(){
-		global $CORE_LOCAL;
+	function send_auth()
+    {
 		// initialize
 		$dbTrans = PaycardLib::paycard_db();
 		if( !$dbTrans){
@@ -526,22 +521,22 @@ class AuthorizeDotNet extends BasicCCModule {
 
 		$today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
 		$now = date('Y-m-d H:i:s'); // full timestamp
-		$cashierNo = $CORE_LOCAL->get("CashierNo");
-		$laneNo = $CORE_LOCAL->get("laneno");
-		$transNo = $CORE_LOCAL->get("transno");
-		$transID = $CORE_LOCAL->get("paycard_id");
-		$amount = $CORE_LOCAL->get("paycard_amount");
+		$cashierNo = CoreLocal::get("CashierNo");
+		$laneNo = CoreLocal::get("laneno");
+		$transNo = CoreLocal::get("transno");
+		$transID = CoreLocal::get("paycard_id");
+		$amount = CoreLocal::get("paycard_amount");
 		$amountText = number_format(abs($amount), 2, '.', '');
 		$mode = (($amount < 0) ? 'refund' : 'tender');
-		$manual = ($CORE_LOCAL->get("paycard_manual") ? 1 : 0);
+		$manual = (CoreLocal::get("paycard_manual") ? 1 : 0);
 		$cardPAN = $this->trans_pan['pan'];
 		$cardPANmasked = PaycardLib::paycard_maskPAN($cardPAN,0,4);
-		$cardIssuer = $CORE_LOCAL->get("paycard_issuer");
-		$cardExM = substr($CORE_LOCAL->get("paycard_exp"),0,2);
-		$cardExY = substr($CORE_LOCAL->get("paycard_exp"),2,2);
+		$cardIssuer = CoreLocal::get("paycard_issuer");
+		$cardExM = substr(CoreLocal::get("paycard_exp"),0,2);
+		$cardExY = substr(CoreLocal::get("paycard_exp"),2,2);
 		$cardTr1 = $this->trans_pan['tr1'];
 		$cardTr2 = $this->trans_pan['tr2'];
-		$cardName = $CORE_LOCAL->get("paycard_name");
+		$cardName = CoreLocal::get("paycard_name");
 		$refNum = $this->refnum($transID);
 		$live = 1;
 
@@ -557,7 +552,7 @@ class AuthorizeDotNet extends BasicCCModule {
 		"x_amount"	=> $amount,
 		"x_user_ref"	=> $refNum
 		);
-		if ($CORE_LOCAL->get("training") == 1)
+		if (CoreLocal::get("training") == 1)
 			$postValues["x_test_request"] = "1";
 
 		if ($mode == "refund")
@@ -605,8 +600,8 @@ class AuthorizeDotNet extends BasicCCModule {
 		return $this->curlSend($postData,'POST',False);
 	}
 
-	function send_void(){
-		global $CORE_LOCAL;
+	function send_void()
+    {
 		// initialize
 		$dbTrans = PaycardLib::paycard_db();
 		if( !$dbTrans){
@@ -617,22 +612,22 @@ class AuthorizeDotNet extends BasicCCModule {
 		// prepare data for the void request
 		$today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
 		$now = date('Y-m-d H:i:s'); // new timestamp
-		$cashierNo = $CORE_LOCAL->get("CashierNo");
-		$laneNo = $CORE_LOCAL->get("laneno");
-		$transNo = $CORE_LOCAL->get("transno");
-		$transID = $CORE_LOCAL->get("paycard_id");
-		$amount = $CORE_LOCAL->get("paycard_amount");
+		$cashierNo = CoreLocal::get("CashierNo");
+		$laneNo = CoreLocal::get("laneno");
+		$transNo = CoreLocal::get("transno");
+		$transID = CoreLocal::get("paycard_id");
+		$amount = CoreLocal::get("paycard_amount");
 		$amountText = number_format(abs($amount), 2, '.', '');
 		$mode = 'void';
-		$manual = ($CORE_LOCAL->get("paycard_manual") ? 1 : 0);
+		$manual = (CoreLocal::get("paycard_manual") ? 1 : 0);
 		$cardPAN = $this->trans_pan['pan'];
 		$cardPANmasked = PaycardLib::paycard_maskPAN($cardPAN,0,4);
-		$cardIssuer = $CORE_LOCAL->get("paycard_issuer");
-		$cardExM = substr($CORE_LOCAL->get("paycard_exp"),0,2);
-		$cardExY = substr($CORE_LOCAL->get("paycard_exp"),2,2);
+		$cardIssuer = CoreLocal::get("paycard_issuer");
+		$cardExM = substr(CoreLocal::get("paycard_exp"),0,2);
+		$cardExY = substr(CoreLocal::get("paycard_exp"),2,2);
 		$cardTr1 = $this->trans_pan['tr1'];
 		$cardTr2 = $this->trans_pan['tr2'];
-		$cardName = $CORE_LOCAL->get("paycard_name");
+		$cardName = CoreLocal::get("paycard_name");
 		$refNum = $this->refnum($transID);
 		$live = 1;
 

@@ -39,7 +39,7 @@ if (!class_exists('FannieAPI')) {
    This tool helps by:
    1. Listing available scripts
    2. Automatically changing to fannie's "cron" directory
-   3. Directing logging to fannie's logs/dayend.log
+   3. Directing logging to fannie's logs/fannie.log
 
    Hiding path management makes the list of tasks
    easier to look at, but also insures a script can
@@ -62,10 +62,11 @@ class CronManagementPage extends FanniePage
     protected $auth_classes = array('admin');
 
     public $description = '[Scheduled Tasks] manages periodic background tasks.';
+    public $themed = true;
 
     function preprocess()
     {
-        global $FANNIE_OP_DB;
+        global $FANNIE_OP_DB, $FANNIE_URL;
         if (FormLib::get_form_value('submit') == 'Save') {
 
             $indexes = FormLib::get_form_value('enabled');
@@ -107,8 +108,12 @@ class CronManagementPage extends FanniePage
                 $dbc->exec_statement($trun);
                 $prep = $dbc->prepare_statement('INSERT INTO cronBackup VALUES ('.$dbc->now().', ?)');
                 $dbc->exec_statement($prep,array(file_get_contents($tmpfn)));
+                $crontab = file_get_contents($tmpfn);
 
                 unlink($tmpfn);
+                $this->add_onload_command("showBootstrapAlert('#alert-area', 'success', 'Enabled " . count($indexes) . " tasks');\n");
+            } else {
+                $this->add_onload_command("showBootstrapAlert('#alert-area', 'warning', 'Enabled zero tasks');\n");
             }
         }
 
@@ -117,9 +122,11 @@ class CronManagementPage extends FanniePage
 
     function body_content()
     {
-        global $FANNIE_ROOT;
+        global $FANNIE_ROOT, $FANNIE_URL;
         $ret = '';
 
+        $ret .= '<div id="alert-area"></div>';
+        $ret .= '<p>';
         if (function_exists('posix_getpwuid')) {
             $chk = posix_getpwuid(posix_getuid());
             $ret .= "PHP is running as: ".$chk['name']."<br />";
@@ -128,17 +135,19 @@ class CronManagementPage extends FanniePage
             $ret .= "PHP is (probably) running as: ".get_current_user()."<br />";
             $ret .= "This is probably Windows; this tool won't work<br /><br />";
         }
+        $ret .= '</p>';
 
-        if (!is_writable($FANNIE_ROOT.'logs/dayend.log')) {
-            $ret .= "<i>Warning: dayend.log ({$FANNIE_ROOT}logs/dayend.log)
+        $ret .= '<p>';
+        if (!is_writable($FANNIE_ROOT.'logs/fannie.log')) {
+            $ret .= "<i>Warning: fannie.log ({$FANNIE_ROOT}logs/fannie.log)
                 is not writable. Logging task results may
                 not work</i>";
          } else {
-            $ret .= "Default logging will be to {$FANNIE_ROOT}logs/dayend.log";
+            $ret .= "Default logging will be to {$FANNIE_ROOT}logs/fannie.log";
          }
+        $ret .= '</p>';
 
-        $ret .= "<br />Click the 'Command' link for popup Help.";
-        $ret .= "<br /><br />";
+        $ret .= "<p>Click the 'Command' link for popup Help.</p>";
 
         $jobs = $this->scanScripts($FANNIE_ROOT.'cron',array());
         $tasks = FannieAPI::listModules('FannieTask');
@@ -146,20 +155,20 @@ class CronManagementPage extends FanniePage
 
         $mode = FormLib::get_form_value('mode','simple');
 
-        $ret .= "<form action=\"{$_SERVER['PHP_SELF']}\" method=\"post\">";
+        $ret .= "<form action=\"{$_SERVER['PHP_SELF']}\" method=\"post\" class=\"form form-inline\">";
         $ret .= sprintf ('<input type="hidden" name="mode" value="%s" />',$mode);
         if ($mode == 'simple') {
             $ret .= '<a href="CronManagementPage.php?mode=advanced">Switch to Advanced View</a><br />';
         } else {
             $ret .= '<a href="CronManagementPage.php?mode=simple">Switch to Simple View</a><br />';
         }
-        $ret .= "<b>E-mail address</b>: <input name=\"email\" value=\"{$tab['email']}\" /><br />";
+        $ret .= "<label>E-mail address</label><input name=\"email\" value=\"{$tab['email']}\" class=\"form-control\" />";
 
-        $ret .= "<table cellspacing=\"0\" cellpadding=\"4\" border=\"1\">";
+        $ret .= "<table class=\"table\">";
         $ret .= "<tr><th>Enabled</th><th>Min</th><th>Hour</th><th>Day</th><th>Month</th><th>Wkdy</th><th>Command/Help</th></tr>";
         $i = 0;
         foreach ($tasks as $task) {
-            $cmd = 'php '.realpath(dirname(__FILE__).'/../../classlib2.0/FannieTask.php').' '.$task.' >> '.$FANNIE_ROOT.'logs/dayend.log';;
+            $cmd = 'php '.realpath(dirname(__FILE__).'/../../classlib2.0/FannieTask.php').' '.$task.' >> '.$FANNIE_ROOT.'logs/fannie.log';;
             $simple = $this->simpleRow($task, $task, $cmd, $tab, $i);
             if ($simple !== false && $mode == 'simple') {
                 $ret .= $simple;
@@ -180,7 +189,7 @@ class CronManagementPage extends FanniePage
             $nicename = rtrim($nicename,'.');
             $nicename = str_replace('.',' ',$nicename);
 
-            $cmd = "cd {$FANNIE_ROOT}cron && php ./{$shortname} >> {$FANNIE_ROOT}logs/dayend.log";
+            $cmd = "cd {$FANNIE_ROOT}cron && php ./{$shortname} >> {$FANNIE_ROOT}logs/fannie.log";
 
             $simple = $this->simpleRow($shortname,$nicename,$cmd,$tab,$i);
             if ($simple !== false && $mode == 'simple') {
@@ -226,9 +235,14 @@ class CronManagementPage extends FanniePage
             $i++;
         }
 
-        $ret .= "</table><br />";
-        $ret .= '<input type="submit" name="submit" value="Save" />';
+        $ret .= "</table>";
+        $ret .= '<p><button type="submit" name="submit" value="Save"
+                    class="btn btn-default">Save</button></p>';
         $ret .= '</form>';
+
+        $this->add_script($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.js?v=1');
+        $this->add_css_file($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.css');
+        $this->add_onload_command('$(\'.fancybox-link\').fancybox();');
 
         return $ret;
     }
@@ -266,7 +280,7 @@ class CronManagementPage extends FanniePage
         $ret .= sprintf('<td><input type="checkbox" name="enabled[]" %s value="%d" /></td>',
             ($enabled ? 'checked' :''),$i);
         
-        $ret .= sprintf('<td><input type="text" size="2" name="min[]" value="%s" /></td>',
+        $ret .= sprintf('<td><input type="text" class="form-control" size="2" name="min[]" value="%s" /></td>',
             (isset($tab[$t_index][$shortname])?$tab[$t_index][$shortname]['min']:'0'));
 
         /**
@@ -280,7 +294,7 @@ class CronManagementPage extends FanniePage
         for ($i=1;$i<24;$i++) {
             $vals[$i] = (($i>12)?($i-12):$i) . (($i>11)?'PM':'AM');
         }
-        $ret .= '<td><select name="hour[]">';
+        $ret .= '<td><select class="form-control" name="hour[]">';
         $matched = false;
         foreach ($vals as $k=>$v) {
             $ret .= sprintf('<option value="%s"',$k);
@@ -300,7 +314,7 @@ class CronManagementPage extends FanniePage
         for ($i=1;$i<32;$i++) {
             $vals[$i] = $i;
         }
-        $ret .= '<td><select name="day[]">';
+        $ret .= '<td><select class="form-control" name="day[]">';
         $matched = False;
         foreach ($vals as $k=>$v) {
             $ret .= sprintf('<option value="%s"',$k);
@@ -320,7 +334,7 @@ class CronManagementPage extends FanniePage
         for ($i=1;$i<13;$i++) {
             $vals[$i] = date('M',mktime(0,0,0,$i,1,2000));
         }
-        $ret .= '<td><select name="month[]">';
+        $ret .= '<td><select class="form-control" name="month[]">';
         $matched = false;
         foreach ($vals as $k=>$v) {
             $ret .= sprintf('<option value="%s"',$k);
@@ -345,7 +359,7 @@ class CronManagementPage extends FanniePage
             $vals[$i] = date('D',$ts);
             $ts = mktime(0,0,0,date('n',$ts),date('j',$ts)+1,date('Y'));
         }
-        $ret .= '<td><select name="wkdy[]">';
+        $ret .= '<td><select name="wkdy[]" class="form-control">';
         $matched = false;
         foreach ($vals as $k=>$v) {
             $ret .= sprintf('<option value="%s"',$k);
@@ -362,7 +376,7 @@ class CronManagementPage extends FanniePage
 
         $ret .= sprintf('
             <td><input type="hidden" name="cmd[]" value="%s" />
-            <a href="" onclick="window.open(\'help.php?fn=%s\',\'Help\',\'height=200,width=500,scrollbars=1\');return false;" title="Help">%s</a></td>
+            <a href="help.php?fn=%s" title="Help" class="fancybox-link">%s</a></td>
             </tr>',
             (isset($tab['jobs'][$shortname])?$tab['jobs'][$shortname]['cmd']:$cmd),
             base64_encode($shortname),$nicename
@@ -397,13 +411,13 @@ class CronManagementPage extends FanniePage
         // start firing a job off every minute
         return sprintf('<tr class="%s">
             <td><input type="checkbox" name="enabled[]" %s value="%d" /></td>
-            <td><input type="text" size="2" name="min[]" value="%s" /></td>
-            <td><input type="text" size="2" name="hour[]" value="%s" /></td>
-            <td><input type="text" size="2" name="day[]" value="%s" /></td>
-            <td><input type="text" size="2" name="month[]" value="%s" /></td>
-            <td><input type="text" size="2" name="wkdy[]" value="%s" /></td>
+            <td><input class="form-control" type="text" size="2" name="min[]" value="%s" /></td>
+            <td><input class="form-control" type="text" size="2" name="hour[]" value="%s" /></td>
+            <td><input class="form-control" type="text" size="2" name="day[]" value="%s" /></td>
+            <td><input class="form-control" type="text" size="2" name="month[]" value="%s" /></td>
+            <td><input class="form-control" type="text" size="2" name="wkdy[]" value="%s" /></td>
             <td><input type="hidden" name="cmd[]" value="%s" />
-            <a href="" onclick="window.open(\'help.php?fn=%s\',\'Help\',\'height=200,width=500,scrollbars=1\');return false;" title="Help">%s</a></td>
+            <a href="help.php?fn=%s" class="fancybox-link" title="Help">%s</a></td>
             </tr>',
             (isset($tab[$t_index][$shortname])&&isset($tab[$t_index][$shortname]['cmd'])?'taskOn':'taskOff'),
             (isset($tab[$t_index][$shortname])&&isset($tab[$t_index][$shortname]['cmd'])?'checked':''),$i,
@@ -479,7 +493,9 @@ class CronManagementPage extends FanniePage
             $tmp = preg_split("/\s+/",$line,6);
             if (count($tmp) == 6) {
                 if (strstr($tmp[5], 'FannieTask')) {
-                    $sn = str_replace(" >> {$FANNIE_ROOT}logs/dayend.log","",$tmp[5]);
+                    $sn = str_replace(" >> {$FANNIE_ROOT}logs/fannie.log","",$tmp[5]);
+                    $sn = str_replace(" >> {$FANNIE_ROOT}logs/dayend.log","",$sn);
+                    $tmp[5] = str_replace(" >> {$FANNIE_ROOT}logs/dayend.log", " >> {$FANNIE_ROOT}logs/fannie.log", $tmp[5]);
                     $parts = explode(' ', $sn);
                     $sn = $parts[count($parts)-1];
                     $ret['tasks'][$sn] = array(
@@ -492,7 +508,9 @@ class CronManagementPage extends FanniePage
                     );
                 } else {
                     $sn = str_replace("cd {$FANNIE_ROOT}cron && php ./","",$tmp[5]);
+                    $sn = str_replace(" >> {$FANNIE_ROOT}logs/fannie.log","",$sn);
                     $sn = str_replace(" >> {$FANNIE_ROOT}logs/dayend.log","",$sn);
+                    $tmp[5] = str_replace(" >> {$FANNIE_ROOT}logs/dayend.log", " >> {$FANNIE_ROOT}logs/fannie.log", $tmp[5]);
                     $ret['jobs'][$sn] = array(
                         'min' => $tmp[0],
                         'hour' => $tmp[1],
@@ -523,6 +541,24 @@ class CronManagementPage extends FanniePage
             background: #D99595;
         }
         ';
+    }
+
+    public function helpContent()
+    {
+        return '<p>Scheduled Tasks are background jobs that run periodically
+            based on this schedule. Note this interface only works on Linux
+            and other systems with cron.</p>
+            <p>When reading the schedule fields, asterisk (*) means <em>all</em>.
+            For example, setting the last three fields to asterisk means run 
+            daily at the time specified by hour & minutes.</p>
+            <p>Clicking on the right-hand command name shows a bit more information
+            about what that particular task does.</p>
+            <p>Entering an e-mail address will send any task-related error
+            messages to that address.</p>
+            <p>The <em>Advanced View</em> provides five text fields for scheduling
+            instead of dropdowns. This is for experienced users who want to use
+            more advanced cron settings.</p>'
+            ;
     }
 
 }

@@ -30,6 +30,7 @@ class RecallReport extends FannieReportPage
 {
     public $description = '[Recall Report] lists names and contact information for everyone who
         purchased a given product. Hopefully rarely used.';
+    public $themed = true;
 
     protected $report_headers = array('Mem#', 'Name', 'Address', 'City', 'State', 'Zip', 'Phone', 'Alt. Phone', 'Email', 'Qty', 'Amt');
     protected $title = "Fannie : Recall Movement";
@@ -100,21 +101,34 @@ class RecallReport extends FannieReportPage
         
     public function form_content()
     {
-        $this->add_onload_command("\$('#date1').datepicker({dateFormat:'yy-mm-dd'});\n");
-        $this->add_onload_command("\$('#date2').datepicker({dateFormat:'yy-mm-dd'});\n");
+        $this->add_onload_command('$(\'#upc\').focus();');
         return '
             <form action=RecallReport.php method=get>
-            <table><tr>
-            <th>UPC</th><td><input type=text name=upc /></td>
-            <td rowspan="4">'.FormLib::date_range_picker().'</td>
-            </tr><tr>
-            <th>Start date</th><td><input type=text name=date1 id="date1" /></td>
-            </tr><tr>
-            <th>End date</th><td><input type=text name=date2 id="date2" /></td>
-            </tr><tr>
-            <td><input type=submit name=submit value="Get Report" /></td>
-            <td><input type=checkbox name=excel id=excel value=xls /><label for=excel>Excel</label></td>
-            </tr></table>
+            <div class="col-sm-4">
+            <div class="form-group">
+                <label>UPC</label>
+                <input type=text name=upc class="form-control" 
+                    id="upc" required />
+            </div>
+            <div class="form-group">
+                <label>Start date</label>
+                <input type=text name=date1 id="date1" required
+                    class="form-control date-field" />
+            </div>
+            <div class="form-group">
+                <label>End date</label>
+                <input type=text name=date2 id="date2" required
+                    class="form-control date-field" />
+            </div>
+            <div class="form-group">
+                <button type=submit name=submit value="Get Report" 
+                    class="btn btn-default">Get Report</button>
+                <input type=checkbox name=excel id=excel value=xls /> <label for=excel>Excel</label>
+            </div>
+            </div>
+            <div class="col-sm-4">
+            '.FormLib::date_range_picker().'
+            </div>
             </form>';
     }
 }

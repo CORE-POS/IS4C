@@ -28,7 +28,7 @@ if (!class_exists('FannieAPI')) {
 
 /**
 */
-class StaffArPayrollDeduction extends FanniePlugin 
+class StaffArPayrollDeduction extends \COREPOS\Fannie\API\FanniePlugin 
 {
     public $plugin_settings = array(
     'StaffArPayrollDB' => array('default'=>'StaffArPayrollDB','label'=>'Database',

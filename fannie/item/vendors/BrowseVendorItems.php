@@ -26,13 +26,14 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class BrowseVendorItems extends FanniePage {
+class BrowseVendorItems extends FanniePage 
+{
     protected $title = "Fannie : Browse Vendor Catalog";
     protected $header = "Browse Vendor Catalog";
-    protected $window_dressing = False;
 
     public $description = '[Vendor Items] lists items in the vendor\'s catalog. Must be
     accessed via the Vendor Editor.';
+    public $themed = true;
 
     function preprocess(){
 
@@ -186,28 +187,33 @@ class BrowseVendorItems extends FanniePage {
         }
         $query .= "ORDER BY v.upc";
         
-        $ret = "<table cellspacing=0 cellpadding=4 border=1>";
+        $ret = "<table class=\"table table-bordered\">";
         $ret .= "<tr><th>UPC</th><th>Brand</th><th>Description</th>";
         $ret .= "<th>Size</th><th>Cost</th><th colspan=3>&nbsp;</th></tr>";
         $p = $dbc->prepare_statement($query);
         $result = $dbc->exec_statement($p,$args);
         while($row = $dbc->fetch_row($result)){
             if ($row['inPOS'] == 1){
-                $ret .= sprintf("<tr style=\"background:#ffffcc;\">
+                $ret .= sprintf("<tr class=\"alert-success\">
                     <td>%s</td><td>%s</td><td>%s</td>
                     <td>%s</td><td>\$%.2f</td><td colspan=3>&nbsp;
                     </td></tr>",$row['upc'],$row['brand'],
                     $row['description'],$row['size'],$row['cost']);
-            }
-            else {
+            } else {
                 $srp = !empty($row['srp']) ? $row['srp'] : $this->getSRP($row['cost'],$row['margin']);
                 $ret .= sprintf("<tr id=row%s><td>%s</td><td>%s</td><td>%s</td>
-                    <td>%s</td><td>\$%.2f</td><td>
-                    <input type=text size=5 value=%.2f id=price%s />
-                    </td><td><select id=\"dept%s\">%s</select></td>
+                    <td>%s</td><td>\$%.2f</td>
+                    <td>
+                        <div class=\"input-group\">
+                            <span class=\"input-group-addon\">$</span>
+                            <input type=text size=5 value=%.2f id=price%s 
+                                class=\"form-control\" />
+                        </div>
+                    </td><td><select id=\"dept%s\" class=\"form-control\">%s</select></td>
                     <td id=button%s>
-                    <input type=submit value=\"Add to POS\"
-                    onclick=\"addToPos('%s');\" /></td></tr>",$row['upc'],
+                    <button type=button value=\"Add to POS\" class=\"btn btn-default\"
+                    onclick=\"addToPos('%s');\">Add to POS</button></td>
+                    </tr>",$row['upc'],
                     $row['upc'],$row['brand'],$row['description'],
                     $row['size'],$row['cost'],$srp,$row['upc'],
                     $row['upc'],$depts,$row['upc'],$row['upc']);
@@ -260,7 +266,7 @@ class BrowseVendorItems extends FanniePage {
             $model->sku($vinfo['sku']);
             $model->size($vinfo['size']);
             $model->units($vinfo['units']);
-            $model->pricePerUnit(PriceLib::pricePerUnit($price, $vinfo['size']));
+            $model->pricePerUnit(\COREPOS\Fannie\API\lib\PriceLib::pricePerUnit($price, $vinfo['size']));
             $model->save();
         }
 
@@ -275,7 +281,8 @@ class BrowseVendorItems extends FanniePage {
         return $srp;
     }
 
-    function body_content(){
+    function body_content()
+    {
         global $FANNIE_OP_DB, $FANNIE_URL;
         $vid = FormLib::get_form_value('vid');
         if ($vid === ''){
@@ -292,24 +299,28 @@ class BrowseVendorItems extends FanniePage {
                                       GROUP BY i.vendorDept, d.name
                                       ORDER BY i.vendorDept");
         $rp = $dbc->exec_statement($p,array($vid));
-        while($rw = $dbc->fetch_row($rp))
+        while ($rw = $dbc->fetch_row($rp)) {
+            if ($rw['vendorDept'] == 0 && empty($rw['name'])) {
+                continue;
+            }
             $cats .= "<option value=$rw[0]>$rw[0] $rw[1]</option>";
+        }
 
         if ($cats =="") $cats = "<option value=\"\">Select a department...</option><option>All</option>";
         else $cats = "<option value=\"\">Select a department...</option>".$cats;
 
         ob_start();
         ?>
-        <div id="categorydiv">
-        <select id=categoryselect onchange="catchange();">
+        <div id="categorydiv" class="form-inline">
+        <select id=categoryselect onchange="catchange();" class="form-control">
         <?php echo $cats ?>
         </select>
         &nbsp;&nbsp;&nbsp;
-        <select id=brandselect onchange="brandchange();">
+        <select id=brandselect onchange="brandchange();" class="form-control">
         <option>Select a department first...</option>
         </select>
         &nbsp;&nbsp;&nbsp;
-        <select id="shelftags">
+        <select id="shelftags" class="form-control">
         <option value="-1">Shelf Tag Page</option>
         <?php
         $pages = $dbc->query('SELECT superID, super_name FROM MasterSuperDepts GROUP BY superID, super_name ORDER BY superID');
@@ -326,11 +337,19 @@ class BrowseVendorItems extends FanniePage {
         }
         ?>
         </div>
+        <div id="loading-bar" class="col-sm-6 collapse">
+            <div class="progress">
+                <div class="progress-bar progress-bar-striped active" style="width:100%;"
+                    role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+                    <span class="sr-only">Loading</span>
+                </div>
+            </div>
+        </div>
         <input type="hidden" id="vendorID" value="<?php echo $vid; ?>" />
         <input type="hidden" id="urlpath" value="<?php echo $FANNIE_URL; ?>" />
+        <p><a href="VendorIndexPage.php?vid=<?php echo $vid; ?>" class="btn btn-default">Home</a></p>
         <?php
         
-        $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
         $this->add_script('browse.js');
 
         return ob_get_clean();

@@ -35,6 +35,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
 
     public $page_set = 'Plugin :: Open Book Financing';
     public $description = '[Week Entry] sets labor amounts and sales goals by week.';
+    public $themed = true;
 
     public function javascript_content()
     {
@@ -98,8 +99,14 @@ class ObfWeekEntryPage extends FannieRESTfulPage
         $model = new ObfWeeksModel($dbc);
         $model->startDate(date('Y-m-d', mktime(0, 0, 0, date('n', $end_ts), date('j', $end_ts)-6, date('Y', $end_ts))));
         $model->endDate(date('Y-m-d', $end_ts));
+        $exists = $model->find();
+        if (is_array($exists) && count($exists) == 1) {
+            $match = $exists[0];
+            $model->obfWeekID($match->obfWeekID());
+        }
         $model->previousYear(date('Y-m-d', mktime(0, 0, 0, date('n', $prev_ts), date('j', $prev_ts)-6, date('Y', $prev_ts))));
         $model->obfQuarterID(FormLib::get('quarter'));
+        $model->obfLaborQuarterID(FormLib::get('labor-quarter'));
         $model->growthTarget(FormLib::get('growthTarget', 0.00) / 100.00);
 
         $new_id = $model->save();
@@ -126,6 +133,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
         $model->endDate(date('Y-m-d', $end_ts));
         $model->previousYear(date('Y-m-d', mktime(0, 0, 0, date('n', $prev_ts), date('j', $prev_ts)-6, date('Y', $prev_ts))));
         $model->obfQuarterID(FormLib::get('quarter'));
+        $model->obfLaborQuarterID(FormLib::get('labor-quarter'));
         $model->growthTarget(FormLib::get('growthTarget', 0.00) / 100.00);
 
         $model->save();
@@ -181,8 +189,18 @@ class ObfWeekEntryPage extends FannieRESTfulPage
         $model = new ObfWeeksModel($dbc);
         if (!is_object($this->weekModel)) {
             $this->weekModel = new ObfWeeksModel($dbc);
+            $quarterID = '';
+            $laborID = '';
+            foreach ($this->weekModel->find('endDate', true) as $w) {
+                $quarterID = $w->obfQuarterID();
+                $laborID = $w->obfLaborQuarterID();
+                break;
+            }
+            $this->weekModel->obfQuarterID($quarterID);
+            $this->weekModel->obfLaborQuarterID($laborID);
         }
-        $select = '<select onchange="location=\'' . $_SERVER['PHP_SELF'] . '?id=\' + this.value;">';
+        $select = '<select class="form-control"
+                    onchange="location=\'' . $_SERVER['PHP_SELF'] . '?id=\' + this.value;">';
         $select .= '<option value="">New Entry</option>';
         foreach($model->find('obfWeekID', true) as $week) {
             $ts = strtotime($week->startDate());
@@ -193,15 +211,18 @@ class ObfWeekEntryPage extends FannieRESTfulPage
         }
         $select .= '</select>';
 
-        $ret = '<b>Week Ending</b>: ' . $select
+        $ret = '<div class="form-group form-inline">
+                <lablel>Week Ending</label>: ' . $select
                 . '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
-                . '<button onclick="location=\'ObfIndexPage.php\';return false;">Home</button>'
-                . '<br /><br />';
+                . '<button type="button" class="btn btn-default"
+                    onclick="location=\'ObfIndexPage.php\';return false;">Home</button>'
+                . '</div>';
 
         $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
-        $ret .= '<table cellpadding="4" cellspacing="0" border="1">';
+        $ret .= '<table class="table">';
         $ret .= '<tr><th>Week End Date</th><th>Previous Year End Date</th>
-                <th>Sales Growth Target</th><th>Quarter</th></tr>';
+                <th>Sales Growth Target</th><th>Sales Period</th>
+                <th>Labor Period</th></tr>';
 
         $end1 = '';
         if ($this->weekModel->startDate() != '') {
@@ -214,20 +235,29 @@ class ObfWeekEntryPage extends FannieRESTfulPage
             $end2 = date('Y-m-d', mktime(0, 0, 0, date('n', $ts), date('j', $ts)+6, date('Y', $ts)));
         }
         $ret .= '<tr>';
-        $ret .= '<td><input type="text" size="12" name="date1" id="date1"
-                        value="' . $end1 . '"
+        $ret .= '<td><input type="text" class="form-control date-field" name="date1" id="date1"
+                        value="' . $end1 . '" required
                         onchange="getPrevYear(this.value);" /></td>';
-        $this->add_onload_command("\$('#date1').datepicker();\n");
-        $ret .= '<td><input type="text" size="12" name="date2" id="date2"
-                        value="' . $end2 . '" /></td>';
-        $ret .= '<td><input type="text" size="6" name="growthTarget" 
-                        value="' . sprintf('%.2f', $this->weekModel->growthTarget() * 100) . '" />%</td>';
-        $this->add_onload_command("\$('#date2').datepicker();\n");
-        $ret .= '<td><select name="quarter">';
+        $ret .= '<td><input type="text" class="form-control date-field" name="date2" id="date2"
+                        value="' . $end2 . '" required /></td>';
+        $ret .= '<td><div class="input-group">
+                <input type="number" min="0" max="100" step="0.01"
+                    class="form-control" name="growthTarget" 
+                    value="' . sprintf('%.2f', $this->weekModel->growthTarget() * 100) . '" />
+                <span class="input-group-addon">%</span></div></td>';
+        $ret .= '<td><select name="quarter" class="form-control">';
         $quarters = new ObfQuartersModel($dbc);
         foreach ($quarters->find('obfQuarterID', true) as $q) {
             $ret .= sprintf('<option %s value="%d">%s %s</option>',
                         ($q->obfQuarterID() == $this->weekModel->obfQuarterID() ? 'selected' : ''),
+                        $q->obfQuarterID(), $q->name(), $q->year());
+        }
+        $ret .= '</select></td>';
+        $ret .= '<td><select name="labor-quarter" class="form-control">';
+        $quarters = new ObfQuartersModel($dbc);
+        foreach ($quarters->find('obfQuarterID', true) as $q) {
+            $ret .= sprintf('<option %s value="%d">%s %s</option>',
+                        ($q->obfQuarterID() == $this->weekModel->obfLaborQuarterID() ? 'selected' : ''),
                         $q->obfQuarterID(), $q->name(), $q->year());
         }
         $ret .= '</select></td>';
@@ -240,7 +270,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
                         $this->weekModel->obfWeekID());
 
             $ret .= '<hr />';
-            $ret .= '<table cellpadding="4" cellspacing="0" border="1">';
+            $ret .= '<table class="table">';
             $ret .= '<tr><th>Group</th><th>Hours</th><th>Wages</th>
                     <th>Labor Goal</th><th>Allocated Hours</th><th>Sales Forecast</th></tr>';
             $categories = new ObfCategoriesModel($dbc);
@@ -261,11 +291,20 @@ class ObfWeekEntryPage extends FannieRESTfulPage
                 }
                 $ret .= sprintf('<tr>
                             <td>%s</td>
-                            <td><input type="text" size="8" name="hours[]" value="%.2f" /></td>
-                            <td><input type="text" size="8" name="wages[]" value="%.2f" /></td>
-                            <td><input type="text" size="8" name="labor[]" value="%.2f" />%%</td>
-                            <td><input type="text" size="8" name="alloc[]" value="%d" /></td>
-                            <td>$<input type="text" size="8" name="sales[]" %s value="%s" /></td>
+                            <td><input type="text" class="form-control" name="hours[]" value="%.2f" /></td>
+                            <td><div class="input-group">
+                                <span class="input-group-addon">$</span>
+                                <input type="text" class="form-control" name="wages[]" value="%.2f" />
+                            </div></td>
+                            <td><div class="input-group">
+                                <input type="text" class="form-control" name="labor[]" value="%.2f" />
+                                <span class="input-group-addon">%%</span>
+                            </div></td>
+                            <td><input type="text" class="form-control" name="alloc[]" value="%d" /></td>
+                            <td><div class="input-group">
+                                <span class="input-group-addon">$</span>
+                                <input type="text" class="form-control" name="sales[]" %s value="%s" />
+                            </div></td>
                             <input type="hidden" name="weekID[]" value="%d" />
                             <input type="hidden" name="catID[]" value="%d" />
                             </tr>',
@@ -283,7 +322,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
             $ret .= '</table>';
         }
 
-        $ret .= '<input type="submit" value="Save" />';
+        $ret .= '<p><button type="submit" class="btn btn-default">Save</button></p>';
         $ret .= '</form>';
 
         return $ret;

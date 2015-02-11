@@ -26,17 +26,18 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-$LANE_NO=30;
-$EMP_NO=1001;
-$DEPT=703;
-
-class GenericBillingPage extends FannieRESTfulPage {
-
+class GenericBillingPage extends FannieRESTfulPage 
+{
     protected $title = "Fannie : Generic Biling";
     protected $header = "Generic Billing";
 
     public $description = '[Generic Billing] adds a specified amount and memo to a member\'s
     accounts receivable (AR) balance.';
+    public $themed = true;
+
+    private $LANE_NO=30;
+    private $EMP_NO=1001;
+    private $DEPT=703;
 
     function javascript_content(){
         ob_start();
@@ -59,10 +60,14 @@ function postBilling(){
         url: 'GenericBillingPage.php',
         type: 'post',
         data: data,
-        success: function(resp){
-            $('#resultArea').html(resp);
-            if (resp.indexOf('billed') != -1)
+        dataType: 'json',
+        success: function(resp) {
+            if (resp.billed) {
                 $('#contentArea').html('');
+                showBootstrapAlert('#resultArea', 'success', resp.msg);
+            } else {
+                showBootstrapAlert('#resultArea', 'danger', resp.msg);
+            }
         }
     });
 }
@@ -70,15 +75,19 @@ function postBilling(){
         return ob_get_clean();
     }
 
-    function get_view(){
+    function get_view()
+    {
         global $FANNIE_OP_DB;
         $sql = FannieDB::get($FANNIE_OP_DB);
         $value = FormLib::get_form_value('id');
         $this->add_onload_command('$(\'#memnum\').val($(\'#sel\').val());');
         $ret = "<form onsubmit=\"getMemInfo(); return false;\">
-            <b>Member #</b>:
-            <input type=text id=memnum name=id value=\"$value\" />
-            <select id=sel onchange=\"\$('#memnum').val(this.value);\">";
+            <div class=\"form-group form-inline\">
+            <label>Member #</label>:
+            <input type=text id=memnum name=id 
+                class=\"form-control\" value=\"$value\" />
+            <select id=sel class=\"form-control\"
+                onchange=\"\$('#memnum').val(this.value);\">";
         $numsQ = "SELECT cardno,lastname FROM custdata WHERE
             memtype = 2
             AND personnum=1
@@ -91,7 +100,8 @@ function postBilling(){
                 $ret .= sprintf("<option value=%d>%d %s</option>",$numsW[0],$numsW[0],$numsW[1]);   
         }
         $ret .= "</select>
-            <input type=submit value=Submit />
+            <button type=submit class=\"btn btn-default\">Submit</button>
+            </div>
             </form><hr /><div id=\"contentArea\"></div>
             <div id=\"resultArea\"></div>";
         return $ret;
@@ -111,7 +121,8 @@ function postBilling(){
         $row = $sql->fetch_row($result);
 
         printf("<form onsubmit=\"postBilling();return false;\">
-            <table cellpadding=4 cellspacing=0 border=1>
+            <div class=\"col-sm-6\">
+            <table class=\"table\">
             <tr>
                 <th>Member</th>
                 <td>%d<input type=hidden id=form_memnum value=%d /></td>
@@ -122,14 +133,23 @@ function postBilling(){
                 <th>Current Balance</th>
                 <td>%.2f</td>
                 <th>Bill</th>
-                <td>$<input type=text size=5 id=amount /></td>
+                <td>
+                    <div class=\"input-group\">
+                        <span class=\"input-group-addon\">$</span>
+                        <input type=text class=\"form-control\" id=amount required />
+                    </div>
+                </td>
             </tr>
             <tr>
                 <th>For</th>
-                <td colspan=3><input type=text maxlength=35 id=desc /></td>
+                <td colspan=3><input type=text maxlength=35 id=desc 
+                    class=\"form-control\" required /></td>
             </tr>
             </table>
-            <input type=submit value=\"Bill Account\" />
+            <p>
+            <button type=submit class=\"btn btn-default\">Bill Account</button>
+            </p>
+            </div>
             </form>",
             $row[0],$row[0],$row[1],$row[2]);
 
@@ -137,18 +157,20 @@ function postBilling(){
     }
 
     function post_id_handler(){
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $EMP_NO, $LANE_NO, $DEPT;
+        global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
         $sql = FannieDB::get($FANNIE_TRANS_DB);
 
         $amount = FormLib::get_form_value('amount');
         $desc = FormLib::get_form_value('desc');
-        if ($amount === ''){
-            echo "Amount is required";
-            return False;
-        }
-        elseif ($desc === ''){
-            echo "Description is required";
-            return False;
+        $json = array('msg' => '', 'billed' => 0);
+        if ($amount === '') {
+            $json['msg'] = "Amount is required";
+            echo json_encode($json);
+            return false;
+        } elseif ($desc === '') {
+            $json['msg'] =  "Description is required";
+            echo json_encode($json);
+            return false;
         }
 
         $desc = str_replace("'","''",$desc);
@@ -156,7 +178,7 @@ function postBilling(){
         $transQ = $sql->prepare_statement("SELECT MAX(trans_no) 
             FROM dtransactions
             WHERE emp_no=? AND register_no=?");
-        $transR = $sql->exec_statement($transQ, array($EMP_NO, $LANE_NO));
+        $transR = $sql->exec_statement($transQ, array($this->EMP_NO, $this->LANE_NO));
         $t_no = '';
         if ($sql->num_rows($transR) > 0){
             $row = $sql->fetch_array($transR);
@@ -166,13 +188,13 @@ function postBilling(){
         else $t_no++;
 
         $record = DTrans::$DEFAULTS;
-        $record['register_no'] = $LANE_NO;
-        $record['emp_no'] = $EMP_NO;    
+        $record['register_no'] = $this->LANE_NO;
+        $record['emp_no'] = $this->EMP_NO;    
         $record['trans_no'] = $t_no;
-        $record['upc'] = $amount.'DP'.$DEPT;
+        $record['upc'] = $amount.'DP'.$this->DEPT;
         $record['description'] = $desc;
         $record['trans_type'] = 'D';
-        $record['department'] = $DEPT;
+        $record['department'] = $this->DEPT;
         $record['quantity'] = 1;
         $record['ItemQtty'] = 1;
         $record['unitPrice'] = $amount;
@@ -202,10 +224,13 @@ function postBilling(){
                 ({$param['columnString']}) VALUES ({$param['valueString']})");
         $sql->exec_statement($prep, $param['arguments']);
 
-        printf("Member <b>%d</b> billed <b>$%.2f</b>.<br />
-            Receipt is %d-%d-%d.",$this->id,$amount,
-            $EMP_NO,$LANE_NO,$t_no);
-        return False;
+        $json['msg'] = sprintf("Member <b>%d</b> billed <b>$%.2f</b>.<br />
+                Receipt is %d-%d-%d.",$this->id,$amount,
+                $this->EMP_NO,$this->LANE_NO,$t_no);
+        $json['billed'] = 1;
+        echo json_encode($json);
+
+        return false;
     }
 }
 

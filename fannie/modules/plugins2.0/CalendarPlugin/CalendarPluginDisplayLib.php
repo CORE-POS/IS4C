@@ -72,7 +72,9 @@ class CalendarPluginDisplayLib {
         $prevTS = mktime(0,0,0,$month-1,1,$year);
         $nextTS = mktime(0,0,0,$month+1,1,$year);
 
-        $ret = "<body onload=\"setTimeout('monthview_refresher()',60000)\">";
+        $ret = '<!doctype html>';
+        $ret .= '<html><head><title>Calendar</title></head>';
+        $ret .= "<body onload=\"setTimeout('monthview_refresher()',5*60*1000)\">";
         $ret .= "<input type=\"hidden\" id=\"calendarID\" value=\"$id\" />";
         $ret .= "<input type=\"hidden\" id=\"uid\" value=\"$uid\" />";
 
@@ -124,12 +126,12 @@ class CalendarPluginDisplayLib {
                     $datebox .= sprintf("<div class=\"%s\" ",$classes[$c]);
                     $c = ($c+1)%2;
                     if (($EDIT && $uid==$dat['uid']) || $OWNER){
-                        $datebox .= " onclick=\"edit_event({$dat['eventID']})\" ";
+                        $datebox .= " onclick=\"edit_event(event, {$dat['eventID']})\" ";
                         $datebox .= " ondblclick=\"save_open_event()\" ";
                     }
                     if ($dat['uid'] == $uid) {
                         $found = true;
-                        $default_action = "edit_event({$dat['eventID']})";
+                        $default_action = "edit_event(event, {$dat['eventID']})";
                     }
                     $datebox .= " id=\"event_".$dat['eventID']."\"";
                     $datebox .= sprintf(" title=\"%s\"",($dat['real_name']==""?"Unknown":$dat['real_name']));
@@ -181,12 +183,12 @@ class CalendarPluginDisplayLib {
                             $datebox .= sprintf("<div class=\"%s\" ",$classes[$c]);
                             $c = ($c+1)%2;
                             if (($EDIT && $uid==$dat['uid']) || $OWNER){
-                                $datebox .= " onclick=\"edit_event({$dat['eventID']})\" ";
+                                $datebox .= " onclick=\"edit_event(event, {$dat['eventID']})\" ";
                                 $datebox .= " ondblclick=\"save_open_event()\" ";
                             }
                             if ($dat['uid'] == $uid) {
                                 $found = true;
-                                $default_action = "edit_event({$dat['eventID']})";
+                                $default_action = "edit_event(event, {$dat['eventID']})";
                             }
                             $datebox .= " id=\"event_".$dat['eventID']."\"";
                             $datebox .= sprintf(" title=\"%s\"",($dat['real_name']==""?"Unknown":$dat['real_name']));
@@ -230,7 +232,11 @@ class CalendarPluginDisplayLib {
         if ($OWNER) {
             $ret .= " || <a href=?view=prefs&calID=$id>Settings for this calendar</a>\n";
         }
+        $token = sha1($calendarModel->calendarID() . 'FannieCalendar' . $calendarModel->name());
+        $ret .= sprintf(' || <a href="CalendarFeed.php?id=%d&token=%s">Feed URL</a>',
+                            $id, $token);
         $ret .= "</div>\n";
+        $ret .= '</body></html>';
             
         return $ret;
     }

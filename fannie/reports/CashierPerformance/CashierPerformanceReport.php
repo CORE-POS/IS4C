@@ -36,9 +36,10 @@ class CashierPerformanceReport extends FannieReportPage
     protected $report_headers = array('Cashier', 'Rings', 'Refunds', 'Refund%', 'Avg. Refund',
                                     'Voids', 'Void%', 'Avg. Void', 'Open Rings', 'Open Ring%',
                                     'Avg. Open Ring', 'Cancels', 'Cancel%', 'Avg. Cancel',
-                                    '#Trans', 'Minutes');
+                                    '#Trans', 'Minutes', 'Rings/Minute');
 
     public $description = '[Cashier Performance] lists cashier scan metrics over a given date range.';
+    public $themed = true;
 
     function fetch_report_data()
     {
@@ -51,9 +52,9 @@ class CashierPerformanceReport extends FannieReportPage
         $dtrans = DTransactionsModel::selectDTrans($date1,$date2);
 
         $detailP = $dbc->prepare('
-            SELECT SUM(transInterval) AS seconds,
+            SELECT SUM(CASE WHEN transInterval > 600 THEN 600 ELSE transInterval END) AS seconds,
                 COUNT(*) AS numTrans
-            FROM ' . $FANNIE_TRANS_DB . $dbc->sep() . 'CashPerformDay_cache
+            FROM ' . $FANNIE_TRANS_DB . $dbc->sep() . 'CashPerformDay
             WHERE proc_date BETWEEN ? AND ?
                 AND emp_no = ?
         ');
@@ -77,6 +78,7 @@ class CashierPerformanceReport extends FannieReportPage
                 AND trans_status <> \'M\'
                 AND register_no <> 99
                 AND d.emp_no <> 9999
+                AND d.store_id <> 50
         ';
         if ($emp_no) {
             $basicQ .= ' AND d.emp_no = ? ';
@@ -114,12 +116,40 @@ class CashierPerformanceReport extends FannieReportPage
             $detailW = $dbc->fetch_row($detailR);
             $time = $detailW['seconds'];
             $trans = $detailW['numTrans'];
+            $minutes = $time / 60.0;
             $record[] = $trans;
             $record[] = sprintf('%.2f', $time / 60.0);
+            $record[] = sprintf('%.2f', $row['rings'] / $minutes);
             $data[] = $record;
         }
 
         return $data;
+    }
+
+    public function calculate_footers($data)
+    {
+        if (count($data) == 0) {
+            return array();
+        }
+        $sums = array();
+        for ($i = 0; $i<count($data[0]); $i++) {
+            $sums[$i] = 0.0;
+        }
+        $count = 0.0;
+        foreach ($data as $row) {
+            for ($i=1; $i<count($row); $i++) {
+                $val = trim($row[$i], '$%');
+                $sums[$i] += $val;
+            }
+            $count++;
+        }
+
+        $ret = array('Average');
+        for ($i=1; $i<count($sums); $i++) {
+            $ret[] = sprintf('%.2f', $sums[$i] / $count);
+        }
+
+        return $ret;
     }
 
     private function safeDivide($a, $b)
@@ -135,45 +165,35 @@ class CashierPerformanceReport extends FannieReportPage
     {
         global $FANNIE_URL;
 ?>
-<div id=main>   
 <form method = "get" action="<?php echo $_SERVER['PHP_SELF']; ?>">
-    <table border="0" cellspacing="0" cellpadding="5">
-        <tr> 
-            <th>Cashier# <?php echo FannieHelp::ToolTip('Leave blank to list all cashiers'); ?></th>
-            <td>
-            <input type=text name=emp_no id=emp_no  />
-            </td>
-            <td>
-            <input type="checkbox" name="excel" id="excel" value="xls" />
-            <label for="excel">Excel</label>
-            </td>   
-        </tr>
-        <tr>
-            <th>Date Start</th>
-            <td>    
-                       <input type=text size=14 id=date1 name=date1 />
-            </td>
-            <td rowspan="3">
-            <?php echo FormLib::date_range_picker(); ?>
-            </td>
-        </tr>
-        <tr>
-            <th>Date End</th>
-            <td>
-                        <input type=text size=14 id=date2 name=date2 />
-               </td>
-
-        </tr>
-        <tr>
-            <td> <input type=submit name=submit value="Submit"> </td>
-            <td> <input type=reset name=reset value="Start Over"> </td>
-        </tr>
-    </table>
-</form>
+<div class="col-sm-4">
+    <div class="form-group">
+        <label>Cashier#
+            <?php echo \COREPOS\Fannie\API\lib\FannieHelp::ToolTip('Leave blank to list all cashiers'); ?></label>
+        <input type=text name=emp_no id=emp_no  class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Date Start</label>
+        <input type=text id=date1 name=date1 class="form-control date-field" required />
+    </div>
+    <div class="form-group">
+        <label>End Start</label>
+        <input type=text id=date2 name=date2 class="form-control date-field" required />
+    </div>
+    <div class="form-group">
+        <input type="checkbox" name="excel" id="excel" value="xls" />
+        <label for="excel">Excel</label>
+    </div>
+    <p>
+        <button type=submit class="btn btn-default">Submit</button>
+        <button type=reset class="btn btn-default">Start Over</button>
+    </p>
 </div>
+<div class="col-sm-4">
+    <?php echo FormLib::date_range_picker(); ?>
+</div>
+</form>
 <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
     }
 }
 

@@ -28,7 +28,7 @@ if (!class_exists('FannieAPI')) {
 
 /**
 */
-class WfcGazetteBilling extends FanniePlugin 
+class WfcGazetteBilling extends \COREPOS\Fannie\API\FanniePlugin 
 {
     public $plugin_settings = array();
 

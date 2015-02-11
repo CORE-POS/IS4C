@@ -33,6 +33,7 @@ class ShelfTagIndex extends FanniePage {
     protected $must_authenticate = True;
     protected $auth_classes = array('barcodes');
     public $description = '[Shelf Tag Menu] lists shelf tag related pages.';
+    public $themed = true;
 
     private $layouts = array();
 
@@ -69,25 +70,23 @@ function goToPage(the_id){
         return ob_get_clean();
     }
 
-    function body_content(){
+    function body_content()
+    {
         global $FANNIE_URL, $FANNIE_OP_DB, $FANNIE_DEFAULT_PDF;
         ob_start();
         ?>
-        <div style="float:right;">
-        <a href="CreateTagsByDept.php">Create Tags By Department</a>
-        <br />
-        <a href="CreateTagsByManu.php">Create Tags By Brand</a>
-        </div>
-        <div>
-        Regular shelf tags
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <a href="BatchShelfTags.php">Batch shelf tags</a>
-        <p />
-        <table cellspacing=0 cellpadding=4 border=1>
-        <tr><td>
-        Offset: <input type=text size=2 id=offset value=0 />
+        <div class="col-sm-6">
+        
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="active"><a href="ShelfTagIndex.php">Regular shelf tags</a></li>
+            <li><a href="BatchShelfTags.php">Batch shelf tags</a></li>
+        </ul>
+        <p>
+        <div class="form-group form-inline">
+            <label>Offset</label>: 
+            <input type="number" class="form-control" id=offset value=0 />
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <select id=layoutselector>
+        <select id=layoutselector class="form-control">
         <?php
         foreach($this->layouts as $l){
             if ($l == $FANNIE_DEFAULT_PDF)
@@ -97,12 +96,10 @@ function goToPage(the_id){
         }
         ?>
         </select>
-        </td></tr>
-        </table>
-        <p />
-        <table cellspacing=0 cellpadding=4 border=1>
+        </div>
+        </p>
+        <table class="table">
         <?php
-        $ret = ob_get_clean();
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
         /* Was:
@@ -124,24 +121,45 @@ function goToPage(the_id){
             $rows[] = array(0,'All Tags');
         }
         foreach($rows as $row){
-            $ret .= sprintf("<tr>
+            printf("<tr>
             <td>%s barcodes/shelftags</td>
             <td style='text-align:right;'>%d</td>
             <td><a href=\"\" onclick=\"goToPage('%d');return false;\">Print</a></td>
             <td><a href=\"DeleteShelfTags.php?id=%d\">Clear</a></td>
-            <td><a href=\"EditShelfTags.php?id=%d\"><img src=\"{$FANNIE_URL}src/img/buttons/b_edit.png\"
-                alt=\"Edit\" border=0 /></td>
+            <td><a href=\"EditShelfTags.php?id=%d\">" . \COREPOS\Fannie\API\lib\FannieUI::editIcon() . "</td>
             </tr>",
             $row[1],$row[2],$row[0],$row[0],$row[0]);
         }
-        $ret .= "</table>";
-        $ret .= '</div>
-        <div style="clear:right;"></div>';
+        ?>
+        </table>
+        </div>
+
+        <div class="col-sm-4">
+        <a href="CreateTagsByDept.php">Create Tags By Department</a>
+        <br />
+        <a href="CreateTagsByManu.php">Create Tags By Brand</a>
+        </div>
+        <?php
         
-        return $ret;
+        return ob_get_clean();
+    }
+
+    public function helpContent()
+    {
+        return '<p>This page lists shelf tags that have been queued up via
+            the item editor. Shelf tags can also be associated with a batch
+            or generated based on POS department or brand name.</p>
+            <p>The dropdown box lists all available shelf tag layouts. The
+            offset value will leave a number of tags at the beginning of
+            the sheet blank. This is intended for re-using partial sheets.</p>
+            <p>The numeric value is the number of shelf tags currently queued
+            up for that super department. <em>Print</em> will generate the
+            actual shelf tag PDF. <em>Clear</em> will clear the queued up
+            tags for that super department. The pencil icon is for editing
+            the currently queued tags.</p>';
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
 ?>

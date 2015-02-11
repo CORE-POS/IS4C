@@ -29,10 +29,11 @@ if (!class_exists('FannieAPI')) {
 class DDDReport extends FannieReportPage 
 {
     public $description = '[Shrink Reports] lists items marked as DDD/shrink at the registers.';
+    public $themed = true;
 
     protected $title = "Fannie : DDD Report";
     protected $header = "DDD Report";
-    protected $report_headers = array('Date','UPC','Item','Dept#','Dept Name','Qty','$','Reason');
+    protected $report_headers = array('Date','UPC','Item','Dept#','Dept Name','Account#', 'Super Dept', 'Qty','$','Reason', 'Loss');
     protected $required_fields = array('submitted');
 
     protected $sort_direction = 1;
@@ -69,10 +70,14 @@ class DDDReport extends FannieReportPage
                     e.dept_name,
                     SUM(d.quantity) AS quantity,
                     SUM(d.total) AS total,
-                    s.description AS shrinkReason
+                    s.description AS shrinkReason,
+                    m.super_name,
+                    e.salesCode,
+                    d.charflag
                   FROM {{table}} AS d
                     LEFT JOIN departments AS e ON d.department=e.dept_no
                     LEFT JOIN ShrinkReasons AS s ON d.numflag=s.shrinkReasonID
+                    LEFT JOIN MasterSuperDepts AS m ON d.department=m.dept_ID
                   WHERE trans_status = 'Z'
                     AND trans_type IN ('D', 'I')
                     AND trans_subtype IN ('','0')
@@ -110,16 +115,19 @@ class DDDReport extends FannieReportPage
         $data = array();
         $prep = $dbc->prepare($fullQuery);
         $result = $dbc->execute($prep, $args);
-        while($row = $dbc->fetch_row($result)) {
+        while ($row = $dbc->fetch_row($result)) {
             $record = array(
                     date('Y-m-d', mktime(0, 0, 0, $row['month'], $row['day'], $row['year'])),
                     $row['upc'],
                     $row['description'],
                     $row['department'],
                     $row['dept_name'],
+                    $row['salesCode'],
+                    $row['super_name'],
                     sprintf('%.2f', $row['quantity']),
                     sprintf('%.2f', $row['total']),
                     empty($row['shrinkReason']) ? 'n/a' : $row['shrinkReason'],
+                    $row['charflag'] == 'C' ? 'No' : 'Yes',
             );
             $data[] = $record;
         }
@@ -129,28 +137,28 @@ class DDDReport extends FannieReportPage
     
     public function form_content()
     {
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
         return '
-            <form method="get" action="DDDReport.php">
-            <table>
-            <tr>
-                <td colspan="3"><i>Dates are optional; omit for last quarter (including today)</i></td>
-            </tr>
-            <tr>
-                <th>Start Date</th>
-                <td><input type="text" id="date1" name="date1" /></td>
-                <td rowspan="2">' . FormLib::dateRangePicker() . '</td>
-            </tr>
-            <tr>
-                <th>End Date</th>
-                <td><input type="text" id="date2" name="date2" /></td>
-            </tr>
-            <tr>
-                <td><input type="submit" name="submitted" value="Get Report" /></td>
-            </tr>
-            </table>
-            </form>';
+        <form action="' . $_SERVER['PHP_SELF'] . '" method="get">
+<div class="well">Dates are optional; omit for last quarter</div>
+<div class="col-sm-4">
+    <div class="form-group">
+    <label>Date Start</label>
+    <input type=text id=date1 name=date1 class="form-control date-field" />
+    </div>
+    <div class="form-group">
+    <label>Date End</label>
+    <input type=text id=date2 name=date2 class="form-control date-field" />
+    </div>
+    <p>
+    <button type=submit name=submitted value=1 class="btn btn-default">Submit</button>
+    <button type=reset name=reset class="btn btn-default">Start Over</button>
+    </p>
+</div>
+<div class="col-sm-4">'
+    . FormLib::date_range_picker() . '
+</div>
+</form>
+        ';
     }
 }
 

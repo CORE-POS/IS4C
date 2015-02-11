@@ -2,7 +2,7 @@ function genericAutoComplete(ws_url, field_name, search_term, callback)
 {
     var req = {
         jsonrpc: '2.0',
-        method: 'FannieAutoComplete',
+        method: '\\COREPOS\\Fannie\\API\\webservices\\FannieAutoComplete',
         id: new Date().getTime(),
         params: { field: field_name, search: search_term }
     };

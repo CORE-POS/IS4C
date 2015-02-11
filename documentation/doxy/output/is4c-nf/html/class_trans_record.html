@@ -54,7 +54,7 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_trans_record.html#ee7142a1fda7e3b9e81f76a496f11997">addcomment</a> ($comment)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_trans_record.html#4e47051a15342ec86d568de8d29df042">addchange</a> ($dblcashreturn, $strtendercode='CA')</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_trans_record.html#594b04e36f86687ab640851da54ee3ee">addchange</a> ($dblcashreturn, $strtendercode='CA', $strchangemsg='Change')</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_trans_record.html#cf234ef07ffa61b6a11109b58e339082">addfsones</a> ($intfsones)</td></tr>
 
@@ -135,10 +135,10 @@ Add cash drop record
 <div class="memdoc">
 
 <p>
-Add an informational record noting case discount $CORE_LOCAL setting "casediscount" controls the percentage shown 
+Add an informational record noting case discount session setting "casediscount" controls the percentage shown 
 </div>
 </div><p>
-<a class="anchor" name="4e47051a15342ec86d568de8d29df042"></a><!-- doxytag: member="TransRecord::addchange" ref="4e47051a15342ec86d568de8d29df042" args="($dblcashreturn, $strtendercode='CA')" -->
+<a class="anchor" name="594b04e36f86687ab640851da54ee3ee"></a><!-- doxytag: member="TransRecord::addchange" ref="594b04e36f86687ab640851da54ee3ee" args="($dblcashreturn, $strtendercode='CA', $strchangemsg='Change')" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -152,7 +152,13 @@ Add an informational record noting case discount $CORE_LOCAL setting "casediscou
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">$&nbsp;</td>
-          <td class="paramname"> <em>strtendercode</em> = <code>'CA'</code></td><td>&nbsp;</td>
+          <td class="paramname"> <em>strtendercode</em> = <code>'CA'</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>strchangemsg</em> = <code>'Change'</code></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -167,9 +173,13 @@ Add an informational record noting case discount $CORE_LOCAL setting "casediscou
 Add a change record (a special type of tender record) <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>$dblcashreturn</em>&nbsp;</td><td>the change amount </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$strtendercode</em>&nbsp;</td><td>[default 'CA'] </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$strchangemsg</em>&nbsp;</td><td>[default 'Change'] </td></tr>
   </table>
 </dl>
 
+<p>
+Avoiding writing blank records if opdata.tenders.ChangeMsg happens to be blank or null 
 </div>
 </div><p>
 <a class="anchor" name="ee7142a1fda7e3b9e81f76a496f11997"></a><!-- doxytag: member="TransRecord::addcomment" ref="ee7142a1fda7e3b9e81f76a496f11997" args="($comment)" -->
@@ -1022,7 +1032,7 @@ Add record to undo tax exemption
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/TransRecord.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 9 Feb 2015 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

@@ -51,6 +51,9 @@ class CalendarMainPage extends FanniePage {
         $this->add_script($plugin->plugin_url().'/javascript/ajax.js');
 
         $view = FormLib::get_form_value('view','index');
+        if (FormLib::get('calID') === '') {
+            $view = 'index';
+        }
         if ($view == 'month') 
             $this->window_dressing = False;
         else
@@ -64,6 +67,10 @@ class CalendarMainPage extends FanniePage {
     
     function body_content(){
         $view = FormLib::get_form_value('view','index');
+        if (FormLib::get('calID') === '') {
+            $view = 'index';
+        }
+        ob_start();
         switch ($view){
         case 'month':
             $editable = True;
@@ -106,6 +113,8 @@ class CalendarMainPage extends FanniePage {
             echo CalendarPluginDisplayLib::indexView($this->uid);
             break;
         }
+
+        return ob_get_clean();
     }
 
 }

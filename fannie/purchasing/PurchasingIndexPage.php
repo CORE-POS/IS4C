@@ -32,6 +32,7 @@ class PurchasingIndexPage extends FannieRESTfulPage {
     protected $title = 'Purchase Orders';
 
     public $description = '[Purchase Order Menu] lists purchase order related pages.';
+    public $themed = true;
 
     protected $must_authenticate = True;
 
@@ -40,7 +41,14 @@ class PurchasingIndexPage extends FannieRESTfulPage {
         return '<ul>
             <li><a href="ViewPurchaseOrders.php">View Orders</a>
             <li><a href="PurchasingSearchPage.php">Search Orders</a>
-            <li><a href="ImportPurchaseOrder.php">Import Order</a>
+            <li>Import Order
+                <ul>
+                    <li><a href="ManualPurchaseOrderPage.php">Manually</a></li>
+                    <li><a href="ImportPurchaseOrder.php">From Spreadsheet</a></li>
+                    <li><a href="importers/AlbertsPdfImport.php">Custom Alberts PDF Import</a></li>
+                    <li><a href="importers/CpwInvoiceImport.php">Custom CPW XLS Import</a></li>
+                    <li>Custom RDW PDF Import</li>
+                </ul>
             </li>
             <li>Create Order
                 <ul>
@@ -48,8 +56,34 @@ class PurchasingIndexPage extends FannieRESTfulPage {
                 <li><a href="EditManyPurchaseOrders.php">By Item</a></li>
                 </ul>
             </li>
+            <li>Reports
+                <ul>
+                <li><a href="reports/UnfiExportForMas.php">UNFI Export for MAS90</li>
+                <li><a href="reports/LocalInvoicesReport.php">Local Item Purchases Report</li>
+                </ul>
+            </li>
             </ul>';
         
+    }
+
+    public function helpContent()
+    {
+        return '<p>Purchase Orders are for incoming inventory - i.e., 
+            items the store purchases from a vendor and then sells to
+            customers. Purchase Orders depend on vendor data and especially
+            vendor item catalogs. Only items in a vendor catalog can be
+            added to a purchase order.</p>
+            <p>Purchase Orders may include two separate sets of quantity
+            and cost fields. One set is for the number of items ordered
+            and expected cost. The other set is for the number of items
+            acutally received and received cost.</p>
+            <p>View and Search are straightforward. Import creates a purchase
+            order from a spreadsheet. Creating orders by vendor results
+            in a single order. Only UPCs and SKUs from the chosen vendor
+            can be added. Creating orders by item will match UPCs and SKUs
+            from all known vendors. This option creates separate orders
+            for each vendor as needed.</p>
+            ';
     }
 }
 

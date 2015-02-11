@@ -26,7 +26,6 @@ class MemberSale extends DiscountType
 
     public function priceInfo($row,$quantity=1)
     {
-        global $CORE_LOCAL;
         if (is_array($this->savedInfo)) {
             return $this->savedInfo;
         }
@@ -39,12 +38,14 @@ class MemberSale extends DiscountType
         $ret['discount'] = 0;
         $ret['memDiscount'] = MiscLib::truncate2(($ret['regPrice'] - $row['special_price']) * $quantity);
 
-        if ($CORE_LOCAL->get("isMember") == 1 || $CORE_LOCAL->get("memberID") == $CORE_LOCAL->get("visitingMem")) {
+        if (CoreLocal::get("isMember") == 1 || (
+            CoreLocal::get("memberID") == CoreLocal::get("visitingMem") && CoreLocal::get('visitingMem') !== ''
+            )) {
             $ret["unitPrice"] = $row['special_price'];
         }
 
-        if ($row['line_item_discountable'] == 1 && $CORE_LOCAL->get("itemPD") > 0) {
-            $discount = $ret['unitPrice'] * (($CORE_LOCAL->get("itemPD")/100));
+        if ($row['line_item_discountable'] == 1 && CoreLocal::get("itemPD") > 0) {
+            $discount = $ret['unitPrice'] * ((CoreLocal::get("itemPD")/100));
             $ret["unitPrice"] -= $discount;
             $ret["discount"] += ($discount * $quantity);
         }
@@ -57,8 +58,7 @@ class MemberSale extends DiscountType
 
     public function addDiscountLine()
     {
-        global $CORE_LOCAL;    
-        if ($CORE_LOCAL->get("isMember") == 1 || $CORE_LOCAL->get("memberID") == $CORE_LOCAL->get("visitingMem")) {
+        if (CoreLocal::get("isMember") == 1 || CoreLocal::get("memberID") == CoreLocal::get("visitingMem")) {
             TransRecord::adddiscount($this->savedInfo['memDiscount'],
                 $this->savedRow['department']);
         }

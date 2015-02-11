@@ -30,6 +30,7 @@ class PcDailyReport extends FannieReportPage
 {
     public $description = '[Integrated Card Reports] lists all integrated payment card transactions for a given day.';
     public $report_set = 'Tenders';
+    public $themed = true;
 
     protected $report_headers = array('Processor', 'Transaction Type', 
                                     'Sales (#)', 'Sales ($)', 
@@ -40,6 +41,7 @@ class PcDailyReport extends FannieReportPage
     protected $title = "Fannie : Card Processing Report";
     protected $header = "Card Processing Report";
     protected $required_fields = array();
+    protected $no_jquery = true;
 
     public function report_description_content()
     {
@@ -47,9 +49,6 @@ class PcDailyReport extends FannieReportPage
         $ret = array(''); // spacer line
         if ($this->report_format == 'html') {
             $ret[] = $this->form_content();
-            $this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
-            $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
-            $this->add_script($FANNIE_URL.'src/javascript/jquery-ui.js');
         }
 
         return $ret;
@@ -383,10 +382,15 @@ class PcDailyReport extends FannieReportPage
     public function form_content()
     {
         global $FANNIE_URL;
-        $this->add_onload_command('$(\'#date\').datepicker();');
-        return '<form style="display:inline;" method="get" action="PcDailyReport.php">
-            <b>Change Date</b> <input type="text" name="date" value="" size="10" id="date" />
-            <input type="submit" value="Get Report" />
+        $this->add_onload_command('$(\'#date\').datepicker({dateFormat:\'yy-mm-dd\'});');
+        return '<form method="get" action="PcDailyReport.php">
+            <div class="col-sm-6">
+            <div class="row form-group form-inline">
+            <label>Change Date</label> <input type="text" name="date" id="date" 
+                class="form-control" required />
+            <button type="submit" class="btn btn-default">Get Report</button>
+            </div>
+            </div>
             </form>';
     }
 

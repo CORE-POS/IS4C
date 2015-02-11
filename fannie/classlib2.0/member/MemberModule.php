@@ -21,8 +21,15 @@
 
 *********************************************************************************/
 
-class MemberModule 
+namespace COREPOS\Fannie\API\member
 {
+
+class MemberModule
+{
+
+    const META_WIDTH_FULL = 100;
+    const META_WIDTH_HALF = 50;
+    const META_WIDTH_THIRD = 33;
 
     /**
       Get connection to member database
@@ -30,12 +37,16 @@ class MemberModule
     */
     public function db()
     {
-        global $FANNIE_OP_DB;
         if (!class_exists('FannieDB')) {
             include_once(dirname(__FILE__) . '/../data/FannieDB.php');
         }
 
-        return FannieDB::get($FANNIE_OP_DB);
+        return \FannieDB::get(\FannieConfig::factory()->get('OP_DB'));
+    }
+
+    public function width()
+    {
+        return self::META_WIDTH_FULL;
     }
 
     /**
@@ -53,11 +64,11 @@ class MemberModule
       Extract data from GET/POST and save
       member information
       @param $memNum [int] member number
-      @return [boolean] success/failure
+      @return [string] message. empty string indicates success
     */
     public function saveFormData($memNum)
     {
-        return true;
+        return '';
     }
 
     /**
@@ -129,3 +140,10 @@ class MemberModule
     }
 }
 
+}
+
+namespace 
+{
+    // global namespace wrapper class
+    class MemberModule extends \COREPOS\Fannie\API\member\MemberModule {}
+}

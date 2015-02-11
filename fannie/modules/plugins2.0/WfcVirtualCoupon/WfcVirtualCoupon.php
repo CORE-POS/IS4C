@@ -28,7 +28,7 @@ if (!class_exists('FannieAPI')) {
 
 /**
 */
-class WfcVirtualCoupon extends FanniePlugin 
+class WfcVirtualCoupon extends \COREPOS\Fannie\API\FanniePlugin 
 {
     public $plugin_settings = array();
 

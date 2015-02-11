@@ -31,7 +31,7 @@ include_once('../classlib2.0/FannieAPI.php');
     @class InstallMenuPage
     Class for the Menu install and config options
 */
-class InstallMenuPage extends InstallPage {
+class InstallMenuPage extends \COREPOS\Fannie\API\InstallPage {
 
     protected $title = 'Fannie: Menu Builder';
     protected $header = 'Fannie: Menu Builder';
@@ -39,6 +39,7 @@ class InstallMenuPage extends InstallPage {
     public $description = "
     Class for the Menu install and config options page.
     ";
+    public $themed = true;
 
     // This replaces the __construct() in the parent.
     public function __construct() {
@@ -83,7 +84,8 @@ class InstallMenuPage extends InstallPage {
     }
     */
 
-    function body_content(){
+    function body_content()
+    {
         include('../config.php'); 
         ob_start();
         ?>
@@ -96,10 +98,10 @@ class InstallMenuPage extends InstallPage {
         <?php
 
         if (is_writable('../config.php')){
-            echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
+            echo "<div class=\"alert alert-success\"><i>config.php</i> is writeable</div>";
         }
         else {
-            echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
+            echo "<div class=\"alert alert-danger\"><b>Error</b>: config.php is not writeable</div>";
             echo "<br />Full path is: ".'../config.php'."<br />";
             if (function_exists('posix_getpwuid')){
                 $chk = posix_getpwuid(posix_getuid());
@@ -112,30 +114,6 @@ class InstallMenuPage extends InstallPage {
 
         <hr  />
         <p class="ichunk">
-        Fannie Administration Menu at left or top.
-        <ul>
-        <li>Menu at left is traditional; on top may allows more horizontal space on the page for the report or tool.
-        <li>Under construction: The "top" option is only available for the configurable menu at this point.
-        </ul>
-        <b>Admin menu position</b>
-        <select name=FANNIE_NAV_POSITION>
-        <?php
-        if (!isset($FANNIE_NAV_POSITION)) $FANNIE_NAV_POSITION = 'left';
-        if (isset($_REQUEST['FANNIE_NAV_POSITION'])) $FANNIE_NAV_POSITION = $_REQUEST['FANNIE_NAV_POSITION'];
-        if ($FANNIE_NAV_POSITION == 'top'){
-            confset('FANNIE_NAV_POSITION',"'top'");
-            echo "<option value='left'>Left</option><option value='top' selected>Top</option>";
-        }
-        else{
-            confset('FANNIE_NAV_POSITION',"'left'");
-            echo "<option value='left' selected>Left</option><option value='top'>Top</option>";
-        }
-        echo "</select>";
-        ?>
-        </p>
-
-        <hr  />
-        <p class="ichunk">
         Whether to always show the Fannie Administration Menu.
         <ul>
         <li>Coops may prefer not to show the menu in order to maximize the space available on the page for the report or tool.
@@ -145,67 +123,164 @@ class InstallMenuPage extends InstallPage {
         <b>Show Admin menu</b>
         <!-- "windowdressing" is the term used in Class Lib 2.0 for the heading and navigation menu.
              Use this to set the value of $window_dressing. -->
-        <select name=FANNIE_WINDOW_DRESSING>
-        <?php
-        if (!isset($FANNIE_WINDOW_DRESSING)) $FANNIE_WINDOW_DRESSING = False;
-        if (isset($_REQUEST['FANNIE_WINDOW_DRESSING'])) $FANNIE_WINDOW_DRESSING = $_REQUEST['FANNIE_WINDOW_DRESSING'];
-        if ($FANNIE_WINDOW_DRESSING === True || $FANNIE_WINDOW_DRESSING == 'Yes'){
-            confset('FANNIE_WINDOW_DRESSING','True');
-            echo "<option selected>Yes</option><option>No</option>";
-        }
-        else{
-            confset('FANNIE_WINDOW_DRESSING','False');
-            echo "<option>Yes</option><option selected>No</option>";
-        }
-        echo "</select>";
+        <?php 
+        echo installSelectField('FANNIE_WINDOW_DRESSING', $FANNIE_WINDOW_DRESSING,
+                    array(1 => 'Yes', 0 => 'No'), false);
         ?>
         </p>
 
         <hr  />
         <p class="ichunk">
-        Use this tool to customize Fannie's left hand menu. Usage:
+        Use this tool to customize Fannie's menu. Usage:
         <ul>
-        <li>To add a new menu entry, type it in the appropriate 'New' box.
-        <li>To delete an entry, clear its 'Text' box. Bear in mind sub-entries
-        will also be deleted.
+        <li>Left hand text box contains the menu entry text
+        <li>Right hand box contains a URL or a special value for other
+        types of entries such as section headers.
         <li>URLs are relative to Fannie <i>unless</i> they begin with / or
         a protocol (http://, https://, etc).
         </ul>
-        <b>Configurable Menu Enabled</b>
-        <select name=FANNIE_DYNAMIC_MENU>
-        <?php
-        if (!isset($FANNIE_DYNAMIC_MENU)) $FANNIE_DYNAMIC_MENU = False;
-        if (isset($_REQUEST['FANNIE_DYNAMIC_MENU'])) $FANNIE_DYNAMIC_MENU = $_REQUEST['FANNIE_DYNAMIC_MENU'];
-        if ($FANNIE_DYNAMIC_MENU === True || $FANNIE_DYNAMIC_MENU == 'Yes'){
-            confset('FANNIE_DYNAMIC_MENU','True');
-            echo "<option selected>Yes</option><option>No</option>";
-        }
-        else{
-            confset('FANNIE_DYNAMIC_MENU','False');
-            echo "<option>Yes</option><option selected>No</option>";
-        }
-        echo "</select>";
-        ?>
-        </p>
 
         <h4 class="install">Fannie Menu Builder</h4>
         <?php
-        if (!isset($FANNIE_MENU) || !is_array($FANNIE_MENU)) $FANNIE_MENU=array();
-        if (isset($_REQUEST['label1'])){
-            $READ_BACK = array();
-            $READ_BACK = $this->fm_read($READ_BACK,'1');
-            $FANNIE_MENU = $READ_BACK;
-        }
-        if (empty($FANNIE_MENU)){
-            include('../src/defaultmenu.php');
+        $VALID_MENUS = array('Item Maintenance', 'Sales Batches', 'Reports', 'Membership', 'Synchronize', 'Admin', '__store__');
+        if (!isset($FANNIE_MENU) || !is_array($FANNIE_MENU)) {
+            include('../src/init_menu.php');
+            $FANNIE_MENU = $INIT_MENU;
+        } else {
+            foreach ($FANNIE_MENU as $menu => $content) {
+                if (!in_array($menu, $VALID_MENUS)) {
+                    // menu is not valid
+                    // reset to default
+                    // obviously not ideal error recovery
+                    include('../src/init_menu.php');
+                    $FANNIE_MENU = $INIT_MENU;
+                    break;
+                }
+            }
         }
 
-        $this->fm_draw($FANNIE_MENU);
-        $saveStr = $this->fm_to_string($FANNIE_MENU);
-        confset('FANNIE_MENU',$saveStr);
+        for ($i=0; $i<count($VALID_MENUS); $i++) {
+            $post_titles = FormLib::get('m_title' . $i);
+            $post_urls = FormLib::get('m_url' . $i);
+            if (!is_array($post_titles) || !is_array($post_urls)) {
+                continue;
+            }
+            /** rebuild from posted data **/
+            $FANNIE_MENU[$VALID_MENUS[$i]] = array();
+            $divider_count = 1;
+            for ($j=0; $j<count($post_titles); $j++) {
+                $p_title = $post_titles[$j];
+                $p_url = $post_urls[$j];
+                // url must have some kind of value
+                // title may be empty on dividers
+                if (empty($p_url)) {
+                    continue;
+                }
+                if ($p_url == '__divider__') {
+                    $p_title = 'divider' . $divider_count;
+                    $divider_count++;
+                } elseif (empty($p_title)) {
+                    continue;
+                }
+
+                $FANNIE_MENU[$VALID_MENUS[$i]][$p_title] = $p_url;
+            }
+        }
+
+        if (FormLib::get('import-menu') !== '') {
+            $import = FormLib::get('import-menu');
+            $json = json_decode($import, true);
+            if ($json === null) {
+                echo '<div class="alert alert-danger">Menu Import is not valid JSON</div>';
+            } else {
+                $valid = true;
+                foreach ($json as $menu => $content) {
+                    if (!in_array($menu, $VALID_MENUS)) {
+                        echo '<div class="alert alert-danger"><strong>' 
+                            . $menu . '</strong> is not a valid top-level menu</div>';
+                        $valid = false;
+                        break;
+                    } elseif (!is_array($content)) {
+                        echo '<div class="alert alert-danger">Entries for <strong>'
+                            . $menu . '</strong> are not valid. It should be a JSON
+                            object with keys representing menu titles and values
+                            represeting URLs or the special values __header__ and
+                            __divider__</div>';
+                        $valid = false;
+                        break;
+                    }
+                }
+                if ($valid) {
+                    $FANNIE_MENU = $json;
+                    echo '<div class="alert alert-success">Imported menu</div>';
+                }
+            }
+        }
+        
+        $saveStr = 'array(';
+        $menu_number = 0;
+        $select = '<select onchange="$(this).next(\'input\').val($(this).val());"
+                        class="form-control">
+                <option value="">URL</option>';
+        $opts = array('__header__'=>'Section Header', '__divider__'=>'Divider Line');
+        foreach ($FANNIE_MENU as $menu => $content) {
+            $saveStr .= "'" . $menu . "' => array(";
+            echo '<b>' . $menu . '</b>';
+            echo '<ul id="menuset' . $menu_number . '">';
+            foreach ($content as $m_title => $m_url) {
+                $saveStr .= "'" . str_replace("'", "\\'", $m_title) . "' => '" . $m_url . "',";
+                echo '<li class="form-inline">';
+                printf('<input type="text" name="m_title%d[]" value="%s" class="form-control" />', 
+                    $menu_number, $m_title); 
+                echo $select;
+                foreach ($opts as $key => $val) {
+                    printf('<option %s value="%s">%s</option>',
+                        ($key == $m_url ? 'selected' : ''),
+                        $key, $val);
+                }
+                echo '</select>';
+                printf('<input type="text" name="m_url%d[]" value="%s" class="form-control" />', 
+                    $menu_number, $m_url); 
+                echo ' [ <a href="" onclick="$(this).parent().remove(); return false;">Remove Entry</a> ]';
+                echo '</li>';
+            }
+            $saveStr .= '),';
+            echo '</ul>';
+            $newEntry = sprintf('<li class="form-inline">
+                            <input type="text" name="m_title%d[]" value="" class="form-control" />%s',
+                            $menu_number, $select);
+            foreach ($opts as $key => $val) {
+                $newEntry .= sprintf('<option value="%s">%s</option>', $key, $val);
+            }
+            $newEntry .= sprintf('</select><input type="text" name="m_url%d[]" value="" class="form-control" />
+                    [ <a href="" onclick="$(this).parent().remove(); return false;">Remove Entry</a> ]
+                    </li>', $menu_number);
+            echo '<div id="newEntry' . $menu_number . '" class="collapse">';
+            echo $newEntry;
+            echo '</div>';
+            printf('[ <a href="" onclick="$(\'ul#menuset%d\').append($(\'#newEntry%d\').html()); return false;">Add New Entry</a>
+                to %s ]',
+                $menu_number, $menu_number, $menu);
+            echo '<br />';
+            $menu_number++;
+        }
+        $saveStr .= ')';
+        confset('FANNIE_MENU', $saveStr);
         ?>
         <hr />
-        <input type=submit value="Refresh" />
+        <div class="form-group">
+        <label>Hand-editable Menu / Export</label>
+        <textarea class="form-control" rows="15">
+<?php echo $this->prettyJSON(json_encode($FANNIE_MENU)); ?>
+        </textarea>
+        </div>
+        <div class="form-group">
+        <label>Import Menu (use same JSON format)</label>
+        <textarea name="import-menu" class="form-control" rows="15"></textarea>
+        </div>
+        <p>
+            <button type="submit" name="psubmit" value="1" class="btn btn-default">Save Configuration</button>
+        </p>
         </form>
         </body>
         </html>
@@ -305,6 +380,55 @@ class InstallMenuPage extends InstallPage {
         printf('URL:<input type="text" size="50" name="url%s[]" value="" /></li>',$parent);
         echo '<br />';
         echo '</ul>'."\n";
+    }
+
+    private function prettyJSON($json)
+    {
+        $result= '';
+        $pos = 0;
+        $strLen= strlen($json);
+        $indentStr = '    ';
+        $newLine = "\n";
+        $prevChar= '';
+        $outOfQuotes = true;
+
+        for ($i=0; $i<=$strLen; $i++) {
+            // Grab the next character in the string.
+            $char = substr($json, $i, 1);
+
+            // Are we inside a quoted string?
+            if ($char == '"' && $prevChar != '\\') {
+                $outOfQuotes = !$outOfQuotes;
+            // If this character is the end of an element, 
+            // output a new line and indent the next line.
+            } else if (($char == '}' || $char == ']') && $outOfQuotes) {
+                $result .= $newLine;
+                $pos--;
+                for ($j=0; $j<$pos; $j++) {
+                    $result .= $indentStr;
+                }
+            }
+
+            // Add the character to the result string.
+            $result .= $char;
+
+            // If the last character was the beginning of an element, 
+            // output a new line and indent the next line.
+            if (($char == ',' || $char == '{' || $char == '[') && $outOfQuotes) {
+                $result .= $newLine;
+                if ($char == '{' || $char == '[') {
+                    $pos ++;
+                }
+
+                for ($j = 0; $j < $pos; $j++) {
+                    $result .= $indentStr;
+                }
+            }
+
+            $prevChar = $char;
+        }
+
+        return $result;
     }
 
 // InstallMenuPage

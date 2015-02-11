@@ -27,7 +27,7 @@ if (!class_exists('FannieAPI'))
 
 /**
 */
-class HouseCoupon extends FanniePlugin 
+class HouseCoupon extends \COREPOS\Fannie\API\FanniePlugin 
 {
 
     /**

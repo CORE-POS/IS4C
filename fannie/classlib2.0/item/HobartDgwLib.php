@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\Fannie\API\item {
+
 class HobartDgwLib 
 {
     /* CSV fields for WriteOneItem & ChangeOneItem records
@@ -109,7 +111,7 @@ class HobartDgwLib
     */
     static public function writeItemsToScales($items, $scales=array())
     {
-        include(dirname(__FILE__).'/../../config.php');
+        $config = \FannieConfig::factory(); 
         if (!isset($items[0])) {
             $items = array($items);
         }
@@ -141,7 +143,7 @@ class HobartDgwLib
         $output_dir = realpath(dirname(__FILE__) . '/../../item/hobartcsv/csv_output');
         $selected_scales = $scales;
         if (!is_array($scales) || count($selected_scales) == 0) {
-            $selected_scales = $FANNIE_SCALES;
+            $selected_scales = $config->get('SCALES');
         }
         $i = 0;
         foreach ($selected_scales as $scale) {
@@ -202,7 +204,7 @@ class HobartDgwLib
     */
     static public function deleteItemsFromScales($items)
     {
-        include(dirname(__FILE__).'/../../config.php');
+        $config = \FannieConfig::factory(); 
 
         if (!is_array($items)) {
             $items = array($items);
@@ -211,7 +213,7 @@ class HobartDgwLib
         $file_prefix = self::sessionKey();
         $output_dir = realpath(dirname(__FILE__) . '/../../item/hobartcsv/csv_output');
         $i = 0;
-        foreach($FANNIE_SCALES as $scale) {
+        foreach($config->get('SCALES', array()) as $scale) {
             $file_name = sys_get_temp_dir() . '/' . $file_prefix . '_deleteItem_' . $i . '.csv';
             $et_name = sys_get_temp_dir() . '/' . $file_prefix . '_deleteText_' . $i . '.csv';
             $fp = fopen($file_name, 'w');
@@ -259,11 +261,10 @@ class HobartDgwLib
     */
     static public function readItemsFromFile($filename)
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = \FannieDB::get(\FannieConfig::factory()->get('OP_DB'));
 
-        $product = new ProductsModel($dbc);
-        $scaleItem = new ScaleItemsModel($dbc);
+        $product = new \ProductsModel($dbc);
+        $scaleItem = new \ScaleItemsModel($dbc);
         
         $fp = fopen($filename, 'r');
         // detect column indexes via header line
@@ -353,11 +354,10 @@ class HobartDgwLib
     */
     static public function readTextsFromFile($filename)
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = \FannieDB::get(\FannieConfig::factory()->get('OP_DB'));
 
-        $product = new ProductsModel($dbc);
-        $scaleItem = new ScaleItems($dbc);
+        $product = new \ProductsModel($dbc);
+        $scaleItem = new \ScaleItems($dbc);
 
         $number_index = -1;
         $text_index = -1;
@@ -426,5 +426,11 @@ class HobartDgwLib
 
         return $session_key;
     }
+}
+
+}
+
+namespace {
+    class HobartDgwLib extends \COREPOS\Fannie\API\item\HobartDgwLib {}
 }
 

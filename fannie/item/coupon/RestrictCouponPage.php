@@ -33,36 +33,47 @@ class RestrictCouponPage extends FannieRESTfulPage {
 
     public $description = '[Coupon Restrictions] bans or limits use of broken manufacturer coupons.
     Typically this means the manufacturer put the wrong UPC code on the coupon.';
+    public $themed = true;
 
     function get_view(){
         global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $ret = '<form onsubmit="save();return false;">
-            <table><tr><td>
-            <b>UPC</b></td><td><input type="text" id="upc" />
-            </td></tr><tr><td>
-            <b>Limit</b></td><td><input type="text" size="3" value="0" id="limit" />
-            (max uses per transaction)
-            </td></tr><tr><td>
-            Reason</td><td><input type="text" id="reason" />
-            </td></tr></table>
-            <input type="submit" value="Save" />
+            <div class="form-group">
+                <label>UPC</label>
+                <input type="text" id="upc" class="form-control" required />
+            </div>
+            <div class="form-group">
+                <label>Limit</label> (max uses per transaction)
+                <input type="number" id="limit" class="form-control" 
+                    value="0" required />
+            </div>
+            <div class="form-group">
+                <label>Reason</label>
+                <input type="text" id="reason" class="form-control" required />
+            </div>
+            <p>
+            <button type="submit" class="btn btn-default">Save</button>
+            </p>
             </form>
             <hr/>';
 
         $model = new DisableCouponModel($dbc);
-        $ret .= '<table cellpadding="4" cellspacing="0" border="1">';
+        $ret .= '<table class="table">
+            <tr><th>UPC</th><th>Limit</th><th>Reason</th><th></th></tr>';
         foreach($model->find('upc') as $obj){
             $ret .= sprintf('<tr><td><a href="" onclick="loadcoupon(\'%s\');return false;">%s</a></td>
                     <td>%d</td><td>%s</td>
-                    <td><a href="" onclick="deletecoupon(\'%s\');return false;"><img 
-                    src="%ssrc/img/buttons/trash.png" /></a></td></tr>',
+                    <td><a href="" onclick="deletecoupon(\'%s\');return false;">%s</a></td>
+                    </tr>',
                     $obj->upc(), $obj->upc(), $obj->threshold(),
-                    $obj->reason(), $obj->upc(), $FANNIE_URL
+                    $obj->reason(), $obj->upc(), \COREPOS\Fannie\API\lib\FannieUI::deleteIcon()
             );
         }
         $ret .= '</table>';
+        $this->add_onload_command("\$('#upc').focus();\n");
+
         return $ret;
     }
 

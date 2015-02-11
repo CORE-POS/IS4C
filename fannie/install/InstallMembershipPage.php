@@ -31,7 +31,7 @@ include_once('../classlib2.0/FannieAPI.php');
     @class InstallMembershipPage
     Class for the Membership install and config options
 */
-class InstallMembershipPage extends InstallPage {
+class InstallMembershipPage extends \COREPOS\Fannie\API\InstallPage {
 
     protected $title = 'Fannie: Membership Settings';
     protected $header = 'Fannie: Membership Settings';
@@ -39,6 +39,7 @@ class InstallMembershipPage extends InstallPage {
     public $description = "
     Class for the Membership install and config options page.
     ";
+    public $themed = true;
 
     // This replaces the __construct() in the parent.
     public function __construct() {
@@ -99,41 +100,26 @@ class InstallMembershipPage extends InstallPage {
 <h1 class="install"><?php echo $this->header; ?></h1>
 <?php
 if (is_writable('../config.php')){
-    echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
+    echo "<div class=\"alert alert-success\"><i>config.php</i> is writeable</div>";
 }
 else {
-    echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
+    echo "<div class=\"alert alert-danger\"><b>Error</b>: config.php is not writeable</div>";
 }
 ?>
 <hr />
 
 <p class="ichunk2"><b>Names per membership: </b>
-<?php
-if (!isset($FANNIE_NAMES_PER_MEM)) $FANNIE_NAMES_PER_MEM = 1;
-if (isset($_REQUEST['FANNIE_NAMES_PER_MEM'])) $FANNIE_NAMES_PER_MEM = $_REQUEST['FANNIE_NAMES_PER_MEM'];
-confset('FANNIE_NAMES_PER_MEM',$FANNIE_NAMES_PER_MEM);
-echo "<input type=text size=3 name=FANNIE_NAMES_PER_MEM value=\"$FANNIE_NAMES_PER_MEM\" />";
-?>
+<?php echo installTextField('FANNIE_NAMES_PER_MEM', $FANNIE_NAMES_PER_MEM, 1); ?>
 </p>
 
 <hr />
 <h4 class="install">Equity/Store Charge</h4>
 <p class="ichunk2"><b>Equity Department(s): </b>
-<?php
-if (!isset($FANNIE_EQUITY_DEPARTMENTS)) $FANNIE_EQUITY_DEPARTMENTS = '';
-if (isset($_REQUEST['FANNIE_EQUITY_DEPARTMENTS'])) $FANNIE_EQUITY_DEPARTMENTS=$_REQUEST['FANNIE_EQUITY_DEPARTMENTS'];
-confset('FANNIE_EQUITY_DEPARTMENTS',"'$FANNIE_EQUITY_DEPARTMENTS'");
-printf("<input type=\"text\" name=\"FANNIE_EQUITY_DEPARTMENTS\" value=\"%s\" />",$FANNIE_EQUITY_DEPARTMENTS);
-?>
+<?php echo installTextField('FANNIE_EQUITY_DEPARTMENTS', $FANNIE_EQUITY_DEPARTMENTS, ''); ?>
 </p>
 
 <p class="ichunk2"><b>Store Charge Department(s): </b>
-<?php
-if (!isset($FANNIE_AR_DEPARTMENTS)) $FANNIE_AR_DEPARTMENTS = '';
-if (isset($_REQUEST['FANNIE_AR_DEPARTMENTS'])) $FANNIE_AR_DEPARTMENTS=$_REQUEST['FANNIE_AR_DEPARTMENTS'];
-confset('FANNIE_AR_DEPARTMENTS',"'$FANNIE_AR_DEPARTMENTS'");
-printf("<input type=\"text\" name=\"FANNIE_AR_DEPARTMENTS\" value=\"%s\" />",$FANNIE_AR_DEPARTMENTS);
-?>
+<?php echo installTextField('FANNIE_AR_DEPARTMENTS', $FANNIE_AR_DEPARTMENTS, ''); ?>
 </p>
 
 <hr />
@@ -157,13 +143,16 @@ foreach($FANNIE_MEMBER_MODULES as $m)
 $saveStr = rtrim($saveStr,",").")";
 confset('FANNIE_MEMBER_MODULES',$saveStr);
 ?>
-<select multiple name="FANNIE_MEMBER_MODULES[]" size="10">
+<select multiple name="FANNIE_MEMBER_MODULES[]" size="10" class="form-control">
 <?php
-$dh = opendir("../mem/modules");
 $tmp = array();
-while(($file = readdir($dh)) !== False){
-    if (substr($file,-4) == ".php")
-        $tmp[] = substr($file,0,strlen($file)-4);   
+$modules = FannieAPI::listModules('MemberModule');
+foreach ($modules as $class) {
+    $tmp[] = $class;
+}
+$modules = FannieAPI::listModules('\COREPOS\Fannie\API\member\MemberModule');
+foreach ($modules as $class) {
+    $tmp[] = $class;
 }
 sort($tmp);
 foreach($tmp as $module){
@@ -178,22 +167,18 @@ Click or ctrl-Click or shift-Click to select/deselect modules for enablement.
 <hr />
 <h4 class="install">Member Cards</h4>
 Member Card UPC Prefix: 
-<?php
-if (!isset($FANNIE_MEMBER_UPC_PREFIX)) $FANNIE_MEMBER_UPC_PREFIX = '';
-if (isset($_REQUEST['FANNIE_MEMBER_UPC_PREFIX'])) $FANNIE_MEMBER_UPC_PREFIX=$_REQUEST['FANNIE_MEMBER_UPC_PREFIX'];
-confset('FANNIE_MEMBER_UPC_PREFIX',"'$FANNIE_MEMBER_UPC_PREFIX'");
-printf("<input type=\"text\" name=\"FANNIE_MEMBER_UPC_PREFIX\" value=\"%s\" />",$FANNIE_MEMBER_UPC_PREFIX);
-?>
-
+<?php echo installTextField('FANNIE_MEMBER_UPC_PREFIX', $FANNIE_MEMBER_UPC_PREFIX, ''); ?>
 <hr />
-<input type=submit value="Re-run" />
+<p>
+    <button type="submit" class="btn btn-default">Save Configuration</button>
+</p>
 </form>
 <?php
 $sql = db_test_connect($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
         $FANNIE_TRANS_DB,$FANNIE_SERVER_USER,
         $FANNIE_SERVER_PW);
 if (!$sql) {
-    echo "<span style='color:red; font-size:1.5em;'>Cannot connect to database to refresh views.</span>";
+    echo "<div class='alert alert-danger'>Cannot connect to database to refresh views.</div>";
 }
 else {
     echo "Refreshing database views ... ";

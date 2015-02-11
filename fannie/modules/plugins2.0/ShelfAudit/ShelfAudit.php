@@ -26,7 +26,7 @@ if (!class_exists('FannieAPI'))
 
 /**
 */
-class ShelfAudit extends FanniePlugin {
+class ShelfAudit extends \COREPOS\Fannie\API\FanniePlugin {
 
     /**
       Desired settings. These are automatically exposed

@@ -35,8 +35,6 @@ class DatabarCoupon extends SpecialUPC
 
     public function handle($upc,$json)
     {
-        global $CORE_LOCAL;
-
         $pos = 0;
         $first_req = array();
 

@@ -32,6 +32,7 @@ class BatchShelfTags extends FanniePage {
     protected $header = "Batch Barcodes";
 
     public $description = '[Batch Shelf Tags] generates PDF shelftags for items in a batch.';
+    public $themed = true;
 
     private $layouts = array();
 
@@ -47,16 +48,16 @@ class BatchShelfTags extends FanniePage {
         global $FANNIE_OP_DB, $FANNIE_URL, $FANNIE_DEFAULT_PDF;
         ob_start();
         ?>
-        <a href="ShelfTagIndex.php">Regular shelf tags</a>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        Batch shelf tags
-        <p />
+        <ul class="nav nav-tabs" role="tablist">
+            <li><a href="ShelfTagIndex.php">Regular shelf tags</a></li>
+            <li class="active"><a href="BatchShelfTags.php">Batch shelf tags</a></li>
+        </ul>
         <?php
         $ret = ob_get_clean();
 
         $ret .= "<form action=genLabels.php method=get>";
         //echo "<form action=barcodenew.php method=get>";
-        $ret .= "<b>Select batch(es*) to be printed</b>:<br />";
+        $ret .= "<label>Select batch(es*) to be printed</label>";
         
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $fetchQ = $dbc->prepare_statement("select b.batchID,b.batchName
@@ -66,14 +67,15 @@ class BatchShelfTags extends FanniePage {
                   group by b.batchID,b.batchName
                   order by b.batchID desc");
         $fetchR = $dbc->exec_statement($fetchQ);
-        $ret .= "<select name=batchID[] multiple style=\"{width:300px;}\" size=15>";
+        $ret .= "<select name=batchID[] multiple class=\"form-control\" size=15>";
         while($fetchW = $dbc->fetch_array($fetchR))
             $ret .= "<option value=$fetchW[0]>$fetchW[1]</option>";
-        $ret .= "</select><p />";
-        $ret .= "<fieldset>";
-        $ret .= "Offset: <input size=3 type=text name=offset value=0 />";
+        $ret .= "</select>";
+        $ret .= '<p><div class="form-group form-inline">';
+        $ret .= "<label>Offset</label>: <input type=\"number\" 
+            class=\"form-control\" name=offset value=0 />";
         $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-        $ret .= "<select name=layout>";
+        $ret .= "<select name=layout class=\"form-control\">";
         foreach($this->layouts as $l){
             if ($l == $FANNIE_DEFAULT_PDF)
                 $ret .= "<option selected>".$l."</option>";
@@ -82,14 +84,27 @@ class BatchShelfTags extends FanniePage {
         }   
         $ret .= "</select>";
         $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-        $ret .= "<input type=submit value=Print />";
-        $ret .= "</fieldset>";
+        $ret .= "<button type=submit class=\"btn btn-default\">Print</button>";
+        $ret .= "</div></p>";
         $ret .= "</form>";
+
+        $ret .= '<div class="well">';
         $ret .= "<a href={$FANNIE_URL}batches/newbatch/index.php>Back to batch list</a><p />";
         $ret .= "* Hold the apple key while clicking to select multiple batches ";
         $ret .= "(or the control key if you're not on a Mac)";
+        $ret .= '</div>';
 
         return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>Select one or more batches and generate a PDF
+            with the associated tags.</p>
+            <p>The dropdown box lists all available shelf tag layouts. The
+            offset value will leave a number of tags at the beginning of
+            the sheet blank. This is intended for re-using partial sheets.</p>
+            ';
     }
 }
 

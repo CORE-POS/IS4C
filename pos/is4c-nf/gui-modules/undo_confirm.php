@@ -31,8 +31,8 @@ class undo_confirm extends BasicPage {
 	var $box_color;
 	var $msg;
 
-	function body_content(){
-		global $CORE_LOCAL;
+	function body_content()
+    {
 		echo $this->input_header();
 		?>
 		<div class="baseHeight">
@@ -83,15 +83,15 @@ class undo_confirm extends BasicPage {
 		<?php
 	}
 
-	function preprocess(){
-		global $CORE_LOCAL;
+	function preprocess()
+    {
 		$this->msg = "";
 		if (isset($_REQUEST['reginput'])){
 			switch(strtoupper($_REQUEST['reginput'])){
 			case 'CL':
                 // cancel the transaction instead
-				$CORE_LOCAL->set("msgrepeat",1);
-				$CORE_LOCAL->set("strRemembered","CN");
+				CoreLocal::set("msgrepeat",1);
+				CoreLocal::set("strRemembered","CN");
 
                 /**
                   Unify emp_no & trans_no records in the
@@ -107,8 +107,8 @@ class undo_confirm extends BasicPage {
                 */
                 Database::loadglobalvalues();
                 $db = Database::tDataConnect();
-                $emp_no = $CORE_LOCAL->get('CashierNo');
-                $trans_no = $CORE_LOCAL->get('transno');
+                $emp_no = CoreLocal::get('CashierNo');
+                $trans_no = CoreLocal::get('transno');
                 $db->query('UPDATE localtemptrans SET
                             emp_no='.((int)$emp_no).',
                             trans_no='.((int)$trans_no).'
@@ -121,8 +121,8 @@ class undo_confirm extends BasicPage {
 				break;
 			case '':
                 // use zero cash to finish transaction
-				$CORE_LOCAL->set("msgrepeat",1);
-				$CORE_LOCAL->set("strRemembered","0CA");
+				CoreLocal::set("msgrepeat",1);
+				CoreLocal::set("strRemembered","0CA");
 
                 /**
                   Unify emp_no & trans_no records in the
@@ -134,8 +134,8 @@ class undo_confirm extends BasicPage {
                   via Database::loadglobalvalues().
                 */
                 $db = Database::tDataConnect();
-                $emp_no = $CORE_LOCAL->get('CashierNo');
-                $trans_no = $CORE_LOCAL->get('transno');
+                $emp_no = CoreLocal::get('CashierNo');
+                $trans_no = CoreLocal::get('transno');
                 $db->query('UPDATE localtemptrans SET
                             emp_no='.((int)$emp_no).',
                             trans_no='.((int)$trans_no).'

@@ -30,6 +30,7 @@ class CustomerPurchasesReport extends FannieReportPage
 {
     public $description = '[Member Purchases] lists items purchased by a given member in a given date range.';
     public $report_set = 'Membership';
+    public $themed = true;
 
     protected $title = "Fannie : What Did I Buy?";
     protected $header = "What Did I Buy? Report";
@@ -106,45 +107,34 @@ class CustomerPurchasesReport extends FannieReportPage
 
     function form_content(){
 ?>
-<div id=main>   
-<form method = "get" action="CustomerPurchasesReport.php">
-    <table border="0" cellspacing="0" cellpadding="5">
-        <tr> 
-            <th><?php echo _('Owner#'); ?></th>
-            <td>
-            <input type=text name=card_no size=14 id=card_no  />
-            </td>
-            <td>
-            <input type="checkbox" name="excel" id="excel" value="xls" />
-            <label for="excel">Excel</label>
-            </td>   
-        </tr>
-        <tr>
-            <th>Date Start</th>
-            <td>    
-                       <input type=text size=14 id=date1 name=date1 />
-            </td>
-            <td rowspan="3">
-            <?php echo FormLib::date_range_picker(); ?>
-            </td>
-        </tr>
-        <tr>
-            <th>End</th>
-            <td>
-                        <input type=text size=14 id=date2 name=date2 />
-               </td>
-
-        </tr>
-        <tr>
-            <td> <input type=submit name=submit value="Submit"> </td>
-            <td> <input type=reset name=reset value="Start Over"> </td>
-        </tr>
-    </table>
-</form>
+<form method = "get" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+<div class="col-sm-4">
+    <div class="form-group">
+        <label><?php echo _('Owner #'); ?></label>
+        <input type=text name=card_no id=card_no  class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Date Start</label>
+        <input type=text id=date1 name=date1 class="form-control date-field" required />
+    </div>
+    <div class="form-group">
+        <label>End Start</label>
+        <input type=text id=date2 name=date2 class="form-control date-field" required />
+    </div>
+    <div class="form-group">
+        <input type="checkbox" name="excel" id="excel" value="xls" />
+        <label for="excel">Excel</label>
+    </div>
+    <p>
+        <button type=submit class="btn btn-default">Submit</button>
+        <button type=reset class="btn btn-default">Start Over</button>
+    </p>
 </div>
+<div class="col-sm-4">
+    <?php echo FormLib::date_range_picker(); ?>
+</div>
+</form>
 <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
     }
 }
 

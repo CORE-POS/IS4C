@@ -1,0 +1,141 @@
+<?php
+global $FANNIE_DYNAMIC_MENU, $FANNIE_NAV_POSITION, $FANNIE_CSS_LOGO, $FANNIE_CHARSET, $FANNIE_CUSTOM_TITLE, $FANNIE_MENU;
+/* try to deal with relative paths for includes */
+$path = "";
+$limit = 15;
+$counter = 0;
+while ($counter < $limit) {
+    if (file_exists($path . 'classlib2.0/FannieAPI.php')) {
+        break;
+    }
+    $path .= "../";
+    $counter++;
+}
+if (!isset($FANNIE_CHARSET) || empty($FANNIE_CHARSET)) {
+    $FANNIE_CHARSET = 'ISO-8859-1';
+}
+?>
+<!DOCTYPE html> 
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=<?php echo $FANNIE_CHARSET; ?>">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><?php echo $page_title; ?></title>
+<?php
+$path1 = dirname(__FILE__) . '/javascript/composer-components/';
+$path2 = dirname(__FILE__) . '/javascript/';
+if (file_exists($path1 . 'bootstrap/js/bootstrap.min.js')) {
+    printf('<link rel="stylesheet" type="text/css" href="%ssrc/javascript/composer-components/bootstrap/css/bootstrap.min.css">', $path);
+    echo "\n";
+    printf('<link rel="stylesheet" type="text/css" href="%ssrc/javascript/composer-components/bootstrap-default/css/bootstrap.min.css">', $path);
+    echo "\n";
+    printf('<link rel="stylesheet" type="text/css" href="%ssrc/javascript/composer-components/bootstrap-default/css/bootstrap-theme.min.css">', $path);
+    echo "\n";
+} elseif (file_exists($path2 . 'bootstrap/js/bootstrap.min.js')) {
+    printf('<link rel="stylesheet" type="text/css" href="%ssrc/javascript/bootstrap/css/bootstrap.min.css">', $path);
+    echo "\n";
+    printf('<link rel="stylesheet" type="text/css" href="%ssrc/javascript/bootstrap-default/css/bootstrap.min.css">', $path);
+    echo "\n";
+    printf('<link rel="stylesheet" type="text/css" href="%ssrc/javascript/bootstrap-default/css/bootstrap-theme.min.css">', $path);
+    echo "\n";
+}
+?>
+<script type="text/javascript">
+function smartToggle()
+{
+    /**
+      Hack to combine bootstrap screensize hidden* classes and collapse classes
+      Nav bar initially renders with .collapse.in (shown) and .hidden-xs
+      On extra small device, the result is a hidden menu. On the first click, remove
+      the hidden-xs class so all further toggling is handled by collapse but
+      also remove the "in" class. This hides the nav from collapse's perspective
+      so the first data-toggle shows it instead of hides it.
+    */
+    if ($('.device-xs').is(':visible') && $('.navbar-default').hasClass('hidden-xs')) {
+        $('.navbar-default').removeClass('hidden-xs');
+        $('.navbar-default').removeClass('in');
+    }
+}
+</script>
+</head>
+<body>
+<div id="fannie-outer-margin" style="margin-left:3em;margin-right:3em;">
+    
+    <div class="hidden-print">
+        <table> <!-- yes. sick of fighting with floating divs... -->
+        <tr><td>
+            <?php if (isset($FANNIE_CSS_LOGO) && !empty($FANNIE_CSS_LOGO)) { ?>
+            <img src="<?php echo $FANNIE_CSS_LOGO; ?>" alt="logo" />
+            <?php } ?>
+        </td>
+        <td>
+        <div style="font-size:28px;" class="primaryColor"
+            data-toggle="collapse" data-target=".navbar-default"
+            onclick="smartToggle();">
+        Fannie
+        <?php if (isset($FANNIE_CUSTOM_TITLE) && !empty($FANNIE_CUSTOM_TITLE)) {
+            echo ' - ' . $FANNIE_CUSTOM_TITLE;
+        } ?>
+        </div>
+        <!-- this span is for detecting bootstrap screensize -->
+        <span class="device-xs visible-xs"></span>
+        <div style="font-size:20px;" class="secondaryColor"
+            data-toggle="collapse" data-target=".navbar-default"
+            onclick="smartToggle();">
+        IT CORE maintenance &amp; reporting
+        </div>
+        </td></tr>
+        </table>
+    </div>
+    <div class="secondaryBorder container-fluid" id="fannie-main-content" style="border-width: 1px; border-style: solid;">
+
+        <div class="navbar navbar-default collapse in hidden-xs hidden-print">
+            <ul class="nav navbar-nav">
+            <?php
+            if (!is_array($FANNIE_MENU) || count($FANNIE_MENU) == 0) {
+                include(dirname(__FILE__) . '/init_menu.php');
+                $FANNIE_MENU = $INIT_MENU;
+            } elseif (isset($FANNIE_MENU[0]['subheading'])) {
+                // old-style menu configuration
+                include(dirname(__FILE__) . '/init_menu.php');
+                $FANNIE_MENU = $INIT_MENU;
+            }
+            foreach ($FANNIE_MENU as $menu => $contents) {
+                if (count($contents) == 0) {
+                    continue;
+                }
+                if ($menu == '__store__') {
+                    $menu = 'Custom';
+                }
+                printf('<li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" data-target="#" 
+                        href="#">%s<span class="caret"></span></a>' . "\n", $menu);
+                echo '<ul class="dropdown-menu" role="menu">' . "\n";
+                foreach ($contents as $m_title => $m_url) {
+                    if ($m_url == '__header__') {
+                        printf('<li class="dropdown-header">%s</li>' . "\n", $m_title);
+                    } elseif ($m_url == '__divider__') {
+                        echo '<li class="divider"></li>' . "\n";
+                    } else {
+                        $prefix = $path;
+                        if ($m_url[0] == '/' || substr($m_url, 0, 7) == 'http://' || substr($m_url, 0, 8) == 'https://') {
+                            $prefix = '';
+                        }
+                        printf('<li><a href="%s%s">%s</a></li>' . "\n", $prefix, $m_url, $m_title);
+                    }
+                }
+                echo '</ul>' . "\n";
+                echo '</li>' . "\n";
+            }
+            ?>
+            <li id="nav-help-link">
+                <a href="#help-modal" data-toggle="modal" data-target="#help-modal">
+                    Help
+                    <span class="glyphicon glyphicon-question-sign"></span>
+                </a>
+            </li>
+            </ul>
+        </div>
+        <div class="h3 primaryColor">
+            <?php echo $header; ?>
+        </div>
+        <div class="">

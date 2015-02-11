@@ -21,30 +21,32 @@
 
 *********************************************************************************/
 
-class AlwaysFsEligibleFooter extends FooterBox {
+class AlwaysFsEligibleFooter extends FooterBox 
+{
 
 	public $header_css_class = 'fsLine';
 	public $display_css_class = 'fsLine';
 
-	function AlwaysFsEligibleFooter() {
-		global $CORE_LOCAL;
-		if ($CORE_LOCAL->get('fntlflag') == 0 && $CORE_LOCAL->get('End') != 1){
-			$CORE_LOCAL->set("fntlflag",1);
+	function AlwaysFsEligibleFooter() 
+    {
+		if (CoreLocal::get('fntlflag') == 0 && CoreLocal::get('End') != 1){
+			CoreLocal::set("fntlflag",1);
 			Database::setglobalvalue("FntlFlag", 1);
 		}
 	}
 
-	function header_content(){
-		global $CORE_LOCAL;
+	function header_content()
+    {
 		return _("FS Eligible");
 	}
 
-	function display_content(){
-		global $CORE_LOCAL;
-		if ($CORE_LOCAL->get('End') != 1)
-			return number_format((double)$CORE_LOCAL->get("fsEligible"),2);
+	function display_content()
+    {
+		if (CoreLocal::get('End') != 1)
+			return number_format((double)CoreLocal::get("fsEligible"),2);
 		else
 			return '0.00';
 	}
 		
 }
+

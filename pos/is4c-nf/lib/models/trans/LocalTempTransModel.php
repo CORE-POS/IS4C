@@ -38,6 +38,7 @@ class LocalTempTransModel extends LocalTransModel
     public function __construct($con)
     {
         $this->columns['trans_id']['increment'] = true;
+        $this->columns['trans_id']['index'] = true;
 
         parent::__construct($con);
     }

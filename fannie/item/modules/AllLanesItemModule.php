@@ -21,28 +21,27 @@
 
 *********************************************************************************/
 
-include_once(dirname(__FILE__).'/../../classlib2.0/item/ItemModule.php');
-
-class AllLanesItemModule extends ItemModule {
+class AllLanesItemModule extends ItemModule 
+{
 
     public function showEditForm($upc, $display_mode=1, $expand_mode=1)
     {
-        global $FANNIE_LANES;
+        $FANNIE_LANES = FannieConfig::config('LANES');
         $upc = BarcodeLib::padUPC($upc);
         $queryItem = "SELECT * FROM products WHERE upc = ?";
 
-        $ret = '<fieldset id="AllLanesFieldset">';
-        $ret .=  "<legend onclick=\"\$('#AllLanesFieldsetContent').toggle();\">
-                <a href=\"\" onclick=\"return false;\">Lane Status</a>
-                </legend>";
-        $css = ($expand_mode == 1) ? '' : 'display:none;';
-        $ret .= '<div id="AllLanesFieldsetContent" style="' . $css . '">';
+        $ret = '<div id="AllLanesFieldset" class="panel panel-default">';
+        $ret .=  "<div class=\"panel-heading\"><a href=\"\" onclick=\"\$('#AllLanesFieldsetContent').toggle();return false;\">
+                Lane Status
+                </a></div>";
+        $css = ($expand_mode == 1) ? '' : ' collapse';
+        $ret .= '<div id="AllLanesFieldsetContent" class="panel-body' . $css . '">';
         
         for($i=0;$i<count($FANNIE_LANES);$i++){
             $f = $FANNIE_LANES[$i];
             $sql = new SQLManager($f['host'],$f['type'],$f['op'],$f['user'],$f['pw']);
             if (!is_object($sql) || $sql->connections[$f['op']] === False){
-                $ret .= "Can't connect to lane ".($i+1)."<br />";
+                $ret .= "<li class=\"alert-danger\">Can't connect to lane ".($i+1)."</li>";
                 continue;
             }
             $prep = $sql->prepare_statement($queryItem);
@@ -50,29 +49,29 @@ class AllLanesItemModule extends ItemModule {
             $num = $sql->num_rows($resultItem);
 
             if ($num == 0){
-                $ret .= "Item <span style=\"color:red;\">$upc</span> not found on Lane ".($i+1)."<br />";
+                $ret .= "<li class=\"alert-danger\">Item <strong>$upc</strong> not found on Lane ".($i+1)."</li>";
             }
             else if ($num > 1){
-                $ret .= "Item <span style=\"color:red;\">$upc</span> found multiple times on Lane ".($i+1)."<br />";
+                $ret .= "<li class=\"alert-danger\">Item <strong>$upc</strong> found multiple times on Lane ".($i+1);
+                $ret .= '<ul>';
                 while ($rowItem = $sql->fetch_array($resultItem)){
-                    $ret .= "{$rowItem['upc']} {$rowItem['description']}<br />";
+                    $ret .= "<li>{$rowItem['upc']} {$rowItem['description']}</li>";
                 }
+                $ret .= '</ul></li>';
             }
             else {
                 $rowItem = $sql->fetch_array($resultItem);
-                $ret .= "Item <span style=\"color:red;\">$upc</span> on Lane ".($i+1)."<br />";
-                $ret .= "Price: {$rowItem['normal_price']}";
+                $ret .= "<li>Item <span style=\"color:red;\">$upc</span> on Lane ".($i+1)."<ul>";
+                $ret .= "<li>Price: {$rowItem['normal_price']}</li>";
                 if ($rowItem['special_price'] <> 0){
-                    $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;<span style=\"color:green;\">ON SALE: {$rowItem['special_price']}</span>";
+                    $ret .= "<li class=\"alert-success\">ON SALE: {$rowItem['special_price']}</li>";
                 }
-                $ret .= "<br />";
-            }
-            if ($i < count($FANNIE_LANES) - 1){
-                $ret .= "<hr />";
+                $ret .= "</ul></li>";
             }
         }
+        $ret .= '</ul>';
         $ret .= '</div>';
-        $ret .= '</fieldset>';
+        $ret .= '</div>';
         return $ret;
     }
 }

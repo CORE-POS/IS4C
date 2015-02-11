@@ -26,7 +26,6 @@ class SlidingMemSale extends DiscountType
 
     public function priceInfo($row,$quantity=1)
     {
-        global $CORE_LOCAL;
         if (is_array($this->savedInfo)) {
             return $this->savedInfo;
         }
@@ -39,7 +38,7 @@ class SlidingMemSale extends DiscountType
         $ret['discount'] = 0;
         $ret['memDiscount'] = MiscLib::truncate2($row['special_price'] * $quantity);
 
-        if ($CORE_LOCAL->get("isMember")) {
+        if (CoreLocal::get("isMember")) {
             $ret['unitPrice'] -= $row['special_price'];
         }
 
@@ -51,8 +50,7 @@ class SlidingMemSale extends DiscountType
 
     public function addDiscountLine()
     {
-        global $CORE_LOCAL;    
-        if ($CORE_LOCAL->get("isMember")) {
+        if (CoreLocal::get("isMember")) {
             TransRecord::adddiscount($this->savedInfo['memDiscount'],
                 $this->savedRow['department']);
         }

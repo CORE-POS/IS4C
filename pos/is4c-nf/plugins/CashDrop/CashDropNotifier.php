@@ -33,10 +33,8 @@ class CashDropNotifier extends Notifier
     */
     public function draw()
     {
-        global $CORE_LOCAL;
-
         $ret = '';
-        if ($CORE_LOCAL->get('cashDropWarned') === true) {
+        if (CoreLocal::get('cashDropWarned') === true) {
             $ret .= '<div style="background:red;border: solid 1px black;padding:7px;text-align:center;font-size:120%;">';
             $ret .= '! ! !';
             $ret .= '</div>';

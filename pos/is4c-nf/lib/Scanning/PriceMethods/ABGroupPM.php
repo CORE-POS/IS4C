@@ -39,7 +39,6 @@ class ABGroupPM extends PriceMethod
 
     function addItem($row,$quantity,$priceObj)
     {
-        global $CORE_LOCAL;
         if ($quantity == 0) {
             return false;
         }
@@ -47,7 +46,7 @@ class ABGroupPM extends PriceMethod
         $pricing = $priceObj->priceInfo($row,$quantity);
 
         // enforce limit on discounting sale items
-        $dsi = $CORE_LOCAL->get('DiscountableSaleItems');
+        $dsi = CoreLocal::get('DiscountableSaleItems');
         if ($dsi == 0 && $dsi !== '' && $priceObj->isSale()) {
             $row['discount'] = 0;
         }
@@ -124,7 +123,11 @@ class ABGroupPM extends PriceMethod
         $q3 = "SELECT sum(matched) FROM localtemptrans WHERE
             mixmatch IN ('$qualMM','$discMM')";
         $r3 = $dbt->query($q3);
-        $matches = ($dbt->num_rows($r3)>0)?array_pop($dbt->fetch_array($r3)):0;
+        $matches = 0;
+        if ($r3 && $dbt->num_rows($r3) > 0) {
+            $w3 = $dbt->fetch_row($r3);
+            $matches = $w3[0];
+        }
 
         // reduce totals by existing matches
         // implicit: quantity required for B = 1
@@ -191,7 +194,7 @@ class ABGroupPM extends PriceMethod
                 'VolSpecial' => ($priceObj->isSale() ? $row['specialgroupprice'] : $row['groupprice']),
                 'mixMatch' => $row['mixmatchcode'],
                 'matched' => $ttlMatches * $groupQty,
-                'cost' => (isset($row['cost']) ? $row['cost']*$new_sets*$groupQty : 0.00),
+                'cost' => (isset($row['cost']) ? $row['cost']*$sets*$groupQty : 0.00),
                 'numflag' => (isset($row['numflag']) ? $row['numflag'] : 0),
                 'charflag' => (isset($row['charflag']) ? $row['charflag'] : '')
             ));

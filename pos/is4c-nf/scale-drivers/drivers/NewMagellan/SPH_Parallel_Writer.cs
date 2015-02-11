@@ -38,7 +38,7 @@ public class SPH_Parallel_Writer : SerialPortHandler {
 
     private ManualResetEvent client_connect_signal;
 
-	public SPH_Parallel_Writer(string p) : base(p)
+    public SPH_Parallel_Writer(string p) : base(p)
     { 
         #if MONO
         lp_port = new ParallelWrapper_Posix();
@@ -47,9 +47,9 @@ public class SPH_Parallel_Writer : SerialPortHandler {
         #endif
 
         lp_fs = lp_port.GetLpHandle(p);
-	}
-	
-	override public void Read()
+    }
+    
+    override public void Read()
     { 
         TcpListener server = new TcpListener(System.Net.IPAddress.Parse("127.0.0.1"), 9450);
         server.Start();
@@ -125,7 +125,7 @@ public class SPH_Parallel_Writer : SerialPortHandler {
         }
     }
 
-	override public void HandleMsg(string msg)
+    override public void HandleMsg(string msg)
     { 
         // ignore messages
     }

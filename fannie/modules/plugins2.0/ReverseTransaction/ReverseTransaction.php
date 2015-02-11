@@ -27,7 +27,7 @@ if (!class_exists('FannieAPI'))
 
 /**
 */
-class ReverseTransaction extends FanniePlugin {
+class ReverseTransaction extends \COREPOS\Fannie\API\FanniePlugin {
 
     /**
       Desired settings. These are automatically exposed

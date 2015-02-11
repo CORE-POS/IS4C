@@ -29,24 +29,26 @@ $decision = isset($_REQUEST['input'])?strtoupper(trim($_REQUEST["input"])):'CL';
 $ret = array('dest_page'=>MiscLib::base_url().'gui-modules/pos2.php',
 		'endorse'=>False, 'cleared'=>False);
 
-if ($decision == "CL") {
-	$CORE_LOCAL->set("msgrepeat",0);
-	$CORE_LOCAL->set("lastRepeat",'');
-	$CORE_LOCAL->set("toggletax",0);
-	$CORE_LOCAL->set("togglefoodstamp",0);
-	$CORE_LOCAL->set("RepeatAgain", false);
-	$ret['cleared'] = True;
+$repeat_cmd = CoreLocal::get('strEntered');
+if (isset($_REQUEST['cmd']) && !empty($_REQUEST['cmd'])) {
+    $repeat_cmd = $_REQUEST['cmd'];
 }
-elseif (strlen($decision) > 0) {
 
-	$CORE_LOCAL->set("msgrepeat",1);
-	$CORE_LOCAL->set("strRemembered",$CORE_LOCAL->get("strEntered"));
-}
-else {
-	$CORE_LOCAL->set("msgrepeat",1);
-	$CORE_LOCAL->set("strRemembered",$CORE_LOCAL->get("strEntered"));
+if ($decision == "CL") {
+	CoreLocal::set("msgrepeat",0);
+	CoreLocal::set("lastRepeat",'');
+	CoreLocal::set("toggletax",0);
+	CoreLocal::set("togglefoodstamp",0);
+	CoreLocal::set("RepeatAgain", false);
+	$ret['cleared'] = true;
+} elseif (strlen($decision) > 0) {
+
+	CoreLocal::set("msgrepeat",1);
+	CoreLocal::set("strRemembered", $repeat_cmd);
+} else {
+	CoreLocal::set("msgrepeat",1);
+	CoreLocal::set("strRemembered", $repeat_cmd);
 }
 
 echo JsonLib::array_to_json($ret);
 
-?>

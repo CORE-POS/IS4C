@@ -29,8 +29,9 @@
    for all queries.
 */
 
-function forceBatch($batchID){
-	global $sql,$FANNIE_SERVER_DBMS;
+function forceBatch($batchID)
+{
+	global $sql,$FANNIE_SERVER_DBMS, $FANNIE_LANES;
 
 	$batchInfoQ = $sql->prepare("SELECT batchType,discountType FROM batches WHERE batchID = ?");
 	$batchInfoR = $sql->execute($batchInfoQ, array($batchID));
@@ -168,24 +169,101 @@ function forceBatch($batchID){
     $forceLCP = $sql->prepare($forceLCQ);
 	$forceLCR = $sql->execute($forceLCP, array($batchID));
 
-	$q = $sql->prepare("SELECT upc FROM batchList WHERE batchID=?");
-	$r = $sql->execute($q, array($batchID));
-    $q2 = $sql->prepare("SELECT upc FROM upcLike WHERE likeCode=?");
-	while($w = $sql->fetch_row($r)){
-		$upcs = array($w['upc']);
-		if (substr($w['upc'],0,2)=='LC'){
-			$upcs = array();
-			$lc = substr($w['upc'],2);
-			$r2 = $sql->execute($q2, array($lc));
-			while($w2 = $sql->fetch_row($r2))
-				$upcs[] = $w2['upc'];
-		}
-		foreach($upcs as $u){
-            $model = new ProductsModel($sql);
-            $model->upc($u);
-            $model->pushToLanes();
-		}
-	}
+    $columnsP = $sql->prepare('
+        SELECT p.upc,
+            p.normal_price,
+            p.special_price,
+            p.modified,
+            p.specialpricemethod,
+            p.specialquantity,
+            p.specialgroupprice,
+            p.discounttype,
+            p.mixmatchcode,
+            p.start_date,
+            p.end_date
+        FROM products AS p
+            INNER JOIN batchList AS b ON p.upc=b.upc
+        WHERE b.batchID=?');
+    $lcColumnsP = $sql->prepare('
+        SELECT p.upc,
+            p.normal_price,
+            p.special_price,
+            p.modified,
+            p.specialpricemethod,
+            p.specialquantity,
+            p.specialgroupprice,
+            p.discounttype,
+            p.mixmatchcode,
+            p.start_date,
+            p.end_date
+        FROM products AS p
+            INNER JOIN upcLike AS u ON p.upc=u.upc
+            INNER JOIN batchList AS b 
+                ON b.upc = ' . $sql->concat("'LC'", $sql->convert('u.likeCode', 'CHAR'), '') . '
+        WHERE b.batchID=?');
+
+    /**
+      Get changed columns for each product record
+    */
+    $upcs = array();
+    $columnsR = $sql->execute($columnsP, array($batchID));
+    while ($w = $sql->fetch_row($columnsR)) {
+        $upcs[$w['upc']] = $w;
+    }
+    $columnsR = $sql->execute($lcColumnsP, array($batchID));
+    while ($w = $sql->fetch_row($columnsR)) {
+        $upcs[$w['upc']] = $w;
+    }
+
+    $updateQ = '
+        UPDATE products AS p SET
+            p.normal_price = ?,
+            p.special_price = ?,
+            p.modified = ?,
+            p.specialpricemethod = ?,
+            p.specialquantity = ?,
+            p.specialgroupprice = ?,
+            p.discounttype = ?,
+            p.mixmatchcode = ?,
+            p.start_date = ?,
+            p.end_date = ?
+        WHERE p.upc = ?';
+
+    /**
+      Update all records on each lane before proceeding
+      to the next lane. Hopefully faster / more efficient
+    */
+    for ($i = 0; $i < count($FANNIE_LANES); $i++) {
+        $lane_sql = new SQLManager($FANNIE_LANES[$i]['host'],$FANNIE_LANES[$i]['type'],
+            $FANNIE_LANES[$i]['op'],$FANNIE_LANES[$i]['user'],
+            $FANNIE_LANES[$i]['pw']);
+        
+        if (!isset($lane_sql->connections[$FANNIE_LANES[$i]['op']]) || $lane_sql->connections[$FANNIE_LANES[$i]['op']] === false) {
+            // connect failed
+            continue;
+        }
+
+        $updateP = $lane_sql->prepare($updateQ);
+        foreach ($upcs as $upc => $data) {
+            $lane_sql->execute($updateP, array(
+                $data['normal_price'],
+                $data['special_price'],
+                $data['modified'],
+                $data['specialpricemethod'],
+                $data['specialquantity'],
+                $data['specialgroupprice'],
+                $data['discounttype'],
+                $data['mixmatchcode'],
+                $data['start_date'],
+                $data['end_date'],
+                $upc,
+            ));
+        }
+    }
+
+    $update = new ProdUpdateModel($sql);
+    $updateType = ($batchInfoW['discountType'] == 0) ? ProdUpdateModel::UPDATE_PC_BATCH : ProdUpdateModel::UPDATE_BATCH;
+    $update->logManyUpdates(array_keys($upcs), $updateType);
 }
 
 ?>

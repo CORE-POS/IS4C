@@ -11,7 +11,6 @@
     <li><a href="namespaces.html"><span>Namespaces</span></a></li>
     <li id="current"><a href="classes.html"><span>Classes</span></a></li>
     <li><a href="pages.html"><span>Related&nbsp;Pages</span></a></li>
-    <li><a href="examples.html"><span>Examples</span></a></li>
     <li>
       <form action="search.php" method="get">
         <table cellspacing="0" cellpadding="0" border="0">
@@ -55,6 +54,8 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_d_trans.html#f943352cf6c3e14ba3efe68f6df8cc88">joinTenders</a> ($dlog_alias='t', $tender_alias='n')</td></tr>
 
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_d_trans.html#03f6f3e5f34d3d51f504e4821ee18884">getTransNo</a> ($connection, $emp_no, $register_no)</td></tr>
+
 <tr><td colspan="2"><br><h2>Static Public Attributes</h2></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_d_trans.html#56a648a650dfa1229ee0215a97516acf">$DEFAULTS</a></td></tr>
 
@@ -63,6 +64,49 @@
 Helper class for generating useful bits of transaction SQL 
 <p>
 <hr><h2>Member Function Documentation</h2>
+<a class="anchor" name="03f6f3e5f34d3d51f504e4821ee18884"></a><!-- doxytag: member="DTrans::getTransNo" ref="03f6f3e5f34d3d51f504e4821ee18884" args="($connection, $emp_no, $register_no)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static DTrans::getTransNo           </td>
+          <td>(</td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>connection</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>emp_no</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>register_no</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"><code> [static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get an available dtransactions.trans_no value <dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>$connection</em>&nbsp;</td><td>[<a class="el" href="class_s_q_l_manager.html">SQLManager</a>] database connection </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$emp_no</em>&nbsp;</td><td>[int] employee number </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$register_no</em>&nbsp;</td><td>[int] register number </td></tr>
+  </table>
+</dl>
+<dl compact><dt><b>Returns:</b></dt><dd>[int] trans_no </dd></dl>
+
+</div>
+</div><p>
 <a class="anchor" name="ffc9eee84f997bfa9ab18c60d55b27a5"></a><!-- doxytag: member="DTrans::isCanceled" ref="ffc9eee84f997bfa9ab18c60d55b27a5" args="($prefix='')" -->
 <div class="memitem">
 <div class="memproto">
@@ -435,7 +479,7 @@ Array of default values for dtransaction-style tables The column 'datetime' is o
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>fannie/classlib2.0/data/DTrans.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - Fannie by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 9 Feb 2015 for CORE POS - Fannie by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

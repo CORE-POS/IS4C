@@ -30,12 +30,13 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class SubdeptImportPage extends FannieUploadPage {
+class SubdeptImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
     protected $title = "Fannie :: Product Tools";
     protected $header = "Import Sub-Departments";
 
     public $description = '[Subdepartment Import] loads subdept data from a spreadsheet.';
+    public $themed = true;
 
     protected $preview_opts = array(
         'sn' => array(
@@ -58,7 +59,10 @@ class SubdeptImportPage extends FannieUploadPage {
         )
     );
 
-    function process_file($linedata){
+    private $stats = array('imported'=>0, 'errors'=>array());
+
+    function process_file($linedata)
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
@@ -81,21 +85,39 @@ class SubdeptImportPage extends FannieUploadPage {
             if (strlen($desc) > 30) $desc = substr($desc,0,30);
 
             $insR = $dbc->exec_statement($insP,array($subdept_no,$desc,$dept_no));
+            if ($insR) {
+                $this->stats['imported']++;
+            } else {
+                $this->stats['errors'][] = 'Error importing sub department #' . $subdept_no;
+            }
         }
-        return True;
+
+        return true;
     }
     
     function form_content(){
-        return '<fieldset><legend>Instructions</legend>
+        return '<div class="well"><legend>Instructions</legend>
         Upload a CSV or XLS file containing subdept numbers, names, and what department
         number they belong to.
         <br />A preview helps you to choose and map spreadsheet fields to the database.
         <br />The uploaded file will be deleted after the load.
-        </fieldset><br />';
+        </div><br />';
     }
 
-    function results_content(){
-        return 'Import completed successfully';
+    function results_content()
+    {
+        $ret = '
+            <p>Import Complete</p>
+            <div class="alert alert-success">' . $this->stats['imported'] . ' sub departments imported</div>';
+        if ($this->stats['errors']) {
+            $ret .= '<div class="alert alert-error"><ul>';
+            foreach ($this->stats['errors'] as $error) {
+                $ret .= '<li>' . $error . '</li>';
+            }
+            $ret .= '</ul></div>';
+        }
+
+        return $ret;
     }
 }
 

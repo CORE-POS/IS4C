@@ -106,9 +106,6 @@ static&nbsp;</td><td class="memItemRight" valign="bottom"><b>chargeBalance</b> (
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="4d5612106a3aedfc977b6c65249dcbf0"></a><!-- doxytag: member="ReceiptLib::getChgName" ref="4d5612106a3aedfc977b6c65249dcbf0" args="()" -->
 static&nbsp;</td><td class="memItemRight" valign="bottom"><b>getChgName</b> ()</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="ed26d8ae072989408c53f0280c56d54d"></a><!-- doxytag: member="ReceiptLib::printCCSigSlip" ref="ed26d8ae072989408c53f0280c56d54d" args="($dateTimeStamp, $ref, $storeCopy=True, $rp=0)" -->
-static&nbsp;</td><td class="memItemRight" valign="bottom"><b>printCCSigSlip</b> ($dateTimeStamp, $ref, $storeCopy=True, $rp=0)</td></tr>
-
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="51122b1ebf347aede88731105caf83e0"></a><!-- doxytag: member="ReceiptLib::normalFont" ref="51122b1ebf347aede88731105caf83e0" args="()" -->
 static&nbsp;</td><td class="memItemRight" valign="bottom"><b>normalFont</b> ()</td></tr>
 
@@ -133,19 +130,10 @@ static&nbsp;</td><td class="memItemRight" valign="bottom"><b>receiptFromBuilders
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="2ef54fc4d9d4e7991b5ad3dce51176b1"></a><!-- doxytag: member="ReceiptLib::receiptDetail" ref="2ef54fc4d9d4e7991b5ad3dce51176b1" args="($reprint=false, $trans_num='')" -->
 static&nbsp;</td><td class="memItemRight" valign="bottom"><b>receiptDetail</b> ($reprint=false, $trans_num='')</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="3734cfbca3afcf4b2b4a7320f7bb00f1"></a><!-- doxytag: member="ReceiptLib::printGCSlip" ref="3734cfbca3afcf4b2b4a7320f7bb00f1" args="($dateTimeStamp, $ref, $storeCopy=true, $rp=0)" -->
-static&nbsp;</td><td class="memItemRight" valign="bottom"><b>printGCSlip</b> ($dateTimeStamp, $ref, $storeCopy=true, $rp=0)</td></tr>
-
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="340316503cbf6b1cc6bce05d0e202803"></a><!-- doxytag: member="ReceiptLib::printGCBalSlip" ref="340316503cbf6b1cc6bce05d0e202803" args="()" -->
-static&nbsp;</td><td class="memItemRight" valign="bottom"><b>printGCBalSlip</b> ()</td></tr>
-
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="9511f142477407400c69abe6fd004e1f"></a><!-- doxytag: member="ReceiptLib::twoColumns" ref="9511f142477407400c69abe6fd004e1f" args="($col1, $col2)" -->
 static&nbsp;</td><td class="memItemRight" valign="bottom"><b>twoColumns</b> ($col1, $col2)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_receipt_lib.html#92cd96c92fba108e1e9be8c92534c2dc">printReceipt</a> ($arg1, $ref, $second=False, $email=False)</td></tr>
-
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="6becec41938bb00cab2fe7dd3828146b"></a><!-- doxytag: member="ReceiptLib::reprintReceipt" ref="6becec41938bb00cab2fe7dd3828146b" args="($trans_num=&quot;&quot;)" -->
-static&nbsp;</td><td class="memItemRight" valign="bottom"><b>reprintReceipt</b> ($trans_num=&quot;&quot;)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="7dc650cfc419b27cabf4e2fd6919527b"></a><!-- doxytag: member="ReceiptLib::memReceiptMessages" ref="7dc650cfc419b27cabf4e2fd6919527b" args="($card_no)" -->
 static&nbsp;</td><td class="memItemRight" valign="bottom"><b>memReceiptMessages</b> ($card_no)</td></tr>
@@ -156,6 +144,9 @@ static&nbsp;</td><td class="memItemRight" valign="bottom"><b>shutdownFunction</b
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_receipt_lib.html#7ff508ebea346db8947272789081ce61">receiptNumber</a> ()</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_receipt_lib.html#0420af34376f3d65c6b6c707061f38ab">mostRecentReceipt</a> ()</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="8f6c298cab661e029255fbc85e36dbb7"></a><!-- doxytag: member="ReceiptLib::code39" ref="8f6c298cab661e029255fbc85e36dbb7" args="($barcode)" -->
+static&nbsp;</td><td class="memItemRight" valign="bottom"><b>code39</b> ($barcode)</td></tr>
 
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
@@ -351,7 +342,10 @@ generates a receipt string <dl compact><dt><b>Parameters:</b></dt><dd>
 <dl compact><dt><b>Returns:</b></dt><dd>string receipt content </dd></dl>
 
 <p>
-This block deprecates ReceiptLib::reprintReceipt() 
+This block deprecates ReceiptLib::reprintReceipt()<p>
+Show all savings on a single line<p>
+Show discounts on separate lines; Optionally show non-members what they could have saved<p>
+List local total as defined by settings Default to $ total if no setting exists 
 </div>
 </div><p>
 <a class="anchor" name="cda26e0deb6ba9260fb55461f093271d"></a><!-- doxytag: member="ReceiptLib::printReceiptHeader" ref="cda26e0deb6ba9260fb55461f093271d" args="($dateTimeStamp, $ref)" -->
@@ -442,7 +436,7 @@ get current receipt number
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/ReceiptLib.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 9 Feb 2015 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

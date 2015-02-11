@@ -36,8 +36,7 @@ class Kicker
     */
     public function doKick($trans_num)
     {
-        global $CORE_LOCAL;
-        if($CORE_LOCAL->get('training') == 1) {
+        if (CoreLocal::get('training') == 1) {
             return false;
         }
         $db = Database::tDataConnect();
@@ -68,8 +67,7 @@ class Kicker
     */
     public function kickOnSignIn()
     {
-        global $CORE_LOCAL;
-        if($CORE_LOCAL->get('training') == 1) {
+        if (CoreLocal::get('training') == 1) {
             return false;
         }
 
@@ -83,8 +81,7 @@ class Kicker
     */
     public function kickOnSignOut()
     {
-        global $CORE_LOCAL;
-        if($CORE_LOCAL->get('training') == 1) {
+        if (CoreLocal::get('training') == 1) {
             return false;
         }
 

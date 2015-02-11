@@ -36,8 +36,7 @@ class DefaultReceiptDataFetch
     */
     public function fetch($empNo=false,$laneNo=false,$transNo=false)
     {
-        global $CORE_LOCAL;
-        $op_db = $CORE_LOCAL->get('pDatabase');
+        $op_db = CoreLocal::get('pDatabase');
         $sql = Database::tDataConnect();
         $join_table = $op_db . $sql->sep() . 'MasterSuperDepts';
         $column = 's.super_name';

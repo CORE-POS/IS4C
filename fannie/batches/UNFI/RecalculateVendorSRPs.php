@@ -36,6 +36,7 @@ class RecalculateVendorSRPs extends FanniePage {
 
     public $description = '[Calculate Vendor SRPs] recalculates item SRPs based on vendor
     specific margin goals.';
+    public $themed = true;
 
     private $mode = 'form';
 
@@ -64,12 +65,11 @@ class RecalculateVendorSRPs extends FanniePage {
         $query = 'select v.upc,v.cost,
             case when d.margin is not null then d.margin
                  when m.margin is not null then m.margin
-                 else 0 end as margin
-            from 
-            vendorItems as v left join
-            vendorDepartments as d
-            on v.vendorID=d.vendorID
-            and v.vendorDept=d.deptID
+                 else 0 end as margin,
+                n.shippingMarkup
+            FROM vendorItems as v 
+                left join vendorDepartments as d on v.vendorID=d.vendorID and v.vendorDept=d.deptID
+                INNER JOIN vendors AS n ON v.vendorID=n.vendorID
             left join products as p
             on v.upc=p.upc ';
         $departments = $dbc->tableDefinition('departments');
@@ -87,6 +87,7 @@ class RecalculateVendorSRPs extends FanniePage {
         $insP = $dbc->prepare_statement('INSERT INTO vendorSRPs VALUES (?,?,?)');
         while ($fetchW = $dbc->fetch_array($fetchR)) {
             // calculate a SRP from unit cost and desired margin
+            $fetchW['cost'] = $fetchW['cost'] * (1+$fetchW['shippingMarkup']);
             $srp = round($fetchW['cost'] / (1 - $fetchW['margin']),2);
 
             // prices should end in 5 or 9, so add a cent until that's true
@@ -105,7 +106,7 @@ class RecalculateVendorSRPs extends FanniePage {
     function form_content(){
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $q = $dbc->prepare_statement("SELECT vendorID,vendorName FROM vendors");
+        $q = $dbc->prepare_statement("SELECT vendorID,vendorName FROM vendors ORDER BY vendorName");
         $r = $dbc->exec_statement($q);
         $opts = "";
         while($w = $dbc->fetch_row($r))
@@ -113,12 +114,27 @@ class RecalculateVendorSRPs extends FanniePage {
         ob_start();
         ?>
         <form action=RecalculateVendorSRPs.php method=get>
-        Recalculate SRPs from margins for which vendor?<br />
-        <select name=vendorID><?php echo $opts; ?></select>
-        <input type=submit value="Recalculate" />
+        <p>
+        <label>Recalculate SRPs from margins for which vendor?</label>
+        <select id="vendor-id" name=vendorID class="form-control">
+            <?php echo $opts; ?></select>
+        <button type=submit class="btn btn-default">Recalculate</button>
+        <button type="button" onclick="location='VendorPricingIndex.php';return false;"
+            class="btn btn-default">Back</button>
+        </p>
         </form>
         <?php
+        $this->add_onload_command('$(\'#vendor-id\').focus();');
+
         return ob_get_clean();
+    }
+
+    public function helpContent()
+    {
+        return '<p>Recalculate suggested retail prices for items from
+            a given vendor. If margin targets have been assigned to
+            vendor-specific departments, those margins are used. Otherwise
+            POS departments\' margin targets are used.</p>';
     }
 }
 

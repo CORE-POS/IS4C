@@ -33,6 +33,7 @@ class EditManyPurchaseOrders extends FannieRESTfulPage {
 
     public $description = '[Multi-Vendor Purchase Order] creates and edits multiple purchase orders
     as items from different vendors are scanned.';
+    public $themed = true;
 
     protected $must_authenticate = True;
 
@@ -201,55 +202,24 @@ class EditManyPurchaseOrders extends FannieRESTfulPage {
     }
 
     function get_view(){
-        $ret = '<div id="col2">';
+        $ret = '<div class="col-sm-6">';
         $ret .= '<div id="ItemSearch">';
-        $ret .= '<form action="" onsubmit="itemSearch();return false;">';
-        $ret .= '<b>UPC/SKU</b>: <input type="text" id="searchField" />';
-        $ret .= '<input type="submit" value="Search" />';
+        $ret .= '<form class="form" action="" onsubmit="itemSearch();return false;">';
+        $ret .= '<label>UPC/SKU</label><input class="form-control" type="text" id="searchField" />';
+        $ret .= '<button type="submit" class="btn btn-default">Search</button>';
         $ret .= '</form>';
         $ret .= '</div>';
-        $ret .= '<div id="SearchResults"></div>';
+        $ret .= '<p><div id="SearchResults"></div></p>';
         $ret .= '</div>';
 
-        $ret .= '<div id="orderInfo">';
+        $ret .= '<div class="col-sm-6" id="orderInfo">';
         $ret .= $this->calculate_sidebar();
         $ret .= '</div>';
-
-        $ret .= '<div style="clear: left;"></div>';
 
         $this->add_onload_command("\$('#searchField').focus();\n");
         $this->add_script('js/editmany.js');
     
         return $ret;
-    }
-
-    function css_content(){
-        ob_start();
-        ?>
-div#orderInfo {
-    border-left: solid 1px black;
-    float: left;
-    margin-left: 10px;
-}
-div#col2 {
-    float: left;
-    text-align: left;
-}
-ul.vendorSubList {
-    line-height: 1em;
-    padding-left: 5px;
-    font-weight: normal;
-    font-size: 90%;
-}
-ul.vendorSubList li {
-    margin-left: 5px;
-}
-ul#vendorList {
-    line-height: 1.1em;
-    font-weight: bold;
-}
-        <?php
-        return ob_get_clean();
     }
 
     private function getOrderID($vendorID, $userID){
@@ -271,6 +241,17 @@ ul#vendorList {
             $insR = $dbc->exec_statement($insP, array($vendorID, $userID));
             return $dbc->insert_id();
         }
+    }
+
+    public function helpContent()
+    {
+        return '
+            <p>Enter UPCs or SKUs. If there are multiple matching items,
+            use the dropdown to specify which. Then enter the number
+            of cases to order.</p>
+            <p>Each time you select an item from a different vendor,
+            a pending order is automatically created for that vendor
+            if one does not already exist.</p>';
     }
 }
 

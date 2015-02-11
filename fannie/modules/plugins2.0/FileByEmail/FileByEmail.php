@@ -28,7 +28,7 @@ if (!class_exists('FannieAPI')) {
 
 /**
 */
-class FileByEmail extends FanniePlugin 
+class FileByEmail extends \COREPOS\Fannie\API\FanniePlugin 
 {
     public $plugin_settings = array(
     'FbeMimeTypes' => array('default'=>'application/pdf', 'label'=>'Mime Types',

@@ -41,10 +41,9 @@ class ItemNotFound extends LibraryClass
     */
     public function handle($upc, $json)
     {
-        global $CORE_LOCAL;
         $opts = array('upc'=>$upc,'description'=>'BADSCAN');
         TransRecord::add_log_record($opts);
-        $CORE_LOCAL->set("boxMsg", $upc . ' ' . _("not a valid item"));
+        CoreLocal::set("boxMsg", $upc . ' ' . _("not a valid item"));
         $json['main_frame'] = MiscLib::baseURL() . "gui-modules/boxMsg2.php";
 
         return $json;
@@ -61,10 +60,9 @@ class LogNotFound extends ItemNotFound
 {
 	public function handle($upc, $json)
     {
-        global $CORE_LOCAL;
         $opts = array('upc'=>$upc,'description'=>'NOTFOUND');
         TransRecord::add_log_record($opts);
-        $CORE_LOCAL->set("boxMsg", $upc . ' ' . _("not a valid item"));
+        CoreLocal::set("boxMsg", $upc . ' ' . _("not a valid item"));
         $json['main_frame'] = $my_url . "gui-modules/boxMsg2.php";
 
         return $json;

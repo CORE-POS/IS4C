@@ -52,8 +52,8 @@ class TableSnapshotTask extends FannieTask
             @severity: most likely just means first ever run
             and the backup table does not exist yet
             */
-            echo $this->cronMsg("Could not drop productBackup. Details: " . $ex->getMessage(),
-                    FannieTask::TASK_TRIVIAL_ERROR);
+            $this->cronMsg("Could not drop productBackup. Details: " . $ex->getMessage(),
+                    FannieLogger::NOTICE);
         }
 
         try {
@@ -68,8 +68,8 @@ class TableSnapshotTask extends FannieTask
             @severity: backup did not happen. that's the primary
             purpose of this task.
             */
-            echo $this->cronMsg("Failed to back up products. Details: " . $ex->getMessage(),
-                    FannieTask::TASK_LARGE_ERROR);
+            $this->cronMsg("Failed to back up products. Details: " . $ex->getMessage(),
+                    FannieLogger::ERROR);
         }
 
         try {
@@ -79,8 +79,8 @@ class TableSnapshotTask extends FannieTask
             @severity: most likely just means first ever run
             and the backup table does not exist yet
             */
-            echo $this->cronMsg("Could not drop custdataBackup. Details: " . $ex->getMessage(),
-                    FannieTask::TASK_TRIVIAL_ERROR);
+            $this->cronMsg("Could not drop custdataBackup. Details: " . $ex->getMessage(),
+                    FannieLogger::NOTICE);
         }
 
         try {
@@ -95,8 +95,8 @@ class TableSnapshotTask extends FannieTask
             @severity: backup did not happen. that's the primary
             purpose of this task.
             */
-            echo $this->cronMsg("Failed to back up custdata. Details: " . $ex->getMessage(),
-                    FannieTask::TASK_LARGE_ERROR);
+            $this->cronMsg("Failed to back up custdata. Details: " . $ex->getMessage(),
+                    FannieLogger::ERROR);
         }
     }
 }

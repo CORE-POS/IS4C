@@ -30,8 +30,15 @@
  across two servers that are useful for lane-server
  communication
 */
+if (!class_exists('FannieAPI')) {
+    include(dirname(__FILE__) . '/../classlib2.0/FannieAPI.php');
+}
 if (!function_exists("ADONewConnection")) {
-    include(dirname(__FILE__).'/../adodb5/adodb.inc.php');
+    if (file_exists(dirname(__FILE__) . '/../../vendor/adodb/adodb-php/adodb.inc.php')) {
+        include(dirname(__FILE__) . '/../../vendor/adodb/adodb-php/adodb.inc.php');
+    } else {
+        include(dirname(__FILE__).'/../adodb5/adodb.inc.php');
+    }
 }
 
 class SQLManager 
@@ -60,7 +67,7 @@ class SQLManager
 	*/
 	public function SQLManager($server,$type,$database,$username,$password='',$persistent=false, $new=false)
     {
-		$this->QUERY_LOG = dirname(__FILE__)."/../logs/queries.log";
+		$this->QUERY_LOG = new FannieLogger();
 		$this->connections=array();
 		$this->default_db = $database;
 		$this->addConnection($server,$type,$database,$username,$password,$persistent,$new);
@@ -161,6 +168,20 @@ class SQLManager
 		return $con->Close();
 	}
 
+    public function setDefaultDB($db_name)
+    {
+        /** verify connection **/
+        if (!isset($this->connections[$db_name])) {
+            return false;
+        }
+
+        $this->default_db = $db_name;
+        if ($this->isConnected()) {
+            $this->query('use ' . $db_name, $db_name);
+            $this->connections[$db_name]->database = $db_name;
+        }
+    }
+
 	/**
 	  Execute a query
 	  @param $query_text The query
@@ -169,7 +190,6 @@ class SQLManager
 	*/
 	public function query($query_text,$which_connection='',$params=false)
     {
-		$ql = $this->QUERY_LOG;
 		if ($which_connection == '') {
 			$which_connection=$this->default_db;
         }
@@ -182,16 +202,10 @@ class SQLManager
 				$query_text = $query_text[0];
             }
 
-			$errorMsg = $_SERVER['PHP_SELF'] . ': ' . date('r') . ': ' . $query_text . "\n";
-			$errorMsg .= $this->error($which_connection) . "\n\n";
-
-            if (is_writable($ql)) {
-                $fp = fopen($ql,'a');
-                fwrite($fp, $errorMsg);
-                fclose($fp);
-            } else {
-                echo str_replace("\n", '<br />', $errorMsg);
-            }
+            $this->QUERY_LOG->debug('Failed Query on ' . $_SERVER['PHP_SELF']);
+            $this->QUERY_LOG->debug($query_text);
+            $errorMsg = $this->error($which_connection);
+            $this->QUERY_LOG->debug($errorMsg);
 
             if ($this->throw_on_fail) {
                 throw new Exception($errorMsg);
@@ -659,44 +673,44 @@ class SQLManager
         return $this->fetchField($result_object, $index, $which_connection);
     }
 
-	/**
-	  Start a transaction
-	  @param $which_connection see method close()
-	*/
-	public function startTransaction($which_connection='')
+    /**
+      Start a transaction
+      @param $which_connection see method close()
+    */
+    public function startTransaction($which_connection='')
     {
-		if ($which_connection == '') {
-			$which_connection = $this->default_db;
+        if ($which_connection == '') {
+            $which_connection = $this->default_db;
         }
 
-		return $this->connections[$which_connection]->BeginTrans();
-	}
+        return $this->connections[$which_connection]->BeginTrans();
+    }
 
-	/**
-	  Finish a transaction
-	  @param $which_connection see method close()
-	*/
-	public function commitTransaction($which_connection='')
+    /**
+      Finish a transaction
+      @param $which_connection see method close()
+    */
+    public function commitTransaction($which_connection='')
     {
-		if ($which_connection == '') {
-			$which_connection = $this->default_db;
+        if ($which_connection == '') {
+            $which_connection = $this->default_db;
         }
 
-		return $this->connections[$which_connection]->CommitTrans();
-	}
+        return $this->connections[$which_connection]->CommitTrans();
+    }
 
-	/**
-	  Abort a transaction
-	  @param $which_connection see method close()
-	*/
-	public function rollbackTransaction($which_connection='')
+    /**
+      Abort a transaction
+      @param $which_connection see method close()
+    */
+    public function rollbackTransaction($which_connection='')
     {
-		if ($which_connection == '') {
-			$which_connection = $this->default_db;
+        if ($which_connection == '') {
+            $which_connection = $this->default_db;
         }
 
-		return $this->connections[$which_connection]->RollbackTrans();
-	}
+        return $this->connections[$which_connection]->RollbackTrans();
+    }
 
 	/** 
 	   Copy a table from one database to another, not necessarily on
@@ -721,14 +735,14 @@ class SQLManager
 		$unquoted = array("money"=>1,"real"=>1,"numeric"=>1,
 			"float4"=>1,"float8"=>1,"bit"=>1);
 		$strings = array("varchar"=>1,"nvarchar"=>1,"string"=>1,
-			"char"=>1);
+			"char"=>1, 'var_string'=>1);
 		$dates = array("datetime"=>1);
 		$queries = array();
 
 		while($row = $this->fetch_array($result,$source_db)) {
 			$full_query = $insert_query." VALUES (";
 			for ($i=0; $i<$num_fields; $i++) {
-				$type = $this->fieldType($result,$i,$source_db);
+				$type = strtolower($this->fieldType($result,$i,$source_db));
 				if ($row[$i] == "" && strstr(strtoupper($type),"INT")) {
 					$row[$i] = 0;	
 				} elseif ($row[$i] == "" && isset($unquoted[$type])) {
@@ -1305,24 +1319,22 @@ class SQLManager
 
 		$cols = "(";
 		$vals = "(";
+        $args = array();
 		foreach($values as $k=>$v) {
 			if (isset($t_def[$k])) {
-				$vals .= $v.",";
 				$col_name = $k;
-				if($this->connections[$which_connection]->databaseType == 'mssql') {
-					$cols .= $col_name.",";
-				} else {
-					$cols .= "`".$col_name."`,";
-                }
+                $vals .= '?,';
+                $args[] = $v;
+                $cols .= $this->identifierEscape($col_name, $which_connection) . ',';
 			} else {
-				echo "No column - $k";
 				// implication: column isn't in the table
 			}
 		}
 		$cols = substr($cols,0,strlen($cols)-1).")";
 		$vals = substr($vals,0,strlen($vals)-1).")";
 		$insertQ = "INSERT INTO $table_name $cols VALUES $vals";
-		$ret = $this->query($insertQ,$which_connection);
+        $insertP = $this->prepare($insertQ, $which_connection);
+        $ret = $this->execute($insertP, $args, $which_connection);
 
 		return $ret;
 	}
@@ -1368,24 +1380,21 @@ class SQLManager
 		$t_def = $this->tableDefinition($table_name,$which_connection);
 
 		$sets = "";
+        $args = array();
 		foreach($values as $k=>$v) {
 			if (isset($t_def[$k])) {
 				$col_name = $k;
-				if($this->connections[$which_connection]->databaseType == 'mssql') {
-					$sets .= $col_name;
-				} else {
-					$sets .= "`".$col_name."`";
-                }
-				$sets .= "=".$v.",";
+                $sets .= $this->identifierEscape($col_name) . ' = ?,';
+                $args[] = $v;
 			} else {
-				echo "No column - $k";
 				// implication: column isn't in the table
 			}
 		}
 		$sets = rtrim($sets,",");
 		$upQ = "UPDATE $table_name SET $sets WHERE $where_clause";
+        $upP = $this->prepare($upQ, $which_connection);
 
-		$ret = $this->query($upQ,$which_connection);
+        $ret = $this->execute($upP, $args, $which_connection);
 
 		return $ret;
 	}
@@ -1497,15 +1506,9 @@ class SQLManager
 	*/  
 	public function logger($str)
     {
-		$ql = $this->QUERY_LOG;
-		if (is_writable($ql)) {
-			$fp = fopen($ql,'a');
-			fputs($fp,$_SERVER['PHP_SELF'].": ".date('r').': '.$str."\n");
-			fclose($fp);
-			return true;
-		} else {
-			return false;
-		}
+        $this->QUERY_LOG->debug($_SERVER['PHP_SELF'] . ' - QUERY - ' . $str);
+
+        return true;
 	}
 
     /**
@@ -1523,6 +1526,10 @@ class SQLManager
         
         $definition1 = $this->table_definition($table1, $which_connection);
         $definition2 = $this->table_definition($table2, $which_connection);
+        if (!is_array($definition1) || ! is_array($definition2)) {
+            return array();
+        }
+
         $matches = array();
         foreach($definition1 as $col_name => $info) {
             if (isset($definition2[$col_name])) {
@@ -1533,12 +1540,20 @@ class SQLManager
         return $matches;
     }
 
+    /**
+      Get list of columns that exist in both tables
+      @param $table1 [string] name of first table
+      @param $which_connection1 [string] name of first database connection
+      @param $table2 [string] name of second table
+      @param $which_connection2 [string] name of second database connection
+      @return [string] list of column names or [boolean] false
+    */
     public function getMatchingColumns($table1, $which_connection1, $table2, $which_connection2)
     {
         $ret = '';
         $def1 = $this->tableDefinition($table1, $which_connection1);
         $def2 = $this->tableDefinition($table2, $which_connection2);
-        foreach($def1 as $column_name => $info) {
+        foreach ($def1 as $column_name => $info) {
             if (isset($def2[$column_name])) {
                 $ret .= $column_name . ',';
             }

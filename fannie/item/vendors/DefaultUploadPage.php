@@ -26,10 +26,11 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class DefaultUploadPage extends FannieUploadPage {
-
+class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage 
+{
     public $title = "Fannie - Load Vendor Prices";
     public $header = "Upload Vendor price file";
+    public $themed = true;
 
     public $description = '[Vendor Catalog Import] is the default tool for loading or updating vendor item data
     via spreadsheet.';
@@ -79,9 +80,9 @@ class DefaultUploadPage extends FannieUploadPage {
         ),
         'cost' => array(
             'name' => 'cost',
-            'display_name' => 'Case Cost (Reg) *',
+            'display_name' => 'Case Cost (Reg) +',
             'default' => 7,
-            'required' => true
+            'required' => false
         ),
         'saleCost' => array(
             'name' => 'saleCost',
@@ -89,10 +90,22 @@ class DefaultUploadPage extends FannieUploadPage {
             'default' => 8,
             'required' => false
         ),
+        'unitCost' => array(
+            'name' => 'unitCost',
+            'display_name' => 'Unit Cost (Reg) +',
+            'default' => 9,
+            'required' => false
+        ),
+        'unitSaleCost' => array(
+            'name' => 'unitSaleCost',
+            'display_name' => 'Unit Cost (Sale)',
+            'default' => 10,
+            'required' => false
+        ),
         'vDept' => array(
             'name' => 'vDept',
             'display_name' => 'Vendor Department',
-            'default' => 9,
+            'default' => 11,
             'required' => false
         ),
     );
@@ -128,6 +141,8 @@ class DefaultUploadPage extends FannieUploadPage {
         $CATEGORY = $this->get_column_index('vDept');
         $REG_COST = $this->get_column_index('cost');
         $NET_COST = $this->get_column_index('saleCost');
+        $REG_UNIT = $this->get_column_index('unitCost');
+        $NET_UNIT = $this->get_column_index('unitSaleCost');
         $SRP = $this->get_column_index('srp');
 
         $itemP = $dbc->prepare_statement("INSERT INTO vendorItems 
@@ -152,6 +167,9 @@ class DefaultUploadPage extends FannieUploadPage {
             $brand = ($BRAND === false) ? $vendorName : substr($data[$BRAND], 0, 50);
             $description = substr($data[$DESCRIPTION], 0, 50);
             $qty = $data[$QTY];
+            if (!is_numeric($qty)) {
+                $qty = 1.0;
+            }
             $size = ($SIZE1 === false) ? '' : substr($data[$SIZE1], 0, 25);
             $upc = $data[$UPC];
             $upc = str_replace(' ', '', $upc);
@@ -167,46 +185,57 @@ class DefaultUploadPage extends FannieUploadPage {
             if ($_SESSION['vUploadCheckDigits'])
                 $upc = '0'.substr($upc,0,12);
             $category = ($CATEGORY === false) ? 0 : $data[$CATEGORY];
-            $reg = trim($data[$REG_COST]);
-            $net = ($NET_COST !== false) ? trim($data[$NET_COST]) : 0.00;
-            // blank spreadsheet cell
-            if (empty($net)) {
-                $net = 0.00;
-            }
-            $srp = ($SRP === false) ? 0.00 : trim($data[$SRP]);
-            // can't process items w/o price (usually promos/samples anyway)
-            if (empty($reg))
-                continue;
 
-            if ($net == $reg) {
-                $net = 0.00; // not really a sale
+            $reg_unit = '';
+            if ($REG_UNIT !== false) {
+                $reg_unit = trim($data[$REG_UNIT]);
+                $reg_unit = $this->priceFix($reg_unit);
             }
-
-            // syntax fixes. kill apostrophes in text fields,
-            // trim $ off amounts as well as commas for the
-            // occasional > $1,000 item
-            $brand = str_replace("'","",$brand);
-            $description = str_replace("'","",$description);
-            $reg = str_replace('$',"",$reg);
-            $reg = str_replace(",","",$reg);
-            $net = str_replace('$',"",$net);
-            $net = str_replace(",","",$net);
-            $srp = str_replace('$',"",$srp);
-            $srp = str_replace(",","",$srp);
+            if (!is_numeric($reg_unit) && $REG_COST !== false) {
+                $reg = trim($data[$REG_COST]);
+                $reg = $this->priceFix($reg);
+                if (is_numeric($reg)) {
+                    $reg_unit = $reg / $qty;
+                }
+            }
 
             // skip the item if prices aren't numeric
             // this will catch the 'label' line in the first CSV split
             // since the splits get returned in file system order,
             // we can't be certain *when* that chunk will come up
-            if (!is_numeric($reg))
+            // can't process items w/o price (usually promos/samples anyway)
+            if (empty($reg_unit) || !is_numeric($reg_unit))
                 continue;
 
-            if (!is_numeric($qty)) {
-                $qty = 1.0;
+            $net_unit = '';
+            if ($NET_UNIT !== false) {
+                $net_unit = trim($data[$NET_UNIT]);
+                $net_unit = $this->priceFix($net_unit);
             }
-            // need unit cost, not case cost
-            $reg_unit = $reg / $qty;
-            $net_unit = $net / $qty;
+            if (!is_numeric($net_unit) && $NET_COST !== false) {
+                $net = trim($data[$NET_COST]);
+                $net = $this->priceFix($net);
+                if (is_numeric($net)) {
+                    $net_unit = $net / $qty;
+                }
+            }
+            // blank spreadsheet cell
+            if (empty($net_unit)) {
+                $net_unit = 0.00;
+            }
+            $srp = ($SRP === false) ? 0.00 : trim($data[$SRP]);
+
+            if ($net_unit == $reg_unit) {
+                $net_unit = 0.00; // not really a sale
+            }
+
+            // syntax fixes. kill apostrophes in text fields,
+            // trim $ off amounts as well as commas for the
+            // occasional > $1,000 item
+            $srp = $this->priceFix($srp);
+
+            $brand = str_replace("'","",$brand);
+            $description = str_replace("'","",$description);
 
             $args = array($brand, $sku, $size,
                     $upc,$qty,$reg_unit,$description,$category,$VENDOR_ID);
@@ -229,7 +258,7 @@ class DefaultUploadPage extends FannieUploadPage {
             }
         }
 
-        return True;
+        return true;
     }
 
     /* clear tables before processing */
@@ -276,11 +305,11 @@ class DefaultUploadPage extends FannieUploadPage {
 
     function results_content()
     {
-        $ret = "Price data import complete<p />";
-        $ret .= '<a href="'.$_SERVER['PHP_SELF'].'">Upload Another</a>';
+        $ret = "<p>Price data import complete</p>";
         unset($_SESSION['vid']);
         unset($_SESSION['vUploadCheckDigits']);
         unset($_SESSION['vUploadChangeCosts']);
+
         return $ret;
     }
 
@@ -290,20 +319,20 @@ class DefaultUploadPage extends FannieUploadPage {
         $vid = FormLib::get_form_value('vid');
         if ($vid === ''){
             $this->add_onload_command("\$('#FannieUploadForm').remove();");
-            return '<span style="color:red;">Error: No Vendor Selected</span>';
+            return '<div class="alert alert-danger">Error: No Vendor Selected</div>';
         }
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $vp = $dbc->prepare_statement('SELECT vendorName FROM vendors WHERE vendorID=?');
         $vr = $dbc->exec_statement($vp,array($vid));
         if ($dbc->num_rows($vr)==0){
             $this->add_onload_command("\$('#FannieUploadForm').remove();");
-            return '<span style="color:red;">Error: No Vendor Found</span>';
+            return '<div class="alert alert-danger">Error: No Vendor Found</div>';
         }
         $vrow = $dbc->fetch_row($vr);
         $_SESSION['vid'] = $vid;
-        return '<fieldset><legend>Instructions</legend>
+        return '<div class="well"><legend>Instructions</legend>
             Upload a price file for <i>'.$vrow['vendorName'].'</i> ('.$vid.'). File must be
-            CSV. Files &gt; 2MB may be zipped.</fieldset><br />';
+            CSV. Files &gt; 2MB may be zipped.</div>';
     }
 
     public function preprocess()
@@ -315,6 +344,14 @@ class DefaultUploadPage extends FannieUploadPage {
         }
 
         return parent::preprocess();
+    }
+
+    private function pricefix($str)
+    {
+        $str = str_replace('$', '', $str);
+        $str = str_replace(',', '', $str);
+
+        return $str;
     }
 }
 

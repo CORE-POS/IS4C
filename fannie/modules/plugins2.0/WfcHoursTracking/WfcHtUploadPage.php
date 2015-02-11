@@ -41,6 +41,7 @@ class WfcHtUploadPage extends FanniePage
     
     public $page_set = 'Plugin :: WFC Hours Tracking';
     public $description = '[Hours Upload] imports data for hourly employees.';
+    public $themed = true;
 
     private $mode = 'form';
 
@@ -97,7 +98,7 @@ class WfcHtUploadPage extends FanniePage
         $ret .= "<b>Pay Period</b>: $start - $end<br />";
         $ret .= "<input type=hidden name=start value=\"$start\" />";
         $ret .= "<input type=hidden name=end value=\"$end\" />";
-        $ret .= "<table cellpadding=4 cellspacing=0 border=1>";
+        $ret .= "<table class=\"table\">";
         $ret .= "<tr class=one><th>ADP ID</th><th>Reg. Hours</th><th>OT Hours</th>";
         $ret .= "<th>PTO</th><th>UTO</th><th>Alt. Rate</th><th>Holiday</th></tr>";
 
@@ -189,7 +190,7 @@ class WfcHtUploadPage extends FanniePage
             $c = ($c+1)%2;
         }
         $ret .= "</table>";
-        $ret .= "<input type=submit value=\"Import Data\">";
+        $ret .= "<p><button type=submit class=\"btn btn-default\">Import Data</button></p>";
     
         fclose($fp);
         unlink("$tmp/$filename");
@@ -242,9 +243,9 @@ class WfcHtUploadPage extends FanniePage
             where c.cusp = '!!!'");
         $cuspR = $db->exec_statement($cuspQ, array($ppID));
 
-        $ret = "ADP data import complete!<br />";
+        $ret = "<p>ADP data import complete!<br />";
         $ret .= "<a href=WfcHtListPage.php>View Employees</a><br />";
-        $ret .= "<a href=WfcHtPayPeriodsPage.php>View Pay Periods</a>";
+        $ret .= "<a href=WfcHtPayPeriodsPage.php>View Pay Periods</a></p>";
     
         return $ret;
     }
@@ -255,16 +256,22 @@ class WfcHtUploadPage extends FanniePage
         echo '
 <form enctype="multipart/form-data" action="'.$_SERVER['PHP_SELF'].'" method="post">
 <input type="hidden" name="MAX_FILE_SIZE" value="2097152" />
-Pay Period: <input type=text name=start id="start" />
-<input type=text name=end id="end" /><p />
-Holiday Hours: <select name=asHoliday><option value=1>As Holiday</option><option value=0>As Hours Worked</option>
-</select><p />
+<div class="form-group">
+<label>Pay Period</label>: 
+<input type=text placeholder="Start Date" name=start id="start" class="form-control date-field" required />
+<input type=text name=end id="end" placeholder="End Date" class="form-control date-field" required />
+</div>
+<div class="form-group">
+<label>Holiday Hours</label>:
+<select class="form-control" name=asHoliday><option value=1>As Holiday</option><option value=0>As Hours Worked</option>
+</select>
+</div>
+<div class="form-group">
 Filename: <input type="file" id="file" name="upload" />
-<input type="submit" value="Upload File" />
+<button type="submit" class="btn btn-default">Upload File</button>
+</div>
 </form>
         ';
-        $this->add_onload_command("\$('#start').datepicker();\n");
-        $this->add_onload_command("\$('#end').datepicker();\n");
     }
 
     public function body_content()

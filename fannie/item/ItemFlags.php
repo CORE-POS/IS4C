@@ -31,6 +31,7 @@ class ItemFlags extends FanniePage {
     private $msgs;
 
     public $description = '[Item Flags] are extra fields that can be associated with an item.';
+    public $themed = true;
 
     function preprocess(){
         global $FANNIE_OP_DB;
@@ -102,18 +103,22 @@ class ItemFlags extends FanniePage {
             $q = $db->prepare_statement("SELECT bit_number,description FROM prodFlags ORDER BY description");
         }
         $r = $db->exec_statement($q);
+        echo '<div class="row">
+            <div class="col-sm-6">';
         echo '<b>Current Flags</b>:<br />';
-        echo '<table cellpadding="4" cellspacing="0" border="1">';
+        echo '<table class="table form-horizontal">';
         while($w = $db->fetch_row($r)){
-            if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID = 'WEFC_Toronto' ) {
-                printf('<tr><td>%d. %s <input type="text" name="desc[]" value="%s" />
+            if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' ) {
+                printf('<tr><td>%d. %s</td><td><input type="text" name="desc[]" 
+                    class="form-control" value="%s" />
                     <input type="hidden" name="mask[]" value="%d" /></td>
                     <td><input type="checkbox" name="del[]" value="%d" /></td>
                     </tr>',
                     $w['bit_number'],($w['bit_number'] <= count($excelCols))?$excelCols[$w['bit_number']]:'',$w['description'],$w['bit_number'],$w['bit_number']
                 );
             } else {
-                printf('<tr><td><input type="text" name="desc[]" value="%s" />
+                printf('<tr><td><input type="text" name="desc[]" value="%s" 
+                    class="form-control" />
                     <input type="hidden" name="mask[]" value="%d" /></td>
                     <td><input type="checkbox" name="del[]" value="%d" /></td>
                     </tr>',
@@ -122,18 +127,38 @@ class ItemFlags extends FanniePage {
             }
         }
         echo '</table>';
-        echo '<input type="submit" name="updateBtn" value="Update Descriptions" /> | ';
-        echo '<input type="submit" name="delBtn" value="Delete Selected" /> ';
+        echo '<p>';
+        echo '<button type="submit" name="updateBtn" value="1" 
+                class="btn btn-default">Update Selected</button> | ';
+        echo '<button type="submit" name="delBtn" value="1" 
+                class="btn btn-default">Delete Selected</button> ';
+        echo '</p>';
         echo '</form>';
-        echo '<hr />';
-        echo '<form action="'.$_SERVER['PHP_SELF'].'" method="post">';
-        echo '<b>New</b>: <input type="text" name="new" /> ';
-        echo '<input type="submit" name="addBtn" value="Add New Flag" />';
+        echo '</div>
+            <div class="col-sm-4 panel panel-default">
+            <div class="panel-body">';
+        echo '<form action="'.$_SERVER['PHP_SELF'].'" method="post"
+                class="form-inline">';
+        echo '<label>New</label>: <input type="text" name="new" class="form-control" /> ';
+        echo '<button type="submit" name="addBtn" value="1"
+                class="btn btn-default">Add New Flag</button>';
+        echo '</div>'; // end panel-body
+        echo '</div>'; // end col-sm-4
+        echo '</div>'; // end row
         echo '</form>';
+    }
+
+    public function helpContent()
+    {
+        return '<p>Product Flags are custom attributes that can
+            be attached to products. Each flag is a yes/no setting.
+            Most systems should support at least 30 flags. Flags
+            can add new settings that are not built-in such as
+            gluten-free or organic.</p>';
     }
 
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
 ?>

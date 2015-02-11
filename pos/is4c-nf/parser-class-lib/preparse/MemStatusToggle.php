@@ -25,8 +25,8 @@ class MemStatusToggle extends PreParser {
 	var $tfd;
 	var $remainder;
 
-	function check($str){
-		global $CORE_LOCAL;
+	function check($str)
+    {
         // Andy: theory is this shortcircuits steering
         return false;
 		if (substr($str,0,4) == "MSTG"){
@@ -35,16 +35,16 @@ class MemStatusToggle extends PreParser {
 		return False;	
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
+	function parse($str)
+    {
 		$remainder = "";
 		if (substr($str,0,4) == "MSTG"){
-			if ($CORE_LOCAL->get("memType") != 1 || $CORE_LOCAL->get("memType") != 2) {
-				$CORE_LOCAL->set("isMember", 1);
-				$CORE_LOCAL->set("memType", 1);
-				$CORE_LOCAL->set("boxMsg", "Member Status Toggled!");
+			if (CoreLocal::get("memType") != 1 || CoreLocal::get("memType") != 2) {
+				CoreLocal::set("isMember", 1);
+				CoreLocal::set("memType", 1);
+				CoreLocal::set("boxMsg", "Member Status Toggled!");
 			} else {
-				$CORE_LOCAL->set("boxMsg", "Cannot UNset a member status");
+				CoreLocal::set("boxMsg", "Cannot UNset a member status");
 			}
 		}
 		return $remainder;	

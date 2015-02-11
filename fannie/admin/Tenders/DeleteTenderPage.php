@@ -26,7 +26,8 @@ if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class DeleteTenderPage extends FanniePage {
+class DeleteTenderPage extends FanniePage 
+{
 
     protected $title = "Fannie : Tenders";
     protected $header = "Tenders";
@@ -34,6 +35,7 @@ class DeleteTenderPage extends FanniePage {
     protected $auth_classes = array('tenders');
 
     public $description = '[Delete Tender] gets rid of a tender type.';
+    public $themed = true;
 
     private $mode = 'form';
 
@@ -71,12 +73,11 @@ class DeleteTenderPage extends FanniePage {
     function form_content(){
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $ret = "<b>Be careful. Deleting a tender could make a mess.
+        $ret = "<div class=\"well\">Be careful. Deleting a tender could make a mess.
             If you run into problems, re-add the tender using
-            the same two-character code.</b>";
-        $ret .= "<br /><br />";
+            the same two-character code.</div>";
         $ret .= '<form action="DeleteTenderPage.php" method="post">';
-        $ret .= '<select name="TenderID">';
+        $ret .= '<p><select name="TenderID" class="form-control">';
         $ret .= '<option>Select a tender...</option>';
         $tender = new TendersModel($dbc);
         foreach($tender->find('TenderID') as $obj){
@@ -84,11 +85,21 @@ class DeleteTenderPage extends FanniePage {
                 $obj->TenderID(),$obj->TenderCode(),
                 $obj->TenderName());
         }
-        $ret .= "</select>";
-        $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;";
-        $ret .= '<input type="submit" value="Delete Selected Tender" />';
+        $ret .= "</select></p>";
+        $ret .= '<p><button type="submit" class="btn btn-default">Delete Selected Tender</button></p>';
+        $ret .= '<p><button type="button" class="btn btn-default" onclick="location=\'TenderEditor.php\';">Back to Tenders</button></p>';
         $ret .= "</form>";
+        $this->add_onload_command("\$('select.form-control').focus();\n");
+
         return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>Deleting a tender will not remove it from the lanes
+            until the next time tenders are synced. Deleting a tender 
+            that has been used in the past may create problems with some
+            reports on historical data where that tender was used.</p>';
     }
 }
 

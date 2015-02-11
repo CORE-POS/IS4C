@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-include('../config.php');
+include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
 }
@@ -33,6 +33,7 @@ class SiteMap extends FannieRESTfulPage
 
     public $must_authenticate = true;
     public $auth_classes = array('admin');
+    public $themed = true;
 
     public $description = '[Site Map] is a list of all known pages. It\'s very likely the page
     you\'re on right now!';
@@ -42,6 +43,12 @@ class SiteMap extends FannieRESTfulPage
         global $FANNIE_ROOT, $FANNIE_URL;
         $pages = FannieAPI::listModules('FanniePage');
         $sets = array();
+        $theme_stats = array(
+            'done' => 0,
+            'total' => 0,
+            'plugin' => 0,
+            'plugin_done' => 0,
+        );
         foreach ($pages as $p) {
             $obj = new $p();
             if (!$obj->discoverable) {
@@ -55,12 +62,31 @@ class SiteMap extends FannieRESTfulPage
             $sets[$obj->page_set][$p] = array(
                'url' => $url,
                'info' => $obj->description, 
+               'class' => $obj->themed ? 'alert-success' : 'alert-danger',
             );
+            $theme_stats['total']++;
+            if ($obj->themed) {
+                $theme_stats['done']++;
+            }
+            if (strstr($obj->page_set, 'Plugin')) {
+                $theme_stats['plugin']++;
+                if ($obj->themed) {
+                    $theme_stats['plugin_done']++;
+                }
+            }
         }
+
+        $ret = '';
+        $ret .= '<div class="alert alert-info">';
+        $ret .= sprintf('New UI completion percent: <strong>%.2f%%</strong><br />', 
+            ((float)$theme_stats['done']) / $theme_stats['total'] * 100);
+        $ret .= sprintf('Excluding plugins: <strong>%.2f%%</strong><br />', 
+            ((float)($theme_stats['done']-$theme_stats['plugin_done'])) / ($theme_stats['total'] - $theme_stats['plugin']) * 100);
+        $ret .= '</div>';
 
         $keys = array_keys($sets);
         sort($keys);
-        $ret = '<ul>';
+        $ret .= '<ul>';
         foreach ($keys as $set_name) {
             $ret .= '<li>' . $set_name;
             $ret .= '<ul>';
@@ -73,7 +99,8 @@ class SiteMap extends FannieRESTfulPage
                 if ($linked === $description) {
                     $linked .= ' (<a href="' . $url . '">Link</a>)';
                 }
-                $ret .= '<li>' . $linked . '</li>';
+                $ret .= '<li class="' . $sets[$set_name][$page_key]['class'] . '">' 
+                    . $linked . '</li>';
             }
             $ret .= '</ul>';
             $ret .= '</li>';
@@ -81,6 +108,14 @@ class SiteMap extends FannieRESTfulPage
         $ret .= '</ul>';
 
         return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>A list of all known Fannie tools and reports including those
+            provided by plugins. Pages <em>may</em> opt out of this list but the
+            vast majority do not. This is provided to ensure users can locate
+            most everything regardless of how the menus are set up.</p>';
     }
 }
 

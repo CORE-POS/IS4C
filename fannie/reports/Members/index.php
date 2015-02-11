@@ -57,8 +57,8 @@ $q = $dbc->prepare_statement("SELECT c.CardNo,
         CASE WHEN n.payments IS NULL THEN 0 ELSE n.payments END as equity
     FROM custdata AS c LEFT JOIN memDates AS m
     ON m.card_no = c.CardNo 
-    LEFT JOIN {$trans}.equity_live_balance AS n
-    ON m.card_no=n.memnum LEFT JOIN suspensions AS s
+    LEFT JOIN {$trans}.equity_history_sum AS n
+    ON m.card_no=n.card_no LEFT JOIN suspensions AS s
     ON m.card_no=s.cardno LEFT JOIN reasoncodes AS r
     ON s.reasonCode & r.mask <> 0
     WHERE c.Type <> 'TERM' AND $where

@@ -27,7 +27,7 @@ if (!class_exists('FannieAPI'))
 
 /**
 */
-class DeliInventory extends FanniePlugin {
+class DeliInventory extends \COREPOS\Fannie\API\FanniePlugin {
 
     /**
       Desired settings. These are automatically exposed

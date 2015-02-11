@@ -105,7 +105,7 @@ A horrible, horrible catch-all clutter of functions
 
 <p>
 Check whether the current member has store charge balance available. <dl compact><dt><b>Returns:</b></dt><dd>1 - Yes 0 - No</dd></dl>
-Sets current balance in $CORE_LOCAL as "balance". Sets available balance in $CORE_LOCAL as "availBal". 
+Sets current balance in session as "balance". Sets available balance in session as "availBal". 
 </div>
 </div><p>
 <a class="anchor" name="0364d8f19d34eba20a685721d780ce55"></a><!-- doxytag: member="PrehLib::checkstatus" ref="0364d8f19d34eba20a685721d780ce55" args="($num)" -->
@@ -288,7 +288,7 @@ Set member number for transaction <dl compact><dt><b>Parameters:</b></dt><dd>
 <dl compact><dt><b>Returns:</b></dt><dd>An array. See <a class="el" href="class_parser.html#0076d421db25e8eb844d0ecc093688ad">Parser::default_json()</a> for format.</dd></dl>
 This function will either assign the number to the current transaction or return a redirect request to get more input. If you want the cashier to verify member name from a list, use this function. If you want to force the number to be set immediately, use <a class="el" href="class_preh_lib.html#8069b3b2ab8043a22c2255db7c3a39c2">setMember()</a>. 
 <p>
-This is a bad idea. If the search is cancelled, these fields won't be refreshed with new data $CORE_LOCAL-&gt;set("memberID","0"); $CORE_LOCAL-&gt;set("memType",0); $CORE_LOCAL-&gt;set("percentDiscount",0); $CORE_LOCAL-&gt;set("memMsg",""); 
+This is a bad idea. If the search is cancelled, these fields won't be refreshed with new data CoreLocal::set("memberID","0"); CoreLocal::set("memType",0); CoreLocal::set("percentDiscount",0); CoreLocal::set("memMsg",""); 
 </div>
 </div><p>
 <a class="anchor" name="567cd27adb4979abc8e74f45f9be2f14"></a><!-- doxytag: member="PrehLib::omtr_ttl" ref="567cd27adb4979abc8e74f45f9be2f14" args="()" -->
@@ -373,7 +373,7 @@ Add a percent discount notification <dl compact><dt><b>Parameters:</b></dt><dd>
   </table>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>An array see <a class="el" href="class_parser.html#0076d421db25e8eb844d0ecc093688ad">Parser::default_json()</a> </dd></dl>
-<dl compact><dt><b><a class="el" href="deprecated.html#_deprecated000007">Deprecated:</a></b></dt><dd>Use discountnotify() instead. This just adds hard-coded percentages and PLUs that likely aren't applicable anywhere but the Wedge. </dd></dl>
+<dl compact><dt><b><a class="el" href="deprecated.html#_deprecated000006">Deprecated:</a></b></dt><dd>Use discountnotify() instead. This just adds hard-coded percentages and PLUs that likely aren't applicable anywhere but the Wedge. </dd></dl>
 
 </div>
 </div><p>
@@ -555,7 +555,7 @@ Calculate WIC eligible total <dl compact><dt><b>Returns:</b></dt><dd>[number] WI
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/PrehLib.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 9 Feb 2015 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

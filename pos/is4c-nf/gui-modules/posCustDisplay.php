@@ -28,21 +28,20 @@ class posCustDisplay extends BasicPage
 
 	public function body_content()
     {
-		global $CORE_LOCAL;
         echo $this->noinput_header();
 		?>
 		<div class="baseHeight">
 		<?php
 
-		if ($CORE_LOCAL->get("plainmsg") && strlen($CORE_LOCAL->get("plainmsg")) > 0) {
+		if (CoreLocal::get("plainmsg") && strlen(CoreLocal::get("plainmsg")) > 0) {
 			echo DisplayLib::printheaderb();
 			echo "<div class=\"centerOffset\">";
-			echo DisplayLib::plainmsg($CORE_LOCAL->get("plainmsg"));
+			echo DisplayLib::plainmsg(CoreLocal::get("plainmsg"));
 			echo "</div>";
 		} else {	
 			// No input and no messages, so
 			// list the items
-			if ($CORE_LOCAL->get("End") == 1) {
+			if (CoreLocal::get("End") == 1) {
 				echo DisplayLib::printReceiptfooter(true);
 			} else {
 				echo DisplayLib::lastpage(true);

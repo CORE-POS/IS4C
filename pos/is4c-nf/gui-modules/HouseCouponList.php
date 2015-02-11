@@ -28,11 +28,10 @@ class HouseCouponList extends NoInputPage
 
     function preprocess()
     {
-        global $CORE_LOCAL;
         if (isset($_REQUEST['selectlist'])) {
             if (!empty($_REQUEST['selectlist'])) {
-                $CORE_LOCAL->set('strRemembered', $_REQUEST['selectlist']);
-                $CORE_LOCAL->set('msgrepeat', 1);
+                CoreLocal::set('strRemembered', $_REQUEST['selectlist']);
+                CoreLocal::set('msgrepeat', 1);
             }
             $this->change_page($this->page_url."gui-modules/pos2.php");
 
@@ -53,9 +52,7 @@ class HouseCouponList extends NoInputPage
     
     function body_content()
     {
-        global $CORE_LOCAL;
-
-        $prefix = $CORE_LOCAL->get('houseCouponPrefix');
+        $prefix = CoreLocal::get('houseCouponPrefix');
         if ($prefix == '') {
             $prefix = '00499999';
         }

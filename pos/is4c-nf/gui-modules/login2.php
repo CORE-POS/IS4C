@@ -35,7 +35,6 @@ class login2 extends BasicPage
 
 	public function preprocess()
     {
-		global $CORE_LOCAL;
 		$this->box_css_class = 'coloredArea';
 		$this->msg = _('please enter your password');
 
@@ -63,16 +62,16 @@ class login2 extends BasicPage
 				if ($my_drawer == 0) {
 					$available = ReceiptLib::availableDrawers();	
 					if (count($available) > 0) { 
-						ReceiptLib::assignDrawer($CORE_LOCAL->get('CashierNo'),$available[0]);
+						ReceiptLib::assignDrawer(CoreLocal::get('CashierNo'),$available[0]);
 						$my_drawer = $available[0];
 					}
 				} else {
-					ReceiptLib::assignDrawer($CORE_LOCAL->get('CashierNo'),$my_drawer);
+					ReceiptLib::assignDrawer(CoreLocal::get('CashierNo'),$my_drawer);
                 }
 
                 TransRecord::addLogRecord(array(
                     'upc' => 'SIGNIN',
-                    'description' => 'Sign In Emp#' . $CORE_LOCAL->get('CashierNo'),
+                    'description' => 'Sign In Emp#' . CoreLocal::get('CashierNo'),
                 ));
 
 				/**
@@ -83,7 +82,7 @@ class login2 extends BasicPage
 				if (session_id() != '') {
 					session_write_close();
                 }
-				$kicker_class = ($CORE_LOCAL->get("kickerModule")=="") ? 'Kicker' : $CORE_LOCAL->get('kickerModule');
+				$kicker_class = (CoreLocal::get("kickerModule")=="") ? 'Kicker' : CoreLocal::get('kickerModule');
 				$kicker_object = new $kicker_class();
 				if ($kicker_object->kickOnSignIn()) {
 					ReceiptLib::drawerKick();
@@ -120,20 +119,25 @@ class login2 extends BasicPage
 
 	public function body_content()
     {
-		global $CORE_LOCAL;
 		// 18Agu12 EL Add separately for readability of source.
 		$this->add_onload_command("\$('#userPassword').focus();");
 		$this->add_onload_command("\$('#scalebox').css('display','none');");
 
 		?>
 		<div id="loginTopBar">
-			<div class="name">I S 4 C</div>
-			<div class="version">P H P &nbsp; D E V E L O P M E N T
-			&nbsp; V E R S I O N &nbsp; 2 .0 .0</div>
-			<div class="welcome coloredArea"><?php echo _("W E L C O M E"); ?></div>
+			<div class="name" style="border-radius: 4px 4px 0px 0px;">
+                I S 4 C
+            </div>
+			<div class="version">
+                P H P &nbsp; D E V E L O P M E N T
+                &nbsp; V E R S I O N &nbsp; 2 .0 .0
+            </div>
+			<div class="welcome coloredArea" style="border-radius: 0px 0px 4px 4px;">
+                <?php echo _("W E L C O M E"); ?>
+            </div>
 		</div>
 		<div id="loginCenter">
-		<div class="box <?php echo $this->box_css_class; ?>">
+		<div class="box <?php echo $this->box_css_class; ?> rounded">
 				<b><?php echo _("log in"); ?></b>
 				<form id="formlocal" name="form" method="post" autocomplete="off" 
 					action="<?php echo $_SERVER['PHP_SELF']; ?>">

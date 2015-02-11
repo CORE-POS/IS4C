@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-class ContactPref extends MemberModule {
+class ContactPref extends \COREPOS\Fannie\API\member\MemberModule {
 
     // Return a form segment to display or edit the Contact Preference.
     function showEditForm($memNum, $country="US"){
@@ -47,22 +47,23 @@ class ContactPref extends MemberModule {
         }
 
         // Compose the display/edit block.
-        $ret = "<fieldset><legend>Member Contact Preference</legend>";
-        $ret .= "<table class='MemFormTable' 
-            border='0'>";
+        $ret = "<div class=\"panel panel-default\">
+            <div class=\"panel-heading\">Member Contact Preference</div>
+            <div class=\"panel-body\">";
 
-        $ret .= "<tr><th>Preference</th>";
-
-        $ret .= '<td><select name="MemContactPref">';
-        while($infoW = $dbc->fetch_row($infoR)){
+        $ret .= '<div class="form-group form-inline">
+            <span class="label primaryBackground">Preference</span>';
+        $ret .= '<select name="MemContactPref" class="form-control">';
+        while ($infoW = $dbc->fetch_row($infoR)) {
             $ret .= sprintf("<option value=%d %s>%s</option>",
                 $infoW['pref_id'],
                 (($infoW['pref']==$infoW['pref_id'])?'selected':''),
                 $infoW['pref_description']);
         }
-        $ret .= "</select></td>";
+        $ret .= "</select></div>";
 
-        $ret .= "</tr></table></fieldset>";
+        $ret .= "</div>";
+        $ret .= "</div>";
 
         return $ret;
 

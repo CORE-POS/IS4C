@@ -136,7 +136,7 @@ class GumEmailPage extends FannieRESTfulPage
             . date('m/d/Y', mktime(0, 0, 0, GumLib::getSetting('FYendMonth'), GumLib::getSetting('FYendDay'), date('Y')))
             . ', the end of the co-op\'s fiscal year. This is just for your information -'
             . ' no action is required and you do not have to report interest income until your'
-            . ' loan is reppaid. Thank you for your support';
+            . ' loan is repaid. Thank you for your support';
 
         $info_section = 'First Name: ' . $this->custdata->FirstName() . "\n"
             . 'Last Name: ' . $this->custdata->LastName() . "\n"
@@ -194,12 +194,6 @@ class GumEmailPage extends FannieRESTfulPage
         $log->uid($uid);
         $log->messageType('Statement (' . $this->id . ')');
 
-        if (!class_exists('SMTP')) {
-            include($FANNIE_ROOT . 'src/PHPMailer/class.smtp.php');
-        }
-        if (!class_exists('PHPMailer')) {
-            include($FANNIE_ROOT . 'src/PHPMailer/class.phpmailer.php');
-        }
         $mail = new PHPMailer();
         $mail->isSMTP();
         $mail->Host = '127.0.0.1';

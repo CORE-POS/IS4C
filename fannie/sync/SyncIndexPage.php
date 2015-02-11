@@ -34,29 +34,43 @@ class SyncIndexPage extends FanniePage {
 
     protected $title = "Fannie : Sync Lane";
     protected $header = "Sync Lane Operational Tables";
+    public $themed = true;
 
     function body_content(){
         ob_start();
         ?>
-        <form action="TableSyncPage.php" method="get">
+        <form action="TableSyncPage.php" method="get" class="form">
+        <p>
+            <label>Table</label><select name="tablename" class="form-control">
+            <option value="">Select a table</option>
+            <option value="products">Products</option>
+            <option value="productUser">Extra Product Info</option>
+            <option value="custdata">Members</option>
+            <option value="memberCards">Membership Cards</option>
+            <option value="employees"><?php echo _('Cashiers'); ?></option>
+            <option value="departments">Departments</option>
+            <option value="tenders">Tenders</option>
+            </select><br /><br />
 
-        <b>Table</b>: <select name="tablename">
-        <option value="">Select a table</option>
-        <option value="products">Products</option>
-        <option value="productUser">Extra Product Info</option>
-        <option value="custdata">Members</option>
-        <option value="memberCards">Membership Cards</option>
-        <option value="employees"><?php echo _('Cashiers'); ?></option>
-        <option value="departments">Departments</option>
-        <option value="tenders">Tenders</option>
-        </select><br /><br />
-
-        <b>Other table</b>: <input type="text" name="othertable" /><br /><br />
-
-        <input type="submit" value="Send Data" />
+            <label>Other table</label><input type="text" name="othertable" class="form-control" />
+        </p>
+        <p>
+            <button type="submit" value="Send Data" class="btn btn-default">Send Data</button>
+        </p>
         </form>
         <?php
         return ob_get_clean();
+    }
+
+    public function helpContent()
+    {
+        return '<p>Send data from the server to the lanes. The sync operations
+            discards current lane-side data and completely replaces it with
+            the server\'s data.</p>
+            <p>The <em>Table</em> dropdown contains the most common options
+            but any other operational table can be sent using the <emOther table</em>
+            field.</p>
+            ';
     }
 }
 

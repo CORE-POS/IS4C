@@ -185,6 +185,29 @@ class BasicModel
     }
 
     /**
+      Create structure only if it does not exist
+      @param $db_name [string] database name
+      @return [keyed array]
+        db => database name
+        struct => table/view name
+        error => [int] error code
+        details => error details
+    */
+    public function createIfNeeded($db_name)
+    {
+        $this->fq_name = $db_name . $this->connection->sep() . $this->name;
+        $ret = array('db'=>$db_name,'struct'=>$this->name,'error'=>0,'details'=>'');
+        if (!$this->create()) {
+            $ret['error'] = 1;
+            $ret['details'] = $this->connection->error($db_name);
+            $reflect = new ReflectionClass($this);
+            $ret['query'] = $reflect->getName() . '::create()';
+        }
+
+        return $ret;
+    }
+
+    /**
       Populate instance with database values
       Requires a uniqueness constraint. Assign
       those columns before calling load().
@@ -499,8 +522,6 @@ class BasicModel
     */
     public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=False)
     {
-        global $CORE_LOCAL;
-
         if ($mode != BasicModel::NORMALIZE_MODE_CHECK && $mode != BasicModel::NORMALIZE_MODE_APPLY) {
             echo "Error: Unknown mode ($mode)\n";
             return false;
@@ -515,9 +536,9 @@ class BasicModel
         /**
 
         */
-        if ($db_name == $CORE_LOCAL->get('pDatabase')) {
+        if ($db_name == CoreLocal::get('pDatabase')) {
             $this->connection = Database::pDataConnect();
-        } else if ($db_name == $CORE_LOCAL->get('tDatabase')) {
+        } else if ($db_name == CoreLocal::get('tDatabase')) {
             $this->connection = Database::tDataConnect();
         } else {
             echo "Error: Unknown database ($db_name)";

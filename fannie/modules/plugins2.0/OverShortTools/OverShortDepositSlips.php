@@ -22,16 +22,22 @@
 *********************************************************************************/
 
 include(dirname(__FILE__).'/../../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include_once($FANNIE_ROOT.'src/fpdf/fpdf.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+if (!class_exists('FPDF')) {
+    include_once($FANNIE_ROOT.'src/fpdf/fpdf.php');
+}
 
-class OverShortDepositSlips extends FanniePage {
+class OverShortDepositSlips extends FanniePage 
+{
 
     protected $header = 'Print Deposit Slips';
     protected $title = 'Print Deposit Slips';
 
     public $page_set = 'Plugin :: Over/Shorts';
     public $description = '[Deposit Slips] generates PDF of bank-required deposit info.';
+    public $themed = true;
 
     function preprocess(){
         if (FormLib::get_form_value('startDate') !== ''){
@@ -296,32 +302,52 @@ class OverShortDepositSlips extends FanniePage {
         ob_start();
         ?>
         <form action=OverShortDepositSlips.php method=get>
-        <table>
-        <tr>
-            <th>Start</th><td><input type=text id=startDate name=startDate />
-            <td >
-            Recent Counts: <select onchange="existingDates(this.value);">
-            <option value=''>Select one...</option>
-            <?php
-            $res = $dbc->query('SELECT dateStr FROM dailyDeposit GROUP BY dateStr ORDER BY dateStr DESC');
-            $count = 0;
-            while($row = $dbc->fetch_row($res)) {
-                if ($count++ > 50) {
-                    break;
-                }
-                echo '<option>'.$row['dateStr'].'</option>';
-            }
-            ?>
-            </select>
-            </td>
-        </tr>
-        <tr><th>End</th><td><input type=text id=endDate name=endDate />
-        </table>
-        <input type=submit value="Generate slips" />
+        <div class="row">
+        <div class="col-sm-4">
+        <div class="panel panel-default">
+            <div class="panel-heading">Date Range</div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <label>Start Date</label>
+                    <input type="text" class="form-control date-field" id="startDate"
+                        name="startDate" required />
+                </div>
+                <div class="form-group">
+                    <label>End Date</label>
+                    <input type="text" class="form-control date-field" id="endDate"
+                        name="endDate" required />
+                </div>
+            </div>
+        </div>
+        </div>
+        <div class="col-sm-4">
+        <div class="panel panel-default">
+            <div class="panel-heading">Recent Counts</div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <select class="form-control" onchange="existingDates(this.value);">
+                    <option value=''>Select one...</option>
+                    <?php
+                    $res = $dbc->query('SELECT dateStr FROM dailyDeposit GROUP BY dateStr ORDER BY dateStr DESC');
+                    $count = 0;
+                    while($row = $dbc->fetch_row($res)) {
+                        if ($count++ > 50) {
+                            break;
+                        }
+                        echo '<option>'.$row['dateStr'].'</option>';
+                    }
+                    ?>
+                    </select>
+                </div>
+            </div>
+        </div>
+        </div>
+        </div> <!-- end row -->
+        <p>
+            <button type=submit class="btn btn-default">Generate slips</button>
+        </p>
         </form>
         <?php
-        $this->add_onload_command("\$('#startDate').datepicker();\n");
-        $this->add_onload_command("\$('#endDate').datepicker();\n");
 
         return ob_get_clean();
     }

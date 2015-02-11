@@ -26,11 +26,12 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class XlsBatchPage extends FannieUploadPage {
+class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
     protected $title = "Fannie -  Sales Batch";
     protected $header = "Upload Batch file";
 
     public $description = '[Excel Batch] creates a sale or price change batch from a spreadsheet.';
+    public $themed = true;
 
     protected $preview_opts = array(
         'upc_lc' => array(
@@ -154,11 +155,11 @@ class XlsBatchPage extends FannieUploadPage {
     function form_content(){
         ob_start();
         ?>
-        <blockquote style="border:solid 1px black;background:#ddd;padding:4px;">
+        <div class="well">
         Use this tool to create a sales batch from an Excel file (XLS or CSV). Uploaded
         files should have a column identifying the product, either by UPC
         or likecode, and a column with prices.
-        </blockquote>
+        </div>
         <?php
         return ob_get_clean();
     }
@@ -173,29 +174,49 @@ class XlsBatchPage extends FannieUploadPage {
         ob_start();
         ?>
         <form enctype="multipart/form-data" action="XlsBatchPage.php" id="FannieUploadForm" method="post">
-        <table cellspacing=4 cellpadding=4>
-        <tr><th>Type</th>
-        <td><select name=btype>
-        <?php foreach($batchtypes as $k=>$v) printf("<option value=%d>%s</option>",$k,$v); ?>
-        </select></td>
-        <th>Start</th><td><input type=text size=10 name=date1 id="date1" /></td></tr>
-        <tr><th>Name</th><td><input type=text size=15 name=bname /></td>
-        <th>End</th><td><input type=text size=10 name=date2 id="date2" /></td></tr>
-        <tr><td colspan=4>
-        <input type="hidden" name="MAX_FILE_SIZE" value="2097152" />
-        Filename: <input type="file" id="FannieUploadFile" name="FannieUploadFile" />
-        </td></tr>
-        <tr>
-        <th>Identifier</th><td><select name=ftype><option>UPCs</option>
-        <option>Likecodes</option></select></td>
-        <td colspan=2>
-        <input type="submit" value="Upload File" />
-        </td></tr>
-        </table>
+        <div class="row form-group form-horizontal">
+            <label class="col-sm-2 control-label">Type</label>
+            <div class="col-sm-4">
+                <select name="btype" class="form-control">
+                <?php foreach($batchtypes as $k=>$v) printf("<option value=%d>%s</option>",$k,$v); ?>
+                </select>
+            </div>
+            <label class="col-sm-2 control-label">Start Date</label>
+            <div class="col-sm-4">
+                <input type="text" name="date1" id="date1" class="form-control date-field" />
+            </div>
+        </div>
+        <div class="row form-group form-horizontal">
+            <label class="col-sm-2 control-label">Name</label>
+            <div class="col-sm-4">
+                <input type="text" name="bname" class="form-control" />
+            </div>
+            <label class="col-sm-2 control-label">End Date</label>
+            <div class="col-sm-4">
+                <input type="text" name="date2" id="date2" class="form-control date-field" />
+            </div>
+        </div>
+        <div class="row form-group form-horizontal">
+            <label class="col-sm-2 control-label">File</label>
+            <div class="col-sm-4">
+                <input type="hidden" name="MAX_FILE_SIZE" value="2097152" />
+                <input type="file" id="FannieUploadFile" name="FannieUploadFile" />
+            </div>
+        </div>
+        <div class="row form-group form-horizontal">
+            <label class="col-sm-2 control-label">Type</label>
+            <div class="col-sm-4">
+                <select name="ftype" class="form-control">
+                    <option>UPCs</option>
+                    <option>Likecodes</option>
+                </select>
+            </div>
+            <div class="col-sm-2">
+                <button type="submit" class="btn btn-default">Upload File</button>
+            </div>
+        </div>
         </form>
         <?php
-        $this->add_onload_command("\$('#date1').datepicker();\n");
-        $this->add_onload_command("\$('#date2').datepicker();\n");
 
         return ob_get_clean();
     }

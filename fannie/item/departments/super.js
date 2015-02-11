@@ -23,15 +23,15 @@
 function superSelected(){
 	var superID = $('#superselect').val();
 	if (superID == -1){
-		$('#namespan').show();
+		$('#namefield').show();
         $('#sd_email').val('');
+        $('#newname').val('');
+        $('#newname').focus();
+	} else {
+		$('#namefield').hide();
+        var name = $('#superselect :selected').text();
+        $('#newname').val(name);	
 	}
-	else {
-		$('#namespan').hide();
-	}
-
-	var name = $('#superselect :selected').text();
-	$('#newname').val(name);	
 
 	$.ajax({
 		url: 'SuperDeptEditor.php',
@@ -39,7 +39,7 @@ function superSelected(){
 		timeout: 5000,
 		data: 'sid='+superID+'&action=deptsInSuper',
 		error: function(e1,e2){
-			alert('Error loading XML document');
+            showAlert('danger', 'Unable to load department data');
 		},
 		success: function(resp){
 			$('#deptselect').html(resp);	
@@ -52,7 +52,7 @@ function superSelected(){
 		timeout: 5000,
 		data: 'sid='+superID+'&action=deptsNotInSuper',
 		error: function(){
-		alert('Error loading XML document');
+            showAlert('danger', 'Unable to load department data');
 		},
 		success: function(resp){
 			$('#deptselect2').html(resp);	
@@ -99,16 +99,28 @@ function saveData(){
 		type: 'POST',
 		timeout: 5000,
 		data: qs,
+        dataType: 'json',
 		error: function(){
-		alert('Error loading XML document');
+            showAlert('danger', 'Save failed!');
 		},
 		success: function(resp){
-			alert(resp);
-            if (sID == -1) {
-                top.location = 'SuperDeptEditor.php';
-            }
 			// reload the page so the form resets
 			// when a new super department is created
+            showAlert('success', 'Saved #' + resp.id + ' ' + resp.name);
+            if (sID == -1) {
+                var newOpt = $('<option/>').val(resp.id).html(resp.name);
+                $('#superselect').append(newOpt);
+                $('#superselect').val(resp.id);
+            }
 		}
 	});
+}
+
+function showAlert(type, msg)
+{
+    var alertbox = '<div class="alert alert-' + type + '" role="alert">';
+    alertbox += '<button type="button" class="close" data-dismiss="alert">';
+    alertbox += '<span>&times;</span></button>';
+    alertbox += msg + '</div>';
+    $('#alertarea').append(alertbox);
 }

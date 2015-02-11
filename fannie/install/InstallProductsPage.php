@@ -31,7 +31,7 @@ include_once('../classlib2.0/FannieAPI.php');
     @class InstallProductsPage
     Class for the Products install and config options
 */
-class InstallProductsPage extends InstallPage {
+class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
 
     protected $title = 'Fannie: Products Settings';
     protected $header = 'Fannie: Products Settings';
@@ -39,6 +39,7 @@ class InstallProductsPage extends InstallPage {
     public $description = "
     Class for the Products install and config options page.
     ";
+    public $themed = true;
 
     // This replaces the __construct() in the parent.
     public function __construct() {
@@ -98,10 +99,10 @@ class InstallProductsPage extends InstallPage {
         <h1 class="install"><?php echo $this->header; ?></h1>
         <?php
         if (is_writable('../config.php')){
-            echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
+            echo "<div class=\"alert alert-success\"><i>config.php</i> is writeable</div>";
         }
         else {
-            echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
+            echo "<div class=\"alert alert-danger\"><b>Error</b>: config.php is not writeable</div>";
         }
         ?>
         <hr />
@@ -120,7 +121,7 @@ class InstallProductsPage extends InstallPage {
         $mods = FannieAPI::ListModules('ItemModule',True);
         sort($mods);
         ?>
-        <table cellspacing="0" cellpadding="4" border="1">
+        <table class="table">
         <tr>
             <th>Name</th>
             <th>Position</th>
@@ -195,18 +196,18 @@ class InstallProductsPage extends InstallPage {
         $default = array('seq' => 0, 'show' => 0, 'expand' => 0);
         $opts = array('No', 'Yes', 'Auto');
         foreach ($mods as $module) {
-            $css = isset($FANNIE_PRODUCT_MODULES[$module]) ? 'class="hilite"' : '';
+            $css = isset($FANNIE_PRODUCT_MODULES[$module]) ? 'class="info"' : '';
             printf('<tr %s><td>%s<input type="hidden" name="_pm[]" value="%s" /></td>', $css, $module, $module);
             $params = isset($FANNIE_PRODUCT_MODULES[$module]) ? $FANNIE_PRODUCT_MODULES[$module] : $default;
-            printf('<td><input type="text" size="3" name="_pmSeq[]" value="%d" /></td>', $params['seq']);
-            echo '<td><select name="_pmShow[]">';
+            printf('<td><input type="number" class="form-control" name="_pmSeq[]" value="%d" /></td>', $params['seq']);
+            echo '<td><select name="_pmShow[]" class="form-control">';
             foreach ($opts as $id => $label) {
                 printf('<option %s value="%d">%s</option>',
                     $id == $params['show'] ? 'selected' : '',
                     $id, $label);
             }
             echo '</select></td>';
-            echo '<td><select name="_pmExpand[]">';
+            echo '<td><select name="_pmExpand[]" class="form-control">';
             foreach ($opts as $id => $label) {
                 printf('<option %s value="%d">%s</option>',
                     $id == $params['expand'] ? 'selected' : '',
@@ -226,40 +227,26 @@ class InstallProductsPage extends InstallPage {
         confset('FANNIE_PRODUCT_MODULES', $saveStr);
         ?>
         </table>
-        <br />
         <hr />
-        Default Shelf Tag Layout
-        <select name=FANNIE_DEFAULT_PDF>
+        <label>Default Shelf Tag Layout</label>
         <?php
-        if (!isset($FANNIE_DEFAULT_PDF)) $FANNIE_DEFAULT_PDF = 'Fannie Standard';
-        if (isset($_REQUEST['FANNIE_DEFAULT_PDF'])) $FANNIE_DEFAULT_PDF = $_REQUEST['FANNIE_DEFAULT_PDF'];
-        if (file_exists($FANNIE_ROOT.'admin/labels/scan_layouts.php')){
+        $layouts = 'No Layouts Found!';
+        if (file_exists($FANNIE_ROOT.'admin/labels/scan_layouts.php') && !function_exists('scan_layouts')){
             include($FANNIE_ROOT.'admin/labels/scan_layouts.php');
-            foreach(scan_layouts() as $l){
-                if ($l == $FANNIE_DEFAULT_PDF)
-                    echo "<option selected>$l</option>";
-                else
-                    echo "<option>$l</option>";
-            }
+            $layouts = scan_layouts();
         }
-        else {
-            echo "<option>No layouts found!</option>";
-        }
-        confset('FANNIE_DEFAULT_PDF',"'$FANNIE_DEFAULT_PDF'");
+        echo installSelectField('FANNIE_DEFAULT_PDF', $FANNIE_DEFAULT_PDF, $layouts, 'Fannie Standard');
         ?>
-        </select>
 
         <hr />
         <h4 class="install">Product Editing</h4>
         <p class='ichunk' style="margin:0.4em 0em 0.4em 0em;"><b>Compose Product Description</b>: 
         <?php
-        if (!isset($FANNIE_COMPOSE_PRODUCT_DESCRIPTION)) $FANNIE_COMPOSE_PRODUCT_DESCRIPTION = 0;
-        if (isset($_REQUEST['FANNIE_COMPOSE_PRODUCT_DESCRIPTION'])) $FANNIE_COMPOSE_PRODUCT_DESCRIPTION = $_REQUEST['FANNIE_COMPOSE_PRODUCT_DESCRIPTION'];
-        confset('FANNIE_COMPOSE_PRODUCT_DESCRIPTION',"$FANNIE_COMPOSE_PRODUCT_DESCRIPTION");
-        echo "<input type=text name=FANNIE_COMPOSE_PRODUCT_DESCRIPTION value=\"$FANNIE_COMPOSE_PRODUCT_DESCRIPTION\" size=1 />";
+        echo installSelectField('FANNIE_COMPOSE_PRODUCT_DESCRIPTION', $FANNIE_COMPOSE_PRODUCT_DESCRIPTION,
+                    array(1 => 'Yes', 0 => 'No'), 0);
         ?>
-        <br />If 0 products.description, which appears on the receipt, will be used as-is.
-        <br />If 1 it will be shortened enough hold a "package" description made by
+        <br />If No products.description, which appears on the receipt, will be used as-is.
+        <br />If Yes it will be shortened enough hold a "package" description made by
         concatenating products.size and products.unitofmeasure so that the whole
         string is still 30 or less characters:
         <br /> "Eden Seville Orange Marma 500g"
@@ -267,19 +254,19 @@ class InstallProductsPage extends InstallPage {
 
         <p class='ichunk' style="margin:0.0em 0em 0.4em 0em;"><b>Compose Long Product Description</b>: 
         <?php
-        if (!isset($FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION)) $FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION = 0;
-        if (isset($_REQUEST['FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION'])) $FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION = $_REQUEST['FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION'];
-        confset('FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION',"$FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION");
-        echo "<input type=text name=FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION value=\"$FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION\" size=1 />";
+        echo installSelectField('FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION', $FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION,
+                    array(1 => 'Yes', 0 => 'No'), 0);
         ?>
-        <br />If 0 productUser.description, which may be used in Product Verification, will be used as-is.
-        <br />If 1 productUser.brand will be prepended and a "package" description made by
+        <br />If No productUser.description, which may be used in Product Verification, will be used as-is.
+        <br />If Yes productUser.brand will be prepended and a "package" description made by
         concatenating products.size and products.unitofmeasure will be appended:
         <br /> "EDEN | Marmalade, Orange, Seville, Rough-Cut | 500g"<br />
         </p>
 
         <hr />
-        <input type=submit value="Re-run" />
+        <p>
+            <button type="submit" class="btn btn-default">Save Configuration</button>
+        </p>
         </form>
 
         <?php

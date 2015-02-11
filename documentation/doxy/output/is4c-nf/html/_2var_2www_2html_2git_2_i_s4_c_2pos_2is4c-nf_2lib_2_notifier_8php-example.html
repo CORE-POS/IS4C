@@ -24,15 +24,14 @@
     </li>
   </ul></div>
 <h1>/var/www/html/git/IS4C/pos/is4c-nf/lib/Notifier.php</h1>Show current member IOU balance<p>
-class MemBalanceNotifier extends <a class="el" href="class_notifier.html">Notifier</a> { public function draw(){ global $CORE_LOCAL;<p>
-if ($CORE_LOCAL-&gt;get('memberID') == 0 || $CORE_LOCAL-&gt;get('memberID') == $CORE_LOCAL-&gt;get('defaultNonMem')) { return ''; }<p>
+class MemBalanceNotifier extends <a class="el" href="class_notifier.html">Notifier</a> { public function draw() { if (CoreLocal::get('memberID') == 0 || CoreLocal::get('memberID') == CoreLocal::get('defaultNonMem')) { return ''; }<p>
 $db = <a class="el" href="class_database.html#8776ef4ef32237e5f0150d91314170f4">Database::pDataConnect()</a>;<p>
-$query = $db-&gt;prepare_statement('SELECT Balance FROM custdata WHERE CardNo=?'); $result = $db-&gt;exec_statement($query, array($CORE_LOCAL-&gt;get('memberID')));<p>
+$query = $db-&gt;prepare_statement('SELECT Balance FROM custdata WHERE CardNo=?'); $result = $db-&gt;exec_statement($query, array(CoreLocal::get('memberID')));<p>
 non-valid member number apparently if ($db-&gt;num_rows($result) == 0) { return ''; }<p>
 $row = $db-&gt;fetch_row($result);<p>
 return sprintf('<div style="border:1px solid black;">Balance $%.2f</div>', $row['Balance']);<p>
 } }<p>
-<div class="fragment"><pre class="fragment"></pre></div> <hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - IS4C by&nbsp;
+<div class="fragment"><pre class="fragment"></pre></div> <hr size="1"><address style="align: right;"><small>Generated on 9 Feb 2015 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

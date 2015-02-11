@@ -25,7 +25,7 @@ include(dirname(__FILE__).'/../../../config.php');
 if(!class_exists("FannieAPI")) include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 if(!class_exists("CalendarPluginDB")) include(dirname(__FILE__).'/CalendarPluginDB.php');
 
-class CalendarAjax extends FannieWebService {
+class CalendarAjax extends \COREPOS\Fannie\API\webservices\FannieWebService {
 
     public $type = 'backtick';
 
@@ -70,6 +70,11 @@ class CalendarAjax extends FannieWebService {
                         $event->save();
                     }
                 }
+
+                $calendar = new CalendarsModel($db);
+                $calendar->calendarID($calID);
+                $calendar->modified(1);
+                $calendar->save();
                 break;
             case 'monthview_save':
                 $date = FormLib::get_form_value('date');
@@ -99,6 +104,11 @@ class CalendarAjax extends FannieWebService {
                             AND uid=?");
                     $db->exec_statement($upP,array($text,$id,$date,$uid));
                 }
+
+                $calendar = new CalendarsModel($db);
+                $calendar->calendarID($id);
+                $calendar->modified(1);
+                $calendar->save();
                 break;
             case 'createCalendar':
                 $name = FormLib::get_form_value('name');

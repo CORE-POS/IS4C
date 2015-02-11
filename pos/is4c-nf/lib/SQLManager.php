@@ -80,6 +80,7 @@ class SQLManager
     public $default_db;
 
     private $TYPE_MYSQL = 'MYSQL';
+    private $TYPE_MYSQLI = 'MYSQLI';
     private $TYPE_MSSQL = 'MSSQL'; 
     private $TYPE_PGSQL = 'PGSQL';
 
@@ -256,6 +257,9 @@ class SQLManager
         if ($which_connection == '') {
             $which_connection=$this->default_db;
         }
+        if (!isset($this->db_types[$which_connection])) {
+            return false;
+        }
         $result = false;
         switch($this->db_types[$which_connection]) {
             case $this->TYPE_MYSQL:
@@ -399,7 +403,13 @@ class SQLManager
                     $query .= $p;
                     if (count($args) > 0) {
                         $val = array_shift($args);
-                        $query .= is_numeric($val) ? $val : "'".$this->escape($val, $which_connection)."'";
+                        // a numeric value w/ leading zeroes needs to be delimited
+                        // as a string or mysql drops the leading zeroes
+                        if (!is_numeric($val) || (strlen($val)>0 && $val[0] == '0')) {
+                            $query .= "'" . $this->escape($val, $which_connection) . "'";
+                        } else {
+                            $query .= $val;
+                        }
                     }
                 }
                 return $this->query($query, $which_connection);
@@ -441,11 +451,11 @@ class SQLManager
         }
         switch($this->db_types[$which_connection]) {
             case $this->TYPE_MYSQL:
-                return mysql_num_rows($result_object);
+                return $result_object === false ? 0 : mysql_num_rows($result_object);
             case $this->TYPE_MSSQL:
-                return mssql_num_rows($result_object);
+                return $result_object === false ? 0 : mssql_num_rows($result_object);
             case $this->TYPE_PGSQL:
-                return pg_num_rows($result_object);
+                return $result_object === false ? 0 : pg_num_rows($result_object);
             case $this->TYPE_PDOMY:
             case $this->TYPE_PDOMS:
             case $this->TYPE_PDOPG:
@@ -947,7 +957,12 @@ class SQLManager
         switch($this->db_types[$which_connection]) {
             case $this->TYPE_PDOMY:
             case $this->TYPE_MYSQL:
-                $result = $this->query("SHOW TABLES FROM $which_connection 
+                if (strstr($table_name, '.')) {
+                    list($schema, $table_name) = explode('.', $table_name, 2);
+                } else {
+                    $schema = $which_connection;
+                }
+                $result = $this->query("SHOW TABLES FROM $schema 
                             LIKE '$table_name'",$which_connection);
                 if ($this->num_rows($result) > 0) {
                     return true;
@@ -1431,6 +1446,11 @@ class SQLManager
         }
 
         return $str;
+    }
+
+    public function identifierEscape($str, $which_connection='')
+    {
+        return $this->identifier_escape($str, $which_connection);
     }
 
     public function identifier_escape($str, $which_connection='')

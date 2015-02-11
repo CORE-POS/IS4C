@@ -30,6 +30,15 @@ include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 */
 class SigImage 
 {
+    public function setConfig()
+    {
+    }
+
+    public function setLogger()
+    {
+    }
+
+
     public function draw_page()
     {
         include(dirname(__FILE__).'/../../config.php');

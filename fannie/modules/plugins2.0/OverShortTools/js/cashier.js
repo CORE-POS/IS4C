@@ -1,7 +1,6 @@
 function loadCashier(){
 	var data = 'action=loadCashier';
-	data += '&empno='+$('#empno').val();
-	data += '&date='+$('#date').val();
+    data += '&' + $('#osForm').serialize();
 
 	$.ajax({
 		url: 'OverShortCashierPage.php',

@@ -33,6 +33,7 @@ class CwLoadDataPage extends FanniePage {
     public $page_set = 'Plugin :: Core Warehouse';
     public $description = '[Core Warehouse Load Data] pull historical transaction data into
     the warehouse storage tables.';
+    public $themed = true;
 
     function preprocess(){
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_ARCHIVE_DB;
@@ -68,8 +69,9 @@ class CwLoadDataPage extends FanniePage {
         ob_start();
         ?>
         <form action="CwLoadDataPage.php" method="post">
-        <p>
-        <b>Table</b>: <select name="model">
+        <div class="form-group form-inline">
+        <label>Table</label>
+        <select name="model" class="form-control">
         <?php 
         foreach($this->getModels() as $file){
             printf('<option>%s</option>',
@@ -77,21 +79,27 @@ class CwLoadDataPage extends FanniePage {
         }
         ?>
         </select>
-        </p>
-        <p>
-        <select name="month">
+        </div>
+        <div class="form-group form-inline">
+            <label>Month</label>
+        <select name="month" class="form-control">
         <?php for ($i=1;$i<=12;$i++){
             printf('<option value="%d">%s</option>',
                 $i,date('F',mktime(0,0,0,$i,1)));
         } ?>
         </select>
-        <input type="text" size=5" name="year" value="<?php echo date('Y'); ?>" />
+        <input type="number" class="form-control" name="year" 
+            required min="1900" max="2999" step="1"
+            value="<?php echo date('Y'); ?>" />
+        </div>
+        <p>
+            <button type="submit" class="btn btn-default">Reoad Data</button>
         </p>
-        <input type="submit" value="Reload Data" />
         </form>
-        <hr />
+        <div class="well">
         You can use this page as a command line tool, too. It's a better option if
         there's <b>lots</b> of data to deal with.
+        </div>
         <?php
         return ob_get_clean();
     }

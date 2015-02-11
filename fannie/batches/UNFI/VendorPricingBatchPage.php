@@ -26,21 +26,23 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class VendorPricingBatchPage extends FanniePage {
+class VendorPricingBatchPage extends FanniePage 
+{
     protected $title = "Fannie - Create Price Change Batch";
     protected $header = "Create Price Change Batch";
 
     public $description = '[Vendor Price Change] creates a price change batch for a given
     vendor and edits it based on catalog cost information.';
+    public $themed = true;
 
     private $mode = 'start';
 
-    function preprocess(){
+    function preprocess()
+    {
         global $FANNIE_URL;
 
         if (FormLib::get_form_value('vid') !== ''){
             $this->mode = 'edit';
-            $this->window_dressing = False;
             $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
         }
 
@@ -151,17 +153,19 @@ function reprice(upc){
     var elem = $('#row'+upc).find('.srp');
     var srp = elem.html();
 
-    var content = "<input type=\"text\" id=\"newprice"+upc+"\" value=\""+srp+"\" size=\"4\" />";
-    var content2 = "<input type=\"submit\" value=\"Save\" onclick=\"saveprice('"+upc+"');\" />";
+    var content = "<div class=\"form-inline input-group\"><span class=\"input-group-addon\">$</span>";
+    content += "<input type=\"text\" id=\"newprice"+upc+"\" value=\""+srp+"\" class=\"form-control\" size=4 /></div>";
+    var content2 = "<button type=\"button\" onclick=\"saveprice('"+upc+"');\" class=\"btn btn-default\">Save</button>";
     elem.html(content);
     $('#row'+upc).find('.dmargin').html(content2);
-    $('#newprice'+upc).focus();
+    $('#newprice'+upc).focus().select();
 }
 
 function saveprice(upc){
     var srp = parseFloat($('#newprice'+upc).val());
     var cost = parseFloat($('#row'+upc).find('.cost').html());
-    var newmargin = ((srp - cost) / srp) * 100;
+    var shipping = parseFloat($('#row'+upc).find('.shipping').html()) / 100.00;
+    var newmargin = ((srp - ((1+shipping)*cost)) / srp) * 100;
     newmargin = Math.round(newmargin*100)/100;
 
     $('#row'+upc).find('.srp').html(srp);
@@ -193,11 +197,11 @@ function saveprice(upc){
             $r = $dbc->exec_statement($p,array($superID));
             $sn = array_pop($dbc->fetch_row($r));
         }
-        $p = $dbc->prepare_statement("SELECT vendorName FROM vendors WHERE vendorID=?");
-        $r = $dbc->exec_statement($p,array($vendorID));
-        $vn = array_pop($dbc->fetch_row($r));
+        $vendor = new VendorsModel($dbc);
+        $vendor->vendorID($vendorID);
+        $vendor->load();
 
-        $batchName = $sn." ".$vn." PC ".date('m/d/y');
+        $batchName = $sn." ".$vendor->vendorName()." PC ".date('m/d/y');
 
         /* find a price change batch type */
         $typeP = $dbc->prepare_statement('SELECT MIN(batchTypeID) FROM batchType WHERE discType=0');
@@ -237,48 +241,47 @@ function saveprice(upc){
         $br = $dbc->exec_statement($bq,array($batchID));
         while($bw = $dbc->fetch_row($br)) $batchUPCs[$bw[0]] = True;
 
-        $query = "SELECT p.upc,p.description,v.cost,p.normal_price,
-            (p.normal_price - v.cost)/p.normal_price AS current_margin,
+        $query = "SELECT p.upc,
+            p.description,
+            v.cost,
+            b.shippingMarkup,
+            p.normal_price,
+            (p.normal_price - ((1+b.shippingMarkup)*v.cost))
+                / p.normal_price AS current_margin,
             s.srp,
-            (s.srp - v.cost)/s.srp AS desired_margin,
-            v.vendorDept,x.variable_pricing
-            FROM products AS p INNER JOIN vendorItems AS v
-            ON p.upc=v.upc AND v.vendorID=?
-            INNER JOIN vendorSRPs AS s ON
-            v.upc=s.upc AND v.vendorID=s.vendorID
-            INNER JOIN vendors as b ON v.vendorID=b.vendorID
-            LEFT JOIN prodExtra AS x on p.upc=x.upc ";
+            (s.srp - ((1+b.shippingMarkup)*v.cost))
+                / s.srp AS desired_margin,
+            v.vendorDept,
+            x.variable_pricing
+            FROM products AS p 
+                INNER JOIN vendorItems AS v ON p.upc=v.upc AND v.vendorID=?
+                INNER JOIN vendorSRPs AS s ON v.upc=s.upc AND v.vendorID=s.vendorID
+                INNER JOIN vendors as b ON v.vendorID=b.vendorID
+                LEFT JOIN prodExtra AS x on p.upc=x.upc ";
         $args = array($vendorID);
         if ($superID != 99){
             $query .= " LEFT JOIN MasterSuperDepts AS m
                 ON p.department=m.dept_ID ";
         }
         $query .= "WHERE v.cost > 0 ";
-        if ($superID != 99){
+        if ($superID != 99) {
             $query .= " AND m.superID=? ";
             $args[] = $superID;
         }
-        if ($filter === False)
+        if ($filter === false) {
             $query .= " AND p.normal_price <> s.srp ";
-
-        // use distributor field from price change page
-        // as "preferred vendor". default is UNFI
-        if ($vn != "UNFI"){
-            $query .= " AND x.distributor = ? ";
-            $args[] = $vn;
         }
-        else 
-            $query .= " AND (x.distributor='UNFI' or x.distributor <> b.vendorName) ";
 
         $query .= " ORDER BY p.upc";
 
         $prep = $dbc->prepare_statement($query);
         $result = $dbc->exec_statement($prep,$args);
 
-        $ret .= "<table cellspacing=0 cellpadding=4 border=0>";
-        $ret .= "<tr><td colspan=3>&nbsp;</td><th colspan=2>Current</th>
+        $ret .= "<table class=\"table\">";
+        $ret .= "<tr><td colspan=3>&nbsp;</td><th colspan=3>Current</th>
             <th colspan=2>Vendor</th></tr>";
         $ret .= "<tr><th>UPC</th><th>Our Description</th><th>Cost</th>
+            <th>Shipping</th>
             <th>Price</th><th>Margin</th><th>SRP</th>
             <th>Margin</th><th>Cat</th><th>Var</th>
             <th>Batch</th></tr>";
@@ -292,6 +295,7 @@ function saveprice(upc){
                 <td class=\"sub\">%s</td>
                 <td class=\"sub\">%s</td>
                 <td class=\"sub cost\">%.3f</td>
+                <td class=\"sub shipping\">%.2f%%</td>
                 <td class=\"sub price\">%.2f</td>
                 <td class=\"sub cmargin\">%.2f%%</td>
                 <td onclick=\"reprice('%s');\" class=\"sub srp\">%.2f</td>
@@ -305,6 +309,7 @@ function saveprice(upc){
                 $row['upc'],
                 $row['description'],
                 $row['cost'],
+                $row['shippingMarkup']*100,
                 $row['normal_price'],
                 100*$row['current_margin'],
                 $row['upc'],
@@ -322,7 +327,8 @@ function saveprice(upc){
         return $ret;
     }
 
-    function start_content(){
+    function start_content()
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
@@ -334,7 +340,7 @@ function saveprice(upc){
         while($row = $dbc->fetch_row($res))
             $opts .= "<option value=$row[0]>$row[1]</option>";
 
-        $p = $dbc->prepare_statement("SELECT vendorID,vendorName FROM vendors");
+        $p = $dbc->prepare_statement("SELECT vendorID,vendorName FROM vendors ORDER BY vendorName");
         $res = $dbc->exec_statement($p);
         $vopts = "";
         while($w = $dbc->fetch_row($res))
@@ -342,27 +348,42 @@ function saveprice(upc){
 
         ob_start();
         ?>
-        Select a vendor &amp; a department:
-        <form action=VendorPricingBatchPage.php method=post>
-        <select name=vid>
+        <form action=VendorPricingBatchPage.php method="get">
+        <label>Select a Vendor</label>
+        <select name=vid class="form-control">
         <?php echo $vopts; ?>
         </select>
-        <br />
-        <select name=super>
+        <label>and a Super Department</label>
+        <select name=super class="form-control">
         <?php echo $opts; ?>
         </select>
-        <br>
-        Show all items <select name=filter>
+        <label>Show all items</label>
+        <select name=filter class="form-control">
         <option>No</option>
         <option>Yes</option>
         </select>
         <br />
-        <input type=submit value=Continue name="continueBtn" />
+        <p>
+        <button type=submit class="btn btn-default">Continue</button>
+        </p>
         </form>
         <?php
 
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>Review products from the vendor with current vendor cost,
+            retail price, and margin information. The tool creates a price
+            change batch in the background. It will add items to this batch
+            and automatically create shelf tags.</p>
+            <p>The default <em>Show all items</em> setting, No, omits items
+            whose current retail price is identical to the margin-based
+            suggested retail price.</p>
+            ';
+    }
+
 
 }
 

@@ -30,9 +30,10 @@ class ReprintReceiptPage extends FanniePage
 {
 
     protected $title = 'Fannie :: Lookup Receipt';
-    protected $header = 'Lookup Receipt';
+    protected $header = 'Receipt Search - Fill in any information available';
 
     public $description  = '[Lookup Receipt] finds a POS transaction.';
+    public $themed = true;
 
     private $results = '';
 
@@ -152,14 +153,16 @@ class ReprintReceiptPage extends FanniePage
                 return false;
             } else {
                 $this->results = "<b>Matching receipts</b>:<br />";
+                $this->results .= '<ul>';
                 while ($row = $dbc->fetch_row($result)) {
                     $year = $row[0];
                     $month = $row[1];
                     $day = $row[2];
                     $trans_num = $row[3].'-'.$row[4].'-'.$row[5];
-                    $this->results .= "<a href=RenderReceiptPage.php?year=$year&month=$month&day=$day&receipt=$trans_num>";
-                    $this->results .= "$year-$month-$day $trans_num</a><br />";
+                    $this->results .= "<li><a href=RenderReceiptPage.php?year=$year&month=$month&day=$day&receipt=$trans_num>";
+                    $this->results .= "$year-$month-$day $trans_num</a></li>";
                 }
+                $this->results .= '</ul>';
             }
         }
 
@@ -180,6 +183,11 @@ class ReprintReceiptPage extends FanniePage
     function body_content()
     {
         if (!empty($this->results)) {
+            $this->results .= '
+                <p>
+                    <button type="button" class="btn btn-default"
+                        onclick="location=\'ReprintReceiptPage.php\';">New Search</button>
+                </p>';
             return $this->results;
         } else {
             return $this->form_content();
@@ -199,24 +207,38 @@ class ReprintReceiptPage extends FanniePage
         ob_start();
         ?>
 <form action=ReprintReceiptPage.php method=get>
-Receipt Search - Fill in any information available
-<table id=mytable cellspacing=4 cellpadding=0>
-<tr>
-    <th>Date*</th><td colspan=2><input type=text name=date size=10 id="date" />
-        <input type=text name=date2 size=10 id="date2" /></td>
-    <th>Receipt #</th><td><input type=text name=trans_num size=6 /></td>
-</tr>
-<tr>
-    <th>Member #</th><td><input type=text name=card_no size=6 /></td>
-    <th>Cashier #</th><td><input type=text name=emp_no size=6 /></td>
-    <th>Lane #</th><td><input type=text name=register_no size=6 /></td>
-</tr>
-<tr>
-    <th>Refund</th><td><input type="checkbox" name="is_refund" value="1" /></td>
-    <th>Mem Discount</th><td><input type="checkbox" name="mem_discount" value="1" /></td>
-</tr>
-<tr>
-    <th>Tender type</th><td colspan=2><select name=trans_subtype>
+<div class="container"> 
+<div class="row form-group form-inline">
+    <label>Date*</label>
+    <input type="text" name="date" class="form-control date-field" id="date"
+        placeholder="Date" />
+    <input type="text" name="date2" class="form-control date-field" id="date2"
+        placeholder="2nd Date (optional)" />
+    <label>Receipt #</label>
+    <input type="text" name="trans_num" class="form-control" />
+</div>
+<div class="row form-group form-inline">
+    <label>Member #</label>
+    <input type="text" name="card_no" class="form-control" />
+    <label>Cashier #</label>
+    <input type="text" name="emp_no" class="form-control" />
+    <label>Lane #</label>
+    <input type="text" name="register_no" class="form-control" />
+</div>
+<div class="row form-group form-inline">
+    <label>
+        Refund
+        <input type="checkbox" class="checkbox-inline" name="is_refund" value="1" />
+    </label>
+    &nbsp;
+    <label>
+        Mem Discount
+        <input type="checkbox" class="checkbox-inline" name="mem_discount" value="1" />
+    </label>
+</div>
+<div class="row form-group form-inline">
+    <label>Tender Type</label>
+    <select name="trans_subtype" class="form-control">
         <option value="">Select one...</option>
         <?php
         $numsQ = $dbc->prepare_statement("SELECT TenderCode,TenderName FROM tenders 
@@ -226,28 +248,48 @@ Receipt Search - Fill in any information available
             printf("<option value=%s>%s</option>",$numsW[0],$numsW[1]); 
         }
         ?>
-        </select></td>
-    <th colspan=2>Tender amount</th><td><input type=text name=tenderTotal size=6 /></td>
-</tr>
-<tr>
-    <th>Department</th><td colspan=2><select name=department><?php echo $depts ?></select></td>
-    <td colspan=2><input name=submit type=submit value="Find recipt(s)" /></td>
-</tr>
-
-</table>
-<i>* If no date is given, all matching receipts from the past 15 days will be returned</i><br />
-<b>Tips</b>:<br />
-<ul>
-<li>A date and a receipt number is sufficient to find any receipt</li>
-<li>If you have a receipt number, you don't need to specify a lane or cashier number</li>
-<li>ALL fields are optional. You can specify a tender type without an amount (or vice versa)</li>
-</ul>
+    </select>
+    <label>Tender Amount</label>
+    <div class="input-group">
+        <span class="input-group-addon">$</span>
+        <input type="text" name="tenderTotal" class="form-control" />
+    </div>
+</div>
+<div class="row form-group form-inline">
+    <label>Department</label>
+    <select name="department" class="form-control">
+        <?php echo $depts; ?>
+    </select>
+    <button type="submit" name="submit" value="1" 
+        class="btn btn-default">Find Receipts</button>
+</div>
+</div>
+<div class="well">
+    <b>Tips</b>:<br />
+    <ul>
+        <li>If no date is given, all matching receipts from the past 15 days will be returned</li>
+        <li>A date and a receipt number is sufficient to find any receipt</li>
+        <li>If you have a receipt number, you don't need to specify a lane or cashier number</li>
+        <li>ALL fields are optional. You can specify a tender type without an amount (or vice versa)</li>
+    </ul>
+</div>
 </form>
         <?php
-        $this->add_onload_command("\$('#date').datepicker();\n");
-        $this->add_onload_command("\$('#date2').datepicker();\n");
 
         return ob_get_clean();
+    }
+
+    public function helpContent()
+    {
+        return '<p>Find a receipt from a previous transaction. All fields are theoretically optional
+            but that will give a very long list of transactions. Fill in a couple values to narrow
+            down the list.</p>
+            <ul>
+                <li>If no date is given, all matching receipts from the past 15 days will be returned</li>
+                <li>A date and a receipt number is sufficient to find any receipt</li>
+                <li>If you have a receipt number, you don\'t need to specify a lane or cashier number</li>
+                <li>ALL fields are optional. You can specify a tender type without an amount (or vice versa)</li>
+            </ul>';
     }
 }
 

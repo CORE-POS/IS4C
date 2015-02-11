@@ -33,7 +33,7 @@ function deptchange(){
 		timeout: 5000,
 		data: 'did='+dID+'&action=deptDisplay',
 		error: function(){
-		alert('Error loading XML document');
+            showBootstrapAlert('#deptdiv', 'danger', 'Error loading department');
 		},
 		success: function(resp){
 			$('#infodiv').html(resp);
@@ -56,15 +56,13 @@ function deptSave(){
 		data: qs,
         dataType: 'json',
 		error: function(){
-		alert('Error loading XML document');
+            showBootstrapAlert('#deptdiv', 'danger', 'Error saving department');
 		},
 		success: function(resp){
             if (resp.did && resp.msg) {
-                alert(resp.msg);
-                location = 'DepartmentEditor.php?did='+resp.did;
+                showBootstrapAlert('#deptdiv', 'success', resp.msg);
             } else {
-                alert('Error saving department');
-                console.log(resp);
+                showBootstrapAlert('#deptdiv', 'danger', 'Error saving department');
             }
 		}
 	});

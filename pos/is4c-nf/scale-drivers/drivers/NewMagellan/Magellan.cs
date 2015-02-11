@@ -22,7 +22,7 @@
 
 /*************************************************************
  * Magellan
- * 	Main app. Starts all requested Serial Port Handlers
+ *     Main app. Starts all requested Serial Port Handlers
  * and monitors UDP for messages
  *
  * Note that exit won't work cleanly if a SerialPortHandler
@@ -39,64 +39,65 @@ using SPH;
 
 public class Magellan : DelegateForm {
 
-	private SerialPortHandler[] sph;
-	private UDPMsgBox u;
+    private SerialPortHandler[] sph;
+    private UDPMsgBox u;
 
-	// read deisred modules from config file
-	public Magellan(int verbosity){
-		ArrayList conf = ReadConfig();
-		sph = new SerialPortHandler[conf.Count];
-		for(int i = 0; i < conf.Count; i++){
-			string port = ((string[])conf[i])[0];
-			string module = ((string[])conf[i])[1];
-			try {
-				Type t = Type.GetType("SPH."+module+", SPH, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null");
+    // read deisred modules from config file
+    public Magellan(int verbosity){
+        ArrayList conf = ReadConfig();
+        sph = new SerialPortHandler[conf.Count];
+        for(int i = 0; i < conf.Count; i++){
+            string port = ((string[])conf[i])[0];
+            string module = ((string[])conf[i])[1];
+            try {
+                Type t = Type.GetType("SPH."+module+", SPH, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null");
 
-				sph[i] = (SerialPortHandler)Activator.CreateInstance(t, new Object[]{ port });
-				sph[i].SetParent(this);
-				sph[i].SetVerbose(verbosity);
-			}
-			catch (Exception){
-				System.Console.WriteLine("Warning: could not initialize "+port);
-				System.Console.WriteLine("Ensure the device is connected and you have permission to access it.");
-				sph[i] = null;
-			}
-		}
-		FinishInit();
-	}
+                sph[i] = (SerialPortHandler)Activator.CreateInstance(t, new Object[]{ port });
+                sph[i].SetParent(this);
+                sph[i].SetVerbose(verbosity);
+            }
+            catch (Exception ex){
+                System.Console.WriteLine(ex);
+                System.Console.WriteLine("Warning: could not initialize "+port);
+                System.Console.WriteLine("Ensure the device is connected and you have permission to access it.");
+                sph[i] = null;
+            }
+        }
+        FinishInit();
+    }
 
-	// alternate constructor for specifying
-	// desired modules at compile-time
-	public Magellan(SerialPortHandler[] args){
-		this.sph = args;
-		FinishInit();
-	}
+    // alternate constructor for specifying
+    // desired modules at compile-time
+    public Magellan(SerialPortHandler[] args){
+        this.sph = args;
+        FinishInit();
+    }
 
-	private void FinishInit(){
-		MonitorSerialPorts();
+    private void FinishInit(){
+        MonitorSerialPorts();
 
-		u = new UDPMsgBox(9450);
-		u.SetParent(this);
-		u.My_Thread.Start();
-	}
+        u = new UDPMsgBox(9450);
+        u.SetParent(this);
+        u.My_Thread.Start();
+    }
 
-	private void MonitorSerialPorts(){
-		foreach(SerialPortHandler s in sph){
-			if (s == null) continue;
-			s.SPH_Thread.Start();
-		}
-	}
+    private void MonitorSerialPorts(){
+        foreach(SerialPortHandler s in sph){
+            if (s == null) continue;
+            s.SPH_Thread.Start();
+        }
+    }
 
-	public override void MsgRecv(string msg){
-		if (msg == "exit"){
-			this.ShutDown();
-		}
-		else {
-			foreach(SerialPortHandler s in sph){
-				s.HandleMsg(msg);
-			}
-		}
-	}
+    public override void MsgRecv(string msg){
+        if (msg == "exit"){
+            this.ShutDown();
+        }
+        else {
+            foreach(SerialPortHandler s in sph){
+                s.HandleMsg(msg);
+            }
+        }
+    }
 
     public override void MsgSend(string msg)
     {
@@ -114,82 +115,82 @@ public class Magellan : DelegateForm {
               "ss-output/" +sep+ticks);
     }
 
-	public void ShutDown(){
-		try {
-			foreach(SerialPortHandler s in sph){
-				s.Stop();
-			}
-			u.Stop();
-		}
-		catch(Exception ex){
-			System.Console.WriteLine(ex);
-		}
-	}
+    public void ShutDown(){
+        try {
+            foreach(SerialPortHandler s in sph){
+                s.Stop();
+            }
+            u.Stop();
+        }
+        catch(Exception ex){
+            System.Console.WriteLine(ex);
+        }
+    }
 
-	/*
-	private void PageChange(object sender, WebBrowserDocumentCompletedEventArgs e){
-		if (e.Url == new Uri("http://localhost/bye.html")){
-			try {
-				u.Stop();
-				foreach(SerialPortHandler s in sph){
-					s.Stop();
-				}
-			}
-			catch(Exception ex){
-				System.Console.WriteLine(ex);
-			}
+    /*
+    private void PageChange(object sender, WebBrowserDocumentCompletedEventArgs e){
+        if (e.Url == new Uri("http://localhost/bye.html")){
+            try {
+                u.Stop();
+                foreach(SerialPortHandler s in sph){
+                    s.Stop();
+                }
+            }
+            catch(Exception ex){
+                System.Console.WriteLine(ex);
+            }
 
-			this.Dispose();
-			Application.Exit();
-		}
-	}
-	*/
+            this.Dispose();
+            Application.Exit();
+        }
+    }
+    */
 
-	private ArrayList ReadConfig(){
-		StreamReader fp = new StreamReader("ports.conf");
-		ArrayList al = new ArrayList();
-		Hashtable ht = new Hashtable();
-		string line;
-		while( (line = fp.ReadLine()) != null){
-			line = line.TrimStart(null);
-			if (line == "" || line[0] == '#') continue;
-			string[] pieces = line.Split(null);
-			if (pieces.Length != 2){
-				System.Console.WriteLine("Warning: malformed port.conf line: "+line);
-				System.Console.WriteLine("Format: <port_string> <handler_class_name>");
-			}
-			else if (ht.ContainsKey(pieces[0])){
-				System.Console.WriteLine("Warning: device already has a module attached.");
-				System.Console.WriteLine("Line will be ignored: "+line);
-			}
-			else {
-				al.Add(pieces);
-				ht.Add(pieces[0], pieces[1]);
-			}
-		}	
-		return al;
-	}
+    private ArrayList ReadConfig(){
+        StreamReader fp = new StreamReader("ports.conf");
+        ArrayList al = new ArrayList();
+        Hashtable ht = new Hashtable();
+        string line;
+        while( (line = fp.ReadLine()) != null){
+            line = line.TrimStart(null);
+            if (line == "" || line[0] == '#') continue;
+            string[] pieces = line.Split(null);
+            if (pieces.Length != 2){
+                System.Console.WriteLine("Warning: malformed port.conf line: "+line);
+                System.Console.WriteLine("Format: <port_string> <handler_class_name>");
+            }
+            else if (ht.ContainsKey(pieces[0])){
+                System.Console.WriteLine("Warning: device already has a module attached.");
+                System.Console.WriteLine("Line will be ignored: "+line);
+            }
+            else {
+                al.Add(pieces);
+                ht.Add(pieces[0], pieces[1]);
+            }
+        }    
+        return al;
+    }
 
-	static public void Main(string[] args){
-		int verbosity = 0;
-		for(int i=0;i<args.Length;i++){
-			if (args[i] == "-v"){
-				verbosity = 1;	
-				if (i+1 < args.Length){
-					try { verbosity = Int32.Parse(args[i+1]); }
-					catch{}
-				}
-			}
-		}
-		Magellan m = new Magellan(verbosity);
-		bool exiting = false;
-		while(!exiting){
-			string user_in = System.Console.ReadLine();
-			if (user_in == "exit"){
-				System.Console.WriteLine("stopping");
-				m.ShutDown();
-				exiting = true;
-			}
-		}
-	}
+    static public void Main(string[] args){
+        int verbosity = 0;
+        for(int i=0;i<args.Length;i++){
+            if (args[i] == "-v"){
+                verbosity = 1;    
+                if (i+1 < args.Length){
+                    try { verbosity = Int32.Parse(args[i+1]); }
+                    catch{}
+                }
+            }
+        }
+        Magellan m = new Magellan(verbosity);
+        bool exiting = false;
+        while(!exiting){
+            string user_in = System.Console.ReadLine();
+            if (user_in == "exit"){
+                System.Console.WriteLine("stopping");
+                m.ShutDown();
+                exiting = true;
+            }
+        }
+    }
 }

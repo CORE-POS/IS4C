@@ -36,6 +36,7 @@ class MemEquityTransferTool extends FanniePage {
     private $depts = array();
 
     public $description = '[Transfer Equity] moves an Equity payment from one member to another.';
+    public $themed = true;
 
     private $CORRECTION_CASHIER = 1001;
     private $CORRECTION_LANE = 30;
@@ -67,13 +68,13 @@ class MemEquityTransferTool extends FanniePage {
         }
 
         if (empty($FANNIE_EQUITY_DEPARTMENTS)){
-            $this->errors .= "<em>Error: no equity departments found</em>";
+            $this->errors .= '<div class="alert alert-danger">Error: no equity departments found</div>';
             return True;
         }
 
         $ret = preg_match_all("/[0-9]+/",$FANNIE_EQUITY_DEPARTMENTS,$depts);
         if ($ret == 0){
-            $this->errors .= "<em>Error: can't read equity department definition</em>";
+            $this->errors .= '<div class="alert alert-danger">Error: can\'t read equity department definitions</div>';
             return True;
         }
         $temp_depts = array_pop($depts);
@@ -90,7 +91,8 @@ class MemEquityTransferTool extends FanniePage {
         $q = $dbc->prepare_statement("SELECT dept_no,dept_name FROM departments WHERE dept_no IN $dlist");
         $r = $dbc->exec_statement($q,$dArgs);
         if ($dbc->num_rows($r) == 0){
-            return "<em>Error: equity department(s) don't exist</em>";
+            $this->errors .= '<div class="alert alert-danger">Error: department(s) don\'t exist.</div>';
+            return true;
         }
 
         $this->depts = array();
@@ -112,25 +114,25 @@ class MemEquityTransferTool extends FanniePage {
             $this->cn2 = FormLib::get_form_value('memTo');
 
             if (!isset($this->depts[$this->dept])){
-                $this->errors .= "<em>Error: equity department doesn't exist</em>"
+                $this->errors .= "<div class=\"alert alert-danger\">Error: equity department doesn't exist</div>"
                     ."<br /><br />"
                     ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
                 return True;
             }
             if (!is_numeric($this->amount)){
-                $this->errors .= "<em>Error: amount given (".$this->amount.") isn't a number</em>"
+                $this->errors .= "<div class=\"alert alert-danger\">Error: amount given (".$this->amount.") isn't a number</div>"
                     ."<br /><br />"
                     ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
                 return True;
             }
             if (!is_numeric($this->cn1)){
-                $this->errors .= "<em>Error: member given (".$this->cn1.") isn't a number</em>"
+                $this->errors .= "<div class=\"alert alert-danger\">Error: member given (".$this->cn1.") isn't a number</div>"
                     ."<br /><br />"
                     ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
                 return True;
             }
             if (!is_numeric($this->cn2)){
-                $this->errors .= "<em>Error: member given (".$this->cn2.") isn't a number</em>"
+                $this->errors .= "<div class=\"alert alert-danger\">Error: member given (".$this->cn2.") isn't a number</div>"
                     ."<br /><br />"
                     ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
                 return True;
@@ -139,7 +141,7 @@ class MemEquityTransferTool extends FanniePage {
             $q = $dbc->prepare_statement("SELECT FirstName,LastName FROM custdata WHERE CardNo=? AND personNum=1");
             $r = $dbc->exec_statement($q,array($this->cn1));
             if ($dbc->num_rows($r) == 0){
-                $this->errors .= "<em>Error: no such member: ".$this->cn1."</em>"
+                $this->errors .= "<div class=\"alert alert-success\">Error: no such member: ".$this->cn1."</div>"
                     ."<br /><br />"
                     ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
                 return True;
@@ -150,7 +152,7 @@ class MemEquityTransferTool extends FanniePage {
             $q = $dbc->prepare_statement("SELECT FirstName,LastName FROM custdata WHERE CardNo=? AND personNum=1");
             $r = $dbc->exec_statement($q,array($this->cn2));
             if ($dbc->num_rows($r) == 0){
-                $this->errors .= "<em>Error: no such member: ".$this->cn2."</em>"
+                $this->errors .= "<div class=\"alert alert-success\">Error: no such member: ".$this->cn2."</div>"
                     ."<br /><br />"
                     ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
                 return True;
@@ -177,18 +179,19 @@ class MemEquityTransferTool extends FanniePage {
 
         $ret = "<form action=\"MemEquityTransferTool.php\" method=\"post\">";
         $ret .= "<b>Confirm transfer</b>";
-        $ret .= "<p style=\"font-size:120%\">";
+        $ret .= "<div class=\"alert alert-info\">";
         $ret .= sprintf("\$%.2f %s will be moved from %d (%s) to %d (%s)",
             $this->amount,$this->depts[$this->dept],
             $this->cn1,$this->name1,$this->cn2,$this->name2);
-        $ret .= "</p><p>";
+        $ret .= "</div><p>";
         $ret .= "<input type=\"hidden\" name=\"dept\" value=\"{$this->dept}\" />";
         $ret .= "<input type=\"hidden\" name=\"amount\" value=\"{$this->amount}\" />";
         $ret .= "<input type=\"hidden\" name=\"memFrom\" value=\"{$this->cn1}\" />";
         $ret .= "<input type=\"hidden\" name=\"memTo\" value=\"{$this->cn2}\" />";
-        $ret .= "<input type=\"submit\" name=\"submit2\" value=\"Confirm\" />";
+        $ret .= "<button type=\"submit\" name=\"submit2\" value=\"Confirm\" 
+                    class=\"btn btn-default\">Confirm</button>";
         $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-        $ret .= "<input type=\"submit\" value=\"Back\" onclick=\"back(); return false;\" />";
+        $ret .= "<input type=\"submit\" name=\"submit2\" value=\"Confirm\" />";
         $ret .= "</form>";
         
         return $ret;
@@ -227,24 +230,43 @@ class MemEquityTransferTool extends FanniePage {
 
         if (!empty($this->errors)) return $this->errors;
 
-        $ret = "<form action=\"MemEquityTransferTool.php\" method=\"post\">";
-        $ret .= "<p style=\"font-size:120%\">";
-        $ret .= "Transfer $<input type=\"text\" name=\"amount\" size=\"5\" /> ";
-        $ret .= "<select name=\"dept\">";
-        foreach($this->depts as $k=>$v)
-            $ret .= "<option value=\"$k\">$v</option>";
-        $ret .= "</select>";
-        $ret .= "</p><p style=\"font-size:120%;\">";
-        $memNum = FormLib::get_form_value('memIN');
-        $ret .= "From member #<input type=\"text\" name=\"memFrom\" size=\"5\" value=\"$memNum\" /> ";
-        $ret .= "to member #<input type=\"text\" name=\"memTo\" size=\"5\" />";
-        $ret .= "</p><p>";
-        $ret .= "<input type=\"hidden\" name=\"type\" value=\"equity_transfer\" />";
-        $ret .= "<input type=\"submit\" name=\"submit1\" value=\"Submit\" />";
-        $ret .= "</p>";
-        $ret .= "</form>";
+        ob_start();
+        ?>
+        <form action="MemEquityTransferTool.php" method="post">
+        <div class="container">
+        <div class="row form-group form-inline">
+            <label>Transfer</label>
+            <div class="input-group">
+                <span class="input-group-addon">$</span>
+                <input type="text" name="amount" class="form-control"
+                    required />
+            </div>
+            <select name="dept" class="form-control">
+            <?php
+            foreach($this->depts as $k=>$v)
+                echo "<option value=\"$k\">$v</option>";
+            ?>
+            </select>
+        </div>
+        <p>If adjusting to remove an amount from the account, prefix it with '-'</p>
+        <?php $memNum = FormLib::get_form_value('memIN') ?>
+        <div class="row form-group form-inline">
+            <label>From member #</label>
+            <input type="number" name="memFrom" class="form-control" required
+                value="<?php echo $memNum; ?>" />
+            <label>To member #</label>
+            <input type="number" name="memTo" class="form-control" required />
+        </div>
+        <input type="hidden" name="type" value="equity_transfer" />
+        <p>
+            <button type="submit" name="submit1" value="Submit"
+                class="btn btn-default">Submit</button>
+        </p>
+        </div>
+        </form>
+        <?php
 
-        return $ret;
+        return ob_get_clean();
     }
 
     function getTransNo($emp,$register){
