@@ -420,6 +420,7 @@ class BaseItemModule extends ItemModule
                     $id,$id,$name);
         }
         $ret .= '</select>';
+        $jsVendorID = $rowItem['default_vendor_id'] > 0 ? $rowItem['default_vendor_id'] : 'no-vendor';
         $ret .= '<select name="subdept" id="subdept" class="form-control chosen-select">';
         $ret .= isset($subs[$rowItem['department']]) ? $subs[$rowItem['department']] : '<option value="0">None</option>';
         $ret .= '</select>';
@@ -506,7 +507,6 @@ class BaseItemModule extends ItemModule
                 </td>
                 </tr>';
 
-        $jsVendorID = $rowItem['default_vendor_id'] > 0 ? $rowItem['default_vendor_id'] : 'no-vendor';
         $ret .= '
             <tr>
                 <th class="small text-right">Pack Size</th>
