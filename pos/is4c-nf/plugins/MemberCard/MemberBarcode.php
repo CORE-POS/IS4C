@@ -57,6 +57,7 @@ class MemberBarcode extends SpecialUPC
 		$row = $db->fetch_array($result);
 		CoreLocal::set("memberCardUsed",1);
 		$json = PrehLib::memberID($row[0]);
+
 		return $json;
 	}
 }

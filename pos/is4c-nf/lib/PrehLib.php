@@ -42,7 +42,7 @@ static public function clearMember()
 }
 
 /**
-  Set member number for transaction
+  Begin setting a member number for a transaction
   @param $member_number CardNo from custdata
   @return An array. See Parser::default_json()
    for format.
@@ -56,10 +56,11 @@ static public function clearMember()
 */
 static public function memberID($member_number) 
 {
-	$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
-		ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
-		SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
-		where CardNo = '".$member_number."'";
+    $query = "
+        SELECT CardNo,
+            personNum
+        FROM custdata
+        WHERE CardNo=" . ((int)$member_number);
 
 	$ret = array(
 		"main_frame"=>false,
@@ -70,40 +71,45 @@ static public function memberID($member_number)
 	
 	$db = Database::pDataConnect();
 	$result = $db->query($query);
-
 	$num_rows = $db->num_rows($result);
 
-	if ($num_rows == 1 && 
-		$member_number == CoreLocal::get("defaultNonMem")) {
-           	$row = $db->fetch_array($result);
-	     	self::setMember($row["CardNo"], $row["personNum"],$row);
-		$ret['redraw_footer'] = True;
-		$ret['output'] = DisplayLib::lastpage();
-		return $ret;
-	} 
+    /**
+      If only a single record exists for the member number,
+      the member will be set immediately if:
+      - the account is the designated, catchall non-member
+      - the verifyName setting is disabled
+    */
+	if ($num_rows == 1) {
+        if ($member_number == CoreLocal::get("defaultNonMem") || CoreLocal::get('verifyName') != 1) {
+            $row = $db->fetch_row($result);
+            self::setMember($row["CardNo"], $row["personNum"]);
+            $ret['redraw_footer'] = true;
+            $ret['output'] = DisplayLib::lastpage();
+
+            if ($member_number != CoreLocal::get('defaultNonMem')) {
+                $ret['udpmsg'] = 'goodBeep';
+            }
+
+            return $ret;
+        }
+	}
 
 	// special hard coding for member 5607 WFC 
 	// needs to go away
 	if ($member_number == "5607") {
 		$ret['main_frame'] = MiscLib::baseURL()."gui-modules/requestInfo.php?class=PrehLib";
+
+        return $ret;
 	}
 
-    /** This is a bad idea. If the search is
-        cancelled, these fields won't be refreshed
-        with new data
-	CoreLocal::set("memberID","0");
-	CoreLocal::set("memType",0);
-	CoreLocal::set("percentDiscount",0);
-	CoreLocal::set("memMsg","");
+    /**
+      Go to member search page in all other cases.
+      If zero matching records are found, member search should be next.
+      If multiple records are found, picking the correct name should
+      be next.
+      If verifyName is enabled, confirming the name should be next.
     */
-
-	if (empty($ret['output']) && $ret['main_frame'] == false) {
-		$ret['main_frame'] = MiscLib::base_url()."gui-modules/memlist.php?idSearch=".$member_number;
-    }
-	
-	if (CoreLocal::get("verifyName") != 1) {
-		$ret['udpmsg'] = 'goodBeep';
-	}
+    $ret['main_frame'] = MiscLib::base_url() . "gui-modules/memlist.php?idSearch=" . $member_number;
 
 	return $ret;
 }
@@ -113,15 +119,7 @@ static public $requestInfoMsg = 'Card for which member?';
 static public function requestInfoCallback($info)
 {
 	TransRecord::addcomment("CARD FOR #".$info);
-
-	$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
-		ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
-		SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
-		where CardNo = 5607";
-	$db = Database::pDataConnect();
-	$result = $db->query($query);
-	$row = $db->fetch_row($result);
-	self::setMember($row["CardNo"], $row["personNum"],$row);
+	self::setMember($row["CardNo"], $row["personNum"]);
 
 	return true;
 }
@@ -196,27 +194,52 @@ static public function setAltMemMsg($store, $member, $personNumber, $row, $charg
   Assign a member number to a transaction
   @param $member CardNo from custdata
   @param $personNumber personNum from custdata
-  @param $row a record from custdata
 
   See memberID() for more information.
 */
-static public function setMember($member, $personNumber, $row) 
+static public function setMember($member, $personNumber)
 {
 	$conn = Database::pDataConnect();
 
-    $memMsg = '#'.$member;
-    if (isset($row['blueLine'])) {
-        $memMsg = $row['blueLine'];
-    }
-	CoreLocal::set("memMsg",$memMsg);
+    /**
+      Look up the member information here. There's no good 
+      reason to have calling code pass in a specially formatted
+      row of data
+    */
+	$query = "
+        SELECT 
+            CardNo,
+            personNum,
+            LastName,
+            FirstName,
+            CashBack,
+            Balance,
+            Discount,
+            ChargeOk,
+            WriteChecks,
+            StoreCoupons,
+            Type,
+            memType,
+            staff,
+            SSI,
+            Purchases,
+            NumberOfChecks,
+            memCoupons,
+            blueLine,
+            Shown,
+            id 
+        FROM custdata 
+		WHERE CardNo = " . ((int)$member) . "
+            AND personNum = " . ((int)$personNumber);
+    $result = $conn->query($query);
+    $row = $conn->fetch_row($result);
 
     CoreLocal::set("memberID",$member);
-	$chargeOk = self::chargeOk();
-	if (CoreLocal::get("balance") != 0 && $member != CoreLocal::get("defaultNonMem")) {
-	      CoreLocal::set("memMsg",CoreLocal::get("memMsg")._(" AR"));
-    }
-
-    self::setAltMemMsg(CoreLocal::get("store"), $member, $personNumber, $row, $chargeOk);
+	if (CoreLocal::get("Type") == "PC") {
+		CoreLocal::set("isMember",1);
+	} else {
+        CoreLocal::set("isMember",0);
+	}
 
 	CoreLocal::set("memType",$row["memType"]);
 	CoreLocal::set("lname",$row["LastName"]);
@@ -225,11 +248,15 @@ static public function setMember($member, $personNumber, $row)
 	CoreLocal::set("isStaff",$row["staff"]);
 	CoreLocal::set("SSI",$row["SSI"]);
 
+    /**
+      Optinonally use memtype table to normalize attributes
+      by member type
+    */
     if (CoreLocal::get('useMemTypeTable') == 1 && $conn->table_exists('memtype')) {
-        $prep = $conn->prepare_statement('SELECT discount, staff, ssi 
-                                 FROM memtype
-                                 WHERE memtype=?');
-        $res = $conn->exec_statement($prep, array((int)CoreLocal::get('memType')));
+        $prep = $conn->prepare('SELECT discount, staff, ssi 
+                                FROM memtype
+                                WHERE memtype=?');
+        $res = $conn->execute($prep, array((int)CoreLocal::get('memType')));
         if ($conn->num_rows($res) > 0) {
             $mt_row = $conn->fetch_row($res);
             $row['Discount'] = $mt_row['discount'];
@@ -237,49 +264,60 @@ static public function setMember($member, $personNumber, $row)
             CoreLocal::set('SSI', $mt_row['ssi']);
         }
     }
-
-	if (CoreLocal::get("Type") == "PC") {
-		CoreLocal::set("isMember",1);
-	} else {
-        CoreLocal::set("isMember",0);
+	if (CoreLocal::get("isStaff") == 0) {
+		CoreLocal::set("staffSpecial", 0);
 	}
 
+    /**
+      Determine what string is shown in the upper
+      left of the screen to indicate the current member
+    */
+    $memMsg = '#' . $member;
+    if (!empty($row['blueLine'])) {
+        $memMsg = $row['blueLine'];
+    }
+	$chargeOk = self::chargeOk();
+	if (CoreLocal::get("balance") != 0 && $member != CoreLocal::get("defaultNonMem")) {
+	    $memMsg .= _(" AR");
+    }
 	if (CoreLocal::get("SSI") == 1) {
-		CoreLocal::set("memMsg",CoreLocal::get("memMsg")." #");
+		$memMsg .= " #";
     }
+	CoreLocal::set("memMsg",$memMsg);
+    self::setAltMemMsg(CoreLocal::get("store"), $member, $personNumber, $row, $chargeOk);
 
+    /**
+      Set member number and attributes
+      in the current transaction
+    */
 	$conn2 = Database::tDataConnect();
-	$memquery = "update localtemptrans set card_no = '".$member."',
-	      				memType = ".sprintf("%d",CoreLocal::get("memType")).",
-					staff = ".sprintf("%d",CoreLocal::get("isStaff"));
-	if (CoreLocal::get("DBMS") == "mssql" && CoreLocal::get("store") == "wfc") {
-		$memquery = str_replace("staff","isStaff",$memquery);
-    }
-
-	if (CoreLocal::get("store") == "wedge") {
-		if (CoreLocal::get("isMember") == 0 && CoreLocal::get("percentDiscount") == 10) {
-			$memquery .= " , percentDiscount = 0 ";
-		} elseif (CoreLocal::get("isStaff") != 1 && CoreLocal::get("percentDiscount") == 15) {
-			$memquery .= " , percentDiscount = 0 ";
-		}
-	}
-
+	$memquery = "
+        UPDATE localtemptrans 
+        SET card_no = '" . $member . "',
+            memType = " . sprintf("%d",CoreLocal::get("memType")) . ",
+            staff = " . sprintf("%d",CoreLocal::get("isStaff"));
 	$conn2->query($memquery);
 
+    /**
+      Add the member discount
+    */
     if (CoreLocal::get('discountEnforced')) {
         // skip subtotaling automatically since that occurs farther down
         DiscountModule::updateDiscount(new DiscountModule($row['Discount'], 'custdata'), false);
     }
 
+    /**
+      Log the member entry
+    */
 	CoreLocal::set("memberID",$member);
 	$opts = array('upc'=>'MEMENTRY','description'=>'CARDNO IN NUMFLAG','numflag'=>$member);
 	TransRecord::add_log_record($opts);
 
-	if (CoreLocal::get("isStaff") == 0) {
-		CoreLocal::set("staffSpecial",0);
-	}
-
 	// 16Sep12 Eric Lee Allow  not append Subtotal at this point.
+    /**
+      Optionally add a subtotal line depending
+      on member_subtotal setting.
+    */
 	if ( CoreLocal::get("member_subtotal") === false ) {
 		$noop = "";
 	} else {
