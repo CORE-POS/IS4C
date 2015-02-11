@@ -41,6 +41,7 @@ class NoDiscOnSalesPM extends PriceMethod {
             'upc' => $row['upc'],
             'description' => $row['description'],
             'trans_type' => 'I',
+            'trans_subtype' => ($this->scanned) ? 'SS' : '',
             'department' => $row['department'],
             'quantity' => $quantity,
             'unitPrice' => $pricing['unitPrice'],

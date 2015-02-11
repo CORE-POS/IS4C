@@ -23,8 +23,15 @@
 
 class UPC extends Parser 
 {
-
+    /**
+      Defines how the UPC was entered.
+      Known good values are:
+      - keyed
+      - scanned
+    */
     private $source = 'keyed';
+
+    const SCANNED_PREFIX = '0XA';
 
     /**
       The default case is pretty simple. A numeric string
@@ -47,7 +54,7 @@ class UPC extends Parser
     {
 		if (is_numeric($str) && strlen($str) < 16) {
 			return true;
-        } elseif (substr($str,0,3) == '0XA' && is_numeric($substr($str, 3))) {
+        } elseif (substr($str,0,strlen(self::SCANNED_PREFIX)) == self::SCANNED_PREFIX && is_numeric($substr($str, 3))) {
             return true;
 		} elseif (substr($str,0,4) == "GS1~" && is_numeric(substr($str, 4))) {
 			return true;
@@ -61,8 +68,8 @@ class UPC extends Parser
 		if (substr($str,0,4) == "GS1~") {
 			$str = $this->fixGS1($str);
             $this->source = 'scanned';
-        } elseif (substr($str, 0, 3) == '0XA') {
-            $str = substr($str, 3);
+        } elseif (substr($str, 0, strlen(self::SCANNED_PREFIX)) == self::SCANNED_PREFIX) {
+            $str = substr($str, strlen(self::SCANNED_PREFIX));
             $this->source = 'scanned';
         }
 
@@ -597,14 +604,15 @@ class UPC extends Parser
 			$pricemethod = MiscLib::nullwrap($row["specialpricemethod"]);
 		$PMClasses = CoreLocal::get("PriceMethodClasses");
         $PriceMethodObject = null;
+        $scanned = ($this->source == 'scanned') ? true : false;
         if ($pricemethod < 100 && isset(PriceMethod::$MAP[$pricemethod])) {
             $class = PriceMethod::$MAP[$pricemethod];
-            $PriceMethodObject = new $class();
+            $PriceMethodObject = new $class($scanned);
         } else if ($pricemethod >= 100 && isset($PMClasses[($pricemethod-100)])) {
             $class = $PMClasses[($pricemethod-100)];
-            $PriceMethodObject = new $class();
+            $PriceMethodObject = new $class($scanned);
         } else {
-            $PriceMethodObject = new BasicPM();
+            $PriceMethodObject = new BasicPM($scanned);
         }
 		// prefetch: otherwise object members 
 		// pass out of scope in addItem()

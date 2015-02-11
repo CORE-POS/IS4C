@@ -51,6 +51,12 @@ class PriceMethod
 
     protected $savedRow;
     protected $savedInfo;
+    protected $scanned = false;
+
+    public function __construct($scanned=false)
+    {
+        $this->scanned = $scanned;
+    }
 
     /**
       Add the item to the transaction
