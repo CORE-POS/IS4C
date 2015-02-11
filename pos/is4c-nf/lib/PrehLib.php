@@ -268,7 +268,7 @@ static public function setMember($member, $personNumber, $row)
 
     if (CoreLocal::get('discountEnforced')) {
         // skip subtotaling automatically since that occurs farther down
-        DiscountModule::updateDiscount(new DiscountModule($row['Discount']), false);
+        DiscountModule::updateDiscount(new DiscountModule($row['Discount'], 'custdata'), false);
     }
 
 	CoreLocal::set("memberID",$member);
