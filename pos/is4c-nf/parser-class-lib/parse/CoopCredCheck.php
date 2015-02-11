@@ -28,19 +28,19 @@ class CoopCredCheck extends Parser {
 		return False;
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
+	function parse($str)
+    {
 		$ret = $this->default_json();
         // Sets $balance and $availBal.
 		$chargeOk = PrehLib::chargeOk();
         // $memChargeCommitted isn't used here.
-		$memChargeCommitted=$CORE_LOCAL->get("availBal") - $CORE_LOCAL->get("memChargeTotal");
+		$memChargeCommitted=CoreLocal::get("availBal") - CoreLocal::get("memChargeTotal");
         $message = "<p style='font-weight:bold; text-align:center; margin: 0em 0em 0em -1.0em;'>".
-            _("Member")." #". $CORE_LOCAL->get("memberID")."<br />";
+            _("Member")." #". CoreLocal::get("memberID")."<br />";
         if ($chargeOk) {
             $message .= _("Available Coop Cred") . "<br />" .
             _("Balance is:") . "<br />" .
-            "<span style='font-size:1.4em;'>" . " ".$CORE_LOCAL->get("availBal") . "</span>";
+            "<span style='font-size:1.4em;'>" . " ".CoreLocal::get("availBal") . "</span>";
         } else {
             $message .= _("Is not authorized to use") . "<br />" . _("Coop Cred");
         }

@@ -30,13 +30,12 @@ class LineItemDiscount extends Parser {
 		return False;
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
-
+	function parse($str)
+    {
 		$ret = $this->default_json();
 
 		// this is the currently selected item
-		$transID = $CORE_LOCAL->get("currentid");
+		$transID = CoreLocal::get("currentid");
 
 		// get info about the current item
 		$db = Database::tDataConnect();
@@ -77,15 +76,15 @@ class LineItemDiscount extends Parser {
 					memDiscount=((regPrice*quantity*%f) - (regPrice*quantity*%f)),
 					discounttype=2
 					WHERE trans_id=%d",
-					$CORE_LOCAL->get("LineItemDiscountNonMem"),
-					$CORE_LOCAL->get("LineItemDiscountNonMem"),
-					$CORE_LOCAL->get("LineItemDiscountMem"),
-					$CORE_LOCAL->get("LineItemDiscountNonMem"),
+					CoreLocal::get("LineItemDiscountNonMem"),
+					CoreLocal::get("LineItemDiscountNonMem"),
+					CoreLocal::get("LineItemDiscountMem"),
+					CoreLocal::get("LineItemDiscountNonMem"),
 					$transID);
 				$discR = $db->query($discQ);
 
 				// add notification line for nonMem discount
-				TransRecord::adddiscount($w['regPrice']*$w['quantity']*$CORE_LOCAL->get("LineItemDiscountNonMem"),
+				TransRecord::adddiscount($w['regPrice']*$w['quantity']*CoreLocal::get("LineItemDiscountNonMem"),
 					$w['department']);
 
 				// footer should be redrawn since savings and totals

@@ -7,9 +7,8 @@ class InstallTest extends PHPUnit_Framework_TestCase
 {
 	public function testOpdata()
     {
-        global $CORE_LOCAL;
         $db = Database::pDataConnect();
-        $errors = InstallUtilities::createOpDBs($db, $CORE_LOCAL->get('pDatabase'));
+        $errors = InstallUtilities::createOpDBs($db, CoreLocal::get('pDatabase'));
 
         $this->assertInternalType('array', $errors);
         foreach ($errors as $error) {
@@ -24,9 +23,8 @@ class InstallTest extends PHPUnit_Framework_TestCase
 
 	public function testTranslog()
     {
-        global $CORE_LOCAL;
         $db = Database::tDataConnect();
-        $errors = InstallUtilities::createTransDBs($db, $CORE_LOCAL->get('tDatabase'));
+        $errors = InstallUtilities::createTransDBs($db, CoreLocal::get('tDatabase'));
 
         $this->assertInternalType('array', $errors);
 
@@ -54,6 +52,8 @@ class InstallTest extends PHPUnit_Framework_TestCase
             'departments',
             'employees',
             'globalvalues',
+            'houseCoupons',
+            'houseCouponItems',
             'MasterSuperDepts',
             'parameters',
             'products',

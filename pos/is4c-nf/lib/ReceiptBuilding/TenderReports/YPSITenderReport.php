@@ -27,22 +27,22 @@
 */
 
 class YPSITenderReport extends TenderReport {
-	static public function get(){
-	global $CORE_LOCAL;
+	static public function get()
+    {
 
 	$db_a = Database::mDataConnect();
 	$shiftCutoff = date('Y-m-d 00:00:00');
 	$excl = " AND emp_no <> 9999 ";
 	// $lookup = $db_a->query("SELECT MAX(datetime) FROM dtransactions 
 	// 	WHERE DATE(datetime) = CURDATE() AND upc='ENDOFSHIFT' AND 
-	// 	register_no=".$CORE_LOCAL->get('laneno'));
+	// 	register_no=".CoreLocal::get('laneno'));
 	// if ($db_a->num_rows($lookup) > 0){
 	// 	$row = $db_a->fetch_row($lookup);
 	// 	if ($row[0] != '') $shiftCutoff = $row[0];
 	// }
 	// TransRecord::add_log_record(array('upc'=>'ENDOFSHIFT'));
 
-	$DESIRED_TENDERS = $CORE_LOCAL->get("TRDesiredTenders");
+	$DESIRED_TENDERS = CoreLocal::get("TRDesiredTenders");
 
 	$db_a = Database::mDataConnect();
 
@@ -52,13 +52,13 @@ class YPSITenderReport extends TenderReport {
 			.substr("Trans #".$blank, 0, 12)
 			.substr("Change".$blank, 0, 14)
 			.substr("Amount".$blank, 0, 14)."\n";
-	$ref = ReceiptLib::centerString(trim($CORE_LOCAL->get("CashierNo"))." ".trim($CORE_LOCAL->get("cashier"))." ".ReceiptLib::build_time(time()))."\n\n";
+	$ref = ReceiptLib::centerString(trim(CoreLocal::get("CashierNo"))." ".trim(CoreLocal::get("cashier"))." ".ReceiptLib::build_time(time()))."\n\n";
 	$receipt = "";
 
 	$cashier_names = "";
     $cashierQ = "SELECT CONCAT(SUBSTR(e.FirstName,1,1),e.Lastname) as cashier
 		FROM dlog d, is4c_op.employees e
-        WHERE d.emp_no = e.emp_no AND d.register_no = ". $CORE_LOCAL->get('laneno')." AND d.emp_no <> 9999 AND d.trans_type <> 'L' 
+        WHERE d.emp_no = e.emp_no AND d.register_no = ". CoreLocal::get('laneno')." AND d.emp_no <> 9999 AND d.trans_type <> 'L' 
 		AND d.tdate >= '".$shiftCutoff."'
         GROUP BY d.emp_no ORDER BY d.tdate";
 		
@@ -74,7 +74,7 @@ class YPSITenderReport extends TenderReport {
 
 	// NET TOTAL
 	$netQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
-		WHERE register_no=".$CORE_LOCAL->get('laneno').
+		WHERE register_no=".CoreLocal::get('laneno').
 		" AND (trans_subtype IN('CA','CK','DC','CC','EF','FS','EC','GD','TC','WT') OR (trans_subtype = 'MI' AND staff <> 1))
 		AND tdate >= '$shiftCutoff'$excl";
 	$netR = $db_a->query($netQ);
@@ -99,7 +99,7 @@ class YPSITenderReport extends TenderReport {
 	$receipt .= "\n\n";
 
 	foreach(array_keys($DESIRED_TENDERS) as $tender_code){ 
-		$query = "select tdate from TenderTapeGeneric where emp_no=".$CORE_LOCAL->get("CashierNo").
+		$query = "select tdate from TenderTapeGeneric where emp_no=".CoreLocal::get("CashierNo").
 			" and tender_code = '".$tender_code."' order by tdate";
 		$result = $db_a->query($query);
 		$num_rows = $db_a->num_rows($result);
@@ -118,7 +118,7 @@ class YPSITenderReport extends TenderReport {
 		if ($itemize == 1) $receipt .=	ReceiptLib::centerString("------------------------------------------------------");
 
 		$query = "select tdate,register_no,trans_no,tender_code,tender
-		       	from TenderTapeGeneric where register_no=".$CORE_LOCAL->get("laneno").
+		       	from TenderTapeGeneric where register_no=".CoreLocal::get("laneno").
 			" and tender_code = '".$tender_code."' order by tdate";
 		$result = $db_a->query($query);
 		$num_rows = $db_a->num_rows($result);
@@ -127,7 +127,7 @@ class YPSITenderReport extends TenderReport {
 		$sum = 0;
 
 		for ($i = 0; $i < $num_rows; $i++) {
-			// if ((($CORE_LOCAL->get("store") == "harvest-cb") || ($CORE_LOCAL->get("store") == "harvest-jp")) && ($tender_code == "PE" || $tender_code == "BU" || $tender_code == "EL" || $tender_code == "PY" || $tender_code == "TV")) $itemize = 1;
+			// if (((CoreLocal::get("store") == "harvest-cb") || (CoreLocal::get("store") == "harvest-jp")) && ($tender_code == "PE" || $tender_code == "BU" || $tender_code == "EL" || $tender_code == "PY" || $tender_code == "TV")) $itemize = 1;
 			// else $itemize = 0;
 			$row = $db_a->fetch_array($result);
 			$timeStamp = self::timeStamp($row["tdate"]);
@@ -154,8 +154,8 @@ class YPSITenderReport extends TenderReport {
 }
 
 
-function trTotal($k, $label,$i=False) {
-	global $CORE_LOCAL;
+function trTotal($k, $label,$i=False) 
+{
 	$db_a = Database::mDataConnect();
 
 	$blank = "             ";
@@ -168,7 +168,7 @@ function trTotal($k, $label,$i=False) {
 	$shiftCutoff = date('Y-m-d 00:00:00');
 	$lookup = $db_a->query("SELECT MAX(datetime) FROM dtransactions 
 		WHERE DATE(datetime) = CURDATE() AND upc='ENDOFSHIFT' AND 
-		register_no=".$CORE_LOCAL->get('laneno'));
+		register_no=".CoreLocal::get('laneno'));
 	if ($db_a->num_rows($lookup) > 0){
 		$row = $db_a->fetch_row($lookup);
 		if ($row[0] != '') $shiftCutoff = $row[0];
@@ -190,11 +190,11 @@ function trTotal($k, $label,$i=False) {
 	
 	if($i===False) {
 	    $tenderQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
-	    	WHERE register_no=".$CORE_LOCAL->get('laneno').
+	    	WHERE register_no=".CoreLocal::get('laneno').
 			" AND $q IN($k) AND tdate >= '$shiftCutoff' AND emp_no <> 9999";
 	} else {
 		$tenderQ = "SELECT tdate,register_no,emp_no,trans_no,card_no,total FROM dlog 
-			WHERE register_no=".$CORE_LOCAL->get('laneno').
+			WHERE register_no=".CoreLocal::get('laneno').
 			" and $q IN($k) AND tdate >= '$shiftCutoff' AND emp_no <> 9999 order by tdate";
 	}
 	$tenderR = $db_a->query($tenderQ);

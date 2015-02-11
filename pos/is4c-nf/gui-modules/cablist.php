@@ -58,10 +58,8 @@ class cablist extends NoInputPage
     
     function body_content()
     {
-        global $CORE_LOCAL;
-
         $db = Database::pDataConnect();
-        $query = "SELECT frontendsecurity FROM employees WHERE emp_no=".$CORE_LOCAL->get("CashierNo");
+        $query = "SELECT frontendsecurity FROM employees WHERE emp_no=".CoreLocal::get("CashierNo");
         $result = $db->query($query);
         $fes = 0;
         if ($db->num_rows($result) > 0)
@@ -79,7 +77,7 @@ class cablist extends NoInputPage
             having sum((case when trans_type='T' THEN -1*total ELSE 0 end)) >= 30
             order by register_no,emp_no,trans_no desc";
             $db = Database::tDataConnect();
-            if ($CORE_LOCAL->get("standalone") == 0) {
+            if (CoreLocal::get("standalone") == 0) {
                 $query = str_replace("localtranstoday","dtransactions",$query);
                 $db = Database::mDataConnect();
             }
@@ -89,8 +87,8 @@ class cablist extends NoInputPage
             $db = Database::tDataConnect();
 
             $query = "select emp_no, register_no, trans_no, sum((case when trans_type = 'T' then -1 * total else 0 end)) as total "
-            ."from localtranstoday where register_no = " . $CORE_LOCAL->get("laneno")
-            ." AND emp_no = " . $CORE_LOCAL->get("CashierNo")
+            ."from localtranstoday where register_no = " . CoreLocal::get("laneno")
+            ." AND emp_no = " . CoreLocal::get("CashierNo")
             ." AND datetime >= " . $db->curdate()
             ." group by register_no, emp_no, trans_no
             having sum((case when trans_type='T' THEN -1*total ELSE 0 end)) >= 30

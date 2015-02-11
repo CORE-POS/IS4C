@@ -41,7 +41,6 @@ class Steering extends Parser
 
     function check($str)
     {
-        global $CORE_LOCAL;
         $my_url = MiscLib::base_url();
         
         $this->dest_input_page = "";
@@ -61,7 +60,7 @@ class Steering extends Parser
         switch($str) {
             
             case 'CAB':
-                if ($CORE_LOCAL->get("LastID") != "0") {
+                if (CoreLocal::get("LastID") != "0") {
                     $this->ret['output'] = DisplayLib::boxMsg("transaction in progress");
                 } else {
                     $this->ret['main_frame'] = $my_url."gui-modules/cablist.php";
@@ -69,16 +68,16 @@ class Steering extends Parser
                 return true;
 
             case "PV":
-                $CORE_LOCAL->set("pvsearch","$pvsearch");
+                CoreLocal::set("pvsearch","$pvsearch");
                 $this->ret['main_frame'] = $my_url."gui-modules/productlist.php";
                 return true;
 
             case "MSTG":
-                if ($CORE_LOCAL->get('memType') == 1 || $CORE_LOCAL->get('memType') == 2) {
-                    // could this be $CORE_LOCAL->get('isMember') == 1
+                if (CoreLocal::get('memType') == 1 || CoreLocal::get('memType') == 2) {
+                    // could this be CoreLocal::get('isMember') == 1
                     // to avoid relying on specific memTypes?
                     $this->ret['output'] = DisplayLib::boxMsg("Cannot UNset a member status");
-                } elseif ($CORE_LOCAL->get("SecuritySR") > 20){
+                } elseif (CoreLocal::get("SecuritySR") > 20){
                     $this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=MemStatusAdminLogin";
                 } else {
                     $this->ret['output'] = DisplayLib::boxMsg("You must be an admin to do this.");
@@ -86,7 +85,7 @@ class Steering extends Parser
                 return true;
 
             case "UNDO":
-                if ($CORE_LOCAL->get("LastID") != "0") {
+                if (CoreLocal::get("LastID") != "0") {
                     $this->ret['output'] = DisplayLib::boxMsg("transaction in progress");
                 } else {
                     $this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=UndoAdminLogin";
@@ -98,27 +97,27 @@ class Steering extends Parser
                 $this->ret['main_frame'] = $my_url."gui-modules/DDDReason.php";
                 return true;
             case 'MG':
-                if ($CORE_LOCAL->get("SecuritySR") > 20) {
+                if (CoreLocal::get("SecuritySR") > 20) {
                     $this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=SusResAdminLogin";
                 } else {
                     $this->ret['main_frame'] = $my_url."gui-modules/adminlist.php";
                 }
                 return true;
             case 'RP':
-                if ($CORE_LOCAL->get("LastID") != "0") {
-                    $tr = $CORE_LOCAL->get("receiptToggle");
+                if (CoreLocal::get("LastID") != "0") {
+                    $tr = CoreLocal::get("receiptToggle");
                     if ($tr == 1) {
-                        $CORE_LOCAL->set("receiptToggle",0);
+                        CoreLocal::set("receiptToggle",0);
                     } else {
-                        $CORE_LOCAL->set("receiptToggle",1);
+                        CoreLocal::set("receiptToggle",1);
                     }
                     $this->ret['main_frame'] = $my_url."gui-modules/pos2.php";
                 } else {
                     $db = Database::tDataConnect();
                     $query = "select register_no, emp_no, trans_no, "
                         ."sum((case when trans_type = 'T' then -1 * total else 0 end)) as total "
-                        ."from localtranstoday where register_no = " . $CORE_LOCAL->get("laneno")
-                        ." and emp_no = " . $CORE_LOCAL->get("CashierNo")
+                        ."from localtranstoday where register_no = " . CoreLocal::get("laneno")
+                        ." and emp_no = " . CoreLocal::get("CashierNo")
                         ." AND datetime >= " . $db->curdate()
                         ." group by register_no, emp_no, trans_no order by 1000 - trans_no";
                     $result = $db->query($query);
@@ -143,17 +142,17 @@ class Steering extends Parser
             case 'SO':
                 // sign off and suspend shift are identical except for
                 // drawer behavior
-                if ($CORE_LOCAL->get("LastID") != 0) {
+                if (CoreLocal::get("LastID") != 0) {
                     $this->ret['output'] = DisplayLib::boxMsg(_("Transaction in Progress"));
                 } else {
                     TransRecord::addLogRecord(array(
                         'upc' => 'SIGNOUT',
-                        'description' => 'Sign Out Emp#' . $CORE_LOCAL->get('CashierNo'),
+                        'description' => 'Sign Out Emp#' . CoreLocal::get('CashierNo'),
                     ));
                     Database::setglobalvalue("LoggedIn", 0);
-                    $CORE_LOCAL->set("LoggedIn",0);
-                    $CORE_LOCAL->set("training",0);
-                    $CORE_LOCAL->set("gui-scale","no");
+                    CoreLocal::set("LoggedIn",0);
+                    CoreLocal::set("training",0);
+                    CoreLocal::set("gui-scale","no");
                     /**
                       An empty transaction may still contain
                       invisible, logging records. Rotate those
@@ -167,7 +166,7 @@ class Steering extends Parser
                         if (session_id() != '') {
                             session_write_close();
                         }
-                        $kicker_class = ($CORE_LOCAL->get("kickerModule")=="") ? 'Kicker' : $CORE_LOCAL->get('kickerModule');
+                        $kicker_class = (CoreLocal::get("kickerModule")=="") ? 'Kicker' : CoreLocal::get('kickerModule');
                         $kicker_object = new $kicker_class();
                         if ($kicker_object->kickOnSignOut()) {
                             ReceiptLib::drawerKick();
@@ -179,7 +178,7 @@ class Steering extends Parser
                 return true;
 
             case 'NS':
-                if ($CORE_LOCAL->get("LastID") != 0) {
+                if (CoreLocal::get("LastID") != 0) {
                     $this->ret['output'] = DisplayLib::boxMsg(_("Transaction in Progress"));
                 } else {
                     $this->ret['main_frame'] = $my_url."gui-modules/nslogin.php";
@@ -187,12 +186,12 @@ class Steering extends Parser
                 return true;
 
             case 'GD':
-                $CORE_LOCAL->set("msgrepeat",0);
+                CoreLocal::set("msgrepeat",0);
                 $this->ret['main_frame'] = $my_url."gui-modules/giftcardlist.php";
                 return true;
 
             case 'IC':
-                $CORE_LOCAL->set("msgrepeat",0);
+                CoreLocal::set("msgrepeat",0);
                 $this->ret['main_frame'] = $my_url."gui-modules/HouseCouponList.php";
                 return true;
 

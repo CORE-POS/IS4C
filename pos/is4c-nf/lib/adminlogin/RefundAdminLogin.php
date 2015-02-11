@@ -34,12 +34,11 @@ class RefundAdminLogin
 
     public static function adminLoginCallback($success)
     {
-        global $CORE_LOCAL;
         if ($success) {
-            $CORE_LOCAL->set('refundComment', $CORE_LOCAL->get('strEntered'));    
+            CoreLocal::set('refundComment', CoreLocal::get('strEntered'));    
             return MiscLib::base_url().'gui-modules/refundComment.php';
         } else {
-            $CORE_LOCAL->set('refundComment', '');
+            CoreLocal::set('refundComment', '');
             return false;
         }
     }

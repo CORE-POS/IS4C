@@ -31,23 +31,22 @@ class ScrollItems extends Parser {
 		return False;
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
-
-        $lines = $CORE_LOCAL->get('screenLines');
+	function parse($str)
+    {
+        $lines = CoreLocal::get('screenLines');
         if (!$lines === '' || !is_numeric($lines)) {
             $lines = 11;
         }
 
 		$ret = $this->default_json();
 		if ($str == "U")
-			$ret["output"] = DisplayLib::listItems($CORE_LOCAL->get("currenttopid"), $this->next_valid($CORE_LOCAL->get("currentid"),True));
+			$ret["output"] = DisplayLib::listItems(CoreLocal::get("currenttopid"), $this->next_valid(CoreLocal::get("currentid"),True));
 		elseif ($str == "D")
-			$ret["output"] = DisplayLib::listItems($CORE_LOCAL->get("currenttopid"), $this->next_valid($CORE_LOCAL->get("currentid"),False));
+			$ret["output"] = DisplayLib::listItems(CoreLocal::get("currenttopid"), $this->next_valid(CoreLocal::get("currentid"),False));
 		else {
 			$change = (int)substr($str,1);
-			$curID = $CORE_LOCAL->get("currenttopid");
-			$newID = $CORE_LOCAL->get("currentid");
+			$curID = CoreLocal::get("currenttopid");
+			$newID = CoreLocal::get("currentid");
 			if ($str[0] == "U")
 				$newID -= $change;
 			else

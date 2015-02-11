@@ -34,6 +34,7 @@ class ShrinkReasonsModel extends BasicModel
     'description' => array('type'=>'VARCHAR(30)'),
     );
 
+    public $preferred_db = 'op';
 
     /* START ACCESSOR FUNCTIONS */
 

@@ -52,8 +52,6 @@ class SpecialOrder extends SpecialUPC
 
     public function handle($upc,$json)
     {
-        global $CORE_LOCAL;
-
         $orderID = substr($upc,5,6);
         $transID = substr($upc,11,2);
 

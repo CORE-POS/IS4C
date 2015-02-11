@@ -37,16 +37,15 @@ class TenderKey extends Parser
 
 	function parse($str)
     {
-		global $CORE_LOCAL;
 		$my_url = MiscLib::base_url();
 
 		$amt = substr($str,0,strlen($str)-2);
 		if ($amt === "") {
-			$amt = 100*$CORE_LOCAL->get("amtdue");
+			$amt = 100*CoreLocal::get("amtdue");
         }
 		$ret = $this->default_json();
 
-		$CORE_LOCAL->set("tenderTotal",$amt);
+		CoreLocal::set("tenderTotal",$amt);
 		$ret['main_frame'] = $my_url.'gui-modules/tenderlist.php';
 
 		return $ret;

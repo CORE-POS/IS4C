@@ -53,3 +53,48 @@ function selectSubmit(selector, myform) {
         }
     });
 }
+
+function scrollUp(selector)
+{
+    var rawElement = $(selector)[0];
+    if (rawElement.selectedIndex > 0) {
+        rawElement.selectedIndex = rawElement.selectedIndex - 1;
+    }
+    $(selector).focus();
+}
+
+function scrollDown(selector)
+{
+    var rawElement = $(selector)[0];
+    var max = $(selector + ' option').length - 1;
+    if (rawElement.selectedIndex < max) {
+        rawElement.selectedIndex = rawElement.selectedIndex + 1;
+    }
+    $(selector).focus();
+}
+
+function pageUp(selector)
+{
+    var rawElement = $(selector)[0];
+    var viewportSize = rawElement.size;
+    if (rawElement.selectedIndex - viewportSize < 0) {
+        rawElement.selectedIndex = 0;
+    } else {
+        rawElement.selectedIndex = rawElement.selectedIndex - viewportSize;
+    }
+    $(selector).focus();
+}
+
+function pageDown(selector)
+{
+    var rawElement = $(selector)[0];
+    var viewportSize = rawElement.size;
+    var max = $(selector + ' option').length - 1;
+    if (rawElement.selectedIndex + viewportSize > max) {
+        rawElement.selectedIndex = max;
+    } else {
+        rawElement.selectedIndex = rawElement.selectedIndex + viewportSize;
+    }
+    $(selector).focus();
+}
+

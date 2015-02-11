@@ -45,9 +45,9 @@ static public function printReport(){
  setting "TenderReportMod". If nothing has been selected,
  the "DefaultTenderReport" module is used.
  */
-static public function get(){
-	global $CORE_LOCAL;
-	$trClass = $CORE_LOCAL->get("TenderReportMod");
+static public function get()
+{
+	$trClass = CoreLocal::get("TenderReportMod");
 	if ($trClass == '') $trClass = 'DefaultTenderReport';
 	return $trClass::get();
 }

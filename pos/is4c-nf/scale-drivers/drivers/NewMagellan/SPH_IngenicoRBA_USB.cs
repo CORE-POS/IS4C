@@ -44,7 +44,8 @@ using USBLayer;
 
 namespace SPH {
 
-public class SPH_IngenicoRBA_USB : SerialPortHandler {
+public class SPH_IngenicoRBA_USB : SPH_IngenicoRBA_Common
+{
 
     /**
      * USB protocol notes
@@ -68,13 +69,9 @@ public class SPH_IngenicoRBA_USB : SerialPortHandler {
      * in that packet.
      */
 
-    private static String MAGELLAN_OUTPUT_DIR = "ss-output/";
-
     private USBWrapper usb_port;
     private bool read_continues;
-    private byte[] long_buffer;
-    private byte[] last_message;
-    private int long_pos;
+    private System.Collections.Generic.List<byte> long_buffer;
     private FileStream usb_fs;
     private int usb_report_size;
     private byte[] ack;
@@ -140,18 +137,14 @@ public class SPH_IngenicoRBA_USB : SerialPortHandler {
     */
 
     private string usb_devicefile;
-    private System.Object usb_lock;
-    private AutoResetEvent ack_event;
 
     public SPH_IngenicoRBA_USB(string p) : base(p)
     { 
         read_continues = false;
-        long_pos = 0;
+        long_buffer = new System.Collections.Generic.List<byte>();
         usb_fs = null;
-        usb_lock = new System.Object();
-        ack_event = new AutoResetEvent(false);
         verbose_mode = 1;
-        last_message = null;
+        this.port = p;
         
         #if MONO
         usb_devicefile = p;
@@ -206,7 +199,13 @@ public class SPH_IngenicoRBA_USB : SerialPortHandler {
         // needs changes for mono. Async probably still doesn't work.
         GetHandle();
         AsyncRead();
-        ConfirmedWrite(OnlineMessage());
+        WriteMessageToDevice(OnlineMessage());
+        WriteMessageToDevice(SwipeCardScreen());
+    }
+
+    public override void WriteMessageToDevice(byte[] msg)
+    {
+        ConfirmedUsbWrite(msg);
     }
 
     private void AsyncRead()
@@ -254,28 +253,34 @@ public class SPH_IngenicoRBA_USB : SerialPortHandler {
                 System.Console.WriteLine("NACK : DEVICE");
                 // resend message?
             } else if (read_continues && input.Length > 0) {
-                foreach (byte b in input) {
-                    long_buffer[long_pos] = b;
-                    long_pos++;
+                for (int i=2; i < input[1]+2; i++) {
+                    long_buffer.Add(input[i]);
                 }
-                if (long_buffer[long_buffer.Length-2] == 0x3) {
+                if (long_buffer[long_buffer.Count-2] == 0x3) {
                     read_continues = false;
                     SendAck();
+                    byte[] sliced = new byte[long_buffer.Count];
+                    long_buffer.CopyTo(sliced);
+                    long_buffer.Clear();
+                    HandleMessageFromDevice(sliced);
                 }
-            } else if (input.Length > 3 && input[1]+2 <= usb_report_size && input[2] == 0x2) {
+            } else if (input.Length > 3 && input[1]+2 <= usb_report_size && input[input[1]] == 0x3 && input[2] == 0x2) {
                 // single report message
                 // 0x1 {message_length_byte} {message_data_bytes}
                 System.Console.WriteLine("ACK : POS");
                 SendAck();
-            } else if (input.Length > 3 && input[1]+2 > usb_report_size && input[2] == 0x2) {
+                byte[] sliced = new byte[input.Length - 2];
+                Array.Copy(input, 2, sliced, 0, sliced.Length);
+                HandleMessageFromDevice(sliced);
+            } else if (input.Length > 3 && input[1] == 30) {
                 // long message begins
                 read_continues = true;
-                long_buffer = input;
-                long_pos = input.Length;
+                long_buffer.Clear();
+                for (int i=2; i<input[1]+2; i++) {
+                    long_buffer.Add(input[i]);
+                }
             } else {
-                //SendNack();
-                // Skipping NACKs until implementation works well and is
-                // not the primary source of errors
+                SendNack();
                 System.Console.WriteLine("unknown message");
             }
         } catch(Exception ex){
@@ -284,54 +289,6 @@ public class SPH_IngenicoRBA_USB : SerialPortHandler {
         }
 
         AsyncRead();
-    }
-
-    public override void HandleMsg(string msg)
-    { 
-        // optional predicate for "termSig" message
-        // predicate string is displayed on sig capture screen
-        if (msg.Length > 7 && msg.Substring(0, 7) == "termSig") {
-            //sig_message = msg.Substring(7);
-            msg = "termSig";
-        }
-        switch(msg) {
-            case "termReset":
-                ConfirmedWrite(HardResetMessage());
-                break;
-            case "termReboot":
-                ConfirmedWrite(HardResetMessage());
-                break;
-            case "termManual":
-                break;
-            case "termApproved":
-                break;
-            case "termSig":
-                break;
-            case "termGetType":
-                break;
-            case "termGetTypeWithFS":
-                break;
-            case "termGetPin":
-                break;
-            case "termWait":
-                break;
-        }
-    }
-    
-    private void PushOutput(string s)
-    {
-        int ticks = Environment.TickCount;
-        char sep = System.IO.Path.DirectorySeparatorChar;
-        while (File.Exists(MAGELLAN_OUTPUT_DIR+sep+ticks)) {
-            ticks++;
-        }
-
-        TextWriter sw = new StreamWriter(MAGELLAN_OUTPUT_DIR+sep+"tmp"+sep+ticks);
-        sw = TextWriter.Synchronized(sw);
-        sw.WriteLine(s);
-        sw.Close();
-        File.Move(MAGELLAN_OUTPUT_DIR+sep+"tmp"+sep+ticks,
-              MAGELLAN_OUTPUT_DIR+sep+ticks);
     }
 
     /**
@@ -367,7 +324,7 @@ public class SPH_IngenicoRBA_USB : SerialPortHandler {
         return lrc;
     }
 
-    private void ConfirmedWrite(byte[] b)
+    private void ConfirmedUsbWrite(byte[] b)
     {
         /**
          * Widen message by one byte to add LRC
@@ -436,43 +393,7 @@ public class SPH_IngenicoRBA_USB : SerialPortHandler {
         }
     }
 
-    private byte[] OnlineMessage()
-    {
-        byte[] msg = new byte[13];
-        msg[0] = 0x2; // STX
-
-        msg[1] = 0x30; // Online Code
-        msg[2] = 0x31;
-        msg[3] = 0x2e;
-
-        // blank application id and parameter id
-        msg[4] = 0x30;
-        msg[5] = 0x30;
-        msg[6] = 0x30;
-        msg[7] = 0x30;
-        msg[8] = 0x30;
-        msg[9] = 0x30;
-        msg[10] = 0x30;
-        msg[11] = 0x30;
-
-        msg[12] = 0x3; // ETX
-
-        return msg;
-    }
-
-    private byte[] HardResetMessage()
-    {
-        byte[] msg = new byte[5];
-        msg[0] = 0x2; // STX
-
-        msg[1] = 0x31; // Reset Code
-        msg[2] = 0x30;
-        msg[3] = 0x2e;
-
-        msg[4] = 0x3; // ETX
-        
-        return msg;
-    }
 }
 
 }
+

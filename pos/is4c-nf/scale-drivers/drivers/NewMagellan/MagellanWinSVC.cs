@@ -22,7 +22,7 @@
 
 /*************************************************************
  * Magellan
- * 	
+ *     
  * Wraps Magellan in a Windows Service.
  * Use installutil.exe posSVC.exe to install. When prompted
  * for a username and password, a fully qualified name
@@ -38,37 +38,37 @@ using SPH;
 
 public class MagellanWinSVC : ServiceBase {
 
-	protected Magellan my_obj;
+    protected Magellan my_obj;
 
-	public MagellanWinSVC(){
-		this.ServiceName = "IT CORE Scale Monitor";
-	}
+    public MagellanWinSVC(){
+        this.ServiceName = "IT CORE Scale Monitor";
+    }
 
-	override protected void OnStart(String[] args){
-		SerialPortHandler[] sph = new SerialPortHandler[1];
-		sph[0] = new SPH_Magellan_Scale("COM1");
-		this.my_obj = new Magellan(sph);
-	}
+    override protected void OnStart(String[] args){
+        SerialPortHandler[] sph = new SerialPortHandler[1];
+        sph[0] = new SPH_Magellan_Scale("COM1");
+        this.my_obj = new Magellan(sph);
+    }
 
-	override protected void OnStop(){
-		if (this.my_obj != null)
-			this.my_obj.ShutDown();
-	}
+    override protected void OnStop(){
+        if (this.my_obj != null)
+            this.my_obj.ShutDown();
+    }
 
-	public static void Main(){
-		ServiceBase.Run(new MagellanWinSVC());
-	}
+    public static void Main(){
+        ServiceBase.Run(new MagellanWinSVC());
+    }
 }
 
 [RunInstallerAttribute(true)]
 public class MyInstaller : ServiceProcessInstaller {
-	private ServiceInstaller s;
+    private ServiceInstaller s;
 
-	public MyInstaller(){
-		this.s = new ServiceInstaller();	
-		this.s.ServiceName = "IT CORE Scale Monitor";
-		this.Installers.AddRange(new Installer[] {
-			this.s
-		});
-	}	
+    public MyInstaller(){
+        this.s = new ServiceInstaller();    
+        this.s.ServiceName = "IT CORE Scale Monitor";
+        this.Installers.AddRange(new Installer[] {
+            this.s
+        });
+    }    
 }

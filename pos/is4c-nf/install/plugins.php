@@ -30,7 +30,7 @@ body {
 <b>Available plugins</b>:<br />
 <?php
 if (isset($_REQUEST['PLUGINLIST']) || isset($_REQUEST['psubmit'])){
-	$oldset = $CORE_LOCAL->get('PluginList');
+	$oldset = CoreLocal::get('PluginList');
 	if (!is_array($oldset)) $oldset = array();
 	$newset = isset($_REQUEST['PLUGINLIST']) ? $_REQUEST['PLUGINLIST'] : array();
 	foreach($newset as $plugin_class){
@@ -45,10 +45,10 @@ if (isset($_REQUEST['PLUGINLIST']) || isset($_REQUEST['psubmit'])){
 			$obj->plugin_disable();
 		}
 	}
-	$CORE_LOCAL->set('PluginList',$_REQUEST['PLUGINLIST']);
+	CoreLocal::set('PluginList',$_REQUEST['PLUGINLIST']);
 }
-$type_check = $CORE_LOCAL->get('PluginList');
-if (!is_array($type_check)) $CORE_LOCAL->set('PluginList',array());
+$type_check = CoreLocal::get('PluginList');
+if (!is_array($type_check)) CoreLocal::set('PluginList',array());
 
 $mods = AutoLoader::listModules('Plugin');
 sort($mods);
@@ -56,7 +56,7 @@ sort($mods);
 foreach($mods as $m){
 	$enabled = False;
 	$instance = new $m();
-	foreach($CORE_LOCAL->get("PluginList") as $r){
+	foreach(CoreLocal::get("PluginList") as $r){
 		if ($r == $m){
 			$enabled = True;
 			break;
@@ -97,7 +97,7 @@ foreach($mods as $m){
 			}
 			if (isset($info['description'])) 
 				echo '<span class="noteTxt" style="width:200px;">'.$info['description'].'</span>';
-			InstallUtilities::paramSave($field,$CORE_LOCAL->get($field));
+			InstallUtilities::paramSave($field,CoreLocal::get($field));
 		echo '</td></tr>';
 		}
         $instance->settingChange();
@@ -106,7 +106,7 @@ foreach($mods as $m){
 }
 echo '</table>';
 
-InstallUtilities::paramSave('PluginList',$CORE_LOCAL->get('PluginList'));
+InstallUtilities::paramSave('PluginList',CoreLocal::get('PluginList'));
 ?>
 <hr />
 <input type=submit name=psubmit value="Save Changes" />

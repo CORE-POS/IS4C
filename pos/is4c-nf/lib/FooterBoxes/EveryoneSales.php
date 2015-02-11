@@ -35,8 +35,7 @@ class EveryoneSales extends FooterBox
 
     public function display_content()
     {
-        global $CORE_LOCAL;
-        $saleTTL = (is_numeric($CORE_LOCAL->get("discounttotal"))) ? number_format($CORE_LOCAL->get("discounttotal"),2) : "0.00";
+        $saleTTL = (is_numeric(CoreLocal::get("discounttotal"))) ? number_format(CoreLocal::get("discounttotal"),2) : "0.00";
         return $saleTTL;
     }
 }

@@ -522,8 +522,6 @@ class BasicModel
     */
     public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=False)
     {
-        global $CORE_LOCAL;
-
         if ($mode != BasicModel::NORMALIZE_MODE_CHECK && $mode != BasicModel::NORMALIZE_MODE_APPLY) {
             echo "Error: Unknown mode ($mode)\n";
             return false;
@@ -538,9 +536,9 @@ class BasicModel
         /**
 
         */
-        if ($db_name == $CORE_LOCAL->get('pDatabase')) {
+        if ($db_name == CoreLocal::get('pDatabase')) {
             $this->connection = Database::pDataConnect();
-        } else if ($db_name == $CORE_LOCAL->get('tDatabase')) {
+        } else if ($db_name == CoreLocal::get('tDatabase')) {
             $this->connection = Database::tDataConnect();
         } else {
             echo "Error: Unknown database ($db_name)";

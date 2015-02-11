@@ -37,10 +37,9 @@ class HarvestNewTenderReport extends TenderReport {
  special handling in the tender tape view (e.g., three
  tender types are actually compined under EBT)
  */
-static public function get(){
-	global $CORE_LOCAL;
-
-	$DESIRED_TENDERS = $CORE_LOCAL->get("TRDesiredTenders");
+static public function get()
+{
+	$DESIRED_TENDERS = CoreLocal::get("TRDesiredTenders");
 
 	// $DESIRED_TENDERS = array(
 	// 			 "CK"=>"CHECK TENDERS",
@@ -69,43 +68,43 @@ static public function get(){
 			.substr("Trans #".$blank, 0, 12)
 			.substr("Change".$blank, 0, 14)
 			.substr("Amount".$blank, 0, 14)."\n";
-	$ref = ReceiptLib::centerString(trim($CORE_LOCAL->get("CashierNo"))." ".trim($CORE_LOCAL->get("cashier"))." ".ReceiptLib::build_time(time()))."\n\n";
+	$ref = ReceiptLib::centerString(trim(CoreLocal::get("CashierNo"))." ".trim(CoreLocal::get("cashier"))." ".ReceiptLib::build_time(time()))."\n\n";
 	$receipt = "";
 
 	$itemize = 0;
 	foreach($DESIRED_TENDERS as $tender_code => $header){ 
 		$query = "select tdate,register_no,trans_no,-total AS tender
-		       	from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
+		       	from dlog where emp_no=".CoreLocal::get("CashierNo").
 			" and trans_type='T' AND trans_subtype='".$tender_code."'
 			 AND total <> 0 ORDER BY tdate";
 		switch($tender_code){
 		case 'FS':
 			$query = "select tdate,register_no,trans_no,-total AS tender
-				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
+				from dlog where emp_no=".CoreLocal::get("CashierNo").
 				" and trans_type='T' AND trans_subtype IN ('EF','EC','EB','EK')
 				  AND total <> 0 ORDER BY tdate";
 			break;
 		case 'CK':
 			$query = "select tdate,register_no,trans_no,-total AS tender
-				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
+				from dlog where emp_no=".CoreLocal::get("CashierNo").
 				" and trans_type='T' AND trans_subtype IN ('PE','BU','EL','PY','TV')
 				  AND total <> 0 ORDER BY tdate";
 			break;
 		case 'MC':
 			$query = "select tdate,register_no,trans_no,-total AS tender
-				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
+				from dlog where emp_no=".CoreLocal::get("CashierNo").
 				" and trans_type='T' AND trans_subtype  IN ('CP','MC') AND
 				  upc NOT LIKE '%MAD%' AND total <> 0 ORDER BY tdate";
 			break;
 		case 'AR':
 			$query = "select tdate,register_no,trans_no,total AS tender
-				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
+				from dlog where emp_no=".CoreLocal::get("CashierNo").
 				" and trans_type='D' AND total <> 0 AND department = 98
 				  ORDER BY tdate";
 			break;
 		case 'EQ':
 			$query = "select tdate,register_no,trans_no,total AS tender
-				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
+				from dlog where emp_no=".CoreLocal::get("CashierNo").
 				" and trans_type='D' AND department IN (70,71)
 				  AND total <> 0 ORDER BY tdate";
 			break;

@@ -34,7 +34,6 @@ class MemberID extends Parser
 
 	function parse($str)
     {
-        global $CORE_LOCAL;
 		if ($str == "0ID") {
             // Member zero clears member info from the transaction
 			PrehLib::clearMember();
@@ -44,13 +43,13 @@ class MemberID extends Parser
 				"redraw_footer"=>true
 			);
 			return $ret;
-		} else if ($CORE_LOCAL->get('RestrictDefaultNonMem') == 1 && $str == ($CORE_LOCAL->get('defaultNonMem') . 'ID')) {
+		} else if (CoreLocal::get('RestrictDefaultNonMem') == 1 && $str == (CoreLocal::get('defaultNonMem') . 'ID')) {
             // PrehLib::ttl will automatically prompt for member if it
             // has not been entered; otherwise just total
             $ret = $this->default_json();
             $try = PrehLib::ttl();
             if ($try !== true) {
-                $ret['main_frame'] = $try.'?idSearch='.$CORE_LOCAL->get('defaultNonMem');
+                $ret['main_frame'] = $try.'?idSearch='.CoreLocal::get('defaultNonMem');
             } else {
                 $ret['output'] = DisplayLib::lastpage();
             }

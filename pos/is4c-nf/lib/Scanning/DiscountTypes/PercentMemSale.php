@@ -26,7 +26,6 @@ class PercentMemSale extends DiscountType
 
     function priceInfo($row,$quantity=1)
     {
-        global $CORE_LOCAL;
         if (is_array($this->savedInfo)) {
             return $this->savedInfo;
         }
@@ -39,7 +38,7 @@ class PercentMemSale extends DiscountType
         $ret['discount'] = 0;
         $ret['memDiscount'] = MiscLib::truncate2(($ret['regPrice'] - ($ret['unitPrice'] * $row['special_price'])) * $quantity);
 
-        if ($CORE_LOCAL->get("isMember") == 1) {
+        if (CoreLocal::get("isMember") == 1) {
             $ret['unitPrice'] = MiscLib::truncate2($ret['unitPrice'] * $row['special_price']);
         }
 
@@ -50,8 +49,7 @@ class PercentMemSale extends DiscountType
 
     public function addDiscountLine()
     {
-        global $CORE_LOCAL;    
-        if ($CORE_LOCAL->get("isMember")) {
+        if (CoreLocal::get("isMember")) {
             TransRecord::adddiscount($this->savedInfo['memDiscount'],
                 $this->savedRow['department']);
         }

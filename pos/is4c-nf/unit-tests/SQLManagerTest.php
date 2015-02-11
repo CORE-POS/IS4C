@@ -4,17 +4,16 @@
  */
 class SQLManagerTest extends PHPUnit_Framework_TestCase
 {
-	public function testMethods(){
-		global $CORE_LOCAL;
-
+	public function testMethods()
+    {
 		$sql = Database::pDataConnect();
 
 		/* test create connection */
 		$this->assertInstanceOf('SQLManager',$sql);
 		$this->assertObjectHasAttribute('connections',$sql);
 		$this->assertInternalType('array',$sql->connections);
-		$this->assertArrayHasKey($CORE_LOCAL->get('pDatabase'),$sql->connections);
-		$con = $sql->connections[$CORE_LOCAL->get('pDatabase')];
+		$this->assertArrayHasKey(CoreLocal::get('pDatabase'),$sql->connections);
+		$con = $sql->connections[CoreLocal::get('pDatabase')];
 		// mysql gives resource; PDO gives object
 		$constraint = $this->logicalOr(
 			$this->isType('resource',$con),

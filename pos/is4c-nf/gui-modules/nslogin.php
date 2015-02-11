@@ -32,7 +32,6 @@ class nslogin extends NoInputPage
 
 	function preprocess()
     {
-        global $CORE_LOCAL;
 		$this->color ="coloredArea";
 		$this->heading = _("enter password");
 		$this->msg = _("confirm no sales");
@@ -51,7 +50,7 @@ class nslogin extends NoInputPage
 				return False;
 			} elseif (Authenticate::checkPassword($passwd)) {
                 ReceiptLib::drawerKick();
-                if ($CORE_LOCAL->get('LoudLogins') == 1) {
+                if (CoreLocal::get('LoudLogins') == 1) {
                     UdpComm::udpSend('goodBeep');
                 }
 				$this->change_page($this->page_url."gui-modules/pos2.php");
@@ -61,7 +60,7 @@ class nslogin extends NoInputPage
 				$this->heading = _("re-enter password");
 				$this->msg = _("invalid password");
 
-                if ($CORE_LOCAL->get('LoudLogins') == 1) {
+                if (CoreLocal::get('LoudLogins') == 1) {
                     UdpComm::udpSend('twoPairs');
                 }
 			}
@@ -78,7 +77,6 @@ class nslogin extends NoInputPage
 
 	function body_content()
     {
-		global $CORE_LOCAL;
 		?>
 		<div class="baseHeight">
 		<div class="<?php echo $this->color; ?> centeredDisplay">

@@ -198,7 +198,7 @@ Get a list of columns that exist on the local db and the server db for the given
 <div class="memdoc">
 
 <p>
-Load values from subtotals view into $CORE_LOCAL. Essentially refreshes totals in the session. 
+Load values from subtotals view into session. Essentially refreshes totals in the session. 
 <p>
 9May14 Andy I belive this query is equivalent to the old subtotals =&gt; lttsubtotals =&gt; lttsummary I've omitted tax since those are already calculated separately. A few conditions here should obviously be more configurable, but first I want to get rid of or simply the old nested views<p>
 fsEligible is the complicated one. That's: 1. Total foodstampable items 2. Minus transaction-level discount on those items 3. Minus any foodstamp tenders already applied. localtemptrans.total is negative on tenders so the query uses an addition sign but in effect it's subracting.<p>
@@ -280,7 +280,7 @@ Calculate taxes using new-style taxView. <dl compact><dt><b>Returns:</b></dt><dd
 <div class="memdoc">
 
 <p>
-Set new value in $CORE_LOCAL. <dl compact><dt><b>Parameters:</b></dt><dd>
+Set new value in session. <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>$param</em>&nbsp;</td><td>keycode </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>$val</em>&nbsp;</td><td>new value </td></tr>
@@ -305,7 +305,7 @@ Set new value in $CORE_LOCAL. <dl compact><dt><b>Parameters:</b></dt><dd>
 <div class="memdoc">
 
 <p>
-Read globalvalues settings into $CORE_LOCAL. 
+Read globalvalues settings into session. 
 </div>
 </div><p>
 <a class="anchor" name="5364076c530f434fcb705b884c6b6d5e"></a><!-- doxytag: member="Database::localMatchingColumns" ref="5364076c530f434fcb705b884c6b6d5e" args="($connection, $table1, $table2)" -->
@@ -496,7 +496,7 @@ Update setting in globalvalues table. <dl compact><dt><b>Parameters:</b></dt><dd
 <div class="memdoc">
 
 <p>
-Update many settings in globalvalues table and in $CORE_LOCAL <dl compact><dt><b>Parameters:</b></dt><dd>
+Update many settings in globalvalues table and in session <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>$arr</em>&nbsp;</td><td>An array of keys and values </td></tr>
   </table>
@@ -598,7 +598,7 @@ On success the local tables are truncated. The efsnet tables are copied in the <
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/Database.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 18 Dec 2014 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 9 Feb 2015 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

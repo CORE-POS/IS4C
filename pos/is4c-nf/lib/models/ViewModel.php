@@ -96,7 +96,6 @@ class ViewModel extends BasicModel
     */
     public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=false)
     {
-        global $CORE_LOCAL;
         // don't try to detect a db structure corresponding to
         // the ViewModel class itself
         if ($this->name == '__VirtualClass_ShouldNotExist') {
@@ -115,9 +114,9 @@ class ViewModel extends BasicModel
         );
         echo "==========================================\n";
 
-        if ($db_name == $CORE_LOCAL->get('pDatabase')) {
+        if ($db_name == CoreLocal::get('pDatabase')) {
             $this->connection = Database::pDataConnect();
-        } else if ($db_name == $CORE_LOCAL->get('tDatabase')) {
+        } else if ($db_name == CoreLocal::get('tDatabase')) {
             $this->connection = Database::tDataConnect();
         } else {
             echo "Error: Unknown database ($db_name)";

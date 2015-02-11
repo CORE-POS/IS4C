@@ -22,7 +22,7 @@
 
 /*************************************************************
  * DelegateForm
- * 	A form with delegate to call from separate threads
+ *     A form with delegate to call from separate threads
  *
  *
 *************************************************************/
@@ -33,8 +33,8 @@ namespace CustomForms {
 
 public abstract class DelegateForm {
 
-	public abstract void MsgRecv(string msg);
-	public abstract void MsgSend(string msg);
+    public abstract void MsgRecv(string msg);
+    public abstract void MsgSend(string msg);
 }
 
 }

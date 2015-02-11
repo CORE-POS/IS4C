@@ -29,8 +29,7 @@ class SavedOrCouldHave extends FooterBox
 
     public function header_content()
     {
-        global $CORE_LOCAL;
-        if ($CORE_LOCAL->get("isMember") == 1) {
+        if (CoreLocal::get("isMember") == 1) {
             return _("You Saved");
         } else {
             return _("Could Have Saved");
@@ -39,12 +38,11 @@ class SavedOrCouldHave extends FooterBox
 
     public function display_content()
     {
-        global $CORE_LOCAL;
-        $saleTTL = (is_numeric($CORE_LOCAL->get("discounttotal"))) ? number_format($CORE_LOCAL->get("discounttotal"),2) : "0.00";
-        $memSaleTTL = is_numeric($CORE_LOCAL->get("memSpecial")) ? number_format($CORE_LOCAL->get("memSpecial"),2) : "0.00";
+        $saleTTL = (is_numeric(CoreLocal::get("discounttotal"))) ? number_format(CoreLocal::get("discounttotal"),2) : "0.00";
+        $memSaleTTL = is_numeric(CoreLocal::get("memSpecial")) ? number_format(CoreLocal::get("memSpecial"),2) : "0.00";
 
-        if ($CORE_LOCAL->get("isMember") == 1) {
-            return number_format($CORE_LOCAL->get("transDiscount") +
+        if (CoreLocal::get("isMember") == 1) {
+            return number_format(CoreLocal::get("transDiscount") +
                 $saleTTL + $memSaleTTL, 2);    
         } else {
             return $memSaleTTL;

@@ -52,6 +52,45 @@ include('InstallUtilities.php');
     </td>
 </tr>
 <tr>
+    <td><b>List Savings</b>: </td>
+    <td>
+    <?php
+    $receipts = array(
+        'unified' => 'Single Line',
+        'separate' => 'Separately',
+        'couldhave' => 'Separately (with "could have")',
+        'omit' => 'Do not print',
+    );
+    echo InstallUtilities::installSelectField('ReceiptSavingsMode', $receipts, 'unified');
+    ?>
+    <span class='noteTxt'>
+    The receipt optionally lists savings from 1) a customer's percent discount,
+    2) sale prices for all customers, and 3) sale prices just for members.
+    The total can be listed as a single lump sum, as three separate line items,
+    or omitted entirely. The "could have" option will list the member-only sale savings
+    on non-member receipts as an amount they "could have" saved.
+    </span>
+    </td>
+</tr>
+<tr>
+    <td><b>List Local Items</b>: </td>
+    <td>
+    <?php
+    $local = array(
+        'total' => 'As $ Amount',
+        'percent' => 'As % of Purchase',
+        'omit' => 'Do not print',
+    );
+    echo InstallUtilities::installSelectField('ReceiptLocalMode', $local, 'total');
+    ?>
+    <span class='noteTxt'>
+    Display information about items in the transaction marked "local". This
+    can be displayed as the total dollar value or as a percent of all
+    items on the receipt.
+    </span>
+    </td>
+</tr>
+<tr>
 	<td><b>Receipt Driver</b>:</td>
 	<td>
     <?php
@@ -120,13 +159,13 @@ if (isset($_REQUEST['RM_MODS'])){
 	foreach($_REQUEST['RM_MODS'] as $m){
 		if ($m != '') $mods[] = $m;
 	}
-	$CORE_LOCAL->set('ReceiptMessageMods', $mods);
+	CoreLocal::set('ReceiptMessageMods', $mods);
 }
-if (!is_array($CORE_LOCAL->get('ReceiptMessageMods'))){
-	$CORE_LOCAL->set('ReceiptMessageMods', array());
+if (!is_array(CoreLocal::get('ReceiptMessageMods'))){
+	CoreLocal::set('ReceiptMessageMods', array());
 }
 $available = AutoLoader::listModules('ReceiptMessage');
-$current = $CORE_LOCAL->get('ReceiptMessageMods');
+$current = CoreLocal::get('ReceiptMessageMods');
 for($i=0;$i<=count($current);$i++){
 	$c = isset($current[$i]) ? $current[$i] : '';
 	echo '<select name="RM_MODS[]">';
@@ -135,7 +174,7 @@ for($i=0;$i<=count($current);$i++){
 		printf('<option %s>%s</option>',($a==$c?'selected':''),$a);
 	echo '</select><br />';
 }
-InstallUtilities::paramSave('ReceiptMessageMods',$CORE_LOCAL->get('ReceiptMessageMods'));
+InstallUtilities::paramSave('ReceiptMessageMods',CoreLocal::get('ReceiptMessageMods'));
 ?>
 </td></tr>
 <tr><td colspan=2 class="submitBtn">

@@ -31,7 +31,6 @@ class pos2 extends BasicPage {
 
 	function preprocess()
     {
-		global $CORE_LOCAL;
 		$this->display = "";
 
 		$sd = MiscLib::scaleObject();
@@ -44,50 +43,50 @@ class pos2 extends BasicPage {
 
 		if (substr($entered, -2) == "CL") $entered = "CL";
 
-		if ($entered == "RI") $entered = $CORE_LOCAL->get("strEntered");
+		if ($entered == "RI") $entered = CoreLocal::get("strEntered");
 
-		if ($CORE_LOCAL->get("msgrepeat") == 1 && $entered != "CL") {
-			$entered = $CORE_LOCAL->get("strRemembered");
-            $CORE_LOCAL->set('strRemembered', '');
+		if (CoreLocal::get("msgrepeat") == 1 && $entered != "CL") {
+			$entered = CoreLocal::get("strRemembered");
+            CoreLocal::set('strRemembered', '');
 		}
-		$CORE_LOCAL->set("strEntered",$entered);
+		CoreLocal::set("strEntered",$entered);
 
 		$json = array();
 		if ($entered != ""){
 
-			if (in_array("Paycards",$CORE_LOCAL->get("PluginList"))){
+			if (in_array("Paycards",CoreLocal::get("PluginList"))){
 				/* this breaks the model a bit, but I'm putting
 				 * putting the CC parser first manually to minimize
 				 * code that potentially handles the PAN */
-				if($CORE_LOCAL->get("PaycardsCashierFacing")=="1" && substr($entered,0,9) == "PANCACHE:"){
+				if(CoreLocal::get("PaycardsCashierFacing")=="1" && substr($entered,0,9) == "PANCACHE:"){
 					/* cashier-facing device behavior; run card immediately */
 					$entered = substr($entered,9);
-					$CORE_LOCAL->set("CachePanEncBlock",$entered);
+					CoreLocal::set("CachePanEncBlock",$entered);
 				}
 
 				$pe = new paycardEntered();
 				if ($pe->check($entered)){
 					$valid = $pe->parse($entered);
 					$entered = "PAYCARD";
-					$CORE_LOCAL->set("strEntered","");
+					CoreLocal::set("strEntered","");
 					$json = $valid;
 				}
 
-				$CORE_LOCAL->set("quantity",0);
-				$CORE_LOCAL->set("multiple",0);
+				CoreLocal::set("quantity",0);
+				CoreLocal::set("multiple",0);
 			}
 
 			/* FIRST PARSE CHAIN:
 			 * Objects belong in the first parse chain if they
 			 * modify the entered string, but do not process it
 			 * This chain should be used for checking prefixes/suffixes
-			 * to set up appropriate $CORE_LOCAL variables.
+			 * to set up appropriate session variables.
 			 */
 			$parser_lib_path = $this->page_url."parser-class-lib/";
-			if (!is_array($CORE_LOCAL->get("preparse_chain")))
-				$CORE_LOCAL->set("preparse_chain",PreParser::get_preparse_chain());
+			if (!is_array(CoreLocal::get("preparse_chain")))
+				CoreLocal::set("preparse_chain",PreParser::get_preparse_chain());
 
-			foreach ($CORE_LOCAL->get("preparse_chain") as $cn){
+			foreach (CoreLocal::get("preparse_chain") as $cn){
 				if (!class_exists($cn)) continue;
 				$p = new $cn();
 				if ($p->check($entered))
@@ -103,11 +102,11 @@ class pos2 extends BasicPage {
 				 * completely. The return value of parse() determines
 				 * whether to call lastpage() [list the items on screen]
 				 */
-				if (!is_array($CORE_LOCAL->get("parse_chain")))
-					$CORE_LOCAL->set("parse_chain",Parser::get_parse_chain());
+				if (!is_array(CoreLocal::get("parse_chain")))
+					CoreLocal::set("parse_chain",Parser::get_parse_chain());
 
 				$result = False;
-				foreach ($CORE_LOCAL->get("parse_chain") as $cn){
+				foreach (CoreLocal::get("parse_chain") as $cn){
 					if (!class_exists($cn)) continue;
 					$p = new $cn();
 					if ($p->check($entered)){
@@ -118,10 +117,10 @@ class pos2 extends BasicPage {
 				if ($result && is_array($result)) {
 
                     // postparse chain: modify result
-                    if (!is_array($CORE_LOCAL->get("postparse_chain"))) {
-                        $CORE_LOCAL->set("postparse_chain",PostParser::getPostParseChain());
+                    if (!is_array(CoreLocal::get("postparse_chain"))) {
+                        CoreLocal::set("postparse_chain",PostParser::getPostParseChain());
                     }
-                    foreach ($CORE_LOCAL->get('postparse_chain') as $class) {
+                    foreach (CoreLocal::get('postparse_chain') as $class) {
                         if (!class_exists($class)) {
                             continue;
                         }
@@ -151,7 +150,7 @@ class pos2 extends BasicPage {
 				}
 			}
 		}
-		$CORE_LOCAL->set("msgrepeat",0);
+		CoreLocal::set("msgrepeat",0);
 		if (isset($json['main_frame']) && $json['main_frame'] != False){
 			$this->change_page($json['main_frame']);
 			return False;
@@ -168,7 +167,7 @@ class pos2 extends BasicPage {
 			$this->add_onload_command("receiptFetch('" . $json['receipt'] . "', '" . $ref . "');\n");
 		}
 
-        if ($CORE_LOCAL->get('CustomerDisplay') === true) {
+        if (CoreLocal::get('CustomerDisplay') === true) {
             $child_url = MiscLib::baseURL() . 'gui-modules/posCustDisplay.php';
             $this->add_onload_command("setCustomerURL('{$child_url}');\n");
             $this->add_onload_command("reloadCustomerDisplay();\n");
@@ -177,8 +176,8 @@ class pos2 extends BasicPage {
 		return true;
 	}
 
-	function head_content(){
-		global $CORE_LOCAL;
+	function head_content()
+    {
 		?>
 		<script type="text/javascript" src="<?php echo $this->page_url; ?>js/ajax-parser.js"></script>
         <script type="text/javascript" src="<?php echo $this->page_url; ?>js/CustomerDisplay.js"></script>
@@ -197,7 +196,7 @@ class pos2 extends BasicPage {
 		}
 		var screenLockVar;
 		function enableScreenLock(){
-			screenLockVar = setTimeout('lockScreen()', <?php printf('%d', $CORE_LOCAL->get("timeout")); ?>);
+			screenLockVar = setTimeout('lockScreen()', <?php printf('%d', CoreLocal::get("timeout")); ?>);
 		}
 		function lockScreen(){
 			location = '<?php echo $this->page_url; ?>gui-modules/login3.php';
@@ -259,14 +258,14 @@ class pos2 extends BasicPage {
 		<?php
 	}
 
-	function body_content(){
-		global $CORE_LOCAL;
-        $lines = $CORE_LOCAL->get('screenLines');
+	function body_content()
+    {
+        $lines = CoreLocal::get('screenLines');
         if (!$lines === '' || !is_numeric($lines)) {
             $lines = 11;
         }
 		$this->input_header('action="pos2.php" onsubmit="return submitWrapper();"');
-		if ($CORE_LOCAL->get("timeout") != "")
+		if (CoreLocal::get("timeout") != "")
 			$this->add_onload_command("enableScreenLock();\n");
 		$this->add_onload_command("\$('#reginput').keydown(function(ev){
 					switch(ev.which){
@@ -291,27 +290,27 @@ class pos2 extends BasicPage {
 					}
 				});\n");
 		/*
-		if ($CORE_LOCAL->get("msgrepeat") == 1)
+		if (CoreLocal::get("msgrepeat") == 1)
 			$this->add_onload_command("submitWrapper();");
 		*/
 		?>
 		<div class="baseHeight">
 		<?php
 
-		$CORE_LOCAL->set("quantity",0);
-		$CORE_LOCAL->set("multiple",0);
-		$CORE_LOCAL->set("casediscount",0);
+		CoreLocal::set("quantity",0);
+		CoreLocal::set("multiple",0);
+		CoreLocal::set("casediscount",0);
 
 		// set memberID if not set already
-		if (!$CORE_LOCAL->get("memberID")) {
-			$CORE_LOCAL->set("memberID","0");
+		if (!CoreLocal::get("memberID")) {
+			CoreLocal::set("memberID","0");
 		}
 
-		if ($CORE_LOCAL->get("plainmsg") && strlen($CORE_LOCAL->get("plainmsg")) > 0) {
+		if (CoreLocal::get("plainmsg") && strlen(CoreLocal::get("plainmsg")) > 0) {
 			echo DisplayLib::printheaderb();
 			echo "<div class=\"centerOffset\">";
-			echo DisplayLib::plainmsg($CORE_LOCAL->get("plainmsg"));
-			$CORE_LOCAL->set("plainmsg",0);
+			echo DisplayLib::plainmsg(CoreLocal::get("plainmsg"));
+			CoreLocal::set("plainmsg",0);
 			echo "</div>";
 		}
 		elseif (!empty($this->display))
@@ -325,30 +324,40 @@ class pos2 extends BasicPage {
 		echo DisplayLib::printfooter();
 		echo "</div>";
 
-		if ($CORE_LOCAL->get("touchscreen") === True){
+		if (CoreLocal::get("touchscreen")) {
 			echo '<div style="text-align: center;">
-			<input type="submit" value="Items"
-				class="quick_button"
+			<button type="submit" 
+				class="quick_button pos-button coloredBorder"
 				style="margin: 0 10px 0 0;"
-				onclick="parseWrapper(\'QK0\');" />
-			<input type="submit" value="Total"
-				class="quick_button"
+				onclick="parseWrapper(\'QK0\');">
+                Items
+            </button>
+			<button type="submit"
+				class="quick_button pos-button coloredBorder"
 				style="margin: 0 10px 0 0;"
-				onclick="parseWrapper(\'QK4\');" />
-			<input type="submit" value="Tender"
-				class="quick_button"
+				onclick="parseWrapper(\'QK4\');">
+                Total
+            </button>
+			<button type="submit" 
+				class="quick_button pos-button coloredBorder"
 				style="margin: 0 10px 0 0;"
-				onclick="parseWrapper(\'QK2\');" />
-			<input type="submit" value="Member"
-				class="quick_button"
+				onclick="parseWrapper(\'QK2\');">
+                Tender
+            </button>
+			<button type="submit" 
+				class="quick_button pos-button coloredBorder"
 				style="margin: 0 10px 0 0;"
-				onclick="parseWrapper(\'QK5\');" />
-			<input type="submit" value="Misc"
-				class="quick_button"
+				onclick="parseWrapper(\'QK5\');">
+                Member
+            </button>
+			<button type="submit"
+				class="quick_button pos-button coloredBorder"
 				style="margin: 0 10px 0 0;"
-				onclick="parseWrapper(\'QK6\');" />
+				onclick="parseWrapper(\'QK6\');">
+                Misc
+            </button>
 			</div>';
-		}
+        }
 	} // END body_content() FUNCTION
 }
 

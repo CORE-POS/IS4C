@@ -123,8 +123,7 @@ class Plugin
 	*/
 	static public function isEnabled($plugin)
     {
-		global $CORE_LOCAL;
-		$list = $CORE_LOCAL->get("PluginList");
+		$list = CoreLocal::get("PluginList");
 		if (!is_array($list)) {
             return false;
         }

@@ -403,7 +403,13 @@ class SQLManager
                     $query .= $p;
                     if (count($args) > 0) {
                         $val = array_shift($args);
-                        $query .= is_numeric($val) ? $val : "'".$this->escape($val, $which_connection)."'";
+                        // a numeric value w/ leading zeroes needs to be delimited
+                        // as a string or mysql drops the leading zeroes
+                        if (!is_numeric($val) || (strlen($val)>0 && $val[0] == '0')) {
+                            $query .= "'" . $this->escape($val, $which_connection) . "'";
+                        } else {
+                            $query .= $val;
+                        }
                     }
                 }
                 return $this->query($query, $which_connection);

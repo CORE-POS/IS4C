@@ -48,8 +48,6 @@ class memlist extends NoInputPage
 
 	function preprocess()
     {
-		global $CORE_LOCAL;
-
 		// set variable ahead of time
 		// so we know if lookup found no one
 		// vs. lookup didn't happen
@@ -122,7 +120,7 @@ class memlist extends NoInputPage
 		// when it's the default non-member account OR
 		// when name verification is disabled
 		if (count($this->results) == 1 && 
-		    ($CORE_LOCAL->get("verifyName")==0 || $entered == $CORE_LOCAL->get('defaultNonMem'))) {
+		    (CoreLocal::get("verifyName")==0 || $entered == CoreLocal::get('defaultNonMem'))) {
 			$key = array_pop(array_keys($this->results));
 			list($memberID, $personNum) = explode('::',$key);
 		}
@@ -130,7 +128,7 @@ class memlist extends NoInputPage
 		// we have exactly one row and 
 		// don't need to confirm any further
 		if ($memberID !== false && $personNum !== false){
-			if ($memberID == $CORE_LOCAL->get('defaultNonMem')) {
+			if ($memberID == CoreLocal::get('defaultNonMem')) {
 				$personNum = 1;
             }
 			$db_a = Database::pDataConnect();
@@ -146,7 +144,7 @@ class memlist extends NoInputPage
 
 			// WEFC_Toronto: If a Member Card # was entered when the choice from the list was made,
 			// add the memberCards record.
-			if ($CORE_LOCAL->get('store') == "WEFC_Toronto") {
+			if (CoreLocal::get('store') == "WEFC_Toronto") {
 				$mmsg = "";
 				if (isset($_REQUEST['memberCard']) && $_REQUEST['memberCard'] != "") {
 					$memberCard = $_REQUEST['memberCard'];
@@ -179,7 +177,7 @@ class memlist extends NoInputPage
 			}
 
 			// don't bother with unpaid balance check if there is no balance
-			if ($entered != $CORE_LOCAL->get("defaultNonMem") && $CORE_LOCAL->get('balance') > 0) {
+			if ($entered != CoreLocal::get("defaultNonMem") && CoreLocal::get('balance') > 0) {
 				$unpaid = PrehLib::check_unpaid_ar($row["CardNo"]);
 				if ($unpaid) {
 					$this->change_page($this->page_url."gui-modules/UnpaidAR.php");
@@ -202,7 +200,6 @@ class memlist extends NoInputPage
 
 	function head_content()
     {
-		global $CORE_LOCAL;
 		if (count($this->results) > 0) {
 			$this->add_onload_command("selectSubmit('#search', '#selectform')\n");
 			$this->add_onload_command("\$('#search').focus();\n");
@@ -217,7 +214,6 @@ class memlist extends NoInputPage
 
 	function body_content()
     {
-		global $CORE_LOCAL;
 		$message = $this->temp_message;
 
 		echo "<div class=\"baseHeight\">"
@@ -228,9 +224,10 @@ class memlist extends NoInputPage
 			echo "
 			<div class=\"colored centeredDisplay\">
 				<span class=\"larger\">
-			{$message}<br />".
-			_("enter member number or name").
-			"</span>
+                    {$message} <br />" .
+                    _("enter member number or name") . "
+			    </span>
+                <br />
 				<input type=\"text\" name=\"search\" size=\"15\"
 			       	onblur=\"\$('#reginput').focus();\" id=\"reginput\" />
 				<br />press [enter] to cancel
@@ -240,7 +237,7 @@ class memlist extends NoInputPage
              * otherwise, put results in a select box
              */
 			echo "
-			<div class=\"colored centeredDisplay\">
+			<div class=\"colored centeredDisplay rounded\">
 				<span class=\"larger\">";
 			if (!$this->submitted) {
 				echo _("member search")."<br />"._("enter member number or name");
@@ -248,10 +245,14 @@ class memlist extends NoInputPage
 				echo _("no match found")."<br />"._("next search or member number");
             }
 			echo "</span>
+                <p>
 				<input type=\"text\" name=\"search\" size=\"15\"
 			       	onblur=\"\$('#reginput').focus();\" id=\"reginput\" />
-				<br />
-				press [enter] to cancel
+				</p>
+                <button class=\"pos-button\" type=\"button\"
+                    onclick=\"\$('#reginput').val('');\$('#selectform').submit();\">
+                    Cancel [enter]
+                </button>
 			</div>";
 		} else {
 			echo "<div class=\"listbox\">"
@@ -267,9 +268,40 @@ class memlist extends NoInputPage
 				}
 				echo '>'.$label.'</option>';
             }
-			echo "</select></div><!-- /.listbox -->"
-				."<div class=\"listboxText coloredText centerOffset\">"
-				._("use arrow keys to navigate")."<p>"._("clear to cancel")."</div><!-- /.listboxText coloredText .centerOffset -->"
+			echo "</select></div><!-- /.listbox -->";
+            if (CoreLocal::get('touchscreen')) {
+                echo '<div class="listbox listboxText">'
+                . '<button type="button" class="pos-button coloredArea"
+                    onclick="pageUp(\'#search\');">
+                    <img src="../graphics/pageup.png" width="16" height="16" />
+                   </button>'
+                . '<br /><br />'
+                . '<button type="button" class="pos-button coloredArea"
+                    onclick="scrollUp(\'#search\');">
+                    <img src="../graphics/up.png" width="16" height="16" />
+                   </button>'
+                . '<br /><br />'
+                . '<button type="button" class="pos-button coloredArea"
+                    onclick="scrollDown(\'#search\');">
+                    <img src="../graphics/down.png" width="16" height="16" />
+                   </button>'
+                . '<br /><br />'
+                . '<button type="button" class="pos-button coloredArea"
+                    onclick="pageDown(\'#search\');">
+                    <img src="../graphics/pagedown.png" width="16" height="16" />
+                   </button>'
+                . '</div>';
+            }
+			echo "<div class=\"listboxText coloredText centerOffset\">"
+				. _("use arrow keys to navigate")
+                . '<p><button type="submit" class="pos-button wide-button coloredArea">
+                    OK <span class="smaller">[enter]</span>
+                    </button></p>'
+                . '<p><button type="submit" class="pos-button wide-button errorColoredArea"
+                    onclick="$(\'#search option:selected\').val(\'\');">
+                    Cancel <span class="smaller">[clear]</span>
+                    </button></p>'
+                ."</div><!-- /.listboxText coloredText .centerOffset -->"
 				."<div class=\"clear\"></div>";
 		}
 		echo "</form></div>";

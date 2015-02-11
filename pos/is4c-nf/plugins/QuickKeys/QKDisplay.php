@@ -21,15 +21,15 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','1');
-
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
-class QKDisplay extends NoInputPage {
+class QKDisplay extends NoInputPage 
+{
+	private $offset;
+	private $plugin_url;
 
-	var $offset;
-
-	function head_content(){
+	function head_content()
+    {
 		?>
 		<script type="text/javascript" >
 		var prevKey = -1;
@@ -51,6 +51,7 @@ class QKDisplay extends NoInputPage {
 			if ( (jsKey==108 || jsKey == 76) && 
 			(prevKey == 99 || prevKey == 67) ){
 				document.getElementById('doClear').value='1';
+                document.forms[0].submit();
 			}
 			else if (jsKey >= 49 && jsKey <= 57){
 				setSelected(jsKey-48);
@@ -68,6 +69,7 @@ class QKDisplay extends NoInputPage {
 			}
 			prevPrevKey = prevKey;
 			prevKey = jsKey;
+            console.log(jsKey);
 		}
 
 		document.onkeyup = keyCheck;
@@ -79,19 +81,18 @@ class QKDisplay extends NoInputPage {
 			else if (row == 1) id = num - 1;
 			else if (row == 0) id = num + 5;
 			if ($('#qkDiv'+id)){
-				$('#qkDiv'+selectedId).css('border','0');
-				$('#qkDiv'+id).css('border','solid 3px #004080');
 				$('#qkButton'+id).focus();
 				selectedId = id;
+                $('.quick_button').removeClass('coloredArea');
+                $('#qkDiv'+id+' .quick_button').addClass('coloredArea');
 			}
 		}
 		</script> 
 		<?php
 	} // END head() FUNCTION
 
-	var $plugin_url;
-	function preprocess(){
-		global $CORE_LOCAL;
+	function preprocess()
+    {
 		$plugin_info = new QuickKeys();
 		$this->plugin_url = $plugin_info->plugin_url().'/';
 
@@ -108,16 +109,16 @@ class QKDisplay extends NoInputPage {
 
 				$value = $_REQUEST[md5($choice)];
 
-				$output = $CORE_LOCAL->get("qkInput").$value;
-				$CORE_LOCAL->set("msgrepeat",1);
-				$CORE_LOCAL->set("strRemembered",$output);
-				$CORE_LOCAL->set("currentid",$CORE_LOCAL->get("qkCurrentId"));
+				$output = CoreLocal::get("qkInput").$value;
+				CoreLocal::set("msgrepeat",1);
+				CoreLocal::set("strRemembered",$output);
+				CoreLocal::set("currentid",CoreLocal::get("qkCurrentId"));
 			}
 			if (substr(strtoupper($output),0,2) == "QK"){
-				$CORE_LOCAL->set("qkNumber",substr($output,2));
-				return True;
-			}
-			else {
+				CoreLocal::set("qkNumber",substr($output,2));
+
+				return true;
+			} else {
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 			}
 			return False;
@@ -125,34 +126,68 @@ class QKDisplay extends NoInputPage {
 		return True;
 	} // END preprocess() FUNCTION
 
-	function body_content(){
-		global $CORE_LOCAL;
-
+	function body_content()
+    {
 		$this->add_onload_command("setSelected(7);");
 
-		echo "<div class=\"baseHeight\" style=\"border: solid 1px black;\">";
+		echo "<div class=\"baseHeight\">";
 		echo "<form action=\"".$_SERVER["PHP_SELF"]."\" method=\"post\">";
 
-		include(realpath(dirname(__FILE__)."/quickkeys/keys/"
-			.$CORE_LOCAL->get("qkNumber").".php"));
+        $db = Database::pDataConnect();
+        $my_keys = array();
+        /**
+          First search for entries in the QuickLookups table
+        */
+        if ($db->table_exists('QuickLookups')) {
+            $prep = $db->prepare('
+                SELECT label,
+                    action
+                FROM QuickLookups
+                WHERE lookupSet = ?
+                ORDER BY sequence');
+            $args = array(CoreLocal::get('qkNumber'));
+            $res = $db->execute($prep, $args);
+            while ($row = $db->fetch_row($res)) {
+                $my_keys[] = new quickkey($row['label'], $row['action']);
+            }
+        }
+
+        /**
+          If none are found, then fall back to including numbered files
+        */
+        if (count($my_keys) == 0) {
+            include(realpath(dirname(__FILE__)."/quickkeys/keys/"
+                .CoreLocal::get("qkNumber").".php"));
+        }
 
 		$num_pages = ceil(count($my_keys)/9.0);
 		$page = $this->offset % $num_pages;
 		if ($page < 0) $page = $num_pages + $page;
 
 		$count = 0;
-		for($i=$page*9; $i < count($my_keys); $i++){
+        $clearButton = false;
+		for ($i=$page*9; $i < count($my_keys); $i++) {
 			$key = $my_keys[$i];
-			if ($count % 3 == 0){
-				if ($count != 0){
+			if ($count % 3 == 0) {
+				if ($count != 0) {
 					if ($num_pages > 1 && $count == 3){
 						echo "<div class=\"qkArrowBox\">";
-						echo "<input type=submit value=Up class=qkArrow 
-							onclick=\"location='{$this->plugin_url}QKDisplay.php?offset=".($page-1)."'; return false;\" />";
+                        echo '<button type=submit class="qkArrow pos-button coloredBorder"
+                            onclick="location=\'' . $this->plugin_url . 'QKDisplay.php?offset='. ($page-1) . '\'; return false;">
+                            Up</button>';
 						echo "</div>";
 					}
+                    if ($count == 6) {
+						echo "<div class=\"qkArrowBox\">";
+                        echo '<button type="submit" class="pos-button errorColoredArea"
+                            onclick="$(\'#doClear\').val(1);">
+                            Cancel <span class="smaller">[clear]</span>
+                        </button>';
+						echo "</div>";
+                        $clearButton = true;
+                    }
 					echo "</div>";
-				}
+                }
 				echo "<div class=\"qkRow\">";
 			}
 			echo "<div class=\"qkBox\"><div id=\"qkDiv$count\">";
@@ -161,10 +196,19 @@ class QKDisplay extends NoInputPage {
 			$count++;
 			if ($count > 8) break;
 		}
-		if ($num_pages > 1){
+        if (!$clearButton) {
+            echo "<div class=\"qkBox\"><div>";
+            echo '<button type="submit" class="quick_button pos-button errorColoredArea"
+                onclick="$(\'#doClear\').val(1);">
+                Cancel <span class="smaller">[clear]</span>
+            </button>';
+            echo "</div></div>";
+        }
+		if ($num_pages > 1) {
 			echo "<div class=\"qkArrowBox\">";
-			echo "<input type=submit value=Down class=qkArrow 
-				onclick=\"location='{$this->plugin_url}QKDisplay.php?offset=".($page+1)."'; return false;\" />";
+			echo '<button type=submit class="qkArrow pos-button coloredBorder"
+				onclick="location=\'' . $this->plugin_url . 'QKDisplay.php?offset='. ($page+1) . '\'; return false;">
+                Down</button>';
 			echo "</div>";
 
 		}

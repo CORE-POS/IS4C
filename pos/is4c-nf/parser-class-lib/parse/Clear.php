@@ -28,17 +28,16 @@ class Clear extends Parser {
 		return False;
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
-
-		$CORE_LOCAL->set("msgrepeat",0);
-		$CORE_LOCAL->set("strendered","");
-		$CORE_LOCAL->set("strRemembered","");
-		$CORE_LOCAL->set("SNR",0);
+	function parse($str)
+    {
+		CoreLocal::set("msgrepeat",0);
+		CoreLocal::set("strendered","");
+		CoreLocal::set("strRemembered","");
+		CoreLocal::set("SNR",0);
 		// added by apbw 6/04/05 to correct voiding of refunded items
-		$CORE_LOCAL->set("refund",0);	
-		//$CORE_LOCAL->set("autoReprint",0);
-		if ($CORE_LOCAL->get("tare") > 0) 
+		CoreLocal::set("refund",0);	
+		//CoreLocal::set("autoReprint",0);
+		if (CoreLocal::get("tare") > 0) 
 			TransRecord::addTare(0);
 
 		$ret = $this->default_json();

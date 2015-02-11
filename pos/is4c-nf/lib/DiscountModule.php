@@ -27,7 +27,7 @@
 
   This module is called in Database::getsubtotals()
   and the value it calculates will be stored in
-  $CORE_LOCAL as 'transDiscount'. The default version
+  session as 'transDiscount'. The default version
   simply returns the value calculated by the 
   translog.subtotals view.
 */
@@ -44,8 +44,7 @@ class DiscountModule
 	*/
 	public function calculate()
     {
-		global $CORE_LOCAL;
-		$subtotalsDiscount = $CORE_LOCAL->get('transDiscount');
+		$subtotalsDiscount = CoreLocal::get('transDiscount');
 		if ($subtotalsDiscount === '') {
 			$subtotalsDiscount = 0.00;
         }

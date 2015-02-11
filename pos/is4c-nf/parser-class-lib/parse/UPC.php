@@ -37,23 +37,23 @@ class UPC extends Parser {
 		return $this->upcscanned($str);
 	}
 
-	function upcscanned($entered) {
-		global $CORE_LOCAL;
+	function upcscanned($entered) 
+    {
 		$my_url = MiscLib::base_url();
 		$ret = $this->default_json();
 
 		/* force cashiers to enter a comment on refunds */
-		if ($CORE_LOCAL->get("refund")==1 && $CORE_LOCAL->get("refundComment") == ""){
+		if (CoreLocal::get("refund")==1 && CoreLocal::get("refundComment") == ""){
 			$ret['udpmsg'] = 'twoPairs';
-			if ($CORE_LOCAL->get("SecurityRefund") > 20){
+			if (CoreLocal::get("SecurityRefund") > 20){
 				$ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=RefundAdminLogin";
 			}
 			else
 				$ret['main_frame'] = $my_url.'gui-modules/refundComment.php';
-			$CORE_LOCAL->set("refundComment",$CORE_LOCAL->get("strEntered"));
+			CoreLocal::set("refundComment",CoreLocal::get("strEntered"));
 			return $ret;
 		}
-		if ($CORE_LOCAL->get('itemPD') > 0 && $CORE_LOCAL->get('SecurityLineItemDiscount') == 30 && $CORE_LOCAL->get('msgrepeat')==0){
+		if (CoreLocal::get('itemPD') > 0 && CoreLocal::get('SecurityLineItemDiscount') == 30 && CoreLocal::get('msgrepeat')==0){
 			$ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=LineItemDiscountAdminLogin";
 			return $ret;
 		}
@@ -65,17 +65,17 @@ class UPC extends Parser {
           sequence can case flag to be raised, cleared, and
           re-raised leading to spurrious error notifications
         */
-        if (false && $CORE_LOCAL->get('paycardTendered')) {
-            if ($CORE_LOCAL->get('msgrepeat') == 0 || $CORE_LOCAL->get('lastRepeat') != 'paycardAlreadyApplied') {
-                $CORE_LOCAL->set('boxMsg', 'Card already tendered<br />
+        if (false && CoreLocal::get('paycardTendered')) {
+            if (CoreLocal::get('msgrepeat') == 0 || CoreLocal::get('lastRepeat') != 'paycardAlreadyApplied') {
+                CoreLocal::set('boxMsg', 'Card already tendered<br />
                                             Confirm adding more items');
-                $CORE_LOCAL->set('lastRepeat', 'paycardAlreadyApplied');
+                CoreLocal::set('lastRepeat', 'paycardAlreadyApplied');
                 $ret['main_frame'] = $my_url . 'gui-modules/boxMsg2.php';
 
                 return $ret;
-            } else if ($CORE_LOCAL->get('lastRepeat') == 'paycardAlreadyApplied') {
-                $CORE_LOCAL->set('lastRepeat', '');
-                $CORE_LOCAL->set('paycardTendered', false);
+            } else if (CoreLocal::get('lastRepeat') == 'paycardAlreadyApplied') {
+                CoreLocal::set('lastRepeat', '');
+                CoreLocal::set('paycardTendered', false);
             }
         }
 
@@ -87,8 +87,8 @@ class UPC extends Parser {
         // cruft. spaces in UPCs are bad.
 		//$entered = str_replace(".", " ", $entered);
 
-		$quantity = $CORE_LOCAL->get("quantity");
-		if ($CORE_LOCAL->get("quantity") == 0 && $CORE_LOCAL->get("multiple") == 0) $quantity = 1;
+		$quantity = CoreLocal::get("quantity");
+		if (CoreLocal::get("quantity") == 0 && CoreLocal::get("multiple") == 0) $quantity = 1;
 
 		/* exapnd UPC-E */
 		if (substr($entered, 0, 1) == 0 && strlen($entered) == 7) {
@@ -103,7 +103,7 @@ class UPC extends Parser {
 
 		/* make sure upc length is 13 */
 		$upc = "";
-        if ($CORE_LOCAL->get('EanIncludeCheckDigits') != 1) {
+        if (CoreLocal::get('EanIncludeCheckDigits') != 1) {
             /** 
               If EANs do not include check digits, the value is 13 digits long,
               and the value does not begin with a zero, it most likely
@@ -125,7 +125,7 @@ class UPC extends Parser {
         $scalePrefix = '002';
         $scaleStickerItem = false;
         $scaleCheckDigits = false;
-        if ($CORE_LOCAL->get('UpcIncludeCheckDigits') == 1) {
+        if (CoreLocal::get('UpcIncludeCheckDigits') == 1) {
             $scalePrefix = '02';
             $scaleCheckDigits = true;
         }
@@ -144,7 +144,7 @@ class UPC extends Parser {
                 $scalepriceUPC = MiscLib::truncate2(substr($upc, -4)/100);
                 $scalepriceEAN = MiscLib::truncate2(substr($upc, -5)/100);
             }
-            $rewrite_class = $CORE_LOCAL->get('VariableWeightReWriter');
+            $rewrite_class = CoreLocal::get('VariableWeightReWriter');
             if ($rewrite_class === '' || !class_exists($rewrite_class)) {
                 $rewrite_class = 'ZeroedPriceReWrite';
             }
@@ -185,7 +185,7 @@ class UPC extends Parser {
 
 		/* check for special upcs that aren't really products */
 		if ($num_rows == 0){
-			$objs = $CORE_LOCAL->get("SpecialUpcClasses");
+			$objs = CoreLocal::get("SpecialUpcClasses");
 			foreach($objs as $class_name){
 				$instance = new $class_name();
 				if ($instance->isSpecial($upc)){
@@ -194,7 +194,7 @@ class UPC extends Parser {
 			}
 			// no match; not a product, not special
 			
-            $handler = $CORE_LOCAL->get('ItemNotFound');
+            $handler = CoreLocal::get('ItemNotFound');
             if ($handler === '' || !class_exists($handler)) {
                 $handler = 'ItemNotFound';
             }
@@ -224,9 +224,9 @@ class UPC extends Parser {
 		 *   and allowing the sale to be confirmed or canceled
 		 */
 		if ($row["inUse"] == 0){
-			if ($CORE_LOCAL->get('msgrepeat') == 0){
-				$CORE_LOCAL->set("strEntered",$row["upc"]);
-				$CORE_LOCAL->set("boxMsg","<b>".$row["upc"]." - ".$row["description"]."</b>
+			if (CoreLocal::get('msgrepeat') == 0){
+				CoreLocal::set("strEntered",$row["upc"]);
+				CoreLocal::set("boxMsg","<b>".$row["upc"]." - ".$row["description"]."</b>
 					<br />"._("Item not for sale")."
 					<br /><font size=-1>"._("enter to continue sale").", "._("clear to cancel")."</font>");
 				$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php?quiet=1";
@@ -238,7 +238,7 @@ class UPC extends Parser {
 		  Apply special department handlers
 		  based on item's department
 		*/
-		$deptmods = $CORE_LOCAL->get('SpecialDeptMap');
+		$deptmods = CoreLocal::get('SpecialDeptMap');
 		if (is_array($deptmods) && isset($deptmods[$row['department']])){
 			foreach($deptmods[$row['department']] as $mod){
 				$obj = new $mod();
@@ -259,12 +259,12 @@ class UPC extends Parser {
 		  case; they're normally entered by keying a quantity multiplier
 		*/
 		if ($num_rows > 0 && $row['scale'] == 1 
-			&& $CORE_LOCAL->get("lastWeight") > 0 && $CORE_LOCAL->get("weight") > 0
-			&& abs($CORE_LOCAL->get("weight") - $CORE_LOCAL->get("lastWeight")) < 0.0005
+			&& CoreLocal::get("lastWeight") > 0 && CoreLocal::get("weight") > 0
+			&& abs(CoreLocal::get("weight") - CoreLocal::get("lastWeight")) < 0.0005
 			&& !$scaleStickerItem && abs($row['normal_price']) > 0.01){
-			if ($CORE_LOCAL->get('msgrepeat') == 0){
-				$CORE_LOCAL->set("strEntered",$row["upc"]);
-				$CORE_LOCAL->set("boxMsg","<b>Same weight as last item</b>
+			if (CoreLocal::get('msgrepeat') == 0){
+				CoreLocal::set("strEntered",$row["upc"]);
+				CoreLocal::set("boxMsg","<b>Same weight as last item</b>
 					<br><font size=-1>[enter] to confirm correct, [clear] to cancel</font>");
 				$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php?quiet=1";
 				return $ret;
@@ -292,20 +292,20 @@ class UPC extends Parser {
 				)";
 			$restrictR = $db->query($restrictQ);
 			if ($db->num_rows($restrictR) > 0){
-				$CORE_LOCAL->set("boxMsg",_("product cannot be sold right now"));
+				CoreLocal::set("boxMsg",_("product cannot be sold right now"));
 				$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php";
 				return $ret;
 			}
 
-			if ($CORE_LOCAL->get("cashierAge") < 18 && $CORE_LOCAL->get("cashierAgeOverride") != 1){
+			if (CoreLocal::get("cashierAge") < 18 && CoreLocal::get("cashierAgeOverride") != 1){
 				$ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=AgeApproveAdminLogin";
 				return $ret;
 			}
 
-			if ($CORE_LOCAL->get("memAge")=="") {
-				$CORE_LOCAL->set("memAge",date('Ymd'));
+			if (CoreLocal::get("memAge")=="") {
+				CoreLocal::set("memAge",date('Ymd'));
 			}
-			$ts = strtotime($CORE_LOCAL->get("memAge"));
+			$ts = strtotime(CoreLocal::get("memAge"));
 			$required_age = $row['idEnforced'];
 			$of_age_on_day = mktime(0, 0, 0, date('n', $ts), date('j', $ts), date('Y', $ts) + $required_age);
 			$today = strtotime( date('Y-m-d') );
@@ -323,11 +323,11 @@ class UPC extends Parser {
 			$peek = PrehLib::peekItem();
 			if (strstr($peek,"** Tare Weight") === False)
 				TransRecord::addTare($row['tareweight']*100);
-		} elseif ($row['scale'] != 0 && !$CORE_LOCAL->get("tare") && Plugin::isEnabled('PromptForTare') && !$CORE_LOCAL->get("tarezero")) {
+		} elseif ($row['scale'] != 0 && !CoreLocal::get("tare") && Plugin::isEnabled('PromptForTare') && !CoreLocal::get("tarezero")) {
             $ret['main_frame'] = $my_url.'plugins/PropmtForTare/TarePropmtInputPage.php?class=UPC&item='.$entered;
 			return $ret;
         } else {
-        	$CORE_LOCAL->set('tarezero', False);
+        	CoreLocal::set('tarezero', False);
         }
 
 		/* sanity check - ridiculous price 
@@ -347,12 +347,12 @@ class UPC extends Parser {
 		/* need a weight with this item
 		   retry the UPC in a few milliseconds and see
 		*/
-		if ($scale != 0 && $CORE_LOCAL->get("weight") == 0 && 
-			$CORE_LOCAL->get("quantity") == 0 && !$scaleStickerItem) {
+		if ($scale != 0 && CoreLocal::get("weight") == 0 && 
+			CoreLocal::get("quantity") == 0 && !$scaleStickerItem) {
 
-			$CORE_LOCAL->set("SNR",$CORE_LOCAL->get('strEntered'));
+			CoreLocal::set("SNR",CoreLocal::get('strEntered'));
 			$ret['output'] = DisplayLib::boxMsg(_("please put item on scale"),'',True);
-			//$ret['retry'] = $CORE_LOCAL->get("strEntered");
+			//$ret['retry'] = CoreLocal::get("strEntered");
 			
 			return $ret;
 		}
@@ -360,19 +360,19 @@ class UPC extends Parser {
 		/* got a scale weight, make sure the tare
 		   is valid */
 		if ($scale != 0 && !$scaleStickerItem) {
-			$quantity = $CORE_LOCAL->get("weight") - $CORE_LOCAL->get("tare");
-			if ($CORE_LOCAL->get("quantity") != 0) 
-				$quantity = $CORE_LOCAL->get("quantity") - $CORE_LOCAL->get("tare");
+			$quantity = CoreLocal::get("weight") - CoreLocal::get("tare");
+			if (CoreLocal::get("quantity") != 0) 
+				$quantity = CoreLocal::get("quantity") - CoreLocal::get("tare");
 
 			if ($quantity <= 0){
 				$ret['output'] = DisplayLib::boxMsg(_("item weight must be greater than tare weight"));
 				return $ret;
 			}
-			$CORE_LOCAL->set("tare",0);
+			CoreLocal::set("tare",0);
 		}
 
 		/* non-scale items need integer quantities */	
-		if ($row["scale"] == 0 && (int) $CORE_LOCAL->get("quantity") != $CORE_LOCAL->get("quantity") ) {
+		if ($row["scale"] == 0 && (int) CoreLocal::get("quantity") != CoreLocal::get("quantity") ) {
 			$ret['output'] = DisplayLib::boxMsg(_("fractional quantity cannot be accepted for this item"));
 			return $ret;
 		}
@@ -380,12 +380,12 @@ class UPC extends Parser {
 		/* quantity required for this item. Send to
 		   entry page if one wasn't provided */
 		$qttyEnforced = $row["qttyEnforced"];
-		if (($qttyEnforced == 1) && ($CORE_LOCAL->get("multiple") == 0) && ($CORE_LOCAL->get("msgrepeat") == 0) && $CORE_LOCAL->get('qttyvalid') == 0) {
+		if (($qttyEnforced == 1) && (CoreLocal::get("multiple") == 0) && (CoreLocal::get("msgrepeat" == 0) || CoreLocal::get('qttyvalid') == 0)) {
 			$ret['main_frame'] = $my_url."gui-modules/qtty2.php";
 			return $ret;
 		}
 		else
-			$CORE_LOCAL->set("qttyvalid",1); // this may be unnecessary
+			CoreLocal::set("qttyvalid",1); // this may be unnecessary
 
 		/* wedge I assume
 		   I don't like this being hard-coded, but since these UPCs
@@ -394,8 +394,8 @@ class UPC extends Parser {
 		   scan, but that's more overhead than I want on such a common
 		   operation
 		*/
-		if ($upc == "0000000008010" && $CORE_LOCAL->get("msgrepeat") == 0) {
-			$CORE_LOCAL->set("boxMsg","<b>".$total." gift certificate</b><br />
+		if ($upc == "0000000008010" && CoreLocal::get("msgrepeat") == 0) {
+			CoreLocal::set("boxMsg","<b>".$total." gift certificate</b><br />
 				"._("insert document")."<br />"._("press enter to endorse")."
 				<p><font size='-1'>"._("clear to cancel")."</font>");
 			$ret["main_frame"] = $my_url."gui-modules/boxMsg2.php?endorse=giftcert&endorseAmt=".$total;
@@ -405,8 +405,8 @@ class UPC extends Parser {
 		/* wedge I assume
 		   see 0000000008010 above
 		*/
-		if ($upc == "0000000008011" && $CORE_LOCAL->get("msgrepeat") == 0) {
-			$CORE_LOCAL->set("boxMsg","<b>".$total." class registration</b><br />
+		if ($upc == "0000000008011" && CoreLocal::get("msgrepeat") == 0) {
+			CoreLocal::set("boxMsg","<b>".$total." class registration</b><br />
 				"._("insert form")."<br />"._("press enter to endorse")."
 				<p><font size='-1'>"._("clear to cancel")."</font>");
 			$ret["main_frame"] = $my_url."gui-modules/boxMsg2.php?endorse=classreg&endorseAmt=".$total;
@@ -429,24 +429,24 @@ class UPC extends Parser {
 
 		/* do tax shift */
 		$tax = $row['tax'];
-		if ($CORE_LOCAL->get("toggletax") != 0) {
+		if (CoreLocal::get("toggletax") != 0) {
 			$tax = ($tax==0) ? 1 : 0;
-			$CORE_LOCAL->set("toggletax",0);
+			CoreLocal::set("toggletax",0);
 		}
 		$row['tax'] = $tax;
 
 		/* do foodstamp shift */
 		$foodstamp = $row["foodstamp"];
-		if ($CORE_LOCAL->get("togglefoodstamp") != 0){
-			$CORE_LOCAL->set("togglefoodstamp",0);
+		if (CoreLocal::get("togglefoodstamp") != 0){
+			CoreLocal::set("togglefoodstamp",0);
 			$foodstamp = ($foodstamp==0) ? 1 : 0;
 		}
 		$row['foodstamp'] = $foodstamp;
 
 		/* do discount shifts */
 		$discountable = $row["discount"];
-		if ($CORE_LOCAL->get("toggleDiscountable") == 1) {
-			$CORE_LOCAL->set("toggleDiscountable",0);
+		if (CoreLocal::get("toggleDiscountable") == 1) {
+			CoreLocal::set("toggleDiscountable",0);
 			$discountable = ($discountable == 0) ? 1 : 0;
 		}
 		$row['discount'] = $discountable;
@@ -457,7 +457,7 @@ class UPC extends Parser {
         if ($row['special_limit'] > 0) {
             $appliedQ = "
                 SELECT SUM(quantity) AS saleQty
-                FROM " . $CORE_LOCAL->get('tDatabase') . $db->sep() . "localtemptrans
+                FROM " . CoreLocal::get('tDatabase') . $db->sep() . "localtemptrans
                 WHERE discounttype <> 0
                     AND (
                         upc='{$row['upc']}'
@@ -493,7 +493,7 @@ class UPC extends Parser {
         */
 		$discounttype = MiscLib::nullwrap($row["discounttype"]);
         $DiscountObject = null;
-		$DTClasses = $CORE_LOCAL->get("DiscountTypeClasses");
+		$DTClasses = CoreLocal::get("DiscountTypeClasses");
         if ($row['discounttype'] < 64 && isset(DiscountType::$MAP[$row['discounttype']])) {
             $class = DiscountType::$MAP[$row['discounttype']];
             $DiscountObject = new $class();
@@ -555,7 +555,7 @@ class UPC extends Parser {
 		$pricemethod = MiscLib::nullwrap($row["pricemethod"]);
 		if ($DiscountObject->isSale())
 			$pricemethod = MiscLib::nullwrap($row["specialpricemethod"]);
-		$PMClasses = $CORE_LOCAL->get("PriceMethodClasses");
+		$PMClasses = CoreLocal::get("PriceMethodClasses");
         $PriceMethodObject = null;
         if ($pricemethod < 100 && isset(PriceMethod::$MAP[$pricemethod])) {
             $class = PriceMethod::$MAP[$pricemethod];
@@ -582,18 +582,18 @@ class UPC extends Parser {
 		// cleanup, reset flags and beep
 		if ($quantity != 0) {
 
-			$CORE_LOCAL->set("msgrepeat",0);
-			$CORE_LOCAL->set("qttyvalid",0);
+			CoreLocal::set("msgrepeat",0);
+			CoreLocal::set("qttyvalid",0);
 
 			$ret['udpmsg'] = 'goodBeep';
 		}
 
 		/* reset various flags and variables */
-		if ($CORE_LOCAL->get("tare") != 0) $CORE_LOCAL->set("tare",0);
-		$CORE_LOCAL->set("ttlflag",0);
-		$CORE_LOCAL->set("fntlflag",0);
-		$CORE_LOCAL->set("quantity",0);
-		$CORE_LOCAL->set("itemPD",0);
+		if (CoreLocal::get("tare") != 0) CoreLocal::set("tare",0);
+		CoreLocal::set("ttlflag",0);
+		CoreLocal::set("fntlflag",0);
+		CoreLocal::set("quantity",0);
+		CoreLocal::set("itemPD",0);
 		Database::setglobalflags(0);
 
 		/* output item list, update totals footer */
@@ -609,8 +609,6 @@ class UPC extends Parser {
 
 	private function addDeposit($upc)
     {
-		global $CORE_LOCAL;
-
 		$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
 
 		$db = Database::pDataConnect();
@@ -631,36 +629,36 @@ class UPC extends Parser {
 		if ($row["scale"] != 0) $scale = 1;
 
 		$tax = 0;
-		if ($row["tax"] > 0 && $CORE_LOCAL->get("toggletax") == 0) {
+		if ($row["tax"] > 0 && CoreLocal::get("toggletax") == 0) {
             $tax = $row["tax"];
-		} else if ($row["tax"] > 0 && $CORE_LOCAL->get("toggletax") == 1) {
+		} else if ($row["tax"] > 0 && CoreLocal::get("toggletax") == 1) {
 			$tax = 0;
-			$CORE_LOCAL->set("toggletax",0);
-		} else if ($row["tax"] == 0 && $CORE_LOCAL->get("toggletax") == 1) {
+			CoreLocal::set("toggletax",0);
+		} else if ($row["tax"] == 0 && CoreLocal::get("toggletax") == 1) {
 			$tax = 1;
-			$CORE_LOCAL->set("toggletax",0);
+			CoreLocal::set("toggletax",0);
 		}
 						
 		$foodstamp = 0;
-		if ($row["foodstamp"] != 0 && $CORE_LOCAL->get("togglefoodstamp") == 0) {
+		if ($row["foodstamp"] != 0 && CoreLocal::get("togglefoodstamp") == 0) {
             $foodstamp = 1;
-		} else if ($row["foodstamp"] != 0 && $CORE_LOCAL->get("togglefoodstamp") == 1) {
+		} else if ($row["foodstamp"] != 0 && CoreLocal::get("togglefoodstamp") == 1) {
 			$foodstamp = 0;
-			$CORE_LOCAL->set("togglefoodstamp",0);
-		} else if ($row["foodstamp"] == 0 && $CORE_LOCAL->get("togglefoodstamp") == 1) {
+			CoreLocal::set("togglefoodstamp",0);
+		} else if ($row["foodstamp"] == 0 && CoreLocal::get("togglefoodstamp") == 1) {
 			$foodstamp = 1;
-			$CORE_LOCAL->set("togglefoodstamp",0);
+			CoreLocal::set("togglefoodstamp",0);
 		}
 
 		$discounttype = MiscLib::nullwrap($row["discounttype"]);
 		$discountable = $row["discount"];
 
 		$quantity = 1;
-		if ($CORE_LOCAL->get("quantity") != 0) {
-            $quantity = $CORE_LOCAL->get("quantity");
+		if (CoreLocal::get("quantity") != 0) {
+            $quantity = CoreLocal::get("quantity");
         }
 
-		$save_refund = $CORE_LOCAL->get("refund");
+		$save_refund = CoreLocal::get("refund");
 
         TransRecord::addRecord(array(
             'upc' => $upc,
@@ -679,7 +677,7 @@ class UPC extends Parser {
             'discounttype' => $discounttype,
         ));
 
-		$CORE_LOCAL->set("refund",$save_refund);
+		CoreLocal::set("refund",$save_refund);
 	}
 
 	function fixGS1($str){
@@ -704,12 +702,12 @@ class UPC extends Parser {
 
 	public static $requestInfoHeader = 'customer age';
 	public static $requestInfoMsg = 'Type customer birthdate YYYYMMDD';
-	public static function requestInfoCallback($info){
-		global $CORE_LOCAL;
+	public static function requestInfoCallback($info)
+    {
 		if ((is_numeric($info) && strlen($info)==8) || $info == 1){
-			$CORE_LOCAL->set("memAge",$info);
-			$CORE_LOCAL->set('strRemembered', $CORE_LOCAL->get('strEntered'));
-			$CORE_LOCAL->set('msgrepeat', 1);
+			CoreLocal::set("memAge",$info);
+			CoreLocal::set('strRemembered', CoreLocal::get('strEntered'));
+			CoreLocal::set('msgrepeat', 1);
 			return True;
 		}
 		return False;
