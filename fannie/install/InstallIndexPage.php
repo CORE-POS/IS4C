@@ -644,6 +644,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             'VendorItemsModel',
             'VendorSRPsModel',
             'VendorSKUtoPLUModel',
+            'VendorBreakdownsModel',
             'VendorDepartmentsModel',
             // VIEWS
             'SuperMinIdViewModel',
