@@ -867,6 +867,7 @@ static public function finalizeTransaction($incomplete=false)
                 'amount2' => $tax['amount'],
             ));
         }
+        DiscountModule::lineItems();
     }
 
     if (Database::rotateTempData()) { // rotate data

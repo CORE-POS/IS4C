@@ -41,13 +41,12 @@ include('InstallUtilities.php');
     </td>
 </tr>
 <tr>
-    <td><label><b>Discount Module</b></label></td>
+    <td></td>
     <td> 
-    <?php
-    $mods = AutoLoader::listModules('DiscountModule',True);
-    echo InstallUtilities::installSelectField('DiscountModule', $mods, 'DiscountModule');
-    ?>
-    <span class='noteTxt'>Calculates actual discount amount</span>
+    <?php echo InstallUtilities::installCheckBoxField('NonStackingDiscounts', 'Only One Discount Applies', 0); ?>
+    <span class='noteTxt'>If a customer is eligible for a 5% discount and a 10% discount and
+    only one applies, then the customer will get a 10% discount. Otherwise they stack and
+    the total discount is 15%.</span>
     </td>
 </tr>
 <tr>

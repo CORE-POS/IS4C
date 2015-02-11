@@ -227,14 +227,6 @@ static public function getsubtotals()
         WHERE trans_type <> 'L'
     ";
 
-    $handler_class = CoreLocal::get('DiscountModule');
-    if ($handler_class === '') $handler_class = 'DiscountModule';
-    elseif (!class_exists($handler_class)) $handler_class = 'DiscountModule';
-    if (class_exists($handler_class)) {
-        $module = new $handler_class();
-        CoreLocal::set('transDiscount', $module->calculate() );
-    }
-
     /* ENABLED LIVE 15Aug2013
        Calculate taxes & exemptions separately from
        the subtotals view.

@@ -222,7 +222,6 @@ static public function setMember($member, $personNumber, $row)
 	CoreLocal::set("lname",$row["LastName"]);
 	CoreLocal::set("fname",$row["FirstName"]);
 	CoreLocal::set("Type",$row["Type"]);
-	CoreLocal::set("percentDiscount",$row["Discount"]);
 	CoreLocal::set("isStaff",$row["staff"]);
 	CoreLocal::set("SSI",$row["SSI"]);
 
@@ -233,22 +232,11 @@ static public function setMember($member, $personNumber, $row)
         $res = $conn->exec_statement($prep, array((int)CoreLocal::get('memType')));
         if ($conn->num_rows($res) > 0) {
             $mt_row = $conn->fetch_row($res);
-            CoreLocal::set('percentDiscount', $mt_row['discount']);
+            $row['Discount'] = $mt_row['discount'];
             CoreLocal::set('isStaff', $mt_row['staff']);
             CoreLocal::set('SSI', $mt_row['ssi']);
         }
     }
-
-	/**
-	  Use discount module to calculate modified percentDiscount
-	*/
-	$handler_class = CoreLocal::get('DiscountModule');
-	if ($handler_class === '') $handler_class = 'DiscountModule';
-	elseif (!class_exists($handler_class)) $handler_class = 'DiscountModule';
-	if (class_exists($handler_class)){
-		$module = new $handler_class();
-		CoreLocal::set('percentDiscount', $module->percentage(CoreLocal::get('percentDiscount')));
-	}
 
 	if (CoreLocal::get("Type") == "PC") {
 		CoreLocal::set("isMember",1);
@@ -276,13 +264,12 @@ static public function setMember($member, $personNumber, $row)
 		}
 	}
 
-	if (CoreLocal::get("discountEnforced") != 0) {
-		$memquery .= " , percentDiscount = ".CoreLocal::get("percentDiscount")." ";
-	} else if (CoreLocal::get("discountEnforced") == 0 && CoreLocal::get("tenderTotal") == 0) {
-		$memquery .= " , percentDiscount = 0 ";
-	}
-
 	$conn2->query($memquery);
+
+    if (CoreLocal::get('discountEnforced')) {
+        // skip subtotaling automatically since that occurs farther down
+        DiscountModule::updateDiscount(new DiscountModule($row['Discount']), false);
+    }
 
 	CoreLocal::set("memberID",$member);
 	$opts = array('upc'=>'MEMENTRY','description'=>'CARDNO IN NUMFLAG','numflag'=>$member);
