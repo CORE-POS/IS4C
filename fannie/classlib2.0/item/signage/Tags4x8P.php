@@ -52,7 +52,7 @@ class Tags4x8P extends \COREPOS\Fannie\API\item\FannieSignage
             // extract & format data
             $price = $item['normal_price'];
             $desc = strtoupper(substr($item['posDescription'],0,27));
-            $brand = ucwords(strtolower(substr($item['brand'],0,13)));
+            $brand = strtoupper(substr($item['brand'],0,13));
             $pak = $item['units'];
             $size = $item['units'] . "-" . $item['size'];
             $sku = $item['sku'];
