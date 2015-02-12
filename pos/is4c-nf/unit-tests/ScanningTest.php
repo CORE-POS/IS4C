@@ -514,7 +514,12 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 
         $cc = new CouponCode();
         $out = $cc->handle('0051234512345', array());
-        $expected_error = DisplayLib::boxMsg(_("product not found")."<br />"._("in transaction"));
+        $expected_error = DisplayLib::boxMsg(
+            _("product not found")."<br />"._("in transaction"),
+            '',
+            true,
+            DisplayLib::standardClearButton()
+        );
 
         $this->assertArrayHasKey('output', $out);
         $this->assertEquals($out['output'], $expected_error);
