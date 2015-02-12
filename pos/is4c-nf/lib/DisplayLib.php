@@ -274,8 +274,13 @@ static public function inputUnknown()
         "<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" . _("input unknown") . "</b>", 
         MiscLib::base_url()."graphics/exclaimC.gif", 
         true,
-        array('[Clear]' => 'parseWrapper(\'CL\');')
+        self::standardClearButton()
     );
+}
+
+static public function standardClearButton()
+{
+    return array('[Clear]' => 'parseWrapper(\'CL\');');
 }
 
 //--------------------------------------------------------------------//

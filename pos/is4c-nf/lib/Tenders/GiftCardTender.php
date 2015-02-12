@@ -35,7 +35,10 @@ class GiftCardTender extends TenderModule
     public function errorCheck()
     {
         if (($this->amount > (CoreLocal::get("amtdue") + 0.005)) && CoreLocal::get("amtdue") >= 0){  
-            return DisplayLib::xboxMsg(_("tender cannot exceed purchase amount"));
+            return DisplayLib::xboxMsg(
+                _("tender cannot exceed purchase amount"),
+                DisplayLib::standardClearButton()
+            );
         }
 
         return true;

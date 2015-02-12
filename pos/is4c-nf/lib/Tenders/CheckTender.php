@@ -34,9 +34,15 @@ class CheckTender extends TenderModule
     */
     public function errorCheck()
     {
+        $clearButton = array('OK [clear]' => 'parseWrapper(\'CL\');');
         if ( CoreLocal::get("isMember") != 0 && (($this->amount - CoreLocal::get("amtdue") - 0.005) > CoreLocal::get("dollarOver")) && (CoreLocal::get("cashOverLimit") == 1)) {
-            return DisplayLib::boxMsg(_("member check tender cannot exceed total purchase by over $").CoreLocal::get("dollarOver"));
-        } else if( CoreLocal::get("store")=="wfc" && CoreLocal::get("isMember") != 0 && ($this->amount - CoreLocal::get("amtdue") - 0.005) > 0) { 
+            return DisplayLib::boxMsg(
+                _("member check tender cannot exceed total purchase by over $") . CoreLocal::get("dollarOver"),
+                '',
+                false,
+                $clearButton
+            );
+        } elseif (CoreLocal::get("store")=="wfc" && CoreLocal::get("isMember") != 0 && ($this->amount - CoreLocal::get("amtdue") - 0.005) > 0) { 
             // This should really be a separate tender 
             // module for store-specific behavior
             $db = Database::pDataConnect();
@@ -45,8 +51,10 @@ class CheckTender extends TenderModule
                 CoreLocal::get('memberID'));
             $r = $db->query($q);
             if ($db->num_rows($r) > 0) {
-                return DisplayLib::xboxMsg(_('member check tender cannot exceed total 
-                                    purchase if equity is owed'));
+                return DisplayLib::xboxMsg(
+                    _('member check tender cannot exceed total purchase if equity is owed'),
+                    $clearButton
+                );
             }
 
             // multi use
@@ -60,11 +68,11 @@ class CheckTender extends TenderModule
                 $db = Database::mDataConnect();
                 $chkR = $db->query($chkQ);
                 if ($db->num_rows($chkR) > 0) {
-                    return DisplayLib::xboxMsg(_('already used check over benefit today'));
+                    return DisplayLib::xboxMsg(_('already used check over benefit today'), $clearButton);
                 }
             }
         } else if( CoreLocal::get("isMember") == 0  && ($this->amount - CoreLocal::get("amtdue") - 0.005) > 0) { 
-            return DisplayLib::xboxMsg(_('non-member check tender cannot exceed total purchase'));
+            return DisplayLib::xboxMsg(_('non-member check tender cannot exceed total purchase'), $clearButton);
         }
 
         return true;

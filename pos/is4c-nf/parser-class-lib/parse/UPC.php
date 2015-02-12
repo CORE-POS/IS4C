@@ -381,7 +381,12 @@ class UPC extends Parser
 		   (can break db column if it doesn't fit
 		*/
 		if (strlen($row["normal_price"]) > 8){
-			$ret['output'] = DisplayLib::boxMsg("$upc<br />"._("Claims to be more than $100,000"));
+			$ret['output'] = DisplayLib::boxMsg(
+                $upc . '<br />' . _("Claims to be more than $100,000"),
+                _('Invalid Item'),
+                false,
+                DisplayLib::standardClearButton()
+            );
 			return $ret;
 		}
 
@@ -398,8 +403,12 @@ class UPC extends Parser
 			CoreLocal::get("quantity") == 0 && !$scaleStickerItem) {
 
 			CoreLocal::set("SNR",CoreLocal::get('strEntered'));
-			$ret['output'] = DisplayLib::boxMsg(_("please put item on scale"),'',True);
-			//$ret['retry'] = CoreLocal::get("strEntered");
+			$ret['output'] = DisplayLib::boxMsg(
+                _("please put item on scale"),
+                'Weighed Item',
+                true,
+                DisplayLib::standardClearButton()
+            );
 			
 			return $ret;
 		}
@@ -411,8 +420,13 @@ class UPC extends Parser
 			if (CoreLocal::get("quantity") != 0) 
 				$quantity = CoreLocal::get("quantity") - CoreLocal::get("tare");
 
-			if ($quantity <= 0){
-				$ret['output'] = DisplayLib::boxMsg(_("item weight must be greater than tare weight"));
+			if ($quantity <= 0) {
+				$ret['output'] = DisplayLib::boxMsg(
+                    _("item weight must be greater than tare weight"),
+                    _('Invalid Weight'),
+                    false,
+                    DisplayLib::standardClearButton()
+                );
 				return $ret;
 			}
 			CoreLocal::set("tare",0);
@@ -420,7 +434,12 @@ class UPC extends Parser
 
 		/* non-scale items need integer quantities */	
 		if ($row["scale"] == 0 && (int) CoreLocal::get("quantity") != CoreLocal::get("quantity") ) {
-			$ret['output'] = DisplayLib::boxMsg(_("fractional quantity cannot be accepted for this item"));
+			$ret['output'] = DisplayLib::boxMsg(
+                _("fractional quantity cannot be accepted for this item"),
+                _('Invalid Quantity'),
+                false,
+                DisplayLib::standardClearButton()
+            );
 			return $ret;
 		}
 
@@ -619,8 +638,13 @@ class UPC extends Parser
 		$prefetch = $DiscountObject->priceInfo($row,$quantity);
 		$added = $PriceMethodObject->addItem($row, $quantity, $DiscountObject);
 
-		if (!$added){
-			$ret['output'] = DisplayLib::boxMsg($PriceMethodObject->errorInfo());
+		if (!$added) {
+			$ret['output'] = DisplayLib::boxMsg(
+                $PriceMethodObject->errorInfo(),
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
 			return $ret;
 		}
 

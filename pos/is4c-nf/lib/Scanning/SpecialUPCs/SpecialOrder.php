@@ -56,7 +56,12 @@ class SpecialOrder extends SpecialUPC
         $transID = substr($upc,11,2);
 
         if ((int)$transID === 0) {
-            $json['output'] = DisplayLib::boxMsg(_("Not a valid order"));
+            $json['output'] = DisplayLib::boxMsg(
+                _("Not a valid order"),
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
             return $json;
         }
 
@@ -71,7 +76,12 @@ class SpecialOrder extends SpecialUPC
         $result = $db->query($query);
 
         if ($db->num_rows($result) != 1) {
-            $json['output'] = DisplayLib::boxMsg(_("Order not found"));
+            $json['output'] = DisplayLib::boxMsg(
+                _("Order not found"),
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
             return $json;
         }
 

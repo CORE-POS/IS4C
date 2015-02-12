@@ -21,13 +21,16 @@
 
 *********************************************************************************/
 
-class LineItemDiscount extends Parser {
+class LineItemDiscount extends Parser 
+{
 
 	/* Parse module matches input LD */
-	function check($str){
-		if ($str == "LD")
-			return True;
-		return False;
+	function check($str)
+    {
+		if ($str == "LD") {
+			return true;
+        }
+		return false;
 	}
 
 	function parse($str)
@@ -45,21 +48,33 @@ class LineItemDiscount extends Parser {
 
 		if ($db->num_rows($r) == 0){
 			// this shouldn't happen unless there's some weird session problem
-			$ret['output'] = DisplayLib::boxMsg(_("Item not found"));
-		}
-		else {
+			$ret['output'] = DisplayLib::boxMsg(
+                _("Item not found"),
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
+		} else {
 			$w = $db->fetch_row($r);
-			if ($w['trans_type'] != 'I' && $w['trans_type'] != 'D'){
+			if ($w['trans_type'] != 'I' && $w['trans_type'] != 'D') {
 				// only items & open rings are discountable
-				$ret['output'] = DisplayLib::boxMsg(_("Line is not discountable"));
-			}
-			else if ($w['discounttype'] != 0){
+				$ret['output'] = DisplayLib::boxMsg(
+                    _("Line is not discountable"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
+			} else if ($w['discounttype'] != 0) {
 				// for simplicity, sale items cannot be discounted
 				// this also prevents using this function more than
 				// once on a single item
-				$ret['output'] = DisplayLib::boxMsg(_("Item already discounted"));
-			}
-			else {
+				$ret['output'] = DisplayLib::boxMsg(
+                    _("Item already discounted"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
+			} else {
 				// discount is simply the total times the 
 				//   non-member discount percentage
 				// total is discounted immediately using
@@ -111,4 +126,3 @@ class LineItemDiscount extends Parser {
 
 }
 
-?>

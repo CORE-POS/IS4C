@@ -511,7 +511,12 @@ static public function tender($right, $strl)
 	}
 
 	if (!is_object($tender_object)) {
-		$ret['output'] = DisplayLib::boxMsg(_('tender is misconfigured'));
+		$ret['output'] = DisplayLib::boxMsg(
+            _('tender is misconfigured'),
+            _('Notify Administrator'),
+            false,
+            DisplayLib::standardClearButton()
+        );
 		return $ret;
 	} else if (get_class($tender_object) != 'TenderModule') {
 		/**
@@ -626,7 +631,12 @@ static public function deptkey($price, $dept,$ret=array())
 
 	$num_rows = $db->num_rows($result);
 	if ($num_rows == 0) {
-		$ret['output'] = DisplayLib::boxMsg(_("department unknown"));
+		$ret['output'] = DisplayLib::boxMsg(
+            _("department unknown"),
+            '',
+            false,
+            DisplayLib::standardClearButton()
+        );
 		$ret['udpmsg'] = 'errorBeep';
 		CoreLocal::set("quantity",1);
 	} elseif ($ringAsCoupon) {
@@ -639,12 +649,22 @@ static public function deptkey($price, $dept,$ret=array())
 
 		$num_rows2 = $db2->num_rows($result2);
 		if ($num_rows2 == 0) {
-			$ret['output'] = DisplayLib::boxMsg(_("no item found in")."<br />".$row["dept_name"]);
+			$ret['output'] = DisplayLib::boxMsg(
+                _("no item found in")."<br />".$row["dept_name"],
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
 			$ret['udpmsg'] = 'errorBeep';
 		} else {
 			$row2 = $db2->fetch_array($result2);
 			if ($price > $row2["total"]) {
-				$ret['output'] = DisplayLib::boxMsg(_("coupon amount greater than department total"));
+				$ret['output'] = DisplayLib::boxMsg(
+                    _("coupon amount greater than department total"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
 				$ret['udpmsg'] = 'errorBeep';
 			} else {
                 TransRecord::addRecord(array(
@@ -701,8 +721,10 @@ static public function deptkey($price, $dept,$ret=array())
                 case 1: // member only, no override
                     if (CoreLocal::get('isMember') == 0) {
                         $ret['output'] = DisplayLib::boxMsg(_(
-                                            'Department is member-only<br />' .
-                                            'Enter member number first'
+                                            _('Department is member-only'),
+                                            _('Enter member number first'),
+                                            false,
+                                            array('Member Search [ID]' => 'parseWrapper(\'ID\');', 'Dismiss [clear]' => 'parseWrapper(\'CL\');')
                                         ));
                         return $ret;
                     }
@@ -725,13 +747,18 @@ static public function deptkey($price, $dept,$ret=array())
                 case 3: // anyone but default non-member
                     if (CoreLocal::get('memberID') == '0') {
                         $ret['output'] = DisplayLib::boxMsg(_(
-                                            'Department is member-only<br />' .
-                                            'Enter member number first'
+                                            _('Department is member-only'),
+                                            _('Enter member number first'),
+                                            false,
+                                            array('Member Search [ID]' => 'parseWrapper(\'ID\');', 'Dismiss [clear]' => 'parseWrapper(\'CL\');')
                                         ));
                         return $ret;
                     } else if (CoreLocal::get('memberID') == CoreLocal::get('defaultNonMem')) {
                         $ret['output'] = DisplayLib::boxMsg(_(
-                                            'Department not allowed with this member'
+                                            _('Department not allowed with this member'),
+                                            '',
+                                            false,
+                                            DisplayLib::standardClearButton()
                                         ));
                         return $ret;
                     }
@@ -1281,8 +1308,14 @@ static public function percentDiscount($strl,$json=array())
 {
 	if ($strl == 10.01) $strl = 10;
 
-	if (!is_numeric($strl) || $strl > 100 || $strl < 0) $json['output'] = DisplayLib::boxMsg("discount invalid");
-	else {
+	if (!is_numeric($strl) || $strl > 100 || $strl < 0) {
+        $json['output'] = DisplayLib::boxMsg(
+            _("discount invalid"),
+            '',
+            false,
+            DisplayLib::standardClearButton()
+        );
+	} else {
 		$query = "select sum(total) as total from localtemptrans where upc = '0000000008005' group by upc";
 
 		$db = Database::tDataConnect();
@@ -1302,8 +1335,12 @@ static public function percentDiscount($strl,$json=array())
 			if ($chk !== True)
 				$json['main_frame'] = $chk;
 			$json['output'] = DisplayLib::lastpage();
-		}
-		else $json['output'] = DisplayLib::xboxMsg("10% discount already applied");
+		} else {
+            $json['output'] = DisplayLib::xboxMsg(
+                _("10% discount already applied"),
+                DisplayLib::standardClearButton()
+            );
+        }
 	}
 	return $json;
 }

@@ -57,7 +57,10 @@ class WedgeScParser extends Parser
 		$row = $pConn->fetch_array($result);
 
 		if ($num_rows == 0) {
-			$json['output'] = DisplayLib::xboxMsg("unable to authenticate staff ".$staffID);
+			$json['output'] = DisplayLib::xboxMsg(
+                _("unable to authenticate staff ").$staffID,
+                DisplayLib::standardClearButton()
+            );
 			CoreLocal::set("isStaff",0);			// apbw 03/05/05 SCR
 			return $json;
 		} else {

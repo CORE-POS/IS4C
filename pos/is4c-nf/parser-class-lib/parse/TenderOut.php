@@ -21,18 +21,27 @@
 
 *********************************************************************************/
 
-class TenderOut extends Parser {
-	function check($str){
-		if ($str == "TO")
-			return True;
-		return False;
+class TenderOut extends Parser 
+{
+	function check($str)
+    {
+		if ($str == "TO") {
+			return true;
+        } else {
+            return false;
+        }
 	}
 
 	function parse($str)
     {
 		if (CoreLocal::get("LastID") == 0){
 			$ret = $this->default_json();
-			$ret['output'] = DisplayLib::boxMsg(_("no transaction in progress"));
+			$ret['output'] = DisplayLib::boxMsg(
+                _("no transaction in progress"),
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
 			return $ret;
 		}
 		else {

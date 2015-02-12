@@ -33,10 +33,20 @@ class NeedDiscountParser extends Parser
         $ret = $this->default_json();
 
         if (CoreLocal::get('isMember') !== 1) {
-            $ret['output'] =  DisplayLib::boxMsg(_("must be a member to use this discount"));
+            $ret['output'] = DisplayLib::boxMsg(
+                _("Apply member number first"),
+                _('No member selected'),
+                false,
+                array_merge(array('Member Search [ID]' => 'parseWrapper(\'ID\');'), DisplayLib::standardClearButton())
+            );
             return $ret;
         } elseif (CoreLocal::get('NeedDiscountFlag')==1) {
-        	$ret['output'] =  DisplayLib::boxMsg(_("discount already applied"));
+            $ret['output'] = DisplayLib::boxMsg(
+                _("discount already applied"),
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
     		return $ret;
     	} else {
     		CoreLocal::set('NeedDiscountFlag',1);

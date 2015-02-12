@@ -21,19 +21,27 @@
 
 *********************************************************************************/
 
-class ItemPD extends Parser {
-	function check($str){
-		if (substr($str,-2) == "PD" && is_numeric(substr($str,0,strlen($str)-2)))
-			return True;
-		return False;
+class ItemPD extends Parser 
+{
+	function check($str)
+    {
+		if (substr($str,-2) == "PD" && is_numeric(substr($str,0,strlen($str)-2))) {
+			return true;
+        }
+		return false;
 	}
 
 	function parse($str)
     {
 		$ret = $this->default_json();
-		if (CoreLocal::get("currentid") == 0) 
-			$ret['output'] = DisplayLib::boxMsg(_("No Item on Order"));
-		else {
+		if (CoreLocal::get("currentid") == 0) {
+			$ret['output'] = DisplayLib::boxMsg(
+                _("No Item on Order"),
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
+		} else {
 			$str = CoreLocal::get("currentid");
 			$pd = substr($str,0,strlen($str)-2);
 
@@ -61,14 +69,26 @@ class ItemPD extends Parser {
 			$result = $db->query($query);
 			$num_rows = $db->num_rows($result);
 
-			if ($num_rows == 0) return DisplayLib::boxMsg(_("Item not found"));
-			else {
+			if ($num_rows == 0) {
+                return DisplayLib::boxMsg(
+                    _("Item not found"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
+			} else {
 				$row = $db->fetch_array($result);
 
-				if (!$row["upc"] || strlen($row["upc"]) < 1 || $row['charflag'] == 'SO') 
-					return DisplayLib::boxMsg("Not a valid item");
-				else  
+				if (!$row["upc"] || strlen($row["upc"]) < 1 || $row['charflag'] == 'SO') {
+					return DisplayLib::boxMsg(
+                        _("Not a valid item"),
+                        '',
+                        false,
+                        DisplayLib::standardClearButton()
+                    );
+				} else {
 					return $this->discountupc($row["ItemQtty"]."*".$row["upc"],$item_num,$pd);
+                }
 			}
 		}
 		return "";
@@ -126,7 +146,12 @@ class ItemPD extends Parser {
 		$result = $db->query($query);
 		$num_rows = $db->num_rows($result);
 		if ($num_rows == 0 ){
-			return DisplayLib::boxMsg(_("Item not found").": ".$upc);
+			return DisplayLib::boxMsg(
+                _("Item not found: ") . $upc,
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
 		}
 
 		$row = $db->fetch_array($result);
@@ -250,5 +275,3 @@ class ItemPD extends Parser {
 	}
 }
 
-
-?>

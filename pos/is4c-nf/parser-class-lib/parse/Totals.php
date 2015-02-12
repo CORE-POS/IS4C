@@ -64,7 +64,8 @@ class Totals extends Parser {
             $ret['output'] = DisplayLib::boxMsg(
                 _('WIC Total') . sprintf(': $%.2f', $ttl), 
                 '', 
-                true
+                true,
+                DisplayLib::standardClearButton()
             );
 
             // return early since output has been set

@@ -59,16 +59,31 @@ class MagicPLU extends SpecialUPC
                 if (CoreLocal::get("memberID") == 0) {
                     $json['main_frame'] = $my_url.'gui-modules/memlist.php';
                 } elseif (CoreLocal::get("isMember") == 0) {
-                    $json['output'] = DisplayLib::boxMsg("<br />member discount not applicable");
+                    $json['output'] = DisplayLib::boxMsg(
+                        _("member discount not applicable"),
+                        '',
+                        false,
+                        DisplayLib::standardClearButton()
+                    );
                 } elseif (CoreLocal::get("percentDiscount") > 0) {
-                    $json['output'] = DisplayLib::boxMsg(CoreLocal::get("percentDiscount")."% discount already applied");
+                    $json['output'] = DisplayLib::boxMsg(
+                        CoreLocal::get("percentDiscount")."% discount already applied",
+                        '',
+                        false,
+                        DisplayLib::standardClearButton()
+                    );
                 }
                 break;    
         }
 
         // magic plu, but other conditions not matched
         if ($json['main_frame'] === false && empty($json['output'])) {
-            $json['output'] = DisplayLib::boxMsg($upc."<br />is not a valid item");
+            $json['output'] = DisplayLib::boxMsg(
+                $upc."<br />is not a valid item",
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
         }
 
         return $json;

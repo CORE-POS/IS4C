@@ -57,11 +57,19 @@ class Steering extends Parser
             $str = "PV";
         }
 
+        // common error message
+        $in_progress_msg = DisplayLib::boxMsg(
+            _("transaction in progress"),
+            '',
+            true,
+            DisplayLib::standardClearButton()
+        );
+
         switch($str) {
             
             case 'CAB':
                 if (CoreLocal::get("LastID") != "0") {
-                    $this->ret['output'] = DisplayLib::boxMsg("transaction in progress");
+                    $this->ret['output'] = $in_progress_msg;
                 } else {
                     $this->ret['main_frame'] = $my_url."gui-modules/cablist.php";
                 }
@@ -76,17 +84,27 @@ class Steering extends Parser
                 if (CoreLocal::get('memType') == 1 || CoreLocal::get('memType') == 2) {
                     // could this be CoreLocal::get('isMember') == 1
                     // to avoid relying on specific memTypes?
-                    $this->ret['output'] = DisplayLib::boxMsg("Cannot UNset a member status");
+                    $this->ret['output'] = DisplayLib::boxMsg(
+                        _("Cannot UNset a member status"),
+                        '',
+                        true,
+                        DisplayLib::standardClearButton()
+                    );
                 } elseif (CoreLocal::get("SecuritySR") > 20){
                     $this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=MemStatusAdminLogin";
                 } else {
-                    $this->ret['output'] = DisplayLib::boxMsg("You must be an admin to do this.");
+                    $this->ret['output'] = DisplayLib::boxMsg(
+                        _("You must be an admin to do this."),
+                        _('Access Denied'),
+                        true,
+                        DisplayLib::standardClearButton()
+                    );
                 }
                 return true;
 
             case "UNDO":
                 if (CoreLocal::get("LastID") != "0") {
-                    $this->ret['output'] = DisplayLib::boxMsg("transaction in progress");
+                    $this->ret['output'] = $in_progress_msg;
                 } else {
                     $this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=UndoAdminLogin";
                 }
@@ -124,7 +142,12 @@ class Steering extends Parser
                     $num_rows = $db->num_rows($result);
 
                     if ($num_rows == 0)  {
-                        $this->ret['output'] = DisplayLib::boxMsg("no receipt found");
+                        $this->ret['output'] = DisplayLib::boxMsg(
+                            _("no receipt found"),
+                            '',
+                            true,
+                            DisplayLib::standardClearButton()
+                        );
                     } else {
                         $this->ret['main_frame'] = $my_url."gui-modules/rplist.php";
                     }
@@ -143,7 +166,7 @@ class Steering extends Parser
                 // sign off and suspend shift are identical except for
                 // drawer behavior
                 if (CoreLocal::get("LastID") != 0) {
-                    $this->ret['output'] = DisplayLib::boxMsg(_("Transaction in Progress"));
+                    $this->ret['output'] = $in_progress_msg;
                 } else {
                     TransRecord::addLogRecord(array(
                         'upc' => 'SIGNOUT',
@@ -179,7 +202,7 @@ class Steering extends Parser
 
             case 'NS':
                 if (CoreLocal::get("LastID") != 0) {
-                    $this->ret['output'] = DisplayLib::boxMsg(_("Transaction in Progress"));
+                    $this->ret['output'] = $in_progress_msg;
                 } else {
                     $this->ret['main_frame'] = $my_url."gui-modules/nslogin.php";
                 }
