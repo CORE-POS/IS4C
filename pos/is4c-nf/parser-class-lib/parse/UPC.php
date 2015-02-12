@@ -274,8 +274,11 @@ class UPC extends Parser
 			if (CoreLocal::get('msgrepeat') == 0){
 				CoreLocal::set("strEntered",$row["upc"]);
 				CoreLocal::set("boxMsg","<b>".$row["upc"]." - ".$row["description"]."</b>
-					<br />"._("Item not for sale")."
-					<br /><font size=-1>"._("enter to continue sale").", "._("clear to cancel")."</font>");
+					<br />"._("Item not for sale"));
+                CoreLocal::set('boxMsgButtons', array(
+                    'Continue Sale [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
+                    'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                ));
 				$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php?quiet=1";
 				return $ret;
 			}
@@ -311,8 +314,11 @@ class UPC extends Parser
 			&& !$scaleStickerItem && abs($row['normal_price']) > 0.01){
 			if (CoreLocal::get('msgrepeat') == 0){
 				CoreLocal::set("strEntered",$row["upc"]);
-				CoreLocal::set("boxMsg","<b>Same weight as last item</b>
-					<br><font size=-1>[enter] to confirm correct, [clear] to cancel</font>");
+				CoreLocal::set("boxMsg","<b>Same weight as last item</b>");
+                CoreLocal::set('boxMsgButtons', array(
+                    'Confirm Weight [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
+                    'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                ));
 				$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php?quiet=1";
 				return $ret;
 			}
@@ -339,8 +345,12 @@ class UPC extends Parser
 				)";
 			$restrictR = $db->query($restrictQ);
 			if ($db->num_rows($restrictR) > 0){
-				CoreLocal::set("boxMsg",_("product cannot be sold right now"));
-				$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php";
+                $ret['output'] = DisplayLib::boxMsg(
+                    _('product cannot be sold right now'),
+                    _('Date Restriction'),
+                    false,
+                    DisplayLib::standardClearButton()
+                );
 				return $ret;
 			}
 
@@ -462,8 +472,11 @@ class UPC extends Parser
 		*/
 		if ($upc == "0000000008010" && CoreLocal::get("msgrepeat") == 0) {
 			CoreLocal::set("boxMsg","<b>".$total." gift certificate</b><br />
-				"._("insert document")."<br />"._("press enter to endorse")."
-				<p><font size='-1'>"._("clear to cancel")."</font>");
+				"._("insert document"));
+            CoreLocal::set('boxMsgButtons', array(
+                'Endorse [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
+                'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+            ));
 			$ret["main_frame"] = $my_url."gui-modules/boxMsg2.php?endorse=giftcert&endorseAmt=".$total;
 			return $ret;
 		}
@@ -473,8 +486,11 @@ class UPC extends Parser
 		*/
 		if ($upc == "0000000008011" && CoreLocal::get("msgrepeat") == 0) {
 			CoreLocal::set("boxMsg","<b>".$total." class registration</b><br />
-				"._("insert form")."<br />"._("press enter to endorse")."
-				<p><font size='-1'>"._("clear to cancel")."</font>");
+				"._("insert form"));
+            CoreLocal::set('boxMsgButtons', array(
+                'Endorse [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
+                'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+            ));
 			$ret["main_frame"] = $my_url."gui-modules/boxMsg2.php?endorse=classreg&endorseAmt=".$total;
 			return $ret;
 		}

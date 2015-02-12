@@ -30,7 +30,11 @@ class ArWarnDept extends SpecialDept
     {
         if (CoreLocal::get('msgrepeat') == 0) {
             CoreLocal::set("boxMsg","<b>A/R Payment Sale</b><br>remember to retain you<br>
-                reprinted receipt<br><font size=-1>[enter] to continue, [clear] to cancel</font>");
+                reprinted receipt");
+            CoreLocal::set('boxMsgButtons', array(
+                'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
+                'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+            ));
             $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php?quiet=1';
         }
 

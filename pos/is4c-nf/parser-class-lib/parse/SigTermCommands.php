@@ -184,9 +184,12 @@ class SigTermCommands extends Parser
 			$ret['retry'] = CoreLocal::get("CachePanEncBlock");
 		}
 		if ($this->cb_error) {
-			CoreLocal::set('boxMsg','Warning: Invalid cash back<br />
-					selection ignored');
-			$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';	
+            $ret['output'] = DisplayLib::boxMsg(
+                'Cash back set to zero instead',
+                _('Invalid cash back selection'),
+                false,
+                DisplayLib::standardClearButton()
+            );
 		}
 
 		return $ret;

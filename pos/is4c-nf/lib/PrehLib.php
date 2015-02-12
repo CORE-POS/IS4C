@@ -803,12 +803,18 @@ static public function deptkey($price, $dept,$ret=array())
 
 		if ($price > $deptmax && CoreLocal::get("msgrepeat") == 0) {
 
-			CoreLocal::set("boxMsg","$".$price." "._("is greater than department limit")."<p>"
-					."<font size='-1'>"._("clear to cancel").", "._("enter to proceed")."</font>");
+			CoreLocal::set("boxMsg","$".$price." "._("is greater than department limit"));
+            CoreLocal::set('boxMsgButtons', array(
+                'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
+                'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+            ));
 			$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 		} elseif ($price < $deptmin && CoreLocal::get("msgrepeat") == 0) {
-			CoreLocal::set("boxMsg","$".$price." "._("is lower than department minimum")."<p>"
-				."<font size='-1'>"._("clear to cancel").", "._("enter to proceed")."</font>");
+			CoreLocal::set("boxMsg","$".$price." "._("is lower than department minimum"));
+            CoreLocal::set('boxMsgButtons', array(
+                'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
+                'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+            ));
 			$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 		} else {
 			if (CoreLocal::get("casediscount") > 0) {
@@ -922,6 +928,9 @@ static public function ttl()
                 }
                 if (!class_exists($ttl_class)) {
                     CoreLocal::set("boxMsg",sprintf("TotalActions class %s doesn't exist.", $ttl_class));
+                    CoreLocal::set('boxMsgButtons', array(
+                        'Dismiss [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                    ));
                     return MiscLib::baseURL()."gui-modules/boxMsg2.php?quiet=1";
                 }
                 $mod = new $ttl_class();
@@ -964,10 +973,13 @@ static public function ttl()
 		if (CoreLocal::get("balance") < CoreLocal::get("memChargeTotal") && CoreLocal::get("memChargeTotal") > 0) {
 			if (CoreLocal::get('msgrepeat') == 0) {
 				CoreLocal::set("boxMsg",sprintf("<b>A/R Imbalance</b><br />
-					Total AR payments $%.2f exceeds AR balance %.2f<br />
-					<font size=-1>[enter] to continue, [clear] to cancel</font>",
+					Total AR payments $%.2f exceeds AR balance %.2f<br />",
 					CoreLocal::get("memChargeTotal"),
 					CoreLocal::get("balance")));
+                CoreLocal::set('boxMsgButtons', array(
+                    'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
+                    'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                ));
 				CoreLocal::set("strEntered","TL");
 				return MiscLib::baseURL()."gui-modules/boxMsg2.php?quiet=1";
 			}
@@ -1101,10 +1113,13 @@ static public function omtr_ttl()
 		if (CoreLocal::get("balance") < CoreLocal::get("memChargeTotal") && CoreLocal::get("memChargeTotal") > 0){
 			if (CoreLocal::get('msgrepeat') == 0){
 				CoreLocal::set("boxMsg",sprintf("<b>A/R Imbalance</b><br />
-					Total AR payments $%.2f exceeds AR balance %.2f<br />
-					<font size=-1>[enter] to continue, [clear] to cancel</font>",
+					Total AR payments $%.2f exceeds AR balance %.2f<br />",
 					CoreLocal::get("memChargeTotal"),
 					CoreLocal::get("balance")));
+                CoreLocal::set('boxMsgButtons', array(
+                    'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
+                    'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                ));
 				CoreLocal::set("strEntered","TL");
 				return MiscLib::base_url()."gui-modules/boxMsg2.php?quiet=1";
 			}
@@ -1274,6 +1289,9 @@ static public function fsEligible()
 	Database::getsubtotals();
 	if (CoreLocal::get("fsEligible") < 0 && False) {
 		CoreLocal::set("boxMsg","Foodstamp eligible amount inapplicable<P>Please void out earlier tender and apply foodstamp first");
+        CoreLocal::set('boxMsgButtons', array(
+            'Dismiss [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+        ));
 		return MiscLib::baseURL()."gui-modules/boxMsg2.php";
 	} else {
 		CoreLocal::set("fntlflag",1);

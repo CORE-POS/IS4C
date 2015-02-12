@@ -95,9 +95,7 @@ class RebateCheckTender extends TenderModule
             .trim(CoreLocal::get("transno"));
 
         $msg = "<br />"._("insert")." ".$this->name_string.
-            ' for $'.sprintf('%.2f',$this->amount).
-            "<br />"._("press enter to endorse");
-        $msg .= "<p><font size='-1'>"._("clear to cancel")."</font></p>";
+            ' for $'.sprintf('%.2f',$this->amount). '<br />';
         if (CoreLocal::get("LastEquityReference") == $ref) {
             $msg .= "<div style=\"background:#993300;color:#ffffff;
                 margin:3px;padding: 3px;\">
@@ -107,6 +105,10 @@ class RebateCheckTender extends TenderModule
 
         CoreLocal::set("boxMsg",$msg);
         CoreLocal::set('strEntered', (100*$this->amount).$this->tender_code);
+        CoreLocal::set('boxMsgButtons', array(
+            'Endorse [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
+            'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+        ));
 
         return MiscLib::base_url().'gui-modules/boxMsg2.php?endorse=check&endorseAmt='.$this->amount;
     }
