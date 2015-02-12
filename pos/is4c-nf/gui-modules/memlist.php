@@ -207,7 +207,7 @@ class memlist extends NoInputPage
 		// First check for a problem found in preprocess.
 		if ($message != "") {
 			echo "
-			<div class=\"colored centeredDisplay\">
+			<div class=\"colored centeredDisplay rounded\">
 				<span class=\"larger\">
                     {$message} <br />" .
                     _("enter member number or name") . "

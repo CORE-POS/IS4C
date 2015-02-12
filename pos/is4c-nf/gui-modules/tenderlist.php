@@ -95,16 +95,48 @@ class tenderlist extends NoInputPage {
 			$selected = "";
 		}
 		echo "</select>"
-			."</form>"
-			."</div>"
-			."<div class=\"listboxText coloredText centerOffset\">";
-		if (CoreLocal::get("tenderTotal") >= 0)
+			."</div>";
+        if (CoreLocal::get('touchscreen')) {
+            echo '<div class="listbox listboxText">'
+            . '<button type="button" class="pos-button coloredArea"
+                onclick="pageUp(\'#search\');">
+                <img src="../graphics/pageup.png" width="16" height="16" />
+               </button>'
+            . '<br /><br />'
+            . '<button type="button" class="pos-button coloredArea"
+                onclick="scrollUp(\'#search\');">
+                <img src="../graphics/up.png" width="16" height="16" />
+               </button>'
+            . '<br /><br />'
+            . '<button type="button" class="pos-button coloredArea"
+                onclick="scrollDown(\'#search\');">
+                <img src="../graphics/down.png" width="16" height="16" />
+               </button>'
+            . '<br /><br />'
+            . '<button type="button" class="pos-button coloredArea"
+                onclick="pageDown(\'#search\');">
+                <img src="../graphics/pagedown.png" width="16" height="16" />
+               </button>'
+            . '</div>';
+        }
+        echo "<div class=\"listboxText coloredText centerOffset\">";
+		if (CoreLocal::get("tenderTotal") >= 0) {
 			echo _("tendering").' $';
-		else
+		} else {
 			echo _("refunding").' $';
+        }
 		printf('%.2f',abs(CoreLocal::get("tenderTotal"))/100);
 		echo '<br />';
-		echo _("clear to cancel")."</div>"
+        echo _("use arrow keys to navigate")
+            . '<p><button type="submit" class="pos-button wide-button coloredArea">
+                OK <span class="smaller">[enter]</span>
+                </button></p>'
+            . '<p><button type="submit" class="pos-button wide-button errorColoredArea"
+                onclick="$(\'#search\').append($(\'<option>\').val(\'\'));$(\'#search\').val(\'\');">
+                Cancel <span class="smaller">[clear]</span>
+                </button></p>'
+            ."</div><!-- /.listboxText coloredText .centerOffset -->"
+            ."</form>"
 			."<div class=\"clear\"></div>";
 		echo "</div>";
 

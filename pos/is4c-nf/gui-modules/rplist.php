@@ -85,7 +85,7 @@ class rplist extends NoInputPage
         <div class="listbox">
         <form name="selectform" method="post" id="selectform" 
             action="<?php echo $_SERVER['PHP_SELF']; ?>" >
-        <select name="selectlist" size="10" id="selectlist"
+        <select name="selectlist" size="15" id="selectlist"
             onblur="$('#selectlist').focus()" >
 
         <?php
@@ -102,13 +102,46 @@ class rplist extends NoInputPage
         ?>
 
         </select>
-        </form>
         </div>
+        <?php
+        if (CoreLocal::get('touchscreen')) {
+            echo '<div class="listbox listboxText">'
+            . '<button type="button" class="pos-button coloredArea"
+                onclick="pageUp(\'#search\');">
+                <img src="../graphics/pageup.png" width="16" height="16" />
+               </button>'
+            . '<br /><br />'
+            . '<button type="button" class="pos-button coloredArea"
+                onclick="scrollUp(\'#search\');">
+                <img src="../graphics/up.png" width="16" height="16" />
+               </button>'
+            . '<br /><br />'
+            . '<button type="button" class="pos-button coloredArea"
+                onclick="scrollDown(\'#search\');">
+                <img src="../graphics/down.png" width="16" height="16" />
+               </button>'
+            . '<br /><br />'
+            . '<button type="button" class="pos-button coloredArea"
+                onclick="pageDown(\'#search\');">
+                <img src="../graphics/pagedown.png" width="16" height="16" />
+               </button>'
+            . '</div>';
+        }
+        ?>
         <div class="listboxText coloredText centerOffset">
         <?php echo _("use arrow keys to navigate"); ?><br />
-        <?php echo _("enter to reprint receipt"); ?><br />
-        <?php echo _("clear to cancel"); ?>
+        <p>
+            <button type="submit" class="pos-button wide-button coloredArea">
+            Reprint <span class="smaller">[enter]</span>
+            </button>
+        </p>
+        <p>
+            <button type="submit" class="pos-button wide-button errorColoredArea"
+            onclick="$(\'#search\').append($(\'<option>\').val(\'\'));$(\'#search\').val(\'\');">
+            Cancel <span class="smaller">[clear]</span>
+        </button></p>
         </div>
+        </form>
         <div class="clear"></div>
         </div>
 

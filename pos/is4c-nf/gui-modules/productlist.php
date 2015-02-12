@@ -26,9 +26,9 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class productlist extends NoInputPage {
 
-	var $temp_result;
-	var $temp_num_rows;
-	var $boxSize;
+	private $temp_result;
+	private $temp_num_rows;
+	private $boxSize;
 
 	function preprocess()
     {
@@ -130,15 +130,15 @@ class productlist extends NoInputPage {
 
 		if ($num_rows == 0) {
 			$this->productsearchbox(_("no match found")."<br />"._("next search or enter upc"));
-		}
-		else {
-			$this->add_onload_command("selectSubmit('#search', '#selectform')\n");
+		} else {
+			$this->add_onload_command("selectSubmit('#search', '#selectform', '#filter-span')\n");
 
 			echo "<div class=\"baseHeight\">"
 				."<div class=\"listbox\">"
 				."<form name=\"selectform\" method=\"post\" action=\"{$_SERVER['PHP_SELF']}\""
 				." id=\"selectform\">"
 				."<select name=\"search\" id=\"search\" "
+                .' style="min-height: 200px; min-width: 220px;" '
 				."size=".$this->boxSize." onblur=\"\$('#search').focus();\" ondblclick=\"document.forms['selectform'].submit();\">";
 
 			$selected = "selected";
@@ -157,10 +157,42 @@ class productlist extends NoInputPage {
 				$selected = "";
 			}
 			echo "</select>"
+                . '<div id="filter-span"></div>'
+				."</div>";
+            if (CoreLocal::get('touchscreen')) {
+                echo '<div class="listbox listboxText">'
+                . '<button type="button" class="pos-button coloredArea"
+                    onclick="pageUp(\'#search\');">
+                    <img src="../graphics/pageup.png" width="16" height="16" />
+                   </button>'
+                . '<br /><br />'
+                . '<button type="button" class="pos-button coloredArea"
+                    onclick="scrollUp(\'#search\');">
+                    <img src="../graphics/up.png" width="16" height="16" />
+                   </button>'
+                . '<br /><br />'
+                . '<button type="button" class="pos-button coloredArea"
+                    onclick="scrollDown(\'#search\');">
+                    <img src="../graphics/down.png" width="16" height="16" />
+                   </button>'
+                . '<br /><br />'
+                . '<button type="button" class="pos-button coloredArea"
+                    onclick="pageDown(\'#search\');">
+                    <img src="../graphics/pagedown.png" width="16" height="16" />
+                   </button>'
+                . '</div>';
+            }
+			echo "<div class=\"listboxText coloredText centerOffset\">"
+				. _("use arrow keys to navigate")
+                . '<p><button type="submit" class="pos-button wide-button coloredArea">
+                    OK <span class="smaller">[enter]</span>
+                    </button></p>'
+                . '<p><button type="submit" class="pos-button wide-button errorColoredArea"
+                    onclick="$(\'#search\').append($(\'<option>\').val(\'\'));$(\'#search\').val(\'\');">
+                    Cancel <span class="smaller">[clear]</span>
+                    </button></p>'
+                ."</div><!-- /.listboxText coloredText .centerOffset -->"
 				."</form>"
-				."</div>"
-				."<div class=\"listboxText coloredText centerOffset\">"
-				._("clear to cancel")."</div>"
 				."<div class=\"clear\"></div>";
 			echo "</div>";
 		}
@@ -171,15 +203,20 @@ class productlist extends NoInputPage {
 	function productsearchbox($strmsg) {
 		?>
 		<div class="baseHeight">
-			<div class="colored centeredDisplay">
+			<div class="colored centeredDisplay rounded">
 			<span class="larger">
 			<?php echo $strmsg;?>
 			</span>
 			<form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post" autocomplete="off">
+            <p>
 			<input type="text" name="search" size="15" id="search"
 				onblur="$('#search').focus();" />
+            </p>
+            <button class="pos-button" type="button"
+                onclick="$('#search').val('');$(this).closest('form').submit();">
+                Cancel [enter]
+            </button>
 			</form>
-			press [enter] to cancel
 			</div>
 		</div>
 		<?php
