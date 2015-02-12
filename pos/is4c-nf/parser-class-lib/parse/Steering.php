@@ -58,12 +58,14 @@ class Steering extends Parser
         }
 
         // common error message
+        $repeat = CoreLocal::get('msgrepeat');
         $in_progress_msg = DisplayLib::boxMsg(
             _("transaction in progress"),
             '',
             true,
             DisplayLib::standardClearButton()
         );
+        CoreLocal::set('msgrepeat', $repeat);
 
         switch($str) {
             
