@@ -36,7 +36,7 @@ class Tags4x8P extends \COREPOS\Fannie\API\item\FannieSignage
 
         $width = 52; // tag width in mm
         $height = 31; // tag height in mm
-        $left = 5; // left margin
+        $left = 5.5; // left margin
         $top = 15; // top margin
         $pdf->SetTopMargin($top);  //Set top margin of the page
         $pdf->SetLeftMargin($left);  //Set left margin of the page
