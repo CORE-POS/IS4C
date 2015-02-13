@@ -186,7 +186,7 @@ class memlist extends NoInputPage
 	function head_content()
     {
 		if (count($this->results) > 0) {
-			$this->add_onload_command("selectSubmit('#search', '#selectform')\n");
+			$this->add_onload_command("selectSubmit('#search', '#selectform', '#filter-div')\n");
 			$this->add_onload_command("\$('#search').focus();\n");
 		} else {
 			$this->default_parsewrapper_js('reginput','selectform');
@@ -253,29 +253,13 @@ class memlist extends NoInputPage
 				}
 				echo '>'.$label.'</option>';
             }
-			echo "</select></div><!-- /.listbox -->";
+			echo "</select>"
+                . '<div id="filter-div"></div>'
+                . "</div><!-- /.listbox -->";
             if (CoreLocal::get('touchscreen')) {
                 echo '<div class="listbox listboxText">'
-                . '<button type="button" class="pos-button coloredArea"
-                    onclick="pageUp(\'#search\');">
-                    <img src="../graphics/pageup.png" width="16" height="16" />
-                   </button>'
-                . '<br /><br />'
-                . '<button type="button" class="pos-button coloredArea"
-                    onclick="scrollUp(\'#search\');">
-                    <img src="../graphics/up.png" width="16" height="16" />
-                   </button>'
-                . '<br /><br />'
-                . '<button type="button" class="pos-button coloredArea"
-                    onclick="scrollDown(\'#search\');">
-                    <img src="../graphics/down.png" width="16" height="16" />
-                   </button>'
-                . '<br /><br />'
-                . '<button type="button" class="pos-button coloredArea"
-                    onclick="pageDown(\'#search\');">
-                    <img src="../graphics/pagedown.png" width="16" height="16" />
-                   </button>'
-                . '</div>';
+                    . DisplayLib::touchScreenScrollButtons()
+                    . '</div>';
             }
 			echo "<div class=\"listboxText coloredText centerOffset\">"
 				. _("use arrow keys to navigate")
@@ -283,7 +267,7 @@ class memlist extends NoInputPage
                     OK <span class="smaller">[enter]</span>
                     </button></p>'
                 . '<p><button type="submit" class="pos-button wide-button errorColoredArea"
-                    onclick="$(\'#search option:selected\').val(\'\');">
+                    onclick="$(\'#search\').append($(\'<option>\').val(\'\'));$(\'#search\').val(\'\');">
                     Cancel <span class="smaller">[clear]</span>
                     </button></p>'
                 ."</div><!-- /.listboxText coloredText .centerOffset -->"

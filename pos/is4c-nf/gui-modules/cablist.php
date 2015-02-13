@@ -103,7 +103,7 @@ class cablist extends NoInputPage
         <div class="baseHeight">
         <div class="listbox">
         <form id="selectform" name="selectform" onsubmit="return submitWrapper();">
-        <select name="selectlist" size="10" onblur="$('#selectlist').focus()"
+        <select name="selectlist" size="15" onblur="$('#selectlist').focus()"
             id="selectlist">
 
         <?php
@@ -122,11 +122,28 @@ class cablist extends NoInputPage
         ?>
 
         </select>
-        </form>
         </div>
+        <?php
+        if (CoreLocal::get('touchscreen')) {
+            echo '<div class="listbox listboxText">'
+                . DisplayLib::touchScreenScrollButtons('#selectlist')
+                . '</div>';
+        }
+        ?>
         <div class="listboxText coloredText centerOffset">
-        use arrow keys to navigate<br />[enter] to reprint receipt<br />[clear] to cancel
+        <?php echo _("use arrow keys to navigate"); ?><br />
+        <p>
+            <button type="submit" class="pos-button wide-button coloredArea">
+            Reprint <span class="smaller">[enter]</span>
+            </button>
+        </p>
+        <p>
+            <button type="submit" class="pos-button wide-button errorColoredArea"
+            onclick="$('#selectlist').append($('<option>').val(''));$('#selectlist').val('');">
+            Cancel <span class="smaller">[clear]</span>
+        </button></p>
         </div>
+        </form>
         <div class="clear"></div>
         </div>
 

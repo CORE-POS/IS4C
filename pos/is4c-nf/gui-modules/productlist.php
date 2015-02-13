@@ -138,7 +138,7 @@ class productlist extends NoInputPage {
 				."<form name=\"selectform\" method=\"post\" action=\"{$_SERVER['PHP_SELF']}\""
 				." id=\"selectform\">"
 				."<select name=\"search\" id=\"search\" "
-                .' style="min-height: 200px; min-width: 220px;" '
+                .' style="min-height: 200px; min-width: 220px; max-width: 390px;" '
 				."size=".$this->boxSize." onblur=\"\$('#search').focus();\" ondblclick=\"document.forms['selectform'].submit();\">";
 
 			$selected = "selected";
@@ -148,11 +148,10 @@ class productlist extends NoInputPage {
 				if ($row["scale"] != 0) $Scale = "S";
 				else $Scale = " ";
 
-				if (!$price) $price = "unKnown";
-				else $price = MiscLib::truncate2($price);
+				$price = MiscLib::truncate2($price);
 
-				echo "<option value='".$row["upc"]."' ".$selected.">".$row["upc"]." -- ".$row["description"]
-					." ---- [".$price."] ".$Scale."\n";
+				echo "<option value='".$row["upc"]."' ".$selected.">".$row["upc"]." - ".$row["description"]
+					." -- [".$price."] ".$Scale."\n";
 					
 				$selected = "";
 			}
@@ -161,26 +160,8 @@ class productlist extends NoInputPage {
 				."</div>";
             if (CoreLocal::get('touchscreen')) {
                 echo '<div class="listbox listboxText">'
-                . '<button type="button" class="pos-button coloredArea"
-                    onclick="pageUp(\'#search\');">
-                    <img src="../graphics/pageup.png" width="16" height="16" />
-                   </button>'
-                . '<br /><br />'
-                . '<button type="button" class="pos-button coloredArea"
-                    onclick="scrollUp(\'#search\');">
-                    <img src="../graphics/up.png" width="16" height="16" />
-                   </button>'
-                . '<br /><br />'
-                . '<button type="button" class="pos-button coloredArea"
-                    onclick="scrollDown(\'#search\');">
-                    <img src="../graphics/down.png" width="16" height="16" />
-                   </button>'
-                . '<br /><br />'
-                . '<button type="button" class="pos-button coloredArea"
-                    onclick="pageDown(\'#search\');">
-                    <img src="../graphics/pagedown.png" width="16" height="16" />
-                   </button>'
-                . '</div>';
+                    . DisplayLib::touchScreenScrollButtons()
+                    . '</div>';
             }
 			echo "<div class=\"listboxText coloredText centerOffset\">"
 				. _("use arrow keys to navigate")

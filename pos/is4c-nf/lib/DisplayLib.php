@@ -1055,5 +1055,30 @@ static public function screenDisplay($min, $max)
     return $ret;
 }
 
+static public function touchScreenScrollButtons($selector='#search')
+{
+    $stem = MiscLib::baseURL() . 'graphics/';
+    return '
+        <button type="button" class="pos-button coloredArea"
+            onclick="pageUp(\''. $selector . '\');">
+            <img src="' . $stem . 'pageup.png" width="16" height="16" />
+        </button>
+        <br /><br />
+        <button type="button" class="pos-button coloredArea"
+            onclick="scrollUp(\''. $selector . '\');">
+            <img src="' . $stem . 'up.png" width="16" height="16" />
+        </button>
+        <br /><br />
+        <button type="button" class="pos-button coloredArea"
+            onclick="scrollDown(\''. $selector . '\');">
+            <img src="' . $stem . 'down.png" width="16" height="16" />
+        </button>
+        <br /><br />
+        <button type="button" class="pos-button coloredArea"
+            onclick="pageDown(\''. $selector . '\');">
+            <img src="' . $stem . 'pagedown.png" width="16" height="16" />
+        </button>';
+}
+
 } // end class DisplayLib
 

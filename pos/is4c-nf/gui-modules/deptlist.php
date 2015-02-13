@@ -104,26 +104,8 @@ class deptlist extends NoInputPage {
 			."</div>";
         if (CoreLocal::get('touchscreen')) {
             echo '<div class="listbox listboxText">'
-            . '<button type="button" class="pos-button coloredArea"
-                onclick="pageUp(\'#search\');">
-                <img src="../graphics/pageup.png" width="16" height="16" />
-               </button>'
-            . '<br /><br />'
-            . '<button type="button" class="pos-button coloredArea"
-                onclick="scrollUp(\'#search\');">
-                <img src="../graphics/up.png" width="16" height="16" />
-               </button>'
-            . '<br /><br />'
-            . '<button type="button" class="pos-button coloredArea"
-                onclick="scrollDown(\'#search\');">
-                <img src="../graphics/down.png" width="16" height="16" />
-               </button>'
-            . '<br /><br />'
-            . '<button type="button" class="pos-button coloredArea"
-                onclick="pageDown(\'#search\');">
-                <img src="../graphics/pagedown.png" width="16" height="16" />
-               </button>'
-            . '</div>';
+                . DisplayLib::touchScreenScrollButtons()
+                . '</div>';
         }
         echo "<div class=\"listboxText coloredText centerOffset\">"
             . _("use arrow keys to navigate")

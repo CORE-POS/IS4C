@@ -106,26 +106,8 @@ class rplist extends NoInputPage
         <?php
         if (CoreLocal::get('touchscreen')) {
             echo '<div class="listbox listboxText">'
-            . '<button type="button" class="pos-button coloredArea"
-                onclick="pageUp(\'#search\');">
-                <img src="../graphics/pageup.png" width="16" height="16" />
-               </button>'
-            . '<br /><br />'
-            . '<button type="button" class="pos-button coloredArea"
-                onclick="scrollUp(\'#search\');">
-                <img src="../graphics/up.png" width="16" height="16" />
-               </button>'
-            . '<br /><br />'
-            . '<button type="button" class="pos-button coloredArea"
-                onclick="scrollDown(\'#search\');">
-                <img src="../graphics/down.png" width="16" height="16" />
-               </button>'
-            . '<br /><br />'
-            . '<button type="button" class="pos-button coloredArea"
-                onclick="pageDown(\'#search\');">
-                <img src="../graphics/pagedown.png" width="16" height="16" />
-               </button>'
-            . '</div>';
+                . DisplayLib::touchScreenScrollButtons('#selectlist')
+                . '</div>';
         }
         ?>
         <div class="listboxText coloredText centerOffset">
@@ -137,7 +119,7 @@ class rplist extends NoInputPage
         </p>
         <p>
             <button type="submit" class="pos-button wide-button errorColoredArea"
-            onclick="$(\'#search\').append($(\'<option>\').val(\'\'));$(\'#search\').val(\'\');">
+            onclick="$('#selectlist').append($('<option>').val(''));$('#selectlist').val('');">
             Cancel <span class="smaller">[clear]</span>
         </button></p>
         </div>

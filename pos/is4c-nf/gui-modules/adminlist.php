@@ -50,6 +50,9 @@ class adminlist extends NoInputPage {
 				Database::getsubtotals();
 				if (CoreLocal::get("LastID") == 0) {
 					CoreLocal::set("boxMsg",_("no transaction in progress"));
+                    CoreLocal::set('boxMsgButtons', array(
+                        'Dismiss [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                    ));
 					$this->change_page($this->page_url."gui-modules/boxMsg2.php");
 					return False;
 				}
@@ -87,10 +90,16 @@ class adminlist extends NoInputPage {
 				Database::getsubtotals();
 				if (CoreLocal::get("LastID") != 0) {
 					CoreLocal::set("boxMsg",_("transaction in progress"));
+                    CoreLocal::set('boxMsgButtons', array(
+                        'Dismiss [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                    ));
 					$this->change_page($this->page_url."gui-modules/boxMsg2.php");
 				}
 				elseif (SuspendLib::checksuspended() == 0) {
 					CoreLocal::set("boxMsg",_("no suspended transaction"));
+                    CoreLocal::set('boxMsgButtons', array(
+                        'Dismiss [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                    ));
 					CoreLocal::set("strRemembered","");
 					$this->change_page($this->page_url."gui-modules/boxMsg2.php");
 				}
@@ -120,12 +129,19 @@ class adminlist extends NoInputPage {
 	} // END head() FUNCTION
 
 	function body_content() {
+        $stem = MiscLib::baseURL() . 'graphics/';
 		?>
 		<div class="baseHeight">
-		<div class="centeredDisplay colored">
+		<div class="centeredDisplay colored rounded">
 			<span class="larger"><?php echo _("administrative tasks"); ?></span>
 			<br />
 		<form id="selectform" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+        <?php if (CoreLocal::get('touchscreen')) { ?>
+        <button type="button" class="pos-button coloredArea"
+            onclick="scrollDown('#selectlist');">
+            <img src="<?php echo $stem; ?>down.png" width="16" height="16" />
+        </button>
+        <?php } ?>
 		<select name="selectlist" id="selectlist" onblur="$('#selectlist').focus();">
 		<option value=''><?php echo _("Select a Task"); ?>
 		<option value='SUSPEND'>1. <?php echo _("Suspend Transaction"); ?>
@@ -137,22 +153,30 @@ class adminlist extends NoInputPage {
 			<option value='OTR'>4. <?php echo _("Any Tender Report"); ?>
 		<?php } ?>
 		</select>
+        <?php if (CoreLocal::get('touchscreen')) { ?>
+        <button type="button" class="pos-button coloredArea"
+            onclick="scrollUp('#selectlist');">
+            <img src="<?php echo $stem; ?>up.png" width="16" height="16" />
+        </button>
+		<?php } ?>
         <?php echo FormLib::tokenField(); ?>
-		</form>
+		<div class="smaller">
+            <?php
+            echo _("use arrow keys to navigate");
+            ?>
+        </div>
 		<p>
-		<span class="smaller"><?php
-		echo _("use arrow keys to navigate");
-		echo "<br />";
-		echo _("enter to select");
-		echo "<br />";
-		echo _("clear to cancel");
-		?></span>
+            <button class="pos-button" type="submit">Select [enter]</button>
+            <button class="pos-button" type="submit" onclick="$('#selectlist').val('');">
+                Cancel [clear]
+            </button>
 		</p>
 		</div>
+		</form>
 		</div>
 		<?php
 		$this->add_onload_command("\$('#selectlist').focus();");
-	        $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
+        $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
 	} // END body_content() FUNCTION
 
 }
