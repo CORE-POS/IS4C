@@ -50,11 +50,13 @@ class PatronageTransferTool extends FanniePage {
     private $cn1;
     private $amt;
 
-    function preprocess(){
+    function preprocess()
+    {
         global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-        global $FANNIE_EMP_NO, $FANNIE_REGISTER_NO;
-        global $FANNIE_CORRECTION_DEPT;
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $FANNIE_EMP_NO = $this->config->get('EMP_NO');
+        $FANNIE_REGISTER_NO = $this->config->get('REGISTER_NO');
+        $FANNIE_CORRECTION_DEPT = $this->config->get('PATRONAGE_DEPT');
         /**
           Use fannie settings if properly configured
         */
@@ -68,10 +70,11 @@ class PatronageTransferTool extends FanniePage {
             $this->CORRECTION_DEPT = $FANNIE_CORRECTION_DEPT;
         }
 
-        if (FormLib::get_form_value('submit1',False) !== False)
+        if (FormLib::get_form_value('submit1',False) !== false) {
             $this->mode = 'confirm';
-        elseif (FormLib::get_form_value('submit2',False) !== False)
+        } elseif (FormLib::get_form_value('submit2',False) !== False) {
             $this->mode = 'finish';
+        }
 
         // error check inputs
         if ($this->mode != 'init'){
@@ -120,17 +123,19 @@ class PatronageTransferTool extends FanniePage {
         return True;
     }
     
-    function body_content(){
-        if ($this->mode == 'init')
+    function body_content()
+    {
+        if ($this->mode == 'init') {
             return $this->form_content();
-        elseif($this->mode == 'confirm')
+        } elseif ($this->mode == 'confirm') {
             return $this->confirm_content();
-        elseif($this->mode == 'finish')
+        } elseif ($this->mode == 'finish') {
             return $this->finish_content();
+        }
     }
 
-    function confirm_content(){
-
+    function confirm_content()
+    {
         if (!empty($this->errors)) return $this->errors;
 
         $ret = "<form action=\"PatronageTransferTool.php\" method=\"post\">";
