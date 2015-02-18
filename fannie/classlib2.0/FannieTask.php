@@ -88,7 +88,6 @@ class FannieTask
         $info = new ReflectionClass($this);
         $msg = date('r').': '.$info->getName().': '.$str."\n";
 
-        echo 'Writing log' . "\n";
         $this->logger->log($severity, $info->getName() . ': ' . $str); 
 
         // raise message into stderr

@@ -30,9 +30,10 @@ class UIGLib
     /**
       Create purchase orders from zipfile
       @param $zipfile filename
+      @param $vendorID integer vendor ID
       @param $repeat this date has been previously imported
     */
-    static public function import($zipfile, $repeat=false)
+    static public function import($zipfile, $vendorID, $repeat=false)
     {
         global $FANNIE_OP_DB;
         $za = new ZipArchive();
@@ -67,7 +68,7 @@ class UIGLib
                 if (strtolower($line[0]) == 'header') {
                     $header_info = self::parseHeader($line);
                 } else if (strtolower($line[0]) == 'detail') {
-                    $item = self::parseItem($line);
+                    $item = self::parseItem($line, $vendorID);
                     $item_info[] = $item;
                 }
             }
@@ -76,7 +77,7 @@ class UIGLib
                 $id = false;
                 if ($repeat) {
                     // date has been downloaded before; lookup orderID
-                    $idR = $dbc->execute($find, array(1, $header_info['vendorInvoiceID']));
+                    $idR = $dbc->execute($find, array($vendorID, $header_info['vendorInvoiceID']));
                     if ($dbc->num_rows($idR) > 0) {
                         $idW = $dbc->fetch_row($idR);
                         $id = $idW['orderID'];
@@ -86,7 +87,7 @@ class UIGLib
                 if (!$id) {
                     // date has not been downloaded before OR
                     // date previously did not include this invoice
-                    $dbc->execute($create, array(1, $header_info['placedDate'], $header_info['placedDate'],
+                    $dbc->execute($create, array($vendorID, $header_info['placedDate'], $header_info['placedDate'],
                                     $header_info['vendorOrderID'], $header_info['vendorInvoiceID']));
                     $id = $dbc->insert_id();
                 }
@@ -116,7 +117,7 @@ class UIGLib
                     $model->description($item['description']);
                     $model->internalUPC($item['upc']);
 
-                    $pluCheck = $dbc->execute($plu, array(1, $item['sku']));
+                    $pluCheck = $dbc->execute($plu, array($vendorID, $item['sku']));
                     if ($dbc->num_rows($pluCheck) > 0) {
                         $pluInfo = $dbc->fetch_row($pluCheck);
                         $model->internalUPC($pluInfo['upc']);
@@ -143,7 +144,7 @@ class UIGLib
         );
     }
 
-    static private function parseItem($line)
+    static private function parseItem($line, $vendorID)
     {
         global $FANNIE_OP_DB;
 
@@ -173,14 +174,14 @@ class UIGLib
             $dbc = FannieDB::get($FANNIE_OP_DB);
             $vmodel = new VendorItemsModel($dbc);
             $vmodel->sku($line[$SKU]);
-            $vmodel->vendorID(1);
+            $vmodel->vendorID($vendorID);
             $vmodel->load();
             if ($vmodel->units() != '') {
                 $caseSize = $vmodel->units();
             } else {
                 $vmodel->reset();
                 $vmodel->upc($upc);
-                $vmodel->vendorID(1);
+                $vmodel->vendorID($vendorID);
                 foreach($vmodel->find() as $item) {
                     if ($item->units() != '') {
                         $caseSize = $item->units();
