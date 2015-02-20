@@ -168,6 +168,10 @@ class CronManagementPage extends FanniePage
         $ret .= "<tr><th>Enabled</th><th>Min</th><th>Hour</th><th>Day</th><th>Month</th><th>Wkdy</th><th>Command/Help</th></tr>";
         $i = 0;
         foreach ($tasks as $task) {
+            $obj = new $task();
+            if (!$obj->schedulable) {
+                continue;
+            }
             $cmd = 'php '.realpath(dirname(__FILE__).'/../../classlib2.0/FannieTask.php').' '.$task.' >> '.$FANNIE_ROOT.'logs/fannie.log';;
             $simple = $this->simpleRow($task, $task, $cmd, $tab, $i);
             if ($simple !== false && $mode == 'simple') {

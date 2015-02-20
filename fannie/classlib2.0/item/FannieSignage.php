@@ -334,10 +334,12 @@ class FannieSignage
         $fontsize = isset($args['fontsize']) ? $args['fontsize'] : 9;
 
         $upc = ltrim($upc, '0');
+        $is_ean = false;
         if (strlen($upc) == 12) { 
             // must be EAN
             $check = \BarcodeLib::getCheckDigit($upc);
             $upc .= $check;
+            $is_ean = true;
         } else {
             $upc = str_pad($upc, 11, '0', STR_PAD_LEFT);
             $check = \BarcodeLib::getCheckDigit($upc);
@@ -397,7 +399,7 @@ class FannieSignage
         } else {
             $pdf->SetXY($x, $y + $h);
         }
-        $pdf->Cell($width, 5, $prefix . substr($upc, -12) . $suffix, 0, 0, $align);
+        $pdf->Cell($width, 5, $prefix . substr($upc, ($is_ean?-13:-12)) . $suffix, 0, 0, $align);
 
         return $pdf;
     }

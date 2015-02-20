@@ -40,6 +40,8 @@ class FannieTask
         'weekday' => '*',
     );
 
+    public $schedulable = true;
+
     protected $error_threshold  = 99;
 
     const TASK_NO_ERROR         = 0;
