@@ -28,10 +28,21 @@ class UPC extends Parser
       Known good values are:
       - keyed
       - scanned
+      - macro
+      - hid
     */
     private $source = 'keyed';
 
+    const GENERIC_STATUS = 'NA';
+
     const SCANNED_PREFIX = '0XA';
+    const SCANNED_STATUS = 'SS';
+
+    const MACRO_PREFIX = '0XB';
+    const MACRO_STATUS = 'KB';
+
+    const HID_PREFIX = '0XC';
+    const HID_STATUS = 'HI';
 
     /**
       The default case is pretty simple. A numeric string
@@ -56,6 +67,10 @@ class UPC extends Parser
 			return true;
         } elseif (substr($str,0,strlen(self::SCANNED_PREFIX)) == self::SCANNED_PREFIX && is_numeric($substr($str, 3))) {
             return true;
+        } elseif (substr($str,0,strlen(self::MACRO_PREFIX)) == self::MACRO_PREFIX && is_numeric($substr($str, 3))) {
+            return true;
+        } elseif (substr($str,0,strlen(self::HID_PREFIX)) == self::HID_PREFIX && is_numeric($substr($str, 3))) {
+            return true;
 		} elseif (substr($str,0,4) == "GS1~" && is_numeric(substr($str, 4))) {
 			return true;
         }
@@ -67,17 +82,23 @@ class UPC extends Parser
     {
 		if (substr($str,0,4) == "GS1~") {
 			$str = $this->fixGS1($str);
-            $this->source = 'scanned';
+            $this->source = self::SCANNED_PREFIX;
         } elseif (substr($str, 0, strlen(self::SCANNED_PREFIX)) == self::SCANNED_PREFIX) {
             $str = substr($str, strlen(self::SCANNED_PREFIX));
-            $this->source = 'scanned';
+            $this->source = self::SCANNED_PREFIX;
+        } elseif (substr($str, 0, strlen(self::MACRO_PREFIX)) == self::MACRO_PREFIX) {
+            $str = substr($str, strlen(self::MACRO_PREFIX));
+            $this->source = self::MACRO_PREFIX;
+        } elseif (substr($str, 0, strlen(self::HID_PREFIX)) == self::HID_PREFIX) {
+            $str = substr($str, strlen(self::HID_PREFIX));
+            $this->source = self::HID_PREFIX;
         }
 
         /**
           Do not apply scanned items if
           tare has been entered
         */
-        if (CoreLocal::get('tare') > 0 && $this->source == 'scanned') {
+        if (CoreLocal::get('tare') > 0 && $this->source == self::SCANNED_PREFIX) {
             return $this->default_json();
         }
 
@@ -639,15 +660,29 @@ class UPC extends Parser
 			$pricemethod = MiscLib::nullwrap($row["specialpricemethod"]);
 		$PMClasses = CoreLocal::get("PriceMethodClasses");
         $PriceMethodObject = null;
-        $scanned = ($this->source == 'scanned') ? true : false;
+
+        $status = self::GENERIC_STATUS;
+        switch ($this->source) {
+            case self::SCANNED_PREFIX:
+                $status = self::SCANNED_STATUS;
+                break;
+            case self::MACRO_PREFIX:
+                $status = self::MACRO_STATUS;
+                break;
+            case self::HID_PREFIX:
+                $status = self::HID_STATUS;
+                break;
+        }
+        $row['trans_subtype'] = $status;
+
         if ($pricemethod < 100 && isset(PriceMethod::$MAP[$pricemethod])) {
             $class = PriceMethod::$MAP[$pricemethod];
-            $PriceMethodObject = new $class($scanned);
+            $PriceMethodObject = new $class();
         } else if ($pricemethod >= 100 && isset($PMClasses[($pricemethod-100)])) {
             $class = $PMClasses[($pricemethod-100)];
-            $PriceMethodObject = new $class($scanned);
+            $PriceMethodObject = new $class();
         } else {
-            $PriceMethodObject = new BasicPM($scanned);
+            $PriceMethodObject = new BasicPM();
         }
 		// prefetch: otherwise object members 
 		// pass out of scope in addItem()
