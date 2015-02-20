@@ -157,9 +157,13 @@ class SigTermCommands extends Parser
 
 			return true;
 
-		} else if (substr($str,0,7) == "TERMCB:") {
+		} elseif (substr($str,0,7) == "TERMCB:") {
 			$cashback = substr($str,7);
-			if ($cashback <= 40) {
+            $termLimit = CoreLocal::get('PaycardsTermCashBackLimit');
+            if ($termLimit === '') {
+                $termLimit = 40;
+            }
+			if ($cashback <= $termLimit) {
 				$this->cb_error = false;
 				CoreLocal::set("CacheCardCashBack",$cashback);
 			} else {
