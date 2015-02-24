@@ -197,7 +197,7 @@ static public function setAltMemMsg($store, $member, $personNumber, $row, $charg
 
   See memberID() for more information.
 */
-static public function setMember($member, $personNumber)
+static public function setMember($member, $personNumber, $row=array())
 {
 	$conn = Database::pDataConnect();
 
@@ -235,11 +235,6 @@ static public function setMember($member, $personNumber)
     $row = $conn->fetch_row($result);
 
     CoreLocal::set("memberID",$member);
-	if (CoreLocal::get("Type") == "PC") {
-		CoreLocal::set("isMember",1);
-	} else {
-        CoreLocal::set("isMember",0);
-	}
 
 	CoreLocal::set("memType",$row["memType"]);
 	CoreLocal::set("lname",$row["LastName"]);
@@ -247,6 +242,11 @@ static public function setMember($member, $personNumber)
 	CoreLocal::set("Type",$row["Type"]);
 	CoreLocal::set("isStaff",$row["staff"]);
 	CoreLocal::set("SSI",$row["SSI"]);
+	if (CoreLocal::get("Type") == "PC") {
+		CoreLocal::set("isMember",1);
+	} else {
+        CoreLocal::set("isMember",0);
+	}
 
     /**
       Optinonally use memtype table to normalize attributes
