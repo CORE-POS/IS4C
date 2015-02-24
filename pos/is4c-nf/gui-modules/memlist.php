@@ -109,7 +109,7 @@ class memlist extends NoInputPage
                 }
             }
 
-            if (count($this->results) == 1) {
+            if (count($this->results) == 1 && (CoreLocal::get('verifyName') == 0 || $entered == CoreLocal::get('defaultNonMem'))) {
                 $members = array_keys($this->results);
                 $match = $members[0];
                 list($memberID, $personNum) = explode('::', $match, 2);
@@ -147,7 +147,7 @@ class memlist extends NoInputPage
             }
 
 			return false;
-		}
+        }
 
 		return true;
 
@@ -242,6 +242,7 @@ class memlist extends NoInputPage
 		} else {
 			echo "<div class=\"listbox\">"
 				."<select name=\"search\" size=\"15\" "
+                .' style="min-height: 200px; min-width: 220px; max-width: 390px;" '
 				."onblur=\"\$('#search').focus();\" ondblclick=\"document.forms['selectform'].submit();\" id=\"search\">";
 
 			$selectFlag = 0;
