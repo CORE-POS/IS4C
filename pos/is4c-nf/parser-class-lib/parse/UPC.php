@@ -402,7 +402,7 @@ class UPC extends Parser
 			if (strstr($peek,"** Tare Weight") === False)
 				TransRecord::addTare($row['tareweight']*100);
 		} elseif ($row['scale'] != 0 && !CoreLocal::get("tare") && Plugin::isEnabled('PromptForTare') && !CoreLocal::get("tarezero")) {
-            $ret['main_frame'] = $my_url.'plugins/PropmtForTare/TarePropmtInputPage.php?class=UPC&item='.$entered;
+            $ret['main_frame'] = $my_url.'plugins/PromptForTare/TarePromptInputPage.php?class=UPC&item='.$entered;
 			return $ret;
         } else {
         	CoreLocal::set('tarezero', False);
