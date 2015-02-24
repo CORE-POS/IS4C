@@ -598,12 +598,18 @@ static public function deptkey($price, $dept,$ret=array())
 	$strdept = $dept;
 	$price = $price/100;
 	$dept = $dept/10;
+    $regPrice = $price;
+    $discount = 0;
 
 	if (CoreLocal::get("casediscount") > 0 && CoreLocal::get("casediscount") <= 100) {
 		$case_discount = (100 - CoreLocal::get("casediscount"))/100;
 		$price = $case_discount * $price;
-	}
+	} elseif (CoreLocal::get('itemPD') > 0) {
+        $discount = MiscLib::truncate2($price * (CoreLocal::get('itemPD')/100.00));
+        $price -= $discount;
+    }
 	$total = $price * CoreLocal::get("quantity");
+    $discount = $discount * CoreLocal::get('quantity');
 	$intdept = $dept;
 
 	$query = "SELECT dept_no,
@@ -848,18 +854,24 @@ static public function deptkey($price, $dept,$ret=array())
                 'ItemQtty' => CoreLocal::get('quantity'),
                 'unitPrice' => $price,
                 'total' => $total,
-                'regPrice' => $price,
+                'regPrice' => $regPrice,
                 'tax' => $tax,
                 'foodstamp' => $foodstamp,
                 'discountable' => $deptDiscount,
                 'voided' => $intvoided,
+                'discount' => $discount,
             ));
 			CoreLocal::set("ttlflag",0);
 			//CoreLocal::set("ttlrequested",0);
+			CoreLocal::set("msgrepeat",0);
+
+            if (CoreLocal::get("itemPD") > 0) {
+                TransRecord::adddiscount($discount, $dept);
+            }
+
 			$ret['output'] = DisplayLib::lastpage();
 			$ret['redraw_footer'] = true;
 			$ret['udpmsg'] = 'goodBeep';
-			CoreLocal::set("msgrepeat",0);
 		}
 	}
 
