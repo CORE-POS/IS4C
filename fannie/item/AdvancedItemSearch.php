@@ -221,6 +221,9 @@ class AdvancedItemSearch extends FannieRESTfulPage
 
             if (FormLib::get('vendorSale')) {
                 $where .= ' AND v.saleCost <> 0 ';
+                $where .= ' AND p.default_vendor_id=? ';
+                $where .= ' AND p.default_vendor_id=v.vendorID ';
+                $args[] = $vendorID;
             }
         }
 
