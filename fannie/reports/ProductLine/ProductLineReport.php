@@ -31,7 +31,7 @@ class ProductLineReport extends FannieReportPage
     public $description = '[Product Line] shows a list of products from the same brand by UPC prefix';
     public $themed = true;
 
-    protected $report_headers = array('UPC', 'Brand', 'Description', 'Alt. Brand', 'Alt. Desc.', 'Price');
+    protected $report_headers = array('UPC', 'Brand', 'Description', 'Alt. Brand', 'Alt. Desc.', 'Price', 'Vendor');
     protected $title = "Fannie : Product Line";
     protected $header = "Fannie : Product Line";
     protected $required_fields = array('prefix');
@@ -49,9 +49,11 @@ class ProductLineReport extends FannieReportPage
                 p.brand,
                 u.description AS altDescription,
                 u.brand AS altBrand,
+                v.vendorName AS vendor,
                 p.normal_price
             FROM products AS p
-                INNER JOIN productUser AS u ON p.upc=u.upc
+                LEFT JOIN productUser AS u ON p.upc=u.upc
+                LEFT JOIN vendors AS v ON p.default_vendor_id=v.vendorID
             WHERE SUBSTRING(p.upc, 4, 5) = ?
             ORDER BY p.upc";
         $prep = $dbc->prepare($query);
@@ -65,6 +67,7 @@ class ProductLineReport extends FannieReportPage
                 empty($row['altBrand']) ? 'n/a' : $row['altBrand'],
                 empty($row['altDescription']) ? 'n/a' : $row['altDescription'],
                 sprintf('%.2f', $row['normal_price']),
+                empty($row['vendor']) ? 'n/a' : $row['vendor'],
             );
         }
 
