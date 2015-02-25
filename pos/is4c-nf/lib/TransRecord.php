@@ -821,7 +821,7 @@ static public function addLogRecord($opts)
         'description' => $desc,
         'trans_type' => 'L',
         'trans_subtype' => 'OG',
-        'trans_status' => 'X',
+        'trans_status' => 'D',
         'department' => $dept,
         'total' => $total,
         'regPrice' => $regPrice,
