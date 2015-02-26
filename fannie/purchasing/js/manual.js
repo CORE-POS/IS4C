@@ -123,8 +123,10 @@ function doLookup(mode, term, elem)
         contentType: 'application/json',
         success: function(data) {
             if (data.result) {
-                if (mode == 'sku') {
+                if (mode == 'sku' && data.result.upc != '0000000000000') {
                     elem.closest('tr').find('.item-upc').val(data.result.upc);
+                } else if (mode == 'sku') {
+                    elem.closest('tr').find('.item-upc').val('');
                 } else if (mode == 'upc') {
                     elem.closest('tr').find('.item-sku').val(data.result.sku);
                 }
