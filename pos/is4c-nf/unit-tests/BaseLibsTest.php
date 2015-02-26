@@ -577,7 +577,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 		unset($record['amount2']); // not real column
 		$record['trans_type'] = 'L';
 		$record['trans_subtype'] = 'OG';
-		$record['trans_status'] = 'X';
+		$record['trans_status'] = 'D';
 		lttLib::verifyRecord(1, $record, $this);
 
 		lttLib::clear();
