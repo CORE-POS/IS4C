@@ -122,7 +122,7 @@ function doLookup(mode, term, elem)
         dataType: 'json',
         contentType: 'application/json',
         success: function(data) {
-            if (data.result) {
+            if (data.result && (data.result.sku || data.result.upc)) {
                 if (mode == 'sku' && data.result.upc != '0000000000000') {
                     elem.closest('tr').find('.item-upc').val(data.result.upc);
                 } else if (mode == 'sku') {
