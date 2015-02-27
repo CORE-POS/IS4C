@@ -86,7 +86,16 @@ class OpenRingsReport extends FannieReportPage
             $args[] = $deptEnd;
         }
 
-        $dlog = DTransactionsModel::selectDlog($date1, $date2);
+        $tempTables = array(
+            'connection' => $dbc,
+            'clauses' => array(
+                array(
+                    'sql' => 'trans_type IN (?, ?)',
+                    'params' => array('I', 'D'),
+                ),
+            ),
+        );
+        $dlog = DTransactionsModel::selectDlog($date1, $date2, $tempTables);
 
         $query = "SELECT year(tdate),month(tdate),day(tdate),
           SUM(CASE WHEN trans_type='D' THEN total ELSE 0 END) as total,

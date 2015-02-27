@@ -1574,6 +1574,45 @@ class SQLManager
         $this->throw_on_fail = $mode;
     }
 
+	/**
+	  Create temporary table
+      @param name string temporary table name
+      @param source_table string source table name
+	  @param which_connection see method close
+	  @return String separator
+	*/
+	public function temporaryTable($name, $source_table, $which_connection='')
+    {
+		if ($which_connection == '') {
+			$which_connection=$this->default_db;
+        }
+		switch ($this->connections[$which_connection]->databaseType) {
+            case 'mysql':
+            case 'mysqli':
+            case 'pdo':
+            case 'pgsql':
+                $created = $this->query('
+                    CREATE TEMPORARY TABLE ' . $name . '
+                    LIKE ' . $source_table
+                );
+                return $created ? $name : false;
+            case 'mssql':
+                if (strstr($name, '.dbo.')) {
+                    list($schema, $table) = explode('.dbo.', $name, 2);
+                    $name = $schema . '.dbo.#' . $name;
+                } else {
+                    $name = '#' . $name;
+                }
+                $created = $this->query('
+                    CREATE TABLE ' . $name . '
+                    LIKE ' . $source_table
+                );
+                return $created ? $name : false;
+		}
+
+		return false;
+	}
+
 	// skipping fetch_cell on purpose; generic-db way would be slow as heck
 
 	/* end compat Brad's class */
