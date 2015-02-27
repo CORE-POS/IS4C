@@ -113,7 +113,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 $where .= ' AND p.upc LIKE ? ';
                 $args[] = '%' . $brand . '%';
             } else {
-                $where .= ' AND (p.brand LIKE ? x.manufacturer LIKE ? OR v.brand LIKE ?) ';
+                $where .= ' AND (p.brand LIKE ? OR x.manufacturer LIKE ? OR v.brand LIKE ?) ';
                 $args[] = '%' . $brand . '%';
                 $args[] = '%' . $brand . '%';
                 $args[] = '%' . $brand . '%';
