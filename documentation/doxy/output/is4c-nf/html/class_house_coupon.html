@@ -42,7 +42,7 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_house_coupon.html#a1fdba33e021f11855b27b3747c37026">handle</a> ($upc, $json)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_house_coupon.html#bece82cdeb3d832dc0354d328e363d5d">checkQualifications</a> ($id)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_house_coupon.html#36db578bd3903de84e084b47f981b6ed">checkQualifications</a> ($id, $quiet=false)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_house_coupon.html#2731c4561c43d09a5139cedfea948da4">checkLimits</a> ($id)</td></tr>
 
@@ -72,7 +72,7 @@ The remainder of the UPC is an ID value to look up requirement(s) and discount v
 <div class="memdoc">
 
 <p>
-Check how many times the coupon has been used and compare against usage limits - e.g., one per transaction, one per member, etc. This is a separate method from <a class="el" href="class_house_coupon.html#bece82cdeb3d832dc0354d328e363d5d">checkQualifications()</a> so that calling code has the option of working around limits via voids or amount adjustments <dl compact><dt><b>Parameters:</b></dt><dd>
+Check how many times the coupon has been used and compare against usage limits - e.g., one per transaction, one per member, etc. This is a separate method from <a class="el" href="class_house_coupon.html#36db578bd3903de84e084b47f981b6ed">checkQualifications()</a> so that calling code has the option of working around limits via voids or amount adjustments <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>$id</em>&nbsp;</td><td>[int] coupon ID </td></tr>
   </table>
@@ -83,7 +83,7 @@ Check how many times the coupon has been used and compare against usage limits -
 For members, enforce limits against longer transaction history 
 </div>
 </div><p>
-<a class="anchor" name="bece82cdeb3d832dc0354d328e363d5d"></a><!-- doxytag: member="HouseCoupon::checkQualifications" ref="bece82cdeb3d832dc0354d328e363d5d" args="($id)" -->
+<a class="anchor" name="36db578bd3903de84e084b47f981b6ed"></a><!-- doxytag: member="HouseCoupon::checkQualifications" ref="36db578bd3903de84e084b47f981b6ed" args="($id, $quiet=false)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -91,9 +91,18 @@ For members, enforce limits against longer transaction history
           <td class="memname">HouseCoupon::checkQualifications           </td>
           <td>(</td>
           <td class="paramtype">$&nbsp;</td>
-          <td class="paramname"> <em>id</em>          </td>
-          <td>&nbsp;)&nbsp;</td>
-          <td width="100%"></td>
+          <td class="paramname"> <em>id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>quiet</em> = <code>false</code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
         </tr>
       </table>
 </div>
@@ -103,6 +112,7 @@ For members, enforce limits against longer transaction history
 Validate coupon exists, is not expired, and transaction meets required qualifications <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>$id</em>&nbsp;</td><td>[int] coupon ID </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$quiet</em>&nbsp;</td><td>[boolean] just return false rather than an error message on failure </td></tr>
   </table>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>[boolean] true or [string] error message </dd></dl>
@@ -208,7 +218,7 @@ Reimplemented from <a class="el" href="class_special_u_p_c.html#351152eeb6a93ab2
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/Scanning/SpecialUPCs/HouseCoupon.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 9 Feb 2015 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

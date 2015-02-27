@@ -26,9 +26,10 @@ if (!class_exists('FannieAPI')) {
     include(dirname(__FILE__) . '/../../../classlib2.0/FannieAPI.php');
 }
 
-class StatementsPlugin extends FanniePlugin 
+class StatementsPlugin extends \COREPOS\Fannie\API\FanniePlugin 
 {
 
+    public $plugin_settings = array();
     public $plugin_description = 'Plugin for mailable member statements.';
 
 }

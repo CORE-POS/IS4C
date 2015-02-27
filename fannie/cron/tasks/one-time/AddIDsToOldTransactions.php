@@ -30,13 +30,7 @@ class AddIDsToOldTransactions extends FannieTask
 transactions and assigns values where store_row_id
 is NULL';
 
-    public $default_schedule = array(
-        'min' => 0,
-        'hour' => 1,
-        'day' => '*',
-        'month' => '*',
-        'weekday' => '*',
-    );
+    public $schedulable = false;
 
     public function run()
     {

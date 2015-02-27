@@ -11,7 +11,6 @@
     <li><a href="namespaces.html"><span>Namespaces</span></a></li>
     <li id="current"><a href="classes.html"><span>Classes</span></a></li>
     <li><a href="pages.html"><span>Related&nbsp;Pages</span></a></li>
-    <li><a href="examples.html"><span>Examples</span></a></li>
     <li>
       <form action="search.php" method="get">
         <table cellspacing="0" cellpadding="0" border="0">
@@ -41,10 +40,14 @@
 <tr><td colspan="2"><br><h2>Public Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_fannie_r_e_s_tful_page.html#b248b5009c98297c3346aa2915a38198">readRoutes</a> ()</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_fannie_r_e_s_tful_page.html#e329897c576b0f04691c4b5c5f4e7102">preprocess</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="e329897c576b0f04691c4b5c5f4e7102"></a><!-- doxytag: member="FannieRESTfulPage::preprocess" ref="e329897c576b0f04691c4b5c5f4e7102" args="()" -->
+&nbsp;</td><td class="memItemRight" valign="bottom"><b>preprocess</b> ()</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="f0ea1761f325f8c2c3af16985c52b20d"></a><!-- doxytag: member="FannieRESTfulPage::bodyContent" ref="f0ea1761f325f8c2c3af16985c52b20d" args="()" -->
 &nbsp;</td><td class="memItemRight" valign="bottom"><b>bodyContent</b> ()</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="74dc769d2dd23662dfdd7919622e3ec0"></a><!-- doxytag: member="FannieRESTfulPage::unitTest" ref="74dc769d2dd23662dfdd7919622e3ec0" args="($phpunit)" -->
+&nbsp;</td><td class="memItemRight" valign="bottom"><b>unitTest</b> ($phpunit)</td></tr>
 
 <tr><td colspan="2"><br><h2>Protected Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_fannie_r_e_s_tful_page.html#fdc093f79eff94c8c011947897931ae8">unknownRequestHandler</a> ()</td></tr>
@@ -72,10 +75,10 @@
 <hr><a name="_details"></a><h2>Detailed Description</h2>
 A variation on the standard <a class="el" href="class_fannie_page.html">FanniePage</a> using REST principles.<p>
 Four methods are available for processing user input and are automatically called based on HTTP request type:<ul>
-<li>getHandler</li><li>postHandler</li><li>putHandler</li><li>deleteHandler These methods behave like <a class="el" href="class_fannie_page.html#860186d52b9e42718ce40a24f3d1dbac">FanniePage::preprocess</a>; there are just four options automatically</li></ul>
+<li>getHandler</li><li>postHandler</li><li>putHandler</li><li>deleteHandler These methods behave like FanniePage::preprocess; there are just four options automatically</li></ul>
 <p>
 Eight methods are available for displaying the page and are also automatically called based on request type:<ul>
-<li>getView</li><li>get_idView</li><li>postView</li><li>post_idView</li><li>putView</li><li>put_idView</li><li>deleteView</li><li>delete_idView These methods behave like <a class="el" href="class_fannie_page.html#f8d91e5f3fb0fe2c5024f79c82ab903b">FanniePage::body_content</a>; again there are just more options.</li></ul>
+<li>getView</li><li>get_idView</li><li>postView</li><li>post_idView</li><li>putView</li><li>put_idView</li><li>deleteView</li><li>delete_idView These methods behave like FanniePage::body_content; again there are just more options.</li></ul>
 <p>
 A class does not need to implement handlers or views for all request types. Use as few or as many as needed.<p>
 PUT and DELETE are simulated by setting a form field named "_method". 
@@ -130,32 +133,6 @@ Load model(s) <dl compact><dt><b>Parameters:</b></dt><dd>
 <dl compact><dt><b>Returns:</b></dt><dd>model object or array or model objects</dd></dl>
 If called without $find or $find=False returns a single model object. Provided $params must be sufficient to uniquely identify a single record<p>
 If called with $find then returns an array of model objects for all records that match $params and sorted by $find. 
-</div>
-</div><p>
-<a class="anchor" name="e329897c576b0f04691c4b5c5f4e7102"></a><!-- doxytag: member="FannieRESTfulPage::preprocess" ref="e329897c576b0f04691c4b5c5f4e7102" args="()" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">FannieRESTfulPage::preprocess           </td>
-          <td>(</td>
-          <td class="paramname">          </td>
-          <td>&nbsp;)&nbsp;</td>
-          <td width="100%"></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-<p>
-Handle pre-display tasks such as input processing <dl compact><dt><b>Returns:</b></dt><dd><ul>
-<li>True if the page should be displayed</li><li>False to stop here</li></ul>
-</dd></dl>
-Common uses include redirecting to a different module and altering body content based on input 
-<p>
-Reimplemented from <a class="el" href="class_fannie_page.html#860186d52b9e42718ce40a24f3d1dbac">FanniePage</a>.
-<p>
-Reimplemented in <a class="el" href="class_sa_price_change_page.html#1cc6ea33e6862a9017248eb46726ffd7">SaPriceChangePage</a>.
 </div>
 </div><p>
 <a class="anchor" name="b248b5009c98297c3346aa2915a38198"></a><!-- doxytag: member="FannieRESTfulPage::readRoutes" ref="b248b5009c98297c3346aa2915a38198" args="()" -->
@@ -242,13 +219,13 @@ Draw default page for unknown HTTP method <dl compact><dt><b>Returns:</b></dt><d
     )
 </pre></div>Define available routes Syntax is request method followed by parameter names in angle brackets<p>
 method&lt;one&gt;&lt;two&gt; should provide a controller function named method_one_twoHandler(). It may optionally provide a view function named method_one_twoView().<p>
-controller functions behave like <a class="el" href="class_fannie_page.html#860186d52b9e42718ce40a24f3d1dbac">FanniePage::preprocess</a> and should return True or False.<p>
-view functions behave like <a class="el" href="class_fannie_page.html#f8d91e5f3fb0fe2c5024f79c82ab903b">FanniePage::body_content</a> and should return an HTML string 
+controller functions behave like FanniePage::preprocess and should return True or False.<p>
+view functions behave like FanniePage::body_content and should return an HTML string 
 </div>
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>fannie/classlib2.0/FannieRESTfulPage.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - Fannie by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 9 Feb 2015 for CORE POS - Fannie by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

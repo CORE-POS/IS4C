@@ -93,7 +93,7 @@ Deprecates nightly.equity.php.';
             $try = $dbc->execute($addP, array($lookupW['card_no'], $lookupW['total'], $lookupW['tdate'],
                                                 $lookupW['trans_num'], $lookupW['department']));
             if ($try === false) {
-                echo $this->cronMsg('Error adding equity entry '.$lookupW['tdate']. ' '.$lookupW['trans_num']);
+                $this->cronMsg('Error adding equity entry '.$lookupW['tdate']. ' '.$lookupW['trans_num'], FannieLogger::ERROR);
             }
         }
 
@@ -102,9 +102,13 @@ Deprecates nightly.equity.php.';
         $query = "INSERT INTO equity_history_sum
             SELECT card_no, SUM(stockPurchase), MIN(tdate)
             FROM stockpurchases GROUP BY card_no";
+        $def = $dbc->tableDefinition('equity_history_sum');
+        if (isset($def['mostRecent'])) {
+            $query = str_replace('MIN(tdate)', 'MIN(tdate), MAX(tdate)', $query);
+        }
         $try = $dbc->query($query);
         if ($try === false) {
-            echo $this->cronMsg('Error rebuilding equity_history_sum table');
+            $this->cronMsg('Error rebuilding equity_history_sum table', FannieLogger::ERROR);
         }
     }
 }

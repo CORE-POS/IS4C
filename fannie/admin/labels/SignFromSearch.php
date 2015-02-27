@@ -34,6 +34,7 @@ class SignFromSearch extends FannieRESTfulPage
 
     public $description = '[Signage] is a tool to create sale signs or shelf tags
     for a set of advanced search items. Must be accessed via Advanced Search.';
+    public $themed = true;
 
     protected $signage_mod;
     protected $signage_obj;
@@ -166,7 +167,7 @@ class SignFromSearch extends FannieRESTfulPage
             $this->signage_mod = $mod;
             return true;
         } else {
-            $mods = FannieAPI::listModules('FannieSignage');
+            $mods = FannieAPI::listModules('\COREPOS\Fannie\API\item\FannieSignage');
             if (isset($mods[0])) {
                 $this->signage_mod = $mods[0];
                 return true;
@@ -186,7 +187,16 @@ class SignFromSearch extends FannieRESTfulPage
         $ret = '';
         $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post" id="signform">';
         $mods = FannieAPI::listModules('FannieSignage');
-        $ret .= '<b>Layout</b>: <select name="signmod" onchange="$(\'#signform\').submit()">';
+        $others = FannieAPI::listModules('\COREPOS\Fannie\API\item\FannieSignage');
+        foreach ($others as $o) {
+            if (!in_array($o, $mods)) {
+                $mods[] = $o;
+            }
+        }
+        sort($mods);
+        $ret .= '<div class="form-group form-inline">';
+        $ret .= '<label>Layout</label>: 
+            <select name="signmod" class="form-control" onchange="$(\'#signform\').submit()">';
         foreach ($mods as $m) {
             $ret .= sprintf('<option %s>%s</option>',
                     ($m == $this->signage_mod ? 'selected' : ''), $m);
@@ -200,7 +210,8 @@ class SignFromSearch extends FannieRESTfulPage
             $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
             $item_mode = FormLib::get('item_mode', 0);
             $modes = array('Current Retail', 'Upcoming Retail', 'Current Sale', 'Upcoming Sale');
-            $ret .= '<select name="item_mode" onchange="$(\'#signform\').submit()">';
+            $ret .= '<select name="item_mode" class="form-control"
+                onchange="$(\'#signform\').submit()">';
             foreach ($modes as $id => $label) {
                 $ret .= sprintf('<option %s value="%d">%s</option>',
                             ($id == $item_mode ? 'selected' : ''),
@@ -213,12 +224,15 @@ class SignFromSearch extends FannieRESTfulPage
             }
         }
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="submit" name="pdf" value="Print" />';
+        $ret .= '<button type="submit" name="pdf" value="Print" 
+                    class="btn btn-default">Print</button>';
+        $ret .= '</div>';
         $ret .= '<hr />';
 
         $ret .= $this->signage_obj->listItems();
 
-        $ret .= '<input type="submit" name="update" id="updateBtn" value="Save Text" />';
+        $ret .= '<p><button type="submit" name="update" id="updateBtn" value="Save Text"
+                    class="btn btn-default">Save Text</button></p>';
 
         $this->add_onload_command('$(".FannieSignageField").keydown(function(event) {
             if (event.which == 13) {

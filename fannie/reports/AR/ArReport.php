@@ -30,6 +30,7 @@ class ArReport extends FannieReportPage
 {
     public $description = '[AR/Store Charge] lists all AR/Store Charge transactions for a given member';
     public $report_set = 'Membership';
+    public $themed = true;
 
     protected $report_headers = array('Date', 'Receipt', 'Amount', 'Type');
     protected $sort_direction = 1;
@@ -79,10 +80,14 @@ class ArReport extends FannieReportPage
 
     public function form_content()
     {
+        $this->add_onload_command('$(\'#memNum\').focus()');
         return '<form method="get" action="ArReport.php">
-            <b>Member #</b> <input type="text" name="memNum" value="" size="6" />
-            <br /><br />
-            <input type="submit" value="Get Report" />
+            <label>Member #</label>
+            <input type="text" name="memNum" value="" class="form-control"
+                required id="memNum" />
+            <p>
+            <button type="submit" class="btn btn-default">Get Report</button>
+            </p>
             </form>';
     }
 

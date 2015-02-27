@@ -43,12 +43,13 @@
 include(dirname(__FILE__) . '/../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-class SalesAndTaxTodayReport extends FannieReportTool 
+class SalesAndTaxTodayReport extends \COREPOS\Fannie\API\FannieReportTool 
 {
 
     //protected $auth_classes = array('salesbyhour');
     public $description = '[Today\'s Sales and Tax] shows current day totals by hour and tax totals for the day.';
     public $report_set = 'Sales Reports';
+    public $themed = true;
 
     protected $selected;
     protected $name = "";
@@ -66,7 +67,7 @@ class SalesAndTaxTodayReport extends FannieReportTool
 
     function preprocess()
     {
-        global $FANNIE_OP_DB, $FANNIE_WINDOW_DRESSING;
+        global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         // Should let fanadmin, cashier in but keep lydia out.
         // But it doesn't.
@@ -91,10 +92,7 @@ class SalesAndTaxTodayReport extends FannieReportTool
         $this->title = "Fannie : Today's $this->name Sales and Taxes";
         $this->header = "Today's $this->name Sales and Taxes";
 
-        if ( isset($FANNIE_WINDOW_DRESSING) )
-            $this->has_menus($FANNIE_WINDOW_DRESSING);
-        else
-            $this->has_menus(True);
+        $this->has_menus(True);
 
         return True;
 
@@ -239,15 +237,15 @@ echo "<br />id $id";
         $prep = $dbc->prepare_statement($query1);
         $result = $dbc->exec_statement($query1,$queryArgs);
 
-        echo "<div align=\"center\"><h1>Today's <span style=\"color:green;\">$this->name</span> Sales and Taxes!</h1>";
+        echo "<div class=\"text-center container\"><h1>Today's <span style=\"color:green;\">$this->name</span> Sales!</h1>";
         $today_time = date("l F j, Y g:i A");
-        echo "<h3 style='font-family:arial; color:#444444;'>$today_time</h3>";
-        echo "<table cellpadding=4 cellspacing=2 border=0>";
-        printf("<tr><td style='font-size:1.3em;'><b>Hour</b></td>
-        <td style='text-align:right;font-size:1.3em;'><b>Sales</b></td>
-        <td style='text-align:right;font-size:1.3em;' title='%% of Sales to Members'><b>Member%%</b></td>
-        <td style='text-align:right;font-size:1.3em;' title='%% of Sales to Non-Members'><b>Non-Member%%</b></td>
-        <td style='font-size:1.3em;'>%s</td></tr>",
+        echo "<h3>$today_time</h3>";
+        echo "<table class=\"table table-bordered no-bs-table\">";
+        printf("<tr><td><strong>Hour</strong></td>
+        <td class=\"text-right\"><b>Sales</b></td>
+        <td class=\"text-right\" title='%% of Sales to Members'><b>Member%%</b></td>
+        <td class=\"text-right\" title='%% of Sales to Non-Members'><b>Non-Member%%</b></td>
+        <td>%s</td></tr>",
             ($this->selected==-1)?"":"<b>Proportion</b>");
         $sum = 0;
         $sum2 = 0;  // If report by SuperDept.
@@ -255,15 +253,15 @@ echo "<br />id $id";
         $member_sum2 = 0;
         $non_member_sum = 0;
         $non_member_sum2 = 0;
-        $pcell="<td style='text-align:right;'>%.2f%%</td>";
-        $dcell = "<td style='text-align:right;'>\$ %s</td>";
+        $pcell="<td class=\"text-right\">%.2f%%</td>";
+        $dcell = "<td class=\"text-right\">\$ %s</td>";
         while($row=$dbc->fetch_row($result)){
-            printf("<tr><td>%s</td>{$dcell}{$pcell}{$pcell}<td style='%s'>%.2f%%</td></tr>",
+            printf("<tr><td>%s</td>{$dcell}{$pcell}{$pcell}<td class='%s'>%.2f%%</td></tr>",
                 $hourNames["{$row['Hour']}"],
                 ($this->selected==-1)?number_format($row['Sales'],2):number_format($row['superdeptSales'],2),
                 (($row['Sales']-$row['nms'])==0)?0.00:($row['Sales']-$row['nms'])/$row['Sales']*100,
                 ($row['nms']==0)?0.00:$row['nms']/$row['Sales']*100,
-                ($this->selected==-1)?'display:none;':'text-align:right;',  
+                ($this->selected==-1)?'collapse':'text-right',  
                 ($this->selected==-1)?0.00:$row['superdeptSales']/$row['Sales']*100
                 );
             $sum += $row['Sales'];
@@ -288,23 +286,23 @@ echo "<br />id $id";
         $grandNonMemberSalesProp = ($this->selected==-1)?
             (($sum==0)?0.00:($non_member_sum/$sum)):
             (($sum2==0)?0.00:($non_member_sum2/$sum2));
-        printf("<tr><td width=60px style='text-align:left; font-size:1.5em;font-weight:700;'>%s</td>
-        {$dcell}{$pcell}{$pcell}<td style='%s'>%.2f%%</td></tr>",
+        printf("<tr><td width=60px class=\"text-left\"><strong>%s</strong></td>
+        {$dcell}{$pcell}{$pcell}<td class='%s'><strong>%.2f%%</strong></td></tr>",
                 'Total',
                 ($this->selected==-1)?number_format($sum,2):number_format($sum2,2),
                 number_format(($grandMemberSalesProp*100),2),
                 number_format(($grandNonMemberSalesProp*100),2),
-                ($this->selected==-1)?'display:none;':'text-align:right;',  
+                ($this->selected==-1)?'collapse':'text-right',  
                 ($this->selected==-1)?0.00:($sum==0)?0.00:round($sum2/$sum*100,2)
                 );
 
         // Total of each Tax
         foreach($taxNames as $k=>$tx) {
-            printf("<tr><td width=60px style='text-align:left;font-weight:700;'>%s</td>
-            <td style='text-align:right;'>\$ %s</td><td style='%s'>%.2f%%</td></tr>",
+            printf("<tr><td width=60px class='text-left'><strong>%s</strong></td>
+            <td class='text-right'>\$ %s</td><td class='%s'>%.2f%%</td></tr>",
                 $tx['name'],
                 ($this->selected==-1)?number_format($tx['sum'],2):number_format($tx['sum2'],2),
-                ($this->selected==-1)?'display:none;':'text-align:right;',  
+                ($this->selected==-1)?'collapse':'text-right',  
                 ($this->selected==-1)?0.00:$this->taxProportion($this->selected,$tx['sum'],$tx['sum2'])
                 );
                 // Nested test doesn't work.
@@ -313,16 +311,19 @@ echo "<br />id $id";
 
         echo "</table>";
 
-        echo "<p>Also available: <select onchange=\"top.location='"
-            .basename($_SERVER['PHP_SELF'])
-            ."?super='+this.value;\">";
+        echo '<div class="form-group form-inline">Also available: 
+                <select onchange="top.location=\''
+                .basename($_SERVER['PHP_SELF'])
+                .'?super=\'+this.value;" class="form-control">';
         foreach($this->supers as $k=>$v){
             echo "<option value=$k";
             if ($k == $this->selected)
                 echo " selected";
             echo ">$v</option>";
         }
-        echo "</select></p></div>";
+        echo "</select></div>";
+
+        echo '</div>';
 
     // body_content()
     }

@@ -28,7 +28,7 @@ if (!class_exists('FannieAPI')) {
 
 /**
 */
-class WfcAbandonEquity extends FanniePlugin 
+class WfcAbandonEquity extends \COREPOS\Fannie\API\FanniePlugin 
 {
     public $plugin_settings = array();
 

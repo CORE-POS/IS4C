@@ -25,13 +25,14 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class AdTextImportPage extends FannieUploadPage 
+class AdTextImportPage extends \COREPOS\Fannie\API\FannieUploadPage 
 {
     protected $title = "Fannie :: Product Ad Text";
     protected $header = "Import Product Ad Text";
 
     public $description = '[Ad Text Import] uploads long brand names and product descriptions
     for use in signage. The default format is set for Co+op Deals signage spreadsheets.';
+    public $themed = true;
 
     /**
       Default based on Co+op Deals Signage Data spreadsheets
@@ -69,6 +70,8 @@ class AdTextImportPage extends FannieUploadPage
             'required' => false
         ),
     );
+
+    private $stats = array('total'=>0, 'here'=>0);
 
     public function process_file($linedata)
     {
@@ -113,6 +116,8 @@ class AdTextImportPage extends FannieUploadPage
             $upc = str_replace(" ","",$upc);
             $upc = str_replace("-","",$upc);
             if (!is_numeric($upc)) continue; // skip header(s) or blank rows
+
+            $this->stats['total']++;
 
             if ($checks) {
                 $upc = substr($upc,0,strlen($upc)-1);
@@ -165,6 +170,7 @@ class AdTextImportPage extends FannieUploadPage
             // but are blank for the given row. No need to update.
             if ($changed) {
                 $model->save();
+                $this->stats['here']++;
             }
         }
 
@@ -173,12 +179,12 @@ class AdTextImportPage extends FannieUploadPage
 
     public function form_content()
     {
-        return '<fieldset><legend>Instructions</legend>
+        return '<div class="well"><legend>Instructions</legend>
         Upload a CSV or XLS file containing product UPCs, descriptions and/or brands,
         and optionally vendor SKU numbers
         <br />A preview helps you to choose and map columns to the database.
         <br />The uploaded file will be deleted after the load.
-        </fieldset><br />';
+        </div>';
     }
 
     public function preview_content()
@@ -193,10 +199,26 @@ class AdTextImportPage extends FannieUploadPage
 
     public function results_content()
     {
-        return 'Import completed successfully' 
+        return '<div class="alert alert-success">
+            Import completed successfully<br />'
+            . $this->stats['total'] . ' items examined<br />'
+            . $this->stats['here'] . ' items updated<br />'
+            . '</div>'
             . '<hr />' 
             . $this->form_content()
             . $this->basicForm();
+    }
+
+    public function helpContent()
+    {
+        return '<p>Import alternate brands and descriptions for products.
+            These are typically more verbose versions. Often the full 
+            name of an item will not fit well on a receipt but it\'s still
+            useful to have the full name in the system for things like 
+            sale signs.</p>
+            <p>The default column layout matches NCGA Co+op Deal sign data
+            spreadsheets.</p>'
+            . parent::helpContent();
     }
 }
 

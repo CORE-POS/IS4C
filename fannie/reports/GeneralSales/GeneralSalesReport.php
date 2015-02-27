@@ -31,6 +31,7 @@ class GeneralSalesReport extends FannieReportPage
 
     public $description = '[General Sales Report] shows total sales per department for a given date range in dollars as well as a percentage of store-wide sales.';
     public $report_set = 'Sales Reports';
+    public $themed = true;
 
     private $grandTTL = 1;
     protected $title = "Fannie : General Sales Report";
@@ -277,35 +278,53 @@ function drawPieChart()
             $ts = mktime(0,0,0,date("n",$ts),date("j",$ts)-1,date("Y",$ts));    
         }
         ?>
-        <form action=GeneralSalesReport.php method=get>
-        <table cellspacing=4 cellpadding=4>
-        <tr>
-        <th>Start Date</th>
-        <td><input type=text id=date1 name=date1 value="<?php echo $lastMonday; ?>" /></td>
-        <td rowspan="2">
-        <?php echo FormLib::date_range_picker(); ?>
-        </td>
-        </tr><tr>
-        <th>End Date</th>
-        <td><input type=text id=date2 name=date2 value="<?php echo $lastSunday; ?>" /></td>
-        </tr><tr>
-        <td colspan=2><select name=dept>
-        <option value=0>Use department settings at time of sale</option>
-        <option value=1>Use current department settings</option>
-        </select></td>
-        </tr><tr>
-        <td>Excel <input type=checkbox name=excel /></td>
-        <td><input type=submit name=submit value="Submit" /></td>
-        </tr>
-        </table>
+        <form action=GeneralSalesReport.php method=get class="form-horizontal">
+        <div class="row">
+            <div class="col-sm-6">
+                <p>
+                    <label>Start Date</label>
+                    <input class="form-control date-field" type=text id=date1 name=date1 value="<?php echo $lastMonday; ?>" />
+                </p>
+                <p>
+                    <label>End Date</label>
+                    <input class="form-control date-field" type=text id=date2 name=date2 value="<?php echo $lastSunday; ?>" />
+                </p>
+            </div>
+            <div class="col-sm-6">
+                <p>
+                <?php echo FormLib::date_range_picker(); ?>
+                </p>
+            </div>
+        </div>
+        <p>
+            <select name=dept class="form-control">
+                <option value=0>Use department settings at time of sale</option>
+                <option value=1>Use current department settings</option>
+            </select>
+        </p>
+        <p>
+            <button type=submit name=submit value="Submit" class="btn btn-default">Submit</button>
+            <label><input type=checkbox name=excel /> Excel</label>
+        </p>
         </form>
         <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
+    }
+
+    public function helpContent()
+    {
+        return '<p>General Sales is an overview with totals for each POS
+            deaprtment and subtotals for each super department. In this
+            context, individual departments are only counted once under
+            their home super department so that the grand total accurately
+            reflects total sales.</p>
+            <p>The <em>Use department settings...</em> option may change
+            line item totals but should not alter the grand total. If an
+            item used to be in department #1 but now is in department #2,
+            this option controls where its sales appear in the report.</p>';
     }
 
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
 ?>

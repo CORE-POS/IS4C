@@ -38,7 +38,7 @@
 <tr><td colspan="2"><br><h2>Static Public Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_paycard_lib.html#728fa85ea6862cc0271241262a5324aa">paycard_info</a> ($pan)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_paycard_lib.html#7ff1ffb2df411141bd0295531b053f57">paycard_accepted</a> ($pan, $acceptTest)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_paycard_lib.html#135557932f1bae4ed93c79e2f1a58577">paycard_accepted</a> ($pan, $ebt=true)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_paycard_lib.html#67d629269ec11487bc978643b5e05300">paycard_type</a> ($pan)</td></tr>
 
@@ -155,7 +155,7 @@ const&nbsp;</td><td class="memItemRight" valign="bottom"><b>PAYCARD_ERR_TRY_VERI
 Defines constants and functions for card processing. 
 <p>
 <hr><h2>Member Function Documentation</h2>
-<a class="anchor" name="7ff1ffb2df411141bd0295531b053f57"></a><!-- doxytag: member="PaycardLib::paycard_accepted" ref="7ff1ffb2df411141bd0295531b053f57" args="($pan, $acceptTest)" -->
+<a class="anchor" name="135557932f1bae4ed93c79e2f1a58577"></a><!-- doxytag: member="PaycardLib::paycard_accepted" ref="135557932f1bae4ed93c79e2f1a58577" args="($pan, $ebt=true)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -169,7 +169,7 @@ Defines constants and functions for card processing.
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">$&nbsp;</td>
-          <td class="paramname"> <em>acceptTest</em></td><td>&nbsp;</td>
+          <td class="paramname"> <em>ebt</em> = <code>true</code></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -184,13 +184,13 @@ Defines constants and functions for card processing.
 Check whether a given card is accepted <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>$pan</em>&nbsp;</td><td>the card number </td></tr>
-    <tr><td valign="top"></td><td valign="top"><em>$acceptTest</em>&nbsp;</td><td>boolean </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$ebt</em>&nbsp;</td><td>[boolean, default true] </td></tr>
   </table>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd><ul>
-<li>1 if accepted</li><li>0 if not accepted</li></ul>
+<li>1 if accepted</li><li>0 if not accepted </li></ul>
 </dd></dl>
-$acceptTest controls the behavior with testing cards. True makes test cards accepted. 
+
 </div>
 </div><p>
 <a class="anchor" name="728fa85ea6862cc0271241262a5324aa"></a><!-- doxytag: member="PaycardLib::paycard_info" ref="728fa85ea6862cc0271241262a5324aa" args="($pan)" -->
@@ -321,7 +321,7 @@ If the data is really malformed, the return will be an error code instead of an 
 <div class="memdoc">
 
 <p>
-Clear paycard variables from $CORE_LOCAL. 
+Clear paycard variables from session 
 </div>
 </div><p>
 <a class="anchor" name="67d629269ec11487bc978643b5e05300"></a><!-- doxytag: member="PaycardLib::paycard_type" ref="67d629269ec11487bc978643b5e05300" args="($pan)" -->
@@ -422,13 +422,13 @@ Validate number using Luhn's Algorithm <dl compact><dt><b>Parameters:</b></dt><d
 <div class="memdoc">
 
 <p>
-Clear card data variables from $CORE_LOCAL.<p>
-<b>Storing card data in $CORE_LOCAL is not recommended</b>. 
+Clear card data variables from session<p>
+<b>Storing card data in session is not recommended</b>. 
 </div>
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/plugins/Paycards/lib/PaycardLib.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 9 Feb 2015 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

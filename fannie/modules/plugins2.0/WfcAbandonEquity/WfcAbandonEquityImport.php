@@ -8,8 +8,11 @@ $EMP_NO = 1001;
 $LANE_NO = 30;
 $OFFSET_DEPT = 703;
 
-class WfcAbandonEquityImport extends FannieUploadPage 
+class WfcAbandonEquityImport extends \COREPOS\Fannie\API\FannieUploadPage 
 {
+    public $page_set = 'Plugin :: WfcAbandonEquity';
+    public $description = '[Import Abandoned Equity] to debit balances and mark members inactive.';
+    public $themed = true;
 
     protected $preview_opts = array(
         'card_no' => array(
@@ -216,12 +219,12 @@ class WfcAbandonEquityImport extends FannieUploadPage
 
     function results_content()
     {
-        return 'Import complete';
+        return '<p>Import complete</p>';
     }
 
     function form_content()
     {
-        return 'Upload abandoned equity spreadsheet';
+        return '<p>Upload abandoned equity spreadsheet</p>';
     }
 }
 

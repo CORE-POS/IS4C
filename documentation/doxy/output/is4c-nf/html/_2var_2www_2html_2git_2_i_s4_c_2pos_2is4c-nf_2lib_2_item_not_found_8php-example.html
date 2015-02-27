@@ -24,9 +24,9 @@
     </li>
   </ul></div>
 <h1>/var/www/html/git/IS4C/pos/is4c-nf/lib/ItemNotFound.php</h1>Log item not found with a different description (contrived, obviously)<p>
-class LogNotFound extends <a class="el" href="class_item_not_found.html">ItemNotFound</a> { public function handle($upc, $json) { global $CORE_LOCAL; $opts = array('upc'=&gt;$upc,'description'=&gt;'NOTFOUND'); TransRecord::add_log_record($opts); $CORE_LOCAL-&gt;set("boxMsg", $upc . ' ' . _("not a valid item")); $json['main_frame'] = $my_url . "gui-modules/boxMsg2.php";<p>
+class LogNotFound extends <a class="el" href="class_item_not_found.html">ItemNotFound</a> { public function handle($upc, $json) { $opts = array('upc'=&gt;$upc,'description'=&gt;'NOTFOUND'); TransRecord::add_log_record($opts); CoreLocal::set("boxMsg", $upc . ' ' . _("not a valid item")); $json['main_frame'] = $my_url . "gui-modules/boxMsg2.php";<p>
 return $json; } }<p>
-<div class="fragment"><pre class="fragment"></pre></div> <hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - IS4C by&nbsp;
+<div class="fragment"><pre class="fragment"></pre></div> <hr size="1"><address style="align: right;"><small>Generated on 9 Feb 2015 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

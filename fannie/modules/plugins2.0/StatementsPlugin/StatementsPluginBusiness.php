@@ -9,6 +9,10 @@ if (!class_exists('FPDF')) {
 
 class StatementsPluginBusiness extends FannieRESTfulPage
 {
+    public $page_set = 'Plugin :: StatementsPlugin';
+    public $description = '[Business Statement PDF] generates business invoices';
+    public $themed = true;
+
     public function post_id_handler()
     {
         global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_ROOT;
@@ -62,7 +66,33 @@ class StatementsPluginBusiness extends FannieRESTfulPage
             ORDER BY card_no, 
                 tdate, 
                 trans_num");
-        $transR = $dbc->execute($transP, $args);
+        $transP = $dbc->prepare("
+            SELECT card_no,
+                charges,
+                payments,
+                tdate,
+                trans_num,
+                'OLD' as timespan
+            FROM " . $FANNIE_TRANS_DB . $dbc->sep() . "ar_history 
+            WHERE card_no IN " . $cards . "
+                AND tdate >= ?
+            UNION ALL
+            SELECT card_no,
+                charges,
+                payments,
+                tdate,
+                trans_num,
+                'TODAY' as timespan
+            FROM " . $FANNIE_TRANS_DB . $dbc->sep() . "ar_history_today
+            WHERE card_no IN " . $cards . "
+            ORDER BY tdate");
+        $date = date('Y-m-d', mktime(0, 0, 0, date('n'), date('j')-90, date('Y')));
+        $trans_args = $args;
+        $trans_args[] = $date;
+        foreach ($args as $a) { // need cards twice for the union
+            $trans_args[] = $a;
+        }
+        $transR = $dbc->execute($transP, $trans_args);
 
         $arRows = array();
         while ($w = $dbc->fetch_row($transR)) {
@@ -81,7 +111,7 @@ class StatementsPluginBusiness extends FannieRESTfulPage
             => trans_num
                => line item description(s)
         */
-        $detailsP = $dbc->prepare('
+        $detailsQ = '
             SELECT card_no,
                 description,
                 department,
@@ -91,10 +121,19 @@ class StatementsPluginBusiness extends FannieRESTfulPage
                 AND trans_num=?
                 AND card_no=?
                 AND trans_type IN (\'I\', \'D\')
-        ');         
+        ';         
+        $todayQ = str_replace('dlog_90_view', 'dlog', $detailsQ);
+        $detailsP = $dbc->prepare($detailsQ);
+        $todayP = $dbc->prepare($todayQ);
         $details = array();
         foreach ($arRows as $card_no => $trans) {
+            $found_charge = false;
             foreach ($trans as $info) {
+                if (!$found_charge && $info['charges'] == 0) {
+                    continue;
+                } elseif ($info['charges'] != 0) {
+                    $found_charge = true;
+                }
                 $dt = strtotime($info['tdate']);
                 $args = array(
                     date('Y-m-d 00:00:00', $dt),
@@ -102,7 +141,11 @@ class StatementsPluginBusiness extends FannieRESTfulPage
                     $info['trans_num'],
                     $info['card_no'],
                 );
-                $r = $dbc->execute($detailsP, $args);
+                if ($info['timespan'] == 'TODAY') {
+                    $r = $dbc->execute($todayP, $args);
+                } else {
+                    $r = $dbc->execute($detailsP, $args);
+                }
                 while ($w = $dbc->fetch_row($r)) {
                     $tn = $w['trans_num'];
                     if (!isset($details[$w['card_no']])) {
@@ -122,15 +165,17 @@ class StatementsPluginBusiness extends FannieRESTfulPage
 
         $stateDate = date("d F, Y",mktime(0,0,0,date('n'),0,date('Y')));
 
-        $pdf = new FPDF();
+        $pdf = new FPDF('P', 'mm', 'Letter');
+        $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
+        $pdf->SetAutoPageBreak(false);
 
         //Meat of the statement
         $rowNum=0;
         while ($memberW = $dbc->fetch_row($memberR)) {
             $pdf->AddPage();
-            $pdf->Image('letterhead_bw.png',10,10, 50);
-            $pdf->SetFont('Arial','','12');
-            $pdf->SetLeftMargin(65);
+            $pdf->Image('new_letterhead_horizontal.png',5,10, 200);
+            $pdf->SetFont('Gill','','12');
+            $pdf->Ln(45);
 
             $pdf->Cell(10,5,sprintf("Invoice #: %s-%s",$memberW['card_no'],date("ymd")),0,1,'L');
             $pdf->Cell(10,5,$stateDate,0);
@@ -171,12 +216,10 @@ class StatementsPluginBusiness extends FannieRESTfulPage
             $priorBalance = is_array($priorW) ? $priorW['priorBalance'] : 0;
 
             $indent = 10;
-            $columns = array(50, 25, 20, 20);
+            $columns = array(75, 35, 30, 30);
             $pdf->Cell($indent,8,'');
             $pdf->SetFillColor(200);
-            $pdf->SetFont('Arial','B','12');   
             $pdf->Cell(40,8,'Balance Forward',0,0,'L',1);
-            $pdf->SetFont('Arial','','12');   
             $pdf->Cell(25,8,'$ ' . sprintf("%.2f",$priorBalance),0,0,'L');
             $pdf->Ln(8);
  
@@ -217,7 +260,7 @@ class StatementsPluginBusiness extends FannieRESTfulPage
                 } else {
                     $pdf->Cell($columns[3],8,'$ ' . sprintf('(%.2f)',abs($payment-$charges)),0,0,'L');
                 }
-                if ($pdf->GetY() > 265){
+                if ($pdf->GetY() > 245){
                     $pdf->AddPage();
                 } else {
                     $pdf->Ln(5);
@@ -226,7 +269,7 @@ class StatementsPluginBusiness extends FannieRESTfulPage
                     $pdf->SetFontSize(10);
                     $pdf->Cell($indent+10,8,'',0,0,'L');
                     $pdf->Cell(60,8,$lineitem,0,0,'L');
-                    if ($pdf->GetY() > 265) {
+                    if ($pdf->GetY() > 245) {
                         $pdf->AddPage();
                     } else {
                         $pdf->Ln(5);
@@ -238,9 +281,7 @@ class StatementsPluginBusiness extends FannieRESTfulPage
             $pdf->Ln(15);
             $pdf->Cell($indent,8,'');
             $pdf->SetFillColor(200);
-            $pdf->SetFont('Arial','B','14');   
             $pdf->Cell(35,8,'Amount Due',0,0,'L',1);
-            $pdf->SetFont('Arial','','14');   
             $pdf->Cell(25,8,'$ ' . sprintf("%.2f",$memberW['balance']),0,0,'L');
 
             if ($gazette) {

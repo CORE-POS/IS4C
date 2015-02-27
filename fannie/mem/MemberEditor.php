@@ -20,6 +20,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
 include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
@@ -35,6 +36,7 @@ class MemberEditor extends FanniePage {
     protected $header = "Member ";
 
     public $description = '[Member Editor] is the primary tool for viewing and editing member accounts.';
+    public $themed = true;
 
     private $country;
     private $memNum;
@@ -43,21 +45,23 @@ class MemberEditor extends FanniePage {
 
     /*
     */
-  public function __construct(){
-    global $FANNIE_COOP_ID;
+    public function __construct(){
+        global $FANNIE_COOP_ID;
         parent::__construct();
         // If saving, set higher priv: members_edit_full
         $this->auth_classes = array('members_edit_full');
-    if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' )
-        $this->auth_classes[] = 'editmembers';
-  }
+        if (isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto') {
+            $this->auth_classes[] = 'editmembers';
+        }
+    }
 
-    function preprocess(){
+    function preprocess()
+    {
         global $FANNIE_COUNTRY, $FANNIE_MEMBER_MODULES, $FANNIE_OP_DB;
 
         $this->country = (isset($FANNIE_COUNTRY)&&!empty($FANNIE_COUNTRY))?$FANNIE_COUNTRY:"US";
         $this->memNum = FormLib::get_form_value('memNum',False);
-        if ($this->memNum !== False){
+        if ($this->memNum !== false) {
             $this->title .= $this->memNum;
             $this->header .= $this->memNum;
 
@@ -75,8 +79,7 @@ class MemberEditor extends FanniePage {
                             $next = $list[$i+1];
                     }
                 }
-            }
-            else {
+            } else {
                 $dbc = FannieDB::get($FANNIE_OP_DB);
                 $prevP = $dbc->prepare_statement('SELECT MAX(CardNo) AS prev
                                                   FROM custdata 
@@ -126,11 +129,12 @@ class MemberEditor extends FanniePage {
             /* form was submitted. save input. */
             if (FormLib::get_form_value('saveBtn',False) !== False){
                 $whichBtn = FormLib::get_form_value('saveBtn');
+                FannieAPI::listModules('MemberModule');
                 foreach($FANNIE_MEMBER_MODULES as $mm){
-                    if (!class_exists($mm))
-                        include('modules/'.$mm.'.php');
-                    $instance = new $mm();
-                    $this->msgs .= $instance->saveFormData($this->memNum);
+                    if (class_exists($mm)) {
+                        $instance = new $mm();
+                        $this->msgs .= $instance->saveFormData($this->memNum);
+                    }
                 }
 
                 $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -162,60 +166,85 @@ class MemberEditor extends FanniePage {
                     return False;
                 }
             }
-        }
-        else {
+        } else {
             // cannot operate without a member number
             // php sapi check makes page unit-testable
             if (php_sapi_name() !== 'cli') {
                 header('Location: MemberSearchPage.php');
             }
-            return False;   
+            return false;   
         }
-        return True;
+
+        return true;
 
     // preprocess()
     }
 
-    function body_content(){
+    function body_content()
+    {
         global $FANNIE_MEMBER_MODULES;
         $ret = '';
-        if (!empty($this->msgs)){
-            $ret .= $this->msgs;
-        }
 
         $list = FormLib::get_form_value('l');
 
         $ret .= '<form action="MemberEditor.php" method="post">';
         $ret .= sprintf('<input type="hidden" name="memNum" value="%d" />',$this->memNum);
-        if (is_array($list)){
+        if (is_array($list)) {
             foreach($list as $l)
                 $ret .= sprintf('<input type="hidden" name="l[]" value="%d" />',$l);
         }
         $load = array();
         $editJS = '';
-        foreach($FANNIE_MEMBER_MODULES as $mm){
-            if (!class_exists($mm))
-                include('modules/'.$mm.'.php');
+        $ret .= '<div class="container-fluid">
+            <div id="alert-area">';
+        if (!empty($this->msgs)){
+            $ret .= '<div class="alert alert-danger">' . $this->msgs . '</div>';
+        }
+        $current_width = 100;
+        FannieAPI::listModules('MemberModule');
+        foreach ($FANNIE_MEMBER_MODULES as $mm) {
+            if (!class_exists($mm)) {
+                continue;
+            }
             $instance = new $mm();
-            $ret .= '<div style="float:left;">';
+            if ($current_width + $instance->width() > 100) {
+                $ret .= '</div>' . "\n"
+                    . '<div class="row">';
+                $current_width = 0;
+            }
+            switch ($instance->width()) {
+                case \COREPOS\Fannie\API\member\MemberModule::META_WIDTH_THIRD:
+                    $ret .= '<div class="col-sm-4">' . "\n";
+                    break;
+                case \COREPOS\Fannie\API\member\MemberModule::META_WIDTH_HALF:
+                    $ret .= '<div class="col-sm-6">' . "\n";
+                    break;
+                case \COREPOS\Fannie\API\member\MemberModule::META_WIDTH_FULL:
+                default:
+                    $ret .= '<div class="col-sm-12">' . "\n";
+                    break;
+            }
             $ret .= $instance->showEditForm($this->memNum, $this->country);
             $ret .= '</div>';
+            $current_width += $instance->width();
             $editJS .= $instance->getEditJavascript();
             foreach ($instance->getEditLoadCommands() as $cmd) {
                 $load[] = $cmd;
             }
         }
-        $ret .= '<div style="clear:left;"></div>';
-        $ret .= '<hr />';
-        if (is_array($list)){
-            $ret .= '<input type="submit" name="saveBtn" value="Save" />';
+        $ret .= '</div>'; // close last module row
+        $ret .= '</div>'; // close fluid-container
+        $ret .= '<p>';
+        if (is_array($list)) {
+            $ret .= '<button type="submit" name="saveBtn" value="Save &amp; Next"
+                class="btn btn-default">Save &amp; Next</button>';
             $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-            $ret .= '<input type="submit" name="saveBtn" value="Save &amp; Next" />';
         }
-        else
-            $ret .= '<input type="submit" name="saveBtn" value="Save" />';
+        $ret .= '<button type="submit" name="saveBtn" value="Save" 
+            class="btn btn-default">Save</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="reset" value="Reset Form" />';
+        $ret .= '<button type="reset" class="btn btn-default">Reset Form</button>';
+        $ret .= '</p>';
         $ret .= '</form>';
 
         if ($editJS != '') {
@@ -227,8 +256,19 @@ class MemberEditor extends FanniePage {
 
         return $ret;
     }
+
+    public function helpContent()
+    {
+        return '<p>View and edit a member account. The exact fields shown here
+            vary depending on local configuration. Add or remove sets of fields
+            on the <em>Members</em> tab of Fannie\'s install/config page.</p>
+            <p>If you arrived here from a search with multiple results, the
+            <em>Prev Match</em> and <em>Next Match</em> links will navigate
+            through that result set. Similarly, the <em>Save &amp; Next</em>
+            button will save the current member and proceed to the next.</p>';
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
 ?>

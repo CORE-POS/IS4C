@@ -31,7 +31,7 @@ include_once('../classlib2.0/FannieAPI.php');
     @class InstallAuthenticationPage
     Class for the Authentication install and config options
 */
-class InstallAuthenticationPage extends InstallPage {
+class InstallAuthenticationPage extends \COREPOS\Fannie\API\InstallPage {
 
     protected $title = 'Fannie: Authentication Settings';
     protected $header = 'Fannie: Authentication Settings';
@@ -39,6 +39,7 @@ class InstallAuthenticationPage extends InstallPage {
     public $description = "
     Class for the Authentication install and config options page.
     ";
+    public $themed = true;
 
     public function __construct() {
 
@@ -99,46 +100,25 @@ class InstallAuthenticationPage extends InstallPage {
 <h1 class="install"><?php echo $this->header; ?></h1>
 <?php
 if (is_writable('../config.php')){
-    echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
+    echo "<div class=\"alert alert-success\"><i>config.php</i> is writeable</div>";
 }
 else {
-    echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
+    echo "<div class=\"alert alert-danger;\"><b>Error</b>: config.php is not writeable</div>";
 }
 ?>
 <hr />
 <p class="ichunk" style="margin-top: 1.0em;">
 <b>Authentication enabled</b>
-<select name=FANNIE_AUTH_ENABLED>
+<?php echo installSelectField('FANNIE_AUTH_ENABLED', $FANNIE_AUTH_ENABLED,
+                       array(1 => 'Yes', 0 => 'No'), false, false); ?>
+</p><!-- /.ichunk -->
 <?php
-if (!isset($FANNIE_AUTH_ENABLED)) $FANNIE_AUTH_ENABLED = False;
-if (isset($_REQUEST['FANNIE_AUTH_ENABLED'])) $FANNIE_AUTH_ENABLED = $_REQUEST['FANNIE_AUTH_ENABLED'];
-if ($FANNIE_AUTH_ENABLED === True || $FANNIE_AUTH_ENABLED == 'Yes'){
-    confset('FANNIE_AUTH_ENABLED','True');
-    echo "<option selected>Yes</option><option>No</option>";
-}
-else{
-    confset('FANNIE_AUTH_ENABLED','False');
-    echo "<option>Yes</option><option selected>No</option>";
-}
-echo "</select>";
-echo "</p><!-- /.ichunk -->";
-
 // Default to Authenticate ("Authenticate Everything") or not.
 if ($FANNIE_AUTH_ENABLED){
     echo "<p class='ichunk'>";
     echo "<b>Authenticate by default </b>";
-    echo "<select name=FANNIE_AUTH_DEFAULT>";
-    if (!isset($FANNIE_AUTH_DEFAULT)) $FANNIE_AUTH_DEFAULT = False;
-    if (isset($_REQUEST['FANNIE_AUTH_DEFAULT'])) $FANNIE_AUTH_DEFAULT = $_REQUEST['FANNIE_AUTH_DEFAULT'];
-    if ($FANNIE_AUTH_DEFAULT === True || $FANNIE_AUTH_DEFAULT == 'Yes'){
-        confset('FANNIE_AUTH_DEFAULT','True');
-        echo "<option selected>Yes</option><option>No</option>";
-    }
-    else{
-        confset('FANNIE_AUTH_DEFAULT','False');
-        echo "<option>Yes</option><option selected>No</option>";
-    }
-    echo "</select><br />";
+    echo installSelectField('FANNIE_AUTH_DEFAULT', $FANNIE_AUTH_DEFAULT,
+                           array(1 => 'Yes', 0 => 'No'), false, false);
     echo "If 'Yes' all Admin utilities will require Login<br />";
     echo "If 'No' only those utilities coded for it will require Login";
     echo "</p><!-- /.ichunk -->";
@@ -173,7 +153,7 @@ if ($FANNIE_AUTH_ENABLED){
                         // populate known privileges table automatically
                         $db = FannieDB::get($FANNIE_OP_DB);
                         ob_start(); // don't care about primary key errors
-                        loaddata($db, 'userKnownPrivs');
+                        \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db, 'userKnownPrivs');
                         ob_end_clean();
                         // loaddata() has no return value; success assumed.
                         echo "Table {$FANNIE_OP_DB}.userKnownPrivs has been populated with the standard privilege set.<br />";
@@ -207,129 +187,61 @@ if ($FANNIE_AUTH_ENABLED){
 ?>
 <hr />
 <b>Allow shadow logins</b>
-<select name=FANNIE_AUTH_SHADOW>
-<?php
-if (!isset($FANNIE_AUTH_SHADOW)) $FANNIE_AUTH_SHADOW = False;
-if (isset($_REQUEST['FANNIE_AUTH_SHADOW'])) $FANNIE_AUTH_SHADOW = $_REQUEST['FANNIE_AUTH_SHADOW'];
-if ($FANNIE_AUTH_SHADOW === True || $FANNIE_AUTH_SHADOW == 'Yes'){
-    confset('FANNIE_AUTH_SHADOW','True');
-    echo "<option selected>Yes</option><option>No</option>";
-}
-else{
-    confset('FANNIE_AUTH_SHADOW','False');
-    echo "<option>Yes</option><option selected>No</option>";
-}
-echo "</select><br />";
+<?php 
+echo installSelectField('FANNIE_AUTH_SHADOW', $FANNIE_AUTH_SHADOW,
+                   array(1 => 'Yes', 0 => 'No'), false, false);
 if (!file_exists("../auth/shadowread/shadowread")){
-    echo "<span style=\"color:red;\"><b>Error</b>: shadowread utility does not exist</span>";
-    echo "<blockquote>";
+    echo "<div class=\"alert alert-danger\"><b>Error</b>: shadowread utility does not exist</div>";
+    echo "<div class=\"well\">";
     echo "shadowread lets Fannie authenticate users agaist /etc/shadow. To create it:";
-    echo "<pre style=\"font:fixed;background:#ccc;\">
+    echo "<pre>
 cd ".realpath('../auth/shadowread')."
 make
     </pre>";
-    echo "</blockquote>";
-}
-else {
+    echo "</div>";
+} else {
     $perms = fileperms("../auth/shadowread/shadowread");
     if ($perms == 0104755)
-        echo "<span style=\"color:green;\">shadowread utility has proper permissions</span>";
+        echo "<div class=\"alert alert-success\">shadowread utility has proper permissions</div>";
     else{
-        echo "<span style=\"color:red;\"><b>Warning</b>: shadowread utility has incorrect permissions</span>";
-        echo "<blockquote>";
+        echo "<div class=\"alert alert-danger\"><b>Warning</b>: shadowread utility has incorrect permissions</div>";
+        echo "<div class=\"well\">";
         echo "shadowread needs setuid permission. To fix it: ";
-        echo "<pre style=\"font:fixed;background:#ccc;\">
+        echo "<pre>
 cd ".realpath('../auth/shadowread')."
 sudo make install
         </pre>";
-        echo "</blockquote>";
+        echo "</div>";
     }
 }
 ?>
 <hr />
 <b>Allow LDAP logins</b>
-<select name=FANNIE_AUTH_LDAP>
-<?php
-if (!isset($FANNIE_AUTH_LDAP)) $FANNIE_AUTH_LDAP = False;
-if (isset($_REQUEST['FANNIE_AUTH_LDAP'])) $FANNIE_AUTH_LDAP = $_REQUEST['FANNIE_AUTH_LDAP'];
-if ($FANNIE_AUTH_LDAP === True || $FANNIE_AUTH_LDAP == 'Yes'){
-    confset('FANNIE_AUTH_LDAP','True');
-    echo "<option selected>Yes</option><option>No</option>";
-}
-else{
-    confset('FANNIE_AUTH_LDAP','False');
-    echo "<option>Yes</option><option selected>No</option>";
-}
-?>
-</select><br />
-<?php
+<?php 
+echo installSelectField('FANNIE_AUTH_LDAP', $FANNIE_AUTH_LDAP,
+               array(1 => 'Yes', 0 => 'No'), false, false);
 if (!function_exists("ldap_connect"))
-    echo "<span style=\"color:red;\"><b>Warning</b>: PHP install does not have LDAP support enabled</span>";
+    echo "<div class=\"alert alert-danger\"><b>Warning</b>: PHP install does not have LDAP support enabled</div>";
 else
-    echo "<span style=\"color:green;\">PHP has LDAP support enabled</span>";
+    echo "<div class=\"alert alert-success\">PHP has LDAP support enabled</div>";
 ?>
 <br />
-LDAP Server Host
-<?php
-if(!isset($FANNIE_LDAP_SERVER)) $FANNIE_LDAP_SERVER = '127.0.0.1';
-if (isset($_REQUEST['FANNIE_LDAP_SERVER'])){
-    $FANNIE_LDAP_SERVER = $_REQUEST['FANNIE_LDAP_SERVER'];
-}
-confset('FANNIE_LDAP_SERVER',"'$FANNIE_LDAP_SERVER'");
-echo "<input type=text name=FANNIE_LDAP_SERVER value=\"$FANNIE_LDAP_SERVER\" />";
-?>
-<br />
-LDAP Port
-<?php
-if(!isset($FANNIE_LDAP_PORT)) $FANNIE_LDAP_PORT = 389;
-if (isset($_REQUEST['FANNIE_LDAP_PORT'])){
-    $FANNIE_LDAP_PORT = $_REQUEST['FANNIE_LDAP_PORT'];
-}
-confset('FANNIE_LDAP_PORT',"'$FANNIE_LDAP_PORT'");
-echo "<input type=text name=FANNIE_LDAP_PORT value=\"$FANNIE_LDAP_PORT\" />";
-?>
-<br />
-LDAP Domain (DN)
-<?php
-if(!isset($FANNIE_LDAP_DN)) $FANNIE_LDAP_DN = 'ou=People,dc=example,dc=org';
-if (isset($_REQUEST['FANNIE_LDAP_DN'])){
-    $FANNIE_LDAP_DN = $_REQUEST['FANNIE_LDAP_DN'];
-}
-confset('FANNIE_LDAP_DN',"'$FANNIE_LDAP_DN'");
-echo "<input type=text name=FANNIE_LDAP_DN value=\"$FANNIE_LDAP_DN\" />";
-?>
-<br />
-LDAP Username Field 
-<?php
-if(!isset($FANNIE_LDAP_SEARCH_FIELD)) $FANNIE_LDAP_SEARCH_FIELD = 'uid';
-if (isset($_REQUEST['FANNIE_LDAP_SEARCH_FIELD'])){
-    $FANNIE_LDAP_SEARCH_FIELD = $_REQUEST['FANNIE_LDAP_SEARCH_FIELD'];
-}
-confset('FANNIE_LDAP_SEARCH_FIELD',"'$FANNIE_LDAP_SEARCH_FIELD'");
-echo "<input type=text name=FANNIE_LDAP_SEARCH_FIELD value=\"$FANNIE_LDAP_SEARCH_FIELD\" />";
-?>
-<br />
-LDAP User ID# Field 
-<?php
-if(!isset($FANNIE_LDAP_UID_FIELD)) $FANNIE_LDAP_UID_FIELD = 'uidnumber';
-if (isset($_REQUEST['FANNIE_LDAP_UID_FIELD'])){
-    $FANNIE_LDAP_UID_FIELD = $_REQUEST['FANNIE_LDAP_UID_FIELD'];
-}
-confset('FANNIE_LDAP_UID_FIELD',"'$FANNIE_LDAP_UID_FIELD'");
-echo "<input type=text name=FANNIE_LDAP_UID_FIELD value=\"$FANNIE_LDAP_UID_FIELD\" />";
-?>
-<br />
-LDAP Real Name Field 
-<?php
-if(!isset($FANNIE_LDAP_RN_FIELD)) $FANNIE_LDAP_RN_FIELD = 'cn';
-if (isset($_REQUEST['FANNIE_LDAP_RN_FIELD'])){
-    $FANNIE_LDAP_RN_FIELD = $_REQUEST['FANNIE_LDAP_RN_FIELD'];
-}
-confset('FANNIE_LDAP_RN_FIELD',"'$FANNIE_LDAP_RN_FIELD'");
-echo "<input type=text name=FANNIE_LDAP_RN_FIELD value=\"$FANNIE_LDAP_RN_FIELD\" />";
-?>
+<label>LDAP Server Host</label>
+<?php echo installTextField('FANNIE_LDAP_SERVER', $FANNIE_LDAP_SERVER, '127.0.0.1'); ?>
+<label>LDAP Port</label>
+<?php echo installTextField('FANNIE_LDAP_PORT', $FANNIE_LDAP_PORT, '389'); ?>
+<label>LDAP Domain (DN)</label>
+<?php echo installTextField('FANNIE_LDAP_DN', $FANNIE_LDAP_CN, 'ou=People,dc=example,dc=org'); ?>
+<label>LDAP Username Field</label>
+<?php echo installTextField('FANNIE_LDAP_SEARCH_FIELD', $FANNIE_LDAP_SEARCH_FIELD, 'uid'); ?>
+<label>LDAP User ID# Field</label>
+<?php echo installTextField('FANNIE_LDAP_UID_FIELD', $FANNIE_LDAP_UID_FIELD, 'uidnumber'); ?>
+<label>LDAP Real Name Field</label>
+<?php echo installTextField('FANNIE_LDAP_RN_FIELD', $FANNIE_LDAP_RN_FIELD, 'cn'); ?>
 <hr />
-<input type=submit value="Re-run" />
+<p>
+    <button type=submit class="btn btn-default">Save Configuration</button>
+</p>
 </form>
 
 <?php

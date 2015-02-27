@@ -140,13 +140,12 @@ static public function win32()
   @return An ScaleDriverWrapper object
   
   The driver is chosen via "scaleDriver"
-  in $CORE_LOCAL. If the object cannot be 
+  in session. If the object cannot be 
   found this returns zero
 */
 static public function scaleObject()
 {
-	global $CORE_LOCAL;
-	$scaleDriver = $CORE_LOCAL->get("scaleDriver");
+	$scaleDriver = CoreLocal::get("scaleDriver");
 	$sd = 0;
 	if ($scaleDriver != ""){
 		$sd = new $scaleDriver();
@@ -160,15 +159,14 @@ static public function scaleObject()
   @return An ScaleDriverWrapper object
   
   The driver is chosen via "termDriver"
-  in $CORE_LOCAL. If the object cannot be 
+  in session. If the object cannot be 
   found this returns zero.
 
   Signature capture support is very alpha.
 */
 static public function sigTermObject()
 {
-	global $CORE_LOCAL;
-	$termDriver = $CORE_LOCAL->get("termDriver");
+	$termDriver = CoreLocal::get("termDriver");
 	$st = 0;
 	if ($termDriver != "") {
 		$st = new $termDriver();
@@ -182,7 +180,6 @@ static public function sigTermObject()
 */
 static public function goodBeep() 
 {
-	global $CORE_LOCAL;
 	$sd = self::scaleObject();
 	if (is_object($sd)) {
 		$sd->WriteToScale("goodBeep");
@@ -194,7 +191,6 @@ static public function goodBeep()
 */
 static public function rePoll() 
 {
-	global $CORE_LOCAL;
 	$sd = self::scaleObject();
 	if (is_object($sd)) {
 		$sd->WriteToScale("rePoll");
@@ -206,7 +202,6 @@ static public function rePoll()
 */
 static public function errorBeep() 
 {
-	global $CORE_LOCAL;
 	$sd = self::scaleObject();
 	if (is_object($sd)) {
 		$sd->WriteToScale("errorBeep");
@@ -218,7 +213,6 @@ static public function errorBeep()
 */
 static public function twoPairs() 
 {
-	global $CORE_LOCAL;
 	$sd = self::scaleObject();
 	if (is_object($sd)) {
 		$sd->WriteToScale("twoPairs");
@@ -230,7 +224,7 @@ static public function twoPairs()
   to determine all available IP addresses
   @return [array] of [string] IP addresses
 */
-function getAllIPs()
+static public function getAllIPs()
 {
     /**
       First: use OS utilities to check IP(s)

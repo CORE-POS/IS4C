@@ -1,10 +1,10 @@
 <?php
 include('../../../config.php');
 
-if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
-include('../../db.php');
 if (!class_exists('FannieAPI'))
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
+include('../../db.php');
 
 $UNFI_ALL_QUERY = "
     select p.upc,

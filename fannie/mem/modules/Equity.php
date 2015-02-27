@@ -21,7 +21,12 @@
 
 *********************************************************************************/
 
-class Equity extends MemberModule {
+class Equity extends \COREPOS\Fannie\API\member\MemberModule {
+
+    public function width()
+    {
+        return parent::META_WIDTH_THIRD;
+    }
 
     function showEditForm($memNum, $country="US"){
         global $FANNIE_URL,$FANNIE_TRANS_DB;
@@ -39,19 +44,25 @@ class Equity extends MemberModule {
             $equity = $w['payments'];
         }
 
-        $ret = "<fieldset><legend>Equity</legend>";
-        $ret .= "<table class=\"MemFormTable\" 
-            border=\"0\">";
+        $ret = "<div class=\"panel panel-default\">
+            <div class=\"panel-heading\">Equity</div>
+            <div class=\"panel-body\">";
 
-        $ret .= "<tr><th>Stock Purhcased</th>";
-        $ret .= sprintf('<td>%.2f</td>',$equity);
+        $ret .= '<div class="form-group">';
+        $ret .= '<span class="label primaryBackground">Stock Purchased</span> ';
+        $ret .= sprintf('%.2f',$equity);
+        $ret .= " <a href=\"{$FANNIE_URL}reports/Equity/index.php?memNum=$memNum\">History</a>";
+        $ret .= '</div>';
 
-        $ret .= "<td><a href=\"{$FANNIE_URL}reports/Equity/index.php?memNum=$memNum\">History</a></td></tr>";
-        $ret .= "<tr><td><a href=\"{$FANNIE_URL}mem/correction_pages/MemEquityTransferTool.php?memIN=$memNum\">Transfer Equity</a></td>";
-        $ret .= "<td><a href=\"{$FANNIE_URL}mem/correction_pages/MemArEquitySwapTool.php?memIN=$memNum\">Convert Equity</a></td></tr>";
+        $ret .= '<div class="form-group">';
+        $ret .= "<a href=\"{$FANNIE_URL}mem/correction_pages/MemEquityTransferTool.php?memIN=$memNum\">Transfer Equity</a>";
+        $ret .= ' | ';
+        $ret .= "<a href=\"{$FANNIE_URL}mem/correction_pages/MemArEquitySwapTool.php?memIN=$memNum\">Convert Equity</a>";
+        $ret .= '</div>';
 
+        $ret .= "</div>";
+        $ret .= "</div>";
 
-        $ret .= "</table></fieldset>";
         return $ret;
     }
 }

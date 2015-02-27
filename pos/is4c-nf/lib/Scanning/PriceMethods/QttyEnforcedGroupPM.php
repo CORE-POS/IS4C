@@ -32,14 +32,14 @@
 
 class QttyEnforcedGroupPM extends PriceMethod {
 
-    function addItem($row,$quantity,$priceObj){
-        global $CORE_LOCAL;
+    function addItem($row,$quantity,$priceObj)
+    {
         if ($quantity == 0) return false;
 
         $pricing = $priceObj->priceInfo($row,$quantity);
 
         // enforce limit on discounting sale items
-        $dsi = $CORE_LOCAL->get('DiscountableSaleItems');
+        $dsi = CoreLocal::get('DiscountableSaleItems');
         if ($dsi == 0 && $dsi !== '' && $priceObj->isSale()) {
             $row['discount'] = 0;
         }
@@ -176,7 +176,7 @@ class QttyEnforcedGroupPM extends PriceMethod {
                     'discountable' => $row['discount'],
                     'discounttype' => $row['discounttype'],
                     'ItemQtty' => 1,
-                    'volDisctype' => ($priceObj->isSale() ? $row['specialpricemethod'] : $row['pricemethod']),
+                    'volDiscType' => ($priceObj->isSale() ? $row['specialpricemethod'] : $row['pricemethod']),
                     'volume' => ($priceObj->isSale() ? $row['specialquantity'] : $row['quantity']),
                     'VolSpecial' => ($priceObj->isSale() ? $row['specialgroupprice'] : $row['groupprice']),
                     'mixMatch' => $row['mixmatchcode'],

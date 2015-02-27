@@ -29,13 +29,14 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class ProductImportPage extends FannieUploadPage 
+class ProductImportPage extends \COREPOS\Fannie\API\FannieUploadPage 
 {
     protected $title = "Fannie :: Product Tools";
     protected $header = "Import Products";
 
     public $description = '[Product Import] loads or updates product data via spreadsheet. Used
     primarily for intial database population.';
+    public $themed = true;
 
     protected $preview_opts = array(
         'upc' => array(
@@ -63,6 +64,8 @@ class ProductImportPage extends FannieUploadPage
             'required' => false
         )
     );
+
+    private $stats = array('imported'=>0, 'errors'=>array());
 
     function process_file($linedata)
     {
@@ -148,9 +151,10 @@ class ProductImportPage extends FannieUploadPage
             $model->inUse(1);
             $try = $model->save();
 
-            if ($try === false) {
-                $ret = false;
-                $this->error_details = 'There was an error importing UPC '.$upc;
+            if ($try) {
+                $this->stats['imported']++;
+            } else {
+                $this->stats['errors'][] = 'Error importing UPC ' . $upc;
             }
 
             if ($linecount++ % 100 == 0) {
@@ -163,27 +167,38 @@ class ProductImportPage extends FannieUploadPage
 
     function form_content()
     {
-        return '<fieldset><legend>Instructions</legend>
+        return '<div class="well"><legend>Instructions</legend>
         Upload a CSV or XLS file containing product UPCs, descriptions, prices,
         and optional department numbers
         <br />A preview helps you to choose and map columns to the database.
         <br />The uploaded file will be deleted after the load.
-        </fieldset><br />';
+        </div><br />';
     }
 
     function preview_content()
     {
-        return '<input type="checkbox" name="checks" value="yes" />
-            Remove check digits from UPCs
+        return '<label><input type="checkbox" name="checks" value="yes" />
+            Remove check digits from UPCs</label>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <input type="checkbox" name="skipExisting" value="1" checked />
-            Skip Existing Items
+            <label><input type="checkbox" name="skipExisting" value="1" checked />
+            Skip Existing Items</label>
             ';
     }
 
     function results_content()
     {
-        return 'Import completed successfully';
+        $ret = '
+            <p>Import Complete</p>
+            <div class="alert alert-success">' . $this->stats['imported'] . ' products imported</div>';
+        if ($this->stats['errors']) {
+            $ret .= '<div class="alert alert-error"><ul>';
+            foreach ($this->stats['errors'] as $error) {
+                $ret .= '<li>' . $error . '</li>';
+            }
+            $ret .= '</ul></div>';
+        }
+
+        return $ret;
     }
 }
 

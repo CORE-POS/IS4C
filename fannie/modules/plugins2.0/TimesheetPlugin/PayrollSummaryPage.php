@@ -1,8 +1,11 @@
 <?php # payroll.php - Generates a bi-monthly statement from timesheet table.
-require_once(dirname(__FILE__).'/../../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__).'/../../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class PayrollSummaryPage extends FanniePage {
+    public $page_set = 'Plugin :: TimesheetPlugin';
 
     public function preprocess(){
         $this->header = 'Timeclock - Payroll Summary';

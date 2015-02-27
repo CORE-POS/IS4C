@@ -28,10 +28,8 @@ class ArWarnDept extends SpecialDept
 
     public function handle($deptID,$amount,$json)
     {
-        global $CORE_LOCAL;
-
-        if ($CORE_LOCAL->get('msgrepeat') == 0) {
-            $CORE_LOCAL->set("boxMsg","<b>A/R Payment Sale</b><br>remember to retain you<br>
+        if (CoreLocal::get('msgrepeat') == 0) {
+            CoreLocal::set("boxMsg","<b>A/R Payment Sale</b><br>remember to retain you<br>
                 reprinted receipt<br><font size=-1>[enter] to continue, [clear] to cancel</font>");
             $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php?quiet=1';
         }

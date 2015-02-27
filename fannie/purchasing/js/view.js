@@ -10,6 +10,7 @@ function fetchOrders(){
 		type: 'get',
 		success: function(data){
 			$('#ordersDiv').html(data);
+            $('.tablesorter').tablesorter([[0, 1]]);
 		}
 	});
 }

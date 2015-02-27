@@ -35,17 +35,17 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
  */
 
 $shrinkReason = 0;
-if ($CORE_LOCAL->get('shrinkReason') > 0) {
-    $shrinkReason = $CORE_LOCAL->get('shrinkReason');
+if (CoreLocal::get('shrinkReason') > 0) {
+    $shrinkReason = CoreLocal::get('shrinkReason');
 }
 
 $db = Database::tDataConnect();
 $query = "UPDATE localtemptrans SET trans_status='Z', numflag=" . ((int)$shrinkReason);
 $db->query($query);
 
-$CORE_LOCAL->set("plainmsg","items marked as shrink/unsellable");
-$CORE_LOCAL->set("End",2);
-$CORE_LOCAL->set('shrinkReason', 0);
+CoreLocal::set("plainmsg","items marked as shrink/unsellable");
+CoreLocal::set("End",2);
+CoreLocal::set('shrinkReason', 0);
 
 $_REQUEST['receiptType'] = 'ddd';
 $_REQUEST['ref'] = ReceiptLib::receiptNumber();

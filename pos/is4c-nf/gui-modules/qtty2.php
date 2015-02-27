@@ -28,9 +28,8 @@ class qtty2 extends BasicPage {
 	var $box_color;
 	var $msg;
 
-	function preprocess(){
-		global $CORE_LOCAL;
-
+	function preprocess()
+    {
 		$this->box_color="coloredArea";
 		$this->msg = _("quantity required");
 
@@ -38,22 +37,22 @@ class qtty2 extends BasicPage {
 
 		$qtty = strtoupper(trim($_REQUEST["reginput"]));
 		if ($qtty == "CL") {
-			$CORE_LOCAL->set("qttyvalid",0);
-			$CORE_LOCAL->set("quantity",0);
-			$CORE_LOCAL->set("msgrepeat",0);
+			CoreLocal::set("qttyvalid",0);
+			CoreLocal::set("quantity",0);
+			CoreLocal::set("msgrepeat",0);
 			$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;
 		}
 		elseif (is_numeric($qtty) && $qtty < 9999 && $qtty >= 0) {
-			$input_string = $CORE_LOCAL->get("item");
+			$input_string = CoreLocal::get("item");
 			$plu = "";
 			while(!empty($input_string) && is_numeric($input_string[strlen($input_string)-1])){
 				$plu = $input_string[strlen($input_string)-1] . $plu;
 				$input_string = substr($input_string,0,strlen($input_string)-1);
 			}
-			$CORE_LOCAL->set("qttyvalid",1);
-			$CORE_LOCAL->set("strRemembered",$input_string.$qtty."*".$plu);
-			$CORE_LOCAL->set("msgrepeat",1);
+			CoreLocal::set("qttyvalid",1);
+			CoreLocal::set("strRemembered",$input_string.$qtty."*".$plu);
+			CoreLocal::set("msgrepeat",1);
 			$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;
 		}
@@ -68,8 +67,8 @@ class qtty2 extends BasicPage {
         $this->noscan_parsewrapper_js();
     }
 
-	function body_content(){
-		global $CORE_LOCAL;
+	function body_content()
+    {
 		$this->input_header();
 		echo DisplayLib::printheaderb();
 		?>
@@ -85,8 +84,8 @@ class qtty2 extends BasicPage {
 		</div>
 
 		<?php
-		$CORE_LOCAL->set("msgrepeat",2);
-		$CORE_LOCAL->set("item",$CORE_LOCAL->get("strEntered"));
+		CoreLocal::set("msgrepeat",2);
+		CoreLocal::set("item",CoreLocal::get("strEntered"));
 		UdpComm::udpSend('errorBeep');
 		echo "<div id=\"footer\">";
 		echo DisplayLib::printfooter();

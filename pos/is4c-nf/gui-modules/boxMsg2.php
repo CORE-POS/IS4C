@@ -32,10 +32,11 @@ class boxMsg2 extends BasicPage {
 			var str = $('#reginput').val();
 			var endorseType = $('#endorseType').val();
 			var endorseAmt = $('#endorseAmt').val();
+            var cmd = $('#repeat-cmd').val();
 			$.ajax({
 				url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-decision.php',
 				type: 'get',
-				data: 'input='+str,
+				data: 'input='+str+'&cmd='+encodeURIComponent(cmd),
 				dataType: 'json',
 				cache: false,
 				success: function(data){
@@ -62,29 +63,30 @@ class boxMsg2 extends BasicPage {
         $this->noscan_parsewrapper_js();
 	}
 
-	function preprocess(){
-		global $CORE_LOCAL;
+	function preprocess()
+    {
 		/**
 		  Bounce through this page and back to pos2.php. This lets
 		  TenderModules use the msgrepeat feature during input parsing.
 		*/
 		if (isset($_REQUEST['autoconfirm'])){
-			$CORE_LOCAL->set('strRemembered', $CORE_LOCAL->get('strEntered'));
-			$CORE_LOCAL->set('msgrepeat', 1);
+			CoreLocal::set('strRemembered', CoreLocal::get('strEntered'));
+			CoreLocal::set('msgrepeat', 1);
 			$this->change_page(MiscLib::base_url().'gui-modules/pos2.php');
 			return False;
 		}
 		return True;
 	}
 
-	function body_content(){
-		global $CORE_LOCAL;
+	function body_content()
+    {
 		$this->input_header("onsubmit=\"return submitWrapper();\"");
 		?>
 		<div class="baseHeight">
 
 		<?php
-		echo DisplayLib::boxMsg($CORE_LOCAL->get("boxMsg"),"",True);
+        $buttons = is_array(CoreLocal::get('boxMsgButtons')) ? CoreLocal::get('boxMsgButtons') : array();
+		echo DisplayLib::boxMsg(CoreLocal::get("boxMsg"), "", true, $buttons);
 		echo "</div>";
 		echo "<div id=\"footer\">";
 		echo DisplayLib::printfooter();
@@ -95,9 +97,17 @@ class boxMsg2 extends BasicPage {
 		echo '<input type="hidden" id="endorseAmt" value="'
 			.(isset($_REQUEST['endorseAmt'])?$_REQUEST['endorseAmt']:'')
 			.'" />';
+        /**
+          Encode the last command entered in the page. With payment
+          terminals facing the customer, input processing may happen
+          in the background and alter the value of strEntered
+        */
+        echo '<input type="hidden" id="repeat-cmd" value="'
+            . CoreLocal::get('strEntered') . '" />';
 		
-		$CORE_LOCAL->set("boxMsg",'');
-		$CORE_LOCAL->set("msgrepeat",2);
+		CoreLocal::set("boxMsg",'');
+		CoreLocal::set("boxMsgButtons", array());
+		CoreLocal::set("msgrepeat",2);
 		if (!isset($_REQUEST['quiet']))
 			MiscLib::errorBeep();
 	} // END body_content() FUNCTION

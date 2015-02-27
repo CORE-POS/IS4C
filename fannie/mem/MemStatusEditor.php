@@ -30,6 +30,7 @@ class MemStatusEditor extends FanniePage {
     protected $title = "Fannie :: Customer Status";
     protected $must_authenticate = True;
     public $description = '[Member Status] alters an account\'s active status.';
+    public $themed = true;
     protected $auth_classes =  array('editmembers');
 
     private $cardno;
@@ -66,7 +67,7 @@ class MemStatusEditor extends FanniePage {
         global $FANNIE_OP_DB;
 
         if ($this->cardno === false) {
-            return '<i>Error - no member specified</i>';
+            return '<div class="alert alert-danger">Error - no member specified</div>';
         }
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -86,21 +87,28 @@ class MemStatusEditor extends FanniePage {
             ON s.cardno=? AND r.mask & s.reasoncode <> 0
             ORDER BY mask");
         $reasonR = $dbc->exec_statement($reasonQ,array($this->cardno));
-        $ret .= '<table cellpadding="4" cellspacing="0" border="1">';
-        $ret .= '<tr><td colspan="2">Mode <select name="type">';
+        $ret .= '<div class="form-group form-inline"><label>Mode</label> <select name="type" class="form-control">';
         $ret .= '<option value="INACT">Inactive</option>';
         $ret .= '<option value="TERM" '.($status_string=='TERM'?'selected':'').'>Terminated</option>';
-        $ret .= '</select></td></tr>';
+        $ret .= '</select></div>';
+        $ret .= '<div class="panel panel-default">';
+        $ret .= '<div class="panel-heading">Reasons(s)</div>
+                <div class="panel-body">';
         while($reasonW = $dbc->fetch_row($reasonR)) {
-            $ret .= sprintf('<tr><td><input type="checkbox" name="rcode[]" value="%d" %s</td>
-                <td>%s</td></tr>',
+            $ret .= sprintf('
+                <div class="form-group">
+                    <label><input type="checkbox" name="rcode[]" value="%d" %s />
+                        %s</label>
+                </div>',
                 $reasonW['mask'],
                 ($reasonW['checked']==1?'checked':''),
                 $reasonW['textStr']
             );
         }
-        $ret .= '</table><br />';
-        $ret .= '<input type="submit" value="Save" name="savebtn" />';
+        $ret .= '</div>'; // end panel-body
+        $ret .= '</div>'; // end panel
+        $ret .= '<p><button type="submit" value="1" name="savebtn"
+                    class="btn btn-default">Save</button></p>';
         $ret .= '</form>';
 
         return $ret;
@@ -193,9 +201,9 @@ class MemStatusEditor extends FanniePage {
                 $cas_model->reasonCode($reason);
                 $cas_model->username($this->current_user);
                 $cas_model->tdate(date('Y-m-d H:i:s'));
-                $model->suspensionTypeID($m_status);
+                $cas_model->suspensionTypeID($m_status);
 
-                $current_id = $model->save();
+                $current_id = $cas_model->save();
             }
 
         } else {
@@ -237,7 +245,7 @@ class MemStatusEditor extends FanniePage {
             $cas_model->suspensionTypeID( substr($type, 0, 1) == 'T' ? 2 : 1 );
             $cas_model->tdate(date('Y-m-d H:i:s'));
             $cas_model->username($this->current_user);
-            $cas_mode->reasonCode($reason);
+            $cas_model->reasonCode($reason);
             $cas_model->active(1);
             $current_id = $cas_model->save();
         }

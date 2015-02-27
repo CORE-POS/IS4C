@@ -26,12 +26,13 @@ if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class ScaleItemUploadPage extends FannieUploadPage 
+class ScaleItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage 
 {
     protected $title = "Fannie :: Product Tools";
     protected $header = "Import Scale Items";
 
     public $description = '[Scale Item Import] load information about service-scale (Hobart) items.';
+    public $themed = true;
 
     protected $preview_opts = array(
         'upc' => array(
@@ -102,6 +103,7 @@ class ScaleItemUploadPage extends FannieUploadPage
 
         $model = new ScaleItemsModel($dbc);
         $ret = true;
+        $this->stats = array('done' => 0, 'error' => array());
         foreach($linedata as $line) {
             // get info from file and member-type default settings
             // if applicable
@@ -156,7 +158,9 @@ class ScaleItemUploadPage extends FannieUploadPage
 
             if ($try === false) {
                 $ret = false;
-                $this->error_details = 'There was an error importing UPC ' . $upc;
+                $this->stats['error'][] = 'There was an error importing UPC ' . $upc;
+            } else {
+                $this->stats['done']++;
             }
         }
 
@@ -165,17 +169,27 @@ class ScaleItemUploadPage extends FannieUploadPage
 
     function form_content()
     {
-        return '<fieldset><legend>Instructions</legend>
+        return '<div class="well"><legend>Instructions</legend>
         Upload a CSV or XLS file containing product UPCs plus descriptions, prices,
         tare weights, net weights, shelf lives, and/or ingredients/text.
         <br />A preview helps you to choose and map columns to the database.
         <br />The uploaded file will be deleted after the load.
-        </fieldset><br />';
+        </div><br />';
     }
 
     function results_content()
     {
-        return 'Import completed successfully';
+        $ret = '<p>Import Complete</p>';
+        $ret .= '<div class="alert alert-success">Updated ' . $this->stats['done'] . ' items</div>';
+        if (count($this->stats['error']) > 0) {
+            $ret .= '<div class="alert alert-danger"><ul>';
+            foreach ($this->stats['error'] as $error) {
+                $ret .= '<li>' . $error . '</li>';
+            }
+            $ret .= '</ul></div>';
+        }
+
+        return $ret;
     }
 }
 

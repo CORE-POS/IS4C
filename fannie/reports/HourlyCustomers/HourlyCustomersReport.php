@@ -29,6 +29,7 @@ if (!class_exists('FannieAPI')) {
 class HourlyCustomersReport extends FannieReportPage 
 {
     public $description = '[Hourly Customers] lists number of customers per hour for a given day.';
+    public $themed = true;
 
     protected $header = "Customers per Hour";
     protected $title = "Fannie : Customers per Hour";
@@ -41,15 +42,16 @@ class HourlyCustomersReport extends FannieReportPage
     {
         ob_start();
         ?>
-<form method=get action=<?php echo $_SERVER["PHP_SELF"]; ?> >
-Get transactions per hour for what date (YYYY-MM-DD)?<br />
-<input type=text name=date id="date" />&nbsp;
-<input type=submit value=Generate />
+<form method=get action="<?php echo $_SERVER["PHP_SELF"]; ?>" >
+<div class="well">Get transactions per hour for what date (YYYY-MM-DD)?</div>
+<input type=text name=date id="date" required
+    class="form-control date-field" placeholder="Date" />
+<p>
+<button type=submit class="btn btn-default">Generate</button>
+</p>
 </form>
-<script type="text/javascript">
-$(document).ready(function() { $('#date').datepicker(); });
-</script>
         <?php
+
         return ob_get_clean();
     }
 

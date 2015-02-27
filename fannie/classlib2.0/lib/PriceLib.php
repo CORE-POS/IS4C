@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\Fannie\API\lib {
+
 /**
   @class PriceLib
 */
@@ -29,8 +31,7 @@ class PriceLib
 
     public static function pricePerUnit($price,$sizeStr)
     {
-        global $FANNIE_COUNTRY;
-        $country = (isset($FANNIE_COUNTRY)&&!empty($FANNIE_COUNTRY))?$FANNIE_COUNTRY:'US';
+        $country = \FannieConfig::factory()->get('COUNTRY', 'US');
 
         $num = "";
         $unit = "";
@@ -129,4 +130,9 @@ class PriceLib
     }
 }
 
-?>
+}
+
+namespace {
+    class PriceLib extends \COREPOS\Fannie\API\lib\PriceLib {}
+}
+

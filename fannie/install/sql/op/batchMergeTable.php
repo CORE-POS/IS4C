@@ -10,8 +10,7 @@ Columns:
     batchID int
 
 Depends on:
-    batchMergeProd
-    batchMergeLC
+    none
 
 Use:
 This is a speedup table for reports. It's

@@ -28,6 +28,7 @@ if (!class_exists('FannieAPI')) {
 class NewMemberTool extends FanniePage 
 {
     public $description = '[New Members] creates a block of new member accounts.';
+    public $themed = true;
     protected $title = "Fannie :: Create Members";
     protected $header = "Create Members";
     protected $must_authenticate = True;
@@ -79,27 +80,53 @@ class NewMemberTool extends FanniePage
 
         $ret = '';
         if (!empty($this->errors)) {
-            $ret .= '<blockquote style="border: solid 1px red; padding: 5px;
-                    margin: 5px;">';
+            $ret .= '<div class="alert alert-danger well">';
             $ret .= $this->errors;
-            $ret .= '</blockquote><br />';
+            $ret .= '</div><br />';
         }
 
-        $ret .= "<b>Create New Members</b><br />";
-        $ret .= '<form action="NewMemberTool.php" method="get">';
-        $ret .= '<b>Type</b>: <select name="memtype">'.$opts.'</select>';
-        $ret .= '<br /><br />';
-        $ret .= '<b>How Many</b>: <input size="4" type="text" name="num" value="40" />';
-        $ret .= '<br /><br />';
-        $ret .= '<b>Name</b>: <input type="text" name="name" value="NEW MEMBER" />';
-        $ret .= '<br /><br />';
-        $ret .= '<input type="checkbox" onclick="$(\'#sdiv\').toggle();$(\'#start\').val(\'\');" /> Specify first number';
-        $ret .= '<div id="sdiv" style="display:none;">';
-        $ret .= '<b>Start</b>: <input type="text" size="5" name="start" id="start" />';
-        $ret .= '</div>';
-        $ret .= '<br /><br />';
-        $ret .= '<input type="submit" name="createMems" value="Create Members" />';
-        $ret .= '</form>';
+        ob_start();
+        ?>
+        <form action="NewMemberTool.php" method="get" class="form-horizontal">
+        <div class="form-group">
+            <label class="col-sm-2">Type</label>
+            <div class="col-sm-4">
+                <select name="memtype" class="form-control">
+                <?php echo $opts; ?>
+                </select>
+            </div> 
+        </div> 
+        <div class="form-group">
+            <label class="col-sm-2">How Many</label>
+            <div class="col-sm-4">
+                <input type="number" name="num" value="40" class="form-control" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2">Name</label>
+            <div class="col-sm-4">
+                <input type="text" name="name" value="NEW MEMBER" class="form-control" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-5">
+                <input type="checkbox" onclick="$('#sdiv').toggle();$('#start').val('')" />
+                Specify First Number
+            </label>
+        </div>
+        <div id="sdiv" class="collapse row">
+            <label class="col-sm-2">First Number</label>
+            <div class="col-sm-4">
+                <input type="number" name="start" id="start" class="form-control" value="" />
+            </div>
+        </div>
+        <p>
+            <button type="submit" name="createMems" value="Create Members"
+                class="btn btn-default">Create Members</button>
+        </p>
+        </form>
+        <?php
+        $ret .= ob_get_clean();
     
         return $ret;
     }
@@ -179,6 +206,7 @@ class NewMemberTool extends FanniePage
         $model->staff($defaults['staff']);
         $model->SSI($defaults['ssi']);
         $model->memType($mtype);
+        $meminfo = new MeminfoModel($dbc);
 
         $chkP = $dbc->prepare_statement('SELECT CardNo FROM custdata WHERE CardNo=?');
         $mdP = $dbc->prepare_statement("INSERT INTO memDates VALUES (?,NULL,NULL)");
@@ -193,12 +221,25 @@ class NewMemberTool extends FanniePage
             $model->CardNo($i);
             $model->blueLine($i.' '.$name);
             $model->save();
-            MeminfoModel::update($i, array());
+            $meminfo->card_no($i);
+            $meminfo->save();
+
             $dbc->exec_statement($mdP, array($i));
             $dbc->exec_statement($mcP, array($i));
         }
 
         return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>Create a set of new member accounts. Typically
+            accounts are created ahead of time so there are always
+            several available, un-assigned accounts. When a person
+            signs up for a membership, they are given one of the 
+            available account numbers. This approach ensures that 
+            first transaction is assigned to the correct membership.</p>
+            ';
     }
 }
 

@@ -65,34 +65,25 @@ $shelftag->units($units);
 $shelftag->vendor($vendor);
 $shelftag->count($count);
 $insR = $shelftag->save();
-
-if ( $insR == False ) {
-echo "<html>
-<head>
-</head>
-<body>
-<p>Failed to create tag
-</p>
-</body>
-</html>";
-}
-else {
-echo "
+?>
+<!doctype html>
 <html>
-<head>
-<script type='text/javascript'>
-window.close();
-</script>
-</head>
-</html>";
+    <head>
+        <title>Add Shelf Tag</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" type="text/css" href="../src/javascript/bootstrap/css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="../src/javascript/bootstrap-default/css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="../src/javascript/bootstrap-default/css/bootstrap-theme.min.css">
+        <script type="text/javascript" src="../src/javascript/jquery/jquery.min.js"></script>
+        <script type="text/javascript" src="../src/javascript/bootstrap/js/bootstrap.min.js"></script>
+    </head>
+<body>
+<?php
+if ($insR == false) {
+    echo '<div class="alert alert-danger">Error creating tag</div>';
+} else {
+    echo '<div class="alert alert-success">Created Tag</div>';
 }
 ?>
-<!--
-<html>
-<head>
-<script type='text/javascript'>
-window.close();
-</script>
-</head>
+</body>
 </html>
--->

@@ -21,20 +21,17 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','1');
-
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
 class VirtCoupDisplay extends NoInputPage {
 
-	var $temp_result;
-	var $temp_num_rows;
-	var $entered;
-	var $db;
+	private $temp_result;
+	private $temp_num_rows;
+	private $entered;
+	private $db;
 
-	function preprocess(){
-		global $CORE_LOCAL;
-
+	function preprocess()
+    {
 		/**
 		  Handle user input
 
@@ -51,8 +48,8 @@ class VirtCoupDisplay extends NoInputPage {
 			}
 			else if (is_numeric($input)){
 				$upc = "00499999".str_pad((int)$input,5,'0',STR_PAD_LEFT);
-				$CORE_LOCAL->set("msgrepeat",1);
-				$CORE_LOCAL->set("strRemembered",$upc);
+				CoreLocal::set("msgrepeat",1);
+				CoreLocal::set("strRemembered",$upc);
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
@@ -61,7 +58,7 @@ class VirtCoupDisplay extends NoInputPage {
 		/**
 		  Lookup coupons by member number
 		*/
-		$memberID = $CORE_LOCAL->get("memberID");
+		$memberID = CoreLocal::get("memberID");
 		$sql = Database::pDataConnect();
 
 		$query = "select coupID,description FROM houseVirtualCoupons
@@ -77,8 +74,8 @@ class VirtCoupDisplay extends NoInputPage {
 		return True;
 	} // END preprocess() FUNCTION
 
-	function head_content(){
-		global $CORE_LOCAL;
+	function head_content()
+    {
 		if ($this->temp_num_rows > 0){
 			$this->add_onload_command("\$('#search').keypress(processkeypress);\n");
 			$this->add_onload_command("\$('#search').focus();\n");
@@ -112,8 +109,8 @@ class VirtCoupDisplay extends NoInputPage {
 		<?php
 	} // END head() FUNCTION
 
-	function body_content(){
-		global $CORE_LOCAL;
+	function body_content()
+    {
 		$num_rows = $this->temp_num_rows;
 		$result = $this->temp_result;
 		$db = $this->db;

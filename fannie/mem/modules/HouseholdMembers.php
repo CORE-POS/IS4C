@@ -21,9 +21,15 @@
 
 *********************************************************************************/
 
-class HouseholdMembers extends MemberModule {
+class HouseholdMembers extends \COREPOS\Fannie\API\member\MemberModule {
 
-    function showEditForm($memNum, $country="US"){
+    public function width()
+    {
+        return parent::META_WIDTH_HALF;
+    }
+
+    function showEditForm($memNum, $country="US")
+    {
         global $FANNIE_URL;
 
         $dbc = $this->db();
@@ -34,75 +40,90 @@ class HouseholdMembers extends MemberModule {
                 ORDER BY c.personNum");
         $infoR = $dbc->exec_statement($infoQ,array($memNum));
 
-        $ret = "<fieldset><legend>Household Members</legend>";
-        $ret .= "<table class=\"MemFormTable\" 
-            border=\"0\">";
+        $ret = "<div class=\"panel panel-default\">
+            <div class=\"panel-heading\">Household Members</div>
+            <div class=\"panel-body\">";
         
         $count = 0; 
         while($infoW = $dbc->fetch_row($infoR)){
-            $ret .= sprintf('<tr><th>First Name</th>
-                <td><input name="HouseholdMembers_fn[]"
-                maxlength="30" value="%s" /></td>
-                <th>Last Name</th>
-                <td><input name="HouseholdMembers_ln[]"
-                maxlength="30" value="%s" /></td></tr>',
+            $ret .= sprintf('
+                <div class="form-inline form-group">
+                <span class="label primaryBackground">Name</span>
+                <input name="HouseholdMembers_fn[]" placeholder="First"
+                    maxlength="30" value="%s" class="form-control" />
+                <input name="HouseholdMembers_ln[]" placeholder="Last"
+                    maxlength="30" value="%s" class="form-control" />
+                </div>',
                 $infoW['FirstName'],$infoW['LastName']);
             $count++;
         }
 
-        while($count < 3){
-            $ret .= sprintf('<tr><th>First Name</th>
-                <td><input name="HouseholdMembers_fn[]"
-                maxlength="30" value="" /></td>
-                <th>Last Name</th>
-                <td><input name="HouseholdMembers_ln[]"
-                maxlength="30" value="" /></td></tr>');
+        while ($count < 3) {
+            $ret .= sprintf('
+                <div class="form-inline form-group">
+                <span class="label primaryBackground">Name</span>
+                <input name="HouseholdMembers_fn[]" placeholder="First"
+                    maxlength="30" value="" class="form-control" />
+                <input name="HouseholdMembers_ln[]" placeholder="Last"
+                    maxlength="30" value="" class="form-control" />
+                </div>');
             $count++;
         }
 
-        $ret .= "</table></fieldset>";
+        $ret .= "</div>";
+        $ret .= "</div>";
+
         return $ret;
     }
 
-    function saveFormData($memNum){
-        global $FANNIE_ROOT;
+    function saveFormData($memNum)
+    {
         $dbc = $this->db();
-        if (!class_exists("CustdataModel"))
-            include($FANNIE_ROOT.'classlib2.0/data/models/CustdataModel.php');
-
-        $CUST_FIELDS = array('personNum'=>array(),'FirstName'=>array(),'LastName'=>array());
+        if (!class_exists("CustdataModel")) {
+            include(dirname(__FILE__) . '/../../classlib2.0/data/models/CustdataModel.php');
+        }
 
         /**
-          Model needs all names, so lookup primary member
+          Use primary member for default column values
         */
-        $lookupP = $dbc->prepare_statement("SELECT FirstName,LastName FROM custdata WHERE
-                personNum=1 AND CardNo=?");
-        $lookupR = $dbc->exec_statement($lookupP, array($memNum));
-        if ($dbc->num_rows($lookupR) == 0){
+        $custdata = new CustdataModel($dbc);
+        $custdata->CardNo($memNum);
+        $custdata->personNum(1);
+        if (!$custdata->load()) {
             return "Error: Problem saving household members<br />"; 
         }
-        $lookupW = $dbc->fetch_row($lookupR);
-        $CUST_FIELDS['personNum'][] = 1;
-        $CUST_FIELDS['FirstName'][] = $lookupW['FirstName'];
-        $CUST_FIELDS['LastName'][] = $lookupW['LastName'];
 
         $fns = FormLib::get_form_value('HouseholdMembers_fn',array());
         $lns = FormLib::get_form_value('HouseholdMembers_ln',array());
         $pn = 2;
-        for($i=0; $i<count($lns); $i++){
-            if (empty($fns[$i]) && empty($lns[$i])) continue;
+        $errors = false;
+        for ($i=0; $i<count($lns); $i++) {
+            if (empty($fns[$i]) && empty($lns[$i])) {
+                continue;
+            }
 
-            $CUST_FIELDS['personNum'][] = $pn;
-            $CUST_FIELDS['FirstName'][] = $fns[$i];
-            $CUST_FIELDS['LastName'][] = $lns[$i];
+            $custdata->personNum($pn);
+            $custdata->FirstName($fns[$i]);
+            $custdata->LastName($lns[$i]);
+            if (!$custdata->save()) {
+                $errors = true;
+            }
 
             $pn++;
         }
 
-        $test = CustdataModel::update($memNum, $CUST_FIELDS);
+        /**
+          Remove any names outside the set that just saved
+        */
+        $clearP = $dbc->prepare('
+            DELETE FROM custdata
+            WHERE CardNo=?
+                AND personNum >= ?');
+        $clearR = $dbc->execute($clearP, array($memNum, $pn));
 
-        if ($test === False)
+        if ($errors) {
             return "Error: Problem saving household members<br />"; 
+        }
 
         return '';
     }

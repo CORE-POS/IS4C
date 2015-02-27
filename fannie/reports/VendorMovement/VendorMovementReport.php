@@ -30,6 +30,7 @@ class VendorMovementReport extends FannieReportPage
 {
     public $description = '[Vendor Movement] lists item sales for a particular vendor';
     public $report_set = 'Movement Reports';
+    public $themed = true;
 
     protected $title = "Fannie : Vendor Movement";
     protected $header = "Vendor Movement Report";
@@ -45,7 +46,6 @@ class VendorMovementReport extends FannieReportPage
         $groupby = FormLib::get_form_value('groupby','upc');
 
         $dlog = DTransactionsModel::selectDlog($date1,$date2);
-        $sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumUpcSalesByDay";
 
         $query = "";
         switch ($groupby) {
@@ -185,49 +185,46 @@ class VendorMovementReport extends FannieReportPage
     public function form_content()
     {
 ?>
-<div id=main>   
 <form method = "get" action="<?php echo $_SERVER['PHP_SELF']; ?>">
-    <table border="0" cellspacing="0" cellpadding="5">
-        <tr> 
-            <th>Vendor</th>
-            <td>
-            <input type=text name=vendor id=vendor  />
-            </td>
-            <th>Date Start</th>
-            <td>
-                <input type=text size=14 id=date1 name=date1 />
-            </td>
-        </tr>
-        <tr>
-            <th>Sum report by</th>
-            <td><select name=groupby>
+<div class="col-sm-5">
+    <div class="form-group">
+        <label>Vendor</label>
+        <input type=text name=vendor id=vendor 
+            class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label>Start Date</label>
+        <input type=text name=date1 id=date1 
+            class="form-control date-field" required />
+    </div>
+    <div class="form-group">
+        <label>End Date</label>
+        <input type=text name=date2 id=date2 
+            class="form-control date-field" required />
+    </div>
+    <div class="form-group">
+        <label>Sum report by</label>
+        <select name=groupby class="form-control">
             <option value="upc">UPC</option>
             <option value="date">Date</option>
             <option value="dept">Department</option>
-            </select></td>
-            <th>Date End</th>   
-            <td>
-            <input type=text size=14 id=date2 name=date2 />
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2">
-            <input type=checkbox name=excel value=xls /> Excel 
-            </td>
-            <td colspan="2" rowspan="2">
-            <?php echo FormLib::date_range_picker(); ?>
-            </td>
-        </tr>
-        <tr>
-            <td> <input type=submit name=submit value="Submit"> </td>
-            <td> <input type=reset name=reset value="Start Over"> </td>
-        </tr>
-    </table>
-</form>
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Excel
+            <input type="checkbox" name="excel" value="xls" />
+        </label>
+    </div>
+    <p>
+        <button type="submit" class="btn btn-default">Submit</button>
+    </p>
 </div>
+<div class="col-sm-5">
+    <?php echo FormLib::date_range_picker(); ?>
+</div>
+</form>
 <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
+        $this->add_onload_command('$(\'#vendor\').focus();');
     }
 }
 

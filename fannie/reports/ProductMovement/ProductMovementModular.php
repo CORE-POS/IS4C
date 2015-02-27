@@ -32,10 +32,11 @@ class ProductMovementModular extends FannieReportPage
     protected $title = "Fannie : Product Movement";
     protected $header = "Product Movement Report";
     protected $report_headers = array('Date','UPC','Description','Qty','$');
-    protected $required_fields = array('date1', 'date2');
+    protected $required_fields = array('date1', 'date2', 'upc');
 
     public $description = '[Product Movement] lists sales for a specific UPC over a given date range.';
     public $report_set = 'Movement Reports';
+    public $themed = true;
 
     function preprocess()
     {
@@ -70,11 +71,11 @@ class ProductMovementModular extends FannieReportPage
         $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
         $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
         $upc = FormLib::get_form_value('upc','0');
-        if (is_numeric($upc))
+        if (is_numeric($upc)) {
             $upc = BarcodeLib::padUPC($upc);
+        }
 
         $dlog = DTransactionsModel::selectDlog($date1,$date2);
-        $sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumUpcSalesByDay";
 
         $query = "SELECT 
                     MONTH(t.tdate),
@@ -105,7 +106,7 @@ class ProductMovementModular extends FannieReportPage
             }
 
             $query = "select MONTH(datetime),DAY(datetime),YEAR(datetime),
-                upc,'RRR',
+                upc,'RRR' AS description,
                 sum(case when upc <> 'rrr' then quantity when volSpecial is null or volSpecial > 9999 then 0 else volSpecial end) as qty,
                 sum(t.total) AS total from
                 $dlog as t
@@ -217,52 +218,57 @@ function showGraph() {
     {
         global $FANNIE_URL;
 ?>
-<div id=main>   
-<form method = "get" action="ProductMovementModular.php">
-    <table border="0" cellspacing="0" cellpadding="5">
-        <tr> 
-            <th>UPC</th>
-            <td>
-            <input type=text name=upc size=14 id=upc  />
-            </td>
-            <td>
-            <input type="checkbox" name="excel" id="excel" value="xls" />
-            <label for="excel">Excel</label>
-            </td>   
-        </tr>
-        <tr>
-            <th>Date Start</th>
-            <td>    
-                       <input type=text size=14 id=date1 name=date1 />
-            </td>
-            <td rowspan="3">
+<form method = "get" action="ProductMovementModular.php" class="form-horizontal">
+    <div class="col-sm-5">
+        <div class="form-group"> 
+            <label class="control-label col-sm-4">UPC</label>
+            <div class="col-sm-8">
+                <input type=text name=upc id=upc class="form-control" required />
+            </div>
+        </div>
+        <div class="form-group"> 
+            <label class="control-label col-sm-4">
+                <input type="checkbox" name="excel" id="excel" value="xls" /> Excel
+            </label>
+        </div>
+        <div class="form-group"> 
+            <button type=submit name=submit value="Submit" class="btn btn-default">Submit</button>
+            <button type=reset name=reset class="btn btn-default">Start Over</button>
+        </div>
+    </div>
+    <div class="col-sm-5">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Start Date</label>
+            <div class="col-sm-8">
+                <input type=text id=date1 name=date1 class="form-control date-field" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-4 control-label">End Date</label>
+            <div class="col-sm-8">
+                <input type=text id=date2 name=date2 class="form-control date-field" required />
+            </div>
+        </div>
+        <div class="form-group">
             <?php echo FormLib::date_range_picker(); ?>
-            </td>
-        </tr>
-        <tr>
-            <th>Date End</th>
-            <td>
-                        <input type=text size=14 id=date2 name=date2 />
-               </td>
-
-        </tr>
-        <tr>
-            <td> <input type=submit name=submit value="Submit"> </td>
-            <td> <input type=reset name=reset value="Start Over"> </td>
-        </tr>
-    </table>
+        </div>
+    </div>
 </form>
-</div>
 <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
         $this->add_script($FANNIE_URL . 'item/autocomplete.js');
         $ws = $FANNIE_URL . 'ws/';
         $this->add_onload_command("bindAutoComplete('#upc', '$ws', 'item');\n");
         $this->add_onload_command('$(\'#upc\').focus();');
     }
+
+    public function helpContent()
+    {
+        return '<p>This report shows per-day total sales for
+            a given item. You can type in item names to find the
+            appropriate UPC if needed.</p>';
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
 ?>

@@ -33,6 +33,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
 
     public $description = '[Single-Vendor Purchase Order] creates and edits a purchase order
     for a specific vendor. When scanning, only items available from that vendor are shown.';
+    public $themed = true;
 
     protected $must_authenticate = True;
     
@@ -71,14 +72,14 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
         }
         if (count($ret) > 0){
             echo json_encode($ret);
-            return False;
+            return false;
         }
 
         // search by UPC
         $upcQ = 'SELECT brand, description, size, units, cost, sku
             FROM vendorItems WHERE upc = ? AND vendorID=?';
         $upcP = $dbc->prepare_statement($upcQ);
-        $upcR = $dbc->exec_statement($upcP, array(BarcodeLib::padUPC($this->search)));
+        $upcR = $dbc->exec_statement($upcP, array(BarcodeLib::padUPC($this->search), $this->id));
         while($w = $dbc->fetch_row($upcR)){
             $result = array(
             'sku' => $w['sku'],
@@ -230,16 +231,21 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
         $ret .= '</div><hr />';
 
         $ret .= '<div id="ItemSearch">';
-        $ret .= '<form action="" onsubmit="itemSearch();return false;">';
-        $ret .= '<b>UPC/SKU</b>: <input type="text" id="searchField" />';
-        $ret .= '<input type="submit" value="Search" />';
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<button onclick="location=\'PurchasingIndexPage.php\'; return false;">Home</button>';
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<button onclick="location=\'ViewPurchaseOrders.php?id=' . $orderID . '\'; return false;">View Order</button>';
+        $ret .= '<form class="form-inline" action="" onsubmit="itemSearch();return false;">';
+        $ret .= '<div class="form-group">';
+        $ret .= '<label class="control-label">UPC/SKU</label><input class="form-control" type="text" id="searchField" />';
+        $ret .= '</div>';
+        $ret .= '<div class="form-group">';
+        $ret .= '&nbsp;&nbsp;&nbsp;';
+        $ret .= '<button type="submit" class="btn btn-default">Search</button>';
+        $ret .= '&nbsp;&nbsp;&nbsp;';
+        $ret .= '<button type="button" class="btn btn-default" onclick="location=\'PurchasingIndexPage.php\'; return false;">Home</button>';
+        $ret .= '&nbsp;&nbsp;&nbsp;';
+        $ret .= '<button type="button" class="btn btn-default" onclick="location=\'ViewPurchaseOrders.php?id=' . $orderID . '\'; return false;">View Order</button>';
+        $ret .= '</div>';
         $ret .= '</form>';
         $ret .= '</div>';
-        $ret .= '<div id="SearchResults"></div>';
+        $ret .= '<p><div id="SearchResults"></div></p>';
 
         $ret .= sprintf('<input type="hidden" id="id" value="%d" />',$this->id);
 
@@ -279,19 +285,31 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
     function get_view(){
         global $FANNIE_OP_DB;
         $model = new VendorsModel(FannieDB::get($FANNIE_OP_DB));
-        $ret = 'Select a vendor';
-        $ret .= '<form action="EditOnePurchaseOrder.php" method="get">';
-        $ret .= '<select name="id">';
+        $ret .= '<form class="form" action="EditOnePurchaseOrder.php" method="get">';
+        $ret .= '<div class="form-group">';
+        $ret .= '<label>Select a vendor</label>';
+        $ret .= '<select name="id" class="form-control">';
         foreach($model->find('vendorName') as $vendor){
             $ret .= sprintf('<option value="%d">%s</option>',
                 $vendor->vendorID(), $vendor->vendorName());
         }
         $ret .= '</select>';
-        $ret .= ' <input type="submit" value="Go" />';
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= ' <button onclick="location=\'PurchasingIndexPage.php\'; return false;">Home</button>';
+        $ret .= '</div>';
+        $ret .= '<p><button type="submit" class="btn btn-default">Go</button>';
+        $ret .= '&nbsp;&nbsp;&nbsp;';
+        $ret .= '<button type="button" class="btn btn-default"
+            onclick="location=\'PurchasingIndexPage.php\'; return false;">Home</button></p>';
         $ret .= '</form>';
         return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>First choose a vendor. This order will only contain
+            items from the chosen vendor.</p>
+            <p>Next enter UPCs or SKUs. If there are multiple matching items,
+            use the dropdown to specify which. Finally enter the number
+            of cases to order.</p>';
     }
 }
 

@@ -36,6 +36,7 @@ class ObfWeeksModel extends BasicModel
     'previousYear' => array('type'=>'DATETIME'),
     'growthTarget' => array('type'=>'DOUBLE'),
     'obfQuarterID' => array('type'=>'INT', 'index'=>true),
+    'obfLaborQuarterID' => array('type'=>'INT', 'index'=>true),
     );
 
     /* START ACCESSOR FUNCTIONS */
@@ -258,6 +259,43 @@ class ObfWeeksModel extends BasicModel
                 }
             }
             $this->instance["obfQuarterID"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function obfLaborQuarterID()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["obfLaborQuarterID"])) {
+                return $this->instance["obfLaborQuarterID"];
+            } else if (isset($this->columns["obfLaborQuarterID"]["default"])) {
+                return $this->columns["obfLaborQuarterID"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'obfLaborQuarterID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["obfLaborQuarterID"]) || $this->instance["obfLaborQuarterID"] != func_get_args(0)) {
+                if (!isset($this->columns["obfLaborQuarterID"]["ignore_updates"]) || $this->columns["obfLaborQuarterID"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["obfLaborQuarterID"] = func_get_arg(0);
         }
         return $this;
     }

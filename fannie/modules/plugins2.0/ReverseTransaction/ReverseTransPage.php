@@ -35,6 +35,7 @@ class ReverseTransPage extends FannieRESTfulPage {
     public $page_set = 'Plugin :: Reverse Transaction';
     public $description = '[Reverse Transaction] generates a new transaction that exactly negates
     a previous transaction. The net effect should be zero but with a clear audit trail.';
+    public $themed = true;
 
     function preprocess(){
         $this->__routes[] = 'get<date><trans>';
@@ -65,7 +66,7 @@ class ReverseTransPage extends FannieRESTfulPage {
             return False;
         }
 
-        $ret = "<table cellspacing=0 cellpadding=3 border=1><tr>";
+        $ret = "<table class=\"table\"><tr>";
         $ret .= "<th>Type</th><th>Status</th><th>UPC</th><th>Description</th><th>Total</th>";
         $ret .= "<tr>";
         $cardno = "";
@@ -223,16 +224,25 @@ class ReverseTransPage extends FannieRESTfulPage {
         ob_start();
         ?>
         <form onsubmit="loadReceipt(); return false;">
-        <table>
-        <tr><td>Date</td><td> <input type=text id=rdate /></td></tr>
-        <tr><td>Trans #</td><td> <input type=text id=rtrans_num /></td></tr>
-        <tr><td colspan="2"><input type=submit value=Submit /></td></tr>
-        </table>
+        <div class="row form-group form-horizontal">
+            <label class="col-sm-1">Date</label>
+            <div class="col-sm-5">
+                <input type="text" id="rdate" class="form-control date-field" required />
+            </div>
+        </div>
+        <div class="row form-group form-horizontal">
+            <label class="col-sm-1">Trans #</label>
+            <div class="col-sm-5">
+                <input type="text" id="rtrans_num" class="form-control" required />
+            </div>
+        </div>
+        <p>
+            <button type="submit" class="btn btn-default">Submit</button>
+        </p>
         </form>
         <div id=contentarea>
         </div>
         <?php
-        $this->add_onload_command("\$('#rdate').datepicker();\n");
 
         return ob_get_clean();
     }

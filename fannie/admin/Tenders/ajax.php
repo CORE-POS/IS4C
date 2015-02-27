@@ -115,7 +115,7 @@ function getTenderTable(){
     $dbc = FannieDB::get($FANNIE_OP_DB);
     $model = new TendersModel($dbc);
     
-    $ret = '<table cellpadding="4" cellspacing="0" border="1">
+    $ret = '<table class="table">
         <tr><th>Code</th><th>Name</th><th>Change Type</th>
         <th>Change Msg</th><th>Min</th><th>Max</th>
         <th>Refund Limit</th></tr>';
@@ -123,19 +123,34 @@ function getTenderTable(){
     foreach($model->find('TenderID') as $row){
         $ret .= sprintf('<tr>
             <td><input size="2" maxlength="2" value="%s"
-                onchange="saveCode(this.value,%d);" /></td>
+                class="form-control"
+                onchange="saveCode.call(this, this.value,%d);" /></td>
             <td><input size="10" maxlength="255" value="%s"
-                onchange="saveName(this.value,%d);" /></td>
+                class="form-control"
+                onchange="saveName.call(this, this.value,%d);" /></td>
             <td><input size="2" maxlength="2" value="%s"
-                onchange="saveType(this.value,%d);" /></td>
+                class="form-control"
+                onchange="saveType.call(this, this.value,%d);" /></td>
             <td><input size="10" maxlength="255" value="%s"
-                onchange="saveCMsg(this.value,%d);" /></td>
-            <td><input size="6" maxlength="10" value="%.2f"
-                onchange="saveMin(this.value,%d);" /></td>
-            <td><input size="6" maxlength="10" value="%.2f"
-                onchange="saveMax(this.value,%d);" /></td>
-            <td><input size="6" maxlength="10" value="%.2f"
-                onchange="saveRLimit(this.value,%d);" /></td>
+                class="form-control"
+                onchange="saveCMsg.call(this, this.value,%d);" /></td>
+            <td><div class="input-group">
+                <span class="input-group-addon">$</span>
+                <input size="6" maxlength="10" value="%.2f"
+                class="form-control"
+                onchange="saveMin.call(this, this.value,%d);" />
+            </div></td>
+            <td><div class="input-group">
+                <span class="input-group-addon">$</span>
+                <input size="6" maxlength="10" value="%.2f"
+                class="form-control"
+                onchange="saveMax.call(this, this.value,%d);" />
+            </div></td>
+            <td><div class="input-group"><span class="input-group-addon">$</span>
+                <input size="6" maxlength="10" value="%.2f"
+                class="form-control"
+                onchange="saveRLimit.call(this, this.value,%d);" />
+            </div></td>
             </tr>',
             $row->TenderCode(),$row->TenderID(),
             $row->TenderName(),$row->TenderID(),
@@ -147,10 +162,11 @@ function getTenderTable(){
         );
     }
     $ret .= "</table>";
-    $ret .= "<br /><br />";
-    $ret .= '<a href="" onclick="addTender();return false;">Add a new tender</a>';
+    $ret .= "<p>";
+    $ret .= '<button type="button" class="btn btn-default" onclick="addTender();return false;">Add a new tender</button>';
     $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-    $ret .= '<a href="DeleteTenderPage.php">Delete a tender</a>';
+    $ret .= '<button type="button" class="btn btn-default" onclick="location=\'DeleteTenderPage.php\';">Delete a tender</button>';
+    $ret .= '</p>';
     return $ret;
 }
 

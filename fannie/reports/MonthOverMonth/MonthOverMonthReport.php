@@ -35,6 +35,7 @@ class MonthOverMonthReport extends FannieReportPage {
 
     public $description = '[Monthly Movement] shows monthly sales totals for items or departments.';
     public $report_set = 'Movement Reports';
+    public $themed = true;
     
     function preprocess()
     {
@@ -143,58 +144,75 @@ class MonthOverMonthReport extends FannieReportPage {
         while($w = $dbc->fetch_row($r))
             $depts[$w[0]] = $w[1];
 ?>
-<div id=main>   
-    <form action="MonthOverMonthReport.php" method="get">
-    <table>
-    <tr>
-    <td><select name="month1"><?php
-    for($i=1;$i<13;$i++)
-        printf("<option value=%d>%s</option>",$i,date("F",mktime(0,0,0,$i,1,2000)));
-    ?></select></td>
-    <td><input type="text" size=4 name="year1" value="<?php echo date("Y"); ?>" /></td>
-    <td>&nbsp;through&nbsp;</td>
-    <td><select name="month2"><?php
-    for($i=1;$i<13;$i++)
-        printf("<option value=%d>%s</option>",$i,date("F",mktime(0,0,0,$i,1,2000)));
-    ?></select></td>
-    <td><input type="text" size=4 name="year2" value="<?php echo date("Y"); ?>" /></td>
-    </tr>
-    <tr><td colspan="5">
-    <b>Report for</b>:
-    <input type="radio" id="upc" name="mtype" value="upc" checked 
-        onclick="$('#upctr').show();$('.depttr').hide();" /> UPC
-    <input type="radio" id="dept" name="mtype" value="dept" 
-        onclick="$('#upctr').hide();$('.depttr').show();" /> Department
-    &nbsp;&nbsp; Results in <select name=results><option>Sales</option><option>Quantity</option></select>
-    </td></tr>
-    <tr id="upctr"><td colspan="5">
-    <b>UPC(s)</b>: <input type="text" name="upcs" size="35" />
-    </td></tr>
-    <tr class="depttr" style="display:none;"><td align=right>
-    <b>Department</b>:
-    </td><td colspan="4">
-    <select name="dept1"><?php
-    foreach($depts as $k=>$v)
-        printf("<option value=%d>%d %s</option>",$k,$k,$v);
-    ?>
-    </select>
-    </td><tr class="depttr" style="display:none;"><td align=right>
-    through</td><td colspan="4">
-    <select name="dept2"><?php
-    foreach($depts as $k=>$v)
-        printf("<option value=%d>%d %s</option>",$k,$k,$v);
-    ?>
-    </select>
-    </table>
-    <br />
-    <input type="submit" value="Run Report" />
-    <input type="checkbox" name="excel" /> Excel
-    </form>
-</div>
+<form action="MonthOverMonthReport.php" method="get" class="form-inline">
+    <p>
+        <select name="month1" class="form-control">
+        <?php
+        for($i=1;$i<13;$i++)
+            printf("<option value=%d>%s</option>",$i,date("F",mktime(0,0,0,$i,1,2000)));
+        ?>
+        </select>
+        <input type="number" name="year1" value="<?php echo date("Y"); ?>" class="form-control" />
+        through
+        <select name="month2" class="form-control">
+        <?php
+        for($i=1;$i<13;$i++)
+            printf("<option value=%d>%s</option>",$i,date("F",mktime(0,0,0,$i,1,2000)));
+        ?>
+        </select>
+        <input type="number" name="year2" value="<?php echo date("Y"); ?>" class="form-control" />
+    </p>
+    <p>
+        <input type="hidden" name="mtype" id="type-field" value="upc" />
+        <ul class="nav nav-tabs">
+            <li class="active"><a href="#upc-tab" role="tab"
+                onclick="$(this).tab('show'); $('#type-field').val('upc'); return false;">By UPC</a></li>
+            <li><a href="#dept-tab" role="tab"
+                onclick="$(this).tab('show'); $('#type-field').val('dept'); return false;">By Department</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane active" id="upc-tab">
+                <label class="control-label">UPC(s)</label>
+                <input type="text" name="upcs" class="form-control">
+            </div>
+            <div class="tab-pane" id="dept-tab">
+                <label class="control-label">Start</label>
+                <select name="dept1" class="form-control">
+                <?php
+                foreach($depts as $k=>$v)
+                    printf("<option value=%d>%d %s</option>",$k,$k,$v);
+                ?>
+                </select>
+                <label class="control-label">End</label>
+                <select name="dept2" class="form-control">
+                <?php
+                foreach($depts as $k=>$v)
+                    printf("<option value=%d>%d %s</option>",$k,$k,$v);
+                ?>
+                </select>
+            </div>
+        </div>
+    </p>
+    <p>
+        <label class="control-label">Results in</label>
+        <select class="form-control" name=results><option>Sales</option><option>Quantity</option></select>
+    </p>
+    <p>
+        <button type="submit" value="Run Report" class="btn btn-default">Run Report</button>
+        <label>
+            <input type="checkbox" name="excel" /> Excel
+        </label>
+    </p>
+</form>
 <?php
+    }
+
+    public function helpContent()
+    {
+        return '<p>This report shows monthly sales totals for a
+            particular item or for all items in a department range.</p>';
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

@@ -21,7 +21,9 @@
 
 *********************************************************************************/
 
-class WfcProduceSingle extends FannieSignage 
+namespace COREPOS\Fannie\API\item\signage {
+
+class WfcProduceSingle extends \COREPOS\Fannie\API\item\FannieSignage 
 {
 
     protected $BIG_FONT = 64;
@@ -30,7 +32,7 @@ class WfcProduceSingle extends FannieSignage
 
     public function drawPDF()
     {
-        $pdf = new FPDF('L', 'mm', 'Letter');
+        $pdf = new \FPDF('L', 'mm', 'Letter');
         $pdf->SetMargins(3.175, 3.175, 3.175);
         $pdf->SetAutoPageBreak(false);
         $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
@@ -88,5 +90,11 @@ class WfcProduceSingle extends FannieSignage
 
         $pdf->Output('WfcProdSingle.pdf', 'I');
     }
+}
+
+}
+
+namespace {
+    class WfcProduceSingle extends \COREPOS\Fannie\API\item\signage\WfcProduceSingle {}
 }
 

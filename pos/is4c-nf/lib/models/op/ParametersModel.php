@@ -38,6 +38,38 @@ class ParametersModel extends BasicModel
     'is_array' => array('type'=>'TINYINT'),
 	);
 
+    /**
+      Get the parameter's effective value by
+      transforming it into an array or boolean
+      if appropriate
+      @return [mixed] param_value as correct PHP type
+    */
+    public function materializeValue()
+    {
+        $value = $this->param_value();
+        if ($this->is_array()) {
+            if ($value === '') {
+                $value = array();
+            } else {
+                $value = explode(',', $value);
+            }
+            if (isset($value[0]) && strstr($value[0], '=>')) {
+                $tmp = array();
+                foreach ($value as $pair) {
+                    list($key, $val) = explode('=>', $pair, 2);
+                    $tmp[$key] = $val;
+                }
+                $value = $tmp;
+            }
+        } elseif (strtoupper($value) === 'TRUE') {
+            $value = true;
+        } elseif (strtoupper($value) === 'FALSE') {
+            $value = false;
+        }
+
+        return $value;
+    }
+
     /* START ACCESSOR FUNCTIONS */
 
     public function store_id()

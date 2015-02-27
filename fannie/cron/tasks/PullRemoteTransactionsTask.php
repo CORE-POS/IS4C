@@ -71,7 +71,7 @@ class PullRemoteTransactionsTask extends FannieTask
             $lowerBound = 0;
             $dtransMax = $dbc->execute($max1, array($remoteID));
             if ($dtransMax === false) {
-                echo $this->cronMsg('Polling problem: cannot lookup info in dtransactions');
+                $this->cronMsg('Polling problem: cannot lookup info in dtransactions', FannieLogger::WARNING);
                 continue;
             } else if ($dbc->num_rows($dtransMax) > 0) {
                 $row = $dbc->fetch_row($dtransMax);
@@ -80,7 +80,7 @@ class PullRemoteTransactionsTask extends FannieTask
             if ($lowerBound == 0) {
                 $transarchiveMax = $dbc->execute($max2, array($remoteID));
                 if ($transarchiveMax === false) {
-                    echo $this->cronMsg('Polling problem: cannot lookup info in transarchive');
+                    $this->cronMsg('Polling problem: cannot lookup info in transarchive', FannieLogger::WARNING);
                     continue;
                 } else if ($dbc->num_rows($transarchiveMax) > 0) {
                     $row = $dbc->fetch_row($transarchiveMax);

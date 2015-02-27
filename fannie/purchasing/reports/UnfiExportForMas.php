@@ -35,6 +35,7 @@ class UnfiExportForMas extends FannieReportPage
 
     public $page_set = 'Reports';
     public $description = '[MAS Invoice Export] exports vendor invoices for MAS90.';
+    public $themed = true;
 
     function preprocess(){
         /**
@@ -87,7 +88,7 @@ class UnfiExportForMas extends FannieReportPage
         } else if ($dbc->tableExists('deptSalesCodes')) {
             $codingQ .= ' LEFT JOIN deptSalesCodes AS d ON p.department=d.dept_ID ';
         }
-        $codingQ .= 'WHERE i.vendorID=1 AND i.userID=0
+        $codingQ .= 'WHERE i.vendorID=? AND i.userID=0
                     AND o.receivedDate BETWEEN ? AND ?
                     GROUP BY o.orderID, d.salesCode, i.vendorInvoiceID
                     ORDER BY rdate, i.vendorInvoiceID, d.salesCode';
@@ -95,7 +96,8 @@ class UnfiExportForMas extends FannieReportPage
 
         $report = array();
         $invoice_sums = array();
-        $codingR = $dbc->execute($codingP, array($date1.' 00:00:00', $date2.' 23:59:59'));
+        $vendorID = FormLib::get('vendorID');
+        $codingR = $dbc->execute($codingP, array($vendorID, $date1.' 00:00:00', $date2.' 23:59:59'));
         while($codingW = $dbc->fetch_row($codingR)) {
             if ($codingW['rtc'] == 0) {
                 // skip zero lines (tote charges)
@@ -131,39 +133,44 @@ class UnfiExportForMas extends FannieReportPage
     
     function form_content()
     {
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
         ob_start();
         ?>
-<div id=main>   
 <form method = "get" action="UnfiExportForMas.php">
-    <table border="0" cellspacing="0" cellpadding="5">
-        <tr> 
-             <td>
-            <p><b>Date Start</b> </p>
-                 <p><b>End</b></p>
-               </td>
-                    <td>
-                     <p>
-                       <input type=text id=date1 name=date1 />
-                       </p>
-                       <p>
-                        <input type=text id=date2 name=date2 />
-                 </p>
-               </td>
-            <td colspan=2 rowspan=2>
-            <?php echo FormLib::date_range_picker(); ?>                         
-            </td>
-        </tr>
-        <tr> 
-            <td> <input type=submit name=submit value="Submit"> </td>
-            <td> <input type=reset name=reset value="Start Over"> </td>
-            <td>&nbsp;</td>
-            <td>&nbsp;</td>
-        </tr>
-    </table>
+<div class="col-sm-5">
+    <div class="form-group">
+        <label>Date Start</label>
+            <input type=text id=date1 name=date1 
+                class="form-control date-field" required />
+    </div>
+    <div class="form-group">
+        <label>Date End</label>
+            <input type=text id=date2 name=date2 
+                class="form-control date-field" required />
+    </div>
+    <div class="form-group">
+        <label>Vendor</label>
+        <select name="vendorID" class="form-control">
+        <?php
+        $vendors = new VendorsModel($dbc);
+        foreach ($vendors->find('vendorName') as $obj) {
+            printf('<option %s value="%d">%s</option>',
+                ($obj->vendorName() == 'UNFI' ? 'selected' : ''),
+                $obj->vendorID(), $obj->vendorName());
+        }
+        ?>
+        </select>
+    </div>
+    <p>
+        <button type="submit" class="btn btn-default">Submit</button>
+        <button type="reset" class="btn btn-default">Start Over</button>
+    </p>
+</div>
+<div class="col-sm-5">
+    <?php echo FormLib::date_range_picker(); ?>                         
+</div>
 </form>
 <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
 
         return ob_get_clean();
     }

@@ -128,7 +128,6 @@ if (!empty($doc))
 else
     echo "Sorry, no documentation for this script: >{$fn}<";
 echo "</pre>";
-echo "<p><button onclick='window.close();'>Close Window</button></p>";
 echo "</body></html>";
 
 ?>

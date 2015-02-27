@@ -22,7 +22,7 @@
 
 /*************************************************************
  * Magellan
- * 	Main app. Starts the thread for each SerialPortHandler
+ *     Main app. Starts the thread for each SerialPortHandler
  * and passes them WebBrowser load event Urls.
  *
  * Otherwise, minor details - sizing the window, watching
@@ -46,96 +46,96 @@ using SPH;
 
 class Magellan : DelegateForm {
 
-	private SerialPortHandler[] sph;
-	private UDPMsgBox u;
-	private Process browser_window;
+    private SerialPortHandler[] sph;
+    private UDPMsgBox u;
+    private Process browser_window;
 
 
-	public Magellan(){
+    public Magellan(){
 
-		MsgDelegate = new MsgRecv(this.MsgRecvMethod);
-		this.FormClosing += new FormClosingEventHandler(FormClosingMethod);
+        MsgDelegate = new MsgRecv(this.MsgRecvMethod);
+        this.FormClosing += new FormClosingEventHandler(FormClosingMethod);
 
-		ArrayList conf = ReadConfig();
-		sph = new SerialPortHandler[conf.Count];
-		for(int i = 0; i < conf.Count; i++){
-			string port = ((string[])conf[i])[0];
-			string module = ((string[])conf[i])[1];
+        ArrayList conf = ReadConfig();
+        sph = new SerialPortHandler[conf.Count];
+        for(int i = 0; i < conf.Count; i++){
+            string port = ((string[])conf[i])[0];
+            string module = ((string[])conf[i])[1];
 
-			Type t = Type.GetType("SPH."+module+", SPH, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null");
+            Type t = Type.GetType("SPH."+module+", SPH, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null");
 
-			sph[i] = (SerialPortHandler)Activator.CreateInstance(t, new Object[]{ port });
-			sph[i].SetParent(this);
-		}
-		MonitorSerialPorts();
+            sph[i] = (SerialPortHandler)Activator.CreateInstance(t, new Object[]{ port });
+            sph[i].SetParent(this);
+        }
+        MonitorSerialPorts();
 
-		browser_window = Process.Start("iexplore.exe",
-				"http://localhost/");
+        browser_window = Process.Start("iexplore.exe",
+                "http://localhost/");
 
-		u = new UDPMsgBox(9450);
-		u.SetParent(this);
-		u.My_Thread.Start();
+        u = new UDPMsgBox(9450);
+        u.SetParent(this);
+        u.My_Thread.Start();
 
 
-	}
+    }
 
-	private void MonitorSerialPorts(){
-		foreach(SerialPortHandler s in sph){
-			s.SPH_Thread.Start();
-		}
-	}	
+    private void MonitorSerialPorts(){
+        foreach(SerialPortHandler s in sph){
+            s.SPH_Thread.Start();
+        }
+    }    
 
-	public void MsgRecvMethod(string msg){
-		if (msg == "exit"){
-			this.ShutDown();
-		}
-		else {
-			foreach(SerialPortHandler s in sph){
-				s.HandleMsg(msg);
-			}
-		}
-	}
+    public void MsgRecvMethod(string msg){
+        if (msg == "exit"){
+            this.ShutDown();
+        }
+        else {
+            foreach(SerialPortHandler s in sph){
+                s.HandleMsg(msg);
+            }
+        }
+    }
 
-	private void FormClosingMethod(Object sender, FormClosingEventArgs e) {
-		this.ShutDown();	
-	}
+    private void FormClosingMethod(Object sender, FormClosingEventArgs e) {
+        this.ShutDown();    
+    }
 
-	private void ShutDown(){
-		try {
-			browser_window.CloseMainWindow();
-			u.Stop();
-			foreach(SerialPortHandler s in sph){
-				s.Stop();
-			}
-		}
-		catch(Exception ex){
-			System.Console.WriteLine(ex);
-		}
+    private void ShutDown(){
+        try {
+            browser_window.CloseMainWindow();
+            u.Stop();
+            foreach(SerialPortHandler s in sph){
+                s.Stop();
+            }
+        }
+        catch(Exception ex){
+            System.Console.WriteLine(ex);
+        }
 
-		this.Dispose();
-		Application.Exit();
-	}
+        this.Dispose();
+        Application.Exit();
+    }
 
-	private ArrayList ReadConfig(){
-		StreamReader fp = new StreamReader("ports.conf");
-		ArrayList al = new ArrayList();
-		string line;
-		while( (line = fp.ReadLine()) != null){
-			line = line.TrimStart(null);
-			if (line == "" || line[0] == '#') continue;
-			string[] pieces = line.Split(null);
-			if (pieces.Length != 2){
-				System.Console.WriteLine("Warning: malformed port.conf line: "+line);
-				System.Console.WriteLine("Format: <port_string> <handler_class_name>");
-			}
-			else {
-				al.Add(pieces);
-			}
-		}	
-		return al;
-	}
+    private ArrayList ReadConfig(){
+        StreamReader fp = new StreamReader("ports.conf");
+        ArrayList al = new ArrayList();
+        string line;
+        while( (line = fp.ReadLine()) != null){
+            line = line.TrimStart(null);
+            if (line == "" || line[0] == '#') continue;
+            string[] pieces = line.Split(null);
+            if (pieces.Length != 2){
+                System.Console.WriteLine("Warning: malformed port.conf line: "+line);
+                System.Console.WriteLine("Format: <port_string> <handler_class_name>");
+            }
+            else {
+                al.Add(pieces);
+            }
+        }    
+        return al;
+    }
 
-	static public void Main(){
-		Application.Run(new Magellan());
-	}
+    static public void Main(){
+        Application.Run(new Magellan());
+    }
 }

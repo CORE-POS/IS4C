@@ -33,6 +33,7 @@ class MemPurchasesPage extends FannieRESTfulPage
     protected $header = 'Member Purchase History';
 
     public $description = '[Member Purchases] lists all of a given member\'s transactions.';
+    public $themed = true;
 
     protected function get_id_handler()
     {
@@ -72,7 +73,8 @@ class MemPurchasesPage extends FannieRESTfulPage
         echo "<form action=\"MemPurchasesPage.php\" id=myform method=get>";
         echo "<input type=hidden name=id value=\"".$this->id."\" />";
         $ts = time();
-        echo "<select name=my onchange=\"\$('#myform').submit();\">";
+        echo '<div class="form-group">';
+        echo "<select class=\"form-control\" name=my onchange=\"\$('#myform').submit();\">";
         $count = 0;
         while(true) {
             $val = date("Ym",$ts);
@@ -88,10 +90,11 @@ class MemPurchasesPage extends FannieRESTfulPage
             }
         }
         echo "</select>";
+        echo '</div>';
 
         $visits = 0;
         $spending = 0.0;
-        echo "<table cellspacing=0 cellpadding=4 border=1 style=\"font-weight:bold;\">";
+        echo "<table class=\"table table-bordered\">";
         while($row = $dbc->fetch_row($result)) {
             echo "<tr>";
             printf("<td>%d/%d/%d</td>",$row[0],$row[1],$row[2]);
@@ -103,10 +106,12 @@ class MemPurchasesPage extends FannieRESTfulPage
             $visits += 1;
         }
         echo "</table>";
+        echo '<p>';
         printf("<b>Visits</b>: %d<br /><b>Spending</b>: \$%.2f
             <br /><b>Avg</b>: \$%.2f",
             $visits,$spending,
             ($visits > 0 ? $spending/$visits : 0));
+        echo '</p>';
 
         return ob_get_clean();
     }

@@ -33,7 +33,7 @@ include('db.php');
     @class InstallMemModDisplayPage
     Class for the MemModDisplay install and config options
 */
-class InstallMemModDisplayPage extends InstallPage {
+class InstallMemModDisplayPage extends \COREPOS\Fannie\API\InstallPage {
 
     protected $title = 'Fannie: Member Editor Module Display Order';
     protected $header = 'Fannie: Member Editor Module Display Order';

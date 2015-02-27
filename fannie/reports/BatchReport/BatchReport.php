@@ -35,6 +35,7 @@ class BatchReport extends FannieReportPage
     protected $required_fields = array('batchID');
 
     public $description = '[Batch Report] lists sales for items in a sales batch (or group of sales batches).';
+    public $themed = true;
 
     public function readinessCheck()
     {
@@ -97,7 +98,6 @@ class BatchReport extends FannieReportPage
         }
         
         $dlog = DTransactionsModel::selectDlog($bStart,$bEnd);
-        $sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumUpcSalesByDay";
         $bStart .= ' 00:00:00';
         $bEnd .= ' 23:59:59';
 
@@ -182,16 +182,18 @@ class BatchReport extends FannieReportPage
         }
 
         
-        echo "<b>Filter</b>: ";
-        echo '<select id="typef" 
+        echo '<div class="form-inline">';
+        echo "<label>Filters</label> ";
+        echo '<select id="typef" class="form-control"
             onchange="location=\'BatchReport.php?btype=\'+$(\'#typef\').val()+\'&owner=\'+escape($(\'#ownerf\').val());">';
         echo $t_opts;
         echo '</select>';
         echo '&nbsp;&nbsp;&nbsp;&nbsp;';
-        echo '<select id="ownerf" 
+        echo '<select id="ownerf" class="form-control"
             onchange="location=\'BatchReport.php?btype=\'+$(\'#typef\').val()+\'&owner=\'+escape($(\'#ownerf\').val());">';
         echo $o_opts;
         echo '</select>';
+        echo '</div>';
 
         echo '<hr />';
 
@@ -211,27 +213,27 @@ class BatchReport extends FannieReportPage
         $batchR = $dbc->exec_statement($batchP, $args);
 
         echo '<form action="BatchReport.php" method="get">';
-        echo '<table cellspacing="2" cellpadding=2" border="0">';
-        echo '<tr><td rowspan="4">';
-        echo '<select size="15" multiple name=batchID[]>';
+        echo '<div class="row">';
+        echo '<div class="col-sm-5">';
+        echo '<select size="15" multiple name=batchID[] class="form-control" required>';
         while($batchW = $dbc->fetch_row($batchR)){
             printf('<option value="%d">%s</option>',
                 $batchW['batchID'],$batchW['batchName']);
         }
         echo '</select>';
-        echo '</td>';
-        echo '<th>Start Date</th>';
-        echo '<td><input name="date1" id="date1" /></td></tr>';
-        echo '<tr><th>End Date</th>';
-        echo '<td><input name="date2" id="date2" /></td></tr>';
-        echo '<tr><th>Excel</th>';
-        echo '<td><input type="checkbox" name="excel" value="xls" /></td></tr>';
-        echo '<tr><td colspan="2"><input type="submit" value="Run Report" /></td></tr>';
+        echo '</div>';
+        echo '<div class="col-sm-7">';
+        echo '<label>Start Date</label>';
+        echo '<input class="form-control date-field" name="date1" id="date1" />';
+        echo '<label>End Date</label>';
+        echo '<input class="form-control date-field" name="date2" id="date2" />';
+        echo '<p><label>Excel ';
+        echo '<input type="checkbox" name="excel" value="xls" /></label></p>';
+        echo '<p><button type="submit" class="btn btn-default">Run Report</button></p>';
+        echo '</div>';
+        echo '</div>';
 
-        echo '</table></form>';
-
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
+        echo '</form>';
     }
 
     function report_description_content()
@@ -271,8 +273,8 @@ class BatchReport extends FannieReportPage
                     to: 
                     <input type=\"text\" name=\"date2\" size=\"10\" value=\"$bEnd\" id=\"date2\" />
                     </span><input type=\"submit\" value=\"Change Dates\" />";
-            $this->add_onload_command("\$('#date1').datepicker();");
-            $this->add_onload_command("\$('#date2').datepicker();");
+            $this->add_onload_command("\$('#date1').datepicker({dateFormat:'yy-mm-dd'});");
+            $this->add_onload_command("\$('#date2').datepicker({dateFormat:'yy-mm-dd'});");
             foreach($batchID as $bID) {
                 $ret[] = sprintf('<input type="hidden" name="batchID[]" value="%d" />', $bID);
             }
@@ -281,6 +283,14 @@ class BatchReport extends FannieReportPage
             $ret[] = "<span style=\"color:black\">From: $bStart to: $bEnd</span>";
         }
         return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>Show per-item sales data for items in a batch or set
+            of batches over the given date range. The filters just narrow
+            down the list of batches. You still have to make selections in
+            the list.</p>';
     }
 }
 

@@ -32,6 +32,7 @@ class MemArEquitySwapTool extends FanniePage {
     protected $header='Swap Member Equity/AR';
 
     public $description = '[Swap Equity/AR] turns an Equity payment into an AR payment or vice versa.';
+    public $themed = true;
 
     private $errors = '';
     private $mode = 'init';
@@ -67,25 +68,25 @@ class MemArEquitySwapTool extends FanniePage {
         }
 
         if (empty($FANNIE_AR_DEPARTMENTS)){
-            $this->errors .= "<em>Error: no AR departments found</em>";
+            $this->errors .= '<div class="alert alert-danger">Error: no AR departments found</div>';
             return True;
         }
 
         if (empty($FANNIE_EQUITY_DEPARTMENTS)){
-            $this->errors .= "<em>Error: no Equity departments found</em>";
+            $this->errors .= '<div class="alert alert-danger">Error: no Equity departments found</div>';
             return True;
         }
 
         $ret = preg_match_all("/[0-9]+/",$FANNIE_AR_DEPARTMENTS,$depts);
         if ($ret == 0){
-            $this->errors .= "<em>Error: can't read AR department definition</em>";
+            $this->errors .= '<div class="alert alert-danger">Error: can\'t read AR department definitions</div>';
             return True;
         }
         $temp_depts = array_pop($depts);
 
         $ret = preg_match_all("/[0-9]+/",$FANNIE_EQUITY_DEPARTMENTS,$depts);
         if ($ret == 0){
-            $this->errors .= "<em>Error: can't read Equity department definition</em>";
+            $this->errors .= '<div class="alert alert-danger">Error: can\'t read Equity department definitions</div>';
             return True;
         }
         $temp_depts2 = array_pop($depts);
@@ -104,7 +105,8 @@ class MemArEquitySwapTool extends FanniePage {
         $q = $dbc->prepare_statement("SELECT dept_no,dept_name FROM departments WHERE dept_no IN $dlist");
         $r = $dbc->exec_statement($q,$dArgs);
         if ($dbc->num_rows($r) == 0){
-            return "<em>Error: department(s) don't exist</em>";
+            $this->errors .= '<div class="alert alert-danger">Error: department(s) don\'t exist.</div>';
+            return true;
         }
 
         $this->depts = array();
@@ -126,25 +128,25 @@ class MemArEquitySwapTool extends FanniePage {
             $this->cn = FormLib::get_form_value('card_no');
 
             if (!isset($this->depts[$this->dept1]) || !isset($this->depts[$this->dept2])){
-                $this->errors .= "<em>Error: AR department doesn't exist</em>"
+                $this->errors .= "<div class=\"alert alert-danger\">Error: AR department doesn't exist</div>"
                     ."<br /><br />"
                     ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
                 return True;
             }
             if (!is_numeric($this->amount)){
-                $this->errors .= "<em>Error: amount given (".$this->amount.") isn't a number</em>"
+                $this->errors .= "<div class=\"alert alert-danger\">Error: amount given (".$this->amount.") isn't a number</div>"
                     ."<br /><br />"
                     ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
                 return True;
             }
             if (!is_numeric($this->cn)){
-                $this->errors .= "<em>Error: member given (".$this->cn1.") isn't a number</em>"
+                $this->errors .= "<div class=\"alert alert-danger\">Error: member given (".$this->cn1.") isn't a number</div>"
                     ."<br /><br />"
                     ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
                 return True;
             }
             if ($this->dept1 == $this->dept2){
-                $this->errors .= "<em>Error: departments are the same; nothing to convert</em>"
+                $this->errors .= "<div class=\"alert alert-danger\">Error: departments are the same; nothing to convert</div>"
                     ."<br /><br />"
                     ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
                 return True;
@@ -153,7 +155,7 @@ class MemArEquitySwapTool extends FanniePage {
             $q = $dbc->prepare_statement("SELECT FirstName,LastName FROM custdata WHERE CardNo=? AND personNum=1");
             $r = $dbc->exec_statement($q,array($this->cn));
             if ($dbc->num_rows($r) == 0){
-                $this->errors .= "<em>Error: no such member: ".$this->cn."</em>"
+                $this->errors .= "<div class=\"alert alert-success\">Error: no such member: ".$this->cn."</div>"
                     ."<br /><br />"
                     ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
                 return True;
@@ -180,18 +182,19 @@ class MemArEquitySwapTool extends FanniePage {
 
         $ret = "<form action=\"MemArEquitySwapTool.php\" method=\"post\">";
         $ret .= "<b>Confirm transactions</b>";
-        $ret .= "<p style=\"font-size:120%\">";
+        $ret .= "<div class=\"alert alert-info\">";
         $ret .= sprintf("\$%.2f will be moved from %s to %s for Member #%d (%s)",
             $this->amount,$this->depts[$this->dept1],
             $this->depts[$this->dept2],$this->cn,$this->name1);
-        $ret .= "</p><p>";
+        $ret .= "</div><p>";
         $ret .= "<input type=\"hidden\" name=\"deptFrom\" value=\"{$this->dept1}\" />";
         $ret .= "<input type=\"hidden\" name=\"deptTo\" value=\"{$this->dept2}\" />";
         $ret .= "<input type=\"hidden\" name=\"amount\" value=\"{$this->amount}\" />";
         $ret .= "<input type=\"hidden\" name=\"card_no\" value=\"{$this->cn}\" />";
-        $ret .= "<input type=\"submit\" name=\"submit2\" value=\"Confirm\" />";
+        $ret .= "<button type=\"submit\" name=\"submit2\" value=\"Confirm\" 
+                    class=\"btn btn-default\">Confirm</button>";
         $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-        $ret .= "<input type=\"submit\" value=\"Back\" onclick=\"back(); return false;\" />";
+        $ret .= "<button type=\"buton\" class=\"btn btn-default\" onclick=\"back(); return false;\">Back</button>";
         $ret .= "</form>";
         
         return $ret;
@@ -220,27 +223,46 @@ class MemArEquitySwapTool extends FanniePage {
 
         if (!empty($this->errors)) return $this->errors;
 
-        $ret = "<form action=\"MemArEquitySwapTool.php\" method=\"post\">";
-        $ret .= "<p style=\"font-size:120%\">";
-        $ret .= "Convert $<input type=\"text\" name=\"amount\" size=\"5\" /> ";
-        $ret .= "<select name=\"deptFrom\">";
-        foreach($this->depts as $k=>$v)
-            $ret .= "<option value=\"$k\">$v</option>";
-        $ret .= "</select>";
-        $ret .= " to ";
-        $ret .= "<select name=\"deptTo\">";
-        foreach($this->depts as $k=>$v)
-            $ret .= "<option value=\"$k\">$v</option>";
-        $ret .= "</select>";
-        $ret .= "</p><p style=\"font-size:120%;\">";
-        $memNum = FormLib::get_form_value('memIN');
-        $ret .= "Member #<input type=\"text\" name=\"card_no\" size=\"5\" value=\"$memNum\" /> ";
-        $ret .= "</p><p>";
-        $ret .= "<input type=\"submit\" name=\"submit1\" value=\"Submit\" />";
-        $ret .= "</p>";
-        $ret .= "</form>";
+        ob_start();
+        ?>
 
-        return $ret;
+        <form action="MemArEquitySwapTool.php" method="post">
+        <div class="container">
+        <div class="row form-group form-inline">
+            <label>Remove</label>
+            <div class="input-group">
+                <span class="input-group-addon">$</span>
+                <input type="text" name="amount" class="form-control"
+                    required />
+            </div>
+            <label>From</label>
+            <select name="deptFrom" class="form-control">
+            <?php
+                foreach($this->depts as $k=>$v)
+                    echo "<option value=\"$k\">$v</option>";
+            ?>
+            </select>
+            <label>To</label>
+            <select name="deptTo" class="form-control">
+            <?php
+                foreach($this->depts as $k=>$v)
+                    echo "<option value=\"$k\">$v</option>";
+            ?>
+            </select>
+        </div>
+        <div class="row form-group form-inline">
+            <label>Member #</label>
+            <input type="number" name="card_no" class="form-control" required />
+        </div>
+        <p>
+            <button type="submit" name="submit1" value="Submit"
+                class="btn btn-default">Submit</button>
+        </p>
+        </div>
+        </form>
+        <?php
+
+        return ob_get_clean();
     }
 
     function getTransNo($emp,$register){

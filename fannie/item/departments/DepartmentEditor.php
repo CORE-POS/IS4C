@@ -31,6 +31,7 @@ class DepartmentEditor extends FanniePage {
     protected $header = "Manage Departments";
 
     public $description = '[Department Editor] creates, updates, and deletes POS departments.';
+    public $themed = true;
 
     function preprocess(){
         /* allow ajax calls */
@@ -110,41 +111,67 @@ class DepartmentEditor extends FanniePage {
             $taxes[$row[0]] = $row[1];
         }
 
-        $ret = "<table class=\"deptFields\" cellspacing=0 cellpadding=4 border=1><tr>";
-        $ret .= "<th>Dept #</th><th colspan=2>Name</th><th>Tax</th><th>FS</th></tr>";
-        $ret .= "<tr><td>";
+        $ret = '<div class="row">'
+            . '<label class="control-label col-sm-2">Dept #</label>'
+            . '<label class="control-label col-sm-4">Name</label>'
+            . '<label class="control-label col-sm-2">Tax</label>'
+            . '<label class="control-label col-sm-2">FS</label>'
+            . '</div>';
+        $ret .= '<div class="row">';
+        $ret .= '<div class="col-sm-2">';
         if ($id == -1){
-            $ret .= "<input type=text size=4 name=did id=deptno />";
-        }
-        else {
+            $ret .= "<input class=\"form-control\" type=text name=did id=deptno />";
+        } else {
             $ret .= $id;
         }
-        $ret .= "</td>";
-        $ret .= "<td colspan=2><input type=text maxlength=30 name=name id=deptname value=\"$name\" /></td>";
-        $ret .= "<td><select id=depttax name=tax>";
-        foreach($taxes as $k=>$v){
-            if ($k == $tax)
+        $ret .= "</div>";
+        $ret .= "<div class=\"col-sm-4\"><input type=text maxlength=30 name=name 
+            id=deptname value=\"$name\" class=\"form-control\" /></div>";
+        $ret .= "<div class=\"col-sm-2\"><select class=\"form-control\" id=depttax name=tax>";
+        foreach ($taxes as $k=>$v) {
+            if ($k == $tax) {
                 $ret .= "<option value=$k selected>$v</option>";
-            else
+            } else {
                 $ret .= "<option value=$k>$v</option>";
+            }
         }
-        $ret .= "</select></td>";
-        $ret .= "<td><input type=checkbox value=1 name=fs id=deptfs ".($fs==1?'checked':'')." /></td>";
-        $ret .= "</tr><tr>";
-        $ret .= "<th>Discount</th><th>Min</th><th>Max</th><th>Margin</th><th>Sales Code</th></tr>";
-        $ret .= "<td><input type=checkbox value=1 name=disc id=deptdisc ".($disc>0?'checked':'')." /></td>";
-        $ret .= sprintf("<td>\$<input type=text size=5 name=min id=deptmin value=\"%.2f\" /></td>",$min,0);  
-        $ret .= sprintf("<td>\$<input type=text size=5 name=max id=deptmax value=\"%.2f\" /></td>",$max,0);  
-        $ret .= sprintf("<td><input type=text size=5 name=margin id=deptmargin value=\"%.2f\" />%%</td>",$margin*100);
-        $ret .= "<td><input type=text size=5 id=deptsalescode name=pcode value=\"$pcode\" /></td>";
-        if ($id != -1){
+        $ret .= "</select></div>";
+        $ret .= "<div class=\"col-sm-2\"><input type=checkbox value=1 name=fs id=deptfs "
+            . ($fs==1?'checked':'') . " class=\"checkbox\" /></div>";
+        $ret .= "</div>";
+        $ret .= '<div class="row">'
+            . '<label class="control-label col-sm-2">Discount</label>'
+            . '<label class="control-label col-sm-2">Min</label>'
+            . '<label class="control-label col-sm-2">Max</label>'
+            . '<label class="control-label col-sm-2">Margin</label>'
+            . '<label class="control-label col-sm-2">Sales Code</label>'
+            . '</div>';
+        $ret .= '<div class="row form-inline">';
+        $ret .= "<div class=\"col-sm-2\"><input class=\"checkbox\" type=checkbox value=1 
+            name=disc id=deptdisc ". ($disc>0?'checked':'') . " /></div>";
+        $ret .= sprintf("<div class=\"col-sm-2\"><div class=\"input-group\">
+            <span class=\"input-group-addon\">\$</span>
+            <input type=number name=min class=\"form-control\" 
+            id=deptmin value=\"%.2f\" min=\"0\" max=\"9999\" step=\"0.01\" />
+            </div></div>",$min,0);  
+        $ret .= sprintf("<div class=\"col-sm-2\"><div class=\"input-group\">
+            <span class=\"input-group-addon\">\$</span>
+            <input type=number name=max class=\"form-control\" id=deptmax 
+            value=\"%.2f\" min=\"0\" max=\"99999\" step=\"0.01\" /></div></div>",$max,0);  
+        $ret .= sprintf("<div class=\"col-sm-2\"><div class=\"input-group\"><input type=number name=margin 
+            class=\"form-control\" id=deptmargin value=\"%.2f\" min=\"0\" max=\"999\" step=\"0.01\" />
+            <span class=\"input-group-addon\">%%</span></div></div>",$margin*100);
+        $ret .= "<div class=\"col-sm-2\"><input type=text id=deptsalescode 
+           class=\"form-control\" name=pcode value=\"$pcode\" /></div>";
+        $ret .= '</div>';
+        if ($id != -1) {
             $ret .= "<input type=hidden name=did id=deptno value=\"$id\" />";
             $ret .= "<input type=hidden name=new id=isNew value=0 />";
-        }
-        else
+        } else {
             $ret .= "<input type=hidden id=isNew name=new value=1 />";
-        $ret .= "</tr></table>";
-        $ret .= "<p /><input type=submit value=Save onclick=\"deptSave(); return false;\" />";
+        }
+        $ret .= "<p><button type=submit value=Save onclick=\"deptSave(); return false;\"
+            class=\"btn btn-default\">Save</button></p>";
 
         echo $ret;
     }
@@ -233,7 +260,8 @@ class DepartmentEditor extends FanniePage {
     }
 
 
-    function body_content(){
+    public function body_content()
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $depts = "<option value=0>Select a department...</option>";
@@ -242,31 +270,55 @@ class DepartmentEditor extends FanniePage {
                     ORDER BY dept_no");
         $resp = $dbc->exec_statement($p);
         $selectedDID = FormLib::get_form_value('did');
-        while($row = $dbc->fetch_row($resp)){
-            if ($selectedDID !== '' && $selectedDID == $row[0])
+        while ($row = $dbc->fetch_row($resp)) {
+            if ($selectedDID !== '' && $selectedDID == $row[0]) {
                 $depts .= "<option value=$row[0] selected>$row[0] $row[1]</option>";
-            else
+            } else {
                 $depts .= "<option value=$row[0]>$row[0] $row[1]</option>";
+            }
         }
         ob_start();
         ?>
-        <div id="deptdiv">
-        <b>Department</b> <select id="deptselect" onchange="deptchange();">
-        <?php echo $depts ?>
-        </select>
+        <div id="deptdiv" class="form-group">
+            <label class="control-label">Department</label>
+            <select class="form-control" id="deptselect" onchange="deptchange();">
+            <?php echo $depts ?>
+            </select>
         </div>
         <hr />
-        <div id="infodiv"></div>
+        <div id="infodiv" class="deptFields"></div>
         <?php
     
         $this->add_script('dept.js');
-        if ($selectedDID !== '')
+        if ($selectedDID !== '') {
             $this->add_onload_command('deptchange();'); 
+        }
 
         return ob_get_clean();
+    }
+
+    public function helpContent()
+    {
+        return '<p>Departments are the base level of categorization for
+            items. All items must belong to a department.</p>
+            <p>To create a department, choose <i>Create a new department</i>
+            from the <i>Department</i> drop down. To edit an existing department,
+            choose that department from the drop down.</p>
+            <p>Tax, foodstamp, and discount are the defaults for new items added
+            to the department. These values are also used for open rings to the
+            department.</p>
+            <p>Min and max are soft limits. If the cashier open rings a price 
+            outside this range they get a warning but can confirm the price and
+            continue.</p>
+            <p>Margin may be used to calculate suggested retail price for items
+            whose cost is known.</p>
+            <p>Sales codes are yet another form of categorization. Typically this
+            field is used for account numbers or similar identifiers that appear
+            in the accounting software used. It is particularly helpful if the 
+            accounting team and the operational team want to categorize items and
+            sales differently.</p>';
     }
 }
 
 FannieDispatch::conditionalExec(false);
 
-?>

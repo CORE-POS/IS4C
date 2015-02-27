@@ -11,7 +11,6 @@
     <li><a href="namespaces.html"><span>Namespaces</span></a></li>
     <li id="current"><a href="classes.html"><span>Classes</span></a></li>
     <li><a href="pages.html"><span>Related&nbsp;Pages</span></a></li>
-    <li><a href="examples.html"><span>Examples</span></a></li>
     <li>
       <form action="search.php" method="get">
         <table cellspacing="0" cellpadding="0" border="0">
@@ -30,13 +29,7 @@
     <li><a href="hierarchy.html"><span>Class&nbsp;Hierarchy</span></a></li>
     <li><a href="functions.html"><span>Class&nbsp;Members</span></a></li>
   </ul></div>
-<h1>InstallProductsPage Class Reference</h1><!-- doxytag: class="InstallProductsPage" --><!-- doxytag: inherits="InstallPage" --><p>Inheritance diagram for InstallProductsPage:
-<p><center><img src="class_install_products_page.png" usemap="#InstallProductsPage_map" border="0" alt=""></center>
-<map name="InstallProductsPage_map">
-<area href="class_install_page.html" alt="InstallPage" shape="rect" coords="0,56,123,80">
-<area href="class_fannie_page.html" alt="FanniePage" shape="rect" coords="0,0,123,24">
-</map>
-<a href="class_install_products_page-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
+<h1>InstallProductsPage Class Reference</h1><!-- doxytag: class="InstallProductsPage" --><a href="class_install_products_page-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
 <tr><td></td></tr>
 <tr><td colspan="2"><br><h2>Public Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_install_products_page.html#e0387a9c66c3a0f42f2ae4bd5537aa79">css_content</a> ()</td></tr>
@@ -45,6 +38,9 @@
 
 <tr><td colspan="2"><br><h2>Public Attributes</h2></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><b>$description</b></td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="b57611306c5ed7a8a6c771b5832e0d47"></a><!-- doxytag: member="InstallProductsPage::$themed" ref="b57611306c5ed7a8a6c771b5832e0d47" args="" -->
+&nbsp;</td><td class="memItemRight" valign="bottom"><b>$themed</b> = true</td></tr>
 
 <tr><td colspan="2"><br><h2>Protected Attributes</h2></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="8f350b91cd6d556023b666330802ec97"></a><!-- doxytag: member="InstallProductsPage::$title" ref="8f350b91cd6d556023b666330802ec97" args="" -->
@@ -74,15 +70,13 @@ Class for the Products install and config options
 <div class="memdoc">
 
 <p>
-Define any javascript needed <dl compact><dt><b>Returns:</b></dt><dd>A javascript string function <a class="el" href="class_fannie_page.html#bda9b037bdf9a3eacbf67bdf40dc6202">javascript_content()</a>{ $js =""; return $js; } </dd></dl>
+Define any javascript needed <dl compact><dt><b>Returns:</b></dt><dd>A javascript string function javascript_content(){ $js =""; return $js; } </dd></dl>
 
 <p>
 Change by Andy 2Jun14 Store modules in a keyed array. Format:<ul>
 <li>module_name =&gt; settings array + seq [int] display order + show [int] yes/no/auto + expand [int] yes/no/auto</li></ul>
 <p>
 The settings for each module control how it is displayed. The "auto" option will only print or expand a module if it is relevant for that particular item. 
-<p>
-Reimplemented from <a class="el" href="class_fannie_page.html#f8d91e5f3fb0fe2c5024f79c82ab903b">FanniePage</a>.
 </div>
 </div><p>
 <a class="anchor" name="e0387a9c66c3a0f42f2ae4bd5537aa79"></a><!-- doxytag: member="InstallProductsPage::css_content" ref="e0387a9c66c3a0f42f2ae4bd5537aa79" args="()" -->
@@ -103,8 +97,6 @@ Reimplemented from <a class="el" href="class_fannie_page.html#f8d91e5f3fb0fe2c50
 <p>
 Define any CSS needed <dl compact><dt><b>Returns:</b></dt><dd>A CSS string </dd></dl>
 
-<p>
-Reimplemented from <a class="el" href="class_fannie_page.html#1ae0e1947ee394c6286c089fe1c5a2f8">FanniePage</a>.
 </div>
 </div><p>
 <hr><h2>Member Data Documentation</h2>
@@ -124,13 +116,11 @@ Reimplemented from <a class="el" href="class_fannie_page.html#1ae0e1947ee394c628
 <span class="stringliteral">    Class for the Products install and config options page.</span>
 <span class="stringliteral">    "</span>
 </pre></div>
-<p>
-Reimplemented from <a class="el" href="class_install_page.html">InstallPage</a>.
 </div>
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>fannie/install/InstallProductsPage.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - Fannie by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 9 Feb 2015 for CORE POS - Fannie by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

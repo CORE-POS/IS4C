@@ -28,14 +28,14 @@ class BalanceCheck extends Parser {
 		return False;
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
+	function parse($str)
+    {
 		$ret = $this->default_json();
 		PrehLib::chargeOk();
-		$memChargeCommitted=$CORE_LOCAL->get("availBal") - $CORE_LOCAL->get("memChargeTotal");
-		$ret['output'] = DisplayLib::boxMsg(_("Member")." #". $CORE_LOCAL->get("memberID")."<br />".
-					_("Current AR balance is")." " . $CORE_LOCAL->get("balance") . "<br />".
-					_("Available AR balance is")." ".$CORE_LOCAL->get("availBal"). "</b>","",True);
+		$memChargeCommitted=CoreLocal::get("availBal") - CoreLocal::get("memChargeTotal");
+		$ret['output'] = DisplayLib::boxMsg(_("Member")." #". CoreLocal::get("memberID")."<br />".
+					_("Current AR balance is")." " . CoreLocal::get("balance") . "<br />".
+					_("Available AR balance is")." ".CoreLocal::get("availBal"). "</b>","",True);
 		return $ret;
 	}
 

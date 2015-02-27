@@ -28,6 +28,7 @@ if (!class_exists('FannieAPI')) {
 
 class StatementsPluginIndex extends FannieRESTfulPage 
 {
+    public $page_set = 'Plugin :: StatementsPlugin';
 
     protected $header = 'Statements';
     protected $title = 'Statements';
@@ -37,6 +38,7 @@ class StatementsPluginIndex extends FannieRESTfulPage
         $this->__routes[] = 'get<equityTab>';
         $this->__routes[] = 'get<arTab>';
         $this->__routes[] = 'get<termTab>';
+        $this->__routes[] = 'post<csv>';
 
         return parent::preprocess();
     }
@@ -58,6 +60,23 @@ class StatementsPluginIndex extends FannieRESTfulPage
     public function get_termTab_handler()
     {
         echo $this->termForm();
+
+        return false;
+    }
+
+    public function post_csv_handler()
+    {
+        $json = json_decode($this->csv);
+
+        header('Content-Type: application/ms-excel');
+        header('Content-Disposition: attachment; filename="'.$json->name.'.csv"');
+        
+        foreach ($json->records as $record) {
+            for ($i=0; $i<count($record); $i++) {
+                echo '"' . $record[$i] . '"';
+                echo ($i < count($record)-1) ? ',' : "\r\n"; 
+            }
+        }
 
         return false;
     }
@@ -89,11 +108,12 @@ class StatementsPluginIndex extends FannieRESTfulPage
 
         $query = 'SELECT m.card_no,
                     c.LastName,
-                    ' . $dbc->monthdiff($dbc->now(), 'm.start_date') . ' AS monthdiff
+                    ' . $dbc->monthdiff($dbc->now(), 'h.mostRecent') . ' AS monthdiff
                   FROM memDates AS m
                     INNER JOIN custdata AS c ON m.card_no=c.CardNo AND c.personNum=1
                     INNER JOIN ' . $FANNIE_TRANS_DB . $dbc->sep() . 'equity_live_balance AS e ON m.card_no=e.memnum
-                  WHERE m.start_date >= ?
+                    INNER JOIN ' . $FANNIE_TRANS_DB . $dbc->sep() . 'equity_history_sum AS h ON m.card_no=h.card_no
+                  WHERE h.mostRecent >= ?
                     AND e.payments >= 100';
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, array(date('Y-m-d', $cutoff)));
@@ -114,6 +134,7 @@ class StatementsPluginIndex extends FannieRESTfulPage
         $ret .= '<button type="button" onclick="$(\'#welcomeAccounts option\').each(function(){$(this).attr(\'selected\', \'selected\');});
                     return false;">Select All</button>';
         $ret .= '<button type="submit">Print</button>';
+        $ret .= '<button type="button" onclick="exportCSV(\'welcome\', \'#welcomeAccounts\');">Export List</button>';
 
         $ret .= '<br />';
 
@@ -165,6 +186,7 @@ class StatementsPluginIndex extends FannieRESTfulPage
         $ret .= '<button type="button" onclick="$(\'#reminderAccounts option\').each(function(){$(this).attr(\'selected\', \'selected\');});
                     return false;">Select All</button>';
         $ret .= '<button type="submit">Print</button>';
+        $ret .= '<button type="button" onclick="exportCSV(\'reminder\', \'#reminderAccounts\');">Export List</button>';
 
         $ret .= '<br />';
 
@@ -229,6 +251,7 @@ class StatementsPluginIndex extends FannieRESTfulPage
         $ret .= '<button type="button" onclick="$(\'#arAccounts option\').each(function(){$(this).attr(\'selected\', \'selected\');});
                     return false;">Select All</button>';
         $ret .= '<button type="submit">Print</button>';
+        $ret .= '<button type="button" onclick="exportCSV(\'ar_statements\', \'#arAccounts\');">Export List</button>';
 
         $ret .= '<br />';
 
@@ -272,6 +295,7 @@ class StatementsPluginIndex extends FannieRESTfulPage
         $ret .= '<button type="button" onclick="$(\'#termAccounts option\').each(function(){$(this).attr(\'selected\', \'selected\');});
                     return false;">Select All</button>';
         $ret .= '<button type="submit">Print</button>';
+        $ret .= '<button type="button" onclick="exportCSV(\'term_letters\', \'#termAccounts\');">Export List</button>';
 
         $ret .= '<br />';
 
@@ -281,6 +305,33 @@ class StatementsPluginIndex extends FannieRESTfulPage
         $ret .= '</form>';
 
         return $ret;
+    }
+
+    public function javascript_content()
+    {
+        ob_start();
+        ?>
+        function exportCSV(name, select_elem)
+        {
+            var data = []
+            $(select_elem+' option').each(function(){
+                var record = [
+                    $(this).val(),
+                    $(this).html()
+                ];
+                data[data.length] = record;
+            });
+            var obj = {
+                name: name+".csv",
+                records: data
+            };
+            var form = $('<form method="post"/>');
+            var field = $('<input name="csv" type="hidden"/>').val(JSON.stringify(obj));
+            form.append(field);
+            form.appendTo('body').submit();
+        }
+        <?php
+        return ob_get_clean();
     }
 
 }

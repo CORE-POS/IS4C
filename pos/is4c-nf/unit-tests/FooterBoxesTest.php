@@ -5,9 +5,8 @@
  */
 class FooterBoxesTest extends PHPUnit_Framework_TestCase
 {
-	public function testAll(){
-		global $CORE_LOCAL;
-
+	public function testAll()
+    {
 		$defaults = array(
 			'FooterBox',
 			'EveryoneSales',

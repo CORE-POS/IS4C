@@ -84,7 +84,7 @@ Deprecates nightly.ar.php and arbalance.sanitycheck.php.';
                     WHERE tdate=? AND trans_num=? AND card_no=?');
         $addP = $dbc->prepare('INSERT INTO ar_history (card_no, charges, payments, tdate, trans_num)
                             VALUES (?, ?, ?, ?, ?)');
-        while($lookupW = $dbc->fetch_row($lookupR)) {
+        while ($lookupW = $dbc->fetch_row($lookupR)) {
             // check whether transaction is already in ar_history
             $checkR = $dbc->execute($checkP, array($lookupW['tdate'], $lookupW['trans_num'], $lookupW['card_no']));
             if ($dbc->num_rows($checkR) != 0) {
@@ -104,7 +104,7 @@ Deprecates nightly.ar.php and arbalance.sanitycheck.php.';
             $try = $addR = $dbc->execute($addP, array($lookupW['card_no'], $lookupW['charges'], $lookupW['payments'],
                                                 $lookupW['tdate'], $lookupW['trans_num']));
             if ($try === false) {
-                echo $this->cronMsg('Error adding AR entry '.$lookupW['tdate']. ' '.$lookupW['trans_num']);
+                $this->cronMsg('Error adding AR entry '.$lookupW['tdate']. ' '.$lookupW['trans_num'], FannieLogger::ERROR);
             }
         }
 
@@ -115,7 +115,7 @@ Deprecates nightly.ar.php and arbalance.sanitycheck.php.';
             FROM ar_history GROUP BY card_no";
         $try = $dbc->query($query);
         if ($try === false) {
-            echo $this->cronMsg('Error rebuilding ar_history_sum table');
+            $this->cronMsg('Error rebuilding ar_history_sum table', FannieLogger::ERROR);
         }
 
         // update custdata balance fields
@@ -129,10 +129,10 @@ Deprecates nightly.ar.php and arbalance.sanitycheck.php.';
         }
         $try = $dbc->query($balQ);
         if ($try === false) {
-            echo $this->cronMsg('Error reloading custdata balances');
+            $this->cronMsg('Error reloading custdata balances', FannieLogger::ERROR);
         }
 
-        echo $this->cronMsg('Finished every-day tasks.');
+        $this->cronMsg('Finished every-day tasks.', FannieLogger::INFO);
 
         /* turnover view/cache base tables for WFC end-of-month reports */
         if (date('j') == 1) {
@@ -191,7 +191,7 @@ Deprecates nightly.ar.php and arbalance.sanitycheck.php.';
                 $dbc->query("TRUNCATE TABLE AR_EOM_Summary");
                 $dbc->query($AR_EOM_Summary_Q);
             }
-            echo $this->cronMsg('Finished first-of-month tasks.');
+            $this->cronMsg('Finished first-of-month tasks.', FannieLogger::INFO);
         }
     }
 }

@@ -34,6 +34,7 @@ class LogViewer extends FanniePage
 	protected $auth_classes = array('admin');
 
     public $description = '[Log Viewer] shows Fannie\'s log files through the web.';
+    public $themed = true;
 
 	private $mode = 'list';
 
@@ -135,9 +136,11 @@ class LogViewer extends FanniePage
 				$this->add_onload_command($highlite_cmd);
 			}
 		
-			$ret .= '<pre class="highlight" style="background: #ccc; border: solid 1px black; padding: 1em;">';
+            $ret .= '<code>';
+			$ret .= '<pre class="highlight">';
 			$ret .= $log;
 			$ret .= '</pre>';
+            $ret .= '</code>';
 		}
 		
 		return $ret;
@@ -149,14 +152,19 @@ class LogViewer extends FanniePage
             return false;
         }
 
-        $content = file_get_contents($fn);
-        if ($num_lines > 0) {
-            $lines = explode("\n", $content);
-            $subset = array_slice($lines, -1 * $num_lines);
-            $content = implode("\n", $subset);
-        }
+        if ($num_lines == 0) {
+            return file_get_contents($fn);
+        } else {
+            $ret = '';
+            $fp = fopen($fn, 'r');
+            $line = 0;
+            while (!feof($fp) && $line < $num_lines) {
+                $ret .= fgets($fp);
+                $line++;
+            }
 
-        return $content;
+            return $ret;
+        }
     }
 
 	private function doRotate($fn)
@@ -182,6 +190,17 @@ class LogViewer extends FanniePage
 
 		return true;
 	}
+
+    public function helpContent()
+    {
+        return '<p>View Fannie\'s logs through the browser</p>
+            <p><em>dayend.log</em> logs information about scheduled
+            tasks run and their results.</p>
+            <p><em>php-errors.log</em> logs developer-oriented information
+            about program warnings and errors.</p>
+            <p><em>queries.log</em> logs developer-oriented information
+            about database errors.</p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

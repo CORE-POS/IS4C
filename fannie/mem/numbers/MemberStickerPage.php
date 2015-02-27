@@ -39,6 +39,7 @@ class MemberStickerPage extends FanniePage {
 
     public $description = '[Member Stickers] generates a PDF of member number stickers
     for use with membership paperwork.';
+    public $themed = true;
 
     function preprocess(){
         if (FormLib::get_form_value('start',False) !== False){
@@ -71,17 +72,30 @@ class MemberStickerPage extends FanniePage {
         return True;
     }
 
-    function body_content(){
+    function body_content()
+    {
         return '<form action="MemberStickerPage.php" method="get">
         <p>
         Generate a sheet of member stickers<br />
         Format: Avery 5267<br />
-        Starting member number:
-        <input type="text" name="start" size="6" /><br />
-        <br />
-        <input type="submit" value="Get PDF" />
+        <label>Starting member number</label>
+        <input type="number" name="start" class="form-control" required />
+        </p>
+        <p>
+        <button type="submit" class="btn btn-default">Get PDF</button>
         </p>
         </form>';
+    }
+
+    public function helpContent()
+    {
+        return '<p>Generate a PDF of member numbers. Layout is set for
+            Avery 5267 label stock. Two labels are generated for each 
+            member number - eighty labels to a page / forty unique member 
+            numbers to a page. Two is often convient since one sticker
+            can be attached to the member\'s paperwork and the other
+            to the co-op\'s paperwork.</p>
+            ';
     }
 }
 

@@ -26,7 +26,8 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class ViewCashiersPage extends FanniePage {
+class ViewCashiersPage extends FanniePage 
+{
 
     protected $title = "Fannie : View Cashiers";
     protected $header = "View Cashiers";
@@ -34,6 +35,7 @@ class ViewCashiersPage extends FanniePage {
     protected $auth_classes = array('editcashiers');
 
     public $description = '[View Cashiers] shows information about cashiers.';
+    public $themed = true;
 
 
     function javascript_content(){
@@ -48,19 +50,27 @@ function deleteEmp(emp_no,filter){
         return ob_get_clean();
     }
 
-    function preprocess(){
+    function preprocess()
+    {
         global $FANNIE_OP_DB;
         $emp = FormLib::get_form_value('emp_no');
-        if (FormLib::get_form_value('delete') !== '' && $emp !== ''){
+        if (FormLib::get_form_value('delete') !== '' && $emp !== '') {
             $dbc = FannieDB::get($FANNIE_OP_DB);
             $employee = new EmployeesModel($dbc);
             $employee->emp_no($emp);
-            $employee->delete();
+            $deleted = $employee->delete();
+            if ($deleted) {
+                $this->add_onload_command("showBootstrapAlert('#alert-area', 'success', 'Deleted #$emp');\n");
+            } else {
+                $this->add_onload_command("showBootstrapAlert('#alert-area', 'danger', 'Error deleting #$emp');\n");
+            }
         }
-        return True;
+
+        return true;
     }
 
-    function body_content(){
+    function body_content()
+    {
         global $FANNIE_OP_DB, $FANNIE_URL;
         $filter = FormLib::get_form_value('filter',1);
         $order = FormLib::get_form_value('order','num');
@@ -81,7 +91,9 @@ function deleteEmp(emp_no,filter){
             break;
         }
         
-        $ret = "Showing: <select onchange=\"location='ViewCashiersPage.php?filter='+this.value;\">";
+        $ret = '<div id="alert-area"></div><div class="form-inline">';
+        $ret .= "<label>Showing</label> <select class=\"form-control\"
+            onchange=\"location='ViewCashiersPage.php?filter='+this.value;\">";
         if ($filter == 1){
             $ret .= "<option value=1 selected>Active Cashiers</option>";
             $ret .= "<option value=0>Disabled Cashiers</option>";
@@ -90,9 +102,9 @@ function deleteEmp(emp_no,filter){
             $ret .= "<option value=1>Active Cashiers</option>";
             $ret .= "<option value=0 selected>Disabled Cashiers</option>";
         }
-        $ret .= "</select><hr />";
+        $ret .= "</select></div><hr />";
 
-        $ret .= "<table cellpadding=4 cellspacing=0 border=1><tr>";
+        $ret .= "<table class=\"table\"><tr>";
         $ret .= "<th><a href=ViewCashiersPage.php?filter=$filter&order=num>#</th>";
         $ret .= "<th><a href=ViewCashiersPage.php?filter=$filter&order=name>Name</th>";
         $ret .= "<th><a href=ViewCashiersPage.php?filter=$filter&order=pass>Password</th>";
@@ -108,15 +120,20 @@ function deleteEmp(emp_no,filter){
                     $emp->FirstName().' '.$emp->LastName(),
                     $emp->CashierPassword(),
                     ($emp->frontendsecurity()<=20?'Regular':'Manager'));
-            $ret .= sprintf("<td><a href=\"CashierEditor.php?emp_no=%d\"><img src=\"{$FANNIE_URL}src/img/buttons/b_edit.png\" 
-                alt=\"Edit\" border=0 /></a></td>
-                <td><a href=\"\" onclick=\"deleteEmp(%d,%d); return false;\"><img alt=\"Delete\"
-                src=\"{$FANNIE_URL}src/img/buttons/b_drop.png\" border=0 /></a></td></tr>",
-                $emp->emp_no(),$emp->emp_no(),$filter);
+            $ret .= sprintf("<td><a href=\"CashierEditor.php?emp_no=%d\">%s</a></td>
+                <td><a href=\"\" onclick=\"deleteEmp(%d,%d); return false;\">%s</a></td></tr>",
+                $emp->emp_no(),\COREPOS\Fannie\API\lib\FannieUI::editIcon(),
+                $emp->emp_no(),$filter, \COREPOS\Fannie\API\lib\FannieUI::deleteIcon());
         }
         $ret .= "</table>";
 
         return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>View, edit, or delete cashiers. Only <em>Active</em> cashiers can
+            log into the lanes. Click column headers to sort the list.</p>';
     }
 }
 

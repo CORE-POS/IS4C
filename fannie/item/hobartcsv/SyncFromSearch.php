@@ -33,8 +33,7 @@ class SyncFromSearch extends FannieRESTfulPage
 
     public $description = '[Scale Sync] sends a set of advanced search items to
     specified scales (Hobart). Must be accessed via Advanced Search.';
-
-    protected $window_dressing = false;
+    public $themed = true;
 
     private $upcs = array();
     private $save_results = array();
@@ -69,6 +68,7 @@ class SyncFromSearch extends FannieRESTfulPage
                 (?, ?)
         ');
 
+        ob_start();
         echo '<ul>';
         // go through scales one at a time
         // check whether item is present on that
@@ -87,24 +87,30 @@ class SyncFromSearch extends FannieRESTfulPage
                         $item_info['RecordType'] = 'WriteOneItem';
                     }
                     $all_items[] = $item_info;
-                    echo '<li style="color:green;">Sending <b>' . $model->plu() . '</b></li>';
+                    echo '<li class="alert-success">Sending <strong>' . $model->plu() . '</strong></li>';
                     // batch out changes @ 10 items / file
                     if (count($all_items) >= 10) {
-                        HobartDgwLib::writeItemsToScales($all_items, array($scale));
+                        \COREPOS\Fannie\API\item\HobartDgwLib::writeItemsToScales($all_items, array($scale));
                         $all_items = array();
                     }
                 } else {
-                    echo '<li style="color:red;">Error on <b>' . $model->plu() . '</b></li>';
+                    echo '<li class="alert-danger">Error on <strong>' . $model->plu() . '</strong></li>';
                 }
             } // end loop on items
             echo '</ul>';
 
             if (count($all_items) > 0) {
-                HobartDgwLib::writeItemsToScales($all_items, array($scale));
+                \COREPOS\Fannie\API\item\HobartDgwLib::writeItemsToScales($all_items, array($scale));
             }
         } // end loop on scales
+        $this->sent_status = ob_get_clean();
 
-        return false;
+        return true;
+    }
+
+    function post_sendall_view()
+    {
+        return $this->sent_status;
     }
 
     function post_sendupc_handler()
@@ -145,7 +151,7 @@ class SyncFromSearch extends FannieRESTfulPage
                     $item_info['RecordType'] = 'ChangeOneItem';
                 }
 
-                HobartDgwLib::writeItemsToScales($item_info, array($scale));
+                \COREPOS\Fannie\API\item\HobartDgwLib::writeItemsToScales($item_info, array($scale));
             }
 
             echo '{error:0}';
@@ -188,7 +194,7 @@ class SyncFromSearch extends FannieRESTfulPage
         $item_info = array(
             'RecordType' => 'ChangeOneItem',
             'PLU' => $s_plu,
-            'Description' => $model->itemdesc(),
+            'Description' => $model->mergeDescription(),
             'Tare' => $model->tare(),
             'ShelfLife' => $model->shelflife(),
             'Price' => $model->price(),
@@ -204,6 +210,7 @@ class SyncFromSearch extends FannieRESTfulPage
         }
         if ($model->weight() == 1) {
             $item_info['Type'] = 'Fixed Weight';
+            $item_info['ByCount'] = 1;
         } else {
             $item_info['Type'] = 'Random Weight';
         }
@@ -239,7 +246,9 @@ class SyncFromSearch extends FannieRESTfulPage
 
         $ret .= '<form action="SyncFromSearch.php" method="post">';
         $scales = new ServiceScalesModel(FannieDB::get($FANNIE_OP_DB));
-        $ret .= '<fieldset><legend>Scales</legend>';
+        $ret .= '<div class="panel panel-default">
+            <div class="panel-heading">Scales</div>
+            <div class="panel-body">';
         foreach ($scales->find('description') as $scale) {
             $ret .= sprintf('<input type="checkbox" class="scaleID" name="scaleID[]" 
                                 id="scaleID%d" value="%d" />
@@ -247,9 +256,11 @@ class SyncFromSearch extends FannieRESTfulPage
                              $scale->serviceScaleID(), $scale->serviceScaleID(),
                              $scale->serviceScaleID(), $scale->description());
         }
-        $ret .= '</fieldset>';
-        $ret .= '<input type="submit" name="sendall" value="Sync All Items" />';
-        $ret .= '<table cellpadding="4" cellspacing="0" border="1">';
+        $ret .= '</div></div>';
+        $ret .= '<p><button type="submit" name="sendall" value="1"
+                    class="btn btn-default">Sync All Items</button></p>';
+        $ret .= '<div id="alert-area"></div>';
+        $ret .= '<table class="table">';
         $ret .= '<tr>
                 <th>UPC</th>
                 <th>Description</th>
@@ -268,12 +279,13 @@ class SyncFromSearch extends FannieRESTfulPage
                             <td>%s</td>
                             <td>%.2f</td>
                             <td>%s</td>
-                            <td><button onclick="sendOne(\'%s\'); return false;">Sync Item</button></td>
+                            <td><button type="button" class="btn btn-default"
+                                onclick="sendOne(\'%s\'); return false;">Sync Item</button></td>
                             <input type="hidden" name="upcs[]" value="%s" />
                             </tr>',
                             $model->plu(),
                             $model->plu(),
-                            $model->itemdesc(),
+                            $model->mergeDescription(),
                             $model->price(),
                             $model->modified(),
                             $model->plu(),
@@ -302,7 +314,12 @@ class SyncFromSearch extends FannieRESTfulPage
                 type: 'post',
                 data: 'sendupc='+upc+'&'+scaleStr,
                 success: function(result) {
-                    $('#row'+upc).remove();
+                    if (result.error) {
+                        showBootstrapAlert('#alert-area', 'danger', 'Error sending item ' + upc);
+                    } else {
+                        showBootstrapAlert('#alert-area', 'success', 'Sent item ' + upc);
+                        $('#row'+upc).remove();
+                    }
                 }
             });
         }

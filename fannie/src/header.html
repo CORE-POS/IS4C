@@ -2,20 +2,14 @@
 global $FANNIE_DYNAMIC_MENU, $FANNIE_NAV_POSITION, $FANNIE_CSS_LOGO, $FANNIE_CHARSET, $FANNIE_CUSTOM_TITLE;
 /* try to deal with relative paths for includes */
 $path = "";
-$found = False;
-$uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
-$tmp = explode("?",$uri);
-if (count($tmp) > 1) {
-    $uri = $tmp[0];
-}
-foreach (explode("/",$uri) as $x) {
-	if (strpos($x,".php") === false && strlen($x) != 0) {
-		$path .= "../";
-	}
-	if (!$found && stripos($x,"fannie") !== false) {
-		$found = true;
-		$path = "";
-	}
+$limit = 15;
+$counter = 0;
+while ($counter < $limit) {
+    if (file_exists($path . 'classlib2.0/FannieAPI.php')) {
+        break;
+    }
+    $path .= "../";
+    $counter++;
 }
 if (!isset($FANNIE_CHARSET) || empty($FANNIE_CHARSET)) {
     $FANNIE_CHARSET = 'ISO-8859-1';

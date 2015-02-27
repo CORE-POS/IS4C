@@ -282,7 +282,7 @@ Process the paycard request and return an error value as defined in paycardLib.p
   </table>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd><ul>
-<li>On success, return PaycardLib::PAYCARD_ERR_OK.</li><li>On failure, return anything else and set any error messages to be displayed in $CORE_LOCAL-&gt;["boxMsg"].</li></ul>
+<li>On success, return PaycardLib::PAYCARD_ERR_OK.</li><li>On failure, return anything else and set any error messages to be displayed in session variable "boxMsg".</li></ul>
 </dd></dl>
 This function should submit a request to the gateway and process the result. By convention credit card request and response info is stored in the efsnet* tables and gift card request and response info is stored in the valutec* tables.<p>
 <b>Do not store full card number when logging request and response info</b>. 
@@ -548,7 +548,7 @@ Create a reference number from session variables. <dl compact><dt><b>Parameters:
     <tr><td valign="top"></td><td valign="top"><em>$errorCode</em>&nbsp;</td><td>error code contstant from paycardLib.php</td></tr>
   </table>
 </dl>
-Set $CORE_LOCAL-&gt;["boxMsg"] appropriately for the given error code. I find this easier than manually setting an appropriate message every time I return a common error like PaycardLib::PAYCARD_ERR_NOSEND. I think everything but PaycardLib::PAYCARD_ERR_PROC can have one default message assigned here 
+Set CoreLocal::["boxMsg"] appropriately for the given error code. I find this easier than manually setting an appropriate message every time I return a common error like PaycardLib::PAYCARD_ERR_NOSEND. I think everything but PaycardLib::PAYCARD_ERR_PROC can have one default message assigned here 
 </div>
 </div><p>
 <a class="anchor" name="6f7b2ad9c70f2eb17d1eca04c20c797f"></a><!-- doxytag: member="BasicCCModule::setPAN" ref="6f7b2ad9c70f2eb17d1eca04c20c797f" args="($in)" -->
@@ -650,7 +650,7 @@ Put objects into a soap envelope <dl compact><dt><b>Parameters:</b></dt><dd>
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/plugins/Paycards/BasicCCModule.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 9 Feb 2015 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

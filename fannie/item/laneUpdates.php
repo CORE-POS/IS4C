@@ -21,13 +21,17 @@
 
 *********************************************************************************/
 
-if (!isset($FANNIE_ROOT))
-    require(dirname(__FILE__) . '/../config.php');
-if (!class_exists('SQLManager'))
-    require($FANNIE_ROOT.'src/SQLManager.php');
+if (!class_exists('FannieConfig')) {
+    require(dirname(__FILE__) . '/../classlib2.0/FannieConfig.php');
+}
+if (!class_exists('SQLManager')) {
+    require(dirname(__FILE__) . '/../src/SQLManager.php');
+}
 
-function addProductAllLanes($upc){
-    global $FANNIE_LANES, $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
+function addProductAllLanes($upc)
+{
+    $FANNIE_OP_DB = FannieConfig::config('OP_DB');
+    $FANNIE_LANES = FannieConfig::config('LANES');
     $laneupdate_sql = FannieDB::get($FANNIE_OP_DB);
 
     $server_table_def = $laneupdate_sql->table_definition('products',$FANNIE_OP_DB);
@@ -69,8 +73,10 @@ function addProductAllLanes($upc){
     }
 }
 
-function deleteProductAllLanes($upc){
-    global $FANNIE_OP_DB, $FANNIE_LANES;
+function deleteProductAllLanes($upc)
+{
+    $FANNIE_OP_DB = FannieConfig::config('OP_DB');
+    $FANNIE_LANES = FannieConfig::config('LANES');
     $laneupdate_sql = FannieDB::get($FANNIE_OP_DB);
 
     for ($i = 0; $i < count($FANNIE_LANES); $i++){
@@ -86,9 +92,9 @@ function deleteProductAllLanes($upc){
     }
 }
 
-function updateProductAllLanes($upc){
+function updateProductAllLanes($upc)
+{
     deleteProductAllLanes($upc);
     addProductAllLanes($upc);
 }
 
-?>

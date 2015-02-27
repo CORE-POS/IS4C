@@ -83,8 +83,8 @@ class mgrlogin extends NoInputPage {
 		$this->scanner_scale_polling(True);
 	}
 
-	function body_content(){
-		global $CORE_LOCAL;
+	function body_content()
+    {
 		$this->add_onload_command("\$('#userPassword').focus();\n");
 		?>
 		<div class="baseHeight">
@@ -106,9 +106,8 @@ class mgrlogin extends NoInputPage {
 		<?php
 	} // END true_body() FUNCTION
 
-	function mgrauthenticate($password){
-		global $CORE_LOCAL;
-
+	function mgrauthenticate($password)
+    {
 		$ret = array(
 			'cancelOrder'=>false,
 			'msg'=>_('password invalid'),
@@ -126,7 +125,7 @@ class mgrlogin extends NoInputPage {
 
 		$db = Database::pDataConnect();
 		$password = $db->escape($password);
-		$priv = sprintf("%d",$CORE_LOCAL->get("SecurityCancel"));
+		$priv = sprintf("%d",CoreLocal::get("SecurityCancel"));
 		$query = "select emp_no, FirstName, LastName from employees where EmpActive = 1 and frontendsecurity >= $priv "
 		."and (CashierPassword = '".$password."' or AdminPassword = '".$password."')";
 		$result = $db->query($query);
@@ -141,11 +140,11 @@ class mgrlogin extends NoInputPage {
             $db->query("update localtemptrans set trans_status = 'X'");
             TransRecord::finalizeTransaction(true);
 
-            if ($CORE_LOCAL->get('LoudLogins') == 1) {
+            if (CoreLocal::get('LoudLogins') == 1) {
                 UdpComm::udpSend('goodBeep');
             }
 		} else {
-            if ($CORE_LOCAL->get('LoudLogins') == 1) {
+            if (CoreLocal::get('LoudLogins') == 1) {
                 UdpComm::udpSend('twoPairs');
             }
         }
@@ -153,12 +152,11 @@ class mgrlogin extends NoInputPage {
 		return $ret;
 	}
 
-	function cancelorder() {
-		global $CORE_LOCAL;
-
-		$CORE_LOCAL->set("plainmsg",_("transaction cancelled"));
+	function cancelorder() 
+    {
+		CoreLocal::set("plainmsg",_("transaction cancelled"));
 		UdpComm::udpSend("rePoll");
-		$CORE_LOCAL->set("ccTermOut","reset");
+		CoreLocal::set("ccTermOut","reset");
 	}
 }
 

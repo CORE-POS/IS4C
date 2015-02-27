@@ -34,6 +34,7 @@ class EditShelfTags extends FanniePage {
     protected $auth_classes = array('barcodes');
 
     public $description = '[Edit Shelf Tags] updates the text information for a set of tags.';
+    public $themed = true;
 
     private $id;
 
@@ -102,32 +103,44 @@ class EditShelfTags extends FanniePage {
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $ret = "<form action=EditShelfTags.php method=post>";
-        $ret .= "<table cellspacing=0 cellpadding=4 border=1>";
+        $ret .= "<table class=\"table table-striped\">";
         $ret .= "<tr><th>UPC</th><th>Desc</th><th>Price</th><th>Brand</th><th>SKU</th>";
         $ret .= "<th>Size</th><th>Units</th><th>Vendor</th><th>PricePer</th><th># Tags</th></tr>";
 
-        $class = array("one","two");
-        $c = 1;
         $tags = new ShelftagsModel($dbc);
         $tags->id($this->id);
-        foreach($tags->find() as $tag) {
-            $ret .= "<tr class=$class[$c]>";
+        foreach ($tags->find() as $tag) {
+            $ret .= '<tr>';
             $ret .= "<td>" . $tag->upc() . "</td><input type=hidden name=upc[] value=\"" . $tag->upc() . "\" />";
-            $ret .= "<td><input type=text name=desc[] value=\"" . $tag->description() . "\" size=25 /></td>";
-            $ret .= "<td><input type=text name=price[] value=\"" . $tag->normal_price() . "\" size=5 /></td>";
-            $ret .= "<td><input type=text name=brand[] value=\"" . $tag->brand() . "\" size=13 /></td>";
-            $ret .= "<td><input type=text name=sku[] value=\"" . $tag->sku() . "\" size=6 /></td>";
-            $ret .= "<td><input type=text name=size[] value=\"" . $tag->size() . "\" size=6 /></td>";
-            $ret .= "<td><input type=text name=units[] value=\"" . $tag->units() . "\" size=4 /></td>";
-            $ret .= "<td><input type=text name=vendor[] value=\"" . $tag->vendor() . "\" size=7 /></td>";
-            $ret .= "<td><input type=text name=ppo[] value=\"" . $tag->pricePerUnit() . "\" size=10 /></td>";
-            $ret .= "<td><input type=text name=counts[] value=\"" . $tag->count() . "\" size=4 /></td>";
+            $ret .= "<td><input type=text name=desc[] value=\"" . $tag->description() . "\" 
+                        class=\"form-control\" /></td>";
+            $ret .= "<td><div class=\"input-group\">
+                    <span class=\"input-group-addon\">\$</span>
+                    <input type=text name=price[] value=\"" . $tag->normal_price() . "\" 
+                        class=\"form-control\" />
+                    </div></td>";
+            $ret .= "<td><input type=text name=brand[] value=\"" . $tag->brand() . "\" 
+                        class=\"form-control\" /></td>";
+            $ret .= "<td><input type=text name=sku[] value=\"" . $tag->sku() . "\" 
+                        class=\"form-control\" /></td>";
+            $ret .= "<td><input type=text name=size[] value=\"" . $tag->size() . "\" 
+                        class=\"form-control\" /></td>";
+            $ret .= "<td><input type=text name=units[] value=\"" . $tag->units() . "\" 
+                        class=\"form-control\" /></td>";
+            $ret .= "<td><input type=text name=vendor[] value=\"" . $tag->vendor() . "\" 
+                        class=\"form-control\" /></td>";
+            $ret .= "<td><input type=text name=ppo[] value=\"" . $tag->pricePerUnit() . "\" 
+                        class=\"form-control\" /></td>";
+            $ret .= "<td><input type=number name=counts[] value=\"" . $tag->count() . "\" 
+                        class=\"form-control\" /></td>";
             $ret .= "</tr>";
-            $c = ($c+1)%2;
         }
         $ret .= "</table>";
         $ret .= "<input type=hidden name=id value=\"".$this->id."\" />";
-        $ret .= "<input type=submit name=submit value=\"Update Shelftags\" />";
+        $ret .= '<p>';
+        $ret .= "<button type=submit name=submit value=\"1\" 
+            class=\"btn btn-default\">Update Shelftags</button>";
+        $ret .= '</p>';
         $ret .= "</form>";
 
         return $ret;

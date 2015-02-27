@@ -134,14 +134,15 @@ foreach($suppliers as $v){
 echo '</select>';
 echo '<hr />';
 
+$paged = true;
 if (isset($_REQUEST['card_no']) && is_numeric($_REQUEST['card_no'])){
-    if (empty($filterstring)){
+    if (empty($filterstring)) {
         $filterstring .= "WHERE p.card_no=?";
-    }
-    else{
+    } else {
         $filterstring .= " AND p.card_no=?";
     }
     $filterargs[] = $_REQUEST['card_no'];
+    $paged = false;
     printf('<input type="hidden" id="cardno" value="%d" />',$_REQUEST['card_no']);
 }
 $page = isset($_REQUEST['page'])?$_REQUEST['page']:1;
@@ -160,43 +161,49 @@ elseif($order === 'qty')
 elseif($order === 'status')
     $orderby = "statusFlag";
 
-$p = $dbc->prepare_statement("SELECT min(datetime) as orderDate,p.order_id,sum(total) as value,
-    count(*)-1 as items,
-    statusFlag AS status_flag,
-    subStatus AS sub_status,
-    CASE WHEN MAX(p.card_no)=0 THEN MAX(o.lastName) ELSE MAX(c.LastName) END as name,
-    MIN(CASE WHEN trans_type='I' THEN charflag ELSE 'ZZZZ' END) as charflag,
-    MAX(p.card_no) AS card_no
+$lookupQ = "
+    SELECT min(datetime) as orderDate,
+        p.order_id,
+        sum(total) as value,
+        count(*)-1 as items,
+        statusFlag AS status_flag,
+        subStatus AS sub_status,
+        CASE WHEN MAX(p.card_no)=0 THEN MAX(o.lastName) ELSE MAX(c.LastName) END as name,
+        MIN(CASE WHEN trans_type='I' THEN charflag ELSE 'ZZZZ' END) as charflag,
+        MAX(p.card_no) AS card_no
     FROM {$TRANS}CompleteSpecialOrder as p
-    LEFT JOIN custdata AS c ON c.CardNo=p.card_no AND personNum=p.voided
-    LEFT JOIN {$TRANS}SpecialOrders AS o ON p.order_id=o.specialOrderID
+        LEFT JOIN custdata AS c ON c.CardNo=p.card_no AND personNum=p.voided
+        LEFT JOIN {$TRANS}SpecialOrders AS o ON p.order_id=o.specialOrderID
     $filterstring
     GROUP BY p.order_id,statusFlag,subStatus
-    HAVING (count(*) > 1 OR
-        SUM(CASE WHEN o.notes LIKE '' THEN 0 ELSE 1 END) > 0
-        )
-    AND ".$dbc->monthdiff($dbc->now(),'min(datetime)')." >= ((?-1)*3)
-    AND ".$dbc->monthdiff($dbc->now(),'min(datetime)')." < (?*3)
-    ORDER BY $orderby");
-$filterargs[] = $page;
-$filterargs[] = $page; // again
+    HAVING 
+        (count(*) > 1 OR SUM(CASE WHEN o.notes LIKE '' THEN 0 ELSE 1 END) > 0)";
+if ($paged) {
+    $lookupQ .= "
+        AND ".$dbc->monthdiff($dbc->now(),'min(datetime)')." >= ((?-1)*3)
+        AND ".$dbc->monthdiff($dbc->now(),'min(datetime)')." < (?*3) ";
+    $filterargs[] = $page;
+    $filterargs[] = $page; // again
+}
+$lookupQ .= " ORDER BY $orderby";
+$p = $dbc->prepare($lookupQ);
 $r = $dbc->exec_statement($p,$filterargs);
 
 $orders = array();
 $valid_ids = array();
-while($w = $dbc->fetch_row($r)){
+while ($w = $dbc->fetch_row($r)) {
     $orders[] = $w;
     $valid_ids[$w['order_id']] = True;
 }
 
-if ($f2 !== '' || $f3 !== ''){
+if ($f2 !== '' || $f3 !== '') {
     $filter = "";
     $args = array();
-    if ($f2 !== ''){
+    if ($f2 !== '') {
         $filter .= "AND (m.superID IN (?) OR o.noteSuperID IN (?))";
         $args = array($f2,$f2);
     }
-    if ($f3 !== ''){
+    if ($f3 !== '') {
         $filter .= "AND p.mixMatch=?";
         $args[] = $f3;
     }
@@ -210,7 +217,7 @@ if ($f2 !== '' || $f3 !== ''){
     while($w = $dbc->fetch_row($r))
         $valid_ids[$w['order_id']] = True;
 
-    if ($f2 !== '' && $f3 === ''){
+    if ($f2 !== '' && $f3 === '') {
         $q2 = $dbc->prepare_statement("SELECT o.specialOrderID FROM 
                 {$TRANS}SpecialOrders AS o
                 INNER JOIN {$TRANS}CompleteSpecialOrder AS p
@@ -218,19 +225,20 @@ if ($f2 !== '' || $f3 !== ''){
                 WHERE o.noteSuperID IN (?)
                 GROUP BY o.specialOrderID");
         $r2 = $dbc->exec_statement($q2, array($f2));
-        while($w2 = $dbc->fetch_row($r2))
-            $valid_ids[$w2['specialOrderID']] = True;
+        while($w2 = $dbc->fetch_row($r2)) {
+            $valid_ids[$w2['specialOrderID']] = true;
+        }
     }
 }
 
 $oids = "(";
 $oargs = array();
-foreach($valid_ids as $id=>$nonsense){
+foreach ($valid_ids as $id=>$nonsense) {
     $oids .= "?,";
     $oargs[] = $id;
 }
 $oids = rtrim($oids,",").")";
-if (empty($oargs)){
+if (empty($oargs)) {
     $oids = '(?)';
     $oargs = array(-1);
     // avoid invalid query
@@ -242,20 +250,22 @@ $itemsQ = $dbc->prepare_statement("SELECT order_id,description,mixMatch FROM
 $itemsR = $dbc->exec_statement($itemsQ, $oargs);
 $items = array();
 $suppliers = array();
-while($itemsW = $dbc->fetch_row($itemsR)){
-    if (!isset($items[$itemsW['order_id']]))
+while ($itemsW = $dbc->fetch_row($itemsR)) {
+    if (!isset($items[$itemsW['order_id']])) {
         $items[$itemsW['order_id']] = $itemsW['description'];
-    else
+    } else {
         $items[$itemsW['order_id']] .= "; ".$itemsW['description'];
-    if (!empty($itemsW['mixMatch'])){
-        if (!isset($suppliers[$itemsW['order_id']]))
+    }
+    if (!empty($itemsW['mixMatch'])) {
+        if (!isset($suppliers[$itemsW['order_id']])) {
             $suppliers[$itemsW['order_id']] = $itemsW['mixMatch'];
-        else
+        } else {
             $suppliers[$itemsW['order_id']] .= "; ".$itemsW['mixMatch'];
+        }
     }
 }
 $lenLimit = 10;
-foreach($items as $id=>$desc){
+foreach ($items as $id=>$desc) {
     if (strlen($desc) <= $lenLimit) continue;
 
     $min = substr($desc,0,$lenLimit);
@@ -267,7 +277,7 @@ foreach($items as $id=>$desc){
     $items[$id] = $desc;
 }
 $lenLimit = 10;
-foreach($suppliers as $id=>$desc){
+foreach ($suppliers as $id=>$desc) {
     if (strlen($desc) <= $lenLimit) continue;
 
     $min = substr($desc,0,$lenLimit);
@@ -290,7 +300,7 @@ $ret = '<table cellspacing="0" cellpadding="4" border="1">
     <th><a href="" onclick="resort(\'status\');return false;">Status</a></th>
     </tr>';
 $key = "";
-foreach($orders as $w){
+foreach ($orders as $w) {
     if (!isset($valid_ids[$w['order_id']])) continue;
 
     $ret .= sprintf('<tr class="%s"><td><a href="review.php?orderID=%d&k=%s">%s</a></td>
@@ -306,29 +316,32 @@ foreach($orders as $w){
         (isset($suppliers[$w['order_id']])?$suppliers[$w['order_id']]:'&nbsp;'),
         $w['items'],$w['value']);
     $ret .= '<td>';
-    foreach($status as $k=>$v){
+    foreach ($status as $k=>$v) {
         if ($w['status_flag']==$k) $ret .= $v;
     }
     $ret .= " <span id=\"statusdate{$w['order_id']}\">".($w['sub_status']==0?'No Date':date('m/d/Y',$w['sub_status']))."</span></td></tr>";
 }
 $ret .= "</table>";
 
-$url = $_SERVER['REQUEST_URI'];
-if (!strstr($url,"page=")){
-    if (substr($url,-4)==".php")
-        $url .= "?page=".$page;
-    else
-        $url .= "&page=".$page;
+if ($paged) {
+    $url = $_SERVER['REQUEST_URI'];
+    if (!strstr($url,"page=")) {
+        if (substr($url,-4)==".php") {
+            $url .= "?page=".$page;
+        } else {
+            $url .= "&page=".$page;
+        }
+    }
+    if ($page > 1) {
+        $prev = $page-1;
+        $prev_url = preg_replace('/page=\d+/','page='.$prev,$url);
+        $ret .= sprintf('<a href="%s">Previous</a>&nbsp;&nbsp;||&nbsp;&nbsp;',
+                $prev_url);
+    }
+    $next = $page+1;
+    $next_url = preg_replace('/page=\d+/','page='.$next,$url);
+    $ret .= sprintf('<a href="%s">Next</a>',$next_url);
 }
-if ($page > 1){
-    $prev = $page-1;
-    $prev_url = preg_replace('/page=\d+/','page='.$prev,$url);
-    $ret .= sprintf('<a href="%s">Previous</a>&nbsp;&nbsp;||&nbsp;&nbsp;',
-            $prev_url);
-}
-$next = $page+1;
-$next_url = preg_replace('/page=\d+/','page='.$next,$url);
-$ret .= sprintf('<a href="%s">Next</a>',$next_url);
 
 echo $ret;
 ?>

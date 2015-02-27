@@ -44,11 +44,14 @@ this ends up being like a percent discount. A value of 1.0 gives an item for fre
 0.5 gives an item for 50% off, etc. The discount is always applied to the cheapest valid item.
 <li><b>Set Price</b> discount locks in the coupon price. Regardless of the regular price, the 
 price with coupon will be exactly what's specified here.
-<li><b>Flat Discount (Item)</b> discounts the chepeast applicable item by the specified amount.
+<li><b>Scaling Discount (Item)</b> discounts the chepeast applicable item by the specified amount.
 This scales with quantity to deal with by-weight items.
-<li><b>Flat Discount (Department)</b> is the same as above except for an item in the specified
+<li><b>Scaling Discount (Department)</b> is the same as above except for an item in the specified
 department(s) instead of a specific UPC
+<li><b>Capped Discount (Department)</b> takes off the discount amount <em>or</em> makes the
+cheapest item free, whichever value is less.</li>
 <li><b>Flat Discount</b> removes exactly the given amount, once, from the transaction
+<li><b>Per-Item Discount</b> removes the discount amount times the number of matching items.</li>
 <li><b>Percent Discount</b> provides a percentage off all discountable items (e.g., member 
 appreciation month)
     <ul>

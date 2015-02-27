@@ -44,6 +44,9 @@
 
 */
 
+// set class alias so lines don't get too long
+use \COREPOS\Fannie\API\data\SyncLanes as SyncLanes;
+
 include('../config.php');
 include_once($FANNIE_ROOT.'src/cron_msg.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
@@ -83,4 +86,3 @@ if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' ) {
 
 echo cron_msg(basename(__FILE__) ." done.");
 
-?>

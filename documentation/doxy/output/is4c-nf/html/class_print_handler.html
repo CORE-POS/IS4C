@@ -239,6 +239,10 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_print_handler.html#6e68b23ca6e8980aebededdef6a7e1f5">RenderBitmap</a> ($arg, $align='C')</td></tr>
 
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_print_handler.html#213df8027ec4a72954e231b1e301ac73">rawEscCommand</a> ($command)</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_print_handler.html#3e6662f39c0729b66a39459540ca1a44">renderBitmapFromRam</a> ($image_id)</td></tr>
+
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
 Generic print module<p>
@@ -361,6 +365,32 @@ Get newlines <dl compact><dt><b>Parameters:</b></dt><dd>
 Reimplemented in <a class="el" href="class_email_print_handler.html#963443876fe78376d5451ef63c9eb368">EmailPrintHandler</a>.
 </div>
 </div><p>
+<a class="anchor" name="213df8027ec4a72954e231b1e301ac73"></a><!-- doxytag: member="PrintHandler::rawEscCommand" ref="213df8027ec4a72954e231b1e301ac73" args="($command)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">PrintHandler::rawEscCommand           </td>
+          <td>(</td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>command</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Wrapper for raw ESC byte strings so subclass handlers can decide whether they're compatible <dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>$command</em>&nbsp;</td><td>[string] command bytes </td></tr>
+  </table>
+</dl>
+<dl compact><dt><b>Returns:</b></dt><dd>[string] receipt text </dd></dl>
+
+</div>
+</div><p>
 <a class="anchor" name="6e68b23ca6e8980aebededdef6a7e1f5"></a><!-- doxytag: member="PrintHandler::RenderBitmap" ref="6e68b23ca6e8980aebededdef6a7e1f5" args="($arg, $align='C')" -->
 <div class="memitem">
 <div class="memproto">
@@ -428,6 +458,32 @@ Draw bitmap from file <dl compact><dt><b>Parameters:</b></dt><dd>
   </table>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>printer command string </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="3e6662f39c0729b66a39459540ca1a44"></a><!-- doxytag: member="PrintHandler::renderBitmapFromRam" ref="3e6662f39c0729b66a39459540ca1a44" args="($image_id)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">PrintHandler::renderBitmapFromRam           </td>
+          <td>(</td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>image_id</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Show bitmap stored on the printer device itself <dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>$image_id</em>&nbsp;</td><td>[int] storage location ID </td></tr>
+  </table>
+</dl>
+<dl compact><dt><b>Returns:</b></dt><dd>[string] receipt text </dd></dl>
 
 </div>
 </div><p>
@@ -539,7 +595,7 @@ Write output to device <dl compact><dt><b>Parameters:</b></dt><dd>
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/PrintHandlers/PrintHandler.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 9 Feb 2015 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

@@ -50,8 +50,7 @@ $query = $dbc->prepare_statement("SELECT CardNo,
       LEFT JOIN memDates AS d
       ON c.CardNo=d.card_no
           WHERE 
-          memType IN (1,3)
-      AND c.Type='PC'
+      c.Type='PC'
           AND (end_date > ".$dbc->now()." 
         or end_date = '' 
         or end_date is null

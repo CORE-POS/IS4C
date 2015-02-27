@@ -42,11 +42,11 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_display_lib.html#11681e41ac2b85e6f92c1fce8acdd735">plainmsg</a> ($strmsg)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_display_lib.html#87bf6dd610589566b597ec69365b0a55">msgbox</a> ($strmsg, $icon, $noBeep=False)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_display_lib.html#955570859b5eea0db69a109d263385cb">msgbox</a> ($strmsg, $icon, $noBeep=false, $buttons=array())</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_display_lib.html#024ae5843f8b385916b12348c22f5121">xboxMsg</a> ($strmsg)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_display_lib.html#600e2c224f319456c38b256850e5587c">xboxMsg</a> ($strmsg, $buttons=array())</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_display_lib.html#a4ca16f2c67a9cbbee6c9ab57c666cde">boxMsg</a> ($strmsg, $header=&quot;&quot;, $noBeep=False)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_display_lib.html#b81d8227ad5d93bc46b3290b760ad6af">boxMsg</a> ($strmsg, $header=&quot;&quot;, $noBeep=false, $buttons=array())</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_display_lib.html#6f47b5762c2f71fbc2a96d0d6f9f5902">inputUnknown</a> ()</td></tr>
 
@@ -72,12 +72,14 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_display_lib.html#8cee5ed474eec9fad96a3ec0cf9cdf49">lastpage</a> ($readOnly=False)</td></tr>
 
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_display_lib.html#8393afcb0da07f47ee8054e6023512e4">screenDisplay</a> ($min, $max)</td></tr>
+
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
 Functions for drawing display elements 
 <p>
 <hr><h2>Member Function Documentation</h2>
-<a class="anchor" name="a4ca16f2c67a9cbbee6c9ab57c666cde"></a><!-- doxytag: member="DisplayLib::boxMsg" ref="a4ca16f2c67a9cbbee6c9ab57c666cde" args="($strmsg, $header=&quot;&quot;, $noBeep=False)" -->
+<a class="anchor" name="b81d8227ad5d93bc46b3290b760ad6af"></a><!-- doxytag: member="DisplayLib::boxMsg" ref="b81d8227ad5d93bc46b3290b760ad6af" args="($strmsg, $header=&quot;&quot;, $noBeep=false, $buttons=array())" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -97,7 +99,13 @@ Functions for drawing display elements
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">$&nbsp;</td>
-          <td class="paramname"> <em>noBeep</em> = <code>False</code></td><td>&nbsp;</td>
+          <td class="paramname"> <em>noBeep</em> = <code>false</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>buttons</em> = <code>array()</code></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -112,12 +120,13 @@ Functions for drawing display elements
 Get a centered message box with "exclaimC" graphic <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>$strmsg</em>&nbsp;</td><td>the message </td></tr>
-    <tr><td valign="top"></td><td valign="top"><em>$header</em>&nbsp;</td><td>does nothing... </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$header</em>&nbsp;</td><td>title for the box </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>$noBeep</em>&nbsp;</td><td>don't beep scale </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$buttons</em>&nbsp;</td><td>see <a class="el" href="class_display_lib.html#955570859b5eea0db69a109d263385cb">msgbox()</a> </td></tr>
   </table>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>An HTML string</dd></dl>
-An alias for <a class="el" href="class_display_lib.html#87bf6dd610589566b597ec69365b0a55">msgbox()</a>. <dl compact><dt><b>Examples: </b></dt><dd>
+An alias for <a class="el" href="class_display_lib.html#955570859b5eea0db69a109d263385cb">msgbox()</a>. <dl compact><dt><b>Examples: </b></dt><dd>
 <a class="el" href="_hello_world_8php-example.html#a8">HelloWorld.php</a>, and <a class="el" href="_h_w___parser_8php-example.html#a15">HW_Parser.php</a>.</dl>
 </div>
 </div><p>
@@ -163,8 +172,11 @@ Get the currently displayed items <dl compact><dt><b>Parameters:</b></dt><dd>
 <dl compact><dt><b>Returns:</b></dt><dd>An HTML string</dd></dl>
 This function probably shouldn't be used directly. Call listitems() or <a class="el" href="class_display_lib.html#8cee5ed474eec9fad96a3ec0cf9cdf49">lastpage()</a> instead. 
 <p>
+30Oct2014 Andy Idea here is to look up the currently displayed items and perform any necessary transformations of the text in PHP instead of tucking that logic inside the screendisplay view. I'm leaving the query above for reference in case I screwed something up and the old method of drawing the screen needs to be quickly re-enabled.<p>
+14Nov2014 Andy Disabled for the sake of putting together a release. Will go into testing following the release and be included in the next one<p>
+03Dec2014 Andy Axing screen display isn't a super high priority right now With better unit testing in place, I want to write more tests to verify this method behaves the same as the screendisplay via. No ETA at this point.<p>
 11Mar14 Andy Ancient idea about displaying transaction line-items on credit card terminal screen. Current terminal does not even support this functionality.<p>
-I'm leaving the "get last relevant line" implementation for reference. if (is_object($td) &amp;&amp; !empty($last_item)) { $due = sprintf('%.2f',$CORE_LOCAL-&gt;get("amtdue")); $dueline = 'Subtotal' .str_pad('',22-strlen($due),' ') .$due; $items = ""; $count = 0; for($i=count($last_item)-1;$i&gt;=0;$i--) { $items = ":".$last_item[$i].$items; $count++; if ($count &gt;= 3) break; } for($i=$count;$i&lt;3;$i++) { $items = ": ".$items; } $td-&gt;WriteToScale("display:".$last_item.":".$dueline); } 
+I'm leaving the "get last relevant line" implementation for reference. if (is_object($td) &amp;&amp; !empty($last_item)) { $due = sprintf('%.2f',CoreLocal::get("amtdue")); $dueline = 'Subtotal' .str_pad('',22-strlen($due),' ') .$due; $items = ""; $count = 0; for($i=count($last_item)-1;$i&gt;=0;$i--) { $items = ":".$last_item[$i].$items; $count++; if ($count &gt;= 3) break; } for($i=$count;$i&lt;3;$i++) { $items = ": ".$items; } $td-&gt;WriteToScale("display:".$last_item.":".$dueline); } 
 </div>
 </div><p>
 <a class="anchor" name="5c4c2a1750dc2fc3285a8477e494ec25"></a><!-- doxytag: member="DisplayLib::drawNotifications" ref="5c4c2a1750dc2fc3285a8477e494ec25" args="()" -->
@@ -203,7 +215,7 @@ Use the right side of the screen to show various notifications
 
 <p>
 Get a centered message box with input unknown message. <dl compact><dt><b>Returns:</b></dt><dd>An HTML string</dd></dl>
-An alias for <a class="el" href="class_display_lib.html#87bf6dd610589566b597ec69365b0a55">msgbox()</a>. 
+An alias for <a class="el" href="class_display_lib.html#955570859b5eea0db69a109d263385cb">msgbox()</a>. 
 </div>
 </div><p>
 <a class="anchor" name="8cee5ed474eec9fad96a3ec0cf9cdf49"></a><!-- doxytag: member="DisplayLib::lastpage" ref="8cee5ed474eec9fad96a3ec0cf9cdf49" args="($readOnly=False)" -->
@@ -268,7 +280,7 @@ Get the items currently on screen <dl compact><dt><b>Parameters:</b></dt><dd>
 If you just want to show the most recently scanned items, use <a class="el" href="class_display_lib.html#8cee5ed474eec9fad96a3ec0cf9cdf49">lastpage()</a>. 
 </div>
 </div><p>
-<a class="anchor" name="87bf6dd610589566b597ec69365b0a55"></a><!-- doxytag: member="DisplayLib::msgbox" ref="87bf6dd610589566b597ec69365b0a55" args="($strmsg, $icon, $noBeep=False)" -->
+<a class="anchor" name="955570859b5eea0db69a109d263385cb"></a><!-- doxytag: member="DisplayLib::msgbox" ref="955570859b5eea0db69a109d263385cb" args="($strmsg, $icon, $noBeep=false, $buttons=array())" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -288,7 +300,13 @@ If you just want to show the most recently scanned items, use <a class="el" href
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">$&nbsp;</td>
-          <td class="paramname"> <em>noBeep</em> = <code>False</code></td><td>&nbsp;</td>
+          <td class="paramname"> <em>noBeep</em> = <code>false</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>buttons</em> = <code>array()</code></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -305,6 +323,9 @@ Get a centered message box <dl compact><dt><b>Parameters:</b></dt><dd>
     <tr><td valign="top"></td><td valign="top"><em>$strmsg</em>&nbsp;</td><td>the message </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>$icon</em>&nbsp;</td><td>graphic icon file </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>$noBeep</em>&nbsp;</td><td>don't send a scale beep </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$buttons</em>&nbsp;</td><td>keyed array of touchable/clickable buttons<ul>
+<li>key is the text shown on the button</li><li>value is javascript executed onclick </li></ul>
+</td></tr>
   </table>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>An HTML string</dd></dl>
@@ -621,6 +642,45 @@ Known input values are:<ul>
 
 </div>
 </div><p>
+<a class="anchor" name="8393afcb0da07f47ee8054e6023512e4"></a><!-- doxytag: member="DisplayLib::screenDisplay" ref="8393afcb0da07f47ee8054e6023512e4" args="($min, $max)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static DisplayLib::screenDisplay           </td>
+          <td>(</td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>min</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>max</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"><code> [static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Select items from the transaction with formatting for on screen display <dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>$min</em>&nbsp;</td><td>[int] minimum localtemptrans.trans_id </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$max</em>&nbsp;</td><td>[int] maximum localtemtprans.trans_id </td></tr>
+  </table>
+</dl>
+<dl compact><dt><b>Returns:</b></dt><dd>array of records</dd></dl>
+Each record contains the following keys:<ul>
+<li>description</li><li>comment</li><li>total</li><li>status</li><li>discounttype</li><li>trans_status</li><li>trans_type</li><li>voided</li><li>trans_id</li></ul>
+<p>
+Note: the outer array is indexed by localtemptrans.trans_id instead of zero through array.length. 
+</div>
+</div><p>
 <a class="anchor" name="71b7cf3c5c66045df0373644bb616ca0"></a><!-- doxytag: member="DisplayLib::termdisplaymsg" ref="71b7cf3c5c66045df0373644bb616ca0" args="()" -->
 <div class="memitem">
 <div class="memproto">
@@ -641,7 +701,7 @@ Display CC terminal state <dl compact><dt><b>Returns:</b></dt><dd>HTML string </
 
 </div>
 </div><p>
-<a class="anchor" name="024ae5843f8b385916b12348c22f5121"></a><!-- doxytag: member="DisplayLib::xboxMsg" ref="024ae5843f8b385916b12348c22f5121" args="($strmsg)" -->
+<a class="anchor" name="600e2c224f319456c38b256850e5587c"></a><!-- doxytag: member="DisplayLib::xboxMsg" ref="600e2c224f319456c38b256850e5587c" args="($strmsg, $buttons=array())" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -649,9 +709,18 @@ Display CC terminal state <dl compact><dt><b>Returns:</b></dt><dd>HTML string </
           <td class="memname">static DisplayLib::xboxMsg           </td>
           <td>(</td>
           <td class="paramtype">$&nbsp;</td>
-          <td class="paramname"> <em>strmsg</em>          </td>
-          <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [static]</code></td>
+          <td class="paramname"> <em>strmsg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>buttons</em> = <code>array()</code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"><code> [static]</code></td>
         </tr>
       </table>
 </div>
@@ -661,15 +730,16 @@ Display CC terminal state <dl compact><dt><b>Returns:</b></dt><dd>HTML string </
 Get a centered message box with "crossD" graphic <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>$strmsg</em>&nbsp;</td><td>the message </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$buttons</em>&nbsp;</td><td>see <a class="el" href="class_display_lib.html#955570859b5eea0db69a109d263385cb">msgbox()</a> </td></tr>
   </table>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>An HTML string</dd></dl>
-An alias for <a class="el" href="class_display_lib.html#87bf6dd610589566b597ec69365b0a55">msgbox()</a>. 
+An alias for <a class="el" href="class_display_lib.html#955570859b5eea0db69a109d263385cb">msgbox()</a>. 
 </div>
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/DisplayLib.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 9 Feb 2015 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

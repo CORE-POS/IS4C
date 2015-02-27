@@ -29,7 +29,7 @@ $end = date("Y-m-t",$stamp);
 $span = "'$start 00:00:00' AND '$end 23:59:59'";
 $args = array($start.' 00:00:00',$end.' 23:59:59');
 
-$output = DataCache::getFile("monthly");
+$output = \COREPOS\Fannie\API\data\DataCache::getFile("monthly");
 if (!$output || isset($_REQUEST['recache'])){
     if (isset($_REQUEST['recache'])) {
         $_SERVER['REQUEST_URI'] = $_SERVER['PHP_SELF']; // remove recache from URI
@@ -82,8 +82,27 @@ if (!$output || isset($_REQUEST['recache'])){
     AND d.trans_type='T'
     AND d.trans_subtype <> 'MA'
     and t.TenderName <> 'MAD Coupon'
+    AND d.trans_subtype <> 'IC'
     and d.total <> 0
     GROUP BY t.TenderName";
+
+    $queryStoreCoupons = "
+        SELECT 
+            CASE 
+                WHEN h.description is NOT NULL THEN h.description
+                WHEN d.upc <> '0' THEN d.upc
+                ELSE 'Generic InStore Coupon'
+            END as TenderName,
+            -sum(d.total) as total, 
+            COUNT(d.total)
+        FROM $dlog AS d
+            LEFT JOIN houseCoupons AS h ON d.upc=concat('00499999', lpad(convert(h.coupID, char), 5, '0'))
+        WHERE d.tdate BETWEEN ? AND ?
+            AND d.trans_status <>'X'  
+            AND d.trans_type='T'
+            AND d.trans_subtype = 'IC'
+            and d.total <> 0
+        GROUP BY TenderName";
 
     $query3 = "SELECT c.salesCode,s.superID,sum(l.total) as total 
     FROM $dlog as l left join MasterSuperDepts AS s ON
@@ -248,7 +267,8 @@ if (!$output || isset($_REQUEST['recache'])){
     echo '<table><td width=120><u><font size=2><b>Type</b></u></font></td>
           <td width=120><u><font size=2><b>Amount</b></u></font></td>
           <td width=120><u><font size=2><b>Count</b></u></font></td></table>';
-    select_to_table($query2,$args,0,'ffffff');
+    select_to_table($query2,$args,0,'ffffff', true);
+    select_to_table($queryStoreCoupons,$args,0,'ffffff');
     echo '<br>';
     echo 'Sales';
     echo '<br>------------------------------';
@@ -286,7 +306,7 @@ if (!$output || isset($_REQUEST['recache'])){
     echo '<table><td width=120><u><font size=2><b>pCode</b></u></font></td>
           <td width=120><u><font size=2><b>Retail</b></u></font></td>
           <td>Dept Number</td><td>WholeSale</td></table>';
-    select_to_table($query2,$args,0,'ffffff');
+    select_to_table($query23,$args,0,'ffffff');
     select_to_table($query22,$args,0,'ffffff');
     echo '<br>';
     echo 'Transactions';
@@ -325,7 +345,7 @@ if (!$output || isset($_REQUEST['recache'])){
         </html>";
 
     $output = ob_get_contents();
-    DataCache::putFile("monthly",$output);
+    \COREPOS\Fannie\API\data\DataCache::putFile("monthly",$output);
     ob_end_clean();
 }
 echo $output;

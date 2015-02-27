@@ -49,6 +49,7 @@ class CustomerCountReport extends FannieReportPage {
     protected $required_fields = array('date1', 'date2');
 
     public $description = '[Customer Count] lists the number of customers per day, separated by membership type.';
+    public $themed = true;
 
     function preprocess(){
         global $FANNIE_OP_DB;
@@ -143,36 +144,38 @@ class CustomerCountReport extends FannieReportPage {
             $ts = mktime(0,0,0,date("n",$ts),date("j",$ts)-1,date("Y",$ts));    
         }
 ?>
-<div id=main>   
 <form action=CustomerCountReport.php method=get>
-<table cellspacing=4 cellpadding=4>
-<tr>
-    <th>Start Date</th>
-    <td><input type=text id=date1 name=date1 value="<?php echo $lastMonday; ?>" /></td>
-    <td rowspan="4">
-    <?php echo FormLib::date_range_picker(); ?>
-    </td>
-</tr>
-<tr>
-    <th>End Date</th>
-    <td><input type=text id=date2 name=date2 value="<?php echo $lastSunday; ?>" /></td>
-</tr>
-<tr>
-    <td>
-    <label for="excel">Excel</label>
-    <input type=checkbox name=excel id="excel" value=xls />
-    </td>
-<td><input type=submit name=submit value="Submit" /></td>
-</tr>
-</table>
-</form>
+<div class="col-sm-6">
+<p>
+    <label>Start Date</label>
+    <input type=text id=date1 name=date1 value="<?php echo $lastMonday; ?>"
+        class="form-control date-field" required />
+</p>
+<p>
+    <label>End Date</label>
+    <input type=text id=date2 name=date2 value="<?php echo $lastSunday; ?>" 
+        class="form-control date-field" required />
+</p>
+<p>
+    <button type=submit name=submit value="Submit" class="btn btn-default">Submit</button>
+    <label><input type=checkbox name=excel id="excel" value=xls /> Excel</label>
+</p>
 </div>
+<div class="col-sm-6">
+    <?php echo FormLib::dateRangePicker(); ?>
+</div>
+</form>
 <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
+    }
+
+    public function helpContent()
+    {
+        return '<p>This report lists the number of transactions per day
+            broken down by member type. This is the number of <em>total</em>
+            customers not the number of <em>unique</em>. If the same member
+            shops twice in one day that\'s two transactions.</p>';
     }
 }
 
 FannieDispatch::conditionalExec(false);
 
-?>

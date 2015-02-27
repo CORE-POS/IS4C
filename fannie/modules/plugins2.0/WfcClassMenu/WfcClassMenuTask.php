@@ -48,7 +48,7 @@ class WfcClassMenuTask extends FannieTask
                         LEFT JOIN productExpires AS e ON p.upc=e.upc 
                     WHERE p.department=708 AND CURDATE() <= e.expires');
 
-        SyncLanes::pushTable('QuickLookups');
+        \COREPOS\Fannie\API\data\SyncLanes::pushTable('QuickLookups');
     }
 }
 

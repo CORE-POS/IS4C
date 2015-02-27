@@ -32,6 +32,7 @@ class ReportsIndexPage extends FanniePage {
     protected $header = "Reports";
 
     public $description = '[Reports Menu] lists all known reports.';
+    public $themed = true;
 
     public function body_content()
     {
@@ -40,8 +41,8 @@ class ReportsIndexPage extends FanniePage {
         ob_start();
         $terminology = '
 <ul>
-<li><span style="font-weight:bold;">Terminology (<a href="" onclick="$(\'#terminologyList\').toggle(); return false;">Show/Hide</a>)</span>
-<ul style="display:none;" id="terminologyList">
+<li><strong>Terminology (<a href="" onclick="$(\'#terminologyList\').toggle(); return false;">Show/Hide</a>)</strong>
+<ul class="collapse" id="terminologyList">
 <li>"Buyer" and "Super Department" usually refer to the same kind of thing:
 a grouping of Departments. 
 Some coops organize their Super Departments by Buyer, the person buying, but others do not.
@@ -87,7 +88,7 @@ All member-related things in IS4C are on the member number.
     </li>
     </ul>
 </li>
-<li><span style="font-weight:bold;">Note</span>
+<li><strong>Note</strong>
 <br />While making these reports it can be useful to have the 
 <a href="../item/ItemEditorPage.php" target="_itemEdit">Item Maintenance</a> application
 open in a separate tab or window as a reference for Manufacturers and Vendors (Distributors).
@@ -121,7 +122,7 @@ open in a separate tab or window as a reference for Manufacturers and Vendors (D
                 );
             }
         }
-        $tools = FannieAPI::listModules('FannieReportTool');
+        $tools = FannieAPI::listModules('\COREPOS\Fannie\API\FannieReportTool');
         foreach($tools as $class) {
             $obj = new $class();
             if (!$obj->discoverable) {

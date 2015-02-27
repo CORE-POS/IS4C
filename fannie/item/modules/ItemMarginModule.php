@@ -21,33 +21,40 @@
 
 *********************************************************************************/
 
-include_once(dirname(__FILE__).'/../../config.php');
-include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
+}
 
-class ItemMarginModule extends ItemModule {
-    
+class ItemMarginModule extends ItemModule 
+{
     public function showEditForm($upc, $display_mode=1, $expand_mode=1)
     {
         $db = $this->db();
         $product = new ProductsModel($db);
         $product->upc($upc);
-        $product->load();
-        $ret = '<fieldset id="ItemMarginFieldset">';
-        $ret .=  "<legend onclick=\"\$('#ItemMarginContents').toggle();\">
-                <a href=\"\" onclick=\"return false;\">Margin</a>
-                </legend>";
-        $css = ($expand_mode == 1) ? '' : 'display:none;';
-        $ret .= '<div id="ItemMarginContents" style="' . $css . '">';
-        $ret .= '<div id="ItemMarginMeter" style="float:left;">';
+        if (!$product->load()) {
+            /**
+              Lookup vendor cost on new items
+            */
+            $vendor = new VendorItemsModel($db);
+            $vendor->upc($upc);
+            foreach ($vendor->find('vendorID') as $v) {
+                $product->cost($v->cost());
+                break;
+            }
+        }
+        $ret = '<div id="ItemMarginFieldset" class="panel panel-default">';
+        $ret .=  "<div class=\"panel-heading\">
+                <a href=\"\" onclick=\"\$('#ItemMarginContents').toggle();return false;\">
+                Margin
+                </a></div>";
+        $css = ($expand_mode == 1) ? '' : ' collapse';
+        $ret .= '<div id="ItemMarginContents" class="panel-body' . $css . '">';
+        $ret .= '<div id="ItemMarginMeter" class="col-sm-5">';
         $ret .= $this->calculateMargin($product->normal_price(),$product->cost(),$product->department(), $upc);
         $ret .= '</div>';
-        $ret .= '<div id="ItemMarginFields" style="float:left;margin-left:2em;">';
-        $ret .= '<label for="cost" style="font-weight:bold;">Unit Cost</label>: ';
-        $ret .= sprintf('$<input type="text" size="6" value="%.2f" name="cost" id="cost" /> ', $product->cost());
-        $ret .= FannieHelp::ToolTip('Cost from current vendor');
         $ret .= '</div>';
         $ret .= '</div>';
-        $ret .= '</fieldset>';
 
         return $ret;
     }
@@ -100,17 +107,32 @@ class ItemMarginModule extends ItemModule {
                     $w['vendorName'],
                     $dm);
         }
+
+        $shippingP = $dbc->prepare('
+            SELECT v.shippingMarkup,
+                v.vendorName
+            FROM products AS p
+                INNER JOIN vendors AS v ON p.default_vendor_id = v.vendorID
+            WHERE p.upc=?');
+        $shippingR = $dbc->execute($shippingP, array($upc));
+        if ($shippingR && $dbc->num_rows($shippingR) > 0) {
+            $w = $dbc->fetch_row($shippingR);
+            $ret .= sprintf('Shipping markup for this vendor (%s) is %.2f%%<br />',
+                    $w['vendorName'],
+                    ($w['shippingMarkup']*100));
+            $cost = $cost * (1+$w['shippingMarkup']);
+        }
         
         $actual = 0;
         if ($price != 0)
             $actual = (($price-$cost)/$price)*100;
         if ($actual > $dm && is_numeric($dm)){
-            $ret .= sprintf("<span style=\"color:green;\">Current margin on this item is %.2f%%</span><br />",
+            $ret .= sprintf("<span class=\"alert-success\">Current margin on this item is %.2f%%</span><br />",
                 $actual);
         } elseif (!is_numeric($price)) {
-            $ret .= "<span style=\"color:green;\">No price has been saved for this item</span><br />";
+            $ret .= "<span class=\"alert-success\">No price has been saved for this item</span><br />";
         } else {
-            $ret .= sprintf("<span style=\"color:red;\">Current margin on this item is %.2f%%</span><br />",
+            $ret .= sprintf("<span class=\"alert-danger\">Current margin on this item is %.2f%%</span><br />",
                 $actual);
             $srp = $this->getSRP($cost,$dm/100.0);
             $ret .= sprintf("Suggested price: \$%.2f ",$srp);
@@ -122,13 +144,11 @@ class ItemMarginModule extends ItemModule {
 
     public function getFormJavascript($upc)
     {
-        global $FANNIE_URL;
         ob_start();
         ?>
         function updateMarginMod(){
-            $('.default_vendor_cost').val($('#cost').val());
             $.ajax({
-                url: '<?php echo $FANNIE_URL; ?>item/modules/ItemMarginModule.php',
+                url: '<?php echo FannieConfig::config('URL'); ?>item/modules/ItemMarginModule.php',
                 data: 'p='+$('#price').val()+'&d='+$('#department').val()+'&c='+$('#cost').val()+'&u=<?php echo $upc; ?>',
                 cache: false,
                 success: function(data){
@@ -136,8 +156,15 @@ class ItemMarginModule extends ItemModule {
                 }
             });
         }
-        $('#price').change(updateMarginMod);
-        $('#cost').change(updateMarginMod);
+        function nosubmit(event)
+        {
+            if (event.which == 13) {
+                event.preventDefault();
+                event.stopPropagation();
+                updateMarginMod();
+                return false;
+            }
+        }
         <?php
         return ob_get_clean();
     }
@@ -146,19 +173,15 @@ class ItemMarginModule extends ItemModule {
     {
         $upc = BarcodeLib::padUPC($upc);
         $cost = FormLib::get_form_value('cost',0.00);
-
         $dbc = $this->db();
-        $pm = new ProductsModel($dbc);
-        $pm->upc($upc);
-        $pm->cost($cost);
-        $r1 = $pm->save();
 
+        $r2 = true;
         if ($dbc->tableExists('prodExtra')) {
             $p = $dbc->prepare_statement('UPDATE prodExtra SET cost=? WHERE upc=?');
             $r2 = $dbc->exec_statement($p,array($cost,$upc));
         }
 
-        if ($r1 === false || $r2 === false) {
+        if (!$r2) {
             return false;
         } else {
             return true;    

@@ -1,0 +1,26 @@
+@media print {
+    /**
+      Bootstrap appends the URL after links.
+      This looks awful.
+    */
+    a[href]:after {
+        content: "" !important;
+    }
+    /**
+      Get rid of border around Fannie's
+      content.
+    */
+    #fannie-main-content {
+        border: 0 !important;
+    }
+    /**
+      Get rid of left and right margins on
+      Fannie's content. Margins from the print
+      settings provide adequate whitespace
+      on the side
+    */
+    #fannie-outer-margin {
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+}

@@ -28,6 +28,7 @@ class CWDemographicsReport extends FannieReportPage {
 
     public $description = '[Demographics Report] lists information about customer participation.
         Requires CoreWarehouse plugin.';
+    public $themed = true;
 
     protected $multi_report_mode = True;
 
@@ -38,6 +39,7 @@ class CWDemographicsReport extends FannieReportPage {
     protected $window_dressing = False;
 
     protected $title = 'Demographics Report';
+    protected $header = 'Demographics Report';
     protected $report_cache = 'day';
 
     function fetch_report_data(){

@@ -37,11 +37,10 @@ the database easier
 */
 function dbconnect()
 {
-    include(dirname(__FILE__).'/../config.php');
     if (!class_exists("FannieAPI")){
         include(dirname(__FILE__).'/../classlib2.0/FannieAPI.php');
     }
-    $dbc = FannieDB::get($FANNIE_OP_DB);
+    $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
 
     return $dbc;
 }
@@ -124,24 +123,23 @@ function getNumAdmins(){
     return $num;
 }
 
-function getGID($group){
-    // 11Nov12 EL Bring in config for SERVER_DBMS test.
-    include(dirname(__FILE__)."/../config.php");
+function getGID($group)
+{
+    if (!isAlphaNumeric($group)) {
+        return false;
+    }
+    $sql = dbconnect();
 
-  if (!isAlphaNumeric($group))
-    return false;
-  $sql = dbconnect();
+    $gidQ = "select gid from userGroups where name=?";
+    $gidQ = $sql->add_select_limit($gidQ,1); 
+    $gidP = $sql->prepare_statement($gidQ);
+    $gidR = $sql->exec_statement($gidP,array($group));
 
-  $gidQ = "select gid from userGroups where name=?";
-  $gidQ = $sql->add_select_limit($gidQ,1); 
-  $gidP = $sql->prepare_statement($gidQ);
-  $gidR = $sql->exec_statement($gidP,array($group));
+    if ($sql->num_rows($gidR) == 0)
+        return false;
 
-  if ($sql->num_rows($gidR) == 0)
-    return false;
-
-  $row = $sql->fetch_array($gidR);
-  return $row[0];
+    $row = $sql->fetch_array($gidR);
+    return $row[0];
 }
 
 function genSessID(){
@@ -230,14 +228,13 @@ function syncUserLDAP($name,$uid,$fullname){
     }
 }
 
-function auth_enabled(){
-    global $FANNIE_AUTH_ENABLED;
-    if (!isset($FANNIE_AUTH_ENABLED)){
-        include(dirname(__FILE__)."/../config.php");
-        return $FANNIE_AUTH_ENABLED;
+function auth_enabled()
+{
+    if (!class_exists('FannieConfig')) {
+        include(dirname(__FILE__) . '/../classlib2.0/FannieConfig.php');
     }
-    else
-        return $FANNIE_AUTH_ENABLED;
+
+    return FannieConfig::config('AUTH_ENABLED', false);
 }
 
 function table_check(){

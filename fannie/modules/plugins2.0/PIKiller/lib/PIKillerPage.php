@@ -27,6 +27,8 @@ if (!class_exists('FannieAPI'))
 
 class PIKillerPage extends FannieRESTfulPage {
 
+    public $page_set = 'Plugin :: PIKiller';
+
     protected $card_no = False;
 
     protected $must_authenticate = true;

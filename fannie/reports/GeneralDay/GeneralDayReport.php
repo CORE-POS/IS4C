@@ -32,6 +32,7 @@ class GeneralDayReport extends FannieReportPage
         (should net to zero). Also listed are transaction count &amp; size information by member type and
         equity sales for the day.'; 
     public $report_set = 'Sales Reports';
+    public $themed = true;
 
     protected $title = "Fannie : General Day Report";
     protected $header = "General Day Report";
@@ -286,20 +287,19 @@ class GeneralDayReport extends FannieReportPage
         $start = date('Y-m-d',strtotime('yesterday'));
         ?>
         <form action=GeneralDayReport.php method=get>
-        <table cellspacing=4 cellpadding=4>
-        <tr>
-        <th>Date</th>
-        <td><input type=text id=date1 name=date1 /></td>
-        </tr><tr>
-        <td>Excel <input type=checkbox name=excel /></td>
-        <td><input type=submit name=submit value="Submit" /></td>
-        </tr>
-        </table>
+        <div class="form-group">
+        <label>Date</label>
+        <input type=text id=date1 name=date1 
+            class="form-control date-field" required />
+        </div>
+        <label>Excel <input type=checkbox name=excel /></label>
+        <p>
+        <button type=submit name=submit value="Submit"
+            class="btn btn-default">Submit</button>
+        </p>
         </form>
         <?php
-        $this->add_onload_command("\$('#date1').datepicker();\n");
     }
-
 }
 
 FannieDispatch::conditionalExec(false);

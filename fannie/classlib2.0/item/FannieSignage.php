@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\Fannie\API\item {
+
 class FannieSignage 
 {
     protected $items = array();
@@ -57,8 +59,8 @@ class FannieSignage
 
     public function loadItems()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $op_db = \FannieConfig::factory()->get('OP_DB');
+        $dbc = \FannieDB::get($op_db);
         $args = array();
         if ($this->source == 'shelftags') {
             $query = 'SELECT s.upc,
@@ -276,7 +278,7 @@ class FannieSignage
         while($row = $dbc->fetch_row($result)) {
 
             if ($row['pricePerUnit'] == '') {
-                $row['pricePerUnit'] = PriceLib::pricePerUnit($row['normal_price'], $row['size']);
+                $row['pricePerUnit'] = \COREPOS\Fannie\API\lib\PriceLib::pricePerUnit($row['normal_price'], $row['size']);
             }
 
             if ($row['originName'] != '') {
@@ -331,16 +333,17 @@ class FannieSignage
         $font = isset($args['font']) ? $args['font'] : 'Arial';
         $fontsize = isset($args['fontsize']) ? $args['fontsize'] : 9;
 
-        $upc = str_pad($upc, 12, '0', STR_PAD_LEFT);
-        if (BarcodeLib::verifyCheckDigit($upc)) {
-            // if an EAN13 with valid check digit is passed
-            // in there's no need to add the zero
-            if (strlen($upc) == 12) {
-                $upc = '0' . $upc;
-            }
-        } else {
-            $check = BarcodeLib::getCheckDigit($upc);
+        $upc = ltrim($upc, '0');
+        $is_ean = false;
+        if (strlen($upc) == 12) { 
+            // must be EAN
+            $check = \BarcodeLib::getCheckDigit($upc);
             $upc .= $check;
+            $is_ean = true;
+        } else {
+            $upc = str_pad($upc, 11, '0', STR_PAD_LEFT);
+            $check = \BarcodeLib::getCheckDigit($upc);
+            $upc = '0' . $upc . $check;
         }
 
         //Convert digits to bars
@@ -396,27 +399,30 @@ class FannieSignage
         } else {
             $pdf->SetXY($x, $y + $h);
         }
-        $pdf->Cell($width, 5, $prefix . substr($upc, -12) . $suffix, 0, 0, $align);
+        $pdf->Cell($width, 5, $prefix . substr($upc, ($is_ean?-13:-12)) . $suffix, 0, 0, $align);
 
         return $pdf;
     }
 
     public function listItems()
     {
-        global $FANNIE_URL;
-        $ret = '<table>';
+        $url = \FannieConfig::factory()->get('URL');
+        $ret = '<table class="table">';
         $ret .= '<tr><th>UPC</th><th>Brand</th><th>Description</th><th>Price</th><th>Origin</th></tr>';
         $data = $this->loadItems();
         foreach ($data as $item) {
             $ret .= sprintf('<tr>
                             <td><a href="%sitem/ItemEditorPage.php?searchupc=%s" target="_edit%s">%s</a></td>
                             <input type="hidden" name="update_upc[]" value="%d" />
-                            <td><input class="FannieSignageField" type="text" name="update_brand[]" value="%s" /></td>
-                            <td><input class="FannieSignageField" type="text" name="update_desc[]" value="%s" /></td>
+                            <td><input class="FannieSignageField form-control" type="text" 
+                                name="update_brand[]" value="%s" /></td>
+                            <td><input class="FannieSignageField form-control" type="text" 
+                                name="update_desc[]" value="%s" /></td>
                             <td>%.2f</td>
-                            <td><input class="FannieSignageField" type="text" name="update_origin[]" value="%s" /></td>
+                            <td><input class="FannieSignageField form-control" type="text" 
+                                name="update_origin[]" value="%s" /></td>
                             </tr>',
-                            $FANNIE_URL,
+                            $url,
                             $item['upc'], $item['upc'], $item['upc'],
                             $item['upc'],
                             $item['brand'],
@@ -432,19 +438,19 @@ class FannieSignage
 
     public function updateItem($upc, $brand, $description)
     {
-        global $FANNIE_OP_DB;
+        $op_db = \FannieConfig::factory()->get('OP_DB');
         switch (strtolower($this->source)) {
             case 'shelftags':
-                $model = new ShelftagsModel(FannieDB::get($FANNIE_OP_DB));
+                $model = new \ShelftagsModel(\FannieDB::get($op_db));
                 $model->id($this->source_id);
-                $model->upc(BarcodeLib::padUPC($upc));
+                $model->upc(\BarcodeLib::padUPC($upc));
                 $model->brand($brand);
                 $model->description($description);
                 $model->save();
                 break;
             case 'batchbarcodes':
-                $dbc = FannieDB::get($FANNIE_OP_DB);
-                $args = array($brand, $description, BarcodeLib::padUPC($upc));
+                $dbc = \FannieDB::get($op_db);
+                $args = array($brand, $description, \BarcodeLib::padUPC($upc));
                 if (!is_array($this->source_id)) {
                     $this->source_id = array($this->source_id);
                 }
@@ -463,13 +469,13 @@ class FannieSignage
                 break;
             case 'batch':
             case '':
-                $model = new ProductUserModel(FannieDB::get($FANNIE_OP_DB));
-                $model->upc(BarcodeLib::padUPC($upc));
+                $model = new \ProductUserModel(\FannieDB::get($op_db));
+                $model->upc(\BarcodeLib::padUPC($upc));
                 $model->brand($brand);
                 $model->description($description);
                 $model->save();
-                $model = new ProductsModel(FannieDB::get($FANNIE_OP_DB));
-                $model->upc(BarcodeLib::padUPC($upc));
+                $model = new \ProductsModel(\FannieDB::get($op_db));
+                $model->upc(\BarcodeLib::padUPC($upc));
                 $model->brand($brand);
                 $model->save();
                 break;
@@ -478,9 +484,9 @@ class FannieSignage
 
     public function saveItems()
     {
-        $upcs = FormLib::get('update_upc', array());
-        $brands = FormLib::get('update_brand', array());
-        $descs = FormLib::get('update_desc', array());
+        $upcs = \FormLib::get('update_upc', array());
+        $brands = \FormLib::get('update_brand', array());
+        $descs = \FormLib::get('update_desc', array());
         for ($i=0; $i<count($upcs); $i++) {
             if (!isset($brands[$i]) || !isset($descs[$i])) {
                 continue;
@@ -491,7 +497,7 @@ class FannieSignage
 
     public function addOverride($upc, $field_name, $value)
     {
-        $upc = BarcodeLib::padUPC($upc);
+        $upc = \BarcodeLib::padUPC($upc);
         if (!isset($this->overrides[$upc])) {
             $this->overrides[$upc] = array();
         }
@@ -503,3 +509,10 @@ class FannieSignage
 
     }
 }
+
+}
+
+namespace {
+    class FannieSignage extends \COREPOS\Fannie\API\item\FannieSignage {}
+}
+

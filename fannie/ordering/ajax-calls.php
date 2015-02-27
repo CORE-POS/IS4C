@@ -507,12 +507,12 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1)
     }
     
     $ins_array = genericRow($orderID);
-    $ins_array['upc'] = "'$upc'";
+    $ins_array['upc'] = "$upc";
     if ($manualSKU) {
         $ins_array['upc'] = BarcodeLib::padUPC($sku);
     }
-    $ins_array['card_no'] = "'$memNum'";
-    $ins_array['trans_type'] = "'I'";
+    $ins_array['card_no'] = "$memNum";
+    $ins_array['trans_type'] = "I";
 
     $caseSize = 1;
     $vendor = "";
@@ -544,15 +544,15 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1)
         $vendor_upc = $row['upc'];
         $skuMatch = $row['skuMatch'];
     }
-    if (!empty($vendor_upc)) $ins_array['upc'] = "'$vendor_upc'";
+    if (!empty($vendor_upc)) $ins_array['upc'] = "$vendor_upc";
     if ($skuMatch == 1) {
-        $ins_array['upc'] = "'$vendor_upc'";
+        $ins_array['upc'] = "$vendor_upc";
         $upc = $vendor_upc;
     }
     $ins_array['quantity'] = $caseSize;
     $ins_array['ItemQtty'] = $num_cases;
-    $ins_array['mixMatch'] = $dbc->escape(substr($vendor,0,26));
-    $ins_array['description'] = $dbc->escape(substr($vendor_desc,0,32)." SO");
+    $ins_array['mixMatch'] = substr($vendor,0,26);
+    $ins_array['description'] = substr($vendor_desc,0,32)." SO";
 
     $mempricing = false;
     if ($memNum != 0 && !empty($memNum)) {
@@ -646,7 +646,7 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1)
                 }
             }
         }
-        $ins_array['description'] = "'".substr($pdW['description'],0,32)." SO'";
+        $ins_array['description'] = substr($pdW['description'],0,32);
         /**
           If product has a default vendor, lookup
           vendor name and add it
@@ -655,7 +655,7 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1)
             $v = new VendorsModel($dbc);
             $v->vendorID($pdW['default_vendor_id']);
             if ($v->load()) {
-                $ins_array['mixMatch'] = $dbc->escape(substr($v->vendorName(),0,26));
+                $ins_array['mixMatch'] = substr($v->vendorName(),0,26);
             }
         }
         /**
@@ -670,7 +670,7 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1)
             $distR = $dbc->execute($distP, array($upc));
             if ($distR && $dbc->num_rows($distR) > 0) {
                 $distW = $dbc->fetch_row($distR);
-                $ins_array['mixMatch'] = $dbc->escape(substr($w['distributor'],0,26));
+                $ins_array['mixMatch'] = substr($distW['distributor'],0,26);
             }
         }
     } elseif ($srp != 0) {
@@ -724,17 +724,17 @@ function createContactRow($orderID)
 
         $vals = array(
             'card_no'=>$orderID,
-            'last_name'=>"''",
-            'first_name'=>"''",
-            'othlast_name'=>"''",
-            'othfirst_name'=>"''",
-            'street'=>"''",
-            'city'=>"''",
-            'state'=>"''",
-            'zip'=>"''",
-            'phone'=>"''",
-            'email_1'=>"''",
-            'email_2'=>"''",
+            'last_name'=>"",
+            'first_name'=>"",
+            'othlast_name'=>"",
+            'othfirst_name'=>"",
+            'street'=>"",
+            'city'=>"",
+            'state'=>"",
+            'zip'=>"",
+            'phone'=>"",
+            'email_1'=>"",
+            'email_2'=>"",
             'ads_OK'=>1
         );
         $dbc->smart_insert("{$TRANS}SpecialOrderContact",$vals);
@@ -864,12 +864,12 @@ function createEmptyOrder()
 
     $ins_array = genericRow($orderID);
     $ins_array['numflag'] = 2;
-    $ins_array['mixMatch'] = $dbc->escape($user);
+    $ins_array['mixMatch'] = $user;
     $dbc->smart_insert("{$TRANS}PendingSpecialOrder",$ins_array);
 
     $note_vals = array(
         'order_id'=>$orderID,
-        'notes'=>"''",
+        'notes'=>"",
         'superID'=>0
     );
 
@@ -907,15 +907,15 @@ function genericRow($orderID)
     $dbc = FannieDB::get($FANNIE_OP_DB);
     return array(
     'order_id'=>$orderID,
-    'datetime'=>$dbc->now(),
+    'datetime'=>date('Y-m-d H:i:s'),
     'emp_no'=>1001,
     'register_no'=>30,
     'trans_no'=>$orderID,
     'upc'=>'0',
-    'description'=>"'SPECIAL ORDER'",
-    'trans_type'=>"'C'",
-    'trans_subtype'=>"''",
-    'trans_status'=>"''",
+    'description'=>"SPECIAL ORDER",
+    'trans_type'=>"C",
+    'trans_subtype'=>"",
+    'trans_status'=>"",
     'department'=>0,
     'quantity'=>0,
     'scale'=>0,
@@ -940,7 +940,7 @@ function genericRow($orderID)
     'memType'=>0,
     'staff'=>0,
     'numflag'=>0,
-    'charflag'=>"''",   
+    'charflag'=>"",   
     'card_no'=>0,
     'trans_id'=>0
     );
@@ -1683,8 +1683,8 @@ function getItemNonForm($orderID)
     $ret .= '<tr><th>UPC</th><th>SKU</th><th>Description</th><th>Cases</th><th>SRP</th><th>Actual</th><th>Qty</th><th>Dept</th></tr>';
     $q = $dbc->prepare_statement("SELECT o.upc,o.description,total,quantity,department,
         sku,ItemQtty,regPrice,o.discounttype,o.charflag,o.mixMatch FROM {$TRANS}CompleteSpecialOrder as o
-        left join vendorItems as v on o.upc=v.upc
-        WHERE order_id=? AND trans_type='I' AND (vendorID=1 or vendorID is null)
+        left join vendorItems as v on o.upc=v.upc AND o.upc <> '0000000000000'
+        WHERE order_id=? AND trans_type='I'
         ORDER BY trans_id DESC");
     $r = $dbc->exec_statement($q, array($orderID));
     while($w = $dbc->fetch_row($r)) {

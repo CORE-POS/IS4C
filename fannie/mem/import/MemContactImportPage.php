@@ -29,12 +29,13 @@ if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class MemContactImportPage extends FannieUploadPage {
+class MemContactImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
     protected $title = "Fannie :: Member Tools";
     protected $header = "Import Member Contact Info";
 
     public $description = '[Member Contact Info] uploads members\' address, phone number, and
     email. Member numbers must already exist.';
+    public $themed = true;
 
     protected $preview_opts = array(
         'memnum' => array(
@@ -93,7 +94,7 @@ class MemContactImportPage extends FannieUploadPage {
         )
     );
 
-    private $details = '';
+    private $stats = array('imported'=>0, 'errors'=>array());
 
     function MemContactImportPage()
     {
@@ -147,27 +148,40 @@ class MemContactImportPage extends FannieUploadPage {
             $try = $model->save();
 
             if ($try === False){
-                $this->details .= "<b>Error importing member $cardno</b><br />";
-            }
-            else {
-                $this->details .= "Imported contact info for member $cardno<br />";
+                $this->stats['errors'][] = "Error importing member $cardno";
+            } else {
+                $this->stats['imported']++;
             }
 
         }
-        return True;
+
+        return true;
     }
     
-    function form_content(){
-        return '<fieldset><legend>Instructions</legend>
+    function form_content()
+    {
+        return '<div class="well"><legend>Instructions</legend>
         Upload a CSV or XLS file containing member numbers, address, phone number(s),
         and emails. All fields are optional except member number.
         <br />A preview helps you to choose and map spreadsheet fields to the database.
         <br />The uploaded file will be deleted after the load.
-        </fieldset><br />';
+        </div><br />';
     }
 
-    function results_content(){
-        return $this->details .= 'Import completed successfully';
+    function results_content()
+    {
+        $ret = '
+            <p>Import Complete</p>
+            <div class="alert alert-success">' . $this->stats['imported'] . ' records imported</div>';
+        if ($this->stats['errors']) {
+            $ret .= '<div class="alert alert-error"><ul>';
+            foreach ($this->stats['errors'] as $error) {
+                $ret .= '<li>' . $error . '</li>';
+            }
+            $ret .= '</ul></div>';
+        }
+
+        return $ret;
     }
 }
 

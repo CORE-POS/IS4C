@@ -31,7 +31,7 @@ $FILEPATH = $FANNIE_ROOT;
     @class InstallPluginsPage
     Class for the Plugins install and config options
 */
-class InstallPluginsPage extends InstallPage {
+class InstallPluginsPage extends \COREPOS\Fannie\API\InstallPage {
 
     protected $title = 'Fannie: Plugin Install';
     protected $header = 'Fannie: Plugin Install Options';
@@ -39,6 +39,7 @@ class InstallPluginsPage extends InstallPage {
     public $description = "
     Class for the Plugins install and config options page.
     ";
+    public $themed = true;
 
     // This replaces the __construct() in the parent.
     public function __construct() {
@@ -99,10 +100,10 @@ class InstallPluginsPage extends InstallPage {
 <h1 class="install"><?php echo $this->header; ?></h1>
 <?php
 if (is_writable('../config.php')){
-    echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
+    echo "<div class=\"alert alert-success\"><i>config.php</i> is writeable</div>";
 }
 else {
-    echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
+    echo "<div class=\"alert alert-danger\"><b>Error</b>: config.php is not writeable</div>";
 }
 ?>
 
@@ -114,6 +115,12 @@ if (!isset($FANNIE_PLUGIN_SETTINGS)) $FANNIE_PLUGIN_SETTINGS = array();
 if (!is_array($FANNIE_PLUGIN_SETTINGS)) $FANNIE_PLUGIN_SETTINGS = array();
 
 $mods = FannieAPI::ListModules('FanniePlugin');
+$others = FannieAPI::listModules('\COREPOS\Fannie\API\FanniePlugin');
+foreach ($others as $o) {
+    if (!in_array($o, $mods)) {
+        $mods[] = $o;
+    }
+}
 sort($mods);
 
 if (isset($_REQUEST['PLUGINLIST']) || isset($_REQUEST['psubmit'])){
@@ -121,7 +128,7 @@ if (isset($_REQUEST['PLUGINLIST']) || isset($_REQUEST['psubmit'])){
     if (!is_array($oldset)) $oldset = array();
     $newset = isset($_REQUEST['PLUGINLIST']) ? $_REQUEST['PLUGINLIST'] : array();
     foreach($newset as $plugin_class){
-        if (!FanniePlugin::IsEnabled($plugin_class)){
+        if (!\COREPOS\Fannie\API\FanniePlugin::IsEnabled($plugin_class)){
             $obj = new $plugin_class();
             $obj->plugin_enable();
         }
@@ -136,7 +143,8 @@ if (isset($_REQUEST['PLUGINLIST']) || isset($_REQUEST['psubmit'])){
     $FANNIE_PLUGIN_LIST = $_REQUEST['PLUGINLIST'];
 }
 
-echo '<table id="install" border=0 cellspacing=0 cellpadding=4>';
+echo '<table id="install" class="table">';
+$count = 0;
 foreach($mods as $m){
     $enabled = False;
     $instance = new $m();
@@ -151,12 +159,12 @@ foreach($mods as $m){
                Not obvious why or how to fix.
                Jiggered the CSS a little here and above but isn't really a fix.
     */
-    echo '<tr><td colspan="2" style="height:1px;"><hr /></td></tr>'."\n";
-    echo '<tr><td style="width:10em;">&nbsp;</td>
+    echo '<tr ' . ($count % 2 == 0 ? 'class="info"' : '') . '>
+        <td style="width:10em;">&nbsp;</td>
         <td style="width:25em;">'."\n";
     echo '<fieldset class="toggle">'."\n";
     printf('<input name="PLUGINLIST[]" id="plugin_%s" type="checkbox" %s
-        value="%s" onchange="$(\'#settings_%s\').toggle();" />
+        value="%s" onchange="$(\'#settings_%s\').toggle();" class="checkbox-inline" />
         <label onclick="" for="plugin_%s">%s</label>',
         $m, ($enabled?'checked':''), $m, $m, $m, $m);
     echo "\n".'<span class="toggle-button"></span></fieldset>'."\n";
@@ -165,11 +173,13 @@ foreach($mods as $m){
     echo '</td></tr>'."\n";
 
     if (empty($instance->plugin_settings)){
-        echo '<tr><td colspan="2"><i>No settings required</i></td></tr>';   
+        echo '<tr ' . ($count % 2 == 0 ? 'class="info"' : '') . '>
+            <td colspan="2"><i>No settings required</i></td></tr>';   
     } else {
-        echo '<tr><td colspan="2" style="margin-bottom: 0px; height:auto;">';
+        echo '<tr ' . ($count % 2 == 0 ? 'class="info"' : '') . '>
+            <td colspan="2" style="margin-bottom: 0px; height:auto;">';
         printf('<div id="settings_%s" %s>',
-            $m, (!$enabled ? 'style="display:none;"' : '')
+            $m, (!$enabled ? 'class="collapse"' : '')
         );
         foreach($instance->plugin_settings as $field => $info){
             $form_id = $m.'_'.$field;
@@ -180,7 +190,7 @@ foreach($mods as $m){
                 $FANNIE_PLUGIN_SETTINGS[$field] = isset($info['default'])?$info['default']:'';
             echo '<b>'.(isset($info['label'])?$info['label']:$field).'</b>: ';
             if (isset($info['options'])) {
-                echo '<select name="' . $form_id . '">';
+                echo '<select name="' . $form_id . '" class="form-control">';
                 foreach ($info['options'] as $key => $val) {
                     printf('<option %s value="%s">%s</option>',
                         ($FANNIE_PLUGIN_SETTINGS[$field] == $val) ? 'selected' : '',
@@ -188,7 +198,7 @@ foreach($mods as $m){
                 }
                 echo '</select>';
             } else {
-                printf('<input type="text" name="%s" value="%s" />',
+                printf('<input type="text" name="%s" value="%s" class="form-control" />',
                     $form_id,$FANNIE_PLUGIN_SETTINGS[$field]);
             }
             // show the default if plugin isn't enabled, but
@@ -202,13 +212,13 @@ foreach($mods as $m){
             echo '<br />';
             //confset($field,"'".$CORE_LOCAL->get($field)."'");
         }
-        if (isset($_REQUEST['psubmit'])) {
+        if ($enabled && isset($_REQUEST['psubmit'])) {
             $instance->setting_change();
         }
         echo '</div>';
         echo '</td></tr>';
     }
-
+    $count++;
 }
 echo '</table>';
 
@@ -228,7 +238,9 @@ confset('FANNIE_PLUGIN_SETTINGS',$saveStr);
 
 ?>
 <hr />
-<input type=submit name=psubmit value="Save Changes" />
+        <p>
+            <button type="submit" name="psubmit" value="1" class="btn btn-default">Save Configuration</button>
+        </p>
 </form>
 
 <?php
@@ -241,6 +253,6 @@ confset('FANNIE_PLUGIN_SETTINGS',$saveStr);
 // InstallPluginsPage
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
 ?>

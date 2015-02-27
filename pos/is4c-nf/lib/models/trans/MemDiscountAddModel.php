@@ -44,6 +44,9 @@ class MemDiscountAddModel extends LocalTransModel
     /* disabled because it's a view */
     public function create()
     { 
+        if ($this->connection->isView($this->name)) {
+            return true;
+        }
         $viewSQL = "CREATE VIEW memdiscountadd AS
             select 
             max(datetime) as datetime, 
@@ -96,10 +99,9 @@ class MemDiscountAddModel extends LocalTransModel
 
     public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=False)
     {
-        global $CORE_LOCAL;
-        if ($db_name == $CORE_LOCAL->get('pDatabase')) {
+        if ($db_name == CoreLocal::get('pDatabase')) {
             $this->connection = Database::pDataConnect();
-        } else if ($db_name == $CORE_LOCAL->get('tDatabase')) {
+        } else if ($db_name == CoreLocal::get('tDatabase')) {
             $this->connection = Database::tDataConnect();
         } else {
             echo "Error: Unknown database ($db_name)";

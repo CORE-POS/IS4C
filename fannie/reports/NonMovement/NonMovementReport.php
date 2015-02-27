@@ -35,6 +35,7 @@ class NonMovementReport extends FannieReportPage {
 
     public $description = '[Non-Movement] shows items in a department or group of departments that have no sales over a given date range. This is mostly for finding discontinued or mis-entered products.';
     public $report_set = 'Movement Reports';
+    public $themed = true;
 
     function preprocess()
     {
@@ -76,7 +77,6 @@ class NonMovementReport extends FannieReportPage {
 
         $tempName = "TempNoMove";
         $dlog = DTransactionsModel::selectDlog($date1,$date2);
-        $sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumUpcSalesByDay";
 
         $tempQ = $dbc->prepare_statement("CREATE TABLE $tempName (upc varchar(13))");
         $dbc->exec_statement($tempQ);
@@ -134,75 +134,76 @@ class NonMovementReport extends FannieReportPage {
         while ($deptsW = $dbc->fetch_array($deptsR))
             $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";
 ?>
-<div id=main>   
-<form method = "get" action="NonMovementReport.php">
-    <table border="0" cellspacing="0" cellpadding="5">
-        <tr> 
-            <td> <p><b>Department Start</b></p>
-            <p><b>End</b></p></td>
-            <td> <p>
-            <select onchange="$('#deptStart').val(this.value)">
-            <?php echo $deptsList ?>
+<form method="get" action="NonMovementReport.php" class="form-horizontal">
+    <div class="col-sm-5">
+        <div class="form-group">
+            <label class="control-label col-sm-4">Department Start</label>
+            <div class="col-sm-6">
+            <select id=deptStartSel onchange="$('#deptStart').val(this.value);" class="form-control col-sm-6">
+                <?php echo $deptsList ?>
             </select>
-            <input type=text name=deptStart id=deptStart size=5 value=1 />
-            </p>
-            <p>
-            <select onchange="$('#deptEnd').val(this.value)">
-            <?php echo $deptsList ?>
-            </select>
-            <input type=text name=deptEnd id=deptEnd size=5 value=1 />
-            </p></td>
-
-             <td>
-            <p><b>Date Start</b> </p>
-                 <p><b>End</b></p>
-               </td>
-                    <td>
-                     <p>
-                       <input type=text size=25 id=date1 name=date1 />
-                       </p>
-                       <p>
-                        <input type=text size=25 id=date2 name=date2 />
-                 </p>
-               </td>
-
-        </tr>
-        <tr> 
-            <th>
-            <label for="excel">Excel</label>
-            </th>
-            <td>
-            <input type=checkbox name=excel value=xls id="excel" />
-            </td>
-            </td>
-            <td rowspan=3 colspan=2>
-            <?php echo FormLib::date_range_picker(); ?>                         
-            </td>
-        </tr>
-        <tr>
-            <th>
-            <label for="netted">Netted</label>
-            </th>
-            <td>
-            <input type=checkbox name=netted id="netted" />
-            </td>
-        </tr>
-
-        <tr> 
-            <td> <input type=submit name=submit value="Submit"> </td>
-            <td> <input type=reset name=reset value="Start Over"> </td>
-            <td>&nbsp;</td>
-            <td>&nbsp;</td>
-        </tr>
-    </table>
+            </div>
+            <div class="col-sm-2">
+            <input type=number name=deptStart id=deptStart size=5 value=1 class="form-control col-sm-2" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-4">Department End</label>
+            <div class="col-sm-6">
+                <select id=deptEndSel onchange="$('#deptEnd').val(this.value);" class="form-control">
+                    <?php echo $deptsList ?>
+                </select>
+            </div>
+            <div class="col-sm-2">
+                <input type=number name=deptEnd id=deptEnd size=5 value=1 class="form-control" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-4">
+                Excel
+                <input type=checkbox name=excel value=xls id="excel" />
+            </label>
+            <label class="control-label col-sm-4">
+                Netted
+                <input type=checkbox name=netted id="netted" />
+            </label>
+        </div>
+        <div class="form-group">
+            <button type=submit name=submit value="Submit" class="btn btn-default">Submit</button>
+            <button type=reset name=reset class="btn btn-default">Start Over</button>
+        </div>
+    </div>
+    <div class="col-sm-5">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Start Date</label>
+            <div class="col-sm-8">
+                <input type=text id=date1 name=date1 class="form-control date-field" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-4 control-label">End Date</label>
+            <div class="col-sm-8">
+                <input type=text id=date2 name=date2 class="form-control date-field" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <?php echo FormLib::date_range_picker(); ?>                            
+        </div>
+    </div>
 </form>
-</div>
 <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
+    }
+
+    public function helpContent()
+    {
+        return '<p>This report finds items that have not sold
+            during the date range. It also provides an option
+            to delete items.</p>
+            <p><em>Netted</em> means total sales is not zero.
+            This would exclude items that are rung in then
+            voided.</p>';
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

@@ -35,7 +35,6 @@ class DeptKey extends Parser
 
 	public function parse($str)
     {
-		global $CORE_LOCAL;
 		$my_url = MiscLib::base_url();
 
 		$split = explode("DP",$str);
@@ -54,26 +53,31 @@ class DeptKey extends Parser
 			// no department specified, just amount followed by DP
 			
 			// maintain refund if needed
-			if ($CORE_LOCAL->get("refund")) {
+			if (CoreLocal::get("refund")) {
 				$amt = "RF" . $amt;
             }
 
 			// save entered amount
-			$CORE_LOCAL->set("departmentAmount",$amt);
+			CoreLocal::set("departmentAmount",$amt);
 
 			// go to the department select screen
 			$ret['main_frame'] = $my_url.'gui-modules/deptlist.php';
-		} else if ($CORE_LOCAL->get("refund")==1 && $CORE_LOCAL->get("refundComment") == "") {
-			if ($CORE_LOCAL->get("SecurityRefund") > 20) {
+		} else if (CoreLocal::get("refund")==1 && CoreLocal::get("refundComment") == "") {
+			if (CoreLocal::get("SecurityRefund") > 20) {
 				$ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=RefundAdminLogin";
 			} else {
 				$ret['main_frame'] = $my_url.'gui-modules/refundComment.php';
             }
-			$CORE_LOCAL->set("refundComment",$CORE_LOCAL->get("strEntered"));
+			CoreLocal::set("refundComment",CoreLocal::get("strEntered"));
 		}
 
 		/* apply any appropriate special dept modules */
-		$deptmods = $CORE_LOCAL->get('SpecialDeptMap');
+		$deptmods = CoreLocal::get('SpecialDeptMap');
+        $db = Database::pDataConnect();
+        if (!is_array($deptmods) && $db->table_exists('SpecialDeptMap')) {
+            $model = new SpecialDeptMapModel($db);
+            $deptmods = $model->buildMap();
+        }
 		$index = (int)($dept/10);
 		if (is_array($deptmods) && isset($deptmods[$index])) {
 			foreach($deptmods[$index] as $mod) {

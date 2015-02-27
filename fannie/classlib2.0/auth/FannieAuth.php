@@ -39,8 +39,6 @@ class FannieAuth
     */
     static public function checkLogin()
     {
-        global $FANNIE_OP_DB;
-
         if (!self::enabled()) {
             return 'null';
         }
@@ -62,7 +60,7 @@ class FannieAuth
             return false;
         }
 
-        $sql = FannieDB::get($FANNIE_OP_DB);
+        $sql = FannieDB::get(FannieConfig::factory()->get('OP_DB'));
         $checkQ = $sql->prepare_statement("select * from Users AS u LEFT JOIN
                 userSessions AS s ON u.uid=s.uid where u.name=? 
                 and s.session_id=?");
@@ -123,7 +121,6 @@ class FannieAuth
     */
     static private function checkAuth($name, $auth_class, $sub='all')
     {
-        global $FANNIE_OP_DB;
         if (self::initCheck()) {
             return 'init';
         }
@@ -136,7 +133,7 @@ class FannieAuth
         if (!$uid) {
             return false;
         }
-        $sql = FannieDB::get($FANNIE_OP_DB);
+        $sql = FannieDB::get(FannieConfig::factory()->get('OP_DB'));
         $checkQ = $sql->prepare_statement("select * from userPrivs where uid=? and auth_class=? and
                  ((? between sub_start and sub_end) or (sub_start='all' and sub_end='all'))");
         $checkR = $sql->exec_statement($checkQ,array($uid,$auth_class,$sub));
@@ -157,8 +154,7 @@ class FannieAuth
     */
     static private function checkGroupAuth($user, $auth, $sub='all')
     {
-        global $FANNIE_OP_DB;
-        $sql = FannieDB::get($FANNIE_OP_DB); 
+        $sql = FannieDB::get(FannieConfig::factory()->get('OP_DB'));
         if (!self::isAlphaNumeric($user) || !self::isAlphaNumeric($auth) ||
             !self::isAlphaNumeric($sub)) {
             return false;
@@ -187,12 +183,11 @@ class FannieAuth
     */
     public static function getUID($name) 
     {
-        global $FANNIE_OP_DB;
         if (!self::enabled()) {
             return '0000';
         }
 
-        $sql = FannieDB::get($FANNIE_OP_DB);
+        $sql = FannieDB::get(FannieConfig::factory()->get('OP_DB'));
         $fetchQ = $sql->prepare_statement("select uid from Users where name=?");
         $fetchR = $sql->exec_statement($fetchQ,array($name));
         if ($sql->num_rows($fetchR) == 0) {
@@ -212,8 +207,10 @@ class FannieAuth
     */
     static public function createClass($auth_class, $description)
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $sql = FannieDB::get(FannieConfig::factory()->get('OP_DB'));
+        if (!$dbc->tableExists('userKnownPrivs')) {
+            return false;
+        }
         $notes = str_replace("\n","<br />",$description);
         $chkP = $dbc->prepare('SELECT auth_class
                                FROM userKnownPrivs
@@ -248,13 +245,9 @@ class FannieAuth
     */
     static private function enabled()
     {
-        global $FANNIE_AUTH_ENABLED;
-        if (!isset($FANNIE_AUTH_ENABLED)) {
-            include(dirname(__FILE__).'/../../config.php');
-            return $FANNIE_AUTH_ENABLED;
-        } else {
-            return $FANNIE_AUTH_ENABLED;
-        }
+        $enabled = FannieConfig::factory()->get('AUTH_ENABLED', false);
+
+        return $enabled ? true : false;
     }
 
     /**

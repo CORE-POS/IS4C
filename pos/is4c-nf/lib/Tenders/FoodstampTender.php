@@ -34,10 +34,9 @@ class FoodstampTender extends TenderModule
     */
     public function errorCheck()
     {
-        global $CORE_LOCAL;
-        if ($CORE_LOCAL->get("fntlflag") == 0) {
+        if (CoreLocal::get("fntlflag") == 0) {
             return DisplayLib::boxMsg(_("eligible amount must be totaled before foodstamp tender can be accepted"));
-        } else if ($this->amount > ($CORE_LOCAL->get("fsEligible") + 0.005)) {
+        } else if ($this->amount > (CoreLocal::get("fsEligible") + 0.005)) {
             return DisplayLib::xboxMsg(_('Foodstamp tender cannot exceed eligible amount'));
         }
 

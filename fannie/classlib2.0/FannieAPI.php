@@ -114,8 +114,8 @@ class FannieAPI
             $file = self::findClass($name, dirname(__FILE__).'/../modules/plugins2.0');
             if ($file !== false) {
                 // only use if enabled
-                $owner = FanniePlugin::memberOf($file);
-                if (FanniePlugin::isEnabled($owner)) {
+                $owner = \COREPOS\Fannie\API\FanniePlugin::memberOf($file);
+                if (\COREPOS\Fannie\API\FanniePlugin::isEnabled($owner)) {
                     include_once($file);
                 }
             }
@@ -198,6 +198,7 @@ class FannieAPI
                 $directories[] = dirname(__FILE__).'/../item/modules/';
                 break;
             case 'MemberModule':
+            case '\COREPOS\Fannie\API\member\MemberModule':
                 $directories[] = dirname(__FILE__).'/../mem/modules/';
                 break;
             case 'FannieTask':
@@ -207,15 +208,18 @@ class FannieAPI
                 $directories[] = dirname(__FILE__).'/data/models/';
                 break;
             case 'BasicModelHook':
+            case '\COREPOS\Fannie\API\data\hooks\BasicModelHook':
                 $directories[] = dirname(__FILE__).'/data/hooks/';
                 break;
             case 'FannieReportPage':
                 $directories[] = dirname(__FILE__).'/../reports/';
                 break;
             case 'FannieReportTool':
+            case '\COREPOS\Fannie\API\FannieReportTool':
                 $directories[] = dirname(__FILE__).'/../reports/';
                 break;
             case 'FannieSignage':
+            case '\COREPOS\Fannie\API\item\FannieSignage':
                 $directories[] = dirname(__FILE__) . '/item/signage/';
                 break;
             case 'FanniePage':
@@ -277,9 +281,9 @@ class FannieAPI
             // if the file is part of a plugin, make sure
             // the plugin is enabled. The exception is when requesting
             // a list of plugin classes
-            if (strstr($file, 'plugins2.0') && $base_class != 'FanniePlugin') {
-                $parent = FanniePlugin::memberOf($file);
-                if ($parent === false || !FanniePlugin::isEnabled($parent)) {
+            if (strstr($file, 'plugins2.0') && $base_class != 'FanniePlugin' && $base_class != '\COREPOS\Fannie\API\FanniePlugin') {
+                $parent = \COREPOS\Fannie\API\FanniePlugin::memberOf($file);
+                if ($parent === false || !\COREPOS\Fannie\API\FanniePlugin::isEnabled($parent)) {
                     continue;
                 }
             }
@@ -305,6 +309,9 @@ class FannieAPI
 FannieAPI::init();
 if (function_exists('spl_autoload_register')) {
     spl_autoload_register(array('FannieAPI','loadClass'));
+    if (file_exists(dirname(__FILE__) . '/../../vendor/autoload.php')) {
+        include_once(dirname(__FILE__) . '/../../vendor/autoload.php');
+    }
 } else {
     function __autoload($name)
     {

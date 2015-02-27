@@ -40,6 +40,8 @@ class FannieTask
         'weekday' => '*',
     );
 
+    public $schedulable = true;
+
     protected $error_threshold  = 99;
 
     const TASK_NO_ERROR         = 0;
@@ -49,9 +51,23 @@ class FannieTask
     const TASK_LARGE_ERROR      = 4;
     const TASK_WORST_ERROR      = 5;
 
+    protected $config = null;
+
+    protected $logger = null;
+
     public function setThreshold($t)
     {
         $this->error_threshold = $t;
+    }
+
+    public function setConfig(FannieConfig $fc)
+    {
+        $this->config = $fc;
+    }
+
+    public function setLogger(FannieLogger $fl)
+    {
+        $this->logger = $fl;
     }
 
     /**
@@ -63,23 +79,25 @@ class FannieTask
     }
 
     /**
-      Format message with date information
-      and task's class name
+      Write message to log and if necessary raise it to stderr
+      to trigger an email
       @param $str message string
-      @param $severity [optional, default zero] message importance
-      @return formatted string
+      @param $severity [optional, default 6/info] message importance
+      @return empty string
     */
-    public function cronMsg($str, $severity=0)
+    public function cronMsg($str, $severity=6)
     {
         $info = new ReflectionClass($this);
         $msg = date('r').': '.$info->getName().': '.$str."\n";
 
+        $this->logger->log($severity, $info->getName() . ': ' . $str); 
+
         // raise message into stderr
-        if ($severity >= $this->error_threshold) {
+        if ($severity <= $this->error_threshold) {
             file_put_contents('php://stderr', $msg, FILE_APPEND);
         }
 
-        return $msg;
+        return '';
     }
 }
 
@@ -92,6 +110,9 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
 
     include(dirname(__FILE__).'/../config.php');
     include(dirname(__FILE__).'/FannieAPI.php');
+
+    $config = FannieConfig::factory();
+    $logger = new FannieLogger();
 
     // prepopulate autoloader
     $preload = FannieAPI::listModules('FannieTask');
@@ -108,9 +129,11 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
         exit;
     }
 
-    if (isset($FANNIE_TASK_THRESHOLD) && is_numeric($FANNIE_TASK_THRESHOLD)) {
-        $obj->setThreshold($FANNIE_TASK_THRESHOLD);
+    if (is_numeric($config->get('TASK_THRESHOLD'))) {
+        $obj->setThreshold($config->get('TASK_THRESHOLD'));
     }
+    $obj->setConfig($config);
+    $obj->setLogger($logger);
 
     $obj->run();
 }

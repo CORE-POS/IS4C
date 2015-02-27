@@ -21,10 +21,12 @@
 
 *********************************************************************************/
 
-class DiscountApplied extends Parser {
-	var $ret;
-	function check($str){
-		global $CORE_LOCAL;
+class DiscountApplied extends Parser 
+{
+	private $ret;
+
+	function check($str)
+    {
 		$this->ret = $this->default_json();
 		if (substr($str,-2) == "DA"){
 			$strl = substr($str,0,strlen($str)-2);
@@ -32,7 +34,7 @@ class DiscountApplied extends Parser {
 				$this->ret = PrehLib::percentDiscount(0,$this->ret);
 			elseif (!is_numeric($strl)) 
 				return False;
-			elseif ($CORE_LOCAL->get("tenderTotal") != 0) 
+			elseif (CoreLocal::get("tenderTotal") != 0) 
 				$this->ret['output'] = DisplayLib::boxMsg(_("discount not applicable after tender"));
 			elseif ($strl > 50) 
 				$this->ret['output'] = DisplayLib::boxMsg(_("discount exceeds maximum"));

@@ -33,6 +33,7 @@ class PatronageTransferTool extends FanniePage {
 
     public $description = '[Transfer Patronage] shifts an entire transaction from one member
     to another.';
+    public $themed = true;
 
     private $errors = '';
     private $mode = 'init';
@@ -49,11 +50,13 @@ class PatronageTransferTool extends FanniePage {
     private $cn1;
     private $amt;
 
-    function preprocess(){
+    function preprocess()
+    {
         global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-        global $FANNIE_EMP_NO, $FANNIE_REGISTER_NO;
-        global $FANNIE_CORRECTION_DEPT;
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $FANNIE_EMP_NO = $this->config->get('EMP_NO');
+        $FANNIE_REGISTER_NO = $this->config->get('REGISTER_NO');
+        $FANNIE_CORRECTION_DEPT = $this->config->get('PATRONAGE_DEPT');
         /**
           Use fannie settings if properly configured
         */
@@ -67,10 +70,11 @@ class PatronageTransferTool extends FanniePage {
             $this->CORRECTION_DEPT = $FANNIE_CORRECTION_DEPT;
         }
 
-        if (FormLib::get_form_value('submit1',False) !== False)
+        if (FormLib::get_form_value('submit1',False) !== false) {
             $this->mode = 'confirm';
-        elseif (FormLib::get_form_value('submit2',False) !== False)
+        } elseif (FormLib::get_form_value('submit2',False) !== False) {
             $this->mode = 'finish';
+        }
 
         // error check inputs
         if ($this->mode != 'init'){
@@ -80,7 +84,7 @@ class PatronageTransferTool extends FanniePage {
             $this->cn2 = FormLib::get_form_value('memTo');
 
             if (!is_numeric($this->cn2)){
-                $this->errors .= "<em>Error: member given (".$this->cn2.") isn't a number</em>"
+                $this->errors .= "<div class=\"alert alert-danger\">Error: member given (".$this->cn2.") isn't a number</div>"
                     ."<br /><br />"
                     ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
                 return True;
@@ -89,7 +93,7 @@ class PatronageTransferTool extends FanniePage {
             $q = $dbc->prepare_statement("SELECT FirstName,LastName FROM custdata WHERE CardNo=? AND personNum=1");
             $r = $dbc->exec_statement($q,array($this->cn2));
             if ($dbc->num_rows($r) == 0){
-                $this->errors .= "<em>Error: no such member: ".$this->cn2."</em>"
+                $this->errors .= "<div class=\"alert alert-success\">Error: no such member: ".$this->cn2."</div>"
                     ."<br /><br />"
                     ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
                 return True;
@@ -103,7 +107,7 @@ class PatronageTransferTool extends FanniePage {
                 ORDER BY card_no DESC");
             $r = $dbc->exec_statement($q,array($this->tn,$this->date.' 00:00:00',$this->date.' 23:59:59'));
             if ($dbc->num_rows($r) == 0){
-                $this->errors .= "<em>Error: receipt not found: $tn</em>"
+                $this->errors .= "<div class=\"alert alert-error\">Error: receipt not found: $tn</div>"
                     ."<br /><br />"
                     ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
                 return True;
@@ -119,31 +123,34 @@ class PatronageTransferTool extends FanniePage {
         return True;
     }
     
-    function body_content(){
-        if ($this->mode == 'init')
+    function body_content()
+    {
+        if ($this->mode == 'init') {
             return $this->form_content();
-        elseif($this->mode == 'confirm')
+        } elseif ($this->mode == 'confirm') {
             return $this->confirm_content();
-        elseif($this->mode == 'finish')
+        } elseif ($this->mode == 'finish') {
             return $this->finish_content();
+        }
     }
 
-    function confirm_content(){
-
+    function confirm_content()
+    {
         if (!empty($this->errors)) return $this->errors;
 
         $ret = "<form action=\"PatronageTransferTool.php\" method=\"post\">";
         $ret .= "<b>Confirm transfer</b>";
-        $ret .= "<p style=\"font-size:120%\">";
+        $ret .= "<div class=\"alert alert-info\">";
         $ret .= sprintf("\$%.2f will be moved from %d to %d (%s)",
             $this->amt,$this->cn1,$this->cn2,$this->name2);
-        $ret .= "</p><p>";
+        $ret .= "</div><p>";
         $ret .= "<input type=\"hidden\" name=\"date\" value=\"{$this->date}\" />";
         $ret .= "<input type=\"hidden\" name=\"trans_num\" value=\"{$this->tn}\" />";
         $ret .= "<input type=\"hidden\" name=\"memTo\" value=\"{$this->cn2}\" />";
-        $ret .= "<input type=\"submit\" name=\"submit2\" value=\"Confirm\" />";
+        $ret .= "<button type=\"submit\" name=\"submit2\" value=\"Confirm\" 
+                    class=\"btn btn-default\">Confirm</button>";
         $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-        $ret .= "<input type=\"submit\" value=\"Back\" onclick=\"back(); return false;\" />";
+        $ret .= "<button type=\"buton\" class=\"btn btn-default\" onclick=\"back(); return false;\">Back</button>";
         $ret .= "</form>";
         
         return $ret;
@@ -180,23 +187,32 @@ class PatronageTransferTool extends FanniePage {
 
         if (!empty($this->errors)) return $this->errors;
 
-        $ret = "<form action=\"PatronageTransferTool.php\" method=\"post\">";
-        $ret .= "<p style=\"font-size:120%\">";
-        $ret .= "Date <input type=\"text\" id=\"date\" name=\"date\" size=\"10\" /> ";
-        $ret .= '<br />';
-        $ret .= "Receipt <input type=\"text\" name=\"trans_num\" size=\"10\" /> ";
-        $ret .= "</p><p style=\"font-size:120%;\">";
-        $memNum = FormLib::get_form_value('memIN');
-        $ret .= "To member #<input type=\"text\" name=\"memTo\" size=\"5\" />";
-        $ret .= "</p><p>";
-        $ret .= "<input type=\"hidden\" name=\"type\" value=\"equity_transfer\" />";
-        $ret .= "<input type=\"submit\" name=\"submit1\" value=\"Submit\" />";
-        $ret .= "</p>";
-        $ret .= "</form>";
+        ob_start();
+        ?>
+        <form action="PatronageTransferTool.php" method="post">
+        <div class="container">
+        <div class="form-group">
+            <label>Date</label>
+            <input type="text" id="date" name="date" class="form-control date-field" required />
+        </div>
+        <div class="form-group">
+            <label>Receipt #</label>
+            <input type="text" name="trans_num" class="form-control" required />
+        </div>
+        <div class="form-group">
+            <label>To Member #</label>
+            <input type="number" name="memTo" class="form-control" required />
+        </div>
+        <input type="hidden" name="type" value="equity_transfer" />
+        <p>
+            <button type="submit" name="submit1" value="Submit"
+                class="btn btn-default">Submit</button>
+        </p>
+        </div>
+        </form>
+        <?php
 
-        $this->add_onload_command('$(\'#date\').datepicker();');
-
-        return $ret;
+        return ob_get_clean();
     }
 
     function getTransNo($emp,$register){

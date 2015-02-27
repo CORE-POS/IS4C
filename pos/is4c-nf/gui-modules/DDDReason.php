@@ -30,8 +30,6 @@ class DDDReason extends NoInputPage
 
 	public function preprocess()
     {
-		global $CORE_LOCAL;
-
         // pre-emptively lookup available reasons
         $db = Database::pDataConnect();
         $result = $db->query('SELECT shrinkReasonID, description
@@ -39,7 +37,7 @@ class DDDReason extends NoInputPage
         if ($db->num_rows($result) == 0) {
             // no reasons configured. skip the 
             // this page and continue to next step.
-            $CORE_LOCAL->set('shrinkReason', 0);
+            CoreLocal::set('shrinkReason', 0);
 			$this->change_page($this->page_url."gui-modules/adminlogin.php?class=DDDAdminLogin");
 
             return false;
@@ -48,7 +46,7 @@ class DDDReason extends NoInputPage
             // just use that reason and continue
             // to next step
             $row = $db->fetch_row($result);
-            $CORE_LOCAL->set('shrinkReason', $row['shrinkReasonID']);
+            CoreLocal::set('shrinkReason', $row['shrinkReasonID']);
 			$this->change_page($this->page_url."gui-modules/adminlogin.php?class=DDDAdminLogin");
 
             return false;
@@ -61,10 +59,10 @@ class DDDReason extends NoInputPage
 		if (isset($_REQUEST["selectlist"])) {
 			$input = $_REQUEST["selectlist"];
 			if ($input == "CL" || $input == '') {
-				$CORE_LOCAL->set("shrinkReason", 0);
+				CoreLocal::set("shrinkReason", 0);
                 $this->change_page($this->page_url."gui-modules/pos2.php");
 			} else {
-				$CORE_LOCAL->set("shrinkReason", (int)$input);
+				CoreLocal::set("shrinkReason", (int)$input);
                 $this->change_page($this->page_url."gui-modules/adminlogin.php?class=DDDAdminLogin");
 			}
 
@@ -81,7 +79,6 @@ class DDDReason extends NoInputPage
 
 	public function body_content() 
     {
-		global $CORE_LOCAL;
 		?>
 		<div class="baseHeight">
 		<div class="centeredDisplay colored">

@@ -55,6 +55,7 @@ class GumReportIndex extends FannieRESTfulPage
             <li><a href="GumMailingList.php">Owner Mailing List</a></li>
             <li><a href="GumDividendReport.php">Projected Dividends</a></li>
             <li><a href="GumIssuedDividendReport.php">Issued Dividends</a></li>
+            <li><a href="GumDividendTaxReport.php">Dividend Tax Info Report</a></li>
             </ul>
         ';
     }

@@ -21,12 +21,12 @@
 
 *********************************************************************************/
 
-if (!class_exists('AttachmentEmailPipe')) {
+if (!class_exists('\COREPOS\Fannie\API\data\pipes\AttachmentEmailPipe')) {
     include_once(dirname(__FILE__).'/../../../classlib2.0/data/pipes/AttachmentEmailPipe.php');
 }
 /**
 */
-class FileByEmailPipe extends AttachmentEmailPipe
+class FileByEmailPipe extends \COREPOS\Fannie\API\data\pipes\AttachmentEmailPipe
 {
     public function processMail($msg)
     {

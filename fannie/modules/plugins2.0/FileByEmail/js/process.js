@@ -5,7 +5,7 @@ function processFile()
     var current = $('#curName').val();
 
     if (newname == '') {
-        alert('Filename is required');
+        showBootstrapAlert('#input-area', 'danger', 'Filename is required');
         return false;
     }
 
@@ -15,11 +15,11 @@ function processFile()
         data: 'path='+path+'&current='+current+'&new='+newname,
         success: function(resp) {
             if (resp.error) {
-                alert(resp.error);
+                showBootstrapAlert('#alert-area', 'danger', resp.error);
             } else if (resp.all_done) {
                 $('#preview').attr('data', '');
                 $('#curName').val('');
-                alert('No more files');
+                showBootstrapAlert('#alert-area', 'warning', 'No more files');
                 $('#saveFilename').val('');
             } else if (resp.next && resp.encoded) {
                 $('#preview').attr('data', 'noauto/queue/'+resp.next);
@@ -27,7 +27,7 @@ function processFile()
                 $('#saveFilename').val('');
                 $('#saveFilename').focus();
             } else {
-                alert('Error: unknown response');
+                showBootstrapAlert('#alert-area', 'danger', 'Error: unknown response');
             }
         }
     });

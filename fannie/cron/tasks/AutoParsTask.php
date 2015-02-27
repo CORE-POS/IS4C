@@ -77,7 +77,7 @@ class AutoParsTask extends FannieTask
         foreach ($vendors->find() as $vendor) {
             $model->reset();
             $model->vendorID($vendor->vendorID());
-            echo $this->cronMsg('Processing ' . $vendor->vendorName());
+            $this->cronMsg('Processing ' . $vendor->vendorName(), FannieLogger::INFO);
 
             $days = array(date('w'));
             // if vendor has a regular delivery schedule,

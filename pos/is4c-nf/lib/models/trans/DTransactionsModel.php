@@ -30,6 +30,7 @@ class DTransactionsModel extends BasicModel
 
     protected $columns = array(
     'datetime'    => array('type'=>'DATETIME','index'=>True),
+    'store_id' => array('type'=>'SMALLINT'),
     'register_no'    => array('type'=>'SMALLINT'),
     'emp_no'    => array('type'=>'SMALLINT'),
     'trans_no'    => array('type'=>'INT'),
@@ -62,7 +63,7 @@ class DTransactionsModel extends BasicModel
     'memType'    => array('type'=>'TINYINT'),
     'staff'        => array('type'=>'TINYINT'),
     'numflag'    => array('type'=>'INT','default'=>0),
-    'charflag'    => array('type'=>'INT','default'=>''),
+    'charflag'    => array('type'=>'VARCHAR(2)','default'=>"''"),
     'card_no'    => array('type'=>'INT','index'=>True),
     'trans_id'    => array('type'=>'TINYINT'),
     'pos_row_id' => array('type'=>'BIGINT UNSIGNED', 'increment'=>true, 'primary_key'=>true),
@@ -82,6 +83,21 @@ class DTransactionsModel extends BasicModel
             }
         } else {
             $this->instance["datetime"] = func_get_arg(0);
+        }
+    }
+
+    public function store_id()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["store_id"])) {
+                return $this->instance["store_id"];
+            } elseif(isset($this->columns["store_id"]["default"])) {
+                return $this->columns["store_id"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["store_id"] = func_get_arg(0);
         }
     }
 
@@ -607,6 +623,21 @@ class DTransactionsModel extends BasicModel
             }
         } else {
             $this->instance["trans_id"] = func_get_arg(0);
+        }
+    }
+
+    public function pos_row_id()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["pos_row_id"])) {
+                return $this->instance["pos_row_id"];
+            } elseif(isset($this->columns["pos_row_id"]["default"])) {
+                return $this->columns["pos_row_id"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["pos_row_id"] = func_get_arg(0);
         }
     }
     /* END ACCESSOR FUNCTIONS */

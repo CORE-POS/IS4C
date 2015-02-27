@@ -37,11 +37,14 @@ class BatchTypeEditor extends FanniePage {
     protected $header = 'Sales Batches';
 
     public $description = '[Batch Type Editor] manages different kinds of batches.';
+    public $themed = true;
 
-    function preprocess(){
+    function preprocess()
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
+        $json = array('error'=>'');
         if (FormLib::get_form_value('saveDesc') !== ''){
             $q = $dbc->prepare_statement("UPDATE batchType
                 SET typeDesc=? WHERE batchTypeID=?");
@@ -49,7 +52,11 @@ class BatchTypeEditor extends FanniePage {
                 FormLib::get_form_value('saveDesc'),
                 FormLib::get_form_value('bid')
             ));
-            echo "Desc saved";
+            if ($r === false) {
+                $json['error'] = 'Error saving sale type';
+            }
+            echo json_encode($json);
+
             return False; // ajax call
         }
         if (FormLib::get_form_value('saveType') !== ''){
@@ -59,7 +66,11 @@ class BatchTypeEditor extends FanniePage {
                 FormLib::get_form_value('saveType'),
                 FormLib::get_form_value('bid')
             ));
-            echo "Desc saved";
+            if ($r === false) {
+                $json['error'] = 'Error saving description';
+            }
+            echo json_encode($json);
+
             return False; // ajax call
         }
         if (FormLib::get_form_value('addtype') !== ''){
@@ -84,22 +95,30 @@ class BatchTypeEditor extends FanniePage {
         ob_start();
         ?>
 function saveDesc(val,bid){
+    var elem = $(this);
+    var orig = this.defaultValue;
     $.ajax({
         url: 'BatchTypeEditor.php',
         cache: false,
         type: 'post',
         data: 'saveDesc='+val+'&bid='+bid,
+        dataType: 'json',
         success: function(data){
+            showBootstrapPopover(elem, orig, data.error);
         }
     });
 }
 function saveType(val,bid){
+    var elem = $(this);
+    var orig = this.defaultValue;
     $.ajax({
         url: 'BatchTypeEditor.php',
         cache: false,
         type: 'post',
         data: 'saveType='+val+'&bid='+bid,
+        dataType: 'json',
         success: function(data){
+            showBootstrapPopover(elem, orig, data.error);
         }
     });
 }
@@ -113,12 +132,12 @@ function saveType(val,bid){
         $q = $dbc->prepare_statement("SELECT batchTypeID,typeDesc,discType FROM batchType ORDER BY batchTypeID");
         $r = $dbc->exec_statement($q);
 
-        $ret = '<table cellspacing="0" cellpadding="4" border="1">';
+        $ret = '<table class="table">';
         $ret .= '<tr><th>ID#</th><th>Description</th><th>Discount Type</th><th>&nbsp;</td></tr>';
         while($w = $dbc->fetch_row($r)){
             $ret .= sprintf('<tr><td>%d</td>
-                <td><input type="text" onchange="saveDesc(this.value,%d)" value="%s" /></td>
-                <td><select onchange="saveType($(this).val(),%d);">',
+                <td><input type="text" class="form-control" onchange="saveDesc.call(this,this.value,%d)" value="%s" /></td>
+                <td><select onchange="saveType.call(this, $(this).val(),%d);" class="form-control">',
                 $w['batchTypeID'],$w['batchTypeID'],$w['typeDesc'],$w['batchTypeID']);
         $found = False;
         foreach($this->price_methods as $id=>$desc){
@@ -133,14 +152,36 @@ function saveType(val,bid){
             $ret .= sprintf('<option value="%d" selected>%d (Custom)</option>',$w['discType'],$w['discType']);
         $ret .= '</select></td>';
         $ret .= sprintf('<td><a href="BatchTypeEditor.php?deltype=yes&bid=%d"
-                onclick="return confirm(\'Are you sure?\');">Delete</a>
-            </td></tr>',$w['batchTypeID']);
+                onclick="return confirm(\'Are you sure?\');">%s</a>
+            </td></tr>',$w['batchTypeID'], \COREPOS\Fannie\API\lib\FannieUI::deleteIcon());
         }
         $ret .= '</table>';
 
-        $ret .= '<br /><a href="BatchTypeEditor.php?addtype=yes">Create New Type</a>';
+        $ret .= '<p><button onclick="location=\'BatchTypeEditor.php?addtype=yes\';"
+            class="btn btn-default">Create New Type</button></p>';
 
         return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>Batch types control what kind of change a batch makes and
+            may also be used for organization. Discount type controls the
+            batch type\'s behavior. You may have multiple batch types with
+            identical discount type for organizational purposes.</p>
+            <p>Discount type zero is not a sale at all. Price change batches
+            update items\' regular price. The biggest advantage of changing
+            regular prices via batches is that shelf tags can be prepared
+            ahead of time before the new prices are applied.</p>
+            <p>Sale for Everyone causes items to ring up at the sale price
+            for the duration of the batch.</p>
+            <p>Sale for Members causes items to ring up at the sale price
+            for the duration of the batch but only if the customer is a
+            member. What price the item rings up at initially depends whether
+            or not the member\'s number has been entered. Prices will be
+            adjusted as needed if the member\'s number is entered after the
+            item is scanned.</p>
+            ';
     }
 }
 

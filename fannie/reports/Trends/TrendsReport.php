@@ -35,6 +35,7 @@ class TrendsReport extends FannieReportPage
 
     public $description = '[Trends] shows daily sales totals for items over a given date range. Items can be included by UPC, department, or manufacturer.';
     public $report_set = 'Movement Reports';
+    public $themed = true;
 
     public function fetch_report_data()
     {
@@ -174,7 +175,7 @@ class TrendsReport extends FannieReportPage
 
     public function form_content()
     {
-        global $FANNIE_OP_DB;
+        global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
@@ -215,74 +216,128 @@ function doShow(){
 }
 </script>
 
-<form method=get action=TrendsReport.php>
-<b>Type</b>: <input type=radio name=type id=rt1 checked value=dept onchange="doShow();" /><label for="rt1">Department</label>
-<input type=radio name=type id=rt2 value=manu onchange="doShow();" /><label for="rt2"><?php echo _('Manufacturer'); ?></label>
-<input type=radio name=type id=rt3 value=upc onchange="doShow();" /><label for="rt3">Single item </label>
-<input type=radio name=type id=rt4 value=likecode onchange="doShow();" /><label for="rt4">Like code</label><br />
-
-<table>
-<tr>
-    <td class="deptField">Start department:</td><td class="deptField">
-    <select id=dept1Sel onchange="swap('dept1Sel','dept1');">
-    <?php echo $deptsList ?>
-    </select>
-    <input type=text name=dept1 id=dept1 size=5 value=1 />
-    </td>
-
-    <td class="manuField"><?php echo _('Manufacturer'); ?>:</td><td class="manuField">
-    <input type=text name=manufacturer />
-    </td>
-
-    <td class="upcField">UPC:</td><td class="upcField">
-    <input type=text name=upc />
-    </td>
-
-    <td class="lcField">LikeCode Start:</td><td class="lcField">
-    <input type=text name=likeCode />
-    </td>
-
-    <td>Start date:</td><td><input type=text id=date1 name=date1 /></td></tr>
-
-    <tr>
-    <td class="deptField">End department:</td><td class="deptField">
-    <select id=dept2Sel onchange="swap('dept2Sel','dept2');">
-    <?php echo $deptsList ?>
-    </select>
-    <input type=text name=dept2 id=dept2 size=5 value=1 />
-    </td>
-
-    <td class="manuField" colspan="2">
-    <input type=radio name=mtype value=name checked />Name
-    <input type=radio name=mtype value=prefix />UPC prefix
-    </td>
-
-    <td class="upcField" colspan="2"></td>
-
-    <td class="lcField">LikeCode End:</td><td class="lcField">
-    <input type=text name=likeCode2 />
-    </td>
-
-    <td>End date:</td><td><input type=text id=date2 name=date2 /></td></tr>
-
-</tr></table>
-<br />
-<table>
-<tr>
-    <td>
-    Excel <input type=checkbox name=excel value="xls" /><br />
-    <input type=submit value=Submit />
-    </td><td>
-    <?php echo FormLib::date_range_picker(); ?>
-    </td>
-</tr>
-</table>
+<form method=get action=TrendsReport.php class="form">
+<input type="hidden" name="type" id="type-field" value="dept" />
+<div class="col-sm-6">
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="active"><a href="#dept-tab" role="tab"
+            onclick="$(this).tab('show'); $('#type-field').val('dept'); return false;">Department</a></li>
+        <li><a href="#manu-tab" role="tab"
+            onclick="$(this).tab('show'); $('#type-field').val('manu'); return false;"><?php echo _('Manufacturer'); ?></a></li>
+        <li><a href="#upc-tab" role="tab"
+            onclick="$(this).tab('show'); $('#type-field').val('upc'); return false;">UPC</a></li>
+        <li><a href="#lc-tab" role="tab"
+            onclick="$(this).tab('show'); $('#type-field').val('likecode'); return false;">Like Code</a></li>
+    </ul>
+    <div class="tab-content">
+        <div class="tab-pane active" id="dept-tab">
+            <div class="form-group">
+                <label class="col-sm-4 control-label">Start</label>
+                <div class="col-sm-6">
+                    <select onchange="$('#dept1').val(this.value);" class="form-control">
+                    <?php echo $deptsList ?>
+                    </select>
+                </div>
+                <div class="col-sm-2">
+                    <input type=text name=dept1 id=dept1 value=1 class="form-control" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-4 control-label">End</label>
+                <div class="col-sm-6">
+                    <select onchange="$('#dept2').val(this.value);" class="form-control">
+                    <?php echo $deptsList ?>
+                    </select>
+                </div>
+                <div class="col-sm-2">
+                    <input type=text name=dept2 id=dept2 value=1 class="form-control" />
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane" id="manu-tab">
+            <div class="form-group">
+                <label class="control-label col-sm-4"><?php echo _('Manufacturer'); ?></label>
+                <div class="col-sm-8">
+                    <input type=text name=manufacturer id="brand-field" class="form-control" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-4">
+                    <input type=radio name=mtype value=name checked /> Name
+                </label>
+                <label class="control-label col-sm-4">
+                    <input type=radio name=mtype value=prefix /> UPC prefix
+                </label>
+            </div>
+        </div>
+        <div class="tab-pane" id="upc-tab">
+            <div class="form-group">
+                <label class="control-label col-sm-4">UPC</label>
+                <div class="col-sm-8">
+                    <input type=text name=upc id="upc-field" class="form-control" />
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane" id="lc-tab">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Start</label>
+                <div class="col-sm-8">
+                    <input type=text name=likeCode class="form-control" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-4">End</label>
+                <div class="col-sm-8">
+                    <input type=text name=likeCode2 class="form-control" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label">
+            <input type="checkbox" name="excel" value="csv" /> Excel
+        </label>
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-default">Submit</button>
+    </div>
+</div>
+<div class="col-sm-5">
+    <div class="row">
+        <label class="col-sm-4 control-label">Start Date</label>
+        <div class="col-sm-8">
+            <input type=text id=date1 name=date1 class="form-control date-field" required />
+        </div>
+    </div>
+    <div class="row">
+        <label class="col-sm-4 control-label">End Date</label>
+        <div class="col-sm-8">
+            <input type=text id=date2 name=date2 class="form-control date-field" required />
+        </div>
+    </div>
+    <div class="row">
+        <?php echo FormLib::date_range_picker(); ?>                            
+    </div>
+</div>
 </form>
         <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
+        $this->add_script($FANNIE_URL . 'item/autocomplete.js');
+        $ws = $FANNIE_URL . 'ws/';
+        $this->add_onload_command("bindAutoComplete('#brand-field', '$ws', 'brand');\n");
+        $this->add_onload_command("bindAutoComplete('#upc-field', '$ws', 'item');\n");
 
         return ob_get_clean();
+    }
+
+    public function helpContent()
+    {
+        return '<p>Trends shows per-item, per-day sales. Rows are
+            items, columns are dates. The department range or brand
+            or UPC or like code range controls which set of items
+            appear in the report.</p>
+            <p>Note this report purposely excludes open rings both
+            for performance reasons and to avoid piling on
+            extraneous rows.</p>';
     }
 }
 

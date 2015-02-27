@@ -5,12 +5,14 @@ if (!class_exists('FannieAPI')) {
 }
 
 class HowToVendorPricing extends FanniePage {
-    protected $window_dressing = False;
 
     public $description = '[Vendor Pricing Documentation] describes uploading vendor catalog price files.';
+    public $themed = true;
+    protected $title = 'Vendor Pricing Documentation';
+    protected $header = 'Vendor Pricing Documentation';
 
     function css_content(){
-        return 'img {
+        return '.container img {
             border: solid 1px black;
         }';
     }

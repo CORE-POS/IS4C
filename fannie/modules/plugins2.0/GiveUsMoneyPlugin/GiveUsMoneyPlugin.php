@@ -28,7 +28,7 @@ if (!class_exists('FannieAPI')) {
 
 /**
 */
-class GiveUsMoneyPlugin extends FanniePlugin 
+class GiveUsMoneyPlugin extends \COREPOS\Fannie\API\FanniePlugin 
 {
     public $plugin_settings = array(
     'GiveUsMoneyDB' => array('default'=>'GiveUsMoneyDB','label'=>'Database',

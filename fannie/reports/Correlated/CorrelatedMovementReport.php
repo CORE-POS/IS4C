@@ -38,6 +38,7 @@ class CorrelatedMovementReport extends FannieReportPage
 
     public $description = '[Correlated Movement] shows what items purchasers from a certain department or group of departments also buy. Optionally, results can be filtered by department too. This may be clearer with an example: among transactions that include a sandwich, what do sales from the beverages department look like?';
     public $report_set = 'Movement Reports';
+    public $themed = true;
 
     public function fetch_report_data()
     {
@@ -217,68 +218,83 @@ function flipover(opt){
         ob_start();
         ?>
 <form action="CorrelatedMovementReport.php" method=post>
-
-<select onchange="flipover(this.value);">
-<option>Department</option>
-<option>UPC</option>
-</select>
-
-<table border=0 cellspacing=5 cellpadding=3>
-<tr>
-    <td rowspan="2" valign=middle>
-    <div id="inputset1">
-    <b>Department(s)</b><br />
-    <select size=7 multiple name=depts[]>
-    <?php 
-    foreach($depts as $no=>$name)
-        echo "<option value=$no>$no $name</option>";    
-    ?>
-    </select>
+<div class="row">
+    <div class="col-sm-6">
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="active"><a href="#department-tab" role="tab"
+                onclick="$(this).tab('show'); $('.tab-pane :input').prop('disabled', true); 
+                $('.tab-pane.active :input').prop('disabled', false); return false;">Department</a></li>
+            <li><a href="#upc-tab" role="tab" 
+                onclick="$(this).tab('show'); $('.tab-pane :input').prop('disabled', true); 
+                $('.tab-pane.active :input').prop('disabled', false); return false;">UPC</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane active" id="department-tab">
+                <label class="control-label">Department(s)</label>
+                <select size=7 multiple name=depts[] class="form-control">
+                <?php 
+                foreach ($depts as $no=>$name) {
+                    echo "<option value=$no>$no $name</option>";    
+                }
+                ?>
+                </select>
+            </div>
+            <div class="tab-pane" id="upc-tab">
+                <label class="control-label">UPC</label>
+                <input type=text name=upc class="form-control" disabled />
+            </div>
+        </div>
     </div>
-    <div id="inputset2">
-    <b>UPC</b>: <input type=text size=13 name=upc />
+    <div class="col-sm-6">
+        <label class="control-label">Start date</label>
+        <input type="text" id="date1" name="date1" class="form-control date-field" />
+        <label class="control-label">End date</label>
+        <input type="text" id="date2" name="date2" class="form-control date-field" />
     </div>
-    </td>
-    <th>Start date</th>
-    <td><input type="text" id="date1" name="date1" /></td>
-</tr>
-<tr>
-    <th>End date</th>
-    <td><input type="text" id="date2" name="date2" /></td>
-</tr>
-</table>
+</div>
 <hr />
-<table border=0 cellspacing=5 cellpadding=3>
-<tr>
-    <td colspan="2"><b>Result Filter</b> (optional)</td>
-</tr>
-<tr>
-    <td rowspan="2" valign=middle>
-    <select size=7 multiple name=filters[]>
-    <?php 
-    foreach($depts as $no=>$name)
-        echo "<option value=$no>$no $name</option>";    
-    ?>
-    </select>
-    </td>
-    <td colspan="2">
+<div class="row">
+    <div class="col-sm-6">
+        <label class="control-label">Result Filter (optional)</label>
+        <select size=7 multiple name=filters[] class="form-control">
+        <?php 
+        foreach ($depts as $no=>$name) {
+            echo "<option value=$no>$no $name</option>";    
+        }
+        ?>
+        </select>
+    </div>
+    <div class="col-sm-6">
         <?php echo FormLib::date_range_picker(); ?>
-    </td>
-</tr>
-</table>
+    </div>
+</div>
 <hr />
-<input type=submit name=submit value="Run Report" />
-<input type=checkbox name=excel value="xls" /> Excel
+<p>
+    <button type=submit name=submit value="Run Report" class="btn btn-default">Run Report</button>
+    <label><input type=checkbox name=excel value="xls" /> Excel</label>
+</p>
 </form>
         <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
 
         return ob_get_clean(); 
     }
-
+    
+    public function helpContent()
+    {
+        return '<p>Correlated Movement shows item sales from a set
+            of transactions. The top department(s) or UPC plus
+            date range find the set of transactions.</p>
+            <p>The report lists all items in those transations.
+            For example, you could find every transaction where
+            a customer bought a cup of coffee. This report will then
+            list every <em>other</em> item that those particular
+            customers purchased with their coffee.</p>
+            <p>The optional result filter trims down that list of
+            other items. Continuing the example, you might apply a 
+            filter to see which bakery items a customer purchased
+            with their coffee.</p>'; 
+    }
 }
 
 FannieDispatch::conditionalExec();
 
-?>

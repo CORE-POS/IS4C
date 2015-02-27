@@ -29,7 +29,7 @@ function showSubsForDept(did){
 		timeout: 5000,
 		data: d,
 		error: function(){
-		alert('Error loading XML document');
+            showBootstrapAlert('#alertarea', 'danger', 'Error loading sub departments');
 		},
 		success: function(resp){
 			$('#subselect').html(resp);
@@ -51,11 +51,12 @@ function addSub(){
 		timeout: 5000,
 		data: d,
 		error: function(){
-		alert('Error loading XML document');
+            showBootstrapAlert('#alertarea', 'danger', 'Error creating sub department');
 		},
 		success: function(resp){
 			$('#subselect').html(resp);
 			$('#newname').val('');
+            showBootstrapAlert('#alertarea', 'success', 'Added sub department ' + name); 
 		}
 	});
 }
@@ -72,10 +73,11 @@ function deleteSub(){
 		timeout: 5000,
 		data: d,
 		error: function(){
-		alert('Error loading XML document');
+            showBootstrapAlert('#alertarea', 'danger', 'Error deleting sub department(s)');
 		},
 		success: function(resp){
 			$('#subselect').html(resp);
+            showBootstrapAlert('#alertarea', 'success', 'Deleted subdepartment(s)');
 		}
 	});
 }

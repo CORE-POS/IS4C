@@ -24,7 +24,7 @@
     </li>
   </ul></div>
 <h1>HelloWorld.php</h1>AutoLoader.php should be included in any top level scripts. If the URL in the browser address bar is your script, it's a top level script. No other includes are necessary. <a class="el" href="class_auto_loader.html">AutoLoader</a> will include other classes as needed.<p>
-body_content() draws the page. Methods from <a class="el" href="class_basic_page.html">BasicPage</a> provide the standard input box at the top and footer at the bottom. <a class="el" href="class_display_lib.html#a4ca16f2c67a9cbbee6c9ab57c666cde">DisplayLib::boxMsg()</a> is a utility function that puts the 'Hello World' message in a standard message box.<p>
+body_content() draws the page. Methods from <a class="el" href="class_basic_page.html">BasicPage</a> provide the standard input box at the top and footer at the bottom. <a class="el" href="class_display_lib.html#b81d8227ad5d93bc46b3290b760ad6af">DisplayLib::boxMsg()</a> is a utility function that puts the 'Hello World' message in a standard message box.<p>
 preprocess() handles input. In this case any form input causes a redirect to the main display script.<p>
 Note the very last line creating an object. That's necessary to actually display anything.<p>
 <div class="fragment"><pre class="fragment"><a name="l00001"></a>00001 &lt;?php
@@ -37,7 +37,7 @@ Note the very last line creating an object. That's necessary to actually display
 <a name="l00008"></a>00008                 $this-&gt;<a name="a7"></a><a class="code" href="class_basic_page.html#65805fa802c839342148c4578de9ac89">input_header</a>();
 <a name="l00009"></a>00009 
 <a name="l00010"></a>00010                 echo '&lt;div <span class="keyword">class</span>=<span class="stringliteral">"baseHeight"</span>&gt;';
-<a name="l00011"></a>00011                 echo <a name="a8"></a><a class="code" href="class_display_lib.html#a4ca16f2c67a9cbbee6c9ab57c666cde">DisplayLib::boxMsg</a>('&lt;b&gt;Hello World!&lt;/b&gt;&lt;br /&gt;
+<a name="l00011"></a>00011                 echo <a name="a8"></a><a class="code" href="class_display_lib.html#b81d8227ad5d93bc46b3290b760ad6af">DisplayLib::boxMsg</a>('&lt;b&gt;Hello World!&lt;/b&gt;&lt;br /&gt;
 <a name="l00012"></a>00012                         Enter anything to <span class="keywordflow">continue</span>');
 <a name="l00013"></a>00013                 echo '&lt;/div&gt;';
 <a name="l00014"></a>00014 
@@ -58,7 +58,7 @@ Note the very last line creating an object. That's necessary to actually display
 <a name="l00029"></a>00029 <span class="keyword">new</span> HelloWorld();
 <a name="l00030"></a>00030 
 <a name="l00031"></a>00031 ?&gt;
-</pre></div> <hr size="1"><address style="align: right;"><small>Generated on 11 Sep 2014 for CORE POS - IS4C by&nbsp;
+</pre></div> <hr size="1"><address style="align: right;"><small>Generated on 9 Feb 2015 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

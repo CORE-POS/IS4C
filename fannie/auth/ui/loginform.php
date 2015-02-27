@@ -21,7 +21,6 @@
 
 *********************************************************************************/
 
-include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
     include_once(dirname(__FILE__) . '/../../classlib2.0/FannieAPI.php');
 }
@@ -64,17 +63,16 @@ class FannieAuthLoginPage extends FannieRESTfulPage
     */
     public function post_name_password_handler()
     {
-        global $FANNIE_AUTH_LDAP, $FANNIE_AUTH_SHADOW;
         $name = FormLib::get('name');
         $password = FormLib::get('password');
         $login = login($name,$password);
         $redirect = FormLib::get('redirect', 'menu.php');
 
-        if (!$login && $FANNIE_AUTH_LDAP) {
+        if (!$login && FannieConfig::config('AUTH_LDAP', false)) {
             $login = ldap_login($name,$password);
         }
 
-        if (!$login && $FANNIE_AUTH_SHADOW) {
+        if (!$login && FannieConfig::config('AUTH_SHADOW', false)) {
             $login = shadow_login($name,$password);
         }
 

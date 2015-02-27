@@ -21,22 +21,24 @@
 
 *********************************************************************************/
 
-if (!class_exists('FannieAPI'))
+if (!class_exists('FannieAPI')) {
     include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
+}
 
 class VendorItemModule extends ItemModule {
 
     public function showEditForm($upc, $display_mode=1, $expand_mode=1)
     {
-        global $FANNIE_CSS_PRIMARY_COLOR;
+        $FANNIE_CSS_PRIMARY_COLOR = FannieConfig::config('CSS_PRIMARY_COLOR');
         $upc = BarcodeLib::padUPC($upc);
 
-        $ret = '<fieldset id="VendorItemsFieldset">';
-        $ret .=  "<legend onclick=\"\$('#VendorItemsFieldsetContent').toggle();\">
-                <a href=\"\" onclick=\"return false;\">Vendor Items</a>
-                </legend>";
-        $css = ($expand_mode == 1) ? '' : 'display:none;';
-        $ret .= '<div id="VendorItemsFieldsetContent" style="' . $css . '">';
+        $ret = '<div id="VendorItemsFieldset" class="panel panel-default">';
+        $ret .=  "<div class=\"panel-heading\">
+                <a href=\"\" onclick=\"\$('#VendorItemsFieldsetContent').toggle(); return false;\">
+                Vendor Items
+                </a></div>";
+        $css = ($expand_mode == 1) ? '' : ' collapse';
+        $ret .= '<div id="VendorItemsFieldsetContent" class="panel-body' . $css . '">';
 
         $dbc = $this->db();
         $p = $dbc->prepare_statement('SELECT vendorID,vendorName FROM vendors ORDER BY vendorName');
@@ -54,7 +56,8 @@ class VendorItemModule extends ItemModule {
         $matched = false;
         $hilite = 'style="color:' . $FANNIE_CSS_PRIMARY_COLOR . ';"';
 
-        $ret .= '<select onchange="$(\'.vtable\').hide();$(\'#vtable\'+this.value).show();">';
+        $ret .= '<select class="form-control"
+            onchange="$(\'.vtable\').hide();$(\'#vtable\'+this.value).show();">';
         foreach ($vendors as $id => $name) {
             $ret .= sprintf('<option %s value="%d">%s%s</option>',
                         ($my_vendor == $id ? 'selected ' . $hilite : ''),
@@ -73,24 +76,47 @@ class VendorItemModule extends ItemModule {
         $cost_class = '';
         foreach ($vendors as $id => $name) {
             if ($matched && $id == $my_vendor) {
-                $style = 'display:table;';
-                $cost_class = 'class="default_vendor_cost"';
+                $table_class = '';
+                $cost_class = 'default_vendor_cost';
+            } else {
+                $table_class = 'collapse';
             }
-            $ret .= "<table style=\"margin-top:5px;margin-bottom:5px;$style\" 
-                    border=1 id=\"vtable$id\"
-                    cellpadding=5 cellspacing=0 class=\"vtable\">";
-            $row = array('cost'=>0,'sku'=>'','units'=>1);
+            $ret .= "<table id=\"vtable$id\"
+                     class=\"vtable table table-bordered $table_class\">";
+            $row = array('cost'=>0,'sku'=>'','units'=>1,'size'=>'');
             $res = $dbc->exec_statement($prep,array($id,$upc)); 
             if ($dbc->num_rows($res) > 0)
                 $row = $dbc->fetch_row($res);
-            $ret .= '<tr><th>SKU</th><td><input type="text" size="8" name="v_sku[]"
-                    value="'.$row['sku'].'" /></td>';
-            $ret .= sprintf('<th>Unit Cost</th><td>$<input type="text" size="6"
-                    name="v_cost[]" id="vcost%d" %s value="%.2f" onchange="vprice(%d);" /></td></tr>',
+            $ret .= '<tr>
+                <th>SKU</th>
+                <td colspan="3">
+                    <input type="text" class="form-control" name="v_sku[]"
+                    id="vsku' . $id . '"
+                    onchange="$(\'#product-sku-field\').val(this.value);"
+                    value="'.$row['sku'].'" />
+                </td>';
+            $ret .= sprintf('<th>Unit Cost</th><td>
+                    <div class="input-group">
+                    <span class="input-group-addon">$</span><input type="text" 
+                    name="v_cost[]" id="vcost%d" class="form-control %s" value="%.2f" 
+                    onchange="vprice(%d);"
+                    /></div>
+                    </td></tr>',
                     $id, $cost_class, $row['cost'], $id);
-            $ret .= '<tr><th>Units/Case</th><td><input type="text" size="4" name="v_units[]"
+            $ret .= '<tr>
+                <th>Units/Case</th>
+                <td>
+                    <input type="text" class="form-control" name="v_units[]"
                     id="vunits'.$id.'" value="'.$row['units'].'" 
-                    onchange="vprice('.$id.');" /></td>';
+                    onchange="vprice('.$id.'); $(\'#product-case-size\').val(this.value);" />
+                </td>
+                <th>Unit Size</th>
+                <td>
+                    <input type="text" class="form-control" name="v_size[]"
+                    id="vsize'.$id.'" value="'.$row['size'].'" 
+                    onchange="$(\'#product-pack-size\').val(this.value); " />
+                </td>
+                </td>';
             $ret .= sprintf('<th>Case Cost</th><td id="vcc%d">$%.2f</td></tr>',
                     $id, ($row['units']*$row['cost']));
             $ret .= '<input type="hidden" name="v_id[]" value="'.$id.'" />';
@@ -101,7 +127,8 @@ class VendorItemModule extends ItemModule {
         }
         
         $ret .= '</div>';
-        $ret .= '</fieldset>';
+        $ret .= '</div>';
+
         return $ret;
     }
 
@@ -126,31 +153,65 @@ class VendorItemModule extends ItemModule {
         $skus = FormLib::get_form_value('v_sku',array());
         $costs = FormLib::get_form_value('v_cost',array());
         $units = FormLib::get_form_value('v_units',array());
+        $sizes = FormLib::get_form_value('v_size',array());
 
         $dbc = $this->db();
         $chkP = $dbc->prepare_statement('SELECT upc FROM vendorItems WHERE vendorID=? AND upc=?');
-        $insP = $dbc->prepare_statement('INSERT INTO vendorItems (upc,vendorID,cost,units,sku)
-                    VALUES (?,?,?,?,?)');
-        $upP = $dbc->prepare_statement('UPDATE vendorItems SET cost=?,units=?,sku=? WHERE
+        $insP = $dbc->prepare_statement('INSERT INTO vendorItems (upc,vendorID,cost,units,sku,size)
+                    VALUES (?,?,?,?,?,?)');
+        $upP = $dbc->prepare_statement('UPDATE vendorItems SET cost=?,units=?,sku=?,size=? WHERE
                     upc=? AND vendorID=?');
+        $initP = $dbc->prepare('
+            UPDATE vendorItems
+            SET brand=?,
+                description=?,
+                vendorDept=0
+            WHERE upc=?
+                AND vendorID=?');
+        $prod = new ProductsModel($dbc);
+        $prod->upc($upc);
+        $prod->load();
     
-        $ret = True;
+        $ret = true;
         for ($i=0;$i<count($ids);$i++){
-            if (!isset($skus[$i]) || !isset($costs[$i]) || !isset($units[$i]))
+            if (!isset($skus[$i]) || !isset($costs[$i]) || !isset($units[$i])) {
                 continue; // bad submit
-            if (empty($skus[$i]) || empty($costs[$i]))
+            }
+            // always create record for the default vendor
+            if ($ids[$i] == $prod->default_vendor_id()) {
+                if (empty($skus[$i])) {
+                    $skus[$i] = $prod->upc();
+                }
+                if (empty($costs[$i])) {
+                    $costs[$i] = $prod->cost();
+                }
+                if (empty($units[$i])) {
+                    $units[$i] = 1;
+                }
+                if (empty($sizes[$i])) {
+                    $sizes[$i] = '';
+                }
+            }
+            if (empty($skus[$i]) || empty($costs[$i])) {
                 continue; // no submission. don't create a record
+            }
 
             $chkR = $dbc->exec_statement($chkP,array($ids[$i],$upc));
             if ($dbc->num_rows($chkR) == 0){
                 $try = $dbc->exec_statement($insP,array($upc,$ids[$i],
-                    $costs[$i],$units[$i],$skus[$i]));
-                if ($try === False) $ret = False;
-            }
-            else {
+                    $costs[$i],$units[$i],$skus[$i],$sizes[$i]));
+                if ($try === false) {
+                    $ret = false;
+                } else {
+                    // initialize new record with product's brand
+                    // and description so it isn't blank
+                    $dbc->execute($initP, array($prod->brand(), $prod->description(),
+                        $upc, $ids[$i]));
+                }
+            } else {
                 $try = $dbc->exec_statement($upP,array($costs[$i],
-                    $units[$i],$skus[$i],$upc,$ids[$i]));
-                if ($try === False) $ret = False;
+                    $units[$i],$skus[$i],$sizes[$i],$upc,$ids[$i]));
+                if ($try === false) $ret = false;
             }
         }
 
@@ -158,4 +219,3 @@ class VendorItemModule extends ItemModule {
     }
 }
 
-?>

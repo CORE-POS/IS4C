@@ -8,6 +8,10 @@ include('../../queries/barcode.php');
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include('../../db.php');
 
+if (!function_exists('unsale')) {
+    require('unsale.php');
+}
+
 $batchtypes = array();
 $typesQ = "select batchTypeID,typeDesc from batchType order by batchTypeID";
 $typesR = $sql->query($typesQ);
@@ -55,55 +59,14 @@ if (isset($_GET['action'])){
 	case 'deleteBatch':
 		$id = $_GET['id'];
 
-		$unsaleQ = $sql->prepare("UPDATE products AS p LEFT JOIN batchList as b
-			ON p.upc=b.upc
-			SET special_price=0,
-			specialpricemethod=0,specialquantity=0,
-			specialgroupprice=0,p.discounttype=0,
-			start_date='1900-01-01',end_date='1900-01-01'
-			WHERE b.upc NOT LIKE '%LC%'
-			AND b.batchID=?");
-		if ($FANNIE_SERVER_DBMS=="MSSQL"){
-			$unsaleQ = $sql->prepare("UPDATE products SET special_price=0,
-				specialpricemethod=0,specialquantity=0,
-				specialgroupprice=0,discounttype=0,
-				start_date='1900-01-01',end_date='1900-01-01'
-				FROM products AS p, batchList as b
-				WHERE p.upc=b.upc AND b.upc NOT LIKE '%LC%'
-				AND b.batchID=?");
-		}
-		$unsaleR = $sql->execute($unsaleQ, array($id));
-
-		$unsaleLCQ = $sql->prepare("UPDATE products AS p LEFT JOIN
-			upcLike AS v ON v.upc=p.upc LEFT JOIN
-			batchList AS l ON l.upc=concat('LC',convert(v.likeCode,char))
-			SET special_price=0,
-			specialpricemethod=0,specialquantity=0,
-			specialgroupprice=0,p.discounttype=0,
-			start_date='1900-01-01',end_date='1900-01-01'
-			WHERE l.upc LIKE '%LC%'
-			AND l.batchID=?");
-		if ($FANNIE_SERVER_DBMS=="MSSQL"){
-			$unsaleLCQ = $sql->prepare("UPDATE products
-				SET special_price=0,
-				specialpricemethod=0,specialquantity=0,
-				specialgroupprice=0,discounttype=0,
-				start_date='1900-01-01',end_date='1900-01-01'
-				FROM products AS p LEFT JOIN
-				upcLike AS v ON v.upc=p.upc LEFT JOIN
-				batchList AS l ON l.upc='LC'+convert(varchar,v.likeCode)
-				WHERE l.upc LIKE '%LC%'
-				AND l.batchID=?");
-		}
-		$unsaleLCR = $sql->execute($unsaleLCQ, array($id));
+        $model = new BatchesModel($sql);
+        $model->forceStopBatch($id);
 		
 		$delQ = $sql->prepare("delete from batches where batchID=?");
 		$delR = $sql->execute($delQ, array($id));
 		
 		$delQ = $sql->prepare("delete from batchList where batchID=?");
 		$delR = $sql->execute($delQ, array($id));
-
-		exec("touch /pos/sync/scheduled/products");
 
 		$out .= batchListDisplay();
 		break;
@@ -277,8 +240,11 @@ if (isset($_GET['action'])){
             $model = new ProductsModel($sql);
             $model->upc($upc);
             $model->pushToLanes();
-		}
-		else {
+
+            $update = new ProdUpdateModel($sql);
+            $update->upc($upc);
+            $update->logUpdate(ProdUpdateModel::UPDATE_BATCH);
+		} else {
 			$lc = substr($upc,2);
 			$unsaleQ = $sql->prepare("UPDATE products AS p LEFT JOIN upcLike as u on p.upc=u.upc
 					LEFT JOIN batchList as b ON b.upc=concat('LC',convert(u.likeCode,char))
@@ -298,6 +264,10 @@ if (isset($_GET['action'])){
                 $model = new ProductsModel($sql);
                 $model->upc($row['upc']);
                 $model->pushToLanes();
+
+                $update = new ProdUpdateModel($sql);
+                $update->upc($upc);
+                $update->logUpdate(ProdUpdateModel::UPDATE_BATCH);
             }
 		}
 
@@ -382,13 +352,13 @@ if (isset($_GET['action'])){
 		break;
 	case 'forceBatch':
 		$id = $_GET['id'];
-		require('forceBatch.php');
-		forceBatch($id);	
+        $model = new BatchesModel($sql);
+        $model->forceStartBatch($id);
 		break;
 	case 'unsale':
 		$id = $_GET['id'];
-		require('unsale.php');
-		unsale($id);	
+        $model = new BatchesModel($sql);
+        $model->forceStopBatch($id);
 		break;
 	case 'switchToLC':
 		$out .= addItemLCInput();

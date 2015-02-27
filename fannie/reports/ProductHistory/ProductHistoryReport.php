@@ -29,6 +29,7 @@ if (!class_exists('FannieAPI')) {
 class ProductHistoryReport extends FannieReportPage 
 {
     public $description = '[Product History] lists changes made to a given item over time.';
+    public $themed = true;
 
     protected $title = "Fannie : Product History";
     protected $header = "Product History Report";
@@ -103,28 +104,29 @@ class ProductHistoryReport extends FannieReportPage
     
     public function form_content()
     {
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
         return '
             <form method="get" action="ProductHistoryReport.php">
-            <table>
-            <tr>
-                <th>UPC</th>
-                <td><input type="text" name="upc" /></td>
-                <td><i>Dates are optional; omit for full history</i></td>
-            </tr>
-            <tr>
-                <th>Start Date</th>
-                <td><input type="text" id="date1" name="date1" /></td>
-                <td rowspan="2">' . FormLib::dateRangePicker() . '</td>
-            </tr>
-            <tr>
-                <th>End Date</th>
-                <td><input type="text" id="date2" name="date2" /></td>
-            </tr>
-            <tr>
-                <td><input type="submit" value="Get Report" /></td>
-            </tr>
+            <div class="well">Dates are optional; omit for full history</div>
+            <div class="col-sm-4">
+            <div class="form-group">
+                <label>UPC</label>
+                <input type="text" name="upc" class="form-control" required />
+            </div>
+            <div class="form-group">
+                <label>Start Date</label>
+                <input type="text" id="date1" name="date1" class="form-control date-field" />
+            </div>
+            <div class="form-group">
+                <label>End Date</label>
+                <input type="text" id="date2" name="date2" class="form-control date-field" />
+            </div>
+            <p>
+                <button type="submit" class="btn btn-default">Get Report</button>
+            </p>
+            </div>
+            <div class="col-sm-4">
+                ' . FormLib::dateRangePicker() . '
+            </div>
             </table>
             </form>';
     }

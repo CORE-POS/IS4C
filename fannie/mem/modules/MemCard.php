@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-class MemCard extends MemberModule {
+class MemCard extends \COREPOS\Fannie\API\member\MemberModule {
 
     // Return a form segment for display or edit the Member Card#
     function showEditForm($memNum, $country="US"){
@@ -41,10 +41,9 @@ class MemCard extends MemberModule {
             return "Error: problem checking for Member Card<br />";
         }
 
-        $ret = "<fieldset><legend>Membership Card</legend>";
-        $ret .= "<table class=\"MemFormTable\" 
-            border=\"0\">";
-
+        $ret = "<div class=\"panel panel-default\">
+            <div class=\"panel-heading\">Membership Card</div>
+            <div class=\"panel-body\">";
         if ( $dbc->num_rows($infoR) > 0 ) {
             $infoW = $dbc->fetch_row($infoR);
             $upc = $infoW['upc'];
@@ -55,11 +54,15 @@ class MemCard extends MemberModule {
         } else {
             $upc = "";
         }
-        $ret .= "<tr><th>Card#</th>";
-        $ret .= "<td><input name='memberCard' size='15' value='{$upc}'></td>";
-        $ret .= '</tr>';
 
-        $ret .= "</table></fieldset>";
+        $ret .= '<div class="form-group form-inline">
+            <span class="label primaryBackground">Card#</span>
+            <input type="text" name="memberCard" class="form-control"
+                value="' . $upc . '" />
+            </div>';
+
+        $ret .= "</div>";
+        $ret .= "</div>";
 
         return $ret;
 

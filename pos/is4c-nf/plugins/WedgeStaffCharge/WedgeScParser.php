@@ -44,11 +44,10 @@ class WedgeScParser extends Parser
 
 	function parse($str)
     {
-		global $CORE_LOCAL;
 		$json = $this->default_json();
 		$arg = $this->left;
 
-		$CORE_LOCAL->set("sc",1);
+		CoreLocal::set("sc",1);
 		$staffID = substr($arg, 0, 4);
 
 		$pQuery = "select staffID,chargecode,blueLine from chargecodeview where chargecode = '".$arg."'";
@@ -59,11 +58,11 @@ class WedgeScParser extends Parser
 
 		if ($num_rows == 0) {
 			$json['output'] = DisplayLib::xboxMsg("unable to authenticate staff ".$staffID);
-			$CORE_LOCAL->set("isStaff",0);			// apbw 03/05/05 SCR
+			CoreLocal::set("isStaff",0);			// apbw 03/05/05 SCR
 			return $json;
 		} else {
-			$CORE_LOCAL->set("isStaff",1);			// apbw 03/05/05 SCR
-			$CORE_LOCAL->set("memMsg",$row["blueLine"]);
+			CoreLocal::set("isStaff",1);			// apbw 03/05/05 SCR
+			CoreLocal::set("memMsg",$row["blueLine"]);
 			$tQuery = "update localtemptrans set card_no = '".$staffID."', percentDiscount = 15";
 			$tConn = Database::tDataConnect();
 
@@ -77,24 +76,22 @@ class WedgeScParser extends Parser
 				$json['main_frame'] = $chk;
 				return $json;
 			}
-			$CORE_LOCAL->set("runningTotal",$CORE_LOCAL->get("amtdue"));
-			return self::tender("MI", $CORE_LOCAL->get("runningTotal") * 100);
+			CoreLocal::set("runningTotal",CoreLocal::get("amtdue"));
+			return self::tender("MI", CoreLocal::get("runningTotal") * 100);
 		}
 	}
 
     private function addscDiscount() 
     {
-        global $CORE_LOCAL;
-
-        if ($CORE_LOCAL->get("scDiscount") != 0) {
+        if (CoreLocal::get("scDiscount") != 0) {
             TransRecord::addRecord(array(
                 'upc' => "DISCOUNT", 
                 'description' => "** 10% Deli Discount **", 
                 'trans_type' => "I",
                 'quantity' => 1, 
                 'ItemQtty' => 1, 
-                'unitPrice' => MiscLib::truncate2(-1 * $CORE_LOCAL->get("scDiscount")), 
-                'total' => MiscLib::truncate2(-1 * $CORE_LOCAL->get("scDiscount")), 
+                'unitPrice' => MiscLib::truncate2(-1 * CoreLocal::get("scDiscount")), 
+                'total' => MiscLib::truncate2(-1 * CoreLocal::get("scDiscount")), 
                 'discountable' => 1,
                 'voided' => 2,
             ));
@@ -103,10 +100,8 @@ class WedgeScParser extends Parser
 
     private function addStaffCoffeeDiscount() 
     {
-        global $CORE_LOCAL;
-
-        if ($CORE_LOCAL->get("staffCoffeeDiscount") != 0) {
-            self::addItem("DISCOUNT", "** Coffee Discount **", "I", "", "", 0, 1, MiscLib::truncate2(-1 * $CORE_LOCAL->get("staffCoffeeDiscount")), MiscLib::truncate2(-1 * $CORE_LOCAL->get("staffCoffeeDiscount")), 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 2);
+        if (CoreLocal::get("staffCoffeeDiscount") != 0) {
+            self::addItem("DISCOUNT", "** Coffee Discount **", "I", "", "", 0, 1, MiscLib::truncate2(-1 * CoreLocal::get("staffCoffeeDiscount")), MiscLib::truncate2(-1 * CoreLocal::get("staffCoffeeDiscount")), 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 2);
         }
     }
 

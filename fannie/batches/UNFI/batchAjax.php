@@ -50,16 +50,6 @@ case 'newPrice':
     $price = FormLib::get_form_value('price',0);
     $sP = $dbc->prepare_statement("UPDATE vendorSRPs SET srp=? WHERE upc=? AND vendorID=?");
     $dbc->exec_statement($sP,array($price,$upc,$vid));
-    $model = new BatchListModel($dbc);
-    $model->batchID($bid);
-    $model->upc($upc);
-    $model->salePrice($price);
-    $model->save();
-    $tag = new ShelftagsModel($tag);
-    $tag->id($sid);
-    $tag->upc($upc);
-    $tag->normal_price($price);
-    $tag->save();
     echo "New Price Applied";
     break;
 case 'batchAdd':
@@ -83,7 +73,7 @@ case 'batchAdd':
         v.vendorID=? LEFT JOIN vendors AS b ON v.vendorID=b.vendorID
         WHERE p.upc=?");
     $info = $dbc->fetch_row($dbc->exec_statement($infoQ,array($vid,$upc)));
-    $ppo = PriceLib::pricePerUnit($price,$info['size']);
+    $ppo = \COREPOS\Fannie\API\lib\PriceLib::pricePerUnit($price,$info['size']);
     
     /* create a shelftag */
     $tag = new ShelftagsModel($dbc);
