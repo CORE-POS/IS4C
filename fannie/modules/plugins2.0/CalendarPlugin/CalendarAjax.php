@@ -46,6 +46,9 @@ class CalendarAjax extends FannieWebService {
             case 'save_or_add_event':
                 $calID = FormLib::get('id', 0);
                 $text = FormLib::get('text');
+                $text = str_replace('<br>', "\n", $text);
+                $text = htmlspecialchars($text);
+                $text = str_replace("\n", '<br>', $text);
 
                 $db = CalendarPluginDB::get();
                 $event = new MonthviewEventsModel($db);
