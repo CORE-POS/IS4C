@@ -25,31 +25,30 @@ class SpeedTestReport extends FannieRESTfulPage
         $end = FormLib::get('date2');
         $dept_limit = FormLib::get('dept');
         $method = FormLib::get('sql-method');
-        $use_intermediate = false;
-        if ($method == 'Single Query') {
-            $use_intermediate = false;
-        } else {
-            $use_intermediate = true;
-        }
         
         $dlog = false;
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $timing_point_1 = microtime(true);
-        if ($use_intermediate) {
-            $where = array(
-                'connection' => $dbc,
-                'clauses' => array(
-                    array('sql'=>' trans_type IN (\'I\',\'D\') ', 'params'=>array()),
-                    array('sql'=>' department BETWEEN 0 AND ? ', 'params'=>array($dept_limit)),
-                ),
-            );
-
-            $dlog = DTransactionsModel::selectDTrans($start, $end, $where);
-            $timing_point_2 = microtime(true);
-        } else {
-            $dlog = DTransactionsModel::selectDTrans($start, $end);
-            $timing_point_2 = microtime(true);
+        switch ($method) {
+            case 'Large Temporary Table':
+                $where = array(
+                    'connection' => $dbc,
+                    'clauses' => array(
+                        array('sql'=>' trans_type IN (\'I\',\'D\') ', 'params'=>array()),
+                        array('sql'=>' department BETWEEN 0 AND ? ', 'params'=>array($dept_limit)),
+                    ),
+                );
+                $dlog = DTransactionsModel::selectDTrans($start, $end, $where);
+                break;
+            case 'Aggregate Temporary Table':
+                $dlog = DTransactionsModel::selectDTransSumByDepartment($dbc, $start, $end);
+                break;
+            case 'Single Query':
+            default:
+                $dlog = DTransactionsModel::selectDTrans($start, $end);
+                break;
         }
+        $timing_point_2 = microtime(true);
 
         $ret = '<p>Using archive table(s): <em>' . $dlog . '</em></p>';
 
@@ -93,7 +92,8 @@ class SpeedTestReport extends FannieRESTfulPage
                     <label>Method</label>
                     <select name="sql-method" class="form-control">
                         <option>Single Query</option>
-                        <option>Multiple Queries</option>
+                        <option>Large Temporary Table</option>
+                        <option>Aggregate Temporary Table</option>
                     </select>
                 </div>
                 <div class="form-group">

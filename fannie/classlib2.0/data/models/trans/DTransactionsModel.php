@@ -499,6 +499,38 @@ class DTransactionsModel extends BasicModel
     // selectStruct()
     }
 
+    public static function selectDtransSumByDepartment($connection, $start_date, $end_date)
+    {
+        $config = FannieConfig::factory();
+        $FANNIE_ARCHIVE_DB = $config->get('ARCHIVE_DB');
+        $FANNIE_TRANS_DB = $config->get('TRANS_DB');
+        $dlog = self::selectDlog($start_date, $end_date);
+        $random_name = uniqid('temp'.rand(1000, 9999));
+        $temp_table = $FANNIE_ARCHIVE_DB . $connection->sep() . $random_name;
+        $temp_name = $connection->temporaryTable($temp_table, $FANNIE_TRANS_DB . $connection->sep() . 'transarchive');
+        
+        $params = array(
+            $start_date . ' 00:00:00',
+            $end_date . ' 23:59:59',
+        );
+
+        $query = '
+            INSERT INTO ' . $temp_name . '
+                (datetime, department, quantity, total)
+            SELECT
+                MIN(datetime),
+                department,
+                SUM(quantity),
+                SUM(total)
+            FROM ' . $dlog . '
+            WHERE datetime BETWEEN ? AND ?
+            GROUP BY department'; 
+        $prep = $connection->prepare($query);
+        $result = $connection->execute($prep, $params);
+
+        return $temp_name;
+    }
+
     public function doc()
     {
         return '
