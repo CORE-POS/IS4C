@@ -33,6 +33,10 @@ using System.Threading;
 using System.IO;
 using System.Collections;
 
+#if CORE_RABBIT
+using RabbitMQ.Client;
+#endif
+
 using CustomForms;
 using CustomUDP;
 using SPH;
@@ -41,6 +45,12 @@ public class Magellan : DelegateForm {
 
     private SerialPortHandler[] sph;
     private UDPMsgBox u;
+
+    #if CORE_RABBIT
+    ConnectionFactory rabbit_factory;
+    IConnection rabbit_con;
+    IModel rabbit_channel;
+    #endif
 
     // read deisred modules from config file
     public Magellan(int verbosity){
@@ -64,6 +74,14 @@ public class Magellan : DelegateForm {
             }
         }
         FinishInit();
+
+        #if CORE_RABBIT
+        rabbit_factory = new ConnectionFactory();
+        rabbit_factory.HostName = "localhost";
+        rabbit_con = rabbit_factory.CreateConnection();
+        rabbit_channel = rabbit_con.CreateModel();
+        rabbit_channel.QueueDeclare("core-pos", false, false, false, null);
+        #endif
     }
 
     // alternate constructor for specifying
@@ -113,6 +131,11 @@ public class Magellan : DelegateForm {
         sw.Close();
         File.Move("ss-output/" +sep+"tmp"+sep+ticks,
               "ss-output/" +sep+ticks);
+
+        #if CORE_RABBIT
+        byte[] body = System.Text.Encoding.UTF8.GetBytes(msg);
+        rabbit_channel.BasicPublish("", "core-pos", null, body);
+        #endif
     }
 
     public void ShutDown(){

@@ -18,6 +18,7 @@
 		Send test messages to a connected iSC250 terminal
 	</li>
 	<li><a href="keypress.html">Test keydown events</a></li>
+	<li><a href="rabbit.php">Test RabbitMQ</a></li>
 </ul>
 </body>
 </html>
