@@ -1,6 +1,6 @@
 set CC=csc /platform:x86 /nologo
 
-%CC% /target:library /out:DelegateForm.dll DelegateBrowserForm.cs DelegateForm.cs
+%CC% /target:library /out:DelegateForm.dll DelegateForm.cs
 %CC% /target:library /out:Bitmap.dll BitmapConverter.cs
 %CC% /target:library /out:USBLayer.dll USBLayer.cs USB-Win32.cs
 %CC% /target:library /r:DelegateForm.dll /out:UDPMsgBox.dll UDPMsgBox.cs

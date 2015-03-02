@@ -26,7 +26,7 @@
  * thread. Allows top-level app to interact with multiple, 
  * different serial devices through one class interface.
  * 
- * Provides Stop() and SetParent(DelegateBrowserForm) functions.
+ * Provides Stop() and SetParent(DelegateForm) functions.
  *
  * Subclasses must implement Read() and PageLoaded(Uri).
  * Read() is the main polling loop, if reading serial data is

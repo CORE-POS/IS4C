@@ -20,20 +20,6 @@
 
 *********************************************************************************/
 
-/*************************************************************
- * SerialPortHandler
- *     Abstract class to manage a serial port in a separate
- * thread. Allows top-level app to interact with multiple, 
- * different serial devices through one class interface.
- * 
- * Provides Stop() and SetParent(DelegateBrowserForm) functions.
- *
- * Subclasses must implement Read() and PageLoaded(Uri).
- * Read() is the main polling loop, if reading serial data is
- * required. PageLoaded(Uri) is called on every WebBrowser
- * load event and provides the Url that was just loaded.
- *
-*************************************************************/
 using System;
 using System.Threading;
 using System.Net;
