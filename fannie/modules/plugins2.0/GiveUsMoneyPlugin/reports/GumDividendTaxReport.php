@@ -92,7 +92,7 @@ class GumDividendTaxReport extends FannieReportPage
             $record[] = $row['state'];
             $record[] = $row['zip'];
             $record[] = sprintf('%.2f', $row['dividendAmount']);
-            $record[] = $row['maskedTaxIdentifier'];
+            $record[] = 'XXX-XX-' . $row['maskedTaxIdentifier'];
             if (!$privkey) {
                 $record[] = 'No key';
             } elseif ($row['maskedTaxIdentifier'] != 'n/a') {
@@ -109,6 +109,28 @@ class GumDividendTaxReport extends FannieReportPage
         }
 
         return $data;
+    }
+
+    public function report_content()
+    {
+        if (FormLib::get('excel') == '1099') {
+            $data = $this->fetch_report_data();
+            $pdf = new FPDF('P', 'mm', 'Letter');
+            $bridge = GumLib::getSetting('posLayer');
+            $year = date('Y', strtotime(FormLib::get('endDate')));
+            foreach ($data as $row) {
+                $custdata = $bridge::getCustdata($row[0]);
+                $meminfo = $bridge::getMeminfo($row[0]);
+                $ssn = ($row[10] == 'No key') ? $row[9] : $row[10];
+                $amount = array(1 => $row[8]);
+                $form = new GumTaxFormTemplate($custdata, $meminfo, $ssn, $tax_year, $amount);
+                $pdf->addPage();
+                $form->renderAsPDF($pdf, 15);
+            }
+            $pdf->Output('taxform.pdf', 'I');
+        } else {
+            return parent::report_content();
+        }
     }
 
     public function form_content()
@@ -133,6 +155,7 @@ class GumDividendTaxReport extends FannieReportPage
             <option value="">Web page</option>
             <option value="csv">CSV</option>
             <option value="xls">Excel</option>
+            <option value="1099">1099</option>
             </select>';
         $ret .= '&nbsp;&nbsp;&nbsp;';
         $ret .= '<input type="submit" value="Get Report" />';
