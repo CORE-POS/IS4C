@@ -220,7 +220,7 @@ class VendorIndexPage extends FanniePage {
             $ret .= "This vendor contains $num items";
             $ret .= "<br />";
             $ret .= "<a href=\"BrowseVendorItems.php?vid=$id\">Browse vendor catalog</a>";  
-            if ($num <= 500) {
+            if ($num <= 750) {
                 $ret .= "<br />";
                 $ret .= "<a href=\"EditVendorItems.php?id=$id\">Edit vendor catalog</a>";  
             }
@@ -382,7 +382,7 @@ class VendorIndexPage extends FanniePage {
         ob_start();
         ?>
         <p id="vendorarea">
-        <select onchange="vendorchange();" id=vendorselect>
+        <select onchange="vendorchange();" id=vendorselect class="form-control">
         <?php echo $vendors; ?>
         </select>
         </p>
