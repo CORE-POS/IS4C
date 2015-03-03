@@ -209,11 +209,6 @@ class SQLManager
             return false;
         }
 
-        if ($current_db == $db_name) {
-            // already selected
-            return true;
-        }
-
         $this->connections[$db_name] = $this->connections[$which_connection];
 
         return $this->setDefaultDB($db_name);
