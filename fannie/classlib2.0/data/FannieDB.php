@@ -88,16 +88,7 @@ class FannieDB
 
     private static function addDB($db_name)
     {
-        $config = FannieConfig::factory();
-        if (!class_exists('SQLManager')) {
-            include(dirname(__FILE__) . '/../../src/SQLManager.php');
-        }
-        self::$db->add_connection(
-            $config->get('SERVER'),
-            $config->get('SERVER_DBMS'),
-            $db_name, 
-            $config->get('SERVER_USER'),
-            $config->get('SERVER_PW'));
+        self::$db->selectDB($db_name);
     }
 }
 

@@ -179,7 +179,44 @@ class SQLManager
         if ($this->isConnected()) {
             $this->query('use ' . $db_name, $db_name);
             $this->connections[$db_name]->database = $db_name;
+
+            return true;
+        } else {
+            return false;
         }
+    }
+
+    /**
+      Change the default database on a given connection
+      (i.e., mysql_select_db equivalent)
+      @param $db_name [string] database name
+      @param $which_connection [optional]
+      @return boolean
+
+      Using this method will recycle an existing connection
+      object where as calling addConnection will create a
+      new connection object.
+    */
+    public function selectDB($db_name, $which_connection='')
+    {
+		if ($which_connection == '') {
+			$which_connection=$this->default_db;
+        }
+
+        $current_db = $this->defaultDatabase($which_connection);
+        if ($current_db === false) {
+            // no connection; cannot switch database
+            return false;
+        }
+
+        if ($current_db == $db_name) {
+            // already selected
+            return true;
+        }
+
+        $this->connections[$db_name] = $this->connections[$which_connection];
+
+        return $this->setDefaultDB($db_name);
     }
 
 	/**
