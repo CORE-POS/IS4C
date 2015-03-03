@@ -170,7 +170,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         $vendor->vendorID($order->vendorID());
         $vendor->load();
 
-        $ret .= '<div class="form-inline">';
+        $ret = '<div class="form-inline">';
         $ret .= '<b>Vendor</b>: '.$vendor->vendorName();
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
         $ret .= '<b>Created</b>: '.$order->creationDate();
