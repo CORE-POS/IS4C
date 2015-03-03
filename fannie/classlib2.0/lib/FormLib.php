@@ -310,7 +310,7 @@ class FormLib
       * vendor
       * like code
     */
-    public function standardItemFields()
+    public static function standardItemFields()
     {
         $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
         $url_stem = FannieConfig::config('URL');
@@ -573,7 +573,7 @@ class FormLib
     /**
       Generate standard date fields with date_range_picker
     */
-    public function standardDateFields()
+    public static function standardDateFields()
     {
         return '
         <div class="col-sm-5 form-horizontal">
