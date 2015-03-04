@@ -126,6 +126,25 @@ class CalendarAjax extends \COREPOS\Fannie\API\webservices\FannieWebService {
 
                 $data[] = "<p class=\"index\"><a href=\"?calID=$id&view=month\">$name</a></p>";
                 break;
+            case 'createSubscription':
+                $db = CalendarPluginDB::get();
+                $name = FormLib::get('name');
+                $url = FormLib::get('url');
+                $uid = FormLib::get_form_value('uid',0);
+                $subscription = new CalendarSubscriptionsModel($db);
+                $subscription->url($url);
+                $subscriptionID = $subscription->save();
+                $calendar = new CalendarsModel($db);
+                $calendar->name($name);
+                $calendar->calendarSubscriptionID($subscriptionID);
+                $calendarID = $calendar->save();
+                $permissions = new PermissionsModel($db);
+                $permissions->calendarID($calendarID);
+                $permissions->uid($uid);
+                $permissions->classID(4);
+                $permissions->save();
+                $data[] = 'Subscribed';
+                break;
             case 'savePrefs':
                 $calID = FormLib::get_form_value('calID');
                 $name = str_replace("'","''",$_GET['name']);
@@ -134,8 +153,11 @@ class CalendarAjax extends \COREPOS\Fannie\API\webservices\FannieWebService {
                 $writers = FormLib::get_form_value('writers',array());
 
                 $db = CalendarPluginDB::get();
-                $p = $db->prepare_statement("UPDATE calendars SET name=? WHERE calendarID=?");
-                $db->exec_statement($p,array($name,$calID));
+                $calendar = new CalendarsModel($db);
+                $calendar->calendarID($calID);
+                $calendar->load();
+                $calendar->name($name);
+                $calendar->save();
 
                 $p = $db->prepare_statement("DELETE FROM permissions WHERE calendarID=? and classID < 4");
                 $db->exec_statement($p,array($calID));
@@ -149,6 +171,13 @@ class CalendarAjax extends \COREPOS\Fannie\API\webservices\FannieWebService {
                     foreach(explode(",",$writers) as $w){
                         $db->exec_statement($insP,array($calID,$w,2));
                     }
+                }
+                if (FormLib::get('url')) {
+                    $url = FormLib::get('url');
+                    $sub = new CalendarSubscriptionsModel($db);
+                    $sub->calendarSubscriptionID($calendar->calendarSubscriptionID());
+                    $sub->url($url);
+                    $sub->save();
                 }
                 break;
             case 'weekview_save':
@@ -191,6 +220,7 @@ class CalendarAjax extends \COREPOS\Fannie\API\webservices\FannieWebService {
 
 }
 
-new CalendarAjax();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
+    $obj = new CalendarAjax();
+}
 
-?>

@@ -41,7 +41,8 @@
         "core-pos/sql-manager": "dev-master",
         "php-xpdf/php-xpdf" : "dev-master",
         "phpmailer/phpmailer": "~5.2",
-        "psr/log": "~1.0"
+        "psr/log": "~1.0",
+        "sabre/vobject": "~3.4"
     },
     "config": {
         "component-dir": "fannie/src/javascript/composer-components/"

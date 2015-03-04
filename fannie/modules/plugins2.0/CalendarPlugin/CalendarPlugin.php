@@ -56,6 +56,7 @@ class CalendarPlugin extends \COREPOS\Fannie\API\FanniePlugin {
             'AccountClasses',
             'Attendees',
             'Calendars',
+            'CalendarSubscriptions',
             'MonthviewEvents',
             'Permissions',
         );
