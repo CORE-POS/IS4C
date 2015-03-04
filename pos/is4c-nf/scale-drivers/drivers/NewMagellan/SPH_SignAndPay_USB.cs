@@ -566,12 +566,13 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         try {
         byte[] input = (byte[])iar.AsyncState;
             HandleReadData(input);        
-            usb_fs.EndRead(iar);
         }
         catch (Exception ex){
             if (this.verbose_mode > 0)
                 System.Console.WriteLine(ex);
             System.Threading.Thread.Sleep(DEFAULT_WAIT_TIMEOUT);
+        } finally {
+            usb_fs.EndRead(iar);
         }
     }
 
