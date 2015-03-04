@@ -598,7 +598,7 @@ class FannieReportPage extends FanniePage
                     $class .= ' tablesorter';
                 }
                 $ret .= '<table class="'.$class.'" cellspacing="0" 
-                    cellpadding="4" border="1">';
+                    cellpadding="4" border="1">' . "\n";
                 break;
             case 'csv':
                 foreach ($this->defaultDescriptionContent() as $line) {
@@ -618,9 +618,9 @@ class FannieReportPage extends FanniePage
             }
             switch(strtolower($format)) {
                 case 'html':
-                    $ret .= '<thead>';
+                    $ret .= '<thead>' . "\n";
                     $ret .= $this->htmlLine($headers1, True);
-                    $ret .= '</thead>';
+                    $ret .= '</thead>' . "\n";
                     break;
                 case 'csv':
                     $ret .= $this->csvLine($headers1);
@@ -633,9 +633,13 @@ class FannieReportPage extends FanniePage
         for ($i=0;$i<count($data);$i++) {
             switch(strtolower($format)) {
                 case 'html':
-                    if ($i==0) $ret .= '<tbody>';
+                    if ($i==0) {
+                        $ret .= "<tbody>\n";
+                    }
                     $ret .= $this->htmlLine($data[$i]);
-                    if ($i==count($data)-1) $ret .= '</tbody>';
+                    if ($i==count($data)-1) {
+                        $ret .= "</tbody>\n";
+                    }
                     break;
                 case 'csv':
                     $ret .= $this->csvLine($data[$i]);
@@ -784,29 +788,29 @@ class FannieReportPage extends FanniePage
             unset($row['meta']);
         }
 
-        $ret = '<tr';
+        $ret = "\t<tr";
         if (($meta & self::META_CHART_DATA) != 0) {
             $ret .= ' class="d3ChartData"';
         }
-        $ret .= '>';
+        $ret .= ">\n";
 
         $tag = $header ? 'th' : 'td';
 
         if (($meta & self::META_BOLD) != 0) {
-            $ret = '</tbody><tbody>' . $ret;
+            $ret = "</tbody>\n<tbody>\n" . $ret;
             $tag = 'th';
         }
         if (($meta & self::META_BLANK) != 0) {
-            $ret = '</tbody><tbody><tr>';
+            $ret = "</tbody>\n<tbody>\n\t<tr>\n";
             $row = array();
             $header1 = $this->select_headers(False);
             // just using headers as a column count
-            foreach($header1 as $h) {
+            foreach ($header1 as $h) {
                 $row[] = null;
             }
         }
         if (($meta & self::META_REPEAT_HEADERS) != 0) {
-            $ret = '<thead><tr>';
+            $ret = "</tbody>\n<thead>\n\t<tr>\n";
             $tag = 'th';
             $row = array();
             $header1 = $this->select_headers(True);
@@ -877,14 +881,16 @@ class FannieReportPage extends FanniePage
             }
             $class .= '"';
 
-            $ret .= '<'.$tag.' '.$class.' style="'.$styles.'" colspan="'.$span.'">'.$row[$i].'</'.$tag.'>';
+            $ret .= "\t\t<" . $tag . ' ' . $class . ' style="' . $styles . '" colspan="' . $span . '">' . "\n"
+                . "\t\t\t" . $row[$i] . "\n"
+                . "\t\t</" . $tag . ">\n";
             $i += $span;
         }
-        $ret .= '</tr>';
+        $ret .= "\t</tr>\n";
         if (($meta & self::META_REPEAT_HEADERS) != 0) {
-            $ret .= '</thead>';
+            $ret .= "</thead>\n<tbody>\n";
         } elseif (($meta & self::META_BLANK) != 0) {
-            $ret .= '</tbody>';
+            $ret .= "</tbody>\n";
         }
 
         return $ret;
@@ -1068,8 +1074,12 @@ class FannieReportPage extends FanniePage
                     echo '<script type="text/javascript">';
                     echo $js_content;
                     echo "\n\$(document).ready(function(){\n";
-                    foreach($this->onload_commands as $oc)
+                    foreach ($this->onload_commands as $oc) {
+                        if (strstr($oc, 'standardFieldMarkup()')) {
+                            continue;
+                        }
                         echo $oc."\n";
+                    }
                     echo "});\n";
                     echo '</script>';
                 }

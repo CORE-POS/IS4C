@@ -71,9 +71,20 @@ class FanniePage
 
     protected $error_text;
 
+    /**
+      Instance of configuration object
+    */
     protected $config;
 
+    /**
+      Instance of logging object
+    */
     protected $logger;
+
+    /**
+      Instance of DB connection object
+    */
+    protected $connection;
 
     public function __construct()
     {
@@ -89,14 +100,31 @@ class FanniePage
         */
     }
 
+    /**
+      DI Setter method for configuration
+      @param $fc [FannieConfig] configuration object
+    */
     public function setConfig(FannieConfig $fc)
     {
         $this->config = $fc;
     }
 
+    /**
+      DI Setter method for logging
+      @param $fl [FannieLogger] logging object
+    */
     public function setLogger(FannieLogger $fl)
     {
         $this->logger = $fl;
+    }
+
+    /**
+      DI Setter method for database
+      @param $sql [SQLManager] database object
+    */
+    public function setConnection(SQLManager $sql)
+    {
+        $this->connection = $sql;
     }
 
     /**

@@ -170,7 +170,8 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         $vendor->vendorID($order->vendorID());
         $vendor->load();
 
-        $ret = '<b>Vendor</b>: '.$vendor->vendorName();
+        $ret = '<div class="form-inline">';
+        $ret .= '<b>Vendor</b>: '.$vendor->vendorName();
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
         $ret .= '<b>Created</b>: '.$order->creationDate();
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
@@ -180,7 +181,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 
-        $ret .= 'Export as: <select id="exporterSelect">';
+        $ret .= 'Export as: <select id="exporterSelect" class="form-control">';
         $dh = opendir('exporters');
         while( ($file=readdir($dh)) !== False){
             if (substr($file,-4) != '.php')
@@ -198,6 +199,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         $init = ($order->placed() ? 'init=placed' : 'init=pending');
         $ret .= '<button type="button" class="btn btn-default" 
             onclick="location=\'ViewPurchaseOrders.php?' . $init . '\'; return false;">All Orders</button>';
+        $ret .= '</div>';
 
         $departments = $dbc->tableDefinition('departments');
         $codingQ = 'SELECT d.salesCode, SUM(o.receivedTotalCost) as rtc
@@ -231,9 +233,13 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         $ret .= '</table>';
         $ret .= '</div><div style="float:left;">';
         if (!$order->placed()) {
-            $ret .= '<button onclick="location=\'EditOnePurchaseOrder.php?id=' . $order->vendorID() . '\'; return false;">Add Items</button>';
+            $ret .= '<button class="btn btn-default"
+                onclick="location=\'EditOnePurchaseOrder.php?id=' . $order->vendorID() . '\'; return false;">Add Items</button>';
             $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
-            $ret .= '<button onclick="deleteOrder(' . $this->id . '); return false;">Delete Order</button>';
+            $ret .= '<button class="btn btn-default" onclick="deleteOrder(' . $this->id . '); return false;">Delete Order</button>';
+        } else {
+            $ret .= '<a class="btn btn-default"
+                href="ManualPurchaseOrderPage.php?id=' . $order->vendorID() . '&adjust=' . $this->id . '">Edit Order</a>';
         }
         $ret .= '</div></div>';
         $ret .= '<div style="clear:left;"></div>';

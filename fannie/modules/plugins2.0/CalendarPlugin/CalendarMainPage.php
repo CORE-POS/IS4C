@@ -113,6 +113,7 @@ class CalendarMainPage extends FanniePage {
         case 'index':
         default:
             echo CalendarPluginDisplayLib::indexView($this->uid);
+            $this->addOnloadCommand("initSubscriptionDialog();\n");
             break;
         }
 

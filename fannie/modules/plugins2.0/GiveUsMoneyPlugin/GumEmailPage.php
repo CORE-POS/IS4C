@@ -44,6 +44,7 @@ class GumEmailPage extends FannieRESTfulPage
         $this->title = 'Email Communications' . ' : ' . $acct;
         $this->__routes[] = 'get<id><welcome>';
         $this->__routes[] = 'get<id><creceipt><cid>';
+        $this->__routes[] = 'get<id><dreceipt><did>';
         $this->__routes[] = 'get<id><loanstatement>';
 
         return parent::preprocess();
@@ -250,6 +251,13 @@ class GumEmailPage extends FannieRESTfulPage
             $this->equity[] = $obj;
         }
 
+        $this->dividends = array();
+        $model = new GumDividendsModel($dbc);
+        $model->card_no($this->id);
+        foreach ($model->find('yearEndDate') as $obj) {
+            $this->dividends[] = $obj;
+        }
+
         $this->settings = new GumSettingsModel($dbc);
 
         return true;
@@ -334,6 +342,69 @@ class GumEmailPage extends FannieRESTfulPage
         return false;
     }
 
+    public function get_id_dreceipt_did_handler()
+    {
+        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
+
+        $bridge = GumLib::getSetting('posLayer');
+        $this->custdata = $bridge::getCustdata($this->id);
+        $this->meminfo = $bridge::getMeminfo($this->id);
+        $uid = FannieAuth::getUID($this->current_user);
+
+        // bridge may change selected database
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB']);
+
+        $model = new GumDividendsModel($dbc);
+        $model->gumDividendID($this->did);
+        $model->load();
+
+        $msg = 'Dear ' . $this->custdata->FirstName() . ' ' . $this->custdata->LastName() . ',' . "\n";
+        $msg .= "\n";
+        $msg .= 'Attached is a 1099 for the Class C dividend issued ' 
+            . date('Y-m-d', strtotime($model->yearEndDate())) . "\n";
+
+        $msg .= wordwrap('Whole Foods Co-op recognizes and thanks you for your support and purchase of Class C Stock. It is important that we maintain your current contact information so that we can deliver any dividends you may earn. Please reply to this email or to finance@wholefoods.coop with any questions or concerns. Or you may also call 218-728-0884, ask for Finance, and we will gladly assist you.') . "\n";
+        $msg .= "\n";
+
+        $msg .= 'Dale Maiers' . "\n";
+        $msg .= 'Finance Manager' . "\n";
+
+        $subject = 'SAMPLE WFC Owner Financing: Class C Stock Dividend';
+        $to = $this->meminfo->email_1();
+
+        $mail = new PHPMailer();
+        $mail->From = 'finance@wholefoods.coop';
+        $mail->FromName = 'Whole Foods Co-op';
+        $mail->AddAddress('andy@wholefoods.coop');
+        $mail->AddAddress('dmaiers@wholefoods.coop');
+        $mail->Subject = $subject;
+        $mail->Body = $msg;
+
+        $year = date('Y', strtotime($model->yearEndDate()));
+        $taxID = new GumTaxIdentifiersModel($dbc);
+        $taxID->card_no($this->id);
+        $taxID->load();
+        $ssn = 'n/a';
+        if ($taxID->maskedTaxIdentifier() != '') {
+            $ssn = 'xxx-xx-' . $taxID->maskedTaxIdentifier();
+        }
+        $amount = array(1 => $model->dividendAmount());
+        $pdf = new FPDF('P', 'mm', 'Letter');
+        $pdf->AddPage();
+        $form = new GumTaxFormTemplate($this->custdata, $this->meminfo, $ssn, $year, $amount);
+        $form->renderAsPDF($pdf, 15);
+        $raw_pdf = $pdf->Output('wfc.pdf', 'S');
+
+        $mail->AddStringAttachment($raw_pdf, 'wfc.pdf', 'base64', 'application/pdf');
+        if ($mail->Send()) {
+            header('Location: GumEmailPage.php?id=' . $this->id);
+        } else {
+            echo $mail->ErrorInfo;
+        }
+
+        return false;
+    }
+
     public function css_content()
     {
         return '
@@ -408,6 +479,20 @@ class GumEmailPage extends FannieRESTfulPage
                                     $obj->gumEquityShareID()
                 );
             }
+        }
+        foreach ($this->dividends as $obj) {
+            $ret .= sprintf('<tr>
+                            <td>Divident Issued %.2f</td>
+                            <td>%s</td>',
+                            $obj->dividendAmount(),
+                            $obj->yearEndDate()
+            );
+            $ret .= sprintf('<td><input type="button" value="Send Receipt"
+                                onclick="location=\'GumEmailPage.php?id=%d&dreceipt=1&did=%d&sendAs=\'+$(\'#sendType\').val();" />
+                                </td>',
+                                $this->id,
+                                $obj->gumDividendID()
+            );
         }
         $ret .= '</table>';
         $ret .= '</fieldset>';

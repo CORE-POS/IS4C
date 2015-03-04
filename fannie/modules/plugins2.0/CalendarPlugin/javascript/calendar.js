@@ -174,6 +174,19 @@ function makeNewCal(doCreate){
 	content += "Create a new calendar</a>";
 	document.getElementById('indexCreateNew').innerHTML=content;
 }
+function createSubscription(uid, name, url)
+{
+    var dataStr = 'action=createSubscription&uid='+uid;
+    dataStr += '&name='+encodeURIComponent(name);
+    dataStr += '&url='+encodeURIComponent(url);
+    $.ajax({
+        url: 'CalendarAjax.php',
+        data: dataStr,
+        success: function(resp){
+            location.reload();
+        }
+    });
+}
 
 // ************************************************************************
 // Display: prefs functions
@@ -216,7 +229,11 @@ function savePrefs(calID){
 		if (i < opts.length-1) writers += ",";
 	}
 
-	phpSend('savePrefs&calID='+calID+'&name='+name+'&viewers='+viewers+'&writers='+writers);
+	var dataStr = 'savePrefs&calID='+calID+'&name='+name+'&viewers='+viewers+'&writers='+writers;
+    if ($('#sub-url').length) {
+        dataStr += '&url='+$('#sub-url').val();
+    }
+    phpSend(dataStr);
 }
 
 // ************************************************************************

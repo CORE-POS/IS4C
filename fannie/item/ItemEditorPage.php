@@ -165,7 +165,8 @@ class ItemEditorPage extends FanniePage
 
     function search_results()
     {
-        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $upc = FormLib::get_form_value('searchupc');
         $numType = FormLib::get_form_value('ntype','UPC');
         $inUseFlag = FormLib::get('inUse', false);
@@ -476,7 +477,8 @@ class ItemEditorPage extends FanniePage
         }
 
         /* push updates to the lanes */
-        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         updateProductAllLanes($upc);
 
         if ($audited) {

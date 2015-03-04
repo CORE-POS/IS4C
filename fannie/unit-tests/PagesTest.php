@@ -9,10 +9,16 @@ class PagesTest extends PHPUnit_Framework_TestCase
     {
         $reports = FannieAPI::listModules('FannieReportPage', true);
         $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $op_db = $config->get('OP_DB');
+        $dbc = FannieDB::get($op_db);
 
-        foreach($reports as $report_class) {
+        foreach ($reports as $report_class) {
             $obj = new $report_class();
             $obj->setConfig($config);
+            $obj->setLogger($logger);
+            $dbc->selectDB($op_db);
+            $obj->setConnection($dbc);
 
             $pre = $obj->preprocess();
             $this->assertInternalType('boolean',$pre);

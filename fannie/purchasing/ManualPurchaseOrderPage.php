@@ -36,14 +36,22 @@ class ManualPurchaseOrderPage extends FannieRESTfulPage
     public $description = '[Manual Purchase Order] is a tool for entering purchase order info
         in a grid from existing paperwork.';
     
+    public function preprocess()
+    {
+        $this->__routes[] = 'get<id><adjust>';
+
+        $ret = parent::preprocess();
+        return $ret;
+    }
+
     public function post_id_handler()
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $ret = array('error' => false);
 
         $date = FormLib::get('order-date', date('Y-m-d')); 
-        $po_num = FormLib::get('po-num');
-        $inv_num = FormLib::get('inv-num');
+        $po_num = FormLib::get('po-number');
+        $inv_num = FormLib::get('inv-number');
 
         $sku = FormLib::get('sku', array());
         $upc = FormLib::get('upc', array());
@@ -87,7 +95,13 @@ class ManualPurchaseOrderPage extends FannieRESTfulPage
         $po->userID(FannieAuth::getUID());
         $po->vendorOrderID($po_num);
         $po->vendorInvoiceID($inv_num);
-        $orderID = $po->save();
+        // if an orderID is supplied, update the existing order
+        if (FormLib::get('order-id') !== '' && is_numeric(FormLib::get('order-id'))) {
+            $orderID = FormLib::get('order-id');
+            $po->orderID($orderID);
+        } else {
+            $orderID = $po->save();
+        }
 
         if (!$orderID) {
             $ret['error'] = true;
@@ -169,6 +183,30 @@ class ManualPurchaseOrderPage extends FannieRESTfulPage
         echo json_encode($ret);
 
         return false;
+    }
+
+    public function get_id_adjust_view()
+    {
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $order = new PurchaseOrderModel($dbc);
+        $order->orderID($this->adjust);
+        $order->load(); 
+        $orderJSON = $order->toJSON();
+
+        $items = new PurchaseOrderItemsModel($dbc);
+        $items->orderID($this->adjust);
+        $itemsJSON = '[';
+        foreach ($items->find() as $item) {
+            $itemsJSON .= $item->toJSON() . ',';
+        }
+        if (strlen($itemsJSON) > 1) {
+            $itemsJSON = substr($itemsJSON, 0, strlen($itemsJSON)-1);
+        }
+        $itemsJSON .= ']';
+
+        $this->addOnloadCommand("existingOrder('$orderJSON', '$itemsJSON');\n");
+
+        return $this->get_id_view();
     }
 
     public function get_id_view()

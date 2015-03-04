@@ -74,18 +74,16 @@ class FannieDispatch
 
     /**
       Log page load in usageStats table
+      @param $dbc [SQLManager] database connection
       @return [boolean] success / fail
     */
-    static public function logUsage()
+    static public function logUsage(SQLManager $dbc, $op_db)
     {
-        $op_db = FannieConfig::factory()->get('OP_DB');
-
         if (php_sapi_name() === 'cli') {
             // don't log cli usage
             return false;
         }
 
-        $dbc = FannieDB::get($op_db);
         if (!$dbc || !isset($dbc->connections[$op_db]) || $dbc->connections[$op_db] == false) {
             // database unavailable
             return false;
@@ -139,19 +137,21 @@ class FannieDispatch
     */
     static public function conditionalExec($custom_errors=true)
     {
-        $config = FannieConfig::factory();
-        $logger = new FannieLogger();
-        self::setLogger($logger);
         $bt = debug_backtrace();
         // conditionalExec() is the only function on the stack
         if (count($bt) == 1) {
+            $config = FannieConfig::factory();
+            $logger = new FannieLogger();
+            $op_db = $config->get('OP_DB');
+            $dbc = FannieDB::get($op_db);
+            self::setLogger($logger);
 
             // setup error logging
             self::setErrorHandlers();
             // initialize locale & gettext
             self::i18n();
             // write URL log
-            self::logUsage();
+            self::logUsage($dbc, $op_db);
 
             // draw current page
             $page = basename($_SERVER['PHP_SELF']);
@@ -160,6 +160,7 @@ class FannieDispatch
                 $obj = new $class();
                 $obj->setConfig($config);
                 $obj->setLogger($logger);
+                $obj->setConnection($dbc);
                 $obj->draw_page();
             } else {
                 trigger_error('Missing class '.$class, E_USER_NOTICE);

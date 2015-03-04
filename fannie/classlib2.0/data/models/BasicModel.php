@@ -1384,6 +1384,11 @@ class $name extends " . ($as_view ? 'ViewModel' : 'BasicModel') . "\n");
 
         return $models;
     }
+
+    public function toJSON()
+    {
+        return json_encode($this->instance);
+    }
 }
 
 if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
