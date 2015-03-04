@@ -591,14 +591,12 @@ class FannieReportPage extends FanniePage
                         $ret .= (substr($line,0,1)=='<'?'':'<br />').$line;
                     }
                 }
-                $class = 'mySortableTable';
-                if ($this->sortable) {
-                    $class .= ' tablesorter';
-                } else if ($this->no_sort_but_style) {
-                    $class .= ' tablesorter';
+                if ($this->sortable || $this->no_sort_but_style) {
+                    $ret .= '<table class="mySortableTable tablesorter">';
+                } else {
+                    $ret .= '<table class="mySortableTable" cellspacing="0" 
+                        cellpadding="4" border="0">' . "\n";
                 }
-                $ret .= '<table class="'.$class.'" cellspacing="0" 
-                    cellpadding="4" border="1">' . "\n";
                 break;
             case 'csv':
                 foreach ($this->defaultDescriptionContent() as $line) {
@@ -810,7 +808,7 @@ class FannieReportPage extends FanniePage
             }
         }
         if (($meta & self::META_REPEAT_HEADERS) != 0) {
-            $ret = "</tbody>\n<thead>\n\t<tr>\n";
+            $ret = "</tbody>\n<tbody>\n\t<tr>\n";
             $tag = 'th';
             $row = array();
             $header1 = $this->select_headers(True);
@@ -888,7 +886,7 @@ class FannieReportPage extends FanniePage
         }
         $ret .= "\t</tr>\n";
         if (($meta & self::META_REPEAT_HEADERS) != 0) {
-            $ret .= "</thead>\n<tbody>\n";
+            $ret .= "</tbody>\n<tbody>\n";
         } elseif (($meta & self::META_BLANK) != 0) {
             $ret .= "</tbody>\n";
         }
