@@ -15,8 +15,12 @@ function selectSubmit(selector, myform, filter_selector) {
     var prevKey = 0;
     var prevPrevKey = 0;
     var filter_string = '';
+    var disabled = true;
 
     $(selector).keydown(function (e){
+        if (disabled) {
+            return;
+        }
         var jsKey; 
         if (e.which) {
             jsKey = e.which;
@@ -43,6 +47,9 @@ function selectSubmit(selector, myform, filter_selector) {
     });
 
     $(selector).keyup(function (e){
+        if (disabled) {
+            return;
+        }
         var jsKey; 
         if (e.which) {
             jsKey = e.which;
@@ -84,7 +91,6 @@ function selectSubmit(selector, myform, filter_selector) {
             }
             if (filter_changed && filter_string.length > 0) {
                 $(filter_selector).html('Filter: ' + filter_string);
-                console.log(filter_string);
                 var re = new RegExp(filter_string, "i");
                 /**
                   Add a hidden select field and move all the options
@@ -126,6 +132,8 @@ function selectSubmit(selector, myform, filter_selector) {
             prevKey = jsKey;
         }
     });
+
+    setTimeout(function(){disabled=false;}, 500);
 }
 
 function isFilterKey(keyCode)
