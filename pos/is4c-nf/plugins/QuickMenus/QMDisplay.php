@@ -33,6 +33,18 @@ class QMDisplay extends NoInputPage {
         $base = MiscLib::baseURL();
 		?>
         <script type="text/javascript" src="<?php echo $base; ?>js/selectSubmit.js"></script>
+        <script type="text/javascript">
+        function qmNumberPress()
+        {
+            $('#ddQKselect').keyup(function(event) {
+                if (event.which >= 49 && event.which <= 57) {
+                    $('#qmform').submit();
+                } else if (event.which >= 97 && event.which <= 105) {
+                    $('#qmform').submit();
+                }
+            });
+        }
+        </script>
 		<?php
 	} // END head() FUNCTION
 
@@ -104,12 +116,13 @@ class QMDisplay extends NoInputPage {
 		echo '<select name="ddQKselect" id="ddQKselect" style="width:380px;" size="10"
 			onblur="$(\'#ddQKselect\').focus();" >';
 		$i=1;
-		foreach($my_menu as $label => $value){
+		foreach ($my_menu as $label => $value) {
 			printf('<option value="%s" %s>%d. %s</option>',$value,
 				($i==1?'selected':''),$i,$label);
 			$i++;
 		}
 		echo '</select>';
+        $this->add_onload_command("qmNumberPress();\n");
 
 		echo "<input type=\"hidden\" value=\"0\" name=\"clear\" id=\"doClear\" />";	
 		echo "</form>";
