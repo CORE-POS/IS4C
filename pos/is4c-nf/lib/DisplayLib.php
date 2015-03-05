@@ -197,7 +197,7 @@ static public function msgbox($strmsg, $icon, $noBeep=false, $buttons=array())
 	        </div>
             <div class=\"clear\"></div>
         </div>";
-    if (!empty($buttons)) {
+    if (!empty($buttons) && is_array($buttons)) {
         $ret .= '<div class="boxMsgBody boxMsgButtons">';
         foreach ($buttons as $label => $action) {
             $label = preg_replace('/(\[.+?\])/', '<span class="smaller">\1</span>', $label);
