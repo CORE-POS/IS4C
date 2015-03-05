@@ -196,7 +196,7 @@ class HouseCoupon extends SpecialUPC
         $requirements_msg = DisplayLib::boxMsg(
             _("coupon requirements not met"),
             '',
-            false,
+            true,
             DisplayLib::standardClearButton()
         );
         $coupID = $id;
