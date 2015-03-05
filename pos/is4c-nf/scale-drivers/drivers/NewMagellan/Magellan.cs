@@ -123,17 +123,18 @@ public class Magellan : DelegateForm {
     public override void MsgSend(string msg)
     {
         int ticks = Environment.TickCount;
+        string my_location = AppDomain.CurrentDomain.BaseDirectory;
         char sep = System.IO.Path.DirectorySeparatorChar;
-        while (File.Exists("ss-output/"  + sep + ticks)) {
+        while (File.Exists(my_location + sep + "ss-output/"  + sep + ticks)) {
             ticks++;
         }
 
-        TextWriter sw = new StreamWriter("ss-output/" +sep+"tmp"+sep+ticks);
+        TextWriter sw = new StreamWriter(my_location + sep + "ss-output/" +sep+"tmp"+sep+ticks);
         sw = TextWriter.Synchronized(sw);
         sw.WriteLine(msg);
         sw.Close();
-        File.Move("ss-output/" +sep+"tmp"+sep+ticks,
-              "ss-output/" +sep+ticks);
+        File.Move(my_location+sep+"ss-output/" +sep+"tmp"+sep+ticks,
+              my_location+sep+"ss-output/" +sep+ticks);
 
         #if CORE_RABBIT
         byte[] body = System.Text.Encoding.UTF8.GetBytes(msg);
@@ -157,7 +158,6 @@ public class Magellan : DelegateForm {
     private ArrayList ReadConfig()
     {
         string my_location = AppDomain.CurrentDomain.BaseDirectory;
-        System.Console.WriteLine(my_location);
         char sep = System.IO.Path.DirectorySeparatorChar;
         StreamReader fp = new StreamReader(my_location + sep + "ports.conf");
         ArrayList al = new ArrayList();
