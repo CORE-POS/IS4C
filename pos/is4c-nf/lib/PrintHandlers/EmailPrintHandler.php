@@ -326,9 +326,9 @@ class EmailPrintHandler extends PrintHandler {
 		}
 	}
 
-	function RenderBitmapFromFile($fn){
-		return "";
+	function RenderBitmapFromFile($fn, $align='C')
+    {
+		return '';
 	}
 } 
 
-?>

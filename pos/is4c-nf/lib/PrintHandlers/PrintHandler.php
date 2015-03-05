@@ -646,7 +646,8 @@ class PrintHandler {
 	  @param $fn a bitmap file
 	  @return printer command string
 	*/
-	function RenderBitmapFromFile($fn, $align='C'){
+	function RenderBitmapFromFile($fn, $align='C')
+    {
 		return $this->RenderBitmap($fn, $align);
 	}
 
@@ -716,4 +717,3 @@ class PrintHandler {
     }
 } 
 
-?>
