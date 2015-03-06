@@ -267,12 +267,15 @@ class MemArEquityDumpTool extends FanniePage {
         return ob_get_clean();
     }
 
-    function getTransNo($emp,$register){
-        global $FANNIE_TRANS_DB;
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
-        $q = $dbc->prepare_statement("SELECT max(trans_no) FROM dtransactions WHERE register_no=? AND emp_no=?");
-        $r = $dbc->exec_statement($q,array($register,$emp));
-        $n = array_pop($dbc->fetch_row($r));
+    private function getTransNo($emp,$register)
+    {
+        $dbc = $this->connection;
+        $dbc->setDefaultDB($this->config->get('TRANS_DB'));
+        $q = $dbc->prepare("SELECT max(trans_no) FROM dtransactions WHERE register_no=? AND emp_no=?");
+        $r = $dbc->execute($q,array($register,$emp));
+        $w = $dbc->fetchRow($r);
+        $n = $w[0];
+
         return (empty($n)?1:$n+1);  
     }
 
