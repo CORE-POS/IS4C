@@ -36,11 +36,18 @@ class QMDisplay extends NoInputPage {
         <script type="text/javascript">
         function qmNumberPress()
         {
+            var qm_submitted = false;
             $('#ddQKselect').keyup(function(event) {
                 if (event.which >= 49 && event.which <= 57) {
-                    $('#qmform').submit();
+                    if (!qm_submitted) {
+                        qm_submitted = true;
+                        $('#qmform').submit();
+                    }
                 } else if (event.which >= 97 && event.which <= 105) {
-                    $('#qmform').submit();
+                    if (!qm_submitted) {
+                        qm_submitted = true;
+                        $('#qmform').submit();
+                    }
                 }
             });
         }
@@ -56,6 +63,12 @@ class QMDisplay extends NoInputPage {
 		$this->offset = isset($_REQUEST['offset'])?$_REQUEST['offset']:0;
 
 		if (count($_POST) > 0){
+            if (!FormLib::validateToken()) {
+                CoreLocal::set('msgrepeat', 0);
+				$this->change_page($this->page_url."gui-modules/pos2.php");
+
+                return false;
+            }
 			$output = "";
 			if ($_REQUEST["clear"] == 0){
 				$value = $_REQUEST['ddQKselect'];
@@ -68,8 +81,7 @@ class QMDisplay extends NoInputPage {
 			if (substr(strtoupper($output),0,2) == "QM"){
 				CoreLocal::set("qmNumber",substr($output,2));
 				return True;
-			}
-			else {
+			} else {
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 			}
 			return False;
@@ -125,6 +137,7 @@ class QMDisplay extends NoInputPage {
         $this->add_onload_command("qmNumberPress();\n");
 
 		echo "<input type=\"hidden\" value=\"0\" name=\"clear\" id=\"doClear\" />";	
+        echo FormLib::tokenField();
 		echo "</form>";
 		echo "</div>";
 	} // END body_content() FUNCTION
