@@ -237,7 +237,13 @@ class TenderModule
     */
     public function disabledPrompt()
     {
-        return DisplayLib::boxMsg('Amount required for '.$this->name_string);
+        $clearButton = array('OK [clear]' => 'parseWrapper(\'CL\');');
+        return DisplayLib::boxMsg(
+            _('Amount required for ') . $this->name_string,
+            '',
+            false,
+            $clearButton
+        );
     }
 
 }

@@ -50,13 +50,20 @@ class MemberBarcode extends SpecialUPC
 		$result = $db->query($query);
 
 		if ($db->num_rows($result) < 1) {
-			$json['output'] = DisplayLib::boxMsg(_("Card not assigned"));
+			$json['output'] = DisplayLib::boxMsg(
+                _("Card not assigned"),
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
+
 			return $json;
 		}
 
 		$row = $db->fetch_array($result);
 		CoreLocal::set("memberCardUsed",1);
 		$json = PrehLib::memberID($row[0]);
+
 		return $json;
 	}
 }

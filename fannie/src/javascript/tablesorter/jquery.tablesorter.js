@@ -1013,7 +1013,7 @@
             var $tr, row = -1,
                 odd;
             // loop through the visible rows
-            $("tr:visible", table.tBodies[0]).each(function (i) {
+            $("tr:visible", table.tBodies).each(function (i) {
                 $tr = $(this);
                 // style children rows the same way the parent
                 // row was styled

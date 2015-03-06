@@ -92,7 +92,12 @@ class CouponCode extends SpecialUPC
         $num_rows = $db->num_rows($result);
 
         if ($num_rows == 0) {
-            $json['output'] = DisplayLib::boxMsg(_("coupon type unknown")."<br />"._("enter coupon manually"));
+            $json['output'] = DisplayLib::boxMsg(
+                _("coupon type unknown")."<br />"._("enter coupon manually"),
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
             return $json;
         }
 
@@ -101,7 +106,12 @@ class CouponCode extends SpecialUPC
         if ($result2 && $db->num_rows($result2) > 0) {
             $row = $db->fetch_row($result2);
             if ($row['threshold'] <= 0) {
-                $json['output'] = DisplayLib::boxMsg(_("coupon disabled")."<br />".$row['reason']);
+                $json['output'] = DisplayLib::boxMsg(
+                    $row['reason'],
+                    _("coupon disabled"),
+                    false,
+                    DisplayLib::standardClearButton()
+                );
                 return $json;
             } else {
                 $transDB = Database::tDataConnect();
@@ -111,7 +121,12 @@ class CouponCode extends SpecialUPC
                     $w = $transDB->fetch_row($r);
                     $qty = $w[0];
                     if ($qty >= $row['threshold']) {
-                        $json['output'] = DisplayLib::boxMsg(_('coupon already applied'));
+                        $json['output'] = DisplayLib::boxMsg(
+                            _('coupon already applied'),
+                            '',
+                            false,
+                            DisplayLib::standardClearButton()
+                        );
                         return $json;
                     }
                 }
@@ -191,7 +206,12 @@ class CouponCode extends SpecialUPC
 
         /* no item w/ matching manufacturer */
         if ($num_rows == 0) {
-            $json['output'] = DisplayLib::boxMsg(_("product not found")."<br />"._("in transaction"));
+            $json['output'] = DisplayLib::boxMsg(
+                _("product not found")."<br />"._("in transaction"),
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
             return $json;
         }
 
@@ -220,14 +240,21 @@ class CouponCode extends SpecialUPC
 
         /* every line has maximum coupons applied */
         if (count($available) == 0) {
-            $json['output'] = DisplayLib::boxMsg(_("Coupon already applied")."<br />"._("for this item"));
+            $json['output'] = DisplayLib::boxMsg(
+                _("Coupon already applied")."<br />"._("for this item"),
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
             return $json;
         }
 
         /* insufficient number of matching items */
         if ($qty > $act_qty) {
-            $json['output'] = DisplayLib::boxMsg(sprintf(_("coupon requires %d items"),$qty)."<br />".
-                        sprintf(_("there are only %d item(s)"),$act_qty)."<br />"._("in this transaction"));
+            $msg = sprintf(_("coupon requires %d items"),$qty) . "<br />"
+                 . sprintf(_("there are only %d item(s)"),$act_qty) . "<br />"
+                 . _("in this transaction");
+            $json['output'] = DisplayLib::boxMsg($msg, '', false, DisplayLib::standardClearButton());
             return $json;
         }
         

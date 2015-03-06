@@ -20,20 +20,6 @@
 
 *********************************************************************************/
 
-/*************************************************************
- * SerialPortHandler
- *     Abstract class to manage a serial port in a separate
- * thread. Allows top-level app to interact with multiple, 
- * different serial devices through one class interface.
- * 
- * Provides Stop() and SetParent(DelegateBrowserForm) functions.
- *
- * Subclasses must implement Read() and PageLoaded(Uri).
- * Read() is the main polling loop, if reading serial data is
- * required. PageLoaded(Uri) is called on every WebBrowser
- * load event and provides the Url that was just loaded.
- *
-*************************************************************/
 using System;
 using System.IO;
 using System.IO.Ports;
@@ -84,12 +70,12 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
     private const int BUTTON_GIFT = 8;
     private const int BUTTON_EBT_FOOD = 9;
     private const int BUTTON_EBT_CASH = 10;
-    private const int BUTTON_000  = 0;
-    private const int BUTTON_500  = 5;
-    private const int BUTTON_1000 = 10;
-    private const int BUTTON_2000 = 20;
-    private const int BUTTON_3000 = 30;
-    private const int BUTTON_4000 = 40;
+    private const int BUTTON_CB_000  = 0;
+    private const int BUTTON_CB_OPT1  = 5;
+    private const int BUTTON_CB_OPT2 = 10;
+    private const int BUTTON_CB_OPT3 = 20;
+    private const int BUTTON_CB_OPT4 = 30;
+    private const int BUTTON_CB_OPT5 = 40;
     private const int BUTTON_SIG_ACCEPT = 1;
     private const int BUTTON_SIG_RESET = 2;
     private const int BUTTON_HARDWARE_BUTTON = 0xff;
@@ -316,12 +302,12 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         SendReport(BuildCommand(LcdSetClipArea(0,0,1,1)));
         SendReport(BuildCommand(LcdTextFont(3,12,14)));
         SendReport(BuildCommand(LcdDrawText("Select Cash Back",60,5)));
-        SendReport(BuildCommand(LcdCreateButton(BUTTON_000,"None",5,40,95,130)));
-        SendReport(BuildCommand(LcdCreateButton(BUTTON_500,"5.00",113,40,208,130)));
-        SendReport(BuildCommand(LcdCreateButton(BUTTON_1000,"10.00",224,40,314,130)));
-        SendReport(BuildCommand(LcdCreateButton(BUTTON_2000,"20.00",5,144,95,234)));
-        SendReport(BuildCommand(LcdCreateButton(BUTTON_3000,"30.00",113,144,208,234)));
-        SendReport(BuildCommand(LcdCreateButton(BUTTON_4000,"40.00",224,144,314,234)));
+        SendReport(BuildCommand(LcdCreateButton(BUTTON_CB_000,"None",5,40,95,130)));
+        SendReport(BuildCommand(LcdCreateButton(BUTTON_CB_OPT1,"5.00",113,40,208,130)));
+        SendReport(BuildCommand(LcdCreateButton(BUTTON_CB_OPT2,"10.00",224,40,314,130)));
+        SendReport(BuildCommand(LcdCreateButton(BUTTON_CB_OPT3,"20.00",5,144,95,234)));
+        SendReport(BuildCommand(LcdCreateButton(BUTTON_CB_OPT4,"30.00",113,144,208,234)));
+        SendReport(BuildCommand(LcdCreateButton(BUTTON_CB_OPT5,"40.00",224,144,314,234)));
         SendReport(BuildCommand(LcdStartCapture(4)));
 
         current_state = STATE_SELECT_CASHBACK;
@@ -580,12 +566,13 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         try {
         byte[] input = (byte[])iar.AsyncState;
             HandleReadData(input);        
-            usb_fs.EndRead(iar);
         }
         catch (Exception ex){
             if (this.verbose_mode > 0)
                 System.Console.WriteLine(ex);
             System.Threading.Thread.Sleep(DEFAULT_WAIT_TIMEOUT);
+        } finally {
+            usb_fs.EndRead(iar);
         }
     }
 

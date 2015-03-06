@@ -41,8 +41,11 @@ class EquityEndorseDept extends SpecialDept
                 .trim(CoreLocal::get("transno"));
             if (CoreLocal::get("LastEquityReference") != $ref) {
                 CoreLocal::set("equityAmt",$amount);
-                CoreLocal::set("boxMsg","<b>Equity Sale</b><br>Insert paperwork and press<br>
-                        <font size=-1>[enter] to continue, [clear] to cancel</font>");
+                CoreLocal::set("boxMsg","<b>Equity Sale</b><br>Insert paperwork");
+                CoreLocal::set('boxMsgButtons', array(
+                    'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
+                    'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                ));
                 $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php?quiet=1&endorse=stock&endorseAmt='.$amount;
             }
         }

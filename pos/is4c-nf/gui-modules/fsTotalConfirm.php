@@ -119,18 +119,31 @@ class fsTotalConfirm extends NoInputPage
         }
 		?>
 		<div class="baseHeight">
-		<div class="centeredDisplay colored">
+		<div class="centeredDisplay colored rounded">
 		<?php if (empty($this->tendertype)) { ?>
 		<span class="larger">Customer is using the</span>
 		<?php } ?>
 		<form id="selectform" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 
 		<?php if (empty($this->tendertype)) { ?>
+            <?php $stem = MiscLib::baseURL() . 'graphics/'; ?>
+            <?php if (CoreLocal::get('touchscreen')) { ?>
+            <button type="button" class="pos-button coloredArea"
+                onclick="scrollDown('#selectlist');">
+                <img src="<?php echo $stem; ?>down.png" width="16" height="16" />
+            </button>
+            <?php } ?>
 			<select size="2" name="selectlist" 
 				id="selectlist" onblur="$('#selectlist').focus();">
 			<option value='EC' <?php echo ($default == 'EC') ? 'selected' : ''; ?>>Cash Portion
 			<option value='EF' <?php echo ($default == 'EF') ? 'selected' : ''; ?>>Food Portion
 			</select>
+            <?php if (CoreLocal::get('touchscreen')) { ?>
+            <button type="button" class="pos-button coloredArea"
+                onclick="scrollUp('#selectlist');">
+                <img src="<?php echo $stem; ?>up.png" width="16" height="16" />
+            </button>
+            <?php } ?>
 		<?php } else { ?>
 			<input type="text" id="tenderamt" 
 				name="tenderamt" onblur="$('#tenderamt').focus();" />
@@ -142,11 +155,15 @@ class fsTotalConfirm extends NoInputPage
 			<br />
 			<input type="hidden" name="tendertype" value="<?php echo $this->tendertype?>" />
 		<?php } ?>
-		</form>
 		<p>
-		<span class="smaller">[clear] to cancel</span>
+            <button class="pos-button" type="submit">Select [enter]</button>
+            <button class="pos-button" type="submit" 
+                onclick="$('#selectlist').append($('<option>').val(''));$('#selectlist').val('');">
+                Cancel [clear]
+            </button>
 		</p>
 		</div>
+		</form>
 		</div>
 		<?php
 		if (empty($this->tendertype)) {

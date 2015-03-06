@@ -29,15 +29,13 @@ class RefundComment extends NoInputPage {
     {
 		if (isset($_REQUEST["selectlist"])){
 			$input = $_REQUEST["selectlist"];
-			if ($input == "CL"){
+			if ($input == "CL" || $input == ''){
 				CoreLocal::set("msgrepeat",0);
 				CoreLocal::set("strRemembered","");
 				CoreLocal::set("refundComment","");
-			}
-			else if ($input == "Other"){
+			} elseif ($input == "Other"){
 				return True;
-			}
-			else {
+			} else {
 				$input = str_replace("'","",$input);
 				CoreLocal::set("strRemembered",CoreLocal::get("refundComment"));
 				// add comment calls additem(), which wipes
@@ -63,7 +61,7 @@ class RefundComment extends NoInputPage {
     {
 		?>
 		<div class="baseHeight">
-		<div class="centeredDisplay colored">
+		<div class="centeredDisplay colored rounded">
 		<span class="larger">reason for refund</span>
 		<form name="selectform" method="post" 
 			id="selectform" action="<?php echo $_SERVER['PHP_SELF']; ?>">
@@ -73,9 +71,15 @@ class RefundComment extends NoInputPage {
 			<input type="text" id="selectlist" name="selectlist" 
 				onblur="$('#selectlist').focus();" />
 		<?php
-		}
-		else {
+		} else {
+            $stem = MiscLib::baseURL() . 'graphics/';
 		?>
+            <?php if (CoreLocal::get('touchscreen')) { ?>
+            <button type="button" class="pos-button coloredArea"
+                onclick="scrollDown('#selectlist');">
+                <img src="<?php echo $stem; ?>down.png" width="16" height="16" />
+            </button>
+            <?php } ?>
 			<select name="selectlist" id="selectlist"
 				onblur="$('#selectlist').focus();">
 			<option>Overcharge</option>
@@ -84,15 +88,25 @@ class RefundComment extends NoInputPage {
 			<option>Did not Like</option>
 			<option>Other</option>
 			</select>
+            <?php if (CoreLocal::get('touchscreen')) { ?>
+            <button type="button" class="pos-button coloredArea"
+                onclick="scrollUp('#selectlist');">
+                <img src="<?php echo $stem; ?>up.png" width="16" height="16" />
+            </button>
+            <?php } ?>
 		<?php
             $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
 		}
 		?>
-		</form>
 		<p>
-		<span class="smaller">[clear] to cancel</span>
+            <button class="pos-button" type="submit">Select [enter]</button>
+            <button class="pos-button" type="submit" 
+                onclick="$('#selectlist').append($('<option>').val(''));$('#selectlist').val('');">
+                Cancel [clear]
+            </button>
 		</p>
 		</div>
+		</form>
 		</div>	
 		<?php
 		$this->add_onload_command("\$('#selectlist').focus();\n");

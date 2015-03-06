@@ -33,33 +33,28 @@ class NeedDiscountParser extends Parser
         $ret = $this->default_json();
 
         if (CoreLocal::get('isMember') !== 1) {
-            $ret['output'] =  DisplayLib::boxMsg(_("must be a member to use this discount"));
+            $ret['output'] = DisplayLib::boxMsg(
+                _("Apply member number first"),
+                _('No member selected'),
+                false,
+                array_merge(array('Member Search [ID]' => 'parseWrapper(\'ID\');'), DisplayLib::standardClearButton())
+            );
             return $ret;
         } elseif (CoreLocal::get('NeedDiscountFlag')==1) {
-        	$ret['output'] =  DisplayLib::boxMsg(_("discount already applied"));
+            $ret['output'] = DisplayLib::boxMsg(
+                _("discount already applied"),
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
     		return $ret;
     	} else {
     		CoreLocal::set('NeedDiscountFlag',1);
-        	Database::getsubtotals();
-        	$NBDisc = number_format(CoreLocal::get('discountableTotal') * CoreLocal::get('needBasedPercent'), 2);
-        	// $NBDupc = substr(strtoupper(str_replace(' ','',CoreLocal::get('needBasedName'))),0,13);
-        	$NBDupc = "NEEDBASEDDISC";
-        	$NBDname = CoreLocal::get('needBasedName');
-        	TransRecord::addRecord(array(
-                'upc' => $NBDupc, 
-                'description' => $NBDname, 
-                'trans_type' => "I", 
-                'trans_subtype' => "IC", 
-                'trans_status' => "C", 
-                'quantity' => 1, 
-                'ItemQtty' => 1, 
-                'unitPrice' => -1*$NBDisc,
-                'total' => -1*$NBDisc,
-                'regPrice' => -1*$NBDisc,
-                'voided' => 29
-            ));
+            $NBDisc = CoreLocal::get('needBasedPercent') * 100;
+            DiscountModule::updateDiscount(new DiscountModule($NBDisc, 'NeedBasedDiscount'));
         	$ret['output'] = DisplayLib::lastpage();
-        	$ret['redraw_footer'] = True;
+        	$ret['redraw_footer'] = true;
+
         	return $ret;
         }
     }

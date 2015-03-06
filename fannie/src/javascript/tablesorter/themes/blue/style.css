@@ -27,6 +27,11 @@ table.tablesorter tbody td {
 	background-color: #FFF;
 	vertical-align: top;
 }
+table.tablesorter tbody th {
+	padding: 4px;
+    background-color: #8dbdd8;
+	vertical-align: top;
+}
 table.tablesorter tbody tr.odd td {
 	background-color:#F0F0F6;
 }

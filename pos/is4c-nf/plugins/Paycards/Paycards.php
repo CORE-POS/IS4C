@@ -96,6 +96,11 @@ messages from POS?',
 			'No' => 0
 			)
 		),
+        'PaycardsTermCashBackLimit' => array(
+		'label' => 'Terminal CB Max',
+		'description' => 'Maximum cashback selectable on terminal (in $)',
+		'default' => 40,
+		),
         'PaycardsAllowEBT' => array(
             'label' => 'Allow EBT',
             'description' => 'Show EBT option on terminal 

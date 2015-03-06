@@ -39,6 +39,8 @@ class StoreSummaryReport extends FannieReportPage {
 
     public $report_set = 'Sales Reports';
     public $themed = true;
+    protected $sortable = true;
+    protected $no_sort_but_style = true;
 
     function preprocess()
     {
@@ -47,9 +49,7 @@ class StoreSummaryReport extends FannieReportPage {
         $this->header = "Store Summary Report";
         $this->report_cache = 'none';
         if (FormLib::get_form_value('sortable') !== '') {
-            $this->sortable = True;
-        } else {
-            $this->sortable = False;
+            $this->no_sort_but_style = false;
         }
         if (FormLib::get_form_value('show_zero') !== '') {
             $this->show_zero = True;

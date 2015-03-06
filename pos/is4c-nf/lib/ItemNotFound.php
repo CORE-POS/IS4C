@@ -43,8 +43,12 @@ class ItemNotFound extends LibraryClass
     {
         $opts = array('upc'=>$upc,'description'=>'BADSCAN');
         TransRecord::add_log_record($opts);
-        CoreLocal::set("boxMsg", $upc . ' ' . _("not a valid item"));
-        $json['main_frame'] = MiscLib::baseURL() . "gui-modules/boxMsg2.php";
+        $json['output'] = DisplayLib::boxMsg(
+            _('not a valid item'),
+            _('UPC: ') . $upc,
+            false,
+            DisplayLib::standardClearButton()
+        );
 
         return $json;
     }

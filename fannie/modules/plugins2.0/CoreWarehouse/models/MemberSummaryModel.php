@@ -79,7 +79,7 @@ class MemberSummaryModel extends CoreWarehouseModel
         $today = time();
         $lastmonth = mktime(0, 0, 0, date('n',$today)-1, 1, date('Y',$today));
         $spotlight_months = array();
-        for ($i=0; $i<3; $i++) {
+        for ($i=0; $i<2; $i++) {
             $spotlight_months[] = mktime(0, 0, 0, date('n',$lastmonth)-$i, 1, date('Y',$lastmonth));
         }
         $lastyear = mktime(0, 0, 0, date('n',$lastmonth)-11, 1, date('Y',$lastmonth));

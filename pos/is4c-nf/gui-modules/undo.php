@@ -190,14 +190,7 @@ class undo extends NoInputPage {
 				}
 			}
 
-			$op = Database::pDataConnect();
-			$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
-				ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
-				SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
-				where CardNo = '".$card_no."'";
-			$res = $op->query($query);
-			$row = $op->fetch_row($res);
-			PrehLib::setMember($card_no,1,$row);
+			PrehLib::setMember($card_no, 1);
 			CoreLocal::set("autoReprint",0);
 
 			/* do NOT restore logged in cashier until this transaction is complete */

@@ -53,9 +53,14 @@ class Void extends Parser
 
 
         if (strlen($str) > 2) {
-            $ret['output'] = $this->voidupc(substr($str,2));
-        } else if (CoreLocal::get("currentid") == 0) {
-            $ret['output'] = DisplayLib::boxMsg(_("No Item on Order"));
+            $ret = $this->voidupc(substr($str,2), $ret);
+        } elseif (CoreLocal::get("currentid") == 0) {
+            $ret['output'] = DisplayLib::boxMsg(
+                _("No Item on Order"),
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
         } else {
             $id = CoreLocal::get("currentid");
 
@@ -77,25 +82,35 @@ class Void extends Parser
             */
             if ($status['voided'] == 2) {
                 // void preceeding item
-                $ret['output'] = $this->voiditem($id - 1);
+                $ret = $this->voiditem($id - 1, $ret);
             } else if ($status['voided'] == 3 || $status['voided'] == 6 || $status['voided'] == 8) {
-                $ret['output'] = DisplayLib::boxMsg(_("Cannot void this entry"));
+                $ret['output'] = DisplayLib::boxMsg(
+                    _("Cannot void this entry"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
             } else if ($status['voided'] == 4 || $status['voided'] == 5) {
                 PrehLib::percentDiscount(0);
             } else if ($status['voided'] == 10) {
                 TransRecord::reverseTaxExempt();
             } else if ($status['status'] == "V") {
-                $ret['output'] = DisplayLib::boxMsg(_("Item already voided"));
+                $ret['output'] = DisplayLib::boxMsg(
+                    _("Item already voided"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
             } else {
-                $ret['output'] = $this->voiditem($id);
+                $ret = $this->voiditem($id, $ret);
             }
         }
 
-        if (empty($ret['output'])) {
+        if (empty($ret['output']) && empty($ret['main_frame'])) {
             $ret['output'] = DisplayLib::lastpage();
             $ret['redraw_footer'] = true;
             $ret['udpmsg'] = 'goodBeep';
-        } else {
+        } elseif (empty($ret['main_frame'])) {
             $ret['udpmsg'] = 'errorBeep';
         }
 
@@ -106,8 +121,10 @@ class Void extends Parser
       Lookup item and decide whether to void
       by simply reversing the record or by
       applying product UPC
+      @param $item_num localtemptrans.trans_id value to void
+      @param $json parser return value structure
     */
-    public function voiditem($item_num)
+    public function voiditem($item_num, $json)
     {
         if ($item_num) {
             $query = "SELECT upc, 
@@ -129,7 +146,13 @@ class Void extends Parser
             $num_rows = $db->num_rows($result);
 
             if ($num_rows == 0) {
-                return DisplayLib::boxMsg(_("Item not found"));
+                $json['output'] = DisplayLib::boxMsg(
+                    _("Item not found"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
+                return $json;
             } else {
                 $row = $db->fetch_array($result);
 
@@ -141,30 +164,46 @@ class Void extends Parser
                      || $row['trans_type'] == 'D' 
                      || $row['charflag'] == 'SO')
                     ) {
-                    return DisplayLib::boxMsg(_("Item already voided"));
-                } else if (!$row["upc"] || strlen($row["upc"]) < 1 
+                    $json['output'] = DisplayLib::boxMsg(
+                        _("Item already voided"),
+                        '',
+                        false,
+                        DisplayLib::standardClearButton()
+                    );
+                    return $json;
+                } elseif (!$row["upc"] || strlen($row["upc"]) < 1 
                            || $row['trans_type'] == 'D'
                            || $row['charflag'] == 'SO') {
-                    return $this->voidid($item_num);
+                    $json = $this->voidid($item_num, $json);
+                    return $json;
                 } else {
-                    return $this->voidupc($row["ItemQtty"] . "*" . $row["upc"], $item_num);
+                    $json = $this->voidupc($row["ItemQtty"] . "*" . $row["upc"], $json, $item_num);
+                    return $json;
                 }
             }
         } else {
-            return DisplayLib::boxMsg(_("Item not found"));
+            $json['output'] = DisplayLib::boxMsg(
+                _("Item not found"),
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
+
+            return $json;
         }
     }
 
     /**
       Void record by trans_id
       @param $item_num [int] trans_id
+      @param $json parser return value structure
 
       This marks the specified record as voided
       and adds an offsetting record also marked voided
       Neither record can be subsequently modified via
       voids.
     */
-    public function voidid($item_num)
+    public function voidid($item_num, $json)
     {
         $query = "select upc,VolSpecial,quantity,trans_subtype,unitPrice,
             discount,memDiscount,discountable,scale,numflag,charflag,
@@ -209,6 +248,22 @@ class Void extends Parser
         $discounttype = MiscLib::nullwrap($row["discounttype"]);
 
         /**
+          Check if the voiding item will exceed the limit. If so,
+          prompt for admin password. For baffling reasons, the
+          void amount $row['total'] is postive on open rings
+        */
+        if ($row['trans_type'] == 'D' && is_numeric(CoreLocal::get('VoidLimit')) && CoreLocal::get('VoidLimit') > 0) {
+            $currentTotal = CoreLocal::get('voidTotal');
+            if ($currentTotal + $row['total'] > CoreLocal::get('VoidLimit') && CoreLocal::get('voidOverride') != 1) {
+                CoreLocal::set('strRemembered', CoreLocal::get('strEntered'));
+                CoreLocal::set('voidOverride', 0);
+                $json['main_frame'] = MiscLib::base_url().'gui-modules/adminlogin.php?class=Void';
+
+                return $json;
+            }
+        }
+
+        /**
           tenderTotal => tenders have been applied
           Amount to be voided is greater than remaining balance of
           the transaction. Restrict voids if cash is involved.
@@ -216,7 +271,13 @@ class Void extends Parser
         if (CoreLocal::get("tenderTotal") < 0 && (-1 * $total) > CoreLocal::get("runningTotal") - CoreLocal::get("taxTotal")) {
             $cash = $db->query("SELECT total FROM localtemptrans WHERE trans_subtype='CA' AND total <> 0");
             if ($db->num_rows($cash) > 0) {
-                return DisplayLib::boxMsg("Item already paid for");
+                $json['output'] = DisplayLib::boxMsg(
+                    _("Item already paid for"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
+                return $json;
             }
         }
 
@@ -259,16 +320,16 @@ class Void extends Parser
             PrehLib::ttl();
         }
 
-        return '';
+        return $json;
     }
 
     /**
       Void the given UPC
       @param $upc [string] upc to void. Optionally including quantity and asterisk
       @param $item_num [int] trans_id of record to void. Optional.
-      @param $silent [boolean] Optional. Legacy. Currently does nothing.
+      @param $json parser return value structure
     */
-    public function voidupc($upc, $item_num=-1, $silent=false) 
+    public function voidupc($upc, $json, $item_num=-1)
     {
         $lastpageflag = 1;
         $deliflag = false;
@@ -281,7 +342,8 @@ class Void extends Parser
         if (strstr($upc, '*')) {
             list($quantity, $upc) = explode('*', $upc, 2);
             if ($quantity === '' || $upc === '' || !is_numeric($quantity) || !is_numeric($upc)) {
-                return DisplayLib::inputUnknown();
+                $json['output'] = DisplayLib::inputUnknown();
+                return $json;
             } else {
                 $weight = 0;
             }
@@ -319,7 +381,13 @@ class Void extends Parser
         $result = $db->query($query);
         $num_rows = $db->num_rows($result);
         if ($num_rows == 0 ) {
-            return DisplayLib::boxMsg(_("Item not found").": ".$upc);
+            $json['outpt'] = DisplayLib::boxMsg(
+                _("Item not found: ") . $upc,
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
+            return $json;
         }
 
         $row = $db->fetch_array($result);
@@ -337,19 +405,39 @@ class Void extends Parser
         $scale = MiscLib::nullwrap($row["scale"]);
 
         if ($voidable == 0 && $quantity == 1) {
-            return DisplayLib::boxMsg(_("Item already voided"));
-        } else if ($voidable == 0 && $quantity > 1) {
-            return DisplayLib::boxMsg(_("Items already voided"));
-        } else if ($scale == 1 && $quantity < 0) {
-            return DisplayLib::boxMsg(_("tare weight cannot be greater than item weight"));
-        } else if ($voidable < $quantity && $row["scale"] == 1) {
+            $json['output'] = DisplayLib::boxMsg(
+                _("Item already voided"),
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
+            return $json;
+        } elseif ($voidable == 0 && $quantity > 1) {
+            $json['output'] = DisplayLib::boxMsg(
+                _("Items already voided"),
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
+            return $json;
+        } elseif ($scale == 1 && $quantity < 0) {
+            $json['output'] = DisplayLib::boxMsg(
+                _("tare weight cannot be greater than item weight"),
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
+            return $json;
+        } elseif ($voidable < $quantity && $row["scale"] == 1) {
             $message = _("Void request exceeds")."<br />"._("weight of item rung in")."<p><b>".
                 sprintf(_("You can void up to %.2f lb"),$row['voidable'])."</b>";
-            return DisplayLib::boxMsg($message);
-        } else if ($voidable < $quantity) {
+            $json['output'] = DisplayLib::boxMsg($message, '', false, DisplayLib::standardClearButton());
+            return $json;
+        } elseif ($voidable < $quantity) {
             $message = _("Void request exceeds")."<br />"._("number of items rung in")."<p><b>".
                 sprintf(_("You can void up to %d"),$row['voidable'])."</b>";
-            return DisplayLib::boxMsg($message);
+            $json['output'] = DisplayLib::boxMsg($message, '', false, DisplayLib::standardClearButton());
+            return $json;
         }
 
         //----------------------Void Item------------------
@@ -408,9 +496,9 @@ class Void extends Parser
           necessary.
         */
         if ((CoreLocal::get("isMember") != 1 && $row["discounttype"] == 2) || 
-            (CoreLocal::get("isStaff") == 0 && $row["discounttype"] == 4)) 
+            (CoreLocal::get("isStaff") == 0 && $row["discounttype"] == 4)) {
             $unitPrice = $row["regPrice"];
-        elseif (((CoreLocal::get("isMember") == 1 && $row["discounttype"] == 2) || 
+        } elseif (((CoreLocal::get("isMember") == 1 && $row["discounttype"] == 2) || 
             (CoreLocal::get("isStaff") != 0 && $row["discounttype"] == 4)) && 
             ($row["unitPrice"] == $row["regPrice"])) {
             $db_p = Database::pDataConnect();
@@ -428,7 +516,7 @@ class Void extends Parser
         $total = $quantity * $unitPrice;
         if ($row['unitPrice'] == 0) {
             $total = $quantity * $row['total'];
-        } else if ($row['total'] != $total && $row['scale'] == 1) {
+        } elseif ($row['total'] != $total && $row['scale'] == 1) {
             /**
               If the total does not match quantity times unit price,
               the cashier probably manually specified a quantity
@@ -438,12 +526,33 @@ class Void extends Parser
             */
             $total = -1*$row['total'];
         }
+
+        /**
+          Check if the voiding item will exceed the limit. If so,
+          prompt for admin password. 
+        */
+        if (is_numeric(CoreLocal::get('VoidLimit')) && CoreLocal::get('VoidLimit') > 0) {
+            $currentTotal = CoreLocal::get('voidTotal');
+            if ($currentTotal + (-1*$total) > CoreLocal::get('VoidLimit') && CoreLocal::get('voidOverride') != 1) {
+                CoreLocal::set('strRemembered', CoreLocal::get('strEntered'));
+                CoreLocal::set('voidOverride', 0);
+                $json['main_frame'] = MiscLib::base_url().'gui-modules/adminlogin.php?class=Void';
+
+                return $json;
+            }
+        }
     
         $db = Database::tDataConnect();
         if (CoreLocal::get("tenderTotal") < 0 && (-1 * $total) > CoreLocal::get("runningTotal") - CoreLocal::get("taxTotal")) {
             $cash = $db->query("SELECT total FROM localtemptrans WHERE trans_subtype='CA' AND total <> 0");
             if ($db->num_rows($cash) > 0) {
-                return DisplayLib::boxMsg(_("Item already paid for"));
+                $json['output'] = DisplayLib::boxMsg(
+                    _("Item already paid for"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
+                return $json;
             }
         }
         if ($quantity != 0) {
@@ -490,7 +599,9 @@ class Void extends Parser
             if ($db->num_rows($chk) > 0) {
                 $w = $db->fetch_row($chk);
                 $dpt = $w['deposit'];
-                if ($dpt <= 0) return ''; // no deposit found
+                if ($dpt <= 0) {
+                    return $json; // no deposit found
+                }
                 $db = Database::tDataConnect();
                 $dupc = str_pad((int)$dpt,13,'0',STR_PAD_LEFT);
                 $id = $db->query(sprintf("SELECT trans_id FROM localtemptrans
@@ -499,11 +610,15 @@ class Void extends Parser
                 if ($db->num_rows($id) > 0) {
                     $w = $db->fetch_row($id);
                     $trans_id = $w['trans_id'];
-                    return $this->voidupc((-1*$quantity)."*".$dupc, $trans_id, true);
+                    // pass an empty array instead of $json so
+                    // voiding the deposit doesn't result in an error
+                    // message. 
+                    $this->voidupc((-1*$quantity)."*".$dupc, array(), $trans_id);
                 }
             }
         }
-        return '';
+
+        return $json;
     }
 
     public static $adminLoginMsg = 'Void Limit Exceeded. Login to continue.';

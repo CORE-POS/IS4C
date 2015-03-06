@@ -128,6 +128,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['upc'] = '0000000000666';
         $record['description'] = 'EXTRA BAG';
         $record['trans_type'] = 'I';
+        $record['trans_subtype'] = 'NA';
         $record['department'] = 13;
         $record['tax'] = 1;
         $record['quantity'] = 1;
@@ -160,6 +161,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['upc'] = '0000000000666';
         $record['description'] = 'EXTRA BAG';
         $record['trans_type'] = 'I';
+        $record['trans_subtype'] = 'NA';
         $record['department'] = 13;
         $record['tax'] = 1;
         $record['quantity'] = 2;
@@ -194,6 +196,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['upc'] = '0000000000666';
         $record['description'] = 'EXTRA BAG';
         $record['trans_type'] = 'I';
+        $record['trans_subtype'] = 'NA';
         $record['trans_status'] = 'R';
         $record['department'] = 13;
         $record['tax'] = 1;
@@ -227,6 +230,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['upc'] = '0000000004627';
         $record['description'] = 'PKALE';
         $record['trans_type'] = 'I';
+        $record['trans_subtype'] = 'NA';
         $record['department'] = 513;
         $record['foodstamp'] = 1;
         $record['discounttype'] = 1;
@@ -271,6 +275,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['upc'] = '0003049488122';
         $record['description'] = 'MINERAL WATER';
         $record['trans_type'] = 'I';
+        $record['trans_subtype'] = 'NA';
         $record['department'] = 188;
         $record['foodstamp'] = 1;
         $record['discounttype'] = 2;
@@ -314,6 +319,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['upc'] = '0003049488122';
         $record['description'] = 'MINERAL WATER';
         $record['trans_type'] = 'I';
+        $record['trans_subtype'] = 'NA';
         $record['department'] = 188;
         $record['foodstamp'] = 1;
         $record['discounttype'] = 2;

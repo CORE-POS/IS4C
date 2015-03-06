@@ -935,6 +935,7 @@ class ObfWeeklyReport extends FannieReportPage
             FROM ' . $FANNIE_TRANS_DB . $dbc->sep() . 'stockpurchases
             WHERE tdate BETWEEN ? AND ?
                 AND dept=992
+                AND trans_num NOT LIKE \'1001-30-%\'
         ');
 
         $args1 = array(

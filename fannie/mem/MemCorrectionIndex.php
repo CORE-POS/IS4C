@@ -45,7 +45,7 @@ class MemCorrectionIndex extends FanniePage {
         <li><a href="correction_pages/PatronageTransferTool.php">Transfer Patronage</a></li>
         </ul>
         <?php
-        return $this->msgs.ob_get_clean();
+        return ob_get_clean();
     }
 }
 
