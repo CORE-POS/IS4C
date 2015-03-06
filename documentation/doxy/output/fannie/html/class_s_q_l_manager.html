@@ -95,6 +95,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a8365f3106732818de8c510100eb17724"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6f9ed78b2a428c1b53bf504feed75b4f"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_s_q_l_manager.html#a6f9ed78b2a428c1b53bf504feed75b4f">setDefaultDB</a> ($db_name)</td></tr>
 <tr class="separator:a6f9ed78b2a428c1b53bf504feed75b4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adcb0c0c017fb7613e3aadab2517e5c90"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_s_q_l_manager.html#adcb0c0c017fb7613e3aadab2517e5c90">selectDB</a> ($db_name, $which_connection='')</td></tr>
+<tr class="separator:adcb0c0c017fb7613e3aadab2517e5c90"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a177cd181d3515c6e9f8201260ad4fdd5"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_s_q_l_manager.html#a177cd181d3515c6e9f8201260ad4fdd5">query</a> ($query_text, $which_connection='', $params=false)</td></tr>
 <tr class="separator:a177cd181d3515c6e9f8201260ad4fdd5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeef657de2425f7d7eead4da5e02e2f80"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_s_q_l_manager.html#aeef657de2425f7d7eead4da5e02e2f80">queryAll</a> ($query_text)</td></tr>
@@ -275,6 +277,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a1775f2d5f8f4957b65beba1d2a250f31"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a881a852a6478b369af2681c4a25b758f"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_s_q_l_manager.html#a881a852a6478b369af2681c4a25b758f">throwOnFailure</a> ($mode)</td></tr>
 <tr class="separator:a881a852a6478b369af2681c4a25b758f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a135d456505880d3087433a1571817bce"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_s_q_l_manager.html#a135d456505880d3087433a1571817bce">temporaryTable</a> ($name, $source_table, $which_connection='')</td></tr>
+<tr class="separator:a135d456505880d3087433a1571817bce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -1781,6 +1785,42 @@ database name to distinguish which is to be used</pre> </td></tr>
 
 </div>
 </div>
+<a class="anchor" id="adcb0c0c017fb7613e3aadab2517e5c90"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">SQLManager::selectDB </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>$db_name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>$which_connection</em> = <code>''</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Change the default database on a given connection (i.e., mysql_select_db equivalent) </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">$db_name</td><td>[string] database name </td></tr>
+    <tr><td class="paramname">$which_connection</td><td>[optional] </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>boolean</dd></dl>
+<p>Using this method will recycle an existing connection object where as calling addConnection will create a new connection object. </p>
+
+</div>
+</div>
 <a class="anchor" id="a49398253a5522486910f33edd5da52dd"></a>
 <div class="memitem">
 <div class="memproto">
@@ -2092,6 +2132,48 @@ database name to distinguish which is to be used</pre> </td></tr>
 
 </div>
 </div>
+<a class="anchor" id="a135d456505880d3087433a1571817bce"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">SQLManager::temporaryTable </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>$name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>$source_table</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>$which_connection</em> = <code>''</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">Create temporary table
+</pre> <dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">name</td><td>string temporary table name </td></tr>
+    <tr><td class="paramname">source_table</td><td>string source table name </td></tr>
+    <tr><td class="paramname">which_connection</td><td>see method close </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>String separator </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="a881a852a6478b369af2681c4a25b758f"></a>
 <div class="memitem">
 <div class="memproto">
@@ -2275,7 +2357,7 @@ database name to distinguish which is to be used</pre> </td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Feb 13 2015 14:15:25 for CORE POS - Fannie by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Mar 6 2015 10:05:29 for CORE POS - Fannie by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.4
 </small></address>

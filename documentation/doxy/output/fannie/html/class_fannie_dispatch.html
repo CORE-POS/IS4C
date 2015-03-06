@@ -84,8 +84,8 @@ Static Public Member Functions</h2></td></tr>
 <tr class="separator:abcf37a38cd2d3ec17676065d56d2207a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aafa5f7768d9e5bedb655a77a4b3c0949"><td class="memItemLeft" align="right" valign="top">static&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_fannie_dispatch.html#aafa5f7768d9e5bedb655a77a4b3c0949">catchFatal</a> ()</td></tr>
 <tr class="separator:aafa5f7768d9e5bedb655a77a4b3c0949"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afaf6bdd195174d94edd41be2eb5502d5"><td class="memItemLeft" align="right" valign="top">static&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_fannie_dispatch.html#afaf6bdd195174d94edd41be2eb5502d5">logUsage</a> ()</td></tr>
-<tr class="separator:afaf6bdd195174d94edd41be2eb5502d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa442061a94aea77f2411bc10b6bcd448"><td class="memItemLeft" align="right" valign="top">static&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_fannie_dispatch.html#aa442061a94aea77f2411bc10b6bcd448">logUsage</a> (<a class="el" href="class_s_q_l_manager.html">SQLManager</a> $dbc, $op_db)</td></tr>
+<tr class="separator:aa442061a94aea77f2411bc10b6bcd448"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aef989bf774e9a6b94845d52a52184dd0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aef989bf774e9a6b94845d52a52184dd0"></a>
 static&#160;</td><td class="memItemRight" valign="bottom"><b>i18n</b> ()</td></tr>
 <tr class="separator:aef989bf774e9a6b94845d52a52184dd0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -229,7 +229,7 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>setErrorHandlers</b
 
 </div>
 </div>
-<a class="anchor" id="afaf6bdd195174d94edd41be2eb5502d5"></a>
+<a class="anchor" id="aa442061a94aea77f2411bc10b6bcd448"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -239,8 +239,19 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>setErrorHandlers</b
         <tr>
           <td class="memname">static FannieDispatch::logUsage </td>
           <td>(</td>
-          <td class="paramname">)</td><td></td>
+          <td class="paramtype"><a class="el" href="class_s_q_l_manager.html">SQLManager</a>&#160;</td>
+          <td class="paramname"><em>$dbc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>$op_db</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -250,6 +261,12 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>setErrorHandlers</b
 </table>
 </div><div class="memdoc">
 <p>Log page load in usageStats table </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">$dbc</td><td>[<a class="el" href="class_s_q_l_manager.html" title="A SQL abstraction layer. ">SQLManager</a>] database connection </td></tr>
+  </table>
+  </dd>
+</dl>
 <dl class="section return"><dt>Returns</dt><dd>[boolean] success / fail </dd></dl>
 
 </div>
@@ -260,7 +277,7 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>setErrorHandlers</b
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Feb 13 2015 14:15:23 for CORE POS - Fannie by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Mar 6 2015 10:05:23 for CORE POS - Fannie by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.4
 </small></address>

@@ -98,8 +98,8 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>requestInfoCallback
 <tr class="separator:a1b9e7cc22a95e1278a7855af9344595d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2ef4fc77208466cb48558a4d8081eca7"><td class="memItemLeft" align="right" valign="top">static&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_preh_lib.html#a2ef4fc77208466cb48558a4d8081eca7">setAltMemMsg</a> ($store, $member, $personNumber, $row, $<a class="el" href="class_preh_lib.html#ac7b49f669743a34195e4c132d3e33a70">chargeOk</a>)</td></tr>
 <tr class="separator:a2ef4fc77208466cb48558a4d8081eca7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8069b3b2ab8043a22c2255db7c3a39c2"><td class="memItemLeft" align="right" valign="top">static&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_preh_lib.html#a8069b3b2ab8043a22c2255db7c3a39c2">setMember</a> ($member, $personNumber, $row)</td></tr>
-<tr class="separator:a8069b3b2ab8043a22c2255db7c3a39c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac8d3b4a8f7ba5b14ac8d96cc382e673f"><td class="memItemLeft" align="right" valign="top">static&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_preh_lib.html#ac8d3b4a8f7ba5b14ac8d96cc382e673f">setMember</a> ($member, $personNumber, $row=array())</td></tr>
+<tr class="separator:ac8d3b4a8f7ba5b14ac8d96cc382e673f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a467f33f366e690132836e19b0e9546fd"><td class="memItemLeft" align="right" valign="top">static&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_preh_lib.html#a467f33f366e690132836e19b0e9546fd">checkUnpaidAR</a> ($cardno)</td></tr>
 <tr class="separator:a467f33f366e690132836e19b0e9546fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa50e492c46b2695acd664db39a745130"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa50e492c46b2695acd664db39a745130"></a>
@@ -383,7 +383,7 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>$requestInfoMsg</b>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Set member number for transaction </p>
+<p>Begin setting a member number for a transaction </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">$member_number</td><td>CardNo from custdata </td></tr>
@@ -391,8 +391,13 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>$requestInfoMsg</b>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>An array. See <a class="el" href="class_parser.html#a0076d421db25e8eb844d0ecc093688ad">Parser::default_json()</a> for format.</dd></dl>
-<p>This function will either assign the number to the current transaction or return a redirect request to get more input. If you want the cashier to verify member name from a list, use this function. If you want to force the number to be set immediately, use <a class="el" href="class_preh_lib.html#a8069b3b2ab8043a22c2255db7c3a39c2">setMember()</a>. </p>
-<p>This is a bad idea. If the search is cancelled, these fields won't be refreshed with new data <a class="el" href="class_core_local.html#afa04c35cf68f9738cde8461dd1602bd5">CoreLocal::set</a>("memberID","0"); <a class="el" href="class_core_local.html#afa04c35cf68f9738cde8461dd1602bd5">CoreLocal::set</a>("memType",0); <a class="el" href="class_core_local.html#afa04c35cf68f9738cde8461dd1602bd5">CoreLocal::set</a>("percentDiscount",0); <a class="el" href="class_core_local.html#afa04c35cf68f9738cde8461dd1602bd5">CoreLocal::set</a>("memMsg","");</p>
+<p>This function will either assign the number to the current transaction or return a redirect request to get more input. If you want the cashier to verify member name from a list, use this function. If you want to force the number to be set immediately, use <a class="el" href="class_preh_lib.html#ac8d3b4a8f7ba5b14ac8d96cc382e673f">setMember()</a>. </p>
+<p>If only a single record exists for the member number, the member will be set immediately if:</p>
+<ul>
+<li>the account is the designated, catchall non-member</li>
+<li>the verifyName setting is disabled</li>
+</ul>
+<p>Go to member search page in all other cases. If zero matching records are found, member search should be next. If multiple records are found, picking the correct name should be next. If verifyName is enabled, confirming the name should be next.</p>
 
 </div>
 </div>
@@ -565,7 +570,7 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>$requestInfoMsg</b>
 
 </div>
 </div>
-<a class="anchor" id="a8069b3b2ab8043a22c2255db7c3a39c2"></a>
+<a class="anchor" id="ac8d3b4a8f7ba5b14ac8d96cc382e673f"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -588,7 +593,7 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>$requestInfoMsg</b>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>$row</em>&#160;</td>
+          <td class="paramname"><em>$row</em> = <code>array()</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -606,13 +611,18 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>$requestInfoMsg</b>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">$member</td><td>CardNo from custdata </td></tr>
-    <tr><td class="paramname">$personNumber</td><td>personNum from custdata </td></tr>
-    <tr><td class="paramname">$row</td><td>a record from custdata</td></tr>
+    <tr><td class="paramname">$personNumber</td><td>personNum from custdata</td></tr>
   </table>
   </dd>
 </dl>
 <p>See <a class="el" href="class_preh_lib.html#a250152d649b618ba52c2dc0b1e532e6c">memberID()</a> for more information. </p>
-<p>Use discount module to calculate modified percentDiscount</p>
+<p>Look up the member information here. There's no good reason to have calling code pass in a specially formatted row of data</p>
+<p>Optinonally use memtype table to normalize attributes by member type</p>
+<p>Determine what string is shown in the upper left of the screen to indicate the current member</p>
+<p>Set member number and attributes in the current transaction</p>
+<p>Add the member discount</p>
+<p>Log the member entry</p>
+<p>Optionally add a subtotal line depending on member_subtotal setting.</p>
 
 </div>
 </div>
@@ -715,7 +725,7 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>$requestInfoMsg</b>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Feb 13 2015 14:16:21 for CORE POS - IS4C by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Mar 6 2015 10:06:41 for CORE POS - IS4C by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.4
 </small></address>
