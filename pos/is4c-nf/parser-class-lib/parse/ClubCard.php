@@ -21,16 +21,19 @@
 
 *********************************************************************************/
 
-class ClubCard extends Parser {
-	function check($str){
-		if ($str == "50JC"){
-			return True;
+class ClubCard extends Parser 
+{
+	function check($str)
+    {
+		if ($str == "50JC") {
+			return true;
 		}
-		return False;
+		return false;
 	}
 
 	function parse($str)
     {
+        $ret = $this->default_json();
 		$query = "select upc,description,VolSpecial,quantity,
 			total,discount,memDiscount,discountable,
 			unitPrice,scale,foodstamp,voided,discounttype,
@@ -67,15 +70,40 @@ class ClubCard extends Parser {
 			$intdiscounttype = MiscLib::nullwrap($row["discounttype"]);
 
 			if ($row["voided"] == 20) {
-				DisplayLib::boxMsg(_("Discount already taken"));
+				$ret['output'] = DisplayLib::boxMsg(
+                    _("Discount already taken"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
 			} elseif ($row["trans_type"] == "T" or $row["trans_status"] == "D" or $row["trans_status"] == "V" or $row["trans_status"] == "C") {
-				DisplayLib::boxMsg("Item cannot be discounted");
+				$ret['output'] = DisplayLib::boxMsg(
+                    _("Item cannot be discounted"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
 			} elseif (strncasecmp($strDescription, "Club Card", 9) == 0 ) {		//----- edited by abpw 2/15/05 -----
-				DisplayLib::boxMsg(_("Item cannot be discounted"));
+				$ret['output'] = DisplayLib::boxMsg(
+                    _("Item cannot be discounted"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
 			} elseif (CoreLocal::get("tenderTotal") < 0 and $intFoodStamp == 1 and (-1 * $dblTotal) > CoreLocal::get("fsEligible")) {
-				DisplayLib::boxMsg(_("Item already paid for"));
+				$ret['output'] = DisplayLib::boxMsg(
+                    _("Item already paid for"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
 			} elseif (CoreLocal::get("tenderTotal") < 0 and (-1 * $dblTotal) > (CoreLocal::get("runningTotal") - CoreLocal::get("taxTotal"))) {
-				DisplayLib::boxMsg(_("Item already paid for"));
+				$ret['output'] = DisplayLib::boxMsg(
+                    _("Item already paid for"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
 			} 
 			else {
 				// --- added partial item desc to club card description - apbw 2/15/05 --- 
@@ -109,10 +137,11 @@ class ClubCard extends Parser {
 				CoreLocal::set("TTLflag",0);
 				CoreLocal::set("TTLRequested",0);
 
-				DisplayLib::lastpage();
+				$ret['output'] = DisplayLib::lastpage();
 			}
-		}	
-		return False;
+		}
+
+		return $ret;
 	}
 
 	function doc(){
@@ -129,4 +158,3 @@ class ClubCard extends Parser {
 	}
 }
 
-?>

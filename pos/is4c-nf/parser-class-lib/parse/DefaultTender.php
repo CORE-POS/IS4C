@@ -48,12 +48,11 @@ class DefaultTender extends Parser {
             $exceptions = strtoupper(CoreLocal::get('PaycardsBlockExceptions'));
             $except_array = preg_split('/[^A-Z]+/', $exceptions, 0, PREG_SPLIT_NO_EMPTY);
             if (CoreLocal::get('ccTermState') == 'ready' && !in_array($tender_code, $except_array)) {
-                CoreLocal::set('boxMsg', _('Tender Customer Card First') 
-                                        . '<br />'
-                                        . _('[enter] to charge card')
-                                        . '<br />'
-                                        . _('[clear] to go back')
-                );
+                CoreLocal::set('boxMsg', _('Tender customer card before other tenders'));
+                CoreLocal::set('boxMsgButtons', array(
+                    'Charge Card [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
+                    'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                ));
                 CoreLocal::set('strEntered', 'CCFROMCACHE');
                 $ret = $this->default_json();
                 $ret['main_frame'] = MiscLib::baseURL() . 'gui-modules/boxMsg2.php';

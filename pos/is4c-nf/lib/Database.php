@@ -227,14 +227,6 @@ static public function getsubtotals()
         WHERE trans_type <> 'L'
     ";
 
-    $handler_class = CoreLocal::get('DiscountModule');
-    if ($handler_class === '') $handler_class = 'DiscountModule';
-    elseif (!class_exists($handler_class)) $handler_class = 'DiscountModule';
-    if (class_exists($handler_class)) {
-        $module = new $handler_class();
-        CoreLocal::set('transDiscount', $module->calculate() );
-    }
-
     /* ENABLED LIVE 15Aug2013
        Calculate taxes & exemptions separately from
        the subtotals view.
@@ -862,7 +854,6 @@ static public function rotateTempData()
     // these records should be written correctly from the start
     // could go away with verification of above.
     $connection->query("update localtemptrans set trans_type = 'T' where trans_subtype IN ('CP','IC')");
-    $connection->query("update localtemptrans set upc = 'DISCOUNT', description = upc, department = 0, trans_type='S' where trans_status = 'S'");
 
     $connection->query("insert into localtrans select * from localtemptrans");
     // localtranstoday converted from view to table

@@ -46,8 +46,9 @@ class TaxFoodShift extends Parser {
 		$q = "SELECT MAX(id) FROM taxrates";
 		$r = $db->query($q);
 		$tax_cap = 0;
-		if ($db->num_rows($r)>0){
-			$max = array_pop($db->fetch_row($r));
+		if ($db->num_rows($r)>0) {
+            $w = $db->fetch_row($r);
+            $max = $w[0];
 			if (!empty($max)) $tax_cap = $max;
 		}
 		$db->query($q);	

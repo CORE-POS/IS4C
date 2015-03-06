@@ -35,7 +35,12 @@ class AccessProgramParser extends Parser {
         $ret = $this->default_json();
 
         if (CoreLocal::get('memberID') == '0') {
-            $ret['output'] = DisplayLib::boxMsg(_('Enter owner number first'));
+            $ret['output'] = DisplayLib::boxMsg(
+                _("Apply member number first"),
+                _('No member selected'),
+                false,
+                array_merge(array('Member Search [ID]' => 'parseWrapper(\'ID\');'), DisplayLib::standardClearButton())
+            );
 
             return $ret;
         }

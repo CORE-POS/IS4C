@@ -36,7 +36,7 @@ class UnpaidAR extends BasicPage {
 
 			if (strtoupper($dec) == "CL"){
 				if (CoreLocal::get('memType') == 0){
-					PrehLib::memberID(CoreLocal::get("defaultNonMem"));
+					PrehLib::setMember(CoreLocal::get("defaultNonMem"), 1);
 				}
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;

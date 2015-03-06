@@ -36,7 +36,10 @@ class ManagerApproveTender extends TenderModule
     public function errorCheck()
     {
         if (MiscLib::truncate2(CoreLocal::get("amtdue")) < MiscLib::truncate2($this->amount)) {
-            return DisplayLib::xboxMsg(_("tender exceeds purchase amount"));
+            return DisplayLib::xboxMsg(
+                _("tender cannot exceed purchase amount"),
+                DisplayLib::standardClearButton()
+            );
         }
 
         return true;

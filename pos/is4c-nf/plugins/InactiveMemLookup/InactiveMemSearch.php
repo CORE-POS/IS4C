@@ -32,18 +32,23 @@ class InactiveMemSearch extends MemberLookup {
 			AND Type=\'INACT\'
 			ORDER BY personNum');
 		$result = $dbc->exec_statement($query, array($num));
+        $inactives = array();
 
 		$ret = $this->default_value();
 		$i = 1;
-		while($w = $dbc->fetch_row($result)){
-			if (CoreLocal::get('InactiveMemUsage') == 1)
+		while ($w = $dbc->fetch_row($result)) {
+			if (CoreLocal::get('InactiveMemUsage') == 1) {
 				$key = CoreLocal::get('defaultNonMem').'::'.$i;
-			else
+			} else {
 				$key = $w['CardNo'].'::'.$w['personNum'];
+                $inactives[] = $w['CardNo'];
+            }
 			$val = $w['CardNo'].'(CSC) '.$w['LastName'].', '.$w['FirstName'];
 			$ret['results'][$key] = $val;
 			$i++;
 		}
+        CoreLocal::set('InactiveMemList', $inactives);
+
 		return $ret;
 	}
 
@@ -57,19 +62,23 @@ class InactiveMemSearch extends MemberLookup {
 			ORDER BY LastName, FirstName');
 		$result = $dbc->exec_statement($query, array($text.'%'));	
 		$ret = $this->default_value();
+        $inactives = array();
 		$i=1;
-		while($w = $dbc->fetch_row($result)){
-			if (CoreLocal::get('InactiveMemUsage') == 1)
+		while ($w = $dbc->fetch_row($result)) {
+			if (CoreLocal::get('InactiveMemUsage') == 1) {
 				$key = CoreLocal::get('defaultNonMem').'::'.$i;
-			else
+			} else {
 				$key = $w['CardNo'].'::'.$w['personNum'];
+                $inactives[] = $w['CardNo'];
+            }
 			$val = $w['CardNo'].'(CSC) '.$w['LastName'].', '.$w['FirstName'];
 			$ret['results'][$key] = $val;
 			$i++;
 		}
+        CoreLocal::set('InactiveMemList', $inactives);
+
 		return $ret;
 	}
 
 }
 
-?>

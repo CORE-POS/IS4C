@@ -45,12 +45,19 @@ class giftcardlist extends NoInputPage {
 
 	function body_content() 
     {
+        $stem = MiscLib::baseURL() . 'graphics/';
 		?>
 		<div class="baseHeight">
-		<div class="centeredDisplay colored">
+		<div class="centeredDisplay colored rounded">
 		<span class="larger">gift card transaction</span>
 		<form name="selectform" method="post" id="selectform"
 			action="<?php echo $_SERVER['PHP_SELF']; ?>">
+        <?php if (CoreLocal::get('touchscreen')) { ?>
+        <button type="button" class="pos-button coloredArea"
+            onclick="scrollDown('#selectlist');">
+            <img src="<?php echo $stem; ?>down.png" width="16" height="16" />
+        </button>
+		<?php } ?>
 		<select id="selectlist" name="selectlist" 
 			onblur="$('#selectlist').focus()">
 		<option value="">Sale
@@ -58,11 +65,20 @@ class giftcardlist extends NoInputPage {
 		<option value="AV">Add Value
 		<option value="PV">Balance
 		</select>
-		</form>
+        <?php if (CoreLocal::get('touchscreen')) { ?>
+        <button type="button" class="pos-button coloredArea"
+            onclick="scrollUp('#selectlist');">
+            <img src="<?php echo $stem; ?>up.png" width="16" height="16" />
+        </button>
+		<?php } ?>
 		<p>
-		<span class="smaller">[clear] to cancel</span>
+            <button class="pos-button" type="submit">Select [enter]</button>
+            <button class="pos-button" type="submit" onclick="$('#selectlist').val('');">
+                Cancel [clear]
+            </button>
 		</p>
 		</div>
+		</form>
 		</div>
 		<?php
 	} // END body_content() FUNCTION

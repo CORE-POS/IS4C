@@ -104,7 +104,7 @@ class suspendedlist extends NoInputPage {
 		echo "<div class=\"baseHeight\">"
 			."<div class=\"listbox\">"
 			."<form id=\"selectform\" method=\"post\" action=\"{$_SERVER['PHP_SELF']}\">\n"
-			."<select name=\"selectlist\" size=\"10\" onblur=\"\$('#selectlist').focus();\"
+			."<select name=\"selectlist\" size=\"15\" onblur=\"\$('#selectlist').focus();\"
 				id=\"selectlist\">";
 
 		$selected = "selected";
@@ -116,9 +116,23 @@ class suspendedlist extends NoInputPage {
 			$selected = "";
 		}
 
-		echo "</select>\n</form>\n</div>\n"
-			."<div class=\"listboxText coloredText centerOffset\">"
-			._("use arrow keys to navigate")."<br />"._("clear to cancel")."</div>\n"
+		echo "</select>\n</div>\n";
+        if (CoreLocal::get('touchscreen')) {
+            echo '<div class="listbox listboxText">'
+                . DisplayLib::touchScreenScrollButtons('#selectlist')
+                . '</div>';
+        }
+        echo "<div class=\"listboxText coloredText centerOffset\">"
+            . _("use arrow keys to navigate")
+            . '<p><button type="submit" class="pos-button wide-button coloredArea">
+                OK <span class="smaller">[enter]</span>
+                </button></p>'
+            . '<p><button type="submit" class="pos-button wide-button errorColoredArea"
+                onclick="$(\'#selectlist\').append($(\'<option>\').val(\'\'));$(\'#selectlist\').val(\'\');">
+                Cancel <span class="smaller">[clear]</span>
+                </button></p>'
+            ."</div><!-- /.listboxText coloredText .centerOffset -->"
+            ."</form>"
 			."<div class=\"clear\"></div>";
 		echo "</div>";
 		$this->add_onload_command("\$('#selectlist').focus();");

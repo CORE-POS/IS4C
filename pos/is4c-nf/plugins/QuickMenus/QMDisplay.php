@@ -28,89 +28,30 @@ class QMDisplay extends NoInputPage {
 	private $offset;
 	private $plugin_url;
 
-	function head_content(){
+	function head_content()
+    {
+        $base = MiscLib::baseURL();
 		?>
-		<script type="text/javascript" >
-		/*
-		var prevKey = -1;
-		var prevPrevKey = -1;
-		var selectedId = 0;
-		var form_disabled = 0;
-		function keyCheck(e) {
-			var jsKey;
-			if(!e)e = window.event;
-			if (e.keyCode) // IE
-				jsKey = e.keyCode;
-			else if(e.which) // Netscape/Firefox/Opera
-				jsKey = e.which;
-			// Options:
-			// 1: Clear - go back to pos2 w/o selecting anything
-			// (Paging wraps)
-			if ( (jsKey==108 || jsKey == 76) && 
-			(prevKey == 99 || prevKey == 67) ){
-				document.getElementById('doClear').value='1';
-			}
-			else if (jsKey==13 && form_disabled == 0){
-				form_disabled=1;
-				$('#qmform').submit();
-			}
-			prevPrevKey = prevKey;
-			prevKey = jsKey;
-		}
-
-		document.onkeyup = keyCheck;
-		*/
-		$(document).ready(function(){
-			var prevKey = -1;
-			var prevPrevKey = -1;
-			var selectedId = 0;
-			var form_disabled = 0;
-			$(document).keyup(function (event){
-				if (
-					(event.which==108 || event.which==76)
-					&&
-					(prevKey==99 || prevKey==67)
-				){
-					// CL or cl
-					// pressed clear
-					$('#doClear').val('1');
-				}
-				if (
-					(event.which==77 || event.which==109)
-					&&
-					(prevKey==81 || prevKey==113)
-				){
-					// QM or qm
-					// sticky quick menu button?
-					// ignore the next enter key
-					form_disabled = -1;
-				}
-				else if (event.which==13 && form_disabled == 0){
-					// enter - submit form
-					form_disabled=1;
-					$('#qmform').submit();
-				}
-				else if (event.which==13 && form_disabled == -1){
-					// enter - ignore
-					// but re-enable form
-					form_disabled=0;
-				}
-				else if (event.which >= 49 && event.which <= 57 && form_disabled == 0){
-					// 1-9 key - submit form
-					form_disabled=1;
-					$('#qmform').submit();
-				}
-				else if (event.which >= 97 && event.which <= 105 && form_disabled == 0){
-					// 1-9 key (numpad) - submit form
-					form_disabled=1;
-					$('#qmform').submit();
-				}
-				prevPrevKey = prevKey;
-				prevKey = event.which;
-			});
-		});
-
-		</script> 
+        <script type="text/javascript" src="<?php echo $base; ?>js/selectSubmit.js"></script>
+        <script type="text/javascript">
+        function qmNumberPress()
+        {
+            var qm_submitted = false;
+            $('#ddQKselect').keyup(function(event) {
+                if (event.which >= 49 && event.which <= 57) {
+                    if (!qm_submitted) {
+                        qm_submitted = true;
+                        $('#qmform').submit();
+                    }
+                } else if (event.which >= 97 && event.which <= 105) {
+                    if (!qm_submitted) {
+                        qm_submitted = true;
+                        $('#qmform').submit();
+                    }
+                }
+            });
+        }
+        </script>
 		<?php
 	} // END head() FUNCTION
 
@@ -122,6 +63,12 @@ class QMDisplay extends NoInputPage {
 		$this->offset = isset($_REQUEST['offset'])?$_REQUEST['offset']:0;
 
 		if (count($_POST) > 0){
+            if (!FormLib::validateToken()) {
+                CoreLocal::set('msgrepeat', 0);
+				$this->change_page($this->page_url."gui-modules/pos2.php");
+
+                return false;
+            }
 			$output = "";
 			if ($_REQUEST["clear"] == 0){
 				$value = $_REQUEST['ddQKselect'];
@@ -134,8 +81,7 @@ class QMDisplay extends NoInputPage {
 			if (substr(strtoupper($output),0,2) == "QM"){
 				CoreLocal::set("qmNumber",substr($output,2));
 				return True;
-			}
-			else {
+			} else {
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 			}
 			return False;
@@ -146,6 +92,7 @@ class QMDisplay extends NoInputPage {
 	function body_content()
     {
 		$this->add_onload_command('$(\'#ddQKselect\').focus()');
+        $this->add_onload_command("selectSubmit('#ddQKselect', '#qmform');\n");
 
 		echo "<div class=\"baseHeight\" style=\"border: solid 1px black;\">";
 		echo "<form id=\"qmform\" action=\"".$_SERVER["PHP_SELF"]."\" method=\"post\">";
@@ -181,14 +128,16 @@ class QMDisplay extends NoInputPage {
 		echo '<select name="ddQKselect" id="ddQKselect" style="width:380px;" size="10"
 			onblur="$(\'#ddQKselect\').focus();" >';
 		$i=1;
-		foreach($my_menu as $label => $value){
+		foreach ($my_menu as $label => $value) {
 			printf('<option value="%s" %s>%d. %s</option>',$value,
 				($i==1?'selected':''),$i,$label);
 			$i++;
 		}
 		echo '</select>';
+        $this->add_onload_command("qmNumberPress();\n");
 
 		echo "<input type=\"hidden\" value=\"0\" name=\"clear\" id=\"doClear\" />";	
+        echo FormLib::tokenField();
 		echo "</form>";
 		echo "</div>";
 	} // END body_content() FUNCTION

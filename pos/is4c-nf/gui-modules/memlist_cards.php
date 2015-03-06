@@ -111,7 +111,7 @@ class memlist_cards extends NoInputPage {
 		    (is_numeric($entered) && is_numeric($personNum) && $selected_name) ) {
 			$row = $db_a->fetch_array($result);
 			// Don't want to affect the current trans.  Will it still work?
-			// PrehLib::setMember($row["CardNo"], $personNum,$row);
+			// PrehLib::setMember($row["CardNo"], $personNum);
 
 			// WEFC_Toronto: If a Member Card # was entered when the choice from the list was made,
 			// add the memberCards record.

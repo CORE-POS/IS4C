@@ -136,7 +136,7 @@ class CoreLocal
       write them to opdata.parameters, then remove
       them from the configuration file
     */
-    public function migrateSettings()
+    public static function migrateSettings()
     {
         if (file_exists(dirname(__FILE__).'/../../ini.php') && class_exists('InstallUtilities')) {
             $file = dirname(__FILE__).'/../../ini.php';
