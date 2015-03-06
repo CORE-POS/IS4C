@@ -40,6 +40,8 @@ class FannieTask
         'weekday' => '*',
     );
 
+    public $schedulable = true;
+
     protected $error_threshold  = 99;
 
     const TASK_NO_ERROR         = 0;
@@ -52,6 +54,9 @@ class FannieTask
     protected $config = null;
 
     protected $logger = null;
+
+    protected $options = array();
+    protected $arguments = array();
 
     public function setThreshold($t)
     {
@@ -66,6 +71,16 @@ class FannieTask
     public function setLogger(FannieLogger $fl)
     {
         $this->logger = $fl;
+    }
+
+    public function setOptions($o)
+    {
+        $this->options = $o;
+    }
+
+    public function setArguments($a)
+    {
+        $this->arguments = $a;
     }
 
     /**
@@ -88,7 +103,6 @@ class FannieTask
         $info = new ReflectionClass($this);
         $msg = date('r').': '.$info->getName().': '.$str."\n";
 
-        echo 'Writing log' . "\n";
         $this->logger->log($severity, $info->getName() . ': ' . $str); 
 
         // raise message into stderr
@@ -97,6 +111,62 @@ class FannieTask
         }
 
         return '';
+    }
+
+    /**
+      getopt style parsing. not fully posix compliant.
+      @param $argv [array] of options and arguments
+      @return [array]
+        - options [array] of option names and values
+        - arguments [array] of non-option arguments
+
+      Example:
+      php FannieTask.php SomeTask -v --verbose -h 1 --host=1 something else
+
+      lazyGetOpt returns
+        - options
+          "-v" => true
+          "--verbose" => true
+          "-h" => 1
+          "--host" => 1
+        - arguments
+          0 => "something"
+          1 => "else"
+    */
+    public function lazyGetOpt($argv)
+    {
+        $options = array();
+        $nonopt = array();
+
+        for ($i=0; $i<count($argv); $i++) {
+            $arg = $argv[$i];
+            if (preg_match('/^(--\w+)=(.+)$/', $arg, $long)) {
+                $options[$long[1]] = $long[2];
+            } elseif (preg_match('/^--\w+$/', $arg)) {
+                if ($i+1 < count($argv) && substr($argv[$i+1],0,1) != '-') {
+                    $options[$arg] = $argv[$i+1];
+                    $i++;
+                } else {
+                    $options[$arg] = true;
+                }
+            } elseif (preg_match('/^(-\w)=.+$/', $arg, $short)) {
+                $options[$short[1]] = $short[2];
+            } elseif (preg_match('/^-\w$/', $arg)) {
+                if ($i+1 < count($argv) && substr($argv[$i+1],0,1) != '-') {
+                    $options[$arg] = $argv[$i+1];
+                    $i++;
+                } else {
+                    $options[$arg] = true;
+                }
+            } else {
+                $nonopt[] = $arg;
+            }
+        }
+
+        return array(
+            'options' => $options,
+            'arguments' => $nonopt,
+        );
     }
 }
 
@@ -133,6 +203,16 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
     }
     $obj->setConfig($config);
     $obj->setLogger($logger);
+
+    /**
+      Parse & set extra options and arguments
+    */
+    if ($argc > 2) {
+        $remainder = array_slice($argv, 2);
+        $parsed = $obj->lazyGetOpt($remainder);
+        $obj->setOptions($parsed['options']);
+        $obj->setArguments($parsed['arguments']);
+    }
 
     $obj->run();
 }

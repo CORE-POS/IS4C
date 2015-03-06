@@ -111,7 +111,8 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $this->error_details = 'Cannot find vendor';
             return False;
         }
-        $VENDOR_ID = array_pop($dbc->fetch_row($idR));
+        $idW = $dbc->fetchRow($idR);
+        $VENDOR_ID = $idW['vendorID'];
 
         $SKU = $this->get_column_index('sku');
         $BRAND = $this->get_column_index('brand');
@@ -268,7 +269,8 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $this->error_details = 'Cannot find vendor';
             return False;
         }
-        $VENDOR_ID = array_pop($dbc->fetch_row($idR));
+        $idW = $dbc->fetchRow($idR);
+        $VENDOR_ID = $idW['vendorID'];
 
         $viP = $dbc->prepare_statement("DELETE FROM vendorItems WHERE vendorID=?");
         $vsP = $dbc->prepare_statement("DELETE FROM vendorSRPs WHERE vendorID=?");

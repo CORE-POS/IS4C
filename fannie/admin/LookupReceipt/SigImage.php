@@ -38,6 +38,10 @@ class SigImage
     {
     }
 
+    public function setConnection()
+    {
+    }
+
 
     public function draw_page()
     {

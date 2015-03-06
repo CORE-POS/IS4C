@@ -33,6 +33,21 @@ class BaseItemModule extends ItemModule
         $FANNIE_PRODUCT_MODULES = FannieConfig::config('PRODUCT_MODULES', array());
         $upc = BarcodeLib::padUPC($upc);
 
+        $trimmed = ltrim($upc, '0');
+        $barcode_type = '';
+        if (strlen($trimmed) == '12') {
+            // probably EAN-13 w/o check digi
+            $barcode_type = 'EAN';
+        } elseif (strlen($trimmed) == 11 && $trimmed[0] == '2') {
+            // variable price UPC
+            $barcode_type = 'Scale';
+        } elseif (strlen($trimmed) <= 11 && strlen($trimmed) >= 6) {
+            // probably UPC-A w/o check digit
+            $barcode_type = 'UPC';
+        } else {
+            $barcode_type = 'PLU';
+        }
+
         $ret = '<div id="BaseItemFieldset" class="panel panel-default">';
 
         $dbc = $this->db();
@@ -225,8 +240,32 @@ class BaseItemModule extends ItemModule
         $ret .= '
             <div class="panel-heading">
                 <strong>UPC</strong>
-                <span class="alert-danger">' . $upc . '</span>
-                <input type="hidden" id="upc" name="upc" value="' . $upc . '" />';
+                <span class="text-danger">';
+        switch ($barcode_type) {
+            case 'EAN':
+            case 'UPC':
+                $ret .= substr($upc, 0, 3) 
+                    . '<a class="text-danger iframe fancyboxLink" href="../reports/ProductLine/ProductLineReport.php?prefix='
+                    . substr($upc, 3, 5) . '" title="Product Line">'
+                    . '<strong>' . substr($upc, 3, 5) . '</strong>'
+                    . '</a>'
+                    . substr($upc, 8);
+                break;
+            case 'Scale':
+                $ret .= substr($upc, 0, 3)
+                    . '<strong>' . substr($upc, 3, 4) . '</strong>'
+                    . substr($upc, 7);
+                break;
+            case 'PLU':
+                $trimmed = ltrim($upc, '0');
+                $ret .= str_repeat('0', 13-strlen($trimmed))
+                    . '<strong>' . $trimmed . '</strong>';
+                break;
+            default:
+                $ret .= $upc;
+        }
+        $ret .= '</span>';
+        $ret .= '<input type="hidden" id="upc" name="upc" value="' . $upc . '" />';
         if ($prevUPC) {
             $ret .= ' <a class="small" href="ItemEditorPage.php?searchupc=' . $prevUPC . '">Previous</a>';
         }
@@ -420,6 +459,7 @@ class BaseItemModule extends ItemModule
                     $id,$id,$name);
         }
         $ret .= '</select>';
+        $jsVendorID = $rowItem['default_vendor_id'] > 0 ? $rowItem['default_vendor_id'] : 'no-vendor';
         $ret .= '<select name="subdept" id="subdept" class="form-control chosen-select">';
         $ret .= isset($subs[$rowItem['department']]) ? $subs[$rowItem['department']] : '<option value="0">None</option>';
         $ret .= '</select>';
@@ -506,7 +546,6 @@ class BaseItemModule extends ItemModule
                 </td>
                 </tr>';
 
-        $jsVendorID = $rowItem['default_vendor_id'] > 0 ? $rowItem['default_vendor_id'] : 'no-vendor';
         $ret .= '
             <tr>
                 <th class="small text-right">Pack Size</th>

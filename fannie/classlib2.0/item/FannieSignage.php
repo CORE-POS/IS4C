@@ -333,16 +333,17 @@ class FannieSignage
         $font = isset($args['font']) ? $args['font'] : 'Arial';
         $fontsize = isset($args['fontsize']) ? $args['fontsize'] : 9;
 
-        $upc = str_pad($upc, 12, '0', STR_PAD_LEFT);
-        if (\BarcodeLib::verifyCheckDigit($upc)) {
-            // if an EAN13 with valid check digit is passed
-            // in there's no need to add the zero
-            if (strlen($upc) == 12) {
-                $upc = '0' . $upc;
-            }
-        } else {
+        $upc = ltrim($upc, '0');
+        $is_ean = false;
+        if (strlen($upc) == 12) { 
+            // must be EAN
             $check = \BarcodeLib::getCheckDigit($upc);
             $upc .= $check;
+            $is_ean = true;
+        } else {
+            $upc = str_pad($upc, 11, '0', STR_PAD_LEFT);
+            $check = \BarcodeLib::getCheckDigit($upc);
+            $upc = '0' . $upc . $check;
         }
 
         //Convert digits to bars
@@ -398,7 +399,7 @@ class FannieSignage
         } else {
             $pdf->SetXY($x, $y + $h);
         }
-        $pdf->Cell($width, 5, $prefix . substr($upc, -12) . $suffix, 0, 0, $align);
+        $pdf->Cell($width, 5, $prefix . substr($upc, ($is_ean?-13:-12)) . $suffix, 0, 0, $align);
 
         return $pdf;
     }

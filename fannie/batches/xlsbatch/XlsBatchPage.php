@@ -72,15 +72,19 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
         $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
         $bname = FormLib::get_form_value('bname','');
+        $owner = FormLib::get_form_value('bowner','');
         $ftype = FormLib::get_form_value('ftype','UPCs');
         $has_checks = FormLib::get_form_value('has_checks') !== '' ? True : False;
 
         $dtQ = $dbc->prepare_statement("SELECT discType FROM batchType WHERE batchTypeID=?");
         $dt = array_pop($dbc->fetch_row($dbc->exec_statement($dtQ,array($btype))));
 
-        $insQ = $dbc->prepare_statement("INSERT INTO batches (startDate,endDate,batchName,batchType,discounttype,priority)
-                VALUES (?,?,?,?,?,0)");
-        $args = array($date1,$date2,$bname,$btype,$dt);
+        $insQ = $dbc->prepare_statement("
+            INSERT INTO batches 
+            (startDate,endDate,batchName,batchType,discounttype,priority,owner)
+            VALUES 
+            (?,?,?,?,?,0,?)");
+        $args = array($date1,$date2,$bname,$btype,$dt,$owner);
         $insR = $dbc->exec_statement($insQ,$args);
         $id = $dbc->insert_id();
 
@@ -130,16 +134,20 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         return True;
     }
 
-    function results_content(){
+    function results_content()
+    {
         return $this->results;
     }
 
-    function preview_content(){
+    function preview_content()
+    {
         $batchtypes = $this->get_batch_types();
         $ret = sprintf("<b>Batch Type: %s <input type=hidden value=%d name=btype /><br />",
             $batchtypes[FormLib::get_form_value('btype')],FormLib::get_form_value('btype'));
         $ret .= sprintf("<b>Batch Name: %s <input type=hidden value=\"%s\" name=bname /><br />",
             FormLib::get_form_value('bname'),FormLib::get_form_value('bname'));
+        $ret .= sprintf("<b>Owner: %s <input type=hidden value=\"%s\" name=bowner /><br />",
+            FormLib::get_form_value('bowner'),FormLib::get_form_value('bowner'));
         $ret .= sprintf("<b>Start Date: %s <input type=hidden value=\"%s\" name=date1 /><br />",
             FormLib::get_form_value('date1'),FormLib::get_form_value('date1'));
         $ret .= sprintf("<b>End Date: %s <input type=hidden value=\"%s\" name=date2 /><br />",
@@ -171,6 +179,8 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
     {
         global $FANNIE_URL;
         $batchtypes = $this->get_batch_types();
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $owners = new MasterSuperDeptsModel($dbc);
         ob_start();
         ?>
         <form enctype="multipart/form-data" action="XlsBatchPage.php" id="FannieUploadForm" method="post">
@@ -201,6 +211,22 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
             <div class="col-sm-4">
                 <input type="hidden" name="MAX_FILE_SIZE" value="2097152" />
                 <input type="file" id="FannieUploadFile" name="FannieUploadFile" />
+            </div>
+            <label class="col-sm-2 control-label">Owner</label>
+            <div class="col-sm-4">
+                <select name="bowner" class="form-control">
+                <option value="">Choose...</option>
+                <?php 
+                $prev = '';
+                foreach ($owners->find('super_name') as $obj) { 
+                    if ($obj->super_name() == $prev) {
+                        continue;
+                    }
+                    echo '<option>' . $obj->super_name() . '</option>';
+                    $prev = $obj->super_name();
+                }
+                ?>
+                </select>
             </div>
         </div>
         <div class="row form-group form-horizontal">

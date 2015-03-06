@@ -40,6 +40,7 @@ function addInvoiceLine()
     var qty = $('<input type="text" name="cases[]" required />')
         .val(1)
         .addClass('input-sm')
+        .addClass('item-cases')
         .addClass('form-control');
     row.append($('<td>').addClass('col-sm-1').append(qty));
 
@@ -98,8 +99,17 @@ function upcLookup(upc, elem)
     doLookup('upc', upc, elem);
 }
 
+var loading = false;
+function stopLoading()
+{
+    loading=false;
+}
+
 function doLookup(mode, term, elem)
 {
+    if (loading) {
+        return;
+    }
     var vendor_id = $('#vendor-id').val();
     p = { type: 'vendor', vendor_id: vendor_id };
     if (mode == 'sku') {
@@ -122,9 +132,11 @@ function doLookup(mode, term, elem)
         dataType: 'json',
         contentType: 'application/json',
         success: function(data) {
-            if (data.result) {
-                if (mode == 'sku') {
+            if (data.result && (data.result.sku || data.result.upc)) {
+                if (mode == 'sku' && data.result.upc != '0000000000000') {
                     elem.closest('tr').find('.item-upc').val(data.result.upc);
+                } else if (mode == 'sku') {
+                    elem.closest('tr').find('.item-upc').val('');
                 } else if (mode == 'upc') {
                     elem.closest('tr').find('.item-sku').val(data.result.sku);
                 }
@@ -185,4 +197,54 @@ function saveOrder()
             }
         }
     });
+}
+
+function existingOrder(orderJSON, itemsJSON)
+{
+    var order = JSON.parse(orderJSON);
+    var items = JSON.parse(itemsJSON);
+
+    if (order.creationDate) {
+        var dateparts = order.creationDate.split(' ');
+        $('input[name=order-date]').val(dateparts[0]);
+    }
+    if (order.vendorOrderID) {
+        $('input[name=po-number]').val(order.vendorOrderID);
+    }
+    if (order.vendorInvoiceID) {
+        $('input[name=inv-number]').val(order.vendorInvoiceID);
+    }
+
+    loading = true;
+    for (var i=0; i<items.length; i++) {
+        var item = items[i];
+        var total = Number(item.receivedTotalCost);
+        var unit = Number(item.unitCost);
+        var cases = Number(item.quantity);
+
+        var caseCost = total / cases;
+        var caseSize = Math.round(caseCost / unit);
+        if (isNaN(caseSize)) {
+            caseSize = 0;
+        }
+
+        addInvoiceLine();
+        $('input.item-sku:first').val(item.sku);
+        $('input.item-upc:first').val(item.internalUPC);
+        $('input.item-cases:first').val(cases);
+        $('input.item-units:first').val(caseSize);
+        $('input.price-field:first').val(total);
+        $('input.item-brand:first').val(item.brand);
+        $('input.item-description:first').val(item.description);
+    }
+
+    var name = $('#vendor-name').html();
+    name = name.replace('New <', 'Existing <');
+    name += ' #' + order.orderID;
+    $('#vendor-name').html(name);
+
+    var idField = $('<input type="hidden" name="order-id" />').val(order.orderID);
+    $('#order-form').append(idField);
+    
+    setTimeout('stopLoading()', 250);
 }

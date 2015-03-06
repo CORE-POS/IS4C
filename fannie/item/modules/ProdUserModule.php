@@ -36,7 +36,7 @@ class ProdUserModule extends ItemModule
         $ret = '<div id="ProdUserFieldset" class="panel panel-default">';
         $ret .=  "<div class=\"panel-heading\">
                 <a href=\"\" onclick=\"\$('#ProdUserFieldsetContent').toggle();return false;\">
-                Longform Info</a>
+                Sign/Web Info</a>
                 </div>";
         $css = ($expand_mode == 1) ? '' : ' collapse';
         $ret .= '<div id="ProdUserFieldsetContent" class="panel-body' . $css . '">';

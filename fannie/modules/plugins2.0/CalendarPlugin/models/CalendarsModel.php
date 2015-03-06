@@ -33,6 +33,7 @@ class CalendarsModel extends BasicModel
     'calendarID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),
     'name' => array('type'=>'VARCHAR(75)'),
     'modified' => array('type'=>'TINYINT', 'default'=>0),
+    'calendarSubscriptionID' => array('type'=>'INT'),
     );
 
     /* START ACCESSOR FUNCTIONS */
@@ -144,6 +145,43 @@ class CalendarsModel extends BasicModel
                 }
             }
             $this->instance["modified"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function calendarSubscriptionID()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["calendarSubscriptionID"])) {
+                return $this->instance["calendarSubscriptionID"];
+            } else if (isset($this->columns["calendarSubscriptionID"]["default"])) {
+                return $this->columns["calendarSubscriptionID"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'calendarSubscriptionID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["calendarSubscriptionID"]) || $this->instance["calendarSubscriptionID"] != func_get_args(0)) {
+                if (!isset($this->columns["calendarSubscriptionID"]["ignore_updates"]) || $this->columns["calendarSubscriptionID"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["calendarSubscriptionID"] = func_get_arg(0);
         }
         return $this;
     }

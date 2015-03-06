@@ -113,7 +113,8 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 $where .= ' AND p.upc LIKE ? ';
                 $args[] = '%' . $brand . '%';
             } else {
-                $where .= ' AND (x.manufacturer LIKE ? OR v.brand LIKE ?) ';
+                $where .= ' AND (p.brand LIKE ? OR x.manufacturer LIKE ? OR v.brand LIKE ?) ';
+                $args[] = '%' . $brand . '%';
                 $args[] = '%' . $brand . '%';
                 $args[] = '%' . $brand . '%';
                 if (!strstr($from, 'prodExtra')) {
@@ -221,6 +222,9 @@ class AdvancedItemSearch extends FannieRESTfulPage
 
             if (FormLib::get('vendorSale')) {
                 $where .= ' AND v.saleCost <> 0 ';
+                $where .= ' AND p.default_vendor_id=? ';
+                $where .= ' AND p.default_vendor_id=v.vendorID ';
+                $args[] = $vendorID;
             }
         }
 
@@ -252,6 +256,24 @@ class AdvancedItemSearch extends FannieRESTfulPage
         if ($discount !== '') {
             $where .= ' AND p.discount=? ';
             $args[] = $discount;
+        }
+
+        $signinfo = FormLib::get('signinfo');
+        if ($signinfo !== '') {
+            if (!strstr($from, 'productUser')) {
+                $from .= ' LEFT JOIN productUser AS s ON p.upc=s.upc ';
+            }
+            if ($signinfo == '1') {
+                $where .= " AND s.brand IS NOT NULL 
+                    AND s.description IS NOT NULL
+                    AND s.brand <> ''
+                    AND s.description <> '' ";
+            } else {
+                $where .= " AND (s.brand IS NULL 
+                    OR s.description IS NULL
+                    OR s.brand = ''
+                    OR s.description = '') ";
+            }
         }
 
         $origin = FormLib::get('originID', 0);
@@ -289,11 +311,6 @@ class AdvancedItemSearch extends FannieRESTfulPage
                  FROM ' . $from . ' WHERE ' . $where;
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $args);
-
-        if ($dbc->numRows($result) > 2500) {
-            echo 'Too many results';
-            return false;
-        }
 
         $items = array();
         while($row = $dbc->fetch_row($result)) {
@@ -427,6 +444,11 @@ class AdvancedItemSearch extends FannieRESTfulPage
                     $items[$savedW['upc']] = $savedW;
                 }
             }
+        }
+
+        if (count($items) > 2500) {
+            echo 'Too many results';
+            return false;
         }
 
         $dataStr = http_build_query($_GET);
@@ -810,11 +832,17 @@ function chainSuper(superID)
             <option value="">Any</option><option value="1">Yes</option><option value="0">No</option></select>
             </td>';
 
-        $ret .= '<td colspan="2">
-            <label for="serviceScale">
+        $ret .= '<td colspan="2" class="form-inline">
+            <label class="small" for="serviceScale">
             Service Scale
             <input type="checkbox" id="serviceScale" name="serviceScale" class="checkbox-inline" />
             </label>';
+
+        $ret .= '&nbsp;&nbsp;
+            <label class="control-label small">Sign Info</label>
+            <select name="signinfo" class="form-control input-sm">
+            <option value="">Any</option><option value="1">Yes</option><option value="0">No</option>
+            </select>';
 
         $ret .= '</td>'; // end row
 

@@ -165,7 +165,8 @@ class ItemEditorPage extends FanniePage
 
     function search_results()
     {
-        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $upc = FormLib::get_form_value('searchupc');
         $numType = FormLib::get_form_value('ntype','UPC');
         $inUseFlag = FormLib::get('inUse', false);
@@ -375,8 +376,10 @@ class ItemEditorPage extends FanniePage
 
                 $ret .= '<p>';
                 if (!$authorized) {
-                    $ret .= sprintf('<a href="%sauth/ui/loginform.php?redirect=%s?searchupc=%s">Login
+                    $ret .= sprintf('<a class="btn btn-danger"
+                                href="%sauth/ui/loginform.php?redirect=%s?searchupc=%s">Login
                                 to edit</a>', $FANNIE_URL, $_SERVER['PHP_SELF'], $upc);
+                    $this->addOnloadCommand("\$(':input').prop('disabled', true).prop('title','Login to edit');\n");
                 } else if ($isNew) {
                     $ret .= '<button type="submit" name="createBtn" value="1"
                                 class="btn btn-default">Create Item</button>';
@@ -474,7 +477,8 @@ class ItemEditorPage extends FanniePage
         }
 
         /* push updates to the lanes */
-        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         updateProductAllLanes($upc);
 
         if ($audited) {

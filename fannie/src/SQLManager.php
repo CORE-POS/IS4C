@@ -179,7 +179,39 @@ class SQLManager
         if ($this->isConnected()) {
             $this->query('use ' . $db_name, $db_name);
             $this->connections[$db_name]->database = $db_name;
+
+            return true;
+        } else {
+            return false;
         }
+    }
+
+    /**
+      Change the default database on a given connection
+      (i.e., mysql_select_db equivalent)
+      @param $db_name [string] database name
+      @param $which_connection [optional]
+      @return boolean
+
+      Using this method will recycle an existing connection
+      object where as calling addConnection will create a
+      new connection object.
+    */
+    public function selectDB($db_name, $which_connection='')
+    {
+		if ($which_connection == '') {
+			$which_connection=$this->default_db;
+        }
+
+        $current_db = $this->defaultDatabase($which_connection);
+        if ($current_db === false) {
+            // no connection; cannot switch database
+            return false;
+        }
+
+        $this->connections[$db_name] = $this->connections[$which_connection];
+
+        return $this->setDefaultDB($db_name);
     }
 
 	/**
@@ -1573,6 +1605,45 @@ class SQLManager
     {
         $this->throw_on_fail = $mode;
     }
+
+	/**
+	  Create temporary table
+      @param name string temporary table name
+      @param source_table string source table name
+	  @param which_connection see method close
+	  @return String separator
+	*/
+	public function temporaryTable($name, $source_table, $which_connection='')
+    {
+		if ($which_connection == '') {
+			$which_connection=$this->default_db;
+        }
+		switch ($this->connections[$which_connection]->databaseType) {
+            case 'mysql':
+            case 'mysqli':
+            case 'pdo':
+            case 'pgsql':
+                $created = $this->query('
+                    CREATE TEMPORARY TABLE ' . $name . '
+                    LIKE ' . $source_table
+                );
+                return $created ? $name : false;
+            case 'mssql':
+                if (strstr($name, '.dbo.')) {
+                    list($schema, $table) = explode('.dbo.', $name, 2);
+                    $name = $schema . '.dbo.#' . $name;
+                } else {
+                    $name = '#' . $name;
+                }
+                $created = $this->query('
+                    CREATE TABLE ' . $name . '
+                    LIKE ' . $source_table
+                );
+                return $created ? $name : false;
+		}
+
+		return false;
+	}
 
 	// skipping fetch_cell on purpose; generic-db way would be slow as heck
 

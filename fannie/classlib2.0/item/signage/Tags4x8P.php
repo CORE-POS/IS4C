@@ -36,7 +36,7 @@ class Tags4x8P extends \COREPOS\Fannie\API\item\FannieSignage
 
         $width = 52; // tag width in mm
         $height = 31; // tag height in mm
-        $left = 5; // left margin
+        $left = 5.5; // left margin
         $top = 15; // top margin
         $pdf->SetTopMargin($top);  //Set top margin of the page
         $pdf->SetLeftMargin($left);  //Set left margin of the page
@@ -52,7 +52,7 @@ class Tags4x8P extends \COREPOS\Fannie\API\item\FannieSignage
             // extract & format data
             $price = $item['normal_price'];
             $desc = strtoupper(substr($item['posDescription'],0,27));
-            $brand = ucwords(strtolower(substr($item['brand'],0,13)));
+            $brand = strtoupper(substr($item['brand'],0,13));
             $pak = $item['units'];
             $size = $item['units'] . "-" . $item['size'];
             $sku = $item['sku'];

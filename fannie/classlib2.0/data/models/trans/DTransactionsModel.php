@@ -30,7 +30,7 @@ class DTransactionsModel extends BasicModel
 
     protected $columns = array(
     'datetime'    => array('type'=>'DATETIME','index'=>True),
-    'store_id'    => array('type'=>'SMALLINT', 'index'=>true),
+    'store_id'    => array('type'=>'SMALLINT'),
     'register_no'    => array('type'=>'SMALLINT'),
     'emp_no'    => array('type'=>'SMALLINT'),
     'trans_no'    => array('type'=>'INT'),
@@ -298,38 +298,144 @@ class DTransactionsModel extends BasicModel
     // normalizeLog()
     }
 
-    static public function selectDlog($start, $end=false)
+    static public function selectDlog($start, $end=false, $where=false)
     {
-        return self::selectStruct(True, $start, $end);
+        return self::selectStruct(True, $start, $end, $where);
     }
 
-    static public function select_dlog($start, $end=false)
+    static public function select_dlog($start, $end=false, $where=false)
     {
-        return self::selectDlog($start, $end);
+        return self::selectDlog($start, $end, $where);
     }
 
-    static public function selectDtrans($start, $end=false)
+    static public function selectDtrans($start, $end=false, $where=false)
     {
-        return self::selectStruct(False, $start, $end);
+        return self::selectStruct(False, $start, $end, $where);
     }
 
-    static public function select_dtrans($start, $end=false)
+    static public function select_dtrans($start, $end=false, $where=false)
     {
-        return self::selectDtrans($start, $end);
+        return self::selectDtrans($start, $end, $where);
     }
 
     /* Return the SQL FROM parameter for a given date range
      *  i.e. the table, view or union of tables or views
      *  in which the transaction records can be found
      *  most efficiently.
+     * @param $dlog [boolean]
+     *   => true means dlog view style
+     *   => false means underlying dtransactions table style
+     * @param $start [datetime] date range start
+     * @param $end [datetime] date range end
+     *   => false implies just the date specified by $start
+     * @param $where [array] of SQL conditions and parameters
+     *   => false implies no conditions
+     *
+     * @return [string] qualified table name
+     *   Note: return value may be a SQL string that can be
+     *   used as if it were a qualified table name
     */
-    static private function selectStruct($dlog, $start, $end=false)
+    static private function selectStruct($dlog, $start, $end=false, $where=false)
     {
         $config = FannieConfig::factory();
         $sep = ($config->get('SERVER_DBMS') == 'MSSQL') ? '.dbo.' : '.';
         $FANNIE_TRANS_DB = $config->get('TRANS_DB');
         $FANNIE_ARCHIVE_DB = $config->get('ARCHIVE_DB');
         $FANNIE_ARCHIVE_METHOD = $config->get('ARCHIVE_METHOD');
+
+        /**
+          Where clause takes precedence if present
+        */
+        if (is_array($where) && isset($where['connection']) && isset($where['clauses'])) {
+            /**
+              Create randomly named temporary table based
+              on the structure of dlog_15 or transachive
+            */
+            $random_name = uniqid('temp'.rand(1000, 9999));
+            $temp_table = $FANNIE_ARCHIVE_DB . $sep . $random_name;
+            if ($dlog) {
+                $source = $FANNIE_TRANS_DB . $sep . 'dlog_15';
+            } else {
+                $source = $FANNIE_TRANS_DB . $sep . 'transarchive';
+            }
+            $dbc = $where['connection'];
+            $temp_name = $dbc->temporaryTable($temp_table, $source);
+
+            /**
+              If creating a temporary table failed (not
+              supported by database?) continue on below and
+              return the table(s) with the appropriate dates
+            */
+            if ($temp_name !== false) {
+
+                /**
+                  Create a skeleton query that has the appropriate
+                  WHERE clauses
+                */
+                $date_col = $dlog ? 'tdate' : 'datetime';
+                $populateQ = '
+                    INSERT INTO ' . $temp_name . '
+                    SELECT *
+                    FROM __SOURCE_TABLE__
+                    WHERE ' . $date_col . ' BETWEEN ? AND ? ';
+                $params = array($start . ' 00:00:00', ($end ? $end : $start) . ' 23:59:59');
+                foreach ($where['clauses'] as $clause) {
+                    if (!isset($clause['sql']) || !isset($clause['params'])) {
+                        // malformed value
+                        continue;
+                    }
+                    $populateQ .= ' AND ' . $clause['sql'];
+                    foreach ($clause['params'] as $p) {
+                        $params[] = $p;
+                    }
+                }
+
+                /**
+                  Call self recursively to get the name of the table
+                  or tables corresponding to the date range. If multiple
+                  tables, use regex to lift table names out of the subquery
+                */
+                $source_tables = self::selectStruct($dlog, $start, $end);
+                if (strstr($source_tables, ' UNION ')) {
+                    preg_match_all('/\s+FROM\s+(\w+)\s+/', $source_tables, $matches);
+                    $source_tables = array();
+                    foreach ($matches[1] as $m) {
+                        $source_tables[] = $m;
+                    }
+                } else {
+                    $source_tables = array($source_tables);
+                }
+
+                echo $populateQ;
+
+                /**
+                  Loop through transaction table(s) and 
+                  execute the skeleton query with the actual table
+                  name slotted in.
+                */
+                $result = true;
+                foreach ($source_tables as $source_table) {
+                    $query = str_replace('__SOURCE_TABLE__', $source_table, $populateQ);
+                    $prep = $dbc->prepare($query);
+                    $result = $dbc->execute($prep, $params);
+                    if ($result === false) {
+                        // failed to insert data into temp table
+                        break;
+                    }
+                }
+
+                /**
+                  In theory temporary table now has the right set
+                  of records. Return the table's name to the caller.
+                  If anything went wrong, fall through to below and
+                  simply return table(s) that match the dates.
+                */
+                if ($result) {
+
+                    return $temp_name;
+                }
+            }
+        }
 
         if ($end === false) {
             $end = $start;
@@ -391,6 +497,38 @@ class DTransactionsModel extends BasicModel
         return $union;
 
     // selectStruct()
+    }
+
+    public static function selectDtransSumByDepartment($connection, $start_date, $end_date)
+    {
+        $config = FannieConfig::factory();
+        $FANNIE_ARCHIVE_DB = $config->get('ARCHIVE_DB');
+        $FANNIE_TRANS_DB = $config->get('TRANS_DB');
+        $dlog = self::selectDlog($start_date, $end_date);
+        $random_name = uniqid('temp'.rand(1000, 9999));
+        $temp_table = $FANNIE_ARCHIVE_DB . $connection->sep() . $random_name;
+        $temp_name = $connection->temporaryTable($temp_table, $FANNIE_TRANS_DB . $connection->sep() . 'transarchive');
+        
+        $params = array(
+            $start_date . ' 00:00:00',
+            $end_date . ' 23:59:59',
+        );
+
+        $query = '
+            INSERT INTO ' . $temp_name . '
+                (datetime, department, quantity, total)
+            SELECT
+                MIN(datetime),
+                department,
+                SUM(quantity),
+                SUM(total)
+            FROM ' . $dlog . '
+            WHERE datetime BETWEEN ? AND ?
+            GROUP BY department'; 
+        $prep = $connection->prepare($query);
+        $result = $connection->execute($prep, $params);
+
+        return $temp_name;
     }
 
     public function doc()

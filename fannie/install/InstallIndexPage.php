@@ -543,6 +543,10 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             . '<td>' . installTextField('FANNIE_CORRECTION_DEPT', $FANNIE_CORRECTION_DEPT, 800, false)
             . '</td></tr>';
 
+        echo '<tr><td>Patronage Transfer Dept#</td>'
+            . '<td>' . installTextField('FANNIE_PATRONAGE_DEPT', $FANNIE_PATRONAGE_DEPT, 800, false)
+            . '</td></tr>';
+
         echo '<tr><td>Catch-all Dept#</td>'
             . '<td>' . installTextField('FANNIE_MISC_DEPT', $FANNIE_MISC_DEPT, 800, false)
             . '</td></tr>';
@@ -644,6 +648,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             'VendorItemsModel',
             'VendorSRPsModel',
             'VendorSKUtoPLUModel',
+            'VendorBreakdownsModel',
             'VendorDepartmentsModel',
             // VIEWS
             'SuperMinIdViewModel',

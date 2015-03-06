@@ -106,7 +106,7 @@ class ProductMovementModular extends FannieReportPage
             }
 
             $query = "select MONTH(datetime),DAY(datetime),YEAR(datetime),
-                upc,'RRR',
+                upc,'RRR' AS description,
                 sum(case when upc <> 'rrr' then quantity when volSpecial is null or volSpecial > 9999 then 0 else volSpecial end) as qty,
                 sum(t.total) AS total from
                 $dlog as t
