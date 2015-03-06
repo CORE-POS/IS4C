@@ -39,6 +39,9 @@ class MemStatusAdminLogin
             CoreLocal::set("isMember", 1);
             CoreLocal::set("memType", 1);
             CoreLocal::set("boxMsg", "Member Status Toggled!");
+            CoreLocal::set('boxMsgButtons', array(
+                'Dismiss [clear]' => '$(\'#reginput\').val(\'\');submitWrapper();',
+            ));
 
             return MiscLib::baseURL().'gui-modules/boxMsg2.php';
         } else {

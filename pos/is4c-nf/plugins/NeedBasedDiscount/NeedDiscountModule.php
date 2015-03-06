@@ -23,7 +23,7 @@
 
 class NeedDiscountModule extends DiscountModule 
 {
-	function calculate()
+	public function calculate($discountable_total=0)
     {
 		$discount = parent::calculate();
 		if (CoreLocal::get('NeedDiscountFlag')===1){

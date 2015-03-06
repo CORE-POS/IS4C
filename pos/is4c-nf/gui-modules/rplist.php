@@ -85,7 +85,7 @@ class rplist extends NoInputPage
         <div class="listbox">
         <form name="selectform" method="post" id="selectform" 
             action="<?php echo $_SERVER['PHP_SELF']; ?>" >
-        <select name="selectlist" size="10" id="selectlist"
+        <select name="selectlist" size="15" id="selectlist"
             onblur="$('#selectlist').focus()" >
 
         <?php
@@ -102,13 +102,28 @@ class rplist extends NoInputPage
         ?>
 
         </select>
-        </form>
         </div>
+        <?php
+        if (CoreLocal::get('touchscreen')) {
+            echo '<div class="listbox listboxText">'
+                . DisplayLib::touchScreenScrollButtons('#selectlist')
+                . '</div>';
+        }
+        ?>
         <div class="listboxText coloredText centerOffset">
         <?php echo _("use arrow keys to navigate"); ?><br />
-        <?php echo _("enter to reprint receipt"); ?><br />
-        <?php echo _("clear to cancel"); ?>
+        <p>
+            <button type="submit" class="pos-button wide-button coloredArea">
+            Reprint <span class="smaller">[enter]</span>
+            </button>
+        </p>
+        <p>
+            <button type="submit" class="pos-button wide-button errorColoredArea"
+            onclick="$('#selectlist').append($('<option>').val(''));$('#selectlist').val('');">
+            Cancel <span class="smaller">[clear]</span>
+        </button></p>
         </div>
+        </form>
         <div class="clear"></div>
         </div>
 

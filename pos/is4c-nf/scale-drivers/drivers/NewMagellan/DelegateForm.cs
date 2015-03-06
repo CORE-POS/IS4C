@@ -31,7 +31,8 @@ using System.Threading;
 
 namespace CustomForms {
 
-public abstract class DelegateForm {
+public abstract class DelegateForm 
+{
 
     public abstract void MsgRecv(string msg);
     public abstract void MsgSend(string msg);

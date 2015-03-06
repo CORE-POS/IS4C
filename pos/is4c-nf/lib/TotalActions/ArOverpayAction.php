@@ -43,10 +43,13 @@ class ArOverpayAction  extends TotalAction
 		if (CoreLocal::get("balance") < CoreLocal::get("memChargeTotal") && CoreLocal::get("memChargeTotal") > 0) {
 			if (CoreLocal::get('msgrepeat') == 0) {
 				CoreLocal::set("boxMsg",sprintf("<b>A/R Imbalance</b><br />
-					Total AR payments $%.2f exceeds AR balance %.2f<br />
-					<font size=-1>[enter] to continue, [clear] to cancel</font>",
+					Total AR payments $%.2f exceeds AR balance %.2f<br />",
 					CoreLocal::get("memChargeTotal"),
 					CoreLocal::get("balance")));
+                CoreLocal::set('boxMsgButtons', array(
+                    'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
+                    'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                ));
 				CoreLocal::set("strEntered","TL");
 				return MiscLib::baseURL()."gui-modules/boxMsg2.php?quiet=1";
 			}

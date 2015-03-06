@@ -68,12 +68,15 @@ class quickkey {
 			$ret .= sprintf('
                 <button type="submit"
                     name="quickkey_submit" id="%s"
+                    value="%s"
                     class="quick_button pos-button coloredBorder">
                     %s
                 </button>
 				<input type="hidden" name="%s"
                     value="%s" />',
-                $id,$this->title,
+                $id,
+				$this->title,
+                $this->title,
 				md5($this->title),
 				$this->output_text);
 		} else {

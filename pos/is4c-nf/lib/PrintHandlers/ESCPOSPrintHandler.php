@@ -708,7 +708,8 @@ class ESCPOSPrintHandler extends PrintHandler {
         ReceiptLib::writeLine($text);
 	}
 
-	function RenderBitmapFromFile($fn, $align='C'){
+	function RenderBitmapFromFile($fn, $align='C')
+    {
 		return $this->RenderBitmap($fn, $align);
 	}
 

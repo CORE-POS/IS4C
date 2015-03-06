@@ -36,8 +36,11 @@ class EquityWarnDept extends SpecialDept
         }
 
         if (CoreLocal::get('msgrepeat') == 0) {
-            CoreLocal::set("boxMsg","<b>Equity Sale</b><br>please confirm<br>
-                <font size=-1>[enter] to continue, [clear] to cancel</font>");
+            CoreLocal::set("boxMsg","<b>Equity Sale</b><br>please confirm");
+            CoreLocal::set('boxMsgButtons', array(
+                'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
+                'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+            ));
             $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php?quiet=1';
         }
 

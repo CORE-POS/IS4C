@@ -36,14 +36,20 @@ class StoreTransferTender extends TenderModule
     public function errorCheck()
     {
         if(MiscLib::truncate2(CoreLocal::get("amtdue")) < MiscLib::truncate2($this->amount)) {
-            return DisplayLib::xboxMsg(_("store transfer exceeds purchase amount"));
+            return DisplayLib::xboxMsg(
+                _("store transfer exceeds purchase amount"),
+                DisplayLib::standardClearButton()
+            );
         }
 
         $db = Database::pDataConnect();
         $query = 'SELECT chargeOk FROM custdata WHERE chargeOk=1 AND CardNo='.CoreLocal::get('memberID');
         $result = $db->query($query);
         if ($db->num_rows($result) == 0) {
-            return DisplayLib::xboxMsg(_("member cannot make transfers"));
+            return DisplayLib::xboxMsg(
+                _("member cannot make transfers"),
+                DisplayLib::standardClearButton()
+            );
         }
 
         return true;

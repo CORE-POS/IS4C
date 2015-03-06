@@ -38,6 +38,7 @@ class AutoCoupon extends TotalAction
     public function apply()
     {
         $db = Database::pDataConnect();
+        $repeat = CoreLocal::get('msgrepeat');
 
         $coupons = array();
         $hc_table = $db->table_definition('houseCoupons');
@@ -92,6 +93,8 @@ class AutoCoupon extends TotalAction
 
             TransRecord::addhousecoupon($upc, $add['department'], -1 * $next_val, $description);
         }
+
+        CoreLocal::set('msgrepeat', $repeat);
 
         return true;
     }

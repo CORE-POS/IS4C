@@ -30,28 +30,44 @@ class StackableDiscount extends Parser
 		$this->ret = $this->default_json();
 		if (substr($str,-2) == "SD"){
 			$strl = substr($str,0,strlen($str)-2);
-			if (!is_numeric($strl)) 
+			if (!is_numeric($strl)) {
 				return False;
-			elseif (CoreLocal::get("tenderTotal") != 0) 
-				$this->ret['output'] = DisplayLib::boxMsg(_("discount not applicable after tender"));
-			elseif ($strl > 50) 
-				$this->ret['output'] = DisplayLib::boxMsg(_("discount exceeds maximum"));
-			elseif ($strl <= 0) 
-				$this->ret['output'] = DisplayLib::boxMsg(_("discount must be greater than zero"));
-			elseif ($strl <= 50 and $strl > 0) {
+			} elseif (CoreLocal::get("tenderTotal") != 0) {
+				$this->ret['output'] = DisplayLib::boxMsg(
+                    _("discount not applicable after tender"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
+			} elseif ($strl > 50) {
+				$this->ret['output'] = DisplayLib::boxMsg(
+                    _("discount exceeds maximum"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
+			} elseif ($strl <= 0) {
+				$this->ret['output'] = DisplayLib::boxMsg(
+                    _("discount must be greater than zero"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
+			} elseif ($strl <= 50 and $strl > 0) {
 				$existingPD = CoreLocal::get("percentDiscount");
 				$stackablePD = $strl;
 				$equivalentPD = ($existingPD + $stackablePD);								//	sum discounts
 				$this->ret = PrehLib::percentDiscount($equivalentPD,$this->ret);
-			}
-			else 
-				return False;
-			return True;
+			} else {
+				return false;
+            }
+			return true;
 		}
-		return False;
+		return false;
 	}
 
-	function parse($str){
+	function parse($str)
+    {
 		return $this->ret;
 	}
 
@@ -69,4 +85,3 @@ class StackableDiscount extends Parser
 	}
 }
 
-?>

@@ -157,9 +157,13 @@ class SigTermCommands extends Parser
 
 			return true;
 
-		} else if (substr($str,0,7) == "TERMCB:") {
+		} elseif (substr($str,0,7) == "TERMCB:") {
 			$cashback = substr($str,7);
-			if ($cashback <= 40) {
+            $termLimit = CoreLocal::get('PaycardsTermCashBackLimit');
+            if ($termLimit === '') {
+                $termLimit = 40;
+            }
+			if ($cashback <= $termLimit) {
 				$this->cb_error = false;
 				CoreLocal::set("CacheCardCashBack",$cashback);
 			} else {
@@ -184,9 +188,12 @@ class SigTermCommands extends Parser
 			$ret['retry'] = CoreLocal::get("CachePanEncBlock");
 		}
 		if ($this->cb_error) {
-			CoreLocal::set('boxMsg','Warning: Invalid cash back<br />
-					selection ignored');
-			$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';	
+            $ret['output'] = DisplayLib::boxMsg(
+                'Cash back set to zero instead',
+                _('Invalid cash back selection'),
+                false,
+                DisplayLib::standardClearButton()
+            );
 		}
 
 		return $ret;

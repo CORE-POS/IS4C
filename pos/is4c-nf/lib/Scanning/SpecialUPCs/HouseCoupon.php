@@ -131,14 +131,41 @@ class HouseCoupon extends SpecialUPC
     {
         $infoW = $this->lookupCoupon($id);
         if ($infoW === false) {
-            return $quiet ? false : DisplayLib::boxMsg(_("coupon not found"));
+            if ($quiet) {
+                return false;
+            } else {
+                return DisplayLib::boxMsg(
+                    _("coupon not found"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
+            }
         }
 
         if ($infoW["expired"] < 0) {
             $expired = substr($infoW["endDate"], 0, strrpos($infoW["endDate"], " "));
-            return $quiet ? false : DisplayLib::boxMsg(_("coupon expired") . " " . $expired);
+            if ($quiet) {
+                return false;
+            } else {
+                return DisplayLib::boxMsg(
+                    _("coupon expired ") . $expired,
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
+            }
         } else if ($infoW['preStart'] > 0) {
-            return $quiet ? false : DisplayLib::boxMsg(_("coupon not available yet"));
+            if ($quiet) {
+                return false;
+            } else {
+                return DisplayLib::boxMsg(
+                    _("coupon not available yet"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
+            }
         }
 
         /* check for member-only, longer use tracking
@@ -152,12 +179,26 @@ class HouseCoupon extends SpecialUPC
             $is_mem = false;
         }
         if ($infoW["memberOnly"] == 1 && !$is_mem) {
-            return $quiet ? false : DisplayLib::boxMsg(_("Member only coupon") . "<br />" .
-                        _("Apply member number first"));
+            if ($quiet) {
+                return false;
+            } else {
+                return DisplayLib::boxMsg(
+                    _("Apply member number first"),
+                    _('Member only coupon'),
+                    false,
+                    array_merge(array('Member Search [ID]' => 'parseWrapper(\'ID\');'), DisplayLib::standardClearButton())
+                );
+            }
         }
 
         /* verify the minimum purchase has been made */
         $transDB = Database::tDataConnect();
+        $requirements_msg = DisplayLib::boxMsg(
+            _("coupon requirements not met"),
+            '',
+            true,
+            DisplayLib::standardClearButton()
+        );
         $coupID = $id;
         switch($infoW["minType"]) {
             case "Q": // must purchase at least X
@@ -171,7 +212,7 @@ class HouseCoupon extends SpecialUPC
                 $minW = $transDB->fetch_row($minR);
                 $validQtty = $minW[0];
                 if ($validQtty < $infoW["minValue"]) {
-                    return $quiet ? false : DisplayLib::boxMsg(_("coupon requirements not met"));
+                    return $quiet ? false : $requirements_msg;
                 }
                 break;
             case "Q+": // must purchase more than X
@@ -185,7 +226,7 @@ class HouseCoupon extends SpecialUPC
                 $minW = $transDB->fetch_row($minR);
                 $validQtty = $minW[0];
                 if ($validQtty <= $infoW["minValue"]) {
-                    return $quiet ? false : DisplayLib::boxMsg(_("coupon requirements not met"));
+                    return $quiet ? false : $requirements_msg;
                 }
                 break;
             case 'D': // must at least purchase from department
@@ -199,7 +240,7 @@ class HouseCoupon extends SpecialUPC
                 $minW = $transDB->fetch_row($minR);
                 $validQtty = $minW[0];
                 if ($validQtty < $infoW["minValue"]) {
-                    return $quiet ? false : DisplayLib::boxMsg(_("coupon requirements not met"));
+                    return $quiet ? false : $requirements_msg;
                 }
                 break;
             case 'D+': // must more than purchase from department 
@@ -213,7 +254,7 @@ class HouseCoupon extends SpecialUPC
                 $minW = $transDB->fetch_row($minR);
                 $validQtty = $minW[0];
                 if ($validQtty <= $infoW["minValue"]) {
-                    return $quiet ? false : DisplayLib::boxMsg(_("coupon requirements not met"));
+                    return $quiet ? false : $requirements_msg;
                 }
                 break;
             case 'M': // must purchase at least X qualifying items
@@ -241,7 +282,7 @@ class HouseCoupon extends SpecialUPC
                 $validQtty2 = $min2W[0];
 
                 if ($validQtty < $infoW["minValue"] || $validQtty2 <= 0) {
-                    return $quiet ? false : DisplayLib::boxMsg(_("coupon requirements not met"));
+                    return $quiet ? false : $requirements_msg;
                 }
                 break;
             case 'MX': // must purchase at least $ from qualifying departments
@@ -270,7 +311,7 @@ class HouseCoupon extends SpecialUPC
                 $validQtty2 = $min2W[0];
 
                 if ($validQtty < $infoW["minValue"] || $validQtty2 <= 0) {
-                    return $quiet ? false : DisplayLib::boxMsg(_("coupon requirements not met"));
+                    return $quiet ? false : $requirements_msg;
                 }
                 break;
             case '$': // must purchase at least $ total items
@@ -280,7 +321,7 @@ class HouseCoupon extends SpecialUPC
                 $minW = $transDB->fetch_row($minR);
                 $validAmt = $minW[0];
                 if ($validAmt < $infoW["minValue"]) {
-                    return $quiet ? false : DisplayLib::boxMsg(_("coupon requirements not met"));
+                    return $quiet ? false : $requirements_msg;
                 }
                 break;
             case '$+': // must purchase more than $ total items
@@ -290,7 +331,7 @@ class HouseCoupon extends SpecialUPC
                 $minW = $transDB->fetch_row($minR);
                 $validAmt = $minW[0];
                 if ($validAmt <= $infoW["minValue"]) {
-                    return $quiet ? false : DisplayLib::boxMsg(_("coupon requirements not met"));
+                    return $quiet ? false : $requirements_msg;
                 }
                 break;
             case '': // no minimum
@@ -316,7 +357,12 @@ class HouseCoupon extends SpecialUPC
     {
         $infoW = $this->lookupCoupon($id);
         if ($infoW === false) {
-            return DisplayLib::boxMsg(_("coupon not found"));
+            return DisplayLib::boxMsg(
+                _("coupon not found"),
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
         }
 
         $prefix = CoreLocal::get('houseCouponPrefix');
@@ -337,7 +383,12 @@ class HouseCoupon extends SpecialUPC
         $limitW = $transDB->fetch_row($limitR);
         $times_used = $limitW[0];
         if ($times_used >= $infoW["limit"]) {
-            return DisplayLib::boxMsg(_("coupon already applied"));
+            return DisplayLib::boxMsg(
+                _("coupon already applied"),
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
         }
 
         /**
@@ -385,9 +436,12 @@ class HouseCoupon extends SpecialUPC
                 $mW = $mDB->fetch_row($mR);
                 $uses = $mW['quantity'];
                 if ($uses >= $infoW["limit"]) {
-                    return DisplayLib::boxMsg(_("Coupon already used")
-                                ."<br />"
-                                ._("on this membership"));
+                    return DisplayLib::boxMsg(
+                        _("Coupon already used") . "<br />" . _("on this membership"),
+                        '',
+                        false,
+                        DisplayLib::standardClearButton()
+                    );
                 }
             }
         }
@@ -563,32 +617,7 @@ class HouseCoupon extends SpecialUPC
             case 'PD': // modify customer percent discount
                    // rather than add line-item
                 $couponPD = $infoW['discountValue'] * 100;
-                $ttlPD = 0;
-                Database::getsubtotals();
-                $opDB = Database::pDataConnect();
-                $custQ = 'SELECT Discount FROM custdata WHERE CardNo='.CoreLocal::get('memberID');    
-                $custR = $opDB->query($custQ);
-                // get member's normal discount
-                $cust_discount = 0;
-                if ($opDB->num_rows($custR) > 0) {
-                    $custW = $opDB->fetch_row($custR);
-                    $cust_discount = $custW['Discount'];
-                }
-                // apply discount module
-                $handler_class = CoreLocal::get('DiscountModule');
-                if ($handler_class === '') $handler_class = 'DiscountModule';
-                elseif (!class_exists($handler_class)) $handler_class = 'DiscountModule';
-                if (class_exists($handler_class)) {
-                    $module = new $handler_class();
-                    $ttlPD = $module->percentage($cust_discount);
-                }
-                // add coupon's discount
-                $ttlPD += $couponPD;
-                // apply new discount to session & transaction
-                CoreLocal::set('percentDiscount', $ttlPD);
-                $transDB = Database::tDataConnect();
-                $transDB->query(sprintf('UPDATE localtemptrans SET percentDiscount=%f',$ttlPD));
-
+                DiscountModule::updateDiscount(new DiscountModule($couponPD, 'HouseCoupon'));
                 // still need to add a line-item with the coupon UPC to the
                 // transaction to track usage
                 $value = 0;

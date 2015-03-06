@@ -561,9 +561,6 @@ static public function paycard_errorText($title, $code, $text, $retry, $standalo
 static public function paycard_msgBox($type, $title, $msg, $action) 
 {
 	$header = "IT CORE - Payment Card";
-	if( CoreLocal::get("paycard_type") == self::PAYCARD_TYPE_CREDIT)      $header = "Wedge - Credit Card";
-	else if( CoreLocal::get("paycard_type") == self::PAYCARD_TYPE_GIFT)   $header = "Wedge - Gift Card";
-	else if( CoreLocal::get("paycard_type") == self::PAYCARD_TYPE_STORE)  $header = "Wedge - Wedge Card";
 	$boxmsg = "<span class=\"larger\">".trim($title)."</span><p />";
 	$boxmsg .= trim($msg)."<p />".trim($action);
 	return DisplayLib::boxMsg($boxmsg,$header,True);
@@ -573,11 +570,7 @@ static public function paycard_msgBox($type, $title, $msg, $action)
 // display a paycard-related error due to system, network or other non-cashier mistake
 static public function paycard_errBox($type, $title, $msg, $action) 
 {
-	$header = "Wedge - Payment Card";
-	if( CoreLocal::get("paycard_type") == self::PAYCARD_TYPE_CREDIT)      $header = "Wedge - Credit Card";
-	else if( CoreLocal::get("paycard_type") == self::PAYCARD_TYPE_GIFT)   $header = "Wedge - Gift Card";
-	else if( CoreLocal::get("paycard_type") == self::PAYCARD_TYPE_STORE)  $header = "Wedge - Wedge Card";
-	return DisplayLib::xboxMsg("<b>".trim($title)."</b><p><font size=-1>".trim($msg)."<p>".trim($action)."</font>", $header);
+	return DisplayLib::xboxMsg("<b>".trim($title)."</b><p><font size=-1>".trim($msg)."<p>".trim($action)."</font>");
 } // paycard_errBox()
 
 static private $paycardDB = null;

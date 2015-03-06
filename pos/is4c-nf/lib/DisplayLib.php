@@ -197,7 +197,7 @@ static public function msgbox($strmsg, $icon, $noBeep=false, $buttons=array())
 	        </div>
             <div class=\"clear\"></div>
         </div>";
-    if (!empty($buttons)) {
+    if (!empty($buttons) && is_array($buttons)) {
         $ret .= '<div class="boxMsgBody boxMsgButtons">';
         foreach ($buttons as $label => $action) {
             $label = preg_replace('/(\[.+?\])/', '<span class="smaller">\1</span>', $label);
@@ -274,8 +274,13 @@ static public function inputUnknown()
         "<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" . _("input unknown") . "</b>", 
         MiscLib::base_url()."graphics/exclaimC.gif", 
         true,
-        array('[Clear]' => 'parseWrapper(\'CL\');')
+        self::standardClearButton()
     );
+}
+
+static public function standardClearButton()
+{
+    return array('[Clear]' => 'parseWrapper(\'CL\');');
 }
 
 //--------------------------------------------------------------------//
@@ -1048,6 +1053,31 @@ static public function screenDisplay($min, $max)
     }
 
     return $ret;
+}
+
+static public function touchScreenScrollButtons($selector='#search')
+{
+    $stem = MiscLib::baseURL() . 'graphics/';
+    return '
+        <button type="button" class="pos-button coloredArea"
+            onclick="pageUp(\''. $selector . '\');">
+            <img src="' . $stem . 'pageup.png" width="16" height="16" />
+        </button>
+        <br /><br />
+        <button type="button" class="pos-button coloredArea"
+            onclick="scrollUp(\''. $selector . '\');">
+            <img src="' . $stem . 'up.png" width="16" height="16" />
+        </button>
+        <br /><br />
+        <button type="button" class="pos-button coloredArea"
+            onclick="scrollDown(\''. $selector . '\');">
+            <img src="' . $stem . 'down.png" width="16" height="16" />
+        </button>
+        <br /><br />
+        <button type="button" class="pos-button coloredArea"
+            onclick="pageDown(\''. $selector . '\');">
+            <img src="' . $stem . 'pagedown.png" width="16" height="16" />
+        </button>';
 }
 
 } // end class DisplayLib

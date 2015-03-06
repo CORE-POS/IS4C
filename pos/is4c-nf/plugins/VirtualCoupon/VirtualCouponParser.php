@@ -35,10 +35,13 @@ class VirtualCouponParser extends Parser {
 		$ret = $this->default_json();
 
 		if (CoreLocal::get("memberID") == 0){
-			$ret['output'] = DisplayLib::boxMsg(_("No member selected")."<br />".
-						_("Apply member number first"));
-		}
-		else {
+            $ret['output'] = DisplayLib::boxMsg(
+                _("Apply member number first"),
+                _('No member selected'),
+                false,
+                array_merge(array('Member Search [ID]' => 'parseWrapper(\'ID\');'), DisplayLib::standardClearButton())
+            );
+		} else {
 			$plugin_info = new VirtualCoupon();
 			$ret['main_frame'] = $plugin_info->plugin_url().'/VirtCoupDisplay.php';
 		}

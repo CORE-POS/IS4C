@@ -87,24 +87,41 @@ class deptlist extends NoInputPage {
 			."<form name=\"selectform\" method=\"post\" action=\"{$_SERVER['PHP_SELF']}\""
 			." id=\"selectform\">"
 			."<select name=\"search\" id=\"search\" "
+            .' style="min-height: 200px; min-width: 220px;" '
 			."size=\"15\" onblur=\"\$('#search').focus();\">";
 
 		$selected = "selected";
 		while($row = $db->fetch_row($r)){
 			echo "<option value='".$row["dept_no"]."' ".$selected.">";
-			echo $row['dept_name'];
+            // &shy; prevents the cursor from moving out of
+            // step with filter-as-you-type
+			echo '&shy; ' . $row['dept_name'];
 			echo '</option>';
 			$selected = "";
 		}
 		echo "</select>"
+            . '<div id="filter-div"></div>'
+			."</div>";
+        if (CoreLocal::get('touchscreen')) {
+            echo '<div class="listbox listboxText">'
+                . DisplayLib::touchScreenScrollButtons()
+                . '</div>';
+        }
+        echo "<div class=\"listboxText coloredText centerOffset\">"
+            . _("use arrow keys to navigate")
+            . '<p><button type="submit" class="pos-button wide-button coloredArea">
+                OK <span class="smaller">[enter]</span>
+                </button></p>'
+            . '<p><button type="submit" class="pos-button wide-button errorColoredArea"
+                onclick="$(\'#search\').append($(\'<option>\').val(\'\'));$(\'#search\').val(\'\');">
+                Cancel <span class="smaller">[clear]</span>
+                </button></p>'
+            ."</div><!-- /.listboxText coloredText .centerOffset -->"
 			."</form>"
-			."</div>"
-			."<div class=\"listboxText coloredText centerOffset\">"
-			._("clear to cancel")."</div>"
 			."<div class=\"clear\"></div>";
 		echo "</div>";
 
-        $this->add_onload_command("selectSubmit('#search', '#selectform')\n");
+        $this->add_onload_command("selectSubmit('#search', '#selectform', '#filter-div')\n");
 		$this->add_onload_command("\$('#search').focus();\n");
 	} // END body_content() FUNCTION
 
