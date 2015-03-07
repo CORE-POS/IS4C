@@ -54,6 +54,7 @@
  --functionality } - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
  #'Z --COMMENTZ { - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ *  2Jul14 EL Ignore in initial select where civicrm_contact.is_deleted <> 0
  * 16Jan14 EL Assign civicrm_membership.status_id = 1 at insert.
  *             It has no default in Civi, was defaulting to 0 which
  *              prevented it from being found
@@ -2894,10 +2895,12 @@ c.id as contact_id
 ,v.{$memberCardField} as mcard
 ,u.modified_date
 FROM
-civicrm_membership m INNER JOIN civicrm_contact c ON c.id = m.contact_id
+civicrm_membership m
+INNER JOIN civicrm_contact c ON c.id = m.contact_id
 LEFT JOIN {$memberCardTable} v ON m.contact_id = v.entity_id
 LEFT JOIN civicrm_log u ON m.contact_id = u.entity_id AND u.entity_table = 'civicrm_contact'
 WHERE u.modified_date > '$latestRunDate'
+ AND c.is_deleted = 0
  AND NOT (m.is_override = 1 AND m.status_id = 6)
 ORDER BY c.id, m.id, u.modified_date DESC;";
 
