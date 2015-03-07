@@ -64,16 +64,37 @@ include('../src/header.html');
 
 $upc = str_pad($_REQUEST['upc'],'0',13,STR_PAD_LEFT);
 
-// Array where keys match products fieldnames, for insertion to products.
+/* Array where keys match products fieldnames, for insertion to products. */
 $ins_array = array();
-$ins_array['upc'] = $dbc->escape($upc);
-//$ins_array['upc'] = $dbc->escape($_REQUEST['upc']);
+
+/* Set tax and FS to department defaults
+ * 22Nov2014 EL Before today this was being done after the assignment
+ *  of values from the form.
+ *  (There was also an apparent bug that the WHERE clause was missing
+ *   so the assignment was almost always from the wrong department.)
+ */
+$ins_array['department'] = $_REQUEST['department'];
+$deptSub = 0;
+$taxfsQ = "SELECT dept_tax,dept_fs, dept_discount, superID
+    FROM departments AS d
+    LEFT JOIN MasterSuperDepts AS s ON d.dept_no=s.dept_ID
+    WHERE d.dept_no = {$ins_array['department']}";
+$taxfsR = $dbc->query($taxfsQ);
+if ($dbc->num_rows($taxfsR) > 0){
+	$taxfsW = $dbc->fetch_array($taxfsR);
+	$ins_array['tax'] = $taxfsW['dept_tax'];
+	$ins_array['foodstamp'] = $taxfsW['dept_fs'];
+	$ins_array['discount'] = $taxfsW['dept_discount'];
+	$deptSub = $taxfsW['superID'];
+}
 $ins_array['tax'] = isset($_REQUEST['tax'])?$_REQUEST['tax']:0;
 $ins_array['foodstamp'] = isset($_REQUEST['FS'])?1:0;
+$ins_array['discount'] = isset($_REQUEST['NoDisc'])?0:1;
+
+$ins_array['upc'] = $dbc->escape($upc);
 $ins_array['scale'] = isset($_REQUEST['Scale'])?1:0;
 $ins_array['deposit'] = isset($_REQUEST['deposit'])?$_REQUEST['deposit']:0;
 $ins_array['qttyEnforced'] = isset($_REQUEST['QtyFrc'])?1:0;
-$ins_array['discount'] = isset($_REQUEST['NoDisc'])?0:1;
 $ins_array['normal_price'] = saveAsMoney($_REQUEST,'price');
 $ins_array['description'] = $dbc->escape($_REQUEST['descript']);
 // Package
@@ -99,8 +120,8 @@ if ($dbc->num_rows($taxfsR) > 0){
     $deptSub = $taxfsW['superID'];
 }
 
-// Authenticate now that deptSub can be reported.
-/* AUTHENTICATION CLASS: pricechange OR audited_pricechange
+/* Authenticate now that deptSub can be reported.
+ * AUTHENTICATION CLASS: pricechange OR audited_pricechange
  * Check which uid is trying to add an item. Users w/ pricechange
  * permission may have access to all items or only a range of
  * subdepartments.
@@ -176,7 +197,9 @@ if ( isset($FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION) && $FANNIE_COMPOSE_LONG_PRO
 $del99Q = "DELETE FROM products WHERE upc = '$upc'";
 $delISR = $dbc->query($del99Q);
 
+/* 22Nov2014 EL Moved above to where it is first needed.
 $ins_array['department'] = $_REQUEST['department'];
+*/
 $ins_array['subdept'] = $_REQUEST['subdepartment'];
 
 $ins_array['cost'] = saveAsMoney($_REQUEST,'cost');
@@ -406,6 +429,13 @@ updateAllLanes($upc, array("products", "productUser"));
 // $dbc may be looking at lane db now, so be sure it is looking at Fannie.
 $dbc = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
         $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
+
+$deptQ = "SELECT dept_no, dept_name FROM departments ORDER BY dept_no";
+$deptR = $dbc->query($deptQ);
+$row = $dbc->fetch_array($deptR);
+$firstDeptNo = $row['dept_no'];
+$firstDeptName = $row['dept_name'];
+
 $prodQ = "SELECT * FROM products WHERE upc = ".$upc;
 $prodR = $dbc->query($prodQ);
 $row = $dbc->fetch_array($prodR);
@@ -415,7 +445,7 @@ $row = $dbc->fetch_array($prodR);
         echo "</tr><tr><td><b>Description</b></td><td>".$row['description']."</td>";
         echo "<td><b>Price</b></td><td>\$ ".$row['normal_price']."</td></tr></table>";
         echo "<table border=0><tr>";
-        echo "<th>Dept<th>subDept<th>FS<th>Scale<th>QtyFrc<th>NoDisc<th>inUse<th>deposit</b>";
+        echo "<th>Dept<th>Sub-Dept<th>FS<th>Scale<th>QtyFrc<th>NoDisc<th>inUse<th>deposit</b>";
         echo "</tr>";
         echo "<tr>";
  
@@ -441,7 +471,7 @@ $row = $dbc->fetch_array($prodR);
         echo $dept . ' ' .  $row2['dept_name'];
         echo " </td>"; 
 
-        echo "<td>";
+        echo "<td style='text-align:center;'>";
         echo $subdept . ' ' .  $row2a['subdept_name'];
         echo " </td>";
 
@@ -469,6 +499,11 @@ $row = $dbc->fetch_array($prodR);
         echo $row["deposit"]. " name='deposit' size='5'";
         echo "></td></tr>";
  
+        if ($dept == $firstDeptNo) {
+            echo "<tr><td colspan=99 style='color:red;'>This item is coded for the default " .
+                "department: {$firstDeptName}. Did you intend that?</td></tr>";
+        }
+
         echo "</table>";
         echo "<hr>";
         echo "<form action='itemMaint_WEFC_Toronto.php' method=post>";
