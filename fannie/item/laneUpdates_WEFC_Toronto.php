@@ -130,6 +130,10 @@ function addAllLanes($upc, $table_name){
 			$selQ = $laneupdate_sql->add_select_limit($selQ, 1, $FANNIE_OP_DB);
 			$ins = rtrim($ins,",").")";
 
+/* test
+$tok = $laneupdate_sql->transfer($FANNIE_OP_DB,$selQ,$FANNIE_LANES[$i]['op'],$ins);
+$laneupdate_sql->logger("tok: $tok");
+*/
 			$laneupdate_sql->transfer($FANNIE_OP_DB,$selQ,$FANNIE_LANES[$i]['op'],$ins);
 		}
 	}

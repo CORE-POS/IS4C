@@ -236,7 +236,7 @@ function itemParse($upc){
 
 		// 3b. Create - Second Block
         echo "<table style=\"margin-bottom:5px;\" width='100%' border=1 cellpadding=5 cellspacing=0><tr>";
-        echo "<th>Dept</th><th>Tax</th><th>FS</th><th>Scale</th><th>QtyFrc</th><th>NoDisc</th>";
+        echo "<th>Department - Sub-Depts</th><th>Tax</th><th>FS</th><th>Scale</th><th>QtyFrc</th><th>NoDisc</th>";
 	echo "</tr>";
         echo "<tr align=top>";
     	echo "<td align=left width=5px>";
@@ -251,8 +251,8 @@ function itemParse($upc){
 					CS_FIRST_SELECTOR=>"department",
 					CS_SECOND_SELECTOR=>"subdepartment");
 
-				//		$department = $rowItem[12];
-				//		$subdepartment = $rowItem[27];
+				//		$department = $rowItem[12] ['department'];
+				//		$subdepartment = $rowItem[27] ['subdept'];
 
 				//query database, assemble data for selectors
 				$Query = "SELECT d.dept_no AS dept_no, d.dept_name AS dept_name,
@@ -263,7 +263,7 @@ function itemParse($upc){
 					ORDER BY d.dept_no,s.subdept_no";
 			    if(!($DatabaseResult = $dbc->query($Query)))
 			    {
-			        print("The query failed!<br>\n");
+			        print("The chained-selector query failed!<br>\n");
 			        exit();
 			    }
 
@@ -675,7 +675,8 @@ function itemParse($upc){
 
 		// 5a. Update - First Block
 		echo "<div id='updateBlock' style=''><table border=1 cellpadding=5 cellspacing=0>";
-		echo "<tr><td align=right><b>UPC</b></td><td><font color='red'>".$rowItem[0]."</font><input type=hidden value='$rowItem[0]' id=upc name=upc>";
+        echo "<tr><td align=right><b>UPC</b></td><td><font color='red'>".$rowItem['upc'].
+                "</font><input type=hidden value='{$rowItem['upc']}' id=upc name=upc>";
 			if ($prevUPC) echo " <a style=\"font-size:85%;\" href=itemMaint_WEFC_Toronto.php?upc=$prevUPC>Previous</a>";
 			if ($nextUPC) echo " <a style=\"font-size:85%;\" href=itemMaint_WEFC_Toronto.php?upc=$nextUPC>Next</a>";
 			echo '</td>';
@@ -692,7 +693,7 @@ function itemParse($upc){
 		if ( array_search('ThreeForDollar',$Fannie_Item_Modules) !== False ) {
 			echo "<td align=right><b>Price</b></td>";
 				echo '<td><span id=price1 style="display:'.(True?'inline':'none').';">$ <input id=price type=text value="'
-				. showAsMoney($rowItem,2) . '" name=price size=6></span></td></tr>';
+				. showAsMoney($rowItem,'normal_price') . '" name=price size=6></span></td></tr>';
 		}
 		// If the ThreeForDollar (Multiples) fieldset/module is not enabled support both normal_price and that editing here.
 		else {
@@ -703,14 +704,14 @@ function itemParse($upc){
 				document.getElementById('price1').style.display='none';
 				document.getElementById('price2').style.display='inline';
 				}\">
-				<option".($rowItem[4]==0?' SELECTED':'').">Price</option>
-				<option".($rowItem[4]!=0?' SELECTED':'').">Volume Price</option></select></td>";
-			echo '<td><span id=price1 style="display:'.($rowItem[4]==0?'inline':'none').';">$ <input id=price type=text value="' .
-					showAsMoney($rowItem,2) . '" name=price size=6></span>';
-				echo '<span id=price2 style="display:'.($rowItem[4]==0?'none':'inline').';"><input type=text size=4 name=vol_qtty value="'.($rowItem[5]!=0?$rowItem[5]:'').'" />';
-				echo " for $<input type=text size=4 name=vol_price value=".($rowItem[4] != 0 ? $rowItem[4] : "\"\"")." />";
-				echo '<input type=checkbox name=doVolume '.($rowItem[4]!=0?'checked':'').' /></span>';
-				echo '<input type=hidden name=vol_pricemethod value='.$rowItem[3].' />';
+				<option".($rowItem['groupprice']==0?' SELECTED':'').">Price</option>
+				<option".($rowItem['groupprice']!=0?' SELECTED':'').">Volume Price</option></select></td>";
+			echo '<td><span id=price1 style="display:'.($rowItem['groupprice']==0?'inline':'none').';">$ <input id=price type=text value="' .
+					showAsMoney($rowItem,'normal_price') . '" name=price size=6></span>';
+				echo '<span id=price2 style="display:'.($rowItem['groupprice']==0?'none':'inline').';"><input type=text size=4 name=vol_qtty value="'.($rowItem['quantity']!=0?$rowItem['quantity']:'').'" />';
+				echo " for $<input type=text size=4 name=vol_price value=".($rowItem['groupprice'] != 0 ? $rowItem['groupprice'] : "\"\"")." />";
+				echo '<input type=checkbox name=doVolume '.($rowItem['groupprice']!=0?'checked':'').' /></span>';
+				echo '<input type=hidden name=vol_pricemethod value='.$rowItem['pricemethod'].' />';
 				echo '</td></tr>';
 		}
 
@@ -724,7 +725,7 @@ function itemParse($upc){
 		echo "<td align=right><b>Distributor</b></td><td><input type=text name=distributor size=8 value=\"".(isset($xtraRow['distributor'])?$xtraRow['distributor']:"")."\" /></td></tr>";
 
 		// If the item is on sale.
-		if($rowItem[6] <> 0){
+		if($rowItem['special_price'] <> 0){
 			$batchQ = "SELECT b.batchName FROM batches AS b
 				LEFT JOIN batchList as l ON b.batchID=l.batchID
 				WHERE '".date('Y-m-d')."' BETWEEN b.startDate
@@ -733,14 +734,15 @@ function itemParse($upc){
 			$batch = "Unknown";
 			if ($dbc->num_rows($batchR) > 0)
 				$batch = array_pop($dbc->fetch_row($batchR));
-			echo "<tr><td><font color=green><b>Sale Price:</b></font></td><td><font color=green>$rowItem[6]</font> (<em>Batch: $batch</em>)</td>";
-			echo "<td><font color=green>End Date:</td><td><font color=green>$rowItem[11]</font></td><tr>";
+            echo "<tr><td><font color=green><b>Sale Price:</b></font></td>" .
+                    "<td><font color=green>{$rowItem['special_price']}</font> (<em>Batch: $batch</em>)</td>";
+			echo "<td><font color=green>End Date:</td><td><font color=green>{$rowItem['end_date']}</font></td><tr>";
 		}
 		echo "</table>";
 
 		// 5b. Update - Second Block
         echo "<table style=\"margin-top:5px;margin-bottom:5px;\" border=1 cellpadding=5 cellspacing=0 width='100%'><tr>";
-        echo "<th>Dept</th><th>Tax</th><th>FS</th><th>Scale</th><th>QtyFrc</th><th>NoDisc</th>";
+        echo "<th>Deparment - Sub-Depts</th><th>Tax</th><th>FS</th><th>Scale</th><th>QtyFrc</th><th>NoDisc</th>";
         echo "</tr>";
         echo "<tr align=top>";
     	echo "<td align=left>";
@@ -825,7 +827,7 @@ function itemParse($upc){
                                 echo " checked";
                         }
                 echo "></td><td align=center><input type=checkbox value=1 name=Scale";
-                        if($rowItem[16]==1){
+                        if($rowItem['scale']==1){
                                 echo " checked";
                         }
                 echo "></td><td align=center><input type=checkbox value=1 name=QtyFrc";
@@ -1297,11 +1299,12 @@ function saveAsMoney(&$arr,$index,$none="0") {
 */
 function showAsMoney(&$arr,$index,$none="") {
 	if ( is_int($index) ) {
-		// For a MySQL double with value 0, == 0 is True, === 0 is false.
-		//  The money fields in products are double (float).
-		//  The money fields in vendorItems, prodExtra are decimal(10,2).
-		// This 0.00 test for dec(10,2)'s that are 0.00 in the db doesn't seem to change anything.
-		//if ( array_key_exists($index,$arr) && ($arr[$index] == 0 || $arr[$index] === 0.00) ) {}
+		/* For a MySQL double with value 0, == 0 is True, === 0 is false.
+         *  The money fields in products were double (float) until June, 2014,
+         *  are now decimal(10,2).
+		 *  The money fields in vendorItems, prodExtra are decimal(10,2).
+		 * This 0.00 test for dec(10,2)'s that are 0.00 in the db doesn't seem to change anything.
+		*/if ( array_key_exists($index,$arr) && ($arr[$index] == 0 || $arr[$index] === 0.00) ) {}
 		if ( array_key_exists($index,$arr) && $arr[$index] == 0 ) {
 			$retVal = "0.00";
 		} elseif ( !empty($arr[$index]) && is_numeric($arr[$index]) ) {
@@ -1312,11 +1315,12 @@ function showAsMoney(&$arr,$index,$none="") {
 		}
 	}
 	else {
-		// For a MySQL double with value 0, == 0 is True, === 0 is false.
-		//  The money fields in products are double (float).
-		//  The money fields in vendorItems, prodExtra are decimal(10,2).
-		// This 0.00 test for dec(10,2)'s that are 0.00 in the db doesn't seem to change anything.
-		//if ( array_key_exists("$index",$arr) && ($arr["$index"] == 0 || $arr["$index"] === 0.00) ) {}
+		/* For a MySQL double with value 0, == 0 is True, === 0 is false.
+         *  The money fields in products were double (float) until June, 2014,
+         *  are now decimal(10,2).
+		 *  The money fields in vendorItems, prodExtra are decimal(10,2).
+		 * This 0.00 test for dec(10,2)'s that are 0.00 in the db doesn't seem to change anything.
+		*/if ( array_key_exists("$index",$arr) && ($arr["$index"] == 0 || $arr["$index"] === 0.00) ) {}
 		if ( array_key_exists("$index",$arr) && $arr["$index"] == 0 ) {
 			$retVal = "0.00";
 		} elseif ( !empty($arr["$index"]) && is_numeric($arr["$index"]) ) {
