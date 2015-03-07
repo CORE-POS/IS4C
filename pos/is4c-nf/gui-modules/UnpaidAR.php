@@ -31,7 +31,6 @@ class UnpaidAR extends BasicPage {
     		if (CoreLocal::get("store") == 'WEFC_Toronto') {
     			$AR_department = '1005';
     		}
-    		}
 		if (isset($_REQUEST['reginput'])){
 			$dec = $_REQUEST['reginput'];
 			$amt = CoreLocal::get("old_ar_balance");
