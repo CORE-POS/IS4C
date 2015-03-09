@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\Fannie\API\data {
+
 /**
   @class DataCache
 
@@ -63,8 +65,8 @@ class DataCache
     */
     static public function check($key=false)
     {
-        global $FANNIE_ARCHIVE_DB;
-        $dbc = FannieDB::get($FANNIE_ARCHIVE_DB, $current_db);
+        $FANNIE_ARCHIVE_DB = \FannieConfig::factory()->get('ARCHIVE_DB');
+        $dbc = \FannieDB::get($FANNIE_ARCHIVE_DB, $current_db);
         $table = $FANNIE_ARCHIVE_DB.$dbc->sep()."reportDataCache";
         $hash = $key ? $key : self::genKey();
         $query = $dbc->prepare_statement("SELECT report_data FROM $table WHERE
@@ -72,7 +74,7 @@ class DataCache
         $result = $dbc->exec_statement($query,array($hash));
         if (!empty($current_db)) {
             // restore selected database
-            $dbc = FannieDB::get($current_db);
+            $dbc = \FannieDB::get($current_db);
         }
         if ($dbc->num_rows($result) > 0) {
             $ret = $dbc->fetch_row($result);
@@ -96,10 +98,10 @@ class DataCache
 
       See check() for details
     */
-    static public function freshen($data, $ttl='day', $key)
+    static public function freshen($data, $ttl='day', $key=false)
     {
-        global $FANNIE_ARCHIVE_DB;
-        $dbc = FannieDB::get($FANNIE_ARCHIVE_DB, $current_db);
+        $FANNIE_ARCHIVE_DB = \FannieConfig::factory()->get('ARCHIVE_DB');
+        $dbc = \FannieDB::get($FANNIE_ARCHIVE_DB, $current_db);
         if ($ttl != 'day' && $ttl != 'month') {
             return false;
         }
@@ -127,7 +129,7 @@ class DataCache
 
         if (!empty($current_db)) {
             // restore selected database
-            $dbc = FannieDB::get($current_db);
+            $dbc = \FannieDB::get($current_db);
         }
 
         return $ret;
@@ -150,7 +152,7 @@ class DataCache
             return false;
         }
 
-        $key = ($key !== false) ? md5($key) : self::getKey();
+        $key = ($key !== false) ? md5($key) : self::genKey();
 
         $cache_dir = self::fileCacheDir($type);
         if ($cache_dir && file_exists($cache_dir . '/' . $key)) {
@@ -178,7 +180,7 @@ class DataCache
             return false;
         }
 
-        $key = ($key !== false) ? md5($key) : self::getKey();
+        $key = ($key !== false) ? md5($key) : self::genKey();
 
         $cache_dir = self::fileCacheDir($type);
         if ($cache_dir) {
@@ -200,7 +202,7 @@ class DataCache
     */
     static public function fileCacheDir($type)
     {
-        if ($type !== 'monthy' && $type !== 'daily') {
+        if ($type !== 'monthly' && $type !== 'daily') {
             return false;
         }
 
@@ -220,3 +222,8 @@ class DataCache
     }
 }
 
+}
+
+namespace {
+    class DataCache extends \COREPOS\Fannie\API\data\DataCache {}
+}

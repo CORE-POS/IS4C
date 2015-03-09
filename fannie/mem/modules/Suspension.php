@@ -24,49 +24,65 @@
 /* 17Aug12 flathat Add titles to un-coded "History" and "Change Status" links.
 */
 
-class Suspension extends MemberModule {
+class Suspension extends \COREPOS\Fannie\API\member\MemberModule {
 
-	function ShowEditForm($memNum,$country="US"){
-		global $FANNIE_URL;
+    public function width()
+    {
+        return parent::META_WIDTH_THIRD;
+    }
 
-		$dbc = $this->db();
-		
-		$infoQ = $dbc->prepare_statement("SELECT CASE WHEN s.type = 'I' THEN 'Inactive' ELSE 'Terminated' END as status,
-				s.suspDate,
-				CASE WHEN s.reasoncode = 0 THEN s.reason ELSE r.textStr END as reason
-				FROM suspensions AS s LEFT JOIN reasoncodes AS r
-				ON s.reasoncode & r.mask <> 0
-				WHERE s.cardno=?");
-		$infoR = $dbc->exec_statement($infoQ,array($memNum));
+    function showEditForm($memNum,$country="US"){
+        global $FANNIE_URL;
 
-		$status = "Active";
-		$date = "";
-		$reason = "";
-		if ($dbc->num_rows($infoR) > 0){
-			while($infoW = $dbc->fetch_row($infoR)){
-				$status = $infoW['status'];
-				$date = $infoW['suspDate'];
-				$reason .= $infoW['reason'].", ";
-			}		
-			$reason = rtrim($reason,", ");
-		}
+        $dbc = $this->db();
+        
+        $infoQ = $dbc->prepare_statement("SELECT CASE WHEN s.type = 'I' THEN 'Inactive' ELSE 'Terminated' END as status,
+                s.suspDate,
+                CASE WHEN s.reasoncode = 0 THEN s.reason ELSE r.textStr END as reason
+                FROM suspensions AS s LEFT JOIN reasoncodes AS r
+                ON s.reasoncode & r.mask <> 0
+                WHERE s.cardno=?");
+        $infoR = $dbc->exec_statement($infoQ,array($memNum));
 
-		$ret = "<fieldset><legend>Active Status</legend>";
-		$ret .= "<table class=\"MemFormTable\" 
-			border=\"0\">";
+        $status = "Active";
+        $date = "";
+        $reason = "";
+        if ($dbc->num_rows($infoR) > 0){
+            while($infoW = $dbc->fetch_row($infoR)){
+                $status = $infoW['status'];
+                $date = $infoW['suspDate'];
+                $reason .= $infoW['reason'].", ";
+            }       
+            $reason = rtrim($reason,", ");
+        }
 
-		$ret .= "<tr><th>Current Status</th>";
-		$ret .= "<td>$status</td>";
-		if (!empty($reason)){
-			$ret .= "<th>Reason</th>";
-			$ret .= "<td>$reason</td></tr>";
-		}
-		$ret .= "<tr><td><a href=\"{$FANNIE_URL}reports/SuspensionHistory/index.php?memNum=$memNum\">History</a></td>";
-		$ret .= "<td><a href=\"{$FANNIE_URL}mem/MemStatusEditor.php?memID=$memNum\">Change Status</a></td></tr>";
+        $ret = "<div class=\"panel panel-default\">
+            <div class=\"panel-heading\">Active Status</div>
+            <div class=\"panel-body\">";
 
-		$ret .= "</table></fieldset>";
-		return $ret;
-	}
+        $ret .= '<div class="form-group">
+            <span class="label primaryBackground">Current Status</span>';
+        $ret .= ' <strong>' . $status . '</strong>';
+        $ret .= '</div>';
+
+        if (!empty($reason)) {
+            $ret .= '<div class="form-group">
+                <span class="label primaryBackground">Reason</span>';
+            $ret .= ' <strong>' . $reason . '</strong>';
+            $ret .= '</div>';
+        }
+        
+        $ret .= '<div class="form-group">';
+        $ret .= "<a href=\"{$FANNIE_URL}reports/SuspensionHistory/index.php?memNum=$memNum\">History</a>";
+        $ret .= ' | ';
+        $ret .= "<a href=\"{$FANNIE_URL}mem/MemStatusEditor.php?memID=$memNum\">Change Status</a>";
+        $ret .= '</div>';
+
+        $ret .= "</div>";
+        $ret .= "</div>";
+
+        return $ret;
+    }
 }
 
 ?>

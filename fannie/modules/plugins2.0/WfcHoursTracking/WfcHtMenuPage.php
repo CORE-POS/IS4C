@@ -31,6 +31,10 @@ class WfcHtMenuPage extends FanniePage
     protected $must_authenticate = true;
     protected $auth_classes = array('view_all_hours');
 
+    public $page_set = 'Plugin :: WFC Hours Tracking';
+    public $description = '[Menu] for plugin pages.';
+    public $themed = true;
+
     protected $header = 'Menu';
     protected $title = 'Menu';
 
@@ -47,6 +51,7 @@ class WfcHtMenuPage extends FanniePage
 <li><a href=WfcHtSalaryUploadPage.php>Update Salary PTO</a></li>
 <br />
 <li><a href=WfcHtSyncPage.php>Import New Employees</a></li>
+<li><a href=WfcHtChangeIdPage.php>Re-Map Employee ID</a></li>
 </ul>
         <?php
         return ob_get_clean();

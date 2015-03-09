@@ -19,11 +19,11 @@
 it is helpful to keep the characteristics of printed ones
 in mind.
 </p -->
-<h3>EL Questions:</h3>
+<!-- h3>EL Questions:</h3>
 <ul>
     <li>Anytime.  Means?: coupon can be entered at any point in the transaction. versus Must be entered at the end, after Subtotal
     <li>x
-</ul>
+</ul -->
 
 <h3>First, the simple ones:</h3>
 <ul>
@@ -80,19 +80,6 @@ applicable discount types are <i>flat discount</i> and <i>percent discount</i>
 </ul>
 
 <h3>Discount types</h3>
-<!--
-'Q'=>'Quantity Discount',
-			'P'=>'Set Price Discount',
-			'FI'=>'Scaling Discount (Item)',
-			'FD'=>'Scaling Discount (Department)',
-			'MD'=>'Capped Discount (Department)',
-			'F'=>'Flat Discount',
-			'%'=>'Percent Discount (End of transaction)',
-			'%D'=>'Percent Discount (Department)',
-			'PD'=>'Percent Discount (Anytime)',
-            '%C'=>'Percent Discount (Capped)',
-			'AD'=>'All Discount (Department)',
-            -->
 <ul>
 <li><b>Q Quantity</b> discount gives a certain number of items free. Fractions are OK, so
 this ends up being like a percent discount. A value of 1.0 gives an item for free, a value of
@@ -104,6 +91,7 @@ This scales with quantity to deal with by-weight items.
 <li><b>FD Flat (Scaling) Discount (Department)</b> is the same as above except for an item in the specified
 department(s) instead of a specific UPC
 <li><b>F Flat Discount</b> removes exactly the given amount, once, from the transaction
+<li><b>Per-Item Discount</b> removes the discount amount times the number of matching items.</li>
 <li><b>Percent Discounts</b> provide a percentage off all discountable items (e.g., member 
 appreciation month):
     <ul>

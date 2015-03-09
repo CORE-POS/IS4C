@@ -37,25 +37,23 @@ class DefaultTender extends Parser {
 		return False;
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
-
+	function parse($str)
+    {
         /**
           If customer card is available, prevent other tenders
           unless specficially allowed (e.g., coupons).
         */
-        if ($CORE_LOCAL->get('PaycardsBlockTenders') == 1) {
+        if (CoreLocal::get('PaycardsBlockTenders') == 1) {
             $tender_code = strtoupper(substr($str, -2));
-            $exceptions = strtoupper($CORE_LOCAL->get('PaycardsBlockExceptions'));
+            $exceptions = strtoupper(CoreLocal::get('PaycardsBlockExceptions'));
             $except_array = preg_split('/[^A-Z]+/', $exceptions, 0, PREG_SPLIT_NO_EMPTY);
-            if ($CORE_LOCAL->get('ccTermState') == 'ready' && !in_array($tender_code, $except_array)) {
-                $CORE_LOCAL->set('boxMsg', _('Tender Customer Card First') 
-                                        . '<br />'
-                                        . _('[enter] to charge card')
-                                        . '<br />'
-                                        . _('[clear] to go back')
-                );
-                $CORE_LOCAL->set('strEntered', 'CCFROMCACHE');
+            if (CoreLocal::get('ccTermState') == 'ready' && !in_array($tender_code, $except_array)) {
+                CoreLocal::set('boxMsg', _('Tender customer card before other tenders'));
+                CoreLocal::set('boxMsgButtons', array(
+                    'Charge Card [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
+                    'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                ));
+                CoreLocal::set('strEntered', 'CCFROMCACHE');
                 $ret = $this->default_json();
                 $ret['main_frame'] = MiscLib::baseURL() . 'gui-modules/boxMsg2.php';
 
@@ -74,7 +72,7 @@ class DefaultTender extends Parser {
 
 			$base_object = new TenderModule($str, False);
 			$tender_object = 0;
-			$map = $CORE_LOCAL->get("TenderMap");
+			$map = CoreLocal::get("TenderMap");
 			if (is_array($map) && isset($map[$str])){
 				$class = $map[$str];
 				$tender_object = new $class($str, False);
@@ -99,12 +97,12 @@ class DefaultTender extends Parser {
 				return $ret;
 			}
 			elseif(is_object($tender_object) && $tender_object->AllowDefault()){
-                $CORE_LOCAL->set('RepeatAgain', true);
+                CoreLocal::set('RepeatAgain', true);
 				$ret['main_frame'] = $tender_object->DefaultPrompt();
 				return $ret;
 			}
 			else if ($base_object->AllowDefault()){
-                $CORE_LOCAL->set('RepeatAgain', true);
+                CoreLocal::set('RepeatAgain', true);
 				$ret['main_frame'] = $base_object->DefaultPrompt();
 				return $ret;
 			}

@@ -23,119 +23,239 @@
 
 global $FANNIE_ROOT;
 if (!class_exists('CoreWarehouseModel'))
-	include_once(dirname(__FILE__).'/CoreWarehouseModel.php');
+    include_once(dirname(__FILE__).'/CoreWarehouseModel.php');
 
 class SumRingSalesByDayModel extends CoreWarehouseModel {
 
-	protected $name = 'sumRingSalesByDay';
-	
-	protected $columns = array(
-	'date_id' => array('type'=>'INT','primary_key'=>True,'default'=>0),
-	'upc' => array('type'=>'VARCHAR(13)','primary_key'=>True,'default'=>''),
-	'department' => array('type'=>'INT','primary_key'=>True,'default'=>''),
-	'total' => array('type'=>'MONEY','default'=>0.00),
-	'quantity' => array('type'=>'DOUBLE','default'=>0.00)
-	);
+    protected $name = 'sumRingSalesByDay';
+    
+    protected $columns = array(
+    'date_id' => array('type'=>'INT','primary_key'=>True,'default'=>0),
+    'upc' => array('type'=>'VARCHAR(13)','primary_key'=>True,'default'=>''),
+    'department' => array('type'=>'INT','primary_key'=>True,'default'=>''),
+    'total' => array('type'=>'MONEY','default'=>0.00),
+    'quantity' => array('type'=>'DOUBLE','default'=>0.00)
+    );
 
-	public function refresh_data($trans_db, $month, $year, $day=False){
-		$start_id = date('Ymd',mktime(0,0,0,$month,1,$year));
-		$start_date = date('Y-m-d',mktime(0,0,0,$month,1,$year));
-		$end_id = date('Ymt',mktime(0,0,0,$month,1,$year));
-		$end_date = date('Y-m-t',mktime(0,0,0,$month,1,$year));
-		if ($day !== False){
-			$start_id = date('Ymd',mktime(0,0,0,$month,$day,$year));
-			$start_date = date('Y-m-d',mktime(0,0,0,$month,$day,$year));
-			$end_id = $start_id;
-			$end_date = $start_date;
-		}
+    public function refresh_data($trans_db, $month, $year, $day=False){
+        $start_id = date('Ymd',mktime(0,0,0,$month,1,$year));
+        $start_date = date('Y-m-d',mktime(0,0,0,$month,1,$year));
+        $end_id = date('Ymt',mktime(0,0,0,$month,1,$year));
+        $end_date = date('Y-m-t',mktime(0,0,0,$month,1,$year));
+        if ($day !== False){
+            $start_id = date('Ymd',mktime(0,0,0,$month,$day,$year));
+            $start_date = date('Y-m-d',mktime(0,0,0,$month,$day,$year));
+            $end_id = $start_id;
+            $end_date = $start_date;
+        }
 
-		$target_table = DTransactionsModel::selectDlog($start_date, $end_date);
+        $target_table = DTransactionsModel::selectDlog($start_date, $end_date);
 
-		/* clear old entries */
-		$sql = 'DELETE FROM '.$this->name.' WHERE date_id BETWEEN ? AND ?';
-		$prep = $this->connection->prepare_statement($sql);
-		$result = $this->connection->exec_statement($prep, array($start_id, $end_id));
+        /* clear old entries */
+        $sql = 'DELETE FROM '.$this->name.' WHERE date_id BETWEEN ? AND ?';
+        $prep = $this->connection->prepare_statement($sql);
+        $result = $this->connection->exec_statement($prep, array($start_id, $end_id));
 
-		/* reload table from transarction archives */
-		$sql = "INSERT INTO ".$this->name."
-			SELECT DATE_FORMAT(tdate, '%Y%m%d') as date_id,
-			upc,department,
-			CONVERT(SUM(total),DECIMAL(10,2)) as total,
-			CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
-				WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as quantity
-			FROM $target_table WHERE
-			tdate BETWEEN ? AND ? AND
-			trans_type IN ('I','D') AND upc <> '0'
-			GROUP BY DATE_FORMAT(tdate,'%Y%m%d'), upc, department";
-		$prep = $this->connection->prepare_statement($sql);
-		$result = $this->connection->exec_statement($prep, array($start_date.' 00:00:00',$end_date.' 23:59:59'));
-	}
+        /* reload table from transarction archives */
+        $sql = "INSERT INTO ".$this->name."
+            SELECT DATE_FORMAT(tdate, '%Y%m%d') as date_id,
+            upc,department,
+            CONVERT(SUM(total),DECIMAL(10,2)) as total,
+            CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
+                WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as quantity
+            FROM $target_table WHERE
+            tdate BETWEEN ? AND ? AND
+            trans_type IN ('I','D') AND upc <> '0'
+            GROUP BY DATE_FORMAT(tdate,'%Y%m%d'), upc, department";
+        $prep = $this->connection->prepare_statement($sql);
+        $result = $this->connection->exec_statement($prep, array($start_date.' 00:00:00',$end_date.' 23:59:59'));
+    }
 
-	/* START ACCESSOR FUNCTIONS */
+    /* START ACCESSOR FUNCTIONS */
 
-	public function date_id(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["date_id"]))
-				return $this->instance["date_id"];
-			elseif(isset($this->columns["date_id"]["default"]))
-				return $this->columns["date_id"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["date_id"] = func_get_arg(0);
-		}
-	}
+    public function date_id()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["date_id"])) {
+                return $this->instance["date_id"];
+            } else if (isset($this->columns["date_id"]["default"])) {
+                return $this->columns["date_id"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'date_id',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["date_id"]) || $this->instance["date_id"] != func_get_args(0)) {
+                if (!isset($this->columns["date_id"]["ignore_updates"]) || $this->columns["date_id"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["date_id"] = func_get_arg(0);
+        }
+        return $this;
+    }
 
-	public function upc(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["upc"]))
-				return $this->instance["upc"];
-			elseif(isset($this->columns["upc"]["default"]))
-				return $this->columns["upc"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["upc"] = func_get_arg(0);
-		}
-	}
+    public function upc()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["upc"])) {
+                return $this->instance["upc"];
+            } else if (isset($this->columns["upc"]["default"])) {
+                return $this->columns["upc"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'upc',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["upc"]) || $this->instance["upc"] != func_get_args(0)) {
+                if (!isset($this->columns["upc"]["ignore_updates"]) || $this->columns["upc"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["upc"] = func_get_arg(0);
+        }
+        return $this;
+    }
 
-	public function department(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["department"]))
-				return $this->instance["department"];
-			elseif(isset($this->columns["department"]["default"]))
-				return $this->columns["department"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["department"] = func_get_arg(0);
-		}
-	}
+    public function department()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["department"])) {
+                return $this->instance["department"];
+            } else if (isset($this->columns["department"]["default"])) {
+                return $this->columns["department"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'department',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["department"]) || $this->instance["department"] != func_get_args(0)) {
+                if (!isset($this->columns["department"]["ignore_updates"]) || $this->columns["department"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["department"] = func_get_arg(0);
+        }
+        return $this;
+    }
 
-	public function total(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["total"]))
-				return $this->instance["total"];
-			elseif(isset($this->columns["total"]["default"]))
-				return $this->columns["total"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["total"] = func_get_arg(0);
-		}
-	}
+    public function total()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["total"])) {
+                return $this->instance["total"];
+            } else if (isset($this->columns["total"]["default"])) {
+                return $this->columns["total"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'total',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["total"]) || $this->instance["total"] != func_get_args(0)) {
+                if (!isset($this->columns["total"]["ignore_updates"]) || $this->columns["total"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["total"] = func_get_arg(0);
+        }
+        return $this;
+    }
 
-	public function quantity(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["quantity"]))
-				return $this->instance["quantity"];
-			elseif(isset($this->columns["quantity"]["default"]))
-				return $this->columns["quantity"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["quantity"] = func_get_arg(0);
-		}
-	}
-	/* END ACCESSOR FUNCTIONS */
+    public function quantity()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["quantity"])) {
+                return $this->instance["quantity"];
+            } else if (isset($this->columns["quantity"]["default"])) {
+                return $this->columns["quantity"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'quantity',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["quantity"]) || $this->instance["quantity"] != func_get_args(0)) {
+                if (!isset($this->columns["quantity"]["ignore_updates"]) || $this->columns["quantity"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["quantity"] = func_get_arg(0);
+        }
+        return $this;
+    }
+    /* END ACCESSOR FUNCTIONS */
 }

@@ -46,6 +46,12 @@ class BigGroupPM extends PriceMethod
 
         $pricing = $priceObj->priceInfo($row,$quantity);
 
+        // enforce limit on discounting sale items
+        $dsi = CoreLocal::get('DiscountableSaleItems');
+        if ($dsi == 0 && $dsi !== '' && $priceObj->isSale()) {
+            $row['discount'] = 0;
+        }
+
         $stem = substr($mixMatch,0,10);    
         $sets = 99;
         // count up total sets
@@ -98,6 +104,7 @@ class BigGroupPM extends PriceMethod
                 'upc' => $row['upc'],
                 'description' => $row['description'],
                 'trans_type' => 'I',
+                'trans_subtype' => (isset($row['trans_subtype'])) ? $row['trans_subtype'] : '',
                 'department' => $row['department'],
                 'quantity' => $quantity,
                 'unitPrice' => $pricing['unitPrice'],
@@ -127,6 +134,7 @@ class BigGroupPM extends PriceMethod
                 'upc' => $row['upc'],
                 'description' => $row['description'],
                 'trans_type' => 'I',
+                'trans_subtype' => (isset($row['trans_subtype'])) ? $row['trans_subtype'] : '',
                 'department' => $row['department'],
                 'quantity' => $quantity,
                 'unitPrice' => $pricing['unitPrice'],

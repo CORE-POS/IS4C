@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\Fannie\API 
+{
+
 /**
   @class FannieReportTool
 
@@ -30,7 +33,7 @@
   in the standard, tabular format can be 
   discovered automatically.
 */
-class FannieReportTool extends FanniePage 
+class FannieReportTool extends \FanniePage 
 {
 
     public $required = True;
@@ -42,6 +45,8 @@ class FannieReportTool extends FanniePage
     Base class for hybrid report/tool pages
     ";
 
+    public $page_set = 'Reports';
+
     /**
       Assign report to a "set" of reports
     */
@@ -49,5 +54,12 @@ class FannieReportTool extends FanniePage
 
     public $discoverable = true;
 
+}
+
+}
+
+namespace
+{
+    class FannieReportTool extends \COREPOS\Fannie\API\FannieReportTool {}
 }
 

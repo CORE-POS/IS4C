@@ -35,7 +35,7 @@ class GumEmailLogModel extends BasicModel
     'tdate' => array('type'=>'DATETIME'),
     'uid' => array('type'=>'INT'),
     'messageType' => array('type'=>'VARCHAR(50)'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -49,6 +49,22 @@ class GumEmailLogModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'gumEmailLogID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["gumEmailLogID"]) || $this->instance["gumEmailLogID"] != func_get_args(0)) {
                 if (!isset($this->columns["gumEmailLogID"]["ignore_updates"]) || $this->columns["gumEmailLogID"]["ignore_updates"] == false) {
@@ -57,6 +73,7 @@ class GumEmailLogModel extends BasicModel
             }
             $this->instance["gumEmailLogID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function card_no()
@@ -69,6 +86,22 @@ class GumEmailLogModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'card_no',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["card_no"]) || $this->instance["card_no"] != func_get_args(0)) {
                 if (!isset($this->columns["card_no"]["ignore_updates"]) || $this->columns["card_no"]["ignore_updates"] == false) {
@@ -77,6 +110,7 @@ class GumEmailLogModel extends BasicModel
             }
             $this->instance["card_no"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function tdate()
@@ -89,6 +123,22 @@ class GumEmailLogModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'tdate',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["tdate"]) || $this->instance["tdate"] != func_get_args(0)) {
                 if (!isset($this->columns["tdate"]["ignore_updates"]) || $this->columns["tdate"]["ignore_updates"] == false) {
@@ -97,6 +147,7 @@ class GumEmailLogModel extends BasicModel
             }
             $this->instance["tdate"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function uid()
@@ -109,6 +160,22 @@ class GumEmailLogModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'uid',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["uid"]) || $this->instance["uid"] != func_get_args(0)) {
                 if (!isset($this->columns["uid"]["ignore_updates"]) || $this->columns["uid"]["ignore_updates"] == false) {
@@ -117,6 +184,7 @@ class GumEmailLogModel extends BasicModel
             }
             $this->instance["uid"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function messageType()
@@ -129,6 +197,22 @@ class GumEmailLogModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'messageType',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["messageType"]) || $this->instance["messageType"] != func_get_args(0)) {
                 if (!isset($this->columns["messageType"]["ignore_updates"]) || $this->columns["messageType"]["ignore_updates"] == false) {
@@ -137,6 +221,7 @@ class GumEmailLogModel extends BasicModel
             }
             $this->instance["messageType"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

@@ -54,6 +54,7 @@ class BasicModel
       - default (null if omitted)
       - primary_key (optional, boolean)
       - index (optional, boolean)
+      - not_null (optional, boolean)
       - increment (optional, boolean)
       - ignore_updates (optional, boolean)
       - replaces (optional, string previous column name)
@@ -101,6 +102,11 @@ class BasicModel
     protected $instance = array();
 
     /**
+      List of WHERE clauses
+    */
+    protected $filters = array();
+
+    /**
       When updating server-side tables, apply
       the same updates to lane-side tables.
       Default is false.
@@ -115,12 +121,30 @@ class BasicModel
     protected $currently_normalizing_lane = false;
 
     /**
+      Cache table definition internally so that repeated
+      calls to find(), save(), etc don't involve multiple
+      extra queries checking table existence and 
+      structure every single time
+    */
+    protected $cached_definition = false;
+
+    /**
+      Configuration object
+    */
+    protected $config;
+
+    /**
       Name of preferred database
     */
     protected $preferred_db = '';
     public function preferredDB()
     {
         return $this->preferred_db;
+    }
+
+    public function setConfig($c)
+    {
+        $this->config = $c;
     }
 
     /** check for potential changes **/
@@ -158,6 +182,8 @@ class BasicModel
         }
         // fq name not working right now...
         $this->fq_name = $this->name;
+
+        $this->config = FannieConfig::factory();
     }
 
     /**
@@ -181,13 +207,22 @@ class BasicModel
         }
     }
 
+    public function getDefinition()
+    {
+        if ($this->cached_definition == false) {
+            $this->cached_definition = $this->connection->tableDefinition($this->fq_name);
+        }
+
+        return $this->cached_definition;
+    }
+
     /**
       Create the table
       @return boolean
     */
     public function create()
     {
-        if ($this->connection->table_exists($this->fq_name)) {
+        if ($this->connection->tableExists($this->fq_name)) {
             return true;
         }
 
@@ -210,6 +245,10 @@ class BasicModel
             }
             $sql .= $type;
 
+            if (isset($definition['not_null']) && $definition['not_null']) {
+                $sql .= ' NOT NULL';
+            }
+
             if (isset($definition['increment']) && $definition['increment']) {
                 if ($dbms == 'mssql') {
                     $sql .= ' IDENTITY (1, 1) NOT NULL';
@@ -217,7 +256,12 @@ class BasicModel
                     $sql .= ' NOT NULL AUTO_INCREMENT';
                 }
                 $inc = true;
-            } elseif (isset($definition['default']) && $definition['default']) {
+                if (!isset($definition['primary_key']) || !$definition['primary_key']) {
+                    $definition['index'] = true;
+                }
+            } elseif (isset($definition['default']) && (
+                is_string($definition['default']) || is_numeric($definition['default'])
+            )) {
                 if ($dbms == 'mssql') {
                     $sql .= ' '.$definition['default'];
                 } else {
@@ -256,9 +300,37 @@ class BasicModel
 
         $result = $this->connection->exec_statement($sql);
 
+        /**
+          Clear out any cached definition
+        */
+        if ($result) {
+            $this->cached_definition = false;
+        }
+
         return ($result === false) ? false : true;
 
     // create()
+    }
+
+    /**
+      Create structure only if it does not exist
+      @param $db_name [string] database name
+      @return [keyed array]
+        db => database name
+        struct => table/view name
+        error => [int] error code
+        error_msg => error details
+    */
+    public function createIfNeeded($db_name)
+    {
+        $this->fq_name = $db_name . $this->connection->sep() . $this->name;
+        $ret = array('db'=>$db_name,'struct'=>$this->name,'error'=>0,'error_msg'=>'');
+        if (!$this->create()) {
+            $ret['error'] = 3;
+            $ret['error_msg'] = $this->connection->error($db_name);
+        }
+
+        return $ret;
     }
 
     /**
@@ -278,7 +350,7 @@ class BasicModel
             }
         }
 
-        $table_def = $this->connection->table_definition($this->fq_name);
+        $table_def = $this->getDefinition();
 
         $sql = 'SELECT ';
         foreach($this->columns as $name => $definition) {
@@ -323,6 +395,7 @@ class BasicModel
     public function reset()
     {
         $this->instance = array();
+        $this->filters = array();
     }
 
     public function getColumns()
@@ -351,7 +424,7 @@ class BasicModel
             $sort = array($sort);
         }
 
-        $table_def = $this->connection->table_definition($this->fq_name);
+        $table_def = $this->getDefinition();
 
         $sql = 'SELECT ';
         foreach($this->columns as $name => $definition) {
@@ -368,6 +441,17 @@ class BasicModel
         foreach($this->instance as $name => $value) {
             $sql .= ' AND '.$this->connection->identifier_escape($name).' = ?';
             $args[] = $value;
+        }
+
+        foreach ($this->filters as $filter) {
+            $sql .= ' AND ' . $this->connection->identifier_escape($filter['left'])
+                . ' ' . $filter['op'];
+            if (!$filter['rightIsLiteral'] && isset($this->columns[$filter['right']])) {
+                $sql .= ' ' . $this->connection->identifier_escape($filter['right']);
+            } else {
+                $sql .= ' ?';
+                $args[] = $filter['right'];
+            }
         }
 
         $order_by = '';
@@ -451,6 +535,32 @@ class BasicModel
     }
 
     /**
+      Validate SQL binary operator
+      @param $operator [string] operator
+      @return [string] valid operator or [boolean] false
+    */
+    protected function validateOp($operator)
+    {
+        if (strlen($operator) == 0) {
+            return false;
+        }
+
+        switch ($operator) {
+            case '<':
+            case '>':
+            case '=':
+            case '<>':
+            case '>=':
+            case '<=':
+                return $operator;
+            case '!=':
+                return '<>';
+            default:
+                return false;
+        }
+    }
+
+    /**
       Save current record. If a uniqueness constraint
       is defined it will INSERT or UPDATE appropriately.
       @return 
@@ -522,7 +632,7 @@ class BasicModel
         $cols = '(';
         $vals = '(';
         $args = array();
-        $table_def = $this->connection->table_definition($this->fq_name);
+        $table_def = $this->getDefinition();
         foreach($this->instance as $column => $value) {
             if (isset($this->columns[$column]['increment']) && $this->columns[$column]['increment']) {
                 // omit autoincrement column from insert
@@ -573,7 +683,7 @@ class BasicModel
         $where = '1=1';
         $set_args = array();
         $where_args = array();
-        $table_def = $this->connection->table_definition($this->fq_name);
+        $table_def = $this->getDefinition();
         foreach($this->instance as $column => $value) {
             if (in_array($column, $this->unique)) {
                 $where .= ' AND '.$this->connection->identifier_escape($column).' = ?';
@@ -608,7 +718,6 @@ class BasicModel
 
     public function pushToLanes()
     {
-        global $FANNIE_LANES;
         // load complete record
         if (!$this->load()) {
             return false;
@@ -616,7 +725,7 @@ class BasicModel
 
         $current = $this->connection;
         // save to each lane
-        foreach($FANNIE_LANES as $lane) {
+        foreach ($this->config->get('LANES', array()) as $lane) {
             $sql = new SQLManager($lane['host'],$lane['type'],$lane['op'],
                         $lane['user'],$lane['pw']);    
             if (!is_object($sql) || $sql->connections[$lane['op']] === false) {
@@ -632,7 +741,6 @@ class BasicModel
 
     public function deleteFromLanes()
     {
-        global $FANNIE_LANES;
         // load complete record
         if (!$this->load()) {
             return false;
@@ -640,7 +748,7 @@ class BasicModel
 
         $current = $this->connection;
         // save to each lane
-        foreach($FANNIE_LANES as $lane) {
+        foreach ($this->config->get('LANES', array()) as $lane) {
             $sql = new SQLManager($lane['host'],$lane['type'],$lane['op'],
                         $lane['user'],$lane['pw']);    
             if (!is_object($sql) || $sql->connections[$lane['op']] === false) {
@@ -656,13 +764,11 @@ class BasicModel
 
     protected function normalizeLanes($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=False)
     {
-        global $FANNIE_LANES, $FANNIE_OP_DB, $FANNIE_TRANS_DB;
-
         // map server db name to lane db name
         $lane_db = false;
-        if ($db_name == $FANNIE_OP_DB) {
+        if ($db_name == $this->config->get('OP_DB')) {
             $lane_db = 'op';
-        } else if ($db_name == $FANNIE_TRANS_DB) {
+        } else if ($db_name == $this->config->get('TRANS_DB')) {
             $lane_db = 'trans';
         }
 
@@ -675,7 +781,7 @@ class BasicModel
         $current = $this->connection;
         $save_fq = $this->fq_name;
         // call normalize() on each lane
-        foreach($FANNIE_LANES as $lane) {
+        foreach ($this->config->get('LANES', array()) as $lane) {
             $sql = new SQLManager($lane['host'],$lane['type'],$lane[$lane_db],
                         $lane['user'],$lane['pw']);    
             if (!is_object($sql) || $sql->connections[$lane[$lane_db]] === false) {
@@ -783,6 +889,9 @@ class BasicModel
                 if (isset($this->columns[$col_name]['default'])) {
                     $sql .= ' DEFAULT '.$this->columns[$col_name]['default'];
                 }
+                if (isset($this->columns[$col_name]['not_null'])) {
+                    $sql .= ' NOT NULL';
+                }
                 printf("\tSQL Details: %s\n", $sql);
                 if ($mode == BasicModel::NORMALIZE_MODE_APPLY) {
                     $renamed = $this->connection->query($sql);
@@ -798,6 +907,9 @@ class BasicModel
                         . $this->getMeta($this->columns[$col_name]['type'], $this->connection->dbms_name());
                 if (isset($this->columns[$col_name]['default'])) {
                     $sql .= ' DEFAULT '.$this->columns[$col_name]['default'];
+                }
+                if (isset($this->columns[$col_name]['not_null'])) {
+                    $sql .= ' NOT NULL';
                 }
                 printf("\tSQL Details: %s\n", $sql);
                 if ($mode == BasicModel::NORMALIZE_MODE_APPLY) {
@@ -835,6 +947,9 @@ class BasicModel
                             . $this->getMeta($this->columns[$col_name]['type'], $this->connection->dbms_name());
                     if (isset($this->columns[$col_name]['default'])) {
                         $sql .= ' DEFAULT '.$this->columns[$col_name]['default'];
+                    }
+                    if (isset($this->columns[$col_name]['not_null'])) {
+                        $sql .= ' NOT NULL';
                     }
                     if (isset($this->columns[$col_name]['increment']) && $this->columns[$col_name]['increment']) {
                         if ($this->connection->dbms_name() == 'mssql') {
@@ -897,6 +1012,9 @@ class BasicModel
                     if (isset($this->columns[$our_columns[$i]]['default'])) {
                         $sql .= ' DEFAULT '.$this->columns[$our_columns[$i]]['default'];
                     }
+                    if (isset($this->columns[$our_columns[$i]]['not_null'])) {
+                        $sql .= ' NOT NULL';
+                    }
                     if (isset($this->columns[$our_columns[$i]]['increment']) && $this->columns[$our_columns[$i]]['increment']) {
                         if ($this->connection->dbms_name() == 'mssql') {
                             $sql .= ' IDENTITY (1, 1) NOT NULL';
@@ -921,6 +1039,9 @@ class BasicModel
                             $this->connection->dbms_name());
                     if (isset($this->columns[$our_columns[$i]]['default'])) {
                         $sql .= ' DEFAULT '.$this->columns[$our_columns[$i]]['default'];
+                    }
+                    if (isset($this->columns[$our_columns[$i]]['not_null'])) {
+                        $sql .= ' NOT NULL';
                     }
                     if (isset($this->columns[$our_columns[$i]]['increment']) && $this->columns[$our_columns[$i]]['increment']) {
                         if ($this->connection->dbms_name() == 'mssql') {
@@ -947,6 +1068,9 @@ class BasicModel
                             $this->connection->dbms_name());
                     if (isset($this->columns[$our_columns[$i]]['default'])) {
                         $sql .= ' DEFAULT '.$this->columns[$our_columns[$i]]['default'];
+                    }
+                    if (isset($this->columns[$our_columns[$i]]['not_null'])) {
+                        $sql .= ' NOT NULL';
                     }
                     if (isset($this->columns[$our_columns[$i]]['increment']) && $this->columns[$our_columns[$i]]['increment']) {
                         if ($this->connection->dbms_name() == 'mssql') {
@@ -1058,6 +1182,12 @@ class BasicModel
        $this->hooks = array();
        if (class_exists('FannieAPI')) {
            $hook_classes = FannieAPI::listModules('BasicModelHook');
+           $others = FannieAPI::listModules('\COREPOS\Fannie\API\data\hooks\BasicModelHook');
+           foreach ($others as $o) {
+               if (!in_array($o, $hook_classes)) {
+                   $hook_classes[] = $o;
+               }
+           }
            foreach($hook_classes as $class) {
                 if (!class_exists($class)) continue;
                 $hook_obj = new $class();
@@ -1066,6 +1196,15 @@ class BasicModel
                 }
            }
        }
+    }
+
+    /**
+      Return information about the table/view
+      this model deals with
+    */
+    public function doc()
+    {
+        return 'This model has yet to be documented';
     }
 
     /**
@@ -1129,6 +1268,22 @@ class BasicModel
             fwrite($fp,"            } else {\n");
             fwrite($fp,"                return null;\n");
             fwrite($fp,"            }\n");
+            fwrite($fp,"        } else if (func_num_args() > 1) {\n");
+            fwrite($fp,'            $value = func_get_arg(0);'."\n");
+            fwrite($fp,'            $op = $this->validateOp(func_get_arg(1));'."\n");
+            fwrite($fp,'            if ($op === false) {'."\n");
+            fwrite($fp,'                throw new Exception(\'Invalid operator: \' . func_get_arg(1));'."\n");
+            fwrite($fp,"            }\n");
+            fwrite($fp,'            $filter = array('."\n");
+            fwrite($fp,'                \'left\' => \''.$name.'\','."\n");
+            fwrite($fp,'                \'right\' => $value,'."\n");
+            fwrite($fp,'                \'op\' => $op,'."\n");
+            fwrite($fp,'                \'rightIsLiteral\' => false,'."\n");
+            fwrite($fp,"            );\n");
+            fwrite($fp,'            if (func_num_args() > 2 && func_get_arg(2) === true) {'."\n");
+            fwrite($fp,'                $filter[\'rightIsLiteral\'] = true;'."\n");
+            fwrite($fp,"            }\n");
+            fwrite($fp,'            $this->filters[] = $filter;'."\n");
             fwrite($fp,"        } else {\n");
             fwrite($fp,'            if (!isset($this->instance["'.$name.'"]) || $this->instance["'.$name.'"] != func_get_args(0)) {'."\n");
             fwrite($fp,'                if (!isset($this->columns["'.$name.'"]["ignore_updates"]) || $this->columns["'.$name.'"]["ignore_updates"] == false) {'."\n");
@@ -1137,6 +1292,7 @@ class BasicModel
             fwrite($fp,"            }\n");
             fwrite($fp,'            $this->instance["'.$name.'"] = func_get_arg(0);'."\n");
             fwrite($fp,"        }\n");
+            fwrite($fp,'        return $this;'."\n");
             fwrite($fp,"    }\n");
         }
         fwrite($fp,$after);
@@ -1146,7 +1302,7 @@ class BasicModel
     // generate()
     }
 
-    public function newModel($name)
+    public function newModel($name, $as_view=false)
     {
         $fp = fopen($name.'.php','w');
         fwrite($fp, chr(60)."?php
@@ -1175,12 +1331,18 @@ class BasicModel
 /**
   @class $name
 */
-class $name extends BasicModel\n");
+class $name extends " . ($as_view ? 'ViewModel' : 'BasicModel') . "\n");
         fwrite($fp,"{\n");
         fwrite($fp,"\n");
         fwrite($fp,"    protected \$name = \"".substr($name,0,strlen($name)-5)."\";\n");
         fwrite($fp,"\n");
-        fwrite($fp,"    protected \$columns = array(\n\t);\n");
+        fwrite($fp,"    protected \$columns = array(\n    );\n");
+        fwrite($fp,"\n");
+        if ($as_view) {
+            fwrite($fp,"    public function definition()\n");
+            fwrite($fp,"    {\n");
+            fwrite($fp,"    }\n");
+        }
         fwrite($fp,"\n");
         fwrite($fp,"    /* START ACCESSOR FUNCTIONS */\n");
         fwrite($fp,"    /* END ACCESSOR FUNCTIONS */\n");
@@ -1222,26 +1384,31 @@ class $name extends BasicModel\n");
 
         return $models;
     }
+
+    public function toJSON()
+    {
+        return json_encode($this->instance);
+    }
 }
 
 if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
 
-    $obj = new BasicModel(null);
-
     /* Argument signatures, to php, where BasicModel.php is the first:
-   * 2 args: Generate Accessor Functions: php BasicModel.php <Subclass Filename>\n";
-   * 3 args: Create new Model: php BasicModel.php --new <Model Name>\n";
-   * 4 args: Update Table Structure: php BasicModel.php --update <Database name> <Subclass Filename[[Model].php]>\n";
+     * 2 args: Generate Accessor Functions: php BasicModel.php <Subclass Filename>\n";
+     * 3 args: Create new Model: php BasicModel.php --new <Model Name>\n";
+     * 4 args: Update Table Structure: php BasicModel.php --update <Database name> <Subclass Filename[[Model].php]>\n";
     */
-    if (($argc < 2 || $argc > 4) || ($argc == 3 && $argv[1] != "--new") || ($argc == 4 && $argv[1] != '--update')) {
+    if (($argc < 2 || $argc > 4) || ($argc == 3 && $argv[1] != "--new" && $argv[1] != '--new-view') || ($argc == 4 && $argv[1] != '--update')) {
         echo "Generate Accessor Functions: php BasicModel.php <Subclass Filename>\n";
         echo "Create new Model: php BasicModel.php --new <Model Name>\n";
+        echo "Create new View Model: php BasicModel.php --new-view <Model Name>\n";
         echo "Update Table Structure: php BasicModel.php --update <Database name> <Subclass Filename>\n";
         exit;
     }
 
-    include(dirname(__FILE__).'/../../../config.php');
     include_once(dirname(__FILE__).'/../../FannieAPI.php');
+
+    $obj = new BasicModel(null);
 
     // Create new Model
     if ($argc == 3) {
@@ -1254,7 +1421,31 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
         }
         echo "Generating Model '$modelname'\n";
         $obj = new BasicModel(null);
-        $obj->newModel($modelname);
+        $as_view = $argv[1] == '--new-view' ? true : false;
+        $obj->newModel($modelname, $as_view);
+        exit;
+    }
+
+    /**
+      Generate all is purposely undocumented write now. It's useful
+      if updating the acutal column methods since they need to then
+      be rebuilt for every file, but it also has the potential to 
+      make a giant mess.
+    */
+    if ($argc == 2 && $argv[1] == '--generate-all') {
+        $all = FannieAPI::listModules('BasicModel');
+        foreach ($all as $model_class) {
+            echo 'Class ' . $model_class . "\n";
+            $reflector = new ReflectionClass($model_class);
+            $filename = $reflector->getFileName();
+            if (!is_writable($filename)) {
+                echo 'ERROR: cannot rewrite file: ' . $filename . "\n";
+                continue;
+            } else {
+                $writer = new $model_class(null);
+                $writer->generate($filename);
+            }
+        }
         exit;
     }
 

@@ -32,7 +32,7 @@ class AccountClassesModel extends BasicModel
     protected $columns = array(
     'classID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),
     'classDesc' => array('type'=>'VARCHAR(50)'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -46,6 +46,22 @@ class AccountClassesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'classID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["classID"]) || $this->instance["classID"] != func_get_args(0)) {
                 if (!isset($this->columns["classID"]["ignore_updates"]) || $this->columns["classID"]["ignore_updates"] == false) {
@@ -54,6 +70,7 @@ class AccountClassesModel extends BasicModel
             }
             $this->instance["classID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function classDesc()
@@ -66,6 +83,22 @@ class AccountClassesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'classDesc',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["classDesc"]) || $this->instance["classDesc"] != func_get_args(0)) {
                 if (!isset($this->columns["classDesc"]["ignore_updates"]) || $this->columns["classDesc"]["ignore_updates"] == false) {
@@ -74,6 +107,7 @@ class AccountClassesModel extends BasicModel
             }
             $this->instance["classDesc"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

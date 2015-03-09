@@ -41,10 +41,6 @@
  */
 
 if (!class_exists("PaycardLib")) include_once(realpath(dirname(__FILE__)."/lib/PaycardLib.php"));
-if (!isset($CORE_LOCAL)) {
-	include_once(realpath(dirname(__FILE__)."/lib/LS_Access.php"));
-	$CORE_LOCAL = new LS_Access();
-}
 
 define("LOCAL_CERT_PATH",realpath(dirname(__FILE__)).'/cacert.pem');
 
@@ -125,7 +121,7 @@ class BasicCCModule
 	 - On success, return PaycardLib::PAYCARD_ERR_OK.
 	 - On failure, return anything else and set any
 	   error messages to be displayed in
-	   $CORE_LOCAL->["boxMsg"].
+	   session variable "boxMsg".
 
 	 This function should submit a request to the
 	 gateway and process the result. By convention
@@ -246,7 +242,6 @@ class BasicCCModule
 	 */
 	function curlSend($data=False,$type='POST',$xml=False, $extraOpts=array(), $auto_handle=true)
     {
-		global $CORE_LOCAL;
 		if($data && $type == 'GET') {
 			$this->GATEWAY .= $data;
         }
@@ -261,7 +256,7 @@ class BasicCCModule
 		curl_setopt($curl_handle, CURLOPT_FRESH_CONNECT,true);
 		curl_setopt($curl_handle, CURLOPT_TIMEOUT,30);
 		curl_setopt($curl_handle, CURLOPT_SSL_VERIFYPEER, 0);
-		if($CORE_LOCAL->get("OS")=="win32") {
+        if (MiscLib::win32()) {
 			curl_setopt($curl_handle, CURLOPT_CAINFO, LOCAL_CERT_PATH);
         }
 		if ($type == 'SOAP') {
@@ -344,10 +339,9 @@ class BasicCCModule
 	 */
 	public function refnum($transID)
     {
-		global $CORE_LOCAL;
-		$transNo   = (int)$CORE_LOCAL->get("transno");
-		$cashierNo = (int)$CORE_LOCAL->get("CashierNo");
-		$laneNo    = (int)$CORE_LOCAL->get("laneno");
+		$transNo   = (int)CoreLocal::get("transno");
+		$cashierNo = (int)CoreLocal::get("CashierNo");
+		$laneNo    = (int)CoreLocal::get("laneno");
 		// fail if any field is too long (we don't want to truncate, since that might produce a non-unique refnum and cause bigger problems)
 		if ($transID > 999 || $transNo > 999 || $laneNo > 99 || $cashierNo > 9999) {
 			return "";
@@ -430,7 +424,7 @@ class BasicCCModule
 	/** 
 	  @param $errorCode error code contstant from paycardLib.php
 
-	  Set $CORE_LOCAL->["boxMsg"] appropriately for
+	  Set CoreLocal::["boxMsg"] appropriately for
 	  the given error code. I find this easier
 	  than manually setting an appropriate message
 	  every time I return a common error like
@@ -440,10 +434,9 @@ class BasicCCModule
 	 */
 	public function setErrorMsg($errorCode)
     {
-		global $CORE_LOCAL;
 		switch ($errorCode) {
             case PaycardLib::PAYCARD_ERR_NOSEND:
-                $CORE_LOCAL->set("boxMsg",
+                CoreLocal::set("boxMsg",
                                  PaycardLib::paycard_errorText("Internal Error",
                                                                $errorCode,
                                                                "",
@@ -452,12 +445,12 @@ class BasicCCModule
                                                                0,
                                                                0,
                                                                1,
-                                                               $CORE_LOCAL->get("paycard_type")
+                                                               CoreLocal::get("paycard_type")
                                  )
                 );
                 break;
             case PaycardLib::PAYCARD_ERR_COMM:
-                $CORE_LOCAL->set("boxMsg",
+                CoreLocal::set("boxMsg",
                                  PaycardLib::paycard_errorText("Communication Error",
                                                                $errorCode,
                                                                "",
@@ -466,12 +459,12 @@ class BasicCCModule
                                                                0,
                                                                0,
                                                                0,
-                                                               $CORE_LOCAL->get("paycard_type")
+                                                               CoreLocal::get("paycard_type")
                                  )
                 );
                 break;
             case PaycardLib::PAYCARD_ERR_TIMEOUT:
-                $CORE_LOCAL->set("boxMsg",
+                CoreLocal::set("boxMsg",
                                  PaycardLib::paycard_errorText("Timeout Error",
                                                                $errorCode,
                                                                "",
@@ -480,12 +473,12 @@ class BasicCCModule
                                                                0,
                                                                1,
                                                                0,
-                                                               $CORE_LOCAL->get("paycard_type")
+                                                               CoreLocal::get("paycard_type")
                                  )
                 );
                 break;
             case PaycardLib::PAYCARD_ERR_DATA:
-                $CORE_LOCAL->set("boxMsg",
+                CoreLocal::set("boxMsg",
                                  PaycardLib::paycard_errorText("System Error",
                                                                $errorCode,
                                                                "",
@@ -494,12 +487,12 @@ class BasicCCModule
                                                                0,
                                                                1,
                                                                1,
-                                                               $CORE_LOCAL->get("paycard_type")
+                                                               CoreLocal::get("paycard_type")
                                  )
                 );
                 break;
             default:
-                $CORE_LOCAL->set("boxMsg",
+                CoreLocal::set("boxMsg",
                                  PaycardLib::paycard_errorText("Internal Error",
                                                                $errorCode,
                                                                "",
@@ -508,7 +501,7 @@ class BasicCCModule
                                                                0,
                                                                0,
                                                                1,
-                                                               $CORE_LOCAL->get("paycard_type")
+                                                               CoreLocal::get("paycard_type")
                                  )
                 );
                 break;

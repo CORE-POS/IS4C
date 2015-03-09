@@ -28,9 +28,8 @@ class deptlist extends NoInputPage {
 	/**
 	  Input processing function
 	*/
-	function preprocess(){
-		global $CORE_LOCAL;
-
+	function preprocess()
+    {
 		// a selection was made
 		if (isset($_REQUEST['search'])){
 			$entered = strtoupper($_REQUEST['search']);
@@ -40,7 +39,7 @@ class deptlist extends NoInputPage {
 				// javascript causes this input if the
 				// user presses CL{enter}
 				// Redirect to main screen
-				$CORE_LOCAL->set("departmentAmount","0");	
+				CoreLocal::set("departmentAmount","0");	
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
@@ -49,12 +48,12 @@ class deptlist extends NoInputPage {
 				// built department input string and set it
 				// to be the next POS entry
 				// Redirect to main screen
-				$input = $CORE_LOCAL->get("departmentAmount")."DP".$entered."0";
-				$qty = $CORE_LOCAL->get("quantity");
+				$input = CoreLocal::get("departmentAmount")."DP".$entered."0";
+				$qty = CoreLocal::get("quantity");
 				if ($qty != "" & $qty != 1 & $qty != 0)
 					$input = $qty."*".$input;
-				$CORE_LOCAL->set("msgrepeat",1);
-				$CORE_LOCAL->set("strRemembered",$input);
+				CoreLocal::set("msgrepeat",1);
+				CoreLocal::set("strRemembered",$input);
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
@@ -77,8 +76,8 @@ class deptlist extends NoInputPage {
 	  Build a <select> form that submits
 	  back to this script
 	*/
-	function body_content(){
-		global $CORE_LOCAL;
+	function body_content()
+    {
 		$db = Database::pDataConnect();
 		$q = "SELECT dept_no,dept_name FROM departments ORDER BY dept_name";
 		$r = $db->query($q);
@@ -88,24 +87,41 @@ class deptlist extends NoInputPage {
 			."<form name=\"selectform\" method=\"post\" action=\"{$_SERVER['PHP_SELF']}\""
 			." id=\"selectform\">"
 			."<select name=\"search\" id=\"search\" "
+            .' style="min-height: 200px; min-width: 220px;" '
 			."size=\"15\" onblur=\"\$('#search').focus();\">";
 
 		$selected = "selected";
 		while($row = $db->fetch_row($r)){
 			echo "<option value='".$row["dept_no"]."' ".$selected.">";
-			echo $row['dept_name'];
+            // &shy; prevents the cursor from moving out of
+            // step with filter-as-you-type
+			echo '&shy; ' . $row['dept_name'];
 			echo '</option>';
 			$selected = "";
 		}
 		echo "</select>"
+            . '<div id="filter-div"></div>'
+			."</div>";
+        if (CoreLocal::get('touchscreen')) {
+            echo '<div class="listbox listboxText">'
+                . DisplayLib::touchScreenScrollButtons()
+                . '</div>';
+        }
+        echo "<div class=\"listboxText coloredText centerOffset\">"
+            . _("use arrow keys to navigate")
+            . '<p><button type="submit" class="pos-button wide-button coloredArea">
+                OK <span class="smaller">[enter]</span>
+                </button></p>'
+            . '<p><button type="submit" class="pos-button wide-button errorColoredArea"
+                onclick="$(\'#search\').append($(\'<option>\').val(\'\'));$(\'#search\').val(\'\');">
+                Cancel <span class="smaller">[clear]</span>
+                </button></p>'
+            ."</div><!-- /.listboxText coloredText .centerOffset -->"
 			."</form>"
-			."</div>"
-			."<div class=\"listboxText coloredText centerOffset\">"
-			._("clear to cancel")."</div>"
 			."<div class=\"clear\"></div>";
 		echo "</div>";
 
-        $this->add_onload_command("selectSubmit('#search', '#selectform')\n");
+        $this->add_onload_command("selectSubmit('#search', '#selectform', '#filter-div')\n");
 		$this->add_onload_command("\$('#search').focus();\n");
 	} // END body_content() FUNCTION
 

@@ -21,33 +21,52 @@
 
 *********************************************************************************/
 
-class DiscountApplied extends Parser {
-	var $ret;
-	function check($str){
-		global $CORE_LOCAL;
+class DiscountApplied extends Parser 
+{
+	private $ret;
+
+	function check($str)
+    {
 		$this->ret = $this->default_json();
 		if (substr($str,-2) == "DA"){
 			$strl = substr($str,0,strlen($str)-2);
-			if (substr($str,0,2) == "VD")
+			if (substr($str,0,2) == "VD") {
 				$this->ret = PrehLib::percentDiscount(0,$this->ret);
-			elseif (!is_numeric($strl)) 
-				return False;
-			elseif ($CORE_LOCAL->get("tenderTotal") != 0) 
-				$this->ret['output'] = DisplayLib::boxMsg(_("discount not applicable after tender"));
-			elseif ($strl > 50) 
-				$this->ret['output'] = DisplayLib::boxMsg(_("discount exceeds maximum"));
-			elseif ($strl <= 0) 
-				$this->ret['output'] = DisplayLib::boxMsg(_("discount must be greater than zero"));
-			elseif ($strl <= 50 and $strl > 0) 
+			} elseif (!is_numeric($strl)) {
+				return false;
+			} elseif (CoreLocal::get("tenderTotal") != 0) {
+				$this->ret['output'] = DisplayLib::boxMsg(
+                    _("discount not applicable after tender"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
+			} elseif ($strl > 50) {
+				$this->ret['output'] = DisplayLib::boxMsg(
+                    _("discount exceeds maximum"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
+			} elseif ($strl <= 0) {
+				$this->ret['output'] = DisplayLib::boxMsg(
+                    _("discount must be greater than zero"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
+			} elseif ($strl <= 50 and $strl > 0) {
 				$this->ret = PrehLib::percentDiscount($strl,$this->ret);
-			else 
-				return False;
-			return True;
+			} else {
+				return false;
+            }
+			return true;
 		}
-		return False;
+		return false;
 	}
 
-	function parse($str){
+	function parse($str)
+    {
 		return $this->ret;
 	}
 
@@ -65,4 +84,3 @@ class DiscountApplied extends Parser {
 	}
 }
 
-?>

@@ -45,8 +45,6 @@ class memlist_cards extends NoInputPage {
 	var $temp_message;
 
 	function preprocess(){
-		global $CORE_LOCAL;
-
 		// set variable ahead of time
 		// so we know if lookup found no one
 		// vs. lookup didn't happen
@@ -108,16 +106,16 @@ class memlist_cards extends NoInputPage {
 		// b. it's been confirmed in the select box
 		// then set the member number
 		// proceed/return to the appropriate next page
-		if ( ($num_rows == 1 && $entered == $CORE_LOCAL->get("defaultNonMem"))
+		if ( ($num_rows == 1 && $entered == CoreLocal::get("defaultNonMem"))
 				||
 		    (is_numeric($entered) && is_numeric($personNum) && $selected_name) ) {
 			$row = $db_a->fetch_array($result);
 			// Don't want to affect the current trans.  Will it still work?
-			// PrehLib::setMember($row["CardNo"], $personNum,$row);
+			// PrehLib::setMember($row["CardNo"], $personNum);
 
 			// WEFC_Toronto: If a Member Card # was entered when the choice from the list was made,
 			// add the memberCards record.
-			if ( $CORE_LOCAL->get('store') == "WEFC_Toronto" ) {
+			if ( CoreLocal::get('store') == "WEFC_Toronto" ) {
 				$mmsg = "";
 				if ( isset($_REQUEST['memberCard']) && $_REQUEST['memberCard'] != "" ) {
 					$memberCard = $_REQUEST['memberCard'];
@@ -135,7 +133,7 @@ class memlist_cards extends NoInputPage {
 					else {
 						/* Check that it isn't already in use, perhaps for someone else.
 						*/
-						$masterLane = $CORE_LOCAL->get('laneno');
+						$masterLane = CoreLocal::get('laneno');
 						$currentLane = $masterLane;
 						$mQ = "SELECT card_no FROM memberCards where card_no = $card_no";
 						$mResult = $db_a->query($mQ);
@@ -202,7 +200,7 @@ class memlist_cards extends NoInputPage {
 			// /WEFC_Toronto bit.
 			}
 
-			if ($entered != $CORE_LOCAL->get("defaultNonMem") && PrehLib::check_unpaid_ar($row["CardNo"]))
+			if ($entered != CoreLocal::get("defaultNonMem") && PrehLib::check_unpaid_ar($row["CardNo"]))
 				$this->change_page($this->page_url."gui-modules/UnpaidAR.php");
 			else
 				$this->change_page($this->page_url."gui-modules/memlist_cards.php");
@@ -219,8 +217,8 @@ class memlist_cards extends NoInputPage {
 
 	} // END preprocess() FUNCTION
 
-	function head_content(){
-		global $CORE_LOCAL;
+	function head_content()
+    {
 		if ($this->temp_num_rows > 0){
 			$this->add_onload_command("selectSubmit('#search', '#selectform')\n");
 			$this->add_onload_command("\$('#search').focus();\n");
@@ -233,8 +231,8 @@ class memlist_cards extends NoInputPage {
 		<?php
 	} // END head() FUNCTION
 
-	function body_content(){
-		global $CORE_LOCAL;
+	function body_content()
+    {
 		$num_rows = $this->temp_num_rows;
 		$result = $this->temp_result;
 		$entered = $this->entered;
@@ -281,7 +279,7 @@ class memlist_cards extends NoInputPage {
 				."onblur=\"\$('#search').focus();\" ondblclick=\"document.forms['selectform'].submit();\" id=\"search\">";
 
 			$selectFlag = 0;
-			if (!is_numeric($entered) && $CORE_LOCAL->get("memlistNonMember") == 1) {
+			if (!is_numeric($entered) && CoreLocal::get("memlistNonMember") == 1) {
 				echo "<option value='3::1' selected> 3 "
 					."&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Customer";
 				$selectFlag = 1;
@@ -303,7 +301,7 @@ class memlist_cards extends NoInputPage {
 				."<div class=\"clear\"></div>";
 
 			// A textbox for the Member Card number, to be added to the db for the selected member.
-			if ( $CORE_LOCAL->get('store') == "WEFC_Toronto" ) {
+			if ( CoreLocal::get('store') == "WEFC_Toronto" ) {
 				echo "<div style='text-align:left; margin-top: 0.5em;'>
 				<p style='margin: 0.2em 0em 0.2em 0em; font-size:0.8em;'>To link the member chosen above to a Member Card:</p>";
 				echo "<span style='font-weight:bold;'>Member Card#:</span> <input name='memberCard' id='memberCard' width='20' title='The digits after 01229, no leading zeroes, not the final, small check-digit' />";

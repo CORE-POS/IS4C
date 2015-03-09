@@ -29,10 +29,10 @@ class WfcMadCouponParser extends Parser {
 		return False;
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
+	function parse($str)
+    {
 		Database::getsubtotals();
-		$amt = $CORE_LOCAL->get('runningTotal') - $CORE_LOCAL->get('transDiscount');
+		$amt = CoreLocal::get('runningTotal') - CoreLocal::get('transDiscount');
 		$madCoup = number_format($amt * 0.05, 2);
 		if ($madCoup > 2.50) $madCoup = 2.50;
 		TransRecord::addRecord(array(

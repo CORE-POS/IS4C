@@ -30,6 +30,7 @@ class EquityAllReport extends FannieReportPage
 {
     public $description = '[Equity Balances] lists current or near-current equity totals for all members';
     public $report_set = 'Membership';
+    public $themed = true;
 
     protected $report_headers = array('Mem #', 'Last Name', 'First Name', 'Equity', 'Due Date');
     protected $title = "Fannie : All Equity Report";
@@ -99,26 +100,32 @@ class EquityAllReport extends FannieReportPage
         ob_start();
         ?>
 <form action="EquityAllReport.php" method="get">
-<b>Active status</b>:
-<select name="memtypes">
-	<option value=1><?php echo _('Active Owners'); ?></option>
-	<option value=2><?php echo _('Non-termed Owners'); ?></option>
-	<option value=3><?php echo _('All Owners'); ?></option>
-</select>
-<br /><br />
-<b>Equity balance</b>:
-<select name="owed">
-	<option value=1>Any balance</option>
-	<option value=2>less than $100</option>
-</select>
-<br /><br />
-<b>As of</b>:
-<select name="grain">
-    <option value=1>Yesterday</option>
-    <option value=2>Right this Second (slower)</option>
-</select>
-<br /><br />
-<input type="submit" name="submit" value="Get Report" />
+<div class="form-group">
+    <label>Active status</label>
+    <select name="memtypes" class="form-control">
+        <option value=1><?php echo _('Active Owners'); ?></option>
+        <option value=2><?php echo _('Non-termed Owners'); ?></option>
+        <option value=3><?php echo _('All Owners'); ?></option>
+    </select>
+</div>
+<div class="form-group">
+    <label>Equity balance</label>
+    <select name="owed" class="form-control">
+        <option value=1>Any balance</option>
+        <option value=2>less than $100</option>
+    </select>
+</div>
+<div class="form-group">
+    <label>As of</label>
+    <select name="grain" class="form-control">
+        <option value=1>Yesterday</option>
+        <option value=2>Right this Second (slower)</option>
+    </select>
+</div>
+<p>
+    <button type="submit" name="submit" value="1" 
+        class="btn btn-default">Submit</button>
+</p>
 </form>
         <?php
         return ob_get_clean();

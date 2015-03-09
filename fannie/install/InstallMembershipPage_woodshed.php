@@ -35,72 +35,72 @@ include_once('../classlib2.0/InstallPage.php');
 //require('../classlib2.0/InstallPage.php');
 
 /**
-	@class InstallMembershipPage
-	Class for the Membership install and config options
+    @class InstallMembershipPage
+    Class for the Membership install and config options
 */
 class InstallMembershipPage extends InstallPage {
 
-	protected $title = 'Fannie: Membership Settings';
-	protected $header = 'Fannie: Membership Settings';
+    protected $title = 'Fannie: Membership Settings';
+    protected $header = 'Fannie: Membership Settings';
 
-	public $description = "
-	Class for the Membership install and config options page.
-	";
+    public $description = "
+    Class for the Membership install and config options page.
+    ";
 
-	// This replaces the __construct() in the parent.
-	public function __construct() {
+    // This replaces the __construct() in the parent.
+    public function __construct() {
 
-		// To set authentication.
-		//parent::__construct();
-		// Would dialing-direct work? Seems to.
-		FanniePage::__construct();
+        // To set authentication.
+        //parent::__construct();
+        // Would dialing-direct work? Seems to.
+        FanniePage::__construct();
 
-		// Why do this here instead of above?
-		//$this->title = "Fannie: Membership Settings";
-		//$this->header = "Fannie: Membership Settings";
+        // Why do this here instead of above?
+        //$this->title = "Fannie: Membership Settings";
+        //$this->header = "Fannie: Membership Settings";
 
-		// Link to a file of CSS by using a function.
-		$this->add_css_file("../src/style.css");
-		$this->add_css_file("../src/jquery/css/smoothness/jquery-ui-1.8.1.custom.css");
-		$this->add_css_file("../src/css/install.css");
+        // Link to a file of CSS by using a function.
+        $this->add_css_file("../src/style.css");
+        $this->add_css_file("../src/javascript/jquery-ui.css");
+        $this->add_css_file("../src/css/install.css");
 
-		// Link to a file of JS by using a function.
-		$this->add_script("../src/jquery/js/jquery.js");
-		$this->add_script("../src/jquery/js/jquery-ui-1.8.1.custom.min.js");
+        // Link to a file of JS by using a function.
+        $this->add_script("../src/javascript/jquery.js");
+        $this->add_script("../src/javascript/jquery-ui.js");
 
-	// __construct()
-	}
+    // __construct()
+    }
 
-	// If chunks of CSS are going to be added the function has to be
-	//  redefined to return them.
-	// If this is to override x.css draw_page() needs to load it after the add_css_file
-	/**
-	  Define any CSS needed
-	  @return A CSS string
-	*/
-	function css_content(){
-		$css ="";
+    // If chunks of CSS are going to be added the function has to be
+    //  redefined to return them.
+    // If this is to override x.css draw_page() needs to load it after the add_css_file
+    /**
+      Define any CSS needed
+      @return A CSS string
+    */
+    function css_content(){
+        $css ="";
 
-		return $css;
+        return $css;
 
-	//css_content()
-	}
+    //css_content()
+    }
 
-	// If chunks of JS are going to be added the function has to be
-	//  redefined to return them.
-	/**
-	  Define any javascript needed
-	  @return A javascript string
-	function javascript_content(){
+    // If chunks of JS are going to be added the function has to be
+    //  redefined to return them.
+    /**
+      Define any javascript needed
+      @return A javascript string
+    function javascript_content(){
 
-	}
-	*/
+    }
+    */
 
-	function body_content(){
-		//Should this really be done with global?
-		//global $FANNIE_URL, $FANNIE_EQUITY_DEPARTMENTS;
-		include('../config.php'); 
-		ob_start();
+    function body_content(){
+        //Should this really be done with global?
+        //global $FANNIE_URL, $FANNIE_EQUITY_DEPARTMENTS;
+        include('../config.php'); 
+        ob_start();
 ?>
 <?php
 // Could this be in the class and assigned with a var?
@@ -113,10 +113,10 @@ echo showInstallTabs("Members");
 <h1 class="install"><?php echo $this->header; ?></h1>
 <?php
 if (is_writable('../config.php')){
-	echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
+    echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
 }
 else {
-	echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
+    echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
 }
 ?>
 <hr />
@@ -154,13 +154,13 @@ The Member editing interface displayed after you select a member at:
 <?php
 if (!isset($FANNIE_MEMBER_MODULES)) $FANNIE_MEMBER_MODULES = array('ContactInfo','MemType');
 if (isset($_REQUEST['FANNIE_MEMBER_MODULES'])){
-	$FANNIE_MEMBER_MODULES = array();
-	foreach($_REQUEST['FANNIE_MEMBER_MODULES'] as $m)
-		$FANNIE_MEMBER_MODULES[] = $m;
+    $FANNIE_MEMBER_MODULES = array();
+    foreach($_REQUEST['FANNIE_MEMBER_MODULES'] as $m)
+        $FANNIE_MEMBER_MODULES[] = $m;
 }
 $saveStr = 'array(';
 foreach($FANNIE_MEMBER_MODULES as $m)
-	$saveStr .= '"'.$m.'",';
+    $saveStr .= '"'.$m.'",';
 $saveStr = rtrim($saveStr,",").")";
 confset('FANNIE_MEMBER_MODULES',$saveStr);
 ?>
@@ -169,12 +169,12 @@ confset('FANNIE_MEMBER_MODULES',$saveStr);
 $dh = opendir("../mem/modules");
 $tmp = array();
 while(($file = readdir($dh)) !== False){
-	if (substr($file,-4) == ".php")
-		$tmp[] = substr($file,0,strlen($file)-4);	
+    if (substr($file,-4) == ".php")
+        $tmp[] = substr($file,0,strlen($file)-4);   
 }
 sort($tmp);
 foreach($tmp as $module){
-	printf("<option %s>%s</option>",(in_array($module,$FANNIE_MEMBER_MODULES)?'selected':''),$module);
+    printf("<option %s>%s</option>",(in_array($module,$FANNIE_MEMBER_MODULES)?'selected':''),$module);
 }
 ?>
 </select><br />
@@ -197,51 +197,51 @@ printf("<input type=\"text\" name=\"FANNIE_MEMBER_UPC_PREFIX\" value=\"%s\" />",
 </form>
 <?php
 $sql = db_test_connect($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
-		$FANNIE_TRANS_DB,$FANNIE_SERVER_USER,
-		$FANNIE_SERVER_PW);
+        $FANNIE_TRANS_DB,$FANNIE_SERVER_USER,
+        $FANNIE_SERVER_PW);
 if (!$sql) {
-	echo "<span style='color:red; font-size:1.5em;'>Cannot connect to database to refresh views.</span>";
+    echo "<span style='color:red; font-size:1.5em;'>Cannot connect to database to refresh views.</span>";
 }
 else {
-	echo "Refreshing database views ... ";
-	$this->recreate_views($sql);
-	echo "done.";
+    echo "Refreshing database views ... ";
+    $this->recreate_views($sql);
+    echo "done.";
 }
 
-		return ob_get_clean();
+        return ob_get_clean();
 
-	// body_content
-	}
+    // body_content
+    }
 
-	// rebuild views that depend on ar & equity
-	// department definitions
-	function recreate_views($con){
-		global $FANNIE_TRANS_DB,$FANNIE_OP_DB,$FANNIE_SERVER_DBMS;
+    // rebuild views that depend on ar & equity
+    // department definitions
+    function recreate_views($con){
+        global $FANNIE_TRANS_DB,$FANNIE_OP_DB,$FANNIE_SERVER_DBMS;
 
-		$con->query("DROP VIEW ar_history_today_sum",$FANNIE_TRANS_DB);
-		create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-				'ar_history_today_sum','trans');
+        $con->query("DROP VIEW ar_history_today_sum",$FANNIE_TRANS_DB);
+        create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+                'ar_history_today_sum','trans');
 
-		$con->query("DROP VIEW ar_live_balance",$FANNIE_TRANS_DB);
-		create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-				'ar_live_balance','trans');
+        $con->query("DROP VIEW ar_live_balance",$FANNIE_TRANS_DB);
+        create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+                'ar_live_balance','trans');
 
-		$con->query("DROP VIEW stockSumToday",$FANNIE_TRANS_DB);
-		create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-				'stockSumToday','trans');
+        $con->query("DROP VIEW stockSumToday",$FANNIE_TRANS_DB);
+        create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+                'stockSumToday','trans');
 
-		$con->query("DROP VIEW newBalanceStockToday_test",$FANNIE_TRANS_DB);
-		create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-				'newBalanceStockToday_test','trans');
+        $con->query("DROP VIEW newBalanceStockToday_test",$FANNIE_TRANS_DB);
+        create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+                'newBalanceStockToday_test','trans');
 
-		$con->query("DROP VIEW dheader",$FANNIE_TRANS_DB);
-		create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-				'dheader','trans');
+        $con->query("DROP VIEW dheader",$FANNIE_TRANS_DB);
+        create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+                'dheader','trans');
 
-		$con->query("DROP VIEW ar_history_today",$FANNIE_TRANS_DB);
-		create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-				'ar_history_today','trans');
-	}
+        $con->query("DROP VIEW ar_history_today",$FANNIE_TRANS_DB);
+        create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+                'ar_history_today','trans');
+    }
 
 // InstallMembershipPage
 }

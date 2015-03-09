@@ -40,7 +40,7 @@ class GumLoanValidTermsModel extends BasicModel
     'gumLoanValidTermID' => array('type'=>'INT', 'increment'=>true, 'index'=>true),
     'termInMonths' => array('type'=>'INT', 'primary_key'=>true),
     'totalPrincipalLimit' => array('type'=>'MONEY', 'default'=>0),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -54,6 +54,22 @@ class GumLoanValidTermsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'gumLoanValidTermID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["gumLoanValidTermID"]) || $this->instance["gumLoanValidTermID"] != func_get_args(0)) {
                 if (!isset($this->columns["gumLoanValidTermID"]["ignore_updates"]) || $this->columns["gumLoanValidTermID"]["ignore_updates"] == false) {
@@ -62,6 +78,7 @@ class GumLoanValidTermsModel extends BasicModel
             }
             $this->instance["gumLoanValidTermID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function termInMonths()
@@ -74,6 +91,22 @@ class GumLoanValidTermsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'termInMonths',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["termInMonths"]) || $this->instance["termInMonths"] != func_get_args(0)) {
                 if (!isset($this->columns["termInMonths"]["ignore_updates"]) || $this->columns["termInMonths"]["ignore_updates"] == false) {
@@ -82,6 +115,7 @@ class GumLoanValidTermsModel extends BasicModel
             }
             $this->instance["termInMonths"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function totalPrincipalLimit()
@@ -94,6 +128,22 @@ class GumLoanValidTermsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'totalPrincipalLimit',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["totalPrincipalLimit"]) || $this->instance["totalPrincipalLimit"] != func_get_args(0)) {
                 if (!isset($this->columns["totalPrincipalLimit"]["ignore_updates"]) || $this->columns["totalPrincipalLimit"]["ignore_updates"] == false) {
@@ -102,6 +152,7 @@ class GumLoanValidTermsModel extends BasicModel
             }
             $this->instance["totalPrincipalLimit"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

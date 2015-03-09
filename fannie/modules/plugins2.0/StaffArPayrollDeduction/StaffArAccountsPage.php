@@ -31,6 +31,11 @@ if (!class_exists('FannieAPI')) {
 class StaffArAccountsPage extends FannieRESTfulPage 
 {
 
+    public $page_set = 'Plugin :: Payroll Deductions';
+    public $description = '[Accounts] sets which accounts will have deductions for AR
+    payments as well as the amounts.';
+    public $themed = true;
+
     public function preprocess()
     {
         $this->title = _('Payroll Deductions');
@@ -74,11 +79,7 @@ class StaffArAccountsPage extends FannieRESTfulPage
             $model->save();
         }
 
-        if (!class_exists('JsonLib')) {
-            include($FANNIE_ROOT.'src/JsonLib.php');
-        }
-
-        echo JsonLib::array_to_json($ret);
+        echo json_encode($ret);
 
         return false;
     }
@@ -159,17 +160,19 @@ class StaffArAccountsPage extends FannieRESTfulPage
             $row = $dbc->fetch_row($result);
             $next = $row['tdate'];
         }
-        $ret .= '<p style="font-size:120%;">Next deduction is scheduled for: ' . $next;
-        $ret .= ' (<a href="StaffArDatesPage.php">View Schedule</a>)</p>';
+        $ret .= '<h4>Next deduction is scheduled for: ' . $next;
+        $ret .= ' (<a href="StaffArDatesPage.php">View Schedule</a>)</h4>';
         $ret .= '<form onsubmit="return false;">'; // for reset function
         $ret .= '<p>';
-        $ret .= '<input type="submit" onclick="useCurrent(); return false;" value="Set New to Current Balance" />';
+        $ret .= '<button type="button" onclick="useCurrent(); return false;" class="btn btn-default">
+            Set New to Current Balance</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="reset" value="Reset" />';
+        $ret .= '<button type="reset" class="btn btn-default">Reset</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="submit" onclick="saveForm(); return false;" value="Save New as Next Deduction" />';
+        $ret .= '<button type="submit" onclick="saveForm(); return false;" class="btn btn-default">
+            Save New as Next Deduction</button>';
         $ret .= '</p>';
-        $ret .= '<table cellspacing="0" cellpadding="4" border="1" id="accountTable">';
+        $ret .= '<table class="table">';
         $ret .= '<tr><th>Mem#</th><th>PayrollID</th><th>Name</th><th>Current</th>
                 <th>Next Deduction</th><th>New Deduction</th><th>&nbsp;</td></tr>';
         foreach($info as $card_no => $data) {
@@ -179,7 +182,10 @@ class StaffArAccountsPage extends FannieRESTfulPage
                             <td class="nametext">%s</td>
                             <td class="currentbalance">%.2f</td>
                             <td>%.2f</td>
-                            <td><input type="text" size="7" class="nextdeduct" value="%.2f" /></td>
+                            <td><div class="input-group">
+                                <span class="input-group-addon">$</span>
+                                <input type="text" class="nextdeduct form-control" value="%.2f" />
+                            </div></td>
                             <td><a href="" onclick="removeAccount(%d); return false;">Remove from List</a></td>
                             </tr>',
                             $card_no,
@@ -194,20 +200,25 @@ class StaffArAccountsPage extends FannieRESTfulPage
         }
         $ret .= '</table>';
         $ret .= '<p>';
-        $ret .= '<input type="submit" onclick="useCurrent(); return false;" value="Set New to Current Balance" />';
+        $ret .= '<button type="button" onclick="useCurrent(); return false;" class="btn btn-default">
+            Set New to Current Balance</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="reset" value="Reset" />';
+        $ret .= '<button type="reset" class="btn btn-default">Reset</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="submit" onclick="saveForm(); return false;" value="Save New as Next Deduction" />';
+        $ret .= '<button type="submit" onclick="saveForm(); return false;" class="btn btn-default">
+            Save New as Next Deduction</button>';
         $ret .= '</form>';
         $ret .= '</div>';
         $ret .= '<hr />';
-        $ret .= '<b>Add User To List</b><br />';
-        $ret .= '<b>Mem#</b>: <input type="text" id="newMem" size="6" />';
+        $ret .= '<h4>Add User To List</h4>';
+        $ret .= '<div class="form-group form-inline">';
+        $ret .= '<label>Mem#</label>: <input type="text" id="newMem" class="form-control" />';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<b>Payroll#</b>: <input type="text" id="newPayID" size="6" />';
+        $ret .= '<label>Payroll#</label>: <input type="text" id="newPayID" class="form-control" />';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="submit" onclick="addNew(); return false;" value="Add" />';
+        $ret .= '<button type="submit" onclick="addNew(); return false;" 
+            class="btn btn-default">Add</button>';
+        $ret .= '</div>';
 
         return $ret;
     }

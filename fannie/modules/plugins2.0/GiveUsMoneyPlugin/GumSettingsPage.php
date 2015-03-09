@@ -33,6 +33,9 @@ class GumSettingsPage extends FannieRESTfulPage
     protected $must_authenticate = true;
     protected $auth_classes = array('GiveUsMoney');
 
+    public $page_set = 'Plugin :: Give Us Money';
+    public $description = '[Settings] manages customizable features of the plugin.';
+
     public function preprocess()
     {
         $this->header = 'Plugin Settings';

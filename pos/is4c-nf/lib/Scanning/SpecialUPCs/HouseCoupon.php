@@ -37,8 +37,7 @@ class HouseCoupon extends SpecialUPC
 
     public function isSpecial($upc)
     {
-        global $CORE_LOCAL;
-        $prefix = $CORE_LOCAL->get('houseCouponPrefix');
+        $prefix = CoreLocal::get('houseCouponPrefix');
         if ($prefix == '') {
             $prefix = '00499999';
         }
@@ -52,8 +51,6 @@ class HouseCoupon extends SpecialUPC
 
     public function handle($upc, $json)
     {
-        global $CORE_LOCAL;
-
         $coupID = ltrim(substr($upc, -5), "0");
         $leadDigits = substr($upc, 3, 5);
 
@@ -70,9 +67,8 @@ class HouseCoupon extends SpecialUPC
         }
 
         $add = $this->getValue($coupID);
-        if ($add['value'] != 0) {
-            TransRecord::addhousecoupon($upc, $add['department'], -1 * $add['value'], $add['description']);
-        }
+        TransRecord::addhousecoupon($upc, $add['department'], -1 * $add['value'], $add['description']);
+
         $json['output'] = DisplayLib::lastpage();
         $json['udpmsg'] = 'goodBeep';
         $json['redraw_footer'] = true;
@@ -127,96 +123,138 @@ class HouseCoupon extends SpecialUPC
       Validate coupon exists, is not expired, and
       transaction meets required qualifications
       @param $id [int] coupon ID
+      @param $quiet [boolean] just return false rather than
+        an error message on failure
       @return [boolean] true or [string] error message
     */
-    public function checkQualifications($id)
+    public function checkQualifications($id, $quiet=false)
     {
-        global $CORE_LOCAL;
         $infoW = $this->lookupCoupon($id);
         if ($infoW === false) {
-            return DisplayLib::boxMsg(_("coupon not found"));
+            if ($quiet) {
+                return false;
+            } else {
+                return DisplayLib::boxMsg(
+                    _("coupon not found"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
+            }
         }
 
         if ($infoW["expired"] < 0) {
             $expired = substr($infoW["endDate"], 0, strrpos($infoW["endDate"], " "));
-            return DisplayLib::boxMsg(_("coupon expired") . " " . $expired);
+            if ($quiet) {
+                return false;
+            } else {
+                return DisplayLib::boxMsg(
+                    _("coupon expired ") . $expired,
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
+            }
         } else if ($infoW['preStart'] > 0) {
-            return DisplayLib::boxMsg(_("coupon not available yet"));
+            if ($quiet) {
+                return false;
+            } else {
+                return DisplayLib::boxMsg(
+                    _("coupon not available yet"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
+            }
         }
 
         /* check for member-only, longer use tracking
            available with member coupons */
         $is_mem = false;
-        if ($CORE_LOCAL->get('isMember') == 1) {
+        if (CoreLocal::get('isMember') == 1) {
             $is_mem = true;
-        } else if ($CORE_LOCAL->get('memberID') == $CORE_LOCAL->get('visitingMem')) {
+        } else if (CoreLocal::get('memberID') == CoreLocal::get('visitingMem')) {
             $is_mem = true;
-        } else if ($CORE_LOCAL->get('memberID') == '0') {
+        } else if (CoreLocal::get('memberID') == '0') {
             $is_mem = false;
         }
         if ($infoW["memberOnly"] == 1 && !$is_mem) {
-            return DisplayLib::boxMsg(_("Member only coupon") . "<br />" .
-                        _("Apply member number first"));
+            if ($quiet) {
+                return false;
+            } else {
+                return DisplayLib::boxMsg(
+                    _("Apply member number first"),
+                    _('Member only coupon'),
+                    false,
+                    array_merge(array('Member Search [ID]' => 'parseWrapper(\'ID\');'), DisplayLib::standardClearButton())
+                );
+            }
         }
 
         /* verify the minimum purchase has been made */
         $transDB = Database::tDataConnect();
+        $requirements_msg = DisplayLib::boxMsg(
+            _("coupon requirements not met"),
+            '',
+            true,
+            DisplayLib::standardClearButton()
+        );
         $coupID = $id;
         switch($infoW["minType"]) {
             case "Q": // must purchase at least X
                 $minQ = "select case when sum(ItemQtty) is null
                     then 0 else sum(ItemQtty) end
                         from localtemptrans
-                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems 
+                    as l left join " . CoreLocal::get('pDatabase') . $transDB->sep() . "houseCouponItems 
                     as h on l.upc = h.upc
                     where h.coupID = " . $coupID ;
                 $minR = $transDB->query($minQ);
                 $minW = $transDB->fetch_row($minR);
                 $validQtty = $minW[0];
                 if ($validQtty < $infoW["minValue"]) {
-                    return DisplayLib::boxMsg(_("coupon requirements not met"));
+                    return $quiet ? false : $requirements_msg;
                 }
                 break;
             case "Q+": // must purchase more than X
                 $minQ = "select case when sum(ItemQtty) is null
                     then 0 else sum(ItemQtty) end
                         from localtemptrans
-                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems 
+                    as l left join " . CoreLocal::get('pDatabase') . $transDB->sep() . "houseCouponItems 
                     as h on l.upc = h.upc
                     where h.coupID = " . $coupID ;
                 $minR = $transDB->query($minQ);
                 $minW = $transDB->fetch_row($minR);
                 $validQtty = $minW[0];
                 if ($validQtty <= $infoW["minValue"]) {
-                    return DisplayLib::boxMsg(_("coupon requirements not met"));
+                    return $quiet ? false : $requirements_msg;
                 }
                 break;
             case 'D': // must at least purchase from department
                 $minQ = "select case when sum(total) is null
                     then 0 else sum(total) end
                     from localtemptrans
-                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
+                    as l left join " . CoreLocal::get('pDatabase') . $transDB->sep() . "houseCouponItems
                     as h on l.department = h.upc
                     where h.coupID = " . $coupID ;
                 $minR = $transDB->query($minQ);
                 $minW = $transDB->fetch_row($minR);
                 $validQtty = $minW[0];
                 if ($validQtty < $infoW["minValue"]) {
-                    return DisplayLib::boxMsg(_("coupon requirements not met"));
+                    return $quiet ? false : $requirements_msg;
                 }
                 break;
             case 'D+': // must more than purchase from department 
                 $minQ = "select case when sum(total) is null
                     then 0 else sum(total) end
                     from localtemptrans
-                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
+                    as l left join " . CoreLocal::get('pDatabase') . $transDB->sep() . "houseCouponItems
                     as h on l.department = h.upc
                     where h.coupID = " . $coupID ;
                 $minR = $transDB->query($minQ);
                 $minW = $transDB->fetch_row($minR);
                 $validQtty = $minW[0];
                 if ($validQtty <= $infoW["minValue"]) {
-                    return DisplayLib::boxMsg(_("coupon requirements not met"));
+                    return $quiet ? false : $requirements_msg;
                 }
                 break;
             case 'M': // must purchase at least X qualifying items
@@ -224,7 +262,7 @@ class HouseCoupon extends SpecialUPC
                 $minQ = "select case when sum(ItemQtty) is null then 0 else
                     sum(ItemQtty) end
                     from localtemptrans
-                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
+                    as l left join " . CoreLocal::get('pDatabase') . $transDB->sep() . "houseCouponItems
                     as h on l.upc = h.upc
                     where h.coupID = $coupID
                     and h.type = 'QUALIFIER'" ;
@@ -235,16 +273,45 @@ class HouseCoupon extends SpecialUPC
                 $min2Q = "select case when sum(ItemQtty) is null then 0 else
                     sum(ItemQtty) end
                     from localtemptrans
-                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
+                    as l left join " . CoreLocal::get('pDatabase') . $transDB->sep() . "houseCouponItems
                     as h on l.upc = h.upc
                     where h.coupID = $coupID
                     and h.type = 'DISCOUNT'";
                 $min2R = $transDB->query($min2Q);
-                $min2W = $transDB->fetch_row($minR);
+                $min2W = $transDB->fetch_row($min2R);
                 $validQtty2 = $min2W[0];
 
                 if ($validQtty < $infoW["minValue"] || $validQtty2 <= 0) {
-                    return DisplayLib::boxMsg(_("coupon requirements not met"));
+                    return $quiet ? false : $requirements_msg;
+                }
+                break;
+            case 'MX': // must purchase at least $ from qualifying departments
+                       // and some quantity discount items
+                       // (mix "cross")
+                $minQ = "select case when sum(total) is null
+                    then 0 else sum(total) end
+                    from localtemptrans
+                    as l left join " . CoreLocal::get('pDatabase') . $transDB->sep() . "houseCouponItems
+                    as h on l.department = h.upc
+                    where h.coupID = " . $coupID . "
+                        AND h.type='QUALIFIER'";
+                $minR = $transDB->query($minQ);
+                $minW = $transDB->fetch_row($minR);
+                $validQtty = $minW[0];
+
+                $min2Q = "select case when sum(ItemQtty) is null then 0 else
+                    sum(ItemQtty) end
+                    from localtemptrans
+                    as l left join " . CoreLocal::get('pDatabase') . $transDB->sep() . "houseCouponItems
+                    as h on l.upc = h.upc
+                    where h.coupID = $coupID
+                    and h.type = 'DISCOUNT'";
+                $min2R = $transDB->query($min2Q);
+                $min2W = $transDB->fetch_row($min2R);
+                $validQtty2 = $min2W[0];
+
+                if ($validQtty < $infoW["minValue"] || $validQtty2 <= 0) {
+                    return $quiet ? false : $requirements_msg;
                 }
                 break;
             case '$': // must purchase at least $ total items
@@ -254,7 +321,7 @@ class HouseCoupon extends SpecialUPC
                 $minW = $transDB->fetch_row($minR);
                 $validAmt = $minW[0];
                 if ($validAmt < $infoW["minValue"]) {
-                    return DisplayLib::boxMsg(_("coupon requirements not met"));
+                    return $quiet ? false : $requirements_msg;
                 }
                 break;
             case '$+': // must purchase more than $ total items
@@ -264,14 +331,14 @@ class HouseCoupon extends SpecialUPC
                 $minW = $transDB->fetch_row($minR);
                 $validAmt = $minW[0];
                 if ($validAmt <= $infoW["minValue"]) {
-                    return DisplayLib::boxMsg(_("coupon requirements not met"));
+                    return $quiet ? false : $requirements_msg;
                 }
                 break;
             case '': // no minimum
             case ' ':
                 break;
             default:
-                return DisplayLib::boxMsg(_("unknown minimum type") . " " . $infoW["minType"]);
+                return $quiet ? false : DisplayLib::boxMsg(_("unknown minimum type") . " " . $infoW["minType"]);
         }
 
         return true;
@@ -288,13 +355,17 @@ class HouseCoupon extends SpecialUPC
     */
     public function checkLimits($id)
     {
-        global $CORE_LOCAL;
         $infoW = $this->lookupCoupon($id);
         if ($infoW === false) {
-            return DisplayLib::boxMsg(_("coupon not found"));
+            return DisplayLib::boxMsg(
+                _("coupon not found"),
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
         }
 
-        $prefix = $CORE_LOCAL->get('houseCouponPrefix');
+        $prefix = CoreLocal::get('houseCouponPrefix');
         if ($prefix == '') {
             $prefix = '00499999';
         }
@@ -309,17 +380,23 @@ class HouseCoupon extends SpecialUPC
             from localtemptrans where
             upc = '" . $upc . "'" ;
         $limitR = $transDB->query($limitQ);
-        $times_used = array_pop($transDB->fetch_row($limitR));
+        $limitW = $transDB->fetch_row($limitR);
+        $times_used = $limitW[0];
         if ($times_used >= $infoW["limit"]) {
-            return DisplayLib::boxMsg(_("coupon already applied"));
+            return DisplayLib::boxMsg(
+                _("coupon already applied"),
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
         }
 
         /**
           For members, enforce limits against longer
           transaction history
         */
-        if ($infoW["memberOnly"] == 1 && $CORE_LOCAL->get("standalone")==0 
-            && $CORE_LOCAL->get('memberID') != $CORE_LOCAL->get('visitingMem')) {
+        if ($infoW["memberOnly"] == 1 && CoreLocal::get("standalone")==0 
+            && CoreLocal::get('memberID') != CoreLocal::get('visitingMem')) {
             $mDB = Database::mDataConnect();
 
             // Lookup usage of this coupon by this member
@@ -327,40 +404,44 @@ class HouseCoupon extends SpecialUPC
             // with previous days (dlog_90_view)
             // Potential replacement for houseCouponThisMonth
             $monthStart = date('Y-m-01 00:00:00');
-            $altQ = "SELECT SUM(s.quantity AS quantity)
+            $altQ = "SELECT SUM(s.quantity) AS quantity,
+                        MAX(tdate) AS lastUse
                      FROM (
-                        SELECT upc, card_no, quantity
+                        SELECT upc, card_no, quantity, tdate
                         FROM dlog
                         WHERE
                             trans_type='T'
                             AND trans_subtype='IC'
                             AND upc='$upc'
-                            AND card_no=" . ((int)$CORE_LOCAL->get('memberID')) . "
+                            AND card_no=" . ((int)CoreLocal::get('memberID')) . "
     
                         UNION ALL
 
-                        SELECT upc, card_no, quantity
+                        SELECT upc, card_no, quantity, tdate
                         FROM dlog_90_view
                         WHERE
                             trans_type='T'
                             AND trans_subtype='IC'
                             AND upc='$upc'
-                            AND card_no=" . ((int)$CORE_LOCAL->get('memberID')) . "
+                            AND card_no=" . ((int)CoreLocal::get('memberID')) . "
                             AND tdate >= '$monthStart'
                      ) AS s
                      GROUP BY s.upc, s.card_no";
 
             $mR = $mDB->query("SELECT quantity 
                                FROM houseCouponThisMonth
-                               WHERE card_no=" . $CORE_LOCAL->get("memberID") . " and
+                               WHERE card_no=" . CoreLocal::get("memberID") . " and
                                upc='$upc'");
             if ($mDB->num_rows($mR) > 0) {
                 $mW = $mDB->fetch_row($mR);
                 $uses = $mW['quantity'];
                 if ($uses >= $infoW["limit"]) {
-                    return DisplayLib::boxMsg(_("Coupon already used")
-                                ."<br />"
-                                ._("on this membership"));
+                    return DisplayLib::boxMsg(
+                        _("Coupon already used") . "<br />" . _("on this membership"),
+                        '',
+                        false,
+                        DisplayLib::standardClearButton()
+                    );
                 }
             }
         }
@@ -379,7 +460,6 @@ class HouseCoupon extends SpecialUPC
     */
     public function getValue($id)
     {
-        global $CORE_LOCAL;
         $infoW = $this->lookupCoupon($id);
         if ($infoW === false) {
             return array('value' => 0, 'department' => 0, 'description' => '');
@@ -397,7 +477,7 @@ class HouseCoupon extends SpecialUPC
                 // discount = coupon's discountValue
                 // times the cheapeast coupon item
                 $valQ = "select unitPrice, department from localtemptrans
-                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
+                    as l left join " . CoreLocal::get('pDatabase') . $transDB->sep() . "houseCouponItems
                     as h on l.upc = h.upc
                     where h.coupID=" . $coupID . " 
                     and h.type in ('BOTH', 'DISCOUNT')
@@ -413,7 +493,7 @@ class HouseCoupon extends SpecialUPC
                 // take off
                 $value = $infoW["discountValue"];
                 $deptQ = "select department, (total/quantity) as value from localtemptrans
-                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
+                    as l left join " . CoreLocal::get('pDatabase') . $transDB->sep() . "houseCouponItems
                     as h on l.upc = h.upc
                     where h.coupID=" . $coupID . "
                     and h.type in ('BOTH', 'DISCOUNT')
@@ -428,7 +508,7 @@ class HouseCoupon extends SpecialUPC
                 // scales with quantity for by-weight items
                 $value = $infoW["discountValue"];
                 $valQ = "select department, quantity from localtemptrans
-                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
+                    as l left join " . CoreLocal::get('pDatabase') . $transDB->sep() . "houseCouponItems
                     as h on l.department = h.upc
                     where h.coupID = " . $coupID . "
                     and h.type in ('BOTH', 'DISCOUNT')
@@ -443,7 +523,7 @@ class HouseCoupon extends SpecialUPC
                 // whichever is less
                 $value = $infoW["discountValue"];
                 $valQ = "select department, l.total from localtemptrans
-                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
+                    as l left join " . CoreLocal::get('pDatabase') . $transDB->sep() . "houseCouponItems
                     as h on l.department = h.upc
                     where h.coupID = " . $coupID . "
                     and h.type in ('BOTH', 'DISCOUNT')
@@ -458,7 +538,7 @@ class HouseCoupon extends SpecialUPC
                 // scales with quantity for by-weight items
                 $value = $infoW["discountValue"];
                 $valQ = "select sum(quantity) from localtemptrans
-                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
+                    as l left join " . CoreLocal::get('pDatabase') . $transDB->sep() . "houseCouponItems
                     as h on l.department = h.upc
                     where h.coupID = " . $coupID . "
                     and h.type in ('BOTH', 'DISCOUNT')
@@ -473,7 +553,7 @@ class HouseCoupon extends SpecialUPC
                 // scales with quantity for by-weight items
                 $value = $infoW["discountValue"];
                 $valQ = "select l.upc, quantity from localtemptrans
-                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
+                    as l left join " . CoreLocal::get('pDatabase') . $transDB->sep() . "houseCouponItems
                     as h on l.upc = h.upc
                     where h.coupID = " . $coupID . "
                     and h.type in ('BOTH', 'DISCOUNT')
@@ -482,6 +562,20 @@ class HouseCoupon extends SpecialUPC
                 $valR = $transDB->query($valQ);
                 $row = $transDB->fetch_row($valR);
                 $value = $row[1] * $value;
+                break;
+            case 'PI': // per-item discount
+                    // take of the request amount times the
+                    // number of matching items.
+                $value = $infoW["discountValue"];
+                $valQ = "
+                    SELECT 
+                       SUM(CASE WHEN ItemQtty IS NULL THEN 0 ELSE ItemQtty END) AS qty
+                    FROM localtemptrans AS l
+                        LEFT JOIN " . CoreLocal::get('pDatabase') . $transDB->sep() . "houseCouponItems AS h ON l.upc = h.upc
+                    WHERE h.coupID = " . $coupID ;
+                $valR = $transDB->query($valQ);
+                $row = $transDB->fetch_row($valR);
+                $value = $row['qty'] * $value;
                 break;
             case "F": // completely flat; no scaling for weight
                 $value = $infoW["discountValue"];
@@ -502,17 +596,17 @@ class HouseCoupon extends SpecialUPC
                 $percentage = $infoW['discountValue'] - $max;
                 // because the overall value is capped, I'm using
                 // the actual transaction total rather than discountableTotal
-                $total = $CORE_LOCAL->get('runningTotal') - $CORE_LOCAL->get('transDiscount');
+                $total = CoreLocal::get('runningTotal') - CoreLocal::get('transDiscount');
                 $amount = $total > $max ? $max : $total;
                 $value = $percentage * $amount;
                 break;
             case "%": // percent discount on all items
                 Database::getsubtotals();
-                $value = $infoW["discountValue"] * $CORE_LOCAL->get("discountableTotal");
+                $value = $infoW["discountValue"] * CoreLocal::get("discountableTotal");
                 break;
             case "%D": // percent discount on all items in give department(s)
                 $valQ = "select sum(total) from localtemptrans
-                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
+                    as l left join " . CoreLocal::get('pDatabase') . $transDB->sep() . "houseCouponItems
                     as h on l.department = h.upc
                     where h.coupID = " . $coupID . "
                     and h.type in ('BOTH', 'DISCOUNT')";
@@ -523,32 +617,7 @@ class HouseCoupon extends SpecialUPC
             case 'PD': // modify customer percent discount
                    // rather than add line-item
                 $couponPD = $infoW['discountValue'] * 100;
-                $ttlPD = 0;
-                Database::getsubtotals();
-                $opDB = Database::pDataConnect();
-                $custQ = 'SELECT Discount FROM custdata WHERE CardNo='.$CORE_LOCAL->get('memberID');    
-                $custR = $opDB->query($custQ);
-                // get member's normal discount
-                $cust_discount = 0;
-                if ($opDB->num_rows($custR) > 0) {
-                    $custW = $opDB->fetch_row($custR);
-                    $cust_discount = $custW['Discount'];
-                }
-                // apply discount module
-                $handler_class = $CORE_LOCAL->get('DiscountModule');
-                if ($handler_class === '') $handler_class = 'DiscountModule';
-                elseif (!class_exists($handler_class)) $handler_class = 'DiscountModule';
-                if (class_exists($handler_class)) {
-                    $module = new $handler_class();
-                    $ttlPD = $module->percentage($cust_discount);
-                }
-                // add coupon's discount
-                $ttlPD += $couponPD;
-                // apply new discount to session & transaction
-                $CORE_LOCAL->set('percentDiscount', $ttlPD);
-                $transDB = Database::tDataConnect();
-                $transDB->query(sprintf('UPDATE localtemptrans SET percentDiscount=%f',$ttlPD));
-
+                DiscountModule::updateDiscount(new DiscountModule($couponPD, 'HouseCoupon'));
                 // still need to add a line-item with the coupon UPC to the
                 // transaction to track usage
                 $value = 0;
@@ -558,7 +627,7 @@ class HouseCoupon extends SpecialUPC
                    // rather than add line-item
                 $couponPD = $infoW['discountValue'] * 100;
                 // apply new discount to session & transaction
-                $CORE_LOCAL->set('percentDiscount', $couponPD);
+                CoreLocal::set('percentDiscount', $couponPD);
                 $transDB = Database::tDataConnect();
                 $transDB->query(sprintf('UPDATE localtemptrans SET percentDiscount=%f', $couponPD));
 

@@ -21,34 +21,41 @@
 
 *********************************************************************************/
 
-require('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+require(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class DeleteShelfTags extends FanniePage 
 {
 
-	protected $title = 'Fannie - Clear Shelf Tags';
-	protected $header = 'Clear Shelf Tags';
-	protected $must_authenticate = True;
-	protected $auth_classes = array('barcodes');
+    protected $title = 'Fannie - Clear Shelf Tags';
+    protected $header = 'Clear Shelf Tags';
+    protected $must_authenticate = True;
+    protected $auth_classes = array('barcodes');
 
-	private $messages = '';
+    private $messages = '';
 
-	function preprocess()
+    public $description = '[Delete Shelf Tags] gets rid of a set of shelf tags.';
+    public $themed = true;
+
+    function preprocess()
     {
-		global $FANNIE_OP_DB;
-		$id = FormLib::get_form_value('id',0);
+        global $FANNIE_OP_DB;
+        $id = FormLib::get_form_value('id',0);
 
-		$dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::get($FANNIE_OP_DB);
         $tags = new ShelftagsModel($dbc);
         $tags->id($id);
         $current_set = $tags->find();
-		if (count($current_set) == 0) {
-			$this->messages = "Barcode table is already empty. <a href='ShelfTagIndex.php'>Click here to continue</a>";
-			return true;
-		}
+        if (count($current_set) == 0) {
+            $this->messages = '<div class="alert alert-info">
+                Barcode table is already empty. <a href="ShelfTagIndex.php">Click here to continue</a>
+                </div>';
+            return true;
+        }
 
-		if (FormLib::get('submit', false) === '1') {
+        if (FormLib::get('submit', false) === '1') {
             /**
               Shelftags are not actually delete immediately
               Instead, the id field is negated so they disappear
@@ -80,22 +87,25 @@ class DeleteShelfTags extends FanniePage
                 $tag->id($old_id);
                 $tag->delete();
             }
-			$this->messages = "Barcode table cleared <a href='ShelfTagIndex.php'>Click here to continue</a>";
+            $this->messages = '<div class="alert alert-success">
+                Barcode table cleared <a href="ShelfTagIndex.php">Click here to continue</a>
+                </div>';
 
-			return true;
-		} else {
-			$this->messages = "<span style=\"color:red;\"><a href='DeleteShelfTags.php?id=$id&submit=1'>Click 
-				here to clear barcodes</a></span>";
-			return true;
-		}
+            return true;
+        } else {
+            $this->messages = '<div class="alert alert-danger">
+                <a href="DeleteShelfTags.php?id=' . $id . '&submit=1">Click 
+                here to clear barcodes</a></div>';
+            return true;
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-	function body_content()
+    function body_content()
     {
-		return $this->messages;
-	}
+        return $this->messages;
+    }
 }
 
 FannieDispatch::conditionalExec(false);

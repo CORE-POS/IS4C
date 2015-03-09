@@ -30,6 +30,7 @@ class SuspensionHistoryReport extends FannieReportPage
 {
     public $description = '[Suspension History] lists when a membership was deactivated &amp; reactivated.';
     public $report_set = 'Membership';
+    public $themed = true;
 
     protected $title = "Fannie : Suspension History";
     protected $header = "Suspension History";
@@ -37,7 +38,7 @@ class SuspensionHistoryReport extends FannieReportPage
     protected $report_headers = array('Date', 'Reason', 'User');
     protected $required_fields = array('memNum');
 
-	public function preprocess()
+    public function preprocess()
     {
         $this->card_no = FormLib::get('memNum','');
 
@@ -76,10 +77,14 @@ class SuspensionHistoryReport extends FannieReportPage
 
     public function form_content()
     {
+        $this->add_onload_command('$(\'#memNum\').focus()');
         return '<form method="get" action="SuspensionHistoryReport.php">
-            <b>Member #</b> <input type="text" name="memNum" value="" size="6" />
-            <br /><br />
-            <input type="submit" value="Get Report" />
+            <label>Member #</label>
+            <input type="text" name="memNum" required 
+                class="form-control" id="memNum" />
+            <p>
+            <button type="submit" class="btn btn-default">Get Report</button> 
+            </p>
             </form>';
     }
 }

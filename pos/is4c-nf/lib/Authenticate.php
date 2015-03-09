@@ -41,10 +41,8 @@ class Authenticate extends LibraryClass
   a user with frontendsecurity >= 30 in the
   employee table will be accepted.
 */
-static public function checkPassword($password,$activity=1)
+static public function checkPassword($password, $activity=1)
 {
-	global $CORE_LOCAL;
-
 	$password = strtoupper($password);
 	$password = str_replace("'", "", $password);
 	$password = str_replace(",", "", $password);

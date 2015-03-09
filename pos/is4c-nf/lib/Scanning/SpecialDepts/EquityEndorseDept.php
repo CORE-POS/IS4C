@@ -23,27 +23,29 @@
 
 class EquityEndorseDept extends SpecialDept 
 {
+    public $help_summary = 'Prompt to print receipt number on equity paperwork via endorser';
 
     public function handle($deptID,$amount,$json)
     {
-        global $CORE_LOCAL;
-
-        if ($CORE_LOCAL->get("memberID") == "0" || $CORE_LOCAL->get("memberID") == $CORE_LOCAL->get("defaultNonMem")) {
-            $CORE_LOCAL->set('strEntered','');
-            $CORE_LOCAL->set('boxMsg','Equity requires member.<br />Apply member number first');
+        if (CoreLocal::get("memberID") == "0" || CoreLocal::get("memberID") == CoreLocal::get("defaultNonMem")) {
+            CoreLocal::set('strEntered','');
+            CoreLocal::set('boxMsg','Equity requires member.<br />Apply member number first');
             $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 
             return $json;
         }
 
-        if ($CORE_LOCAL->get('msgrepeat') == 0) {
-            $ref = trim($CORE_LOCAL->get("CashierNo"))."-"
-                .trim($CORE_LOCAL->get("laneno"))."-"
-                .trim($CORE_LOCAL->get("transno"));
-            if ($CORE_LOCAL->get("LastEquityReference") != $ref) {
-                $CORE_LOCAL->set("equityAmt",$amount);
-                $CORE_LOCAL->set("boxMsg","<b>Equity Sale</b><br>Insert paperwork and press<br>
-                        <font size=-1>[enter] to continue, [clear] to cancel</font>");
+        if (CoreLocal::get('msgrepeat') == 0) {
+            $ref = trim(CoreLocal::get("CashierNo"))."-"
+                .trim(CoreLocal::get("laneno"))."-"
+                .trim(CoreLocal::get("transno"));
+            if (CoreLocal::get("LastEquityReference") != $ref) {
+                CoreLocal::set("equityAmt",$amount);
+                CoreLocal::set("boxMsg","<b>Equity Sale</b><br>Insert paperwork");
+                CoreLocal::set('boxMsgButtons', array(
+                    'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
+                    'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                ));
                 $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php?quiet=1&endorse=stock&endorseAmt='.$amount;
             }
         }

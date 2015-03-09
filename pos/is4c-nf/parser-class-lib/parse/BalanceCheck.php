@@ -21,21 +21,32 @@
 
 *********************************************************************************/
 
-class BalanceCheck extends Parser {
-	function check($str){
-		if ($str == "BQ")
-			return True;
-		return False;
+class BalanceCheck extends Parser 
+{
+	function check($str)
+    {
+		if ($str == "BQ") {
+			return true;
+        }
+
+		return false;
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
+	function parse($str)
+    {
 		$ret = $this->default_json();
 		PrehLib::chargeOk();
-		$memChargeCommitted=$CORE_LOCAL->get("availBal") - $CORE_LOCAL->get("memChargeTotal");
-		$ret['output'] = DisplayLib::boxMsg(_("Member")." #". $CORE_LOCAL->get("memberID")."<br />".
-					_("Current AR balance is")." " . $CORE_LOCAL->get("balance") . "<br />".
-					_("Available AR balance is")." ".$CORE_LOCAL->get("availBal"). "</b>","",True);
+		$memChargeCommitted=CoreLocal::get("availBal") - CoreLocal::get("memChargeTotal");
+        $title = _('Member #') . CoreLocal::get('memberID');
+        $msg = _("Current AR balance is ") . CoreLocal::get("balance") . "<br />"
+             . _("Available AR balance is ") . CoreLocal::get("availBal");
+		$ret['output'] = DisplayLib::boxMsg(
+            $msg, 
+            $title, 
+            true, 
+            array_merge(array('Tender [Store Credit]' => 'parseWrapper(\'MI\');'), DisplayLib::standardClearButton())
+        );
+
 		return $ret;
 	}
 
@@ -54,4 +65,3 @@ class BalanceCheck extends Parser {
 
 }
 
-?>

@@ -5,9 +5,8 @@
 class BaseLibsTest extends PHPUnit_Framework_TestCase
 {
 
-	public function testMiscLib(){
-		global $CORE_LOCAL;
-
+	public function testMiscLib()
+    {
 		$here = getcwd();
 		chdir(dirname(__FILE__).'/../gui-modules/');
 		$rel = MiscLib::baseURL();
@@ -24,7 +23,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals(1.99, MiscLib::truncate2("1.99"));
 		$this->assertEquals(1.35, MiscLib::truncate2("1.345"));
 
-		$hostCheck = MiscLib::pingport($CORE_LOCAL->get('localhost'),$CORE_LOCAL->get('DBMS'));
+		$hostCheck = MiscLib::pingport(CoreLocal::get('localhost'),CoreLocal::get('DBMS'));
 		$this->assertInternalType('integer', $hostCheck);
 
 		$hostCheck = MiscLib::win32();
@@ -36,15 +35,14 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 		}
 	}
 
-	public function testDatabase(){
-		global $CORE_LOCAL;
-		
+	public function testDatabase()
+    {
 		$db = Database::tDataConnect();
 		$this->assertInstanceOf('SQLManager', $db);
-		$this->assertEquals($CORE_LOCAL->get('tDatabase'), $db->default_db);
+		$this->assertEquals(CoreLocal::get('tDatabase'), $db->default_db);
 		$db = Database::pDataConnect();
 		$this->assertInstanceOf('SQLManager', $db);
-		$this->assertEquals($CORE_LOCAL->get('pDatabase'), $db->default_db);
+		$this->assertEquals(CoreLocal::get('pDatabase'), $db->default_db);
 
 		$this->assertEquals(1, Database::gettransno(-1)); // not a real emp_no
 
@@ -63,33 +61,33 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 			'TaxExempt' => 0
 		);
 		Database::setglobalvalues($globals);
-		$this->assertEquals(9999, $CORE_LOCAL->get('CashierNo'));
-		$this->assertEquals('TRAINING', $CORE_LOCAL->get('cashier'));
-		$this->assertEquals(0, $CORE_LOCAL->get('LoggedIn'));
-		$this->assertEquals(1, $CORE_LOCAL->get('transno'));
-		$this->assertEquals(0, $CORE_LOCAL->get('ttlflag'));
-		$this->assertEquals(0, $CORE_LOCAL->get('fntlflag'));
-		$this->assertEquals(0, $CORE_LOCAL->get('TaxExempt'));
+		$this->assertEquals(9999, CoreLocal::get('CashierNo'));
+		$this->assertEquals('TRAINING', CoreLocal::get('cashier'));
+		$this->assertEquals(0, CoreLocal::get('LoggedIn'));
+		$this->assertEquals(1, CoreLocal::get('transno'));
+		$this->assertEquals(0, CoreLocal::get('ttlflag'));
+		$this->assertEquals(0, CoreLocal::get('fntlflag'));
+		$this->assertEquals(0, CoreLocal::get('TaxExempt'));
 		Database::loadglobalvalues(); // reload session from db. shouldn't change.
-		$this->assertEquals(9999, $CORE_LOCAL->get('CashierNo'));
-		$this->assertEquals('TRAINING', $CORE_LOCAL->get('cashier'));
-		$this->assertEquals(0, $CORE_LOCAL->get('LoggedIn'));
-		$this->assertEquals(1, $CORE_LOCAL->get('transno'));
-		$this->assertEquals(0, $CORE_LOCAL->get('ttlflag'));
-		$this->assertEquals(0, $CORE_LOCAL->get('fntlflag'));
-		$this->assertEquals(0, $CORE_LOCAL->get('TaxExempt'));
+		$this->assertEquals(9999, CoreLocal::get('CashierNo'));
+		$this->assertEquals('TRAINING', CoreLocal::get('cashier'));
+		$this->assertEquals(0, CoreLocal::get('LoggedIn'));
+		$this->assertEquals(1, CoreLocal::get('transno'));
+		$this->assertEquals(0, CoreLocal::get('ttlflag'));
+		$this->assertEquals(0, CoreLocal::get('fntlflag'));
+		$this->assertEquals(0, CoreLocal::get('TaxExempt'));
 		Database::setglobalvalue('TTLFlag',1);
 		Database::loadglobalvalues();
-		$this->assertEquals(1, $CORE_LOCAL->get('ttlflag'));
+		$this->assertEquals(1, CoreLocal::get('ttlflag'));
 		Database::setglobalflags(0);
 		Database::loadglobalvalues();
-		$this->assertEquals(0, $CORE_LOCAL->get('ttlflag'));
-		$this->assertEquals(0, $CORE_LOCAL->get('fntlflag'));
+		$this->assertEquals(0, CoreLocal::get('ttlflag'));
+		$this->assertEquals(0, CoreLocal::get('fntlflag'));
 	}
 
-	public function testAuthenticate(){
-		global $CORE_LOCAL;
-		$CORE_LOCAL->set('scaleDriver',''); // don't interact w/ scale
+	public function testAuthenticate()
+    {
+		CoreLocal::set('scaleDriver',''); // don't interact w/ scale
 
 		Database::setglobalvalue('LoggedIn',1);
 		Database::setglobalvalue('CashierNo',1);
@@ -106,11 +104,10 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals(True, $pass);
 	}
 
-	public function testAutoLoader(){
-		global $CORE_LOCAL;
-		
+	public function testAutoLoader()
+    {
 		AutoLoader::loadMap();
-		$class_map = $CORE_LOCAL->get('ClassLookup');
+		$class_map = CoreLocal::get('ClassLookup');
 		$this->assertInternalType('array', $class_map);
 		$this->assertNotEmpty($class_map);
 		
@@ -154,9 +151,8 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 		}
 	}
 
-	public function testBitmap(){
-		global $CORE_LOCAL;
-
+	public function testBitmap()
+    {
 		/**
 		  Using PrintHandler::RenderBitmapFromFile
 		  will call all the methods of the Bitmap class
@@ -164,7 +160,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 		*/
 
 		$ph = new PrintHandler();
-		$file = dirname(__FILE__).'/../graphics/WFC_Logo.bmp';
+		$file = dirname(__FILE__).'/../graphics/WfcLogo2014.bmp';
 
 		$this->assertFileExists($file);
 		$bitmap = $ph->RenderBitmapFromFile($file);
@@ -172,9 +168,8 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 		$this->assertNotEmpty($bitmap);
 	}
 
-	public function testCoreState(){
-		global $CORE_LOCAL;
-
+	public function testCoreState()
+    {
 		// normal session init attempts to recover state
 		// transaction info - e.g., after a browser crash
 		// or reboot. Clear the table so that doesn't
@@ -184,7 +179,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
 		/**
 		  This will trigger any syntax or run-time errors
-		  Testing all the invidual values of CORE_LOCAL
+		  Testing all the invidual values of session
 		  might be worthwhile is anyone wants to write
 		  all those tests out. They're mostly static values
 		  so the test would only catch changes to the
@@ -197,9 +192,8 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals('',$str);
 	}
 
-	public function testDisplayLib(){
-		global $CORE_LOCAL;
-
+	public function testDisplayLib()
+    {
 		$footer = DisplayLib::printfooter();
 		$this->assertInternalType('string',$footer);
 		$this->assertNotEmpty($footer);
@@ -244,9 +238,9 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 		$this->assertInternalType('string',$itemH);
 		$this->assertNotEmpty($itemH);
 
-		$CORE_LOCAL->set('weight',0);
-		$CORE_LOCAL->set('scale',0);
-		$CORE_LOCAL->set('SNR',0);
+		CoreLocal::set('weight',0);
+		CoreLocal::set('scale',0);
+		CoreLocal::set('SNR',0);
 
 		$basic = DisplayLib::scaledisplaymsg();
 		$this->assertInternalType('string',$basic);
@@ -272,10 +266,10 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 			$this->assertEquals($output, $test['display']);
 		}
 
-		$this->assertEquals(1, $CORE_LOCAL->get('scale'));
-		$this->assertEquals(0.02, $CORE_LOCAL->get('weight'));
+		$this->assertEquals(1, CoreLocal::get('scale'));
+		$this->assertEquals(0.02, CoreLocal::get('weight'));
 
-		$CORE_LOCAL->set('SNR','4011');
+		CoreLocal::set('SNR','4011');
 		$both = DisplayLib::scaledisplaymsg('S11050');
 		$this->assertInternalType('array',$both);
 		$this->assertArrayHasKey('display',$both);
@@ -301,9 +295,8 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals($lp,$list);
 	}
 
-	public function testJsonLib(){
-		global $CORE_LOCAL;
-
+	public function testJsonLib()
+    {
 		$test = array(
 			0 => array(1, 2, 3),
 			1 => 'test string',
@@ -320,20 +313,19 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals($good,$json);
 	}
 
-	public function testUdpComm(){
-		global $CORE_LOCAL;
+	public function testUdpComm()
+    {
 		UdpComm::udpSend('most likely no one is listening...');
 	}
 
-	public function testTransRecord(){
-		global $CORE_LOCAL;
-
+	public function testTransRecord()
+    {
 		if (!class_exists('lttLib')) include ('lttLib.php');
 		lttLib::clear();
 
-		$CORE_LOCAL->set('infoRecordQueue',array());
+		CoreLocal::set('infoRecordQueue',array());
 		TransRecord::addQueued('1234567890123','UNIT TEST',1,'UT',1.99);
-		$queue = $CORE_LOCAL->get('infoRecordQueue');
+		$queue = CoreLocal::get('infoRecordQueue');
 		$this->assertInternalType('array',$queue);
 		$this->assertEquals(1,count($queue));
 		$this->assertArrayHasKey(0,$queue);
@@ -350,7 +342,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals(1.99,$queue[0]['regPrice']);
 
 		TransRecord::emptyQueue();
-		$queue = $CORE_LOCAL->get('infoRecordQueue');
+		$queue = CoreLocal::get('infoRecordQueue');
 		$this->assertInternalType('array',$queue);
 		$this->assertEquals(0,count($queue));
 		$record = lttLib::genericRecord();
@@ -365,7 +357,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
 		lttLib::clear();
 
-		$CORE_LOCAL->set('taxTotal',1.23);
+		CoreLocal::set('taxTotal',1.23);
 		TransRecord::addtax();
 		$record = lttLib::genericRecord();
 		$record['upc'] = 'TAX';
@@ -456,7 +448,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 		$record['voided'] = 10;
 		$record['tax'] = 9;
 		lttLib::verifyRecord(1, $record, $this);
-		$this->assertEquals(1, $CORE_LOCAL->get('TaxExempt'));
+		$this->assertEquals(1, CoreLocal::get('TaxExempt'));
 
 		lttLib::clear();
 
@@ -467,11 +459,11 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 		$record['voided'] = 10;
 		$record['tax'] = 9;
 		lttLib::verifyRecord(1, $record, $this);
-		$this->assertEquals(0, $CORE_LOCAL->get('TaxExempt'));
+		$this->assertEquals(0, CoreLocal::get('TaxExempt'));
 
 		lttLib::clear();
 
-		$CORE_LOCAL->set('casediscount',7);
+		CoreLocal::set('casediscount',7);
 		TransRecord::addcdnotify();
 		$record = lttLib::genericRecord();
 		$record['description'] = '** 7% Case Discount Applied';
@@ -537,16 +529,16 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 		$record['trans_status'] = 'D';
 		$record['voided'] = 6;
 		lttLib::verifyRecord(1, $record, $this);
-		$this->assertEquals(0.05, $CORE_LOCAL->get('tare'));
+		$this->assertEquals(0.05, CoreLocal::get('tare'));
 
 		lttLib::clear();
 
-		$CORE_LOCAL->set('transDiscount',3.24);
+		CoreLocal::set('transDiscount',3.24);
 		TransRecord::addTransDiscount();
 		$record = lttLib::genericRecord();
 		$record['upc'] = 'DISCOUNT';
 		$record['description'] = 'Discount';
-		$record['trans_type'] = 'I';
+		$record['trans_type'] = 'S';
 		$record['quantity'] = 1;
 		$record['ItemQtty'] = 1;
 		$record['unitPrice'] = -3.24;
@@ -585,15 +577,14 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 		unset($record['amount2']); // not real column
 		$record['trans_type'] = 'L';
 		$record['trans_subtype'] = 'OG';
-		$record['trans_status'] = 'X';
+		$record['trans_status'] = 'D';
 		lttLib::verifyRecord(1, $record, $this);
 
 		lttLib::clear();
 	}
 
-	public function testPrehLib(){
-		global $CORE_LOCAL;
-
+	public function testPrehLib()
+    {
 		if (!class_exists('lttLib')) include ('lttLib.php');
 		lttLib::clear();
 		
@@ -603,11 +594,11 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
 		lttLib::clear();
 
-		$CORE_LOCAL->set('percentDiscount',5);
-		$CORE_LOCAL->set('transDiscount',0.51);
-		$CORE_LOCAL->set('taxTotal',1.45);
-		$CORE_LOCAL->set('fsTaxExempt',1.11);
-		$CORE_LOCAL->set('amtdue',9.55);
+		CoreLocal::set('percentDiscount',5);
+		CoreLocal::set('transDiscount',0.51);
+		CoreLocal::set('taxTotal',1.45);
+		CoreLocal::set('fsTaxExempt',1.11);
+		CoreLocal::set('amtdue',9.55);
 		// should add four records
 		PrehLib::finalttl();
 
@@ -654,4 +645,4 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 	}
 
 }
-?>
+

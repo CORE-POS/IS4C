@@ -11,17 +11,19 @@
   to do anything.
 */
 
-class LocalStorage 
+class LocalStorage implements Iterator
 {
 
     protected $immutables = array();
+
+    protected $iterator_position = 0;
+    protected $iterator_keys = array();
 
     /**
       Constructor
     */
     public function LocalStorage()
     {
-
     }
 
     /**
@@ -99,6 +101,7 @@ class LocalStorage
                         echo 'New value: ';
                         print_r($s['args'][1]);
                         echo "\n"; 
+                        echo 'URL ' . $_SERVER['PHP_SELF'] . "\n";
                         echo 'Line '.$s['line'].', '.$s['file']."\n\n";
                         $out = ob_get_clean();
                         fwrite($fp,$out);
@@ -108,6 +111,43 @@ class LocalStorage
                 fclose($fp);
             }
         }
+    }
+
+    /**
+      Iterator interface methods
+    */
+    public function current()
+    {
+        return $this->get($this->iterator_keys[$this->iterator_position]);
+    }
+
+    public function key()
+    {
+        return $this->iterator_keys[$this->iterator_position];
+    }
+
+    public function next()
+    {
+        $this->iterator_position++;
+    }
+
+    public function valid()
+    {
+        return isset($this->iterator_keys[$this->iterator_position]);
+    }
+
+    public function rewind()
+    {
+        $this->iterator_position = 0;
+        $this->iterator_keys = $this->iteratorKeys();
+    }
+
+    /**
+      Iterator interface helper for child classes
+    */
+    public function iteratorKeys()
+    {
+        return array_keys($this->immutables);
     }
 }
 

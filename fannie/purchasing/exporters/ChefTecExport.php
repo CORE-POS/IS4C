@@ -24,27 +24,27 @@
 class ChefTecExport 
 {
 
-	public $nice_name = 'ChefTec (CSV)';
+    public $nice_name = 'ChefTec (CSV)';
 
-	public function send_headers()
+    public function send_headers()
     {
-		header("Content-type: text/csv");
-		header("Content-Disposition: attachment; filename=order_export.csv");
-		header("Pragma: no-cache");
-		header("Expires: 0");
-	}
+        header("Content-type: text/csv");
+        header("Content-Disposition: attachment; filename=order_export.csv");
+        header("Pragma: no-cache");
+        header("Expires: 0");
+    }
 
-	public function export_order($id)
+    public function export_order($id)
     {
-		global $FANNIE_OP_DB;
-		$dbc = FannieDB::get($FANNIE_OP_DB);
-		
-		$order = new PurchaseOrderModel($dbc);
-		$order->orderID($id);
-		$order->load();
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        
+        $order = new PurchaseOrderModel($dbc);
+        $order->orderID($id);
+        $order->load();
 
-		$items = new PurchaseOrderItemsModel($dbc);
-		$items->orderID($id);
+        $items = new PurchaseOrderItemsModel($dbc);
+        $items->orderID($id);
 
         $columns = array(
             'Product Code',
@@ -59,7 +59,7 @@ class ChefTecExport
             'Alternate Unit',
         );
 
-		foreach ($items->find() as $obj) {
+        foreach ($items->find() as $obj) {
             $units = 1.0;
             $unit_of_measure = $obj->unitSize();
             if (strstr($obj->unitSize(), ' ')) {
@@ -79,18 +79,18 @@ class ChefTecExport
                 $units = $matches[1] * $matches[2];
                 $unit_of_measure = $matches[3];
             }
-			echo $obj->sku().',';
-			echo '"'.$obj->description().'",';
+            echo $obj->sku().',';
+            echo '"'.$obj->description().'",';
             echo $order->vendorInvoiceID() . ',';
             echo date('Ymd', strtotime($obj->receivedDate())) . ',';
             printf('%f,', $units * $obj->caseSize() * $obj->quantity());
             echo $unit_of_measure . ',';
-			printf('%.2f,', $obj->unitCost() * $obj->caseSize() * $obj->quantity());
-			echo '"'.$obj->description().'",';
+            printf('%.2f,', $obj->unitCost() * $obj->caseSize() * $obj->quantity());
+            echo '"'.$obj->description().'",';
             echo '"",'; // alt. indicator
             echo '"",'; // alt. unit
-			echo "\r\n";
-		}
-	}
+            echo "\r\n";
+        }
+    }
 }
 

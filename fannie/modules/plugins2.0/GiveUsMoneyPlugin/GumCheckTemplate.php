@@ -62,7 +62,13 @@ class GumCheckTemplate
         $this->amount_as_words = ucwords($nf->format($dollars)) . ' And ' . str_pad($cents, 2, '0', STR_PAD_LEFT) . '/100';
 
         $this->their_address[] = $custdata->FirstName() . ' ' . $custdata->LastName();
-        $this->their_address[] = $meminfo->street();
+        if (strstr($meminfo->street(), "\n")) {
+            foreach (explode("\n", $meminfo->street()) as $line) {
+                $this->their_address[] = $line;
+            }
+        } else {
+            $this->their_address[] = $meminfo->street();
+        }
         $this->their_address[] = $meminfo->city() . ', ' . $meminfo->state() . ' ' . $meminfo->zip();
 
         $settings->key('routingNo');
@@ -82,7 +88,7 @@ class GumCheckTemplate
         $this->my_address[1] = 'Street Address';
         $settings->key('storeAddress');
         if ($settings->load()) {
-            //$this->my_address[1] = $settings->value();
+            $this->my_address[1] = $settings->value();
         }
         $this->my_address[2] = '';
         $settings->key('storeCity');
@@ -170,6 +176,10 @@ class GumCheckTemplate
     public function renderAsPDF($pdf)
     {
         $margins = $pdf->GetMargins();
+        // this was written BEFORE patching
+        // fpdf to correctly return the top margin
+        // set to zero to mimic old, broken fpdf
+        $margins['top'] = 0.0; 
         $check_left_x = ($margins['left'] > 3.175) ? $margins['right'] : 3.175 - $margins['left'];
         $check_top_y = 193.675 - $margins['top'];
         $check_right_x = 203.2 - $margins['left'];
@@ -217,18 +227,20 @@ class GumCheckTemplate
         $pdf->SetFont('Arial', 'B', 10);
         $pdf->Cell(0, $line_height, $this->amount_as_words.'   ', 0, 1, 'R');
 
-        $pdf->SetXY($check_left_x + $envelope_window_tab, $check_top_y + (8*$line_height));
+        $pdf->SetXY($check_left_x + $envelope_window_tab, $check_top_y + (8.5*$line_height));
         foreach($this->their_address as $line) {
             $pdf->SetX($check_left_x + $envelope_window_tab);
             $pdf->Cell(0, $line_height, $line, 0, 1);
         }
 
-        $pdf->Image('img/sig.png', $check_right_x - 63.5, $check_top_y + (9*$line_height), 63.5);
-        $pdf->SetXY($check_right_x - 63.5, $pdf->GetY()+$line_height);
+        $pdf->Image(dirname(__FILE__) . '/img/sig.png', $check_right_x - 63.5, $check_top_y + (9*$line_height), 63.5);
+        $pdf->SetXY($check_right_x - 63.5, $check_top_y + (13*$line_height));
         $pdf->Cell(63.5, $line_height, 'Authorized By Signature', 'T');
 
-        $pdf->SetXY($check_left_x + 36, $check_bottom_y + $line_height - 1);
-        $pdf->AddFont('GnuMICR', '', 'GnuMICR.php');
+        $pdf->SetXY($check_left_x + 34.5, $check_bottom_y + $line_height - 1);
+        if (!isset($pdf->fonts['gnumicr'])) {
+            $pdf->AddFont('GnuMICR', '', 'GnuMICR.php');
+        }
         $pdf->SetFont('GnuMICR', '', 12);
         // In the MICR font:
         // A is the symbol for routing/transit

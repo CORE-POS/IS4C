@@ -32,24 +32,28 @@ class AccessProgramParser extends Parser {
 
     public function parse($str)
     {
-        global $CORE_LOCAL;
         $ret = $this->default_json();
 
-        if ($CORE_LOCAL->get('memberID') == '0') {
-            $ret['output'] = DisplayLib::boxMsg(_('Enter owner number first'));
+        if (CoreLocal::get('memberID') == '0') {
+            $ret['output'] = DisplayLib::boxMsg(
+                _("Apply member number first"),
+                _('No member selected'),
+                false,
+                array_merge(array('Member Search [ID]' => 'parseWrapper(\'ID\');'), DisplayLib::standardClearButton())
+            );
 
             return $ret;
         }
 
-        if ($str == 'ACCESS' && $CORE_LOCAL->get('msgrepeat') == 0) {
+        if ($str == 'ACCESS' && CoreLocal::get('msgrepeat') == 0) {
             $ret['main_frame'] = MiscLib::baseURL() . 'gui-modules/adminlogin.php?class=AccessProgramParser';
 
             return $ret;
         } else if ($str == 'ACCESS') {
-            if ($CORE_LOCAL->get('AccessQuickMenu') != '' && class_exists('QuickMenuLauncher')) {
+            if (CoreLocal::get('AccessQuickMenu') != '' && class_exists('QuickMenuLauncher')) {
                 $qm = new QuickMenuLauncher();
 
-                return $qm->parse('QM' . $CORE_LOCAL->get('AccessQuickMenu'));
+                return $qm->parse('QM' . CoreLocal::get('AccessQuickMenu'));
             } else {
                 $str = 'ACCESS0';
             }
@@ -75,10 +79,9 @@ class AccessProgramParser extends Parser {
 
     public static function adminLoginCallback($success)
     {
-        global $CORE_LOCAL;
         if ($success) {
-            $CORE_LOCAL->set('strRemembered', 'ACCESS');
-            $CORE_LOCAL->set('msgrepeat', 1);
+            CoreLocal::set('strRemembered', 'ACCESS');
+            CoreLocal::set('msgrepeat', 1);
 
             return true;
         } else {

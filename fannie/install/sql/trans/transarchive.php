@@ -3,10 +3,10 @@
 Table: transarchive
 
 Columns:
-	identical to dtransactions
+    identical to dtransactions
 
 Depends on:
-	dtransactions (table)
+    dtransactions (table)
 
 Use:
 This is a look-up table. Under WFC's day
@@ -23,10 +23,10 @@ cron/nightly.dtrans.php appends all of dtransactions
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-	* 23Oct2012 Eric Lee Added Maintenance section.
+    * 23Oct2012 Eric Lee Added Maintenance section.
 
 */
 
 $CREATE['trans.transarchive'] = duplicate_structure($dbms,
-					'dtransactions','transarchive');
+                    'dtransactions','transarchive');
 ?>

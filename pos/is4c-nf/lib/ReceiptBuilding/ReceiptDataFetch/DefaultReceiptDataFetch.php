@@ -36,8 +36,7 @@ class DefaultReceiptDataFetch
     */
     public function fetch($empNo=false,$laneNo=false,$transNo=false)
     {
-        global $CORE_LOCAL;
-        $op_db = $CORE_LOCAL->get('pDatabase');
+        $op_db = CoreLocal::get('pDatabase');
         $sql = Database::tDataConnect();
         $join_table = $op_db . $sql->sep() . 'MasterSuperDepts';
         $column = 's.super_name';
@@ -50,6 +49,7 @@ class DefaultReceiptDataFetch
             l.charflag,l.scale,l.quantity,l.unitPrice,
             l.ItemQtty,l.matched,l.numflag,l.tax,
             l.foodstamp,l.trans_id,l.department,
+            l.trans_subtype,l.regPrice,
             ' . $column . ' AS category 
             FROM localtemptrans AS l 
                 LEFT JOIN ' . $join_table . ' AS s ON l.department=s.dept_ID
@@ -61,6 +61,7 @@ class DefaultReceiptDataFetch
                 l.charflag,l.scale,l.quantity,l.unitPrice,
                 l.ItemQtty,l.matched,l.numflag,l.tax,
                 l.foodstamp,l.trans_id,l.department,
+                l.trans_subtype,l.regPrice,
                 " . $column . " AS category 
                 FROM localtranstoday as l 
                     LEFT JOIN " . $join_table . " AS s ON l.department=s.dept_ID

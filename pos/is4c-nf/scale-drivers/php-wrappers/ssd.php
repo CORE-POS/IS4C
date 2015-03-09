@@ -76,7 +76,6 @@ class ssd extends ScaleDriverWrapper {
 	}
 
 	function ReadFromScale(){
-		global $CORE_LOCAL;
 		$rel = MiscLib::base_url();
 
 		$scale_data = file_get_contents($rel.'scale-drivers/drivers/rs232/scale');
@@ -109,8 +108,7 @@ class ssd extends ScaleDriverWrapper {
 	}
 
 	function WriteToScale($str){
-		global $CORE_LOCAL;
-		$port = $CORE_LOCAL->get("scalePort");
+		$port = CoreLocal::get("scalePort");
 
 		switch(strtolower($str)){
 		case 'goodbeep':

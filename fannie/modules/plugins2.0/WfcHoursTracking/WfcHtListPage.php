@@ -34,7 +34,10 @@ class WfcHtListPage extends FanniePage
     protected $must_authenticate = true;
     protected $header = 'List';
     protected $title = 'List';
-    protected $window_dressing = false;
+
+    public $page_set = 'Plugin :: WFC Hours Tracking';
+    public $description = '[List] tracked employees.';
+    public $themed = true;
 
     private $dept_restrict = "WHERE deleted=0 ";
     private $dept_args = array();
@@ -222,7 +225,7 @@ class WfcHtListPage extends FanniePage
             $deptsQ = "select name,deptID from Departments order by name";
             $deptsR = $sql->query($deptsQ);
             echo "Show Department: ";
-            echo "<select onchange=\"top.location='{$_SERVER['PHP_SELF']}?showdept='+this.value;\">";
+            echo "<select class=\"form-control\" onchange=\"top.location='{$_SERVER['PHP_SELF']}?showdept='+this.value;\">";
             echo "<option value=\"\">All</option>";
             while ($deptsW = $sql->fetch_row($deptsR)) {
                 if ($this->selected_dept == $deptsW[1]) {
@@ -242,7 +245,7 @@ class WfcHtListPage extends FanniePage
             $deptsP = $sql->prepare_statement($deptsQ);
             $deptsR = $sql->exec_statement($deptsP, $this->list_args);
             echo "Show Department: ";
-            echo "<select onchange=\"top.location='{$_SERVER['PHP_SELF']}?showdept='+this.value;\">";
+            echo "<select class=\"form-control\" onchange=\"top.location='{$_SERVER['PHP_SELF']}?showdept='+this.value;\">";
             echo "<option value=\"\">All</option>";
             while ($deptsW = $sql->fetch_row($deptsR)) {
                 if ($this->selected_dept == $deptsW[1]) {
@@ -254,7 +257,7 @@ class WfcHtListPage extends FanniePage
             echo "</select>";
         }
 
-        echo "<table cellspacing=0 cellpadding=4 border=1><tr>";
+        echo "<table class=\"table\"><tr>";
         if ($sort == "e.name")
             echo "<th><a href={$_SERVER['PHP_SELF']}?sort=name&dir=$otherdir&showdept={$this->selected_dept}>Name</a></th>";
         else

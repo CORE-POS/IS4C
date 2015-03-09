@@ -28,10 +28,10 @@ if (!class_exists('FannieAPI')) {
 
 /**
 */
-class WfcGazetteBilling extends FanniePlugin 
+class WfcGazetteBilling extends \COREPOS\Fannie\API\FanniePlugin 
 {
-	public $plugin_settings = array();
+    public $plugin_settings = array();
 
-	public $plugin_description = 'WFC Plugin for billing business accounts for newsletter ads';
+    public $plugin_description = 'WFC Plugin for billing business accounts for newsletter ads';
 }
 

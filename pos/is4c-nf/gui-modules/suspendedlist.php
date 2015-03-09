@@ -38,16 +38,14 @@ class suspendedlist extends NoInputPage {
 
 	function preprocess()
     {
-		global $CORE_LOCAL;
-
 		/* form submitted */
 		if (isset($_REQUEST['selectlist'])){
             if (!empty($_REQUEST['selectlist'])){ // selected a transaction
 				$tmp = explode("::",$_REQUEST['selectlist']);
 				$this->doResume($tmp[0],$tmp[1],$tmp[2]);
                 // if it is a member transaction, verify correct name
-                if ($CORE_LOCAL->get('memberID') != '0' && $CORE_LOCAL->get('memberID') != $CORE_LOCAL->get('defaultNonMem')) {
-                    $this->change_page($this->page_url.'gui-modules/memlist.php?idSearch='.$CORE_LOCAL->get('memberID'));
+                if (CoreLocal::get('memberID') != '0' && CoreLocal::get('memberID') != CoreLocal::get('defaultNonMem')) {
+                    $this->change_page($this->page_url.'gui-modules/memlist.php?idSearch='.CoreLocal::get('memberID'));
                 } else {
                     $this->change_page($this->page_url."gui-modules/pos2.php");
                 }
@@ -65,14 +63,14 @@ class suspendedlist extends NoInputPage {
 
 		$db_a = Database::tDataConnect();
 		$result = "";
-		if ($CORE_LOCAL->get("standalone") == 1) {
+		if (CoreLocal::get("standalone") == 1) {
             $result = $db_a->query($query_local);
 		} else {
 			$db_a = Database::mDataConnect();
 			$result = $db_a->query($query_local);
 		}
 
-		$num_rows = $db_a->num_rows($result);
+		$num_rows = $result ? $db_a->num_rows($result) : 0;
 		
 		/* if there are suspended transactions available, 
 		 * store the result and row count as class variables
@@ -88,7 +86,7 @@ class suspendedlist extends NoInputPage {
 
 			return true;
 		} else {
-			$CORE_LOCAL->set("boxMsg",_("no suspended transaction"));
+			CoreLocal::set("boxMsg",_("no suspended transaction"));
 			$this->change_page($this->page_url."gui-modules/pos2.php");	
 
 			return false;
@@ -99,7 +97,6 @@ class suspendedlist extends NoInputPage {
 
 	function body_content()
     {
-		global $CORE_LOCAL;
 		$num_rows = $this->temp_num_rows;
 		$result = $this->temp_result;
 		$db = $this->temp_db;
@@ -107,7 +104,7 @@ class suspendedlist extends NoInputPage {
 		echo "<div class=\"baseHeight\">"
 			."<div class=\"listbox\">"
 			."<form id=\"selectform\" method=\"post\" action=\"{$_SERVER['PHP_SELF']}\">\n"
-			."<select name=\"selectlist\" size=\"10\" onblur=\"\$('#selectlist').focus();\"
+			."<select name=\"selectlist\" size=\"15\" onblur=\"\$('#selectlist').focus();\"
 				id=\"selectlist\">";
 
 		$selected = "selected";
@@ -119,9 +116,23 @@ class suspendedlist extends NoInputPage {
 			$selected = "";
 		}
 
-		echo "</select>\n</form>\n</div>\n"
-			."<div class=\"listboxText coloredText centerOffset\">"
-			._("use arrow keys to navigate")."<br />"._("clear to cancel")."</div>\n"
+		echo "</select>\n</div>\n";
+        if (CoreLocal::get('touchscreen')) {
+            echo '<div class="listbox listboxText">'
+                . DisplayLib::touchScreenScrollButtons('#selectlist')
+                . '</div>';
+        }
+        echo "<div class=\"listboxText coloredText centerOffset\">"
+            . _("use arrow keys to navigate")
+            . '<p><button type="submit" class="pos-button wide-button coloredArea">
+                OK <span class="smaller">[enter]</span>
+                </button></p>'
+            . '<p><button type="submit" class="pos-button wide-button errorColoredArea"
+                onclick="$(\'#selectlist\').append($(\'<option>\').val(\'\'));$(\'#selectlist\').val(\'\');">
+                Cancel <span class="smaller">[clear]</span>
+                </button></p>'
+            ."</div><!-- /.listboxText coloredText .centerOffset -->"
+            ."</form>"
 			."<div class=\"clear\"></div>";
 		echo "</div>";
 		$this->add_onload_command("\$('#selectlist').focus();");
@@ -130,8 +141,6 @@ class suspendedlist extends NoInputPage {
 
 	private function doResume($reg,$emp,$trans)
     {
-		global $CORE_LOCAL;
-
 		$query_del = "DELETE FROM suspended WHERE register_no = ".$reg." AND emp_no = "
 			.$emp." AND trans_no = ".$trans;
 
@@ -140,9 +149,9 @@ class suspendedlist extends NoInputPage {
 
 		// use SQLManager's transfer method when not in stand alone mode
 		// to eliminate the cross server query - andy 8/31/07
-		if ($CORE_LOCAL->get("standalone") == 0){
-			$db_a->add_connection($CORE_LOCAL->get("mServer"),$CORE_LOCAL->get("mDBMS"),
-				$CORE_LOCAL->get("mDatabase"),$CORE_LOCAL->get("mUser"),$CORE_LOCAL->get("mPass"));
+		if (CoreLocal::get("standalone") == 0){
+			$db_a->add_connection(CoreLocal::get("mServer"),CoreLocal::get("mDBMS"),
+				CoreLocal::get("mDatabase"),CoreLocal::get("mUser"),CoreLocal::get("mPass"));
 
 			$cols = Database::getMatchingColumns($db_a, "localtemptrans", "suspended");
 			// localtemptrans might not actually be empty; let trans_id
@@ -160,12 +169,12 @@ class suspendedlist extends NoInputPage {
                             AND trans_no = $trans
                             AND datetime >= " . date("'Y-m-d 00:00:00'") . "
                         ORDER BY trans_id";
-			$success = $db_a->transfer($CORE_LOCAL->get("mDatabase"),$remoteQ,
-				$CORE_LOCAL->get("tDatabase"),"insert into localtemptrans ({$cols})");
+			$success = $db_a->transfer(CoreLocal::get("mDatabase"),$remoteQ,
+				CoreLocal::get("tDatabase"),"insert into localtemptrans ({$cols})");
 			if ($success) {
-				$db_a->query($query_del,$CORE_LOCAL->get("mDatabase"));
+				$db_a->query($query_del,CoreLocal::get("mDatabase"));
             }
-			$db_a->close($CORE_LOCAL->get("mDatabase"), true);
+			$db_a->close(CoreLocal::get("mDatabase"), true);
 		} else {	
 			// localtemptrans might not actually be empty; let trans_id
 			// populate via autoincrement rather than copying it from
@@ -192,8 +201,8 @@ class suspendedlist extends NoInputPage {
             }
 		}
 
-		$query_update = "update localtemptrans set register_no = ".$CORE_LOCAL->get("laneno").", emp_no = ".$CORE_LOCAL->get("CashierNo")
-			.", trans_no = ".$CORE_LOCAL->get("transno");
+		$query_update = "update localtemptrans set register_no = ".CoreLocal::get("laneno").", emp_no = ".CoreLocal::get("CashierNo")
+			.", trans_no = ".CoreLocal::get("transno");
 
 		$db_a->query($query_update);
 

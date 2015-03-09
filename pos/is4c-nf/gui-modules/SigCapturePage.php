@@ -67,8 +67,6 @@ class SigCapturePage extends BasicPage
 
 	function preprocess()
     {
-		global $CORE_LOCAL;
-
         $this->bmp_path = $this->page_url . 'scale-drivers/drivers/NewMagellan/ss-output/tmp/';
 
         $terminal_msg = 'termSig';
@@ -93,9 +91,9 @@ class SigCapturePage extends BasicPage
                     // this should have been set already, but if we have sufficient info
                     // we can make sure it's correct.
                     if (isset($_REQUEST['amt']) && !empty($_REQUEST['amt']) && isset($_REQUEST['code']) && !empty($_REQUEST['code'])) {
-                        $CORE_LOCAL->set('strRemembered', (100*$_REQUEST['amt']) . $_REQUEST['code']);
+                        CoreLocal::set('strRemembered', (100*$_REQUEST['amt']) . $_REQUEST['code']);
                     }
-                    $CORE_LOCAL->set('msgrepeat', 1);
+                    CoreLocal::set('msgrepeat', 1);
 
                     $bmp = file_get_contents($_REQUEST['bmpfile']);
                     $format = 'BMP';
@@ -138,10 +136,10 @@ class SigCapturePage extends BasicPage
                     Database::getsubtotals();
                     $args = array(
                         date('Y-m-d H:i:s'),
-                        $CORE_LOCAL->get('CashierNo'),
-                        $CORE_LOCAL->get('laneno'),
-                        $CORE_LOCAL->get('transno'),
-                        $CORE_LOCAL->get('LastID') + 1,
+                        CoreLocal::get('CashierNo'),
+                        CoreLocal::get('laneno'),
+                        CoreLocal::get('transno'),
+                        CoreLocal::get('LastID') + 1,
                         $format,
                         $img_content,
                     );
@@ -164,8 +162,8 @@ class SigCapturePage extends BasicPage
 		return true;
 	}
 
-	function body_content(){
-		global $CORE_LOCAL;
+	function body_content()
+    {
 		$this->input_header();
 		echo DisplayLib::printheaderb();
 		?>
@@ -181,6 +179,15 @@ class SigCapturePage extends BasicPage
 
         echo "<div id=\"imgArea\"></div>";
         echo '<div class="textArea">';
+        if (!isset($_REQUEST['amt'])) {
+            $_REQUEST['amt'] = 0.00;
+        }
+        if (!isset($_REQUEST['type'])) {
+            $_REQUEST['type'] = 'Unknown';
+        }
+        if (!isset($_REQUEST['code'])) {
+            $_REQUEST['code'] = '??';
+        }
         echo '$' . sprintf('%.2f', $_REQUEST['amt']) . ' as ' . $_REQUEST['type'];
         echo '<br />';
         echo '<span id="sigInstructions" style="font-size:90%;">';
@@ -199,8 +206,8 @@ class SigCapturePage extends BasicPage
         $this->add_onload_command("addToForm('type', '{$_REQUEST['type']}');\n");
         $this->add_onload_command("addToForm('code', '{$_REQUEST['code']}');\n");
 		
-		$CORE_LOCAL->set("boxMsg",'');
-		$CORE_LOCAL->set("msgrepeat",2);
+		CoreLocal::set("boxMsg",'');
+		CoreLocal::set("msgrepeat",2);
 	} // END body_content() FUNCTION
 }
 

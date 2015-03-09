@@ -25,30 +25,35 @@ class CaseDiscount extends PreParser {
 	
 	function check($str){
 		// force quantity == 1
-		if (strstr($str,"CT") && !strstr($str,"*"))
-			return True;
-		return False;
+		if (strstr($str,"CT") && !strstr($str,"*")) {
+            $split = explode('CT', $str);
+            if (is_numeric($split[0]) && strlen($split[0] > 1) && strlen($split[1] > 1)) {
+                return true;
+            }
+        }
+
+		return false;
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
+	function parse($str)
+    {
 		$split = explode("CT", $str);
 		$remainder = "";
 		if (is_numeric($split[0]) && strlen($split[0] > 1) && strlen($split[1] > 1)){
 			if ($split[0] != 5 && $split[0] != 10){
 				$remainder = "cdinvalid";
-				$CORE_LOCAL->set("casediscount",$split[0]);
+				CoreLocal::set("casediscount",$split[0]);
 			}
-			elseif ($CORE_LOCAL->get("isStaff") == 1)
+			elseif (CoreLocal::get("isStaff") == 1)
 				$remainder = "cdStaffNA";
-			elseif ($CORE_LOCAL->get("SSI") == 1)
+			elseif (CoreLocal::get("SSI") == 1)
 				$remainder = "cdSSINA";
-			elseif ($CORE_LOCAL->get("isMember") == 1){
-				$CORE_LOCAL->set("casediscount",10);
+			elseif (CoreLocal::get("isMember") == 1){
+				CoreLocal::set("casediscount",10);
 				$remainder = $split[1];
 			}
-			elseif ($CORE_LOCAL->get("isMember") != 1){
-				$CORE_LOCAL->set("casediscount",5);
+			elseif (CoreLocal::get("isMember") != 1){
+				CoreLocal::set("casediscount",5);
 				$remainder = $split[1];
 			}
 		}	

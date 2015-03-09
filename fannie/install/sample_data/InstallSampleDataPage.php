@@ -24,75 +24,76 @@
 ini_set('display_errors','1');
 include('../../config.php'); 
 if(!class_exists('SQLManager'))
-	include($FANNIE_ROOT.'src/SQLManager.php');
+    include($FANNIE_ROOT.'src/SQLManager.php');
 include('../util.php');
 include('../db.php');
 include_once('../../classlib2.0/FannieAPI.php');
 
 /**
-	@class InstallSampleDataPage
-	Class for the SampleData install and config options
+    @class InstallSampleDataPage
+    Class for the SampleData install and config options
 */
 class InstallSampleDataPage extends InstallPage {
 
-	protected $title = 'Fannie: Sample Data';
-	protected $header = 'Fannie: Sample Data';
+    protected $title = 'Fannie: Sample Data';
+    protected $header = 'Fannie: Sample Data';
 
-	public $description = "
-	Class for the Sample Data install page.
-	";
+    public $description = "
+    Class for the Sample Data install page.
+    ";
+    public $themed = true;
 
-	// This replaces the __construct() in the parent.
-	public function __construct() {
+    // This replaces the __construct() in the parent.
+    public function __construct() {
 
-		// To set authentication.
-		FanniePage::__construct();
+        // To set authentication.
+        FanniePage::__construct();
 
-		// Link to a file of CSS by using a function.
-		$this->add_css_file("../../src/style.css");
-		$this->add_css_file("../../src/jquery/css/smoothness/jquery-ui-1.8.1.custom.css");
-		$this->add_css_file("../../src/css/install.css");
+        // Link to a file of CSS by using a function.
+        $this->add_css_file("../../src/style.css");
+        $this->add_css_file("../../src/javascript/jquery-ui.css");
+        $this->add_css_file("../../src/css/install.css");
 
-		// Link to a file of JS by using a function.
-		$this->add_script("../../src/jquery/js/jquery.js");
-		$this->add_script("../../src/jquery/js/jquery-ui-1.8.1.custom.min.js");
+        // Link to a file of JS by using a function.
+        $this->add_script("../../src/javascript/jquery.js");
+        $this->add_script("../../src/javascript/jquery-ui.js");
 
-	// __construct()
-	}
+    // __construct()
+    }
 
-	// If chunks of CSS are going to be added the function has to be
-	//  redefined to return them.
-	// If this is to override x.css draw_page() needs to load it after the add_css_file
-	/**
-	  Define any CSS needed
-	  @return A CSS string
-	*/
-	function css_content(){
-		$css ="
-		h4.install {
-		margin-bottom: 0.4em;
-		}";
+    // If chunks of CSS are going to be added the function has to be
+    //  redefined to return them.
+    // If this is to override x.css draw_page() needs to load it after the add_css_file
+    /**
+      Define any CSS needed
+      @return A CSS string
+    */
+    function css_content(){
+        $css ="
+        h4.install {
+        margin-bottom: 0.4em;
+        }";
 
-		return $css;
+        return $css;
 
-	//css_content()
-	}
+    //css_content()
+    }
 
-	// If chunks of JS are going to be added the function has to be
-	//  redefined to return them.
-	/**
-	  Define any javascript needed
-	  @return A javascript string
-	function javascript_content(){
+    // If chunks of JS are going to be added the function has to be
+    //  redefined to return them.
+    /**
+      Define any javascript needed
+      @return A javascript string
+    function javascript_content(){
 
-	}
-	*/
+    }
+    */
 
-	function body_content(){
-		//Should this really be done with global?
-		//global $FANNIE_URL, $FANNIE_EQUITY_DEPARTMENTS;
-		include('../../config.php'); 
-		ob_start();
+    function body_content(){
+        //Should this really be done with global?
+        //global $FANNIE_URL, $FANNIE_EQUITY_DEPARTMENTS;
+        include('../../config.php'); 
+        ob_start();
 ?>
 <?php
 echo showInstallTabs("Sample Data", '../');
@@ -102,103 +103,90 @@ echo showInstallTabs("Sample Data", '../');
 <h1 class="install"><?php echo $this->header; ?></h1>
 <?php
 if (is_writable('../../config.php')){
-	echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
+    echo "<div class=\"alert alert-success\"><i>config.php</i> is writeable</div>";
 }
 else {
-	echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
+    echo "<div class=\"alert alert-danger\"><b>Error</b>: config.php is not writeable</div>";
 }
 ?>
 <hr />
-<blockquote><i>
+<div class="well"><em>
 <?php
 /* First, if this is a request to load a file, do that.
 */
 $db = new SQLManager($FANNIE_SERVER,
-	$FANNIE_SERVER_DBMS,
-	$FANNIE_OP_DB,
-	$FANNIE_SERVER_USER,
-	$FANNIE_SERVER_PW);
+    $FANNIE_SERVER_DBMS,
+    $FANNIE_OP_DB,
+    $FANNIE_SERVER_USER,
+    $FANNIE_SERVER_PW);
 
 if (isset($_REQUEST['employees'])){
-	echo "Loading employees";
-	$db->query("TRUNCATE TABLE employees");
-	loaddata($db,'employees');	
+    echo "Loading employees";
+    $db->query("TRUNCATE TABLE employees");
+    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'employees');  
 }
 elseif(isset($_REQUEST['custdata'])){
-	echo "Loading custdata";
-	$db->query("TRUNCATE TABLE custdata");
-	loaddata($db,'custdata');
+    echo "Loading custdata";
+    $db->query("TRUNCATE TABLE custdata");
+    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'custdata');
 }
 elseif(isset($_REQUEST['memtype'])){
-	echo "Loading memtype";
-	$db->query("TRUNCATE TABLE memtype");
-	loaddata($db,'memtype');
-    if ($db->tableExists('memdefaults')) {
-        echo "Loading memdefaults";
-        $db->query("TRUNCATE TABLE memdefaults");
-        loaddata($db,'memdefaults');
-    }
+    echo "Loading memtype";
+    $db->query("TRUNCATE TABLE memtype");
+    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'memtype');
 }
 elseif(isset($_REQUEST['products'])){
-	echo "Loading products";
-	$db->query("TRUNCATE TABLE products");
-	loaddata($db,'products');
+    echo "Loading products";
+    $db->query("TRUNCATE TABLE products");
+    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'products');
 }
 elseif(isset($_REQUEST['depts'])){
-	echo "Loading departments";
-	$db->query("TRUNCATE TABLE departments");
-	loaddata($db,'departments');
-	/* subdepts sample data is of questionable use
-	echo "<br />Loading subdepts";
-	$db->query("TRUNCATE TABLE subdepts");
-	loaddata($db,'subdepts');
-	*/
-}
-elseif(isset($_REQUEST['memtype'])){
-	echo "Loading memtype";
-	$db->query("TRUNCATE TABLE memtype");
-	loaddata($db,'memtype');
-	echo "Loading memdefaults";
-	$db->query("TRUNCATE TABLE memdefaults");
-	loaddata($db,'memdefaults');
+    echo "Loading departments";
+    $db->query("TRUNCATE TABLE departments");
+    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'departments');
+    /* subdepts sample data is of questionable use
+    echo "<br />Loading subdepts";
+    $db->query("TRUNCATE TABLE subdepts");
+    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'subdepts');
+    */
 }
 elseif (isset($_REQUEST['superdepts'])){
-	echo "Loadintg super departments";
-	$db->query("TRUNCATE TABLE superdepts");
-	loaddata($db,'superdepts');
-	$db->query("TRUNCATE TABLE superDeptNames");
-	loaddata($db,'superDeptNames');
+    echo "Loading super departments";
+    $db->query("TRUNCATE TABLE superdepts");
+    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'superdepts');
+    $db->query("TRUNCATE TABLE superDeptNames");
+    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'superDeptNames');
 }
 elseif (isset($_REQUEST['tenders'])){
-	echo "Loadintg tenders";
-	$db->query("TRUNCATE TABLE tenders");
-	loaddata($db,'tenders');
+    echo "Loading tenders";
+    $db->query("TRUNCATE TABLE tenders");
+    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'tenders');
 }
 elseif (isset($_REQUEST['authentication'])){
-	echo "Loading authentication info";
-	$db->query("TRUNCATE TABLE userKnownPrivs");
-	loaddata($db,'userKnownPrivs');
+    echo "Loading authentication info";
+    $db->query("TRUNCATE TABLE userKnownPrivs");
+    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'userKnownPrivs');
 }
 elseif (isset($_REQUEST['origin'])){
-	echo "Loading country info";
-	$db->query("TRUNCATE TABLE originCountry");
-	loaddata($db,'originCountry');
-	echo "<br />Loading state/province info";
-	$db->query("TRUNCATE TABLE originStateProv");
-	loaddata($db,'originStateProv');
+    echo "Loading country info";
+    $db->query("TRUNCATE TABLE originCountry");
+    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'originCountry');
+    echo "<br />Loading state/province info";
+    $db->query("TRUNCATE TABLE originStateProv");
+    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'originStateProv');
 } else if (isset($_REQUEST['authGroups'])) {
-	echo "Loading authentication groups";
-	$db->query("TRUNCATE TABLE userGroups");
-	loaddata($db,'userGroups');
-	$db->query("TRUNCATE TABLE userGroupPrivs");
-	loaddata($db,'userGroupPrivs');
+    echo "Loading authentication groups";
+    $db->query("TRUNCATE TABLE userGroups");
+    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'userGroups');
+    $db->query("TRUNCATE TABLE userGroupPrivs");
+    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'userGroupPrivs');
     // give "Administrators" group all permissions
     $db->query("INSERT userGroupPrivs SELECT 
             1, auth_class, 'all', 'all'
             FROM userKnownPrivs");
 }
 ?>
-</i></blockquote>
+</em></div>
 
 <?php /* Display a list of data that can be loaded.
 */
@@ -209,34 +197,33 @@ up and running quickly and to try Fannie functions.
 <h3>Keep in mind this data overwrites whatever is currently in the table.</h3>
 <br />These utilities populate the server tables.
 Then use the <a href="../../sync/SyncIndexPage.php"
-target="_sync"
-style="text-decoration:underline;">Synchronize</a>
+target="_sync"><u>Synchronize</u></a>
 utilities to populate the lane tables.
 </p>
 <hr />
-<h4 class="install">Employees</h4>
+<h4 class="install"><?php echo _('Cashiers'); ?></h4>
 This table contains login information for cashiers. The two
 included logins are '56' and '7000'.<br />
-<input type=submit name=employees value="Load sample employees" />
+<button type=submit name=employees value="1" class="btn btn-default"><?php echo _('Load sample cashiers'); ?></button>
 <hr />
 <h4 class="install">Custdata</h4>
 Customer data is the membership information. Sample data includes
 a bunch of members and default non-member 11.<br />
-<input type=submit name=custdata value="Load sample customers" />
+<button type=submit name=custdata value="1" class="btn btn-default">Load sample customers</button>
 <br />
-<input type=submit name=memtype value="Load sample member types" />
+<button type=submit name=memtype value="1" class="btn btn-default">Load sample member types</button>
 <hr />
 <h4 class="install">Products</h4>
 Stuff to sell. There's a lot of sample data. I think this might
 be the Wedge's or at least a snapshot of it.<br />
-<input type=submit name=products value="Load sample products" />
+<button type=submit name=products value="1" class="btn btn-default">Load sample products</button>
 <hr />
 <h4 class="install">Departments</h4>
 Products get categorized into departments .
 You can also ring amounts directly to a department. Not needed,
 strictly speaking, for a basic lane (Ring up items, total, 
 accept tender, provide change).<br />
-<input type=submit name=depts value="Load sample departments" />
+<button type=submit name=depts value="1" class="btn btn-default">Load sample departments</button>
 <hr />
 <h4 class="install">Super-Department Names <span style="font-weight:400;">and</span> Super-Department Links</h4>
 Super Departments are tags for grouping Departments.
@@ -246,34 +233,32 @@ A Department can have more than one, that is, belong to more than one Super-Depa
 <br />Use them with e.g. the <a href="../../fannie/item/productList.php">Product List report/tool</a>
 <br />They are also used for grouping shelftags for printing and for grouping data in reports.
 <br />
-<input type=submit name=superdepts value="Load sample super departments" />
+<button type=submit name=superdepts value="1" class="btn btn-default">Load sample super departments</button>
 <hr />
 <h4 class="install">Tenders</h4>
 Load all the default tenders into the tenders table.<br />
-<input type=submit name=tenders value="Load default tenders" />
+<button type=submit name=tenders value="1" class="btn btn-default">Load default tenders</button>
 <hr />
 <h4 class="install">Authentication</h4>
 Load information about currently defined authorization classes<br />
-<input type=submit name=authentication value="Load auth classes" />
+<button type=submit name=authentication value="1" class="btn btn-default">Load auth classes</button>
 <br /><br />
 Load default groups<br />
-<input type=submit name=authGroups value="Load auth groups" />
+<button type=submit name=authGroups value="1" class="btn btn-default">Load auth groups</button>
 <hr />
 <h4 class="install">Countries, States, and Provinces</h4>
 Load default place-of-origin information<br />
-<input type=submit name=origin value="Load origin info" />
+<button type=submit name=origin value="1" class="btn btn-default">Load origin info</button>
 <hr />
 
 </form>
 
 <?php
 
-		return ob_get_clean();
+        return ob_get_clean();
 
-	// body_content
-	}
-
-// InstallSampleDataPage
+    // body_content
+    }
 }
 
 FannieDispatch::conditionalExec(false);

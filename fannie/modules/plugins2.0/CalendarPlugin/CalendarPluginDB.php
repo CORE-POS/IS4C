@@ -22,14 +22,14 @@
 *********************************************************************************/
 
 if (!class_exists('FannieAPI'))
-	include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class CalendarPluginDB {
 
-	public static function get(){
-		global $FANNIE_PLUGIN_SETTINGS;
-		return FannieDB::get($FANNIE_PLUGIN_SETTINGS['CalendarDatabase']);
-	}
+    public static function get(){
+        global $FANNIE_PLUGIN_SETTINGS;
+        return FannieDB::get($FANNIE_PLUGIN_SETTINGS['CalendarDatabase']);
+    }
 }
 
 ?>

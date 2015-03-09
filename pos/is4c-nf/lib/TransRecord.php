@@ -107,15 +107,13 @@ signs in
 */
 static public function addItem($strupc, $strdescription, $strtransType, $strtranssubType, $strtransstatus, $intdepartment, $dblquantity, $dblunitPrice, $dbltotal, $dblregPrice, $intscale, $inttax, $intfoodstamp, $dbldiscount, $dblmemDiscount, $intdiscountable, $intdiscounttype, $dblItemQtty, $intvolDiscType, $intvolume, $dblVolSpecial, $intmixMatch, $intmatched, $intvoided, $cost=0, $numflag=0, $charflag='') 
 {
-	global $CORE_LOCAL;
 	//$dbltotal = MiscLib::truncate2(str_replace(",", "", $dbltotal)); replaced by apbw 7/27/05 with the next 4 lines -- to fix thousands place errors
-
 	$dbltotal = str_replace(",", "", $dbltotal);		
 	$dbltotal = number_format($dbltotal, 2, '.', '');
 	$dblunitPrice = str_replace(",", "", $dblunitPrice);
 	$dblunitPrice = number_format($dblunitPrice, 2, '.', '');
 
-	if ($CORE_LOCAL->get("refund") == 1) {
+	if (CoreLocal::get("refund") == 1) {
 		$dblquantity = (-1 * $dblquantity);
 		$dbltotal = (-1 * $dbltotal);
 		$dbldiscount = (-1 * $dbldiscount);
@@ -125,35 +123,35 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
             $strtransstatus = "R" ;	// edited by apbw 6/04/05 to correct voiding of refunded items
         }
 
-		$CORE_LOCAL->set("refund",0);
-		$CORE_LOCAL->set("refundComment","");
-		$CORE_LOCAL->set("autoReprint",1);
+		CoreLocal::set("refund",0);
+		CoreLocal::set("refundComment","");
+		CoreLocal::set("autoReprint",1);
 
-		if ($CORE_LOCAL->get("refundDiscountable")==0) {
+		if (CoreLocal::get("refundDiscountable")==0) {
 			$intdiscountable = 0;
         }
 	}
 
-	$intregisterno = $CORE_LOCAL->get("laneno");
-	$intempno = $CORE_LOCAL->get("CashierNo");
-	$inttransno = $CORE_LOCAL->get("transno");
-	$strCardNo = $CORE_LOCAL->get("memberID");
-	$memType = $CORE_LOCAL->get("memType");
-	$staff = $CORE_LOCAL->get("isStaff");
-	$percentDiscount = $CORE_LOCAL->get("percentDiscount");
+	$intregisterno = CoreLocal::get("laneno");
+	$intempno = CoreLocal::get("CashierNo");
+	$inttransno = CoreLocal::get("transno");
+	$strCardNo = CoreLocal::get("memberID");
+	$memType = CoreLocal::get("memType");
+	$staff = CoreLocal::get("isStaff");
+	$percentDiscount = CoreLocal::get("percentDiscount");
 
 	$db = Database::tDataConnect();
 
 	$datetimestamp = "";
-	if ($CORE_LOCAL->get("DBMS") == "mssql") {
+	if (CoreLocal::get("DBMS") == "mssql") {
 		$datetimestamp = strftime("%m/%d/%y %H:%M:%S %p", time());
 	} else {
 		$datetimestamp = strftime("%Y-%m-%d %H:%M:%S", time());
 	}
 
-	$CORE_LOCAL->set("LastID",$CORE_LOCAL->get("LastID") + 1);
+	CoreLocal::set("LastID",CoreLocal::get("LastID") + 1);
 
-	$trans_id = $CORE_LOCAL->get("LastID");
+	$trans_id = CoreLocal::get("LastID");
 
     if (strlen($strdescription) > 30) {
         $strdescription = substr($strdescription, 0, 30);
@@ -196,7 +194,7 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 		'charflag'	=> $charflag,
 		'card_no'	=> (string)$strCardNo
 		);
-	if ($CORE_LOCAL->get("DBMS") == "mssql" && $CORE_LOCAL->get("store") == "wfc") {
+	if (CoreLocal::get("DBMS") == "mssql" && CoreLocal::get("store") == "wfc") {
 		unset($values["staff"]);
 		$values["isStaff"] = MiscLib::nullwrap($staff);
 	}
@@ -204,16 +202,15 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 	$db->smart_insert("localtemptrans",$values);
 
 	if ($strtransType == "I" || $strtransType == "D") {
-		$CORE_LOCAL->set("repeatable",1);
+		CoreLocal::set("repeatable",1);
 	}
 
-	$CORE_LOCAL->set("msgrepeat",0);
-	$CORE_LOCAL->set("toggletax",0);
-	$CORE_LOCAL->set("togglefoodstamp",0);
-	$CORE_LOCAL->set("SNR",0);
+	CoreLocal::set("toggletax",0);
+	CoreLocal::set("togglefoodstamp",0);
+	CoreLocal::set("SNR",0);
 
 	if ($intscale == 1) {
-		$CORE_LOCAL->set("lastWeight",$dblquantity);
+		CoreLocal::set("lastWeight",$dblquantity);
     }
 }
 
@@ -306,15 +303,14 @@ static public function addRecord($named_params)
 */
 static public function addQueued($upc, $description, $numflag=0, $charflag='',$regPrice=0)
 {
-	global $CORE_LOCAL;
-	$queue = $CORE_LOCAL->get("infoRecordQueue");	
+	$queue = CoreLocal::get("infoRecordQueue");	
 	if (!is_array($queue)) {
         $queue = array();
     }
 	$queue[] = array('upc'=>$upc,'description'=>$description,
 			'numflag'=>$numflag,'charflag'=>$charflag,
 			'regPrice'=>$regPrice);
-	$CORE_LOCAL->set("infoRecordQueue", $queue);
+	CoreLocal::set("infoRecordQueue", $queue);
 }
 
 /**
@@ -324,8 +320,7 @@ static public function addQueued($upc, $description, $numflag=0, $charflag='',$r
 */
 static public function emptyQueue()
 {
-	global $CORE_LOCAL;
-	$queue = $CORE_LOCAL->get("infoRecordQueue");	
+	$queue = CoreLocal::get("infoRecordQueue");	
 	if (!is_array($queue)) {
         $queue = array();
     }
@@ -345,7 +340,7 @@ static public function emptyQueue()
             'charflag' => $record['charflag'],
         ));
 	}
-	$CORE_LOCAL->set("infoRecordQueue",array());
+	CoreLocal::set("infoRecordQueue",array());
 }
 
 /**
@@ -354,14 +349,12 @@ static public function emptyQueue()
 */
 static public function addtax() 
 {
-	global $CORE_LOCAL;
-
 	if (true){
         self::addRecord(array(
             'upc' => 'TAX',
             'description' => 'Tax',
             'trans_type' => 'A',
-            'total' => $CORE_LOCAL->get('taxTotal'),
+            'total' => CoreLocal::get('taxTotal'),
         ));
 		return;
 	}
@@ -465,12 +458,22 @@ static public function addcomment($comment)
 /**
   Add a change record (a special type of tender record)
   @param $dblcashreturn the change amount
+  @param $strtendercode [default 'CA']
+  @param $strchangemsg [default 'Change']
 */
-static public function addchange($dblcashreturn,$strtendercode='CA') 
+static public function addchange($dblcashreturn, $strtendercode='CA', $strchangemsg='Change') 
 {
-	global $CORE_LOCAL;
+    /**
+      Avoiding writing blank records if opdata.tenders.ChangeMsg happens to be blank or null
+    */
+    if (empty($strchangemsg)) {
+        $strchangemsg = 'Change';
+    }
+    if (empty($strtendercode)) {
+        $strtendercode = 'CA';
+    }
     self::addRecord(array(
-        'description' => 'Change',
+        'description' => $strchangemsg,
         'trans_type' => 'T',
         'trans_subtype' => $strtendercode,
         'total' => $dblcashreturn,
@@ -504,11 +507,10 @@ static public function addfsones($intfsones)
 */
 static public function adddiscount($dbldiscount,$department) 
 {
-	global $CORE_LOCAL;
 	$strsaved = "** YOU SAVED $".MiscLib::truncate2($dbldiscount)." **";
-	if ($CORE_LOCAL->get("itemPD") > 0) {
+	if (CoreLocal::get("itemPD") > 0) {
 		$strsaved = sprintf("** YOU SAVED \$%.2f (%d%%) **",
-			$dbldiscount,$CORE_LOCAL->get("itemPD"));
+			$dbldiscount,CoreLocal::get("itemPD"));
 	}
     self::addRecord(array(
         'description' => $strsaved,
@@ -524,15 +526,13 @@ static public function adddiscount($dbldiscount,$department)
 */
 static public function addfsTaxExempt() 
 {
-	global $CORE_LOCAL;
-
 	Database::getsubtotals();
     self::addRecord(array(
         'upc' => 'FS Tax Exempt',
         'description' => ' Fs Tax Exempt ',
         'trans_type' => 'C',
         'trans_status' => 'D',
-        'unitPrice' => $CORE_LOCAL->get('fsTaxExempt'),
+        'unitPrice' => CoreLocal::get('fsTaxExempt'),
         'voided' => 17,
     ));
 }
@@ -559,8 +559,6 @@ static public function discountnotify($strl)
 */
 static public function addTaxExempt() 
 {
-	global $CORE_LOCAL;
-
     self::addRecord(array(
         'description' => '** Order is Tax Exempt **',
         'trans_type' => '0',
@@ -568,7 +566,7 @@ static public function addTaxExempt()
         'voided' => 10,
         'tax' => 9,
     ));
-	$CORE_LOCAL->set("TaxExempt",1);
+	CoreLocal::set("TaxExempt",1);
 	Database::setglobalvalue("TaxExempt", 1);
 }
 
@@ -577,7 +575,6 @@ static public function addTaxExempt()
 */
 static public function reverseTaxExempt() 
 {
-	global $CORE_LOCAL;
     self::addRecord(array(
         'description' => '** Tax Exemption Reversed **',
         'trans_type' => '0',
@@ -585,21 +582,19 @@ static public function reverseTaxExempt()
         'voided' => 10,
         'tax' => 9,
     ));
-	$CORE_LOCAL->set("TaxExempt",0);
+	CoreLocal::set("TaxExempt",0);
 	Database::setglobalvalue("TaxExempt", 0);
 }
 
 /** 
   Add an informational record noting case discount
-  $CORE_LOCAL setting "casediscount" controls the percentage
+  session setting "casediscount" controls the percentage
   shown
 */
 static public function addcdnotify() 
 {
-	global $CORE_LOCAL;
-
     self::addRecord(array(
-        'description' => '** ' . $CORE_LOCAL->get('casediscount') . '% Case Discount Applied',
+        'description' => '** ' . CoreLocal::get('casediscount') . '% Case Discount Applied',
         'trans_type' => '0',
         'trans_status' => 'D',
         'voided' => 6,
@@ -621,8 +616,7 @@ static public function addcdnotify()
 */
 static public function addCoupon($strupc, $intdepartment, $dbltotal, $foodstamp=0, $tax=0) 
 {
-	global $CORE_LOCAL;
-	if ($CORE_LOCAL->get('CouponsAreTaxable') !== 0) {
+	if (CoreLocal::get('CouponsAreTaxable') !== 0) {
 		$tax = 0;
     }
 
@@ -651,10 +645,9 @@ static public function addCoupon($strupc, $intdepartment, $dbltotal, $foodstamp=
 */
 static public function addhousecoupon($strupc, $intdepartment, $dbltotal, $description='') 
 {
-	global $CORE_LOCAL;
     if (empty($description)) {
         $sql = Database::pDataConnect();
-        $fetchQ = "select card_no, coupID, description from houseVirtualCoupons WHERE card_no=" . $CORE_LOCAL->get('memberID');
+        $fetchQ = "select card_no, coupID, description from houseVirtualCoupons WHERE card_no=" . CoreLocal::get('memberID');
         $fetchR = $sql->query($fetchQ);
         $coupW = $sql->fetch_row($fetchR);
         $description = ($coupW) ? substr($coupW["description"],0,35) : " * Store Coupon";
@@ -703,18 +696,17 @@ static public function additemdiscount($intdepartment, $dbltotal)
 */
 static public function addTare($dbltare) 
 {
-	global $CORE_LOCAL;
-	$CORE_LOCAL->set("tare",$dbltare/100);
-	$rf = $CORE_LOCAL->get("refund");
-	$rc = $CORE_LOCAL->get("refundComment");
+	CoreLocal::set("tare",$dbltare/100);
+	$rf = CoreLocal::get("refund");
+	$rc = CoreLocal::get("refundComment");
     self::addRecord(array(
-        'description' => '** Tare Weight ' . $CORE_LOCAL->get('tare') . ' **',
+        'description' => '** Tare Weight ' . CoreLocal::get('tare') . ' **',
         'trans_type' => '0',
         'trans_status' => 'D',
         'voided' => 6,
     ));
-	$CORE_LOCAL->set("refund",$rf);
-	$CORE_LOCAL->set("refundComment",$rc);
+	CoreLocal::set("refund",$rf);
+	CoreLocal::set("refundComment",$rc);
 }
 
 /**
@@ -723,7 +715,6 @@ static public function addTare($dbltare)
 */
 static public function addVirtualCoupon($id)
 {
-	global $CORE_LOCAL;
 	$sql = Database::pDataConnect();
 	$fetchQ = "select name,type,value,max from VirtualCoupon WHERE flag=$id";
 	$fetchR = $sql->query($fetchQ);
@@ -735,7 +726,7 @@ static public function addVirtualCoupon($id)
 	$desc = substr($coupW["name"],0,35);
 	switch(strtoupper($type)) {
         case 'PERCENT':
-            $val = $val * $CORE_LOCAL->get("discountableTotal");
+            $val = $val * CoreLocal::get("discountableTotal");
             break;
 	}
 	if ($limit != 0 && $val > $limit) {
@@ -763,14 +754,13 @@ static public function addVirtualCoupon($id)
 */
 static public function addTransDiscount() 
 {
-	global $CORE_LOCAL;
     self::addRecord(array(
         'upc' => 'DISCOUNT',
         'description' => 'Discount',
-        'trans_type' => 'I',
+        'trans_type' => 'S',
         'quantity' => 1,
-        'unitPrice' => MiscLib::truncate2(-1 * $CORE_LOCAL->get('transDiscount')),
-        'total' => MiscLib::truncate2(-1 * $CORE_LOCAL->get('transDiscount')),
+        'unitPrice' => MiscLib::truncate2(-1 * CoreLocal::get('transDiscount')),
+        'total' => MiscLib::truncate2(-1 * CoreLocal::get('transDiscount')),
         'ItemQtty' => 1,
     ));
 }
@@ -831,7 +821,7 @@ static public function addLogRecord($opts)
         'description' => $desc,
         'trans_type' => 'L',
         'trans_subtype' => 'OG',
-        'trans_status' => 'X',
+        'trans_status' => 'D',
         'department' => $dept,
         'total' => $total,
         'regPrice' => $regPrice,
@@ -843,6 +833,76 @@ static public function addLogRecord($opts)
 static public function add_log_record($opts)
 {
     self::addLogRecord($opts);
+}
+
+/**
+  Finish the current transaction
+  @param $incomplete [boolean] optional, default false
+
+  This method:
+  1) Adds tax and discount lines if transaction is complete
+     (i.e., $incomplete == false)
+  2) Rotates data out of localtemptrans
+  3) Advances trans_no variable to next available value
+
+  This method replaces older ajax-end.php / end.php operations
+  where the receipt was printed first and then steps 1-3
+  above happened. This method should be called BEFORE printing
+  a receipt. Receipts are now always printed via localtranstoday.
+*/
+static public function finalizeTransaction($incomplete=false)
+{
+    if (!$incomplete) {
+        self::addtransDiscount();
+        self::addTax();
+        $taxes = Database::LineItemTaxes();
+        foreach($taxes as $tax) {
+            if (CoreLocal::get('TaxExempt') == 1) {
+                $tax['amount'] = 0.00;
+            }
+            self::addLogRecord(array(
+                'upc' => 'TAXLINEITEM',
+                'description' => $tax['description'],
+                'numflag' => $tax['rate_id'],
+                'amount2' => $tax['amount'],
+            ));
+        }
+        DiscountModule::lineItems();
+    }
+
+    if (Database::rotateTempData()) { // rotate data
+        Database::clearTempTables();
+    }
+
+    // advance trans_no value
+    $nextTransNo = Database::gettransno(CoreLocal::get('CashierNo'));
+    CoreLocal::set('transno', $nextTransNo);
+    Database::setglobalvalue('TransNo', $nextTransNo);
+}
+
+static public function debugLog($val)
+{
+	$tdate = "";
+	if (CoreLocal::get("DBMS") == "mssql") {
+		$tdate = strftime("%m/%d/%y %H:%M:%S %p", time());
+	} else {
+		$tdate = strftime("%Y-%m-%d %H:%M:%S", time());
+	}
+    $trans_num = ReceiptLib::receiptNumber();
+    $lastID = CoreLocal::get('LastID');
+
+    $db = Database::tDataConnect();
+    if ($db->table_exists('DebugLog')) {
+        $prep = $db->prepare('INSERT INTO DebugLog 
+                              (tdate, transNum, transID, entry)
+                              VALUES
+                              (?, ?, ?, ?)');
+        $res = $db->execute($prep, array($tdate, $trans_num, $lastID, $val));
+
+        return $res ? true : false;
+    } else {
+        return false;
+    }
 }
 
 }

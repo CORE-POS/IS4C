@@ -1,0 +1,63 @@
+language: php
+
+# keep verisions minimal to limit total
+# builds on free service. politeness.
+php:
+#    - "5.4"
+    - "5.3"
+
+services:
+    - mysql
+
+branches:
+    only:
+        - fannieDevelop
+        - posDevelop
+
+# test both msyqli and PDO 
+# using deprecated mysql should really
+# be discoutraged
+env:
+    global:
+        - F_TEST="phpunit --bootstrap fannie/unit-tests/bootstrap.php"
+        - P_TEST="phpunit --bootstrap pos/is4c-nf/unit-tests/bootstrap.php"
+    matrix:
+        - DB_DRIVER=pdo_mysql
+        - DB_DRIVER=mysqli
+
+install:
+    - if [ '$TRAVIS_BRANCH' != 'posDevelop' ] ; then sh fannie/unit-tests/travis-init.sh; fi
+    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ] ; then sh pos/is4c-nf/unit-tests/travis-init.sh; fi
+
+script:
+    # Fannie tests
+    # This must run first
+    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/InstallTest.php; fi
+    # These can run in any order
+    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/ApiLibTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/ItemsTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/LogTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/MembersTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/ModelsTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/PagesTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/PluginsTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/SQLManagerTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/TasksTest.php; fi
+    # POS tests
+    # This must run first
+    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/InstallTest.php; fi
+    # These can run in any order
+    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/BaseLibsTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/DisplayTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/FooterBoxesTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/KickersTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/LocalStorageTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/PagesTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/ParsersTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/PluginsTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/ReceiptTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/SQLManagerTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/ScanningTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/SearchTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/TendersTest.php; fi
+    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/TotalActionsTest.php; fi

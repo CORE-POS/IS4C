@@ -46,23 +46,47 @@ class SalesBatchTask extends FannieTask
         $now = date('Y-m-d 00:00:00');
         $sale_upcs = array();
 
+        // ensure likecode items are mixmatch-able
+        if ($dbc->dbms_name() == 'mssql') {
+            $dbc->query("UPDATE products
+                SET mixmatchcode=convert(varchar,u.likecode+500)
+                FROM 
+                products AS p
+                INNER JOIN upcLike AS u
+                ON p.upc=u.upc");
+        } else {
+            $dbc->query("UPDATE products AS p
+                INNER JOIN upcLike AS u ON p.upc=u.upc
+                SET p.mixmatchcode=convert(u.likeCode+500,char)");
+        }
+
         $likeP = $dbc->prepare('SELECT u.upc 
                                 FROM upcLike AS u
                                     INNER JOIN products AS p ON u.upc=p.upc
                                 WHERE likeCode=?');
         $product = new ProductsModel($dbc);
+        $b_def = $dbc->tableDefinition('batches');
 
         // lookup current batches
-        $query = 'SELECT l.upc, l.batchID, l.pricemethod, l.salePrice, l.quantity,
-                        b.startDate, b.endDate, b.discounttype
+        $query = 'SELECT l.upc, 
+                    l.batchID, 
+                    l.pricemethod, 
+                    l.salePrice, 
+                    l.quantity,
+                    b.startDate, 
+                    b.endDate, 
+                    b.discounttype
+                    ' . (isset($b_def['transLimit']) ? ',b.transLimit' : ',0 AS transLimit') . '
                   FROM batches AS b
                     INNER JOIN batchList AS l ON b.batchID = l.batchID
                   WHERE b.discounttype <> 0
                     AND b.startDate <= ?
-                    AND b.endDate >= ?';
+                    AND b.endDate >= ?
+                  ORDER BY l.upc,
+                    l.salePrice DESC';
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, array($now, $now));
-        while($row = $dbc->fetch_row($result)) {
+        while ($row = $dbc->fetch_row($result)) {
             // all items affected by this bathcList record
             // could be more than one in the case of likecodes
             $item_upcs = array();
@@ -72,6 +96,7 @@ class SalesBatchTask extends FannieTask
             $specialpricemethod = $row['pricemethod'];
             $specialgroupprice = abs($row['salePrice']);
             $specialquantity = $row['quantity'];
+            $special_limit = $row['transLimit'];
             $start_date = $row['startDate'];
             $end_date = $row['endDate'];
             $discounttype = $row['discounttype'];
@@ -103,12 +128,12 @@ class SalesBatchTask extends FannieTask
 
             // check each item to see if it is on
             // sale with the correct parameters
-            foreach($item_upcs as $upc) {
+            foreach ($item_upcs as $upc) {
                 $product->reset();
                 $product->upc($upc);
-                echo $this->cronMsg('Checking item ' . $upc);
+                $this->cronMsg('Checking item ' . $upc, FannieLogger::INFO);
                 if (!$product->load()) {
-                    echo $this->cronMsg("\tError: item does not exist in products");
+                    $this->cronMsg("\tError: item does not exist in products", FannieLogger::NOTICE);
                     continue;
                 }
                 // list of UPCs that should be on sale
@@ -117,60 +142,67 @@ class SalesBatchTask extends FannieTask
                 $changed = false;
                 ob_start();
                 if ($product->special_price() == $special_price) {
-                    echo $this->cronMsg("\tspecial_price is correct");
+                    $this->cronMsg("\tspecial_price is correct", FannieLogger::INFO);
                 } else {
-                    echo $this->cronMsg("\tspecial_price will be updated");
+                    $this->cronMsg("\tspecial_price will be updated", FannieLogger::INFO);
                     $changed = true;
                     $product->special_price($special_price);
                 }
                 if ($product->specialpricemethod() == $specialpricemethod) {
-                    echo $this->cronMsg("\tspecialpricemethod is correct");
+                    $this->cronMsg("\tspecialpricemethod is correct", FannieLogger::INFO);
                 } else {
-                    echo $this->cronMsg("\tspecialpricemethod will be updated");
+                    $this->cronMsg("\tspecialpricemethod will be updated", FannieLogger::INFO);
                     $changed = true;
                     $product->specialpricemethod($specialpricemethod);
                 }
                 if ($product->specialgroupprice() == $specialgroupprice) {
-                    echo $this->cronMsg("\tspecialgroupprice is correct");
+                    $this->cronMsg("\tspecialgroupprice is correct", FannieLogger::INFO);
                 } else {
-                    echo $this->cronMsg("\tspecialgroupprice will be updated");
+                    $this->cronMsg("\tspecialgroupprice will be updated", FannieLogger::INFO);
                     $changed = true;
                     $product->specialgroupprice($specialgroupprice);
                 }
                 if ($product->specialquantity() == $specialquantity) {
-                    echo $this->cronMsg("\tspecialquantity is correct");
+                    $this->cronMsg("\tspecialquantity is correct", FannieLogger::INFO);
                 } else {
-                    echo $this->cronMsg("\tspecialquantity will be updated");
+                    $this->cronMsg("\tspecialquantity will be updated", FannieLogger::INFO);
                     $changed = true;
                     $product->specialquantity($specialquantity);
                 }
-                if ($product->start_date() == $start_date) {
-                    echo $this->cronMsg("\tstart_date is correct");
+                if ($product->special_limit() == $special_limit) {
+                    $this->cronMsg("\tspecial_limit is correct", FannieLogger::INFO);
                 } else {
-                    echo $this->cronMsg("\tstart_date will be updated");
+                    $this->cronMsg("\tspecial_limit will be updated", FannieLogger::INFO);
+                    $changed = true;
+                    $product->special_limit($special_limit);
+                }
+                if ($product->start_date() == $start_date) {
+                    $this->cronMsg("\tstart_date is correct", FannieLogger::INFO);
+                } else {
+                    $this->cronMsg("\tstart_date will be updated", FannieLogger::INFO);
                     $changed = true;
                     $product->start_date($start_date);
                 }
                 if ($product->end_date() == $end_date) {
-                    echo $this->cronMsg("\tend_date is correct");
+                    $this->cronMsg("\tend_date is correct", FannieLogger::INFO);
                 } else {
-                    echo $this->cronMsg("\tend_date will be updated");
+                    $this->cronMsg("\tend_date will be updated", FannieLogger::INFO);
                     $changed = true;
                     $product->end_date($end_date);
                 }
                 if ($product->discounttype() == $discounttype) {
-                    echo $this->cronMsg("\tdiscounttype is correct");
+                    $this->cronMsg("\tdiscounttype is correct", FannieLogger::INFO);
                 } else {
-                    echo $this->cronMsg("\tdiscounttype will be updated");
+                    $this->cronMsg("\tdiscounttype will be updated", FannieLogger::INFO);
                     $changed = true;
                     $product->discounttype($discounttype);
                 }
-                if ($mixmatch === false || $product->mixmatch() == $mixmatch) {
-                    echo $this->cronMsg("\tmixmatch is correct");
+                if ($mixmatch === false || $product->mixmatchcode() == $mixmatch) {
+                    $this->cronMsg("\tmixmatch is correct", FannieLogger::INFO);
                 } else {
-                    echo $this->cronMsg("\tmixmatch will be updated");
+                    $this->cronMsg("\tmixmatch will be updated", FannieLogger::INFO);
                     $changed = true;
-                    $product->mixmatch($mixmatch);
+                    $product->mixmatchcode($mixmatch);
                 }
 
                 if ($changed) {
@@ -178,11 +210,17 @@ class SalesBatchTask extends FannieTask
                     $product->save();
                 } else {
                     ob_end_clean();
-                    echo $this->cronMsg("\tAll settings correct");
+                    $this->cronMsg("\tAll settings correct", FannieLogger::INFO);
                 }
             } // end loop on batchList record items
         } // end loop on batchList records
 
+        // No sale items; need a filler value for
+        // the query below
+        if (count($sale_upcs) == 0) {
+            $this->cronMsg('Notice: nothing is currently on sale', FannieLogger::WARNING);
+            $sale_upcs[] = 'notValidUPC';
+        }
         // now look for anything on sale that should not be
         // and take those items off sale
         $upc_in = '';
@@ -203,7 +241,7 @@ class SalesBatchTask extends FannieTask
         $lookupP = $dbc->prepare($lookupQ);
         $lookupR = $dbc->execute($lookupP, $sale_upcs);
         while($lookupW = $dbc->fetch_row($lookupR)) {
-            echo $this->cronMsg('Taking ' . $lookupW['upc'] . ' off sale');
+            $this->cronMsg('Taking ' . $lookupW['upc'] . ' off sale', FannieLogger::INFO);
             $product->reset();
             $product->upc($lookupW['upc']);
             $product->discounttype(0);

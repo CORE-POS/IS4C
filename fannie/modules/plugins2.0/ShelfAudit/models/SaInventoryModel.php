@@ -36,7 +36,7 @@ class SaInventoryModel extends BasicModel
     'clear' => array('type'=>'TINYINT'),
     'quantity' => array('type'=>'DOUBLE'),
     'section' => array('type'=>'INT'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -50,6 +50,22 @@ class SaInventoryModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'id',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["id"]) || $this->instance["id"] != func_get_args(0)) {
                 if (!isset($this->columns["id"]["ignore_updates"]) || $this->columns["id"]["ignore_updates"] == false) {
@@ -58,6 +74,7 @@ class SaInventoryModel extends BasicModel
             }
             $this->instance["id"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function datetime()
@@ -70,6 +87,22 @@ class SaInventoryModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'datetime',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["datetime"]) || $this->instance["datetime"] != func_get_args(0)) {
                 if (!isset($this->columns["datetime"]["ignore_updates"]) || $this->columns["datetime"]["ignore_updates"] == false) {
@@ -78,6 +111,7 @@ class SaInventoryModel extends BasicModel
             }
             $this->instance["datetime"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function upc()
@@ -90,6 +124,22 @@ class SaInventoryModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'upc',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["upc"]) || $this->instance["upc"] != func_get_args(0)) {
                 if (!isset($this->columns["upc"]["ignore_updates"]) || $this->columns["upc"]["ignore_updates"] == false) {
@@ -98,6 +148,7 @@ class SaInventoryModel extends BasicModel
             }
             $this->instance["upc"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function clear()
@@ -110,6 +161,22 @@ class SaInventoryModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'clear',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["clear"]) || $this->instance["clear"] != func_get_args(0)) {
                 if (!isset($this->columns["clear"]["ignore_updates"]) || $this->columns["clear"]["ignore_updates"] == false) {
@@ -118,6 +185,7 @@ class SaInventoryModel extends BasicModel
             }
             $this->instance["clear"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function quantity()
@@ -130,6 +198,22 @@ class SaInventoryModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'quantity',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["quantity"]) || $this->instance["quantity"] != func_get_args(0)) {
                 if (!isset($this->columns["quantity"]["ignore_updates"]) || $this->columns["quantity"]["ignore_updates"] == false) {
@@ -138,6 +222,7 @@ class SaInventoryModel extends BasicModel
             }
             $this->instance["quantity"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function section()
@@ -150,6 +235,22 @@ class SaInventoryModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'section',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["section"]) || $this->instance["section"] != func_get_args(0)) {
                 if (!isset($this->columns["section"]["ignore_updates"]) || $this->columns["section"]["ignore_updates"] == false) {
@@ -158,6 +259,7 @@ class SaInventoryModel extends BasicModel
             }
             $this->instance["section"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

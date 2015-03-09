@@ -30,6 +30,7 @@ class HourlySalesReport extends FannieReportPage
 {
     public $description = '[Hourly Sales] lists sales per hour over a given date range.';
     public $report_set = 'Sales Reports';
+    public $themed = true;
 
     protected $title = "Fannie : Hourly Sales Report";
     protected $header = "Hourly Sales";
@@ -39,35 +40,33 @@ class HourlySalesReport extends FannieReportPage
     protected $sortable = false;
     protected $no_sort_but_style = true;
 
-	public function preprocess()
+    public function preprocess()
     {
         parent::preprocess();
         // custom: needs graphing JS/CSS
         if ($this->content_function == 'report_content' && $this->report_format == 'html') {
-            $this->add_script('../../src/d3.js/d3.v3.min.js');
-            $this->add_script('../../src/d3.js/charts/singleline/singleline.js');
-            $this->add_css_file('../../src/d3.js/charts/singleline/singleline.css');
-		}
+            $this->add_script('../../src/javascript/d3.js/d3.v3.min.js');
+            $this->add_script('../../src/javascript/d3.js/charts/singleline/singleline.js');
+            $this->add_css_file('../../src/javascript/d3.js/charts/singleline/singleline.css');
+        }
 
-		return true;
-	}
+        return true;
+    }
 
     public function report_description_content()
     {
-        $date1 = FormLib::get('date1', date('Y-m-d'));
-        $date2 = FormLib::get('date2', date('Y-m-d'));
         $deptStart = FormLib::get('deptStart');
         $deptEnd = FormLib::get('deptEnd');
         $weekday = FormLib::get('weekday', 0);
         $buyer = FormLib::get('buyer', '');
-	
+    
         $ret = array();
-        $ret[] = 'Hourly Sales Report';
-        $ret[] = 'From '.$date1.' to '.$date2;
         if ($buyer === '') {
             $ret[] = 'Department '.$deptStart.' to '.$deptEnd;
         } else if ($buyer == -1) {
             $ret[] = 'All Super Departments';
+        } else if ($buyer == -2) {
+            $ret[] = 'All Retail Super Departments';
         } else {
             $ret[] = 'Super Department '.$buyer;
         }
@@ -77,7 +76,7 @@ class HourlySalesReport extends FannieReportPage
         }
 
         if ($this->report_format == 'html') {
-            $ret[] = sprintf('<a href="../HourlyTrans/HourlyTransReport.php?%s">Transaction Counts for Same Period</a>', 
+            $ret[] = sprintf(' <a href="../HourlyTrans/HourlyTransReport.php?%s">Transaction Counts for Same Period</a>', 
                             $_SERVER['QUERY_STRING']);
         }
 
@@ -114,7 +113,7 @@ class HourlySalesReport extends FannieReportPage
         $deptStart = FormLib::get('deptStart');
         $deptEnd = FormLib::get('deptEnd');
         $weekday = FormLib::get('weekday', 0);
-	
+    
         $buyer = FormLib::get('buyer', '');
 
         // args/parameters differ with super
@@ -122,7 +121,9 @@ class HourlySalesReport extends FannieReportPage
         $args = array($date1.' 00:00:00', $date2.' 23:59:59');
         $where = ' 1=1 ';
         if ($buyer !== '') {
-            if ($buyer != -1) {
+            if ($buyer == -2) {
+                $where = ' s.superID != 0 ';
+            } elseif ($buyer != -1) {
                 $where = ' s.superID=? ';
                 $args[] = $buyer;
             }
@@ -151,8 +152,11 @@ class HourlySalesReport extends FannieReportPage
                     sum(d.total) AS ttl, avg(d.total) as avg
                   FROM $dlog AS d ";
         // join only needed with specific buyer
+        // or all retail
         if ($buyer !== '' && $buyer > -1) {
             $query .= 'LEFT JOIN superdepts AS s ON d.department=s.dept_ID ';
+        } elseif ($buyer !== '' && $buyer == -2) {
+            $query .= 'LEFT JOIN MasterSuperDepts AS s ON d.department=s.dept_ID ';
         }
         $query .= "WHERE d.trans_type IN ('I','D')
                     AND d.tdate BETWEEN ? AND ?
@@ -232,7 +236,7 @@ class HourlySalesReport extends FannieReportPage
         }
         
         return $data;
-	}
+    }
 
     public function calculate_footers($data)
     {
@@ -341,77 +345,103 @@ function showGraph(i) {
 
         ob_start();
         ?>
-<script type="text/javascript">
-function swap(src,dst){
-    var val = document.getElementById(src).value;
-    document.getElementById(dst).value = val;
-}
-</script>
-<div id=main>	
-<form method = "get" action="HourlySalesReport.php">
-	<table border="0" cellspacing="0" cellpadding="5">
-		<tr>
-			<td><b>Select Buyer/Dept</b></td>
-			<td><select id=buyer name=buyer>
-			   <option value=""></option>
-			   <?php echo $deptSubList; ?>
-			   <option value=-1 selected>All</option>
-			   </select>
- 			</td>
-			<td><b>Send to Excel</b></td>
-			<td><input type=checkbox name=excel id=excel value=1></td>
-		</tr>
-		<tr>
-			<td colspan=5><i>Selecting a Buyer/Dept overrides Department Start/Department End, but not Date Start/End.
-			To run reports for a specific department(s) leave Buyer/Dept or set it to 'blank'</i></td>
-		</tr>
-		<tr> 
-			<td> <p><b>Department Start</b></p>
-			<p><b>End</b></p></td>
-			<td> <p>
- 			<select id=deptStartSel onchange="swap('deptStartSel','deptStart');">
-			<?php echo $deptsList ?>
-			</select>
-			<input type=text name=deptStart id=deptStart size=5 value=1 />
-			</p>
-			<p>
-			<select id=deptEndSel onchange="swap('deptEndSel','deptEnd');">
-			<?php echo $deptsList ?>
-			</select>
-			<input type=text name=deptEnd id=deptEnd size=5 value=1 />
-			</p></td>
-
-			 <td>
-			<p><b>Date Start</b> </p>
-		         <p><b>End</b></p>
-		       </td>
-		            <td>
-		             <p>
-		               <input type=text id=date1 name=date1 onfocus="this.value='';showCalendarControl(this);">
-		               </p>
-		               <p>
-		                <input type=text id=date2 name=date2 onfocus="this.value='';showCalendarControl(this);">
-		         </p>
-		       </td>
-
-		</tr>
-		<tr> 
-             <td colspan="2"><input type=checkbox name=weekday value=1>Group by weekday?</td>
-			<td colspan="2" rowspan="2">
-                <?php echo FormLib::date_range_picker(); ?>
-            </td>
-		</tr>
-        <tr>
-			<td> <input type=submit name=submit value="Submit"> </td>
-			<td> <input type=reset name=reset value="Start Over"> </td>
-		</tr>
-	</table>
+<div class="well">Selecting a Buyer/Dept overrides Department Start/Department End, but not Date Start/End.
+        To run reports for a specific department(s) leave Buyer/Dept or set it to 'blank'
+</div>
+<form method="get" action="HourlySalesReport.php" class="form-horizontal">
+<div class="row">
+    <div class="col-sm-5">
+        <div class="form-group">
+            <label class="control-label col-sm-4">Select Buyer/Dept</label>
+            <div class="col-sm-8">
+            <select id=buyer name=buyer class="form-control">>
+               <option value="" >
+               <?php echo $deptSubList; ?>
+               <option value=-2 >All Retail</option>
+               <option value=-1 >All</option>
+           </select>
+           </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-4">Department Start</label>
+            <div class="col-sm-6">
+            <select id=deptStartSel onchange="$('#deptStart').val(this.value);" class="form-control col-sm-6">
+                <?php echo $deptsList ?>
+            </select>
+            </div>
+            <div class="col-sm-2">
+            <input type=number name=deptStart id=deptStart size=5 value=1 class="form-control col-sm-2" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-4">Department End</label>
+            <div class="col-sm-6">
+                <select id=deptEndSel onchange="$('#deptEnd').val(this.value);" class="form-control">
+                    <?php echo $deptsList ?>
+                </select>
+            </div>
+            <div class="col-sm-2">
+                <input type=number name=deptEnd id=deptEnd size=5 value=1 class="form-control" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-4 control-label">
+                Group by weekday?
+                <input type=checkbox name=weekday value=1>
+            </label>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-4">Save to Excel
+                <input type=checkbox name=excel id=excel value=1>
+            </label>
+            <label class="col-sm-4 control-label">Store</label>
+            <div class="col-sm-4">
+                <?php $ret=FormLib::storePicker();echo $ret['html']; ?>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-5">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Start Date</label>
+            <div class="col-sm-8">
+                <input type=text id=date1 name=date1 class="form-control date-field" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-4 control-label">End Date</label>
+            <div class="col-sm-8">
+                <input type=text id=date2 name=date2 class="form-control date-field" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <?php echo FormLib::date_range_picker(); ?>                            
+        </div>
+    </div>
+</div>
+    <p>
+        <button type=submit name=submit value="Submit" class="btn btn-default">Submit</button>
+        <button type=reset name=reset class="btn btn-default">Start Over</button>
+    </p>
 </form>
         <?php
+
         return ob_get_clean();
+    }
+
+    public function helpContent()
+    {
+        return '<p>This report shows hourly sales over a range of dates.
+            The rows are always hours. The columns are either calendar
+            dates or named weekdays (e.g., Monday, Tuesday) if grouping
+            by week day.</p>
+            <p>If a <em>Buyer/Dept</em> option is used, the result will
+            be sales from that super department. Otherwise, the result
+            will be sales from the specified department range. Note there
+            are a couple special options in the <em>Buyer/Dept</em> list:
+            <em>All</em> is simply all sales and <em>All Retail</em> is
+            everything except for super department #0 (zero).</p>';
     }
 }
 
 FannieDispatch::conditionalExec();
 
-?>

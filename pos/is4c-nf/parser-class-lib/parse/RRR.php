@@ -21,39 +21,47 @@
 
 *********************************************************************************/
 
-class RRR extends Parser {
-	function check($str){
-		if ($str == "RRR" || substr($str,-4)=="*RRR"){
-			return True;
+class RRR extends Parser 
+{
+	function check($str)
+    {
+		if ($str == "RRR" || substr($str,-4)=="*RRR") {
+			return true;
 		}
-		return False;
+
+		return false;
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
+	function parse($str)
+    {
 		$ret = $this->default_json();
 		$qty = 1;
-		if ($str != "RRR"){
+		if ($str != "RRR") {
 			$split = explode("*",$str);
-			if (!is_numeric($split[0])) return True;
+			if (!is_numeric($split[0])) {
+                return true;
+            }
 			$qty = $split[0];
 		}
+        $no_trans = CoreLocal::get('LastID') == 0 ? true : false;
 		$this->add($qty);
 
 		$ret['output'] = DisplayLib::lastpage();
 		$ret['udpmsg'] = 'goodBeep';
 
 		Database::getsubtotals();
-		if ($CORE_LOCAL->get("runningTotal") == 0){
-			$ret['receipt'] = 'none';
+		if ($no_trans && CoreLocal::get("runningTotal") == 0) {
+            TransRecord::finalizeTransaction(true);
 		}
+
 		return $ret;
 	}
 
 	// gross misuse of field!
 	// quantity is getting shoved into the volume special
 	// column so that basket-size stats aren't skewed
-	function add($qty) {
+	function add($qty) 
+    {
         TransRecord::addRecord(array(
             'upc' => 'RRR',
             'description' => $qty . ' RRR DONATED',
@@ -62,7 +70,8 @@ class RRR extends Parser {
         ));
 	}
 
-	function doc(){
+	function doc()
+    {
 		return "<table cellspacing=0 cellpadding=3 border=1>
 			<tr>
 				<th>Input</th><th>Result</th>
@@ -80,4 +89,3 @@ class RRR extends Parser {
 
 }
 
-?>

@@ -37,11 +37,18 @@
 
 class SplitABGroupPM extends PriceMethod {
 
-    function addItem($row,$quantity,$priceObj){
+    function addItem($row,$quantity,$priceObj)
+    {
         if ($quantity == 0) return false;
 
         $pricing = $priceObj->priceInfo($row,$quantity);
         $department = $row['department'];
+
+        // enforce limit on discounting sale items
+        $dsi = CoreLocal::get('DiscountableSaleItems');
+        if ($dsi == 0 && $dsi !== '' && $priceObj->isSale()) {
+            $row['discount'] = 0;
+        }
 
         $mixMatch = $row['mixmatchcode'];
         /* group definition: number of items
@@ -111,7 +118,11 @@ class SplitABGroupPM extends PriceMethod {
         $q3 = "SELECT sum(matched) FROM localtemptrans WHERE
             mixmatch IN ('$qualMM','$discMM')";
         $r3 = $dbt->query($q3);
-        $matches = ($dbt->num_rows($r3)>0)?array_pop($dbt->fetch_array($r3)):0;
+        $matches = 0;
+        if ($r3 && $dbt->num_rows($r3) > 0) {
+            $w3 = $dbt->fetch_row($r3);
+            $matches = $w3[0];
+        }
 
         // reduce totals by existing matches
         // implicit: quantity required for B = 1
@@ -158,6 +169,7 @@ class SplitABGroupPM extends PriceMethod {
                 'upc' => $row['upc'],
                 'description' => $row['description'],
                 'trans_type' => 'I',
+                'trans_subtype' => (isset($row['trans_subtype'])) ? $row['trans_subtype'] : '',
                 'department' => $row['department'],
                 'quantity' => $sets,
                 'unitPrice' => $pricing['unitPrice'],
@@ -193,6 +205,7 @@ class SplitABGroupPM extends PriceMethod {
                 'upc' => $row['upc'],
                 'description' => $row['description'],
                 'trans_type' => 'I',
+                'trans_subtype' => (isset($row['trans_subtype'])) ? $row['trans_subtype'] : '',
                 'department' => $row['department'],
                 'quantity' => $quantity,
                 'unitPrice' => $pricing['unitPrice'],

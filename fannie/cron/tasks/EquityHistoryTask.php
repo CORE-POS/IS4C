@@ -93,7 +93,7 @@ Deprecates nightly.equity.php.';
             $try = $dbc->execute($addP, array($lookupW['card_no'], $lookupW['total'], $lookupW['tdate'],
                                                 $lookupW['trans_num'], $lookupW['department']));
             if ($try === false) {
-                echo $this->cronMsg('Error adding equity entry '.$lookupW['tdate']. ' '.$lookupW['trans_num']);
+                $this->cronMsg('Error adding equity entry '.$lookupW['tdate']. ' '.$lookupW['trans_num'], FannieLogger::ERROR);
             }
         }
 
@@ -102,9 +102,70 @@ Deprecates nightly.equity.php.';
         $query = "INSERT INTO equity_history_sum
             SELECT card_no, SUM(stockPurchase), MIN(tdate)
             FROM stockpurchases GROUP BY card_no";
+        $def = $dbc->tableDefinition('equity_history_sum');
+        if (isset($def['mostRecent'])) {
+            $query = str_replace('MIN(tdate)', 'MIN(tdate), MAX(tdate)', $query);
+        }
         $try = $dbc->query($query);
         if ($try === false) {
-            echo $this->cronMsg('Error rebuilding equity_history_sum table');
+            $this->cronMsg('Error rebuilding equity_history_sum table', FannieLogger::ERROR);
+        }
+
+        if (isset($def['mostRecent'])) {
+            /**
+              Lookup transactions with net equity purchase
+              of zero. These transactions should not impact
+              the first/last equity purchase dates
+            */
+            $voidedR = $dbc->query('
+                SELECT card_no,
+                    trans_num
+                FROM stockpurchases
+                GROUP BY card_no,trans_num
+                HAVING SUM(stockPurchase)=0');
+            $voids = array();
+            while ($row = $dbc->fetchRow($voidedR)) {
+                if (!isset($voids[$row['card_no']])) {
+                    $voids[$row['card_no']] = array();
+                }
+                $voids[$row['card_no']][] = $row['trans_num'];
+            }
+
+            /**
+              For applicable members, lookup min and max
+              date values again excluding the net-zero
+              transactions. Update date fields for these
+              members.
+            */
+            $upP = $dbc->prepare('
+                UPDATE equity_history_sum
+                SET startdate=?,
+                    mostRecent=?
+                WHERE card_no=?');
+            foreach ($voids as $card_no => $transactions) {
+                $query = '
+                    SELECT MIN(tdate) AS startdate,
+                        MAX(tdate) AS mostRecent
+                    FROM stockpurchases
+                    WHERE card_no=?
+                        AND trans_num NOT IN (';
+                $args = array($card_no);
+                foreach ($transactions as $t) {
+                    $query .= '?,';
+                    $args[] = $t;
+                }
+                $query = substr($query, 0, strlen($query)-1) . ')';
+                $prep = $dbc->prepare($query);
+                $res = $dbc->execute($prep, $args);
+                if ($res && $dbc->numRows($res)) {
+                    $dates = $dbc->fetchRow($res);
+                    $dbc->execute($upP, array(
+                        $dates['startdate'],
+                        $dates['mostRecent'],
+                        $card_no,
+                    ));
+                }
+            }
         }
     }
 }

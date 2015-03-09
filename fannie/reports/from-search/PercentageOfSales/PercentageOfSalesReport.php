@@ -36,11 +36,6 @@ class PercentageOfSalesReport extends FannieReportPage
     protected $report_headers = array('UPC', 'Desc', 'Super', 'Dept');
     protected $required_fields = array('u');
 
-    public function report_description_content()
-    {
-        return '';
-    }
-
     public function fetch_report_data()
     {
         global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
@@ -133,7 +128,7 @@ class PercentageOfSalesReport extends FannieReportPage
         }
 
         return $data;
-	}
+    }
 
     public function calculate_footers($data)
     {

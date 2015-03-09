@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\Fannie\API\data\hooks {
+
 /**
   @class BasicModelHook
 
@@ -58,5 +60,11 @@ class BasicModelHook
     {
 
     }
+}
+
+}
+
+namespace {
+    class BasicModelHook extends \COREPOS\Fannie\API\data\hooks\BasicModelHook {}
 }
 

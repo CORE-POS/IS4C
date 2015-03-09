@@ -28,21 +28,20 @@ class rplist extends NoInputPage
 
     function preprocess()
     {
-        global $CORE_LOCAL;
         if (isset($_REQUEST['selectlist'])) {
             if (!empty($_REQUEST['selectlist'])) {
-                $print_class = $CORE_LOCAL->get('ReceiptDriver');
+                $print_class = CoreLocal::get('ReceiptDriver');
                 if ($print_class === '' || !class_exists($print_class)) {
                     $print_class = 'ESCPOSPrintHandler';
                 }
                 $PRINT_OBJ = new $print_class();
-                $receipt = ReceiptLib::printReceipt($_REQUEST['selectlist']);
+                $receipt = ReceiptLib::printReceipt('reprint', $_REQUEST['selectlist']);
                 if (session_id() != '') {
                     session_write_close();
                 }
                 if(is_array($receipt)) {
                     if (!empty($receipt['any'])) {
-                        $EMAIL_OBJ->writeLine($receipt['any']);
+                        $PRINT_OBJ->writeLine($receipt['any']);
                     }
                     if (!empty($receipt['print'])) {
                         $PRINT_OBJ->writeLine($receipt['print']);
@@ -70,12 +69,11 @@ class rplist extends NoInputPage
     
     function body_content()
     {
-        global $CORE_LOCAL;
         $db = Database::tDataConnect();
         $query = "select register_no, emp_no, trans_no, "
             ."sum((case when trans_type = 'T' then -1 * total else 0 end)) as total "
-            ."FROM localtranstoday WHERE register_no = " . $CORE_LOCAL->get("laneno")
-            ." AND emp_no = " . $CORE_LOCAL->get("CashierNo")
+            ."FROM localtranstoday WHERE register_no = " . CoreLocal::get("laneno")
+            ." AND emp_no = " . CoreLocal::get("CashierNo")
             ." AND datetime >= " . $db->curdate()
             ." GROUP BY register_no, emp_no, trans_no ORDER BY trans_no DESC";
     
@@ -87,7 +85,7 @@ class rplist extends NoInputPage
         <div class="listbox">
         <form name="selectform" method="post" id="selectform" 
             action="<?php echo $_SERVER['PHP_SELF']; ?>" >
-        <select name="selectlist" size="10" id="selectlist"
+        <select name="selectlist" size="15" id="selectlist"
             onblur="$('#selectlist').focus()" >
 
         <?php
@@ -104,13 +102,28 @@ class rplist extends NoInputPage
         ?>
 
         </select>
-        </form>
         </div>
+        <?php
+        if (CoreLocal::get('touchscreen')) {
+            echo '<div class="listbox listboxText">'
+                . DisplayLib::touchScreenScrollButtons('#selectlist')
+                . '</div>';
+        }
+        ?>
         <div class="listboxText coloredText centerOffset">
         <?php echo _("use arrow keys to navigate"); ?><br />
-        <?php echo _("enter to reprint receipt"); ?><br />
-        <?php echo _("clear to cancel"); ?>
+        <p>
+            <button type="submit" class="pos-button wide-button coloredArea">
+            Reprint <span class="smaller">[enter]</span>
+            </button>
+        </p>
+        <p>
+            <button type="submit" class="pos-button wide-button errorColoredArea"
+            onclick="$('#selectlist').append($('<option>').val(''));$('#selectlist').val('');">
+            Cancel <span class="smaller">[clear]</span>
+        </button></p>
         </div>
+        </form>
         <div class="clear"></div>
         </div>
 

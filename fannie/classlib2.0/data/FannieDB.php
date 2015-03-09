@@ -55,16 +55,15 @@ class FannieDB
             $previous_db = self::$db->defaultDatabase();
         }
 
-        self::$db->default_db = $db_name;
-        self::$db->query('use '.$db_name);
+        self::$db->setDefaultDB($db_name);
 
         return self::$db;
     }
 
     private static function dbIsConfigured()
     {
-        include(dirname(__FILE__).'/../../config.php');
-        if (!isset($FANNIE_SERVER) || !isset($FANNIE_SERVER_DBMS) || !isset($FANNIE_SERVER_USER) || !isset($FANNIE_SERVER_PW)) {
+        $config = FannieConfig::factory();
+        if ($config->get('SERVER') == '' || $config->get('SERVER_DBMS') == '' || $config->get('SERVER_USER') == '') {
             return false;
         } else {
             return true;
@@ -73,22 +72,23 @@ class FannieDB
 
     private static function newDB($db_name)
     {
-        include(dirname(__FILE__).'/../../config.php');
+        $config = FannieConfig::factory();
         if (!class_exists('SQLManager')) {
-            include($FANNIE_ROOT.'src/SQLManager.php');
+            include(dirname(__FILE__) . '/../../src/SQLManager.php');
         }
-        self::$db = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
-            $db_name, $FANNIE_SERVER_USER, $FANNIE_SERVER_PW, false, true);
+        self::$db = new SQLManager(
+            $config->get('SERVER'),
+            $config->get('SERVER_DBMS'),
+            $db_name, 
+            $config->get('SERVER_USER'),
+            $config->get('SERVER_PW'),
+            false, 
+            true);
     }
 
     private static function addDB($db_name)
     {
-        include(dirname(__FILE__).'/../../config.php');
-        if (!class_exists('SQLManager')) {
-            include($FANNIE_ROOT.'src/SQLManager.php');
-        }
-        self::$db->add_connection($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
-            $db_name, $FANNIE_SERVER_USER, $FANNIE_SERVER_PW);
+        self::$db->selectDB($db_name);
     }
 }
 

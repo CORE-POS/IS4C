@@ -21,11 +21,6 @@
 
 *********************************************************************************/
 
-if (!isset($CORE_LOCAL)){
-	include(realpath(dirname(__FILE__)."/LS_Access.php"));
-	$CORE_LOCAL = new LS_Access();	
-}
-
 /**
  @class PaycardLib
  @brief Defines constants and functions for card processing.
@@ -174,8 +169,7 @@ static public function paycard_info($pan) {
 		else if( $iin>=6007600 && $iin<=6007609) { $issuer="EBT (PA)";   $accepted=$ebt_accept; }
 		else if( $iin>=6104700 && $iin<=6104709) { $issuer="EBT (SC)";   $accepted=$ebt_accept; }
 		else if( $iin>=6100980 && $iin<=6100989) { $issuer="EBT (TX)";   $accepted=$ebt_accept; }
-	}
-	else if (substr($pan,0,8) == "02E60080"){
+    } else if (substr($pan,0,8) == "02E60080" || substr($pan, 0, 5) == "23.0%" || substr($pan, 0, 5) == "23.0;") {
 		$type = self::PAYCARD_TYPE_ENCRYPTED;
 		$accepted = true;
 	}
@@ -187,22 +181,18 @@ static public function paycard_info($pan) {
 /**
   Check whether a given card is accepted
   @param $pan the card number
-  @param $acceptTest boolean
+  @param $ebt [boolean, default true] 
   @return 
    - 1 if accepted
    - 0 if not accepted
-
-  $acceptTest controls the behavior with
-  testing cards. True makes test cards
-  accepted.
 */
-static public function paycard_accepted($pan, $acceptTest) {
+static public function paycard_accepted($pan, $ebt=true) {
 	$info = self::paycard_info($pan);
-	/*
-	if( $info['test'] && $acceptTest)
-		return 1;
-	 */
-	return ($info['accepted'] ? 1 : 0);
+    if (!$ebt && substr($info['issuer'], 0, 3) == 'EBT') {
+        return 0;
+    } else {
+        return ($info['accepted'] ? 1 : 0);
+    }
 } // paycard_accepted()
 
 
@@ -239,21 +229,20 @@ static public function paycard_issuer($pan) {
    - 1 if type is enabled
    - 0 if type is disabled
 */
-static public function paycard_live($type = self::PAYCARD_TYPE_UNKNOWN) {
-	global $CORE_LOCAL;
-
+static public function paycard_live($type = self::PAYCARD_TYPE_UNKNOWN) 
+{
 	// these session vars require training mode no matter what card type
-	if( $CORE_LOCAL->get("training") != 0 || $CORE_LOCAL->get("CashierNo") == 9999)
+	if( CoreLocal::get("training") != 0 || CoreLocal::get("CashierNo") == 9999)
 		return 0;
 	// special session vars for each card type
 	if( $type === self::PAYCARD_TYPE_CREDIT) {
-		if( $CORE_LOCAL->get("ccLive") != 1)
+		if( CoreLocal::get("CCintegrate") != 1)
 			return 0;
 	} else if( $type === self::PAYCARD_TYPE_GIFT) {
-		if( $CORE_LOCAL->get("training") == 1)
+		if( CoreLocal::get("training") == 1)
 			return 0;
 	} else if( $type === self::PAYCARD_TYPE_STORE) {
-		if( $CORE_LOCAL->get("storecardLive") != 1)
+		if( CoreLocal::get("storecardLive") != 1)
 			return 0;
 	}
 	return 1;
@@ -261,43 +250,43 @@ static public function paycard_live($type = self::PAYCARD_TYPE_UNKNOWN) {
 
 
 /**
-  Clear paycard variables from $CORE_LOCAL.
+  Clear paycard variables from session
 */
-static public function paycard_reset() {
-	global $CORE_LOCAL;
+static public function paycard_reset() 
+{
 
 	// make sure this matches session.php!!!
-	$CORE_LOCAL->set("paycard_manual",0);
-	$CORE_LOCAL->set("paycard_amount",0.00);
-	$CORE_LOCAL->set("paycard_mode",0);
-	$CORE_LOCAL->set("paycard_id",0);
-	$CORE_LOCAL->set("paycard_PAN",'');
-	$CORE_LOCAL->set("paycard_exp",'');
-	$CORE_LOCAL->set("paycard_name",'Customer');
-	$CORE_LOCAL->set("paycard_tr1",false);
-	$CORE_LOCAL->set("paycard_tr2",false);
-	$CORE_LOCAL->set("paycard_tr3",false);
-	$CORE_LOCAL->set("paycard_type",0);
-	$CORE_LOCAL->set("paycard_issuer",'Unknown');
-	$CORE_LOCAL->set("paycard_response",array());
-	$CORE_LOCAL->set("paycard_trans",'');
-	$CORE_LOCAL->set("paycard_cvv2",'');
-    $CORE_LOCAL->set('PaycardRetryBalanceLimit', 0);
+	CoreLocal::set("paycard_manual",0);
+	CoreLocal::set("paycard_amount",0.00);
+	CoreLocal::set("paycard_mode",0);
+	CoreLocal::set("paycard_id",0);
+	CoreLocal::set("paycard_PAN",'');
+	CoreLocal::set("paycard_exp",'');
+	CoreLocal::set("paycard_name",'Customer');
+	CoreLocal::set("paycard_tr1",false);
+	CoreLocal::set("paycard_tr2",false);
+	CoreLocal::set("paycard_tr3",false);
+	CoreLocal::set("paycard_type",0);
+	CoreLocal::set("paycard_issuer",'Unknown');
+	CoreLocal::set("paycard_response",array());
+	CoreLocal::set("paycard_trans",'');
+	CoreLocal::set("paycard_cvv2",'');
+    CoreLocal::set('PaycardRetryBalanceLimit', 0);
 } // paycard_reset()
 
 /**
-  Clear card data variables from $CORE_LOCAL.
+  Clear card data variables from session
 
-  <b>Storing card data in $CORE_LOCAL is
+  <b>Storing card data in session is
   not recommended</b>.
 */
-static public function paycard_wipe_pan(){
-	global $CORE_LOCAL;
-	$CORE_LOCAL->set("paycard_tr1",false);
-	$CORE_LOCAL->set("paycard_tr2",false);
-	$CORE_LOCAL->set("paycard_tr3",false);
-	$CORE_LOCAL->set("paycard_PAN",'');
-	$CORE_LOCAL->set("paycard_exp",'');
+static public function paycard_wipe_pan()
+{
+	CoreLocal::set("paycard_tr1",false);
+	CoreLocal::set("paycard_tr2",false);
+	CoreLocal::set("paycard_tr3",false);
+	CoreLocal::set("paycard_PAN",'');
+	CoreLocal::set("paycard_exp",'');
 }
 
 
@@ -389,9 +378,8 @@ static public function paycard_validExpiration($exp) {
   If the data is really malformed, the return
   will be an error code instead of an array.
 */
-static public function paycard_magstripe($data) {
-	global $CORE_LOCAL;
-
+static public function paycard_magstripe($data) 
+{
 	// initialize
 	$tr1 = false;
 	$weirdTr1 = false;
@@ -428,7 +416,7 @@ static public function paycard_magstripe($data) {
 			// from cc-terminal if in case it differs
 			$amt = str_pad(substr($track,1),3,'0',STR_PAD_LEFT);
 			$amt = substr($amt,0,strlen($amt)-2).".".substr($amt,-2);	
-			$CORE_LOCAL->set("paycard_amount",$amt);
+			CoreLocal::set("paycard_amount",$amt);
 		}
 		// ignore tracks with unrecognized start sentinels
 		// readers often put E? or something similar if they have trouble reading,
@@ -527,9 +515,8 @@ static public function paycard_moneyFormat($amt) {
 
 
 // helper static public function to build error messages
-static public function paycard_errorText($title, $code, $text, $retry, $standalone, $refuse, $carbon, $tellIT, $type) {
-	global $CORE_LOCAL;
-
+static public function paycard_errorText($title, $code, $text, $retry, $standalone, $refuse, $carbon, $tellIT, $type) 
+{
 	// pick the icon
 	if( $carbon)
 		$msg = "<img src='graphics/blacksquare.gif'> ";
@@ -562,8 +549,8 @@ static public function paycard_errorText($title, $code, $text, $retry, $standalo
 	if( $retry) {
 		$msg .= "[enter] to retry<br>";
 	} else {
-		$CORE_LOCAL->set("strEntered","");
-		$CORE_LOCAL->set("strRemembered","");
+		CoreLocal::set("strEntered","");
+		CoreLocal::set("strRemembered","");
 	}
 	$msg .= "[clear] to cancel</font>";
 	return $msg;
@@ -571,12 +558,9 @@ static public function paycard_errorText($title, $code, $text, $retry, $standalo
 
 
 // display a paycard-related error due to cashier mistake
-static public function paycard_msgBox($type, $title, $msg, $action) {
-	global $CORE_LOCAL;
+static public function paycard_msgBox($type, $title, $msg, $action) 
+{
 	$header = "IT CORE - Payment Card";
-	if( $CORE_LOCAL->get("paycard_type") == self::PAYCARD_TYPE_CREDIT)      $header = "Wedge - Credit Card";
-	else if( $CORE_LOCAL->get("paycard_type") == self::PAYCARD_TYPE_GIFT)   $header = "Wedge - Gift Card";
-	else if( $CORE_LOCAL->get("paycard_type") == self::PAYCARD_TYPE_STORE)  $header = "Wedge - Wedge Card";
 	$boxmsg = "<span class=\"larger\">".trim($title)."</span><p />";
 	$boxmsg .= trim($msg)."<p />".trim($action);
 	return DisplayLib::boxMsg($boxmsg,$header,True);
@@ -584,25 +568,19 @@ static public function paycard_msgBox($type, $title, $msg, $action) {
 
 
 // display a paycard-related error due to system, network or other non-cashier mistake
-static public function paycard_errBox($type, $title, $msg, $action) {
-	global $CORE_LOCAL;
-
-	$header = "Wedge - Payment Card";
-	if( $CORE_LOCAL->get("paycard_type") == self::PAYCARD_TYPE_CREDIT)      $header = "Wedge - Credit Card";
-	else if( $CORE_LOCAL->get("paycard_type") == self::PAYCARD_TYPE_GIFT)   $header = "Wedge - Gift Card";
-	else if( $CORE_LOCAL->get("paycard_type") == self::PAYCARD_TYPE_STORE)  $header = "Wedge - Wedge Card";
-	return DisplayLib::xboxMsg("<b>".trim($title)."</b><p><font size=-1>".trim($msg)."<p>".trim($action)."</font>", $header);
+static public function paycard_errBox($type, $title, $msg, $action) 
+{
+	return DisplayLib::xboxMsg("<b>".trim($title)."</b><p><font size=-1>".trim($msg)."<p>".trim($action)."</font>");
 } // paycard_errBox()
 
 static private $paycardDB = null;
 
-static public function paycard_db(){
-	global $CORE_LOCAL;
-
+static public function paycard_db()
+{
 	if (self::$paycardDB === null){
-		self::$paycardDB = new SQLManager('127.0.0.1',$CORE_LOCAL->get('DBMS'),
-				$CORE_LOCAL->get('tDatabase'),$CORE_LOCAL->get('localUser'),
-				$CORE_LOCAL->get('localPass'));
+		self::$paycardDB = new SQLManager('127.0.0.1',CoreLocal::get('DBMS'),
+				CoreLocal::get('tDatabase'),CoreLocal::get('localUser'),
+				CoreLocal::get('localPass'));
 	}
 	return self::$paycardDB;
 }

@@ -30,7 +30,6 @@ class fsTotalConfirm extends NoInputPage
 
 	function preprocess()
     {
-		global $CORE_LOCAL;
 		$this->tendertype = "";
 		if (isset($_REQUEST["selectlist"])) {
 			$choice = $_REQUEST["selectlist"];
@@ -73,23 +72,23 @@ class fsTotalConfirm extends NoInputPage
 			$in = $_REQUEST['tenderamt'];
 			if (empty($in)) {
 				if ($this->tendertype == 'EF') {
-					$CORE_LOCAL->set("strRemembered",100*$CORE_LOCAL->get("fsEligible")."EF");		
+					CoreLocal::set("strRemembered",100*CoreLocal::get("fsEligible")."EF");		
 				} else {
-					$CORE_LOCAL->set("strRemembered",100*$CORE_LOCAL->get("runningTotal")."EC");		
+					CoreLocal::set("strRemembered",100*CoreLocal::get("runningTotal")."EC");		
                 }
-				$CORE_LOCAL->set("msgrepeat",1);
+				CoreLocal::set("msgrepeat",1);
 				$valid_input = true;
 			} else if (is_numeric($in)) {
-				if ($this->tendertype == 'EF' && $in > (100*$CORE_LOCAL->get("fsEligible"))) {
+				if ($this->tendertype == 'EF' && $in > (100*CoreLocal::get("fsEligible"))) {
 					$valid_input = false;
 				} else {
-					$CORE_LOCAL->set("strRemembered",$in.$this->tendertype);
-					$CORE_LOCAL->set("msgrepeat",1);
+					CoreLocal::set("strRemembered",$in.$this->tendertype);
+					CoreLocal::set("msgrepeat",1);
 					$valid_input = true;
 				}
 			} else if (strtoupper($in) == "CL") {
-				$CORE_LOCAL->set("strRemembered","");
-				$CORE_LOCAL->set("msgrepeat",0);
+				CoreLocal::set("strRemembered","");
+				CoreLocal::set("msgrepeat",0);
 				$valid_input = true;
 			}
 
@@ -112,43 +111,59 @@ class fsTotalConfirm extends NoInputPage
 
 	function body_content() 
     {
-		global $CORE_LOCAL;
         $default = '';
-        if ($CORE_LOCAL->get('fntlDefault') === '' || $CORE_LOCAL->get('fntlDefault') == 1) {
+        if (CoreLocal::get('fntlDefault') === '' || CoreLocal::get('fntlDefault') == 1) {
             $default = 'EC';
-        } else if ($CORE_LOCAL->get('fntlDefault') == 0) {
+        } else if (CoreLocal::get('fntlDefault') == 0) {
             $default = 'EF';
         }
 		?>
 		<div class="baseHeight">
-		<div class="centeredDisplay colored">
+		<div class="centeredDisplay colored rounded">
 		<?php if (empty($this->tendertype)) { ?>
 		<span class="larger">Customer is using the</span>
 		<?php } ?>
 		<form id="selectform" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 
 		<?php if (empty($this->tendertype)) { ?>
+            <?php $stem = MiscLib::baseURL() . 'graphics/'; ?>
+            <?php if (CoreLocal::get('touchscreen')) { ?>
+            <button type="button" class="pos-button coloredArea"
+                onclick="scrollDown('#selectlist');">
+                <img src="<?php echo $stem; ?>down.png" width="16" height="16" />
+            </button>
+            <?php } ?>
 			<select size="2" name="selectlist" 
 				id="selectlist" onblur="$('#selectlist').focus();">
 			<option value='EC' <?php echo ($default == 'EC') ? 'selected' : ''; ?>>Cash Portion
 			<option value='EF' <?php echo ($default == 'EF') ? 'selected' : ''; ?>>Food Portion
 			</select>
+            <?php if (CoreLocal::get('touchscreen')) { ?>
+            <button type="button" class="pos-button coloredArea"
+                onclick="scrollUp('#selectlist');">
+                <img src="<?php echo $stem; ?>up.png" width="16" height="16" />
+            </button>
+            <?php } ?>
 		<?php } else { ?>
 			<input type="text" id="tenderamt" 
 				name="tenderamt" onblur="$('#tenderamt').focus();" />
 			<br />
 			<span class="larger">Press [enter] to tender 
-			$<?php printf("%.2f",($this->tendertype=='EF'?$CORE_LOCAL->get("fsEligible"):$CORE_LOCAL->get("runningTotal"))); ?>
+			$<?php printf("%.2f",($this->tendertype=='EF'?CoreLocal::get("fsEligible"):CoreLocal::get("runningTotal"))); ?>
 			as <?php echo ($this->tendertype=="EF"?"EBT Food":"EBT Cash") ?>
 			or input a different amount</span>
 			<br />
 			<input type="hidden" name="tendertype" value="<?php echo $this->tendertype?>" />
 		<?php } ?>
-		</form>
 		<p>
-		<span class="smaller">[clear] to cancel</span>
+            <button class="pos-button" type="submit">Select [enter]</button>
+            <button class="pos-button" type="submit" 
+                onclick="$('#selectlist').append($('<option>').val(''));$('#selectlist').val('');">
+                Cancel [clear]
+            </button>
 		</p>
 		</div>
+		</form>
 		</div>
 		<?php
 		if (empty($this->tendertype)) {

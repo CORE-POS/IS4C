@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\Fannie\API\webservices 
+{
+
 class FannieAutoComplete extends FannieWebService 
 {
     
@@ -34,7 +37,6 @@ class FannieAutoComplete extends FannieWebService
     */
     public function run($args)
     {
-        global $FANNIE_OP_DB;
         $ret = array();
         if (!property_exists($args, 'field') || !property_exists($args, 'search')) {
             // missing required arguments
@@ -52,21 +54,31 @@ class FannieAutoComplete extends FannieWebService
             return $ret;
         }
 
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = \FannieDB::get(\FannieConfig::factory()->get('OP_DB'));
         switch (strtolower($args->field)) {
             case 'item':
-                $prep = $dbc->prepare('SELECT p.upc,
-                                        p.description
-                                       FROM products AS p
-                                        LEFT JOIN productUser AS u ON u.upc=p.upc
-                                       WHERE p.description LIKE ?
-                                        OR p.brand LIKE ?
-                                        OR u.description LIKE ?
-                                        OR u.brand LIKE ?
-                                       ORDER BY p.description');
-                $term = '%' . $args->search . '%';
-                $res = $dbc->execute($prep, array($term, $term, $term, $term));
-                while ($row = $dbc->fetch_row($res)) {
+                $res = false;
+                if (!is_numeric($args->search)) {
+                    $prep = $dbc->prepare('SELECT p.upc,
+                                            p.description
+                                           FROM products AS p
+                                            LEFT JOIN productUser AS u ON u.upc=p.upc
+                                           WHERE p.description LIKE ?
+                                            OR p.brand LIKE ?
+                                            OR u.description LIKE ?
+                                            OR u.brand LIKE ?
+                                           ORDER BY p.description');
+                    $term = '%' . $args->search . '%';
+                    $res = $dbc->execute($prep, array($term, $term, $term, $term));
+                } elseif (ltrim($args->search, '0') != '') {
+                    $prep = $dbc->prepare('
+                        SELECT p.upc,
+                            p.upc AS description
+                        FROM products AS p
+                        WHERE p.upc LIKE ?');
+                    $res = $dbc->execute($prep, array('%'.$args->search . '%'));
+                }
+                while ($res && $row = $dbc->fetch_row($res)) {
                     $ret[] = array(
                         'label' => $row['description'],
                         'value' => $row['upc'],
@@ -110,6 +122,121 @@ class FannieAutoComplete extends FannieWebService
                 while ($row = $dbc->fetch_row($res)) {
                     $ret[] = $row['vendorName'];
                 }
+                if ($dbc->tableExists('prodExtra')) {
+                    $prep = $dbc->prepare('SELECT distributor
+                                           FROM prodExtra
+                                           WHERE distributor LIKE ?
+                                           GROUP BY distributor
+                                           ORDER BY distributor');
+                    $res = $dbc->execute($prep, array($args->search . '%'));
+                    while ($row = $dbc->fetch_row($res)) {
+                        if (!in_array($row['distributor'], $ret)) {
+                            $ret[] = $row['distributor'];
+                        }
+                    }
+                }
+
+                return $ret;
+
+            case 'mfirstname':
+                $prep = $dbc->prepare('SELECT FirstName
+                                       FROM custdata
+                                       WHERE FirstName LIKE ?
+                                       GROUP BY FirstName
+                                       ORDER BY FirstName');
+                $res = $dbc->execute($prep, array('%' . $args->search . '%'));
+                while ($row = $dbc->fetch_row($res)) {
+                    $ret[] = $row['FirstName'];
+                    if (count($ret) > 50) {
+                        break;
+                    }
+                }
+                
+                return $ret;
+
+            case 'mlastname':
+                $prep = $dbc->prepare('SELECT LastName
+                                       FROM custdata
+                                       WHERE LastName LIKE ?
+                                       GROUP BY LastName
+                                       ORDER BY LastName');
+                $res = $dbc->execute($prep, array('%' . $args->search . '%'));
+                while ($row = $dbc->fetch_row($res)) {
+                    $ret[] = $row['LastName'];
+                    if (count($ret) > 50) {
+                        break;
+                    }
+                }
+
+                return $ret;
+
+            case 'maddress':
+                $prep = $dbc->prepare('SELECT street
+                                       FROM meminfo
+                                       WHERE street LIKE ?
+                                       GROUP BY street
+                                       ORDER BY street');
+                $res = $dbc->execute($prep, array('%' . $args->search . '%'));
+                while ($row = $dbc->fetch_row($res)) {
+                    $ret[] = $row['street'];
+                    if (count($ret) > 50) {
+                        break;
+                    }
+                }
+
+                return $ret;
+
+            case 'mcity':
+                $prep = $dbc->prepare('SELECT city
+                                       FROM meminfo
+                                       WHERE city LIKE ?
+                                       GROUP BY city
+                                       ORDER BY city');
+                $res = $dbc->execute($prep, array('%' . $args->search . '%'));
+                while ($row = $dbc->fetch_row($res)) {
+                    $ret[] = $row['city'];
+                    if (count($ret) > 50) {
+                        break;
+                    }
+                }
+
+                return $ret;
+
+            case 'memail':
+                $prep = $dbc->prepare('SELECT email_1
+                                       FROM meminfo
+                                       WHERE email_1 LIKE ?
+                                       GROUP BY email_1
+                                       ORDER BY email_1');
+                $res = $dbc->execute($prep, array('%' . $args->search . '%'));
+                while ($row = $dbc->fetch_row($res)) {
+                    $ret[] = $row['email_1'];
+                    if (count($ret) > 50) {
+                        break;
+                    }
+                }
+
+                return $ret;
+
+            case 'sku':
+                $query = 'SELECT sku
+                          FROM vendorItems
+                          WHERE sku LIKE ? ';
+                $param = array($args->search . '%');
+                if (property_exists($args, 'vendor_id')) {
+                    $query .= ' AND vendorID=? ';
+                    $param[] = $args->vendor_id;
+                }
+                $query .= 'GROUP BY sku
+                          ORDER BY sku';
+                $prep = $dbc->prepare($query);
+                $res = $dbc->execute($prep, $param);
+                while ($row = $dbc->fetch_row($res)) {
+                    $ret[] = $row['sku'];
+                    if (count($ret) > 50) {
+                        break;
+                    }
+                }
 
                 return $ret;
 
@@ -117,5 +244,13 @@ class FannieAutoComplete extends FannieWebService
                 return $ret;
         }
     }
+}
+
+}
+
+namespace 
+{
+    // global namespace wrapper class
+    class FannieAutoComplete extends \COREPOS\Fannie\API\webservices\FannieAutoComplete {}
 }
 

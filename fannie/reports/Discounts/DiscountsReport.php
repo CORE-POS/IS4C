@@ -31,6 +31,7 @@ class DiscountsReport extends FannieReportPage {
     public $description = '[Discounts Reports] lists member percentage discounts by member type for a
         a given date range.';
     public $report_set = 'Membership';
+    public $themed = true;
 
     protected $report_headers = array('Type', 'Total');
     protected $title = "Fannie : Discounts Report";
@@ -90,29 +91,35 @@ class DiscountsReport extends FannieReportPage {
             } elseif(date("w",$ts) == 0) {
                 $lastSunday = date("Y-m-d",$ts);
             }
-            $ts = mktime(0,0,0,date("n",$ts),date("j",$ts)-1,date("Y",$ts));	
+            $ts = mktime(0,0,0,date("n",$ts),date("j",$ts)-1,date("Y",$ts));    
         }
 
         ob_start();
         ?>
 <form action=DiscountsReport.php method=get>
-<table cellspacing=4 cellpadding=4>
-<tr>
-<th>Start Date</th>
-<td><input type=text id="date1" name=date1 onclick="showCalendarControl(this);" value="<?php echo $lastMonday; ?>" /></td>
-<td rowspan="3">
-<?php echo FormLib::date_range_picker(); ?>
-</td>
-</tr><tr>
-<th>End Date</th>
-<td><input type=text id="date2" name=date2 onclick="showCalendarControl(this);" value="<?php echo $lastSunday; ?>" /></td>
-</tr><tr>
-<td>Excel <input type=checkbox name=excel value="xls" /></td>
-<td><input type=submit name=submit value="Submit" /></td>
-</tr>
-</table>
+<div class="col-sm-4">
+    <div class="form-group">
+    <label>Date Start</label>
+    <input type=text id=date1 name=date1 class="form-control date-field" />
+    </div>
+    <div class="form-group">
+    <label>Date End</label>
+    <input type=text id=date2 name=date2 class="form-control date-field" />
+    </div>
+    <p>
+    <label>Excel <input type=checkbox name=excel value="xls" /></label>
+    </p>
+    <p>
+    <button type=submit name=submit class="btn btn-default">Submit</button>
+    <button type=reset name=reset class="btn btn-default">Start Over</button>
+    </p>
+</div>
+<div class="col-sm-4">
+    <?php echo FormLib::date_range_picker(); ?>
+</div>
 </form>
         <?php
+
         return ob_get_clean();
     }
 

@@ -25,31 +25,35 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class UnpaidAR extends BasicPage {
 
-	function preprocess(){
-		global $CORE_LOCAL;
+	function preprocess()
+    {
+    		$AR_department = '990';
+    		if (CoreLocal::get("store") == 'WEFC_Toronto') {
+    			$AR_department = '1005';
+    		}
 		if (isset($_REQUEST['reginput'])){
 			$dec = $_REQUEST['reginput'];
-			$amt = $CORE_LOCAL->get("old_ar_balance");
+			$amt = CoreLocal::get("old_ar_balance");
 
-			$CORE_LOCAL->set("msgrepeat",0);
-			$CORE_LOCAL->set("strRemembered","");
+			CoreLocal::set("msgrepeat",0);
+			CoreLocal::set("strRemembered","");
 
 			if (strtoupper($dec) == "CL"){
-				if ($CORE_LOCAL->get('memType') == 0){
-					PrehLib::memberID($CORE_LOCAL->get("defaultNonMem"));
+				if (CoreLocal::get('memType') == 0){
+					PrehLib::setMember(CoreLocal::get("defaultNonMem"), 1);
 				}
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 			elseif ($dec == "" || strtoupper($dec) == "BQ"){
 				if (strtoupper($dec)=="BQ")
-					$amt = $CORE_LOCAL->get("balance");
-				$CORE_LOCAL->set("strRemembered", ($amt*100).'DP9900');
-				$CORE_LOCAL->set("msgrepeat",1);
-				$memtype = $CORE_LOCAL->get("memType");
-				$type = $CORE_LOCAL->get("Type");
+					$amt = CoreLocal::get("balance");
+				CoreLocal::set("strRemembered", ($amt*100)."DP{$AR_department}0");
+				CoreLocal::set("msgrepeat",1);
+				$memtype = CoreLocal::get("memType");
+				$type = CoreLocal::get("Type");
 				if ($memtype == 1 || $memtype == 3 || $type == "INACT"){
-					$CORE_LOCAL->set("isMember",1);
+					CoreLocal::set("isMember",1);
 					PrehLib::ttl();
 				}
 				$this->change_page($this->page_url."gui-modules/pos2.php");
@@ -64,15 +68,15 @@ class UnpaidAR extends BasicPage {
         $this->noscan_parsewrapper_js();
     }
 	
-	function body_content(){
-		global $CORE_LOCAL;
-		$amt = $CORE_LOCAL->get("old_ar_balance");
+	function body_content()
+    {
+		$amt = CoreLocal::get("old_ar_balance");
 		$this->input_header();
 		?>
 		<div class="baseHeight">
 
 		<?php
-		if ($amt == $CORE_LOCAL->get("balance")){
+		if ($amt == CoreLocal::get("balance")){
 			echo DisplayLib::boxMsg(sprintf("Old A/R Balance: $%.2f<br />
 				[Enter] to pay balance now<br />
 				[Clear] to leave balance",$amt));
@@ -83,13 +87,13 @@ class UnpaidAR extends BasicPage {
 				[Enter] to pay old balance<br />
 				[Balance] to pay the entire balance<br />
 				[Clear] to leave the balance",
-				$amt,$CORE_LOCAL->get("balance")));
+				$amt,CoreLocal::get("balance")));
 		}
 		echo "</div>";
 		echo "<div id=\"footer\">";
 		echo DisplayLib::printfooter();
 		echo "</div>";
-		$CORE_LOCAL->set("msgrepeat",2);
+		CoreLocal::set("msgrepeat",2);
 	} // END body_content() FUNCTION
 }
 

@@ -21,11 +21,11 @@ body {
 <form action=extra_data.php method=post>
 <div class="alert success"><b>
 <?php
-$db = new SQLManager($CORE_LOCAL->get('localhost'),
-	$CORE_LOCAL->get('DBMS'),
-	$CORE_LOCAL->get('pDatabase'),
-	$CORE_LOCAL->get('localUser'),
-	$CORE_LOCAL->get('localPass'));
+$db = new SQLManager(CoreLocal::get('localhost'),
+	CoreLocal::get('DBMS'),
+	CoreLocal::get('pDatabase'),
+	CoreLocal::get('localUser'),
+	CoreLocal::get('localPass'));
 
 if (isset($_REQUEST['employees'])){
 	echo "Loading employees";
@@ -49,6 +49,10 @@ elseif(isset($_REQUEST['depts'])){
 	echo "<br />Loading super departments";
 	$db->query("TRUNCATE TABLE MasterSuperDepts");
 	InstallUtilities::loadSampleData($db,'MasterSuperDepts');
+} elseif(isset($_REQUEST['quicklookups'])){
+	echo "Loading QuickLookups";
+	$db->query("TRUNCATE TABLE QuickLookups");
+	InstallUtilities::loadSampleData($db,'QuickLookups');
 }
 ?>
 </b></div>
@@ -78,6 +82,12 @@ You can also ring amounts directly to a department. Not needed,
 strictly speaking, for a basic lane (Ring up items, total, 
 accept tender, provide change).</p>
 <input type=submit name=depts value="Load sample departments" />
+<?php if ($db->table_exists('QuickLookups')) { ?>
+<hr />
+<b>Quick Lookups</b>
+<p>Basic menus for QuickKeys and QuickLookups plugins</p>
+<input type=submit name=quicklookups value="Load sample menus" />
+<?php } ?>
 </form>
 </div> <!--	wrapper -->
 </body>

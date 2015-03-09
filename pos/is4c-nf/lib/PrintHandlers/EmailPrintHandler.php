@@ -310,25 +310,25 @@ class EmailPrintHandler extends PrintHandler {
 	  Write output to device
 	  @param the output string
 	*/
-	function writeLine($text, $to=False){
-		global $CORE_LOCAL;
+	function writeLine($text, $to=false)
+    {
 		$text = substr($text,0,strlen($text)-2);
-		if ($CORE_LOCAL->get("print") != 0 && $to !== False) {
+		if (CoreLocal::get("print") != 0 && $to !== False) {
 
 			$subject = "Receipt ".date("Y-m-d");
-			$subject .= " ".$CORE_LOCAL->get("CashierNo");
-			$subject .= "-".$CORE_LOCAL->get("laneno");
-			$subject .= "-".$CORE_LOCAL->get("transno");
+			$subject .= " ".CoreLocal::get("CashierNo");
+			$subject .= "-".CoreLocal::get("laneno");
+			$subject .= "-".CoreLocal::get("transno");
 			
-			$headers = "From: ".$CORE_LOCAL->get("emailReceiptFrom");
+			$headers = "From: ".CoreLocal::get("emailReceiptFrom");
 
 			mail($to, $subject, $text, $headers);
 		}
 	}
 
-	function RenderBitmapFromFile($fn){
-		return "";
+	function RenderBitmapFromFile($fn, $align='C')
+    {
+		return '';
 	}
 } 
 
-?>

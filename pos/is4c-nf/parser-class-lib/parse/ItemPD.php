@@ -21,20 +21,28 @@
 
 *********************************************************************************/
 
-class ItemPD extends Parser {
-	function check($str){
-		if (substr($str,-2) == "PD" && is_numeric(substr($str,0,strlen($str)-2)))
-			return True;
-		return False;
+class ItemPD extends Parser 
+{
+	function check($str)
+    {
+		if (substr($str,-2) == "PD" && is_numeric(substr($str,0,strlen($str)-2))) {
+			return true;
+        }
+		return false;
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
+	function parse($str)
+    {
 		$ret = $this->default_json();
-		if ($CORE_LOCAL->get("currentid") == 0) 
-			$ret['output'] = DisplayLib::boxMsg(_("No Item on Order"));
-		else {
-			$str = $CORE_LOCAL->get("currentid");
+		if (CoreLocal::get("currentid") == 0) {
+			$ret['output'] = DisplayLib::boxMsg(
+                _("No Item on Order"),
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
+		} else {
+			$str = CoreLocal::get("currentid");
 			$pd = substr($str,0,strlen($str)-2);
 
 			$ret['output'] = $this->discountitem($str,$pd);
@@ -50,8 +58,8 @@ class ItemPD extends Parser {
 		return $ret;
 	}
 
-	function discountitem($item_num,$pd) {
-		global $CORE_LOCAL;
+	function discountitem($item_num,$pd) 
+    {
 
 		if ($item_num) {
 			$query = "select upc, quantity, ItemQtty, foodstamp, total, voided, charflag from localtemptrans where "
@@ -61,21 +69,33 @@ class ItemPD extends Parser {
 			$result = $db->query($query);
 			$num_rows = $db->num_rows($result);
 
-			if ($num_rows == 0) return DisplayLib::boxMsg(_("Item not found"));
-			else {
+			if ($num_rows == 0) {
+                return DisplayLib::boxMsg(
+                    _("Item not found"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
+			} else {
 				$row = $db->fetch_array($result);
 
-				if (!$row["upc"] || strlen($row["upc"]) < 1 || $row['charflag'] == 'SO') 
-					return DisplayLib::boxMsg("Not a valid item");
-				else  
+				if (!$row["upc"] || strlen($row["upc"]) < 1 || $row['charflag'] == 'SO') {
+					return DisplayLib::boxMsg(
+                        _("Not a valid item"),
+                        '',
+                        false,
+                        DisplayLib::standardClearButton()
+                    );
+				} else {
 					return $this->discountupc($row["ItemQtty"]."*".$row["upc"],$item_num,$pd);
+                }
 			}
 		}
 		return "";
 	}	
 
-	function discountupc($upc,$item_num=-1,$pd=0) {
-		global $CORE_LOCAL;
+	function discountupc($upc,$item_num=-1,$pd=0) 
+    {
 
 		$lastpageflag = 1;
 		$deliflag = 0;
@@ -99,7 +119,7 @@ class ItemPD extends Parser {
 		elseif (!is_numeric($upc) && !strpos($upc, "DP")) $upc = "stop";
 		else {
 			$quantity = 1;
-			$weight = $CORE_LOCAL->get("weight");
+			$weight = CoreLocal::get("weight");
 		}
 
 		$scaleprice = 0;
@@ -126,14 +146,19 @@ class ItemPD extends Parser {
 		$result = $db->query($query);
 		$num_rows = $db->num_rows($result);
 		if ($num_rows == 0 ){
-			return DisplayLib::boxMsg(_("Item not found").": ".$upc);
+			return DisplayLib::boxMsg(
+                _("Item not found: ") . $upc,
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
 		}
 
 		$row = $db->fetch_array($result);
 
 		if (($row["scale"] == 1) && $weight > 0) {
-			$quantity = $weight - $CORE_LOCAL->get("tare");
-			$CORE_LOCAL->set("tare",0);
+			$quantity = $weight - CoreLocal::get("tare");
+			CoreLocal::set("tare",0);
 		}
 
 		$volDiscType = $row["volDiscType"];
@@ -163,11 +188,11 @@ class ItemPD extends Parser {
 		$charflag = isset($row["charflag"])?$row["charflag"]:0;
 	
 		$unitPrice = $row["unitPrice"];
-		if (($CORE_LOCAL->get("isMember") != 1 && $row["discounttype"] == 2) || 
-		    ($CORE_LOCAL->get("isStaff") == 0 && $row["discounttype"] == 4)) 
+		if ((CoreLocal::get("isMember") != 1 && $row["discounttype"] == 2) || 
+		    (CoreLocal::get("isStaff") == 0 && $row["discounttype"] == 4)) 
 			$unitPrice = $row["regPrice"];
-		elseif ((($CORE_LOCAL->get("isMember") == 1 && $row["discounttype"] == 2) || 
-		    ($CORE_LOCAL->get("isStaff") != 0 && $row["discounttype"] == 4)) && 
+		elseif (((CoreLocal::get("isMember") == 1 && $row["discounttype"] == 2) || 
+		    (CoreLocal::get("isStaff") != 0 && $row["discounttype"] == 4)) && 
 		    ($row["unitPrice"] == $row["regPrice"])) {
 			$db_p = Database::pDataConnect();
 			$query_p = "select special_price from products where upc = '".$upc."'";
@@ -182,7 +207,7 @@ class ItemPD extends Parser {
 		$memDiscount = -1 * $row["memDiscount"];
 		$discountable = $row["discountable"];
 
-		$CardNo = $CORE_LOCAL->get("memberID");
+		$CardNo = CoreLocal::get("memberID");
 		
 		$discounttype = MiscLib::nullwrap($row["discounttype"]);
 		if ($discounttype == 3) 
@@ -219,7 +244,7 @@ class ItemPD extends Parser {
             ));
 
 			if ($row["trans_type"] != "T") {
-				$CORE_LOCAL->set("ttlflag",0);
+				CoreLocal::set("ttlflag",0);
 			}
 
 			$db = Database::pDataConnect();
@@ -250,5 +275,3 @@ class ItemPD extends Parser {
 	}
 }
 
-
-?>

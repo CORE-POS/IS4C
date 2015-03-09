@@ -33,6 +33,9 @@ class GumDefaultRatesPage extends FannieRESTfulPage
     protected $must_authenticate = true;
     protected $auth_classes = array('GiveUsMoney');
 
+    public $page_set = 'Plugin :: Give Us Money';
+    public $description = '[Default Rates] set default rates for loans based on principal thresholds.';
+
     public function preprocess()
     {
         $this->header = 'Default Interest Rates';

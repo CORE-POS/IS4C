@@ -29,10 +29,11 @@ if (!class_exists('FannieAPI')) {
 class RecallReport extends FannieReportPage 
 {
     public $description = '[Recall Report] lists names and contact information for everyone who
-        purchased a given product. Hopefully rarely used.';
+        purchased a given product during a date range. Hopefully rarely used.';
+    public $themed = true;
 
     protected $report_headers = array('Mem#', 'Name', 'Address', 'City', 'State', 'Zip', 'Phone', 'Alt. Phone', 'Email', 'Qty', 'Amt');
-    protected $title = "Fannie : Recall Movement";
+    protected $title = "Fannie : Recall Report";
     protected $header = "Recall Report";
     protected $required_fields = array('date1', 'date2');
 
@@ -44,16 +45,13 @@ class RecallReport extends FannieReportPage
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $upc = BarcodeLib::padUPC(FormLib::get('upc'));
-		$date1 = FormLib::get_form_value('date1',date('Y-m-d'));
-		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
 
         $q = $dbc->prepare_statement("SELECT description FROM products WHERE upc=?");
         $r = $dbc->exec_statement($q,array($upc));
         $w = $dbc->fetch_row($r);
         $description = $w[0];
 
-	    return array("Purchases for $upc ($description)",
-                    "between $date1 and $date2");
+        return array("Purchases for $upc ($description)");
     }
 
     public function fetch_report_data()
@@ -62,8 +60,8 @@ class RecallReport extends FannieReportPage
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $upc = BarcodeLib::padUPC(FormLib::get('upc'));
-		$date1 = FormLib::get_form_value('date1',date('Y-m-d'));
-		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
+        $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
+        $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
 
         $dlog = DTransactionsModel::selectDlog($date1,$date2);
 
@@ -99,23 +97,38 @@ class RecallReport extends FannieReportPage
         }
 
         return $data;
-	}
-		
+    }
+        
     public function form_content()
     {
+        $this->add_onload_command('$(\'#upc\').focus();');
         return '
             <form action=RecallReport.php method=get>
-            <table><tr>
-            <th>UPC</th><td><input type=text name=upc /></td>
-            <td rowspan="4">'.FormLib::date_range_picker().'</td>
-            </tr><tr>
-            <th>Start date</th><td><input type=text name=date1 id="date1" onclick="showCalendarControl(this);" /></td>
-            </tr><tr>
-            <th>End date</th><td><input type=text name=date2 id="date2" onclick="showCalendarControl(this);" /></td>
-            </tr><tr>
-            <td><input type=submit name=submit value="Get Report" /></td>
-            <td><input type=checkbox name=excel id=excel value=xls /><label for=excel>Excel</label></td>
-            </tr></table>
+            <div class="col-sm-4">
+            <div class="form-group">
+                <label>UPC</label>
+                <input type=text name=upc class="form-control" 
+                    id="upc" required />
+            </div>
+            <div class="form-group">
+                <label>Start date</label>
+                <input type=text name=date1 id="date1" required
+                    class="form-control date-field" />
+            </div>
+            <div class="form-group">
+                <label>End date</label>
+                <input type=text name=date2 id="date2" required
+                    class="form-control date-field" />
+            </div>
+            <div class="form-group">
+                <button type=submit name=submit value="Get Report" 
+                    class="btn btn-default">Get Report</button>
+                <input type=checkbox name=excel id=excel value=xls /> <label for=excel>Excel</label>
+            </div>
+            </div>
+            <div class="col-sm-4">
+            '.FormLib::date_range_picker().'
+            </div>
             </form>';
     }
 }

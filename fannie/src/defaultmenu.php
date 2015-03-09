@@ -71,6 +71,7 @@ array('label'=>'Item Maintenance','url'=>'item/ItemEditorPage.php','subheading'=
 	),
 	array('label'=>'Manage Likcodes','url'=>'item/likecodes/'),
 	array('label'=>'Manage Vendors','url'=>'item/vendors/'),
+	array('label'=>'Purchase Orders','url'=>'purchasing/'),
 	array('label'=>'Store Coupons','url'=>'modules/plugins2.0/HouseCoupon/')
 	)
 ),
@@ -126,18 +127,18 @@ array('label'=>'Synchronize','url'=>'sync/','subheading'=>'Update cash registers
 	array('label'=>'ProductUser','url'=>'sync/TableSyncPage.php?tablename=productUser'),
 	array('label'=>'Membership','url'=>'sync/TableSyncPage.php?tablename=custdata'),
 	array('label'=>'Member Cards','url'=>'sync/TableSyncPage.php?tablename=memberCards'),
-	array('label'=>'Employees','url'=>'sync/TableSyncPage.php?tablename=employees'),
+	array('label'=>_('Cashiers'),'url'=>'sync/TableSyncPage.php?tablename=employees'),
 	array('label'=>'Departments','url'=>'sync/TableSyncPage.php?tablename=departments'),
 	array('label'=>'Super Departments','url'=>'sync/TableSyncPage.php?tablename=MasterSuperDepts')
 	)
 ),
 array('label'=>'Admin','url'=>'admin/','subheading'=>'Administrative functions, etc.',
 'submenu'=>array(
-	array('label'=>'Cashier Management >>','url'=>'admin/Cashiers/',
+	array('label'=>_('Cashier Management') . ' >>','url'=>'admin/Cashiers/',
 	'submenu'=>array(
-		array('label'=>'Add a new Cashier','url'=>'admin/Cashiers/AddCashierPage.php'),
-		array('label'=>'View/edit Cashiers','url'=>'admin/Cashiers/ViewCashiersPage.php'),
-		array('label'=>'Cashier performance report','url'=>'reports/cash_report/')
+		array('label'=>_('Add a new Cashier'),'url'=>'admin/Cashiers/AddCashierPage.php'),
+		array('label'=>_('View/edit Cashiers'),'url'=>'admin/Cashiers/ViewCashiersPage.php'),
+		array('label'=>_('Cashier performance report'),'url'=>'reports/cash_report/')
 		)
 	),
 	array('label'=>'Member Management >>','url'=>'mem/',

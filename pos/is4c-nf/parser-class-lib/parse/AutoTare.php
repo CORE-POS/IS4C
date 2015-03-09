@@ -21,29 +21,43 @@
 
 *********************************************************************************/
 
-class AutoTare extends Parser {
-	function check($str){
-		if (substr($str,-2) == "TW"){
+class AutoTare extends Parser 
+{
+	function check($str)
+    {
+		if (substr($str,-2) == "TW") {
 			$left = substr($str,0,strlen($str)-2);
-			if ($left == "" || is_numeric($left))
-				return True;
+			if ($left == "" || is_numeric($left)) {
+				return true;
+            }
 		}
-		return False;
+
+		return false;
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
+	function parse($str)
+    {
 		$ret = $this->default_json();
 
 		$left = substr($str,0,strlen($str)-2);
 		if ($left == "")
 			$left = 1;	
 
-		if (strlen($left) > 4)
-			$ret['output'] = DisplayLib::boxMsg(MiscLib::truncate2($left/100)." "._("tare not supported"));
-		elseif ($left/100 > $CORE_LOCAL->get("weight") && $CORE_LOCAL->get("weight") > 0) 
-			$ret['output'] = DisplayLib::boxMsg(_("Tare cannot be")."<br />"._("greater than item weight"));
-		else {
+		if (strlen($left) > 4) {
+			$ret['output'] = DisplayLib::boxMsg(
+                MiscLib::truncate2($left/100) . _(" tare not supported"),
+                _('Invalid Tare'),
+                false,
+                DisplayLib::standardClearButton()
+            );
+		} elseif ($left/100 > CoreLocal::get("weight") && CoreLocal::get("weight") > 0) {
+			$ret['output'] = DisplayLib::boxMsg(
+                _("Tare cannot be")."<br />"._("greater than item weight"),
+                _('Excess Tare'),
+                false,
+                DisplayLib::standardClearButton()
+            );
+		} else {
 			TransRecord::addTare($left);
 			$ret['output'] = DisplayLib::lastpage();
 		}
@@ -69,4 +83,3 @@ class AutoTare extends Parser {
 
 }
 
-?>

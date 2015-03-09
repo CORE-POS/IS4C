@@ -10,6 +10,7 @@ function fetchOrders(){
 		type: 'get',
 		success: function(data){
 			$('#ordersDiv').html(data);
+            $('.tablesorter').tablesorter([[0, 1]]);
 		}
 	});
 }
@@ -48,4 +49,17 @@ function togglePlaced(orderID){
 
 function doExport(orderID){
 	window.location = 'ViewPurchaseOrders.php?id='+orderID+'&export='+$('#exporterSelect').val();
+}
+
+function deleteOrder(orderID)
+{
+    if (confirm('Delete this order?')) {
+        $.ajax({
+            type: 'delete',
+            data: 'id=' + orderID,
+            success: function(result) {
+                location='ViewPurchaseOrders.php?init=pending';
+            }
+        });
+    }
 }

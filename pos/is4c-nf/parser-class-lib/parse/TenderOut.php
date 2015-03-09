@@ -21,18 +21,27 @@
 
 *********************************************************************************/
 
-class TenderOut extends Parser {
-	function check($str){
-		if ($str == "TO")
-			return True;
-		return False;
+class TenderOut extends Parser 
+{
+	function check($str)
+    {
+		if ($str == "TO") {
+			return true;
+        } else {
+            return false;
+        }
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
-		if ($CORE_LOCAL->get("LastID") == 0){
+	function parse($str)
+    {
+		if (CoreLocal::get("LastID") == 0){
 			$ret = $this->default_json();
-			$ret['output'] = DisplayLib::boxMsg(_("no transaction in progress"));
+			$ret['output'] = DisplayLib::boxMsg(
+                _("no transaction in progress"),
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
 			return $ret;
 		}
 		else {
@@ -40,24 +49,27 @@ class TenderOut extends Parser {
 		}
 	}
 
-	function tender_out($asTender){
-		global $CORE_LOCAL;
+	function tender_out($asTender)
+    {
 		$ret = $this->default_json();
 		Database::getsubtotals();
-		if ($CORE_LOCAL->get("amtdue") <= 0.005) {
-			$CORE_LOCAL->set("change",-1 * $CORE_LOCAL->get("amtdue"));
-			$cash_return = $CORE_LOCAL->get("change");
+		if (CoreLocal::get("amtdue") <= 0.005) {
+			CoreLocal::set("change",-1 * CoreLocal::get("amtdue"));
+			$cash_return = CoreLocal::get("change");
 			if ($asTender != "FS") {
 				TransRecord::addchange($cash_return,'CA');
 			}
-			$CORE_LOCAL->set("End",1);
+			CoreLocal::set("End",1);
 			$ret['output'] = DisplayLib::printReceiptFooter();
 			$ret['redraw_footer'] = true;
 			$ret['receipt'] = 'full';
+            TransRecord::finalizeTransaction();
 		} else {
-			$CORE_LOCAL->set("change",0);
-			$CORE_LOCAL->set("fntlflag",0);
-			PrehLib::ttl();
+			CoreLocal::set("change",0);
+			CoreLocal::set("fntlflag",0);
+			$ttl_result = PrehLib::ttl();
+            TransRecord::debugLog('Tender Out (PrehLib): ' . print_r($ttl_result, true));
+            TransRecord::debugLog('Tender Out (amtdue): ' . print_r(CoreLocal::get('amtdue'), true));
 			$ret['output'] = DisplayLib::lastpage();
 		}
 		return $ret;

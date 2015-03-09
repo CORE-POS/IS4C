@@ -32,129 +32,139 @@
 include(dirname(__FILE__) . '/../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-class SalesTodayReport extends FannieReportTool 
+class SalesTodayReport extends \COREPOS\Fannie\API\FannieReportTool 
 {
     public $description = '[Today\'s Sales] shows current day totals by hour.';
     public $report_set = 'Sales Reports';
+    public $themed = true;
 
-	protected $selected;
-	protected $name = "";
-	protected $supers;
+    protected $selected;
+    protected $name = "";
+    protected $supers;
 
-	public function preprocess()
+    public function preprocess()
     {
-		global $FANNIE_OP_DB, $FANNIE_URL;
+        global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-		$this->selected = (isset($_GET['super']))?$_GET['super']:-1;
+        $this->selected = (isset($_GET['super']))?$_GET['super']:-1;
 
-		/* Populate an array of superdepartments from which to
-		 *  select for filtering this report in the next run
-		 *  and if a superdepartment was chosen for this run
-		 *  get its name.
-		*/
-		$superP = $dbc->prepare_statement("SELECT superID,super_name FROM MasterSuperDepts ORDER BY super_name");
-		$superR = $dbc->exec_statement($superP);
-		$this->supers = array();
-		$this->supers[-1] = "All";
-		while($row = $dbc->fetch_row($superR)) {
-			$this->supers[$row[0]] = $row[1];
-			if ($this->selected == $row[0]) {
-				$this->name = $row[1];
+        /* Populate an array of superdepartments from which to
+         *  select for filtering this report in the next run
+         *  and if a superdepartment was chosen for this run
+         *  get its name.
+        */
+        $superP = $dbc->prepare_statement("SELECT superID,super_name FROM MasterSuperDepts ORDER BY super_name");
+        $superR = $dbc->exec_statement($superP);
+        $this->supers = array();
+        $this->supers[-1] = "All";
+        while($row = $dbc->fetch_row($superR)) {
+            $this->supers[$row[0]] = $row[1];
+            if ($this->selected == $row[0]) {
+                $this->name = $row[1];
             }
-		}
+        }
 
-		$this->title = "Fannie : Today's $this->name Sales";
-		$this->header = "Today's $this->name Sales";
+        $this->title = "Fannie : Today's $this->name Sales";
+        $this->header = '';
 
-		$this->has_menus(True);
-        $this->add_script($FANNIE_URL.'src/d3.js/d3.v3.min.js');
+        $this->has_menus(True);
+        $this->add_script($FANNIE_URL.'src/javascript/d3.js/d3.v3.min.js');
 
-		return True;
+        return True;
 
-	// preprocess()
-	}
+    // preprocess()
+    }
 
-	public function body_content()
+    public function body_content()
     {
-		global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
+        global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-		$today = date("Y-m-d");
+        $today = date("Y-m-d");
 
-		$query1="SELECT ".$dbc->hour('tdate').", 
-				sum(total)as Sales
-			FROM ".$FANNIE_TRANS_DB.$dbc->sep()."dlog AS d left join MasterSuperDepts AS t
-				ON d.department = t.dept_ID
-			WHERE ".$dbc->datediff('tdate',$dbc->now())."=0
-				AND (trans_type ='I' OR trans_type = 'D' or trans_type='M')
-				AND (t.superID > 0 or t.superID IS NULL)
-			GROUP BY ".$dbc->hour('tdate')."
-			ORDER BY ".$dbc->hour('tdate');
-		$args = array();
-		if ($this->selected != -1) {
-			$query1="SELECT ".$dbc->hour('tdate').", 
-					sum(total)as Sales,
-					sum(case when t.superID=? then total else 0 end) as prodSales
-				FROM ".$FANNIE_TRANS_DB.$dbc->sep()."dlog AS d left join MasterSuperDepts AS t
-					ON d.department = t.dept_ID
-				WHERE ".$dbc->datediff('tdate',$dbc->now())."=0
-					AND (trans_type ='I' OR trans_type = 'D' or trans_type='M')
-					AND t.superID > 0
-				GROUP BY ".$dbc->hour('tdate')."
-				ORDER BY ".$dbc->hour('tdate');
-			$args = array($this->selected);
-		}
+        $query1="SELECT ".$dbc->hour('tdate').", 
+                sum(total)as Sales
+            FROM ".$FANNIE_TRANS_DB.$dbc->sep()."dlog AS d left join MasterSuperDepts AS t
+                ON d.department = t.dept_ID
+            WHERE ".$dbc->datediff('tdate',$dbc->now())."=0
+                AND (trans_type ='I' OR trans_type = 'D' or trans_type='M')
+                AND (t.superID > 0 or t.superID IS NULL)
+            GROUP BY ".$dbc->hour('tdate')."
+            ORDER BY ".$dbc->hour('tdate');
+        $args = array();
+        if ($this->selected != -1) {
+            $query1="SELECT ".$dbc->hour('tdate').", 
+                    sum(total)as Sales,
+                    sum(case when t.superID=? then total else 0 end) as prodSales
+                FROM ".$FANNIE_TRANS_DB.$dbc->sep()."dlog AS d left join MasterSuperDepts AS t
+                    ON d.department = t.dept_ID
+                WHERE ".$dbc->datediff('tdate',$dbc->now())."=0
+                    AND (trans_type ='I' OR trans_type = 'D' or trans_type='M')
+                    AND t.superID > 0
+                GROUP BY ".$dbc->hour('tdate')."
+                ORDER BY ".$dbc->hour('tdate');
+            $args = array($this->selected);
+        }
 
-		$prep = $dbc->prepare_statement($query1);
-		$result = $dbc->exec_statement($query1,$args);
+        $prep = $dbc->prepare_statement($query1);
+        $result = $dbc->exec_statement($query1,$args);
 
         ob_start();
-		echo "<div align=\"center\"><h1>Today's <span style=\"color:green;\">$this->name</span> Sales!</h1>";
-		echo "<table cellpadding=4 cellspacing=2 border=0>";
-		echo "<tr><td><b>Hour</b></td><td><b>Sales</b></td></tr>";
-		$sum = 0;
-		$sum2 = 0;
-		while($row=$dbc->fetch_row($result)){
-			printf("<tr class=\"datarow\"><td class=\"x-data\">%d</td><td class=\"y-data\" style='text-align:right;'>%.2f</td><td style='%s'>%.2f%%</td></tr>",
-				$row[0],
-				($this->selected==-1)?$row[1]:$row[2],
-				($this->selected==-1)?'display:none;':'text-align:right;',	
-				($this->selected==-1)?0.00:$row[2]/$row[1]*100);
-			$sum += $row[1];
-			if($this->selected != -1) {
+        echo "<div class=\"text-center container\"><h1>Today's <span style=\"color:green;\">$this->name</span> Sales!</h1>";
+        echo "<table class=\"table table-bordered no-bs-table\">"; 
+        echo "<tr><td><b>Hour</b></td><td><b>Sales</b></td></tr>";
+        $sum = 0;
+        $sum2 = 0;
+        while($row=$dbc->fetch_row($result)){
+            printf("<tr class=\"datarow\"><td class=\"x-data\">%d</td><td class=\"y-data text-right\">%.2f</td><td class='%s'>%.2f%%</td></tr>",
+                $row[0],
+                ($this->selected==-1)?$row[1]:$row[2],
+                ($this->selected==-1)?'collapse':'text-right',  
+                ($this->selected==-1)?0.00:$row[2]/$row[1]*100);
+            $sum += $row[1];
+            if($this->selected != -1) {
                 $sum2 += $row[2];
             }
-		}
-		echo "<tr><th width=60px style='text-align:left;'>Total</th><td style='text-align:right;'>";
-		if ($this->selected != -1) {
-			echo number_format($sum2,2)."</td><td>".round($sum2/$sum*100,2)."%";
-		} else {
-			echo number_format($sum,2);
         }
-		echo "</td></tr></table>";
+        echo "<tr><th width=60px class='text-left'>Total</th><td class='text-right'>";
+        if ($this->selected != -1) {
+            echo number_format($sum2,2)."</td><td>".round($sum2/$sum*100,2)."%";
+        } else {
+            echo number_format($sum,2);
+        }
+        echo "</td></tr></table>";
 
-		echo "<p>Also available: <select onchange=\"top.location='SalesTodayReport.php?super='+this.value;\">";
-		foreach($this->supers as $k=>$v) {
-			echo "<option value=$k";
-			if ($k == $this->selected) {
-				echo " selected";
+        echo '<div class="form-group form-inline">Also available: 
+            <select onchange="top.location=\'SalesTodayReport.php?super=\'+this.value;"
+                class="form-control">';
+        foreach($this->supers as $k=>$v) {
+            echo "<option value=$k";
+            if ($k == $this->selected) {
+                echo " selected";
             }
-			echo ">$v</option>";
-		}
-		echo "</select></p></div>";
+            echo ">$v</option>";
+        }
+        echo "</select></div>";
 
         echo '<div id="chartDiv"></div>';
 
         $this->add_onload_command('graphData();');
 
+        echo '</div>';
+
         return ob_get_clean();
-	// body_content()
-	}
+    // body_content()
+    }
 
     public function css_content()
     {
         ob_start();
         ?>
+.no-bs-table {
+    width: auto !important;
+    margin-left: auto;
+    margin-right: auto;
+}
 /* tell the SVG path to be a thin blue line without any area fill */
 path {
     stroke: steelblue;
@@ -280,9 +290,15 @@ function drawLineGraph(data, xrange, yrange)
         return ob_get_clean();
     }
 
+    public function helpContent()
+    {
+        return '<p>Hourly Sales for the current day. The drop down menu
+            can switch the report to a single super department.</p>';
+    }
+
 // SalesTodayReport
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
 ?>

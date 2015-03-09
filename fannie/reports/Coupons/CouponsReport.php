@@ -29,6 +29,7 @@ if (!class_exists('FannieAPI')) {
 class CouponsReport extends FannieReportPage {
 
     public $description = '[Manufacturer Coupons] lists coupons totals by UPC for a given date range.';
+    public $themed = true;
 
     protected $title = "Fannie : Coupons Report";
     protected $header = "Coupons Report";
@@ -91,29 +92,37 @@ class CouponsReport extends FannieReportPage {
             } elseif(date("w",$ts) == 0) {
                 $lastSunday = date("Y-m-d",$ts);
             }
-            $ts = mktime(0,0,0,date("n",$ts),date("j",$ts)-1,date("Y",$ts));	
+            $ts = mktime(0,0,0,date("n",$ts),date("j",$ts)-1,date("Y",$ts));    
         }
 
         ob_start();
         ?>
 <form action=CouponsReport.php method=get>
-<table cellspacing=4 cellpadding=4>
-<tr>
-<th>Start Date</th>
-<td><input type=text id="date1" name=date1 onclick="showCalendarControl(this);" value="<?php echo $lastMonday; ?>" /></td>
-<td rowspan="3">
+<div class="col-sm-4">
+<div class="form-group">
+    <label>Start Date</label>
+    <input type=text id="date1" name=date1 
+        class="form-control date-field" value="<?php echo $lastMonday; ?>" />
+</div>
+<div class="form-group">
+    <label>End Date</label>
+    <input type=text id="date2" name=date2 
+        class="form-control date-field" value="<?php echo $lastSunday; ?>" />
+</div>
+<div class="form-group">
+    <label>
+        Excel <input type=checkbox name=excel value="xls" />
+    </label>
+    <button type=submit name=submit value="Submit" 
+        class="btn btn-default">Submit</button>
+</div>
+</div>
+<div class="col-sm-4">
 <?php echo FormLib::date_range_picker(); ?>
-</td>
-</tr><tr>
-<th>End Date</th>
-<td><input type=text id="date2" name=date2 onclick="showCalendarControl(this);" value="<?php echo $lastSunday; ?>" /></td>
-</tr><tr>
-<td>Excel <input type=checkbox name=excel value="xls" /></td>
-<td><input type=submit name=submit value="Submit" /></td>
-</tr>
-</table>
+</div>
 </form>
         <?php
+
         return ob_get_clean();
     }
 

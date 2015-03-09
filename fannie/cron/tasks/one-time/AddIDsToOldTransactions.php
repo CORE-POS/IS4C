@@ -32,13 +32,7 @@ values where store_row_id is NULL.
 You may want to change the date-based range of
 tables checked before running this.';
 
-    public $default_schedule = array(
-        'min' => 0,
-        'hour' => 1,
-        'day' => '*',
-        'month' => '*',
-        'weekday' => '*',
-    );
+    public $schedulable = false;
 
     public function run()
     {

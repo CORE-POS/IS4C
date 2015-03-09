@@ -25,15 +25,17 @@ include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
-if (!class_exists('JsonLib')) {
-    include($FANNIE_ROOT.'src/JsonLib.php');
-}
 
 class FbeProcessQueuePage extends FannieRESTfulPage
 {
 
     protected $title = 'File Queued Documents';
     protected $header = 'File Queued Documents';
+
+    public $page_set = 'Plugin: File By Email';
+    public $description = '[File By Email] shows pending documents so the user can rename them and
+    file them in an appropriate directory.';
+    public $themed = true;
 
     protected $window_dressing = false;
 
@@ -80,7 +82,7 @@ class FbeProcessQueuePage extends FannieRESTfulPage
             }
         }
 
-        echo JsonLib::array_to_json($ret);
+        echo json_encode($ret);
 
         return false;
     }
@@ -92,7 +94,9 @@ class FbeProcessQueuePage extends FannieRESTfulPage
 
         $base = dirname(__FILE__).'/noauto/save-paths/';
         $ret .= '<form onsubmit="processFile(); return false;">';
-        $ret .= '<b>File To</b>: <select id="savePath">';
+        $ret .= '<div class="form-group form-inline">
+            <label>File To</label>: 
+            <select id="savePath" class="form-control">';
         $dh = opendir($base);
         while( ($d = readdir($dh)) !== false) {
             if ($d[0] == '.') continue;
@@ -101,16 +105,20 @@ class FbeProcessQueuePage extends FannieRESTfulPage
                                 base64_encode($d), basename($d));
             }
         }
-        $ret .= '</select><br />';
-        $ret .= '<b>File As</b>: <input type="text" id="saveFilename" />';
-        $ret .= ' <input type="submit" value="Save" />';
+        $ret .= '</select></div>';
+        $ret .= '<div class="form-group form-inline">
+            <label>File As</label>: 
+            <input type="text" id="saveFilename" class="form-control" required />';
+        $ret .= ' <button type="submit" class="btn btn-default">Save</button>';
+        $ret .= '</div>';
         $ret .= '</form>';
+        $ret .= '<div id="alert-area"></div>';
 
         $ret .= '<hr />';
 
         $next = $this->queueNext();
         if ($next === false) {
-            $ret .= 'No files in queue!';
+            $ret .= '<div class="alert alert-danger">No files in queue!</div>';
         } else {
             $ret .= '<object style="width:100%;min-height:500px;" id="preview" 
                     type="application/pdf" data="noauto/queue/' . $next . '#page=1&view=Fit&toolbar=0">
@@ -121,7 +129,7 @@ class FbeProcessQueuePage extends FannieRESTfulPage
             $ret .= '<input type="hidden" id="curName" value="' . base64_encode($next) . '" />';
         }
 
-        $this->add_script($FANNIE_URL.'src/jquery/jquery.js');
+        $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
         $this->add_script('js/process.js');
 
         return $ret;

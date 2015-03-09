@@ -23,6 +23,9 @@
 
 /* HELP
 
+   @deprecated. ReportDataCache task handles
+   all cached data.
+
    manage.cache.php
 
    Delete daily & monthly cache files as needed
@@ -43,25 +46,25 @@ if (!$dh) {
     exit;
 }
 while ( ($file = readdir($dh)) !== False){
-	if (is_file($FANNIE_ROOT.$path.$file))
-		unlink($FANNIE_ROOT.$path.$file);
+    if (is_file($FANNIE_ROOT.$path.$file))
+        unlink($FANNIE_ROOT.$path.$file);
 }
 closedir($dh);
 echo cron_msg("Cleared daily cache");
 
 if (date('j') == 1){
-	$path = 'cache/cachefiles/monthly/';
-	$dh = opendir($FANNIE_ROOT.$path);
+    $path = 'cache/cachefiles/monthly/';
+    $dh = opendir($FANNIE_ROOT.$path);
     if (!$dh) {
         echo cron_msg("$FANNIE_ROOT.$path does not exist.");
         exit;
     }
-	while ( ($file = readdir($dh)) !== False){
-		if (is_file($FANNIE_ROOT.$path.$file))
-			unlink($FANNIE_ROOT.$path.$file);
-	}
-	closedir($dh);
-	echo cron_msg("Cleared monthly cache");
+    while ( ($file = readdir($dh)) !== False){
+        if (is_file($FANNIE_ROOT.$path.$file))
+            unlink($FANNIE_ROOT.$path.$file);
+    }
+    closedir($dh);
+    echo cron_msg("Cleared monthly cache");
 }
 
 ?>

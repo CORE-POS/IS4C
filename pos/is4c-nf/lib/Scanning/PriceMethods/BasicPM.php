@@ -35,9 +35,15 @@ class BasicPM extends PriceMethod
 
     private $error_msg = '';
 
-    function addItem($row,$quantity,$priceObj)
+    function addItem($row, $quantity, $priceObj)
     {
         if ($quantity == 0) return False;
+
+        // enforce limit on discounting sale items
+        $dsi = CoreLocal::get('DiscountableSaleItems');
+        if ($dsi == 0 && $dsi !== '' && $priceObj->isSale()) {
+            $row['discount'] = 0;
+        }
 
         /*
           Use "quantity" field in products record as a per-transaction
@@ -65,6 +71,7 @@ class BasicPM extends PriceMethod
             'upc' => $row['upc'],
             'description' => $row['description'],
             'trans_type' => 'I',
+            'trans_subtype' => (isset($row['trans_subtype'])) ? $row['trans_subtype'] : '',
             'department' => $row['department'],
             'quantity' => $quantity,
             'unitPrice' => $pricing['unitPrice'],

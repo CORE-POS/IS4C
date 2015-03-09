@@ -26,10 +26,12 @@ if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class BasketLimitedReport extends FannieReportPage {
+class BasketLimitedReport extends FannieReportPage 
+{
 
     public $description = '[Small Basket Report] lists sales for transactions containing a limited
     number of items - i.e., what do people buy when they\'re only purchasing one or two things?';
+    public $themed = true;
 
     protected $report_headers = array('UPC', 'Description', '# Trans', 'Qty', '$');
     protected $sort_column = 2;
@@ -39,7 +41,7 @@ class BasketLimitedReport extends FannieReportPage {
     protected $header = "Basket Limited Report Report";
     protected $required_fields = array('date1', 'date2');
 
-	public function fetch_report_data()
+    public function fetch_report_data()
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -59,12 +61,19 @@ class BasketLimitedReport extends FannieReportPage {
             HAVING COUNT(*) <= ?");
         $dbc->exec_statement($setupQ,array($date1.' 00:00:00',$date2.' 23:59:59',$qty));
 
-        $reportQ = $dbc->prepare_statement("SELECT g.upc,description,sum(g.quantity),count(DISTINCT trans_num),sum(total) FROM
-            groupingTempBS as g 
-            LEFT JOIN products AS p ON g.upc=p.upc
-            GROUP BY 
-            g.upc,p.description HAVING sum(total) <> 0
-            ORDER BY count(*) DESC");
+        $reportQ = $dbc->prepare_statement('
+            SELECT g.upc,
+                p.description,
+                SUM(g.quantity) AS qty,
+                COUNT(DISTINCT trans_num) AS num,
+                SUM(total) AS ttl
+            FROM groupingTempBS as g '
+                . DTrans::joinProducts('g', 'p') . '
+            GROUP BY g.upc,
+                p.description
+            HAVING sum(total) <> 0
+            ORDER BY count(*) DESC
+        ');
         $reportR = $dbc->exec_statement($reportQ);
 
         $data = array();
@@ -81,7 +90,7 @@ class BasketLimitedReport extends FannieReportPage {
         $dbc->exec_statement($drop);
 
         return $data;
-	}
+    }
 
     public function report_description_content()
     {
@@ -89,53 +98,55 @@ class BasketLimitedReport extends FannieReportPage {
             'Basket Size '.FormLib::get('qty', 1).' or less'
         );
     }
-	
-	public function form_content()
+    
+    public function form_content()
     {
         ob_start();
 ?>
-<div id=main>
-<form method ="get" action="BasketLimitedReport.php">
-	<table border="0" cellspacing="0" cellpadding="5">
-		<tr> 
-			<td> 
-                <p><b>Size Limit (Qty)</b></p>
-                <p><b>Excel</b></p>
-			</td>
-			<td>
-                <p>
-                <input type=text name=qty id=qty value="1"  />
-                </p>
-                <p>
-                <input type=checkbox name=excel id=excel /> 
-                </p>
-			</td>
-            <td>
-                <p><b>Date Start</b> </p>
-                <p><b>End</b></p>
-            </td>
-            <td>
-                <p>
-                <input type=text id=date1 name=date1 onfocus="this.value='';showCalendarControl(this);">
-                </p>
-                <p>
-                <input type=text id=date2 name=date2 onfocus="this.value='';showCalendarControl(this);">
-                </p>
-            </td>
-        </tr>
-        <tr>
-			<td> <input type=submit name=submit value="Submit"> </td>
-			<td> <input type=reset name=reset value="Start Over"> </td>
-            <td colspan="2" rowspan="2">
-                <?php echo FormLib::date_range_picker(); ?>
-            </td>
-		</tr>
-	</table>
-</form>
+<form method="get" action="BasketLimitedReport.php" class="form-horizontal">
+<div class="col-sm-5">
+    <div class="form-group">
+        <label class="control-label col-sm-4">Size Limit (Qty)</label>
+        <div class="col-sm-8">
+            <input type=text name=qty id=qty value="1" 
+                class="form-control" required />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-sm-4">Start Date</label>
+        <div class="col-sm-8">
+            <input type=text id=date1 name=date1 
+                class="form-control date-field" required />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-sm-4">End Date</label>
+        <div class="col-sm-8">
+            <input type=text id=date2 name=date2 
+                class="form-control date-field" required />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-8">
+            <input type="checkbox" name="excel" value="xls" />
+            Excel
+        </label>
+    </div>
+    <p>
+        <button class="btn btn-default" type="submit">Submit</button>
+        <button class="btn btn-default" type="reset">Start Over</button>
+    </p>
 </div>
+<div class="col-sm-5">
+    <div class="form-group">
+        <?php echo FormLib::date_range_picker(); ?>
+    </div>
+</div>
+</form>
 <?php
+
         return ob_get_clean();
-	}
+    }
 }
 
 FannieDispatch::conditionalExec();

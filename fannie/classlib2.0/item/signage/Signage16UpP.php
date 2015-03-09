@@ -21,7 +21,9 @@
 
 *********************************************************************************/
 
-class Signage16UpP extends FannieSignage 
+namespace COREPOS\Fannie\API\item\signage {
+
+class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage 
 {
     protected $BIG_FONT = 18;
     protected $MED_FONT = 14;
@@ -29,7 +31,7 @@ class Signage16UpP extends FannieSignage
 
     public function drawPDF()
     {
-        $pdf = new FPDF('P', 'mm', 'Letter');
+        $pdf = new \FPDF('P', 'mm', 'Letter');
         $pdf->SetMargins(0, 3.175, 0);
         $pdf->SetAutoPageBreak(false);
         $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
@@ -85,7 +87,13 @@ class Signage16UpP extends FannieSignage
             $sign++;
         }
 
-        $pdf->Output('Sigange16UpP.pdf', 'I');
+        $pdf->Output('Signage16UpP.pdf', 'I');
     }
+}
+
+}
+
+namespace {
+    class Signage16UpP extends \COREPOS\Fannie\API\item\signage\Signage16UpP {}
 }
 

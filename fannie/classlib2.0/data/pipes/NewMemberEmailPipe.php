@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\Fannie\API\data\pipes {
+
 /**
   @class NewMemberEmailPipe
 
@@ -163,8 +165,13 @@ class NewMemberEmailPipe
     }
 }
 
+}
+
+namespace {
+class NewMemberEmailPipe extends \COREPOS\Fannie\API\data\pipes\NewMemberEmailPipe {}
+
 if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
-    $obj = new NewMemberEmailPipe();
+    $obj = new \COREPOS\Fannie\API\data\pipes\NewMemberEmailPipe();
     $message = file_get_contents("php://stdin");
     if (!empty($message)) {
         $fp = fopen('/tmp/savemailtest', 'w');
@@ -173,3 +180,6 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
         $obj->processMail($message);
     }
 } 
+
+}
+

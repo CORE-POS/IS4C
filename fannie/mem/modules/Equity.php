@@ -21,37 +21,50 @@
 
 *********************************************************************************/
 
-class Equity extends MemberModule {
+class Equity extends \COREPOS\Fannie\API\member\MemberModule {
 
-	function ShowEditForm($memNum, $country="US"){
-		global $FANNIE_URL,$FANNIE_TRANS_DB;
+    public function width()
+    {
+        return parent::META_WIDTH_THIRD;
+    }
 
-		$dbc = $this->db();
-		$trans = $FANNIE_TRANS_DB.$dbc->sep();
-		
-		$infoQ = $dbc->prepare_statement("SELECT payments
-				FROM {$trans}equity_live_balance
-				WHERE memnum=?");
-		$infoR = $dbc->exec_statement($infoQ,array($memNum));
-		$equity = 0;
-		if ($dbc->num_rows($infoR) > 0)
-			$equity = array_pop($dbc->fetch_row($infoR));
+    function showEditForm($memNum, $country="US"){
+        global $FANNIE_URL,$FANNIE_TRANS_DB;
 
-		$ret = "<fieldset><legend>Equity</legend>";
-		$ret .= "<table class=\"MemFormTable\" 
-			border=\"0\">";
+        $dbc = $this->db();
+        $trans = $FANNIE_TRANS_DB.$dbc->sep();
+        
+        $infoQ = $dbc->prepare_statement("SELECT payments
+                FROM {$trans}equity_live_balance
+                WHERE memnum=?");
+        $infoR = $dbc->exec_statement($infoQ,array($memNum));
+        $equity = 0;
+        if ($dbc->num_rows($infoR) > 0) {
+            $w = $dbc->fetch_row($infoR);
+            $equity = $w['payments'];
+        }
 
-		$ret .= "<tr><th>Stock Purhcased</th>";
-		$ret .= sprintf('<td>%.2f</td>',$equity);
+        $ret = "<div class=\"panel panel-default\">
+            <div class=\"panel-heading\">Equity</div>
+            <div class=\"panel-body\">";
 
-		$ret .= "<td><a href=\"{$FANNIE_URL}reports/Equity/index.php?memNum=$memNum\">History</a></td></tr>";
-		$ret .= "<tr><td><a href=\"{$FANNIE_URL}mem/correction_pages/MemEquityTransferTool.php?memIN=$memNum\">Transfer Equity</a></td>";
-		$ret .= "<td><a href=\"{$FANNIE_URL}mem/correction_pages/MemArEquitySwapTool.php?memIN=$memNum\">Convert Equity</a></td></tr>";
+        $ret .= '<div class="form-group">';
+        $ret .= '<span class="label primaryBackground">Stock Purchased</span> ';
+        $ret .= sprintf('%.2f',$equity);
+        $ret .= " <a href=\"{$FANNIE_URL}reports/Equity/index.php?memNum=$memNum\">History</a>";
+        $ret .= '</div>';
 
+        $ret .= '<div class="form-group">';
+        $ret .= "<a href=\"{$FANNIE_URL}mem/correction_pages/MemEquityTransferTool.php?memIN=$memNum\">Transfer Equity</a>";
+        $ret .= ' | ';
+        $ret .= "<a href=\"{$FANNIE_URL}mem/correction_pages/MemArEquitySwapTool.php?memIN=$memNum\">Convert Equity</a>";
+        $ret .= '</div>';
 
-		$ret .= "</table></fieldset>";
-		return $ret;
-	}
+        $ret .= "</div>";
+        $ret .= "</div>";
+
+        return $ret;
+    }
 }
 
 ?>

@@ -29,8 +29,8 @@ class CheckKey extends Parser {
 		return False;
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
+	function parse($str)
+    {
 		$my_url = MiscLib::base_url();
 
 		$split = explode("CQ",$str);
@@ -46,7 +46,7 @@ class CheckKey extends Parser {
 			// no department specified, just amount followed by DP
 			
 			// save entered amount
-			$CORE_LOCAL->set("tenderTotal",$amt);
+			CoreLocal::set("tenderTotal",$amt);
 
 			// go to the department select screen
 			$ret['main_frame'] = $my_url.'gui-modules/checklist.php';

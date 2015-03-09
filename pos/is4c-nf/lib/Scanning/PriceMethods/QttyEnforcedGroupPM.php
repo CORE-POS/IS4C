@@ -32,10 +32,17 @@
 
 class QttyEnforcedGroupPM extends PriceMethod {
 
-    function addItem($row,$quantity,$priceObj){
+    function addItem($row,$quantity,$priceObj)
+    {
         if ($quantity == 0) return false;
 
         $pricing = $priceObj->priceInfo($row,$quantity);
+
+        // enforce limit on discounting sale items
+        $dsi = CoreLocal::get('DiscountableSaleItems');
+        if ($dsi == 0 && $dsi !== '' && $priceObj->isSale()) {
+            $row['discount'] = 0;
+        }
 
         /* group definition: number of items
            that make up a group, price for a
@@ -81,6 +88,7 @@ class QttyEnforcedGroupPM extends PriceMethod {
                 'upc' => $row['upc'],
                 'description' => $row['description'],
                 'trans_type' => 'I',
+                'trans_subtype' => (isset($row['trans_subtype'])) ? $row['trans_subtype'] : '',
                 'department' => $row['department'],
                 'quantity' => $new_sets * $groupQty,
                 'unitPrice' => MiscLib::truncate2($unit),
@@ -156,6 +164,8 @@ class QttyEnforcedGroupPM extends PriceMethod {
                 TransRecord::addRecord(array(
                     'upc' => $row['upc'],
                     'description' => $row['description'],
+                    'trans_type' => 'I',
+                    'trans_subtype' => (isset($row['trans_subtype'])) ? $row['trans_subtype'] : '',
                     'department' => $row['department'],
                     'quantity' => 1,
                     'unitPrice' => $pricing['unitPrice'] - $discount,
@@ -169,7 +179,7 @@ class QttyEnforcedGroupPM extends PriceMethod {
                     'discountable' => $row['discount'],
                     'discounttype' => $row['discounttype'],
                     'ItemQtty' => 1,
-                    'volDisctype' => ($priceObj->isSale() ? $row['specialpricemethod'] : $row['pricemethod']),
+                    'volDiscType' => ($priceObj->isSale() ? $row['specialpricemethod'] : $row['pricemethod']),
                     'volume' => ($priceObj->isSale() ? $row['specialquantity'] : $row['quantity']),
                     'VolSpecial' => ($priceObj->isSale() ? $row['specialgroupprice'] : $row['groupprice']),
                     'mixMatch' => $row['mixmatchcode'],
@@ -191,6 +201,7 @@ class QttyEnforcedGroupPM extends PriceMethod {
                 'upc' => $row['upc'],
                 'description' => $row['description'],
                 'trans_type' => 'I',
+                'trans_subtype' => (isset($row['trans_subtype'])) ? $row['trans_subtype'] : '',
                 'department' => $row['department'],
                 'quantity' => $quantity,
                 'unitPrice' => $pricing['unitPrice'],

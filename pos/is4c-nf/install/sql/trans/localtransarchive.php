@@ -49,6 +49,5 @@ in localtrans. This could probably go away entirely.
 By the data is removed from localtrans it should be
 safely archived on the server side anyway.
 */
-$CREATE['trans.localtransarchive'] = InstallUtilities::duplicateStructure($dbms,'dtransactions','localtransarchive');
+$CREATE['trans.localtransarchive'] = InstallUtilities::duplicateStructure($dbms,'localtrans','localtransarchive');
 
-?>

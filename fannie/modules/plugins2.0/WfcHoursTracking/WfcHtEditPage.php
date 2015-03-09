@@ -36,13 +36,17 @@ class WfcHtEditPage extends FanniePage
     protected $header = 'Edit';
     protected $title = 'Edit';
 
+    public $page_set = 'Plugin :: WFC Hours Tracking';
+    public $description = '[Edit] the settings for an employee.';
+    public $themed = true;
+
     public function body_content()
     {
         $db = WfcHtLib::hours_dbconnect();
 
         $empID = FormLib::get('id');
         if (!is_numeric($empID)) {
-            return "<b>Error: no employee ID specified</b>";
+            return '<div class="alert alert-error">Error: no employee ID specified</div>';
         }
 
         $fetchQ = $db->prepare_statement("select adpid,name,department from employees where empID=?");
@@ -51,14 +55,23 @@ class WfcHtEditPage extends FanniePage
         $ret = "<form action=WfcHtListPage.php method=post>";
         $ret .= "<input type=hidden name=action value=update />";
         $ret .= "<input type=hidden name=id value=$empID />";
-        $ret .= "<table cellspacing=4 cellpadding=0>";
-        $ret .= "<tr><th>ADP ID#</th><td><input type=text name=adpid value=\"{$fetchW['adpid']}\" /></td></tr>";
-        $ret .= "<tr><th>Name</th><td><input type=text name=name value=\"{$fetchW['name']}\" /></td></tr>";
-        $ret .= "<tr><th>Department</th><td>";
+
+        $ret .= '<div class="form-group">';
+        $ret .= "<label>ADP ID#</label>
+            <input class=\"form-control\" type=text name=adpid value=\"{$fetchW['adpid']}\" />";
+        $ret .= '</div>';
+
+        $ret .= '<div class="form-group">';
+        $ret .= "<label>Name</label>
+            <input class=\"form-control\" type=text name=name value=\"{$fetchW['name']}\" />";
+        $ret .= '</div>';
+
+        $ret .= '<div class="form-group">';
+        $ret .= "<label>Department</label>";
 
         $deptsQ = "select name,deptID from Departments order by name";
         $deptsR = $db->query($deptsQ);
-        $ret .= "<select name=dept>";
+        $ret .= "<select name=dept class=\"form-control\">";
         $ret .= "<option value=\"\"></option>";
         while ($deptsW = $db->fetch_row($deptsR)) {
             if ($deptsW['deptID'] == $fetchW['department']) {
@@ -68,10 +81,10 @@ class WfcHtEditPage extends FanniePage
             }
         }
         $ret .= "</select>";
-        $ret .= "</td></tr>";
-        $ret .= "<tr><td><input type=submit value=\"Save Changes\" /></td>";
-        $ret .= "<td><input type=submit value=Cancel onclick=\"window.location = 'WfcHtListPage.php'; return false;\" /></td></tr>";
-        $ret .= "</table>";
+        $ret .= "</div>";
+        $ret .= "<p><button type=submit class=\"btn btn-default\">Save Changes</button>";
+        $ret .= ' <a href="WfcHtListPage.php" class="btn btn-default">Cancel</a>';
+        $ret .= "</p>";
         $ret .= "</form>";
 
         return $ret;

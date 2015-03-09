@@ -1,0 +1,30 @@
+        </div>
+    </div>
+<div class="hidden-print">
+		<div style="float:left; margin-right: 50px;">
+<?php
+if($FANNIE_AUTH_ENABLED){
+	if (!function_exists("checkLogin")) include(dirname(__FILE__) . '/../auth/login.php');
+	$name = checkLogin();
+	if (!$name){
+		echo "You are not logged in.";
+		echo "&nbsp;&nbsp;&nbsp;&nbsp;";
+		echo "[<a href=\"{$FANNIE_URL}auth/ui/loginform.php?redirect={$_SERVER['PHP_SELF']}\">";
+		echo "Login</a>]";
+	}
+	else {
+		echo "You are logged in as <b>$name</b>.";
+		echo "&nbsp;&nbsp;&nbsp;&nbsp;";
+		echo "[<a href=\"{$FANNIE_URL}auth/ui/loginform.php?logout=yes\">Logout</a>]";
+	}
+}
+$version_file = dirname(__FILE__) . '/../../VERSION';
+if (file_exists($version_file) && is_readable($version_file)) {
+    $version = file_get_contents($version_file);
+    echo '<div id="fannieVersion">Current version: ' . $version . '</div>';
+}
+?>
+<a href="<?php echo $FANNIE_URL; ?>admin/SiteMap.php">Site Map</a>
+		</div>
+</div>
+</div>

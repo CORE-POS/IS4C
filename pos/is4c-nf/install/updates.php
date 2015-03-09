@@ -1,6 +1,8 @@
 <?php
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
+include('../ini.php');
+CoreState::loadParams();
 ?>
 <html>
 <head>
@@ -56,7 +58,12 @@ $adds = 0;
 $unknowns = 0;
 $errors = 0;
 echo '<ul>';
-foreach($mods as $class) {
+foreach ($mods as $class) {
+    if ($class == 'ViewModel') {
+        // just a helper subclass not an
+        // actual structure
+        continue;
+    }
 
     $model = new $class(null);
 

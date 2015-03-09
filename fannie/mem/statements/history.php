@@ -21,8 +21,13 @@
 
 *********************************************************************************/
 // A page to search the member base.
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
+    return;
+}
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 $page_title='Fannie - Member Management Module';
@@ -37,25 +42,25 @@ if (isset($_REQUEST['year'])) $year = $_REQUEST['year'];
 echo "<form action=history.php name=myform method=get>";
 echo "<select name=month onchange=document.myform.submit()>";
 for($i=1;$i<12;$i++){
-	if ($i==$month)
-		echo "<option selected value=$i>".date('F',mktime(0,0,0,$i,1,2000))."</option>";
-	else
-		echo "<option value=$i>".date('F',mktime(0,0,0,$i,1,2000))."</option>";
+    if ($i==$month)
+        echo "<option selected value=$i>".date('F',mktime(0,0,0,$i,1,2000))."</option>";
+    else
+        echo "<option value=$i>".date('F',mktime(0,0,0,$i,1,2000))."</option>";
 }
 echo "</select>&nbsp;&nbsp;&nbsp;";
 echo "<select name=year onchange=document.myform.submit()>";
 for($i=2010;$i<=date('Y');$i++)
-	echo "<option>$i</option>";
+    echo "<option>$i</option>";
 echo "</select>";
 echo "</form>";
 echo "<hr />";
 echo "<table cellspacing=0 cellpadding=4 border=1>
-	<tr><th>Date</th><th>Mem #</th><th>E-mail</th><th>Type</th></tr>";
+    <tr><th>Date</th><th>Mem #</th><th>E-mail</th><th>Type</th></tr>";
 $q = $dbc->prepare_statement("SELECT * FROM emailLog WHERE month(tdate)=? AND year(tdate)=? ORDER BY tdate");
 $r = $dbc->exec_statement($q,array($month,$year));
 while($w = $dbc->fetch_row($r)){
-	printf("<tr><td>%s</td><td>%d</td><td>%s</td><td>%s</td></tr>",
-		array_shift(explode(" ",$w[0])),$w[1],$w[2],$w[3]);
+    printf("<tr><td>%s</td><td>%d</td><td>%s</td><td>%s</td></tr>",
+        array_shift(explode(" ",$w[0])),$w[1],$w[2],$w[3]);
 }
 echo "</table>";
 

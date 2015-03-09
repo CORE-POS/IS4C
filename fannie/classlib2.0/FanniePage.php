@@ -38,6 +38,17 @@ class FanniePage
     Base class for creating HTML pages.
     ";
 
+    public $discoverable = true;
+
+    public $page_set = 'Misc';
+
+    public $doc_link = '';
+
+    /**
+      Page has been updated to support themeing
+    */
+    public $themed = false;
+
     /** force users to login immediately */
     protected $must_authenticate = False;
     /** name of the logged in user (or False is no one is logged in) */
@@ -52,19 +63,68 @@ class FanniePage
     protected $scripts = array();
     protected $css_files = array();
 
+    /**
+      Include javascript necessary to integrate linea
+      scanner device
+    */
+    protected $enable_linea = false;
+
     protected $error_text;
+
+    /**
+      Instance of configuration object
+    */
+    protected $config;
+
+    /**
+      Instance of logging object
+    */
+    protected $logger;
+
+    /**
+      Instance of DB connection object
+    */
+    protected $connection;
 
     public function __construct()
     {
-        global $FANNIE_AUTH_DEFAULT, $FANNIE_COOP_ID;
-        if (isset($FANNIE_AUTH_DEFAULT) && !$this->must_authenticate) {
-            $this->must_authenticate = $FANNIE_AUTH_DEFAULT;
+        $auth_default = FannieConfig::config('AUTH_DEFAULT', false);
+        $coop_id = FannieConfig::config('COOP_ID');
+        if ($auth_default && !$this->must_authenticate) {
+            $this->must_authenticate = $auth_default;
         }
-        if (isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto') {
+        if (isset($coop_id) && $coop_id == 'WEFC_Toronto') {
             $this->auth_classes[] = 'admin';
         }
         /*
         */
+    }
+
+    /**
+      DI Setter method for configuration
+      @param $fc [FannieConfig] configuration object
+    */
+    public function setConfig(FannieConfig $fc)
+    {
+        $this->config = $fc;
+    }
+
+    /**
+      DI Setter method for logging
+      @param $fl [FannieLogger] logging object
+    */
+    public function setLogger(FannieLogger $fl)
+    {
+        $this->logger = $fl;
+    }
+
+    /**
+      DI Setter method for database
+      @param $sql [SQLManager] database object
+    */
+    public function setConnection(SQLManager $sql)
+    {
+        $this->connection = $sql;
     }
 
     /**
@@ -87,14 +147,78 @@ class FanniePage
     */
     public function getHeader()
     {
-        global $FANNIE_ROOT;
+        $url = $this->config->get('URL');
         ob_start();
         $page_title = $this->title;
         $header = $this->header;
-        include($FANNIE_ROOT.'src/header.html');
+        if ($this->themed) {
+            include(dirname(__FILE__) . '/../src/header.bootstrap.html');
+            $this->addJQuery();
+            if (!$this->addBootstrap()) {
+                echo '<em>Warning: bootstrap does not appear to be installed. Try running composer update</em>';
+            }
+            $this->addScript($url . 'src/javascript/jquery-ui.js');
+            $this->addScript($url . 'src/javascript/calculator.js');
+            $this->addCssFile($url . 'src/javascript/jquery-ui.css?id=20140625');
+            $this->addCssFile($url . 'src/css/configurable.php');
+            $this->addCssFile($url . 'src/css/core.css');
+            $this->addCssFile($url . 'src/css/print.css');
+            $this->add_onload_command('standardFieldMarkup();');
+        } else {
+            include(dirname(__FILE__) . '/../src/header.html');
+        }
+
+        if ($this->enable_linea) {
+            $this->addScript($url . 'src/javascript/linea/cordova-2.2.0.js');
+            $this->addScript($url . 'src/javascript/linea/ScannerLib-Linea-2.0.0.js');
+        }
 
         return ob_get_clean();
     }
+
+    /**
+      Add css and js files required for bootstrap.
+      If a version installed via composer is present, that
+      is the version used.
+      @return [boolean] success
+    */
+    public function addBootstrap()
+    {
+        $url = $this->config->get('URL');
+        $path1 = dirname(__FILE__) . '/../src/javascript/composer-components/';
+        $path2 = dirname(__FILE__) . '/../src/javascript/';
+        if (file_exists($path1 . 'bootstrap/js/bootstrap.min.js')) {
+            $this->addScript($url . 'src/javascript/composer-components/bootstrap/js/bootstrap.min.js');
+        } elseif (file_exists($path2 . 'bootstrap/js/bootstrap.min.js')) {
+            $this->addScript($url . 'src/javascript/bootstrap/js/bootstrap.min.js');
+        } else {
+            return false; // bootstrap not found!
+        }
+
+        return true;
+    }
+
+    /**
+      Add jquery js file to the page
+      If present, the version installed via composer is used
+      @return [boolean] success
+    */
+    public function addJQuery()
+    {
+        $url = $this->config->get('URL');
+        $path1 = dirname(__FILE__) . '/../src/javascript/composer-components/';
+        $path2 = dirname(__FILE__) . '/../src/javascript/';
+        if (file_exists($path1 . 'jquery/jquery.min.js')) {
+            $this->addFirstScript($url . 'src/javascript/composer-components/jquery/jquery.min.js');
+        } elseif (file_exists($path2 . 'jquery.js')) {
+            $this->addFirstScript($url . 'src/javascript/jquery.js');
+        } else {
+            return false;
+        }
+
+        return true;
+    }
+
     public function get_header()
     {
         return $this->getHeader();
@@ -106,9 +230,18 @@ class FanniePage
     */
     public function getFooter()
     {
-        global $FANNIE_ROOT, $FANNIE_AUTH_ENABLED, $FANNIE_URL;
+        $FANNIE_AUTH_ENABLED = $this->config->get('AUTH_ENABLED');
+        $FANNIE_URL = $this->config->get('URL');
         ob_start();
-        include($FANNIE_ROOT.'src/footer.html');
+        if ($this->themed) {
+            include(dirname(__FILE__) . '/../src/footer.bootstrap.html');
+            $modal = $this->helpModal();
+            if ($modal) {
+                echo "\n" . $modal . "\n";
+            }
+        } else {
+            include(dirname(__FILE__) . '/../src/footer.html');
+        }
 
         return ob_get_clean();
     }
@@ -163,6 +296,52 @@ class FanniePage
         return $this->javascript_content();
     }
 
+    protected function lineaJS()
+    {
+        ob_start();
+        ?>
+/**
+  Enable linea scanner on page
+  @param selector - jQuery selector for the element where
+    barcode data should be entered
+  @param callback [optional] function called after
+    barcode scan
+
+  If the callback is omitted, the parent <form> of the
+  selector's element is submitted.
+*/
+function enableLinea(selector, callback)
+{
+    Device = new ScannerDevice({
+        barcodeData: function (data, type){
+            var upc = data.substring(0,data.length-1);
+            if ($(selector).length > 0){
+                $(selector).val(upc);
+                if (typeof callback === 'function') {
+                    callback();
+                } else {
+                    $(selector).closest('form').submit();
+                }
+            }
+        },
+        magneticCardData: function (track1, track2, track3){
+        },
+        magneticCardRawData: function (data){
+        },
+        buttonPressed: function (){
+        },
+        buttonReleased: function (){
+        },
+        connectionState: function (state){
+        }
+    });
+    ScannerDevice.registerListener(Device);
+}
+        <?php
+
+        return ob_get_clean();
+    }
+
     /**
       Add a script to the page using <script> tags
       @param $file_url the script URL
@@ -171,6 +350,15 @@ class FanniePage
     public function addScript($file_url, $type='text/javascript')
     {
         $this->scripts[$file_url] = $type;
+    }
+
+    private function addFirstScript($file_url, $type='text/javascript')
+    {
+        $new = array($file_url => $type);
+        foreach ($this->scripts as $url => $t) {
+            $new[$url] = $t;
+        }
+        $this->scripts = $new;
     }
 
     public function add_script($file_url,$type="text/javascript")
@@ -220,9 +408,8 @@ class FanniePage
     */
     public function loginRedirect()
     {
-        global $FANNIE_URL;
         $redirect = $_SERVER['REQUEST_URI'];
-        $url = $FANNIE_URL.'auth/ui/loginform.php';
+        $url = $this->config->get('URL') . 'auth/ui/loginform.php';
         header('Location: '.$url.'?redirect='.$redirect);
     }
 
@@ -287,11 +474,11 @@ class FanniePage
     */
     public function tableExistsReadinessCheck($database, $table)
     {
-        global $FANNIE_URL;
+        $url = $this->config->get('URL');
         $dbc = FannieDB::get($database);
         if (!$dbc->tableExists($table)) {
             $this->error_text = "<p>Missing table {$database}.{$table}
-                            <br /><a href=\"{$FANNIE_URL}install/\">Click Here</a> to
+                            <br /><a href=\"{$url}install/\">Click Here</a> to
                             create necessary tables.</p>";
             return false;
         }
@@ -311,7 +498,7 @@ class FanniePage
     */
     public function tableHasColumnReadinessCheck($database, $table, $column)
     {
-        global $FANNIE_URL;
+        $url = $this->config->get('URL');
         if ($this->tableExistsReadinessCheck($database, $table) === false) {
             return false;
         }
@@ -320,7 +507,7 @@ class FanniePage
         $definition = $dbc->tableDefinition($table);
         if (!isset($definition[$column])) {
             $this->error_text = "<p>Table {$database}.{$table} needs to be updated.
-                            <br /><a href=\"{$FANNIE_URL}install/InstallUpdatesPage.php\">Click Here</a> to
+                            <br /><a href=\"{$url}install/InstallUpdatesPage.php\">Click Here</a> to
                             run updates.</p>";
             return false;
         }
@@ -329,11 +516,58 @@ class FanniePage
     }
 
     /**
+      Helper method to wrap helpContent()
+      in markup for a bootstrap modal dialog.
+    */
+    protected function helpModal()
+    {
+        $help = $this->helpContent();
+        if (!$help) {
+            return false;
+        }
+
+        return '
+            <div class="modal" id="help-modal" role="modal">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">
+                                <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+                            </button>
+                            <h4>' . $this->title . '</h4>
+                        </div>
+                        <div class="modal-body">' . $help . '</div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>';
+    }
+
+    /**
+      User-facing help text explaining how to 
+      use a page.
+      @return [string] html content
+    */
+    public function helpContent()
+    {
+        return false;
+    }
+
+    public function unitTest($phpunit)
+    {
+
+    }
+
+    /**
       Check for input and display the page
     */
     public function drawPage()
     {
-        global $FANNIE_WINDOW_DRESSING;
+        if (!($this->config instanceof FannieConfig)) {
+            $this->config = FannieConfig::factory();
+        }
 
         if (!$this->checkAuth() && $this->must_authenticate) {
             $this->loginRedirect();
@@ -344,7 +578,7 @@ class FanniePage
               Global setting overrides default behavior
               to force the menu to appear.
             */
-            if (isset($FANNIE_WINDOW_DRESSING) && $FANNIE_WINDOW_DRESSING) {
+            if ($this->config->get('WINDOW_DRESSING')) {
                 $this->window_dressing = true;
             }
             
@@ -353,16 +587,21 @@ class FanniePage
             }
             
             if ($this->readinessCheck() !== false) {
-                echo $this->bodyContent();
+                $body = $this->bodyContent();
             } else {
-                echo $this->errorContent();
+                $body = $this->errorContent();
             }
 
             if ($this->window_dressing) {
+                echo $body;
                 $footer = $this->getFooter();
                 $footer = str_ireplace('</html>','',$footer);
                 $footer = str_ireplace('</body>','',$footer);
                 echo $footer;
+            } else {
+                $body = str_ireplace('</html>','',$body);
+                $body = str_ireplace('</body>','',$body);
+                echo $body;
             }
 
             foreach($this->scripts as $s_url => $s_type) {
@@ -372,13 +611,65 @@ class FanniePage
             }
             
             $js_content = $this->javascriptContent();
-            if (!empty($js_content) || !empty($this->onload_commands)) {
+            if (!empty($js_content) || !empty($this->onload_commands) || $this->themed) {
                 echo '<script type="text/javascript">';
                 echo $js_content;
                 echo "\n\$(document).ready(function(){\n";
                 foreach($this->onload_commands as $oc)
                     echo $oc."\n";
                 echo "});\n";
+                if ($this->themed) {
+                    ?>
+function showBootstrapAlert(selector, type, msg)
+{
+    var alertbox = '<div class="alert alert-' + type + '" role="alert">';
+    alertbox += '<button type="button" class="close" data-dismiss="alert">';
+    alertbox += '<span>&times;</span></button>';
+    alertbox += msg + '</div>';
+    $(selector).append(alertbox);
+}
+function showBootstrapPopover(element, original_value, error_message)
+{
+    var timeout = 1500;
+    if (error_message == '') {
+        error_message = 'Saved!';
+    } else {
+        element.val(original_value);
+        timeout = 3000;
+    }
+    element.popover({
+        html: true,
+        content: error_message,
+        placement: 'auto bottom'
+    });
+    element.popover('show');
+    setTimeout(function(){element.popover('destroy');}, timeout);
+}
+function mathField(elem)
+{
+    try {
+        console.log(elem);
+        console.log(elem.value);
+        var newval = calculator.parse(elem.value);
+        elem.value = newval;
+    } catch (e) { }
+}
+function standardFieldMarkup()
+{
+    $('input.date-field').datepicker({
+        dateFormat: 'yy-mm-dd',    
+        changeYear: true,
+        yearRange: "c-10:c+10",
+    });
+    $('input.math-field').change(function (event) {
+        mathField(event.target);
+    });
+}
+                    <?php
+                }
+                if ($this->enable_linea) {
+                    echo $this->lineaJS();
+                }
                 echo '</script>';
             }
 
@@ -395,9 +686,7 @@ class FanniePage
                 echo '</style>';
             }
 
-            if ($this->window_dressing) {
-                echo '</body></html>';
-            }
+            echo '</body></html>';
         }
     }
 }

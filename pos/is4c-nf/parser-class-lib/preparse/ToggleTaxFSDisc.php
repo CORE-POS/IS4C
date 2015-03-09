@@ -21,58 +21,67 @@
 
 *********************************************************************************/
 
-class ToggleTaxFSDisc extends PreParser {
-	var $tfd;
-	var $remainder;
+class ToggleTaxFSDisc extends PreParser 
+{
 
-	var $TAX = 4;
-	var $FS = 2;
-	var $DISC = 1;
+	private $tfd;
+	private $remainder;
+
+	public $TAX = 4;
+	public $FS = 2;
+	public $DISC = 1;
 
 	// use bit-masks to determine the which toggles
 	// should be enabled
-	function check($str){
-		global $CORE_LOCAL;
+	function check($str)
+    {
+        // ignore comments; they may have all sorts of
+        // random character cominations
+        if (substr($str, 0, 2) == "CM") {
+            return false;
+        }
 		$this->tfd = 0;
-		if (substr($str,0,5) == "1TNFN" || substr($str,0,5) == "FN1TN"){
-			$this->remainder = substr($str,5);
-			$this->tfd = $this->tfd | $this->TAX;
-			$this->tfd = $this->tfd | $this->FS;	
-			return True;
-		}
-		elseif (substr($str,0,4) == "FNDN" || substr($str,0,4) == "DNFN"){
-			$this->remainder = substr($str,4);
-			$this->tfd = $this->tfd | $this->DISC;
-			$this->tfd = $this->tfd | $this->FS;	
-			return True;
-		}
-		elseif (substr($str,0,3) == "1TN"){
-			$this->remainder = substr($str,3);
-			$this->tfd = $this->tfd | $this->TAX;
-			return True;
+        $this->remainder = '';
 
-		}
-		elseif (substr($str,0,2) == "FN" && substr($str,2,2) != "TL"){
-			$this->remainder = substr($str,2);
-			$this->tfd = $this->tfd | $this->FS;	
-			return True;
-		}
-		elseif (substr($str,0,2) == "DN"){
-			$this->remainder = substr($str,2);
-			$this->tfd = $this->tfd | $this->DISC;	
-			return True;
-		}
-		return False;	
+        if (strstr($str, '1TN')) {
+			$this->tfd = $this->tfd | $this->TAX;
+            $parts = explode('1TN', $str, 2);
+            foreach ($parts as $p) {
+                $this->remainder .= $p;
+            }
+        }
+
+        if (strstr($str, 'DN')) {
+			$this->tfd = $this->tfd | $this->DISC;
+            $parts = explode('DN', $str, 2);
+            foreach ($parts as $p) {
+                $this->remainder .= $p;
+            }
+        }
+
+        if (strstr($str, 'FN') && !strstr($str, 'FNTL')) {
+			$this->tfd = $this->tfd | $this->FS;
+            $parts = explode('FN', $str, 2);
+            foreach ($parts as $p) {
+                $this->remainder .= $p;
+            }
+        }
+
+		return $this->tfd != 0 ? true : false;;	
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
-		if ($this->tfd & $this->TAX)
-			$CORE_LOCAL->set("toggletax",1);
-		if ($this->tfd & $this->FS)
-			$CORE_LOCAL->set("togglefoodstamp",1);
-		if ($this->tfd & $this->DISC)
-			$CORE_LOCAL->set("toggleDiscountable",1);
+	function parse($str)
+    {
+		if ($this->tfd & $this->TAX) {
+			CoreLocal::set("toggletax",1);
+        }
+		if ($this->tfd & $this->FS) {
+			CoreLocal::set("togglefoodstamp",1);
+        }
+		if ($this->tfd & $this->DISC) {
+			CoreLocal::set("toggleDiscountable",1);
+        }
+
 		return $this->remainder;	
 	}
 

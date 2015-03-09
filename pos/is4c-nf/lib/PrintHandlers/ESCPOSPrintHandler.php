@@ -708,7 +708,8 @@ class ESCPOSPrintHandler extends PrintHandler {
         ReceiptLib::writeLine($text);
 	}
 
-	function RenderBitmapFromFile($fn, $align='C'){
+	function RenderBitmapFromFile($fn, $align='C')
+    {
 		return $this->RenderBitmap($fn, $align);
 	}
 
@@ -756,6 +757,16 @@ class ESCPOSPrintHandler extends PrintHandler {
 
 		return $slip;
 	}
+
+    /**
+      Show bitmap stored on the printer device itself
+      @param $image_id [int] storage location ID
+      @return [string] receipt text
+    */
+    public function renderBitmapFromRam($image_id)
+    {
+        return chr(28) . 'p' . chr($image_id) . chr(0);
+    }
 	
 } // ESCPOSPrintHandler
 

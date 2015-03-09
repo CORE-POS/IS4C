@@ -30,6 +30,7 @@ class ItemOrderHistoryReport extends FannieReportPage
 {
     public $description = '[Item Order History] shows purchase orders for a given item. Requires purchase orders or
     invoice information to be entered into POS.';
+    public $themed = true;
 
     protected $title = "Fannie : Item Order History";
     protected $header = "Item Order History";
@@ -102,7 +103,7 @@ class ItemOrderHistoryReport extends FannieReportPage
         }
 
         return $data;
-	}
+    }
 
     public function calculate_footers($data)
     {
@@ -111,11 +112,15 @@ class ItemOrderHistoryReport extends FannieReportPage
 
     public function form_content()
     {
-        global $FANNIE_URL;
-        return "<form action=\"{$_SERVER['PHP_SELF']}\" method=\"get\">
-                <b>UPC</b> <input type=text name=upc id=upc />
-                <input type=submit value=\"Get Report\" />
-                </form>";
+        $this->add_onload_command('$(\'#upc\').focus();');
+        return '
+            <form action="' . $_SERVER['PHP_SELF'] . '" method="get">
+            <div class="form-group form-inline">
+                <label>UPC</label> 
+                <input type=text name=upc id=upc class="form-control" />
+                <button type=submit class="btn btn-default">Get Report</button>
+            </div>
+            </form>';
     }
 
     public function readinessCheck()

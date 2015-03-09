@@ -26,11 +26,11 @@ include("../../config.php");
 
 $current_user = checkLogin();
 
-if ($current_user)
-	logout();
+if ($current_user) {
+    logout();
+}
 
 echo "<html><body bgcolor=cabb1e>";
 echo "You have logged out successfully";
 echo "</body></html>";
 
-?>

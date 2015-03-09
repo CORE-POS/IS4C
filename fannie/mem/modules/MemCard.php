@@ -21,69 +21,72 @@
 
 *********************************************************************************/
 
-class MemCard extends MemberModule {
+class MemCard extends \COREPOS\Fannie\API\member\MemberModule {
 
-	// Return a form segment for display or edit the Member Card#
-	function ShowEditForm($memNum, $country="US"){
-		global $FANNIE_URL;
-		global $FANNIE_MEMBER_UPC_PREFIX;
+    // Return a form segment for display or edit the Member Card#
+    function showEditForm($memNum, $country="US"){
+        global $FANNIE_URL;
+        global $FANNIE_MEMBER_UPC_PREFIX;
 
-		$dbc = $this->db();
+        $dbc = $this->db();
 
-		$prefix = isset($FANNIE_MEMBER_UPC_PREFIX) ? $FANNIE_MEMBER_UPC_PREFIX : "";
-		$plen = strlen($prefix);
+        $prefix = isset($FANNIE_MEMBER_UPC_PREFIX) ? $FANNIE_MEMBER_UPC_PREFIX : "";
+        $plen = strlen($prefix);
 
-		$infoQ = $dbc->prepare_statement("SELECT upc
-				FROM memberCards
-				WHERE card_no=?");
-		$infoR = $dbc->exec_statement($infoQ,array($memNum));
-		if ( $infoR === false ) {
-			return "Error: problem checking for Member Card<br />";
-		}
+        $infoQ = $dbc->prepare_statement("SELECT upc
+                FROM memberCards
+                WHERE card_no=?");
+        $infoR = $dbc->exec_statement($infoQ,array($memNum));
+        if ( $infoR === false ) {
+            return "Error: problem checking for Member Card<br />";
+        }
 
-		$ret = "<fieldset><legend>Membership Card</legend>";
-		$ret .= "<table class=\"MemFormTable\" 
-			border=\"0\">";
+        $ret = "<div class=\"panel panel-default\">
+            <div class=\"panel-heading\">Membership Card</div>
+            <div class=\"panel-body\">";
+        if ( $dbc->num_rows($infoR) > 0 ) {
+            $infoW = $dbc->fetch_row($infoR);
+            $upc = $infoW['upc'];
+            if ( $prefix && strpos("$upc", "$prefix") === 0 ) {
+                $upc = substr($upc,$plen);
+                $upc = ltrim($upc,"0");
+            }
+        } else {
+            $upc = "";
+        }
 
-		if ( $dbc->num_rows($infoR) > 0 ) {
-			$infoW = $dbc->fetch_row($infoR);
-			$upc = $infoW['upc'];
-			if ( $prefix && strpos("$upc", "$prefix") === 0 ) {
-				$upc = substr($upc,$plen);
-				$upc = ltrim($upc,"0");
-			}
-		} else {
-			$upc = "";
-		}
-		$ret .= "<tr><th>Card#</th>";
-		$ret .= "<td><input name='memberCard' size='15' value='{$upc}'></td>";
-		$ret .= '</tr>';
+        $ret .= '<div class="form-group form-inline">
+            <span class="label primaryBackground">Card#</span>
+            <input type="text" name="memberCard" class="form-control"
+                value="' . $upc . '" />
+            </div>';
 
-		$ret .= "</table></fieldset>";
+        $ret .= "</div>";
+        $ret .= "</div>";
 
-		return $ret;
+        return $ret;
 
-	// showEditForm
-	}
+    // showEditForm
+    }
 
-	// Update, insert or delete the Member Card#.
-	// Return "" on success or an error message.
-	function SaveFormData($memNum){
+    // Update, insert or delete the Member Card#.
+    // Return "" on success or an error message.
+    function saveFormData($memNum){
 
-		global $FANNIE_MEMBER_UPC_PREFIX, $FANNIE_ROOT;
-		$dbc = $this->db();
-		if (!class_exists("MemberCardsModel"))
-			include($FANNIE_ROOT.'classlib2.0/data/models/MemberCardsModel.php');
+        global $FANNIE_MEMBER_UPC_PREFIX, $FANNIE_ROOT;
+        $dbc = $this->db();
+        if (!class_exists("MemberCardsModel"))
+            include($FANNIE_ROOT.'classlib2.0/data/models/MemberCardsModel.php');
 
-		$prefix = isset($FANNIE_MEMBER_UPC_PREFIX) ? $FANNIE_MEMBER_UPC_PREFIX : "";
-		$plen = strlen($prefix);
+        $prefix = isset($FANNIE_MEMBER_UPC_PREFIX) ? $FANNIE_MEMBER_UPC_PREFIX : "";
+        $plen = strlen($prefix);
 
-		$form_upc = FormLib::get_form_value('memberCard','');
-		// Restore prefix and leading 0's to upc.
-		if ( $form_upc && strlen($form_upc) < 13 ) {
-			$clen = (13 - $plen);
-			$form_upc = sprintf("{$prefix}%0{$clen}d", $form_upc);
-		}
+        $form_upc = FormLib::get_form_value('memberCard','');
+        // Restore prefix and leading 0's to upc.
+        if ( $form_upc && strlen($form_upc) < 13 ) {
+            $clen = (13 - $plen);
+            $form_upc = sprintf("{$prefix}%0{$clen}d", $form_upc);
+        }
 
         $model = new MemberCardsModel($dbc);
         $model->card_no($memNum);
@@ -91,14 +94,14 @@ class MemCard extends MemberModule {
         $saved = $model->save();
         $model->pushToLanes();
 
-		if (!$saved) {
-			return 'Error: problem saving Member Card<br />';
-		} else {
-			return '';
+        if (!$saved) {
+            return 'Error: problem saving Member Card<br />';
+        } else {
+            return '';
         }
 
-	// saveFormData
-	}
+    // saveFormData
+    }
 
 // MemCard
 }

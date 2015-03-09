@@ -36,6 +36,7 @@ class PriceHistoryReport extends FannieReportPage
     protected $required_fields = array();
 
     public $description = '[Price History] shows what prices an item as been assigned over a given time period.';
+    public $themed = true;
 
     /**
       Report has variable inputs so change
@@ -161,92 +162,74 @@ class PriceHistoryReport extends FannieReportPage
         ob_start();
         ?>
 <form method=get action="<?php echo $_SERVER['PHP_SELF']; ?>">
-Type: <input type=radio id=radioU name=type value=upc onclick=showUPC() checked /> UPC 
-<input type=radio id=radioD name=type value=department onclick=showDept() /> Department 
-<input type=radio id=radioM name=type value=manufacturer onclick=showManu() /> <?php echo _('Manufacturer'); ?>
-<br />
-
-<div id=upcfields>
-UPC: <input type=text name=upc /><br />
+<input type="hidden" name="type" id="type-field" value="upc" />
+<div class="col-sm-6">
+    <ul class="nav nav-tabs">
+        <li class="active"><a href="#upc-tab" role="tab"
+            onclick="$(this).tab('show'); $('#type-field').val('upc'); return false;">UPC</a></li>
+        <li><a href="#dept-tab" role="tab"
+            onclick="$(this).tab('show'); $('#type-field').val('department'); return false;">Department</a></li>
+        <li><a href="#manu-tab" role="tab"
+            onclick="$(this).tab('show'); $('#type-field').val('manufacturer'); return false;"><?php echo _('Manufacturer'); ?></a></li>
+    </ul>
+    <div class="tab-content">
+        <div class="tab-pane active" id="upc-tab">
+            <label>UPC</label>
+            <input type=text name=upc class="form-control" />
+        </div>
+        <div class="tab-pane" id="dept-tab">
+            <p>
+                <label class="col-sm-3">Start</label>
+                <div class="col-sm-2">
+                    <input type=text id=dept1 name=dept1 class="form-control" />
+                </div>
+                <div class="col-sm-7">
+                    <select onchange="$('#dept1').val(this.value);" class="form-control">
+                    <?php echo $deptsList; ?>
+                    </select>
+                </div>
+            </p>
+            <p>
+                <label class="col-sm-3">End</label>
+                <div class="col-sm-2">
+                    <input type=text id=dept2 name=dept2 class="form-control" />
+                </div>
+                <div class="col-sm-7">
+                    <select onchange="$('#dept2').val(this.value);" class="form-control">
+                    <?php echo $deptsList; ?>
+                    </select>
+                </div>
+            </p>
+        </div>
+        <div class="tab-pane" id="manu-tab">
+            <label><?php echo _('Manufacturer'); ?></label>
+            <input type=text name=manufacturer class="form-control" />
+            <p>
+                <label><input type=radio name=mtype value=upc checked /> UPC prefix</label>
+                <label><input type=radio name=mtype value=name /> <?php echo _('Manufacturer name'); ?></label>
+            </p>
+        </div>
+    </div>
+    <br />
+    <p>
+        <button type=submit name=Submit class="btn btn-default">Submit</button>
+        <label><input type=checkbox name=excel value="xls" /> Excel</label>
+    </p>
 </div>
-
-<div id=departmentfields>
-Department Start: <input type=text id=dept1 size=4 name=dept1 />
-<select id=d1s><?php echo $deptsList; ?></select><br />
-Department End: <input type=text id=dept2 size=4 name=dept2 />
-<select id=d2s><?php echo $deptsList; ?></select><br />
+<div class="col-sm-6">
+    <p>
+        <label>Start Date</label>
+        <input type="text" id="date1" name="date1" class="form-control date-field" required />
+    </p>
+    <p>
+        <label>End Date</label>
+        <input type="text" id="date2" name="date2" class="form-control date-field" required />
+    </p>
+    <p>
+        <?php echo FormLib::dateRangePicker(); ?>
+    </p>
 </div>
-
-<div id=manufacturerfields>
-<?php echo _('Manufacturer'); ?>: <input type=text name=manufacturer /><br />
-<input type=radio name=mtype value=upc checked /> UPC prefix 
-<input type=radio name=mtype value=name /> <?php echo _('Manufacturer name'); ?><br />
-</div>
-
-<table>
-<tr>
-<th>Start Date</th><td><input type=text id=date1 name=date1 /></td>
-<td rowspan="2">
-<?php echo FormLib::dateRangePicker(); ?>
-</td>
-</tr>
-<tr>
-<th>End Date</th><td><input type=text id=date2 name=date2 /></td>
-</table>
-<input type=submit name=Submit /> <input type=checkbox name=excel value="xls" /> Excel
 </form>
-        <?php
-        return ob_get_clean();
-    }
-
-    public function javascript_content()
-    {
-        ob_start();
-        ?>
-function showUPC(){
-	$('#radioU').attr('checked',true);
-	document.getElementById('upcfields').style.display='block';
-	document.getElementById('departmentfields').style.display='none';
-	document.getElementById('manufacturerfields').style.display='none';
-}
-function showDept(){
-	$('#radioD').attr('checked',true);
-	document.getElementById('upcfields').style.display='none';
-	document.getElementById('departmentfields').style.display='block';
-	document.getElementById('manufacturerfields').style.display='none';
-}
-function showManu(){
-	$('#radioM').attr('checked',true);
-	document.getElementById('upcfields').style.display='none';
-	document.getElementById('departmentfields').style.display='none';
-	document.getElementById('manufacturerfields').style.display='block';
-}
-$(document).ready(function(){
-	showUPC();
-	$('#date1').click(function(){showCalendarControl(this);});
-	$('#date2').click(function(){showCalendarControl(this);});
-	$('#d1s').change(function(){
-		$('#dept1').val($('#d1s').val());
-	});
-	$('#d2s').change(function(){
-		$('#dept2').val($('#d2s').val());
-	});
-});
-        <?php
-        return ob_get_clean();
-    }
-
-    public function css_content()
-    {
-        ob_start();
-        ?>
-<style type=text/css>
-#departmentfields{
-	display:none;
-}
-#manufacturerfields{
-	display:none;
-}
         <?php
         return ob_get_clean();
     }

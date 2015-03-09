@@ -30,6 +30,7 @@ class PcDailyReport extends FannieReportPage
 {
     public $description = '[Integrated Card Reports] lists all integrated payment card transactions for a given day.';
     public $report_set = 'Tenders';
+    public $themed = true;
 
     protected $report_headers = array('Processor', 'Transaction Type', 
                                     'Sales (#)', 'Sales ($)', 
@@ -40,21 +41,20 @@ class PcDailyReport extends FannieReportPage
     protected $title = "Fannie : Card Processing Report";
     protected $header = "Card Processing Report";
     protected $required_fields = array();
+    protected $no_jquery = true;
 
     public function report_description_content()
     {
         global $FANNIE_URL;
-        $ret = array();
+        $ret = array(''); // spacer line
         if ($this->report_format == 'html') {
             $ret[] = $this->form_content();
-            $this->add_css_file($FANNIE_URL.'src/CalendarControl.css');
         }
-        $ret[] = 'Activity for ' . FormLib::get('date', date('Y-m-d'));
 
         return $ret;
     }
 
-	public function fetch_report_data()
+    public function fetch_report_data()
     {
         global $FANNIE_TRANS_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_TRANS_DB);
@@ -382,11 +382,15 @@ class PcDailyReport extends FannieReportPage
     public function form_content()
     {
         global $FANNIE_URL;
-        $this->add_script($FANNIE_URL.'src/CalendarControl.js');
-        return '<form style="display:inline;" method="get" action="PcDailyReport.php">
-            <b>Change Date</b> <input type="text" name="date" value="" size="10" 
-                        onfocus="showCalendarControl(this);" />
-            <input type="submit" value="Get Report" />
+        $this->add_onload_command('$(\'#date\').datepicker({dateFormat:\'yy-mm-dd\'});');
+        return '<form method="get" action="PcDailyReport.php">
+            <div class="col-sm-6">
+            <div class="row form-group form-inline">
+            <label>Change Date</label> <input type="text" name="date" id="date" 
+                class="form-control" required />
+            <button type="submit" class="btn btn-default">Get Report</button>
+            </div>
+            </div>
             </form>';
     }
 

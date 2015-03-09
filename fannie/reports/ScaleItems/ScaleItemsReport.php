@@ -30,6 +30,7 @@ class ScaleItemsReport extends FannieReportPage
 {
     public $description = '[Scale Items] lists all items sent to Hobart scales';
     public $report_set = '';
+    public $themed = true;
 
     protected $report_headers = array('UPC', 'Description', 'Weight', 'Tare', 'Shelf Life',
                                       'Net Wt', 'Label Text');
@@ -38,7 +39,7 @@ class ScaleItemsReport extends FannieReportPage
 
     protected $required_fields = array('submit');
 
-	public function fetch_report_data()
+    public function fetch_report_data()
     {
         global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -109,25 +110,38 @@ class ScaleItemsReport extends FannieReportPage
             $dlist[$dept->dept_no()] = $dept->dept_name();
         }
         $ret = '<form method="get" action="ScaleItemsReport.php">
-            <fieldset><legend>Filters</legend>
-            <b>Search Text</b> <input type="text" name="search" value="" placeholder="optional" />
-            <br /><br />';
-        $ret .= '<b>Dept Start</b>: <input type="text" size="3" name="dept1" id="dept1" />';
-        $ret .= '<select onchange="$(\'#dept1\').val(this.value);">';
+            <div class="panel panel-default">
+                <div class="panel-heading">Filters</div>
+                <div class="panel-body">
+                    <div class="form-group form-inline">
+                        <label>Search Text</label>
+                        <input type="text" name="search" value="" 
+                            class="form-control" placeholder="optional" />
+                    </div>
+                    <div class="form-group form-inline">';
+        $ret .= '<label>Dept Start</label> 
+            <input type="text" size="3" name="dept1" id="dept1" class="form-control" />';
+        $ret .= '<select onchange="$(\'#dept1\').val(this.value);" class="form-control">';
         foreach($dlist as $id => $label) {
             $ret .= sprintf('<option value="%d">%d %s</option>', $id, $id, $label);
         }
         $ret .= '</select>';
-        $ret .= '<br /><br />';
-        $ret .= '<b>Dept End</b>: <input type="text" size="3" name="dept2" id="dept1" />';
-        $ret .= '<select onchange="$(\'#dept2\').val(this.value);">';
+        $ret .= '</div>
+                    <div class="form-group form-inline">';
+        $ret .= '<label>Dept End</label>: 
+            <input type="text" size="3" name="dept2" id="dept2" class="form-control" />';
+        $ret .= '<select onchange="$(\'#dept2\').val(this.value);" class="form-control">';
         foreach($dlist as $id => $label) {
             $ret .= sprintf('<option value="%d">%d %s</option>', $id, $id, $label);
         }
         $ret .= '</select>';
-        $ret .= '</fieldset>';
-        $ret .= '<br /><br />
-            <input type="submit" name="submit" value="Get Report" />
+        $ret .= '</div>';
+        $ret .= '</div>';
+        $ret .= '</div>';
+        $ret .= '<p>
+            <button type="submit" name="submit" value="1" 
+                class="btn btn-default">Get Report</button>
+            </p>
             </form>';
 
         return $ret;

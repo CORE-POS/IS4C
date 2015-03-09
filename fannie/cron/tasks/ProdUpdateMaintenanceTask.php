@@ -53,7 +53,7 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
         if (isset($prodUpdate['prodUpdateID']) && isset($priceHistory['prodUpdateID']) && isset($deptHistory['prodUpdateID'])) {
             // schema is updated
             $new_maintenance_method = true;
-            echo $this->cronMsg('New archiving method for prodUpdate');
+            $this->cronMsg('New archiving method for prodUpdate', FannieLogger::INFO);
 
             // migrate data if needed
             // and rebuild the history tables from scratch
@@ -61,7 +61,7 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
             if ($dbc->table_exists('prodUpdateArchive')) {
                 $chk = $dbc->query($dbc->addSelectLimit('SELECT upc FROM prodUpdateArchive', 1));
                 if ($dbc->num_rows($chk) > 0) {
-                    echo $this->cronMsg('Need to migrate prodUpdateArchive data');
+                    $this->cronMsg('Need to migrate prodUpdateArchive data', FannieLogger::INFO);
                     if ($this->migrateArchive($dbc)) {
                         $dbc->query('TRUNCATE TABLE prodPriceHistory');
                         $dbc->query('TRUNCATE TABLE prodDepartmentHistory');
@@ -84,7 +84,7 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
                 $limitW = $dbc->fetch_row($limitR);
                 $limit = $limitW['lastChange'];
             }
-            echo $this->cronMsg('Scanning price changes from prodUpdateID '.$limit);
+            $this->cronMsg('Scanning price changes from prodUpdateID '.$limit, FannieLogger::INFO);
             $this->scanPriceChanges($dbc, $limit);
 
             $limitR = $dbc->query('SELECT MAX(prodUpdateID) as lastChange FROM prodDepartmentHistory');
@@ -93,7 +93,7 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
                 $limitW = $dbc->fetch_row($limitR);
                 $limit = $limitW['lastChange'];
             }
-            echo $this->cronMsg('Scanning dept changes from prodUpdateID '.$limit);
+            $this->cronMsg('Scanning dept changes from prodUpdateID '.$limit, FannieLogger::INFO);
             $this->scanDeptChanges($dbc, $limit);
         } else {
             /**
@@ -119,7 +119,7 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
             if ($worked){
                 $dbc->query("DELETE FROM prodUpdate");
             } else {
-                echo $this->cronMsg("There was an archiving error on prodUpdate");
+                $this->cronMsg("There was an archiving error on prodUpdate", FannieLogger::ERROR);
                 flush();
             }
         }
@@ -145,8 +145,8 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
         $prodUpdateR = $dbc->execute($prodUpdateP, $args);
        
         $chkP = $dbc->prepare("SELECT modified,price FROM
-			prodPriceHistory WHERE upc=?
-			ORDER BY modified DESC");
+            prodPriceHistory WHERE upc=?
+            ORDER BY modified DESC");
         $upc = null;
         $prevPrice = null;
         $update = new ProdUpdateModel($dbc); 
@@ -182,7 +182,7 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
                 $history->uid($update->user());
                 $history->prodUpdateID($update->prodUpdateID());
                 $history->save();
-                echo $this->cronMsg('Add price change #' . $update->prodUpdateID());
+                $this->cronMsg('Add price change #' . $update->prodUpdateID(), FannieLogger::INFO);
             }
 
             $prevPrice = $update->price();
@@ -208,8 +208,8 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
         $prodUpdateR = $dbc->execute($prodUpdateP, $args);
        
         $chkP = $dbc->prepare("SELECT modified,dept_ID FROM
-			prodDepartmentHistory WHERE upc=?
-			ORDER BY modified DESC");
+            prodDepartmentHistory WHERE upc=?
+            ORDER BY modified DESC");
         $upc = null;
         $prevDept = null;
         $update = new ProdUpdateModel($dbc); 
@@ -240,7 +240,7 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
                 $history->dept_ID($update->dept());
                 $history->uid($update->user());
                 $history->prodUpdateID($update->prodUpdateID());
-                echo $this->cronMsg('Add dept change #' . $update->prodUpdateID());
+                $this->cronMsg('Add dept change #' . $update->prodUpdateID(), FannieLogger::INFO);
                 $history->save();
             }
 
@@ -268,11 +268,11 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
 
         $worked = $dbc->query("INSERT INTO prodUpdate ($col_list) SELECT $col_list FROM prodUpdateArchive");
         if ($worked){
-            echo $this->cronMsg("Migrated prodUpdateArchive back into prodUpdate successfully");
+            $this->cronMsg("Migrated prodUpdateArchive back into prodUpdate successfully", FannieLogger::INFO);
             $dbc->query("TRUNCATE TABLE prodUpdateArchive");
             return true;
         } else {
-            echo $this->cronMsg("There was an archiving error on prodUpdate");
+            $this->cronMsg("There was an archiving error on prodUpdate", FannieLogger::ERROR);
             return false;
         }
     }

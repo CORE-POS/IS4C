@@ -28,20 +28,14 @@ if (!class_exists('FannieAPI')) {
 
 class TrendsReport extends FannieReportPage
 {
-	protected $title = "Fannie : Trends";
-	protected $header = "Trend Report";
+    protected $title = "Fannie : Trends";
+    protected $header = "Trend Report";
 
     protected $required_fields = array('date1', 'date2');
 
     public $description = '[Trends] shows daily sales totals for items over a given date range. Items can be included by UPC, department, or manufacturer.';
     public $report_set = 'Movement Reports';
-
-    public function report_description_content()
-    {
-        $date1 = FormLib::get('date1', date('Y-m-d'));
-        $date2 = FormLib::get('date2', date('Y-m-d'));
-        return array();
-    }
+    public $themed = true;
 
     public function fetch_report_data()
     {
@@ -54,7 +48,7 @@ class TrendsReport extends FannieReportPage
         
         $joins = '';
         $where = '1=1';
-        $groupby = 'd.upc, p.description';
+        $groupby = 'd.upc, CASE WHEN p.description IS NULL THEN d.description ELSE p.description END';
         $args = array($date1.' 00:00:00', $date2.' 23:59:59');
         switch (FormLib::get('type', 'dept')) {
             case 'dept':
@@ -86,23 +80,31 @@ class TrendsReport extends FannieReportPage
                 break;
         }
 
-        $query = "select 
-            year(d.tdate) as year,
-            month(d.tdate) as month,
-            day(d.tdate) as day,
-            $groupby,
-            sum(d.quantity) as total 
-            from $dlog as d left join products as p on d.upc = p.upc
-            $joins
-            where d.tdate BETWEEN ? AND ?
-            and trans_status <> 'M'
-            and $where
-            group by year(d.tdate),month(d.tdate),day(d.tdate),
-            $groupby
-            order by d.upc,year(d.tdate),month(d.tdate),day(d.tdate)";
+        $query = "
+            SELECT 
+                YEAR(d.tdate) AS year,
+                MONTH(d.tdate) AS month,
+                DAY(d.tdate) AS day,
+                $groupby, "
+                . DTrans::sumQuantity('d') . " AS total
+            FROM $dlog as d "
+                . DTrans::joinProducts('d', 'p')
+                . $joins . "
+            WHERE d.tdate BETWEEN ? AND ?
+                AND trans_status <> 'M'
+                AND trans_type = 'I'
+                AND $where
+            GROUP BY YEAR(d.tdate),
+                MONTH(d.tdate),
+                DAY(d.tdate),
+                $groupby
+            ORDER BY d.upc,
+                YEAR(d.tdate),
+                MONTH(d.tdate),
+                DAY(d.tdate)";
         $prep = $dbc->prepare_statement($query);
         $result = $dbc->exec_statement($prep,$args);
-	
+    
         // variable columns. one per dates
         $dates = array();
         while($date1 != $date2) {
@@ -118,12 +120,12 @@ class TrendsReport extends FannieReportPage
             $this->report_headers[] = $i;
         }
         $this->report_headers[] = 'Total';
-	
+    
         $current = array('upc'=>'', 'description'=>'');
         $data = array();
         // track upc while going through the rows, storing 
         // all data about a given upc before printing
-        while ($row = $dbc->fetch_array($result)){	
+        while ($row = $dbc->fetch_array($result)){  
             if ($current['upc'] != $row[3]){
                 if ($current['upc'] != ""){
                     $record = array($current['upc'], $current['description']);
@@ -173,24 +175,23 @@ class TrendsReport extends FannieReportPage
 
     public function form_content()
     {
-        global $FANNIE_OP_DB;
+        global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
         $deptsR = $dbc->exec_statement($deptsQ);
         $deptsList = "";
         while ($deptsW = $dbc->fetch_array($deptsR)) {
-          $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";	
+          $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";  
         }
-        $this->add_script('../../src/CalendarControl.js');
         $this->add_onload_command('doShow();');
 
         ob_start();
         ?>
 <script type="text/javascript">
 function swap(src,dst){
-	var val = document.getElementById(src).value;
-	document.getElementById(dst).value = val;
+    var val = document.getElementById(src).value;
+    document.getElementById(dst).value = val;
 }
 
 function doShow(){
@@ -203,83 +204,140 @@ function doShow(){
     $('.upcField').hide();
     $('.lcField').hide();
     $('.manuField').hide();
-	if (which == "manu") {
+    if (which == "manu") {
         $('.manuField').show();
-	} else if (which == "dept") {
+    } else if (which == "dept") {
         $('.deptField').show();
-	} else if (which == "upc") {
+    } else if (which == "upc") {
         $('.upcField').show();
-	} else if (which == "likecode") {
+    } else if (which == "likecode") {
         $('.lcField').show();
-	}
+    }
 }
 </script>
 
-<form method=get action=TrendsReport.php>
-<b>Type</b>: <input type=radio name=type id=rt1 checked value=dept onchange="doShow();" /><label for="rt1">Department</label>
-<input type=radio name=type id=rt2 value=manu onchange="doShow();" /><label for="rt2"><?php echo _('Manufacturer'); ?></label>
-<input type=radio name=type id=rt3 value=upc onchange="doShow();" /><label for="rt3">Single item </label>
-<input type=radio name=type id=rt4 value=likecode onchange="doShow();" /><label for="rt4">Like code</label><br />
-
-<table>
-<tr>
-    <td class="deptField">Start department:</td><td class="deptField">
-    <select id=dept1Sel onchange="swap('dept1Sel','dept1');">
-    <?php echo $deptsList ?>
-    </select>
-    <input type=text name=dept1 id=dept1 size=5 value=1 />
-    </td>
-
-    <td class="manuField"><?php echo _('Manufacturer'); ?>:</td><td class="manuField">
-    <input type=text name=manufacturer />
-    </td>
-
-    <td class="upcField">UPC:</td><td class="upcField">
-    <input type=text name=upc />
-    </td>
-
-    <td class="lcField">LikeCode Start:</td><td class="lcField">
-    <input type=text name=likeCode />
-    </td>
-
-    <td>Start date:</td><td><input type=text id=date1 name=date1 onfocus="showCalendarControl(this);"/></td></tr>
-
-    <tr>
-    <td class="deptField">End department:</td><td class="deptField">
-    <select id=dept2Sel onchange="swap('dept2Sel','dept2');">
-    <?php echo $deptsList ?>
-    </select>
-    <input type=text name=dept2 id=dept2 size=5 value=1 />
-    </td>
-
-    <td class="manuField" colspan="2">
-    <input type=radio name=mtype value=name checked />Name
-    <input type=radio name=mtype value=prefix />UPC prefix
-    </td>
-
-    <td class="upcField" colspan="2"></td>
-
-    <td class="lcField">LikeCode End:</td><td class="lcField">
-    <input type=text name=likeCode2 />
-    </td>
-
-    <td>End date:</td><td><input type=text id=date2 name=date2 onfocus="showCalendarControl(this);"/></td></tr>
-
-</tr></table>
-<br />
-<table>
-<tr>
-    <td>
-    Excel <input type=checkbox name=excel value="xls" /><br />
-    <input type=submit value=Submit />
-    </td><td>
-    <?php echo FormLib::date_range_picker(); ?>
-    </td>
-</tr>
-</table>
+<form method=get action=TrendsReport.php class="form">
+<input type="hidden" name="type" id="type-field" value="dept" />
+<div class="col-sm-6">
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="active"><a href="#dept-tab" role="tab"
+            onclick="$(this).tab('show'); $('#type-field').val('dept'); return false;">Department</a></li>
+        <li><a href="#manu-tab" role="tab"
+            onclick="$(this).tab('show'); $('#type-field').val('manu'); return false;"><?php echo _('Manufacturer'); ?></a></li>
+        <li><a href="#upc-tab" role="tab"
+            onclick="$(this).tab('show'); $('#type-field').val('upc'); return false;">UPC</a></li>
+        <li><a href="#lc-tab" role="tab"
+            onclick="$(this).tab('show'); $('#type-field').val('likecode'); return false;">Like Code</a></li>
+    </ul>
+    <div class="tab-content">
+        <div class="tab-pane active" id="dept-tab">
+            <div class="form-group">
+                <label class="col-sm-4 control-label">Start</label>
+                <div class="col-sm-6">
+                    <select onchange="$('#dept1').val(this.value);" class="form-control">
+                    <?php echo $deptsList ?>
+                    </select>
+                </div>
+                <div class="col-sm-2">
+                    <input type=text name=dept1 id=dept1 value=1 class="form-control" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-4 control-label">End</label>
+                <div class="col-sm-6">
+                    <select onchange="$('#dept2').val(this.value);" class="form-control">
+                    <?php echo $deptsList ?>
+                    </select>
+                </div>
+                <div class="col-sm-2">
+                    <input type=text name=dept2 id=dept2 value=1 class="form-control" />
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane" id="manu-tab">
+            <div class="form-group">
+                <label class="control-label col-sm-4"><?php echo _('Manufacturer'); ?></label>
+                <div class="col-sm-8">
+                    <input type=text name=manufacturer id="brand-field" class="form-control" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-4">
+                    <input type=radio name=mtype value=name checked /> Name
+                </label>
+                <label class="control-label col-sm-4">
+                    <input type=radio name=mtype value=prefix /> UPC prefix
+                </label>
+            </div>
+        </div>
+        <div class="tab-pane" id="upc-tab">
+            <div class="form-group">
+                <label class="control-label col-sm-4">UPC</label>
+                <div class="col-sm-8">
+                    <input type=text name=upc id="upc-field" class="form-control" />
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane" id="lc-tab">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Start</label>
+                <div class="col-sm-8">
+                    <input type=text name=likeCode class="form-control" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-4">End</label>
+                <div class="col-sm-8">
+                    <input type=text name=likeCode2 class="form-control" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label">
+            <input type="checkbox" name="excel" value="csv" /> Excel
+        </label>
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-default">Submit</button>
+    </div>
+</div>
+<div class="col-sm-5">
+    <div class="row">
+        <label class="col-sm-4 control-label">Start Date</label>
+        <div class="col-sm-8">
+            <input type=text id=date1 name=date1 class="form-control date-field" required />
+        </div>
+    </div>
+    <div class="row">
+        <label class="col-sm-4 control-label">End Date</label>
+        <div class="col-sm-8">
+            <input type=text id=date2 name=date2 class="form-control date-field" required />
+        </div>
+    </div>
+    <div class="row">
+        <?php echo FormLib::date_range_picker(); ?>                            
+    </div>
+</div>
 </form>
         <?php
+        $this->add_script($FANNIE_URL . 'item/autocomplete.js');
+        $ws = $FANNIE_URL . 'ws/';
+        $this->add_onload_command("bindAutoComplete('#brand-field', '$ws', 'brand');\n");
+        $this->add_onload_command("bindAutoComplete('#upc-field', '$ws', 'item');\n");
+
         return ob_get_clean();
+    }
+
+    public function helpContent()
+    {
+        return '<p>Trends shows per-item, per-day sales. Rows are
+            items, columns are dates. The department range or brand
+            or UPC or like code range controls which set of items
+            appear in the report.</p>
+            <p>Note this report purposely excludes open rings both
+            for performance reasons and to avoid piling on
+            extraneous rows.</p>';
     }
 }
 

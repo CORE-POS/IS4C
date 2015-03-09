@@ -48,6 +48,10 @@ Lane-side record of historical transactions.
 See dtransactions for details on what the columns
 are used for.
 */
-$CREATE['trans.localtrans'] = InstallUtilities::duplicateStructure($dbms,'dtransactions','localtrans');
+$CREATE['trans.localtrans'] = array(
+    InstallUtilities::duplicateStructure($dbms,'dtransactions','localtrans'),
+    'ALTER TABLE localtrans DROP COLUMN pos_row_id',
+    'ALTER TABLE localtrans DROP COLUMN store_id',
+);
 
 ?>

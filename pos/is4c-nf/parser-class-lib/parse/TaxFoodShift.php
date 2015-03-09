@@ -23,18 +23,18 @@
 
 class TaxFoodShift extends Parser {
 
-	function check($str){
-		global $CORE_LOCAL;
-		$id = $CORE_LOCAL->get("currentid");
+	function check($str)
+    {
+		$id = CoreLocal::get("currentid");
 		if ($str == "TFS" && $id > 0){
 			return True;
 		}
 		return False;
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
-		$id = $CORE_LOCAL->get("currentid");
+	function parse($str)
+    {
+		$id = CoreLocal::get("currentid");
 
 		$db = Database::tDataConnect();
 
@@ -46,8 +46,9 @@ class TaxFoodShift extends Parser {
 		$q = "SELECT MAX(id) FROM taxrates";
 		$r = $db->query($q);
 		$tax_cap = 0;
-		if ($db->num_rows($r)>0){
-			$max = array_pop($db->fetch_row($r));
+		if ($db->num_rows($r)>0) {
+            $w = $db->fetch_row($r);
+            $max = $w[0];
 			if (!empty($max)) $tax_cap = $max;
 		}
 		$db->query($q);	
@@ -65,7 +66,7 @@ class TaxFoodShift extends Parser {
 		$db->query($q);	
 		
 		$ret = $this->default_json();
-		$ret['output'] = DisplayLib::listItems($CORE_LOCAL->get("currenttopid"),$id);
+		$ret['output'] = DisplayLib::listItems(CoreLocal::get("currenttopid"),$id);
 		return $ret; // maintain item cursor position
 	}
 

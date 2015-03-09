@@ -21,91 +21,112 @@
 
 *********************************************************************************/
 
-class HouseholdMembers extends MemberModule {
+class HouseholdMembers extends \COREPOS\Fannie\API\member\MemberModule {
 
-	function ShowEditForm($memNum, $country="US"){
-		global $FANNIE_URL;
+    public function width()
+    {
+        return parent::META_WIDTH_HALF;
+    }
 
-		$dbc = $this->db();
-		
-		$infoQ = $dbc->prepare_statement("SELECT c.FirstName,c.LastName
-				FROM custdata AS c 
-				WHERE c.CardNo=? AND c.personNum > 1
-				ORDER BY c.personNum");
-		$infoR = $dbc->exec_statement($infoQ,array($memNum));
+    function showEditForm($memNum, $country="US")
+    {
+        global $FANNIE_URL;
 
-		$ret = "<fieldset><legend>Household Members</legend>";
-		$ret .= "<table class=\"MemFormTable\" 
-			border=\"0\">";
-		
-		$count = 0;	
-		while($infoW = $dbc->fetch_row($infoR)){
-			$ret .= sprintf('<tr><th>First Name</th>
-				<td><input name="HouseholdMembers_fn[]"
-				maxlength="30" value="%s" /></td>
-				<th>Last Name</th>
-				<td><input name="HouseholdMembers_ln[]"
-				maxlength="30" value="%s" /></td></tr>',
-				$infoW['FirstName'],$infoW['LastName']);
-			$count++;
-		}
+        $dbc = $this->db();
+        
+        $infoQ = $dbc->prepare_statement("SELECT c.FirstName,c.LastName
+                FROM custdata AS c 
+                WHERE c.CardNo=? AND c.personNum > 1
+                ORDER BY c.personNum");
+        $infoR = $dbc->exec_statement($infoQ,array($memNum));
 
-		while($count < 3){
-			$ret .= sprintf('<tr><th>First Name</th>
-				<td><input name="HouseholdMembers_fn[]"
-				maxlength="30" value="" /></td>
-				<th>Last Name</th>
-				<td><input name="HouseholdMembers_ln[]"
-				maxlength="30" value="" /></td></tr>');
-			$count++;
-		}
+        $ret = "<div class=\"panel panel-default\">
+            <div class=\"panel-heading\">Household Members</div>
+            <div class=\"panel-body\">";
+        
+        $count = 0; 
+        while($infoW = $dbc->fetch_row($infoR)){
+            $ret .= sprintf('
+                <div class="form-inline form-group">
+                <span class="label primaryBackground">Name</span>
+                <input name="HouseholdMembers_fn[]" placeholder="First"
+                    maxlength="30" value="%s" class="form-control" />
+                <input name="HouseholdMembers_ln[]" placeholder="Last"
+                    maxlength="30" value="%s" class="form-control" />
+                </div>',
+                $infoW['FirstName'],$infoW['LastName']);
+            $count++;
+        }
 
-		$ret .= "</table></fieldset>";
-		return $ret;
-	}
+        while ($count < 3) {
+            $ret .= sprintf('
+                <div class="form-inline form-group">
+                <span class="label primaryBackground">Name</span>
+                <input name="HouseholdMembers_fn[]" placeholder="First"
+                    maxlength="30" value="" class="form-control" />
+                <input name="HouseholdMembers_ln[]" placeholder="Last"
+                    maxlength="30" value="" class="form-control" />
+                </div>');
+            $count++;
+        }
 
-	function SaveFormData($memNum){
-		global $FANNIE_ROOT;
-		$dbc = $this->db();
-		if (!class_exists("CustdataModel"))
-			include($FANNIE_ROOT.'classlib2.0/data/models/CustdataModel.php');
+        $ret .= "</div>";
+        $ret .= "</div>";
 
-		$CUST_FIELDS = array('personNum'=>array(),'FirstName'=>array(),'LastName'=>array());
+        return $ret;
+    }
 
-		/**
-		  Model needs all names, so lookup primary member
-		*/
-		$lookupP = $dbc->prepare_statement("SELECT FirstName,LastName FROM custdata WHERE
-				personNum=1 AND CardNo=?");
-		$lookupR = $dbc->exec_statement($lookupP, array($memNum));
-		if ($dbc->num_rows($lookupR) == 0){
-			return "Error: Problem saving household members<br />";	
-		}
-		$lookupW = $dbc->fetch_row($lookupR);
-		$CUST_FIELDS['personNum'][] = 1;
-		$CUST_FIELDS['FirstName'][] = $lookupW['FirstName'];
-		$CUST_FIELDS['LastName'][] = $lookupW['LastName'];
+    function saveFormData($memNum)
+    {
+        $dbc = $this->db();
+        if (!class_exists("CustdataModel")) {
+            include(dirname(__FILE__) . '/../../classlib2.0/data/models/CustdataModel.php');
+        }
 
-		$fns = FormLib::get_form_value('HouseholdMembers_fn',array());
-		$lns = FormLib::get_form_value('HouseholdMembers_ln',array());
-		$pn = 2;
-		for($i=0; $i<count($lns); $i++){
-			if (empty($fns[$i]) && empty($lns[$i])) continue;
+        /**
+          Use primary member for default column values
+        */
+        $custdata = new CustdataModel($dbc);
+        $custdata->CardNo($memNum);
+        $custdata->personNum(1);
+        if (!$custdata->load()) {
+            return "Error: Problem saving household members<br />"; 
+        }
 
-			$CUST_FIELDS['personNum'][] = $pn;
-			$CUST_FIELDS['FirstName'][] = $fns[$i];
-			$CUST_FIELDS['LastName'][] = $lns[$i];
+        $fns = FormLib::get_form_value('HouseholdMembers_fn',array());
+        $lns = FormLib::get_form_value('HouseholdMembers_ln',array());
+        $pn = 2;
+        $errors = false;
+        for ($i=0; $i<count($lns); $i++) {
+            if (empty($fns[$i]) && empty($lns[$i])) {
+                continue;
+            }
 
-			$pn++;
-		}
+            $custdata->personNum($pn);
+            $custdata->FirstName($fns[$i]);
+            $custdata->LastName($lns[$i]);
+            if (!$custdata->save()) {
+                $errors = true;
+            }
 
-		$test = CustdataModel::update($memNum, $CUST_FIELDS);
+            $pn++;
+        }
 
-		if ($test === False)
-			return "Error: Problem saving household members<br />";	
+        /**
+          Remove any names outside the set that just saved
+        */
+        $clearP = $dbc->prepare('
+            DELETE FROM custdata
+            WHERE CardNo=?
+                AND personNum >= ?');
+        $clearR = $dbc->execute($clearP, array($memNum, $pn));
 
-		return '';
-	}
+        if ($errors) {
+            return "Error: Problem saving household members<br />"; 
+        }
+
+        return '';
+    }
 }
 
 ?>

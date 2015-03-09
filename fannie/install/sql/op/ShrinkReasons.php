@@ -3,7 +3,7 @@
 Table: ShrinkReasons
 
 Columns:
-	shrinkReasonID int
+    shrinkReasonID int
     description varchar
 
 Depends on:
@@ -15,11 +15,11 @@ shrink
 
 */
 $CREATE['op.ShrinkReasons'] = "
-	CREATE TABLE ShrinkReasons (
-		shrinkReasonID INT NOT NULL AUTO_INCREMENT,
-		description VARCHAR(30),
-		PRIMARY KEY (shrinkReasonID)
-	)
+    CREATE TABLE ShrinkReasons (
+        shrinkReasonID INT NOT NULL AUTO_INCREMENT,
+        description VARCHAR(30),
+        PRIMARY KEY (shrinkReasonID)
+    )
 ";
 
 if ($dbms == "MSSQL"){

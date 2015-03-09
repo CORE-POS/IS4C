@@ -22,8 +22,8 @@
 *********************************************************************************/
 
 class Wakeup extends Parser {
-	function check($str){
-		global $CORE_LOCAL;
+	function check($str)
+    {
 		if ($str == "WAKEUP"){
 			return True;
 		}

@@ -31,7 +31,7 @@ class WfcHtZipCodesModel extends BasicModel
 
     protected $columns = array(
     'zip' => array('type'=>'VARCHAR(50)', 'primary_key'=>true),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -40,14 +40,36 @@ class WfcHtZipCodesModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["zip"])) {
                 return $this->instance["zip"];
-            } elseif(isset($this->columns["zip"]["default"])) {
+            } else if (isset($this->columns["zip"]["default"])) {
                 return $this->columns["zip"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'zip',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["zip"]) || $this->instance["zip"] != func_get_args(0)) {
+                if (!isset($this->columns["zip"]["ignore_updates"]) || $this->columns["zip"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["zip"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

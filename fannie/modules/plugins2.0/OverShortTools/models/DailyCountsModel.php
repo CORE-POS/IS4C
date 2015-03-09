@@ -23,67 +23,163 @@
 
 class DailyCountsModel extends BasicModel {
 
-	protected $name = 'dailyCounts';
+    protected $name = 'dailyCounts';
 
-	protected $columns = array(
-	'date' => array('type'=>'VARCHAR(10)','primary_key'=>True),
-	'emp_no' => array('type'=>'SMALLINT','primary_key'=>True),
-	'tender_type' => array('type'=>'VARCHAR(10)','primary_key'=>True),
-	'amt' => array('type'=>'MONEY','default'=>0)
-	);
+    protected $columns = array(
+    'date' => array('type'=>'VARCHAR(10)','primary_key'=>True),
+    'emp_no' => array('type'=>'SMALLINT','primary_key'=>True),
+    'tender_type' => array('type'=>'VARCHAR(10)','primary_key'=>True),
+    'amt' => array('type'=>'MONEY','default'=>0)
+    );
 
-	/* START ACCESSOR FUNCTIONS */
+    /* START ACCESSOR FUNCTIONS */
 
-	public function date(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["date"]))
-				return $this->instance["date"];
-			elseif(isset($this->columns["date"]["default"]))
-				return $this->columns["date"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["date"] = func_get_arg(0);
-		}
-	}
+    public function date()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["date"])) {
+                return $this->instance["date"];
+            } else if (isset($this->columns["date"]["default"])) {
+                return $this->columns["date"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'date',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["date"]) || $this->instance["date"] != func_get_args(0)) {
+                if (!isset($this->columns["date"]["ignore_updates"]) || $this->columns["date"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["date"] = func_get_arg(0);
+        }
+        return $this;
+    }
 
-	public function emp_no(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["emp_no"]))
-				return $this->instance["emp_no"];
-			elseif(isset($this->columns["emp_no"]["default"]))
-				return $this->columns["emp_no"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["emp_no"] = func_get_arg(0);
-		}
-	}
+    public function emp_no()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["emp_no"])) {
+                return $this->instance["emp_no"];
+            } else if (isset($this->columns["emp_no"]["default"])) {
+                return $this->columns["emp_no"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'emp_no',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["emp_no"]) || $this->instance["emp_no"] != func_get_args(0)) {
+                if (!isset($this->columns["emp_no"]["ignore_updates"]) || $this->columns["emp_no"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["emp_no"] = func_get_arg(0);
+        }
+        return $this;
+    }
 
-	public function tender_type(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["tender_type"]))
-				return $this->instance["tender_type"];
-			elseif(isset($this->columns["tender_type"]["default"]))
-				return $this->columns["tender_type"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["tender_type"] = func_get_arg(0);
-		}
-	}
+    public function tender_type()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["tender_type"])) {
+                return $this->instance["tender_type"];
+            } else if (isset($this->columns["tender_type"]["default"])) {
+                return $this->columns["tender_type"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'tender_type',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["tender_type"]) || $this->instance["tender_type"] != func_get_args(0)) {
+                if (!isset($this->columns["tender_type"]["ignore_updates"]) || $this->columns["tender_type"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["tender_type"] = func_get_arg(0);
+        }
+        return $this;
+    }
 
-	public function amt(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["amt"]))
-				return $this->instance["amt"];
-			elseif(isset($this->columns["amt"]["default"]))
-				return $this->columns["amt"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["amt"] = func_get_arg(0);
-		}
-	}
-	/* END ACCESSOR FUNCTIONS */
+    public function amt()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["amt"])) {
+                return $this->instance["amt"];
+            } else if (isset($this->columns["amt"]["default"])) {
+                return $this->columns["amt"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'amt',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["amt"]) || $this->instance["amt"] != func_get_args(0)) {
+                if (!isset($this->columns["amt"]["ignore_updates"]) || $this->columns["amt"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["amt"] = func_get_arg(0);
+        }
+        return $this;
+    }
+    /* END ACCESSOR FUNCTIONS */
 }

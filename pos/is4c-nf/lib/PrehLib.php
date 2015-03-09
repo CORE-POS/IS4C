@@ -33,18 +33,16 @@ class PrehLib extends LibraryClass
 */
 static public function clearMember()
 {
-	global $CORE_LOCAL;
-
 	CoreState::memberReset();
 	$db = Database::tDataConnect();
 	$db->query("UPDATE localtemptrans SET card_no=0,percentDiscount=NULL");
-	$CORE_LOCAL->set("ttlflag",0);	
+	CoreLocal::set("ttlflag",0);	
 	$opts = array('upc'=>'DEL_MEMENTRY');
 	TransRecord::add_log_record($opts);
 }
 
 /**
-  Set member number for transaction
+  Begin setting a member number for a transaction
   @param $member_number CardNo from custdata
   @return An array. See Parser::default_json()
    for format.
@@ -58,12 +56,11 @@ static public function clearMember()
 */
 static public function memberID($member_number) 
 {
-	global $CORE_LOCAL;
-
-	$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
-		ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
-		SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
-		where CardNo = '".$member_number."'";
+    $query = "
+        SELECT CardNo,
+            personNum
+        FROM custdata
+        WHERE CardNo=" . ((int)$member_number);
 
 	$ret = array(
 		"main_frame"=>false,
@@ -74,40 +71,45 @@ static public function memberID($member_number)
 	
 	$db = Database::pDataConnect();
 	$result = $db->query($query);
-
 	$num_rows = $db->num_rows($result);
 
-	if ($num_rows == 1 && 
-		$member_number == $CORE_LOCAL->get("defaultNonMem")) {
-           	$row = $db->fetch_array($result);
-	     	self::setMember($row["CardNo"], $row["personNum"],$row);
-		$ret['redraw_footer'] = True;
-		$ret['output'] = DisplayLib::lastpage();
-		return $ret;
-	} 
+    /**
+      If only a single record exists for the member number,
+      the member will be set immediately if:
+      - the account is the designated, catchall non-member
+      - the verifyName setting is disabled
+    */
+	if ($num_rows == 1) {
+        if ($member_number == CoreLocal::get("defaultNonMem") || CoreLocal::get('verifyName') != 1) {
+            $row = $db->fetch_row($result);
+            self::setMember($row["CardNo"], $row["personNum"]);
+            $ret['redraw_footer'] = true;
+            $ret['output'] = DisplayLib::lastpage();
+
+            if ($member_number != CoreLocal::get('defaultNonMem')) {
+                $ret['udpmsg'] = 'goodBeep';
+            }
+
+            return $ret;
+        }
+	}
 
 	// special hard coding for member 5607 WFC 
 	// needs to go away
 	if ($member_number == "5607") {
 		$ret['main_frame'] = MiscLib::baseURL()."gui-modules/requestInfo.php?class=PrehLib";
+
+        return $ret;
 	}
 
-    /** This is a bad idea. If the search is
-        cancelled, these fields won't be refreshed
-        with new data
-	$CORE_LOCAL->set("memberID","0");
-	$CORE_LOCAL->set("memType",0);
-	$CORE_LOCAL->set("percentDiscount",0);
-	$CORE_LOCAL->set("memMsg","");
+    /**
+      Go to member search page in all other cases.
+      If zero matching records are found, member search should be next.
+      If multiple records are found, picking the correct name should
+      be next.
+      If verifyName is enabled, confirming the name should be next.
     */
-
-	if (empty($ret['output']) && $ret['main_frame'] == false) {
-		$ret['main_frame'] = MiscLib::base_url()."gui-modules/memlist.php?idSearch=".$member_number;
-    }
-	
-	if ($CORE_LOCAL->get("verifyName") != 1) {
-		$ret['udpmsg'] = 'goodBeep';
-	}
+    $ret['main_frame'] = MiscLib::base_url() . "gui-modules/memlist.php?idSearch=" . $member_number;
 
 	return $ret;
 }
@@ -117,15 +119,7 @@ static public $requestInfoMsg = 'Card for which member?';
 static public function requestInfoCallback($info)
 {
 	TransRecord::addcomment("CARD FOR #".$info);
-
-	$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
-		ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
-		SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
-		where CardNo = 5607";
-	$db = Database::pDataConnect();
-	$result = $db->query($query);
-	$row = $db->fetch_row($result);
-	self::setMember($row["CardNo"], $row["personNum"],$row);
+	self::setMember($row["CardNo"], $row["personNum"]);
 
 	return true;
 }
@@ -140,8 +134,6 @@ static public function requestInfoCallback($info)
 */
 static public function setAltMemMsg($store, $member, $personNumber, $row, $chargeOk) 
 {
-	global $CORE_LOCAL;
-
     if ($store == 'WEFC_Toronto') {
         if ($chargeOk == 1) {
             if (isset($row['blueLine'])) {
@@ -176,20 +168,20 @@ static public function setAltMemMsg($store, $member, $personNumber, $row, $charg
 
                 // Prepay
                 if ($limit == 0.00) {
-                    $CORE_LOCAL->set("memMsg", $memMsg . _(' : Coop Cred: $') .
-                        number_format(((float)$CORE_LOCAL->get("availBal") * 1),2)
+                    CoreLocal::set("memMsg", $memMsg . _(' : Coop Cred: $') .
+                        number_format(((float)CoreLocal::get("availBal") * 1),2)
                     );
                 // Store Charge
                 } else {
-                    $CORE_LOCAL->set("memMsg", $memMsg . _(' : Store Charge: $') .
-                        number_format(((float)$CORE_LOCAL->get("availBal") * 1),2)
+                    CoreLocal::set("memMsg", $memMsg . _(' : Store Charge: $') .
+                        number_format(((float)CoreLocal::get("availBal") * 1),2)
                     );
                 }
             // Intra-coop transfer
             } else {
-                $CORE_LOCAL->set("memMsg", $memMsg);
-                $CORE_LOCAL->set("memMsg", $memMsg . _(' : Intra Coop spent: $') .
-                   number_format(((float)$CORE_LOCAL->get("balance") * 1),2)
+                CoreLocal::set("memMsg", $memMsg);
+                CoreLocal::set("memMsg", $memMsg . _(' : Intra Coop spent: $') .
+                   number_format(((float)CoreLocal::get("balance") * 1),2)
                 );
             }
         }
@@ -202,106 +194,131 @@ static public function setAltMemMsg($store, $member, $personNumber, $row, $charg
   Assign a member number to a transaction
   @param $member CardNo from custdata
   @param $personNumber personNum from custdata
-  @param $row a record from custdata
 
   See memberID() for more information.
 */
-static public function setMember($member, $personNumber, $row) 
+static public function setMember($member, $personNumber, $row=array())
 {
-	global $CORE_LOCAL;
-
 	$conn = Database::pDataConnect();
 
-    $memMsg = '#'.$member;
-    if (isset($row['blueLine'])) {
-        $memMsg = $row['blueLine'];
-    }
-	$CORE_LOCAL->set("memMsg",$memMsg);
+    /**
+      Look up the member information here. There's no good 
+      reason to have calling code pass in a specially formatted
+      row of data
+    */
+	$query = "
+        SELECT 
+            CardNo,
+            personNum,
+            LastName,
+            FirstName,
+            CashBack,
+            Balance,
+            Discount,
+            ChargeOk,
+            WriteChecks,
+            StoreCoupons,
+            Type,
+            memType,
+            staff,
+            SSI,
+            Purchases,
+            NumberOfChecks,
+            memCoupons,
+            blueLine,
+            Shown,
+            id 
+        FROM custdata 
+		WHERE CardNo = " . ((int)$member) . "
+            AND personNum = " . ((int)$personNumber);
+    $result = $conn->query($query);
+    $row = $conn->fetch_row($result);
 
-    $CORE_LOCAL->set("memberID",$member);
-	$chargeOk = self::chargeOk();
-	if ($CORE_LOCAL->get("balance") != 0 && $member != $CORE_LOCAL->get("defaultNonMem")) {
-	      $CORE_LOCAL->set("memMsg",$CORE_LOCAL->get("memMsg")._(" AR"));
-    }
+    CoreLocal::set("memberID",$member);
 
-    self::setAltMemMsg($CORE_LOCAL->get("store"), $member, $personNumber, $row, $chargeOk);
+	CoreLocal::set("memType",$row["memType"]);
+	CoreLocal::set("lname",$row["LastName"]);
+	CoreLocal::set("fname",$row["FirstName"]);
+	CoreLocal::set("Type",$row["Type"]);
+	CoreLocal::set("isStaff",$row["staff"]);
+	CoreLocal::set("SSI",$row["SSI"]);
+	if (CoreLocal::get("Type") == "PC") {
+		CoreLocal::set("isMember",1);
+	} else {
+        CoreLocal::set("isMember",0);
+	}
 
-	$CORE_LOCAL->set("memType",$row["memType"]);
-	$CORE_LOCAL->set("lname",$row["LastName"]);
-	$CORE_LOCAL->set("fname",$row["FirstName"]);
-	$CORE_LOCAL->set("Type",$row["Type"]);
-	$CORE_LOCAL->set("percentDiscount",$row["Discount"]);
-	$CORE_LOCAL->set("isStaff",$row["staff"]);
-	$CORE_LOCAL->set("SSI",$row["SSI"]);
-
-    if ($CORE_LOCAL->get('useMemTypeTable') == 1 && $conn->table_exists('memtype')) {
-        $prep = $conn->prepare_statement('SELECT discount, staff, ssi 
-                                 FROM memtype
-                                 WHERE memtype=?');
-        $res = $conn->exec_statement($prep, array((int)$CORE_LOCAL->get('memType')));
+    /**
+      Optinonally use memtype table to normalize attributes
+      by member type
+    */
+    if (CoreLocal::get('useMemTypeTable') == 1 && $conn->table_exists('memtype')) {
+        $prep = $conn->prepare('SELECT discount, staff, ssi 
+                                FROM memtype
+                                WHERE memtype=?');
+        $res = $conn->execute($prep, array((int)CoreLocal::get('memType')));
         if ($conn->num_rows($res) > 0) {
             $mt_row = $conn->fetch_row($res);
-            $CORE_LOCAL->set('percentDiscount', $mt_row['discount']);
-            $CORE_LOCAL->set('isStaff', $mt_row['staff']);
-            $CORE_LOCAL->set('SSI', $mt_row['ssi']);
+            $row['Discount'] = $mt_row['discount'];
+            CoreLocal::set('isStaff', $mt_row['staff']);
+            CoreLocal::set('SSI', $mt_row['ssi']);
         }
     }
-
-	/**
-	  Use discount module to calculate modified percentDiscount
-	*/
-	$handler_class = $CORE_LOCAL->get('DiscountModule');
-	if ($handler_class === '') $handler_class = 'DiscountModule';
-	elseif (!class_exists($handler_class)) $handler_class = 'DiscountModule';
-	if (class_exists($handler_class)){
-		$module = new $handler_class();
-		$CORE_LOCAL->set('percentDiscount', $module->percentage($CORE_LOCAL->get('percentDiscount')));
+	if (CoreLocal::get("isStaff") == 0) {
+		CoreLocal::set("staffSpecial", 0);
 	}
 
-	if ($CORE_LOCAL->get("Type") == "PC") {
-		$CORE_LOCAL->set("isMember",1);
-	} else {
-        $CORE_LOCAL->set("isMember",0);
-	}
-
-	if ($CORE_LOCAL->get("SSI") == 1) {
-		$CORE_LOCAL->set("memMsg",$CORE_LOCAL->get("memMsg")." #");
+    /**
+      Determine what string is shown in the upper
+      left of the screen to indicate the current member
+    */
+    $memMsg = '#' . $member;
+    if (!empty($row['blueLine'])) {
+        $memMsg = $row['blueLine'];
     }
+	$chargeOk = self::chargeOk();
+	if (CoreLocal::get("balance") != 0 && $member != CoreLocal::get("defaultNonMem")) {
+	    $memMsg .= _(" AR");
+    }
+	if (CoreLocal::get("SSI") == 1) {
+		$memMsg .= " #";
+    }
+	CoreLocal::set("memMsg",$memMsg);
+    self::setAltMemMsg(CoreLocal::get("store"), $member, $personNumber, $row, $chargeOk);
 
+    /**
+      Set member number and attributes
+      in the current transaction
+    */
 	$conn2 = Database::tDataConnect();
-	$memquery = "update localtemptrans set card_no = '".$member."',
-	      				memType = ".sprintf("%d",$CORE_LOCAL->get("memType")).",
-					staff = ".sprintf("%d",$CORE_LOCAL->get("isStaff"));
-	if ($CORE_LOCAL->get("DBMS") == "mssql" && $CORE_LOCAL->get("store") == "wfc") {
-		$memquery = str_replace("staff","isStaff",$memquery);
-    }
-
-	if ($CORE_LOCAL->get("store") == "wedge") {
-		if ($CORE_LOCAL->get("isMember") == 0 && $CORE_LOCAL->get("percentDiscount") == 10) {
-			$memquery .= " , percentDiscount = 0 ";
-		} elseif ($CORE_LOCAL->get("isStaff") != 1 && $CORE_LOCAL->get("percentDiscount") == 15) {
-			$memquery .= " , percentDiscount = 0 ";
-		}
-	}
-
-	if ($CORE_LOCAL->get("discountEnforced") != 0) {
-		$memquery .= " , percentDiscount = ".$CORE_LOCAL->get("percentDiscount")." ";
-	} else if ($CORE_LOCAL->get("discountEnforced") == 0 && $CORE_LOCAL->get("tenderTotal") == 0) {
-		$memquery .= " , percentDiscount = 0 ";
-	}
-
+	$memquery = "
+        UPDATE localtemptrans 
+        SET card_no = '" . $member . "',
+            memType = " . sprintf("%d",CoreLocal::get("memType")) . ",
+            staff = " . sprintf("%d",CoreLocal::get("isStaff"));
 	$conn2->query($memquery);
 
-	$CORE_LOCAL->set("memberID",$member);
+    /**
+      Add the member discount
+    */
+    if (CoreLocal::get('discountEnforced')) {
+        // skip subtotaling automatically since that occurs farther down
+        DiscountModule::updateDiscount(new DiscountModule($row['Discount'], 'custdata'), false);
+    }
+
+    /**
+      Log the member entry
+    */
+	CoreLocal::set("memberID",$member);
 	$opts = array('upc'=>'MEMENTRY','description'=>'CARDNO IN NUMFLAG','numflag'=>$member);
 	TransRecord::add_log_record($opts);
 
-	if ($CORE_LOCAL->get("isStaff") == 0) {
-		$CORE_LOCAL->set("staffSpecial",0);
-	}
-
 	// 16Sep12 Eric Lee Allow  not append Subtotal at this point.
-	if ( $CORE_LOCAL->get("member_subtotal") === false ) {
+    /**
+      Optionally add a subtotal line depending
+      on member_subtotal setting.
+    */
+	if ( CoreLocal::get("member_subtotal") === false ) {
 		$noop = "";
 	} else {
 		self::ttl();
@@ -319,12 +336,10 @@ static public function setMember($member, $personNumber, $row)
 */
 static public function checkUnpaidAR($cardno)
 {
-	global $CORE_LOCAL;
-
 	// only attempt if server is available
 	// and not the default non-member
-	if ($cardno == $CORE_LOCAL->get("defaultNonMem")) return false;
-	if ($CORE_LOCAL->get("balance") == 0) return false;
+	if ($cardno == CoreLocal::get("defaultNonMem")) return false;
+	if (CoreLocal::get("balance") == 0) return false;
 
 	$db = Database::mDataConnect();
 
@@ -340,8 +355,8 @@ static public function checkUnpaidAR($cardno)
 
 	$bal = $row["old_balance"];
 	$paid = $row["recent_payments"];
-	if ($CORE_LOCAL->get("memChargeTotal") > 0) {
-		$paid += $CORE_LOCAL->get("memChargeTotal");
+	if (CoreLocal::get("memChargeTotal") > 0) {
+		$paid += CoreLocal::get("memChargeTotal");
     }
 	
 	if ($bal <= 0) return false;
@@ -349,7 +364,7 @@ static public function checkUnpaidAR($cardno)
 
 	// only case where customer prompt should appear
 	if ($bal > 0 && $paid < $bal){
-		$CORE_LOCAL->set("old_ar_balance",$bal - $paid);
+		CoreLocal::set("old_ar_balance",$bal - $paid);
 		return true;
 	}
 
@@ -376,8 +391,6 @@ static public function check_unpaid_ar($cardno)
 */
 static public function checkstatus($num) 
 {
-	global $CORE_LOCAL;
-
 	$ret = array(
 		'voided' => 0,
 		'scaleprice' => 0,
@@ -417,8 +430,8 @@ static public function checkstatus($num)
 
         // added by apbw 6/04/05 to correct voiding of refunded items 
 		if ($row["trans_status"] == "R") {
-			$CORE_LOCAL->set("refund",1);
-			$CORE_LOCAL->set("autoReprint",1);
+			CoreLocal::set("refund",1);
+			CoreLocal::set("autoReprint",1);
 			$ret['status'] = 'R';
 			$ret['refund'] = True;
 		}
@@ -440,7 +453,6 @@ static public function checkstatus($num)
 */
 static public function tender($right, $strl)
 {
-	global $CORE_LOCAL;
 	$ret = array('main_frame'=>false,
 		'redraw_footer'=>false,
 		'target'=>'.baseHeight',
@@ -459,13 +471,13 @@ static public function tender($right, $strl)
 	$strl = (double)($dollars+round($cents,2));
 	$strl *= $mult;
 
-    if ($CORE_LOCAL->get('RepeatAgain')) {
+    if (CoreLocal::get('RepeatAgain')) {
         // the default tender prompt utilizes boxMsg2.php to
         // repeat the previous input, plus amount, on confirmation
         // the tender's preReqCheck methods will need to pretend
         // this is the first input rather than a repeat
-        $CORE_LOCAL->set('msgrepeat', 0);
-        $CORE_LOCAL->set('RepeatAgain', false);
+        CoreLocal::set('msgrepeat', 0);
+        CoreLocal::set('RepeatAgain', false);
     }
 
 	/**
@@ -490,7 +502,7 @@ static public function tender($right, $strl)
 	  one has been configured
 	*/
 	$tender_object = 0;
-	$map = $CORE_LOCAL->get("TenderMap");
+	$map = CoreLocal::get("TenderMap");
 	if (is_array($map) && isset($map[$right])) {
 		$class = $map[$right];
 		$tender_object = new $class($right, $strl);
@@ -499,7 +511,12 @@ static public function tender($right, $strl)
 	}
 
 	if (!is_object($tender_object)) {
-		$ret['output'] = DisplayLib::boxMsg(_('tender is misconfigured'));
+		$ret['output'] = DisplayLib::boxMsg(
+            _('tender is misconfigured'),
+            _('Notify Administrator'),
+            false,
+            DisplayLib::standardClearButton()
+        );
 		return $ret;
 	} else if (get_class($tender_object) != 'TenderModule') {
 		/**
@@ -522,18 +539,20 @@ static public function tender($right, $strl)
 	Database::getsubtotals();
 
 	// see if transaction has ended
-	if ($CORE_LOCAL->get("amtdue") <= 0.005) {
+	if (CoreLocal::get("amtdue") <= 0.005) {
 
-		$CORE_LOCAL->set("change",-1 * $CORE_LOCAL->get("amtdue"));
-		$cash_return = $CORE_LOCAL->get("change");
-		TransRecord::addchange($cash_return,$tender_object->ChangeType());
+		CoreLocal::set("change",-1 * CoreLocal::get("amtdue"));
+		$cash_return = CoreLocal::get("change");
+		TransRecord::addchange($cash_return, $tender_object->ChangeType(), $tender_object->ChangeMsg());
 					
-		$CORE_LOCAL->set("End",1);
+		CoreLocal::set("End",1);
 		$ret['receipt'] = 'full';
 		$ret['output'] = DisplayLib::printReceiptFooter();
+        TransRecord::finalizeTransaction();
 	} else {
-		$CORE_LOCAL->set("change",0);
-		$CORE_LOCAL->set("fntlflag",0);
+		CoreLocal::set("change",0);
+		CoreLocal::set("fntlflag",0);
+		Database::setglobalvalue("FntlFlag", 0);
 		$chk = self::ttl();
 		if ($chk === true) {
 			$ret['output'] = DisplayLib::lastpage();
@@ -556,12 +575,10 @@ static public function tender($right, $strl)
 */
 static public function deptkey($price, $dept,$ret=array()) 
 {
-	global $CORE_LOCAL;
-
 	$intvoided = 0;
 
-	if ($CORE_LOCAL->get("quantity") == 0 && $CORE_LOCAL->get("multiple") == 0) {
-		$CORE_LOCAL->set("quantity",1);
+	if (CoreLocal::get("quantity") == 0 && CoreLocal::get("multiple") == 0) {
+		CoreLocal::set("quantity",1);
 	}
 
 	$ringAsCoupon = False;
@@ -572,7 +589,7 @@ static public function deptkey($price, $dept,$ret=array())
 		
 	if (!is_numeric($dept) || !is_numeric($price) || strlen($price) < 1 || strlen($dept) < 2) {
 		$ret['output'] = DisplayLib::inputUnknown();
-		$CORE_LOCAL->set("quantity",1);
+		CoreLocal::set("quantity",1);
 		$ret['udpmsg'] = 'errorBeep';
 		return $ret;
 	}
@@ -581,31 +598,53 @@ static public function deptkey($price, $dept,$ret=array())
 	$strdept = $dept;
 	$price = $price/100;
 	$dept = $dept/10;
+    $regPrice = $price;
+    $discount = 0;
 
-	if ($CORE_LOCAL->get("casediscount") > 0 && $CORE_LOCAL->get("casediscount") <= 100) {
-		$case_discount = (100 - $CORE_LOCAL->get("casediscount"))/100;
+	if (CoreLocal::get("casediscount") > 0 && CoreLocal::get("casediscount") <= 100) {
+		$case_discount = (100 - CoreLocal::get("casediscount"))/100;
 		$price = $case_discount * $price;
-	}
-	$total = $price * $CORE_LOCAL->get("quantity");
+	} elseif (CoreLocal::get('itemPD') > 0) {
+        $discount = MiscLib::truncate2($price * (CoreLocal::get('itemPD')/100.00));
+        $price -= $discount;
+    }
+	$total = $price * CoreLocal::get("quantity");
+    $discount = $discount * CoreLocal::get('quantity');
 	$intdept = $dept;
 
-	$query = "select dept_no,dept_name,dept_tax,dept_fs,dept_limit,
-		dept_minimum,dept_discount,";
+	$query = "SELECT dept_no,
+        dept_name,
+        dept_tax,
+        dept_fs,
+        dept_limit,
+		dept_minimum,
+        dept_discount,";
 	$db = Database::pDataConnect();
 	$table = $db->table_definition('departments');
 	if (isset($table['dept_see_id'])) {
-		$query .= 'dept_see_id';
+		$query .= 'dept_see_id,';
 	} else {
-		$query .= '0 as dept_see_id';
+		$query .= '0 as dept_see_id,';
     }
-	$query .= " from departments where dept_no = ".$intdept;
+    if (isset($table['memberOnly'])) {
+        $query .= 'memberOnly';
+    } else {
+        $query .= '0 AS memberOnly';
+    }
+	$query .= " FROM departments 
+                WHERE dept_no = " . $intdept;
 	$result = $db->query($query);
 
 	$num_rows = $db->num_rows($result);
 	if ($num_rows == 0) {
-		$ret['output'] = DisplayLib::boxMsg(_("department unknown"));
+		$ret['output'] = DisplayLib::boxMsg(
+            _("department unknown"),
+            '',
+            false,
+            DisplayLib::standardClearButton()
+        );
 		$ret['udpmsg'] = 'errorBeep';
-		$CORE_LOCAL->set("quantity",1);
+		CoreLocal::set("quantity",1);
 	} elseif ($ringAsCoupon) {
 		$row = $db->fetch_array($result);
 		$query2 = "select department, sum(total) as total from localtemptrans where department = "
@@ -616,12 +655,22 @@ static public function deptkey($price, $dept,$ret=array())
 
 		$num_rows2 = $db2->num_rows($result2);
 		if ($num_rows2 == 0) {
-			$ret['output'] = DisplayLib::boxMsg(_("no item found in")."<br />".$row["dept_name"]);
+			$ret['output'] = DisplayLib::boxMsg(
+                _("no item found in")."<br />".$row["dept_name"],
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
 			$ret['udpmsg'] = 'errorBeep';
 		} else {
 			$row2 = $db2->fetch_array($result2);
 			if ($price > $row2["total"]) {
-				$ret['output'] = DisplayLib::boxMsg(_("coupon amount greater than department total"));
+				$ret['output'] = DisplayLib::boxMsg(
+                    _("coupon amount greater than department total"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
 				$ret['udpmsg'] = 'errorBeep';
 			} else {
                 TransRecord::addRecord(array(
@@ -637,7 +686,7 @@ static public function deptkey($price, $dept,$ret=array())
                     'regPrice' => -1 * $price,
                     'voided' => $intvoided,
                 ));
-				$CORE_LOCAL->set("ttlflag",0);
+				CoreLocal::set("ttlflag",0);
 				$ret['output'] = DisplayLib::lastpage();
 				$ret['redraw_footer'] = True;
 				$ret['udpmsg'] = 'goodBeep';
@@ -646,26 +695,82 @@ static public function deptkey($price, $dept,$ret=array())
 	} else {
 		$row = $db->fetch_array($result);
 
+        $my_url = MiscLib::baseURL();
+
 		if ($row['dept_see_id'] > 0) {
 
-			$my_url = MiscLib::baseURL();
 
-			if ($CORE_LOCAL->get("cashierAge") < 18 && $CORE_LOCAL->get("cashierAgeOverride") != 1) {
+			if (CoreLocal::get("cashierAge") < 18 && CoreLocal::get("cashierAgeOverride") != 1) {
 				$ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=AgeApproveAdminLogin";
 				return $ret;
 			}
 
-			if ($CORE_LOCAL->get("memAge")=="") {
-				$CORE_LOCAL->set("memAge",date('Ymd'));
+			if (CoreLocal::get("memAge")=="") {
+				CoreLocal::set("memAge",date('Ymd'));
             }
-			$diff = time() - ((int)strtotime($CORE_LOCAL->get("memAge")));
-			$age = floor($diff / (365*60*60*24));
-			if ($age < $row['dept_see_id']) {
+			$ts = strtotime(CoreLocal::get("memAge"));
+			$required_age = $row['dept_see_id'];
+			$of_age_on_day = mktime(0, 0, 0, date('n', $ts), date('j', $ts), date('Y', $ts) + $required_age);
+			$today = strtotime( date('Y-m-d') );
+			if ($of_age_on_day > $today) {
 				$ret['udpmsg'] = 'twoPairs';
 				$ret['main_frame'] = $my_url.'gui-modules/requestInfo.php?class=UPC';
 				return $ret;
 			}
 		}
+
+        /**
+          Enforce memberOnly flag
+        */
+        if ($row['memberOnly'] > 0) {
+            switch ($row['memberOnly']) {
+                case 1: // member only, no override
+                    if (CoreLocal::get('isMember') == 0) {
+                        $ret['output'] = DisplayLib::boxMsg(_(
+                                            _('Department is member-only'),
+                                            _('Enter member number first'),
+                                            false,
+                                            array('Member Search [ID]' => 'parseWrapper(\'ID\');', 'Dismiss [clear]' => 'parseWrapper(\'CL\');')
+                                        ));
+                        return $ret;
+                    }
+                    break; 
+                case 2: // member only, can override
+                    if (CoreLocal::get('isMember') == 0) {
+                        if (CoreLocal::get('msgrepeat') == 0 || CoreLocal::get('lastRepeat') != 'memberOnlyDept') {
+                            CoreLocal::set('boxMsg', _(
+                                'Department is member-only<br />' .
+                                '[enter] to continue, [clear] to cancel'
+                            ));
+                            CoreLocal::set('lastRepeat', 'memberOnlyDept');
+                            $ret['main_frame'] = $my_url . 'gui-modules/boxMsg2.php';
+                            return $ret;
+                        } else if (CoreLocal::get('lastRepeat') == 'memberOnlyDept') {
+                            CoreLocal::set('lastRepeat', '');
+                        }
+                    }
+                    break;
+                case 3: // anyone but default non-member
+                    if (CoreLocal::get('memberID') == '0') {
+                        $ret['output'] = DisplayLib::boxMsg(_(
+                                            _('Department is member-only'),
+                                            _('Enter member number first'),
+                                            false,
+                                            array('Member Search [ID]' => 'parseWrapper(\'ID\');', 'Dismiss [clear]' => 'parseWrapper(\'CL\');')
+                                        ));
+                        return $ret;
+                    } else if (CoreLocal::get('memberID') == CoreLocal::get('defaultNonMem')) {
+                        $ret['output'] = DisplayLib::boxMsg(_(
+                                            _('Department not allowed with this member'),
+                                            '',
+                                            false,
+                                            DisplayLib::standardClearButton()
+                                        ));
+                        return $ret;
+                    }
+                    break;
+            }
+        }
 
 		if (!$row["dept_limit"]) {
             $deptmax = 0;
@@ -688,45 +793,45 @@ static public function deptkey($price, $dept,$ret=array())
 
 		$deptDiscount = $row["dept_discount"];
 
-		if ($CORE_LOCAL->get("toggleDiscountable") == 1) {
-			$CORE_LOCAL->set("toggleDiscountable",0);
-			if  ($deptDiscount == 0) {
+		if (CoreLocal::get("toggleDiscountable") == 1) {
+			CoreLocal::set("toggleDiscountable",0);
+			if ($deptDiscount == 0) {
 				$deptDiscount = 1;
 			} else {
 				$deptDiscount = 0;
 			}
 		}
 
-		if ($CORE_LOCAL->get("togglefoodstamp") == 1) {
+		if (CoreLocal::get("togglefoodstamp") == 1) {
 			$foodstamp = ($foodstamp + 1) % 2;
-			$CORE_LOCAL->set("togglefoodstamp",0);
+			CoreLocal::set("togglefoodstamp",0);
 		}
 
-		if ($CORE_LOCAL->get("ddNotify") != 0 &&  $CORE_LOCAL->get("itemPD") == 10) {  
-			$CORE_LOCAL->set("itemPD",0);
-			$deptDiscount = 7;
-			$intvoided = 22;
-		}
+		if ($price > $deptmax && CoreLocal::get("msgrepeat") == 0) {
 
-		if ($price > $deptmax && $CORE_LOCAL->get("msgrepeat") == 0) {
-
-			$CORE_LOCAL->set("boxMsg","$".$price." "._("is greater than department limit")."<p>"
-					."<font size='-1'>"._("clear to cancel").", "._("enter to proceed")."</font>");
+			CoreLocal::set("boxMsg","$".$price." "._("is greater than department limit"));
+            CoreLocal::set('boxMsgButtons', array(
+                'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
+                'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+            ));
 			$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
-		} elseif ($price < $deptmin && $CORE_LOCAL->get("msgrepeat") == 0) {
-			$CORE_LOCAL->set("boxMsg","$".$price." "._("is lower than department minimum")."<p>"
-				."<font size='-1'>"._("clear to cancel").", "._("enter to proceed")."</font>");
+		} elseif ($price < $deptmin && CoreLocal::get("msgrepeat") == 0) {
+			CoreLocal::set("boxMsg","$".$price." "._("is lower than department minimum"));
+            CoreLocal::set('boxMsgButtons', array(
+                'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
+                'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+            ));
 			$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 		} else {
-			if ($CORE_LOCAL->get("casediscount") > 0) {
+			if (CoreLocal::get("casediscount") > 0) {
 				TransRecord::addcdnotify();
-				$CORE_LOCAL->set("casediscount",0);
+				CoreLocal::set("casediscount",0);
 			}
 			
-			if ($CORE_LOCAL->get("toggletax") == 1) {
+			if (CoreLocal::get("toggletax") == 1) {
 				if ($tax > 0) $tax = 0;
 				else $tax = 1;
-				$CORE_LOCAL->set("toggletax",0);
+				CoreLocal::set("toggletax",0);
 			}
 
 			if ($dept == "77") {
@@ -737,7 +842,7 @@ static public function deptkey($price, $dept,$ret=array())
 
 				$price /= (1+$rate);
 				$price = MiscLib::truncate2($price);
-				$total = $price * $CORE_LOCAL->get("quantity");
+				$total = $price * CoreLocal::get("quantity");
 			}
 
             TransRecord::addRecord(array(
@@ -745,27 +850,33 @@ static public function deptkey($price, $dept,$ret=array())
                 'description' => $row['dept_name'],
                 'trans_type' => 'D',
                 'department' => $dept,
-                'quantity' => $CORE_LOCAL->get('quantity'),
-                'ItemQtty' => $CORE_LOCAL->get('quantity'),
+                'quantity' => CoreLocal::get('quantity'),
+                'ItemQtty' => CoreLocal::get('quantity'),
                 'unitPrice' => $price,
                 'total' => $total,
-                'regPrice' => $price,
+                'regPrice' => $regPrice,
                 'tax' => $tax,
                 'foodstamp' => $foodstamp,
                 'discountable' => $deptDiscount,
                 'voided' => $intvoided,
+                'discount' => $discount,
             ));
-			$CORE_LOCAL->set("ttlflag",0);
-			//$CORE_LOCAL->set("ttlrequested",0);
+			CoreLocal::set("ttlflag",0);
+			//CoreLocal::set("ttlrequested",0);
+			CoreLocal::set("msgrepeat",0);
+
+            if (CoreLocal::get("itemPD") > 0) {
+                TransRecord::adddiscount($discount, $dept);
+            }
+
 			$ret['output'] = DisplayLib::lastpage();
 			$ret['redraw_footer'] = true;
 			$ret['udpmsg'] = 'goodBeep';
-			$CORE_LOCAL->set("msgrepeat",0);
 		}
 	}
 
-	$CORE_LOCAL->set("quantity",0);
-	$CORE_LOCAL->set("itemPD",0);
+	CoreLocal::set("quantity",0);
+	CoreLocal::set("itemPD",0);
 
 	return $ret;
 }
@@ -786,15 +897,13 @@ static public function deptkey($price, $dept,$ret=array())
 */
 static public function ttl() 
 {
-	global $CORE_LOCAL;
-
-	if ($CORE_LOCAL->get("memberID") == "0") {
+	if (CoreLocal::get("memberID") == "0") {
 		return MiscLib::base_url()."gui-modules/memlist.php";
 	} else {
 		$mconn = Database::tDataConnect();
 		$query = "";
 		$query2 = "";
-		if ($CORE_LOCAL->get("isMember") == 1 || $CORE_LOCAL->get("memberID") == $CORE_LOCAL->get("visitingMem")) {
+		if (CoreLocal::get("isMember") == 1 || CoreLocal::get("memberID") == CoreLocal::get("visitingMem")) {
 			$cols = Database::localMatchingColumns($mconn,"localtemptrans","memdiscountadd");
 			$query = "INSERT INTO localtemptrans ({$cols}) SELECT {$cols} FROM memdiscountadd";
 		} else {
@@ -802,7 +911,7 @@ static public function ttl()
 			$query = "INSERT INTO localtemptrans ({$cols}) SELECT {$cols} FROM memdiscountremove";
 		}
 
-		if ($CORE_LOCAL->get("isStaff") != 0) {
+		if (CoreLocal::get("isStaff") != 0) {
 			$cols = Database::localMatchingColumns($mconn,"localtemptrans","staffdiscountadd");
 			$query2 = "INSERT INTO localtemptrans ({$cols}) SELECT {$cols} FROM staffdiscountadd";
 		} else {
@@ -813,24 +922,27 @@ static public function ttl()
 		$result = $mconn->query($query);
 		$result2 = $mconn->query($query2);
 
-		$CORE_LOCAL->set("ttlflag",1);
+		CoreLocal::set("ttlflag",1);
 		Database::setglobalvalue("TTLFlag", 1);
 
         // if total is called before records have been added to the transaction,
         // Database::getsubtotals will zero out the discount
-        $savePD = $CORE_LOCAL->get('percentDiscount');
+        $savePD = CoreLocal::get('percentDiscount');
 
 		// Refresh totals after staff and member discounts.
 		Database::getsubtotals();
 
-        $ttlHooks = $CORE_LOCAL->get('TotalActions');
+        $ttlHooks = CoreLocal::get('TotalActions');
         if (is_array($ttlHooks)) {
             foreach($ttlHooks as $ttl_class) {
                 if ("$ttl_class" == "") {
                     continue;
                 }
                 if (!class_exists($ttl_class)) {
-                    $CORE_LOCAL->set("boxMsg",sprintf("TotalActions class %s doesn't exist.", $ttl_class));
+                    CoreLocal::set("boxMsg",sprintf("TotalActions class %s doesn't exist.", $ttl_class));
+                    CoreLocal::set('boxMsgButtons', array(
+                        'Dismiss [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                    ));
                     return MiscLib::baseURL()."gui-modules/boxMsg2.php?quiet=1";
                 }
                 $mod = new $ttl_class();
@@ -844,10 +956,10 @@ static public function ttl()
 		// Refresh totals after total actions
 		Database::getsubtotals();
 
-        $CORE_LOCAL->set('percentDiscount', $savePD);
+        CoreLocal::set('percentDiscount', $savePD);
 
-		if ($CORE_LOCAL->get("percentDiscount") > 0) {
-			if ($CORE_LOCAL->get("member_subtotal") === false) {
+		if (CoreLocal::get("percentDiscount") > 0) {
+			if (CoreLocal::get("member_subtotal") === false) {
                 // 5May14 Andy
                 // Why is this different trans_type & voided from
                 // the other Subtotal record generated farther down?
@@ -855,51 +967,54 @@ static public function ttl()
                     'description' => 'Subtotal',
                     'trans_type' => '0',
                     'trans_status' => 'D',
-                    'unitPrice' => MiscLib::truncate2($CORE_LOCAL->get('transDiscount') + $CORE_LOCAL->get('subtotal')),
+                    'unitPrice' => MiscLib::truncate2(CoreLocal::get('transDiscount') + CoreLocal::get('subtotal')),
                     'voided' => 7,
                 ));
 			}
-			TransRecord::discountnotify($CORE_LOCAL->get("percentDiscount"));
+			TransRecord::discountnotify(CoreLocal::get("percentDiscount"));
             TransRecord::addRecord(array(
-                'description' => $CORE_LOCAL->get('percentDiscount') . '% Discount',
+                'description' => CoreLocal::get('percentDiscount') . '% Discount',
                 'trans_type' => 'C',
                 'trans_status' => 'D',
-                'unitPrice' => MiscLib::truncate2(-1 * $CORE_LOCAL->get('transDiscount')),
+                'unitPrice' => MiscLib::truncate2(-1 * CoreLocal::get('transDiscount')),
                 'voided' => 5,
             ));
 		}
 
 		$temp = self::chargeOk();
-		if ($CORE_LOCAL->get("balance") < $CORE_LOCAL->get("memChargeTotal") && $CORE_LOCAL->get("memChargeTotal") > 0) {
-			if ($CORE_LOCAL->get('msgrepeat') == 0) {
-				$CORE_LOCAL->set("boxMsg",sprintf("<b>A/R Imbalance</b><br />
-					Total AR payments $%.2f exceeds AR balance %.2f<br />
-					<font size=-1>[enter] to continue, [clear] to cancel</font>",
-					$CORE_LOCAL->get("memChargeTotal"),
-					$CORE_LOCAL->get("balance")));
-				$CORE_LOCAL->set("strEntered","TL");
+		if (CoreLocal::get("balance") < CoreLocal::get("memChargeTotal") && CoreLocal::get("memChargeTotal") > 0) {
+			if (CoreLocal::get('msgrepeat') == 0) {
+				CoreLocal::set("boxMsg",sprintf("<b>A/R Imbalance</b><br />
+					Total AR payments $%.2f exceeds AR balance %.2f<br />",
+					CoreLocal::get("memChargeTotal"),
+					CoreLocal::get("balance")));
+                CoreLocal::set('boxMsgButtons', array(
+                    'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
+                    'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                ));
+				CoreLocal::set("strEntered","TL");
 				return MiscLib::baseURL()."gui-modules/boxMsg2.php?quiet=1";
 			}
 		}
 
-		$amtDue = str_replace(",", "", $CORE_LOCAL->get("amtdue"));
+		$amtDue = str_replace(",", "", CoreLocal::get("amtdue"));
 
-		$CORE_LOCAL->set("ccTermOut","total:".
+		CoreLocal::set("ccTermOut","total:".
 			str_replace(".","",sprintf("%.2f",$amtDue)));
 		$memline = "";
-		if($CORE_LOCAL->get("memberID") != $CORE_LOCAL->get("defaultNonMem")) {
-			$memline = " #" . $CORE_LOCAL->get("memberID");
+		if(CoreLocal::get("memberID") != CoreLocal::get("defaultNonMem")) {
+			$memline = " #" . CoreLocal::get("memberID");
 		} 
 		// temporary fix Andy 13Feb13
 		// my cashiers don't like the behavior; not configurable yet
-		if ($CORE_LOCAL->get("store") == "wfc") $memline="";
+		if (CoreLocal::get("store") == "wfc") $memline="";
 		$peek = self::peekItem();
 		if (true || substr($peek,0,9) != "Subtotal ") {
             TransRecord::addRecord(array(
                 'description' => 'Subtotal ' 
-                                 . MiscLib::truncate2($CORE_LOCAL->get('subtotal')) 
+                                 . MiscLib::truncate2(CoreLocal::get('subtotal')) 
                                  . ', Tax' 
-                                 . MiscLib::truncate2($CORE_LOCAL->get('taxTotal')) 
+                                 . MiscLib::truncate2(CoreLocal::get('taxTotal')) 
                                  . $memline,
                 'trans_type' => 'C',
                 'trans_status' => 'D',
@@ -908,12 +1023,12 @@ static public function ttl()
             ));
 		}
 	
-		if ($CORE_LOCAL->get("fntlflag") == 1) {
+		if (CoreLocal::get("fntlflag") == 1) {
             TransRecord::addRecord(array(
                 'description' => 'Foodstamps Eligible',
                 'trans_type' => '0',
                 'trans_status' => 'D',
-                'unitPrice' => MiscLib::truncate2($CORE_LOCAL->get('fsEligible')),
+                'unitPrice' => MiscLib::truncate2(CoreLocal::get('fsEligible')),
                 'voided' => 7,
             ));
 		}
@@ -951,10 +1066,8 @@ static public function ttl()
 */
 static public function omtr_ttl() 
 {
-	global $CORE_LOCAL;
-
 	// Must have gotten member number before totaling.
-	if ($CORE_LOCAL->get("memberID") == "0") {
+	if (CoreLocal::get("memberID") == "0") {
 		return MiscLib::base_url()."gui-modules/memlist.php";
 	}
 	else {
@@ -962,7 +1075,7 @@ static public function omtr_ttl()
 		$query = "";
 		$query2 = "";
 		// Apply or remove any member discounts as appropriate.
-		if ($CORE_LOCAL->get("isMember") == 1 || $CORE_LOCAL->get("memberID") == $CORE_LOCAL->get("visitingMem")) {
+		if (CoreLocal::get("isMember") == 1 || CoreLocal::get("memberID") == CoreLocal::get("visitingMem")) {
 			$cols = Database::localMatchingColumns($mconn,"localtemptrans","memdiscountadd");
 			$query = "INSERT INTO localtemptrans ({$cols}) SELECT {$cols} FROM memdiscountadd";
 		} else {
@@ -971,7 +1084,7 @@ static public function omtr_ttl()
 		}
 
 		// Apply or remove any staff discounts as appropriate.
-		if ($CORE_LOCAL->get("isStaff") != 0) {
+		if (CoreLocal::get("isStaff") != 0) {
 			$cols = Database::localMatchingColumns($mconn,"localtemptrans","staffdiscountadd");
 			$query2 = "INSERT INTO localtemptrans ({$cols}) SELECT {$cols} FROM staffdiscountadd";
 		} else {
@@ -982,21 +1095,21 @@ static public function omtr_ttl()
 		$result = $mconn->query($query);
 		$result2 = $mconn->query($query2);
 
-		$CORE_LOCAL->set("ttlflag",1);
+		CoreLocal::set("ttlflag",1);
 		Database::setglobalvalue("TTLFlag", 1);
 
 		// Refresh totals after staff and member discounts.
 		Database::getsubtotals();
 
 		// Is the before-tax total within range?
-		if ($CORE_LOCAL->get("runningTotal") <= 4.00 ) {
-			$totalBefore = $CORE_LOCAL->get("amtdue");
+		if (CoreLocal::get("runningTotal") <= 4.00 ) {
+			$totalBefore = CoreLocal::get("amtdue");
 			$ret = Database::changeLttTaxCode("HST","GST");
 			if ( $ret !== True ) {
 				TransRecord::addcomment("$ret");
 			} else {
 				Database::getsubtotals();
-				$saved = ($totalBefore - $CORE_LOCAL->get("amtdue"));
+				$saved = ($totalBefore - CoreLocal::get("amtdue"));
 				$comment = sprintf("OMTR OK. You saved: $%.2f", $saved);
 				TransRecord::addcomment("$comment");
 			}
@@ -1009,37 +1122,40 @@ static public function omtr_ttl()
 		 * Important preliminary is to refresh totals.
 		*/
 		$temp = self::chargeOk();
-		if ($CORE_LOCAL->get("balance") < $CORE_LOCAL->get("memChargeTotal") && $CORE_LOCAL->get("memChargeTotal") > 0){
-			if ($CORE_LOCAL->get('msgrepeat') == 0){
-				$CORE_LOCAL->set("boxMsg",sprintf("<b>A/R Imbalance</b><br />
-					Total AR payments $%.2f exceeds AR balance %.2f<br />
-					<font size=-1>[enter] to continue, [clear] to cancel</font>",
-					$CORE_LOCAL->get("memChargeTotal"),
-					$CORE_LOCAL->get("balance")));
-				$CORE_LOCAL->set("strEntered","TL");
+		if (CoreLocal::get("balance") < CoreLocal::get("memChargeTotal") && CoreLocal::get("memChargeTotal") > 0){
+			if (CoreLocal::get('msgrepeat') == 0){
+				CoreLocal::set("boxMsg",sprintf("<b>A/R Imbalance</b><br />
+					Total AR payments $%.2f exceeds AR balance %.2f<br />",
+					CoreLocal::get("memChargeTotal"),
+					CoreLocal::get("balance")));
+                CoreLocal::set('boxMsgButtons', array(
+                    'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
+                    'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                ));
+				CoreLocal::set("strEntered","TL");
 				return MiscLib::base_url()."gui-modules/boxMsg2.php?quiet=1";
 			}
 		}
 
 		// Display discount.
-		if ($CORE_LOCAL->get("percentDiscount") > 0) {
+		if (CoreLocal::get("percentDiscount") > 0) {
             TransRecord::addRecord(array(
-                'description' => $CORE_LOCAL->get('percentDiscount') . '% Discount',
+                'description' => CoreLocal::get('percentDiscount') . '% Discount',
                 'trans_type' => 'C',
                 'trans_status' => 'D',
-                'unitPrice' => MiscLib::truncate2(-1 * $CORE_LOCAL->get('transDiscount')),
+                'unitPrice' => MiscLib::truncate2(-1 * CoreLocal::get('transDiscount')),
                 'voided' => 5,
             ));
 		}
 
-		$amtDue = str_replace(",", "", $CORE_LOCAL->get("amtdue"));
+		$amtDue = str_replace(",", "", CoreLocal::get("amtdue"));
 
-		$CORE_LOCAL->set("ccTermOut","total:".
+		CoreLocal::set("ccTermOut","total:".
 			str_replace(".","",sprintf("%.2f",$amtDue)));
 
 		// Compose the member ID string for the description.
-		if($CORE_LOCAL->get("memberID") != $CORE_LOCAL->get("defaultNonMem")) {
-			$memline = " #" . $CORE_LOCAL->get("memberID");
+		if(CoreLocal::get("memberID") != CoreLocal::get("defaultNonMem")) {
+			$memline = " #" . CoreLocal::get("memberID");
 		} 
 		else {
 			$memline = "";
@@ -1050,9 +1166,9 @@ static public function omtr_ttl()
 		if (True || substr($peek,0,9) != "Subtotal "){
             TransRecord::addRecord(array(
                 'description' => 'Subtotal ' 
-                                 . MiscLib::truncate2($CORE_LOCAL->get('subtotal')) 
+                                 . MiscLib::truncate2(CoreLocal::get('subtotal')) 
                                  . ', Tax' 
-                                 . MiscLib::truncate2($CORE_LOCAL->get('taxTotal')) 
+                                 . MiscLib::truncate2(CoreLocal::get('taxTotal')) 
                                  . $memline,
                 'trans_type' => 'C',
                 'trans_status' => 'D',
@@ -1061,12 +1177,12 @@ static public function omtr_ttl()
             ));
 		}
 	
-		if ($CORE_LOCAL->get("fntlflag") == 1) {
+		if (CoreLocal::get("fntlflag") == 1) {
             TransRecord::addRecord(array(
                 'description' => 'Foodstamps Eligible',
                 'trans_type' => '0',
                 'trans_status' => 'D',
-                'unitPrice' => MiscLib::truncate2($CORE_LOCAL->get('fsEligible')),
+                'unitPrice' => MiscLib::truncate2(CoreLocal::get('fsEligible')),
                 'voided' => 7,
             ));
 		}
@@ -1079,17 +1195,53 @@ static public function omtr_ttl()
 }
 
 /**
-  See what the last item in the transaction is currently
-  @return localtemptrans.description for the last item
+  Calculate WIC eligible total
+  @return [number] WIC eligible items total
 */
-static public function peekItem()
+static public function wicableTotal()
+{
+    $db = Database::tDataConnect();
+    $products = CoreLocal::get('pDatabase') . $db->sep() . 'products';
+
+    $query = '
+        SELECT SUM(total) AS wicableTotal
+        FROM localtemptrans AS t
+            INNER JOIN ' . $products . ' AS p ON t.upc=p.upc
+        WHERE t.trans_type = \'I\'
+            AND p.wicable = 1
+    ';
+
+    $result = $db->query($query);
+    if (!$result || $db->num_rows($result) == 0) {
+        return 0.00;
+    } else {
+        $row = $db->fetch_row($result);
+        
+        return $row['wicableTotal'];
+    }
+}
+
+/**
+  See what the last item in the transaction is currently
+  @param $full_record [boolean] return full database record.
+    Default is false. Just returns description.
+  @return localtemptrans.description for the last item
+    or localtemptrans record for the last item
+
+    If no record exists, returns false
+*/
+static public function peekItem($full_record=false)
 {
 	$db = Database::tDataConnect();
 	$q = "SELECT description FROM localtemptrans ORDER BY trans_id DESC";
 	$r = $db->query($q);
 	$w = $db->fetch_row($r);
 
-	return (isset($w['description'])?$w['description']:'');
+    if ($full_record) {
+        return is_array($w) ? $w : false;
+    } else {
+        return isset($w['description']) ? $w['description'] : false;
+    }
 }
 
 /**
@@ -1100,13 +1252,12 @@ static public function peekItem()
 */
 static public function finalttl() 
 {
-	global $CORE_LOCAL;
-	if ($CORE_LOCAL->get("percentDiscount") > 0) {
+	if (CoreLocal::get("percentDiscount") > 0) {
         TransRecord::addRecord(array(
             'description' => 'Discount',
             'trans_type' => 'C',
             'trans_status' => 'D',
-            'unitPrice' => MiscLib::truncate2(-1 * $CORE_LOCAL->get('transDiscount')),
+            'unitPrice' => MiscLib::truncate2(-1 * CoreLocal::get('transDiscount')),
             'voided' => 5,
         ));
 	}
@@ -1116,18 +1267,18 @@ static public function finalttl()
         'description' => 'Subtotal',
         'trans_type' => 'C',
         'trans_status' => 'D',
-        'unitPrice' => MiscLib::truncate2($CORE_LOCAL->get('taxTotal') - $CORE_LOCAL->get('fsTaxExempt')),
+        'unitPrice' => MiscLib::truncate2(CoreLocal::get('taxTotal') - CoreLocal::get('fsTaxExempt')),
         'voided' => 11,
     ));
 
 
-	if ($CORE_LOCAL->get("fsTaxExempt")  != 0) {
+	if (CoreLocal::get("fsTaxExempt")  != 0) {
         TransRecord::addRecord(array(
             'upc' => 'Tax',
             'description' => 'FS Taxable',
             'trans_type' => 'C',
             'trans_status' => 'D',
-            'unitPrice' => MiscLib::truncate2($CORE_LOCAL->get('fsTaxExempt')),
+            'unitPrice' => MiscLib::truncate2(CoreLocal::get('fsTaxExempt')),
             'voided' => 7,
         ));
 	}
@@ -1137,7 +1288,7 @@ static public function finalttl()
         'description' => 'Total',
         'trans_type' => 'C',
         'trans_status' => 'D',
-        'unitPrice' => MiscLib::truncate2($CORE_LOCAL->get('amtdue')),
+        'unitPrice' => MiscLib::truncate2(CoreLocal::get('amtdue')),
         'voided' => 11,
     ));
 }
@@ -1147,22 +1298,24 @@ static public function finalttl()
 */
 static public function fsEligible() 
 {
-	global $CORE_LOCAL;
 	Database::getsubtotals();
-	if ($CORE_LOCAL->get("fsEligible") < 0 && False) {
-		$CORE_LOCAL->set("boxMsg","Foodstamp eligible amount inapplicable<P>Please void out earlier tender and apply foodstamp first");
+	if (CoreLocal::get("fsEligible") < 0 && False) {
+		CoreLocal::set("boxMsg","Foodstamp eligible amount inapplicable<P>Please void out earlier tender and apply foodstamp first");
+        CoreLocal::set('boxMsgButtons', array(
+            'Dismiss [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+        ));
 		return MiscLib::baseURL()."gui-modules/boxMsg2.php";
 	} else {
-		$CORE_LOCAL->set("fntlflag",1);
+		CoreLocal::set("fntlflag",1);
 		Database::setglobalvalue("FntlFlag", 1);
-		if ($CORE_LOCAL->get("ttlflag") != 1) {
+		if (CoreLocal::get("ttlflag") != 1) {
             return self::ttl();
 		} else {
             TransRecord::addRecord(array(
                 'description' => 'Foodstamps Eligible',
                 'trans_type' => '0',
                 'trans_status' => 'D',
-                'unitPrice' => MiscLib::truncate2($CORE_LOCAL->get('fsEligible')),
+                'unitPrice' => MiscLib::truncate2(CoreLocal::get('fsEligible')),
                 'voided' => 7,
             ));
         }
@@ -1185,8 +1338,14 @@ static public function percentDiscount($strl,$json=array())
 {
 	if ($strl == 10.01) $strl = 10;
 
-	if (!is_numeric($strl) || $strl > 100 || $strl < 0) $json['output'] = DisplayLib::boxMsg("discount invalid");
-	else {
+	if (!is_numeric($strl) || $strl > 100 || $strl < 0) {
+        $json['output'] = DisplayLib::boxMsg(
+            _("discount invalid"),
+            '',
+            false,
+            DisplayLib::standardClearButton()
+        );
+	} else {
 		$query = "select sum(total) as total from localtemptrans where upc = '0000000008005' group by upc";
 
 		$db = Database::tDataConnect();
@@ -1206,8 +1365,12 @@ static public function percentDiscount($strl,$json=array())
 			if ($chk !== True)
 				$json['main_frame'] = $chk;
 			$json['output'] = DisplayLib::lastpage();
-		}
-		else $json['output'] = DisplayLib::xboxMsg("10% discount already applied");
+		} else {
+            $json['output'] = DisplayLib::xboxMsg(
+                _("10% discount already applied"),
+                DisplayLib::standardClearButton()
+            );
+        }
 	}
 	return $json;
 }
@@ -1219,18 +1382,16 @@ static public function percentDiscount($strl,$json=array())
    1 - Yes
    0 - No
 
-  Sets current balance in $CORE_LOCAL as "balance".
-  Sets available balance in $CORE_LOCAL as "availBal".
+  Sets current balance in session as "balance".
+  Sets available balance in session as "availBal".
 */
 static public function chargeOk() 
 {
-	global $CORE_LOCAL;
-
 	$conn = Database::pDataConnect();
 	$query = "SELECT c.ChargeLimit - c.Balance AS availBal,
         c.Balance, c.ChargeOk
 		FROM custdata AS c 
-		WHERE c.personNum=1 AND c.CardNo = " . ((int)$CORE_LOCAL->get("memberID"));
+		WHERE c.personNum=1 AND c.CardNo = " . ((int)CoreLocal::get("memberID"));
     $table_def = $conn->table_definition('custdata');
     // 3Jan14 schema may not have been updated
     if (!isset($table_def['ChargeLimit'])) {
@@ -1241,11 +1402,11 @@ static public function chargeOk()
 	$num_rows = $conn->num_rows($result);
 	$row = $conn->fetch_array($result);
 
-	$availBal = $row["availBal"] + $CORE_LOCAL->get("memChargeTotal");
+	$availBal = $row["availBal"] + CoreLocal::get("memChargeTotal");
 	
-	$CORE_LOCAL->set("balance",$row["Balance"]);
+	CoreLocal::set("balance",$row["Balance"]);
 
-	$CORE_LOCAL->set("availBal",number_format($availBal,2,'.',''));	
+	CoreLocal::set("availBal",number_format($availBal,2,'.',''));	
 	
 	$chargeOk = 1;
 	if ($num_rows == 0 || !$row["ChargeOk"]) {

@@ -211,18 +211,32 @@ class DTrans
       @param $product_alias [optional] alias for the products table (default 'p')
       @return string SQL snippet
     */
-    public static function joinProducts($dlog_alias='t', $product_alias='p')
+    public static function joinProducts($dlog_alias='t', $product_alias='p', $join_type='left')
     {
-        global $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
+        $conf = FannieConfig::factory();
         $table = 'products';
-        if (isset($FANNIE_OP_DB) && !empty($FANNIE_OP_DB)) {
-            $table = $FANNIE_OP_DB;
-            $table .= ($FANNIE_SERVER_DBMS == 'mssql') ? '.dbo.' : '.';
+        if ($conf->get('OP_DB') != '') {
+            $table = $conf->get('OP_DB');
+            $table .= ($conf->get('SERVER_DBMS') == 'mssql') ? '.dbo.' : '.';
             $table .= 'products';
         }
 
-        return ' LEFT JOIN ' . $table . ' AS ' . $product_alias
+        return ' ' . self::normalizeJoin($join_type) . ' JOIN ' . $table 
+                . ' AS ' . $product_alias
                 . ' ON ' . $product_alias . '.upc = ' . $dlog_alias . '.upc ';
+    }
+
+    private static function normalizeJoin($join_type)
+    {
+        switch (strtoupper($join_type)) {
+            case 'RIGHT':
+                return 'RIGHT';
+            case 'INNER':
+                return 'INNER';
+            default:
+            case 'LEFT':
+                return 'LEFT';
+        }
     }
 
     /**
@@ -233,11 +247,11 @@ class DTrans
     */
     public static function joinDepartments($dlog_alias='t', $dept_alias='d')
     {
-        global $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
+        $conf = FannieConfig::factory();
         $table = 'departments';
-        if (isset($FANNIE_OP_DB) && !empty($FANNIE_OP_DB)) {
-            $table = $FANNIE_OP_DB;
-            $table .= ($FANNIE_SERVER_DBMS == 'mssql') ? '.dbo.' : '.';
+        if ($conf->get('OP_DB') != '') {
+            $table = $conf->get('OP_DB');
+            $table .= ($conf->get('SERVER_DBMS') == 'mssql') ? '.dbo.' : '.';
             $table .= 'departments';
         }
 
@@ -253,11 +267,11 @@ class DTrans
     */
     public static function joinCustdata($dlog_alias='t', $cust_alias='c')
     {
-        global $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
+        $conf = FannieConfig::factory();
         $table = 'custdata';
-        if (isset($FANNIE_OP_DB) && !empty($FANNIE_OP_DB)) {
-            $table = $FANNIE_OP_DB;
-            $table .= ($FANNIE_SERVER_DBMS == 'mssql') ? '.dbo.' : '.';
+        if ($conf->get('OP_DB') != '') {
+            $table = $conf->get('OP_DB');
+            $table .= ($conf->get('SERVER_DBMS') == 'mssql') ? '.dbo.' : '.';
             $table .= 'custdata';
         }
 
@@ -274,16 +288,43 @@ class DTrans
     */
     public static function joinTenders($dlog_alias='t', $tender_alias='n')
     {
-        global $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
+        $conf = FannieConfig::factory();
         $table = 'tenders';
-        if (isset($FANNIE_OP_DB) && !empty($FANNIE_OP_DB)) {
-            $table = $FANNIE_OP_DB;
-            $table .= ($FANNIE_SERVER_DBMS == 'mssql') ? '.dbo.' : '.';
+        if ($conf->get('OP_DB') != '') {
+            $table = $conf->get('OP_DB');
+            $table .= ($conf->get('SERVER_DBMS') == 'mssql') ? '.dbo.' : '.';
             $table .= 'tenders';
         }
 
         return ' LEFT JOIN ' . $table . ' AS ' . $tender_alias
                 . ' ON ' . $tender_alias . '.TenderCode = ' . $dlog_alias . '.trans_subtype ';
+    }
+
+    /**
+      Get an available dtransactions.trans_no value
+      @param $connection [SQLManager] database connection
+      @param $emp_no [int] employee number
+      @param $register_no [int] register number
+      @return [int] trans_no
+    */
+    public static function getTransNo($connection, $emp_no, $register_no)
+    {
+        $prep = $connection->prepare('
+            SELECT MAX(trans_no) AS trans
+            FROM dtransactions
+            WHERE emp_no=?
+                AND register_no=?');
+        $result = $connection->execute($prep, array($emp_no, $register_no));
+        if (!$result || $connection->num_rows($result) == 0) {
+            return 1;
+        } else {
+            $row = $connection->fetch_row($result);
+            if ($row['trans'] == '') {
+                return 1;
+            } else {
+                return $row['trans'] + 1;
+            }
+        }
     }
 }
 

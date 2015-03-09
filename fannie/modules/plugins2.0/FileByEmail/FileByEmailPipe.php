@@ -21,12 +21,12 @@
 
 *********************************************************************************/
 
-if (!class_exists('AttachmentEmailPipe')) {
+if (!class_exists('\COREPOS\Fannie\API\data\pipes\AttachmentEmailPipe')) {
     include_once(dirname(__FILE__).'/../../../classlib2.0/data/pipes/AttachmentEmailPipe.php');
 }
 /**
 */
-class FileByEmailPipe extends AttachmentEmailPipe
+class FileByEmailPipe extends \COREPOS\Fannie\API\data\pipes\AttachmentEmailPipe
 {
     public function processMail($msg)
     {
@@ -53,8 +53,13 @@ class FileByEmailPipe extends AttachmentEmailPipe
                     continue;
                 }
                 $fp = fopen(dirname(__FILE__) . '/noauto/queue/' . $a['name'], 'w');
+                if ($fp === false) {
+                    echo 'File open failed' . "\n";
+                    continue;
+                }
                 fwrite($fp, $a['content']);
                 fclose($fp);
+                echo 'Wrote file ' . dirname(__FILE__) . '/noauto/queue/' . $a['name'] . "\n";
                 chmod(dirname(__FILE__) . '/noauto/queue/' . $a['name'], 0666);
                 if (!empty($burst)) {
                     $this->burstPDF($a['name'], $burst);

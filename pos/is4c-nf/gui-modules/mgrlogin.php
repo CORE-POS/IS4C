@@ -55,7 +55,7 @@ class mgrlogin extends NoInputPage {
 						$.ajax({
 							url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-end.php',
 							type: 'get',
-							data: 'receiptType=cancelled',
+							data: 'receiptType=cancelled&ref='+data.trans_num,
 							cache: false,
 							success: function(data2){
 								location = '<?php echo $this->page_url; ?>gui-modules/pos2.php';
@@ -83,8 +83,8 @@ class mgrlogin extends NoInputPage {
 		$this->scanner_scale_polling(True);
 	}
 
-	function body_content(){
-		global $CORE_LOCAL;
+	function body_content()
+    {
 		$this->add_onload_command("\$('#userPassword').focus();\n");
 		?>
 		<div class="baseHeight">
@@ -99,20 +99,19 @@ class mgrlogin extends NoInputPage {
 		<input type="hidden" name="reginput" id="reginput" value="" />
 		</form>
 		<p>
-		<span id="localmsg"><?php echo _("please enter manager password"); ?></span>
+		<span id="localmsg"><?php echo _("please enter password"); ?></span>
 		</p>
 		</div>
 		</div>
 		<?php
 	} // END true_body() FUNCTION
 
-	function mgrauthenticate($password){
-		global $CORE_LOCAL;
-
+	function mgrauthenticate($password)
+    {
 		$ret = array(
 			'cancelOrder'=>false,
 			'msg'=>_('password invalid'),
-			'heading'=>_('re-enter manager password'),
+			'heading'=>_('re-enter password'),
 			'giveUp'=>false
 		);
 
@@ -126,7 +125,7 @@ class mgrlogin extends NoInputPage {
 
 		$db = Database::pDataConnect();
 		$password = $db->escape($password);
-		$priv = sprintf("%d",$CORE_LOCAL->get("SecurityCancel"));
+		$priv = sprintf("%d",CoreLocal::get("SecurityCancel"));
 		$query = "select emp_no, FirstName, LastName from employees where EmpActive = 1 and frontendsecurity >= $priv "
 		."and (CashierPassword = '".$password."' or AdminPassword = '".$password."')";
 		$result = $db->query($query);
@@ -135,11 +134,17 @@ class mgrlogin extends NoInputPage {
 		if ($num_rows != 0) {
 			$this->cancelorder();
 			$ret['cancelOrder'] = true;
-            if ($CORE_LOCAL->get('LoudLogins') == 1) {
+            $ret['trans_num'] = ReceiptLib::receiptNumber();
+
+            $db = Database::tDataConnect();
+            $db->query("update localtemptrans set trans_status = 'X'");
+            TransRecord::finalizeTransaction(true);
+
+            if (CoreLocal::get('LoudLogins') == 1) {
                 UdpComm::udpSend('goodBeep');
             }
 		} else {
-            if ($CORE_LOCAL->get('LoudLogins') == 1) {
+            if (CoreLocal::get('LoudLogins') == 1) {
                 UdpComm::udpSend('twoPairs');
             }
         }
@@ -147,12 +152,11 @@ class mgrlogin extends NoInputPage {
 		return $ret;
 	}
 
-	function cancelorder() {
-		global $CORE_LOCAL;
-
-		$CORE_LOCAL->set("plainmsg",_("transaction cancelled"));
+	function cancelorder() 
+    {
+		CoreLocal::set("plainmsg",_("transaction cancelled"));
 		UdpComm::udpSend("rePoll");
-		$CORE_LOCAL->set("ccTermOut","reset");
+		CoreLocal::set("ccTermOut","reset");
 	}
 }
 

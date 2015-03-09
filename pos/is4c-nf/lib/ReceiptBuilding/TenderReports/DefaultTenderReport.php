@@ -35,10 +35,9 @@ class DefaultTenderReport extends TenderReport {
  Which tenders to include is defined via checkboxes by the
  tenders on the install page's "extras" tab.
  */
-static public function get(){
-	global $CORE_LOCAL;
-
-	$DESIRED_TENDERS = $CORE_LOCAL->get("TRDesiredTenders");
+static public function get()
+{
+	$DESIRED_TENDERS = CoreLocal::get("TRDesiredTenders");
 
 	$db_a = Database::mDataConnect();
 
@@ -48,11 +47,11 @@ static public function get(){
 			.substr("Trans #".$blank, 0, 12)
 			.substr("Change".$blank, 0, 14)
 			.substr("Amount".$blank, 0, 14)."\n";
-	$ref = ReceiptLib::centerString(trim($CORE_LOCAL->get("CashierNo"))." ".trim($CORE_LOCAL->get("cashier"))." ".ReceiptLib::build_time(time()))."\n\n";
+	$ref = ReceiptLib::centerString(trim(CoreLocal::get("CashierNo"))." ".trim(CoreLocal::get("cashier"))." ".ReceiptLib::build_time(time()))."\n\n";
 	$receipt = "";
 
 	foreach(array_keys($DESIRED_TENDERS) as $tender_code){ 
-		$query = "select tdate from TenderTapeGeneric where emp_no=".$CORE_LOCAL->get("CashierNo").
+		$query = "select tdate from TenderTapeGeneric where emp_no=".CoreLocal::get("CashierNo").
 			" and tender_code = '".$tender_code."' order by tdate";
 		$result = $db_a->query($query);
 		$num_rows = $db_a->num_rows($result);
@@ -71,7 +70,7 @@ static public function get(){
 		if ($itemize == 1) $receipt .=	ReceiptLib::centerString("------------------------------------------------------");
 
 		$query = "select tdate,register_no,trans_no,tender
-		       	from TenderTapeGeneric where emp_no=".$CORE_LOCAL->get("CashierNo").
+		       	from TenderTapeGeneric where emp_no=".CoreLocal::get("CashierNo").
 			" and tender_code = '".$tender_code."' order by tdate";
 		$result = $db_a->query($query);
 		$num_rows = $db_a->num_rows($result);
@@ -80,7 +79,7 @@ static public function get(){
 		$sum = 0;
 
 		for ($i = 0; $i < $num_rows; $i++) {
-			if ((($CORE_LOCAL->get("store") == "harvest-cb") || ($CORE_LOCAL->get("store") == "harvest-jp")) && ($tender_code == "PE" || $tender_code == "BU" || $tender_code == "EL" || $tender_code == "PY" || $tender_code == "TV")) $itemize = 1;
+			if (((CoreLocal::get("store") == "harvest-cb") || (CoreLocal::get("store") == "harvest-jp")) && ($tender_code == "PE" || $tender_code == "BU" || $tender_code == "EL" || $tender_code == "PY" || $tender_code == "TV")) $itemize = 1;
 			else $itemize = 0;
 			$row = $db_a->fetch_array($result);
 			$timeStamp = self::timeStamp($row["tdate"]);

@@ -26,10 +26,9 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 class adminlist extends NoInputPage {
 
 	private $security;
-	function preprocess(){
-		global $CORE_LOCAL;
-
-		$me = $CORE_LOCAL->get('CashierNo');	
+	function preprocess()
+    {
+		$me = CoreLocal::get('CashierNo');	
 		$this->security = 0;
 		$db = Database::pDataConnect();
 		$chk = $db->prepare_statement('SELECT frontendsecurity FROM employees WHERE emp_no=?');
@@ -40,26 +39,32 @@ class adminlist extends NoInputPage {
 		}
 
 		if (isset($_REQUEST['selectlist'])){
+            if (!FormLib::validateToken()) {
+                return false;
+            }
 			if (empty($_REQUEST['selectlist'])){
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 			elseif ($_REQUEST['selectlist'] == 'SUSPEND'){
 				Database::getsubtotals();
-				if ($CORE_LOCAL->get("LastID") == 0) {
-					$CORE_LOCAL->set("boxMsg",_("no transaction in progress"));
+				if (CoreLocal::get("LastID") == 0) {
+					CoreLocal::set("boxMsg",_("no transaction in progress"));
+                    CoreLocal::set('boxMsgButtons', array(
+                        'Dismiss [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                    ));
 					$this->change_page($this->page_url."gui-modules/boxMsg2.php");
 					return False;
 				}
 				else {
 					// ajax call to end transaction
 					// and print receipt
-					SuspendLib::suspendorder();
+					$ref = SuspendLib::suspendorder();
 					$this->add_onload_command("\$.ajax({
 						type:'post',
 						url:'{$this->page_url}ajax-callbacks/ajax-end.php',
 						cache: false,
-						data: 'receiptType=suspended',
+						data: 'receiptType=suspended&ref={$ref}',
 						dataType: 'json',
 						success: function(data){
 							\$.ajax({
@@ -83,13 +88,19 @@ class adminlist extends NoInputPage {
 			}
 			else if ($_REQUEST['selectlist'] == 'RESUME'){
 				Database::getsubtotals();
-				if ($CORE_LOCAL->get("LastID") != 0) {
-					$CORE_LOCAL->set("boxMsg",_("transaction in progress"));
+				if (CoreLocal::get("LastID") != 0) {
+					CoreLocal::set("boxMsg",_("transaction in progress"));
+                    CoreLocal::set('boxMsgButtons', array(
+                        'Dismiss [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                    ));
 					$this->change_page($this->page_url."gui-modules/boxMsg2.php");
 				}
 				elseif (SuspendLib::checksuspended() == 0) {
-					$CORE_LOCAL->set("boxMsg",_("no suspended transaction"));
-					$CORE_LOCAL->set("strRemembered","");
+					CoreLocal::set("boxMsg",_("no suspended transaction"));
+                    CoreLocal::set('boxMsgButtons', array(
+                        'Dismiss [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                    ));
+					CoreLocal::set("strRemembered","");
 					$this->change_page($this->page_url."gui-modules/boxMsg2.php");
 				}
 				else {
@@ -118,39 +129,54 @@ class adminlist extends NoInputPage {
 	} // END head() FUNCTION
 
 	function body_content() {
-		global $CORE_LOCAL;
+        $stem = MiscLib::baseURL() . 'graphics/';
 		?>
 		<div class="baseHeight">
-		<div class="centeredDisplay colored">
+		<div class="centeredDisplay colored rounded">
 			<span class="larger"><?php echo _("administrative tasks"); ?></span>
 			<br />
 		<form id="selectform" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+        <?php if (CoreLocal::get('touchscreen')) { ?>
+        <button type="button" class="pos-button coloredArea"
+            onclick="scrollDown('#selectlist');">
+            <img src="<?php echo $stem; ?>down.png" width="16" height="16" />
+        </button>
+        <?php } ?>
 		<select name="selectlist" id="selectlist" onblur="$('#selectlist').focus();">
 		<option value=''><?php echo _("Select a Task"); ?>
 		<option value='SUSPEND'>1. <?php echo _("Suspend Transaction"); ?>
 		<option value='RESUME'>2. <?php echo _("Resume Transaction"); ?>
-        <?php if ($CORE_LOCAL->get('SecurityTR') != 30 || $this->security >= 30) { ?>
+        <?php if (CoreLocal::get('SecurityTR') != 30 || $this->security >= 30) { ?>
             <option value='TR'>3. <?php echo _("Tender Report"); ?>
 		<?php } ?>
 		<?php if ($this->security >= 30){ ?>
 			<option value='OTR'>4. <?php echo _("Any Tender Report"); ?>
 		<?php } ?>
 		</select>
-		</form>
+        <?php if (CoreLocal::get('touchscreen')) { ?>
+        <button type="button" class="pos-button coloredArea"
+            onclick="scrollUp('#selectlist');">
+            <img src="<?php echo $stem; ?>up.png" width="16" height="16" />
+        </button>
+		<?php } ?>
+        <?php echo FormLib::tokenField(); ?>
+		<div class="smaller">
+            <?php
+            echo _("use arrow keys to navigate");
+            ?>
+        </div>
 		<p>
-		<span class="smaller"><?php
-		echo _("use arrow keys to navigate");
-		echo "<br />";
-		echo _("enter to select");
-		echo "<br />";
-		echo _("clear to cancel");
-		?></span>
+            <button class="pos-button" type="submit">Select [enter]</button>
+            <button class="pos-button" type="submit" onclick="$('#selectlist').val('');">
+                Cancel [clear]
+            </button>
 		</p>
 		</div>
+		</form>
 		</div>
 		<?php
 		$this->add_onload_command("\$('#selectlist').focus();");
-	        $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
+        $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
 	} // END body_content() FUNCTION
 
 }

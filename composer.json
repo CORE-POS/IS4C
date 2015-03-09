@@ -1,0 +1,51 @@
+{
+    "name": "core-pos/core-pos",
+    "description": "A Point of Sale System for Co-ops",
+    "license": "GPL",
+    "type": "package",
+    "homepage": "https://github.com/CORE-POS/IS4C",
+    "authors": [
+        {
+            "name": "Andy Theuninck",
+            "email": "andy@wholefoods.coop"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/CORE-POS/IS4C/issues",
+        "wiki": "https://github.com/CORE-POS/IS4C/wiki",
+        "source": "https://github.com/CORE-POS/IS4C"
+    },
+    "repositories": {
+        "core-pos": {
+            "type": "vcs",
+            "url": "https://github.com/CORE-POS/IS4C"
+        },
+        "adodb": {
+            "type": "vcs",
+            "url": "https://github.com/gohanman/adodb"
+        },
+        "sqlmanager": {
+            "type": "vcs",
+            "url": "https://github.com/CORE-POS/SqlManager"
+        },
+        "xpdf": {
+            "type": "vcs",
+            "url": "https://github.com/gohanman/PHP-XPDF"
+        }
+    },
+    "require": {
+        "components/jquery": "1.11.1",
+        "components/bootstrap": "3.2.*",
+        "components/bootstrap-default": "~3.2",
+        "adodb/adodb-php": "dev-master",
+        "core-pos/sql-manager": "dev-master",
+        "php-xpdf/php-xpdf" : "dev-master",
+        "phpmailer/phpmailer": "~5.2",
+        "psr/log": "~1.0",
+        "sabre/vobject": "~3.4",
+        "videlalvaro/php-amqplib": "~2.5"
+    },
+    "config": {
+        "component-dir": "fannie/src/javascript/composer-components/"
+    }
+}

@@ -37,10 +37,20 @@
   rearrange them so products.pricemethod=X doesn't
   need to mean the same thing at every store.
 */
-class PriceMethod {
+class PriceMethod 
+{
+    public static $MAP = array(
+        0   => 'BasicPM',
+        1   => 'GroupPM',
+        2   => 'QttyEnforcedGroupPM',
+        3   => 'SplitABGroupPM',
+        4   => 'ABGroupPM',
+        5   => 'BigGroupPM',
+        6   => 'MoreThanQttyPM',
+    );
 
-    var $savedRow;
-    var $savedInfo;
+    protected $savedRow;
+    protected $savedInfo;
 
     /**
       Add the item to the transaction
@@ -49,7 +59,8 @@ class PriceMethod {
       @param $priceObj A DiscountType object 
       @return boolean success/failure
     */
-    function addItem($row,$quantity,$priceObj){
+    public function addItem($row, $quantity, $priceObj)
+    {
         return true;
     }
 
@@ -58,9 +69,9 @@ class PriceMethod {
       item to the transaction
       @return string message
     */
-    function errorInfo(){
+    public function errorInfo()
+    {
         return '';
     }
 }
 
-?>

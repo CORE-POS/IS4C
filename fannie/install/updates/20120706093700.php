@@ -23,22 +23,22 @@
 
 class update_20120706093700 extends UpdateObj {
 
-	protected $timestamp = '20120706093700';
+    protected $timestamp = '20120706093700';
 
-	protected $description = 'This update adds 
+    protected $description = 'This update adds 
 a birth date column to the employees table. Depending
 how you synchronize operational data with your lanes,
 those tables might need an update too.';
 
-	protected $author = 'Andy Theuninck (WFC)';
+    protected $author = 'Andy Theuninck (WFC)';
 
-	protected $queries = array(
-		'op' => array(
-			'ALTER TABLE employees ADD COLUMN birthdate DATETIME'
-		),
-		'trans' => array(),
-		'archive' => array()
-	);
+    protected $queries = array(
+        'op' => array(
+            'ALTER TABLE employees ADD COLUMN birthdate DATETIME'
+        ),
+        'trans' => array(),
+        'archive' => array()
+    );
 }
 
 ?>

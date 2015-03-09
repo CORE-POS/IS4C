@@ -26,12 +26,12 @@ require_once($FANNIE_ROOT.'sync/special/generic.mysql.php');
 
 // on each MySQL lane, load the CSV file
 foreach($FANNIE_LANES as $lane) {
-	$dbc = new SQLManager($lane['host'],$lane['type'],$lane['op'],
-			$lane['user'],$lane['pw']);
-	if ($dbc->connections[$lane['op']] !== false) {
+    $dbc = new SQLManager($lane['host'],$lane['type'],$lane['op'],
+            $lane['user'],$lane['pw']);
+    if ($dbc->connections[$lane['op']] !== false) {
 
         $dbc->query("DELETE FROM custdata WHERE type IN ('TERM','INACT2')", $lane['op']);
-	}
+    }
 }
 
 echo "<li>Custdata table synched</li>";

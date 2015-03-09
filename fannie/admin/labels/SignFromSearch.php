@@ -21,14 +21,20 @@
 
 *********************************************************************************/
 
-require('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+require(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class SignFromSearch extends FannieRESTfulPage 
 {
 
-	protected $title = 'Fannie - Signage';
-	protected $header = 'Signage';
+    protected $title = 'Fannie - Signage';
+    protected $header = 'Signage';
+
+    public $description = '[Signage] is a tool to create sale signs or shelf tags
+    for a set of advanced search items. Must be accessed via Advanced Search.';
+    public $themed = true;
 
     protected $signage_mod;
     protected $signage_obj;
@@ -62,12 +68,51 @@ class SignFromSearch extends FannieRESTfulPage
         if (empty($this->upcs)) {
             echo 'Error: no valid data';
             return false;
-        } else if (FormLib::get('pdf') == 'Print') {
-            $this->signage_obj = new $class_name($this->upcs, '', $item_mode);
+        }
+
+        $this->signage_obj = new $class_name($this->upcs, '', $item_mode);
+
+        /**
+          On item text update, kick out a mini form
+          to re-POST the correct items to this page
+          
+          Need to prevent page refresh from re-updating
+          items. That causes issues if jumping back
+          and forth between this editor and the 
+          normal item editor.
+        */
+        if (FormLib::get('update') == 'Save Text') {
+            $this->signage_obj->saveItems();
+            echo '<html><head></head>
+                  <body onload="document.forms[0].submit();">
+                  <form method="post" action="' . $_SERVER['PHP_SELF'] . '">';
+            foreach ($this->upcs as $u) {
+                printf('<input type="hidden" name="u[]" value="%s" />', $u);
+            }
+            echo '</form></body></html>';
+            return false;
+        } else if (is_array(FormLib::get('update_upc'))) {
+            $upc = FormLib::get('update_upc');
+            $brand = FormLib::get('update_brand', array());
+            $desc = FormLib::get('update_desc', array());
+            $origin = FormLib::get('update_origin', array());
+            for ($i=0; $i<count($upc); $i++) {
+                if (isset($brand[$i])) {
+                    $this->signage_obj->addOverride($upc[$i], 'brand', $brand[$i]);
+                }
+                if (isset($desc[$i])) {
+                    $this->signage_obj->addOverride($upc[$i], 'description', $desc[$i]);
+                }
+                if (isset($origin[$i])) {
+                    $this->signage_obj->addOverride($upc[$i], 'originName', $origin[$i]);
+                }
+            }
+        }
+
+        if (FormLib::get('pdf') == 'Print') {
             $this->signage_obj->drawPDF();
             return false;
         } else {
-            $this->signage_obj = new $class_name($this->upcs, '', $item_mode);
             return true;
         }
     }
@@ -88,12 +133,25 @@ class SignFromSearch extends FannieRESTfulPage
         if (empty($this->batch)) {
             echo 'Error: no valid data';
             return false;
-        } else if (FormLib::get('pdf') == 'Print') {
-            $this->signage_obj = new $class_name(array(), 'batch', $this->batch);
+        }
+
+        $this->signage_obj = new $class_name(array(), 'batch', $this->batch);
+        if (FormLib::get('update') == 'Save Text') {
+            $this->signage_obj->saveItems();
+            echo '<html><head></head>
+                  <body onload="document.forms[0].submit();">
+                  <form method="post" action="' . $_SERVER['PHP_SELF'] . '">';
+            foreach ($this->batch as $b) {
+                printf('<input type="hidden" name="batch[]" value="%d" />', $b);
+            }
+            echo '</form></body></html>';
+            return false;
+        }
+        
+        if (FormLib::get('pdf') == 'Print') {
             $this->signage_obj->drawPDF();
             return false;
         } else {
-            $this->signage_obj = new $class_name(array(), 'batch', $this->batch);
             return true;
         }
     }
@@ -109,7 +167,7 @@ class SignFromSearch extends FannieRESTfulPage
             $this->signage_mod = $mod;
             return true;
         } else {
-            $mods = FannieAPI::listModules('FannieSignage');
+            $mods = FannieAPI::listModules('\COREPOS\Fannie\API\item\FannieSignage');
             if (isset($mods[0])) {
                 $this->signage_mod = $mods[0];
                 return true;
@@ -129,7 +187,16 @@ class SignFromSearch extends FannieRESTfulPage
         $ret = '';
         $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post" id="signform">';
         $mods = FannieAPI::listModules('FannieSignage');
-        $ret .= '<b>Layout</b>: <select name="signmod" onchange="$(\'#signform\').submit()">';
+        $others = FannieAPI::listModules('\COREPOS\Fannie\API\item\FannieSignage');
+        foreach ($others as $o) {
+            if (!in_array($o, $mods)) {
+                $mods[] = $o;
+            }
+        }
+        sort($mods);
+        $ret .= '<div class="form-group form-inline">';
+        $ret .= '<label>Layout</label>: 
+            <select name="signmod" class="form-control" onchange="$(\'#signform\').submit()">';
         foreach ($mods as $m) {
             $ret .= sprintf('<option %s>%s</option>',
                     ($m == $this->signage_mod ? 'selected' : ''), $m);
@@ -143,7 +210,8 @@ class SignFromSearch extends FannieRESTfulPage
             $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
             $item_mode = FormLib::get('item_mode', 0);
             $modes = array('Current Retail', 'Upcoming Retail', 'Current Sale', 'Upcoming Sale');
-            $ret .= '<select name="item_mode" onchange="$(\'#signform\').submit()">';
+            $ret .= '<select name="item_mode" class="form-control"
+                onchange="$(\'#signform\').submit()">';
             foreach ($modes as $id => $label) {
                 $ret .= sprintf('<option %s value="%d">%s</option>',
                             ($id == $item_mode ? 'selected' : ''),
@@ -156,11 +224,24 @@ class SignFromSearch extends FannieRESTfulPage
             }
         }
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="submit" name="pdf" value="Print" />';
-        $ret .= '</form>';
+        $ret .= '<button type="submit" name="pdf" value="Print" 
+                    class="btn btn-default">Print</button>';
+        $ret .= '</div>';
         $ret .= '<hr />';
 
         $ret .= $this->signage_obj->listItems();
+
+        $ret .= '<p><button type="submit" name="update" id="updateBtn" value="Save Text"
+                    class="btn btn-default">Save Text</button></p>';
+
+        $this->add_onload_command('$(".FannieSignageField").keydown(function(event) {
+            if (event.which == 13) {
+                event.preventDefault();
+                $("#updateBtn").click();
+            }
+        });');
+
+        $ret .= '</form>';
 
         return $ret;
     }

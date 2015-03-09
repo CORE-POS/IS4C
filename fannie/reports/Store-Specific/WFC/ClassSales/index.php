@@ -34,42 +34,42 @@ while(($thisMonth)%3 != 0) $thisMonth++;
 $qEnd = sprintf("%d-%02d-%d 23:59:59",date("Y"),$thisMonth,date('j',mktime(0,0,0,$thisMonth+1,0,2000)));
 
 if (isset($_REQUEST['upc'])){
-	$q = $dbc->prepare_statement("SELECT d.datetime,d.upc,p.description,
-		u.name,u.real_name,d.quantity 
-		FROM dtransactions AS d
-		LEFT JOIN productUser AS p ON d.upc=p.upc 
-		LEFT JOIN Users AS u ON d.emp_no=u.uid
-		WHERE trans_type='I' AND datetime BETWEEN ? AND ?
-		AND d.upc=?");
-	$r = $dbc->exec_statement($q,array($qStart,$qEnd,$_REQUEST['upc']));
-	$rc = 0;
-	while($w = $dbc->fetch_row($r)){
-		if ($rc==0){
-			printf('Sales for %s (%s) this quarter (%s to %s)',
-				$w['description'],$w['upc'],$qStart,$qEnd);
-			echo '<table cellspacing="0" cellpadding="4" border="1">
-				<tr><th>Email</th><th>Name</th><th>Qty Sold</th></tr>';
-		}
-		printf('<tr><td>%s</td><td>%s</td><td>%d</td></tr>',
-			$w['name'],$w['real_name'],$w['quantity']);
-		$rc++;
-	}
-	echo '</table>';
+    $q = $dbc->prepare_statement("SELECT d.datetime,d.upc,p.description,
+        u.name,u.real_name,d.quantity 
+        FROM dtransactions AS d
+        LEFT JOIN productUser AS p ON d.upc=p.upc 
+        LEFT JOIN Users AS u ON d.emp_no=u.uid
+        WHERE trans_type='I' AND datetime BETWEEN ? AND ?
+        AND d.upc=?");
+    $r = $dbc->exec_statement($q,array($qStart,$qEnd,$_REQUEST['upc']));
+    $rc = 0;
+    while($w = $dbc->fetch_row($r)){
+        if ($rc==0){
+            printf('Sales for %s (%s) this quarter (%s to %s)',
+                $w['description'],$w['upc'],$qStart,$qEnd);
+            echo '<table cellspacing="0" cellpadding="4" border="1">
+                <tr><th>Email</th><th>Name</th><th>Qty Sold</th></tr>';
+        }
+        printf('<tr><td>%s</td><td>%s</td><td>%d</td></tr>',
+            $w['name'],$w['real_name'],$w['quantity']);
+        $rc++;
+    }
+    echo '</table>';
 }
 else {
-	echo 'Classes sold this quarter ('.$qStart.' to '.$qEnd.')';
+    echo 'Classes sold this quarter ('.$qStart.' to '.$qEnd.')';
 
-	$q = $dbc->prepare_statement("SELECT d.upc,p.description,sum(d.quantity) FROM dtransactions AS d
-		LEFT JOIN productUser AS p ON d.upc=p.upc 
-		WHERE trans_type='I' AND datetime BETWEEN ? AND ?
-		GROUP BY d.upc,p.description ORDER BY p.description");
-	$r = $dbc->exec_statement($q,array($qStart,$qEnd));
-	echo '<table cellspacing="0" cellpadding="4" border="1">
-		<tr><th>UPC</th><th>Class</th><th>Qty Sold</th></tr>';
-	while($w = $dbc->fetch_row($r)){
-		printf('<tr><td><a href="?upc=%s">%s</a></td><td>%s</td><td>%d</td></tr>',
-			$w[0],$w[0],$w[1],$w[2]);
-	}
-	echo '</table>';
+    $q = $dbc->prepare_statement("SELECT d.upc,p.description,sum(d.quantity) FROM dtransactions AS d
+        LEFT JOIN productUser AS p ON d.upc=p.upc 
+        WHERE trans_type='I' AND datetime BETWEEN ? AND ?
+        GROUP BY d.upc,p.description ORDER BY p.description");
+    $r = $dbc->exec_statement($q,array($qStart,$qEnd));
+    echo '<table cellspacing="0" cellpadding="4" border="1">
+        <tr><th>UPC</th><th>Class</th><th>Qty Sold</th></tr>';
+    while($w = $dbc->fetch_row($r)){
+        printf('<tr><td><a href="?upc=%s">%s</a></td><td>%s</td><td>%d</td></tr>',
+            $w[0],$w[0],$w[1],$w[2]);
+    }
+    echo '</table>';
 }
 ?>

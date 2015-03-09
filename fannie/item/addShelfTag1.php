@@ -23,13 +23,18 @@
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-	* 21Mar2013 EL Assign all fields on update, not just price, ppu. OK per AT.
-	*               This routine will be replaced by Andy's of March 18 soon.
+    * 21Mar2013 EL Assign all fields on update, not just price, ppu. OK per AT.
+    *               This routine will be replaced by Andy's of March 18 soon.
 
 */
 
-require('../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+require(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
+    return;
+}
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 $id = 0;
@@ -38,7 +43,7 @@ $description = $_REQUEST['description'];
 $brand = $_REQUEST['brand'];
 $units = $_REQUEST['units'];
 if ( $units == '' )
-	$units = 'NULL';
+    $units = 'NULL';
 $size = $_REQUEST['size'];
 $ppo = $_REQUEST['ppo'];
 $vendor = $_REQUEST['vendor'];
@@ -60,34 +65,25 @@ $shelftag->units($units);
 $shelftag->vendor($vendor);
 $shelftag->count($count);
 $insR = $shelftag->save();
-
-if ( $insR == False ) {
-echo "<html>
-<head>
-</head>
-<body>
-<p>Failed to create tag
-</p>
-</body>
-</html>";
-}
-else {
-echo "
+?>
+<!doctype html>
 <html>
-<head>
-<script type='text/javascript'>
-window.close();
-</script>
-</head>
-</html>";
+    <head>
+        <title>Add Shelf Tag</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" type="text/css" href="../src/javascript/bootstrap/css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="../src/javascript/bootstrap-default/css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="../src/javascript/bootstrap-default/css/bootstrap-theme.min.css">
+        <script type="text/javascript" src="../src/javascript/jquery/jquery.min.js"></script>
+        <script type="text/javascript" src="../src/javascript/bootstrap/js/bootstrap.min.js"></script>
+    </head>
+<body>
+<?php
+if ($insR == false) {
+    echo '<div class="alert alert-danger">Error creating tag</div>';
+} else {
+    echo '<div class="alert alert-success">Created Tag</div>';
 }
 ?>
-<!--
-<html>
-<head>
-<script type='text/javascript'>
-window.close();
-</script>
-</head>
+</body>
 </html>
--->

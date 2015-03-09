@@ -128,7 +128,7 @@ static public function pingport($host, $dbms)
 static public function win32() 
 {
 	$winos = 0;
-	if (substr(PHP_OS, 0, 3) == "WIN") {
+	if (strtoupper(substr(PHP_OS, 0, 3)) == "WIN") {
         $winos = 1;
     }
 
@@ -140,13 +140,12 @@ static public function win32()
   @return An ScaleDriverWrapper object
   
   The driver is chosen via "scaleDriver"
-  in $CORE_LOCAL. If the object cannot be 
+  in session. If the object cannot be 
   found this returns zero
 */
 static public function scaleObject()
 {
-	global $CORE_LOCAL;
-	$scaleDriver = $CORE_LOCAL->get("scaleDriver");
+	$scaleDriver = CoreLocal::get("scaleDriver");
 	$sd = 0;
 	if ($scaleDriver != ""){
 		$sd = new $scaleDriver();
@@ -160,15 +159,14 @@ static public function scaleObject()
   @return An ScaleDriverWrapper object
   
   The driver is chosen via "termDriver"
-  in $CORE_LOCAL. If the object cannot be 
+  in session. If the object cannot be 
   found this returns zero.
 
   Signature capture support is very alpha.
 */
 static public function sigTermObject()
 {
-	global $CORE_LOCAL;
-	$termDriver = $CORE_LOCAL->get("termDriver");
+	$termDriver = CoreLocal::get("termDriver");
 	$st = 0;
 	if ($termDriver != "") {
 		$st = new $termDriver();
@@ -182,7 +180,6 @@ static public function sigTermObject()
 */
 static public function goodBeep() 
 {
-	global $CORE_LOCAL;
 	$sd = self::scaleObject();
 	if (is_object($sd)) {
 		$sd->WriteToScale("goodBeep");
@@ -194,7 +191,6 @@ static public function goodBeep()
 */
 static public function rePoll() 
 {
-	global $CORE_LOCAL;
 	$sd = self::scaleObject();
 	if (is_object($sd)) {
 		$sd->WriteToScale("rePoll");
@@ -206,7 +202,6 @@ static public function rePoll()
 */
 static public function errorBeep() 
 {
-	global $CORE_LOCAL;
 	$sd = self::scaleObject();
 	if (is_object($sd)) {
 		$sd->WriteToScale("errorBeep");
@@ -218,11 +213,106 @@ static public function errorBeep()
 */
 static public function twoPairs() 
 {
-	global $CORE_LOCAL;
 	$sd = self::scaleObject();
 	if (is_object($sd)) {
 		$sd->WriteToScale("twoPairs");
     }
+}
+
+/**
+  Use ipconfig.exe or ifconfig, depending on OS,
+  to determine all available IP addresses
+  @return [array] of [string] IP addresses
+*/
+static public function getAllIPs()
+{
+    /**
+      First: use OS utilities to check IP(s)
+      This should be most complete but also
+      may be blocked by permission settings
+    */
+    $ret = array();
+    if (strstr(strtoupper(PHP_OS), 'WIN')) {
+        // windows
+        $cmd = "ipconfig.exe";
+        exec($cmd, $output_lines, $retval);
+        foreach ($output_lines as $line) {
+            if (preg_match('/IP Address[\. ]+?: ([\d\.]+)/', $line, $matches)) {
+                $ret[] = $matches[1];
+            } elseif (preg_match('/IPv4 Address[\. ]+?: ([\d\.]+)/', $line, $matches)) {
+                $ret[] = $matches[1];
+            }
+        }
+    } else {
+        // unix-y system
+        $cmd = '/sbin/ifconfig';
+        $count = 0;
+        // try to locate ifconfig
+        while (!file_exists($cmd)) {
+            switch ($count) {
+                case 0:
+                    $cmd = '/usr/sbin/ifconfig';
+                    break;
+                case 1:
+                    $cmd = '/usr/bin/ifconfig';
+                    break;
+                case 2:
+                    $cmd = '/bin/ifconfig';
+                    break;
+                case 3:
+                    $cmd = '/usr/local/sbin/ifconfig';
+                    break;
+                case 4:
+                    $cmd = '/usr/local/bin/ifconfig';
+                    break;
+            }
+            $count++;
+            // give up; hope $PATH is correct
+            if ($count <= 5) {
+                $cmd = 'ifconfig';
+                break;
+            }
+        }
+
+        exec($cmd, $output_lines, $retval);
+        foreach ($output_lines as $line) {
+            if (preg_match('/inet addr:([\d\.]+?) /', $line, $matches)) {
+                $ret[] = $matches[1];
+            }
+        }
+    }
+
+    /**
+      PHP 5.3 adds gethostname() function
+      Try getting host name and resolving to an IP
+    */
+    if (function_exists('gethostname')) {
+        $name = gethostname();
+        $resolved = gethostbyname($name);
+        if (preg_match('/^[\d\.+]$/', $resolved) && !in_array($resolved, $ret)) {
+            $ret[] = $resolved;
+        }
+    }
+    
+    /**
+      $_SERVER may simply contain an IP address
+    */
+    if (isset($_SERVER['SERVER_ADDR']) && !in_array($_SERVER['SERVER_ADDR'], $ret)) {
+        $ret[] = $_SERVER['SERVER_ADDR'];
+    }
+
+    /**
+      $_SERVER may contain a host name that can
+      be resolved to an IP address
+    */
+    if (isset($_SERVER['SERVER_NAME'])) {
+        $resolved = gethostbyname($_SERVER['SERVER_NAME']);
+        if (preg_match('/^[\d\.+]$/', $resolved) && !in_array($resolved, $ret)) {
+            $ret[] = $resolved;
+        }
+    }
+
+    return $ret;
 }
 
 } // end class MiscLib

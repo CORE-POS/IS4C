@@ -33,11 +33,16 @@ class ObfIndexPage extends FannieRESTfulPage
     protected $title = 'OBF: Menu';
     protected $header = 'OBF: Menu';
 
+    public $page_set = 'Plugin :: Open Book Financing';
+    public $description = '[Menu] lists all the OBF pages.';
+    public $themed = true;
+
     public function get_view()
     {
         return '<ul>
             <li><a href="ObfWeeklyReport.php">View Weekly Reports</a></li>
-            <li><a href="ObfWeekEntryPage.php">Enter Labor and Forecast Data</a></li>
+            <li><a href="ObfQuarterEntryPage.php">Enter Quarterly Sales and Labor Plan</a></li>
+            <li><a href="ObfWeekEntryPage.php">Enter Weekly Labor and Forecast Data</a></li>
             <li><a href="ObfCategoriesPage.php">Manage OBF Categories</a></li>
             <li><a href="ObfMappingPage.php">Map OBF Categories to POS</a></li>
             </ul>';

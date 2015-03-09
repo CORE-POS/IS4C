@@ -21,60 +21,68 @@
 
 *********************************************************************************/
 
-include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
+}
 
 class VolumePricingModule extends ItemModule 
 {
 
     public function showEditForm($upc, $display_mode=1, $expand_mode=1)
     {
-		$upc = BarcodeLib::padUPC($upc);
+        $upc = BarcodeLib::padUPC($upc);
 
-		$ret = '<fieldset id="3for1FieldSet">';
-		$ret .=  "<legend onclick=\"\$('#VolumeFieldsetContent').toggle();\">
-                <a href=\"\" onclick=\"return false;\">\"Three for a dollar\"</a>
-                </legend>";
-        $css = ($expand_mode == 1) ? '' : 'display:none;';
-        $ret .= '<div id="VolumeFieldsetContent" style="' . $css . '">';
+        $ret = '<div id="3for1FieldSet" class="panel panel-default">';
+        $ret .=  "<div class=\"panel-heading\">
+                <a href=\"\" onclick=\"\$('#VolumeFieldsetContent').toggle();return false;\">
+               \"Three for a dollar\"
+                </a></div>";
+        $css = ($expand_mode == 1) ? '' : ' collapse';
+        $ret .= '<div id="VolumeFieldsetContent" class="panel-body' . $css . '">';
 
-		$dbc = $this->db();
-		$model = new ProductsModel($dbc);
-		$model->upc($upc);
-		$model->load();
+        $dbc = $this->db();
+        $model = new ProductsModel($dbc);
+        $model->upc($upc);
+        $model->load();
 
-		$methods = array(0=>'Disabled',2=>'Use this price for full sets',1=>'Always use this price');
+        $methods = array(0=>'Disabled',2=>'Use this price for full sets',1=>'Always use this price');
 
-		$ret .= "<table style=\"margin-top:5px;margin-bottom:5px;\" border=1 cellpadding=5 cellspacing=0 width='100%'><tr>";
-		$ret .= '<tr><th>Enabled</td>
-			<th># Items'.FannieHelp::ToolTip('# of items in a set').'</th>
-			<th>Price'.FannieHelp::ToolTip('Price for the whole set').'</th>
-			<th>Mix/Match'.FannieHelp::ToolTip('Items with the same Mix/Match all count').'</th></tr>';
-		$ret .= '<tr><td><select name="vp_method">';
-		foreach($methods as $value => $label){
-			$ret .= sprintf('<option value="%d"%s>%s</option>',
-					$value, ($value==$model->pricemethod()?' selected':''), $label);
-		}
-		$ret .= '</select></td>';
-		$ret .= '<td><input type="text" name="vp_qty" size="4" value="'.$model->quantity().'" /></td>';
-		$ret .= '<td>$<input type="text" name="vp_price" size="4" value="'.sprintf('%.2f',$model->groupprice()).'" /></td>';
-		$ret .= '<td><input type="text" name="vp_mm" size="4" value="'.$model->mixmatchcode().'" /></td>';
-		$ret .= '</table></div></fieldset>';
+        $ret .= "<table class=\"table table-bordered\"><tr>";
+        $ret .= '<tr><th>Enabled</td>
+            <th># Items'.\COREPOS\Fannie\API\lib\FannieHelp::ToolTip('# of items in a set').'</th>
+            <th>Price'.\COREPOS\Fannie\API\lib\FannieHelp::ToolTip('Price for the whole set').'</th>
+            <th>Mix/Match'.\COREPOS\Fannie\API\lib\FannieHelp::ToolTip('Items with the same Mix/Match all count').'</th></tr>';
+        $ret .= '<tr><td><select name="vp_method" class="form-control">';
+        foreach($methods as $value => $label){
+            $ret .= sprintf('<option value="%d"%s>%s</option>',
+                    $value, ($value==$model->pricemethod()?' selected':''), $label);
+        }
+        $ret .= '</select></td>';
+        $ret .= '<td><input type="text" name="vp_qty" class="form-control" value="'.$model->quantity().'" /></td>';
+        $ret .= '<td>
+            <div class="input-group">
+            <span class="input-group-addon">$</span>
+            <input type="text" name="vp_price" class="form-control" value="'.sprintf('%.2f',$model->groupprice()).'" />
+            </div>
+            </td>';
+        $ret .= '<td><input type="text" name="vp_mm" class="form-control" value="'.$model->mixmatchcode().'" /></td>';
+        $ret .= '</table></div></div>';
 
-		return $ret;
-	}
+        return $ret;
+    }
 
-	public function SaveFormData($upc)
+    public function SaveFormData($upc)
     {
-		$upc = BarcodeLib::padUPC($upc);
-		$dbc = $this->db();
+        $upc = BarcodeLib::padUPC($upc);
+        $dbc = $this->db();
 
         $model = new ProductsModel($dbc);
         $model->upc($upc);
 
-		$method = FormLib::get_form_value('vp_method',0);
-		$qty = FormLib::get_form_value('vp_qty',0);
-		$price = FormLib::get_form_value('vp_price',0);
-		$mixmatch = FormLib::get_form_value('vp_mm',0);
+        $method = FormLib::get_form_value('vp_method',0);
+        $qty = FormLib::get_form_value('vp_qty',0);
+        $price = FormLib::get_form_value('vp_price',0);
+        $mixmatch = FormLib::get_form_value('vp_mm',0);
 
         $model->pricemethod($method);
         $model->quantity($qty);
@@ -82,12 +90,12 @@ class VolumePricingModule extends ItemModule
         $model->mixmatchcode($mixmatch);
         $r1 = $model->save();
 
-		if ($r1 === false) {
-			return false;
-		} else {
-			return true;	
+        if ($r1 === false) {
+            return false;
+        } else {
+            return true;    
         }
-	}
+    }
 }
 
 ?>

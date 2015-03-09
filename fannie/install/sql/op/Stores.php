@@ -3,7 +3,7 @@
 Table: Stores
 
 Columns:
-	storeID int
+    storeID int
     description varchar
     dbHost VARCHAR(50)
     dbDriver VARCHAR(15)
@@ -33,9 +33,9 @@ Setting up user accounts with read-only to remote
 store databases should work fine.
 */
 $CREATE['op.Stores'] = "
-	CREATE TABLE Stores (
-		storeID INT NOT NULL AUTO_INCREMENT,
-		description VARCHAR(50),
+    CREATE TABLE Stores (
+        storeID INT NOT NULL AUTO_INCREMENT,
+        description VARCHAR(50),
         dbHost VARCHAR(50),
         dbUser VARCHAR(25),
         dbPassword VARCHAR(25),
@@ -43,8 +43,8 @@ $CREATE['op.Stores'] = "
         opDB VARCHAR(20),
         push TINYINT DEFAULT 1,
         pull TINYINT DEFAULT 1,
-		PRIMARY KEY (storeID)
-	)
+        PRIMARY KEY (storeID)
+    )
 ";
 
 if ($dbms == "MSSQL"){

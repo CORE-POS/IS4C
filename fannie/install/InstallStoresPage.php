@@ -28,35 +28,36 @@ include('db.php');
 include_once('../classlib2.0/FannieAPI.php');
 
 /**
-	@class InstallStoresPage
-	Class for the Stores install and config options
+    @class InstallStoresPage
+    Class for the Stores install and config options
 */
-class InstallStoresPage extends InstallPage {
+class InstallStoresPage extends \COREPOS\Fannie\API\InstallPage {
 
-	protected $title = 'Fannie: Store Settings';
-	protected $header = 'Fannie: Store Settings';
+    protected $title = 'Fannie: Store Settings';
+    protected $header = 'Fannie: Store Settings';
 
-	public $description = "
-	Class for the Stores install and config options page.
-	";
+    public $description = "
+    Class for the Stores install and config options page.
+    ";
+    public $themed = true;
 
-	// This replaces the __construct() in the parent.
-	public function __construct() {
+    // This replaces the __construct() in the parent.
+    public function __construct() {
 
-		// To set authentication.
-		FanniePage::__construct();
+        // To set authentication.
+        FanniePage::__construct();
 
-		// Link to a file of CSS by using a function.
-		$this->add_css_file("../src/style.css");
-		$this->add_css_file("../src/jquery/css/smoothness/jquery-ui-1.8.1.custom.css");
-		$this->add_css_file("../src/css/install.css");
+        // Link to a file of CSS by using a function.
+        $this->add_css_file("../src/style.css");
+        $this->add_css_file("../src/javascript/jquery-ui.css");
+        $this->add_css_file("../src/css/install.css");
 
-		// Link to a file of JS by using a function.
-		$this->add_script("../src/jquery/js/jquery.js");
-		$this->add_script("../src/jquery/js/jquery-ui-1.8.1.custom.min.js");
+        // Link to a file of JS by using a function.
+        $this->add_script("../src/javascript/jquery.js");
+        $this->add_script("../src/javascript/jquery-ui.js");
 
-	// __construct()
-	}
+    // __construct()
+    }
 
     public function preprocess()
     {
@@ -124,36 +125,36 @@ class InstallStoresPage extends InstallPage {
         return true;
     }
 
-	/**
-	  Define any CSS needed
-	  @return a CSS string
-	*/
-	function css_content(){
+    /**
+      Define any CSS needed
+      @return a CSS string
+    */
+    function css_content(){
         return '
             tr.highlight td {
                 background-color: #ffffcc;
             }
         ';
-	//css_content()
-	}
+    //css_content()
+    }
 
-	public function body_content()
+    public function body_content()
     {
-		global $FANNIE_OP_DB, $FANNIE_SERVER;
-		ob_start();
+        global $FANNIE_OP_DB, $FANNIE_SERVER;
+        ob_start();
 
-		echo showInstallTabs('Stores');
-		?>
+        echo showInstallTabs('Stores');
+        ?>
 
 <form action=InstallStoresPage.php method=post>
 <h1 class="install"><?php echo $this->header; ?></h1>
 <p class="ichunk">Revised 23Apr2014</p>
 <?php
 if (is_writable('../config.php')){
-	echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
+    echo "<div class=\"alert alert-success\"><i>config.php</i> is writeable</div>";
 }
 else {
-	echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
+    echo "<div class=\"alert alert-danger\"><b>Error</b>: config.php is not writeable</div>";
 }
 ?>
 <hr />
@@ -184,7 +185,7 @@ if (extension_loaded('mysql'))
 if (extension_loaded('mssql'))
     $supportedTypes['MSSQL'] = 'MSSQL';
 ?>
-<table cellspacing="0" cellpadding="4" border="1">
+<table class="table">
 <tr>
     <th>Store #</th><th>Description</th><th>DB Host</th>
     <th>Driver</th><th>Username</th><th>Password</th>
@@ -197,24 +198,24 @@ if (extension_loaded('mssql'))
 <?php foreach($model->find('storeID') as $store) {
     printf('<tr %s>
             <td>%d<input type="hidden" name="storeID[]" value="%d" /></td>
-            <td><input type="text" name="storeName[]" value="%s" /></td>
-            <td><input type="text" name="storeHost[]" value="%s" /></td>',
-            ($store->dbHost() == $FANNIE_SERVER ? 'class="highlight"' : ''),
+            <td><input type="text" class="form-control" name="storeName[]" value="%s" /></td>
+            <td><input type="text" class="form-control" name="storeHost[]" value="%s" /></td>',
+            ($store->dbHost() == $FANNIE_SERVER ? 'class="info"' : ''),
             $store->storeID(), $store->storeID(),
             $store->description(),
             $store->dbHost()
     );
-    echo '<td><select name="storeDriver[]">';
+    echo '<td><select name="storeDriver[]" class="form-control">';
     foreach($supportedTypes as $key => $label) {
         printf('<option %s value="%s">%s</option>',
             ($store->dbDriver() == $key ? 'selected' : ''),
             $key, $label);
     }
     echo '</select></td>';
-    printf('<td><input type="text" size="10" name="storeUser[]" value="%s" /></td>
-            <td><input type="password" size="10" name="storePass[]" value="%s" /></td>
-            <td><input type="text" size="10" name="storeOp[]" value="%s" /></td>
-            <td><input type="text" size="10" name="storeTrans[]" value="%s" /></td>
+    printf('<td><input type="text" class="form-control" name="storeUser[]" value="%s" /></td>
+            <td><input type="password" class="form-control" name="storePass[]" value="%s" /></td>
+            <td><input type="text" class="form-control" name="storeOp[]" value="%s" /></td>
+            <td><input type="text" class="form-control" name="storeTrans[]" value="%s" /></td>
             <td><input type="checkbox" name="storePush[]" value="%d" %s /></td>
             <td><input type="checkbox" name="storePull[]" value="%d" %s /></td>
             <td><input type="checkbox" name="storeDelete[]" value="%d" /></td>
@@ -249,17 +250,19 @@ if (extension_loaded('mssql'))
        on the "Necessities" tab.</i>
 </p>
 <hr />
-<input type=submit name="saveButton" value="Save" />
+<p>
+<button type=submit name="saveButton" value="Save" class="btn btn-default">Save</button>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<input type=submit name="addButton" value="Add Another Store" />
+<button type=submit name="addButton" value="Add Another Store" class="btn btn-default">Add Another Store</button>
+</p>
 </form>
 
 <?php
 
-		return ob_get_clean();
+        return ob_get_clean();
 
-	// body_content
-	}
+    // body_content
+    }
 
 // InstallStoresPage
 }

@@ -21,24 +21,29 @@
 
 *********************************************************************************/
 
-class AR extends MemberModule 
+class AR extends \COREPOS\Fannie\API\member\MemberModule 
 {
 
-	function ShowEditForm($memNum,$country="US")
+    public function width()
     {
-		global $FANNIE_URL,$FANNIE_TRANS_DB, $FANNIE_ROOT;
+        return parent::META_WIDTH_THIRD;
+    }
 
-		$dbc = $this->db();
-		$trans = $FANNIE_TRANS_DB.$dbc->sep();
-		
-		$infoQ = $dbc->prepare_statement("SELECT n.balance
-				FROM {$trans}ar_live_balance AS n 
-				WHERE n.card_no=?");
-		$infoR = $dbc->exec_statement($infoQ,array($memNum));
-		$infoW = $dbc->fetch_row($infoR);
+    function showEditForm($memNum,$country="US")
+    {
+        global $FANNIE_URL,$FANNIE_TRANS_DB, $FANNIE_ROOT;
 
-		if (!class_exists("CustdataModel")) {
-			include($FANNIE_ROOT.'classlib2.0/data/models/CustdataModel.php');
+        $dbc = $this->db();
+        $trans = $FANNIE_TRANS_DB.$dbc->sep();
+        
+        $infoQ = $dbc->prepare_statement("SELECT n.balance
+                FROM {$trans}ar_live_balance AS n 
+                WHERE n.card_no=?");
+        $infoR = $dbc->exec_statement($infoQ,array($memNum));
+        $infoW = $dbc->fetch_row($infoR);
+
+        if (!class_exists("CustdataModel")) {
+            include($FANNIE_ROOT.'classlib2.0/data/models/CustdataModel.php');
         }
         $model = new CustdataModel($dbc);
         $model->CardNo($memNum);
@@ -50,33 +55,46 @@ class AR extends MemberModule
         }
 
 
-		$ret = "<fieldset><legend>A/R</legend>";
-		$ret .= "<table class=\"MemFormTable\" 
-			border=\"0\">";
+        $ret = "<div class=\"panel panel-default\">
+            <div class=\"panel-heading\">A/R</div>
+            <div class=\"panel-body\">";
 
-		$ret .= "<tr><th>Limit</th>";
-		$ret .= sprintf('<td><input name="AR_limit" size="4" value="%d" />
-				</td>',$limit);
-		$ret .= "<th>Current Balance</th>";
-		$ret .= sprintf('<td>%.2f</td>',$infoW['balance']);	
+        $ret .= '<div class="form-group form-inline">';
+        $ret .= '<span class="label primaryBackground">Limit</span> ';
+        $ret .= '<div class="input-group"><span class="input-group-addon">$</span>';
+        $ret .= sprintf('<input name="AR_limit" value="%d" class="form-control" />
+                ',$limit);
+        $ret .= '</div>';
+        $ret .= '</div>';
 
-		$ret .= "<td><a href=\"{$FANNIE_URL}reports/AR/index.php?memNum=$memNum\">History</a></td></tr>";
-		$ret .= "<tr><td colspan=\"2\"><a href=\"{$FANNIE_URL}mem/correction_pages/MemArTransferTool.php?memIN=$memNum\">Transfer A/R</a></td>";
-		$ret .= "<td><a href=\"{$FANNIE_URL}mem/correction_pages/MemArEquitySwapTool.php?memIN=$memNum\">Convert A/R</a></td></tr>";
+        $ret .= '<div class="form-group">';
+        $ret .= '<span class="label primaryBackground">Current Balance</span> ';
+        $ret .= sprintf('%.2f',$infoW['balance']); 
+        $ret .= ' ';
+        $ret .= "<a href=\"{$FANNIE_URL}reports/AR/index.php?memNum=$memNum\">History</a>";
+        $ret .= '</div>';
 
-		$ret .= "</table></fieldset>";
-		return $ret;
-	}
+        $ret .= '<div class="form-group">';
+        $ret .= "<a href=\"{$FANNIE_URL}mem/correction_pages/MemArTransferTool.php?memIN=$memNum\">Transfer A/R</a>";
+        $ret .= ' | ';
+        $ret .= "<a href=\"{$FANNIE_URL}mem/correction_pages/MemArEquitySwapTool.php?memIN=$memNum\">Convert A/R</a>";
+        $ret .= '</div>';
 
-	function SaveFormData($memNum)
+        $ret .= '</div>';
+        $ret .= '</div>';
+
+        return $ret;
+    }
+
+    function saveFormData($memNum)
     {
-		global $FANNIE_ROOT;
-		$dbc = $this->db();
-		if (!class_exists("CustdataModel")) {
-			include($FANNIE_ROOT.'classlib2.0/data/models/CustdataModel.php');
+        global $FANNIE_ROOT;
+        $dbc = $this->db();
+        if (!class_exists("CustdataModel")) {
+            include($FANNIE_ROOT.'classlib2.0/data/models/CustdataModel.php');
         }
 
-		$limit = FormLib::get_form_value('AR_limit',0);
+        $limit = FormLib::get_form_value('AR_limit',0);
         $model = new CustdataModel($dbc);
         $model->CardNo($memNum);
         $test = false;
@@ -86,12 +104,12 @@ class AR extends MemberModule
             $obj->ChargeOk( $limit == 0 ? 0 : 1 );
             $test = $obj->save();
         }
-		
-		if ($test === false) {
-			return 'Error: Problme saving A/R limit<br />';
-		} else {
-			return '';
+        
+        if ($test === false) {
+            return 'Error: Problme saving A/R limit<br />';
+        } else {
+            return '';
         }
-	}
+    }
 }
 

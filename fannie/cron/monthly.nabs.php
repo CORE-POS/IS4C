@@ -34,10 +34,9 @@
 
 include('../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
-include($FANNIE_ROOT.'src/tmp_dir.php');
 
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
-	$FANNIE_TRANS_DB,$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
+    $FANNIE_TRANS_DB,$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
 $insQ = "INSERT INTO dtransactions SELECT * FROM nabsAdjustView";
 $insR = $sql->query($insQ);
@@ -45,14 +44,14 @@ $insR = $sql->query($insQ);
 // fix trans_no values
 $tn = 1;
 $fixQ = "SELECT card_no FROM dtransactions WHERE register_no=20
-	AND emp_no=1001";
+    AND emp_no=1001";
 $fixR = $sql->query($fixQ);
 while($fixW = $sql->fetch_row($fixR)){
-	$transQ = "UPDATE dtransactions SET trans_no=$tn
-		WHERE register_no=20 and emp_no=1001
-		AND card_no=".$fixW['card_no'];
-	$transR = $sql->query($transQ);
-	$tn++;
+    $transQ = "UPDATE dtransactions SET trans_no=$tn
+        WHERE register_no=20 and emp_no=1001
+        AND card_no=".$fixW['card_no'];
+    $transR = $sql->query($transQ);
+    $tn++;
 }
 
 

@@ -30,21 +30,21 @@ include($FANNIE_ROOT.'src/header.html');
 ?>
 <script type="text/javascript">
 function refilter(f){
-	var o = $('#orderSetting').val();
-	var s = $('#sS').val();
-	location = "receivingReport.php?f="+f+"&s="+s+"&order="+o;
+    var o = $('#orderSetting').val();
+    var s = $('#sS').val();
+    location = "receivingReport.php?f="+f+"&s="+s+"&order="+o;
 }
 function resort(o){
-	var f= $('#sF').val();
-	location = "receivingReport.php?f="+f+"&order="+o;
+    var f= $('#sF').val();
+    location = "receivingReport.php?f="+f+"&order="+o;
 }
 </script>
 <?
 $status = array(
-	""=> "Any",
-	0 => "New",
-	2 => "Pending",
-	4 => "Placed"
+    ""=> "Any",
+    0 => "New",
+    2 => "Pending",
+    4 => "Placed"
 );
 
 $order = isset($_REQUEST['order'])?$_REQUEST['order']:'mixMatch';
@@ -54,24 +54,24 @@ if ($filter !== '') $filter = (int)$filter;
 
 echo '<select id="sF" onchange="refilter($(this).val());">';
 foreach($status as $k=>$v){
-	printf('<option value="%s" %s>%s</option>',
-		$k,($k===$filter?'selected':''),$v);
+    printf('<option value="%s" %s>%s</option>',
+        $k,($k===$filter?'selected':''),$v);
 }
 echo '</select>';
 echo '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 
 $suppliers = array('');
 $q = $dbc->prepare_statement("SELECT mixMatch FROM PendingSpecialOrder WHERE trans_type='I'
-	GROUP BY mixMatch ORDER BY mixMatch");
+    GROUP BY mixMatch ORDER BY mixMatch");
 $r = $dbc->exec_statement($q);
 while($w = $dbc->fetch_row($r)){
-	$suppliers[] = $w[0];
+    $suppliers[] = $w[0];
 }
 echo '<select id="sS" onchange="refilter($(\'#sF\').val());">';
 echo '<option value="">Supplier...</option>';
 foreach($suppliers as $s){
-	printf('<option %s>%s</option>',
-		($s==$supp?'selected':''),$s);
+    printf('<option %s>%s</option>',
+        ($s==$supp?'selected':''),$s);
 }
 echo '</select><br /><br />';
 printf('<input type="hidden" id="orderSetting" value="%s" />',$order);
@@ -79,29 +79,29 @@ printf('<input type="hidden" id="orderSetting" value="%s" />',$order);
 $where = "p.trans_type = 'I'";
 $args = array();
 if (!empty($filter)){
-	$where .= " AND s.statusFlag=? ";
-	$args[] = ((int)$filter);
+    $where .= " AND s.statusFlag=? ";
+    $args[] = ((int)$filter);
 }
 if (!empty($supp)){
-	$where .= " AND mixMatch=? ";
-	$args[] = $supp;
+    $where .= " AND mixMatch=? ";
+    $args[] = $supp;
 }
 $sql_order = 'mixMatch,upc';
 if ($order == 'upc')
-	$sql_order = 'upc';
+    $sql_order = 'upc';
 elseif($order == 'description')
-	$sql_order = 'description,upc';
+    $sql_order = 'description,upc';
 elseif($order == 'ItemQtty')
-	$sql_order = 'ItemQtty,upc';
+    $sql_order = 'ItemQtty,upc';
 elseif($order == 'subStatus')
-	$sql_order = 'subStatus,upc';
+    $sql_order = 'subStatus,upc';
 
 $q = "SELECT upc,description,ItemQtty,mixMatch,subStatus
-	FROM PendingSpecialOrder AS p
-	LEFT JOIN SpecialOrders as s
-	ON p.order_id=s.specialOrderID
-	WHERE $where
-	ORDER BY $sql_order";
+    FROM PendingSpecialOrder AS p
+    LEFT JOIN SpecialOrders as s
+    ON p.order_id=s.specialOrderID
+    WHERE $where
+    ORDER BY $sql_order";
 $p = $dbc->prepare_statement($q);
 $r = $dbc->exec_statement($q, $args);
 echo '<table cellspacing="0" cellpadding="4" border="1"><tr>';
@@ -112,9 +112,9 @@ echo '<th><a href="" onclick="resort(\'mixMatch\');return false;">Supplier</a></
 echo '<th><a href="" onclick="resort(\'subStatus\');return false;">Status Updated</a></td>';
 echo '</tr>';
 while ($w = $dbc->fetch_row($r)){
-	printf('<tr><td>%s</td><td>%s</td><td>%d</td><td>%s</td><td>%s</td></tr>',
-		$w['upc'],$w['description'],$w['ItemQtty'],$w['mixMatch'],
-		($w['subStatus']==0?'Unknown':date('m/d/Y',$w['subStatus'])));
+    printf('<tr><td>%s</td><td>%s</td><td>%d</td><td>%s</td><td>%s</td></tr>',
+        $w['upc'],$w['description'],$w['ItemQtty'],$w['mixMatch'],
+        ($w['subStatus']==0?'Unknown':date('m/d/Y',$w['subStatus'])));
 }
 echo '</table>';
 

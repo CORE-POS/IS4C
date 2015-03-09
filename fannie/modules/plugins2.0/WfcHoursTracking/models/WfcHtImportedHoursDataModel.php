@@ -40,7 +40,7 @@ class WfcHtImportedHoursDataModel extends BasicModel
     'SecondRateHours' => array('type'=>'DOUBLE'),
     'HolidayHours' => array('type'=>'DOUBLE'),
     'UTOHours' => array('type'=>'DOUBLE'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -49,14 +49,36 @@ class WfcHtImportedHoursDataModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["empID"])) {
                 return $this->instance["empID"];
-            } elseif(isset($this->columns["empID"]["default"])) {
+            } else if (isset($this->columns["empID"]["default"])) {
                 return $this->columns["empID"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'empID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["empID"]) || $this->instance["empID"] != func_get_args(0)) {
+                if (!isset($this->columns["empID"]["ignore_updates"]) || $this->columns["empID"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["empID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function periodID()
@@ -64,14 +86,36 @@ class WfcHtImportedHoursDataModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["periodID"])) {
                 return $this->instance["periodID"];
-            } elseif(isset($this->columns["periodID"]["default"])) {
+            } else if (isset($this->columns["periodID"]["default"])) {
                 return $this->columns["periodID"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'periodID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["periodID"]) || $this->instance["periodID"] != func_get_args(0)) {
+                if (!isset($this->columns["periodID"]["ignore_updates"]) || $this->columns["periodID"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["periodID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function year()
@@ -79,14 +123,36 @@ class WfcHtImportedHoursDataModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["year"])) {
                 return $this->instance["year"];
-            } elseif(isset($this->columns["year"]["default"])) {
+            } else if (isset($this->columns["year"]["default"])) {
                 return $this->columns["year"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'year',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["year"]) || $this->instance["year"] != func_get_args(0)) {
+                if (!isset($this->columns["year"]["ignore_updates"]) || $this->columns["year"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["year"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function hours()
@@ -94,14 +160,36 @@ class WfcHtImportedHoursDataModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["hours"])) {
                 return $this->instance["hours"];
-            } elseif(isset($this->columns["hours"]["default"])) {
+            } else if (isset($this->columns["hours"]["default"])) {
                 return $this->columns["hours"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'hours',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["hours"]) || $this->instance["hours"] != func_get_args(0)) {
+                if (!isset($this->columns["hours"]["ignore_updates"]) || $this->columns["hours"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["hours"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function OTHours()
@@ -109,14 +197,36 @@ class WfcHtImportedHoursDataModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["OTHours"])) {
                 return $this->instance["OTHours"];
-            } elseif(isset($this->columns["OTHours"]["default"])) {
+            } else if (isset($this->columns["OTHours"]["default"])) {
                 return $this->columns["OTHours"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'OTHours',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["OTHours"]) || $this->instance["OTHours"] != func_get_args(0)) {
+                if (!isset($this->columns["OTHours"]["ignore_updates"]) || $this->columns["OTHours"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["OTHours"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function PTOHours()
@@ -124,14 +234,36 @@ class WfcHtImportedHoursDataModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["PTOHours"])) {
                 return $this->instance["PTOHours"];
-            } elseif(isset($this->columns["PTOHours"]["default"])) {
+            } else if (isset($this->columns["PTOHours"]["default"])) {
                 return $this->columns["PTOHours"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'PTOHours',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["PTOHours"]) || $this->instance["PTOHours"] != func_get_args(0)) {
+                if (!isset($this->columns["PTOHours"]["ignore_updates"]) || $this->columns["PTOHours"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["PTOHours"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function EmergencyHours()
@@ -139,14 +271,36 @@ class WfcHtImportedHoursDataModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["EmergencyHours"])) {
                 return $this->instance["EmergencyHours"];
-            } elseif(isset($this->columns["EmergencyHours"]["default"])) {
+            } else if (isset($this->columns["EmergencyHours"]["default"])) {
                 return $this->columns["EmergencyHours"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'EmergencyHours',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["EmergencyHours"]) || $this->instance["EmergencyHours"] != func_get_args(0)) {
+                if (!isset($this->columns["EmergencyHours"]["ignore_updates"]) || $this->columns["EmergencyHours"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["EmergencyHours"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function SecondRateHours()
@@ -154,14 +308,36 @@ class WfcHtImportedHoursDataModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["SecondRateHours"])) {
                 return $this->instance["SecondRateHours"];
-            } elseif(isset($this->columns["SecondRateHours"]["default"])) {
+            } else if (isset($this->columns["SecondRateHours"]["default"])) {
                 return $this->columns["SecondRateHours"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'SecondRateHours',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["SecondRateHours"]) || $this->instance["SecondRateHours"] != func_get_args(0)) {
+                if (!isset($this->columns["SecondRateHours"]["ignore_updates"]) || $this->columns["SecondRateHours"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["SecondRateHours"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function HolidayHours()
@@ -169,14 +345,36 @@ class WfcHtImportedHoursDataModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["HolidayHours"])) {
                 return $this->instance["HolidayHours"];
-            } elseif(isset($this->columns["HolidayHours"]["default"])) {
+            } else if (isset($this->columns["HolidayHours"]["default"])) {
                 return $this->columns["HolidayHours"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'HolidayHours',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["HolidayHours"]) || $this->instance["HolidayHours"] != func_get_args(0)) {
+                if (!isset($this->columns["HolidayHours"]["ignore_updates"]) || $this->columns["HolidayHours"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["HolidayHours"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function UTOHours()
@@ -184,14 +382,36 @@ class WfcHtImportedHoursDataModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["UTOHours"])) {
                 return $this->instance["UTOHours"];
-            } elseif(isset($this->columns["UTOHours"]["default"])) {
+            } else if (isset($this->columns["UTOHours"]["default"])) {
                 return $this->columns["UTOHours"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'UTOHours',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["UTOHours"]) || $this->instance["UTOHours"] != func_get_args(0)) {
+                if (!isset($this->columns["UTOHours"]["ignore_updates"]) || $this->columns["UTOHours"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["UTOHours"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

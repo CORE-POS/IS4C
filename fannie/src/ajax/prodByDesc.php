@@ -5,7 +5,6 @@ if (!class_exists('FannieAPI')) {
         include(dirname(__FILE__).'/../classlib2.0/FannieAPI.php');
 }
 $dbc = FannieDB::get($FANNIE_OP_DB);
-include($FANNIE_ROOT.'src/JsonLib.php');
 $ret = array();
 
 $search = isset($_REQUEST['term']) ? $_REQUEST['term'] : '';
@@ -33,6 +32,5 @@ if (strlen($search) > 2){
 	}
 }
 
-echo JsonLib::array_to_json($ret);
+echo json_encode($ret);
 
-?>

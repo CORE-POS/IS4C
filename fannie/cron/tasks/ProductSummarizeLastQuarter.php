@@ -49,7 +49,7 @@ last thirteen weeks';
         $last_monday = mktime(0, 0, 0, date('n', $this_monday), date('j', $this_monday) - 7, date('Y', $this_monday));
 
         $dbc = FannieDB::get($FANNIE_ARCHIVE_DB);
-        echo $this->cronMsg('Determining applicable weeks');
+        $this->cronMsg('Determining applicable weeks', FannieLogger::INFO);
         $dbc->query('TRUNCATE TABLE weeksLastQuarter');
         $ins = $dbc->prepare('INSERT INTO weeksLastQuarter (weekLastQuarterID, weekStart, weekEnd) VALUES (?, ?, ?)');
 
@@ -89,7 +89,7 @@ last thirteen weeks';
         $dbc->query('TRUNCATE TABLE productWeeklyLastQuarter');
         foreach($weeks as $weekID => $limits) {
             $upcs = array();
-            echo $this->cronMsg('Processing week #'.$weekID);
+            $this->cronMsg('Processing week #'.$weekID, FannieLogger::INFO);
             $dlog = DTransactionsModel::selectDlog(date('Y-m-d', $limits[0]), date('Y-m-d', $limits[1]));
             $dataP = $dbc->prepare("SELECT d.upc, SUM(total) as ttl, "
                                 . DTrans::sumQuantity('d') . " as qty,
@@ -139,16 +139,16 @@ last thirteen weeks';
                     $weekID,
                     $info['qty'],
                     $info['ttl'],
-                    $info['ttl'] / $store_sales,
-                    $info['ttl'] / $s_ttl,
-                    $info['ttl'] / $d_ttl,
+                    $store_sales == 0 ? 0.0 : $info['ttl'] / $store_sales,
+                    $s_ttl == 0 ? 0.0 : $info['ttl'] / $s_ttl,
+                    $d_ttl == 0 ? 0.0 : $info['ttl'] / $d_ttl,
                 );
                 $dbc->execute($addP, $args);
             }
         } // end loop on weeks
 
         // now do weighted averages
-        echo $this->cronMsg('Calculating weighted averages');
+        $this->cronMsg('Calculating weighted averages', FannieLogger::INFO);
         $dbc->query('TRUNCATE TABLE productSummaryLastQuarter');
         $dbc->query('INSERT INTO productSummaryLastQuarter
                    (upc, qtyThisWeek, totalThisWeek, qtyLastQuarter,

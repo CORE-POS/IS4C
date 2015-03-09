@@ -21,8 +21,6 @@
 
 *********************************************************************************/
 
-include_once(realpath(dirname(__FILE__)."/../ini.php"));
-
 /**
  @class CoreState
  Setup session variables
@@ -31,7 +29,7 @@ class CoreState extends LibraryClass
 {
 
 /**
-  Populates $CORE_LOCAL with default values.
+  Populates session with default values.
   Short-hand for calling every other function
   in this file. Normally called once on
   startup.
@@ -53,14 +51,12 @@ static public function initiate_session()
 
 /**
   Initialize system default values in
-  $CORE_LOCAL. Variables defined here
+  session. Variables defined here
   should always exist but won't be reset
   to these values on a regular basis.
 */
 static public function systemInit() 
 {
-	global $CORE_LOCAL;
-
 	/**
 	  @var standalone 
 	  indicates whether the server
@@ -68,21 +64,21 @@ static public function systemInit()
 	  - 0 => server is available 
 	  - 1 => server is not available 
 	*/
-	$CORE_LOCAL->set("standalone",0);
+	CoreLocal::set("standalone",0);
 
 	/**
 	  @var currentid
 	  localtemptrans.trans_id for current
 	  cursor position
 	*/	
-	$CORE_LOCAL->set("currentid",1);
+	CoreLocal::set("currentid",1);
 
 	/**
 	  @var currenttopid
 	  localtemptrans.trans_id for the first
 	  item currently shown on screen
 	*/
-	$CORE_LOCAL->set("currenttopid",1);
+	CoreLocal::set("currenttopid",1);
 
 	/**
 	  @var training
@@ -90,7 +86,7 @@ static public function systemInit()
 	  - 0 => not in training mode
 	  - 1 => in training mode
 	*/
-	$CORE_LOCAL->set("training",0);
+	CoreLocal::set("training",0);
 
 	/**
 	  @var SNR
@@ -98,13 +94,13 @@ static public function systemInit()
 	  (normally a UPC) to be entered when
 	  the scale settles on a weight
 	*/
-	$CORE_LOCAL->set("SNR",0);
+	CoreLocal::set("SNR",0);
 
 	/**
 	  @var weight
 	  Currently scale weight (as float)
 	*/
-	$CORE_LOCAL->set("weight",0);
+	CoreLocal::set("weight",0);
 
 	/**
 	  @var scale
@@ -112,7 +108,7 @@ static public function systemInit()
 	  - 0 => scale error or settling
 	  - 1 => scale settled on weight
 	*/
-	$CORE_LOCAL->set("scale",1);
+	CoreLocal::set("scale",1);
 
 	/**
 	  @var plainmsg
@@ -123,39 +119,57 @@ static public function systemInit()
 	  on or finishing/canceling/suspending a
 	  transaction
 	*/
-	$CORE_LOCAL->set("plainmsg","");
+	CoreLocal::set("plainmsg","");
 
 	/**
 	  @var ccTermOut
 	  Used for sending messages to Ingenico
 	  device. Very alpha.
 	*/
-	$CORE_LOCAL->set("ccTermOut","idle");
+	CoreLocal::set("ccTermOut","idle");
+
+    /**
+      Load lane and store numbers from LaneMap array
+      if present
+    */
+    if (is_array(CoreLocal::get('LaneMap'))) {
+        $my_ips = MiscLib::getAllIPs();
+        foreach ($my_ips as $ip) {
+            if (!isset($map[$ip])) {
+                continue;
+            }
+            if (isset($map[$ip]['register_id']) && isset($map[$ip]['store_id'])) {
+                CoreLocal::set('laneno', $map[$ip]['register_id']);
+                CoreLocal::set('store_id', $map[$ip]['store_id']);
+            }
+            // use first matching IP
+            break;
+        }
+
+    }
 }
 
 /**
-  Initialize transaction variable in $CORE_LOCAL.
+  Initialize transaction variable in session.
   This function is called after the end of every
   transaction so these values will be the
   the defaults every time.
 */
 static public function transReset() 
 {
-	global $CORE_LOCAL;
-
 	/**
 	  @var End
 	  Indicates transaction has ended
 	  0 => transaction in progress
 	  1 => transaction is complete
 	*/
-	$CORE_LOCAL->set("End",0);
+	CoreLocal::set("End",0);
 
 	/**
 	  @var memberID
 	  Current member number
 	*/
-	$CORE_LOCAL->set("memberID","0");
+	CoreLocal::set("memberID","0");
 
 	/**
 	  @var TaxExempt
@@ -163,7 +177,7 @@ static public function transReset()
 	  0 => transaction is taxable
 	  1 => transaction is tax exempt
 	*/
-	$CORE_LOCAL->set("TaxExempt",0);
+	CoreLocal::set("TaxExempt",0);
 
 	/**
 	  @var yousaved
@@ -173,7 +187,7 @@ static public function transReset()
 	  - sale prices (localtemptrans.discount)
 	  - member prices (localtemptrans.memDiscount)
 	*/
-	$CORE_LOCAL->set("yousaved",0);
+	CoreLocal::set("yousaved",0);
 
 	/**
 	  @var couldhavesaved
@@ -181,7 +195,7 @@ static public function transReset()
 	  Consists of localtemptrans.memDiscount on
 	  non-member purchases
 	*/ 
-	$CORE_LOCAL->set("couldhavesaved",0);
+	CoreLocal::set("couldhavesaved",0);
 
 	/**
 	  @var specials
@@ -189,19 +203,19 @@ static public function transReset()
 	  of localtemptrans.discount and when applicable
 	  localtemptrans.memDiscount
 	*/
-	$CORE_LOCAL->set("specials",0);
+	CoreLocal::set("specials",0);
 
 	/**
 	  @var tare
 	  Current tare setting (as float)
 	*/
-	$CORE_LOCAL->set("tare",0);
+	CoreLocal::set("tare",0);
 
 	/**
 	  @var change
 	  Amount of change due (as float)
 	*/
-	$CORE_LOCAL->set("change",0);
+	CoreLocal::set("change",0);
 
 	/**
 	  @var toggletax
@@ -209,7 +223,7 @@ static public function transReset()
 	  - 0 => do nothing
 	  - 1 => change next tax status	
 	*/
-	$CORE_LOCAL->set("toggletax",0);
+	CoreLocal::set("toggletax",0);
 
 	/**
 	  @var togglefoodstamp
@@ -217,7 +231,7 @@ static public function transReset()
 	  - 0 => do nothing
 	  - 1 => change next foodstamp status	
 	*/
-	$CORE_LOCAL->set("togglefoodstamp",0);
+	CoreLocal::set("togglefoodstamp",0);
 
 	/**
 	  @var toggleDiscountable
@@ -225,7 +239,7 @@ static public function transReset()
 	  - 0 => do nothing
 	  - 1 => change next discount status	
 	*/
-	$CORE_LOCAL->set("toggleDiscountable",0);
+	CoreLocal::set("toggleDiscountable",0);
 
 	/**
 	  @var refund
@@ -236,7 +250,7 @@ static public function transReset()
 	  - 0 => not a refund
 	  - 1 => refund
 	*/
-	$CORE_LOCAL->set("refund",0);
+	CoreLocal::set("refund",0);
 
 	/**
 	  @var casediscount
@@ -246,7 +260,7 @@ static public function transReset()
 	  line-item discount. It more or less just differs
 	  in that the messages say "Case".
 	*/
-	$CORE_LOCAL->set("casediscount",0);
+	CoreLocal::set("casediscount",0);
 
 	/**
 	  @var multiple
@@ -257,7 +271,7 @@ static public function transReset()
 	  is likely sufficient to determine whether
 	  a multiplier was used.
 	*/
-	$CORE_LOCAL->set("multiple",0);
+	CoreLocal::set("multiple",0);
 
 	/**
 	  @var quantity
@@ -268,7 +282,7 @@ static public function transReset()
 	  a quantity via products.scale or
 	  products.qttyEnforced.
 	*/
-	$CORE_LOCAL->set("quantity",0);
+	CoreLocal::set("quantity",0);
 
 	/**
 	  @var strEntered
@@ -276,7 +290,7 @@ static public function transReset()
 	  POS screen. Used in conjunction with the
 	  msgrepeat option.
 	*/
-	$CORE_LOCAL->set("strEntered","");
+	CoreLocal::set("strEntered","");
 
 	/**
 	  @var strRemembered
@@ -285,7 +299,7 @@ static public function transReset()
 	  conjunction with the msgrepeat
 	  option.
 	*/
-	$CORE_LOCAL->set("strRemembered","");
+	CoreLocal::set("strRemembered","");
 
 	/**
 	  @var msgrepeat
@@ -320,7 +334,7 @@ static public function transReset()
 	  processing finishes.
 	
 	*/
-	$CORE_LOCAL->set("msgrepeat",0);
+	CoreLocal::set("msgrepeat",0);
 
     /**
       @var lastRepeat
@@ -328,20 +342,20 @@ static public function transReset()
       Useful to set & check in situations where multiple
       confirmations may be required.
     */
-    $CORE_LOCAL->set('lastRepeat', '');
+    CoreLocal::set('lastRepeat', '');
 
 	/**
 	  @var boxMsg
 	  Message string to display on the boxMsg2.php page
 	*/
-	$CORE_LOCAL->set("boxMsg","");		
+	CoreLocal::set("boxMsg","");		
 
 	/**
 	  @var itemPD
 	  Line item percent discount (as integer; 5 = 5%).
 	  Applies a percent discount to the current ring.
 	*/
-	$CORE_LOCAL->set("itemPD",0);
+	CoreLocal::set("itemPD",0);
 
 	/**
 	  @var cashierAgeOverride
@@ -354,7 +368,7 @@ static public function transReset()
 	  - 0 => no manager approval
 	  - 1 => manager has given approval
 	*/
-	$CORE_LOCAL->set("cashierAgeOverride",0);
+	CoreLocal::set("cashierAgeOverride",0);
 
 	/**
 	  @var voidOverride
@@ -367,7 +381,7 @@ static public function transReset()
 	  - 0 => no manager approval
 	  - 1 => manager has given approval
 	*/
-	$CORE_LOCAL->set("voidOverride",0);
+	CoreLocal::set("voidOverride",0);
 	
 	/**
 	  @var lastWeight
@@ -377,7 +391,7 @@ static public function transReset()
 	  weight often indicate the scale is stuck or not
 	  responding properly.
 	*/
-	$CORE_LOCAL->set("lastWeight",0.00);
+	CoreLocal::set("lastWeight",0.00);
 
 	/**
 	  @var CachePanEncBlcok
@@ -388,14 +402,14 @@ static public function transReset()
 	  so the value is stored in session until the
 	  cashier is ready to process payment
 	*/
-	$CORE_LOCAL->set("CachePanEncBlock","");
+	CoreLocal::set("CachePanEncBlock","");
 
 	/**
 	  @var CachePinEncBlock
 	  Stores the encrypted string of PIN data.
 	  Similar to CachePanEncBlock.
 	*/
-	$CORE_LOCAL->set("CachePinEncBlock","");
+	CoreLocal::set("CachePinEncBlock","");
 
 	/**
 	  @var CacheCardType
@@ -407,14 +421,14 @@ static public function transReset()
 	  - EBTFOOD
 	  - EBTCASH
 	*/
-	$CORE_LOCAL->set("CacheCardType","");
+	CoreLocal::set("CacheCardType","");
 
 	/**
 	  @var CacheCardCashBack
 	  Stores the select cashback amount.
 	  Similar to CachePanEncBlock.
 	*/
-	$CORE_LOCAL->set("CacheCardCashBack",0);
+	CoreLocal::set("CacheCardCashBack",0);
 
 	/**
 	  @var ccTermState
@@ -424,7 +438,7 @@ static public function transReset()
 	  cashier know what the CC terminal is
 	  doing if they cannot see its screen.
 	*/
-	$CORE_LOCAL->set('ccTermState','swipe');
+	CoreLocal::set('ccTermState','swipe');
 
 	/**
 	  @var paycard_voiceauthcode
@@ -433,21 +447,21 @@ static public function transReset()
 	  but required to pass Mercury's certification
 	  script.
 	*/
-	$CORE_LOCAL->set("paycard_voiceauthcode","");
+	CoreLocal::set("paycard_voiceauthcode","");
 
 	/**
 	  @var ebt_authcode
 	  Stores a foodstamp authorization code.
 	  Similar to paycard_voiceauthcode.
 	*/
-	$CORE_LOCAL->set("ebt_authcode","");
+	CoreLocal::set("ebt_authcode","");
 
 	/**
 	  @var ebt_vnum
 	  Stores a foodstamp voucher number.
 	  Similar to paycard_voiceauthcode.
 	*/
-	$CORE_LOCAL->set("ebt_vnum","");
+	CoreLocal::set("ebt_vnum","");
 
 	/**
 	  @var paycard_keyed
@@ -460,34 +474,39 @@ static public function transReset()
 	  keyed transactions even though the CC terminal
 	  is only capable of producing swipe-style data.
 	*/
-	$CORE_LOCAL->set("paycard_keyed",False);
+	CoreLocal::set("paycard_keyed",False);
+    
+    if (!is_array(CoreLocal::get('PluginList'))) {
+        CoreLocal::set('PluginList', array());
+    }
 
-    if (is_array($CORE_LOCAL->get('PluginList'))) {
-        foreach($CORE_LOCAL->get('PluginList') as $p) {
+    if (is_array(CoreLocal::get('PluginList'))) {
+        foreach(CoreLocal::get('PluginList') as $p) {
             if (!class_exists($p)) continue;
             $obj = new $p();
             $obj->plugin_transaction_reset();
         }
     }
 
-    if (is_array($CORE_LOCAL->get('Notifiers'))) {
-        foreach($CORE_LOCAL->get('Notifiers') as $n) {
+    if (is_array(CoreLocal::get('Notifiers'))) {
+        foreach(CoreLocal::get('Notifiers') as $n) {
             if (!class_exists($n)) continue;
             $obj = new $n();
             $obj->transactionReset();
         }
     }
+
+    FormLib::clearTokens();
+    DiscountModule::transReset();
 }
 
 /**
-  Initialize print related variables in $CORE_LOCAL.
+  Initialize print related variables in session.
   This function is called after the end of
   every transaction.
 */
 static public function printReset() 
 {
-	global $CORE_LOCAL;
-
 	/**
 	  @var receiptToggle
 	  Control whether a receipt prints
@@ -499,7 +518,7 @@ static public function printReset()
 	  signature slips cannot be suppressed
 	  and will always print.
 	*/
-	$CORE_LOCAL->set("receiptToggle",1);
+	CoreLocal::set("receiptToggle",1);
 
 	/**
 	  @var autoReprint
@@ -507,23 +526,21 @@ static public function printReset()
 	  - 0 => do nothing
 	  - 1 => print a copy of the receipt
 	*/
-	$CORE_LOCAL->set("autoReprint",0);
+	CoreLocal::set("autoReprint",0);
 }
 
 /**
-  Initialize member related variables in $CORE_LOCAL.
+  Initialize member related variables in session.
   This function is called after the end of
   every transaction.
 */
 static public function memberReset() 
 {
-	global $CORE_LOCAL;
-
 	/**
 	  @var memberID
 	  The current member number
 	*/
-	$CORE_LOCAL->set("memberID","0");
+	CoreLocal::set("memberID","0");
 
 	/**
 	  @var isMember
@@ -537,42 +554,42 @@ static public function memberReset()
 	  field must be 'PC' for the account to be
 	  considered a member.
 	*/
-	$CORE_LOCAL->set("isMember",0);
+	CoreLocal::set("isMember",0);
 
 	/**
 	  @var isStaff
 	  Indicates whether the current customer is
 	  an employee. Corresponds to custdata.staff.
 	*/
-	$CORE_LOCAL->set("isStaff",0);
+	CoreLocal::set("isStaff",0);
 
 	/**
 	  @var SSI
 	  Corresponds to custdata.SSI for current
 	  customer.
 	*/
-	$CORE_LOCAL->set("SSI",0);
+	CoreLocal::set("SSI",0);
 
 	/**
 	  @var memMsg
 	  Text string shown in the upper left of the
 	  POS screen near the word MEMBER.
 	*/
-	$CORE_LOCAL->set("memMsg","");
+	CoreLocal::set("memMsg","");
 
 	/**
 	  @var memType
 	  Corresponds to custdata.memType for current
 	  customer.
 	*/
-	$CORE_LOCAL->set("memType",0);
+	CoreLocal::set("memType",0);
 	
 	/**
 	  @var balance
 	  Current customer's charge account balance
 	  owed.
 	*/
-	$CORE_LOCAL->set("balance",0);
+	CoreLocal::set("balance",0);
 
 	/**
 	  @var availBal
@@ -581,7 +598,7 @@ static public function memberReset()
 	  custdata.ChargeLimit minus the balance
 	  setting above.
 	*/
-	$CORE_LOCAL->set("availBal",0);
+	CoreLocal::set("availBal",0);
 
 	/**
 	  @var percentDiscount
@@ -589,7 +606,7 @@ static public function memberReset()
 	  percent discount as an integer (i.e., 5 = 5%).
 	  Corresponds to custdata.Discount.
 	*/
-	$CORE_LOCAL->set("percentDiscount",0);
+	CoreLocal::set("percentDiscount",0);
 
 	/**
 	  @var memAge
@@ -598,12 +615,12 @@ static public function memberReset()
 	  This is stored if the customer purchases
 	  an age-restricted item.
 	*/
-	$CORE_LOCAL->set("memAge",date('Ymd'));
+	CoreLocal::set("memAge",date('Ymd'));
 }
 
 /**
   If there are records in localtemptrans, get the 
-  member number and initialize $CORE_LOCAL member
+  member number and initialize session member
   variables.
 
   The only time this function does anything is
@@ -613,8 +630,6 @@ static public function memberReset()
 */
 static public function loadData() 
 {
-	global $CORE_LOCAL;
-	
 	$query_local = "select card_no from localtemptrans";
 	
 	$db_local = Database::tDataConnect();
@@ -625,37 +640,37 @@ static public function loadData()
 		$row_local = $db_local->fetch_array($result_local);
 		
 		if ($row_local["card_no"] && strlen($row_local["card_no"]) > 0) {
-			$CORE_LOCAL->set("memberID",$row_local["card_no"]);
+			CoreLocal::set("memberID",$row_local["card_no"]);
 		}
 	}
 
-	if ($CORE_LOCAL->get("memberID") == "0") {
+	if (CoreLocal::get("memberID") == "0") {
 		// not used - andy 4/12/07
-		$CORE_LOCAL->set("percentDiscount",0);
-		$CORE_LOCAL->set("memType",0);
+		CoreLocal::set("percentDiscount",0);
+		CoreLocal::set("memType",0);
 	} else {
 		$query_member = "select CardNo,memType,Type,Discount,staff,SSI,
 				blueLine,FirstName,LastName
-				from custdata where CardNo = '".$CORE_LOCAL->get("memberID")."'";
+				from custdata where CardNo = '".CoreLocal::get("memberID")."'";
 		$db_product = Database::pDataConnect();
 		$result = $db_product->query($query_member);
 		if ($db_product->num_rows($result) > 0) {
 			$row = $db_product->fetch_array($result);
-			$CORE_LOCAL->set("memMsg",$row['blueLine']);
-			$CORE_LOCAL->set("memType",$row["memType"]);
-			$CORE_LOCAL->set("percentDiscount",$row["Discount"]);
+			CoreLocal::set("memMsg",$row['blueLine']);
+			CoreLocal::set("memType",$row["memType"]);
+			CoreLocal::set("percentDiscount",$row["Discount"]);
 
 			if ($row["Type"] == "PC") {
-                $CORE_LOCAL->set("isMember",1);
+                CoreLocal::set("isMember",1);
 			} else {
-                $CORE_LOCAL->set("isMember",0);
+                CoreLocal::set("isMember",0);
             }
 
-			$CORE_LOCAL->set("isStaff",$row["staff"]);
-			$CORE_LOCAL->set("SSI",$row["SSI"]);
+			CoreLocal::set("isStaff",$row["staff"]);
+			CoreLocal::set("SSI",$row["SSI"]);
 
-			if ($CORE_LOCAL->get("SSI") == 1) {
-				$CORE_LOCAL->set("memMsg",$CORE_LOCAL->get("memMsg")." #");
+			if (CoreLocal::get("SSI") == 1) {
+				CoreLocal::set("memMsg",CoreLocal::get("memMsg")." #");
             }
 		}
 	}
@@ -668,8 +683,6 @@ static public function loadData()
  */
 static public function customReceipt()
 {
-	global $CORE_LOCAL;
-
 	$db = Database::pDataConnect(); 
 	$headerQ = "select text,type,seq from customReceipt order by seq";
 	$headerR = $db->query($headerQ);
@@ -686,7 +699,7 @@ static public function customReceipt()
             $typeStr = "receiptFooter";
         }
 
-		$CORE_LOCAL->set($typeStr.$numeral,$text);
+		CoreLocal::set($typeStr.$numeral,$text);
 
 		if (!isset($counts[$typeStr])) {
 			$counts[$typeStr] = 1;
@@ -696,21 +709,20 @@ static public function customReceipt()
 	}
 	
 	foreach($counts as $key => $num) {
-		$CORE_LOCAL->set($key."Count",$num);
+		CoreLocal::set($key."Count",$num);
 	}
 }
 
 static public function getCustomerPref($key)
 {
-	global $CORE_LOCAL;
-	if ($CORE_LOCAL->get('memberID') == 0) {
+	if (CoreLocal::get('memberID') == 0) {
         return '';
     }
 
 	$db = Database::pDataConnect();
 	$q = sprintf('SELECT pref_value FROM custPreferences WHERE
 		card_no=%d AND pref_key=\'%s\'',
-		$CORE_LOCAL->get('memberID'),$key);
+		CoreLocal::get('memberID'),$key);
 	$r = $db->query($q);
 	if ($r === False) {
         return '';
@@ -725,22 +737,20 @@ static public function getCustomerPref($key)
 
 static public function cashierLogin($transno=False, $age=0)
 {
-	global $CORE_LOCAL;
-	if ($CORE_LOCAL->get('CashierNo')==9999) {
-		$CORE_LOCAL->set('training', 1);
+	if (CoreLocal::get('CashierNo')==9999) {
+		CoreLocal::set('training', 1);
 	}
 	if (!is_numeric($age)) {
         $age = 0;
     }
-	$CORE_LOCAL->set('cashierAge', $age);
+	CoreLocal::set('cashierAge', $age);
 	if($transno && is_numeric($transno)) {
-		$CORE_LOCAL->set('transno', $transno);
+		CoreLocal::set('transno', $transno);
 	}
 }
 
-static public function loadParams(){
-    global $CORE_LOCAL;
-
+static public function loadParams()
+{
     $db = Database::pDataConnect();
 
     // newer & optional table. should not fail
@@ -750,45 +760,24 @@ static public function loadParams(){
     }
     
     // load global settings first
-    $prep = $db->prepare_statement('SELECT param_key, param_value, is_array FROM parameters
-                            WHERE (lane_id=0 OR lane_id IS NULL) AND
-                            (store_id=0 OR store_id IS NULL)');
-    $globals = $db->exec_statement($prep);
-    while($row = $db->fetch_row($globals)) {
-        $key = $row['param_key'];
-        $value = $row['param_value'];
-        if ($row['is_array'] == 1) {
-            $value = explode(',', $value);
-        }
-        $CORE_LOCAL->set($key, $value);
+    $parameters = new ParametersModel($db);
+    $parameters->lane_id(0);
+    $parameters->store_id(0);
+    foreach ($parameters->find() as $global) {
+        $key = $global->param_key();
+        $value = $global->materializeValue();
+        CoreLocal::set($key, $value);
     }
 
     // apply local settings next
     // with any overrides that occur
-    $prep = $db->prepare_statement('SELECT param_key, param_value, is_array FROM parameters
-                            WHERE lane_id=?');
-    $locals = $db->exec_statement($prep, array($CORE_LOCAL->get('laneno')));
-    while($row = $db->fetch_row($locals)) {
-        $key = $row['param_key'];
-        $value = $row['param_value'];
-        if ($row['is_array'] == 1) {
-            $value = explode(',', $value);
-            if (isset($value[0]) && strstr($value[0], '=>')) {
-                // keyed array
-                $tmp = array();
-                foreach($value as $entry) {
-                    list($k, $v) = explode('=>', $entry, 2);
-                    $tmp[$k] = $v;
-                }
-                $value = $tmp;
-            }
-        } else if (strtoupper($value) === 'TRUE') {
-            $value = true;
-        } else if (strtoupper($value) === 'FALSE') {
-            $value = false;
-        }
-
-        $CORE_LOCAL->set($key, $value);
+    $parameters->reset();
+    $parameters->lane_id(CoreLocal::get('laneno'));
+    $parameters->store_id(0);
+    foreach ($parameters->find() as $local) {
+        $key = $local->param_key();
+        $value = $local->materializeValue();
+        CoreLocal::set($key, $value);
     }
 }
 

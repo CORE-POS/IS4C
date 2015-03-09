@@ -63,20 +63,23 @@ class quickkey {
 	}
 
 	function display($id=""){
-		$ret = sprintf("<form action=\"%s\" method=\"post\"
-			style=\"display:inline;\">",
-			$_SERVER["PHP_SELF"]);
 		$ret = "";
 		if ($this->img == ""){
-			$ret .= sprintf("<input type=\"submit\"
-				name=\"quickkey_submit\" id=\"%s\"
-				value=\"%s\" class=\"quick_button\" />
-				<input type=\"hidden\" name=\"%s\"
-				value=\"%s\" />",$id,$this->title,
+			$ret .= sprintf('
+                <button type="submit"
+                    name="quickkey_submit" id="%s"
+                    value="%s"
+                    class="quick_button pos-button coloredBorder">
+                    %s
+                </button>
+				<input type="hidden" name="%s"
+                    value="%s" />',
+                $id,
+				$this->title,
+                $this->title,
 				md5($this->title),
 				$this->output_text);
-		}
-		else {
+		} else {
 			$ret .= sprintf("<input type=\"submit\"
 				name=\"quickkey_submit\" id=\"%s\"
 				value=\"%s\" class=\"quick_button\" 
@@ -88,7 +91,7 @@ class quickkey {
 				md5($this->title),
 				$this->output_text);
 		}
-		//$ret .= "</form>";
+
 		return $ret;
 	}
 }

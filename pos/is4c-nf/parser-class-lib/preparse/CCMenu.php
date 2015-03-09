@@ -22,41 +22,44 @@
 *********************************************************************************/
 
 class CCMenu extends PreParser {
-	var $remainder;
-	
-	function check($str){
-		global $CORE_LOCAL;
-		if ($str == "CC"){
-			$this->remainder = "QM1";
-			return True;
-		}
-		elseif ($str == "MANUALCC"){
-			$this->remainder = ("".$CORE_LOCAL->get("runningTotal") * 100)."CC";
-			return True;
-		}
-		return False;
-	}
 
-	function parse($str){
-		return $this->remainder;
-	}
+    private $remainder;
+    
+    function check($str)
+    {
+        $plugins = CoreLocal::get('PluginList');
+        if ($str == "CC" && is_array($plugins) && in_array('Paycards', $plugins)){
+            $this->remainder = "QM1";
+            return true;
+        } elseif ($str == "MANUALCC") {
+            $this->remainder = ("".CoreLocal::get("runningTotal") * 100)."CC";
+            return true;
+        }
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td><i>discount</i>DI<i>item</i></td>
-				<td>Set a percent discount <i>discount</i>
-				for just one item <i>item</i></td>
-			</tr>
-			<tr>
-				<td><i>discount</i>PD<i>item</i></td>
-				<td>Same as DI above</td>
-			</tr>
-			</table>";
-	}
+        return false;
+    }
+
+    function parse($str)
+    {
+        return $this->remainder;
+    }
+
+    function doc()
+    {
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td>>CC</td>
+                <td>Open the integrated card menu if
+                Paycards is enabled</td>
+            </tr>
+            <tr>
+                <td>MANUALCC</td>
+                <td>Tender current totals as credit card</td>
+            </tr>
+            </table>";
+    }
 }
 
-?>

@@ -38,14 +38,15 @@ class SuspensionsReport extends FannieReportPage
 
     public $description = '[Suspensions] lists all members made inactive during a given date range';
     public $report_set = 'Membership';
+    public $themed = true;
 
-	function fetch_report_data()
+    function fetch_report_data()
     {
-		global $FANNIE_OP_DB, $FANNIE_URL;
+        global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-		$date1 = FormLib::get_form_value('date1',date('Y-m-d'));
-		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
-		$code = FormLib::get_form_value('reason','0');
+        $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
+        $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
+        $code = FormLib::get_form_value('reason','0');
 
         $args = array($date1 . ' 00:00:00', $date2 . ' 23:59:59');
         $query = 'SELECT s.cardno as card_no,
@@ -121,23 +122,20 @@ class SuspensionsReport extends FannieReportPage
         }
         return array(
             'Accounts suspended for: ' . $reason,
-            'From ' . FormLib::get('date1') . ' to ' . FormLib::get('date2'),
         );
     }
-	
-	function form_content()
+    
+    function form_content()
     {
-		global $FANNIE_OP_DB, $FANNIE_URL;
+        global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $codes = new ReasoncodesModel($dbc);
 ?>
-<div id=main>	
 <form method = "get" action="<?php echo $_SERVER['PHP_SELF']; ?>">
-	<table border="0" cellspacing="0" cellpadding="5">
-		<tr> 
-			<th>Reason</th>
-			<td>
-			<select name="reason">
+<div class="col-sm-4">
+    <div class="form-group"> 
+        <label>Reason</label>
+        <select name="reason" class="form-control">
             <option value="0">Any Reason</option>
             <?php foreach($codes->find() as $obj) {
                 printf('<option value="%d">%s</option>',
@@ -145,38 +143,35 @@ class SuspensionsReport extends FannieReportPage
                         $obj->textStr()
                 );
             } ?>
-            </select>
-			</td>
-			<td>
-			<input type="checkbox" name="excel" id="excel" value="xls" />
-			<label for="excel">Excel</label>
-			</td>	
-		</tr>
-		<tr>
-			<th>Date Start</th>
-			<td>	
-		               <input type=text size=14 id=date1 name=date1 onfocus="this.value='';showCalendarControl(this);">
-			</td>
-			<td rowspan="3">
-			<?php echo FormLib::date_range_picker(); ?>
-			</td>
-		</tr>
-		<tr>
-			<th>End</th>
-			<td>
-		                <input type=text size=14 id=date2 name=date2 onfocus="this.value='';showCalendarControl(this);">
-		       </td>
-
-		</tr>
-		<tr>
-			<td> <input type=submit name=submit value="Submit"> </td>
-			<td> <input type=reset name=reset value="Start Over"> </td>
-		</tr>
-	</table>
-</form>
+        </select>
+    </div>
+    <div class="form-group"> 
+        <label>Date Start</label>
+        <input type=text id=date1 name=date1 required
+            class="form-control date-field" />
+    </div>
+    <div class="form-group"> 
+        <label>Date End</label>
+        <input type=text id=date2 name=date2 required
+            class="form-control date-field" />
+    </div>
+    <div class="form-group"> 
+        <input type="checkbox" name="excel" id="excel" value="xls" />
+        <label for="excel">Excel</label>
+    </div>
+    <div class="form-group"> 
+        <button type=submit name=submit value="Submit"
+            class="btn btn-default">Submit</button>
+        <button type=reset name=reset value="Start Over"
+            class="btn btn-default">Start Over</button>
+    </div>
 </div>
+<div class="col-sm-4">
+    <?php echo FormLib::date_range_picker(); ?>
+</div>
+</form>
 <?php
-	}
+    }
 }
 
 FannieDispatch::conditionalExec(false);

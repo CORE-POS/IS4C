@@ -23,25 +23,25 @@
 
 class update_20130106233554 extends UpdateObj {
 
-	protected $timestamp = '20130106233554';
+    protected $timestamp = '20130106233554';
 
-	protected $description = 'Create, or re-create, table for a list of available member contact preferences.
+    protected $description = 'Create, or re-create, table for a list of available member contact preferences.
 Describes values in memContact.
 Also see 20130106233555 to populate the table.';
 
-	protected $author = 'Eric Lee (WEFC_Toronto)';
+    protected $author = 'Eric Lee (WEFC_Toronto)';
 
-	protected $queries = array(
-		'op' => array(
-			'DROP TABLE IF EXISTS memContactPrefs',
-			'CREATE TABLE memContactPrefs (
-				pref_id int,
-				pref_description varchar(50),
-				PRIMARY KEY (pref_id))'
-		),
-		'trans' => array(),
-		'archive' => array()
-	);
+    protected $queries = array(
+        'op' => array(
+            'DROP TABLE IF EXISTS memContactPrefs',
+            'CREATE TABLE memContactPrefs (
+                pref_id int,
+                pref_description varchar(50),
+                PRIMARY KEY (pref_id))'
+        ),
+        'trans' => array(),
+        'archive' => array()
+    );
 }
 
 ?>

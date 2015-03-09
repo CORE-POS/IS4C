@@ -21,8 +21,10 @@
 
 *********************************************************************************/
 
-include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class UnfiExportForMas extends FannieReportPage 
 {
@@ -31,45 +33,47 @@ class UnfiExportForMas extends FannieReportPage
     protected $sortable = false;
     protected $no_sort_but_style = true;
 
-	function preprocess(){
-		/**
-		  Set the page header and title, enable caching
-		*/
-		$this->report_cache = 'none';
-		$this->title = "Fannie : Invoice Export";
-		$this->header = "Invoice Export";
+    public $page_set = 'Reports';
+    public $description = '[MAS Invoice Export] exports vendor invoices for MAS90.';
+    public $themed = true;
 
-		if (isset($_REQUEST['date1'])) {
-			/**
-			  Form submission occurred
+    function preprocess(){
+        /**
+          Set the page header and title, enable caching
+        */
+        $this->report_cache = 'none';
+        $this->title = "Fannie : Invoice Export";
+        $this->header = "Invoice Export";
 
-			  Change content function, turn off the menus,
-			  set up headers
-			*/
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-		
-			/**
-			  Check if a non-html format has been requested
-			*/
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls')
-				$this->report_format = 'xls';
-			elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv')
-				$this->report_format = 'csv';
-		}
-		else 
-			$this->add_script("../../src/CalendarControl.js");
+        if (isset($_REQUEST['date1'])) {
+            /**
+              Form submission occurred
 
-		return True;
-	}
+              Change content function, turn off the menus,
+              set up headers
+            */
+            $this->content_function = "report_content";
+            $this->has_menus(False);
+        
+            /**
+              Check if a non-html format has been requested
+            */
+            if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls')
+                $this->report_format = 'xls';
+            elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv')
+                $this->report_format = 'csv';
+        }
 
-	/**
-	  Lots of options on this report.
-	*/
-	function fetch_report_data(){
-		global $FANNIE_OP_DB;
-		$date1 = FormLib::get_form_value('date1',date('Y-m-d'));
-		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
+        return True;
+    }
+
+    /**
+      Lots of options on this report.
+    */
+    function fetch_report_data(){
+        global $FANNIE_OP_DB;
+        $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
+        $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $departments = $dbc->tableDefinition('departments');
@@ -84,7 +88,7 @@ class UnfiExportForMas extends FannieReportPage
         } else if ($dbc->tableExists('deptSalesCodes')) {
             $codingQ .= ' LEFT JOIN deptSalesCodes AS d ON p.department=d.dept_ID ';
         }
-        $codingQ .= 'WHERE i.vendorID=1 AND i.userID=0
+        $codingQ .= 'WHERE i.vendorID=? AND i.userID=0
                     AND o.receivedDate BETWEEN ? AND ?
                     GROUP BY o.orderID, d.salesCode, i.vendorInvoiceID
                     ORDER BY rdate, i.vendorInvoiceID, d.salesCode';
@@ -92,7 +96,8 @@ class UnfiExportForMas extends FannieReportPage
 
         $report = array();
         $invoice_sums = array();
-        $codingR = $dbc->execute($codingP, array($date1.' 00:00:00', $date2.' 23:59:59'));
+        $vendorID = FormLib::get('vendorID');
+        $codingR = $dbc->execute($codingP, array($vendorID, $date1.' 00:00:00', $date2.' 23:59:59'));
         while($codingW = $dbc->fetch_row($codingR)) {
             if ($codingW['rtc'] == 0) {
                 // skip zero lines (tote charges)
@@ -124,43 +129,51 @@ class UnfiExportForMas extends FannieReportPage
         }
 
         return $report;
-	}
-	
-	function form_content()
+    }
+    
+    function form_content()
     {
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
         ob_start();
         ?>
-<div id=main>	
 <form method = "get" action="UnfiExportForMas.php">
-	<table border="0" cellspacing="0" cellpadding="5">
-		<tr> 
-			 <td>
-			<p><b>Date Start</b> </p>
-		         <p><b>End</b></p>
-		       </td>
-		            <td>
-		             <p>
-		               <input type=text id=date1 name=date1 onfocus="this.value='';showCalendarControl(this);">
-		               </p>
-		               <p>
-		                <input type=text id=date2 name=date2 onfocus="this.value='';showCalendarControl(this);">
-		         </p>
-		       </td>
-			<td colspan=2 rowspan=2>
-			<?php echo FormLib::date_range_picker(); ?>	                        
-			</td>
-		</tr>
-		<tr> 
-			<td> <input type=submit name=submit value="Submit"> </td>
-			<td> <input type=reset name=reset value="Start Over"> </td>
-			<td>&nbsp;</td>
-			<td>&nbsp;</td>
-		</tr>
-	</table>
+<div class="col-sm-5">
+    <div class="form-group">
+        <label>Date Start</label>
+            <input type=text id=date1 name=date1 
+                class="form-control date-field" required />
+    </div>
+    <div class="form-group">
+        <label>Date End</label>
+            <input type=text id=date2 name=date2 
+                class="form-control date-field" required />
+    </div>
+    <div class="form-group">
+        <label>Vendor</label>
+        <select name="vendorID" class="form-control">
+        <?php
+        $vendors = new VendorsModel($dbc);
+        foreach ($vendors->find('vendorName') as $obj) {
+            printf('<option %s value="%d">%s</option>',
+                ($obj->vendorName() == 'UNFI' ? 'selected' : ''),
+                $obj->vendorID(), $obj->vendorName());
+        }
+        ?>
+        </select>
+    </div>
+    <p>
+        <button type="submit" class="btn btn-default">Submit</button>
+        <button type="reset" class="btn btn-default">Start Over</button>
+    </p>
+</div>
+<div class="col-sm-5">
+    <?php echo FormLib::date_range_picker(); ?>                         
+</div>
 </form>
 <?php
+
         return ob_get_clean();
-	}
+    }
 }
 
 FannieDispatch::conditionalExec();

@@ -25,16 +25,16 @@ include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
 class paycardboxMsgGift extends PaycardProcessPage {
 
-	function preprocess(){
-		global $CORE_LOCAL;
+	function preprocess()
+    {
 		// check for posts before drawing anything, so we can redirect
 		if( isset($_REQUEST['reginput'])) {
 			$input = strtoupper(trim($_REQUEST['reginput']));
 			// CL always exits
 			if( $input == "CL") {
-				$CORE_LOCAL->set("msgrepeat",0);
-				$CORE_LOCAL->set("toggletax",0);
-				$CORE_LOCAL->set("togglefoodstamp",0);
+				CoreLocal::set("msgrepeat",0);
+				CoreLocal::set("toggletax",0);
+				CoreLocal::set("togglefoodstamp",0);
 				PaycardLib::paycard_reset();
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
@@ -43,7 +43,7 @@ class paycardboxMsgGift extends PaycardProcessPage {
 			// when (de)activating/adding-value, double check that the current amount is acceptable
 			// before checking input (similar logic is later when generating the message)
 			$amtValid = false;
-			$amt = $CORE_LOCAL->get("paycard_amount");
+			$amt = CoreLocal::get("paycard_amount");
 			if( !is_numeric($amt) || $amt < 0.005) {
 			} else {
 				// all errors are caught above; here, the amount is okay
@@ -57,24 +57,24 @@ class paycardboxMsgGift extends PaycardProcessPage {
 			}
 			else if( $input != "" && substr($input,-2) != "CL") {
 				// any other input is an alternate amount
-				$CORE_LOCAL->set("paycard_amount","invalid");
+				CoreLocal::set("paycard_amount","invalid");
 				if( is_numeric($input))
-					$CORE_LOCAL->set("paycard_amount",$input/100);
+					CoreLocal::set("paycard_amount",$input/100);
 			}
 			// if we're still here, we haven't accepted a valid amount yet; display prompt again
 		} // post?
 		return True;
 	}
 
-	function body_content(){
-		global $CORE_LOCAL;
+	function body_content()
+    {
 		?>
 		<div class="baseHeight">
 		<?php
 		// generate message to print
-		$type = $CORE_LOCAL->get("paycard_type");
-		$mode = $CORE_LOCAL->get("paycard_mode");
-		$amt = $CORE_LOCAL->get("paycard_amount");
+		$type = CoreLocal::get("paycard_type");
+		$mode = CoreLocal::get("paycard_mode");
+		$amt = CoreLocal::get("paycard_amount");
 		if( $amt == 0) {
 			if( $mode == PaycardLib::PAYCARD_MODE_ACTIVATE)
 				echo PaycardLib::paycard_msgBox($type,"Enter Activation Amount",
@@ -95,7 +95,7 @@ class paycardboxMsgGift extends PaycardProcessPage {
 			echo PaycardLib::paycard_msgBox($type,"Add Value ".PaycardLib::paycard_moneyFormat($amt)."?","",
 				"[enter] to continue if correct<br>Enter a different amount if incorrect<br>[clear] to cancel");
 		}
-		$CORE_LOCAL->set("msgrepeat",2);
+		CoreLocal::set("msgrepeat",2);
 		?>
 		</div>
 		<?php

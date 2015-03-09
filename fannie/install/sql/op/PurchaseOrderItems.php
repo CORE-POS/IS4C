@@ -3,22 +3,22 @@
 Table: PurchaseOrderItems
 
 Columns:
-	orderID int
-	sku varchar
-	quantity int
-	unitCost money
-	caseSize int
-	receivedDate datetime
-	receivedQty int
-	receivedTotalCost money
-	unitSize varchar
-	brand varchar
-	description varchar
-	internalUPC varchar
+    orderID int
+    sku varchar
+    quantity int
+    unitCost money
+    caseSize int
+    receivedDate datetime
+    receivedQty int
+    receivedTotalCost money
+    unitSize varchar
+    brand varchar
+    description varchar
+    internalUPC varchar
 
 Depends on:
-	PurchaseOrder (table)
-	vendorItems (table)	
+    PurchaseOrder (table)
+    vendorItems (table) 
 
 Use:
 Contains items to be purchased as part
@@ -42,20 +42,20 @@ different product, this record will still
 accurately represent what was ordered.
 */
 $CREATE['op.PurchaseOrderItems'] = "
-	create table PurchaseOrderItems (
-		orderID INT,
-		sku VARCHAR(13),	
-		quantity INT,
-		unitCost DECIMAL(10,2),
-		caseSize INT,
-		receivedDate DATETIME,
-		receivedQty INT,
-		receivedTotalCost DECIMAL(10,2),
-		unitSize VARCHAR(25),
-		brand VARCHAR(50),
-		description VARCHAR(50),
-		internalUPC VARCHAR(13),	
-		PRIMARY KEY(orderID,sku)
-	)
+    create table PurchaseOrderItems (
+        orderID INT,
+        sku VARCHAR(13),    
+        quantity INT,
+        unitCost DECIMAL(10,2),
+        caseSize INT,
+        receivedDate DATETIME,
+        receivedQty INT,
+        receivedTotalCost DECIMAL(10,2),
+        unitSize VARCHAR(25),
+        brand VARCHAR(50),
+        description VARCHAR(50),
+        internalUPC VARCHAR(13),    
+        PRIMARY KEY(orderID,sku)
+    )
 ";
 ?>

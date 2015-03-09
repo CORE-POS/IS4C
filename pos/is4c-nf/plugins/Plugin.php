@@ -61,6 +61,14 @@ class Plugin
 
 	}
 
+    /**
+      Callback. Triggered when plugin settings are updated.
+    */
+    public function settingChange()
+    {
+
+    }
+
 	/**
 	  Callback. Triggered after every transaction.
 	  Use for reseting any session/state info.
@@ -115,8 +123,7 @@ class Plugin
 	*/
 	static public function isEnabled($plugin)
     {
-		global $CORE_LOCAL;
-		$list = $CORE_LOCAL->get("PluginList");
+		$list = CoreLocal::get("PluginList");
 		if (!is_array($list)) {
             return false;
         }

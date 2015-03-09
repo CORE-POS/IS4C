@@ -42,12 +42,13 @@ class ItemReceiptFormat extends DefaultReceiptFormat
 		} else if ($row['trans_status'] == 'D') {
 			// a "YOU SAVED" line
 			$description = strtolower($row['description']);
-			$description = str_replace("**"," >",$description);
+            if (strstr($description, '**')) {
+                $description = ' >' . trim($description, '*') . '< ';
+            }
 			return $description;
 		} else if ($row['trans_status'] == 'M') {
 			// member special line
-			$description = sprintf(' > you saved $%.2f Member Special <',$row['total']*-1);
-			return $description;
+            return $this->align($row['description'], 'Owner Special', $row['total'], '');
 		} else {
 			// an item record
 
@@ -56,15 +57,20 @@ class ItemReceiptFormat extends DefaultReceiptFormat
 				// intentional. special orders can have weird
 				// quantity fields
 				$comment = "";
-			} elseif ($row['scale'] != 0 && $row['quantity'] != 0) {
+			} elseif (isset($row['scale']) && $row['scale'] != 0 && $row['quantity'] != 0) {
 				$comment = sprintf('%.2f @ %.2f',$row['quantity'],$row['unitPrice']);
 			} else if (abs($row['ItemQtty']>1)) {
-				$comment = sprintf('%d @ %.2f',$row['quantity'],$row['unitPrice']);
+				$comment = sprintf('%d @ %.2f',$row['quantity'],$row['total']/$row['quantity']);
 			} else if ($row['matched'] > 0) {
 				$comment = 'w/ vol adj';
 			}
 
-			if ($row['numflag'] > 0) $row['description'] .= '*';
+            /**
+              Identify local items on receipt if displaying a local total
+            */
+			if ($row['numflag'] > 0 && CoreLocal::get('ReceiptLocalMode') != 'omit') {
+                $row['description'] .= '*';
+            }
 
 			return $this->align($row['description'],$comment,$row['total'],$this->flags($row));
 		}

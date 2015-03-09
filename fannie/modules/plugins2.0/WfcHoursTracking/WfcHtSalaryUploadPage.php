@@ -36,6 +36,10 @@ class WfcHtSalaryUploadPage extends FanniePage
     protected $header = 'Import Salary PTO';
     protected $title = 'Import Salary PTO';
 
+    public $page_set = 'Plugin :: WFC Hours Tracking';
+    public $description = '[Salary Upload] import PTO usage for salaried employees.';
+    public $themed = true;
+
     public function body_content()
     {
         $sql = WfcHtLib::hours_dbconnect();
@@ -49,7 +53,7 @@ class WfcHtSalaryUploadPage extends FanniePage
                 $sql->exec_statement($insQ, array($ids[$i], $datestamp, $days[$i]));
             }
 
-            return "Salary PTO added";
+            return '<div class="alert alert-success">Salary PTO added</div>';
         } else {
             $ret = "<form action=\"{$_SERVER['PHP_SELF']}\" method=post>";
 
@@ -57,26 +61,27 @@ class WfcHtSalaryUploadPage extends FanniePage
                 and deleted=0 order by name";
             $fetchR = $sql->query($fetchQ);
 
-            $ret .= "<table cellpadding=4 cellspacing=0 border=1>";
+            $ret .= '<div class="row"><div class="col-sm-5">';
+            $ret .= "<table class=\"table\">";
             $ret .= "<tr><th>Employee</th><th>Days taken</th></tr>";
             while($fetchW = $sql->fetch_row($fetchR)) {
                 $ret .= "<tr><td>{$fetchW['name']}</td>";
-                $ret .= "<td><input type=text name=days[] size=4 value=0 /></td>";
+                $ret .= "<td><input type=number name=days[] class=\"form-control\" required value=0 /></td>";
                 $ret .= "<input type=hidden name=ids[] value={$fetchW['empID']} /></tr>";
             }
 
             $ret .= "<tr><th>Month</th><th>Year</th></tr>";
-            $ret .= "<tr><td><select name=month>";
+            $ret .= "<tr><td><select name=month class=\"form-control\">";
             for ($i=1;$i<=12;$i++) {
                 $stamp = mktime(0,0,0,$i,1);
                 $mname = date('F',$stamp);
                 $ret .= "<option value=$i>$mname</option>";
             }
             $ret .= "</select></td><td>";
-            $ret .= "<input type=text size=4 name=year value=".date("Y")." /></td></tr>";
+            $ret .= "<input type=number class=\"form-control\" required name=year value=".date("Y")." /></td></tr>";
             $ret .= "</table>";
-            $ret .= "<br />";
-            $ret .= "<input type=submit value=Submit />";
+            $ret .= "</div></div>";
+            $ret .= '<p><button type="submit" class="btn btn-default">Submit</button></p>';
             $ret .= "</form>";
 
             return $ret;

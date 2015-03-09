@@ -30,9 +30,9 @@ if (!class_exists('FannieAPI')) {
 */
 class WfcClassMenu extends FanniePlugin 
 {
-	public $plugin_settings = array();
+    public $plugin_settings = array();
 
-	public $plugin_description = 'WFC plugin for generating list of currently available classes
+    public $plugin_description = 'WFC plugin for generating list of currently available classes
                                   as a POS menu';
 }
 

@@ -23,21 +23,22 @@
 
 class PaidOutDept extends SpecialDept
 {
+    public $help_summary = 'Negate entered amount and also prompt for comment';
+
     public function handle($deptID,$amount,$json)
     {
-        global $CORE_LOCAL;
-        if ($CORE_LOCAL->get('msgrepeat') == 0) { // invert has not happened yet
-            $CORE_LOCAL->set('strEntered', (100*$amount * -1).'DP'.$deptID);
-            $CORE_LOCAL->set('msgrepeat', 1);
+        if (CoreLocal::get('msgrepeat') == 0) { // invert has not happened yet
+            CoreLocal::set('strEntered', (100*$amount * -1).'DP'.$deptID);
+            CoreLocal::set('msgrepeat', 1);
            // $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php?autoconfirm=1';
             $json['main_frame'] = MiscLib::base_url().'gui-modules/PaidOutComment.php';
-            $CORE_LOCAL->set("refundComment",$CORE_LOCAL->get("strEntered"));
+            CoreLocal::set("refundComment",CoreLocal::get("strEntered"));
         }
 
-        //if ($CORE_LOCAL->get("refundComment") == ""){
+        //if (CoreLocal::get("refundComment") == ""){
             
             //$json['main_frame'] = MiscLib::base_url().'gui-modules/PaidOutComment.php';
-            //$CORE_LOCAL->set("refundComment",$CORE_LOCAL->get("strEntered"));
+            //CoreLocal::set("refundComment",CoreLocal::get("strEntered"));
         //}
 
         return $json;

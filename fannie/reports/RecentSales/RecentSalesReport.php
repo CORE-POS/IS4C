@@ -24,7 +24,7 @@
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-	* 21Jan2013 Eric Lee table upcLike need database specified: core_op.upcLike
+    * 21Jan2013 Eric Lee table upcLike need database specified: core_op.upcLike
 
 */
 
@@ -36,6 +36,7 @@ if (!class_exists('FannieAPI')) {
 class RecentSalesReport extends FannieReportPage
 {
     public $description = '[Recent Sales] lists sales for an item in recent days/weeks/months.';
+    public $themed = true;
 
     protected $header = 'Recent Sales';
     protected $title = 'Fannie : Recent Sales';
@@ -143,9 +144,15 @@ class RecentSalesReport extends FannieReportPage
 
     public function form_content() 
     {
+        $this->add_onload_command('$(\'#upc-field\').focus();');
         return '<form action="RecentSalesReport.php" method="get">
-                <b>UPC</b> <input type="text" name="upc" />
-                <input type="submit" value="Submit" />
+                <div class="form-group form-inline">
+                <label>UPC</label>
+                <input type="text" name="upc" id="upc-field" class="form-control" />
+                </div>
+                <p>
+                <button type="submit" class="btn btn-default">Submit</button>
+                </p>
                 </form>';
     }
 }

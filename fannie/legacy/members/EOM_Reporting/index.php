@@ -9,7 +9,7 @@
 <tr>
 	<td valign=top><b>Aged Trial Balances</b><br />
 	<a href=agedTrialBalances.php>Regular</a><br />
-	<a href=agedTrialBalances.php?excel=yes>Excel</a>
+	<a href=agedTrialBalances.php?excel=xls>Excel</a>
 	</td>
 	<td>Summary of AR last month, two months ago, and three months ago
 	for all members except:<ul>
@@ -39,7 +39,7 @@
 <tr>
 	<td valign=top><b>Inactivations for AR</b><br />
 	<a href=inactivationsAR.php>Regular</a><br />
-	<a href=inactivationsAR.php?excel=yes>Excel</a>
+	<a href=inactivationsAR.php?excel=xls>Excel</a>
 	</td>
 	<td>Lists members with a balance > $1 three months ago
 	and no payments. Members who meet these conditions but
@@ -50,7 +50,7 @@
 <tr>
 	<td valign=top><b>New Members Last Month</b><br />
 	<a href=newMembersEOM.php>Regular</a><br />
-	<a href=newMembersEOM.php?excel=yes>Excel</a>
+	<a href=newMembersEOM.php?excel=xls>Excel</a>
 	</td>
 	<td>
 	All members joining last month with contact information,
@@ -62,7 +62,7 @@
 <tr>
 	<td valign=top><b>New Members Year to Date</b><br />
 	<a href=newMembersYTD.php>Regular</a><br />
-	<a href=newMembersYTD.php?excel=yes>Excel</a>
+	<a href=newMembersYTD.php?excel=xls>Excel</a>
 	</td>
 	<td>
 	All members joining this yearwith contact information,
@@ -72,7 +72,7 @@
 <tr>
 	<td valign=top><b>First Equity Due</b><br />
 	<a href=equityDue1.php>Regular</a><br />
-	<a href=equityDue1.php?excel=yes>Excel</a>
+	<a href=equityDue1.php?excel=xls>Excel</a>
 	</td>
 	<td>
 	Members whose final equity payment is due next month
@@ -81,7 +81,7 @@
 <tr>
 	<td valign=top><b>Second Equity Due</b><br />
 	<a href=equityDue2.php>Regular</a><br />
-	<a href=equityDue2.php?excel=yes>Excel</a>
+	<a href=equityDue2.php?excel=xls>Excel</a>
 	</td>
 	<td>
 	Members whose final equity payment is due this month
@@ -90,7 +90,7 @@
 <tr>
 	<td valign=top><b>Inactivations for Equity</b><br />
 	<a href=inactivationsStock.php>Regular</a><br />
-	<a href=inactivationsStock.php?excel=yes>Excel</a>
+	<a href=inactivationsStock.php?excel=xls>Excel</a>
 	</td>
 	<td>
 	Members whose final equity payment was due last month
@@ -100,7 +100,7 @@
 <tr>
 	<td valign=top><b>Inactivations for Equity YTD</b><br />
 	<a href=inactiveStockYTD.php>Regular</a><br />
-	<a href=inactiveStockYTD.php?excel=yes>Excel</a>
+	<a href=inactiveStockYTD.php?excel=xls>Excel</a>
 	</td>
 	<td>
 	Members who have been inactivated or termed with less
@@ -110,7 +110,7 @@
 <tr>
 	<td valign=top><b>Aged Patronage Report</b><br />
 	<a href=agedPatronage.php>Regular</a><br />
-	<a href=agedPatronage.php?excel=yes>Excel</a>
+	<a href=agedPatronage.php?excel=xls>Excel</a>
 	</td>
 	<td>
 	Listing of members who made no purchases in the previous month
@@ -122,7 +122,7 @@
 <tr>
 	<td valign=top><b>Shopper statistics</b><br />
 	<a href="../../../modules/plugins2.0/CoreWarehouse/reports/CWDemographicsReport.php">Regular</a><br />
-	<a href=demographics.php?excel=yes>Excel</a>
+	<a href=demographics.php?excel=xls>Excel</a>
 	</td>
 	<td>
 	Active members, shopping frequency, and spending
@@ -131,7 +131,7 @@
 <tr>
 	<td valign=top><b>Patronage Report (defectors)</b><br />
 	<a href=defectors.php>Regular</a><br />
-	<a href=defectors.php?excel=yes>Excel</a>
+	<a href=defectors.php?excel=xls>Excel</a>
 	</td>
 	<td>
 	List of members who visited the store five, four, and three months ago
@@ -145,7 +145,7 @@
 <tr>
 	<td valign=top><b>Patronage Report (developers)</b><br />
 	<a href=developers.php>Regular</a><br />
-	<a href=developers.php?excel=yes>Excel</a>
+	<a href=developers.php?excel=xls>Excel</a>
 	</td>
 	<td>
 	List of members who consistently shopped here for the last three months
@@ -158,7 +158,7 @@
 <tr>
 	<td valign=top><b>Inactivations Last Month</b><br />
 	<a href=inactiveAll.php>Regular</a><br />
-	<a href=inactiveAll.php?excel=yes.php>Excel</a>
+	<a href=inactiveAll.php?excel=xls.php>Excel</a>
 	</td>
 	<td>
 	Members who were made inactive last month &amp; the reason given.
@@ -170,7 +170,7 @@
 <tr>
 	<td valign=top><b>Current Inactivations</b><br />
 	<a href=inactiveCurrent.php>Regular</a><br />
-	<a href=inactiveCurrent.php?excel=yes.php>Excel</a>
+	<a href=inactiveCurrent.php?excel=xls>Excel</a>
 	</td>
 	<td>
 	All members who are currently inactive.

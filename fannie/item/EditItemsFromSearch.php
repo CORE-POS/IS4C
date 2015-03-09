@@ -21,15 +21,19 @@
 
 *********************************************************************************/
 
-include('../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+require(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class EditItemsFromSearch extends FannieRESTfulPage
 {
     protected $header = 'Edit Search Results';
     protected $title = 'Edit Search Results';
 
-    protected $window_dressing = false;
+    public $description = '[Edit Search Results] takes a set of advanced search items and allows
+    editing some fields on all items simultaneously. Must be accessed via Advanced Search.';
+    public $themed = true;
 
     private $upcs = array();
     private $save_results = array();
@@ -57,6 +61,7 @@ class EditItemsFromSearch extends FannieRESTfulPage
         $vendor = FormLib::get('vendor');
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
+        $vlookup = new VendorsModel($dbc);
         for($i=0; $i<count($upcs); $i++) {
             $model = new ProductsModel($dbc);
             $upc = BarcodeLib::padUPC($upcs[$i]);
@@ -70,6 +75,17 @@ class EditItemsFromSearch extends FannieRESTfulPage
             }
             if (isset($local[$i])) {
                 $model->local($local[$i]);
+            }
+            if (isset($brand[$i])) {
+                $model->brand($brand[$i]);
+            }
+            if (isset($vendor[$i])) {
+                $vlookup->reset();
+                $vlookup->vendorName($vendor[$i]);
+                foreach ($vlookup->find('vendorID') as $obj) {
+                    $model->default_vendor_id($obj->vendorID());
+                    break;
+                }
             }
 
             if (in_array($upc, FormLib::get('fs', array()))) {
@@ -152,8 +168,6 @@ class EditItemsFromSearch extends FannieRESTfulPage
     function post_u_view()
     {
         global $FANNIE_OP_DB, $FANNIE_URL;
-        $this->add_script($FANNIE_URL.'/src/jquery/jquery.js');
-        $this->add_css_file($FANNIE_URL.'/src/style.css');
         $ret = '';
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -176,7 +190,7 @@ class EditItemsFromSearch extends FannieRESTfulPage
         }
 
         $ret .= '<form action="EditItemsFromSearch.php" method="post">';
-        $ret .= '<table cellpadding="4" cellspacing="0" border="1">';
+        $ret .= '<table class="table small">';
         $ret .= '<tr>
                 <th>UPC</th>
                 <th>Description</th>
@@ -186,17 +200,18 @@ class EditItemsFromSearch extends FannieRESTfulPage
                 <th>Tax</th>
                 <th>FS</th>
                 <th>Scale</th>
-                <th>Discountable</th>
+                <th>%Disc</th>
                 <th>Local</th>
                 </tr>';
-        $ret .= '<tr><th colspan="2">Change All &nbsp;&nbsp;&nbsp;<input type="reset" /></th>';
+        $ret .= '<tr><th colspan="2">Change All &nbsp;&nbsp;&nbsp;<button type="reset" 
+                class="btn btn-default">Reset</button></th>';
 
         /**
           List known brands from vendorItems as a drop down selection
           rather than free text entry. prodExtra remains an imperfect
           solution but this can at least start normalizing that data
         */
-        $ret .= '<td><select onchange="updateAll(this.value, \'.brandField\');">';
+        $ret .= '<td><select class="form-control input-sm" onchange="updateAll(this.value, \'.brandField\');">';
         $ret .= '<option value=""></option>';
         $brands = $dbc->query('SELECT brand FROM vendorItems 
                         WHERE brand IS NOT NULL AND brand <> \'\' 
@@ -209,7 +224,7 @@ class EditItemsFromSearch extends FannieRESTfulPage
         /**
           See brand above
         */
-        $ret .= '<td><select onchange="updateAll(this.value, \'.vendorField\');">';
+        $ret .= '<td><select class="form-control input-sm" onchange="updateAll(this.value, \'.vendorField\');">';
         $ret .= '<option value=""></option><option>DIRECT</option>';
         $vendors = $dbc->query('SELECT vendorName FROM vendors
                         GROUP BY vendorName ORDER BY vendorName');
@@ -218,13 +233,13 @@ class EditItemsFromSearch extends FannieRESTfulPage
         }
         $ret .= '</select></td>';
 
-        $ret .= '<td><select onchange="updateAll(this.value, \'.deptSelect\');">';
+        $ret .= '<td><select class="form-control input-sm" onchange="updateAll(this.value, \'.deptSelect\');">';
         foreach($depts as $num => $name) {
             $ret .= sprintf('<option value="%d">%d %s</option>', $num, $num, $name);
         }
         $ret .= '</select></td>';
 
-        $ret .= '<td><select onchange="updateAll(this.value, \'.taxSelect\');">';
+        $ret .= '<td><select class="form-control input-sm" onchange="updateAll(this.value, \'.taxSelect\');">';
         foreach($taxes as $num => $name) {
             $ret .= sprintf('<option value="%d">%s</option>', $num, $name);
         }
@@ -234,7 +249,7 @@ class EditItemsFromSearch extends FannieRESTfulPage
         $ret .= '<td><input type="checkbox" onchange="toggleAll(this, \'.scaleCheckBox\');" /></td>';
         $ret .= '<td><input type="checkbox" onchange="toggleAll(this, \'.discCheckBox\');" /></td>';
 
-        $ret .= '<td><select onchange="updateAll(this.value, \'.localSelect\');">';
+        $ret .= '<td><select class="form-control input-sm" onchange="updateAll(this.value, \'.localSelect\');">';
         foreach($locales as $num => $name) {
             $ret .= sprintf('<option value="%d">%s</option>', $num, $name);
         }
@@ -278,14 +293,14 @@ class EditItemsFromSearch extends FannieRESTfulPage
                                 <input type="hidden" class="upcInput" name="upc[]" value="%s" />
                             </td>
                             <td>%s</td>
-                            <td><input type="text" name="brand[]" class="brandField" value="%s" /></td>
-                            <td><input type="text" name="vendor[]" class="vendorField" value="%s" /></td>
-                            <td><select name="dept[]" class="deptSelect">%s</select></td>
-                            <td><select name="tax[]" class="taxSelect">%s</select></td>
+                            <td><input type="text" name="brand[]" class="brandField form-control input-sm" value="%s" /></td>
+                            <td><input type="text" name="vendor[]" class="vendorField form-control input-sm" value="%s" /></td>
+                            <td><select name="dept[]" class="deptSelect form-control input-sm">%s</select></td>
+                            <td><select name="tax[]" class="taxSelect form-control input-sm">%s</select></td>
                             <td><input type="checkbox" name="fs[]" class="fsCheckBox" value="%s" %s /></td>
                             <td><input type="checkbox" name="scale[]" class="scaleCheckBox" value="%s" %s /></td>
                             <td><input type="checkbox" name="disc[]" class="discCheckBox" value="%s" %s /></td>
-                            <td><select name="local[]" class="localSelect">%s</select></td>
+                            <td><select name="local[]" class="localSelect form-control input-sm">%s</select></td>
                             </tr>',
                             $row['upc'], $row['upc'], $row['upc'],
                             $row['upc'],
@@ -302,8 +317,8 @@ class EditItemsFromSearch extends FannieRESTfulPage
         }
         $ret .= '</table>';
 
-        $ret .= '<br />';
-        $ret .= '<input type="submit" name="save" value="Save Changes" />';
+        $ret .= '<p>';
+        $ret .= '<button type="submit" name="save" class="btn btn-default" value="1">Save Changes</button>';
         $ret .= '</form>';
 
         return $ret;

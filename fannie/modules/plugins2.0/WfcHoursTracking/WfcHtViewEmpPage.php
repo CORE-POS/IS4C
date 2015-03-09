@@ -32,7 +32,13 @@ if (!class_exists('WfcHtLib')) {
 class WfcHtViewEmpPage extends FanniePage
 {
     protected $must_authenticate = true;
-    protected $window_dressing = false;
+
+    public $page_set = 'Plugin :: WFC Hours Tracking';
+    public $description = '[View Hourly] shows information for a single hourly employee.';
+    public $themed = true;
+
+    protected $title = 'View Employee';
+    protected $header = '';
 
     private $empID = 0;
 
@@ -86,7 +92,6 @@ class WfcHtViewEmpPage extends FanniePage
         $sql = WfcHtLib::hours_dbconnect();
 
         ob_start();
-        echo "<html><head><title>View</title>";
         echo "<style type=text/css>
             #payperiods {
             margin-top: 50px;
@@ -151,7 +156,6 @@ class WfcHtViewEmpPage extends FanniePage
         }
 
         </style>";
-        echo "</head><body>";
 
         echo "<h3>Employee Total Hours Worked and PTO Status</h3>";
 
@@ -180,7 +184,7 @@ class WfcHtViewEmpPage extends FanniePage
         }
 
         echo "<h2>{$infoW['name']} [ <a href={$FANNIE_URL}auth/ui/loginform.php?logout=yes>Logout</a> ]</h2>";
-        echo "<table cellspacing=0 cellpadding=4 border=1 id=newtable>";
+        echo "<table class=\"table\" id=newtable>";
         echo "<tr class=one><th>Consecutive Hours Worked</th><td>{$infoW['totalHours']}</td></tr>";
         echo "<tr class=two><th>Current PTO Level</th><td>{$infoW['PTOLevel']}</td></tr>";
         echo "<tr class=one><th>Starting PTO Allocation</th><td>{$infoW['totalPTO']}</td></tr>";
@@ -199,7 +203,7 @@ class WfcHtViewEmpPage extends FanniePage
         $class = array("one","two");
         $prev_hours = 0;
         $c = 0;
-        echo "<table id=payperiods cellspacing=0 cellpadding=4 border=1>";
+        echo "<table id=payperiods class=\"table\">";
         echo "<tr><th>Pay Period</th><th>Reg. Hours</th><th>OT Hours</th><th>PTO Taken</th>";
         echo "<th>UTO Taken</th><th>Alt. Position Hours</th><th>Total Hours*</th></tr>";
         while ($row = $sql->fetch_row($periodsR)) {
@@ -209,7 +213,7 @@ class WfcHtViewEmpPage extends FanniePage
                 $sums[5] += $row[1];
                 continue;
             }
-	
+    
             echo "<tr class=$class[$c]>";
             $total = $row[1]+$row[2]+$row[5];
             echo "<td class=left>$row[0]</td>";
@@ -240,12 +244,10 @@ class WfcHtViewEmpPage extends FanniePage
         echo "<i>* Total does not include PTO & UTO hours taken. These hours do not count towards
         consecutive hours worked.</i>";
         echo "<p />";
-        echo "<div id=disclaimer>
+        echo "<div class=\"well\">
         <u>Please Note</u>: This web-base PTO Access Page is new. If you notice any problems,
         please contact Colleen or Andy.
         </div>";
-
-        echo "</body></html>";
 
         return ob_get_clean();
     }

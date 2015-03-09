@@ -23,146 +23,266 @@
 
 global $FANNIE_ROOT;
 if (!class_exists('CoreWarehouseModel'))
-	include_once(dirname(__FILE__).'/CoreWarehouseModel.php');
+    include_once(dirname(__FILE__).'/CoreWarehouseModel.php');
 
 class SumMemTypeSalesByDayModel extends CoreWarehouseModel {
 
-	protected $name = 'sumMemTypeSalesByDay';
-	
-	protected $columns = array(
-	'date_id' => array('type'=>'INT','primary_key'=>True,'default'=>0),
-	'memType' => array('type'=>'SMALLINT','primary_key'=>True,'default'=>''),
-	'total' => array('type'=>'MONEY','default'=>0.00),
-	'quantity' => array('type'=>'DOUBLE','default'=>0.00),
-	'transCount' => array('type'=>'INT','default'=>0)
-	);
+    protected $name = 'sumMemTypeSalesByDay';
+    
+    protected $columns = array(
+    'date_id' => array('type'=>'INT','primary_key'=>True,'default'=>0),
+    'memType' => array('type'=>'SMALLINT','primary_key'=>True,'default'=>''),
+    'total' => array('type'=>'MONEY','default'=>0.00),
+    'quantity' => array('type'=>'DOUBLE','default'=>0.00),
+    'transCount' => array('type'=>'INT','default'=>0)
+    );
 
-	public function refresh_data($trans_db, $month, $year, $day=False){
-		$start_id = date('Ymd',mktime(0,0,0,$month,1,$year));
-		$start_date = date('Y-m-d',mktime(0,0,0,$month,1,$year));
-		$end_id = date('Ymt',mktime(0,0,0,$month,1,$year));
-		$end_date = date('Y-m-t',mktime(0,0,0,$month,1,$year));
-		if ($day !== False){
-			$start_id = date('Ymd',mktime(0,0,0,$month,$day,$year));
-			$start_date = date('Y-m-d',mktime(0,0,0,$month,$day,$year));
-			$end_id = $start_id;
-			$end_date = $start_date;
-		}
+    public function refresh_data($trans_db, $month, $year, $day=False){
+        $start_id = date('Ymd',mktime(0,0,0,$month,1,$year));
+        $start_date = date('Y-m-d',mktime(0,0,0,$month,1,$year));
+        $end_id = date('Ymt',mktime(0,0,0,$month,1,$year));
+        $end_date = date('Y-m-t',mktime(0,0,0,$month,1,$year));
+        if ($day !== False){
+            $start_id = date('Ymd',mktime(0,0,0,$month,$day,$year));
+            $start_date = date('Y-m-d',mktime(0,0,0,$month,$day,$year));
+            $end_id = $start_id;
+            $end_date = $start_date;
+        }
 
-		$target_table = DTransactionsModel::selectDlog($start_date, $end_date);
+        $target_table = DTransactionsModel::selectDlog($start_date, $end_date);
 
-		/* clear old entries */
-		$sql = 'DELETE FROM '.$this->name.' WHERE date_id BETWEEN ? AND ?';
-		$prep = $this->connection->prepare_statement($sql);
-		$result = $this->connection->exec_statement($prep, array($start_id, $end_id));
+        /* clear old entries */
+        $sql = 'DELETE FROM '.$this->name.' WHERE date_id BETWEEN ? AND ?';
+        $prep = $this->connection->prepare_statement($sql);
+        $result = $this->connection->exec_statement($prep, array($start_id, $end_id));
 
-		/* reload table from transarction archives 
-		   The process for this controller is iterative because of
-		   an old bug that assigns incorrect values to the transaction's
-		   memType column on records with trans_status 'M'. Using
-		   aggregates directly on the table over-counts memType zero
-		   so instead we count transactions one at a time.
-		*/
-		$sql = "SELECT DATE_FORMAT(tdate, '%Y%m%d') as date_id,
-			MAX(memType) as memType,
-			CONVERT(SUM(total),DECIMAL(10,2)) as total,
-			CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
-				WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as quantity
-			FROM $target_table WHERE
-			tdate BETWEEN ? AND ? AND
-			trans_type IN ('I','D') AND upc <> 'RRR'
-			AND card_no <> 0 AND memType IS NOT NULL
-			GROUP BY DATE_FORMAT(tdate,'%Y%m%d'), trans_num
-			ORDER BY DATE_FORMAT(tdate,'%Y%m%d'), MAX(memType)";
-		$prep = $this->connection->prepare_statement($sql);
-		$result = $this->connection->exec_statement($prep, array($start_date.' 00:00:00',$end_date.' 23:59:59'));
-		$this->reset();
-		while($row = $this->connection->fetch_row($result)){
-			if($this->date_id() != $row['date_id'] || $this->memType() != $row['memType']){
-				if ($this->date_id() !== 0){ 
-					$this->save();
-				}
-				$this->reset();
-				$this->date_id($row['date_id']);
-				$this->memType($row['memType']);
-				$this->total(0.00);
-				$this->quantity(0.00);
-				$this->transCount(0);
-			}
-			$this->total( $this->total() + $row['total'] );
-			$this->quantity( $this->quantity() + $row['quantity'] );
-			$this->transCount( $this->transCount() + 1 );
-		}
-		if ($this->date_id() !== ''){
-			$this->save();
-		}
-	}
+        /* reload table from transarction archives 
+           The process for this controller is iterative because of
+           an old bug that assigns incorrect values to the transaction's
+           memType column on records with trans_status 'M'. Using
+           aggregates directly on the table over-counts memType zero
+           so instead we count transactions one at a time.
+        */
+        $sql = "SELECT DATE_FORMAT(tdate, '%Y%m%d') as date_id,
+            MAX(memType) as memType,
+            CONVERT(SUM(total),DECIMAL(10,2)) as total,
+            CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
+                WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as quantity
+            FROM $target_table WHERE
+            tdate BETWEEN ? AND ? AND
+            trans_type IN ('I','D') AND upc <> 'RRR'
+            AND card_no <> 0 AND memType IS NOT NULL
+            GROUP BY DATE_FORMAT(tdate,'%Y%m%d'), trans_num
+            ORDER BY DATE_FORMAT(tdate,'%Y%m%d'), MAX(memType)";
+        $prep = $this->connection->prepare_statement($sql);
+        $result = $this->connection->exec_statement($prep, array($start_date.' 00:00:00',$end_date.' 23:59:59'));
+        $this->reset();
+        while($row = $this->connection->fetch_row($result)){
+            if($this->date_id() != $row['date_id'] || $this->memType() != $row['memType']){
+                if ($this->date_id() !== 0){ 
+                    $this->save();
+                }
+                $this->reset();
+                $this->date_id($row['date_id']);
+                $this->memType($row['memType']);
+                $this->total(0.00);
+                $this->quantity(0.00);
+                $this->transCount(0);
+            }
+            $this->total( $this->total() + $row['total'] );
+            $this->quantity( $this->quantity() + $row['quantity'] );
+            $this->transCount( $this->transCount() + 1 );
+        }
+        if ($this->date_id() !== ''){
+            $this->save();
+        }
+    }
 
-	/* START ACCESSOR FUNCTIONS */
+    /* START ACCESSOR FUNCTIONS */
 
-	public function date_id(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["date_id"]))
-				return $this->instance["date_id"];
-			elseif(isset($this->columns["date_id"]["default"]))
-				return $this->columns["date_id"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["date_id"] = func_get_arg(0);
-		}
-	}
+    public function date_id()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["date_id"])) {
+                return $this->instance["date_id"];
+            } else if (isset($this->columns["date_id"]["default"])) {
+                return $this->columns["date_id"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'date_id',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["date_id"]) || $this->instance["date_id"] != func_get_args(0)) {
+                if (!isset($this->columns["date_id"]["ignore_updates"]) || $this->columns["date_id"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["date_id"] = func_get_arg(0);
+        }
+        return $this;
+    }
 
-	public function memType(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["memType"]))
-				return $this->instance["memType"];
-			elseif(isset($this->columns["memType"]["default"]))
-				return $this->columns["memType"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["memType"] = func_get_arg(0);
-		}
-	}
+    public function memType()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["memType"])) {
+                return $this->instance["memType"];
+            } else if (isset($this->columns["memType"]["default"])) {
+                return $this->columns["memType"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'memType',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["memType"]) || $this->instance["memType"] != func_get_args(0)) {
+                if (!isset($this->columns["memType"]["ignore_updates"]) || $this->columns["memType"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["memType"] = func_get_arg(0);
+        }
+        return $this;
+    }
 
-	public function total(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["total"]))
-				return $this->instance["total"];
-			elseif(isset($this->columns["total"]["default"]))
-				return $this->columns["total"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["total"] = func_get_arg(0);
-		}
-	}
+    public function total()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["total"])) {
+                return $this->instance["total"];
+            } else if (isset($this->columns["total"]["default"])) {
+                return $this->columns["total"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'total',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["total"]) || $this->instance["total"] != func_get_args(0)) {
+                if (!isset($this->columns["total"]["ignore_updates"]) || $this->columns["total"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["total"] = func_get_arg(0);
+        }
+        return $this;
+    }
 
-	public function quantity(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["quantity"]))
-				return $this->instance["quantity"];
-			elseif(isset($this->columns["quantity"]["default"]))
-				return $this->columns["quantity"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["quantity"] = func_get_arg(0);
-		}
-	}
+    public function quantity()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["quantity"])) {
+                return $this->instance["quantity"];
+            } else if (isset($this->columns["quantity"]["default"])) {
+                return $this->columns["quantity"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'quantity',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["quantity"]) || $this->instance["quantity"] != func_get_args(0)) {
+                if (!isset($this->columns["quantity"]["ignore_updates"]) || $this->columns["quantity"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["quantity"] = func_get_arg(0);
+        }
+        return $this;
+    }
 
-	public function transCount(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["transCount"]))
-				return $this->instance["transCount"];
-			elseif(isset($this->columns["transCount"]["default"]))
-				return $this->columns["transCount"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["transCount"] = func_get_arg(0);
-		}
-	}
-	/* END ACCESSOR FUNCTIONS */
+    public function transCount()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["transCount"])) {
+                return $this->instance["transCount"];
+            } else if (isset($this->columns["transCount"]["default"])) {
+                return $this->columns["transCount"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'transCount',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["transCount"]) || $this->instance["transCount"] != func_get_args(0)) {
+                if (!isset($this->columns["transCount"]["ignore_updates"]) || $this->columns["transCount"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["transCount"] = func_get_arg(0);
+        }
+        return $this;
+    }
+    /* END ACCESSOR FUNCTIONS */
 }

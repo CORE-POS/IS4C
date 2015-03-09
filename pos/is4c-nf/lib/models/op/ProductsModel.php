@@ -41,6 +41,7 @@ class ProductsModel extends BasicModel
     'specialpricemethod'=>array('type'=>'SMALLINT'),
     'specialgroupprice'=>array('type'=>'MONEY'),
     'specialquantity'=>array('type'=>'SMALLINT'),
+    'special_limit'=>array('type'=>'TINYINT'),
     'start_date'=>array('type'=>'DATETIME'),
     'end_date'=>array('type'=>'DATETIME'),
     'department'=>array('type'=>'SMALLINT','index'=>True),

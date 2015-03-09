@@ -31,6 +31,7 @@ class PatronageReport extends FannieReportPage
     public $description = '[Patronage] show per-member patronage information by fiscal year. Note this is
     calculated and entered annually, not assembled on the fly from transaction information.';
     public $report_set = 'Membership';
+    public $themed = true;
 
     protected $header = "Patronage Report";
     protected $title = "Fannie : Patronage Report";
@@ -38,13 +39,14 @@ class PatronageReport extends FannieReportPage
     protected $content_function = 'both_content';
 
     protected $report_headers = array('#', 'Gross Purchases', 'Discounts', 'Rewards', 'Net Purchases', 'Cash Portion', 'Equity Portion', 'Total Rebate');
+    protected $no_jquery = true;
 
-	public function preprocess()
+    public function preprocess()
     {
         $this->formatCheck();
 
-		return true;
-	}
+        return true;
+    }
 
     public function form_content()
     {
@@ -55,8 +57,10 @@ class PatronageReport extends FannieReportPage
         $fyR = $dbc->exec_statement($fyQ);
         $fy = FormLib::get('fy');
 
-        $ret = '<form action="PatronageReport.php" id="reportForm" method="get">
-            <select name="fy" onchange="$(\'#reportForm\').submit();">
+        $ret = '<form action="PatronageReport.php" id="reportForm" 
+                    class="form form-inline" method="get">
+            <select name="fy" class="form-control" 
+                onchange="$(\'#reportForm\').submit();">
             <option value="">Select FY</option>';
         while($fyW = $dbc->fetch_row($fyR)){
             $ret .= sprintf('<option value="%d" %s>%d</option>',
@@ -65,7 +69,7 @@ class PatronageReport extends FannieReportPage
                 $fyW['FY']
             );
         }
-        $ret .= '</select> <input type="submit" value="Submit" /></form>';
+        $ret .= '</select> <button type="submit" class="btn btn-default">Submit</button></form>';
 
         return $ret;
     }

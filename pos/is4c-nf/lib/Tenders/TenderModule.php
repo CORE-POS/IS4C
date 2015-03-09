@@ -65,7 +65,7 @@ class TenderModule
             $this->max_limit = $row['MaxAmount'];
         } else {
             $this->name_string = '';
-            $this->change_string = '';
+            $this->change_string = 'Change';
             $this->min_limit = 0;
             $this->max_limit = 0;
             $this->change_type = 'CA';
@@ -78,31 +78,49 @@ class TenderModule
     */
     public function errorCheck()
     {
-        global $CORE_LOCAL;
-
         //force negative entered value when the total is negative.
-        if ($CORE_LOCAL->get("amtdue") <0 && $this->amount >= 0) {
+        if (CoreLocal::get("amtdue") <0 && $this->amount >= 0) {
             $this->amount = -1 * $this->amount;
         }
 
-        if ($CORE_LOCAL->get("LastID") == 0) {
-            return DisplayLib::boxMsg(_("no transaction in progress"));
+        $clearButton = array('OK [clear]' => 'parseWrapper(\'CL\');');
+
+        if (CoreLocal::get("LastID") == 0) {
+            return DisplayLib::boxMsg(
+                _("no transaction in progress"),
+                '',
+                false,
+                $clearButton
+            );
         } else if ($this->amount > 99999.99) {
             return DisplayLib::boxMsg(
-                      _("tender amount of") . " " . $this->amount . "<br />"
-                    . _("exceeds allowable limit")
+                _("tender amount of") . " " . $this->amount . "<br />" . _("exceeds allowable limit"),
+                '',
+                false,
+                $clearButton
             );
-        } else if ($CORE_LOCAL->get("ttlflag") == 0) {
-            return DisplayLib::boxMsg(_("transaction must be totaled before tender can be accepted"));
+        } else if (CoreLocal::get("ttlflag") == 0) {
+            return DisplayLib::boxMsg(
+                _("transaction must be totaled before tender can be accepted"),
+                '',
+                false,
+                array('Total [subtotal]' => 'parseWrapper(\'TL\');$(\'#reginput\').focus();', 'Dimiss [clear]' => 'parseWrapper(\'CL\');')
+            );
         } else if ($this->name_string === "") {
             return DisplayLib::inputUnknown();
-        } elseif ((($this->amount < ($CORE_LOCAL->get("amtdue") - 0.005)) || ($this->amount > ($CORE_LOCAL->get("amtdue") + 0.005)))
-                     && $CORE_LOCAL->get("amtdue") < 0 
+        } elseif ((($this->amount < (CoreLocal::get("amtdue") - 0.005)) || ($this->amount > (CoreLocal::get("amtdue") + 0.005)))
+                     && CoreLocal::get("amtdue") < 0 
                      && $this->amount !=0){
             // the return tender needs to be exact because the transaction state can get weird.
-            return DisplayLib::xboxMsg(_("return tender must be exact"));
-        } elseif($CORE_LOCAL->get("amtdue")>0 && $this->amount < 0) { 
-            return DisplayLib::xboxMsg(_("Why are you using a negative number for a positve sale?"));
+            return DisplayLib::xboxMsg(
+                _("return tender must be exact"),
+                $clearButton
+            );
+        } elseif(CoreLocal::get("amtdue")>0 && $this->amount < 0) { 
+            return DisplayLib::xboxMsg(
+                _("Why are you using a negative number for a positve sale?"),
+                $clearButton
+            );
         }
 
         return true;
@@ -114,26 +132,27 @@ class TenderModule
     */
     public function preReqCheck()
     {
-        global $CORE_LOCAL;
-        if ($this->amount > $this->max_limit && $CORE_LOCAL->get("msgrepeat") == 0) {
-            $CORE_LOCAL->set("boxMsg",
+        if ($this->amount > $this->max_limit && CoreLocal::get("msgrepeat") == 0) {
+            CoreLocal::set("boxMsg",
                 "$" . $this->amount . " " . _("is greater than tender limit for") . " " . $this->name_string
-              . "<p>"
-              . "<font size='-1'>" . _("clear to cancel") . ", " . _("enter to proceed") . "</font>"
             );
-            $CORE_LOCAL->set('lastRepeat', 'confirmTenderAmount');
+            CoreLocal::set('lastRepeat', 'confirmTenderAmount');
+            CoreLocal::set('boxMsgButtons', array(
+                'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
+                'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+            ));
 
             return MiscLib::base_url().'gui-modules/boxMsg2.php';
-        } else if ($CORE_LOCAL->get('msgrepeat') == 1 && $CORE_LOCAL->get('lastRepeat') == 'confirmTenderAmount') {
-            $CORE_LOCAL->set('msgrepeat', 0);
-            $CORE_LOCAL->set('lastRepeat', '');
+        } else if (CoreLocal::get('msgrepeat') == 1 && CoreLocal::get('lastRepeat') == 'confirmTenderAmount') {
+            CoreLocal::set('msgrepeat', 0);
+            CoreLocal::set('lastRepeat', '');
         }
 
-        if ($this->amount - $CORE_LOCAL->get("amtdue") > 0) {
-            $CORE_LOCAL->set("change",$this->amount - $CORE_LOCAL->get("amtdue"));
-            $CORE_LOCAL->set("ChangeType", $this->change_type);
+        if ($this->amount - CoreLocal::get("amtdue") > 0) {
+            CoreLocal::set("change",$this->amount - CoreLocal::get("amtdue"));
+            CoreLocal::set("ChangeType", $this->change_type);
         } else {
-            $CORE_LOCAL->set("change",0);
+            CoreLocal::set("change",0);
         }
 
         return true;
@@ -162,6 +181,15 @@ class TenderModule
     }
 
     /**
+      What description should be used for change records associated with this tender
+      @return string change description
+    */
+    public function changeMsg()
+    {
+        return $this->change_string;
+    }
+
+    /**
       Allow the tender to be used without specifying a total
       @return boolean
     */
@@ -176,8 +204,7 @@ class TenderModule
     */
     public function defaultTotal()
     {
-        global $CORE_LOCAL;
-        return $CORE_LOCAL->get('amtdue');
+        return CoreLocal::get('amtdue');
     }
 
     /**
@@ -189,14 +216,16 @@ class TenderModule
     */
     public function defaultPrompt()
     {
-        global $CORE_LOCAL;
         $amt = $this->DefaultTotal();
-        $CORE_LOCAL->set('boxMsg',
+        CoreLocal::set('boxMsg',
             '<br />'
-          . 'tender $' . sprintf('%.2f',$amt) . ' as ' . $this->name_string . '<br />'
-          . 'press [enter] to continue<br />'
-          . '<font size="-1">[clear] to cancel</font>');
-        $CORE_LOCAL->set('strEntered', (100*$amt).$this->tender_code);
+          . 'tender $' . sprintf('%.2f',$amt) . ' as ' . $this->name_string 
+        );
+        CoreLocal::set('strEntered', (100*$amt).$this->tender_code);
+        CoreLocal::set('boxMsgButtons', array(
+            'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
+            'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+        ));
 
         return MiscLib::base_url().'gui-modules/boxMsg2.php?quiet=1';
     }
@@ -208,7 +237,13 @@ class TenderModule
     */
     public function disabledPrompt()
     {
-        return DisplayLib::boxMsg('Amount required for '.$this->name_string);
+        $clearButton = array('OK [clear]' => 'parseWrapper(\'CL\');');
+        return DisplayLib::boxMsg(
+            _('Amount required for ') . $this->name_string,
+            '',
+            false,
+            $clearButton
+        );
     }
 
 }

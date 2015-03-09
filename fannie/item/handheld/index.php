@@ -23,13 +23,13 @@
 ?>
 <html>
 <head>
-	<title>Handheld tools</title>
+    <title>Handheld tools</title>
 <meta name="viewport" content="width=device-width; initial-scale=1.0;">
 </head>
 <body>
 <ul>
-	<li><a href="handheld.php">Item Editor</a></li>
-	<li><a href="hhStatus.php">Status Check</a></li>
+    <li><a href="handheld.php">Item Editor</a></li>
+    <li><a href="hhStatus.php">Status Check</a></li>
 </ul>
 </body>
 </html>

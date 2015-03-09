@@ -38,20 +38,19 @@ class GenericSigSlipMessage extends ReceiptMessage
 
 	public function message($val, $ref, $reprint=false)
     {
-		global $CORE_LOCAL;
 		if ($val == 0) return '';
         
         $slip = '';
         // reprints always include. if the original transaction
         // has an automatic reprtint, only include one slip
-        if ($reprint || $CORE_LOCAL->get('autoReprint') == 0) {
+        if ($reprint || CoreLocal::get('autoReprint') == 0) {
 
             $slip .= ReceiptLib::centerString("................................................")."\n\n";
             $slip .= ReceiptLib::centerString("( S T O R E   C O P Y )")."\n";
             $slip .= ReceiptLib::biggerFont(sprintf("Amount \$%.2f",$val))."\n\n";
 
-            if ( $CORE_LOCAL->get("fname") != "" && $CORE_LOCAL->get("lname") != ""){
-                $slip .= "Name: ".$CORE_LOCAL->get("fname")." ".$CORE_LOCAL->get("lname")."\n\n";
+            if ( CoreLocal::get("fname") != "" && CoreLocal::get("lname") != ""){
+                $slip .= "Name: ".CoreLocal::get("fname")." ".CoreLocal::get("lname")."\n\n";
             } else {
                 $slip .= "Name: ____________________________________________\n\n";
             }

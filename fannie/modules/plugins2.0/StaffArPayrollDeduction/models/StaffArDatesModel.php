@@ -32,7 +32,7 @@ class StaffArDatesModel extends BasicModel
     protected $columns = array(
     'staffArDateID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),
     'tdate' => array('type'=>'DATETIME'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -46,6 +46,22 @@ class StaffArDatesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'staffArDateID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["staffArDateID"]) || $this->instance["staffArDateID"] != func_get_args(0)) {
                 if (!isset($this->columns["staffArDateID"]["ignore_updates"]) || $this->columns["staffArDateID"]["ignore_updates"] == false) {
@@ -54,6 +70,7 @@ class StaffArDatesModel extends BasicModel
             }
             $this->instance["staffArDateID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function tdate()
@@ -66,6 +83,22 @@ class StaffArDatesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'tdate',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["tdate"]) || $this->instance["tdate"] != func_get_args(0)) {
                 if (!isset($this->columns["tdate"]["ignore_updates"]) || $this->columns["tdate"]["ignore_updates"] == false) {
@@ -74,6 +107,7 @@ class StaffArDatesModel extends BasicModel
             }
             $this->instance["tdate"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

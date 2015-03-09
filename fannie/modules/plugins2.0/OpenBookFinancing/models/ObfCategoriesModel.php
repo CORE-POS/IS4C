@@ -35,8 +35,10 @@ class ObfCategoriesModel extends BasicModel
     'hasSales' => array('type'=>'TINYINT', 'default'=>1),
     'growthTarget' => array('type'=>'DOUBLE'),
     'laborTarget' => array('type'=>'DOUBLE'),
+    'hoursTarget' => array('type'=>'DOUBLE'),
     'averageWage' => array('type'=>'MONEY'),
-	);
+    'salesPerLaborHourTarget' => array('type'=>'DOUBLE', 'default'=>0.0),
+    );
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -50,6 +52,22 @@ class ObfCategoriesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'obfCategoryID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["obfCategoryID"]) || $this->instance["obfCategoryID"] != func_get_args(0)) {
                 if (!isset($this->columns["obfCategoryID"]["ignore_updates"]) || $this->columns["obfCategoryID"]["ignore_updates"] == false) {
@@ -58,6 +76,7 @@ class ObfCategoriesModel extends BasicModel
             }
             $this->instance["obfCategoryID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function name()
@@ -70,6 +89,22 @@ class ObfCategoriesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'name',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["name"]) || $this->instance["name"] != func_get_args(0)) {
                 if (!isset($this->columns["name"]["ignore_updates"]) || $this->columns["name"]["ignore_updates"] == false) {
@@ -78,6 +113,7 @@ class ObfCategoriesModel extends BasicModel
             }
             $this->instance["name"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function hasSales()
@@ -90,6 +126,22 @@ class ObfCategoriesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'hasSales',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["hasSales"]) || $this->instance["hasSales"] != func_get_args(0)) {
                 if (!isset($this->columns["hasSales"]["ignore_updates"]) || $this->columns["hasSales"]["ignore_updates"] == false) {
@@ -98,6 +150,7 @@ class ObfCategoriesModel extends BasicModel
             }
             $this->instance["hasSales"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function growthTarget()
@@ -110,6 +163,22 @@ class ObfCategoriesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'growthTarget',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["growthTarget"]) || $this->instance["growthTarget"] != func_get_args(0)) {
                 if (!isset($this->columns["growthTarget"]["ignore_updates"]) || $this->columns["growthTarget"]["ignore_updates"] == false) {
@@ -118,6 +187,7 @@ class ObfCategoriesModel extends BasicModel
             }
             $this->instance["growthTarget"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function laborTarget()
@@ -130,6 +200,22 @@ class ObfCategoriesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'laborTarget',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["laborTarget"]) || $this->instance["laborTarget"] != func_get_args(0)) {
                 if (!isset($this->columns["laborTarget"]["ignore_updates"]) || $this->columns["laborTarget"]["ignore_updates"] == false) {
@@ -138,6 +224,44 @@ class ObfCategoriesModel extends BasicModel
             }
             $this->instance["laborTarget"] = func_get_arg(0);
         }
+        return $this;
+    }
+
+    public function hoursTarget()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["hoursTarget"])) {
+                return $this->instance["hoursTarget"];
+            } else if (isset($this->columns["hoursTarget"]["default"])) {
+                return $this->columns["hoursTarget"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'hoursTarget',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["hoursTarget"]) || $this->instance["hoursTarget"] != func_get_args(0)) {
+                if (!isset($this->columns["hoursTarget"]["ignore_updates"]) || $this->columns["hoursTarget"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["hoursTarget"] = func_get_arg(0);
+        }
+        return $this;
     }
 
     public function averageWage()
@@ -150,6 +274,22 @@ class ObfCategoriesModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'averageWage',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["averageWage"]) || $this->instance["averageWage"] != func_get_args(0)) {
                 if (!isset($this->columns["averageWage"]["ignore_updates"]) || $this->columns["averageWage"]["ignore_updates"] == false) {
@@ -158,6 +298,44 @@ class ObfCategoriesModel extends BasicModel
             }
             $this->instance["averageWage"] = func_get_arg(0);
         }
+        return $this;
+    }
+
+    public function salesPerLaborHourTarget()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["salesPerLaborHourTarget"])) {
+                return $this->instance["salesPerLaborHourTarget"];
+            } else if (isset($this->columns["salesPerLaborHourTarget"]["default"])) {
+                return $this->columns["salesPerLaborHourTarget"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'salesPerLaborHourTarget',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["salesPerLaborHourTarget"]) || $this->instance["salesPerLaborHourTarget"] != func_get_args(0)) {
+                if (!isset($this->columns["salesPerLaborHourTarget"]["ignore_updates"]) || $this->columns["salesPerLaborHourTarget"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["salesPerLaborHourTarget"] = func_get_arg(0);
+        }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

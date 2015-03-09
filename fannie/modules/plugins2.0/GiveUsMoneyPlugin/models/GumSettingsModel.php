@@ -38,7 +38,7 @@ class GumSettingsModel extends BasicModel
     'gumSettingID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),
     'key' => array('type'=>'VARCHAR(50)', 'index'=>true),
     'value' => array('type'=>'VARCHAR(50)'),
-	);
+    );
 
     protected $unique = array('key');
 
@@ -54,6 +54,22 @@ class GumSettingsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'gumSettingID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["gumSettingID"]) || $this->instance["gumSettingID"] != func_get_args(0)) {
                 if (!isset($this->columns["gumSettingID"]["ignore_updates"]) || $this->columns["gumSettingID"]["ignore_updates"] == false) {
@@ -62,6 +78,7 @@ class GumSettingsModel extends BasicModel
             }
             $this->instance["gumSettingID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function key()
@@ -74,6 +91,22 @@ class GumSettingsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'key',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["key"]) || $this->instance["key"] != func_get_args(0)) {
                 if (!isset($this->columns["key"]["ignore_updates"]) || $this->columns["key"]["ignore_updates"] == false) {
@@ -82,6 +115,7 @@ class GumSettingsModel extends BasicModel
             }
             $this->instance["key"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function value()
@@ -94,6 +128,22 @@ class GumSettingsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'value',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["value"]) || $this->instance["value"] != func_get_args(0)) {
                 if (!isset($this->columns["value"]["ignore_updates"]) || $this->columns["value"]["ignore_updates"] == false) {
@@ -102,6 +152,7 @@ class GumSettingsModel extends BasicModel
             }
             $this->instance["value"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

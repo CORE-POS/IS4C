@@ -58,11 +58,16 @@ function handleResponse() {
         		document.getElementById('inputarea').innerHTML = array[1];
         		document.getElementById('displayarea').innerHTML = array[2];
         		document.getElementById('newBatchName').focus();	
+                setupDatePickers();
         		break;
         case 'addItemUPC':
         case 'addItemLC':
         		document.getElementById('inputarea').innerHTML = array[1];
-        		document.getElementById('addItemPrice').focus();
+                if (document.getElementById('addItemPrice')) {
+                    document.getElementById('addItemPrice').focus();
+                } else if (document.getElementById('addItemUPC')) {
+                    document.getElementById('addItemUPC').focus();
+                }
         		break;
 	case 'switchToLC':
 	case 'switchFromLC':
@@ -357,4 +362,9 @@ function doCollapse(likecode,saleprice,num){
 
 	var newSpan = " <a href=\"\" onclick=\"expand("+likecode+","+saleprice+"); return false;\">[+]</a>";
 	document.getElementById("LCToggle"+likecode).innerHTML = newSpan;
+}
+
+function setupDatePickers() {
+    $('#newBatchStartDate').datepicker();
+    $('#newBatchEndDate').datepicker();
 }

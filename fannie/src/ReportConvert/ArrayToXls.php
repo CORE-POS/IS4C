@@ -3,8 +3,7 @@
 function ArrayToXls($array){
 	global $FANNIE_ROOT;
 
-	include_once($FANNIE_ROOT.'src/pear-stuff/Spreadsheet_Excel_Writer/Writer.php');
-	include_once($FANNIE_ROOT.'src/tmp_dir.php');
+	include_once($FANNIE_ROOT.'src/Excel/xls_write/Spreadsheet_Excel_Writer/Writer.php');
 
 	$fn = tempnam(sys_get_temp_dir(),"xlstemp");
 	$workbook = new Spreadsheet_Excel_Writer($fn);

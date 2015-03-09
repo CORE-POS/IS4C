@@ -15,14 +15,14 @@ function writeitem($filename,$scaletype,$scaleip,$department,$writetype,
   if (is_array($plu)){
     for ($i = 0; $i < count($plu); $i++){
       if (($bycount[$i] === "on" or $bycount[$i] === 1) && $type[$i]=="Random Weight"){
-	$type[$i] = "By Count";
-	$bycount[$i] = 1;
+    $type[$i] = "By Count";
+    $bycount[$i] = 1;
       }
       else if ($type[$i] == "Fixed Weight"){
-	$bycount[$i] = 1;
+    $bycount[$i] = 1;
       }
       else {
-	$bycount[$i] = 0;
+    $bycount[$i] = 0;
       }
       $barcode = str_pad($plu[$i],5,"0",STR_PAD_RIGHT);
 
@@ -66,7 +66,7 @@ function writetext($filename,$scaletype,$scaleip,$department,$plu,$text){
       $text_lines = explode('\n',$text[$i]);
       $fixed_text = "";
       foreach($text_lines as $str){
-	$fixed_text .= wordwrap($str,50,"\n") . "\n";
+    $fixed_text .= wordwrap($str,50,"\n") . "\n";
       }
       $text[$i] = preg_replace("/\\n/","<br />",$fixed_text);
       fputs($fp,"WriteOneExpandedText,{$plu[$i]},\"{$text[$i]}\"\r\n");
@@ -127,5 +127,4 @@ function delete_text($filename,$scaletype,$scaleip,$department,$plu){
   fclose($fp);
 
 }
-?>
 

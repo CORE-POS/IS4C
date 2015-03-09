@@ -20,28 +20,33 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-include('../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class MemberIndexPage extends FanniePage {
 
-	protected $title = "Fannie :: Member Tools";
-	protected $header = "Member Tools";
+    protected $title = "Fannie :: Member Tools";
+    protected $header = "Member Tools";
 
-	function body_content(){
-		ob_start();
-		?>
-		<ul>
-		<li><a href="MemberSearchPage.php">View/Edit Members</a></li>
-		<li><a href="MemberTypeEditor.php">Manage Member Types</a></li>
-		<li><a href="NewMemberTool.php">Create New Members</a></li>
-		<li><a href="numbers/index.php">Print Member Stickers</a></li>
-		<li><a href="MemCorrectionIndex.php ">Equity, AR, &amp; Patronage Corrections</a></li>
-		<li><a href="import/">Import Data</a></li>
-		</ul>
-		<?php
-		return ob_get_clean();
-	}
+    public $description = '[Member Menu] lists member related pages.';
+    public $themed = true;
+
+    function body_content(){
+        ob_start();
+        ?>
+        <ul>
+        <li><a href="MemberSearchPage.php">View/Edit Members</a></li>
+        <li><a href="MemberTypeEditor.php">Manage Member Types</a></li>
+        <li><a href="NewMemberTool.php">Create New Members</a></li>
+        <li><a href="numbers/index.php">Print Member Stickers</a></li>
+        <li><a href="MemCorrectionIndex.php ">Equity, AR, &amp; Patronage Corrections</a></li>
+        <li><a href="import/">Import Data</a></li>
+        </ul>
+        <?php
+        return ob_get_clean();
+    }
 }
 
 FannieDispatch::conditionalExec(false);

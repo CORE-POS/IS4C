@@ -32,7 +32,7 @@ class WfcHtUTOModel extends BasicModel
     protected $columns = array(
     'empID' => array('type'=>'INT'),
     'hours' => array('type'=>'DOUBLE'),
-	);
+    );
 
     public function create()
     {
@@ -62,14 +62,36 @@ class WfcHtUTOModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["empID"])) {
                 return $this->instance["empID"];
-            } elseif(isset($this->columns["empID"]["default"])) {
+            } else if (isset($this->columns["empID"]["default"])) {
                 return $this->columns["empID"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'empID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["empID"]) || $this->instance["empID"] != func_get_args(0)) {
+                if (!isset($this->columns["empID"]["ignore_updates"]) || $this->columns["empID"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["empID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function hours()
@@ -77,14 +99,36 @@ class WfcHtUTOModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["hours"])) {
                 return $this->instance["hours"];
-            } elseif(isset($this->columns["hours"]["default"])) {
+            } else if (isset($this->columns["hours"]["default"])) {
                 return $this->columns["hours"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'hours',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["hours"]) || $this->instance["hours"] != func_get_args(0)) {
+                if (!isset($this->columns["hours"]["ignore_updates"]) || $this->columns["hours"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["hours"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

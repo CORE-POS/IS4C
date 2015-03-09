@@ -33,6 +33,8 @@ class GumReportIndex extends FannieRESTfulPage
     protected $must_authenticate = true;
     protected $auth_classes = array('GiveUsMoney');
 
+    public $discoverable = false;
+
     public function preprocess()
     {
         $this->header = 'Available Reporting';
@@ -50,6 +52,10 @@ class GumReportIndex extends FannieRESTfulPage
             <li><a href="GumEquityReport.php">Active Equity</a></li>
             <li><a href="GumBothReport.php">Combined Report</a></li>
             <li><a href="GumPeopleReport.php">Owner Report</a></li>
+            <li><a href="GumMailingList.php">Owner Mailing List</a></li>
+            <li><a href="GumDividendReport.php">Projected Dividends</a></li>
+            <li><a href="GumIssuedDividendReport.php">Issued Dividends</a></li>
+            <li><a href="GumDividendTaxReport.php">Dividend Tax Info Report</a></li>
             </ul>
         ';
     }

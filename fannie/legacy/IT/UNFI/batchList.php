@@ -1,6 +1,8 @@
 <?php
 include('../../../config.php');
 
+if (!class_exists('FannieAPI'))
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include('../../db.php');
 
@@ -21,16 +23,14 @@ $batchListR = $sql->query($batchListQ);
 ?>
 <html>
 <head>
-<link href="CalendarControl/CalendarControl.css"
+<link href="../../../src/javascript/jquery-ui.css"
       rel="stylesheet" type="text/css">
-<script src="CalendarControl/CalendarControl.js"
+<script src="../../../src/javascript/jquery.js"
+        language="javascript"></script>
+<script src="../../../src/javascript/jquery-ui.js"
         language="javascript"></script>
 </head>
 <body>
-<link href="CalendarControl/CalendarControl.css"
-      rel="stylesheet" type="text/css">
-<script src="CalendarControl/CalendarControl.js"
-        language="javascript"></script>
 
 <?
 echo "<table border=1 cellpadding=2 cellspacing=0>";

@@ -1,11 +1,14 @@
 <?php
+if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
+    return;
+}
 
 /* like read, but for expanded text */
 
 $fp = fopen('expandedtext.csv','r');
 
 $targets = array('Expanded Text Number' => 0,
-		 'Expanded Text' => 0);
+         'Expanded Text' => 0);
 
 $line = fgets($fp); // first line - definitions
 
@@ -31,13 +34,13 @@ while($line = fgets($fp)){
   $current_plu = '';
   foreach ($targets as $i){
     if ($i == $targets['Expanded Text Number']){
-	// make the plu 4 digit
-	$temp = str_pad($data[$i],3,"0",STR_PAD_LEFT);
-	$temp = str_pad($temp,4,"0",STR_PAD_RIGHT);
-	// make the plu into a upc
-	$temp = str_pad("002".$temp,13,"0",STR_PAD_RIGHT);
-	$current_plu = $temp;
-	echo "<td><a href=\"../productTestScale.php?upc=$temp\">$temp</a></td>";
+    // make the plu 4 digit
+    $temp = str_pad($data[$i],3,"0",STR_PAD_LEFT);
+    $temp = str_pad($temp,4,"0",STR_PAD_RIGHT);
+    // make the plu into a upc
+    $temp = str_pad("002".$temp,13,"0",STR_PAD_RIGHT);
+    $current_plu = $temp;
+    echo "<td><a href=\"../productTestScale.php?upc=$temp\">$temp</a></td>";
     }
     else {
       $temp = ltrim($data[$i],"\""); // lose quote
@@ -45,7 +48,7 @@ while($line = fgets($fp)){
       $temp = preg_replace("/\\r?<br.*?>/","\n",$temp); // breaks to newlines
       $temp = preg_replace("/\'/","",$temp); // lose apostrophes
       $temp = preg_replace("/<.*?>/","",$temp); // lose html tags
-      $upQ = $sql->prepare_statement("update scaleItems set text=? where plu=?");	
+      $upQ = $sql->prepare_statement("update scaleItems set text=? where plu=?");   
       $upR = $sql->exec_statement($upQ,array($temp,$current_plu));
       echo "<td>$temp</td>";   
     }

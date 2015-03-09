@@ -21,56 +21,75 @@
 
 *********************************************************************************/
 
-class MemDates extends MemberModule {
+class MemDates extends \COREPOS\Fannie\API\member\MemberModule {
 
-	function ShowEditForm($memNum, $country="US"){
-		global $FANNIE_URL;
+    public function width()
+    {
+        return parent::META_WIDTH_HALF;
+    }
 
-		$dbc = $this->db();
-		
-		$infoQ = $dbc->prepare_statement("SELECT start_date,end_date
-				FROM memDates
-				WHERE card_no=?");
-		$infoR = $dbc->exec_statement($infoQ,array($memNum));
-		$infoW = $dbc->fetch_row($infoR);
+    function showEditForm($memNum, $country="US"){
+        global $FANNIE_URL;
 
-		$ret = "<script type=\"text/javascript\"
-			src=\"{$FANNIE_URL}src/CalendarControl.js\">
-			</script>";
-		$ret .= "<fieldset class='memOneRow'><legend>Membership Dates</legend>";
-		$ret .= "<table class=\"MemFormTable\" 
-			border=\"0\">";
+        $dbc = $this->db();
+        
+        $infoQ = $dbc->prepare_statement("SELECT start_date,end_date
+                FROM memDates
+                WHERE card_no=?");
+        $infoR = $dbc->exec_statement($infoQ,array($memNum));
+        $infoW = $dbc->fetch_row($infoR);
 
-		$ret .= "<tr><th>Start Date</th>";
-		$ret .= sprintf('<td><input name="MemDates_start" size="10"
-				maxlength="10" value="%s" onclick="showCalendarControl(this);"
-				/></td>',$infoW['start_date']);	
-		$ret .= "<th>End Date</th>";
-		$ret .= sprintf('<td><input name="MemDates_end" size="10"
-				maxlength="10" value="%s" onclick="showCalendarControl(this);"
-				/></td></tr>',$infoW['end_date']);	
+        if (date('Y', strtotime($infoW['start_date'])) > 1900) {
+            $infoW['start_date'] = date('Y-m-d', strtotime($infoW['start_date']));
+        } else {
+            $infoW['start_date'] = '';
+        }
+        if (date('Y', strtotime($infoW['end_date'])) > 1900) {
+            $infoW['end_date'] = date('Y-m-d', strtotime($infoW['end_date']));
+        } else {
+            $infoW['end_date'] = '';
+        }
 
-		$ret .= "</table></fieldset>";
+        $ret = "<div class=\"panel panel-default\">
+            <div class=\"panel-heading\">Membership Dates</div>
+            <div class=\"panel-body\">";
 
-		return $ret;
-	}
+        $ret .= '<div class="form-group form-inline">';
+        $ret .= '<span class="label primaryBackground">Start</span>';
+        $ret .= sprintf('<input name="MemDates_start"
+                maxlength="10" value="%s" id="MemDates_start"
+                class="form-control date-field" />',$infoW['start_date']); 
+        $ret .= '<span class="label primaryBackground">End</span>';
+        $ret .= sprintf('<input name="MemDates_end" 
+                maxlength="10" value="%s" id="MemDates_end"
+                class="form-control date-field" />',$infoW['end_date']);  
+        $ret .= '</div>';
 
-	function SaveFormData($memNum){
-		global $FANNIE_ROOT;
-		$dbc = $this->db();
-		if (!class_exists("MemDatesModel"))
-			include($FANNIE_ROOT.'classlib2.0/data/models/MemDatesModel.php');
-		
-		$test = MemDatesModel::update($memNum,
-				FormLib::get_form_value('MemDates_start'),
-				FormLib::get_form_value('MemDates_end')
-		);
+        $ret .= "</div>";
+        $ret .= "</div>";
 
-		if ($test === False)
-			return "Error: problem saving start/end dates<br />";
-		else
-			return "";
-	}
+        return $ret;
+    }
+
+    function saveFormData($memNum)
+    {
+        $dbc = $this->db();
+        if (!class_exists("MemDatesModel")) {
+            include(dirname(__FILE__) . '/../../classlib2.0/data/models/MemDatesModel.php');
+        }
+        
+        $memdate = new MemDatesModel($dbc);
+        $memdate->card_no($memNum);
+        $memdate->start_date(FormLib::get('MemDates_start'));
+        $memdate->end_date(FormLib::get('MemDates_end'));
+        $test = $memdate->save();
+
+        if ($test === false) {
+            return "Error: problem saving start/end dates<br />";
+        } else {
+            return "";
+        }
+    }
 }
 
 ?>

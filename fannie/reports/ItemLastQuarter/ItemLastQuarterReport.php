@@ -31,6 +31,7 @@ class ItemLastQuarterReport extends FannieReportPage
     public $description = '[Item Last Quarter] shows an item\'s weekly sales for the previous 13 weeks
         as both raw totals and as a percentage of overall store sales.';
     public $report_set = 'Movement Reports';
+    public $themed = true;
 
     protected $title = "Fannie : Item Last Quarter Report";
     protected $header = "Item Last Quarter Report";
@@ -85,7 +86,7 @@ class ItemLastQuarterReport extends FannieReportPage
         }
 
         return $data;
-	}
+    }
 
     public function calculate_footers($data)
     {
@@ -94,11 +95,15 @@ class ItemLastQuarterReport extends FannieReportPage
 
     public function form_content()
     {
-        global $FANNIE_URL;
-        return "<form action=\"{$_SERVER['PHP_SELF']}\" method=\"get\">
-                <b>UPC</b> <input type=text name=upc id=upc />
-                <input type=submit value=\"Get Report\" />
-                </form>";
+        $this->add_onload_command('$(\'#upc\').focus();');
+        return '
+            <form action="' . $_SERVER['PHP_SELF'] . '" method="get">
+            <div class="form-group form-inline">
+                <label>UPC</label> 
+                <input type=text name=upc id=upc class="form-control" />
+                <button type=submit class="btn btn-default">Get Report</button>
+            </div>
+            </form>';
     }
 
     public function readinessCheck()

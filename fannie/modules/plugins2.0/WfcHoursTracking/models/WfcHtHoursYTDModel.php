@@ -36,7 +36,7 @@ class WfcHtHoursYTDModel extends BasicModel
     'emergencyHours' => array('type'=>'DOUBLE'),
     'rateHours' => array('type'=>'DOUBLE'),
     'totalHours' => array('type'=>'DOUBLE'),
-	);
+    );
 
     public function create()
     {
@@ -64,14 +64,36 @@ class WfcHtHoursYTDModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["empID"])) {
                 return $this->instance["empID"];
-            } elseif(isset($this->columns["empID"]["default"])) {
+            } else if (isset($this->columns["empID"]["default"])) {
                 return $this->columns["empID"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'empID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["empID"]) || $this->instance["empID"] != func_get_args(0)) {
+                if (!isset($this->columns["empID"]["ignore_updates"]) || $this->columns["empID"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["empID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function regularHours()
@@ -79,14 +101,36 @@ class WfcHtHoursYTDModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["regularHours"])) {
                 return $this->instance["regularHours"];
-            } elseif(isset($this->columns["regularHours"]["default"])) {
+            } else if (isset($this->columns["regularHours"]["default"])) {
                 return $this->columns["regularHours"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'regularHours',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["regularHours"]) || $this->instance["regularHours"] != func_get_args(0)) {
+                if (!isset($this->columns["regularHours"]["ignore_updates"]) || $this->columns["regularHours"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["regularHours"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function overtimeHours()
@@ -94,14 +138,36 @@ class WfcHtHoursYTDModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["overtimeHours"])) {
                 return $this->instance["overtimeHours"];
-            } elseif(isset($this->columns["overtimeHours"]["default"])) {
+            } else if (isset($this->columns["overtimeHours"]["default"])) {
                 return $this->columns["overtimeHours"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'overtimeHours',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["overtimeHours"]) || $this->instance["overtimeHours"] != func_get_args(0)) {
+                if (!isset($this->columns["overtimeHours"]["ignore_updates"]) || $this->columns["overtimeHours"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["overtimeHours"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function emergencyHours()
@@ -109,14 +175,36 @@ class WfcHtHoursYTDModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["emergencyHours"])) {
                 return $this->instance["emergencyHours"];
-            } elseif(isset($this->columns["emergencyHours"]["default"])) {
+            } else if (isset($this->columns["emergencyHours"]["default"])) {
                 return $this->columns["emergencyHours"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'emergencyHours',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["emergencyHours"]) || $this->instance["emergencyHours"] != func_get_args(0)) {
+                if (!isset($this->columns["emergencyHours"]["ignore_updates"]) || $this->columns["emergencyHours"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["emergencyHours"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function rateHours()
@@ -124,14 +212,36 @@ class WfcHtHoursYTDModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["rateHours"])) {
                 return $this->instance["rateHours"];
-            } elseif(isset($this->columns["rateHours"]["default"])) {
+            } else if (isset($this->columns["rateHours"]["default"])) {
                 return $this->columns["rateHours"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'rateHours',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["rateHours"]) || $this->instance["rateHours"] != func_get_args(0)) {
+                if (!isset($this->columns["rateHours"]["ignore_updates"]) || $this->columns["rateHours"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["rateHours"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function totalHours()
@@ -139,14 +249,36 @@ class WfcHtHoursYTDModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["totalHours"])) {
                 return $this->instance["totalHours"];
-            } elseif(isset($this->columns["totalHours"]["default"])) {
+            } else if (isset($this->columns["totalHours"]["default"])) {
                 return $this->columns["totalHours"]["default"];
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'totalHours',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
+            if (!isset($this->instance["totalHours"]) || $this->instance["totalHours"] != func_get_args(0)) {
+                if (!isset($this->columns["totalHours"]["ignore_updates"]) || $this->columns["totalHours"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["totalHours"] = func_get_arg(0);
         }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }
