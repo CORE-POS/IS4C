@@ -35,6 +35,16 @@ class FannieAuthLoginPage extends FannieRESTfulPage
 
     public $themed = true;
 
+    /**
+     * Force authenticate requirement off
+     * to avoid a redirect loop
+     */
+    public function __construct()
+    {
+        parent::__construct();
+        $this->must_authenticate = false;
+    }
+
     public function preprocess()
     {
         if (isset($_GET["redirect"]) && init_check()){
