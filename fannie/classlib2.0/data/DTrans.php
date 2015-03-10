@@ -307,11 +307,18 @@ class DTrans
       @param $register_no [int] register number
       @return [int] trans_no
     */
-    public static function getTransNo($connection, $emp_no, $register_no)
+    public static function getTransNo(SQLManager $connection, $emp_no=false, $register_no=false)
     {
+        $config = FannieConfig::factory();
+        if ($emp_no === false) {
+            $emp_no = $config->get('EMP_NO');
+        }
+        if ($register_no === false) {
+            $register_no = $config->get('REGISTER_NO');
+        }
         $prep = $connection->prepare('
             SELECT MAX(trans_no) AS trans
-            FROM dtransactions
+            FROM ' . $config->get('TRANS_DB') . $connection->sep() . 'dtransactions
             WHERE emp_no=?
                 AND register_no=?');
         $result = $connection->execute($prep, array($emp_no, $register_no));
@@ -325,6 +332,131 @@ class DTrans
                 return $row['trans'] + 1;
             }
         }
+    }
+
+    /**
+      Add a transaction record directly to dtransactions on the backend
+      @param $connection [SQLManager] database connection
+      @param $trans_no [integer] transaction number (dtransactions.trans_no)
+      @param $params [array] of column_name => value
+
+      If emp_no and register_no values are not specified, the defaults
+      are the configuration settings FANNIE_EMP_NO and FANNIE_REGISTER_NO.
+
+      The following columns are always calculated by addItem() and values
+      set in $params will be ignored:
+      - datetime (always current)
+      - trans_id (assigned based on existing records)
+      Additionally, the following values are looked up if $params['card_no']
+      is specified:
+      - memType
+      - staff
+    */
+    public static function addItem(SQLManager $connection, $trans_no, $params)
+    {
+        $config = FannieConfig::factory();
+        $model = new DTransactionsModel($connection);
+        $model->whichDB($config->get('TRANS_DB'));
+        $model->trans_no($trans_no);
+        $model->emp_no($config->get('EMP_NO'));
+        if (isset($params['emp_no'])) {
+            $model->emp_no($params['emp_no']);
+        }
+        $model->register_no($config->get('REGISTER_NO'));
+        if (isset($params['register_no'])) {
+            $model->register_no($params['register_no']);
+        }
+        
+        $current_records = $model->find('trans_id', true);
+        if (count($current_records) == 0) {
+            $model->trans_id(1);
+        } else {
+            $last = $current_records[0];
+            $model->trans_id($last->trans_id() + 1);
+        }
+
+        $custdata = new CustdataModel($connection);
+        $custdata->whichDB($config->get('OP_DB'));
+        if (isset($params['card_no'])) {
+            $custdata->CardNo($params['card_no']);
+            $custdata->personNum(1);
+            if ($custdata->load()) {
+                $model->memType($custdata->memType());                
+                $model->staff($custdata->staff());
+            }
+        }
+
+        $defaults = self::$DEFAULTS;
+        $skip = array('datetime', 'emp_no', 'register_no', 'trans_no', 'trans_id');
+        foreach ($defaults as $name => $value) {
+            if (in_array($name, $skip)) {
+                continue;
+            }
+            if (isset($params[$name])) {
+                $model->$name($params[$name]);
+            } else {
+                $model->$name($value);
+            }
+        }
+        $model->datetime(date('Y-m-d H:i:s'));
+
+        if ($model->save()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+      Add an open ring record to dtransactions on the backend
+      @param $connection [SQLManager] database connection
+      @param $department [integer] department number
+      $param $amount [number] ring amount
+      @param $trans_no [integer] transaction number (dtransactions.trans_no)
+      @param $params [array] of column_name => value
+
+      If emp_no and register_no values are not specified, the defaults
+      are the configuration settings FANNIE_EMP_NO and FANNIE_REGISTER_NO.
+
+      The following columns are automatically calculated based
+      on department number and amount:
+      - upc
+      - description
+      - trans_type
+      - trans_status
+      - unitPrice
+      - total
+      - regPrice
+      - quantity
+      - ItemQtty
+      Negative amounts result in a refund trans_status
+
+      This method calls DTrans::addItem() so columns datetime and trans_id are
+      also automatically assigned.
+    */
+    public static function addOpenRing(SQLManager $connection, $department, $amount, $trans_no, $params=array())
+    {
+        $config = FannieConfig::factory();
+        $model = new DepartmentsModel($connection);
+        $model->whichDB($config->get('OP_DB'));
+        $model->dept_no($department);
+        $model->load(); 
+
+        $params['trans_type'] = 'D';
+        $params['department'] = $department;
+        $params['unitPrice'] = $amount;
+        $params['total'] = $amount;
+        $params['regPrice'] = $amount;
+        $params['quantity'] = 1;
+        $params['ItemQtty'] = 1;
+        if ($amount < 0) {
+            $params['quantity'] = -1;
+            $params['trans_status'] = 'R';
+        }
+        $params['description'] = $model->dept_name();
+        $params['upc'] = abs($amount) . 'DP' . $department;
+
+        return self::addItem($connection, $trans_no, $params);
     }
 }
 
