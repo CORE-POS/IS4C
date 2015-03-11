@@ -39,7 +39,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
     private byte[] long_buffer;
     private int long_length;
     private int long_pos;
-    private FileStream usb_fs;
+    private Stream usb_fs;
     private int usb_report_size;
     private bool logo_available = false;
 
@@ -132,6 +132,9 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         usb_fs = null;
         #if MONO
         usb_port = new USBWrapper_Posix();
+        usb_report_size = 64;
+        #elif FUTURE
+        usb_port = new USBWrapper_HidSharp();
         usb_report_size = 64;
         #else
         usb_port = new USBWrapper_Win32();
@@ -771,6 +774,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
     private void ReRead(){
         byte[] buf = new byte[usb_report_size];
         try {
+            System.Console.WriteLine("reading");
             usb_fs.BeginRead(buf, 0, usb_report_size, new AsyncCallback(ReadCallback), buf);
         }
         catch(Exception ex){
@@ -779,6 +783,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
                 System.Console.WriteLine(ex);
             }
         }
+        System.Console.WriteLine("no block");
     }
 
     /**

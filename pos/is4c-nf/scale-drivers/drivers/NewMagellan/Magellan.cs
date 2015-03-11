@@ -61,9 +61,34 @@ public class Magellan : DelegateForm {
             string port = ((string[])conf[i])[0];
             string module = ((string[])conf[i])[1];
             try {
-                Type t = Type.GetType("SPH."+module+", SPH, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null");
+                switch (module) {
+                    case "SPH_Magellan_Scale":
+                        sph[i] = new SPH_Magellan_Scale(port);
+                        break;
+                    case "SPH_SignAndPay_USB":
+                        sph[i] = new SPH_SignAndPay_USB(port);
+                        break;
+                    case "SPH_IngenicoRBA_RS232":
+                        sph[i] = new SPH_IngenicoRBA_RS232(port);
+                        break;
+                    case "SPH_IngenicoRBA_IP":
+                        sph[i] = new SPH_IngenicoRBA_IP(port);
+                        break;
+                    case "SPH_IngenicoRBA_USB":
+                        sph[i] = new SPH_IngenicoRBA_USB(port);
+                        break;
+                    case "SPH_Parallel_Writer":
+                        sph[i] = new SPH_Parallel_Writer(port);
+                        break;
+                    /* Windows only; needs different handing
+                    case "SPH_Datacap_PDCX":
+                        sph[i] = new SPH_Datacap_PDCX(port);
+                        break;
+                    */
+                    default:
+                        throw new Exception("unknown module: " + module);
+                }
 
-                sph[i] = (SerialPortHandler)Activator.CreateInstance(t, new Object[]{ port });
                 sph[i].SetParent(this);
                 sph[i].SetVerbose(verbosity);
             } catch (Exception ex) {
