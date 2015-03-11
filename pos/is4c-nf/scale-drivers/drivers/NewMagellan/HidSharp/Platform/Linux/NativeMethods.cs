@@ -25,7 +25,7 @@ namespace HidSharp.Platform.Linux
     static class NativeMethods
     {
 		const string libc = "libc";
-		const string libudev = "libudev.so.0";
+		const string libudev = "libudev";
 
 		public enum error
 		{

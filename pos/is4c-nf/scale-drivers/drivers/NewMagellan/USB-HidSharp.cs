@@ -23,8 +23,8 @@ public class USBWrapper_HidSharp : USBWrapper
         int pid = 0;
         if (filename.IndexOf("&") > 0) {
             String[] parts = filename.Split(new Char[]{'&'});
-            vid = Convert.ToInt32(parts[0], 16);
-            pid = Convert.ToInt32(parts[1], 16);
+            vid = Convert.ToInt32(parts[0]);
+            pid = Convert.ToInt32(parts[1]);
         } else {
             System.Console.WriteLine("Invalid device specification: " + filename);
             return null;
@@ -34,7 +34,6 @@ public class USBWrapper_HidSharp : USBWrapper
         if (dev == null) {
             System.Console.WriteLine("Could not find requested device: " + filename);
             var devices = loader.GetDevices().ToArray();
-            System.Console.WriteLine(devices);
             foreach (HidDevice d in devices) {
                 System.Console.WriteLine(d);
             }

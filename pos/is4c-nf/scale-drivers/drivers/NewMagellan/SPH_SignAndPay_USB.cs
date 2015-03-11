@@ -135,7 +135,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         usb_report_size = 64;
         #elif FUTURE
         usb_port = new USBWrapper_HidSharp();
-        usb_report_size = 64;
+        usb_report_size = 65;
         #else
         usb_port = new USBWrapper_Win32();
         usb_report_size = 65;
@@ -545,10 +545,12 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         try {
             usb_fs.EndRead(iar);
             HandleReadData(input);        
-        }
-        catch (Exception ex){
-            if (this.verbose_mode > 0)
+        } catch (TimeoutException){
+        } catch (Exception ex){
+            if (this.verbose_mode > 0) {
+		System.Console.WriteLine("ReadCallback()");
                 System.Console.WriteLine(ex);
+	    }
         }
 
         ReRead();
@@ -744,11 +746,6 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
                     System.Console.WriteLine(msg.Length+" "+msg[0]+" "+msg[1]);
             }
             break;
-        default:
-            if (this.verbose_mode > 0) {
-                System.Console.WriteLine("The driver has become confused!");
-            }
-            break;
         }
     }
 
@@ -774,7 +771,6 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
     private void ReRead(){
         byte[] buf = new byte[usb_report_size];
         try {
-            System.Console.WriteLine("reading");
             usb_fs.BeginRead(buf, 0, usb_report_size, new AsyncCallback(ReadCallback), buf);
         }
         catch(Exception ex){
@@ -783,7 +779,6 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
                 System.Console.WriteLine(ex);
             }
         }
-        System.Console.WriteLine("no block");
     }
 
     /**
