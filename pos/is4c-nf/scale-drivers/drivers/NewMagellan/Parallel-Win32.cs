@@ -16,7 +16,7 @@ public class ParallelWrapper_Win32 : ParallelWrapper
     protected static IntPtr InvalidHandleValue = new IntPtr(-1);
 
     private IntPtr native_handle;
-    private SafeHandle safe_handle;
+    private SafeFileHandle safe_handle;
 
     [DllImport("kernel32.dll", SetLastError = true)] protected static extern IntPtr CreateFile([MarshalAs(UnmanagedType.LPStr)] string strName, uint nAccess, uint nShareMode, IntPtr lpSecurity, uint nCreationFlags, uint nAttributes, IntPtr lpTemplate);
     /** alt; use safehandles?
@@ -36,23 +36,19 @@ public class ParallelWrapper_Win32 : ParallelWrapper
     {
         native_handle = CreateFile(filename, GENERIC_WRITE, 0, IntPtr.Zero, OPEN_EXISTING, 0, IntPtr.Zero);
         if (native_handle != InvalidHandleValue) {
-            return new FileStream(native_handle, FileAccess.Write);
+            safe_handle = new SafeFileHandle(native_handle, true);
+            return new FileStream(safe_handle, FileAccess.Write);
         }
-
-        /** alt; use safehandles?
-        safe_handle = CreateFile(filename, GENERIC_WRITE, 0, IntPtr.Zero, OPEN_EXISTING, 0, IntPtr.Zero);
-        if (native_handle != InvalidHandleValue) {
-            return new FileStream(native_handle, FileAccess.Write);
-        } */
 
         return null;
     }
 
     public override void CloseLpHandle(){
         try {
+            safe_handle.Close();
             CloseHandle(native_handle);
         }
-        catch(Exception ex){}
+        catch(Exception){}
     }
 
 } // end class
