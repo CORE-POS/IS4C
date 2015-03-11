@@ -42,6 +42,8 @@ public class SPH_Parallel_Writer : SerialPortHandler {
     { 
         #if MONO
         lp_port = new ParallelWrapper_Posix();
+        #elif FUTURE
+        lp_port = new ParallelWrapper_Posix();
         #else
         lp_port = new ParallelWrapper_Win32();
         #endif

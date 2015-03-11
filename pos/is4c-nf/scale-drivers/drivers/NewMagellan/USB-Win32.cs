@@ -101,9 +101,9 @@ public class USBWrapper_Win32 : USBWrapper {
      * Get a handle for USB device file
      * @param filename the name of the file OR vendor and device ids formatted as "vid&pid"
      * @param report_size [optional] report size in bytes
-     * @return open read/write FileStream
+     * @return open read/write Stream
      */
-    public override FileStream GetUSBHandle(string filename, int report_size){
+    public override Stream GetUSBHandle(string filename, int report_size){
         if (filename.IndexOf("&") > 0){
             String[] parts = filename.Split(new Char[]{'&'});
             if (parts.Length != 2){
