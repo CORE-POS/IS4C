@@ -31,6 +31,7 @@ class VendorItemsModel extends BasicModel
     protected $preferred_db = 'op';
 
     protected $columns = array(
+    'vendorItemID' => array('type'=>'INT', 'index'=>true, 'increment'=>true),
     'upc' => array('type'=>'VARCHAR(13)','index'=>True),
     'sku' => array('type'=>'VARCHAR(13)','index'=>True,'primary_key'=>True),
     'brand' => array('type'=>'VARCHAR(50)'),
@@ -152,6 +153,43 @@ SKUs.
     }
 
     /* START ACCESSOR FUNCTIONS */
+
+    public function vendorItemID()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["vendorItemID"])) {
+                return $this->instance["vendorItemID"];
+            } else if (isset($this->columns["vendorItemID"]["default"])) {
+                return $this->columns["vendorItemID"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'vendorItemID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["vendorItemID"]) || $this->instance["vendorItemID"] != func_get_args(0)) {
+                if (!isset($this->columns["vendorItemID"]["ignore_updates"]) || $this->columns["vendorItemID"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["vendorItemID"] = func_get_arg(0);
+        }
+        return $this;
+    }
 
     public function upc()
     {

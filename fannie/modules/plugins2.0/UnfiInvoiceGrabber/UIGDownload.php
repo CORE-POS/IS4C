@@ -23,9 +23,7 @@
 
 class UIGDownload {} // plugin format compliance
 
-if (php_sapi_name() !== 'cli' || basename($_SERVER['PHP_SELF']) != basename(__FILE__)) {
-    return;
-}
+if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
@@ -327,3 +325,6 @@ foreach($dates as $date) {
   Cleanup: delete cookie file
 */
 unlink($cookies);
+
+}
+

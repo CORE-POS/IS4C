@@ -22,18 +22,24 @@
 *********************************************************************************/
 
 include_once(dirname(__FILE__).'/../../../config.php');
-if (!class_exists('FanniePage'))
+if (!class_exists('FanniePage')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-if (!class_exists('CalendarPlugin'))
+}
+if (!class_exists('CalendarPlugin')) {
     include(dirname(__FILE__).'/CalendarPlugin.php');
-if (!class_exists('CalendarPluginDB'))
+}
+if (!class_exists('CalendarPluginDB')) {
     include(dirname(__FILE__).'/CalendarPluginDB.php');
-if (!class_exists('PermissionsModel'))
+}
+if (!class_exists('PermissionsModel')) {
     include(dirname(__FILE__).'/models/PermissionsModel.php');
-if (!class_exists('CalendarsModel'))
+}
+if (!class_exists('CalendarsModel')) {
     include(dirname(__FILE__).'/models/CalendarsModel.php');
-if (!class_exists('MonthviewEventsModel'))
+}
+if (!class_exists('MonthviewEventsModel')) {
     include(dirname(__FILE__).'/models/MonthviewEventsModel.php');
+}
 
 class CalendarAttendedEventPage extends FannieRESTfulPage 
 {
