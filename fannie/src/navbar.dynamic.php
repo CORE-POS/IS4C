@@ -21,6 +21,98 @@ else {
 
 <?php
 
+function newMenuToOldMenu($menu)
+{
+    /**
+    OLD:
+    array(
+        label,
+        url,
+        subheading,
+        submenu => array(
+                        (label, url)
+                        (label, url)
+                        (label, url)
+                        ...
+                   )
+    )
+
+    NEW:
+    array(
+        heading => array(
+                    (label, url)
+                    (label, url)
+                    (label, url)
+                    ...
+                   )
+    )
+    */
+
+    if (isset($menu['url'])) {
+        return $menu;
+    }
+
+    $newmenu = array();
+    foreach ($menu as $heading => $menu_items) {
+        if ($heading == '__store__' && count($menu_items) == 0) {
+            continue;
+        }
+
+        $entry = array(
+            'label' => $heading,
+            'url' => '',
+            'subheading' => '',
+            'submenu' => array(),
+        );
+        /**
+          Add subheadings & URLs back
+        */
+        switch ($heading) {
+            case 'Item Maintenance':
+                $entry['url'] = 'item/ItemEditorPage.php';
+                $entry['subheading'] = 'Manage our product DB';
+                break;
+            case 'Sales Batches':
+                $entry['url'] = 'batches/';
+                $entry['subheading'] = 'Create automated sales & price changes';
+                break;
+            case 'Reports':
+                $entry['url'] = 'reports/';
+                $entry['subheading'] = 'Custom reporting tools';
+                break;
+            case 'Membership':
+                $entry['url'] = 'mem/';
+                $entry['subheading'] = 'Manage our member DB';
+                break;
+            case 'Synchronize':
+                $entry['url'] = 'sync/';
+                $entry['subheading'] = 'Update cash register';
+                break;
+            case 'Admin':
+                $entry['url'] = 'admin/';
+                $entry['subheading'] = 'Administratrive functions, etc.';
+                break;
+            case '__store__':
+                $entry['label'] = 'Custom';
+                $entry['subheading'] = 'Store-specific menu';
+                break;
+        }
+        foreach ($menu_items as $label => $url) {
+            // non-link in new style menu
+            if (preg_match('/^__.+__$/', $url)) {
+                continue;
+            }
+            $entry['submenu'][] = array(
+                'label' => $label,
+                'url' => $url,
+            );
+        }
+        $newmenu[] = $entry;
+    }
+
+    return $newmenu;
+}
+
 function render_menu($arr,$depth=0){
 	global $FANNIE_URL, $FANNIE_NAV_POSITION;
 //	$FANNIE_NAV_POSITION = "top";
@@ -74,7 +166,7 @@ else {
 if (!isset($FANNIE_MENU) || !is_array($FANNIE_MENU))
 	include($path.'src/defaultmenu.php');
 else
-	render_menu($FANNIE_MENU);
+	render_menu(newMenuToOldMenu($FANNIE_MENU));
 echo "</ul>";
 if ( isset($FANNIE_NAV_POSITION) && $FANNIE_NAV_POSITION == "top" )
 	echo "<br style='clear:both;'><!-- br / -->";
