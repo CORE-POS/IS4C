@@ -315,7 +315,7 @@ class FannieAPI
       @param $path [string] file system path
       @return [string] class name with namespace if applicable
     */
-    private static function pathToClass($path)
+    public static function pathToClass($path)
     {
         if (strstr($path, '/modules/plugins2.0/')) {
             $name = '\\COREPOS\\Fannie\\Plugin';
