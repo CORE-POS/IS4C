@@ -110,7 +110,13 @@ echo showInstallTabs("Members");
 <form action=InstallMembershipPage.php method=post>
 <!-- Could this be in the class and assigned with a var?
 -->
-<h1 class="install"><?php echo $this->header; ?></h1>
+<h1 class="install">
+    <?php 
+    if (!$this->themed) {
+        echo "<h1 class='install'>{$this->header}</h1>";
+    }
+    ?>
+</h1>
 <?php
 if (is_writable('../config.php')){
     echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";

@@ -66,7 +66,9 @@ class InstallMemModDisplayPage extends \COREPOS\Fannie\API\InstallPage {
         $parent = 'InstallMembershipPage.php';
         echo showLinkUp('Back to Membership',"$parent",'');
 
-        echo "<h1 class='install'>{$this->header}</h1>";
+        if (!$this->themed) {
+            echo "<h1 class='install'>{$this->header}</h1>";
+        }
 
         // Re-order the modules and report.
         if (isset($_REQUEST['ordering'])){

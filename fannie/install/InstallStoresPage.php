@@ -147,7 +147,13 @@ class InstallStoresPage extends \COREPOS\Fannie\API\InstallPage {
         ?>
 
 <form action=InstallStoresPage.php method=post>
-<h1 class="install"><?php echo $this->header; ?></h1>
+<h1 class="install">
+    <?php 
+    if (!$this->themed) {
+        echo "<h1 class='install'>{$this->header}</h1>";
+    }
+    ?>
+</h1>
 <p class="ichunk">Revised 23Apr2014</p>
 <?php
 if (is_writable('../config.php')){

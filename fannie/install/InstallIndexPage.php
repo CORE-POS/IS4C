@@ -123,7 +123,9 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         $self = basename($_SERVER['PHP_SELF']);
 
         echo "<form action='$self' method='post'>";
-        echo "<h1 class='install'>{$this->header}</h1>";
+        if (!$this->themed) {
+            echo "<h1 class='install'>{$this->header}</h1>";
+        }
 
         // Path detection: Establish ../../
         $FILEPATH = rtrim(__FILE__,"$self");
