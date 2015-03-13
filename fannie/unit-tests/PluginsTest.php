@@ -45,11 +45,17 @@ class PluginsTest extends PHPUnit_Framework_TestCase
         foreach ($files as $file) {
             $file = realpath($file);
             $class_name = substr(basename($file), 0 , strlen(basename($file))-4);
+            $namespaced_class_name = FannieAPI::pathToClass($file);
             if (class_exists($class_name, false)) {
                 // may have already been included
                 $reflect = new ReflectionClass($class_name);
                 $this->assertEquals($file, $reflect->getFileName(), 
                         $class_name . ' is defined by ' . $file . ' AND ' . $reflect->getFileName()); 
+            } elseif (class_exists($namespaced_class_name, false)) {
+                // may have already been included
+                $reflect = new ReflectionClass($namespaced_class_name);
+                $this->assertEquals($file, $reflect->getFileName(), 
+                        $namespaced_class_name . ' is defined by ' . $file . ' AND ' . $reflect->getFileName()); 
             } else {
                 ob_start();
                 include($file);
@@ -63,7 +69,6 @@ class PluginsTest extends PHPUnit_Framework_TestCase
                                 . $this->detailedFunctionDiff($current_functions['user'], $functions['user'])
                 );
 
-                $namespaced_class_name = FannieAPI::pathToClass($file);
                 $classes = get_declared_classes();
                 $this->assertThat($classes, $this->logicalOr(
                         $this->contains($class_name),
