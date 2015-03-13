@@ -204,6 +204,9 @@ class ManualPurchaseOrderPage extends FannieRESTfulPage
         }
         $itemsJSON .= ']';
 
+        $orderJSON = str_replace('\\', '\\\\', $orderJSON);
+        $itemsJSON = str_replace('\\', '\\\\', $itemsJSON);
+
         $this->addOnloadCommand("existingOrder('$orderJSON', '$itemsJSON');\n");
 
         return $this->get_id_view();
