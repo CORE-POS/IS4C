@@ -39,7 +39,6 @@ class ZipCodeReport extends FannieReportPage
     {
         $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
         $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
-        $type = FormLib::get_form_value('rtype','Purchases');
         $exclude = FormLib::get_form_value('excludes','');
 
         $ex = preg_split('/\D+/',$exclude, 0, PREG_SPLIT_NO_EMPTY);
@@ -52,60 +51,26 @@ class ZipCodeReport extends FannieReportPage
         $exCondition = substr($exCondition, 0, strlen($exCondition)-1);
 
         $ret = array();
-        switch($type){
-        case 'Join Date':
-            $dbc = FannieDB::get($this->config->get('OP_DB'));
-            $query = "
-                SELECT 
-                    CASE WHEN m.zip='' THEN 'none' ELSE m.zip END as zipcode,
-                    COUNT(*) as num 
-                FROM meminfo AS m 
-                    INNER JOIN memDates AS d ON m.card_no=d.card_no 
-                WHERE ";
-            if (!empty($exArgs)) {
-                $query .= "m.card_no NOT IN ($exCondition) AND ";
-            }
-            $query .= "d.start_date >= ?
-                GROUP BY zipcode
-                ORDER BY COUNT(*) DESC";
-            $exArgs[] = $date1.' 00:00:00';
-            $prep = $dbc->prepare_statement($query);
-            $result = $dbc->exec_statement($prep, $exArgs);
-            while($row = $dbc->fetch_row($result)){
-                $record = array($row['zipcode'], $row['num']);
-                $ret[] = $record;
-            }
-            break;  
-
-        case 'Purchases':
-        default:
-            $settings = $this->config->get('PLUGIN_SETTINGS');
-            $dbc = FannieDB::get($settings['WarehouseDatabase']);
-            $query = "
-                SELECT 
-                    CASE WHEN m.zip='' THEN 'none' ELSE m.zip END as zipcode,
-                    COUNT(*) as num_trans, 
-                    SUM(total) as spending,
-                    COUNT(DISTINCT s.card_no) as uniques
-                FROM sumMemSalesByDay AS s 
-                    INNER JOIN " . $this->config->get('OP_DB') . $dbc->sep()."meminfo AS m ON s.card_no=m.card_no 
-                WHERE ";
-            if (!empty($exArgs)) {
-                $query .= "s.card_no NOT IN ($exCondition) AND ";
-            }
-            $query .= "s.date_id BETWEEN ? AND ?
-                GROUP BY zipcode
-                ORDER BY SUM(total) DESC";
-            $date_id1 = date('Ymd',strtotime($date1));
-            $date_id2 = date('Ymd',strtotime($date2));
-            $exArgs[] = $date_id1;
-            $exArgs[] = $date_id2;
-            $prep = $dbc->prepare_statement($query);
-            $result = $dbc->exec_statement($prep, $exArgs);
-            while($row = $dbc->fetch_row($result)){
-                $record = array($row['zipcode'],$row['num_trans'],$row['uniques'],$row['spending']);
-                $ret[] = $record;
-            }
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $query = "
+            SELECT 
+                CASE WHEN m.zip='' THEN 'none' ELSE m.zip END as zipcode,
+                COUNT(*) as num 
+            FROM meminfo AS m 
+                INNER JOIN memDates AS d ON m.card_no=d.card_no 
+            WHERE ";
+        if (!empty($exArgs)) {
+            $query .= "m.card_no NOT IN ($exCondition) AND ";
+        }
+        $query .= "d.start_date >= ?
+            GROUP BY zipcode
+            ORDER BY COUNT(*) DESC";
+        $exArgs[] = $date1.' 00:00:00';
+        $prep = $dbc->prepare_statement($query);
+        $result = $dbc->exec_statement($prep, $exArgs);
+        while ($row = $dbc->fetch_row($result)) {
+            $record = array($row['zipcode'], $row['num']);
+            $ret[] = $record;
         }
 
         return $ret;
@@ -141,26 +106,6 @@ class ZipCodeReport extends FannieReportPage
     function form_content()
     {
         $ret = '';
-        $options = array(
-            'Purchases',
-            'Join Date',
-        );
-        $plugin_settings = $this->config->get('PLUGIN_SETTINGS');
-        if (!is_array($plugin_settings) || !isset($plugin_settings['WarehouseDatabase'])) {
-            $ret .= '<div class="alert alert-warning">
-                Enable the CoreWarehouse plugin to run reports by
-                Purchases instead of Join Date
-                </div>';
-            array_shift($options);
-        } else {
-            $dbc = FannieDB::get($plugin_settings['WarehouseDatabase']);
-            if (!$dbc->tableExists('sumMemSalesByDay')) {
-                $ret .= '<div class="alert alert-warning">
-                    The required warehouse summary table is missing.
-                    </div>';
-                array_shift($options);
-            }
-        }
         $ret .= '<form action="ZipCodeReport.php" method="get">
             <div class="col-sm-5">
             <div class="form-group">
@@ -172,12 +117,6 @@ class ZipCodeReport extends FannieReportPage
                 <label>End Date</label>
                 <input type="text" name="date2" id="date2" 
                     class="form-control date-field" required/>
-            </div>
-            <div class="form-group">
-                <label>Based on</label>
-                <select name="rtype" class="form-control">
-                    ' . array_reduce($options, function($c, $i) { return $c . '<option>' . $i . '</option>'; }, '') . '
-                </select>
             </div>
             <div class="form-group">
                 <label>Exclude #(s)</label>
