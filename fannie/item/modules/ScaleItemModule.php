@@ -99,11 +99,11 @@ class ScaleItemModule extends ItemModule
                 $scale['netWeight']);
 
         $ret .= "<td><select name=s_label size=2 class=\"form-control\">";
-        if ($scale['label']==133 || $scale['label']==63){
+        $label_attr = HobartDgwLib::labelToAttributes($scale['label']);
+        if ($label_attr['align'] == 'horizontal') {
             $ret .= "<option value=horizontal selected>Horizontal</option>";
             $ret .= "<option value=vertical>Vertical</option>";
-        }
-        else {
+        } else {
             $ret .= "<option value=horizontal>Horizontal</option>";
             $ret .= "<option value=vertical selected>Vertical</option>";
         }
@@ -174,20 +174,14 @@ class ScaleItemModule extends ItemModule
         $type = FormLib::get('s_type','Random Weight');
         $weight = ($type == 'Random Weight') ? 0 : 1;
         $text = FormLib::get('s_text','');
-        $label = FormLib::get('s_label','horizontal');
+        $align = FormLib::get('s_label','horizontal');
         $netWeight = FormLib::get('s_netwt', 0);
 
-        if ($graphics) {
-            $label = 53;
-        } elseif ($label == "horizontal" && $type == "Random Weight") {
-            $label = 133;
-        } elseif ($label == "horizontal" && $type == "Fixed Weight") {
-            $label = 63;
-        } elseif ($label == "vertical" && $type == "Random Weight") {
-            $label = 103;
-        } elseif ($label == "vertical" && $type == "Fixed Weight") {
-            $label = 23;
-        }
+        $label = HobartDgwLib::attributesToLabel(
+            $align,
+            ($type == 'Fixed Weight') ? true : false,
+            ($graphics != 0) ? true : false
+        );
 
         $dbc = $this->db();
 

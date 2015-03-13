@@ -156,6 +156,7 @@ class BaseItemModule extends ItemModule
                 'idEnforced' => 0,
                 'local' => 0,
                 'deposit' => 0,
+                'cost' => 0,
             );
 
             /**

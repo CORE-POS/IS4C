@@ -149,17 +149,8 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
                         (brand,sku,size,upc,units,cost,description,vendorDept,vendorID,saleCost)
                         VALUES (?,?,?,?,?,?,?,?,?,?)");
         }
-        /** deprecating unfi_* structures 22Jan14
-        $uuP = $dbc->prepare_statement("INSERT INTO unfi_order 
-                    (unfi_sku,brand,item_desc,pack,pack_size,upcc,cat,wholesale,vd_cost,wfc_srp) 
-                    VALUES (?,?,?,?,?,?,?,?,?,?)");
-        */
         $srpP = $dbc->prepare_statement("INSERT INTO vendorSRPs (vendorID, upc, srp) VALUES (?,?,?)");
         $updated_upcs = array();
-
-        /** deprecating unfi_* structures 22Jan14
-        $dupeP = $dbc->prepare_statement("SELECT upcc FROM unfi_order WHERE upcc=?");
-        */
 
         foreach($linedata as $data) {
             if (!is_array($data)) continue;
@@ -192,12 +183,6 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             if (empty($reg) or empty($srp))
                 continue;
 
-            /** deprecating unfi_* structures 22Jan14
-            // don't repeat items
-            $dupeR = $dbc->exec_statement($dupeP,array($upc));
-            if ($dbc->num_rows($dupeR) > 0) continue;
-            */
-
             // syntax fixes. kill apostrophes in text fields,
             // trim $ off amounts as well as commas for the
             // occasional > $1,000 item
@@ -226,11 +211,9 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $reg_unit = $reg / $qty;
             $net_unit = $net / $qty;
 
-            // set cost in $PRICEFILE_COST_TABLE
             $dbc->exec_statement($extraP, array($reg_unit,$upc));
             $dbc->exec_statement($prodP, array($reg_unit,$upc));
             $updated_upcs[] = $upc;
-            // end $PRICEFILE_COST_TABLE cost tracking
 
             $args = array($brand,($sku===False?'':$sku),($size===False?'':$size),
                     $upc,$qty,$reg_unit,$description,$category,$VENDOR_ID);
@@ -238,16 +221,6 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 $args[] = $net_unit;
             }
             $dbc->exec_statement($itemP,$args);
-
-            /** deprecating unfi_* structures 22Jan14
-            // unfi_order is what the UNFI price change page builds on,
-            // that's why it's being populated here
-            // it's just a table containing all items in the current order
-            $args = array(($sku===False?'':$sku),$brand,$description,$qty,
-                    ($size===False?'':$size),$upc,$category,$reg,
-                    $reg,$srp);
-            $dbc->exec_statement($uuP,$args);
-            */
 
             $dbc->exec_statement($srpP,array($VENDOR_ID,$upc,$srp));
         }
@@ -274,10 +247,6 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
         $viP = $dbc->prepare_statement("DELETE FROM vendorItems WHERE vendorID=?");
         $vsP = $dbc->prepare_statement("DELETE FROM vendorSRPs WHERE vendorID=?");
-        /** deprecating unfi_* structures 22Jan14
-        $uoP = $dbc->prepare_statement("TRUNCATE TABLE unfi_order");
-        $dbc->exec_statement($uoP);
-        */
         $dbc->exec_statement($viP,array($VENDOR_ID));
         $dbc->exec_statement($vsP,array($VENDOR_ID));
     }

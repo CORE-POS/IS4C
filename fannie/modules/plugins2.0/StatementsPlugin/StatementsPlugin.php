@@ -21,7 +21,6 @@
 
 *********************************************************************************/
 
-global $FANNIE_ROOT;
 if (!class_exists('FannieAPI')) {
     include(dirname(__FILE__) . '/../../../classlib2.0/FannieAPI.php');
 }

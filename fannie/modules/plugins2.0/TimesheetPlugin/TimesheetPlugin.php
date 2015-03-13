@@ -21,11 +21,12 @@
 
 *********************************************************************************/
 
-global $FANNIE_ROOT;
-if (!class_exists('FannieAPI'))
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-if (!class_exists('FannieAuth'))
-    include($FANNIE_ROOT.'classlib2.0/auth/FannieAuth.php');
+if (!class_exists('FannieAPI')) {
+    include(dirname(__FILE__) .'/classlib2.0/FannieAPI.php');
+}
+if (!class_exists('FannieAuth')) {
+    include(dirname(__FILE__) .'/classlib2.0/auth/FannieAuth.php');
+}
 
 /**
 */

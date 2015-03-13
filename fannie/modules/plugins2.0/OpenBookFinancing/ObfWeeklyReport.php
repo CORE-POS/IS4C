@@ -44,7 +44,7 @@ class ObfWeeklyReport extends FannieReportPage
         array('', 'Last Year', 'Plan Goal', '% Store', 'Trend', 'Actual', '% Growth', '% Store', 'Current O/U', 'Long-Term O/U'),
         array('', 'Last Year', 'Plan Goal', '% Store', 'Trend', 'Actual', '% Growth', '% Store', 'Current O/U', 'Long-Term O/U'),
         array('', 'Last Year', 'Plan Goal', '% Store', 'Trend', 'Actual', '% Growth', '% Store', 'Current O/U', 'Long-Term O/U'),
-        array('', '', 'Plan Goal', '%', '', 'Actual', '%', 'Est. Bonus', 'Current Year', 'Last Year'),
+        array('', 'Current Year', 'Last Year', '', '', '', '', '', '', ''),
     );
 
     public function report_description_content()
@@ -856,79 +856,7 @@ class ObfWeeklyReport extends FannieReportPage
             array_shift($colors);
         }
 
-        $quarterP = $dbc->prepare(
-            'SELECT
-                SUM(s.actualSales) AS actual,
-                SUM(s.lastYearSales * (1+s.growthTarget)) AS plan
-             FROM ObfSalesCache AS s
-                INNER JOIN ObfWeeks AS w ON s.obfWeekID=w.obfWeekID
-             WHERE w.obfQuarterID=?
-                AND w.endDate <= ?'
-        );
-        $quarterR = $dbc->execute($quarterP, array($week->obfQuarterID(), date('Y-m-d 00:00:00', $end_ts)));
-        $quarterW = $dbc->fetch_row($quarterR);
-
         $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS);
-        $data[] = array('Quarter to Date', '', '', '', '', '', '', '', '', '',
-                        'meta' => FannieReportPage::META_BOLD | FannieReportPage::META_COLOR,
-                        'meta_background' => $colors[0],
-                        'meta_foreground' => 'black',
-        );
-        $data[] = array(
-            'Sales',
-            '',
-            number_format($quarterW['plan']),
-            '',
-            '',
-            number_format($qtd_sales, 0),
-            '',
-            '',
-            '',
-            '',
-            'meta' => FannieReportPage::META_COLOR,
-            'meta_background' => $colors[0],
-            'meta_foreground' => 'black',
-        );
-
-        $data[] = array(
-            'Total Wages',
-            '',
-            '',
-            '',
-            '',
-            number_format($qtd_wages, 0),
-            number_format(($qtd_wages) / ($qtd_sales) * 100, 2) . '%',
-            '',
-            '',
-            '',
-            'meta' => FannieReportPage::META_COLOR,
-            'meta_background' => $colors[0],
-            'meta_foreground' => 'black',
-        );
-
-        $plan_personnel = $quarterW['plan'] * 0.2081;
-        $bonus = ($qtd_sales * 0.2081) - ($qtd_wages * $p_est);
-        if ($bonus < 0) {
-            $bonus = 0;
-        } else if ($bonus > 35000) {
-            $bonus = 35000.00;
-        }
-
-        $data[] = array(
-            'Total Personnel (est)',
-            '',
-            number_format($plan_personnel, 0),
-            number_format(($plan_personnel) / ($quarterW['plan']) * 100, 2) . '%',
-            '',
-            number_format($qtd_wages * $p_est, 0),
-            number_format(($qtd_wages * $p_est) / ($qtd_sales) * 100, 2) . '%',
-            number_format($bonus, 0),
-            '',
-            '',
-            'meta' => FannieReportPage::META_COLOR,
-            'meta_background' => $colors[0],
-            'meta_foreground' => 'black',
-        );
 
         $stockP = $dbc->prepare('
             SELECT SUM(stockPurchase) AS ttl
@@ -989,36 +917,38 @@ class ObfWeeklyReport extends FannieReportPage
         if ($dbc->num_rows($last_week) > 0) {
             $last_week = $dbc->fetch_row($last_week);
             $last_week = $last_week['ttl'] / 20;
+            $num_days = (float)date('t', $start_ly);
+            $last_week = round(($last_week/$num_days) * 7);
         } else {
             $last_week = 0;
         }
 
         $data[] = array(
             'Ownership This Week',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
             number_format($this_week, 0),
             number_format($last_week, 0),
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
             'meta' => FannieReportPage::META_COLOR,
             'meta_background' => $colors[0],
             'meta_foreground' => 'black',
         );
         $data[] = array(
             'Ownership This Year',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
             number_format($current, 0),
             number_format($prior, 0),
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
             'meta' => FannieReportPage::META_COLOR,
             'meta_background' => $colors[0],
             'meta_foreground' => 'black',
