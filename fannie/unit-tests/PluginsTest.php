@@ -63,8 +63,15 @@ class PluginsTest extends PHPUnit_Framework_TestCase
                                 . $this->detailedFunctionDiff($current_functions['user'], $functions['user'])
                 );
 
+                $namespaced_class_name = FannieAPI::pathToClass($file);
                 $classes = get_declared_classes();
-                $this->assertContains($class_name, $classes, $file . ' does not define class ' . $class_name);
+                $this->assertThat($classes, $this->logicalOr(
+                        $this->contains($class_name),
+                        $this->contains($namespaced_class_name),
+                        $this->contains(ltrim($namespaced_class_name, '\\'))
+                    ),
+                    $file . ' does not define ' . $class_name . ' or ' . $namespaced_class_name
+                );
             }
         }
     }
