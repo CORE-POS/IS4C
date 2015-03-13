@@ -100,7 +100,13 @@ echo showInstallTabs("Sample Data", '../');
 ?>
 
 <form action=InstallSampleDataPage.php method=post>
-<h1 class="install"><?php echo $this->header; ?></h1>
+<h1 class="install">
+    <?php 
+    if (!$this->themed) {
+        echo "<h1 class='install'>{$this->header}</h1>";
+    }
+    ?>
+</h1>
 <?php
 if (is_writable('../../config.php')){
     echo "<div class=\"alert alert-success\"><i>config.php</i> is writeable</div>";

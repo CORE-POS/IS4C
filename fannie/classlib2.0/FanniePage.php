@@ -152,6 +152,8 @@ class FanniePage
         $page_title = $this->title;
         $header = $this->header;
         if ($this->themed) {
+            $headerConfig = $this->config;
+            $BACKEND_NAME = $this->config->get('BACKEND_NAME', 'Fannie');
             include(dirname(__FILE__) . '/../src/header.bootstrap.html');
             $this->addJQuery();
             if (!$this->addBootstrap()) {

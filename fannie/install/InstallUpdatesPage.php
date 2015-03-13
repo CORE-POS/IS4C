@@ -99,7 +99,13 @@ class InstallUpdatesPage extends \COREPOS\Fannie\API\InstallPage {
         echo showInstallTabs('Updates');
 ?>
 
-<h1 class="install"><?php echo $this->header; ?></h1>
+<h1 class="install">
+    <?php 
+    if (!$this->themed) {
+        echo "<h1 class='install'>{$this->header}</h1>";
+    }
+    ?>
+</h1>
 <p class="ichunk">Database Updates.</p>
 <?php
         if (FormLib::get_form_value('mupdate') !== ''){
