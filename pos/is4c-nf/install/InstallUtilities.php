@@ -48,17 +48,21 @@ class InstallUtilities extends LibraryClass
         $failure = ($optional) ? 'blue' : 'red';
         $status = ($optional) ? 'Optional' : 'Warning';
 
-        if (!file_exists($filename) && !$optional && is_writable($filename)) {
+        if (!file_exists($filename) && !$optional) {
             $fp = fopen($filename,'w');
-            if ($template !== False) {
-                switch($template) {
-                    case 'PHP':
-                        fwrite($fp,"<?php\n");
-                        fwrite($fp,"?>\n");
-                        break;
+            if ($fp) {
+                if ($template !== False) {
+                    switch($template) {
+                        case 'PHP':
+                            fwrite($fp,"<?php\n");
+                            break;
+                        case 'JSON':
+                            fwrite($fp, CoreLocal::convertIniPhpToJson());
+                            break;
+                    }
                 }
+                fclose($fp);
             }
-            fclose($fp);
         }
 
         if (!file_exists($filename)) {
@@ -79,7 +83,7 @@ class InstallUtilities extends LibraryClass
     }
 
     /**
-      Save entry to ini.php or ini-local.php
+      Save entry to config file(s)
       @param $key string key
       @param $value string value
       @param $prefer_local use ini-local if it exists
@@ -89,7 +93,7 @@ class InstallUtilities extends LibraryClass
       PHP code. For example, a PHP string should include
       single or double quote delimiters in $value.
     */
-    static public function confsave($key,$value,$prefer_local=False)
+    static public function confsave($key, $value, $prefer_local=false)
     {
         // lane #0 is the server config editor
         // no ini.php file to write values to
@@ -97,7 +101,39 @@ class InstallUtilities extends LibraryClass
             return null;
         }
 
+        $ini_php = dirname(__FILE__) . '/../ini.php';
+        $ini_json = dirname(__FILE__) . '/../ini.json';
+        $save_php = null;
+        $save_json = null;
+        if (file_exists($ini_php)) {
+            $save_php = self::phpConfSave($key, $value, $prefer_local);
+        }
+        if (file_exists($ini_json)) {
+            $save_json = self::jsonConfSave($key, $value);
+        }
 
+        if ($save_php === false || $save_json === false) {
+            // error occurred saving
+            return false;
+        } elseif ($save_php === null || $save_json === null) {
+            // neither config file found
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /**
+      Save entry to ini.php or ini-local.php.
+      This is called by confsave() if ini.php exists.
+      Should not be called directly
+      @param $key string key
+      @param $value string value
+      @param $prefer_local use ini-local if it exists
+      @return boolean success
+    */
+    static private function phpConfSave($key, $value, $prefer_local=false)
+    {
         /*
         Attempt to update settings in both ini.php and ini-local.php.
         If found in both, return False if (and only if) ini-local.php
@@ -170,10 +206,18 @@ class InstallUtilities extends LibraryClass
         if ($append_path === $path_global) {
             $new_global = preg_replace("|(\?>)?\s*$|", $new_setting.'?>', $orig_global,
                             1, $found_global);
+            // make sure new setting isn't right up against
+            // the opening php tag
+            if (preg_match('/^<\?php[^\s]/', $new_global)) {
+                $new_global = preg_replace('/^<\?php/', "<?php\n", $new_global);
+            }
             $added_global = file_put_contents($append_path, $new_global);
         } else {
             $new_local = preg_replace("|(\?>)?\s*$|", $new_setting.'?>', $orig_local,
                             1, $found_local);
+            if (preg_match('/^<\?php[^\s]/', $new_local)) {
+                $new_local = preg_replace('/^<\?php/', "<?php\n", $new_local);
+            }
             $added_local = file_put_contents($append_path, $new_local);
         }
         if ($added_global || $added_local){
@@ -183,17 +227,119 @@ class InstallUtilities extends LibraryClass
         return false;	// didn't manage to write anywhere!
     }
 
+    /**
+      Save entry to ini.json
+      This is called by confsave() if ini.json exists.
+      Should not be called directly
+      @param $key string key
+      @param $value string value
+      @return boolean success
+    */
+    static private function jsonConfSave($key, $value)
+    {
+        $ini_json = dirname(__FILE__) . '/../ini.json';
+        if (!is_writable($ini_json)) {
+            return false;
+        }
+
+        $json = json_decode(file_get_contents($ini_json), true);
+        if (!is_array($json)) {
+            return false;
+        }
+
+        /**
+          ini.php expects string delimiters. Take them
+          off if present.
+        */
+        if (strlen($value) >= 2 && substr($value, 0, 1) == "'" && substr($value, -1) == "'") {
+            $value = substr($value, 1, strlen($value)-2);
+        }
+
+        $json[$key] = $value;
+        $saved = file_put_contents($ini_json, JsonLib::prettyJSON(json_encode($json)));
+
+        return ($saved === false) ? false : true;
+    }
+
+    /**
+      Remove a value from config file(s)
+      @param $key string key
+      @param $local boolean optional default false
+        remove from ini-local.php if applicable
+      @return boolean success
+    */
     static public function confRemove($key, $local=false)
+    {
+        $ini_php = dirname(__FILE__) . '/../ini.php';
+        $ini_json = dirname(__FILE__) . '/../ini.json';
+        $save_php = null;
+        $save_json = null;
+        if (file_exists($ini_php)) {
+            $save_php = self::phpConfRemove($key, $local);
+        }
+        if (file_exists($ini_json)) {
+            $save_json = self::jsonConfRemove($key);
+        }
+        
+        if ($save_php === false || $save_json === false) {
+            // error occurred saving
+            return false;
+        } elseif ($save_php === null || $save_json === null) {
+            // neither config file found
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /**
+      Remove a value from ini.php or ini-local.php
+      Called by confRemove() if ini.php exists.
+      Should not be called directly.
+      @param $key string key
+      @param $local boolean optional default false
+        remove from ini-local.php if applicable
+      @return boolean success
+    */
+    static private function phpConfRemove($key, $local=false)
     {
         $path_global = dirname(__FILE__) . '/../ini.php';
         $path_local = dirname(__FILE__) .  '/../ini-local.php';
+        $ret = false;
 
         $orig_setting = '|\$CORE_LOCAL->set\([\'"]'.$key.'[\'"],\s*(.+)\);[\r\n]|';
         $current_conf = ($local) ? file_get_contents($path_local) : file_get_contents($path_global);
         if (preg_match($orig_setting, $current_conf) == 1) {
             $removed = preg_replace($orig_setting, '', $current_conf);
-            file_put_contents($local ? $path_local : $path_global, $removed);
+            $ret = file_put_contents($local ? $path_local : $path_global, $removed);
         }
+
+        return ($ret === false) ? false : true;
+    }
+
+    /**
+      Remove a value from ini.json
+      Called by confRemove() if ini.json exists.
+      Should not be called directly.
+      @param $key string key
+      @return boolean success
+    */
+    static private function jsonConfRemove($key)
+    {
+        $ini_json = dirname(__FILE__) . '/../ini.json';
+        if (!is_writable($ini_json)) {
+            return false;
+        }
+
+        $json = json_decode(file_get_contents($ini_json), true);
+        if (!is_array($json)) {
+            return false;
+        }
+
+        unset($json[$key]);
+        $saved = file_put_contents($ini_json, JsonLib::prettyJSON(json_encode($json)));
+
+        return ($saved === false) ? false : true;
     }
 
     static public function confExists($key, $local=False)

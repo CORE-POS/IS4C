@@ -26,9 +26,6 @@ ini_set('display_errors','1');
 
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
-if (file_exists('../ini.php')) {
-    include('../ini.php');
-}
 include('InstallUtilities.php');
 ?>
 <html>
@@ -49,6 +46,7 @@ body {
 <form action=index.php method=post>
 
 <div class="alert"><?php InstallUtilities::checkWritable('../ini.php', False, 'PHP'); ?></div>
+<div class="alert"><?php InstallUtilities::checkWritable('../ini.json', false, 'JSON'); ?></div>
 <div class="alert"><?php InstallUtilities::checkWritable('../ini-local.php', True, 'PHP'); ?></div>
 
 PHP is running as: <?php echo InstallUtilities::whoami(); ?><br />
