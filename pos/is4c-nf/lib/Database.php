@@ -160,7 +160,7 @@ static public function getsubtotals()
     CoreLocal::set("memSpecial", (!$row || !isset($row['memSpecial'])) ? 0 : (double)$row["memSpecial"] );
     // staffSpecial => SUM(localtemptrans.total) where discounttype=4
     CoreLocal::set("staffSpecial", (!$row || !isset($row['staffSpecial'])) ? 0 : (double)$row["staffSpecial"] );
-    if ( CoreLocal::get("member_subtotal") !== False ) {
+    if ( CoreLocal::get("member_subtotal") != False ) {
         // percentDiscount => MAX(localtemptrans.percentDiscount)
         CoreLocal::set("percentDiscount", (!$row || !isset($row['percentDiscount'])) ? 0 : (double)$row["percentDiscount"] );
     }
