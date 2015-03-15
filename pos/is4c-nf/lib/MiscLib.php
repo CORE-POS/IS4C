@@ -315,5 +315,15 @@ static public function getAllIPs()
     return $ret;
 }
 
+static public function getNumbers($string)
+{
+    $pieces = preg_split('/[^\d]+/', $string, 0, PREG_SPLIT_NO_EMPTY);
+    for ($i=0; $i<count($pieces); $i++) {
+        $pieces[$i] = (int)$pieces[$i];
+    }
+
+    return $pieces;
+}
+
 } // end class MiscLib
 
