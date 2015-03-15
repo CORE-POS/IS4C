@@ -547,10 +547,7 @@ static public function centerBig($text) {
 static public function chargeBalance($receipt, $program="charge", $trans_num='')
 {
     PrehLib::chargeOK();
-    /*
-    Should be checking a lane version of: $FANNIE_AR_DEPARTMENTS = '1005 1010'
-    Should be checking: CoreLocal::get('defaultNonMem'), not 11
-    */
+
     $labels = array();
     $labels['charge'] = array("Current IOU Balance:"
             , 1
@@ -564,20 +561,30 @@ static public function chargeBalance($receipt, $program="charge", $trans_num='')
 
     $db = Database::tDataConnect();
     list($emp, $reg, $trans) = explode('-', $trans_num, 3);
+    $ar_depts = MiscLib::getNumbers(CoreLocal::get('ArDepartments'));
     $checkQ = "SELECT trans_id 
                FROM localtranstoday 
-               WHERE (department=990 or trans_subtype='MI')
-                AND emp_no=" . ((int)$emp) . "
+               WHERE 
+                emp_no=" . ((int)$emp) . "
                 AND register_no=" . ((int)$reg) . "
                 AND trans_no=" . ((int)$trans);
+    if (count($ar_depts) == 0) {
+        $checkQ .= " AND trans_subtype='MI'";
+    } else {
+        $checkQ .= " AND (trans_subtype='MI' OR department IN (";
+        foreach ($ar_depts as $ar_dept) {
+            $checkQ .= $ar_dept . ',';
+        }
+        $checkQ = substr($checkQ, 0, strlen($checkQ)-1) . ')';
+    }
     $checkR = $db->query($checkQ);
     $num_rows = $db->num_rows($checkR);
 
     $currActivity = CoreLocal::get("memChargeTotal");
     $currBalance = CoreLocal::get("balance") - $currActivity;
     
-    if(($num_rows > 0 || $currBalance != 0) && CoreLocal::get("memberID") != 11){
-         $chargeString = $labels["$program"][0] ." $".sprintf("%.2f",($labels["$program"][1] * $currBalance));
+    if (($num_rows > 0 || $currBalance != 0) && CoreLocal::get("memberID") != CoreLocal::get('defaultNonMem')) {
+        $chargeString = $labels["$program"][0] ." $".sprintf("%.2f",($labels["$program"][1] * $currBalance));
         $receipt = $receipt."\n\n".self::biggerFont(self::centerBig($chargeString));
     }
     
