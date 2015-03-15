@@ -18,6 +18,8 @@
 
     <FutureDefine Include="FUTURE" />
     <FutureDefine Include="FUTUREWIN" Condition=" '$(OS)' != 'Unix' " />
+
+    <JsonDefine Include="NEWTONSOFT_JSON" />
   </ItemGroup>
 
   <!--
@@ -31,27 +33,31 @@
     <MagellanRef Include="DelegateForm.dll" />
     <MagellanRef Include="UDPMsgBox.dll" />
     <MagellanRef Include="SPH.dll" />
+    <MagellanRef Include="Newtonsoft.Json.dll" />
     <MagellanRef Include="rabbitmq\RabbitMQ.Client.dll" Condition=" Exists('rabbimq\RabbitMQ.Client.dll') " />
 
     <MagellanTarget Include="DelegateFormLibrary" />
     <MagellanTarget Include="UDPMsgBoxLibrary" />
     <MagellanTarget Include="SPHLibrary" />
+    <MagellanTarget Include="JsonLibrary" />
 
     <MagellanFutureRef Include="DelegateForm.dll" />
     <MagellanFutureRef Include="UDPMsgBox.dll" />
     <MagellanFutureRef Include="SPHFuture.dll" />
+    <MagellanFutureRef Include="Newtonsoft.Json.dll" />
 
     <MagellanFutureTarget Include="DelegateFormLibrary" />
     <MagellanFutureTarget Include="UDPMsgBoxLibrary" />
     <MagellanFutureTarget Include="SPHFutureLibrary" />
+    <MagellanFutureTarget Include="JsonLibrary" />
   </ItemGroup>
   <Target Name="Build" DependsOnTargets="@(MagellanTarget)">
     <Csc Sources="@(Magellan)" References="@(MagellanRef)" TargetType="exe" OutputAssembly="pos.exe" 
-        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" />
+        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" DefineConstants="@(JsonDefine)" />
   </Target>
   <Target Name="Future" DependsOnTargets="@(MagellanFutureTarget)">
     <Csc Sources="@(Magellan)" References="@(MagellanFutureRef)" TargetType="exe" OutputAssembly="pos-future.exe" 
-        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" />
+        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" DefineConstants="@(JsonDefine)" />
   </Target>
 
   <!-- Build DelegateForm.dll -->
@@ -151,6 +157,10 @@
 
   <Target Name="HIDSharpLibrary" Returns="HIDSharp.dll">
     <MSBuild Projects="HidSharp\HidSharp.csproj" />
+  </Target>
+
+  <Target Name="JsonLibrary" Returns="Newtonsoft.Json.dll">
+    <MSBuild Projects="Newtonsoft.Json\Newtonsoft.Json.Net40.csproj" />
   </Target>
 
 </Project>

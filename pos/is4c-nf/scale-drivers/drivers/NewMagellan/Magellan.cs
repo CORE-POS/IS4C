@@ -33,6 +33,12 @@ using System.Threading;
 using System.IO;
 using System.Collections;
 
+#if NEWTONSOFT_JSON
+using System.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+#endif
+
 #if CORE_RABBIT
 using RabbitMQ.Client;
 #endif
@@ -180,8 +186,51 @@ public class Magellan : DelegateForm {
         }
     }
 
+    #if NEWTONSOFT_JSON
+    private ArrayList JsonConfig()
+    {
+        string my_location = AppDomain.CurrentDomain.BaseDirectory;
+        char sep = System.IO.Path.DirectorySeparatorChar;
+        string ini_file = my_location + sep + ".." + sep + ".." + sep + ".." + sep + "ini.json";
+        ArrayList al = new ArrayList();
+        if (!System.IO.File.Exists(ini_file)) {
+            return al;
+        }
+
+        try {
+            string ini_json = System.IO.File.ReadAllText(ini_file);
+            JObject o = JObject.Parse(ini_json);
+            foreach (var port in o["NewMagellanPorts"]) {
+                if (port["port"] == null) {
+                    System.Console.WriteLine("Missing the \"port\" setting. JSON:");
+                    System.Console.WriteLine(port);
+                } else if (port["module"] == null) {
+                    System.Console.WriteLine("Missing the \"module\" setting. JSON:");
+                    System.Console.WriteLine(port);
+                } else {
+                    al.Add(new string[]{ (string)port["port"], (string)port["module"] });
+                }
+            }
+        } catch (Exception ex) {
+            System.Console.WriteLine(ex);
+        }
+
+        return al;
+    }
+    #endif
+
     private ArrayList ReadConfig()
     {
+        /**
+         * Look for settings in ini.json if it exists
+         * and the library DLL exists
+         */
+        #if NEWTONSOFT_JSON
+        ArrayList json_ports = JsonConfig();
+        if (json_ports.Count > 0) {
+            return json_ports;
+        }
+        #endif
         string my_location = AppDomain.CurrentDomain.BaseDirectory;
         char sep = System.IO.Path.DirectorySeparatorChar;
         StreamReader fp = new StreamReader(my_location + sep + "ports.conf");
