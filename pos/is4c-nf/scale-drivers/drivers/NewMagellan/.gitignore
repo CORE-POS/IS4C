@@ -1,2 +1,5 @@
 ports.conf
 logo.jpg
+*.suo
+HidSharp/bin
+HidSharp/obj

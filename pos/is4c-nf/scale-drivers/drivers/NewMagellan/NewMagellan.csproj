@@ -149,63 +149,8 @@
         Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" />
   </Target>
 
-  <!-- 
-    Build HidSharp project as HIDSharp.dll
-    Probably a better way of doing this utilizing
-    the .vcsproj file in the HidSharp directory
-  -->
-  <ItemGroup>
-    <HidSharp Include="HidSharp\ReportDescriptors\GlobalItemTag.cs" /> 
-    <HidSharp Include="HidSharp\ReportDescriptors\CollectionType.cs" /> 
-    <HidSharp Include="HidSharp\ReportDescriptors\ItemType.cs" /> 
-    <HidSharp Include="HidSharp\ReportDescriptors\MainItemTag.cs" /> 
-    <HidSharp Include="HidSharp\ReportDescriptors\LocalItemTag.cs" /> 
-    <HidSharp Include="HidSharp\ReportDescriptors\Parser\ReportSegment.cs" /> 
-    <HidSharp Include="HidSharp\ReportDescriptors\Parser\ReportType.cs" /> 
-    <HidSharp Include="HidSharp\ReportDescriptors\Parser\LocalIndexes.cs" /> 
-    <HidSharp Include="HidSharp\ReportDescriptors\Parser\ReportMainItem.cs" /> 
-    <HidSharp Include="HidSharp\ReportDescriptors\Parser\IndexList.cs" /> 
-    <HidSharp Include="HidSharp\ReportDescriptors\Parser\Report.cs" /> 
-    <HidSharp Include="HidSharp\ReportDescriptors\Parser\IndexBase.cs" /> 
-    <HidSharp Include="HidSharp\ReportDescriptors\Parser\ReportDescriptorParser.cs" /> 
-    <HidSharp Include="HidSharp\ReportDescriptors\Parser\IndexRange.cs" /> 
-    <HidSharp Include="HidSharp\ReportDescriptors\Parser\ReportCollection.cs" /> 
-    <HidSharp Include="HidSharp\ReportDescriptors\EncodedItem.cs" /> 
-    <HidSharp Include="HidSharp\ReportDescriptors\Units\TimeUnit.cs" /> 
-    <HidSharp Include="HidSharp\ReportDescriptors\Units\Unit.cs" /> 
-    <HidSharp Include="HidSharp\ReportDescriptors\Units\UnitSystem.cs" /> 
-    <HidSharp Include="HidSharp\ReportDescriptors\Units\TemperatureUnit.cs" /> 
-    <HidSharp Include="HidSharp\ReportDescriptors\Units\LuminousIntensityUnit.cs" /> 
-    <HidSharp Include="HidSharp\ReportDescriptors\Units\CurrentUnit.cs" /> 
-    <HidSharp Include="HidSharp\ReportDescriptors\Units\MassUnit.cs" /> 
-    <HidSharp Include="HidSharp\ReportDescriptors\Units\LengthUnit.cs" /> 
-    <HidSharp Include="HidSharp\ReportDescriptors\DataMainItemFlags.cs" /> 
-    <HidSharp Include="HidSharp\HidDevice.cs" /> 
-    <HidSharp Include="HidSharp\Throw.cs" /> 
-    <HidSharp Include="HidSharp\AsyncResult.cs" /> 
-    <HidSharp Include="HidSharp\Properties\AssemblyInfo.cs" /> 
-    <HidSharp Include="HidSharp\HidStream.cs" /> 
-    <HidSharp Include="HidSharp\HidDeviceLoader.cs" /> 
-    <HidSharp Include="HidSharp\Platform\HidManager.cs" /> 
-    <HidSharp Include="HidSharp\Platform\MacOS\MacHidManager.cs" /> 
-    <HidSharp Include="HidSharp\Platform\MacOS\MacHidStream.cs" /> 
-    <HidSharp Include="HidSharp\Platform\MacOS\MacHidDevice.cs" /> 
-    <HidSharp Include="HidSharp\Platform\MacOS\NativeMethods.cs" /> 
-    <HidSharp Include="HidSharp\Platform\Utf8Marshaler.cs" /> 
-    <HidSharp Include="HidSharp\Platform\HidSelector.cs" /> 
-    <HidSharp Include="HidSharp\Platform\Windows\WinHidManager.cs" /> 
-    <HidSharp Include="HidSharp\Platform\Windows\WinHidDevice.cs" /> 
-    <HidSharp Include="HidSharp\Platform\Windows\WinHidStream.cs" /> 
-    <HidSharp Include="HidSharp\Platform\Windows\NativeMethods.cs" /> 
-    <HidSharp Include="HidSharp\Platform\Unsupported\UnsupportedHidManager.cs" /> 
-    <HidSharp Include="HidSharp\Platform\Linux\LinuxHidStream.cs" /> 
-    <HidSharp Include="HidSharp\Platform\Linux\LinuxHidManager.cs" /> 
-    <HidSharp Include="HidSharp\Platform\Linux\LinuxHidDevice.cs" /> 
-    <HidSharp Include="HidSharp\Platform\Linux\NativeMethods.cs" />
-  </ItemGroup>
   <Target Name="HIDSharpLibrary" Returns="HIDSharp.dll">
-    <Csc Sources="@(HIDSharp)" AllowUnsafeBlocks="true" TargetType="library" OutputAssembly="HIDSharp.dll" 
-        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" />
+    <MSBuild Projects="HidSharp\HidSharp.csproj" />
   </Target>
 
 </Project>
