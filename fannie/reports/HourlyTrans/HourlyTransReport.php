@@ -283,7 +283,7 @@ function showGraph(i) {
 
     var xdata = Array();
     $('td.reportColumn0').each(function(){
-        var hour = $(this).html().substring(0,2);
+        var hour = $(this).html().trim().substring(0,2);
         if (hour.charAt(0) == '0') {
             hour = hour.charAt(1);
         }
