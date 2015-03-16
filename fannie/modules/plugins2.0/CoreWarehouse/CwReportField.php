@@ -94,7 +94,7 @@ class CwReportField
         $ret = '<label>' . $this->label . '</label> ';
         $ret .= '<select name="' . $this->name . '" class="form-control cw-field">';
         $keys = array_keys($this->options);
-        $sequential_keys = range(count($this->options));
+        $sequential_keys = range(0, count($this->options)-1);
         $use_values = ($keys != $sequential_keys) ? true : false;
         foreach ($this->options as $value => $label) {
             if (!$use_values) {
