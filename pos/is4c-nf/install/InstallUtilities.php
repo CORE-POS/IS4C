@@ -244,7 +244,11 @@ class InstallUtilities extends LibraryClass
 
         $json = json_decode(file_get_contents($ini_json), true);
         if (!is_array($json)) {
-            return false;
+            if (trim(file_get_contents($ini_json)) === '') {
+                $json = array();
+            } else {
+                return false;
+            }
         }
 
         /**

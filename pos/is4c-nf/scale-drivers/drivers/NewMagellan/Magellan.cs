@@ -211,7 +211,11 @@ public class Magellan : DelegateForm {
                     al.Add(new string[]{ (string)port["port"], (string)port["module"] });
                 }
             }
+        } catch (NullReferenceException) {
+            // probably means now NewMagellanPorts key in ini.json
+            // not a fatal problem
         } catch (Exception ex) {
+            // unexpected exception
             System.Console.WriteLine(ex);
         }
 
