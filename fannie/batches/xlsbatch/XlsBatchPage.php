@@ -142,15 +142,15 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
     function preview_content()
     {
         $batchtypes = $this->get_batch_types();
-        $ret = sprintf("<b>Batch Type: %s <input type=hidden value=%d name=btype /><br />",
+        $ret = sprintf("<b>Batch Type</b>: %s <input type=hidden value=%d name=btype /><br />",
             $batchtypes[FormLib::get_form_value('btype')],FormLib::get_form_value('btype'));
-        $ret .= sprintf("<b>Batch Name: %s <input type=hidden value=\"%s\" name=bname /><br />",
+        $ret .= sprintf("<b>Batch Name</b>: %s <input type=hidden value=\"%s\" name=bname /><br />",
             FormLib::get_form_value('bname'),FormLib::get_form_value('bname'));
-        $ret .= sprintf("<b>Owner: %s <input type=hidden value=\"%s\" name=bowner /><br />",
+        $ret .= sprintf("<b>Owner</b>: %s <input type=hidden value=\"%s\" name=bowner /><br />",
             FormLib::get_form_value('bowner'),FormLib::get_form_value('bowner'));
-        $ret .= sprintf("<b>Start Date: %s <input type=hidden value=\"%s\" name=date1 /><br />",
+        $ret .= sprintf("<b>Start Date</b>: %s <input type=hidden value=\"%s\" name=date1 /><br />",
             FormLib::get_form_value('date1'),FormLib::get_form_value('date1'));
-        $ret .= sprintf("<b>End Date: %s <input type=hidden value=\"%s\" name=date2 /><br />",
+        $ret .= sprintf("<b>End Date</b>: %s <input type=hidden value=\"%s\" name=date2 /><br />",
             FormLib::get_form_value('date2'),FormLib::get_form_value('date2'));
         $ret .= sprintf("<b>Product Identifier</b>: %s <input type=hidden value=\"%s\" name=ftype /><br />",
             FormLib::get_form_value('ftype'),FormLib::get_form_value('ftype'));
