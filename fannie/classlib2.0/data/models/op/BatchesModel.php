@@ -185,7 +185,15 @@ those same items revert to normal pricing.
                 UPDATE products AS p
                       INNER JOIN batchList AS l ON l.upc=p.upc
                 SET p.normal_price = l.salePrice,
-                    p.modified = curdate()
+                    p.modified = now()
+                WHERE l.upc not like 'LC%'
+                    AND l.batchID = ?";
+
+            $scaleQ = "
+                UPDATE scaleItems AS s
+                    INNER JOIN batchList AS l ON l.upc=s.plu
+                SET s.price = l.salePrice,
+                    s.modified = now()
                 WHERE l.upc not like 'LC%'
                     AND l.batchID = ?";
 
@@ -194,7 +202,7 @@ those same items revert to normal pricing.
                     INNER JOIN upcLike AS v ON v.upc=p.upc 
                     INNER JOIN batchList as b on b.upc=concat('LC',convert(v.likecode,char))
                 SET p.normal_price = b.salePrice,
-                    p.modified=curdate()
+                    p.modified=now()
                 WHERE l.upc LIKE 'LC%'
                     AND l.batchID = ?";
 
@@ -210,6 +218,17 @@ those same items revert to normal pricing.
                       AND b.batchID = l.batchID
                       AND b.batchID = ?";
 
+                $scaleQ = "UPDATE scaleItems
+                      SET price = l.salePrice,
+                      modified = getdate()
+                      FROM scaleItems as s,
+                      batches as b,
+                      batchList as l
+                      WHERE l.upc = s.plu
+                      AND l.upc not like 'LC%'
+                      AND b.batchID = l.batchID
+                      AND b.batchID = ?";
+
                 $forceLCQ = "update products set normal_price = b.salePrice,
                     modified=getdate()
                     from products as p left join
@@ -221,6 +240,8 @@ those same items revert to normal pricing.
 
         $forceP = $this->connection->prepare($forceQ);
         $forceR = $this->connection->execute($forceP,array($id));
+        $scaleP = $this->connection->prepare($scaleQ);
+        $scaleR = $this->connection->execute($scaleP,array($id));
         $forceLCP = $this->connection->prepare($forceLCQ);
         $forceR = $this->connection->execute($forceLCP,array($id));
 
@@ -416,6 +437,55 @@ those same items revert to normal pricing.
 
         $update = new ProdUpdateModel($this->connection);
         $update->logManyUpdates(array_keys($upcs), $updateType);
+    }
+
+    /**
+      Fetch all UPCs associated with a batch
+      @param $batchID [optional]
+      @return [array] of [string] UPC values
+      If $batchID is omitted, the model's own batchID
+      is used.
+    */
+    public function getUPCs($batchID=false)
+    {
+        if ($batchID === false) {
+            $batchID = $this->batchID();
+        }
+
+        if ($batchID === null) {
+            return array();
+        }
+
+        $upcs = array();
+        $likecodes = array();
+        $in_sql = '';
+        $itemP = $this->connection->prepare('
+            SELECT upc
+            FROM batchList
+            WHERE batchID=?');
+        $itemR = $this->connection->execute($itemP, array($batchID));
+        while ($itemW = $this->connection->fetchRow($itemR)) {
+            if (substr($itemW['upc'], 0, 2) == 'LC') {
+                $likecodes[] = substr($itemW['upc'], 2);
+                $in_sql .= '?,';
+            } else {
+                $upcs[] = $itemW['upc'];
+            }
+        }
+
+        if (count($likecodes) > 0) {
+            $in_sql = substr($in_sql, 0, strlen($in_sql)-1);
+            $lcP = $this->connection->prepare('
+                SELECT upc
+                FROM upcLike
+                WHERE likeCode IN (' . $in_sql . ')');
+            $lcR = $this->connection->execute($lcP, $likecodes);
+            while ($lcW = $this->connection->fetchRow($lcR)) {
+                $upcs[] = $lcW['upc'];
+            }
+        }
+
+        return $upcs;
     }
 
     protected function hookAddColumnowner()
