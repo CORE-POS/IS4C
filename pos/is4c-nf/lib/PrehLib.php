@@ -503,6 +503,17 @@ static public function tender($right, $strl)
 	*/
 	$tender_object = 0;
 	$map = CoreLocal::get("TenderMap");
+    $db = Database::pDataConnect();
+    /**
+      Fetch module mapping from the database
+      if the schema supports it
+      16Mar2015
+    */
+    $tender_table = $db->table_definition('tenders');
+    if (isset($tender_table['TenderModule'])) {
+        $tender_model = new TendersModel($db);
+        $map = $tender_model->getMap();
+    }
 	if (is_array($map) && isset($map[$right])) {
 		$class = $map[$right];
 		$tender_object = new $class($right, $strl);
