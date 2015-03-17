@@ -96,7 +96,7 @@ static public function memberID($member_number)
 
 	// special hard coding for member 5607 WFC 
 	// needs to go away
-	if ($member_number == "5607") {
+	if (CoreLocal::get('store') == 'wfc' && $member_number == "5607") {
 		$ret['main_frame'] = MiscLib::baseURL()."gui-modules/requestInfo.php?class=PrehLib";
 
         return $ret;
