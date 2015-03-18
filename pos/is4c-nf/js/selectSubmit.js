@@ -15,12 +15,9 @@ function selectSubmit(selector, myform, filter_selector) {
     var prevKey = 0;
     var prevPrevKey = 0;
     var filter_string = '';
-    var disabled = true;
+    var disabled = false;
 
     $(selector).keydown(function (e){
-        if (disabled) {
-            return;
-        }
         var jsKey; 
         if (e.which) {
             jsKey = e.which;
@@ -30,8 +27,15 @@ function selectSubmit(selector, myform, filter_selector) {
 
         if (jsKey == 13) {
             enterDown = 1;
+            e.preventDefault();
+            e.stopPropagation();
         } else {
             enterDown = 0;
+        }
+
+        if (disabled) {
+            enterDown = 0;
+            return;
         }
 
         /**
@@ -47,14 +51,20 @@ function selectSubmit(selector, myform, filter_selector) {
     });
 
     $(selector).keyup(function (e){
-        if (disabled) {
-            return;
-        }
         var jsKey; 
         if (e.which) {
             jsKey = e.which;
         } else if (e.keyCode) {
             jsKey = e.keyCode;
+        }
+
+        if (jsKey == 13) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        if (disabled) {
+            return;
         }
 
         if (jsKey == 13 && enterDown == 1 && enterUp == 0) {
@@ -133,7 +143,7 @@ function selectSubmit(selector, myform, filter_selector) {
         }
     });
 
-    setTimeout(function(){disabled=false;}, 500);
+    setTimeout(function(){disabled=false;}, 250);
 }
 
 function isFilterKey(keyCode)
