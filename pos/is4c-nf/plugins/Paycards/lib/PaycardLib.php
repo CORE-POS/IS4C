@@ -597,10 +597,6 @@ static public function paycard_db_fetch_row($result){
 	return self::$paycardDB->fetch_row($result);
 }
 
-static public function paycard_db_escape($str, $link){
-	return self::$paycardDB->escape($str);
-}
-
 /*
 summary of ISO standards for credit card magnetic stripe data tracks:
 http://www.cyberd.co.uk/support/technotes/isocards.htm

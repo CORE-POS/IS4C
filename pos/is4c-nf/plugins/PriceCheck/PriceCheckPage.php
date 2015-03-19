@@ -56,8 +56,9 @@ class PriceCheckPage extends NoInputPage
 				pricemethod,quantity,specialgroupprice,specialquantity,
 				mixmatchcode,idEnforced,tareweight,d.dept_name
 				from products, departments d where department = d.dept_no
-				AND upc = '" . $db->escape($this->upc) . "'";
-			$result = $db->query($query);
+				AND upc = ?";
+            $prep = $db->prepare($query);
+			$result = $db->execute($prep, array($this->upc));
 			$num_rows = $db->num_rows($result);
 
 			// lookup item info

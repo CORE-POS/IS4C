@@ -70,14 +70,22 @@ class rplist extends NoInputPage
     function body_content()
     {
         $db = Database::tDataConnect();
-        $query = "select register_no, emp_no, trans_no, "
-            ."sum((case when trans_type = 'T' then -1 * total else 0 end)) as total "
-            ."FROM localtranstoday WHERE register_no = " . CoreLocal::get("laneno")
-            ." AND emp_no = " . CoreLocal::get("CashierNo")
-            ." AND datetime >= " . $db->curdate()
-            ." GROUP BY register_no, emp_no, trans_no ORDER BY trans_no DESC";
-    
-        $result = $db->query($query);
+        $query = "
+            SELECT register_no, 
+                emp_no, 
+                trans_no, 
+                SUM((CASE WHEN trans_type = 'T' THEN -1 * TOTAL ELSE 0 END)) AS total 
+            FROM localtranstoday 
+            WHERE register_no = ?
+                AND emp_no = ?
+                AND datetime >= " . $db->curdate() . "
+            GROUP BY register_no, 
+                emp_no, 
+                trans_no 
+            ORDER BY trans_no DESC";
+        $args = array(CoreLocal::get('laneno'), CoreLocal::get('CashierNo')); 
+        $prep = $db->prepare($query);
+        $result = $db->execute($prep, $args);
         $num_rows = $db->num_rows($result);
         ?>
 

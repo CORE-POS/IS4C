@@ -94,13 +94,17 @@ class adminlogin extends NoInputPage {
 			}
 			else {
 				$db = Database::pDataConnect();
-				$passwd = $db->escape($passwd);
-				$query = "select emp_no, FirstName, LastName from employees 
-					where EmpActive = 1 and frontendsecurity >= "
-					.$class::$adminLoginLevel
-					." and (CashierPassword = '".$passwd."' 
-					or AdminPassword = '".$passwd."')";
-				$result = $db->query($query);
+				$query = "
+                    SELECT emp_no, 
+                        FirstName, 
+                        LastName 
+                    FROM employees 
+					where EmpActive = 1 
+                        AND frontendsecurity >= ?
+                        AND (CashierPassword = ? OR AdminPassword = ?)";
+                $args = array($class::$adminLoginLevel, $passwd, $passwd);
+                $prep = $db->prepare($query);
+				$result = $db->execute($prep, $args);
 				$num_rows = $db->num_rows($result);
 				if ($num_rows != 0) {
 					$row = $db->fetch_row($result);

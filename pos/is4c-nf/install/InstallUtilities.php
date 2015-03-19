@@ -2846,5 +2846,105 @@ class InstallUtilities extends LibraryClass
 
         return $errors;
     }
+
+    public static function createMinServer($db, $name)
+    {
+        $errors = array();
+        $type = $db->dbms_name();
+        if (CoreLocal::get('laneno') == 0) {
+            $errors[] = array(
+                'struct' => 'No structures created for lane #0',
+                'query' => 'None',
+                'details' => 'Zero is reserved for server',
+            );
+
+            return $errors;
+        }
+
+        $models = array(
+            'DTransactionsModel',
+            'SuspendedModel',
+            'EfsnetRequestModel',
+            'EfsnetRequestModModel',
+            'EfsnetResponseModel',
+            'EfsnetTokensModel',
+            'PaycardTransactionsModel',
+            'CapturedSignatureModel',
+            // Views
+            'CcReceiptViewModel',
+        );
+        foreach ($models as $class) {
+            $obj = new $class($db);
+            $errors[] = $obj->createIfNeeded($name);
+        }
+
+        $dlogQ = "CREATE VIEW dlog AS
+            SELECT datetime AS tdate,
+                register_no,
+                emp_no,
+                trans_no,
+                upc,
+                CASE 
+                    WHEN trans_subtype IN ('CP','IC') OR upc LIKE '%000000052' THEN 'T' 
+                    WHEN upc = 'DISCOUNT' THEN 'S' 
+                    ELSE trans_type 
+                END AS trans_type,
+                CASE 
+                    WHEN upc = 'MAD Coupon' THEN 'MA' 
+                    WHEN upc LIKE '%00000000052' THEN 'RR' 
+                    ELSE trans_subtype 
+                END AS trans_subtype,
+                trans_status,
+                department,
+                quantity,
+                unitPrice,
+                total,
+                tax,
+                foodstamp,
+                ItemQtty,
+                memType,
+                staff,
+                numflag,
+                charflag,
+                card_no,
+                trans_id, "
+                . $db->concat(
+                    $db->convert('emp_no','char'),"'-'",
+                    $db->convert('register_no','char'),"'-'",
+                    $db->convert('trans_no','char'),
+                    '') . " AS trans_num
+            FROM dtransactions
+            WHERE trans_status NOT IN ('D','X','Z')
+                AND emp_no <> 9999 
+                AND register_no <> 99";
+        if (!$db->table_exists("dlog",$name)) {
+            $errors = InstallUtilities::dbStructureModify($db,'dlog',$dlogQ,$errors);
+        }
+
+        $ttG = "
+            CREATE VIEW TenderTapeGeneric AS
+            SELECT tdate, 
+                emp_no, 
+                register_no,
+                trans_no,
+                CASE 
+                    WHEN trans_subtype = 'CP' AND upc LIKE '%MAD%' THEN ''
+                    WHEN trans_subtype IN ('EF','EC','TA') THEN 'EF'
+                    ELSE trans_subtype
+                END AS trans_subtype,
+                CASE 
+                    WHEN trans_subtype = 'ca' THEN
+                        CASE WHEN total >= 0 THEN total ELSE 0 END
+                    ELSE -1 * total
+            END AS tender
+            FROM dlog
+            WHERE tdate >= " . $db->curdate() . "
+                AND trans_subtype NOT IN ('0','')";
+        if (!$db->table_exists("TenderTapeGeneric",$name)) {
+            InstallUtilities::dbStructureModify($db,'TenderTapeGeneric',$ttG,$errors);
+        }
+
+        return $errors;
+    }
 }
 

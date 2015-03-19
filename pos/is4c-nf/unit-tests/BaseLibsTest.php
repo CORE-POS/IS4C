@@ -83,6 +83,33 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 		Database::loadglobalvalues();
 		$this->assertEquals(0, CoreLocal::get('ttlflag'));
 		$this->assertEquals(0, CoreLocal::get('fntlflag'));
+
+		if (!class_exists('lttLib')) {
+            include(dirname(__FILE__) . '/lttLib.php');
+        }
+		lttLib::clear();
+        $record = lttLib::genericRecord(); 
+        $record['upc'] = '0000000000000';
+        $record['description'] = uniqid('TEST-');
+        TransRecord::addRecord($record);
+        SuspendLib::suspendorder();
+
+        $db = Database::mDataConnect();
+        $query = "
+            SELECT *
+            FROM suspended
+            WHERE upc='{$record['upc']}'
+                AND description='{$record['description']}'
+                AND datetime >= " . $db->curdate();
+        $result = $db->query($query);
+        $this->assertNotEquals(false, $result, 'Could not query suspended record');
+        $this->assertEquals(1, $db->num_rows($result), 'Could not find suspended record');
+        $row = $db->fetch_row($result);
+        $this->assertInternalType('array', $row, 'Invalid suspended record');
+        foreach ($record as $column => $value) {
+            $this->assertArrayHasKey($column, $row, 'Suspended missing ' . $column);
+            $this->assertEquals($value, $row[$column], 'Suspended mismatch on column ' . $column);
+        }
 	}
 
 	public function testAuthenticate()
