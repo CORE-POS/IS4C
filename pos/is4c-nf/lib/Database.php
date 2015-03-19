@@ -125,7 +125,7 @@ static public function pDataConnect()
 static public function mDataConnect()
 {
     $sql = new SQLManager(CoreLocal::get("mServer"),CoreLocal::get("mDBMS"),CoreLocal::get("mDatabase"),
-                  CoreLocal::get("mUser"),CoreLocal::get("mPass"),False);
+                  CoreLocal::get("mUser"),CoreLocal::get("mPass"),false,true);
 
     return $sql;
 }

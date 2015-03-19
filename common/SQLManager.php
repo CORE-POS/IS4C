@@ -126,9 +126,9 @@ class SQLManager
         return true;
     }
 
-    public function add_connection($server,$type,$database,$username,$password='',$persistent=false)
+    public function add_connection($server,$type,$database,$username,$password='',$persistent=false,$new=false)
     {
-        return $this->addConnection($server, $type, $database, $username, $password, $persistent);
+        return $this->addConnection($server, $type, $database, $username, $password, $persistent,$new);
     }
 
     /**

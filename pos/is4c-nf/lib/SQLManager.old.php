@@ -89,7 +89,7 @@ class SQLManager
     private $TYPE_PDOPG = 'PDOPGSQL';
     private $TYPE_PDOSL = 'PDOLITE';
 
-    public function __construct($server, $type, $database, $username, $password='', $persistent=false)
+    public function __construct($server, $type, $database, $username, $password='', $persistent=false, $new=false)
     {
         $this->connections=array();
         $this->db_types=array();
