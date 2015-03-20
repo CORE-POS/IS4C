@@ -99,6 +99,7 @@ class ManualPurchaseOrderPage extends FannieRESTfulPage
         if (FormLib::get('order-id') !== '' && is_numeric(FormLib::get('order-id'))) {
             $orderID = FormLib::get('order-id');
             $po->orderID($orderID);
+            $po->save();
         } else {
             $orderID = $po->save();
         }
@@ -123,6 +124,15 @@ class ManualPurchaseOrderPage extends FannieRESTfulPage
             $units = $caseSize[$i];
             $qty = $cases[$i];
             $unitCost = $total[$i] / $qty / $units;
+            /**
+              Multiple same-SKU records
+              Sum the quantities and costs to merge
+              into a single record
+            */
+            if ($pitem->load()) {
+                $qty += $pitem->receivedQty();
+                $total[$i] += $pitem->receivedTotalCost();
+            }
 
             $pitem->quantity($qty);
             $pitem->caseSize($units);
