@@ -116,6 +116,9 @@ class adminlist extends NoInputPage {
 			else if ($_REQUEST['selectlist'] == 'OTR' && $this->security >= 30){
 				$this->change_page($this->page_url.'gui-modules/requestInfo.php?class=AnyTenderReportRequest');
 				return False;
+			} elseif ($_REQUEST['selectlist'] == 'UNDO' && $this->security >= 30){
+                $this->change_page($this->page_url . 'gui-modules/undo.php');
+                return false;
 			}
 		}
 		return True;
@@ -151,6 +154,7 @@ class adminlist extends NoInputPage {
 		<?php } ?>
 		<?php if ($this->security >= 30){ ?>
 			<option value='OTR'>4. <?php echo _("Any Tender Report"); ?>
+            <option value='UNDO'><?php echo _('Undo Transaction'); ?>
 		<?php } ?>
 		</select>
         <?php if (CoreLocal::get('touchscreen')) { ?>

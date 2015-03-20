@@ -74,7 +74,10 @@ class rplist extends NoInputPage
             SELECT register_no, 
                 emp_no, 
                 trans_no, 
-                SUM((CASE WHEN trans_type = 'T' THEN -1 * TOTAL ELSE 0 END)) AS total 
+                SUM(CASE 
+                    WHEN trans_type='T' AND department=0 THEN -1 * total 
+                    ELSE 0 
+                END) AS total 
             FROM localtranstoday 
             WHERE register_no = ?
                 AND emp_no = ?
