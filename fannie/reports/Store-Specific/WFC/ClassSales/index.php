@@ -23,7 +23,7 @@
 
 include('../../../../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
-include($FANNIE_ROOT.'src/Credentials/OutsideDB.is4c.php');
+include($FANNIE_ROOT.'src/Credentials/OutsideDB.tunneled.php');
 
 $thisMonth = date('n');
 while(($thisMonth-1)%3 != 0) $thisMonth--;
@@ -50,8 +50,8 @@ if (isset($_REQUEST['upc'])){
             echo '<table cellspacing="0" cellpadding="4" border="1">
                 <tr><th>Email</th><th>Name</th><th>Qty Sold</th></tr>';
         }
-        printf('<tr><td>%s</td><td>%s</td><td>%d</td></tr>',
-            $w['name'],$w['real_name'],$w['quantity']);
+        printf('<tr><td>%s</td><td>%s</td><td>%s</td><td>%d</td></tr>',
+            $w['datetime'],$w['name'],$w['real_name'],$w['quantity']);
         $rc++;
     }
     echo '</table>';
