@@ -42,16 +42,22 @@ class qtty2 extends BasicPage {
 			CoreLocal::set("msgrepeat",0);
 			$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;
-		}
-		elseif (is_numeric($qtty) && $qtty < 9999 && $qtty >= 0) {
+		} elseif (is_numeric($qtty) && $qtty < 9999 && $qtty >= 0) {
 			$input_string = CoreLocal::get("item");
-			$plu = "";
-			while(!empty($input_string) && is_numeric($input_string[strlen($input_string)-1])){
-				$plu = $input_string[strlen($input_string)-1] . $plu;
-				$input_string = substr($input_string,0,strlen($input_string)-1);
-			}
+			$plu = '';
+            $prefix = '';
+            // trim numeric characters from right side of
+            // input. what remains, if anything, should be
+            // prefixes to the UPC
+            $matched = preg_match('/^(\D*)(\d+)$/', $input_string, $matches);
+            if ($matched) {
+                $prefix = $matches[1];
+                $plu = $matches[2];
+            } else {
+                $plu = $input_string;
+            }
 			CoreLocal::set("qttyvalid",1);
-			CoreLocal::set("strRemembered",$input_string.$qtty."*".$plu);
+			CoreLocal::set("strRemembered", $prefix . $qtty . '*' . $plu);
 			CoreLocal::set("msgrepeat",1);
 			$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;
