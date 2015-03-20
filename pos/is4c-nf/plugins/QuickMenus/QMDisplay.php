@@ -91,11 +91,12 @@ class QMDisplay extends NoInputPage {
 
 	function body_content()
     {
-		$this->add_onload_command('$(\'#ddQKselect\').focus()');
         $this->add_onload_command("selectSubmit('#ddQKselect', '#qmform');\n");
+		$this->add_onload_command('$(\'#ddQKselect\').focus()');
 
 		echo "<div class=\"baseHeight\" style=\"border: solid 1px black;\">";
-		echo "<form id=\"qmform\" action=\"".$_SERVER["PHP_SELF"]."\" method=\"post\">";
+		echo "<form id=\"qmform\" action=\"".$_SERVER["PHP_SELF"]."\" 
+            method=\"post\" onsubmit=\"return false;\">";
 
         /**
           Where can the menu be found?

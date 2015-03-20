@@ -17,7 +17,7 @@ function selectSubmit(selector, myform, filter_selector) {
     var filter_string = '';
     var disabled = false;
 
-    $(selector).keydown(function (e){
+    $(document).keydown(function (e){
         var jsKey; 
         if (e.which) {
             jsKey = e.which;
@@ -50,7 +50,7 @@ function selectSubmit(selector, myform, filter_selector) {
 
     });
 
-    $(selector).keyup(function (e){
+    $(document).keyup(function (e){
         var jsKey; 
         if (e.which) {
             jsKey = e.which;
@@ -82,7 +82,24 @@ function selectSubmit(selector, myform, filter_selector) {
                 }
                 $(selector).val('');
             }
+
+            /**
+              1. Remove any existing onsubmit attribute
+              2. Submit the form
+              3. Add an onsubmit method to prevent any additional
+                 form submittsions
+
+              Putting 'onsubmit="return false;"' in the <form>
+              tag can prevent any accidental form submission not
+              specifically triggered by this script.
+            */
+            $(myform).removeAttr('onsubmit');
             $(myform).submit();
+            $(myform).submit(function(submit_event){
+                submit_event.preventDefault();
+                submit_event.stopPropagation();
+                return false;
+            });
         } else if (filter_selector) {
             /**
               Filter options in the select
