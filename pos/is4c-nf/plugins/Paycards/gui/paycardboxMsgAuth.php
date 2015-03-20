@@ -77,6 +77,9 @@ class paycardboxMsgAuth extends PaycardProcessPage {
 		$due = CoreLocal::get("amtdue");
 		$type = CoreLocal::get("CacheCardType");
 		$cb = CoreLocal::get('CacheCardCashBack');
+        if ($type == 'EBTFOOD') {
+            $due = CoreLocal::get('fsEligible');
+        }
 		if( !is_numeric($amt) || abs($amt) < 0.005) {
 		} else if( $amt > 0 && $due < 0) {
 		} else if( $amt < 0 && $due > 0) {
@@ -100,9 +103,12 @@ class paycardboxMsgAuth extends PaycardProcessPage {
 		$due = CoreLocal::get("amtdue");
 		$cb = CoreLocal::get('CacheCardCashBack');
         $balance_limit = CoreLocal::get('PaycardRetryBalanceLimit');
+        if ($type == 'EBTFOOD') {
+            $due = CoreLocal::get('fsEligible');
+        }
 		if ($cb > 0) $amt -= $cb;
 		if( !is_numeric($amt) || abs($amt) < 0.005) {
-			echo PaycardLib::paycard_msgBox($type,"Invalid Amount: $amt $due",
+			echo PaycardLib::paycard_msgBox($type,"Invalid Amount: $amt",
 				"Enter a different amount","[clear] to cancel");
 		} else if( $amt > 0 && $due < 0) {
 			echo PaycardLib::paycard_msgBox($type,"Invalid Amount",
