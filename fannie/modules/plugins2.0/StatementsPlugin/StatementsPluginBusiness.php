@@ -122,7 +122,7 @@ class StatementsPluginBusiness extends FannieRESTfulPage
                 AND card_no=?
                 AND trans_type IN (\'I\', \'D\')
         ';         
-        $todayQ = str_replace('dlog_90_view', 'dlog', $detailsQ);
+        $todayQ = str_replace($FANNIE_ARCHIVE_DB . $dbc->sep() . 'dlogBig', $FANNIE_TRANS_DB . $dbc->sep() . 'dlog', $detailsQ);
         $detailsP = $dbc->prepare($detailsQ);
         $todayP = $dbc->prepare($todayQ);
         $details = array();
@@ -323,7 +323,12 @@ class StatementsPluginBusiness extends FannieRESTfulPage
                 $pdf->Ln(5);
                 $pdf->Cell(50,10,trim($memberW['LastName']),0);
                 $pdf->Ln(5);
-                $pdf->Cell(80,10,$memberW['street'],0);
+                list($addr1, $addr2) = explode("\n", $memberW['street'], 2);
+                $pdf->Cell(80,10,$addr1,0);
+                if ($addr2) {
+                    $pdf->Ln(5);
+                    $pdf->Cell(80,10,$addr2,0);
+                }
                 $pdf->Ln(5);
                 $pdf->Cell(90,10,$memberW['city'] . ', ' . $memberW['state'] . '   ' . $memberW['zip'],0);
 
