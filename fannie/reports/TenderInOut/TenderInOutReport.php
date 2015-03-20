@@ -71,7 +71,7 @@ class TenderInOutReport extends FannieReportPage
         $data = array();
         while ($row = $dbc->fetch_array($result)) {
             $record = array(
-                $row['tdate'],
+                date('Y-m-d', strtotime($row['tdate'])),
                 $row['trans_num'],
                 $row['emp_no'],
                 $row['register_no'],
