@@ -151,9 +151,9 @@ class FanniePage
         ob_start();
         $page_title = $this->title;
         $header = $this->header;
+        $headerConfig = $this->config;
+        $BACKEND_NAME = $this->config->get('BACKEND_NAME', 'Fannie');
         if ($this->themed) {
-            $headerConfig = $this->config;
-            $BACKEND_NAME = $this->config->get('BACKEND_NAME', 'Fannie');
             include(dirname(__FILE__) . '/../src/header.bootstrap.html');
             $this->addJQuery();
             if (!$this->addBootstrap()) {
@@ -527,6 +527,7 @@ function enableLinea(selector, callback)
         if (!$help) {
             return false;
         }
+        $BACKEND_NAME = $this->config->get('BACKEND_NAME', 'Fannie');
 
         return '
             <div class="modal" id="help-modal" role="modal">
@@ -536,7 +537,9 @@ function enableLinea(selector, callback)
                             <button type="button" class="close" data-dismiss="modal">
                                 <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
                             </button>
-                            <h4>' . $this->title . '</h4>
+                            <h4>' . 
+                                preg_replace('/^Fannie(.*)$/', $BACKEND_NAME . '$1', $this->title) . '
+                            </h4>
                         </div>
                         <div class="modal-body">' . $help . '</div>
                         <div class="modal-footer">
