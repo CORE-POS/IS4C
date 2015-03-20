@@ -111,7 +111,8 @@ those same items revert to normal pricing.
                         WHEN l.pricemethod IN (3,4) AND l.salePrice < 0 THEN convert(-1*l.batchID,char)
                         WHEN l.pricemethod = 0 AND l.quantity > 0 THEN concat('b',convert(l.batchID,char))
                         ELSE p.mixmatchcode 
-                    END 
+                    END ,
+                    p.modified = NOW()
                 WHERE l.upc not like 'LC%'
                     and l.batchID = ?";
                 
@@ -133,7 +134,8 @@ those same items revert to normal pricing.
                         WHEN l.pricemethod IN (3,4) AND l.salePrice < 0 THEN convert(-1*l.batchID,char)
                         WHEN l.pricemethod = 0 AND l.quantity > 0 THEN concat('b',convert(l.batchID,char))
                         ELSE p.mixmatchcode 
-                    END 
+                    END,
+                    p.modified = NOW()
                 WHERE l.upc LIKE 'LC%'
                     AND l.batchID = ?";
 
@@ -152,7 +154,8 @@ those same items revert to normal pricing.
                     WHEN l.pricemethod IN (3,4) AND l.salePrice < 0 THEN convert(varchar,-1*l.batchID)
                     WHEN l.pricemethod = 0 AND l.quantity > 0 THEN 'b'+convert(varchar,l.batchID)
                     ELSE p.mixmatchcode 
-                    END 
+                    END ,
+                    p.modified = getdate()
                     FROM products as p, 
                     batches as b, 
                     batchList as l 
@@ -173,7 +176,8 @@ those same items revert to normal pricing.
                         WHEN l.pricemethod IN (3,4) AND l.salePrice < 0 THEN convert(varchar,-1*l.batchID)
                         WHEN l.pricemethod = 0 AND l.quantity > 0 THEN 'b'+convert(varchar,l.batchID)
                         ELSE p.mixmatchcode 
-                    END 
+                    END ,
+                    p.modified = getdate()
                     from products as p left join
                     upcLike as v on v.upc=p.upc left join
                     batchList as l on l.upc='LC'+convert(varchar,v.likecode)
