@@ -171,6 +171,10 @@ class AutoLoader extends LibraryClass
                 $path = realpath(dirname(__FILE__).'/ReceiptBuilding/ReceiptTag');
                 $map = Plugin::pluginMap($path,$map);
                 break;
+            case 'DefaultReceiptSavings':
+                $path = realpath(dirname(__FILE__).'/ReceiptBuilding/ReceiptSavings');
+                $map = Plugin::pluginMap($path,$map);
+                break;
             case 'ReceiptMessage':
                 $path = realpath(dirname(__FILE__).'/ReceiptBuilding/Messages');
                 $map = Plugin::pluginMap($path,$map);
