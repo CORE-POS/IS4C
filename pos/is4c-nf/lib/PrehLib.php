@@ -615,6 +615,9 @@ static public function deptkey($price, $dept,$ret=array())
 	if (CoreLocal::get("casediscount") > 0 && CoreLocal::get("casediscount") <= 100) {
 		$case_discount = (100 - CoreLocal::get("casediscount"))/100;
 		$price = $case_discount * $price;
+    } elseif (CoreLocal::get('itemPD') > 0 && CoreLocal::get('SecurityLineItemDiscount') == 30 && CoreLocal::get('msgrepeat')==0){
+        $ret['main_frame'] = MiscLib::baseURL() . "gui-modules/adminlogin.php?class=LineItemDiscountAdminLogin";
+        return $ret;
 	} elseif (CoreLocal::get('itemPD') > 0) {
         $discount = MiscLib::truncate2($price * (CoreLocal::get('itemPD')/100.00));
         $price -= $discount;
