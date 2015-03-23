@@ -558,12 +558,7 @@ static public function localMatchingColumns($connection,$table1,$table2)
 */
 static public function uploadCCdata()
 {
-	if (!in_array("Paycards",CoreLocal::get("PluginList"))) {
-        // plugin not enabled; nothing to upload
-        return true;
-    }
-
-    if (!in_array("Paycards",$CORE_LOCAL->get("PluginList"))) {
+    if (!in_array("Paycards",CoreLocal::get("PluginList"))) {
         // plugin not enabled; nothing to upload
         return true;
     }
