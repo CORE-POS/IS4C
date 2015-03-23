@@ -27,6 +27,7 @@
 */
 class CheckTender extends TenderModule 
 {
+    protected $check = 'check';
 
     /**
       Check for errors
@@ -34,10 +35,25 @@ class CheckTender extends TenderModule
     */
     public function errorCheck()
     {
+
+        /* Want locale-correct spelling.
+         * This approach doesn't work becasue setlocale() may not return the
+         *  right value.
+         */
+        $lang = setlocale(LC_ALL,NULL);
+        if (CoreLocal::get("store") == 'WEFC_Toronto') {
+            $lang = 'en_CA';
+        }
+        if ($lang !== FALSE) {
+            if (preg_match("/^en_(CA|GB|IE)/",$lang)) {
+                $this->check = 'cheque';
+            }
+        }
+
         $clearButton = array('OK [clear]' => 'parseWrapper(\'CL\');');
         if ( CoreLocal::get("isMember") != 0 && (($this->amount - CoreLocal::get("amtdue") - 0.005) > CoreLocal::get("dollarOver")) && (CoreLocal::get("cashOverLimit") == 1)) {
             return DisplayLib::boxMsg(
-                _("member check tender cannot exceed total purchase by over $") . CoreLocal::get("dollarOver"),
+                _("member {$this->check} tender cannot exceed total purchase by over $") . CoreLocal::get("dollarOver"),
                 '',
                 false,
                 $clearButton
@@ -52,7 +68,7 @@ class CheckTender extends TenderModule
             $r = $db->query($q);
             if ($db->num_rows($r) > 0) {
                 return DisplayLib::xboxMsg(
-                    _('member check tender cannot exceed total purchase if equity is owed'),
+                    _("member {$this->check} tender cannot exceed total purchase if equity is owed"),
                     $clearButton
                 );
             }
@@ -68,11 +84,16 @@ class CheckTender extends TenderModule
                 $db = Database::mDataConnect();
                 $chkR = $db->query($chkQ);
                 if ($db->num_rows($chkR) > 0) {
-                    return DisplayLib::xboxMsg(_('already used check over benefit today'), $clearButton);
+                    return DisplayLib::xboxMsg(_("already used {$this->check} over benefit today"), $clearButton);
                 }
             }
         } else if( CoreLocal::get("isMember") == 0  && ($this->amount - CoreLocal::get("amtdue") - 0.005) > 0) { 
-            return DisplayLib::xboxMsg(_('non-member check tender cannot exceed total purchase'), $clearButton);
+            if (CoreLocal::get("store") == 'WEFC_Toronto') {
+                $msg = _("Non-members may not write {$this->check}s for more than the total purchase.");
+            } else {
+                $msg = _("non-member {$this->check} tender cannot exceed total purchase");
+            }
+            return DisplayLib::xboxMsg($msg, $clearButton);
         }
 
         return true;
