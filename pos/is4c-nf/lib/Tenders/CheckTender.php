@@ -27,7 +27,6 @@
 */
 class CheckTender extends TenderModule 
 {
-
     /**
       Check for errors
       @return True or an error message string
@@ -52,7 +51,7 @@ class CheckTender extends TenderModule
             $r = $db->query($q);
             if ($db->num_rows($r) > 0) {
                 return DisplayLib::xboxMsg(
-                    _('member check tender cannot exceed total purchase if equity is owed'),
+                    _("member check tender cannot exceed total purchase if equity is owed"),
                     $clearButton
                 );
             }
@@ -68,11 +67,16 @@ class CheckTender extends TenderModule
                 $db = Database::mDataConnect();
                 $chkR = $db->query($chkQ);
                 if ($db->num_rows($chkR) > 0) {
-                    return DisplayLib::xboxMsg(_('already used check over benefit today'), $clearButton);
+                    return DisplayLib::xboxMsg(_("already used check over benefit today"), $clearButton);
                 }
             }
         } else if( CoreLocal::get("isMember") == 0  && ($this->amount - CoreLocal::get("amtdue") - 0.005) > 0) { 
-            return DisplayLib::xboxMsg(_('non-member check tender cannot exceed total purchase'), $clearButton);
+            if (CoreLocal::get("store") == 'WEFC_Toronto') {
+                $msg = _("Non-members may not write checks for more than the total purchase.");
+            } else {
+                $msg = _("non-member check tender cannot exceed total purchase");
+            }
+            return DisplayLib::xboxMsg($msg, $clearButton);
         }
 
         return true;

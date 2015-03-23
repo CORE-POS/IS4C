@@ -541,8 +541,19 @@ class BasicModel
         } else if ($db_name == CoreLocal::get('tDatabase')) {
             $this->connection = Database::tDataConnect();
         } else {
-            echo "Error: Unknown database ($db_name)";
-            return false;
+            /* Allow for db other than main ones, e.g. for a plugin.
+            */
+            $this->connection = new SQLManager($CORE_LOCAL->get("localhost"),
+                $CORE_LOCAL->get("DBMS"),
+                $db_name,
+                $CORE_LOCAL->get("localUser"),$CORE_LOCAL->get("localPass"),
+                False);
+            if ($this->connection == false) {
+                echo "Error: Unknown database ($db_name)";
+                return false;
+            }
+            $this->connection->query('use '.$db_name);
+            $this->connection->default_db = $db_name;
         }
 
         if (!$this->connection->table_exists($this->name)) {

@@ -284,11 +284,18 @@ else {
 	}
 }
 
-/** internationalization */
-/*
-setlocale(LC_MESSAGES, "en_US.UTF-8");
-bindtextdomain("pos-nf",realpath(dirname(__FILE__).'/../locale'));
-bind_textdomain_codeset("pos-nf","UTF-8");
-textdomain("pos-nf");
- */
+/** 
+  Internationalization 
+  setlocale() probably always exists
+  but the gettext functions may or may not
+  be available
+*/
+if (function_exists('setlocale') && CoreLocal::get('locale') !== '') {
+    setlocale(LC_MESSAGES, CoreLocal::get('locale') . '.utf8');
+    putenv('LC_MESSAGES=' . CoreLocal::get('locale') . '.utf8');
+    if (function_exists('bindtextdomain')) {
+        bindtextdomain('pos-nf', realpath(dirname(__FILE__).'/../locale'));
+        textdomain('pos-nf');
+    }
+}
 

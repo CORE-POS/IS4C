@@ -1,4 +1,4 @@
-# Base strings for POS
+# EN_CA strings for POS
 # Copyright (C) 2015
 # This file is distributed under the same license as the POS package.
 # Andy Theuninck <andy@gohanman.com> 2015
@@ -364,23 +364,23 @@ msgstr ""
 
 #: lib/Tenders/CheckTender.php:49 plugins/ECheckPlugin/ECheckTender.php:41
 msgid "member check tender cannot exceed total purchase by over $"
-msgstr ""
+msgstr "member cheque tender cannot exceed total purchase by over $"
 
 #: lib/Tenders/CheckTender.php:64 plugins/ECheckPlugin/ECheckTender.php:56
 msgid "member check tender cannot exceed total purchase if equity is owed"
-msgstr ""
+msgstr "member cheque tender cannot exceed total purchase if equity is owed"
 
 #: lib/Tenders/CheckTender.php:80 plugins/ECheckPlugin/ECheckTender.php:72
 msgid "already used check over benefit today"
-msgstr ""
+msgstr "already used cheque over benefit today"
 
 #: lib/Tenders/CheckTender.php:85
 msgid "Non-members may not write checks for more than the total purchase."
-msgstr ""
+msgstr "Non-members may not write cheques for more than the total purchase."
 
 #: lib/Tenders/CheckTender.php:87 plugins/ECheckPlugin/ECheckTender.php:76
 msgid "non-member check tender cannot exceed total purchase"
-msgstr ""
+msgstr "non-member cheque tender cannot exceed total purchase"
 
 #: lib/Tenders/CheckTender.php:138 lib/Tenders/RebateCheckTender.php:97
 #: lib/Tenders/GiftCertificateTender.php:74

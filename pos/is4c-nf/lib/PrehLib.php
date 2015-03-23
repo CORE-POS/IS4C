@@ -135,14 +135,80 @@ static public function requestInfoCallback($info)
 static public function setAltMemMsg($store, $member, $personNumber, $row, $chargeOk) 
 {
     if ($store == 'WEFC_Toronto') {
-        if ($chargeOk == 1) {
-            if (isset($row['blueLine'])) {
-                $memMsg = $row['blueLine'];
-            } else {
-                $memMsg = '#'.$member;
-            }
-            if ($member < 99000) {
+    /* Doesn't quite allow for StoreCharge/PrePay for regular members
+     * either instead of or in addition to CoopCred
+     */
+        if (isset($row['blueLine'])) {
+            $memMsg = $row['blueLine'];
+        } else {
+            $memMsg = '#'.$member;
+        }
+        if ($member == CoreLocal::get('defaultNonMem')) {
+            CoreLocal::set("memMsg", $memMsg);
+            return;
+        }
 
+        if ($member < 99000) {
+
+            if (in_array('CoopCred', CoreLocal::get('PluginList'))) {
+                $conn = CoopCredLib::ccDataConnect();
+                if ($conn !== False) {
+                    $ccQ = "SELECT p.programID AS ppID, p.programName, p.tenderType,
+                        p.active, p.startDate, p.endDate,
+                        p.bankID, p.creditOK, p.inputOK, p.transferOK,
+                        m.creditBalance, m.creditLimit, m.creditOK, m.inputOK,
+                            m.transferOK, m.isBank
+                            ,(m.creditLimit - m.creditBalance) as availCreditBalance
+                        FROM CCredMemberships m
+                        JOIN CCredPrograms p
+                            ON p.programID = m.programID
+                            WHERE m.cardNo =?" .
+                        " ORDER BY ppID";
+                    $ccS = $conn->prepare_statement("$ccQ");
+                    if ($ccS === False) {
+                        CoreLocal::set("memMsg", $memMsg . "Prep failed");
+                        return;
+                    }
+                    $args = array();
+                    $args[] = $member;
+                    $ccR = $conn->exec_statement($ccS, $args);
+                    if ($ccR === False) {
+                        CoreLocal::set("memMsg", $memMsg . "Query failed");
+                        return;
+                    }
+                    if ($conn->num_rows($ccR) == 0) {
+                        CoreLocal::set("memMsg", $memMsg);
+                        return;
+                    }
+
+                    $message = "";
+                    while ($row = $conn->fetch_array($ccR)) {
+                        $programOK = CoopCredLib::programOK($row['tenderType'], $conn);
+                        if ($programOK === True) {
+                            $programCode = 'CCred' . CoreLocal::get("CCredProgramID");
+                            $tenderKeyCap = (CoreLocal::get("{$programCode}tenderKeyCap") != "")
+                                ?  CoreLocal::get("{$programCode}tenderKeyCap")
+                                : 'CCr' . CoreLocal::get("CCredProgramID");
+                            $programBalance =
+                                (CoreLocal::get("{$programCode}availBal")) ?
+                                CoreLocal::get("{$programCode}availBal") :
+                                CoreLocal::get("{$programCode}availCreditBalance");
+
+                            $message .= " {$tenderKeyCap}: " .  number_format($programBalance,2);
+                        }
+                        else {
+                            $message .= $row['tenderType'] . " not OK";
+                        }
+                    }
+                    if ($message != "") {
+                        CoreLocal::set("memMsg", $memMsg . "$message");
+                        return;
+                    }
+
+                }
+            }
+
+            if ($chargeOk == 1) {
                 $conn = Database::pDataConnect();
                 $query = "SELECT ChargeLimit AS CLimit
                     FROM custdata
@@ -168,7 +234,7 @@ static public function setAltMemMsg($store, $member, $personNumber, $row, $charg
 
                 // Prepay
                 if ($limit == 0.00) {
-                    CoreLocal::set("memMsg", $memMsg . _(' : Coop Cred: $') .
+                    CoreLocal::set("memMsg", $memMsg . _(' : Pre Pay: $') .
                         number_format(((float)CoreLocal::get("availBal") * 1),2)
                     );
                 // Store Charge
@@ -177,14 +243,16 @@ static public function setAltMemMsg($store, $member, $personNumber, $row, $charg
                         number_format(((float)CoreLocal::get("availBal") * 1),2)
                     );
                 }
-            // Intra-coop transfer
-            } else {
-                CoreLocal::set("memMsg", $memMsg);
-                CoreLocal::set("memMsg", $memMsg . _(' : Intra Coop spent: $') .
-                   number_format(((float)CoreLocal::get("balance") * 1),2)
-                );
             }
+
+        // Intra-coop transfer
+        } else {
+            CoreLocal::set("memMsg", $memMsg);
+            CoreLocal::set("memMsg", $memMsg . _(' : Intra Coop spent: $') .
+               number_format(((float)CoreLocal::get("balance") * 1),2)
+            );
         }
+    // WEFC_Toronto
     }
 
 	//return $ret;
@@ -313,14 +381,13 @@ static public function setMember($member, $personNumber, $row=array())
 	$opts = array('upc'=>'MEMENTRY','description'=>'CARDNO IN NUMFLAG','numflag'=>$member);
 	TransRecord::add_log_record($opts);
 
-	// 16Sep12 Eric Lee Allow  not append Subtotal at this point.
     /**
       Optionally add a subtotal line depending
       on member_subtotal setting.
     */
-	if (CoreLocal::get('member_subtotal') === 0 || CoreLocal::get('member_subtotal') === '0') {
-		$noop = "";
-	} else {
+    if (CoreLocal::get('member_subtotal') === 0 || CoreLocal::get('member_subtotal') === '0') {
+        $noop = "";
+    } else {
 		self::ttl();
 	} 
 }
@@ -973,7 +1040,7 @@ static public function ttl()
         CoreLocal::set('percentDiscount', $savePD);
 
 		if (CoreLocal::get("percentDiscount") > 0) {
-            if (CoreLocal::get('member_subtotal') === 0 || CoreLocal::get('member_subtotal') === '0') {
+            if (CoreLocal::get('member_subtotal') || CoreLocal::get('member_subtotal') === '') {
                 // 5May14 Andy
                 // Why is this different trans_type & voided from
                 // the other Subtotal record generated farther down?
