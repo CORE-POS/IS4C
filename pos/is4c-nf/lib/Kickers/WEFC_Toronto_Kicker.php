@@ -34,7 +34,7 @@ class WEFC_Toronto_Kicker extends Kicker
       Determine whether to open the drawer
       @return boolean
     */
-    public function doKick()
+    public function doKick($trans_num)
     {
         global $CORE_LOCAL;
         if($CORE_LOCAL->get('training') == 1) {
@@ -42,8 +42,11 @@ class WEFC_Toronto_Kicker extends Kicker
         }
         $db = Database::tDataConnect();
 
-        $query = "select trans_id from localtemptrans where 
-            (trans_subtype = 'CA' and total <> 0)";
+        $query = "SELECT trans_id   
+                  FROM localtranstoday 
+                  WHERE 
+                    (trans_subtype = 'CA' and total <> 0)
+                    AND " . $this->refToWhere($trans_num);
 
         $result = $db->query($query);
         $num_rows = $db->num_rows($result);
