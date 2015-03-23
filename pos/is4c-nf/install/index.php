@@ -127,6 +127,9 @@ if (is_array(CoreLocal::get('LaneMap'))) {
     <td><?php echo InstallUtilities::installTextField('store_id', 1, InstallUtilities::INI_SETTING, false); ?></td>
     <?php } ?>
 </tr>
+<tr>
+    <td>Locale:</td>
+    <td><?php echo InstallUtilities::installSelectField('locale', array('en_US','en_CA'), 'en_US'); ?></td>
 <?php if (CoreLocal::get('laneno') === '' || CoreLocal::get('laneno') != 0) { ?>
 <tr>
     <td colspan=2 class="tblheader">
