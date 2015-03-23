@@ -30,7 +30,12 @@ class mgrlogin extends NoInputPage {
 			$arr = $this->mgrauthenticate($_REQUEST['input']);
 			echo JsonLib::array_to_json($arr);
 			return False;
-		}
+		} else {
+            // beep on initial page load
+            if (CoreLocal::get('LoudLogins') == 1) {
+                UdpComm::udpSend('twoPairs');
+            }
+		} 
 		return True;
 	}
 
@@ -148,11 +153,11 @@ class mgrlogin extends NoInputPage {
             TransRecord::finalizeTransaction(true);
 
             if (CoreLocal::get('LoudLogins') == 1) {
-                UdpComm::udpSend('goodBeep');
+                UdpComm::udpSend('twoPairs');
             }
 		} else {
             if (CoreLocal::get('LoudLogins') == 1) {
-                UdpComm::udpSend('twoPairs');
+                UdpComm::udpSend('errorBeep');
             }
         }
 
