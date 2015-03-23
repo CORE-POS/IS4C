@@ -306,7 +306,8 @@ static public function printChargeFooterCust($dateTimeStamp, $ref, $program="cha
     $date = self::build_time($dateTimeStamp);
 
     /* Where should the label values come from, be entered?
-
+       20Mar15 Eric Lee. Andy's comment was about Coop Cred which
+         is now implemented as he describes.
        24Apr14 Andy
        Implementing these as ReceiptMessage subclasses might work
        better. Plugins could provide their own ReceiptMessage subclass
@@ -314,7 +315,6 @@ static public function printChargeFooterCust($dateTimeStamp, $ref, $program="cha
     */
     $labels = array();
     $labels['charge'] = array("CUSTOMER CHARGE ACCOUNT\n", "Charge Amount:");
-    $labels['coopcred'] = array("COOP CRED ACCOUNT\n", "Credit Amount:");
     $labels['debit'] = array("CUSTOMER DEBIT ACCOUNT\n", "Debit Amount:");
     /* Could append labels from other modules
     foreach (CoreLocal::get('plugins') as $plugin)
@@ -341,7 +341,6 @@ static public function printChargeFooterCust($dateTimeStamp, $ref, $program="cha
 }
 
 // Charge Footer split into two functions by apbw 2/1/05
-//#'S
 static public function printChargeFooterStore($dateTimeStamp, $ref, $program="charge") 
 {
     $chgName = self::getChgName();            // added by apbw 2/14/05 SCR
@@ -349,7 +348,8 @@ static public function printChargeFooterStore($dateTimeStamp, $ref, $program="ch
     $date = self::build_time($dateTimeStamp);
 
     /* Where should the label values come from, be entered?
-
+       20Mar15 Eric Lee. Andy's comment was about Coop Cred which
+         is now implemented as he describes.
        24Apr14 Andy
        Implementing these as ReceiptMessage subclasses might work
        better. Plugins could provide their own ReceiptMessage subclass
@@ -360,11 +360,6 @@ static public function printChargeFooterStore($dateTimeStamp, $ref, $program="ch
             , "Charge Amount:"
             , "I AGREE TO PAY THE ABOVE AMOUNT\n"
             , "TO MY CHARGE ACCOUNT\n"
-    );
-    $labels['coopcred'] = array("COOP CRED ACCOUNT\n"
-            , "Debit Amount:"
-            , "I ACKNOWLEDGE THE ABOVE DEBIT\n"
-            , "TO MY COOP CRED ACCOUNT\n"
     );
     $labels['debit'] = array("CUSTOMER DEBIT ACCOUNT\n"
             , "Debit Amount:"
@@ -549,14 +544,10 @@ static public function chargeBalance($receipt, $program="charge", $trans_num='')
     PrehLib::chargeOK();
     /*
     Should be checking a lane version of: $FANNIE_AR_DEPARTMENTS = '1005 1010'
-    Should be checking: CoreLocal::get('defaultNonMem'), not 11
     */
     $labels = array();
     $labels['charge'] = array("Current IOU Balance:"
             , 1
-    );
-    $labels['coopcred'] = array("Coop Cred Available:"
-            , -1
     );
     $labels['debit'] = array("Debit available:"
             , -1
@@ -576,9 +567,12 @@ static public function chargeBalance($receipt, $program="charge", $trans_num='')
     $currActivity = CoreLocal::get("memChargeTotal");
     $currBalance = CoreLocal::get("balance") - $currActivity;
     
-    if(($num_rows > 0 || $currBalance != 0) && CoreLocal::get("memberID") != 11){
-         $chargeString = $labels["$program"][0] ." $".sprintf("%.2f",($labels["$program"][1] * $currBalance));
-        $receipt = $receipt."\n\n".self::biggerFont(self::centerBig($chargeString));
+    if (($num_rows > 0 || $currBalance != 0) &&
+        CoreLocal::get("memberID") != CoreLocal::get('defaultNonMem'))
+    {
+        $chargeString = $labels["$program"][0] .
+            " $".sprintf("%.2f",($labels["$program"][1] * $currBalance));
+        $receipt = $receipt."\n\n".self::biggerFont(self::centerBig($chargeString))."\n";
     }
     
     return $receipt;
@@ -877,7 +871,6 @@ static public function twoColumns($col1, $col2) {
   @param $email generate email-style receipt
   @return string receipt content
 */
-//#'P
 static public function printReceipt($arg1, $ref, $second=False, $email=False) 
 {
     if($second) $email = False; // store copy always prints
@@ -963,18 +956,7 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
         }
     }
 
-    /*#'Q chargeProgram - where to get it or how to decide
-        Since a member can only be in one program this could work
-          if made part of the session setup, when ID established.
-           base on shrinkRange (99900-99998, which is also a plugin var
-        $chargeProgram = CoreLocal::get('chargeProgram');
-        if (!isset($chargeProgram) $chargeProgram = 'charge';
-    */
-    if (CoreLocal::get("store") == 'WEFC_Toronto' && CoreLocal::get("memberID") < 99900) {
-        $chargeProgram = 'coopcred';
-    } else {
-        $chargeProgram = 'charge';
-    }
+    $chargeProgram = 'charge';
 
     $print_class = CoreLocal::get('ReceiptDriver');
     if ($print_class === '' || !class_exists($print_class)) {
@@ -986,7 +968,7 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
     $noreceipt = (CoreLocal::get("receiptToggle")==1 ? 0 : 1);
     $ignoreNR = array("ccSlip");
 
-    // find receipt types provided via modules
+    // find receipt types, or segments, provided via modules
     $message_mods = CoreLocal::get('ReceiptMessageMods');
     if (!is_array($message_mods)) $message_mods = array();
     $type_map = array();
@@ -1186,9 +1168,9 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
     if ((is_array($tmap) && isset($tmap['MI']) && $tmap['MI'] != 'SignedStoreChargeTender') || $reprint) {
         if (CoreLocal::get("chargeTotal") != 0 && ((CoreLocal::get("End") == 1 && !$second) || $reprint)) {
             if (is_array($receipt)) {
-                $receipt['print'] .= self::printChargeFooterStore($dateTimeStamp, $ref);
+                $receipt['print'] .= self::printChargeFooterStore($dateTimeStamp, $ref, $chargeProgram);
             } else {
-                $receipt .= self::printChargeFooterStore($dateTimeStamp, $ref);
+                $receipt .= self::printChargeFooterStore($dateTimeStamp, $ref, $chargeProgram);
             }
         }
     }
@@ -1220,16 +1202,27 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
     return $receipt;
 }
 
+/* Per-member messages.
+ */
 static public function memReceiptMessages($card_no){
     $db = Database::pDataConnect();
-    $q = "SELECT msg_text,modifier_module FROM custReceiptMessage WHERE card_no=".$card_no;
+    $q = "SELECT msg_text,modifier_module
+            FROM custReceiptMessage
+            WHERE card_no=".$card_no .
+            " ORDER BY msg_text";
     $r = $db->query($q);
     $ret = "";
     while($w = $db->fetch_row($r)){
-        if (file_exists(dirname(__FILE__).'/ReceiptBuilding/custMessages/'.$w['modifier_module'].'.php')){
-            $class_name = $w['modifier_module'];
+        // EL This bit new for messages from plugins.
+        $class_name = $w['modifier_module'];
+        if (class_exists($class_name)){
+            $obj = new $class_name();
+            $ret .=  $obj->message($w['msg_text']);
+        } elseif (file_exists(dirname(__FILE__).'/ReceiptBuilding/custMessages/'.
+                    $w['modifier_module'].'.php')){
             if (!class_exists($class_name)){
-                include(dirname(__FILE__).'/ReceiptBuilding/custMessages/'.$class_name.'.php');
+                include(dirname(__FILE__).'/ReceiptBuilding/custMessages/'.
+                    $class_name.'.php');
             }
             $obj = new $class_name();
             $ret .= $obj->message($w['msg_text']);
