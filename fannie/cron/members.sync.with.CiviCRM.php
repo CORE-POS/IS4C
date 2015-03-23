@@ -54,6 +54,11 @@
  --functionality } - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
  #'Z --COMMENTZ { - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ *  2Jul14 EL Ignore in initial select where civicrm_contact.is_deleted <> 0
+ * 16Jan14 EL Assign civicrm_membership.status_id = 1 at insert.
+ *             It has no default in Civi, was defaulting to 0 which
+ *              prevented it from being found
+ *              and caused label "Pending and Inactive"
  * 28Oct13 EL Change $is4cMax from 99989 to 99900 to allow more special cases.
  * 20Jun13 EL Finish report the new member number obtained from CiviCRM.
  *            +>2add +>1add, +>3add
@@ -744,12 +749,14 @@ function assignLocalC ($row, $civiOps, $updated, $civiContactId) {
         , membership_type_id
         , join_date
         , start_date
+        , status_id
         )
         VALUES
         ('', $civiContactId
         , $civicrm_membership[membership_type_id])
         , '$civicrm_membership[join_date]'
         , '$civicrm_membership[start_date]'
+        , 1
         )";
     }
     else {
@@ -796,7 +803,7 @@ function assignLocalC ($row, $civiOps, $updated, $civiContactId) {
         // If there is another one insert it, is_primary=0.
         if ( isEmail($row[email_2]) ) {
             $civicrm_email[email] = $row[email_2];
-            $civicrm_email[location_type_id] = 2;   // We don't actually know.
+            $civicrm_email[location_type_id] = 2;  // We don't actually know.
             // In fact 0 is default.
             $civicrm_email[is_primary] = 0;
             $insertEmail[] = "INSERT INTO civicrm_email
@@ -935,7 +942,7 @@ function assignLocalC ($row, $civiOps, $updated, $civiContactId) {
             // If there is another one insert it, is_primary=0.
             if ( isPhone($row[email_2]) ) {
                 $civicrm_phone[phone] = $row[email_2];
-                $civicrm_phone[location_type_id] = 2;   // We don't actually know.
+                $civicrm_phone[location_type_id] = 2;  // We don't actually know.
                 // In fact 0 is default.
                 $civicrm_phone[is_primary] = 0;
                 $insertPhone[] = "INSERT INTO civicrm_phone
@@ -1234,7 +1241,7 @@ function getNewMemberId($contactId) {
 
     $retVal = 0;
 
-    $sql = "INSERT INTO civicrm_membership (contact_id) VALUES ($contactId)";
+    $sql = "INSERT INTO civicrm_membership (contact_id, status_id) VALUES ($contactId, 1)";
     $rslt = $dbConn->query("$sql");
     if ( $dbConn->errno ) {
         $msg = sprintf("Failed: %s", $dbConn->error);
@@ -2888,10 +2895,12 @@ c.id as contact_id
 ,v.{$memberCardField} as mcard
 ,u.modified_date
 FROM
-civicrm_membership m INNER JOIN civicrm_contact c ON c.id = m.contact_id
+civicrm_membership m
+INNER JOIN civicrm_contact c ON c.id = m.contact_id
 LEFT JOIN {$memberCardTable} v ON m.contact_id = v.entity_id
 LEFT JOIN civicrm_log u ON m.contact_id = u.entity_id AND u.entity_table = 'civicrm_contact'
 WHERE u.modified_date > '$latestRunDate'
+ AND c.is_deleted = 0
  AND NOT (m.is_override = 1 AND m.status_id = 6)
 ORDER BY c.id, m.id, u.modified_date DESC;";
 

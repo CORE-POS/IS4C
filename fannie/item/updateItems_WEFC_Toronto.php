@@ -489,6 +489,13 @@ elseif (isset($_REQUEST['likeCode']) && $_REQUEST['likeCode'] == -1){
  * The page contains form elements but there is no submit for the them.
  * The record-select input is also displayed in a proper form with a submit.
 */
+
+$deptQ = "SELECT dept_no, dept_name FROM departments ORDER BY dept_no";
+$deptR = $dbc->query($deptQ);
+$row = $dbc->fetch_array($deptR);
+$firstDeptNo = $row['dept_no'];
+$firstDeptName = $row['dept_name'];
+
 $query1 = "SELECT upc,description,normal_price,department,subdept,
         foodstamp,scale,qttyEnforced,discount,inUse,deposit
          FROM products WHERE upc = '$upc'";
@@ -500,7 +507,7 @@ echo "<table border=0>";
         echo "</tr><tr><td><b>Description</b></td><td>{$row['description']}</td>";
         echo "<td><b>Price</b></td><td>\${$row['normal_price']}</td></tr></table>";
         echo "<table border=0><tr>";
-        echo "<th>Dept<th>subDept<th>FS<th>Scale<th>QtyFrc<th>NoDisc<th>inUse<th>deposit</b>";
+        echo "<th>Dept<th>Sub-Dept<th>FS<th>Scale<th>QtyFrc<th>NoDisc<th>inUse<th>deposit</b>";
         echo "</tr>";
         echo "<tr>";
         $dept=$row['department'];
@@ -525,7 +532,7 @@ echo "<table border=0>";
         echo $dept . ' ' .  $row2['dept_name'];
         echo " </td>";
 
-        echo "<td>";
+        echo "<td style='text-align:center;'>";
         echo $subdept . ' ' .  $row2a['subdept_name'];
         echo " </td>";
 
@@ -550,7 +557,12 @@ echo "<table border=0>";
                         echo " checked";
                 }
         echo "></td><td align=center><input type=text value=\"".$row["deposit"]."\" name=deposit size='5'";
-        echo "></td></tr>";
+		echo "></td></tr>";
+ 
+        if ($dept == $firstDeptNo) {
+            echo "<tr><td colspan=99 style='color:red;'>This item is coded for the default " .
+                "department: {$firstDeptName}. Did you intend that?</td></tr>";
+        }
 
     echo "</table>";
         echo "<hr>";
