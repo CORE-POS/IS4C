@@ -23,6 +23,7 @@
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    *  3Feb2015 Eric Lee New function logger(), anticipate change to uploadCC().
     * 27Feb2013 Andy Theuninck singleton connection for local databases
     * 13Jan2013 Eric Lee Added changeLttTaxCode(From, To);
 
@@ -562,6 +563,11 @@ static public function uploadCCdata()
         return true;
     }
 
+    if (!in_array("Paycards",$CORE_LOCAL->get("PluginList"))) {
+        // plugin not enabled; nothing to upload
+        return true;
+    }
+
     $sql = self::tDataConnect();
     $sql->add_connection(CoreLocal::get("mServer"),
                 CoreLocal::get("mDBMS"),
@@ -909,6 +915,23 @@ static public function clearTempTables()
     $connection->query($query2);
 
     return ($ret) ? true : false;
+}
+
+/**
+  Log a message to the lane log
+  @param $msg A string containing the message to log.
+  @return True on success, False on failure 
+ */
+static public function logger($msg="")
+{
+    $connection = Database::tDataConnect();
+
+    if (method_exists($connection, 'logger')) {
+        $ret = $connection->logger($msg);
+    } else {
+        $ret = False;
+    }
+    return $ret;
 }
 
 } // end Database class
