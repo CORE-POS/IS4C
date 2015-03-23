@@ -115,7 +115,7 @@ class adminlogin extends NoInputPage {
 						'num_flag' => $row['emp_no']
 					));
                     if (CoreLocal::get('LoudLogins') == 1) {
-                        UdpComm::udpSend('goodBeep');
+                        UdpComm::udpSend('twoPairs');
                     }
 					$result = $class::adminLoginCallback(True);
 					if ($result === True)
@@ -135,11 +135,16 @@ class adminlogin extends NoInputPage {
 					));
 
                     if (CoreLocal::get('LoudLogins') == 1) {
-                        UdpComm::udpSend('twoPairs');
+                        UdpComm::udpSend('errorBeep');
                     }
 				}
 			}
-		}
+		} else {
+            // beep on initial page load
+            if (CoreLocal::get('LoudLogins') == 1) {
+                UdpComm::udpSend('twoPairs');
+            }
+        }
 
 		return True;
 	}
