@@ -22,8 +22,12 @@
 *********************************************************************************/
 
 include(dirname(__FILE__).'/../../../config.php');
-if(!class_exists("FannieAPI")) include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-if(!class_exists("CalendarPluginDB")) include(dirname(__FILE__).'/CalendarPluginDB.php');
+if(!class_exists("FannieAPI")) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+if(!class_exists("CalendarPluginDB")) {
+    include(dirname(__FILE__).'/CalendarPluginDB.php');
+}
 
 class CalendarAjax extends \COREPOS\Fannie\API\webservices\FannieWebService {
 
@@ -46,6 +50,9 @@ class CalendarAjax extends \COREPOS\Fannie\API\webservices\FannieWebService {
             case 'save_or_add_event':
                 $calID = FormLib::get('id', 0);
                 $text = FormLib::get('text');
+                $text = str_replace('<br>', "\n", $text);
+                $text = htmlspecialchars($text);
+                $text = str_replace("\n", '<br>', $text);
 
                 $db = CalendarPluginDB::get();
                 $event = new MonthviewEventsModel($db);
@@ -67,7 +74,9 @@ class CalendarAjax extends \COREPOS\Fannie\API\webservices\FannieWebService {
                     $event->uid($uid);
                     $event->eventText($text);
                     if (!empty($text)) {
-                        $event->save();
+                        $eventID = $event->save();
+                        $data = array();
+                        echo $eventID;
                     }
                 }
 

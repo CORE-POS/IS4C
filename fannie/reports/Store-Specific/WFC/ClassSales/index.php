@@ -3,14 +3,14 @@
 
     Copyright 2011 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -23,7 +23,7 @@
 
 include('../../../../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
-include($FANNIE_ROOT.'src/Credentials/OutsideDB.is4c.php');
+include($FANNIE_ROOT.'src/Credentials/OutsideDB.tunneled.php');
 
 $thisMonth = date('n');
 while(($thisMonth-1)%3 != 0) $thisMonth--;
@@ -50,8 +50,8 @@ if (isset($_REQUEST['upc'])){
             echo '<table cellspacing="0" cellpadding="4" border="1">
                 <tr><th>Email</th><th>Name</th><th>Qty Sold</th></tr>';
         }
-        printf('<tr><td>%s</td><td>%s</td><td>%d</td></tr>',
-            $w['name'],$w['real_name'],$w['quantity']);
+        printf('<tr><td>%s</td><td>%s</td><td>%s</td><td>%d</td></tr>',
+            $w['datetime'],$w['name'],$w['real_name'],$w['quantity']);
         $rc++;
     }
     echo '</table>';

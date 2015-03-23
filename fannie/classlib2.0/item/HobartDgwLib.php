@@ -3,7 +3,7 @@
 
     Copyright 2014 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -402,6 +402,62 @@ class HobartDgwLib
         fclose($fp);
 
         return $item_count;
+    }
+
+    /**
+      Get attributes for a given label number
+      @param $label_number [integer]
+      @return keyed array
+        - align => vertical or horizontal
+        - fixed_weight => boolean
+        - graphics => boolean
+    */
+    static public function labelToAttributes($label_number)
+    {
+        $ret = array(
+            'align' => 'vertical',
+            'fixed_weight' => false,
+            'graphics' => false,
+        );
+        switch ($label_number) {
+            case 23:
+                $ret['fixed_weight'] = true;
+                break;
+            case 53:
+                $ret['graphics'] = true;
+                break;
+            case 63:
+                $ret['fixed_weight'] = true;
+                $ret['align'] = 'horizontal';
+                break;
+            case 103:
+                break;
+            case 113:
+                $ret['align'] = 'horizontal';
+                break;
+        }
+
+        return $ret;
+    }
+
+    /**
+      Get appropriate label number for given attributes
+      @param $align [string] vertical or horizontal
+      @param $fixed_weight [boolean, default false]
+      @param $graphics [boolean, default false]
+      @return [integer] label number
+    */
+    static public function attributesToLabel($align, $fixed_weight=false, $graphics=false)
+    {
+        if ($graphics) {
+            return 53;
+        }
+
+        if ($align == 'horizontal') {
+            return ($fixed_weight) ? 63 : 113;
+        } else {
+            return ($fixed_weight) ? 23 : 103;
+        }
     }
 
     static private function scalePluToUpc($plu)

@@ -21,9 +21,9 @@
 
 *********************************************************************************/
 
-global $FANNIE_ROOT;
-if (!class_exists('CoreWarehouseModel'))
+if (!class_exists('CoreWarehouseModel')) {
     include_once(dirname(__FILE__).'/CoreWarehouseModel.php');
+}
 
 class SumMemSalesByDayModel extends CoreWarehouseModel {
 

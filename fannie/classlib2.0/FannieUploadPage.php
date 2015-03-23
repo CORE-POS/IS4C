@@ -3,7 +3,7 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -676,13 +676,18 @@ class FannieUploadPage extends \FanniePage
       @param $name the name (as defined in $this->preview_opts)
       @return Integer index if available otherwise False
     */
-    protected function get_column_index($name)
+    protected function getColumnIndex($name)
     {
         if (isset($this->preview_selections[$name])) {
             return $this->preview_selections[$name];
         } else {
             return false;
         }
+    }
+
+    protected function get_column_index($name)
+    {
+        return $this->getColumnIndex($name);
     }
 
     /**

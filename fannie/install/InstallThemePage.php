@@ -3,14 +3,14 @@
 
     Copyright 2014 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -59,7 +59,13 @@ class InstallThemePage extends \COREPOS\Fannie\API\InstallPage
         ?>
 
         <form action="InstallThemePage.php" method="post">
-        <h1 class="install"><?php echo $this->header; ?></h1>
+        <h1 class="install">
+            <?php 
+            if (!$this->themed) {
+                echo "<h1 class='install'>{$this->header}</h1>";
+            }
+            ?>
+        </h1>
         <?php
         if (is_writable('../config.php')) {
             echo "<div class=\"alert alert-success\"><i>config.php</i> is writeable</div>";
@@ -99,6 +105,9 @@ class InstallThemePage extends \COREPOS\Fannie\API\InstallPage
         echo '<h4 class="install">Other</h4>';
 
         echo '<table id="otherConfTable" class="table">'; 
+
+        echo '<tr><td>Backend Name</td>'
+            . '<td>' . installTextField('FANNIE_BACKEND_NAME', $FANNIE_BACKEND_NAME, 'Fannie') . '</td>';
 
         echo '<tr><td>Custom Title</td>'
             . '<td>' . installTextField('FANNIE_CUSTOM_TITLE', $FANNIE_CUSTOM_TITLE, '') . '</td>';

@@ -41,7 +41,14 @@ class SpeedTestReport extends FannieRESTfulPage
                 $dlog = DTransactionsModel::selectDTrans($start, $end, $where);
                 break;
             case 'Aggregate Temporary Table':
-                $dlog = DTransactionsModel::selectDTransSumByDepartment($dbc, $start, $end);
+                $where = new stdclass();
+                $where->sql = array(
+                    "trans_type IN ('I', 'D')",
+                    "department BETWEEN 0 AND ?",
+                );
+                $where->params = array($dept_limit);
+                $groupby = array('department');
+                $dlog = DTransactionsModel::aggregateDtrans($dbc, $start, $end, $where, $groupby);
                 break;
             case 'Single Query':
             default:

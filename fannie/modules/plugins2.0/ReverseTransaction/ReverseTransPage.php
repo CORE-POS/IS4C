@@ -22,10 +22,12 @@
 *********************************************************************************/
 
 include(dirname(__FILE__).'/../../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
-class ReverseTransPage extends FannieRESTfulPage {
-
+class ReverseTransPage extends FannieRESTfulPage 
+{
     protected $must_authenticate = True;
     protected $auth_classes = array('backvoids');
 

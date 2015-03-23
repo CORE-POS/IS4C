@@ -22,8 +22,12 @@
 *********************************************************************************/
 
 
-if(!class_exists("CalendarPluginDB")) include(dirname(__FILE__).'/CalendarPluginDB.php');
-include_once(dirname(__FILE__).'/CalendarPluginPermissions.php');
+if (!class_exists("CalendarPluginDB")) {
+    include(dirname(__FILE__).'/CalendarPluginDB.php');
+}
+if (!class_exists("CalendarPluginPermissions")) {
+    include_once(dirname(__FILE__).'/CalendarPluginPermissions.php');
+}
 
 class CalendarPluginDisplayLib 
 {
@@ -249,7 +253,9 @@ class CalendarPluginDisplayLib
             $ret .= sprintf(' || <a href="%s">Subscription URL</a>', $sub->url());
         } else {
             $token = sha1($calendarModel->calendarID() . 'FannieCalendar' . $calendarModel->name());
-            $ret .= sprintf(' || <a href="CalendarFeed.php?id=%d&token=%s">Feed URL</a>',
+            $ret .= sprintf(' || <a href="webcal://%s%smodules/plugins2.0/CalendarPlugin/CalendarFeed.php?id=%d&token=%s">Feed URL</a>',
+                                $_SERVER['HTTP_HOST'], $FANNIE_URL, $id, $token);
+            $ret .= sprintf(' || <a href="CalendarFeed.php?id=%d&token=%s&export=1">Export URL</a>',
                             $id, $token);
         }
         $ret .= "</div>\n";
@@ -383,7 +389,7 @@ class CalendarPluginDisplayLib
         $ret .= "<div class=indexTitle>Your Calendars</div>";
         $ret .= "<div id=yours>";
         foreach($yours as $k=>$v){
-            $ret .= "<p class=\"index\"><a href=\"?calID=$k&view=week\">$v</a></p>";
+            $ret .= "<p class=\"index\"><a href=\"?calID=$k&view=month\">$v</a></p>";
         }
         $ret .= "</div>";
         $ret .= "<p class=\"index\" id=\"indexCreateNew\">";
@@ -399,7 +405,7 @@ class CalendarPluginDisplayLib
         $ret .= "<div class=indexTitle>Other Calendars</div>";
         $ret .= "<div id=theirs>";
         foreach($theirs as $k=>$v){
-            $ret .= "<p class=\"index\"><a href=\"?calID=$k&view=week\">$v</a></p>";
+            $ret .= "<p class=\"index\"><a href=\"?calID=$k&view=month\">$v</a></p>";
         }
         $ret .= "</div>";
 
