@@ -1040,7 +1040,7 @@ static public function ttl()
         CoreLocal::set('percentDiscount', $savePD);
 
 		if (CoreLocal::get("percentDiscount") > 0) {
-            if (CoreLocal::get('member_subtotal') || CoreLocal::get('member_subtotal') === '') {
+            if (CoreLocal::get('member_subtotal') === 0 || CoreLocal::get('member_subtotal') === '0') {
                 // 5May14 Andy
                 // Why is this different trans_type & voided from
                 // the other Subtotal record generated farther down?
