@@ -21,12 +21,6 @@
 
 *********************************************************************************/
 
-/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    * 28Feb13 Andy Theuninck wrapped as class
-    * 19Jan13 Eric Lee Add productUser to table list
-    * 10Oct12 Eric Lee Add memberCards to table list
-*/
-
 include('../config.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
@@ -50,6 +44,10 @@ class SyncIndexPage extends FanniePage {
             <option value="employees"><?php echo _('Cashiers'); ?></option>
             <option value="departments">Departments</option>
             <option value="tenders">Tenders</option>
+            <option value="houseCoupons">House Coupons</option>
+            <option value="houseVirtualCoupons">House Virtual Coupons</option>
+            <option value="houseCouponItems">House Coupon Items</option>
+            <option value="memtype">Member Types</option>
             </select><br /><br />
 
             <label>Other table</label><input type="text" name="othertable" class="form-control" />

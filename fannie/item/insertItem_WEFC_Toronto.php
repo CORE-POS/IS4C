@@ -104,22 +104,6 @@ $ins_array['size'] = $dbc->escape($string_size);
 $unitofmeasure = substr(trim($_REQUEST['unitofmeasure']),0,15);
 $ins_array['unitofmeasure'] = $dbc->escape($unitofmeasure);
 
-/* set tax and FS to department defaults */
-/* But these fields can be edited on the form. Good to override? */
-$deptSub = 0;
-$taxfsQ = "select dept_tax,dept_fs,
-    dept_discount,
-    superID FROM
-    departments as d left join MasterSuperDepts as s on d.dept_no=s.dept_ID";
-$taxfsR = $dbc->query($taxfsQ);
-if ($dbc->num_rows($taxfsR) > 0){
-    $taxfsW = $dbc->fetch_array($taxfsR);
-    $ins_array['tax'] = $taxfsW['dept_tax'];
-    $ins_array['foodstamp'] = $taxfsW['dept_fs'];
-    $ins_array['discount'] = $taxfsW['dept_discount'];
-    $deptSub = $taxfsW['superID'];
-}
-
 /* Authenticate now that deptSub can be reported.
  * AUTHENTICATION CLASS: pricechange OR audited_pricechange
  * Check which uid is trying to add an item. Users w/ pricechange

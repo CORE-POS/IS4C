@@ -563,6 +563,11 @@ static public function uploadCCdata()
         return true;
     }
 
+    if (!in_array("Paycards",$CORE_LOCAL->get("PluginList"))) {
+        // plugin not enabled; nothing to upload
+        return true;
+    }
+
     $sql = self::tDataConnect();
     $sql->add_connection(CoreLocal::get("mServer"),
                 CoreLocal::get("mDBMS"),

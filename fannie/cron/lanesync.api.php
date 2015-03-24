@@ -59,14 +59,15 @@ foreach (array('valutecRequest', 'valutecRequestMod', 'valutecResponse') as $tab
 }
 
 $regularPushTables = array(
-    'products',
-    'custdata',
-    'memberCards',
-    'custReceiptMessage',
-    'employees',
-    'departments',
-    'houseCoupons',
-    'houseVirtualCoupons'
+	'products',
+	'custdata',
+	'memberCards',
+	'custReceiptMessage',
+	'employees',
+	'departments',
+	'houseCoupons',
+	'houseCouponItems',
+	'houseVirtualCoupons'
 );
 foreach ($regularPushTables as $table) {
     $result = SyncLanes::push_table("$table", 'op', SyncLanes::TRUNCATE_DESTINATION);
@@ -80,6 +81,8 @@ if ( isset($FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION) && $FANNIE_COMPOSE_LONG_PRO
 
 if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' ) {
     $result = SyncLanes::push_table('tenders', 'op', SyncLanes::TRUNCATE_DESTINATION);
+    echo cron_msg($result['messages']);
+    $result = SyncLanes::push_table('memtype', 'op', SyncLanes::TRUNCATE_DESTINATION);
     echo cron_msg($result['messages']);
 }
 
