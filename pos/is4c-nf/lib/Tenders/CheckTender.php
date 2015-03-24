@@ -27,28 +27,12 @@
 */
 class CheckTender extends TenderModule 
 {
-    protected $check = 'check';
-
     /**
       Check for errors
       @return True or an error message string
     */
     public function errorCheck()
     {
-
-        /* Want locale-correct spelling.
-         * This approach doesn't work becasue setlocale() may not return the
-         *  right value.
-         */
-        $lang = setlocale(LC_ALL,NULL);
-        if (CoreLocal::get("store") == 'WEFC_Toronto') {
-            $lang = 'en_CA';
-        }
-        if ($lang !== FALSE) {
-            if (preg_match("/^en_(CA|GB|IE)/",$lang)) {
-                $this->check = 'cheque';
-            }
-        }
 
         $clearButton = array('OK [clear]' => 'parseWrapper(\'CL\');');
         if ( CoreLocal::get("isMember") != 0 && (($this->amount - CoreLocal::get("amtdue") - 0.005) > CoreLocal::get("dollarOver")) && (CoreLocal::get("cashOverLimit") == 1)) {
@@ -68,7 +52,7 @@ class CheckTender extends TenderModule
             $r = $db->query($q);
             if ($db->num_rows($r) > 0) {
                 return DisplayLib::xboxMsg(
-                    _("member {$this->check} tender cannot exceed total purchase if equity is owed"),
+                    _("member check tender cannot exceed total purchase if equity is owed"),
                     $clearButton
                 );
             }
@@ -84,14 +68,14 @@ class CheckTender extends TenderModule
                 $db = Database::mDataConnect();
                 $chkR = $db->query($chkQ);
                 if ($db->num_rows($chkR) > 0) {
-                    return DisplayLib::xboxMsg(_("already used {$this->check} over benefit today"), $clearButton);
+                    return DisplayLib::xboxMsg(_("already used check over benefit today"), $clearButton);
                 }
             }
         } else if( CoreLocal::get("isMember") == 0  && ($this->amount - CoreLocal::get("amtdue") - 0.005) > 0) { 
             if (CoreLocal::get("store") == 'WEFC_Toronto') {
-                $msg = _("Non-members may not write {$this->check}s for more than the total purchase.");
+                $msg = _("Non-members may not write checks for more than the total purchase.");
             } else {
-                $msg = _("non-member {$this->check} tender cannot exceed total purchase");
+                $msg = _("non-member check tender cannot exceed total purchase");
             }
             return DisplayLib::xboxMsg($msg, $clearButton);
         }

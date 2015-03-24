@@ -557,7 +557,7 @@ echo "<table border=0>";
                         echo " checked";
                 }
         echo "></td><td align=center><input type=text value=\"".$row["deposit"]."\" name=deposit size='5'";
-		echo "></td></tr>";
+        echo "></td></tr>";
  
         if ($dept == $firstDeptNo) {
             echo "<tr><td colspan=99 style='color:red;'>This item is coded for the default " .

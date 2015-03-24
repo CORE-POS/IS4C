@@ -385,7 +385,7 @@ static public function setMember($member, $personNumber, $row=array())
       Optionally add a subtotal line depending
       on member_subtotal setting.
     */
-    if (CoreLocal::get('member_subtotal') !== 0 || CoreLocal::get('member_subtotal') !== '0') {
+    if (CoreLocal::get('member_subtotal') === 0 || CoreLocal::get('member_subtotal') === '0') {
         $noop = "";
     } else {
 		self::ttl();

@@ -412,7 +412,7 @@ updateAllLanes($upc, array("products", "productUser"));
 */
 // $dbc may be looking at lane db now, so be sure it is looking at Fannie.
 $dbc = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
+        $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
 $deptQ = "SELECT dept_no, dept_name FROM departments ORDER BY dept_no";
 $deptR = $dbc->query($deptQ);
@@ -455,9 +455,9 @@ $row = $dbc->fetch_array($prodR);
         echo $dept . ' ' .  $row2['dept_name'];
         echo " </td>"; 
 
-		echo "<td style='text-align:center;'>";
-		echo $subdept . ' ' .  $row2a['subdept_name'];
-		echo " </td>";
+        echo "<td style='text-align:center;'>";
+        echo $subdept . ' ' .  $row2a['subdept_name'];
+        echo " </td>";
 
         echo "<td align=center><input type=checkbox value=1 name=FS";
                 if($row["foodstamp"]==1){

@@ -246,21 +246,23 @@ function itemParse($upc){
 
         // 3b. Create - Second Block
         echo "<table style=\"margin-bottom:5px;\" width='100%' border=1 cellpadding=5 cellspacing=0><tr>";
-        echo "<th>Dept</th><th>Tax</th><th>FS</th><th>Scale</th><th>QtyFrc</th><th>NoDisc</th>";
+        echo "<th>Department - Sub-Depts</th><th>Tax</th><th>FS</th><th>Scale</th><th>QtyFrc</th><th>NoDisc</th>";
     echo "</tr>";
         echo "<tr align=top>";
         echo "<td align=left width=5px>";
         /**
-            **  BEGIN CHAINEDSELECTOR CLASS
+            **    BEGIN CHAINEDSELECTOR CLASS
             **/
+                require('../src/chainedSelectors.php');
+
                 //prepare names
                 $selectorNames = array(
                     CS_FORM=>"pickSubDepartment",
                     CS_FIRST_SELECTOR=>"department",
                     CS_SECOND_SELECTOR=>"subdepartment");
 
-                //      $department = $rowItem[12];
-                //      $subdepartment = $rowItem[27];
+                //        $department = $rowItem[12] ['department'];
+                //        $subdepartment = $rowItem[27] ['subdept'];
 
                 //query database, assemble data for selectors
                 $Query = "SELECT d.dept_no AS dept_no, d.dept_name AS dept_name,
@@ -271,7 +273,7 @@ function itemParse($upc){
                     ORDER BY d.dept_no,s.subdept_no";
                 if(!($DatabaseResult = $dbc->query($Query)))
                 {
-                    print("The query failed!<br>\n");
+                    print("The chained-selector query failed!<br>\n");
                     exit();
                 }
 
@@ -311,8 +313,8 @@ function itemParse($upc){
                     </body>
                     </html>
                 <?php
-               /**
-                **  CHAINEDSELECTOR CLASS ENDS . . . . . . . NOW
+                  /**
+                **    CHAINEDSELECTOR CLASS ENDS . . . . . . . NOW
                 **/
         echo "</td><td align=left>";
         $taxQ = "SELECT id,description FROM taxrates ORDER BY id";
@@ -1494,9 +1496,9 @@ class chainedSelectors
         //loop over each value of this selector
         foreach($this->uniqueChoices as $sourceValue=>$sourceLabel)
         {
-            if($sourceValue == $selected_item[12]) {		// [12] = Department number
-                $selected_index = $selected_item[28];		// [28] = subdept. #
-                $selected_index = $selected_index - ($sourceValue * 100);	// the index of the subdept just happens to be preceded by the dept_no
+            if($sourceValue == $selected_item[12]) {        // [12] = Department number
+                $selected_index = $selected_item[28];        // [28] = subdept. #
+                $selected_index = $selected_index - ($sourceValue * 100);    // the index of the subdept just happens to be preceded by the dept_no
             } else {
                 $selected_index = 0;
             }
@@ -1550,7 +1552,7 @@ class chainedSelectors
         foreach($this->uniqueChoices as $key=>$value)
         {
             print("\t<option value=\"$key\"");
-            if($key == $item_selected[12]) 	// [12] = department
+            if($key == $item_selected[12])     // [12] = department
             {
                 print(" selected=\"selected\"");
                 $selected=FALSE;
