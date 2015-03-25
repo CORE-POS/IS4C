@@ -448,7 +448,10 @@ class UPC extends Parser
         /* quantity required for this item. Send to
            entry page if one wasn't provided */
         if (($qttyEnforced == 1) && (CoreLocal::get("multiple") == 0) && (CoreLocal::get("msgrepeat" == 0) || CoreLocal::get('qttyvalid') == 0)) {
-            $ret['main_frame'] = $my_url."gui-modules/qtty2.php";
+            $ret['main_frame'] = 
+                    $my_url . 'gui-modules/QuantityEntryPage.php'
+                    . '?entered-item=' . CoreLocal::get('strEntered')
+                    . '&qty-mode=' . $scale;
             return $ret;
         } 
 
