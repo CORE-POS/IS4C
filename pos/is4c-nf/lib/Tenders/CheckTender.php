@@ -37,7 +37,7 @@ class CheckTender extends TenderModule
         $clearButton = array('OK [clear]' => 'parseWrapper(\'CL\');');
         if ( CoreLocal::get("isMember") != 0 && (($this->amount - CoreLocal::get("amtdue") - 0.005) > CoreLocal::get("dollarOver")) && (CoreLocal::get("cashOverLimit") == 1)) {
             return DisplayLib::boxMsg(
-                _("member {$this->check} tender cannot exceed total purchase by over $") . CoreLocal::get("dollarOver"),
+                _("member check tender cannot exceed total purchase by over $") . CoreLocal::get("dollarOver"),
                 '',
                 false,
                 $clearButton
