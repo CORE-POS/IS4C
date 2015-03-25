@@ -32,7 +32,7 @@ AutoLoader::loadMap();
 CoreState::initiate_session();
 
 if (CoreLocal::get("SessionFirstRun") == "") {
-	CoreLocal::set("SessionFirstRun",1);
+    CoreLocal::set("SessionFirstRun",1);
 }
 
 CoreLocal::migrateSettings();
