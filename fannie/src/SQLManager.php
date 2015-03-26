@@ -175,15 +175,39 @@ class SQLManager
             return false;
         }
 
+        $current_default = $this->default_db;
         $this->default_db = $db_name;
         if ($this->isConnected()) {
-            $this->query('use ' . $db_name, $db_name);
-            $this->connections[$db_name]->database = $db_name;
+            $selected = $this->query('use ' . $this->identifierEscape($db_name), $db_name);
+            if (!$selected) {
+                /** 
+                  select failed; most likely database doesn't exist 
+                  try creating it and if that works selecting it
+                  again
+                */
+                $created = $this->query('CREATE DATABASE ' . $this->identifierEscape($db_name), $db_name);
+                if ($created) {
+                    $selected = $this->query('use ' . $this->identifierEscape($db_name), $db_name);
+                }
+            }
 
-            return true;
-        } else {
-            return false;
+            if ($selected) {
+                $this->connections[$db_name]->database = $db_name;
+
+                return true;
+            }
         }
+
+        /**
+          Selecting the database didn't work.
+          Clean up connections and return failure
+        */
+        $this->default_db = $current_default;
+        if (isset($this->connections[$db_name])) {
+            unset($this->connections[$db_name]);
+        }
+
+        return false;
     }
 
     /**
