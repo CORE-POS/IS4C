@@ -315,6 +315,7 @@ static public function printChargeFooterCust($dateTimeStamp, $ref, $program="cha
     */
     $labels = array();
     $labels['charge'] = array("CUSTOMER CHARGE ACCOUNT\n", "Charge Amount:");
+    $labels['coopcred'] = array("COOP CRED ACCOUNT\n", "Credit Amount:");
     $labels['debit'] = array("CUSTOMER DEBIT ACCOUNT\n", "Debit Amount:");
     /* Could append labels from other modules
     foreach (CoreLocal::get('plugins') as $plugin)
@@ -340,7 +341,14 @@ static public function printChargeFooterCust($dateTimeStamp, $ref, $program="cha
 
 }
 
-// Charge Footer split into two functions by apbw 2/1/05
+/**
+  Get a signature slip for use with a charge account
+  @param $dateTimeStamp [string] representing date and time
+  @param $ref [string] transaction identifer 
+  @param $program [string, optional] identifier for different
+    types of charge accounts that require different text
+  @return [string] receipt text
+*/
 static public function printChargeFooterStore($dateTimeStamp, $ref, $program="charge") 
 {
     $chgName = self::getChgName();            // added by apbw 2/14/05 SCR
@@ -1183,35 +1191,38 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
     return $receipt;
 }
 
-/* Per-member messages.
+/** 
+  Get per-member receipt messages
+  @param $card_no [int] member number
+  @return [string] receipt text
  */
-static public function memReceiptMessages($card_no){
+static public function memReceiptMessages($card_no)
+{
     $db = Database::pDataConnect();
-    $q = "SELECT msg_text,modifier_module
-            FROM custReceiptMessage
-            WHERE card_no=".$card_no .
-            " ORDER BY msg_text";
+    $q = 'SELECT msg_text,modifier_module
+          FROM custReceiptMessage
+          WHERE card_no=' . ((int)$card_no) . '
+          ORDER BY msg_text';
     $r = $db->query($q);
     $ret = "";
-    while($w = $db->fetch_row($r)){
+    while ($w = $db->fetch_row($r)) {
         // EL This bit new for messages from plugins.
         $class_name = $w['modifier_module'];
-        if (class_exists($class_name)){
+        if (!empty($class_name) && class_exists($class_name)) {
             $obj = new $class_name();
             $ret .=  $obj->message($w['msg_text']);
-        } elseif (file_exists(dirname(__FILE__).'/ReceiptBuilding/custMessages/'.
-                    $w['modifier_module'].'.php')){
+        } elseif (file_exists(dirname(__FILE__).'/ReceiptBuilding/custMessages/'.$class_name.'php')) {
             if (!class_exists($class_name)){
                 include(dirname(__FILE__).'/ReceiptBuilding/custMessages/'.
                     $class_name.'.php');
             }
             $obj = new $class_name();
             $ret .= $obj->message($w['msg_text']);
-        }
-        else {
+        } else {
             $ret .= $w['msg_text']."\n";
         }
     }
+
     return $ret;
 }
 
