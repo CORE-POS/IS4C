@@ -70,12 +70,8 @@ class CheckTender extends TenderModule
                     return DisplayLib::xboxMsg(_("already used check over benefit today"), $clearButton);
                 }
             }
-        } else if( CoreLocal::get("isMember") == 0  && ($this->amount - CoreLocal::get("amtdue") - 0.005) > 0) { 
-            if (CoreLocal::get("store") == 'WEFC_Toronto') {
-                $msg = _("Non-members may not write checks for more than the total purchase.");
-            } else {
-                $msg = _("non-member check tender cannot exceed total purchase");
-            }
+        } elseif( CoreLocal::get("isMember") == 0  && ($this->amount - CoreLocal::get("amtdue") - 0.005) > 0) { 
+            $msg = _('Non-members may not write checks for more than the total purchase.');
             return DisplayLib::xboxMsg($msg, $clearButton);
         }
 
