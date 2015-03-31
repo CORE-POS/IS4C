@@ -45,11 +45,8 @@ class ExtraInfoModule extends ItemModule
         }
 
         $local_opts = array(0=>'No');
-        $p = $dbc->prepare_statement('SELECT originID,shortName FROM originName WHERE local=1 ORDER BY originID');
-        $r = $dbc->exec_statement($p);
-        while($w = $dbc->fetch_row($r)) {
-            $local_opts[$w['originID']] = $w['shortName'];  
-        }
+        $origin = new OriginsModel($dbc);
+        $local_opts = array_merge($local_opts, $origin->getLocalOrigins());
         if (count($local_opts) == 1) {
             $local_opts[1] = 'Yes'; // generic local if no origins defined
         }

@@ -103,8 +103,14 @@ class AdvancedItemSearch extends FannieRESTfulPage
 
         $desc = FormLib::get('description');
         if ($desc !== '') {
-            $where .= ' AND p.description LIKE ? ';
-            $args[] = '%' . $desc . '%';
+            if (FormLib::get('serviceScale') !== '') {
+                $where .= ' AND (p.description LIKE ? OR h.itemdesc LIKE ?) ';
+                $args[] = '%' . $desc . '%';
+                $args[] = '%' . $desc . '%';
+            } else {
+                $where .= ' AND p.description LIKE ? ';
+                $args[] = '%' . $desc . '%';
+            }
         }
 
         $brand = FormLib::get('brand');
@@ -820,9 +826,9 @@ function chainSuper(superID)
         $ret .= '<td colspan="2" class="form-inline">
             <label class="control-label">Local</label>
             <select name="local" class="form-control input-sm"><option value="">Any</option><option value="0">No</option>';
-        $origins = $dbc->query('SELECT originID, shortName FROM originName WHERE local=1');
-        while($row = $dbc->fetch_row($origins)) {
-            $ret .= sprintf('<option value="%d">%s</option>', $row['originID'], $row['shortName']);
+        $origins = new OriginsModel($dbc);
+        foreach ($origins->getLocalOrigins() as $originID => $shortName) {
+            $ret .= sprintf('<option value="%d">%s</option>', $originID, $shortName);
         }
         $ret .= '</select> ';
 
