@@ -93,9 +93,6 @@ class PaycardsTest extends PHPUnit_Framework_TestCase
         $this->assertNotEmpty($row['xApprovalNumber']);
         $this->assertNotEmpty($row['xResultMessage']);
         $this->assertNotEmpty($row['xTransactionID']);
-        $this->assertNotEmpty($row['xToken']);
-        $this->assertNotEmpty($row['xProcessorRef']);
-        $this->assertNotEmpty($row['xAcquirerRef']);
         $this->assertEquals('xxxxxxxxxxxx', substr($row['PAN'], 0, 12));
 
         /** cleanup test transaction record(s) */
@@ -178,6 +175,9 @@ class PaycardsTest extends PHPUnit_Framework_TestCase
         $this->assertNotEmpty($row['xApprovalNumber']);
         $this->assertNotEmpty($row['xResultMessage']);
         $this->assertNotEmpty($row['xTransactionID']);
+        $this->assertNotEmpty($row['xToken']);
+        $this->assertNotEmpty($row['xProcessorRef']);
+        $this->assertNotEmpty($row['xAcquirerRef']);
         $this->assertEquals('************', substr($row['PAN'], 0, 12));
 
         /** cleanup test transaction record(s) */
