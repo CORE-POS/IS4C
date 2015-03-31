@@ -28,6 +28,8 @@ class TendersModel extends BasicModel
 
     protected $preferred_db = 'op';
 
+    protected $normalize_lanes = true;
+
     protected $columns = array(
     'TenderID'    => array('type'=>'SMALLINT','primary_key'=>True),
     'TenderCode'    => array('type'=>'VARCHAR(2)','index'=>True),
@@ -36,7 +38,8 @@ class TendersModel extends BasicModel
     'ChangeMessage'    => array('type'=>'VARCHAR(25)'),
     'MinAmount'    => array('type'=>'MONEY','default'=>0.01),
     'MaxAmount'    => array('type'=>'MONEY','default'=>1000.00),
-    'MaxRefund'    => array('type'=>'MONEY','default'=>1000.00)
+    'MaxRefund'    => array('type'=>'MONEY','default'=>1000.00),
+    'TenderModule' => array('type'=>'VARCHAR(50)', 'default'=>"'TenderModule'"),
     );
 
     public function doc()
@@ -71,6 +74,34 @@ and on various reports.
 
 TenderType and TenderID are mostly ignored.
         ';
+    }
+
+    /**
+      Lookup existing TenderMap in parameters
+      and write appropriate values in new
+      TenderModule column
+    */
+    public function hookAddColumnTenderModule()
+    {
+        $settingR = $this->connection->query('
+            SELECT param_value 
+            FROM parameters
+            WHERE param_key=\'TenderMap\'
+            ORDER BY store_id,
+                lane_id');
+        if ($this->connection->numRows($settingR) > 0) {
+            $settingW = $this->connection->fetchRow($settingR);
+            $tender_map = $settingW['param_value'];
+            $update = $this->connection->prepare('
+                UPDATE tenders
+                SET TenderModule=?
+                WHERE TenderCode=?
+            ');
+            foreach (explode(',', $tender_map) as $tender) {
+                list($code, $module) = explode('=>', $tender, 2);
+                $this->connection->execute($update, array($module, $code));
+            }
+        }
     }
 
     /* START ACCESSOR FUNCTIONS */
@@ -367,6 +398,43 @@ TenderType and TenderID are mostly ignored.
                 }
             }
             $this->instance["MaxRefund"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function TenderModule()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["TenderModule"])) {
+                return $this->instance["TenderModule"];
+            } else if (isset($this->columns["TenderModule"]["default"])) {
+                return $this->columns["TenderModule"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'TenderModule',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["TenderModule"]) || $this->instance["TenderModule"] != func_get_args(0)) {
+                if (!isset($this->columns["TenderModule"]["ignore_updates"]) || $this->columns["TenderModule"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["TenderModule"] = func_get_arg(0);
         }
         return $this;
     }
