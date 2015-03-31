@@ -89,7 +89,7 @@ class PaycardsTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(200, $row['httpCode']);
         $this->assertEquals(1, $row['validResponse']);
         $this->assertEquals(1, $row['xResultCode']);
-        $this->assertEquals(0, $row['xResponseCode']);
+        $this->assertEquals(1, $row['xResponseCode']);
         $this->assertNotEmpty($row['xApprovalNumber']);
         $this->assertNotEmpty($row['xResultMessage']);
         $this->assertNotEmpty($row['xTransactionID']);
