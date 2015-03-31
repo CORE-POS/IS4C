@@ -244,8 +244,10 @@ those same items revert to normal pricing.
 
         $forceP = $this->connection->prepare($forceQ);
         $forceR = $this->connection->execute($forceP,array($id));
-        $scaleP = $this->connection->prepare($scaleQ);
-        $scaleR = $this->connection->execute($scaleP,array($id));
+        if (!empty($scaleQ)) {
+            $scaleP = $this->connection->prepare($scaleQ);
+            $scaleR = $this->connection->execute($scaleP,array($id));
+        }
         $forceLCP = $this->connection->prepare($forceLCQ);
         $forceR = $this->connection->execute($forceLCP,array($id));
 
