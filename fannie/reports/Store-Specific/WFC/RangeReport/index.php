@@ -41,9 +41,17 @@ td.center {
 }
 
 if (!isset($_GET['excel'])){
+    echo "<script src=\"../../../../src/javascript/jquery.js\"></script>";
+    echo "<script src=\"../../../../src/javascript/jquery-ui.js\"></script>";
+    echo "<link type=\"text/css\" rel=\"stylesheet\" href=\"../../../../src/javascript/jquery-ui.css\">";
+    echo "<script type\"text/javascript\">
+        $(document).ready(function(){
+            $('.date').datepicker();
+        });
+        </script>";
     echo "<form action=index.php name=datelist method=get>";
-    echo "Start Date<input name=date type=text id=date >";
-    echo "End Date<input type=text name=date2>";
+    echo "Start Date<input name=date class=date type=text id=date >";
+    echo "End Date<input type=text name=date2 class=date>";
     echo "<input name=Submit type=submit value=submit>";
     echo "</form>";
 }
@@ -67,7 +75,7 @@ if(isset($_REQUEST['date']) && isset($_REQUEST['date2'])){
    $ddiff = "'$d1 00:00:00' AND '$d2 23:59:59'";
 }
 $dates = array($d1.' 00:00:00',$d2.' 23:59:59');
-$date_ids = array(date('Ymd', strtotime($d1)), date('Y-m-d', strtotime($d2)));
+$date_ids = array(date('Ymd', strtotime($d1)), date('Ymd', strtotime($d2)));
 
 if (!isset($_GET['excel']))
     echo "<br /><a href=index.php?date=$repDate&date2=$repDate2&excel=yes>Click here for Excel version</a>";
@@ -176,7 +184,7 @@ AND (d.department >300)AND d.department <> 0
 and d.department <> 610
 and d.department not between 500 and 599
 GROUP BY d.department, t.dept_name order by d.department");
-$otherR = $dbc->exec_statement($otherQ,$dates);
+$otherR = $dbc->exec_statement($otherQ,$date_ids);
 $others = array("600"=>array("64410","SUPPLIES",0.0),
         "604"=>array("&nbsp;","MISC PO",0.0),
         "700"=>array("63320","TOTES",0.0),
