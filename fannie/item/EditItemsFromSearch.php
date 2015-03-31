@@ -178,10 +178,8 @@ class EditItemsFromSearch extends FannieRESTfulPage
         }
 
         $locales = array(0 => 'No');
-        $origins = $dbc->query('SELECT originID, shortName FROM originName WHERE local=1');
-        while($row = $dbc->fetch_row($origins)) {
-            $locales[$row['originID']] = $row['shortName'];
-        }
+        $origin = new OriginsModel($dbc);
+        $locales = array_merge($locales, $origin->getLocalOrigins());
 
         $depts = array();
         $deptlist = $dbc->query('SELECT dept_no, dept_name FROM departments ORDER BY dept_no');
