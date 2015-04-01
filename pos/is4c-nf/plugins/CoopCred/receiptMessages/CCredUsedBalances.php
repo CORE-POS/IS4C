@@ -308,5 +308,3 @@ class CCredUsedBalances extends ReceiptMessage {
 	}
 }
 
-?>
-

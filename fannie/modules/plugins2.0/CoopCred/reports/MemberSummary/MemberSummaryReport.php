@@ -641,4 +641,3 @@ title="Tick to display with sorting from column heads; un-tick for a plain formt
 FannieDispatch::conditionalExec(false);
 
 ?>
-
