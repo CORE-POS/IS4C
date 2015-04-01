@@ -40,6 +40,7 @@ class BatchManagementTool extends FanniePage
     protected $auth_classes = array('batches','batches_audited');
     protected $title = 'Sales Batches Tool';
     protected $header = 'Sales Batches Tool';
+    public $discoverable = false;
 
     public $description = '[Sales Batches] is the primary tool for creating, editing, and managing 
     sale and price change batches.';

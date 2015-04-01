@@ -68,7 +68,8 @@ class CoreWarehouse extends \COREPOS\Fannie\API\FanniePlugin {
             'SumRingSalesByDay',
             'SumTendersByDay',
             'SumUpcSalesByDay',
-            'TransactionSummary'
+            'TransactionSummary',
+            'WarehouseDates',
         );
 
         foreach($tables as $t){

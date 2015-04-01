@@ -1,9 +1,10 @@
 <?php
 
-function ArrayToXls($array){
-	global $FANNIE_ROOT;
-
-	include_once($FANNIE_ROOT.'src/Excel/xls_write/Spreadsheet_Excel_Writer/Writer.php');
+function ArrayToXls($array)
+{
+    if (!class_exists('Spreadsheet_Excel_Writer')) {
+        include_once(dirname(__FILE__) . '/../Excel/xls_write/Spreadsheet_Excel_Writer/Writer.php');
+    }
 
 	$fn = tempnam(sys_get_temp_dir(),"xlstemp");
 	$workbook = new Spreadsheet_Excel_Writer($fn);

@@ -165,7 +165,8 @@ function saveprice(upc){
     var srp = parseFloat($('#newprice'+upc).val());
     var cost = parseFloat($('#row'+upc).find('.cost').html());
     var shipping = parseFloat($('#row'+upc).find('.shipping').html()) / 100.00;
-    var newmargin = ((srp - ((1+shipping)*cost)) / srp) * 100;
+    var newmargin = 1 - (cost * ((1+shipping)/srp));
+    newmargin *= 100;
     newmargin = Math.round(newmargin*100)/100;
 
     $('#row'+upc).find('.srp').html(srp);
@@ -246,11 +247,9 @@ function saveprice(upc){
             v.cost,
             b.shippingMarkup,
             p.normal_price,
-            (p.normal_price - ((1+b.shippingMarkup)*v.cost))
-                / p.normal_price AS current_margin,
+            1 - (v.cost * ((1+b.shippingMarkup)/p.normal_price)) AS current_margin,
             s.srp,
-            (s.srp - ((1+b.shippingMarkup)*v.cost))
-                / s.srp AS desired_margin,
+            1 - (v.cost * ((1+b.shippingMarkup)/s.srp)) AS desired_margin,
             v.vendorDept,
             x.variable_pricing
             FROM products AS p 
@@ -277,7 +276,7 @@ function saveprice(upc){
         $prep = $dbc->prepare_statement($query);
         $result = $dbc->exec_statement($prep,$args);
 
-        $ret .= "<table class=\"table\">";
+        $ret .= "<table class=\"table table-bordered\">";
         $ret .= "<tr><td colspan=3>&nbsp;</td><th colspan=3>Current</th>
             <th colspan=2>Vendor</th></tr>";
         $ret .= "<tr><th>UPC</th><th>Our Description</th><th>Cost</th>

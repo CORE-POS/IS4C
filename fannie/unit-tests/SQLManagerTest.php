@@ -7,14 +7,16 @@ class SQLManagerTest extends PHPUnit_Framework_TestCase
 {
     public function testMethods()
     {
-        $sql = FannieDB::get('');
+        $config = FannieConfig::factory();
+        $OP_DB = $config->get('OP_DB');
+        $sql = FannieDB::get($OP_DB);
 
         /* test create connection */
         $this->assertInstanceOf('SQLManager',$sql);
         $this->assertObjectHasAttribute('connections',$sql);
         $this->assertInternalType('array',$sql->connections);
-        $this->assertArrayHasKey('',$sql->connections);
-        $this->assertInstanceOf('ADOConnection',$sql->connections['']);
+        $this->assertArrayHasKey($OP_DB ,$sql->connections);
+        $this->assertInstanceOf('ADOConnection',$sql->connections[$OP_DB]);
         
         /* test query */
         $result = $sql->query("SELECT 1 as one");
