@@ -575,7 +575,7 @@ static public function chargeBalance($receipt, $program="charge", $trans_num='')
         foreach ($ar_depts as $ar_dept) {
             $checkQ .= $ar_dept . ',';
         }
-        $checkQ = substr($checkQ, 0, strlen($checkQ)-1) . ')';
+        $checkQ = substr($checkQ, 0, strlen($checkQ)-1) . '))';
     }
     $checkR = $db->query($checkQ);
     $num_rows = $db->num_rows($checkR);
