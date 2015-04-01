@@ -884,7 +884,7 @@ class SQLManager
         $dates = array("datetime"=>1);
         $queries = array();
 
-        while($row = $this->fetch_array($result,$source_db)) {
+        while ($row = $this->fetch_array($result,$source_db)) {
             $full_query = $insert_query." VALUES (";
             for ($i=0; $i<$num_fields; $i++) {
                 $type = strtolower($this->fieldType($result,$i,$source_db));
@@ -901,7 +901,7 @@ class SQLManager
                 if (isset($unquoted[$type])) {
                     $full_query .= $row[$i].",";
                 } else {
-                    $full_query .= "'".$row[$i]."',";
+                    $full_query .= $this->escape($row[$i]) . ',';
                 }
             }
             $full_query = substr($full_query,0,strlen($full_query)-1).")";
@@ -1690,7 +1690,7 @@ class SQLManager
 
             return true;
         } elseif (is_string($this->QUERY_LOG)) {
-            $fp = @fopen($str, 'a');
+            $fp = @fopen($this->QUERY_LOG, 'a');
             if ($fp) {
                 fwrite($fp, $str);
                 fclose($fp);
