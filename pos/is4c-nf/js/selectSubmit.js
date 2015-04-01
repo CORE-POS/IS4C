@@ -8,7 +8,7 @@
   $param filter_selector [string, optional] valid jquery selector for displaying
     current filter string
 */
-function selectSubmit(selector, myform, filter_selector) {
+function selectSubmit(selector, myform, filter_selector, leave_submit) {
 
     var enterDown = 0;
     var enterUp = 0;
@@ -93,7 +93,9 @@ function selectSubmit(selector, myform, filter_selector) {
               tag can prevent any accidental form submission not
               specifically triggered by this script.
             */
-            $(myform).removeAttr('onsubmit');
+            if (leave_submit !== true) {
+                $(myform).removeAttr('onsubmit');
+            }
             $(myform).submit();
             $(myform).submit(function(submit_event){
                 submit_event.preventDefault();

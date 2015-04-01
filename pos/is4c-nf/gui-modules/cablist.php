@@ -52,7 +52,7 @@ class cablist extends NoInputPage
         }
         </script> 
         <?php
-        $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
+        $this->add_onload_command("selectSubmit('#selectlist', '#selectform', false, true)\n");
         $this->add_onload_command("\$('#selectlist').focus();\n");
     }
     
