@@ -30,7 +30,12 @@ class mgrlogin extends NoInputPage {
 			$arr = $this->mgrauthenticate($_REQUEST['input']);
 			echo JsonLib::array_to_json($arr);
 			return False;
-		}
+		} else {
+            // beep on initial page load
+            if (CoreLocal::get('LoudLogins') == 1) {
+                UdpComm::udpSend('twoPairs');
+            }
+		} 
 		return True;
 	}
 
@@ -124,11 +129,18 @@ class mgrlogin extends NoInputPage {
 		}
 
 		$db = Database::pDataConnect();
-		$password = $db->escape($password);
 		$priv = sprintf("%d",CoreLocal::get("SecurityCancel"));
-		$query = "select emp_no, FirstName, LastName from employees where EmpActive = 1 and frontendsecurity >= $priv "
-		."and (CashierPassword = '".$password."' or AdminPassword = '".$password."')";
-		$result = $db->query($query);
+        $args = array($priv, $password, $password);
+		$query = '
+            SELECT emp_no, 
+                FirstName, 
+                LastName 
+            FROM employees 
+            WHERE EmpActive = 1 
+                AND frontendsecurity >= ?
+		        AND (CashierPassword = ? OR AdminPassword = ?)';
+        $prep = $db->prepare($query);
+		$result = $db->execute($prep, $args);
 		$num_rows = $db->num_rows($result);
 
 		if ($num_rows != 0) {
@@ -141,11 +153,11 @@ class mgrlogin extends NoInputPage {
             TransRecord::finalizeTransaction(true);
 
             if (CoreLocal::get('LoudLogins') == 1) {
-                UdpComm::udpSend('goodBeep');
+                UdpComm::udpSend('twoPairs');
             }
 		} else {
             if (CoreLocal::get('LoudLogins') == 1) {
-                UdpComm::udpSend('twoPairs');
+                UdpComm::udpSend('errorBeep');
             }
         }
 

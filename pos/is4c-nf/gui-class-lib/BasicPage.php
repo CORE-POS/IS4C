@@ -36,14 +36,14 @@
 
 class BasicPage {
 
-	var $onload_commands;
+	protected $onload_commands;
 	/**
 	  Relative URL for POS root directory
 	  Pages often need this.
 	*/
-	var $page_url;
+	protected $page_url;
 
-	var $body_class='mainBGimage';
+	protected $body_class='mainBGimage';
 
 	/**
 	  Constructor
@@ -53,10 +53,16 @@ class BasicPage {
 	  (if applicable). Creating a new instance
 	  will output the entire page contents
 	*/
-	function BasicPage(){
+	function __construct()
+    {
 		$this->onload_commands = "";
 		$this->page_url = MiscLib::base_url();
-		if ($this->preprocess()){
+        if (file_exists(dirname(__FILE__) . '/../graphics/is4c.gif')) {
+            $this->body_class = 'mainBGimage';
+        } elseif (file_exists(dirname(__FILE__) . '/../graphics/your_logo_here.gif')) {
+            $this->body_class = 'placeholderBGimage';
+        }
+		if ($this->preprocess()) {
 			ob_start();
 			$this->print_page();
 			ob_end_flush();

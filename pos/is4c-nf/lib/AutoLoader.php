@@ -171,6 +171,10 @@ class AutoLoader extends LibraryClass
                 $path = realpath(dirname(__FILE__).'/ReceiptBuilding/ReceiptTag');
                 $map = Plugin::pluginMap($path,$map);
                 break;
+            case 'DefaultReceiptSavings':
+                $path = realpath(dirname(__FILE__).'/ReceiptBuilding/ReceiptSavings');
+                $map = Plugin::pluginMap($path,$map);
+                break;
             case 'ReceiptMessage':
                 $path = realpath(dirname(__FILE__).'/ReceiptBuilding/Messages');
                 $map = Plugin::pluginMap($path,$map);
@@ -280,11 +284,18 @@ else {
 	}
 }
 
-/** internationalization */
-/*
-setlocale(LC_MESSAGES, "en_US.UTF-8");
-bindtextdomain("pos-nf",realpath(dirname(__FILE__).'/../locale'));
-bind_textdomain_codeset("pos-nf","UTF-8");
-textdomain("pos-nf");
- */
+/** 
+  Internationalization 
+  setlocale() probably always exists
+  but the gettext functions may or may not
+  be available
+*/
+if (function_exists('setlocale') && defined('LC_MESSAGES') && CoreLocal::get('locale') !== '') {
+    setlocale(LC_MESSAGES, CoreLocal::get('locale') . '.utf8');
+    putenv('LC_MESSAGES=' . CoreLocal::get('locale') . '.utf8');
+    if (function_exists('bindtextdomain')) {
+        bindtextdomain('pos-nf', realpath(dirname(__FILE__).'/../locale'));
+        textdomain('pos-nf');
+    }
+}
 

@@ -91,7 +91,7 @@ class PriceOverride extends NoInputPage {
 		?>
 		<div class="baseHeight">
 		<div class="centeredDisplay colored">
-		<span class="larger">price override</span>
+		<span class="larger">enter purchase price</span>
 		<form name="overrideform" method="post" 
 			id="overrideform" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 		<input type="text" id="reginput" name='reginput' tabindex="0" onblur="$('#reginput').focus()" />

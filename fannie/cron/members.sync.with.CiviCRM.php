@@ -54,6 +54,11 @@
  --functionality } - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
  #'Z --COMMENTZ { - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ *  2Jul14 EL Ignore in initial select where civicrm_contact.is_deleted <> 0
+ * 16Jan14 EL Assign civicrm_membership.status_id = 1 at insert.
+ *             It has no default in Civi, was defaulting to 0 which
+ *              prevented it from being found
+ *              and caused label "Pending and Inactive"
  * 28Oct13 EL Change $is4cMax from 99989 to 99900 to allow more special cases.
  * 20Jun13 EL Finish report the new member number obtained from CiviCRM.
  *            +>2add +>1add, +>3add
@@ -579,461 +584,463 @@ WHERE card_no = $memberCards[card_no]
 */
 function assignLocalC ($row, $civiOps, $updated, $civiContactId) {
 
-    global $dbConn;
-    // Base
-    global $civicrm_contact;
-    // Membership#
-    global $civicrm_membership;
-    // email
-    global $civicrm_email;
-    // addres
-    global $civicrm_address;
-    // phone
-    global $civicrm_phone;
-    // Membership card#
-    global $civicrm_value_identification_and_cred;
-    // Datestamp
-    global $civicrm_log;
+	global $dbConn;
+	// Base
+	global $civicrm_contact;
+	// Membership#
+	global $civicrm_membership;
+	// email
+	global $civicrm_email;
+	// addres
+	global $civicrm_address;
+	// phone
+	global $civicrm_phone;
+	// Membership card#
+	global $civicrm_value_identification_and_cred;
+	// Datestamp
+	global $civicrm_log;
 
-    /* SQL DML statements
-    */
-    global $insertContact;
-    global $insertMembership;
-    global $insertEmail;
-    global $insertAddress;
-    global $insertPhone;
-    global $insertMemberCard;
-    global $insertLog;
+	/* SQL DML statements
+	*/
+	global $insertContact;
+	global $insertMembership;
+	global $insertEmail;
+	global $insertAddress;
+	global $insertPhone;
+	global $insertMemberCard;
+	global $insertLog;
 
-    global $updateContact;
-    global $updateMembership;
-    global $updateEmail;
-    global $updateAddress;
-    global $updatePhone;
-    global $updateMemberCard;
-    global $updateLog;
+	global $updateContact;
+	global $updateMembership;
+	global $updateEmail;
+	global $updateAddress;
+	global $updatePhone;
+	global $updateMemberCard;
+	global $updateLog;
 
-    global $memberCardTable;
-    global $memberCardField;
+	global $memberCardTable;
+	global $memberCardField;
 
-    // #'u
-    /* In general:
-     * - Use the civicrm_* array elements for prepared versions of the data for that table.
-     * - Assign prepared versions of the data for that table to the civicrm_* array elements.
-     * - Test civiOps[table_name] for whether to prepare an insert or update.
-     * - Compose the statement and assign/append it to the statement list for that table.
-     * - Create a civicrm_log record (datestamp) to match the IS4C datestamp.
-    */
+	// #'u
+	/* In general:
+	 * - Use the civicrm_* array elements for prepared versions of the data for that table.
+	 * - Assign prepared versions of the data for that table to the civicrm_* array elements.
+	 * - Test civiOps[table_name] for whether to prepare an insert or update.
+	 * - Compose the statement and assign/append it to the statement list for that table.
+	 * - Create a civicrm_log record (datestamp) to match the IS4C datestamp.
+	*/
 
-    // 1/0. 1 prevents any communication.
-    $civicrm_contact[is_opt_out] = ($row[ads_OK] == 0) ? 1 : 0;
+	// 1/0. 1 prevents any communication.
+	$civicrm_contact[is_opt_out] = ($row[ads_OK] == 0) ? 1 : 0;
 
-    if ( $row[pref] == 0 ) {
-        $civicrm_contact[do_not_email] = 1;
-        //$civicrm_contact[do_not_phone] = 1;
-        $civicrm_contact[do_not_mail] = 1;
-    } elseif ( $row[pref] == 1 ) {
-        $civicrm_contact[do_not_email] = 1;
-        $civicrm_contact[do_not_mail] = 0;
-    // 2 is usual and at WEFC probably means nothing either way about postalmail
-    } elseif ( $row[pref] == 2 ) {
-        $civicrm_contact[do_not_email] = 0;
-        $civicrm_contact[do_not_mail] = 0;
-    } elseif ( $row[pref] == 3 ) {
-        $civicrm_contact[do_not_email] = 0;
-        $civicrm_contact[do_not_mail] = 0;
-    } else {
-        1;
-    }
+	if ( $row[pref] == 0 ) {
+		$civicrm_contact[do_not_email] = 1;
+		//$civicrm_contact[do_not_phone] = 1;
+		$civicrm_contact[do_not_mail] = 1;
+	} elseif ( $row[pref] == 1 ) {
+		$civicrm_contact[do_not_email] = 1;
+		$civicrm_contact[do_not_mail] = 0;
+	// 2 is usual and at WEFC probably means nothing either way about postalmail
+	} elseif ( $row[pref] == 2 ) {
+		$civicrm_contact[do_not_email] = 0;
+		$civicrm_contact[do_not_mail] = 0;
+	} elseif ( $row[pref] == 3 ) {
+		$civicrm_contact[do_not_email] = 0;
+		$civicrm_contact[do_not_mail] = 0;
+	} else {
+		1;
+	}
 
-    // Community Partner or Producer: organizations.
-    // IS4C convention s/b: LastName = Organization, FirsName = "" or "Joe Bloggs"
-    if ( $row[memType] == 3 || $row[memType] == 5 ) {
-        $civicrm_contact[contact_type] = "Organization";
-        $civicrm_contact[organization_name] = $row[LastName];
-        // Better to split FirstName on " " and assign to both first_name and last_name?
-        $civicrm_contact[first_name] = $row[FirstName];
-        if ( $row[LastName] != "" ) {
-            $civicrm_contact[sort_name] = $row[LastName];
-            $civicrm_contact[display_name] = $row[LastName];
-        }
-        elseif ( $row[email_1] != "" ) {
-            $civicrm_contact[sort_name] = $row[email_1];
-            $civicrm_contact[display_name] = $row[email_1];
-        }
-        else {
-            1;
-        }
-    }
-    // Eater or Worker
-    elseif ( $row[memType] == 4 || $row[memType] == 6 || $row[FirstName] != "" ) {
-        $civicrm_contact[contact_type] = "Individual";
-        list($first,$middle) = explode("|", $row[FirstName]);
-        $civicrm_contact[first_name] = $first;
-        $civicrm_contact[middle_name] = $middle;
-        $civicrm_contact[last_name] = $row[LastName];
-        $row[FirstName] = str_replace("|", " ", $row[FirstName]);
-        if ( $row[LastName] != "" ) {
-            $civicrm_contact[sort_name] = "{$row[LastName]}, {$row[FirstName]}";
-            $civicrm_contact[display_name] = "{$row[FirstName]} {$row[LastName]}";
-        }
-        elseif ( $row[email_1] != "" ) {
-            $civicrm_contact[sort_name] = $row[email_1];
-            $civicrm_contact[display_name] = $row[email_1];
-        }
-        else {
-            1;
-        }
-    } else {
-        // Unknown memType, or 1.  Does 1 ever happen? Is not offered in Civi but is in IS4C.
-        // c.memType :: _membership.membership_type_id
-        1;
-    }
+	// Community Partner or Producer: organizations.
+	// IS4C convention s/b: LastName = Organization, FirsName = "" or "Joe Bloggs"
+	if ( $row[memType] == 3 || $row[memType] == 5 ) {
+		$civicrm_contact[contact_type] = "Organization";
+		$civicrm_contact[organization_name] = $row[LastName];
+		// Better to split FirstName on " " and assign to both first_name and last_name?
+		$civicrm_contact[first_name] = $row[FirstName];
+		if ( $row[LastName] != "" ) {
+			$civicrm_contact[sort_name] = $row[LastName];
+			$civicrm_contact[display_name] = $row[LastName];
+		}
+		elseif ( $row[email_1] != "" ) {
+			$civicrm_contact[sort_name] = $row[email_1];
+			$civicrm_contact[display_name] = $row[email_1];
+		}
+		else {
+			1;
+		}
+	}
+	// Eater or Worker
+	elseif ( $row[memType] == 4 || $row[memType] == 6 || $row[FirstName] != "" ) {
+		$civicrm_contact[contact_type] = "Individual";
+		list($first,$middle) = explode("|", $row[FirstName]);
+		$civicrm_contact[first_name] = $first;
+		$civicrm_contact[middle_name] = $middle;
+		$civicrm_contact[last_name] = $row[LastName];
+		$row[FirstName] = str_replace("|", " ", $row[FirstName]);
+		if ( $row[LastName] != "" ) {
+			$civicrm_contact[sort_name] = "{$row[LastName]}, {$row[FirstName]}";
+			$civicrm_contact[display_name] = "{$row[FirstName]} {$row[LastName]}";
+		}
+		elseif ( $row[email_1] != "" ) {
+			$civicrm_contact[sort_name] = $row[email_1];
+			$civicrm_contact[display_name] = $row[email_1];
+		}
+		else {
+			1;
+		}
+	} else {
+		// Unknown memType, or 1.  Does 1 ever happen? Is not offered in Civi but is in IS4C.
+		// c.memType :: _membership.membership_type_id
+		1;
+	}
 
-    // id is auto_increment.
-    if ( $civiOps[civicrm_contact] == "insert" ) {
-        $insertContact = "INSERT INTO civicrm_contact
-        (id
-        , source
-        , first_name, middle_name, last_name
-        , organization_name, sort_name, display_name
-        , is_opt_out
-        , do_not_email , do_not_mail
-        )
-        VALUES
-        (''
-        , {$dbConn->escape($civicrm_contact[contact_type])}
-        , {$dbConn->escape($civicrm_contact[source])}
-        , {$dbConn->escape($civicrm_contact[first_name])}
-        , {$dbConn->escape($civicrm_contact[middle_name])}
-        , {$dbConn->escape($civicrm_contact[last_name])}
-        , {$dbConn->escape($civicrm_contact[organization_name])}
-        , {$dbConn->escape($civicrm_contact[sort_name])}
-        , {$dbConn->escape($civicrm_contact[display_name])}
-        , $civicrm_contact[is_opt_out]
-        , $civicrm_contact[do_not_email]
-        , $civicrm_contact[do_not_mail]
-        )";
-    }
-    else {
-        $updateContact = "UPDATE civicrm_contact
-        SET
-            contact_type = {$dbConn->escape($civicrm_contact[contact_type])}
-            , first_name = {$dbConn->escape($civicrm_contact[first_name])}
-            , middle_name = {$dbConn->escape($civicrm_contact[middle_name])}
-            , last_name = {$dbConn->escape($civicrm_contact[last_name])}
-            , organization_name = {$dbConn->escape($civicrm_contact[organization_name])}
-            , sort_name = {$dbConn->escape($civicrm_contact[sort_name])}
-            , display_name = {$dbConn->escape($civicrm_contact[display_name])}
-            , is_opt_out = $civicrm_contact[is_opt_out]
-            , do_not_email = $civicrm_contact[do_not_email]
-            , do_not_mail = $civicrm_contact[do_not_mail]
-        WHERE id = $civiContactId";
-    }
+	// id is auto_increment.
+	if ( $civiOps[civicrm_contact] == "insert" ) {
+		$insertContact = "INSERT INTO civicrm_contact
+		(id
+		, source
+		, first_name, middle_name, last_name
+		, organization_name, sort_name, display_name
+		, is_opt_out
+		, do_not_email , do_not_mail
+		)
+		VALUES
+		(''
+		, {$dbConn->escape($civicrm_contact[contact_type])}
+		, {$dbConn->escape($civicrm_contact[source])}
+		, {$dbConn->escape($civicrm_contact[first_name])}
+		, {$dbConn->escape($civicrm_contact[middle_name])}
+		, {$dbConn->escape($civicrm_contact[last_name])}
+		, {$dbConn->escape($civicrm_contact[organization_name])}
+		, {$dbConn->escape($civicrm_contact[sort_name])}
+		, {$dbConn->escape($civicrm_contact[display_name])}
+		, $civicrm_contact[is_opt_out]
+		, $civicrm_contact[do_not_email]
+		, $civicrm_contact[do_not_mail]
+		)";
+	}
+	else {
+		$updateContact = "UPDATE civicrm_contact
+		SET
+			contact_type = {$dbConn->escape($civicrm_contact[contact_type])}
+			, first_name = {$dbConn->escape($civicrm_contact[first_name])}
+			, middle_name = {$dbConn->escape($civicrm_contact[middle_name])}
+			, last_name = {$dbConn->escape($civicrm_contact[last_name])}
+			, organization_name = {$dbConn->escape($civicrm_contact[organization_name])}
+			, sort_name = {$dbConn->escape($civicrm_contact[sort_name])}
+			, display_name = {$dbConn->escape($civicrm_contact[display_name])}
+			, is_opt_out = $civicrm_contact[is_opt_out]
+			, do_not_email = $civicrm_contact[do_not_email]
+			, do_not_mail = $civicrm_contact[do_not_mail]
+		WHERE id = $civiContactId";
+	}
 
-    /* Membership
-    */
-    $civicrm_membership[membership_type_id] = $row[memType];
-    // These civi dates are date only, no time.
-    $civicrm_membership[join_date] = substr($row[start_date], 0, 10);
-    $civicrm_membership[start_date] = substr($row[start_date], 0, 10);
+	/* Membership
+	*/
+	$civicrm_membership[membership_type_id] = $row[memType];
+	// These civi dates are date only, no time.
+	$civicrm_membership[join_date] = substr($row[start_date], 0, 10);
+	$civicrm_membership[start_date] = substr($row[start_date], 0, 10);
 
-    if ( $civiOps[civicrm_membership] == "insert" ) {
-        $insertMembership = "INSERT INTO civicrm_membership
-        (id, contact_id
-        , membership_type_id
-        , join_date
-        , start_date
-        )
-        VALUES
-        ('', $civiContactId
-        , $civicrm_membership[membership_type_id])
-        , '$civicrm_membership[join_date]'
-        , '$civicrm_membership[start_date]'
-        )";
-    }
-    else {
-        $updateMembership = "UPDATE civicrm_membership
-        SET
-        membership_type_id = $civicrm_membership[membership_type_id]
-        , join_date = '$civicrm_membership[join_date]'
-        , start_date = '$civicrm_membership[start_date]'
-        WHERE contact_id = $civiContactId";
-    }
+	if ( $civiOps[civicrm_membership] == "insert" ) {
+		$insertMembership = "INSERT INTO civicrm_membership
+		(id, contact_id
+		, membership_type_id
+		, join_date
+		, start_date
+		, status_id
+		)
+		VALUES
+		('', $civiContactId
+		, $civicrm_membership[membership_type_id])
+		, '$civicrm_membership[join_date]'
+		, '$civicrm_membership[start_date]'
+		, 1
+		)";
+	}
+	else {
+		$updateMembership = "UPDATE civicrm_membership
+		SET
+		membership_type_id = $civicrm_membership[membership_type_id]
+		, join_date = '$civicrm_membership[join_date]'
+		, start_date = '$civicrm_membership[start_date]'
+		WHERE contact_id = $civiContactId";
+	}
 
-    /* Email(s)
-     * For insert is_primary=1
-     * For update:
-     *  There is always one where is_primary=1
-     * + First change the one where is_primary=1
-     * + If there is another
-     *   + See if there is one with is_primary=0
-     *     + If yes, update that one.
-     *     + If not, insert one with is_primary=0
-    */
+	/* Email(s)
+	 * For insert is_primary=1
+	 * For update:
+	 *  There is always one where is_primary=1
+	 * + First change the one where is_primary=1
+	 * + If there is another
+	 *   + See if there is one with is_primary=0
+	 *     + If yes, update that one.
+	 *     + If not, insert one with is_primary=0
+	*/
 
-    $civicrm_email[email] = $row[email_1];
+	$civicrm_email[email] = $row[email_1];
 
-    if ( $civiOps[civicrm_email] == "insert" ) {
-        $civicrm_email[location_type_id] = 1;
-        $civicrm_email[is_primary] = 1;
-        $civicrm_email[is_bulkmail] = 1;
-        $insertEmail[] = "INSERT INTO civicrm_email
-        (id, contact_id
-        , email
-        , location_type_id
-        , is_primary
-        , is_bulkmail
-        )
-        VALUES
-        ('', $civiContactId
-        , {$dbConn->escape($civicrm_email[email])}
-        , $civicrm_email[location_type_id]
-        , $civicrm_email[is_primary]
-        , $civicrm_email[is_bulkmail]
-        )";
+	if ( $civiOps[civicrm_email] == "insert" ) {
+		$civicrm_email[location_type_id] = 1;
+		$civicrm_email[is_primary] = 1;
+		$civicrm_email[is_bulkmail] = 1;
+		$insertEmail[] = "INSERT INTO civicrm_email
+		(id, contact_id
+		, email
+		, location_type_id
+		, is_primary
+		, is_bulkmail
+		)
+		VALUES
+		('', $civiContactId
+		, {$dbConn->escape($civicrm_email[email])}
+		, $civicrm_email[location_type_id]
+		, $civicrm_email[is_primary]
+		, $civicrm_email[is_bulkmail]
+		)";
 
-        // If there is another one insert it, is_primary=0.
-        if ( isEmail($row[email_2]) ) {
-            $civicrm_email[email] = $row[email_2];
-            $civicrm_email[location_type_id] = 2;   // We don't actually know.
-            // In fact 0 is default.
-            $civicrm_email[is_primary] = 0;
-            $insertEmail[] = "INSERT INTO civicrm_email
-            (id, contact_id
-            , email
-            , location_type_id
-            , is_primary
-            )
-            VALUES
-            ('', $civiContactId
-            , {$dbConn->escape($civicrm_email[email])}
-            , $civicrm_email[location_type_id]
-            , $civicrm_email[is_primary]
-            )";
-        }
-    }
-    else {
-        $updateEmail[] = "UPDATE civicrm_email
-        SET
-        email = {$dbConn->escape($civicrm_email[email])}
-        WHERE contact_id = $civiContactId AND is_primary = 1";
+		// If there is another one insert it, is_primary=0.
+		if ( isEmail($row[email_2]) ) {
+			$civicrm_email[email] = $row[email_2];
+			$civicrm_email[location_type_id] = 2;	// We don't actually know.
+			// In fact 0 is default.
+			$civicrm_email[is_primary] = 0;
+			$insertEmail[] = "INSERT INTO civicrm_email
+			(id, contact_id
+			, email
+			, location_type_id
+			, is_primary
+			)
+			VALUES
+			('', $civiContactId
+			, {$dbConn->escape($civicrm_email[email])}
+			, $civicrm_email[location_type_id]
+			, $civicrm_email[is_primary]
+			)";
+		}
+	}
+	else {
+		$updateEmail[] = "UPDATE civicrm_email
+		SET
+		email = {$dbConn->escape($civicrm_email[email])}
+		WHERE contact_id = $civiContactId AND is_primary = 1";
 
-        /* If there is another one
-         *  Look for the id of one non-primary at Civi
-         *   If there is one
-         *    update it on id#
-         *   If not,
-         *    insert it, is_primary=0.
-        */
-        if ( isEmail($row[email_2]) ) {
-            $civicrm_email[email] = $row[email_2];
-            $civicrm_email[is_primary] = 0;
-            $email_id = getCiviSecondEmail($civiContactId);
-            if ( $email_id != 0 ) {
-                $updateEmail[] = "UPDATE civicrm_email
-                SET
-                email = {$dbConn->escape($civicrm_email[email])}
-                , is_primary = $civicrm_email[is_primary]
-                WHERE id = $email_id";
-            }
-            else {
-                $insertEmail[] = "INSERT INTO civicrm_email
-                (id, contact_id
-                , email
-                , is_primary
-                )
-                VALUES
-                ('', $civiContactId
-                , {$dbConn->escape($civicrm_email[email])}
-                , $civicrm_email[is_primary]
-                )";
-            }
-        }
+		/* If there is another one
+		 *  Look for the id of one non-primary at Civi
+		 *   If there is one
+		 *    update it on id#
+		 *   If not,
+		 *    insert it, is_primary=0.
+		*/
+		if ( isEmail($row[email_2]) ) {
+			$civicrm_email[email] = $row[email_2];
+			$civicrm_email[is_primary] = 0;
+			$email_id = getCiviSecondEmail($civiContactId);
+			if ( $email_id != 0 ) {
+				$updateEmail[] = "UPDATE civicrm_email
+				SET
+				email = {$dbConn->escape($civicrm_email[email])}
+				, is_primary = $civicrm_email[is_primary]
+				WHERE id = $email_id";
+			}
+			else {
+				$insertEmail[] = "INSERT INTO civicrm_email
+				(id, contact_id
+				, email
+				, is_primary
+				)
+				VALUES
+				('', $civiContactId
+				, {$dbConn->escape($civicrm_email[email])}
+				, $civicrm_email[is_primary]
+				)";
+			}
+		}
 
-    // update Email
-    }
+	// update Email
+	}
 
-    /* Address - IS4C only supports one.
-    */
-    $row[street] = str_replace("\n"," ",$row[street]);
-    $civicrm_address[street_address] = fixAddress($row[street]);
-    $civicrm_address[city] = fixCity($row[city]);
-    $civicrm_address[postal_code] = fixPostalCode($row[zip]);
-    $civicrm_address[state_province_id] = getProvinceId($row[state]);
+	/* Address - IS4C only supports one.
+	*/
+	$row[street] = str_replace("\n"," ",$row[street]);
+	$civicrm_address[street_address] = fixAddress($row[street]);
+	$civicrm_address[city] = fixCity($row[city]);
+	$civicrm_address[postal_code] = fixPostalCode($row[zip]);
+	$civicrm_address[state_province_id] = getProvinceId($row[state]);
 
-    if ( $civiOps[civicrm_address] == "insert" ) {
-        if ( $civicrm_address[street_address] != "" ) {
-            $civicrm_address[location_type_id] = 1;
-            $civicrm_address[is_primary] = 1;
-            $insertAddress[] = "INSERT INTO civicrm_address
-            (id, contact_id
-            , street_address
-            , city
-            , postal_code
-            , state_province_id
-            , location_type_id
-            , is_primary
-            )
-            VALUES
-            ('', $civiContactId
-            , {$dbConn->escape($civicrm_address[street_address])}
-            , {$dbConn->escape($civicrm_address[city])}
-            , {$dbConn->escape($civicrm_address[postal_code])}
-            , $civicrm_address[state_province_id]
-            , $civicrm_address[location_type_id]
-            , $civicrm_address[is_primary]
-            )";
+	if ( $civiOps[civicrm_address] == "insert" ) {
+		if ( $civicrm_address[street_address] != "" ) {
+			$civicrm_address[location_type_id] = 1;
+			$civicrm_address[is_primary] = 1;
+			$insertAddress[] = "INSERT INTO civicrm_address
+			(id, contact_id
+			, street_address
+			, city
+			, postal_code
+			, state_province_id
+			, location_type_id
+			, is_primary
+			)
+			VALUES
+			('', $civiContactId
+			, {$dbConn->escape($civicrm_address[street_address])}
+			, {$dbConn->escape($civicrm_address[city])}
+			, {$dbConn->escape($civicrm_address[postal_code])}
+			, $civicrm_address[state_province_id]
+			, $civicrm_address[location_type_id]
+			, $civicrm_address[is_primary]
+			)";
 
-        }
-    }
-    else {
-        // This will set-empty but not delete if foo=="".
-        $updateAddress[] = "UPDATE civicrm_address
-        SET
-        street_address = {$dbConn->escape($civicrm_address[street_address])}
-        , city = {$dbConn->escape($civicrm_address[city])}
-        , postal_code = {$dbConn->escape($civicrm_address[postal_code])}
-        , state_province_id = $civicrm_address[state_province_id]
-        WHERE contact_id = $civiContactId AND is_primary = 1";
+		}
+	}
+	else {
+		// This will set-empty but not delete if foo=="".
+		$updateAddress[] = "UPDATE civicrm_address
+		SET
+		street_address = {$dbConn->escape($civicrm_address[street_address])}
+		, city = {$dbConn->escape($civicrm_address[city])}
+		, postal_code = {$dbConn->escape($civicrm_address[postal_code])}
+		, state_province_id = $civicrm_address[state_province_id]
+		WHERE contact_id = $civiContactId AND is_primary = 1";
 
-    // update Address
-    }
+	// update Address
+	}
 
 
-    /* Phone(s)
-     * For insert, first: is_primary=1, 2nd: is_primary=0
-     * For update:
-     *  There is always one where is_primary=1
-     * + First change the one where is_primary=1
-     * + If there is another
-     *   + See if there is one with is_primary=0
-     *     + If yes, update that one.
-     *     + If not, insert one with is_primary=0
-    */
+	/* Phone(s)
+	 * For insert, first: is_primary=1, 2nd: is_primary=0
+	 * For update:
+	 *  There is always one where is_primary=1
+	 * + First change the one where is_primary=1
+	 * + If there is another
+	 *   + See if there is one with is_primary=0
+	 *     + If yes, update that one.
+	 *     + If not, insert one with is_primary=0
+	*/
 
-    // Does it need some validation?
-    $civicrm_phone[phone] = $row[phone];
+	// Does it need some validation?
+	$civicrm_phone[phone] = $row[phone];
 
-    if ( $civiOps[civicrm_phone] == "insert" ) {
-        if ( $civicrm_phone[phone] != "" ) {
-            $civicrm_phone[location_type_id] = 1;
-            $civicrm_phone[is_primary] = 1;
-            $insertPhone[] = "INSERT INTO civicrm_phone
-            (id, contact_id
-            , phone
-            , location_type_id
-            , is_primary
-            )
-            VALUES
-            ('', $civiContactId
-            , {$dbConn->escape($civicrm_phone[phone])}
-            , $civicrm_phone[location_type_id]
-            , $civicrm_phone[is_primary]
-            )";
+	if ( $civiOps[civicrm_phone] == "insert" ) {
+		if ( $civicrm_phone[phone] != "" ) {
+			$civicrm_phone[location_type_id] = 1;
+			$civicrm_phone[is_primary] = 1;
+			$insertPhone[] = "INSERT INTO civicrm_phone
+			(id, contact_id
+			, phone
+			, location_type_id
+			, is_primary
+			)
+			VALUES
+			('', $civiContactId
+			, {$dbConn->escape($civicrm_phone[phone])}
+			, $civicrm_phone[location_type_id]
+			, $civicrm_phone[is_primary]
+			)";
 
-            // If there is another one insert it, is_primary=0.
-            if ( isPhone($row[email_2]) ) {
-                $civicrm_phone[phone] = $row[email_2];
-                $civicrm_phone[location_type_id] = 2;   // We don't actually know.
-                // In fact 0 is default.
-                $civicrm_phone[is_primary] = 0;
-                $insertPhone[] = "INSERT INTO civicrm_phone
-                (id, contact_id
-                , phone
-                , location_type_id
-                , is_primary
-                )
-                VALUES
-                ('', $civiContactId
-                , {$dbConn->escape($civicrm_phone[phone])}
-                , $civicrm_email[location_type_id]
-                , $civicrm_phone[is_primary]
-                )";
-            }
-        }
-    }
-    else {
-        // This will set-empty but not delete if phone=="".
-        $updatePhone[] = "UPDATE civicrm_phone
-        SET
-        phone = {$dbConn->escape($civicrm_phone[phone])}
-        WHERE contact_id = $civiContactId AND is_primary = 1";
+			// If there is another one insert it, is_primary=0.
+			if ( isPhone($row[email_2]) ) {
+				$civicrm_phone[phone] = $row[email_2];
+				$civicrm_phone[location_type_id] = 2;	// We don't actually know.
+				// In fact 0 is default.
+				$civicrm_phone[is_primary] = 0;
+				$insertPhone[] = "INSERT INTO civicrm_phone
+				(id, contact_id
+				, phone
+				, location_type_id
+				, is_primary
+				)
+				VALUES
+				('', $civiContactId
+				, {$dbConn->escape($civicrm_phone[phone])}
+				, $civicrm_email[location_type_id]
+				, $civicrm_phone[is_primary]
+				)";
+			}
+		}
+	}
+	else {
+		// This will set-empty but not delete if phone=="".
+		$updatePhone[] = "UPDATE civicrm_phone
+		SET
+		phone = {$dbConn->escape($civicrm_phone[phone])}
+		WHERE contact_id = $civiContactId AND is_primary = 1";
 
-        /* If there is another one
-         *  Look for the id of one non-primary at Civi
-         *   If there is one
-         *    update it on id#
-         *   If not,
-         *    insert it, is_primary=0.
-        */
-        if ( isPhone($row[email_2]) ) {
-            $civicrm_phone[phone] = $row[email_2];
-            $civicrm_phone[is_primary] = 0;
-            $phone_id = getCiviSecondPhone($civiContactId);
-            if ( $phone_id != 0 ) {
-                $updatePhone[] = "UPDATE civicrm_phone
-                SET
-                phone = {$dbConn->escape($civicrm_phone[phone])}
-                , is_primary = $civicrm_phone[is_primary]
-                WHERE id = $phone_id";
-            }
-            else {
-                $insertPhone[] = "INSERT INTO civicrm_phone
-                (id, contact_id
-                , phone
-                , is_primary
-                )
-                VALUES
-                ('', $civiContactId
-                , {$dbConn->escape($civicrm_phone[phone])}
-                , $civicrm_phone[is_primary]
-                )";
-            }
-        }
+		/* If there is another one
+		 *  Look for the id of one non-primary at Civi
+		 *   If there is one
+		 *    update it on id#
+		 *   If not,
+		 *    insert it, is_primary=0.
+		*/
+		if ( isPhone($row[email_2]) ) {
+			$civicrm_phone[phone] = $row[email_2];
+			$civicrm_phone[is_primary] = 0;
+			$phone_id = getCiviSecondPhone($civiContactId);
+			if ( $phone_id != 0 ) {
+				$updatePhone[] = "UPDATE civicrm_phone
+				SET
+				phone = {$dbConn->escape($civicrm_phone[phone])}
+				, is_primary = $civicrm_phone[is_primary]
+				WHERE id = $phone_id";
+			}
+			else {
+				$insertPhone[] = "INSERT INTO civicrm_phone
+				(id, contact_id
+				, phone
+				, is_primary
+				)
+				VALUES
+				('', $civiContactId
+				, {$dbConn->escape($civicrm_phone[phone])}
+				, $civicrm_phone[is_primary]
+				)";
+			}
+		}
 
-    // update Phone
-    }
+	// update Phone
+	}
 
-    // Membership card#.
-    if ( $row[member_card_upc] != "" ) {
-        $civicrm_value_identification_and_cred["$memberCardField"] =
-            ltrim(substr($row[member_card_upc],8,5), "0");
-    }
-    else {
-        $civicrm_value_identification_and_cred["$memberCardField"] = 'NULL';
-    }
-    if ( $civiOps["$memberCardTable"] == "insert" ) {
-        $insertMemberCard = "INSERT INTO $memberCardTable
-        (id, entity_id, $memberCardField)
-        VALUES
-        ('', $civiContactId, $civicrm_value_identification_and_cred[$memberCardField])";
-    }
-    else {
-        $updateMemberCard = "UPDATE $memberCardTable
-        SET $memberCardField = $civicrm_value_identification_and_cred[$memberCardField]
-        WHERE entity_id = $civiContactId";
-    }
+	// Membership card#.
+	if ( $row[member_card_upc] != "" ) {
+		$civicrm_value_identification_and_cred["$memberCardField"] =
+			ltrim(substr($row[member_card_upc],8,5), "0");
+	}
+	else {
+		$civicrm_value_identification_and_cred["$memberCardField"] = 'NULL';
+	}
+	if ( $civiOps["$memberCardTable"] == "insert" ) {
+		$insertMemberCard = "INSERT INTO $memberCardTable
+		(id, entity_id, $memberCardField)
+		VALUES
+		('', $civiContactId, $civicrm_value_identification_and_cred[$memberCardField])";
+	}
+	else {
+		$updateMemberCard = "UPDATE $memberCardTable
+		SET $memberCardField = $civicrm_value_identification_and_cred[$memberCardField]
+		WHERE entity_id = $civiContactId";
+	}
 
-    // Datestamp
-    // Create a civicrm_log record (datestamp) to match the IS4C datestamp.
-    $civicrm_log['entity_table'] = "civicrm_contact";
-    $civicrm_log['entity_id'] = $civiContactId;
-    $civicrm_log['data'] = "{$civicrm_log['entity_table']},{$civicrm_log['entity_id']}";
-    // This is civicrm_contact.id of an "IS4C" record in Civi.
-    $civicrm_log['modified_id'] = "4982";
-    $civicrm_log['modified_date'] = "$updated";
+	// Datestamp
+	// Create a civicrm_log record (datestamp) to match the IS4C datestamp.
+	$civicrm_log['entity_table'] = "civicrm_contact";
+	$civicrm_log['entity_id'] = $civiContactId;
+	$civicrm_log['data'] = "{$civicrm_log['entity_table']},{$civicrm_log['entity_id']}";
+	// This is civicrm_contact.id of an "IS4C" record in Civi.
+	$civicrm_log['modified_id'] = "4982";
+	$civicrm_log['modified_date'] = "$updated";
 
-    $insertLog = "INSERT INTO civicrm_log
-    (id, entity_table, entity_id, data, modified_id, modified_date)
-    VALUES
-    ('',
-    '$civicrm_log[entity_table]',
-    $civicrm_log[entity_id],
-    '$civicrm_log[data]',
-    $civicrm_log[modified_id],
-    '$civicrm_log[modified_date]'
-    )";
+	$insertLog = "INSERT INTO civicrm_log
+	(id, entity_table, entity_id, data, modified_id, modified_date)
+	VALUES
+	('',
+	'$civicrm_log[entity_table]',
+	$civicrm_log[entity_id],
+	'$civicrm_log[data]',
+	$civicrm_log[modified_id],
+	'$civicrm_log[modified_date]'
+	)";
 
 // assignLocalC
 }
@@ -1225,46 +1232,46 @@ function getNewContactId($tempMember) {
 */
 function getNewMemberId($contactId) {
 
-    global $dbConn;
-    global $debug;
-    global $dieMail;
+	global $dbConn;
+	global $debug;
+	global $dieMail;
 
-    if ( $debug > 0 ) 
-        $ans = readline("In getNewMemberId > ");
+	if ( $debug > 0 ) 
+		$ans = readline("In getNewMemberId > ");
 
-    $retVal = 0;
+	$retVal = 0;
 
-    $sql = "INSERT INTO civicrm_membership (contact_id) VALUES ($contactId)";
-    $rslt = $dbConn->query("$sql");
-    if ( $dbConn->errno ) {
-        $msg = sprintf("Failed: %s", $dbConn->error);
-        dieHere($msg, $dieMail);
-    }
-    if ( ! $rslt ) {
-        $msg = "getNewMemberId failed: $sql";
-        dieHere($msg, $dieMail);
-    }
+	$sql = "INSERT INTO civicrm_membership (contact_id, status_id) VALUES ($contactId, 1)";
+	$rslt = $dbConn->query("$sql");
+	if ( $dbConn->errno ) {
+		$msg = sprintf("Failed: %s", $dbConn->error);
+		dieHere($msg, $dieMail);
+	}
+	if ( ! $rslt ) {
+		$msg = "getNewMemberId failed: $sql";
+		dieHere($msg, $dieMail);
+	}
 
-    //  Get the _membership.id, which was created by auto-increment
-    $sql = "SELECT id FROM civicrm_membership WHERE contact_id = $contactId";
-    $rslt = $dbConn->query("$sql");
-    if ( $dbConn->errno ) {
-        $msg = sprintf("Failed: %s", $dbConn->error);
-        dieHere($msg, $dieMail);
-    }
-    if ( ! $rslt ) {
-        $msg = "getNewMemberId failed: $sql";
-        dieHere($msg, $dieMail);
-    }
-    $rows = $dbConn->num_rows($rslt);
-    if ( $rows > 0 ) {
-        $row = $dbConn->fetch_row($rslt);
-        $retVal = $row[id];
-    } else {
-        $retVal = 0;
-    }
+	//  Get the _membership.id, which was created by auto-increment
+	$sql = "SELECT id FROM civicrm_membership WHERE contact_id = $contactId";
+	$rslt = $dbConn->query("$sql");
+	if ( $dbConn->errno ) {
+		$msg = sprintf("Failed: %s", $dbConn->error);
+		dieHere($msg, $dieMail);
+	}
+	if ( ! $rslt ) {
+		$msg = "getNewMemberId failed: $sql";
+		dieHere($msg, $dieMail);
+	}
+	$rows = $dbConn->num_rows($rslt);
+	if ( $rows > 0 ) {
+		$row = $dbConn->fetch_row($rslt);
+		$retVal = $row[id];
+	} else {
+		$retVal = 0;
+	}
 
-    return($retVal);
+	return($retVal);
 
 //getNewMemberId
 }
@@ -2888,10 +2895,12 @@ c.id as contact_id
 ,v.{$memberCardField} as mcard
 ,u.modified_date
 FROM
-civicrm_membership m INNER JOIN civicrm_contact c ON c.id = m.contact_id
+civicrm_membership m
+INNER JOIN civicrm_contact c ON c.id = m.contact_id
 LEFT JOIN {$memberCardTable} v ON m.contact_id = v.entity_id
 LEFT JOIN civicrm_log u ON m.contact_id = u.entity_id AND u.entity_table = 'civicrm_contact'
 WHERE u.modified_date > '$latestRunDate'
+ AND c.is_deleted = 0
  AND NOT (m.is_override = 1 AND m.status_id = 6)
 ORDER BY c.id, m.id, u.modified_date DESC;";
 

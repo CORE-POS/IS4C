@@ -58,7 +58,7 @@ public class SPH_IngenicoRBA_USB : SPH_IngenicoRBA_Common
     private USBWrapper usb_port;
     private bool read_continues;
     private System.Collections.Generic.List<byte> long_buffer;
-    private FileStream usb_fs;
+    private Stream usb_fs;
     private int usb_report_size;
     private byte[] ack;
     private byte[] nack;
@@ -162,6 +162,8 @@ public class SPH_IngenicoRBA_USB : SPH_IngenicoRBA_Common
 
         #if MONO
         usb_port = new USBWrapper_Posix();
+        #elif FUTURE
+        usb_port = new USBWrapper_HidSharp();
         #else
         usb_port = new USBWrapper_Win32();
         #endif

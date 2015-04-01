@@ -94,13 +94,17 @@ class adminlogin extends NoInputPage {
 			}
 			else {
 				$db = Database::pDataConnect();
-				$passwd = $db->escape($passwd);
-				$query = "select emp_no, FirstName, LastName from employees 
-					where EmpActive = 1 and frontendsecurity >= "
-					.$class::$adminLoginLevel
-					." and (CashierPassword = '".$passwd."' 
-					or AdminPassword = '".$passwd."')";
-				$result = $db->query($query);
+				$query = "
+                    SELECT emp_no, 
+                        FirstName, 
+                        LastName 
+                    FROM employees 
+					where EmpActive = 1 
+                        AND frontendsecurity >= ?
+                        AND (CashierPassword = ? OR AdminPassword = ?)";
+                $args = array($class::$adminLoginLevel, $passwd, $passwd);
+                $prep = $db->prepare($query);
+				$result = $db->execute($prep, $args);
 				$num_rows = $db->num_rows($result);
 				if ($num_rows != 0) {
 					$row = $db->fetch_row($result);
@@ -111,7 +115,7 @@ class adminlogin extends NoInputPage {
 						'num_flag' => $row['emp_no']
 					));
                     if (CoreLocal::get('LoudLogins') == 1) {
-                        UdpComm::udpSend('goodBeep');
+                        UdpComm::udpSend('twoPairs');
                     }
 					$result = $class::adminLoginCallback(True);
 					if ($result === True)
@@ -131,11 +135,16 @@ class adminlogin extends NoInputPage {
 					));
 
                     if (CoreLocal::get('LoudLogins') == 1) {
-                        UdpComm::udpSend('twoPairs');
+                        UdpComm::udpSend('errorBeep');
                     }
 				}
 			}
-		}
+		} else {
+            // beep on initial page load
+            if (CoreLocal::get('LoudLogins') == 1) {
+                UdpComm::udpSend('twoPairs');
+            }
+        }
 
 		return True;
 	}

@@ -395,18 +395,58 @@ InstallUtilities::paramSave('FooterModules',$current_mods);
 	in the Tender Report (available via Mgrs. Menu [MG])</p></td><td>
 <?php
 $settings = CoreLocal::get("TenderMap");
+$db = Database::pDataConnect();
+$tender_table = $db->table_definition('tenders');
+/**
+  Load tender map from database if
+  the schema supports it
+*/
+if (isset($tender_table['TenderModule'])) {
+    $model = new TendersModel($db);
+    $settings = $model->getMap();
+}
 if (!is_array($settings)) $settings = array();
 if (isset($_REQUEST['TenderMapping'])){
-	$saveStr = "array(";
 	$settings = array();
-	foreach($_REQUEST['TenderMapping'] as $tm){
-		if($tm=="") continue;
-		list($code,$mod) = explode(":",$tm);
+	foreach ($_REQUEST['TenderMapping'] as $tm) {
+		if ($tm=="") {
+            continue;
+        }
+		list($code, $mod) = explode(":", $tm);
 		$settings[$code] = $mod;
-		$saveStr .= "'".$code."'=>'".$mod."',";
 	}
-	$saveStr = rtrim($saveStr,",").")";
-	InstallUtilities::paramSave('TenderMap',$settings);
+    if (!isset($tender_table['TenderModule'])) {
+        InstallUtilities::paramSave('TenderMap',$settings);
+    } else {
+        /**
+          Save posted mapping to database
+          First update the records where a non-default
+          module is specified, then set everything
+          else to default
+        */
+        $not_default_sql = '';
+        $not_default_args = array();
+        $saveP = $db->prepare('
+            UPDATE tenders
+            SET TenderModule=?
+            WHERE TenderCode=?');
+        foreach ($settings as $code => $module) {
+            $db->execute($saveP, array($module, $code));
+            $not_default_sql .= '?,';
+            $not_default_args[] = $code;
+        }
+        if (count($not_default_args) > 0) {
+            $not_default_sql = substr($not_default_sql, 0, strlen($not_default_sql)-1);
+            $defaultP = $db->prepare('
+                UPDATE tenders
+                SET TenderModule=\'TenderModule\'
+                WHERE TenderCode NOT IN (' . $not_default_sql . ')');
+            $db->execute($defaultP, $not_default_args);
+        } else {
+            $db->query("UPDATE tenders SET TenderModule='TenderModule'");
+        }
+        CoreLocal::set('TenderMap', $settings);
+    }
 }
 $mods = AutoLoader::listModules('TenderModule');
 //  Tender Report: Desired tenders column

@@ -113,7 +113,8 @@ function newMenuToOldMenu($menu)
     return $newmenu;
 }
 
-function render_menu($arr,$depth=0){
+function render_menu($arr,$depth=0)
+{
 	global $FANNIE_URL, $FANNIE_NAV_POSITION;
 //	$FANNIE_NAV_POSITION = "top";
 	foreach($arr as $entry){
@@ -122,20 +123,21 @@ function render_menu($arr,$depth=0){
 			$entry['url'] = $FANNIE_URL.$entry['url'];
 		}
 		if ($depth == 0) {
-if ( isset($FANNIE_NAV_POSITION) && $FANNIE_NAV_POSITION == "top" )
+            if (isset($FANNIE_NAV_POSITION) && $FANNIE_NAV_POSITION == "top") {
 			/* 6Oct13 Woodshed comments, will remove when finished.
 			height does not give a uniform height. Does if subhead not below.
 			The li contains all the submenus.
 			The reachability of the submenu is dependent on the offset from the list item,
 			 so fixed width important unless the offset can be actual-width-aware.
 			*/
-			echo "<li style='width:140px; height:20px; margin-right:0.8em; float:left; border-bottom:1px solid #ccc;' class='menu0' title='{$entry["subheading"]}'>";
+                echo "<li style='width:140px; height:20px; margin-right:0.8em; float:left; 
+                    border-bottom:1px solid #ccc;' class='menu0' title='{$entry["subheading"]}'>";
 			//printf('<li style="height:40px; margin-right:0.8em; float:left;" class="menu%d">',$depth);
 			//printf('<li style="width:15%%; height:40px; margin-right:0.8em; float:left;" class="menu%d">',$depth);
-else
-			printf('<li style="width:100%%;" class="menu%d">',$depth);
-		}
-		else {
+            } else {
+                printf('<li style="width:100%%;" class="menu%d">',$depth);
+            }
+		} else {
 			echo '<li>';
 		}
 		printf('<a href="%s">%s</a>',$entry['url'],$entry['label']);
@@ -146,20 +148,19 @@ else
 			render_menu($entry['submenu'],$depth+1);
 			echo '</ul></div></div>';
 		}
-if ( isset($FANNIE_NAV_POSITION) && $FANNIE_NAV_POSITION == "top" ) {
-		// Subhead inside list element.
-		if (False && isset($entry['subheading']) && $depth == 0){
-			printf('<div class="sub">%s</div>',$entry['subheading']);
-		}
-		echo '</li>';
-}
-else {
-		// Subhead outside list element.
-		echo '</li>';
-		if (isset($entry['subheading']) && $depth == 0){
-			printf('<div class="sub">%s</div>',$entry['subheading']);
-		}
-}
+        if (isset($FANNIE_NAV_POSITION) && $FANNIE_NAV_POSITION == "top") {
+            // Subhead inside list element.
+            if (False && isset($entry['subheading']) && $depth == 0){
+                printf('<div class="sub">%s</div>',$entry['subheading']);
+            }
+            echo '</li>';
+        } else {
+            // Subhead outside list element.
+            echo '</li>';
+            if (isset($entry['subheading']) && $depth == 0){
+                printf('<div class="sub">%s</div>',$entry['subheading']);
+            }
+        }
 	}
 }
 

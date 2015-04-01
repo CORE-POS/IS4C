@@ -63,20 +63,17 @@ class QMDisplay extends NoInputPage {
 		$this->offset = isset($_REQUEST['offset'])?$_REQUEST['offset']:0;
 
 		if (count($_POST) > 0){
-            if (!FormLib::validateToken()) {
-                CoreLocal::set('msgrepeat', 0);
-				$this->change_page($this->page_url."gui-modules/pos2.php");
-
-                return false;
-            }
 			$output = "";
-			if ($_REQUEST["clear"] == 0){
+			if ($_REQUEST["clear"] == 0) {
 				$value = $_REQUEST['ddQKselect'];
 
 				$output = CoreLocal::get("qmInput").$value;
 				CoreLocal::set("msgrepeat",1);
 				CoreLocal::set("strRemembered",$output);
 				CoreLocal::set("currentid",CoreLocal::get("qmCurrentId"));
+                if (!FormLib::validateToken() && is_numeric($value)) {
+                    CoreLocal::set("msgrepeat",0);
+                }
 			}
 			if (substr(strtoupper($output),0,2) == "QM"){
 				CoreLocal::set("qmNumber",substr($output,2));
@@ -91,11 +88,12 @@ class QMDisplay extends NoInputPage {
 
 	function body_content()
     {
-		$this->add_onload_command('$(\'#ddQKselect\').focus()');
         $this->add_onload_command("selectSubmit('#ddQKselect', '#qmform');\n");
+		$this->add_onload_command('$(\'#ddQKselect\').focus()');
 
 		echo "<div class=\"baseHeight\" style=\"border: solid 1px black;\">";
-		echo "<form id=\"qmform\" action=\"".$_SERVER["PHP_SELF"]."\" method=\"post\">";
+		echo "<form id=\"qmform\" action=\"".$_SERVER["PHP_SELF"]."\" 
+            method=\"post\" onsubmit=\"return false;\">";
 
         /**
           Where can the menu be found?

@@ -46,7 +46,7 @@ static public function suspendorder()
 
 	if (CoreLocal::get("standalone") == 0) {
 		$db_a->add_connection(CoreLocal::get("mServer"),CoreLocal::get("mDBMS"),
-			CoreLocal::get("mDatabase"),CoreLocal::get("mUser"),CoreLocal::get("mPass"));
+			CoreLocal::get("mDatabase"),CoreLocal::get("mUser"),CoreLocal::get("mPass"),false,true);
 		$cols = Database::getMatchingColumns($db_a,"localtemptrans","suspended");
 		$db_a->transfer(CoreLocal::get("tDatabase"),"select {$cols} from localtemptrans",
 			CoreLocal::get("mDatabase"),"insert into suspended ($cols)");

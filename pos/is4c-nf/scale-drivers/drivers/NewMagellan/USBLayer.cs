@@ -10,7 +10,7 @@ public class USBWrapper {
      * @param report_size [optional] report size in bytes
      * @return open read/write FileStream
      */
-    public virtual FileStream GetUSBHandle(string filename, int report_size){ 
+    public virtual Stream GetUSBHandle(string filename, int report_size){ 
         return null;    
     }
 

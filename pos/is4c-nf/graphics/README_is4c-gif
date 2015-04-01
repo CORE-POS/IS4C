@@ -1,8 +1,16 @@
 is4c.gif is used as a background image on the main PoS page.
-peoples_coop_logo.gif is an example of a suitable image.
-The distributed is4c.gif is symbolic link to, by default,
- a tiny, empty image; a placeholder.
- If you have a better image, change the link to that:
- $ rm is4c.gif
- $ ln -s my_better_image.gif is4c.gif
+To use a custom background, create (or link to) a file
+named is4c.gif. The file peoples_coop_logo.gif is an example 
+of a suitable image, i.e. it is 670 x 510 pixels on a white 
+background with the image roughly in the middle.
+ 
+If you don't want any image:
+$ rm is4c.gif
+$ ln -s empty.gif is4c.gif
 
+The use of this background image is spcified in:
+/IS4C/pos/is4c-nf/css/pos.css
+.mainBGimage {
+	background-image: url('../graphics/is4c.gif');
+	background-repeat: no-repeat;
+}

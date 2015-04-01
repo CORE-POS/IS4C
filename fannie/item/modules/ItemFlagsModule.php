@@ -80,6 +80,7 @@ class ItemFlagsModule extends ItemModule
             if ($f != (int)$f) continue;
             $numflag = $numflag | (1 << ($f-1));
         }
+        $dbc = $this->db();
         $model = new ProductsModel($dbc);
         $model->upc($upc);
         $model->numflag($numflag);

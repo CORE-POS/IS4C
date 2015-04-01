@@ -74,8 +74,8 @@ class EquityHistoryImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
     
     function process_file($linedata)
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
+        $dbc = FannieDB::get($FANNIE_TRANS_DB);
 
         $mn_index = $this->get_column_index('memnum');
         $amt_index = $this->get_column_index('amt');
@@ -84,7 +84,7 @@ class EquityHistoryImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $trans_index = $this->get_column_index('transID');
 
         // prepare statements
-        $insP = $dbc->prepare_statement("INSERT INTO stockpurchases card_no,stockPurchase,
+        $insP = $dbc->prepare_statement("INSERT INTO stockpurchases (card_no,stockPurchase,
                 tdate,trans_num,dept) VALUES (?,?,?,?,?)");
         foreach($linedata as $line){
             // get info from file and member-type default settings

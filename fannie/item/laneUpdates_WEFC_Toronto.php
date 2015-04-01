@@ -95,47 +95,50 @@ function updateProductAllLanes($upc){
 /* Functions like the above with table_name as a parameter. */
 
 function addAllLanes($upc, $table_name){
-    global $FANNIE_LANES, $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
-    $laneupdate_sql = FannieDB::get($FANNIE_OP_DB);
+	global $laneupdate_sql, $FANNIE_LANES, $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
 
-    $server_table_def = $laneupdate_sql->table_definition("{$table_name}",$FANNIE_OP_DB);
-    if (count($server_table_def) == 0)
-         echo "<br />server_table_def is empty for >{$table_name}<";
+	$server_table_def = $laneupdate_sql->table_definition("{$table_name}",$FANNIE_OP_DB);
+	if (count($server_table_def) == 0)
+		 echo "<br />server_table_def is empty for >{$table_name}<";
 
-    // generate list of server columns
-    $server_cols = array();
-    foreach($server_table_def as $k=>$v)
-        $server_cols[$k] = True;
+	// generate list of server columns
+	$server_cols = array();
+	foreach($server_table_def as $k=>$v)
+		$server_cols[$k] = True;
 
-    for ($i = 0; $i < count($FANNIE_LANES); $i++){
-        $laneupdate_sql->add_connection($FANNIE_LANES[$i]['host'],$FANNIE_LANES[$i]['type'],
-            $FANNIE_LANES[$i]['op'],$FANNIE_LANES[$i]['user'],
-            $FANNIE_LANES[$i]['pw']);
+	for ($i = 0; $i < count($FANNIE_LANES); $i++){
+		$laneupdate_sql->add_connection($FANNIE_LANES[$i]['host'],$FANNIE_LANES[$i]['type'],
+			$FANNIE_LANES[$i]['op'],$FANNIE_LANES[$i]['user'],
+			$FANNIE_LANES[$i]['pw']);
 
-        if ( $laneupdate_sql->table_exists("$table_name") ) {
-            // generate list of columns that exist on both
-            // the server and the lane
-            $lane_table_def = $laneupdate_sql->table_definition("{$table_name}",$FANNIE_LANES[$i]['op']);
-            $matching_columns = array();
-            foreach($lane_table_def as $k=>$v){
-                if (isset($server_cols[$k])) $matching_columns[] = $k;
-            }
+		if ( $laneupdate_sql->table_exists("$table_name") ) {
+			// generate list of columns that exist on both
+			// the server and the lane
+			$lane_table_def = $laneupdate_sql->table_definition("{$table_name}",$FANNIE_LANES[$i]['op']);
+			$matching_columns = array();
+			foreach($lane_table_def as $k=>$v){
+				if (isset($server_cols[$k])) $matching_columns[] = $k;
+			}
 
-            $selQ = "SELECT ";
-            $ins = "INSERT INTO $table_name (";
-            foreach($matching_columns as $col){
-                $selQ .= $col.",";
-                $ins .= $col.",";
-            }
-            $selQ = rtrim($selQ,",")." FROM $table_name WHERE upc='$upc'";
-            if ( isset($matching_columns['store_id']) )
-                $selQ .= " ORDER BY store_id DESC";
-            $selQ = $laneupdate_sql->add_select_limit($selQ, 1, $FANNIE_OP_DB);
-            $ins = rtrim($ins,",").")";
+			$selQ = "SELECT ";
+			$ins = "INSERT INTO $table_name (";
+			foreach($matching_columns as $col){
+				$selQ .= $col.",";
+				$ins .= $col.",";
+			}
+			$selQ = rtrim($selQ,",")." FROM $table_name WHERE upc='$upc'";
+			if ( isset($matching_columns['store_id']) )
+				$selQ .= " ORDER BY store_id DESC";
+			$selQ = $laneupdate_sql->add_select_limit($selQ, 1, $FANNIE_OP_DB);
+			$ins = rtrim($ins,",").")";
 
-            $laneupdate_sql->transfer($FANNIE_OP_DB,$selQ,$FANNIE_LANES[$i]['op'],$ins);
-        }
-    }
+/* test
+$tok = $laneupdate_sql->transfer($FANNIE_OP_DB,$selQ,$FANNIE_LANES[$i]['op'],$ins);
+$laneupdate_sql->logger("tok: $tok");
+*/
+			$laneupdate_sql->transfer($FANNIE_OP_DB,$selQ,$FANNIE_LANES[$i]['op'],$ins);
+		}
+	}
 }
 
 function removeAllLanes($upc, $table_name){

@@ -95,7 +95,7 @@ class BatchListPage extends FannieRESTfulPage
         
         if ($dbc->tableExists('batchowner')) {
             $insQ = $dbc->prepare_statement("insert batchowner values (?,?)");
-            $insR = $dbc->exec_statement($insQ,array($id,$owner));
+            $insR = $dbc->exec_statement($insQ,array($id,$b->owner()));
         }
         
         if ($id === false) {
