@@ -515,9 +515,6 @@ static public function getMatchingColumns($connection,$table_name,$table2="")
         $cache = array();
     }
     if (isset($cache[$table_name]) && CoreLocal::get('standalone') == 0) {
-        $fp = fopen(dirname(__FILE__) . '/../log/php-errors.log', 'a');
-        fwrite($fp, "Cache hit for $table_name\n");
-        fclose($fp);
         return $cache[$table_name];
     }
 
