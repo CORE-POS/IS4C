@@ -883,9 +883,12 @@ class SQLManager
             "char"=>1, 'var_string'=>1);
         $dates = array("datetime"=>1);
         $queries = array();
+        $prep = $insert_query . ' VALUES(';
+        $arg_sets = array();
 
         while ($row = $this->fetch_array($result,$source_db)) {
             $full_query = $insert_query." VALUES (";
+            $args = array();
             for ($i=0; $i<$num_fields; $i++) {
                 $type = strtolower($this->fieldType($result,$i,$source_db));
                 if ($row[$i] == "" && strstr(strtoupper($type),"INT")) {
@@ -903,16 +906,33 @@ class SQLManager
                 } else {
                     $full_query .= $this->escape($row[$i]) . ',';
                 }
+                $args[] = $row[$i];
+                if (count($arg_sets) == 0) {
+                    $prep .= '?,';
+                }
             }
             $full_query = substr($full_query,0,strlen($full_query)-1).")";
             array_push($queries,$full_query);
+            if (count($arg_sets) == 0) {
+                $prep = substr($prep, 0, strlen($prep)-1) . ')';
+            }
+            $arg_sets[] = $args;
         }
 
         $ret = true;
         $this->startTransaction($dest_db);
+        $statement = $this->prepare($prep, $dest_db);
+        /*
         foreach ($queries as $q) {
             if(!$this->query($q,$dest_db)) {
                 $ret = false;
+            }
+        }
+        */
+        foreach ($arg_sets as $args) {
+            if (!$this->execute($statement, $args, $dest_db)) {
+                $ret = false;
+                break;
             }
         }
         if ($ret === true) {
