@@ -3,14 +3,14 @@
 
     Copyright 2011 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -66,7 +66,9 @@ class InstallMemModDisplayPage extends \COREPOS\Fannie\API\InstallPage {
         $parent = 'InstallMembershipPage.php';
         echo showLinkUp('Back to Membership',"$parent",'');
 
-        echo "<h1 class='install'>{$this->header}</h1>";
+        if (!$this->themed) {
+            echo "<h1 class='install'>{$this->header}</h1>";
+        }
 
         // Re-order the modules and report.
         if (isset($_REQUEST['ordering'])){

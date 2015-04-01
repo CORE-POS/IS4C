@@ -3,14 +3,14 @@
 
     Copyright 2009 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -187,7 +187,7 @@ function doLogin($name){
     $session_data = array("name"=>$name,"session_id"=>$session_id);
     $cookie_data = serialize($session_data);
 
-    setcookie('session_data',base64_encode($cookie_data),time()+(60*600),'/');
+    setcookie('session_data',base64_encode($cookie_data),0,'/');
 }
 
 function syncUserShadow($name){

@@ -422,6 +422,7 @@ class UPC extends Parser
         }
 
         $scale = ($row["scale"] == 0) ? 0 : 1;
+        $qttyEnforced = $row["qttyEnforced"];
         /* use scaleprice bit column to indicate 
            whether values should be interpretted as 
            UPC or EAN */ 
@@ -430,8 +431,8 @@ class UPC extends Parser
         /* need a weight with this item
            retry the UPC in a few milliseconds and see
         */
-        if ($scale != 0 && CoreLocal::get("weight") == 0 && 
-            CoreLocal::get("quantity") == 0 && !$scaleStickerItem) {
+        if ($scale != 0 && CoreLocal::get("weight") == 0 && $qttyEnforced == 0
+            && CoreLocal::get("quantity") == 0 && !$scaleStickerItem) {
 
             CoreLocal::set("SNR",CoreLocal::get('strEntered'));
             $ret['output'] = DisplayLib::boxMsg(
@@ -443,6 +444,16 @@ class UPC extends Parser
             
             return $ret;
         }
+
+        /* quantity required for this item. Send to
+           entry page if one wasn't provided */
+        if (($qttyEnforced == 1) && (CoreLocal::get("multiple") == 0) && (CoreLocal::get("msgrepeat" == 0) || CoreLocal::get('qttyvalid') == 0)) {
+            $ret['main_frame'] = 
+                    $my_url . 'gui-modules/QuantityEntryPage.php'
+                    . '?entered-item=' . CoreLocal::get('strEntered')
+                    . '&qty-mode=' . $scale;
+            return $ret;
+        } 
 
         /* got a scale weight, make sure the tare
            is valid */
@@ -473,16 +484,6 @@ class UPC extends Parser
             );
             return $ret;
         }
-
-        /* quantity required for this item. Send to
-           entry page if one wasn't provided */
-        $qttyEnforced = $row["qttyEnforced"];
-        if (($qttyEnforced == 1) && (CoreLocal::get("multiple") == 0) && (CoreLocal::get("msgrepeat" == 0) || CoreLocal::get('qttyvalid') == 0)) {
-            $ret['main_frame'] = $my_url."gui-modules/qtty2.php";
-            return $ret;
-        }
-        else
-            CoreLocal::set("qttyvalid",1); // this may be unnecessary
 
         /* wedge I assume
            I don't like this being hard-coded, but since these UPCs

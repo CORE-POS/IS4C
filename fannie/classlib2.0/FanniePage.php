@@ -3,7 +3,7 @@
 
     Copyright 2012 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -151,6 +151,8 @@ class FanniePage
         ob_start();
         $page_title = $this->title;
         $header = $this->header;
+        $headerConfig = $this->config;
+        $BACKEND_NAME = $this->config->get('BACKEND_NAME', 'Fannie');
         if ($this->themed) {
             include(dirname(__FILE__) . '/../src/header.bootstrap.html');
             $this->addJQuery();
@@ -525,6 +527,7 @@ function enableLinea(selector, callback)
         if (!$help) {
             return false;
         }
+        $BACKEND_NAME = $this->config->get('BACKEND_NAME', 'Fannie');
 
         return '
             <div class="modal" id="help-modal" role="modal">
@@ -534,7 +537,9 @@ function enableLinea(selector, callback)
                             <button type="button" class="close" data-dismiss="modal">
                                 <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
                             </button>
-                            <h4>' . $this->title . '</h4>
+                            <h4>' . 
+                                preg_replace('/^Fannie(.*)$/', $BACKEND_NAME . '$1', $this->title) . '
+                            </h4>
                         </div>
                         <div class="modal-body">' . $help . '</div>
                         <div class="modal-footer">

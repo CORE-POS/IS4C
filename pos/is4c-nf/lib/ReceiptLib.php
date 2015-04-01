@@ -315,6 +315,7 @@ static public function printChargeFooterCust($dateTimeStamp, $ref, $program="cha
     */
     $labels = array();
     $labels['charge'] = array("CUSTOMER CHARGE ACCOUNT\n", "Charge Amount:");
+    $labels['coopcred'] = array("COOP CRED ACCOUNT\n", "Credit Amount:");
     $labels['debit'] = array("CUSTOMER DEBIT ACCOUNT\n", "Debit Amount:");
     /* Could append labels from other modules
     foreach (CoreLocal::get('plugins') as $plugin)
@@ -340,7 +341,14 @@ static public function printChargeFooterCust($dateTimeStamp, $ref, $program="cha
 
 }
 
-// Charge Footer split into two functions by apbw 2/1/05
+/**
+  Get a signature slip for use with a charge account
+  @param $dateTimeStamp [string] representing date and time
+  @param $ref [string] transaction identifer 
+  @param $program [string, optional] identifier for different
+    types of charge accounts that require different text
+  @return [string] receipt text
+*/
 static public function printChargeFooterStore($dateTimeStamp, $ref, $program="charge") 
 {
     $chgName = self::getChgName();            // added by apbw 2/14/05 SCR
@@ -542,9 +550,7 @@ static public function centerBig($text) {
 static public function chargeBalance($receipt, $program="charge", $trans_num='')
 {
     PrehLib::chargeOK();
-    /*
-    Should be checking a lane version of: $FANNIE_AR_DEPARTMENTS = '1005 1010'
-    */
+
     $labels = array();
     $labels['charge'] = array("Current IOU Balance:"
             , 1
@@ -555,21 +561,29 @@ static public function chargeBalance($receipt, $program="charge", $trans_num='')
 
     $db = Database::tDataConnect();
     list($emp, $reg, $trans) = explode('-', $trans_num, 3);
+    $ar_depts = MiscLib::getNumbers(CoreLocal::get('ArDepartments'));
     $checkQ = "SELECT trans_id 
                FROM localtranstoday 
-               WHERE (department=990 or trans_subtype='MI')
-                AND emp_no=" . ((int)$emp) . "
+               WHERE 
+                emp_no=" . ((int)$emp) . "
                 AND register_no=" . ((int)$reg) . "
                 AND trans_no=" . ((int)$trans);
+    if (count($ar_depts) == 0) {
+        $checkQ .= " AND trans_subtype='MI'";
+    } else {
+        $checkQ .= " AND (trans_subtype='MI' OR department IN (";
+        foreach ($ar_depts as $ar_dept) {
+            $checkQ .= $ar_dept . ',';
+        }
+        $checkQ = substr($checkQ, 0, strlen($checkQ)-1) . ')';
+    }
     $checkR = $db->query($checkQ);
     $num_rows = $db->num_rows($checkR);
 
     $currActivity = CoreLocal::get("memChargeTotal");
     $currBalance = CoreLocal::get("balance") - $currActivity;
     
-    if (($num_rows > 0 || $currBalance != 0) &&
-        CoreLocal::get("memberID") != CoreLocal::get('defaultNonMem'))
-    {
+    if (($num_rows > 0 || $currBalance != 0) && CoreLocal::get("memberID") != CoreLocal::get('defaultNonMem')) {
         $chargeString = $labels["$program"][0] .
             " $".sprintf("%.2f",($labels["$program"][1] * $currBalance));
         $receipt = $receipt."\n\n".self::biggerFont(self::centerBig($chargeString))."\n";
@@ -997,38 +1011,13 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
 
             $receipt['any'] .= self::receiptDetail($reprint, $ref);
             $member = trim(CoreLocal::get("memberID"));
-            $your_discount = CoreLocal::get("transDiscount");
 
             $savingsMode = CoreLocal::get('ReceiptSavingsMode');
-            $memberSaleSavings = CoreLocal::get('memSpecial');
-            $everyoneSaleSavings = CoreLocal::get('discounttotal');
-            $percentDiscountSavings = CoreLocal::get('transDiscount');
-            if ($savingsMode == 'unified' || $savingsMode === '') {
-                /**
-                  Show all savings on a single line
-                */
-                if ($memberSaleSavings + $everyoneSaleSavings + $percentDiscountSavings > 0) {
-                    $receipt['any'] .= 'TODAY YOU SAVED = $'
-                        . number_format($memberSaleSavings + $everyoneSaleSavings + $percentDiscountSavings, 2)
-                        . "\n";
-                }
-            } elseif ($savingsMode == 'separate' || $savingsMode == 'couldhave') {
-                /**
-                  Show discounts on separate lines;
-                  Optionally show non-members what they could have saved
-                */
-                if ($percentDiscountSavings > 0) {
-                    $receipt['any'] .= _('DISCOUNT SAVINGS = $') . number_format($percentDiscountSavings, 2) . "\n";
-                }
-                if ($everyoneSaleSavings > 0) {
-                    $receipt['any'] .= _('SALE SAVINGS = $') . number_format($everyoneSaleSavings, 2) . "\n";
-                }
-                if ($memberSaleSavings > 0 && trim(CoreLocal::get("memberID")) != CoreLocal::get("defaultNonMem")) {
-                    $receipt['any'] .= _('OWNER SALE SAVINGS = $') . number_format($memberSaleSavings, 2) . "\n";
-                } elseif ($memberSaleSavings > 0 && $savingsMode == 'couldhave') {
-                    $receipt['any'] .= _('OWNER COULD HAVE SAVED = $') . number_format($memberSaleSavings, 2) . "\n";
-                }
+            if ($savingsMode === '' || !class_exists($savingsMode)) {
+                $savingsMode = 'DefaultReceiptSavings';
             }
+            $savings = new $savingsMode();
+            $receipt['any'] .= $savings->savingsMessage($ref);
 
             /**
               List local total as defined by settings
@@ -1202,35 +1191,38 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
     return $receipt;
 }
 
-/* Per-member messages.
+/** 
+  Get per-member receipt messages
+  @param $card_no [int] member number
+  @return [string] receipt text
  */
-static public function memReceiptMessages($card_no){
+static public function memReceiptMessages($card_no)
+{
     $db = Database::pDataConnect();
-    $q = "SELECT msg_text,modifier_module
-            FROM custReceiptMessage
-            WHERE card_no=".$card_no .
-            " ORDER BY msg_text";
+    $q = 'SELECT msg_text,modifier_module
+          FROM custReceiptMessage
+          WHERE card_no=' . ((int)$card_no) . '
+          ORDER BY msg_text';
     $r = $db->query($q);
     $ret = "";
-    while($w = $db->fetch_row($r)){
+    while ($w = $db->fetch_row($r)) {
         // EL This bit new for messages from plugins.
         $class_name = $w['modifier_module'];
-        if (class_exists($class_name)){
+        if (!empty($class_name) && class_exists($class_name)) {
             $obj = new $class_name();
             $ret .=  $obj->message($w['msg_text']);
-        } elseif (file_exists(dirname(__FILE__).'/ReceiptBuilding/custMessages/'.
-                    $w['modifier_module'].'.php')){
+        } elseif (file_exists(dirname(__FILE__).'/ReceiptBuilding/custMessages/'.$class_name.'php')) {
             if (!class_exists($class_name)){
                 include(dirname(__FILE__).'/ReceiptBuilding/custMessages/'.
                     $class_name.'.php');
             }
             $obj = new $class_name();
             $ret .= $obj->message($w['msg_text']);
-        }
-        else {
+        } else {
             $ret .= $w['msg_text']."\n";
         }
     }
+
     return $ret;
 }
 

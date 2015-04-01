@@ -3,7 +3,7 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -293,16 +293,69 @@ class FannieAPI
             include_once($file);
             ob_end_clean();
 
-            if (!class_exists($class)) {
+            $namespaced_class = self::pathToClass($file);
+
+            if (!class_exists($class) && !class_exists($namespaced_class)) {
                 continue;
             }
 
-            if (is_subclass_of($class, $base_class)) {
+            if (class_exists($class) && is_subclass_of($class, $base_class)) {
                 $ret[] = $class;
+            } elseif (class_exists($namespaced_class) && is_subclass_of($namespaced_class, $base_class)) {
+                $ret[] = $namespaced_class;
             }
         }
 
         return $ret;
+    }
+
+    /**
+      Determine fully namespaced class name
+      based on filesystem path
+      @param $path [string] file system path
+      @return [string] class name with namespace if applicable
+    */
+    public static function pathToClass($path)
+    {
+        if (strstr($path, '/modules/plugins2.0/')) {
+            $name = '\\COREPOS\\Fannie\\Plugin';
+            $parts = explode('/', $path);
+            $start = false;
+            for ($i=0; $i<count($parts); $i++) {
+                if ($parts[$i] == '') { 
+                    continue;
+                } elseif ($parts[$i] == 'plugins2.0') {
+                    $start = true;
+                    continue;
+                }
+                if ($start) {
+                    $name .= '\\' . $parts[$i];
+                }
+            }
+
+            return substr($name, 0, strlen($name)-4);
+        } elseif (strstr($path, '/classlib2.0/')) {
+            $name = '\\COREPOS\\Fannie\\API';
+            $parts = explode('/', $path);
+            $start = false;
+            for ($i=0; $i<count($parts); $i++) {
+                if ($parts[$i] == '') { 
+                    continue;
+                } elseif ($parts[$i] == 'classlib2.0') {
+                    $start = true;
+                    continue;
+                }
+                if ($start) {
+                    $name .= '\\' . $parts[$i];
+                }
+            }
+
+            return substr($name, 0, strlen($name)-4);
+        } else {
+            $name = basename($file);        
+
+            return substr($name, 0, strlen($name)-4);
+        }
     }
 }
 

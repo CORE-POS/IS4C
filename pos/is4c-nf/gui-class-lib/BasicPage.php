@@ -36,14 +36,14 @@
 
 class BasicPage {
 
-	var $onload_commands;
+	protected $onload_commands;
 	/**
 	  Relative URL for POS root directory
 	  Pages often need this.
 	*/
-	var $page_url;
+	protected $page_url;
 
-	private $body_class='mainBGimage';
+	protected $body_class='mainBGimage';
 
 	/**
 	  Constructor

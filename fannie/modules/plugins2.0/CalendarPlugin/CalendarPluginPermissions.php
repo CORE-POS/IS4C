@@ -21,7 +21,9 @@
 
 *********************************************************************************/
 
-if(!class_exists("CalendarPluginDB")) include(dirname(__FILE__).'/CalendarPluginDB.php');
+if(!class_exists("CalendarPluginDB")) {
+    include(dirname(__FILE__).'/CalendarPluginDB.php');
+}
 
 class CalendarPluginPermissions {
 

@@ -15,7 +15,7 @@ class StatementsPluginBusiness extends FannieRESTfulPage
 
     public function post_id_handler()
     {
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_ROOT;
+        global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_ROOT, $FANNIE_ARCHIVE_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $cards = "(";
@@ -116,22 +116,20 @@ class StatementsPluginBusiness extends FannieRESTfulPage
                 description,
                 department,
                 trans_num
-            FROM ' . $FANNIE_TRANS_DB . $dbc->sep() . ' dlog_90_view
+            FROM ' . $FANNIE_ARCHIVE_DB . $dbc->sep() . 'dlogBig
             WHERE tdate BETWEEN ? AND ?
                 AND trans_num=?
                 AND card_no=?
                 AND trans_type IN (\'I\', \'D\')
         ';         
-        $todayQ = str_replace('dlog_90_view', 'dlog', $detailsQ);
+        $todayQ = str_replace($FANNIE_ARCHIVE_DB . $dbc->sep() . 'dlogBig', $FANNIE_TRANS_DB . $dbc->sep() . 'dlog', $detailsQ);
         $detailsP = $dbc->prepare($detailsQ);
         $todayP = $dbc->prepare($todayQ);
         $details = array();
         foreach ($arRows as $card_no => $trans) {
             $found_charge = false;
             foreach ($trans as $info) {
-                if (!$found_charge && $info['charges'] == 0) {
-                    continue;
-                } elseif ($info['charges'] != 0) {
+                if ($info['charges'] != 0) {
                     $found_charge = true;
                 }
                 $dt = strtotime($info['tdate']);
@@ -156,6 +154,17 @@ class StatementsPluginBusiness extends FannieRESTfulPage
                     }
                     $details[$w['card_no']][$tn][] = $w['description'];
                 }
+            }
+            if ($found_charge) {
+                $actual = array();
+                $i=0;
+                while ($arRows[$card_no][$i]['charges'] == 0) {
+                    $i++;
+                }
+                for ($i; $i<count($arRows[$card_no]); $i++) {
+                    $actual[] = $arRows[$card_no][$i];
+                }
+                $arRows[$card_no] = $actual;
             }
         }
 
@@ -281,7 +290,11 @@ class StatementsPluginBusiness extends FannieRESTfulPage
             $pdf->Ln(15);
             $pdf->Cell($indent,8,'');
             $pdf->SetFillColor(200);
-            $pdf->Cell(35,8,'Amount Due',0,0,'L',1);
+            if ($memberW['balance'] >= 0) {
+                $pdf->Cell(35,8,'Amount Due',0,0,'L',1);
+            } else {
+                $pdf->Cell(35,8,'Credit Balance',0,0,'L',1);
+            }
             $pdf->Cell(25,8,'$ ' . sprintf("%.2f",$memberW['balance']),0,0,'L');
 
             if ($gazette) {
@@ -310,7 +323,12 @@ class StatementsPluginBusiness extends FannieRESTfulPage
                 $pdf->Ln(5);
                 $pdf->Cell(50,10,trim($memberW['LastName']),0);
                 $pdf->Ln(5);
-                $pdf->Cell(80,10,$memberW['street'],0);
+                list($addr1, $addr2) = explode("\n", $memberW['street'], 2);
+                $pdf->Cell(80,10,$addr1,0);
+                if ($addr2) {
+                    $pdf->Ln(5);
+                    $pdf->Cell(80,10,$addr2,0);
+                }
                 $pdf->Ln(5);
                 $pdf->Cell(90,10,$memberW['city'] . ', ' . $memberW['state'] . '   ' . $memberW['zip'],0);
 

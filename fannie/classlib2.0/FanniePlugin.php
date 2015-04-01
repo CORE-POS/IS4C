@@ -49,14 +49,6 @@ class FanniePlugin
 
     public $plugin_description = 'This author didn\'t provide anything. Shame!';
 
-    /**
-      @deprecated
-      Temporary compat for function normalization
-    */
-    public function plugin_enable()
-    {
-        $this->pluginEnable();
-    }
 
     /**
       Callback. Triggered when plugin is enabled
@@ -70,9 +62,9 @@ class FanniePlugin
       @deprecated
       Temporary compat for function normalization
     */
-    public function plugin_disable()
+    public function plugin_enable()
     {
-        $this->pluginDisable();
+        $this->pluginEnable();
     }
 
     /**
@@ -87,9 +79,9 @@ class FanniePlugin
       @deprecated
       Temporary compat for function normalization
     */
-    public function setting_change()
+    public function plugin_disable()
     {
-        $this->settingChange();
+        $this->pluginDisable();
     }
 
     /**
@@ -104,9 +96,9 @@ class FanniePlugin
       @deprecated
       Temporary compat for function normalization
     */
-    public function plugin_url()
+    public function setting_change()
     {
-        return $this->pluginUrl();
+        $this->settingChange();
     }
 
     /**
@@ -124,9 +116,9 @@ class FanniePlugin
       @deprecated
       Temporary compat for function normalization
     */
-    public function plugin_dir()
+    public function plugin_url()
     {
-        return $this->pluginDir();
+        return $this->pluginUrl();
     }
 
     /**
@@ -143,9 +135,9 @@ class FanniePlugin
       @deprecated
       Temporary compat for function normalization
     */
-    public function plugin_db_struct($db, $struct_name, $db_name="")
+    public function plugin_dir()
     {
-        return $this->pluginDbStruct($db, $struct_name, $db_name);
+        return $this->pluginDir();
     }
 
     public function pluginDbStruct($db, $struct_name, $db_name="")
@@ -171,6 +163,15 @@ class FanniePlugin
         }
     }
     
+    /**
+      @deprecated
+      Temporary compat for function normalization
+    */
+    public function plugin_db_struct($db, $struct_name, $db_name="")
+    {
+        return $this->pluginDbStruct($db, $struct_name, $db_name);
+    }
+
     /**
       Find the plugin containing a given file
       @param $file string filename
@@ -244,3 +245,4 @@ class FanniePlugin
 namespace {
     class FanniePlugin extends \COREPOS\Fannie\API\FanniePlugin {}
 }
+

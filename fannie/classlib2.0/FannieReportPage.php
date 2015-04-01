@@ -3,7 +3,7 @@
 
     Copyright 2012 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -200,6 +200,29 @@ class FannieReportPage extends FanniePage
 
     function bodyContent()
     {
+        $plugins = $this->config->get('PLUGIN_LIST');
+        if (is_array($plugins) && in_array('CoreWarehouse', $plugins)) {
+            $reflector = new ReflectionClass($this);
+            $source = \COREPOS\Fannie\Plugin\CoreWarehouse\CwReportDataSource::getDataSource($reflector->getName());
+            if ($source !== false) {
+                $source_select = '
+                    <div class="col-sm-12" id="data-source-fields">
+                        <div class="form-group">
+                            <label>Data Source</label> <select name="data-source" class="form-control" id="select-data-source">
+                                <option>Standard</option>
+                                <option>CoreWarehouse</option>
+                            </select>
+                        </div>';
+                foreach ($source->additionalFields() as $field) {
+                    $source_select .= '<div class="form-group">' . $field->toHTML() . '</div>';
+                }
+                $source_select .= '</div>';
+                $source_select = preg_replace('/\s\s+/', '', $source_select);
+                $this->addOnloadCommand("\$('#primary-content form').prepend('$source_select');\n");
+                $this->addOnloadCommand("\$('#primary-content .cw-field').attr('disabled', true);\n");
+                $this->addOnloadCommand("\$('#select-data-source').change(function(){ if ($(this).val()=='CoreWarehouse') { $('#primary-content .cw-field').attr('disabled', false); } else { $('#primary-content .cw-field').attr('disabled', true); } });\n");
+            }
+        }
         return $this->form_content();
     }
 
@@ -234,7 +257,27 @@ class FannieReportPage extends FanniePage
                 $this->freshenCache($data);
             }
         } else {
-            $data = $this->fetch_report_data();
+            /**
+              Use CoreWarehouse data source if requested & available
+              Fail back to FannieReportPage::fetch_report_data()
+              if a data source cannot be found or data source fails
+              to handle the request
+            */
+            $plugins = $this->config->get('PLUGIN_LIST');
+            if (FormLib::get('data-source') === 'CoreWarehouse' && is_array($plugins) && in_array('CoreWarehouse', $plugins)) {
+                $reflector = new ReflectionClass($this);
+                $source = \COREPOS\Fannie\Plugin\CoreWarehouse\CwReportDataSource::getDataSource($reflector->getName());
+                if ($source != false) {
+                    $data = $source->fetchReportData($reflector->getName(), $this->config, $this->connection);
+                    if ($data === false) {
+                        $data = $this->fetch_report_data();
+                    }
+                } else {
+                    $data = $this->fetch_report_data();
+                }
+            } else {
+                $data = $this->fetch_report_data();
+            }
             $this->freshenCache($data);
         }
         $output = '';

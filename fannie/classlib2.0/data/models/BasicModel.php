@@ -3,7 +3,7 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -832,7 +832,7 @@ class BasicModel
             $this->connection = FannieDB::get($db_name);
         }
 
-        if (!$this->connection->table_exists($this->name)) {
+        if (!$this->connection->tableExists($this->name)) {
             if ($mode == BasicModel::NORMALIZE_MODE_CHECK) {
                 echo "Table {$this->name} not found!\n";
                 echo "==========================================\n";
@@ -852,6 +852,33 @@ class BasicModel
                     printf("Update complete. Creation of table %s %s\n",$this->name, ($doCreate)?"OK":"not supported");
                 }
                 echo "==========================================\n\n";
+                return true;
+            }
+        } elseif ($this->connection->isView($this->name) && !($this instanceof ViewModel)) {
+            if ($mode == BasicModel::NORMALIZE_MODE_CHECK) {
+                echo "Table {$this->name} is currently a view but should be a table\n";
+                echo "==========================================\n";
+                printf("%s table %s\n","Check complete. Need to drop view and re-create as table", $this->name);
+                echo "==========================================\n\n";
+
+                return 999;
+            } else if ($mode == BasicModel::NORMALIZE_MODE_APPLY) {
+                echo "==========================================\n";
+                if ($doCreate) {
+                    $cResult = $this->connection->query('DROP VIEW ' . $this->connection->identifierEscape($this->name));
+                    if ($cResult) {
+                        $cResult = $this->create(); 
+                    }
+                    printf("Update complete. Re-creation of table %s as view %s\n",$this->name, ($cResult)?"OK":"failed");
+                    // create succeeded, normalize_lanes enabled
+                    if ($cResult && $this->normalize_lanes && !$this->currently_normalizing_lane) {
+                        $this->normalizeLanes($db_name, $mode, $doCreate);
+                    }
+                } else {
+                    printf("Update complete. Creation of table %s %s\n",$this->name, ($doCreate)?"OK":"not supported");
+                }
+                echo "==========================================\n\n";
+
                 return true;
             }
         }
@@ -1310,7 +1337,7 @@ class BasicModel
 
     Copyright ".date("Y")." Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

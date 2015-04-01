@@ -3,7 +3,7 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -406,8 +406,6 @@ class DTransactionsModel extends BasicModel
                     $source_tables = array($source_tables);
                 }
 
-                echo $populateQ;
-
                 /**
                   Loop through transaction table(s) and 
                   execute the skeleton query with the actual table
@@ -499,34 +497,147 @@ class DTransactionsModel extends BasicModel
     // selectStruct()
     }
 
-    public static function selectDtransSumByDepartment($connection, $start_date, $end_date)
+    public static function aggregateDlog(SQLManager $connection, $start_date, $end_date, stdclass $where, $groupby=array())
     {
-        $config = FannieConfig::factory();
-        $FANNIE_ARCHIVE_DB = $config->get('ARCHIVE_DB');
-        $FANNIE_TRANS_DB = $config->get('TRANS_DB');
-        $dlog = self::selectDlog($start_date, $end_date);
-        $random_name = uniqid('temp'.rand(1000, 9999));
-        $temp_table = $FANNIE_ARCHIVE_DB . $connection->sep() . $random_name;
-        $temp_name = $connection->temporaryTable($temp_table, $FANNIE_TRANS_DB . $connection->sep() . 'transarchive');
-        
-        $params = array(
-            $start_date . ' 00:00:00',
-            $end_date . ' 23:59:59',
-        );
+        return self::aggregateStruct($connection, true, $start_date, $end_date, $where, $groupby);
+    }
 
-        $query = '
-            INSERT INTO ' . $temp_name . '
-                (datetime, department, quantity, total)
-            SELECT
-                MIN(datetime),
-                department,
-                SUM(quantity),
-                SUM(total)
-            FROM ' . $dlog . '
-            WHERE datetime BETWEEN ? AND ?
-            GROUP BY department'; 
-        $prep = $connection->prepare($query);
-        $result = $connection->execute($prep, $params);
+    public static function aggregateDtrans(SQLManager $connection, $start_date, $end_date, stdclass $where, $groupby=array())
+    {
+        return self::aggregateStruct($connection, false, $start_date, $end_date, $where, $groupby);
+    }
+
+    public static function aggregateStruct(SQLManager $connection, $dlog, $start_date, $end_date, stdclass $where, $groupby=array())
+    {
+        $base_table = self::selectStruct($dlog, $start_date, $end_date);
+        $dt_col = ($dlog) ? 'tdate' : 'datetime';
+        $clone_table = ($dlog) ? 'dlog_15' : 'transarchive';
+
+        /**
+          Grouping is required
+        */
+        if (!is_array($groupby) || count($groupby) == 0) {
+            return $base_table;
+        }
+
+        /**
+          Validate group by columns
+        */
+        $model = new DTransactionsModel(null);
+        $columns = $model->getColumns();
+        $insert_cols = array();
+        $select_cols = array();
+        for ($i=0; $i<count($groupby); $i++) {
+            $group = $groupby[$i];
+            if (isset($columns[$group])) {
+                $insert_cols[] = $group;
+                $select_cols[] = $group;
+            } elseif (preg_match('/(.+)\s+AS\s+(\w+)$/', $group, $matches)) {
+                $col_definition = $matches[1];
+                $col_alias = $matches[2];
+                if (isset($columns[$col_alias])) {
+                    $insert_cols[] = $col_alias;
+                    $select_cols[] = $group;
+                    $groupby[$i] = $col_definition;
+                } else {
+                    return $base_table;
+                }
+            } else {
+                return $base_table;
+            }
+        }
+        /**
+          Always include a datetime column
+        */
+        if (!in_array($dt_col, $insert_cols)) {
+            $insert_cols[] = $dt_col;
+            $select_cols[] = 'MAX(' . $dt_col . ') AS ' . $dt_col;
+        }
+
+        /**
+          Create randomly named temporary table based
+          on the structure of dlog_15 or transachive
+        */
+        $config = FannieConfig::factory();
+        $sep = $connection->sep();
+        $random_name = uniqid('temp'.rand(1000, 9999));
+        $temp_table = $config->get('ARCHIVE_DB') . $sep . $random_name;
+        $clone_table = $config->get('TRANS_DB') . $sep . $clone_table;
+        $temp_name = $connection->temporaryTable($temp_table, $clone_table);
+        if ($temp_name === false) {
+            return $base_table;
+        }
+
+        /**
+          Build a query to insert aggregated rows into
+          the temporary table
+        */
+        $query = 'INSERT INTO ' . $temp_name . '(';
+        foreach ($insert_cols as $c) {
+            $query .= $c . ',';
+        }
+        $query .= 'total, quantity) ';
+
+        $query .= ' SELECT ';
+        foreach ($select_cols as $c) {
+            $query .= $c . ',';
+        }
+        /**
+          Always aggregate by total & quantity
+        */
+        $query .= ' SUM(total) AS total, '
+            . DTrans::sumQuantity() . ' AS quantity
+            FROM __TRANSACTION_TABLE__
+            WHERE ' . $dt_col . ' BETWEEN ? AND ? ';
+        $params = array($start_date . ' 00:00:00', $end_date . ' 23:59:59');
+
+        /**
+          Add a where clause if one has been specified
+        */
+        if (property_exists($where, 'sql') && is_array($where->sql)) {
+            foreach ($where->sql as $sql) {
+                $query .= ' AND ' . $sql;
+            }
+        }
+        if (property_exists($where, 'params') && is_array($where->params)) {
+            foreach ($where->params as $p) {
+                $params[] = $p;
+            }
+        }
+
+        /**
+          Add the group by clause
+        */
+        $query .= ' GROUP BY ';
+        foreach ($groupby as $group) {
+            $query .= $group . ',';
+        }
+        $query = substr($query, 0, strlen($query)-1);
+
+        /**
+          Split monthly archive union if needed
+        */
+        $source_tables = array();
+        if (strstr($base_table, ' UNION ')) {
+            preg_match_all('/\s+FROM\s+(\w+)\s+/', $base_table, $matches);
+            foreach ($matches[1] as $m) {
+                $source_tables[] = $m;
+            }
+        } else {
+            $source_tables = array($base_table);
+        }
+
+        /**
+          Load data into temporary table from source table(s)
+          using built query
+        */
+        foreach ($source_tables as $source_table) {
+            $insertQ = str_replace('__TRANSACTION_TABLE__', $source_table, $query);
+            $prep = $connection->prepare($insertQ);
+            if (!$connection->execute($prep, $params)) {
+                return $base_table;
+            }
+        }
 
         return $temp_name;
     }

@@ -96,7 +96,7 @@ static public function memberID($member_number)
 
 	// special hard coding for member 5607 WFC 
 	// needs to go away
-	if ($member_number == "5607") {
+	if (CoreLocal::get('store') == 'wfc' && $member_number == "5607") {
 		$ret['main_frame'] = MiscLib::baseURL()."gui-modules/requestInfo.php?class=PrehLib";
 
         return $ret;
@@ -570,6 +570,17 @@ static public function tender($right, $strl)
 	*/
 	$tender_object = 0;
 	$map = CoreLocal::get("TenderMap");
+    $db = Database::pDataConnect();
+    /**
+      Fetch module mapping from the database
+      if the schema supports it
+      16Mar2015
+    */
+    $tender_table = $db->table_definition('tenders');
+    if (isset($tender_table['TenderModule'])) {
+        $tender_model = new TendersModel($db);
+        $map = $tender_model->getMap();
+    }
 	if (is_array($map) && isset($map[$right])) {
 		$class = $map[$right];
 		$tender_object = new $class($right, $strl);
@@ -671,6 +682,9 @@ static public function deptkey($price, $dept,$ret=array())
 	if (CoreLocal::get("casediscount") > 0 && CoreLocal::get("casediscount") <= 100) {
 		$case_discount = (100 - CoreLocal::get("casediscount"))/100;
 		$price = $case_discount * $price;
+    } elseif (CoreLocal::get('itemPD') > 0 && CoreLocal::get('SecurityLineItemDiscount') == 30 && CoreLocal::get('msgrepeat')==0){
+        $ret['main_frame'] = MiscLib::baseURL() . "gui-modules/adminlogin.php?class=LineItemDiscountAdminLogin";
+        return $ret;
 	} elseif (CoreLocal::get('itemPD') > 0) {
         $discount = MiscLib::truncate2($price * (CoreLocal::get('itemPD')/100.00));
         $price -= $discount;
@@ -1026,7 +1040,7 @@ static public function ttl()
         CoreLocal::set('percentDiscount', $savePD);
 
 		if (CoreLocal::get("percentDiscount") > 0) {
-            if (CoreLocal::get('member_subtotal') !== 0 || CoreLocal::get('member_subtotal') !== '0') {
+            if (CoreLocal::get('member_subtotal') === 0 || CoreLocal::get('member_subtotal') === '0') {
                 // 5May14 Andy
                 // Why is this different trans_type & voided from
                 // the other Subtotal record generated farther down?

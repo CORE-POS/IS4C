@@ -31,12 +31,11 @@ class login2 extends BasicPage
 	private $box_css_class;
 	private $msg;
 
-	public $body_class = '';
-
 	public function preprocess()
     {
 		$this->box_css_class = 'coloredArea';
 		$this->msg = _('please enter your password');
+        $this->body_class = '';
 
 		if (isset($_REQUEST['reginput']) || isset($_REQUEST['userPassword'])) {
 

@@ -11,8 +11,7 @@ services:
 
 branches:
     only:
-        - fannieDevelop
-        - posDevelop
+        - master
 
 # test both msyqli and PDO 
 # using deprecated mysql should really
@@ -26,38 +25,39 @@ env:
         - DB_DRIVER=mysqli
 
 install:
-    - if [ '$TRAVIS_BRANCH' != 'posDevelop' ] ; then sh fannie/unit-tests/travis-init.sh; fi
-    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ] ; then sh pos/is4c-nf/unit-tests/travis-init.sh; fi
+    - sh fannie/unit-tests/travis-init.sh
+    - sh pos/is4c-nf/unit-tests/travis-init.sh
 
 script:
     # Fannie tests
     # This must run first
-    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/InstallTest.php; fi
+    - $F_TEST fannie/unit-tests/InstallTest.php
     # These can run in any order
-    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/ApiLibTest.php; fi
-    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/ItemsTest.php; fi
-    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/LogTest.php; fi
-    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/MembersTest.php; fi
-    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/ModelsTest.php; fi
-    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/PagesTest.php; fi
-    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/PluginsTest.php; fi
-    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/SQLManagerTest.php; fi
-    - if [ "$TRAVIS_BRANCH" != 'posDevelop' ]; then set -e; $F_TEST fannie/unit-tests/TasksTest.php; fi
+    - $F_TEST fannie/unit-tests/ApiLibTest.php
+    - $F_TEST fannie/unit-tests/ItemsTest.php
+    - $F_TEST fannie/unit-tests/LogTest.php
+    - $F_TEST fannie/unit-tests/MembersTest.php
+    - $F_TEST fannie/unit-tests/ModelsTest.php
+    - $F_TEST fannie/unit-tests/PagesTest.php
+    - $F_TEST fannie/unit-tests/PluginsTest.php
+    - $F_TEST fannie/unit-tests/SQLManagerTest.php
+    - $F_TEST fannie/unit-tests/TasksTest.php
     # POS tests
     # This must run first
-    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/InstallTest.php; fi
+    - $P_TEST pos/is4c-nf/unit-tests/InstallTest.php
     # These can run in any order
-    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/BaseLibsTest.php; fi
-    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/DisplayTest.php; fi
-    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/FooterBoxesTest.php; fi
-    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/KickersTest.php; fi
-    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/LocalStorageTest.php; fi
-    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/PagesTest.php; fi
-    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/ParsersTest.php; fi
-    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/PluginsTest.php; fi
-    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/ReceiptTest.php; fi
-    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/SQLManagerTest.php; fi
-    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/ScanningTest.php; fi
-    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/SearchTest.php; fi
-    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/TendersTest.php; fi
-    - if [ "$TRAVIS_BRANCH" != 'fannieDevelop' ]; then set -e; $P_TEST pos/is4c-nf/unit-tests/TotalActionsTest.php; fi
+    - $P_TEST pos/is4c-nf/unit-tests/BaseLibsTest.php
+    - $P_TEST pos/is4c-nf/unit-tests/DisplayTest.php
+    - $P_TEST pos/is4c-nf/unit-tests/FooterBoxesTest.php
+    - $P_TEST pos/is4c-nf/unit-tests/KickersTest.php
+    - $P_TEST pos/is4c-nf/unit-tests/LocalStorageTest.php
+    - $P_TEST pos/is4c-nf/unit-tests/PagesTest.php
+    - $P_TEST pos/is4c-nf/unit-tests/PaycardsTest.php
+    - $P_TEST pos/is4c-nf/unit-tests/ParsersTest.php
+    - $P_TEST pos/is4c-nf/unit-tests/PluginsTest.php
+    - $P_TEST pos/is4c-nf/unit-tests/ReceiptTest.php
+    - $P_TEST pos/is4c-nf/unit-tests/SQLManagerTest.php
+    - $P_TEST pos/is4c-nf/unit-tests/ScanningTest.php
+    - $P_TEST pos/is4c-nf/unit-tests/SearchTest.php
+    - $P_TEST pos/is4c-nf/unit-tests/TendersTest.php
+    - $P_TEST pos/is4c-nf/unit-tests/TotalActionsTest.php

@@ -36,7 +36,13 @@ function save_open_event() {
             url: 'CalendarAjax.php',
             type: 'get',
             data: getArgs,
-            success: function(){
+            success: function(resp){
+                if (temp.length == 3 && /^\d+$/.test(resp)) {
+                    var datestr = temp[1];
+                    var uid = temp[2];
+                    $('#event_'+datestr+"_"+uid).attr('id', 'event_'+resp);
+                    $('#event_'+resp).attr('onclick', 'edit_event(event, '+resp+')');
+                }
             }
         });
     });
@@ -64,6 +70,7 @@ function edit_event(event, event_id) {
 	area += "</textarea>";
     
     $('#event_'+event_id).html(area);
+    $('#event_'+event_id+' .openevent').focus();
 }
 
 function add_event(datestr, uid) {
@@ -79,6 +86,7 @@ function add_event(datestr, uid) {
 	area += "</textarea>";
 
     $('#event_'+datestr+'_'+uid).html(area);
+    $('#event_'+datestr+'_'+uid+' .openevent').focus();
 }
 
 /**

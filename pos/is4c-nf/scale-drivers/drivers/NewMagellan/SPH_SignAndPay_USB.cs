@@ -39,7 +39,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
     private byte[] long_buffer;
     private int long_length;
     private int long_pos;
-    private FileStream usb_fs;
+    private Stream usb_fs;
     private int usb_report_size;
     private bool logo_available = false;
 
@@ -133,6 +133,9 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         #if MONO
         usb_port = new USBWrapper_Posix();
         usb_report_size = 64;
+        #elif FUTURE
+        usb_port = new USBWrapper_HidSharp();
+        usb_report_size = 65;
         #else
         usb_port = new USBWrapper_Win32();
         usb_report_size = 65;
@@ -542,10 +545,12 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         try {
             usb_fs.EndRead(iar);
             HandleReadData(input);        
-        }
-        catch (Exception ex){
-            if (this.verbose_mode > 0)
+        } catch (TimeoutException){
+        } catch (Exception ex){
+            if (this.verbose_mode > 0) {
+		System.Console.WriteLine("ReadCallback()");
                 System.Console.WriteLine(ex);
+	    }
         }
 
         ReRead();
@@ -739,11 +744,6 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
             else if (msg.Length > 1){
                 if (this.verbose_mode > 0)
                     System.Console.WriteLine(msg.Length+" "+msg[0]+" "+msg[1]);
-            }
-            break;
-        default:
-            if (this.verbose_mode > 0) {
-                System.Console.WriteLine("The driver has become confused!");
             }
             break;
         }

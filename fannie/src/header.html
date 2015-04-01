@@ -1,5 +1,20 @@
 <?php
-global $FANNIE_DYNAMIC_MENU, $FANNIE_NAV_POSITION, $FANNIE_CSS_LOGO, $FANNIE_CHARSET, $FANNIE_CUSTOM_TITLE;
+global $FANNIE_DYNAMIC_MENU, $FANNIE_NAV_POSITION, $FANNIE_CSS_LOGO, $FANNIE_CHARSET, $FANNIE_CUSTOM_TITLE, $FANNIE_BACKEND_NAME;
+if ($headerConfig instanceof FannieConfig) {
+    $FANNIE_DYNAMIC_MENU = $headerConfig->get('DYNAMIC_MENU');
+    $FANNIE_NAV_POSITION = $headerConfig->get('NAV_POSITION');
+    $FANNIE_CSS_LOGO = $headerConfig->get('CSS_LOGO');
+    $FANNIE_CHARSET = $headerConfig->get('CHARSET');
+    $FANNIE_CUSTOM_TITLE = $headerConfig->get('CUSTOM_TITLE');
+    $FANNIE_MENU = $headerConfig->get('MENU');
+    $BACKEND_NAME = $headerConfig->get('BACKEND_NAME', 'Fannie');
+}
+if (preg_match('/^Fannie[^\w]+.*$/', $page_title)) {
+    $page_title = preg_replace('/^Fannie(.*)$/', $BACKEND_NAME . '$1', $page_title);
+}
+if (preg_match('/^Fannie[^\w]+.*$/', $header)) {
+    $header = preg_replace('/^Fannie(.*)$/', $BACKEND_NAME . '$1', $header);
+}
 /* try to deal with relative paths for includes */
 $path = "";
 $limit = 15;
@@ -43,10 +58,12 @@ if (!isset($FANNIE_CHARSET) || empty($FANNIE_CHARSET)) {
         </td>
         <td>
         <div style="font-size:28px;" class="primaryColor">
-        Fannie
-        <?php if (isset($FANNIE_CUSTOM_TITLE) && !empty($FANNIE_CUSTOM_TITLE)) {
+        <?php
+        echo $FANNIE_BACKEND_NAME;
+        if (isset($FANNIE_CUSTOM_TITLE) && !empty($FANNIE_CUSTOM_TITLE)) {
             echo ' - ' . $FANNIE_CUSTOM_TITLE;
-        } ?>
+        } 
+        ?>
         </div>
         <div style="font-size:20px;" class="secondaryColor">
         IT CORE maintenance & reporting

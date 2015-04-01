@@ -36,7 +36,7 @@ class SQLManagerTest extends PHPUnit_Framework_TestCase
 		$this->assertNotEquals(False,$fields);
 		$this->assertEquals(1,$fields);
 
-		$type = $sql->field_type($result,0);
+		$type = strtolower($sql->field_type($result,0));
 		$constraint = $this->logicalOr(
 			$this->equalTo('int'),
 			$this->equalTo('longlong')

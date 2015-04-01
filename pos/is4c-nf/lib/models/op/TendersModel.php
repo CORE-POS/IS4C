@@ -36,8 +36,40 @@ class TendersModel extends BasicModel
     'ChangeMessage'    => array('type'=>'VARCHAR(25)'),
     'MinAmount'    => array('type'=>'MONEY','default'=>0.01),
     'MaxAmount'    => array('type'=>'MONEY','default'=>1000.00),
-    'MaxRefund'    => array('type'=>'MONEY','default'=>1000.00)
+    'MaxRefund'    => array('type'=>'MONEY','default'=>1000.00),
+    'TenderModule' => array('type'=>'VARCHAR(50)', 'default'=>"'TenderModule'"),
     );
+
+    public function getMap()
+    {
+        $prep = $this->connection->prepare('
+            SELECT TenderCode,
+                TenderModule
+            FROM tenders
+            WHERE TenderModule <> \'TenderModule\'');
+        $result = $this->connection->execute($prep);
+        $map = array();
+        while ($w = $this->connection->fetch_row($result)) {
+            $map[$w['TenderCode']] = $w['TenderModule'];
+        }
+
+        return $map;
+    }
+
+    public function hookAddColumnTenderModule()
+    {
+        CoreLocal::refresh();
+        CoreState::loadParams();
+        $current_map = CoreLocal::get('TenderMap');
+        $update = $this->connection->prepare('
+            UPDATE tenders
+            SET TenderModule=?
+            WHERE TenderCode=?
+        ');
+        foreach ($current_map as $code => $module) {
+            $this->connection->execute($update, array($module, $code));
+        }
+    }
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -158,6 +190,21 @@ class TendersModel extends BasicModel
             }
         } else {
             $this->instance["MaxRefund"] = func_get_arg(0);
+        }
+    }
+
+    public function TenderModule()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["TenderModule"])) {
+                return $this->instance["TenderModule"];
+            } elseif(isset($this->columns["TenderModule"]["default"])) {
+                return $this->columns["TenderModule"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["TenderModule"] = func_get_arg(0);
         }
     }
     /* END ACCESSOR FUNCTIONS */
