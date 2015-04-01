@@ -504,6 +504,23 @@ static public function uploadtoServer()
 */
 static public function getMatchingColumns($connection,$table_name,$table2="")
 {
+    /**
+      Cache column information by table in the session
+      In standalone mode, a transfer query likely failed
+      and the cache may be wrong so always requery in
+      that case.
+    */
+    $cache = CoreLocal::get('MatchingColumnCache');
+    if (!is_array($cache)) {
+        $cache = array();
+    }
+    if (isset($cache[$table_name]) && CoreLocal::get('standalone') == 0) {
+        $fp = fopen(dirname(__FILE__) . '/../log/php-errors.log', 'a');
+        fwrite($fp, "Cache hit for $table_name\n");
+        fclose($fp);
+        return $cache[$table_name];
+    }
+
     $local_poll = $connection->table_definition($table_name,CoreLocal::get("tDatabase"));
     if ($local_poll === false) {
         return '';
@@ -528,8 +545,11 @@ static public function getMatchingColumns($connection,$table_name,$table2="")
     foreach($matching_cols as $col) {
         $ret .= $col.",";
     }
+    $ret = rtrim($ret,",");
+    $cache[$table_name] = $ret;
+    CoreLocal::set('MatchingColumnCache', $cache);
 
-    return rtrim($ret,",");
+    return $ret;
 }
 
 /** Get a list of columns in both tables.
@@ -571,11 +591,6 @@ static public function localMatchingColumns($connection,$table1,$table2)
 static public function uploadCCdata()
 {
     if (!in_array("Paycards",CoreLocal::get("PluginList"))) {
-        // plugin not enabled; nothing to upload
-        return true;
-    }
-
-    if (!in_array("Paycards",$CORE_LOCAL->get("PluginList"))) {
         // plugin not enabled; nothing to upload
         return true;
     }
