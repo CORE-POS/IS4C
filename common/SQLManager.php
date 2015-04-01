@@ -53,6 +53,9 @@ class SQLManager
     /** throw exception on failed query **/
     protected $throw_on_fail = false;
 
+    /** cache information about table existence & definition **/
+    protected $structure_cache = array();
+
     /** Constructor
         @param $server Database server host
         @param $type Database type. Most supported are
@@ -1095,9 +1098,19 @@ class SQLManager
         if ($which_connection == '') {
             $which_connection=$this->default_db;
         }
+
+        /**
+          Check whether the definition is in cache
+        */
+        if (isset($this->structure_cache[$which_connection]) && isset($this->structure_cache[$which_connection][$table_name])) {
+            return true;
+        }
+
         $conn = $this->connections[$which_connection];
         $cols = $conn->MetaColumns($table_name);
-        if ($cols === false) return false;
+        if ($cols === false) {
+            return false;
+        }
 
         return true;
     }
@@ -1141,6 +1154,14 @@ class SQLManager
         if ($which_connection == '') {
             $which_connection=$this->default_db;
         }
+
+        /**
+          Check whether the definition is in cache
+        */
+        if (isset($this->structure_cache[$which_connection]) && isset($this->structure_cache[$which_connection][$table_name])) {
+            return $this->structure_cache[$which_connection][$table_name];
+        }
+
         $conn = $this->connections[$which_connection];
         $cols = $conn->MetaColumns($table_name);
 
@@ -1462,16 +1483,10 @@ class SQLManager
             $which_connection=$this->default_db;
         }
 
-        $exists = $this->tableExists($table_name,$which_connection);
-
-        if (!$exists) {
+        $t_def = $this->tableDefinition($table_name, $which_connection);
+        if ($t_def === false) {
             return false;
         }
-        if ($exists === -1) {
-            return -1;
-        }
-
-        $t_def = $this->tableDefinition($table_name,$which_connection);
 
         $cols = "(";
         $vals = "(";
@@ -1524,16 +1539,10 @@ class SQLManager
             $which_connection=$this->default_db;
         }
 
-        $exists = $this->tableExists($table_name,$which_connection);
-
-        if (!$exists) {
+        $t_def = $this->tableDefinition($table_name, $which_connection);
+        if ($t_def === false) {
             return false;
         }
-        if ($exists === -1) {
-            return -1;
-        }
-
-        $t_def = $this->tableDefinition($table_name,$which_connection);
 
         $sets = "";
         $args = array();
@@ -1825,6 +1834,35 @@ class SQLManager
             $this->test_mode = false; // no more test data
             return false;
         }
+    }
+
+    /**
+      Cache a table definition to avoid future lookups
+    */
+    public function cacheTableDefinition($table, $definition, $which_connection='')
+    {
+        if ($which_connection == '') {
+            $which_connection=$this->default_db;
+        }
+        if (!isset($this->structure_cache[$which_connection])) {
+            $this->structure_cache[$which_connection] = array();
+        }
+        $this->structure_cache[$which_connection][$table] = $definition;
+
+        return true;
+    }
+
+    /**
+      Clear cached table definitions
+    */
+    public function clearTableCache($which_connection='')
+    {
+        if ($which_connection == '') {
+            $which_connection=$this->default_db;
+        }
+        $this->structure_cache[$which_connection] = array();
+
+        return true;
     }
 }
 
