@@ -453,6 +453,9 @@ class FannieReportPage extends FanniePage
     */
     protected function checkDataCache()
     {
+        if (isset($_REQUEST['no-cache']) && $_REQUEST['no-cache'] === '1') {
+            return false;
+        }
         $archive_db = $this->config->get('ARCHIVE_DB');
         $dbc = FannieDB::get($archive_db);
         if ($this->report_cache != 'day' && $this->report_cache != 'month') {
@@ -490,8 +493,12 @@ class FannieReportPage extends FanniePage
         }
         $table = $archive_db . $dbc->sep() . "reportDataCache";
         $hash = $_SERVER['REQUEST_URI'];
-        $hash = str_replace("&excel=xls","",$hash);
-        $hash = str_replace("&excel=csv","",$hash);
+        $hash = str_replace("excel=xls","",$hash);
+        $hash = str_replace("excel=csv","",$hash);
+        $hash = str_replace("no-cache=1","",$hash);
+        if (substr($hash, -1) == '?') {
+            $hash = substr($hash, 0, strlen($hash)-1);
+        }
         $hash = md5($hash);
         $expires = '';
         if ($this->report_cache == 'day') {
@@ -638,7 +645,7 @@ class FannieReportPage extends FanniePage
                     $ret .= '<table class="mySortableTable tablesorter">';
                 } else {
                     $ret .= '<table class="mySortableTable" cellspacing="0" 
-                        cellpadding="4" border="0">' . "\n";
+                        cellpadding="4" border="1">' . "\n";
                 }
                 break;
             case 'csv':
