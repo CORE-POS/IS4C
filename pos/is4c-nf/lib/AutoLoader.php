@@ -290,7 +290,7 @@ else {
   but the gettext functions may or may not
   be available
 */
-if (function_exists('setlocale') && CoreLocal::get('locale') !== '') {
+if (function_exists('setlocale') && defined('LC_MESSAGES') && CoreLocal::get('locale') !== '') {
     setlocale(LC_MESSAGES, CoreLocal::get('locale') . '.utf8');
     putenv('LC_MESSAGES=' . CoreLocal::get('locale') . '.utf8');
     if (function_exists('bindtextdomain')) {
