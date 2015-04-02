@@ -90,8 +90,14 @@ Inheritance diagram for ManualPurchaseOrderPage:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:a712f03da0d3fac18e566609e25a11555"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a712f03da0d3fac18e566609e25a11555"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>preprocess</b> ()</td></tr>
+<tr class="separator:a712f03da0d3fac18e566609e25a11555"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8946fe26b62e2059ca5695fac79be5cd"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_manual_purchase_order_page.html#a8946fe26b62e2059ca5695fac79be5cd">post_id_handler</a> ()</td></tr>
 <tr class="separator:a8946fe26b62e2059ca5695fac79be5cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa75f906bd7f0fc170ee400a016ecf46b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa75f906bd7f0fc170ee400a016ecf46b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>get_id_adjust_view</b> ()</td></tr>
+<tr class="separator:aa75f906bd7f0fc170ee400a016ecf46b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1da4d3920d1eb9e3b5cfceaeb32c0764"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1da4d3920d1eb9e3b5cfceaeb32c0764"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>get_id_view</b> ()</td></tr>
 <tr class="separator:a1da4d3920d1eb9e3b5cfceaeb32c0764"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -169,6 +175,7 @@ Additional Inherited Members</h2></td></tr>
 <p>Queries to check for vendorItems entries</p>
 <p>Create parent record for the order</p>
 <p>Create item records for the order</p>
+<p>Multiple same-SKU records Sum the quantities and costs to merge into a single record</p>
 <p>Try to look up unit size using vendorID+sku or vendorID+upc. This avoids making unit size a required field <em>and</em> checks for an existing vendorItems record</p>
 <p>If no vendorItems record exists for this SKU or UPC then create one</p>
 
@@ -195,7 +202,7 @@ Additional Inherited Members</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Feb 13 2015 14:15:24 for CORE POS - Fannie by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Apr 2 2015 12:27:29 for CORE POS - Fannie by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.4
 </small></address>

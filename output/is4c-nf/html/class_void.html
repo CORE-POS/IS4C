@@ -95,12 +95,12 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a205ae19fd644e6af751cb47320abd68d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af5366e14fef567494d0aeb6e7bdb57dd"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_void.html#af5366e14fef567494d0aeb6e7bdb57dd">parse</a> ($str)</td></tr>
 <tr class="separator:af5366e14fef567494d0aeb6e7bdb57dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae4c881501b88bf6ef09990cbeb6d1823"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_void.html#ae4c881501b88bf6ef09990cbeb6d1823">voiditem</a> ($item_num)</td></tr>
-<tr class="separator:ae4c881501b88bf6ef09990cbeb6d1823"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad0c166db5f098c13df531154b2d0a382"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_void.html#ad0c166db5f098c13df531154b2d0a382">voidid</a> ($item_num)</td></tr>
-<tr class="separator:ad0c166db5f098c13df531154b2d0a382"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8aaba7493e91e75998fe19c80e316329"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_void.html#a8aaba7493e91e75998fe19c80e316329">voidupc</a> ($upc, $item_num=-1, $silent=false)</td></tr>
-<tr class="separator:a8aaba7493e91e75998fe19c80e316329"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc6663f380dc3105df42a6ed94c99ee0"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_void.html#abc6663f380dc3105df42a6ed94c99ee0">voiditem</a> ($item_num, $json)</td></tr>
+<tr class="separator:abc6663f380dc3105df42a6ed94c99ee0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4c4678e0ee0b6f05570a23a59b994710"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_void.html#a4c4678e0ee0b6f05570a23a59b994710">voidid</a> ($item_num, $json)</td></tr>
+<tr class="separator:a4c4678e0ee0b6f05570a23a59b994710"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a84308ef9d61befbb2b4012905587f594"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_void.html#a84308ef9d61befbb2b4012905587f594">voidupc</a> ($upc, $json, $item_num=-1)</td></tr>
+<tr class="separator:a84308ef9d61befbb2b4012905587f594"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acfc34a470e31780a29a07b8f5bf92864"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acfc34a470e31780a29a07b8f5bf92864"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>doc</b> ()</td></tr>
 <tr class="separator:acfc34a470e31780a29a07b8f5bf92864"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -154,7 +154,7 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>$adminLoginLevel</b
 
 </div>
 </div>
-<a class="anchor" id="ad0c166db5f098c13df531154b2d0a382"></a>
+<a class="anchor" id="a4c4678e0ee0b6f05570a23a59b994710"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -162,24 +162,36 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>$adminLoginLevel</b
           <td class="memname">Void::voidid </td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>$item_num</em>)</td><td></td>
+          <td class="paramname"><em>$item_num</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>$json</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 <p><a class="el" href="class_void.html">Void</a> record by trans_id </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">$item_num</td><td>[int] trans_id</td></tr>
+    <tr><td class="paramname">$item_num</td><td>[int] trans_id </td></tr>
+    <tr><td class="paramname">$json</td><td>parser return value structure</td></tr>
   </table>
   </dd>
 </dl>
 <p>This marks the specified record as voided and adds an offsetting record also marked voided Neither record can be subsequently modified via voids. </p>
+<p>Check if the voiding item will exceed the limit. If so, prompt for admin password. For baffling reasons, the void amount $row['total'] is postive on open rings</p>
 <p>tenderTotal =&gt; tenders have been applied Amount to be voided is greater than remaining balance of the transaction. Restrict voids if cash is involved.</p>
 
 </div>
 </div>
-<a class="anchor" id="ae4c881501b88bf6ef09990cbeb6d1823"></a>
+<a class="anchor" id="abc6663f380dc3105df42a6ed94c99ee0"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -187,16 +199,33 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>$adminLoginLevel</b
           <td class="memname">Void::voiditem </td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>$item_num</em>)</td><td></td>
+          <td class="paramname"><em>$item_num</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>$json</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 <p>Lookup item and decide whether to void by simply reversing the record or by applying product <a class="el" href="class_u_p_c.html">UPC</a> </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">$item_num</td><td>localtemptrans.trans_id value to void </td></tr>
+    <tr><td class="paramname">$json</td><td>parser return value structure </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
-<a class="anchor" id="a8aaba7493e91e75998fe19c80e316329"></a>
+<a class="anchor" id="a84308ef9d61befbb2b4012905587f594"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -210,13 +239,13 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>$adminLoginLevel</b
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>$item_num</em> = <code>-1</code>, </td>
+          <td class="paramname"><em>$json</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>$silent</em> = <code>false</code>&#160;</td>
+          <td class="paramname"><em>$item_num</em> = <code>-1</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -230,13 +259,14 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>$adminLoginLevel</b
   <table class="params">
     <tr><td class="paramname">$upc</td><td>[string] upc to void. Optionally including quantity and asterisk </td></tr>
     <tr><td class="paramname">$item_num</td><td>[int] trans_id of record to void. Optional. </td></tr>
-    <tr><td class="paramname">$silent</td><td>[boolean] Optional. Legacy. Currently does nothing. </td></tr>
+    <tr><td class="paramname">$json</td><td>parser return value structure </td></tr>
   </table>
   </dd>
 </dl>
 <p>If <a class="el" href="class_u_p_c.html">UPC</a> contains an asterisk, extract quantity and validate input. Otherwise use quantity 1.</p>
 <p>11Jun14 Andy Convert unitPrice to/from sale price based on member status. I'm not sure this is actually necessary.</p>
 <p>If the total does not match quantity times unit price, the cashier probably manually specified a quantity i.e., VD{qty}*{upc}. This is probably OK for non-weight items. Each record should be the same and voiding multiple in one line will usually be fine.</p>
+<p>Check if the voiding item will exceed the limit. If so, prompt for admin password.</p>
 
 </div>
 </div>
@@ -246,7 +276,7 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>$adminLoginLevel</b
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Feb 13 2015 14:16:22 for CORE POS - IS4C by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Apr 2 2015 12:27:48 for CORE POS - IS4C by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.4
 </small></address>

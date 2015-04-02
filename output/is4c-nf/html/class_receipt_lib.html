@@ -126,8 +126,7 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>promoMsg</b> ()</td
 <tr class="memitem:add59c9a6b64c2e028f3dec16bed002de"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="add59c9a6b64c2e028f3dec16bed002de"></a>
 static&#160;</td><td class="memItemRight" valign="bottom"><b>printChargeFooterCust</b> ($dateTimeStamp, $ref, $program=&quot;charge&quot;)</td></tr>
 <tr class="separator:add59c9a6b64c2e028f3dec16bed002de"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a222c730203256738357232dbdc3192a0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a222c730203256738357232dbdc3192a0"></a>
-static&#160;</td><td class="memItemRight" valign="bottom"><b>printChargeFooterStore</b> ($dateTimeStamp, $ref, $program=&quot;charge&quot;)</td></tr>
+<tr class="memitem:a222c730203256738357232dbdc3192a0"><td class="memItemLeft" align="right" valign="top">static&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_receipt_lib.html#a222c730203256738357232dbdc3192a0">printChargeFooterStore</a> ($dateTimeStamp, $ref, $program=&quot;charge&quot;)</td></tr>
 <tr class="separator:a222c730203256738357232dbdc3192a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0a80c4ab41b5a2f35ed1b138fc5e66d6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0a80c4ab41b5a2f35ed1b138fc5e66d6"></a>
 static&#160;</td><td class="memItemRight" valign="bottom"><b>printCabCoupon</b> ($dateTimeStamp, $ref)</td></tr>
@@ -185,8 +184,7 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>twoColumns</b> ($co
 <tr class="separator:a9511f142477407400c69abe6fd004e1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a92cd96c92fba108e1e9be8c92534c2dc"><td class="memItemLeft" align="right" valign="top">static&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_receipt_lib.html#a92cd96c92fba108e1e9be8c92534c2dc">printReceipt</a> ($arg1, $ref, $second=False, $email=False)</td></tr>
 <tr class="separator:a92cd96c92fba108e1e9be8c92534c2dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7dc650cfc419b27cabf4e2fd6919527b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7dc650cfc419b27cabf4e2fd6919527b"></a>
-static&#160;</td><td class="memItemRight" valign="bottom"><b>memReceiptMessages</b> ($card_no)</td></tr>
+<tr class="memitem:a7dc650cfc419b27cabf4e2fd6919527b"><td class="memItemLeft" align="right" valign="top">static&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_receipt_lib.html#a7dc650cfc419b27cabf4e2fd6919527b">memReceiptMessages</a> ($card_no)</td></tr>
 <tr class="separator:a7dc650cfc419b27cabf4e2fd6919527b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8309b7a870542df45398813726f58a42"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8309b7a870542df45398813726f58a42"></a>
 static&#160;</td><td class="memItemRight" valign="bottom"><b>shutdownFunction</b> ()</td></tr>
@@ -352,6 +350,38 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>code39</b> ($barcod
 
 </div>
 </div>
+<a class="anchor" id="a7dc650cfc419b27cabf4e2fd6919527b"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static ReceiptLib::memReceiptMessages </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>$card_no</em>)</td><td></td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Get per-member receipt messages </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">$card_no</td><td>[int] member number </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>[string] receipt text </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="a0420af34376f3d65c6b6c707061f38ab"></a>
 <div class="memitem">
 <div class="memproto">
@@ -373,6 +403,56 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>code39</b> ($barcod
 </table>
 </div><div class="memdoc">
 <p>Get most recent receipt number </p>
+
+</div>
+</div>
+<a class="anchor" id="a222c730203256738357232dbdc3192a0"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static ReceiptLib::printChargeFooterStore </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>$dateTimeStamp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>$ref</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>$program</em> = <code>&quot;charge&quot;</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Get a signature slip for use with a charge account </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">$dateTimeStamp</td><td>[string] representing date and time </td></tr>
+    <tr><td class="paramname">$ref</td><td>[string] transaction identifer </td></tr>
+    <tr><td class="paramname">$program</td><td>[string, optional] identifier for different types of charge accounts that require different text </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>[string] receipt text </dd></dl>
 
 </div>
 </div>
@@ -431,8 +511,6 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>code39</b> ($barcod
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>string receipt content </dd></dl>
 <p>This block deprecates ReceiptLib::reprintReceipt()</p>
-<p>Show all savings on a single line</p>
-<p>Show discounts on separate lines; Optionally show non-members what they could have saved</p>
 <p>List local total as defined by settings Default to $ total if no setting exists</p>
 
 </div>
@@ -551,7 +629,7 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>code39</b> ($barcod
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Feb 13 2015 14:16:22 for CORE POS - IS4C by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Apr 2 2015 12:27:47 for CORE POS - IS4C by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.4
 </small></address>

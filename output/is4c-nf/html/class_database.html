@@ -126,6 +126,8 @@ Static Public Member Functions</h2></td></tr>
 <tr class="separator:afb256dcc8594ca30387505265a206b89"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad02b6625f56f2d3e8fe51134cf19327f"><td class="memItemLeft" align="right" valign="top">static&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_database.html#ad02b6625f56f2d3e8fe51134cf19327f">clearTempTables</a> ()</td></tr>
 <tr class="separator:ad02b6625f56f2d3e8fe51134cf19327f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1ece922aa25e4ee809b7d3caf8ae54b4"><td class="memItemLeft" align="right" valign="top">static&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_database.html#a1ece922aa25e4ee809b7d3caf8ae54b4">logger</a> ($msg=&quot;&quot;)</td></tr>
+<tr class="separator:a1ece922aa25e4ee809b7d3caf8ae54b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Functions related to the database </p>
@@ -249,6 +251,7 @@ Static Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[string] comma separated list of column names </dd></dl>
+<p>Cache column information by table in the session In standalone mode, a transfer query likely failed and the cache may be wrong so always requery in that case.</p>
 
 </div>
 </div>
@@ -464,6 +467,38 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="a1ece922aa25e4ee809b7d3caf8ae54b4"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static Database::logger </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>$msg</em> = <code>&quot;&quot;</code>)</td><td></td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Log a message to the lane log </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">$msg</td><td>A string containing the message to log. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True on success, False on failure </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="a3e145772bebec8090aa919ade6af10da"></a>
 <div class="memitem">
 <div class="memproto">
@@ -512,6 +547,7 @@ Static Public Member Functions</h2></td></tr>
 <p>Connect to the operational database (local) </p>
 <dl class="section return"><dt>Returns</dt><dd>a <a class="el" href="class_s_q_l_manager.html">SQLManager</a> object </dd></dl>
 <p>Add both local databases to the connection object</p>
+<p>19Mar2015 Temporary measure to support failback using old, non-adodb <a class="el" href="class_s_q_l_manager.html">SQLManager</a></p>
 <p>Switch connection object to the requested database</p>
 
 </div>
@@ -676,6 +712,7 @@ Static Public Member Functions</h2></td></tr>
 <p>Connect to the transaction database (local) </p>
 <dl class="section return"><dt>Returns</dt><dd>a <a class="el" href="class_s_q_l_manager.html">SQLManager</a> object </dd></dl>
 <p>Add both local databases to the connection object</p>
+<p>19Mar2015 Temporary measure to support failback using old, non-adodb <a class="el" href="class_s_q_l_manager.html">SQLManager</a></p>
 <p>Switch connection object to the requested database</p>
 
 </div>
@@ -779,7 +816,7 @@ Static Public Member Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Feb 13 2015 14:16:21 for CORE POS - IS4C by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Apr 2 2015 12:27:44 for CORE POS - IS4C by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.4
 </small></address>
