@@ -246,7 +246,7 @@ class MercuryGift extends BasicCCModule
             case PaycardLib::PAYCARD_MODE_VOIDITEM:
                 CoreLocal::set("autoReprint",1);
                 $v = new Void();
-                $v->voidid(CoreLocal::get("paycard_id"));
+                $v->voidid(CoreLocal::get("paycard_id"), array());
                 $resp = CoreLocal::get("paycard_response");
                 CoreLocal::set("boxMsg","<b>Voided</b><font size=-1>
                                            <p>New balance: $" . $resp["Balance"] . "
