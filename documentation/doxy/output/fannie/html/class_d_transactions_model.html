@@ -301,9 +301,14 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>selectDtrans</b> ($
 <tr class="memitem:aa1cbc006907fb341fdae24bf513f6e59"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa1cbc006907fb341fdae24bf513f6e59"></a>
 static&#160;</td><td class="memItemRight" valign="bottom"><b>select_dtrans</b> ($start, $end=false, $where=false)</td></tr>
 <tr class="separator:aa1cbc006907fb341fdae24bf513f6e59"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a59a9e8783448f5887017120deac11124"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a59a9e8783448f5887017120deac11124"></a>
-static&#160;</td><td class="memItemRight" valign="bottom"><b>selectDtransSumByDepartment</b> ($connection, $start_date, $end_date)</td></tr>
-<tr class="separator:a59a9e8783448f5887017120deac11124"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1b092670a5644c6d108462b41fc1d602"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1b092670a5644c6d108462b41fc1d602"></a>
+static&#160;</td><td class="memItemRight" valign="bottom"><b>aggregateDlog</b> (<a class="el" href="class_s_q_l_manager.html">SQLManager</a> $connection, $start_date, $end_date, stdclass $where, $groupby=array())</td></tr>
+<tr class="separator:a1b092670a5644c6d108462b41fc1d602"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a456485501ab5c63f54a167d8e58c87f2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a456485501ab5c63f54a167d8e58c87f2"></a>
+static&#160;</td><td class="memItemRight" valign="bottom"><b>aggregateDtrans</b> (<a class="el" href="class_s_q_l_manager.html">SQLManager</a> $connection, $start_date, $end_date, stdclass $where, $groupby=array())</td></tr>
+<tr class="separator:a456485501ab5c63f54a167d8e58c87f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac9858e44c653177e2061898a0e197813"><td class="memItemLeft" align="right" valign="top">static&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_d_transactions_model.html#ac9858e44c653177e2061898a0e197813">aggregateStruct</a> (<a class="el" href="class_s_q_l_manager.html">SQLManager</a> $connection, $dlog, $start_date, $end_date, stdclass $where, $groupby=array())</td></tr>
+<tr class="separator:ac9858e44c653177e2061898a0e197813"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
@@ -371,6 +376,74 @@ Additional Inherited Members</h2></td></tr>
 <tr class="separator:a2973605b6ff4f80e7846e301cc91b02d inherit pro_methods_class_basic_model"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="ac9858e44c653177e2061898a0e197813"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static DTransactionsModel::aggregateStruct </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_s_q_l_manager.html">SQLManager</a>&#160;</td>
+          <td class="paramname"><em>$connection</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>$dlog</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>$start_date</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>$end_date</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">stdclass&#160;</td>
+          <td class="paramname"><em>$where</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>$groupby</em> = <code>array()</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Grouping is required</p>
+<p>Validate group by columns</p>
+<p>Always include a datetime column</p>
+<p>Create randomly named temporary table based on the structure of dlog_15 or transachive</p>
+<p>Build a query to insert aggregated rows into the temporary table</p>
+<p>Always aggregate by total &amp; quantity</p>
+<p>Add a where clause if one has been specified</p>
+<p>Add the group by clause</p>
+<p>Split monthly archive union if needed</p>
+<p>Load data into temporary table from source table(s) using built query</p>
+
+</div>
+</div>
 <a class="anchor" id="aa504aa27e7239abe9098e8ff0be49909"></a>
 <div class="memitem">
 <div class="memproto">
@@ -452,7 +525,7 @@ Additional Inherited Members</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Mar 6 2015 10:05:23 for CORE POS - Fannie by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Apr 2 2015 12:27:27 for CORE POS - Fannie by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.4
 </small></address>

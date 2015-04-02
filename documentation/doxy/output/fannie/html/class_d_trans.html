@@ -101,8 +101,12 @@ Static Public Member Functions</h2></td></tr>
 <tr class="separator:aa8fbbc1f2dbb96bcf56b944f98228de9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af943352cf6c3e14ba3efe68f6df8cc88"><td class="memItemLeft" align="right" valign="top">static&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_d_trans.html#af943352cf6c3e14ba3efe68f6df8cc88">joinTenders</a> ($dlog_alias='t', $tender_alias='n')</td></tr>
 <tr class="separator:af943352cf6c3e14ba3efe68f6df8cc88"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a03f6f3e5f34d3d51f504e4821ee18884"><td class="memItemLeft" align="right" valign="top">static&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_d_trans.html#a03f6f3e5f34d3d51f504e4821ee18884">getTransNo</a> ($connection, $emp_no, $register_no)</td></tr>
-<tr class="separator:a03f6f3e5f34d3d51f504e4821ee18884"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab3fba6135d75f7b025bb9331bc3bf56f"><td class="memItemLeft" align="right" valign="top">static&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_d_trans.html#ab3fba6135d75f7b025bb9331bc3bf56f">getTransNo</a> (<a class="el" href="class_s_q_l_manager.html">SQLManager</a> $connection, $emp_no=false, $register_no=false)</td></tr>
+<tr class="separator:ab3fba6135d75f7b025bb9331bc3bf56f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afda0370dbcaa8926f86a5ec2daf4d089"><td class="memItemLeft" align="right" valign="top">static&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_d_trans.html#afda0370dbcaa8926f86a5ec2daf4d089">addItem</a> (<a class="el" href="class_s_q_l_manager.html">SQLManager</a> $connection, $trans_no, $params)</td></tr>
+<tr class="separator:afda0370dbcaa8926f86a5ec2daf4d089"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad0de5c0ae753ec0936ab742a28e56c58"><td class="memItemLeft" align="right" valign="top">static&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_d_trans.html#ad0de5c0ae753ec0936ab742a28e56c58">addOpenRing</a> (<a class="el" href="class_s_q_l_manager.html">SQLManager</a> $connection, $department, $amount, $trans_no, $params=array())</td></tr>
+<tr class="separator:ad0de5c0ae753ec0936ab742a28e56c58"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Static Public Attributes</h2></td></tr>
@@ -112,7 +116,140 @@ Static Public Attributes</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Helper class for generating useful bits of transaction SQL </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="a03f6f3e5f34d3d51f504e4821ee18884"></a>
+<a class="anchor" id="afda0370dbcaa8926f86a5ec2daf4d089"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static DTrans::addItem </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_s_q_l_manager.html">SQLManager</a>&#160;</td>
+          <td class="paramname"><em>$connection</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>$trans_no</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>$params</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Add a transaction record directly to dtransactions on the backend </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">$connection</td><td>[<a class="el" href="class_s_q_l_manager.html" title="A SQL abstraction layer. ">SQLManager</a>] database connection </td></tr>
+    <tr><td class="paramname">$trans_no</td><td>[integer] transaction number (dtransactions.trans_no) </td></tr>
+    <tr><td class="paramname">$params</td><td>[array] of column_name =&gt; value</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>If emp_no and register_no values are not specified, the defaults are the configuration settings FANNIE_EMP_NO and FANNIE_REGISTER_NO.</p>
+<p>The following columns are always calculated by <a class="el" href="class_d_trans.html#afda0370dbcaa8926f86a5ec2daf4d089">addItem()</a> and values set in $params will be ignored:</p>
+<ul>
+<li>datetime (always current)</li>
+<li>trans_id (assigned based on existing records) Additionally, the following values are looked up if $params['card_no'] is specified:</li>
+<li>memType</li>
+<li>staff </li>
+</ul>
+
+</div>
+</div>
+<a class="anchor" id="ad0de5c0ae753ec0936ab742a28e56c58"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static DTrans::addOpenRing </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_s_q_l_manager.html">SQLManager</a>&#160;</td>
+          <td class="paramname"><em>$connection</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>$department</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>$amount</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>$trans_no</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>$params</em> = <code>array()</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Add an open ring record to dtransactions on the backend </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">$connection</td><td>[<a class="el" href="class_s_q_l_manager.html" title="A SQL abstraction layer. ">SQLManager</a>] database connection </td></tr>
+    <tr><td class="paramname">$department</td><td>[integer] department number $param $amount [number] ring amount </td></tr>
+    <tr><td class="paramname">$trans_no</td><td>[integer] transaction number (dtransactions.trans_no) </td></tr>
+    <tr><td class="paramname">$params</td><td>[array] of column_name =&gt; value</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>If emp_no and register_no values are not specified, the defaults are the configuration settings FANNIE_EMP_NO and FANNIE_REGISTER_NO.</p>
+<p>The following columns are automatically calculated based on department number and amount:</p>
+<ul>
+<li>upc</li>
+<li>description</li>
+<li>trans_type</li>
+<li>trans_status</li>
+<li>unitPrice</li>
+<li>total</li>
+<li>regPrice</li>
+<li>quantity</li>
+<li>ItemQtty Negative amounts result in a refund trans_status</li>
+</ul>
+<p>This method calls <a class="el" href="class_d_trans.html#afda0370dbcaa8926f86a5ec2daf4d089">DTrans::addItem()</a> so columns datetime and trans_id are also automatically assigned. </p>
+
+</div>
+</div>
+<a class="anchor" id="ab3fba6135d75f7b025bb9331bc3bf56f"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -122,20 +259,20 @@ Static Public Attributes</h2></td></tr>
         <tr>
           <td class="memname">static DTrans::getTransNo </td>
           <td>(</td>
-          <td class="paramtype">&#160;</td>
+          <td class="paramtype"><a class="el" href="class_s_q_l_manager.html">SQLManager</a>&#160;</td>
           <td class="paramname"><em>$connection</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>$emp_no</em>, </td>
+          <td class="paramname"><em>$emp_no</em> = <code>false</code>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>$register_no</em>&#160;</td>
+          <td class="paramname"><em>$register_no</em> = <code>false</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -618,7 +755,7 @@ Static Public Attributes</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Mar 6 2015 10:05:23 for CORE POS - Fannie by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Apr 2 2015 12:27:27 for CORE POS - Fannie by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.4
 </small></address>

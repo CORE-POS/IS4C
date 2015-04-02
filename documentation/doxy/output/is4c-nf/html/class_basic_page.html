@@ -71,7 +71,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="class_basic_page-members.html">List of all members</a>  </div>
   <div class="headertitle">
@@ -94,7 +93,7 @@ Inheritance diagram for BasicPage:</div>
 <area href="class_paycard_trans_lookup_page.html" alt="PaycardTransLookupPage" shape="rect" coords="172,448,334,472"/>
 <area href="classpos2.html" alt="pos2" shape="rect" coords="172,504,334,528"/>
 <area href="classpos_cust_display.html" alt="posCustDisplay" shape="rect" coords="172,560,334,584"/>
-<area href="classqtty2.html" alt="qtty2" shape="rect" coords="172,616,334,640"/>
+<area href="class_quantity_entry_page.html" alt="QuantityEntryPage" shape="rect" coords="172,616,334,640"/>
 <area href="class_sig_capture_page.html" alt="SigCapturePage" shape="rect" coords="172,672,334,696"/>
 <area href="classundo__confirm.html" alt="undo_confirm" shape="rect" coords="172,728,334,752"/>
 <area href="class_unpaid_a_r.html" alt="UnpaidAR" shape="rect" coords="172,784,334,808"/>
@@ -103,8 +102,8 @@ Inheritance diagram for BasicPage:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a258d25f528d1df6a192000a1f1ab4b2d"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_basic_page.html#a258d25f528d1df6a192000a1f1ab4b2d">BasicPage</a> ()</td></tr>
-<tr class="separator:a258d25f528d1df6a192000a1f1ab4b2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a48a749958b97247fda009ef783115f47"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_basic_page.html#a48a749958b97247fda009ef783115f47">__construct</a> ()</td></tr>
+<tr class="separator:a48a749958b97247fda009ef783115f47"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a56f4de5510cd315e5ac2180cb9fe75f2"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_basic_page.html#a56f4de5510cd315e5ac2180cb9fe75f2">head_content</a> ()</td></tr>
 <tr class="separator:a56f4de5510cd315e5ac2180cb9fe75f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aee2a2ad1ee31315b1ec25ec350da566e"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_basic_page.html#aee2a2ad1ee31315b1ec25ec350da566e">body_content</a> ()</td></tr>
@@ -135,8 +134,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a154e5dbf00ccf59a28ceedeeccc224f3"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_basic_page.html#a154e5dbf00ccf59a28ceedeeccc224f3">noscan_parsewrapper_js</a> ()</td></tr>
 <tr class="separator:a154e5dbf00ccf59a28ceedeeccc224f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
-Public Attributes</h2></td></tr>
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
+Protected Attributes</h2></td></tr>
 <tr class="memitem:aa59a480b56ec6e1d1fa50983f80ec897"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa59a480b56ec6e1d1fa50983f80ec897"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>$onload_commands</b></td></tr>
 <tr class="separator:aa59a480b56ec6e1d1fa50983f80ec897"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -145,9 +144,6 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:a5d9af6f0b46d176c2af266ea98bfd9c0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5d9af6f0b46d176c2af266ea98bfd9c0"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>$body_class</b> ='mainBGimage'</td></tr>
 <tr class="separator:a5d9af6f0b46d176c2af266ea98bfd9c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
-Protected Attributes</h2></td></tr>
 <tr class="memitem:a540eebac1561d8e08da38cac08a48e1f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a540eebac1561d8e08da38cac08a48e1f"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>$mask_input</b> = False</td></tr>
 <tr class="separator:a540eebac1561d8e08da38cac08a48e1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -156,7 +152,25 @@ Protected Attributes</h2></td></tr>
 <div class="textblock"><p>This is the base class for all display scripts</p>
 <p>Display scripts are not required to use this base class but it does provide a lot of common functionality for building HTML pages with standard headers, footers, and styling. </p>
 <dl><dt><b>Examples: </b></dt><dd><a class="el" href="_hello_world_8php-example.html#_a0">HelloWorld.php</a>.</dd>
-</dl></div><h2 class="groupheader">Member Function Documentation</h2>
+</dl></div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a class="anchor" id="a48a749958b97247fda009ef783115f47"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">BasicPage::__construct </td>
+          <td>(</td>
+          <td class="paramname">)</td><td></td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Constructor</p>
+<p>The constructor automatically runs the preprocess and print_page methods (if applicable). Creating a new instance will output the entire page contents </p>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="adaa9d7f0d373048279e9e143cca51f89"></a>
 <div class="memitem">
 <div class="memproto">
@@ -179,23 +193,6 @@ Protected Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>None</dd></dl>
 <p>All queued commands are run once the page loads Note: JQuery is present </p>
-
-</div>
-</div>
-<a class="anchor" id="a258d25f528d1df6a192000a1f1ab4b2d"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">BasicPage::BasicPage </td>
-          <td>(</td>
-          <td class="paramname">)</td><td></td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Constructor</p>
-<p>The constructor automatically runs the preprocess and print_page methods (if applicable). Creating a new instance will output the entire page contents </p>
 
 </div>
 </div>
@@ -441,11 +438,19 @@ Protected Attributes</h2></td></tr>
 <a class="anchor" id="a8c32e7fbc89cc174bce3b12f30ad63b4"></a>
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">BasicPage::$page_url</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 <p>Relative URL for POS root directory Pages often need this. </p>
 
@@ -457,7 +462,7 @@ Protected Attributes</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Mar 6 2015 10:06:39 for CORE POS - IS4C by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Apr 2 2015 12:27:44 for CORE POS - IS4C by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.4
 </small></address>
