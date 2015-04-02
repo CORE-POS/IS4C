@@ -8,7 +8,19 @@ class PluginsTest extends PHPUnit_Framework_TestCase
     public function testPlugins()
     {
         $plugin_path = dirname(__FILE__) . '/../modules/plugins2.0/';
-        $files = FannieAPI::listFiles($plugin_path);
+        $first = array('CwReportDataSource'=>'');
+        $files = array();
+        foreach (FannieAPI::listFiles($plugin_path) as $file) {
+            $class = substr(basename($file), 0, strlen(basename($file))-4); 
+            if (isset($first[$class])) {
+                $first[$class] = $file;
+            } else {
+                $files[] = $file;
+            }
+        }
+        foreach ($first as $class => $file) {
+            array_unshift($files, $file);
+        }
         $functions = get_defined_functions();
 
         $sniffer = null;
