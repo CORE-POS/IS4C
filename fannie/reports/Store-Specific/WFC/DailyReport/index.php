@@ -119,6 +119,7 @@ echo tablify($tenders,array(1,0,2,3),array("Account","Type","Amount","Count"),
          array($ALIGN_LEFT,$ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT),2);
 
 if ($store != 50) {
+    /*
     $stamp = strtotime($dstr);
     $creditQ = "SELECT 1 as num, 
             MAX(CASE WHEN q.mode IN ('retail_alone_credit','Credit_Return') THEN -amount ELSE amount END) as ttl,
@@ -157,6 +158,8 @@ if ($store != 50) {
     echo '<br /><b>Integrated CC Supplement</b>';
     echo tablify($cTallies,array(0,1,2),array('Processor','Amount','Count'),
         array($ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT),1);
+    */
+    echo '<br /><a href="../../../Paycards/PcDailyReport.php?date='. $dstr . '">Integrated CC Supplement</a><br />';
 
     $couponQ = "
         SELECT SUM(-d.total) AS ttl,
