@@ -77,10 +77,17 @@ class FannieAPI
             */
             if (strstr($name, '\\')) {
                 $full_name = explode('\\', $name);
-                if (count($full_name) >= 3 && $full_name[0] == 'COREPOS' && $full_name[1] == 'Fannie' 
+                $core_namespace = false;
+                if (count($full_name) >= 2 && $full_name[0] == 'COREPOS' && $full_name[1] == 'common') {
+                    $core_namespace = true;
+                } elseif (count($full_name) >= 3 && $full_name[0] == 'COREPOS' && $full_name[2] == 'Fannie'
                     && ($full_name[2] == 'API' || $full_name[2] == 'Plugin')) {
+                    $core_namespace = true;
+                }
+                if ($core_namespace) {
                     $filename = '';
-                    for ($i=3; $i<count($full_name); $i++) {
+                    $start = ($full_name[1] == 'common') ? 2 : 3;
+                    for ($i=$start; $i<count($full_name); $i++) {
                         $filename .= $full_name[$i];
                         if ($i < count($full_name) - 1) {
                             $filename .= '/';
@@ -89,7 +96,9 @@ class FannieAPI
                         }
                     }
                     $expected_file = '';
-                    if ($full_name[2] == 'API') {
+                    if ($full_name[1] == 'common') {
+                        $expected_file = dirname(__FILE__) . '/../../common/' . $filename;
+                    } elseif ($full_name[2] == 'API') {
                         $expected_file = dirname(__FILE__) . '/' . $filename;
                     } else {
                         $expected_file = dirname(__FILE__) . '/../modules/plugins2.0/' . $filename;

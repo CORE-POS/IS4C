@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\common\mvc;
+
 /**
   @class FannieRESTfulPage
 
@@ -55,8 +57,8 @@
   PUT and DELETE are simulated by setting a form 
   field named "_method".
 */
-class FannieRESTfulPage extends FanniePage {
-
+class FannieRESTfulPage extends FanniePage 
+{
     protected $__method = '';
 
     protected $__models = array();
@@ -90,6 +92,8 @@ class FannieRESTfulPage extends FanniePage {
 
     protected $__route_stem = 'unknownRequest';
 
+    protected $form;
+
     /**
       Extract paramaters from route definition
       @param $route string route definition
@@ -98,7 +102,7 @@ class FannieRESTfulPage extends FanniePage {
     private function routeParams($route)
     {
         $matches = array();
-        $try = preg_match_all('/<(.+?)>/',$route,$matches);
+        $try = preg_match_all('/<(.+?)>/', $route, $matches);
         if ($try > 0) {
             return $matches[1];
         } else {
@@ -112,8 +116,9 @@ class FannieRESTfulPage extends FanniePage {
     public function readRoutes()
     {
         // routes begin with method
-        $this->__method = FormLib::get_form_value('_method');
-        if ($this->__method === '') {
+        try {
+            $this->__method = $this->form->_method;
+        } catch (Exception $ex) {
             $this->__method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'get';
         }
         $this->__method = strtolower($this->__method);
@@ -134,7 +139,11 @@ class FannieRESTfulPage extends FanniePage {
                     // make sure all params provided
                     $all = true;
                     foreach($params as $p) {
-                        if (FormLib::get_form_value($p,false) === false) {
+                        // just checking whether field exists
+                        // exception means it doesn't
+                        try {
+                            $this->form->$p;
+                        } catch (Exception $e) {
                             $all = false;
                             break;
                         }
@@ -160,14 +169,16 @@ class FannieRESTfulPage extends FanniePage {
             $this->__route_stem = $this->__method;
             if ($longest > 0) {
                 foreach($this->routeParams($best_route) as $param) {
-                    $this->$param = FormLib::get_form_value($param);
+                    $this->$param = $this->form->$param;
                     $this->__route_stem .= '_'.$param;
                 }
             }
         }
     }
 
-    public function preprocess(){
+    public function preprocess()
+    {
+        $this->form = new COREPOS\common\mvc\FormValueContainer();
         $this->readRoutes();
         $handler = $this->__route_stem.'Handler';
         $view = $this->__route_stem.'View';    
@@ -192,13 +203,15 @@ class FannieRESTfulPage extends FanniePage {
       Returning True draws the page
       Returning False does not
     */
-    protected function unknownRequestHandler(){
+    protected function unknownRequestHandler()
+    {
         echo '<html><head><title>HTTP 400 - Bad Request</title>
             <body><h1>HTTP 400 - Bad Request</body></html>';
         return False;
     }
 
-    public function bodyContent(){
+    public function bodyContent()
+    {
         $func = $this->__route_stem.'View';
         $old_func = $this->__route_stem.'_view';
         if (method_exists($this, $func)) {
@@ -266,33 +279,47 @@ class FannieRESTfulPage extends FanniePage {
             'get<id><other>',
         );
 
-        $_REQUEST['_method'] = 'get';
+        $values = new \COREPOS\common\mvc\ValueContainer();
+
+        $values->_method = 'get';
+        $this->setForm($values);
         $this->readRoutes(); 
         $phpunit->assertEquals('get', $this->__route_stem);
 
-        $_REQUEST['id'] = -99;
+        $values->id = -99;
+        $this->setForm($values);
         $this->readRoutes(); 
         $phpunit->assertEquals('get_id', $this->__route_stem);
 
-        $_REQUEST['other'] = -99;
+        $values->other = -99;
+        $this->setForm($values);
         $this->readRoutes(); 
         $phpunit->assertEquals('get_id_other', $this->__route_stem);
 
-        unset($_REQUEST['id']);
+        unset($values->id);
+        $this->setForm($values);
         $this->readRoutes(); 
         $phpunit->assertEquals('get_other', $this->__route_stem);
 
-        $_REQUEST['_method'] = 'post';
+        $values->_method = 'post';
+        $this->setForm($values);
         $this->readRoutes(); 
         $phpunit->assertEquals('post', $this->__route_stem);
 
-        $_REQUEST['id'] = -99;
+        $values->id = -99;
+        $this->setForm($values);
         $this->readRoutes(); 
         $phpunit->assertEquals('post_id', $this->__route_stem);
+    }
 
-        $keys = array_keys($_REQUEST);
-        foreach ($keys as $k) {
-            unset($_REQUEST[$k]);
-        }
+    /**
+      Set the form value container
+      @param [ValueContainer] $f
+      Accepts a generic ValueContainer instead of a FormValueContainer
+      so that unit tests can inject preset values 
+    */
+    public function setForm(COREPOS\common\mvc\ValueContainer $f)
+    {
+        $this->form = $f;
     }
 }
