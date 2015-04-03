@@ -213,7 +213,7 @@ class FannieReportPage extends FanniePage
                                 <option>CoreWarehouse</option>
                             </select>
                         </div>';
-                foreach ($source->additionalFields() as $field) {
+                foreach ($source->additionalFields($reflector->getName()) as $field) {
                     $source_select .= '<div class="form-group">' . $field->toHTML() . '</div>';
                 }
                 $source_select .= '</div>';
