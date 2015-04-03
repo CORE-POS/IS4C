@@ -3,14 +3,14 @@
 
     Copyright 2009 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -142,15 +142,15 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
     function preview_content()
     {
         $batchtypes = $this->get_batch_types();
-        $ret = sprintf("<b>Batch Type: %s <input type=hidden value=%d name=btype /><br />",
+        $ret = sprintf("<b>Batch Type</b>: %s <input type=hidden value=%d name=btype /><br />",
             $batchtypes[FormLib::get_form_value('btype')],FormLib::get_form_value('btype'));
-        $ret .= sprintf("<b>Batch Name: %s <input type=hidden value=\"%s\" name=bname /><br />",
+        $ret .= sprintf("<b>Batch Name</b>: %s <input type=hidden value=\"%s\" name=bname /><br />",
             FormLib::get_form_value('bname'),FormLib::get_form_value('bname'));
-        $ret .= sprintf("<b>Owner: %s <input type=hidden value=\"%s\" name=bowner /><br />",
+        $ret .= sprintf("<b>Owner</b>: %s <input type=hidden value=\"%s\" name=bowner /><br />",
             FormLib::get_form_value('bowner'),FormLib::get_form_value('bowner'));
-        $ret .= sprintf("<b>Start Date: %s <input type=hidden value=\"%s\" name=date1 /><br />",
+        $ret .= sprintf("<b>Start Date</b>: %s <input type=hidden value=\"%s\" name=date1 /><br />",
             FormLib::get_form_value('date1'),FormLib::get_form_value('date1'));
-        $ret .= sprintf("<b>End Date: %s <input type=hidden value=\"%s\" name=date2 /><br />",
+        $ret .= sprintf("<b>End Date</b>: %s <input type=hidden value=\"%s\" name=date2 /><br />",
             FormLib::get_form_value('date2'),FormLib::get_form_value('date2'));
         $ret .= sprintf("<b>Product Identifier</b>: %s <input type=hidden value=\"%s\" name=ftype /><br />",
             FormLib::get_form_value('ftype'),FormLib::get_form_value('ftype'));

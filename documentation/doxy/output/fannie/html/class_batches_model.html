@@ -96,6 +96,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a3257bdf86bd923f868728e97c0e0377e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6f6a6694f3e16395229b3f6bffaf61d1"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_batches_model.html#a6f6a6694f3e16395229b3f6bffaf61d1">forceStopBatch</a> ($id)</td></tr>
 <tr class="separator:a6f6a6694f3e16395229b3f6bffaf61d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2f7c431070128f8ce368eecca8c273c9"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_batches_model.html#a2f7c431070128f8ce368eecca8c273c9">getUPCs</a> ($batchID=false)</td></tr>
+<tr class="separator:a2f7c431070128f8ce368eecca8c273c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab9e95dc976928840a87c05c6b66d8d35"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab9e95dc976928840a87c05c6b66d8d35"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>batchID</b> ()</td></tr>
 <tr class="separator:ab9e95dc976928840a87c05c6b66d8d35"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -302,6 +304,30 @@ Additional Inherited Members</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="a2f7c431070128f8ce368eecca8c273c9"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">BatchesModel::getUPCs </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>$batchID</em> = <code>false</code>)</td><td></td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Fetch all UPCs associated with a batch </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">$batchID</td><td>[optional] </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>[array] of [string] UPC values If $batchID is omitted, the model's own batchID is used. </dd></dl>
+
+</div>
+</div>
 <h2 class="groupheader">Member Data Documentation</h2>
 <a class="anchor" id="aae42a6b1d7167a8686ee2b29d4f118c3"></a>
 <div class="memitem">
@@ -340,7 +366,7 @@ Additional Inherited Members</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Mar 6 2015 10:05:20 for CORE POS - Fannie by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Apr 2 2015 12:27:26 for CORE POS - Fannie by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.4
 </small></address>

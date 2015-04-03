@@ -45,6 +45,10 @@
         "sabre/vobject": "~3.4",
         "videlalvaro/php-amqplib": "~2.5"
     },
+    "require-dev": {
+        "phpunit/phpunit": "4.5.*",
+        "squizlabs/php_codesniffer": "2.*"
+    },
     "config": {
         "component-dir": "fannie/src/javascript/composer-components/"
     }

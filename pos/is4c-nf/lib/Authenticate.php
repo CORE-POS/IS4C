@@ -56,14 +56,18 @@ static public function checkPassword($password, $activity=1)
 	$db_g = Database::pDataConnect();
 	$result_g = $db_g->query($query_g);
 	$row_g = $db_g->fetch_array($result_g);
-	$password = $db_g->escape($password);
 
 	if ($row_g["LoggedIn"] == 0) {
-		$query_q = "select emp_no, FirstName, LastName, "
-			.$db_g->yeardiff($db_g->now(),'birthdate')." as age "
-			."from employees where EmpActive = 1 "
-			."and CashierPassword = '".$password."'";
-		$result_q = $db_g->query($query_q);
+		$query_q = '
+            SELECT emp_no, 
+                FirstName, 
+                LastName, '
+			    . $db_g->yeardiff($db_g->now(),'birthdate') . ' AS age
+			FROM employees 
+            WHERE EmpActive = 1 
+			    AND CashierPassword = ?';
+        $prep_q = $db_g->prepare($query_q);
+		$result_q = $db_g->execute($prep_q, array($password));
 		$num_rows_q = $db_g->num_rows($result_q);
 
 		if ($num_rows_q > 0) {
@@ -102,14 +106,18 @@ static public function checkPassword($password, $activity=1)
 		// longer query but simpler. since someone is logged in already,
 		// only accept password from that person OR someone with a high
 		// frontendsecurity setting
-		$query_a = "select emp_no, FirstName, LastName, "
-			.$db_g->yeardiff($db_g->now(),'birthdate')." as age "
-			."from employees "
-			."where EmpActive = 1 and "
-			."(frontendsecurity >= 30 or emp_no = ".$row_g["CashierNo"].") "
-			."and (CashierPassword = '".$password."' or AdminPassword = '".$password."')";
-
-		$result_a = $db_g->query($query_a);	
+		$query_a = '
+            SELECT emp_no, 
+                FirstName, 
+                LastName, '
+                . $db_g->yeardiff($db_g->now(),'birthdate') . ' AS age
+			FROM employees 
+			WHERE EmpActive = 1 
+			    AND (frontendsecurity >= 30 OR emp_no = ?)
+			    AND (CashierPassword = ? OR AdminPassword = ?)';
+        $args = array($row_g['CashierNo'], $password, $password);
+        $prep_a = $db_g->prepare($query_a);
+		$result_a = $db_g->execute($prep_a, $args);
 
 		$num_rows_a = $db_g->num_rows($result_a);
 

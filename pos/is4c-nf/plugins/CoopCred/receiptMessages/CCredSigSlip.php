@@ -280,5 +280,3 @@ class CCredSigSlip extends ReceiptMessage {
 	}
 }
 
-?>
-

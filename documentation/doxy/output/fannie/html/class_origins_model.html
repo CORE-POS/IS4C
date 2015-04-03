@@ -91,6 +91,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a1a9ce5320d2697081141c83d2985a10d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1a9ce5320d2697081141c83d2985a10d"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>doc</b> ()</td></tr>
 <tr class="separator:a1a9ce5320d2697081141c83d2985a10d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af9860ce80165e141b5ce10252c7d7d9f"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_origins_model.html#af9860ce80165e141b5ce10252c7d7d9f">getLocalOrigins</a> ()</td></tr>
+<tr class="separator:af9860ce80165e141b5ce10252c7d7d9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0b41149d1824a66ca261836663efbc99"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0b41149d1824a66ca261836663efbc99"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>originID</b> ()</td></tr>
 <tr class="separator:a0b41149d1824a66ca261836663efbc99"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -237,6 +239,24 @@ Additional Inherited Members</h2></td></tr>
 <tr class="memitem:a2973605b6ff4f80e7846e301cc91b02d inherit pro_methods_class_basic_model"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_basic_model.html#a2973605b6ff4f80e7846e301cc91b02d">loadHooks</a> ()</td></tr>
 <tr class="separator:a2973605b6ff4f80e7846e301cc91b02d inherit pro_methods_class_basic_model"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="af9860ce80165e141b5ce10252c7d7d9f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">OriginsModel::getLocalOrigins </td>
+          <td>(</td>
+          <td class="paramname">)</td><td></td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Look up local origins. Normally these are found in the origins table but will use the older, deprecated originName table if it exists and the appropriate columns aren't in the origins table. </p>
+<dl class="section return"><dt>Returns</dt><dd>[array] originID =&gt; shortName </dd></dl>
+
+</div>
+</div>
 <h2 class="groupheader">Member Data Documentation</h2>
 <a class="anchor" id="a035b767f3b83b44be8bece3b741df3a4"></a>
 <div class="memitem">
@@ -273,7 +293,7 @@ Additional Inherited Members</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Mar 6 2015 10:05:27 for CORE POS - Fannie by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Apr 2 2015 12:27:29 for CORE POS - Fannie by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.4
 </small></address>

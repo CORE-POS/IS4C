@@ -3,14 +3,14 @@
 
     Copyright 2010,2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -87,13 +87,10 @@ class RecalculateVendorSRPs extends FanniePage {
         $insP = $dbc->prepare_statement('INSERT INTO vendorSRPs VALUES (?,?,?)');
         while ($fetchW = $dbc->fetch_array($fetchR)) {
             // calculate a SRP from unit cost and desired margin
-            $fetchW['cost'] = $fetchW['cost'] * (1+$fetchW['shippingMarkup']);
             $srp = round($fetchW['cost'] / (1 - $fetchW['margin']),2);
+            $srp *= (1+$fetchW['shippingMarkup']);
 
-            // prices should end in 5 or 9, so add a cent until that's true
-            while (substr($srp,strlen($srp)-1,strlen($srp)) != "5" and
-                   substr($srp,strlen($srp)-1,strlen($srp)) != "9")
-                $srp+=.01;
+            $srp = $this->normalizePrice($srp);
 
             $insR = $dbc->exec_statement($insP,array($id,$fetchW['upc'],$srp));
         }
@@ -101,6 +98,19 @@ class RecalculateVendorSRPs extends FanniePage {
         $ret = "<b>SRPs have been updated</b><br />";
         $ret .= "<a href=index.php>Main Menu</a>";
         return $ret;
+    }
+
+    private function normalizePrice($price)
+    {
+        $int_price = floor($price * 100);
+        while ($int_price % 10 != 5 && $int_price % 10 != 9) {
+            $int_price++;
+        }
+        if ($int_price % 100 == 5 || $int_price % 100 == 9) {
+            $int_price += 10;
+        }
+
+        return round($int_price/100.00, 2);
     }
 
     function form_content(){

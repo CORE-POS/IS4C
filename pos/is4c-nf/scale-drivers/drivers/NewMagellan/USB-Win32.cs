@@ -2,6 +2,7 @@ using System;
 using System.Text;
 using System.IO;
 using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
 
 namespace USBLayer {
 
@@ -82,6 +83,7 @@ public class USBWrapper_Win32 : USBWrapper {
     protected static IntPtr InvalidHandleValue = new IntPtr(-1);
 
     private IntPtr native_handle;
+    private SafeFileHandle safe_handle;
 
     [DllImport("hid.dll",      SetLastError = true)] protected static extern void HidD_GetHidGuid(out Guid gHid);
     [DllImport("setupapi.dll", SetLastError = true)] protected static extern IntPtr SetupDiGetClassDevs(ref Guid gClass, [MarshalAs(UnmanagedType.LPStr)] string strEnumerator, IntPtr hParent, uint nFlags);
@@ -101,9 +103,9 @@ public class USBWrapper_Win32 : USBWrapper {
      * Get a handle for USB device file
      * @param filename the name of the file OR vendor and device ids formatted as "vid&pid"
      * @param report_size [optional] report size in bytes
-     * @return open read/write FileStream
+     * @return open read/write Stream
      */
-    public override FileStream GetUSBHandle(string filename, int report_size){
+    public override Stream GetUSBHandle(string filename, int report_size){
         if (filename.IndexOf("&") > 0){
             String[] parts = filename.Split(new Char[]{'&'});
             if (parts.Length != 2){
@@ -129,13 +131,17 @@ public class USBWrapper_Win32 : USBWrapper {
                 HidD_FreePreparsedData(ref lpData);
                 System.Console.WriteLine("Input: {0}, Output: {1}",inp, outp);
             }
-            return new FileStream(native_handle, FileAccess.Read | FileAccess.Write, true, report_size, true);    
+            safe_handle = new SafeFileHandle(native_handle, true);
+            return new FileStream(safe_handle, FileAccess.Read | FileAccess.Write, report_size, true);
+            // old method that works but generates obsolete warnings
+            // return new FileStream(native_handle, FileAccess.Read | FileAccess.Write, true, report_size, true);    
         }
         return null;
     }
 
     public override void CloseUSBHandle(){
         try {
+            safe_handle.Close();
             CloseHandle(native_handle);
         }
         catch(Exception){}

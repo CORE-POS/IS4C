@@ -3,7 +3,7 @@
 
     Copyright 2013 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -156,6 +156,7 @@ class BaseItemModule extends ItemModule
                 'idEnforced' => 0,
                 'local' => 0,
                 'deposit' => 0,
+                'cost' => 0,
             );
 
             /**
@@ -585,11 +586,8 @@ class BaseItemModule extends ItemModule
                     <select name="prod-local" id="prod-local" class="form-control input-sm"
                         onchange="$(\'#local-origin-id\').val(this.value);">';
         $local_opts = array(0=>'No');
-        $p = $dbc->prepare_statement('SELECT originID,shortName FROM originName WHERE local=1 ORDER BY originID');
-        $r = $dbc->exec_statement($p);
-        while ($w = $dbc->fetch_row($r)) {
-            $local_opts[$w['originID']] = $w['shortName'];  
-        }
+        $origin = new OriginsModel($dbc);
+        $local_opts = array_merge($local_opts, $origin->getLocalOrigins());
         if (count($local_opts) == 1) {
             $local_opts[1] = 'Yes'; // generic local if no origins defined
         }

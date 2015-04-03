@@ -1,0 +1,188 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" 
+    DefaultTarget="Build" ToolsVersion="4.0">
+
+  <!-- global properties for project -->
+  <PropertyGroup>
+    <!--
+      Wrapped ActiveX control is 32-bit only. Change platform
+      and disable warnings if using x64 csc.exe
+    -->
+    <BuildPlatform Condition=" Exists('DSIPDCXLib.dll') And Exists('AxDSIPDCXLib.dll') ">x86</BuildPlatform>
+    <BuildPlatform Condition=" !Exists('DSIPDCXLib.dll') Or !Exists('AxDSIPDCXLib.dll') ">anycpu</BuildPlatform>
+    <NoWarn Condition=" Exists('DSIPDCXLib.dll') And Exists('AxDSIPDCXLib.dll') ">1607</NoWarn>
+  </PropertyGroup>
+
+  <!-- Defined constants -->
+  <ItemGroup>
+    <MonoDefine Include="MONO" Condition=" '$(OS)' == 'Unix' " />
+
+    <FutureDefine Include="FUTURE" />
+    <FutureDefine Include="FUTUREWIN" Condition=" '$(OS)' != 'Unix' " />
+
+    <JsonDefine Include="NEWTONSOFT_JSON" />
+  </ItemGroup>
+
+  <!--
+    Build the main application
+    Default target "Build" produces pos.exe
+    Alt target "Future" produces pos-future.exe
+  -->
+  <ItemGroup>
+    <Magellan Include="Magellan.cs" />
+
+    <MagellanRef Include="DelegateForm.dll" />
+    <MagellanRef Include="UDPMsgBox.dll" />
+    <MagellanRef Include="SPH.dll" />
+    <MagellanRef Include="Newtonsoft.Json.dll" />
+    <MagellanRef Include="rabbitmq\RabbitMQ.Client.dll" Condition=" Exists('rabbimq\RabbitMQ.Client.dll') " />
+
+    <MagellanTarget Include="DelegateFormLibrary" />
+    <MagellanTarget Include="UDPMsgBoxLibrary" />
+    <MagellanTarget Include="SPHLibrary" />
+    <MagellanTarget Include="JsonLibrary" />
+
+    <MagellanFutureRef Include="DelegateForm.dll" />
+    <MagellanFutureRef Include="UDPMsgBox.dll" />
+    <MagellanFutureRef Include="SPHFuture.dll" />
+    <MagellanFutureRef Include="Newtonsoft.Json.dll" />
+
+    <MagellanFutureTarget Include="DelegateFormLibrary" />
+    <MagellanFutureTarget Include="UDPMsgBoxLibrary" />
+    <MagellanFutureTarget Include="SPHFutureLibrary" />
+    <MagellanFutureTarget Include="JsonLibrary" />
+  </ItemGroup>
+  <Target Name="Build" DependsOnTargets="@(MagellanTarget)">
+    <Csc Sources="@(Magellan)" References="@(MagellanRef)" TargetType="exe" OutputAssembly="pos.exe" 
+        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" DefineConstants="@(JsonDefine)" />
+  </Target>
+  <Target Name="Future" DependsOnTargets="@(MagellanFutureTarget)">
+    <Csc Sources="@(Magellan)" References="@(MagellanFutureRef)" TargetType="exe" OutputAssembly="pos-future.exe" 
+        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" DefineConstants="@(JsonDefine)" />
+  </Target>
+
+  <!-- Build DelegateForm.dll -->
+  <ItemGroup>
+    <DelegateForm Include="DelegateForm.cs" />
+  </ItemGroup>
+  <Target Name="DelegateFormLibrary" Inputs="@(DelegateForm)" Outputs="DelegateForm.dll">
+    <Csc Sources="@(DelegateForm)" TargetType="library" OutputAssembly="DelegateForm.dll" 
+        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" />
+  </Target>
+
+  <!-- Build Bitmap.dll -->
+  <ItemGroup>
+    <Bitmap Include="BitmapConverter.cs" />
+  </ItemGroup>
+  <Target Name="BitmapLibrary" Inputs="@(Bitmap)" Outputs="Bitmap.dll">
+    <Csc Sources="@(Bitmap)" TargetType="library" OutputAssembly="Bitmap.dll" 
+        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" />
+  </Target>
+
+  <!-- Build ParallelLayer.dll -->
+  <ItemGroup>
+    <ParallelLayer Include="ParallelLayer.cs" />
+    <!-- low-level details are OS-specific -->
+    <ParallelLayer Include="Parallel-Win32.cs" Condition=" '$(OS)' != 'Unix' " />
+    <ParallelLayer Include="Parallel-Posix.cs" Condition=" '$(OS)' == 'Unix' " />
+  </ItemGroup>
+  <Target Name="ParallelLayerLibrary" Inputs="@(ParallelLayer)" Outputs="ParallelLayer.dll">
+    <Csc Sources="@(ParallelLayer)" TargetType="library" OutputAssembly="ParallelLayer.dll" 
+        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" />
+  </Target>
+
+  <!-- Build USBLayer.dll -->
+  <ItemGroup>
+    <USBLayer Include="USBLayer.cs" />
+    <!-- use one of the OS-dependent options plus the HidSharp library -->
+    <USBLayer Include="USB-Win32.cs" Condition=" '$(OS)' != 'Unix' " />
+    <USBLayer Include="USB-Posix.cs" Condition=" '$(OS)' == 'Unix' " />
+    <USBLayer Include="USB-HidSharp.cs" />
+    
+    <USBLayerRef Include="HidSharp.dll" />
+
+    <USBLayerTarget Include="HIDSharpLibrary" />
+  </ItemGroup>
+  <Target Name="USBLayerLibrary" Inputs="@(USBLayer)" Outputs="USBLayer.dll" DependsOnTargets="@(USBLayerTarget)">
+    <Csc Sources="@(USBLayer)" TargetType="library" References="@(USBLayerRef)" OutputAssembly="USBLayer.dll" 
+        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" />
+  </Target>
+
+  <!-- Build USBMsgBox.dll -->
+  <ItemGroup>
+    <UDPMsgBox Include="UDPMsgBox.cs" />
+
+    <UDPMsgBoxRef Include="DelegateForm.dll" />
+  </ItemGroup>
+  <Target Name="UDPMsgBoxLibrary" Inputs="@(UDPMsgBox)" Outputs="UDPMsgBox.dll" DependsOnTargets="DelegateFormLibrary">
+    <Csc Sources="@(UDPMsgBox)" References="@(UDPMsgBoxRef)" TargetType="library" OutputAssembly="UDPMsgBox.dll" 
+        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" />
+  </Target>
+
+  <!--
+    Build SPH.dll and/or SPHFuture.dll
+    The files are all the same. The "Future" version just
+    defines a couple constants for #if macros
+  -->
+  <ItemGroup>
+    <SPH Include="SerialPortHandler.cs" />
+    <SPH Include="SPH_Magellan_Scale.cs" />
+    <SPH Include="SPH_SignAndPay_USB.cs" />
+    <SPH Include="SPH_IngenicoRBA_Common.cs" />
+    <SPH Include="SPH_IngenicoRBA_RS232.cs" />
+    <SPH Include="SPH_IngenicoRBA_IP.cs" />
+    <SPH Include="SPH_IngenicoRBA_USB.cs" />
+    <SPH Include="SPH_Parallel_Writer.cs" />
+    <SPH Include="SPH_Datacap_PDCX.cs" Condition=" Exists('DSIPDCXLib.dll') And Exists('AxDSIPDCXLib.dll') " />
+
+    <SPHRef Include="DelegateForm.dll" />
+    <SPHRef Include="Bitmap.dll" />
+    <SPHRef Include="USBLayer.dll" />
+    <SPHRef Include="ParallelLayer.dll" />
+    <SPHRef Include="DSIPDCXLib.dll" Condition=" Exists('DSIPDCXLib.dll') And Exists('AxDSIPDCXLib.dll') " />
+    <SPHRef Include="AxDSIPDCXLib.dll" Condition=" Exists('DSIPDCXLib.dll') And Exists('AxDSIPDCXLib.dll') " />
+    <SPHRef Include="System.Drawing.dll" Condition=" '$(OS)' == 'Unix' " />
+
+    <SPHTarget Include="DelegateFormLibrary" />
+    <SPHTarget Include="BitmapLibrary" />
+    <SPHTarget Include="USBLayerLibrary" />
+    <SPHTarget Include="ParallelLayerLibrary" />
+  </ItemGroup>
+  <Target Name="SPHLibrary" Inputs="@(SPH)" Outputs="SPH.dll" DependsOnTargets="@(SPHTarget)">
+    <Csc Sources="@(SPH)" DefineConstants="@(MonoDefine)" References="@(SPHRef)" TargetType="library" OutputAssembly="SPH.dll" 
+        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" />
+  </Target>
+  <Target Name="SPHFutureLibrary" Inputs="@(SPH)" Outputs="SPHFuture.dll" DependsOnTargets="@(SPHTarget)">
+    <Csc Sources="@(SPH)" DefineConstants="@(MonoDefine);@(FutureDefine)" References="@(SPHRef)" TargetType="library" OutputAssembly="SPHFuture.dll" 
+        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" />
+  </Target>
+
+  <Target Name="HIDSharpLibrary" Returns="HidSharp.dll">
+    <MSBuild Projects="HidSharp\HidSharp.csproj" />
+  </Target>
+
+  <Target Name="JsonLibrary" Returns="Newtonsoft.Json.dll">
+    <MSBuild Projects="Newtonsoft.Json\Newtonsoft.Json.Net40.csproj" />
+  </Target>
+
+  <ItemGroup>
+    <CleanFiles Include="DelegateForm.dll" />
+    <CleanFiles Include="Bitmap.dll" />
+    <CleanFiles Include="ParallelLayer.dll" />
+    <CleanFiles Include="USBLayer.dll" />
+    <CleanFiles Include="SPH.dll" />
+    <CleanFiles Include="HidSharp.dll" />
+    <CleanFiles Include="Newtonsoft.Json.dll" />
+    <CleanFiles Include="pos.exe" />
+    <CleanFiles Include="pos-future.exe" />
+
+    <CleanDirs Include="HidSharp\bin" />
+    <CleanDirs Include="HidSharp\obj" />
+    <CleanDirs Include="Newtonsoft.Json\bin" />
+    <CleanDirs Include="Newtonsoft.Json\obj" />
+  </ItemGroup>
+  <Target Name="Clean">
+    <Delete Files="@(CleanFiles)" />
+    <RemoveDir Directories="@(CleanDirs)" />
+  </Target>
+
+</Project>

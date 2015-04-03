@@ -8,19 +8,16 @@
   $param filter_selector [string, optional] valid jquery selector for displaying
     current filter string
 */
-function selectSubmit(selector, myform, filter_selector) {
+function selectSubmit(selector, myform, filter_selector, leave_submit) {
 
     var enterDown = 0;
     var enterUp = 0;
     var prevKey = 0;
     var prevPrevKey = 0;
     var filter_string = '';
-    var disabled = true;
+    var disabled = false;
 
-    $(selector).keydown(function (e){
-        if (disabled) {
-            return;
-        }
+    $(document).keydown(function (e){
         var jsKey; 
         if (e.which) {
             jsKey = e.which;
@@ -30,8 +27,15 @@ function selectSubmit(selector, myform, filter_selector) {
 
         if (jsKey == 13) {
             enterDown = 1;
+            e.preventDefault();
+            e.stopPropagation();
         } else {
             enterDown = 0;
+        }
+
+        if (disabled) {
+            enterDown = 0;
+            return;
         }
 
         /**
@@ -46,15 +50,21 @@ function selectSubmit(selector, myform, filter_selector) {
 
     });
 
-    $(selector).keyup(function (e){
-        if (disabled) {
-            return;
-        }
+    $(document).keyup(function (e){
         var jsKey; 
         if (e.which) {
             jsKey = e.which;
         } else if (e.keyCode) {
             jsKey = e.keyCode;
+        }
+
+        if (jsKey == 13) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        if (disabled) {
+            return;
         }
 
         if (jsKey == 13 && enterDown == 1 && enterUp == 0) {
@@ -72,7 +82,26 @@ function selectSubmit(selector, myform, filter_selector) {
                 }
                 $(selector).val('');
             }
+
+            /**
+              1. Remove any existing onsubmit attribute
+              2. Submit the form
+              3. Add an onsubmit method to prevent any additional
+                 form submittsions
+
+              Putting 'onsubmit="return false;"' in the <form>
+              tag can prevent any accidental form submission not
+              specifically triggered by this script.
+            */
+            if (leave_submit !== true) {
+                $(myform).removeAttr('onsubmit');
+            }
             $(myform).submit();
+            $(myform).submit(function(submit_event){
+                submit_event.preventDefault();
+                submit_event.stopPropagation();
+                return false;
+            });
         } else if (filter_selector) {
             /**
               Filter options in the select
@@ -133,7 +162,7 @@ function selectSubmit(selector, myform, filter_selector) {
         }
     });
 
-    setTimeout(function(){disabled=false;}, 500);
+    setTimeout(function(){disabled=false;}, 250);
 }
 
 function isFilterKey(keyCode)

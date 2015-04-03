@@ -1,47 +1,46 @@
 <?php
 include(dirname(__FILE__).'/../../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-
-$EMP_NO = 1001;
-$LANE_NO = 30;
-
-$BILLING_MEMBER = array(
-    "1/20B/W" => 45.00, 
-    "1/15B/W" => 60.00,
-    "1/10B/W" => 90.00,
-    "1/5B/W" => 187.50,
-    "1/ 5B/W" => 187.50,
-    "1/2B/W" => 412.50,
-    "1/ 2B/W" => 412.50,
-    "1/20FULL" => 63.75,
-    "1/15FULL" => 75.00,
-    "1/10FULL"  => 112.50,
-    "0.1FULL"  => 112.50,
-    "1/5FULL" => 225,
-    "1/ 5FULL" => 225,
-    "1/2FULL" => 562.50,
-    "1/ 2FULL" => 562.50
-);
-
-$BILLING_NONMEMBER = array(
-    "1/20B/W" => 60,
-    "1/20B/W" => 60,
-    "1/15B/W" => 80,
-    "1/10B/W" => 120,
-    "1/5B/W" => 250,
-    "1/ 5B/W" => 250,
-    "1/2B/W" => 550,
-    "1/ 2B/W" => 550,
-    "1/20FULL" => 85,
-    "1/15FULL" => 100,
-    "1/10FULL"  => 150,
-    "1/5FULL" => 300,
-    "1/ 5FULL" => 300,
-    "1/2FULL" => 750,
-    "1/ 2FULL" => 750
-);
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
+
+    private $BILLING_MEMBER = array(
+        "1/20B/W" => 45.00, 
+        "1/15B/W" => 60.00,
+        "1/10B/W" => 90.00,
+        "1/5B/W" => 187.50,
+        "1/ 5B/W" => 187.50,
+        "1/2B/W" => 412.50,
+        "1/ 2B/W" => 412.50,
+        "1/20FULL" => 63.75,
+        "1/15FULL" => 75.00,
+        "1/10FULL"  => 112.50,
+        "0.1FULL"  => 112.50,
+        "1/5FULL" => 225,
+        "1/ 5FULL" => 225,
+        "1/2FULL" => 562.50,
+        "1/ 2FULL" => 562.50
+    );
+
+    private $BILLING_NONMEMBER = array(
+        "1/20B/W" => 60,
+        "1/20B/W" => 60,
+        "1/15B/W" => 80,
+        "1/10B/W" => 120,
+        "1/5B/W" => 250,
+        "1/ 5B/W" => 250,
+        "1/2B/W" => 550,
+        "1/ 2B/W" => 550,
+        "1/20FULL" => 85,
+        "1/15FULL" => 100,
+        "1/10FULL"  => 150,
+        "1/5FULL" => 300,
+        "1/ 5FULL" => 300,
+        "1/2FULL" => 750,
+        "1/ 2FULL" => 750
+    );
 
     public $page_set = 'Plugin :: WfcGazetteBilling';
     public $description = '[Import Billing Data] to generate AR transactions with appropriate balances.';
@@ -93,7 +92,9 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
     }
 
     function post_charges(){
-        global $FANNIE_TRANS_DB, $EMP_NO, $LANE_NO;
+        global $FANNIE_TRANS_DB;
+        $EMP_NO = $this->config->get('EMP_NO');
+        $LANE_NO = $this->config->get('REGISTER_NO');
         $ret = "<b>Date</b>: ".date("m/d/Y")."<br />
             <i>Summary of charges</i><br />
             <table class=\"table\">
@@ -172,7 +173,9 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
     private $output_html = '';
     function process_file($linedata)
     {
-        global $BILLING_MEMBER, $BILLING_NONMEMBER, $FANNIE_OP_DB;
+        global $FANNIE_OP_DB;
+        $BILLING_MEMBER = $this->BILLING_MEMBER;
+        $BILLING_NONMEMBER = $this->BILLING_NONMEMBER;
         $PHONE = $this->get_column_index('phone');
         $CONTACT = $this->get_column_index('name');
         $SIZE = $this->get_column_index('size');

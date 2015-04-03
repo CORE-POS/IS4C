@@ -51,7 +51,7 @@ class nslogin extends NoInputPage
 			} elseif (Authenticate::checkPassword($passwd)) {
                 ReceiptLib::drawerKick();
                 if (CoreLocal::get('LoudLogins') == 1) {
-                    UdpComm::udpSend('goodBeep');
+                    UdpComm::udpSend('twoPairs');
                 }
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return false;
@@ -61,9 +61,14 @@ class nslogin extends NoInputPage
 				$this->msg = _("invalid password");
 
                 if (CoreLocal::get('LoudLogins') == 1) {
-                    UdpComm::udpSend('twoPairs');
+                    UdpComm::udpSend('errorBeep');
                 }
 			}
+		} else {
+            // beep on initial page load
+            if (CoreLocal::get('LoudLogins') == 1) {
+                UdpComm::udpSend('twoPairs');
+            }
 		}
 
 		return true;

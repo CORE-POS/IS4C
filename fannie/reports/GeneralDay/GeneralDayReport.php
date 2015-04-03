@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -92,10 +92,54 @@ class GeneralDayReport extends FannieReportPage
                 WHERE d.tdate BETWEEN ? AND ?
                     AND d.department <> 0 AND d.trans_type <> 'T'{$shrinkageUsers}
                 GROUP BY m.super_name ORDER BY m.super_name");
-        $salesR = $dbc->exec_statement($salesQ,$dates);
+        $salesQ = '';
+        switch (FormLib::get('sales-by')) {
+            case 'Department':
+                $salesQ = '
+                    SELECT t.dept_name AS category,
+                        SUM(d.quantity) AS qty,
+                        SUM(d.total) AS total
+                    FROM ' . $dlog . ' AS d
+                        LEFT JOIN departments AS t ON d.department=t.dept_no
+                    WHERE d.department <> 0
+                        AND d.trans_type <> \'T\' ' . $shrinkageUsers . '
+                        AND d.tdate BETWEEN ? AND ?
+                    GROUP BY t.dept_name
+                    ORDER BY t.dept_name'; 
+                break;
+            case 'Sales Code':
+                $salesQ = '
+                    SELECT t.salesCode AS category,
+                        SUM(d.quantity) AS qty,
+                        SUM(d.total) AS total
+                    FROM ' . $dlog . ' AS d
+                        LEFT JOIN departments AS t ON d.department=t.dept_no
+                    WHERE d.department <> 0
+                        AND d.trans_type <> \'T\' ' . $shrinkageUsers . '
+                        AND d.tdate BETWEEN ? AND ?
+                    GROUP BY t.salesCode
+                    ORDER BY t.salesCode'; 
+                break;
+            case 'Super Department':
+            default:
+                $salesQ = '
+                    SELECT m.super_name AS category,
+                        SUM(d.quantity) AS qty,
+                        SUM(d.total) AS total
+                    FROM ' . $dlog . ' AS d
+                        LEFT JOIN MasterSuperDepts AS m ON d.department=m.dept_ID
+                    WHERE d.department <> 0
+                        AND d.trans_type <> \'T\' ' . $shrinkageUsers . '
+                        AND d.tdate BETWEEN ? AND ?
+                    GROUP BY m.super_name
+                    ORDER BY m.super_name';
+                break;
+        }
+        $salesP = $dbc->prepare($salesQ);
+        $salesR = $dbc->exec_statement($salesP,$dates);
         $report = array();
         while($salesW = $dbc->fetch_row($salesR)){
-            $record = array($salesW['super_name'],
+            $record = array($salesW['category'],
                     sprintf('%.2f',$salesW['qty']),
                     sprintf('%.2f',$salesW['total']));
             $report[] = $record;
@@ -288,11 +332,24 @@ class GeneralDayReport extends FannieReportPage
         ?>
         <form action=GeneralDayReport.php method=get>
         <div class="form-group">
-        <label>Date</label>
-        <input type=text id=date1 name=date1 
-            class="form-control date-field" required />
+            <label>
+                Date
+                (<a href="../GeneralRange/">Range of Dates</a>)
+            </label>
+            <input type=text id=date1 name=date1 
+                class="form-control date-field" required />
         </div>
-        <label>Excel <input type=checkbox name=excel /></label>
+        <div class="form-group">
+            <label>List Sales By</label>
+            <select name="sales-by" class="form-control">
+                <option>Super Department</option>
+                <option>Department</option>
+                <option>Sales Code</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Excel <input type=checkbox name=excel /></label>
+        </div>
         <p>
         <button type=submit name=submit value="Submit"
             class="btn btn-default">Submit</button>

@@ -4,6 +4,10 @@ on IS4C with a focus on greater modularity and collaboration.
 
 In this directory you'll find:
 
+common/
+  => Contains share code used by both
+     Fannie and POS
+
 documentation/
   => Contains what you would expect
 

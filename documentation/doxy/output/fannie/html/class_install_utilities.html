@@ -93,10 +93,9 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>whoami</b> ()</td><
 <tr class="memitem:abb5d9a62788eb17568b985f9169c64dc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abb5d9a62788eb17568b985f9169c64dc"></a>
 static&#160;</td><td class="memItemRight" valign="bottom"><b>checkWritable</b> ($filename, $optional=False, $template=False)</td></tr>
 <tr class="separator:abb5d9a62788eb17568b985f9169c64dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aff4cdc9d90e65c9b4c28c132caa64541"><td class="memItemLeft" align="right" valign="top">static&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_install_utilities.html#aff4cdc9d90e65c9b4c28c132caa64541">confsave</a> ($key, $value, $prefer_local=False)</td></tr>
-<tr class="separator:aff4cdc9d90e65c9b4c28c132caa64541"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a45c647667e8e0d58750bff0b208075c7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a45c647667e8e0d58750bff0b208075c7"></a>
-static&#160;</td><td class="memItemRight" valign="bottom"><b>confRemove</b> ($key, $local=false)</td></tr>
+<tr class="memitem:a6400190ee9782706a0db2770e1c8e46b"><td class="memItemLeft" align="right" valign="top">static&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_install_utilities.html#a6400190ee9782706a0db2770e1c8e46b">confsave</a> ($key, $value, $prefer_local=false)</td></tr>
+<tr class="separator:a6400190ee9782706a0db2770e1c8e46b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a45c647667e8e0d58750bff0b208075c7"><td class="memItemLeft" align="right" valign="top">static&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_install_utilities.html#a45c647667e8e0d58750bff0b208075c7">confRemove</a> ($key, $local=false)</td></tr>
 <tr class="separator:a45c647667e8e0d58750bff0b208075c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab43608bb70130b109bfb847d2ad2799e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab43608bb70130b109bfb847d2ad2799e"></a>
 static&#160;</td><td class="memItemRight" valign="bottom"><b>confExists</b> ($key, $local=False)</td></tr>
@@ -133,6 +132,9 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>installCheckboxFiel
 <tr class="separator:a6c1a14308af8d92db5c07ddde6b7aa48"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5802452016739c49e88213b1dcb70517"><td class="memItemLeft" align="right" valign="top">static&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_install_utilities.html#a5802452016739c49e88213b1dcb70517">createTransDBs</a> ($db, $name)</td></tr>
 <tr class="separator:a5802452016739c49e88213b1dcb70517"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3672d336e5523be81c3f768a671ed481"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3672d336e5523be81c3f768a671ed481"></a>
+static&#160;</td><td class="memItemRight" valign="bottom"><b>createMinServer</b> ($db, $name)</td></tr>
+<tr class="separator:a3672d336e5523be81c3f768a671ed481"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -147,7 +149,50 @@ const&#160;</td><td class="memItemRight" valign="bottom"><b>EITHER_SETTING</b> =
 <tr class="separator:a7451dee7f4354e37a906686462044eb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="aff4cdc9d90e65c9b4c28c132caa64541"></a>
+<a class="anchor" id="a45c647667e8e0d58750bff0b208075c7"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static InstallUtilities::confRemove </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>$key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>$local</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Remove a value from config file(s) </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">$key</td><td>string key </td></tr>
+    <tr><td class="paramname">$local</td><td>boolean optional default false remove from ini-local.php if applicable </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>boolean success </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a6400190ee9782706a0db2770e1c8e46b"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -170,7 +215,7 @@ const&#160;</td><td class="memItemRight" valign="bottom"><b>EITHER_SETTING</b> =
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>$prefer_local</em> = <code>False</code>&#160;</td>
+          <td class="paramname"><em>$prefer_local</em> = <code>false</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -184,7 +229,7 @@ const&#160;</td><td class="memItemRight" valign="bottom"><b>EITHER_SETTING</b> =
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Save entry to ini.php or ini-local.php </p>
+<p>Save entry to config file(s) </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">$key</td><td>string key </td></tr>
@@ -538,7 +583,7 @@ const&#160;</td><td class="memItemRight" valign="bottom"><b>EITHER_SETTING</b> =
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Mar 6 2015 10:05:25 for CORE POS - Fannie by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Apr 2 2015 12:27:29 for CORE POS - Fannie by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.4
 </small></address>

@@ -511,7 +511,7 @@ class FirstData extends BasicCCModule {
 			break;
 		case PaycardLib::PAYCARD_MODE_VOID:
 			$v = new Void();
-			$v->voidid(CoreLocal::get("paycard_id"));
+			$v->voidid(CoreLocal::get("paycard_id"), array());
 			CoreLocal::set("boxMsg","<b>Voided</b><p><font size=-1>[enter] to continue<br>\"rp\" to reprint slip</font>");
 			break;	
 		}
@@ -608,11 +608,11 @@ class FirstData extends BasicCCModule {
 			"date,cashierNo,laneNo,transNo,transID," .
 			"datetime,refNum,live,mode,amount," .
 			"PAN,issuer,manual,name";
-		$fixedName = PaycardLib::paycard_db_escape($cardName, $dbTrans);
+		$fixedName = $dbTrans->escape($cardName);
 		$sqlVals .= "," . // already defined some sent* values
 			sprintf("%d,%d,%d,%d,%d,",        $today, $cashierNo, $laneNo, $transNo, $transID) .
 			sprintf("'%s','%s',%d,'%s',%s,",  $now, $refNum, $live, $mode, $amountText) .
-			sprintf("'%s','%s',%d,'%s'",           $cardPANmasked, $cardIssuer, $manual,$fixedName);
+			sprintf("'%s','%s',%d,%s",           $cardPANmasked, $cardIssuer, $manual,$fixedName);
 		$sql = "INSERT INTO efsnetRequest (" . $sqlCols . ") VALUES (" . $sqlVals . ")";
         $table_def = $dbTrans->table_definition('efsnetRequest');
 		if( !PaycardLib::paycard_db_query($sql, $dbTrans) ) {

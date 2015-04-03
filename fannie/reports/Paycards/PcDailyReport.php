@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -61,181 +61,167 @@ class PcDailyReport extends FannieReportPage
 
         $date_id = date('Ymd', strtotime(FormLib::get('date', date('Y-m-d'))));
 
-        $chk1 = 'SELECT efsnetRequestID 
-                 FROM efsnetRequest
-                 WHERE date=?
-                    AND efsnetRequestID IS NULL';
-        $chk1 = $dbc->prepare($chk1);
-        $chkR = $dbc->execute($chk1, array($date_id)); 
-        $req_nulls = ($chkR == false || $dbc->num_rows($chkR)) > 0 ? true : false;
-
-        $chk2 = 'SELECT efsnetRequestID 
-                 FROM efsnetRequest
-                 WHERE date=?
-                    AND efsnetRequestID IS NULL';
-        $chk2 = $dbc->prepare($chk2);
-        $chkR = $dbc->execute($chk2, array($date_id)); 
-        $resp_nulls = ($chkR == false || $dbc->num_rows($chkR)) > 0 ? true : false;
-
         $dataset = array();
         $integrated_trans_ids = array();
-        if (true || $req_nulls || $resp_nulls) {
-            // efsnetRequestID column is missing or has not been set
-            // fixing this is recommended. results will be faster
-            // and more accurate
+        $pt_ids = array();
 
-            /** get mercury transactions **/
-            $mercuryQ = "SELECT
-                            CASE WHEN q.mode LIKE 'Credit_%' THEN 'Credit'
-                                 WHEN q.mode LIKE 'Debit_%' THEN 'Debit'
-                                 WHEN q.mode LIKE 'EBTCASH_%' THEN 'EBT Cash'
-                                 WHEN q.mode LIKE 'EBTFOOD_%' THEN 'EBT Food'
-                                 ELSE 'Unknown' END AS cardType,
-                            CASE WHEN q.mode LIKE '%_Sale' THEN 'Sales'
-                                 WHEN q.mode LIKE '%_Return' THEN 'Returns'
-                                 ELSE 'Unknown' END as transType,
-                            MAX(q.issuer) AS cardIssuer,
-                            MAX(CASE WHEN q.mode LIKE '%_Return' THEN -amount ELSE amount END) as ttl,
-                            1 as num,
-                            MAX(q.cashierNo) as emp,
-                            MAX(q.laneNo) as reg,
-                            MAX(q.transNo) as trans,
-                            MAX(q.transID) as tid
-                         FROM efsnetRequest AS q
-                            LEFT JOIN efsnetResponse AS r ON q.date=r.date AND q.refNum=r.refNum
-                         WHERE q.date=?
-                            AND r.httpCode=200
-                            AND r.xResultMessage LIKE '%approved%'
-                            AND q.CashierNo <> 9999
-                            AND q.laneNo <> 99
-                            AND q.refNum NOT LIKE '%-%'
-                         GROUP BY q.refNum, q.mode";
-            $mercuryP = $dbc->prepare($mercuryQ);
-            $mercuryR = $dbc->execute($mercuryP, array($date_id));
-            $proc = array();
-            while($mercuryW = $dbc->fetch_row($mercuryR)) {
-                $pos_trans_id = $mercuryW['emp'].'-'.$mercuryW['reg'].'-'.$mercuryW['trans'].'-'.$mercuryW['tid'];
-                $integrated_trans_ids[$pos_trans_id] = true;
-                $cardType = $mercuryW['cardType'];
-                if (!isset($proc[$cardType])) {
-                    $proc[$cardType] = array(
-                                'Sales' => array('amt'=>0.0, 'num'=>0),
-                                'Returns' => array('amt'=>0.0, 'num'=>0),
-                                'Details' => array(),
-                    );
-                }
-                $transType = $mercuryW['transType'];
-                $proc[$cardType][$transType]['amt'] += $mercuryW['ttl'];
-                $proc[$cardType][$transType]['num'] += $mercuryW['num'];
-                $issuer = $mercuryW['cardIssuer'];
-                if (!isset($proc[$cardType]['Details'][$issuer])) {
-                    $proc[$cardType]['Details'][$issuer] = array(
-                        'Sales' => array('amt'=>0.0, 'num'=>0),
-                        'Returns' => array('amt'=>0.0, 'num'=>0),
-                    );
-                }
-                $proc[$cardType]['Details'][$issuer][$transType]['amt'] += $mercuryW['ttl'];
-                $proc[$cardType]['Details'][$issuer][$transType]['num'] += $mercuryW['num'];
-            }
-            foreach($proc as $type => $info) {
-                $record = array('MERCURY', 
-                                $type, 
-                                $info['Sales']['num'],
-                                sprintf('%.2f', $info['Sales']['amt']),
-                                $info['Returns']['num'],
-                                sprintf('%.2f', $info['Returns']['amt']),
-                                $info['Sales']['num'] + $info['Returns']['num'],
-                                sprintf('%.2f', $info['Sales']['amt'] + $info['Returns']['amt']),
+        /** get mercury transactions **/
+        // voids have trans_id from original dtrans record, not void dtrans record
+        $mercuryQ = "
+            SELECT cardType,
+                CASE 
+                    WHEN transType='Sale' THEN 'Sales'
+                    WHEN transType='Return' THEN 'Returns'
+                    WHEN transType='VOID' THEN 'Sales'
+                    ELSE 'Unknown'
+                END AS transType,
+                issuer AS cardIssuer,
+                CASE WHEN transType IN ('Return', 'VOID') THEN -amount ELSE amount END AS ttl,
+                CASE WHEN transType='VOID' THEN -1 ELSE 1 END AS num,
+                empNo AS emp,
+                registerNo AS reg,
+                transNo AS trans,
+                CASE WHEN transType='VOID' THEN transID+1 ELSE transID END AS tid,
+                paycardTransactionID
+            FROM PaycardTransactions
+            WHERE dateID=?
+                AND httpCode=200
+                AND xResultMessage LIKE '%approve%'
+                AND empNo <> 9999
+                AND registerNo <> 99
+                AND processor='MercuryE2E'";
+        $mercuryP = $dbc->prepare($mercuryQ);
+        $mercuryR = $dbc->execute($mercuryP, array($date_id));
+        $proc = array();
+        while($mercuryW = $dbc->fetch_row($mercuryR)) {
+            $pos_trans_id = $mercuryW['emp'].'-'.$mercuryW['reg'].'-'.$mercuryW['trans'].'-'.$mercuryW['tid'];
+            $integrated_trans_ids[$pos_trans_id] = true;
+            $pt_id = $mercuryW['reg'] . '-' . $mercuryW['paycardTransactionID'];
+            $pt_ids[$pt_id] = true;
+            $cardType = $mercuryW['cardType'];
+            if (!isset($proc[$cardType])) {
+                $proc[$cardType] = array(
+                            'Sales' => array('amt'=>0.0, 'num'=>0),
+                            'Returns' => array('amt'=>0.0, 'num'=>0),
+                            'Details' => array(),
                 );
-                $record['meta'] = FannieReportPage::META_BOLD;
-                $dataset[] = $record;
-                foreach($info['Details'] as $issuer => $subinfo) {
-                    $record = array('', 
-                                    $issuer, 
-                                    $subinfo['Sales']['num'],
-                                    sprintf('%.2f', $subinfo['Sales']['amt']),
-                                    $subinfo['Returns']['num'],
-                                    sprintf('%.2f', $subinfo['Returns']['amt']),
-                                    $subinfo['Sales']['num'] + $subinfo['Returns']['num'],
-                                    sprintf('%.2f', $subinfo['Sales']['amt'] + $subinfo['Returns']['amt']),
-                    );
-                    $dataset[] = $record;
-                }
             }
-            /** end mercury transactions **/
-
-            /** get GoE / FAPS transactions **/
-            $fapsQ = "SELECT 
-                        'Credit' AS cardType,
-                        CASE WHEN q.mode = 'retail_sale' THEN 'Sales'
-                             WHEN q.mode = 'retail_alone_credit' THEN 'Returns'
-                             ELSE 'Unknown' END AS transType,
-                        q.issuer AS cardIssuer,
-                        CASE WHEN q.mode='retail_alone_credit' THEN -amount ELSE amount END as ttl,
-                        1 AS num,
-                        q.cashierNo as emp,
-                        q.laneNo as reg,
-                        q.transNo as trans,
-                        q.transID as tid
-                      FROM efsnetRequest AS q
-                        LEFT JOIN efsnetResponse AS r ON q.date=r.date AND q.refNum=r.refNum
-                      WHERE q.date=?
-                        AND r.httpCode=200
-                        AND (r.xResultMessage LIKE '%approved%' OR r.xResultMessage LIKE '%PENDING%')
-                        AND q.CashierNo <> 9999
-                        AND q.laneNo <> 99
-                        AND q.refNum LIKE '%-%'";
-            $fapsP = $dbc->prepare($fapsQ);
-            $fapsR = $dbc->execute($fapsP, array($date_id));
-            $proc = array(
-                'Sales' => array('amt'=>0.0, 'num'=>0),
-                'Returns' => array('amt'=>0.0, 'num'=>0),
-                'Details' => array(),
-            );
-            while($fapsW = $dbc->fetch_row($fapsR)) {
-                $pos_trans_id = $fapsW['emp'].'-'.$fapsW['reg'].'-'.$fapsW['trans'].'-'.$fapsW['tid'];
-                $integrated_trans_ids[$pos_trans_id] = true;
-                $transType = $fapsW['transType']; 
-                $issuer = $fapsW['cardIssuer'];
-                $proc[$transType]['amt'] += $fapsW['ttl'];
-                $proc[$transType]['num'] += $fapsW['num'];
-                if (!isset($proc['Details'][$issuer])) {
-                    $proc['Details'][$issuer] = array(
-                        'Sales' => array('amt'=>0.0, 'num'=>0),
-                        'Returns' => array('amt'=>0.0, 'num'=>0),
-                    );
-                }
-                $proc['Details'][$issuer][$transType]['amt'] += $fapsW['ttl'];
-                $proc['Details'][$issuer][$transType]['num'] += $fapsW['num'];
+            $transType = $mercuryW['transType'];
+            $proc[$cardType][$transType]['amt'] += $mercuryW['ttl'];
+            $proc[$cardType][$transType]['num'] += $mercuryW['num'];
+            $issuer = $mercuryW['cardIssuer'];
+            if (!isset($proc[$cardType]['Details'][$issuer])) {
+                $proc[$cardType]['Details'][$issuer] = array(
+                    'Sales' => array('amt'=>0.0, 'num'=>0),
+                    'Returns' => array('amt'=>0.0, 'num'=>0),
+                );
             }
-
-            $record = array('FAPS', 
-                            'Credit', 
-                            $proc['Sales']['num'],
-                            sprintf('%.2f', $proc['Sales']['amt']),
-                            $proc['Returns']['num'],
-                            sprintf('%.2f', $proc['Returns']['amt']),
-                            $proc['Sales']['num'] + $proc['Returns']['num'],
-                            sprintf('%.2f', $proc['Sales']['amt'] + $proc['Returns']['amt']),
+            $proc[$cardType]['Details'][$issuer][$transType]['amt'] += $mercuryW['ttl'];
+            $proc[$cardType]['Details'][$issuer][$transType]['num'] += $mercuryW['num'];
+        }
+        foreach($proc as $type => $info) {
+            $record = array('MERCURY', 
+                        $type, 
+                        $info['Sales']['num'],
+                            sprintf('%.2f', $info['Sales']['amt']),
+                            $info['Returns']['num'],
+                            sprintf('%.2f', $info['Returns']['amt']),
+                            $info['Sales']['num'] + $info['Returns']['num'],
+                            sprintf('%.2f', $info['Sales']['amt'] + $info['Returns']['amt']),
             );
             $record['meta'] = FannieReportPage::META_BOLD;
             $dataset[] = $record;
-            foreach($proc['Details'] as $issuer => $info) {
+            foreach($info['Details'] as $issuer => $subinfo) {
                 $record = array('', 
                                 $issuer, 
-                                $info['Sales']['num'],
-                                sprintf('%.2f', $info['Sales']['amt']),
-                                $info['Returns']['num'],
-                                sprintf('%.2f', $info['Returns']['amt']),
-                                $info['Sales']['num'] + $info['Returns']['num'],
-                                sprintf('%.2f', $info['Sales']['amt'] + $info['Returns']['amt']),
+                                $subinfo['Sales']['num'],
+                                sprintf('%.2f', $subinfo['Sales']['amt']),
+                                $subinfo['Returns']['num'],
+                                sprintf('%.2f', $subinfo['Returns']['amt']),
+                                $subinfo['Sales']['num'] + $subinfo['Returns']['num'],
+                                sprintf('%.2f', $subinfo['Sales']['amt'] + $subinfo['Returns']['amt']),
                 );
                 $dataset[] = $record;
             }
-            /** end get FAPS / goE **/
-
-        } else {
         }
+        /** end mercury transactions **/
+
+        /** get GoE / FAPS transactions **/
+        // voids have trans_id from original dtrans record, not void dtrans record
+        $fapsQ = "
+            SELECT cardType,
+                CASE 
+                    WHEN transType='Sale' THEN 'Sales'
+                    WHEN transType='Return' THEN 'Returns'
+                    WHEN transType='VOID' THEN 'Sales'
+                    ELSE 'Unknown'
+                END AS transType,
+                issuer AS cardIssuer,
+                CASE WHEN transType IN ('Return', 'VOID') THEN -amount ELSE amount END AS ttl,
+                CASE WHEN transType='VOID' THEN -1 ELSE 1 END AS num,
+                empNo AS emp,
+                registerNo AS reg,
+                transNo AS trans,
+                CASE WHEN transType='VOID' THEN transID+1 ELSE transID END AS tid,
+                paycardTransactionID
+            FROM PaycardTransactions
+            WHERE dateID=?
+                AND httpCode=200
+                AND (xResultMessage LIKE '%approved%' OR xResultMessage LIKE '%PENDING%')
+                AND empNo <> 9999
+                AND registerNo <> 99
+                AND processor='GoEMerchant'";
+        $fapsP = $dbc->prepare($fapsQ);
+        $fapsR = $dbc->execute($fapsP, array($date_id));
+        $proc = array(
+            'Sales' => array('amt'=>0.0, 'num'=>0),
+            'Returns' => array('amt'=>0.0, 'num'=>0),
+            'Details' => array(),
+        );
+        while ($fapsW = $dbc->fetch_row($fapsR)) {
+            $pos_trans_id = $fapsW['emp'].'-'.$fapsW['reg'].'-'.$fapsW['trans'].'-'.$fapsW['tid'];
+            $integrated_trans_ids[$pos_trans_id] = true;
+            $pt_id = $fapsW['reg'] . '-' . $fapsW['paycardTransactionID'];
+            $pt_ids[$pt_id] = true;
+            $transType = $fapsW['transType']; 
+            $issuer = $fapsW['cardIssuer'];
+            $proc[$transType]['amt'] += $fapsW['ttl'];
+            $proc[$transType]['num'] += $fapsW['num'];
+            if (!isset($proc['Details'][$issuer])) {
+                $proc['Details'][$issuer] = array(
+                    'Sales' => array('amt'=>0.0, 'num'=>0),
+                    'Returns' => array('amt'=>0.0, 'num'=>0),
+                );
+            }
+            $proc['Details'][$issuer][$transType]['amt'] += $fapsW['ttl'];
+            $proc['Details'][$issuer][$transType]['num'] += $fapsW['num'];
+        }
+
+        $record = array('FAPS', 
+                        'Credit', 
+                        $proc['Sales']['num'],
+                        sprintf('%.2f', $proc['Sales']['amt']),
+                        $proc['Returns']['num'],
+                        sprintf('%.2f', $proc['Returns']['amt']),
+                        $proc['Sales']['num'] + $proc['Returns']['num'],
+                        sprintf('%.2f', $proc['Sales']['amt'] + $proc['Returns']['amt']),
+        );
+        $record['meta'] = FannieReportPage::META_BOLD;
+        $dataset[] = $record;
+        foreach($proc['Details'] as $issuer => $info) {
+            $record = array('', 
+                            $issuer, 
+                            $info['Sales']['num'],
+                            sprintf('%.2f', $info['Sales']['amt']),
+                            $info['Returns']['num'],
+                            sprintf('%.2f', $info['Returns']['amt']),
+                            $info['Sales']['num'] + $info['Returns']['num'],
+                            sprintf('%.2f', $info['Sales']['amt'] + $info['Returns']['amt']),
+            );
+            $dataset[] = $record;
+        }
+        /** end get FAPS / goE **/
+
 
         /** now get POS transaction records and check which are integrated **/
         $dlog = DTransactionsModel::selectDlog(FormLib::get('date', date('Y-m-d')));
@@ -250,7 +236,10 @@ class PcDailyReport extends FannieReportPage
                     -total AS ttl,
                     CASE WHEN trans_status='V' THEN -1 ELSE 1 END AS num,
                     trans_num,
-                    trans_id
+                    trans_id,
+                    numflag,
+                    charflag,
+                    register_no
                   FROM $dlog AS d
                   WHERE tdate BETWEEN ? AND ?
                     AND trans_type = 'T'
@@ -280,7 +269,15 @@ class PcDailyReport extends FannieReportPage
             $proc[$cardType][$transType]['amt'] += $row['ttl'];
             $proc[$cardType][$transType]['num'] += $row['num'];
             $pos_trans_id = $row['trans_num'].'-'.$row['trans_id'];
-            if (isset($integrated_trans_ids[$pos_trans_id])) {
+            // ebt trans_id is off by one from fsEligible record
+            if ($cardType == 'EBT Food') {
+                $pos_trans_id = $row['trans_num'].'-'. ($row['trans_id']-1);
+            }
+            $pt_id = $row['register_no'] . '-' . $row['numflag'];
+            if ($row['charflag'] == 'PT' && isset($pt_ids[$pt_id])) {
+                $proc[$cardType]['Integrated'][$transType]['amt'] += $row['ttl'];
+                $proc[$cardType]['Integrated'][$transType]['num'] += $row['num'];
+            } elseif (isset($integrated_trans_ids[$pos_trans_id])) {
                 $proc[$cardType]['Integrated'][$transType]['amt'] += $row['ttl'];
                 $proc[$cardType]['Integrated'][$transType]['num'] += $row['num'];
             } else {
@@ -359,11 +356,11 @@ class PcDailyReport extends FannieReportPage
                 continue;
             }
             if ($row[0] == 'POS Total') {
-                $pN += $row[6];
-                $pS += $row[7];
-            } else {
                 $tN += $row[6];
                 $tS += $row[7];
+            } else {
+                $pN += $row[6];
+                $pS += $row[7];
             }
         }
 

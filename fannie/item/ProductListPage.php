@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -99,10 +99,10 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 $taxes[strtoupper(substr($w[1],0,1))] = array($w[0], $w[1]);
         }
         $local_opts = array('-'=>array(0,'No'));
-        $p = $dbc->prepare_statement('SELECT originID,shortName FROM originName WHERE local=1 ORDER BY originID');
-        $r = $dbc->exec_statement($p);
-        while($w = $dbc->fetch_row($r)){
-            $local_opts[substr($w['shortName'],0,1)] = array($w['originID'],$w['shortName']);
+        $origins = new OriginsModel($dbc);
+        $local_origins = $origins->getLocalOrigins();
+        foreach ($local_origins as $originID => $shortName) {
+            $local_opts[substr($shortName,0,1)] = array($originID,$shortName);
         }
         if (count($local_opts) == 1) $local_opts['X'] = array(1,'Yes'); // generic local if no origins defined
         $vendors = array('', 'DIRECT');
@@ -601,7 +601,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 LEFT JOIN taxrates AS t ON t.id = i.tax
                 LEFT JOIN prodExtra as x on i.upc = x.upc
                 LEFT JOIN vendors AS v ON i.default_vendor_id=v.vendorID
-                LEFT JOIN originName AS o ON i.local=o.originID";
+                LEFT JOIN origins AS o ON i.local=o.originID";
         /** add extra joins if this lookup requires them **/
         if ($supertype == 'dept' && $super != 0) {
             $query .= ' LEFT JOIN superdepts AS s ON i.department=s.dept_ID ';                

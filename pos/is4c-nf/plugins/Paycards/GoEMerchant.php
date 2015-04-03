@@ -736,7 +736,7 @@ class GoEMerchant extends BasicCCModule
                 break;
             case PaycardLib::PAYCARD_MODE_VOID:
                 $v = new Void();
-                $v->voidid(CoreLocal::get("paycard_id"));
+                $v->voidid(CoreLocal::get("paycard_id"), array());
                 CoreLocal::set("boxMsg","<b>Voided</b>
                                            <p><font size=-1>[enter] to continue
                                            <br>\"rp\" to reprint slip</font>");
@@ -838,22 +838,26 @@ class GoEMerchant extends BasicCCModule
             $magstripe .= ";".$cardTr3."?";
         }
 
-        $sqlCols = "sentPAN,sentExp,sentTr1,sentTr2";
-        $sqlVals = "$sendPAN,$sendExp,$sendTr1,$sendTr2";
         // store request in the database before sending it
-        $sqlCols .= "," . // already defined some sent* columns
-            $dbTrans->identifier_escape('date').",cashierNo,laneNo,transNo,transID," .
-            $dbTrans->identifier_escape('datetime').",refNum,live,mode,amount," .
-            "PAN,issuer,manual,name";
-        $fixedName = PaycardLib::paycard_db_escape($cardName, $dbTrans);
-        $sqlVals .= "," . // already defined some sent* values
-            sprintf("%d,%d,%d,%d,%d,",        $today, $cashierNo, $laneNo, $transNo, $transID) .
-            sprintf("'%s','%s',%d,'%s',%s,",  $now, $refNum, $live, $mode, $amountText) .
-            sprintf("'%s','%s',%d,'%s'",           $cardPANmasked, $cardIssuer, $manual,$fixedName);
-        $sql = "INSERT INTO efsnetRequest (" . $sqlCols . ") VALUES (" . $sqlVals . ")";
+        $sql = 'INSERT INTO efsnetRequest (' .
+                    $dbTrans->identifier_escape('date') . ', cashierNo, laneNo, transNo, transID, ' .
+                    $dbTrans->identifier_escape('datetime') . ', refNum, live, mode, amount,
+                    PAN, issuer, manual, name,
+                    sentPAN, sentExp, sentTr1, sentTr2)
+                VALUES (
+                    ?, ?, ?, ?, ?,
+                    ?, ?, ?, ?, ?,
+                    ?, ?, ?, ?, 
+                    ?, ?, ?, ?)'; 
+        $efsArgs = array(
+            $today, $cashierNo, $laneNo, $transNo, $transID,
+            $now, $refNum, $live, $mode, $amountText,
+            $cardPANmasked, $cardIssuer, $manual, $cardName,
+            $sendPAN, $sendExp, $sendTr1, $sendTr2);
+        $prep = $dbTrans->prepare($sql);
         $table_def = $dbTrans->table_definition('efsnetRequest');
 
-        if ($dbTrans->table_exists('efsnetRequest') && !PaycardLib::paycard_db_query($sql, $dbTrans)) {
+        if ($dbTrans->table_exists('efsnetRequest') && !$dbTrans->execute($prep, $efsArgs)) {
             PaycardLib::paycard_reset();
             // internal error, nothing sent (ok to retry)
             return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND);
@@ -863,19 +867,22 @@ class GoEMerchant extends BasicCCModule
             $this->last_req_id = $dbTrans->insert_id();
         }
 
-        $insQ = sprintf("INSERT INTO PaycardTransactions (
+        $insQ = '
+                INSERT INTO PaycardTransactions (
                     dateID, empNo, registerNo, transNo, transID,
                     processor, refNum, live, cardType, transType,
                     amount, PAN, issuer, name, manual, requestDateTime)
-                 VALUES (
-                    %d,     %d,    %d,         %d,      %d,
-                    '%s',     '%s',    %d,   '%s',     '%s',
-                    %.2f,  '%s', '%s',  '%s',  %d,     '%s')",
-                    $today, $cashierNo, $laneNo, $transNo, $transID,
+                VALUES (
+                    ?, ?, ?, ?, ?,
+                    ?, ?, ?, ?, ?,
+                    ?, ?, ?, ?, ?, ?
+                )';
+        $ptArgs = array($today, $cashierNo, $laneNo, $transNo, $transID,
                     'GoEMerchant', $refNum, $live, 'Credit', $logged_mode,
                     $amountText, $cardPANmasked,
-                    $cardIssuer, $fixedName, $manual, $now);
-        $insR = $dbTrans->query($insQ);
+                    $cardIssuer, $cardName, $manual, $now);
+        $insP = $dbTrans->prepare($insQ);
+        $insR = $dbTrans->execute($insP, $ptArgs);
         if ($insR) {
             $this->last_paycard_transaction_id = $dbTrans->insert_id();
         } else {
@@ -1159,45 +1166,52 @@ class GoEMerchant extends BasicCCModule
                 // actual processor result and finish
                 // the transaction correctly
                 $db = Database::tDataConnect(); 
-                $upQ = sprintf("UPDATE PaycardTransactions SET
-                                xResponseCode=%d
-                                xResultCode=%d,
-                                xResultMessage='%s',
-                                xTransactionID='%s',
-                                commErr=0,
-                                httpCode=200,
-                                validResponse=%d,
-                                WHERE refNum='%s'
-                                    AND transID=%d",
-                                $responseCode,
-                                $resultCode,
-                                $db->escape($rMsg),
-                                $db->escape($xTransID),
-                                $db->escape($apprNumber),
-                                $normalized,
-                                $db->escape($ref),
-                                CoreLocal::get('paycard_id')
+                $upP = $db->prepare("
+                    UPDATE PaycardTransactions 
+                    SET xResponseCode=?,
+                        xResultCode=?,
+                        xResultMessage=?,
+                        xTransactionID=?,
+                        xApprovalNumber=?,
+                        commErr=0,
+                        httpCode=200,
+                        validResponse=?
+                    WHERE refNum=?
+                        AND transID=?");
+                $args = array(
+                    $responseCode,
+                    $resultCode,
+                    $rMsg,
+                    $xTransID,
+                    $apprNumber,
+                    $normalized,
+                    $ref,
+                    CoreLocal::get('paycard_id'),
                 );
-                $upR = $db->query($upQ);
-                $upQ = sprintf("UPDATE efsnetResponse SET
-                                xResponseCode=%d,
-                                xResultCode=%d, 
-                                xResultMessage='%s',
-                                xTransactionID='%s',
-                                xApprovalNumber='%s',
-                                commErr=0,
-                                httpCode=200
-                                WHERE refNum='%s'
-                                AND transID=%d",
-                                $responseCode,
-                                $resultCode,
-                                $db->escape($rMsg),
-                                $db->escape($xTransID),
-                                $db->escape($apprNumber),
-                                $db->escape($ref),
-                                CoreLocal::get('paycard_id'));
+                $upR = $db->execute($upP, $args);
+
+                $upP = $db->prepare("
+                    UPDATE efsnetResponse SET
+                        xResponseCode=?,
+                        xResultCode=?, 
+                        xResultMessage=?,
+                        xTransactionID=?,
+                        xApprovalNumber=?,
+                        commErr=0,
+                        httpCode=200
+                    WHERE refNum=?
+                        AND transID=?");
+                $args = array(
+                    $responseCode,
+                    $resultCode,
+                    $rMsg,
+                    $xTransID,
+                    $apprNumber,
+                    $ref,
+                    CoreLocal::get('paycard_id')
+                );
                 if ($db->table_exists('efsnetResponse')) {
-                    $upR = $db->query($upQ);
+                    $upR = $db->execute($upP, $args);
                 }
 
                 if ($status == 'APPROVED') {

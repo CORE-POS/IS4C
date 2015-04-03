@@ -26,7 +26,9 @@
  *           See the notes in CoopCredProgramEditor.php re program flow.
  */
 include(dirname(__FILE__).'/../../../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class CoopCredConfigEditor extends FanniePage {
 

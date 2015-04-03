@@ -48,7 +48,7 @@ class PaycardProcessPage extends BasicPage {
 
 	function PaycardProcessPage(){
 		$this->action = "";
-		parent::BasicPage();
+		parent::__construct();
 	}
 
 	/**

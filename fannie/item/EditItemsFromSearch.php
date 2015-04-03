@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Community Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -178,10 +178,8 @@ class EditItemsFromSearch extends FannieRESTfulPage
         }
 
         $locales = array(0 => 'No');
-        $origins = $dbc->query('SELECT originID, shortName FROM originName WHERE local=1');
-        while($row = $dbc->fetch_row($origins)) {
-            $locales[$row['originID']] = $row['shortName'];
-        }
+        $origin = new OriginsModel($dbc);
+        $locales = array_merge($locales, $origin->getLocalOrigins());
 
         $depts = array();
         $deptlist = $dbc->query('SELECT dept_no, dept_name FROM departments ORDER BY dept_no');

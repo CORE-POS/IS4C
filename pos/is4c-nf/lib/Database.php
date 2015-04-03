@@ -64,14 +64,20 @@ static public function tDataConnect()
             CoreLocal::get("localUser"),
             CoreLocal::get("localPass"),
             false);
-        self::$SQL_CONNECTION->db_types[CoreLocal::get('pDatabase')] = strtoupper(CoreLocal::get('DBMS'));
         self::$SQL_CONNECTION->connections[CoreLocal::get('pDatabase')] = self::$SQL_CONNECTION->connections[CoreLocal::get('tDatabase')];
+        /**
+          19Mar2015
+          Temporary measure to support failback
+          using old, non-adodb SQLManager
+        */
+        if (property_exists(self::$SQL_CONNECTION, 'db_types')) {
+            self::$SQL_CONNECTION->db_types[CoreLocal::get('pDatabase')] = strtoupper(CoreLocal::get('DBMS'));
+        }
     } else {
         /**
           Switch connection object to the requested database
         */
-        self::$SQL_CONNECTION->query('use ' . CoreLocal::get('tDatabase'));
-        self::$SQL_CONNECTION->default_db = CoreLocal::get('tDatabase');
+        self::$SQL_CONNECTION->selectDB(CoreLocal::get('tDatabase'));
     }    
 
     return self::$SQL_CONNECTION;
@@ -94,14 +100,20 @@ static public function pDataConnect()
             CoreLocal::get("localUser"),
             CoreLocal::get("localPass"),
             false);
-        self::$SQL_CONNECTION->db_types[CoreLocal::get('tDatabase')] = strtoupper(CoreLocal::get('DBMS'));
         self::$SQL_CONNECTION->connections[CoreLocal::get('tDatabase')] = self::$SQL_CONNECTION->connections[CoreLocal::get('pDatabase')];
+        /**
+          19Mar2015
+          Temporary measure to support failback
+          using old, non-adodb SQLManager
+        */
+        if (property_exists(self::$SQL_CONNECTION, 'db_types')) {
+            self::$SQL_CONNECTION->db_types[CoreLocal::get('tDatabase')] = strtoupper(CoreLocal::get('DBMS'));
+        }
     } else {
         /**
           Switch connection object to the requested database
         */
-        self::$SQL_CONNECTION->query('use '. CoreLocal::get('pDatabase'));
-        self::$SQL_CONNECTION->default_db = CoreLocal::get('pDatabase');
+        self::$SQL_CONNECTION->selectDB(CoreLocal::get('pDatabase'));
     }
 
     return self::$SQL_CONNECTION;
@@ -114,7 +126,7 @@ static public function pDataConnect()
 static public function mDataConnect()
 {
     $sql = new SQLManager(CoreLocal::get("mServer"),CoreLocal::get("mDBMS"),CoreLocal::get("mDatabase"),
-                  CoreLocal::get("mUser"),CoreLocal::get("mPass"),False);
+                  CoreLocal::get("mUser"),CoreLocal::get("mPass"),false,true);
 
     return $sql;
 }
@@ -161,7 +173,7 @@ static public function getsubtotals()
     CoreLocal::set("memSpecial", (!$row || !isset($row['memSpecial'])) ? 0 : (double)$row["memSpecial"] );
     // staffSpecial => SUM(localtemptrans.total) where discounttype=4
     CoreLocal::set("staffSpecial", (!$row || !isset($row['staffSpecial'])) ? 0 : (double)$row["staffSpecial"] );
-    if ( CoreLocal::get("member_subtotal") !== False ) {
+	if (CoreLocal::get('member_subtotal') !== 0 && CoreLocal::get('member_subtotal') !== '0') {
         // percentDiscount => MAX(localtemptrans.percentDiscount)
         CoreLocal::set("percentDiscount", (!$row || !isset($row['percentDiscount'])) ? 0 : (double)$row["percentDiscount"] );
     }
@@ -492,6 +504,20 @@ static public function uploadtoServer()
 */
 static public function getMatchingColumns($connection,$table_name,$table2="")
 {
+    /**
+      Cache column information by table in the session
+      In standalone mode, a transfer query likely failed
+      and the cache may be wrong so always requery in
+      that case.
+    */
+    $cache = CoreLocal::get('MatchingColumnCache');
+    if (!is_array($cache)) {
+        $cache = array();
+    }
+    if (isset($cache[$table_name]) && CoreLocal::get('standalone') == 0) {
+        return $cache[$table_name];
+    }
+
     $local_poll = $connection->table_definition($table_name,CoreLocal::get("tDatabase"));
     if ($local_poll === false) {
         return '';
@@ -516,8 +542,11 @@ static public function getMatchingColumns($connection,$table_name,$table2="")
     foreach($matching_cols as $col) {
         $ret .= $col.",";
     }
+    $ret = rtrim($ret,",");
+    $cache[$table_name] = $ret;
+    CoreLocal::set('MatchingColumnCache', $cache);
 
-    return rtrim($ret,",");
+    return $ret;
 }
 
 /** Get a list of columns in both tables.
@@ -559,11 +588,6 @@ static public function localMatchingColumns($connection,$table1,$table2)
 static public function uploadCCdata()
 {
     if (!in_array("Paycards",CoreLocal::get("PluginList"))) {
-        // plugin not enabled; nothing to upload
-        return true;
-    }
-
-    if (!in_array("Paycards",$CORE_LOCAL->get("PluginList"))) {
         // plugin not enabled; nothing to upload
         return true;
     }

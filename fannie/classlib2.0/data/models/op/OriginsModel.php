@@ -3,7 +3,7 @@
 
     Copyright 2014 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -64,6 +64,40 @@ tables. The local field indicates whether
 or not this origin is considered local
 by the co-op.
         ';
+    }
+
+    /**
+      Look up local origins. Normally these are
+      found in the origins table but will use the
+      older, deprecated originName table if it
+      exists and the appropriate columns aren't in
+      the origins table.
+      @return [array] originID => shortName
+    */
+    public function getLocalOrigins()
+    {
+        $def = $this->connection->tableDefinition('origins');
+        $ret = array();
+        if (isset($def['shortName'])) {
+            $o = new OriginsModel($this->connection);
+            $o->local(1);
+            foreach ($o->find('originID') as $origin) {
+                $ret[$origin->originID()] = $origin->shortName();
+            }
+        } elseif ($this->connection->tableExists('originNames')) {
+            $q = '
+                SELECT originID,
+                    shortName 
+                FROM originName 
+                WHERE local=1 
+                ORDER BY originID';
+            $r = $this->connection->query($q);
+            while ($w = $this->connection->fetchRow($r)) {
+                $ret[$w['originID']] = $w['shortName'];
+            }
+        }
+
+        return $ret;
     }
 
     /* START ACCESSOR FUNCTIONS */
