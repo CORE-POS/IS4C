@@ -109,5 +109,12 @@ class SQLManagerTest extends PHPUnit_Framework_TestCase
 		$this->assertInternalType('array',$row);
 		$this->assertArrayHasKey(0,$row);
 		$this->assertEquals(2,$row[0]);
+
+        $real_name = 'memberCardsView';
+        $lc_name = strtolower($real_name);
+        if ($sql->table_exists($real_name)) {
+            $view = $sql->isView($lc_name);
+            $this->assertEquals(true, $view);
+        }
 	}
 }
