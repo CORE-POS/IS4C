@@ -23,6 +23,11 @@
 
 class ContactPref extends \COREPOS\Fannie\API\member\MemberModule {
 
+    public function width()
+    {
+        return parent::META_WIDTH_HALF;
+    }
+
     // Return a form segment to display or edit the Contact Preference.
     function showEditForm($memNum, $country="US"){
 
@@ -53,7 +58,7 @@ class ContactPref extends \COREPOS\Fannie\API\member\MemberModule {
 
         $ret .= '<div class="form-group form-inline">
             <span class="label primaryBackground">Preference</span>';
-        $ret .= '<select name="MemContactPref" class="form-control">';
+        $ret .= ' <select name="MemContactPref" class="form-control">';
         while ($infoW = $dbc->fetch_row($infoR)) {
             $ret .= sprintf("<option value=%d %s>%s</option>",
                 $infoW['pref_id'],

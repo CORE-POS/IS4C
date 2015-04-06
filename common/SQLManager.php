@@ -1152,7 +1152,13 @@ class SQLManager
 
         $conn = $this->connections[$which_connection];
         $views = $conn->MetaTables('VIEW');
-        if (in_array($table_name, $views)) {
+        $lc_views = array();
+        $lc_name = strtolower($table_name);
+        foreach ($views as $view) {
+            $lc_views[] = strtolower($view);
+        }
+
+        if (in_array($table_name, $views) || in_array($lc_name, $lc_views)) {
             return true;
         } else {
             return false;

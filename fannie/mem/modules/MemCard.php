@@ -23,10 +23,97 @@
 
 class MemCard extends \COREPOS\Fannie\API\member\MemberModule {
 
+    public function width()
+    {
+        return parent::META_WIDTH_HALF;
+    }
+
+    function HasSearch(){
+        $FANNIE_MEMBER_UPC_PREFIX = FannieConfig::config('FANNIE_MEMBER_UPC_PREFIX');
+		if (isset($FANNIE_MEMBER_UPC_PREFIX) &&
+            $FANNIE_MEMBER_UPC_PREFIX != "") {
+            return True;
+        } else {
+            return False;
+        }
+    }
+
+    function showSearchForm($country='US') {
+        $FANNIE_MEMBER_UPC_PREFIX = FannieConfig::config('FANNIE_MEMBER_UPC_PREFIX');
+        $ret = '';
+        $ret .= '<div class="row form-group form-inline" ' .
+            'title="Type or scan, with or without the prefix ' .
+            $FANNIE_MEMBER_UPC_PREFIX . '"' .
+            '>' .
+            '<label>Membership Card</label>' .
+            ' <input type="text" name="MemCard_mc"' .
+            'size="13" maxlength="13" ' .
+            'id="s_mc" class="form-control" />' .
+        '</div>';
+
+        return $ret;
+    }
+
+    /* What should replace 'mFirstName'?  mMemberCard
+    public function getSearchLoadCommands()
+    {
+        $FANNIE_URL = FannieConfig::config('URL');
+        return array(
+            "bindAutoComplete('#s_mc', '" . $FANNIE_URL . "ws/', 'mFirstName');\n",
+        );
+    }
+    */
+
+	function GetSearchResults(){
+        $FANNIE_MEMBER_UPC_PREFIX = FannieConfig::config('FANNIE_MEMBER_UPC_PREFIX');
+		$dbc = $this->db();
+
+		$ret = array();
+
+        $mc = "";
+        $mc = FormLib::get_form_value('MemCard_mc');
+        if (!preg_match("/^\d+$/",$mc)) {
+            return $ret;
+        }
+        $mcc = "";
+        if (strlen($mc) == 13) {
+            $mcc = $mc;
+        } else if (strlen($mc) == 11) {
+            $mcc = sprintf("00%s", $mc);
+        } else {
+            $mcc = sprintf("%s%05d",$FANNIE_MEMBER_UPC_PREFIX, (int)$mc);
+        }
+
+		$where = "";
+		$args = array();
+		if (!empty($mcc)){
+			$where .= " AND upc = ?";
+			$args[] = "$mcc";
+		}
+
+		if (!empty($where)){
+            $q = "SELECT CardNo,FirstName,LastName
+                FROM custdata as c
+                JOIN memberCards AS m ON c.CardNo = m.card_no
+                WHERE 1=1 $where
+                ORDER BY m.card_no";
+			$s = $dbc->prepare_statement($q);
+			$r = $dbc->exec_statement($s,$args);
+			if ($dbc->num_rows($r) > 0){
+				while($w = $dbc->fetch_row($r)){
+					$ret[$w[0]] = $w[1]." ".$w[2];
+				}
+			}
+		}
+
+		return $ret;
+	}
+
+
     // Return a form segment for display or edit the Member Card#
     function showEditForm($memNum, $country="US"){
-        global $FANNIE_URL;
-        global $FANNIE_MEMBER_UPC_PREFIX;
+        $FANNIE_URL = FannieConfig::config('URL');
+        $FANNIE_MEMBER_UPC_PREFIX = FannieConfig::config('FANNIE_MEMBER_UPC_PREFIX');
 
         $dbc = $this->db();
 
