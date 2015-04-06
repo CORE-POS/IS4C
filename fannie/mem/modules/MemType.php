@@ -70,6 +70,7 @@ class MemType extends \COREPOS\Fannie\API\member\MemberModule {
         $ret .= '<span class="label primaryBackground">Type</span> ';
         $ret .= '<select name="MemType_type" class="form-control">';
         $disc = 0;
+		$mDesc = '';
         while($infoW = $dbc->fetch_row($infoR)){
             $ret .= sprintf("<option value=%d %s>%s</option>",
                 $infoW['memType'],
@@ -80,10 +81,23 @@ class MemType extends \COREPOS\Fannie\API\member\MemberModule {
             } elseif ($infoW['custdataType'] == $infoW['memType']) {
                 $disc = $infoW['memTypeDiscount'];
             }
+            if ($infoW['custdataType'] == $infoW['memType']) {
+                $mDesc = $infoW['memDesc'];
+            }
         }
         $ret .= "</select> ";
+
+        if ($discount_mode == 'memtype.discount') {
+            $discountTip = " title=\"The discount for the Member's current Type: " .
+                "{$mDesc}\"";
+        } else {
+            $discountTip = " title=\"The Member's current Discount, " .
+                "regardless of assigned Type, which is: " .
+                "{$mDesc}\"";
+        }
         
-        $ret .= '<span class="label primaryBackground">Discount</span> ';
+        $ret .= '<span class="label primaryBackground"' .
+                    $discountTip . '>Discount</span> ';
         $ret .= sprintf('%d%%',$disc);
         $ret .= '</div>';
 
