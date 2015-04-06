@@ -85,6 +85,10 @@ class BasicModel
     { 
         return $this->connection;
     }
+    public function setConnection($sql)
+    {
+        $this->connection = $sql;
+    }
 
     /**
       boolean flag indicating at least one column
