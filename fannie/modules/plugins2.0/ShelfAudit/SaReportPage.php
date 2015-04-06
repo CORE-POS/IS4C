@@ -318,7 +318,7 @@ table.shelf-audit tr:hover {
                     <td id="col_e" class="right">'.money_format('%.2n', $row['cost']).'</td>
                     <td id="col_h" class="right">'.money_format('%!.2n', ($row['quantity']*$row['cost'])).'</td>
                     <td id="col_e" class="right">'.money_format('%.2n', $row['normal_retail']).'</td>
-                    <td id="col_f" class="right">'.money_format('%.2n', $row['atual_retail']).'</td>
+                    <td id="col_f" class="right">'.money_format('%.2n', $row['actual_retail']).'</td>
                     <td id="col_g">'.(($row['retailstatus'])?$row['retailstatus']:'&nbsp;').'</td>
                     <td id="col_h" class="right">'.money_format('%!.2n', ($row['quantity']*$row['normal_retail'])).'</td>
                     <td id="col_i"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'">'

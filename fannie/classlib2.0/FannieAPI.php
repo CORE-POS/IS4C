@@ -108,10 +108,10 @@ class FannieAPI
                         $_SESSION['FannieClassMap'][$name] = $expected_file;
                         return;
                     }
-                } else {
-                    // remove all namespacing for global search below
-                    $name = $full_name[count($full_name) - 1];
                 }
+
+                // remove all namespacing for global search below
+                $name = $full_name[count($full_name) - 1];
             }
 
             // search class lib for definition
@@ -304,13 +304,13 @@ class FannieAPI
 
             $namespaced_class = self::pathToClass($file);
 
-            if (!class_exists($class) && !class_exists($namespaced_class)) {
+            if (!class_exists($class, false) && !class_exists($namespaced_class, false)) {
                 continue;
             }
 
-            if (class_exists($class) && is_subclass_of($class, $base_class)) {
+            if (class_exists($class, false) && is_subclass_of($class, $base_class)) {
                 $ret[] = $class;
-            } elseif (class_exists($namespaced_class) && is_subclass_of($namespaced_class, $base_class)) {
+            } elseif (class_exists($namespaced_class, false) && is_subclass_of($namespaced_class, $base_class)) {
                 $ret[] = $namespaced_class;
             }
         }
