@@ -582,7 +582,7 @@ class BasicModel
             $this->loadHooks();
         }
         foreach($this->hooks as $hook_obj) {
-            if (method_exists($hook_obj, 'onSave')) {
+            if (is_object($hook_obj) && method_exists($hook_obj, 'onSave')) {
                 $hook_obj->onSave($this->name, $this);
             }
         }
@@ -1223,6 +1223,8 @@ class BasicModel
                 }
            }
        }
+       // placeholder value to signify this has actually run
+       $this->hooks[] = '_loaded';
     }
 
     /**
