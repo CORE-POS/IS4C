@@ -724,6 +724,8 @@ class EditBatchPage extends FannieRESTfulPage
         $name = $model->batchName();
         $type = $model->batchType();
         $dtype = $model->discounttype();
+        $start = strtotime($model->startDate());
+        $end = strtotime($model->endDate()) + (60*60*24);
 
         if ($type == 10){
             return $this->showPairedBatchDisplay($id,$name);
@@ -801,7 +803,9 @@ class EditBatchPage extends FannieRESTfulPage
         if ($cp > 0) {
             $ret .= "<a href=\"EditBatchPage.php?id=$id&paste=1\">Paste Items ($cp)</a> | ";
         }
-        $ret .= "<a href=\"\" onclick=\"forceNow($id); return false;\">Force batch</a> | ";
+        if ($dtype == 0 || (time() >= $start && time() <= $end)) {
+            $ret .= "<a href=\"\" onclick=\"forceNow($id); return false;\">Force batch</a> | ";
+        }
         if ($dtype != 0) {
             $ret .= "<a href=\"\" onclick=\"unsaleNow($id); return false;\">Stop Sale</a> | ";
         }
