@@ -209,8 +209,8 @@ class MemArEquityDumpTool extends FanniePage
             'register_no' => $this->CORRECTION_LANE,
             'emp_no' => $this->CORRECTION_CASHIER,
         );
-        DTrans::addOpenRing($this->connection, $trans_no, $this->dept1, -1*$this->amount, $params);
-        DTrans::addOpenRing($this->connection, $trans_no, $this->dept2, $this->amount, $params);
+        DTrans::addOpenRing($this->connection, $this->dept1, -1*$this->amount, $trans_no, $params);
+        DTrans::addOpenRing($this->connection, $this->dept2, $this->amount, $trans_no, $params);
 
         $comment = FormLib::get_form_value('comment');
         if (!empty($comment)) {
