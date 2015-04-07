@@ -31,7 +31,7 @@ class WfcWebModule extends ItemModule
         $dbc = $this->db();
         $ret = '<div id="WebListingFieldset" class="panel panel-default">';
         $ret .=  "<div class=\"panel-heading\">
-                <a href=\"\" onclick=\"\$('#WebListingFieldset').toggle();return false;\">
+                <a href=\"\" onclick=\"\$('#WebListingFieldsetContent').toggle();return false;\">
                 Website Listing</a>
                 </div>";
 

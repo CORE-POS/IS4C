@@ -88,6 +88,8 @@ class BasicModel
     public function setConnection($sql)
     {
         $this->connection = $sql;
+        $this->record_changed = true;
+        $this->cached_definition = false;
     }
 
     /**
