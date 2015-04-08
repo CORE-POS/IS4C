@@ -248,13 +248,12 @@ function saveprice(upc){
             b.shippingMarkup,
             p.normal_price,
             1 - (v.cost * ((1+b.shippingMarkup)/p.normal_price)) AS current_margin,
-            s.srp,
+            v.srp,
             1 - (v.cost * ((1+b.shippingMarkup)/s.srp)) AS desired_margin,
             v.vendorDept,
             x.variable_pricing
             FROM products AS p 
                 INNER JOIN vendorItems AS v ON p.upc=v.upc AND v.vendorID=?
-                INNER JOIN vendorSRPs AS s ON v.upc=s.upc AND v.vendorID=s.vendorID
                 INNER JOIN vendors as b ON v.vendorID=b.vendorID
                 LEFT JOIN prodExtra AS x on p.upc=x.upc ";
         $args = array($vendorID);

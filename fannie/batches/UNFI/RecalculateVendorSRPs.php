@@ -53,7 +53,8 @@ class RecalculateVendorSRPs extends FanniePage {
             return $this->results_content();
     }
 
-    function results_content(){
+    function results_content()
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
@@ -62,29 +63,35 @@ class RecalculateVendorSRPs extends FanniePage {
         $delQ = $dbc->prepare_statement("DELETE FROM vendorSRPs WHERE vendorID=?");
         $delR = $dbc->exec_statement($delQ,array($id));
 
-        $query = 'select v.upc,v.cost,
-            case when d.margin is not null then d.margin
-                 when m.margin is not null then m.margin
-                 else 0 end as margin,
+        $query = '
+            SELECT v.upc,
+                v.sku,
+                v.cost,
+                CASE
+                    WHEN a.margin IS NOT NULL THEN a.margin
+                    WHEN b.margin IS NOT NULL THEN b.margin
+                    ELSE 0 
+                END AS margin,
                 n.shippingMarkup
             FROM vendorItems as v 
-                left join vendorDepartments as d on v.vendorID=d.vendorID and v.vendorDept=d.deptID
+                LEFT JOIN vendorDepartments AS a ON v.vendorID=a.vendorID AND v.vendorDept=a.deptID
                 INNER JOIN vendors AS n ON v.vendorID=n.vendorID
-            left join products as p
-            on v.upc=p.upc ';
-        $departments = $dbc->tableDefinition('departments');
-        if (isset($departments['margin'])) {
-            $query .= ' LEFT JOIN departments AS m
-                        ON p.department = m.dept_no ';
-        } else if ($dbc->tableExists('deptMargin')) {
-            $query .= ' left join deptMargin as m
-                        on p.department=m.dept_ID ';
-        }
-        $query .= ' where v.vendorID=?
-            and (d.margin is not null or m.margin is not null)';
+                LEFT JOIN products as p ON v.upc=p.upc AND v.vendorID=p.default_vendor_id
+                LEFT JOIN departments AS b ON p.department=b.dept_no
+            WHERE v.vendorID=?
+                AND (d.margin IS NOT NULL OR m.margin IS NOT NULL)';
         $fetchP = $dbc->prepare($query);
         $fetchR = $dbc->exec_statement($fetchP, array($id));
-        $insP = $dbc->prepare_statement('INSERT INTO vendorSRPs VALUES (?,?,?)');
+        $upP = $dbc->prepare('
+            UPDATE vendorItems
+            SET srp=?,
+                modified=' . $dbc->now() . '
+            WHERE vendorID=?
+                AND sku=?');
+        $insP = false;
+        if ($dbc->tableExists('vendorSRPs')) {
+            $insP = $dbc->prepare_statement('INSERT INTO vendorSRPs VALUES (?,?,?)');
+        }
         while ($fetchW = $dbc->fetch_array($fetchR)) {
             // calculate a SRP from unit cost and desired margin
             $srp = round($fetchW['cost'] / (1 - $fetchW['margin']),2);
@@ -92,7 +99,10 @@ class RecalculateVendorSRPs extends FanniePage {
 
             $srp = $this->normalizePrice($srp);
 
-            $insR = $dbc->exec_statement($insP,array($id,$fetchW['upc'],$srp));
+            $upR = $dbc->execute($upP, array($srp, $id, $fetchW['sku']));
+            if ($insP) {
+                $insR = $dbc->exec_statement($insP,array($id,$fetchW['upc'],$srp));
+            }
         }
 
         $ret = "<b>SRPs have been updated</b><br />";

@@ -73,10 +73,9 @@ if (isset($_GET['cat'])){
 	$depts .= "</select>";
 
 	$dataQ = $sql->prepare("SELECT v.upc,v.brand,v.description,v.vendorDept,
-		s.srp,v.cost, 
+		v.srp,v.cost, 
 		v.size,v.units,v.sku FROM vendorItems AS v 
 		LEFT JOIN products AS p ON v.upc = p.upc 
-		left join vendorSRPs as s ON v.upc=s.upc AND v.vendorID=s.vendorID
 		WHERE p.upc IS NULL and v.vendorID=1
 		$brand AND v.vendorDept=? order by v.vendorDept,v.brand,v.description");
     $brandArgs[] = $catID;

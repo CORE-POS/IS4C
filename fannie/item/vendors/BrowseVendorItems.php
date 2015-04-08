@@ -173,12 +173,10 @@ class BrowseVendorItems extends FanniePage
             v.cost as cost,
             CASE WHEN d.margin IS NULL THEN 0 ELSE d.margin END as margin,
             CASE WHEN p.upc IS NULL THEN 0 ELSE 1 END as inPOS,
-            s.srp
+            v.srp
             FROM vendorItems AS v LEFT JOIN products AS p
             ON v.upc=p.upc LEFT JOIN vendorDepartments AS d
             ON d.deptID=v.vendorDept
-            LEFT JOIN vendorSRPs AS s 
-            ON v.upc=s.upc AND v.vendorID=s.vendorID
             WHERE v.vendorID=? AND v.brand=?";
         $args = array($vid,$brand);
         if ($did != 'All'){

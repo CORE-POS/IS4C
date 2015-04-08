@@ -69,12 +69,11 @@ class BadScanTool extends FannieRESTfulPage
                     MIN(datetime) as oldest,
                     MAX(datetime) as newest,
                     p.description as prod,
-                    MAX(v.description) as vend, MAX(n.vendorName) as vendorName, MAX(s.srp) as srp
+                    MAX(v.description) as vend, MAX(n.vendorName) as vendorName, MAX(v.srp) as srp
                     FROM " . $FANNIE_TRANS_DB . $dbc->sep() . "transarchive AS t
                     LEFT JOIN products AS p ON p.upc=t.upc
                     LEFT JOIN vendorItems AS v ON t.upc=v.upc
                     LEFT JOIN vendors AS n ON v.vendorID=n.vendorID
-                    LEFT JOIN vendorSRPs AS s ON v.upc=s.upc AND v.vendorID=s.vendorID
                     WHERE t.trans_type='L' AND t.description='BADSCAN'
                     AND t.upc NOT LIKE '% %'
                     AND t.upc NOT LIKE '00000000000%'

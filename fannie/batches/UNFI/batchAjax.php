@@ -45,11 +45,18 @@ case 'delVarPricing':
 case 'newPrice':
     $vid = FormLib::get_form_value('vendorID');
     $bid = FormLib::get_form_value('batchID');
-    $sid = FormLib::get_form_value('superID',0);
-    if ($sid == 99) $sid = 0;
     $price = FormLib::get_form_value('price',0);
-    $sP = $dbc->prepare_statement("UPDATE vendorSRPs SET srp=? WHERE upc=? AND vendorID=?");
-    $dbc->exec_statement($sP,array($price,$upc,$vid));
+    $viP = $dbc->prepare('
+        UPDATE vendorItems
+        SET srp=?,
+            modified=' . $dbc->now() . '
+        WHERE upc=?
+            AND vendorID=?');
+    $dbc->execute($viP, array($price,$upc,$vid));
+    if ($dbc->tableExists('vendorSRPs')) {
+        $sP = $dbc->prepare_statement("UPDATE vendorSRPs SET srp=? WHERE upc=? AND vendorID=?");
+        $dbc->exec_statement($sP,array($price,$upc,$vid));
+    }
     echo "New Price Applied";
     break;
 case 'batchAdd':

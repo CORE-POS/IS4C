@@ -145,16 +145,38 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $NET_UNIT = $this->get_column_index('unitSaleCost');
         $SRP = $this->get_column_index('srp');
 
-        $itemP = $dbc->prepare_statement("INSERT INTO vendorItems 
-                    (brand,sku,size,upc,units,cost,description,vendorDept,vendorID)
-                    VALUES (?,?,?,?,?,?,?,?,?)");
-        $vi_def = $dbc->tableDefinition('vendorItems');
-        if (isset($vi_def['saleCost'])) {
-            $itemP = $dbc->prepare_statement("INSERT INTO vendorItems 
-                        (brand,sku,size,upc,units,cost,description,vendorDept,vendorID,saleCost)
-                        VALUES (?,?,?,?,?,?,?,?,?,?)");
+        $itemP = $dbc->prepare("
+            INSERT INTO vendorItems (
+                brand, 
+                sku,
+                size,
+                upc,
+                units,
+                cost,
+                description,
+                vendorDept,
+                vendorID,
+                saleCost,
+                modified,
+                srp
+            ) VALUES (
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?
+            )");
+        $srpP = false;
+        if ($dbc->tableExists('vendorSRPs')) {
+            $srpP = $dbc->prepare_statement("INSERT INTO vendorSRPs (vendorID, upc, srp) VALUES (?,?,?)");
         }
-        $srpP = $dbc->prepare_statement("INSERT INTO vendorSRPs (vendorID, upc, srp) VALUES (?,?,?)");
         $pm = new ProductsModel($dbc);
 
         foreach($linedata as $data) {
@@ -233,18 +255,30 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             // trim $ off amounts as well as commas for the
             // occasional > $1,000 item
             $srp = $this->priceFix($srp);
+            if (!is_numeric($srp)) {
+                $srp = 0;
+            }
 
             $brand = str_replace("'","",$brand);
             $description = str_replace("'","",$description);
 
-            $args = array($brand, $sku, $size,
-                    $upc,$qty,$reg_unit,$description,$category,$VENDOR_ID);
-            if (isset($vi_def['saleCost'])) {
-                $args[] = $net_unit;
-            }
-            $dbc->exec_statement($itemP,$args);
+            $args = array(
+                $brand, 
+                $sku, 
+                $size,
+                $upc,
+                $qty,
+                $reg_unit,
+                $description,
+                $category,
+                $VENDOR_ID,
+                $net_unit,
+                date('Y-m-d H:i:s'),
+                $srp
+            );
+            $dbc->execute($itemP, $args);
 
-            if (is_numeric($srp)) {
+            if ($srpP) {
                 $dbc->exec_statement($srpP,array($VENDOR_ID,$upc,$srp));
             }
 

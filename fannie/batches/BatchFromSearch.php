@@ -170,7 +170,7 @@ class BatchFromSearch extends FannieRESTfulPage
             SELECT p.upc,
                 CASE WHEN v.srp IS NULL THEN 0 ELSE v.srp END as newSRP
             FROM products AS p
-                LEFT JOIN vendorSRPs AS v ON p.upc=v.upc
+                LEFT JOIN vendorItems AS v ON p.upc=v.upc 
             WHERE p.upc IN (' . $params['in'] . ')
             ORDER BY p.upc,
                 CASE WHEN v.vendorID=? THEN -999 ELSE v.vendorID END';
@@ -275,8 +275,8 @@ class BatchFromSearch extends FannieRESTfulPage
         $query = 'SELECT p.upc, p.description, p.normal_price, m.superID,
                 MAX(CASE WHEN v.srp IS NULL THEN 0.00 ELSE v.srp END) as srp
                 FROM products AS p
-                LEFT JOIN vendorSRPs AS v ON p.upc=v.upc
-                LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
+                    LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
+                    LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
                 WHERE p.upc IN ( ' . $info['in'] . ')
                 GROUP BY p.upc, p.description, p.normal_price, m.superID
                 ORDER BY p.upc';

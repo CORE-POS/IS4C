@@ -524,12 +524,11 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1)
         SELECT units,
             vendorName,
             description,
-            srp,
+            i.srp,
             i.upc,
             CASE WHEN i.upc=? THEN 0 ELSE 1 END as skuMatch 
         FROM vendorItems as i
             LEFT JOIN vendors AS v ON i.vendorID=v.vendorID 
-            LEFT JOIN vendorSRPs AS s ON i.upc=s.upc AND i.vendorID=s.vendorID
         WHERE i.upc=? 
             OR i.sku=? 
             OR i.sku=?

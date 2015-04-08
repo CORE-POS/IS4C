@@ -15,7 +15,7 @@ $UNFI_ALL_QUERY = "
     v.cost * v.units as vd_cost,
     p.normal_price,
     v.sku as unfi_sku,
-    s.srp as wfc_srp,
+    v.srp as wfc_srp,
     v.vendorDept as cat,
     p.department,
     CASE WHEN p.normal_price = 0 THEN 0 ELSE
@@ -29,7 +29,6 @@ $UNFI_ALL_QUERY = "
     from vendorItems AS v
     INNER JOIN products as p ON v.upc=p.upc
     LEFT JOIN prodExtra AS x ON p.upc=x.upc
-    LEFT JOIN vendorSRPs AS s ON v.vendorID=s.vendorID AND v.upc=s.upc
     where 
     v.vendorID=1";
 
@@ -78,8 +77,12 @@ if (isset($_GET['action'])){
 	case 'saveUnfiPrice':
 		$upc = $_GET['upc'];
 		$price = $_GET['price'];
-		$upQ = $sql->prepare("update vendorSRPs set srp=? where vendorID=1 AND upc=?");
+		$upQ = $sql->prepare("update vendorItems set srp=?,modified=".$sql->now()." where vendorID=1 AND upc=?");
 		$upR = $sql->execute($upQ, array($price, $upc));
+        if ($sql->tableExists('vendorSRPs')) {
+            $upQ = $sql->prepare("update vendorSRPs set srp=? where vendorID=1 AND upc=?");
+            $upR = $sql->execute($upQ, array($price, $upc));
+        }
 		break;
 	case 'toggleVariable':
 		$upc = $_GET['upc'];

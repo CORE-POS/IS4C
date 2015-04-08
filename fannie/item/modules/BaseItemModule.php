@@ -171,7 +171,7 @@ class BaseItemModule extends ItemModule
                     v.vendorName as distributor,
                     d.margin,
                     i.vendorID,
-                    s.srp,
+                    i.srp,
                     i.size,
                     i.units,
                     i.sku,
@@ -179,7 +179,6 @@ class BaseItemModule extends ItemModule
                 FROM vendorItems AS i 
                     LEFT JOIN vendors AS v ON i.vendorID=v.vendorID
                     LEFT JOIN vendorDepartments AS d ON i.vendorDept=d.deptID
-                    LEFT JOIN vendorSRPs AS s ON s.upc=i.upc AND s.vendorID=i.vendorID
                 WHERE i.upc=?";
             $args = array($upc);
             $vID = FormLib::get_form_value('vid','');
