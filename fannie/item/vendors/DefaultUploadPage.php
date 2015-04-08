@@ -340,6 +340,10 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
     function results_content()
     {
         $ret = "<p>Price data import complete</p>";
+        $ret .= sprintf('<p><a class="btn btn-default" 
+            href="%sbatches/UNFI/RecalculateVendorSRPs.php?id=%d">Update SRPs</a></p>',
+            $this->config->get('URL'), $_SESSION['vid']);
+
         unset($_SESSION['vid']);
         unset($_SESSION['vUploadCheckDigits']);
         unset($_SESSION['vUploadChangeCosts']);

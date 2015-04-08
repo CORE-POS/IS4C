@@ -64,6 +64,8 @@ class UnitBreakdownPage extends FannieRESTfulPage
             } elseif (preg_match('/(\d+)\s*\\/\s*(.+)/', $original->size(), $matches)) {
                 $split_factor = $matches[1];
                 $unit_size = $matches[2];
+            } elseif (preg_match('/(\d+)\s*CT/', $original->size(), $matches)) {
+                $split_factor = $matches[1];
             }
             if (!$split_factor) {
                 $this->addOnloadCommand("showBootstrapAlert('#alert-area', 'danger', 'Vendor SKU #" . $original->size() . " cannot be broken down');\n");
@@ -87,6 +89,8 @@ class UnitBreakdownPage extends FannieRESTfulPage
                 if ($product->load() && $product->default_vendor_id() == $this->id) {
                     $product->cost($original->cost());
                     $product->save();
+                    $original->description($product->description());
+                    $original->save();
                 }
             } else {
                 $this->addOnloadCommand("showBootstrapAlert('#alert-area', 'success', 'Error saving vendor SKU #" . $obj->sku() . "');\n");

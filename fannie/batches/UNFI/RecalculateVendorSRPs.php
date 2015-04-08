@@ -30,7 +30,8 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class RecalculateVendorSRPs extends FanniePage {
+class RecalculateVendorSRPs extends FannieRESTfulPage
+{
     protected $title = "Fannie - Vendor SRPs";
     protected $header = "Recalculate SRPs from Margins";
 
@@ -38,27 +39,12 @@ class RecalculateVendorSRPs extends FanniePage {
     specific margin goals.';
     public $themed = true;
 
-    private $mode = 'form';
-
-    function preprocess(){
-        if(FormLib::get_form_value('vendorID') !== '')
-            $this->mode = 'results';
-        return True;
-    }
-
-    function body_content(){
-        if ($this->mode == 'form')
-            return $this->form_content();
-        else if ($this->mode == 'results')
-            return $this->results_content();
-    }
-
-    function results_content()
+    public function get_id_view()
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $id = FormLib::get_form_value('vendorID',0);
+        $id = $this->id;
 
         $delQ = $dbc->prepare_statement("DELETE FROM vendorSRPs WHERE vendorID=?");
         $delR = $dbc->exec_statement($delQ,array($id));
@@ -79,7 +65,7 @@ class RecalculateVendorSRPs extends FanniePage {
                 LEFT JOIN products as p ON v.upc=p.upc AND v.vendorID=p.default_vendor_id
                 LEFT JOIN departments AS b ON p.department=b.dept_no
             WHERE v.vendorID=?
-                AND (d.margin IS NOT NULL OR m.margin IS NOT NULL)';
+                AND (a.margin IS NOT NULL OR b.margin IS NOT NULL)';
         $fetchP = $dbc->prepare($query);
         $fetchR = $dbc->exec_statement($fetchP, array($id));
         $upP = $dbc->prepare('
@@ -106,7 +92,13 @@ class RecalculateVendorSRPs extends FanniePage {
         }
 
         $ret = "<b>SRPs have been updated</b><br />";
-        $ret .= "<a href=index.php>Main Menu</a>";
+        $ret .= sprintf('<p>
+            <a class="btn btn-default" href="index.php">Price Batch Tools</a>
+            <a class="btn btn-default" 
+            href="%s/item/vendors/VendorIndexPage.php?vid=%d">Vendor Settings &amp; Catalog</a>
+            </p>',
+            $this->config->get('URL'), $id);
+
         return $ret;
     }
 
@@ -123,7 +115,8 @@ class RecalculateVendorSRPs extends FanniePage {
         return round($int_price/100.00, 2);
     }
 
-    function form_content(){
+    public function get_view()
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $q = $dbc->prepare_statement("SELECT vendorID,vendorName FROM vendors ORDER BY vendorName");
@@ -136,7 +129,7 @@ class RecalculateVendorSRPs extends FanniePage {
         <form action=RecalculateVendorSRPs.php method=get>
         <p>
         <label>Recalculate SRPs from margins for which vendor?</label>
-        <select id="vendor-id" name=vendorID class="form-control">
+        <select id="vendor-id" name="id" class="form-control">
             <?php echo $opts; ?></select>
         <button type=submit class="btn btn-default">Recalculate</button>
         <button type="button" onclick="location='VendorPricingIndex.php';return false;"
