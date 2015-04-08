@@ -186,9 +186,10 @@ class VendorDepartmentEditor extends FanniePage {
         global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         
-        $nameQ = $dbc->prepare_statement("SELECT vendorName FROM vendors WHERE vendorID=?");
-        $nameR = $dbc->exec_statement($nameQ,array($id));
-        $name = array_pop($dbc->fetch_row($nameR));
+        $v = new VendorsModel($dbc);
+        $v->vendorID($id);
+        $v->load();
+        $name = $v->vendorName();
 
         $ret = "<strong>Departments in $name</strong><br />";
         $ret .= "<table class=\"table\">"; 

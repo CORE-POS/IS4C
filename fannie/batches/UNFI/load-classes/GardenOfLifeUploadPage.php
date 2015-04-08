@@ -200,14 +200,14 @@ class GardenOfLifeUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 if (preg_match($TRAY_PATTERN, $description, $matches)) {
                     $size = $matches[1] . 'CT';
                     $description = preg_replace($TRAY_PATTERN, '', $description);
-                } elseif (preg_match('/(\d+)/', $matches, $description)) {
+                } elseif (preg_match('/(\d+)/', $description, $matches)) {
                     $size = $matches[1] . 'CT';
                 }
             } elseif ($type == 'carton') {
                 if (preg_match($CARTON_PATTERN, $description, $matches)) {
                     $size = $matches[1] . 'CT';
                     $description = preg_replace($CARTON_PATTERN, '', $description);
-                } elseif (preg_match('/(\d+)/', $matches, $description)) {
+                } elseif (preg_match('/(\d+)/', $description, $matches)) {
                     $size = $matches[1] . 'CT';
                 }
             }

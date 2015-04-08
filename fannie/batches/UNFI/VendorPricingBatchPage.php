@@ -196,7 +196,8 @@ function saveprice(upc){
         if ($superID != 99){
             $p = $dbc->prepare_statement("SELECT super_name FROM superDeptNames WHERE superID=?");
             $r = $dbc->exec_statement($p,array($superID));
-            $sn = array_pop($dbc->fetch_row($r));
+            $w = $dbc->fetchRow($r);
+            $sn = $w['super_name'];
         }
         $vendor = new VendorsModel($dbc);
         $vendor->vendorID($vendorID);
@@ -224,7 +225,8 @@ function saveprice(upc){
             $insR = $dbc->exec_statement($insQ,array($batchName,$bType));
             $batchID = $dbc->insert_id();
         } else  {
-            $batchID = array_pop($dbc->fetch_row($bidR));
+            $bidW = $dbc->fetchRow($bigR);
+            $batchID = $bidW['batchID'];
         }
 
         $ret = sprintf('<b>Batch</b>: 
@@ -249,7 +251,7 @@ function saveprice(upc){
             p.normal_price,
             1 - (v.cost * ((1+b.shippingMarkup)/p.normal_price)) AS current_margin,
             v.srp,
-            1 - (v.cost * ((1+b.shippingMarkup)/s.srp)) AS desired_margin,
+            1 - (v.cost * ((1+b.shippingMarkup)/v.srp)) AS desired_margin,
             v.vendorDept,
             x.variable_pricing
             FROM products AS p 
@@ -267,7 +269,7 @@ function saveprice(upc){
             $args[] = $superID;
         }
         if ($filter === false) {
-            $query .= " AND p.normal_price <> s.srp ";
+            $query .= " AND p.normal_price <> v.srp ";
         }
 
         $query .= " ORDER BY p.upc";
