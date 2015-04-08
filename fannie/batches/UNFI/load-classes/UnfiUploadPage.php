@@ -140,16 +140,38 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             SET cost=?,
                 modified=' . $dbc->now() . '
             WHERE upc=?');
-        $itemP = $dbc->prepare_statement("INSERT INTO vendorItems 
-                    (brand,sku,size,upc,units,cost,description,vendorDept,vendorID)
-                    VALUES (?,?,?,?,?,?,?,?,?)");
-        $vi_def = $dbc->table_definition('vendorItems');
-        if (isset($vi_def['saleCost'])) {
-            $itemP = $dbc->prepare_statement("INSERT INTO vendorItems 
-                        (brand,sku,size,upc,units,cost,description,vendorDept,vendorID,saleCost)
-                        VALUES (?,?,?,?,?,?,?,?,?,?)");
+        $itemP = $dbc->prepare("
+            INSERT INTO vendorItems (
+                brand, 
+                sku,
+                size,
+                upc,
+                units,
+                cost,
+                description,
+                vendorDept,
+                vendorID,
+                saleCost,
+                modified,
+                srp
+            ) VALUES (
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?
+            )");
+        $srpP = false;
+        if ($dbc->tableExists('vendorSRPs')) {
+            $srpP = $dbc->prepare_statement("INSERT INTO vendorSRPs (vendorID, upc, srp) VALUES (?,?,?)");
         }
-        $srpP = $dbc->prepare_statement("INSERT INTO vendorSRPs (vendorID, upc, srp) VALUES (?,?,?)");
         $updated_upcs = array();
 
         foreach($linedata as $data) {
@@ -215,14 +237,25 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $dbc->exec_statement($prodP, array($reg_unit,$upc));
             $updated_upcs[] = $upc;
 
-            $args = array($brand,($sku===False?'':$sku),($size===False?'':$size),
-                    $upc,$qty,$reg_unit,$description,$category,$VENDOR_ID);
-            if (isset($vi_def['saleCost'])) {
-                $args[] = $net_unit;
-            }
-            $dbc->exec_statement($itemP,$args);
+            $args = array(
+                $brand, 
+                $sku === false ? '' : $sku, 
+                $size === false ? '' : $size,
+                $upc,
+                $qty,
+                $reg_unit,
+                $description,
+                $category,
+                $VENDOR_ID,
+                $net_unit,
+                date('Y-m-d H:i:s'),
+                $srp
+            );
+            $dbc->execute($itemP,$args);
 
-            $dbc->exec_statement($srpP,array($VENDOR_ID,$upc,$srp));
+            if ($srpP) {
+                $dbc->exec_statement($srpP,array($VENDOR_ID,$upc,$srp));
+            }
         }
 
         $updateModel = new ProdUpdateModel($dbc);
