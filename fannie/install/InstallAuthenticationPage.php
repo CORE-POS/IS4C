@@ -237,7 +237,7 @@ else
 <label>LDAP Port</label>
 <?php echo installTextField('FANNIE_LDAP_PORT', $FANNIE_LDAP_PORT, '389'); ?>
 <label>LDAP Domain (DN)</label>
-<?php echo installTextField('FANNIE_LDAP_DN', $FANNIE_LDAP_CN, 'ou=People,dc=example,dc=org'); ?>
+<?php echo installTextField('FANNIE_LDAP_DN', $FANNIE_LDAP_DN, 'ou=People,dc=example,dc=org'); ?>
 <label>LDAP Username Field</label>
 <?php echo installTextField('FANNIE_LDAP_SEARCH_FIELD', $FANNIE_LDAP_SEARCH_FIELD, 'uid'); ?>
 <label>LDAP User ID# Field</label>
