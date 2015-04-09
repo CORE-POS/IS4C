@@ -580,7 +580,7 @@ class InstallUtilities extends LibraryClass
             ob_end_clean();
         } catch(Exception $ex) {}
 
-        if ($sql === false || $sql->connections[$db] === false) {
+        if ($sql === false || $sql->isConnected($db) === false) {
             return false;
         } else {
             return $sql;
