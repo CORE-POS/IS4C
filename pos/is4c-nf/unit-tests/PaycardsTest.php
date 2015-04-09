@@ -153,7 +153,13 @@ class PaycardsTest extends PHPUnit_Framework_TestCase
         $this->emptyPaycardTables();
         $processor = new MercuryE2E();
         $auth_result = $processor->doSend(PaycardLib::PAYCARD_MODE_AUTH);
-        $this->assertEquals(PaycardLib::PAYCARD_ERR_OK, $auth_result, 'Authorization attempt produced error: ' . $auth_result);
+        $this->assertEquals(
+            PaycardLib::PAYCARD_ERR_OK, 
+            $auth_result, 
+            'Authorization attempt produced error: ' 
+                . $auth_result . ' : '
+                . CoreLocal::get('boxMsg')
+        );
         $db = Database::tDataConnect();
         $ptrans = $db->query('SELECT * FROM PaycardTransactions');
         $row = $db->fetch_row($ptrans);
