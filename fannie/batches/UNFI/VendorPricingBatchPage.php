@@ -225,7 +225,7 @@ function saveprice(upc){
             $insR = $dbc->exec_statement($insQ,array($batchName,$bType));
             $batchID = $dbc->insert_id();
         } else  {
-            $bidW = $dbc->fetchRow($bigR);
+            $bidW = $dbc->fetchRow($bidR);
             $batchID = $bidW['batchID'];
         }
 
