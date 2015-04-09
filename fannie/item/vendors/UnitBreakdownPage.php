@@ -215,6 +215,8 @@ class UnitBreakdownPage extends FannieRESTfulPage
             <input type="hidden" name="id" value="' . $this->id . '" />
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             <a href="?id=' . $this->id . '&break=1" class="btn btn-default">Run Breakdowns</a>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="VendorIndexPage.php?vid=' . $this->id . '" class="btn btn-default">Home</a>
             </div>
             </form>';
 
