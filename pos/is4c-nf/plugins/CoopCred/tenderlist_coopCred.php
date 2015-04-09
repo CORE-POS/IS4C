@@ -25,50 +25,50 @@ include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
 class tenderlist_coopCred extends NoInputPage {
 
-	/**
-	  Input processing function
-	*/
-	function preprocess(){
-		global $CORE_LOCAL;
+    /**
+      Input processing function
+    */
+    function preprocess(){
+        global $CORE_LOCAL;
 
-		// a selection was made
-		if (isset($_REQUEST['search'])){
-			$entered = strtoupper($_REQUEST['search']);
+        // a selection was made
+        if (isset($_REQUEST['search'])){
+            $entered = strtoupper($_REQUEST['search']);
 
-			if ($entered == "" || $entered == "CL"){
-				/* should be empty string
-				 * javascript selectSubmit() causes this input if the
-				 * user presses CL{enter}
+            if ($entered == "" || $entered == "CL"){
+                /* should be empty string
+                 * javascript selectSubmit() causes this input if the
+                 * user presses CL{enter}
                  * Redirect to main screen
                  */
-				$CORE_LOCAL->set("tenderTotal","0");	
-				$this->change_page($this->page_url."gui-modules/pos2.php");
-				return False;
-			}
+                $CORE_LOCAL->set("tenderTotal","0");    
+                $this->change_page($this->page_url."gui-modules/pos2.php");
+                return False;
+            }
 
-			if (!empty($entered)){ 
-				/* built department input string and set it
-				 * to be the next POS entry
+            if (!empty($entered)){ 
+                /* built department input string and set it
+                 * to be the next POS entry
                  * Redirect to main screen
                  */
-				$input = $CORE_LOCAL->get("tenderTotal").$entered;
-				$CORE_LOCAL->set("msgrepeat",1);
-				$CORE_LOCAL->set("strRemembered",$input);
-				$this->change_page($this->page_url."gui-modules/pos2.php");
-				return False;
-			}
-		}
-		return True;
-	} // END preprocess() FUNCTION
+                $input = $CORE_LOCAL->get("tenderTotal").$entered;
+                $CORE_LOCAL->set("msgrepeat",1);
+                $CORE_LOCAL->set("strRemembered",$input);
+                $this->change_page($this->page_url."gui-modules/pos2.php");
+                return False;
+            }
+        }
+        return True;
+    } // END preprocess() FUNCTION
 
-	/**
-	  Catch CL typed in a select box and return "".
-	*/
-	function head_content(){
-		?>
+    /**
+      Catch CL typed in a select box and return "".
+    */
+    function head_content(){
+        ?>
         <script type="text/javascript" src="../../js/selectSubmit.js"></script>
-		<?php
-	} // END head_content() FUNCTION
+        <?php
+    } // END head_content() FUNCTION
 
     /*
      * Build a <select> form that submits back to this script.
@@ -76,10 +76,10 @@ class tenderlist_coopCred extends NoInputPage {
      * The <select> can accept typed input that overrides
      *  the <option value>.
      *  See how preprocess() handles "CL"
-	*/
-	function body_content(){
-		global $CORE_LOCAL;
-		$db = Database::pDataConnect();
+    */
+    function body_content(){
+        global $CORE_LOCAL;
+        $db = Database::pDataConnect();
         /* Only tenders the member may actually use. */
         $q = "SELECT t.TenderCode, p.tenderKeyCap, p.tenderName
             FROM opdata.tenders t
@@ -89,9 +89,9 @@ class tenderlist_coopCred extends NoInputPage {
             AND m.cardNo =" . $CORE_LOCAL->get("memberID") .
             " AND m.creditOK =1
             ORDER BY p.programID";
-		$r = $db->query($q);
+        $r = $db->query($q);
 
-		echo "<div class=\"baseHeight\">"
+        echo "<div class=\"baseHeight\">"
             ."<div class=\"listbox\">";
         echo "<form name=\"selectform\" method=\"post\" " .
             "action=\"{$_SERVER['PHP_SELF']}\" " .
@@ -153,16 +153,16 @@ class tenderlist_coopCred extends NoInputPage {
             echo "</form>";
         }
         echo "<div class=\"clear\"></div>";
-		echo "</div><!-- /.baseHeight -->";
+        echo "</div><!-- /.baseHeight -->";
 
         $this->add_onload_command("selectSubmit('#search', '#selectform')\n");
         $this->add_onload_command("\$('#search').focus();\n");
 
-	} // END body_content() FUNCTION
+    } // END body_content() FUNCTION
 
 }
 
 if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-	new tenderlist_coopCred();
+    new tenderlist_coopCred();
 
 ?>

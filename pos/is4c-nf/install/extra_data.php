@@ -9,7 +9,7 @@ include('InstallUtilities.php');
 <title>IT CORE Lane Installation: Sample data</title>
 <style type="text/css">
 body {
-	line-height: 1.5em;
+    line-height: 1.5em;
 }
 </style>
 </head>
@@ -22,37 +22,37 @@ body {
 <div class="alert success"><b>
 <?php
 $db = new SQLManager(CoreLocal::get('localhost'),
-	CoreLocal::get('DBMS'),
-	CoreLocal::get('pDatabase'),
-	CoreLocal::get('localUser'),
-	CoreLocal::get('localPass'));
+    CoreLocal::get('DBMS'),
+    CoreLocal::get('pDatabase'),
+    CoreLocal::get('localUser'),
+    CoreLocal::get('localPass'));
 
 if (isset($_REQUEST['employees'])){
-	echo "Loading employees";
-	$db->query("TRUNCATE TABLE employees");
-	InstallUtilities::loadSampleData($db,'employees');	
+    echo "Loading employees";
+    $db->query("TRUNCATE TABLE employees");
+    InstallUtilities::loadSampleData($db,'employees');    
 }
 elseif(isset($_REQUEST['custdata'])){
-	echo "Loading custdata";
-	$db->query("TRUNCATE TABLE custdata");
-	InstallUtilities::loadSampleData($db,'custdata');
+    echo "Loading custdata";
+    $db->query("TRUNCATE TABLE custdata");
+    InstallUtilities::loadSampleData($db,'custdata');
 }
 elseif(isset($_REQUEST['products'])){
-	echo "Loading products";
-	$db->query("TRUNCATE TABLE products");
-	InstallUtilities::loadSampleData($db,'products');
+    echo "Loading products";
+    $db->query("TRUNCATE TABLE products");
+    InstallUtilities::loadSampleData($db,'products');
 }
 elseif(isset($_REQUEST['depts'])){
-	echo "Loading departments";
-	$db->query("TRUNCATE TABLE departments");
-	InstallUtilities::loadSampleData($db,'departments');
-	echo "<br />Loading super departments";
-	$db->query("TRUNCATE TABLE MasterSuperDepts");
-	InstallUtilities::loadSampleData($db,'MasterSuperDepts');
+    echo "Loading departments";
+    $db->query("TRUNCATE TABLE departments");
+    InstallUtilities::loadSampleData($db,'departments');
+    echo "<br />Loading super departments";
+    $db->query("TRUNCATE TABLE MasterSuperDepts");
+    InstallUtilities::loadSampleData($db,'MasterSuperDepts');
 } elseif(isset($_REQUEST['quicklookups'])){
-	echo "Loading QuickLookups";
-	$db->query("TRUNCATE TABLE QuickLookups");
-	InstallUtilities::loadSampleData($db,'QuickLookups');
+    echo "Loading QuickLookups";
+    $db->query("TRUNCATE TABLE QuickLookups");
+    InstallUtilities::loadSampleData($db,'QuickLookups');
 }
 ?>
 </b></div>
@@ -89,6 +89,6 @@ accept tender, provide change).</p>
 <input type=submit name=quicklookups value="Load sample menus" />
 <?php } ?>
 </form>
-</div> <!--	wrapper -->
+</div> <!--    wrapper -->
 </body>
 </html>

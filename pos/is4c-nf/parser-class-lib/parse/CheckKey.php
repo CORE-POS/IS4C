@@ -22,54 +22,54 @@
 *********************************************************************************/
 
 class CheckKey extends Parser {
-	function check($str){
-		if (strstr($str,"CQ") && strlen($str) > 3 &&
-		    substr($str,0,2) != "VD")
-			return True;
-		return False;
-	}
+    function check($str){
+        if (strstr($str,"CQ") && strlen($str) > 3 &&
+            substr($str,0,2) != "VD")
+            return True;
+        return False;
+    }
 
-	function parse($str)
+    function parse($str)
     {
-		$my_url = MiscLib::base_url();
+        $my_url = MiscLib::base_url();
 
-		$split = explode("CQ",$str);
-		$tender = $split[1];
-		$amt = $split[0];
-		$ret = $this->default_json();
+        $split = explode("CQ",$str);
+        $tender = $split[1];
+        $amt = $split[0];
+        $ret = $this->default_json();
 
-		/**
-		  This "if" is the new addition to trigger the
-		  department select screen
-		*/
-		if (empty($split[1])){
-			// no department specified, just amount followed by DP
-			
-			// save entered amount
-			CoreLocal::set("tenderTotal",$amt);
+        /**
+          This "if" is the new addition to trigger the
+          department select screen
+        */
+        if (empty($split[1])){
+            // no department specified, just amount followed by DP
+            
+            // save entered amount
+            CoreLocal::set("tenderTotal",$amt);
 
-			// go to the department select screen
-			$ret['main_frame'] = $my_url.'gui-modules/checklist.php';
-		}
+            // go to the department select screen
+            $ret['main_frame'] = $my_url.'gui-modules/checklist.php';
+        }
 
-		if (!$ret['main_frame'])
-			$ret = PrehLib::tender($split[1],$split[0]);
-		return $ret;
-	}
+        if (!$ret['main_frame'])
+            $ret = PrehLib::tender($split[1],$split[0]);
+        return $ret;
+    }
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td><i>amount</i>DP<i>department</i>0</td>
-				<td>Ring up <i>amount</i> to the specified
-				<i>department</i>. The trailing zero is
-				necessary for historical purposes</td>
-			</tr>
-			</table>";
-	}
+    function doc(){
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td><i>amount</i>DP<i>department</i>0</td>
+                <td>Ring up <i>amount</i> to the specified
+                <i>department</i>. The trailing zero is
+                necessary for historical purposes</td>
+            </tr>
+            </table>";
+    }
 }
 
 ?>

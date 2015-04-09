@@ -26,7 +26,7 @@
 */
 class DoubleSubtotalReceiptSort extends DefaultReceiptSort 
 {
-	public function sort($rowset)
+    public function sort($rowset)
     {
         $rowset = parent::sort($rowset);
         $newset = array();

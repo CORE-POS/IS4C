@@ -37,7 +37,7 @@ class EfsnetTokensModel extends BasicModel
     'token' => array('type'=>'VARCHAR(100)', 'primary_key'=>true),
     'processData' => array('type'=>'VARCHAR(255)'),
     'acqRefData' => array('type'=>'VARCHAR(255)'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

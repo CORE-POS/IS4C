@@ -1630,15 +1630,15 @@ class SQLManager
         return '0';
     }
 
-	/**
-	  Add row limit to a select query
-	  @param $query The select query
-	  @param $int_limit Max rows
-	  @param which_connection see method close
+    /**
+      Add row limit to a select query
+      @param $query The select query
+      @param $int_limit Max rows
+      @param which_connection see method close
 
-	  This method currently only suport MySQL and MSSQL
-	*/
-	public function addSelectLimit($query,$int_limit,$which_connection='')
+      This method currently only suport MySQL and MSSQL
+    */
+    public function addSelectLimit($query,$int_limit,$which_connection='')
     {
         if ($which_connection == '') {
             $which_connection = $this->default_db;
@@ -1650,7 +1650,7 @@ class SQLManager
             case $this->TYPE_MSSQL:
             case $this->TYPE_PDOMS:
                 return str_ireplace("SELECT ","SELECT TOP $int_limit ",$query);
-		}
+        }
 
         return $query;
     }
@@ -1684,23 +1684,23 @@ class SQLManager
         }
     }
 
-	/**
-	   Log a string to the query log.
-	   @param $str The string
-	   @return A True on success, False on failure 
-	*/  
-	public function logger($str)
+    /**
+       Log a string to the query log.
+       @param $str The string
+       @return A True on success, False on failure 
+    */  
+    public function logger($str)
     {
-		$ql = DEBUG_MYSQL_QUERIES;
-		if (is_writable($ql)) {
-			$fp = fopen($ql,'a');
-			fputs($fp,$_SERVER['PHP_SELF'].": ".date('r').': '.$str."\n");
-			fclose($fp);
-			return true;
-		} else {
-			return false;
-		}
-	}
+        $ql = DEBUG_MYSQL_QUERIES;
+        if (is_writable($ql)) {
+            $fp = fopen($ql,'a');
+            fputs($fp,$_SERVER['PHP_SELF'].": ".date('r').': '.$str."\n");
+            fclose($fp);
+            return true;
+        } else {
+            return false;
+        }
+    }
 
 }
 

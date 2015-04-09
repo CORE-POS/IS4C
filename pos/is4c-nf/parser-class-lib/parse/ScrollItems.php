@@ -22,93 +22,93 @@
 *********************************************************************************/
 
 class ScrollItems extends Parser {
-	function check($str){
-		if ($str == "U" || $str == "D")
-			return True;
-		elseif(($str[0] == "U" || $str[0] == "D")
-			&& is_numeric(substr($str,1)))
-			return True;
-		return False;
-	}
+    function check($str){
+        if ($str == "U" || $str == "D")
+            return True;
+        elseif(($str[0] == "U" || $str[0] == "D")
+            && is_numeric(substr($str,1)))
+            return True;
+        return False;
+    }
 
-	function parse($str)
+    function parse($str)
     {
         $lines = CoreLocal::get('screenLines');
         if (!$lines === '' || !is_numeric($lines)) {
             $lines = 11;
         }
 
-		$ret = $this->default_json();
-		if ($str == "U")
-			$ret["output"] = DisplayLib::listItems(CoreLocal::get("currenttopid"), $this->next_valid(CoreLocal::get("currentid"),True));
-		elseif ($str == "D")
-			$ret["output"] = DisplayLib::listItems(CoreLocal::get("currenttopid"), $this->next_valid(CoreLocal::get("currentid"),False));
-		else {
-			$change = (int)substr($str,1);
-			$curID = CoreLocal::get("currenttopid");
-			$newID = CoreLocal::get("currentid");
-			if ($str[0] == "U")
-				$newID -= $change;
-			else
-				$newID += $change;
-			if ($newID == $curID || $newID == $curID+$lines)
-				$curID = $newID-5;
-			if ($curID < 1) $curID = 1;
-			$ret["output"] = DisplayLib::listItems($curID, $newID);
-		}
-		return $ret;
-	}
+        $ret = $this->default_json();
+        if ($str == "U")
+            $ret["output"] = DisplayLib::listItems(CoreLocal::get("currenttopid"), $this->next_valid(CoreLocal::get("currentid"),True));
+        elseif ($str == "D")
+            $ret["output"] = DisplayLib::listItems(CoreLocal::get("currenttopid"), $this->next_valid(CoreLocal::get("currentid"),False));
+        else {
+            $change = (int)substr($str,1);
+            $curID = CoreLocal::get("currenttopid");
+            $newID = CoreLocal::get("currentid");
+            if ($str[0] == "U")
+                $newID -= $change;
+            else
+                $newID += $change;
+            if ($newID == $curID || $newID == $curID+$lines)
+                $curID = $newID-5;
+            if ($curID < 1) $curID = 1;
+            $ret["output"] = DisplayLib::listItems($curID, $newID);
+        }
+        return $ret;
+    }
 
-	/**
-	  New function: log rows don't appear in screendisplay
-	  so scrolling by simplying incrementing trans_id
-	  can land on a "blank" line. It still works if you
-	  keep scrolling but the cursor disappears from the screen.
-	  This function finds the next visible line instead.
-	 
-	  @param $id the current id
-	  @param $up bool
-	    [True] => scroll towards top of screen
-	    [False] => scroll towards bottom of screen
-	*/
-	function next_valid($id,$up=True){
-		$db = Database::tDataConnect();
-		$next = $id;
-		while(True){
-			$prev = $next;
-			$next = ($up) ? $next-1 : $next+1;
-			if ($next <= 0) return $prev;
+    /**
+      New function: log rows don't appear in screendisplay
+      so scrolling by simplying incrementing trans_id
+      can land on a "blank" line. It still works if you
+      keep scrolling but the cursor disappears from the screen.
+      This function finds the next visible line instead.
+     
+      @param $id the current id
+      @param $up bool
+        [True] => scroll towards top of screen
+        [False] => scroll towards bottom of screen
+    */
+    function next_valid($id,$up=True){
+        $db = Database::tDataConnect();
+        $next = $id;
+        while(True){
+            $prev = $next;
+            $next = ($up) ? $next-1 : $next+1;
+            if ($next <= 0) return $prev;
 
-			$r = $db->query("SELECT MAX(trans_id) as max,
-					SUM(CASE WHEN trans_id=$next THEN 1 ELSE 0 END) as present
-					FROM screendisplay");
-			if ($db->num_rows($r) == 0) return 1;
-			$w = $db->fetch_row($r);
-			if ($w['max']=='') return 1;
-			if ($w['present'] > 0) return $next;
-			if ($w['max'] <= $next) return $w['max'];
+            $r = $db->query("SELECT MAX(trans_id) as max,
+                    SUM(CASE WHEN trans_id=$next THEN 1 ELSE 0 END) as present
+                    FROM screendisplay");
+            if ($db->num_rows($r) == 0) return 1;
+            $w = $db->fetch_row($r);
+            if ($w['max']=='') return 1;
+            if ($w['present'] > 0) return $next;
+            if ($w['max'] <= $next) return $w['max'];
 
-			// failsafe; shouldn't happen
-			if ($next > 1000) break;
-		}
-		return $id;
-	}
+            // failsafe; shouldn't happen
+            if ($next > 1000) break;
+        }
+        return $id;
+    }
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td>U</td>
-				<td>Scroll up</td>
-			</tr>
-			<tr>
-				<td>D</td>
-				<td>Scroll down</td>
-			</tr>
-			</table>";
-	}
+    function doc(){
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td>U</td>
+                <td>Scroll up</td>
+            </tr>
+            <tr>
+                <td>D</td>
+                <td>Scroll down</td>
+            </tr>
+            </table>";
+    }
 }
 
 ?>

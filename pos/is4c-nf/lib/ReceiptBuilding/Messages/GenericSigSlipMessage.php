@@ -29,16 +29,16 @@
 */
 class GenericSigSlipMessage extends ReceiptMessage
 {
-	public $paper_only = true;
+    public $paper_only = true;
 
-	public function select_condition()
+    public function select_condition()
     {
-		return "SUM(CASE WHEN trans_type='T' AND trans_subtype='ST' THEN total ELSE 0 END)";
-	}
+        return "SUM(CASE WHEN trans_type='T' AND trans_subtype='ST' THEN total ELSE 0 END)";
+    }
 
-	public function message($val, $ref, $reprint=false)
+    public function message($val, $ref, $reprint=false)
     {
-		if ($val == 0) return '';
+        if ($val == 0) return '';
         
         $slip = '';
         // reprints always include. if the original transaction
@@ -60,8 +60,8 @@ class GenericSigSlipMessage extends ReceiptMessage
             $slip .= ReceiptLib::centerString("................................................")."\n";
         }
 
-		return $slip;
-	}
+        return $slip;
+    }
 
 }
 

@@ -22,51 +22,51 @@
 *********************************************************************************/
 
 class ScaleInput extends Parser {
-	function check($str){
-		if (substr($str,0,3) == "S11" ||
-		    substr($str,0,4) == "S143")
-			return True;
-		return False;
-	}
+    function check($str){
+        if (substr($str,0,3) == "S11" ||
+            substr($str,0,4) == "S143")
+            return True;
+        return False;
+    }
 
-	function parse($str)
+    function parse($str)
     {
-		if (substr($str,0,3) == "S11"){
-			$weight = substr($str,3);
-			if (is_numeric($weight) || $weight < 9999){
-				CoreLocal::set("scale",1);
-				CoreLocal::set("weight",$weight / 100);
-			}
-		}
-		else
-			CoreLocal::set("scale",0);
+        if (substr($str,0,3) == "S11"){
+            $weight = substr($str,3);
+            if (is_numeric($weight) || $weight < 9999){
+                CoreLocal::set("scale",1);
+                CoreLocal::set("weight",$weight / 100);
+            }
+        }
+        else
+            CoreLocal::set("scale",0);
 
-		$ret = $this->default_json();
-		$ret['scale'] = $str;
-		return $ret;
-	}
+        $ret = $this->default_json();
+        $ret['scale'] = $str;
+        return $ret;
+    }
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td>S11</td>
-				<td>Catch scale's input</td>
-			</tr>
-			<tr>
-				<td>S143</td>
-				<td>Catch scale's input</td>
-			</tr>
-			<tr>
-				<td colspan=2>These are so the scanner-scale
-				can talk to IT CORE. Users wouldn't use these
-				key strokes</td>
-			</tr>
-			</table>";
+    function doc(){
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td>S11</td>
+                <td>Catch scale's input</td>
+            </tr>
+            <tr>
+                <td>S143</td>
+                <td>Catch scale's input</td>
+            </tr>
+            <tr>
+                <td colspan=2>These are so the scanner-scale
+                can talk to IT CORE. Users wouldn't use these
+                key strokes</td>
+            </tr>
+            </table>";
 
-	}
+    }
 
 }
 

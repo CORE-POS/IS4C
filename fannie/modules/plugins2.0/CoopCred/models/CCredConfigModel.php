@@ -28,10 +28,10 @@
 class CCredConfigModel extends BasicModel
 {
 
-	// The actual name of the table.
-	protected $name = 'CCredConfig';
+    // The actual name of the table.
+    protected $name = 'CCredConfig';
 
-	protected $columns = array(
+    protected $columns = array(
         'configID' => array('type'=>'SMALLINT(6)', 'default'=>1, 'primary_key'=>True,
             'increment'=>False),
         /* Tender refers to tenders.TenderCode but value shouldn't exist.
@@ -71,7 +71,7 @@ class CCredConfigModel extends BasicModel
         'modified' => array('type'=>'DATETIME', 'not_null'=>True,
             'default'=>"'0000-00-00 00:00:00'"),
         'modifiedBy' => array('type'=>'INT(11)', 'not_null'=>True, 'default'=>0)
-	);
+    );
 
     public function name()
     {
@@ -96,7 +96,7 @@ class CCredConfigModel extends BasicModel
         return $desc;
     }
 
-	/* START ACCESSOR FUNCTIONS */
+    /* START ACCESSOR FUNCTIONS */
 
     public function configID()
     {
@@ -541,7 +541,7 @@ class CCredConfigModel extends BasicModel
         }
         return $this;
     }
-	/* END ACCESSOR FUNCTIONS */
+    /* END ACCESSOR FUNCTIONS */
 
 // class CCredConfig
 }?>

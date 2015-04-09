@@ -35,7 +35,7 @@ class CustPreferencesModel extends BasicModel
     'card_no' => array('type' => 'INT', 'primary_key'=>true),
     'pref_key' => array('type' => 'VARCHAR(50)', 'primary_key'=>true),
     'pref_value' => array('type'=>'VARCHAR(100)'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

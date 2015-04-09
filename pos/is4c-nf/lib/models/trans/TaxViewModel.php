@@ -38,7 +38,7 @@ class TaxViewModel extends ViewModel
     'fsTaxTotal' => array('type'=>'MONEY'),
     'foodstampTender' => array('type'=>'MONEY'),
     'taxrate' => array('type'=>'FLOAT'),
-	);
+    );
 
     public function definition()
     {

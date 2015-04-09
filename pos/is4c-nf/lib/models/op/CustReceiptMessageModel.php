@@ -34,7 +34,7 @@ class CustReceiptMessageModel extends BasicModel
     'card_no' => array('type' => 'INT', 'index'=>true),
     'msg_text' => array('type'=>'VARCHAR(255)'),
     'modifier_module' => array('type'=>'VARCHAR(50)'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

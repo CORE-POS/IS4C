@@ -23,15 +23,15 @@
 
 class NeedDiscountModule extends DiscountModule 
 {
-	public function calculate($discountable_total=0)
+    public function calculate($discountable_total=0)
     {
-		$discount = parent::calculate();
-		if (CoreLocal::get('NeedDiscountFlag')===1){
-			$extra = 0.05 * CoreLocal::get('discountableTotal');
-			$discount = MiscLib::truncate2($discount + $extra);
-		}
+        $discount = parent::calculate();
+        if (CoreLocal::get('NeedDiscountFlag')===1){
+            $extra = 0.05 * CoreLocal::get('discountableTotal');
+            $discount = MiscLib::truncate2($discount + $extra);
+        }
 
-		return $discount;
-	}
+        return $discount;
+    }
 }
 

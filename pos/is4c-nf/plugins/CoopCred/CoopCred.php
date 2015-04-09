@@ -27,35 +27,35 @@
 class CoopCred extends Plugin
 {
 
-	/**
-	  Desired settings. These are automatically exposed
-	  on the 'Plugins' area of the install page and,
-	  upon enablement of the plugin, written to ini.php
-		and from then on maintained there.
-	*/
-	public $plugin_settings = array(
-		'CoopCredLaneDatabase' => array(
-			'label'=>'LaneDatabase',
-			'default'=>'coop_cred_lane',
-			'description'=>'Database on lanes to store tables of plugin-specific
-					Coop Cred related info.
+    /**
+      Desired settings. These are automatically exposed
+      on the 'Plugins' area of the install page and,
+      upon enablement of the plugin, written to ini.php
+        and from then on maintained there.
+    */
+    public $plugin_settings = array(
+        'CoopCredLaneDatabase' => array(
+            'label'=>'LaneDatabase',
+            'default'=>'coop_cred_lane',
+            'description'=>'Database on lanes to store tables of plugin-specific
+                    Coop Cred related info.
                     <br />Can be one of the default CORE databases or a separate one.
                     <br />The name of a new database should be all lower-case.
                     <br />The name must not be the same as the Coop Cred Server Database.'
-		)
-	);
+        )
+    );
 
-	public $plugin_description =
-		'Plugin for charging purchases to Coop Cred,
-		a system of debit accounts for members
-		for purchases at the Co-op.';
+    public $plugin_description =
+        'Plugin for charging purchases to Coop Cred,
+        a system of debit accounts for members
+        for purchases at the Co-op.';
 
     /* 22Jul14 On lane this isn't supported yet
      *          and this code isn't runnable lane-side.
      */
-	public function settingChange()
-	{
-		global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
+    public function settingChange()
+    {
+        global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
 
         $news = array();
 
@@ -63,7 +63,7 @@ class CoopCred extends Plugin
         if (empty($FANNIE_PLUGIN_SETTINGS['CoopCredDatabase'])) {
             return;
         }
-		$db_name = $FANNIE_PLUGIN_SETTINGS['CoopCredDatabase'];
+        $db_name = $FANNIE_PLUGIN_SETTINGS['CoopCredDatabase'];
 
         /* Check for problems in settings
          * Needs to be a way to report this back.
@@ -82,42 +82,42 @@ class CoopCred extends Plugin
             return;
         }
 
-		// Creates the database if it doesn't already exist.
-		$dbc = FannieDB::get($db_name);
-		
+        // Creates the database if it doesn't already exist.
+        $dbc = FannieDB::get($db_name);
+        
         /* Will be created from models/~ if they don't exist
          *  but will not be touched if they do,
          *   neither re-created or modified.
          */
-		$tables = array(
-			'CCredMemberships',
+        $tables = array(
+            'CCredMemberships',
             'CCredPrograms'
-		);
+        );
 
-		foreach($tables as $t){
-			$model_class = $t.'Model';
-			if (!class_exists($model_class))
-				include_once(dirname(__FILE__).'/models/'.$model_class.'.php');
-			$instance = new $model_class($dbc);
-			$try = $instance->create();		
-			if ($try) {
-				$msg="Created table specified in {$model_class}";
-				$dbc->logger("$msg");
-			} else {
-				$msg="Failed to create table specified in {$model_class}";
-				$dbc->logger("$msg");
-			}
-			/* Generate the accessor function code for each column.
-			*/
-			$try = $instance->generate(dirname(__FILE__).'/models/'.$model_class.'.php');
-			if ($try) {
-				$dbc->logger("[Re-]Generated $model_class accessor functions.");
-			} else {
-				$dbc->logger("Failed to [re-]generate $model_class accessor functions.");
-			}
-		}
-	// settingChange()
-	}
+        foreach($tables as $t){
+            $model_class = $t.'Model';
+            if (!class_exists($model_class))
+                include_once(dirname(__FILE__).'/models/'.$model_class.'.php');
+            $instance = new $model_class($dbc);
+            $try = $instance->create();        
+            if ($try) {
+                $msg="Created table specified in {$model_class}";
+                $dbc->logger("$msg");
+            } else {
+                $msg="Failed to create table specified in {$model_class}";
+                $dbc->logger("$msg");
+            }
+            /* Generate the accessor function code for each column.
+            */
+            $try = $instance->generate(dirname(__FILE__).'/models/'.$model_class.'.php');
+            if ($try) {
+                $dbc->logger("[Re-]Generated $model_class accessor functions.");
+            } else {
+                $dbc->logger("Failed to [re-]generate $model_class accessor functions.");
+            }
+        }
+    // settingChange()
+    }
 
     public function plugin_transaction_reset(){
         global $CORE_LOCAL;

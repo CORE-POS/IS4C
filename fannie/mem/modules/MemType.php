@@ -70,7 +70,7 @@ class MemType extends \COREPOS\Fannie\API\member\MemberModule {
         $ret .= '<span class="label primaryBackground">Type</span> ';
         $ret .= '<select name="MemType_type" class="form-control">';
         $disc = 0;
-		$mDesc = '';
+        $mDesc = '';
         while($infoW = $dbc->fetch_row($infoR)){
             $ret .= sprintf("<option value=%d %s>%s</option>",
                 $infoW['memType'],

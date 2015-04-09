@@ -36,7 +36,7 @@ class ParametersModel extends BasicModel
     'param_key' => array('type'=>'VARCHAR(100)', 'primary_key'=>true),
     'param_value' => array('type'=>'VARCHAR(255)'),
     'is_array' => array('type'=>'TINYINT'),
-	);
+    );
 
     /**
       Get the parameter's effective value by
@@ -76,11 +76,11 @@ class ParametersModel extends BasicModel
 Table: parameters
 
 Columns:
-	store_id int
-	lane_id int
-	param_key varchar
-	param_value varchar
-	is_array int
+    store_id int
+    lane_id int
+    param_key varchar
+    param_value varchar
+    is_array int
 
 Depends on:
     none

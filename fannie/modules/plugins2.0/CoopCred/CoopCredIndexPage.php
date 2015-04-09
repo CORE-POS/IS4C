@@ -30,13 +30,13 @@ if (!class_exists('FannieAPI')) {
 class CoopCredIndexPage extends FanniePage
 {
 
-	protected $header = 'Coop Cred - Admin';
-	protected $title = 'Coop Cred - Admin';
-	protected $auth_classes = array('admin');
+    protected $header = 'Coop Cred - Admin';
+    protected $title = 'Coop Cred - Admin';
+    protected $auth_classes = array('admin');
     public $themed = true;
 
-	function body_content()
-	{
+    function body_content()
+    {
         global $FANNIE_URL;
 
         /* $hb (helpbit) is an array keyed on the id= of the input being described.
@@ -202,9 +202,9 @@ class CoopCredIndexPage extends FanniePage
                 "</fieldset>";
         }
 
-		ob_start();
-		?>
-		<ul>
+        ob_start();
+        ?>
+        <ul>
         <li>Setup
             <ul>
                 <li><a href="CoopCredSetup.php"
@@ -253,8 +253,8 @@ class CoopCredIndexPage extends FanniePage
                         <?php echo $hb['dtool']['a']; ?>
                 </li>
             </ul>
-		</ul>
-		<?php
+        </ul>
+        <?php
 
         /* Place for long help messages.
          * Each in its own fieldset or possibly other container.
@@ -266,8 +266,8 @@ class CoopCredIndexPage extends FanniePage
             }
         }
 
-		return ob_get_clean();
-	}
+        return ob_get_clean();
+    }
 
 // class CoopCredIndexPage
 }

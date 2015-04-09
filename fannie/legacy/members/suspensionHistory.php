@@ -14,22 +14,22 @@ $memID = $memNum;
 <head>
 </head>
 <body 
-	bgcolor="#66CC99" 
-	leftmargin="0" topmargin="0" 
-	marginwidth="0" marginheight="0" 
-	onload="MM_preloadImages(
-		'../images/memOver.gif',
-		'../images/memUp.gif',
-		'../images/repUp.gif',
-		'../images/itemsDown.gif',
-		'../images/itemsOver.gif',
-		'../images/itemsUp.gif',
-		'../images/refUp.gif',
-		'../images/refDown.gif',
-		'../images/refOver.gif',
-		'../images/repDown.gif',
-		'../images/repOver.gif'
-	)"
+    bgcolor="#66CC99" 
+    leftmargin="0" topmargin="0" 
+    marginwidth="0" marginheight="0" 
+    onload="MM_preloadImages(
+        '../images/memOver.gif',
+        '../images/memUp.gif',
+        '../images/repUp.gif',
+        '../images/itemsDown.gif',
+        '../images/itemsOver.gif',
+        '../images/itemsUp.gif',
+        '../images/refUp.gif',
+        '../images/refDown.gif',
+        '../images/refOver.gif',
+        '../images/repDown.gif',
+        '../images/repOver.gif'
+    )"
 >
 
 <table width="660" height="111" border="0" cellpadding="0" cellspacing="0" bgcolor="#66cc99">
@@ -53,22 +53,22 @@ $codesQ = "SELECT textStr,mask FROM reasoncodes";
 $codesR = $sql->query($codesQ);
 $codes = array();
 while($codesW=$sql->fetch_row($codesR))
-	$codes["$codesW[0]"] = (int)$codesW[1];
+    $codes["$codesW[0]"] = (int)$codesW[1];
 
 $q = $sql->prepare("select username,post,postdate,reasoncode from suspension_history where cardno=? order by postdate desc");
 $r = $sql->execute($q, array($memNum));
 while($w = $sql->fetch_array($r)){
-	echo "<b>$w[2] - status changed by $w[0]</b><br />";
-	$reasonCode = (int)$w[3];
-	if ($reasonCode == -1)
-		echo "$w[1]<br /><hr />";
-	else {
-		foreach($codes as $key=>$value){
-			if ($reasonCode & $value)
-				echo $key."<br />";
-		}
-		echo "<hr />";
-	}
+    echo "<b>$w[2] - status changed by $w[0]</b><br />";
+    $reasonCode = (int)$w[3];
+    if ($reasonCode == -1)
+        echo "$w[1]<br /><hr />";
+    else {
+        foreach($codes as $key=>$value){
+            if ($reasonCode & $value)
+                echo $key."<br />";
+        }
+        echo "<hr />";
+    }
 }
 
 ?>

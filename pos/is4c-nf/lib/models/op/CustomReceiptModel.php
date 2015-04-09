@@ -34,7 +34,7 @@ class CustomReceiptModel extends BasicModel
     'text' => array('type'=>'VARCHAR(80)'),
     'seq' => array('type'=>'INT', 'primary_key'=>true),
     'type' => array('type'=>'VARCHAR(20)', 'primary_key'=>true),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

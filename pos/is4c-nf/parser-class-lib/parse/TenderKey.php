@@ -24,47 +24,47 @@
 class TenderKey extends Parser 
 {
 
-	function check($str)
+    function check($str)
     {
         if (substr($str, -2) == "TT" && strlen($str) >=3 && is_numeric(substr($str, 0, strlen($str)-2))) {
-			return true;
-		} else if ($str == "TT") {
-			return true;
+            return true;
+        } else if ($str == "TT") {
+            return true;
         }
 
-		return false;
-	}
+        return false;
+    }
 
-	function parse($str)
+    function parse($str)
     {
-		$my_url = MiscLib::base_url();
+        $my_url = MiscLib::base_url();
 
-		$amt = substr($str,0,strlen($str)-2);
-		if ($amt === "") {
-			$amt = 100*CoreLocal::get("amtdue");
+        $amt = substr($str,0,strlen($str)-2);
+        if ($amt === "") {
+            $amt = 100*CoreLocal::get("amtdue");
         }
-		$ret = $this->default_json();
+        $ret = $this->default_json();
 
-		CoreLocal::set("tenderTotal",$amt);
-		$ret['main_frame'] = $my_url.'gui-modules/tenderlist.php';
+        CoreLocal::set("tenderTotal",$amt);
+        $ret['main_frame'] = $my_url.'gui-modules/tenderlist.php';
 
-		return $ret;
-	}
+        return $ret;
+    }
 
-	function doc()
+    function doc()
     {
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td><i>amount</i>DP<i>department</i>0</td>
-				<td>Ring up <i>amount</i> to the specified
-				<i>department</i>. The trailing zero is
-				necessary for historical purposes</td>
-			</tr>
-			</table>";
-	}
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td><i>amount</i>DP<i>department</i>0</td>
+                <td>Ring up <i>amount</i> to the specified
+                <i>department</i>. The trailing zero is
+                necessary for historical purposes</td>
+            </tr>
+            </table>";
+    }
 }
 
 ?>

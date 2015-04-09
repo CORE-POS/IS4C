@@ -26,48 +26,48 @@
 */
 class CCReceiptMessage extends ReceiptMessage {
 
-	public function select_condition(){
-		return "SUM(CASE WHEN trans_subtype IN ('CC','AX','DC') THEN 1 ELSE 0 END)";
-	}
+    public function select_condition(){
+        return "SUM(CASE WHEN trans_subtype IN ('CC','AX','DC') THEN 1 ELSE 0 END)";
+    }
 
-	/**
-	  Generate the message
-	  @param $val the value returned by the object's select_condition()
-	  @param $ref a transaction reference (emp-lane-trans)
-	  @param $reprint boolean
-	  @return [string] message to print on receipt
-	*/
-	public function message($val, $ref, $reprint=False){
-		if ($val == 0) return '';
-		else return $this->variable_slip($ref, $reprint, False);
-	}
+    /**
+      Generate the message
+      @param $val the value returned by the object's select_condition()
+      @param $ref a transaction reference (emp-lane-trans)
+      @param $reprint boolean
+      @return [string] message to print on receipt
+    */
+    public function message($val, $ref, $reprint=False){
+        if ($val == 0) return '';
+        else return $this->variable_slip($ref, $reprint, False);
+    }
 
-	/**
-	  The same data can be rendered two different ways. One's a
-	  signature slip, the other is just a list of date, amount,
-	  approval code, etc
-	*/
-	protected function variable_slip($ref, $reprint=False, $sigSlip=False)
+    /**
+      The same data can be rendered two different ways. One's a
+      signature slip, the other is just a list of date, amount,
+      approval code, etc
+    */
+    protected function variable_slip($ref, $reprint=False, $sigSlip=False)
     {
-		$date = ReceiptLib::build_time(time());
-		list($emp,$reg,$trans) = explode('-', $ref);
-		$sort = 'asc';
+        $date = ReceiptLib::build_time(time());
+        list($emp,$reg,$trans) = explode('-', $ref);
+        $sort = 'asc';
 
-		$slip = '';
-		$idclause = '';
-		$db = Database::tDataConnect();
-		if ($reprint)
-			$db = Database::mDataConnect();
-		if ($sigSlip && is_numeric(CoreLocal::get('paycard_id'))) {
-			$idclause = ' AND transID='.CoreLocal::get('paycard_id');
-		}
+        $slip = '';
+        $idclause = '';
+        $db = Database::tDataConnect();
+        if ($reprint)
+            $db = Database::mDataConnect();
+        if ($sigSlip && is_numeric(CoreLocal::get('paycard_id'))) {
+            $idclause = ' AND transID='.CoreLocal::get('paycard_id');
+        }
 
-		// query database for cc receipt info 
-		$query = "select  tranType, amount, PAN, entryMethod, issuer, xResultMessage, xApprovalNumber, xTransactionID, name, "
-			." datetime from ccReceiptView where date=".date('Ymd',time())
-			." and cashierNo = ".$emp." and laneNo = ".$reg
-			." and transNo = ".$trans ." ".$idclause
-			." order by datetime $sort, transID DESC";
+        // query database for cc receipt info 
+        $query = "select  tranType, amount, PAN, entryMethod, issuer, xResultMessage, xApprovalNumber, xTransactionID, name, "
+            ." datetime from ccReceiptView where date=".date('Ymd',time())
+            ." and cashierNo = ".$emp." and laneNo = ".$reg
+            ." and transNo = ".$trans ." ".$idclause
+            ." order by datetime $sort, transID DESC";
 
         if ($db->table_exists('PaycardTransactions')) {
             $trans_type = $db->concat('p.cardType', "' '", 'p.transType', '');
@@ -93,85 +93,85 @@ class CCReceiptMessage extends ReceiptMessage {
                       ORDER BY p.requestDatetime";
         }
 
-		$result = $db->query($query);
-		
-		while($row = $db->fetch_array($result)){
-			$trantype = $row['tranType'];  
-			if ($row['amount'] < 0) {
-				$amt = "-$".number_format(-1*$row['amount'],2);
-			} else {
-				$amt = "$".number_format($row['amount'],2);
-			}
-			$pan = $row['PAN']; // already masked in the database
-			$entryMethod = $row['entryMethod'];
-			$cardBrand = $row['issuer'];
-			$approvalPhrase = $row['xResultMessage'];
-			$authCode = "#".$row['xApprovalNumber'];
-			$sequenceNum = $row['xTransactionID'];  
-			$name = $row["name"];
+        $result = $db->query($query);
+        
+        while($row = $db->fetch_array($result)){
+            $trantype = $row['tranType'];  
+            if ($row['amount'] < 0) {
+                $amt = "-$".number_format(-1*$row['amount'],2);
+            } else {
+                $amt = "$".number_format($row['amount'],2);
+            }
+            $pan = $row['PAN']; // already masked in the database
+            $entryMethod = $row['entryMethod'];
+            $cardBrand = $row['issuer'];
+            $approvalPhrase = $row['xResultMessage'];
+            $authCode = "#".$row['xApprovalNumber'];
+            $sequenceNum = $row['xTransactionID'];  
+            $name = $row["name"];
 
-			$slip .= ReceiptLib::centerString("................................................")."\n";
-			if ($sigSlip){
+            $slip .= ReceiptLib::centerString("................................................")."\n";
+            if ($sigSlip){
                 for ($i=1; $i<= CoreLocal::get('chargeSlipCount'); $i++) {
                     $slip .= ReceiptLib::centerString(CoreLocal::get("chargeSlip" . $i))."\n";
                 }
-				$slip .= $trantype."\n"			// trans type:  purchase, canceled purchase, refund or canceled refund
-					."Card: ".$cardBrand."  ".$pan."\n"
-					."Reference:  ".$ref."\n"
-					."Date & Time:  ".$date."\n"
-					."Entry Method:  ".$entryMethod."\n"  		// swiped or manual entry
-					."Sequence Number:  ".$sequenceNum."\n"	// their sequence #		
-					//."Authorization:  ".$approvalPhrase." ".$authCode."\n"		// result + auth number
-					."Authorization:  ".$approvalPhrase."\n"		// result + auth number
-					.ReceiptLib::boldFont()  // change to bold font for the total
-					."Amount: ".$amt."\n"		
-					.ReceiptLib::normalFont();
-				$slip .= ReceiptLib::centerString("I agree to pay above total amount")."\n"
-					.ReceiptLib::centerString("according to card issuer agreement.")."\n\n"
-				
-					.ReceiptLib::centerString("X____________________________________________")."\n"
-					.ReceiptLib::centerString($name)."\n";
-			}
-			else {
-				// use columns instead
-				$c1 = array();
-				$c2 = array();
-				$c1[] = $trantype;
-				$c1[] = "Entry Method:  ".$entryMethod;
-				$c1[] = "Sequence Number:  ".$sequenceNum;
-				$c2[] = $cardBrand."  ".$pan;
-				$c2[] = "Authorization:  ".$approvalPhrase;
-				$c2[] = ReceiptLib::boldFont()."Amount: ".$amt.ReceiptLib::normalFont();
-				$slip .= ReceiptLib::twoColumns($c1,$c2);
-			}
-			$slip .= ReceiptLib::centerString(".................................................")."\n";
+                $slip .= $trantype."\n"            // trans type:  purchase, canceled purchase, refund or canceled refund
+                    ."Card: ".$cardBrand."  ".$pan."\n"
+                    ."Reference:  ".$ref."\n"
+                    ."Date & Time:  ".$date."\n"
+                    ."Entry Method:  ".$entryMethod."\n"          // swiped or manual entry
+                    ."Sequence Number:  ".$sequenceNum."\n"    // their sequence #        
+                    //."Authorization:  ".$approvalPhrase." ".$authCode."\n"        // result + auth number
+                    ."Authorization:  ".$approvalPhrase."\n"        // result + auth number
+                    .ReceiptLib::boldFont()  // change to bold font for the total
+                    ."Amount: ".$amt."\n"        
+                    .ReceiptLib::normalFont();
+                $slip .= ReceiptLib::centerString("I agree to pay above total amount")."\n"
+                    .ReceiptLib::centerString("according to card issuer agreement.")."\n\n"
+                
+                    .ReceiptLib::centerString("X____________________________________________")."\n"
+                    .ReceiptLib::centerString($name)."\n";
+            }
+            else {
+                // use columns instead
+                $c1 = array();
+                $c2 = array();
+                $c1[] = $trantype;
+                $c1[] = "Entry Method:  ".$entryMethod;
+                $c1[] = "Sequence Number:  ".$sequenceNum;
+                $c2[] = $cardBrand."  ".$pan;
+                $c2[] = "Authorization:  ".$approvalPhrase;
+                $c2[] = ReceiptLib::boldFont()."Amount: ".$amt.ReceiptLib::normalFont();
+                $slip .= ReceiptLib::twoColumns($c1,$c2);
+            }
+            $slip .= ReceiptLib::centerString(".................................................")."\n";
 
-			if ($sigSlip){
-				// Cut is added automatically by printing process
-				//$slip .= "\n\n\n\n".chr(27).chr(105);
-				break;
-			}
-		}
+            if ($sigSlip){
+                // Cut is added automatically by printing process
+                //$slip .= "\n\n\n\n".chr(27).chr(105);
+                break;
+            }
+        }
 
-		return $slip;
-	}
+        return $slip;
+    }
 
-	/**
-	  Message can be printed independently from a regular	
-	  receipt. Pass this string to ajax-end.php as URL
-	  parameter receiptType to print the standalone receipt.
-	*/
-	public $standalone_receipt_type = 'ccSlip';
+    /**
+      Message can be printed independently from a regular    
+      receipt. Pass this string to ajax-end.php as URL
+      parameter receiptType to print the standalone receipt.
+    */
+    public $standalone_receipt_type = 'ccSlip';
 
-	/**
-	  Print message as its own receipt
-	  @param $ref a transaction reference (emp-lane-trans)
-	  @param $reprint boolean
-	  @return [string] message to print 
-	*/
-	public function standalone_receipt($ref, $reprint=False){
-		return $this->variable_slip($ref, $reprint, True);
-	}
+    /**
+      Print message as its own receipt
+      @param $ref a transaction reference (emp-lane-trans)
+      @param $reprint boolean
+      @return [string] message to print 
+    */
+    public function standalone_receipt($ref, $reprint=False){
+        return $this->variable_slip($ref, $reprint, True);
+    }
 }
 
 ?>

@@ -38,7 +38,7 @@ class GlobalValuesModel extends BasicModel
     'TTLFlag' => array('type'=>'TINYINT'),
     'FntlFlag' => array('type'=>'TINYINT'),
     'TaxExempt' => array('type'=>'TINYINT'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

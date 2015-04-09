@@ -32,7 +32,7 @@ class MemberCardsViewModel extends ViewModel
     protected $columns = array(
     'upc' => array('type'=>'VARCHAR(13)'),
     'card_no' => array('type'=>'INT'),
-	);
+    );
 
     public $preferred_db = 'op';
 

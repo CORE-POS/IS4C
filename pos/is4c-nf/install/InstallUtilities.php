@@ -168,13 +168,13 @@ class InstallUtilities extends LibraryClass
         }
 
         $new_global = preg_replace($orig_setting, $new_setting, $orig_global,
-					-1, $found_global);
+                    -1, $found_global);
         $new_local = preg_replace($orig_setting, $new_setting, $orig_local,
                         -1, $found_local);
         if ($found_global) {
             preg_match($orig_setting, $orig_global, $matches);
             if ($matches[1] === $value.', True') {// found with exact same value
-                $written_global = True;	// no need to bother rewriting it
+                $written_global = True;    // no need to bother rewriting it
             } elseif ($writeable_global) {
                 $written_global = file_put_contents($path_global, $new_global);
             }
@@ -183,17 +183,17 @@ class InstallUtilities extends LibraryClass
         if ($found_local) {
             preg_match($orig_setting, $orig_local, $matches);
             if ($matches[1] === $value.', True') {// found with exact same value
-                $written_local = True;	// no need to bother rewriting it
+                $written_local = True;    // no need to bother rewriting it
             } elseif ($writeable_local) {
                 $written_local = file_put_contents($path_local, $new_local);
             }
         }
 
         if ($found_local && !$written_local) {
-            return false;	// ini-local.php is overriding ini.php with bad data!
+            return false;    // ini-local.php is overriding ini.php with bad data!
         }
         if ($written_global || $written_local) {
-            return true;	// successfully written somewhere relevant
+            return true;    // successfully written somewhere relevant
         }
 
         if (!$found_global && !$found_local) {
@@ -221,10 +221,10 @@ class InstallUtilities extends LibraryClass
             $added_local = file_put_contents($append_path, $new_local);
         }
         if ($added_global || $added_local){
-            return true;	// successfully appended somewhere relevant
+            return true;    // successfully appended somewhere relevant
         }
 
-        return false;	// didn't manage to write anywhere!
+        return false;    // didn't manage to write anywhere!
     }
 
     /**

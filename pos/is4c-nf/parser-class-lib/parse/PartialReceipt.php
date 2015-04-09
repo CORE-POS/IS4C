@@ -22,30 +22,30 @@
 *********************************************************************************/
 
 class PartialReceipt extends Parser {
-	function check($str){
-		if ($str == "PP")
-			return True;
-		return False;
-	}
+    function check($str){
+        if ($str == "PP")
+            return True;
+        return False;
+    }
 
-	function parse($str){
-		$ret = $this->default_json();
-		$ret['receipt'] = 'partial';
-		$ret['output'] = DisplayLib::lastpage();
-		return $ret;
-	}
+    function parse($str){
+        $ret = $this->default_json();
+        $ret['receipt'] = 'partial';
+        $ret['output'] = DisplayLib::lastpage();
+        return $ret;
+    }
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td>PP</td>
-				<td>Print a partial receipt</td>
-			</tr>
-			</table>";
-	}
+    function doc(){
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td>PP</td>
+                <td>Print a partial receipt</td>
+            </tr>
+            </table>";
+    }
 
 }
 

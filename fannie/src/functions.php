@@ -24,9 +24,9 @@
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-	* 20Jan2013 Eric Lee In receipt_to_table() support per-coop header text
-	*            hopefully pending use of CORE_LOCAL[receiptHeader*]
-	*            via $FANNIE/install/lane_config/ini.php and table core_trans.lane_config
+    * 20Jan2013 Eric Lee In receipt_to_table() support per-coop header text
+    *            hopefully pending use of CORE_LOCAL[receiptHeader*]
+    *            via $FANNIE/install/lane_config/ini.php and table core_trans.lane_config
 
 */
 
@@ -42,44 +42,44 @@ if (!class_exists('FannieAPI')) {
 
 function select_to_table($query,$args,$border,$bgcolor, $no_end=false)
 {
-	global $FANNIE_OP_DB;
+    global $FANNIE_OP_DB;
     $dbc = FannieDB::get($FANNIE_OP_DB);
-	$prep = $dbc->prepare_statement($query);
-	$results = $dbc->exec_statement($prep,$args); 
-	$number_cols = $dbc->num_fields($results);
-	//display query
-	//echo "<b>query: $query</b>";
-	//layout table header
-	echo "<font size = 2>";
-	echo "<table border = $border bgcolor=$bgcolor cellspacing=0 cellpadding=3>\n";
-	/*
-	echo "<tr align left>\n";
-	for($i=0; $i<$number_cols; $i++)
-	{
-		echo "<th><font size =2>" . $dbc->field_name($results,$i). "</font></th>\n";
-	}
-	echo "</tr>\n"; //end table header
-	*/
-	//layout table body
-	while($row = $dbc->fetch_row($results))
-	{
-		echo "<tr align left>\n";
-		for ($i=0;$i<$number_cols; $i++) {
-			echo "<td width=";
-			if(is_numeric($row[$i]) || !isset($row[$i])) { echo "89";} else { echo "170";} 
-			echo " align=";
-			if(is_numeric($row[$i]) || !isset($row[$i])) { echo "right";} else { echo "left";} 
-			echo "><font size = 2>";
-			if(!isset($row[$i])) {//test for null value
-				echo "0.00";
-			}elseif (is_numeric($row[$i]) && strstr($row[$i],".")){
-				printf("%.2f",$row[$i]);
-			}else{
-				echo $row[$i];
-			}
-			echo "</font></td>\n";
-		} echo "</tr>\n";
-	} 
+    $prep = $dbc->prepare_statement($query);
+    $results = $dbc->exec_statement($prep,$args); 
+    $number_cols = $dbc->num_fields($results);
+    //display query
+    //echo "<b>query: $query</b>";
+    //layout table header
+    echo "<font size = 2>";
+    echo "<table border = $border bgcolor=$bgcolor cellspacing=0 cellpadding=3>\n";
+    /*
+    echo "<tr align left>\n";
+    for($i=0; $i<$number_cols; $i++)
+    {
+        echo "<th><font size =2>" . $dbc->field_name($results,$i). "</font></th>\n";
+    }
+    echo "</tr>\n"; //end table header
+    */
+    //layout table body
+    while($row = $dbc->fetch_row($results))
+    {
+        echo "<tr align left>\n";
+        for ($i=0;$i<$number_cols; $i++) {
+            echo "<td width=";
+            if(is_numeric($row[$i]) || !isset($row[$i])) { echo "89";} else { echo "170";} 
+            echo " align=";
+            if(is_numeric($row[$i]) || !isset($row[$i])) { echo "right";} else { echo "left";} 
+            echo "><font size = 2>";
+            if(!isset($row[$i])) {//test for null value
+                echo "0.00";
+            }elseif (is_numeric($row[$i]) && strstr($row[$i],".")){
+                printf("%.2f",$row[$i]);
+            }else{
+                echo $row[$i];
+            }
+            echo "</font></td>\n";
+        } echo "</tr>\n";
+    } 
     if (!$no_end) {
         echo "</table>\n";
         echo "</font>";
@@ -90,54 +90,54 @@ function select_to_table($query,$args,$border,$bgcolor, $no_end=false)
 
 function select_to_table2($query,$args,$border,$bgcolor,$width="120",$spacing="0",$padding="0",$headers=array(),$nostart=False)
 {
-	global $FANNIE_OP_DB;
+    global $FANNIE_OP_DB;
     $dbc = FannieDB::get($FANNIE_OP_DB);
-	$prep = $dbc->prepare_statement($query);
-	$results = $dbc->exec_statement($prep,$args); 
-	$number_cols = $dbc->num_fields($results);
-	$num_rows = $dbc->num_rows($results);
-	$backgrounds = array('#ffffff',$bgcolor);
-	$b = 0;	
-	//display query
-	//echo "<b>query: $query</b>";
-	//layout table header
-	echo "<font size = 2>";
-	if (!$nostart){
-	    if($num_rows !=0){
-	       echo "<table border = $border cellpadding=$padding cellspacing=$spacing>\n";
-	    }else{
-	       echo "<table border=0 bgcolor=$bgcolor>\n";
-	    }
-	}
-	echo "<tr align left>\n";
+    $prep = $dbc->prepare_statement($query);
+    $results = $dbc->exec_statement($prep,$args); 
+    $number_cols = $dbc->num_fields($results);
+    $num_rows = $dbc->num_rows($results);
+    $backgrounds = array('#ffffff',$bgcolor);
+    $b = 0;    
+    //display query
+    //echo "<b>query: $query</b>";
+    //layout table header
+    echo "<font size = 2>";
+    if (!$nostart){
+        if($num_rows !=0){
+           echo "<table border = $border cellpadding=$padding cellspacing=$spacing>\n";
+        }else{
+           echo "<table border=0 bgcolor=$bgcolor>\n";
+        }
+    }
+    echo "<tr align left>\n";
     if($num_rows == 0){
        echo "There are no results to report";
     }else{
 
-	if (count($headers) > 0){
-		echo "<tr>\n";
-		foreach ($headers as $h)
-			echo "<th width=$width bgcolor=$backgrounds[$b]><font size=2>".$h."</font></th>\n";
-		echo "</tr>";
-		$b = 1;
-	}
+    if (count($headers) > 0){
+        echo "<tr>\n";
+        foreach ($headers as $h)
+            echo "<th width=$width bgcolor=$backgrounds[$b]><font size=2>".$h."</font></th>\n";
+        echo "</tr>";
+        $b = 1;
+    }
     while($row = $dbc->fetch_array($results))
-	{
-		echo "<tr align left>\n";
-		for ($i=0;$i<$number_cols; $i++)
-		{
-		echo "<td width = $width bgcolor=$backgrounds[$b]><font size = 2>";
-			if(!isset($row[$i])) //test for null value
-			{
-				echo "NULL";
-			}else{
-				echo $row[$i];
-			}
-			echo "</font></td>\n";
-		} echo "</tr>\n";
-		$b = ($b+1)%2;
-	} } echo "</table>\n";
-	echo "</font>";
+    {
+        echo "<tr align left>\n";
+        for ($i=0;$i<$number_cols; $i++)
+        {
+        echo "<td width = $width bgcolor=$backgrounds[$b]><font size = 2>";
+            if(!isset($row[$i])) //test for null value
+            {
+                echo "NULL";
+            }else{
+                echo $row[$i];
+            }
+            echo "</font></td>\n";
+        } echo "</tr>\n";
+        $b = ($b+1)%2;
+    } } echo "</table>\n";
+    echo "</font>";
 }
 
 /* pads upc with zeroes to make $upc into IT CORE compliant upc*/

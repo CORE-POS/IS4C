@@ -62,7 +62,7 @@ class ItemNotFound extends LibraryClass
 
 class LogNotFound extends ItemNotFound 
 {
-	public function handle($upc, $json)
+    public function handle($upc, $json)
     {
         $opts = array('upc'=>$upc,'description'=>'NOTFOUND');
         TransRecord::add_log_record($opts);
@@ -70,7 +70,7 @@ class LogNotFound extends ItemNotFound
         $json['main_frame'] = $my_url . "gui-modules/boxMsg2.php";
 
         return $json;
-	}
+    }
 }
 */
 

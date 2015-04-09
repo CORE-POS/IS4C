@@ -157,31 +157,31 @@ class DiscountModule
         $this->name = $name;
     }
 
-	/**
-	  Calculate the discount based on current
-	  transaction state
-	  @return double discount amount
+    /**
+      Calculate the discount based on current
+      transaction state
+      @return double discount amount
 
-	  Note return value should be positive unless
-	  you're doing something odd
-	*/
-	public function calculate($discountable_total=0)
+      Note return value should be positive unless
+      you're doing something odd
+    */
+    public function calculate($discountable_total=0)
     {
         if ($discountable_total == 0) {
             $discountable_total = CoreLocal::get('discountableTotal');
         }
 
-		return MiscLib::truncate2(($this->my_discount/100.00) * $discountable_total);
-	}
+        return MiscLib::truncate2(($this->my_discount/100.00) * $discountable_total);
+    }
 
-	/**
-	  Decide what percent discount to apply to this
-	  transaction.
-	  @return int percentage (i.e., 5 == 5%)
-	*/
-	public function percentage()
+    /**
+      Decide what percent discount to apply to this
+      transaction.
+      @return int percentage (i.e., 5 == 5%)
+    */
+    public function percentage()
     {
-		return $this->my_discount;
-	}
+        return $this->my_discount;
+    }
 }
 

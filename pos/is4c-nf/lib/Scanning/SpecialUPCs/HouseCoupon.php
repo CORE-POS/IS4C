@@ -42,7 +42,7 @@ class HouseCoupon extends SpecialUPC
             $prefix = '00499999';
         }
 
-		if (substr($upc,0,strlen($prefix)) == $prefix) {
+        if (substr($upc,0,strlen($prefix)) == $prefix) {
             return true;
         }
 

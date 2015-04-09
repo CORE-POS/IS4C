@@ -23,37 +23,37 @@
 
 class CashDropPreParser extends PreParser {
 
-	function check($str)
+    function check($str)
     {
-		// only check & warn once per transaction
-		if (CoreLocal::get('cashDropWarned') == True) return False;
+        // only check & warn once per transaction
+        if (CoreLocal::get('cashDropWarned') == True) return False;
 
-		// checking one time
-		CoreLocal::set('cashDropWarned',True);
+        // checking one time
+        CoreLocal::set('cashDropWarned',True);
 
-		// cannot check in standalone
-		if (CoreLocal::get('standalone') == 1) return False;
+        // cannot check in standalone
+        if (CoreLocal::get('standalone') == 1) return False;
 
-		// lookup cashier total
-		$db = Database::mDataConnect();
-		$q = sprintf("SELECT sum(-total) FROM dtransactions WHERE
-			trans_subtype='CA' AND trans_status <> 'X' AND emp_no=%d",
-			CoreLocal::get('CashierNo'));
-		$r = $db->query($q);
-		$ttl = 0;
-		if ($db->num_rows($r) > 0) {
+        // lookup cashier total
+        $db = Database::mDataConnect();
+        $q = sprintf("SELECT sum(-total) FROM dtransactions WHERE
+            trans_subtype='CA' AND trans_status <> 'X' AND emp_no=%d",
+            CoreLocal::get('CashierNo'));
+        $r = $db->query($q);
+        $ttl = 0;
+        if ($db->num_rows($r) > 0) {
             $row = $db->fetch_row($r);
             $ttl = $row[0];
         }
 
-		if ($ttl > CoreLocal::get('cashDropThreshold'))
-			return True;
-		else
-			return False;
-	}
+        if ($ttl > CoreLocal::get('cashDropThreshold'))
+            return True;
+        else
+            return False;
+    }
 
-	function parse($str){
-		// modify input to trigger CashDropParser
-		return 'DROPDROP'.$str;
-	}
+    function parse($str){
+        // modify input to trigger CashDropParser
+        return 'DROPDROP'.$str;
+    }
 }

@@ -26,9 +26,9 @@ include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 class PaycardTransListPage extends NoInputPage 
 {
 
-	function preprocess()
+    function preprocess()
     {
-		// check for posts before drawing anything, so we can redirect
+        // check for posts before drawing anything, so we can redirect
         if (isset($_REQUEST['selectlist'])) {
             $id = $_REQUEST['selectlist'];
 
@@ -41,11 +41,11 @@ class PaycardTransListPage extends NoInputPage
 
                 return false;
             }
-		} // post?
-		return True;
-	}
+        } // post?
+        return True;
+    }
 
-	function body_content()
+    function body_content()
     {
         $local = array();
         $other = array();
@@ -87,14 +87,14 @@ class PaycardTransListPage extends NoInputPage
                                         . sprintf('%.2f', $w['amount']);
             }
         }
-		?>
-		<div class="baseHeight">
+        ?>
+        <div class="baseHeight">
         <div class="listbox">
         <form name="selectform" method="post" id="selectform" 
             action="<?php echo $_SERVER['PHP_SELF']; ?>" >
         <select name="selectlist" size="10" id="selectlist"
             onblur="$('#selectlist').focus()" >
-		<?php
+        <?php
         $selected = 'selected';
         foreach($local as $id => $label) {
             printf('<option %s value="%s">%s</option>',
@@ -109,7 +109,7 @@ class PaycardTransListPage extends NoInputPage
         if (count($local) == 0 && count($other) == 0) {
             echo '<option value="" selected>No transactions found</option>';
         }
-		?>
+        ?>
         </select>
         </form>
         </div>
@@ -119,11 +119,11 @@ class PaycardTransListPage extends NoInputPage
         <?php echo _("clear to cancel"); ?>
         </div>
         <div class="clear"></div>
-		</div>
-		<?php
+        </div>
+        <?php
         $this->add_onload_command("\$('#selectlist').keypress(processkeypress);\n");
         $this->add_onload_command("\$('#selectlist').focus();\n");
-	}
+    }
 
     function head_content()
     {
@@ -153,6 +153,6 @@ class PaycardTransListPage extends NoInputPage
 }
 
 if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
-	new PaycardTransListPage();
+    new PaycardTransListPage();
 }
 

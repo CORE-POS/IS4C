@@ -34,7 +34,7 @@ class UnpaidArTodayModel extends BasicModel
     'card_no' => array('type'=>'INT', 'primary_key'=>true),
     'old_balance' => array('type'=>'MONEY'),
     'recent_payments' => array('type'=>'MONEY'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

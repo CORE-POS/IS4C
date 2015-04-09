@@ -23,8 +23,8 @@
 
 class Refund extends PreParser 
 {
-	
-	function check($str)
+    
+    function check($str)
     {
         // ignore comments; they may have all sorts of
         // random character cominations
@@ -37,35 +37,35 @@ class Refund extends PreParser
         } else {
             return false;
         }
-	}
+    }
 
-	function parse($str)
+    function parse($str)
     {
-		$remainder = "";
+        $remainder = "";
         $parts = explode('RF', $str, 2);
         foreach ($parts as $p) {
             $remainder .= $p;
         }
-		CoreLocal::set("refund",1);
+        CoreLocal::set("refund",1);
 
-		return $remainder;
-	}
+        return $remainder;
+    }
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td>RF<i>ringable</i>
-				OR <i>ringable</i>RF
-				</td>
-				<td>Refund the specified item(s). <i>Ringable
-				</i> can be a single UPC, an open-department
-				ring, or a multiple using *</td>
-			</tr>
-			</table>";
-	}
+    function doc(){
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td>RF<i>ringable</i>
+                OR <i>ringable</i>RF
+                </td>
+                <td>Refund the specified item(s). <i>Ringable
+                </i> can be a single UPC, an open-department
+                ring, or a multiple using *</td>
+            </tr>
+            </table>";
+    }
 }
 
 ?>

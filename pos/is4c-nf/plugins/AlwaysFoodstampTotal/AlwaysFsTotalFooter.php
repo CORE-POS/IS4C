@@ -24,38 +24,38 @@
 class AlwaysFsTotalFooter extends FooterBox 
 {
 
-	public $display_css = "font-weight:bold;font-size:150%;";
+    public $display_css = "font-weight:bold;font-size:150%;";
 
-	function header_content()
+    function header_content()
     {
-		if ( CoreLocal::get("ttlflag") == 1 and CoreLocal::get("End") != 1 ) {
-			$this->header_css_class = 'errorColoredArea';
-			return _("Amount Due");
-		}
-		elseif (CoreLocal::get("ttlflag") == 1  and CoreLocal::get("End") == 1 ) {
-			$this->header_css_class = 'coloredArea';
-			return _("Change");
-		}	
-		else {
-			$this->header_css_class = 'totalArea';
-			return _("Total");
-		}
-	}
+        if ( CoreLocal::get("ttlflag") == 1 and CoreLocal::get("End") != 1 ) {
+            $this->header_css_class = 'errorColoredArea';
+            return _("Amount Due");
+        }
+        elseif (CoreLocal::get("ttlflag") == 1  and CoreLocal::get("End") == 1 ) {
+            $this->header_css_class = 'coloredArea';
+            return _("Change");
+        }    
+        else {
+            $this->header_css_class = 'totalArea';
+            return _("Total");
+        }
+    }
 
-	function display_content()
+    function display_content()
     {
-		if ( CoreLocal::get("ttlflag") == 1 and CoreLocal::get("End") != 1 ) {
-			$this->display_css_class = 'errorColoredText';
-			return number_format(CoreLocal::get("runningTotal"),2);
-		}
-		elseif (CoreLocal::get("ttlflag") == 1  and CoreLocal::get("End") == 1 ) {
-			$this->display_css_class = 'coloredText';
-			return number_format(CoreLocal::get("runningTotal"),2);
-		}	
-		else {
-			$this->display_css_class = 'totalLine';
-			return number_format((double)CoreLocal::get("runningTotal"),2);
-		}
-	}
+        if ( CoreLocal::get("ttlflag") == 1 and CoreLocal::get("End") != 1 ) {
+            $this->display_css_class = 'errorColoredText';
+            return number_format(CoreLocal::get("runningTotal"),2);
+        }
+        elseif (CoreLocal::get("ttlflag") == 1  and CoreLocal::get("End") == 1 ) {
+            $this->display_css_class = 'coloredText';
+            return number_format(CoreLocal::get("runningTotal"),2);
+        }    
+        else {
+            $this->display_css_class = 'totalLine';
+            return number_format((double)CoreLocal::get("runningTotal"),2);
+        }
+    }
 }
 

@@ -25,10 +25,10 @@
  
    nightly.seniordiscount.php
 
-	Update custdata.discount on senior discount days.
-	Customize this script with your store's discount day.
+    Update custdata.discount on senior discount days.
+    Customize this script with your store's discount day.
 
-	This script must be run after midnight.
+    This script must be run after midnight.
 
    This script does not update the lanes, therefore
    it should be run before lane syncing.
@@ -62,14 +62,14 @@ date_add($dday, date_interval_create_from_date_string('1 days'));
 $discount_day_after = date_format($dday, 'l');
 
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
+        $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
 $toggle = ($today == $discount_day) ? "+" : "-";
-	
+    
 if (($today == $discount_day) || ($today == $discount_day_after)) {
-	$sql->query("UPDATE custdata SET discount = (discount $toggle $discount_value) WHERE SSI = 1");
+    $sql->query("UPDATE custdata SET discount = (discount $toggle $discount_value) WHERE SSI = 1");
 } else {
-	echo cron_msg("nightly.seniordiscount.php: Discount active on " . $discount_day . ".<br /> No discounts to apply");
+    echo cron_msg("nightly.seniordiscount.php: Discount active on " . $discount_day . ".<br /> No discounts to apply");
 }
 
 

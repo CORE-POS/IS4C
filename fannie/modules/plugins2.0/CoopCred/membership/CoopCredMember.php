@@ -51,9 +51,9 @@ class CoopCredMember extends MemberModule
             to display the block for a different Program than
             the function would otherwise choose.
      */
-	function ShowEditForm($memNum,$country="US",$inProgramID=-1)
+    function ShowEditForm($memNum,$country="US",$inProgramID=-1)
     {
-		global $FANNIE_URL;
+        global $FANNIE_URL;
         global $FANNIE_PLUGIN_LIST,$FANNIE_PLUGIN_SETTINGS;
 
         if (!isset($FANNIE_PLUGIN_LIST) || !in_array('CoopCred', $FANNIE_PLUGIN_LIST)) {
@@ -233,13 +233,13 @@ class CoopCredMember extends MemberModule
             $ret .= "<style type='text/css'>
 .MemFormTable th {
     font-size: 75%;
-	text-align: right;
-	color: #fff;
-	padding: 0 5px 0 2px;
-	border: solid white 2px;
+    text-align: right;
+    color: #fff;
+    padding: 0 5px 0 2px;
+    border: solid white 2px;
 }
 .MemFormTable td {
-	padding: 2px 2px 2px 2px;
+    padding: 2px 2px 2px 2px;
 }
 /* The interveneing ccredmemdiv prevents bootstrap's
     * gradient from appearing.
@@ -264,7 +264,7 @@ class CoopCredMember extends MemberModule
 
         /* For bootstrapped v.1 retain the table coding.
          */
-		$ret .= "<table class='MemFormTable' border='0' width='100%'>";
+        $ret .= "<table class='MemFormTable' border='0' width='100%'>";
 
         if ($memNum != $programBankNumber) {
             $ret .= "<tr>";
@@ -292,18 +292,18 @@ class CoopCredMember extends MemberModule
             $ret .= "</tr>";
         }
 
-		$ret .= "<tr>";
+        $ret .= "<tr>";
 
         $ucc = ($ccred_programs["$defaultMembership"]['creditOK']) ?
             ' checked="" ' : '';
         $uccDisabled = ($memNum == $programBankNumber)?' disabled ':"";
-		$ret .= "<th title='Allow/prevent the member&apos;s use of the selected type of Coop Cred.'>Use Coop Cred</th>";
-		$ret .= sprintf('<td><input type="checkbox" name="use_coop_cred" %s %s/>
+        $ret .= "<th title='Allow/prevent the member&apos;s use of the selected type of Coop Cred.'>Use Coop Cred</th>";
+        $ret .= sprintf('<td><input type="checkbox" name="use_coop_cred" %s %s/>
                 </td>',$ucc,$uccDisabled);
 
         // In Coop Cred $limit is always 0.
         $limit = 0;
-		$ret .= "<input type='hidden' name='CC_limit' value='{$limit}'>";
+        $ret .= "<input type='hidden' name='CC_limit' value='{$limit}'>";
 
         if ($memNum == $programBankNumber) {
             $ret .= "<th title='The amount of Coop Cred the member has to use.'>Current Balance</th>";
@@ -312,7 +312,7 @@ class CoopCredMember extends MemberModule
         }
 
         $ret .= sprintf('<td id="cbal" name="cbal">%.2f</td>',
-                ($ccred_programs["$defaultMembership"]['balance'] * -1));	
+                ($ccred_programs["$defaultMembership"]['balance'] * -1));    
 
         if ($memNum == $programBankNumber) {
             $today = date('Y-m-d');
@@ -337,7 +337,7 @@ class CoopCredMember extends MemberModule
             $template = '<input type="text" size=8 maxlength=10 id="maxbal" ' .
                 'name="maxbal" value="%.2f" >';
             $cellContent = sprintf("$template",
-                ($ccred_programs["$defaultMembership"]['maxCreditBalance'] * -1));	
+                ($ccred_programs["$defaultMembership"]['maxCreditBalance'] * -1));    
         }
         $ret .= ("<td>" . $cellContent);
         $ret .= "</td>";
@@ -433,10 +433,10 @@ class CoopCredMember extends MemberModule
 
         }
 
-		return $ret;
+        return $ret;
 
     // ShowEditForm()
-	}
+    }
 
     /**
       Get any javascript that goes with
@@ -457,11 +457,11 @@ class CoopCredMember extends MemberModule
      * If member not in CCredMemberships for this program
      *  add to CCRedMembers IFF creditOK ticked.
      */
-	function SaveFormData($memNum)
+    function SaveFormData($memNum)
     {
-		global $FANNIE_ROOT;
-		//$dbc = $this->db();
-		global $FANNIE_URL;
+        global $FANNIE_ROOT;
+        //$dbc = $this->db();
+        global $FANNIE_URL;
         global $FANNIE_PLUGIN_LIST,$FANNIE_PLUGIN_SETTINGS;
 
         if (!isset($FANNIE_PLUGIN_LIST) || !in_array('CoopCred', $FANNIE_PLUGIN_LIST)) {
@@ -476,22 +476,22 @@ class CoopCredMember extends MemberModule
         }
 
         // Test probably not necessary.
-		if (!class_exists("CCredMembershipsModel")) {
+        if (!class_exists("CCredMembershipsModel")) {
             $dbc->logger("Had to include CCredMembershipsModel");
             include($FANNIE_ROOT . 'modules/plugins2.0/CoopCred/models/CCredMembershipsModel.php');
         }
 
         // Test probably not necessary.
-		if (!class_exists("CCredProgramsModel")) {
+        if (!class_exists("CCredProgramsModel")) {
             $dbc->logger("Had to include CCredProgramsModel");
             include($FANNIE_ROOT . 'modules/plugins2.0/CoopCred/models/CCredProgramsModel.php');
         }
 
         // For Coop Cred limit always 0.
-		$limit = (int)FormLib::get_form_value('CC_limit',0);
+        $limit = (int)FormLib::get_form_value('CC_limit',0);
         $credit_ok = (FormLib::get_form_value('use_coop_cred','')!=='' ? 1 : 0);
-		$programID = (int)FormLib::get_form_value('ccred_program',0);
-		$maxCreditBalance = FormLib::get_form_value('maxbal',0.00);
+        $programID = (int)FormLib::get_form_value('ccred_program',0);
+        $maxCreditBalance = FormLib::get_form_value('maxbal',0.00);
         if ($maxCreditBalance > 0) {
             $maxCreditBalance = $maxCreditBalance * -1;
         }
@@ -577,7 +577,7 @@ class CoopCredMember extends MemberModule
         // OK
         return '';
 
-	} // SaveFormData()
+    } // SaveFormData()
 
     /* Compose a message to return instead of the block of the form.
         @param $msg The message

@@ -24,29 +24,29 @@
 class AlwaysFsEligibleFooter extends FooterBox 
 {
 
-	public $header_css_class = 'fsLine';
-	public $display_css_class = 'fsLine';
+    public $header_css_class = 'fsLine';
+    public $display_css_class = 'fsLine';
 
-	function AlwaysFsEligibleFooter() 
+    function AlwaysFsEligibleFooter() 
     {
-		if (CoreLocal::get('fntlflag') == 0 && CoreLocal::get('End') != 1){
-			CoreLocal::set("fntlflag",1);
-			Database::setglobalvalue("FntlFlag", 1);
-		}
-	}
+        if (CoreLocal::get('fntlflag') == 0 && CoreLocal::get('End') != 1){
+            CoreLocal::set("fntlflag",1);
+            Database::setglobalvalue("FntlFlag", 1);
+        }
+    }
 
-	function header_content()
+    function header_content()
     {
-		return _("FS Eligible");
-	}
+        return _("FS Eligible");
+    }
 
-	function display_content()
+    function display_content()
     {
-		if (CoreLocal::get('End') != 1)
-			return number_format((double)CoreLocal::get("fsEligible"),2);
-		else
-			return '0.00';
-	}
-		
+        if (CoreLocal::get('End') != 1)
+            return number_format((double)CoreLocal::get("fsEligible"),2);
+        else
+            return '0.00';
+    }
+        
 }
 

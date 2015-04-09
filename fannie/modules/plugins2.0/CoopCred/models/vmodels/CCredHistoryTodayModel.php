@@ -114,18 +114,18 @@ class CCredHistoryTodayModel extends ViewModel
                 ELSE q.programID END
                 AS programID,
             t.card_no AS cardNo,
-			SUM(CASE WHEN t.trans_subtype in {$tlist} THEN -t.total ELSE 0 END) AS charges,
-			SUM(CASE WHEN t.department IN {$dlist} THEN t.total ELSE 0 END) AS payments,
-			MAX(t.tdate) AS tdate,
-			t.trans_num AS transNum
+            SUM(CASE WHEN t.trans_subtype in {$tlist} THEN -t.total ELSE 0 END) AS charges,
+            SUM(CASE WHEN t.department IN {$dlist} THEN t.total ELSE 0 END) AS payments,
+            MAX(t.tdate) AS tdate,
+            t.trans_num AS transNum
         FROM {$FANNIE_TRANS_DB}.dlog t
             LEFT JOIN coop_cred.CCredPrograms p
                 ON t.trans_subtype = p.tenderType
             LEFT JOIN coop_cred.CCredPrograms q
                 ON t.department = q.paymentDepartment
         WHERE ((t.trans_subtype in {$tlist} OR t.department IN {$dlist})
-				AND " . $this->connection->datediff($this->connection->now(),'t.tdate') . "=0)
-		GROUP BY programID, cardNo, transNum
+                AND " . $this->connection->datediff($this->connection->now(),'t.tdate') . "=0)
+        GROUP BY programID, cardNo, transNum
         ";
 
     }

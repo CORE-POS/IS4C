@@ -29,12 +29,12 @@
 class GroupSavingsSort extends DefaultReceiptSort 
 {
 
-	/**
-	  Sorting function
-	  @param $rowset an array of records
-	  @return an array of records
-	*/
-	public function sort($rowset)
+    /**
+      Sorting function
+      @param $rowset an array of records
+      @return an array of records
+    */
+    public function sort($rowset)
     {
         /**
           Split rows into tenders, items, and the middle section
@@ -124,8 +124,8 @@ class GroupSavingsSort extends DefaultReceiptSort
             }
         }
 
-		return array_merge($items, $middle, $tenders);
-	}
+        return array_merge($items, $middle, $tenders);
+    }
 
-}	
+}    
 

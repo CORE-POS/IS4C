@@ -24,7 +24,7 @@
 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
-	include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
 /** Coop Cred Setup - How to Install Coop Cred on Back End and Lanes
@@ -32,16 +32,16 @@ if (!class_exists('FannieAPI')) {
 class CoopCredSetup extends FanniePage
 {
 
-	protected $header = 'Coop Cred - Setup';
-	protected $title = 'Coop Cred - Setup';
-	protected $auth_classes = array('overshorts');
+    protected $header = 'Coop Cred - Setup';
+    protected $title = 'Coop Cred - Setup';
+    protected $auth_classes = array('overshorts');
     public $themed = true;
 
-	function body_content()
-	{
+    function body_content()
+    {
         global $FANNIE_URL;
-		ob_start();
-		?>
+        ob_start();
+        ?>
 
 <h3>On the Server (Back End)</h3>
 <ul>
@@ -241,9 +241,9 @@ At the West End Food Coop that may be in two hours or perhaps not until the next
     </li>
 </ul>
 
-		<?php
-		return ob_get_clean();
-	}
+        <?php
+        return ob_get_clean();
+    }
 
 // class CoopCredSetup
 }

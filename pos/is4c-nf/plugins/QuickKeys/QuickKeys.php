@@ -23,20 +23,20 @@
 
 class QuickKeys extends Plugin {
 
-	public $plugin_settings = array(
-	);
+    public $plugin_settings = array(
+    );
 
-	public $plugin_description = 'A plugin for building menus. Menus are defined in numbered
-				      PHP files within the plugin. Type "QK" followed by the menu
-				      number to launch that menu. QuickKeys render options as a
-				      3x3 grid of buttons for touchscreen accessibility.';
+    public $plugin_description = 'A plugin for building menus. Menus are defined in numbered
+                      PHP files within the plugin. Type "QK" followed by the menu
+                      number to launch that menu. QuickKeys render options as a
+                      3x3 grid of buttons for touchscreen accessibility.';
 
-	public function plugin_enable(){
+    public function plugin_enable(){
 
-	}
+    }
 
-	public function plugin_disable(){
+    public function plugin_disable(){
 
-	}
+    }
 
 }

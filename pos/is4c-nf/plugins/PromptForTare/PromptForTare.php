@@ -32,30 +32,30 @@
 class PromptForTare extends Plugin 
 {
 
-	/**
-	  Desired settings. These are automatically exposed
-	  on the 'Plugins' area of the install page and
-	  written to ini.php
-	*/
-	public $plugin_settings = array(
-	'DefaultTare' => array('default'=>0.01,'label'=>'Default Tare',
-			'description'=>'For locations where there may be legal requirements to enter a default tare.'),
-	);
+    /**
+      Desired settings. These are automatically exposed
+      on the 'Plugins' area of the install page and
+      written to ini.php
+    */
+    public $plugin_settings = array(
+    'DefaultTare' => array('default'=>0.01,'label'=>'Default Tare',
+            'description'=>'For locations where there may be legal requirements to enter a default tare.'),
+    );
 
-	public $plugin_description = 'Prompts the user for tare weight on items. Only ask if there is no default
-	                                and if the user has not used the tare key to enter a value.';
+    public $plugin_description = 'Prompts the user for tare weight on items. Only ask if there is no default
+                                    and if the user has not used the tare key to enter a value.';
 
-	/**
-	  Callback. Triggered when plugin is enabled
-	*/
-	public function plugin_enable(){
+    /**
+      Callback. Triggered when plugin is enabled
+    */
+    public function plugin_enable(){
 
-	}
+    }
 
-	/**
-	  Callback. Triggered when plugin is disabled
-	*/
-	public function plugin_disable(){
+    /**
+      Callback. Triggered when plugin is disabled
+    */
+    public function plugin_disable(){
 
-	}
+    }
 }

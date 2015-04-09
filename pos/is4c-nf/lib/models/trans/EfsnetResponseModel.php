@@ -49,7 +49,7 @@ class EfsnetResponseModel extends BasicModel
     'xTransactionID' => array('type'=>'VARCHAR(12)'),
     'xApprovalNumber' => array('type'=>'VARCHAR(20)'),
     'efsnetRequestID' => array('type'=>'INT', 'index'=>true),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

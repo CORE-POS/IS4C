@@ -25,9 +25,9 @@ else if(isset($_REQUEST['submit']) && $_REQUEST['submit']=="submit"){
      if(substr($key,0,4) == 'sale'){
         $$key = $value;
         $upc1 = substr($key,4);
-	    $queryTest = $sql->prepare("UPDATE batchListTest SET salePrice = ? WHERE upc = ? and batchID = ?");
+        $queryTest = $sql->prepare("UPDATE batchListTest SET salePrice = ? WHERE upc = ? and batchID = ?");
         //echo $queryTest . "<br>";
-	    $resultTest = $sql->execute($queryTest, array($value, $upc1, $batchID));
+        $resultTest = $sql->execute($queryTest, array($value, $upc1, $batchID));
         $updateBarQ = $sql->prepare("UPDATE newbarcodes SET normal_price=? WHERE upc = ?");
         $updateBarR = $sql->execute($updateBarQ, array($value, $upc1));
       }
@@ -36,7 +36,7 @@ else if(isset($_REQUEST['submit']) && $_REQUEST['submit']=="submit"){
        $$key = $value;
        $upc1 = substr($key,3);
        $infoQ = $sql->prepare("select b.batchName,l.salePrice from batchListTest as l left join batchTest as b on b.batchID
-		= l.batchID where b.batchID = ? and l.upc = ?");
+        = l.batchID where b.batchID = ? and l.upc = ?");
        $infoR = $sql->execute($infoQ, array($batchID, $upc1));
        $infoW = $sql->fetch_array($infoR);
        $name = $infoW[0];

@@ -41,7 +41,7 @@ class ScreenDisplayModel extends ViewModel
     'trans_status' => array('type'=>'VARCHAR(2)'),
     'voided' => array('type'=>'INT'),
     'trans_id' => array('type'=>'INT'),
-	);
+    );
 
     public function definition()
     {

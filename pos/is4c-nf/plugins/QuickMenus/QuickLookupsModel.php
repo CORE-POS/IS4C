@@ -37,7 +37,7 @@ class QuickLookupsModel extends BasicModel
     'label' => array('type'=>'VARCHAR(100)'),
     'action' => array('type'=>'VARCHAR(25)'),
     'sequence' => array('type'=>'SMALLINT', 'default'=>0),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

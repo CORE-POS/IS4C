@@ -34,7 +34,7 @@ class HouseCouponItemsModel extends BasicModel
     'coupID' => array('type'=>'INT', 'primary_key'=>true),
     'upc' => array('type'=>'VARCHAR(13)', 'primary_key'=>true),
     'type' => array('type'=>'VARCHAR(15)'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

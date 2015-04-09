@@ -14,7 +14,7 @@ include('InstallUtilities.php');
 </head>
 <body>
 <?php include('tabs.php'); ?>
-<div id="wrapper">	
+<div id="wrapper">    
 <h2>IT CORE Lane Installation: Additional Configuration (Extras)</h2>
 
 <div class="alert"><?php InstallUtilities::checkWritable('../ini.php', False, 'PHP'); ?></div>
@@ -276,26 +276,26 @@ $current_mods = CoreLocal::get("FooterModules");
 // fill in defaults if missing
 if (isset($_REQUEST['FOOTER_MODS'])) $current_mods = $_REQUEST['FOOTER_MODS'];
 elseif(!is_array($current_mods) || count($current_mods) != 5){
-	$current_mods = array(
-	'SavedOrCouldHave',
-	'TransPercentDiscount',
-	'MemSales',
-	'EveryoneSales',
-	'MultiTotal'
-	);
+    $current_mods = array(
+    'SavedOrCouldHave',
+    'TransPercentDiscount',
+    'MemSales',
+    'EveryoneSales',
+    'MultiTotal'
+    );
 }
 $footer_mods = AutoLoader::listModules('FooterBox');
 for($i=0;$i<5;$i++){
-	echo '<select name="FOOTER_MODS[]">';
-	foreach($footer_mods as $fm){
-		printf('<option %s>%s</option>',
-			($current_mods[$i]==$fm?'selected':''),$fm);
-	}
-	echo '</select><br />';
+    echo '<select name="FOOTER_MODS[]">';
+    foreach($footer_mods as $fm){
+        printf('<option %s>%s</option>',
+            ($current_mods[$i]==$fm?'selected':''),$fm);
+    }
+    echo '</select><br />';
 }
 $saveStr = "array(";
 foreach($current_mods as $m)
-	$saveStr .= "'".$m."',";
+    $saveStr .= "'".$m."',";
 $saveStr = rtrim($saveStr,",").")";
 InstallUtilities::paramSave('FooterModules',$current_mods);
 ?>
@@ -392,7 +392,7 @@ InstallUtilities::paramSave('FooterModules',$current_mods);
 <tr><td>
 <b>Tender Mapping</b>:<br />
 <p>Map custom tenders to IS4Cs expected tenders Tender Rpt. column: Include the checked tenders 
-	in the Tender Report (available via Mgrs. Menu [MG])</p></td><td>
+    in the Tender Report (available via Mgrs. Menu [MG])</p></td><td>
 <?php
 $settings = CoreLocal::get("TenderMap");
 $db = Database::pDataConnect();
@@ -407,14 +407,14 @@ if (isset($tender_table['TenderModule'])) {
 }
 if (!is_array($settings)) $settings = array();
 if (isset($_REQUEST['TenderMapping'])){
-	$settings = array();
-	foreach ($_REQUEST['TenderMapping'] as $tm) {
-		if ($tm=="") {
+    $settings = array();
+    foreach ($_REQUEST['TenderMapping'] as $tm) {
+        if ($tm=="") {
             continue;
         }
-		list($code, $mod) = explode(":", $tm);
-		$settings[$code] = $mod;
-	}
+        list($code, $mod) = explode(":", $tm);
+        $settings[$code] = $mod;
+    }
     if (!isset($tender_table['TenderModule'])) {
         InstallUtilities::paramSave('TenderMap',$settings);
     } else {
@@ -453,16 +453,16 @@ $mods = AutoLoader::listModules('TenderModule');
 $settings2 = CoreLocal::get("TRDesiredTenders");
 if (!is_array($settings2)) $settings2 = array();
 if (isset($_REQUEST['TR_LIST'])){
-	$saveStr2 = "array(";
-	$settings2 = array();
-	foreach($_REQUEST['TR_LIST'] as $dt){
-		if($dt=="") continue;
-		list($code2,$name2) = explode(":",$dt);
-		$settings2[$code2] = $name2;
-		$saveStr2 .= "'".$code2."'=>'".addslashes($name2)."',";
-	}
-	$saveStr2 = rtrim($saveStr2,",").")";
-	InstallUtilities::paramSave('TRDesiredTenders',$settings2);
+    $saveStr2 = "array(";
+    $settings2 = array();
+    foreach($_REQUEST['TR_LIST'] as $dt){
+        if($dt=="") continue;
+        list($code2,$name2) = explode(":",$dt);
+        $settings2[$code2] = $name2;
+        $saveStr2 .= "'".$code2."'=>'".addslashes($name2)."',";
+    }
+    $saveStr2 = rtrim($saveStr2,",").")";
+    InstallUtilities::paramSave('TRDesiredTenders',$settings2);
 } //end TR desired tenders
 $db = Database::pDataConnect();
 $res = $db->query("SELECT TenderCode, TenderName FROM tenders ORDER BY TenderName");
@@ -471,20 +471,20 @@ $res = $db->query("SELECT TenderCode, TenderName FROM tenders ORDER BY TenderNam
 <?php
 echo "<thead><tr><th>Tender Name</th><th>Map To</th><th>Tender Rpt</th></tr></thead><tbody>\n";
 while($row = $db->fetch_row($res)){
-	printf('<tr><td>%s (%s)</td>',$row['TenderName'],$row['TenderCode']);
-	echo '<td><select name="TenderMapping[]">';
-	echo '<option value="">default</option>';
-	foreach($mods as $m){
-		printf('<option value="%s:%s" %s>%s</option>',
-			$row['TenderCode'],$m,
-			(isset($settings[$row['TenderCode']])&&$settings[$row['TenderCode']]==$m)?'selected':'',
-			$m);	
-	}
-	echo '</select></td>';
-	echo "<td><input type=checkbox name=\"TR_LIST[]\" ";
-	echo 'value="'.$row['TenderCode'].':'.$row['TenderName'].'"';
-	if (array_key_exists($row['TenderCode'], $settings2)) echo " CHECKED";
-	echo "></td></tr></tbody>";
+    printf('<tr><td>%s (%s)</td>',$row['TenderName'],$row['TenderCode']);
+    echo '<td><select name="TenderMapping[]">';
+    echo '<option value="">default</option>';
+    foreach($mods as $m){
+        printf('<option value="%s:%s" %s>%s</option>',
+            $row['TenderCode'],$m,
+            (isset($settings[$row['TenderCode']])&&$settings[$row['TenderCode']]==$m)?'selected':'',
+            $m);    
+    }
+    echo '</select></td>';
+    echo "<td><input type=checkbox name=\"TR_LIST[]\" ";
+    echo 'value="'.$row['TenderCode'].':'.$row['TenderName'].'"';
+    if (array_key_exists($row['TenderCode'], $settings2)) echo " CHECKED";
+    echo "></td></tr></tbody>";
 }
 ?>
 </table>
@@ -502,6 +502,6 @@ while($row = $db->fetch_row($res)){
 </td></tr>
 </table>
 </form>
-</div> <!--	wrapper -->
+</div> <!--    wrapper -->
 </body>
 </html>

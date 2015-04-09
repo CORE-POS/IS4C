@@ -28,8 +28,8 @@ $input = isset($_REQUEST['input'])?$_REQUEST['input']:'';
 $display = DisplayLib::scaledisplaymsg($input);
 
 if (is_array($display))
-	echo $display['display'];
+    echo $display['display'];
 else
-	echo $display;
+    echo $display;
 
 ?>

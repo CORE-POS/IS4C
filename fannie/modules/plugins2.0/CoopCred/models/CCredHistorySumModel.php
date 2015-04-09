@@ -39,7 +39,7 @@ class CCredHistorySumModel extends BasicModel
         'payments' => array('type'=>'MONEY','not_null'=>True,  'default'=>0),
         'balance' => array('type'=>'MONEY','not_null'=>True,  'default'=>0),
         'ccHistorySumID' => array('type'=>'INT','primary_key'=>True, 'increment'=>True)
-	);
+    );
 
     public function name()
     {

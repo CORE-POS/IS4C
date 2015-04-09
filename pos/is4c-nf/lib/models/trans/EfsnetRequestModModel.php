@@ -50,7 +50,7 @@ class EfsnetRequestModModel extends BasicModel
     'xResponseCode' => array('type'=>'VARCHAR(4)'),
     'xResultCode' => array('type'=>'VARCHAR(4)'),
     'xResultMessage' => array('type'=>'VARCHAR(100)'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

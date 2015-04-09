@@ -33,7 +33,7 @@ class DrawerOwnerModel extends BasicModel
     protected $columns = array(
     'drawer_no' => array('type'=>'SMALLINT', 'primary_key'=>true),
     'emp_no' => array('type'=>'SMALLINT'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

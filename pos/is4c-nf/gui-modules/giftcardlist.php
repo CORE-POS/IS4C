@@ -25,65 +25,65 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class giftcardlist extends NoInputPage {
 
-	function preprocess()
+    function preprocess()
     {
-		if (isset($_REQUEST["selectlist"])){
-			CoreLocal::set("prefix",$_REQUEST["selectlist"]);
-			$this->change_page($this->page_url."gui-modules/pos2.php");
-			return False;
-		}
-		return True;
-	}
-	
-	function head_content(){
-		?>
+        if (isset($_REQUEST["selectlist"])){
+            CoreLocal::set("prefix",$_REQUEST["selectlist"]);
+            $this->change_page($this->page_url."gui-modules/pos2.php");
+            return False;
+        }
+        return True;
+    }
+    
+    function head_content(){
+        ?>
         <script type="text/javascript" src="../js/selectSubmit.js"></script>
-		<?php
+        <?php
         $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
-		$this->add_onload_command("\$('#selectlist').focus();\n");
-	} // END head() FUNCTION
+        $this->add_onload_command("\$('#selectlist').focus();\n");
+    } // END head() FUNCTION
 
-	function body_content() 
+    function body_content() 
     {
         $stem = MiscLib::baseURL() . 'graphics/';
-		?>
-		<div class="baseHeight">
-		<div class="centeredDisplay colored rounded">
-		<span class="larger">gift card transaction</span>
-		<form name="selectform" method="post" id="selectform"
-			action="<?php echo $_SERVER['PHP_SELF']; ?>">
+        ?>
+        <div class="baseHeight">
+        <div class="centeredDisplay colored rounded">
+        <span class="larger">gift card transaction</span>
+        <form name="selectform" method="post" id="selectform"
+            action="<?php echo $_SERVER['PHP_SELF']; ?>">
         <?php if (CoreLocal::get('touchscreen')) { ?>
         <button type="button" class="pos-button coloredArea"
             onclick="scrollDown('#selectlist');">
             <img src="<?php echo $stem; ?>down.png" width="16" height="16" />
         </button>
-		<?php } ?>
-		<select id="selectlist" name="selectlist" 
-			onblur="$('#selectlist').focus()">
-		<option value="">Sale
-		<option value="AC">Activate
-		<option value="AV">Add Value
-		<option value="PV">Balance
-		</select>
+        <?php } ?>
+        <select id="selectlist" name="selectlist" 
+            onblur="$('#selectlist').focus()">
+        <option value="">Sale
+        <option value="AC">Activate
+        <option value="AV">Add Value
+        <option value="PV">Balance
+        </select>
         <?php if (CoreLocal::get('touchscreen')) { ?>
         <button type="button" class="pos-button coloredArea"
             onclick="scrollUp('#selectlist');">
             <img src="<?php echo $stem; ?>up.png" width="16" height="16" />
         </button>
-		<?php } ?>
-		<p>
+        <?php } ?>
+        <p>
             <button class="pos-button" type="submit">Select [enter]</button>
             <button class="pos-button" type="submit" onclick="$('#selectlist').val('');">
                 Cancel [clear]
             </button>
-		</p>
-		</div>
-		</form>
-		</div>
-		<?php
-	} // END body_content() FUNCTION
+        </p>
+        </div>
+        </form>
+        </div>
+        <?php
+    } // END body_content() FUNCTION
 }
 
 if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-	new giftcardlist();
+    new giftcardlist();
 ?>

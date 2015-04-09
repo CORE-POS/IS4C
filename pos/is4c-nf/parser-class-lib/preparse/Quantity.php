@@ -22,45 +22,45 @@
 *********************************************************************************/
 
 class Quantity extends PreParser {
-	
-	function check($str){
-		if (strstr($str,"*"))
-			return True;
-		return False;
-	}
+    
+    function check($str){
+        if (strstr($str,"*"))
+            return True;
+        return False;
+    }
 
-	function parse($str)
+    function parse($str)
     {
-		if (!strpos($str,"**") && strpos($str,"*") != 0 &&
-		    strpos($str,"*") != strlen($str)-1){
-			$split = explode("*",$str);
-			if (is_numeric($split[0]) &&
-			   (strpos($split[1],"DP") || is_numeric($split[1]))){
-				   CoreLocal::set("quantity",$split[0]);
-				   CoreLocal::set("multiple",1);
-				   $str = $split[1];
-			}
-		}
-		return $str;
-	}
+        if (!strpos($str,"**") && strpos($str,"*") != 0 &&
+            strpos($str,"*") != strlen($str)-1){
+            $split = explode("*",$str);
+            if (is_numeric($split[0]) &&
+               (strpos($split[1],"DP") || is_numeric($split[1]))){
+                   CoreLocal::set("quantity",$split[0]);
+                   CoreLocal::set("multiple",1);
+                   $str = $split[1];
+            }
+        }
+        return $str;
+    }
 
-	function isLast(){
-		return True;
-	}
+    function isLast(){
+        return True;
+    }
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td><i>number</i>*<i>item</i></td>
-				<td>Enter <i>item</i> <i>number</i> times
-				(e.g., 2*item to ring up two of the same
-				item)</td>
-			</tr>
-			</table>";
-	}
+    function doc(){
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td><i>number</i>*<i>item</i></td>
+                <td>Enter <i>item</i> <i>number</i> times
+                (e.g., 2*item to ring up two of the same
+                item)</td>
+            </tr>
+            </table>";
+    }
 }
 
 ?>

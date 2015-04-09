@@ -5,7 +5,7 @@
  */
 class PluginsTest extends PHPUnit_Framework_TestCase
 {
-	public function testAll()
+    public function testAll()
     {
         $path = dirname(__FILE__) . '/../plugins';
         $iter = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path), RecursiveIteratorIterator::CHILD_FIRST, 2);
@@ -51,5 +51,5 @@ class PluginsTest extends PHPUnit_Framework_TestCase
             $provides_class = class_exists($name, false);
             $this->assertEquals($provides_class, true, 'Missing class definition ' . $name);
         }
-	}
+    }
 }

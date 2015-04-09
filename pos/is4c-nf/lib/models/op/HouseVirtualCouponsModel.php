@@ -36,7 +36,7 @@ class HouseVirtualCouponsModel extends BasicModel
     'description' => array('type'=>'VARCHAR(100)'),
     'start_date' => array('type'=>'DATETIME'),
     'end_date' => array('type'=>'DATETIME'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

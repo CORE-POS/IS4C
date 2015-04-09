@@ -17,8 +17,8 @@ $batchInfoR = $sql->execute($batchInfoQ, array($batchID));
 $batchInfoW = $sql->fetch_array($batchInfoR);
 
 $forceQ = $sql->prepare("UPDATE products AS p
-		LEFT JOIN batchListTest as l
-		ON l.upc=p.upc
+        LEFT JOIN batchListTest as l
+        ON l.upc=p.upc
               SET normal_price = l.salePrice,
               modified = now()
               WHERE l.batchID = ?");

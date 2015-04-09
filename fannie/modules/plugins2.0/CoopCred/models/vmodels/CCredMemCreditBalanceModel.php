@@ -41,16 +41,16 @@ class CCredMemCreditBalanceModel extends ViewModel
 
     /*
 Columns:
-	programID int
-	cardNo int
-	availableBal[ance] (calculated) 
-	balance (calculated)
-	mark (calculated)
+    programID int
+    cardNo int
+    availableBal[ance] (calculated) 
+    balance (calculated)
+    mark (calculated)
 
 
 Depends on:
-	CCredMemberships (table)
-	CCredLiveBalance (view of t.dtransactions -> .v.dlog)
+    CCredMemberships (table)
+    CCredLiveBalance (view of t.dtransactions -> .v.dlog)
       so should be created first.
 
 Use:

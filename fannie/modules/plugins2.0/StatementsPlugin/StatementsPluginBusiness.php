@@ -304,7 +304,7 @@ class StatementsPluginBusiness extends FannieRESTfulPage
                 $pdf->SetY(205);
                 $pdf->Cell(0,8,'','B',1);
                 $pdf->Ln(5);
-	
+    
                 $pdf->Cell(30,5,'Whole Foods Co-op');
                 $pdf->Cell(115,5,'');
                 $pdf->Cell(20,5,'Invoice Date:',0,0,'R');
@@ -339,7 +339,7 @@ class StatementsPluginBusiness extends FannieRESTfulPage
 ( ) I do not wish to continue an ad in the next issue.
 ( ) I will contact you at a later date with my advertising decision.");
                 $pdf->Ln(3);
-	
+    
                 $pdf->SetFontSize(12);
                 $pdf->Cell(0,8,'Please Return This Portion With Your Payment',0,0,'C');
             }

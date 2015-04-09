@@ -5,7 +5,7 @@
 class DisplayTest extends PHPUnit_Framework_TestCase
 {
 
-	public function testScreenDisplay()
+    public function testScreenDisplay()
     {
         lttLib::clear();
         $u = new UPC();
@@ -214,7 +214,7 @@ class DisplayTest extends PHPUnit_Framework_TestCase
             $this->compareArrays($records[$i], $view[$i]);
             $this->compareArrays($spec[$i], $view[$i]);
         }
-	}
+    }
 
     private function compareArrays($one, $two)
     {

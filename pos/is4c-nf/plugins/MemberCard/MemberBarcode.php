@@ -33,38 +33,38 @@
 class MemberBarcode extends SpecialUPC 
 {
 
-	public function isSpecial($upc)
+    public function isSpecial($upc)
     {
-		$prefix = CoreLocal::get("memberUpcPrefix");
-		if (substr($upc,0,strlen($prefix)) == $prefix) {
-			return true;
+        $prefix = CoreLocal::get("memberUpcPrefix");
+        if (substr($upc,0,strlen($prefix)) == $prefix) {
+            return true;
         }
 
-		return false;
-	}
+        return false;
+    }
 
-	public function handle($upc,$json)
+    public function handle($upc,$json)
     {
-		$db = Database::pDataConnect();
-		$query = "select card_no from memberCards where upc='$upc'";
-		$result = $db->query($query);
+        $db = Database::pDataConnect();
+        $query = "select card_no from memberCards where upc='$upc'";
+        $result = $db->query($query);
 
-		if ($db->num_rows($result) < 1) {
-			$json['output'] = DisplayLib::boxMsg(
+        if ($db->num_rows($result) < 1) {
+            $json['output'] = DisplayLib::boxMsg(
                 _("Card not assigned"),
                 '',
                 false,
                 DisplayLib::standardClearButton()
             );
 
-			return $json;
-		}
+            return $json;
+        }
 
-		$row = $db->fetch_array($result);
-		CoreLocal::set("memberCardUsed",1);
-		$json = PrehLib::memberID($row[0]);
+        $row = $db->fetch_array($result);
+        CoreLocal::set("memberCardUsed",1);
+        $json = PrehLib::memberID($row[0]);
 
-		return $json;
-	}
+        return $json;
+    }
 }
 

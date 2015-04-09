@@ -41,7 +41,7 @@ class CCredHistoryBackupModel extends BasicModel
         'tdate' => array('type'=>'DATETIME', 'not_null'=>True),
         'transNum' => array('type'=>'VARCHAR(50)', 'not_null'=>True),
         'ccHistoryID' => array('type'=>'INT','primary_key'=>True, 'increment'=>True)
-	);
+    );
 
     public function name()
     {

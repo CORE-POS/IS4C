@@ -31,47 +31,47 @@
 class DefaultReceiptFilter 
 {
 
-	/**
-	  Filtering function
-	  @param $data an SQL result object
-	  @return an array of records
-	*/
-	public function filter($data)
+    /**
+      Filtering function
+      @param $data an SQL result object
+      @return an array of records
+    */
+    public function filter($data)
     {
-		$reverseMap = array();
-		$tenderTTL = 0.00;
-		$tax = False;
-		$discount = False;
-		$returnset = array();
+        $reverseMap = array();
+        $tenderTTL = 0.00;
+        $tax = False;
+        $discount = False;
+        $returnset = array();
 
-		// walk through backwards and pick rows to keep
-		$dbc = Database::tDataConnect();
-		$count = 0;
-		while($row = $dbc->fetch_row($data)) {
-			if ($tax === False && $row['upc'] == 'TAX') {
-				// keep tax row. relevant to total and subtotal
-				$tax = $row;
-			} else if ($discount === False && $row['upc'] == 'DISCOUNT') { 
-				if ($row['total'] == 0) continue;
-				// keep discount row. need to pick up proper % discount still
-				$discount = $row;
-				$discount['trans_type'] = 'S';
-			} else if ($row['trans_type'] == 'T' && $row['department'] == 0){
-				// keep tender rows. use them to calculate total
+        // walk through backwards and pick rows to keep
+        $dbc = Database::tDataConnect();
+        $count = 0;
+        while($row = $dbc->fetch_row($data)) {
+            if ($tax === False && $row['upc'] == 'TAX') {
+                // keep tax row. relevant to total and subtotal
+                $tax = $row;
+            } else if ($discount === False && $row['upc'] == 'DISCOUNT') { 
+                if ($row['total'] == 0) continue;
+                // keep discount row. need to pick up proper % discount still
+                $discount = $row;
+                $discount['trans_type'] = 'S';
+            } else if ($row['trans_type'] == 'T' && $row['department'] == 0){
+                // keep tender rows. use them to calculate total
                 // rows with departments are usually coupons and those
                 // should be treated more like items than like tenders
-				$tenderTTL += $row['total'];
-				$returnset[] = $row;
-				$count++;
-			} else if ($row['trans_type'] == 'I' || $row['trans_type'] == 'D' || ($row['trans_type']=='T' && $row['department'] != 0)){
-				// keep item rows
-				// save department for fetching category headers
-				// and update discount row if necessary
-				if ($discount !== False && $row['percentDiscount'] > $discount['percentDiscount']) {
-					$discount['percentDiscount'] = $row['percentDiscount'];
+                $tenderTTL += $row['total'];
+                $returnset[] = $row;
+                $count++;
+            } else if ($row['trans_type'] == 'I' || $row['trans_type'] == 'D' || ($row['trans_type']=='T' && $row['department'] != 0)){
+                // keep item rows
+                // save department for fetching category headers
+                // and update discount row if necessary
+                if ($discount !== False && $row['percentDiscount'] > $discount['percentDiscount']) {
+                    $discount['percentDiscount'] = $row['percentDiscount'];
                 }
-				if (!isset($reverseMap[$row['category']])) {
-					$reverseMap[$row['category']] = true;
+                if (!isset($reverseMap[$row['category']])) {
+                    $reverseMap[$row['category']] = true;
                 }
                 if ($row['trans_type'] == 'I' && $row['matched'] == 0 && $row['scale'] == 0 && $row['trans_status'] != 'D') {
                     // merge duplicate items
@@ -93,37 +93,37 @@ class DefaultReceiptFilter
                     }
                     if (!$merged) {
                         $returnset[] = $row;
-                        $count++;	
+                        $count++;    
                     }
                 } else {
                     $returnset[] = $row;
-                    $count++;	
+                    $count++;    
                 }
             } else if ($row['trans_type'] == 'C' && $row['trans_subtype'] == 'CM') {
                 // print comment rows as if they were items
                 $row['trans_type'] = 'I';
                 $row['upc'] = 'COMMENT';
-				$returnset[] = $row;
-				$count++;	
-			} else if ($row['trans_type'] == '0' && substr($row['description'],0,7)=="** Tare"){
-				// only deal with tare lines
-				$prev = $count-1;
-				if (isset($returnset[$prev]) && 
+                $returnset[] = $row;
+                $count++;    
+            } else if ($row['trans_type'] == '0' && substr($row['description'],0,7)=="** Tare"){
+                // only deal with tare lines
+                $prev = $count-1;
+                if (isset($returnset[$prev]) && 
                     strlen($returnset[$prev]['description']) > 7 &&
-				    substr($returnset[$prev]['description'], 0, 7) == '** Tare'
+                    substr($returnset[$prev]['description'], 0, 7) == '** Tare'
                    ) { 
-					continue; // ignore repeated tares
-				}
-				$tare = $row;
-				if (isset($returnset[$prev])) {
-					$tare['category'] = $returnset[$prev]['category'];
+                    continue; // ignore repeated tares
                 }
-				$returnset[] = $tare;
-				$count++;
+                $tare = $row;
+                if (isset($returnset[$prev])) {
+                    $tare['category'] = $returnset[$prev]['category'];
+                }
+                $returnset[] = $tare;
+                $count++;
             }
-		}
+        }
 
-		$returnset = array_reverse($returnset);
+        $returnset = array_reverse($returnset);
 
         /**
           Re-write trans_id on member special lines to
@@ -157,26 +157,26 @@ class DefaultReceiptFilter
             array_splice($returnset, $index, 1);
         }
 
-		// add discount, subtotal, tax, and total records to the end
-		if ($discount) {
-			$returnset[] = $discount;
-		}
-		$returnset[] = array('upc'=>'SUBTOTAL','trans_type'=>'S',
-				'total'=>(-1*$tenderTTL) - $tax['total']);
-		if ($tax) {
-			$returnset[] = $tax;
-		}
-		$returnset[] = array('upc'=>'TOTAL','trans_type'=>'S','total'=>-1*$tenderTTL);
-			
-		// add category headers
-		foreach($reverseMap as $catName => $val) {
+        // add discount, subtotal, tax, and total records to the end
+        if ($discount) {
+            $returnset[] = $discount;
+        }
+        $returnset[] = array('upc'=>'SUBTOTAL','trans_type'=>'S',
+                'total'=>(-1*$tenderTTL) - $tax['total']);
+        if ($tax) {
+            $returnset[] = $tax;
+        }
+        $returnset[] = array('upc'=>'TOTAL','trans_type'=>'S','total'=>-1*$tenderTTL);
+            
+        // add category headers
+        foreach($reverseMap as $catName => $val) {
             if (!empty($catName)) {
                 $returnset[] = array('upc'=>'CAT_HEADER','trans_type'=>'H','description'=>$catName);
             }
-		}
+        }
 
-		return $returnset;
-	}
+        return $returnset;
+    }
 
 }
 

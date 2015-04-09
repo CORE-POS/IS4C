@@ -24,27 +24,27 @@
 class ToggleTaxFSDisc extends PreParser 
 {
 
-	private $tfd;
-	private $remainder;
+    private $tfd;
+    private $remainder;
 
-	public $TAX = 4;
-	public $FS = 2;
-	public $DISC = 1;
+    public $TAX = 4;
+    public $FS = 2;
+    public $DISC = 1;
 
-	// use bit-masks to determine the which toggles
-	// should be enabled
-	function check($str)
+    // use bit-masks to determine the which toggles
+    // should be enabled
+    function check($str)
     {
         // ignore comments; they may have all sorts of
         // random character cominations
         if (substr($str, 0, 2) == "CM") {
             return false;
         }
-		$this->tfd = 0;
+        $this->tfd = 0;
         $this->remainder = '';
 
         if (strstr($str, '1TN')) {
-			$this->tfd = $this->tfd | $this->TAX;
+            $this->tfd = $this->tfd | $this->TAX;
             $parts = explode('1TN', $str, 2);
             foreach ($parts as $p) {
                 $this->remainder .= $p;
@@ -52,7 +52,7 @@ class ToggleTaxFSDisc extends PreParser
         }
 
         if (strstr($str, 'DN')) {
-			$this->tfd = $this->tfd | $this->DISC;
+            $this->tfd = $this->tfd | $this->DISC;
             $parts = explode('DN', $str, 2);
             foreach ($parts as $p) {
                 $this->remainder .= $p;
@@ -60,56 +60,56 @@ class ToggleTaxFSDisc extends PreParser
         }
 
         if (strstr($str, 'FN') && !strstr($str, 'FNTL')) {
-			$this->tfd = $this->tfd | $this->FS;
+            $this->tfd = $this->tfd | $this->FS;
             $parts = explode('FN', $str, 2);
             foreach ($parts as $p) {
                 $this->remainder .= $p;
             }
         }
 
-		return $this->tfd != 0 ? true : false;;	
-	}
+        return $this->tfd != 0 ? true : false;;    
+    }
 
-	function parse($str)
+    function parse($str)
     {
-		if ($this->tfd & $this->TAX) {
-			CoreLocal::set("toggletax",1);
+        if ($this->tfd & $this->TAX) {
+            CoreLocal::set("toggletax",1);
         }
-		if ($this->tfd & $this->FS) {
-			CoreLocal::set("togglefoodstamp",1);
+        if ($this->tfd & $this->FS) {
+            CoreLocal::set("togglefoodstamp",1);
         }
-		if ($this->tfd & $this->DISC) {
-			CoreLocal::set("toggleDiscountable",1);
+        if ($this->tfd & $this->DISC) {
+            CoreLocal::set("toggleDiscountable",1);
         }
 
-		return $this->remainder;	
-	}
+        return $this->remainder;    
+    }
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td>1TN<i>ringable</i></td>
-				<td>Toggle tax setting for <i>ringable</i>
-				which may be an item or group of same items
-				using *</td>
-			</tr>
-			<tr>
-				<td>FN<i>ringable</i></td>
-				<td>Toggle foodstamp setting for <i>ringable</i>
-				which may be an item or group of same items
-				using *</td>
-			</tr>
-			<tr>
-				<td>DN<i>ringable</i></td>
-				<td>Toggle discount setting for <i>ringable</i>
-				which may be an item or group of same items
-				using *</td>
-			</tr>
-			</table>";
-	}
+    function doc(){
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td>1TN<i>ringable</i></td>
+                <td>Toggle tax setting for <i>ringable</i>
+                which may be an item or group of same items
+                using *</td>
+            </tr>
+            <tr>
+                <td>FN<i>ringable</i></td>
+                <td>Toggle foodstamp setting for <i>ringable</i>
+                which may be an item or group of same items
+                using *</td>
+            </tr>
+            <tr>
+                <td>DN<i>ringable</i></td>
+                <td>Toggle discount setting for <i>ringable</i>
+                which may be an item or group of same items
+                using *</td>
+            </tr>
+            </table>";
+    }
 }
 
 ?>

@@ -32,139 +32,139 @@
 */
 class Parser {
 
-	/**
-	  Check whether the module handles this input
-	  @param $str The input string
-	  @return 
-	   - True The module handles this input.
-	     The parse method() will be called next.
-	   - False The module does not handle this input.
-	     The parse method() will not be called and
-	     processing will proceed to the next Parser module.
+    /**
+      Check whether the module handles this input
+      @param $str The input string
+      @return 
+       - True The module handles this input.
+         The parse method() will be called next.
+       - False The module does not handle this input.
+         The parse method() will not be called and
+         processing will proceed to the next Parser module.
 
-	*/
-	function check($str){
-	
-	}
+    */
+    function check($str){
+    
+    }
 
-	/**
-	  Deal with the input
-	  @param $str The input string
-	  @return mixed
+    /**
+      Deal with the input
+      @param $str The input string
+      @return mixed
 
-	  Parse modules a keyed array: 
-	   - main_frame If set, change page to this URL
-	   - output HTML output to be displayed
-	   - target Javascript selector string describing which
-	     element should contain the output
-	   - redraw_footer True or False. Set to True if
-	     totals have changed.
-	   - receipt False or string type. Print a receipt with
-	     the given type.
+      Parse modules a keyed array: 
+       - main_frame If set, change page to this URL
+       - output HTML output to be displayed
+       - target Javascript selector string describing which
+         element should contain the output
+       - redraw_footer True or False. Set to True if
+         totals have changed.
+       - receipt False or string type. Print a receipt with
+         the given type.
        - trans_num string current transaction identifier
-	   - scale Update the scale display and session variables
-	   - udpmsg False or string. Send a message to hardware
-	     device(s)
-	   - retry False or string. Try the input again shortly.
+       - scale Update the scale display and session variables
+       - udpmsg False or string. Send a message to hardware
+         device(s)
+       - retry False or string. Try the input again shortly.
 
-	   The utility method default_json() provides an array
-	   with the proper keys and sane default values.
-	*/
-	function parse($str){
+       The utility method default_json() provides an array
+       with the proper keys and sane default values.
+    */
+    function parse($str){
 
-	}
+    }
 
-	/**
-	  A return array for parse() with proper keys
-	  @return array
-	
-	  See parse() method
-	*/
-	function default_json()
+    /**
+      A return array for parse() with proper keys
+      @return array
+    
+      See parse() method
+    */
+    function default_json()
     {
-		return array(
-			'main_frame'=>false,
-			'target'=>'.baseHeight',
-			'output'=>false,
-			'redraw_footer'=>false,
-			'receipt'=>false,
+        return array(
+            'main_frame'=>false,
+            'target'=>'.baseHeight',
+            'output'=>false,
+            'redraw_footer'=>false,
+            'receipt'=>false,
             'trans_num'=>ReceiptLib::receiptNumber(),
-			'scale'=>false,
-			'udpmsg'=>false,
-			'retry'=>false
-			);
-	}
+            'scale'=>false,
+            'udpmsg'=>false,
+            'retry'=>false
+            );
+    }
 
-	/**
-	  Make this module last
-	  @return True or False
+    /**
+      Make this module last
+      @return True or False
 
-	  Modules are not run in any guaranteed order.
-	  Return True will force this module to be last.
+      Modules are not run in any guaranteed order.
+      Return True will force this module to be last.
 
-	  BE VERY VERY CAREFUL IF YOU OVERRIDE THIS.
-	  Quantity is the last preparse module and
-	  DefaultTender is the last parse module. Making
-	  your own module last will break one of these
-	  and probably make a mess.
-	*/
-	function isLast(){
-		return False;
-	}
+      BE VERY VERY CAREFUL IF YOU OVERRIDE THIS.
+      Quantity is the last preparse module and
+      DefaultTender is the last parse module. Making
+      your own module last will break one of these
+      and probably make a mess.
+    */
+    function isLast(){
+        return False;
+    }
 
-	/**
-	  Make this module first
-	  @return True or False
+    /**
+      Make this module first
+      @return True or False
 
-	  Modules are not run in any guaranteed order.
-	  Return True will force this module to be first
-	  (or nearly first if multiple modules override
-	  this method)
-	*/
-	function isFirst(){
-		return False;
-	}
+      Modules are not run in any guaranteed order.
+      Return True will force this module to be first
+      (or nearly first if multiple modules override
+      this method)
+    */
+    function isFirst(){
+        return False;
+    }
 
-	/**
-	  Display documentation
-	  @return A string describing the module
-	
-	  Ideally you should note what your module it does
-	  and what the input format is.
-	*/
-	function doc(){
-		return "Developer didn't document this module very well";
-	}
+    /**
+      Display documentation
+      @return A string describing the module
+    
+      Ideally you should note what your module it does
+      and what the input format is.
+    */
+    function doc(){
+        return "Developer didn't document this module very well";
+    }
 
-	/**
-	  Gather parse modules
-	  @return array of Parser class names
+    /**
+      Gather parse modules
+      @return array of Parser class names
 
-	  Scan the parse directory for module files.
-	  Return an array of available modules.
-	*/
-	static public function get_parse_chain(){
+      Scan the parse directory for module files.
+      Return an array of available modules.
+    */
+    static public function get_parse_chain(){
 
-		$set = AutoLoader::ListModules('Parser');
-		$set = array_reverse($set);
+        $set = AutoLoader::ListModules('Parser');
+        $set = array_reverse($set);
 
-		$parse_chain = array();
-		$first = "";
-		foreach($set as $classname){	
-			$instance = new $classname();
-			if ($instance->isLast()){
-				array_push($parse_chain,$classname);
-			}
-			elseif ($instance->isFirst())
-				$first = $classname;
-			else
-				array_unshift($parse_chain,$classname);
-		}
-		if ($first != "")
-			array_unshift($parse_chain,$first);
+        $parse_chain = array();
+        $first = "";
+        foreach($set as $classname){    
+            $instance = new $classname();
+            if ($instance->isLast()){
+                array_push($parse_chain,$classname);
+            }
+            elseif ($instance->isFirst())
+                $first = $classname;
+            else
+                array_unshift($parse_chain,$classname);
+        }
+        if ($first != "")
+            array_unshift($parse_chain,$first);
 
-		return $parse_chain;
-	}
+        return $parse_chain;
+    }
 
 }
 

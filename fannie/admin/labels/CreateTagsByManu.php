@@ -49,21 +49,21 @@ class CreateTagsByManu extends FanniePage {
                 $cond = " x.manufacturer LIKE ? ";
             $dbc = FannieDB::get($FANNIE_OP_DB);
             $q = $dbc->prepare_statement("
-			    SELECT
-			        p.upc,
-			        p.description,
-			        p.normal_price,
-				    x.manufacturer,
-				    x.distributor,
-				    v.sku,
-				    v.size AS pack_size_and_units,
-				    CASE WHEN v.units IS NULL THEN 1 ELSE v.units END AS units_per_case
-				FROM
-				    products AS p
-				    LEFT JOIN prodExtra AS x ON p.upc=x.upc
-				    LEFT JOIN vendorItems AS v ON p.upc=v.upc
-				    LEFT JOIN vendors AS n ON v.vendorID=n.vendorID
-				WHERE $cond
+                SELECT
+                    p.upc,
+                    p.description,
+                    p.normal_price,
+                    x.manufacturer,
+                    x.distributor,
+                    v.sku,
+                    v.size AS pack_size_and_units,
+                    CASE WHEN v.units IS NULL THEN 1 ELSE v.units END AS units_per_case
+                FROM
+                    products AS p
+                    LEFT JOIN prodExtra AS x ON p.upc=x.upc
+                    LEFT JOIN vendorItems AS v ON p.upc=v.upc
+                    LEFT JOIN vendors AS n ON v.vendorID=n.vendorID
+                WHERE $cond
                 ORDER BY p.upc,
                     CASE WHEN p.default_vendor_id=v.vendorID THEN 0 ELSE 1 END,
                     CASE WHEN x.distributor=n.vendorName THEN 0 ELSE 1 END,

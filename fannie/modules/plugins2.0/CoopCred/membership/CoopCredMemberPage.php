@@ -30,24 +30,24 @@ if (!class_exists('FannieAPI')) {
 class CoopCredMemberPage extends FanniePage {
 
     protected $pluginHome = 'modules/plugins2.0/CoopCred/';
-	private $country;
-	private $memNum;
+    private $country;
+    private $memNum;
 
     function preprocess(){
         global $FANNIE_PLUGIN_LIST, $FANNIE_PLUGIN_SETTINGS;
 
         if (!isset($FANNIE_PLUGIN_LIST) || !in_array('CoopCred', $FANNIE_PLUGIN_LIST)) {
-			$this->errors .= _("Error: The Coop Cred Plugin is not enabled.");
-			return True;
+            $this->errors .= _("Error: The Coop Cred Plugin is not enabled.");
+            return True;
         }
 
         if (!array_key_exists('CoopCredDatabase', $FANNIE_PLUGIN_SETTINGS) ||
             $FANNIE_PLUGIN_SETTINGS['CoopCredDatabase'] == "") {
-			$this->errors .= _("Error: Coop Cred Database not named in Plugin Settings.");
-			return True;
+            $this->errors .= _("Error: Coop Cred Database not named in Plugin Settings.");
+            return True;
         }
 
-		$this->country = (isset($FANNIE_COUNTRY)&&!empty($FANNIE_COUNTRY))?$FANNIE_COUNTRY:"US";
+        $this->country = (isset($FANNIE_COUNTRY)&&!empty($FANNIE_COUNTRY))?$FANNIE_COUNTRY:"US";
         $this->memNum = FormLib::get_form_value('memNum');
 
         /* Support ajax calls to this program.
@@ -55,10 +55,10 @@ class CoopCredMemberPage extends FanniePage {
          * The form submission may be via AJAX instead of <form ...>
          *  with action= in the query string with other parameters.
          */
-		if(FormLib::get_form_value('action') !== ''){
-			$this->ajax_response(FormLib::get_form_value('action'));
-			return False;
-		}
+        if(FormLib::get_form_value('action') !== ''){
+            $this->ajax_response(FormLib::get_form_value('action'));
+            return False;
+        }
 
         /* If the call was not by form, e.g. from the initial menu
          * or the <form action=> is '' (when does that happen?)
@@ -68,7 +68,7 @@ class CoopCredMemberPage extends FanniePage {
         return True;
 
     // preprocess()
-	}
+    }
 
     /* Handles one of the requests assumed to be AJAX.
      * The output of the handler (responder) is a string which can be HTML
@@ -77,23 +77,23 @@ class CoopCredMemberPage extends FanniePage {
      *   - assigns to <div id=infodiv>
      *   - displays with JS alert()
      */
-	function ajax_response($action){
-		switch($action){
-		case 'programDisplay':
-			$this->ajax_display_program(FormLib::get_form_value('pid',0));
-			break;
-		case 'programSave':
+    function ajax_response($action){
+        switch($action){
+        case 'programDisplay':
+            $this->ajax_display_program(FormLib::get_form_value('pid',0));
+            break;
+        case 'programSave':
             /* Return success/failure/problem (duplicate-use)?
              * I want to return to the display with error messages
              *  and/or error inputs highlighted.
              */
-			$this->ajax_save_program();
-			break;
-		default:
-			echo 'Bad request';
-			break;
-		}
-	}
+            $this->ajax_save_program();
+            break;
+        default:
+            echo 'Bad request';
+            break;
+        }
+    }
 
     /* Echo the data capture form.
      */
@@ -113,8 +113,8 @@ class CoopCredMemberPage extends FanniePage {
 
         echo $ret;
 
-	// ajax_display_program()
-	}
+    // ajax_display_program()
+    }
 
 // CoopCredMemberPage class
 }

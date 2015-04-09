@@ -23,11 +23,11 @@
 
 class AlwaysFoodstampTotal extends Plugin {
 
-	public $plugin_description = 'Always display foodstamp total. Provides
-			two new footer boxes. AlwaysFsTotalFooter should probably
-			replace the defaultMultiTotal to show Total/Due/Change.
-			AlwaysFsEligibleFooter can go in one of the other slots
-			to show the foodstamp eligible total.';	
+    public $plugin_description = 'Always display foodstamp total. Provides
+            two new footer boxes. AlwaysFsTotalFooter should probably
+            replace the defaultMultiTotal to show Total/Due/Change.
+            AlwaysFsEligibleFooter can go in one of the other slots
+            to show the foodstamp eligible total.';    
 
-	public $plugin_settings = array();
+    public $plugin_settings = array();
 }

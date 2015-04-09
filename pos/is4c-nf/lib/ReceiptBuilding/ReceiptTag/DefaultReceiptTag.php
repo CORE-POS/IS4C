@@ -30,15 +30,15 @@
 class DefaultReceiptTag 
 {
 
-	/**
-	  Tagging function
-	  @param $rowset an array of records
-	  @return an array of records
-	*/
-	public function tag($rowset)
+    /**
+      Tagging function
+      @param $rowset an array of records
+      @return an array of records
+    */
+    public function tag($rowset)
     {
-		for($i=0;$i<count($rowset);$i++) {
-			switch($rowset[$i]['trans_type']) {
+        for($i=0;$i<count($rowset);$i++) {
+            switch($rowset[$i]['trans_type']) {
                 case 'T':
                     if ($rowset[$i]['department'] == 0) {
                         $rowset[$i]['tag'] = 'Tender';
@@ -57,10 +57,10 @@ class DefaultReceiptTag
                 default:
                     $rowset[$i]['tag'] = 'Total';
                     break;
-			}
-		}
-		
-		return $rowset;
-	}
+            }
+        }
+        
+        return $rowset;
+    }
 }
 

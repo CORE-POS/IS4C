@@ -28,7 +28,7 @@ class DDDReason extends NoInputPage
 {
     private $reasons = array();
 
-	public function preprocess()
+    public function preprocess()
     {
         // pre-emptively lookup available reasons
         $db = Database::pDataConnect();
@@ -38,7 +38,7 @@ class DDDReason extends NoInputPage
             // no reasons configured. skip the 
             // this page and continue to next step.
             CoreLocal::set('shrinkReason', 0);
-			$this->change_page($this->page_url."gui-modules/adminlogin.php?class=DDDAdminLogin");
+            $this->change_page($this->page_url."gui-modules/adminlogin.php?class=DDDAdminLogin");
 
             return false;
         } else if ($db->num_rows($result) == 1) {
@@ -47,7 +47,7 @@ class DDDReason extends NoInputPage
             // to next step
             $row = $db->fetch_row($result);
             CoreLocal::set('shrinkReason', $row['shrinkReasonID']);
-			$this->change_page($this->page_url."gui-modules/adminlogin.php?class=DDDAdminLogin");
+            $this->change_page($this->page_url."gui-modules/adminlogin.php?class=DDDAdminLogin");
 
             return false;
         } else {
@@ -56,55 +56,55 @@ class DDDReason extends NoInputPage
             }
         }
 
-		if (isset($_REQUEST["selectlist"])) {
-			$input = $_REQUEST["selectlist"];
-			if ($input == "CL" || $input == '') {
-				CoreLocal::set("shrinkReason", 0);
+        if (isset($_REQUEST["selectlist"])) {
+            $input = $_REQUEST["selectlist"];
+            if ($input == "CL" || $input == '') {
+                CoreLocal::set("shrinkReason", 0);
                 $this->change_page($this->page_url."gui-modules/pos2.php");
-			} else {
-				CoreLocal::set("shrinkReason", (int)$input);
+            } else {
+                CoreLocal::set("shrinkReason", (int)$input);
                 $this->change_page($this->page_url."gui-modules/adminlogin.php?class=DDDAdminLogin");
-			}
+            }
 
-			return false;
-		}
+            return false;
+        }
 
-		return true;
-	}
-	
-	public function head_content()
+        return true;
+    }
+    
+    public function head_content()
     {
         echo '<script type="text/javascript" src="../js/selectSubmit.js"></script>';
-	} 
+    } 
 
-	public function body_content() 
+    public function body_content() 
     {
-		?>
-		<div class="baseHeight">
-		<div class="centeredDisplay colored">
+        ?>
+        <div class="baseHeight">
+        <div class="centeredDisplay colored">
                 <span class="larger">Why are these items being marked as shrink/unsellable?</span>
-		<form name="selectform" method="post" 
-			id="selectform" action="<?php echo $_SERVER['PHP_SELF']; ?>">
-			<select name="selectlist" id="selectlist"
-				onblur="$('#selectlist').focus();">
+        <form name="selectform" method="post" 
+            id="selectform" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+            <select name="selectlist" id="selectlist"
+                onblur="$('#selectlist').focus();">
             <?php
             foreach($this->reasons as $id => $label) {
                 printf('<option value="%d">%s</option>', $id, $label);
             }
             ?>
-			</select>
-		</form>
-		<p>
-		<span class="smaller">[clear] to cancel</span>
-		</p>
-		</div>
-		</div>	
-		<?php
-		$this->add_onload_command("\$('#selectlist').focus();\n");
+            </select>
+        </form>
+        <p>
+        <span class="smaller">[clear] to cancel</span>
+        </p>
+        </div>
+        </div>    
+        <?php
+        $this->add_onload_command("\$('#selectlist').focus();\n");
         $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
-	} // END body_content() FUNCTION
+    } // END body_content() FUNCTION
 }
 
 if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-	new DDDReason();
+    new DDDReason();
 ?>

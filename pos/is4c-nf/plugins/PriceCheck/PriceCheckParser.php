@@ -22,38 +22,38 @@
 *********************************************************************************/
 
 class PriceCheckParser extends Parser {
-	function check($str){
-		if ($str == "PC")
-			return True;
-		else if (substr($str,0,2)=="PC" && is_numeric(substr($str,2)))
-			return True;
-		return False;
-	}
+    function check($str){
+        if ($str == "PC")
+            return True;
+        else if (substr($str,0,2)=="PC" && is_numeric(substr($str,2)))
+            return True;
+        return False;
+    }
 
-	function parse($str){
-		$ret = $this->default_json();
-		$plugin_info = new PriceCheck();
-		$ret['main_frame'] = $plugin_info->plugin_url().'/PriceCheckPage.php';
-		if (strlen($str)>2)
-			$ret['main_frame'] .= "?upc=".substr($str,2);
-		return $ret;
-	}
+    function parse($str){
+        $ret = $this->default_json();
+        $plugin_info = new PriceCheck();
+        $ret['main_frame'] = $plugin_info->plugin_url().'/PriceCheckPage.php';
+        if (strlen($str)>2)
+            $ret['main_frame'] .= "?upc=".substr($str,2);
+        return $ret;
+    }
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td>PC</td>
-				<td>Do a price check</td>
-			</tr>
-			<tr>
-				<td>PC<UPC></td>
-				<td>Price check the specified UPC</td>
-			</tr>
-			</table>";
-	}
+    function doc(){
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td>PC</td>
+                <td>Do a price check</td>
+            </tr>
+            <tr>
+                <td>PC<UPC></td>
+                <td>Price check the specified UPC</td>
+            </tr>
+            </table>";
+    }
 
 }
 

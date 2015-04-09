@@ -27,15 +27,15 @@
  */
 class CoopCredCheckQ extends Parser {
 
-	function check($str){
-		if ($str == "QQ")
-			return True;
-		return False;
-	}
+    function check($str){
+        if ($str == "QQ")
+            return True;
+        return False;
+    }
 
-	function parse($str){
-		global $CORE_LOCAL;
-		$ret = $this->default_json();
+    function parse($str){
+        global $CORE_LOCAL;
+        $ret = $this->default_json();
         $pStyle = "<p style='font-weight:bold; text-align:center; margin: 0em 0em 0em -1.0em;'>";
         if (!in_array('CoopCred', $CORE_LOCAL->get('PluginList'))) {
             $message = "{$pStyle}" .
@@ -160,25 +160,25 @@ class CoopCredCheckQ extends Parser {
         $message .= "</table>";
         $message .= "</div>";
         $ret['output'] = DisplayLib::boxMsg("$message","",True);
-		return $ret;
-	}
+        return $ret;
+    }
 
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td>QQ</td>
+    function doc(){
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td>QQ</td>
                 <td>Display All Coop Cred
                 Program statuses
                 and
                 balances
                 for currently entered member</td>
-			</tr>
-			</table>";
-	}
+            </tr>
+            </table>";
+    }
 
 }
 

@@ -196,14 +196,14 @@ $r = $dbc->exec_statement($q);
 $header="";
 $i=1;
 while($w = $dbc->fetch_row($r)){
-	if ($header != $w['type']){
-		echo '<h3>'.$TRANSLATE[$w['type']].'</h3>';
-		$header = $w['type'];	
-		$i=1;
-	}
-	printf('<p>%d:<input type="text" size="55" maxlength="55" name="old_content[]" value="%s" />
-		<input type="hidden" name="old_type[]" value="%s" /></p>',
-		$i++,$w['text'],$w['type']);
+    if ($header != $w['type']){
+        echo '<h3>'.$TRANSLATE[$w['type']].'</h3>';
+        $header = $w['type'];    
+        $i=1;
+    }
+    printf('<p>%d:<input type="text" size="55" maxlength="55" name="old_content[]" value="%s" />
+        <input type="hidden" name="old_type[]" value="%s" /></p>',
+        $i++,$w['text'],$w['type']);
 }
 ?>
 <input type="submit" name="old_submit" value="Save Changes" />

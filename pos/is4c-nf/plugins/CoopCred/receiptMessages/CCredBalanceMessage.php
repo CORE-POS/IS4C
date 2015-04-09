@@ -46,8 +46,8 @@ class CCredBalanceMessage extends CustomerReceiptMessage {
       @return [string] message about Available Balance for each Program
       the member belongs to.
     */
-	public function message($str){
-		global $CORE_LOCAL;
+    public function message($str){
+        global $CORE_LOCAL;
 
         $lineStart = "";
         $lineEnd = "\n";
@@ -129,9 +129,9 @@ class CCredBalanceMessage extends CustomerReceiptMessage {
             }
         }
 
-		return $ret;
+        return $ret;
 
-	}
+    }
 
 }
 

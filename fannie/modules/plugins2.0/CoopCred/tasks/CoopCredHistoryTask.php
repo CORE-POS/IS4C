@@ -54,7 +54,7 @@ class CoopCredHistoryTask extends FannieTask
     );
 
     public function __construct() {
-				$this->description = $this->name . "\n" . $this->description;
+                $this->description = $this->name . "\n" . $this->description;
         //parent::__construct();
     }
 

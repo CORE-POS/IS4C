@@ -28,10 +28,10 @@
 class CCredProgramsModel extends BasicModel
 {
 
-	// The actual name of the table.
-	protected $name = 'CCredPrograms';
+    // The actual name of the table.
+    protected $name = 'CCredPrograms';
 
-	protected $columns = array(
+    protected $columns = array(
         'programID' => array('type'=>'SMALLINT(6)', 'default'=>0, 'primary_key'=>True,
             'increment'=>True),
         'programName' => array('type'=>'VARCHAR(100)', 'not_null'=>True,
@@ -65,14 +65,14 @@ class CCredProgramsModel extends BasicModel
         'tenderName' => array('type'=>'VARCHAR(25)', 'not_null'=>True, 'default'=>"''"),
         // Text for tender keycap, or very short-form references.
         'tenderKeyCap' => array('type'=>'VARCHAR(25)', 'not_null'=>True, 'default'=>"''")
-	);
+    );
 
     public function name()
     {
         return $this->name;
     }
 
-	/* START ACCESSOR FUNCTIONS */
+    /* START ACCESSOR FUNCTIONS */
 
     public function programID()
     {
@@ -454,7 +454,7 @@ class CCredProgramsModel extends BasicModel
         }
     }
 
-	/* END ACCESSOR FUNCTIONS */
+    /* END ACCESSOR FUNCTIONS */
 
 // class CCredPrograms
 }

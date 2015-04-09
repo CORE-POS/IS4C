@@ -37,118 +37,118 @@ class DisplayLib extends LibraryClass {
 */
 static public function printfooter($readOnly=False) 
 {
-	$FOOTER_MODULES = CoreLocal::get("FooterModules");
-	// use defaults if modules haven't been configured
-	// properly
-	if (!is_array($FOOTER_MODULES) || count($FOOTER_MODULES) != 5) {
-		$FOOTER_MODULES = array(
-		'SavedOrCouldHave',
-		'TransPercentDiscount',
-		'MemSales',
-		'EveryoneSales',
-		'MultiTotal'
-		);
-	}
-	
-	$modchain = array();
-	foreach($FOOTER_MODULES as $MOD) {
-		$modchain[] = new $MOD();
-	}
-
-	if (!$readOnly) {
-		CoreLocal::set("runningTotal",CoreLocal::get("amtdue"));
-	}
-
-	if (CoreLocal::get("End") == 1 && !$readOnly) {
-		CoreLocal::set("runningTotal",-1 * CoreLocal::get("change"));
-	}
-	
-	if (CoreLocal::get("scale") == 1) {
-		$weight = number_format(CoreLocal::get("weight"), 2)."lb.";
-	} else {
-		$weight = "_ _ _ _";
-	}
-
-	$ret = "<table>";
-	$ret .= "<tr class=\"heading\">";
-	$label = $modchain[0]->header_content();
-	$ret .= sprintf('<td class="first %s" style="%s">%s</td>',
-			$modchain[0]->header_css_class, $modchain[0]->header_css,$label);
-	$label = $modchain[1]->header_content();
-	$ret .= sprintf('<td class="reg %s" style="%s">%s</td>',
-			$modchain[1]->header_css_class, $modchain[1]->header_css,$label);
-	$label = $modchain[2]->header_content();
-	$ret .= sprintf('<td class="reg %s" style="%s">%s</td>',
-			$modchain[2]->header_css_class, $modchain[2]->header_css,$label);
-	$label = $modchain[3]->header_content();
-	$ret .= sprintf('<td class="reg %s" style="%s">%s</td>',
-			$modchain[3]->header_css_class, $modchain[3]->header_css,$label);
-	$label = $modchain[4]->header_content();
-	$ret .= sprintf('<td class="total %s" style="%s">%s</td>',
-			$modchain[4]->header_css_class, $modchain[4]->header_css,$label);
-	$ret .= "</tr>";
-
-	$special = CoreLocal::get("memSpecial") + CoreLocal::get("staffSpecial");
-	$dbldiscounttotal = 0.00;
-	if (is_numeric(CoreLocal::get('discounttotal'))) {
-		$dbldiscounttotal = number_format(CoreLocal::get("discounttotal"), 2);
+    $FOOTER_MODULES = CoreLocal::get("FooterModules");
+    // use defaults if modules haven't been configured
+    // properly
+    if (!is_array($FOOTER_MODULES) || count($FOOTER_MODULES) != 5) {
+        $FOOTER_MODULES = array(
+        'SavedOrCouldHave',
+        'TransPercentDiscount',
+        'MemSales',
+        'EveryoneSales',
+        'MultiTotal'
+        );
+    }
+    
+    $modchain = array();
+    foreach($FOOTER_MODULES as $MOD) {
+        $modchain[] = new $MOD();
     }
 
-	if (CoreLocal::get("isMember") == 1) {
-		$dblyousaved = number_format( CoreLocal::get("transDiscount") + $dbldiscounttotal + $special, 2);
-		if (!$readOnly) {
-			CoreLocal::set("yousaved",$dblyousaved);
-			CoreLocal::set("couldhavesaved",0);
-			CoreLocal::set("specials",number_format($dbldiscounttotal + $special, 2));
-		}
-	} else {
-		$dblyousaved = 0.00;
-		if (is_numeric(CoreLocal::get('memSpecial'))) {
-			$dblyousaved = number_format(CoreLocal::get("memSpecial"), 2);
+    if (!$readOnly) {
+        CoreLocal::set("runningTotal",CoreLocal::get("amtdue"));
+    }
+
+    if (CoreLocal::get("End") == 1 && !$readOnly) {
+        CoreLocal::set("runningTotal",-1 * CoreLocal::get("change"));
+    }
+    
+    if (CoreLocal::get("scale") == 1) {
+        $weight = number_format(CoreLocal::get("weight"), 2)."lb.";
+    } else {
+        $weight = "_ _ _ _";
+    }
+
+    $ret = "<table>";
+    $ret .= "<tr class=\"heading\">";
+    $label = $modchain[0]->header_content();
+    $ret .= sprintf('<td class="first %s" style="%s">%s</td>',
+            $modchain[0]->header_css_class, $modchain[0]->header_css,$label);
+    $label = $modchain[1]->header_content();
+    $ret .= sprintf('<td class="reg %s" style="%s">%s</td>',
+            $modchain[1]->header_css_class, $modchain[1]->header_css,$label);
+    $label = $modchain[2]->header_content();
+    $ret .= sprintf('<td class="reg %s" style="%s">%s</td>',
+            $modchain[2]->header_css_class, $modchain[2]->header_css,$label);
+    $label = $modchain[3]->header_content();
+    $ret .= sprintf('<td class="reg %s" style="%s">%s</td>',
+            $modchain[3]->header_css_class, $modchain[3]->header_css,$label);
+    $label = $modchain[4]->header_content();
+    $ret .= sprintf('<td class="total %s" style="%s">%s</td>',
+            $modchain[4]->header_css_class, $modchain[4]->header_css,$label);
+    $ret .= "</tr>";
+
+    $special = CoreLocal::get("memSpecial") + CoreLocal::get("staffSpecial");
+    $dbldiscounttotal = 0.00;
+    if (is_numeric(CoreLocal::get('discounttotal'))) {
+        $dbldiscounttotal = number_format(CoreLocal::get("discounttotal"), 2);
+    }
+
+    if (CoreLocal::get("isMember") == 1) {
+        $dblyousaved = number_format( CoreLocal::get("transDiscount") + $dbldiscounttotal + $special, 2);
+        if (!$readOnly) {
+            CoreLocal::set("yousaved",$dblyousaved);
+            CoreLocal::set("couldhavesaved",0);
+            CoreLocal::set("specials",number_format($dbldiscounttotal + $special, 2));
         }
-		if (!$readOnly) {
-			CoreLocal::set("yousaved",$dbldiscounttotal + CoreLocal::get("staffSpecial"));
-			CoreLocal::set("couldhavesaved",$dblyousaved);
-			CoreLocal::set("specials",$dbldiscounttotal + CoreLocal::get("staffSpecial"));
-		}
-	}
+    } else {
+        $dblyousaved = 0.00;
+        if (is_numeric(CoreLocal::get('memSpecial'))) {
+            $dblyousaved = number_format(CoreLocal::get("memSpecial"), 2);
+        }
+        if (!$readOnly) {
+            CoreLocal::set("yousaved",$dbldiscounttotal + CoreLocal::get("staffSpecial"));
+            CoreLocal::set("couldhavesaved",$dblyousaved);
+            CoreLocal::set("specials",$dbldiscounttotal + CoreLocal::get("staffSpecial"));
+        }
+    }
 
-	if (!$readOnly) {
-		if (CoreLocal::get("End") == 1) {
-			MiscLib::rePoll();
-		}
-		if (CoreLocal::get("scale") == 0 && CoreLocal::get("SNR") != 0) {
-			MiscLib::rePoll();
-		}
-	}
+    if (!$readOnly) {
+        if (CoreLocal::get("End") == 1) {
+            MiscLib::rePoll();
+        }
+        if (CoreLocal::get("scale") == 0 && CoreLocal::get("SNR") != 0) {
+            MiscLib::rePoll();
+        }
+    }
 
-	$ret .= "<tr class=\"values\">";
-	$box = $modchain[0]->display_content();
-	$ret .= sprintf('<td class="first %s" style="%s">%s</td>',
-			$modchain[0]->display_css_class,$modchain[0]->display_css,$box);
-	$box = $modchain[1]->display_content();
-	$ret .= sprintf('<td class="reg %s" style="%s">%s</td>',
-			$modchain[1]->display_css_class,$modchain[1]->display_css,$box);
-	$box = $modchain[2]->display_content();
-	$ret .= sprintf('<td class="reg %s" style="%s">%s</td>',
-			$modchain[2]->display_css_class,$modchain[2]->display_css,$box);
-	$box = $modchain[3]->display_content();
-	$ret .= sprintf('<td class="reg %s" style="%s">%s</td>',
-			$modchain[3]->display_css_class,$modchain[3]->display_css,$box);
-	$box = $modchain[4]->display_content();
-	$ret .= sprintf('<td class="total %s" style="%s">%s</td>',
-			$modchain[4]->display_css_class,$modchain[4]->display_css,$box);
-	$ret .= "</tr>";
-	$ret .= "</table>";
+    $ret .= "<tr class=\"values\">";
+    $box = $modchain[0]->display_content();
+    $ret .= sprintf('<td class="first %s" style="%s">%s</td>',
+            $modchain[0]->display_css_class,$modchain[0]->display_css,$box);
+    $box = $modchain[1]->display_content();
+    $ret .= sprintf('<td class="reg %s" style="%s">%s</td>',
+            $modchain[1]->display_css_class,$modchain[1]->display_css,$box);
+    $box = $modchain[2]->display_content();
+    $ret .= sprintf('<td class="reg %s" style="%s">%s</td>',
+            $modchain[2]->display_css_class,$modchain[2]->display_css,$box);
+    $box = $modchain[3]->display_content();
+    $ret .= sprintf('<td class="reg %s" style="%s">%s</td>',
+            $modchain[3]->display_css_class,$modchain[3]->display_css,$box);
+    $box = $modchain[4]->display_content();
+    $ret .= sprintf('<td class="total %s" style="%s">%s</td>',
+            $modchain[4]->display_css_class,$modchain[4]->display_css,$box);
+    $ret .= "</tr>";
+    $ret .= "</table>";
 
-	if (!$readOnly) {
-		$ret .= "<form name='hidden'>\n";
-		$ret .= "<input type='hidden' id='ccTermOut' name='ccTermOut' value=\"".CoreLocal::get("ccTermOut")."\">\n";
-		$ret .= "</form>";
-		CoreLocal::set("ccTermOut","idle");
-	}
+    if (!$readOnly) {
+        $ret .= "<form name='hidden'>\n";
+        $ret .= "<input type='hidden' id='ccTermOut' name='ccTermOut' value=\"".CoreLocal::get("ccTermOut")."\">\n";
+        $ret .= "</form>";
+        CoreLocal::set("ccTermOut","idle");
+    }
 
-	return $ret;
+    return $ret;
 }
 
 //--------------------------------------------------------------------//
@@ -160,7 +160,7 @@ static public function printfooter($readOnly=False)
 */
 static public function plainmsg($strmsg) 
 {
-	return "<div id=\"plainmsg\" class=\"coloredText\">$strmsg</div>";
+    return "<div id=\"plainmsg\" class=\"coloredText\">$strmsg</div>";
 }
 
 
@@ -181,20 +181,20 @@ static public function plainmsg($strmsg)
 */
 static public function msgbox($strmsg, $icon, $noBeep=false, $buttons=array()) 
 {
-	$ret = self::printheaderb();
-	$ret .= "<div id=\"boxMsg\" class=\"centeredDisplay\">";
-	$ret .= "<div class=\"boxMsgAlert coloredArea\">";
-	$ret .= CoreLocal::get("alertBar");
+    $ret = self::printheaderb();
+    $ret .= "<div id=\"boxMsg\" class=\"centeredDisplay\">";
+    $ret .= "<div class=\"boxMsgAlert coloredArea\">";
+    $ret .= CoreLocal::get("alertBar");
     if (CoreLocal::get('alertBar') == '') {
         $ret .= 'Alert';
     }
-	$ret .= "</div>";
-	$ret .= "
+    $ret .= "</div>";
+    $ret .= "
         <div class=\"boxMsgBody\">
             <div class=\"msgicon\"><img src=\"$icon\" /></div>
-	        <div class=\"msgtext\">"
-	            . $strmsg . "
-	        </div>
+            <div class=\"msgtext\">"
+                . $strmsg . "
+            </div>
             <div class=\"clear\"></div>
         </div>";
     if (!empty($buttons) && is_array($buttons)) {
@@ -208,7 +208,7 @@ static public function msgbox($strmsg, $icon, $noBeep=false, $buttons=array())
         }
         $ret .= '</div>';
     }
-	$ret .= "</div>"; // close #boxMsg
+    $ret .= "</div>"; // close #boxMsg
 
     // input has probably already been marked up for display. 
     // no need to re-wrap in various <div>s
@@ -216,14 +216,14 @@ static public function msgbox($strmsg, $icon, $noBeep=false, $buttons=array())
         $ret = $strmsg;
     }
 
-	if (!$noBeep) {
-		MiscLib::errorBeep();
+    if (!$noBeep) {
+        MiscLib::errorBeep();
     }
 
-	CoreLocal::set("strRemembered",CoreLocal::get("strEntered"));
-	CoreLocal::set("msgrepeat",1);
+    CoreLocal::set("strRemembered",CoreLocal::get("strEntered"));
+    CoreLocal::set("msgrepeat",1);
 
-	return $ret;
+    return $ret;
 }
 //--------------------------------------------------------------------//
 
@@ -237,7 +237,7 @@ static public function msgbox($strmsg, $icon, $noBeep=false, $buttons=array())
 */
 static public function xboxMsg($strmsg, $buttons=array()) 
 {
-	return self::msgbox($strmsg, MiscLib::base_url()."graphics/crossD.gif", false, $buttons);
+    return self::msgbox($strmsg, MiscLib::base_url()."graphics/crossD.gif", false, $buttons);
 }
 
 /**
@@ -256,7 +256,7 @@ static public function boxMsg($strmsg, $header="", $noBeep=false, $buttons=array
     if (!empty($header)) {
         CoreLocal::set('alertBar', $header);
     }
-	$ret = self::msgbox($strmsg, MiscLib::base_url()."graphics/exclaimC.gif", $noBeep, $buttons);
+    $ret = self::msgbox($strmsg, MiscLib::base_url()."graphics/exclaimC.gif", $noBeep, $buttons);
     CoreLocal::set('alertBar', $default);
 
     return $ret;
@@ -270,7 +270,7 @@ static public function boxMsg($strmsg, $header="", $noBeep=false, $buttons=array
 */
 static public function inputUnknown() 
 {
-	return self::msgbox(
+    return self::msgbox(
         "<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" . _("input unknown") . "</b>", 
         MiscLib::base_url()."graphics/exclaimC.gif", 
         true,
@@ -293,34 +293,34 @@ static public function standardClearButton()
 static public function printheaderb() 
 {
 
-	$strmemberID = "";
-	if (CoreLocal::get("memberID") == "0") {
-		$strmemberID = "";
-	} else {
-		$strmemberID = CoreLocal::get("memMsg");
-		if (CoreLocal::get("isMember") == 0) {
-			$strmemberID = str_replace("(0)", "(n/a)", $strmemberID);
-		}
-	}
+    $strmemberID = "";
+    if (CoreLocal::get("memberID") == "0") {
+        $strmemberID = "";
+    } else {
+        $strmemberID = CoreLocal::get("memMsg");
+        if (CoreLocal::get("isMember") == 0) {
+            $strmemberID = str_replace("(0)", "(n/a)", $strmemberID);
+        }
+    }
 
-	$ret = '
-	<div id="headerb">
-		<div class="left">
-			<span class="bigger">'._("M E M B E R").' &nbsp;&nbsp;</span>
-			<span class="smaller">
-			'.$strmemberID.'
-			</span>
-		</div>
-		<div class="right">
-			<span class="bigger">'._("C A S H I E R").' &nbsp;&nbsp;</span>
-			<span class="smaller">
-			'.CoreLocal::get("cashier").'
-			</span>
-		</div>
-		<div class="clear"></div>
-	</div>
-	';
-	return $ret;
+    $ret = '
+    <div id="headerb">
+        <div class="left">
+            <span class="bigger">'._("M E M B E R").' &nbsp;&nbsp;</span>
+            <span class="smaller">
+            '.$strmemberID.'
+            </span>
+        </div>
+        <div class="right">
+            <span class="bigger">'._("C A S H I E R").' &nbsp;&nbsp;</span>
+            <span class="smaller">
+            '.CoreLocal::get("cashier").'
+            </span>
+        </div>
+        <div class="clear"></div>
+    </div>
+    ';
+    return $ret;
 }
 
 //-------------------------------------------------------------------//
@@ -339,42 +339,42 @@ static public function printheaderb()
 */
 static public function printItem($field2, $field3, $total, $field5, $trans_id=-1) 
 {
-	$onclick = "";
-	if ($trans_id != -1) {
-		$curID = CoreLocal::get("currentid");
-		$diff = $trans_id - $curID;
-		if ($diff > 0) {
-			$onclick="onclick=\"parseWrapper('D$diff');\"";
-		} else if ($diff < 0) {
-			$diff *= -1;
-			$onclick="onclick=\"parseWrapper('U$diff');\"";
-		}
-	}	
+    $onclick = "";
+    if ($trans_id != -1) {
+        $curID = CoreLocal::get("currentid");
+        $diff = $trans_id - $curID;
+        if ($diff > 0) {
+            $onclick="onclick=\"parseWrapper('D$diff');\"";
+        } else if ($diff < 0) {
+            $diff *= -1;
+            $onclick="onclick=\"parseWrapper('U$diff');\"";
+        }
+    }    
 
-	if (strlen($total) > 0) {
-		$total = number_format($total, 2);
-	} else {
-		$total = "&nbsp;";
-	}
-	if ($field2 == "") {
+    if (strlen($total) > 0) {
+        $total = number_format($total, 2);
+    } else {
+        $total = "&nbsp;";
+    }
+    if ($field2 == "") {
         $field2 = "&nbsp;";
     }
-	if (trim($field3) == "") {
+    if (trim($field3) == "") {
         $field3 = "&nbsp;";
     }
-	if ($field5 == "") {
+    if ($field5 == "") {
         $field5 = "&nbsp;";
     }
 
-	$ret = "<div class=\"item\">";
-	$ret .= "<div $onclick class=\"desc coloredText\">$field2</div>";
-	$ret .= "<div $onclick class=\"comments lightestColorText\">$field3</div>";
-	$ret .= "<div $onclick class=\"total lightestColorText\">$total</div>";
-	$ret .= "<div $onclick class=\"suffix lightestColorText\">$field5</div>";
-	$ret .= "</div>";
-	$ret .= "<div style=\"clear:left;\"></div>\n";
+    $ret = "<div class=\"item\">";
+    $ret .= "<div $onclick class=\"desc coloredText\">$field2</div>";
+    $ret .= "<div $onclick class=\"comments lightestColorText\">$field3</div>";
+    $ret .= "<div $onclick class=\"total lightestColorText\">$total</div>";
+    $ret .= "<div $onclick class=\"suffix lightestColorText\">$field5</div>";
+    $ret .= "</div>";
+    $ret .= "<div style=\"clear:left;\"></div>\n";
 
-	return $ret;
+    return $ret;
 }
 
 //------------------------------------------------------------------//
@@ -382,7 +382,7 @@ static public function printItem($field2, $field3, $total, $field5, $trans_id=-1
 /**
   Get a transaction line item in a specific color
   @param $color is a hex color code (do not include a '#')
-	(see CSS notes)
+    (see CSS notes)
   @param $description typically description
   @param $comments comment section. Used for things
    like "0.59@1.99" on weight items.
@@ -404,59 +404,59 @@ static public function printItem($field2, $field3, $total, $field5, $trans_id=-1
 */
 static public function printItemColor($color, $description, $comments, $total, $suffix,$trans_id=-1) 
 {
-	$onclick = "";
-	if ($trans_id != -1) {
-		$curID = CoreLocal::get("currentid");
-		$diff = $trans_id - $curID;
-		if ($diff > 0) {
-			$onclick="onclick=\"parseWrapper('D$diff');\"";
-		} else if ($diff < 0){
-			$diff *= -1;
-			$onclick="onclick=\"parseWrapper('U$diff');\"";
-		}
-	}	
+    $onclick = "";
+    if ($trans_id != -1) {
+        $curID = CoreLocal::get("currentid");
+        $diff = $trans_id - $curID;
+        if ($diff > 0) {
+            $onclick="onclick=\"parseWrapper('D$diff');\"";
+        } else if ($diff < 0){
+            $diff *= -1;
+            $onclick="onclick=\"parseWrapper('U$diff');\"";
+        }
+    }    
 
-	if (strlen($total) > 0) {
-		$total = number_format($total, 2);
-	} else {
-		$total = "&nbsp;";
-	}
-	if ($total == 0 && $color == "408080") {
+    if (strlen($total) > 0) {
+        $total = number_format($total, 2);
+    } else {
         $total = "&nbsp;";
     }
-	if ($description == "") {
+    if ($total == 0 && $color == "408080") {
+        $total = "&nbsp;";
+    }
+    if ($description == "") {
         $description = "&nbsp;";
     }
-	if (trim($comments) == "") {
+    if (trim($comments) == "") {
         $comments = "&nbsp;";
     }
-	if ($suffix == "") {
+    if ($suffix == "") {
         $suffix = "&nbsp;";
     }
 
-	$style = '';
-	$class = '';
-	if ($color == '004080') {
-		$class = 'coloredText';
-	} else if ($color == '000000') {
-		$class = 'totalLine';
-	} else if ($color == '800080') {
-		$class = 'fsLine';
-	} else if ($color == '408080') {
-		$class = 'lightColorText';
-	} else {
-		$style = "style=\"color:#$color;\"";
+    $style = '';
+    $class = '';
+    if ($color == '004080') {
+        $class = 'coloredText';
+    } else if ($color == '000000') {
+        $class = 'totalLine';
+    } else if ($color == '800080') {
+        $class = 'fsLine';
+    } else if ($color == '408080') {
+        $class = 'lightColorText';
+    } else {
+        $style = "style=\"color:#$color;\"";
     }
 
-	$ret = "<div class=\"item\">";
-	$ret .= "<div $onclick class=\"desc $class\" $style>$description</div>";
-	$ret .= "<div $onclick class=\"comments $class\" $style>$comments</div>";
-	$ret .= "<div $onclick class=\"total $class\" $style>$total</div>";
-	$ret .= "<div $onclick class=\"suffix $class\" $style>$suffix</div>";
-	$ret .= "</div>";
-	$ret .= "<div style=\"clear:left;\"></div>\n";
+    $ret = "<div class=\"item\">";
+    $ret .= "<div $onclick class=\"desc $class\" $style>$description</div>";
+    $ret .= "<div $onclick class=\"comments $class\" $style>$comments</div>";
+    $ret .= "<div $onclick class=\"total $class\" $style>$total</div>";
+    $ret .= "<div $onclick class=\"suffix $class\" $style>$suffix</div>";
+    $ret .= "</div>";
+    $ret .= "<div style=\"clear:left;\"></div>\n";
 
-	return $ret;
+    return $ret;
 }
 
 //----------------------------------------------------------------//
@@ -464,7 +464,7 @@ static public function printItemColor($color, $description, $comments, $total, $
 /**
   Get a transaction line item in a specific color
   @param $color is a hex color code (do not include a '#')
-	(see CSS notes)
+    (see CSS notes)
   @param $description typically description
   @param $comments comment section. Used for things
    like "0.59@1.99" on weight items.
@@ -483,47 +483,47 @@ static public function printItemColor($color, $description, $comments, $total, $
 */
 static public function printItemColorHilite($color, $description, $comments, $total, $suffix) 
 {
-	if (strlen($total) > 0) {
-		$total = number_format($total, 2);
-	} else {
-		$total = "&nbsp;";
-	}
-	if ($total == 0 && $color == "408080") {
+    if (strlen($total) > 0) {
+        $total = number_format($total, 2);
+    } else {
         $total = "&nbsp;";
     }
-	if ($description == "") {
+    if ($total == 0 && $color == "408080") {
+        $total = "&nbsp;";
+    }
+    if ($description == "") {
         $description="&nbsp;";
     }
-	if (trim($comments) == "") {
+    if (trim($comments) == "") {
         $comments="&nbsp;";
     }
-	if ($suffix == "") {
+    if ($suffix == "") {
         $suffix="&nbsp;";
     }
 
-	$style = '';
-	$class = '';
-	if ($color == '004080') {
-		$class = 'coloredArea';
-	} else if ($color == '000000') {
-		$class = 'totalArea';
-	} else if ($color == '800080') {
-		$class = 'fsArea';
-	} else if ($color == '408080') {
-		$class = 'lightColorArea';
-	} else {
-		$style = "style=\"background:#$color;color:#ffffff;\"";
+    $style = '';
+    $class = '';
+    if ($color == '004080') {
+        $class = 'coloredArea';
+    } else if ($color == '000000') {
+        $class = 'totalArea';
+    } else if ($color == '800080') {
+        $class = 'fsArea';
+    } else if ($color == '408080') {
+        $class = 'lightColorArea';
+    } else {
+        $style = "style=\"background:#$color;color:#ffffff;\"";
     }
 
-	$ret = "<div class=\"item\">";
-	$ret .= "<div class=\"desc $class\" $style>$description</div>";
-	$ret .= "<div class=\"comments $class\" $style>$comments</div>";
-	$ret .= "<div class=\"total $class\" $style>$total</div>";
-	$ret .= "<div class=\"suffix $class\" $style>$suffix</div>";
-	$ret .= "</div>";
-	$ret .= "<div style=\"clear:left;\"></div>\n";
+    $ret = "<div class=\"item\">";
+    $ret .= "<div class=\"desc $class\" $style>$description</div>";
+    $ret .= "<div class=\"comments $class\" $style>$comments</div>";
+    $ret .= "<div class=\"total $class\" $style>$total</div>";
+    $ret .= "<div class=\"suffix $class\" $style>$suffix</div>";
+    $ret .= "</div>";
+    $ret .= "<div style=\"clear:left;\"></div>\n";
 
-	return $ret;
+    return $ret;
 }
 
 //----------------------------------------------------------------//
@@ -547,64 +547,64 @@ static public function printItemColorHilite($color, $description, $comments, $to
 */
 static public function scaledisplaymsg($input="")
 {
-	$reginput = trim(strtoupper($input));
+    $reginput = trim(strtoupper($input));
 
-	$scans = '';
+    $scans = '';
 
-	// return early; all other cases simplified
-	// by resetting session "weight"
-	if (strlen($reginput) == 0) {
-		if (is_numeric(CoreLocal::get("weight"))) {
-			return number_format(CoreLocal::get("weight"), 2)." lb";
-		} else {
-			return CoreLocal::get("weight")." lb";
+    // return early; all other cases simplified
+    // by resetting session "weight"
+    if (strlen($reginput) == 0) {
+        if (is_numeric(CoreLocal::get("weight"))) {
+            return number_format(CoreLocal::get("weight"), 2)." lb";
+        } else {
+            return CoreLocal::get("weight")." lb";
         }
-	}
+    }
 
-	$display_weight = "";
-	$weight = 0;
-	CoreLocal::set("scale",0);
-	CoreLocal::set("weight",0);
+    $display_weight = "";
+    $weight = 0;
+    CoreLocal::set("scale",0);
+    CoreLocal::set("weight",0);
 
-	$prefix = "NonsenseThatWillNotEverHappen";
-	if (substr($reginput, 0, 3) == "S11")
-		$prefix = "S11";
-	else if (substr($reginput,0,4)=="S144")	
-		$prefix = "S144";
+    $prefix = "NonsenseThatWillNotEverHappen";
+    if (substr($reginput, 0, 3) == "S11")
+        $prefix = "S11";
+    else if (substr($reginput,0,4)=="S144")    
+        $prefix = "S144";
 
-	if (strpos($reginput, $prefix) === 0) {
-		$len = strlen($prefix);
-		if (!substr($reginput, $len) || 
-		    !is_numeric(substr($reginput, $len))) {
-			$display_weight = "_ _ _ _";
-		} else {
-			$weight = number_format(substr($reginput, $len)/100, 2);
-			CoreLocal::set("weight",$weight);
-			$display_weight = $weight." lb";
-			CoreLocal::set("scale",1);
-			if (CoreLocal::get('SNR') != 0 && $weight != 0) {
-				$scans = CoreLocal::get('SNR');
-			}
-		}
-	} elseif (substr($reginput, 0, 4) == "S143") {
-		$display_weight = "0.00 lb";
-		CoreLocal::set("scale",1);
-	} elseif (substr($reginput, 0, 4) == "S141") {
-		$display_weight = "_ _ _ _";
-	} elseif (substr($reginput, 0, 4) == "S145") {
-		$display_weight = "err -0";
-	} elseif (substr($reginput, 0, 4) == "S142") {
-		$display_weight = "error";
-	} else {
-		$display_weight = "? ? ? ?";
-	}
+    if (strpos($reginput, $prefix) === 0) {
+        $len = strlen($prefix);
+        if (!substr($reginput, $len) || 
+            !is_numeric(substr($reginput, $len))) {
+            $display_weight = "_ _ _ _";
+        } else {
+            $weight = number_format(substr($reginput, $len)/100, 2);
+            CoreLocal::set("weight",$weight);
+            $display_weight = $weight." lb";
+            CoreLocal::set("scale",1);
+            if (CoreLocal::get('SNR') != 0 && $weight != 0) {
+                $scans = CoreLocal::get('SNR');
+            }
+        }
+    } elseif (substr($reginput, 0, 4) == "S143") {
+        $display_weight = "0.00 lb";
+        CoreLocal::set("scale",1);
+    } elseif (substr($reginput, 0, 4) == "S141") {
+        $display_weight = "_ _ _ _";
+    } elseif (substr($reginput, 0, 4) == "S145") {
+        $display_weight = "err -0";
+    } elseif (substr($reginput, 0, 4) == "S142") {
+        $display_weight = "error";
+    } else {
+        $display_weight = "? ? ? ?";
+    }
 
-	$ret = array('display'=>$display_weight);
-	if (!empty($scans)) {
+    $ret = array('display'=>$display_weight);
+    if (!empty($scans)) {
         $ret['upc'] = $scans;
     }
 
-	return $ret;
+    return $ret;
 }
 
 /**
@@ -613,15 +613,15 @@ static public function scaledisplaymsg($input="")
 */
 static public function termdisplaymsg()
 {
-	if (!in_array("Paycards",CoreLocal::get("PluginList"))) {
-		return '';
-	} elseif(CoreLocal::get("PaycardsCashierFacing")=="1") {
-		return '';
+    if (!in_array("Paycards",CoreLocal::get("PluginList"))) {
+        return '';
+    } elseif(CoreLocal::get("PaycardsCashierFacing")=="1") {
+        return '';
     }
-	// style box to look like a little screen
-	$ret = '<div style="background:#ccc;border:solid 1px black;padding:7px;text-align:center;font-size:120%;">';
-	$rdy = '<div style="background:#0c0;border:solid 1px black;padding:7px;text-align:center;font-size:120%;">';
-	switch(CoreLocal::get('ccTermState')) {
+    // style box to look like a little screen
+    $ret = '<div style="background:#ccc;border:solid 1px black;padding:7px;text-align:center;font-size:120%;">';
+    $rdy = '<div style="background:#0c0;border:solid 1px black;padding:7px;text-align:center;font-size:120%;">';
+    switch(CoreLocal::get('ccTermState')) {
         case 'swipe':
             return $ret.'Slide<br />Card</div>';
             break;
@@ -637,9 +637,9 @@ static public function termdisplaymsg()
         case 'cashback':
             return $ret.'Cash<br />Back</div>';
             break;
-	}
+    }
 
-	return '';
+    return '';
 }
 
 /**
@@ -681,36 +681,36 @@ static public function listItems($top_item, $highlight)
         $lines = 11;
     }
 
-	Database::getsubtotals();
-	$LastID = CoreLocal::get("LastID");
+    Database::getsubtotals();
+    $LastID = CoreLocal::get("LastID");
 
 //----------------Boundary Top ------------------
 
-	if ($highlight < 1) {
-		$highlight = 1;
-		$top_item = 1;
-	}
-	
-	if ($highlight > $LastID) {
-		$highlight = $LastID;
-	}
+    if ($highlight < 1) {
+        $highlight = 1;
+        $top_item = 1;
+    }
+    
+    if ($highlight > $LastID) {
+        $highlight = $LastID;
+    }
 
-	if ($highlight < $top_item) {
-		$top_item = $highlight;
-	}
+    if ($highlight < $top_item) {
+        $top_item = $highlight;
+    }
 
-	if ($highlight > ($top_item + $lines)) {
-		$top_item = ($highlight - $lines);
-	}
+    if ($highlight > ($top_item + $lines)) {
+        $top_item = ($highlight - $lines);
+    }
 
-	CoreLocal::set("currenttopid",$top_item);
-	CoreLocal::set("currentid",$highlight);
+    CoreLocal::set("currenttopid",$top_item);
+    CoreLocal::set("currentid",$highlight);
 
 //------------------Boundary Bottom----------------
 
-	CoreLocal::set("currentid",$highlight);
+    CoreLocal::set("currentid",$highlight);
 
-	return self::drawItems($top_item, $lines, $highlight);
+    return self::drawItems($top_item, $lines, $highlight);
 }
 
 
@@ -727,33 +727,33 @@ static public function listItems($top_item, $highlight)
 */
 static public function printReceiptfooter($readOnly=False) 
 {
-	if (!$readOnly) {
-		Database::getsubtotals();
+    if (!$readOnly) {
+        Database::getsubtotals();
     }
-	$last_id = CoreLocal::get("LastID");
+    $last_id = CoreLocal::get("LastID");
 
-	if (($last_id - 7) < 0) {
-		$top_id = 1;
-	} else {
-		$top_id = $last_id - 7;
-	}
+    if (($last_id - 7) < 0) {
+        $top_id = 1;
+    } else {
+        $top_id = $last_id - 7;
+    }
 
-	$ret = self::drawitems($top_id, 7, 0);
+    $ret = self::drawitems($top_id, 7, 0);
 
-	$ret .= "<div class=\"farewellMsg coloredText\">";
-	for($i=0;$i<=CoreLocal::get("farewellMsgCount");$i++) {
-		$ret .= CoreLocal::get("farewellMsg".$i)."<br />";
-	}
+    $ret .= "<div class=\"farewellMsg coloredText\">";
+    for($i=0;$i<=CoreLocal::get("farewellMsgCount");$i++) {
+        $ret .= CoreLocal::get("farewellMsg".$i)."<br />";
+    }
 
-	$email = CoreState::getCustomerPref('email_receipt');
-	$doEmail = filter_var($email, FILTER_VALIDATE_EMAIL);
-	if($doEmail) {
+    $email = CoreState::getCustomerPref('email_receipt');
+    $doEmail = filter_var($email, FILTER_VALIDATE_EMAIL);
+    if($doEmail) {
         $ret .= 'receipt emailed';
     }
 
-	$ret .= "</div>";
+    $ret .= "</div>";
 
-	return $ret;
+    return $ret;
 }
 
 
@@ -769,41 +769,41 @@ static public function printReceiptfooter($readOnly=False)
 */
 static public function drawItems($top_item, $rows, $highlight) 
 {
-	$ret = self::printheaderb();
+    $ret = self::printheaderb();
 
-	$query = "select count(*) as count from localtemptrans";
-	$db = Database::tDataConnect();
-	$result = $db->query($query);
-	$row = $db->fetch_array($result);
-	$rowCount = $row["count"];
+    $query = "select count(*) as count from localtemptrans";
+    $db = Database::tDataConnect();
+    $result = $db->query($query);
+    $row = $db->fetch_array($result);
+    $rowCount = $row["count"];
 
-	$last_item = array();
+    $last_item = array();
 
-	if ($rowCount == 0) {
-		$ret .= "<div class=\"centerOffset\">";
-		$msg_text = "";
-		if (CoreLocal::get("training") != 1) {
-			for($i=1; $i<=CoreLocal::get("welcomeMsgCount");$i++) {
-				$msg_text .= CoreLocal::get("welcomeMsg".$i)."<br />";
-			}	
-		} else {
-			for($i=1; $i<=CoreLocal::get("trainingMsgCount");$i++) {
-				$msg_text .= CoreLocal::get("trainingMsg".$i)."<br />";
-			}	
-		}
-		$ret .= self::plainmsg($msg_text);
-		$ret .= "</div>";
-	} else {
+    if ($rowCount == 0) {
+        $ret .= "<div class=\"centerOffset\">";
+        $msg_text = "";
+        if (CoreLocal::get("training") != 1) {
+            for($i=1; $i<=CoreLocal::get("welcomeMsgCount");$i++) {
+                $msg_text .= CoreLocal::get("welcomeMsg".$i)."<br />";
+            }    
+        } else {
+            for($i=1; $i<=CoreLocal::get("trainingMsgCount");$i++) {
+                $msg_text .= CoreLocal::get("trainingMsg".$i)."<br />";
+            }    
+        }
+        $ret .= self::plainmsg($msg_text);
+        $ret .= "</div>";
+    } else {
 
-		$query_range = "select trans_id,description,total,comment,status,lineColor
-		       		from screendisplay where trans_id >= ".$top_item." and trans_id <= "
-				.($top_item + $rows)." order by trans_id";
-		$db_range = Database::tDataConnect();
-		$result_range = $db_range->query($query_range);
-		$num_rows = $db_range->num_rows($result_range);
+        $query_range = "select trans_id,description,total,comment,status,lineColor
+                       from screendisplay where trans_id >= ".$top_item." and trans_id <= "
+                .($top_item + $rows)." order by trans_id";
+        $db_range = Database::tDataConnect();
+        $result_range = $db_range->query($query_range);
+        $num_rows = $db_range->num_rows($result_range);
         $screenRecords = array();
-		for ($i = 0; $i < $num_rows; $i++) {
-			$screenRecords[] = $db_range->fetch_array($result_range);
+        for ($i = 0; $i < $num_rows; $i++) {
+            $screenRecords[] = $db_range->fetch_array($result_range);
         }
         /**
           30Oct2014 Andy
@@ -829,35 +829,35 @@ static public function drawItems($top_item, $rows, $highlight)
 
         foreach ($screenRecords as $row) {
 
-			$trans_id = $row["trans_id"];
-			$description = $row["description"];
-			$total = $row["total"];
-			$comment = $row["comment"];
-			$tf = $row["status"];
-			$color = $row["lineColor"];
+            $trans_id = $row["trans_id"];
+            $description = $row["description"];
+            $total = $row["total"];
+            $comment = $row["comment"];
+            $tf = $row["status"];
+            $color = $row["lineColor"];
 
-			
-			if ($trans_id == $highlight) {
-				$ret .= self::printItemColorHilite($color, $description, $comment, $total, $tf);
-			} else {
-				if ($color == "004080") {
-					$ret .= self::printItem($description, $comment, $total, $tf,$trans_id);
-				} else {
-					$ret .= self::printItemColor($color, $description, $comment, $total, $tf,$trans_id);
-				}				
-			}
+            
+            if ($trans_id == $highlight) {
+                $ret .= self::printItemColorHilite($color, $description, $comment, $total, $tf);
+            } else {
+                if ($color == "004080") {
+                    $ret .= self::printItem($description, $comment, $total, $tf,$trans_id);
+                } else {
+                    $ret .= self::printItemColor($color, $description, $comment, $total, $tf,$trans_id);
+                }                
+            }
 
-			if (!strstr($description,'Subtotal')) {
-				$fixed_desc = str_replace(":"," ",$description);
-				if (strlen($fixed_desc) > 24) {
-					$fixed_desc = substr($fixed_desc,0,24);
-				}
-				$fixed_price = empty($total)?'':sprintf('%.2f',$total);
-				$spaces = str_pad('',30-strlen($fixed_desc)-strlen($fixed_price),' ');
-				$last_item[] = $fixed_desc.$spaces.$fixed_price;
-			}
-		}
-	}
+            if (!strstr($description,'Subtotal')) {
+                $fixed_desc = str_replace(":"," ",$description);
+                if (strlen($fixed_desc) > 24) {
+                    $fixed_desc = substr($fixed_desc,0,24);
+                }
+                $fixed_price = empty($total)?'':sprintf('%.2f',$total);
+                $spaces = str_pad('',30-strlen($fixed_desc)-strlen($fixed_price),' ');
+                $last_item[] = $fixed_desc.$spaces.$fixed_price;
+            }
+        }
+    }
 
     /** 11Mar14 Andy
         Ancient idea about displaying transaction line-items
@@ -866,26 +866,26 @@ static public function drawItems($top_item, $rows, $highlight)
 
         I'm leaving the "get last relevant line" implementation
         for reference.
-	if (is_object($td) && !empty($last_item)) {
-		$due = sprintf('%.2f',CoreLocal::get("amtdue"));
-		$dueline = 'Subtotal'
-			.str_pad('',22-strlen($due),' ')
-			.$due;
-		$items = "";
-		$count = 0;
-		for($i=count($last_item)-1;$i>=0;$i--) {
-			$items = ":".$last_item[$i].$items;
-			$count++;
-			if ($count >= 3) break;
-		}
-		for($i=$count;$i<3;$i++) {
-			$items = ": ".$items;
+    if (is_object($td) && !empty($last_item)) {
+        $due = sprintf('%.2f',CoreLocal::get("amtdue"));
+        $dueline = 'Subtotal'
+            .str_pad('',22-strlen($due),' ')
+            .$due;
+        $items = "";
+        $count = 0;
+        for($i=count($last_item)-1;$i>=0;$i--) {
+            $items = ":".$last_item[$i].$items;
+            $count++;
+            if ($count >= 3) break;
         }
-		$td->WriteToScale("display:".$last_item.":".$dueline);
-	}
+        for($i=$count;$i<3;$i++) {
+            $items = ": ".$items;
+        }
+        $td->WriteToScale("display:".$last_item.":".$dueline);
+    }
     */
 
-	return $ret;
+    return $ret;
 }
 
 
@@ -905,22 +905,22 @@ static public function lastpage($readOnly=False)
         $lines = 11;
     }
 
-	if (!$readOnly) {
-		Database::getsubtotals();
-	}
-	$last_id = CoreLocal::get("LastID");
+    if (!$readOnly) {
+        Database::getsubtotals();
+    }
+    $last_id = CoreLocal::get("LastID");
 
-	if (($last_id - $lines) < 0) {
-		$top_id = 1;
-	} else {
-		$top_id = $last_id - $lines;
-	}
-	
-	if (!$readOnly) {
-		CoreLocal::set("currentid",$last_id);
-		CoreLocal::set("currenttopid",$top_id);
-	}
-	return self::drawItems($top_id, $lines, $last_id);
+    if (($last_id - $lines) < 0) {
+        $top_id = 1;
+    } else {
+        $top_id = $last_id - $lines;
+    }
+    
+    if (!$readOnly) {
+        CoreLocal::set("currentid",$last_id);
+        CoreLocal::set("currenttopid",$top_id);
+    }
+    return self::drawItems($top_id, $lines, $last_id);
 }
 
 /**

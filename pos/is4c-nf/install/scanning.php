@@ -10,7 +10,7 @@ include('InstallUtilities.php');
 <title>IT CORE Lane Installation: Scanning options</title>
 <style type="text/css">
 body {
-	line-height: 1.5em;
+    line-height: 1.5em;
 }
 </style>
 </head>
@@ -182,26 +182,26 @@ if (isset($_REQUEST['DT_MODS'])) {
     CoreLocal::set('DiscountTypeClasses', $new_val);
 }
 if (!is_array(CoreLocal::get('DiscountTypeClasses'))) {
-	CoreLocal::set('DiscountTypeClasses', array(), true);
+    CoreLocal::set('DiscountTypeClasses', array(), true);
 }
 $discounts = AutoLoader::listModules('DiscountType');
 $dt_conf = CoreLocal::get("DiscountTypeClasses");
 $dt_conf[] = ''; // add blank slot for adding another discounttype
 $i = 64;
 foreach ($dt_conf as $entry) {
-	echo '[' . $i . '] => ';
-	echo "<select name=DT_MODS[]>";
+    echo '[' . $i . '] => ';
+    echo "<select name=DT_MODS[]>";
     echo '<option value="">[None]</option>';
-	foreach($discounts as $d) {
+    foreach($discounts as $d) {
         if (in_array($d, DiscountType::$MAP)) {
             continue;
         }
-		echo "<option";
-		if ($entry == $d)
-			echo " selected";
-		echo ">$d</option>";
-	}
-	echo "</select><br />";
+        echo "<option";
+        if ($entry == $d)
+            echo " selected";
+        echo ">$d</option>";
+    }
+    echo "</select><br />";
     $i++;
 }
 $save = array();
@@ -214,9 +214,9 @@ InstallUtilities::paramSave('DiscountTypeClasses',$save);
 ?></td></tr>
 
 <tr><td colspan=2>
-<hr />	<p>Price Methods dictate how item prices are calculated.
-	There's some overlap with Discount Types, but <i>often</i>
-	price methods deal with grouped items.</p></td></tr>
+<hr />    <p>Price Methods dictate how item prices are calculated.
+    There's some overlap with Discount Types, but <i>often</i>
+    price methods deal with grouped items.</p></td></tr>
 </td></tr>
 <tr><td>
 <b>Default Methods</b>:</td><td>
@@ -239,26 +239,26 @@ if (isset($_REQUEST['PM_MODS'])) {
     CoreLocal::set('PriceMethodClasses', $new_val);
 }
 if (!is_array(CoreLocal::get('PriceMethodClasses'))){
-	CoreLocal::set('PriceMethodClasses', array(), true);
+    CoreLocal::set('PriceMethodClasses', array(), true);
 }
 $pms = AutoLoader::listModules('PriceMethod');
 $pm_conf = CoreLocal::get("PriceMethodClasses");
 $pm_conf[] = ''; // add blank slot for adding another method
 $i = 100;
 foreach ($pm_conf as $entry) {
-	echo "[$i] => ";
-	echo "<select name=PM_MODS[]>";
+    echo "[$i] => ";
+    echo "<select name=PM_MODS[]>";
     echo '<option value="">[None]</option>';
-	foreach($pms as $p) {
+    foreach($pms as $p) {
         if (in_array($p, PRiceMethod::$MAP)) {
             continue;
         }
-		echo "<option";
-		if ($entry == $p)
-			echo " selected";
-		echo ">$p</option>";
-	}
-	echo "</select><br />";
+        echo "<option";
+        if ($entry == $p)
+            echo " selected";
+        echo ">$p</option>";
+    }
+    echo "</select><br />";
     $i++;
 }
 $save = array();
@@ -276,11 +276,11 @@ if (isset($_REQUEST['SALEDISC'])) CoreLocal::set('DiscountableSaleItems',$_REQUE
 if (CoreLocal::get('DiscountableSaleItems') === '') CoreLocal::set('DiscountableSaleItems', 1);
 echo '<select name="SALEDISC">';
 if (CoreLocal::get('DiscountableSaleItems') == 0) {
-	echo '<option value="1">Yes</option>';
-	echo '<option value="0" selected>No</option>';
+    echo '<option value="1">Yes</option>';
+    echo '<option value="0" selected>No</option>';
 } else {
-	echo '<option value="1" selected>Yes</option>';
-	echo '<option value="0">No</option>';
+    echo '<option value="1" selected>Yes</option>';
+    echo '<option value="0">No</option>';
 }
 echo '</select>';
 InstallUtilities::paramSave('DiscountableSaleItems', CoreLocal::get('DiscountableSaleItems'));
@@ -291,8 +291,8 @@ save 5%.
 </span>
 </td></tr>
 <tr><td colspan=2>
-<hr />	<p>Special Department modules add extra steps to open rings in specific departments.
-	Enter department number(s) that each module should apply to.*</p>
+<hr />    <p>Special Department modules add extra steps to open rings in specific departments.
+    Enter department number(s) that each module should apply to.*</p>
 </td></tr>
 <tr><td>
 <?php
@@ -322,13 +322,13 @@ if (isset($_REQUEST['SDEPT_MAP_LIST'])) {
     } else {
         $sconf = array();
     }
-	for ($i=0;$i<count($_REQUEST['SDEPT_MAP_NAME']);$i++) {
-		if (!isset($_REQUEST['SDEPT_MAP_LIST'][$i])) continue;
-		if (empty($_REQUEST['SDEPT_MAP_LIST'][$i])) continue;
+    for ($i=0;$i<count($_REQUEST['SDEPT_MAP_NAME']);$i++) {
+        if (!isset($_REQUEST['SDEPT_MAP_LIST'][$i])) continue;
+        if (empty($_REQUEST['SDEPT_MAP_LIST'][$i])) continue;
 
-		$class = $_REQUEST['SDEPT_MAP_NAME'][$i];
-		$ids = preg_split('/\D+/',$_REQUEST['SDEPT_MAP_LIST'][$i]);
-		foreach ($ids as $id) {
+        $class = $_REQUEST['SDEPT_MAP_NAME'][$i];
+        $ids = preg_split('/\D+/',$_REQUEST['SDEPT_MAP_LIST'][$i]);
+        foreach ($ids as $id) {
             if ($specialDeptMapExists) {
                 $mapModel->reset();
                 $mapModel->specialDeptModuleName($class);
@@ -339,7 +339,7 @@ if (isset($_REQUEST['SDEPT_MAP_LIST'])) {
                 $sconf = $obj->register($id,$sconf);
             }
         }
-	}
+    }
     if (!$specialDeptMapExists) {
         CoreLocal::set('SpecialDeptMap',$sconf);
     }
@@ -351,18 +351,18 @@ if ($specialDeptMapExists) {
     $sconf = CoreLocal::get('SpecialDeptMap');
 }
 foreach ($sdepts as $sd) {
-	$list = "";
-	foreach($sconf as $id => $mods){
-		if (in_array($sd,$mods))
-			$list .= $id.', ';
-	}
-	$list = rtrim($list,', ');
+    $list = "";
+    foreach($sconf as $id => $mods){
+        if (in_array($sd,$mods))
+            $list .= $id.', ';
+    }
+    $list = rtrim($list,', ');
     $obj = new $sd();
-	printf('<tr><td title="%s">%s</td><td>
-		<input type="text" name="SDEPT_MAP_LIST[]" value="%s" />
-		<input type="hidden" name="SDEPT_MAP_NAME[]" value="%s" />
-		</td></tr>',
-		$obj->help_summary,$sd,$list,$sd);
+    printf('<tr><td title="%s">%s</td><td>
+        <input type="text" name="SDEPT_MAP_LIST[]" value="%s" />
+        <input type="hidden" name="SDEPT_MAP_NAME[]" value="%s" />
+        </td></tr>',
+        $obj->help_summary,$sd,$list,$sd);
 }
 if (!$specialDeptMapExists) {
     $saveStr = 'array(';
@@ -407,6 +407,6 @@ if (!$specialDeptMapExists) {
 <input type=submit name=scansubmit value="Save Changes" />
 </td></tr></table>
 </form>
-</div> <!--	wrapper -->
+</div> <!--    wrapper -->
 </body>
 </html>

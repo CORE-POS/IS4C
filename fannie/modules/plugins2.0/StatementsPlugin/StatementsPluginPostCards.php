@@ -77,16 +77,16 @@ class StatementsPluginPostCards extends FannieRESTfulPage
         $pdf->SetFont("Gill","",10);
         //Meat of the statement
         while ($memberW = $dbc->fetch_row($memberR)) {
-	        $pdf->AddPage();
+            $pdf->AddPage();
 
-	        $fullname = $memberW['FirstName'] . ' ' . $memberW['LastName'];
+            $fullname = $memberW['FirstName'] . ' ' . $memberW['LastName'];
             $pdf->SetXY(2.75,1.45);
             $pdf->Cell(2,0.25,$fullname,"",1,"L");
 
             $pdf->SetX(2.75);
             $address = str_replace("\n"," ",$memberW['street']);
             $pdf->Cell(2,0.25,$address,"",1,"L");
-	
+    
             $pdf->SetX(2.75);
             $str = $memberW['city'].", ".$memberW['state']." ".$memberW['zip'];
             $pdf->Cell(2,0.25,$str,"",1,"L");

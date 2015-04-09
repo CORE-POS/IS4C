@@ -50,7 +50,7 @@ class MemberSummaryReport extends FannieReportPage
     protected $dbSortOrder;
     protected $pid = 0;
 
-	function preprocess(){
+    function preprocess(){
 
         global $FANNIE_ROOT,$FANNIE_URL,$FANNIE_PLUGIN_LIST,$FANNIE_PLUGIN_SETTINGS;
 
@@ -96,17 +96,17 @@ class MemberSummaryReport extends FannieReportPage
             $this->programStartDate = (preg_match("/^[12]\d{3}-\d{2}-\d{2}/",$prog->startDate()))
                 ? $prog->startDate() : '1970-01-01';
 
-		    $dateFrom = FormLib::get_form_value('date1','');
-		    $dateTo = FormLib::get_form_value('date2','');
+            $dateFrom = FormLib::get_form_value('date1','');
+            $dateTo = FormLib::get_form_value('date2','');
             $this->dateFrom = (($dateFrom == '')?$this->programStartDate:$dateFrom);
             $this->dateTo = (($dateTo == '')?date('Y-m-d'):$dateTo);
 
             /* Vars from the form
              */
-		    $this->reportType = FormLib::get_form_value('reportType','summary');
-		    $this->sortable = FormLib::get_form_value('sortable','0');
-		    $this->subTotals = FormLib::get_form_value('subTotals','0');
-		    $this->dbSortOrder = FormLib::get_form_value('dbSortOrder','DESC');
+            $this->reportType = FormLib::get_form_value('reportType','summary');
+            $this->sortable = FormLib::get_form_value('sortable','0');
+            $this->subTotals = FormLib::get_form_value('subTotals','0');
+            $this->dbSortOrder = FormLib::get_form_value('dbSortOrder','DESC');
             if ($this->sortable == True) {
                 if ($this->reportType == 'summary') {
                     $this->sort_column = 1; // 1st column is 0
@@ -124,36 +124,36 @@ class MemberSummaryReport extends FannieReportPage
             }
 
             /*
-			  Check if a non-html format has been requested
-			*/
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-				$this->report_format = 'xls';
-				$this->has_menus(False);
+              Check if a non-html format has been requested
+            */
+            if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
+                $this->report_format = 'xls';
+                $this->has_menus(False);
             } elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-				$this->report_format = 'csv';
-				$this->has_menus(False);
+                $this->report_format = 'csv';
+                $this->has_menus(False);
             }
 
             /* Which page content to create upon return to draw_page().
              */
-			$this->content_function = "report_content";
+            $this->content_function = "report_content";
         } else {
-			$this->add_script("{$FANNIE_URL}src/CalendarControl.js");
+            $this->add_script("{$FANNIE_URL}src/CalendarControl.js");
             if (FormLib::get_form_value('pid',0) != 0) {
                 $this->pid = FormLib::get_form_value('pid',0);
             }
         }
 
-		return True;
+        return True;
 
     // preprocess()
-	}
+    }
 
-	/**
-	  Define any CSS needed
-	  @return A CSS string
-	*/
-	function css_content(){
+    /**
+      Define any CSS needed
+      @return A CSS string
+    */
+    function css_content(){
     $css =
 "p.explain {
     font-family: Arial;
@@ -177,12 +177,12 @@ class MemberSummaryReport extends FannieReportPage
     /* Lines of descriptive text that appear before the tabular part of the
      * report.
      */
-	function report_description_content(){
+    function report_description_content(){
         /* Each line of description is an element of this array.
          * At output <br /> will be prefixed unless the element starts with
          *  an HTML tag
          */
-		$ret = array();
+        $ret = array();
         $ret[] = sprintf("<H3 class='report'>Coop Cred: Payments,
             Purchases and Net for the<br />%s Program<br />From %s to %s</H3>",
             $this->programName,
@@ -193,7 +193,7 @@ class MemberSummaryReport extends FannieReportPage
         );
         // Today, until now (not necessarily the whole day).
        if ($this->dateTo = date('Y-m-d')) {
-		    $today_time = date("l F j, Y g:i A");
+            $today_time = date("l F j, Y g:i A");
             $ret[] = "<p class='explain'>As at: {$today_time}</p>";
         // Last day
         } else {
@@ -211,14 +211,14 @@ class MemberSummaryReport extends FannieReportPage
             " accounts (Payment) and the amount they have used for purchases.".
             " It is the amount the Coop is still liable for.<!--br /><br /--></p>";
         $ret[] ="";
-		return $ret;
+        return $ret;
     // /report_description_content()
-	}
+    }
 
     /* Get data from the database
      * and format it as a table without totals in the last row.
      */
-	function fetch_report_data(){
+    function fetch_report_data(){
 
         //global $FANNIE_TRANS_DB,
         global $FANNIE_OP_DB, $FANNIE_URL;
@@ -470,17 +470,17 @@ class MemberSummaryReport extends FannieReportPage
         // summary
         }
 
-		return $ret;
+        return $ret;
 
     // /fetch_report_data()
-	}
+    }
 
-	/**
-	  Extra, non-tabular information appended to reports
-	  @return array of strings
-	*/
-	function report_end_content(){
-		$ret = array();
+    /**
+      Extra, non-tabular information appended to reports
+      @return array of strings
+    */
+    function report_end_content(){
+        $ret = array();
         $ret[] = "<p class='explain'><br /><a name='notes'><b>Notes:</b></a></p>";
         $ret[] = "<p class='explain'><b>Total</b> of <b>Purchases</b>".
             " is the retail value of what has been".
@@ -492,17 +492,17 @@ class MemberSummaryReport extends FannieReportPage
         $ret[] = "<p class='explain'><b><a href='MemberSummaryReport.php?pid=" .
             $this->programID . "'>" .
             "Start again from the form.</a></b></p>";
-		return $ret;
+        return $ret;
     // /report_end_content()
-	}
-	
-	/**
-	  Sum the total columns
-	*/
-	function calculate_footers($data){
-		$sumPayments = 0.0;
-		$sumCharges = 0.0;
-		$sumNet = 0.0;
+    }
+    
+    /**
+      Sum the total columns
+    */
+    function calculate_footers($data){
+        $sumPayments = 0.0;
+        $sumCharges = 0.0;
+        $sumNet = 0.0;
         if ($this->reportType == "detail") {
             foreach($data as $row) {
                 $sumPayments += (isset($row[5]))?$row[5]:0;
@@ -532,17 +532,17 @@ class MemberSummaryReport extends FannieReportPage
         }
         return $ret;
     // /calculate_footers()
-	}
+    }
 
     /** The form for specifying the report
      */
-	function form_content(){
+    function form_content(){
 
         global $FANNIE_PLUGIN_SETTINGS;
 
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['CoopCredDatabase']);
 ?>
-<div id=main>	
+<div id=main>    
 <?php
         if (isset($this->errors[0])) {
             echo "<p style='font-family:Arial; font-size:1.5em;'>";
@@ -615,7 +615,7 @@ class MemberSummaryReport extends FannieReportPage
             <label for="sortable" class="col-sm-4 control-label"
 title="Tick to display with sorting from column heads; un-tick for a plain formt."
 >Sort on Column Heads</label>
-			<input type="checkbox" name="sortable" id="sortable" CHECKED />
+            <input type="checkbox" name="sortable" id="sortable" CHECKED />
         </div>
     </div><!-- /.col-sm-5 -->
 </div><!-- /.row -->
@@ -633,7 +633,7 @@ title="Tick to display with sorting from column heads; un-tick for a plain formt
 <!-- Bootstrap-coded ends -->
 <?php
     // /form_content()
-	}
+    }
 
 // /class MemberSummaryReport
 }

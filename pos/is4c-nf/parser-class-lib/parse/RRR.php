@@ -23,44 +23,44 @@
 
 class RRR extends Parser 
 {
-	function check($str)
+    function check($str)
     {
-		if ($str == "RRR" || substr($str,-4)=="*RRR") {
-			return true;
-		}
+        if ($str == "RRR" || substr($str,-4)=="*RRR") {
+            return true;
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	function parse($str)
+    function parse($str)
     {
-		$ret = $this->default_json();
-		$qty = 1;
-		if ($str != "RRR") {
-			$split = explode("*",$str);
-			if (!is_numeric($split[0])) {
+        $ret = $this->default_json();
+        $qty = 1;
+        if ($str != "RRR") {
+            $split = explode("*",$str);
+            if (!is_numeric($split[0])) {
                 return true;
             }
-			$qty = $split[0];
-		}
+            $qty = $split[0];
+        }
         $no_trans = CoreLocal::get('LastID') == 0 ? true : false;
-		$this->add($qty);
+        $this->add($qty);
 
-		$ret['output'] = DisplayLib::lastpage();
-		$ret['udpmsg'] = 'goodBeep';
+        $ret['output'] = DisplayLib::lastpage();
+        $ret['udpmsg'] = 'goodBeep';
 
-		Database::getsubtotals();
-		if ($no_trans && CoreLocal::get("runningTotal") == 0) {
+        Database::getsubtotals();
+        if ($no_trans && CoreLocal::get("runningTotal") == 0) {
             TransRecord::finalizeTransaction(true);
-		}
+        }
 
-		return $ret;
-	}
+        return $ret;
+    }
 
-	// gross misuse of field!
-	// quantity is getting shoved into the volume special
-	// column so that basket-size stats aren't skewed
-	function add($qty) 
+    // gross misuse of field!
+    // quantity is getting shoved into the volume special
+    // column so that basket-size stats aren't skewed
+    function add($qty) 
     {
         TransRecord::addRecord(array(
             'upc' => 'RRR',
@@ -68,24 +68,24 @@ class RRR extends Parser
             'trans_type' => 'I',
             'VolSpecial' => $qty,
         ));
-	}
+    }
 
-	function doc()
+    function doc()
     {
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td>RRR</td>
-				<td>Add donated RRR card punch</td>
-			</tr>
-			<tr>
-				<td><i>number</i>*RRR</td>
-				<td>Add multiple donated punches</td>
-			</tr>
-			</table>";
-	}
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td>RRR</td>
+                <td>Add donated RRR card punch</td>
+            </tr>
+            <tr>
+                <td><i>number</i>*RRR</td>
+                <td>Add multiple donated punches</td>
+            </tr>
+            </table>";
+    }
 
 }
 

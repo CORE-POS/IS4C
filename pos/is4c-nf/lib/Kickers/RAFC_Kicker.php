@@ -34,8 +34,8 @@ class RAFC_Kicker extends Kicker
 
         $query = "select trans_id from localtemptrans where 
             (trans_subtype = 'CA' and total <> 0)
-			OR (trans_subtype = 'DC' and total <> 0)
-			OR (trans_subtype = 'CK' and total <> 0)";
+            OR (trans_subtype = 'DC' and total <> 0)
+            OR (trans_subtype = 'CK' and total <> 0)";
 
         $result = $db->query($query);
         $num_rows = $db->num_rows($result);
@@ -53,7 +53,7 @@ class RAFC_Kicker extends Kicker
     }
 
     public function kickOnSignIn() 
-	{
+    {
         return false;
     }
     public function kickOnSignOut()

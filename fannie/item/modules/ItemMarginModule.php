@@ -74,8 +74,10 @@ class ItemMarginModule extends ItemModule
         $dm = 'Unknown';
         $dept = new DepartmentsModel($dbc);
         $dept->dept_no($deptID);
+        $dept_name = 'n/a';
         if ($dept->load()) {
             $dm = $dept->margin() * 100;
+            $dept_name = $dept->dept_name();
         }
 
         if ((empty($dm) || $dm == 'Unknown') && $dbc->tableExists('deptMargin')) {
@@ -87,7 +89,7 @@ class ItemMarginModule extends ItemModule
             }
         }
 
-        $ret = "Desired margin on this department is " . $dm . "%";
+        $ret = "Desired margin on this department (" . $dept_name . ") is " . $dm . "%";
         $ret .= "<br />";
 
         $vendorP = $dbc->prepare('

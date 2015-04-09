@@ -50,36 +50,36 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 */
 class QuantityEntryPage extends BasicPage 
 {
-	protected $box_color;
-	protected $msg;
+    protected $box_color;
+    protected $msg;
 
     const MODE_INTEGER = 0;
     const MODE_PRECISE = 1;
 
-	function preprocess()
+    function preprocess()
     {
-		$this->box_color="coloredArea";
-		$this->msg = _("quantity required");
+        $this->box_color="coloredArea";
+        $this->msg = _("quantity required");
         $mode = FormLib::get('qty-mode');
         if ($mode == self::MODE_PRECISE) {
             $this->msg = _('precision weight required');
         }
 
-		if (!isset($_REQUEST['reginput'])) {
+        if (!isset($_REQUEST['reginput'])) {
             return true;
         }
 
-		$qtty = strtoupper(trim($_REQUEST["reginput"]));
-		if ($qtty == "CL") {
+        $qtty = strtoupper(trim($_REQUEST["reginput"]));
+        if ($qtty == "CL") {
             /**
               Clear cancels
             */
-			CoreLocal::set("qttyvalid",0);
-			CoreLocal::set("quantity",0);
-			CoreLocal::set("msgrepeat",0);
-			$this->change_page($this->page_url."gui-modules/pos2.php");
-			return false;
-		} elseif (is_numeric($qtty) && $qtty < 9999 && $qtty >= 0) {
+            CoreLocal::set("qttyvalid",0);
+            CoreLocal::set("quantity",0);
+            CoreLocal::set("msgrepeat",0);
+            $this->change_page($this->page_url."gui-modules/pos2.php");
+            return false;
+        } elseif (is_numeric($qtty) && $qtty < 9999 && $qtty >= 0) {
             /**
               If it's a number, check error conditions.
               The number should always be an integer. In
@@ -113,8 +113,8 @@ class QuantityEntryPage extends BasicPage
                 $qtty = round($qtty, 3);
             }
 
-			$input_string = FormLib::get('entered-item');
-			$plu = '';
+            $input_string = FormLib::get('entered-item');
+            $plu = '';
             $prefix = '';
             // trim numeric characters from right side of
             // input. what remains, if anything, should be
@@ -126,22 +126,22 @@ class QuantityEntryPage extends BasicPage
             } else {
                 $plu = $input_string;
             }
-			CoreLocal::set("qttyvalid",1);
-			CoreLocal::set("strRemembered", $prefix . $qtty . '*' . $plu);
-			CoreLocal::set("msgrepeat",1);
-			$this->change_page($this->page_url."gui-modules/pos2.php");
+            CoreLocal::set("qttyvalid",1);
+            CoreLocal::set("strRemembered", $prefix . $qtty . '*' . $plu);
+            CoreLocal::set("msgrepeat",1);
+            $this->change_page($this->page_url."gui-modules/pos2.php");
 
-			return false;
-		}
+            return false;
+        }
 
-		$this->box_color="errorColoredArea";
-		$this->msg = _("invalid quantity");
+        $this->box_color="errorColoredArea";
+        $this->msg = _("invalid quantity");
         if ($mode == self::MODE_PRECISE) {
             $this->msg = _('invalid precision weight');
         }
 
-		return true;
-	}
+        return true;
+    }
 
     function head_content()
     {
@@ -149,40 +149,40 @@ class QuantityEntryPage extends BasicPage
         echo '<script type="text/javascript" src="../js/formAdd.js"></script>';
     }
 
-	function body_content()
+    function body_content()
     {
-		$this->input_header();
-		echo DisplayLib::printheaderb();
+        $this->input_header();
+        echo DisplayLib::printheaderb();
 
         $mode = FormLib::get('qty-mode', 0);
         $this->add_onload_command("formAdd('#formlocal','qty-mode','{$mode}');\n");
         $item = FormLib::get('entered-item', CoreLocal::get('strEntered'));
         $this->add_onload_command("formAdd('#formlocal','entered-item','{$item}');\n");
 
-		?>
-		<div class="baseHeight">
-		<div class="<?php echo $this->box_color; ?> centeredDisplay">
-		<span class="larger">
-		<?php echo $this->msg ?>
-		</span><br />
-		<p>
-		<?php echo _("enter quantity or clear to cancel"); ?>
-		</p> 
-		</div>
-		</div>
+        ?>
+        <div class="baseHeight">
+        <div class="<?php echo $this->box_color; ?> centeredDisplay">
+        <span class="larger">
+        <?php echo $this->msg ?>
+        </span><br />
+        <p>
+        <?php echo _("enter quantity or clear to cancel"); ?>
+        </p> 
+        </div>
+        </div>
 
-		<?php
-		CoreLocal::set("msgrepeat",2);
-		CoreLocal::set("item",CoreLocal::get("strEntered"));
-		UdpComm::udpSend('errorBeep');
-		echo "<div id=\"footer\">";
-		echo DisplayLib::printfooter();
-		echo "</div>";
-	} // END true_body() FUNCTION
+        <?php
+        CoreLocal::set("msgrepeat",2);
+        CoreLocal::set("item",CoreLocal::get("strEntered"));
+        UdpComm::udpSend('errorBeep');
+        echo "<div id=\"footer\">";
+        echo DisplayLib::printfooter();
+        echo "</div>";
+    } // END true_body() FUNCTION
 }
 
 if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
-	new QuantityEntryPage();
+    new QuantityEntryPage();
 }
 
 ?>

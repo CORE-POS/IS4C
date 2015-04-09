@@ -9,14 +9,14 @@ include('../../db.php');
 $buyID = (isset($_POST['buyID']))?$_POST['buyID']:0;
 $buyer = "All";
 if ($buyID == 99){
-	$buyID=0;
+    $buyID=0;
 }
 else if ($buyID != 0){
-	$getBuyerQ = $sql->prepare("SELECT subdept_name from subdepts where subdept_no = ?");
+    $getBuyerQ = $sql->prepare("SELECT subdept_name from subdepts where subdept_no = ?");
 
-	$getBuyerR = $sql->execute($getBuyerQ, array($buyID));
-	$getBuyerW = $sql->fetch_array($getBuyerR);
-	$buyer = $getBuyerW['subdept_name'];
+    $getBuyerR = $sql->execute($getBuyerQ, array($buyID));
+    $getBuyerW = $sql->fetch_array($getBuyerR);
+    $buyer = $getBuyerW['subdept_name'];
 }
 $date = date('mjY');
 $batchName = "priceUpdate".$buyer.$date;

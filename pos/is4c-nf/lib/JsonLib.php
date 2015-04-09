@@ -34,28 +34,28 @@ class JsonLib extends LibraryClass {
 */
 static public function arrayToJson($arr)
 {
-	$ret = "[";
-	for($i=0;$i<count($arr);$i++) {
-		if (isset($arr[$i])) {
-			$ret .= self::encodeValueJson($arr[$i]).",";
-		} else {
-			$ret = "";
-			break; // not a numeric indexed array
-		}
-	}
-	if (!empty($ret)) {
-		$ret = substr($ret,0,strlen($ret)-1)."]";
-		return $ret;
-	}
+    $ret = "[";
+    for($i=0;$i<count($arr);$i++) {
+        if (isset($arr[$i])) {
+            $ret .= self::encodeValueJson($arr[$i]).",";
+        } else {
+            $ret = "";
+            break; // not a numeric indexed array
+        }
+    }
+    if (!empty($ret)) {
+        $ret = substr($ret,0,strlen($ret)-1)."]";
+        return $ret;
+    }
 
-	$ret = "{";
-	foreach($arr as $k=>$v) {
-		$ret .= '"'.$k.'":';
-		$ret .= self::encodeValueJson($v).",";
-	}
-	$ret = substr($ret,0,strlen($ret)-1)."}";
+    $ret = "{";
+    foreach($arr as $k=>$v) {
+        $ret .= '"'.$k.'":';
+        $ret .= self::encodeValueJson($v).",";
+    }
+    $ret = substr($ret,0,strlen($ret)-1)."}";
 
-	return $ret;
+    return $ret;
 }
 
 static public function array_to_json($arr)
@@ -70,20 +70,20 @@ static public function array_to_json($arr)
 */
 static public function encodeValueJson($val)
 {
-	if (is_array($val)) {
+    if (is_array($val)) {
         return self::array_to_json($val);
     }
-	if (is_numeric($val)) {
+    if (is_numeric($val)) {
         return ltrim($val,'0');
     }
-	if ($val === true) {
+    if ($val === true) {
         return 'true';
     }
-	if ($val === false) {
+    if ($val === false) {
         return 'false';
     }
 
-	return '"'.addcslashes($val,"\\\"\r\n\t").'"';
+    return '"'.addcslashes($val,"\\\"\r\n\t").'"';
 }
 
 /**
@@ -95,9 +95,9 @@ static public function encodeValueJson($val)
 */
 static public function fixstring($str)
 {
-	$str = str_replace("\n","",$str);
-	$str = str_replace("\r","",$str);
-	$str = str_replace("\t","",$str);
+    $str = str_replace("\n","",$str);
+    $str = str_replace("\r","",$str);
+    $str = str_replace("\t","",$str);
 }
 
 static public function prettyJSON($json)

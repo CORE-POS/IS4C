@@ -32,11 +32,11 @@ if (!class_exists('FannieAPI')) {
 
 class CoopCredConfigEditor extends FanniePage {
 
-	public $themed = True;
-	protected $title = "Fannie : Configure Coop Cred";
-	protected $header = "Configure Coop Cred";
-	protected $auth_classes = array('overshorts');
-	private $errors = '';
+    public $themed = True;
+    protected $title = "Fannie : Configure Coop Cred";
+    protected $header = "Configure Coop Cred";
+    protected $auth_classes = array('overshorts');
+    private $errors = '';
     private $authUserNumber;
     private $first;
 
@@ -44,20 +44,20 @@ class CoopCredConfigEditor extends FanniePage {
         global $FANNIE_PLUGIN_LIST, $FANNIE_PLUGIN_SETTINGS;
 
         if (!isset($FANNIE_PLUGIN_LIST) || !in_array('CoopCred', $FANNIE_PLUGIN_LIST)) {
-			$this->errors .= _("Error: The Coop Cred Plugin is not enabled.");
-			return True;
+            $this->errors .= _("Error: The Coop Cred Plugin is not enabled.");
+            return True;
         }
 
         if (!array_key_exists('CoopCredDatabase', $FANNIE_PLUGIN_SETTINGS) ||
             $FANNIE_PLUGIN_SETTINGS['CoopCredDatabase'] == "") {
-			$this->errors .= _("Error: Coop Cred Database not named in Plugin Settings.");
-			return True;
+            $this->errors .= _("Error: Coop Cred Database not named in Plugin Settings.");
+            return True;
         }
 
         /* Get values from the Whole-Project (Plugin) config table.
         */
         $this->first = 0;
-		if (FormLib::get_form_value('action') == ''){
+        if (FormLib::get_form_value('action') == ''){
             $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['CoopCredDatabase']);
             $config = new CCredConfigModel($dbc);
             $id = (FormLib::get_form_value('configno') != '') ?
@@ -87,7 +87,7 @@ class CoopCredConfigEditor extends FanniePage {
         /* The first (unless this is an update) time proceed directly to edit.
          */
         if ($this->first) {
-			return True;
+            return True;
         }
 
         /* Support ajax calls to this program.
@@ -95,13 +95,13 @@ class CoopCredConfigEditor extends FanniePage {
          * The form submission may be via AJAX instead of <form ...>
          *  with action= in the query string with other parameters.
          */
-		if(FormLib::get_form_value('action') !== ''){
-			$this->ajax_response(FormLib::get_form_value('action'));
+        if(FormLib::get_form_value('action') !== ''){
+            $this->ajax_response(FormLib::get_form_value('action'));
             /* How to handle errors/problems esp. in save?
              * Possibly code readinessCheck()
              */
-			return False;
-		}
+            return False;
+        }
 
         /* If the call was not by form, e.g. from the initial menu
          * or the <form action=> is '' (when does that happen?)
@@ -111,7 +111,7 @@ class CoopCredConfigEditor extends FanniePage {
         return True;
 
     // preprocess()
-	}
+    }
 
     /**
       Define any CSS needed
@@ -130,23 +130,23 @@ class CoopCredConfigEditor extends FanniePage {
      *   - assigns to <div id=infodiv>
      *   - displays with JS alert()
      */
-	function ajax_response($action){
-		switch($action){
-		case 'programDisplay':
-			$this->ajax_display_program(FormLib::get_form_value('configno',0));
-			break;
-		case 'programSave':
-			$this->ajax_save_program();
-			break;
-		default:
-			echo 'Bad request';
-			break;
-		}
-	}
+    function ajax_response($action){
+        switch($action){
+        case 'programDisplay':
+            $this->ajax_display_program(FormLib::get_form_value('configno',0));
+            break;
+        case 'programSave':
+            $this->ajax_save_program();
+            break;
+        default:
+            echo 'Bad request';
+            break;
+        }
+    }
 
     /* Echo the data capture form.
      */
-	private function ajax_display_program($id){
+    private function ajax_display_program($id){
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL, $FANNIE_OP_DB;
 
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['CoopCredDatabase']);
@@ -195,7 +195,7 @@ class CoopCredConfigEditor extends FanniePage {
             $cModifiedDatestamp = $cModified;
             $cModifiedBy = $config->modifiedBy();
 
-		}
+        }
 
         /* $hb (helpbit) is an array keyed on the id= of the input being described.
          * Each element is an array with 2 elements:
@@ -356,21 +356,21 @@ class CoopCredConfigEditor extends FanniePage {
         $ret .= "</tr>";
 
         // First row of inputs.
-		$ret .= "<tr class='vTop'>";
-		$ret .= "<td class='iCenter'{$edtd}>";
+        $ret .= "<tr class='vTop'>";
+        $ret .= "<td class='iCenter'{$edtd}>";
         /* Not editable.
          * Don't think there will ever be more than one.
          * Maybe no point in displaying.
          */
-		if ($id == -1){
+        if ($id == -1){
             $ret .= _("Will be assigned upon Save");
-			$ret .= "<input type=hidden id=configno name=configno value='' />";
+            $ret .= "<input type=hidden id=configno name=configno value='' />";
             // id must be the same as in the hidden.
-			//$ret .= "<input type=text size=4 id=progno />";
-		} else {
-			$ret .= $id;
-		}
-		$ret .= "</td>";
+            //$ret .= "<input type=text size=4 id=progno />";
+        } else {
+            $ret .= $id;
+        }
+        $ret .= "</td>";
         // dummyTenderCode
         $ret .= "<td colspan=1><input type=text size=2 maxlength=2 id=dummytender " .
             "value=\"$cDummyTenderCode\" /></td>";
@@ -393,7 +393,7 @@ class CoopCredConfigEditor extends FanniePage {
         $ret .= "<td colspan=1><input type=text size=4 maxlength=5 id=deptmax " .
             "value=\"$cDeptMax\" /></td>";
 
-		$ret .= "</tr>";
+        $ret .= "</tr>";
 
         /* Second row of headings.
          */
@@ -455,23 +455,23 @@ class CoopCredConfigEditor extends FanniePage {
         }
 
         // Remember that these are also in JS.
-		if ($id == -1){
-			$ret .= "<input type=hidden id=isnew value=1 />";
-		} else {
-			$ret .= "<input type=hidden id=isnew value=0 />";
+        if ($id == -1){
+            $ret .= "<input type=hidden id=isnew value=1 />";
+        } else {
+            $ret .= "<input type=hidden id=isnew value=0 />";
             // id must be the same as in the form, the <select> of programs.
-			$ret .= "<input type=hidden id=configno value=\"$id\" />";
+            $ret .= "<input type=hidden id=configno value=\"$id\" />";
         }
 
         /* The onclick= is what happens instead of <form action=> in
          * regular form submissions.
          */
-		$ret .= "<p /><input type=submit value=Save onclick=\"programSave(); return false;\" />";
+        $ret .= "<p /><input type=submit value=Save onclick=\"programSave(); return false;\" />";
 
         echo $ret;
 
-	// ajax_display_program()
-	}
+    // ajax_display_program()
+    }
 
     /* Save to the tables:
      *  Use Model for the Program, i.e. config.
@@ -481,7 +481,7 @@ class CoopCredConfigEditor extends FanniePage {
      *  AFAICT the ajax can't or doesn't distinguish success from failure.
      *  I want to be able to tell op to fix things before doing the save.
      */
-	private function ajax_save_program(){
+    private function ajax_save_program(){
 
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
 
@@ -528,7 +528,7 @@ class CoopCredConfigEditor extends FanniePage {
         /* Save changes to or Create the Config proper.
          */
         $config = new CCredConfigModel($dbc);
-		$config->configID($configno);
+        $config->configID($configno);
 
         $config->dummyTenderCode($dummytender);
         $config->dummyDepartment($dummydept);
@@ -548,28 +548,28 @@ class CoopCredConfigEditor extends FanniePage {
         /* save() decides UPDATE vs INSERT based on whether configID already
          * exists.
          */
-		$saved = $config->save();
+        $saved = $config->save();
 
-		if ($isnew == 1) {
-			if ($saved === False){
-				echo 'Error: could not create Configuration';
-				return;
-			}
+        if ($isnew == 1) {
+            if ($saved === False){
+                echo 'Error: could not create Configuration';
+                return;
+            }
 
-		} else {
-			if ($saved === False){
-				echo 'Error: could not save the changes to the Configuration';
-				return;
+        } else {
+            if ($saved === False){
+                echo 'Error: could not save the changes to the Configuration';
+                return;
             } else {
                 $returnMessage .= sprintf("\nSaved Configuration (#%d)", $configno);
             }
-		}
+        }
 
         $returnMessage = preg_replace("/^\n+/","",$returnMessage);
         echo $returnMessage;
 
-	// ajax_save_program()
-	}
+    // ajax_save_program()
+    }
 
     /**
      * Override FanniePage::errorContent().
@@ -590,7 +590,7 @@ class CoopCredConfigEditor extends FanniePage {
        below, an area that is populated by JS with the editing form
         and possibly other art.
     */
-	function body_content(){
+    function body_content(){
 
         global $FANNIE_PLUGIN_SETTINGS;
         global $FANNIE_URL;
@@ -605,57 +605,57 @@ class CoopCredConfigEditor extends FanniePage {
                 FROM CCredConfig
                 ORDER BY configID";
         $p = $dbc->prepare_statement($q);
-		$resp = $dbc->exec_statement($p);
+        $resp = $dbc->exec_statement($p);
         if ($resp === false) {
             return "<p style='font-size:1.2em;'>" . 
                "Exec SQL failed: $q" . "</p>";
         }
-		$programs = "<option value=0>Select Configuration ...</option>";
-		$selectedPID = FormLib::get_form_value('configno',1);
+        $programs = "<option value=0>Select Configuration ...</option>";
+        $selectedPID = FormLib::get_form_value('configno',1);
         $listSize = 2;
-		while($row = $dbc->fetch_row($resp)){
+        while($row = $dbc->fetch_row($resp)){
             if ($listSize < 4) {
                 $listSize++;
             }
-			if ($selectedPID !== '' && $selectedPID == $row['configID']) {
+            if ($selectedPID !== '' && $selectedPID == $row['configID']) {
                 $programs .= "<option value={$row['configID']} selected>" .
                     "{$row['configID']}</option>";
             } else {
                 $programs .= "<option value={$row['configID']}>" .
                     "{$row['configID']}</option>";
             }
-		}
-		ob_start();
-		?>
+        }
+        ob_start();
+        ?>
         <!-- Code for choosing a Config commented out since there is only one. -->
-		<!-- div id="programdiv" style="padding:1.0em 0 0 0;">
+        <!-- div id="programdiv" style="padding:1.0em 0 0 0;">
         <div style="float:left; margin-right:0.5em;"><b>Configuration</b></div>
         <select id="configselect" onchange="programChange();"
         size="<?php //echo $listSize ?>" -->
-		<?php //echo $programs ?>
-		<!-- /select>
+        <?php //echo $programs ?>
+        <!-- /select>
         </div>
         <p style="clear: both;">To refresh the list above, save your current edits, then
         <a href="CoopCredConfigEditor.php"
             style="font-size:1.2em; font-weight:bold;">Refresh</a></p>
-		<hr / -->
+        <hr / -->
         <input type="hidden" id="configselect" name="configselect" value="1" />
         <!-- infodiv is filled with the editing form.  -->
         <div id="infodiv">
-		<?php
+        <?php
         if ($this->first) {
-			$this->ajax_response('programDisplay');
+            $this->ajax_response('programDisplay');
             }
         ?>
         </div>
-		<?php
+        <?php
         //$this->add_script($FANNIE_URL . 'src/CalendarControl.js');
         $this->add_script('coopcred_config.js');
         $this->add_css_file('coopcred_form.css');
         /* Does this run programChange()?
          * To display an, i.e. the, initial config.
          *   If so might be a better way than what I did.
-		if ($selectedPID !== '') {
+        if ($selectedPID !== '') {
              *  It seems to get the programID from the page, not passed as arg.
             $this->add_onload_command('programChange();');
             $noop=1;

@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	* 10Oct12 Eric Lee New.
+    * 10Oct12 Eric Lee New.
 */
 
 include('../../config.php');
@@ -34,12 +34,12 @@ include($FANNIE_ROOT.'src/header.html');
 echo "<ul>";
 ?>
       <li><a href="<?php echo $path; ?>item/import/uploadAnyFile.php">Upload Any File</a></li>
-			<li><a href="<?php echo $path; ?>item/departments/loadWEFCTorontoDepts.php">Load Departments</a></li>
-			<li><a href="<?php echo $path; ?>item/import/loadWEFCTorontoProducts.php">Load Products</a></li>
-			<li><a href="<?php echo $path; ?>reports/Store-Specific/WEFC_Toronto/ProductsExport/">Product Export</a></li>
+            <li><a href="<?php echo $path; ?>item/departments/loadWEFCTorontoDepts.php">Load Departments</a></li>
+            <li><a href="<?php echo $path; ?>item/import/loadWEFCTorontoProducts.php">Load Products</a></li>
+            <li><a href="<?php echo $path; ?>reports/Store-Specific/WEFC_Toronto/ProductsExport/">Product Export</a></li>
 <?php
 echo "</ul>";
-									 
+                                     
 include($FANNIE_ROOT.'src/footer.html');
 
 ?>

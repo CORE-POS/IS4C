@@ -29,23 +29,23 @@
 class OtherReceiptFormat extends DefaultReceiptFormat 
 {
 
-	/**
-	  Formatting function
-	  @param $row a single receipt record
-	  @return a formatted string
-	*/
-	public function format($row)
+    /**
+      Formatting function
+      @param $row a single receipt record
+      @return a formatted string
+    */
+    public function format($row)
     {
-		if ($row['trans_type'] == '0') {
-			// tare
-			$description = strtolower($row['description']);
-			$description = str_replace('**',' =', $description);
-			return $description;
-		} else if ($row['trans_type'] == 'H' && $row['description'] != '') {
-			$this->is_bold = True;
-			return $row['description'];
-		}
-		return "";
-	}
+        if ($row['trans_type'] == '0') {
+            // tare
+            $description = strtolower($row['description']);
+            $description = str_replace('**',' =', $description);
+            return $description;
+        } else if ($row['trans_type'] == 'H' && $row['description'] != '') {
+            $this->is_bold = True;
+            return $row['description'];
+        }
+        return "";
+    }
 }
 

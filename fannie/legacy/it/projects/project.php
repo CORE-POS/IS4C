@@ -56,7 +56,7 @@ $emailQ = $sql->prepare("select email from project_parties where projID=? order 
 $emailR = $sql->execute($emailQ, array($projID));
 $emaillist = "";
 while ($emailW = $sql->fetch_array($emailR))
-	$emaillist .= $emailW[0].", ";
+    $emaillist .= $emailW[0].", ";
 $emaillist = substr($emaillist,0,strlen($emaillist)-2);
 
 require($FANNIE_ROOT.'auth/login.php');

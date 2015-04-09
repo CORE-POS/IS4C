@@ -35,7 +35,7 @@ class CouponCodesModel extends BasicModel
     'Code' => array('type'=>'VARCHAR(4)', 'primary_key'=>true),
     'Qty' => array('type'=>'INT'),
     'Value' => array('type'=>'Real'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

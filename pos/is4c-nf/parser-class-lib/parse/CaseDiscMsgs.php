@@ -23,70 +23,70 @@
 
 class CaseDiscMsgs extends Parser 
 {
-	function check($str)
+    function check($str)
     {
-		if ($str == "cdinvalid" ||
-		    $str == "cdStaffNA" ||
-	    	    $str == "cdSSINA"){
-			return true;
-		}
-		return false;
-	}
+        if ($str == "cdinvalid" ||
+            $str == "cdStaffNA" ||
+                $str == "cdSSINA"){
+            return true;
+        }
+        return false;
+    }
 
-	function parse($str)
+    function parse($str)
     {
-		$ret = $this->default_json();
-		if ($str == "cdInvalid") {
-			$ret['output'] = DisplayLib::boxMsg(
+        $ret = $this->default_json();
+        if ($str == "cdInvalid") {
+            $ret['output'] = DisplayLib::boxMsg(
                 CoreLocal::get("casediscount") . _("% case discount invalid"),
                 '',
                 false,
                 DisplayLib::standardClearButton()
             );
-		} elseif ($str == "cdStaffNA") {
-			$ret['output'] = DisplayLib::boxMsg(
+        } elseif ($str == "cdStaffNA") {
+            $ret['output'] = DisplayLib::boxMsg(
                 _("case discount not applicable to staff"),
                 '',
                 false,
                 DisplayLib::standardClearButton()
             );
-		} elseif ($str == "cdSSINA") {
-			$ret['output'] = DisplayLib::boxMsg(
-			    _("hit 10% key to apply case discount for member")." ".CoreLocal::get("memberID"),
+        } elseif ($str == "cdSSINA") {
+            $ret['output'] = DisplayLib::boxMsg(
+                _("hit 10% key to apply case discount for member")." ".CoreLocal::get("memberID"),
                 '',
                 false,
                 DisplayLib::standardClearButton()
             );
         }
-	
-		return $ret;
-	}
+    
+        return $ret;
+    }
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td>cdInvalid</td>
-				<td>Display error message</td>
-			</tr>
-			<tr>
-				<td>cdStaffNA</td>
-				<td>Display error message</td>
-			</tr>
-			<tr>
-				<td>cdSSINA</td>
-				<td>Display instructional message</td>
-			</tr>
-			<tr>
-				<td colspan=2><i>I'm not entirely sure
-				what this one's for. It's just here
-				to reproduce original pos2.php 
-				functionality</td>
-			</tr>
-			</table>";
-	}
+    function doc(){
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td>cdInvalid</td>
+                <td>Display error message</td>
+            </tr>
+            <tr>
+                <td>cdStaffNA</td>
+                <td>Display error message</td>
+            </tr>
+            <tr>
+                <td>cdSSINA</td>
+                <td>Display instructional message</td>
+            </tr>
+            <tr>
+                <td colspan=2><i>I'm not entirely sure
+                what this one's for. It's just here
+                to reproduce original pos2.php 
+                functionality</td>
+            </tr>
+            </table>";
+    }
 }
 
 ?>

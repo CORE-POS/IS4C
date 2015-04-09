@@ -9,7 +9,7 @@ CoreState::loadParams();
 <title>Database Updates</title>
 <style type="text/css">
 body {
-	line-height: 1.5em;
+    line-height: 1.5em;
 }
 </style>
 <script type="text/javascript" src="../js/jquery.js"></script>
@@ -27,7 +27,7 @@ if (isset($_REQUEST['mupdate'])) {
     if (!class_exists($updateClass)) {
         echo 'Error: class not found<br />';
     } elseif(!is_subclass_of($updateClass, 'BasicModel')) {
-        echo 'Error: not a valid model<br />';	
+        echo 'Error: not a valid model<br />';    
     } else {
         $updateModel = new $updateClass(null);
         $db_name = InstallUtilities::normalizeDbName($updateModel->preferredDB());
@@ -114,6 +114,6 @@ printf('<tr><td>Errors</td><td align="right">%d</td></tr>', $errors);
 printf('<tr><td>Updates</td><td align="right">%d</td></tr>', $adds);
 printf('<tr><td>Oddities</td><td align="right">%d</td></tr>', $unknowns);
 ?>
-</div> <!--	wrapper -->
+</div> <!--    wrapper -->
 </body>
 </html>

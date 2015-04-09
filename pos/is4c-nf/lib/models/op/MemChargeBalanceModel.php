@@ -34,7 +34,7 @@ class MemChargeBalanceModel extends BasicModel
     'CardNo' => array('type'=>'INT'),
     'availBal' => array('type'=>'MONEY'),
     'balance' => array('type'=>'MONEY'),
-	);
+    );
 
     /* disabled because it's a view */
     public function create(){ return false; }

@@ -25,78 +25,78 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class boxMsg2 extends BasicPage {
 
-	function head_content(){
-		?>
-		<script type="text/javascript">
-		function submitWrapper(){
-			var str = $('#reginput').val();
-			var endorseType = $('#endorseType').val();
-			var endorseAmt = $('#endorseAmt').val();
+    function head_content(){
+        ?>
+        <script type="text/javascript">
+        function submitWrapper(){
+            var str = $('#reginput').val();
+            var endorseType = $('#endorseType').val();
+            var endorseAmt = $('#endorseAmt').val();
             var cmd = $('#repeat-cmd').val();
-			$.ajax({
-				url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-decision.php',
-				type: 'get',
-				data: 'input='+str+'&cmd='+encodeURIComponent(cmd),
-				dataType: 'json',
-				cache: false,
-				success: function(data){
-					if (!data.cleared && endorseType != ''){
-						$.ajax({
-							url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-endorse.php',
-							type: 'get',
-							data: 'type='+endorseType+'&amount='+endorseAmt,
-							cache: false,
-							success: function(){
-								location = data.dest_page;
-							}
-						});
-					}
-					else {
-						location = data.dest_page;
-					}
-				}
-			});
-			return false;
-		}
-		</script>
-		<?php
+            $.ajax({
+                url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-decision.php',
+                type: 'get',
+                data: 'input='+str+'&cmd='+encodeURIComponent(cmd),
+                dataType: 'json',
+                cache: false,
+                success: function(data){
+                    if (!data.cleared && endorseType != ''){
+                        $.ajax({
+                            url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-endorse.php',
+                            type: 'get',
+                            data: 'type='+endorseType+'&amount='+endorseAmt,
+                            cache: false,
+                            success: function(){
+                                location = data.dest_page;
+                            }
+                        });
+                    }
+                    else {
+                        location = data.dest_page;
+                    }
+                }
+            });
+            return false;
+        }
+        </script>
+        <?php
         $this->noscan_parsewrapper_js();
-	}
+    }
 
-	function preprocess()
+    function preprocess()
     {
-		/**
-		  Bounce through this page and back to pos2.php. This lets
-		  TenderModules use the msgrepeat feature during input parsing.
-		*/
-		if (isset($_REQUEST['autoconfirm'])){
-			CoreLocal::set('strRemembered', CoreLocal::get('strEntered'));
-			CoreLocal::set('msgrepeat', 1);
-			$this->change_page(MiscLib::base_url().'gui-modules/pos2.php');
-			return False;
-		}
-		return True;
-	}
+        /**
+          Bounce through this page and back to pos2.php. This lets
+          TenderModules use the msgrepeat feature during input parsing.
+        */
+        if (isset($_REQUEST['autoconfirm'])){
+            CoreLocal::set('strRemembered', CoreLocal::get('strEntered'));
+            CoreLocal::set('msgrepeat', 1);
+            $this->change_page(MiscLib::base_url().'gui-modules/pos2.php');
+            return False;
+        }
+        return True;
+    }
 
-	function body_content()
+    function body_content()
     {
-		$this->input_header("onsubmit=\"return submitWrapper();\"");
-		?>
-		<div class="baseHeight">
+        $this->input_header("onsubmit=\"return submitWrapper();\"");
+        ?>
+        <div class="baseHeight">
 
-		<?php
+        <?php
         $buttons = is_array(CoreLocal::get('boxMsgButtons')) ? CoreLocal::get('boxMsgButtons') : array();
-		echo DisplayLib::boxMsg(CoreLocal::get("boxMsg"), "", true, $buttons);
-		echo "</div>";
-		echo "<div id=\"footer\">";
-		echo DisplayLib::printfooter();
-		echo "</div>";
-		echo '<input type="hidden" id="endorseType" value="'
-			.(isset($_REQUEST['endorse'])?$_REQUEST['endorse']:'')
-			.'" />';
-		echo '<input type="hidden" id="endorseAmt" value="'
-			.(isset($_REQUEST['endorseAmt'])?$_REQUEST['endorseAmt']:'')
-			.'" />';
+        echo DisplayLib::boxMsg(CoreLocal::get("boxMsg"), "", true, $buttons);
+        echo "</div>";
+        echo "<div id=\"footer\">";
+        echo DisplayLib::printfooter();
+        echo "</div>";
+        echo '<input type="hidden" id="endorseType" value="'
+            .(isset($_REQUEST['endorse'])?$_REQUEST['endorse']:'')
+            .'" />';
+        echo '<input type="hidden" id="endorseAmt" value="'
+            .(isset($_REQUEST['endorseAmt'])?$_REQUEST['endorseAmt']:'')
+            .'" />';
         /**
           Encode the last command entered in the page. With payment
           terminals facing the customer, input processing may happen
@@ -104,16 +104,16 @@ class boxMsg2 extends BasicPage {
         */
         echo '<input type="hidden" id="repeat-cmd" value="'
             . CoreLocal::get('strEntered') . '" />';
-		
-		CoreLocal::set("boxMsg",'');
-		CoreLocal::set("boxMsgButtons", array());
-		CoreLocal::set("msgrepeat",2);
-		if (!isset($_REQUEST['quiet']))
-			MiscLib::errorBeep();
-	} // END body_content() FUNCTION
+        
+        CoreLocal::set("boxMsg",'');
+        CoreLocal::set("boxMsgButtons", array());
+        CoreLocal::set("msgrepeat",2);
+        if (!isset($_REQUEST['quiet']))
+            MiscLib::errorBeep();
+    } // END body_content() FUNCTION
 }
 
 if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-	new boxMsg2();
+    new boxMsg2();
 
 ?>

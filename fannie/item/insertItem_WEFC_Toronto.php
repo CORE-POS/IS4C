@@ -81,11 +81,11 @@ $taxfsQ = "SELECT dept_tax,dept_fs, dept_discount, superID
     WHERE d.dept_no = {$ins_array['department']}";
 $taxfsR = $dbc->query($taxfsQ);
 if ($dbc->num_rows($taxfsR) > 0){
-	$taxfsW = $dbc->fetch_array($taxfsR);
-	$ins_array['tax'] = $taxfsW['dept_tax'];
-	$ins_array['foodstamp'] = $taxfsW['dept_fs'];
-	$ins_array['discount'] = $taxfsW['dept_discount'];
-	$deptSub = $taxfsW['superID'];
+    $taxfsW = $dbc->fetch_array($taxfsR);
+    $ins_array['tax'] = $taxfsW['dept_tax'];
+    $ins_array['foodstamp'] = $taxfsW['dept_fs'];
+    $ins_array['discount'] = $taxfsW['dept_discount'];
+    $deptSub = $taxfsW['superID'];
 }
 $ins_array['tax'] = isset($_REQUEST['tax'])?$_REQUEST['tax']:0;
 $ins_array['foodstamp'] = isset($_REQUEST['FS'])?1:0;

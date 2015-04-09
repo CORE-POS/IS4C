@@ -42,7 +42,7 @@ static private $db_a = NULL;
  @return string The report, ready to send to printer.
 */
 static public function get(){
-	global $CORE_LOCAL;
+    global $CORE_LOCAL;
 
     /* First, check for anything still in
      * . localtemptrans
@@ -91,8 +91,8 @@ static public function get(){
     }
 
     /* Ideally, either
-		 * . both tables are empty
-		 * . there is one record, an upc=ENDOFSHIFT,
+         * . both tables are empty
+         * . there is one record, an upc=ENDOFSHIFT,
      *    in either localtemptrans or dtransactions
      *    and the other table is empty.
      */
@@ -100,7 +100,7 @@ static public function get(){
         $localCheck .= "\n\nThe shift was ended properly, buffers empty. " .
             "Good!";
 
-		}
+        }
     elseif (
         ($lastUPC1 == 'ENDOFSHIFT' && $rowCount1 == 1 && $rowCount2 == 0) ||
         ($lastUPC2 == 'ENDOFSHIFT' && $rowCount2 == 1 && $rowCount1 == 0) 
@@ -166,18 +166,18 @@ static public function get(){
             "AND d.register_no <> 99";
     }
 
-		self::$db_a = $db_a;
+        self::$db_a = $db_a;
     self::$tTable = $tTable;
     self::$tDate = $tDate;
     self::$excl = $excl;
-		$shiftCutoff = date('Y-m-d 00:00:00');
-		self::$shiftCutoff = $shiftCutoff;
+        $shiftCutoff = date('Y-m-d 00:00:00');
+        self::$shiftCutoff = $shiftCutoff;
 
-		$DESIRED_TENDERS = $CORE_LOCAL->get("TRDesiredTenders");
+        $DESIRED_TENDERS = $CORE_LOCAL->get("TRDesiredTenders");
 
     self::$dashLine = str_repeat('-',54);
-		$receipt = "";
-		$blank = str_repeat(' ', 13);
+        $receipt = "";
+        $blank = str_repeat(' ', 13);
 /* Literal spacing from left margin.
                           C a s h
   ------------------------------------------------------
@@ -188,34 +188,34 @@ static public function get(){
                                 Count: 2  Total: -13.00
 */
 
-	$fieldNames = "  ".substr("Time".$blank, 0, 10)
-			.substr("Lane".$blank, 0, 8)
-			.substr("Trans #".$blank, 0, 10)
-			.substr("Emp #".$blank, 0, 8)
-			.substr("Mem #".$blank, 0, 11)
-			.substr("Amount".$blank, 0, 14)."\n";
+    $fieldNames = "  ".substr("Time".$blank, 0, 10)
+            .substr("Lane".$blank, 0, 8)
+            .substr("Trans #".$blank, 0, 10)
+            .substr("Emp #".$blank, 0, 8)
+            .substr("Mem #".$blank, 0, 11)
+            .substr("Amount".$blank, 0, 14)."\n";
     $ref = ReceiptLib::centerString(trim($CORE_LOCAL->get("CashierNo"))." ".
         trim($CORE_LOCAL->get("cashier"))." ".ReceiptLib::build_time(time())).
         "\n";
 
-	$cashier_names = "";
+    $cashier_names = "";
     $cashierQ = "SELECT CONCAT(SUBSTR(e.FirstName,1,1),SUBSTR(e.Lastname,1,1)) as cashier
-		FROM $tTable d, ".$CORE_LOCAL->get('pDatabase').".employees e
+        FROM $tTable d, ".$CORE_LOCAL->get('pDatabase').".employees e
         WHERE d.emp_no = e.emp_no AND d.register_no = ". $CORE_LOCAL->get('laneno').
             " AND d.trans_type <> 'L' 
             AND d.{$tDate} >= '".$shiftCutoff."'{$excl}
         GROUP BY d.emp_no
         ORDER BY d.{$tDate}";
-		
+        
     $cashierR = $db_a->query($cashierQ);
 
     for ($i = 0; $i < $row = $db_a->fetch_array($cashierR); $i++) {
             $cashier_names .= $row['cashier'].", ";
     }
 
-	$receipt .= ReceiptLib::centerString("T E N D E R   R E P O R T")."\n";
-	$receipt .= ReceiptLib::centerString("Data from $tSource")."\n";
-	$receipt .= $ref;
+    $receipt .= ReceiptLib::centerString("T E N D E R   R E P O R T")."\n";
+    $receipt .= ReceiptLib::centerString("Data from $tSource")."\n";
+    $receipt .= $ref;
     $receipt .= ReceiptLib::centerString("Lane " . $CORE_LOCAL->get('laneno').
         " -- Cashiers: " . $cashier_names)."\n\n";
 
@@ -226,24 +226,24 @@ static public function get(){
     /* NET TOTAL
      * Does not include tenders such as StoreCharge and Coupons.
      */
-	if ($CORE_LOCAL->get('store') == 'WEFC_Toronto') {
-		$netTenderList = "'CA','CK','DC','CC'";
-		$netTenderMessage = "(Only: Cash, Cheque, Debit, Credit)";
-	} else {
-		$netTenderList = "'CA','CK','DC','CC','FS','EC'";
-		$netTenderMessage = "(Only: Cash, Check, Debit, Credit, SNAPs)";
-	}
-	$netQ = "SELECT -SUM(total) AS net, COUNT(total)
-	  FROM $tTable d
-		WHERE register_no=".$CORE_LOCAL->get('laneno').
+    if ($CORE_LOCAL->get('store') == 'WEFC_Toronto') {
+        $netTenderList = "'CA','CK','DC','CC'";
+        $netTenderMessage = "(Only: Cash, Cheque, Debit, Credit)";
+    } else {
+        $netTenderList = "'CA','CK','DC','CC','FS','EC'";
+        $netTenderMessage = "(Only: Cash, Check, Debit, Credit, SNAPs)";
+    }
+    $netQ = "SELECT -SUM(total) AS net, COUNT(total)
+      FROM $tTable d
+        WHERE register_no=".$CORE_LOCAL->get('laneno').
         " AND trans_subtype IN({$netTenderList})" .
         " AND {$tDate} >= '{$shiftCutoff}'{$excl}";
-	$netR = $db_a->query($netQ);
-	$net = $db_a->fetch_row($netR);
+    $netR = $db_a->query($netQ);
+    $net = $db_a->fetch_row($netR);
     $receipt .= "  ".substr("NET Total: ".$blank.$blank,0,20);
     $receipt .= substr($blank.number_format(($net[0]),2),-8).
-		"\n  {$netTenderMessage}\n";
-	$receipt .= "\n";
+        "\n  {$netTenderMessage}\n";
+    $receipt .= "\n";
 
     /* Total for each of a Tender Type or combination.
      * Each is listed even if no items.
@@ -251,10 +251,10 @@ static public function get(){
      */
     $receipt .= self::trTotal('CA','CASH');
     if ($CORE_LOCAL->get('store') == 'WEFC_Toronto') {
-			$receipt .= self::trTotal('CK','CHEQUE');
+            $receipt .= self::trTotal('CK','CHEQUE');
     } else {
-			$receipt .= self::trTotal('CK','CHECK');
-		}
+            $receipt .= self::trTotal('CK','CHECK');
+        }
     $receipt .= self::trTotal(array('CP','MC'),'VENDOR COUPON');
     $receipt .= self::trTotal('CC','CREDIT CARD');
     $receipt .= self::trTotal('DC','DEBIT CARD');
@@ -281,7 +281,7 @@ static public function get(){
  
     $receipt .= ReceiptLib::centerString(self::$dashLine);
 
-	$receipt .= str_repeat("\n", 5);
+    $receipt .= str_repeat("\n", 5);
 
     /* Detail for each Desired Tender Type or combination.
      * Types with no items are skipped.
@@ -295,7 +295,7 @@ static public function get(){
     $allLaneTenders = array();
     $allLaneTenders[] = 'CC';
     $allLaneTenders[] = 'DC';
-	foreach(array_keys($DESIRED_TENDERS) as $tender_code){ 
+    foreach(array_keys($DESIRED_TENDERS) as $tender_code){ 
         /* Skip Tender Type if no items of that type.
          * The first search seems the same as the lower search except for total tests.
          */
@@ -310,18 +310,18 @@ static public function get(){
                 $registerArg .
                 " AND {$tDate} >= '{$shiftCutoff}'{$excl}".
             " ORDER BY {$tDate}";
-		$result = $db_a->query($query);
-		$numRows = $db_a->num_rows($result);
+        $result = $db_a->query($query);
+        $numRows = $db_a->num_rows($result);
         if ($numRows <= 0) {
             continue;
         }
 
-		$titleStr = "";
-		$itemize = 1;
-		for ($i = 0; $i < strlen($DESIRED_TENDERS[$tender_code]); $i++)
-			$titleStr .= $DESIRED_TENDERS[$tender_code][$i]." ";
-		$titleStr = substr($titleStr,0,strlen($titleStr)-1);
-		$receipt .= ReceiptLib::centerString($titleStr)."\n";
+        $titleStr = "";
+        $itemize = 1;
+        for ($i = 0; $i < strlen($DESIRED_TENDERS[$tender_code]); $i++)
+            $titleStr .= $DESIRED_TENDERS[$tender_code][$i]." ";
+        $titleStr = substr($titleStr,0,strlen($titleStr)-1);
+        $receipt .= ReceiptLib::centerString($titleStr)."\n";
 
         if ($registerArg == '') {
             $receipt .= _("The list includes items for all lanes.");
@@ -330,35 +330,35 @@ static public function get(){
             $receipt .= ReceiptLib::centerString(self::$dashLine)."\n";
         }
 
-		$query = "SELECT {$tDate},register_no,emp_no,trans_no,card_no,total".
+        $query = "SELECT {$tDate},register_no,emp_no,trans_no,card_no,total".
             " FROM {$tTable} d".
             " WHERE trans_subtype = '".$tender_code."'".
                 $registerArg .
                 " AND (total <> 0 OR total <> -0) ".
                 " AND {$tDate} >= '{$shiftCutoff}'{$excl}".
             " ORDER BY {$tDate}";
-		$result = $db_a->query($query);
-		$numRows = $db_a->num_rows($result);
+        $result = $db_a->query($query);
+        $numRows = $db_a->num_rows($result);
 
-		if ($itemize == 1) {
-			$receipt .= $fieldNames;
-		}
-		$sum = 0;
+        if ($itemize == 1) {
+            $receipt .= $fieldNames;
+        }
+        $sum = 0;
 
-		for ($i = 0; $i < $numRows; $i++) {
-			$row = $db_a->fetch_array($result);
-			$timeStamp = self::timeStamp($row["$tDate"]);
-			if ($itemize == 1 && $row["total"]) {
-				$receipt .= "  ".substr($timeStamp.$blank, 0, 10)
-				.substr($row["register_no"].$blank, 0, 9)
-				.substr($row["trans_no"].$blank, 0, 8)
-				.substr($blank.$row['emp_no'], -6)
-				.substr($blank.$row["card_no"],-6)
-				.substr($blank.number_format($row["total"], 2), -14)."\n";
-			}
-			$sum += $row["total"];
-		}
-		
+        for ($i = 0; $i < $numRows; $i++) {
+            $row = $db_a->fetch_array($result);
+            $timeStamp = self::timeStamp($row["$tDate"]);
+            if ($itemize == 1 && $row["total"]) {
+                $receipt .= "  ".substr($timeStamp.$blank, 0, 10)
+                .substr($row["register_no"].$blank, 0, 9)
+                .substr($row["trans_no"].$blank, 0, 8)
+                .substr($blank.$row['emp_no'], -6)
+                .substr($blank.$row["card_no"],-6)
+                .substr($blank.number_format($row["total"], 2), -14)."\n";
+            }
+            $sum += $row["total"];
+        }
+        
         $receipt .= ReceiptLib::centerString(self::$dashLine)."\n";
 
         $receipt .= substr($blank.$blank.$blank."Count: ".$numRows.
@@ -366,19 +366,19 @@ static public function get(){
         $receipt .= str_repeat("\n", 3);
 
     // each desired tender.
-	}
+    }
 
     /* Each item of purchase of these kinds.
      * first-param depts are PioneerFoodCoop, not WEFC_Toronto
      */
-	$receipt .= self::trTotal(36,'MEMBER EQUITY',True,False);
-	$receipt .= self::trTotal(45,'RCVD / ACCOUNT',True,False);
-	$receipt .= self::trTotal(41,'GIFT CARDS SOLD',True,False);
-	
-	$receipt .= str_repeat("\n", 5);
+    $receipt .= self::trTotal(36,'MEMBER EQUITY',True,False);
+    $receipt .= self::trTotal(45,'RCVD / ACCOUNT',True,False);
+    $receipt .= self::trTotal(41,'GIFT CARDS SOLD',True,False);
+    
+    $receipt .= str_repeat("\n", 5);
 
     // cut paper?
-	return $receipt.chr(27).chr(105);
+    return $receipt.chr(27).chr(105);
 
 // get()
 }
@@ -393,74 +393,74 @@ static public function get(){
  @return string A section of the report for the tender or department.
  */
 static private function trTotal($codes,$label,$listEach=False,$reportIfNone=True) {
-	global $CORE_LOCAL;
+    global $CORE_LOCAL;
 
-	$db_a = self::$db_a;
+    $db_a = self::$db_a;
 
-	$blank = str_repeat(' ',13);
+    $blank = str_repeat(' ',13);
     // Names padded on right with blanks. %10s?
-	$fieldNames = "  ".substr("Time".$blank, 0, 10)
-			.substr("Lane".$blank, 0, 8)
-			.substr("Trans #".$blank, 0, 10)
-			.substr("Emp #".$blank, 0, 8)
-			.substr("Mem #".$blank, 0, 11)
-			.substr("Amount".$blank, 0, 14)."\n";
+    $fieldNames = "  ".substr("Time".$blank, 0, 10)
+            .substr("Lane".$blank, 0, 8)
+            .substr("Trans #".$blank, 0, 10)
+            .substr("Emp #".$blank, 0, 8)
+            .substr("Mem #".$blank, 0, 11)
+            .substr("Amount".$blank, 0, 14)."\n";
 
-	if (is_array($codes)) $codes = "'" . implode("','", $codes) . "'";
+    if (is_array($codes)) $codes = "'" . implode("','", $codes) . "'";
     elseif (!is_numeric($codes)) $codes = "'".$codes."'";
-	$codeField = (!is_numeric($codes)) ? 'trans_subtype' : 'department';
-	
-	if($listEach===False) {
-	    $tenderQ = "SELECT -SUM(total) AS net, COUNT(total)" .
-			" FROM " . self::$tTable . " d" .
-	    " WHERE register_no=".$CORE_LOCAL->get('laneno').
+    $codeField = (!is_numeric($codes)) ? 'trans_subtype' : 'department';
+    
+    if($listEach===False) {
+        $tenderQ = "SELECT -SUM(total) AS net, COUNT(total)" .
+            " FROM " . self::$tTable . " d" .
+        " WHERE register_no=".$CORE_LOCAL->get('laneno').
         " AND $codeField IN($codes) AND " . self::$tDate . " >= '" .
             self::$shiftCutoff . "'" . self::$excl;
-	} else {
-		$tenderQ = "SELECT " . self::$tDate . ",register_no,emp_no,trans_no,card_no,total" .
-			" FROM " . self::$tTable . " d" .
-			" WHERE register_no=".$CORE_LOCAL->get('laneno').
+    } else {
+        $tenderQ = "SELECT " . self::$tDate . ",register_no,emp_no,trans_no,card_no,total" .
+            " FROM " . self::$tTable . " d" .
+            " WHERE register_no=".$CORE_LOCAL->get('laneno').
             " AND $codeField IN($codes) AND " . self::$tDate . " >= '" .
                 self::$shiftCutoff . "'" . self::$excl;
-			" ORDER BY " . self::$tDate;
-	}
-	$tenderR = $db_a->query($tenderQ);
-	$tender = $db_a->fetch_array($tenderR);
-	$numRows = $db_a->num_rows($tenderR);
+            " ORDER BY " . self::$tDate;
+    }
+    $tenderR = $db_a->query($tenderQ);
+    $tender = $db_a->fetch_array($tenderR);
+    $numRows = $db_a->num_rows($tenderR);
     $ret = '';
     // Reports even if 0. reportIfNone
     if (!$reportIfNone && $numRows == 0) {
         return '';
     }
 
-	if($listEach===False) {
+    if($listEach===False) {
         $ret = "  ".substr($label.$blank.$blank,0,20).
             substr($blank.number_format(($tender[0]),2),-8).substr($blank.
             $tender[1],-8)."\n";
-	} else {
-		$sum = 0;
-		$ret = ReceiptLib::centerString($label)."\n";
+    } else {
+        $sum = 0;
+        $ret = ReceiptLib::centerString($label)."\n";
         $ret .= ReceiptLib::centerString(self::$dashLine)."1\n";
-		$ret .= $fieldNames;
-		for ($i = 0; $i < $numRows; $i++) {
-			$row = $db_a->fetch_array($tenderR);
-			$timeStamp = TenderReport::timeStamp($row["self::$tDate"]);
-			$ret .= "  ".substr($timeStamp.$blank, 0, 10)
-				.substr($row["register_no"].$blank, 0, 9)
-				.substr($row["trans_no"].$blank, 0, 8)
-				.substr($blank.$row['emp_no'], -8)
-				.substr($blank.$row["card_no"],-6)
-				.substr($blank.number_format($row["total"], 2), -14)."\n";
-			$sum += $row["total"];
-		}
+        $ret .= $fieldNames;
+        for ($i = 0; $i < $numRows; $i++) {
+            $row = $db_a->fetch_array($tenderR);
+            $timeStamp = TenderReport::timeStamp($row["self::$tDate"]);
+            $ret .= "  ".substr($timeStamp.$blank, 0, 10)
+                .substr($row["register_no"].$blank, 0, 9)
+                .substr($row["trans_no"].$blank, 0, 8)
+                .substr($blank.$row['emp_no'], -8)
+                .substr($blank.$row["card_no"],-6)
+                .substr($blank.number_format($row["total"], 2), -14)."\n";
+            $sum += $row["total"];
+        }
         $ret .= ReceiptLib::centerString(self::$dashLine)."2\n";
         $ret .= substr($blank.$blank.$blank."Count: ".$numRows.
             "  Total: ".number_format($sum,2), -55)."\n";
 
-		$ret .= str_repeat("\n", 3);
-	}	
-	
-	return $ret;
+        $ret .= str_repeat("\n", 3);
+    }    
+    
+    return $ret;
 
 // trTotal()
 }

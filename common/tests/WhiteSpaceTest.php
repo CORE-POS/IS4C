@@ -1,20 +1,37 @@
 <?php
 
-class WhiteSpaceTest extends PHPUnit_Framework_TestCase
+namespace COREPOS\Common\tests;
+
+class WhiteSpaceTest extends \PHPUnit_Framework_TestCase
 {
-	public function testWhiteSpace()
+    public function testWhiteSpace()
     {
         $ignore = array(
-            'ini.php',
+            'files'=> array(
+                'ini.php',
+                'config.php',
+            ),
+            'directories' => array(
+                'adodb5',
+                'documentation',
+                'cc-modules',
+                'noauto',
+                'vendor',
+                'pi_food_net',
+            ),
         );
-        $search = function($path) use (&$search, $ignore) {
-            if (is_file($path) && substr($path,-4) == '.php' && !in_array(basename($path), $ignore)) {
+        $count = 0;
+        $search = function($path) use (&$search, $ignore, $count) {
+            if (is_file($path) && substr($path,-4) == '.php' && !in_array(basename($path), $ignore['files'])) {
                 return array($path);
             } elseif (is_dir($path)) {
                 $dh = opendir($path);
                 $files = array();
                 while (($file=readdir($dh)) !== false) {
                     if ($file[0] == '.') {
+                        continue;
+                    }
+                    if (is_dir($path . '/' . $file) && in_array($file, $ignore['directories'])) {
                         continue;
                     }
                     $dir_files = $search($path . '/' . $file);
@@ -26,7 +43,7 @@ class WhiteSpaceTest extends PHPUnit_Framework_TestCase
             }
         };
 
-        $top = realpath(dirname(__FILE__) . '/../');
+        $top = realpath(dirname(__FILE__) . '/../../');
         $phpfiles = $search($top);
 
         foreach ($phpfiles as $file) {

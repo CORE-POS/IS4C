@@ -23,43 +23,43 @@
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-	* 13Jan2013 Eric Lee Added MTL for Ontario Meal Tax Rebate
+    * 13Jan2013 Eric Lee Added MTL for Ontario Meal Tax Rebate
 
 */
 
 class Totals extends Parser {
 
-	function check($str){
-		if ($str == "FNTL" || $str == "TETL" ||
-		    $str == "FTTL" || $str == "TL" ||
-			$str == "MTL" || $str == "WICTL" ||
-		    substr($str,0,2) == "FN")
-			return True;
-		return False;
-	}
+    function check($str){
+        if ($str == "FNTL" || $str == "TETL" ||
+            $str == "FTTL" || $str == "TL" ||
+            $str == "MTL" || $str == "WICTL" ||
+            substr($str,0,2) == "FN")
+            return True;
+        return False;
+    }
 
-	function parse($str)
+    function parse($str)
     {
-		$ret = $this->default_json();
-		if ($str == "FNTL"){
-			$ret['main_frame'] = MiscLib::base_url().'gui-modules/fsTotalConfirm.php';
-		}
-		elseif ($str == "TETL"){
-			$ret['main_frame'] = MiscLib::base_url().'gui-modules/requestInfo.php?class=Totals';
-		}
-		elseif ($str == "FTTL")
-			PrehLib::finalttl();
-		elseif ($str == "TL"){
+        $ret = $this->default_json();
+        if ($str == "FNTL"){
+            $ret['main_frame'] = MiscLib::base_url().'gui-modules/fsTotalConfirm.php';
+        }
+        elseif ($str == "TETL"){
+            $ret['main_frame'] = MiscLib::base_url().'gui-modules/requestInfo.php?class=Totals';
+        }
+        elseif ($str == "FTTL")
+            PrehLib::finalttl();
+        elseif ($str == "TL"){
             CoreLocal::set('End', 0);
-			$chk = PrehLib::ttl();
-			if ($chk !== True)
-				$ret['main_frame'] = $chk;
-		}
-		elseif ($str == "MTL"){
-			$chk = PrehLib::omtr_ttl();
-			if ($chk !== True)
-				$ret['main_frame'] = $chk;
-		} elseif ($str == "WICTL") {
+            $chk = PrehLib::ttl();
+            if ($chk !== True)
+                $ret['main_frame'] = $chk;
+        }
+        elseif ($str == "MTL"){
+            $chk = PrehLib::omtr_ttl();
+            if ($chk !== True)
+                $ret['main_frame'] = $chk;
+        } elseif ($str == "WICTL") {
             $ttl = PrehLib::wicableTotal();
             $ret['output'] = DisplayLib::boxMsg(
                 _('WIC Total') . sprintf(': $%.2f', $ttl), 
@@ -72,49 +72,49 @@ class Totals extends Parser {
             return $ret;
         }
 
-		if (!$ret['main_frame']){
-			$ret['output'] = DisplayLib::lastpage();
-			$ret['redraw_footer'] = True;
-		}
-		return $ret;
-	}
+        if (!$ret['main_frame']){
+            $ret['output'] = DisplayLib::lastpage();
+            $ret['redraw_footer'] = True;
+        }
+        return $ret;
+    }
 
-	static $requestInfoHeader = 'tax exempt';
-	static $requestInfoMsg = 'Enter the tax exempt ID';
-	static function requestInfoCallback($info){
-		TransRecord::addTaxExempt();
-		TransRecord::addcomment("Tax Ex ID# ".$info);
-		return True;
-	}
+    static $requestInfoHeader = 'tax exempt';
+    static $requestInfoMsg = 'Enter the tax exempt ID';
+    static function requestInfoCallback($info){
+        TransRecord::addTaxExempt();
+        TransRecord::addcomment("Tax Ex ID# ".$info);
+        return True;
+    }
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td>FNTL</td>
-				<td>Foodstamp eligible total</td>
-			</tr>
-			<tr>
-				<td>TETL</td>
-				<td>Tax exempt total</td>
-			</tr>
-			<tr>
-				<td>FTTL</td>
-				<td>Final total</td>
-			</tr>
-			<tr>
-				<td>TL</td>
-				<td>Re-calculate total</td>
-			</tr>
-			<tr>
-				<td>MTL</td>
-				<td>Ontario (Canada) Meal Tax Rebate
-				<br />Remove Provincial tax on food up to \$4 to this point in the transaction.</td>
-			</tr>
-			</table>";
-	}
+    function doc(){
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td>FNTL</td>
+                <td>Foodstamp eligible total</td>
+            </tr>
+            <tr>
+                <td>TETL</td>
+                <td>Tax exempt total</td>
+            </tr>
+            <tr>
+                <td>FTTL</td>
+                <td>Final total</td>
+            </tr>
+            <tr>
+                <td>TL</td>
+                <td>Re-calculate total</td>
+            </tr>
+            <tr>
+                <td>MTL</td>
+                <td>Ontario (Canada) Meal Tax Rebate
+                <br />Remove Provincial tax on food up to \$4 to this point in the transaction.</td>
+            </tr>
+            </table>";
+    }
 }
 
 ?>

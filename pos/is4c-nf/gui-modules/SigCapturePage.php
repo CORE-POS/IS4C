@@ -28,7 +28,7 @@ class SigCapturePage extends BasicPage
 
     private $bmp_path;
 
-	function head_content()
+    function head_content()
     {
         ?>
         <script type="text/javascript" src="<?php echo $this->page_url; ?>js/ajax-parser.js"></script>
@@ -63,9 +63,9 @@ class SigCapturePage extends BasicPage
         #imgArea img { border: solid 1px; black; margin:5px; }
         </style>
         <?php
-	}
+    }
 
-	function preprocess()
+    function preprocess()
     {
         $this->bmp_path = $this->page_url . 'scale-drivers/drivers/NewMagellan/ss-output/tmp/';
 
@@ -159,23 +159,23 @@ class SigCapturePage extends BasicPage
             UdpComm::udpSend($terminal_msg);
         }
 
-		return true;
-	}
+        return true;
+    }
 
-	function body_content()
+    function body_content()
     {
-		$this->input_header();
-		echo DisplayLib::printheaderb();
-		?>
-		<div class="baseHeight">
-		<?php
+        $this->input_header();
+        echo DisplayLib::printheaderb();
+        ?>
+        <div class="baseHeight">
+        <?php
         echo "<div id=\"boxMsg\" class=\"centeredDisplay\">";
 
         echo "<div class=\"boxMsgAlert coloredArea\">";
         echo "Waiting for signature";
         echo "</div>";
 
-	    echo "<div class=\"\">";
+        echo "<div class=\"\">";
 
         echo "<div id=\"imgArea\"></div>";
         echo '<div class="textArea">';
@@ -193,25 +193,25 @@ class SigCapturePage extends BasicPage
         echo '<span id="sigInstructions" style="font-size:90%;">';
         echo '[enter] to get re-request signature, [clear] to cancel';
         echo '</span>';
-		echo "</div>";
+        echo "</div>";
 
-		echo "</div>"; // empty class
-		echo "</div>"; // #boxMsg
-		echo "</div>"; // .baseHeight
-		echo "<div id=\"footer\">";
-		echo DisplayLib::printfooter();
-		echo "</div>";
+        echo "</div>"; // empty class
+        echo "</div>"; // #boxMsg
+        echo "</div>"; // .baseHeight
+        echo "<div id=\"footer\">";
+        echo DisplayLib::printfooter();
+        echo "</div>";
 
         $this->add_onload_command("addToForm('amt', '{$_REQUEST['amt']}');\n");
         $this->add_onload_command("addToForm('type', '{$_REQUEST['type']}');\n");
         $this->add_onload_command("addToForm('code', '{$_REQUEST['code']}');\n");
-		
-		CoreLocal::set("boxMsg",'');
-		CoreLocal::set("msgrepeat",2);
-	} // END body_content() FUNCTION
+        
+        CoreLocal::set("boxMsg",'');
+        CoreLocal::set("msgrepeat",2);
+    } // END body_content() FUNCTION
 }
 
 if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-	new SigCapturePage();
+    new SigCapturePage();
 
 ?>

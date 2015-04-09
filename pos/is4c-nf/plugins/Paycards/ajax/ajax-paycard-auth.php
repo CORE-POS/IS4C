@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 if (basename($_SERVER['PHP_SELF']) != basename(__FILE__)){
-	return;
+    return;
 }
 
 ini_set('display_errors','Off');
@@ -36,22 +36,22 @@ $plugin_info = new Paycards();
 $json['main_frame'] = $plugin_info->plugin_url().'/gui/paycardSuccess.php';
 $json['receipt'] = false;
 foreach(CoreLocal::get("RegisteredPaycardClasses") as $rpc){
-	$myObj = new $rpc();
-	if ($myObj->handlesType(CoreLocal::get("paycard_type"))){
-		break;
-	}
+    $myObj = new $rpc();
+    if ($myObj->handlesType(CoreLocal::get("paycard_type"))){
+        break;
+    }
 }
 
 $st = MiscLib::sigTermObject();
 
 $result = $myObj->doSend(CoreLocal::get("paycard_mode"));
 if ($result === PaycardLib::PAYCARD_ERR_OK){
-	PaycardLib::paycard_wipe_pan();
-	$json = $myObj->cleanup($json);
-	CoreLocal::set("strRemembered","");
-	CoreLocal::set("msgrepeat",0);
-	if (is_object($st))
-		$st->WriteToScale(CoreLocal::get("ccTermOut"));
+    PaycardLib::paycard_wipe_pan();
+    $json = $myObj->cleanup($json);
+    CoreLocal::set("strRemembered","");
+    CoreLocal::set("msgrepeat",0);
+    if (is_object($st))
+        $st->WriteToScale(CoreLocal::get("ccTermOut"));
 } else if ($result === PaycardLib::PAYCARD_ERR_NSF_RETRY) {
     // card shows balance < requested amount
     // try again with lesser amount
@@ -61,11 +61,11 @@ if ($result === PaycardLib::PAYCARD_ERR_OK){
     // transaction status.
     $json['main_frame'] = $plugin_info->plugin_url().'/gui/PaycardTransLookupPage.php?mode=verify&id=_l'.$myObj->last_ref_num;
 } else {
-	PaycardLib::paycard_reset();
-	CoreLocal::set("msgrepeat",0);
-	$json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
-	if (is_object($st))
-		$st->WriteToScale(CoreLocal::get("ccTermOut"));
+    PaycardLib::paycard_reset();
+    CoreLocal::set("msgrepeat",0);
+    $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
+    if (is_object($st))
+        $st->WriteToScale(CoreLocal::get("ccTermOut"));
 }
 
 echo JsonLib::array_to_json($json);

@@ -22,47 +22,47 @@
 *********************************************************************************/
 
 class QuickMenuLauncher extends Parser {
-	
-	function check($str){
-		if (strstr($str,"QM")){
-			$tmp = explode("QM",$str);
-			$ct = count($tmp);
-			if ($ct <= 2 && is_numeric($tmp[$ct-1]))
-				return True;
-		}
-		return False;
-	}
+    
+    function check($str){
+        if (strstr($str,"QM")){
+            $tmp = explode("QM",$str);
+            $ct = count($tmp);
+            if ($ct <= 2 && is_numeric($tmp[$ct-1]))
+                return True;
+        }
+        return False;
+    }
 
-	function parse($str)
+    function parse($str)
     {
-		$tmp = explode("QM",$str);
-		if (count($tmp) == 2)
-			CoreLocal::set("qmInput",$tmp[0]);
-		else
-			CoreLocal::set("qmInput","");
-		CoreLocal::set("qmNumber",$tmp[count($tmp)-1]);
-		CoreLocal::set("qmCurrentId",CoreLocal::get("currentid"));
-		$ret = $this->default_json();
+        $tmp = explode("QM",$str);
+        if (count($tmp) == 2)
+            CoreLocal::set("qmInput",$tmp[0]);
+        else
+            CoreLocal::set("qmInput","");
+        CoreLocal::set("qmNumber",$tmp[count($tmp)-1]);
+        CoreLocal::set("qmCurrentId",CoreLocal::get("currentid"));
+        $ret = $this->default_json();
 
-		$plugin_info = new QuickMenus();
-		$ret['main_frame'] = $plugin_info->plugin_url().'/QMDisplay.php';
-		return $ret;
-	}
+        $plugin_info = new QuickMenus();
+        $ret['main_frame'] = $plugin_info->plugin_url().'/QMDisplay.php';
+        return $ret;
+    }
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td><i>anything</i>QM<i>number</i></td>
-				<td>
-				Go to quick menu with the given number.
-				Save any provided input.
-				</td>
-			</tr>
-			</table>";
-	}
+    function doc(){
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td><i>anything</i>QM<i>number</i></td>
+                <td>
+                Go to quick menu with the given number.
+                Save any provided input.
+                </td>
+            </tr>
+            </table>";
+    }
 }
 
 ?>

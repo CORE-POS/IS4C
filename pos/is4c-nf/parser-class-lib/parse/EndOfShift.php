@@ -23,18 +23,18 @@
 
 class EndOfShift extends Parser 
 {
-	function check($str)
+    function check($str)
     {
-		if ($str == "ES") {
-			return true;
+        if ($str == "ES") {
+            return true;
         }
 
-		return false;
-	}
+        return false;
+    }
 
-	function parse($str)
+    function parse($str)
     {
-		$json = $this->default_json();
+        $json = $this->default_json();
 
         CoreLocal::set("memberID", CoreLocal::get('defaultNonMem'));
         CoreLocal::set("memMsg","End of Shift");
@@ -52,21 +52,21 @@ class EndOfShift extends Parser
         CoreLocal::set("runningtotal",CoreLocal::get("amtdue"));
 
         return PrehLib::tender("CA", CoreLocal::get("runningtotal") * 100);
-	}
+    }
 
-	function doc()
+    function doc()
     {
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td>ES</td>
-				<td>Runs an end of shift, whatever
-				that is. Wedge function I think.</td>
-			</tr>
-			</table>";
-	}
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td>ES</td>
+                <td>Runs an end of shift, whatever
+                that is. Wedge function I think.</td>
+            </tr>
+            </table>";
+    }
 
 }
 

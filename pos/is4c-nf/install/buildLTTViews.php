@@ -22,10 +22,10 @@
 *********************************************************************************/
 
 function buildLTTViews($db,$type,$errors=array()){
-	if (strstr($type,'mysql')) return buildLTTViewsMySQL($db,$errors);
-	elseif(strstr($type,'mssql')) return buildLTTViewsMSSQL($db,$errors);
-	elseif($type=='pdolite') return buildLTTViewsMySQL($db, $errors);
-	else return $errors;
+    if (strstr($type,'mysql')) return buildLTTViewsMySQL($db,$errors);
+    elseif(strstr($type,'mssql')) return buildLTTViewsMSSQL($db,$errors);
+    elseif($type=='pdolite') return buildLTTViewsMySQL($db, $errors);
+    else return $errors;
 }
 
 function buildLTTViewsMySQL($db, $errors=array()){
@@ -35,24 +35,24 @@ function buildLTTViewsMySQL($db, $errors=array()){
 //--------------------------------------------------------------
 
 $createStr = "CREATE view lttsummary as
-	select 
-	(case when min(datetime) is null then ".$db->now()." else min(datetime) end) as tdate,
-	max(card_no) as card_no, 
-	CAST(sum(total) AS decimal(10,2)) as runningTotal,
-	CAST(sum(case when discounttype = 1 then discount else 0 end) AS decimal(10,2)) as discountTTL,
-	CAST(sum(case when discountable <> 0 and tax <> 0 then total else 0 end) AS decimal(10,2)) as discTaxable,
-	CAST(sum(case when discounttype in (2,3) then memDiscount else 0 end) AS decimal(10,2)) as memSpecial,
-	CAST(sum(case when discounttype=4 THEN memDiscount ELSE 0 END) AS decimal(10,2)) as staffSpecial,
-	CAST(sum(case when discountable = 0 then 0 else total end) AS decimal(10,2)) as discountableTTL,
-	";	
+    select 
+    (case when min(datetime) is null then ".$db->now()." else min(datetime) end) as tdate,
+    max(card_no) as card_no, 
+    CAST(sum(total) AS decimal(10,2)) as runningTotal,
+    CAST(sum(case when discounttype = 1 then discount else 0 end) AS decimal(10,2)) as discountTTL,
+    CAST(sum(case when discountable <> 0 and tax <> 0 then total else 0 end) AS decimal(10,2)) as discTaxable,
+    CAST(sum(case when discounttype in (2,3) then memDiscount else 0 end) AS decimal(10,2)) as memSpecial,
+    CAST(sum(case when discounttype=4 THEN memDiscount ELSE 0 END) AS decimal(10,2)) as staffSpecial,
+    CAST(sum(case when discountable = 0 then 0 else total end) AS decimal(10,2)) as discountableTTL,
+    ";    
 
 $taxRatesQ = "select id,description from taxrates order by id";
 $taxRatesR = $db->query($taxRatesQ);
 while ($taxRatesW = $db->fetch_row($taxRatesR)){
-	$createStr .= "CAST(sum(case when (trans_type = 'I' or trans_type = 'D') and tax = ".$taxRatesW[0]." and discountable = 0 then total else 0 end) AS decimal(10,2)) as noDiscTaxable_".$taxRatesW[1].",\n";
-	$createStr .= "CAST(sum(case when (trans_type = 'I' or trans_type = 'D') and tax = ".$taxRatesW[0]." and discountable <> 0 then total else 0 end) AS decimal(10,2)) as discTaxable_".$taxRatesW[1].",\n";
-	$createStr .= "CAST(sum(case when (trans_type = 'I' or trans_type = 'D') and tax = ".$taxRatesW[0]." and discountable = 0 and foodstamp=1 then total else 0 end) AS decimal(10,2)) as fsTaxable_".$taxRatesW[1].",\n";
-	$createStr .= "CAST(sum(case when (trans_type = 'I' or trans_type = 'D') and tax = ".$taxRatesW[0]." and discountable <> 0 and foodstamp=1 then total else 0 end) AS decimal(10,2)) as fsDiscTaxable_".$taxRatesW[1].",\n";
+    $createStr .= "CAST(sum(case when (trans_type = 'I' or trans_type = 'D') and tax = ".$taxRatesW[0]." and discountable = 0 then total else 0 end) AS decimal(10,2)) as noDiscTaxable_".$taxRatesW[1].",\n";
+    $createStr .= "CAST(sum(case when (trans_type = 'I' or trans_type = 'D') and tax = ".$taxRatesW[0]." and discountable <> 0 then total else 0 end) AS decimal(10,2)) as discTaxable_".$taxRatesW[1].",\n";
+    $createStr .= "CAST(sum(case when (trans_type = 'I' or trans_type = 'D') and tax = ".$taxRatesW[0]." and discountable = 0 and foodstamp=1 then total else 0 end) AS decimal(10,2)) as fsTaxable_".$taxRatesW[1].",\n";
+    $createStr .= "CAST(sum(case when (trans_type = 'I' or trans_type = 'D') and tax = ".$taxRatesW[0]." and discountable <> 0 and foodstamp=1 then total else 0 end) AS decimal(10,2)) as fsDiscTaxable_".$taxRatesW[1].",\n";
 }
 
 $createStr .= "
@@ -85,33 +85,33 @@ $errors = InstallUtilities::dbStructureModify($db,'rp_lttsummary',$rpQ,$errors);
 //--------------------------------------------------------------
 
 $createStr = "CREATE VIEW lttsubtotals AS
-	select tdate,\n";
+    select tdate,\n";
 $ratesQ = "select description,rate from taxrates";
 $ratesR = $db->query($ratesQ);
 $desc = array();
 $rates = array();
 while ($ratesW = $db->fetch_row($ratesR)){
-	array_push($desc,$ratesW[0]);
-	array_push($rates,$ratesW[1]);
+    array_push($desc,$ratesW[0]);
+    array_push($rates,$ratesW[1]);
 }
 if (count($rates) > 0){
-	$createStr .= "CAST(";
-	for ($i = 0; $i < count($rates); $i++){
-		$createStr .= "(noDiscTaxable_".$desc[$i]." * ".$rates[$i].") + ";
-		$createStr .= "(discTaxable_".$desc[$i]." * ((100-percentDiscount)/100) * ".$rates[$i].") + ";
-	}
-	$createStr = substr($createStr,0,strlen($createStr)-2);
-	$createStr .= " AS decimal(10,2)) as taxTotal,\n";
+    $createStr .= "CAST(";
+    for ($i = 0; $i < count($rates); $i++){
+        $createStr .= "(noDiscTaxable_".$desc[$i]." * ".$rates[$i].") + ";
+        $createStr .= "(discTaxable_".$desc[$i]." * ((100-percentDiscount)/100) * ".$rates[$i].") + ";
+    }
+    $createStr = substr($createStr,0,strlen($createStr)-2);
+    $createStr .= " AS decimal(10,2)) as taxTotal,\n";
 }
 else $createStr .= "0 as taxTotal,\n";
 
 $createStr .= "fsTendered,
 CAST(fsTendered + fsNoDiscTTL + (fsDiscTTL * ((100-percentDiscount)/100)) AS  DECIMAL(10,2)) AS fsEligible,\n";
 if(count($rates) > 0){
-	for ($i = 0; $i < count($rates); $i++){
-		$createStr .= "CAST((fsDiscTaxable_".$desc[$i]."*((100-percentDiscount)/100)) + fsTaxable_".$desc[$i]." AS decimal(10,2)) as fsTaxable_".$desc[$i].",";
-		$createStr .= "CAST((fsDiscTaxable_".$desc[$i]."*((100-percentDiscount)/100)*".$rates[$i].")+(fsTaxable_".$desc[$i]."*".$rates[$i].") AS decimal(10,2)) as fsTax_".$desc[$i].",\n";
-	}
+    for ($i = 0; $i < count($rates); $i++){
+        $createStr .= "CAST((fsDiscTaxable_".$desc[$i]."*((100-percentDiscount)/100)) + fsTaxable_".$desc[$i]." AS decimal(10,2)) as fsTaxable_".$desc[$i].",";
+        $createStr .= "CAST((fsDiscTaxable_".$desc[$i]."*((100-percentDiscount)/100)*".$rates[$i].")+(fsTaxable_".$desc[$i]."*".$rates[$i].") AS decimal(10,2)) as fsTax_".$desc[$i].",\n";
+    }
 }
 else $createStr .= "0 as fsTax,\n";
 
@@ -151,45 +151,45 @@ $ratesR = $db->query($ratesQ);
 $desc =  array();
 $rates = array();
 while ($ratesW = $db->fetch_row($ratesR)){
-	array_push($desc,$ratesW[0]);
-	array_push($rates,$ratesW[1]);
+    array_push($desc,$ratesW[0]);
+    array_push($rates,$ratesW[1]);
 }
 $fsTaxStr = "CAST(CASE WHEN ";
 for ($i = 0; $i < count($rates); $i++)
-	$fsTaxStr .= "s.fsTaxable_".$desc[$i]."+";
+    $fsTaxStr .= "s.fsTaxable_".$desc[$i]."+";
 $fsTaxStr = substr($fsTaxStr,0,strlen($fsTaxStr)-1);
 $fsTaxStr .= " = 0 THEN 0 ELSE CASE WHEN l.fsTendered <> 0 AND -1 * l.fsTendered >= ";
 for ($i = 0; $i < count($rates); $i++)
-	$fsTaxStr .= "s.fsTaxable_".$desc[$i]."+";
+    $fsTaxStr .= "s.fsTaxable_".$desc[$i]."+";
 $fsTaxStr = substr($fsTaxStr,0,strlen($fsTaxStr)-1);
 $fsTaxStr .= " THEN -1 * (";
 for ($i = 0; $i < count($rates); $i++)
-	$fsTaxStr .= "s.fsTax_".$desc[$i]."+";
+    $fsTaxStr .= "s.fsTax_".$desc[$i]."+";
 $fsTaxStr = substr($fsTaxStr,0,strlen($fsTaxStr)-1);
 $fsTaxStr .= ") ELSE CASE ";
 for ($i = 0; $i < count($rates); $i++){
-	$fsTaxStr .= "WHEN -1*l.fsTendered ";
-	for ($j = $i-1; $j >= 0; $j--)
-		$fsTaxStr .= "-s.fsTaxable_".$desc[$j];
-	$fsTaxStr .= "<= s.fsTaxable_".$desc[$i];
-	$fsTaxStr .= " THEN -(";
-	for ($j = $i-1; $j >= 0; $j--)
-		$fsTaxStr .= "s.fsTax_".$desc[$j]."+";
-	$fsTaxStr .= "((-1*l.fsTendered ";
-	for ($j = $i-1; $j >= 0; $j--)
-		$fsTaxStr .= "-s.fsTaxable_".$desc[$j];
-	$fsTaxStr .= ") * ".$rates[$i]."))";
+    $fsTaxStr .= "WHEN -1*l.fsTendered ";
+    for ($j = $i-1; $j >= 0; $j--)
+        $fsTaxStr .= "-s.fsTaxable_".$desc[$j];
+    $fsTaxStr .= "<= s.fsTaxable_".$desc[$i];
+    $fsTaxStr .= " THEN -(";
+    for ($j = $i-1; $j >= 0; $j--)
+        $fsTaxStr .= "s.fsTax_".$desc[$j]."+";
+    $fsTaxStr .= "((-1*l.fsTendered ";
+    for ($j = $i-1; $j >= 0; $j--)
+        $fsTaxStr .= "-s.fsTaxable_".$desc[$j];
+    $fsTaxStr .= ") * ".$rates[$i]."))";
 }
 $fsTaxStr .= " ELSE 0 ";
 $fsTaxStr .= " END END END AS decimal(10,2))\n";
 
 if(count($rates) > 0){
-	$createStr .= $fsTaxStr." as fsTaxExempt,\n";
-	$createStr .= "CAST(s.taxTotal+".$fsTaxStr." AS decimal(10,2)) as taxTotal,\n";
+    $createStr .= $fsTaxStr." as fsTaxExempt,\n";
+    $createStr .= "CAST(s.taxTotal+".$fsTaxStr." AS decimal(10,2)) as taxTotal,\n";
 }
 else {
-	$createStr .= "0 as fsTaxExempt,\n";
-	$createStr .= "0 as taxTotal,\n";
+    $createStr .= "0 as fsTaxExempt,\n";
+    $createStr .= "0 as taxTotal,\n";
 }
 $createStr .= "
 s.transDiscount as transDiscount,
@@ -205,8 +205,8 @@ $rpQ = str_replace("lttsummary","rp_lttsummary",$rpQ);
 $rpQ = str_replace("lttsubtotals","rp_lttsubtotals",$rpQ);
 $rpQ = str_replace("view subtotals","view rp_subtotals",$rpQ);
 $rpQ .= " AND l.emp_no=s.emp_no AND 
-	l.register_no=s.register_no AND
-	l.trans_no=s.trans_no";
+    l.register_no=s.register_no AND
+    l.trans_no=s.trans_no";
 $errors = InstallUtilities::dbStructureModify($db,'rp_subtotals','DROP VIEW rp_subtotals',$errors);
 $errors = InstallUtilities::dbStructureModify($db,'rp_subtotals',$rpQ,$errors);
 //echo str_replace("\n","<br />",$createStr)."<br />";
@@ -221,23 +221,23 @@ function buildLTTViewsMSSQL($db){
 //--------------------------------------------------------------
 
 $createStr = "CREATE view lttsummary as
-	select 
-	(case when min(datetime) is null then getdate() else min(datetime) end) as tdate,
-	max(card_no) as card_no, 
-	convert(numeric(10,2),sum(total)) as runningTotal,
-	convert(numeric(10,2),sum(case when discounttype = 1 then discount else 0 end)) as discountTTL,
-	convert(numeric(10,2),sum(case when discounttype in (2,3) then memDiscount else 0 end)) as memSpecial,
-	convert(numeric(10,2),sum(case when discounttype = 4 then memDiscount else 0 end)) as staffSpecial,
-	convert(numeric(10,2),sum(case when discountable = 0 then 0 else total end)) as discountableTTL,
-	";	
+    select 
+    (case when min(datetime) is null then getdate() else min(datetime) end) as tdate,
+    max(card_no) as card_no, 
+    convert(numeric(10,2),sum(total)) as runningTotal,
+    convert(numeric(10,2),sum(case when discounttype = 1 then discount else 0 end)) as discountTTL,
+    convert(numeric(10,2),sum(case when discounttype in (2,3) then memDiscount else 0 end)) as memSpecial,
+    convert(numeric(10,2),sum(case when discounttype = 4 then memDiscount else 0 end)) as staffSpecial,
+    convert(numeric(10,2),sum(case when discountable = 0 then 0 else total end)) as discountableTTL,
+    ";    
 
 $taxRatesQ = "select id,description from taxrates order by id";
 $taxRatesR = $db->query($taxRatesQ);
 while ($taxRatesW = $db->fetch_row($taxRatesR)){
-	$createStr .= "convert(numeric(10,2),sum(case when (trans_type = 'I' or trans_type = 'D') and tax = ".$taxRatesW[0]." and discountable = 0 then total else 0 end)) as noDiscTaxable_".$taxRatesW[1].",";
-	$createStr .= "convert(numeric(10,2),sum(case when (trans_type = 'I' or trans_type = 'D') and tax = ".$taxRatesW[0]." and discountable <> 0 then total else 0 end)) as discTaxable_".$taxRatesW[1].",";
-	$createStr .= "convert(numeric(10,2),sum(case when (trans_type = 'I' or trans_type = 'D') and tax = ".$taxRatesW[0]." and discountable = 0 and foodstamp=1 then total else 0 end)) as fsTaxable_".$taxRatesW[1].",";
-	$createStr .= "convert(numeric(10,2),sum(case when (trans_type = 'I' or trans_type = 'D') and tax = ".$taxRatesW[0]." and discountable <> 0 and foodstamp=1 then total else 0 end)) as fsDiscTaxable_".$taxRatesW[1].",";
+    $createStr .= "convert(numeric(10,2),sum(case when (trans_type = 'I' or trans_type = 'D') and tax = ".$taxRatesW[0]." and discountable = 0 then total else 0 end)) as noDiscTaxable_".$taxRatesW[1].",";
+    $createStr .= "convert(numeric(10,2),sum(case when (trans_type = 'I' or trans_type = 'D') and tax = ".$taxRatesW[0]." and discountable <> 0 then total else 0 end)) as discTaxable_".$taxRatesW[1].",";
+    $createStr .= "convert(numeric(10,2),sum(case when (trans_type = 'I' or trans_type = 'D') and tax = ".$taxRatesW[0]." and discountable = 0 and foodstamp=1 then total else 0 end)) as fsTaxable_".$taxRatesW[1].",";
+    $createStr .= "convert(numeric(10,2),sum(case when (trans_type = 'I' or trans_type = 'D') and tax = ".$taxRatesW[0]." and discountable <> 0 and foodstamp=1 then total else 0 end)) as fsDiscTaxable_".$taxRatesW[1].",";
 }
 
 $createStr .= "
@@ -270,23 +270,23 @@ $db->query($rpQ);
 //--------------------------------------------------------------
 
 $createStr = "CREATE VIEW lttsubtotals AS
-	select tdate,";
+    select tdate,";
 $ratesQ = "select description,rate from taxrates";
 $ratesR = $db->query($ratesQ);
 $desc = array();
 $rates = array();
 while ($ratesW = $db->fetch_row($ratesR)){
-	array_push($desc,$ratesW[0]);
-	array_push($rates,$ratesW[1]);
+    array_push($desc,$ratesW[0]);
+    array_push($rates,$ratesW[1]);
 }
 if(count($rates) > 0){
-	$createStr .= "convert(numeric(10,2),";
-	for ($i = 0; $i < count($rates); $i++){
-		$createStr .= "(noDiscTaxable_".$desc[$i]." * ".$rates[$i].") + ";
-		$createStr .= "(discTaxable_".$desc[$i]." * ((100-percentDiscount)/100) * ".$rates[$i].") + ";
-	}
-	$createStr = substr($createStr,0,strlen($createStr)-2);
-	$createStr .= ") as taxTotal,";
+    $createStr .= "convert(numeric(10,2),";
+    for ($i = 0; $i < count($rates); $i++){
+        $createStr .= "(noDiscTaxable_".$desc[$i]." * ".$rates[$i].") + ";
+        $createStr .= "(discTaxable_".$desc[$i]." * ((100-percentDiscount)/100) * ".$rates[$i].") + ";
+    }
+    $createStr = substr($createStr,0,strlen($createStr)-2);
+    $createStr .= ") as taxTotal,";
 }
 else $createStr .= "0 as taxTotal,";
 
@@ -294,10 +294,10 @@ $createStr .= "
 fsTendered,
 (fsDiscItems  - convert(numeric(10,2),(fsDiscItems  * (percentDiscount)/100)) +fsItems + fsTendered) as fsEligible,\n";
 if(count($rates) > 0){
-	for ($i = 0; $i < count($rates); $i++){
-		$createStr .= "convert(numeric(10,2),(fsDiscTaxable_".$desc[$i]."*((100-percentDiscount)/100)) + fsTaxable_".$desc[$i].") as fsTaxable_".$desc[$i].",";
-		$createStr .= "convert(numeric(10,2),(fsDiscTaxable_".$desc[$i]."*((100-percentDiscount)/100)*".$rates[$i].")+(fsTaxable_".$desc[$i]."*".$rates[$i].")) as fsTax_".$desc[$i].",";
-	}
+    for ($i = 0; $i < count($rates); $i++){
+        $createStr .= "convert(numeric(10,2),(fsDiscTaxable_".$desc[$i]."*((100-percentDiscount)/100)) + fsTaxable_".$desc[$i].") as fsTaxable_".$desc[$i].",";
+        $createStr .= "convert(numeric(10,2),(fsDiscTaxable_".$desc[$i]."*((100-percentDiscount)/100)*".$rates[$i].")+(fsTaxable_".$desc[$i]."*".$rates[$i].")) as fsTax_".$desc[$i].",";
+    }
 }
 else $createStr .= "0 as fsTax,";
 
@@ -337,44 +337,44 @@ $ratesR = $db->query($ratesQ);
 $desc =  array();
 $rates = array();
 while ($ratesW = $db->fetch_row($ratesR)){
-	array_push($desc,$ratesW[0]);
-	array_push($rates,$ratesW[1]);
+    array_push($desc,$ratesW[0]);
+    array_push($rates,$ratesW[1]);
 }
 $fsTaxStr = "convert(numeric(10,2),CASE WHEN ";
 for ($i = 0; $i < count($rates); $i++)
-	$fsTaxStr .= "s.fsTaxable_".$desc[$i]."+";
+    $fsTaxStr .= "s.fsTaxable_".$desc[$i]."+";
 $fsTaxStr = substr($fsTaxStr,0,strlen($fsTaxStr)-1);
 $fsTaxStr .= " = 0 THEN 0 ELSE CASE WHEN -1 * l.fsTendered >= ";
 for ($i = 0; $i < count($rates); $i++)
-	$fsTaxStr .= "s.fsTaxable_".$desc[$i]."+";
+    $fsTaxStr .= "s.fsTaxable_".$desc[$i]."+";
 $fsTaxStr = substr($fsTaxStr,0,strlen($fsTaxStr)-1);
 $fsTaxStr .= " THEN -1 * (";
 for ($i = 0; $i < count($rates); $i++)
-	$fsTaxStr .= "s.fsTax".$desc[$i]."+";
+    $fsTaxStr .= "s.fsTax".$desc[$i]."+";
 $fsTaxStr = substr($fsTaxStr,0,strlen($fsTaxStr)-1);
 $fsTaxStr .= ") ELSE CASE ";
 for ($i = 0; $i < count($rates); $i++){
-	$fsTaxStr .= "WHEN -1*l.fsTendered ";
-	for ($j = $i-1; $j >= 0; $j--)
-		$fsTaxStr .= "-s.fsTaxable_".$desc[$j];
-	$fsTaxStr .= "<= s.fsTaxable_".$desc[$i];
-	$fsTaxStr .= " THEN -(";
-	for ($j = $i-1; $j >= 0; $j--)
-		$fsTaxStr .= "s.fsTax".$desc[$j]."+";
-	$fsTaxStr .= "((-1*l.fsTendered ";
-	for ($j = $i-1; $j >= 0; $j--)
-		$fsTaxStr .= "-s.fsTaxable_".$desc[$j];
-	$fsTaxStr .= ") * ".$rates[$i]."))";
+    $fsTaxStr .= "WHEN -1*l.fsTendered ";
+    for ($j = $i-1; $j >= 0; $j--)
+        $fsTaxStr .= "-s.fsTaxable_".$desc[$j];
+    $fsTaxStr .= "<= s.fsTaxable_".$desc[$i];
+    $fsTaxStr .= " THEN -(";
+    for ($j = $i-1; $j >= 0; $j--)
+        $fsTaxStr .= "s.fsTax".$desc[$j]."+";
+    $fsTaxStr .= "((-1*l.fsTendered ";
+    for ($j = $i-1; $j >= 0; $j--)
+        $fsTaxStr .= "-s.fsTaxable_".$desc[$j];
+    $fsTaxStr .= ") * ".$rates[$i]."))";
 }
 $fsTaxStr .= " END END END)";
 
 if(count($rates) > 0){
-	$createStr .= $fsTaxStr." as fsTaxExempt,";
-	$createStr .= "convert(numeric(10,2),s.taxTotal+".$fsTaxStr.") as taxTotal,";
+    $createStr .= $fsTaxStr." as fsTaxExempt,";
+    $createStr .= "convert(numeric(10,2),s.taxTotal+".$fsTaxStr.") as taxTotal,";
 }
 else {
-	$createStr .= "0 as fsTaxExempt,";
-	$createStr .= "0 as taxTotal,";
+    $createStr .= "0 as fsTaxExempt,";
+    $createStr .= "0 as taxTotal,";
 }
 $createStr .= "
 s.transDiscount,
@@ -390,8 +390,8 @@ $rpQ = str_replace("lttsummary","rp_lttsummary",$rpQ);
 $rpQ = str_replace("lttsubtotals","rp_lttsubtotals",$rpQ);
 $rpQ = str_replace("view subtotals","view rp_subtotals",$rpQ);
 $rpQ .= " AND l.emp_no=s.emp_no AND 
-	l.register_no=s.register_no AND
-	l.trans_no=s.trans_no";
+    l.register_no=s.register_no AND
+    l.trans_no=s.trans_no";
 $db->query("DROP VIEW rp_subtotals");
 $db->query($rpQ);
 //echo $createStr."<br />";

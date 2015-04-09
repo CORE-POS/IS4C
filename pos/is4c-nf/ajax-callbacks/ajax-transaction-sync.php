@@ -26,7 +26,7 @@ include_once(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 
 /*
 if (CoreLocal::get("testremote")==0)
-	Database::testremote(); 
+    Database::testremote(); 
 */
 
 echo 'Done';

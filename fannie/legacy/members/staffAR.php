@@ -31,7 +31,7 @@ if(!validateUserQuiet('staffar')){
               c.FirstName,
               n.balance as Ending_Balance
               FROM is4c_op.custdata as c INNER JOIN staffID as a ON a.cardNo = c.CardNo
-	      LEFT JOIN ar_live_balance AS n ON c.CardNo=n.card_no
+          LEFT JOIN ar_live_balance AS n ON c.CardNo=n.card_no
               WHERE (c.memType = 9 OR c.memType = 3 OR c.memType = 6)
               and c.personNum = 1
               order by c.LastName";
@@ -39,13 +39,13 @@ if(!validateUserQuiet('staffar')){
       $result=$sql->query($query);
 
       $insARQ = "INSERT INTO staffAR (cardNo, lastName, firstName, adjust)
-	      SELECT
+          SELECT
               c.CardNo,
               c.LastName,
               c.FirstName,
               n.balance as Ending_Balance
               FROM is4c_op.custdata as c INNER JOIN staffID as a ON a.cardNo = c.CardNo
-	      LEFT JOIN ar_live_balance AS n ON c.CardNo=n.card_no
+          LEFT JOIN ar_live_balance AS n ON c.CardNo=n.card_no
               WHERE (c.memType = 9 OR c.memType = 3 OR c.memType=6)
               and c.personNum = 1
               order by c.LastName";
@@ -57,12 +57,12 @@ if(!validateUserQuiet('staffar')){
 ?>  
    <html>
    <head><title>Staff AR Page</title>
-   <link href="../styles.css" rel="stylesheet" type="text/css">	
+   <link href="../styles.css" rel="stylesheet" type="text/css">    
    <script type="text/javascript">
    function recalcCheck(){
-	if (confirm("This will load CURRENT account balances. Do you want to continue?"))
-		return true;
-	return false;
+    if (confirm("This will load CURRENT account balances. Do you want to continue?"))
+        return true;
+    return false;
    }
    </script>
    </head>
@@ -81,7 +81,7 @@ if(!validateUserQuiet('staffar')){
    }
    
    $query = "SELECT a.*,s.adpID FROM staffAR AS a LEFT JOIN
-	staffID AS s ON a.cardNo=s.cardno order by lastName";
+    staffID AS s ON a.cardNo=s.cardno order by lastName";
    $result = $sql->query($query);
 
    echo "<form name=upStaffAR method=post action=staffAR.php>";
@@ -93,11 +93,11 @@ if(!validateUserQuiet('staffar')){
    $c = 1;
    while($row = $sql->fetch_array($result)){
       echo "<tr><td bgcolor=$colors[$c]>".$row['cardNo']."</td>"
-	  ."<td bgcolor=$colors[$c]>".$row['adpID']."</td>"
-	  ."<td bgcolor=$colors[$c]>".$row['lastName']."</td>"
-	  ."<td bgcolor=$colors[$c]>".$row['firstName']."</td>"
+      ."<td bgcolor=$colors[$c]>".$row['adpID']."</td>"
+      ."<td bgcolor=$colors[$c]>".$row['lastName']."</td>"
+      ."<td bgcolor=$colors[$c]>".$row['firstName']."</td>"
           ."<td bgcolor=$colors[$c]>".trim($row['adjust'])."</td>"
-	  ."<td bgcolor=$colors[$c]><input type=text name=".$row['cardNo']." value="
+      ."<td bgcolor=$colors[$c]><input type=text name=".$row['cardNo']." value="
           .trim($row['adjust'])."></td></tr>";
       $sum += $row['adjust'];
       echo "<input type=hidden value=".$row['cardNo'].">";

@@ -23,65 +23,65 @@
 
 class TaxFoodShift extends Parser {
 
-	function check($str)
+    function check($str)
     {
-		$id = CoreLocal::get("currentid");
-		if ($str == "TFS" && $id > 0){
-			return True;
-		}
-		return False;
-	}
+        $id = CoreLocal::get("currentid");
+        if ($str == "TFS" && $id > 0){
+            return True;
+        }
+        return False;
+    }
 
-	function parse($str)
+    function parse($str)
     {
-		$id = CoreLocal::get("currentid");
+        $id = CoreLocal::get("currentid");
 
-		$db = Database::tDataConnect();
+        $db = Database::tDataConnect();
 
-		$q = "SELECT trans_type,tax,foodstamp FROM localtemptrans WHERE trans_id=$id";
-		$r = $db->query($q);
-		if ($db->num_rows($r) == 0) return True; // shouldn't ever happen
-		$row = $db->fetch_row($r);
+        $q = "SELECT trans_type,tax,foodstamp FROM localtemptrans WHERE trans_id=$id";
+        $r = $db->query($q);
+        if ($db->num_rows($r) == 0) return True; // shouldn't ever happen
+        $row = $db->fetch_row($r);
 
-		$q = "SELECT MAX(id) FROM taxrates";
-		$r = $db->query($q);
-		$tax_cap = 0;
-		if ($db->num_rows($r)>0) {
+        $q = "SELECT MAX(id) FROM taxrates";
+        $r = $db->query($q);
+        $tax_cap = 0;
+        if ($db->num_rows($r)>0) {
             $w = $db->fetch_row($r);
             $max = $w[0];
-			if (!empty($max)) $tax_cap = $max;
-		}
-		$db->query($q);	
+            if (!empty($max)) $tax_cap = $max;
+        }
+        $db->query($q);    
 
-		$next_tax = $row['tax']+1;
-		$next_fs = 0;
-		if ($next_tax > $max){
-			$next_tax = 0;
-			$next_fs = 1;
-		}
+        $next_tax = $row['tax']+1;
+        $next_fs = 0;
+        if ($next_tax > $max){
+            $next_tax = 0;
+            $next_fs = 1;
+        }
 
-		$q = "UPDATE localtemptrans 
-			set tax=$next_tax,foodstamp=$next_fs 
-			WHERE trans_id=$id";
-		$db->query($q);	
-		
-		$ret = $this->default_json();
-		$ret['output'] = DisplayLib::listItems(CoreLocal::get("currenttopid"),$id);
-		return $ret; // maintain item cursor position
-	}
+        $q = "UPDATE localtemptrans 
+            set tax=$next_tax,foodstamp=$next_fs 
+            WHERE trans_id=$id";
+        $db->query($q);    
+        
+        $ret = $this->default_json();
+        $ret['output'] = DisplayLib::listItems(CoreLocal::get("currenttopid"),$id);
+        return $ret; // maintain item cursor position
+    }
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td>TFS</td>
-				<td>Roll through tax/foodstamp settings
-				on the current item</td>
-			</tr>
-			</table>";
-	}
+    function doc(){
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td>TFS</td>
+                <td>Roll through tax/foodstamp settings
+                on the current item</td>
+            </tr>
+            </table>";
+    }
 }
 
 ?>

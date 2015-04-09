@@ -52,14 +52,14 @@ static private $SQL_CONNECTION = null;
 
         $CORE_LOCAL->set("balance",$this->creditBalance);
 
-        $CORE_LOCAL->set("availBal",number_format($availBal,2,'.',''));	
+        $CORE_LOCAL->set("availBal",number_format($availBal,2,'.',''));    
 
         $chargeOk = 1;
         /* This check has already been done.
         if ($num_rows == 0 || !$row["ChargeOk"]) {
             $chargeOk = 0;
         } elseif ( $row["ChargeOk"] == 0 ) {
-            $chargeOk = 0;	
+            $chargeOk = 0;    
         }
          */
 
@@ -303,7 +303,7 @@ static private $SQL_CONNECTION = null;
         $availBal = (($CORE_LOCAL->get("{$pc}availCreditBalance") == '')
                         ? 0 : $CORE_LOCAL->get("{$pc}availCreditBalance")) +
                     $CORE_LOCAL->get("{$pc}memChargeTotal");
-        $CORE_LOCAL->set("{$pc}availBal",number_format($availBal,2,'.',''));	
+        $CORE_LOCAL->set("{$pc}availBal",number_format($availBal,2,'.',''));    
 
         $CORE_LOCAL->set("{$pc}balance",
             (($CORE_LOCAL->get("{$pc}creditBalance") == '')

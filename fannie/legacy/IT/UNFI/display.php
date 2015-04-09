@@ -47,7 +47,7 @@ if($getBatchIDW[0] < $batchID){
 }
 
 ?>
-	<FRAMESET rows='40,*' frameborder='0'>
-	    <FRAME src=''>
+    <FRAMESET rows='40,*' frameborder='0'>
+        <FRAME src=''>
         <FRAME src='batches.php?batchID=<?php echo $batchID; ?>' name='items' border='0' scrolling='yes'>
-	</FRAMESET>
+    </FRAMESET>

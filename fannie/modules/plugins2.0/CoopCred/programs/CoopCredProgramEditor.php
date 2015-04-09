@@ -85,11 +85,11 @@ if (!class_exists('FannieAPI')) {
 
 class CoopCredProgramEditor extends FanniePage {
 
-	public $themed = True;
-	protected $title = "Fannie : Manage Coop Cred Programs";
-	protected $header = "Manage Coop Cred Programs";
-	protected $auth_classes = array('overshorts');
-	private $errors = '';
+    public $themed = True;
+    protected $title = "Fannie : Manage Coop Cred Programs";
+    protected $header = "Manage Coop Cred Programs";
+    protected $auth_classes = array('overshorts');
+    private $errors = '';
     private $dummyTenderCode;
     private $dummyDepartment;
     private $deptMin;
@@ -103,14 +103,14 @@ class CoopCredProgramEditor extends FanniePage {
         global $FANNIE_PLUGIN_LIST, $FANNIE_PLUGIN_SETTINGS;
 
         if (!isset($FANNIE_PLUGIN_LIST) || !in_array('CoopCred', $FANNIE_PLUGIN_LIST)) {
-			$this->errors .= _("Error: The Coop Cred Plugin is not enabled.");
-			return True;
+            $this->errors .= _("Error: The Coop Cred Plugin is not enabled.");
+            return True;
         }
 
         if (!array_key_exists('CoopCredDatabase', $FANNIE_PLUGIN_SETTINGS) ||
             $FANNIE_PLUGIN_SETTINGS['CoopCredDatabase'] == "") {
-			$this->errors .= _("Error: Coop Cred Database not named in Plugin Settings.");
-			return True;
+            $this->errors .= _("Error: Coop Cred Database not named in Plugin Settings.");
+            return True;
         }
 
         /* Get values from the Whole-Project (Plugin) config table.
@@ -119,8 +119,8 @@ class CoopCredProgramEditor extends FanniePage {
         $config = new CCredConfigModel($dbc);
         $config->configID(1);
         if (!$config->load()) {
-			$this->errors .= _("Error: Coop Cred configuration not available.");
-			return True;
+            $this->errors .= _("Error: Coop Cred configuration not available.");
+            return True;
         }
         $this->dummyTenderCode = $config->dummyTenderCode();
         $this->dummyDepartment = $config->dummyDepartment();
@@ -147,13 +147,13 @@ class CoopCredProgramEditor extends FanniePage {
          * The form submission may be via AJAX instead of <form ...>
          *  with action= in the query string with other parameters.
          */
-		if(FormLib::get_form_value('action') !== ''){
-			$this->ajax_response(FormLib::get_form_value('action'));
+        if(FormLib::get_form_value('action') !== ''){
+            $this->ajax_response(FormLib::get_form_value('action'));
             /* How to handle errors/problems esp. in save?
              * Possibly code readinessCheck()
              */
-			return False;
-		}
+            return False;
+        }
 
         /* If the call was not by form, e.g. from the initial menu
          * or the <form action=> is '' (when does that happen?)
@@ -163,7 +163,7 @@ class CoopCredProgramEditor extends FanniePage {
         return True;
 
     // preprocess()
-	}
+    }
 
     /**
       Define any CSS needed
@@ -182,23 +182,23 @@ class CoopCredProgramEditor extends FanniePage {
      *   - assigns to <div id=infodiv>
      *   - displays with JS alert()
      */
-	function ajax_response($action){
-		switch($action){
-		case 'programDisplay':
-			$this->ajax_display_program(FormLib::get_form_value('pid',0));
-			break;
-		case 'programSave':
-			$this->ajax_save_program();
-			break;
-		default:
-			echo 'Bad request';
-			break;
-		}
-	}
+    function ajax_response($action){
+        switch($action){
+        case 'programDisplay':
+            $this->ajax_display_program(FormLib::get_form_value('pid',0));
+            break;
+        case 'programSave':
+            $this->ajax_save_program();
+            break;
+        default:
+            echo 'Bad request';
+            break;
+        }
+    }
 
     /* Echo the data capture form.
      */
-	private function ajax_display_program($id){
+    private function ajax_display_program($id){
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL, $FANNIE_OP_DB;
 
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['CoopCredDatabase']);
@@ -237,9 +237,9 @@ class CoopCredProgramEditor extends FanniePage {
             $program->load();
             // Assuming the lookup/load didn't fail, load values to local vars.
             // First row 
-			$pProgramName = $program->programName();
-			$pActive = $program->active();
-			$pStartDate = $program->startDate();
+            $pProgramName = $program->programName();
+            $pActive = $program->active();
+            $pStartDate = $program->startDate();
             $pEndDate = $program->endDate();
             if ($pEndDate == "NULL" || $pEndDate == "0000-00-00") {
                 $pEndDate = "";
@@ -260,11 +260,11 @@ class CoopCredProgramEditor extends FanniePage {
             $pInputOK = $program->inputOK();
             $pTransferOK = $program->transferOK();
 
-		}
+        }
 
         $OP = $FANNIE_OP_DB.$dbc->sep();
 
-		$tenders = array();
+        $tenders = array();
         /* Default for new Programs
          * Can be saved to CCredPrograms but not to tenders.
          * Program cannot be used for e.g. membership assignments until a real
@@ -298,7 +298,7 @@ class CoopCredProgramEditor extends FanniePage {
         $iSelected = '';
         $inputRet = '';
         $tenderStyle=" style='color:black;' ";
-		while($row = $dbc->fetch_row($resp)){
+        while($row = $dbc->fetch_row($resp)){
             // --> 'Q' to come from project configuration.
             if (substr($row['TenderCode'],0,1) == 'Q') {
                 $tSize++;
@@ -324,7 +324,7 @@ class CoopCredProgramEditor extends FanniePage {
                     $row['TenderCode'],
                     $row['TenderName']);
             }
-		}
+        }
         $tSize = ($tSize>4) ? 4 : $tSize;
         $tenderRet = "<select id='tendertype' name='tendertype' size='$tSize'>" .
             $tenderRet . "</select>";
@@ -332,7 +332,7 @@ class CoopCredProgramEditor extends FanniePage {
         $inputRet = "<select id='inputtender' name='inputtender' size='$iSize'>" .
             $inputRet . "</select>";
 
-		$departments = array();
+        $departments = array();
         /* Default for new Programs
          * Can be saved to CCredPrograms but not to departments.
          * Program cannot be used for e.g. membership assignments until a real
@@ -360,7 +360,7 @@ class CoopCredProgramEditor extends FanniePage {
                 $pPaymentDepartment,
                 $departments[$pPaymentDepartment]);
         }
-		while($row = $dbc->fetch_row($resp)){
+        while($row = $dbc->fetch_row($resp)){
             $dSize++;
             $departments["{$row['dept_no']}"] = $row['dept_name'];
             $departmentRet .= sprintf("<option value='%s'%s>%s %s</option>",
@@ -373,12 +373,12 @@ class CoopCredProgramEditor extends FanniePage {
                 $pPaymentName == "") {
                 $pPaymentName = $row['dept_name'];
             }
-		}
+        }
         $dSize = ($dSize>4) ? 4 : $dSize;
         $departmentRet = "<select id='paymentid' name='paymentid' size='$dSize'>" .
             $departmentRet . "</select>";
 
-		$bankers = array();
+        $bankers = array();
         /* Default for new Programs
          * Can be saved to CCredPrograms but not to custdata.
          * Program cannot be used for e.g. membership assignments until a real
@@ -405,7 +405,7 @@ class CoopCredProgramEditor extends FanniePage {
                 $pBankID,
                 $bankers[$pBankID]);
         }
-		while($row = $dbc->fetch_row($resp)){
+        while($row = $dbc->fetch_row($resp)){
             $bSize++;
             $bankers["{$row['CardNo']}"] = $row['bname'];
             $bankerRet .= sprintf("<option value='%s'%s>%s %s</option>",
@@ -414,7 +414,7 @@ class CoopCredProgramEditor extends FanniePage {
                     ? " selected=''" : '',
                 $row['CardNo'],
                 $row['bname']);
-		}
+        }
         $bSize = ($bSize>4) ? 4 : $bSize;
         $bankerRet = "<select id='bankid' name='bankid' size='$bSize'>" .
             $bankerRet . "</select>";
@@ -707,15 +707,15 @@ class CoopCredProgramEditor extends FanniePage {
         $ret .= "</tr>";
 
         // First row of inputs.
-		$ret .= "<tr class='vTop'>";
-		$ret .= "<td class='iCenter'>";
-		if ($id == -1){
+        $ret .= "<tr class='vTop'>";
+        $ret .= "<td class='iCenter'>";
+        if ($id == -1){
             $ret .= _("Will be assigned upon Save");
-			$ret .= "<input type=hidden id=progno name=progno value='' />";
-		} else {
-			$ret .= $id;
-		}
-		$ret .= "</td>";
+            $ret .= "<input type=hidden id=progno name=progno value='' />";
+        } else {
+            $ret .= $id;
+        }
+        $ret .= "</td>";
         $ret .= "<td colspan=1 class=''><input type=text maxlength=30 id=progname " .
             "value=\"$pProgramName\" /></td>";
 
@@ -740,7 +740,7 @@ class CoopCredProgramEditor extends FanniePage {
         $ret .= "<td><input type=text size=8 maxlength=10 id=enddate name=enddate
                     onclick='showCalendarControl(this);'
                     value='$pEndDate' /></td>";
-		$ret .= "</tr>";
+        $ret .= "</tr>";
 
         /* Second row of headings.
          */
@@ -758,7 +758,7 @@ class CoopCredProgramEditor extends FanniePage {
         $ret .= "<td>{$tenderRet}</td>";
         $ret .= "<td><input type=text size=22 maxlength=25 id=tendername " .
             "value=\"$pTenderName\" /></td>";
-		$ret .= "<td><input type=text size=1 id=tenderkeycap maxlength=10 " .
+        $ret .= "<td><input type=text size=1 id=tenderkeycap maxlength=10 " .
             "value=\"$pTenderKeyCap\" /></td>";
         $ret .= "<td>{$inputRet}</td>";
         $ret .= "<td colspan=1> &nbsp; </td>";
@@ -779,7 +779,7 @@ class CoopCredProgramEditor extends FanniePage {
         $ret .= "<td>{$departmentRet}</td>";
         $ret .= "<td><input type=text size=22 maxlength=25 id=paymentname " .
             "value=\"$pPaymentName\" /></td>";
-		$ret .= "<td><input type=text size=1 id=paymentkeycap maxlength=10 " .
+        $ret .= "<td><input type=text size=1 id=paymentkeycap maxlength=10 " .
             "value=\"$pPaymentKeyCap\" /></td>";
         $ret .= "<td colspan=2>{$bankerRet}</td>";
         $ret .= "</tr>";
@@ -800,7 +800,7 @@ class CoopCredProgramEditor extends FanniePage {
         $ret .= "<td class='iCenter'><input type=checkbox id=creditok ".
             ($pCreditOK==1?'checked':'')." /></td>";
         $ret .= sprintf("<td>\$ <input type=text size=5 id=maxcredit value=\"%.2f\" /></td>",
-            $pMaxCreditBalance);	
+            $pMaxCreditBalance);    
         $ret .= "<td class='iCenter'><input type=checkbox id=inputok ".
             ($pInputOK==1?'checked':'')." /></td>";
         $ret .= "<td class='iCenter'><input type=checkbox id=transferok ".
@@ -822,25 +822,25 @@ class CoopCredProgramEditor extends FanniePage {
 
 
         // Remember that these are also in JS.
-		if ($id == -1){
-			$ret .= "<input type=hidden id=isnew value=1 />";
-		} else {
-			$ret .= "<input type=hidden id=isnew value=0 />";
+        if ($id == -1){
+            $ret .= "<input type=hidden id=isnew value=1 />";
+        } else {
+            $ret .= "<input type=hidden id=isnew value=0 />";
             // id must be the same as in the form, the <select> of programs.
-			$ret .= "<input type=hidden id=progno value=\"$id\" />";
-			$ret .= "<input type=hidden id='origdepartment' value=\"{$pPaymentDepartment}\" />";
-			$ret .= "<input type=hidden id='origtender' value=\"{$pTenderType}\" />";
+            $ret .= "<input type=hidden id=progno value=\"$id\" />";
+            $ret .= "<input type=hidden id='origdepartment' value=\"{$pPaymentDepartment}\" />";
+            $ret .= "<input type=hidden id='origtender' value=\"{$pTenderType}\" />";
         }
 
         /* The onclick= is what happens instead of <form action=> in
          * regular form submissions.
          */
-		$ret .= "<p /><input type=submit value=Save onclick=\"programSave(); return false;\" />";
+        $ret .= "<p /><input type=submit value=Save onclick=\"programSave(); return false;\" />";
 
         echo $ret;
 
-	// ajax_display_program()
-	}
+    // ajax_display_program()
+    }
 
     /* Save to the tables:
      *  Use Model for the Program.
@@ -853,7 +853,7 @@ class CoopCredProgramEditor extends FanniePage {
      *  I want to be able to tell op to fix things before doing the save.
      *  E.g. tender may not be used by more than one program.
      */
-	private function ajax_save_program(){
+    private function ajax_save_program(){
 
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
 
@@ -997,7 +997,7 @@ class CoopCredProgramEditor extends FanniePage {
         /* Save changes to or Create the Program proper.
          */
         $model = new CCredProgramsModel($dbc);
-		$model->programID($progno);
+        $model->programID($progno);
         $model->programName($progname);
         /* Cannot be active if any dummy's in use. */
         $resetIsactive = False;
@@ -1008,8 +1008,8 @@ class CoopCredProgramEditor extends FanniePage {
                 $resetIsactive = True;
                 $isactive = 0;
             }
-		$model->active($isactive);
-		$model->startDate($startdate);
+        $model->active($isactive);
+        $model->startDate($startdate);
         $model->endDate($enddate);
 
         $model->tenderType($tendertype);
@@ -1027,18 +1027,18 @@ class CoopCredProgramEditor extends FanniePage {
         $model->inputOK($inputok);
         $model->transferOK($transferok);
 
-		$model->modified(date('Y-m-d H:i:s'));
+        $model->modified(date('Y-m-d H:i:s'));
         $model->modifiedBy($this->authUserNumber);
         /* save() decides UPDATE vs INSERT based on whether programID already
          *  exists.
          */
-		$saved = $model->save();
+        $saved = $model->save();
 
-		if ($isnew == 1) {
-			if ($saved === False){
-				echo 'Error: could not create Program';
-				return;
-			}
+        if ($isnew == 1) {
+            if ($saved === False){
+                echo 'Error: could not create Program';
+                return;
+            }
 
             /* Get the programID that was assigned by auto-increment.
              */
@@ -1085,10 +1085,10 @@ class CoopCredProgramEditor extends FanniePage {
             }
 
 
-		} else {
-			if ($saved === False){
-				echo 'Error: could not save the changes to the Program';
-				return;
+        } else {
+            if ($saved === False){
+                echo 'Error: could not save the changes to the Program';
+                return;
             } else {
                 $returnMessage .= sprintf("\nSaved Program %s (#%d)", $progname, $progno);
             }
@@ -1109,7 +1109,7 @@ class CoopCredProgramEditor extends FanniePage {
                             $progname, $progno);
                 }
             }
-		}
+        }
 
         /* Membership of Banker in Program
          * Create new membership or change Banker to this Program.
@@ -1310,8 +1310,8 @@ class CoopCredProgramEditor extends FanniePage {
         $returnMessage = preg_replace("/^\n+/","",$returnMessage);
         echo $returnMessage;
 
-	// ajax_save_program()
-	}
+    // ajax_save_program()
+    }
 
     /**
      * Override FanniePage::errorContent().
@@ -1347,7 +1347,7 @@ class CoopCredProgramEditor extends FanniePage {
        below, an area that is populated by JS with the editing form
         and possibly other art.
     */
-	function body_content(){
+    function body_content(){
 
         global $FANNIE_PLUGIN_SETTINGS;
         global $FANNIE_URL;
@@ -1362,51 +1362,51 @@ class CoopCredProgramEditor extends FanniePage {
                 FROM CCredPrograms
                 ORDER BY programID";
         $p = $dbc->prepare_statement($q);
-		$resp = $dbc->exec_statement($p);
+        $resp = $dbc->exec_statement($p);
         if ($resp === false) {
             return "<p style='font-size:1.2em;'>" . 
                "Exec SQL failed: $q" . "</p>";
         }
-		$programs = "<option value=0>Select a Program ...</option>";
+        $programs = "<option value=0>Select a Program ...</option>";
         $programs .= "<option value=-1 style='text-decoration:underline;'>" .
             "Create a new Program</option>";
-		$selectedPID = FormLib::get_form_value('pid');
+        $selectedPID = FormLib::get_form_value('pid');
         $listSize = 2;
-		while($row = $dbc->fetch_row($resp)){
+        while($row = $dbc->fetch_row($resp)){
             if ($listSize < 4) {
                 $listSize++;
             }
-			if ($selectedPID !== '' && $selectedPID == $row['programID']) {
+            if ($selectedPID !== '' && $selectedPID == $row['programID']) {
                 $programs .= "<option value={$row['programID']} selected>" .
                     "{$row['programName']}</option>";
             } else {
                 $programs .= "<option value={$row['programID']}>" .
                     "{$row['programName']}</option>";
             }
-		}
-		ob_start();
-		?>
-		<div id="programdiv" style="padding:1.0em 0 0 0;">
+        }
+        ob_start();
+        ?>
+        <div id="programdiv" style="padding:1.0em 0 0 0;">
         <div style="float:left; margin-right:0.5em;"><b>Program</b></div>
         <!-- With select size=2 some options are skipped over in the scrolling. -->
         <select id="programselect" onchange="programChange();"
         size="<?php echo $listSize ?>">
-		<?php echo $programs ?>
-		</select>
+        <?php echo $programs ?>
+        </select>
         </div>
         <p style="clear: both;">To refresh the list above, save your current edits, then
         <a href="CoopCredProgramEditor.php"
             style="font-size:1.2em; font-weight:bold;">Refresh</a></p>
-		<hr />
+        <hr />
         <!-- infodiv is filled with the editing form. -->
-		<div id="infodiv"></div>
-		<?php
+        <div id="infodiv"></div>
+        <?php
         $this->add_script('CalendarControl.js');
         $this->add_css_file('CalendarControl.css');
         $this->add_script('coopcred_program.js');
         $this->add_css_file('coopcred_form.css');
         /* Does this run JS programChange()? To display an initial Program?
-		if ($selectedPID !== '') {
+        if ($selectedPID !== '') {
             //  It seems to get the programID from the page, not passed as arg.
             $this->add_onload_command('programChange();');
             $noop=1;
@@ -1468,7 +1468,7 @@ class CoopCredProgramEditor extends FanniePage {
                     continue;
                 }
             }
-            $try = $instance->create();		
+            $try = $instance->create();        
             if ($try) {
                 $msg="Created view $view specified in {$model_class}";
                 $dbc->logger("$msg");

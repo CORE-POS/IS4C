@@ -54,13 +54,13 @@ class Notifier extends LibraryClass
 
 class MemBalanceNotifier extends Notifier 
 {
-	public function draw()
+    public function draw()
     {
         if (CoreLocal::get('memberID') == 0 || CoreLocal::get('memberID') == CoreLocal::get('defaultNonMem')) {
             return '';
         }
 
-		$db = Database::pDataConnect();
+        $db = Database::pDataConnect();
 
         $query = $db->prepare_statement('SELECT Balance FROM custdata WHERE CardNo=?');
         $result = $db->exec_statement($query, array(CoreLocal::get('memberID')));
@@ -75,7 +75,7 @@ class MemBalanceNotifier extends Notifier
         return sprintf('<div style="border:1px solid black;">Balance $%.2f</div>',
                         $row['Balance']);
 
-	}
+    }
 }
 */
 

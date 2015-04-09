@@ -59,15 +59,15 @@ foreach (array('valutecRequest', 'valutecRequestMod', 'valutecResponse') as $tab
 }
 
 $regularPushTables = array(
-	'products',
-	'custdata',
-	'memberCards',
-	'custReceiptMessage',
-	'employees',
-	'departments',
-	'houseCoupons',
-	'houseCouponItems',
-	'houseVirtualCoupons'
+    'products',
+    'custdata',
+    'memberCards',
+    'custReceiptMessage',
+    'employees',
+    'departments',
+    'houseCoupons',
+    'houseCouponItems',
+    'houseVirtualCoupons'
 );
 foreach ($regularPushTables as $table) {
     $result = SyncLanes::push_table("$table", 'op', SyncLanes::TRUNCATE_DESTINATION);

@@ -24,53 +24,53 @@
 class TenderKeyCoopCred extends Parser 
 {
 
-	function check($str)
+    function check($str)
     {
         if (
             substr($str, -2) == "TQ" && strlen($str) >=3 &&
             is_numeric(substr($str, 0, strlen($str)-2))
             ) {
-			return true;
-		} else if ($str == "TQ") {
-			return true;
+            return true;
+        } else if ($str == "TQ") {
+            return true;
         }
 
-		return false;
-	}
+        return false;
+    }
 
-	function parse($str)
+    function parse($str)
     {
-		global $CORE_LOCAL;
-		$my_url = MiscLib::base_url();
+        global $CORE_LOCAL;
+        $my_url = MiscLib::base_url();
 
-		$amt = substr($str,0,strlen($str)-2);
-		if ($amt === "") {
-			$amt = 100*$CORE_LOCAL->get("amtdue");
+        $amt = substr($str,0,strlen($str)-2);
+        if ($amt === "") {
+            $amt = 100*$CORE_LOCAL->get("amtdue");
         }
-		$ret = $this->default_json();
+        $ret = $this->default_json();
 
-		$CORE_LOCAL->set("tenderTotal",$amt);
-		$ret['main_frame'] = $my_url.'plugins/CoopCred/tenderlist_coopCred.php';
-		//$ret['main_frame'] = $my_url.'gui-modules/tenderlist_coopCred.php';
+        $CORE_LOCAL->set("tenderTotal",$amt);
+        $ret['main_frame'] = $my_url.'plugins/CoopCred/tenderlist_coopCred.php';
+        //$ret['main_frame'] = $my_url.'gui-modules/tenderlist_coopCred.php';
 
-		return $ret;
-	}
+        return $ret;
+    }
 
-	function doc()
+    function doc()
     {
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
             <td><i>[amount]</i>TQ<i></td>
             <td>Display a picklist of Coop Cred tenders.
             The <i>amount</i>, if specified, or else the remaining Amount Due,
             will be tendered.
             </td>
-			</tr>
-			</table>";
-	}
+            </tr>
+            </table>";
+    }
 }
 
 ?>

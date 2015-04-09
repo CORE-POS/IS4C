@@ -22,62 +22,62 @@
 
 class NM_Ingenico extends ScaleDriverWrapper {
 
-	function ReadFromScale()
+    function ReadFromScale()
     {
-		$rel = MiscLib::base_url();
+        $rel = MiscLib::base_url();
 
-		$input = "";
-		$readdir = $rel.'scale-drivers/drivers/NewMagellan/cc-output';
-		$dh  = opendir($readdir);
+        $input = "";
+        $readdir = $rel.'scale-drivers/drivers/NewMagellan/cc-output';
+        $dh  = opendir($readdir);
 
-		while (false !== ($fn = readdir($dh))) {
-			if (is_dir($readdir."/".$fn)) continue;
-			$data = file_get_contents($readdir."/".$fn);
-			unlink($readdir."/".$fn);
-			$line = rtrim($data,"\r\n");
-			if (empty($line)) continue;
-			$input = $line;
-			break;
-		}
+        while (false !== ($fn = readdir($dh))) {
+            if (is_dir($readdir."/".$fn)) continue;
+            $data = file_get_contents($readdir."/".$fn);
+            unlink($readdir."/".$fn);
+            $line = rtrim($data,"\r\n");
+            if (empty($line)) continue;
+            $input = $line;
+            break;
+        }
 
-		$output = array();
-		if (!empty($input)) $output['scans'] = $input;
+        $output = array();
+        if (!empty($input)) $output['scans'] = $input;
 
-		if (!empty($output)) echo JsonLib::array_to_json($output);
-		else echo "{}";
-	}
+        if (!empty($output)) echo JsonLib::array_to_json($output);
+        else echo "{}";
+    }
 
-	function poll($msg){
-		$res = UdpConn::udpPoke($msg);
-		return $res;
-	}
+    function poll($msg){
+        $res = UdpConn::udpPoke($msg);
+        return $res;
+    }
 
-	function getpath(){
-		$rel = MiscLib::base_url();
-		return $rel.'scale-drivers/drivers/NewMagellan/';
-	}
+    function getpath(){
+        $rel = MiscLib::base_url();
+        return $rel.'scale-drivers/drivers/NewMagellan/';
+    }
 
-	/* just wraps UDP send because commands 
-	   ARE case-sensitive on the c# side */
-	function WriteToScale($str){
+    /* just wraps UDP send because commands 
+       ARE case-sensitive on the c# side */
+    function WriteToScale($str){
 
-		if (strlen($str) > 8 && substr($str,0,8)=="display:"){}
-		else // don't change case on display messages
-			$str = strtolower($str);
+        if (strlen($str) > 8 && substr($str,0,8)=="display:"){}
+        else // don't change case on display messages
+            $str = strtolower($str);
 
-		if (substr($str,0,6) == "total:" && strlen($str) > 6)
-			UdpConn::udpSend($str);
-		elseif (substr($str,0,11) == "resettotal:" && strlen($str) > 11)
-			UdpConn::udpSend($str);
-		elseif (substr($str,0,9) == "approval:" && strlen($str) > 9)
-			UdpConn::udpSend($str);
-		elseif (substr($str,0,8) == "display:" && strlen($str) > 8)
-			UdpConn::udpSend($str);
-		elseif ($str == "reset")
-			UdpConn::udpSend($str);
-		elseif ($str == "sig")
-			UdpConn::udpSend($str);
-	}
+        if (substr($str,0,6) == "total:" && strlen($str) > 6)
+            UdpConn::udpSend($str);
+        elseif (substr($str,0,11) == "resettotal:" && strlen($str) > 11)
+            UdpConn::udpSend($str);
+        elseif (substr($str,0,9) == "approval:" && strlen($str) > 9)
+            UdpConn::udpSend($str);
+        elseif (substr($str,0,8) == "display:" && strlen($str) > 8)
+            UdpConn::udpSend($str);
+        elseif ($str == "reset")
+            UdpConn::udpSend($str);
+        elseif ($str == "sig")
+            UdpConn::udpSend($str);
+    }
 }
 
 ?>

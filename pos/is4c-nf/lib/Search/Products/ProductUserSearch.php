@@ -28,19 +28,19 @@
 */
 class ProductUserSearch extends ProductSearch 
 {
-	public function search($str)
+    public function search($str)
     {
-		$ret = array();
-		$sql = Database::pDataConnect();
-		if (!$sql->table_exists('productUser')) return array();
-		$query = "
+        $ret = array();
+        $sql = Database::pDataConnect();
+        if (!$sql->table_exists('productUser')) return array();
+        $query = "
             SELECT p.upc,
                 CASE 
                     WHEN u.description IS NULL THEN p.description
                     WHEN u.description = '' THEN p.description
                     ELSE u.description 
                 END as description,
-				p.normal_price,
+                p.normal_price,
                 p.special_price, 
                 p.advertised, 
                 p.scale
@@ -51,12 +51,12 @@ class ProductUserSearch extends ProductSearch
                 AND p.upc LIKE ('0000000%')
                 AND p.inUse=1
             ORDER BY description";
-		$result = $sql->query($query);
-		while ($row = $sql->fetch_row($result)) {
-			$ret[$row['upc']] = $row;
-		}
+        $result = $sql->query($query);
+        while ($row = $sql->fetch_row($result)) {
+            $ret[$row['upc']] = $row;
+        }
 
-		return $ret;
-	}
+        return $ret;
+    }
 }
 

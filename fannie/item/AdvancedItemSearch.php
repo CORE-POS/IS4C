@@ -252,11 +252,11 @@ class AdvancedItemSearch extends FannieRESTfulPage
             $args[] = $fs;
         }
 
-		$inUse = FormLib::get('in_use');
-		if ($inUse !== '') {
-			$where .= ' AND p.inUse=? ';
-			$args[] = $inUse;
-		}
+        $inUse = FormLib::get('in_use');
+        if ($inUse !== '') {
+            $where .= ' AND p.inUse=? ';
+            $args[] = $inUse;
+        }
 
         $discount = FormLib::get('discountable');
         if ($discount !== '') {
@@ -802,7 +802,7 @@ function chainSuper(superID)
         $ret .= ' | 
                 <label class="small" for="in_use">
                 InUse
-				<input type="checkbox" name="in_use" id="in_use" value="1" checked class="checkbox-inline" />
+                <input type="checkbox" name="in_use" id="in_use" value="1" checked class="checkbox-inline" />
                 </label>
                 </td>'; 
 

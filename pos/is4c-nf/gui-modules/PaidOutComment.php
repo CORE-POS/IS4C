@@ -25,83 +25,83 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class PaidOutComment extends NoInputPage {
 
-	function preprocess()
+    function preprocess()
     {
-		if (isset($_REQUEST["selectlist"])){
-			$input = $_REQUEST["selectlist"];
-			if ($input == "CL"){
-				CoreLocal::set("msgrepeat",0);
-				CoreLocal::set("strRemembered","");
-				CoreLocal::set("refundComment","");
-			}
-			else if ($input == "Other"){
-				return True;
-			}
-			else {
-				$input = str_replace("'","",$input);
-				CoreLocal::set("strRemembered",CoreLocal::get("refundComment"));
-				// add comment calls additem(), which wipes
-				// out refundComment; save it
-				TransRecord::addcomment("PO: ".$input);
-				CoreLocal::set("refundComment",CoreLocal::get("strRemembered"));
-				CoreLocal::set("msgrepeat",1);
-				//CoreLocal::set("refund",1);
-			}
-			$this->change_page($this->page_url."gui-modules/pos2.php");
-			return False;
-		}
-		return True;
-	}
-	
-	function head_content()
+        if (isset($_REQUEST["selectlist"])){
+            $input = $_REQUEST["selectlist"];
+            if ($input == "CL"){
+                CoreLocal::set("msgrepeat",0);
+                CoreLocal::set("strRemembered","");
+                CoreLocal::set("refundComment","");
+            }
+            else if ($input == "Other"){
+                return True;
+            }
+            else {
+                $input = str_replace("'","",$input);
+                CoreLocal::set("strRemembered",CoreLocal::get("refundComment"));
+                // add comment calls additem(), which wipes
+                // out refundComment; save it
+                TransRecord::addcomment("PO: ".$input);
+                CoreLocal::set("refundComment",CoreLocal::get("strRemembered"));
+                CoreLocal::set("msgrepeat",1);
+                //CoreLocal::set("refund",1);
+            }
+            $this->change_page($this->page_url."gui-modules/pos2.php");
+            return False;
+        }
+        return True;
+    }
+    
+    function head_content()
     {
-		?>
+        ?>
         <script type="text/javascript" src="../js/selectSubmit.js"></script>
-		<?php
-	} // END head() FUNCTION
+        <?php
+    } // END head() FUNCTION
 
-	function body_content() 
+    function body_content() 
     {
-		?>
-		<div class="baseHeight">
-		<div class="centeredDisplay colored">
-		<span class="larger">reason for paidout</span>
-		<form name="selectform" method="post" 
-			id="selectform" action="<?php echo $_SERVER['PHP_SELF']; ?>">
-		<?php
-		if (isset($_POST['selectlist']) && $_POST['selectlist'] == 'Other') {
-		?>
-			<input type="text" id="selectlist" name="selectlist" 
-				onblur="$('#selectlist').focus();" />
-		<?php
-		}
-		else {
-		?>
-			<select name="selectlist" id="selectlist"
-				onblur="$('#selectlist').focus();">
-			<option>Paid to Supplier</option>
-			<option>Store Use</option>
-			<option>Coupon</option>
-			<option>Other</option>
-			<option>Discount</option>
-			<option>Gift Card Refund</option>
-			</select>
-		<?php
-		}
-		?>
-		</form>
-		<p>
-		<span class="smaller">[clear] to cancel</span>
-		</p>
-		</div>
-		</div>	
-		<?php
-		$this->add_onload_command("\$('#selectlist').focus();\n");
-		//if (isset($_POST['selectlist']) && $_POST['selectlist'] == 'Other') 
+        ?>
+        <div class="baseHeight">
+        <div class="centeredDisplay colored">
+        <span class="larger">reason for paidout</span>
+        <form name="selectform" method="post" 
+            id="selectform" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+        <?php
+        if (isset($_POST['selectlist']) && $_POST['selectlist'] == 'Other') {
+        ?>
+            <input type="text" id="selectlist" name="selectlist" 
+                onblur="$('#selectlist').focus();" />
+        <?php
+        }
+        else {
+        ?>
+            <select name="selectlist" id="selectlist"
+                onblur="$('#selectlist').focus();">
+            <option>Paid to Supplier</option>
+            <option>Store Use</option>
+            <option>Coupon</option>
+            <option>Other</option>
+            <option>Discount</option>
+            <option>Gift Card Refund</option>
+            </select>
+        <?php
+        }
+        ?>
+        </form>
+        <p>
+        <span class="smaller">[clear] to cancel</span>
+        </p>
+        </div>
+        </div>    
+        <?php
+        $this->add_onload_command("\$('#selectlist').focus();\n");
+        //if (isset($_POST['selectlist']) && $_POST['selectlist'] == 'Other') 
         $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
-	} // END body_content() FUNCTION
+    } // END body_content() FUNCTION
 }
 
 if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-	new PaidOutComment();
+    new PaidOutComment();
 ?>

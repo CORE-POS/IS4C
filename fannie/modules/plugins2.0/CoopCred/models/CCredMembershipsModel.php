@@ -55,7 +55,7 @@ class CCredMembershipsModel extends BasicModel
         'modifiedBy' => array('type'=>'INT(11)', 'not_null'=>True, 'default'=>0),
         'membershipID' => array('type'=>'INT(11)','primary_key'=>True,
             'increment'=>True)
-	);
+    );
 
     public function name()
     {

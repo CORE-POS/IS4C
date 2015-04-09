@@ -23,25 +23,25 @@
 
 class CashDropParser extends Parser {
 
-	function check($str){
-		if (substr($str,0,8) == 'DROPDROP'){
-			return True;
-		}
-		else if (substr($str,0,4) == 'DROP' && is_numeric(substr($str,4))){
-			return True;
-		}
-		else if (substr($str,-4) == 'DROP' && is_numeric(substr($str,0,strlen($str)-4))){
-			return True;
-		}
-		else{
-			return False;
-		}
-	}
+    function check($str){
+        if (substr($str,0,8) == 'DROPDROP'){
+            return True;
+        }
+        else if (substr($str,0,4) == 'DROP' && is_numeric(substr($str,4))){
+            return True;
+        }
+        else if (substr($str,-4) == 'DROP' && is_numeric(substr($str,0,strlen($str)-4))){
+            return True;
+        }
+        else{
+            return False;
+        }
+    }
 
-	function parse($str)
+    function parse($str)
     {
-		$ret = $this->default_json();
-		if (substr($str,0,8) == 'DROPDROP'){
+        $ret = $this->default_json();
+        if (substr($str,0,8) == 'DROPDROP'){
             // repeat cashier's input, if any
             if (strlen($str) > 8) {
                 $json['retry'] = substr($str, 8);
@@ -49,24 +49,24 @@ class CashDropParser extends Parser {
             // redraw right side of the screen
             $json['scale'] = true; 
 
-			return $ret;
-		}
-		else {
-			// add drop record to transaction
-			$amt = 0;
-			if (substr($str,0,4) == 'DROP')
-				$amt = substr($str,4);
-			else
-				$amt = substr($str,0,strlen($str)-4);
-			TransRecord::addRecord(array(
+            return $ret;
+        }
+        else {
+            // add drop record to transaction
+            $amt = 0;
+            if (substr($str,0,4) == 'DROP')
+                $amt = substr($str,4);
+            else
+                $amt = substr($str,0,strlen($str)-4);
+            TransRecord::addRecord(array(
                 'upc' =>'CASHDROP', 
                 'description' => 'CASHDROP', 
                 'trans_type' => "L", 
                 'trans_subtype' => 'CA',
-				'total' => ($amt/100.00),
+                'total' => ($amt/100.00),
             ));
-			$ret['main_frame'] = MiscLib::base_url()."gui-modules/pos2.php";
-			return $ret;
-		}
-	}
+            $ret['main_frame'] = MiscLib::base_url()."gui-modules/pos2.php";
+            return $ret;
+        }
+    }
 }

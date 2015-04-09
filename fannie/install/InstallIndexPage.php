@@ -129,9 +129,9 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
 
         // Path detection: Establish ../../
         $FILEPATH = rtrim(__FILE__,"$self");
-	if (DIRECTORY_SEPARATOR == '\\') {
-	    $FILEPATH = str_replace(DIRECTORY_SEPARATOR, '/', $FILEPATH);
-	}
+        if (DIRECTORY_SEPARATOR == '\\') {
+            $FILEPATH = str_replace(DIRECTORY_SEPARATOR, '/', $FILEPATH);
+        }
         $URL = rtrim($_SERVER['SCRIPT_NAME'],"$self");
         $FILEPATH = rtrim($FILEPATH, '/');
         $URL = rtrim($URL,'/');

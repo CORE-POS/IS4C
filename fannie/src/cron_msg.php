@@ -21,6 +21,6 @@
 
 *********************************************************************************/
 function cron_msg($str){
-	return date('r').': '.$_SERVER['SCRIPT_FILENAME'].': '.$str."\n";
+    return date('r').': '.$_SERVER['SCRIPT_FILENAME'].': '.$str."\n";
 }
 ?>

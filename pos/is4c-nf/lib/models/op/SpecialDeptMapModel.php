@@ -32,7 +32,7 @@ class SpecialDeptMapModel extends BasicModel
     protected $columns = array(
     'specialDeptModuleName' => array('type'=>'VARCHAR(100)', 'primary_key'=>true),
     'dept_no' => array('type'=>'INT', 'primary_key'=>true),
-	);
+    );
 
     public $preferred_db = 'op';
 

@@ -23,62 +23,62 @@
 
 class InactiveMemSearch extends MemberLookup {
 
-	public function lookup_by_number($num)
+    public function lookup_by_number($num)
     {
-		$dbc = Database::pDataConnect();
-		$query = $dbc->prepare_statement('SELECT CardNo, personNum,
-			LastName, FirstName FROM custdata
-			WHERE CardNo=? 
-			AND Type=\'INACT\'
-			ORDER BY personNum');
-		$result = $dbc->exec_statement($query, array($num));
+        $dbc = Database::pDataConnect();
+        $query = $dbc->prepare_statement('SELECT CardNo, personNum,
+            LastName, FirstName FROM custdata
+            WHERE CardNo=? 
+            AND Type=\'INACT\'
+            ORDER BY personNum');
+        $result = $dbc->exec_statement($query, array($num));
         $inactives = array();
 
-		$ret = $this->default_value();
-		$i = 1;
-		while ($w = $dbc->fetch_row($result)) {
-			if (CoreLocal::get('InactiveMemUsage') == 1) {
-				$key = CoreLocal::get('defaultNonMem').'::'.$i;
-			} else {
-				$key = $w['CardNo'].'::'.$w['personNum'];
+        $ret = $this->default_value();
+        $i = 1;
+        while ($w = $dbc->fetch_row($result)) {
+            if (CoreLocal::get('InactiveMemUsage') == 1) {
+                $key = CoreLocal::get('defaultNonMem').'::'.$i;
+            } else {
+                $key = $w['CardNo'].'::'.$w['personNum'];
                 $inactives[] = $w['CardNo'];
             }
-			$val = $w['CardNo'].'(CSC) '.$w['LastName'].', '.$w['FirstName'];
-			$ret['results'][$key] = $val;
-			$i++;
-		}
+            $val = $w['CardNo'].'(CSC) '.$w['LastName'].', '.$w['FirstName'];
+            $ret['results'][$key] = $val;
+            $i++;
+        }
         CoreLocal::set('InactiveMemList', $inactives);
 
-		return $ret;
-	}
+        return $ret;
+    }
 
-	public function lookup_by_text($text)
+    public function lookup_by_text($text)
     {
-		$dbc = Database::pDataConnect();
-		$query = $dbc->prepare_statement('SELECT CardNo, personNum,
-			LastName, FirstName FROM custdata
-			WHERE LastName LIKE ? 
-			AND Type = \'INACT\'
-			ORDER BY LastName, FirstName');
-		$result = $dbc->exec_statement($query, array($text.'%'));	
-		$ret = $this->default_value();
+        $dbc = Database::pDataConnect();
+        $query = $dbc->prepare_statement('SELECT CardNo, personNum,
+            LastName, FirstName FROM custdata
+            WHERE LastName LIKE ? 
+            AND Type = \'INACT\'
+            ORDER BY LastName, FirstName');
+        $result = $dbc->exec_statement($query, array($text.'%'));    
+        $ret = $this->default_value();
         $inactives = array();
-		$i=1;
-		while ($w = $dbc->fetch_row($result)) {
-			if (CoreLocal::get('InactiveMemUsage') == 1) {
-				$key = CoreLocal::get('defaultNonMem').'::'.$i;
-			} else {
-				$key = $w['CardNo'].'::'.$w['personNum'];
+        $i=1;
+        while ($w = $dbc->fetch_row($result)) {
+            if (CoreLocal::get('InactiveMemUsage') == 1) {
+                $key = CoreLocal::get('defaultNonMem').'::'.$i;
+            } else {
+                $key = $w['CardNo'].'::'.$w['personNum'];
                 $inactives[] = $w['CardNo'];
             }
-			$val = $w['CardNo'].'(CSC) '.$w['LastName'].', '.$w['FirstName'];
-			$ret['results'][$key] = $val;
-			$i++;
-		}
+            $val = $w['CardNo'].'(CSC) '.$w['LastName'].', '.$w['FirstName'];
+            $ret['results'][$key] = $val;
+            $i++;
+        }
         CoreLocal::set('InactiveMemList', $inactives);
 
-		return $ret;
-	}
+        return $ret;
+    }
 
 }
 

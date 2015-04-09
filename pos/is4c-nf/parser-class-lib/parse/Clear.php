@@ -22,41 +22,41 @@
 *********************************************************************************/
 
 class Clear extends Parser {
-	function check($str){
-		if ($str == "CL")
-			return True;
-		return False;
-	}
+    function check($str){
+        if ($str == "CL")
+            return True;
+        return False;
+    }
 
-	function parse($str)
+    function parse($str)
     {
-		CoreLocal::set("msgrepeat",0);
-		CoreLocal::set("strendered","");
-		CoreLocal::set("strRemembered","");
-		CoreLocal::set("SNR",0);
-		// added by apbw 6/04/05 to correct voiding of refunded items
-		CoreLocal::set("refund",0);	
-		//CoreLocal::set("autoReprint",0);
-		if (CoreLocal::get("tare") > 0) 
-			TransRecord::addTare(0);
+        CoreLocal::set("msgrepeat",0);
+        CoreLocal::set("strendered","");
+        CoreLocal::set("strRemembered","");
+        CoreLocal::set("SNR",0);
+        // added by apbw 6/04/05 to correct voiding of refunded items
+        CoreLocal::set("refund",0);    
+        //CoreLocal::set("autoReprint",0);
+        if (CoreLocal::get("tare") > 0) 
+            TransRecord::addTare(0);
 
-		$ret = $this->default_json();
-		$ret['main_frame'] = MiscLib::base_url()."gui-modules/pos2.php";
-		return $ret;
-	}
+        $ret = $this->default_json();
+        $ret['main_frame'] = MiscLib::base_url()."gui-modules/pos2.php";
+        return $ret;
+    }
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td>CL</td>
-				<td>Try to clear the screen of any
-				messages</td>
-			</tr>
-			</table>";
-	}
+    function doc(){
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td>CL</td>
+                <td>Try to clear the screen of any
+                messages</td>
+            </tr>
+            </table>";
+    }
 
 }
 

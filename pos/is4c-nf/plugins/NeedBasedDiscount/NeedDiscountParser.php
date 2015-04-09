@@ -22,13 +22,13 @@
 *********************************************************************************/
 class NeedDiscountParser extends Parser 
 {
-	function check($str)
+    function check($str)
     {
-		if ($str == "FF") return True;
-		else return False;
-	}
+        if ($str == "FF") return True;
+        else return False;
+    }
 
-	function parse($str)
+    function parse($str)
     {
         $ret = $this->default_json();
 
@@ -47,15 +47,15 @@ class NeedDiscountParser extends Parser
                 false,
                 DisplayLib::standardClearButton()
             );
-    		return $ret;
-    	} else {
-    		CoreLocal::set('NeedDiscountFlag',1);
+            return $ret;
+        } else {
+            CoreLocal::set('NeedDiscountFlag',1);
             $NBDisc = CoreLocal::get('needBasedPercent') * 100;
             DiscountModule::updateDiscount(new DiscountModule($NBDisc, 'NeedBasedDiscount'));
-        	$ret['output'] = DisplayLib::lastpage();
-        	$ret['redraw_footer'] = true;
+            $ret['output'] = DisplayLib::lastpage();
+            $ret['redraw_footer'] = true;
 
-        	return $ret;
+            return $ret;
         }
     }
 }

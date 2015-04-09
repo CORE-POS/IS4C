@@ -22,47 +22,47 @@
 *********************************************************************************/
 
 class QuickKeyLauncher extends Parser {
-	
-	function check($str){
-		if (strstr($str,"QK")){
-			$tmp = explode("QK",$str);
-			$ct = count($tmp);
-			if ($ct <= 2 && is_numeric($tmp[$ct-1]))
-				return True;
-		}
-		return False;
-	}
+    
+    function check($str){
+        if (strstr($str,"QK")){
+            $tmp = explode("QK",$str);
+            $ct = count($tmp);
+            if ($ct <= 2 && is_numeric($tmp[$ct-1]))
+                return True;
+        }
+        return False;
+    }
 
-	function parse($str)
+    function parse($str)
     {
-		$tmp = explode("QK",$str);
-		if (count($tmp) == 2)
-			CoreLocal::set("qkInput",$tmp[0]);
-		else
-			CoreLocal::set("qkInput","");
-		CoreLocal::set("qkNumber",$tmp[count($tmp)-1]);
-		CoreLocal::set("qkCurrentId",CoreLocal::get("currentid"));
-		$ret = $this->default_json();
+        $tmp = explode("QK",$str);
+        if (count($tmp) == 2)
+            CoreLocal::set("qkInput",$tmp[0]);
+        else
+            CoreLocal::set("qkInput","");
+        CoreLocal::set("qkNumber",$tmp[count($tmp)-1]);
+        CoreLocal::set("qkCurrentId",CoreLocal::get("currentid"));
+        $ret = $this->default_json();
 
-		$plugin_info = new QuickKeys();
-		$ret['main_frame'] = $plugin_info->plugin_url().'/QKDisplay.php';
-		return $ret;
-	}
+        $plugin_info = new QuickKeys();
+        $ret['main_frame'] = $plugin_info->plugin_url().'/QKDisplay.php';
+        return $ret;
+    }
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td><i>anything</i>QK<i>number</i></td>
-				<td>
-				Go to quick key with the given number.
-				Save any provided input.
-				</td>
-			</tr>
-			</table>";
-	}
+    function doc(){
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td><i>anything</i>QK<i>number</i></td>
+                <td>
+                Go to quick key with the given number.
+                Save any provided input.
+                </td>
+            </tr>
+            </table>";
+    }
 }
 
 ?>

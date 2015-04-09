@@ -22,29 +22,29 @@
 *********************************************************************************/
 
 class Lock extends Parser {
-	function check($str){
-		if ($str == "LOCK")
-			return True;
-		return False;
-	}
+    function check($str){
+        if ($str == "LOCK")
+            return True;
+        return False;
+    }
 
-	function parse($str){
-		$ret = $this->default_json();
-		$ret['main_frame'] = MiscLib::base_url().'gui-modules/login3.php';
-		return $ret;
-	}
+    function parse($str){
+        $ret = $this->default_json();
+        $ret['main_frame'] = MiscLib::base_url().'gui-modules/login3.php';
+        return $ret;
+    }
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td>LOCK</td>
-				<td>Lock the screen</td>
-			</tr>
-			</table>";
-	}
+    function doc(){
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td>LOCK</td>
+                <td>Lock the screen</td>
+            </tr>
+            </table>";
+    }
 }
 
 ?>

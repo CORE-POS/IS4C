@@ -53,7 +53,7 @@ class ActivityReport extends FannieReportPage
     protected $programName = '';
     protected $memberFullName = '';
 
-	public function preprocess()
+    public function preprocess()
     {
         global $FANNIE_OP_DB,$FANNIE_PLUGIN_LIST,$FANNIE_PLUGIN_SETTINGS;
 
@@ -115,7 +115,7 @@ class ActivityReport extends FannieReportPage
         return array($desc);
     }
 
-	public function fetch_report_data()
+    public function fetch_report_data()
     {
         global $FANNIE_TRANS_DB, $FANNIE_URL;
         global $FANNIE_PLUGIN_SETTINGS;

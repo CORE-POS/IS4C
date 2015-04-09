@@ -5,7 +5,7 @@
  */
 class InstallTest extends PHPUnit_Framework_TestCase
 {
-	public function testOpdata()
+    public function testOpdata()
     {
         $db = Database::pDataConnect();
         $errors = InstallUtilities::createOpDBs($db, CoreLocal::get('pDatabase'));
@@ -21,7 +21,7 @@ class InstallTest extends PHPUnit_Framework_TestCase
         }
     }
 
-	public function testTranslog()
+    public function testTranslog()
     {
         $db = Database::tDataConnect();
         $errors = InstallUtilities::createTransDBs($db, CoreLocal::get('tDatabase'));
@@ -44,7 +44,7 @@ class InstallTest extends PHPUnit_Framework_TestCase
         }
     }
 
-	public function testMinServer()
+    public function testMinServer()
     {
         $db = Database::mDataConnect();
         $errors = InstallUtilities::createMinServer($db, CoreLocal::get('mDatabase'));
@@ -67,7 +67,7 @@ class InstallTest extends PHPUnit_Framework_TestCase
         }
     }
 
-	public function testSampleData()
+    public function testSampleData()
     {
         $samples = array(
             'couponcodes',

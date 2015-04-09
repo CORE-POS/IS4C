@@ -40,9 +40,9 @@ class NeedBasedDiscount extends Plugin {
                         in your Need-Based discount program.  Sometimes called Food For All or FLOWER.<br>
                         Trigger with "FF"';
 
-	function plugin_transaction_reset()
+    function plugin_transaction_reset()
     {
-		CoreLocal::set('NeedDiscountFlag', 0);
-	}
+        CoreLocal::set('NeedDiscountFlag', 0);
+    }
 }
 

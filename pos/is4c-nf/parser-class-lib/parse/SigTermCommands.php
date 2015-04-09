@@ -23,38 +23,38 @@
 
 class SigTermCommands extends Parser 
 {
-	private $cb_error;
+    private $cb_error;
 
-	function check($str)
+    function check($str)
     {
-		if ($str == "TERMMANUAL") {
-			UdpComm::udpSend("termManual");
-			CoreLocal::set("paycard_keyed", true);
+        if ($str == "TERMMANUAL") {
+            UdpComm::udpSend("termManual");
+            CoreLocal::set("paycard_keyed", true);
 
-			return true;
+            return true;
 
-		} else if ($str == "TERMRESET" || $str == "TERMREBOOT") {
-			if ($str == "TERMRESET") {
-				UdpComm::udpSend("termReset");
-			} else {
-				UdpComm::udpSend("termReboot");
+        } else if ($str == "TERMRESET" || $str == "TERMREBOOT") {
+            if ($str == "TERMRESET") {
+                UdpComm::udpSend("termReset");
+            } else {
+                UdpComm::udpSend("termReboot");
             }
-			CoreLocal::set("paycard_keyed", false);
-			CoreLocal::set("CachePanEncBlock","");
-			CoreLocal::set("CachePinEncBlock","");
-			CoreLocal::set("CacheCardType","");
-			CoreLocal::set("CacheCardCashBack",0);
-			CoreLocal::set('ccTermState','swipe');
+            CoreLocal::set("paycard_keyed", false);
+            CoreLocal::set("CachePanEncBlock","");
+            CoreLocal::set("CachePinEncBlock","");
+            CoreLocal::set("CacheCardType","");
+            CoreLocal::set("CacheCardCashBack",0);
+            CoreLocal::set('ccTermState','swipe');
 
-			return true;
+            return true;
 
-		} else if ($str == "CCFROMCACHE") {
+        } else if ($str == "CCFROMCACHE") {
 
-			return true;
+            return true;
 
-		} else if (substr($str,0,9) == "PANCACHE:") {
-			CoreLocal::set("CachePanEncBlock",substr($str,9));
-			CoreLocal::set('ccTermState','type');
+        } else if (substr($str,0,9) == "PANCACHE:") {
+            CoreLocal::set("CachePanEncBlock",substr($str,9));
+            CoreLocal::set('ccTermState','type');
             if (CoreLocal::get('PaycardsStateChange') == 'coordinated') {
                 if (CoreLocal::get('PaycardsAllowEBT') == 1) {
                     UdpComm::udpSend('termGetTypeWithFS');
@@ -70,44 +70,44 @@ class SigTermCommands extends Parser
                 }
             }
 
-			return true;
+            return true;
 
-		} else if (substr($str,0,9) == "PINCACHE:") {
-			CoreLocal::set("CachePinEncBlock",substr($str,9));
-			CoreLocal::set('ccTermState','ready');
+        } else if (substr($str,0,9) == "PINCACHE:") {
+            CoreLocal::set("CachePinEncBlock",substr($str,9));
+            CoreLocal::set('ccTermState','ready');
             if (CoreLocal::get('PaycardsStateChange') == 'coordinated') {
                 UdpComm::udpSend('termWait');
             }
 
-			return true;
+            return true;
 
-		} else if (substr($str,0,6) == "VAUTH:") {
-			CoreLocal::set("paycard_voiceauthcode",substr($str,6));
+        } else if (substr($str,0,6) == "VAUTH:") {
+            CoreLocal::set("paycard_voiceauthcode",substr($str,6));
 
-			return true;
+            return true;
 
-		} else if (substr($str,0,8) == "EBTAUTH:") {
-			CoreLocal::set("ebt_authcode",substr($str,8));
+        } else if (substr($str,0,8) == "EBTAUTH:") {
+            CoreLocal::set("ebt_authcode",substr($str,8));
 
-			return true;
+            return true;
 
-		} else if (substr($str,0,5) == "EBTV:"){
-			CoreLocal::set("ebt_vnum",substr($str,5));
+        } else if (substr($str,0,5) == "EBTV:"){
+            CoreLocal::set("ebt_vnum",substr($str,5));
 
-			return true;
+            return true;
 
-		} else if ($str == "TERMCLEARALL") {
-			CoreLocal::set("CachePanEncBlock","");
-			CoreLocal::set("CachePinEncBlock","");
-			CoreLocal::set("CacheCardType","");
-			CoreLocal::set("CacheCardCashBack",0);
+        } else if ($str == "TERMCLEARALL") {
+            CoreLocal::set("CachePanEncBlock","");
+            CoreLocal::set("CachePinEncBlock","");
+            CoreLocal::set("CacheCardType","");
+            CoreLocal::set("CacheCardCashBack",0);
             CoreLocal::set('ccTermState', 'swipe');
 
-			return true;
+            return true;
 
-		} else if (substr($str,0,5) == "TERM:") {
-			CoreLocal::set("CacheCardType",substr($str,5));
-			switch(CoreLocal::get('CacheCardType')) {
+        } else if (substr($str,0,5) == "TERM:") {
+            CoreLocal::set("CacheCardType",substr($str,5));
+            switch(CoreLocal::get('CacheCardType')) {
                 case 'CREDIT':
                     CoreLocal::set('ccTermState','ready');
                     if (CoreLocal::get('PaycardsStateChange') == 'coordinated') {
@@ -146,7 +146,7 @@ class SigTermCommands extends Parser
                         }
                     }
                     break;
-			}
+            }
 
             if (CoreLocal::get('PaycardsStateChange') == 'direct') {
                 // check for out of order messages from terminal
@@ -155,79 +155,79 @@ class SigTermCommands extends Parser
                 }
             }
 
-			return true;
+            return true;
 
-		} elseif (substr($str,0,7) == "TERMCB:") {
-			$cashback = substr($str,7);
+        } elseif (substr($str,0,7) == "TERMCB:") {
+            $cashback = substr($str,7);
             $termLimit = CoreLocal::get('PaycardsTermCashBackLimit');
             if ($termLimit === '') {
                 $termLimit = 40;
             }
-			if ($cashback <= $termLimit) {
-				$this->cb_error = false;
-				CoreLocal::set("CacheCardCashBack",$cashback);
-			} else {
-				$this->cb_error = true;
-			}
-			CoreLocal::set('ccTermState','pin');
+            if ($cashback <= $termLimit) {
+                $this->cb_error = false;
+                CoreLocal::set("CacheCardCashBack",$cashback);
+            } else {
+                $this->cb_error = true;
+            }
+            CoreLocal::set('ccTermState','pin');
             if (CoreLocal::get('PaycardsStateChange') == 'coordinated') {
                 UdpComm::udpSend('termGetPin');
             }
 
-			return true;
-		}
+            return true;
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	function parse($str)
+    function parse($str)
     {
-		$ret = $this->default_json();
-		$ret['scale'] = ''; // redraw righthand column
-		if ($str == "CCFROMCACHE") {
-			$ret['retry'] = CoreLocal::get("CachePanEncBlock");
-		}
-		if ($this->cb_error) {
+        $ret = $this->default_json();
+        $ret['scale'] = ''; // redraw righthand column
+        if ($str == "CCFROMCACHE") {
+            $ret['retry'] = CoreLocal::get("CachePanEncBlock");
+        }
+        if ($this->cb_error) {
             $ret['output'] = DisplayLib::boxMsg(
                 'Cash back set to zero instead',
                 _('Invalid cash back selection'),
                 false,
                 DisplayLib::standardClearButton()
             );
-		}
+        }
 
-		return $ret;
-	}
+        return $ret;
+    }
 
-	function doc()
+    function doc()
     {
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td>TERMMANUAL</td>
-				<td>
-				Send CC terminal to manual entry mode
-				</td>
-			</tr>
-			<tr>
-				<td>TERMRESET</td>
-				<td>Reset CC terminal to begin transaction</td>
-			</tr>
-			<tr>
-				<td>CCFROMCACHE</td>
-				<td>Charge the card cached earlier</td>
-			</tr>
-			<tr>
-				<td>PANCACHE:<encrypted block></td>
-				<td>Cache an encrypted block on swipe</td>
-			</tr>
-			<tr>
-				<td>PINCACHE:<encrypted block></td>
-				<td>Cache an encrypted block on PIN entry</td>
-			</tr>
-			</table>";
-	}
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td>TERMMANUAL</td>
+                <td>
+                Send CC terminal to manual entry mode
+                </td>
+            </tr>
+            <tr>
+                <td>TERMRESET</td>
+                <td>Reset CC terminal to begin transaction</td>
+            </tr>
+            <tr>
+                <td>CCFROMCACHE</td>
+                <td>Charge the card cached earlier</td>
+            </tr>
+            <tr>
+                <td>PANCACHE:<encrypted block></td>
+                <td>Cache an encrypted block on swipe</td>
+            </tr>
+            <tr>
+                <td>PINCACHE:<encrypted block></td>
+                <td>Cache an encrypted block on PIN entry</td>
+            </tr>
+            </table>";
+    }
 }
 

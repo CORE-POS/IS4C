@@ -26,37 +26,37 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 class posCustDisplay extends BasicPage 
 {
 
-	public function body_content()
+    public function body_content()
     {
         echo $this->noinput_header();
-		?>
-		<div class="baseHeight">
-		<?php
+        ?>
+        <div class="baseHeight">
+        <?php
 
-		if (CoreLocal::get("plainmsg") && strlen(CoreLocal::get("plainmsg")) > 0) {
-			echo DisplayLib::printheaderb();
-			echo "<div class=\"centerOffset\">";
-			echo DisplayLib::plainmsg(CoreLocal::get("plainmsg"));
-			echo "</div>";
-		} else {	
-			// No input and no messages, so
-			// list the items
-			if (CoreLocal::get("End") == 1) {
-				echo DisplayLib::printReceiptfooter(true);
-			} else {
-				echo DisplayLib::lastpage(true);
+        if (CoreLocal::get("plainmsg") && strlen(CoreLocal::get("plainmsg")) > 0) {
+            echo DisplayLib::printheaderb();
+            echo "<div class=\"centerOffset\">";
+            echo DisplayLib::plainmsg(CoreLocal::get("plainmsg"));
+            echo "</div>";
+        } else {    
+            // No input and no messages, so
+            // list the items
+            if (CoreLocal::get("End") == 1) {
+                echo DisplayLib::printReceiptfooter(true);
+            } else {
+                echo DisplayLib::lastpage(true);
             }
-		}
-		echo "</div>"; // end base height
+        }
+        echo "</div>"; // end base height
 
-		echo "<div id=\"footer\">";
-		echo DisplayLib::printfooter(true);
+        echo "<div id=\"footer\">";
+        echo DisplayLib::printfooter(true);
         echo '</div>';
 
-	} // END body_content() FUNCTION
+    } // END body_content() FUNCTION
 }
 
 if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
-	new posCustDisplay();
+    new posCustDisplay();
 }
 

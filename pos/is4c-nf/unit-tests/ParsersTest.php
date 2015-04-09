@@ -7,116 +7,116 @@ include(dirname(__FILE__).'/../parser-class-lib/Parser.php');
  */
 class ParsersTest extends PHPUnit_Framework_TestCase
 {
-	/**
-	  Check methods for getting available PreParser and Parser modules
-	*/
-	public function testStatics()
+    /**
+      Check methods for getting available PreParser and Parser modules
+    */
+    public function testStatics()
     {
-		$chain = PreParser::get_preparse_chain();
-		$this->assertInternalType('array',$chain);
-		$this->assertNotEmpty($chain);
-		foreach($chain as $class){
-			$instance = new $class();
-			$this->assertInstanceOf('PreParser',$instance);
-		}
+        $chain = PreParser::get_preparse_chain();
+        $this->assertInternalType('array',$chain);
+        $this->assertNotEmpty($chain);
+        foreach($chain as $class){
+            $instance = new $class();
+            $this->assertInstanceOf('PreParser',$instance);
+        }
 
-		$chain = Parser::get_parse_chain();
-		$this->assertInternalType('array',$chain);
-		$this->assertNotEmpty($chain);
-		foreach($chain as $class){
-			$instance = new $class();
-			$this->assertInstanceOf('Parser',$instance);
-		}
-	}
+        $chain = Parser::get_parse_chain();
+        $this->assertInternalType('array',$chain);
+        $this->assertNotEmpty($chain);
+        foreach($chain as $class){
+            $instance = new $class();
+            $this->assertInstanceOf('Parser',$instance);
+        }
+    }
 
-	public function testPreParsers()
+    public function testPreParsers()
     {
-		/* set any needed session variables */
-		CoreLocal::set('runningTotal',1.99);
-		CoreLocal::set('mfcoupon',0);
-		CoreLocal::set('itemPD',0);
-		CoreLocal::set('multiple',0);
-		CoreLocal::set('quantity',0);
-		CoreLocal::set('refund',0);
-		CoreLocal::set('toggletax',0);
-		CoreLocal::set('togglefoodstamp',0);
-		CoreLocal::set('toggleDiscountable',0);
-		CoreLocal::set('nd',0);
-	
-		/* inputs and expected outputs */
-		$input_output = array(
-			'MANUALCC'	=> '199CC',
-			'5DI123'	=> '123',
-			'7PD123'	=> '123',
-			'2*4011'	=> '4011',
-			'3*100DP10'	=> '100DP10',
-			'text*blah'	=> 'text*blah',
-			'RF123'		=> '123',
-			'123RF'		=> '123',
-			'RF3*100DP10'	=> '100DP10',
-			'FN123'		=> '123',
-			'DN123'		=> '123',
-			'1TN123'	=> '123',
-			'invalid'	=> 'invalid'
-		);
+        /* set any needed session variables */
+        CoreLocal::set('runningTotal',1.99);
+        CoreLocal::set('mfcoupon',0);
+        CoreLocal::set('itemPD',0);
+        CoreLocal::set('multiple',0);
+        CoreLocal::set('quantity',0);
+        CoreLocal::set('refund',0);
+        CoreLocal::set('toggletax',0);
+        CoreLocal::set('togglefoodstamp',0);
+        CoreLocal::set('toggleDiscountable',0);
+        CoreLocal::set('nd',0);
+    
+        /* inputs and expected outputs */
+        $input_output = array(
+            'MANUALCC'    => '199CC',
+            '5DI123'    => '123',
+            '7PD123'    => '123',
+            '2*4011'    => '4011',
+            '3*100DP10'    => '100DP10',
+            'text*blah'    => 'text*blah',
+            'RF123'        => '123',
+            '123RF'        => '123',
+            'RF3*100DP10'    => '100DP10',
+            'FN123'        => '123',
+            'DN123'        => '123',
+            '1TN123'    => '123',
+            'invalid'    => 'invalid'
+        );
 
-		$chain = PreParser::get_preparse_chain();
-		foreach($input_output as $input => $output){
-			foreach($chain as $class){
-				$obj = new $class();
-				$chk = $obj->check($input);
-				$this->assertInternalType('boolean',$chk);
-				if ($chk){
-					$input = $obj->parse($input);
-				}
-			}
-			$this->assertEquals($output, $input);
-		}
+        $chain = PreParser::get_preparse_chain();
+        foreach($input_output as $input => $output){
+            foreach($chain as $class){
+                $obj = new $class();
+                $chk = $obj->check($input);
+                $this->assertInternalType('boolean',$chk);
+                if ($chk){
+                    $input = $obj->parse($input);
+                }
+            }
+            $this->assertEquals($output, $input);
+        }
 
-		/* verify correct session values */
-		$this->assertEquals(7, CoreLocal::get('itemPD'));
-		$this->assertEquals(1, CoreLocal::get('multiple'));
-		$this->assertEquals(3, CoreLocal::get('quantity'));
-		$this->assertEquals(1, CoreLocal::get('refund'));
-		$this->assertEquals(1, CoreLocal::get('toggletax'));
-		$this->assertEquals(1, CoreLocal::get('togglefoodstamp'));
-		$this->assertEquals(1, CoreLocal::get('toggleDiscountable'));
-	}
+        /* verify correct session values */
+        $this->assertEquals(7, CoreLocal::get('itemPD'));
+        $this->assertEquals(1, CoreLocal::get('multiple'));
+        $this->assertEquals(3, CoreLocal::get('quantity'));
+        $this->assertEquals(1, CoreLocal::get('refund'));
+        $this->assertEquals(1, CoreLocal::get('toggletax'));
+        $this->assertEquals(1, CoreLocal::get('togglefoodstamp'));
+        $this->assertEquals(1, CoreLocal::get('toggleDiscountable'));
+    }
 
-	function testParsers()
+    function testParsers()
     {
-		/* inputs and expected outputs */
-		$input_output = array(
+        /* inputs and expected outputs */
+        $input_output = array(
         'WillNotMatchAnythingEver' => array(),
-		);
+        );
 
-		$chain = Parser::get_parse_chain();
-		foreach($input_output as $input => $output){
+        $chain = Parser::get_parse_chain();
+        foreach($input_output as $input => $output){
             $actual = $output;
-			foreach($chain as $class){
-				$obj = new $class();
-				$chk = $obj->check($input);
-				$this->assertInternalType('boolean',$chk);
-				if ($chk){
-					$actual = $obj->parse($input);
+            foreach($chain as $class){
+                $obj = new $class();
+                $chk = $obj->check($input);
+                $this->assertInternalType('boolean',$chk);
+                if ($chk){
+                    $actual = $obj->parse($input);
                     break;
-				}
-			}
+                }
+            }
             $this->assertEquals($output, $actual);
-		}
-	}
+        }
+    }
 
     function testItemsEntry()
     {
-		CoreLocal::set('mfcoupon',0);
-		CoreLocal::set('itemPD',0);
-		CoreLocal::set('multiple',0);
-		CoreLocal::set('quantity',0);
-		CoreLocal::set('refund',0);
-		CoreLocal::set('toggletax',0);
-		CoreLocal::set('togglefoodstamp',0);
-		CoreLocal::set('toggleDiscountable',0);
-		CoreLocal::set('nd',0);
+        CoreLocal::set('mfcoupon',0);
+        CoreLocal::set('itemPD',0);
+        CoreLocal::set('multiple',0);
+        CoreLocal::set('quantity',0);
+        CoreLocal::set('refund',0);
+        CoreLocal::set('toggletax',0);
+        CoreLocal::set('togglefoodstamp',0);
+        CoreLocal::set('toggleDiscountable',0);
+        CoreLocal::set('nd',0);
 
         // test regular price item
         lttLib::clear();

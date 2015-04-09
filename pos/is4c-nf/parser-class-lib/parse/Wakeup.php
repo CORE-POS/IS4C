@@ -22,36 +22,36 @@
 *********************************************************************************/
 
 class Wakeup extends Parser {
-	function check($str)
+    function check($str)
     {
-		if ($str == "WAKEUP"){
-			return True;
-		}
-		return False;
-	}
+        if ($str == "WAKEUP"){
+            return True;
+        }
+        return False;
+    }
 
-	function parse($str){
-		$ret = $this->default_json();
-		$ret['udpmsg'] = 'rePoll';
-		return $ret;
-	}
+    function parse($str){
+        $ret = $this->default_json();
+        $ret['udpmsg'] = 'rePoll';
+        return $ret;
+    }
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td>WAKEUP</td>
-				<td>Try to coax a stuck scale back
-				into operation</td>
-			</tr>
-			<tr>
-				<td>WAKEUP2</td>
-				<td>Different method, same goal</td>
-			</tr>
-			</table>";
-	}
+    function doc(){
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td>WAKEUP</td>
+                <td>Try to coax a stuck scale back
+                into operation</td>
+            </tr>
+            <tr>
+                <td>WAKEUP2</td>
+                <td>Different method, same goal</td>
+            </tr>
+            </table>";
+    }
 }
 
 ?>

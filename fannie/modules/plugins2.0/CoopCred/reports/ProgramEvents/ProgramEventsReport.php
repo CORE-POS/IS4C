@@ -44,8 +44,8 @@ class ProgramEventsReport extends FannieReportPage {
     public $description = "[Coop Cred Program Report] Events detail: inputs to the Program and payments to members.";
 
     public $report_set = 'CoopCred';
-	protected $title = "Fannie: Coop Cred Program Events: Inputs and Transfers Report";
-	protected $header = "Coop Cred Program Events: Inputs and Transfers Report";
+    protected $title = "Fannie: Coop Cred Program Events: Inputs and Transfers Report";
+    protected $header = "Coop Cred Program Events: Inputs and Transfers Report";
 
     protected $programID = 0;
     protected $programName = "";
@@ -58,7 +58,7 @@ class ProgramEventsReport extends FannieReportPage {
     protected $errors = array();
     protected $pid = 0;
 
-	function preprocess(){
+    function preprocess(){
         global $FANNIE_ROOT,$FANNIE_URL,$FANNIE_PLUGIN_LIST,$FANNIE_PLUGIN_SETTINGS;
 
         if (!isset($FANNIE_PLUGIN_LIST) || !in_array('CoopCred', $FANNIE_PLUGIN_LIST)) {
@@ -90,7 +90,7 @@ class ProgramEventsReport extends FannieReportPage {
         /**
           Whether invoked by form submission.
         */
-		if (isset($_REQUEST['programID'])){
+        if (isset($_REQUEST['programID'])){
             // Better to do this in JS in the form.
             if ($_REQUEST['programID'] == "") {
                 $this->errors[] = "Please choose a Program";
@@ -125,38 +125,38 @@ class ProgramEventsReport extends FannieReportPage {
                     'Event','$ Amount','Comment');
             }
 
-			$this->content_function = "report_content";
+            $this->content_function = "report_content";
 
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-				$this->report_format = 'xls';
-				$this->has_menus(False);
+            if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
+                $this->report_format = 'xls';
+                $this->has_menus(False);
             } elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-				$this->report_format = 'csv';
-				$this->has_menus(False);
+                $this->report_format = 'csv';
+                $this->has_menus(False);
             }
-		} else {
+        } else {
             if (FormLib::get_form_value('pid',0) != 0) {
                 $this->pid = FormLib::get_form_value('pid',0);
             }
-			$this->add_script("{$FANNIE_URL}src/CalendarControl.js");
+            $this->add_script("{$FANNIE_URL}src/CalendarControl.js");
         }
 
         return True;
 
     // preprocess()
-	}
+    }
 
     /* Get data from the database
      * and format it as an HTML table without totals in the last row.
      */
-	function fetch_report_data(){
+    function fetch_report_data(){
 
         global $FANNIE_ARCHIVE_METHOD, $FANNIE_ARCHIVE_DB,
             $FANNIE_OP_DB, $FANNIE_TRANS_DB;
 
-		$date1 = FormLib::get_form_value('date1',date('Y-m-d'));
-		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
-		$card_no = FormLib::get_form_value('card_no','0');
+        $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
+        $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
+        $card_no = FormLib::get_form_value('card_no','0');
 
         $dbc = FannieDB::get($FANNIE_ARCHIVE_DB);
         $OP = $FANNIE_OP_DB . $dbc->sep();
@@ -214,29 +214,29 @@ class ProgramEventsReport extends FannieReportPage {
             LEFT JOIN {$OP}departments m ON m.dept_no = d.department
             WHERE d.department = {$this->paymentDepartment}
               AND ({$dte} BETWEEN ? AND ?)
-			ORDER BY DATE_FORMAT(d.{$dte}, '%Y-%m-%d %H:%i')";
+            ORDER BY DATE_FORMAT(d.{$dte}, '%Y-%m-%d %H:%i')";
         $args = array();
         $args[] = $date1 . ' 00:00:00';
         $args[] = $date2 . ' 23:59:59';
 
-		$prep = $dbc->prepare_statement($query);
+        $prep = $dbc->prepare_statement($query);
         if ($prep === False) {
             $dbc->logger("\nprep failed:\n$query");
         }
-		$result = $dbc->exec_statement($prep,$args);
+        $result = $dbc->exec_statement($prep,$args);
         if ($result === False) {
             $dbc->logger("\nexec failed:\n$query\nargs:",implode(" : ",$args));
         }
 
-		/**
-		  Build array of results, without totals.
-		*/
-		$ret = array();
+        /**
+          Build array of results, without totals.
+        */
+        $ret = array();
         $transferOut = 0;
         $otherOut = 0;
         $rowCount = 0;
-		while ($row = $dbc->fetch_array($result)){
-			$memberNumber = $row['card_no'];
+        while ($row = $dbc->fetch_array($result)){
+            $memberNumber = $row['card_no'];
             $suffix = "";
             if ($row['trans_status'] == 'V') {
                 $suffix = " Void";
@@ -258,11 +258,11 @@ class ProgramEventsReport extends FannieReportPage {
                     $suffix = " Reversed";
                 }
             }
-			$record = array();
+            $record = array();
             if ($this->sortable) {
                 $record[] = $row['SortDate'];
             }
-			$record[] = $row['When'];
+            $record[] = $row['When'];
             $record[] = "<a href='../Activity/ActivityReport.php?" .
                 "memNum={$row['card_no']}&amp;programID={$this->programID}'" .
                 " target='_CCR_{$row['card_no']}' title='Details for this member'>" .
@@ -272,7 +272,7 @@ class ProgramEventsReport extends FannieReportPage {
                 " target='_CCR_{$row['card_no']}' title='Details for this member'>" .
                 "{$row['Who']}</a>";
 
-			$record[] = (($memberNumber == $this->programBankID)?"Input":"Payment") . $suffix;
+            $record[] = (($memberNumber == $this->programBankID)?"Input":"Payment") . $suffix;
 
             $record[] = sprintf("%.2f",($memberNumber == $this->programBankID)
                                     ? $row['total']
@@ -280,20 +280,20 @@ class ProgramEventsReport extends FannieReportPage {
 
             $record[] = $row['Comment'];
 
-			$ret[] = $record;
+            $ret[] = $record;
             $rowCount++;
-		}
+        }
 
-		return $ret;
+        return $ret;
 
     // /fetch_report_data()
-	}
+    }
 
-	/**
-	  Define any CSS needed
-	  @return A CSS string
-	*/
-	function css_content(){
+    /**
+      Define any CSS needed
+      @return A CSS string
+    */
+    function css_content(){
     $css =
 "p.explain {
     font-family: Arial;
@@ -317,14 +317,14 @@ class ProgramEventsReport extends FannieReportPage {
         return $css;
     }
 
-	/**
-	  Extra, non-tabular information prefixed to tabular reports
-	  @return array of strings
+    /**
+      Extra, non-tabular information prefixed to tabular reports
+      @return array of strings
      */
-	function report_description_content(){
-		$ret = array();
-		$date1 = FormLib::get_form_value('date1',date('Y-m-d'));
-		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
+    function report_description_content(){
+        $ret = array();
+        $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
+        $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
         $ret[] = "<H3 class='report'>Events in the " .
             "<br />{$this->programName} " .
             "Program (Dept {$this->paymentDepartment})" .
@@ -334,21 +334,21 @@ class ProgramEventsReport extends FannieReportPage {
             (($date2 == '')?date('Y-m-d'):$date2) .
             "</H3>";
         if (($date1 == $date2) && ($date2 == date('Y-m-d'))) {
-		    $today_time = date("l F j, Y g:i A");
+            $today_time = date("l F j, Y g:i A");
             $ret[] = "<p class='explain exponly'>As at: {$today_time}</p>";
         } else {
-		    $today_time = date("l F j, Y g:i A");
+            $today_time = date("l F j, Y g:i A");
             $ret[] = "<p class='explain exponly'>As at: {$today_time}</p>";
         }
-		return $ret;
-	}
+        return $ret;
+    }
 
-	/**
-	  Extra, non-tabular information appended to reports
-	  @return array of strings
-	*/
-	function report_end_content(){
-		$ret = array();
+    /**
+      Extra, non-tabular information appended to reports
+      @return array of strings
+    */
+    function report_end_content(){
+        $ret = array();
         $ret[] = "<p class='explain'><br /><a name='notes'><b>Notes:</b></a></p>";
         $ret[] = "<p class='explain'><b>Balance</b>".
             " is the difference between the the amount that has been" .
@@ -361,15 +361,15 @@ class ProgramEventsReport extends FannieReportPage {
         $ret[] = "<p class='explain'><b><a href='ProgramEventsReport.php?pid=" .
             $this->programID . "'>" .
             "Start again from the form.</a></b></p>";
-		return $ret;
+        return $ret;
     // /report_end_content()
-	}
+    }
 
-	/**
-	  Sum the total columns
-	*/
-	function calculate_footers($data){
-		$sumProgram = 0.0;
+    /**
+      Sum the total columns
+    */
+    function calculate_footers($data){
+        $sumProgram = 0.0;
         if ($this->sortable) {
             foreach($data as $row){
                 $sumProgram += $row[5];
@@ -381,17 +381,17 @@ class ProgramEventsReport extends FannieReportPage {
             }
             return array('Balance',null,null,null,number_format($sumProgram,2),'');
         }
-	}
+    }
 
     /** The form for specifying the report
      */
-	function form_content(){
+    function form_content(){
 
         global $FANNIE_PLUGIN_SETTINGS;
 
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['CoopCredDatabase']);
 ?>
-<div id=main>	
+<div id=main>    
 <?php
         if (isset($this->errors[0])) {
             echo "<p style='font-family:Arial; font-size:1.5em;'>";
@@ -475,7 +475,7 @@ class ProgramEventsReport extends FannieReportPage {
             <label for="sortable" class="col-sm-4 control-label"
 title="Tick to display with sorting from column heads; un-tick for a plain formt."
 >Sort on Column Heads</label>
-			<input type="checkbox" name="sortable" id="sortable" CHECKED />
+            <input type="checkbox" name="sortable" id="sortable" CHECKED />
         </div>
     </div><!-- /.col-sm-6 -->
     <div class="col-sm-5"><!-- start right col -->
@@ -490,13 +490,13 @@ title="Tick to display with sorting from column heads; un-tick for a plain formt
         <button type=submit name=submit value="Create Report" class="btn btn-default">Create Report</button>
         <!-- button type=reset name=reset class="btn btn-default">Start Over</button -->
 </p>
-			<input type=hidden name=card_no id=card_no value=0  />
+            <input type=hidden name=card_no id=card_no value=0  />
 </form><!-- /.form-horizontal -->
 
 <!-- Bootstrap-coded ends -->
 <?php
     // /form_content()
-	}
+    }
 
     // class programReport
 }

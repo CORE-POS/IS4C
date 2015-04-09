@@ -31,143 +31,143 @@
 
 function forceBatch($batchID)
 {
-	global $sql,$FANNIE_SERVER_DBMS, $FANNIE_LANES;
+    global $sql,$FANNIE_SERVER_DBMS, $FANNIE_LANES;
 
-	$batchInfoQ = $sql->prepare("SELECT batchType,discountType FROM batches WHERE batchID = ?");
-	$batchInfoR = $sql->execute($batchInfoQ, array($batchID));
-	$batchInfoW = $sql->fetch_array($batchInfoR);
+    $batchInfoQ = $sql->prepare("SELECT batchType,discountType FROM batches WHERE batchID = ?");
+    $batchInfoR = $sql->execute($batchInfoQ, array($batchID));
+    $batchInfoW = $sql->fetch_array($batchInfoR);
 
-	$forceQ = "";
-	$forceLCQ = "";
-	$forceMMQ = "";
-	if ($batchInfoW['discountType'] != 0){
+    $forceQ = "";
+    $forceLCQ = "";
+    $forceMMQ = "";
+    if ($batchInfoW['discountType'] != 0){
 
-		$forceQ="UPDATE products AS p
-		    INNER JOIN batchList AS l
-		    ON p.upc=l.upc
-		    INNER JOIN batches AS b
-		    ON l.batchID=b.batchID
-		    SET p.start_date = b.startDate, 
-		    p.end_date=b.endDate,
-		    p.special_price=l.salePrice,
-		    p.specialgroupprice=CASE WHEN l.salePrice < 0 THEN -1*l.salePrice ELSE l.salePrice END,
-		    p.specialpricemethod=l.pricemethod,
-		    p.specialquantity=l.quantity,
-		    p.discounttype=b.discounttype,
-		    p.mixmatchcode = CASE 
-			WHEN l.pricemethod IN (3,4) AND l.salePrice >= 0 THEN convert(l.batchID,char)
-			WHEN l.pricemethod IN (3,4) AND l.salePrice < 0 THEN convert(-1*l.batchID,char)
-			WHEN l.pricemethod = 0 AND l.quantity > 0 THEN concat('b',convert(l.batchID,char))
-			ELSE p.mixmatchcode 
-		    END	
-		    WHERE l.upc not like 'LC%'
-		    and l.batchID = ?";
+        $forceQ="UPDATE products AS p
+            INNER JOIN batchList AS l
+            ON p.upc=l.upc
+            INNER JOIN batches AS b
+            ON l.batchID=b.batchID
+            SET p.start_date = b.startDate, 
+            p.end_date=b.endDate,
+            p.special_price=l.salePrice,
+            p.specialgroupprice=CASE WHEN l.salePrice < 0 THEN -1*l.salePrice ELSE l.salePrice END,
+            p.specialpricemethod=l.pricemethod,
+            p.specialquantity=l.quantity,
+            p.discounttype=b.discounttype,
+            p.mixmatchcode = CASE 
+            WHEN l.pricemethod IN (3,4) AND l.salePrice >= 0 THEN convert(l.batchID,char)
+            WHEN l.pricemethod IN (3,4) AND l.salePrice < 0 THEN convert(-1*l.batchID,char)
+            WHEN l.pricemethod = 0 AND l.quantity > 0 THEN concat('b',convert(l.batchID,char))
+            ELSE p.mixmatchcode 
+            END    
+            WHERE l.upc not like 'LC%'
+            and l.batchID = ?";
             
-		$forceLCQ = "UPDATE products AS p
-			INNER JOIN upcLike AS v 
-			ON v.upc=p.upc
-			INNER JOIN batchList as l 
-			ON l.upc=concat('LC',convert(v.likecode,char))
-			INNER JOIN batches AS b 
-			ON b.batchID=l.batchID
-			set p.special_price = l.salePrice,
-			p.end_date = b.endDate,p.start_date=b.startDate,
-		        p.specialgroupprice=CASE WHEN l.salePrice < 0 THEN -1*l.salePrice ELSE l.salePrice END,
-			p.specialpricemethod=l.pricemethod,
-			p.specialquantity=l.quantity,
-			p.discounttype = b.discounttype,
-		        p.mixmatchcode = CASE 
-				WHEN l.pricemethod IN (3,4) AND l.salePrice >= 0 THEN convert(l.batchID,char)
-				WHEN l.pricemethod IN (3,4) AND l.salePrice < 0 THEN convert(-1*l.batchID,char)
-				WHEN l.pricemethod = 0 AND l.quantity > 0 THEN concat('b',convert(l.batchID,char))
-				ELSE p.mixmatchcode 
-		        END	
-			where l.batchID=?";
+        $forceLCQ = "UPDATE products AS p
+            INNER JOIN upcLike AS v 
+            ON v.upc=p.upc
+            INNER JOIN batchList as l 
+            ON l.upc=concat('LC',convert(v.likecode,char))
+            INNER JOIN batches AS b 
+            ON b.batchID=l.batchID
+            set p.special_price = l.salePrice,
+            p.end_date = b.endDate,p.start_date=b.startDate,
+                p.specialgroupprice=CASE WHEN l.salePrice < 0 THEN -1*l.salePrice ELSE l.salePrice END,
+            p.specialpricemethod=l.pricemethod,
+            p.specialquantity=l.quantity,
+            p.discounttype = b.discounttype,
+                p.mixmatchcode = CASE 
+                WHEN l.pricemethod IN (3,4) AND l.salePrice >= 0 THEN convert(l.batchID,char)
+                WHEN l.pricemethod IN (3,4) AND l.salePrice < 0 THEN convert(-1*l.batchID,char)
+                WHEN l.pricemethod = 0 AND l.quantity > 0 THEN concat('b',convert(l.batchID,char))
+                ELSE p.mixmatchcode 
+                END    
+            where l.batchID=?";
 
-		if ($FANNIE_SERVER_DBMS == 'MSSQL'){
-			$forceQ="UPDATE products
-			    SET start_date = b.startDate, 
-			    end_date=b.endDate,
-			    special_price=l.salePrice,
-		            specialgroupprice=CASE WHEN l.salePrice < 0 THEN -1*l.salePrice ELSE l.salePrice END,
-			    specialpricemethod=l.pricemethod,
-			    specialquantity=l.quantity,
-			    discounttype=b.discounttype,
-			    mixmatchcode = CASE 
-				WHEN l.pricemethod IN (3,4) AND l.salePrice >= 0 THEN convert(varchar,l.batchID)
-				WHEN l.pricemethod IN (3,4) AND l.salePrice < 0 THEN convert(varchar,-1*l.batchID)
-				WHEN l.pricemethod = 0 AND l.quantity > 0 THEN 'b'+convert(varchar,l.batchID)
-				ELSE p.mixmatchcode 
-			    END	
-			    FROM products as p, 
-			    batches as b, 
-			    batchList as l 
-			    WHERE l.upc = p.upc
-			    and l.upc not like 'LC%'
-			    and b.batchID = l.batchID
-			    and b.batchID = ?";
+        if ($FANNIE_SERVER_DBMS == 'MSSQL'){
+            $forceQ="UPDATE products
+                SET start_date = b.startDate, 
+                end_date=b.endDate,
+                special_price=l.salePrice,
+                    specialgroupprice=CASE WHEN l.salePrice < 0 THEN -1*l.salePrice ELSE l.salePrice END,
+                specialpricemethod=l.pricemethod,
+                specialquantity=l.quantity,
+                discounttype=b.discounttype,
+                mixmatchcode = CASE 
+                WHEN l.pricemethod IN (3,4) AND l.salePrice >= 0 THEN convert(varchar,l.batchID)
+                WHEN l.pricemethod IN (3,4) AND l.salePrice < 0 THEN convert(varchar,-1*l.batchID)
+                WHEN l.pricemethod = 0 AND l.quantity > 0 THEN 'b'+convert(varchar,l.batchID)
+                ELSE p.mixmatchcode 
+                END    
+                FROM products as p, 
+                batches as b, 
+                batchList as l 
+                WHERE l.upc = p.upc
+                and l.upc not like 'LC%'
+                and b.batchID = l.batchID
+                and b.batchID = ?";
 
-			$forceLCQ = "update products set special_price = l.salePrice,
-				end_date = b.endDate,start_date=b.startDate,
-				discounttype = b.discounttype,
-				specialpricemethod=l.pricemethod,
-				specialquantity=l.quantity,
-		                specialgroupprice=CASE WHEN l.salePrice < 0 THEN -1*l.salePrice ELSE l.salePrice END,
-				mixmatchcode = CASE 
-					WHEN l.pricemethod IN (3,4) AND l.salePrice >= 0 THEN convert(varchar,l.batchID)
-					WHEN l.pricemethod IN (3,4) AND l.salePrice < 0 THEN convert(varchar,-1*l.batchID)
-					WHEN l.pricemethod = 0 AND l.quantity > 0 THEN 'b'+convert(varchar,l.batchID)
-					ELSE p.mixmatchcode 
-				END	
-				from products as p left join
-				upcLike as v on v.upc=p.upc left join
-				batchList as l on l.upc='LC'+convert(varchar,v.likecode)
-				left join batches as b on b.batchID = l.batchID
-				where b.batchID=?";
-		}
-	}
-	else{
-		$forceQ = "UPDATE products AS p
-		      INNER JOIN batchList AS l
-		      ON l.upc=p.upc
-		      SET p.normal_price = l.salePrice,
-		      p.modified = now()
-		      WHERE l.upc not like 'LC%'
-		      AND l.batchID = ?";
+            $forceLCQ = "update products set special_price = l.salePrice,
+                end_date = b.endDate,start_date=b.startDate,
+                discounttype = b.discounttype,
+                specialpricemethod=l.pricemethod,
+                specialquantity=l.quantity,
+                        specialgroupprice=CASE WHEN l.salePrice < 0 THEN -1*l.salePrice ELSE l.salePrice END,
+                mixmatchcode = CASE 
+                    WHEN l.pricemethod IN (3,4) AND l.salePrice >= 0 THEN convert(varchar,l.batchID)
+                    WHEN l.pricemethod IN (3,4) AND l.salePrice < 0 THEN convert(varchar,-1*l.batchID)
+                    WHEN l.pricemethod = 0 AND l.quantity > 0 THEN 'b'+convert(varchar,l.batchID)
+                    ELSE p.mixmatchcode 
+                END    
+                from products as p left join
+                upcLike as v on v.upc=p.upc left join
+                batchList as l on l.upc='LC'+convert(varchar,v.likecode)
+                left join batches as b on b.batchID = l.batchID
+                where b.batchID=?";
+        }
+    }
+    else{
+        $forceQ = "UPDATE products AS p
+              INNER JOIN batchList AS l
+              ON l.upc=p.upc
+              SET p.normal_price = l.salePrice,
+              p.modified = now()
+              WHERE l.upc not like 'LC%'
+              AND l.batchID = ?";
 
-		$forceLCQ = "UPDATE products AS p
-			INNER JOIN upcLike AS v
-			ON v.upc=p.upc INNER JOIN
-			batchList as b on b.upc=concat('LC',convert(v.likecode,char))
-			set p.normal_price = b.salePrice,
-   			p.modified=now()
-			where b.batchID=?";
+        $forceLCQ = "UPDATE products AS p
+            INNER JOIN upcLike AS v
+            ON v.upc=p.upc INNER JOIN
+            batchList as b on b.upc=concat('LC',convert(v.likecode,char))
+            set p.normal_price = b.salePrice,
+               p.modified=now()
+            where b.batchID=?";
 
-		if ($FANNIE_SERVER_DBMS == 'MSSQL'){
-			$forceQ = "UPDATE products
-			      SET normal_price = l.salePrice,
-			      modified = getdate()
-			      FROM products as p,
-			      batches as b,
-			      batchList as l
-			      WHERE l.upc = p.upc
-			      AND l.upc not like 'LC%'
-			      AND b.batchID = l.batchID
-			      AND b.batchID = ?";
+        if ($FANNIE_SERVER_DBMS == 'MSSQL'){
+            $forceQ = "UPDATE products
+                  SET normal_price = l.salePrice,
+                  modified = getdate()
+                  FROM products as p,
+                  batches as b,
+                  batchList as l
+                  WHERE l.upc = p.upc
+                  AND l.upc not like 'LC%'
+                  AND b.batchID = l.batchID
+                  AND b.batchID = ?";
 
-			$forceLCQ = "update products set normal_price = b.salePrice,
-				modified=getdate()
-				from products as p left join
-				upcLike as v on v.upc=p.upc left join
-				batchList as b on b.upc='LC'+convert(varchar,v.likecode)
-				where b.batchID=?";
-		}
-	}
+            $forceLCQ = "update products set normal_price = b.salePrice,
+                modified=getdate()
+                from products as p left join
+                upcLike as v on v.upc=p.upc left join
+                batchList as b on b.upc='LC'+convert(varchar,v.likecode)
+                where b.batchID=?";
+        }
+    }
 
     $forceP = $sql->prepare($forceQ);
-	$forceR = $sql->execute($forceP, array($batchID));
+    $forceR = $sql->execute($forceP, array($batchID));
     $forceLCP = $sql->prepare($forceLCQ);
-	$forceLCR = $sql->execute($forceLCP, array($batchID));
+    $forceLCR = $sql->execute($forceLCP, array($batchID));
 
     $columnsP = $sql->prepare('
         SELECT p.upc,

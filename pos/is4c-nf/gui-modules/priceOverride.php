@@ -25,88 +25,88 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class PriceOverride extends NoInputPage {
 
-	var $description;
-	var $price;
+    var $description;
+    var $price;
 
-	function preprocess()
+    function preprocess()
     {
-		$line_id = CoreLocal::get("currentid");
-		$db = Database::tDataConnect();
-		
-		$q = "SELECT description,total,department FROM localtemptrans
-			WHERE trans_type IN ('I','D') AND trans_status IN ('', ' ', '0')
-			AND trans_id=".((int)$line_id);
-		$r = $db->query($q);
-		if ($db->num_rows($r)==0){
-			// current record cannot be repriced
-			$this->change_page($this->page_url."gui-modules/pos2.php");
-			return False;
-		}
-		$w = $db->fetch_row($r);
-		$this->description = $w['description'];
-		$this->price = sprintf('$%.2f',$w['total']);
+        $line_id = CoreLocal::get("currentid");
+        $db = Database::tDataConnect();
+        
+        $q = "SELECT description,total,department FROM localtemptrans
+            WHERE trans_type IN ('I','D') AND trans_status IN ('', ' ', '0')
+            AND trans_id=".((int)$line_id);
+        $r = $db->query($q);
+        if ($db->num_rows($r)==0){
+            // current record cannot be repriced
+            $this->change_page($this->page_url."gui-modules/pos2.php");
+            return False;
+        }
+        $w = $db->fetch_row($r);
+        $this->description = $w['description'];
+        $this->price = sprintf('$%.2f',$w['total']);
 
-		if (isset($_REQUEST['reginput'])){
-			$input = strtoupper($_REQUEST['reginput']);
+        if (isset($_REQUEST['reginput'])){
+            $input = strtoupper($_REQUEST['reginput']);
 
-			if ($input == "CL"){
-				if ($this->price == "$0.00"){
-					$q = sprintf("UPDATE localtemptrans SET trans_type='L',
+            if ($input == "CL"){
+                if ($this->price == "$0.00"){
+                    $q = sprintf("UPDATE localtemptrans SET trans_type='L',
                                 trans_subtype='OG',charflag='PO',total=0
                                 WHERE trans_id=".(int)$line_id);
-					$r = $db->query($q);
-				}
-				// override canceled; go home
-				$this->change_page($this->page_url."gui-modules/pos2.php");
-				return False;
-			} else if (is_numeric($input) && $input != 0){
-				$cents = 0;
-				$dollars = 0;
-				if (strlen($input)==1 || strlen($input)==2)
-					$cents = $input;
-				else {
-					$cents = substr($input,-2);
-					$dollars = substr($input,0,strlen($input)-2);
-				}
-				$ttl = ((int)$dollars) + ((int)$cents / 100.0);
-				$ttl = number_format($ttl,2);
-				if ($w['department'] == CoreLocal::get("BottleReturnDept"))
-					$ttl = $ttl * -1;
-					
-				$q = sprintf("UPDATE localtemptrans SET unitPrice=%.2f, regPrice=%.2f,
+                    $r = $db->query($q);
+                }
+                // override canceled; go home
+                $this->change_page($this->page_url."gui-modules/pos2.php");
+                return False;
+            } else if (is_numeric($input) && $input != 0){
+                $cents = 0;
+                $dollars = 0;
+                if (strlen($input)==1 || strlen($input)==2)
+                    $cents = $input;
+                else {
+                    $cents = substr($input,-2);
+                    $dollars = substr($input,0,strlen($input)-2);
+                }
+                $ttl = ((int)$dollars) + ((int)$cents / 100.0);
+                $ttl = number_format($ttl,2);
+                if ($w['department'] == CoreLocal::get("BottleReturnDept"))
+                    $ttl = $ttl * -1;
+                    
+                $q = sprintf("UPDATE localtemptrans SET unitPrice=%.2f, regPrice=%.2f,
                     total = quantity*%.2f, charflag='PO'
-					WHERE trans_id=%d",$ttl,$ttl,$ttl,$line_id);
-				$r = $db->query($q);	
+                    WHERE trans_id=%d",$ttl,$ttl,$ttl,$line_id);
+                $r = $db->query($q);    
 
-				$this->change_page($this->page_url."gui-modules/pos2.php");
-				return False;
-			}
-		}
+                $this->change_page($this->page_url."gui-modules/pos2.php");
+                return False;
+            }
+        }
 
-		return True;
-	}
-	
-	function body_content() 
+        return True;
+    }
+    
+    function body_content() 
     {
-		?>
-		<div class="baseHeight">
-		<div class="centeredDisplay colored">
-		<span class="larger">enter purchase price</span>
-		<form name="overrideform" method="post" 
-			id="overrideform" action="<?php echo $_SERVER['PHP_SELF']; ?>">
-		<input type="text" id="reginput" name='reginput' tabindex="0" onblur="$('#reginput').focus()" />
-		</form>
-		<span><?php echo $this->description; ?> - <?php echo $this->price; ?></span>
-		<p>
-		<span class="smaller">[clear] to cancel</span>
-		</p>
-		</div>
-		</div>	
-		<?php
-		$this->add_onload_command("\$('#reginput').focus();\n");
-	} // END body_content() FUNCTION
+        ?>
+        <div class="baseHeight">
+        <div class="centeredDisplay colored">
+        <span class="larger">enter purchase price</span>
+        <form name="overrideform" method="post" 
+            id="overrideform" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+        <input type="text" id="reginput" name='reginput' tabindex="0" onblur="$('#reginput').focus()" />
+        </form>
+        <span><?php echo $this->description; ?> - <?php echo $this->price; ?></span>
+        <p>
+        <span class="smaller">[clear] to cancel</span>
+        </p>
+        </div>
+        </div>    
+        <?php
+        $this->add_onload_command("\$('#reginput').focus();\n");
+    } // END body_content() FUNCTION
 }
 
 if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-	new PriceOverride();
+    new PriceOverride();
 ?>

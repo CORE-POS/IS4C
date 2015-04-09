@@ -10,7 +10,7 @@ include('InstallUtilities.php');
 <title>Security configuration options</title>
 <style type="text/css">
 body {
-	line-height: 1.5em;
+    line-height: 1.5em;
 }
 </style>
 </head>
@@ -69,6 +69,6 @@ body {
 </tr>
 </table>
 </form>
-</div> <!--	wrapper -->
+</div> <!--    wrapper -->
 </body>
 </html>

@@ -25,42 +25,42 @@ include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
 class CashDropWarningPage extends InputPage {
 
-	function preprocess()
+    function preprocess()
     {
-		if (isset($_REQUEST['reginput'])){
-			$in = strtoupper($_REQUEST['reginput']);
-			if ($in != '' && $in != 'CL') return True;
+        if (isset($_REQUEST['reginput'])){
+            $in = strtoupper($_REQUEST['reginput']);
+            if ($in != '' && $in != 'CL') return True;
 
-			CoreLocal::set("msgrepeat",1);
-			CoreLocal::set("strRemembered",CoreLocal::get('cashDropSaveInput'));
-			CoreLocal::set('cashDropSaveInput','');
+            CoreLocal::set("msgrepeat",1);
+            CoreLocal::set("strRemembered",CoreLocal::get('cashDropSaveInput'));
+            CoreLocal::set('cashDropSaveInput','');
 
-			$this->change_page($this->page_url."gui-modules/pos2.php");
-			return False;
-		}
-		return True;
-	}
-	
-	function body_content()
+            $this->change_page($this->page_url."gui-modules/pos2.php");
+            return False;
+        }
+        return True;
+    }
+    
+    function body_content()
     {
-		echo '<div class="baseHeight">';
-		$ret = "<div id=\"boxMsg\" style=\"background:red;\" 
-			class=\"centeredDisplay\">";
-		$ret .= "<div class=\"boxMsgAlert coloredArea\">";
-		$ret .= CoreLocal::get("alertBar");
-		$ret .= "</div>";
-		$ret .= "<div class=\"boxMsgBody\">";
-		$ret .= "<div class=\"msgicon\"></div>";
-		$ret .= "<div class=\"msgtext\">";
-		$ret .= '1.83 jigawatts';
-		$ret .= "</div><div class=\"clear\"></div></div>";
-		$ret .= "</div>";
-		echo $ret;
-		echo "</div>";
-	} // END body_content() FUNCTION
+        echo '<div class="baseHeight">';
+        $ret = "<div id=\"boxMsg\" style=\"background:red;\" 
+            class=\"centeredDisplay\">";
+        $ret .= "<div class=\"boxMsgAlert coloredArea\">";
+        $ret .= CoreLocal::get("alertBar");
+        $ret .= "</div>";
+        $ret .= "<div class=\"boxMsgBody\">";
+        $ret .= "<div class=\"msgicon\"></div>";
+        $ret .= "<div class=\"msgtext\">";
+        $ret .= '1.83 jigawatts';
+        $ret .= "</div><div class=\"clear\"></div></div>";
+        $ret .= "</div>";
+        echo $ret;
+        echo "</div>";
+    } // END body_content() FUNCTION
 }
 
 if (basename($_SERVER['PHP_SELF']) == basename(__FILE__))
-	new CashDropWarningPage();
+    new CashDropWarningPage();
 
 ?>

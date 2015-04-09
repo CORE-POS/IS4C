@@ -36,7 +36,7 @@ class CouponAppliedModel extends BasicModel
     'trans_no' => array('type'=>'INT', 'primary_key'=>true),
     'quantity' => array('type'=>'FLOAT'),
     'trans_id' => array('type'=>'INT', 'primary_key'=>true),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

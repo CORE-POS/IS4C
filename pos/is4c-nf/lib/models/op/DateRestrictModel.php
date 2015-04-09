@@ -37,7 +37,7 @@ class DateRestrictModel extends BasicModel
     'restrict_dow' => array('type'=>'SMALLINT'),
     'restrict_start' => array('type'=>'TIME'),
     'restrict_end' => array('type'=>'TIME'),
-	);
+    );
 
     /* START ACCESSOR FUNCTIONS */
 

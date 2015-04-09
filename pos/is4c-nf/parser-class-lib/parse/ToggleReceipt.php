@@ -22,38 +22,38 @@
 *********************************************************************************/
 
 class ToggleReceipt extends Parser {
-	
-	function check($str){
-		if ($str == "NR")
-			return True;
-		return False;
-	}
+    
+    function check($str){
+        if ($str == "NR")
+            return True;
+        return False;
+    }
 
-	function parse($str)
+    function parse($str)
     {
-		$rt = CoreLocal::get("receiptToggle");
-		if ($rt == 1)
-			CoreLocal::set("receiptToggle",0);
-		else
-			CoreLocal::set("receiptToggle",1);
-		$ret = $this->default_json();
-		// redirect to main screen so receipt icon reloads
-		$ret['main_frame'] = MiscLib::base_url().'gui-modules/pos2.php';
-		return $ret;
-	}
+        $rt = CoreLocal::get("receiptToggle");
+        if ($rt == 1)
+            CoreLocal::set("receiptToggle",0);
+        else
+            CoreLocal::set("receiptToggle",1);
+        $ret = $this->default_json();
+        // redirect to main screen so receipt icon reloads
+        $ret['main_frame'] = MiscLib::base_url().'gui-modules/pos2.php';
+        return $ret;
+    }
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td>NR</td>
-				<td>Disable receipt printing. 
-				</td>
-			</tr>
-			</table>";
-	}
+    function doc(){
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td>NR</td>
+                <td>Disable receipt printing. 
+                </td>
+            </tr>
+            </table>";
+    }
 }
 
 ?>

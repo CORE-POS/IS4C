@@ -27,10 +27,10 @@
 */
 class DefaultProductSearch extends ProductSearch 
 {
-	public function search($str)
+    public function search($str)
     {
-		$ret = array();
-		$sql = Database::pDataConnect();
+        $ret = array();
+        $sql = Database::pDataConnect();
         $args = array('%' . $str . '%');
         $table = $sql->table_definition('products');
         $string_search = "(description LIKE ?)";
@@ -49,24 +49,24 @@ class DefaultProductSearch extends ProductSearch
                 '%' . $str . '%',
             );
         }
-		$query = "SELECT upc, 
+        $query = "SELECT upc, 
                     description, 
                     normal_price, 
                     special_price,
-        			advertised, 
+                    advertised, 
                     scale 
                   FROM products 
                   WHERE $string_search
                     AND upc LIKE '0000000%'
                     AND inUse=1
-			      ORDER BY description";
+                  ORDER BY description";
         $prep = $sql->prepare($query);
-		$result = $sql->execute($prep, $args);
-		while ($row = $sql->fetch_row($result)) {
-			$ret[$row['upc']] = $row;
-		}
+        $result = $sql->execute($prep, $args);
+        while ($row = $sql->fetch_row($result)) {
+            $ret[$row['upc']] = $row;
+        }
 
-		return $ret;
-	}
+        return $ret;
+    }
 }
 

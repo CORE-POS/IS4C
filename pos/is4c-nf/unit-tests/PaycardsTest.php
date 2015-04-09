@@ -19,10 +19,10 @@ class PaycardsTest extends PHPUnit_Framework_TestCase
 
     public function testGoE()
     {
-		if (!class_exists('lttLib')) {
+        if (!class_exists('lttLib')) {
             include(dirname(__FILE__) . '/lttLib.php');
         }
-		lttLib::clear();
+        lttLib::clear();
 
         $plugins = CoreLocal::get('PluginList');
         if (!in_array('Paycards', $plugins)) {
@@ -101,10 +101,10 @@ class PaycardsTest extends PHPUnit_Framework_TestCase
 
     public function testMercuryE2E()
     {
-		if (!class_exists('lttLib')) {
+        if (!class_exists('lttLib')) {
             include(dirname(__FILE__) . '/lttLib.php');
         }
-		lttLib::clear();
+        lttLib::clear();
 
         $plugins = CoreLocal::get('PluginList');
         if (!in_array('Paycards', $plugins)) {

@@ -42,17 +42,17 @@ class CCredLiveBalanceModel extends ViewModel
 
     /*
 Columns:
-	[programID int]
-	cardNo int
-	totcharges (calculated)
-	totpayments (calculated)
-	balance (calculated)
-	mark (calculated)
+    [programID int]
+    cardNo int
+    totcharges (calculated)
+    totpayments (calculated)
+    balance (calculated)
+    mark (calculated)
 
 Depends on:
-	CCredMembershipships (table)
-	CCredHistorySum (table)
-	CCredHistoryTodaySum (view)
+    CCredMembershipships (table)
+    CCredHistorySum (table)
+    CCredHistoryTodaySum (view)
 Use:
 This view lists real-time Coop Cred
 balances by membership.

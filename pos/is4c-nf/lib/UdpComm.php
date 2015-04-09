@@ -13,12 +13,12 @@ class UdpComm extends LibraryClass {
 */
 static public function udpSend($msg,$port=9450)
 {
-	if (!function_exists("socket_create")) {
+    if (!function_exists("socket_create")) {
         return;
     }
-	$sock = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
-	$res = socket_sendto($sock, $msg, strlen($msg), 0, '127.0.0.1',$port);
-	socket_close($sock);
+    $sock = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+    $res = socket_sendto($sock, $msg, strlen($msg), 0, '127.0.0.1',$port);
+    socket_close($sock);
 }
 
 /**
@@ -33,19 +33,19 @@ static public function udpSend($msg,$port=9450)
 */
 static public function udpPoke($msg,$port=9450)
 {
-	$socket = stream_socket_server("udp://127.0.0.1:".($port+1), 
-		$errno, $errstr, STREAM_SERVER_BIND);	
-	self::udpSend($msg,$port);
-	$read = array($socket);
-	$write = null;
-	$except = null;
-	$ready = stream_select($read,$write,$except,0,500);
-	$buf = "";
-	if ($ready > 0) {
-		$buf = stream_socket_recvfrom($socket, 1024, 0, $peer);
+    $socket = stream_socket_server("udp://127.0.0.1:".($port+1), 
+        $errno, $errstr, STREAM_SERVER_BIND);    
+    self::udpSend($msg,$port);
+    $read = array($socket);
+    $write = null;
+    $except = null;
+    $ready = stream_select($read,$write,$except,0,500);
+    $buf = "";
+    if ($ready > 0) {
+        $buf = stream_socket_recvfrom($socket, 1024, 0, $peer);
     }
-	stream_socket_shutdown($socket,STREAM_SHUT_RDWR);
-	return $buf;
+    stream_socket_shutdown($socket,STREAM_SHUT_RDWR);
+    return $buf;
 }
 
 }

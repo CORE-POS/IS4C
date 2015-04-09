@@ -26,13 +26,13 @@
 */
 class StoreCreditIssuedReceiptMessage extends ReceiptMessage{
 
-	public function select_condition(){
-		return "SUM(CASE WHEN trans_type='T' AND trans_subtype='SC' THEN total ELSE 0 END)";
-	}
+    public function select_condition(){
+        return "SUM(CASE WHEN trans_type='T' AND trans_subtype='SC' THEN total ELSE 0 END)";
+    }
 
-	public function message($val, $ref, $reprint=False)
+    public function message($val, $ref, $reprint=False)
     {
-		if ($val <= 0) return '';
+        if ($val <= 0) return '';
         
         $slip = '';
         if ($reprint || CoreLocal::get('autoReprint') == 0) {
@@ -54,9 +54,9 @@ class StoreCreditIssuedReceiptMessage extends ReceiptMessage{
             $slip .= ReceiptLib::centerString("................................................")."\n";
         }
 
-		return $slip;
-	}
+        return $slip;
+    }
 
-	public $paper_only = True;
+    public $paper_only = True;
 }
 

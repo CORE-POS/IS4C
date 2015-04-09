@@ -6,35 +6,35 @@ require('db.php');
 $sql = db_connect();
 
 if (isset($_POST['submit'])){
-	$appID = $_POST['appID'];
-	$noteID = $_POST['noteID'];
-	$note_date = $_POST['note_date'];
-	$username = $_POST['username'];
-	$note_text = $_POST['note_text'];
+    $appID = $_POST['appID'];
+    $noteID = $_POST['noteID'];
+    $note_date = $_POST['note_date'];
+    $username = $_POST['username'];
+    $note_text = $_POST['note_text'];
 
-	$note_text = str_replace("\r","",$note_text);
-	$note_text = str_replace("\n","<br />",$note_text);
-	$note_text = str_replace("'","\\'",$note_text);
+    $note_text = str_replace("\r","",$note_text);
+    $note_text = str_replace("\n","<br />",$note_text);
+    $note_text = str_replace("'","\\'",$note_text);
 
-	if ($noteID == -1){
-		$insQ = $sql->prepare("INSERT INTO notes (appID,note_date,note_text,username) VALUES
-			(?, ?, ?, ?)");
-		$sql->execute($insQ, array($appID, $note_date, $note_text, $username));
-	}
-	else {
-		$upQ = $sql->prepare("UPDATE notes SET note_text=? WHERE noteID=?");
-		$sql->execute($upQ, array($note_text, $noteID));
-	}
+    if ($noteID == -1){
+        $insQ = $sql->prepare("INSERT INTO notes (appID,note_date,note_text,username) VALUES
+            (?, ?, ?, ?)");
+        $sql->execute($insQ, array($appID, $note_date, $note_text, $username));
+    }
+    else {
+        $upQ = $sql->prepare("UPDATE notes SET note_text=? WHERE noteID=?");
+        $sql->execute($upQ, array($note_text, $noteID));
+    }
 
-	header("Location: /it/ApplicationTracking/view.php?appID=$appID");
-	return;
+    header("Location: /it/ApplicationTracking/view.php?appID=$appID");
+    return;
 }
 
 $id = $_GET['id'];
 $username = validateUserQuiet('apptracking',0);
 if (!$username){
-	header("Location: {$FANNIE_RUL}auth/ui/loginform.php?redirect={$FANNIE_URL}legacy/it/ApplicationTracking/comment.php?id=$id");
-	return;
+    header("Location: {$FANNIE_RUL}auth/ui/loginform.php?redirect={$FANNIE_URL}legacy/it/ApplicationTracking/comment.php?id=$id");
+    return;
 }
 refreshSession();
 
@@ -46,19 +46,19 @@ $note_text = "";
 $note_date = date("Y-m-d");
 
 if ($noteID != -1){
-	$dataQ = $sql->prepare("SELECT note_text,note_date FROM notes WHERE noteID=?");
-	$dataR = $sql->execute($dataQ, array($noteID));
-	$dataW = $sql->fetch_row($dataR);
-	
-	$note_date = $dataW[1];
-	$note_text = str_replace("\\'","'",$dataW[0]);
-	$note_text = str_replace("<br />","\n",$note_text);
+    $dataQ = $sql->prepare("SELECT note_text,note_date FROM notes WHERE noteID=?");
+    $dataR = $sql->execute($dataQ, array($noteID));
+    $dataW = $sql->fetch_row($dataR);
+    
+    $note_date = $dataW[1];
+    $note_text = str_replace("\\'","'",$dataW[0]);
+    $note_text = str_replace("<br />","\n",$note_text);
 }
 
 ?>
 <html>
 <head>
-	<title>Comment</title>
+    <title>Comment</title>
 </head>
 <body>
 

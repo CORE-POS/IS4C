@@ -14,7 +14,7 @@ include('InstallUtilities.php');
 </head>
 <body>
 <?php include('tabs.php'); ?>
-<div id="wrapper">	
+<div id="wrapper">    
 <h2>IT CORE Lane Installation: Receipt Configuration</h2>
 
 <div class="alert"><?php InstallUtilities::checkWritable('../ini.php', False, 'PHP'); ?></div>
@@ -89,14 +89,14 @@ include('InstallUtilities.php');
     </td>
 </tr>
 <tr>
-	<td><b>Receipt Driver</b>:</td>
-	<td>
+    <td><b>Receipt Driver</b>:</td>
+    <td>
     <?php
     $mods = AutoLoader::listModules('PrintHandler',True);
     echo InstallUtilities::installSelectField('ReceiptDriver', $mods, 'ESCPOSPrintHandler');
     ?>
-	<span class="noteTxt"></span>
-	</td>
+    <span class="noteTxt"></span>
+    </td>
 </tr>
 <tr>
     <td><b>Email Receipt Sender</b>:</td>
@@ -153,24 +153,24 @@ of the receipt &amp; special non-item receipt types.</p>
 <tr><td>&nbsp;</td><td>
 <?php
 if (isset($_REQUEST['RM_MODS'])){
-	$mods = array();
-	foreach($_REQUEST['RM_MODS'] as $m){
-		if ($m != '') $mods[] = $m;
-	}
-	CoreLocal::set('ReceiptMessageMods', $mods);
+    $mods = array();
+    foreach($_REQUEST['RM_MODS'] as $m){
+        if ($m != '') $mods[] = $m;
+    }
+    CoreLocal::set('ReceiptMessageMods', $mods);
 }
 if (!is_array(CoreLocal::get('ReceiptMessageMods'))){
-	CoreLocal::set('ReceiptMessageMods', array());
+    CoreLocal::set('ReceiptMessageMods', array());
 }
 $available = AutoLoader::listModules('ReceiptMessage');
 $current = CoreLocal::get('ReceiptMessageMods');
 for($i=0;$i<=count($current);$i++){
-	$c = isset($current[$i]) ? $current[$i] : '';
-	echo '<select name="RM_MODS[]">';
-	echo '<option value="">[None]</option>';
-	foreach($available as $a)
-		printf('<option %s>%s</option>',($a==$c?'selected':''),$a);
-	echo '</select><br />';
+    $c = isset($current[$i]) ? $current[$i] : '';
+    echo '<select name="RM_MODS[]">';
+    echo '<option value="">[None]</option>';
+    foreach($available as $a)
+        printf('<option %s>%s</option>',($a==$c?'selected':''),$a);
+    echo '</select><br />';
 }
 InstallUtilities::paramSave('ReceiptMessageMods',CoreLocal::get('ReceiptMessageMods'));
 ?>
@@ -180,6 +180,6 @@ InstallUtilities::paramSave('ReceiptMessageMods',CoreLocal::get('ReceiptMessageM
 </td></tr>
 </table>
 </form>
-</div> <!--	wrapper -->
+</div> <!--    wrapper -->
 </body>
 </html>

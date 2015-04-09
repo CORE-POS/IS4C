@@ -31,8 +31,8 @@ class TenderReport extends LibraryClass {
   Write tender report to the printer
 */
 static public function printReport(){
-	$contents = self::get();
-	ReceiptLib::writeLine($contents);
+    $contents = self::get();
+    ReceiptLib::writeLine($contents);
 }
 
 /** 
@@ -47,14 +47,14 @@ static public function printReport(){
  */
 static public function get()
 {
-	$trClass = CoreLocal::get("TenderReportMod");
-	if ($trClass == '') $trClass = 'DefaultTenderReport';
-	return $trClass::get();
+    $trClass = CoreLocal::get("TenderReportMod");
+    if ($trClass == '') $trClass = 'DefaultTenderReport';
+    return $trClass::get();
 }
 
 static public function timeStamp($time) {
 
-	return strftime("%I:%M %p", strtotime($time));
+    return strftime("%I:%M %p", strtotime($time));
 }
 
 }

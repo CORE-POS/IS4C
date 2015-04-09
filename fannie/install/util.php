@@ -77,12 +77,12 @@ function confset($key, $value)
 
 function check_db_host($host,$dbms)
 {
-	if (!function_exists("socket_create")) {
-		return true; // test not possible
+    if (!function_exists("socket_create")) {
+        return true; // test not possible
     }
 
-	$port = 0;
-	switch (strtoupper($dbms)) {
+    $port = 0;
+    switch (strtoupper($dbms)) {
         case 'MYSQL':
         case 'MYSQLI':
         case 'PDO_MYSQL':
@@ -90,26 +90,26 @@ function check_db_host($host,$dbms)
             break;
         case 'MSSQL':
             $port = 1433;
-            break;	
+            break;    
         case 'PGSQL':
             $port = 5432;
             break;
-	}
-
-	if (strstr($host,":")) {
-		list($host,$port) = explode(":",$host,2);
     }
 
-	$test = false;
-	$sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-	socket_set_option($sock, SOL_SOCKET, SO_SNDTIMEO, array('sec' => 1, 'usec' => 0)); 
-	socket_set_block($sock);
-	try {
-		$test = @socket_connect($sock,$host,$port);
-	} catch(Exception $ex) {}
-	socket_close($sock);
+    if (strstr($host,":")) {
+        list($host,$port) = explode(":",$host,2);
+    }
 
-	return ($test ? true : false);	
+    $test = false;
+    $sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+    socket_set_option($sock, SOL_SOCKET, SO_SNDTIMEO, array('sec' => 1, 'usec' => 0)); 
+    socket_set_block($sock);
+    try {
+        $test = @socket_connect($sock,$host,$port);
+    } catch(Exception $ex) {}
+    socket_close($sock);
+
+    return ($test ? true : false);    
 }
 
 function db_test_connect($host,$type,$db,$user,$pw){
