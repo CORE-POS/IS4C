@@ -169,29 +169,34 @@ class BrowseVendorItems extends FanniePage
         while($rw = $dbc->fetch_row($rp))
             $depts .= "<option value=$rw[0]>$rw[0] $rw[1]</option>";
 
-        $query = "SELECT v.upc,v.brand,v.description,v.size,
-            v.cost as cost,
-            CASE WHEN d.margin IS NULL THEN 0 ELSE d.margin END as margin,
-            CASE WHEN p.upc IS NULL THEN 0 ELSE 1 END as inPOS,
-            v.srp
-            FROM vendorItems AS v LEFT JOIN products AS p
-            ON v.upc=p.upc LEFT JOIN vendorDepartments AS d
-            ON d.deptID=v.vendorDept
-            WHERE v.vendorID=? AND v.brand=?";
+        $query = "
+            SELECT v.upc,
+                v.brand,
+                v.description,
+                v.size,
+                v.cost as cost,
+                CASE WHEN d.margin IS NULL THEN 0 ELSE d.margin END as margin,
+                v.srp
+            FROM vendorItems AS v 
+                LEFT JOIN vendorDepartments AS d ON d.deptID=v.vendorDept AND d.vendorID=v.vendorID
+            WHERE v.vendorID=? 
+                AND v.brand=? ";
         $args = array($vid,$brand);
         if ($did != 'All'){
             $query .= ' AND vendorDept=? ';
             $args[] = $did;
         }
         $query .= "ORDER BY v.upc";
+        $posP = $dbc->prepare('SELECT upc FROM products WHERE upc=?');
         
         $ret = "<table class=\"table table-bordered\">";
         $ret .= "<tr><th>UPC</th><th>Brand</th><th>Description</th>";
         $ret .= "<th>Size</th><th>Cost</th><th colspan=3>&nbsp;</th></tr>";
         $p = $dbc->prepare_statement($query);
         $result = $dbc->exec_statement($p,$args);
-        while($row = $dbc->fetch_row($result)){
-            if ($row['inPOS'] == 1){
+        while ($row = $dbc->fetch_row($result)) {
+            $inPOS = $dbc->execute($posP, array($row['upc']));
+            if ($inPOS && $dbc->numRows($inPOS) > 0) {
                 $ret .= sprintf("<tr class=\"alert-success\">
                     <td>%s</td><td>%s</td><td>%s</td>
                     <td>%s</td><td>\$%.2f</td><td colspan=3>&nbsp;
