@@ -642,13 +642,15 @@ function showBootstrapPopover(element, original_value, error_message)
         element.val(original_value);
         timeout = 3000;
     }
+    var t = element.attr('title');
+    element.attr('title', '');
     element.popover({
         html: true,
         content: error_message,
         placement: 'auto bottom'
     });
     element.popover('show');
-    setTimeout(function(){element.popover('destroy');}, timeout);
+    setTimeout(function(){element.popover('destroy');element.attr('title', t);}, timeout);
 }
 function mathField(elem)
 {

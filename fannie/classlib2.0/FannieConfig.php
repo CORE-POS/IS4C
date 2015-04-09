@@ -73,6 +73,11 @@ class FannieConfig
         }
     }
 
+    public function __get($name)
+    {
+        return $this->get($name);
+    }
+
     public static function config($name, $default='')
     {
         $obj = self::factory();

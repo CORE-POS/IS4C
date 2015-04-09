@@ -139,3 +139,19 @@ function saveVC(vendorID){
 		}
 	});
 }
+
+function saveShipping(s)
+{
+    var dstr = 'action=saveShipping&id='+$('#vendorselect').val()+'&shipping='+s;
+	$.ajax({
+		url: 'VendorIndexPage.php',
+		method: 'post',
+		data: dstr,
+        dataType: 'json',
+		success: function(resp) {
+            var elem = $('#vc-shipping');
+            showBootstrapPopover(elem, 0, resp.error);
+        }
+    });
+}
+
