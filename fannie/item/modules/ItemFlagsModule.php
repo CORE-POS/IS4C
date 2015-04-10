@@ -84,7 +84,11 @@ class ItemFlagsModule extends ItemModule
 
     public function saveFormData($upc)
     {
-        $flags = $this->form->flags;
+        try {
+            $flags = $this->form->flags;
+        } catch (Exception $ex) {
+            $flags = array();
+        }
         if (!is_array($flags)) {
             return false;
         }
