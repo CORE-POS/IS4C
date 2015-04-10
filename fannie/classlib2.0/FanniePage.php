@@ -535,7 +535,7 @@ function enableLinea(selector, callback)
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal">
+                            <button type="button" class="close close-btn" data-dismiss="modal">
                                 <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
                             </button>
                             <h4>' . 
@@ -544,7 +544,11 @@ function enableLinea(selector, callback)
                         </div>
                         <div class="modal-body">' . $help . '</div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-default" data-dismiss="modal"
+                                onclick="var helpWindow=window.open(\''. $this->config->URL . 'admin/HelpPopup.php\',
+                                \'CORE Help\', \'height=500,width=300,scrollbars=1,resizable=1\');"
+                                id="popout-btn">Pop Out</button>
+                            <button type="button" class="btn btn-default close-btn" data-dismiss="modal">Close</button>
                         </div>
                     </div>
                 </div>
