@@ -528,6 +528,7 @@ function enableLinea(selector, callback)
             return false;
         }
         $BACKEND_NAME = $this->config->get('BACKEND_NAME', 'Fannie');
+        $this->addOnloadCommand("\$('.modal').draggable({handle:'.modal-header'});\n");
 
         return '
             <div class="modal" id="help-modal" role="modal">
