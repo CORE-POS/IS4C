@@ -82,20 +82,26 @@ class ItemFlagsModule extends ItemModule
         return $ret;
     }
 
-    function SaveFormData($upc)
+    public function saveFormData($upc)
     {
-        $flags = FormLib::get_form_value('flags',array());
-        if (!is_array($flags)) return False;
+        $flags = $this->form->flags;
+        if (!is_array($flags)) {
+            return false;
+        }
         $numflag = 0;   
-        foreach($flags as $f){
-            if ($f != (int)$f) continue;
+        foreach ($flags as $f) {
+            if ($f != (int)$f) {
+                continue;
+            }
             $numflag = $numflag | (1 << ($f-1));
         }
-        $dbc = $this->db();
+        $dbc = $this->connection;
         $model = new ProductsModel($dbc);
         $model->upc($upc);
         $model->numflag($numflag);
-        $model->save();
+        $saved = $model->save();
+
+        return $saved ? true : false;
     }
 }
 

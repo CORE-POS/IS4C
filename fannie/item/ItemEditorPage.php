@@ -471,8 +471,12 @@ class ItemEditorPage extends FanniePage
         }
 
         uasort($FANNIE_PRODUCT_MODULES, array('ItemEditorPage', 'sortModules'));
+        $form = new \COREPOS\common\mvc\FormValueContainer();
         foreach ($FANNIE_PRODUCT_MODULES as $class => $params) {
             $mod = new $class();
+            $mod->setConnection($this->connection);
+            $mod->setConfig($this->config);
+            $mod->setForm($form);
             $mod->SaveFormData($upc);
         }
 
