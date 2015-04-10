@@ -129,9 +129,15 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $model->save();
         }
 
-        $ret .= "Batch created";
+        $ret .= '
+        <p>
+            Batch created
+            <a href="' . $this->config->URL . 'batches/newbatch/EditBatchPage.php?id=' . $id 
+                . '" class="btn btn-default">View Batch</a>
+        </p>';
         $this->results = $ret;
-        return True;
+
+        return true;
     }
 
     function results_content()

@@ -264,7 +264,6 @@ function swapQualifierToDiscount(elem, upc)
 function savePairedPricing(id)
 {
     var dataStr = $('#paired-fields :input').serialize();
-    console.log(dataStr);
     dataStr += '&id='+id;
     $.ajax({
         type: 'post',
@@ -299,5 +298,22 @@ function printSigns()
     }
     $(document.body).append(myform);
     myform.submit();
+}
+
+function trimPcBatch(id)
+{
+    $.ajax({
+        type: 'post',
+        data: 'id='+id+'&trim=1',
+        dataType: 'json',
+        success: function(resp) {
+            if (resp.error) {
+                showBootstrapAlert('#inputarea', 'danger', resp.error);
+            } else {
+                $('#displayarea').html(resp.display);
+            }
+        }
+    });
+
 }
 

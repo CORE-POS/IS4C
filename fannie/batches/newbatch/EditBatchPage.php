@@ -74,6 +74,7 @@ class EditBatchPage extends FannieRESTfulPage
         $this->__routes[] = 'delete<id><upc>';
         $this->__routes[] = 'post<id><upc><swap>';
         $this->__routes[] = 'post<id><qualifiers><discount>';
+        $this->__routes[] = 'post<id><trim>';
 
         return parent::preprocess();
     }
@@ -563,6 +564,34 @@ class EditBatchPage extends FannieRESTfulPage
         return false;
     }
 
+    protected function post_id_trim_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->OP_DB);
+        $ret = array('error'=>0, 'display'=>'');
+
+        $query = '
+            SELECT b.upc
+            FROM batchList AS b
+                INNER JOIN products AS p ON b.upc=p.upc
+            WHERE b.batchID=?
+                AND b.salePrice=p.normal_price';
+        $prep = $dbc->prepare($query);
+        $res = $dbc->execute($prep, array($this->id));
+
+        $delP = $dbc->prepare('
+            DELETE FROM batchList
+            WHERE batchID=?
+                AND upc=?');
+        while ($w = $dbc->fetchRow($res)) {
+            $dbc->execute($delP, array($this->id, $w['upc']));
+        }
+        $ret['display'] = $this->showBatchDisplay($this->id);
+        echo json_encode($ret);
+
+        return false;
+    }
+
     private function addItemUPCInput($newtags=false)
     {
         global $FANNIE_OP_DB;
@@ -807,12 +836,17 @@ class EditBatchPage extends FannieRESTfulPage
             $ret .= "<a href=\"\" onclick=\"forceNow($id); return false;\">Force batch</a> | ";
         }
         if ($dtype != 0) {
-            $ret .= "<a href=\"\" onclick=\"unsaleNow($id); return false;\">Stop Sale</a> | ";
+            $ret .= "<a href=\"\" onclick=\"unsaleNow($id); return false;\">Stop Sale</a> ";
         }
-        $ret .= "<span id=\"edit-limit-link\"><a href=\"\" 
-            onclick=\"editTransLimit(); return false;\">" . ($hasLimit ? 'Edit' : 'Add' ) . " Limit</a></span>";
-        $ret .= "<span id=\"save-limit-link\" class=\"collapse\"><a href=\"\" onclick=\"saveTransLimit($id); return false;\">Save Limit</a></span>";
-        $ret .= " <span class=\"form-group form-inline\" id=\"currentLimit\" style=\"color:#000;\">{$limit}</span>";
+
+        if ($dtype == 0) {
+            $ret .= " <a href=\"\" onclick=\"trimPcBatch($id); return false;\">Trim Unchanged</a> ";
+        } else {
+            $ret .= " | <span id=\"edit-limit-link\"><a href=\"\" 
+                onclick=\"editTransLimit(); return false;\">" . ($hasLimit ? 'Edit' : 'Add' ) . " Limit</a></span>";
+            $ret .= "<span id=\"save-limit-link\" class=\"collapse\"><a href=\"\" onclick=\"saveTransLimit($id); return false;\">Save Limit</a></span>";
+            $ret .= " <span class=\"form-group form-inline\" id=\"currentLimit\" style=\"color:#000;\">{$limit}</span>";
+        }
         $ret .= "<br />";
         $ret .= "<table id=yeoldetable class=\"table\">";
         $ret .= "<tr>";
