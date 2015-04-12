@@ -173,25 +173,6 @@ class ItemMarginModule extends ItemModule
         return ob_get_clean();
     }
 
-    function SaveFormData($upc)
-    {
-        $upc = BarcodeLib::padUPC($upc);
-        $cost = FormLib::get_form_value('cost',0.00);
-        $dbc = $this->db();
-
-        $r2 = true;
-        if ($dbc->tableExists('prodExtra')) {
-            $p = $dbc->prepare_statement('UPDATE prodExtra SET cost=? WHERE upc=?');
-            $r2 = $dbc->exec_statement($p,array($cost,$upc));
-        }
-
-        if (!$r2) {
-            return false;
-        } else {
-            return true;    
-        }
-    }
-
     function AjaxCallback(){
         $p = FormLib::get_form_value('p',0);
         $d = FormLib::get_form_value('d',0);

@@ -913,6 +913,7 @@ class BaseItemModule extends ItemModule
             }
             $extra->manufacturer(str_replace("'",'',FormLib::get('manufacturer')));
             $extra->distributor(str_replace("'",'',FormLib::get('distributor')));
+            $extra->cost(FormLib::extract($this->form, 'cost', 0.00));
             $extra->save();
         }
 
