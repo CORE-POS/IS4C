@@ -63,7 +63,7 @@ class AllLanesItemModule extends ItemModule
                 $rowItem = $sql->fetch_array($resultItem);
                 $ret .= "<li>Item <span style=\"color:red;\">$upc</span> on Lane ".($i+1)."<ul>";
                 $ret .= "<li>Price: {$rowItem['normal_price']}</li>";
-                if ($rowItem['special_price'] <> 0){
+                if ($rowItem['discounttype'] <> 0){
                     $ret .= "<li class=\"alert-success\">ON SALE: {$rowItem['special_price']}</li>";
                 }
                 $ret .= "</ul></li>";

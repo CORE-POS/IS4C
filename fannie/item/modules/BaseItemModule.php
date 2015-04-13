@@ -81,7 +81,8 @@ class BaseItemModule extends ItemModule
                                         p.inUse,
                                         p.idEnforced,
                                         p.local,
-                                        p.deposit
+                                        p.deposit,
+                                        p.discounttype
                                       FROM products AS p 
                                         LEFT JOIN prodExtra AS x ON p.upc=x.upc 
                                         LEFT JOIN productUser AS u ON p.upc=u.upc 
@@ -157,6 +158,7 @@ class BaseItemModule extends ItemModule
                 'local' => 0,
                 'deposit' => 0,
                 'cost' => 0,
+                'discounttype' => 0,
             );
 
             /**
@@ -345,7 +347,7 @@ class BaseItemModule extends ItemModule
           valid reference to the vendors table
         */
         $normalizedVendorID = false;
-        if (isset($rowItem['default_vendor_id']) && $rowItem['default_vendor_id'] > 0) {
+        if (isset($rowItem['default_vendor_id']) && $rowItem['default_vendor_id'] <> 0) {
             $normalizedVendor = new VendorsModel($dbc);
             $normalizedVendor->vendorID($rowItem['default_vendor_id']);
             if ($normalizedVendor->load()) {
@@ -385,7 +387,7 @@ class BaseItemModule extends ItemModule
         $ret .= '</fieldset>';
         $ret .= '</div>';
 
-        if (isset($rowItem['special_price']) && $rowItem['special_price'] <> 0){
+        if (isset($rowItem['discounttype']) && $rowItem['discounttype'] <> 0){
             /* show sale info */
             $batchP = $dbc->prepare_statement("
                 SELECT b.batchName, 
