@@ -49,6 +49,10 @@ class SiteMap extends FannieRESTfulPage
             'plugin' => 0,
             'plugin_done' => 0,
         );
+        $help_stats = array(
+            'done' => 0,
+            'total' => 0,
+        );
         foreach ($pages as $p) {
             $obj = new $p();
             if (!$obj->discoverable) {
@@ -74,6 +78,10 @@ class SiteMap extends FannieRESTfulPage
                     $theme_stats['plugin_done']++;
                 }
             }
+            $help['total']++;
+            if ($obj->helpContent()) {
+                $help['done']++;
+            }
         }
 
         $ret = '';
@@ -82,6 +90,8 @@ class SiteMap extends FannieRESTfulPage
             ((float)$theme_stats['done']) / $theme_stats['total'] * 100);
         $ret .= sprintf('Excluding plugins: <strong>%.2f%%</strong><br />', 
             ((float)($theme_stats['done']-$theme_stats['plugin_done'])) / ($theme_stats['total'] - $theme_stats['plugin']) * 100);
+        $ret .= sprintf('New UI help content percent: <strong>%.2f%%</strong><br />', 
+            ((float)$help['done']) / $help['total'] * 100);
         $ret .= '</div>';
 
         $keys = array_keys($sets);
