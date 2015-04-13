@@ -761,5 +761,22 @@ class FormLib
         return array('query'=>$query, 'args'=>$args);
     }
 
+    /**
+      Method gets a value from container or returns
+      a default if the value does not exist
+      @c [object] container for values
+      @field [string] field name
+      @default [mixed] default value
+      @retun field value OR default value
+    */
+    public static function extract(\COREPOS\common\mvc\ValueContainer $c, $field, $default='')
+    {
+        try {
+            return $c->$field;
+        } catch (Exception $ex) {
+            return $default;
+        }
+    }
+
 }
 
