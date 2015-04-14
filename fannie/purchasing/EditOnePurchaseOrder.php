@@ -285,6 +285,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
     function get_view(){
         global $FANNIE_OP_DB;
         $model = new VendorsModel(FannieDB::get($FANNIE_OP_DB));
+        $ret = '';
         $ret .= '<form class="form" action="EditOnePurchaseOrder.php" method="get">';
         $ret .= '<div class="form-group">';
         $ret .= '<label>Select a vendor</label>';
