@@ -302,7 +302,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
         
-        $ret .= '<label>From</label> ';
+        $ret .= '<label>During</label> ';
         $ret .= '<select id="viewMonth" onchange="fetchOrders();" class="form-control">';
         $month = date('n');
         for($i=1; $i<= 12; $i++) {
