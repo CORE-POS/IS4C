@@ -75,7 +75,7 @@ class SyncLanes
             $ret['sending'] = False;
             $ret['messages'] = 'Error: No table given';
             return $ret;
-        } elseif (!preg_match('/^[A-Za-z0-9_]$/',$table)) {
+        } elseif (!preg_match('/^[A-Za-z0-9_]+$/',$table)) {
             $ret['sending'] = False;
             $ret['messages'] = 'Error: Illegal table name: '.$table;
             return $ret;
