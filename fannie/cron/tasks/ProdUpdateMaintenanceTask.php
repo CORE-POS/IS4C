@@ -87,6 +87,19 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
             $this->cronMsg('Scanning price changes from prodUpdateID '.$limit, FannieLogger::INFO);
             $this->scanPriceChanges($dbc, $limit);
 
+            if ($dbc->tableExists('ProdCostHistory')) {
+                $limitR = $dbc->query('
+                    SELECT MAX(productUpdateID) AS lastChange
+                    FROM prodCostHistory');
+                $limit = 0;
+                if ($dbc->numRows($limitR) > 0) {
+                    $limitW = $dbc->fetchRow($limitR);
+                    $limit = $limitW['lastChange'];
+                }
+                $this->cronMsg('Scanning cost changes from prodUpdateID '.$limit, FannieLogger::INFO);
+                $this->scanCostChanges($dbc, $limit);
+            }
+
             $limitR = $dbc->query('SELECT MAX(prodUpdateID) as lastChange FROM prodDepartmentHistory');
             $limit = 0;
             if ($dbc->num_rows($limitR) > 0) {
@@ -96,34 +109,9 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
             $this->cronMsg('Scanning dept changes from prodUpdateID '.$limit, FannieLogger::INFO);
             $this->scanDeptChanges($dbc, $limit);
         } else {
-            /**
-              old method:
-              1. Scan prodUpdate for changes
-              2. Log changes in history table
-              3. Move prodUpdate records into prodUpdateArchive
-            */
-            $this->scanPriceChanges($dbc);
-            $this->scanDeptChanges($dbc);
-
-            $matching = $dbc->matchingColumns('prodUpdate', 'prodUpdateArchive');
-            $col_list = '';
-            foreach($matching as $column) {
-                if ($column == 'prodUpdateID') {
-                    continue;
-                }
-                $col_list .= $dbc->identifier_escape($column) . ',';
-            }
-            $col_list = substr($col_list, 0, strlen($col_list)-1);
-
-            $worked = $dbc->query("INSERT INTO prodUpdateArchive ($col_list) SELECT $col_list FROM prodUpdate");
-            if ($worked){
-                $dbc->query("DELETE FROM prodUpdate");
-            } else {
-                $this->cronMsg("There was an archiving error on prodUpdate", FannieLogger::ERROR);
-                flush();
-            }
+            $this->cronMsg('Old prodUpdate archiving is no longer supported. Apply schema updates to prodUpdate table.',
+                FannieLogger::WARNING);
         }
-
     }
 
     /**
@@ -188,6 +176,74 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
             $prevPrice = $update->price();
         }
     }
+
+    /**
+      Scan prodUpdate from cost changes and log them
+      in prodCostHistory
+      @param $dbc [SQLManager] db connection
+      @param $offset [optional int] start scanning from this prodUpdateID
+    */
+    private function scanCostChanges($dbc, $offset=0)
+    {
+        $prodUpdateQ = 'SELECT prodUpdateID FROM prodUpdate ';
+        $args = array();
+        if ($offset > 0) {
+            $prodUpdateQ .= ' WHERE prodUpdateID > ? ';
+            $args[] = $offset;
+        }
+        $prodUpdateQ .= ' ORDER BY upc, modified';
+        $prodUpdateP = $dbc->prepare($prodUpdateQ);
+        $prodUpdateR = $dbc->execute($prodUpdateP, $args);
+       
+        $chkP = $dbc->prepare("
+            SELECT modified,
+                cost 
+            FROM prodCostHistory 
+            WHERE upc=?
+            ORDER BY modified DESC");
+        $upc = null;
+        $prevPrice = null;
+        $update = new ProdUpdateModel($dbc); 
+        $history = new ProdCostHistoryModel($dbc);
+
+        /**
+          Go through changes to each UPC in order
+          When encountering a new UPC, lookup previous price
+          (if any) from prodPriceHistory
+          Only create new entries when the prodUpdate record's price
+          does not match the previous price.
+        */
+        while ($prodUpdateW = $dbc->fetchRow($prodUpdateR)) {
+            $update->prodUpdateID($prodUpdateW['prodUpdateID']);
+            if (!$update->load()) {
+                continue;
+            }
+
+            if ($upc === null || $upc != $update->upc()) {
+                $upc = $update->upc();
+                $prevPrice = null;
+                $chkR = $dbc->execute($chkP, array($upc));
+                if ($dbc->numRows($chkR) > 0) {
+                    $chkW = $dbc->fetch_row($chkR);
+                    $prevPrice = $chkW['cost'];
+                }
+            }
+            
+            if ($prevPrice != $update->cost()) {
+                $history->reset();
+                $history->upc($upc);
+                $history->modified($update->modified());
+                $history->cost($update->cost());
+                $history->uid($update->user());
+                $history->prodUpdateID($update->prodUpdateID());
+                $history->save();
+                $this->cronMsg('Add cost change #' . $update->prodUpdateID(), FannieLogger::INFO);
+            }
+
+            $prevPrice = $update->cost();
+        }
+    }
+
 
     /**
       Scan prodUpdate from dept changes and log them
