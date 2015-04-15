@@ -21,9 +21,9 @@ $UNFI_ALL_QUERY = "
     CASE WHEN p.normal_price = 0 THEN 0 ELSE
         CONVERT((p.normal_price - v.cost)/p.normal_price,decimal(10,2)) 
     END as our_margin,
-    CONVERT((s.srp- v.cost)/ s.srp,decimal(10,2))
+    CONVERT((v.srp- v.cost)/ v.srp,decimal(10,2))
     as unfi_margin,
-    case when s.srp > p.normal_price then 1 else 0 END as diff,
+    case when v.srp > p.normal_price then 1 else 0 END as diff,
     x.cost AS cost,
     x.variable_pricing
     from vendorItems AS v
@@ -221,7 +221,7 @@ $strCat = $strCat . ")";
         WHERE cat IN$strCat order by $sort,department,u.upc");
    */
    if ($filter != 'Yes')
-       $UNFI_ALL_QUERY .= ' AND p.normal_price <> s.srp ';
+       $UNFI_ALL_QUERY .= ' AND p.normal_price <> v.srp ';
    $prep = $sql->prepare($UNFI_ALL_QUERY . " AND v.vendorDept IN $strCat ORDER BY $sort, p.department, p.upc");
    $result = $sql->execute($prep, $cat_args);
 
