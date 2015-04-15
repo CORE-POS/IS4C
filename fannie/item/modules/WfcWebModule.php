@@ -108,7 +108,7 @@ class WfcWebModule extends ItemModule
         if ($local->tableExists('productExpires')) {
             $e = new ProductExpiresModel($local);
             $e->upc($upc);
-            $e->expires(FormLib::getDate('lf_expires', date('Y-m-d')));
+            $e->expires(FormLib::getDate('u_expires', date('Y-m-d')));
             $e->save();
             if ($e->expires() && $remote->isConnected()) {
                 $e->setConnection($remote);
