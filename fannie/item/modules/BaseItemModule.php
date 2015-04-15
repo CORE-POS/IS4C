@@ -416,18 +416,31 @@ class BaseItemModule extends ItemModule
 
         $depts = array();
         $subs = array();
-        $p = $dbc->prepare_statement('
+        $range_limit = FannieAuth::validateUserLimited('pricechange');
+        $deptQ = '
             SELECT dept_no,
                 dept_name,
                 subdept_no,
                 subdept_name,
                 s.dept_ID,
-                m.superID
+                MIN(m.superID) AS superID
             FROM departments AS d
                 LEFT JOIN subdepts AS s ON d.dept_no=s.dept_ID
-                LEFT JOIN MasterSuperDepts AS m ON d.dept_no=m.dept_ID
-            ORDER BY d.dept_no, s.subdept_name');
-        $r = $dbc->exec_statement($p);
+                LEFT JOIN superdepts AS m ON d.dept_no=m.dept_ID ';
+        if (is_array($range_limit) && count($range_limit) == 2) {
+            $deptQ .= ' WHERE m.superID BETWEEN ? AND ? ';
+        } else {
+            $range_limit = array();
+        }
+        $deptQ .= '
+            GROUP BY d.dept_no,
+                d.dept_name,
+                s.subdept_no,
+                s.subdept_name,
+                s.dept_ID
+            ORDER BY d.dept_no, s.subdept_name';
+        $p = $dbc->prepare($deptQ);
+        $r = $dbc->execute($p, $range_limit);
         $superID = '';
         while ($w = $dbc->fetch_row($r)) {
             if (!isset($depts[$w['dept_no']])) $depts[$w['dept_no']] = $w['dept_name'];
@@ -447,6 +460,10 @@ class BaseItemModule extends ItemModule
                 <td colspan="7" class="form-inline">
                 <select id="super-dept" class="form-control chosen-select" onchange="chainSuper(this.value);">';
         $names = new SuperDeptNamesModel($dbc);
+        if (is_array($range_limit) && count($range_limit) == 2) {
+            $names->superID($range_limit[0], '>=');
+            $names->superID($range_limit[1], '<=');
+        }
         foreach ($names->find('superID') as $obj) {
             $ret .= sprintf('<option %s value="%d">%s</option>',
                     $obj->superID() == $superID ? 'selected' : '',

@@ -336,8 +336,29 @@ class ItemEditorPage extends FanniePage
         $ws = $FANNIE_URL . 'ws/';
 
         $authorized = false;
+        $super_dept_limit = false;
         if (FannieAuth::validateUserQuiet('pricechange') || FannieAuth::validateUserQuiet('audited_pricechange')) {
             $authorized = true;
+        } elseif (($range=FannieAuth::validateUserLimited('pricechange')) !== false) {
+            /**
+              Check if user is authorized to edit a subset of items
+            */
+            if ($isNew) {
+                $authorized = true;
+            } else {
+                $this->connection->selectDB($this->config->OP_DB);
+                $prep = $this->connection->prepare("
+                    SELECT upc
+                    FROM products AS p
+                        INNER JOIN superdepts AS s ON p.department=s.dept_ID
+                    WHERE p.upc=?
+                        AND s.superID BETWEEN ? AND ?");
+                $args = array(BarcodeLib::padUPC($upc), $range[0], $range[1]);
+                $result = $this->connection->execute($prep, $args);
+                if ($result && $this->connection->numRows($result) > 0) {
+                    $authorized = true;
+                }
+            }
         }
 
         // remove action so form cannot be submitted by pressing enter
@@ -463,8 +484,10 @@ class ItemEditorPage extends FanniePage
         $audited = false;
         if (FannieAuth::validateUserQuiet('pricechange')) { 
             // validated; nothing to do
-        } else if (FannieAuth::validateUserQuiet('audited_pricechange')) {
+        } elseif (FannieAuth::validateUserQuiet('audited_pricechange')) {
             $audited = true;
+        } elseif (($range=FannieAuth::validateUserLimited('pricechange')) !== false) {
+            // validated for certain departments; nothing to do
         } else {
             // not authorized to make edits
             return '<span style="color:red;">Error: Log in to edit</span>';

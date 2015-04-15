@@ -112,6 +112,106 @@ class FannieAuth
         return $current_user;
     }
 
+    static public function validateUserLimited($auth_class)
+    {
+        if (!self::enabled()) {
+            return 'all';
+        }
+        if (self::initCheck()) {
+            return 'all';
+        }
+
+        $current_user = self::checkLogin();
+        if (!$current_user) {
+            return false;
+        }
+
+        $as_user = self::userAuthRange($current_user, $auth_class);
+        $as_group = self::groupAuthRange($current_user, $auth_class);
+
+        if ($as_group === false && $as_user === false) {
+            return false;
+        } elseif ($as_user == 'all' || $as_group == 'all') {
+            return 'all';
+        } elseif ($as_user === false) {
+            return $as_group;
+        } elseif ($as_group === false) {
+            return $as_user;
+        } else {
+            $full_range = array(
+                $as_user[0] < $as_group[0] ? $as_user[0] : $as_group[0],
+                $as_user[1] < $as_group[1] ? $as_user[1] : $as_group[1],
+            );
+            return $full_range;
+        }
+    }
+
+    static private function userAuthRange($name, $auth_class)
+    {
+        if (self::initCheck()) {
+            return 'all';
+        }
+
+        if (!self::isAlphanumeric($name) || !self::isAlphanumeric($auth_class)) {
+            return false;
+        }
+
+        $uid = self::getUID($name);
+        $dbc = FannieDB::get(FannieConfig::factory()->get('OP_DB'));
+        $query = $dbc->prepare("
+            SELECT MIN(sub_start) AS lowerBound,
+                MAX(sub_end) AS upperBound
+            FROM userPrivs
+            WHERE uid=?
+                AND auth_class=?
+            GROUP BY uid,
+                auth_class");
+        $result = $dbc->execute($query, array($uid, $auth_class));
+        if (!$result || $dbc->numRows($result) == 0) {
+            return false;
+        }
+
+        $range = $dbc->fetchRow($result);
+        if ($range['lowerBound'] == 'all' || $range['upperBound'] == 'all') {
+            return 'all';
+        } else {
+            return array($range['lowerBound'], $range['upperBound']);
+        }
+    }
+
+    static private function groupAuthRange($username, $auth_class)
+    {
+        if (self::initCheck()) {
+            return 'all';
+        }
+
+        if (!self::isAlphanumeric($username) || !self::isAlphanumeric($auth_class)) {
+            return false;
+        }
+
+        $dbc = FannieDB::get(FannieConfig::factory()->get('OP_DB'));
+        $query = $dbc->prepare("
+            SELECT MIN(sub_start) AS lowerBound,
+                MAX(sub_end) AS upperBound
+            FROM userGroupPrivs AS p
+                INNER JOIN userGroups AS g ON p.gid=g.gid
+            WHERE g.username=?
+                AND p.auth=?
+            GROUP BY g.username,
+                p.auth");
+        $result = $dbc->execute($query, array($username, $auth_class));
+        if (!$result || $dbc->numRows($result) == 0) {
+            return false;
+        }
+
+        $range = $dbc->fetchRow($result);
+        if ($range['lowerBound'] == 'all' || $range['upperBound'] == 'all') {
+            return 'all';
+        } else {
+            return array($range['lowerBound'], $range['upperBound']);
+        }
+    }
+
     /**
       Check if the given user has the given permission
       @param $name the username
