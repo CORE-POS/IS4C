@@ -134,6 +134,14 @@ class TransArchiveTask extends FannieTask
         $created_view = false;
         $sql = FannieDB::get($FANNIE_ARCHIVE_DB);
         $sql->throwOnFailure(true);
+        /* get table definition in partitioning mode to
+           have a list of existing partitions */
+        $bigArchive = false;
+        if ($FANNIE_ARCHIVE_METHOD == "partitions") {
+            $bigArchive = $sql->query('SHOW CREATE TABLE bigArchive');
+            $bigArchive = $dbc->fetchRow($bigArchive);
+            $bigArchive = $bigArchive[0];
+        }
         foreach ($dates as $date) {
             /* figure out which monthly archive dtransactions data belongs in */
             list($year, $month, $day) = explode('-', $date);
@@ -142,10 +150,11 @@ class TransArchiveTask extends FannieTask
 
             if ($FANNIE_ARCHIVE_METHOD == "partitions") {
                 // we're just partitioning
-                // make a new partition if it's a new month
-                if (date('j') == 1 && !$added_partition) {
-                    $partition_name = "p" . date("Ym"); 
-                    $boundary = date("Y-m-d", mktime(0,0,0,date("n")+1,1,date("Y")));
+                // create a partition if it doesn't exist
+                $partition_name = "p" . date("Ym", mktime(strtotime($date))); 
+                if (strstr($bigArchive, 'PARTITION ' . $partition_name . ' VALUES') === false) {
+                    $ts = strtotime($date);
+                    $boundary = date("Y-m-d", mktime(0,0,0,date("n", $ts)+1,1,date("Y", $ts)));
                     // new partition named pYYYYMM
                     // ends on first day of next month
                     $newQ = sprintf("ALTER TABLE bigArchive ADD PARTITION 
@@ -154,7 +163,10 @@ class TransArchiveTask extends FannieTask
                         )",$partition_name,$boundary);
                     try {
                         $newR = $sql->query($newQ);
-                        $added_partition = true;
+                        /* refresh table definition after adding partition */
+                        $bigArchive = $sql->query('SHOW CREATE TABLE bigArchive');
+                        $bigArchive = $dbc->fetchRow($bigArchive);
+                        $bigArchive = $bigArchive[0];
                     } catch (Exception $ex) {
                         /**
                         @severity lack of partitions will eventually
