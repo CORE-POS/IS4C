@@ -74,6 +74,12 @@ public class Magellan : DelegateForm {
                     case "SPH_SignAndPay_USB":
                         sph[i] = new SPH_SignAndPay_USB(port);
                         break;
+                    case "SPH_SignAndPay_Auto":
+                        sph[i] = new SPH_SignAndPay_Auto(port);
+                        break;
+                    case "SPH_SignAndPay_Native":
+                        sph[i] = new SPH_SignAndPay_Native(port);
+                        break;
                     case "SPH_IngenicoRBA_RS232":
                         sph[i] = new SPH_IngenicoRBA_RS232(port);
                         break;

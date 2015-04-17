@@ -16,16 +16,12 @@
   <ItemGroup>
     <MonoDefine Include="MONO" Condition=" '$(OS)' == 'Unix' " />
 
-    <FutureDefine Include="FUTURE" />
-    <FutureDefine Include="FUTUREWIN" Condition=" '$(OS)' != 'Unix' " />
-
     <JsonDefine Include="NEWTONSOFT_JSON" />
   </ItemGroup>
 
   <!--
     Build the main application
     Default target "Build" produces pos.exe
-    Alt target "Future" produces pos-future.exe
   -->
   <ItemGroup>
     <Magellan Include="Magellan.cs" />
@@ -40,23 +36,9 @@
     <MagellanTarget Include="UDPMsgBoxLibrary" />
     <MagellanTarget Include="SPHLibrary" />
     <MagellanTarget Include="JsonLibrary" />
-
-    <MagellanFutureRef Include="DelegateForm.dll" />
-    <MagellanFutureRef Include="UDPMsgBox.dll" />
-    <MagellanFutureRef Include="SPHFuture.dll" />
-    <MagellanFutureRef Include="Newtonsoft.Json.dll" />
-
-    <MagellanFutureTarget Include="DelegateFormLibrary" />
-    <MagellanFutureTarget Include="UDPMsgBoxLibrary" />
-    <MagellanFutureTarget Include="SPHFutureLibrary" />
-    <MagellanFutureTarget Include="JsonLibrary" />
   </ItemGroup>
   <Target Name="Build" DependsOnTargets="@(MagellanTarget)">
     <Csc Sources="@(Magellan)" References="@(MagellanRef)" TargetType="exe" OutputAssembly="pos.exe" 
-        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" DefineConstants="@(JsonDefine)" />
-  </Target>
-  <Target Name="Future" DependsOnTargets="@(MagellanFutureTarget)">
-    <Csc Sources="@(Magellan)" References="@(MagellanFutureRef)" TargetType="exe" OutputAssembly="pos-future.exe" 
         Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" DefineConstants="@(JsonDefine)" />
   </Target>
 
@@ -118,15 +100,13 @@
         Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" />
   </Target>
 
-  <!--
-    Build SPH.dll and/or SPHFuture.dll
-    The files are all the same. The "Future" version just
-    defines a couple constants for #if macros
-  -->
+  <!-- Build SPH.dll -->
   <ItemGroup>
     <SPH Include="SerialPortHandler.cs" />
     <SPH Include="SPH_Magellan_Scale.cs" />
     <SPH Include="SPH_SignAndPay_USB.cs" />
+    <SPH Include="SPH_SignAndPay_Auto.cs" />
+    <SPH Include="SPH_SignAndPay_Native.cs" />
     <SPH Include="SPH_IngenicoRBA_Common.cs" />
     <SPH Include="SPH_IngenicoRBA_RS232.cs" />
     <SPH Include="SPH_IngenicoRBA_IP.cs" />
@@ -149,10 +129,6 @@
   </ItemGroup>
   <Target Name="SPHLibrary" Inputs="@(SPH)" Outputs="SPH.dll" DependsOnTargets="@(SPHTarget)">
     <Csc Sources="@(SPH)" DefineConstants="@(MonoDefine)" References="@(SPHRef)" TargetType="library" OutputAssembly="SPH.dll" 
-        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" />
-  </Target>
-  <Target Name="SPHFutureLibrary" Inputs="@(SPH)" Outputs="SPHFuture.dll" DependsOnTargets="@(SPHTarget)">
-    <Csc Sources="@(SPH)" DefineConstants="@(MonoDefine);@(FutureDefine)" References="@(SPHRef)" TargetType="library" OutputAssembly="SPHFuture.dll" 
         Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" />
   </Target>
 

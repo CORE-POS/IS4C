@@ -160,13 +160,7 @@ public class SPH_IngenicoRBA_USB : SPH_IngenicoRBA_Common
             ack[i] = 0;
         }
 
-        #if MONO
-        usb_port = new USBWrapper_Posix();
-        #elif FUTURE
         usb_port = new USBWrapper_HidSharp();
-        #else
-        usb_port = new USBWrapper_Win32();
-        #endif
         while(usb_fs == null){
             usb_fs = usb_port.GetUSBHandle(usb_devicefile,usb_report_size);
             if (usb_fs == null){

@@ -25,23 +25,15 @@ cd HidSharp
 %CC% /target:library /unsafe /out:HIDSharp.dll %HID_SHARP_FILES%
 cd ..
 copy HidSharp\HIDSharp.dll .
-%CC% /target:library /out:USBLayer.dll USBLayer.cs USB-Win32.cs
-%CC% /target:library /out:USBLayerFuture.dll /r:HIDSharp.dll USBLayer.cs USB-HidSharp.cs
+%CC% /target:library /out:USBLayer.dll USBLayer.cs USB-Win32.cs USB-HidSharp.cs
 %CC% /target:library /r:DelegateForm.dll /out:UDPMsgBox.dll UDPMsgBox.cs
 
 %CC% /target:library ^
 /r:DelegateForm.dll /r:Bitmap.dll /r:USBLayer.dll /r:ParallelLayer.dll %PDCX_LIBS% ^
 /out:SPH.dll ^
-SerialPortHandler.cs SPH_Magellan_Scale.cs SPH_IngenicoRBA_RS232.cs SPH_SignAndPay_USB.cs SPH_IngenicoRBA_USB.cs SPH_IngenicoRBA_Common.cs SPH_IngenicoRBA_IP.cs SPH_Parallel_Writer.cs %PDCX_FILES%
-
-%CC% /target:library ^
-/r:DelegateForm.dll /r:Bitmap.dll /r:USBLayerFuture.dll /r:ParallelLayer.dll %PDCX_LIBS% ^
-/define:FUTURE /define:FUTUREWIN ^
-/out:SPHFuture.dll ^
-SerialPortHandler.cs SPH_Magellan_Scale.cs SPH_IngenicoRBA_RS232.cs SPH_SignAndPay_USB.cs SPH_IngenicoRBA_USB.cs SPH_IngenicoRBA_Common.cs SPH_IngenicoRBA_IP.cs SPH_Parallel_Writer.cs %PDCX_FILES%
+SerialPortHandler.cs SPH_Magellan_Scale.cs SPH_IngenicoRBA_RS232.cs SPH_SignAndPay_USB.cs SPH_SignAndPay_Auto.cs SPH_SignAndPay_Native.cs SPH_IngenicoRBA_USB.cs SPH_IngenicoRBA_Common.cs SPH_IngenicoRBA_IP.cs SPH_Parallel_Writer.cs %PDCX_FILES%
 
 %CC% /target:exe /r:DelegateForm.dll /r:UDPMsgBox.dll /r:SPH.dll %RABBITMQ% /out:pos.exe Magellan.cs
-%CC% /target:exe /r:DelegateForm.dll /r:UDPMsgBox.dll /r:SPHFuture.dll %RABBITMQ% /out:pos-future.exe Magellan.cs
 @echo off
 REM csc /target:library /r:DelegateForm.dll /r:UDPMsgBox.dll /r:SPH.dll /out:Magellan.dll Magellan.cs
 REM csc /target:exe /r:DelegateForm.dll /r:UDPMsgBox.dll /r:SPH.dll /r:Magellan.dll /out:posSVC.exe MagellanWinSVC.cs
