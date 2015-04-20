@@ -291,6 +291,10 @@ class DTransactionsModel extends BasicModel
             .' WHERE '.$c->identifier_escape('trans_status')
             ." NOT IN ('D','X','Z') AND emp_no <> 9999
             AND register_no <> 99";
+        // for plain "dlog" view, add a date restriction
+        if ($view_name == 'dlog') {
+            $sql .= ' AND datetime >= ' . $c->curdate();
+        }
         if ($mode == BasicModel::NORMALIZE_MODE_APPLY) {
             $this->connection->query($sql);
         }
