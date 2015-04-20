@@ -45,6 +45,10 @@ class FannieBaseLogger
         7 => 'debug',
     );
 
+    protected $syslog_host = false;
+    protected $syslog_port = 514;
+    protected $syslog_protocol = 'udp';
+
     const EMERGENCY     = 0;
     const ALERT         = 1;
     const CRITICAL      = 2;
@@ -61,6 +65,45 @@ class FannieBaseLogger
         } else {
             return strtolower($level);
         }
+    }
+
+    public function setRemoteSyslog($host, $port=514, $protocol='udp')
+    {
+        $this->syslog_host = $host;
+        $this->syslog_port = $port;
+        $this->syslog_protocol = $protocol;
+    }
+
+    protected function syslogRemote($message)
+    {
+        $context = array('skip_remote' => true);
+        if (!function_exists('socket_create')) {
+            $this->debug('Sockets extension required for remote logging', $context);
+
+            return false;
+        } 
+        
+        $socket = false;
+        if (strtolower($this->syslog_protocol) === 'udp') {
+            $socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+        } elseif (strtolower($this->syslog_protocol) === 'tcp') {
+            $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+        }
+        if ($socket === false) {
+            $this->debug('Remote logging socket error: ' . socket_last_error(), $context);
+
+            return false;
+        }
+
+        if (!socket_connect($socket, $this->syslog_host, $this->syslog_port)) {
+            $this->debug('Unable to connect to ' . $this->syslog_host . ':' . $this->syslog_port
+                . ' for remote logging. Error: ' . socket_last_error(), $context);
+        }
+
+        socket_write($socket, $message);
+        socket_close($socket);
+
+        return true;
     }
 
     public function emergency($message, array $context = array())
@@ -141,6 +184,9 @@ class FannieBaseLogger
                 $this->log_level_map[$int_level],
                 $message);
             fwrite($fp, $log_line . "\n");
+            if ($this->syslog_host && !isset($context['skip_remote'])) {
+                $this->syslogRemote($log_line);
+            }
             if ($int_level === self::DEBUG && $verbose_debug) {
                 $stack = array();
                 if (isset($context['exception']) && $context['exception'] instanceof Exception) {
