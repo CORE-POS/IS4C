@@ -279,7 +279,7 @@ class SQLManager
             $this->logger($logMsg);
 
             if ($this->throw_on_fail) {
-                throw new Exception($errorMsg);
+                throw new \Exception($errorMsg);
             }
         }
 
