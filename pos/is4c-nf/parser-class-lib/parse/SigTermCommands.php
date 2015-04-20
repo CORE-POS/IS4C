@@ -104,7 +104,30 @@ class SigTermCommands extends Parser
             CoreLocal::set('ccTermState', 'swipe');
 
             return true;
+        } elseif ($str == 'TERMAUTOENABLE') {
+            CoreLocal::set('PaycardsStateChange', 'direct');
+            $query = "
+                UPDATE parameters
+                SET param_value='direct'
+                WHERE param_key='PaycardsStateChange'
+                    AND (lane_id=0 OR lane_id=?)";
+            $db = Database::pDataConnect();
+            $prep = $db->prepare($query);
+            $res = $db->execute($prep, array(CoreLocal::get('laneno')));
 
+            return true;
+        } elseif ($str == 'TERMAUTODISABLE') {
+            CoreLocal::set('PaycardsStateChange', 'coordinated');
+            $query = "
+                UPDATE parameters
+                SET param_value='coordinated'
+                WHERE param_key='PaycardsStateChange'
+                    AND (lane_id=0 OR lane_id=?)";
+            $db = Database::pDataConnect();
+            $prep = $db->prepare($query);
+            $res = $db->execute($prep, array(CoreLocal::get('laneno')));
+
+            return true;
         } else if (substr($str,0,5) == "TERM:") {
             CoreLocal::set("CacheCardType",substr($str,5));
             switch(CoreLocal::get('CacheCardType')) {

@@ -75,6 +75,8 @@ public class SPH_SignAndPay_Auto : SPH_SignAndPay_USB
 
     public override void Read()
     { 
+        PushOutput("TERMAUTOENABLE");
+
         GetHandle();
         SendReport(BuildCommand(LcdSetBacklightTimeout(0)));
         SendReport(BuildCommand(EnableAudio()));

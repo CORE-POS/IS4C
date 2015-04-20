@@ -67,10 +67,10 @@ class Paycards extends Plugin {
         'description' => 'Should terminal switch screens 
 based on direct input or
 messages from POS?',
-        'default' => 'direct',
+        'default' => 'coordinated',
         'options' => array(
+            'Messages' => 'coordinated',
             'Direct Input' => 'direct',
-            'Messages' => 'coordinated' 
             )
         ),
         'PaycardsSigCapture' => array(
