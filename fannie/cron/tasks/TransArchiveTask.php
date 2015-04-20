@@ -139,8 +139,8 @@ class TransArchiveTask extends FannieTask
         $bigArchive = false;
         if ($FANNIE_ARCHIVE_METHOD == "partitions") {
             $bigArchive = $sql->query('SHOW CREATE TABLE bigArchive');
-            $bigArchive = $dbc->fetchRow($bigArchive);
-            $bigArchive = $bigArchive[0];
+            $bigArchive = $sql->fetchRow($bigArchive);
+            $bigArchive = $bigArchive['Create Table'];
         }
         foreach ($dates as $date) {
             /* figure out which monthly archive dtransactions data belongs in */
@@ -151,7 +151,7 @@ class TransArchiveTask extends FannieTask
             if ($FANNIE_ARCHIVE_METHOD == "partitions") {
                 // we're just partitioning
                 // create a partition if it doesn't exist
-                $partition_name = "p" . date("Ym", mktime(strtotime($date))); 
+                $partition_name = "p" . date("Ym", strtotime($date)); 
                 if (strstr($bigArchive, 'PARTITION ' . $partition_name . ' VALUES') === false) {
                     $ts = strtotime($date);
                     $boundary = date("Y-m-d", mktime(0,0,0,date("n", $ts)+1,1,date("Y", $ts)));
@@ -165,8 +165,8 @@ class TransArchiveTask extends FannieTask
                         $newR = $sql->query($newQ);
                         /* refresh table definition after adding partition */
                         $bigArchive = $sql->query('SHOW CREATE TABLE bigArchive');
-                        $bigArchive = $dbc->fetchRow($bigArchive);
-                        $bigArchive = $bigArchive[0];
+                        $bigArchive = $sql->fetchRow($bigArchive);
+                        $bigArchive = $bigArchive['Create Table'];
                     } catch (Exception $ex) {
                         /**
                         @severity lack of partitions will eventually
