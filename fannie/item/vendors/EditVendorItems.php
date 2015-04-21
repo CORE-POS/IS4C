@@ -265,6 +265,17 @@ function itemEditing()
         <?php
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            Edit invidual records in the vendor item catalog
+            in a grid layout. Saving is instantanoues on each
+            field and includes a small popup notification. The
+            editor only works with catalogs containing less than
+            a thousand items.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

@@ -66,7 +66,7 @@ class SiteMap extends FannieRESTfulPage
             $sets[$obj->page_set][$p] = array(
                'url' => $url,
                'info' => $obj->description, 
-               'class' => $obj->themed ? 'alert-success' : 'alert-danger',
+               'themed' => $obj->themed ? 'alert-success' : 'alert-danger',
             );
             $theme_stats['total']++;
             if ($obj->themed) {
@@ -79,8 +79,11 @@ class SiteMap extends FannieRESTfulPage
                 }
             }
             $help['total']++;
-            if ($obj->helpContent()) {
+            if ($obj->helpContent() && substr($obj->helpContent(),0,17) != '<!-- need doc -->') {
                 $help['done']++;
+                $sets[$obj->page_set][$p]['help'] = 'alert-success';
+            } else {
+                $sets[$obj->page_set][$p]['help'] = 'alert-danger';
             }
         }
 
@@ -109,8 +112,10 @@ class SiteMap extends FannieRESTfulPage
                 if ($linked === $description) {
                     $linked .= ' (<a href="' . $url . '">Link</a>)';
                 }
-                $ret .= '<li class="' . $sets[$set_name][$page_key]['class'] . '">' 
-                    . $linked . '</li>';
+                $ret .= sprintf('<li>%s <span class="%s">Themed</span> <span class="%s">Help</span></li>',
+                    $linked,
+                    $sets[$set_name][$page_key]['themed'],
+                    $sets[$set_name][$page_key]['help']);
             }
             $ret .= '</ul>';
             $ret .= '</li>';

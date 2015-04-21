@@ -33,6 +33,9 @@ class AlbertsPdfImport extends FannieRESTfulPage
     protected $header = 'Import Alberts Invoice PDF';
     protected $title = 'Import Alberts Invoice PDF';
 
+    public $description = '[Import Alberts Invoice] specialized tool to import Alberts invoices from PDFs.';
+    public $page_set = 'Purchasing';
+
     private $file_content = '';
 
     public function preprocess()
@@ -371,6 +374,15 @@ class AlbertsPdfImport extends FannieRESTfulPage
             <button type="submit" class="btn btn-default">Upload File</button>
             </p>
             </form>';
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            Upload a PDF invoice from Alberts. View the information
+            that was loaded from file and make any necessary corrections.
+            Finally, import the invoice as amended.
+            </p>';
     }
 
 }

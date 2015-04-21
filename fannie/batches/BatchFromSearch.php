@@ -474,6 +474,37 @@ function noEnter(e) {
         return array('in'=>$str, 'args'=>$args);
     }
 
+    public function helpContent()
+    {
+        return '<p>
+            This tool creates a sale or price change batch
+            for a set of advanced search results. The top
+            fields control the batch type, name, dates, and
+            owner. The middle section contains different tools
+            for calculating prices depending on whether the
+            batch type selected is a sale or a price change.
+            <p>
+            For sales, two markdown options are available. The
+            percentage will create sale prices that are X% off
+            from the regular retial price. The dollar amount will
+            create sale prices that are $X.XX less than the
+            regular retial price.
+            </p>
+            <p>
+            Price changes include a larger list of options.
+            The Use Vendor SRPs button will calculate new
+            retail pricing based on vendor-specific margin
+            rules. The Auto Choose Vendor option will simply
+            use whichever vendor is assigned as the default
+            for a given product. Choosing a specific vendor instead
+            will use that vendor\'s pricing rules for all 
+            products in the list. The markup percentage is
+            an alternative to vendor-based pricing and will
+            create new prices that are X% above current retail.
+            New shelftags are allocated and the Tags dropdown
+            controls which set they land in.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

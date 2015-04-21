@@ -116,6 +116,19 @@ class MemPurchasesPage extends FannieRESTfulPage
         return ob_get_clean();
     }
 
+    public function helpContent()
+    {
+        return '<p>
+            This report displays purchases for the given member
+            in a given month. The default is the current month.
+            Use the drop down menu to select other months.
+            </p>
+            <p>
+            Click receipt number links to see detail from
+            individual transactions.
+            </p>';
+    }
+
 }
 
 FannieDispatch::conditionalExec();

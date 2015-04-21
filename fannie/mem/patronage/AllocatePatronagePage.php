@@ -29,6 +29,8 @@ class AllocatePatronagePage extends FannieRESTfulPage
 {
     protected $title = "Fannie :: Patronage Tools";
     protected $header = "Fannie :: Patronage Tools";
+    public $description = '[Allocate Patronage] divies up calculated patronage amounts amongst
+        qualifiying members';
     public $themed = true;
 
     public function helpContent()

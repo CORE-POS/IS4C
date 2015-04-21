@@ -33,6 +33,9 @@ class CpwInvoiceImport extends FannieRESTfulPage
     protected $header = 'Import CPW Invoice';
     protected $title = 'Import CPW Invoice';
 
+    public $description = '[CPW Invoice Import] is a specialized tool for importing CPW invoices';
+    public $page_set = 'Purchasing';
+
     private $filedata;
 
     public function preprocess()
@@ -353,6 +356,16 @@ class CpwInvoiceImport extends FannieRESTfulPage
             <button type="submit" class="btn btn-default">Upload File</button>
             </p>
             </form>';
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            Upload a CPW invoice file. Review the information
+            extracted from the file and make any necessary
+            adjustments. Finally, import the amended information
+            as a new invoice.
+            </p>';
     }
 
 }

@@ -30,6 +30,7 @@ class MemberPreferences extends FannieRESTfulPage
     protected $header = "Customer Preferences";
     protected $title = "Fannie :: Customer Preferences";
     public $themed = true;
+    public $description = '[Member Preferences] manages a set of per-member preference settings.';
 
     public function get_view()
     {
@@ -102,6 +103,17 @@ class MemberPreferences extends FannieRESTfulPage
         $ret .= '</form>';
 
         return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            Member preferences are an arbitrary, custom list
+            of per-member configuration options. Stores can
+            add new preferences as needed to assist in local
+            operations. Individual members\' preference
+            settings are managed on this page.
+            </p>';
     }
 }
 

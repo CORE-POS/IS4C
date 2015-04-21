@@ -28,6 +28,8 @@ if (!class_exists('FannieAPI')) {
 
 class HelpPopup extends FanniePage 
 {
+    public $discoverable = false;
+
     public function drawPage()
     {
         $url = $this->config->URL;

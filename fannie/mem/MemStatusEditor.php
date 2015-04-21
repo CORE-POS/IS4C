@@ -280,6 +280,21 @@ class MemStatusEditor extends FanniePage {
             }
         }
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            Change a member\'s status to inactive or
+            terminated. Inactive accounts are considered
+            temporarily suspended but may be reactivated later.
+            Terminated accounts are permanently closed.
+            </p>
+            <p>
+            To deactivate a member, choose Inactive/Termed
+            and check one or more reasons. To reactivate an account,
+            simply clear all the reason checkboxes.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

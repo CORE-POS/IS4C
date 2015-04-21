@@ -47,6 +47,15 @@ class MemCorrectionIndex extends FanniePage {
         <?php
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            This is a set of tools for adjusting activity on a member
+            account or moving activity from one member account to
+            another.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

@@ -30,6 +30,7 @@ class ItemImportIndex extends FanniePage {
     protected $header = "Import Product Information";
 
     public $description = '[Item Import Menu] lists options for importing item related data.';
+    public $page_set = 'Import Tools';
     public $themed = true;
 
     function body_content(){
@@ -43,6 +44,16 @@ class ItemImportIndex extends FanniePage {
         </ul>
         <?php
         return ob_get_clean();
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            These data import tools can load different kinds
+            of data from spreadsheets (generally CSVs). The tools
+            are intended for initializing the system as opposed to
+            for ongoing maintenance.
+            </p>';
     }
 }
 

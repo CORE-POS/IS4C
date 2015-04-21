@@ -276,6 +276,31 @@ class MemArEquityDumpTool extends FanniePage
 
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            Reduce a member account\'s equity or AR balance by
+            the specified amount. Because the primary purpose is
+            paying out equity, entering a positive $20 will
+            reduce the member equity by $20.
+            </p>
+            <p>
+            However, AR essentially runs backwards from equity.
+            While an equity payment increases a member\'s equity
+            balance, an AR payment reduces a member\'s AR
+            balance. Entering a positive $20 for AR will actually
+            increase the member balance by $20. Negative numbers
+            are permitted and $-20 AR will reduce the member 
+            balance by $20.
+            <p>
+            The <em>add to department</em> is the second line of
+            the transaction. The payment to equity or AR must
+            be offset by an additional, opposite payment somewhere
+            else or the books won\'t balance. A generic corrections
+            or miscellaneous department may be a good fit.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

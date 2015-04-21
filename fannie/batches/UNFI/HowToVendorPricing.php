@@ -52,6 +52,13 @@ Step 5 (optional): track down a dedicated professional to help<br />
         <?php
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>This information may be a bit out of date.
+            Except the cat. Enjoy the cat!
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

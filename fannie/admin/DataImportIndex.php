@@ -31,6 +31,7 @@ class DataImportIndex extends FannieRESTfulPage
     protected $header = 'Fannie :: Data Import Tools';
     protected $title = 'Fannie :: Data Import Tools';
     public $description = '[Data Import Tools] is a landing page listing all available import options.';
+    public $page_set = 'Import Tools';
     public $themed = true;
 
     public function get_view()
@@ -51,6 +52,16 @@ class DataImportIndex extends FannieRESTfulPage
                 </ul>
             </li>
         </ul>';
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            These data import tools can load different kinds
+            of data from spreadsheets (generally CSVs). The tools
+            are intended for initializing the system as opposed to
+            for ongoing maintenance.
+            </p>';
     }
 
 }

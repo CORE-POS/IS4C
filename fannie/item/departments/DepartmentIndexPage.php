@@ -44,6 +44,22 @@ class DepartmentIndexPage extends FanniePage {
         <?php
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            CORE organizes POS products into a hierarchy.
+            The top category is <strong>Super Departments</strong>.
+            Each super department contains one or more
+            <strong>Departments</strong>. A department may in
+            turn contain one or more <strong>Sub Departments</strong>.
+            </p>
+            <p>
+            Departments are the only tier that is strictly required,
+            but many tools in CORE are designed to work best with
+            a higher-level set of super departments.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

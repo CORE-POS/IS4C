@@ -43,6 +43,16 @@ class MemImportIndex extends FanniePage {
         <?php
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            These data import tools can load different kinds
+            of data from spreadsheets (generally CSVs). The tools
+            are intended for initializing the system as opposed to
+            for ongoing maintenance.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

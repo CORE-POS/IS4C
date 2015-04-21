@@ -224,6 +224,18 @@ class ItemStatusPage extends FannieRESTfulPage
             </div>
             </form>';
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            The status check shows a brief summary of
+            a product\'s information in POS. It can be used
+            to verify pricing and queue up new shelf tags.
+            This particular page should scale to a mobile
+            device where as the full item editor often
+            does not fit well on small screens.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

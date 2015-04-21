@@ -655,6 +655,21 @@ function reCalc(upc, price, cost, deptID, superID) {
 
         return array('in'=>$str, 'args'=>$args);
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            This tool lists the selected item\'s cost,
+            price, and margins as well as each item\'s
+            percentage of overall store, super department,
+            and department sales. Entering a new price
+            will calculate the new item margin. The percentages
+            are used for a weighted, contribution to margin
+            calculation to predict how changes to an individual
+            item will impact overal margin at a department
+            or super department level.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

@@ -351,6 +351,21 @@ function updateAll(val, selector) {
 
         return array('in'=>$str, 'args'=>$args);
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            This tool edits some attributes of several products
+            at once. The set of products must be built first
+            using advanced search.
+            </p>
+            <p>
+            Editing the top row will apply the change to all
+            products in the list. Editing individual rows will
+            only change the product. Changes are not instantaneous.
+            Clicking the save button when finished is required.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

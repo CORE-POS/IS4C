@@ -389,6 +389,24 @@ class PatronageTransferTool extends FanniePage {
         $prep = $dbc->prepare_statement("INSERT INTO dtransactions ($columns) VALUES ($values)");
         $dbc->exec_statement($prep, $args);
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            Transfer patronage from one member to another. This
+            is for corrections where the wrong member number was
+            applied to a given transaction. The transfer happens
+            as a lump sum rather than shifting invidual receipt lines
+            from one member to another. Generally this is fine
+            but transactions including equity or AR activity need
+            additional corrections to account for those specific
+            receipt lines.
+            </p>
+            <p>
+            The amount transferred does not include taxes or discounts;
+            just the total of the products on the receipt.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

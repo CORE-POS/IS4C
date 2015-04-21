@@ -229,6 +229,30 @@ function showMultiple() {
             }
         ';
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            This list shows products entered at a lane in the
+            given time period that came up as "not found". PLUs are
+            excluded from this list as miskeys are more or less to
+            be expected. Viewing the last quarter may be a bit slow.
+            </p>
+            <p>
+            Entries marked in green have already been fixed. Entries
+            in red are found in vendor catalogs and can be added
+            instantly. Entries in blue are also found in vendor 
+            catalogs but have a low number of rings. These may be
+            incidental barcodes on reusable containers.
+            </p>
+            <p>
+            The <strong>Fixable</strong> view only show red and blue
+            entries - the ones that can be added to POS directly.
+            The <strong>Repeats</strong> view shows unknown UPCs
+            that were scanned at least twice. The <strong>All</strong>
+            view lists every single unknown UPC.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

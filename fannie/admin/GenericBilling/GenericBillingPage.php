@@ -232,6 +232,15 @@ function postBilling(){
 
         return false;
     }
+
+    public function helpContent()
+    {
+        return '<p>Add a miscellaneous entry to a customer account\'s
+            accounts receivable (AR) balance. The general use case 
+            involves billing business customers for random services
+            that lack specialized tooling.
+            </p>'; 
+    }
 }
 
 FannieDispatch::conditionalExec();

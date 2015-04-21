@@ -106,6 +106,15 @@ class DeleteShelfTags extends FanniePage
     {
         return $this->messages;
     }
+
+    public function helpContent()
+    {
+        return '<p>This tool clears a set of queued 
+            shelf tags. Shelf tags can always be recreated
+            although typically this should only be used
+            after printing a given set of tags.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

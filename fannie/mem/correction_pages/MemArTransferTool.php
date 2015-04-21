@@ -452,6 +452,17 @@ class MemArTransferTool extends FanniePage {
         $prep = $dbc->prepare_statement("INSERT INTO dtransactions ($columns) VALUES ($values)");
         $dbc->exec_statement($prep, $args);
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            Transfer an AR payment from one member account
+            to another. Since an AR payment <em>reduces</em>
+            a member\'s balance, moving $20 from Alice to Bob
+            will <em>increase</em> Alice\'s balance by $20 and
+            <em>decrease</em> Bob\'s balance by $20.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

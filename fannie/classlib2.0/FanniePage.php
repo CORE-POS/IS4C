@@ -562,7 +562,9 @@ function enableLinea(selector, callback)
     */
     public function helpContent()
     {
-        return false;
+        return '<!-- need doc -->
+            <h3>Oh no!</h3>
+            <p>This page hasn\'t been documented</p>';
     }
 
     public function unitTest($phpunit)

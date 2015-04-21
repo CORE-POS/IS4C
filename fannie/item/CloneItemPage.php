@@ -121,6 +121,17 @@ class CloneItemPage extends FannieRESTfulPage
 
         return $ret;
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            Cloning creates a new product that is 
+            identical to an exisiting product but has a different
+            UPC. The new item will have "CLONE" added to its
+            description for distinctive search results. Editing
+            the cloned item description is recommended.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

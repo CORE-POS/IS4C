@@ -145,6 +145,17 @@ class EditShelfTags extends FanniePage {
 
         return $ret;
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            Edit individual fields in a set of queued shelf tags.
+            These changes only impact the queued set of tags. 
+            Nothing will change in the actual product, nor will
+            changes persist to shelf tags created in the future.
+            This is for quick fine-tuning before printing tags.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

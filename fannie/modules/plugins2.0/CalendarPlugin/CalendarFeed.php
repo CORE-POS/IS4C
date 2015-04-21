@@ -8,6 +8,7 @@ if (!class_exists('FannieAPI')) {
 class CalendarFeed extends FannieRESTfulPage
 {
     protected $window_dressing = false;
+    public $discoverable = false;
 
     public function preprocess()
     {

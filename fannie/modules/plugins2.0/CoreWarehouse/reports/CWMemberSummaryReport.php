@@ -119,12 +119,14 @@ class CWMemberSummaryReport extends FannieRESTfulPage {
         $ret .= '<table class="table table-bordered table-striped">
             <tr>
                 <th>&nbsp;</th>
-                <th>Spotlight</th>
-                <th title="Same period last year">YoY</th>
+                <th title="' . $this->fixDate($model->spotlightStart())
+                    . ' to ' . $this->fixDate($model->spotlightEnd()) . '">Spotlight</th>
+                <th title="Spotlight month(s) last year">YoY</th>
                 <th title="Spotlight vs YoY">% Growth</th>
-                <th title="Same period all years">All YoY</th>
+                <th title="Spotlight month(s) all years">All YoY</th>
                 <th title="Spotlight vs All YoY">% Growth</th>
-                <th>Last Year</th>
+                <th title="' . $this->fixDate($model->yearStart())
+                    . ' to ' . $this->fixDate($model->yearEnd()) . '">Last Year</th>
                 <th title="Spotlight vs Last Year">% Growth</th>
             </tr>';
 
@@ -136,14 +138,13 @@ class CWMemberSummaryReport extends FannieRESTfulPage {
             <td>%.2f</th>
             <td>n/a</th>
             <td>%.2f</th>
-            <td>%.2f</th>
+            <td>n/a</th>
             </tr>',
             $model->spotlightTotalSpending(),
             $model->oldlightTotalSpending(),
             $this->percentGrowth($model->spotlightTotalSpending(), $model->oldlightTotalSpending()),
             $model->longlightTotalSpending(),
-            $model->yearTotalSpending(),
-            $this->percentGrowth(self::S_TO_Y*$model->spotlightTotalSpending(), $model->yearTotalSpending())
+            $model->yearTotalSpending()
         );
 
         $ret .= sprintf('<tr>
@@ -173,14 +174,13 @@ class CWMemberSummaryReport extends FannieRESTfulPage {
             <td>%.2f</th>
             <td>n/a</th>
             <td>%.2f</th>
-            <td>%.2f</th>
+            <td>n/a</th>
             </tr>',
             $model->spotlightTotalItems(),
             $model->oldlightTotalItems(),
             $this->percentGrowth($model->spotlightTotalItems(), $model->oldlightTotalItems()),
             $model->longlightTotalItems(),
-            $model->yearTotalItems(),
-            $this->percentGrowth(self::S_TO_Y*$model->spotlightTotalItems(), $model->yearTotalItems())
+            $model->yearTotalItems()
         );
 
         $ret .= sprintf('<tr>
@@ -210,14 +210,13 @@ class CWMemberSummaryReport extends FannieRESTfulPage {
             <td>%.2f</th>
             <td>n/a</th>
             <td>%.2f</th>
-            <td>%.2f</th>
+            <td>n/a</th>
             </tr>',
             $model->spotlightTotalVisits(),
             $model->oldlightTotalVisits(),
             $this->percentGrowth($model->spotlightTotalVisits(), $model->oldlightTotalVisits()),
             $model->longlightTotalVisits(),
-            $model->yearTotalVisits(),
-            $this->percentGrowth(self::S_TO_Y * $model->spotlightTotalVisits(), $model->yearTotalVisits())
+            $model->yearTotalVisits()
         );
 
         $ret .= '</table>';

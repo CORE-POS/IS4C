@@ -35,6 +35,7 @@ class ManualPurchaseOrderPage extends FannieRESTfulPage
 
     public $description = '[Manual Purchase Order] is a tool for entering purchase order info
         in a grid from existing paperwork.';
+    public $page_set = 'Purchasing';
     
     public function preprocess()
     {
@@ -291,6 +292,15 @@ class ManualPurchaseOrderPage extends FannieRESTfulPage
             </div>';
 
         return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            Build a purchase order or transcribe an invoice
+            one line at a time. Auto completion is available
+            via both product UPC and vendor item SKU.
+            </p>';
     }
 }
 

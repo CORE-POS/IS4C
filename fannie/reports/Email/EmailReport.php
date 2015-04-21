@@ -11,6 +11,8 @@ class EmailReport extends FannieRESTfulPage
     protected $title = "Fannie :: Email List";
     public $themed = true;
 
+    public $description = '[Email Report] lists email addresses for members by member type.';
+
     public function post_view()
     {
         global $FANNIE_OP_DB;
@@ -98,6 +100,17 @@ class EmailReport extends FannieRESTfulPage
             </div>';
 
         return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            Choose a member type or types. Including inactive accounts
+            will use a member\'s type from the last time they were
+            active instead of their current type. The <em>prefer
+            email</em> option will only work if that field is being
+            maintained for member accounts.
+            </p>';
     }
 }
 

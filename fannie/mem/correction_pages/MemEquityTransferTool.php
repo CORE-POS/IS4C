@@ -445,6 +445,17 @@ class MemEquityTransferTool extends FanniePage {
         $prep = $dbc->prepare_statement("INSERT INTO dtransactions ($columns) VALUES ($values)");
         $dbc->exec_statement($prep, $args);
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            Transfer an equity payment from one member account
+            to another. Since an equity payment <em>increases</em>
+            a member\'s balance, moving $20 from Alice to Bob
+            will <em>decrease</em> Alice\'s balance by $20 and
+            <em>increase</em> Bob\'s balance by $20.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

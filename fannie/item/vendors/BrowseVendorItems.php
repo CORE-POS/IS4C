@@ -357,6 +357,24 @@ class BrowseVendorItems extends FanniePage
 
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>This tool is used to create POS products from
+            entries in the vendor\'s catalog of items. Selecting
+            a department and brand first is necessary to keep the
+            list of available items a manageable size.
+            </p>
+            <p>Green rows are already in POS as products. Other
+            items can be added by entering an appropriate price
+            and department. CORE will try to guess correct values
+            but the default selections should still be verified.
+            </p>
+            <p>The third, rightmost dropdown box at the top controls
+            where new shelf tags are created for the added products.
+            Again CORE will try to guess the correct set.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

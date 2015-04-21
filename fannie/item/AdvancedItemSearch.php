@@ -953,6 +953,29 @@ function chainSuper(superID)
         return $ret;
     }
 
+    public function helpContent()
+    {
+        return '<p>
+            Specify one or more search conditions to find a set
+            of products in POS. Select one or more products in
+            the list of results and click one of the right hand
+            buttons to feed the select product(s) into different
+            tools and reports. Star (*) is permitted as a wild
+            card in text fields.
+            </p>
+            <p>
+            Selected items are retained across searches and can
+            be used to build larger sets of products. For example,
+            you could run a search for items in department one
+            with a description including "CAN", select a few products
+            in the result set, then run a second search for items
+            in department two with a description including
+            "FROZEN". The second search results will include 
+            products that match the second search <strong>and</strong>
+            products that were selected in the first search.
+            </p>';
+    }
+
 }
 
 FannieDispatch::conditionalExec();

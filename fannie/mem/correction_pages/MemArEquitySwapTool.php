@@ -434,6 +434,17 @@ class MemArEquitySwapTool extends FanniePage {
         $prep = $dbc->prepare_statement("INSERT INTO dtransactions ($columns) VALUES ($values)");
         $dbc->exec_statement($prep, $args);
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            Convert an AR payment into an equity payment or
+            vice versa for a given member. This is used for 
+            fixing simple miskeys. It may also be used to
+            "pay off" an outstanding AR balance using the
+            member\'s equity (if by-laws permit).
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

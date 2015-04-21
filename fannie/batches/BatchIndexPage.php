@@ -53,6 +53,17 @@ class BatchIndexPage extends FanniePage {
         <?php
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>These tools deal with creating and managing
+            batches. Batches are used for temporary promotional prices
+            - often referred to as "Sales Batches" as well as for
+            scheduling updates to regular retail pricing and applying
+            changes simultaneously to multiple products. The latter
+            are called "Price Change Batches".
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);
