@@ -90,7 +90,7 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
             if ($dbc->tableExists('ProdCostHistory')) {
                 $limitR = $dbc->query('
                     SELECT MAX(productUpdateID) AS lastChange
-                    FROM prodCostHistory');
+                    FROM ProdCostHistory');
                 $limit = 0;
                 if ($dbc->numRows($limitR) > 0) {
                     $limitW = $dbc->fetchRow($limitR);
@@ -179,7 +179,7 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
 
     /**
       Scan prodUpdate from cost changes and log them
-      in prodCostHistory
+      in ProdCostHistory
       @param $dbc [SQLManager] db connection
       @param $offset [optional int] start scanning from this prodUpdateID
     */
@@ -198,7 +198,7 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
         $chkP = $dbc->prepare("
             SELECT modified,
                 cost 
-            FROM prodCostHistory 
+            FROM ProdCostHistory 
             WHERE upc=?
             ORDER BY modified DESC");
         $upc = null;

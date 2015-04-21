@@ -368,14 +368,16 @@ echo $output;
     $state = 0.06875;
     $city = 0.01;
     $deli = 0.0225;
+    $county = 0.005;
     echo '<table border="1" cellspacing="0" cellpadding="4">';
     echo '<tr><th>Tax Collected on Regular rate items</th>
             <th>' . sprintf('%.2f', $collected[1]) . '</th>
             <th>Regular Taxable Sales</th>
-            <th>' . sprintf('%.2f', $collected[1]/($state+$city)) . '</th>
+            <th>' . sprintf('%.2f', $collected[1]/($state+$city+$county)) . '</th>
             </tr>';
-    $stateTax = $collected[1] * ($state/($state+$city));
-    $cityTax = $collected[1] * ($city/($state+$city));
+    $stateTax = $collected[1] * ($state/($state+$city+$county));
+    $cityTax = $collected[1] * ($city/($state+$city+$county));
+    $countyTax = $collected[1] * ($county/($state+$city+$county));
     echo '<tr>
         <td align="right">State Tax Amount</td>
         <td>' . sprintf('%.2f', $stateTax) . '</td>
@@ -387,16 +389,23 @@ echo $output;
         <td>' . sprintf('%.2f', $cityTax) . '</td>
         <td align="right">City Taxable Sales</td>
         <td>' . sprintf('%.2f', $cityTax / $city) . '</td>
+        </tr>';
+    echo '<tr>
+        <td align="right">County Tax Amount</td>
+        <td>' . sprintf('%.2f', $countyTax) . '</td>
+        <td align="right">County Taxable Sales</td>
+        <td>' . sprintf('%.2f', $countyTax / $county) . '</td>
         </tr>';
 
     echo '<tr><th>Tax Collected on Deli rate items</th>
             <th>' . sprintf('%.2f', $collected[2]) . '</th>
             <th>Deli Taxable Sales</th>
-            <th>' . sprintf('%.2f', $collected[2]/($state+$city+$deli)) . '</th>
+            <th>' . sprintf('%.2f', $collected[2]/($state+$city+$deli+$county)) . '</th>
             </tr>';
-    $stateTax = $collected[2] * ($state/($state+$city+$deli));
-    $cityTax = $collected[2] * ($city/($state+$city+$deli));
-    $deliTax = $collected[2] * ($deli/($state+$city+$deli));
+    $stateTax = $collected[2] * ($state/($state+$city+$deli+$county));
+    $cityTax = $collected[2] * ($city/($state+$city+$deli+$county));
+    $deliTax = $collected[2] * ($deli/($state+$city+$deli+$county));
+    $countyTax = $collected[2] * ($county/($state+$city+$deli+$county));
     echo '<tr>
         <td align="right">State Tax Amount</td>
         <td>' . sprintf('%.2f', $stateTax) . '</td>
@@ -408,6 +417,12 @@ echo $output;
         <td>' . sprintf('%.2f', $cityTax) . '</td>
         <td align="right">City Taxable Sales</td>
         <td>' . sprintf('%.2f', $cityTax / $city) . '</td>
+        </tr>';
+    echo '<tr>
+        <td align="right">County Tax Amount</td>
+        <td>' . sprintf('%.2f', $countyTax) . '</td>
+        <td align="right">County Taxable Sales</td>
+        <td>' . sprintf('%.2f', $countyTax / $county) . '</td>
         </tr>';
     echo '<tr>
         <td align="right">Deli Tax Amount</td>
@@ -416,11 +431,13 @@ echo $output;
         <td>' . sprintf('%.2f', $deliTax / $deli) . '</td>
         </tr>';
 
-    $stateTax = ($collected[1] * ($state/($state+$city))) 
-                + ($collected[2] * ($state/($state+$city+$deli)));
-    $cityTax = ($collected[1] * ($city/($state+$city))) 
-                + ($collected[2] * ($city/($state+$city+$deli)));
-    $deliTax = $collected[2] * ($deli/($state+$city+$deli));
+    $stateTax = ($collected[1] * ($state/($state+$city+$county))) 
+                + ($collected[2] * ($state/($state+$city+$deli+$county)));
+    $cityTax = ($collected[1] * ($city/($state+$city+$county))) 
+                + ($collected[2] * ($city/($state+$city+$deli+$county)));
+    $countyTax = ($collected[1] * ($county/($state+$city+$county))) 
+                + ($collected[2] * ($county/($state+$city+$deli+$county)));
+    $deliTax = $collected[2] * ($deli/($state+$city+$deli+$county));
     echo '<tr><th colspan="4">State Totals</th></tr>';
     echo '<tr>
         <td align="right">Tax Collected</td>
@@ -434,6 +451,13 @@ echo $output;
         <td>' . sprintf('%.2f', $cityTax) . '</td>
         <td align="right">Taxable Sales</td>
         <td>' . sprintf('%.2f', $cityTax / $city) . '</td>
+        </tr>';
+    echo '<tr><th colspan="4">County Totals</th></tr>';
+    echo '<tr>
+        <td align="right">Tax Collected</td>
+        <td>' . sprintf('%.2f', $countyTax) . '</td>
+        <td align="right">Taxable Sales</td>
+        <td>' . sprintf('%.2f', $countyTax / $county) . '</td>
         </tr>';
     echo '<tr><th colspan="4">Deli Totals</th></tr>';
     echo '<tr>

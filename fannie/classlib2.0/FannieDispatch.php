@@ -26,7 +26,7 @@ class FannieDispatch
 
     private static $logger;
 
-    static private function setLogger($l)
+    static public function setLogger($l)
     {
         self::$logger = $l;
     }
@@ -69,6 +69,16 @@ class FannieDispatch
         $error = error_get_last();
         if ($error["type"] == E_ERROR) {
             self::errorHandler($error["type"], $error["message"], $error["file"], $error["line"]);
+            /**
+              Put fatals in the error log as well as the debug log
+              For good measure, put them in STDERR too. Try to
+              ensure somebody notices.
+            */
+            $msg = $error['message']
+                . ' Line ' . $error['line']
+                . ', File ' . $error['file'];
+            self::$logger->error($msg);
+            file_put_contents('php://stderr', $msg, FILE_APPEND);
         }
     }
 

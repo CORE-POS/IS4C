@@ -374,24 +374,34 @@ $diff = array_pop($dbc->fetch_row($checkR));
 $deliTax = 0.0325;
 $deliTax = 0.02775; 
 
-$stateTax = 0.0685;
+$stateTax = 0.06875;
 $cityTax = 0.01;
 $deliTax = 0.0225;
+$countyTax = 0.005;
 if (strtotime($repDate) >= strtotime('2008-07-01')) {
     $deliTax = 0.025;
-} elseif (strtotime($repDate) >= strtotime('2012-11-01')) {
-    $deliTax = 0.0325;
-} elseif (strtotime($repDate) >= strtotime('2013-06-01')) {
-    $deliTax = 0.02775; 
-} elseif (strtotime($repDate) >= strtotime('2014-08-01')) {
-    $deliTax = 0.0325;
+} 
+if (strtotime($repDate) >= strtotime('2012-11-01')) {
+    $deliTax = 0.0225;
+} 
+if (strtotime($repDate) >= strtotime('2013-06-01')) {
+    $deliTax = 0.01775; 
+} 
+if (strtotime($repDate) >= strtotime('2014-08-01')) {
+    $deliTax = 0.0225;
+} 
+if (strtotime($repDate) <= strtotime('2015-04-01')) {
+    $countyTax = 0;
 }
 
-$taxQ = $dbc->prepare_statement("SELECT (CASE WHEN d.tax = 1 THEN 'Non Deli Sales' ELSE 'Deli Sales' END) as type, sum(total) as taxable_sales,
-.01*(sum(CASE WHEN d.tax = 1 THEN total ELSE 0 END)) as city_tax_nonDeli,
-$deliTax*(sum(CASE WHEN d.tax = 2 THEN total ELSE 0 END)) as city_tax_Del, 
-.0685*(sum(total)) as state_tax,
-((.01*(sum(CASE WHEN d.tax = 1 THEN total ELSE 0 END))) + ($deliTax*(sum(CASE WHEN d.tax = 2 THEN total ELSE 0 END))) + (.0685*(sum(total)))) as total_tax 
+$taxQ = $dbc->prepare_statement("
+SELECT 
+    (CASE WHEN d.tax = 1 THEN 'Non Deli Sales' ELSE 'Deli Sales' END) as type, 
+    sum(total) as taxable_sales,
+    $cityTax*(sum(total)) as city_tax,
+    $deliTax*(sum(CASE WHEN d.tax = 2 THEN total ELSE 0 END)) as deli_tax,
+    $stateTax*(sum(total)) as state_tax,
+    $countyTax*(SUM(total)) AS county_tax
 FROM $dlog as d 
 WHERE d.tdate BETWEEN ? AND ?
 AND d.tax <> 0 
@@ -400,11 +410,27 @@ GROUP BY d.tax ORDER BY d.tax DESC");
 $taxR = $dbc->exec_statement($taxQ, $store_dates);
 $taxes = array();
 while($row = $dbc->fetch_row($taxR))
-    $taxes["$row[0]"] = array(-1*$row[1],-1*$row[2],-1*$row[3],-1*$row[4],-1*$row[5]);
+    $taxes["$row[0]"] = array(
+        -1*$row['taxable_sales'],
+        -1*$row['city_tax'],
+        -1*$row['deli_tax'],
+        -1*$row['county_tax'],
+        -1*$row['state_tax'],
+        -1*($row['city_tax']+$row['county_tax']+$row['state_tax']+$row['deli_tax'])
+    );
 echo "<br /><b>Sales Tax</b>";
-echo tablify($taxes,array(0,1,2,3,4,5),array("&nbsp;","Taxable Sales","City Tax","Deli Tax","State Tax","Total Tax"),
+echo tablify($taxes,array(0,1,2,3,4,5,6),
+    array(
+        "&nbsp;",
+        "Taxable Sales",
+        sprintf("City Tax (%.2f%%)", $cityTax*100),
+        sprintf("Deli Tax (%.2f%%)", $deliTax*100),
+        sprintf("County Tax (%.2f%%)", $countyTax*100),
+        sprintf("State Tax (%.3f%%)", $stateTax*100),
+        "Total Tax"
+    ),
     array($ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT|$TYPE_MONEY,
-          $ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT|$TYPE_MONEY));
+          $ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT|$TYPE_MONEY));
 
 $taxSumQ = $dbc->prepare_statement("SELECT  -1*sum(total) as tax_collected
 FROM $dlog as d 

@@ -132,6 +132,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         System.Console.WriteLine("  Screen Control: POS");
         System.Console.WriteLine("  Paycards Communication: Messages");
         System.Console.WriteLine("  USB Layer: HidSharp");
+        PushOutput("TERMAUTODISABLE");
 
         GetHandle();
         SendReport(BuildCommand(LcdSetBacklightTimeout(0)));
@@ -977,20 +978,8 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         PushOutput("TERMBMP"+ticks+".bmp");
     }
 
-    protected void PushOutput(string s){
-        /*
-        int ticks = Environment.TickCount;
-        char sep = System.IO.Path.DirectorySeparatorChar;
-        while(File.Exists(MAGELLAN_OUTPUT_DIR+sep+ticks))
-            ticks++;
-
-        TextWriter sw = new StreamWriter(MAGELLAN_OUTPUT_DIR+sep+"tmp"+sep+ticks);
-        sw = TextWriter.Synchronized(sw);
-        sw.WriteLine(s);
-        sw.Close();
-        File.Move(MAGELLAN_OUTPUT_DIR+sep+"tmp"+sep+ticks,
-              MAGELLAN_OUTPUT_DIR+sep+ticks);
-        */
+    protected void PushOutput(string s)
+    {
         parent.MsgSend(s);
     }
 
