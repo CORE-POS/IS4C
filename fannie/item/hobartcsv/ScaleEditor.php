@@ -154,6 +154,15 @@ class ScaleEditor extends FannieRESTfulPage
 
         return $ret;
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            Define the name, type, and network location of service scales.
+            Currently only Hobart Quantums are supported. Data Gate Weigh
+            still has to be configured separately with similar information.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

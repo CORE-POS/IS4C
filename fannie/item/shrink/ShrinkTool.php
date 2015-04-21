@@ -185,6 +185,22 @@ class ShrinkTool extends FannieRESTfulPage
             </p>
             </form>';
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            The back end tool for entering shrink. Enter a UPC,
+            then on the next screen specify a quantity lost
+            and a reason. The price and cost should be correct
+            but can be adjusted if needed.
+            </p>
+            <p>
+            Loss vs Contribute may be WFC specific. From an inventory
+            standpoint, the item is gone either way but if it
+            can be donated ("contributed") to charity that may
+            be relevant for tax accounting.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

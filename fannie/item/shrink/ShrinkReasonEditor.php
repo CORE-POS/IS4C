@@ -114,6 +114,21 @@ class ShrinkReasonEditor extends FannieRESTfulPage
 
         return $ret;
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            Maintain a list of reasons for "shrinking" products.
+            In this context, shrink means entering loss quanties
+            from breakage, spoilage, etc. When entering shrink,
+            the user can select a specific reason.
+            </p>
+            <p>
+            Reasons are not strictly necessary unless the store
+            wants to track why different losses take place. For
+            the sake of quantity on hand, loss is loss.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

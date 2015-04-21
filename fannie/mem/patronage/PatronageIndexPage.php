@@ -30,6 +30,7 @@ class PatronageIndexPage extends FannieRESTfulPage
     protected $title = "Fannie :: Patronage Tools";
     protected $header = "Fannie :: Patronage Tools";
     public $themed = true;
+    public $description = '[Patronage Menu] lists various patronage calculation tools';
 
     public function helpContent()
     {

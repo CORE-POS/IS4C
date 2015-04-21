@@ -207,6 +207,17 @@ class PluRangePage extends FannieRESTfulPage
         return $ret;
     }
 
+    public function helpContent()
+    {
+        return '<p>
+            Find a block of available PLU numbers. The PLU length 
+            is the number of digits in the PLU. The number needed
+            refers to how many are needed. Setting number needed to
+            three will attempt to find three <em>consecutive</em>
+            PLU numbers that are not in use.
+            </p>';
+    }
+
 }
 
 FannieDispatch::conditionalExec();

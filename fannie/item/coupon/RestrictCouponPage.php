@@ -169,6 +169,15 @@ function deletecoupon(upc){
         <?php
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            Place restrictions on how often a manufacturer coupon
+            can be used. Often this is set to zero to "ban" poorly
+            formatted coupon UPCs that apply to incorrect items.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

@@ -30,6 +30,8 @@ class PatronageChecks extends FannieRESTfulPage
     protected $title = "Fannie :: Patronage Checks";
     protected $header = "Fannie :: Patronage Checks";
     public $themed = true;
+    public $description = '[Patronage Checks] is an elaborate tool for generating PDFs with
+        patronage info that will print on check paper.';
 
     public function helpContent()
     {

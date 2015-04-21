@@ -273,6 +273,17 @@ class OpenRingReceipts extends FannieRESTfulPage
             </div>
             </form>';
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            Locate receipts in a given date range that
+            include open rings. Optionally filter to only
+            those receipts that also include UPCs that did
+            not scan. Typically this combination indicates
+            a product has not been entered into POS.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

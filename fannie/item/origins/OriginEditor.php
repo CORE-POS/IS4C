@@ -591,6 +591,18 @@ class OriginEditor extends FannieRESTfulPage
             $origin->save();
         }
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            Origins are where products come from. In many situations
+            this may be overkill from a labor/maintenance standpoint,
+            but origins can be defined in three tiers: countries,
+            states/provinces, and custom regions. Custom regions may
+            be smaller or larger than countries and/or states depending
+            what is being tracked and measured.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

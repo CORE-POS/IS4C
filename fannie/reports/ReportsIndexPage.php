@@ -190,6 +190,19 @@ open in a separate tab or window as a reference for Manufacturers and Vendors (D
         }
     }
 
+    public function helpContent()
+    {
+        return '<p>
+            <em>This page is generated automatically</em>.
+            </p>
+            <p>
+            These are almost all the reports currently available in the
+            system. Reports can be marked as not automatically
+            discoverable but that is fairly uncommon and mostly in
+            plugins.
+            </p>';
+    }
+
 }
 
 FannieDispatch::conditionalExec();
