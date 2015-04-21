@@ -75,34 +75,35 @@ public class SPH_Datacap_PDCX : SerialPortHandler
         byte[] buffer = new byte[10];
         while (SPH_Running) {
             try {
-                TcpClient client = http.AcceptTcpClient();
-                client.ReceiveTimeout = 100;
-                NetworkStream stream = client.GetStream();
-                string message = "";
-                int bytes_read = 0;
-                do {
-                    bytes_read = stream.Read(buffer, 0, buffer.Length);
-                    message += System.Text.Encoding.ASCII.GetString(buffer, 0, bytes_read);
-                } while (stream.DataAvailable);
+                using (TcpClient client = http.AcceptTcpClient()) {
+		    client.ReceiveTimeout = 100;
+                    using (NetworkStream stream = client.GetStream()) {
+                        string message = "";
+                        int bytes_read = 0;
+                        do {
+                            bytes_read = stream.Read(buffer, 0, buffer.Length);
+                            message += System.Text.Encoding.ASCII.GetString(buffer, 0, bytes_read);
+                        } while (stream.DataAvailable);
 
-                message = GetHttpBody(message);
-                if (this.verbose_mode > 0) {
-                    System.Console.WriteLine(message);
+                        message = GetHttpBody(message);
+                        if (this.verbose_mode > 0) {
+                            Console.WriteLine(message);
+                        }
+
+                        string result = ax_control.ProcessTransaction(message, 0, null, null);
+                        result = WrapHttpResponse(result);
+                        if (this.verbose_mode > 0) {
+                            Console.WriteLine(result);
+                        }
+
+                        byte[] response = System.Text.Encoding.ASCII.GetBytes(result);
+                        stream.Write(response, 0, response.Length);
+                    }
+                    client.Close();
                 }
-
-                string result = ax_control.ProcessTransaction(message, 0, null, null);
-                result = WrapHttpResponse(result);
-                if (this.verbose_mode > 0) {
-                    System.Console.WriteLine(result);
-                }
-
-                byte[] response = System.Text.Encoding.ASCII.GetBytes(result);
-                stream.Write(response, 0, response.Length);
-
-                client.Close();
             } catch (Exception ex) {
                 if (verbose_mode > 0) {
-                    System.Console.WriteLine(ex);
+                    Console.WriteLine(ex);
                 }
             }
         }
