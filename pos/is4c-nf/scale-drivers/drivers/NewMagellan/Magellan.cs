@@ -31,7 +31,7 @@
 using System;
 using System.Threading;
 using System.IO;
-using System.Collections;
+using System.Collections.Generic;
 
 #if NEWTONSOFT_JSON
 using System.Linq;
@@ -46,10 +46,11 @@ using RabbitMQ.Client;
 using CustomForms;
 using CustomUDP;
 using SPH;
+using Discover;
 
-public class Magellan : DelegateForm {
-
-    private SerialPortHandler[] sph;
+public class Magellan : DelegateForm 
+{
+    private List<SerialPortHandler> sph;
     private UDPMsgBox u;
 
     #if CORE_RABBIT
@@ -61,53 +62,27 @@ public class Magellan : DelegateForm {
     // read deisred modules from config file
     public Magellan(int verbosity)
     {
-        ArrayList conf = ReadConfig();
-        sph = new SerialPortHandler[conf.Count];
-        for (int i = 0; i < conf.Count; i++) {
-            string port = ((string[])conf[i])[0];
-            string module = ((string[])conf[i])[1];
-            try {
-                switch (module) {
-                    case "SPH_Magellan_Scale":
-                        sph[i] = new SPH_Magellan_Scale(port);
-                        break;
-                    case "SPH_SignAndPay_USB":
-                        sph[i] = new SPH_SignAndPay_USB(port);
-                        break;
-                    case "SPH_SignAndPay_Auto":
-                        sph[i] = new SPH_SignAndPay_Auto(port);
-                        break;
-                    case "SPH_SignAndPay_Native":
-                        sph[i] = new SPH_SignAndPay_Native(port);
-                        break;
-                    case "SPH_IngenicoRBA_RS232":
-                        sph[i] = new SPH_IngenicoRBA_RS232(port);
-                        break;
-                    case "SPH_IngenicoRBA_IP":
-                        sph[i] = new SPH_IngenicoRBA_IP(port);
-                        break;
-                    case "SPH_IngenicoRBA_USB":
-                        sph[i] = new SPH_IngenicoRBA_USB(port);
-                        break;
-                    case "SPH_Parallel_Writer":
-                        sph[i] = new SPH_Parallel_Writer(port);
-                        break;
-                    /* Windows only; needs different handing
-                    case "SPH_Datacap_PDCX":
-                        sph[i] = new SPH_Datacap_PDCX(port);
-                        break;
-                    */
-                    default:
-                        throw new Exception("unknown module: " + module);
-                }
+        var d = new Discover.Discover();
+        var modules = d.GetSubClasses("SPH.SerialPortHandler");
 
-                sph[i].SetParent(this);
-                sph[i].SetVerbose(verbosity);
+        List<MagellanConfigPair> conf = ReadConfig();
+        sph = new List<SerialPortHandler>();
+	foreach (var pair in conf) {
+            try {
+		if (modules.Any(m => m.Name == pair.module)) {
+		    var type = d.GetType("SPH." + pair.module);
+		    Console.WriteLine(pair.module + ":" + pair.port);
+		    SerialPortHandler s = (SerialPortHandler)Activator.CreateInstance(type, new Object[]{ pair.port });
+                    s.SetParent(this);
+                    s.SetVerbose(verbosity);
+		    sph.Add(s);
+		} else {
+                    throw new Exception("unknown module: " + pair.module);
+                }
             } catch (Exception ex) {
-                System.Console.WriteLine(ex);
-                System.Console.WriteLine("Warning: could not initialize "+port);
-                System.Console.WriteLine("Ensure the device is connected and you have permission to access it.");
-                sph[i] = null;
+                Console.WriteLine(ex);
+                Console.WriteLine("Warning: could not initialize "+pair.port);
+                Console.WriteLine("Ensure the device is connected and you have permission to access it.");
             }
         }
         FinishInit();
@@ -125,7 +100,10 @@ public class Magellan : DelegateForm {
     // desired modules at compile-time
     public Magellan(SerialPortHandler[] args)
     {
-        this.sph = args;
+        this.sph = new List<SerialPortHandler>();
+	foreach (SerialPortHandler s in args) {
+	    sph.Add(s);
+	}
         FinishInit();
     }
 
@@ -140,7 +118,7 @@ public class Magellan : DelegateForm {
 
     private void MonitorSerialPorts()
     {
-        foreach(SerialPortHandler s in sph){
+        foreach (SerialPortHandler s in sph) {
             if (s == null) continue;
             s.SPH_Thread.Start();
         }
@@ -148,12 +126,10 @@ public class Magellan : DelegateForm {
 
     public override void MsgRecv(string msg)
     {
-        if (msg == "exit"){
+        if (msg == "exit") {
             this.ShutDown();
         } else {
-            foreach(SerialPortHandler s in sph){
-                s.HandleMsg(msg);
-            }
+	    sph.ForEach(s => { s.HandleMsg(msg); });
         }
     }
 
@@ -161,7 +137,7 @@ public class Magellan : DelegateForm {
     {
         int ticks = Environment.TickCount;
         string my_location = AppDomain.CurrentDomain.BaseDirectory;
-        char sep = System.IO.Path.DirectorySeparatorChar;
+        char sep = Path.DirectorySeparatorChar;
         while (File.Exists(my_location + sep + "ss-output/"  + sep + ticks)) {
             ticks++;
         }
@@ -182,39 +158,40 @@ public class Magellan : DelegateForm {
     public void ShutDown()
     {
         try {
-            foreach(SerialPortHandler s in sph){
-                s.Stop();
-            }
+	    sph.ForEach(s => { s.Stop(); });
             u.Stop();
         }
-        catch(Exception ex){
-            System.Console.WriteLine(ex);
+        catch(Exception ex) {
+            Console.WriteLine(ex);
         }
     }
 
     #if NEWTONSOFT_JSON
-    private ArrayList JsonConfig()
+    private List<MagellanConfigPair> JsonConfig()
     {
         string my_location = AppDomain.CurrentDomain.BaseDirectory;
-        char sep = System.IO.Path.DirectorySeparatorChar;
+        char sep = Path.DirectorySeparatorChar;
         string ini_file = my_location + sep + ".." + sep + ".." + sep + ".." + sep + "ini.json";
-        ArrayList al = new ArrayList();
-        if (!System.IO.File.Exists(ini_file)) {
-            return al;
+        List<MagellanConfigPair> conf = new List<MagellanConfigPair>();
+        if (!File.Exists(ini_file)) {
+            return conf;
         }
 
         try {
-            string ini_json = System.IO.File.ReadAllText(ini_file);
+            string ini_json = File.ReadAllText(ini_file);
             JObject o = JObject.Parse(ini_json);
             foreach (var port in o["NewMagellanPorts"]) {
                 if (port["port"] == null) {
-                    System.Console.WriteLine("Missing the \"port\" setting. JSON:");
-                    System.Console.WriteLine(port);
+                    Console.WriteLine("Missing the \"port\" setting. JSON:");
+                    Console.WriteLine(port);
                 } else if (port["module"] == null) {
-                    System.Console.WriteLine("Missing the \"module\" setting. JSON:");
-                    System.Console.WriteLine(port);
+                    Console.WriteLine("Missing the \"module\" setting. JSON:");
+                    Console.WriteLine(port);
                 } else {
-                    al.Add(new string[]{ (string)port["port"], (string)port["module"] });
+		    var pair = new MagellanConfigPair();
+		    pair.port = (string)port["port"];
+		    pair.module = (string)port["module"];
+		    conf.Add(pair);
                 }
             }
         } catch (NullReferenceException) {
@@ -222,47 +199,52 @@ public class Magellan : DelegateForm {
             // not a fatal problem
         } catch (Exception ex) {
             // unexpected exception
-            System.Console.WriteLine(ex);
+            Console.WriteLine(ex);
         }
 
-        return al;
+        return conf;
     }
     #endif
 
-    private ArrayList ReadConfig()
+    private List<MagellanConfigPair> ReadConfig()
     {
         /**
          * Look for settings in ini.json if it exists
          * and the library DLL exists
          */
         #if NEWTONSOFT_JSON
-        ArrayList json_ports = JsonConfig();
+        List<MagellanConfigPair> json_ports = JsonConfig();
         if (json_ports.Count > 0) {
             return json_ports;
         }
         #endif
+
         string my_location = AppDomain.CurrentDomain.BaseDirectory;
-        char sep = System.IO.Path.DirectorySeparatorChar;
+        char sep = Path.DirectorySeparatorChar;
         StreamReader fp = new StreamReader(my_location + sep + "ports.conf");
-        ArrayList al = new ArrayList();
-        Hashtable ht = new Hashtable();
+        List<MagellanConfigPair> conf = new List<MagellanConfigPair>();
+        HashSet<string> hs = new HashSet<string>();
         string line;
-        while( (line = fp.ReadLine()) != null){
+        while( (line = fp.ReadLine()) != null) {
             line = line.TrimStart(null);
             if (line == "" || line[0] == '#') continue;
             string[] pieces = line.Split(null);
             if (pieces.Length != 2) {
-                System.Console.WriteLine("Warning: malformed port.conf line: "+line);
-                System.Console.WriteLine("Format: <port_string> <handler_class_name>");
-            } else if (ht.ContainsKey(pieces[0])) {
-                System.Console.WriteLine("Warning: device already has a module attached.");
-                System.Console.WriteLine("Line will be ignored: "+line);
+                Console.WriteLine("Warning: malformed port.conf line: "+line);
+                Console.WriteLine("Format: <port_string> <handler_class_name>");
+            } else if (hs.Contains(pieces[0])) {
+                Console.WriteLine("Warning: device already has a module attached.");
+                Console.WriteLine("Line will be ignored: "+line);
             } else {
-                al.Add(pieces);
-                ht.Add(pieces[0], pieces[1]);
+	        var pair = new MagellanConfigPair();
+		pair.port = pieces[0];
+		pair.module = pieces[1];
+                conf.Add(pair);
+                hs.Add(pieces[0]);
             }
         }    
-        return al;
+
+        return conf;
     }
 
     static public void Main(string[] args)
@@ -280,12 +262,21 @@ public class Magellan : DelegateForm {
         Magellan m = new Magellan(verbosity);
         bool exiting = false;
         while (!exiting) {
-            string user_in = System.Console.ReadLine();
+            string user_in = Console.ReadLine();
             if (user_in == "exit") {
-                System.Console.WriteLine("stopping");
+                Console.WriteLine("stopping");
                 m.ShutDown();
                 exiting = true;
             }
         }
     }
+}
+
+/**
+ Helper class representing a config setting
+*/
+public class MagellanConfigPair
+{
+    public string port { get; set; }
+    public string module { get; set; }
 }

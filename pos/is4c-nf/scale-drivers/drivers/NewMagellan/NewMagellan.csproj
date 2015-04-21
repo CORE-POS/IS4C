@@ -31,11 +31,13 @@
     <MagellanRef Include="SPH.dll" />
     <MagellanRef Include="Newtonsoft.Json.dll" />
     <MagellanRef Include="rabbitmq\RabbitMQ.Client.dll" Condition=" Exists('rabbimq\RabbitMQ.Client.dll') " />
+    <MagellanRef Include="Discover.dll" />
 
     <MagellanTarget Include="DelegateFormLibrary" />
     <MagellanTarget Include="UDPMsgBoxLibrary" />
     <MagellanTarget Include="SPHLibrary" />
     <MagellanTarget Include="JsonLibrary" />
+    <MagellanTarget Include="Discover" />
   </ItemGroup>
   <Target Name="Build" DependsOnTargets="@(MagellanTarget)">
     <Csc Sources="@(Magellan)" References="@(MagellanRef)" TargetType="exe" OutputAssembly="pos.exe" 
@@ -141,6 +143,15 @@
   </Target>
 
   <ItemGroup>
+    <Discover Include="Discover.cs" />
+  </ItemGroup>
+  <Target Name="Discover" Returns="Discover.dll">
+    <Csc Sources="@(Discover)" TargetType="library" OutputAssembly="Discover.dll" 
+        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" />
+  </Target>
+
+  <ItemGroup>
+    <CleanFiles Include="Discover.dll" />
     <CleanFiles Include="DelegateForm.dll" />
     <CleanFiles Include="Bitmap.dll" />
     <CleanFiles Include="ParallelLayer.dll" />
