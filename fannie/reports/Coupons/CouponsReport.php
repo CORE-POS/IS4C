@@ -126,6 +126,15 @@ class CouponsReport extends FannieReportPage {
         return ob_get_clean();
     }
 
+    public function helpContent()
+    {
+        return '<p>
+            List usage of manufacturer coupons by UPC for
+            a given date range. Can be faster than counting
+            paper coupons if redemption agency accepts counts
+            </p>';
+    }
+
 }
 
 FannieDispatch::conditionalExec();

@@ -91,6 +91,14 @@ class ArReport extends FannieReportPage
             </form>';
     }
 
+    public function helpContent()
+    {
+        return '<p>
+            View all Accounts Receivable (AR) activity for a given member.
+            Enter the desired member number.
+            </p>';
+    }
+
 }
 
 FannieDispatch::conditionalExec();

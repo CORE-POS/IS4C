@@ -357,6 +357,29 @@ class GeneralDayReport extends FannieReportPage
         </form>
         <?php
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            This report lists the four major categories of transaction
+            information for a given day: tenders, sales, discounts, and
+            taxes.
+            </p>
+            <p>
+            Tenders are payments given by customers such as cash or
+            credit cards. Sales are items sold to customers. Discounts
+            are percentage discounts associated with an entire
+            transaction instead of individual items. Taxes are sales
+            tax collected.
+            </p>
+            <p>
+            Tenders should equal sales minus discounts plus taxes.
+            </p>
+            <p>
+            Equity and transaction statistics are provided as generally
+            useful information.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

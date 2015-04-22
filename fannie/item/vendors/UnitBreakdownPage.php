@@ -273,6 +273,20 @@ class UnitBreakdownPage extends FannieRESTfulPage
                 }
             ';
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            Breakdowns are individual item entries in
+            a vendor catalog that turn into multiple products
+            that the store sells. The cannonical example is a
+            soda purchased in a 6-pack from the vendor but sold
+            as both 6-packs as well as singles. Running breakdowns
+            will generate additional products from vendor items
+            and calculate their costs based on the original
+            items\' unit size.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

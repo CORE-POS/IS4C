@@ -206,6 +206,17 @@ class SkuMapPage extends FannieRESTfulPage
                 }
             ';
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            Create a permanent mapping between certain vendor item SKUs
+            and store product UPCs. This is used when importing entire
+            catalogs from spreadsheet type sources. The process usually
+            rebuilds the catalog from scratch. This separate mapping
+            preserves SKU => UPC relationships through that rebuild.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

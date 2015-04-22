@@ -326,6 +326,18 @@ class SyncFromSearch extends FannieRESTfulPage
         <?php
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            Push item(s) from an advanced search to service scales.
+            Currently Hobart Quantums are supported. Choose which scale(s)
+            the items should be sent to and then either sync all items with
+            buttons at the top or sync individual items with the buttons
+            in the list of items.
+            </p>';
+
+    }
 }
 
 FannieDispatch::conditionalExec();

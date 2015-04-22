@@ -126,6 +126,14 @@ class ItemLastQuarterReport extends FannieReportPage
 
         return true;
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            Lists an item\'s sales over the previous thirteen weeks
+            with its percentage of category sales.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

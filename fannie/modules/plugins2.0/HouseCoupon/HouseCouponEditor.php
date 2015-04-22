@@ -32,9 +32,7 @@ if (!class_exists('FannieAPI')) {
 class HouseCouponEditor extends FanniePage 
 {
 
-    public $description = "
-    Module for managing in store coupons
-    ";
+    public $description = "[Module] for managing in store coupons";
     public $themed = true;
 
     protected $header = "Fannie :: House Coupons";
@@ -515,7 +513,7 @@ class HouseCouponEditor extends FanniePage
 
     public function helpContent()
     {
-        $help = file_get_contents('explainify.html');
+        $help = file_get_contents(dirname(__FILE__) . '/explainify.html');
         $extract = preg_match('/<body>(.*)<\/body>/ms', $help, $matches);
         if ($extract) {
             return $matches[1];

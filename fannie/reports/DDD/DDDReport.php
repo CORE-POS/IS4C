@@ -160,6 +160,14 @@ class DDDReport extends FannieReportPage
 </form>
         ';
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            List items marked as shrink for a given date range. In this
+            context, shrink is tracking losses.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

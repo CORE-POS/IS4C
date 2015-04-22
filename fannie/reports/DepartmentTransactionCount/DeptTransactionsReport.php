@@ -122,6 +122,14 @@ class DeptTransactionsReport extends FannieReportPage
 
         return $form;
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            Lists number of transactions in a department or set of
+            departments over a given date range.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

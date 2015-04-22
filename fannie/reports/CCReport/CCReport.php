@@ -95,6 +95,16 @@ class CCReport extends FannieReportPage
 
         return $data;
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            Lists information about integrated card transactions
+            for a given date range. The <strong>Integrated Card
+            Report</strong> is newer and probably better but
+            this has not been retired yet.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

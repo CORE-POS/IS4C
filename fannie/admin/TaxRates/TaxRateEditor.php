@@ -96,6 +96,19 @@ class TaxRateEditor extends FanniePage {
 
         return $ret;
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            Manage sales tax rates. Rates should be 
+            specified as decimals - for example, 0.05 means 5%.
+            Entries should be effective tax rates as opposed to 
+            invdividual taxes. If, for example, there is a state
+            sales tax as well as city sales tax that applies to
+            taxable items, the <em>effective</em> rate is both
+            rates added together.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

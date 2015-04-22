@@ -43,6 +43,7 @@ class UploadAnyFile extends FanniePage {
 
     public $description = '[Generic Upload] simply uploads a file to temporary storage
     on the server.';
+    public $page_set = 'Import Tools';
     public $themed = true;
 
     private $tpath;
@@ -145,6 +146,16 @@ class UploadAnyFile extends FanniePage {
         <?php
 
         return ob_get_clean();
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            Upload a file to temporary storage on the server. This
+            may go away. Plenty of better tools exist for this purpose.
+            Recommendations include: Samba/SMB/CIFS, NFS, FTP, SFTP,
+            SCP, rsync.
+            </p>';
     }
 }
 

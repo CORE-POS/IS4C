@@ -132,6 +132,15 @@ class EquityAllReport extends FannieReportPage
 
     }
 
+    public function helpContent()
+    {
+        return '<p>
+            List equity balances for members or a subset of members.
+            Pulling live data is a bit slower than pulling
+            as-of-yesterday data.
+            </p>';
+    }
+
 }
 
 FannieDispatch::conditionalExec();

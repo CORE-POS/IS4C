@@ -283,6 +283,17 @@ class SignFromSearch extends FannieRESTfulPage
         return $ret;
     }
 
+    public function helpContent()
+    {
+        return '<p>
+            Create signs and/or tags. First select a layout
+            that controls how the tags look. Then select which
+            prices to use: current or upcoming, retail or sale/promo.
+            Text for each item can be overriden in the 
+            list of items below.
+            </p>';
+    }
+
 }
 
 FannieDispatch::conditionalExec(false);

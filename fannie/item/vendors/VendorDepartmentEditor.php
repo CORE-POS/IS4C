@@ -237,6 +237,22 @@ class VendorDepartmentEditor extends FanniePage {
 
         return $ret;
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            Vendor departments are distinct from POS\' department
+            hierarchy. The primary purpose for categorizing vendor
+            items into vendor-specific departments is that specialize
+            margin targets can be assigned to each vendor department.
+            </p>
+            <p>
+            To simply set a vendor-specific margin, create a single
+            vendor department containing all the vendor\'s items.
+            Depending how entries were created, this should be
+            vendor department #0 or #1.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

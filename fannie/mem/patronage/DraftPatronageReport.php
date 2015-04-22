@@ -84,6 +84,14 @@ class DraftPatronageReport extends FannieReportPage
         return $data;
     }
 
+    public function helpContent()
+    {
+        return '<p>
+            Show the in-progress data used for calculating
+            patronage rebate info for a given year.
+            </p>';
+    }
+
 }
 
 FannieDispatch::conditionalExec();

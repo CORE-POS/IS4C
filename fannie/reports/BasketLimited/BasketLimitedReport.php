@@ -147,6 +147,16 @@ class BasketLimitedReport extends FannieReportPage
 
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            This report shows per-item sales for transactions
+            containing a specific number of items or fewer.
+            Canonically, if customers are buying just a single item,
+            which item(s) are they buying most often?
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

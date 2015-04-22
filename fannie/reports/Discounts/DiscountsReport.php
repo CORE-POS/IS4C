@@ -123,6 +123,15 @@ class DiscountsReport extends FannieReportPage {
         return ob_get_clean();
     }
 
+    public function helpContent()
+    {
+        return '<p>
+            List member discounts for a given range. These discounts are 
+            transaction-wide, percentage discounts associated with a
+            member (or customer) account.
+            </p>';
+    }
+
 }
 
 FannieDispatch::conditionalExec();

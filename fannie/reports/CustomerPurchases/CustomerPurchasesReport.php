@@ -136,6 +136,13 @@ class CustomerPurchasesReport extends FannieReportPage
 </form>
 <?php
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            List items purchased by a given customer in a given date range.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

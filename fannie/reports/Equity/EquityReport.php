@@ -92,6 +92,14 @@ class EquityReport extends FannieReportPage
             </form>';
     }
 
+    public function helpContent()
+    {
+        return '<p>
+            List equity transactions for a given member. Simply
+            enter the member number.
+            </p>';
+    }
+
 }
 
 FannieDispatch::conditionalExec();

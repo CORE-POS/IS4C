@@ -143,6 +143,14 @@ class ItemOrderHistoryReport extends FannieReportPage
 
         return true;
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            Lists purchase orders and/or invoices
+            containing a particular item.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

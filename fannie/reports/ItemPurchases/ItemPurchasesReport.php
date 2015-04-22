@@ -152,6 +152,13 @@ class ItemPurchasesReport extends FannieReportPage
 <?php
         $this->add_onload_command('$(\'#upc-field\').focus();');
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            Lists every transaction containing a particular item.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);
