@@ -232,7 +232,7 @@ class CronManagementPage extends FanniePage
                 $job['hour'],
                 $job['day'],
                 $job['month'],
-                $job['year'],
+                $job['wkdy'],
                 $job['cmd'],
                 $job['cmd']
             );
