@@ -30,6 +30,7 @@ class DeptSettingsReport extends FannieReportPage
 {
     public $description = '[Department Settings] provides a quick overview of current department settings for margin, tax, and foodstamp status.';
     public $themed = true;
+    public $report_set = 'Operational Data';
 
     protected $report_headers = array('Dept #', 'Dept Name', 'Sales Code', 'Margin', 'Tax', 'FS');
     protected $title = "Fannie : Department Settings";

@@ -226,6 +226,14 @@ class VendorMovementReport extends FannieReportPage
 <?php
         $this->add_onload_command('$(\'#vendor\').focus();');
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            Lists product movement for products from a given
+            vendor during the specified date range.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

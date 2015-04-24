@@ -8,6 +8,8 @@ class WeeklySalesReport extends FannieReportPage
 {
 
     public $themed = true;
+    public $description = '[Weekly Sales] list one big total sales number per week';
+    public $report_set = 'Sales Reports';
     protected $title = 'Weekly Sales';
     protected $header = 'Weekly Sales';
     protected $required_fields = array('date1', 'date2');
@@ -87,6 +89,14 @@ class WeeklySalesReport extends FannieReportPage
                 <button type="submit" class="btn btn-default">Get Report</button>
             </p>
             </form>';
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            Lists total sales for each week in the given date range.
+            This is simply one (hopefully) big number per week.
+            </p>';
     }
 }
 

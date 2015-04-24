@@ -28,9 +28,10 @@ if (!class_exists('FannieAPI')) {
 
 class CWTransactionsReport extends FannieReportPage 
 {
-    public $description = '[Transactions Report] lists information about basket size and member type.
+    public $description = '[Transactions Report] lists information about basket size by member type.
         Requires CoreWarehouse plugin.';
     public $themed = true;
+    public $report_set = 'Transaction Reports';
 
     protected $title = 'Transactions Report';
     protected $header = 'Transactions Report';
@@ -166,6 +167,14 @@ class CWTransactionsReport extends FannieReportPage
                 ' . FormLib::dateRangePicker() . '
             </div>
             </form>';
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            This report shows information about total spending
+            in the time period broken down by member type.
+            </p>';
     }
 }
 

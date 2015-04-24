@@ -145,6 +145,14 @@ class TenderInOutReport extends FannieReportPage
 
         return ob_get_clean();
     }
+    
+    public function helpContent()
+    {
+        return '<p>
+            Lists each individual use of a given tender
+            during the selected date range.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

@@ -134,6 +134,21 @@ class ZipCodeReport extends FannieReportPage
         return $ret;
     }
 
+    public function helpContent()
+    {
+        return '<p>
+            Lists information about members by their zip code.
+            The default Join Date option will only show the number
+            of members from each zip code who joined the co-op in
+            the given date range.
+            </p>
+            <p>
+            If the CoreWarehouse plugin is available, the report
+            can also show total purchase information per zip code
+            for all members who shopped in the given date range.
+            </p>';
+    }
+
 }
 
 FannieDispatch::conditionalExec();

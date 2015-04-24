@@ -29,7 +29,7 @@ if (!class_exists('FannieAPI')) {
 class HourlyTransReport extends FannieReportPage 
 {
     public $description = '[Hourly Transactions] lists transactions per hour over a given date range.';
-    public $report_set = 'Sales Reports';
+    public $report_set = 'Transaction Reports';
     public $themed = true;
 
     protected $title = "Fannie : Hourly Transactions Report";

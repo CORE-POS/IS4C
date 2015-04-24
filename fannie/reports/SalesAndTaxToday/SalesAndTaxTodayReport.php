@@ -341,6 +341,14 @@ echo "<br />id $id";
         return($retVal);
     }
 
+    public function helpContent()
+    {
+        return '<p>
+            Show hourly sales for the current day. Also includes
+            information about sales tax collected.
+            </p>';
+    }
+
 // SalesAndTaxTodayReport
 }
 

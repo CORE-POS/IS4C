@@ -30,6 +30,7 @@ class HourlyCustomersReport extends FannieReportPage
 {
     public $description = '[Hourly Customers] lists number of customers per hour for a given day.';
     public $themed = true;
+    public $report_set = 'Transaction Reports';
 
     protected $header = "Customers per Hour";
     protected $title = "Fannie : Customers per Hour";

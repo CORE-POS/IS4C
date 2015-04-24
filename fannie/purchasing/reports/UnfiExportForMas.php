@@ -33,7 +33,7 @@ class UnfiExportForMas extends FannieReportPage
     protected $sortable = false;
     protected $no_sort_but_style = true;
 
-    public $page_set = 'Reports';
+    public $page_set = 'Purchasing';
     public $description = '[MAS Invoice Export] exports vendor invoices for MAS90.';
     public $themed = true;
 
@@ -173,6 +173,16 @@ class UnfiExportForMas extends FannieReportPage
 <?php
 
         return ob_get_clean();
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            Transforms vendor invoice data into a format that
+            can be imported into Sage MAS90. This probably cannot
+            be used outside WFC other than as an example to
+            base similar import/export reports on.
+            </p>';
     }
 }
 

@@ -32,6 +32,7 @@ class BasketLimitedReport extends FannieReportPage
     public $description = '[Small Basket Report] lists sales for transactions containing a limited
     number of items - i.e., what do people buy when they\'re only purchasing one or two things?';
     public $themed = true;
+    public $report_set = 'Transaction Reports';
 
     protected $report_headers = array('UPC', 'Description', '# Trans', 'Qty', '$');
     protected $sort_column = 2;

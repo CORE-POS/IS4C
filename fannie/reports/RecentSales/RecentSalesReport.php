@@ -155,6 +155,21 @@ class RecentSalesReport extends FannieReportPage
                 </p>
                 </form>';
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            List sales for an item on:
+            <ul>
+                <li>Each of the last three days</li>
+                <li>The current and previous week</li>
+                <li>The current and previous month</li>
+            </ul>
+            This report is rarely used directly. More often
+            it is integrated into other tools to provide
+            a quick snapshot of sale information.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

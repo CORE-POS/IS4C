@@ -556,6 +556,17 @@ class StoreSummaryReport extends FannieReportPage {
     // form_content()
     }
 
+    public function helpContent()
+    {
+       return '<p>
+           This shows total sales, costs and taxes
+           per department for a given date range in dollars as well as a percentage of 
+           store-wide sales and costs. It uses actual item cost if known and estimates 
+           cost from price and department margin if not; 
+           relies on department margins being accurate.
+           </p>';
+    }
+
 // StoreSummaryReport
 }
 

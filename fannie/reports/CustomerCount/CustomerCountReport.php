@@ -50,6 +50,7 @@ class CustomerCountReport extends FannieReportPage {
 
     public $description = '[Customer Count] lists the number of customers per day, separated by membership type.';
     public $themed = true;
+    public $report_set = 'Membership';
 
     function preprocess(){
         global $FANNIE_OP_DB;

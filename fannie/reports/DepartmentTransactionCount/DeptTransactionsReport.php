@@ -31,6 +31,7 @@ class DeptTransactionsReport extends FannieReportPage
     public $description = '[Department Transactions] lists the number of transactions in a department
         or departments over a given date range.';
     public $themed = true;
+    public $report_set = 'Transaction Reports';
 
     protected $report_headers = array('Date', '# Matching Trans', '# Total Trans', '%');
 

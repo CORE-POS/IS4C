@@ -31,6 +31,7 @@ class NewItemsReport extends FannieReportPage
     public $description = '[New Items] shows products recently added to POS. This is more
         approximate than definitive.';
     public $themed = true;
+    public $report_set = 'Operational Data';
 
     protected $title = "Fannie : New Items Report";
     protected $header = "New Items Report";
@@ -131,6 +132,14 @@ class NewItemsReport extends FannieReportPage
         $form = FormLib::dateAndDepartmentForm($d_list, $s_list, true);
 
         return $form;
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            List items that were added to POS
+            in the given date range.
+            </p>';
     }
 }
 

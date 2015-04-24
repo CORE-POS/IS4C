@@ -28,8 +28,8 @@ if (!class_exists('FannieAPI')) {
 
 class ScaleItemsReport extends FannieReportPage 
 {
-    public $description = '[Scale Items] lists all items sent to Hobart scales';
-    public $report_set = '';
+    public $description = '[Scale Items] lists items with Hobart scale information';
+    public $report_set = 'Operational Data';
     public $themed = true;
 
     protected $report_headers = array('UPC', 'Description', 'Weight', 'Tare', 'Shelf Life',
@@ -145,6 +145,16 @@ class ScaleItemsReport extends FannieReportPage
             </form>';
 
         return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            List service scale item information stored in POS, 
+            optionally limited to a range of departments. 
+            The search text option will search within both
+            descriptions and longer label text.
+            </p>';
     }
 
 }

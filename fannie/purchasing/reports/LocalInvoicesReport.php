@@ -33,7 +33,7 @@ class LocalInvoicesReport extends FannieReportPage
     protected $sortable = false;
     protected $no_sort_but_style = true;
 
-    public $page_set = 'Reports';
+    public $page_set = 'Purchasing';
     public $description = '[Local Invoice Report] show local item totals for invoices.';
     public $themed = true;
 
@@ -200,6 +200,15 @@ class LocalInvoicesReport extends FannieReportPage
 <?php
 
         return ob_get_clean();
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            This report lists information about items designated
+            as local on vendor invoices over a particular
+            date range.
+            </p>'; 
     }
 }
 

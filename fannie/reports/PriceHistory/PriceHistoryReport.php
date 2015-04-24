@@ -37,6 +37,7 @@ class PriceHistoryReport extends FannieReportPage
 
     public $description = '[Price History] shows what prices an item as been assigned over a given time period.';
     public $themed = true;
+    public $report_set = 'Operational Data';
 
     /**
       Report has variable inputs so change
@@ -232,6 +233,13 @@ class PriceHistoryReport extends FannieReportPage
 </form>
         <?php
         return ob_get_clean();
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            List price changes for a given item.
+            </p>';
     }
 }
 

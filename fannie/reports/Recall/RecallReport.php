@@ -131,6 +131,16 @@ class RecallReport extends FannieReportPage
             </div>
             </form>';
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            List all members who purchased a specific product
+            in the given range. The original use case was as a
+            tool to notify members in the event of a product
+            recall.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

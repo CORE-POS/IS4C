@@ -36,6 +36,7 @@ class BatchReport extends FannieReportPage
 
     public $description = '[Batch Report] lists sales for items in a sales batch (or group of sales batches).';
     public $themed = true;
+    public $report_set = 'Batches';
 
     function fetch_report_data()
     {

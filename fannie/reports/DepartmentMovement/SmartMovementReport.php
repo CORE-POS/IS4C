@@ -34,7 +34,8 @@ class SmartMovementReport extends FannieReportPage
 
     protected $required_fields = array('date1', 'date2');
 
-    public $description = '[Department Movement] lists sales for a department or group of departments over a given date range.';
+    public $description = '[Smart Movement] combines several different movement reports into
+        a single report with a larger set of settings.';
     public $report_set = 'Movement Reports';
     public $themed = true;
     private $mode = 'PLU';
@@ -304,6 +305,32 @@ class SmartMovementReport extends FannieReportPage
         <?php
 
         return ob_get_clean();
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            This tool performs a variety of different movement reports.
+            Select the set of items by department, brand, vendor, or
+            like code using the appropriate tabs. 
+            </p>
+            <p>
+            Identifying items by department provides a super department
+            choice and/or a range of departments and/or a range of
+            sub departments. Identifying by brand allows either a text
+            brand name or a numeric UPC prefix. Vendor simply allows
+            a choice of vendor. Like code provides a range of like
+            codes.
+            </p>
+            <p>
+            After choosing a method for identifying a set of items
+            and defining a date range, there is also an option to choose
+            how the report is summed. PLU will show one row for each
+            item sold. Date will show one row for each day in the period.
+            Department will show one row for each department that
+            has sales. Weekday is similar to date but combines each Monday,
+            Tuesday, etc into a single row.
+            </p>'; 
     }
 }
 

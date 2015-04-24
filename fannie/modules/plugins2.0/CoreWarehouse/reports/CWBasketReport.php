@@ -28,9 +28,11 @@ if (!class_exists('\\FannieAPI')) {
 
 class CWBasketReport extends FannieReportPage 
 {
-    public $description = '[Basket Report] lists basket size over time
+    public $description = '[Basket Report] lists weekly statistics about
+        basket size for members, non-members, and both combined.
         Requires CoreWarehouse plugin.';
     public $themed = true;
+    public $report_set = 'Transaction Reports';
 
     protected $header = 'Basket Report';
     protected $title = 'Basket Report';
@@ -261,6 +263,18 @@ function showGraph(colset) {
 }
         <?php
         return ob_get_clean();
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            This report lists <em>weekly</em> statistics
+            about basket size and spending for members, 
+            non-members, and both combined. The web version
+            of the report also includes a graph where the
+            blue line is members, the red line is non-members,
+            and the green line is both combined.
+            </p>';
     }
 }
 

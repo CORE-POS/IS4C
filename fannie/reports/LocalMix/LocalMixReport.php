@@ -28,9 +28,11 @@ if (!class_exists('FannieAPI')) {
 
 class LocalMixReport extends FannieReportPage 
 {
-    public $description = '[Small Basket Report] lists sales for transactions containing a limited
-    number of items - i.e., what do people buy when they\'re only purchasing one or two things?';
+    public $description = '[Local Mix Report] lists the total number of products
+        from each vendor as well as each brand within a vendor. The number of
+        products designated as local is also listed.';
     public $themed = true;
+    public $report_set = 'Purchasing';
     public $required_fields = array();
     protected $title = "Fannie : Local Item Mix Report";
     protected $header = "Local Item Mix Report";
@@ -153,6 +155,17 @@ class LocalMixReport extends FannieReportPage
         }
 
         return $data;
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            This report lists the total number of products
+            from each vendor as well as each brand within a vendor. The number of
+            products designated as local is also listed. It can be
+            used to check for discrepancies when products from a
+            brand or vendor has inconsistent local designations.
+            </p>';
     }
 
 }

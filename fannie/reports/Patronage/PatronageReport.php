@@ -117,6 +117,14 @@ class PatronageReport extends FannieReportPage
         return $data;
     }
 
+    public function helpContent()
+    {
+        return '<p>
+            Lists total patronage distribution information
+            for all members for a given fiscal year.
+            </p>';
+    }
+
 }
 
 FannieDispatch::conditionalExec();

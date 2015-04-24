@@ -30,6 +30,7 @@ class CouponsReport extends FannieReportPage {
 
     public $description = '[Manufacturer Coupons] lists coupons totals by UPC for a given date range.';
     public $themed = true;
+    public $report_set = 'Tenders';
 
     protected $title = "Fannie : Coupons Report";
     protected $header = "Coupons Report";

@@ -87,6 +87,14 @@ class SuspensionHistoryReport extends FannieReportPage
             </p>
             </form>';
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            Lists all changes to a membership\'s
+            active/inactive status.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

@@ -190,6 +190,15 @@ class MarginMovementReport extends FannieReportPage
 
         return $form;
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            This movement report includes total costs as well as
+            sales and calculates both margin and contribution to
+            margin.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

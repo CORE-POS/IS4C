@@ -149,6 +149,14 @@ class MembersReport extends FannieReportPage
 
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            List members by type or types as well as
+            equity balance and active status information.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

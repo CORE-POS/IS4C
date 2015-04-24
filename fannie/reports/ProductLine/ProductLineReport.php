@@ -30,6 +30,7 @@ class ProductLineReport extends FannieReportPage
 {
     public $description = '[Product Line] shows a list of products from the same brand by UPC prefix';
     public $themed = true;
+    public $discoverable = false;
 
     protected $report_headers = array('UPC', 'Brand', 'Description', 'Alt. Brand', 'Alt. Desc.', 'Price', 'Vendor');
     protected $title = "Fannie : Product Line";

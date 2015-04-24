@@ -31,6 +31,7 @@ class CashierRecordsReport extends FannieReportPage
     public $description = '[Cashier Records] shows per-cashier sales and transaction totals
         over a given date range. "Records" here should be interpretted like "Record Sales Day".';
     public $themed = true;
+    public $report_set = 'Cashiering';
 
     protected $report_headers = array('Emp#', 'Date', '$', '# of Trans');
     protected $sort_column = 3;
@@ -94,6 +95,16 @@ class CashierRecordsReport extends FannieReportPage
 <?php
 
         return ob_get_clean();
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            This report lists the total sales and number of
+            transactions handled by each cashier in a given
+            date range. This is trivia cashiers may enjoy
+            but likely serves no larger business purpose.
+            </p>';
     }
 }
 

@@ -76,7 +76,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
         while (SPH_Running) {
             try {
                 using (TcpClient client = http.AcceptTcpClient()) {
-		    client.ReceiveTimeout = 100;
+                    client.ReceiveTimeout = 100;
                     using (NetworkStream stream = client.GetStream()) {
                         string message = "";
                         int bytes_read = 0;

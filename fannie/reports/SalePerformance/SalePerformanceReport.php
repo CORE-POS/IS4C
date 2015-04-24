@@ -30,6 +30,7 @@ class SalePerformanceReport extends FannieReportPage
 {
     public $description = '[Batch Performance] lists weekly sales totals for a batch.';
     public $themed = true;
+    public $report_set = 'Batches';
 
     protected $title = "Fannie : Sale Performance";
     protected $header = "Sale Performance";
@@ -196,6 +197,16 @@ for ($i=1;$i<=12;$i++) {
         $this->add_onload_command('lookupSales();');
 
         return ob_get_clean();
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            List weekly sales totals for a given sale (promotion)
+            batch or batches. Only one month of batches is listed
+            at a time. Use the month, year, and Lookup Sales to
+            show batches from different months.
+            </p>';
     }
 
 }

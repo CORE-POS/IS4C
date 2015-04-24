@@ -37,6 +37,7 @@ class ItemPurchasesReport extends FannieReportPage
 
     public $description = '[Item Purchases] lists each transaction containing a particular item';
     public $themed = true;
+    public $report_set = 'Transaction Reports';
 
     function fetch_report_data()
     {

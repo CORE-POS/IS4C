@@ -49,7 +49,7 @@ class SiteMap extends FannieRESTfulPage
             'plugin' => 0,
             'plugin_done' => 0,
         );
-        $help_stats = array(
+        $help = array(
             'done' => 0,
             'total' => 0,
         );

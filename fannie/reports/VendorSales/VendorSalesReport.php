@@ -30,6 +30,7 @@ class VendorSalesReport extends FannieReportPage
 {
     public $themed = true;
     public $description = '[Vendor Sales] lists sales totals by vendor for a date range.';
+    public $report_set = 'Purchasing';
     protected $header = 'Vendor Sales Report';
     protected $title = 'Vendor Sales Report';
     protected $required_fields = array('date1', 'date2');
@@ -132,6 +133,15 @@ class VendorSalesReport extends FannieReportPage
         $supers = new SuperDeptNamesModel($dbc);
 
         return FormLib::dateAndDepartmentForm($depts->find('dept_no'), $supers->find('superID'), true);
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            This lists total sales and percentage of sales by vendor for a POS
+            department or departments. It is a view into product mix and
+            where items are commonly sourced.
+            </p>';
     }
 }
 

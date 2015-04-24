@@ -30,6 +30,7 @@ class OpenRingsReport extends FannieReportPage
 {
     public $description = '[Open Rings] shows UPC-less sales for a department or group of departments over a given date range.';
     public $themed = true;
+    public $report_set = 'Transaction Reports';
 
     protected $title = "Fannie : Open Rings Report";
     protected $header = "Open Rings Report";

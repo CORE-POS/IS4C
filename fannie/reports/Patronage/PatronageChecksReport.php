@@ -134,6 +134,15 @@ class PatronageChecksReport extends FannieReportPage
 
         return $ret;
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            List information about patronage checks
+            cashed at the store or elsewhere over a given
+            date range.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

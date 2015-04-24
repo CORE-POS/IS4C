@@ -172,6 +172,14 @@ class SuspensionsReport extends FannieReportPage
 </form>
 <?php
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            List members whose status was changed to
+            inactive during the given date range.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

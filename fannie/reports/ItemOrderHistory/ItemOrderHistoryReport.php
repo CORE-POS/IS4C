@@ -31,6 +31,7 @@ class ItemOrderHistoryReport extends FannieReportPage
     public $description = '[Item Order History] shows purchase orders for a given item. Requires purchase orders or
     invoice information to be entered into POS.';
     public $themed = true;
+    public $report_set = 'Purchasing';
 
     protected $title = "Fannie : Item Order History";
     protected $header = "Item Order History";

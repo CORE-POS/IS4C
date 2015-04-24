@@ -30,6 +30,7 @@ class ProductHistoryReport extends FannieReportPage
 {
     public $description = '[Product History] lists changes made to a given item over time.';
     public $themed = true;
+    public $report_set = 'Operational Data';
 
     protected $title = "Fannie : Product History";
     protected $header = "Product History Report";
@@ -129,6 +130,13 @@ class ProductHistoryReport extends FannieReportPage
             </div>
             </table>
             </form>';
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            List audit log of changes to a given item.
+            </p>';
     }
 }
 

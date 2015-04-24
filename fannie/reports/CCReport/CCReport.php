@@ -8,6 +8,7 @@ class CCReport extends FannieReportPage
 {
     public $description = '[Integrated Card Detail] lists integrated transactions for a day.';
     public $themed = true;
+    public $report_set = 'Tenders';
     protected $title = 'Integrated Transactions';
     protected $header = 'Integrated Transactions';
     protected $report_headers = array('Date &amp; Time', 'Card', 'Amount', 'Response', 'POS Receipt');

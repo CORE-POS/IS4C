@@ -289,6 +289,16 @@ class OwnerJoinLeaveReport extends FannieReportPage
             <p><button type="submit" class="btn btn-default">Get Report</button></p>
             </form>';
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            List information about owners that joined the co-op
+            in a given range. Information about owners who are inactive
+            or leaving the co-op is also available if that information
+            is managed via CORE.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

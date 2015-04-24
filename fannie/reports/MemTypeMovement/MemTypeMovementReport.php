@@ -31,6 +31,8 @@ class MemTypeMovementReport extends FannieReportPage
     public $themed = true;
     protected $header = 'Movement by Customer Type';
     protected $title = 'Movement by Customer Type';
+    public $description = '[Member Type Movement] shows sales by members with a given type or types.';
+    public $report_set = 'Movement Reports';
 
     protected $required_fields = array('date1', 'date2');
     protected $report_headers = array('UPC', 'Description', 'Dept', 'Qty', '$ Total');
@@ -100,6 +102,19 @@ class MemTypeMovementReport extends FannieReportPage
         $ret .= '</div>';
 
         return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            List sales by a specific member/customer type
+            or types. This is used primarily to track
+            activity by specialized internal customer accounts.
+            For example, a special type of account may be
+            used when transfer goods between departments
+            or taking goods of the shelf for the store\'s
+            own use.
+            </p>';
     }
 }
 
