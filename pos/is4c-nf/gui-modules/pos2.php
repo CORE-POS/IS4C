@@ -329,31 +329,31 @@ class pos2 extends BasicPage {
             <button type="submit" 
                 class="quick_button pos-button coloredBorder"
                 style="margin: 0 10px 0 0;"
-                onclick="parseWrapper(\'QK0\');">
+                onclick="parseWrapper(\'QO1001\');">
                 Items
             </button>
             <button type="submit"
                 class="quick_button pos-button coloredBorder"
                 style="margin: 0 10px 0 0;"
-                onclick="parseWrapper(\'QK4\');">
+                onclick="parseWrapper(\'QO1002\');">
                 Total
             </button>
             <button type="submit" 
                 class="quick_button pos-button coloredBorder"
                 style="margin: 0 10px 0 0;"
-                onclick="parseWrapper(\'QK2\');">
-                Tender
+                onclick="parseWrapper(\'QO1003\');">
+                Member
             </button>
             <button type="submit" 
                 class="quick_button pos-button coloredBorder"
                 style="margin: 0 10px 0 0;"
-                onclick="parseWrapper(\'QK5\');">
-                Member
+                onclick="parseWrapper(\'QO1004\');">
+                Tender
             </button>
             <button type="submit"
                 class="quick_button pos-button coloredBorder"
                 style="margin: 0 10px 0 0;"
-                onclick="parseWrapper(\'QK6\');">
+                onclick="parseWrapper(\'QO1005\');">
                 Misc
             </button>
             </div>';
