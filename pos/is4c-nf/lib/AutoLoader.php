@@ -273,6 +273,32 @@ class AutoLoader extends LibraryClass
         closedir($dh);
     }
 
+    /**
+      Use a dedicated dispatch function to launch
+      page classes.
+      @param $redirect [boolean, default true]
+        go to login page if an error occurs
+      
+      This method checks for the session variable
+      CashierNo as a general indicator that the current
+      session has been properly initialized
+    */
+    public static function dispatch($redirect=true)
+    {
+        $bt = debug_backtrace();
+        if (count($bt) == 1) {
+            $page = basename($_SERVER['PHP_SELF']);
+            $class = substr($page,0,strlen($page)-4);
+            if (CoreLocal::get('CashierNo') !== '' && $class != 'index' && class_exists($class)) {
+                $page = new $class();
+            } elseif ($redirect) {
+                $url = MiscLib::baseURL();
+                header('Location: ' . $url . 'login.php');
+            } else {
+                trigger_error('Missing class '.$class, E_USER_NOTICE);
+            }
+        }
+    }
 }
 
 if (function_exists('spl_autoload_register')){
