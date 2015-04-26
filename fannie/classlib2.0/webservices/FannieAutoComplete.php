@@ -45,7 +45,7 @@ class FannieAutoComplete extends FannieWebService
                 'message' => 'Invalid parameters',
             );
             return $ret;
-        } else if (strlen($args->search) < 2) {
+        } else if (strlen($args->search) < 1) {
             // search term is too short
             $ret['error'] = array(
                 'code' => -32602,
@@ -233,6 +233,25 @@ class FannieAutoComplete extends FannieWebService
                 $res = $dbc->execute($prep, $param);
                 while ($row = $dbc->fetch_row($res)) {
                     $ret[] = $row['sku'];
+                    if (count($ret) > 50) {
+                        break;
+                    }
+                }
+            
+                return $ret;
+
+            case 'unit':
+                $query = '
+                    SELECT unitofmeasure
+                    FROM products
+                    WHERE unitofmeasure LIKE ?
+                    GROUP BY unitofmeasure
+                    ORDER BY unitofmeasure';
+                $param = array($args->search . '%');
+                $prep = $dbc->prepare($query);
+                $res = $dbc->execute($prep, $param);
+                while ($row = $dbc->fetchRow($res)) {
+                    $ret[] = $row['unitofmeasure'];
                     if (count($ret) > 50) {
                         break;
                     }

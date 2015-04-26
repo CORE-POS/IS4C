@@ -418,6 +418,8 @@ class ItemEditorPage extends FanniePage
         if (isset($shown['BaseItemModule'])) {
             $this->add_onload_command("bindAutoComplete('#brand-field', '$ws', 'brand');\n");
             $this->add_onload_command("bindAutoComplete('#vendor_field', '$ws', 'vendor');\n");
+            $this->add_onload_command("bindAutoComplete('#unit-of-measure', '$ws', 'unit');\n");
+            $this->add_onload_command("\$('#unit-of-measure').autocomplete('option', 'minLength', 1);\n");
             $this->add_onload_command("addVendorDialog();\n");
         }
 

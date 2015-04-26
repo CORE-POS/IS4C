@@ -567,7 +567,7 @@ class BaseItemModule extends ItemModule
                 <th class="small">Unit of measure</th>
                 <td class="col-sm-1">
                     <input type="text" name="unitm" class="form-control input-sm"
-                        value="' . $rowItem['unitofmeasure'] . '" />
+                        value="' . $rowItem['unitofmeasure'] . '" id="unit-of-measure" />
                 </td>
                 <th class="small">Age Req</th>
                 <td class="col-sm-1">
