@@ -376,6 +376,8 @@ function installSelectField($name, &$current_value, $options, $default_value='',
 {
     if (FormLib::get($name, false) !== false) {
         $current_value = FormLib::get($name);
+    } else if ($current_value === null) {
+        $current_value = $default_value;
     }
 
     // sanitize values:

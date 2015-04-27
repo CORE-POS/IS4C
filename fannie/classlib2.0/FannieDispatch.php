@@ -152,6 +152,13 @@ class FannieDispatch
         if (count($bt) == 1) {
             $config = FannieConfig::factory();
             $logger = new FannieLogger();
+            if ($config->get('SYSLOG_SERVER')) {
+                $logger->setRemoteSyslog(
+                    $config->get('SYSLOG_SERVER'),
+                    $config->get('SYSLOG_PORT'),
+                    $config->get('SYSLOG_PROTOCOL')
+                );
+            }
             $op_db = $config->get('OP_DB');
             $dbc = FannieDB::get($op_db);
             self::setLogger($logger);
