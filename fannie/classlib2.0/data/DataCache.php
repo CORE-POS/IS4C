@@ -46,6 +46,7 @@ class DataCache
         $hash = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : $_SERVER['PHP_SELF'];
         $hash = str_replace("&excel=xls", "", $hash);
         $hash = str_replace("&excel=csv", "", $hash);
+        $hash = str_replace("&no-cache=1", "", $hash);
         $hash = md5($hash);
 
         return $hash;
