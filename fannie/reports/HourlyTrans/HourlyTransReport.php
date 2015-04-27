@@ -119,7 +119,9 @@ class HourlyTransReport extends FannieReportPage
         $args = array($date1.' 00:00:00', $date2.' 23:59:59');
         $where = ' 1=1 ';
         if ($buyer !== '') {
-            if ($buyer != -1) {
+            if ($buyer == -2) {
+                $where = ' s.superID <> 0 ';
+            } elseif ($buyer != -1) {
                 $where = ' s.superID=? ';
                 $args[] = $buyer;
             }
@@ -149,7 +151,7 @@ class HourlyTransReport extends FannieReportPage
                     sum(d.total) AS ttl
                   FROM $dlog AS d ";
         // join only needed with specific buyer
-        if ($buyer !== '' && $buyer > -1) {
+        if ($buyer !== '' && $buyer != -1) {
             $query .= 'LEFT JOIN superdepts AS s ON d.department=s.dept_ID ';
         }
         $query .= "WHERE d.trans_type IN ('I','D')
