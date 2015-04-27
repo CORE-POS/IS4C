@@ -209,6 +209,27 @@ class OverShortMAS extends FannieRESTfulPage {
             $records[] = $row;
         }
 
+        $explorersQ = '
+            SELECT SUM(quantity) AS qty
+            FROM ' . $dlog . ' AS d
+            WHERE tdate BETWEEN ? AND ?
+                AND upc = ?';
+        $explorersP = $dbc->prepare($explorersQ);
+        $explorersR = $dbc->execute($explorersP, array_merge($args, array('0000000004792')));
+        $expQty = 0.0;
+        if ($explorersR && $dbc->numRows($explorersR)) {
+            $w = $dbc->fetchRow($explorersR);
+            $expQty = $w['qty'];
+        }
+        $records[] = array(
+            $dateID,
+            $dateStr,
+            '000000000',
+            '0.00',
+            '0.00',
+            'CO-OP EXPLORERS (' . $expQty . ')',
+        );
+
         $miscQ = "SELECT total as amount, description as name,
             trans_num, tdate FROM $dlog WHERE department=703
             AND trans_subtype <> 'IC'
@@ -279,7 +300,7 @@ class OverShortMAS extends FannieRESTfulPage {
         $records = \COREPOS\Fannie\API\data\DataCache::getFile('daily');
         if ($records !== False)
             $records = unserialize($records);
-        if (!is_array($records)){
+        if (!is_array($records) || FormLib::get('no-cache') == '1'){
             $records = $this->get_data();
             \COREPOS\Fannie\API\data\DataCache::putFile('daily', serialize($records));
         }
