@@ -69,8 +69,8 @@ class CheckCouponMailing extends FannieRESTfulPage
         $my_address = array(
             '610 E 4th St',
             'Duluth, MN 55805',
-            'Tel: 218-728-0884',
-            'wholefoods.coop',
+            'Tel: 218.728.0884',
+            'www.wholefoods.coop',
         );
         $check_date = date('F j, Y');
 
@@ -99,6 +99,9 @@ class CheckCouponMailing extends FannieRESTfulPage
                 $pdf->Ln($line_height);
                 foreach ($my_address as $line) {
                     $pdf->SetX($check_left_x + $envelope_window_tab+20);
+                    if ($line == 'www.wholefoods.coop') {
+                        $pdf->SetFont('Gill', 'B', 10);
+                    }
                     $pdf->Cell(0, $line_height, $line, 0, 1);
                 }
 
@@ -106,7 +109,7 @@ class CheckCouponMailing extends FannieRESTfulPage
                 $pdf->SetXY($check_left_x + $right_col1, $check_top_y);
                 $pdf->Cell(30, $line_height, 'Check Number:', 0, 0, 'R');
                 $pdf->SetFont('Gill', '', 10);
-                $pdf->SetTextColor(0xff, 0, 0);
+                $pdf->SetTextColor(0xff, 0x6f, 0);
                 $pdf->SetX($check_left_x + $right_col2);
                 $pdf->Cell(30, $line_height, $check_number, 0, 0, 'R');
                 $pdf->SetFont('Gill', 'B', 10);
@@ -114,7 +117,7 @@ class CheckCouponMailing extends FannieRESTfulPage
                 $pdf->SetXY($check_left_x + $right_col1, $check_top_y+(1.5*$line_height));
                 $pdf->Cell(30, $line_height, 'Date:', 0, 0, 'R');
                 $pdf->SetFont('Gill', '', 10);
-                $pdf->SetTextColor(0xff, 0, 0);
+                $pdf->SetTextColor(0xff, 0x6f, 0);
                 $pdf->SetX($check_left_x + $right_col2);
                 $pdf->Cell(30, $line_height, $check_date, 0, 0, 'R');
                 $pdf->SetXY($check_left_x + $right_col1, $check_top_y+(3*$line_height));
@@ -123,8 +126,8 @@ class CheckCouponMailing extends FannieRESTfulPage
                 $pdf->Cell(30, $line_height, 'Amount:', 0, 0, 'R');
                 $pdf->SetXY($check_left_x + $right_col1 + 30, $check_top_y+(3*$line_height));
                 $pdf->SetFont('Gill', '', 10);
-                $pdf->SetTextColor(0xff, 0, 0);
-                $pdf->MultiCell(40, $line_height, str_repeat(' ', 5) . $this->terms);
+                $pdf->SetTextColor(0xff, 0x6f, 0);
+                $pdf->MultiCell(40, $line_height, str_repeat(' ', 2) . $this->terms, 0, 'R');
                 $pdf->SetTextColor(0, 0, 0);
 
                 $their_address = array(
@@ -143,24 +146,27 @@ class CheckCouponMailing extends FannieRESTfulPage
                 $pdf->SetFont('Gill', '', 10);
 
                 $pdf->SetXY($check_left_x, $check_bottom_y + $line_height - 1);
-                $pdf->SetTextColor(0xff, 0, 0);
+                $pdf->SetTextColor(0, 0, 0);
                 $pdf->SetFont('Gill', 'B', 10);
                 $pdf->Cell(0, $line_height, 'Cashable only at Whole Foods Co-op', 0, 0, 'C');
                 $pdf->SetFont('Gill', '', 10);
-                $pdf->SetTextColor(0, 0, 0);
 
                 $pdf->SetFillColor(0xCC, 0xCC, 0xCC);
-                $pdf->Rect($check_top_x+82, $check_top_y+3, 39, 19, 'F');
+                $pdf->Rect($check_top_x+87, $check_top_y+3, 39, 15, 'F');
                 $pdf->SetFillColor(0, 0, 0);
-                $pdf->Rect($check_top_x+82, $check_top_y+3, 39, 19, 'D');
-                $signage->drawBarcode(ltrim($this->upc, '0'), $pdf, $check_top_x+85, $check_top_y+5, array('height'=>11, 'fontsize'=>8));
+                $signage->drawBarcode(ltrim($this->upc, '0'), $pdf, $check_top_x+90, $check_top_y+5, array('height'=>11, 'fontsize'=>0));
 
                 $pdf->Image('minilogo.wfc.png', $check_left_x+$envelope_window_tab, $check_top_y+5, 20);
 
-                $pdf->Image('appreciate.png', $check_left_x+$envelope_window_tab, $check_top_y+(5*$line_height), 100);
+                $pdf->SetFont('Gill', 'B', '32');
+                $pdf->SetXY($check_left_x + $envelope_window_tab, $check_top_y + (5.5*$line_height));
+                $pdf->SetTextColor(0xff, 0x6f, 0);
+                $pdf->Cell(0, 3*$line_height, 'We Appreciate You');
 
+                $pdf->SetFont('Gill', '', '10');
+                $pdf->SetTextColor(0, 0, 0);
                 $pdf->Image(dirname(__FILE__) . '/../GiveUsMoneyPlugin/img/sig.png', $check_right_x - 63.5, $check_top_y + (9*$line_height), 63.5);
-                $pdf->SetXY($check_right_x - 63.5, $check_top_y + (13*$line_height));
+                $pdf->SetXY($check_right_x - 63.5, $check_top_y + (12*$line_height));
                 $pdf->Cell(63.5, $line_height, 'Authorized By Signature', 'T');
             }
 
