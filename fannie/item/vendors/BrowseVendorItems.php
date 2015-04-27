@@ -191,7 +191,7 @@ class BrowseVendorItems extends FanniePage
         
         $ret = "<table class=\"table table-bordered\">";
         $ret .= "<tr><th>UPC</th><th>Brand</th><th>Description</th>";
-        $ret .= "<th>Size</th><th>Cost</th><th colspan=3>&nbsp;</th></tr>";
+        $ret .= "<th>Size</th><th>Cost</th><th>Price</th><th>Dept.</th><th>&nbsp;</th></tr>";
         $p = $dbc->prepare_statement($query);
         $result = $dbc->exec_statement($p,$args);
         while ($row = $dbc->fetch_row($result)) {
@@ -206,11 +206,11 @@ class BrowseVendorItems extends FanniePage
                 $srp = !empty($row['srp']) ? $row['srp'] : $this->getSRP($row['cost'],$row['margin']);
                 $ret .= sprintf("<tr id=row%s><td>%s</td><td>%s</td><td>%s</td>
                     <td>%s</td><td>\$%.2f</td>
-                    <td>
+                    <td class=\"col-sm-1\">
                         <div class=\"input-group\">
                             <span class=\"input-group-addon\">$</span>
                             <input type=text size=5 value=%.2f id=price%s 
-                                class=\"form-control\" />
+                                class=\"form-control price-field\" />
                         </div>
                     </td><td><select id=\"dept%s\" class=\"form-control\">%s</select></td>
                     <td id=button%s>
