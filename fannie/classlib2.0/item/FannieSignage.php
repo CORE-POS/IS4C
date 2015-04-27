@@ -391,15 +391,17 @@ class FannieSignage
             $width += $w;
         }
 
-        // Print text uder barcode
+        // Print text under barcode
         // omits first digit; should always be zero
-        $pdf->SetFont($font, '', $fontsize);
-        if ($valign == 'T') {
-            $pdf->SetXY($x, $y - 5);
-        } else {
-            $pdf->SetXY($x, $y + $h);
+        if ($fontsize > 0) {
+            $pdf->SetFont($font, '', $fontsize);
+            if ($valign == 'T') {
+                $pdf->SetXY($x, $y - 5);
+            } else {
+                $pdf->SetXY($x, $y + $h);
+            }
+            $pdf->Cell($width, 5, $prefix . substr($upc, ($is_ean?-13:-12)) . $suffix, 0, 0, $align);
         }
-        $pdf->Cell($width, 5, $prefix . substr($upc, ($is_ean?-13:-12)) . $suffix, 0, 0, $align);
 
         return $pdf;
     }
