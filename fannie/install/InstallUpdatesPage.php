@@ -86,12 +86,25 @@ class InstallUpdatesPage extends \COREPOS\Fannie\API\InstallPage {
     }
     */
 
-    private function normalize_db_name($name){
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_ARCHIVE_DB;
-        if ($name == 'op') return $FANNIE_OP_DB;
-        elseif($name == 'trans') return $FANNIE_TRANS_DB;
-        elseif($name == 'archive') return $FANNIE_ARCHIVE_DB;
-        else return False;
+    private function normalize_db_name($name)
+    {
+        if ($name == 'op') {
+            return $this->config->get('OP_DB');
+        } elseif ($name == 'trans') {
+            return $this->config->get('TRANS_DB');
+        } elseif ($name == 'archive') {
+            return $this->config->get('ARCHIVE_DB');
+        } elseif (substr($name, 0, 7) == 'plugin:') {
+            $settings = $this->config->get('PLUGIN_SETTINGS');
+            $pluginDB = substr($name, 7);
+            if (isset($settings[$pluginDB])) {
+                return $settings[$pluginDB];
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 
     function body_content(){
@@ -123,7 +136,7 @@ class InstallUpdatesPage extends \COREPOS\Fannie\API\InstallPage {
                     echo '<div class="alert alert-danger">Error: requested database unknown</div>';
                 else {
                     ob_start();
-                    $changes = $updateModel->normalize($db_name, BasicModel::NORMALIZE_MODE_APPLY);
+                    $changes = $updateModel->normalize($db_name, BasicModel::NORMALIZE_MODE_APPLY, true);
                     $details = ob_get_clean();
                     if ($changes === False)
                         echo '<div class="alert alert-danger">An error occured applying the update</div>';
@@ -138,7 +151,7 @@ class InstallUpdatesPage extends \COREPOS\Fannie\API\InstallPage {
         }
 
         $obj = new BasicModel(null);
-        $models = $obj->getModels();
+        $models = FannieAPI::listModules('BasicModel');
         $cmd = new ReflectionClass('BasicModel');
         $cmd = $cmd->getFileName();
         echo '<ul>';

@@ -206,10 +206,17 @@ class SQLManager
 
         $this->default_db = $db_name;
         if ($this->isConnected()) {
-            $this->query('use ' . $db_name, $db_name);
-            $this->connections[$db_name]->database = $db_name;
-
-            return true;
+            $selected = $this->query('USE ' . $this->identifierEscape($db_name), $db_name);
+            if (!$selected) {
+                $this->query('CREATE DATABASE ' . $this->identifierEscape($db_name), $db_name);
+                $selected = $this->query('USE ' . $this->identifierEscape($db_name), $db_name);
+            }
+            if ($selected) {
+                $this->connections[$db_name]->database = $db_name;
+                return true;
+            } else {
+                return false;
+            }
         } else {
             return false;
         }
