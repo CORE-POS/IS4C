@@ -134,21 +134,21 @@ function getTenderTable(){
             <td><input size="10" maxlength="255" value="%s"
                 class="form-control"
                 onchange="saveCMsg.call(this, this.value,%d);" /></td>
-            <td><div class="input-group">
+            <td class="col-sm-1"><div class="input-group">
                 <span class="input-group-addon">$</span>
                 <input size="6" maxlength="10" value="%.2f"
-                class="form-control"
+                class="form-control price-field"
                 onchange="saveMin.call(this, this.value,%d);" />
             </div></td>
-            <td><div class="input-group">
+            <td class="col-sm-1"><div class="input-group">
                 <span class="input-group-addon">$</span>
                 <input size="6" maxlength="10" value="%.2f"
-                class="form-control"
+                class="form-control price-field"
                 onchange="saveMax.call(this, this.value,%d);" />
             </div></td>
-            <td><div class="input-group"><span class="input-group-addon">$</span>
+            <td class="col-sm-1"><div class="input-group"><span class="input-group-addon">$</span>
                 <input size="6" maxlength="10" value="%.2f"
-                class="form-control"
+                class="form-control price-field"
                 onchange="saveRLimit.call(this, this.value,%d);" />
             </div></td>
             </tr>',

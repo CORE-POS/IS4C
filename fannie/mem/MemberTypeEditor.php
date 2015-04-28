@@ -205,7 +205,7 @@ class MemberTypeEditor extends FanniePage {
                     <td><input type="text" class="form-control" value="%s" 
                         onchange="saveType.call(this, this.value, %d);" /></td>
                     <td><input type="checkbox" %s onclick="saveMem.call(this, this.checked, %d);" /></td>
-                    <td><div class="input-group"><input type="number" value="%d" class="form-control" 
+                    <td class="col-sm-1"><div class="input-group"><input type="number" value="%d" class="form-control price-field" 
                         onchange="saveDisc.call(this, this.value,%d);" /><span class="input-group-addon">%%</span>
                     </div></td>
                     <td><input type="checkbox" %s onclick="saveStaff.call(this, this.checked,%d);" /></td>
