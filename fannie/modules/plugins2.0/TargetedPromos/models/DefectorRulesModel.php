@@ -22,20 +22,19 @@
 *********************************************************************************/
 
 /**
-  @class DeveloperRulesModel
+  @class DefectorRulesModel
 */
-class DeveloperRulesModel extends BasicModel
+class DefectorRulesModel extends BasicModel
 {
 
-    protected $name = "DeveloperRules";
+    protected $name = "DefectorRules";
 
     protected $columns = array(
-    'developerRulesID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),
-    'examineMonths' => array('type'=>'TINYINT', 'default'=>2),
+    'defectorRulesID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),
+    'emptyDays' => array('type'=>'TINYINT', 'default'=>30),
+    'activeDays' => array('type'=>'TINYINT', 'default'=>120),
     'minVisits' => array('type'=>'TINYINT', 'default'=>1),
-    'minVisitAvg' => array('type'=>'MONEY', 'default'=>20),
-    'minMonthAvg' => array('type'=>'MONEY', 'default'=>100),
-    'activeDays' => array('type'=>'TINYINT', 'default'=>60),
+    'minPurchases' => array('type'=>'MONEY', 'default'=>0.01),
     'couponUPC' => array('type'=>'VARCHAR(13)'),
     'couponExpireDays' => array('type'=>'TINYINT', 'default'=>28),
     'maxIssue' => array('type'=>'TINYINT', 'default'=>3),
@@ -45,15 +44,16 @@ class DeveloperRulesModel extends BasicModel
 
     protected $preferred_db = 'plugin:TargetedPromosDB';
 
+
     /* START ACCESSOR FUNCTIONS */
 
-    public function developerRulesID()
+    public function defectorRulesID()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["developerRulesID"])) {
-                return $this->instance["developerRulesID"];
-            } else if (isset($this->columns["developerRulesID"]["default"])) {
-                return $this->columns["developerRulesID"]["default"];
+            if(isset($this->instance["defectorRulesID"])) {
+                return $this->instance["defectorRulesID"];
+            } else if (isset($this->columns["defectorRulesID"]["default"])) {
+                return $this->columns["defectorRulesID"]["default"];
             } else {
                 return null;
             }
@@ -64,7 +64,7 @@ class DeveloperRulesModel extends BasicModel
                 throw new Exception('Invalid operator: ' . func_get_arg(1));
             }
             $filter = array(
-                'left' => 'developerRulesID',
+                'left' => 'defectorRulesID',
                 'right' => $value,
                 'op' => $op,
                 'rightIsLiteral' => false,
@@ -74,23 +74,23 @@ class DeveloperRulesModel extends BasicModel
             }
             $this->filters[] = $filter;
         } else {
-            if (!isset($this->instance["developerRulesID"]) || $this->instance["developerRulesID"] != func_get_args(0)) {
-                if (!isset($this->columns["developerRulesID"]["ignore_updates"]) || $this->columns["developerRulesID"]["ignore_updates"] == false) {
+            if (!isset($this->instance["defectorRulesID"]) || $this->instance["defectorRulesID"] != func_get_args(0)) {
+                if (!isset($this->columns["defectorRulesID"]["ignore_updates"]) || $this->columns["defectorRulesID"]["ignore_updates"] == false) {
                     $this->record_changed = true;
                 }
             }
-            $this->instance["developerRulesID"] = func_get_arg(0);
+            $this->instance["defectorRulesID"] = func_get_arg(0);
         }
         return $this;
     }
 
-    public function examineMonths()
+    public function emptyDays()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["examineMonths"])) {
-                return $this->instance["examineMonths"];
-            } else if (isset($this->columns["examineMonths"]["default"])) {
-                return $this->columns["examineMonths"]["default"];
+            if(isset($this->instance["emptyDays"])) {
+                return $this->instance["emptyDays"];
+            } else if (isset($this->columns["emptyDays"]["default"])) {
+                return $this->columns["emptyDays"]["default"];
             } else {
                 return null;
             }
@@ -101,7 +101,7 @@ class DeveloperRulesModel extends BasicModel
                 throw new Exception('Invalid operator: ' . func_get_arg(1));
             }
             $filter = array(
-                'left' => 'examineMonths',
+                'left' => 'emptyDays',
                 'right' => $value,
                 'op' => $op,
                 'rightIsLiteral' => false,
@@ -111,12 +111,49 @@ class DeveloperRulesModel extends BasicModel
             }
             $this->filters[] = $filter;
         } else {
-            if (!isset($this->instance["examineMonths"]) || $this->instance["examineMonths"] != func_get_args(0)) {
-                if (!isset($this->columns["examineMonths"]["ignore_updates"]) || $this->columns["examineMonths"]["ignore_updates"] == false) {
+            if (!isset($this->instance["emptyDays"]) || $this->instance["emptyDays"] != func_get_args(0)) {
+                if (!isset($this->columns["emptyDays"]["ignore_updates"]) || $this->columns["emptyDays"]["ignore_updates"] == false) {
                     $this->record_changed = true;
                 }
             }
-            $this->instance["examineMonths"] = func_get_arg(0);
+            $this->instance["emptyDays"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function activeDays()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["activeDays"])) {
+                return $this->instance["activeDays"];
+            } else if (isset($this->columns["activeDays"]["default"])) {
+                return $this->columns["activeDays"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'activeDays',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["activeDays"]) || $this->instance["activeDays"] != func_get_args(0)) {
+                if (!isset($this->columns["activeDays"]["ignore_updates"]) || $this->columns["activeDays"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["activeDays"] = func_get_arg(0);
         }
         return $this;
     }
@@ -158,13 +195,13 @@ class DeveloperRulesModel extends BasicModel
         return $this;
     }
 
-    public function minVisitAvg()
+    public function minPurchases()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["minVisitAvg"])) {
-                return $this->instance["minVisitAvg"];
-            } else if (isset($this->columns["minVisitAvg"]["default"])) {
-                return $this->columns["minVisitAvg"]["default"];
+            if(isset($this->instance["minPurchases"])) {
+                return $this->instance["minPurchases"];
+            } else if (isset($this->columns["minPurchases"]["default"])) {
+                return $this->columns["minPurchases"]["default"];
             } else {
                 return null;
             }
@@ -175,7 +212,7 @@ class DeveloperRulesModel extends BasicModel
                 throw new Exception('Invalid operator: ' . func_get_arg(1));
             }
             $filter = array(
-                'left' => 'minVisitAvg',
+                'left' => 'minPurchases',
                 'right' => $value,
                 'op' => $op,
                 'rightIsLiteral' => false,
@@ -185,86 +222,12 @@ class DeveloperRulesModel extends BasicModel
             }
             $this->filters[] = $filter;
         } else {
-            if (!isset($this->instance["minVisitAvg"]) || $this->instance["minVisitAvg"] != func_get_args(0)) {
-                if (!isset($this->columns["minVisitAvg"]["ignore_updates"]) || $this->columns["minVisitAvg"]["ignore_updates"] == false) {
+            if (!isset($this->instance["minPurchases"]) || $this->instance["minPurchases"] != func_get_args(0)) {
+                if (!isset($this->columns["minPurchases"]["ignore_updates"]) || $this->columns["minPurchases"]["ignore_updates"] == false) {
                     $this->record_changed = true;
                 }
             }
-            $this->instance["minVisitAvg"] = func_get_arg(0);
-        }
-        return $this;
-    }
-
-    public function minMonthAvg()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["minMonthAvg"])) {
-                return $this->instance["minMonthAvg"];
-            } else if (isset($this->columns["minMonthAvg"]["default"])) {
-                return $this->columns["minMonthAvg"]["default"];
-            } else {
-                return null;
-            }
-        } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'minMonthAvg',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
-        } else {
-            if (!isset($this->instance["minMonthAvg"]) || $this->instance["minMonthAvg"] != func_get_args(0)) {
-                if (!isset($this->columns["minMonthAvg"]["ignore_updates"]) || $this->columns["minMonthAvg"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["minMonthAvg"] = func_get_arg(0);
-        }
-        return $this;
-    }
-
-    public function activeDays()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["activeDays"])) {
-                return $this->instance["activeDays"];
-            } else if (isset($this->columns["activeDays"]["default"])) {
-                return $this->columns["activeDays"]["default"];
-            } else {
-                return null;
-            }
-        } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'activeDays',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
-        } else {
-            if (!isset($this->instance["activeDays"]) || $this->instance["activeDays"] != func_get_args(0)) {
-                if (!isset($this->columns["activeDays"]["ignore_updates"]) || $this->columns["activeDays"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["activeDays"] = func_get_arg(0);
+            $this->instance["minPurchases"] = func_get_arg(0);
         }
         return $this;
     }
