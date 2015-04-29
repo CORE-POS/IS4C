@@ -489,8 +489,8 @@ class ObfWeeklyReport extends FannieReportPage
                     $x++;
                 }
                 $trend_data = $this->removeOutliers($trend_data);
-                $exp = $this->expFit($trend_data);
-                $trend1 = exp($exp['a']) * exp($exp['b'] * $x);
+                $exp = $this->exponentialFit($trend_data);
+                $trend1 = exp($exp->a) * exp($exp->b * $x);
 
                 $dept_trend += $trend1;
                 $total_sales->trend += $trend1;
@@ -1150,36 +1150,40 @@ class ObfWeeklyReport extends FannieReportPage
         );
     }
 
-    private function expFit($points)
+    private function exponentialFit($points)
     {
-        $a_num = 
-            (array_reduce($points, function($c,$i){ return $c + (pow($i[0],2)*$i[1]); })
-            * array_reduce($points, function($c,$i){ return $c + ($i[1] * log($i[1])); })) 
+        $a_numerator = 
+            (array_reduce($points, function($c,$p){ return $c + (pow($p[0],2)*$p[1]); })
+            * array_reduce($points, function($c,$p){ return $c + ($p[1] * log($p[1])); })) 
             -
-            (array_reduce($points, function($c,$i){ return $c + ($i[0]*$i[1]); })
-            * array_reduce($points, function($c,$i){ return $c + ($i[0] * $i[1] * log($i[1])); })); 
+            (array_reduce($points, function($c,$p){ return $c + ($p[0]*$p[1]); })
+            * array_reduce($points, function($c,$p){ return $c + ($p[0] * $p[1] * log($p[1])); })); 
 
-        $a_denom = 
-            (array_reduce($points, function($c,$i) { return $c + $i[1]; })
-            * array_reduce($points, function($c,$i) { return $c + (pow($i[0],2)*$i[1]); }))
+        $a_denominator = 
+            (array_reduce($points, function($c,$p) { return $c + $p[1]; })
+            * array_reduce($points, function($c,$p) { return $c + (pow($p[0],2)*$p[1]); }))
             -
             pow(
-                array_reduce($points, function($c,$i) { return $c + $i[0]*$i[1]; }),
+                array_reduce($points, function($c,$p) { return $c + $p[0]*$p[1]; }),
                 2);
 
-        $a = $a_num / $a_denom;
+        $a = $a_numerator / $a_denominator;
 
-        $b_num = 
-            (array_reduce($points, function($c,$i){ return $c + $i[1]; })
-            * array_reduce($points, function($c,$i){ return $c + ($i[0] * $i[1] * log($i[1])); })) 
+        $b_numerator = 
+            (array_reduce($points, function($c,$p){ return $c + $p[1]; })
+            * array_reduce($points, function($c,$p){ return $c + ($p[0] * $p[1] * log($p[1])); })) 
             -
-            (array_reduce($points, function($c,$i){ return $c + ($i[0]*$i[1]); })
-            * array_reduce($points, function($c,$i){ return $c + ($i[1] * log($i[1])); })); 
-        $b_denom = $a_denom;
+            (array_reduce($points, function($c,$p){ return $c + ($p[0]*$p[1]); })
+            * array_reduce($points, function($c,$p){ return $c + ($p[1] * log($p[1])); })); 
+        $b_denominator = $a_denominator;
 
-        $b = $b_num / $b_denom;
+        $b = $b_numerator / $b_denominator;
 
-        return array('a' => $a, 'b' => $b);
+        $ret = new stdClass();
+        $ret->a = $a;
+        $ret->b = $b;
+
+        return $ret;
     }
 
     private function removeOutliers($arr)
