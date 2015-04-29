@@ -106,7 +106,7 @@ class ItemMarginModule extends ItemModule
 
         $shippingP = $dbc->prepare('
             SELECT v.shippingMarkup,
-                0 AS discountRate,
+                v.discountRate,
                 v.vendorName
             FROM products AS p
                 INNER JOIN vendors AS v ON p.default_vendor_id = v.vendorID

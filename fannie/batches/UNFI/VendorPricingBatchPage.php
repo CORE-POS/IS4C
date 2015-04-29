@@ -244,13 +244,14 @@ function saveprice(upc){
             $batchUPCs[$obj->upc()] = true;
         }
 
-        $costSQL = Margin::adjustedCostSQL('v.cost', '0', 'b.shippingMarkup');
+        $costSQL = Margin::adjustedCostSQL('v.cost', 'b.discountRate', 'b.shippingMarkup');
         $marginSQL = Margin::toMarginSQL($costSQL, 'p.normal_price');
 
         $query = "SELECT p.upc,
             p.description,
             v.cost,
             b.shippingMarkup,
+            b.discountRate,
             p.normal_price,
             " . Margin::toMarginSQL($costSQL, 'p.normal_price') . " AS current_margin,
             " . Margin::toMarginSQL($costSQL, 'v.srp') . " AS desired_margin,
@@ -287,6 +288,7 @@ function saveprice(upc){
         $ret .= "<tr><th>UPC</th><th>Our Description</th>
             <th>Base Cost</th>
             <th>Shipping</th>
+            <th>Discount%</th>
             <th>Adj. Cost</th>
             <th>Price</th><th>Margin</th><th>SRP</th>
             <th>Margin</th><th>Cat</th><th>Var</th>
@@ -312,6 +314,7 @@ function saveprice(upc){
                 <td class=\"sub\">%s</td>
                 <td class=\"sub cost\">%.2f</td>
                 <td class=\"sub shipping\">%.2f%%</td>
+                <td class=\"sub discount\">%.2f%%</td>
                 <td class=\"sub adj-cost\">%.2f</td>
                 <td class=\"sub price\">%.2f</td>
                 <td class=\"sub cmargin\">%.2f%%</td>
@@ -338,6 +341,7 @@ function saveprice(upc){
                 $row['description'],
                 $row['cost'],
                 $row['shippingMarkup']*100,
+                $row['discountRate']*100,
                 $row['adjusted_cost'],
                 $row['normal_price'],
                 100*$row['current_margin'],

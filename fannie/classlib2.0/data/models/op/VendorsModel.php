@@ -34,6 +34,7 @@ class VendorsModel extends BasicModel
     'vendorID' => array('type'=>'INT', 'primary_key'=>true),
     'vendorName' => array('type'=>'VARCHAR(50)'),
     'shippingMarkup' => array('type'=>'DOUBLE', 'default'=>0),
+    'discountRate' => array('type'=>'DOUBLE', 'default'=>0),
     'phone' => array('type'=>'VARCHAR(15)'),
     'fax' => array('type'=>'VARCHAR(15)'),
     'email' => array('type'=>'VARCHAR(50)'),
@@ -168,6 +169,43 @@ List of known vendors. Pretty simple.
                 }
             }
             $this->instance["shippingMarkup"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function discountRate()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["discountRate"])) {
+                return $this->instance["discountRate"];
+            } else if (isset($this->columns["discountRate"]["default"])) {
+                return $this->columns["discountRate"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'discountRate',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["discountRate"]) || $this->instance["discountRate"] != func_get_args(0)) {
+                if (!isset($this->columns["discountRate"]["ignore_updates"]) || $this->columns["discountRate"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["discountRate"] = func_get_arg(0);
         }
         return $this;
     }

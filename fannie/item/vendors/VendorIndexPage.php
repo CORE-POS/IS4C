@@ -159,6 +159,23 @@ class VendorIndexPage extends FanniePage {
             }
             echo json_encode($ret);
             break;
+        case 'saveDiscountRate':
+            $id = FormLib::get('id','');
+            $ret = array('error'=>0);
+            if ($id === ''){
+                $ret['error'] = 'Bad request';
+            } else {
+                $dbc = $this->connection;
+                $dbc->setDefaultDB($this->config->OP_DB);
+                $vModel = new VendorsModel($dbc);
+                $vModel->vendorID($id);
+                $vModel->discountRate(FormLib::get('rate') / 100.00);
+                if (!$vModel->save()) {
+                    $ret['error'] = 'Save failed!';
+                }
+            }
+            echo json_encode($ret);
+            break;
         default:
             echo 'Bad request'; 
             break;
@@ -304,8 +321,7 @@ class VendorIndexPage extends FanniePage {
                     <input type="text" id="vc-discount" name="discount-rate" 
                         title="Markdown percentage from catalog list costs"
                         onchange="saveDiscountRate(this.value);"
-                        disabled
-                        class="form-control" value="' . 0 . '" />
+                        class="form-control" value="' . $model->discountRate() * 100 . '" />
                     <span class="input-group-addon">%</span>
                 </div>
             </div>';
@@ -433,16 +449,16 @@ class VendorIndexPage extends FanniePage {
         ob_start();
         ?>
         <p id="vendorarea">
-        <select onchange="vendorchange();" id=vendorselect class="form-control">
+        <select onchange="location='?vid='+this.value;" id=vendorselect class="form-control">
         <?php echo $vendors; ?>
         </select>
         </p>
         <p id="contentarea">
+        <?php if ($vid) { echo $this->getVendorInfo($vid); } ?>
         </p>
         <?php
 
         $this->add_script('index.js');
-        $this->add_onload_command('vendorchange();');
 
         return ob_get_clean();
     }
