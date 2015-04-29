@@ -100,7 +100,7 @@ class CheckCouponMailing extends FannieRESTfulPage
                 foreach ($my_address as $line) {
                     $pdf->SetX($check_left_x + $envelope_window_tab+20);
                     if ($line == 'www.wholefoods.coop') {
-                        $pdf->SetFont('Gill', 'B', 10);
+                        $pdf->SetFont('Gill', 'B', 9);
                     }
                     $pdf->Cell(0, $line_height, $line, 0, 1);
                 }
@@ -109,7 +109,7 @@ class CheckCouponMailing extends FannieRESTfulPage
                 $pdf->SetXY($check_left_x + $right_col1, $check_top_y);
                 $pdf->Cell(30, $line_height, 'Check Number:', 0, 0, 'R');
                 $pdf->SetFont('Gill', '', 10);
-                $pdf->SetTextColor(0xff, 0x6f, 0);
+                $pdf->SetTextColor(0xff, 0x58, 0);
                 $pdf->SetX($check_left_x + $right_col2);
                 $pdf->Cell(30, $line_height, $check_number, 0, 0, 'R');
                 $pdf->SetFont('Gill', 'B', 10);
@@ -117,7 +117,7 @@ class CheckCouponMailing extends FannieRESTfulPage
                 $pdf->SetXY($check_left_x + $right_col1, $check_top_y+(1.5*$line_height));
                 $pdf->Cell(30, $line_height, 'Date:', 0, 0, 'R');
                 $pdf->SetFont('Gill', '', 10);
-                $pdf->SetTextColor(0xff, 0x6f, 0);
+                $pdf->SetTextColor(0xff, 0x58, 0);
                 $pdf->SetX($check_left_x + $right_col2);
                 $pdf->Cell(30, $line_height, $check_date, 0, 0, 'R');
                 $pdf->SetXY($check_left_x + $right_col1, $check_top_y+(3*$line_height));
@@ -126,7 +126,7 @@ class CheckCouponMailing extends FannieRESTfulPage
                 $pdf->Cell(30, $line_height, 'Amount:', 0, 0, 'R');
                 $pdf->SetXY($check_left_x + $right_col1 + 30, $check_top_y+(3*$line_height));
                 $pdf->SetFont('Gill', '', 10);
-                $pdf->SetTextColor(0xff, 0x6f, 0);
+                $pdf->SetTextColor(0xff, 0x58, 0);
                 $pdf->MultiCell(40, $line_height, str_repeat(' ', 2) . $this->terms, 0, 'R');
                 $pdf->SetTextColor(0, 0, 0);
 
@@ -156,12 +156,12 @@ class CheckCouponMailing extends FannieRESTfulPage
                 $pdf->SetFillColor(0, 0, 0);
                 $signage->drawBarcode(ltrim($this->upc, '0'), $pdf, $check_top_x+90, $check_top_y+5, array('height'=>11, 'fontsize'=>0));
 
-                $pdf->Image('minilogo.wfc.png', $check_left_x+$envelope_window_tab, $check_top_y+5, 20);
+                $pdf->Image('logo.rgb.noalpha.png', $check_left_x+$envelope_window_tab, $check_top_y+5, 20);
 
                 $pdf->SetFont('Gill', 'B', '32');
                 $pdf->SetXY($check_left_x + $envelope_window_tab, $check_top_y + (5.5*$line_height));
-                $pdf->SetTextColor(0xff, 0x6f, 0);
-                $pdf->Cell(0, 3*$line_height, 'We Appreciate You');
+                $pdf->SetTextColor(0xff, 0x58, 0);
+                $pdf->Cell(0, 3*$line_height, 'We Appreciate You!');
 
                 $pdf->SetFont('Gill', '', '10');
                 $pdf->SetTextColor(0, 0, 0);
