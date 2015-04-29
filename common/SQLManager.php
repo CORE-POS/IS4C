@@ -262,7 +262,7 @@ class SQLManager
     */
     public function query($query_text,$which_connection='',$params=false)
     {
-        if ($this->test_mode && substr($query_text, 0, 4) != 'use ') {
+        if ($this->test_mode && substr($query_text, 0, 4) != 'USE ') {
             // called when 
             $this->test_mode = false;
         }
