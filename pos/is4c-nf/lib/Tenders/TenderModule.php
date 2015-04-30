@@ -108,9 +108,13 @@ class TenderModule
             );
         } else if ($this->name_string === "") {
             return DisplayLib::inputUnknown();
-        } elseif ((($this->amount < (CoreLocal::get("amtdue") - 0.005)) || ($this->amount > (CoreLocal::get("amtdue") + 0.005)))
-                     && CoreLocal::get("amtdue") < 0 
-                     && $this->amount !=0){
+        } elseif (CoreLocal::get('fntlflag') && CoreLocal::get('fsEligible') < 0 && abs($this->amount - CoreLocal::get('fsEligible')) < 0.005) {
+            // not actually an error
+            // if return tender exactly matches FS elgible return amount
+            // pass through so the subsequent exact amount error
+            // does not occur.
+        } elseif (abs($this->amount - CoreLocal::get('amtdue')) > 0.005 && CoreLocal::get("amtdue") < 0 
+                     && $this->amount !=0) {
             // the return tender needs to be exact because the transaction state can get weird.
             return DisplayLib::xboxMsg(
                 _("return tender must be exact"),
@@ -118,7 +122,7 @@ class TenderModule
             );
         } elseif(CoreLocal::get("amtdue")>0 && $this->amount < 0) { 
             return DisplayLib::xboxMsg(
-                _("Why are you using a negative number for a positve sale?"),
+                _("Why are you using a negative number for a positive sale?"),
                 $clearButton
             );
         }

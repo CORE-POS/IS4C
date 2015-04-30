@@ -41,9 +41,14 @@ class FoodstampTender extends TenderModule
                 false,
                 array('Total [FS Total]' => 'parseWrapper(\'FNTL\');$(\'#reginput\').focus();', 'Dimiss [clear]' => 'parseWrapper(\'CL\');')
             );
-        } else if ($this->amount > (CoreLocal::get("fsEligible") + 0.005)) {
+        } elseif ($this->amount !== false && $this->amount > 0 && $this->amount > (CoreLocal::get("fsEligible") + 0.005)) {
             return DisplayLib::xboxMsg(
                 _('Foodstamp tender cannot exceed eligible amount'),
+                DisplayLib::standardClearButton()
+            );
+        } elseif ($this->amount !== false && $this->amount <= 0 && $this->amount < (CoreLocal::get("fsEligible") - 0.005)) {
+            return DisplayLib::xboxMsg(
+                _('Foodstamp return cannot exceed eligible amount' . $info), 
                 DisplayLib::standardClearButton()
             );
         }

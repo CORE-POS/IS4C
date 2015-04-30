@@ -315,7 +315,7 @@ static public function LineItemTaxes()
     // loop through line items and deal with
     // foodstamp tax exemptions
     for($i=0;$i<count($taxRows);$i++) {
-        if($fsTenderTTL <= 0.005) {
+        if (abs($fsTenderTTL) <= 0.005) {
             continue;
         }
         
@@ -341,7 +341,7 @@ static public function LineItemTaxes()
             //    Decrement line item tax proprotionally to foodstamp tender available
             //    No FS tender left, so exemption ends
             $percentageApplied = $fsTenderTTL / $taxRows[$i]['fsTaxable'];
-            $exemption = $taxRows[$i]['fsTaxTotal'] * $percentageApplied;
+            $exemption = MiscLib::truncate2($taxRows[$i]['fsTaxTotal'] * $percentageApplied);
             $taxRows[$i]['taxTotal'] = MiscLib::truncate2($taxRows[$i]['taxTotal'] - $exemption);
             $taxRows[$i]['fsExempt'] = $exemption;
             $fsTenderTTL = 0;
