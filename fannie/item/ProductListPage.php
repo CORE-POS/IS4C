@@ -711,11 +711,11 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             $ret .= "<td align=center class=\"td_supplier clickable\">{$row['distributor']}</td>";
             $ret .= "<td align=center class=\"td_cost clickable\">".sprintf('%.2f',$row['cost'])."</td>";
             $ret .= "<td align=center class=\"td_price clickable\">{$row['normal_price']}</td>";
-            $ret .= "<td align=center class=td_tax>$row[4]</td>";
-            $ret .= "<td align=center class=td_fs>$row[5]</td>";
-            $ret .= "<td align=center class=td_disc>$row[6]</td>";
-            $ret .= "<td align=center class=td_wgt>$row[7]</td>";
-            $ret .= "<td align=center class=td_local>$row[8]</td>";
+            $ret .= "<td align=center class=td_tax>{$row['Tax']}</td>";
+            $ret .= "<td align=center class=td_fs>{$row['FS']}</td>";
+            $ret .= "<td align=center class=td_disc>{$row['DISC']}</td>";
+            $ret .= "<td align=center class=td_wgt>{$row['WGHd']}</td>";
+            $ret .= "<td align=center class=td_local>{$row['local']}</td>";
             if (!$this->excel && $this->canEditItems !== False){
                 $ret .= "<td align=center class=td_cmd><a href=\"\" 
                     class=\"edit-link\"
