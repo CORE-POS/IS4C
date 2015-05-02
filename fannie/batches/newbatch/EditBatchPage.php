@@ -276,24 +276,22 @@ class EditBatchPage extends FannieRESTfulPage
         $dbc->exec_statement($delQ,array($bid));
         
         $selQ = $dbc->prepare_statement("
-            select l.upc,p.description,l.salePrice, 
-            case when x.manufacturer is null then v.brand
-            else x.manufacturer end as brand,
+            SELECT l.upc,
+                p.description,
+                l.salePrice, 
+            case when p.brand is null then v.brand
+            else p.brand end as brand,
             case when v.sku is null then '' else v.sku end as sku,
             case when v.size is null then '' else v.size end as size,
             case when v.units is null then 1 else v.units end as units,
-            case when x.distributor is null then z.vendorName
-            else x.distributor end as vendor,
+            case when z.vendorName is null then x.distributor
+            else z.vendorName end as vendor,
             l.batchID
             from batchList as l
-            inner join products as p on
-            l.upc=p.upc
-            left join prodExtra as x on
-            l.upc=x.upc
-            left join vendorItems as v on
-            l.upc=v.upc
-            left join vendors as z on
-            v.vendorID=z.vendorID
+                inner join products as p on l.upc=p.upc
+                left join prodExtra as x on l.upc=x.upc
+                left join vendorItems as v on l.upc=v.upc AND p.default_vendor_id=v.vendorID
+                left join vendors as z on p.default_vendor_id=z.vendorID
             where batchID=? ORDER BY l.upc");
         $selR = $dbc->exec_statement($selQ,array($bid));
         $upc = "";
@@ -741,6 +739,12 @@ class EditBatchPage extends FannieRESTfulPage
             case 'loc_d':
                 $orderby = 'ORDER BY m.super_name DESC,y.subsection DESC,y.shelf_set DESC,y.shelf DESC';
                 break;
+            case 'brand_a':
+                $orderby = 'ORDER BY p.brand ASC';
+                break;
+            case 'brand_d':
+                $orderby = 'ORDER BY p.brand DESC';
+                break;
             case 'natural':
             default:
                 $orderby = 'ORDER BY b.listID DESC';
@@ -756,7 +760,7 @@ class EditBatchPage extends FannieRESTfulPage
         $start = strtotime($model->startDate());
         $end = strtotime($model->endDate()) + (60*60*24);
 
-        if ($type == 10){
+        if ($dtype == 3 || $dtype == 4) {
             return $this->showPairedBatchDisplay($id,$name);
         }
 
@@ -772,21 +776,30 @@ class EditBatchPage extends FannieRESTfulPage
             $saleHeader = "New price";
         }
         
-        $fetchQ = "select b.upc,
-                case when l.likeCode is null then p.description
-                else l.likeCodeDesc end as description,
-                p.normal_price,b.salePrice,
+        $fetchQ = "
+            SELECT b.upc,
+                CASE 
+                    WHEN l.likeCode IS NULL THEN p.description
+                    ELSE l.likeCodeDesc 
+                END AS description,
+                p.normal_price,
+                b.salePrice,
                 CASE WHEN c.upc IS NULL then 0 ELSE 1 END as isCut,
-                b.quantity,b.pricemethod,
-                m.super_name, y.subsection, y.shelf_set, y.shelf
-                from batchList as b left join products as p on
-                b.upc = p.upc left join likeCodes as l on
-                b.upc = concat('LC',convert(l.likeCode,char))
-                left join batchCutPaste as c ON
-                b.upc=c.upc AND b.batchID=c.batchID
-                left join prodPhysicalLocation as y on b.upc=y.upc
-                left join superDeptNames as m on y.section=m.superID
-                where b.batchID = ? $orderby";
+                b.quantity,
+                b.pricemethod,
+                m.super_name, 
+                y.subsection, 
+                y.shelf_set, 
+                y.shelf,
+                p.brand
+            FROM batchList AS b 
+                LEFT JOIN products AS p ON b.upc = p.upc 
+                LEFT JOIN likeCodes AS l ON b.upc = CONCAT('LC',CONVERT(l.likeCode,CHAR))
+                LEFT JOIN batchCutPaste AS c ON b.upc=c.upc AND b.batchID=c.batchID
+                LEFT JOIN prodPhysicalLocation AS y ON b.upc=y.upc
+                LEFT JOIN superDeptNames AS m ON y.section=m.superID
+            WHERE b.batchID = ? 
+            $orderby";
         if ($dbc->dbms_name() == "mssql") {
             $fetchQ = "select b.upc,
                     case when l.likecode is null then p.description
@@ -803,6 +816,21 @@ class EditBatchPage extends FannieRESTfulPage
         }
         $fetchP = $dbc->prepare_statement($fetchQ);
         $fetchR = $dbc->exec_statement($fetchP,array($id));
+
+        $overlapP = $dbc->prepare('
+            SELECT b.batchID
+                b.batchName
+            FROM batchList as l
+                INNER JOIN batches AS b ON b.batchID=l.batchID
+            WHERE l.upc=?
+                AND b.discounttype <> 0
+                AND (
+                    (b.startDate BETWEEN ? AND ?)
+                    OR
+                    (b.endDate BETWEEN ? AND ?)
+                )
+        ');
+        $overlap_args = array($model->startDate(), $model->endDate(), $model->startDate(), $model->endDate());
 
         $cpCount = $dbc->prepare_statement("SELECT count(*) FROM batchCutPaste WHERE uid=?");
         $res = $dbc->exec_statement($cpCount,array($uid));
@@ -855,6 +883,11 @@ class EditBatchPage extends FannieRESTfulPage
         } else {
             $ret .= "<th><a href=\"EditBatchPage.php?id=$id&sort=upc_d\">UPC</a></th>";
         }
+        if ($orderby != "ORDER BY p.brand ASC") {
+            $ret .= "<th><a href=\"EditBatchPage.php?id=$id&sort=brand_a\">Brand</a></th>";
+        } else {
+            $ret .= "<th><a href=\"EditBatchPage.php?id=$id&sort=brand_d\">Brand</a></th>";
+        }
         if ($orderby != "ORDER BY description ASC") {
             $ret .= "<th><a href=\"EditBatchPage.php?id=$id&sort=desc_a\">Description</a></th>";
         } else {
@@ -899,9 +932,23 @@ class EditBatchPage extends FannieRESTfulPage
                 $ret .= " <a href=\"\" onclick=\"\$('.lc-item-{$likecode}').toggle(); return false;\">[+]</a>";
                 $ret .= "</td>";
             } else {
+                $conflict = '';
+                if ($dtype != 0) {
+                    $overlapR = $dbc->execute($overlapP, array_merge(array($fetchW['upc']), $overlap_args)); 
+                    if ($overlapR && $dbc->numRows($overlapR)) {
+                        $overlap = $dbc->fetchRow($overlapR);
+                        $conflict = sprintf('<a href="EditBatchPage.php?id=%d" target="_batch%d"
+                                                title="Conflicts with batch %s" class="btn btn-xs btn-danger">
+                                                <span class="glyphicon glyphicon-exclamation-sign">
+                                                </span></a>',
+                                                $overlap['batchID'], $overlap['batchID'],
+                                                $overlap['batchName']);
+                    }
+                }
                 $ret .= "<td bgcolor=$colors[$c]><a href=\"{$FANNIE_URL}item/ItemEditorPage.php?searchupc={$fetchW['upc']}\" 
-                    target=\"_new{$fetchW['upc']}\">{$fetchW['upc']}</a></td>";
+                    target=\"_new{$fetchW['upc']}\">{$fetchW['upc']}</a>{$conflict}</td>";
             }
+            $ret .= "<td bgcolor=$colors[$c]>{$fetchW['brand']}</td>";
             $ret .= "<td bgcolor=$colors[$c]>{$fetchW['description']}</td>";
             $ret .= "<td bgcolor=$colors[$c]>{$fetchW['normal_price']}</td>";
             $qtystr = ($fetchW['pricemethod']>0 && is_numeric($fetchW['quantity']) && $fetchW['quantity'] > 0) ? $fetchW['quantity'] . " for " : "";
