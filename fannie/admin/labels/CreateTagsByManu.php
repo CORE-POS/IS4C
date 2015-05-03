@@ -101,15 +101,9 @@ class CreateTagsByManu extends FanniePage {
     function body_content(){
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $deptSubQ = $dbc->prepare_statement("SELECT superID,super_name FROM MasterSuperDepts
-                GROUP BY superID,super_name
-                ORDER BY superID");
-        $deptSubR = $dbc->exec_statement($deptSubQ);
 
-        $deptSubList = "";
-        while($deptSubW = $dbc->fetch_array($deptSubR)){
-            $deptSubList .=" <option value=$deptSubW[0]>$deptSubW[1]</option>";
-        }
+        $qm = new ShelfTagQueuesModel($dbc);
+        $deptSubList = $qm->toOptions();
 
         $ret = '';
         if (!empty($this->msgs)){

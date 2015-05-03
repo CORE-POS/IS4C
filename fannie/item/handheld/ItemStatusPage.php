@@ -180,12 +180,16 @@ class ItemStatusPage extends FannieRESTfulPage
         $tags = new ShelftagsModel($dbc);
         $tags->upc($upc);
         $queued = $tags->find('id');
-        $masters = new SuperDeptNamesModel($dbc);
+        $queues = new ShelfTagQueuesModel($dbc);
         $verb = 'Queue';
         if (count($queued) > 0) {
-            $masters->superID($queued[0]->id());
-            $masters->load();
-            $ret .= 'Tags queued for ' . $masters->super_name();
+            if ($tags->id() == 0) {
+                $ret .= 'Tags queued for Default';
+            } else {
+                $queues->shelfTagQueueID($tags->id());
+                $queues->load();
+                $ret .= 'Tags queued for ' . $queues->description();
+            }
             $verb = 'Requeue';
         } else {
             $ret .= 'No tags queued';
@@ -193,12 +197,7 @@ class ItemStatusPage extends FannieRESTfulPage
         $ret .= '<input type="hidden" name="upc" value="' . $upc . '" />
             <button class="btn btn-default" type="submit">' . $verb . ' Tags</button>
             for <select name="tagID" class="form-control">';
-        $masters->reset();
-        foreach ($masters->find('super_name') as $m) {
-            $ret .= sprintf('<option %s value="%d">%s</option>',
-                ($m->superID() == $master ? 'selected' : ''),
-                $m->superID(), $m->super_name());
-        }
+        $ret .= $queues->toOptions($master);
         $ret .= '</select></form></p>';
 
         if (FannieAuth::validateUserQuiet('pricechange') || FannieAuth::validateUserQuiet('audited_pricechange')) {

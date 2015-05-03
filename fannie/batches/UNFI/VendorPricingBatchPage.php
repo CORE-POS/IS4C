@@ -81,16 +81,18 @@ class VendorPricingBatchPage extends FanniePage
 var vid = null;
 var bid = null;
 var sid = null;
+var qid = null;
 $(document).ready(function(){
     vid = $('#vendorID').val();
     bid = $('#batchID').val();
     sid = $('#superID').val();
+    qid = $('#queueID').val();
 });
 
 function toggleB(upc){
     var elem = $('#row'+upc).find('.addrem');
     
-    var dstr = "upc="+upc+"&vendorID="+vid+"&superID="+sid+"&batchID="+bid;
+    var dstr = "upc="+upc+"&vendorID="+vid+"&queueID="+qid+"&batchID="+bid;
     if (elem.html() == "Add"){
         elem.html('Del');
         var price = $('#row'+upc).find('.srp').html();
@@ -172,7 +174,7 @@ function saveprice(upc){
     $('#row'+upc).find('.srp').html(srp);
     $('#row'+upc).find('.dmargin').html(newmargin+'%');
 
-    var dstr = "upc="+upc+"&vendorID="+vid+"&superID="+sid+"&batchID="+bid;
+    var dstr = "upc="+upc+"&vendorID="+vid+"&queueID="+qid+"&batchID="+bid;
     $.ajax({
         url: 'batchAjax.php',
         data: dstr+'&action=newPrice&price='+srp,
@@ -184,11 +186,13 @@ function saveprice(upc){
         return ob_get_clean();
     }
 
-    function edit_content(){
+    function edit_content()
+    {
         global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $vendorID = FormLib::get_form_value('vid',0);
         $superID = FormLib::get_form_value('super',99);
+        $queueID = FormLib::get('queueID');
         $filter = FormLib::get_form_value('filter') == 'Yes' ? True : False;
 
         /* lookup vendor and superdept names to build a batch name */
@@ -234,8 +238,9 @@ function saveprice(upc){
                     $batchName);
         $ret .= sprintf("<input type=hidden id=vendorID value=%d />
             <input type=hidden id=batchID value=%d />
+            <input type=hidden id=queueID value=%d />
             <input type=hidden id=superID value=%d />",
-            $vendorID,$batchID,$superID);
+            $vendorID,$batchID,$queueID,$superID);
 
         $batchUPCs = array();
         $bq = $dbc->prepare_statement("SELECT upc FROM batchList WHERE batchID=?");
@@ -345,6 +350,9 @@ function saveprice(upc){
         while($w = $dbc->fetch_row($res))
             $vopts .= "<option value=$w[0]>$w[1]</option>";
 
+        $queues = new ShelfTagQueuesModel($dbc);
+        $qopts = $queues->toOptions();
+
         ob_start();
         ?>
         <form action=VendorPricingBatchPage.php method="get">
@@ -360,6 +368,10 @@ function saveprice(upc){
         <select name=filter class="form-control">
         <option>No</option>
         <option>Yes</option>
+        </select>
+        <label>Shelf Tag Queue</label>
+        <select name="queueID" class="form-control">
+        <?php echo $qopts; ?>
         </select>
         <br />
         <p>

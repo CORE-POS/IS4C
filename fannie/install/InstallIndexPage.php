@@ -632,6 +632,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             'ServiceScalesModel',
             'ServiceScaleItemMapModel',
             'ShelftagsModel',
+            'ShelfTagQueuesModel',
             'ShrinkReasonsModel',
             'SpecialDeptMapModel',
             'SubDeptsModel',

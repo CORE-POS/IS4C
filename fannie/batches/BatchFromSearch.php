@@ -319,10 +319,8 @@ class BatchFromSearch extends FannieRESTfulPage
                 <button type="submit" class="btn btn-default" onclick="markUp($(\'#muPercent\').val()); return false">Go</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
         $ret .= '<label>Tags</label> <select name="tagset" class="form-control" id="tagset"><option value="">No Tags</option>';
-        $supers = $dbc->query('SELECT superID, super_name FROM MasterSuperDepts GROUP BY superID, super_name ORDER BY superID');
-        while($row = $dbc->fetch_row($supers)) {
-            $ret .= sprintf('<option value="%d">%s</option>', $row['superID'], $row['super_name']);
-        }
+        $qm = new ShelfTagQueuesModel($dbc);
+        $ret .= $qm->toOptions();
         $ret .= '</select>';
         $ret .= '</div>';
 

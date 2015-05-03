@@ -108,18 +108,28 @@ function goToPage(the_id){
             ORDER BY superID");
         */
         // 5May13 Change SELECT so #-of-labels can be displayed. */
-        $query = $dbc->prepare_statement("SELECT superID,super_name, count(distinct t.upc) ct
-            FROM MasterSuperDepts AS s
-            LEFT JOIN shelftags AS t ON s.superID = t.id
-            GROUP BY superID,super_name
-            ORDER BY superID");
-        $result = $dbc->exec_statement($query);
+        $query = $dbc->prepare("
+            SELECT s.shelfTagQueueID, 
+                s.description, 
+                count(distinct t.upc) AS ct
+            FROM ShelfTagQueues AS s
+                LEFT JOIN shelftags AS t ON s.shelfTagQueueID = t.id
+            GROUP BY shelfTagQueueID,
+                s.description
+            ORDER BY shelfTagQueueID");
+        $result = $dbc->execute($query);
+        if ($dbc->numRows($result) == 0) {
+            $queues = new ShelfTagQueuesModel($dbc);
+            $queues->initQueues();
+            $result = $dbc->execute($query);
+        }
         $rows = array();
         while($row = $dbc->fetch_row($result))
             $rows[] = $row;
-        if (count($rows)==0){
-            $rows[] = array(0,'All Tags');
-        }
+        $zeroID = $dbc->query('SELECT upc FROM shelftags WHERE id=0');
+        array_unshift($rows, array(0,'Default',$dbc->numRows($zeroID)));
+
+
         foreach($rows as $row){
             printf("<tr>
             <td>%s barcodes/shelftags</td>
