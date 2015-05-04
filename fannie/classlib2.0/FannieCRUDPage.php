@@ -35,7 +35,7 @@ class FannieCRUDPage extends FannieRESTfulPage
     protected function getIdCol()
     {
         $pks = array();
-        $obj = $this->getModel();
+        $obj = $this->getCRUDModel();
         foreach ($obj->getColumns() as $name => $c) {
             if (isset($c['primary_key']) && $c['primary_key']) {
                 $pks[] = $name;
@@ -50,7 +50,7 @@ class FannieCRUDPage extends FannieRESTfulPage
         }
     }
 
-    protected function getModel()
+    protected function getCRUDModel()
     {
         if ($this->model === null) {
             $class_name = $this->model_name;
@@ -88,7 +88,7 @@ class FannieCRUDPage extends FannieRESTfulPage
             return $this->unknownRequestHandler();
         }
 
-        $obj = $this->getModel();
+        $obj = $this->getCRUDModel();
         $id_col = $this->getIdCol();
         $columns = $obj->getColumns();
         $errors = 0;
@@ -121,7 +121,7 @@ class FannieCRUDPage extends FannieRESTfulPage
 
     public function put_handler()
     {
-        $obj = $this->getModel();
+        $obj = $this->getCRUDModel();
         $id_col = $this->getIdCol();
         $columns = $obj->getColumns();
         $id_info = $columns[$id_col];
@@ -158,7 +158,7 @@ class FannieCRUDPage extends FannieRESTfulPage
 
     public function delete_id_handler()
     {
-        $obj = $this->getModel();
+        $obj = $this->getCRUDModel();
         $id_col = $this->getIdCol();
         $obj->$id_col($this->id);
         if ($obj->delete()) {
@@ -172,7 +172,7 @@ class FannieCRUDPage extends FannieRESTfulPage
 
     public function get_view()
     {
-        $obj = $this->getModel();
+        $obj = $this->getCRUDModel();
         $id_col = $this->getIdCol();
         $columns = $obj->getColumns();
         $ret = '<form method="post">';
