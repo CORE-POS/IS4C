@@ -326,10 +326,8 @@ class BrowseVendorItems extends FanniePage
         <select id="shelftags" class="form-control">
         <option value="-1">Shelf Tag Page</option>
         <?php
-        $pages = $dbc->query('SELECT superID, super_name FROM MasterSuperDepts GROUP BY superID, super_name ORDER BY superID');
-        while($row = $dbc->fetch_row($pages)) {
-            printf('<option value="%d">%s</option>', $row['superID'], $row['super_name']);
-        }
+        $queues = new ShelfTagQueuesModel($dbc);
+        echo $queues->toOptions();
         ?>
         </select>
         </div>

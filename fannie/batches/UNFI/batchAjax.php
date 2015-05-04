@@ -45,6 +45,8 @@ case 'delVarPricing':
 case 'newPrice':
     $vid = FormLib::get_form_value('vendorID');
     $bid = FormLib::get_form_value('batchID');
+    $sid = FormLib::get_form_value('queueID',0);
+    if ($sid == 99) $sid = 0;
     $price = FormLib::get_form_value('price',0);
     $viP = $dbc->prepare('
         UPDATE vendorItems
@@ -62,7 +64,7 @@ case 'newPrice':
 case 'batchAdd':
     $vid = FormLib::get_form_value('vendorID');
     $bid = FormLib::get_form_value('batchID');
-    $sid = FormLib::get_form_value('superID',0);
+    $sid = FormLib::get_form_value('queueID',0);
     if ($sid == 99) $sid = 0;
     $price = FormLib::get_form_value('price',0);
 
@@ -100,7 +102,7 @@ case 'batchAdd':
 case 'batchDel':
     $vid = FormLib::get_form_value('vendorID');
     $bid = FormLib::get_form_value('batchID');
-    $sid = FormLib::get_form_value('superID',0);
+    $sid = FormLib::get_form_value('queueID',0);
     if ($sid == 99) $sid = 0;
 
     $model = new BatchListModel($dbc);

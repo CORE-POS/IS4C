@@ -189,13 +189,8 @@ echo "value='".$sku."'";
 <label>Barcode page</label>
 <select name=subID class="form-control">
 <?php
-$subsQ = $dbc->prepare_statement("SELECT superID,super_name FROM superDeptNames");
-$subsR = $dbc->exec_statement($subsQ);
-while($subsW = $dbc->fetch_row($subsR)){
-    if ($subsW[0] == 0) $subsW[1] = 'All';
-    $checked = ($subsW[0]==$superID)?'selected':'';
-    echo "<option value=\"$subsW[0]\" $checked>$subsW[1]</option>";
-}
+$qm = new ShelfTagQueuesModel($dbc);
+echo $qm->toOptions($superID);
 ?>
 </select>
 </div>
