@@ -196,8 +196,6 @@ class MemEquityTransferTool extends FanniePage {
         $ret .= "<input type=\"hidden\" name=\"memTo\" value=\"{$this->cn2}\" />";
         $ret .= "<button type=\"submit\" name=\"submit2\" value=\"Confirm\" 
                     class=\"btn btn-default\">Confirm</button>";
-        $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-        $ret .= "<input type=\"submit\" name=\"submit2\" value=\"Confirm\" />";
         $ret .= "</form>";
         
         return $ret;
