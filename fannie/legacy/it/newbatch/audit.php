@@ -2,7 +2,7 @@
 $tos = array(    0=>"andy@wholefoods.coop",
         1=>"jim@wholefoods.coop, lisa@wholefoods.coop, crouleau@wholefoods.coop",
         2=>"jesse@wholefoods.coop, lisa@wholefoods.coop, crouleau@wholefoods.coop",
-        3=>"fkoenig@wholefoods.coop, aelliott@wholefoods.coop, justin@wholefoods.coop, rianna@wholefoods.coop",
+        3=>"fkoenig@wholefoods.coop, dheytens@wholefoods.coop, justin@wholefoods.coop, rianna@wholefoods.coop",
         4=>"joeu@wholefoods.coop, lisa@wholefoods.coop, crouleau@wholefoods.coop",
         5=>"lisa@wholefoods.coop, crouleau@wholefoods.coop",
         6=>"michael@wholefoods.coop, alex@wholefoods.coop",

@@ -192,6 +192,13 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 continue;
             if (isset($SKU_TO_PLU_MAP[$sku])) {
                 $upc = $SKU_TO_PLU_MAP[$sku];
+                if (substr($size, -1) == '#' && substr($upc, 0, 3) == '002') {
+                    $qty = trim($size, '# ');
+                    $size = '#';
+                } elseif (substr($size, -2) == 'LB' && substr($upc, 0, 3) == '002') {
+                    $qty = trim($size, 'LB ');
+                    $size = 'LB';
+                }
             }
             $category = $data[$CATEGORY];
             $reg = trim($data[$REG_COST]);
