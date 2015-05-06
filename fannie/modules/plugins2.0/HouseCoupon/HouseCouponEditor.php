@@ -127,7 +127,9 @@ class HouseCouponEditor extends FanniePage
 
             $this->coupon_id = FormLib::get_form_value('cid',0);
             $expires = FormLib::get_form_value('expires');
-            if ($expires == '') $expires = null;
+            if ($expires == '') {
+                $expires = null;
+            }
             $limit = FormLib::get_form_value('limit',1);
             $mem = FormLib::get_form_value('memberonly',0);
             $dept = FormLib::get_form_value('dept',0);
@@ -138,6 +140,9 @@ class HouseCouponEditor extends FanniePage
             $descript = FormLib::get_form_value('description',0);
             $auto = FormLib::get('autoapply', 0);
             $starts = FormLib::get('starts');
+            if ($starts == '') {
+                $starts = null;
+            }
 
             $model = new HouseCouponsModel($dbc);
             $model->coupID($this->coupon_id);
