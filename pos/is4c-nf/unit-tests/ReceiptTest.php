@@ -41,7 +41,12 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
             $obj = new $class();
 
             $output = $obj->message('SAMPLE INPUT STRING');
-            $this->assertInternalType('string', $output);
+            if (is_array($output)) {
+                $this->assertArrayHasKey('print', $output);
+                $this->assertArrayHasKey('any', $output);
+            } else {
+                $this->assertInternalType('string', $output);
+            }
         }
     }
 
