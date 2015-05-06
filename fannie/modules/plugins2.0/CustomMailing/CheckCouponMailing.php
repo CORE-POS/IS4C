@@ -41,12 +41,12 @@ class CheckCouponMailing extends FannieRESTfulPage
 
     public function preprocess()
     {
-        $this->__routes[] = 'get<id><upc><terms>';
+        $this->__routes[] = 'post<id><upc><terms>';
 
         return parent::preprocess();
     }
 
-    public function get_id_upc_terms_handler()
+    public function post_id_upc_terms_handler()
     {
         $this->id = preg_split('/[^\d]/', $this->id, 0, PREG_SPLIT_NO_EMPTY);
 
@@ -176,7 +176,7 @@ class CheckCouponMailing extends FannieRESTfulPage
 
     public function get_view()
     {
-        return '<form method="get">
+        return '<form method="post">
             <div class="form-group">
                 <label>Coupon UPC</label>
                 <input type="text" name="upc" class="form-control" />
