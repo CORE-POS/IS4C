@@ -1,15 +1,18 @@
-CC=gmcs
+CC=mcs
 RM=rm -f
-BASE_LIBS=/r:System.Drawing.dll
+BASE_LIBS=/r:System.Drawing.dll /r:System.Core.dll
 
-all: DelegateForm.dll USBLayer.dll ParallelLayer.dll SPH.dll UDPMsgBox.dll Magellan.cs
-	$(CC) -target:exe $(BASE_LIBS) -r:SPH.dll -r:DelegateForm.dll -r:UDPMsgBox.dll -out:pos.exe Magellan.cs
+all: DelegateForm.dll USBLayer.dll ParallelLayer.dll SPH.dll UDPMsgBox.dll Discover.dll Magellan.cs
+	$(CC) -target:exe $(BASE_LIBS) -r:SPH.dll -r:DelegateForm.dll -r:UDPMsgBox.dll -r:Discover.dll -out:pos.exe Magellan.cs
 
 socket.exe: DelegateForm.dll USBLayer.dll ParallelLayer.dll SPH.dll UDPMsgBox.dll WebSockets.dll NewerMagellan.cs
 	$(CC) -target:exe $(BASE_LIBS) -r:SPH.dll -r:DelegateForm.dll -r:UDPMsgBox.dll -r:WebSockets.dll -out:socket.exe NewerMagellan.cs
 
 UDPMsgBox.dll: DelegateForm.dll UDPMsgBox.cs
 	$(CC) -target:library $(BASE_LIBS) -r:DelegateForm.dll -out:UDPMsgBox.dll UDPMsgBox.cs
+
+Discover.dll: Discover.cs
+	$(CC) -target:library $(BASE_LIBS) -out:Discover.dll Discover.cs
 
 DelegateForm.dll: DelegateForm.cs
 	$(CC) -target:library $(BASE_LIBS) -out:DelegateForm.dll DelegateForm.cs
@@ -42,8 +45,8 @@ SPH.dll: DelegateForm.dll USBLayer.dll ParallelLayer.dll SerialPortHandler.cs SP
         SPH_SignAndPay_USB.cs SPH_SignAndPay_Auto.cs SPH_SignAndPay_Native.cs \
 		SPH_IngenicoRBA_USB.cs SPH_IngenicoRBA_RS232.cs SPH_IngenicoRBA_Common.cs
 
-Magellan.dll: DelegateForm.dll SPH.dll UDPMsgBox.dll Magellan.cs
-	$(CC) -target:library $(BASE_LIBS) -r:SPH.dll -r:DelegateForm.dll -r:UDPMsgBox.dll -out:Magellan.dll Magellan.cs
+Magellan.dll: DelegateForm.dll SPH.dll UDPMsgBox.dll Discover.dll Magellan.cs
+	$(CC) -target:library $(BASE_LIBS) -r:SPH.dll -r:DelegateForm.dll -r:Discover.dll -r:UDPMsgBox.dll -out:Magellan.dll Magellan.cs
 
 posSVC.exe: Magellan.dll MagellanWinSVC.cs
 	$(CC) -target:exe $(BASE_LIBS) -r:System.ServiceProcess.dll -r:System.Configuration.Install.dll -r:SPH.dll -r:DelegateForm.dll -r:UDPMsgBox.dll -r:Magellan.dll -out:posSVC.exe MagellanWinSVC.cs

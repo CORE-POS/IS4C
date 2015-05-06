@@ -38,11 +38,6 @@ public class SPH_SignAndPay_Auto : SPH_SignAndPay_USB
         System.Console.WriteLine("Loading Sign and Pay module");
         System.Console.WriteLine("  Screen Control: Auto");
         System.Console.WriteLine("  Paycards Communication: Direct");
-        #if MONO
-        System.Console.WriteLine("  USB Layer: Posix Device File");
-        #else
-        System.Console.WriteLine("  USB Layer: Win32");
-        #endif
 
         #if MONO
         usb_devicefile = p;
@@ -55,9 +50,11 @@ public class SPH_SignAndPay_Auto : SPH_SignAndPay_USB
         #if MONO
         usb_port = new USBWrapper_Posix();
         usb_report_size = 64;
+        System.Console.WriteLine("  USB Layer: Posix Device File");
         #else
         usb_port = new USBWrapper_Win32();
         usb_report_size = 65;
+        System.Console.WriteLine("  USB Layer: Win32");
         #endif
         while(usb_fs == null){
             usb_fs = usb_port.GetUSBHandle(usb_devicefile,usb_report_size);

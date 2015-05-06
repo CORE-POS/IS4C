@@ -110,6 +110,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
     {
         usb_fs = null;
         usb_port = new USBWrapper_HidSharp();
+        System.Console.WriteLine("  USB Layer: HidSharp");
         usb_report_size = 65;
         while (usb_fs == null) {
             usb_fs = usb_port.GetUSBHandle(usb_devicefile,usb_report_size);
@@ -131,7 +132,6 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         System.Console.WriteLine("Loading Sign and Pay module");
         System.Console.WriteLine("  Screen Control: POS");
         System.Console.WriteLine("  Paycards Communication: Messages");
-        System.Console.WriteLine("  USB Layer: HidSharp");
         PushOutput("TERMAUTODISABLE");
 
         GetHandle();
