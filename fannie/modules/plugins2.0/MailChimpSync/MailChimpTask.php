@@ -151,7 +151,12 @@ class MailChimpTask extends FannieTask
                                     'leid' => $record[$columns['LEID']],
                                 );
                                 $this->cronMsg(sprintf("Updating name field(s) for member #%d", $card_no), FannieLogger::INFO);
-                                $mc->lists->updateMember($LISTID, $email_struct, $update, '', false);
+                                try {
+                                    $mc->lists->updateMember($LISTID, $email_struct, $update, '', false);
+                                } catch (Exception $ex) {
+                                    echo $ex;
+                                    var_dump($update);
+                                }
                                 sleep(1);
                             }
                             break;
