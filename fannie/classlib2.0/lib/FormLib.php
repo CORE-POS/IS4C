@@ -363,13 +363,15 @@ class FormLib
         function filterSubs()
         {
             var range = [ $('#deptStart').val(), $('#deptEnd').val() ];
+            var sID = $('#super-id').val();
             var req = {
                 jsonrpc: '2.0',
                 method: '\\COREPOS\\Fannie\\API\\webservices\\FannieDeptLookup',
                 id: new Date().getTime(),
                 params: {
                     'type' : 'children',
-                    'dept_no' : range
+                    'dept_no' : range,
+                    'superID' : sID
                 }
             };
             $.ajax({
@@ -412,7 +414,7 @@ class FormLib
                     <div class="row form-group form-horizontal">
                         <label class="control-label col-sm-3">Buyer (SuperDept)</label>
                         <div class="col-sm-8">
-                            <select name=super-dept class="form-control" onchange="filterDepartments(this.value);">
+                            <select name=super-dept id="super-id" class="form-control" onchange="filterDepartments(this.value);">
                                 <option value=""></option>
                                 <?php
                                 $supers = $dbc->query('

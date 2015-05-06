@@ -326,13 +326,15 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         function filterSubs()
         {
             var range = [ $('#deptStart').val(), $('#deptEnd').val() ];
+            var sID = $('#super-id').val();
             var req = {
                 jsonrpc: '2.0',
                 method: '\\COREPOS\\Fannie\\API\\webservices\\FannieDeptLookup',
                 id: new Date().getTime(),
                 params: {
                     'type' : 'children',
-                    'dept_no' : range
+                    'dept_no' : range,
+                    'superID' : sID
                 }
             };
             $.ajax({
@@ -792,7 +794,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 <div class="row form-group form-horizontal">
                     <label class="control-label col-sm-2">SuperDept (Buyer)</label>
                     <div class="col-sm-6">
-                        <select name=deptSub class="form-control" onchange="chainSuper(this.value);">
+                        <select name=deptSub id="super-id" class="form-control" onchange="chainSuper(this.value);">
                             <option value=0></option>
                             <?php
                             foreach($supers as $id => $name)
