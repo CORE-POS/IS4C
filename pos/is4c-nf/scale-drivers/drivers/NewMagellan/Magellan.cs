@@ -101,9 +101,9 @@ public class Magellan : DelegateForm
     public Magellan(SerialPortHandler[] args)
     {
         this.sph = new List<SerialPortHandler>();
-	foreach (SerialPortHandler s in args) {
-	    sph.Add(s);
-	}
+        foreach (SerialPortHandler s in args) {
+            sph.Add(s);
+        }
         FinishInit();
     }
 
@@ -124,7 +124,7 @@ public class Magellan : DelegateForm
         }
     }
 
-    public override void MsgRecv(string msg)
+    public void MsgRecv(string msg)
     {
         if (msg == "exit") {
             this.ShutDown();
@@ -133,7 +133,7 @@ public class Magellan : DelegateForm
         }
     }
 
-    public override void MsgSend(string msg)
+    public void MsgSend(string msg)
     {
         int ticks = Environment.TickCount;
         string my_location = AppDomain.CurrentDomain.BaseDirectory;
