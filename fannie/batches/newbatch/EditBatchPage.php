@@ -823,6 +823,7 @@ class EditBatchPage extends FannieRESTfulPage
             FROM batchList as l
                 INNER JOIN batches AS b ON b.batchID=l.batchID
             WHERE l.upc=?
+                AND l.batchID <> ?
                 AND b.discounttype <> 0
                 AND (
                     (b.startDate BETWEEN ? AND ?)
@@ -934,7 +935,7 @@ class EditBatchPage extends FannieRESTfulPage
             } else {
                 $conflict = '';
                 if ($dtype != 0) {
-                    $overlapR = $dbc->execute($overlapP, array_merge(array($fetchW['upc']), $overlap_args)); 
+                    $overlapR = $dbc->execute($overlapP, array_merge(array($fetchW['upc'], $id), $overlap_args)); 
                     if ($overlapR && $dbc->numRows($overlapR)) {
                         $overlap = $dbc->fetchRow($overlapR);
                         $conflict = sprintf('<a href="EditBatchPage.php?id=%d" target="_batch%d"
