@@ -818,7 +818,7 @@ class EditBatchPage extends FannieRESTfulPage
         $fetchR = $dbc->exec_statement($fetchP,array($id));
 
         $overlapP = $dbc->prepare('
-            SELECT b.batchID
+            SELECT b.batchID,
                 b.batchName
             FROM batchList as l
                 INNER JOIN batches AS b ON b.batchID=l.batchID
