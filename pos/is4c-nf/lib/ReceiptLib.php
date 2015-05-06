@@ -1095,8 +1095,11 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
                 }
             }
 
-            if (CoreLocal::get('memberID') != CoreLocal::get('defaultNonMem'))
-                $receipt['any'] .= self::memReceiptMessages(CoreLocal::get("memberID"));
+            if (CoreLocal::get('memberID') != CoreLocal::get('defaultNonMem')) {
+                $memMessages = self::memReceiptMessages(CoreLocal::get("memberID"));
+                $receipt['print'] .= $memMessages['print'];
+                $receipt['any'] .= $memMessages['any'];
+            }
             CoreLocal::set("equityNoticeAmt",0);
 
             // knit pieces back together if not emailing
@@ -1194,7 +1197,8 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
 /** 
   Get per-member receipt messages
   @param $card_no [int] member number
-  @return [string] receipt text
+  @return [array] receipt text
+  Array keys are "any" and "print". 
  */
 static public function memReceiptMessages($card_no)
 {
@@ -1204,22 +1208,25 @@ static public function memReceiptMessages($card_no)
           WHERE card_no=' . ((int)$card_no) . '
           ORDER BY msg_text';
     $r = $db->query($q);
-    $ret = "";
+    $ret = array('any', 'print');
     while ($w = $db->fetch_row($r)) {
         // EL This bit new for messages from plugins.
         $class_name = $w['modifier_module'];
         if (!empty($class_name) && class_exists($class_name)) {
             $obj = new $class_name();
-            $ret .=  $obj->message($w['msg_text']);
-        } elseif (file_exists(dirname(__FILE__).'/ReceiptBuilding/custMessages/'.$class_name.'php')) {
-            if (!class_exists($class_name)){
-                include(dirname(__FILE__).'/ReceiptBuilding/custMessages/'.
-                    $class_name.'.php');
+            $msg_text = $obj->message($w['msg_text']);
+            if (is_array($msg_text)) {
+                if (isset($msg_text['any'])) {
+                    $ret['any'] .= $msg_text['any'];
+                }
+                if (isset($msg_text['print'])) {
+                    $ret['print'] .= $msg_text['print'];
+                }
+            } else {
+                $ret['any'] .= $msg_text;
             }
-            $obj = new $class_name();
-            $ret .= $obj->message($w['msg_text']);
         } else {
-            $ret .= $w['msg_text']."\n";
+            $ret['any'] .= $w['msg_text']."\n";
         }
     }
 
