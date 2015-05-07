@@ -37,7 +37,7 @@ class NonMovementReport extends FannieReportPage {
     public $report_set = 'Movement Reports';
     public $themed = true;
 
-    protected $report_headers = array('UPC', 'Description', 'Dept#', 'Department', '', '');
+    protected $report_headers = array('UPC', 'Brand', 'Description', 'Dept#', 'Department', '', '');
 
     function preprocess()
     {
@@ -103,6 +103,7 @@ class NonMovementReport extends FannieReportPage {
 
         $query = $dbc->prepare("
             SELECT p.upc,
+                p.brand,
                 p.description,
                 d.dept_no,
                 d.dept_name 
@@ -128,6 +129,7 @@ class NonMovementReport extends FannieReportPage {
             $record[] = $row[1];
             $record[] = $row[2];
             $record[] = $row[3];
+            $record[] = $row[4];
             if ($this->report_format == 'html') {
                 $record[] = sprintf('<a href="" id="del%s"
                         onclick="backgroundDeactivate(\'%s\');return false;">

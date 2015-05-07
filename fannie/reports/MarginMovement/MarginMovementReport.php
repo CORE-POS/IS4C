@@ -38,7 +38,7 @@ class MarginMovementReport extends FannieReportPage
     protected $sort_column = 5;
     protected $sort_direction = 1;
 
-    protected $report_headers = array('UPC', 'Desc', 'Dept#', 'Dept', 'Cost', 'Sales', 'Margin', 'Markup', 'Contrib');
+    protected $report_headers = array('UPC', 'Brand', 'Desc', 'Dept#', 'Dept', 'Cost', 'Sales', 'Margin', 'Markup', 'Contrib');
     protected $required_fields = array('date1', 'date2');
 
     public function report_description_content()
@@ -95,6 +95,7 @@ class MarginMovementReport extends FannieReportPage
         $dlog = DTransactionsModel::selectDlog($date1, $date2);
 
         $query = "SELECT d.upc,
+                    p.brand,
                     p.description,
                     d.department,
                     t.dept_name,
@@ -127,6 +128,7 @@ class MarginMovementReport extends FannieReportPage
             $margin = ($row['total'] - $row['cost']) / $row['total'] * 100;
             $record = array(
                 $row['upc'],
+                $row['brand'],
                 $row['description'],
                 $row['department'],
                 $row['dept_name'],
@@ -161,11 +163,11 @@ class MarginMovementReport extends FannieReportPage
         $sum_cost = 0.0;
         $sum_ttl = 0.0;
         foreach($data as $row) {
-            $sum_cost += $row[4];
-            $sum_ttl += $row[5];
+            $sum_cost += $row[5];
+            $sum_ttl += $row[6];
         }
 
-        return array('Totals', null, null, null, sprintf('%.2f',$sum_cost), sprintf('%.2f',$sum_ttl), '', null, null);
+        return array('Totals', null, null, null, null, sprintf('%.2f',$sum_cost), sprintf('%.2f',$sum_ttl), '', null, null);
     }
 
     public function form_content()

@@ -31,7 +31,7 @@ class ProductMovementModular extends FannieReportPage
 
     protected $title = "Fannie : Product Movement";
     protected $header = "Product Movement Report";
-    protected $report_headers = array('Date','UPC','Description','Qty','$');
+    protected $report_headers = array('Date','UPC','Brand','Description','Qty','$');
     protected $required_fields = array('date1', 'date2', 'upc');
 
     public $description = '[Product Movement] lists sales for a specific UPC over a given date range.';
@@ -82,11 +82,12 @@ class ProductMovementModular extends FannieReportPage
                     DAY(t.tdate),
                     YEAR(t.tdate),
                     t.upc,
+                    p.brand,
                     p.description,
                     " . DTrans::sumQuantity('t') . " AS qty,
                     SUM(t.total) AS total
                   FROM $dlog AS t 
-                    " . DTrans::joinProducts('t', 'p') . "
+                    " . DTrans::joinProducts('t', 'p', 'INNER') . "
                   WHERE t.upc = ? AND
                     t.tdate BETWEEN ? AND ?
                   GROUP BY 
@@ -106,7 +107,7 @@ class ProductMovementModular extends FannieReportPage
             }
 
             $query = "select MONTH(datetime),DAY(datetime),YEAR(datetime),
-                upc,'RRR' AS description,
+                upc,'' AS brand,'RRR' AS description,
                 sum(case when upc <> 'rrr' then quantity when volSpecial is null or volSpecial > 9999 then 0 else volSpecial end) as qty,
                 sum(t.total) AS total from
                 $dlog as t
@@ -121,7 +122,7 @@ class ProductMovementModular extends FannieReportPage
             $dlog = DTransactionsModel::selectDTrans($date1, $date2);
 
             $query = "select MONTH(datetime),DAY(datetime),YEAR(datetime),
-                upc,description,
+                upc,'' AS brand, description,
                 sum(CASE WHEN quantity=0 THEN 1 ELSE quantity END) as qty,
                 sum(t.total) AS total from
                 $dlog as t
@@ -144,6 +145,7 @@ class ProductMovementModular extends FannieReportPage
             $record = array();
             $record[] = $row[0]."/".$row[1]."/".$row[2];
             $record[] = $row['upc'];
+            $record[] = $row['brand'];
             $record[] = $row['description'];
             $record[] = sprintf('%.2f', $row['qty']);
             $record[] = sprintf('%.2f', $row['total']);
@@ -159,10 +161,10 @@ class ProductMovementModular extends FannieReportPage
         $sumQty = 0.0;
         $sumSales = 0.0;
         foreach($data as $row){
-            $sumQty += $row[3];
-            $sumSales += $row[4];
+            $sumQty += $row[4];
+            $sumSales += $row[5];
         }
-        return array('Total',null,null,$sumQty,$sumSales);
+        return array('Total',null,null,null,$sumQty,$sumSales);
     }
 
     public function javascriptContent()

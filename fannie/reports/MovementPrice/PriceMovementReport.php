@@ -32,7 +32,7 @@ class PriceMovementReport extends FannieReportPage
     protected $title = "Fannie : Price Movement Report";
     protected $header = "Price Movement Report";
 
-    protected $report_headers = array('UPC', 'Desc', 'Dept#', 'Dept', 'Price', 'Qty', 'Sales');
+    protected $report_headers = array('UPC', 'Brand', 'Desc', 'Dept#', 'Dept', 'Price', 'Qty', 'Sales');
     protected $required_fields = array('date1', 'date2');
 
     public $description = '[Movement by Price] lists item sales with a separate line for each price point. If an item was sold at more than one price in the given date range, sales from each price are listed separately.';
@@ -88,6 +88,7 @@ class PriceMovementReport extends FannieReportPage
 
         $query = "
             SELECT d.upc,
+                p.brand,
                 p.description,"
                 . DTrans::sumQuantity('d') . " AS qty,
                 CASE WHEN memDiscount <> 0 AND memType <> 0 THEN unitPrice - memDiscount ELSE unitPrice END as price,
@@ -114,6 +115,7 @@ class PriceMovementReport extends FannieReportPage
         while($row = $dbc->fetch_row($result)) {
             $record = array(
                 $row['upc'],
+                $row['brand'],
                 $row['description'],
                 $row['department'],
                 $row['dept_name'],
@@ -149,11 +151,11 @@ class PriceMovementReport extends FannieReportPage
         $sum_qty = 0.0;
         $sum_ttl = 0.0;
         foreach($data as $row) {
-            $sum_qty += $row[5];
-            $sum_ttl += $row[6];
+            $sum_qty += $row[6];
+            $sum_ttl += $row[7];
         }
 
-        return array('Totals', null, null, null, null, sprintf('%.2f',$sum_qty), sprintf('%.2f',$sum_ttl));
+        return array('Totals', null, null, null, null, null, sprintf('%.2f',$sum_qty), sprintf('%.2f',$sum_ttl));
     }
 
     public function form_content()

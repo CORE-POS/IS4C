@@ -66,6 +66,7 @@ class ManufacturerMovementReport extends FannieReportPage
         case 'upc':
             $query = "
                 SELECT t.upc,
+                    p.brand,
                     p.description, "
                     . DTrans::sumQuantity('t') . " AS qty,
                     SUM(t.total) AS ttl,
@@ -73,7 +74,7 @@ class ManufacturerMovementReport extends FannieReportPage
                     d.dept_name,
                     s.superID
                 FROM $dlog AS t " 
-                    . DTrans::joinProducts('t', 'p')
+                    . DTrans::joinProducts('t', 'p', 'INNER')
                     . DTrans::joinDepartments('t', 'd') . "
                     LEFT JOIN MasterSuperDepts AS s ON d.dept_no = s.dept_ID
                 WHERE $type_condition
@@ -93,7 +94,7 @@ class ManufacturerMovementReport extends FannieReportPage
                     . DTrans::sumQuantity('t') . " AS qty,
                     SUM(t.total) AS ttl
                 FROM $dlog AS t "
-                    . DTrans::joinProducts('t', 'p') . "
+                    . DTrans::joinProducts('t', 'p', 'INNER') . "
                 WHERE $type_condition
                     AND t.tdate BETWEEN ? AND ?
                 GROUP BY YEAR(t.tdate),
@@ -111,7 +112,7 @@ class ManufacturerMovementReport extends FannieReportPage
                     SUM(t.total) AS ttl,
                     s.superID
                 FROM $dlog AS t "
-                    . DTrans::joinProducts('t', 'p')
+                    . DTrans::joinProducts('t', 'p', 'INNER')
                     . DTrans::joinDepartments('t', 'd') . "
                     LEFT JOIN MasterSuperDepts AS s ON d.dept_no=s.dept_ID
                 WHERE $type_condition
@@ -153,17 +154,17 @@ class ManufacturerMovementReport extends FannieReportPage
         }
 
         switch (count($data[0])) {
-            case 7:
-                $this->report_headers = array('UPC','Description','Qty','$',
+            case 8:
+                $this->report_headers = array('UPC','Brand','Description','Qty','$',
                     'Dept#','Department','Subdept');
                 $sumQty = 0.0;
                 $sumSales = 0.0;
                 foreach ($data as $row) {
-                    $sumQty += $row[2];
-                    $sumSales += $row[3];
+                    $sumQty += $row[3];
+                    $sumSales += $row[4];
                 }
 
-                return array('Total',null,$sumQty,$sumSales,'',null,null);
+                return array('Total',null,null,$sumQty,$sumSales,'',null,null);
 
             case 5:
                 $this->report_headers = array('Dept#','Department','Qty','$','Subdept');
