@@ -52,14 +52,15 @@ class VendorMovementReport extends FannieReportPage
             case 'upc':
                 $query = "
                     SELECT t.upc,
+                        COALESCE(p.brand, x.distributor) AS brand,
                         p.description, "
                         . DTrans::sumQuantity('t') . " AS qty,
                         SUM(t.total) AS ttl,
                         d.dept_no,
                         d.dept_name,
-                        s.superID
+                        s.super_name
                     FROM $dlog AS t "
-                        . DTrans::joinProducts('t', 'p')
+                        . DTrans::joinProducts('t', 'p', 'INNER')
                         . DTrans::joinDepartments('t', 'd') . "
                         LEFT JOIN vendors AS v ON p.default_vendor_id = v.vendorID
                         LEFT JOIN prodExtra AS x ON p.upc=x.upc
@@ -67,10 +68,11 @@ class VendorMovementReport extends FannieReportPage
                     WHERE (v.vendorName LIKE ? OR x.distributor LIKE ?)
                         AND t.tdate BETWEEN ? AND ?
                     GROUP BY t.upc,
+                        COALESCE(p.brand, x.distributor),
                         p.description,
                         d.dept_no,
                         d.dept_name,
-                        s.superID
+                        s.super_name
                     ORDER BY SUM(t.total) DESC";
                 break;
             case 'date':
@@ -99,9 +101,9 @@ class VendorMovementReport extends FannieReportPage
                         d.dept_name, "
                         . DTrans::sumQuantity('t') . " AS qty,
                         SUM(t.total) AS ttl,
-                        s.superID
+                        s.super_name
                     FROM $dlog AS t "
-                        . DTrans::joinProducts('t', 'p')
+                        . DTrans::joinProducts('t', 'p', 'INNER')
                         . DTrans::joinDepartments('t', 'd') . "
                         LEFT JOIN vendors AS v ON p.default_vendor_id = v.vendorID
                         LEFT JOIN MasterSuperDepts AS s ON d.dept_no=s.dept_ID
@@ -110,7 +112,7 @@ class VendorMovementReport extends FannieReportPage
                         AND t.tdate BETWEEN ? AND ?
                     GROUP BY d.dept_no,
                         d.dept_name,
-                        s.superID
+                        s.super_name
                     ORDER BY SUM(t.total) DESC";
                 break;
         }
@@ -146,20 +148,20 @@ class VendorMovementReport extends FannieReportPage
         }
 
         switch (count($data[0])) {
-            case 7:
-                $this->report_headers = array('UPC','Description','Qty','$',
-                    'Dept#','Department','Subdept');
+            case 8:
+                $this->report_headers = array('UPC','Brand','Description','Qty','$',
+                    'Dept#','Department','Super');
                 $sumQty = 0.0;
                 $sumSales = 0.0;
                 foreach ($data as $row) {
-                    $sumQty += $row[2];
-                    $sumSales += $row[3];
+                    $sumQty += $row[3];
+                    $sumSales += $row[4];
                 }
 
-                return array('Total',null,$sumQty,$sumSales,null,null,null);
+                return array('Total',null,null,$sumQty,$sumSales,null,null,null);
 
             case 5:
-                $this->report_headers = array('Dept#','Department','Qty','$','Subdept');
+                $this->report_headers = array('Dept#','Department','Qty','$','Super');
                 $sumQty = 0.0;
                 $sumSales = 0.0;
                 foreach ($data as $row) {
@@ -184,6 +186,7 @@ class VendorMovementReport extends FannieReportPage
 
     public function form_content()
     {
+        $this->addScript('../../item/autocomplete.js');
 ?>
 <form method = "get" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 <div class="col-sm-5">
@@ -224,6 +227,8 @@ class VendorMovementReport extends FannieReportPage
 </div>
 </form>
 <?php
+        $auto_url = $this->config->URL . 'ws/';
+        $this->add_onload_command("bindAutoComplete('#vendor', '$auto_url', 'vendor');\n");
         $this->add_onload_command('$(\'#vendor\').focus();');
     }
 
