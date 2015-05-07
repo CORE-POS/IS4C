@@ -310,11 +310,19 @@ class AdvancedItemSearch extends FannieRESTfulPage
             return false;
         }
 
-        $query = 'SELECT p.upc, p.description, m.super_name, p.department, d.dept_name,
-                 p.normal_price, p.special_price,
-                 CASE WHEN p.discounttype > 0 THEN \'X\' ELSE \'-\' END as onSale,
-                 0 as selected
-                 FROM ' . $from . ' WHERE ' . $where;
+        $query = '
+            SELECT p.upc, 
+                p.brand,
+                p.description, 
+                m.super_name, 
+                p.department, 
+                d.dept_name,
+                p.normal_price, 
+                p.special_price,
+                CASE WHEN p.discounttype > 0 THEN \'X\' ELSE \'-\' END as onSale,
+                0 as selected
+            FROM ' . $from . '
+            WHERE ' . $where;
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $args);
 
@@ -427,14 +435,20 @@ class AdvancedItemSearch extends FannieRESTfulPage
 
         $savedItems = FormLib::get('u', array());
         if (is_array($savedItems) && count($savedItems) > 0) {
-            $savedQ = 'SELECT p.upc, p.description, m.super_name, p.department, d.dept_name,
-                        p.normal_price, p.special_price,
-                        CASE WHEN p.discounttype > 0 THEN \'X\' ELSE \'-\' END as onSale,
-                        1 as selected
-                       FROM products AS p 
-                        LEFT JOIN departments AS d ON p.department=d.dept_no
-                        LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
-                       WHERE p.upc IN (';
+            $savedQ = '
+                SELECT p.upc, 
+                    p.brand,
+                    p.description, 
+                    m.super_name, 
+                    p.department, 
+                    d.dept_name,
+                    p.normal_price, p.special_price,
+                    CASE WHEN p.discounttype > 0 THEN \'X\' ELSE \'-\' END as onSale,
+                    1 as selected
+               FROM products AS p 
+                   LEFT JOIN departments AS d ON p.department=d.dept_no
+                   LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
+               WHERE p.upc IN (';
             foreach ($savedItems as $item) {
                 $savedQ .= '?,';
             }
@@ -484,13 +498,15 @@ class AdvancedItemSearch extends FannieRESTfulPage
         $ret .= '<table class="table search-table">';
         $ret .= '<thead><tr>
                 <th><input type="checkbox" onchange="toggleAll(this, \'.upcCheckBox\');" /></th>
-                <th>UPC</th><th>Desc</th><th>Super</th><th>Dept</th>
+                <th>UPC</th><th>Brand</th><th>Desc</th><th>Super</th><th>Dept</th>
                 <th>Retail</th><th>On Sale</th><th>Sale</th>
                 </tr></thead><tbody>';
         foreach($data as $upc => $record) {
             $ret .= sprintf('<tr>
-                            <td><input type="checkbox" name="u[]" class="upcCheckBox" value="%s" %s /></td>
+                            <td><input type="checkbox" name="u[]" class="upcCheckBox" value="%s" %s 
+                                onchange="checkedCount(\'#selection-counter\', \'.upcCheckBox\');" /></td>
                             <td><a href="ItemEditorPage.php?searchupc=%s" target="_advs%s">%s</a></td>
+                            <td>%s</td>
                             <td>%s</td>
                             <td>%s</td>
                             <td>%d %s</td>
@@ -500,6 +516,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
                             </tr>', 
                             $upc, ($record['selected'] == 1 ? 'checked' : ''),
                             $upc, $upc, $upc,
+                            $record['brand'],
                             $record['description'],
                             $record['super_name'],
                             $record['department'], $record['dept_name'],
@@ -541,6 +558,16 @@ function toggleAll(elem, selector) {
         $(selector).prop('checked', true);
     } else {
         $(selector).prop('checked', false);
+    }
+    checkedCount('#selection-counter', selector);
+}
+function checkedCount(output_selector, checked_selector)
+{
+    var count = $(checked_selector + ':checked').length;
+    if (count == 0) {
+        $(output_selector).html('');
+    } else {
+        $(output_selector).html(count + ' items selected. These items will be retained in the next search.');
     }
 }
 // helper: add all selected upc values to hidden form
@@ -898,6 +925,8 @@ function chainSuper(superID)
         $ret .= '<button type="submit" class="btn btn-default">Find Items</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
         $ret .= '<button type="reset" class="btn btn-default">Clear Settings</button>';
+        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
+        $ret .= '<span id="selection-counter"></span>';
         $ret .= '</form>';
 
         $ret .= '<hr />';
