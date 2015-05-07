@@ -234,6 +234,17 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         ?>
         </table>
         <hr />
+        <label>Default Batch View</label>
+        <?php
+        $batch_opts = array(
+            'all' => 'All',
+            'current' => 'Current',
+            'Pending' => 'Pending',
+            'Historical' => 'Historical',
+        ); 
+        echo installSelectField('FANNIE_BATCH_VIEW', $FANNIE_BATCH_VIEW, $batch_opts, 'all');
+        ?>
+        <hr />
         <label>Default Shelf Tag Layout</label>
         <?php
         $layouts = 'No Layouts Found!';

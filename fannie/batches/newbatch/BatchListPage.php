@@ -332,10 +332,14 @@ class BatchListPage extends FannieRESTfulPage
      * functions for generating content that goes in the
      * displayarea div
      */
-    function batchListDisplay($filter='', $mode='all', $maxBatchID='')
+    function batchListDisplay($filter='', $mode='', $maxBatchID='')
     {
         global $FANNIE_URL;
         $dbc = $this->con;
+
+        if ($mode === '') {
+            $mode = $this->config->get('BATCH_VIEW', 'all');
+        }
         
         $colors = array('#ffffff','#ffffcc');
         $c = 0;
