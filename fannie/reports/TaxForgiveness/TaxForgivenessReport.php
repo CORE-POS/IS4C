@@ -137,7 +137,10 @@ class TaxForgivenessReport extends FannieReportPage
 
     public function calculate_footers($data)
     {
-        $sums = array_map(function($v){ return ''; }, $data);
+        if (count($data) == 0) {
+            return array();
+        }
+        $sums = array_map(function($v){ return 0; }, $data[0]);
         foreach ($data as $row) {
             for ($i=3; $i<count($row); $i++) {
                 $sums[$i] += $row[$i];
