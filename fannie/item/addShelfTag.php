@@ -112,8 +112,13 @@ $prodExtraN = $dbc->num_rows($prodExtraR);
         <link rel="stylesheet" type="text/css" href="../src/javascript/bootstrap/css/bootstrap.min.css">
         <link rel="stylesheet" type="text/css" href="../src/javascript/bootstrap-default/css/bootstrap.min.css">
         <link rel="stylesheet" type="text/css" href="../src/javascript/bootstrap-default/css/bootstrap-theme.min.css">
-        <script type="text/javascript" src="../src/javascript/jquery/jquery.min.js"></script>
+        <script type="text/javascript" src="../src/javascript/jquery.js"></script>
         <script type="text/javascript" src="../src/javascript/bootstrap/js/bootstrap.min.js"></script>
+        <script type="text/javascript">
+        $(document).ready(function(){
+            $('input.focus').focus();
+        });
+        </script>
     </head>
 <body>
 <div class="container-fluid">
@@ -122,7 +127,7 @@ $prodExtraN = $dbc->num_rows($prodExtraR);
 <div class="form-group form-inline">
     <label>Description</label>
     <input type='text' name='description' maxlength=30
-        class="form-control"
+        class="form-control focus"
 <?php
 echo "value='".strtoupper($desc)."'";
 ?>

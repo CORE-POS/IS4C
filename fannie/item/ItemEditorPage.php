@@ -466,7 +466,7 @@ class ItemEditorPage extends FanniePage
             $ret .= "\n</script>\n";
         }
 
-        $this->add_onload_command('$(\'.fancyboxLink\').fancybox({\'width\':\'85%;\'});');
+        $this->add_onload_command('$(\'.fancyboxLink\').fancybox({\'width\':\'85%;\',\'titlePosition\':\'inside\'});');
         $this->add_onload_command('$(\'#price\').focus();');
         
         return $ret;
