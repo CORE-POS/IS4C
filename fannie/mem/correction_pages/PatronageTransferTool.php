@@ -31,6 +31,9 @@ class PatronageTransferTool extends FanniePage {
     protected $title='Fannie - Member Management Module';
     protected $header='Transfer Patronage';
 
+    protected $must_authenticate = true;
+    protected $auth_classes =  array('editmembers');
+
     public $description = '[Transfer Patronage] shifts an entire transaction from one member
     to another.';
     public $themed = true;

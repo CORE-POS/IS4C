@@ -30,6 +30,9 @@ class VendorDepartmentEditor extends FanniePage {
     protected $title = "Fannie : Manage Vendors";
     protected $header = "Manage Vendors";
 
+    protected $must_authenticate = true;
+    protected $auth_classes = array('pricechange');
+
     public $description = '[Vendor Departments] manages vendor-specific departments or categories.
     These are distinct from POS departments.';
     public $themed = true;

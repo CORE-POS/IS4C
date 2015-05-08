@@ -32,6 +32,9 @@ class MemberPreferences extends FannieRESTfulPage
     public $themed = true;
     public $description = '[Member Preferences] manages a set of per-member preference settings.';
 
+    protected $must_authenticate = true;
+    protected $auth_classes = array('editmembers');
+
     public function get_view()
     {
         return '<div class="alert alert-danger">Error - no member specified</div>';

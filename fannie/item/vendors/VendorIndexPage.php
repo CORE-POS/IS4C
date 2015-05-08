@@ -40,6 +40,9 @@ class VendorIndexPage extends FanniePage {
     protected $title = "Fannie : Manage Vendors";
     protected $header = "Manage Vendors";
 
+    protected $must_authenticate = true;
+    protected $auth_classes = array('pricechange');
+
     public $themed = true;
 
     public $description = '[Vendor Editor] creates or update information about vendors.';

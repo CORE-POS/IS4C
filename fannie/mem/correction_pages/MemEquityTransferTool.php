@@ -31,6 +31,9 @@ class MemEquityTransferTool extends FanniePage {
     protected $title='Fannie - Member Management Module';
     protected $header='Transfer Member Equity';
 
+    protected $must_authenticate = true;
+    protected $auth_classes =  array('editmembers');
+
     private $errors = '';
     private $mode = 'init';
     private $depts = array();

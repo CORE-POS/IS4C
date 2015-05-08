@@ -38,6 +38,9 @@ class MemberEditor extends FanniePage {
     public $description = '[Member Editor] is the primary tool for viewing and editing member accounts.';
     public $themed = true;
 
+    protected $must_authenticate = true;
+    protected $auth_classes = array('editmembers');
+
     private $country;
     private $memNum;
 

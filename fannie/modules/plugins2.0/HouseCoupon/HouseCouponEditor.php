@@ -35,6 +35,9 @@ class HouseCouponEditor extends FanniePage
     public $description = "[Module] for managing in store coupons";
     public $themed = true;
 
+    protected $must_authenticate = true;
+    protected $auth_classes = array('tenders');
+
     protected $header = "Fannie :: House Coupons";
     protected $title = "House Coupons";
 

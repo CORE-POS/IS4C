@@ -35,6 +35,9 @@ class EditVendorItems extends FannieRESTfulPage
     accessed via the Vendor Editor.';
     public $themed = true;
 
+    protected $must_authenticate = true;
+    protected $auth_classes = array('pricechange');
+
     public function preprocess()
     {
         $this->__routes[] = 'post<id><sku><field><value>';

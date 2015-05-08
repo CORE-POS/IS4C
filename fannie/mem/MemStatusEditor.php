@@ -31,6 +31,7 @@ class MemStatusEditor extends FanniePage {
     protected $must_authenticate = True;
     public $description = '[Member Status] alters an account\'s active status.';
     public $themed = true;
+    protected $must_authenticate = true;
     protected $auth_classes =  array('editmembers');
 
     private $cardno;

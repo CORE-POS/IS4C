@@ -35,6 +35,9 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
     public $description = '[Vendor Catalog Import] is the default tool for loading or updating vendor item data
     via spreadsheet.';
 
+    protected $must_authenticate = true;
+    protected $auth_classes = array('pricechange');
+
     protected $preview_opts = array(
         'upc' => array(
             'name' => 'upc',

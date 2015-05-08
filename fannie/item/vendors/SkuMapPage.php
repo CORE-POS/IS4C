@@ -31,6 +31,9 @@ class SkuMapPage extends FannieRESTfulPage
     protected $title = "Fannie : Vendor SKU Map";
     protected $header = "Vendor SKU Map";
 
+    protected $must_authenticate = true;
+    protected $auth_classes = array('pricechange');
+
     public $description = '[Vendor SKU Map] uses SKUs to map items that have a different
         vendor UPC than store UPC. Typically the "store" UPC is a PLU.';
     public $themed = true;

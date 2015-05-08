@@ -31,6 +31,9 @@ class UnitBreakdownPage extends FannieRESTfulPage
     protected $title = "Fannie : Vendor Case Breakdowns";
     protected $header = "Vendor Case Breakdowns";
 
+    protected $must_authenticate = true;
+    protected $auth_classes = array('pricechange');
+
     public $description = '[Vendor Case Breakdowns] manages items where the splits a package
         and sells items individually';
     public $themed = true;

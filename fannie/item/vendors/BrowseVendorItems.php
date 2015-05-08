@@ -35,6 +35,9 @@ class BrowseVendorItems extends FanniePage
     accessed via the Vendor Editor.';
     public $themed = true;
 
+    protected $must_authenticate = true;
+    protected $auth_classes = array('pricechange');
+
     function preprocess(){
 
         $ajax = FormLib::get_form_value('action');

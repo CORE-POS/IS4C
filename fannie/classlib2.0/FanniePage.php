@@ -443,7 +443,7 @@ function enableLinea(selector, callback)
             return true;
         }
 
-        return False;
+        return false;
     }
 
     public function check_auth()
