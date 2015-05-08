@@ -241,6 +241,9 @@ class StatementsPluginBusiness extends FannieRESTfulPage
             $pdf->Cell($columns[3],8,'Amount',0,1,'L',1);
  
             $gazette = false;
+            if (!isset($arRows[$memberW['card_no']])) {
+                $arRows[$memberW['card_no']] = array();
+            }
             foreach ($arRows[$memberW['card_no']] as $arRow) {
 
                 $date = $arRow['tdate'];
@@ -323,7 +326,11 @@ class StatementsPluginBusiness extends FannieRESTfulPage
                 $pdf->Ln(5);
                 $pdf->Cell(50,10,trim($memberW['LastName']),0);
                 $pdf->Ln(5);
-                list($addr1, $addr2) = explode("\n", $memberW['street'], 2);
+                if (strstr($memberW['street'], "\n")) {
+                    list($addr1, $addr2) = explode("\n", $memberW['street'], 2);
+                } else {
+                    $addr2 = false;
+                }
                 $pdf->Cell(80,10,$addr1,0);
                 if ($addr2) {
                     $pdf->Ln(5);

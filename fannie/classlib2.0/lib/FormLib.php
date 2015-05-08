@@ -208,6 +208,108 @@ class FormLib
         );
     }
 
+    public static function chainDeptFields($supers, $departments, $subs, $fake_supers=false)
+    {
+        $url_stem = FannieConfig::config('URL');
+        ob_start();
+        ?>
+        <div class="form-group">
+            <label class="control-label col-sm-4">Select SuperDept</label>
+            <div class="col-sm-8">
+                <select name="super-id" id="cdf-super-id" class="form-control"
+                    onchange="chainDeptFieldsSuper(this.value);">
+                    <option value=""></option>
+                    <?php foreach ($supers as $s) { ?>
+                    <option value="<?php echo $s->superID(); ?>"><?php echo $s->super_name(); ?></option>
+                    <?php } ?>
+                    <?php if ($fake_supers) { ?>
+                    <option value=-2 >All Retail</option>
+                    <option value=-1 >All</option>
+                    <?php } ?>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-4">Department Start</label>
+            <div class="col-sm-6">
+            <select id="cdf-dept-start-select" 
+                onchange="$('#cdf-dept-start').val(this.value);$('#cdf-dept-end-select').val(this.value);$('#cdf-dept-end').val(this.value);" 
+                class="form-control">
+            <option value="">
+            <?php foreach ($departments as $d) { ?>
+            <option value="<?php echo $d->dept_no(); ?>"><?php echo $d->dept_no(); ?>
+                <?php echo $d->dept_name(); ?></option>
+            <?php } ?>
+            </select>
+            </div>
+            <div class="col-sm-2">
+            <input type="number" name="deptStart" id="cdf-dept-start" value="" class="form-control" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-4">Department End</label>
+            <div class="col-sm-6">
+            <select id="cdf-dept-end-select" onchange="$('#cdf-dept-end').val(this.value);" class="form-control">
+            <option value="">
+            <?php foreach ($departments as $d) { ?>
+            <option value="<?php echo $d->dept_no(); ?>"><?php echo $d->dept_no(); ?>
+                <?php echo $d->dept_name(); ?></option>
+            <?php } ?>
+            </select>
+            </div>
+            <div class="col-sm-2">
+            <input type="number" name="deptEnd" id="cdf-dept-end" value="" class="form-control" />
+            </div>
+        </div>
+        <script type="text/javascript">
+        function chainDeptFieldsSuper(superID)
+        {
+            if (superID === '') {
+                superID = -1;
+            }
+            var req = {
+                jsonrpc: '2.0',
+                method: '\\COREPOS\\Fannie\\API\\webservices\\FannieDeptLookup',
+                id: new Date().getTime(),
+                params: {
+                    'type' : 'children',
+                    'superID' : superID
+                }
+            };
+            $.ajax({
+                url: '<?php echo $url_stem; ?>ws/',
+                type: 'post',
+                data: JSON.stringify(req),
+                dataType: 'json',
+                contentType: 'application/json',
+                success: function(resp) {
+                    if (resp.result) {
+                        $('#cdf-dept-start-select').empty();
+                        $('#cdf-dept-end-select').empty();
+                        for (var i=0; i<resp.result.length; i++) {
+                            var opt = $('<option>').val(resp.result[i]['id'])
+                                .html(resp.result[i]['id'] + ' ' + resp.result[i]['name']);
+                            $('#cdf-dept-start-select').append(opt.clone());
+                            $('#cdf-dept-end-select').append(opt);
+                        }
+                        if (resp.result.length > 0) {
+                            $('#cdf-dept-start-select').val(resp.result[0]['id']);
+                            $('#cdf-dept-start').val(resp.result[0]['id']);
+                            $('#cdf-dept-end-select').val(resp.result[resp.result.length-1]['id']);
+                            $('#cdf-dept-end').val(resp.result[resp.result.length-1]['id']);
+                        } else {
+                            $('#cdf-dept-start').val('');
+                            $('#cdf-dept-end').val('');
+                        }
+                    }
+                }
+            });
+        }
+        </script>
+        <?php
+        return ob_get_clean();
+    }
+
     /**
       Generate a very standard form with date and department fields
       @param $departments [array] of DepartmentModels

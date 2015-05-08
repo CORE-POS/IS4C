@@ -79,7 +79,7 @@ class CheckCouponMailing extends FannieRESTfulPage
 
         $custdata = new CustdataModel($dbc);
         $meminfo = new MeminfoModel($dbc);
-        $signage = new COREPOS\Fannie\API\item\FannieSignage();
+        $signage = new COREPOS\Fannie\API\item\FannieSignage(array());
         foreach ($this->id as $card_no) {
             $pdf->AddPage();
             $custdata->CardNo($card_no);
@@ -89,14 +89,14 @@ class CheckCouponMailing extends FannieRESTfulPage
             $meminfo->card_no($card_no);
             $meminfo->load();
 
-            $check_number = rand(100000, 999999);
+            $check_number = rand(100000, 999995);
 
             for ($i=0; $i<3; $i++) {
                 $pdf->SetFont('Gill', '', 10);
                 $check_top_y = $real_check_top_y - ($i*90);
                 $check_bottom_y = $real_check_bottom_y - ($i*90);
                 $pdf->SetXY($check_left_x, $check_top_y);
-                $pdf->Ln($line_height);
+                $pdf->Ln($line_height*4.25);
                 foreach ($my_address as $line) {
                     $pdf->SetX($check_left_x + $envelope_window_tab+20);
                     if ($line == 'www.wholefoods.coop') {
@@ -137,7 +137,7 @@ class CheckCouponMailing extends FannieRESTfulPage
                     $their_address[] = $s;
                 }
                 $their_address[] = $meminfo->city() . ', ' . $meminfo->state() . ' ' . $meminfo->zip();
-                $pdf->SetXY($check_left_x + $envelope_window_tab, $check_top_y + (9.5*$line_height));
+                $pdf->SetXY($check_left_x + $envelope_window_tab, $check_top_y + (11*$line_height));
                 $pdf->SetFont('Gill', 'B', 10);
                 foreach($their_address as $line) {
                     $pdf->SetX($check_left_x + $envelope_window_tab);
@@ -148,18 +148,23 @@ class CheckCouponMailing extends FannieRESTfulPage
                 $pdf->SetXY($check_left_x, $check_bottom_y + $line_height - 1);
                 $pdf->SetTextColor(0, 0, 0);
                 $pdf->SetFont('Gill', 'B', 10);
-                $pdf->Cell(0, $line_height, 'Cashable only at Whole Foods Co-op', 0, 0, 'C');
+                $pdf->Cell(0, $line_height, 'Redeemable only at Whole Foods Co-op', 0, 0, 'C');
+                $pdf->SetFont('Gill', '', 10);
+
+                $pdf->SetXY($check_left_x+145, $check_top_y+(6*$line_height)+1);
+                $pdf->SetFont('Gill', '', 8);
+                $pdf->MultiCell(50, $line_height-2, 'Limit one per purchase. Cannot be applied to previous purchases. No cash value.');
                 $pdf->SetFont('Gill', '', 10);
 
                 $pdf->SetFillColor(0xCC, 0xCC, 0xCC);
-                $pdf->Rect($check_top_x+87, $check_top_y+3, 39, 15, 'F');
+                $pdf->Rect($check_left_x+84, $check_top_y+28, 39, 15, 'F');
                 $pdf->SetFillColor(0, 0, 0);
-                $signage->drawBarcode(ltrim($this->upc, '0'), $pdf, $check_top_x+90, $check_top_y+5, array('height'=>11, 'fontsize'=>0));
+                $signage->drawBarcode(ltrim($this->upc, '0'), $pdf, $check_left_x+87, $check_top_y+30, array('height'=>11, 'fontsize'=>0));
 
-                $pdf->Image('logo.rgb.noalpha.png', $check_left_x+$envelope_window_tab, $check_top_y+5, 20);
+                $pdf->Image('logo.rgb.noalpha.png', $check_left_x+$envelope_window_tab, $check_top_y+20, 20);
 
-                $pdf->SetFont('Gill', 'B', '32');
-                $pdf->SetXY($check_left_x + $envelope_window_tab, $check_top_y + (5.5*$line_height));
+                $pdf->SetFont('Gill', 'B', '31');
+                $pdf->SetXY($check_left_x + $envelope_window_tab, $check_top_y + (0.5*$line_height));
                 $pdf->SetTextColor(0xff, 0x58, 0);
                 $pdf->Cell(0, 3*$line_height, 'We Appreciate You!');
 
@@ -168,6 +173,8 @@ class CheckCouponMailing extends FannieRESTfulPage
                 $pdf->Image(dirname(__FILE__) . '/../GiveUsMoneyPlugin/img/sig.png', $check_right_x - 63.5, $check_top_y + (9*$line_height), 63.5);
                 $pdf->SetXY($check_right_x - 63.5, $check_top_y + (12*$line_height));
                 $pdf->Cell(63.5, $line_height, 'Authorized By Signature', 'T');
+
+                $check_number++;
             }
 
         }

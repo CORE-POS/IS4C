@@ -90,7 +90,7 @@ class ProductImportPage extends \COREPOS\Fannie\API\FannieUploadPage
         $ret = true;
         $linecount = 0;
         $checks = (FormLib::get_form_value('checks')=='yes') ? true : false;
-        $skipExisting = FormLib::get('skipExisting', 1);
+        $skipExisting = FormLib::get('skipExisting', 0);
         $model = new ProductsModel($dbc);
         foreach($linedata as $line) {
             // get info from file and member-type default settings

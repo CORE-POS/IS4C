@@ -177,9 +177,14 @@ class RenderReceiptPage extends FanniePage {
         $results = $dbc->exec_statement($prep,$args);
         $number_cols = $dbc->num_fields($results);
         $rows = array();
-        while($row = $dbc->fetch_row($results))
+        while ($row = $dbc->fetch_row($results)) {
             $rows[] = $row;
-        $row2 = $rows[0];
+        } 
+        if (isset($rows[0])) {
+            $row2 = $rows[0];
+        } else {
+            $row2 = array('emp_no'=>'','register_no'=>'','trans_no'=>'','datetime'=>'','memberID'=>'');
+        }
         $emp_no = $row2['emp_no'];  
         $trans_num = $row2['emp_no']."-".$row2['register_no']."-".$row2['trans_no'];
 

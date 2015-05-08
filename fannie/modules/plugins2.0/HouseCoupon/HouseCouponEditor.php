@@ -106,7 +106,12 @@ class HouseCouponEditor extends FanniePage
             $dbc = FannieDB::get($this->config->get('OP_DB'));
 
             $maxQ = $dbc->prepare_statement("SELECT max(coupID) from houseCoupons");
-            $max = array_pop($dbc->fetch_row($dbc->exec_statement($maxQ)));
+            $maxR = $dbc->execute($maxQ);
+            $max = 0;
+            if ($maxR && $dbc->numRows($maxR)) {
+                $maxW = $dbc->fetchRow($maxR);
+                $max = $maxW[0];
+            }
             $this->coupon_id = $max+1;
             
             $insQ = $dbc->prepare_statement("INSERT INTO houseCoupons (coupID) values (?)");

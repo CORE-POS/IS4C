@@ -112,12 +112,14 @@ class PatronageTransferTool extends FanniePage {
                     ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
                 return True;
             }
-            $this->cn1 = array_pop($dbc->fetch_row($r));
+            $w = $dbc->fetchRow($r);
+            $this->cn1 = is_array($w) ? $w[0] : 0;
 
             $q = $dbc->prepare_statement("SELECT SUM(CASE WHEN trans_type in ('I','M','D') then total else 0 END)
                 FROM $dlog WHERE trans_num=? AND tdate BETWEEN ? AND ?");
             $r = $dbc->exec_statement($q,array($this->tn,$this->date.' 00:00:00',$this->date.' 23:59:59'));
-            $this->amt = array_pop($dbc->fetch_row($r));
+            $w = $dbc->fetchRow($r);
+            $this->amt = is_array($w) ? $w[0] : 0;
         }
 
         return True;
@@ -235,8 +237,8 @@ class PatronageTransferTool extends FanniePage {
         $dbc = FannieDB::get($FANNIE_TRANS_DB);
         $q = $dbc->prepare_statement("SELECT max(trans_no) FROM dtransactions WHERE register_no=? AND emp_no=?");
         $r = $dbc->exec_statement($q,array($register,$emp));
-        $n = array_pop($dbc->fetch_row($r));
-        return (empty($n)?1:$n+1);  
+        $w = $dbc->fetchRow($r);
+        return is_array($w) ? $w[0]+1 : 1;
     }
 
     function doInsert($dtrans,$amount,$department,$cardno){

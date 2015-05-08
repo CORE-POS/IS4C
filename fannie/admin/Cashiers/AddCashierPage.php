@@ -61,8 +61,8 @@ class AddCashierPage extends FanniePage
 
             $idQ = $dbc->prepare_statement("SELECT max(emp_no)+1 FROM employees WHERE emp_no < 1000");
             $idR = $dbc->exec_statement($idQ);
-            $emp_no = array_pop($dbc->fetch_row($idR));
-            if ($emp_no == '') $emp_no=1;
+            $idW = $dbc->fetchRow($idR);
+            $emp_no = is_array($idW) ? $idW[0]+1 : 1;
 
             $employee = new EmployeesModel($dbc);
             $employee->emp_no($emp_no);

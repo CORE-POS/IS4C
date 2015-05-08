@@ -41,7 +41,7 @@ last thirteen weeks';
     {
         global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_ARCHIVE_DB;
 
-        $today = mktime();
+        $today = strtotime('today');
         $this_monday = $today;
         while(date('N', $this_monday) != 1) {
             $this_monday = mktime(0, 0, 0, date('n', $this_monday), date('j', $this_monday) - 1, date('Y', $this_monday));

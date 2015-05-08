@@ -89,7 +89,7 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
 
             if ($dbc->tableExists('ProdCostHistory')) {
                 $limitR = $dbc->query('
-                    SELECT MAX(productUpdateID) AS lastChange
+                    SELECT MAX(prodUpdateID) AS lastChange
                     FROM ProdCostHistory');
                 $limit = 0;
                 if ($dbc->numRows($limitR) > 0) {

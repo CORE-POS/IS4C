@@ -281,8 +281,11 @@ class SQLManager
 
             $errorMsg = $this->error($which_connection);
             $logMsg = 'Failed Query on ' . $_SERVER['PHP_SELF'] . "\n"
-                    . $query_text . "\n"
-                    . $errorMsg . "\n";
+                    . $query_text . "\n";
+            if (is_array($params)) {
+                $logMsg .= 'Parameters: ' . implode("\n", $params);
+            }
+            $logMsg .= $errorMsg . "\n";
             $this->logger($logMsg);
 
             if ($this->throw_on_fail) {

@@ -125,7 +125,7 @@ class MarginMovementReport extends FannieReportPage
         $sum_total = 0.0;
         $sum_cost = 0.0;
         while($row = $dbc->fetch_row($result)) {
-            $margin = ($row['total'] - $row['cost']) / $row['total'] * 100;
+            $margin = $row['total'] == 0 ? 0 : ($row['total'] - $row['cost']) / $row['total'] * 100;
             $record = array(
                 $row['upc'],
                 $row['brand'],
@@ -135,7 +135,7 @@ class MarginMovementReport extends FannieReportPage
                 sprintf('%.2f', $row['cost']),
                 sprintf('%.2f', $row['total']),
                 sprintf('%.2f', $margin),
-                sprintf('%.2f', ($row['total'] - $row['cost']) / $row['qty']),
+                sprintf('%.2f', $row['qty'] == 0 ? 0 : ($row['total'] - $row['cost']) / $row['qty']),
             );
 
             $sum_total += $row['total'];

@@ -280,8 +280,8 @@ class MemArEquitySwapTool extends FanniePage {
         $dbc = FannieDB::get($FANNIE_TRANS_DB);
         $q = $dbc->prepare_statement("SELECT max(trans_no) FROM dtransactions WHERE register_no=? AND emp_no=?");
         $r = $dbc->exec_statement($q,array($register,$emp));
-        $n = array_pop($dbc->fetch_row($r));
-        return (empty($n)?1:$n+1);  
+        $w = $dbc->fetchRow($r);
+        return is_array($w) ? $w[0]+1 : 1;
     }
 
     function doInsert($dtrans,$amount,$department,$cardno){

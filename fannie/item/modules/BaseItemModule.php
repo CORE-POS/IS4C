@@ -260,8 +260,12 @@ class BaseItemModule extends ItemModule
                 break;
             case 'PLU':
                 $trimmed = ltrim($upc, '0');
-                $ret .= str_repeat('0', 13-strlen($trimmed))
-                    . '<strong>' . $trimmed . '</strong>';
+                if (strlen($trimmed) < 13) {
+                    $ret .= str_repeat('0', 13-strlen($trimmed))
+                        . '<strong>' . $trimmed . '</strong>';
+                } else {
+                    $ret .= $upc;
+                }
                 break;
             default:
                 $ret .= $upc;
