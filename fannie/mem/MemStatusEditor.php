@@ -28,7 +28,6 @@ if (!class_exists('FannieAPI')) {
 class MemStatusEditor extends FanniePage {
     protected $header = "Customer Status";
     protected $title = "Fannie :: Customer Status";
-    protected $must_authenticate = True;
     public $description = '[Member Status] alters an account\'s active status.';
     public $themed = true;
     protected $must_authenticate = true;
