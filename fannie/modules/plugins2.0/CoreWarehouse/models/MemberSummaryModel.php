@@ -178,6 +178,7 @@ class MemberSummaryModel extends CoreWarehouseModel
 
         $oldlight = array(strtotime($spotlight_args[0]), strtotime($spotlight_args[1]));
         $oldlight_args = array(
+            $spotlight_args[0],
             date('Ym01', mktime(0,0,0,date('n',$oldlight[0]),1,date('Y',$oldlight[0])-1)),
             date('Ymt', mktime(0,0,0,date('n',$oldlight[1]),1,date('Y',$oldlight[1])-1)),
         );
