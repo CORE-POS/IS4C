@@ -881,6 +881,9 @@ class SQLManager
         if (!$result) {
             return false;
         }
+        if ($this->numRows($result) == 0) {
+            return true;
+        }
 
         $num_fields = $this->num_fields($result,$source_db);
 
@@ -889,12 +892,14 @@ class SQLManager
         $strings = array("varchar"=>1,"nvarchar"=>1,"string"=>1,
             "char"=>1, 'var_string'=>1);
         $dates = array("datetime"=>1);
-        $queries = array();
         $prep = $insert_query . ' VALUES(';
         $arg_sets = array();
+        $big_query = $insert_query . ' VALUES ';
+        $big_values = '';
+        $big_args = array();
 
         while ($row = $this->fetch_array($result,$source_db)) {
-            $full_query = $insert_query." VALUES (";
+            $big_values .= '(';
             $args = array();
             for ($i=0; $i<$num_fields; $i++) {
                 $type = strtolower($this->fieldType($result,$i,$source_db));
@@ -908,34 +913,37 @@ class SQLManager
                 } elseif (isset($strings[$type])) {
                     $row[$i] = str_replace("'","''",$row[$i]);
                 }
-                if (isset($unquoted[$type])) {
-                    $full_query .= $row[$i].",";
-                } else {
-                    $full_query .= $this->escape($row[$i]) . ',';
-                }
                 $args[] = $row[$i];
                 if (count($arg_sets) == 0) {
                     $prep .= '?,';
                 }
+                $big_args[] = $row[$i];
+                $big_values .= '?,';
             }
-            $full_query = substr($full_query,0,strlen($full_query)-1).")";
-            array_push($queries,$full_query);
             if (count($arg_sets) == 0) {
                 $prep = substr($prep, 0, strlen($prep)-1) . ')';
             }
             $arg_sets[] = $args;
+            $big_values = substr($big_values, 0, strlen($big_values)-1) . '),';
+        }
+        $big_values = substr($big_values, 0, strlen($big_values)-1);
+
+        /**
+          Sending all records as a single query for large
+          record sets may present problems depending on
+          underlying DBMS and/or configuration limits.
+          MySQL max_allowed_packet is probably the most
+          common one.
+        */
+        if (count($arg_sets) < 500) {
+            $big_prep = $this->prepare($big_query . $big_values, $dest_db);
+            $bigR = $this->execute($big_prep, $big_args, $dest_db);
+            return ($bigR) ? true : false;
         }
 
         $ret = true;
         $this->startTransaction($dest_db);
         $statement = $this->prepare($prep, $dest_db);
-        /*
-        foreach ($queries as $q) {
-            if(!$this->query($q,$dest_db)) {
-                $ret = false;
-            }
-        }
-        */
         foreach ($arg_sets as $args) {
             if (!$this->execute($statement, $args, $dest_db)) {
                 $ret = false;
@@ -1725,7 +1733,7 @@ class SQLManager
         } elseif (is_string($this->QUERY_LOG)) {
             $fp = @fopen($this->QUERY_LOG, 'a');
             if ($fp) {
-                fwrite($fp, $str);
+                fwrite($fp, date('r') . ': ' . $str);
                 fclose($fp);
 
                 return true;
