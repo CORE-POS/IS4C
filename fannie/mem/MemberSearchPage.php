@@ -124,6 +124,17 @@ class MemberSearchPage extends FanniePage {
             }
             $ret .= ')';
             $ret .= '<br /><a href="MemberEditor.php?memNum='.$review.'">Edit Again</a>';
+            $list = FormLib::get('l');
+            if (!class_exists('MemberEditor')) {
+                include(dirname(__FILE__) . '/MemberEditor.php');
+            }
+            $links = MemberEditor::memLinksPrevNext($review, $list);
+            if (!empty($links[0])) {
+                $ret .= '&nbsp;&nbsp;&nbsp;' . $links[0];
+            }
+            if (!empty($links[1])) {
+                $ret .= '&nbsp;&nbsp;&nbsp;' . $links[1];
+            }
             $ret .= '</fieldset>';
         }
 

@@ -279,7 +279,6 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
 
         $ret = array();
         if (!empty($where)){
-            echo $where;
             $q = $dbc->prepare_statement("SELECT CardNo,FirstName,LastName FROM
                 custdata as c LEFT JOIN meminfo AS m
                 ON c.CardNo = m.card_no
