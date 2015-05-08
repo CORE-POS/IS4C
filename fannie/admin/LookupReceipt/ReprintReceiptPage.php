@@ -66,7 +66,16 @@ class ReprintReceiptPage extends FanniePage
 
             $dbc = FannieDB::get($FANNIE_OP_DB);
             $dlog = $FANNIE_TRANS_DB . $dbc->sep() . "dlog_15";
-            $query = "SELECT year(tdate),month(tdate),day(tdate),emp_no,register_no,trans_no FROM $dlog WHERE 1=1 ";
+            $query = "SELECT 
+                year(tdate) AS year,
+                month(tdate) AS month,
+                day(tdate) AS day,
+                emp_no,
+                register_no,
+                trans_no,
+                MAX(card_no) AS card_no,
+                MAX(tdate) AS ts
+            FROM $dlog WHERE 1=1 ";
             $args = array();
             if ($date != "") {
                 $date2 = ($date2 != "") ? $date2 : $date;
@@ -152,17 +161,57 @@ class ReprintReceiptPage extends FanniePage
                 header("Location: RenderReceiptPage.php?year=$year&month=$month&day=$day&receipt=$trans_num");
                 return false;
             } else {
+                $this->addScript('../../src/javascript/tablesorter/jquery.tablesorter.js');
+                $this->addOnloadCommand("\$('.tablesorter').tablesorter();\n");
                 $this->results = "<b>Matching receipts</b>:<br />";
-                $this->results .= '<ul>';
+                $this->results .= '<table class="table tablesorter">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Receipt</th>
+                            <th>Employee</th>
+                            <th>Lane</th>
+                            <th>Owner</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>';
+                $subTotalP = $dbc->prepare("
+                    SELECT SUM(-total) AS subtotal
+                    FROM {$dlog} AS d
+                    WHERE tdate BETWEEN ? AND ?
+                        AND trans_type='T'
+                        AND department = 0
+                        AND emp_no=?
+                        AND register_no=?
+                        AND trans_no=?
+                ");
                 while ($row = $dbc->fetch_row($result)) {
+                    $this->results .= '<tr>';
                     $year = $row[0];
                     $month = $row[1];
                     $day = $row[2];
+                    $this->results .= '<td>' . $row['ts'] . '</td>';
                     $trans_num = $row[3].'-'.$row[4].'-'.$row[5];
-                    $this->results .= "<li><a href=RenderReceiptPage.php?year=$year&month=$month&day=$day&receipt=$trans_num>";
-                    $this->results .= "$year-$month-$day $trans_num</a></li>";
+                    $this->results .= "<td><a href=RenderReceiptPage.php?year=$year&month=$month&day=$day&receipt=$trans_num>";
+                    $this->results .= "$trans_num</a></td>";
+                    $this->results .= '<td>' . $row['emp_no'] . '</td>';
+                    $this->results .= '<td>' . $row['register_no'] . '</td>';
+                    $this->results .= '<td>' . $row['card_no'] . '</td>';
+                    $subTotalArgs = array(
+                        date('Y-m-d 00:00:00', strtotime($row['ts'])),
+                        date('Y-m-d 23:59:59', strtotime($row['ts'])),
+                        $row['emp_no'],
+                        $row['register_no'],
+                        $row['trans_no'],
+                    );
+                    $subTotalR = $dbc->execute($subTotalP, $subTotalArgs);
+                    $subTotalW = $dbc->fetchRow($subTotalR);
+                    $subTotal = is_array($subTotalW) ? $subTotalW['subtotal'] : 0;
+                    $this->results .= sprintf('<td>%.2f</td>', $subTotal);
+                    $this->results .= '</tr>';
                 }
-                $this->results .= '</ul>';
+                $this->results .= '</tbody></table>';
             }
         }
 
@@ -177,7 +226,12 @@ class ReprintReceiptPage extends FanniePage
             color: white;
             padding-left: 4px;
             padding-right: 4px;
-        }';
+        }
+        .tablesorter thead th {
+            cursor: hand;
+            cursor: pointer;
+        }
+        ';
     }
 
     function body_content()
