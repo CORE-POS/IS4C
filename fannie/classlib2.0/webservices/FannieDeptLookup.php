@@ -129,7 +129,7 @@ class FannieDeptLookup extends FannieWebService
                             $query .= ' WHERE d.dept_no = ? ';
                             $params[] = $args->dept_no;
                         }
-                        if (property_exists($args, 'superID')) {
+                        if (property_exists($args, 'superID') && is_numeric($args->superID)) {
                             $query .= ' AND a.superID = ? ';
                             $params[] = $args->superID;
                         }
