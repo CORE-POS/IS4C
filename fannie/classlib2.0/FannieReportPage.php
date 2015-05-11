@@ -610,6 +610,7 @@ class FannieReportPage extends FanniePage
                             'content="text/html; charset=iso-8859-1">' .
                         '</head><body>';
                     }
+                    $ret .= '<div id="pre-report-content">';
                     /**
                       Detect PEAR and only offer XLS if
                       the system is capable.
@@ -640,6 +641,7 @@ class FannieReportPage extends FanniePage
                     foreach ($this->report_description_content() as $line) {
                         $ret .= (substr($line,0,1)=='<'?'':'<br />').$line;
                     }
+                    $ret .= '</div>';
                 }
                 if ($this->sortable || $this->no_sort_but_style) {
                     $ret .= '<table class="mySortableTable tablesorter">';
@@ -857,15 +859,6 @@ class FannieReportPage extends FanniePage
                 $row[] = null;
             }
         }
-        if (($meta & self::META_REPEAT_HEADERS) != 0) {
-            $ret = "</tbody>\n<tbody>\n\t<tr>\n";
-            $tag = 'th';
-            $row = array();
-            $header1 = $this->select_headers(True);
-            foreach($header1 as $h) {
-                $row[] = $h;
-            }
-        }
         $color_styles = '';
         if (($meta & self::META_COLOR) != 0) {
             if (isset($row['meta_background'])) {
@@ -875,6 +868,15 @@ class FannieReportPage extends FanniePage
             if (isset($row['meta_foreground'])) {
                 $color_styles .= 'color:' . $row['meta_foreground'] . ';';
                 unset($row['meta_foreground']);
+            }
+        }
+        if (($meta & self::META_REPEAT_HEADERS) != 0) {
+            $ret = "</tbody>\n<tbody>\n\t<tr>\n";
+            $tag = 'th';
+            $row = array();
+            $header1 = $this->select_headers(True);
+            foreach($header1 as $h) {
+                $row[] = $h;
             }
         }
 

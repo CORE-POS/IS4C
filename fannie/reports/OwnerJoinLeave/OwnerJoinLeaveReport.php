@@ -37,22 +37,37 @@ class OwnerJoinLeaveReport extends FannieReportPage
     protected $required_fields = array('date1', 'date2');
 
     protected $report_headers = array(
+        array('Ownership Report', null, null, null, null),
+        array('Total Equity', null, null, null, null),
+        array('Period', null, 'Number of Owners', 'Stock', null),
         array('New Owners', null, null, null, null),
-        array('Number', 'Date', 'Name', 'Stock', ''),
-        array('Inactive Owners', null, null, null, null),
-        array('Number', 'Date', 'Name', 'Stock', 'Reason'),
+        array('Number', 'Date', 'Name', 'Stock', null),
+        array('Inactives', null, null, null, null),
+        array('Description', null, 'Current', 'Year to Date', 'Life to Date'),
         array('Termination Pending', null, null, null, null),
         array('Number', 'Date', 'Name', 'Stock', 'Reason'),
-        array('Total Equity', null, null, null, null),
-        array('Period', 'Number of Owners', 'Stock', '', ''),
-        array('Total Active/Inactive', null, null, null, null),
-        array('Period', 'Active/Inactive', 'Number of Owners', 'Reason', ''),
     );
 
     public function fetch_report_data()
     {
         global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
+
+        $this->report_headers[0][0] .= ' '
+            . date('M j, Y', strtotime(FormLib::get('date1')))
+            . ' through ' 
+            . date('M j, Y', strtotime(FormLib::get('date2')));
+        if ($this->report_format == 'html') {
+            echo '<style type="text/css">
+                thead th {
+                    background-color: #000 !important;
+                    color: #fff;
+                }
+                @media print {
+                    #pre-report-content { display: none; }
+                }
+                </style>';
+        }
 
         $joinP = $dbc->prepare('
             SELECT m.card_no,
@@ -66,25 +81,6 @@ class OwnerJoinLeaveReport extends FannieReportPage
             WHERE m.start_date BETWEEN ? AND ?
                 AND c.Type=\'PC\'
             ORDER BY m.start_date
-        ');
-
-        $inactP = $dbc->prepare('
-            SELECT s.cardno AS card_no,
-                c.FirstName,
-                c.LastName,
-                s.suspDate,
-                s.reasoncode
-            FROM suspensions AS s
-                INNER JOIN custdata AS c ON s.cardno=c.CardNo AND c.personNum=1
-            WHERE c.Type=\'INACT\'
-                AND s.suspDate BETWEEN ? AND ?
-            ORDER BY s.suspDate
-        ');
-
-        $reasonP = $dbc->prepare('
-            SELECT r.textStr
-            FROM reasoncodes AS r
-            WHERE r.mask & ? <> 0
         ');
 
         $termP = $dbc->prepare('
@@ -110,7 +106,10 @@ class OwnerJoinLeaveReport extends FannieReportPage
 
         $data = array();
         $totals = array();
-        $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS);
+        $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
+            'meta_background'=>'#000','meta_foreground'=>'#fff');
+        $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
+            'meta_background'=>'#ccc','meta_foreground'=>'#000');
 
         $args = array(
             FormLib::getDate('date1', date('Y-m-d')) . ' 00:00:00',
@@ -125,67 +124,30 @@ class OwnerJoinLeaveReport extends FannieReportPage
                 $row['card_no'],
                 date('Y-m-d', strtotime($row['start_date'])),    
                 $row['FirstName'] . ' ' . $row['LastName'],
-                sprintf('%.2f', $row['payments']),
-                '',
+                sprintf('$%.2f', $row['payments']),
+                null,
             );
             $totals['new']++;
             $totals['newStock'] += $row['payments'];     
         }
 
-        $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS);
-        $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS);
-        
-        $inactR = $dbc->execute($inactP, $args);
-        $totals['inact'] = 0;
-        $totals['inactReasons'] = array('Term Pending'=>0);
-        while ($row = $dbc->fetch_row($inactR)) {
-            $record = array(
-                $row['card_no'],
-                date('Y-m-d', strtotime($row['suspDate'])),    
-                $row['FirstName'] . ' ' . $row['LastName'],
-                sprintf('%.2f', $row['payments']),
-            );
-            $totals['inact']++;
-            $reasonR = $dbc->execute($reasonP, array($row['reasoncode']));
-            $reason = '';
-            while ($w = $dbc->fetch_row($reasonR)) {
-                $reason .= $w['textStr'] . ', ';
-                if (!isset($totals['inactReasons'][$w['textStr']])) {
-                    $totals['inactReasons'][$w['textStr']] = 0;
-                }
-                $totals['inactReasons'][$w['textStr']]++;
-            }
-            if ($reason === '') {
-                $reason = '?';
+        $ytdArgs = array(
+            date('Y-01-01 00:00:00', strtotime($args[0])),
+            $args[1],
+        );
+        if ($this->config->COOP_ID == 'WFC_Duluth') {
+            $ts = strtotime($args[0]);
+            if (mktime(0, 0, 0, 7, 1, date('Y',$ts)) < $ts) {
+                $ts = mktime(0, 0, 0, 7, 1, date('Y', $ts));
             } else {
-                $reason = substr($reason, 0, strlen($reason)-2);
+                $ts = mktime(0, 0, 0, 7, 1, date('Y', $ts)-1);
             }
-            $record[] = $reason;
-            $data[] = $record;
-        }
-
-        $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS);
-        $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS);
-        
-        $termR = $dbc->execute($termP, $args);
-        while ($row = $dbc->fetch_row($termR)) {
-            $record = array(
-                $row['card_no'],
-                date('Y-m-d', strtotime($row['suspDate'])),    
-                $row['FirstName'] . ' ' . $row['LastName'],
-                sprintf('%.2f', $row['payments']),
+            $ytdArgs = array(
+                date('Y-m-d', $ts),
+                $args[1],
             );
-            $totals['inact']++;
-            $totals['inactReasons']['Term Pending']++;
-            $noteR = $dbc->execute($noteP, array($row['card_no']));
-            if ($noteR && $dbc->num_rows($noteR) > 0) {
-                $noteW = $dbc->fetch_row($noteR);
-                $record[] = $noteW['note'];
-            } else {
-                $record[] = '?';
-            }
-            $data[] = $record;
         }
+        
 
         $ytdP = $dbc->prepare('
             SELECT SUM(payments) AS stock,
@@ -196,10 +158,6 @@ class OwnerJoinLeaveReport extends FannieReportPage
             WHERE m.start_date BETWEEN ? AND ?
                 AND c.Type=\'PC\'
         ');
-        $ytdArgs = array(
-            date('Y-01-01 00:00:00', strtotime($args[0])),
-            $args[1],
-        );
         $ytdR = $dbc->execute($ytdP, $ytdArgs);
         $ytd = $dbc->fetch_row($ytdR);
 
@@ -217,49 +175,208 @@ class OwnerJoinLeaveReport extends FannieReportPage
             $totals['active'] = $activeW['activeTotal'];
         }
 
-        $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS);
-        $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS);
+        $allTimeR = $dbc->query('
+            SELECT COUNT(DISTINCT memnum) AS members,
+                SUM(payments) AS equity
+            FROM ' . $FANNIE_TRANS_DB . $dbc->sep() . 'equity_live_balance'); 
+        $allTimeW = $dbc->fetchRow($allTimeR);
 
-        $data[] = array(
-            date('Y-m-d', strtotime($args[0])) . ' - ' . date('Y-m-d', strtotime($args[1])),
-            $totals['new'],
-            $totals['newStock'],
-            '',
-            '',
-        );
-        $data[] = array(
-            date('Y-m-d', strtotime($ytdArgs[0])) . ' - ' . date('Y-m-d', strtotime($ytdArgs[1])),
-            $ytd['numOwners'],
-            $ytd['stock'],
-            '',
-            '',
-        );
-
-        $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS);
-        $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS);
-
-        $data[] = array(
-            '(the big bang) - ' . date('Y-m-d', strtotime($args[1])),
-            'Active',
+        array_unshift($data, array(
+            'Still Active',
+            null,
             $totals['active'],
-            'n/a',
-            ''
-        );
-        $data[] = array(
-            date('Y-m-d', strtotime($args[0])) . ' - ' . date('Y-m-d', strtotime($args[1])),
-            'Inactive',
-            $totals['inact'],
-            'any',
-            '',
-        );
-        foreach ($totals['inactReasons'] as $reason => $num) {
+            number_format($totals['active'] / $allTimeW['members'] * 100) . '%',
+            null,
+        ));
+
+        array_unshift($data, array(
+            'Life to Date',
+            null,
+            $allTimeW['members'],
+            '$' . number_format($allTimeW['equity'], 2),
+            null,
+        ));
+
+        if ($this->config->COOP_ID == 'WFC_Duluth') {
+            array_unshift($data, array(
+                'Yearly Budget',
+                null,
+                '1,000',
+                '$72,000.00',
+                null,
+            ));
+        }
+
+        array_unshift($data, array(
+            'Current Report: ' . date('Y-m-d', strtotime($ytdArgs[0])) . ' - ' . date('Y-m-d', strtotime($ytdArgs[1])),
+            null,
+            $ytd['numOwners'],
+            '$' . number_format($ytd['stock'], 2),
+            null,
+        ));
+
+        array_unshift($data, array(
+            'Year to Date: ' . date('Y-m-d', strtotime($args[0])) . ' - ' . date('Y-m-d', strtotime($args[1])),
+            null,
+            $totals['new'],
+            '$' . number_format($totals['newStock'], 2),
+            null,
+        ));
+        array_unshift($data, array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
+            'meta_background'=>'#ccc','meta_foreground'=>'#000'));
+        array_unshift($data, array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
+            'meta_background'=>'#000','meta_foreground'=>'#fff'));
+        $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
+            'meta_background'=>'#000','meta_foreground'=>'#fff');
+        $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
+            'meta_background'=>'#ccc','meta_foreground'=>'#000');
+
+        $inactP = $dbc->prepare('
+            SELECT COUNT(*),
+                r.textStr,
+                r.mask 
+            FROM suspensions AS s
+                INNER JOIN custdata AS c ON s.cardno=c.CardNo AND c.personNum=1
+                LEFT JOIN reasoncodes AS r ON (r.mask & s.reasoncode) <> 0
+            WHERE s.suspDate BETWEEN ? AND ?
+                AND c.type=\'INACT\'
+            GROUP BY r.textStr,
+                r.mask
+            ORDER BY r.textStr
+        ');
+        $reasons = array();
+        $specific_reasons = FormLib::get('reasons', array());
+        $inactR = $dbc->execute($inactP, $args);
+        while ($w = $dbc->fetchRow($inactR)) {
+            if (!in_array($w['mask'], $specific_reasons)) {
+                $w['textStr'] = 'Other';
+            }
+            if (!isset($reasons[$w['textStr']])) {
+                $reasons[$w['textStr']] = array(
+                    'current' => 0,
+                    'ytd' => 0,
+                    'all' => 0,
+                );
+            }
+            $reasons[$w['textStr']]['current'] += $w[0];
+        }
+        $inactR = $dbc->execute($inactP, $ytdArgs);
+        while ($w = $dbc->fetchRow($inactR)) {
+            if (!in_array($w['mask'], $specific_reasons)) {
+                $w['textStr'] = 'Other';
+            }
+            if (!isset($reasons[$w['textStr']])) {
+                $reasons[$w['textStr']] = array(
+                    'current' => 0,
+                    'ytd' => 0,
+                    'all' => 0,
+                );
+            }
+            $reasons[$w['textStr']]['ytd'] += $w[0];
+        }
+        $inactR = $dbc->execute($inactP, array('1900-01-01', '2999-12-31'));
+        while ($w = $dbc->fetchRow($inactR)) {
+            if (!in_array($w['mask'], $specific_reasons)) {
+                $w['textStr'] = 'Other';
+            }
+            if (!isset($reasons[$w['textStr']])) {
+                $reasons[$w['textStr']] = array(
+                    'current' => 0,
+                    'ytd' => 0,
+                    'all' => 0,
+                );
+            }
+            $reasons[$w['textStr']]['all'] += $w[0];
+        }
+        $totals = array('current'=>0,'ytd'=>0,'all'=>0);
+        ksort($reasons);
+        foreach ($reasons as $reason => $counts) {
+            if (empty($reason)) {
+                $reason = 'n/a';
+            }
             $data[] = array(
-                date('Y-m-d', strtotime($args[0])) . ' - ' . date('Y-m-d', strtotime($args[1])),
-                'Inactive',
-                $num,
                 $reason,
-                '',
+                null,
+                $counts['current'],
+                $counts['ytd'],
+                $counts['all'],
             );
+            $totals['current'] += $counts['current'];
+            $totals['ytd'] += $counts['ytd'];
+            $totals['all'] += $counts['all'];
+        }
+        $data[] = array(
+            'Total',
+            null,
+            $totals['current'],
+            $totals['ytd'],
+            $totals['all'],
+        );
+
+        $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
+            'meta_background'=>'#000','meta_foreground'=>'#fff');
+        $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
+            'meta_background'=>'#ccc','meta_foreground'=>'#000');
+
+        $termR = $dbc->execute($termP, $ytdArgs);
+        while ($row = $dbc->fetch_row($termR)) {
+            $record = array(
+                $row['card_no'],
+                date('Y-m-d', strtotime($row['suspDate'])),    
+                $row['FirstName'] . ' ' . $row['LastName'],
+                sprintf('%.2f', $row['payments']),
+            );
+            $noteR = $dbc->execute($noteP, array($row['card_no']));
+            if ($noteR && $dbc->num_rows($noteR) > 0) {
+                $noteW = $dbc->fetch_row($noteR);
+                $record[] = $noteW['note'];
+            } else {
+                $record[] = '?';
+            }
+            $data[] = $record;
+        }
+
+        if ($this->config->COOP_ID == 'WFC_Duluth') {
+            $this->report_headers[] = array('Fran Requests', null, null, null, null);
+            $this->report_headers[] = array('Date', 'Number', 'Name', 'Stock', 'Request');
+            $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
+                'meta_background'=>'#000','meta_foreground'=>'#fff');
+            $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
+                'meta_background'=>'#ccc','meta_foreground'=>'#000');
+
+            $franP = $dbc->prepare('
+                SELECT cardno
+                FROM memberNotes AS n
+                    LEFT JOIN ' . $FANNIE_TRANS_DB . $dbc->sep() . 'equity_live_balance AS e ON n.cardno=e.memnum
+                WHERE note LIKE \'%FRAN APP%\'
+                    AND stamp BETWEEN ? AND ?
+                    AND e.payments < 100
+                GROUP BY cardno');
+            $detailP = $dbc->prepare('
+                SELECT c.CardNo,
+                    c.FirstName,
+                    c.LastName,
+                    e.payments,
+                    n.stamp,
+                    n.note
+                FROM custdata AS c
+                    LEFT JOIN ' . $FANNIE_TRANS_DB . $dbc->sep() . 'equity_live_balance AS e ON c.CardNo=e.memnum
+                    LEFT JOIN memberNotes AS n ON c.CardNo=n.cardno
+                WHERE c.CardNo=?
+                    AND c.personNum=1
+                ORDER BY n.note DESC');
+            $franR = $dbc->execute($franP, $args);
+            while ($w = $dbc->fetchRow($franR)) {
+                $detailR = $dbc->execute($detailP, array($w['cardno']));
+                $detailW = $dbc->fetchRow($detailR);
+                $data[] = array(
+                    $detailW['stamp'],
+                    $detailW['CardNo'],
+                    $detailW['FirstName'] . ' ' . $detailW['LastName'],
+                    $detailW['payments'],
+                    $detailW['note'],
+                );
+            }
         }
 
         return $data;
@@ -267,7 +384,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
 
     public function form_content()
     {
-        return '
+        $ret = '
             <form method="get" action="' . $_SERVER['PHP_SELF'] . '">
             <div class="row">
             <div class="col-sm-4">
@@ -281,6 +398,18 @@ class OwnerJoinLeaveReport extends FannieReportPage
                     <input type="text" name="date2" id="date2"
                         class="form-control date-field" required />
                 </div>
+                <div class="panel panel-default">
+                    <div class="panel panel-heading">List Inactives</div>
+                    <div class="panel panel-body">';
+        $reasons = new ReasoncodesModel($this->connection);
+        foreach ($reasons->find('textStr') as $r) {
+            $ret .= sprintf('<p><label>
+                <input type="checkbox" name="reasons[]" value="%d" />
+                %s</label></p>',
+                $r->mask(), $r->textStr());
+        }
+        $ret .= '   </div>
+                </div>
             </div>
             <div class="col-sm-5">
                 ' . FormLib::dateRangePicker() . '
@@ -288,6 +417,8 @@ class OwnerJoinLeaveReport extends FannieReportPage
             </div>
             <p><button type="submit" class="btn btn-default">Get Report</button></p>
             </form>';
+        
+        return $ret;
     }
 
     public function helpContent()

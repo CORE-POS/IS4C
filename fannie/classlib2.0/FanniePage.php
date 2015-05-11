@@ -410,7 +410,7 @@ function enableLinea(selector, callback)
     */
     public function loginRedirect()
     {
-        $redirect = $_SERVER['REQUEST_URI'];
+        $redirect = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
         $url = $this->config->get('URL') . 'auth/ui/loginform.php';
         header('Location: '.$url.'?redirect='.$redirect);
     }
