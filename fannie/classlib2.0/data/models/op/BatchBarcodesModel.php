@@ -39,6 +39,7 @@ class BatchBarcodesModel extends BasicModel
     'size' => array('type'=>'VARCHAR(50)'),
     'units' => array('type'=>'VARCHAR(15)'),
     'vendor' => array('type'=>'VARCHAR(50)'),
+    'pricePerUnit' => array('type'=>'VARCHAR(50)'),
     'batchID' => array('type'=>'INT', 'primary_key'=>true),
     );
 
@@ -367,6 +368,43 @@ units, each with a size of 12 oz.
                 }
             }
             $this->instance["vendor"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function pricePerUnit()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["pricePerUnit"])) {
+                return $this->instance["pricePerUnit"];
+            } else if (isset($this->columns["pricePerUnit"]["default"])) {
+                return $this->columns["pricePerUnit"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'pricePerUnit',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["pricePerUnit"]) || $this->instance["pricePerUnit"] != func_get_args(0)) {
+                if (!isset($this->columns["pricePerUnit"]["ignore_updates"]) || $this->columns["pricePerUnit"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["pricePerUnit"] = func_get_arg(0);
         }
         return $this;
     }
