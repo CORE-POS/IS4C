@@ -50,7 +50,7 @@ class EditShelfTags extends FanniePage {
             $skus = FormLib::get_form_value('sku',array());
             $sizes = FormLib::get_form_value('size',array());
             $units = FormLib::get_form_value('units',array());
-            $vendors = FormLib::get_form_value('vendors',array());
+            $vendors = FormLib::get_form_value('vendor',array());
             $ppos = FormLib::get_form_value('ppo',array());
             $counts = FormLib::get_form_value('counts',array());
 
@@ -62,7 +62,7 @@ class EditShelfTags extends FanniePage {
                 $price = isset($prices[$i]) ? $prices[$i] : 0;
                 $brand = isset($brands[$i]) ? $brands[$i] : '';
                 $size = isset($sizes[$i]) ? $sizes[$i] : '';
-                $sku = isset($sku[$i]) ? $sku[$i] : '';
+                $sku = isset($skus[$i]) ? $skus[$i] : '';
                 $unit = isset($units[$i]) ? $units[$i] : 1;
                 $vendor = isset($vendors[$i]) ? $vendors[$i] : '';
                 $ppo = isset($ppos[$i]) ? $ppos[$i] : '';
