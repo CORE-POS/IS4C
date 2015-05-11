@@ -55,7 +55,7 @@ class BatchShelfTags extends FanniePage {
         <?php
         $ret = ob_get_clean();
 
-        $ret .= "<form action=genLabels.php method=get>";
+        $ret .= "<form id=\"batch-tag-form\" action=genLabels.php method=get>";
         //echo "<form action=barcodenew.php method=get>";
         $ret .= "<label>Select batch(es*) to be printed</label>";
         
@@ -85,6 +85,10 @@ class BatchShelfTags extends FanniePage {
         $ret .= "</select>";
         $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
         $ret .= "<button type=submit class=\"btn btn-default\">Print</button>";
+        $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+        $ret .= "<button type=submit class=\"btn btn-default\" 
+            onclick=\"\$('#batch-tag-form').attr('action','EditBatchTags.php').submit(); return false;\">
+            Edit Tag Info</button>";
         $ret .= "</div></p>";
         $ret .= "</form>";
 
