@@ -418,6 +418,7 @@ class BaseItemModule extends ItemModule
             $ret .= '</td>';
         }
 
+        $supers = array();
         $depts = array();
         $subs = array();
         $range_limit = FannieAuth::validateUserLimited('pricechange');
@@ -451,7 +452,15 @@ class BaseItemModule extends ItemModule
             if ($w['dept_no'] == $rowItem['department']) {
                 $superID = $w['superID'];
             }
-            if ($w['subdept_no'] == '') continue;
+            if (!isset($supers[$w['superID']])) {
+                $supers[$w['superID']] = array();
+            }
+            $supers[$w['superID']][] = $w['dept_no'];
+
+            if ($w['subdept_no'] == '') {
+                continue;
+            }
+
             if (!isset($subs[$w['dept_ID']]))
                 $subs[$w['dept_ID']] = '';
             $subs[$w['dept_ID']] .= sprintf('<option %s value="%d">%d %s</option>',
@@ -477,6 +486,11 @@ class BaseItemModule extends ItemModule
                 <select name="department" id="department" 
                     class="form-control chosen-select" onchange="chainSelects(this.value);">';
         foreach ($depts as $id => $name){
+            if (is_array($supers[$superID])) {
+                if (!in_array($id, $supers[$superID]) && $id != $rowItem['department']) {
+                    continue;
+                }
+            }
             $ret .= sprintf('<option %s value="%d">%d %s</option>',
                     ($id == $rowItem['department'] ? 'selected':''),
                     $id,$id,$name);
