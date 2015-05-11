@@ -51,17 +51,7 @@ class ItemStatusPage extends FannieRESTfulPage
         $product = new ProductsModel($dbc);
         $product->upc($upc);
         $product->load();
-
-        $vendor = new VendorsModel($dbc);
-        $vendor->vendorID($product->default_vendor_id());
-        $vendor->load();
-
-        $vitem = new VendorItemsModel($dbc);
-        $vitem->upc($upc);
-        $vitem->vendorID($vendor->vendorID());
-        if (count($vitem->find()) > 0) {
-            $vitem = array_pop($vitem->find());
-        }
+        $info = $product->getTagData();
 
         $tag = new ShelftagsModel($dbc);
         $tag->upc($this->upc);
@@ -72,20 +62,14 @@ class ItemStatusPage extends FannieRESTfulPage
         }
 
         $tag->id($this->ID);
-        $tag->description($product->description());
-        $tag->brand($product->brand());
-        $tag->normal_price($product->normal_price());
-        $tag->sku($vitem->sku());
-        $size = $vitem->size();
-        if ($size == '' && $product->size() != '') {
-            $size = $product->size();
-            if ($product->unitofmeasure() != '') {
-                $size .= ' ' . $product->unitofmeasure();
-            }
-        }
-        $tag->units($vitem->units());
-        $tag->vendor($vendor->vendorName());
-        $tag->pricePerUnit(\COREPOS\Fannie\API\lib\PriceLib::pricePerUnit($product->normal_price(), $size));
+        $tag->description($info['description']);
+        $tag->brand($info['brand']);
+        $tag->normal_price($info['normal_price']);
+        $tag->sku($info['sku']);
+        $tag->size($info['size']);
+        $tag->units($info['units']);
+        $tag->vendor($info['vendor']);
+        $tag->pricePerUnit($info['pricePerUnit']);
         $tag->save();
 
         header('Location: ' . $_SERVER['PHP_SELF'] . '?id=' . $this->upc);

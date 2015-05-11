@@ -44,64 +44,24 @@ if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 $upc = BarcodeLib::padUPC(FormLib::get('upc'));
-
-// EL 16Mar13 Get vendorItem and vendor data for the item being edited or that was just created.
-// This favours UNFI which traditionally has vendorID 1.
-//was: $unfiQ = "SELECT DISTINCT * FROM vendorItems WHERE upc = '$upc' ORDER BY vendorID";
-$vendiQ = $dbc->prepare_statement("SELECT DISTINCT i.*,v.vendorName FROM vendorItems AS i
-            LEFT JOIN vendors AS v ON i.vendorID=v.vendorID
-            where upc = ? ORDER BY i.vendorID");
-
-$vendiR = $dbc->exec_statement($vendiQ,array($upc));
-$vendiN = $dbc->num_rows($vendiR);
+$product = new ProductsModel($dbc);
+$product->upc($upc);
+$tagData = $product->getTagData();
 
 $prodQ = $dbc->prepare_statement("SELECT p.*,s.superID FROM products AS p
     LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID
     where upc=?");
 $prodR = $dbc->exec_statement($prodQ,array($upc));
-
-$prodW = $dbc->fetch_array($prodR);
-$price = $prodW['normal_price'];
-$desc = $prodW['description'];
-$brand = '';
-$size = '';
-$units = '';
-$sku = '';
-$vendor = '';
-$ppo = '';
 $superID = $prodW['superID'];
 
-if($vendiN > 0){
- // Use only the first hit.
- $vendiW = $dbc->fetch_array($vendiR);
- // Composed: "200 g"
- $size = $vendiW['size'];
- $brand = $vendiW['brand'];
- $units = $vendiW['units'];
- $sku = $vendiW['sku'];
- if ( $vendiW['vendorName'] != "" ) {
-     $vendor = $vendiW['vendorName'];
- } else if ($dbc->table_exists('prodExtra')) {
-    $prodExtraQ = $dbc->prepare_statement("select distributor from prodExtra where upc=?");
-    $prodExtraR = $dbc->exec_statement($prodExtraQ, array($upc));
-    $prodExtraN = $dbc->num_rows($prodExtraR);
-    if ($prodExtraN > 0){
-        $prodExtraW = $dbc->fetch_array($prodExtraR);
-        $vendor = $prodExtraW['distributor'];
-    }
- }
- $ppo = \COREPOS\Fannie\API\lib\PriceLib::pricePerUnit($price,$size);
-}
-else if ($dbc->table_exists('prodExtra')) {
-$prodExtraQ = $dbc->prepare_statement("select manufacturer,distributor from prodExtra where upc=?");
-$prodExtraR = $dbc->exec_statement($prodExtraQ,array($upc));
-$prodExtraN = $dbc->num_rows($prodExtraR);
-    if ($prodExtraN == 1){
-        $prodExtraW = $dbc->fetch_array($prodExtraR);
-        $brand = $prodExtraW['manufacturer'];
-        $vendor = $prodExtraW['distributor'];
-    }
-}
+$price = $tagData['normal_price'];
+$desc = $tagData['description'];
+$brand = $tagData['brand'];
+$size = $tagData['size'];
+$units = $tagData['units'];
+$sku = $tagData['sku'];
+$vendor = $tagData['vendor'];
+$ppo = $tagData['pricePerUnit'];
 
 ?>
 <!doctype html>

@@ -111,31 +111,13 @@ class BatchFromSearch extends FannieRESTfulPage
         $tagset = FormLib::get('tagset');
         if ($discounttype == 0 && $tagset !== '') {
             $vendorID = FormLib::get('preferredVendor', 0);
-            $lookup = $dbc->prepare('
-                SELECT p.description, 
-                    v.brand, 
-                    v.sku, 
-                    v.size, 
-                    v.units, 
-                    n.vendorName
-                FROM products AS p 
-                    LEFT JOIN vendorItems AS v ON p.upc=v.upc
-                    LEFT JOIN vendors AS n ON v.vendorID=n.vendorID
-                WHERE p.upc=? 
-                ORDER BY CASE WHEN v.vendorID=? THEN -999 ELSE v.vendorID END'
-            );
             $tag = new ShelftagsModel($dbc);
+            $product = new ProductsModel($dbc);
             for($i=0; $i<count($upcs);$i++) {
                 $upc = $upcs[$i];
                 $price = isset($prices[$i]) ? $prices[$i] : 0.00;
-                $info = array('description'=>'', 'brand'=>'', 'sku'=>'', 'size'=>'', 'units'=>1,
-                            'vendorName'=>'');
-                $lookupR = $dbc->execute($lookup, array($upc, $vendorID));
-                if ($dbc->num_rows($lookupR) > 0) {
-                    $info = $dbc->fetch_row($lookupR);
-                }
-                $ppo = ($info['size'] !== '') ? \COREPOS\Fannie\API\lib\PriceLib::pricePerUnit($price, $info['size']) : '';
-
+                $product->upc($upc);
+                $info = $product->getTagData($price);
                 $tag->id($tagset);
                 $tag->upc($upc);
                 $tag->description($info['description']);
@@ -144,8 +126,8 @@ class BatchFromSearch extends FannieRESTfulPage
                 $tag->sku($info['sku']);
                 $tag->size($info['size']);
                 $tag->units($info['units']);
-                $tag->vendor($info['vendorName']);
-                $tag->pricePerUnit($ppo);
+                $tag->vendor($info['vendor']);
+                $tag->pricePerUnit($info['pricePerUnit']);
                 $tag->save();
             }
         }

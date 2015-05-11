@@ -45,52 +45,27 @@ class CreateTagsByDept extends FanniePage {
             $pageID = FormLib::get_form_value('sID',0);
             $dbc = FannieDB::get($FANNIE_OP_DB);
             $q = $dbc->prepare_statement("
-                SELECT p.upc,
-                    p.description,
-                    p.normal_price,
-                    x.manufacturer,
-                    x.distributor,
-                    v.sku,
-                    CASE WHEN v.size IS NOT NULL THEN v.size ELSE "
-                        . $dbc->concat(
-                            "p.size",
-                            "' '",
-                            "p.unitofmeasure",
-                            ''
-                        ) ." END AS pack_size_and_units,
-                    CASE WHEN v.units IS NOT NULL THEN v.units ELSE 1 END AS units_per_case
+                SELECT p.upc
                 FROM products AS p
-                    LEFT JOIN prodExtra AS x ON p.upc=x.upc
-                    LEFT JOIN vendorItems AS v ON p.upc=v.upc
-                    LEFT JOIN vendors AS n ON v.vendorID=n.vendorID
                 WHERE p.department BETWEEN ? AND ?
-                ORDER BY p.upc,
-                    CASE WHEN p.default_vendor_id=v.vendorID THEN 0 ELSE 1 END,
-                    CASE WHEN x.distributor=n.vendorName THEN 0 ELSE 1 END,
-                    v.vendorID"
-            );
+            ");
             $r = $dbc->exec_statement($q,array($start,$end));
             $tag = new ShelftagsModel($dbc);
-            $prevUPC = 'invalidUPC';
+            $product = new ProductsModel($dbc);
             while ($w = $dbc->fetch_row($r)) {
-                if ($prevUPC == $w['upc']) {
-                    // multiple vendor matches for this item
-                    // already created a tag for it w/ first
-                    // priority vendor
-                    continue;
-                }
+                $product->upc($w['upc']);
+                $info = $product->getTagData();
                 $tag->id($pageID);
                 $tag->upc($w['upc']);
-                $tag->description($w['description']);
-                $tag->normal_price($w['normal_price']);
-                $tag->brand($w['manufacturer']);
-                $tag->sku($w['sku']);
-                $tag->size($w['pack_size_and_units']);
-                $tag->units($w['units_per_case']);
-                $tag->vendor($w['distributor']);
-                $tag->pricePerUnit(\COREPOS\Fannie\API\lib\PriceLib::pricePerUnit($w['normal_price'], $w['size']));
+                $tag->description($info['description']);
+                $tag->normal_price($info['normal_price']);
+                $tag->brand($info['brand']);
+                $tag->sku($info['sku']);
+                $tag->size($info['size']);
+                $tag->units($info['units']);
+                $tag->vendor($info['vendor']);
+                $tag->pricePerUnit($info['pricePerUnit']);
                 $tag->save();
-                $prevUPC = $w['upc'];
             }
             $this->msgs = sprintf('<em>Created tags for departments #%d through #%d</em>
                     <br /><a href="ShelfTagIndex.php">Home</a>',

@@ -254,6 +254,15 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         }
         echo installSelectField('FANNIE_DEFAULT_PDF', $FANNIE_DEFAULT_PDF, $layouts, 'Fannie Standard');
         ?>
+        <label>Shelf Tag Data Source</label>
+        <?php
+        $mods = FannieAPI::listModules('TagDataSource');
+        $source = array('' => 'Default');
+        foreach ($mods as $m) {
+            $source[$m] = $m;
+        }
+        echo installSelectField('FANNIE_TAG_DATA_SOURCE', $FANNIE_TAG_DATA_SOURCE, $source);
+        ?>
 
         <hr />
         <h4 class="install">Product Editing</h4>

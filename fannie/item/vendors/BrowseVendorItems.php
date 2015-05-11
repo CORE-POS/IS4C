@@ -262,17 +262,18 @@ class BrowseVendorItems extends FanniePage
         $dbc->exec_statement($xInsQ,$args);
 
         if ($tags !== -1) {
-            $model = new ShelftagsModel($dbc);
-            $model->id($tags);
-            $model->upc($upc);
-            $model->normal_price($price);
-            $model->description($vinfo['description']);
-            $model->brand($vinfo['brand']);
-            $model->vendor($vinfo['vendorName']);
-            $model->sku($vinfo['sku']);
-            $model->size($vinfo['size']);
-            $model->units($vinfo['units']);
-            $model->pricePerUnit(\COREPOS\Fannie\API\lib\PriceLib::pricePerUnit($price, $vinfo['size']));
+            $tag = new ShelftagsModel($dbc);
+            $tag->id($tags);
+            $tag->upc($upc);
+            $info = $model->getTagData();
+            $model->normal_price($info['normal_price']);
+            $model->description($info['description']);
+            $model->brand($info['brand']);
+            $model->vendor($info['vendor']);
+            $model->sku($info['sku']);
+            $model->size($info['size']);
+            $model->units($info['units']);
+            $model->pricePerUnit($info['pricePerUnit']);
             $model->save();
         }
 

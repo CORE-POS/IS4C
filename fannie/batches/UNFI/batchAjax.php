@@ -76,13 +76,9 @@ case 'batchAdd':
     $model->quantity(0);
     $model->save();
 
-    /* get shelftag info */
-    $infoQ = $dbc->prepare_statement("SELECT p.description,v.brand,v.sku,v.size,v.units,b.vendorName
-        FROM products AS p LEFT JOIN vendorItems AS v ON p.upc=v.upc AND
-        v.vendorID=? LEFT JOIN vendors AS b ON v.vendorID=b.vendorID
-        WHERE p.upc=?");
-    $info = $dbc->fetch_row($dbc->exec_statement($infoQ,array($vid,$upc)));
-    $ppo = \COREPOS\Fannie\API\lib\PriceLib::pricePerUnit($price,$info['size']);
+    $product = new ProductsModel($dbc);
+    $product->upc($upc);
+    $info = $product->getTagData($price);
     
     /* create a shelftag */
     $tag = new ShelftagsModel($dbc);
@@ -94,8 +90,8 @@ case 'batchAdd':
     $tag->sku($info['sku']);
     $tag->size($info['size']);
     $tag->units($info['units']);
-    $tag->vendor($info['vendorName']);
-    $tag->pricePerUnit($ppo);
+    $tag->vendor($info['vendor']);
+    $tag->pricePerUnit($info['pricePerUnit']);
     $tag->save();
 
     break;
