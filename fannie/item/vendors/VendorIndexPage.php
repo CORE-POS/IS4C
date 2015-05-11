@@ -429,6 +429,7 @@ class VendorIndexPage extends FanniePage {
         $model = new VendorsModel($dbc);
         $model->vendorID($id);
         $model->vendorName($name);
+        $model->vendorAbbreviation(substr($name, 0, 10));
         $model->save();
 
         echo $id;

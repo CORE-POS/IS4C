@@ -971,6 +971,7 @@ class BaseItemModule extends ItemModule
                     if ($max && $maxW = $db->fetch_row($max)) {
                         $newID = ((int)$maxW['max']) + 1;
                     }
+                    $vendor->vendorAbbreviation(substr($name, 0, 10));
                     $vendor->vendorID($newID);
                     $vendor->save();
                     $json['vendorID'] = $newID;

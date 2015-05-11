@@ -33,6 +33,7 @@ class VendorsModel extends BasicModel
     protected $columns = array(
     'vendorID' => array('type'=>'INT', 'primary_key'=>true),
     'vendorName' => array('type'=>'VARCHAR(50)'),
+    'vendorAbbreviation' => array('type'=>'VARCHAR(10)'),
     'shippingMarkup' => array('type'=>'DOUBLE', 'default'=>0),
     'discountRate' => array('type'=>'DOUBLE', 'default'=>0),
     'phone' => array('type'=>'VARCHAR(15)'),
@@ -42,6 +43,14 @@ class VendorsModel extends BasicModel
     'notes' => array('type'=>'TEXT'),
     'localOriginID' => array('type'=>'INT', 'default'=>0),
     );
+
+    public function hookAddColumnvendorAbbreviation()
+    {
+        $query = '
+            UPDATE vendors
+            SET vendorAbbreviation=LEFT(vendorName, 10)';
+        $this->connection->query($query);
+    }
 
     public function doc()
     {
@@ -132,6 +141,43 @@ List of known vendors. Pretty simple.
                 }
             }
             $this->instance["vendorName"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function vendorAbbreviation()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["vendorAbbreviation"])) {
+                return $this->instance["vendorAbbreviation"];
+            } else if (isset($this->columns["vendorAbbreviation"]["default"])) {
+                return $this->columns["vendorAbbreviation"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'vendorAbbreviation',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["vendorAbbreviation"]) || $this->instance["vendorAbbreviation"] != func_get_args(0)) {
+                if (!isset($this->columns["vendorAbbreviation"]["ignore_updates"]) || $this->columns["vendorAbbreviation"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["vendorAbbreviation"] = func_get_arg(0);
         }
         return $this;
     }
