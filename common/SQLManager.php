@@ -532,6 +532,30 @@ class SQLManager
     }
 
     /**
+      Get the current time w/o date
+      @return [string] SQL 
+    */
+    public function curtime($which_connection='')
+    {
+        if ($which_connection == '') {
+            $which_connection = $this->default_db;
+        }
+        switch ($this->connectionType($which_connection)) {
+            case 'mysql':
+            case 'mysqli':
+            case 'pdo_mysql':
+            case 'pdo':
+                return "CURTIME()";
+            case 'mssql':
+                return 'GETDATE()';
+            case 'pgsql':
+                return 'CURRENT_TIME';
+            case 'sqlite3':
+                return "TIME('NOW')";
+        }
+    }
+
+    /**
       Get the database's date difference function
       @param $date1 First date
       @param $date2 Second date
