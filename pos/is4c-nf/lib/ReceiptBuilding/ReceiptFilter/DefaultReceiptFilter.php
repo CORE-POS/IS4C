@@ -64,6 +64,10 @@ class DefaultReceiptFilter
                 $returnset[] = $row;
                 $count++;
             } else if ($row['trans_type'] == 'I' || $row['trans_type'] == 'D' || ($row['trans_type']=='T' && $row['department'] != 0)){
+                // skip the YOU SAVED lines
+                if ($row['trans_status'] == 'D') {
+                    continue;
+                }
                 // keep item rows
                 // save department for fetching category headers
                 // and update discount row if necessary
@@ -155,6 +159,31 @@ class DefaultReceiptFilter
         }
         foreach ($removes as $index) {
             array_splice($returnset, $index, 1);
+        }
+
+        $adds = array();
+        foreach ($returnset as $row) {
+            if (!isset($row['trans_type']) || $row['trans_type'] != 'I') {
+                continue;
+            }
+            if (!isset($row['trans_status']) || $row['trans_status'] == 'M') {
+                continue;
+            }
+            if (!isset($row['quantity']) || !isset($row['regPrice']) || !isset($row['unitPrice'])) {
+                continue;
+            }
+            if ($row['regPrice'] == $row['unitPrice']) {
+                continue;
+            }
+            $savings = ($row['quantity']*$row['regPrice']) - ($row['quantity']*$row['unitPrice']);
+            $new = $row;
+            $new['description'] = sprintf('** YOU SAVED $%.2f **', $savings);
+            $new['trans_status'] = 'D';
+            $new['trans_id'] += 0.25;
+            $adds[] = $new;
+        }
+        foreach ($adds as $a) {
+            $returnset[] = $a;
         }
 
         // add discount, subtotal, tax, and total records to the end
