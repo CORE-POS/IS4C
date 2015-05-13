@@ -1208,7 +1208,7 @@ static public function memReceiptMessages($card_no)
           WHERE card_no=' . ((int)$card_no) . '
           ORDER BY msg_text';
     $r = $db->query($q);
-    $ret = array('any', 'print');
+    $ret = array('any'=>'', 'print'=>'');
     while ($w = $db->fetch_row($r)) {
         // EL This bit new for messages from plugins.
         $class_name = $w['modifier_module'];
