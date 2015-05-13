@@ -93,7 +93,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
                 INNER JOIN custdata AS c ON s.cardno=c.CardNo AND c.personNum=1
                 LEFT JOIN ' . $FANNIE_TRANS_DB . $dbc->sep() . 'equity_live_balance AS n ON s.cardno=n.memnum
             WHERE c.Type=\'INACT2\'
-                AND s.suspDate BETWEEN ? AND ?
+                AND s.suspDate >= ?
             ORDER BY s.suspDate
         ');
 
@@ -184,7 +184,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
         array_unshift($data, array(
             'Still Active',
             null,
-            $totals['active'],
+            number_format($totals['active']),
             number_format($totals['active'] / $allTimeW['members'] * 100) . '%',
             null,
         ));
@@ -192,7 +192,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
         array_unshift($data, array(
             'Life to Date',
             null,
-            $allTimeW['members'],
+            number_format($allTimeW['members']),
             '$' . number_format($allTimeW['equity'], 2),
             null,
         ));
@@ -208,6 +208,14 @@ class OwnerJoinLeaveReport extends FannieReportPage
         }
 
         array_unshift($data, array(
+            'Year to Date: ' . date('Y-m-d', strtotime($args[0])) . ' - ' . date('Y-m-d', strtotime($args[1])),
+            null,
+            $totals['new'],
+            '$' . number_format($totals['newStock'], 2),
+            null,
+        ));
+
+        array_unshift($data, array(
             'Current Report: ' . date('Y-m-d', strtotime($ytdArgs[0])) . ' - ' . date('Y-m-d', strtotime($ytdArgs[1])),
             null,
             $ytd['numOwners'],
@@ -215,13 +223,6 @@ class OwnerJoinLeaveReport extends FannieReportPage
             null,
         ));
 
-        array_unshift($data, array(
-            'Year to Date: ' . date('Y-m-d', strtotime($args[0])) . ' - ' . date('Y-m-d', strtotime($args[1])),
-            null,
-            $totals['new'],
-            '$' . number_format($totals['newStock'], 2),
-            null,
-        ));
         array_unshift($data, array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
             'meta_background'=>'#ccc','meta_foreground'=>'#000'));
         array_unshift($data, array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
@@ -318,7 +319,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
         $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
             'meta_background'=>'#ccc','meta_foreground'=>'#000');
 
-        $termR = $dbc->execute($termP, $ytdArgs);
+        $termR = $dbc->execute($termP, $ytdArgs[0]);
         while ($row = $dbc->fetch_row($termR)) {
             $record = array(
                 $row['card_no'],
@@ -348,8 +349,8 @@ class OwnerJoinLeaveReport extends FannieReportPage
                 SELECT cardno
                 FROM memberNotes AS n
                     LEFT JOIN ' . $FANNIE_TRANS_DB . $dbc->sep() . 'equity_live_balance AS e ON n.cardno=e.memnum
-                WHERE note LIKE \'%FRAN APP%\'
-                    AND stamp BETWEEN ? AND ?
+                WHERE note LIKE \'%FUNDS REQ%\'
+                    AND stamp >= ?
                     AND e.payments < 100
                 GROUP BY cardno');
             $detailP = $dbc->prepare('
@@ -365,7 +366,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
                 WHERE c.CardNo=?
                     AND c.personNum=1
                 ORDER BY n.note DESC');
-            $franR = $dbc->execute($franP, $args);
+            $franR = $dbc->execute($franP, $args[0]);
             while ($w = $dbc->fetchRow($franR)) {
                 $detailR = $dbc->execute($detailP, array($w['cardno']));
                 $detailW = $dbc->fetchRow($detailR);
@@ -399,7 +400,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
                         class="form-control date-field" required />
                 </div>
                 <div class="panel panel-default">
-                    <div class="panel panel-heading">List Inactives</div>
+                    <div class="panel panel-heading">List Subtotals for some Inactive account reasons</div>
                     <div class="panel panel-body">';
         $reasons = new ReasoncodesModel($this->connection);
         foreach ($reasons->find('textStr') as $r) {
