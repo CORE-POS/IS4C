@@ -310,6 +310,10 @@ class UPC extends Parser
           based on item's department
         */
         $deptmods = CoreLocal::get('SpecialDeptMap');
+        if (!is_array($deptmods) && $db->table_exists('SpecialDeptMap')) {
+            $model = new SpecialDeptMapModel($db);
+            $deptmods = $model->buildMap();
+        }
         if (is_array($deptmods) && isset($deptmods[$row['department']])){
             foreach($deptmods[$row['department']] as $mod){
                 $obj = new $mod();
