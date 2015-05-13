@@ -585,20 +585,20 @@ class BaseItemModule extends ItemModule
 
         $ret .= '
             <tr>
-                <th class="small text-right">Pack Size</th>
-                <td class="col-sm-1">
-                    <input type="text" name="size" class="form-control input-sm"
-                        value="' . $rowItem['size'] . '" 
-                        onchange="$(\'#vsize' . $jsVendorID . '\').val(this.value);" 
-                        id="product-pack-size" />
-                </td>
-                <th class="small">Case Size</th>
+                <th class="small text-right">Case Size</th>
                 <td class="col-sm-1">
                     <input type="text" name="caseSize" class="form-control input-sm"
                         value="' . $rowItem['caseSize'] . '" 
                         onchange="$(\'#vunits' . $jsVendorID . '\').val(this.value);" 
                         ' . ($jsVendorID == 'no-vendor' ? 'disabled' : '') . '
                         id="product-case-size" />
+                </td>
+                <th class="small text-right">Pack Size</th>
+                <td class="col-sm-1">
+                    <input type="text" name="size" class="form-control input-sm"
+                        value="' . $rowItem['size'] . '" 
+                        onchange="$(\'#vsize' . $jsVendorID . '\').val(this.value);" 
+                        id="product-pack-size" />
                 </td>
                 <th class="small">Unit of measure</th>
                 <td class="col-sm-1">
