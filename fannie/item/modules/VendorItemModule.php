@@ -178,18 +178,23 @@ class VendorItemModule extends ItemModule {
                 continue; // bad submit
             }
             // always create record for the default vendor
+            // but only initialize an empty one if no
+            // record exists.
             if ($ids[$i] == $prod->default_vendor_id()) {
-                if (empty($skus[$i])) {
-                    $skus[$i] = $prod->upc();
-                }
-                if (empty($costs[$i])) {
-                    $costs[$i] = $prod->cost();
-                }
-                if (empty($units[$i])) {
-                    $units[$i] = 1;
-                }
-                if (empty($sizes[$i])) {
-                    $sizes[$i] = '';
+                $defaultR = $dbc->execute($chkP, array($ids[$i], $prod->upc()));
+                if ($dbc->numRows($defaultR) == 0) {
+                    if (empty($skus[$i])) {
+                        $skus[$i] = $prod->upc();
+                    }
+                    if (empty($costs[$i])) {
+                        $costs[$i] = $prod->cost();
+                    }
+                    if (empty($units[$i])) {
+                        $units[$i] = 1;
+                    }
+                    if (empty($sizes[$i])) {
+                        $sizes[$i] = '';
+                    }
                 }
             }
             if (empty($skus[$i]) || empty($costs[$i])) {
