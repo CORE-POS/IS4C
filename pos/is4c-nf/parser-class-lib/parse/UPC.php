@@ -65,11 +65,11 @@ class UPC extends Parser
     {
         if (is_numeric($str) && strlen($str) < 16) {
             return true;
-        } elseif (substr($str,0,strlen(self::SCANNED_PREFIX)) == self::SCANNED_PREFIX && is_numeric($substr($str, 3))) {
+        } elseif (substr($str,0,strlen(self::SCANNED_PREFIX)) === self::SCANNED_PREFIX && is_numeric($substr($str, 3))) {
             return true;
-        } elseif (substr($str,0,strlen(self::MACRO_PREFIX)) == self::MACRO_PREFIX && is_numeric($substr($str, 3))) {
+        } elseif (substr($str,0,strlen(self::MACRO_PREFIX)) === self::MACRO_PREFIX && is_numeric($substr($str, 3))) {
             return true;
-        } elseif (substr($str,0,strlen(self::HID_PREFIX)) == self::HID_PREFIX && is_numeric($substr($str, 3))) {
+        } elseif (substr($str,0,strlen(self::HID_PREFIX)) === self::HID_PREFIX && is_numeric($substr($str, 3))) {
             return true;
         } elseif (substr($str,0,4) == "GS1~" && is_numeric(substr($str, 4))) {
             return true;
@@ -83,13 +83,13 @@ class UPC extends Parser
         if (substr($str,0,4) == "GS1~") {
             $str = $this->fixGS1($str);
             $this->source = self::SCANNED_PREFIX;
-        } elseif (substr($str, 0, strlen(self::SCANNED_PREFIX)) == self::SCANNED_PREFIX) {
+        } elseif (substr($str, 0, strlen(self::SCANNED_PREFIX)) === self::SCANNED_PREFIX) {
             $str = substr($str, strlen(self::SCANNED_PREFIX));
             $this->source = self::SCANNED_PREFIX;
-        } elseif (substr($str, 0, strlen(self::MACRO_PREFIX)) == self::MACRO_PREFIX) {
+        } elseif (substr($str, 0, strlen(self::MACRO_PREFIX)) === self::MACRO_PREFIX) {
             $str = substr($str, strlen(self::MACRO_PREFIX));
             $this->source = self::MACRO_PREFIX;
-        } elseif (substr($str, 0, strlen(self::HID_PREFIX)) == self::HID_PREFIX) {
+        } elseif (substr($str, 0, strlen(self::HID_PREFIX)) === self::HID_PREFIX) {
             $str = substr($str, strlen(self::HID_PREFIX));
             $this->source = self::HID_PREFIX;
         }
@@ -98,7 +98,7 @@ class UPC extends Parser
           Do not apply scanned items if
           tare has been entered
         */
-        if (CoreLocal::get('tare') > 0 && $this->source == self::SCANNED_PREFIX) {
+        if (CoreLocal::get('tare') > 0 && $this->source === self::SCANNED_PREFIX) {
             return $this->default_json();
         }
 
