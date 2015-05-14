@@ -330,7 +330,8 @@ class OwnerJoinLeaveReport extends FannieReportPage
             $noteR = $dbc->execute($noteP, array($row['card_no']));
             if ($noteR && $dbc->num_rows($noteR) > 0) {
                 $noteW = $dbc->fetch_row($noteR);
-                $record[] = $noteW['note'];
+                $note_pts = explode("<br />", $noteW['note']);
+                $record[] = $note_pts[0];
             } else {
                 $record[] = '?';
             }
