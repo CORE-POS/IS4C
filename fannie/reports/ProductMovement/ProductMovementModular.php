@@ -87,7 +87,7 @@ class ProductMovementModular extends FannieReportPage
                     " . DTrans::sumQuantity('t') . " AS qty,
                     SUM(t.total) AS total
                   FROM $dlog AS t 
-                    " . DTrans::joinProducts('t', 'p', 'INNER') . "
+                    " . DTrans::joinProducts('t', 'p', 'LEFT') . "
                   WHERE t.upc = ? AND
                     t.tdate BETWEEN ? AND ?
                   GROUP BY 
@@ -145,8 +145,8 @@ class ProductMovementModular extends FannieReportPage
             $record = array();
             $record[] = $row[0]."/".$row[1]."/".$row[2];
             $record[] = $row['upc'];
-            $record[] = $row['brand'];
-            $record[] = $row['description'];
+            $record[] = $row['brand'] === null ? '' : $row['brand'];
+            $record[] = $row['description'] === null ? '' : $row['description'];
             $record[] = sprintf('%.2f', $row['qty']);
             $record[] = sprintf('%.2f', $row['total']);
             $ret[] = $record;
