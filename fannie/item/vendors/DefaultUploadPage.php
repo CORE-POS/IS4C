@@ -148,6 +148,15 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $NET_UNIT = $this->get_column_index('unitSaleCost');
         $SRP = $this->get_column_index('srp');
 
+        // PLU items have different internal UPCs
+        // map vendor SKUs to the internal PLUs
+        $SKU_TO_PLU_MAP = array();
+        $skusP = $dbc->prepare('SELECT sku, upc FROM vendorSKUtoPLU WHERE vendorID=?');
+        $skusR = $dbc->execute($skusP, array($VENDOR_ID));
+        while($skusW = $dbc->fetch_row($skusR)) {
+            $SKU_TO_PLU_MAP[$skusW['sku']] = $skusW['upc'];
+        }
+
         $itemP = $dbc->prepare("
             INSERT INTO vendorItems (
                 brand, 
@@ -209,6 +218,9 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 continue;
             if ($_SESSION['vUploadCheckDigits'])
                 $upc = '0'.substr($upc,0,12);
+            if (isset($SKU_TO_PLU_MAP[$sku])) {
+                $upc = $SKU_TO_PLU_MAP[$sku];
+            }
             $category = ($CATEGORY === false) ? 0 : $data[$CATEGORY];
 
             $reg_unit = '';
