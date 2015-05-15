@@ -674,6 +674,75 @@ class FormLib
         return ob_get_clean();
     }
 
+    public static function standardDepartmentFields()
+    {
+        $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
+        $supers = new SuperDeptNamesModel($dbc);
+        $depts = new DepartmentsModel($dbc);
+        $ret = '
+            <div class="form-group">
+                <label class="col-sm-4 control-label">Super Dept</label>
+                <div class="col-sm-8">
+                <select name="super-id" id="super-id" class="form-control">
+                    <option value="">Select super department</option>';
+        foreach ($supers->find('superID') as $s) {
+            $ret .= sprintf('<option value="%d">%s</option>', $s->superID(), $s->super_name());         
+        }
+        $ret .= '</select>
+                </div>
+            </div>';
+        if (FannieConfig::config('REPORT_DEPT_MODE') == 'multi') {
+            $ret .= '<div class="form-group">
+                <label class="col-sm-4 control-label">Department(s)</label>
+                <div class="col-sm-8">
+                    <select id="departments" name="department[]" class="form-control" multiple size="10">';
+            foreach ($depts->find('dept_no') as $d) {
+                $ret .= sprintf('<option value="%d">%d %s</option>', $d->dept_no(), $d->dept_no(), $d->dept_name());         
+            }
+            $ret .= '</select>
+                    </div>
+                </div>';
+        } else {
+            $ret .= '<div class="form-group">
+                <label class="col-sm-4 control-label">Dept Start</label>
+                <div class="col-sm-6">
+                    <select id="dept-start" class="form-control">';
+            foreach ($depts->find('dept_no') as $d) {
+                $ret .= sprintf('<option value="%d">%s</option>', $d->dept_no(), $d->dept_name());         
+            }
+            $ret .= '</select>
+                    </div>
+                <div class="col-sm-2">
+                    <input type="text" name="department[]" id="dept-start-txt" 
+                        class="form-control" value="1" />
+                </div>';
+            $ret .= '<div class="form-group">
+                <label class="col-sm-4 control-label">Dept End</label>
+                <div class="col-sm-6">
+                    <select id="dept-start" name="department[]" class="form-control">';
+            foreach ($depts->find('dept_no') as $d) {
+                $ret .= sprintf('<option value="%d">%s</option>', $d->dept_no(), $d->dept_name());         
+            }
+            $ret .= '</select>
+                    </div>
+                <div class="col-sm-2">
+                    <input type="text" name="department[]" id="dept-start-txt" 
+                        class="form-control" value="1" />
+                </div>
+                </div>';
+
+        }
+        $ret .= '<div class="form-group">
+            <label class="col-sm-4 control-label">Sub Dept(s)</label>
+            <div class="col-sm-8">
+                <select id="subdepts" name="subdepts[]" class="form-control" multiple size="5">
+                </select>
+                </div>
+            </div>';
+
+        return $ret;
+    }
+
     /**
       Generate standard date fields with date_range_picker
     */
