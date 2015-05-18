@@ -179,6 +179,7 @@ function saveprice(upc){
 
         $superID = FormLib::get_form_value('super',99);
         $queueID = FormLib::get('queueID');
+        $vendorID = $this->id;
         $filter = FormLib::get_form_value('filter') == 'Yes' ? True : False;
 
         /* lookup vendor and superdept names to build a batch name */
@@ -285,7 +286,7 @@ function saveprice(upc){
         $result = $dbc->exec_statement($prep,$args);
 
         $ret .= "<table class=\"table table-bordered small\">";
-        $ret .= "<tr><td colspan=5>&nbsp;</td><th colspan=2>Current</th>
+        $ret .= "<tr><td colspan=6>&nbsp;</td><th colspan=2>Current</th>
             <th colspan=2>Vendor</th></tr>";
         $ret .= "<tr><th>UPC</th><th>Our Description</th>
             <th>Base Cost</th>
