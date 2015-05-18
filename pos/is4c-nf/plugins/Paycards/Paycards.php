@@ -93,7 +93,8 @@ messages from POS?',
         'default' => 1,
         'options' => array(
             'Yes' => 1,
-            'No' => 0
+            'No' => 0,
+            'Member Only' => 2,
             )
         ),
         'PaycardsTermCashBackLimit' => array(

@@ -143,6 +143,11 @@ class SigTermCommands extends Parser
                         if (CoreLocal::get('PaycardsStateChange') == 'coordinated') {
                             UdpComm::udpSend('termCashBack');
                         }
+                    } elseif (CoreLocal::get('PaycardsOfferCashBack') == 2 && CoreLocal::get('isMember') == 1) {
+                        CoreLocal::set('ccTermState','cashback');
+                        if (CoreLocal::get('PaycardsStateChange') == 'coordinated') {
+                            UdpComm::udpSend('termCashBack');
+                        }
                     } else {
                         CoreLocal::set('ccTermState','pin');
                         if (CoreLocal::get('PaycardsStateChange') == 'coordinated') {
