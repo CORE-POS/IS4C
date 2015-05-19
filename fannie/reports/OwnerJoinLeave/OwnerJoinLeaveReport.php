@@ -67,6 +67,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
                     #pre-report-content { display: none; }
                 }
                 </style>';
+            $this->add_onload_command("\$('.tablesorter td').dblclick(highlightCell);");
         }
 
         $joinP = $dbc->prepare('
@@ -210,16 +211,16 @@ class OwnerJoinLeaveReport extends FannieReportPage
         array_unshift($data, array(
             'Year to Date: ' . date('Y-m-d', strtotime($args[0])) . ' - ' . date('Y-m-d', strtotime($args[1])),
             null,
-            $totals['new'],
-            '$' . number_format($totals['newStock'], 2),
+            $ytd['numOwners'],
+            '$' . number_format($ytd['stock'], 2),
             null,
         ));
 
         array_unshift($data, array(
             'Current Report: ' . date('Y-m-d', strtotime($ytdArgs[0])) . ' - ' . date('Y-m-d', strtotime($ytdArgs[1])),
             null,
-            $ytd['numOwners'],
-            '$' . number_format($ytd['stock'], 2),
+            $totals['new'],
+            '$' . number_format($totals['newStock'], 2),
             null,
         ));
 

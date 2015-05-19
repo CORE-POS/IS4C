@@ -609,6 +609,16 @@ class FannieReportPage extends FanniePage
                         '<meta http-equiv="Content-Type" ' .
                             'content="text/html; charset=iso-8859-1">' .
                         '</head><body>';
+                        $ret .= '<script type="text/javascript">
+                            function highlightCell(e)
+                            {
+                                if ($(this).css(\'background-color\') != \'rgb(255, 255, 0)\') {
+                                    $(this).css(\'background-color\',\'yellow\');
+                                } else {
+                                    $(this).css(\'background-color\',\'\');
+                                }
+                            }
+                            </script>';
                     }
                     $ret .= '<div id="pre-report-content">';
                     /**
