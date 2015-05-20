@@ -85,7 +85,7 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $ABT = $this->get_column_index('abt');
 
         $rm_checks = (FormLib::get_form_value('rm_cds') != '') ? True : False;
-        $upcP = $dbc->prepare_statement('SELECT upc FROM products WHERE upc=?');
+        $upcP = $dbc->prepare_statement('SELECT upc FROM products WHERE upc=? AND inUse=1');
         $skuP = $dbc->prepare_statement('
             SELECT s.upc 
             FROM vendorSKUtoPLU AS s
