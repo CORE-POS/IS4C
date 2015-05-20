@@ -271,7 +271,8 @@ function saveprice(upc){
             $query .= " LEFT JOIN MasterSuperDepts AS m
                 ON p.department=m.dept_ID ";
         }
-        $query .= "WHERE v.cost > 0 ";
+        $query .= "WHERE v.cost > 0 
+                    AND p.inUse=1 ";
         if ($superID != 99) {
             $query .= " AND m.superID=? ";
             $args[] = $superID;
