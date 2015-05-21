@@ -164,7 +164,7 @@ class FannieUploadPage extends \FanniePage
 
                         $num_columns = count($fileData[0]);
 
-                        /** first pass; create table **/
+                        /** first pass **/
                         if ($offset == 0) {
                             $this->split_start();
                         }
@@ -629,8 +629,6 @@ class FannieUploadPage extends \FanniePage
                             $('#uploadingSpan').html('Uploading '+resp.cur_record);
                             doUpload(file_name, resp.cur_record);
                         } else {
-                            $('#progressSpan').html('Processing 0');
-                            $('#numRecords').html('/'+resp.num_records+' records');
                             $('#resultsSpan').html('Upload complete');
                         }
                     } else {
