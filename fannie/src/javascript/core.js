@@ -88,7 +88,7 @@ function standardFieldMarkup()
   @param dept_start_t [jQuery selector] single <input> for numeric range start
   @param dept_end_t [jQuery selector] single <input> for numeric range end
 */
-function chainSuperDepartment(ws_url, super_id, dept_multi, dept_start_s, dept_end_s, dept_start_t, dept_end_t)
+function chainSuperDepartment(ws_url, super_id, dept_multi, dept_start_s, dept_end_s, dept_start_t, dept_end_t, callback)
 {
     if (super_id === '' || super_id === '0') {
         super_id = -1;
@@ -156,6 +156,10 @@ function chainSuperDepartment(ws_url, super_id, dept_multi, dept_start_s, dept_e
                     $(dept_end_t).val($(dept_end_s).val());
                 }
             }
+
+            if (typeof callback == 'function') {
+                callback();
+            }
         }
     });
 }
@@ -172,7 +176,7 @@ function chainSuperDepartment(ws_url, super_id, dept_multi, dept_start_s, dept_e
   @param sub_start [jQuery selector] single <select> for sub range start
   @param sub_end [jQuery selector] single <select> for sub range end
 */
-function chainSubDepartments(ws_url, super_s, dept_start, dept_end, sub_multi, sub_start, sub_end)
+function chainSubDepartments(ws_url, super_s, dept_start, dept_end, sub_multi, sub_start, sub_end, callback)
 {
     var range = [ $(dept_start).val(), $(dept_end).val() ];
     var sID = $(super_s).val();
@@ -219,6 +223,10 @@ function chainSubDepartments(ws_url, super_s, dept_start, dept_end, sub_multi, s
                         $(sub_end).append(opt);
                     }
                 }
+            }
+
+            if (typeof callback == 'function') {
+                callback();
             }
         }
     });

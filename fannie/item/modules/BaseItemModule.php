@@ -471,7 +471,8 @@ class BaseItemModule extends ItemModule
         $ret .= '<tr>
                 <th class="text-right">Dept</th>
                 <td colspan="7" class="form-inline">
-                <select id="super-dept" class="form-control chosen-select" onchange="chainSuper(this.value);">';
+                <select id="super-dept" class="form-control chosen-select" 
+                    onchange="chainSuperDepartment(\'../ws/\', this.value, null, \'#department\', null, null, null, function(){$(\'#department\').trigger(\'chosen:updated\');chainSelects($(\'#department\').val());});">';
         $names = new SuperDeptNamesModel($dbc);
         if (is_array($range_limit) && count($range_limit) == 2) {
             $names->superID($range_limit[0], '>=');
@@ -669,36 +670,6 @@ class BaseItemModule extends ItemModule
         $json = count($subs) == 0 ? '{}' : json_encode($subs);
         ob_start();
         ?>
-        function chainSuper(val) {
-            var req = {
-                jsonrpc: '2.0',
-                method: '\\COREPOS\\Fannie\\API\\webservices\\FannieDeptLookup',
-                id: new Date().getTime(),
-                params: {
-                    'type' : 'children',
-                    'superID' : val
-                }
-            };
-            $.ajax({
-                url: '<?php echo $FANNIE_URL; ?>ws/',
-                type: 'post',
-                data: JSON.stringify(req),
-                dataType: 'json',
-                contentType: 'application/json',
-                success: function(resp) {
-                    if (resp.result) {
-                        $('#department').empty();
-                        for (var i=0; i<resp.result.length; i++) {
-                            var opt = $('<option>').val(resp.result[i]['id'])
-                                .html(resp.result[i]['id'] + ' ' + resp.result[i]['name']);
-                            $('#department').append(opt);
-                        }
-                        $('#department').trigger('chosen:updated');
-                        chainSelects($('#department').val());
-                    }
-                }
-            });
-        }
         function chainSelects(val){
             var lookupTable = <?php echo $json; ?>;
             if (val in lookupTable) {
