@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Common\mvc;
+namespace COREPOS\common\mvc;
 
 class ValueContainer implements \Iterator
 {

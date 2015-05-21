@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Common;
+namespace COREPOS\common;
 
 if (!function_exists("ADONewConnection")) {
     if (file_exists(dirname(__FILE__) . '/../vendor/adodb/adodb-php/adodb.inc.php')) {

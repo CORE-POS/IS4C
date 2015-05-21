@@ -10,8 +10,9 @@ V5.20dev  ??-???-2014  (c) 2000-2014 John Lim (jlim#natsoft.com). All rights res
  
 */ 
 
-if (!class_exists('ADODB_pdo'))
+if (!class_exists('ADODB_pdo', false)) {
 	include(dirname(__FILE__).'/adodb-pdo.inc.php');
+}
 
 class ADODB_pdo_mysql extends ADODB_pdo {
 	var $metaTablesSQL = "SELECT

@@ -1,6 +1,6 @@
 <?php
 
-namespace COREPOS\Common\tests;
+namespace COREPOS\common\tests;
 
 class WhiteSpaceTest extends \PHPUnit_Framework_TestCase
 {

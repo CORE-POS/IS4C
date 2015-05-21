@@ -21,9 +21,9 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Common;
+namespace COREPOS\common;
 
-if (!class_exists('\COREPOS\Common\BaseLogger')) {
+if (!class_exists('\COREPOS\common\BaseLogger', false)) {
     include(dirname(__FILE__) . '/BaseLogger.php');
 }
 

@@ -35,11 +35,11 @@ if (!file_exists(dirname(__FILE__) . '/../../../common/SQLManager.php')) {
     /**
       Autoloader doesn't know about COREPOS\Common yet
     */
-    if (!class_exists('\\COREPOS\\Common\\SQLManager', false)) {
+    if (!class_exists('\\COREPOS\\common\\SQLManager', false)) {
         include(dirname(__FILE__) . '/../../../common/SQLManager.php');
     }
 
-    class SQLManager extends \COREPOS\Common\SQLManager
+    class SQLManager extends \COREPOS\common\SQLManager
     {
         /**
           Override to initialize QUERY_LOG

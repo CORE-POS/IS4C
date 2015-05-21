@@ -41,6 +41,9 @@ class FannieAPI
         if (!isset($_SESSION['FannieClassMap']['SQLManager'])) {
             $_SESSION['FannieClassMap']['SQLManager'] = realpath(dirname(__FILE__).'/../src/SQLManager.php');
         }
+        if (!isset($_SESSION['FannieClassMap']['FPDF'])) {
+            $_SESSION['FannieClassMap']['FPDF'] = realpath(dirname(__FILE__).'/../src/fpdf/fpdf.php');
+        }
     }
 
     /**
@@ -55,7 +58,9 @@ class FannieAPI
         // of class_name => file_name
         if (!is_array($map)) { 
             $map = array();
-            $_SESSION['FannieClassMap'] = array();
+            $map['SQLManager'] = realpath(dirname(__FILE__).'/../src/SQLManager.php');
+            $map['FPDF'] = realpath(dirname(__FILE__).'/../src/fpdf/fpdf.php');
+            $_SESSION['FannieClassMap'] = $map;
         }
 
         // if class is known in the map, include its file
@@ -75,12 +80,13 @@ class FannieAPI
               Otherwise, just strip off the namespace and search
               both plugins and API class library
             */
+            $real_name = $name;
             if (strstr($name, '\\')) {
                 $full_name = explode('\\', $name);
                 $core_namespace = false;
                 if (count($full_name) >= 2 && $full_name[0] == 'COREPOS' && $full_name[1] == 'common') {
                     $core_namespace = true;
-                } elseif (count($full_name) >= 3 && $full_name[0] == 'COREPOS' && $full_name[2] == 'Fannie'
+                } elseif (count($full_name) >= 3 && $full_name[0] == 'COREPOS' && $full_name[1] == 'Fannie'
                     && ($full_name[2] == 'API' || $full_name[2] == 'Plugin')) {
                     $core_namespace = true;
                 }
@@ -108,6 +114,10 @@ class FannieAPI
                         $_SESSION['FannieClassMap'][$name] = $expected_file;
                         return;
                     }
+                } else {
+                    // do not search for non-CORE namespace'd classes
+                    // inside CORE
+                    return;
                 }
 
                 // remove all namespacing for global search below

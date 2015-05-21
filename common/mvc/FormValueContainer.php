@@ -21,9 +21,9 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Common\mvc;
+namespace COREPOS\common\mvc;
 
-if (!class_exists('ValueContainer')) {
+if (!class_exists('ValueContainer', false)) {
     include(dirname(__FILE__) . '/ValueContainer.php');
 }
 

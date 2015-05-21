@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Common;
+namespace COREPOS\common;
 
 /**
   @class BaseLogger
