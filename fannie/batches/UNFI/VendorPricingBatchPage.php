@@ -108,7 +108,7 @@ function removeFromBatch(upc)
     });
 }
 function toggleV(upc){
-    var val = $('#row'+upc).find('.varp').attr('checked');
+    var val = $('#row'+upc).find('.varp').prop('checked');
     if (val){
         $('#row'+upc).attr('class','white');
         $.ajax({
