@@ -277,88 +277,6 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             }
             });
         }
-        function chainSuper(superID)
-        {
-            if (superID === '' || superID === '0') {
-                superID = -1;
-            }
-            var req = {
-                jsonrpc: '2.0',
-                method: '\\COREPOS\\Fannie\\API\\webservices\\FannieDeptLookup',
-                id: new Date().getTime(),
-                params: {
-                    'type' : 'children',
-                    'superID' : superID
-                }
-            };
-            $.ajax({
-                url: '../ws/',
-                type: 'post',
-                data: JSON.stringify(req),
-                dataType: 'json',
-                contentType: 'application/json',
-                success: function(resp) {
-                    if (resp.result) {
-                        $('#dept-start-select').empty();
-                        $('#dept-end-select').empty();
-                        for (var i=0; i<resp.result.length; i++) {
-                            var opt = $('<option>').val(resp.result[i]['id'])
-                                .html(resp.result[i]['id'] + ' ' + resp.result[i]['name']);
-                            $('#dept-start-select').append(opt.clone());
-                            $('#dept-end-select').append(opt);
-                        }
-                    }
-                    // selecting the blank entry should reset the form to its
-                    // initial state with both department selects containing the
-                    // full list and set to one
-                    if (resp.result.length > 0 && superID != -1) {
-                        $('#dept-start-select').val(resp.result[0]['id']);
-                        $('#deptStart').val(resp.result[0]['id']);
-                        $('#dept-end-select').val(resp.result[0]['id']);
-                        $('#deptEnd').val(resp.result[0]['id']);
-                    } else if (resp.result.length > 0) {
-                        $('#deptStart').val($('#dept-start-select').val());
-                        $('#deptEnd').val($('#dept-end-select').val());
-                    }
-                }
-            });
-        }
-        function filterSubs()
-        {
-            var range = [ $('#deptStart').val(), $('#deptEnd').val() ];
-            var sID = $('#super-id').val();
-            var req = {
-                jsonrpc: '2.0',
-                method: '\\COREPOS\\Fannie\\API\\webservices\\FannieDeptLookup',
-                id: new Date().getTime(),
-                params: {
-                    'type' : 'children',
-                    'dept_no' : range,
-                    'superID' : sID
-                }
-            };
-            $.ajax({
-                url: '../ws/',
-                type: 'post',
-                data: JSON.stringify(req),
-                dataType: 'json',
-                contentType: 'application/json',
-                success: function(resp) {
-                    if (resp.result) {
-                        $('#sub-start').empty();
-                        $('#sub-end').empty();
-                        $('#sub-start').append($('<option value="">Select sub department</option>'));
-                        $('#sub-end').append($('<option value="">Select sub department</option>'));
-                        for (var i=0; i<resp.result.length; i++) {
-                            var opt = $('<option>').val(resp.result[i]['id'])
-                                .html(resp.result[i]['id'] + ' ' + resp.result[i]['name']);
-                            $('#sub-start').append(opt.clone());
-                            $('#sub-end').append(opt);
-                        }
-                    }
-                }
-            });
-        }
         <?php if ($this->canEditItems) { ?>
         $(document).ready(function(){
             $('tr').each(function(){
@@ -794,7 +712,8 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 <div class="row form-group form-horizontal">
                     <label class="control-label col-sm-2">SuperDept (Buyer)</label>
                     <div class="col-sm-6">
-                        <select name=deptSub id="super-id" class="form-control" onchange="chainSuper(this.value);">
+                        <select name=deptSub id="super-id" class="form-control" 
+                            onchange="chainSuperDepartment('../ws/', this.value, null, '#dept-start-select', '#dept-end-select', '#deptStart', '#deptEnd');">
                             <option value=0></option>
                             <?php
                             foreach($supers as $id => $name)
@@ -806,7 +725,11 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 <div class="row form-group form-horizontal">
                     <label class="control-label col-sm-2">Department Start</label>
                     <div class="col-sm-4">
-                        <select onchange="$('#deptStart').val(this.value); $('#dept-end-select').val(this.value); $('#deptEnd').val(this.value); filterSubs();" 
+                        <select onchange="
+                            $('#deptStart').val(this.value); 
+                            $('#dept-end-select').val(this.value); 
+                            $('#deptEnd').val(this.value); 
+                            chainSubDepartments('../ws/', '#super-id', '#deptStart', '#deptEnd', null, '#sub-start', '#sub-end');" 
                             id="dept-start-select" class="form-control input-sm">
                         <?php
                         foreach ($depts as $id => $name)
@@ -817,13 +740,19 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                     <div class="col-sm-2">
                     <input type=text id=deptStart name=deptStart 
                         class="form-control input-sm" value=1
-                        onchange="$('#dept-start-select').val(this.value); filterSubs();" />
+                        onchange="
+                            $('#dept-start-select').val(this.value); 
+                            chainSubDepartments('../ws/', '#super-id', '#deptStart', '#deptEnd', null, '#sub-start', '#sub-end');" 
+                        />
                     </div>
                 </div>
                 <div class="form-group form-horizontal row">
                     <label class="control-label col-sm-2">Department End</label>
                     <div class="col-sm-4">
-                        <select onchange="$('#deptEnd').val(this.value); filterSubs();" 
+                        <select 
+                            onchange="
+                                $('#deptEnd').val(this.value); 
+                                chainSubDepartments('../ws/', '#super-id', '#deptStart', '#deptEnd', null, '#sub-start', '#sub-end');" 
                             id="dept-end-select" class="form-control input-sm">
                         <?php
                         foreach ($depts as $id => $name)
@@ -834,7 +763,10 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                     <div class="col-sm-2">
                         <input type=text id=deptEnd name=deptEnd 
                             class="form-control input-sm" value=1
-                            onchange="$('#dept-end-select').val(this.value); filterSubs();" />
+                            onchange="
+                                $('#dept-end-select').val(this.value);
+                                chainSubDepartments('../ws/', '#super-id', '#deptStart', '#deptEnd', null, '#sub-start', '#sub-end');" 
+                            />
                     </div>
                 </div>
                 <div class="row form-group form-horizontal">

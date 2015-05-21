@@ -163,6 +163,7 @@ class FanniePage
             }
             $this->addScript($url . 'src/javascript/jquery-ui.js');
             $this->addScript($url . 'src/javascript/calculator.js');
+            $this->addScript($url . 'src/javascript/core.js');
             $this->addCssFile($url . 'src/javascript/jquery-ui.css?id=20140625');
             $this->addCssFile($url . 'src/css/configurable.php');
             $this->addCssFile($url . 'src/css/core.css');
@@ -630,57 +631,6 @@ function enableLinea(selector, callback)
                 foreach($this->onload_commands as $oc)
                     echo $oc."\n";
                 echo "});\n";
-                if ($this->themed) {
-                    ?>
-function showBootstrapAlert(selector, type, msg)
-{
-    var alertbox = '<div class="alert alert-' + type + '" role="alert">';
-    alertbox += '<button type="button" class="close" data-dismiss="alert">';
-    alertbox += '<span>&times;</span></button>';
-    alertbox += msg + '</div>';
-    $(selector).append(alertbox);
-}
-function showBootstrapPopover(element, original_value, error_message)
-{
-    var timeout = 1500;
-    if (error_message == '') {
-        error_message = 'Saved!';
-    } else {
-        element.val(original_value);
-        timeout = 3000;
-    }
-    var t = element.attr('title');
-    element.attr('title', '');
-    element.popover({
-        html: true,
-        content: error_message,
-        placement: 'auto bottom'
-    });
-    element.popover('show');
-    setTimeout(function(){element.popover('destroy');element.attr('title', t);}, timeout);
-}
-function mathField(elem)
-{
-    try {
-        console.log(elem);
-        console.log(elem.value);
-        var newval = calculator.parse(elem.value);
-        elem.value = newval;
-    } catch (e) { }
-}
-function standardFieldMarkup()
-{
-    $('input.date-field').datepicker({
-        dateFormat: 'yy-mm-dd',    
-        changeYear: true,
-        yearRange: "c-10:c+10",
-    });
-    $('input.math-field').change(function (event) {
-        mathField(event.target);
-    });
-}
-                    <?php
-                }
                 if ($this->enable_linea) {
                     echo $this->lineaJS();
                 }
