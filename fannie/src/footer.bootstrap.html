@@ -24,9 +24,10 @@ if (file_exists($version_file) && is_readable($version_file)) {
     echo '<div id="fannieVersion">Current version: ' . $version . '</div>';
 }
 ?>
-<a href="<?php echo $FANNIE_URL; ?>admin/SiteMap.php">Site Map</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="<?php echo $FANNIE_URL; ?>admin/SiteSearch.php">Search</a>
+            <a href="<?php echo $FANNIE_URL; ?>admin/SiteMap.php">Site Map</a>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="<?php echo $FANNIE_URL; ?>admin/SiteSearch.php">Search</a>
+            <div class="small">Page drawn in <?php echo round(microtime(true)-$START_TIMESTAMP, 3); ?> seconds</div>
 		</div>
 </div>
 </div>

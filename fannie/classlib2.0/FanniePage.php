@@ -88,6 +88,8 @@ class FanniePage
 
     public function __construct()
     {
+        $this->start_timestamp = microtime(true);
+
         $auth_default = FannieConfig::config('AUTH_DEFAULT', false);
         $coop_id = FannieConfig::config('COOP_ID');
         if ($auth_default && !$this->must_authenticate) {
@@ -235,6 +237,7 @@ class FanniePage
         $FANNIE_AUTH_ENABLED = $this->config->get('AUTH_ENABLED');
         $FANNIE_URL = $this->config->get('URL');
         ob_start();
+        $START_TIMESTAMP = $this->start_timestamp;
         if ($this->themed) {
             include(dirname(__FILE__) . '/../src/footer.bootstrap.html');
             $modal = $this->helpModal();
@@ -606,10 +609,7 @@ function enableLinea(selector, callback)
 
             if ($this->window_dressing) {
                 echo $body;
-                $footer = $this->getFooter();
-                $footer = str_ireplace('</html>','',$footer);
-                $footer = str_ireplace('</body>','',$footer);
-                echo $footer;
+                echo $this->getFooter();
             } else {
                 $body = str_ireplace('</html>','',$body);
                 $body = str_ireplace('</body>','',$body);
