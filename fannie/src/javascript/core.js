@@ -126,7 +126,7 @@ function chainSuperDepartment(ws_url, super_id, params)
         delete params.callback;
     }
 
-    if (super_id === '' || super_id === '0') {
+    if (super_id === '') {
         super_id = -1;
     }
 

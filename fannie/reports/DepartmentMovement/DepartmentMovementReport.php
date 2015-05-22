@@ -65,6 +65,9 @@ class DepartmentMovementReport extends FannieReportPage
         $filter_condition = 't.department BETWEEN ? AND ?';
         $args = array($deptStart,$deptEnd);
         if ($buyer !== "" && $buyer > 0) {
+            $filter_condition .= ' AND s.superID=? ';
+            $args[] = $buyer;
+            /*
             $superR = $dbc->execute($superP, array($buyer));
             $filter_condition = 't.department IN (';
             $args = array();
@@ -75,6 +78,7 @@ class DepartmentMovementReport extends FannieReportPage
             $filter_condition = substr($filter_condition, 0, strlen($filter_condition)-1) . ')';
             $filter_condition .= ' AND s.superID=?';
             $args[] = $buyer;
+            */
         } else if ($buyer !== "" && $buyer == -1) {
             $filter_condition = "1=1";
             $args = array();
@@ -304,6 +308,7 @@ class DepartmentMovementReport extends FannieReportPage
 
     function form_content()
     {
+        /*
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
         $deptsR = $dbc->exec_statement($deptsQ);
@@ -321,13 +326,18 @@ class DepartmentMovementReport extends FannieReportPage
         while ($deptsW = $dbc->fetch_array($deptsR)) {
             $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";
         }
+        */
 ?>
+<!--
 <div class="well">Selecting a Buyer/Dept overrides Department Start/Department End, but not Date Start/End.
         To run reports for a specific department(s) leave Buyer/Dept or set it to 'blank'
 </div>
+-->
 <form method = "get" action="DepartmentMovementReport.php" class="form-horizontal">
 <div class="row">
     <div class="col-sm-6">
+        <?php echo FormLib::standardDepartmentFields('buyer', '', 'deptStart', 'deptEnd'); ?>
+        <!--
         <div class="form-group">
             <label class="control-label col-sm-4">Select Buyer/Dept</label>
             <div class="col-sm-8">
@@ -361,6 +371,7 @@ class DepartmentMovementReport extends FannieReportPage
                 <input type=text name=deptEnd id=deptEnd value=1 class="form-control input-sm" />
             </div>
         </div>
+        -->
         <div class="form-group">
             <label class="col-sm-4 control-label">Sum movement by?</label>
             <div class="col-sm-8">
@@ -406,6 +417,7 @@ class DepartmentMovementReport extends FannieReportPage
     </p>
 </form>
 <?php
+        $this->addOnloadCommand("\$('#subdepts').closest('.form-group').hide();");
     }
 
     public function helpContent()

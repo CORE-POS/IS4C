@@ -674,20 +674,31 @@ class FormLib
         return ob_get_clean();
     }
 
-    public static function standardDepartmentFields()
+    public static function standardDepartmentFields($super='super',$multi='departments',$start='deptStart',$end='deptEnd', $subs='subdepts')
     {
         $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
-        $supers = new SuperDeptNamesModel($dbc);
-        $depts = new DepartmentsModel($dbc);
+        $superR = $dbc->query('SELECT superID, super_name FROM superDeptNames');
+        $deptR = $dbc->query('SELECT dept_no, dept_name FROM departments ORDER BY dept_no');
+        $depts = array();
+        while ($w = $dbc->fetchRow($deptR)) {
+            $depts[$w['dept_no']] = $w['dept_name'];
+        }
+        $url = FannieConfig::config('URL');
+        $chainsubs = "chainSubDepartments('{$url}ws/', {super_id:'#super-id', dept_start:'#dept-start-txt', dept_end:'#dept-end-txt', sub_multiple:'#subdepts'})";
+        $onchange = "chainSuperDepartment('../../ws/', this.value, {dept_start:'#dept-start',dept_end:'#dept-end',dept_start_id:'#dept-start-txt',dept_end_id:'#dept-end-txt',callback:function(){ $chainsubs; }})";
+        if (FannieConfig::config('REPORT_DEPT_MODE') == 'multi') {
+            $onchange = "chainSuperDepartment('../../ws/', this.value, {departments:'#departments'})";
+        }
         $ret = '
             <div class="form-group">
                 <label class="col-sm-4 control-label">Super Dept</label>
                 <div class="col-sm-8">
-                <select name="super-id" id="super-id" class="form-control">
+                <select name="' . $super . '" id="super-id" class="form-control" onchange="' . $onchange . ';">
                     <option value="">Select super department</option>';
-        foreach ($supers->find('superID') as $s) {
-            $ret .= sprintf('<option value="%d">%s</option>', $s->superID(), $s->super_name());         
+        while ($w = $dbc->fetchRow($superR)) {
+            $ret .= sprintf('<option value="%d">%s</option>', $w['superID'], $w['super_name']);
         }
+        $ret .= '<option value="-2">All Retail</option><option value="-1">All</option>';
         $ret .= '</select>
                 </div>
             </div>';
@@ -695,9 +706,10 @@ class FormLib
             $ret .= '<div class="form-group">
                 <label class="col-sm-4 control-label">Department(s)</label>
                 <div class="col-sm-8">
-                    <select id="departments" name="department[]" class="form-control" multiple size="10">';
-            foreach ($depts->find('dept_no') as $d) {
-                $ret .= sprintf('<option value="%d">%d %s</option>', $d->dept_no(), $d->dept_no(), $d->dept_name());         
+                    <select id="departments" name="' . $multi . '[]" class="form-control" 
+                        multiple size="10" onchange="' . $chainsubs . ';">';
+            foreach ($depts as $k => $v) {
+                $ret .= sprintf('<option value="%d">%d %s</option>', $k, $k, $v);
             }
             $ret .= '</select>
                     </div>
@@ -706,27 +718,32 @@ class FormLib
             $ret .= '<div class="form-group">
                 <label class="col-sm-4 control-label">Dept Start</label>
                 <div class="col-sm-6">
-                    <select id="dept-start" class="form-control">';
-            foreach ($depts->find('dept_no') as $d) {
-                $ret .= sprintf('<option value="%d">%s</option>', $d->dept_no(), $d->dept_name());         
+                    <select id="dept-start" class="form-control"
+                        onchange="$(\'#dept-start-txt\').val(this.value);' . $chainsubs . ';">';
+            foreach ($depts as $k => $v) {
+                $ret .= sprintf('<option value="%d">%d %s</option>', $k, $k, $v);
             }
             $ret .= '</select>
                     </div>
                 <div class="col-sm-2">
-                    <input type="text" name="department[]" id="dept-start-txt" 
+                    <input type="text" name="' . $deptStart . '" id="dept-start-txt" 
+                        onchange="$(\'#dept-start\').val(this.value);' . $chainsubs . ';"
                         class="form-control" value="1" />
-                </div>';
+                </div>
+            </div>';
             $ret .= '<div class="form-group">
                 <label class="col-sm-4 control-label">Dept End</label>
                 <div class="col-sm-6">
-                    <select id="dept-start" name="department[]" class="form-control">';
-            foreach ($depts->find('dept_no') as $d) {
-                $ret .= sprintf('<option value="%d">%s</option>', $d->dept_no(), $d->dept_name());         
+                    <select id="dept-end" name="department[]" class="form-control"
+                        onchange="$(\'#dept-end-txt\').val(this.value);' . $chainsubs . ';">';
+            foreach ($depts as $k => $v) {
+                $ret .= sprintf('<option value="%d">%d %s</option>', $k, $k, $v);
             }
             $ret .= '</select>
                     </div>
                 <div class="col-sm-2">
-                    <input type="text" name="department[]" id="dept-start-txt" 
+                    <input type="text" name="' . $deptEnd . '" id="dept-end-txt" 
+                        onchange="$(\'#dept-end\').val(this.value);' . $chainsubs . ';"
                         class="form-control" value="1" />
                 </div>
                 </div>';
@@ -735,7 +752,7 @@ class FormLib
         $ret .= '<div class="form-group">
             <label class="col-sm-4 control-label">Sub Dept(s)</label>
             <div class="col-sm-8">
-                <select id="subdepts" name="subdepts[]" class="form-control" multiple size="5">
+                <select id="subdepts" name="' . $subs . '[]" class="form-control" multiple size="5">
                 </select>
                 </div>
             </div>';
