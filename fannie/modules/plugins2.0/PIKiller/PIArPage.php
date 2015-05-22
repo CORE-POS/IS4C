@@ -76,7 +76,6 @@ class PIArPage extends PIKillerPage {
             }
         }
         echo '</table>';
-        return ob_get_clean();
     }
 }
 
