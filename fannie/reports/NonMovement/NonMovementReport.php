@@ -101,21 +101,44 @@ class NonMovementReport extends FannieReportPage {
             GROUP BY d.upc");
         $dbc->exec_statement($insQ, array($date1.' 00:00:00',$date2.' 23:59:59'));
 
-        $query = $dbc->prepare("
+        $where = ' 1=1 ';
+        $buyer = FormLib::get('super');
+        $args = array();
+        if ($buyer !== '') {
+            if ($buyer == -2) {
+                $where .= ' AND s.superID != 0 ';
+            } elseif ($buyer != -1) {
+                $where .= ' AND s.superID=? ';
+                $args[] = $buyer;
+            }
+        }
+        if ($buyer != -1) {
+            $where .= ' AND p.department BETWEEN ? AND ? ';
+            $args[] = $dept1;
+            $args[] = $dept2;
+        }
+
+        $query = "
             SELECT p.upc,
                 p.brand,
                 p.description,
                 d.dept_no,
                 d.dept_name 
             FROM products AS p 
-                LEFT JOIN departments AS d ON p.department=d.dept_no
-            WHERE p.upc NOT IN (
+                LEFT JOIN departments AS d ON p.department=d.dept_no ";
+        if ($buyer !== '' && $buyer > -1) {
+            $query .= 'LEFT JOIN superdepts AS s ON p.department=s.dept_ID ';
+        } elseif ($buyer !== '' && $buyer == -2) {
+            $query .= 'LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID ';
+        }
+        $query .= " WHERE p.upc NOT IN (
                 SELECT upc FROM $tempName
                 )
-                AND p.department BETWEEN ? AND ?
+                AND $where
                 AND p.inUse=1
-            ORDER BY p.upc");
-        $result = $dbc->exec_statement($query,array($dept1,$dept2));
+            ORDER BY p.upc";
+        $prep = $dbc->prepare($query);
+        $result = $dbc->exec_statement($prep,$args);
 
         /**
           Simple report
@@ -163,29 +186,8 @@ class NonMovementReport extends FannieReportPage {
             $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";
 ?>
 <form method="get" action="NonMovementReport.php" class="form-horizontal">
-    <div class="col-sm-5">
-        <div class="form-group">
-            <label class="control-label col-sm-4">Department Start</label>
-            <div class="col-sm-6">
-            <select id=deptStartSel onchange="$('#deptStart').val(this.value);" class="form-control col-sm-6">
-                <?php echo $deptsList ?>
-            </select>
-            </div>
-            <div class="col-sm-2">
-            <input type=number name=deptStart id=deptStart size=5 value=1 class="form-control col-sm-2" />
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="control-label col-sm-4">Department End</label>
-            <div class="col-sm-6">
-                <select id=deptEndSel onchange="$('#deptEnd').val(this.value);" class="form-control">
-                    <?php echo $deptsList ?>
-                </select>
-            </div>
-            <div class="col-sm-2">
-                <input type=number name=deptEnd id=deptEnd size=5 value=1 class="form-control" />
-            </div>
-        </div>
+    <div class="col-sm-6">
+        <?php echo FormLib::standardDepartmentFields(); ?>
         <div class="form-group">
             <label class="control-label col-sm-4">
                 Excel
@@ -198,7 +200,8 @@ class NonMovementReport extends FannieReportPage {
         </div>
         <div class="form-group">
             <button type=submit name=submit value="Submit" class="btn btn-default">Submit</button>
-            <button type=reset name=reset class="btn btn-default">Start Over</button>
+            <button type=reset name=reset class="btn btn-default"
+                onclick="$('#super-id').val('').trigger('change');">Start Over</button>
         </div>
     </div>
     <div class="col-sm-5">

@@ -277,19 +277,6 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             }
             });
         }
-        function productListChainSubs()
-        {
-            chainSubDepartments(
-                '../ws/', 
-                {
-                    super_id:'#super-id', 
-                    dept_start:'#deptStart', 
-                    dept_end:'#deptEnd', 
-                    sub_start:'#sub-start', 
-                    sub_end:'#sub-end'
-                }
-            ); 
-        }
         <?php if ($this->canEditItems) { ?>
         $(document).ready(function(){
             $('tr').each(function(){
@@ -474,9 +461,8 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         $mtype = FormLib::get_form_value('mtype','prefix');
         $deptStart = FormLib::get_form_value('deptStart',0);
         $deptEnd = FormLib::get_form_value('deptEnd',0);
-        $subStart = FormLib::get('sub-start', 0);
-        $subEnd = FormLib::get('sub-end', 0);
-        $super = FormLib::get_form_value('deptSub',0);
+        $subDepts = FormLib::get('subdepts', array());
+        $super = FormLib::get_form_value('deptSub');
         $vendorID = FormLib::get('vendor');
         $upc_list = FormLib::get('u', array());
         $inUse = FormLib::get('inUse', 1);
@@ -487,7 +473,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         elseif ($sort === 'Description') $order = 'i.description, i.upc';
 
         $ret = 'Report sorted by '.$sort.'<br />';
-        if ($supertype == 'dept' && $super == 0){
+        if ($supertype == 'dept' && $super === ''){
             $ret .= 'Department '.$deptStart.' to '.$deptEnd.'<br />';
         } else if ($supertype == 'dept'){
             $ret .= 'Sub department '.$super.'<br />';
@@ -508,14 +494,17 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 <input type="hidden" name="supertype" value="' . $supertype . '" />
                 <input type="hidden" name="deptStart" value="' . $deptStart . '" />
                 <input type="hidden" name="deptEnd" value="' . $deptEnd . '" />
-                <input type="hidden" name="sub-start" value="' . $subStart . '" />
-                <input type="hidden" name="sub-end" value="' . $subEnd . '" />
                 <input type="hidden" name="deptSub" value="' . $super . '" />
                 <input type="hidden" name="manufacturer" value="' . $manufacturer . '" />
                 <input type="hidden" name="mtype" value="' . $mtype . '" />
                 <input type="hidden" name="vendor" value="' . $vendorID . '" />
                 <input type="hidden" name="inUse" value="' . $inUse . '" />
                 <input type="hidden" name="excel" value="yes" />';
+            if (is_array($subDepts)) {
+                foreach ($subDepts as $s) {
+                    $ret .= '<input type="hidden" name="subdepts[]" value="' . $s . '" />';
+                }
+            }
             if (is_array($upc_list)) {
                 foreach ($upc_list as $u) {
                     $ret .= '<input type="hidden" name="u[]" value="' . $u . '" />';
@@ -523,8 +512,8 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             }
             $ret .= '</form>';
             $ret .= sprintf('<a href="" onclick="$(\'#excel-form\').submit();return false;">Save to Excel</a> 
-                &nbsp; &nbsp; <a href="javascript:back();">Back</a><br />',
-                $page_url, $sort);
+                &nbsp; &nbsp; <a href="%s">Back</a><br />',
+                basename(__FILE__));
         }
 
         /** base select clause and joins **/
@@ -549,7 +538,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 LEFT JOIN vendors AS v ON i.default_vendor_id=v.vendorID
                 LEFT JOIN origins AS o ON i.local=o.originID";
         /** add extra joins if this lookup requires them **/
-        if ($supertype == 'dept' && $super != 0) {
+        if ($supertype == 'dept' && $super !== '') {
             $query .= ' LEFT JOIN superdepts AS s ON i.department=s.dept_ID ';                
         } elseif ($supertype == 'vendor') {
             $query .= ' LEFT JOIN vendors AS z ON z.vendorName=x.distributor ';
@@ -557,7 +546,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         /** build where clause and parameters based on
             the lookup type **/
         $args = array();
-        if ($supertype == 'dept' && $super != 0) {
+        if ($supertype == 'dept' && $super !== '') {
             $query .= ' WHERE s.superID=? ';
             $args = array($super);
             if ($deptStart != 0 && $deptEnd != 0) {
@@ -565,10 +554,13 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 $args[] = $deptStart;
                 $args[] = $deptEnd;
             }
-            if ($subStart != 0 && $subEnd != 0) {
-                $query .= ' AND i.subdept BETWEEN ? AND ? ';
-                $args[] = $subStart;
-                $args[] = $subEnd;
+            if (is_array($subDepts) && count($subDepts) > 0) {
+                $query .= ' AND i.subdept IN (';
+                foreach ($subDepts as $s) {
+                    $query .= '?,';
+                    $args[] = $s;
+                }
+                $query = substr($query, 0, strlen($query)-1) . ')';
             }
         } elseif ($supertype == 'manu' && $mtype == 'prefix') {
             $query .= ' WHERE i.upc LIKE ? ';
@@ -590,10 +582,12 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         } else {
             $query .= ' WHERE i.department BETWEEN ? AND ? ';
             $args = array($deptStart, $deptEnd);
-            if ($subStart != 0 && $subEnd != 0) {
-                $query .= ' AND i.subdept BETWEEN ? AND ? ';
-                $args[] = $subStart;
-                $args[] = $subEnd;
+            if (is_array($subDepts) && count($subDepts) > 0) {
+                $query .= ' AND i.subdept IN (';
+                foreach ($subDepts as $s) {
+                    $query .= '?,';
+                    $args[] = $s;
+                }
             }
         }
         if ($inUse == 1) {
@@ -685,8 +679,8 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         while ($deptW = $dbc->fetch_array($deptR)){
             $depts[$deptW['dept_no']] = $deptW['dept_name'];
         }
-        $superQ = $dbc->prepare_statement("SELECT superID,super_name FROM superDeptNames WHERE 
-            superID > 0 ORDER BY superID");
+        $superQ = $dbc->prepare_statement("SELECT superID,super_name FROM superDeptNames 
+            ORDER BY superID");
         $superR = $dbc->exec_statement($superQ);
         $supers = array();
         while ($superW = $dbc->fetch_row($superR)){
@@ -722,90 +716,9 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         <div class="tab-content">
             <p>
             <div class="tab-pane active" id="dept-tab">
-                <div class="row form-group form-horizontal">
-                    <label class="control-label col-sm-2">SuperDept (Buyer)</label>
-                    <div class="col-sm-6">
-                        <select name=deptSub id="super-id" class="form-control" 
-                            onchange="chainSuperDepartment('../ws/', this.value, {dept_start:'#dept-start-select', dept_end:'#dept-end-select', dept_start_id:'#deptStart', dept_end_id:'#deptEnd',callback:productListChainSubs});">
-                            <option value=0></option>
-                            <?php
-                            foreach($supers as $id => $name)
-                                printf('<option value="%d">%s</option>',$id,$name); 
-                            ?>
-                        </select>
-                    </div>
-                </div>
-                <div class="row form-group form-horizontal">
-                    <label class="control-label col-sm-2">Department Start</label>
-                    <div class="col-sm-4">
-                        <select onchange="
-                            $('#deptStart').val(this.value); 
-                            $('#dept-end-select').val(this.value); 
-                            $('#deptEnd').val(this.value); 
-                            productListChainSubs();"
-                            id="dept-start-select" class="form-control input-sm">
-                        <?php
-                        foreach ($depts as $id => $name)
-                            printf('<option value="%d">%d %s</option>',$id,$id,$name);  
-                        ?>
-                        </select>
-                    </div>
-                    <div class="col-sm-2">
-                    <input type=text id=deptStart name=deptStart 
-                        class="form-control input-sm" value=1
-                        onchange="
-                            $('#dept-start-select').val(this.value); 
-                            chainSubDepartments('../ws/', '#super-id', '#deptStart', '#deptEnd', null, '#sub-start', '#sub-end');" 
-                        />
-                    </div>
-                </div>
-                <div class="form-group form-horizontal row">
-                    <label class="control-label col-sm-2">Department End</label>
-                    <div class="col-sm-4">
-                        <select 
-                            onchange="
-                                $('#deptEnd').val(this.value); 
-                                chainSubDepartments('../ws/', '#super-id', '#deptStart', '#deptEnd', null, '#sub-start', '#sub-end');" 
-                            id="dept-end-select" class="form-control input-sm">
-                        <?php
-                        foreach ($depts as $id => $name)
-                            printf('<option value="%d">%d %s</option>',$id,$id,$name);  
-                        ?>
-                        </select>
-                    </div>
-                    <div class="col-sm-2">
-                        <input type=text id=deptEnd name=deptEnd 
-                            class="form-control input-sm" value=1
-                            onchange="
-                                $('#dept-end-select').val(this.value);
-                                chainSubDepartments('../ws/', '#super-id', '#deptStart', '#deptEnd', null, '#sub-start', '#sub-end');" 
-                            />
-                    </div>
-                </div>
-                <div class="row form-group form-horizontal">
-                    <label class="control-label col-sm-2">Sub Start</label>
-                    <div class="col-sm-6">
-                        <select name="sub-start" id="sub-start" onchange="$('#sub-end').val(this.value);" class="form-control">
-                            <option value="">Select sub department</option>
-                            <?php
-                            foreach ($subs as $id => $name) {
-                                printf('<option value="%d">%d %s</option>', $id, $id, $name);
-                            }
-                            ?>
-                        </select>
-                    </div>
-                </div>
-                <div class="row form-group form-horizontal">
-                    <label class="control-label col-sm-2">Sub End</label>
-                    <div class="col-sm-6">
-                        <select name="sub-end" id="sub-end" class="form-control">
-                            <option value="">Select sub department</option>
-                            <?php
-                            foreach ($subs as $id => $name) {
-                                printf('<option value="%d">%d %s</option>', $id, $id, $name);
-                            }
-                            ?>
-                        </select>
+                <div class="row form-horizontal">
+                    <div class="col-sm-8">
+                    <?php echo FormLib::standardDepartmentFields('deptSub', ''); ?>
                     </div>
                 </div>
             </div>
@@ -856,7 +769,8 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         </div>
         <p> 
             <button type=submit name=submit class="btn btn-default">Submit</button>
-            <button type=reset id="reset-btn" class="btn btn-default">Start Over</button>
+            <button type=reset id="reset-btn" class="btn btn-default"
+                onclick="$('#super-id').val('').trigger('change');">Start Over</button>
         </p>
         </form>
         <?php
@@ -905,5 +819,5 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

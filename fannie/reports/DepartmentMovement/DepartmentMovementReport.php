@@ -328,50 +328,10 @@ class DepartmentMovementReport extends FannieReportPage
         }
         */
 ?>
-<!--
-<div class="well">Selecting a Buyer/Dept overrides Department Start/Department End, but not Date Start/End.
-        To run reports for a specific department(s) leave Buyer/Dept or set it to 'blank'
-</div>
--->
 <form method = "get" action="DepartmentMovementReport.php" class="form-horizontal">
 <div class="row">
     <div class="col-sm-6">
         <?php echo FormLib::standardDepartmentFields('buyer', '', 'deptStart', 'deptEnd'); ?>
-        <!--
-        <div class="form-group">
-            <label class="control-label col-sm-4">Select Buyer/Dept</label>
-            <div class="col-sm-8">
-            <select id=buyer name=buyer class="form-control">
-               <option value=0 >
-               <?php echo $deptSubList; ?>
-               <option value=-2 >All Retail</option>
-               <option value=-1 >All</option>
-           </select>
-           </div>
-        </div>
-        <div class="form-group">
-            <label class="control-label col-sm-4">Department Start</label>
-            <div class="col-sm-6">
-            <select id=deptStartSel onchange="$('#deptStart').val(this.value);" class="form-control col-sm-6 input-sm">
-                <?php echo $deptsList ?>
-            </select>
-            </div>
-            <div class="col-sm-2">
-            <input type=text name=deptStart id=deptStart value=1 class="form-control col-sm-2 input-sm" />
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="control-label col-sm-4">Department End</label>
-            <div class="col-sm-6">
-                <select id=deptEndSel onchange="$('#deptEnd').val(this.value);" class="form-control input-sm">
-                    <?php echo $deptsList ?>
-                </select>
-            </div>
-            <div class="col-sm-2">
-                <input type=text name=deptEnd id=deptEnd value=1 class="form-control input-sm" />
-            </div>
-        </div>
-        -->
         <div class="form-group">
             <label class="col-sm-4 control-label">Sum movement by?</label>
             <div class="col-sm-8">
@@ -413,7 +373,8 @@ class DepartmentMovementReport extends FannieReportPage
 </div>
     <p>
         <button type=submit name=submit value="Submit" class="btn btn-default">Submit</button>
-        <button type=reset name=reset class="btn btn-default">Start Over</button>
+        <button type=reset name=reset class="btn btn-default"
+            onclick="$('#super-id').val('').trigger('change');">Start Over</button>
     </p>
 </form>
 <?php

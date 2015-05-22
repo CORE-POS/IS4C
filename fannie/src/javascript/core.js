@@ -263,10 +263,10 @@ function chainSubDepartments(ws_url, params)
                     var opt = $('<option>').val(resp.result[i]['id'])
                         .html(resp.result[i]['id'] + ' ' + resp.result[i]['name']);
                     if ('sub_multiple' in params) {
-                        $(params.sub_multiple).append(opt.clone().prop('selected', true));
+                        $(params.sub_multiple).append(opt.clone());
                     }
                     if ('sub_start' in params) {
-                        $(params.sub_start).append(opt.close());
+                        $(params.sub_start).append(opt.clone());
                     }
                     if ('sub_end' in params) {
                         $(params.sub_end).append(opt);

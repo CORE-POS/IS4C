@@ -674,88 +674,131 @@ class FormLib
         return ob_get_clean();
     }
 
+    /**
+      Draw a standard set of bootstrap'd department fields
+      with javascript chaining as they change
+      @param $super [string, default 'super'] name of the super department <select>
+      @param $multi [string, default 'departments'] name of the department multi <select>
+      @param $start [string, default 'deptStart'] name of the department start single <select>
+      @param $end [string, default 'deptEnd'] name of the department end single <select>
+      @param $subs [string, default 'subdepts'] name of the subdepartment multi <select>
+      @return [string] HTML
+    */
     public static function standardDepartmentFields($super='super',$multi='departments',$start='deptStart',$end='deptEnd', $subs='subdepts')
     {
+        /**
+          Precalculate options for superdept and dept selects
+        */
         $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
         $superR = $dbc->query('SELECT superID, super_name FROM superDeptNames');
-        $deptR = $dbc->query('SELECT dept_no, dept_name FROM departments ORDER BY dept_no');
-        $depts = array();
-        while ($w = $dbc->fetchRow($deptR)) {
-            $depts[$w['dept_no']] = $w['dept_name'];
+        $super_opts = '';
+        while ($w = $dbc->fetchRow($superR)) {
+            $super_opts .= sprintf('<option value="%d">%s</option>',
+                $w['superID'], $w['super_name']) . "\n";
         }
+        $deptR = $dbc->query('SELECT dept_no, dept_name FROM departments ORDER BY dept_no');
+        $dept_opts = '';
+        while ($w = $dbc->fetchRow($deptR)) {
+            $dept_opts .= sprintf('<option value="%d">%d %s</option>',
+                $w['dept_no'], $w['dept_no'], $w['dept_name']) . "\n";
+        }
+
+        /**
+          Store javascript chaining function calls in variables
+          the sub chaining one is repeated a bunch. The super chaining
+          one depends which type of department <select>s are shown
+          They're also ridiculously long argument lists.
+        */
         $url = FannieConfig::config('URL');
         $chainsubs = "chainSubDepartments('{$url}ws/', {super_id:'#super-id', dept_start:'#dept-start-txt', dept_end:'#dept-end-txt', sub_multiple:'#subdepts'})";
-        $onchange = "chainSuperDepartment('../../ws/', this.value, {dept_start:'#dept-start',dept_end:'#dept-end',dept_start_id:'#dept-start-txt',dept_end_id:'#dept-end-txt',callback:function(){ $chainsubs; }})";
+        $onchange = "chainSuperDepartment('{$url}ws/', this.value, {dept_start:'#dept-start',dept_end:'#dept-end',dept_start_id:'#dept-start-txt',dept_end_id:'#dept-end-txt',callback:function(){ $chainsubs; }})";
         if (FannieConfig::config('REPORT_DEPT_MODE') == 'multi') {
-            $onchange = "chainSuperDepartment('../../ws/', this.value, {departments:'#departments'})";
+            $onchange = "chainSuperDepartment('{$url}ws/', this.value, {departments:'#departments'})";
         }
-        $ret = '
-            <div class="form-group">
-                <label class="col-sm-4 control-label">Super Dept</label>
-                <div class="col-sm-8">
-                <select name="' . $super . '" id="super-id" class="form-control" onchange="' . $onchange . ';">
-                    <option value="">Select super department</option>';
-        while ($w = $dbc->fetchRow($superR)) {
-            $ret .= sprintf('<option value="%d">%s</option>', $w['superID'], $w['super_name']);
-        }
-        $ret .= '<option value="-2">All Retail</option><option value="-1">All</option>';
-        $ret .= '</select>
-                </div>
-            </div>';
-        if (FannieConfig::config('REPORT_DEPT_MODE') == 'multi') {
-            $ret .= '<div class="form-group">
-                <label class="col-sm-4 control-label">Department(s)</label>
-                <div class="col-sm-8">
-                    <select id="departments" name="' . $multi . '[]" class="form-control" 
-                        multiple size="10" onchange="' . $chainsubs . ';">';
-            foreach ($depts as $k => $v) {
-                $ret .= sprintf('<option value="%d">%d %s</option>', $k, $k, $v);
-            }
-            $ret .= '</select>
-                    </div>
-                </div>';
-        } else {
-            $ret .= '<div class="form-group">
-                <label class="col-sm-4 control-label">Dept Start</label>
-                <div class="col-sm-6">
-                    <select id="dept-start" class="form-control"
-                        onchange="$(\'#dept-start-txt\').val(this.value);' . $chainsubs . ';">';
-            foreach ($depts as $k => $v) {
-                $ret .= sprintf('<option value="%d">%d %s</option>', $k, $k, $v);
-            }
-            $ret .= '</select>
-                    </div>
-                <div class="col-sm-2">
-                    <input type="text" name="' . $deptStart . '" id="dept-start-txt" 
-                        onchange="$(\'#dept-start\').val(this.value);' . $chainsubs . ';"
-                        class="form-control" value="1" />
-                </div>
-            </div>';
-            $ret .= '<div class="form-group">
-                <label class="col-sm-4 control-label">Dept End</label>
-                <div class="col-sm-6">
-                    <select id="dept-end" name="department[]" class="form-control"
-                        onchange="$(\'#dept-end-txt\').val(this.value);' . $chainsubs . ';">';
-            foreach ($depts as $k => $v) {
-                $ret .= sprintf('<option value="%d">%d %s</option>', $k, $k, $v);
-            }
-            $ret .= '</select>
-                    </div>
-                <div class="col-sm-2">
-                    <input type="text" name="' . $deptEnd . '" id="dept-end-txt" 
-                        onchange="$(\'#dept-end\').val(this.value);' . $chainsubs . ';"
-                        class="form-control" value="1" />
-                </div>
-                </div>';
 
+        /**
+          The rest of this method uses HEREDOC style strings with
+          {{PLACEHOLDERS}} and substitutes PHP variables in after the
+          fact. This is an uncommon coding style in the overall project
+          but the HTML is easier to read
+        */
+
+        $ret = <<<HTML
+<div class="form-group">
+    <label class="col-sm-4 control-label">Super Department</label>
+    <div class="col-sm-8">
+        <select name="{{SUPER_FIELD_NAME}}" id="super-id" class="form-control" onchange="{{SUPER_ONCHANGE}};">
+            <option value="">Select super department</option>
+            {{SUPER_OPTS}}
+            <option value="-2">All Retail</option><option value="-1">All</option>
+        </select>
+    </div>
+</div>
+HTML;
+        $ret = str_replace('{{SUPER_FIELD_NAME}}', $super, $ret);
+        $ret = str_replace('{{SUPER_ONCHANGE}}', $onchange, $ret);
+        $ret = str_replace('{{SUPER_OPTS}}', $super_opts, $ret);
+
+        if (FannieConfig::config('REPORT_DEPT_MODE') == 'multi') {
+            $ret .= <<<HTML
+<div class="form-group">
+    <label class="col-sm-4 control-label">Department(s)</label>
+    <div class="col-sm-8">
+        <select id="departments" name="{{DEPT_MULTI}}[]" class="form-control" 
+            multiple size="10" onchange="{{DEPT_ONCHANGE}};">';
+            {{DEPT_OPTS}}
+        </select>
+    </div>
+</div>
+HTML;
+            $ret = str_replace('{{DEPT_MULTI}}', $multi, $ret);
+        } else {
+            $ret .= <<<HTML
+<div class="form-group">
+    <label class="col-sm-4 control-label">Department Start</label>
+    <div class="col-sm-6">
+        <select id="dept-start" class="form-control"
+            onchange="$('#dept-start-txt').val(this.value); {{DEPT_ONCHANGE}};">
+            {{DEPT_OPTS}}
+        </select>
+    </div>
+    <div class="col-sm-2">
+        <input type="text" name="{{DEPT_START}}" id="dept-start-txt" 
+            onchange="$('#dept-start').val(this.value); {{DEPT_ONCHANGE}};"
+            class="form-control" value="1" />
+    </div>
+</div>
+<div class="form-group">
+    <label class="col-sm-4 control-label">Department End</label>
+    <div class="col-sm-6">
+        <select id="dept-end" class="form-control"
+            onchange="$('#dept-end-txt').val(this.value); {{DEPT_ONCHANGE}};">
+            {{DEPT_OPTS}}
+        </select>
+    </div>
+    <div class="col-sm-2">
+    <input type="text" name="{{DEPT_END}}" id="dept-end-txt" 
+        onchange="$('#dept-end').val(this.value);' {{DEPT_ONCHANGE}}';"
+        class="form-control" value="1" />
+    </div>
+</div>
+HTML;
+            $ret = str_replace('{{DEPT_START}}', $start, $ret);
+            $ret = str_replace('{{DEPT_END}}', $end, $ret);
         }
-        $ret .= '<div class="form-group">
-            <label class="col-sm-4 control-label">Sub Dept(s)</label>
-            <div class="col-sm-8">
-                <select id="subdepts" name="' . $subs . '[]" class="form-control" multiple size="5">
-                </select>
-                </div>
-            </div>';
+        $ret = str_replace('{{DEPT_OPTS}}', $dept_opts, $ret);
+        $ret = str_replace('{{DEPT_ONCHANGE}}', $chainsubs, $ret);
+
+        $ret .= <<<HTML
+<div class="form-group">
+    <label class="col-sm-4 control-label">Sub Dept(s)</label>
+    <div class="col-sm-8">
+        <select id="subdepts" name="{{SUBS_NAME}}[]" class="form-control" multiple size="5">
+        </select>
+    </div>
+</div>
+HTML;
+        $ret = str_replace('{{SUBS_NAME}}', $subs, $ret);
 
         return $ret;
     }

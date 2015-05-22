@@ -76,13 +76,14 @@ class OpenRingsReport extends FannieReportPage
         $where = ' 1=1 ';
         if ($buyer !== '') {
             if ($buyer > -1) {
-                $where = ' s.superID=? ';
+                $where .= ' AND s.superID=? ';
                 $args[] = $buyer;
             } elseif ($buyer == -2) {
-                $where = ' s.superID <> 0 ';
+                $where .= ' AND s.superID <> 0 ';
             }
-        } else {
-            $where = ' d.department BETWEEN ? AND ? ';
+        }
+        if ($buyer != -1) {
+            $where .= ' AND d.department BETWEEN ? AND ? ';
             $args[] = $deptStart;
             $args[] = $deptEnd;
         }
@@ -156,67 +157,12 @@ class OpenRingsReport extends FannieReportPage
 
     public function form_content()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-
-        $deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
-        $deptsR = $dbc->exec_statement($deptsQ);
-        $deptsList = "";
-
-        $deptSubQ = $dbc->prepare_statement("SELECT superID,super_name FROM superDeptNames
-                WHERE superID <> 0 
-                ORDER BY superID");
-        $deptSubR = $dbc->exec_statement($deptSubQ);
-
-        $deptSubList = "";
-        while($deptSubW = $dbc->fetch_array($deptSubR)) {
-            $deptSubList .=" <option value=$deptSubW[0]>$deptSubW[1]</option>";
-        }
-        while ($deptsW = $dbc->fetch_array($deptsR)) {
-            $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";
-        }
-
         ob_start();
         ?>
-<div class="well">Selecting a Buyer/Dept overrides Department Start/Department End, but not Date Start/End.
-        To run reports for a specific department(s) leave Buyer/Dept or set it to 'blank'
-</div>
-<form method="get" action="OpenRingsReport.php" class="form-horizontal">
+<form method="get" class="form-horizontal">
 <div class="row">
-    <div class="col-sm-5">
-        <div class="form-group">
-            <label class="control-label col-sm-4">Select Buyer/Dept</label>
-            <div class="col-sm-8">
-            <select id=buyer name=buyer class="form-control">>
-               <option value="">
-               <?php echo $deptSubList; ?>
-               <option value=-2 >All Retail</option>
-               <option value=-1 >All</option>
-           </select>
-           </div>
-        </div>
-        <div class="form-group">
-            <label class="control-label col-sm-4">Department Start</label>
-            <div class="col-sm-6">
-            <select id=deptStartSel onchange="$('#deptStart').val(this.value);" class="form-control col-sm-6">
-                <?php echo $deptsList ?>
-            </select>
-            </div>
-            <div class="col-sm-2">
-            <input type=number name=deptStart id=deptStart size=5 value=1 class="form-control col-sm-2" />
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="control-label col-sm-4">Department End</label>
-            <div class="col-sm-6">
-                <select id=deptEndSel onchange="$('#deptEnd').val(this.value);" class="form-control">
-                    <?php echo $deptsList ?>
-                </select>
-            </div>
-            <div class="col-sm-2">
-                <input type=number name=deptEnd id=deptEnd size=5 value=1 class="form-control" />
-            </div>
-        </div>
+    <div class="col-sm-6">
+        <?php echo FormLib::standardDepartmentFields('buyer'); ?>
         <div class="form-group">
             <label class="control-label col-sm-4">Save to Excel
                 <input type=checkbox name=excel id=excel value=1>
@@ -247,7 +193,8 @@ class OpenRingsReport extends FannieReportPage
 </div>
 <p>
     <button type=submit name=submit value="Submit" class="btn btn-default">Submit</button>
-    <button type=reset name=reset class="btn btn-default">Start Over</button>
+    <button type=reset name=reset class="btn btn-default"
+        onclick="$('#super-id').val('').trigger('change');">Start Over</button>
 </p>
 </form>
         <?php
