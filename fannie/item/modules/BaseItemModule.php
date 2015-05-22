@@ -472,7 +472,7 @@ class BaseItemModule extends ItemModule
                 <th class="text-right">Dept</th>
                 <td colspan="7" class="form-inline">
                 <select id="super-dept" class="form-control chosen-select" 
-                    onchange="chainSuperDepartment(\'../ws/\', this.value, null, \'#department\', null, null, null, function(){$(\'#department\').trigger(\'chosen:updated\');chainSelects($(\'#department\').val());});">';
+                    onchange="chainSuperDepartment(\'../ws/\', this.value, {dept_start:\'#department\', callback:function(){$(\'#department\').trigger(\'chosen:updated\');baseItemChainSubs();}});">';
         $names = new SuperDeptNamesModel($dbc);
         if (is_array($range_limit) && count($range_limit) == 2) {
             $names->superID($range_limit[0], '>=');
@@ -485,7 +485,7 @@ class BaseItemModule extends ItemModule
         }
         $ret .= '</select>
                 <select name="department" id="department" 
-                    class="form-control chosen-select" onchange="chainSelects(this.value);">';
+                    class="form-control chosen-select" onchange="baseItemChainSubs();">';
         foreach ($depts as $id => $name){
             if (is_array($supers[$superID])) {
                 if (!in_array($id, $supers[$superID]) && $id != $rowItem['department']) {
@@ -647,58 +647,43 @@ class BaseItemModule extends ItemModule
     public function getFormJavascript($upc)
     {
         $FANNIE_URL = FannieConfig::config('URL');
-        $dbc = $this->db();
-        $prod = new ProductsModel($dbc);
-        $prod->upc($upc);
-        $prod->load();
-
-        $p = $dbc->prepare_statement('SELECT dept_no,dept_name,subdept_no,subdept_name,dept_ID 
-                FROM departments AS d
-                LEFT JOIN subdepts AS s ON d.dept_no=s.dept_ID
-                ORDER BY d.dept_no, s.subdept_name');
-        $r = $dbc->exec_statement($p);
-        $subs = array();
-        while($w = $dbc->fetch_row($r)){
-            if ($w['subdept_no'] == '') continue;
-            if (!isset($subs[$w['dept_ID']]))
-                $subs[$w['dept_ID']] = '';
-            $subs[$w['dept_ID']] .= sprintf('<option %s value="%d">%d %s</option>',
-                    ($w['subdept_no'] == $prod->subdept() ? 'selected':''),
-                    $w['subdept_no'],$w['subdept_no'],$w['subdept_name']);
-        }
-
-        $json = count($subs) == 0 ? '{}' : json_encode($subs);
         ob_start();
         ?>
-        function chainSelects(val){
-            var lookupTable = <?php echo $json; ?>;
-            if (val in lookupTable) {
-                $('#subdept').html(lookupTable[val]);
-                $('#subdept').trigger('chosen:updated');
-            } else {
-                $('#subdept').html('<option value=0>None</option>');
-            }
-            $.ajax({
-                url: '<?php echo $FANNIE_URL; ?>item/modules/BaseItemModule.php',
-                data: 'dept_defaults='+val,
-                dataType: 'json',
-                cache: false,
-                success: function(data){
-                    if (data.tax)
-                        $('#tax').val(data.tax);
-                    if (data.fs)
-                        $('#FS').prop('checked',true);
-                    else{
-                        $('#FS').prop('checked', false);
-                    }
-                    if (data.nodisc) {
-                        $('#discount-select').val(0);
-                    } else {
-                        $('#discount-select').val(1);
+        function baseItemChainSubs()
+        {
+            chainSubDepartments(
+                '../ws/',
+                {
+                    super_id: '#super-dept',
+                    dept_start: '#department',
+                    dept_end: '#department', 
+                    sub_start: '#subdept',
+                    callback: function() {
+                        $('#subdept option:first').html('None').val(0);
+                        $('#subdept').trigger('chosen:updated');
+                        $.ajax({
+                            url: 'modules/BaseItemModule.php',
+                            data: 'dept_defaults='+$('#department').val(),
+                            dataType: 'json',
+                            cache: false,
+                            success: function(data){
+                                if (data.tax)
+                                    $('#tax').val(data.tax);
+                                if (data.fs)
+                                    $('#FS').prop('checked',true);
+                                else{
+                                    $('#FS').prop('checked', false);
+                                }
+                                if (data.nodisc) {
+                                    $('#discount-select').val(0);
+                                } else {
+                                    $('#discount-select').val(1);
+                                }
+                            }
+                        });
                     }
                 }
-
-            });
+            );
         }
         function vendorChanged()
         {

@@ -277,6 +277,19 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             }
             });
         }
+        function productListChainSubs()
+        {
+            chainSubDepartments(
+                '../ws/', 
+                {
+                    super_id:'#super-id', 
+                    dept_start:'#deptStart', 
+                    dept_end:'#deptEnd', 
+                    sub_start:'#sub-start', 
+                    sub_end:'#sub-end'
+                }
+            ); 
+        }
         <?php if ($this->canEditItems) { ?>
         $(document).ready(function(){
             $('tr').each(function(){
@@ -713,7 +726,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                     <label class="control-label col-sm-2">SuperDept (Buyer)</label>
                     <div class="col-sm-6">
                         <select name=deptSub id="super-id" class="form-control" 
-                            onchange="chainSuperDepartment('../ws/', this.value, null, '#dept-start-select', '#dept-end-select', '#deptStart', '#deptEnd');">
+                            onchange="chainSuperDepartment('../ws/', this.value, {dept_start:'#dept-start-select', dept_end:'#dept-end-select', dept_start_id:'#deptStart', dept_end_id:'#deptEnd',callback:productListChainSubs});">
                             <option value=0></option>
                             <?php
                             foreach($supers as $id => $name)
@@ -729,7 +742,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                             $('#deptStart').val(this.value); 
                             $('#dept-end-select').val(this.value); 
                             $('#deptEnd').val(this.value); 
-                            chainSubDepartments('../ws/', '#super-id', '#deptStart', '#deptEnd', null, '#sub-start', '#sub-end');" 
+                            productListChainSubs();"
                             id="dept-start-select" class="form-control input-sm">
                         <?php
                         foreach ($depts as $id => $name)

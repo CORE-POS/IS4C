@@ -77,19 +77,55 @@ function standardFieldMarkup()
 }
 
 /**
+  Check whether the properties are present in the
+  object and valid jQuery selectors
+  @param obj [object]
+  @param properties [array] list of property names 
+*/
+function validateSelectorProperties(obj, properties)
+{
+    for (var i=0; i<properties.length; i++) {
+        var prop = properties[i];
+        if (prop in obj) {
+            if ($(obj[prop]).length == 0) {
+                delete obj[prop];
+            }
+        }
+    }
+
+    return obj;
+}
+
+/**
   Select chaining. When a super department is selected,
   lookup child departments and populate field(s). Any
   non-existant department field selector is ignored
   @param ws_url [string] webservices URL
   @param super_id [int] super department ID
-  @param dept_multi [jQuery selector] multiple <select> element
-  @param dept_start_s [jQuery selector] single <select> for range start
-  @param dept_end_s [jQuery selector] single <select> for range end
-  @param dept_start_t [jQuery selector] single <input> for numeric range start
-  @param dept_end_t [jQuery selector] single <input> for numeric range end
+  @param params [object] containing additional named parameters.
+    - dept_multiple [jQuery selector] multiple <select>
+    - dept_start [jQuery selector] single start <select>
+    - dept_end [jQuery selector] single end <select>
+    - dept_start_id [jQuery selector] single start <input> 
+    - dept_end_id [jQuery selector] single end <input>
+    - callback [function] called after chaining
 */
-function chainSuperDepartment(ws_url, super_id, dept_multi, dept_start_s, dept_end_s, dept_start_t, dept_end_t, callback)
+function chainSuperDepartment(ws_url, super_id, params)
 {
+    if (typeof params != 'object') {
+        throw "chainSuperDepartment: 3rd parameter must be an object";
+    }
+
+    params = validateSelectorProperties(params, ['dept_multiple', 'dept_start', 'dept_end', 'dept_start_id', 'dept_end_id']);
+
+    if (!('dept_multiple' in params) && !('dept_start' in params) && !('dept_end' in params)) {
+        throw "chainSuperDepartmet: must specify dept_multiple, dept_start, or dept_end";
+    }
+
+    if ('callback' in params && typeof params.callback != 'function') {
+        delete params.callback;
+    }
+
     if (super_id === '' || super_id === '0') {
         super_id = -1;
     }
@@ -112,26 +148,22 @@ function chainSuperDepartment(ws_url, super_id, dept_multi, dept_start_s, dept_e
         contentType: 'application/json',
         success: function(resp) {
             if (resp.result) {
-                if ($(dept_multi).length > 0) {
-                    $(dept_multi).empty();
-                }
-                if ($(dept_start_s).length > 0) {
-                    $(dept_start_s).empty();
-                }
-                if ($(dept_end_s).length > 0) {
-                    $(dept_end_s).empty();
-                }
+                ['dept_multiple', 'dept_start', 'dept_end'].forEach(function(p){
+                    if (p in params) {
+                        $(params[p]).empty();
+                    }
+                });
                 for (var i=0; i<resp.result.length; i++) {
                     var opt = $('<option>').val(resp.result[i]['id'])
                         .html(resp.result[i]['id'] + ' ' + resp.result[i]['name']);
-                    if ($(dept_multi).length > 0) {
-                        $(dept_multi).append(opt.clone().prop('selected', true));
+                    if ('dept_multiple' in params) {
+                        $(params.dept_multiple).append(opt.clone().prop('selected', true));
                     }
-                    if ($(dept_start_s).length > 0) {
-                        $(dept_start_s).append(opt.clone());
+                    if ('dept_start' in params) {
+                        $(params.dept_start).append(opt.clone());
                     }
-                    if ($(dept_end_s).length > 0) {
-                        $(dept_end_s).append(opt);
+                    if ('dept_end' in params) {
+                        $(params.dept_end).append(opt);
                     }
                 }
             }
@@ -140,25 +172,26 @@ function chainSuperDepartment(ws_url, super_id, dept_multi, dept_start_s, dept_e
             // initial state with both department selects containing the
             // full list and set to one
             if (resp.result.length > 0 && super_id != -1) {
-                if ($(dept_start_s).length > 0 && $(dept_start_t).length > 0) {
-                    $(dept_start_s).val(resp.result[0]['id']);
-                    $(dept_start_t).val(resp.result[0]['id']);
+                if ('dept_start' in params && 'dept_start_id' in params) {
+                    $(params.dept_start_id).val($(params.dept_start).val());
                 }
-                if ($(dept_end_s).length > 0 && $(dept_end_t).length > 0) {
-                    $(dept_end_s).val(resp.result[0]['id']);
-                    $(dept_end_t).val(resp.result[0]['id']);
+                if ('dept_end' in params) {
+                    $(params.dept_end).val(resp.result[resp.result.length-1]['id']);
+                    if ('dept_end_id' in params) {
+                        $(params.dept_end_id).val($(params.dept_end).val());
+                    }
                 }
             } else if (resp.result.length > 0) {
-                if ($(dept_start_s).length > 0 && $(dept_start_t).length > 0) {
-                    $(dept_start_t).val($(dept_start_s).val());
+                if ('dept_start' in params && 'dept_start_id' in params) {
+                    $(params.dept_start_id).val($(params.dept_start).val());
                 }
-                if ($(dept_end_s).length > 0 && $(dept_end_t).length > 0) {
-                    $(dept_end_t).val($(dept_end_s).val());
+                if ('dept_end' in params && 'dept_end_id' in params) {
+                    $(params.dept_end_id).val($(params.dept_end).val());
                 }
             }
 
-            if (typeof callback == 'function') {
-                callback();
+            if ('callback' in params) {
+                params.callback();
             }
         }
     });
@@ -169,17 +202,36 @@ function chainSuperDepartment(ws_url, super_id, dept_multi, dept_start_s, dept_e
   lookup child subdepartments and populate field(s). Any
   non-existant subdepartment field selector is ignored
   @param ws_url [string] webservices URL
-  @param super_s [jQuery selector] super department ID
-  @param dept_start [jQuery selector] start of department range
-  @param dept_end [jQuery selector] end of department range
-  @param sub_multi [jQuery selector] multiple <select> for sub departments
-  @param sub_start [jQuery selector] single <select> for sub range start
-  @param sub_end [jQuery selector] single <select> for sub range end
+  @param params [object] with additional named parameters
+    - super_id [jQuery selector] super department ID
+    - dept_start [jQuery selector] start of department range
+    - dept_end [jQuery selector] end of department range
+    - sub_multiple [jQuery selector] multiple <select> for sub departments
+    - sub_start [jQuery selector] single <select> for sub range start
+    - sub_end [jQuery selector] single <select> for sub range end
+    - callback [function] called after chaining
 */
-function chainSubDepartments(ws_url, super_s, dept_start, dept_end, sub_multi, sub_start, sub_end, callback)
+function chainSubDepartments(ws_url, params)
 {
-    var range = [ $(dept_start).val(), $(dept_end).val() ];
-    var sID = $(super_s).val();
+    params = validateSelectorProperties(params, ['super_id', 'dept_start', 'dept_end', 'sub_multiple', 'sub_start', 'sub_end']);
+    if (!('super_id' in params)) {
+        throw "chainSubDepartments: super_id parameter is required";
+    }
+    if (!('dept_start' in params)) {
+        throw "chainSubDepartments: dept_start parameter is required";
+    }
+    if (!('dept_end' in params)) {
+        throw "chainSubDepartments: dept_end parameter is required";
+    }
+    if (!('sub_multiple' in params) && !('sub_start' in params) && !('sub_end' in params)) {
+        throw "chainSubDepartments: sub_multiple, sub_start, or sub_end is required";
+    }
+    if ('callback' in params && typeof params.callback != 'function') {
+        delete params.callback;
+    }
+
+    var range = [ $(params.dept_start).val(), $(params.dept_end).val() ];
+    var sID = $(params.super_id).val();
     var req = {
         jsonrpc: '2.0',
         method: '\\COREPOS\\Fannie\\API\\webservices\\FannieDeptLookup',
@@ -199,34 +251,31 @@ function chainSubDepartments(ws_url, super_s, dept_start, dept_end, sub_multi, s
         contentType: 'application/json',
         success: function(resp) {
             if (resp.result) {
-                if ($(sub_multi).length > 0) {
-                    $(sub_multi).empty();
-                }
-                if ($(sub_start).length > 0) {
-                    $(sub_start).empty();
-                    $(sub_start).append($('<option value="">Select sub department</option>'));
-                }
-                if ($(sub_end).length > 0) {
-                    $(sub_end).empty();
-                    $(sub_end).append($('<option value="">Select sub department</option>'));
-                }
+                ['sub_multiple', 'sub_start', 'sub_end'].forEach(function(p){
+                    if (p in params) {
+                        $(params[p]).empty();
+                        if (p != 'sub_multiple') {
+                            $(params[p]).append($('<option value="">Select sub department</option>'));
+                        }
+                    }
+                });
                 for (var i=0; i<resp.result.length; i++) {
                     var opt = $('<option>').val(resp.result[i]['id'])
                         .html(resp.result[i]['id'] + ' ' + resp.result[i]['name']);
-                    if ($(sub_multi).length > 0) {
-                        $(sub_multi).append(opt.clone().prop('selected', true));
+                    if ('sub_multiple' in params) {
+                        $(params.sub_multiple).append(opt.clone().prop('selected', true));
                     }
-                    if ($(sub_start).length > 0) {
-                        $(sub_start).append(opt.close());
+                    if ('sub_start' in params) {
+                        $(params.sub_start).append(opt.close());
                     }
-                    if ($(sub_end).length > 0) {
-                        $(sub_end).append(opt);
+                    if ('sub_end' in params) {
+                        $(params.sub_end).append(opt);
                     }
                 }
             }
 
-            if (typeof callback == 'function') {
-                callback();
+            if ('callback' in params) {
+                params.callback();
             }
         }
     });
