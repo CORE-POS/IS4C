@@ -339,10 +339,7 @@ function showGraph(i) {
 
         ob_start();
         ?>
-<div class="well">Selecting a Buyer/Dept overrides Department Start/Department End, but not Date Start/End.
-        To run reports for a specific department(s) leave Buyer/Dept or set it to 'blank'
-</div>
-<form method="get" action="HourlyTransReport.php" class="form-horizontal">
+<form method="get" class="form-horizontal">
 <div class="row">
     <div class="col-sm-6">
         <?php echo FormLib::standardDepartmentFields('buyer'); ?>

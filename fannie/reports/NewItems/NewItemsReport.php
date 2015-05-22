@@ -74,12 +74,15 @@ class NewItemsReport extends FannieReportPage
         $args = array();
         $where = ' 1=1 ';
         if ($buyer !== '') {
-            if ($buyer != -1) {
-                $where = ' s.superID=? ';
+            if ($buyer == -2) {
+                $where .= ' AND s.superID != 0 ';
+            } elseif ($buyer != -1) {
+                $where .= ' AND s.superID=? ';
                 $args[] = $buyer;
             }
-        } else {
-            $where = ' t.department BETWEEN ? AND ? ';
+        }
+        if ($buyer != -1) {
+            $where .= ' AND p.department BETWEEN ? AND ? ';
             $args[] = $deptStart;
             $args[] = $deptEnd;
         }
@@ -93,6 +96,8 @@ class NewItemsReport extends FannieReportPage
         // join only needed with specific buyer
         if ($buyer !== '' && $buyer > -1) {
             $query .= 'LEFT JOIN superdepts AS s ON p.department=s.dept_ID ';
+        } elseif ($buyer !== '' && $buyer == -2) {
+            $query .= 'LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID ';
         }
         $query .= "WHERE $where
             GROUP BY p.upc,p.description,p.department, d.dept_name
@@ -120,18 +125,7 @@ class NewItemsReport extends FannieReportPage
 
     public function form_content()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-
-        $depts = new DepartmentsModel($dbc);
-        $d_list = $depts->find('dept_no');
-        $supers = new SuperDeptNamesModel($dbc);
-        $supers->superID(0, '>');
-        $s_list = $supers->find('superID');
-
-        $form = FormLib::dateAndDepartmentForm($d_list, $s_list, true);
-
-        return $form;
+        return FormLib::dateAndDepartmentForm();
     }
 
     public function helpContent()

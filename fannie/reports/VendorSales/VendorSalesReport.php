@@ -69,24 +69,27 @@ class VendorSalesReport extends FannieReportPage
                 LEFT JOIN vendors AS v ON p.default_vendor_id=v.vendorID
                 LEFT JOIN prodExtra AS x ON p.upc=x.upc AND x.distributor <> \'\'
                 ';
-        if ($buyer !== '' && $buyer == -1) {
-            $query .= ' LEFT JOIN MasterSuperDepts AS s ON t.department=s.dept_ID ';
-        } elseif ($buyer !== '' && $buyer >= 0) {
+        if ($buyer !== '' && $buyer > -1) {
             $query .= ' LEFT JOIN superdepts AS s ON t.department=s.dept_ID ';
+        } elseif ($buyer !== '' && $buyer == -2) {
+            $query .= ' LEFT JOIN MasterSuperDepts AS s ON t.department=s.dept_ID ';
         }
         $query .= '
             WHERE t.tdate BETWEEN ? AND ?
                 AND t.trans_type IN (\'I\',\'D\') ';
         $args = array($date1 . ' 00:00:00', $date2 . ' 23:59:59');
-        if ($buyer === '') {
+        if ($buyer !== '') {
+            if ($buyer == -2) {
+                $query .= ' AND s.superID != 0 ';
+            } elseif ($buyer != -1) {
+                $query .= ' AND s.superID=? ';
+                $args[] = $buyer;
+            }
+        }
+        if ($buyer != -1) {
             $query .= ' AND t.department BETWEEN ? AND ? ';
-            $args[] = $dept1;
-            $args[] = $dept2;
-        } elseif ($buyer == -1) {
-            $query .= ' AND s.superID <> 0 ';
-        } elseif ($buyer >= 0) {
-            $query .= ' AND s.superID = ? ';
-            $args[] = $buyer;
+            $args[] = $deptStart;
+            $args[] = $deptEnd;
         }
         $query .= '
             GROUP BY COALESCE(v.vendorName, x.distributor)
@@ -127,12 +130,7 @@ class VendorSalesReport extends FannieReportPage
 
     public function form_content()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-        $depts = new DepartmentsModel($dbc);
-        $supers = new SuperDeptNamesModel($dbc);
-
-        return FormLib::dateAndDepartmentForm($depts->find('dept_no'), $supers->find('superID'), true);
+        return FormLib::dateAndDepartmentForm();
     }
 
     public function helpContent()

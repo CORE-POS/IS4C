@@ -82,12 +82,15 @@ class MarginMovementReport extends FannieReportPage
         $args = array($date1.' 00:00:00', $date2.' 23:59:59');
         $where = ' 1=1 ';
         if ($buyer !== '') {
-            if ($buyer != -1) {
-                $where = ' s.superID=? ';
+            if ($buyer == -2) {
+                $where .= ' AND s.superID != 0 ';
+            } elseif ($buyer != -1) {
+                $where .= ' AND s.superID=? ';
                 $args[] = $buyer;
             }
-        } else {
-            $where = ' d.department BETWEEN ? AND ? ';
+        }
+        if ($buyer != -1) {
+            $where .= ' AND d.department BETWEEN ? AND ? ';
             $args[] = $deptStart;
             $args[] = $deptEnd;
         }
@@ -108,6 +111,8 @@ class MarginMovementReport extends FannieReportPage
         // join only needed with specific buyer
         if ($buyer !== '' && $buyer > -1) {
             $query .= 'LEFT JOIN superdepts AS s ON d.department=s.dept_ID ';
+        } elseif ($buyer !== '' && $buyer == -2) {
+            $query .= 'LEFT JOIN MasterSuperDepts AS s ON d.department=s.dept_ID ';
         }
         $query .= "WHERE tdate BETWEEN ? AND ?
             AND $where
@@ -172,15 +177,6 @@ class MarginMovementReport extends FannieReportPage
 
     public function form_content()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-
-        $depts = new DepartmentsModel($dbc);
-        $d_list = $depts->find('dept_no');
-        $supers = new SuperDeptNamesModel($dbc);
-        $supers->superID(0, '>');
-        $s_list = $supers->find('superID');
-
         $form = FormLib::dateAndDepartmentForm($d_list, $s_list);
 
         /** add one extra field **/

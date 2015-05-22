@@ -65,16 +65,23 @@ class DeptTransactionsReport extends FannieReportPage
         $querySelected = "SELECT YEAR(tdate) AS year, MONTH(tdate) AS month, DAY(tdate) AS day,
             COUNT(DISTINCT trans_num) as trans_count
             FROM $dlog AS d ";
-        if ($buyer !== '') {
+        if ($buyer !== '' && $buyer > -1) {
             $querySelected .= " LEFT JOIN superdepts AS s ON d.department=s.dept_ID ";
+        } elseif ($buyer !== '' && $buyer == -2) {
+            $query .= 'LEFT JOIN MasterSuperDepts AS s ON d.department=s.dept_ID ';
         }
         $querySelected .= " WHERE tdate BETWEEN ? AND ? ";
         $argsSel = $argsAll;
         if ($buyer !== '') {
-            $querySelected .= " AND s.superID=? ";
-            $argsSel[] = $buyer;
-        } else {
-            $querySelected .= " AND department BETWEEN ? AND ?";
+            if ($buyer == -2) {
+                $querySelected .= ' AND s.superID != 0 ';
+            } elseif ($buyer != -1) {
+                $querySelected .= ' AND s.superID=? ';
+                $argsSel[] = $buyer;
+            }
+        }
+        if ($buyer != -1) {
+            $querySelected .= " AND d.department BETWEEN ? AND ?";
             $argsSel[] = $deptStart;
             $argsSel[] = $deptEnd;
         }
@@ -110,18 +117,7 @@ class DeptTransactionsReport extends FannieReportPage
 
     public function form_content()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-
-        $depts = new DepartmentsModel($dbc);
-        $d_list = $depts->find('dept_no');
-        $supers = new SuperDeptNamesModel($dbc);
-        $supers->superID(0, '>');
-        $s_list = $supers->find('superID');
-
-        $form = FormLib::dateAndDepartmentForm($d_list, $s_list);
-
-        return $form;
+        return FormLib::dateAndDepartmentForm();
     }
 
     public function helpContent()
@@ -135,4 +131,3 @@ class DeptTransactionsReport extends FannieReportPage
 
 FannieDispatch::conditionalExec();
 
-?>
