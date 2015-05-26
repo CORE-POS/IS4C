@@ -63,7 +63,8 @@ $cmd = 'mysqldump'
     . ' -P ' . escapeshellarg($port)
     . ' ' . escapeshellarg($FANNIE_OP_DB)
     . ' ' . escapeshellarg($table)
-    . ' > ' . escapeshellarg($tempfile);
+    . ' > ' . escapeshellarg($tempfile)
+    . ' 2> ' . escapeshellarg($tempfile.'.err');
 $cmd_obfusc = 'mysqldump'
     . ' -u ' . escapeshellarg($FANNIE_SERVER_USER)
     . ' -p' . str_repeat('*', 8)
@@ -74,6 +75,10 @@ $cmd_obfusc = 'mysqldump'
     . ' > ' . escapeshellarg($tempfile);
 exec($cmd, $output, $ret);
 if ($ret > 0) {
+    if (file_exists($tempfile . '.err')) {
+        $output .= file_get_contents($tempfile . '.err');
+        unlink($tempfile . '.err');
+    }
     $report = implode($lineBreak, $output);
     if (strlen($report) > 0) {
         $report = "{$lineBreak}$report";
