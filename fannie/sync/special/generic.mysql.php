@@ -63,8 +63,7 @@ $cmd = 'mysqldump'
     . ' -P ' . escapeshellarg($port)
     . ' ' . escapeshellarg($FANNIE_OP_DB)
     . ' ' . escapeshellarg($table)
-    . ' > ' . escapeshellarg($tempfile)
-    . ' 2>&1';
+    . ' > ' . escapeshellarg($tempfile);
 $cmd_obfusc = 'mysqldump'
     . ' -u ' . escapeshellarg($FANNIE_SERVER_USER)
     . ' -p' . str_repeat('*', 8)
