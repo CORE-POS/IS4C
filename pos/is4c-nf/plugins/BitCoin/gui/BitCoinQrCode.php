@@ -22,6 +22,10 @@
 
 *********************************************************************************/
 
+if (!file_exists(dirname(__FILE__) . '/../../../../../vendor/endroid/qrcode/src/Endroid/QrCode')) {
+    return;
+}
+
 include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
 // QR codegen via composer
@@ -41,7 +45,7 @@ if (!class_exists('\\Endroid\\QrCode\\QrCode')) {
     include(dirname(__FILE__) . '/../../../../../vendor/endroid/qrcode/src/Endroid/QrCode/QrCode.php');
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
+if (basename($_SERVER['PHP_SELF']) == basename(__FILE__) && isset($_REQUEST['data'])) {
     header('Content-Type: image/png');
     $data = base64_decode($_REQUEST['data']);
     $qr = new \Endroid\QrCode\QrCode();
