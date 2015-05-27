@@ -22,6 +22,8 @@
 
 *********************************************************************************/
 
+class BitCoinQrCode {}
+
 if (!file_exists(dirname(__FILE__) . '/../../../../../vendor/endroid/qrcode/src/Endroid/QrCode')) {
     return;
 }
