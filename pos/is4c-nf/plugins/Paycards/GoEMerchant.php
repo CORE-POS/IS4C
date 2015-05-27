@@ -742,7 +742,6 @@ class GoEMerchant extends BasicCCModule
                                            <br>\"rp\" to reprint slip</font>");
                 break;    
         }
-        CoreLocal::set("ccCustCopy",0);
 
         return $json;
     }

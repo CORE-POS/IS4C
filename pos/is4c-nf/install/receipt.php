@@ -32,6 +32,14 @@ include('InstallUtilities.php');
     <td><?php echo InstallUtilities::installCheckBoxField('print', 'Enable receipts', 0); ?></td>
 </tr>
 <tr>
+    <td style="width: 30%;"></td>
+    <td><?php echo InstallUtilities::installCheckBoxField('CancelReceipt', 'Print receipt on canceled transaction', 1); ?></td>
+</tr>
+<tr>
+    <td style="width: 30%;"></td>
+    <td><?php echo InstallUtilities::installCheckBoxField('SuspendReceipt', 'Print receipt on suspended transaction', 1); ?></td>
+</tr>
+<tr>
     <td><b>Receipt Type</b>: </td>
     <td>
     <?php

@@ -976,7 +976,6 @@ class MercuryE2E extends BasicCCModule
                 );
                 break;    
         }
-        CoreLocal::set("ccCustCopy",0);
 
         return $json;
     }

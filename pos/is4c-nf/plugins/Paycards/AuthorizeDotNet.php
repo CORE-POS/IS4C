@@ -495,7 +495,6 @@ class AuthorizeDotNet extends BasicCCModule {
             CoreLocal::set("boxMsg","<b>Voided</b><p><font size=-1>[enter] to continue<br>\"rp\" to reprint slip</font>");
             break;    
         }
-        CoreLocal::set("ccCustCopy",0);
 
         return $json;
     }

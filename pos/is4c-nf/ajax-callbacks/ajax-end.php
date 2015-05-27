@@ -53,17 +53,6 @@ if (!preg_match('/^\d+-\d+-\d+$/', $receiptNum)) {
     $receiptNum = ReceiptLib::mostRecentReceipt();
 }
 
-/**
-if ($receiptType == 'full') {
-    TransRecord::addtransDiscount();
-    TransRecord::addTax();
-    $taxes = Database::LineItemTaxes();
-    foreach($taxes as $tax) {
-        TransRecord::addQueued('TAXLINEITEM',$tax['description'],$tax['rate_id'],'',$tax['amount']);
-    }
-}
-*/
-
 $yesSync = JsonLib::array_to_json(array('sync'=>true));
 $noSync = JsonLib::array_to_json(array('sync'=>false));
 $output = $noSync;
@@ -99,10 +88,7 @@ if (strlen($receiptType) > 0) {
         $receiptContent[] = ReceiptLib::printReceipt($receiptType, $receiptNum, false, $doEmail);
     }
 
-    if (CoreLocal::get("ccCustCopy") == 1) {
-        CoreLocal::set("ccCustCopy",0);
-        $receiptContent[] = ReceiptLib::printReceipt($receiptType, $receiptNum);
-    } elseif ($receiptType == "ccSlip" || $receiptType == 'gcSlip') {
+    if ($receiptType == "ccSlip" || $receiptType == 'gcSlip') {
         // don't mess with reprints
     } elseif (CoreLocal::get("autoReprint") == 1) {
         CoreLocal::set("autoReprint",0);
@@ -131,6 +117,16 @@ if (strlen($receiptType) > 0) {
         ReceiptLib::drawerKick();
     }
 
+    /**
+      Disable receipt for cancelled and/or suspended
+      transactions if configured to do so
+    */
+    if ($receiptType == 'cancelled' && CoreLocal::get('CancelReceipt') == 0 && CoreLocal::get('CancelReceipt') !== '') {
+        $receiptContent = array();
+    } elseif ($receiptType == 'suspended' && CoreLocal::get('SuspendReceipt') == 0 && CoreLocal::get('SuspendReceipt') !== '') {
+        $receiptContent = array();
+    }
+
     $EMAIL_OBJ = new EmailPrintHandler();
     foreach($receiptContent as $receipt) {
         if(is_array($receipt)) {
@@ -151,27 +147,6 @@ ob_end_flush();
 
 function uploadAndReset($type) 
 {
-    /** @deprecated 3Jun14
-      Handled by TransRecord::finalizeTransaction()
-    Database::loadglobalvalues();    
-    CoreLocal::set("transno",CoreLocal::get("transno") + 1);
-    Database::setglobalvalue("TransNo", CoreLocal::get("transno"));
-    */
-
-    /** @deprecated 3Jun14
-      Handled by mgrlogin.php
-    if($type == "cancelled") {
-        $db->query("update localtemptrans set trans_status = 'X'");
-    }
-    */
-
-    /** @deprecated 3Jun14
-      Handled by TransRecord::finalizeTransaction()
-    if (Database::rotateTempData()) {
-        Database::clearTempTables();
-    }
-    */
-
     if (CoreLocal::get("testremote")==0) {
         Database::testremote(); 
     }
@@ -188,52 +163,5 @@ function uploadAndReset($type)
     Database::getsubtotals();
 
     return 1;
-}
-
-
-/**
-  @deprecated 25Feb14
-  See Database::clearTempTables()
-
-  Replacement method has proper return value
-  and can be called from other scripts if
-  needed
-*/
-function truncateTempTables() 
-{
-    $connection = Database::tDataConnect();
-    $query1 = "truncate table localtemptrans";
-    $query3 = "truncate table couponApplied";
-
-    $connection->query($query1);
-    $connection->query($query3);
-}
-
-/**
-  @deprecated 25Feb14
-  See Database::rotateTempData()
-
-  Replacement method has proper return value
-  and can be called from other scripts if
-  needed
-*/
-function moveTempData() 
-{
-    $connection = Database::tDataConnect();
-
-    $connection->query("update localtemptrans set trans_type = 'T' where trans_subtype IN ('CP','IC')");
-    $connection->query("update localtemptrans set upc = 'DISCOUNT', description = upc, department = 0, trans_type='S' where trans_status = 'S'");
-
-    $connection->query("insert into localtrans select * from localtemptrans");
-    // localtranstoday converted from view to table
-    if (!$connection->isView('localtranstoday')) {
-        $connection->query("insert into localtranstoday select * from localtemptrans");
-    }
-    // legacy table when localtranstoday is still a view
-    if ($connection->table_exists('localtrans_today')) {
-        $connection->query("insert into localtrans_today select * from localtemptrans");
-    }
-    $cols = Database::localMatchingColumns($connection, 'dtransactions', 'localtemptrans');
-    $connection->query("insert into dtransactions ($cols) select $cols from localtemptrans");
 }
 

@@ -515,7 +515,6 @@ class FirstData extends BasicCCModule {
             CoreLocal::set("boxMsg","<b>Voided</b><p><font size=-1>[enter] to continue<br>\"rp\" to reprint slip</font>");
             break;    
         }
-        CoreLocal::set("ccCustCopy",0);
         if (CoreLocal::get("paycard_amount") > CoreLocal::get("CCSigLimit") || CoreLocal::get("paycard_amount") < 0)
             $json['receipt'] = "ccSlip";
         return $json;
