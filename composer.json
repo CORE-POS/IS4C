@@ -43,7 +43,8 @@
         "phpmailer/phpmailer": "~5.2",
         "psr/log": "~1.0",
         "sabre/vobject": "~3.4",
-        "videlalvaro/php-amqplib": "~2.5"
+        "videlalvaro/php-amqplib": "~2.5",
+        "endroid/qrcode": "~1.5"
     },
     "require-dev": {
         "phpunit/phpunit": "4.5.*",
