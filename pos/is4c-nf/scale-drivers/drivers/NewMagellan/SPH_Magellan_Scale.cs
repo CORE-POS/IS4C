@@ -47,10 +47,15 @@ using System.Threading;
 
 namespace SPH {
 
-public class SPH_Magellan_Scale : SerialPortHandler {
-    private bool got_weight;
+public class SPH_Magellan_Scale : SerialPortHandler 
+{
+    private string last_message;
 
-    public SPH_Magellan_Scale(string p) : base(p){
+    enum WeighState { Zero, NonZero, None };
+    private WeighState scale_state;
+
+    public SPH_Magellan_Scale(string p) : base(p)
+    {
         sp = new SerialPort();
         sp.PortName = this.port;
         sp.BaudRate = 9600;
@@ -61,36 +66,35 @@ public class SPH_Magellan_Scale : SerialPortHandler {
         sp.Handshake = Handshake.None;
         sp.ReadTimeout = 500;
         
-        got_weight = false;
+        last_message = null;
+        scale_state = WeighState.None;
 
         sp.Open();
     }
 
-    override public void HandleMsg(string msg){
-        if (msg == "errorBeep"){
+    override public void HandleMsg(string msg)
+    {
+        if (msg == "errorBeep") {
             Beeps(3);
-        }
-        else if (msg == "beepTwice"){
+        } else if (msg == "beepTwice") {
             Beeps(2);
-        }
-        else if (msg == "goodBeep"){
+        } else if (msg == "goodBeep") {
             Beeps(1);
-        }
-        else if (msg == "twoPairs"){
+        } else if (msg == "twoPairs") {
             Thread.Sleep(300);
             Beeps(2);
             Thread.Sleep(300);
             Beeps(2);
-        }
-        else if (msg == "rePoll"){
-            got_weight = false;
+        } else if (msg == "rePoll") {
+            scale_state = WeighState.None;
             sp.Write("S14\r");
         }
     }
 
-    private void Beeps(int num){
+    private void Beeps(int num)
+    {
         int count = 0;
-        while(count < num){
+        while(count < num) {
             sp.Write("S334\r");
             Thread.Sleep(150);
             count++;
@@ -100,19 +104,23 @@ public class SPH_Magellan_Scale : SerialPortHandler {
     override public void Read()
     {
         string buffer = "";
-        if (this.verbose_mode > 0)
+        if (this.verbose_mode > 0) {
             System.Console.WriteLine("Reading serial data");
+        }
         sp.Write("S14\r");
         while (SPH_Running) {
             try {
                 int b = sp.ReadByte();
                 if (b == 13) {
-                    if (this.verbose_mode > 0)
+                    if (this.verbose_mode > 0) {
                         System.Console.WriteLine("RECV FROM SCALE: "+buffer);
+                    }
                     buffer = this.ParseData(buffer);
-                    if (buffer != null){
-                        if (this.verbose_mode > 0)
+                    last_message = buffer;
+                    if (buffer != null) {
+                        if (this.verbose_mode > 0) {
                             System.Console.WriteLine("PASS TO POS: "+buffer);
+                        }
                         this.PushOutput(buffer);
                     }
                     buffer = "";
@@ -126,96 +134,109 @@ public class SPH_Magellan_Scale : SerialPortHandler {
         }
     }
 
-    private void PushOutput(string s){
-        /* trying to maintain thread safety between
-         * two apps in different languages....
-         *
-         * 1. Create a new file for each bit of output
-         * 2. Give each file a unique name (i.e., don't
-         *    overwrite earlier output)
-         * 3. Generate files in a temporary directory, then
-         *    move the finished files to the output directory
-         *    (i.e., so they aren't read too early)
-         */
-         /*
-        int ticks = Environment.TickCount;
-        char sep = System.IO.Path.DirectorySeparatorChar;
-        while(File.Exists(MAGELLAN_OUTPUT_DIR+sep+ticks))
-            ticks++;
-
-        TextWriter sw = new StreamWriter(MAGELLAN_OUTPUT_DIR+sep+"tmp"+sep+ticks);
-        sw = TextWriter.Synchronized(sw);
-        sw.WriteLine(s);
-        sw.Close();
-        File.Move(MAGELLAN_OUTPUT_DIR+sep+"tmp"+sep+ticks,
-              MAGELLAN_OUTPUT_DIR+sep+ticks);
-              */
+    private void PushOutput(string s)
+    {
         parent.MsgSend(s);
     }
 
-    private string ParseData(string s){
-        if (s.Substring(0,3) == "S11")
-            sp.Write("S14\r");
-        else if(s.Substring(0,4) == "S141"){
-            sp.Write("S14\r");
-            if(got_weight){
-                got_weight = false;
+    private string ParseData(string s)
+    {
+        if (s.Substring(0,2) == "S0") { // scanner message
+            if (s.Substring(0,4) == "S08A" || s.Substring(0,4) == "S08F") { // UPC-A or EAN-13
+                return s.Substring(4);
+            } else if (s.Substring(0,4) == "S08E") { // UPC-E
+                return this.ExpandUPCE(s.Substring(4));
+            } else if (s.Substring(0,4) == "S08R") { // GTIN / GS1
+                return "GS1~"+s.Substring(3);
+            } else if (s.Substring(0,5) == "S08B1") { // Code39
+                return s.Substring(5);
+            } else if (s.Substring(0,5) == "S08B2") { // Interleaved 2 of 5
+                return s.Substring(5);
+            } else if (s.Substring(0,5) == "S08B3") { // Code128
+                return s.Substring(5);
+            } else {
+                return s; // catch all
+            }
+        } else if (s.Substring(0,2) == "S1") { // scale message
+            /**
+              Rate limiter. Two consecutive, identical messages
+              are probably scale state results. Take a short
+              pause to avoid flooding the scale with constant
+              state requests.
+            */
+            if (s == last_message) {
+                Thread.Sleep(200);
+            }
+
+            /**
+              The scale supports two primary commands:
+              S11 is "get stable weight". This tells the scale to return
+              the next stable non-zero weight.
+              S14 is "get state". This tells the scale to return its
+              current state.
+              The "scale_state" variable tracks whether the scale is
+              currently at a stable zero weight, stable non-zero weight,
+              or neither (i.e., None).
+
+              Future: maybe stop using S11 entirely? Send a hard reset (S10)
+              in some situations?
+            */
+            if (s.Substring(0,3) == "S11") { // stable weight following weight request
+                sp.Write("S14\r");
+                scale_state = WeighState.NonZero;
+                return s;
+            } else if (s.Substring(0,4) == "S140") { // scale not ready
+                scale_state = WeighState.None;
+                sp.Write("S14\r");
+                return "S140";
+            } else if (s.Substring(0,4) == "S141") { // weight not stable
+                scale_state = WeighState.None;
+                sp.Write("S14\r");
                 return "S141";
+            } else if (s.Substring(0,4) == "S142") { // weight over max
+                scale_state = WeighState.None;
+                sp.Write("S14\r");
+                return "S142";
+            } else if (s.Substring(0,4) == "S143") { // stable zero weight
+                sp.Write("S14\r");
+                if (scale_state != WeighState.Zero) {
+                    scale_state = WeighState.Zero;
+                    return "S110000";
+                }
+            } else if (s.Substring(0,4) == "S144") { // stable non-zero weight
+                if (scale_state != WeighState.NonZero) {
+                    sp.Write("S11\r");
+                } else {
+                    sp.Write("S14\r");
+                }
+            } else if (s.Substring(0,4) == "S145") { // scale under zero weight
+                scale_state = WeighState.None;
+                sp.Write("S14\r");
+                return "S145";
+            } else {
+                return s; // catch all
             }
+        } else { // not scanner or scale message
+            return s; // catch all
         }
-        else if(s.Substring(0,4) == "S142"){
-            sp.Write("S11\r");
-            return "S142";
-        }
-        else if(s.Substring(0,4) == "S143"){
-            sp.Write("S11\r");
-            got_weight = false;
-            return "S110000";
-        }
-        else if(s.Substring(0,4) == "S144"){
-            sp.Write("S14\r");
-            if (!got_weight){
-                got_weight = true;
-                return "S11"+s.Substring(4);
-            }
-        }
-        else if(s.Substring(0,4) == "S145"){
-            sp.Write("S11\r");
-            return "S145";
-        }
-        else if (s.Substring(0,3) == "S14"){
-            sp.Write("S11\r");
-            return s;
-        }
-        else if (s.Substring(0,4) == "S08A" ||
-             s.Substring(0,4) == "S08F")
-            return s.Substring(4);
-        else if (s.Substring(0,4) == "S08E")
-            return this.ExpandUPCE(s.Substring(4));
-        else if (s.Substring(0,4) == "S08R")
-            return "GS1~"+s.Substring(3);
-        else if (s.Substring(0,5) == "S08B1")
-            return s.Substring(5);
-        else if (s.Substring(0,5) == "S08B3")
-            return s.Substring(5);
-        else
-            return s;
 
         return null;
     }
 
-    private string ExpandUPCE(string upc){
+    private string ExpandUPCE(string upc)
+    {
         string lead = upc.Substring(0,upc.Length-1);
         string tail = upc.Substring(upc.Length-1);
 
-        if (tail == "0" || tail == "1" || tail == "2")
+        if (tail == "0" || tail == "1" || tail == "2") {
             return lead.Substring(0,3)+tail+"0000"+lead.Substring(3);
-        else if (tail == "3")
+        } else if (tail == "3") {
             return lead.Substring(0,4)+"00000"+lead.Substring(4);
-        else if (tail == "4")
+        } else if (tail == "4") {
             return lead.Substring(0,5)+"00000"+lead.Substring(5);
-        else
+        } else {
             return lead+"0000"+tail;
+        }
     }
 }
 
