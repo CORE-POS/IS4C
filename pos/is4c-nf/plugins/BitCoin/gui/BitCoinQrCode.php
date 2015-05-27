@@ -31,16 +31,16 @@ if (!file_exists(dirname(__FILE__) . '/../../../../../vendor/endroid/qrcode/src/
 include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
 // QR codegen via composer
-if (!class_exists('\\Endroid\\QrCode\\QrCode\\Exceptions\\DataDoesntExistsException')) {
+if (!class_exists('\\Endroid\\QrCode\\Exceptions\\DataDoesntExistsException')) {
     include(dirname(__FILE__) . '/../../../../../vendor/endroid/qrcode/src/Endroid/QrCode/Exceptions/DataDoesntExistsException.php');
 }
-if (!class_exists('\\Endroid\\QrCode\\QrCode\\Exceptions\\ImageFunctionUnknownException')) {
+if (!class_exists('\\Endroid\\QrCode\\Exceptions\\ImageFunctionUnknownException')) {
     include(dirname(__FILE__) . '/../../../../../vendor/endroid/qrcode/src/Endroid/QrCode/Exceptions/ImageFunctionUnknownException.php');
 }
-if (!class_exists('\\Endroid\\QrCode\\QrCode\\Exceptions\\ImageSizeTooLargeException')) {
+if (!class_exists('\\Endroid\\QrCode\\Exceptions\\ImageSizeTooLargeException')) {
     include(dirname(__FILE__) . '/../../../../../vendor/endroid/qrcode/src/Endroid/QrCode/Exceptions/ImageSizeTooLargeException.php');
 }
-if (!class_exists('\\Endroid\\QrCode\\QrCode\\Exceptions\\VersionTooLargeException')) {
+if (!class_exists('\\Endroid\\QrCode\\Exceptions\\VersionTooLargeException')) {
     include(dirname(__FILE__) . '/../../../../../vendor/endroid/qrcode/src/Endroid/QrCode/Exceptions/VersionTooLargeException.php');
 }
 if (!class_exists('\\Endroid\\QrCode\\QrCode')) {
