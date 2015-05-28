@@ -114,8 +114,13 @@ class PaycardProcessPage extends BasicPage {
         echo "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n";
         echo "<link rel=\"stylesheet\" type=\"text/css\"
             href=\"{$my_url}css/pos.css\">";
-        echo "<script type=\"text/javascript\"
-            src=\"{$my_url}js/jquery.js\"></script>";
+        if (MiscLib::win32()) {
+            echo "<script type=\"text/javascript\"
+                src=\"{$my_url}js/jquery-1.8.3.min.js\"></script>";
+        } else {
+            echo "<script type=\"text/javascript\"
+                src=\"{$my_url}js/jquery.js\"></script>";
+        }
         $this->paycard_jscript_functions();
         $this->head_content();
         echo "</head>";

@@ -497,9 +497,17 @@ class InstallUtilities extends LibraryClass
                 $fp = fopen($path, 'r');
                 $first_line = trim(fgets($fp));
                 if (substr($first_line, -4) == '.csv') {
-                    $path = realpath($first_line);
+                    $path = realpath(substr($first_line, 3));
+                    if (!file_exists($path)) {
+                        if (!$quiet) {
+                            echo 'File not found: ' . $path . '<br />';
+                            echo ob_end_clean();
+                        }
+                        return false;
+                    }
                 }
                 fclose($fp);
+                $path = str_replace('\\', '/', $path);
             }
             $query = "LOAD DATA $LOCAL INFILE
                     '$path'
