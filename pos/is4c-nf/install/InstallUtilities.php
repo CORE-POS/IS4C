@@ -489,6 +489,18 @@ class InstallUtilities extends LibraryClass
                 $LOCAL = '';
             }
             $path = realpath(dirname(__FILE__) . "/data/$table.csv");
+            /**
+              Handle symlinks on windows by checking if the first line
+              of the file contains the name of another CSV file.
+            */
+            if (MiscLib::win32()) {
+                $fp = fopen($path, 'r');
+                $first_line = trim(fgets($fp));
+                if (substr($first_line, -4) == '.csv') {
+                    $path = realpath($first_line);
+                }
+                fclose($fp);
+            }
             $query = "LOAD DATA $LOCAL INFILE
                     '$path'
                     INTO TABLE $table
