@@ -49,8 +49,13 @@ class NoInputPage extends BasicPage {
             echo "<link rel=\"stylesheet\" type=\"text/css\"
                 href=\"{$my_url}/store.css\">";
         }
-        echo "<script type=\"text/javascript\"
-            src=\"{$my_url}js/jquery.js\"></script>";
+        if (MiscLib::win32()) {
+            echo "<script type=\"text/javascript\"
+                src=\"{$my_url}/js/jquery-1.8.3.min.js\"></script>";
+        } else {
+            echo "<script type=\"text/javascript\"
+                src=\"{$my_url}/js/jquery.js\"></script>";
+        }
         $this->head_content();
         echo "</head>";
         echo '<body class="'.$this->body_class.'">';
