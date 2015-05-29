@@ -159,8 +159,8 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 
     function get_id_view()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         $order = new PurchaseOrderModel($dbc);
         $order->orderID($this->id);
@@ -253,10 +253,17 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
             <th>Est. Cost</th><th>&nbsp;</th><th>Received</th>
             <th>Rec. Qty</th><th>Rec. Cost</th></tr></thead><tbody>';
         foreach($model->find() as $obj){
-            $ret .= sprintf('<tr><td>%s</td><td>%s</td><td>%s</td>
+            $css = '';
+            if ($obj->receivedQty() == 0 && $obj->quantity() != 0) {
+                $css = 'class="danger"';
+            } elseif ($obj->receivedQty() < $obj->quantity()) {
+                $css = 'class="warning"';
+            }
+            $ret .= sprintf('<tr %s><td>%s</td><td>%s</td><td>%s</td>
                     <td>%s</td><td>%s</td><td>%d</td><td>%.2f</td>
                     <td>&nbsp;</td><td>%s</td><td>%d</td><td>%.2f</td>
                     </tr>',
+                    $css,
                     $obj->sku(),
                     $obj->brand(),
                     $obj->description(),
