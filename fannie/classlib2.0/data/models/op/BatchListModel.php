@@ -45,19 +45,8 @@ class BatchListModel extends BasicModel
     public function doc()
     {
         return '
-Table: batchList
-
-Columns:
-    listID int (auto increment)
-    upc varchar(13)
-    batchID int
-    salePrice dbms currency
-    active bit
-    pricemethod int
-    quantity int
-
 Depends on:
-    batches (table)
+* batches (table)
 
 Use:
 This table has a list of items in a batch.

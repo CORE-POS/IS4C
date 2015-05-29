@@ -46,21 +46,8 @@ class BatchBarcodesModel extends BasicModel
     public function doc()
     {
         return '
-Table: batchBarcodes
-
-Columns:
-    upc bigint or varchar, dbms dependent
-    description varchar(30)
-    normal_price dbms currency
-    brand varchar(50)
-    sku varchar(14)
-    size varchar(50)
-    units varchar(15)
-    vendor varchar(50)
-    batchID int
-
 Depends on:
-    batches (table)
+* batches (table)
 
 Use:
 This table has information for generating shelf tags

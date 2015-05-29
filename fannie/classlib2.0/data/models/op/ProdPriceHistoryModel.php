@@ -42,18 +42,8 @@ class ProdPriceHistoryModel extends BasicModel
     public function doc()
     {
         return '
-Table: prodPriceHistory
-
-Columns:
-    prodPriceHistory int
-    upc varchar(13)
-    modified datetime
-    price decimal(10,2)
-    uid int
-    prodUpdateID int
-
 Depends on:
-    prodUpdate (table)
+* prodUpdate (table)
 
 Use:
 This table holds a compressed version of prodUpdate.

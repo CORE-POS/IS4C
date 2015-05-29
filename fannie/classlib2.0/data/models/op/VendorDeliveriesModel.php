@@ -48,25 +48,6 @@ class VendorDeliveriesModel extends BasicModel
     public function doc()
     {
         return '
-Table: vendorDeliveries
-
-Columns:
-    vendorID int
-    frequency varchar
-    regular int
-    nextDelivery datetime
-    nextNextDelivery datetime
-    sunday int
-    monday int
-    tuesday int
-    wednesday int
-    thursday int
-    friday int
-    saturday int
-
-Depends on:
-    none
-
 Use:
 Schedule of vendor deliveries
         ';

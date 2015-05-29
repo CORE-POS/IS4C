@@ -123,14 +123,10 @@ class CcReceiptViewModel extends ViewModel
     public function doc()
     {
         return '
-View: ccReceiptView
-
-Columns:
-
 Depends on:
-    efsnetRequest
-    efsnetResponse
-    efsnetRequestMod
+* efsnetRequest
+* efsnetResponse
+* efsnetRequestMod
 
 Use:
 View of transaction timing to generate

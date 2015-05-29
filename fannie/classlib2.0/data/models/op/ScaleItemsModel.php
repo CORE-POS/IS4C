@@ -51,25 +51,6 @@ class ScaleItemsModel extends BasicModel
     public function doc()
     {
         return '
-Table: scaleItems
-
-Columns:
-    plu varchar
-    price float
-    itemdesc varchar
-    exceptionprice float
-    weight tinyint
-    bycount tinyint
-    tare float
-    shelflife int
-    text text
-    reportingClass varchar
-    label int
-    graphics int
-
-Depends on:
-    none
-
 Use:
 This holds info for deli-scale items. It\'s
 formatted to match what the Hobart

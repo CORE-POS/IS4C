@@ -38,14 +38,8 @@ class UpcLikeModel extends BasicModel
     public function doc()
     {
         return '
-Table: upcLike
-
-Columns:
-    upc varchar or int, dbms dependent
-    likeCode int
-
 Depends on:
-    likeCodes (table)
+* likeCodes (table)
 
 Use:
 Lists the items contained in each like code

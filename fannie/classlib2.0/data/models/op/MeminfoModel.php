@@ -72,25 +72,8 @@ class MeminfoModel extends BasicModel
     public function doc()
     {
         return '
-Table: meminfo
-
-Columns:
-    card_no int
-    last_name varchar
-    first_name varchar
-    othlast_name varchar
-    othfirst_name varchar
-    street varchar
-    city varchar
-    state varchar
-    zip varchar 10
-    phone varchar
-    email_1 varchar
-    email_2 varchar
-    ads_OK tinyint
-
 Depends on:
-    custdata (table)
+* custdata (table)
 
 Use:
 This table has contact information for a member,

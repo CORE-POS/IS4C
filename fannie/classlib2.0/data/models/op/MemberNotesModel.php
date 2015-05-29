@@ -42,16 +42,8 @@ class MemberNotesModel extends BasicModel
     public function doc()
     {
         return '
-Table: memberNotes
-
-Columns:
-    cardno int
-    note text
-    stamp datetime
-    username varchar(50)
-
 Depends on:
-    custdata (table)
+* custdata (table)
 
 Use:
 This table just holds generic blobs of text

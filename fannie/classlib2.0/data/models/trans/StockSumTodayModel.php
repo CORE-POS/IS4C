@@ -65,15 +65,8 @@ class StockSumTodayModel extends ViewModel
     public function doc()
     {
         return '
-View: stockSumToday
-
-Columns:
-    card_no int
-    totPayments (calculated)
-    startdate datetime
-
 Depends on:
-    dlog (view)
+* dlog (view)
 
 Use:
 This view lists equity activity

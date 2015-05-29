@@ -48,19 +48,8 @@ class CustomerAccountSuspensionsModel extends BasicModel
     public function doc()
     {
         return '
-Table: CustomerAccountSuspensions
-
-Columns:
-    username varchar
-    postdate datetime
-    post text
-    cardno int
-    reasoncode int
-
-Depends on:
-    none
-
 Use:
+Proposed replacement for suspensions. Not in use yet.
         ';
     }
 

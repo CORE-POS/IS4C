@@ -44,16 +44,6 @@ class ReportDataCacheModel extends BasicModel
     public function doc()
     {
         return '
-Table: reportDataCache
-
-Columns:
-    hash_key varchar
-    report_data text
-    expires datetime
-
-Depends on:
-    none
-
 Use:
 Caches reporting datasets
         ';

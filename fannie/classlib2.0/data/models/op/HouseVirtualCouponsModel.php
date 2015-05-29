@@ -41,18 +41,9 @@ class HouseVirtualCouponsModel extends BasicModel
     public function doc()
     {
         return '
-Table: houseVirtualCoupons
-
-Columns:
-    card_no int
-    coupID int
-    description varchar
-    start_date datetime 
-    end_date datetime   
-
 Depends on:
-    houseCoupons
-    houseCouponItems
+* houseCoupons
+* houseCouponItems
 
 Use:
 Assign house coupons to members so

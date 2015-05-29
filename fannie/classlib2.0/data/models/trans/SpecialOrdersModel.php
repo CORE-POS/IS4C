@@ -51,24 +51,6 @@ class SpecialOrdersModel extends BasicModel
     public function doc()
     {
         return '
-Table: SpecialOrders
-
-Columns:
-    specialOrderID int (auto increment)
-    statusFlag int
-    subStatus int
-    notes text
-    noteSuperID int
-    firstName varchar
-    lastName varchar
-    street varchar
-    city varchar
-    state varchar
-    zip varchar
-    phone varchar
-    altPhone varchar
-    email varchar
-
 This table just exists as an accumulator
 so that IDs in PendingSpecialOrder and
 CompletedSpecialOrder never conflict

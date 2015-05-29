@@ -47,22 +47,8 @@ class SuspensionsModel extends BasicModel
     public function doc()
     {
         return '
-Table: suspensions
-
-Columns:
-    cardno int
-    type char
-    memtype1 int
-    memtype2 varchar
-    reason text
-    suspDate datetime
-    mailflag int
-    discount int
-    chargelimit dbms currency
-    reasoncode int
-
 Depends on:
-    custdata (table)
+* custdata (table)
 
 Use:
 suspensions are a way of putting a membership on

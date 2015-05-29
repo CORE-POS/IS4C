@@ -55,18 +55,11 @@ class UnpaidArBalancesModel extends ViewModel
     public function doc()
     {
         return '
-View: unpaid_ar_balances
-
-Columns:
-    card_no int
-    old_balance (calculated)
-    recent_payments (calculated)
-
 Depends on:
-    ar_history (table)
+* ar_history (table)
 
 Depended on by:
-  unpaid_ar_today (view)
+* unpaid_ar_today (view)
 
 Use:
 This view lists A/R balances older than

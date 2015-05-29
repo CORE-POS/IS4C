@@ -39,16 +39,6 @@ class CustomReportsModel extends BasicModel
     public function doc()
     {
         return '
-Table: customReports
-
-Columns:
-    reportID int
-    reportName varchar
-    reportQuery text
-
-Depends on:
-    none
-
 Use:
 Save queries for later use
 as reports

@@ -38,14 +38,8 @@ class SuperDeptEmailsModel extends BasicModel
     public function doc()
     {
         return '
-Table: superDeptEmails
-
-Columns:
-    superID int
-    email_address varchar
-
 Depends on:
-    superdepts (table)
+* superdepts (table)
 
 Use:
 Associating a person or people with

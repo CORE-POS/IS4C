@@ -50,14 +50,10 @@ class SuperMinIdViewModel extends ViewModel
     public function doc()
     {
         return '
-View: superMinIdView
-
-Columns:
-    superID int
-    dept_ID
+**View**
 
 Depends on:
-    superdepts
+* superdepts
 
 Use:
 This view exists solely because MySQL won\'t let

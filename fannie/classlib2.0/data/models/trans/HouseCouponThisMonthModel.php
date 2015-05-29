@@ -53,16 +53,9 @@ class HouseCouponThisMonthModel extends ViewModel
     public function doc()
     {
         return '
-View: houseCouponThisMonth
-
-Columns:
-    card_no  int
-    upc  varchar
-    quantity float
-
 Depends on:
-    dlog (view)
-    dlog_90_view (view)
+* dlog (view)
+* dlog_90_view (view)
 
 Use:
 List of custom coupons redeemed, per member

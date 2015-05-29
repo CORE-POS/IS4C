@@ -40,15 +40,8 @@ class BatchCutPasteModel extends BasicModel
     public function doc()
     {
         return '
-Table: batchCutPaste
-
-Columns:
-    batchID int
-    upc varchar(13)
-    uid int
-
 Depends on:
-    batchList (table)
+* batchList (table)
 
 Use:
 This table is a clipboard for batches. uid is the logged in user, 

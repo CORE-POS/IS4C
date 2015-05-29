@@ -45,21 +45,8 @@ class BatchesModel extends BasicModel
     public function doc()
     {
         return '
-Table: batches
-
-Columns:
-    batchID int
-    startDate datetime
-    endDate datetime
-    batchName varchar
-    batchType int
-    discountType int
-    priority int
-    owner varchar
-    transLimit int
-
 Depends on:
-    batchType
+* batchType
 
 Use:
 This table contains basic information

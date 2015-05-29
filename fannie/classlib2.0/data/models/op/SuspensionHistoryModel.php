@@ -42,17 +42,8 @@ class SuspensionHistoryModel extends BasicModel
     public function doc()
     {
         return '
-Table: suspension_history
-
-Columns:
-    username varchar
-    postdate datetime
-    post text
-    cardno int
-    reasoncode int
-
 Depends on:
-    suspensions (table)
+* suspensions (table)
 
 Use:
 This table just keeps a record of member accounts

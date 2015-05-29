@@ -51,13 +51,8 @@ class TransArchiveModel extends DTransactionsModel
     public function doc()
     {
         return '
-Table: transarchive
-
-Columns:
-    identical to dtransactions
-
 Depends on:
-    dtransactions (table)
+* dtransactions (table)
 
 Use:
 This is a look-up table. Under WFC\'s day

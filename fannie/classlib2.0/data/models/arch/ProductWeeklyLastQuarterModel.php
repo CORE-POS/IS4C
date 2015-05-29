@@ -44,20 +44,6 @@ class ProductWeeklyLastQuarterModel extends BasicModel
     public function doc()
     {
         return '
-Table: productWeeklyLastQuarter
-
-Columns:
-    productWeeklyLastQuarterID int
-    upc varchar
-    quantity double
-    total double
-    percentageStoreSales
-    percentageSuperDeptSales
-    percentageDeptSales
-
-Depends on:
-    none
-
 Use:
 Per-item sales numbers for a given week. As always,
 quantity is the number of items sold and total is

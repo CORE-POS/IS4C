@@ -39,15 +39,8 @@ class SubDeptsModel extends BasicModel
     public function doc()
     {
         return '
-Table: subdepts
-
-Columns:
-    subdept_no smallint
-    subdept_name varchar
-    dept_ID smallint
-
 Depends on:
-    departments (table)
+* departments (table)
 
 Use:
 A department may contain multiple subdepartments.

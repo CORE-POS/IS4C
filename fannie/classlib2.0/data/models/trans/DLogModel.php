@@ -78,36 +78,8 @@ class DLogModel extends DTransactionsModel
     public function doc()
     {
         return '
-View: dlog
-
-Columns:
-    tdate datetime
-    register_no int
-    emp_no int
-    trans_no int
-    upc varchar
-    trans_type varchar
-    trans_subtype varchar
-    trans_status varchar
-    department int
-    quantity double
-    unitPrice dbms currency
-    total dbms currency
-    tax int
-    foodstamp int
-    ItemQtty double
-    memType int
-    staff int
-    numflag int
-    charflag int
-    card_no int
-    trans_id int
-    pos_row_id int
-    store_row_id int
-    trans_num varchar
-
 Depends on:
-    dtransactions (table)
+* dtransactions (table)
 
 Use:
 This view presents simplified access to

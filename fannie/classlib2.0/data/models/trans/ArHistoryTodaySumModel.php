@@ -68,16 +68,8 @@ class ArHistoryTodaySumModel extends ViewModel
     public function doc()
     {
         return '
-View: ar_history_today_sum
-
-Columns:
-    card_no int
-    charges dbms currency
-    payments dbms currency
-    balance dbms currency
-
 Depends on:
-    dlog (view)
+* dlog (view)
 
 Use:
 Total charges and payments for the current day

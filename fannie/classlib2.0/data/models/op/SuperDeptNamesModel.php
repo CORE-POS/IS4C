@@ -38,14 +38,8 @@ class SuperDeptNamesModel extends BasicModel
     public function doc()
     {
         return '
-Table: superDeptNames
-
-Columns:
-    superID int
-    super_name varchar
-
 Depends on:
-    departments (table)
+* departments (table)
 
 Use:
 Super departments contain departments. For the

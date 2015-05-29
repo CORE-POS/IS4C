@@ -38,15 +38,9 @@ class ServiceScaleItemMapModel extends BasicModel
     public function doc()
     {
         return '
-Table: ServiceScaleItemMap
-
-Columns:
-    serviceScaleID int
-    upc varchar
-
 Depends on:
-    ServiceScales
-    scaleItems
+* ServiceScales
+* scaleItems
 
 Use:
 Join table to record which items are

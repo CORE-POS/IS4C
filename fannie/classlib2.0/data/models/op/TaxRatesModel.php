@@ -39,16 +39,6 @@ class TaxRatesModel extends BasicModel
     public function doc()
     {
         return '
-Table: taxrates
-
-Columns:
-    id int
-    rate float
-    description varchar
-
-Depends on:
-    none
-
 Use:
 List of applicable tax rates. By convention,
 id 0 should be used for untaxed goods. Only

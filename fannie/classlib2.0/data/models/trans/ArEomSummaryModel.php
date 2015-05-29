@@ -48,22 +48,6 @@ class ArEomSummaryModel extends BasicModel
     public function doc()
     {
         return '
-Table: AR_EOM_Summary
-
-Columns:
-    card_no int
-    memName varchar
-    priorBalance money
-    threeMonthCharges money
-    threeMonthPayments money
-    threeMonthBalance money
-    twoMonthCharges money
-    twoMonthPayments money
-    twoMonthBalance money
-    lastMonthCharges money
-    lastMonthPayments money
-    lastMonthBalance money
-
 Use:
 List of customer start/end AR balances
 over past few months

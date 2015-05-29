@@ -74,36 +74,6 @@ class CustdataModel extends BasicModel
     public function doc()
     {
         return '
-Table: custdata
-
-Columns:
-    CardNo int
-    personNum tinyint
-    LastName varchar
-    FirstName varchar
-    CashBack double
-    Balance double
-    Discount smallint
-    MemDiscountLimit double
-    ChargeLimit double
-    ChargeOk tinyint
-    WriteChecks tinyint
-    StoreCoupons tinyint
-    Type varchar
-    memType
-    staff
-    SSI 
-    Purchases
-    NumberOfChecks
-    memCoupons
-    blueLine
-    Shown
-    LastChange
-    id int (auto increment)
-
-Depends on:
-    memtype
-
 Use:
 This is one of two "primary" tables dealing with membership
 (the other is meminfo). Of the two, only custdata is present

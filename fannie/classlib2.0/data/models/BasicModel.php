@@ -1485,6 +1485,9 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
 
             $table = $obj->getName();
             $doc = '### ' . $table . "\n";
+            if (is_a($obj, 'ViewModel')) {
+                $doc .= '**View**' . "\n\n";
+            }
             $doc .= $obj->columnsDoc();
             $doc .= $obj->doc();
 

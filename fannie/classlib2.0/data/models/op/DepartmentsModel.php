@@ -84,26 +84,6 @@ class DepartmentsModel extends BasicModel
     public function doc()
     {
         return '
-Table: departments
-
-Columns:
-    dept_no smallint
-    dept_name varchar
-    dept_tax tinyint
-    dept_fs tinyint
-    dept_limit dbms currency
-    dept_minimum dbms currency
-    dept_discount tinyint
-    dept_see_id tinyint
-    modified datetime
-    modifiedby int
-    margin double
-    salesCode int
-    memberOnly smallint
-
-Depends on:
-    none
-
 Use:
 Departments are the primary level of granularity
 for products. Each product may belong to one department,

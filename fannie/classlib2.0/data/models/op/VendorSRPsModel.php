@@ -39,16 +39,9 @@ class VendorSRPsModel extends BasicModel
     public function doc()
     {
         return '
-Table: vendorSRPs
-
-Columns:
-    vendorID int
-    upc varchar
-    srp decimal(10,2)
-
 Depends on:
-    vendorItems (table)
-    vendorDepartments (table)
+* vendorItems (table)
+* vendorDepartments (table)
 
 Use:
 This table contains SRPs for items

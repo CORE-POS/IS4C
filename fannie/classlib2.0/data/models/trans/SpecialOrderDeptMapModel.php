@@ -38,12 +38,6 @@ class SpecialOrderDeptMapModel extends BasicModel
     public function doc()
     {
         return '
-Table: SpecialOrderDeptMap
-
-Columns:
-    dept_ID int
-    map_to int
-
 Optional table for mapping product departments
 to alternate departments. Essentially, put
 entries into historic "special order" departments

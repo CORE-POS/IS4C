@@ -39,15 +39,6 @@ class OriginCountryModel extends BasicModel
     public function doc()
     {
         return '
-Table: originCountry
-
-Columns:
-    countryID int
-    name varchar
-
-Depends on:
-    origins
-
 Use:
 This table lists countries
         ';

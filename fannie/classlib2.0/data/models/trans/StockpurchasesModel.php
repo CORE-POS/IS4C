@@ -42,17 +42,8 @@ class StockpurchasesModel extends BasicModel
     public function doc()
     {
         return '
-Table: stockpurchases
-
-Columns:
-    card_no int
-    stockPurchase dbms currency
-    tdate datetime
-    trans_num varchar
-    dept int
-
 Depends on:
-    dlog (table)
+* dlog (table)
 
 Use:
 This table equity related transaction info.

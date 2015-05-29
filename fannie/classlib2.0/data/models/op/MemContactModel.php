@@ -38,15 +38,6 @@ class MemContactModel extends BasicModel
     public function doc()
     {
         return '
-Table: memContact
-
-Columns:
-    card_no int
-    pref    int
-
-Depends on:
-    custdata (table)
-
 Use:
 Contact preferences
     0 => no contact

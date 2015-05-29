@@ -45,21 +45,6 @@ class TendersModel extends BasicModel
     public function doc()
     {
         return '
-Table: tenders
-
-Columns:
-    TenderID smallint
-    TenderCode varchar
-    TenderName varchar
-    TenderType varchar
-    ChangeMessage varchar
-    MinAmount double
-    MaxAmount double
-    MaxRefund double
-
-Depends on:
-    none
-
 Use:
 List of tenders IT CORE accepts. TenderCode
 should be unique; it\'s what cashiers type in

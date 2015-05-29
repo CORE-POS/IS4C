@@ -38,15 +38,6 @@ class DisableCouponModel extends BasicModel
     public function doc()
     {
         return '
-Table: disableCoupon
-
-Columns:
-    upc varchar
-    reason text
-
-Depends on:
-    none
-
 Use:
 Maintain a list of manufacturer coupons
 the store does not accept. Most common

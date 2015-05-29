@@ -55,15 +55,6 @@ class VendorsModel extends BasicModel
     public function doc()
     {
         return '
-Table: vendors
-
-Columns:
-    vendorID int
-    vendorName varchar
-
-Depends on:
-    none
-
 Use:
 List of known vendors. Pretty simple.
         ';

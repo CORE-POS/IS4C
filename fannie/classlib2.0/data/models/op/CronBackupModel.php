@@ -38,15 +38,6 @@ class CronBackupModel extends BasicModel
     public function doc()
     {
         return '
-Table: cronBackup
-
-Columns:
-    modified datetime
-    file_contents text
-
-Depends on:
-    none
-
 Use:
 Store a copy of webserver\'s crontab
 in case update goes awry

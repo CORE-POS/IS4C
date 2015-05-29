@@ -63,18 +63,8 @@ class TenderTapeGenericModel extends ViewModel
     public function doc()
     {
         return '
-View: TenderTapeGeneric
-
-Columns:
-    tdate datetime
-    emp_no int
-    register_no int
-    trans_no int
-    trans_subtype (calculated)
-    total (calculated)
-
 Depends on:
-    dlog (view)
+* dlog (view)
 
 Use:
 This view lists all a cashier\'s 

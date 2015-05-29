@@ -41,17 +41,8 @@ class SpecialOrderHistoryModel extends BasicModel
     public function doc()
     {
         return '
-Table: SpecialOrderHistory
-
-Columns:
-    specialOrderHistoryID int
-    order_id int
-    entry_type varchar
-    entry_date datetime
-    entry_value text
-
 Depends on:
-    PendingSpecialOrder
+* PendingSpecialOrder
 
 Use:
 This table is for a work-in-progress special

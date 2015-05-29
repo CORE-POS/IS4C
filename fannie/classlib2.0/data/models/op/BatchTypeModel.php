@@ -39,16 +39,6 @@ class BatchTypeModel extends BasicModel
     public function doc()
     {
         return '
-Table: batchType
-
-Columns:
-    batchTypeID int
-    typeDesc varchar
-    discType int
-
-Depends on:
-    none
-
 Use:
 This table contains types of batches that
 can be created. You really only need one

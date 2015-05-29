@@ -39,16 +39,9 @@ class ProductOriginsMapModel extends BasicModel
     public function doc()
     {
         return '
-Table: ProductOriginsMap
-
-Columns:
-    upc int
-    originID int
-    active tinyint
-
 Depends on:
-    origins
-    products
+* origins
+* products
 
 Use:
 Maps products to multiple origins. A product

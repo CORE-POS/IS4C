@@ -40,16 +40,6 @@ class CustAvailablePrefsModel extends BasicModel
     public function doc()
     {
         return '
-Table: custAvailablePrefs
-
-Columns:
-    pref_key varchar
-    pref_default_value varchar
-    pref_description
-
-Depends on:
-    none
-
 Use:
 List of available customer preferences
         ';

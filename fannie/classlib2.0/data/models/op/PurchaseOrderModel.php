@@ -46,21 +46,6 @@ class PurchaseOrderModel extends BasicModel
     public function doc()
     {
         return '
-Table: PurchaseOrder
-
-Columns:
-    orderID int
-    vendorID int
-    creationDate datetime
-    placed tinyint
-    placedDate datetime
-    userID int
-    vendorOrderID varchar
-    vendorInvoiceID varchar
-
-Depends on:
-    none
-
 Use:
 Stores general an order from a vendor.
 One or more records in purchaseOrderItems

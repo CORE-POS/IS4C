@@ -78,32 +78,8 @@ class DLog90ViewModel extends DTransactionsModel
     public function doc()
     {
         return '
-View: dlog_90_view
-
-Columns:
-    tdate datetime
-    register_no int
-    emp_no int
-    trans_no int
-    upc varchar
-    trans_type varchar
-    trans_subtype varchar
-    trans_status varchar
-    department int
-    quantity double
-    unitPrice dbms currency
-    total dbms currency
-    tax int
-    foodstamp int
-    ItemQtty double
-    card_no int
-    trans_id int
-    pos_row_id int
-    store_row_id int
-    trans_num varchar
-
 Depends on:
-    transarchive (table)
+* transarchive (table)
 
 Use:
 This view applies the same restrictions

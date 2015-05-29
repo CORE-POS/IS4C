@@ -41,19 +41,6 @@ class VendorContactModel extends BasicModel
     public function doc()
     {
         return '
-Table: vendorContact
-
-Columns:
-    vendorID int
-    phone varchar
-    fax varchar
-    email varchar
-    website varchar
-    notes text
-
-Depends on:
-    none
-
 Use:
 Information about how to contact a vendor
         ';

@@ -43,19 +43,8 @@ class ProdPhysicalLocationModel extends BasicModel
     public function doc()
     {
         return '
-Table: prodPhysicalLocation
-
-Columns:
-    upc varchar
-    store_id smallint
-    section smallint
-    subsection smallint
-    shelf_set smallint
-    shelf smallint
-    location int
-
 Depends on:
-    products (table)
+* products (table)
 
 Use:
 Storing physical location of products within a store.

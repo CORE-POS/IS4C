@@ -49,25 +49,9 @@ class PurchaseOrderItemsModel extends BasicModel
     public function doc()
     {
         return '
-Table: PurchaseOrderItems
-
-Columns:
-    orderID int
-    sku varchar
-    quantity int
-    unitCost money
-    caseSize int
-    receivedDate datetime
-    receivedQty int
-    receivedTotalCost money
-    unitSize varchar
-    brand varchar
-    description varchar
-    internalUPC varchar
-
 Depends on:
-    PurchaseOrder (table)
-    vendorItems (table) 
+* PurchaseOrder (table)
+* vendorItems (table) 
 
 Use:
 Contains items to be purchased as part

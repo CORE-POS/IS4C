@@ -68,19 +68,10 @@ class ArLiveBalanceModel extends SpanningViewModel
     public function doc()
     {
         return '
-View: ar_live_balance
-
-Columns:
-    card_no int
-    totcharges (calculated)
-    totpayments (calculated)
-    balance (calculated)
-    mark (calculated)
-
 Depends on:
-    core_op.custdata (table)
-    ar_history_sum (table)
-    ar_history_today_sum (view)
+* core_op.custdata (table)
+* ar_history_sum (table)
+* ar_history_today_sum (view)
 
 Use:
 This view lists real-time store charge

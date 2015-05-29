@@ -40,17 +40,6 @@ class VoidTransHistoryModel extends BasicModel
     public function doc()
     {
         return '
-Table: voidTransHistory
-
-Columns:
-    tdate datetime
-    description varchar
-    trans_num varchar
-    total money
-
-Depends on:
-    none
-
 Use:
 Store transaction numbers for voided transactions
 (they\'re identified by comment lines which are

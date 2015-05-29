@@ -40,15 +40,8 @@ class EquityHistorySumModel extends BasicModel
     public function doc()
     {
         return '
-Table: equity_history_sum
-
-Columns:
-    card_no int
-    payments dbms currency
-    startdate datetime
-
 Depends on:
-    stockpurchases (table)
+* stockpurchases (table)
 
 Use:
   Summary of all equity transactions

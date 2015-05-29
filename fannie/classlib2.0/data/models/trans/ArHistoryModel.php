@@ -42,22 +42,13 @@ class ArHistoryModel extends BasicModel
     public function doc()
     {
         return '
-Table: ar_history
-
-Columns:
-    card_no int
-    charges dbms currency
-    payments dbms currency
-    tdate datetime
-    trans_num varchar
-
 Depends on:
-    transarchive (table), i.e. dlog_15 (table)
-    was: dlog (view)
+* transarchive (table), i.e. dlog_15 (table)
+* was: dlog (view)
 
 Depended on by:
-  table ar_history_backup and its descendents
-  view ar_history_sum and its descendents
+* table ar_history_backup and its descendents
+* view ar_history_sum and its descendents
 
 Use:
   This table stores charges and payments on

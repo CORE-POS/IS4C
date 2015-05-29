@@ -73,18 +73,6 @@ class ParametersModel extends BasicModel
     public function doc()
     {
         return '
-Table: parameters
-
-Columns:
-    store_id int
-    lane_id int
-    param_key varchar
-    param_value varchar
-    is_array int
-
-Depends on:
-    none
-
 Use:
 Partial replacement for ini.php.
 This differs from the lane_config table.

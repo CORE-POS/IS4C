@@ -41,18 +41,6 @@ class BatchMergeTableModel extends BasicModel
     public function doc()
     {
         return '
-Table: batchMergeTable
-
-Columns:
-    startDate datetime
-    endDate datetime
-    upc varchar or int, dbms dependent
-    description varchar
-    batchID int
-
-Depends on:
-    none
-
 Use:
 This is a speedup table for reports. It\'s
 populated (daily) by a scheduled task.

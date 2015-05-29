@@ -40,16 +40,8 @@ class ArHistorySumModel extends BasicModel
     public function doc()
     {
         return '
-Table: ar_history_sum
-
-Columns:
-    card_no int
-    charges dbms currency
-    payments dbms currency
-    balance dbms currency
-
 Depends on:
-    ar_history (table)
+* ar_history (table)
 
 Use:
   Summary of all charges and payments per customer

@@ -44,13 +44,8 @@ class ProductUserModel extends BasicModel
     public function doc()
     {
         return '
-Table: productUser
-
-Columns:
-    upc int or varchar, dbms dependent
-
 Depends on:
-    products (table)
+* products (table)
 
 Use:
 Longer product descriptions for use in

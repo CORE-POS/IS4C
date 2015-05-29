@@ -58,13 +58,8 @@ class SuspendedTodayModel extends SuspendedModel
     public function doc()
     {
         return '
-View: suspendedtoday
-
-Columns:
-    identical to dtransactions
-
 Depends on:
-    suspended (table)
+* suspended (table)
 
 Use:
 This view omits all entries in suspended

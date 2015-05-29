@@ -45,22 +45,8 @@ class ProdExtraModel extends BasicModel
     public function doc()
     {
         return '
-Table: prodExtra
-
-Columns:
-    upc int or varchar, dbms dependent
-    distributor varchar
-    manufacturer varchar
-    cost dbms currency
-    margin dbms currency
-    variable_pricing tinyint
-    location varchar
-    case_quantity varchar
-    case_cost dbms currency
-    case_info varchar
-
 Depends on:
-    products (table)
+* products (table)
 
 Use:
 Don\'t add to it.

@@ -54,29 +54,8 @@ class EfsnetResponseModel extends BasicModel
     public function doc()
     {
         return '
-Table: efsnetResponse
-
-Columns:
-    date int
-    cashierNo int
-    laneNo int
-    transNo int
-    transID int
-    datetime datetime
-    refNum varchar
-    seconds float
-    commErr int
-    httpCode int
-    validResponse smallint
-    xResponseCode varchar
-    xResultCode varchar
-    xResultMessage varchar
-    xTransactionID varchar
-    xApprovalNumber varchar
-    efsnetRequestID int
-
 Depends on:
-    efsnetRequest (table)
+* efsnetRequest (table)
 
 Use:
 This table logs information that is

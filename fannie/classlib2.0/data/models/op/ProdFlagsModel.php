@@ -38,14 +38,8 @@ class ProdFlagsModel extends BasicModel
     public function doc()
     {
         return '
-Table: prodFlags
-
-Columns:
-    bit_number int
-    description varchar
-
 Depends on:
-    products (table)
+* products (table)
 
 Use:
 Properties for the product table\'s

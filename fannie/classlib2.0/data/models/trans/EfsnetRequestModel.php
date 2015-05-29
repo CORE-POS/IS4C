@@ -56,32 +56,6 @@ class EfsnetRequestModel extends BasicModel
     public function doc()
     {
         return '
-Table: efsnetRequest
-
-Columns:
-    date int
-    cashierNo int
-    laneNo int
-    transNo int
-    transID int
-    datetime datetime
-    refNum varchar
-    live tinyint
-    mode varchar
-    amount double
-    PAN varchar
-    issuer varchar
-    name varchar
-    manual tinyint
-    sentPAN tinyint
-    sentExp tinyint
-    sentTr1 tinyint
-    sentTr2 tinyint 
-    efsnetRequestID int
-
-Depends on:
-    none
-
 Use:
 This table logs information that is
 sent to a credit-card payment gateway.

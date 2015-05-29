@@ -42,16 +42,8 @@ class ServiceScalesModel extends BasicModel
     public function doc()
     {
         return '
-Table: ServiceScales
-
-Columns:
-    serviceScaleID int
-    description varchar
-
-Depends on:
-    none
-
 Use:
+List service scales and network info.
         ';
     }
 

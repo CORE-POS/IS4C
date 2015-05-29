@@ -46,23 +46,6 @@ class CashPerformDayModel extends BasicModel
     public function doc()
     {
         return '
-Table: CashPerformDay
-
-Columns:
-    proc_date datetime
-    emp_no int
-    trans_num char
-    startTime datetime
-    endTime datetime
-    transInterval int
-    items int
-    rings int
-    cancels int
-    card_no int
-
-Depends on:
-    none
-
 Use:
 Stores cashier performance metrics to
 speed up reporting. 

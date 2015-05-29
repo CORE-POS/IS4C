@@ -47,24 +47,6 @@ class ShelftagsModel extends BasicModel
     public function doc()
     {
         return '
-Table: shelftags
-
-Columns:
-    id int
-    upc int or varchar, dbms dependent
-    description varchar
-    normal_price dbms currency
-    brand varchar
-    sku varchar
-    size varchar
-    units int
-    vendor varchar
-    pricePerUnit varchar
-    count int 
-
-Depends on:
-    none
-
 Use:
 Data for generating shelf tag PDFs. id is used 
 to segment sets into different PDF documents.

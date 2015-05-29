@@ -32,21 +32,12 @@ class ArHistoryBackupModel extends ArHistoryModel
     public function doc()
     {
         return '
-Table: ar_history_backup
-
-Columns:
-    card_no int
-    charges dbms currency
-    payments dbms currency
-    tdate datetime
-    trans_num varchar
-
 Depends on:
-    dlog (view)
-    ar_history (table)
+* dlog (view)
+* ar_history (table)
 
 Depended on by:
-Table AR_EOM_Summary
+* Table AR_EOM_Summary
 
 Use:
 Stores an extra copy of ar_history

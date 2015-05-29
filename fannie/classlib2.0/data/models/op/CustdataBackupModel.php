@@ -33,13 +33,6 @@ class CustdataBackupModel extends CustdataModel
     public function doc()
     {
         return '
-Table: custdataBackup
-
-Columns:
-    same as custdata
-
-Depends on:
-
 Use:
 Stores an older snapshot of custdata
 Easier to pull small bits of info from

@@ -41,18 +41,9 @@ class EfsnetTokensModel extends BasicModel
     public function doc()
     {
         return '
-Table: efsnetTokens
-
-Columns:
-    expireDay datetime
-    refNum varchar
-    token varchar
-    processData varchar
-    acqRefData
-
 Depends on:
-    efsnetRequest (table)
-    efsnetResponse (table)
+* efsnetRequest (table)
+* efsnetResponse (table)
 
 Use:
 This table logs tokens used for modifying

@@ -47,23 +47,6 @@ class StoresModel extends BasicModel
     public function doc()
     {
         return '
-Table: Stores
-
-Columns:
-    storeID int
-    description varchar
-    dbHost VARCHAR(50)
-    dbDriver VARCHAR(15)
-    dbUser VARCHAR(25)
-    dbPassword VARCHAR(25)
-    transDB VARCHAR(20)
-    opDB VARCHAR(20)
-    push int
-    pull int
-
-Depends on:
-    none
-
 Use:
 List of known stores. By convention
 storeID zero should NOT be used; it represents

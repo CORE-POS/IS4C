@@ -39,17 +39,10 @@ class VendorSKUtoPLUModel extends BasicModel
     public function doc()
     {
         return '
-Table: vendorSKUtoPLU
-
-Columns:
-    vendorID int
-    sku varchar
-    upc varchar
-
 Depends on:
-    vendors (table)
-    vendorItems (table)
-    products (table)
+* vendors (table)
+* vendorItems (table)
+* products (table)
 
 Use:
 Table mapping vendor SKUs to 

@@ -46,16 +46,6 @@ class MemDatesModel extends BasicModel
     public function doc()
     {
         return '
-Table: memDates
-
-Columns:
-    card_no int
-    start_date datetime
-    end_date datetime
-
-Depends on:
-    custdata (table)
-
 Use:
 Start and end dates for a membership.
 Both date fields optional.

@@ -38,15 +38,6 @@ class OriginCustomRegionModel extends BasicModel
     public function doc()
     {
         return '
-Table: originCustomRegion
-
-Columns:
-    customID int
-    name varchar
-
-Depends on:
-    origins
-
 Use:
 This table lists custom defined
 regions (counties, neighborhoods,

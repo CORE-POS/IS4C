@@ -67,17 +67,10 @@ class EquityLiveBalanceModel extends SpanningViewModel
     public function doc()
     {
         return '
-View: equity_live_balance
-
-Columns:
-    memnum int
-    payments (calculated)
-    startdate datetime
-
 Depends on:
-    core_op.meminfo (table)
-    equit_history_sum (table)
-    stockSum_today (view)
+* core_op.meminfo (table)
+* equity_history_sum (table)
+* stockSum_today (view)
 
 Use:
 This view lists real-time equity

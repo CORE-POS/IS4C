@@ -49,23 +49,9 @@ class VendorItemsModel extends BasicModel
     public function doc()
     {
         return '
-Table: vendorItems
-
-Columns:
-    upc varchar
-    sku varchar
-    brand varchar
-    description varchar
-    size varchar
-    units int
-    cost dbms currency
-    saleCost dbms currency
-    vendorDept int
-    vendorID int
-
 Depends on:
-    vendors (table)
-    vendorDepartments (table)
+* vendors (table)
+* vendorDepartments (table)
 
 Use:
 This table has items from vendors. Cost

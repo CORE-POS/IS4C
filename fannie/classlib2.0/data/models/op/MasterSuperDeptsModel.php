@@ -51,16 +51,7 @@ class MasterSuperDeptsModel extends ViewModel
     public function doc()
     {
         return '
-View: MasterSuperDepts
-
-Columns:
-    superID int
-    super_name var_char
-    dept_ID int
-
-Depends on:
-    SuperMinIdView (view)
-    superDeptNames (table)
+**View**        
 
 Use:
 A department may belong to more than one superdepartment, but

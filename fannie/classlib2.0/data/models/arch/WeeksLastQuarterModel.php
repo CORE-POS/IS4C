@@ -39,16 +39,6 @@ class WeeksLastQuarterModel extends BasicModel
     public function doc()
     {
         return '
-Table: weeksLastQuarter
-
-Columns:
-    weekLastQuarterID int
-    weekStart datetime
-    weekEnd datetime
-
-Depends on:
-    none
-
 Use:
 Keep track of weeks in the last quarter.
 This imposes several conventions:

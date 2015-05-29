@@ -70,18 +70,9 @@ class ArHistoryTodayModel extends ViewModel
     public function doc()
     {
         return '
-View: ar_history_today
-
-Columns:
-    card_no int
-    Charges dbms currency
-    Payments dbms currency
-    tdate datetime
-    trans_num varchar
-
 Depends on:
-    dlog (view)
-    AR departments in Fannie config.
+* dlog (view)
+* AR departments in Fannie config.
 
 Use:
   In-store charge account activity summary for

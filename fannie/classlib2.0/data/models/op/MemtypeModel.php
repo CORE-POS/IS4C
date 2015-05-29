@@ -43,19 +43,6 @@ class MemtypeModel extends BasicModel
     public function doc()
     {
         return '
-Table: memtype
-
-Columns:
-    memtype tinyint
-    memDesc varchar
-    custdataType varchar
-    discount int
-    staff int
-    ssi int
-
-Depends on:
-    none
-
 Use:
 Housekeeping. If you want to sort people in
 custdata into more categories than just

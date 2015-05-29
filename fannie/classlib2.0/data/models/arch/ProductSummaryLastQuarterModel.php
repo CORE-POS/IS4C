@@ -45,22 +45,9 @@ class ProductSummaryLastQuarterModel extends BasicModel
     public function doc()
     {
         return '
-Table: productSummaryLastQuarter
-
-Columns:
-    productSummaryLastQuarterID int
-    upc varchar
-    qtyThisWeek
-    totalThisWeek
-    qtyLastQuarter
-    totalLastQuarter
-    percentageStoreSales
-    percentageSuperDeptSales
-    percentageDeptSales
-
 Depends on:
-    productWeeklyLastQuarter
-    weeksLastQuarter
+* productWeeklyLastQuarter
+* weeksLastQuarter
 
 Use:
 Provides per-item sales for the previous quarter.

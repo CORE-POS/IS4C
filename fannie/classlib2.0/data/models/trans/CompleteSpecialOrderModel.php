@@ -32,14 +32,8 @@ class CompleteSpecialOrderModel extends PendingSpecialOrderModel
     public function doc()
     {
         return '
-Table: CompleteSpecialOrder
-
-Columns:
-    order_id int
-    dtransactions columns
-
 Depends on:
-    PendingSpecialOrder
+* PendingSpecialOrder
 
 Use:
 This table is for a work-in-progress special

@@ -32,13 +32,8 @@ class ProductBackupModel extends ProductsModel
     public function doc()
     {
         return '
-Table: productBackup
-
-Columns:
-    same as products
-
 Depends on:
-    products (table)
+* products (table)
 
 Use:
 Stores an older snapshot of products

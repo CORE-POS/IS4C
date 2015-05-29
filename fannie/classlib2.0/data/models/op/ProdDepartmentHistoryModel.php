@@ -41,18 +41,8 @@ class ProdDepartmentHistoryModel extends BasicModel
     public function doc()
     {
         return '
-Table: prodDepartmentHistory
-
-Columns:
-    prodDepartmentHistoryID int
-    upc varchar(13)
-    modified datetime
-    dept_ID int
-    uid int
-    prodUpdateID int
-
 Depends on:
-    prodUpdate (table)
+* prodUpdate (table)
 
 Use:
 This table holds a compressed version of prodUpdate.

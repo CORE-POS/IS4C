@@ -57,29 +57,8 @@ class ProdUpdateModel extends BasicModel
     public function doc()
     {
         return '
-Table: prodUpdate
-
-Columns:
-    prodUpdateID int
-    updateType varchar
-    upc int or varchar, dbms dependent
-    description varchar
-    price dbms currency
-    salePrice dbms currency
-    cost dbms currency
-    dept int
-    tax bit
-    fs bit
-    scale bit
-    likeCode int
-    modified datetime
-    user int
-    forceQty bit
-    noDisc bit
-    inUse bit
-
 Depends on:
-    products (table)
+* products (table)
 
 Use:
 In theory, every time a product is change in fannie,

@@ -38,15 +38,6 @@ class MemContactPrefsModel extends BasicModel
     public function doc()
     {
         return '
-Table: memContactPrefs
-
-Columns:
-    pref_id int
-    pref_description varchar
-
-Depends on:
-    none
-
 Use:
 List of available member contact preferences
 Describes values in memContact.pref

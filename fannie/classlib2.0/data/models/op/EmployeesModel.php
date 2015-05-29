@@ -44,23 +44,6 @@ class EmployeesModel extends BasicModel
     public function doc()
     {
         return '
-Table: employees
-
-Columns:
-    emp_no int  
-    CashierPassword varchar
-    AdminPassword varchar
-    FirstName varchar
-    LastName varchar
-    JobTitle varchar
-    EmpActive int
-    frontendsecurity int
-    backendsecurity int
-    birthdate datetime
-
-Depends on:
-    none
-
 Use:
 Table of cashiers. emp_no identifies
 a cashier uniquely. CashierPassword and

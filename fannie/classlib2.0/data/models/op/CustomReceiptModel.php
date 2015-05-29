@@ -39,16 +39,6 @@ class CustomReceiptModel extends BasicModel
     public function doc()
     {
         return '
-Table: customReceipt
-
-Columns:
-    text varchar
-    seq int
-    type varchar
-
-Depends on:
-    none
-
 Use:
 This table contains strings of text
 that originally lived in the lane\'s 
@@ -58,13 +48,13 @@ the name. Submit a patch if you want
 a saner name.
 
 Current valid types are:
-receiptHeader
-receiptFooter
-ckEndorse
-welcomeMsg
-farewellMsg
-trainingMsg
-chargeSlip
+* receiptHeader
+* receiptFooter
+* ckEndorse
+* welcomeMsg
+* farewellMsg
+* trainingMsg
+* chargeSlip
         ';
     }
 

@@ -41,16 +41,9 @@ class CustPreferencesModel extends BasicModel
     public function doc()
     {
         return '
-Table: custPreferences
-
-Columns:
-    card_no int
-    pref_key varchar
-    pref_value varchar
-
 Depends on:
-    custdata (table)
-    custAvailablePrefs (table)
+* custdata (table)
+* custAvailablePrefs (table)
 
 Use:
 Store customer-specific preferences

@@ -39,18 +39,14 @@ class AutoCouponsModel extends BasicModel
     public function doc()
     {
         return '
-Table: autoCoupons
-
-Columns:
-    coupID int
-    description varchar
-
 Depends on:
-    houseCoupons
-    houseCouponItems
+* houseCoupons
+* houseCouponItems
 
 Use:
 Apply coupons to transactions automatically
+**Deprecated. The houseCoupons table has the same
+functionality built in**.
         ';
     }
 

@@ -43,19 +43,10 @@ class OriginsModel extends BasicModel
     public function doc()
     {
         return '
-Table: origins
-
-Columns:
-    originID int
-    countryID int
-    stateProvID int
-    customID int
-    local int
-
 Depends on:
-    originCountry
-    originStateProv
-    originCustomRegion
+* originCountry
+* originStateProv
+* originCustomRegion
 
 Use:
 This table defines locations.

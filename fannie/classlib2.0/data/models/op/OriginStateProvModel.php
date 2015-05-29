@@ -39,15 +39,6 @@ class OriginStateProvModel extends BasicModel
     public function doc()
     {
         return '
-Table: originStateProv
-
-Columns:
-    stateProvID int
-    name varchar
-
-Depends on:
-    origins
-
 Use:
 This table lists major sub-national
 divisions (e.g., US States, Canadian

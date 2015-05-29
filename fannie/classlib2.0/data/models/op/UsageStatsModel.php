@@ -42,19 +42,6 @@ class UsageStatsModel extends BasicModel
     public function doc()
     {
         return '
-Table: usageStats
-
-Columns:
-    usageID int
-    tdate datetime
-    pageName varchar
-    referrer varchar
-    userHash varchar
-    ipHash varchar
-
-Depends on:
-    none
-
 Use:
 Internal usage metrics. Tracks visits
         ';

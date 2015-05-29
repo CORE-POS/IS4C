@@ -183,55 +183,6 @@ class ProductsModel extends BasicModel
     public function doc()
     {
         return '
-Table: products
-
-Columns:
-    upc int or varchar, dbms dependent
-    description varchar
-    brand varchar
-    formatted_name varchar
-    normal_price double
-    pricemethod smallint
-    groupprice double
-    quantity smallint
-    special_price double
-    specialpricemethod smallint
-    specialgroupprice double
-    specialquantity smallint
-    special_limit tinyint
-    start_date datetime
-    end_date datetime
-    department smallint
-    size varchar
-    tax smallint
-    foodstamp tinyint
-    scale tinyint
-    scaleprice tinyint
-    mixmatchcode varchar
-    modified datetime
-    advertised tinyint
-    tareweight double
-    discount smallint
-    discounttype tinyint
-    line_item_discountable tinyint
-    unitofmeasure varchar
-    wicable tinyint
-    qttyEnforced tinyint
-    idEnforced tinyint
-    cost double
-    inUse tinyint
-    numflag int
-    subdept smallint
-    deposit double
-    local tinyint
-    store_id smallint
-    default_vendor_id int
-    current_origin_id
-    id int auto_increment
-
-Depends on:
-    none
-
 Use:
 This table lists items in the system.
 

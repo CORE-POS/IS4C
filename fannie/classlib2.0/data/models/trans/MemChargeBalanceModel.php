@@ -60,17 +60,9 @@ class MemChargeBalanceModel extends SpanningViewModel
     public function doc()
     {
         return '
-View: memChargeBalance
-
-Columns:
-    CardNo int
-    availBal (calculated) 
-    balance (calculated)
-    mark (calculated)
-
 Depends on:
-    core_op.custdata (table)
-    ar_live_balance (view of t.dtransactions -> .v.dlog)
+* core_op.custdata (table)
+* ar_live_balance (view of t.dtransactions -> .v.dlog)
 
 Use:
 This view lists real-time store charge

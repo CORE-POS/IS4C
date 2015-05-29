@@ -49,13 +49,8 @@ class SuspendedModel extends DTransactionsModel
     public function doc()
     {
         return '
-Table: suspended
-
-Columns:
-    identical to dtransactions
-
 Depends on:
-    dtransactions (table)
+* dtransactions (table)
 
 Use:
 This table exists so that transactions that

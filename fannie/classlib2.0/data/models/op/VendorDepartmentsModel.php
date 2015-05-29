@@ -41,18 +41,8 @@ class VendorDepartmentsModel extends BasicModel
     public function doc()
     {
         return '
-Table: vendorDepartments
-
-Columns:
-    vendorID int
-    deptID int
-    name varchar
-    margin float
-    testing float
-    posDeptID int
-
 Depends on:
-    vendors (table)
+* vendors (table)
 
 Use:
 This table contains a vendors product categorization.

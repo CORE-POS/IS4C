@@ -44,18 +44,9 @@ class PurchaseOrderSummaryModel extends BasicModel
     public function doc()
     {
         return '
-Table: PurchaseOrderSummary
-
-Columns:
-    vendorID INT
-    sku VARCHAR
-    totalReceived INT
-    casesReceived INT
-    oldest DATETIME
-    newest DATETIME
-
 Depends on:
-    PurchaseOrder, PurchaseOrderItems
+* PurchaseOrder
+* PurchaseOrderItems
 
 Use:
 Stores total quantities ordered for recent

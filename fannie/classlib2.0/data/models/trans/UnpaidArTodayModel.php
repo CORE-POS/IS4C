@@ -57,21 +57,13 @@ class UnpaidArTodayModel extends ViewModel
     public function doc()
     {
         return '
-View: unpaid_ar_today
-
-Columns:
-    card_no int
-    old_balance (calculated)
-    recent_payments (calculated)
-    mark (calculated)
-
 Depends on:
-    ar_history (table)
-    unpaid_ar_balances (view of t.ar_history)
-    ar_history_today_sum (view of t.dtransactions via v.dlog)
+* ar_history (table)
+* unpaid_ar_balances (view of t.ar_history)
+* ar_history_today_sum (view of t.dtransactions via v.dlog)
 
 Depended on by:
-  cron/LanePush/UpdateUnpaidAR.php
+* cron/LanePush/UpdateUnpaidAR.php
    to update each lane opdata.unpaid_ar_today.recent_payments
 
 Use:

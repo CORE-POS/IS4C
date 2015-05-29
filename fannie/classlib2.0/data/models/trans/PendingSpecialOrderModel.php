@@ -72,15 +72,6 @@ class PendingSpecialOrderModel extends BasicModel
     public function doc()
     {
         return '
-Table: PendingSpecialOrder
-
-Columns:
-    order_id int
-    dtransactions columns
-
-Depends on:
-    none
-
 Use:
 This table is for a work-in-progress special
 order tracking system. Conceptually, it will

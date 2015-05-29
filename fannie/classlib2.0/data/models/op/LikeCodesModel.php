@@ -38,15 +38,6 @@ class LikeCodesModel extends BasicModel
     public function doc()
     {
         return '
-Table: likeCodes
-
-Columns:
-    likeCode int
-    likeCodeDesc varchar
-
-Depends on:
-    upcLike (table)
-
 Use:
 Like Codes group sets of items that will always
 have the same price. It\'s mostly used for produce,

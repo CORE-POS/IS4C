@@ -39,14 +39,8 @@ class ReasoncodesModel extends BasicModel
     public function doc()
     {
         return '
-Table: reasoncodes
-
-Columns:
-    textStr varchar
-    mask int
-
 Depends on:
-    suspensions
+* suspensions
 
 Use:
 Reason code work in conjunction with suspended

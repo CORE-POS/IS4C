@@ -39,16 +39,6 @@ class HouseCouponItemsModel extends BasicModel
     public function doc()
     {
         return '
-Table: houseCouponItems
-
-Columns:
-    coupID int
-    upc varchar
-    type varchar
-
-Depends on:
-    houseCoupons
-
 Use:
 WFC runs custom barcoded coupons with
 upc prefix 499999. See houseCoupons for
