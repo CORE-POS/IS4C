@@ -110,10 +110,10 @@ the price. There is variance here by implementation,
 but generally pricemethod 1 or 2 will yield the
 most obvious grouped pricing. Example: buy one, get
 the second 50% off
-	normal_price => 1.00
-	pricemethod => 1 (or maybe 2)
-	groupprice => 1.50
-	quantity => 2
+    normal_price => 1.00
+    pricemethod => 1 (or maybe 2)
+    groupprice => 1.50
+    quantity => 2
 If discounttype is greater than zero, the special*
 columns get used instead but otherwise behavior
 should be similar.
@@ -154,9 +154,9 @@ percentage discounts on a whole transactions. Value 0
 means exclude from discounts.
 
 discounttype indicates if an item is on sale
-	0 => not on sale
-	1 => on sale for everyone
-	2 => on sale for members
+    0 => not on sale
+    1 => on sale for everyone
+    2 => on sale for members
 Values greater than 2 may be used, but results will
 vary based on whose code you\'re running
 

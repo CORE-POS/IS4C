@@ -93,40 +93,40 @@ description is what\'s displayed on screen and on receipts.
 
 trans_type indicates the record\'s type Values include
 (but may not be limited to at all co-ops):
-	I => normally a product identified by upc, but
-	     can also be a discount line (upc=\'DISCOUNT\')
-	     or a YOU SAVED line (upc=\'0\'). 
-	A => tax total line
-	C => a commentary line. These generally exist 
-	     only for generating the on-screen display
-	     at the register (subtotal lines, etc).
-	D => open ring to a department. In this case,
-	     upc will be the amount, \'DP\', and the
-	     department number
-	T => tender record. UPC is generally, but not
-	     always, \'0\' (e.g., manufacturer coupons
-	     have their own UPCs)
-	0 => another commentary line
+    I => normally a product identified by upc, but
+         can also be a discount line (upc=\'DISCOUNT\')
+         or a YOU SAVED line (upc=\'0\'). 
+    A => tax total line
+    C => a commentary line. These generally exist 
+         only for generating the on-screen display
+         at the register (subtotal lines, etc).
+    D => open ring to a department. In this case,
+         upc will be the amount, \'DP\', and the
+         department number
+    T => tender record. UPC is generally, but not
+         always, \'0\' (e.g., manufacturer coupons
+         have their own UPCs)
+    0 => another commentary line
 
 trans_subtype refines the record\'s type. Values include
 (but may not be limited to at all co-ops):
-	CM => record is a cashier-written comment.
-	      Used to make notes on a transaction
-	(tender code) => goes with trans_type \'T\',
-			 exact values depends what\'s
-			 in core_op.tenders
-	blank => no refinement available for this trans_type
+    CM => record is a cashier-written comment.
+          Used to make notes on a transaction
+    (tender code) => goes with trans_type \'T\',
+             exact values depends what\'s
+             in core_op.tenders
+    blank => no refinement available for this trans_type
 
 trans_status is a fairly all-purpose indicator. Values include
 (but may not be limited to at all co-ops):
-	X => the transaction is canceled
-	D => this can be omitted with back-end reporting
-	R => this line is a refund
-	V => this line is a void
-	M => this line is a member special discount
-	C => this line is a coupon
-	Z => this item was damaged, not sold (WFC)
-	blank => no particular meaning
+    X => the transaction is canceled
+    D => this can be omitted with back-end reporting
+    R => this line is a refund
+    V => this line is a void
+    M => this line is a member special discount
+    C => this line is a coupon
+    Z => this item was damaged, not sold (WFC)
+    blank => no particular meaning
 
 department is set for a UPC item, an open-department ring,
 a member special discount, or a manufacturer coupon. All
@@ -135,10 +135,10 @@ other lines have zero here.
 quantity and ItemQtty are the number of items sold on
 that line. These can be fractional for by-weight items.
 These values are normally the same, except for:
-	1. member special lines, where ItemQtty is always zero.
-	   This is useful for tracking actual movement by UPC
-	2. refund lines, where quantity is negative and ItemQtty
-	   is not. No idea what the reasoning was here.	
+    1. member special lines, where ItemQtty is always zero.
+       This is useful for tracking actual movement by UPC
+    2. refund lines, where quantity is negative and ItemQtty
+       is not. No idea what the reasoning was here.    
 
 scale indicates an item sold by-weight. Meaningless on
 non-item records.
@@ -172,28 +172,28 @@ for transaction-wide percent discounts.
 
 discounttype indicates what type of sale an item
 is on.
-	0 => not on sale
-	1 => on sale for everyone
-	2 => on sale for members
+    0 => not on sale
+    1 => on sale for everyone
+    2 => on sale for members
 Values over 2 may be used, but aren\'t used 
 consistently across co-ops at this time.
 
 voided indicates whether a line has been voided
-	0 => no
-	1 => yes
+    0 => no
+    1 => yes
 voided is also used as a status flag in some cases
 You\'d have to dig into IT CORE code a bit to get a
 handle on that.
-	
+    
 percentDiscount is a percentage discount applied to
 the whole transaction. This is an integer, so
 5 = 5% = 0.05
 
 volDiscType is a volume discount type. Usage varies
 a lot here, but in general:
-	volDiscType => core_op.products.pricemethod
-	volume => core_op.products.quantity
-	VolSpecial => core_op.products.groupprice
+    volDiscType => core_op.products.pricemethod
+    volume => core_op.products.quantity
+    VolSpecial => core_op.products.groupprice
 If an item is on sale, those become specialpricemethod,
 specialquantity, and specialgroupprice (respectively).
 Exact calculations depend a lot of volDiscType. 0 means

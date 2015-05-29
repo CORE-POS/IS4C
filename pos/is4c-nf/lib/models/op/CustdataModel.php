@@ -72,13 +72,13 @@ across stores.
 - CardNo is the member\'s number. This identifies them.
 - personNum is for stores that allow more than one person per membership.
   personNum starts at 1.
-	The combination (CardNo, personNum) should be unique for each record.
+    The combination (CardNo, personNum) should be unique for each record.
 - FirstName what it sounds like.
 - LastName what it sounds like.
 - Discount gives the member a percentage discount on purchases.
 - Type identifies whether the record is for an actual member.
   If Type is \'PC\', the person is considered a member at the register.
-	This is a little confusing, but not everyone in the table has to be
+    This is a little confusing, but not everyone in the table has to be
    a member.
 - blueLine is displayed on the checkout screen when the member\'s number is entered.
 - id just provides a guaranteed-unique row identifier.
@@ -99,9 +99,9 @@ WFC Specific:
 - ChargeLimit is their store charge account limit.
 - Balance is a store charge balance as of the start of the day,
    if the person has one.
-	 Some records are for organizations, esp vendors,
-	 that have charge accounts.
-	 Is updated from newBalanceToday_cust by cronjob arbalance.sanitycheck.php
+     Some records are for organizations, esp vendors,
+     that have charge accounts.
+     Is updated from newBalanceToday_cust by cronjob arbalance.sanitycheck.php
 - memCoupons indicates how many virtual coupons (tender MA) are available.
 
 [Probably] Ignored:
