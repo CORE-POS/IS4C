@@ -36,6 +36,17 @@ class UnpaidArTodayModel extends BasicModel
     'recent_payments' => array('type'=>'MONEY'),
     );
 
+    public function doc()
+    {
+        return '
+Use:
+Listing of overdue balances. Authoritative,
+up-to-the-second data is on the server
+but checking a local table is faster if
+slightly stale data is acceptable
+        ';
+    }
+
     /* START ACCESSOR FUNCTIONS */
 
     public function card_no()

@@ -36,6 +36,11 @@ class MemberCardsViewModel extends ViewModel
 
     public $preferred_db = 'op';
 
+    public function doc()
+    {
+        return '';
+    }
+
     public function definition()
     {
         $cardsViewQ = "

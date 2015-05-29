@@ -36,6 +36,15 @@ class ShrinkReasonsModel extends BasicModel
 
     public $preferred_db = 'op';
 
+    public function doc()
+    {
+        return '
+Use:
+Maintain list of reasons for marking
+shrink
+        ';
+    }
+
     /* START ACCESSOR FUNCTIONS */
 
     public function shrinkReasonID()

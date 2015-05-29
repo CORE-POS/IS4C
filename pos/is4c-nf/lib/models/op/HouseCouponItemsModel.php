@@ -36,6 +36,17 @@ class HouseCouponItemsModel extends BasicModel
     'type' => array('type'=>'VARCHAR(15)'),
     );
 
+    public function doc()
+    {
+        return '
+Use:
+WFC runs custom barcoded coupons with
+upc prefix 499999. See houseCoupons for
+more detail. Type here should be \'QUALIFIER\',
+\'DISCOUNT\', or \'BOTH\'.
+        ';
+    }
+
     /* START ACCESSOR FUNCTIONS */
 
     public function coupID()

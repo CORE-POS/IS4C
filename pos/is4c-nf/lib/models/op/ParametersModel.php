@@ -38,6 +38,19 @@ class ParametersModel extends BasicModel
     'is_array' => array('type'=>'TINYINT'),
     );
 
+    public function doc()
+    {
+        return '
+Use:
+Partial replacement for ini.php.
+
+Values with store_id=0 (or NULL) and lane_id=0 (or NULL)
+are applied first, then values with the lane\'s own
+lane_id are applied second as local overrides. A similar
+precedent level based on store_id may be added at a later date.
+        ';
+    }
+
     /**
       Get the parameter's effective value by
       transforming it into an array or boolean

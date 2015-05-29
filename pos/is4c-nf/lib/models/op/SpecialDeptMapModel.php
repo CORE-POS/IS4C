@@ -36,6 +36,11 @@ class SpecialDeptMapModel extends BasicModel
 
     public $preferred_db = 'op';
 
+    public function doc()
+    {
+        return '';
+    }
+
     public function buildMap()
     {
         $map = array();

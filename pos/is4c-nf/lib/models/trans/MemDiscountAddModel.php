@@ -94,6 +94,17 @@ class MemDiscountAddModel extends LocalTransModel
         return ($try === false) ? false : true;
     }
 
+    public function doc()
+    {
+        return '
+Use:
+This view calculates member discounts on items
+in the transaction that have not yet been applied.
+These records are then inserted into localtemptrans
+to apply the relevant discount(s).
+        ';
+    }
+
     public function delete(){ return false; }
     public function save(){ return false; }
 

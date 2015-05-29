@@ -40,6 +40,17 @@ class GlobalValuesModel extends BasicModel
     'TaxExempt' => array('type'=>'TINYINT'),
     );
 
+    public function doc()
+    {
+        return '
+Use:
+A small subset of session values. Storing this
+in SQL ensures it will survive a browser crash
+or reboot to pick up more-or-less when the transaction
+left off.
+        ';
+    }
+
     /* START ACCESSOR FUNCTIONS */
 
     public function CashierNo()

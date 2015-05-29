@@ -68,45 +68,6 @@ class PaycardTransactionsModel extends BasicModel
     public function doc()
     {
         return '
-Table: PaycardTransaction
-
-Columns:
-    paycardTransactionID int
-    dateID int
-    empNo int
-    registerNo int
-    transNo int
-    transID int
-    previousPaycardTransactionID int
-    processor varchar
-    refNum varchar
-    live tinyint
-    cardType varchar
-    transType varchar
-    amount double
-    PAN varchar
-    issuer varchar
-    name varchar
-    manual tinyint
-    requestDatetime datetime
-    responseDatetime datetime
-    seconds float
-    commErr int
-    httpCode int
-    validResponse tinyint
-    xResultCode varchar
-    xApprovalNumber varchar
-    xResponseCode varchar
-    xResultMessage varchar
-    xTransactionID varchar
-    xBalance varchar
-    xToken varchar
-    xProcessorRef varchar
-    xAcquirerRef varchar
-
-Depends on:
-    none
-
 Use:
 This table records information about integrated
 card transactions.

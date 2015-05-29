@@ -38,6 +38,16 @@ class HouseVirtualCouponsModel extends BasicModel
     'end_date' => array('type'=>'DATETIME'),
     );
 
+    public function doc()
+    {
+        return '
+Use:
+Assign house coupons to members so
+they can be applied without scanning
+a barcode
+        ';
+    }
+
     /* START ACCESSOR FUNCTIONS */
 
     public function card_no()

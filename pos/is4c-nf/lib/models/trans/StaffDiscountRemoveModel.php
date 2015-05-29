@@ -100,6 +100,18 @@ class StaffDiscountRemoveModel extends LocalTransModel
         return ($try === false) ? false : true;
     }
 
+    public function doc()
+    {
+        return '
+Use:
+This view is the opposite of staffdiscountadd.
+It calculates the reverse of all currently
+applied staff discounts on items. These records
+are inserted into localtemptrans to remove
+staff discounts if needed.
+        ';
+    }
+
     public function delete(){ return false; }
     public function save(){ return false; }
     public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=False){ return 0; }

@@ -38,6 +38,15 @@ class MemberCardsModel extends BasicModel
     'upc' => array('type'=>'VARCHAR(13)','primary_key'=>True,'default'=>'')
     );
 
+    public function doc()
+    {
+        return '
+Use:
+WFC has barcoded member identification cards.
+card_no is the member, upc is their card.
+        ';
+    }
+
     protected $unique = array('card_no');
 
     /* START ACCESSOR FUNCTIONS */

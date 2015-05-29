@@ -36,6 +36,13 @@ class AutoCouponsModel extends BasicModel
 
     protected $preferred_db = 'op';
 
+    public function doc()
+    {
+        return '
+Apply coupons to transactions automatically
+        ';
+    }
+
     /* START ACCESSOR FUNCTIONS */
 
     public function coupID()

@@ -41,6 +41,16 @@ class LocalTransModel extends DTransactionsModel
         parent::__construct($con);
     }
 
+    public function doc()
+    {
+        return '
+Use:
+Lane-side record of historical transactions.
+See dtransactions for details on what the columns
+are used for.
+        ';
+    }
+
     /* START ACCESSOR FUNCTIONS */
     /* END ACCESSOR FUNCTIONS */
 }

@@ -37,6 +37,14 @@ class TaxRatesModel extends BasicModel
     'description' => array('type'=>'VARCHAR(50)'),
     );
 
+    public function doc()
+    {
+        return '
+Use:
+Local tax rates
+        ';
+    }
+
     /* START ACCESSOR FUNCTIONS */
 
     public function id()

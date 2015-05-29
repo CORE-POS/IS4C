@@ -45,6 +45,18 @@ class LocalTransTodayModel extends LocalTransModel
         $this->columns['emp_no']['index'] = true;
     }
 
+    public function doc()
+    {
+        return '
+Use:
+Contains today\'s transactions. 
+Truncating this table
+daily will yield better performance on some actions
+that reference the current day\'s info - for example,
+reprinting receipts.
+        ';
+    }
+
     /**
       localtranstoday used to be a view; recreate
       it as a table if needed.

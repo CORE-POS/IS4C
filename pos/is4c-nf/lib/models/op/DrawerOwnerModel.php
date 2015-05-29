@@ -35,6 +35,15 @@ class DrawerOwnerModel extends BasicModel
     'emp_no' => array('type'=>'SMALLINT'),
     );
 
+    public function doc()
+    {
+        return '
+Use:
+Manage assignments when more than one
+cash drawer is present.
+        ';
+    }
+
     /* START ACCESSOR FUNCTIONS */
 
     public function drawer_no()

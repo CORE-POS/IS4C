@@ -36,6 +36,18 @@ class MemChargeBalanceModel extends BasicModel
     'balance' => array('type'=>'MONEY'),
     );
 
+    public function doc()
+    {
+        return '
+Use:
+DEPRECATED 4Jan14 no longer used
+
+View showing member charge balance. Authoritative,
+up-to-the-second data is on the server but a local
+lookup is faster if slightly stale data is acceptable.
+        ';
+    }
+
     /* disabled because it's a view */
     public function create(){ return false; }
     public function delete(){ return false; }

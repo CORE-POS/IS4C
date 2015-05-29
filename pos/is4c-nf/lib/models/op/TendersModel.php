@@ -40,6 +40,25 @@ class TendersModel extends BasicModel
     'TenderModule' => array('type'=>'VARCHAR(50)', 'default'=>"'TenderModule'"),
     );
 
+    public function doc()
+    {
+        return '
+Use:
+List of tenders IT CORE accepts. TenderCode
+should be unique; it\'s what cashiers type in
+at the register as well as the identifier that
+eventually shows up in transaction logs.
+
+ChangeMessage, MinAmount, MaxAmount, and
+MaxRefund all do exactly what they sound like.
+
+TenderName shows up at the register screen
+and on various reports.
+
+TenderType and TenderID are mostly ignored.
+        ';
+    }
+
     public function getMap()
     {
         $prep = $this->connection->prepare('

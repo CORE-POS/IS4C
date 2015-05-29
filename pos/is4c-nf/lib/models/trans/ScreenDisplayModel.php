@@ -249,6 +249,27 @@ class ScreenDisplayModel extends ViewModel
         return $viewSQL;
     }
 
+    public function doc()
+    {
+        return '
+Use:
+Formats current transaction info for
+onscreen display.
+
+The first four columns are display text
+and on rendered left to right. Description
+goes on the far left, comment goes in the middle,
+total is the lineitem\'s price, and status is
+a character or two on the far right.
+
+trans_id is used to select appropriate lines if
+the entire transaction does not fit on the screen
+
+The remaining columns are used for display formatting
+mostly in terms of background & text color.
+        ';
+    }
+
     /* START ACCESSOR FUNCTIONS */
 
     public function description()

@@ -100,6 +100,18 @@ class MemDiscountRemoveModel extends LocalTransModel
         return ($try === false) ? false : true;
     }
 
+    public function doc()
+    {
+        return '
+Use:
+This view is the opposite of memdiscountadd.
+It calculates the reverse of all currently
+applied member discounts on items. These records
+are inserted into localtemptrans to remove
+member discounts if needed.
+        ';
+    }
+
     public function delete(){ return false; }
     public function save(){ return false; }
 

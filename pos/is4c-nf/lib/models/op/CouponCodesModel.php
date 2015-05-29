@@ -37,6 +37,15 @@ class CouponCodesModel extends BasicModel
     'Value' => array('type'=>'Real'),
     );
 
+    public function doc()
+    {
+        return '
+Use:
+Standard UPC coupon codes. Code is the UPC suffix,
+Qty is required quantity, value is the coupon\'s value.
+        ';
+    }
+
     /* START ACCESSOR FUNCTIONS */
 
     public function Code()

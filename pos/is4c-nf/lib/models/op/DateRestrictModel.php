@@ -39,6 +39,19 @@ class DateRestrictModel extends BasicModel
     'restrict_end' => array('type'=>'TIME'),
     );
 
+    public function doc()
+    {
+        return '
+Use:
+Store restrictions for selling products at
+certain dates & times. Restrictions can be specified
+by UPC or department number as well as by 
+exact date or day of week. If start and end
+times are entered, restriction will only apply
+during that span
+        ';
+    }
+
     /* START ACCESSOR FUNCTIONS */
 
     public function upc()

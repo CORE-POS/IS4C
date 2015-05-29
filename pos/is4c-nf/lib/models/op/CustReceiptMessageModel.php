@@ -35,6 +35,25 @@ class CustReceiptMessageModel extends BasicModel
     'msg_text' => array('type'=>'VARCHAR(255)'),
     'modifier_module' => array('type'=>'VARCHAR(50)'),
     );
+    
+    public function doc()
+    {
+        return '
+Use:
+Create member-specific messages for
+receipts.
+
+- card_no is the member number
+- msg_text is the message itself
+- modifier_module is [optionally] the name
+  of a class that should be invoked
+  to potentially modify the message.
+  An equity message, for example, might
+  use a modifier module to check and see
+  if payment was made in the current 
+  transaction
+        ';
+    }
 
     /* START ACCESSOR FUNCTIONS */
 

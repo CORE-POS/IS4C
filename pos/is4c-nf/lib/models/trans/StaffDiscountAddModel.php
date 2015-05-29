@@ -88,6 +88,17 @@ class StaffDiscountAddModel extends LocalTransModel
         return ($try === false) ? false : true;
     }
 
+    public function doc()
+    {
+        return '
+Use:
+This view calculates staff discounts on items
+in the transaction that have not yet been applied.
+These records are then inserted into localtemptrans
+to apply the relevant discount(s).
+        ';
+    }
+
     public function delete(){ return false; }
     public function save(){ return false; }
     public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=False){ return 0; }

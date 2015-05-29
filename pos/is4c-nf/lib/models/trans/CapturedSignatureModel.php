@@ -44,21 +44,6 @@ class CapturedSignatureModel extends BasicModel
     public function doc()
     {
         return '
-Table: CapturedSignature
-
-Columns:
-    capturedSignatureID int
-    tdate datetime
-    emp_no int
-    register_no int
-    trans_no int
-    trans_id int
-    filetype varchar
-    filecontents binary data
-
-Depends on:
-    none
-
 Use:
 This table contains digital images of customer signatures.
 The standard dtransactions columns indicate what transaction
