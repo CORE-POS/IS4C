@@ -1242,6 +1242,31 @@ class BasicModel
         return 'This model has yet to be documented';
     }
 
+    public function columnsDoc()
+    {
+        $ret = str_pad('Name', 25, ' ') . '|' . str_pad('Type', 15, ' ') . '|Info' . "\n";
+        $ret .= str_repeat('-', 25) . '|' . str_repeat('-', 15) . '|' . str_repeat('-', 10) . "\n";
+        foreach ($this->columns as $name => $info) {
+            $ret .= str_pad($name, 25, ' ') . '|';
+            $ret .= str_pad($info['type'], 15, ' ') . '|';
+            if (isset($info['primary_key'])) {
+                $ret .= 'PK ';
+            }
+            if (isset($info['index'])) {
+                $ret .= 'Indexed ';
+            }
+            if (isset($info['increment'])) {
+                $ret .= 'Increment ';
+            }
+            if (isset($info['default'])) {
+                $ret .= 'Default=' . $info['default'];
+            }
+            $ret .= "\n";
+        }
+
+        return $ret;
+    }
+
     /**
       Rewrite the given file to create accessor
       functions for all of its columns
@@ -1420,6 +1445,11 @@ class $name extends " . ($as_view ? 'ViewModel' : 'BasicModel') . "\n");
         return $models;
     }
 
+    public function setConnectionByName($db_name)
+    {
+        $this->connection = FannieDB::get($db_name);
+    }
+
     public function toJSON()
     {
         return json_encode($this->instance);
@@ -1427,6 +1457,50 @@ class $name extends " . ($as_view ? 'ViewModel' : 'BasicModel') . "\n");
 }
 
 if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
+
+    include_once(dirname(__FILE__).'/../../FannieAPI.php');
+
+    if ($argc > 2 && $argv[1] == '--doc') {
+        array_shift($argv);
+        array_shift($argv);
+        $tables = array();
+        foreach ($argv as $file) {
+            if (!file_exists($file)) {
+                continue;
+            }
+            if (!substr($file, -4) == 'php') {
+                continue;
+            }
+            $class = pathinfo($file, PATHINFO_FILENAME);
+            if (!class_exists($class)) { // nested / cross-linked includes
+                include($file);
+                if (!class_exists($class)) {
+                    continue;
+                }
+            }
+            $obj = new $class(null);
+            if (!is_a($obj, 'BasicModel')) {
+                continue;
+            }
+
+            $table = $obj->getName();
+            $doc = '### ' . $table . "\n";
+            $doc .= $obj->columnsDoc();
+            $doc .= $obj->doc();
+
+            $tables[$table] = $doc;
+        }
+        ksort($tables);
+        foreach ($tables as $t => $doc) {
+            echo '* [' . $t . '](#' . strtolower($t) . ')' . "\n";
+        }
+        echo "\n";
+        foreach ($tables as $t => $doc) {
+            echo $doc;
+            echo "\n";
+        }
+        exit;
+    }
 
     /* Argument signatures, to php, where BasicModel.php is the first:
      * 2 args: Generate Accessor Functions: php BasicModel.php <Subclass Filename>\n";
@@ -1438,10 +1512,9 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
         echo "Create new Model: php BasicModel.php --new <Model Name>\n";
         echo "Create new View Model: php BasicModel.php --new-view <Model Name>\n";
         echo "Update Table Structure: php BasicModel.php --update <Database name> <Subclass Filename>\n";
+        echo "Generate markdown documentation: php BasicModel.php --doc <Model Filename(s)>\n";
         exit;
     }
-
-    include_once(dirname(__FILE__).'/../../FannieAPI.php');
 
     $obj = new BasicModel(null);
 
