@@ -227,6 +227,7 @@ class UIGTask extends FannieTask
 
         $check = $dbc->prepare('SELECT orderID FROM PurchaseOrder WHERE vendorID=? and userID=0
                             AND creationDate=? AND placedDate=?');
+        $temp_dir = sys_get_temp_dir();
         foreach($dates as $date) {
             $good_date = date('Y-m-d', strtotime($date->Text));
             $doCheck = $dbc->execute($check, array(1, $good_date, $good_date));
@@ -295,7 +296,7 @@ class UIGTask extends FannieTask
 
             if ($response) {
                 $this->cronMsg("Downloading " . $date->Text . "...", FannieLogger::INFO);
-                $filename = str_replace('/','-',$date->Text).'.zip';
+                $filename = $temp_dir . '/' . str_replace('/','-',$date->Text).'.zip';
                 $fp = fopen($filename, 'w');
                 $ch = curl_init($response->d);
                 curl_setopt($ch, CURLOPT_FILE, $fp);
