@@ -59,6 +59,77 @@ values can be saved here for reference.
         ';
     }
 
+    public function guessAccounts()
+    {
+        $dbc = $this->connection; 
+        $detailP = $dbc->prepare('
+            SELECT o.sku,
+                o.internalUPC,
+                o.receivedTotalCost
+            FROM PurchaseOrderItems AS o
+            WHERE o.internalUPC NOT IN (
+                SELECT upc FROM products
+            )
+                AND o.orderID=?
+                AND o.receivedTotalCost <> 0');
+        $detailR = $dbc->execute($detailP, array($this->orderID()));
+
+        $config = FannieConfig::factory();
+        $soP1 = $dbc->prepare('
+            SELECT d.salesCode
+            FROM ' . $config->get('TRANS_DB') . $dbc->sep() . 'CompleteSpecialOrder AS o
+                INNER JOIN departments AS d ON o.department=d.dept_no
+            WHERE o.upc=?');
+        $soP2 = $dbc->prepare('
+            SELECT d.salesCode
+            FROM ' . $config->get('TRANS_DB') . $dbc->sep() . 'PendingSpecialOrder AS o
+                INNER JOIN departments AS d ON o.department=d.dept_no
+            WHERE o.upc=?');
+        $vdP = $dbc->prepare('
+            SELECT d.salesCode
+            FROM vendorItems AS v
+                INNER JOIN vendorDepartments AS p ON v.vendorDept = p.deptID
+                INNER JOIN departments AS d ON p.deptID=d.dept_no
+            WHERE v.sku=?
+                AND v.vendorID=?');
+        $coding = array('n/a' => 0.00);
+        while ($w = $dbc->fetchRow($detailR)) {
+            $soR = $dbc->execute($soP1, array($w['internalUPC']));
+            if ($dbc->numRows($soR) > 0) {
+                $soW = $dbc->fetchRow($soR);
+                if (!isset($coding[$soW['salesCode']])) {
+                    $coding[$soW['salesCode']] = 0.00;
+                }
+                $coding[$soW['salesCode']] += $w['receivedTotalCost'];
+                continue;
+            }
+
+            $soR = $dbc->execute($soP2, array($w['internalUPC']));
+            if ($dbc->numRows($soR) > 0) {
+                $soW = $dbc->fetchRow($soR);
+                if (!isset($coding[$soW['salesCode']])) {
+                    $coding[$soW['salesCode']] = 0.00;
+                }
+                $coding[$soW['salesCode']] += $w['receivedTotalCost'];
+                continue;
+            }
+
+            $soR = $dbc->execute($vdP, array($w['sku'], $this->vendorID()));
+            if ($dbc->numRows($soR) > 0) {
+                $soW = $dbc->fetchRow($soR);
+                if (!isset($coding[$soW['salesCode']])) {
+                    $coding[$soW['salesCode']] = 0.00;
+                }
+                $coding[$soW['salesCode']] += $w['receivedTotalCost'];
+                continue;
+            }
+
+            $coding['n/a'] += $w['receivedTotalCost'];
+        }
+
+        return $coding;
+    }
+
     /**
       A really, REALLY old version of this table might exist.
       If so, just delete it and start over with the new schema.
