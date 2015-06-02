@@ -120,6 +120,17 @@ body {
     </td>
 </tr>
 <tr>
+    <td><b>Open Ring Min/Max Limits</b></td>
+    <td>
+    <?php
+    echo InstallUtilities::installSelectField('OpenRingHardMinMax', array('Absolute Limit' => 1, 'Warning Only'=>0), 0);
+    ?>
+    <span class='noteTxt'>
+    Set whether open ring department limits are bypassable warnings or complete blocks.
+    </span>
+    </td>
+</tr>
+<tr>
     <td><b>AR Department(s)</b></td>
     <td>
     <?php

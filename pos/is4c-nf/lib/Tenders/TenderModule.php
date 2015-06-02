@@ -125,6 +125,13 @@ class TenderModule
                 _("Why are you using a negative number for a positive sale?"),
                 $clearButton
             );
+        } elseif (CoreLocal::get('TenderHardMinMax') && $this->amount > $this->max_limit) {
+            return DisplayLib::boxMsg(
+                "$" . $this->amount . " " . _("is greater than tender limit for") . " " . $this->name_string,
+                '',
+                false,
+                $clearButton
+            );
         }
 
         return true;
