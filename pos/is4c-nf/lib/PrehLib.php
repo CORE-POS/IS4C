@@ -888,20 +888,28 @@ static public function deptkey($price, $dept,$ret=array())
 			CoreLocal::set("togglefoodstamp",0);
 		}
 
-		if ($price > $deptmax && CoreLocal::get("msgrepeat") == 0) {
-
+		if ($price > $deptmax && (CoreLocal::get('OpenRingHardMinMax') || CoreLocal::get("msgrepeat") == 0)) {
 			CoreLocal::set("boxMsg","$".$price." "._("is greater than department limit"));
-            CoreLocal::set('boxMsgButtons', array(
+            $maxButtons = array(
                 'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
                 'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
-            ));
+            );
+            // remove Confirm button/text if hard limits enforced
+            if (CoreLocal::get('OpenRingHardMinMax')) {
+                array_shift($maxButtons);
+            }
+            CoreLocal::set('boxMsgButtons', $maxButtons);
 			$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
-		} elseif ($price < $deptmin && CoreLocal::get("msgrepeat") == 0) {
+		} elseif ($price < $deptmin && (CoreLocal::get('OpenRingHardMinMax') || CoreLocal::get("msgrepeat") == 0)) {
 			CoreLocal::set("boxMsg","$".$price." "._("is lower than department minimum"));
-            CoreLocal::set('boxMsgButtons', array(
+            $minButtons = array(
                 'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
                 'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
-            ));
+            );
+            if (CoreLocal::get('OpenRingHardMinMax')) {
+                array_shift($minButtons);
+            }
+            CoreLocal::set('boxMsgButtons', $minButtons);
 			$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 		} else {
 			if (CoreLocal::get("casediscount") > 0) {

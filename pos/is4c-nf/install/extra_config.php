@@ -363,6 +363,10 @@ InstallUtilities::paramSave('FooterModules',$current_mods);
     <td colspan=2 class="tblHeader"><h3>Tender Settings</h3></td>
 </tr>
 <tr>
+    <td><b>Tender min/max limits</b>: </td>
+    <td><?php echo InstallUtilities::installSelectField('TenderHardMinMax', array(1=>'Absolute Limit',0=>'Warning Only'), 0); ?></td>
+</tr>
+<tr>
     <td><b>Allow members to write checks over purchase amount</b>: </td>
     <td><?php echo InstallUtilities::installSelectField('cashOverLimit', array(1=>'Yes',0=>'No'), 0); ?></td>
 </tr>
