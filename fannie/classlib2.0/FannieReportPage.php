@@ -891,6 +891,7 @@ class FannieReportPage extends FanniePage
         }
 
         $date = false;
+        $trans = false;
         /* After removing HTML, the cell will be seen as a number
          *  and aligned right if it matches this pattern:
          * Optional leading $, optionally with space(s) after
@@ -915,9 +916,10 @@ class FannieReportPage extends FanniePage
             } else if (!$date && preg_match('/^\d\d\d\d-\d\d-\d\d$/', $row[$i])) {
                 // cell contains a date column
                 $date = $row[$i];
-            } else if ($date && preg_match('/^\d+-\d+-\d+$/', $row[$i])) {
+            } else if ($date && !$trans && preg_match('/^\d+-\d+-\d+$/', $row[$i])) {
                 // row contains a trans_num column & a date column
                 // auto-link to reprint receipt
+                $trans = $row[$i];
                 $row[$i] = sprintf('<a href="%sadmin/LookupReceipt/RenderReceiptPage.php?date=%s&amp;receipt=%s"
                                        target="_rp_%s_%s">%s</a>',
                                     $url, $date, $row[$i],
