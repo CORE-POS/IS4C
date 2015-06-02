@@ -96,7 +96,7 @@ class ItemFlags extends FanniePage {
         }
         echo '<form action="'.$_SERVER['PHP_SELF'].'" method="post">';
         $db = FannieDB::get($FANNIE_OP_DB);
-        if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID = 'WEFC_Toronto' ) {
+        if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' ) {
             $q = $db->prepare_statement("SELECT bit_number,description FROM prodFlags ORDER BY bit_number");
             $excelCols = array('','AJ','AK','AL','AM','AN','AO','AP','AQ','AR','AS','AT','AU','AV','AW','AX','AY','AZ');
         } else {
