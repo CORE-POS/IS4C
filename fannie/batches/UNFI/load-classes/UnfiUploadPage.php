@@ -95,7 +95,13 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             'display_name' => 'UNFI Category # *',
             'default' => 5,
             'required' => True
-        )
+        ),
+        'flags' => array(
+            'name' => 'flags',
+            'display_name' => 'Flags',
+            'default' => 20,
+            'required' => false
+        ),
     );
 
     protected $use_splits = false;
@@ -124,6 +130,7 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $REG_COST = $this->get_column_index('cost');
         $NET_COST = $this->get_column_index('saleCost');
         $SRP = $this->get_column_index('srp');
+        $FLAGS = $this->get_column_index('flags');
 
         // PLU items have different internal UPCs
         // map vendor SKUs to the internal PLUs
@@ -138,6 +145,7 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $prodP = $dbc->prepare('
             UPDATE products
             SET cost=?,
+                numflag=?,
                 modified=' . $dbc->now() . '
             WHERE upc=?');
         $itemP = $dbc->prepare("
@@ -186,6 +194,8 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $description = $data[$DESCRIPTION];
             $qty = $data[$QTY];
             $size = ($SIZE1 !== false) ? $data[$SIZE1] : '';
+            $prodInfo = ($FLAGS !== false) ? $data[$FLAGS] : '';
+            $flag = 0;
             $upc = substr($data[$UPC],0,13);
             // zeroes isn't a real item, skip it
             if ($upc == "0000000000000")
@@ -233,15 +243,25 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             // this will catch the 'label' line in the first CSV split
             // since the splits get returned in file system order,
             // we can't be certain *when* that chunk will come up
-            if (!is_numeric($reg) or !is_numeric($srp))
+            if (!is_numeric($reg) or !is_numeric($srp)) {
                 continue;
+            }
+
+            // set organic flag on OG1 (100%) or OG2 (95%)
+            if (strstr($prodInfo, 'OG2') || strstr($prodInfo, 'OG1')) {
+                $flag = $flag | 2;
+            }
+            // set gluten-free flag on g
+            if (strstr($prodInfo, 'g')) {
+                $flag = $flag | 1;
+            }
 
             // need unit cost, not case cost
             $reg_unit = $reg / $qty;
             $net_unit = $net / $qty;
 
             $dbc->exec_statement($extraP, array($reg_unit,$upc));
-            $dbc->exec_statement($prodP, array($reg_unit,$upc));
+            $dbc->exec_statement($prodP, array($reg_unit,$flag,$upc));
             $updated_upcs[] = $upc;
 
             $args = array(
