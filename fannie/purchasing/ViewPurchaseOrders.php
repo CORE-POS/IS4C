@@ -204,7 +204,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         $departments = $dbc->tableDefinition('departments');
         $codingQ = 'SELECT d.salesCode, SUM(o.receivedTotalCost) as rtc
                     FROM PurchaseOrderItems AS o
-                    LEFT JOIN products AS p ON o.internalUPC=p.upc ';
+                        LEFT JOIN products AS p ON o.internalUPC=p.upc ';
         if (isset($departments['salesCode'])) {
             $codingQ .= ' LEFT JOIN departments AS d ON p.department=d.dept_no ';
         } else if ($dbc->tableExists('deptSalesCodes')) {
@@ -214,6 +214,30 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
                     GROUP BY d.salesCode';
         $codingP = $dbc->prepare($codingQ);
         $codingR = $dbc->execute($codingP, array($this->id));
+        $codings = array();
+        while ($codingW = $dbc->fetch_row($codingR)) {
+            if ($codingW['rtc'] == 0 && empty($codingW['salesCode'])) {
+                continue;
+            }
+            if (empty($codingW['salesCode'])) {
+                $codingW['salesCode'] = 'n/a';
+            }
+            $coding[$codingW['salesCode']] = $codingW['rtc'];
+        }
+        $na_details = '';
+        if (isset($coding['n/a'])) {
+            $guesses = $order->guessAccounts();
+            foreach ($guesses as $code => $total) {
+                if (!isset($coding[$code])) {
+                    $coding[$code] = 0;
+                }
+                $coding[$code] += $total;
+            }
+            $coding['n/a'] = $guesses['n/a'];
+            if ($coding['n/a'] == 0) {
+                unset($coding['n/a']);
+            }
+        }
         $ret .= '<br />';
 
         $ret .= '<div><div style="float:left;">';
@@ -221,14 +245,9 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         $ret .= '<td><b>PO#</b>: '.$order->vendorOrderID().'</td>';
         $ret .= '<td><b>Invoice#</b>: '.$order->vendorInvoiceID().'</td>';
         $ret .= '</tr>';
-        while($codingW = $dbc->fetch_row($codingR)) {
-            if ($codingW['rtc'] == 0 && empty($codingW['salesCode'])) {
-                continue;
-            } else if (empty($codingW['salesCode'])) {
-                $codingW['salesCode'] = 'n/a';
-            }
-            $ret .= sprintf('<tr><td>%s</td><td>%.2f</td><td colspan="2"></td></tr>',
-                        $codingW['salesCode'], $codingW['rtc']); 
+        foreach ($coding as $code => $total) {
+            $ret .= sprintf('<tr><td>%s</td><td>%.2f</td><td colspan="2">%s</td></tr>',
+                        $code, $total, $na_details);
         }
         $ret .= '</table>';
         $ret .= '</div><div style="float:left;">';

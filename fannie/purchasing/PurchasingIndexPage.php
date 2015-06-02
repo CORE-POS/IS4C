@@ -58,8 +58,8 @@ class PurchasingIndexPage extends FannieRESTfulPage {
             </li>
             <li>Reports
                 <ul>
-                <li><a href="reports/UnfiExportForMas.php">UNFI Export for MAS90</li>
-                <li><a href="reports/LocalInvoicesReport.php">Local Item Purchases Report</li>
+                <li><a href="reports/UnfiExportForMas.php">UNFI Export for MAS90</a></li>
+                <li><a href="reports/LocalInvoicesReport.php">Local Item Purchases Report</a></li>
                 </ul>
             </li>
             </ul>';

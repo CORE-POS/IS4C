@@ -76,16 +76,13 @@ class VendorDepartmentEditor extends FanniePage {
             break;
         case 'updateCat':
             $dbc = FannieDB::get($FANNIE_OP_DB);
-            $q = $dbc->prepare_statement("UPDATE vendorDepartments
-                SET name=?, margin=?
-                WHERE vendorID=? AND deptID=?");
-            $args = array(
-                FormLib::get_form_value('name'),
-                trim(FormLib::get_form_value('margin',0),'%')/100,
-                FormLib::get_form_value('vid'),
-                FormLib::get_form_value('deptID')
-            );
-            $saved = $dbc->exec_statement($q,$args);
+            $dept = new VendorDepartmentsModel($dbc);
+            $dept->vendorID(FormLib::get('vid'));
+            $dept->deptID(FormLib::get('deptID'));
+            $dept->name(FormLib::get('name'));
+            $dept->margin(trim(FormLib::get('margin',0), '%') / 100.00);
+            $dept->posDeptID(FormLib::get('pos'));
+            $saved = $dept->save();
             if ($saved === false) {
                 $json['error'] = 'Error saving #' . FormLib::get('deptID');
             }
@@ -196,7 +193,7 @@ class VendorDepartmentEditor extends FanniePage {
 
         $ret = "<strong>Departments in $name</strong><br />";
         $ret .= "<table class=\"table\">"; 
-        $ret .= "<tr><th>No.</th><th>Name</th><th>Margin</th>
+        $ret .= "<tr><th>No.</th><th>Name</th><th>Margin</th><th>POS Dept#</th>
             <th>&nbsp;</th><th>&nbsp;</th></tr>";
 
         $deptQ = $dbc->prepare_statement("
@@ -215,6 +212,7 @@ class VendorDepartmentEditor extends FanniePage {
                 <td>%d</td>
                 <td id=nametd%d>%s</td>
                 <td id=margintd%d>%.2f%%</td>
+                <td id=posdepttd%d>%d</td>
                 <td id=button%d>
                     <a href=\"\" onclick=\"edit(%d);return false;\"
                         class=\"edit-link\">%s</a>
@@ -224,14 +222,16 @@ class VendorDepartmentEditor extends FanniePage {
                 <td><a href=\"\" onclick=\"deleteCat(%d,'%s');return false\">%s</a></td>
                 </tr>",
                 $row['deptID'],
-                $row['deptID'],$row['deptID'],
-                $row['name'],$row['deptID'],
-                $row['margin']*100,
-                $row['deptID'],$row['deptID'],
+                $row['deptID'],
+                $row['deptID'], $row['name'],
+                $row['deptID'], $row['margin']*100,
+                $row['deptID'], $row['posDeptID'],
+                $row['deptID'],
+                $row['deptID'],
                 \COREPOS\Fannie\API\lib\FannieUI::editIcon(),
                 $row['deptID'],
                 \COREPOS\Fannie\API\lib\FannieUI::saveIcon(),
-                $row['deptID'],$row['name'],
+                $row['deptID'], $row['name'],
                 \COREPOS\Fannie\API\lib\FannieUI::deleteIcon());
         }
         $ret .= "</table>";

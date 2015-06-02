@@ -55,9 +55,11 @@ function edit(did)
 {
 	var name = $('#nametd'+did).html();
 	var margin = $('#margintd'+did).html();
+	var pos = $('#posdepttd'+did).html();
 
 	$('#nametd'+did).html("<input id=in"+did+" type=text class=form-control value=\""+name+"\" />");
 	$('#margintd'+did).html("<input id=im"+did+" type=text class=form-control value=\""+margin+"\" />");
+	$('#posdepttd'+did).html("<input id=ip"+did+" type=text class=form-control value=\""+pos+"\" />");
 
     $('#button'+did+' .edit-link').hide();
     $('#button'+did+' .save-link').show();
@@ -67,10 +69,12 @@ function save(did)
 {
 	var name = $('#in'+did).val();
 	var margin = $('#im'+did).val();
+	var pos = $('#ip'+did).val();
 	var vid = $('#vendorID').val();
 
 	$('#nametd'+did).html(name);
 	$('#margintd'+did).html(margin);
+	$('#posdepttd'+did).html(pos);
 
     $('#button'+did+' .edit-link').show();
     $('#button'+did+' .save-link').hide();
@@ -81,13 +85,15 @@ function save(did)
 		type: 'POST',
         dataType: 'json',
 		timeout: 5000,
-		data: 'deptID='+did+'&vid='+vid+'&name='+name+'&margin='+margin+'&action=updateCat',
+		data: 'deptID='+did+'&vid='+vid+'&name='+name+'&margin='+margin+'&pos='+pos+'&action=updateCat',
 		error: function(){
             showBootstrapAlert('#alert-area', 'danger', 'Network error saving #' + did);
 		},
 		success: function(resp){
             if (resp.error) {
                 showBootstrapAlert('#alert-area', 'danger', resp.error);
+            } else {
+                showBootstrapAlert('#alert-area', 'success', 'Saved #' + did);
             }
 		}
 	});
