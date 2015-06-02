@@ -66,9 +66,10 @@ class ItemFlagsModule extends ItemModule
         while($w = $dbc->fetch_row($r)){
             if ($i==0) $ret .= '<tr>';
             if ($i != 0 && $i % 2 == 0) $ret .= '</tr><tr>';
-            $ret .= sprintf('<td><input type="checkbox" name="flags[]" value="%d" %s /></td>
-                <td>%s</td>',$w['bit_number'],
+            $ret .= sprintf('<td><input type="checkbox" id="item-flag-%d" name="flags[]" value="%d" %s /></td>
+                <td><label for="item-flag-%d">%s</label></td>',$i, $w['bit_number'],
                 ($w['flagIsSet']==0 ? '' : 'checked'),
+                $i,
                 $w['description']
             );
             $i++;
