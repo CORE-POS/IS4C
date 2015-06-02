@@ -164,6 +164,26 @@ class CWCouponReport extends FannieReportPage
         return $report;
     }
 
+    public function calculate_footers($data)
+    {
+        $ttl = 0;
+        $pre = 0;
+        $post = 0;
+        foreach ($data as $row) {
+            $ttl += $row[4];
+            $pre += $row[11];
+            $post += $row[18];
+        }
+
+        return array('Uses', count($data), '', sprintf('%.2f', $ttl/count($data)), sprintf('%.2f', $ttl), '',
+            '', '', '', '', '',
+            sprintf('%.2f', $pre / count($data)), '', 
+            '', '', '', '', '',
+            sprintf('%.2f', $post / count($data))
+        );
+    }
+
+
     public function form_content()
     {
         $ret = '<form method="get">
