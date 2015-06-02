@@ -205,6 +205,7 @@ class HouseCouponEditor extends FanniePage
     private function listHouseCoupons()
     {
         $FANNIE_URL = $this->config->get('URL');
+
         $this->add_script($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.js?v=1');
         $this->add_css_file($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.css');
         $dbc = FannieDB::get($this->config->get('OP_DB'));
@@ -245,6 +246,8 @@ class HouseCouponEditor extends FanniePage
                         class="btn btn-default">Print Barcode</a>
                         <a href="%sreports/ProductMovement/ProductMovementModular.php?upc=%s&date1=%s&date2=%s"
                         class="btn btn-default">Usage Report</a>
+                        <a href="%smodules/plugins2.0/CoreWarehouse/reports/CWCouponReport.php?coupon-id=%d&date1=%s&date2=%s"
+                        class="btn btn-default %s">Member Baskets</a>
                     </tr>',
                     $obj->coupID(),$obj->coupID(),$obj->description(),
                     $obj->discountValue(), $obj->discountType(), $obj->endDate(),
@@ -254,7 +257,12 @@ class HouseCouponEditor extends FanniePage
                     $FANNIE_URL,
                     ('499999' . str_pad($obj->coupID(), 5, '0', STR_PAD_LEFT)),
                     $report_dates[0],
-                    $report_dates[1]
+                    $report_dates[1],
+                    $FANNIE_URL,
+                    $obj->coupID(),
+                    $report_dates[0],
+                    $report_dates[1],
+                    (\COREPOS\Fannie\API\FanniePlugin::isEnabled('CoreWarehouse') ? '' : 'collapse')
                 );
         }
         $ret .= '</table>';
