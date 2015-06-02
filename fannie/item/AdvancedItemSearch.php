@@ -218,7 +218,9 @@ class AdvancedItemSearch extends FannieRESTfulPage
         }
 
         $vendorID = FormLib::get('vendor');
-        if ($vendorID !== '') {
+        if ($vendorID === '0') {
+            $where .= ' AND p.default_vendor_id=0 ';
+        } elseif ($vendorID !== '') {
             $where .= ' AND (v.vendorID=? or p.default_vendor_id=?)';
             $args[] = $vendorID;
             $args[] = $vendorID;
@@ -787,8 +789,9 @@ function chainSuper(superID)
                  </td>
                  <td>
                     <select name="vendor" class="form-control input-sm"
-                    onchange="if(this.value===\'\') $(\'#vendorSale\').attr(\'disabled\',\'disabled\'); else $(\'#vendorSale\').removeAttr(\'disabled\');" >
-                    <option value="">Any</option>';
+                    onchange="if(this.value===\'\' || this.value===\'0\') $(\'#vendorSale\').attr(\'disabled\',\'disabled\'); else $(\'#vendorSale\').removeAttr(\'disabled\');" >
+                    <option value="">Any</option>
+                    <option value="0">Not Assigned</option>';
         $vendors = $dbc->query('SELECT vendorID, vendorName FROM vendors ORDER BY vendorName');
         while ($row = $dbc->fetch_row($vendors)) {
             $ret .= sprintf('<option value="%d">%s</option>', $row['vendorID'], $row['vendorName']);
