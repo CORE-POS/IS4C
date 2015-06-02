@@ -111,7 +111,7 @@ class UIGLib
 
                     $model->unitCost($item['unitCost']);
                     $model->caseSize($item['caseSize']);
-                    $model->receivedDate($header_info['placedDate']);
+                    $model->receivedDate($header_info['receivedDate']);
                     $model->unitSize($item['unitSize']);
                     $model->brand($item['brand']);
                     $model->description($item['description']);
@@ -134,11 +134,13 @@ class UIGLib
     static private function parseHeader($line)
     {
         $INVOICE = 1;
-        $ORDER_DATE = 4;
+        $INVOICE_DATE = 4;
+        $PLACED_DATE = 21;
         $PO_NUMBER = 24;
 
         return array(
-                'placedDate' => date('Y-m-d', strtotime($line[$ORDER_DATE])),
+                'placedDate' => date('Y-m-d', strtotime($line[$PLACED_DATE])),
+                'receivedDate' => date('Y-m-d', strtotime($line[$INVOICE_DATE])),
                 'vendorOrderID' => $line[$PO_NUMBER],
                 'vendorInvoiceID' => $line[$INVOICE],
         );
