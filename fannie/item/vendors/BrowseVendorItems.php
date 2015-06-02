@@ -252,9 +252,11 @@ class BrowseVendorItems extends FanniePage
         $model->tax($dinfo['dept_tax']);
         $model->foodstamp($dinfo['dept_fs']);
         $model->cost($vinfo['cost']);
+        $model->default_vendor_id($vid);
+        $model->brand($vinfo['brand']);
         $model->save();
 
-        $xInsQ = $dbc->prepare_statement("INSERT INTO prodExtra (upc,distributor,manufacturer,cost,margin,variable_pricing,location,
+        $xInsQ = $dbc->prepare_statement("INSERT INTO prodExtra (upc,manufacturer,distributor,cost,margin,variable_pricing,location,
                 case_quantity,case_cost,case_info) VALUES
                 (?,?,?,?,0.00,0,'','',0.00,'')");
         $args = array($upc,$vinfo['brand'],

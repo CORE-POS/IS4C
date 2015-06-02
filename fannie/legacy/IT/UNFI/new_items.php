@@ -182,6 +182,7 @@ for ($i=0; $i<count($depts); $i++){
         $product->foodstamp($fs);
         $product->cost($costs[$i]);
         $product->default_vendor_id(1);
+        $product->brand($brands[$i]);
         $product->save();
 
         $sql->execute($xtraP, array($upcs[$i], $brands[$i], $costs[$i]));
