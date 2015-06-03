@@ -604,6 +604,10 @@ class FannieReportPage extends FanniePage
             case 'html':
                 if ($this->multi_counter == 1) {
                     $this->add_css_file($url . 'src/javascript/tablesorter/themes/blue/style.css');
+                    /**
+                      Prep work for pending tablesorter update
+                    $this->add_css_file($url . 'src/javascript/tablesorter-2.22.1/css/theme.bootstrap.css');
+                    */
                     if (!$this->window_dressing) {
                         $ret .= '<!DOCTYPE html><html><head>' .
                         '<meta http-equiv="Content-Type" ' .
@@ -750,9 +754,18 @@ class FannieReportPage extends FanniePage
                     $this->add_script($url . 'src/javascript/jquery.js');
                 }
                 $this->add_script($url . 'src/javascript/tablesorter/jquery.tablesorter.js');
+                /**
+                  Prep work for pending tablesorter update
+                $this->add_script($url . 'src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.js');
+                $this->add_script($url . 'src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.widgets.js');
+                */
                 $sort = sprintf('[[%d,%d]]',$this->sort_column,$this->sort_direction);
                 if ($this->sortable) {
                     $this->add_onload_command("\$('.mySortableTable').tablesorter({sortList: $sort, widgets: ['zebra']});");
+                    /**
+                      Prep work for pending tablesorter update
+                    $this->add_onload_command("\$('.mySortableTable').tablesorter({sortList: $sort, theme:'bootstrap', widgets: ['uitheme','zebra']});");
+                    */
                 }
                 break;
             case 'csv':

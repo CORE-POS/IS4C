@@ -332,7 +332,7 @@ class ItemEditorPage extends FanniePage
 
         $this->add_script('autocomplete.js');
         $this->add_script($FANNIE_URL . 'src/javascript/chosen/chosen.jquery.min.js');
-        $this->add_css_file($FANNIE_URL . 'src/javascript/chosen/chosen.min.css');
+        $this->add_css_file($FANNIE_URL . 'src/javascript/chosen/bootstrap-chosen.css');
         $ws = $FANNIE_URL . 'ws/';
 
         $authorized = false;
@@ -418,6 +418,9 @@ class ItemEditorPage extends FanniePage
 
                     $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
                     $ret .= '<a class="iframe fancyboxLink" href="'.$FANNIE_URL.'reports/PriceHistory/?upc='.$upc.'" title="Price History">Price History</a>';
+
+                    $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+                    $ret .= '<a class="iframe fancyboxLink" href="'.$FANNIE_URL.'reports/CostHistory/?upc='.$upc.'" title="Cost History">Cost History</a>';
 
                     $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
                     $ret .= '<a class="iframe fancyboxLink" href="'.$FANNIE_URL.'reports/RecentSales/?upc='.$upc.'" title="Sales History">Sales History</a>';
