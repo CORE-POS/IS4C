@@ -123,7 +123,7 @@ body {
     <td><b>Open Ring Min/Max Limits</b></td>
     <td>
     <?php
-    echo InstallUtilities::installSelectField('OpenRingHardMinMax', array('Absolute Limit' => 1, 'Warning Only'=>0), 0);
+    echo InstallUtilities::installSelectField('OpenRingHardMinMax', array(1=>'Absolute Limit', 0=>'Warning Only'), 0);
     ?>
     <span class='noteTxt'>
     Set whether open ring department limits are bypassable warnings or complete blocks.
