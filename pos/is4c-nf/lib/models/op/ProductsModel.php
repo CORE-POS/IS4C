@@ -70,6 +70,7 @@ class ProductsModel extends BasicModel
     'store_id'=>array('type'=>'SMALLINT','default'=>0),
     'default_vendor_id'=>array('type'=>'INT','default'=>0),
     'current_origin_id'=>array('type'=>'INT','default'=>0),
+    'auto_par'=>array('type'=>'DOUBLE','default'=>0),
     'id'=>array('type'=>'INT','default'=>0,'primary_key'=>True,'increment'=>True)
     );
 
