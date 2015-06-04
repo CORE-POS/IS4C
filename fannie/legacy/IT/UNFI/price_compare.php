@@ -25,7 +25,7 @@ $UNFI_ALL_QUERY = "
     as unfi_margin,
     case when v.srp > p.normal_price then 1 else 0 END as diff,
     x.cost AS cost,
-    x.variable_pricing
+    p.price_rule_id AS variable_pricing
     from vendorItems AS v
     INNER JOIN products as p ON v.upc=p.upc
     LEFT JOIN prodExtra AS x ON p.upc=x.upc
@@ -89,6 +89,39 @@ if (isset($_GET['action'])){
         $val = ($_GET['toggle'] == "true") ? 1 : 0;
         $upQ = $sql->prepare("update prodExtra set variable_pricing=? where upc=?");
         $upR = $sql->execute($upQ, array($val, $upc));
+        if ($val == 1) {
+            $prod = new ProductsModel($sql);
+            $prod->upc($upc);
+            $prod->load();
+            // make sure another rule isn't overwritten with a generic one
+            if ($prod->price_rule_id() == 0) {
+                $prod->price_rule_id(1);
+            }
+            $prod->save();
+        } else {
+            $prod = new ProductsModel($sql);
+            $prod->upc($upc);
+            $prod->load();
+            $ruleID = 0;
+            // remove the rule but save its ID
+            if ($prod->price_rule_id() != 0) {
+                $ruleID = $prod->price_rule_id();
+                $prod->price_rule_id(0);
+            }
+            $prod->save();
+            // make sure no other item is using the same
+            // rule before deleting it
+            if ($ruleID > 1) {
+                $prod->reset();
+                $prod->price_rule_id($ruleID);
+                if (count($prod->find()) == 0) {
+                    // no products are using this rule
+                    $rule = new PriceRulesModel($sql);
+                    $rule->priceRuleID($ruleID);
+                    $rule->delete();
+                }
+            }
+        }
         break;
     }
     echo $out;
@@ -136,7 +169,7 @@ echo "<a href=price_compare.php?excel=1&buyer=$buyID&filter=$filter>Dump to Exce
 
 //Connect to mysql server
 
-$mysql = new SQLManager('mysql.wfco-op.store','MYSQL','IS4C','is4c','is4c');
+$mysql = new SQLManager('localhost','MYSQL','IS4C','root','is4c');
 
 $getCatQ = "SELECT unfi_cat FROM unfi_cat";
 $getCatArgs = array();
@@ -251,7 +284,7 @@ $strCat = $strCat . ")";
       echo  "<td bgcolor=$bg><a href=\"/queries/productTest.php?upc=$pupc\" target=\"__unfi_pc\">$pupc</td><td bgcolor=$bg>$pdesc</td><td bgcolor=$bg>$cost</td><td bgcolor=$bg id=pricefield$pupc>$pprice</td>";
       echo  "<td bgcolor=$bg>$ourMarg</td><td id=unfiprice$pupc bgcolor=$bg><a href=\"\" onclick=\"editUnfiPrice('$pupc'); return false;\">$uprice</a></td><td bgcolor=$bg>$unMarg</td><td bgcolor=$bg>$cat</td><td bgcolor=$bg>$sort</td>";
       echo "<td bgcolor=$bg><input type=checkbox id=var$pupc ";
-      if ($var == 1)
+      if ($var != 0)
     echo "checked ";
       echo "onclick=\"toggleVariable('$pupc');\" /></td>";
       echo "<td bgcolor=$bg><input type=checkbox name=pricechange[] id=\"check$pupc\" value=$pupc><label for=\"check$pupc\">UNFI</label>";

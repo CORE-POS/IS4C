@@ -633,6 +633,8 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             'OriginCustomRegionModel',
             'ParametersModel',
             'PatronageModel',
+            'PriceRulesModel',
+            'PriceRuleTypesModel',
             'ProductsModel',
             'ProductBackupModel',
             'ProductUserModel',
@@ -680,6 +682,13 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         foreach ($models as $class) {
             $obj = new $class($con);
             $ret[] = $obj->createIfNeeded($op_db_name);
+        }
+
+        $rules = new PriceRulesModel($con);
+        if (count($rules->find()) == 0) {
+            $rules->priceRuleID(1);
+            $rules->details('Generic Variable Price');
+            $rules->save();
         }
 
         /**

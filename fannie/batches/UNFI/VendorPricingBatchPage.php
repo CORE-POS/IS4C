@@ -249,6 +249,7 @@ function saveprice(upc){
 
         $costSQL = Margin::adjustedCostSQL('v.cost', 'b.discountRate', 'b.shippingMarkup');
         $marginSQL = Margin::toMarginSQL($costSQL, 'p.normal_price');
+        $p_def = $dbc->tableDefinition('products');
 
         $query = "SELECT p.upc,
             p.description,
@@ -282,6 +283,9 @@ function saveprice(upc){
         }
 
         $query .= " ORDER BY p.upc";
+        if (isset($p_def['price_rule_id'])) {
+            $query = str_replace('x.variable_pricing', 'p.price_rule_id AS variable_pricing', $query);
+        }
 
         $prep = $dbc->prepare_statement($query);
         $result = $dbc->exec_statement($prep,$args);
@@ -301,7 +305,7 @@ function saveprice(upc){
             $bg = "white";
             if (isset($batchUPCs[$row['upc']])) {
                 $bg = 'selection';
-            } elseif ($row['variable_pricing'] != 1) {
+            } elseif ($row['variable_pricing'] != 0) {
                 $bg = ($row['normal_price']<$row['srp'])?'red':'green';
             }
             if (isset($batchUPCs[$row['upc']])) {

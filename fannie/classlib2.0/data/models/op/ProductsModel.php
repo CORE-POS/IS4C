@@ -68,7 +68,7 @@ class ProductsModel extends BasicModel
     'discounttype'=>array('type'=>'TINYINT'),
     'line_item_discountable'=>array('type'=>'TINYINT', 'default'=>1),
     'unitofmeasure'=>array('type'=>'VARCHAR(15)'),
-    'wicable'=>array('type'=>'SMALLINT'),
+    'wicable'=>array('type'=>'SMALLINT', 'default'=>0),
     'qttyEnforced'=>array('type'=>'TINYINT'),
     'idEnforced'=>array('type'=>'TINYINT'),
     'cost'=>array('type'=>'MONEY'),
@@ -81,6 +81,7 @@ class ProductsModel extends BasicModel
     'default_vendor_id'=>array('type'=>'INT','default'=>0),
     'current_origin_id'=>array('type'=>'INT','default'=>0),
     'auto_par'=>array('type'=>'DOUBLE','default'=>0),
+    'price_rule_id'=>array('type'=>'INT', 'default'=>0),
     'id'=>array('type'=>'INT','default'=>0,'primary_key'=>true,'increment'=>true)
     );
 
@@ -366,6 +367,19 @@ it won\'t *do* anything.
         }
 
         return $try;
+    }
+
+    public function hookAddColumnprice_rule_id()
+    {
+        if ($this->connection->tableExists('prodExtra')) {
+            $query = '
+                UPDATE products AS p
+                    INNER JOIN prodExtra AS x ON p.upc=x.upc
+                SET p.price_rule_id=1
+                WHERE x.variable_pricing=1
+            ';
+            $this->connection->query($query);
+        }
     }
 
     /* START ACCESSOR FUNCTIONS */
@@ -1920,6 +1934,43 @@ it won\'t *do* anything.
                 }
             }
             $this->instance["auto_par"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function price_rule_id()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["price_rule_id"])) {
+                return $this->instance["price_rule_id"];
+            } else if (isset($this->columns["price_rule_id"]["default"])) {
+                return $this->columns["price_rule_id"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'price_rule_id',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["price_rule_id"]) || $this->instance["price_rule_id"] != func_get_args(0)) {
+                if (!isset($this->columns["price_rule_id"]["ignore_updates"]) || $this->columns["price_rule_id"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["price_rule_id"] = func_get_arg(0);
         }
         return $this;
     }
