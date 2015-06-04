@@ -82,7 +82,8 @@ class BaseItemModule extends ItemModule
                                         p.idEnforced,
                                         p.local,
                                         p.deposit,
-                                        p.discounttype
+                                        p.discounttype,
+                                        p.wicable
                                       FROM products AS p 
                                         LEFT JOIN prodExtra AS x ON p.upc=x.upc 
                                         LEFT JOIN productUser AS u ON p.upc=u.upc 
@@ -546,6 +547,11 @@ class BaseItemModule extends ItemModule
                     ' . ($rowItem['qttyEnforced'] == 1 ? 'checked' : '') . ' />
                 </label>
                 &nbsp;&nbsp;&nbsp;&nbsp;
+                <label>WIC
+                <input type="checkbox" value="1" name="prod-wicable" id="prod-wicable-checkbox"
+                    ' . ($rowItem['wicable'] == 1 ? 'checked' : '') . '  />
+                </label>
+                &nbsp;&nbsp;&nbsp;&nbsp;
                 <label>InUse
                 <input type="checkbox" value="1" name="prod-in-use" id="in-use-checkbox"
                     ' . ($rowItem['inUse'] == 1 ? 'checked' : '') . ' 
@@ -802,6 +808,7 @@ class BaseItemModule extends ItemModule
         $model->foodstamp(FormLib::get_form_value('FS',0));
         $model->scale(FormLib::get_form_value('Scale',0));
         $model->qttyEnforced(FormLib::get_form_value('QtyFrc',0));
+        $model->wicable(FormLib::get('prod-wicable', 0));
         $discount_setting = FormLib::get('discount', 1);
         switch ($discount_setting) {
             case 0:
