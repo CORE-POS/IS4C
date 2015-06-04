@@ -123,6 +123,43 @@ numflag column
         }
         return $this;
     }
+
+    public function active()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["active"])) {
+                return $this->instance["active"];
+            } else if (isset($this->columns["active"]["default"])) {
+                return $this->columns["active"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'active',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["active"]) || $this->instance["active"] != func_get_args(0)) {
+                if (!isset($this->columns["active"]["ignore_updates"]) || $this->columns["active"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["active"] = func_get_arg(0);
+        }
+        return $this;
+    }
     /* END ACCESSOR FUNCTIONS */
 }
 
