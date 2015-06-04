@@ -111,10 +111,11 @@ while ($row = $dbc->fetch_row($tenderR)){
     if(isset($tenders[$row[0]])){
         $tenders[$row[0]][1] = $row[1];
         $tenders[$row[0]][2] = $row[2];
-    }
-    elseif ($row[0] == "MAD Coupon"){
+    } elseif ($row[0] == "MAD Coupon"){
         $mad[0] = $row[1];
         $mad[1] = $row[2];
+    } else {
+        $tenders[$row[0]] = array('00000', $row[1], $row[2]);
     }
 } 
 
