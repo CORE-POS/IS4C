@@ -44,10 +44,10 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
         $data = $this->loadItems();
         $count = 0;
         $sign = 0;
-        $width = 66.67;
-        $height = 70;
-        $top = 18;
-        $left = 10;
+        $width = 68.67;
+        $height = 71;
+        $top = 15;
+        $left = 8.5;
         $effective_width = $width - $left;
         foreach ($data as $item) {
             if ($count % 12 == 0) {
@@ -60,7 +60,9 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
 
             $price = sprintf('$%.2f', $item['normal_price']);
             if ($item['scale']) {
-                $price .= ' / lb';
+                $price .= ' /lb';
+            } else {
+                $price = $this->formatPrice($item['normal_price']);
             }
 
             $pdf->SetXY($left + ($width*$column), $top + ($row*$height));
@@ -102,22 +104,22 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
             $pdf->SetFont('GillBook', '', $this->SMALLER_FONT);
             $pdf->Cell($effective_width, 6, $item['size'], 0, 1, 'C');
 
-            $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - $top - 23));
-            $pdf->SetFontSize($this->BIG_FONT);
+            $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - 41));
+            $pdf->SetFont('Gill', '', $this->BIG_FONT);
             $pdf->Cell($effective_width, 12, $price, 0, 1, 'C');
 
             if ($item['startDate'] != '' && $item['endDate'] != '') {
                 // intl would be nice
-                $datestr = date('M j', strtotime($item['startDate']))
+                $datestr = date('M d', strtotime($item['startDate']))
                     . '-'
-                    . date('M j', strtotime($item['endDate']));
-                $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - $top - 15));
+                    . date('M d', strtotime($item['endDate']));
+                $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - 33));
                 $pdf->SetFont('GillBook', '', $this->SMALL_FONT);
                 $pdf->Cell($effective_width, 20, $datestr, 0, 1, 'R');
             }
 
             if ($item['originShortName'] != '') {
-                $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - $top - 15));
+                $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - 33));
                 $pdf->SetFontSize($this->SMALL_FONT);
                 $pdf->SetFont('GillBook', '', $this->SMALL_FONT);
                 $pdf->Cell($effective_width, 20, $item['originShortName'], 0, 1, 'L');

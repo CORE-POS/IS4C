@@ -506,6 +506,28 @@ class FannieSignage
         $this->overrides[$upc][$field_name] = $value;
     }
 
+    public function formatPrice($price)
+    {
+        if (substr($price, -3) == '.33') {
+            $ttl = round(3*$price);
+            return '3 / $' . $ttl;
+        } elseif (substr($price, -3) == '.66' || substr($price, -3) == '.67') {
+            $ttl = round(3*$price);
+            return '3 / $' . $ttl;
+        } elseif (substr($price, -3) == '.50') {
+            $ttl = round(2*$price);
+            return '2 / $' . $ttl;
+        } elseif (substr($price, -3) == '.00' && $price <= 5.00) {
+            $mult = 2;
+            while (($mult+1)*$price <= 10) {
+                $mult++;
+            }
+            return sprintf('%d / $%d', $mult, round($mult*$price));
+        } else {
+            return sprintf('$%.2f', $price);
+        }
+    }
+
     public function drawPDF()
     {
 
