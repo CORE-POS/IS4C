@@ -60,14 +60,19 @@ class ItemFlags extends FanniePage {
                     $db->exec_statement($insP,array($bit_number,$desc));    
                 }
             }
-        }
-        elseif (FormLib::get_form_value('updateBtn') !== ''){
+        } elseif (FormLib::get_form_value('updateBtn') !== '') {
             $ids = FormLib::get_form_value('mask',array());
             $descs = FormLib::get_form_value('desc',array());
-            $upP = $db->prepare_statement("UPDATE prodFlags SET description=? WHERE bit_number=?");
+            $active = FormLib::get('active', array());
+            $upP = $db->prepare_statement("
+                UPDATE prodFlags 
+                SET description=?,
+                    active=?
+                WHERE bit_number=?");
             for($i=0;$i<count($ids);$i++){
                 if (isset($descs[$i]) && !empty($descs[$i])){
-                    $db->exec_statement($upP,array($descs[$i],$ids[$i]));   
+                    $a = in_array($ids[$i], $active) ? 1 : 0;
+                    $db->exec_statement($upP,array($descs[$i],$a,$ids[$i]));   
                 }
             }
         }
@@ -85,7 +90,8 @@ class ItemFlags extends FanniePage {
         return True;
     }
 
-    function body_content(){
+    function body_content()
+    {
         global $FANNIE_OP_DB;
         global $FANNIE_COOP_ID;
         // If there were errors in preprocess().
@@ -97,32 +103,49 @@ class ItemFlags extends FanniePage {
         echo '<form action="'.$_SERVER['PHP_SELF'].'" method="post">';
         $db = FannieDB::get($FANNIE_OP_DB);
         if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' ) {
-            $q = $db->prepare_statement("SELECT bit_number,description FROM prodFlags ORDER BY bit_number");
+            $q = $db->prepare_statement("SELECT bit_number,description,active FROM prodFlags ORDER BY bit_number");
             $excelCols = array('','AJ','AK','AL','AM','AN','AO','AP','AQ','AR','AS','AT','AU','AV','AW','AX','AY','AZ');
         } else {
-            $q = $db->prepare_statement("SELECT bit_number,description FROM prodFlags ORDER BY description");
+            $q = $db->prepare_statement("SELECT bit_number,description,active FROM prodFlags ORDER BY description");
         }
         $r = $db->exec_statement($q);
         echo '<div class="row">
             <div class="col-sm-6">';
-        echo '<b>Current Flags</b>:<br />';
         echo '<table class="table form-horizontal">';
-        while($w = $db->fetch_row($r)){
-            if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' ) {
-                printf('<tr><td>%d. %s</td><td><input type="text" name="desc[]" 
+        echo '<tr>
+            <th>Current Flags</th>
+            <th>Enabled</th>
+            <th><span class="glyphicon glyphicon-trash"></span></th>
+            </tr>';
+        while ($w = $db->fetch_row($r)) {
+            if (isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' ) {
+                printf('<tr><td>%d. %s <input type="text" name="desc[]" 
                     class="form-control" value="%s" />
                     <input type="hidden" name="mask[]" value="%d" /></td>
+                    <td><input type="checkbox" name="active[]" value="%d"
+                        %s /></td>
                     <td><input type="checkbox" name="del[]" value="%d" /></td>
                     </tr>',
-                    $w['bit_number'],($w['bit_number'] <= count($excelCols))?$excelCols[$w['bit_number']]:'',$w['description'],$w['bit_number'],$w['bit_number']
+                    $w['bit_number'],
+                    ($w['bit_number'] <= count($excelCols))?$excelCols[$w['bit_number']]:'',
+                    $w['description'],
+                    $w['bit_number'],
+                    $w['bit_number'],
+                    ($w['active'] ? 'checked' : ''),
+                    $w['bit_number']
                 );
             } else {
                 printf('<tr><td><input type="text" name="desc[]" value="%s" 
                     class="form-control" />
                     <input type="hidden" name="mask[]" value="%d" /></td>
+                    <td><input type="checkbox" name="active[]" value="%d"
+                        %s /></td>
                     <td><input type="checkbox" name="del[]" value="%d" /></td>
                     </tr>',
-                    $w['description'],$w['bit_number'],$w['bit_number']
+                    $w['description'],$w['bit_number'],
+                    $w['bit_number'],
+                    ($w['active'] ? 'checked' : ''),
+                    $w['bit_number']
                 );
             }
         }

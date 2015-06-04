@@ -45,18 +45,25 @@ class ItemFlagsModule extends ItemModule
         $ret .= '<div id="ItemFlagsTable" class="col-sm-5">';
 
         $dbc = $this->db();
-        $q = "SELECT f.description,
-            f.bit_number,
-            (1<<(f.bit_number-1)) & p.numflag AS flagIsSet
-            FROM products AS p, prodFlags AS f
-            WHERE p.upc=?";
+        $q = "
+            SELECT f.description,
+                f.bit_number,
+                (1<<(f.bit_number-1)) & p.numflag AS flagIsSet
+            FROM products AS p, 
+                prodFlags AS f
+            WHERE p.upc=?
+                AND f.active=1";
         $p = $dbc->prepare_statement($q);
         $r = $dbc->exec_statement($p,array($upc));
         
         if ($dbc->num_rows($r) == 0){
             // item does not exist
-            $p = $dbc->prepare_statement('SELECT f.description,f.bit_number,0 AS flagIsSet
-                    FROM prodFlags AS f');
+            $p = $dbc->prepare_statement('
+                SELECT f.description,
+                    f.bit_number,
+                    0 AS flagIsSet
+                FROM prodFlags AS f
+                WHERE f.active=1');
             $r = $dbc->exec_statement($p);
         }
 

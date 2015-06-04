@@ -33,6 +33,7 @@ class ProdFlagsModel extends BasicModel
     protected $columns = array(
     'bit_number' => array('type'=>'TINYINT', 'primary_key'=>true),
     'description' => array('type'=>'VARCHAR(50)'),
+    'active' => array('type'=>'TINYINT', 'default'=>1),
     );
 
     public function doc()
