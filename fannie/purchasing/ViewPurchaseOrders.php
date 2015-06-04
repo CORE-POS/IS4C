@@ -116,7 +116,8 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         $prep = $dbc->prepare_statement($query);
         $result = $dbc->exec_statement($prep, $args);
 
-        $ret = '<table class="table table-striped table-bordered tablesorter">';
+        $ret = '<div class="table-responsive">
+            <table class="table table-striped table-bordered ">';
         $ret .= '<thead><tr><th>Created</th><th>Vendor</th><th># Items</th><th>Est. Cost</th>
             <th>Placed</th><th>Received</th><th>Rec. Cost</th></tr></thead><tbody>';
         $count = 1;
@@ -132,7 +133,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
                     (!empty($w['receivedCost']) ? $w['receivedCost'] : 0.00)
             );
         }
-        $ret .= '</tbody></table>';
+        $ret .= '</tbody></table></div>';
 
         return $ret;
     }
