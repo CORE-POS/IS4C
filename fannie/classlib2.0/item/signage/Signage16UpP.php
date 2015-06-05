@@ -60,7 +60,7 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
 
             $price = sprintf('$%.2f', $item['normal_price']);
             if ($item['scale']) {
-                $price .= ' /lb';
+                $price .= ' /lb.';
             } else {
                 $price = $this->formatPrice($item['normal_price']);
             }
@@ -103,7 +103,20 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
                     $pdf->SetXY($left + ($width*$column), $y);
                 } else {
                     if ($pdf->GetY() - $y < 12) {
-                        $pdf->Ln(6);
+                        $words = explode(' ', $item['description']);
+                        $multi = '';
+                        for ($i=0;$i<count($words)/2;$i++) {
+                            $multi .= $words[$i] . ' ';
+                        }
+                        $multi = trim($multi) . "\n";
+                        for ($i=count($words)/2; $i<count($words); $i++) {
+                            $multi .= $words[$i] . ' ';
+                        }
+                        $item['description'] = trim($multi);
+                        $pdf->SetFillColor(0xff, 0xff, 0xff);
+                        $pdf->Rect($left + ($width*$column), $y, $left + ($width*$column) + $effective_width, $pdf->GetY(), 'F');
+                        $pdf->SetXY($left + ($width*$column), $y);
+                        $pdf->MultiCell($effective_width, 6, $item['description'], 0, 'C');
                     }
                     break;
                 }
@@ -111,6 +124,17 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
 
             $pdf->SetX($left + ($width*$column));
             $pdf->SetFont('GillBook', '', $this->SMALLER_FONT);
+            $item['size'] = strtolower($item['size']);
+            if (substr($item['size'], -1) != '.') {
+                $item['size'] .= '.'; // end abbreviation w/ period
+                $item['size'] = str_replace('fz.', 'fl oz.', $item['size']);
+            }
+            if (substr($item['size'], 0, 1) == '.') {
+                $item['size'] = '0' . $item['size']; // add leading zero on decimal qty
+            }
+            if (strlen(ltrim($item['upc'], '0')) < 5 && $item['scale']) {
+                $item['size'] = 'PLU# ' . ltrim($item['upc'], '0'); // show PLU #s on by-weight
+            }
             $pdf->Cell($effective_width, 6, $item['size'], 0, 1, 'C');
 
             $pdf->Ln(4);
@@ -121,11 +145,11 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
             if ($item['startDate'] != '' && $item['endDate'] != '') {
                 // intl would be nice
                 $datestr = date('M d', strtotime($item['startDate']))
-                    . '-'
+                    . chr(0x96) // en dash in cp1252
                     . date('M d', strtotime($item['endDate']));
                 $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - $top - 10));
                 $pdf->SetFont('GillBook', '', $this->SMALL_FONT);
-                $pdf->Cell($effective_width, 6, $datestr, 0, 1, 'R');
+                $pdf->Cell($effective_width, 6, strtoupper($datestr), 0, 1, 'R');
             }
 
             if ($item['originShortName'] != '') {

@@ -517,6 +517,9 @@ class FannieSignage
         } elseif (substr($price, -3) == '.50') {
             $ttl = round(2*$price);
             return '2 / $' . $ttl;
+        } elseif (substr($price, -3) == '.25') {
+            $ttl = round(4*$price);
+            return '4 / $' . $ttl;
         } elseif (substr($price, -3) == '.00' && $price <= 5.00) {
             $mult = 2;
             while (($mult+1)*$price <= 10) {
