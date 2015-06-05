@@ -59,8 +59,7 @@
 .tablesorter-bootstrap > tbody > tr.even:hover > td,
 .tablesorter-bootstrap > tbody > tr.tablesorter-hasChildRow.odd:hover ~ .tablesorter-childRow.odd > td,
 .tablesorter-bootstrap > tbody > tr.tablesorter-hasChildRow.even:hover ~ .tablesorter-childRow.even > td {
-	/*background-color: #f5f5f5;*/
-    background-color: #d9edf7;
+	background-color: #f5f5f5;
 }
 .tablesorter-bootstrap > tbody > tr.even > td,
 .tablesorter-bootstrap > tbody > tr.tablesorter-hasChildRow.even:hover ~ tr.tablesorter-hasChildRow.even ~ .tablesorter-childRow.even > td {

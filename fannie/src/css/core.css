@@ -10,3 +10,16 @@
 .btn-reset {
     margin-left: 25px;
 }
+
+/**
+  Override the hover row color in the tablesorter bootstrap
+  theme. Adding the extra tablesorter-core class increases
+  specificity.
+*/
+.tablesorter-bootstrap.tablesorter-core > tbody > tr.hover > td,
+.tablesorter-bootstrap.tablesorter-core > tbody > tr.odd:hover > td,
+.tablesorter-bootstrap.tablesorter-core > tbody > tr.even:hover > td,
+.tablesorter-bootstrap.tablesorter-core > tbody > tr.tablesorter-hasChildRow.odd:hover ~ .tablesorter-childRow.odd > td,
+.tablesorter-bootstrap.tablesorter-core > tbody > tr.tablesorter-hasChildRow.even:hover ~ .tablesorter-childRow.even > td {
+    background-color: #d9edf7;
+}
