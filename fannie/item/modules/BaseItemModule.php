@@ -51,44 +51,51 @@ class BaseItemModule extends ItemModule
         $ret = '<div id="BaseItemFieldset" class="panel panel-default">';
 
         $dbc = $this->db();
-        $p = $dbc->prepare_statement('SELECT
-                                        p.description,
-                                        p.pricemethod,
-                                        p.normal_price,
-                                        p.cost,
-                                        CASE 
-                                            WHEN p.size IS NULL OR p.size=\'\' OR p.size=\'0\' AND v.size IS NOT NULL THEN v.size 
-                                            ELSE p.size 
-                                        END AS size,
-                                        p.unitofmeasure,
-                                        p.modified,
-                                        p.special_price,
-                                        p.end_date,
-                                        p.subdept,
-                                        p.department,
-                                        p.tax,
-                                        p.foodstamp,
-                                        p.scale,
-                                        p.qttyEnforced,
-                                        p.discount,
-                                        p.line_item_discountable,
-                                        p.brand AS manufacturer,
-                                        x.distributor,
-                                        u.description as ldesc,
-                                        p.default_vendor_id,
-                                        v.units AS caseSize,
-                                        v.sku,
-                                        p.inUse,
-                                        p.idEnforced,
-                                        p.local,
-                                        p.deposit,
-                                        p.discounttype,
-                                        p.wicable
-                                      FROM products AS p 
-                                        LEFT JOIN prodExtra AS x ON p.upc=x.upc 
-                                        LEFT JOIN productUser AS u ON p.upc=u.upc 
-                                        LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id = v.vendorID
-                                      WHERE p.upc=?');
+        $q = '
+            SELECT
+                p.description,
+                p.pricemethod,
+                p.normal_price,
+                p.cost,
+                CASE 
+                    WHEN p.size IS NULL OR p.size=\'\' OR p.size=\'0\' AND v.size IS NOT NULL THEN v.size 
+                    ELSE p.size 
+                END AS size,
+                p.unitofmeasure,
+                p.modified,
+                p.last_sold,
+                p.special_price,
+                p.end_date,
+                p.subdept,
+                p.department,
+                p.tax,
+                p.foodstamp,
+                p.scale,
+                p.qttyEnforced,
+                p.discount,
+                p.line_item_discountable,
+                p.brand AS manufacturer,
+                x.distributor,
+                u.description as ldesc,
+                p.default_vendor_id,
+                v.units AS caseSize,
+                v.sku,
+                p.inUse,
+                p.idEnforced,
+                p.local,
+                p.deposit,
+                p.discounttype,
+                p.wicable
+            FROM products AS p 
+                LEFT JOIN prodExtra AS x ON p.upc=x.upc 
+                LEFT JOIN productUser AS u ON p.upc=u.upc 
+                LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id = v.vendorID
+            WHERE p.upc=?';
+        $p_def = $dbc->tableDefinition('products');
+        if (!isset($p_def['last_sold'])) {
+            $q = str_replace('p.last_sold', 'NULL as last_sold', $q);
+        }
+        $p = $dbc->prepare($q);
         $r = $dbc->exec_statement($p,array($upc));
         $rowItem = array();
         $prevUPC = False;
@@ -281,6 +288,8 @@ class BaseItemModule extends ItemModule
         }
         $ret .= ' <label style="color:darkmagenta;">Modified</label>
                 <span style="color:darkmagenta;">'. $rowItem['modified'] . '</span>';
+        $ret .= ' | <label style="color:darkmagenta;">Last Sold</label>
+                <span style="color:darkmagenta;">'. (empty($rowItem['last_sold']) ? 'n/a' : $rowItem['last_sold']) . '</span>';
         $ret .= '</div>'; // end panel-heading
 
         $ret .= '<div class="panel-body">';

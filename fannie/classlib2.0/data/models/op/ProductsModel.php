@@ -82,6 +82,7 @@ class ProductsModel extends BasicModel
     'current_origin_id'=>array('type'=>'INT','default'=>0),
     'auto_par'=>array('type'=>'DOUBLE','default'=>0),
     'price_rule_id'=>array('type'=>'INT', 'default'=>0),
+    'last_sold'=>array('type'=>'DATETIME'),
     'id'=>array('type'=>'INT','default'=>0,'primary_key'=>true,'increment'=>true)
     );
 
@@ -1971,6 +1972,43 @@ it won\'t *do* anything.
                 }
             }
             $this->instance["price_rule_id"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function last_sold()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["last_sold"])) {
+                return $this->instance["last_sold"];
+            } else if (isset($this->columns["last_sold"]["default"])) {
+                return $this->columns["last_sold"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'last_sold',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["last_sold"]) || $this->instance["last_sold"] != func_get_args(0)) {
+                if (!isset($this->columns["last_sold"]["ignore_updates"]) || $this->columns["last_sold"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["last_sold"] = func_get_arg(0);
         }
         return $this;
     }
