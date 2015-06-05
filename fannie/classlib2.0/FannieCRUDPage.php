@@ -148,9 +148,9 @@ class FannieCRUDPage extends FannieRESTfulPage
 
         $saved = $obj->save();
         if ($saved) {
-            header('Location: ' . $_SERVER['PHP_SELF'] . '?flash[]=sAdded+Entry');
+            echo json_encode(array('error'=>0, 'added'=>1));
         } else {
-            header('Location: ' . $_SERVER['PHP_SELF'] . '?flash[]=dError+Adding+Entry');
+            echo json_encode(array('error'=>1, 'added'=>0));
         }
 
         return false;
@@ -175,7 +175,8 @@ class FannieCRUDPage extends FannieRESTfulPage
         $obj = $this->getCRUDModel();
         $id_col = $this->getIdCol();
         $columns = $obj->getColumns();
-        $ret = '<form method="post">';
+        $ret = '<form class="crud-form" method="post">';
+        $ret .= '<div class="flash-div">';
         foreach (FormLib::get('flash', array()) as $f) {
             $css = '';
             switch (substr($f, 0, 1)) {
@@ -192,6 +193,7 @@ class FannieCRUDPage extends FannieRESTfulPage
                 . '<span>&times;</span></button>'
                 . '</div>';
         }
+        $ret .= '</div>';
         $ret .= '<table class="table table-bordered">';
         $ret .= '<tr>';
         foreach ($columns as $col_name => $c) {
@@ -223,9 +225,25 @@ class FannieCRUDPage extends FannieRESTfulPage
         $ret .= '<p>
             <button type="submit" class="btn btn-default">Save Changes</button>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <a href="?_method=put" class="btn btn-default">Add Entry</a>
+            <a href="" onclick="addEntry(); return false;" class="btn btn-default">Add Entry</a>
             </p>';
         $ret .= '</form>';
+        $ret .= '<script type="text/javascript">
+            function addEntry()
+            {
+                $.ajax({
+                    method: "PUT",
+                    dataType: "json",
+                    success: function(resp) {
+                        if (resp.added) {
+                            $("form.crud-form").submit();
+                        } else {
+                            showBootstrapAlert(".flash-div", "danger", "Error adding entry");
+                        }
+                    }
+                });
+            }
+            </script>';
 
         return $ret;
     }
