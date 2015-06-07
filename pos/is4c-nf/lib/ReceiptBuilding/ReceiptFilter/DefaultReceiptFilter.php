@@ -47,6 +47,7 @@ class DefaultReceiptFilter
         // walk through backwards and pick rows to keep
         $dbc = Database::tDataConnect();
         $count = 0;
+        $prev_row = array();
         while($row = $dbc->fetch_row($data)) {
             if ($tax === False && $row['upc'] == 'TAX') {
                 // keep tax row. relevant to total and subtotal
@@ -67,6 +68,17 @@ class DefaultReceiptFilter
                 // skip the YOU SAVED lines
                 if ($row['trans_status'] == 'D') {
                     continue;
+                } elseif ($row['trans_status'] == 'AD') {
+                    if (isset($prev_row['department'])) {
+                        // auto-deposit records need to stay with their item
+                        // rewrite department so they group together
+                        $row['department'] = $prev_row['department'];
+                    }
+                    if (isset($prev_row['upc'])) {
+                        // append parent item UPC to deposit UPC so that
+                        // merging same-UPC records works correctly
+                        $row['upc'] .= $prev_row['upc'];
+                    }
                 }
                 // keep item rows
                 // save department for fetching category headers
@@ -107,6 +119,10 @@ class DefaultReceiptFilter
                 // print comment rows as if they were items
                 $row['trans_type'] = 'I';
                 $row['upc'] = 'COMMENT';
+                if (isset($prev_row['department'])) {
+                    // keep comment near item where it was entered
+                    $row['department'] = $prev_row['department'];
+                }
                 $returnset[] = $row;
                 $count++;    
             } else if ($row['trans_type'] == '0' && substr($row['description'],0,7)=="** Tare"){
@@ -125,6 +141,8 @@ class DefaultReceiptFilter
                 $returnset[] = $tare;
                 $count++;
             }
+
+            $prev_row = $row;
         }
 
         $returnset = array_reverse($returnset);
