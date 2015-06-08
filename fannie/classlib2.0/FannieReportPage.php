@@ -185,6 +185,7 @@ class FannieReportPage extends FanniePage
             $this->content_function = 'report_content'; 
             if ($this->config->get('WINDOW_DRESSING')) {
                 $this->has_menus(true);
+                $this->new_tablesorter = true;
             } else {
                 $this->has_menus(false);
             }
@@ -936,7 +937,7 @@ class FannieReportPage extends FanniePage
                 // auto-link UPCs to edit tool
                 $row[$i] = sprintf('<a target="_new%s" href="%sitem/itemMaint.php?upc=%s">%s</a>',
                     $row[$i],$url,$row[$i],$row[$i]);
-            } else if (!$date && preg_match('/^\d\d\d\d-\d\d-\d\d$/', $row[$i])) {
+            } else if (!$header && !$date && preg_match('/^\d\d\d\d-\d\d-\d\d$/', $row[$i])) {
                 // cell contains a date column
                 $date = $row[$i];
             } else if ($date && !$trans && preg_match('/^\d+-\d+-\d+$/', $row[$i])) {
