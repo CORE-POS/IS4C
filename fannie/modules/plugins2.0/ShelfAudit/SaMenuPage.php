@@ -62,8 +62,12 @@ input[type="submit"] {
 <input type="submit" value="Inventory"
     onclick="location='SaHandheldPage.php';return false;" />
 <hr />
+<!--
 <input type="submit" value="Price Check"
     onclick="location='SaPriceChangePage.php';return false;" />
+    -->
+<input type="submit" value="Price Check"
+    onclick="location='../../../item/handheld/ItemStatusPage.php';return false;" />
 <hr />
 <input type="submit" value="Ordering Info"
     onclick="location='SaOrderingPage.php';return false;" />
