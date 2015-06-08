@@ -49,7 +49,7 @@ class ItemStatusPage extends FannieRESTfulPage
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $product = new ProductsModel($dbc);
-        $product->upc($upc);
+        $product->upc($this->upc);
         $product->load();
         $info = $product->getTagData();
 
@@ -61,7 +61,7 @@ class ItemStatusPage extends FannieRESTfulPage
             }
         }
 
-        $tag->id($this->ID);
+        $tag->id($this->tagID);
         $tag->description($info['description']);
         $tag->brand($info['brand']);
         $tag->normal_price($info['normal_price']);
@@ -163,14 +163,15 @@ class ItemStatusPage extends FannieRESTfulPage
         $ret .= '<p><form class="form-inline" method="get">';
         $tags = new ShelftagsModel($dbc);
         $tags->upc($upc);
+        $tags->id(0, '>=');
         $queued = $tags->find('id');
         $queues = new ShelfTagQueuesModel($dbc);
         $verb = 'Queue';
         if (count($queued) > 0) {
-            if ($tags->id() == 0) {
+            if ($queued[0]->id() == 0) {
                 $ret .= 'Tags queued for Default';
             } else {
-                $queues->shelfTagQueueID($tags->id());
+                $queues->shelfTagQueueID($queued[0]->id());
                 $queues->load();
                 $ret .= 'Tags queued for ' . $queues->description();
             }
