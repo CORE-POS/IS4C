@@ -199,7 +199,8 @@ class ItemStatusPage extends FannieRESTfulPage
         $this->add_script('../autocomplete.js');
         $this->add_onload_command("bindAutoComplete('#upc', '../../ws/', 'item');\n");
         $this->add_onload_command("\$('#upc').focus();\n");
-        return '<form action="' . $_SERVER['PHP_SELF'] . '" method="get">
+        $this->addOnloadCommand("enableLinea('#upc', function(){ \$('#upc-form').submit(); });\n");
+        return '<form id="upc-form" action="' . $_SERVER['PHP_SELF'] . '" method="get">
             <div class="form-group form-inline">
                 <label>UPC</label>
                 <input type="text" name="id" id="upc" class="form-control" />
