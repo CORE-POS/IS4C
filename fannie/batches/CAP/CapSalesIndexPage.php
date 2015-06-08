@@ -40,6 +40,7 @@ class CapSalesIndexPage extends FanniePage {
         <ul>
         <li><a href="CoopDealsUploadPage.php">Upload Price File</a></li>
         <li><a href="CoopDealsReviewPage.php">Review data &amp; create sales batches</a></li>
+        <li><a href="CoopDealsSignsPage.php">Print Sale Signs</a></li>
         </ul>
         <?php
         return ob_get_clean();

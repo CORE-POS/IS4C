@@ -58,8 +58,11 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
             $row = floor($sign / 4);
             $column = $sign % 4;
 
-            $price = sprintf('$%.2f', $item['normal_price']);
+            $price = $item['normal_price'];
             if ($item['scale']) {
+                if (substr($price, 0, 1) != '$') {
+                    $price = sprintf('$%.2f', $price);
+                }
                 $price .= ' /lb.';
             } else {
                 $price = $this->formatPrice($item['normal_price']);

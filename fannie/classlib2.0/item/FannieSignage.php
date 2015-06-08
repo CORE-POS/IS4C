@@ -526,6 +526,10 @@ class FannieSignage
                 $mult++;
             }
             return sprintf('%d / $%d', $mult, round($mult*$price));
+        } elseif (substr($price, 0, 1) == '$') {
+            return $price;
+        } elseif (strstr($price, '/')) {
+            return $price;
         } else {
             return sprintf('$%.2f', $price);
         }
