@@ -31,6 +31,7 @@ class FannieCRUDPage extends FannieRESTfulPage
     protected $column_name_map = array();
     public $themed = true;
     protected $flashes = array();
+    protected $display_sorting = array();
 
     protected function getIdCol()
     {
@@ -198,11 +199,15 @@ class FannieCRUDPage extends FannieRESTfulPage
         $ret .= '<tr>';
         foreach ($columns as $col_name => $c) {
             if ($col_name != $id_col) {
+                if (isset($this->column_name_map[$col_name])) {
+                    $col_name = $this->column_name_map[$col_name];
+                }
                 $ret .= '<th>' . ucwords($col_name) . '</th>';
             }
         }
         $ret .= '</tr>';
-        foreach ($obj->find($id_col) as $o) {
+        $sort = !empty($this->display_sorting) ? $this->display_sorting : $id_col;
+        foreach ($obj->find($sort) as $o) {
             $ret .= '<tr>';
             foreach ($columns as $col_name => $c) {
                 if ($col_name == $id_col) {
