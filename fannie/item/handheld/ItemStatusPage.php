@@ -36,6 +36,12 @@ class ItemStatusPage extends FannieRESTfulPage
 
     public function preprocess()
     {
+        if (php_sapi_name() !== 'cli') {
+            /* this page requires a session to pass some extra
+               state information through multiple requests */
+            @session_start();
+        }
+
         $this->__routes[] = 'get<tagID><upc>';
 
         return parent::preprocess();
@@ -61,6 +67,7 @@ class ItemStatusPage extends FannieRESTfulPage
             }
         }
 
+        $_SESSION['LastTagQueue'] = $this->tagID;
         $tag->id($this->tagID);
         $tag->description($info['description']);
         $tag->brand($info['brand']);
@@ -139,6 +146,10 @@ class ItemStatusPage extends FannieRESTfulPage
             ORDER BY s.superID');
         $supersR = $dbc->execute($supersP, array($product->department()));
         $master = false;
+        // preserve queue selection if user is entering several tags
+        if (isset($_SESSION['LastTagQueue']) && is_numeric($_SESSION['LastTagQueue'])) {
+            $master = $_SESSION['LastTagQueue'];
+        }
         $ret .= '<p><strong>Super(s)</strong>: ';
         while ($supersW = $dbc->fetch_row($supersR)) {
             if ($master === false) {
@@ -182,6 +193,7 @@ class ItemStatusPage extends FannieRESTfulPage
         $ret .= '<input type="hidden" name="upc" value="' . $upc . '" />
             <button class="btn btn-default" type="submit">' . $verb . ' Tags</button>
             for <select name="tagID" class="form-control">';
+        $queues->reset();
         $ret .= $queues->toOptions($master);
         $ret .= '</select></form></p>';
 
@@ -199,8 +211,10 @@ class ItemStatusPage extends FannieRESTfulPage
     {
         $this->add_script('../autocomplete.js');
         $this->add_onload_command("bindAutoComplete('#upc', '../../ws/', 'item');\n");
-        $this->add_onload_command("\$('#upc').focus();\n");
-        $this->addOnloadCommand("enableLinea('#upc', function(){ \$('#upc-form').submit(); });\n");
+        if (FormLib::get('linea') != 1) {
+            $this->add_onload_command("\$('#upc').focus();\n");
+        }
+        $this->addOnloadCommand("enableLinea('#upc', function(){ \$('#upc-form').append('<input type=hidden name=linea value=1 />').submit(); });\n");
         return '<form id="upc-form" action="' . $_SERVER['PHP_SELF'] . '" method="get">
             <div class="form-group form-inline">
                 <label>UPC</label>
