@@ -42,11 +42,24 @@ class QuickLookupsEditor extends FannieCRUDPage
     public function helpContent()
     {
         return '<p>
-            Add, delete, or rename shelf tag queues. Use the red trash
-            icon to delete. The Add button creates a new entry named "NEW".
-            Edit existing entries and click save to rename queues.
-            </p>';
+            Manage entries in QuickMenus or QuickKeys. These are plugins for
+            putting a list of commands in a menu or series of touchable/clickable
+            buttons on the lane.
+            </p>
+            <p>
+            The Menu Number controls which entries are grouped together. For example,
+            when the cashier enters "QM1" or "QK1" all the entries in Menu Number one
+            are displayed. Position in Menu controls the order of entries within the
+            menu. Lowered numbered positions are displayed first and higher numbered
+            positions are displayed last.
+            </p>
+            <p>
+            The Label is the text displayed on the cashier\'s screen; the Action is the
+            POS command triggered when the cashier chooses that particular entry.
+            </p>
+            ';
     }
 }
 
 FannieDispatch::conditionalExec();
+
