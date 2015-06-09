@@ -37,6 +37,8 @@ class DepartmentMovementReport extends FannieReportPage
     public $report_set = 'Movement Reports';
     public $themed = true;
 
+    protected $new_tablesorter = false;
+
     /**
       Lots of options on this report.
     */
@@ -372,8 +374,8 @@ class DepartmentMovementReport extends FannieReportPage
     </div>
 </div>
     <p>
-        <button type=submit name=submit value="Submit" class="btn btn-default">Submit</button>
-        <button type=reset name=reset class="btn btn-default"
+        <button type=submit name=submit value="Submit" class="btn btn-default btn-core">Submit</button>
+        <button type=reset name=reset class="btn btn-default btn-reset"
             onclick="$('#super-id').val('').trigger('change');">Start Over</button>
     </p>
 </form>
