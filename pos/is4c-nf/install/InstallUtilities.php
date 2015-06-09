@@ -1099,6 +1099,7 @@ class InstallUtilities extends LibraryClass
             'HouseCouponsModel',
             'HouseCouponItemsModel',
             'HouseVirtualCouponsModel',
+            'IgnoredBarcodes',
             'MasterSuperDeptsModel',
             'MemberCardsModel',
             'MemtypeModel',
