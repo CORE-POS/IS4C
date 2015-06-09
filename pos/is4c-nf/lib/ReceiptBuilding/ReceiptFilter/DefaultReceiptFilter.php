@@ -193,6 +193,9 @@ class DefaultReceiptFilter
             if ($row['regPrice'] == $row['unitPrice']) {
                 continue;
             }
+            if ($row['charflag'] == 'SO') {
+                continue;
+            }
             $savings = ($row['quantity']*$row['regPrice']) - ($row['quantity']*$row['unitPrice']);
             $new = $row;
             $new['description'] = sprintf('** YOU SAVED $%.2f **', $savings);
