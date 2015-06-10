@@ -68,7 +68,7 @@ class DefaultReceiptFilter
                 // skip the YOU SAVED lines
                 if ($row['trans_status'] == 'D') {
                     continue;
-                } elseif ($row['trans_status'] == 'AD') {
+                } elseif ($row['trans_subtype'] == 'AD') {
                     if (isset($prev_row['department'])) {
                         // auto-deposit records need to stay with their item
                         // rewrite department so they group together

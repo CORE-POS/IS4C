@@ -803,7 +803,7 @@ class UPC extends Parser
             'upc' => $upc,
             'description' => $description,
             'trans_type' => 'I',
-            'trans_status' => 'AD',
+            'trans_subtype' => 'AD',
             'department' => $row['department'],
             'quantity' => $quantity,
             'ItemQtty' => $quantity,
