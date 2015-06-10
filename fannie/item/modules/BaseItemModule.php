@@ -497,7 +497,7 @@ class BaseItemModule extends ItemModule
                 <select name="department" id="department" 
                     class="form-control chosen-select" onchange="baseItemChainSubs();">';
         foreach ($depts as $id => $name){
-            if (is_array($supers[$superID])) {
+            if (is_numeric($superID) && is_array($supers[$superID])) {
                 if (!in_array($id, $supers[$superID]) && $id != $rowItem['department']) {
                     continue;
                 }
