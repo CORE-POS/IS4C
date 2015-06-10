@@ -375,7 +375,7 @@ class PIMemberPage extends PIKillerPage {
         echo '<td></td>';
         echo '<td class="yellowbg">First Name</td>';
         echo '<td class="yellowbg">Last Name</td>';
-        echo "<td colspan=4 width=\"300px\" rowspan=8>";
+        echo "<td colspan=4 width=\"300px\" valign=\"top\" rowspan=8>";
         echo $this->text_or_area('notetext',$this->__models['note'],
                 array('rows'=>7,'cols'=>50), 2);
         echo "</td>";
