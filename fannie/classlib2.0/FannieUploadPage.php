@@ -661,6 +661,17 @@ class FannieUploadPage extends \FanniePage
         foreach (\FormLib::get('cs', array()) as $column) {
             $ret .= sprintf('<input type="hidden" name="cs[]" value="%s" />', $column);
         }
+        foreach ($_POST as $key => $val) {
+            if ($key != 'cs') {
+                if (is_array($val)) {
+                    foreach ($val as $v) {
+                        $ret .= sprintf('<input type="hidden" name="%s[]" value="%s" />', $key, $v);
+                    }
+                } else {
+                    $ret .= sprintf('<input type="hidden" name="%s" value="%s" />', $key, $val);
+                }
+            }
+        }
         $ret .= '</div>';
 
         $this->add_onload_command("doUpload('" . $this->upload_file_name . "', 0);");

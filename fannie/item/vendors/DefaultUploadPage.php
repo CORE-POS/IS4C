@@ -349,8 +349,8 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
 
     function preview_content()
     {
-        return '<input type="checkbox" name="rm_cds" checked /> Remove check digits<br />
-                <input type="checkbox" name="up_costs" checked /> Update product costs';
+        return '<input type="checkbox" name="rm_cds" value="1" checked /> Remove check digits<br />
+                <input type="checkbox" name="up_costs" value="1" checked /> Update product costs';
     }
 
     function results_content()
