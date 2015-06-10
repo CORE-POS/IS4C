@@ -265,7 +265,7 @@ class UPC extends Parser
                 // lookup UPC in tabe of ignored barcodes
                 // this just suppresses any error message from
                 // coming back
-                $query = 'SELECT upc FROM IgnoredBarcodes WHERE upc="' . $upc . "'";
+                $query = 'SELECT upc FROM IgnoredBarcodes WHERE upc=\'' . $upc . "'";
                 $result = $db->query($query);
                 if ($result && $db->num_rows($result)) {
                     return $this->default_json();
