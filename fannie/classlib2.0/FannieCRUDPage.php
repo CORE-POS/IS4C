@@ -21,17 +21,50 @@
 
 *********************************************************************************/
 
+namespace COREPOS\Fannie\API {
+
 /**
-  @class FannieRESTfulPage
+  @class FannieCRUDPage
+  Base class to generate an editor page for a given
+  table supporting Create/Read/Update/Delete.
+
+  Supports tables with a single primary key column
+  with an integer type. Primary key may or may not
+  be identity/increment.
 */
-class FannieCRUDPage extends FannieRESTfulPage
+class FannieCRUDPage extends \FannieRESTfulPage
 {
+    /**
+      @property $model_name
+      The model class for the table this page will
+      be managing
+    */
     protected $model_name = 'BasicModel';
-    protected $model = null;
+
+    /**
+      @property $column_name_map
+      By default, the display will show actual 
+      column names from the underlying table as
+      headers. To put alternate names in the user
+      facing interface (e.g., with spaces, more descriptive,
+      etc) use an associative array with:
+        [database column name] => [displayed name]
+
+      It is not necessary to specify aliases for all
+      (or any) columns.
+    */
     protected $column_name_map = array();
+
+    /**
+      By default, the user facing data is sorted on
+      the primary key column. To use an alternative sorting,
+      specify one or more database column names here.
+    */
+    protected $display_sorting = array();
+
+    protected $model = null;
     public $themed = true;
     protected $flashes = array();
-    protected $display_sorting = array();
 
     protected function getIdCol()
     {
@@ -100,7 +133,7 @@ class FannieCRUDPage extends FannieRESTfulPage
                 if ($col_name == $id_col) {
                     continue;
                 }
-                $vals = FormLib::get($col_name);
+                $vals = \FormLib::get($col_name);
                 if (!is_array($vals) || !isset($vals[$i])) {
                     continue;
                 }
@@ -178,7 +211,7 @@ class FannieCRUDPage extends FannieRESTfulPage
         $columns = $obj->getColumns();
         $ret = '<form class="crud-form" method="post">';
         $ret .= '<div class="flash-div">';
-        foreach (FormLib::get('flash', array()) as $f) {
+        foreach (\FormLib::get('flash', array()) as $f) {
             $css = '';
             switch (substr($f, 0, 1)) {
                 case 's':
@@ -221,7 +254,7 @@ class FannieCRUDPage extends FannieRESTfulPage
             $ret .= sprintf('<td>
                         <a href="?_method=delete&id=%s" class="btn btn-xs btn-default btn-danger"
                             onclick="return confirm(\'Delete entry?\');">
-                        ' . FannieUI::deleteIcon() . '</a>
+                        ' . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</a>
                         </td>',
                         $o->$id_col());
             $ret .= '</tr>';
@@ -252,5 +285,7 @@ class FannieCRUDPage extends FannieRESTfulPage
 
         return $ret;
     }
+}
+
 }
 

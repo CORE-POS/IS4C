@@ -26,7 +26,7 @@ if (!class_exists('FannieAPI.php')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class PriceRuleTypesPage extends FannieCRUDPage 
+class PriceRuleTypesPage extends \COREPOS\Fannie\API\FannieCRUDPage 
 {
     protected $model_name = 'PriceRuleTypesModel';
     protected $header = 'Price Rule Types';
