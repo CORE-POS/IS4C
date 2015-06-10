@@ -1454,6 +1454,26 @@ class $name extends " . ($as_view ? 'ViewModel' : 'BasicModel') . "\n");
     {
         return json_encode($this->instance);
     }
+
+    public function toOptions($selected=0)
+    {
+        if (count($this->unique) != 1) {
+            return '';
+        }
+        $id_col = $this->unique[0];
+        $label_col = array_keys($this->columns);
+        $label_col = $label_col[1];
+        $ret = '';
+        foreach ($this->find($label_col) as $obj) {
+            $ret .= sprintf('<option %s value="%d">%s</option>',
+                    $selected == $obj->$id_col() ? 'selected' : '',
+                    $obj->$id_col(),
+                    $obj->$label_col()
+            );
+        }
+
+        return $ret;
+    }
 }
 
 if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {

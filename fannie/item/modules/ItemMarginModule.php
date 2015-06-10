@@ -53,13 +53,90 @@ class ItemMarginModule extends ItemModule
                 </a></div>";
         $css = ($expand_mode == 1) ? '' : ' collapse';
         $ret .= '<div id="ItemMarginContents" class="panel-body' . $css . '">';
+        $ret .= '<div class="col-sm-5">';
         $ret .= '<div id="ItemMarginMeter">'; 
         $ret .= $this->calculateMargin($product->normal_price(),$product->cost(),$product->department(), $upc);
+        $ret .= '</div>';
+        $ret .= '</div>';
+        $ret .= '<div class="col-sm-6">';
+        $ret .= '<div class="form-group form-inline">
+                    <label>Pricing Rule</label>
+                    <select name="price-rule-id" class="form-control input-sm">
+                        <option value="0" ' . ($product->price_rule_id() == 0 ? 'selected' : '') . '>Normal</option>
+                        <option value="1" ' . ($product->price_rule_id() == 1 ? 'selected' : '') . '>Variable</option>
+                        <option value="-1" ' . ($product->price_rule_id() > 1 ? 'selected' : '') . '>Custom</option>
+                    </select>
+                    <input type="hidden" name="current-price-rule-id" value="' . $product->price_rule_id() . '" />
+                 </div>';
+        $rule = new PriceRulesModel($db);
+        if ($product->price_rule_id() > 1) {
+            $rule->priceRuleID($product->price_rule_id());
+            $rule->load();
+        }
+        $ret .= '<div class="form-group form-inline">
+                    <label>Custom</label>
+                    <select disabled name="price-rule-type" class="form-control input-sm">
+                    {{RULE_TYPES}}
+                    </select>
+                    <input type="text" class="form-control date-field input-sm" name="rule-review-date"
+                        disabled placeholder="Review Date" title="Review Date" value="{{REVIEW_DATE}}" />
+                    <input type="text" class="form-control input-sm" name="rule-details"
+                        disabled placeholder="Details" title="Details" value="{{RULE_DETAILS}}" />
+                 </div>';
+        $types = new PriceRuleTypesModel($db);
+        $ret = str_replace('{{RULE_TYPES}}', $types->toOptions($rule->priceRuleTypeID()), $ret);
+        $ret = str_replace('{{REVIEW_DATE}}', $rule->reviewDate(), $ret);
+        $ret = str_replace('{{RULE_DETAILS}}', $rule->details(), $ret);
         $ret .= '</div>';
         $ret .= '</div>';
         $ret .= '</div>';
 
         return $ret;
+    }
+
+    public function saveFormData($upc)
+    {
+        $db = $this->db();
+        $new_rule = FormLib::get('price-rule-id', 0);
+        $old_rule = FormLib::get('current-price-rule-id', 0);
+
+        if ($new_rule != $old_rule) {
+            $prod = new ProductsModel($db);
+            $rule = new PriceRulesModel($db);
+            switch ($new_rule) {
+                case 0: // no custom rule
+                case 1: // generic variable pricing
+                    /**
+                      Update the product with the generic rule ID
+                      If it was previously set to a custom rule,
+                      that custom rule can be deleted
+                    */
+                    $prod->price_rule_id($new_rule);
+                    if ($old_rule > 1) {
+                        $rule->priceRuleID($old_rule);
+                        $rule->delete();
+                    }
+                    break;
+                default: // custom rule
+                    /**
+                      If the product is already using a custom rule,
+                      just update that rule record. Otherwise create
+                      a new one.
+                    */
+                    $rule->reviewDate(FormLib::get('rule-review-date'));
+                    $rule->details(FormLib::get('rule-details'));
+                    if ($old_rule > 1) {
+                        $rule->priceRuleID($old_rule);
+                        $prod->price_rule_id($old_rule); // just in case
+                    } else {
+                        $new_rule_id = $rule->save();
+                        $prod->price_rule_id($new_rule_id);
+                    }
+            }
+            $prod->save();
+        }
+
+        return true;
     }
 
     private function getSRP($cost,$margin)
