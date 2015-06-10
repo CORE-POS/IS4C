@@ -305,7 +305,7 @@ function saveprice(upc){
             $bg = "white";
             if (isset($batchUPCs[$row['upc']])) {
                 $bg = 'selection';
-            } elseif ($row['variable_pricing'] != 0) {
+            } elseif ($row['variable_pricing'] == 0) {
                 $bg = ($row['normal_price']<$row['srp'])?'red':'green';
             }
             if (isset($batchUPCs[$row['upc']])) {
