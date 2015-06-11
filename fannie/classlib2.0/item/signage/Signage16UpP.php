@@ -151,13 +151,13 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
                     . chr(0x96) // en dash in cp1252
                     . date('M d', strtotime($item['endDate']));
                 $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - $top - 10));
-                $pdf->SetFont('GillBook', '', $this->SMALL_FONT);
+                $pdf->SetFont('GillBook', '', $this->SMALLEST_FONT);
                 $pdf->Cell($effective_width, 6, strtoupper($datestr), 0, 1, 'R');
             }
 
             if ($item['originShortName'] != '') {
                 $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - $top - 10));
-                $pdf->SetFont('GillBook', '', $this->SMALL_FONT);
+                $pdf->SetFont('GillBook', '', $this->SMALLEST_FONT);
                 $pdf->Cell($effective_width, 6, $item['originShortName'], 0, 1, 'L');
             }
 
