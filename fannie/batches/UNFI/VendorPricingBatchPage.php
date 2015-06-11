@@ -264,7 +264,7 @@ function saveprice(upc){
             v.vendorDept,
             x.variable_pricing
             FROM products AS p 
-                INNER JOIN vendorItems AS v ON p.upc=v.upc AND v.vendorID=?
+                INNER JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                 INNER JOIN vendors as b ON v.vendorID=b.vendorID
                 LEFT JOIN prodExtra AS x on p.upc=x.upc ";
         $args = array($vendorID);
@@ -273,6 +273,7 @@ function saveprice(upc){
                 ON p.department=m.dept_ID ";
         }
         $query .= "WHERE v.cost > 0 
+                    AND v.vendorID=?
                     AND p.inUse=1 ";
         if ($superID != 99) {
             $query .= " AND m.superID=? ";
