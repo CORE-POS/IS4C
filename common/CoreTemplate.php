@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Fannie\API\lib {
+namespace COREPOS\common;
 
 /**
   @class CoreTemplate
@@ -177,5 +177,4 @@ class CoreTemplate
     }
 }
 
-}
 
