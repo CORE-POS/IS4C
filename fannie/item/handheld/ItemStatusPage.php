@@ -39,7 +39,9 @@ class ItemStatusPage extends FannieRESTfulPage
         if (php_sapi_name() !== 'cli') {
             /* this page requires a session to pass some extra
                state information through multiple requests */
-            @session_start();
+            if (session_id() == '') {
+                session_start();
+            }
         }
 
         $this->__routes[] = 'get<tagID><upc>';
