@@ -126,16 +126,73 @@ class EditShelfTags extends FannieRESTfulPage
 
     public function get_id_view()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+
+        $template = <<<HTML
+<form action=EditShelfTags.php method=post>
+<table class="table table-striped table-bordered small">
+    <tr>
+        <th>UPC</th><th>Desc</th><th>Price</th><th>Brand</th><th>SKU</th>
+        <th>Size</th><th>Units</th><th>Vendor</th><th>PricePer</th><th># Tags</th>
+    </tr>
+    {%
+    <tr>
+        <td>{{ tag.upc }}</td>
+        <input type="hidden" name="upc[]" value="{{ tag.upc }}" /> 
+        <td><input type="text" name="desc[]" value="{{ tag.description }}"
+            class="form-control input-sm" /></td>
+        <td><div class="input-group">
+            <span class="input-group-addon">$</span>
+            <input type=text name=price[] value="{{ tag.normal_price }}" 
+                class="form-control price-field input-sm" />
+            </div>
+        </td>
+        <td><input type=text name=brand[] value="{{ tag.brand }}"
+                class="form-control input-sm" /></td>
+        <td><input type=text name=sku[] value="{{ tag.sku }}"
+                class="form-control input-sm" /></td>
+        <td><input type=text name=size[] value="{{ tag.size }}"
+                class="form-control input-sm" /></td>
+        <td><input type=text name=units[] value="{{ tag.units }}"
+                class="form-control input-sm price-field" /></td>
+        <td><input type=text name=vendor[] value="{{ tag.vendor }}"
+                class="form-control input-sm" /></td>
+        <td><input type=text name=ppo[] value="{{ tag.pricePerUnit }}"
+                class="form-control input-sm" /></td>
+        <td><input type=number name=counts[] value="{{ tag.count }}"
+                class="form-control input-sm price-field" /></td>
+        <td><a href="?_method=delete&id={{ id }}upc={{ tag.upc }}"
+                class="btn btn-danger">
+                {{ deleteIcon }}
+        </a></td>
+    </tr>
+    %}
+</table>
+<input type=hidden name=id value="{{ id }}" />
+<p>
+    <button type=submit name=submit value="1"
+        class="btn btn-default">Update Shelftags</button>
+</p>
+</form>
+HTML;
+        $tags = new ShelftagsModel($dbc);
+        $tags->id($this->id);
+
+        $data = array(
+            'id' => $this->id,
+            'tag' => $tags->find(),
+            'deleteIcon' => \COREPOS\Fannie\API\lib\FannieUI::deleteIcon('Delete Tag OR Change Queues'),
+        );
+
+        $t = new \COREPOS\Fannie\API\lib\CoreTemplate($template);
+        return $t->render($data);
 
         $ret = "<form action=EditShelfTags.php method=post>";
         $ret .= "<table class=\"table table-striped table-bordered small\">";
         $ret .= "<tr><th>UPC</th><th>Desc</th><th>Price</th><th>Brand</th><th>SKU</th>";
         $ret .= "<th>Size</th><th>Units</th><th>Vendor</th><th>PricePer</th><th># Tags</th></tr>";
 
-        $tags = new ShelftagsModel($dbc);
-        $tags->id($this->id);
         foreach ($tags->find() as $tag) {
             $ret .= '<tr>';
             $ret .= "<td>" . $tag->upc() . "</td><input type=hidden name=upc[] value=\"" . $tag->upc() . "\" />";
