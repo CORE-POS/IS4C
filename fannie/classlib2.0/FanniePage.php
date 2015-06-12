@@ -342,7 +342,6 @@ function enableLinea(selector, callback)
         }
     });
     ScannerDevice.registerListener(Device);
-    Device.setScanBeep(false, []);
 }
         <?php
 
