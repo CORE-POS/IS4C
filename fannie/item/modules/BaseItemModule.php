@@ -167,6 +167,7 @@ class BaseItemModule extends ItemModule
                 'deposit' => 0,
                 'cost' => 0,
                 'discounttype' => 0,
+                'wicable' => 0,
             );
 
             /**
