@@ -178,8 +178,8 @@ class TrendsReport extends FannieReportPage
 </p>
 </form>
         <?php
-        $this->add_script($FANNIE_URL . 'item/autocomplete.js');
-        $ws = $FANNIE_URL . 'ws/';
+        $this->add_script($this->config->URL . 'item/autocomplete.js');
+        $ws = $this->config->URL . 'ws/';
         $this->add_onload_command("bindAutoComplete('#brand-field', '$ws', 'brand');\n");
         $this->add_onload_command("bindAutoComplete('#upc-field', '$ws', 'item');\n");
 
