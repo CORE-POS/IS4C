@@ -58,7 +58,7 @@ class ProdUserModule extends ItemModule
                 . '</div>';
         $ret .= '<div class="form-group form-inline">'
                 . '<label>Desc.</label> '
-                . '<input type="text" class="form-control" id="lf_desc" name="lf_desc" value="' . $model->description() . '" />'
+                . '<input type="text" class="form-control" id="lf_desc" name="lf_desc" value="' . str_replace('"', '&quot;', $model->description()) . '" />'
                 . '</div>';
 
         $otherOriginBlock = '<div class=form-inline><select name=otherOrigin[] class=form-control><option value=0>n/a</option>';

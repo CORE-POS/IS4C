@@ -428,7 +428,7 @@ class FannieSignage
                             $item['upc'], $item['upc'], $item['upc'],
                             $item['upc'],
                             $item['brand'],
-                            $item['description'],
+                            str_replace('"', '&quot;', $item['description']),
                             $item['normal_price'],
                             $item['originName']
             );

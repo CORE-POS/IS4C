@@ -279,27 +279,6 @@ function savePairedPricing(id)
     });
 }
 
-function printSigns()
-{
-    var myform = $('<form action="../../admin/labels/SignFromSearch.php" method="post"/>');
-    $('.batch-hidden-upc').each(function() {
-        var upc_in = $('<input name="u[]" />').val($(this).val());
-        myform.append(upc_in);
-    });
-    if ($('#batch-discount-type').val() == 0) {
-        var new_retail = $('<input name="item_mode" />').val(1);
-        myform.append(new_retail);
-    } else if ($('#batch-future-mode').val() == 1) {
-        var new_sale = $('<input name="item_mode" />').val(3);
-        myform.append(new_sale);
-    } else if ($('#batch-future-mode').val() == 0) {
-        var current_sale = $('<input name="item_mode" />').val(2);
-        myform.append(current_sale);
-    }
-    $(document.body).append(myform);
-    myform.submit();
-}
-
 function trimPcBatch(id)
 {
     $.ajax({
