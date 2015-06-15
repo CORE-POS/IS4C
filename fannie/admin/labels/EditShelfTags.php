@@ -184,9 +184,10 @@ HTML;
             'tag' => $tags->find(),
             'deleteIcon' => \COREPOS\Fannie\API\lib\FannieUI::deleteIcon('Delete Tag OR Change Queues'),
         );
-
+        /*
         $t = new \COREPOS\common\CoreTemplate($template);
         return $t->render($data);
+        */
 
         $ret = "<form action=EditShelfTags.php method=post>";
         $ret .= "<table class=\"table table-striped table-bordered small\">";
