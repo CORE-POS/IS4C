@@ -139,6 +139,8 @@ class BasicModel
     */
     protected $config;
 
+    protected $find_limit = 0;
+
     /**
       Name of preferred database
     */
@@ -419,6 +421,11 @@ class BasicModel
         return $this->fq_name;
     }
 
+    public function setFindLimit($fl)
+    {
+        $this->find_limit = $fl;
+    }
+
     /**
       Find records that match this instance
       @param $sort array of columns to sort by
@@ -488,6 +495,9 @@ class BasicModel
                 $obj->$name($row[$name]);
             }
             $ret[] = $obj;
+            if ($this->find_limit > 0 && count($ret) >= $this->find_limit) {
+                break;
+            }
         }
 
         return $ret;
