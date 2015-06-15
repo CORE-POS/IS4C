@@ -940,6 +940,9 @@ class FannieReportPage extends FanniePage
             } else if (!$header && !$date && preg_match('/^\d\d\d\d-\d\d-\d\d$/', $row[$i])) {
                 // cell contains a date column
                 $date = $row[$i];
+            } elseif (!$header && !$date && preg_match('/^\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d$/', $row[$i])) {
+                // cell contains a date column
+                list($date, $time) = explode(' ', $row[$i]);
             } else if ($date && !$trans && preg_match('/^\d+-\d+-\d+$/', $row[$i])) {
                 // row contains a trans_num column & a date column
                 // auto-link to reprint receipt
