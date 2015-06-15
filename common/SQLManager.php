@@ -56,6 +56,8 @@ class SQLManager
     /** cache information about table existence & definition **/
     protected $structure_cache = array();
 
+    protected $last_connect_error = false;
+
     /** Constructor
         @param $server Database server host
         @param $type Database type. Most supported are
@@ -108,19 +110,24 @@ class SQLManager
         }
         $this->connections[$database] = $conn;
 
+        $this->last_connection_error = false;
         if (!$ok) {
+            $this->last_connect_error = $conn->ErrorMsg();
             $conn = ADONewConnection($type);
             $conn->SetFetchMode(ADODB_FETCH_BOTH);
             $ok = $conn->Connect($server,$username,$password);
             if ($ok) {
+                $this->last_connection_error = false;
                 $stillok = $conn->Execute("CREATE DATABASE $database");
                 if (!$stillok) {
+                    $this->last_connect_error = $conn->ErrorMsg();
                     $this->connections[$database] = false;
                     return false;
                 }
                 $conn->Execute("USE $database");
                 $this->connections[$database] = $conn;
             } else {
+                $this->last_connect_error = $conn->ErrorMsg();
                 $this->connections[$database] = false;
                 return false;
             }
@@ -1562,7 +1569,11 @@ class SQLManager
         $con = $this->connections[$which_connection];
 
         if (!is_object($con)) {
-            return 'No database connection';
+            if ($this->last_connect_error) {
+                return $this->last_connect_error;
+            } else {
+                return 'No database connection';
+            }
         }
 
         return $con->ErrorMsg();
