@@ -366,12 +366,18 @@ class BatchListPage extends FannieRESTfulPage
             $ret .= "All<br />";
         }
 
-        $ret .= '<table class="table tablesorter"><thead>';
-        $ret .= "<tr><th bgcolor=$colors[$c]>Batch Name</th>";
-        $ret .= "<th bgcolor=$colors[$c]>Type</th>";
-        $ret .= "<th bgcolor=$colors[$c]>Start date</th>";
-        $ret .= "<th bgcolor=$colors[$c]>End date</th>";
-        $ret .= "<th bgcolor=$colors[$c]>Owner/Super Dept.</th>";
+        $sort = '
+            <span class="core-sort-none glyphicon glyphicon-sort"></span>
+            <span class="core-sort-down glyphicon glyphicon-arrow-down"></span>
+            <span class="core-sort-up glyphicon glyphicon-arrow-up"></span>
+        ';
+
+        $ret .= '<table class="table tablesorter tablesorter-core"><thead>';
+        $ret .= "<tr><th bgcolor=$colors[$c]>Batch Name$sort</th>";
+        $ret .= "<th bgcolor=$colors[$c]>Type$sort</th>";
+        $ret .= "<th bgcolor=$colors[$c]>Start date$sort</th>";
+        $ret .= "<th bgcolor=$colors[$c]>End date$sort</th>";
+        $ret .= "<th bgcolor=$colors[$c]>Owner/Super Dept.$sort</th>";
         $ret .= "<th colspan=\"3\">&nbsp;</th></tr></thead><tbody>";
         
         // owner column might be in different places

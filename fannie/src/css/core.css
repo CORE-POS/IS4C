@@ -11,6 +11,35 @@
     margin-left: 25px;
 }
 
+.tablesorter-core > thead > th {
+    cursor: pointer;
+    cursor: hand;
+}
+.tablesorter-core > thead > tr > th .core-sort-down {
+    display: none;
+}
+.tablesorter-core > thead > tr > th .core-sort-up {
+    display: none;
+}
+.tablesorter-core > thead > tr > th.headerSortDown .core-sort-down {
+    display: inline;
+}
+.tablesorter-core > thead > tr > th.headerSortDown .core-sort-up {
+    display: none;
+}
+.tablesorter-core > thead > tr > th.headerSortDown .core-sort-none {
+    display: none;
+}
+.tablesorter-core > thead > tr > th.headerSortUp .core-sort-up {
+    display: inline;
+}
+.tablesorter-core > thead > tr > th.headerSortUp .core-sort-down {
+    display: none;
+}
+.tablesorter-core > thead > tr > th.headerSortUp .core-sort-none {
+    display: none;
+}
+
 /**
   Override the hover row color in the tablesorter bootstrap
   theme. Adding the extra tablesorter-core class increases
