@@ -38,6 +38,9 @@ class VendorPricingBatchPage extends FannieRESTfulPage
     vendor and edits it based on catalog cost information.';
     public $themed = true;
 
+    protected $auth_classes = array('batches');
+    protected $must_authenticate = true;
+
     private $mode = 'start';
 
     public function css_content()

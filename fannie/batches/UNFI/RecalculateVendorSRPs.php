@@ -39,6 +39,9 @@ class RecalculateVendorSRPs extends FannieRESTfulPage
     specific margin goals.';
     public $themed = true;
 
+    protected $auth_classes = array('batches');
+    protected $must_authenticate = true;
+
     public function get_id_view()
     {
         global $FANNIE_OP_DB;

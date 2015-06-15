@@ -35,6 +35,9 @@ class CoopDealsReviewPage extends FanniePage
     public $description = '[Co+op Deals Review] lists the currently load Co+op Deals data
     and can create sales batches from that data.';
     public $themed = true;
+
+    protected $auth_classes = array('batches');
+    protected $must_authenticate = true;
     
     private $mode = 'form';
 
