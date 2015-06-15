@@ -108,11 +108,11 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
                     if ($pdf->GetY() - $y < 12) {
                         $words = explode(' ', $item['description']);
                         $multi = '';
-                        for ($i=0;$i<count($words)/2;$i++) {
+                        for ($i=0;$i<floor(count($words)/2);$i++) {
                             $multi .= $words[$i] . ' ';
                         }
                         $multi = trim($multi) . "\n";
-                        for ($i=count($words)/2; $i<count($words); $i++) {
+                        for ($i=floor(count($words)/2); $i<count($words); $i++) {
                             $multi .= $words[$i] . ' ';
                         }
                         $item['description'] = trim($multi);
