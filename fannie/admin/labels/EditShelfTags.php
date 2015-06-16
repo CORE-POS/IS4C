@@ -162,7 +162,7 @@ class EditShelfTags extends FannieRESTfulPage
                 class="form-control input-sm" /></td>
         <td><input type=number name=counts[] value="{{ tag.count }}"
                 class="form-control input-sm price-field" /></td>
-        <td><a href="?_method=delete&id={{ id }}upc={{ tag.upc }}"
+        <td><a href="?_method=delete&id={{ id }}&upc={{ tag.upc }}"
                 class="btn btn-danger">
                 {{ deleteIcon }}
         </a></td>
