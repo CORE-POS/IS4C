@@ -189,7 +189,7 @@ class BaseItemModule extends ItemModule
                     i.vendorID as default_vendor_id
                 FROM vendorItems AS i 
                     LEFT JOIN vendors AS v ON i.vendorID=v.vendorID
-                    LEFT JOIN vendorDepartments AS d ON i.vendorDept=d.deptID
+                    LEFT JOIN vendorDepartments AS d ON i.vendorDept=d.deptID AND d.vendorID=i.vendorID
                 WHERE i.upc=?";
             $args = array($upc);
             $vID = FormLib::get_form_value('vid','');
@@ -197,13 +197,14 @@ class BaseItemModule extends ItemModule
                 $vendorP .= ' AND i.vendorID=?';
                 $args[] = $vID;
             }
+            $vendorP .= ' ORDER BY i.vendorID';
             $vendorP = $dbc->prepare_statement($vendorP);
             $vendorR = $dbc->exec_statement($vendorP,$args);
             
             if ($dbc->num_rows($vendorR) > 0){
                 $v = $dbc->fetch_row($vendorR);
-                $ret .= "<br /><i>This product is in the ".$v['distributor']." catalog. Values have
-                    been filled in where possible</i><br />";
+                $ret .= "<div><i>This product is in the ".$v['distributor']." catalog. Values have
+                    been filled in where possible</i></div>";
                 $rowItem['description'] = $v['description'];
                 $rowItem['manufacturer'] = $v['manufacturer'];
                 $rowItem['cost'] = $v['cost'];
@@ -214,8 +215,8 @@ class BaseItemModule extends ItemModule
                 $rowItem['caseSize'] = $v['units'];
                 $rowItem['sku'] = $v['sku'];
 
-                while($v = $dbc->fetch_row($vendorR)){
-                    printf('This product is also in <a href="?searchupc=%s&vid=%d">%s</a><br />',
+                while ($v = $dbc->fetch_row($vendorR)) {
+                    $ret .= sprintf('This product is also in <a href="?searchupc=%s&vid=%d">%s</a><br />',
                         $upc,$v['vendorID'],$v['distributor']);
                 }
             }

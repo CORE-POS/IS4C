@@ -30,7 +30,6 @@ if (!function_exists('updateProductAllLanes')) {
 
 class ItemEditorPage extends FanniePage 
 {
-
     private $mode = 'search';
     private $msgs = '';
 
@@ -269,6 +268,18 @@ class ItemEditorPage extends FanniePage
             $actualUPC = BarcodeLib::padUPC($upc);
             $new = true;
             $this->mode = 'new'; // mode drives appropriate help text
+            if ($numType == 'SKU') {
+                $prep = $dbc->prepare('
+                    SELECT upc
+                    FROM vendorItems
+                    WHERE sku LIKE ?
+                ');
+                $skuR = $dbc->execute($prep, array('%'.$upc));
+                if ($skuR && $dbc->numRows($skuR)) {
+                    $skuW = $dbc->fetchRow($skuR);
+                    $actualUPC = BarcodeLib::padUPC($skuW['upc']);
+                }
+            }
         } else {
             $row = $dbc->fetch_row($result);
             $actualUPC = $row['upc'];
@@ -584,5 +595,5 @@ class ItemEditorPage extends FanniePage
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
