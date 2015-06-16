@@ -1240,6 +1240,54 @@ class MercuryE2E extends BasicCCModule
     }
 
     /**
+      Prepare an XML request body for an EMVSale or
+      EMVReturn transaction
+      @param $amount [number] authorization amount
+      @return [string] XML request body
+    */
+    public function prepareEmvAuth($amount)
+    {
+        $termID = $this->getTermID();
+        $cashierNo = CoreLocal::get("CashierNo");
+        $mcTerminalID = CoreLocal::get('PaycardsTerminalID');
+        if ($mcTerminalID === '') {
+            $mcTerminalID = CoreLocal::get('laneno');
+        }
+        $tran_code = $amount > 0 ? 'EMVSale' : 'EMVReturn';
+        if (CoreLocal::get("training") == 1) {
+            $host = "x1.mercurydev.net";
+        } else {
+            $host = "x1.mercurypay.com";
+        }
+        $refNum = $this->refnum(CoreLocal::get('paycard_id'));
+        $msgXml = '<?xml version="1.0"?'.'>
+            <TStream>
+            <Transaction>
+            <HostOrIp>' . $host . '</HostOrIP>
+            <MerchantID>'.$termID.'</MerchantID>
+            <OperatorID>'.$cashierNo.'</OperatorID>
+            <LaneID>'.$mcTerminalID.'</LaneID>
+            <TranCode>' . $tran_code . '</TranCode>
+            <CollectData>CardholderName</CollectData>
+            <SecureDevice>{{SecureDevice}}</SecureDevice>
+            <ComPort>{{ComPort}}</ComPort>
+            <InvoiceNo>'.$refNum.'</InvoiceNo>
+            <RefNo>'.$refNum.'</RefNo>
+            <Amount>
+                <Purchase>' . sprintf('%.2f', abs($amount)) . '</Purchase>
+            </Amount>
+            <SequenceNo>{{SequenceNo}}</SequenceNo>
+            <RecordNo>RecordNoRequested</RecordNo>
+            <Frequency>OneTime</Frequency>
+            </Transaction>
+            </TStream>';
+
+        /** todo: log request in database **/
+
+        return $msgXml;
+    }
+
+    /**
       Updated for E2E
     */
     private function send_void($skipReversal=False,$domain="w1.mercurypay.com")
