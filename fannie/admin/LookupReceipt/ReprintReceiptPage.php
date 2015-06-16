@@ -82,7 +82,7 @@ class ReprintReceiptPage extends FanniePage
                 $query .= ' AND datetime BETWEEN ? AND ? ';
                 $args[] = $date.' 00:00:00';
                 $args[] = $date2.' 23:59:59';
-                $dlog = DTransactionsModel::selectDlog($date, $date2);
+                $dlog = DTransactionsModel::selectDTrans($date, $date2);
                 // update the table we're searching
                 $query = str_replace($FANNIE_TRANS_DB . $dbc->sep() . 'transarchive', $dlog, $query);
             } else {
@@ -195,6 +195,7 @@ class ReprintReceiptPage extends FanniePage
                         AND register_no=?
                         AND trans_no=?
                 ");
+                $num_results = $dbc->numRows($result);
                 while ($row = $dbc->fetch_row($result)) {
                     $this->results .= '<tr>';
                     $year = $row[0];
@@ -207,17 +208,21 @@ class ReprintReceiptPage extends FanniePage
                     $this->results .= '<td>' . $row['emp_no'] . '</td>';
                     $this->results .= '<td>' . $row['register_no'] . '</td>';
                     $this->results .= '<td>' . $row['card_no'] . '</td>';
-                    $subTotalArgs = array(
-                        date('Y-m-d 00:00:00', strtotime($row['ts'])),
-                        date('Y-m-d 23:59:59', strtotime($row['ts'])),
-                        $row['emp_no'],
-                        $row['register_no'],
-                        $row['trans_no'],
-                    );
-                    $subTotalR = $dbc->execute($subTotalP, $subTotalArgs);
-                    $subTotalW = $dbc->fetchRow($subTotalR);
-                    $subTotal = is_array($subTotalW) ? $subTotalW['subtotal'] : 0;
-                    $this->results .= sprintf('<td>%.2f</td>', $subTotal);
+                    if ($num_results < 50) {
+                        $subTotalArgs = array(
+                            date('Y-m-d 00:00:00', strtotime($row['ts'])),
+                            date('Y-m-d 23:59:59', strtotime($row['ts'])),
+                            $row['emp_no'],
+                            $row['register_no'],
+                            $row['trans_no'],
+                        );
+                        $subTotalR = $dbc->execute($subTotalP, $subTotalArgs);
+                        $subTotalW = $dbc->fetchRow($subTotalR);
+                        $subTotal = is_array($subTotalW) ? $subTotalW['subtotal'] : 0;
+                        $this->results .= sprintf('<td>%.2f</td>', $subTotal);
+                    } else {
+                        $this->results .= '<td>n/a</td>';
+                    }
                     $this->results .= '</tr>';
                 }
                 $this->results .= '</tbody></table>';
