@@ -210,7 +210,7 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             $upc = str_replace(' ', '', $upc);
             $upc = str_replace('-', '', $upc);
             if (strlen($upc) > 13) {
-                $upc = substr($upc, 0, 13);
+                $upc = substr($upc, -13);
             } else {
                 $upc = str_pad($upc, 13, '0', STR_PAD_LEFT);
             }
