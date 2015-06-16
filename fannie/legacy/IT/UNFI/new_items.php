@@ -37,7 +37,7 @@ if (isset($_GET['cat'])){
         $brandArgs[] = $_GET['brands'];
     }
 
-    $mysql = new SQLManager('mysql.wfco-op.store','mysql','IS4C','is4c','is4c');
+    $mysql = new SQLManager('localhost','mysql','IS4C','root','is4c');
     $dsubs = " superID IN (";
     $dargs = array();
     $buyersP = $mysql->prepare("SELECT buyer FROM unfi_cat WHERE unfi_cat=?");
