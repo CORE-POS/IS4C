@@ -146,10 +146,22 @@ class ScaleItemModule extends ItemModule
                 }
             }
 
-            $ret .= sprintf('<input type="checkbox" name="scaleID[]" id="scaleID%d" value=%d %s />
-                            <label for="scaleID%d">%s</label><br />',
+            $css_class = '';
+            $title = '';
+            if ($checked) {
+                $online = \COREPOS\Fannie\API\item\HobartDgwLib::scaleOnline($scale->host());
+                $css_class = $online ? 'has-success' : 'has-danger';
+                $title = $online ? 'Scale Online' : 'Scale Offline';
+            }
+            $ret .= sprintf('<div class="form-group %s" title="%s"><div class="checkbox">
+                            <label class="control-label">
+                            <input type="checkbox" name="scaleID[]" id="scaleID%d" value=%d %s />
+                            %s</label>
+                            </div></div>',
+                            $css_class, $title,
                             $scale->serviceScaleID(), $scale->serviceScaleID(), ($checked ? 'checked' : ''),
-                            $scale->serviceScaleID(), $scale->description());
+                            $scale->description()
+            );
         }
         $ret .= '</div>';
         $ret .= "</td></tr>";
