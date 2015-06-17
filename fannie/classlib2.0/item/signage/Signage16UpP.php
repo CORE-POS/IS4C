@@ -31,15 +31,23 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
     protected $SMALLER_FONT = 8;
     protected $SMALLEST_FONT = 5;
 
+    protected $font = 'Arial';
+    protected $alt_font = 'Arial';
+
     public function drawPDF()
     {
         $pdf = new \FPDF('P', 'mm', 'Letter');
         $pdf->SetMargins(0, 3.175, 0);
         $pdf->SetAutoPageBreak(false);
-        $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
-        $pdf->AddFont('Gill', 'B', 'GillSansMTPro-Heavy.php');
-        $pdf->AddFont('GillBook', '', 'GillSansMTPro-Book.php');
-        $pdf->SetFont('Gill', '', 16);
+        if (\COREPOS\Fannie\API\FanniePlugin::isEnabled('CoopDealsSigns')) {
+            $this->font = 'Gill';
+            $this->alt_font = 'GillBook';
+            define('FPDF_FONTPATH', dirname(__FILE__) . '/../../../modules/plugins2.0/CoopDealsSigns/fonts/');
+            $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
+            $pdf->AddFont('Gill', 'B', 'GillSansMTPro-Heavy.php');
+            $pdf->AddFont('GillBook', '', 'GillSansMTPro-Book.php');
+        }
+        $pdf->SetFont($this->font, '', 16);
 
         $data = $this->loadItems();
         $count = 0;
@@ -69,7 +77,7 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
             }
 
             $pdf->SetXY($left + ($width*$column), $top + ($row*$height));
-            $pdf->SetFont('Gill', 'B', $this->SMALL_FONT);
+            $pdf->SetFont($this->font, 'B', $this->SMALL_FONT);
             $font_shrink = 0;
             while (true) {
                 $pdf->SetX($left + ($width*$column));
@@ -89,7 +97,7 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
                 }
             }
 
-            $pdf->SetFont('Gill', '', $this->MED_FONT);
+            $pdf->SetFont($this->font, '', $this->MED_FONT);
             $font_shrink = 0;
             while (true) {
                 $pdf->SetX($left + ($width*$column));
@@ -126,7 +134,7 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
             }
 
             $pdf->SetX($left + ($width*$column));
-            $pdf->SetFont('GillBook', '', $this->SMALLER_FONT);
+            $pdf->SetFont($this->alt_font, '', $this->SMALLER_FONT);
             $item['size'] = strtolower($item['size']);
             if (substr($item['size'], -1) != '.') {
                 $item['size'] .= '.'; // end abbreviation w/ period
@@ -142,7 +150,7 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
 
             $pdf->Ln(4);
             $pdf->SetX($left + ($width*$column));
-            $pdf->SetFont('Gill', '', $this->BIG_FONT);
+            $pdf->SetFont($this->font, '', $this->BIG_FONT);
             $pdf->MultiCell($effective_width, 8, $price, 0, 'C');
 
             if ($item['startDate'] != '' && $item['endDate'] != '') {
@@ -151,13 +159,13 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
                     . chr(0x96) // en dash in cp1252
                     . date('M d', strtotime($item['endDate']));
                 $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - $top - 10));
-                $pdf->SetFont('GillBook', '', $this->SMALLEST_FONT);
+                $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
                 $pdf->Cell($effective_width, 6, strtoupper($datestr), 0, 1, 'R');
             }
 
             if ($item['originShortName'] != '') {
                 $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - $top - 10));
-                $pdf->SetFont('GillBook', '', $this->SMALLEST_FONT);
+                $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
                 $pdf->Cell($effective_width, 6, $item['originShortName'], 0, 1, 'L');
             }
 

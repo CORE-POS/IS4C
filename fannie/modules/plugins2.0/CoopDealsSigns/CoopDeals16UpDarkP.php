@@ -3,27 +3,11 @@
 
     Copyright 2014 Whole Foods Co-op, Duluth, MN
 
-    This file is part of CORE-POS.
-
-    IT CORE is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    IT CORE is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    in the file license.txt along with IT CORE; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
 *********************************************************************************/
 
-namespace COREPOS\Fannie\API\item\signage {
+namespace COREPOS\Fannie\Plugin\CoopDealsSigns {
 
-class CoopDeals16UpP extends \COREPOS\Fannie\API\item\FannieSignage 
+class CoopDeals16UpDarkP extends \COREPOS\Fannie\API\item\FannieSignage 
 {
     protected $BIG_FONT = 40;
     protected $MED_FONT = 14;
@@ -38,6 +22,7 @@ class CoopDeals16UpP extends \COREPOS\Fannie\API\item\FannieSignage
         $pdf = new \FPDF('P', 'mm', 'Letter');
         $pdf->SetMargins(0, 3.175, 0);
         $pdf->SetAutoPageBreak(false);
+        define('FPDF_FONTPATH', dirname(__FILE__) . '/fonts/');
         $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
         $pdf->AddFont('Gill', 'B', 'GillSansMTPro-Heavy.php');
         $pdf->AddFont('GillBook', '', 'GillSansMTPro-Book.php');
@@ -189,9 +174,5 @@ class CoopDeals16UpP extends \COREPOS\Fannie\API\item\FannieSignage
     }
 }
 
-}
-
-namespace {
-    class CoopDeals16UpP extends \COREPOS\Fannie\API\item\signage\CoopDeals16UpP {}
 }
 

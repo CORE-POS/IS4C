@@ -21,9 +21,9 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Fannie\API\item\signage {
+namespace COREPOS\Fannie\Plugin\CoopDealsSigns {
 
-class CoopDeals12UpL extends \COREPOS\Fannie\API\item\FannieSignage 
+class CoopDeals12UpDarkL extends \COREPOS\Fannie\API\item\FannieSignage 
 {
     protected $BIG_FONT = 40;
     protected $MED_FONT = 14;
@@ -38,6 +38,7 @@ class CoopDeals12UpL extends \COREPOS\Fannie\API\item\FannieSignage
         $pdf = new \FPDF('L', 'mm', 'Letter');
         $pdf->SetMargins(3.175, 3.175, 3.175);
         $pdf->SetAutoPageBreak(false);
+        define('FPDF_FONTPATH', dirname(__FILE__) . '/fonts/');
         $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
         $pdf->AddFont('Gill', 'B', 'GillSansMTPro-Heavy.php');
         $pdf->AddFont('GillBook', '', 'GillSansMTPro-Book.php');
@@ -149,10 +150,10 @@ class CoopDeals12UpL extends \COREPOS\Fannie\API\item\FannieSignage
                 $pdf->Cell($effective_width, 20, strtoupper($datestr), 0, 1, 'R');
             }
 
-            if ($item['originShortName'] != '') {
+            if ($item['upc'] != '') {
                 $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - 36));
                 $pdf->SetFont('GillBook', '', $this->SMALLEST_FONT);
-                $pdf->Cell($effective_width, 6, $item['upc'], 0, 1, 'L');
+                $pdf->Cell($effective_width, 20, $item['upc'], 0, 1, 'L');
             }
 
             $pdf->Image(dirname(__FILE__) . '/' . $this->footer_image, ($left-1)+($width*$column), $top + ($height*$row) + ($height-$top-3), $width-6);
@@ -165,9 +166,5 @@ class CoopDeals12UpL extends \COREPOS\Fannie\API\item\FannieSignage
     }
 }
 
-}
-
-namespace {
-    class CoopDeals12UpL extends \COREPOS\Fannie\API\item\signage\CoopDeals12UpL {}
 }
 

@@ -209,8 +209,13 @@ class SignFromSearch extends FannieRESTfulPage
         $ret .= '<label>Layout</label>: 
             <select name="signmod" class="form-control" onchange="$(\'#signform\').submit()">';
         foreach ($mods as $m) {
-            $ret .= sprintf('<option %s>%s</option>',
-                    ($m == $this->signage_mod ? 'selected' : ''), $m);
+            $name = $m;
+            if (strstr($m, '\\')) {
+                $pts = explode('\\', $m);
+                $name = $pts[count($pts)-1];
+            }
+            $ret .= sprintf('<option %s value="%s">%s</option>',
+                    ($m == $this->signage_mod ? 'selected' : ''), $m, $name);
         }
         $ret .= '</select>';
         
