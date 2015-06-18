@@ -39,6 +39,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     private DsiEMVX emv_ax_control = null;
     private DsiPDCX pdc_ax_control = null; // can I include both?
     private string device_identifier = null;
+    private string com_port = "0";
     protected string server_list = "x1.mercurydev.net;x2.mercurydev.net";
     protected int LISTEN_PORT = 9000; // acting as a Datacap stand-in
     protected string sequence_no = false;
@@ -47,6 +48,11 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     { 
         verbose_mode = 1;
         device_identifier=p;
+        if (p.Contains(":")) {
+            string[] parts = p.Split(new char[]{':'}, 2);
+            device_identifer = parts[0];
+            com_port = parts[1];
+        }
     }
 
     /**
@@ -59,6 +65,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             pdc_ax_control = new DsiPDCX();
             pdc_ax_control.ServerIPConfig(server_list, 0);
             pdc_ax_control.SetResponseTimeout(60);
+            InitPDCX();
         }
         pdc_ax_control.CancelRequest();
 
@@ -208,7 +215,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         */
         xml = xml.Replace("{{SequenceNo}}", SequenceNo());
         xml = xml.Replace("{{SecureDevice}}", this.device_identifier);
-        xml = xml.Replace("{{ComPort}}", "9");
+        xml = xml.Replace("{{ComPort}}", com_port);
 
         string result = emv_ax_control.ProcessTransaction(xml);
         // track SequenceNo values in responses
@@ -243,7 +250,27 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     }
 
     /**
-      EMVX method to reset device for next transaction
+      PDCX initialize device
+    */
+    protected string InitPDCX()
+    {
+        string xml="<?xml version=\"1.0\"?>"
+            + "<TStream>"
+            + "<Admin>"
+            + "<MerchantID>MerchantID</MerchantID>"
+            + "<TranCode>SecureDeviceInit</TranCode>"
+            + "<TranType>Setup</TranType>"
+            + "<SecureDevice>" + this.device_identifier + "</SecureDevice>"
+            + "<ComPort>" + this.com_port + "</ComPort>"
+            + "<PadType>" + SecureDeviceToPadType(device_identifier) + "</PadType>"
+            + "</Admin>"
+            + "</TStream>";
+        
+        return ProcessPDC(xml);
+    }
+
+    /**
+      EMVX reset device for next transaction
     */
     protected string PadReset()
     {
@@ -253,7 +280,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             + "<MerchantID>MerchantID</MerchantID>"
             + "<TranCode>EMVPadReset</TranCode>"
             + "<SecureDevice>"+ this.device_identifier + "</SecureDevice>"
-            + "<ComPort>9</ComPort>"
+            + "<ComPort>" + this.com_port + "</ComPort>"
             + "<SequenceNo>" + SequenceNo() + "</SequenceNo>"
             + "</Transaction>"
             + "</TStream>";
@@ -291,6 +318,19 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         }
         
         return null;
+    }
+
+    protected string SecureDeviceToPadType(string device)
+    {
+        switch (device) {
+            case "VX805_XPI":
+            case "VX805_XPI_MERCURY_E2E":
+                return "VX805";
+            case "INGENICOISC250":
+                return "ISC250";
+            default:
+                return device;
+        }
     }
 }
 

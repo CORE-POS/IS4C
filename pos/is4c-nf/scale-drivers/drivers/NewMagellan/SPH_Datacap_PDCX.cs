@@ -36,6 +36,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
 {
     private DsiPDCX ax_control = null;
     private string device_identifier = null;
+    private string com_port = "0";
     protected string server_list = "x1.mercurydev.net;x2.mercurydev.net";
     protected int LISTEN_PORT = 9000; // acting as a Datacap stand-in
 
@@ -43,6 +44,11 @@ public class SPH_Datacap_PDCX : SerialPortHandler
     { 
         verbose_mode = 1;
         device_identifier=p;
+        if (p.Contains(":")) {
+            string[] parts = p.Split(new char[]{':'}, 2);
+            device_identifer = parts[0];
+            com_port = parts[1];
+        }
     }
 
     /**
@@ -51,9 +57,13 @@ public class SPH_Datacap_PDCX : SerialPortHandler
     */
     protected bool initDevice()
     {
-        ax_control = new DsiPDCX();
-        ax_control.ServerIPConfig(server_list, 0);
-        ax_control.SetResponseTimeout(60);
+        if (ax_control == null) {
+            ax_control = new DsiPDCX();
+            ax_control.ServerIPConfig(server_list, 0);
+            ax_control.SetResponseTimeout(60);
+            InitPDCX();
+        }
+        ax_control.CancelRequest();
 
         return true;
     }
@@ -90,6 +100,8 @@ public class SPH_Datacap_PDCX : SerialPortHandler
                             Console.WriteLine(message);
                         }
 
+                        messaage = message.Replace("{{SecureDevice}}", this.device_identifier);
+                        message = message.Replace("{{ComPort}}", com_port);
                         string result = ax_control.ProcessTransaction(message, 0, null, null);
                         result = WrapHttpResponse(result);
                         if (this.verbose_mode > 0) {
@@ -175,6 +187,26 @@ public class SPH_Datacap_PDCX : SerialPortHandler
                 break;
         }
     }
+
+    /**
+      PDCX initialize device
+    */
+    protected string InitPDCX()
+    {
+        string xml="<?xml version=\"1.0\"?>"
+            + "<TStream>"
+            + "<Admin>"
+            + "<MerchantID>MerchantID</MerchantID>"
+            + "<TranCode>SecureDeviceInit</TranCode>"
+            + "<TranType>Setup</TranType>"
+            + "<SecureDevice>" + this.device_identifier + "</SecureDevice>"
+            + "<ComPort>" + this.com_port + "</ComPort>"
+            + "<PadType>" + SecureDeviceToPadType(device_identifier) + "</PadType>"
+            + "</Admin>"
+            + "</TStream>";
+        
+        return ax_control.ProcessTransaction(xml, 0, null, null);
+    }
     
     protected string GetSignature()
     {
@@ -203,6 +235,19 @@ public class SPH_Datacap_PDCX : SerialPortHandler
         }
         
         return null;
+    }
+
+    protected string SecureDeviceToPadType(string device)
+    {
+        switch (device) {
+            case "VX805_XPI":
+            case "VX805_XPI_MERCURY_E2E":
+                return "VX805";
+            case "INGENICOISC250":
+                return "ISC250";
+            default:
+                return device;
+        }
     }
 }
 

@@ -1240,35 +1240,46 @@ class MercuryE2E extends BasicCCModule
     }
 
     /**
-      Prepare an XML request body for an EMVSale or
-      EMVReturn transaction
+      Prepare an XML request body for an PDCX
+      or EMVX transaction
+      @param $type [string] card type
       @param $amount [number] authorization amount
       @return [string] XML request body
     */
-    public function prepareEmvAuth($amount)
+    public function prepareDataCapAuth($type, $amount)
     {
         $termID = $this->getTermID();
         $cashierNo = CoreLocal::get("CashierNo");
-        $mcTerminalID = CoreLocal::get('PaycardsTerminalID');
-        if ($mcTerminalID === '') {
-            $mcTerminalID = CoreLocal::get('laneno');
+        $refNum = $this->refnum(CoreLocal::get('paycard_id'));
+        $tran_code = $amount > 0 ? 'Sale' : 'Return';
+        if ($type == 'EMV') {
+            $tran_code = 'EMV' . $tran_code;
         }
-        $tran_code = $amount > 0 ? 'EMVSale' : 'EMVReturn';
+
+        $host = "x1.mercurypay.com";
         if (CoreLocal::get("training") == 1) {
             $host = "x1.mercurydev.net";
-        } else {
-            $host = "x1.mercurypay.com";
         }
-        $refNum = $this->refnum(CoreLocal::get('paycard_id'));
+
+        $tran_type = 'Credit';
+        $card_type = false;
+        if ($type == 'DEBIT') {
+            $tran_type = 'Debit';
+        } elseif ($type == 'EBTFOOD') {
+            $tran_type = 'EBT';
+            $card_type = 'Foodstamp';
+        } elseif ($type == 'EBTCASH') {
+            $tran_type = 'EBT';
+            $card_type = 'Cash';
+        }
+
+        // start with fields common to PDCX and EMVX
         $msgXml = '<?xml version="1.0"?'.'>
             <TStream>
             <Transaction>
-            <HostOrIp>' . $host . '</HostOrIP>
             <MerchantID>'.$termID.'</MerchantID>
             <OperatorID>'.$cashierNo.'</OperatorID>
-            <LaneID>'.$mcTerminalID.'</LaneID>
             <TranCode>' . $tran_code . '</TranCode>
-            <CollectData>CardholderName</CollectData>
             <SecureDevice>{{SecureDevice}}</SecureDevice>
             <ComPort>{{ComPort}}</ComPort>
             <InvoiceNo>'.$refNum.'</InvoiceNo>
@@ -1276,15 +1287,40 @@ class MercuryE2E extends BasicCCModule
             <Amount>
                 <Purchase>' . sprintf('%.2f', abs($amount)) . '</Purchase>
             </Amount>
-            <SequenceNo>{{SequenceNo}}</SequenceNo>
             <RecordNo>RecordNoRequested</RecordNo>
-            <Frequency>OneTime</Frequency>
+            <Frequency>OneTime</Frequency>';
+        if ($type == 'EMV') { // add EMV specific fields
+            $msgXml .= '
+            <HostOrIp>' . $host . '</HostOrIP>
+            <SequenceNo>{{SequenceNo}}</SequenceNo>
+            <CollectData>CardholderName</CollectData>';
+        } else {
+            $msgXml .= '
+            <Account>
+                <AcctNo>SecureDevice</AcctNo>
+            </Account>
+            <TranType>' . $tranType . '</TranType>';
+            if ($card_type) {
+                $msgXml .= '<CardType>' . $card_type . '</CardType>';
+            }
+        }
+        $msgXml .= '
             </Transaction>
             </TStream>';
 
         /** todo: log request in database **/
 
         return $msgXml;
+    }
+
+    /**
+      Examine XML response from Datacap transaction,
+      log results, determine next step
+      @return [int] PaycardLib error code
+    */
+    public function handleResponseDataCap($xml)
+    {
+        return PaycardLib::PAYCARD_ERR_OK;
     }
 
     /**

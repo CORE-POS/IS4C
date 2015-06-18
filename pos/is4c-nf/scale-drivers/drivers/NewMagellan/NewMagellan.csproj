@@ -115,6 +115,8 @@
     <SPH Include="SPH_IngenicoRBA_USB.cs" />
     <SPH Include="SPH_Parallel_Writer.cs" />
     <SPH Include="SPH_Datacap_PDCX.cs" Condition=" Exists('DSIPDCXLib.dll') And Exists('AxDSIPDCXLib.dll') " />
+    <SPH Include="SPH_Datacap_EMVX.cs" 
+        Condition=" Exists('DSIPDCXLib.dll') And Exists('AxDSIPDCXLib.dll') And Exists('DSIEMVXLib.dll') AND Exists('AxDSIEMVXLib.dll') " />
 
     <SPHRef Include="DelegateForm.dll" />
     <SPHRef Include="Bitmap.dll" />
@@ -122,6 +124,8 @@
     <SPHRef Include="ParallelLayer.dll" />
     <SPHRef Include="DSIPDCXLib.dll" Condition=" Exists('DSIPDCXLib.dll') And Exists('AxDSIPDCXLib.dll') " />
     <SPHRef Include="AxDSIPDCXLib.dll" Condition=" Exists('DSIPDCXLib.dll') And Exists('AxDSIPDCXLib.dll') " />
+    <SPHRef Include="DSIEMVXLib.dll" Condition=" Exists('DSIEMVXLib.dll') And Exists('AxDSIEMVXLib.dll') " />
+    <SPHRef Include="AxDSIPEMVLib.dll" Condition=" Exists('DSIEMVXLib.dll') And Exists('AxDSIEMVXLib.dll') " />
     <SPHRef Include="System.Drawing.dll" Condition=" '$(OS)' == 'Unix' " />
 
     <SPHTarget Include="DelegateFormLibrary" />

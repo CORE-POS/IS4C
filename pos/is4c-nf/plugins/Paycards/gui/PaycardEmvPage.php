@@ -29,7 +29,7 @@ class PaycardEmvPage extends PaycardProcessPage
     function preprocess()
     {
         // check for posts before drawing anything, so we can redirect
-        if( isset($_REQUEST['reginput'])) {
+        if (isset($_REQUEST['reginput'])) {
             $input = strtoupper(trim($_REQUEST['reginput']));
             // CL always exits
             if( $input == "CL") {
@@ -65,6 +65,24 @@ class PaycardEmvPage extends PaycardProcessPage
                 }
             }
             // if we're still here, we haven't accepted a valid amount yet; display prompt again
+        } elseif (isset($_REQUEST['xml-resp'])) {
+            $xml = $_REQUEST['xml-resp'];
+            $e2e = new MercuryE2E();
+            $json = array();
+            $plugin_info = new Paycards();
+            $json['main_frame'] = $plugin_info->plugin_url().'/gui/paycardSuccess.php';
+            $json['receipt'] = false;
+            $success = $e2e->handleResponseDataCap($xml);
+            if ($success === PaycardLib::PAYCARD_ERR_OK) {
+                $json = $e2e->cleanup($json);
+                CoreLocal::set("strRemembered","");
+                CoreLocal::set("msgrepeat",0);
+            } else {
+                CoreLocal::set("msgrepeat",0);
+                $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
+            }
+            header('Location: ' . $json['main_frame']);
+            return false;
         } // post?
 
         return true;
@@ -79,7 +97,7 @@ function emvSubmit()
 {
     $('div.baseHeight').html('Processing transaction');
     // POST XML request to driver using AJAX
-    var xmlData = '<?php echo $e2e->prepareEmvAuth(CoreLocal::get('paycard_amount')); ?>';
+    var xmlData = '<?php echo $e2e->prepareDataCapAuth(CoreLocal::get('paycard_type'), CoreLocal::get('paycard_amount')); ?>';
     $.ajax({
         url: http://localhost:9000,
         type: 'POST',
@@ -88,11 +106,19 @@ function emvSubmit()
             // POST result to PHP page in POS to
             // process the result.
             console.log(resp);
+            var f = $('<form id="js-form"></form>');
+            f.append($('<input type="hidden" name="xml-resp" />').val(resp));
+            $('body').append(f);
+            $('#js-form').submit();
         },
         error: function(resp) {
             // display error to user?
             // go to dedicated error page?
             console.log(resp);
+            var f = $('<form id="js-form"></form>');
+            f.append($('<input type="hidden" name="xml-resp" />').val(resp));
+            $('body').append(f);
+            $('#js-form').submit();
         }
     });
 }
