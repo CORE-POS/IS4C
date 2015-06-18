@@ -354,7 +354,8 @@ class OwnerJoinLeaveReport extends FannieReportPage
                 WHERE note LIKE \'%FUNDS REQ%\'
                     AND stamp >= ?
                     AND e.payments < 100
-                GROUP BY cardno');
+                GROUP BY cardno
+                ORDER BY cardno');
             $detailP = $dbc->prepare('
                 SELECT c.CardNo,
                     c.FirstName,
@@ -367,7 +368,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
                     LEFT JOIN memberNotes AS n ON c.CardNo=n.cardno
                 WHERE c.CardNo=?
                     AND c.personNum=1
-                ORDER BY n.note DESC');
+                ORDER BY n.stamp DESC');
             $franR = $dbc->execute($franP, $args[0]);
             while ($w = $dbc->fetchRow($franR)) {
                 $detailR = $dbc->execute($detailP, array($w['cardno']));
