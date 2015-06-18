@@ -60,7 +60,6 @@ public class SPH_Datacap_PDCX : SerialPortHandler
         if (ax_control == null) {
             ax_control = new DsiPDCX();
             ax_control.ServerIPConfig(server_list, 0);
-            ax_control.SetResponseTimeout(60);
             InitPDCX();
         }
         ax_control.CancelRequest();

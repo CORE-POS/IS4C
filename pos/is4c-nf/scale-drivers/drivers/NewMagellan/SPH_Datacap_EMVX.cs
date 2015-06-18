@@ -64,7 +64,6 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         if (pdc_ax_control == null) {
             pdc_ax_control = new DsiPDCX();
             pdc_ax_control.ServerIPConfig(server_list, 0);
-            pdc_ax_control.SetResponseTimeout(60);
             InitPDCX();
         }
         pdc_ax_control.CancelRequest();
