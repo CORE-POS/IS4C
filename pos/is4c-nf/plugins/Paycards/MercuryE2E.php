@@ -1355,6 +1355,155 @@ class MercuryE2E extends BasicCCModule
     }
 
     /**
+      Prepare an XML request body to void an PDCX
+      or EMVX transaction
+      @param $pcID [int] PaycardTransactions record ID
+      @return [string] XML request
+    */
+    public function prepareDataCapVoid($pcID)
+    {
+        $termID = $this->getTermID();
+        $cashierNo = CoreLocal::get("CashierNo");
+        $registerNo = CoreLocal::get("laneno");
+        $transNo = CoreLocal::get("transno");
+        $transID = CoreLocal::get('paycard_id');
+        $mcTerminalID = CoreLocal::get('PaycardsTerminalID');
+        if ($mcTerminalID === '') {
+            $mcTerminalID = CoreLocal::get('laneno');
+        }
+        $refNum = $this->refnum($transID);
+
+        $dbc = Database::tDataConnect();
+        $query = '
+            SELECT cardType,
+                transType,
+                amount,
+                refNum,
+                xToken,
+                xProcessorRef,
+                xAcquirerRef,
+                xTransactionID,
+                xApprovalNumber,
+                issuer
+            FROM PaycardTransactions
+            WHERE paycardTransactionID=' . ((int)$pcID);
+        $result = $dbc->query($query);
+        if (!$result || $dbc->numRows($result) == 0) {
+            CoreLocal::set('boxMsg', 'Transaction not found');
+            return 'Error';
+        }
+        $prev = $dbc->fetchRow($result);
+
+        $initQ = "INSERT INTO PaycardTransactions (
+                    dateID, empNo, registerNo, transNo, transID,
+                    previousPaycardTransactionID, processor, refNum,
+                    live, cardType, transType, amount, PAN, issuer,
+                    name, manual, requestDateTime)
+                  SELECT dateID, empNo, registerNo, transNo, transID,
+                    paycardTransactionID, processor, refNum,
+                    live, cardType, 'VOID', amount, PAN, issuer,
+                    name, manual, " . $dbc->now() . "
+                  FROM PaycardTransactions
+                  WHERE paycardTransactionID=" . ((int)$pcID);
+        $initR = $dbc->query($initQ);
+        if ($initR) {
+            $this->last_paycard_transaction_id = $dbc->insert_id();
+        } else {
+            $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); 
+            return 'Error';
+        }
+
+        /* Determine reversal method based on
+           original transaction.
+           EMV and Credit are voided
+           PIN Debit and EBT run an opposite transaction
+           (e.g., Return after a Sale)
+        */
+        $tran_code = '';
+        $tran_type = '';
+        $card_type = false;
+        if ($prev['transType'] == 'EMVSale') {
+            $tran_code = 'EMVVoidSale';
+            $tran_type = 'EMV';
+        } elseif ($prev['transType'] == 'EMVReturn') {
+            $tran_code = 'EMVVoidReturn';
+            $tran_type = 'EMV';
+        } else {
+            switch ($prev['cardType']) {
+                case 'Credit':
+                    $tran_code = ($prev['transType'] == 'Sale') ? 'VoidSaleByRecordNo' : 'VoidReturnByRecordNo';
+                    $tran_type = 'Credit';
+                    break;
+                case 'Debit':
+                    $tran_code = ($prev['transType'] == 'Sale') ? 'ReturnByRecordNo' : 'SaleByRecordNo';
+                    $tran_type = 'Debit';
+                    break;
+                case 'EBT':
+                    $tran_code = ($prev['transType'] == 'Sale') ? 'ReturnByRecordNo' : 'SaleByRecordNo';
+                    $tran_type = 'EBT';
+                    $card_type = $prev['issuer'];
+                    break;
+            }
+        }
+
+        // common fields
+        $msgXml = '<?xml version="1.0"?'.'>
+            <TStream>
+            <Transaction>
+            <MerchantID>'.$termID.'</MerchantID>
+            <OperatorID>'.$cashierNo.'</OperatorID>
+            <LaneID>'.$mcTerminalID.'</LaneID>
+            <TranCode>' . $tran_code . '</TranCode>
+            <SecureDevice>{{SecureDevice}}</SecureDevice>
+            <ComPort>{{ComPort}}</ComPort>
+            <InvoiceNo>'.$refNum.'</InvoiceNo>
+            <RefNo>'.$refNum.'</RefNo>
+            <Amount>
+                <Purchase>' . sprintf('%.2f', abs($prev['amount'])) . '</Purchase>
+            </Amount>
+            <RecordNo>RecordNumberRequested</RecordNo>
+            <Frequency>OneTime</Frequency>';
+        if ($type == 'EMV') { // add EMV specific fields
+            $msgXml .= '
+            <HostOrIP>' . $host . '</HostOrIP>
+            <SequenceNo>{{SequenceNo}}</SequenceNo>
+            <CollectData>CardholderName</CollectData>
+            <Memo>CORE POS 1.0.0 EMVX</Memo>
+            <PartialAuth>Allow</PartialAuth>';
+        } else { // add non-EMV fields
+            $msgXml .= '
+            <Memo>CORE POS 1.0.0 PDCX</Memo>
+            <Account>
+                <AcctNo>SecureDevice</AcctNo>
+            </Account>
+            <TranType>' . $tran_type . '</TranType>';
+            if ($card_type) {
+                $msgXml .= '<CardType>' . $card_type . '</CardType>';
+            }
+            if ($tran_type == 'Credit') {
+                $msgXml .= '<PartialAuth>Allow</PartialAuth>';
+            }
+        }
+        /**
+          Add token and reversal data fields if available
+        */
+        if ($prev['xToken']) {
+            $msgXml .= '<RecordNo>' . $prev['xToken'] . '</RecordNo>';
+        }
+        if ($prev['xProcessorRef']) {
+            $msgXml .= '<ProcessData>' . $prev['xProcessorRef'] . '</ProcessData>';
+        }
+        if ($prev['xAcquirerRef']) {
+            $msgXml .= '<AcqRefData>' . $prev['xAcquirerRef'] . '</AcqRefData>';
+        }
+        $msgXml .= '
+            </Transaction>
+            </TStream>';
+
+        return $msgXml;
+    }
+
+    /**
       Examine XML response from Datacap transaction,
       log results, determine next step
       @return [int] PaycardLib error code
