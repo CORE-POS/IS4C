@@ -26,6 +26,8 @@ include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
 class PaycardEmvPage extends PaycardProcessPage 
 {
+    private $prompt = false;
+
     function preprocess()
     {
         // check for posts before drawing anything, so we can redirect
@@ -50,10 +52,13 @@ class PaycardEmvPage extends PaycardProcessPage
                 UdpComm::udpSend("termReset");
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return False;
-            } elseif ($input == "") {
+            } elseif ($input == "" || $input == 'MANUAL') {
                 if ($this->validate_amount()) {
                     $this->action = "onsubmit=\"return false;\"";    
                     $this->add_onload_command("emvSubmit();");
+                    if ($input == 'MANUAL') {
+                        $this->prompt = true;
+                    }
                 }
             } elseif ( $input != "" && substr($input,-2) != "CL") {
                 // any other input is an alternate amount
@@ -97,7 +102,7 @@ function emvSubmit()
 {
     $('div.baseHeight').html('Processing transaction');
     // POST XML request to driver using AJAX
-    var xmlData = '<?php echo json_encode($e2e->prepareDataCapAuth(CoreLocal::get('CacheCardType'), CoreLocal::get('paycard_amount'))); ?>';
+    var xmlData = '<?php echo json_encode($e2e->prepareDataCapAuth(CoreLocal::get('CacheCardType'), CoreLocal::get('paycard_amount'), $this->prompt)); ?>';
     if (xmlData == '"Error"') { // failed to save request info in database
         location = '<?php echo MiscLib::baseURL(); ?>gui-modules/boxMsg2.php';
         return false;
@@ -106,10 +111,11 @@ function emvSubmit()
         url: 'http://localhost:9000',
         type: 'POST',
         data: xmlData,
-        dataType: 'string',
+        dataType: 'text',
         success: function(resp) {
             // POST result to PHP page in POS to
             // process the result.
+            console.log('success');
             console.log(resp);
             var f = $('<form id="js-form"></form>');
             f.append($('<input type="hidden" name="xml-resp" />').val(resp));
@@ -119,6 +125,7 @@ function emvSubmit()
         error: function(resp) {
             // display error to user?
             // go to dedicated error page?
+            console.log('error');
             console.log(resp);
             var f = $('<form id="js-form"></form>');
             f.append($('<input type="hidden" name="xml-resp" />').val(resp));

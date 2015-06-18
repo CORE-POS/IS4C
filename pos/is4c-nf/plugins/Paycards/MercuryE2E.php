@@ -1246,12 +1246,12 @@ class MercuryE2E extends BasicCCModule
       @param $amount [number] authorization amount
       @return [string] XML request body
     */
-    public function prepareDataCapAuth($type, $amount)
+    public function prepareDataCapAuth($type, $amount, $prompt=false)
     {
         $termID = $this->getTermID();
         $cashierNo = CoreLocal::get("CashierNo");
         $registerNo = CoreLocal::get("laneno");
-        $transNo = CoreLocal::get("transNo");
+        $transNo = CoreLocal::get("transno");
         $transID = CoreLocal::get('paycard_id');
         $mcTerminalID = CoreLocal::get('PaycardsTerminalID');
         if ($mcTerminalID === '') {
@@ -1286,14 +1286,14 @@ class MercuryE2E extends BasicCCModule
         $insP = $dbc->prepare('
             INSERT INTO PaycardTransactions
             (dateID, empNo, registerNo, transNo, transID, processor,
-            refNum, live, cardType, transType, amount, manual, requestDatetime
+            refNum, live, cardType, transType, amount, manual, requestDatetime,
             seconds, commErr, httpCode)
             VALUES
             (?, ?, ?, ?, ?, \'MercuryE2E\',
-            ?, ?, ?, ?, 0, ?,
+            ?, ?, ?, ?, ?, 0, ?,
             0, 0, 200)');
         $args = array(
-            date('Ymd'), $empNo, $registerNo, $transNo, $transID,
+            date('Ymd'), $cashierNo, $registerNo, $transNo, $transID,
             $refNum, $live, $tran_type, $tran_code, abs($amount), date('Y-m-d H:i:s')
         );
         $insR = $dbc->execute($insP, $args);
@@ -1345,6 +1345,11 @@ class MercuryE2E extends BasicCCModule
         $msgXml .= '
             </Transaction>
             </TStream>';
+
+        if ($prompt) {
+            $msgXml = str_replace('<AcctNo>SecureDevice</AcctNo>',
+                '<AcctNo>Prompt</AcctNo>', $msgXml);
+        }
 
         return $msgXml;
     }
@@ -1472,7 +1477,8 @@ class MercuryE2E extends BasicCCModule
             $xml->get_first('ACQREFDATA'),
             $this->last_paycard_transaction_id
         );
-        $finishQ = $dbc->prep_statement($finishQ);
+        $dbc = Database::tDataConnect();
+        $finishQ = $dbc->prepare_statement($finishQ);
         $dbc->exec_statement($finishQ, $args);
 
         /** handle partial auth **/
@@ -1483,7 +1489,7 @@ class MercuryE2E extends BasicCCModule
                                 SET amount=%.2f
                                 WHERE paycardTransactionID=%d',
                                 $amt, $this->last_paycard_transaction_id);
-                $dbTrans->query($upQ);
+                $dbc->query($upQ);
 
                 CoreLocal::set("paycard_amount",$amt);
                 CoreLocal::set("paycard_partial",True);
