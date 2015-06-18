@@ -1287,7 +1287,7 @@ class MercuryE2E extends BasicCCModule
             <Amount>
                 <Purchase>' . sprintf('%.2f', abs($amount)) . '</Purchase>
             </Amount>
-            <RecordNo>RecordNoRequested</RecordNo>
+            <RecordNo>RecordNumberRequested</RecordNo>
             <Frequency>OneTime</Frequency>';
         if ($type == 'EMV') { // add EMV specific fields
             $msgXml .= '
@@ -1299,7 +1299,7 @@ class MercuryE2E extends BasicCCModule
             <Account>
                 <AcctNo>SecureDevice</AcctNo>
             </Account>
-            <TranType>' . $tranType . '</TranType>';
+            <TranType>' . $tran_type . '</TranType>';
             if ($card_type) {
                 $msgXml .= '<CardType>' . $card_type . '</CardType>';
             }

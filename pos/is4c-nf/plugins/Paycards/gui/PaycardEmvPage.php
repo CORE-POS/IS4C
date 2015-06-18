@@ -97,11 +97,12 @@ function emvSubmit()
 {
     $('div.baseHeight').html('Processing transaction');
     // POST XML request to driver using AJAX
-    var xmlData = '<?php echo $e2e->prepareDataCapAuth(CoreLocal::get('paycard_type'), CoreLocal::get('paycard_amount')); ?>';
+    var xmlData = '<?php echo json_encode($e2e->prepareDataCapAuth(CoreLocal::get('paycard_type'), CoreLocal::get('paycard_amount'))); ?>';
     $.ajax({
-        url: http://localhost:9000,
+        url: 'http://localhost:9000',
         type: 'POST',
         data: xmlData,
+        dataType: 'string',
         success: function(resp) {
             // POST result to PHP page in POS to
             // process the result.
@@ -215,10 +216,11 @@ function emvSubmit()
         }
         CoreLocal::set("msgrepeat",2);
         ?>
+        asldfjlaksfjlaksj
         </div>
         <?php
     }
 }
 
 if (basename($_SERVER['PHP_SELF']) == basename(__FILE__))
-    new paycardboxMsgAuth();
+    new PaycardEmvPage();

@@ -125,7 +125,7 @@
     <SPHRef Include="DSIPDCXLib.dll" Condition=" Exists('DSIPDCXLib.dll') And Exists('AxDSIPDCXLib.dll') " />
     <SPHRef Include="AxDSIPDCXLib.dll" Condition=" Exists('DSIPDCXLib.dll') And Exists('AxDSIPDCXLib.dll') " />
     <SPHRef Include="DSIEMVXLib.dll" Condition=" Exists('DSIEMVXLib.dll') And Exists('AxDSIEMVXLib.dll') " />
-    <SPHRef Include="AxDSIPEMVLib.dll" Condition=" Exists('DSIEMVXLib.dll') And Exists('AxDSIEMVXLib.dll') " />
+    <SPHRef Include="AxDSIEMVXLib.dll" Condition=" Exists('DSIEMVXLib.dll') And Exists('AxDSIEMVXLib.dll') " />
     <SPHRef Include="System.Drawing.dll" Condition=" '$(OS)' == 'Unix' " />
 
     <SPHTarget Include="DelegateFormLibrary" />

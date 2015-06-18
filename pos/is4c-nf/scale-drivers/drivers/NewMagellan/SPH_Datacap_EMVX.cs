@@ -42,7 +42,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     private string com_port = "0";
     protected string server_list = "x1.mercurydev.net;x2.mercurydev.net";
     protected int LISTEN_PORT = 9000; // acting as a Datacap stand-in
-    protected string sequence_no = false;
+    protected string sequence_no = null;
 
     public SPH_Datacap_EMVX(string p) : base(p)
     { 
@@ -50,7 +50,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         device_identifier=p;
         if (p.Contains(":")) {
             string[] parts = p.Split(new char[]{':'}, 2);
-            device_identifer = parts[0];
+            device_identifier = parts[0];
             com_port = parts[1];
         }
     }
@@ -165,6 +165,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             + "Connection: close\r\n"
             + "Content-Type: text/xml\r\n"
             + "Content-Length: " + http_response.Length + "\r\n" 
+            + "Access-Control-Allow-Origin: http://localhost\r\n"
             + "\r\n"; 
         
         return headers + http_response;
@@ -238,6 +239,10 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     */
     protected string ProcessPDC(string xml)
     {
+        xml = xml.Replace("{{SequenceNo}}", SequenceNo());
+        xml = xml.Replace("{{SecureDevice}}", this.device_identifier);
+        xml = xml.Replace("{{ComPort}}", com_port);
+
         return pdc_ax_control.ProcessTransaction(xml, 0, null, null);
     }
 
@@ -246,7 +251,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     */
     protected string SequenceNo()
     {
-        return sequence_no ? sequence_no : "0010010010";
+        return sequence_no != null ? sequence_no : "0010010010";
     }
 
     /**

@@ -46,7 +46,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
         device_identifier=p;
         if (p.Contains(":")) {
             string[] parts = p.Split(new char[]{':'}, 2);
-            device_identifer = parts[0];
+            device_identifier = parts[0];
             com_port = parts[1];
         }
     }
@@ -96,12 +96,12 @@ public class SPH_Datacap_PDCX : SerialPortHandler
                         } while (stream.DataAvailable);
 
                         message = GetHttpBody(message);
+                        message = message.Replace("{{SecureDevice}}", this.device_identifier);
+                        message = message.Replace("{{ComPort}}", com_port);
+                        message = message.Trim(new char[]{'"'});
                         if (this.verbose_mode > 0) {
                             Console.WriteLine(message);
                         }
-
-                        messaage = message.Replace("{{SecureDevice}}", this.device_identifier);
-                        message = message.Replace("{{ComPort}}", com_port);
                         string result = ax_control.ProcessTransaction(message, 0, null, null);
                         result = WrapHttpResponse(result);
                         if (this.verbose_mode > 0) {
@@ -151,6 +151,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
             + "Connection: close\r\n"
             + "Content-Type: text/xml\r\n"
             + "Content-Length: " + http_response.Length + "\r\n" 
+            + "Access-Control-Allow-Origin: http://localhost\r\n"
             + "\r\n"; 
         
         return headers + http_response;

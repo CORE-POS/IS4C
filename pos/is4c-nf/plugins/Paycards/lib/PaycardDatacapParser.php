@@ -56,7 +56,7 @@ class PaycardDatacapParser extends Parser
         $ret = $this->default_json();
         $plugin_info = new Paycards();
         $ret['main_frame'] = $plugin_info->plugin_url().'/gui/PaycardEmvPage.php';
-        CoreLocal::getsubtotals();
+        Database::getsubtotals();
         CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_AUTH);
         if ($str == 'DATACAPEMV') {
             CoreLocal::set('paycard_amount', CoreLocal::get('amtdue'));
