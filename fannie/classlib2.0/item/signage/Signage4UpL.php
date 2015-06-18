@@ -41,7 +41,7 @@ class Signage4UpL extends \COREPOS\Fannie\API\item\FannieSignage
         if (\COREPOS\Fannie\API\FanniePlugin::isEnabled('CoopDealsSigns')) {
             $this->font = 'Gill';
             $this->alt_font = 'GillBook';
-            define('FPDF_FONTPATH', dirname(__FILE__) . '/../../../modules/plugins2.0/CoopDealsSigns/fonts/');
+            define('FPDF_FONTPATH', dirname(__FILE__) . '/../../../modules/plugins2.0/CoopDealsSigns/noauto/fonts/');
             $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
         }
         $pdf->SetFont($this->font, '', 16);
