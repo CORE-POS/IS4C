@@ -22,7 +22,7 @@ class CoopDeals16UpDarkP extends \COREPOS\Fannie\API\item\FannieSignage
         $pdf = new \FPDF('P', 'mm', 'Letter');
         $pdf->SetMargins(0, 3.175, 0);
         $pdf->SetAutoPageBreak(false);
-        define('FPDF_FONTPATH', dirname(__FILE__) . '/fonts/');
+        define('FPDF_FONTPATH', dirname(__FILE__) . '/noauto/fonts/');
         $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
         $pdf->AddFont('Gill', 'B', 'GillSansMTPro-Heavy.php');
         $pdf->AddFont('GillBook', '', 'GillSansMTPro-Book.php');
