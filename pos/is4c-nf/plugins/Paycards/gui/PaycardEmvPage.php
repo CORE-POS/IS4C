@@ -97,7 +97,11 @@ function emvSubmit()
 {
     $('div.baseHeight').html('Processing transaction');
     // POST XML request to driver using AJAX
-    var xmlData = '<?php echo json_encode($e2e->prepareDataCapAuth(CoreLocal::get('paycard_type'), CoreLocal::get('paycard_amount'))); ?>';
+    var xmlData = '<?php echo json_encode($e2e->prepareDataCapAuth(CoreLocal::get('CacheCardType'), CoreLocal::get('paycard_amount'))); ?>';
+    if (xmlData == '"Error"') { // failed to save request info in database
+        location = '<?php echo MiscLib::baseURL(); ?>gui-modules/boxMsg2.php';
+        return false;
+    }
     $.ajax({
         url: 'http://localhost:9000',
         type: 'POST',

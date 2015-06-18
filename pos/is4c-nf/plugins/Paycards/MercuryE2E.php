@@ -1250,15 +1250,24 @@ class MercuryE2E extends BasicCCModule
     {
         $termID = $this->getTermID();
         $cashierNo = CoreLocal::get("CashierNo");
-        $refNum = $this->refnum(CoreLocal::get('paycard_id'));
+        $registerNo = CoreLocal::get("laneno");
+        $transNo = CoreLocal::get("transNo");
+        $transID = CoreLocal::get('paycard_id');
+        $mcTerminalID = CoreLocal::get('PaycardsTerminalID');
+        if ($mcTerminalID === '') {
+            $mcTerminalID = CoreLocal::get('laneno');
+        }
+        $refNum = $this->refnum($transID);
         $tran_code = $amount > 0 ? 'Sale' : 'Return';
         if ($type == 'EMV') {
             $tran_code = 'EMV' . $tran_code;
         }
 
         $host = "x1.mercurypay.com";
+        $live = 1;
         if (CoreLocal::get("training") == 1) {
             $host = "x1.mercurydev.net";
+            $live = 0;
         }
 
         $tran_type = 'Credit';
@@ -1273,12 +1282,35 @@ class MercuryE2E extends BasicCCModule
             $card_type = 'Cash';
         }
 
+        $dbc = Database::tDataConnect();
+        $insP = $dbc->prepare('
+            INSERT INTO PaycardTransactions
+            (dateID, empNo, registerNo, transNo, transID, processor,
+            refNum, live, cardType, transType, amount, manual, requestDatetime
+            seconds, commErr, httpCode)
+            VALUES
+            (?, ?, ?, ?, ?, \'MercuryE2E\',
+            ?, ?, ?, ?, 0, ?,
+            0, 0, 200)');
+        $args = array(
+            date('Ymd'), $empNo, $registerNo, $transNo, $transID,
+            $refNum, $live, $tran_type, $tran_code, abs($amount), date('Y-m-d H:i:s')
+        );
+        $insR = $dbc->execute($insP, $args);
+        if ($insR === false) {
+            // TODO: cancel request on JS side
+            $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); 
+            return 'Error';
+        }
+        $this->last_paycard_transaction_id = $dbc->insert_id();
+
         // start with fields common to PDCX and EMVX
         $msgXml = '<?xml version="1.0"?'.'>
             <TStream>
             <Transaction>
             <MerchantID>'.$termID.'</MerchantID>
             <OperatorID>'.$cashierNo.'</OperatorID>
+            <LaneID>'.$mcTerminalID.'</LaneID>
             <TranCode>' . $tran_code . '</TranCode>
             <SecureDevice>{{SecureDevice}}</SecureDevice>
             <ComPort>{{ComPort}}</ComPort>
@@ -1293,7 +1325,8 @@ class MercuryE2E extends BasicCCModule
             $msgXml .= '
             <HostOrIP>' . $host . '</HostOrIP>
             <SequenceNo>{{SequenceNo}}</SequenceNo>
-            <CollectData>CardholderName</CollectData>';
+            <CollectData>CardholderName</CollectData>
+            <PartialAuth>Allow</PartialAuth>';
         } else {
             $msgXml .= '
             <Account>
@@ -1303,12 +1336,13 @@ class MercuryE2E extends BasicCCModule
             if ($card_type) {
                 $msgXml .= '<CardType>' . $card_type . '</CardType>';
             }
+            if ($type == 'CREDIT') {
+                $msgXml .= '<PartialAuth>Allow</PartialAuth>';
+            }
         }
         $msgXml .= '
             </Transaction>
             </TStream>';
-
-        /** todo: log request in database **/
 
         return $msgXml;
     }
@@ -1320,7 +1354,167 @@ class MercuryE2E extends BasicCCModule
     */
     public function handleResponseDataCap($xml)
     {
-        return PaycardLib::PAYCARD_ERR_OK;
+        $xml = new xmlData($xml);
+        $cashierNo = CoreLocal::get("CashierNo");
+        $laneNo = CoreLocal::get("laneno");
+        $transNo = CoreLocal::get("transno");
+        $transID = CoreLocal::get("paycard_id");
+        // mercury truncates the reference number in the response; recalculate so it
+        // actually matches
+        $refNum = $this->refnum($transID);
+
+        $validResponse = ($xml->isValid()) ? 1 : 0;
+        $responseCode = $xml->get("CMDSTATUS");
+        if ($responseCode) {
+            // map response status to 0/1/2 for compatibility
+            if ($responseCode == "Approved") {
+                $responseCode=1;
+            } elseif ($responseCode == "Declined") {
+                $responseCode=2;
+            } elseif ($responseCode == "Error") {
+                $responseCode=0;
+            }
+        } else {
+            $validResponse = -3;
+        }
+        $resultCode = $xml->get("DSIXRETURNCODE");
+        $resultMsg = $xml->get_first("CMDSTATUS");
+        $rMsg = $resultMsg;
+        if ($resultMsg) {
+            $rMsg = $resultMsg;
+            $aNum = $xml->get("AUTHCODE");
+            if ($responseCode == 1) { // approved
+                if ($aNum) {
+                    $rMsg .= ' '.$aNum;
+                }
+            } else {
+                $processor_text = $xml->get_first('TEXTRESPONSE');
+                if ($processor_text) {
+                    $rMsg = $processor_text;
+                }
+            }
+            if (strlen($rMsg) > 100) {
+                $rMsg = substr($rMsg,0,100);
+            }
+        }
+        $xTransID = $xml->get("REFNO");
+        if ($xTransID) {
+            $sqlColumns .= ",xTransactionID";
+            $xTransID = substr($xTransID, 0, 12);
+            $sqlValues .= sprintf(",'%s'", $xTransID);
+        } else {
+            $validResponse = -3;
+        }
+        $apprNumber = $xml->get("AUTHCODE");
+        $pan = $xml->get('AcctNo');
+        if (strlen($pan) > 4) {
+            $pan = '************' . substr($pan, -4);
+        }
+        $name = 'Cardholder';
+        if ($xml->get_first('CardholderName')) {
+            $name = $xml->get_first('CardholderName');
+        }
+
+        $issuer = $xml->get('CardType');
+        $ebtbalance = 0;
+        if ($issuer == 'Foodstamp' && $xml->get_first('Balance')) {
+            $issuer = 'EBT';
+            CoreLocal::set('EbtFsBalance', $xml->get_first('Balance'));
+            $ebtbalance = $xml->get_first('Balance');
+        } elseif ($issuer == 'Cash' && $xml->get_first('Balance')) {
+            $issuer = 'EBT';
+            CoreLocal::set('EbtFsBalance', $xml->get_first('Balance'));
+            $ebtbalance = $xml->get_first('Balance');
+        }
+
+        // put normalized value in validResponse column
+        $normalized = ($validResponse == 0) ? 4 : 0;
+        if ($responseCode == 1) {
+            $normalized = 1;
+        } else if ($responseCode == 2) {
+            $normalized = 2;
+        } else if ($responseCode == 0) {
+            $normalized = 3;
+        }
+
+        $finishQ = "UPDATE PaycardTransactions
+                        SET responseDatetime=?,
+                            name=?,
+                            issuer=?,
+                            PAN=?,
+                            validResponse=?,
+                            xResultCode=?,
+                            xApprovalNumber=?,
+                            xResponseCode=?,
+                            xResultMessage=?,
+                            xTransactionID=?,
+                            xBalance=?,
+                            xToken=?,
+                            xProcessorRef=?,
+                            xAcquirerRef=?,
+                        WHERE paycardTransactionID=?";
+        $args = array(
+            date('Y-m-d H:i:s'),
+            $name,
+            $issuer,
+            $pan,
+            $normalized,
+            $responseCode,
+            $apprNumber,
+            $resultCode,
+            $rMsg,
+            $xTransID,
+            $ebtbalance,
+            $xml->get_first('RECORDNO'),
+            $xml->get_first('PROCESSDATA'),
+            $xml->get_first('ACQREFDATA'),
+            $this->last_paycard_transaction_id
+        );
+        $finishQ = $dbc->prep_statement($finishQ);
+        $dbc->exec_statement($finishQ, $args);
+
+        /** handle partial auth **/
+        if ($responseCode == 1) {
+            $amt = $xml->get_first("AUTHORIZE");
+            if ($amt != abs(CoreLocal::get("paycard_amount"))) {
+                $upQ = sprintf('UPDATE PaycardTransactions
+                                SET amount=%.2f
+                                WHERE paycardTransactionID=%d',
+                                $amt, $this->last_paycard_transaction_id);
+                $dbTrans->query($upQ);
+
+                CoreLocal::set("paycard_amount",$amt);
+                CoreLocal::set("paycard_partial",True);
+                UdpComm::udpSend('goodBeep');
+            }
+        }
+
+        switch (strtoupper($xml->get_first("CMDSTATUS"))) {
+            case 'APPROVED':
+                return PaycardLib::PAYCARD_ERR_OK;
+            case 'DECLINED':
+                if ($issuer == 'EBT') {
+                    // if EBT is declined but lists a balance less than the
+                    // requested authorization, it may be possible to
+                    // charge the card for a less amount. 
+                    TransRecord::addcomment("");
+                    CoreLocal::set('boxMsg', sprintf('Card Balance: $%.2f', $ebtbalance));
+                }
+                UdpComm::udpSend('termReset');
+                CoreLocal::set('ccTermState','swipe');
+                // intentional fallthrough
+            case 'ERROR':
+                CoreLocal::set("boxMsg","");
+                $texts = $xml->get_first("TEXTRESPONSE");
+                CoreLocal::set("boxMsg","Error: $texts");
+                TransRecord::addcomment("");
+                break;
+            default:
+                CoreLocal::set("boxMsg","An unknown error occurred<br />at the gateway");
+                TransRecord::addcomment("");    
+        }
+
+        return PaycardLib::PAYCARD_ERR_PROC;
     }
 
     /**

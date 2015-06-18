@@ -57,16 +57,15 @@ class PaycardDatacapParser extends Parser
         $plugin_info = new Paycards();
         $ret['main_frame'] = $plugin_info->plugin_url().'/gui/PaycardEmvPage.php';
         Database::getsubtotals();
-        CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_AUTH);
         if ($str == 'DATACAPEMV') {
             CoreLocal::set('paycard_amount', CoreLocal::get('amtdue'));
-            CoreLocal::set('paycard_type', 'EMV');
+            CoreLocal::set('CacheCardType', 'EMV');
         } elseif ($str == 'DATACAPCC') {
             CoreLocal::set('paycard_amount', CoreLocal::get('amtdue'));
-            CoreLocal::set('paycard_type', 'CREDIT');
+            CoreLocal::set('CacheCardType', 'CREDIT');
         } elseif ($str == 'DATACAPDC') {
             CoreLocal::set('paycard_amount', CoreLocal::get('amtdue'));
-            CoreLocal::set('paycard_type', 'DEBIT');
+            CoreLocal::set('CacheCardType', 'DEBIT');
         } elseif ($str == 'DATACAPEF') {
             if (CoreLocal::get('fntlflag') == 0) {
                 /* try to automatically do fs total */
@@ -79,11 +78,13 @@ class PaycardDatacapParser extends Parser
                 } 
             }
             CoreLocal::set('paycard_amount', CoreLocal::get('fsEligible'));
-            CoreLocal::set('paycard_type', 'EBTFOOD');
+            CoreLocal::set('CacheCardType', 'EBTFOOD');
         } elseif ($str == 'DATACAPEC') {
             CoreLocal::set('paycard_amount', CoreLocal::get('amtdue'));
-            CoreLocal::set('paycard_type', 'EBTCASH');
+            CoreLocal::set('CacheCardType', 'EBTCASH');
         }
+        CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_AUTH);
+        CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_CREDIT);
 
         return $ret;
     }
