@@ -1326,9 +1326,11 @@ class MercuryE2E extends BasicCCModule
             <HostOrIP>' . $host . '</HostOrIP>
             <SequenceNo>{{SequenceNo}}</SequenceNo>
             <CollectData>CardholderName</CollectData>
+            <Memo>CORE POS 1.0.0 EMVX</Memo>
             <PartialAuth>Allow</PartialAuth>';
         } else {
             $msgXml .= '
+            <Memo>CORE POS 1.0.0 PDCX</Memo>
             <Account>
                 <AcctNo>SecureDevice</AcctNo>
             </Account>
