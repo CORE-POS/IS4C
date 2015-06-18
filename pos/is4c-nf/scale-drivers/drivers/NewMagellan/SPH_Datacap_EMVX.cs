@@ -105,9 +105,6 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                         } while (stream.DataAvailable);
 
                         message = GetHttpBody(message);
-                        if (this.verbose_mode > 0) {
-                            Console.WriteLine(message);
-                        }
 
                         // Send EMV messages to EMVX, others
                         // to PDCX
@@ -214,9 +211,13 @@ public class SPH_Datacap_EMVX : SerialPortHandler
            as so tracking SequenceNo values is not POS'
            problem.
         */
+        xml = xml.Trim(new char[]{'"'});
         xml = xml.Replace("{{SequenceNo}}", SequenceNo());
-        xml = xml.Replace("{{SecureDevice}}", this.device_identifier);
+        xml = xml.Replace("{{SecureDevice}}", SecureDeviceToEmvType(this.device_identifier));
         xml = xml.Replace("{{ComPort}}", com_port);
+        if (this.verbose_mode > 0) {
+            Console.WriteLine(xml);
+        }
 
         string result = emv_ax_control.ProcessTransaction(xml);
         // track SequenceNo values in responses
@@ -239,9 +240,13 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     */
     protected string ProcessPDC(string xml)
     {
+        xml = xml.Trim(new char[]{'"'});
         xml = xml.Replace("{{SequenceNo}}", SequenceNo());
         xml = xml.Replace("{{SecureDevice}}", this.device_identifier);
         xml = xml.Replace("{{ComPort}}", com_port);
+        if (this.verbose_mode > 0) {
+            Console.WriteLine(xml);
+        }
 
         return pdc_ax_control.ProcessTransaction(xml, 0, null, null);
     }
@@ -265,7 +270,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             + "<MerchantID>MerchantID</MerchantID>"
             + "<TranCode>SecureDeviceInit</TranCode>"
             + "<TranType>Setup</TranType>"
-            + "<SecureDevice>" + this.device_identifier + "</SecureDevice>"
+            + "<SecureDevice>"+ this.device_identifier + "</SecureDevice>"
             + "<ComPort>" + this.com_port + "</ComPort>"
             + "<PadType>" + SecureDeviceToPadType(device_identifier) + "</PadType>"
             + "</Admin>"
@@ -284,7 +289,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             + "<Transaction>"
             + "<MerchantID>MerchantID</MerchantID>"
             + "<TranCode>EMVPadReset</TranCode>"
-            + "<SecureDevice>"+ this.device_identifier + "</SecureDevice>"
+            + "<SecureDevice>" + SecureDeviceToEmvType(this.device_identifier) + "</SecureDevice>"
             + "<ComPort>" + this.com_port + "</ComPort>"
             + "<SequenceNo>" + SequenceNo() + "</SequenceNo>"
             + "</Transaction>"
@@ -325,17 +330,35 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         return null;
     }
 
+    /**
+      Translate securedevice strings to padtype strings
+    */
     protected string SecureDeviceToPadType(string device)
     {
         switch (device) {
-            case "VX805_XPI":
-            case "VX805_XPI_MERCURY_E2E":
+            case "VX805XPI":
+            case "VX805XPI_MERCURY_E2E":
                 return "VX805";
             case "INGENICOISC250":
                 return "ISC250";
             default:
                 return device;
         }
+    }
+
+    /**
+      Translate pdc securedevice strings to emv securedevice strings
+    */
+    protected string SecureDeviceToEmvType(string device)
+    {
+        switch (device) {
+            case "VX805XPI":
+            case "VX805XPI_MERCURY_E2E":
+                return "EMV_VX805_MERCURY";
+            default:
+                return "EMV_" + device;
+        }
+
     }
 }
 

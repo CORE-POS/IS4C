@@ -241,8 +241,8 @@ public class SPH_Datacap_PDCX : SerialPortHandler
     protected string SecureDeviceToPadType(string device)
     {
         switch (device) {
-            case "VX805_XPI":
-            case "VX805_XPI_MERCURY_E2E":
+            case "VX805XPI":
+            case "VX805XPI_MERCURY_E2E":
                 return "VX805";
             case "INGENICOISC250":
                 return "ISC250";

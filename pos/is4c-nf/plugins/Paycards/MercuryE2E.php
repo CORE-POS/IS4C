@@ -1291,7 +1291,7 @@ class MercuryE2E extends BasicCCModule
             <Frequency>OneTime</Frequency>';
         if ($type == 'EMV') { // add EMV specific fields
             $msgXml .= '
-            <HostOrIp>' . $host . '</HostOrIP>
+            <HostOrIP>' . $host . '</HostOrIP>
             <SequenceNo>{{SequenceNo}}</SequenceNo>
             <CollectData>CardholderName</CollectData>';
         } else {
