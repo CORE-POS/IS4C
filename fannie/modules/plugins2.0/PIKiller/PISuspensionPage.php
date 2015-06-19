@@ -239,6 +239,7 @@ class PISuspensionPage extends PIKillerPage {
                 $m_status = 1;
             }
             $this->__models['suspended']->reasoncode($code);
+            $this->__models['suspended']->suspDate(date('Y-m-d H:i:s'));
             $this->__models['suspended']->save();
 
             $history = new SuspensionHistoryModel($dbc);
