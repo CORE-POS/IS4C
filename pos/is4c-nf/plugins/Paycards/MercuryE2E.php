@@ -1520,7 +1520,7 @@ class MercuryE2E extends BasicCCModule
     */
     public function prepareDataCapBalance($type)
     {
-	CoreLocal::set('DatacapBalanceCheck', '??');
+        CoreLocal::set('DatacapBalanceCheck', '??');
         $termID = $this->getTermID();
         $cashierNo = CoreLocal::get("CashierNo");
         $registerNo = CoreLocal::get("laneno");
@@ -1539,16 +1539,16 @@ class MercuryE2E extends BasicCCModule
             $live = 0;
         }
 
-	$tran_type = '';
-	$card_type = '';
-	if ($type == 'EBTFOOD') {
-	    $tran_type = 'EBT';
-	    $card_type = 'Foodstamp';
-	} elseif ($type == 'EBTCASH') {
-	    $tran_type = 'EBT';
-	    $card_type = 'Cash';
-	} elseif ($type == 'GIFT') {
-	    $tran_type = 'PrePaid';
+        $tran_type = '';
+        $card_type = '';
+        if ($type == 'EBTFOOD') {
+            $tran_type = 'EBT';
+            $card_type = 'Foodstamp';
+        } elseif ($type == 'EBTCASH') {
+            $tran_type = 'EBT';
+            $card_type = 'Cash';
+        } elseif ($type == 'GIFT') {
+            $tran_type = 'PrePaid';
         }
 
         $msgXml = '<?xml version="1.0"?'.'>
@@ -1557,7 +1557,7 @@ class MercuryE2E extends BasicCCModule
             <MerchantID>'.$termID.'</MerchantID>
             <OperatorID>'.$cashierNo.'</OperatorID>
             <LaneID>'.$mcTerminalID.'</LaneID>
-	    <TranType>' . $tran_type . '</TranType>
+            <TranType>' . $tran_type . '</TranType>
             <TranCode>Balance</TranCode>
             <SecureDevice>{{SecureDevice}}</SecureDevice>
             <ComPort>{{ComPort}}</ComPort>
@@ -1571,11 +1571,11 @@ class MercuryE2E extends BasicCCModule
                 <Purchase>0.00</Purchase>
             </Amount>';
         if ($card_type) {
-	    $msgXml .= '<CardType>' . $card_type . '</CardType>';
-	}
-	$msgXml .= '</Transaction></TStream>';
+            $msgXml .= '<CardType>' . $card_type . '</CardType>';
+        }
+        $msgXml .= '</Transaction></TStream>';
 
-	return $msgXml;
+        return $msgXml;
     }
 
     /**
@@ -1770,11 +1770,11 @@ class MercuryE2E extends BasicCCModule
             $validResponse = -3;
         }
 
-	$balance = $xml->get_first('BALANCE');
+        $balance = $xml->get_first('BALANCE');
 
         switch (strtoupper($xml->get_first("CMDSTATUS"))) {
             case 'APPROVED':
-	    	CoreLocal::set('DatacapBalanceCheck', $balance);
+                CoreLocal::set('DatacapBalanceCheck', $balance);
                 return PaycardLib::PAYCARD_ERR_OK;
             case 'DECLINED':
                 // intentional fallthrough
