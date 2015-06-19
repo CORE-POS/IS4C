@@ -85,6 +85,7 @@ class PaycardDatacapParser extends Parser
         }
         CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_AUTH);
         CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_CREDIT);
+        CoreLocal::set('paycard_id', CoreLocal::get('LastID')+1);
 
         return $ret;
     }
