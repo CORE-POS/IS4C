@@ -27,6 +27,7 @@ include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 class PaycardEmvPage extends PaycardProcessPage 
 {
     private $prompt = false;
+    private $run_transaction = false;
 
     function preprocess()
     {
@@ -59,6 +60,7 @@ class PaycardEmvPage extends PaycardProcessPage
                     if ($input == 'MANUAL') {
                         $this->prompt = true;
                     }
+                    $this->run_transaction = true;
                 }
             } elseif ( $input != "" && substr($input,-2) != "CL") {
                 // any other input is an alternate amount
@@ -95,6 +97,9 @@ class PaycardEmvPage extends PaycardProcessPage
 
     function head_content()
     {
+        if (!$this->run_transaction) {
+            return '';
+        }
         $e2e = new MercuryE2E();
         ?>
 <script type="text/javascript">

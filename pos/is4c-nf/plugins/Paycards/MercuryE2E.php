@@ -1302,7 +1302,7 @@ class MercuryE2E extends BasicCCModule
             $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); 
             return 'Error';
         }
-        $this->last_paycard_transaction_id = $dbc->insert_id();
+        CoreLocal::set('LastEmvPcId', $dbc->insert_id());
 
         // start with fields common to PDCX and EMVX
         $msgXml = '<?xml version="1.0"?'.'>
@@ -1399,7 +1399,7 @@ class MercuryE2E extends BasicCCModule
                     previousPaycardTransactionID, processor, refNum,
                     live, cardType, transType, amount, PAN, issuer,
                     name, manual, requestDateTime)
-                  SELECT dateID, empNo, registerNo, transNo, transID,
+                  SELECT dateID, empNo, registerNo, transNo, transID+1,
                     paycardTransactionID, processor, refNum,
                     live, cardType, 'VOID', amount, PAN, issuer,
                     name, manual, " . $dbc->now() . "
@@ -1407,7 +1407,7 @@ class MercuryE2E extends BasicCCModule
                   WHERE paycardTransactionID=" . ((int)$pcID);
         $initR = $dbc->query($initQ);
         if ($initR) {
-            $this->last_paycard_transaction_id = $dbc->insert_id();
+            CoreLocal::set('LastEmvPcId', $dbc->insert_id());
         } else {
             $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); 
             return 'Error';
@@ -1497,6 +1497,7 @@ class MercuryE2E extends BasicCCModule
             $msgXml .= '<AcqRefData>' . $prev['xAcquirerRef'] . '</AcqRefData>';
         }
         $msgXml .= '
+            <AuthCode>' . $prev['xApprovalNumber'] . '</AuthCode>
             </Transaction>
             </TStream>';
 
@@ -1555,9 +1556,7 @@ class MercuryE2E extends BasicCCModule
         }
         $xTransID = $xml->get("REFNO");
         if ($xTransID) {
-            $sqlColumns .= ",xTransactionID";
             $xTransID = substr($xTransID, 0, 12);
-            $sqlValues .= sprintf(",'%s'", $xTransID);
         } else {
             $validResponse = -3;
         }
@@ -1607,7 +1606,7 @@ class MercuryE2E extends BasicCCModule
                             xBalance=?,
                             xToken=?,
                             xProcessorRef=?,
-                            xAcquirerRef=?,
+                            xAcquirerRef=?
                         WHERE paycardTransactionID=?";
         $args = array(
             date('Y-m-d H:i:s'),
@@ -1624,7 +1623,7 @@ class MercuryE2E extends BasicCCModule
             $xml->get_first('RECORDNO'),
             $xml->get_first('PROCESSDATA'),
             $xml->get_first('ACQREFDATA'),
-            $this->last_paycard_transaction_id
+            CoreLocal::get('LastEmvPcId')
         );
         $dbc = Database::tDataConnect();
         $finishQ = $dbc->prepare_statement($finishQ);
@@ -1637,7 +1636,7 @@ class MercuryE2E extends BasicCCModule
                 $upQ = sprintf('UPDATE PaycardTransactions
                                 SET amount=%.2f
                                 WHERE paycardTransactionID=%d',
-                                $amt, $this->last_paycard_transaction_id);
+                                $amt, CoreLocal::get('LastEmvPcId'));
                 $dbc->query($upQ);
 
                 CoreLocal::set("paycard_amount",$amt);

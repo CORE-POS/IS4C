@@ -28,14 +28,18 @@ class PaycardEmvVoid extends PaycardProcessPage
 {
     private $prompt = false;
     private $id = false;
+    private $run_transaction = false;
 
     function preprocess()
     {
         $dbc = Database::tDataConnect();
-        $q = 'SELECT MAX(paycadTransactionID) FROM PaycardTransactions';
+        $q = '
+            SELECT MAX(paycardTransactionID) 
+            FROM PaycardTransactions
+            WHERE transID=' . ((int)CoreLocal::get('paycard_id'));
         $r = $dbc->query($q);
         if ($r && $dbc->numRows($r)) {
-            $w = $dc->fetchRow($r);
+            $w = $dbc->fetchRow($r);
             $this->id = $w[0];
         }
         if (!$this->id) {
@@ -57,9 +61,10 @@ class PaycardEmvVoid extends PaycardProcessPage
                 CoreLocal::set("togglefoodstamp",0);
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return false;
-            } elseif (Authenticate::checkASSWORD($input)) {
+            } elseif (Authenticate::checkPassword($input)) {
                 $this->action = "onsubmit=\"return false;\"";    
                 $this->add_onload_command("emvSubmit();");
+                $this->run_transaction = true;
             }
             // if we're still here, we haven't accepted a valid amount yet; display prompt again
         } elseif (isset($_REQUEST['xml-resp'])) {
@@ -87,6 +92,9 @@ class PaycardEmvVoid extends PaycardProcessPage
 
     function head_content()
     {
+        if (!$this->run_transaction) {
+            return '';
+        }
         $e2e = new MercuryE2E();
         ?>
 <script type="text/javascript">
