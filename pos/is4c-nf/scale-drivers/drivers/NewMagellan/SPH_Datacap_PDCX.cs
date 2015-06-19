@@ -101,7 +101,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
                         if (this.verbose_mode > 0) {
                             Console.WriteLine(message);
                         }
-                        string result = ax_control.ProcessTransaction(message, 0, null, null);
+                        string result = ax_control.ProcessTransaction(message, 1, null, null);
                         result = WrapHttpResponse(result);
                         if (this.verbose_mode > 0) {
                             Console.WriteLine(result);
@@ -205,7 +205,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
             + "</Admin>"
             + "</TStream>";
         
-        return ax_control.ProcessTransaction(xml, 0, null, null);
+        return ax_control.ProcessTransaction(xml, 1, null, null);
     }
     
     protected string GetSignature()
@@ -221,7 +221,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
             + "</Account>"
             + "</Transaction>"
             + "</TStream>";
-        string result = ax_control.ProcessTransaction(xml, 0, null, null);
+        string result = ax_control.ProcessTransaction(xml, 1, null, null);
         XmlDocument doc = new XmlDocument();
         try {
             doc.LoadXml(result);

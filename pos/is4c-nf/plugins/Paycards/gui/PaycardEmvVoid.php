@@ -77,6 +77,7 @@ class PaycardEmvVoid extends PaycardProcessPage
             $success = $e2e->handleResponseDataCap($xml);
             if ($success === PaycardLib::PAYCARD_ERR_OK) {
                 $json = $e2e->cleanup($json);
+                CoreLocal::set("strEntered","");
                 CoreLocal::set("strRemembered","");
                 CoreLocal::set("msgrepeat",0);
             } else {

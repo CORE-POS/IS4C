@@ -48,6 +48,14 @@ class PaycardDatacapParser extends Parser
             return true;
         } elseif ($str == 'DATACAPEC') {
             return true;
+        } elseif ($str == 'DATACAPGD') {
+            return true;
+        } elseif ($str == 'PVDATACAPGD') {
+            return true;
+        } elseif ($str == 'PVDATACAPEF') {
+            return true;
+        } elseif ($str == 'PVDATACAPEC') {
+            return true;
         }
     }
 
@@ -57,34 +65,72 @@ class PaycardDatacapParser extends Parser
         $plugin_info = new Paycards();
         $ret['main_frame'] = $plugin_info->plugin_url().'/gui/PaycardEmvPage.php';
         Database::getsubtotals();
-        if ($str == 'DATACAPEMV') {
-            CoreLocal::set('paycard_amount', CoreLocal::get('amtdue'));
-            CoreLocal::set('CacheCardType', 'EMV');
-        } elseif ($str == 'DATACAPCC') {
-            CoreLocal::set('paycard_amount', CoreLocal::get('amtdue'));
-            CoreLocal::set('CacheCardType', 'CREDIT');
-        } elseif ($str == 'DATACAPDC') {
-            CoreLocal::set('paycard_amount', CoreLocal::get('amtdue'));
-            CoreLocal::set('CacheCardType', 'DEBIT');
-        } elseif ($str == 'DATACAPEF') {
-            if (CoreLocal::get('fntlflag') == 0) {
-                /* try to automatically do fs total */
-                $try = PrehLib::fsEligible();
-                if ($try !== true) {
-                    $ret['output'] = PaycardLib::paycard_msgBox($type,"Type Mismatch",
-                        "Foodstamp eligible amount inapplicable","[clear] to cancel");
-                    $ret['main_frame'] = false;
-                    return $ret;
-                } 
-            }
-            CoreLocal::set('paycard_amount', CoreLocal::get('fsEligible'));
-            CoreLocal::set('CacheCardType', 'EBTFOOD');
-        } elseif ($str == 'DATACAPEC') {
-            CoreLocal::set('paycard_amount', CoreLocal::get('amtdue'));
-            CoreLocal::set('CacheCardType', 'EBTCASH');
+        switch ($str) {
+            case 'DATACAPEMV': 
+                CoreLocal::set('paycard_amount', CoreLocal::get('amtdue'));
+                CoreLocal::set('CacheCardType', 'EMV');
+                CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_AUTH);
+                CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_CREDIT);
+                break;
+            case 'DATACAPCC':
+                CoreLocal::set('paycard_amount', CoreLocal::get('amtdue'));
+                CoreLocal::set('CacheCardType', 'CREDIT');
+                CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_AUTH);
+                CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_CREDIT);
+                break;
+            case 'DATACAPDC':
+                CoreLocal::set('paycard_amount', CoreLocal::get('amtdue'));
+                CoreLocal::set('CacheCardType', 'DEBIT');
+                CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_AUTH);
+                CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_CREDIT);
+                break;
+            case 'DATACAPEF':
+                if (CoreLocal::get('fntlflag') == 0) {
+                    /* try to automatically do fs total */
+                    $try = PrehLib::fsEligible();
+                    if ($try !== true) {
+                        $ret['output'] = PaycardLib::paycard_msgBox($type,"Type Mismatch",
+                            "Foodstamp eligible amount inapplicable","[clear] to cancel");
+                        $ret['main_frame'] = false;
+                        return $ret;
+                    } 
+                }
+                CoreLocal::set('paycard_amount', CoreLocal::get('fsEligible'));
+                CoreLocal::set('CacheCardType', 'EBTFOOD');
+                CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_AUTH);
+                CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_CREDIT);
+                break;
+            case 'DATACAPEC':
+                CoreLocal::set('paycard_amount', CoreLocal::get('amtdue'));
+                CoreLocal::set('CacheCardType', 'EBTCASH');
+                CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_AUTH);
+                CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_CREDIT);
+                break;
+            case 'DATACAPGD':
+                CoreLocal::set('paycard_amount', CoreLocal::get('amtdue'));
+                CoreLocal::set('CacheCardType', 'GIFT');
+                CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_AUTH);
+                CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_GIFT);
+                break;
+            case 'PVDATACAPGD':
+                CoreLocal::set('CacheCardType', 'GIFT');
+                CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_BALANCE);
+                CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_GIFT);
+                $ret['main_frame'] = $plugin_info->plugin_url().'/gui/PaycardEmvBalance.php';
+                break;
+            case 'PVDATACAPEF':
+                CoreLocal::set('CacheCardType', 'EBTFOOD');
+                CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_BALANCE);
+                CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_CREDIT);
+                $ret['main_frame'] = $plugin_info->plugin_url().'/gui/PaycardEmvBalance.php';
+                break;
+            case 'PVDATACAPEC':
+                CoreLocal::set('CacheCardType', 'EBTCASH');
+                CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_BALANCE);
+                CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_CREDIT);
+                $ret['main_frame'] = $plugin_info->plugin_url().'/gui/PaycardEmvBalance.php';
+                break;
         }
-        CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_AUTH);
-        CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_CREDIT);
         CoreLocal::set('paycard_id', CoreLocal::get('LastID')+1);
 
         return $ret;

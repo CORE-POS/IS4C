@@ -814,6 +814,14 @@ class MercuryE2E extends BasicCCModule
     public function cleanup($json)
     {
         switch (CoreLocal::get("paycard_mode")) {
+            case PaycardLib::PAYCARD_MODE_BALANCE:
+                $bal = CoreLocal::get('DatacapBalanceCheck');
+                CoreLocal::set("boxMsg","<b>Success</b><font size=-1>
+                                           <p>Card balance: $" . $bal . "
+                                           <p>\"rp\" to print
+                                           <br>[enter] to continue</font>"
+                );
+                break;
             case PaycardLib::PAYCARD_MODE_AUTH:
                 // cast to string. tender function expects string input
                 // numeric input screws up parsing on negative values > $0.99
@@ -1505,6 +1513,72 @@ class MercuryE2E extends BasicCCModule
     }
 
     /**
+      Prepare an XML request body for an PDCX
+      card balance inquiry
+      @param $type [string] card type
+      @return [string] XML request body
+    */
+    public function prepareDataCapBalance($type)
+    {
+	CoreLocal::set('DatacapBalanceCheck', '??');
+        $termID = $this->getTermID();
+        $cashierNo = CoreLocal::get("CashierNo");
+        $registerNo = CoreLocal::get("laneno");
+        $transNo = CoreLocal::get("transno");
+        $transID = CoreLocal::get('paycard_id');
+        $mcTerminalID = CoreLocal::get('PaycardsTerminalID');
+        if ($mcTerminalID === '') {
+            $mcTerminalID = CoreLocal::get('laneno');
+        }
+        $refNum = $this->refnum($transID);
+
+        $host = "x1.mercurypay.com";
+        $live = 1;
+        if (CoreLocal::get("training") == 1) {
+            $host = "x1.mercurydev.net";
+            $live = 0;
+        }
+
+	$tran_type = '';
+	$card_type = '';
+	if ($type == 'EBTFOOD') {
+	    $tran_type = 'EBT';
+	    $card_type = 'Foodstamp';
+	} elseif ($type == 'EBTCASH') {
+	    $tran_type = 'EBT';
+	    $card_type = 'Cash';
+	} elseif ($type == 'GIFT') {
+	    $tran_type = 'PrePaid';
+        }
+
+        $msgXml = '<?xml version="1.0"?'.'>
+            <TStream>
+            <Transaction>
+            <MerchantID>'.$termID.'</MerchantID>
+            <OperatorID>'.$cashierNo.'</OperatorID>
+            <LaneID>'.$mcTerminalID.'</LaneID>
+	    <TranType>' . $tran_type . '</TranType>
+            <TranCode>Balance</TranCode>
+            <SecureDevice>{{SecureDevice}}</SecureDevice>
+            <ComPort>{{ComPort}}</ComPort>
+            <InvoiceNo>'.$refNum.'</InvoiceNo>
+            <RefNo>'.$refNum.'</RefNo>
+            <Memo>CORE POS 1.0.0 PDCX</Memo>
+            <Account>
+                <AcctNo>SecureDevice</AcctNo>
+            </Account>
+            <Amount>
+                <Purchase>0.00</Purchase>
+            </Amount>';
+        if ($card_type) {
+	    $msgXml .= '<CardType>' . $card_type . '</CardType>';
+	}
+	$msgXml .= '</Transaction></TStream>';
+
+	return $msgXml;
+    }
+
+    /**
       Examine XML response from Datacap transaction,
       log results, determine next step
       @return [int] PaycardLib error code
@@ -1658,6 +1732,51 @@ class MercuryE2E extends BasicCCModule
                 }
                 UdpComm::udpSend('termReset');
                 CoreLocal::set('ccTermState','swipe');
+                // intentional fallthrough
+            case 'ERROR':
+                CoreLocal::set("boxMsg","");
+                $texts = $xml->get_first("TEXTRESPONSE");
+                CoreLocal::set("boxMsg","Error: $texts");
+                TransRecord::addcomment("");
+                break;
+            default:
+                CoreLocal::set("boxMsg","An unknown error occurred<br />at the gateway");
+                TransRecord::addcomment("");    
+        }
+
+        return PaycardLib::PAYCARD_ERR_PROC;
+    }
+
+    /**
+      Examine XML response from Datacap transaction,
+      extract balance and/or error determine next step
+      @return [int] PaycardLib error code
+    */
+    public function handleResponseDataCapBalance($xml)
+    {
+        $xml = new xmlData($xml);
+        $validResponse = ($xml->isValid()) ? 1 : 0;
+        $responseCode = $xml->get("CMDSTATUS");
+        if ($responseCode) {
+            // map response status to 0/1/2 for compatibility
+            if ($responseCode == "Approved") {
+                $responseCode=1;
+            } elseif ($responseCode == "Declined") {
+                $responseCode=2;
+            } elseif ($responseCode == "Error") {
+                $responseCode=0;
+            }
+        } else {
+            $validResponse = -3;
+        }
+
+	$balance = $xml->get_first('BALANCE');
+
+        switch (strtoupper($xml->get_first("CMDSTATUS"))) {
+            case 'APPROVED':
+	    	CoreLocal::set('DatacapBalanceCheck', $balance);
+                return PaycardLib::PAYCARD_ERR_OK;
+            case 'DECLINED':
                 // intentional fallthrough
             case 'ERROR':
                 CoreLocal::set("boxMsg","");
