@@ -249,9 +249,13 @@ class BaseItemModule extends ItemModule
             }
         }
 
-        $ret .= '
-            <div class="panel-heading">
-                <strong>UPC</strong>
+        $ret .= '<div class="panel-heading">';
+        if ($prevUPC) {
+            $ret .= ' <a class="btn btn-default btn-xs small" href="ItemEditorPage.php?searchupc=' . $prevUPC . '"
+                title="Previous item in this department">
+                <span class="glyphicon glyphicon-chevron-left"></span></a> ';
+        }
+        $ret .= '<strong>UPC</strong>
                 <span class="text-danger">';
         switch ($barcode_type) {
             case 'EAN':
@@ -282,11 +286,10 @@ class BaseItemModule extends ItemModule
         }
         $ret .= '</span>';
         $ret .= '<input type="hidden" id="upc" name="upc" value="' . $upc . '" />';
-        if ($prevUPC) {
-            $ret .= ' <a class="small" href="ItemEditorPage.php?searchupc=' . $prevUPC . '">Previous</a>';
-        }
         if ($nextUPC) {
-            $ret .= ' <a class="small" href="ItemEditorPage.php?searchupc=' . $nextUPC . '">Next</a>';
+            $ret .= ' <a class="btn btn-default btn-xs small" href="ItemEditorPage.php?searchupc=' . $nextUPC . '"
+                title="Next item in this department">
+                <span class="glyphicon glyphicon-chevron-right"></span></a>';
         }
         $ret .= ' <label style="color:darkmagenta;">Modified</label>
                 <span style="color:darkmagenta;">'. $rowItem['modified'] . '</span>';
@@ -305,15 +308,15 @@ class BaseItemModule extends ItemModule
         $ret .= '<input type="hidden" name="store_id" value="0" />';
         $ret .= '<table class="table table-bordered">';
 
-        $limit = 35 - strlen(isset($rowItem['description'])?$rowItem['description']:'');
+        $limit = 30 - strlen(isset($rowItem['description'])?$rowItem['description']:'');
         $ret .= 
             '<tr>
-                <th>Description</th>
+                <th class="text-right">Description</th>
                 <td colspan="5">
                     <div class="input-group" style="width:100%;">
                         <input type="text" maxlength="30" class="form-control"
                             name="descript" id="descript" value="' . $rowItem['description'] . '"
-                            onkeyup="$(\'#dcounter\').html(35-(this.value.length));" />
+                            onkeyup="$(\'#dcounter\').html(30-(this.value.length));" />
                         <span id="dcounter" class="input-group-addon">' . $limit . '</span>
                     </div>
                 </td>
@@ -393,7 +396,8 @@ class BaseItemModule extends ItemModule
                 ."\" id=\"vendor_field\" class=\"form-control\" />";
         }
         $ret .= ' <button type="button" id="newVendorButton"
-                    class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>';
+                    title="Create new vendor"
+                    class="btn btn-default btn-sm"><span class="glyphicon glyphicon-plus"></span></button>';
         $ret .= '</td></tr>'; // end row
 
         $ret .= '<div id="newVendorDialog" title="Create new Vendor" class="collapse">';
@@ -618,12 +622,12 @@ class BaseItemModule extends ItemModule
                         onchange="$(\'#vsize' . $jsVendorID . '\').val(this.value);" 
                         id="product-pack-size" />
                 </td>
-                <th class="small">Unit of measure</th>
+                <th class="small text-right">Unit of measure</th>
                 <td class="col-sm-1">
                     <input type="text" name="unitm" class="form-control input-sm"
                         value="' . $rowItem['unitofmeasure'] . '" id="unit-of-measure" />
                 </td>
-                <th class="small">Age Req</th>
+                <th class="small text-right">Age Req</th>
                 <td class="col-sm-1">
                     <select name="id-enforced" id="id-enforced" class="form-control input-sm"
                         onchange="$(\'#idReq\').val(this.value);">';

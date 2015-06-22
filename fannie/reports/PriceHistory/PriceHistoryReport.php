@@ -39,6 +39,9 @@ class PriceHistoryReport extends FannieReportPage
     public $themed = true;
     public $report_set = 'Operational Data';
 
+    protected $sort_column = 3;
+    protected $sort_direction = 1;
+
     /**
       Report has variable inputs so change
       required fields before calling default preprocess

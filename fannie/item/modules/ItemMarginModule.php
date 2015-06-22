@@ -61,27 +61,32 @@ class ItemMarginModule extends ItemModule
         $ret .= '<div class="col-sm-6">';
         $ret .= '<div class="form-group form-inline">
                     <label>Pricing Rule</label>
-                    <select name="price-rule-id" class="form-control input-sm">
+                    <select name="price-rule-id" class="form-control input-sm"
+                        onchange="if(this.value>=0)$(\'#custom-pricing-fields :input\').prop(\'disabled\', true);
+                        else $(\'#custom-pricing-fields :input\').prop(\'disabled\', false);">
                         <option value="0" ' . ($product->price_rule_id() == 0 ? 'selected' : '') . '>Normal</option>
                         <option value="1" ' . ($product->price_rule_id() == 1 ? 'selected' : '') . '>Variable</option>
                         <option value="-1" ' . ($product->price_rule_id() > 1 ? 'selected' : '') . '>Custom</option>
                     </select>
                     <input type="hidden" name="current-price-rule-id" value="' . $product->price_rule_id() . '" />
+                    &nbsp;
+                    <label>Avg. Daily Movement</label> ' . sprintf('%.2f', $this->avgSales($upc)) . '
                  </div>';
         $rule = new PriceRulesModel($db);
         if ($product->price_rule_id() > 1) {
             $rule->priceRuleID($product->price_rule_id());
             $rule->load();
         }
-        $ret .= '<div class="form-group form-inline">
+        $disabled = $product->price_rule_id() <= 1 ? 'disabled' : '';
+        $ret .= '<div id="custom-pricing-fields" class="form-group form-inline">
                     <label>Custom</label>
-                    <select disabled name="price-rule-type" class="form-control input-sm">
+                    <select ' . $disabled . ' name="price-rule-type" class="form-control input-sm">
                     {{RULE_TYPES}}
                     </select>
                     <input type="text" class="form-control date-field input-sm" name="rule-review-date"
-                        disabled placeholder="Review Date" title="Review Date" value="{{REVIEW_DATE}}" />
+                        ' . $disabled . ' placeholder="Review Date" title="Review Date" value="{{REVIEW_DATE}}" />
                     <input type="text" class="form-control input-sm" name="rule-details"
-                        disabled placeholder="Details" title="Details" value="{{RULE_DETAILS}}" />
+                        ' . $disabled . ' placeholder="Details" title="Details" value="{{RULE_DETAILS}}" />
                  </div>';
         $types = new PriceRuleTypesModel($db);
         $ret = str_replace('{{RULE_TYPES}}', $types->toOptions($rule->priceRuleTypeID()), $ret);
@@ -92,6 +97,47 @@ class ItemMarginModule extends ItemModule
         $ret .= '</div>';
 
         return $ret;
+    }
+
+    public function avgSales($upc)
+    {
+        $config = FannieConfig::factory();
+        $dbc = FannieDB::get($config->get('ARCHIVE_DB'));
+        $avg = 0.0;
+        if ($dbc->tableExists('productWeeklyLastQuarter')) {
+            $maxP = $dbc->prepare('SELECT MAX(weekLastQuarterID) FROM productWeeklyLastQuarter WHERE upc=?'); 
+            $maxR = $dbc->execute($maxP, $upc);
+            if ($maxR && $dbc->numRows($maxR)) {
+                $maxW = $dbc->fetchRow($maxR);
+                $avgP = $dbc->prepare('
+                    SELECT SUM((?-weekLastQuarterID)*quantity) / SUM(weekLastQuarterID)
+                    FROM productWeeklyLastQuarter
+                    WHERE upc=?');
+                $avgR = $dbc->execute($avgP, array($maxW[0], $upc));
+                $avgW = $dbc->fetchRow($avgR);
+                $avg = $avgW[0] / 7.0;
+            }
+        } else {
+            $dbc = FannieDB::get($config->get('TRANS_DB'));
+            $avgP = $dbc->prepare('
+                SELECT MIN(tdate) AS min,
+                    MAX(tdate) AS max,
+                    ' . DTrans::sumQuantity() . ' AS qty
+                FROM dlog_90_view
+                WHERE upc=?');
+            $avgR = $dbc->execute($avgP, array($upc));
+            if ($avgR && $dbc->numRows($avgR)) {
+                $avgW = $dbc->fetchRow($avgR);
+                $d1 = new DateTime($avgW['max']);
+                $d2 = new DateTime($avgW['min']);
+                $num_days = $d1->diff($d2)->format('%a') + 1;
+                $avg = $avgW['qty'] / $num_days;
+            }
+        }
+        // put the database back where we found it (probably)
+        $dbc = FannieDB::get($config->get('OP_DB'));
+
+        return $avg;
     }
 
     public function saveFormData($upc)

@@ -420,27 +420,37 @@ class ItemEditorPage extends FanniePage
                                 class="btn btn-default">Update Item</button>';
                 }
                 $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    <a href="' . $_SERVER['PHP_SELF'] . '">Back</a>';
+                    <a class="btn btn-default btn-sm" href="' . $_SERVER['PHP_SELF'] . '">Back</a>';
                 $this->add_script($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.js?v=1');
                 $this->add_css_file($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.css');
                 if (!$isNew) {
                     $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-                    $ret .= '<a href="deleteItem.php?submit=submit&upc='.$upc.'">Delete this item</a>';
+                    $ret .= '<a href="deleteItem.php?submit=submit&upc='.$upc.'" class="btn btn-danger btn-sm">Delete this item</a>';
 
                     $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-                    $ret .= '<a class="iframe fancyboxLink" href="'.$FANNIE_URL.'reports/PriceHistory/?upc='.$upc.'" title="Price History">Price History</a>';
+                    $ret .= '<label class="badge">History</label> <span class="btn-group">';
+                    $ret .= '<a class="btn btn-default btn-sm iframe fancyboxLink" 
+                        href="'.$FANNIE_URL.'reports/PriceHistory/?upc='.$upc.'" title="Price History">Price</a>';
+
+                    $ret .= '<a class="btn btn-default btn-sm iframe fancyboxLink" 
+                        href="'.$FANNIE_URL.'reports/CostHistory/?upc='.$upc.'" title="Cost History">Cost</a>';
+
+                    $ret .= '<a class="btn btn-default btn-sm iframe fancyboxLink" 
+                        href="'.$FANNIE_URL.'reports/RecentSales/?upc='.$upc.'" title="Sales History">Sales</a>';
+
+                    $ret .= '<a class="btn btn-default btn-sm iframe fancyboxLink" 
+                        href="'.$FANNIE_URL.'reports/ItemOrderHistory/ItemOrderHistoryReport.php?upc='.$upc.'" 
+                        title="Order History">Orders</a>';
+                    $ret .= '</span>';
 
                     $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-                    $ret .= '<a class="iframe fancyboxLink" href="'.$FANNIE_URL.'reports/CostHistory/?upc='.$upc.'" title="Cost History">Cost History</a>';
+                    $ret .= '<a class="btn btn-default btn-sm iframe fancyboxLink" 
+                        href="'.$FANNIE_URL.'item/addShelfTag.php?upc='.$upc.'" title="Queue a tag for this item">Shelf Tag</a>';
 
                     $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-                    $ret .= '<a class="iframe fancyboxLink" href="'.$FANNIE_URL.'reports/RecentSales/?upc='.$upc.'" title="Sales History">Sales History</a>';
-
-                    $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-                    $ret .= '<a class="iframe fancyboxLink" href="'.$FANNIE_URL.'item/addShelfTag.php?upc='.$upc.'" title="Create Shelf Tag">Shelf Tag</a>';
-
-                    $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-                    $ret .=  '<a href="' . $FANNIE_URL . 'item/CloneItemPage.php?id=' . $upc . '" title="Clone Item">Clone Item</a>';
+                    $ret .=  '<a class="btn btn-default btn-sm" 
+                        href="' . $FANNIE_URL . 'item/CloneItemPage.php?id=' . $upc . '" 
+                        title="Create a duplicate item with a different UPC">Clone Item</a>';
                 }
                 $ret .= '</p>';
             }
