@@ -32,7 +32,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
     public $report_set = 'Membership';
     public $themed = true;
 
-    protected $title = "Fannie :  Ownersship Status Report";
+    protected $title = "Fannie :  Ownership Status Report";
     protected $header = "Ownership Status Report";
     protected $required_fields = array('date1', 'date2');
 
@@ -340,8 +340,8 @@ class OwnerJoinLeaveReport extends FannieReportPage
         }
 
         if ($this->config->COOP_ID == 'WFC_Duluth') {
-            $this->report_headers[] = array('Fran Requests', null, null, null, null);
-            $this->report_headers[] = array('Date', 'Number', 'Name', 'Stock', 'Request');
+            $this->report_headers[] = array('Fran Allocations', null, null, null, null);
+            $this->report_headers[] = array('Date', 'Number', 'Name', 'Stock', 'Allocation');
             $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
                 'meta_background'=>'#000','meta_foreground'=>'#fff');
             $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
