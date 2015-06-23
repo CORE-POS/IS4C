@@ -99,7 +99,8 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
                 MIN(placedDate) as placedDate, COUNT(i.orderID) as records,
                 SUM(i.unitCost*i.caseSize*i.quantity) as estimatedCost,
                 SUM(i.receivedTotalCost) as receivedCost, v.vendorName,
-                MAX(i.receivedDate) as receivedDate
+                MAX(i.receivedDate) as receivedDate,
+                p.vendorInvoiceID
             FROM PurchaseOrder as p
                 LEFT JOIN PurchaseOrderItems AS i ON p.orderID = i.orderID
                 LEFT JOIN vendors AS v ON p.vendorID=v.vendorID
@@ -118,15 +119,16 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 
         $ret = '<div class="table-responsive">
             <table class="table table-striped table-bordered tablesorter">';
-        $ret .= '<thead><tr><th>Created</th><th>Vendor</th><th># Items</th><th>Est. Cost</th>
+        $ret .= '<thead><tr><th>Created</th><th>Invoice#</th><th>Vendor</th><th># Items</th><th>Est. Cost</th>
             <th>Placed</th><th>Received</th><th>Rec. Cost</th></tr></thead><tbody>';
         $count = 1;
         while($w = $dbc->fetch_row($result)){
             $ret .= sprintf('<tr><td><a href="ViewPurchaseOrders.php?id=%d">%s</a></td>
+                    <td>%s</td>
                     <td>%s</td><td>%d</td><td>%.2f</td>
                     <td>%s</td><td>%s</td><td>%.2f</td></tr>',
                     $w['orderID'],
-                    $w['creationDate'], $w['vendorName'], $w['records'],
+                    $w['creationDate'], $w['vendorInvoiceID'], $w['vendorName'], $w['records'],
                     $w['estimatedCost'],
                     ($placed == 1 ? $w['placedDate'] : '&nbsp;'),
                     (!empty($w['receivedDate']) ? $w['receivedDate'] : '&nbsp;'),
@@ -268,7 +270,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         $model->orderID($this->id);
 
         $ret .= '<table class="table tablesorter"><thead>';
-        $ret .= '<tr><th>SKU</th><th>Brand</th><th>Description</th>
+        $ret .= '<tr><th>SKU</th><th>UPC</th><th>Brand</th><th>Description</th>
             <th>Unit Size</th><th>Units/Case</th><th>Cases</th>
             <th>Est. Cost</th><th>&nbsp;</th><th>Received</th>
             <th>Rec. Qty</th><th>Rec. Cost</th></tr></thead><tbody>';
@@ -279,12 +281,13 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
             } elseif ($obj->receivedQty() < $obj->quantity()) {
                 $css = 'class="warning"';
             }
-            $ret .= sprintf('<tr %s><td>%s</td><td>%s</td><td>%s</td>
+            $ret .= sprintf('<tr %s><td>%s</td><td>%s</td><td>%s</td><td>%s</td>
                     <td>%s</td><td>%s</td><td>%d</td><td>%.2f</td>
                     <td>&nbsp;</td><td>%s</td><td>%d</td><td>%.2f</td>
                     </tr>',
                     $css,
                     $obj->sku(),
+                    $obj->internalUPC(),
                     $obj->brand(),
                     $obj->description(),
                     $obj->unitSize(), $obj->caseSize(),
