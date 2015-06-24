@@ -39,6 +39,7 @@ class FannieSignage
         - batchbarcodes => data is in batchBarcodes table
         - batch => get data from normal product and vendor tables but
             use batch(es) for price
+        - provided => $items contains all necessary data
         - empty => get data from normal product and vendor tables
       @param $source_id [optional]
         - for shelftags, shelftags.id
@@ -59,6 +60,10 @@ class FannieSignage
 
     public function loadItems()
     {
+        if ($this->source == 'provided') {
+            return $this->items;
+        }
+
         $op_db = \FannieConfig::factory()->get('OP_DB');
         $dbc = \FannieDB::get($op_db);
         $args = array();
