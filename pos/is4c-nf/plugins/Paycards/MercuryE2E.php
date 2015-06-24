@@ -1258,6 +1258,7 @@ class MercuryE2E extends BasicCCModule
     {
         $termID = $this->getTermID();
         $cashierNo = CoreLocal::get("CashierNo");
+        $operatorID = $cashierNo;
         $registerNo = CoreLocal::get("laneno");
         $transNo = CoreLocal::get("transno");
         $transID = CoreLocal::get('paycard_id');
@@ -1269,6 +1270,10 @@ class MercuryE2E extends BasicCCModule
         $tran_code = $amount > 0 ? 'Sale' : 'Return';
         if ($type == 'EMV') {
             $tran_code = 'EMV' . $tran_code;
+        } elseif ($type == 'GIFT') {
+            $tran_code = $amount > 0 ? 'NoNSFSale' : 'Return';
+        } else if (CoreLocal::get("ebt_authcode") != "" && CoreLocal::get("ebt_vnum") != "") {
+            $tran_code = 'Voucher';
         }
 
         $host = "x1.mercurypay.com";
@@ -1276,6 +1281,7 @@ class MercuryE2E extends BasicCCModule
         if (CoreLocal::get("training") == 1) {
             $host = "x1.mercurydev.net";
             $live = 0;
+            $operatorID = 'test';
         }
 
         $tran_type = 'Credit';
@@ -1288,6 +1294,16 @@ class MercuryE2E extends BasicCCModule
         } elseif ($type == 'EBTCASH') {
             $tran_type = 'EBT';
             $card_type = 'Cash';
+        } elseif ($type == 'GIFT') {
+            $tran_type = 'PrePaid';
+        }
+
+        $cashback = 0;
+        if (($type == 'DEBIT' || $type == 'EBTCASH') && CoreLocal::get('amtdue') > 0 && $amount > 0) {
+            if ($amount > CoreLocal::get('amtdue')) {
+                $cashback = $amount - CoreLocal::get('amtdue');
+                $amount = CoreLocal::get('amtdue');
+            }
         }
 
         $dbc = Database::tDataConnect();
@@ -1317,7 +1333,7 @@ class MercuryE2E extends BasicCCModule
             <TStream>
             <Transaction>
             <MerchantID>'.$termID.'</MerchantID>
-            <OperatorID>'.$cashierNo.'</OperatorID>
+            <OperatorID>'.$operatorID.'</OperatorID>
             <LaneID>'.$mcTerminalID.'</LaneID>
             <TranCode>' . $tran_code . '</TranCode>
             <SecureDevice>{{SecureDevice}}</SecureDevice>
@@ -1325,8 +1341,11 @@ class MercuryE2E extends BasicCCModule
             <InvoiceNo>'.$refNum.'</InvoiceNo>
             <RefNo>'.$refNum.'</RefNo>
             <Amount>
-                <Purchase>' . sprintf('%.2f', abs($amount)) . '</Purchase>
-            </Amount>
+                <Purchase>' . sprintf('%.2f', abs($amount)) . '</Purchase>';
+        if ($cashback) {
+            $msgXml .= '<CashBack>' . sprintf('%.2f', $cashback) . '</CashBack>';
+        }
+        $msgXml .= '</Amount>
             <RecordNo>RecordNumberRequested</RecordNo>
             <Frequency>OneTime</Frequency>';
         if ($type == 'EMV') { // add EMV specific fields
@@ -1348,6 +1367,20 @@ class MercuryE2E extends BasicCCModule
             }
             if ($type == 'CREDIT') {
                 $msgXml .= '<PartialAuth>Allow</PartialAuth>';
+            }
+            if ($type == 'GIFT') {
+                $msgXml .= '<IpPort>9100</IpPort>';
+                $msgXml .= '<IpAddress>' . $this->giftServerIP() . '</IpAddress>';
+            }
+            if (CoreLocal::get("ebt_authcode") != "" && CoreLocal::get("ebt_vnum") != "") {
+                $msgXml .= "<TransInfo>";
+                $msgXml .= "<AuthCode>";
+                $msgXml .= CoreLocal::get("ebt_authcode");
+                $msgXml .= "</AuthCode>";
+                $msgXml .= "<VoucherNo>";
+                $msgXml .= CoreLocal::get("ebt_vnum");
+                $msgXml .= "</VoucherNo>";
+                $msgXml .= "</TransInfo>";
             }
         }
         $msgXml .= '
@@ -1372,6 +1405,7 @@ class MercuryE2E extends BasicCCModule
     {
         $termID = $this->getTermID();
         $cashierNo = CoreLocal::get("CashierNo");
+        $operatorID = $cashierNo;
         $registerNo = CoreLocal::get("laneno");
         $transNo = CoreLocal::get("transno");
         $transID = CoreLocal::get('paycard_id');
@@ -1380,6 +1414,14 @@ class MercuryE2E extends BasicCCModule
             $mcTerminalID = CoreLocal::get('laneno');
         }
         $refNum = $this->refnum($transID);
+
+        $host = "x1.mercurypay.com";
+        $live = 1;
+        if (CoreLocal::get("training") == 1) {
+            $host = "x1.mercurydev.net";
+            $live = 0;
+            $operatorID = 'test';
+        }
 
         $dbc = Database::tDataConnect();
         $query = '
@@ -1436,6 +1478,9 @@ class MercuryE2E extends BasicCCModule
         } elseif ($prev['transType'] == 'EMVReturn') {
             $tran_code = 'EMVVoidReturn';
             $tran_type = 'EMV';
+        } elseif ($prev['transType'] == 'NoNSFSale') {
+            $tran_type = 'PrePaid';
+            $tran_code = 'VoidSale';
         } else {
             switch ($prev['cardType']) {
                 case 'Credit':
@@ -1459,7 +1504,7 @@ class MercuryE2E extends BasicCCModule
             <TStream>
             <Transaction>
             <MerchantID>'.$termID.'</MerchantID>
-            <OperatorID>'.$cashierNo.'</OperatorID>
+            <OperatorID>'.$operatorID.'</OperatorID>
             <LaneID>'.$mcTerminalID.'</LaneID>
             <TranCode>' . $tran_code . '</TranCode>
             <SecureDevice>{{SecureDevice}}</SecureDevice>
@@ -1491,6 +1536,10 @@ class MercuryE2E extends BasicCCModule
             if ($tran_type == 'Credit') {
                 $msgXml .= '<PartialAuth>Allow</PartialAuth>';
             }
+            if ($tran_type == 'PrePaid') {
+                $msgXml .= '<IpPort>9100</IpPort>';
+                $msgXml .= '<IpAddress>' . $this->giftServerIP() . '</IpAddress>';
+            }
         }
         /**
           Add token and reversal data fields if available
@@ -1518,11 +1567,12 @@ class MercuryE2E extends BasicCCModule
       @param $type [string] card type
       @return [string] XML request body
     */
-    public function prepareDataCapBalance($type)
+    public function prepareDataCapBalance($type, $prompt=false)
     {
         CoreLocal::set('DatacapBalanceCheck', '??');
         $termID = $this->getTermID();
         $cashierNo = CoreLocal::get("CashierNo");
+        $operatorID = $cashierNo;
         $registerNo = CoreLocal::get("laneno");
         $transNo = CoreLocal::get("transno");
         $transID = CoreLocal::get('paycard_id');
@@ -1537,6 +1587,7 @@ class MercuryE2E extends BasicCCModule
         if (CoreLocal::get("training") == 1) {
             $host = "x1.mercurydev.net";
             $live = 0;
+            $operatorID = 'test';
         }
 
         $tran_type = '';
@@ -1555,7 +1606,7 @@ class MercuryE2E extends BasicCCModule
             <TStream>
             <Transaction>
             <MerchantID>'.$termID.'</MerchantID>
-            <OperatorID>'.$cashierNo.'</OperatorID>
+            <OperatorID>'.$operatorID.'</OperatorID>
             <LaneID>'.$mcTerminalID.'</LaneID>
             <TranType>' . $tran_type . '</TranType>
             <TranCode>Balance</TranCode>
@@ -1573,7 +1624,16 @@ class MercuryE2E extends BasicCCModule
         if ($card_type) {
             $msgXml .= '<CardType>' . $card_type . '</CardType>';
         }
+        if ($type == 'GIFT') {
+            $msgXml .= '<IpPort>9100</IpPort>';
+            $msgXml .= '<IpAddress>' . $this->giftServerIP() . '</IpAddress>';
+        }
         $msgXml .= '</Transaction></TStream>';
+
+        if ($prompt) {
+            $msgXml = str_replace('<AcctNo>SecureDevice</AcctNo>',
+                '<AcctNo>Prompt</AcctNo>', $msgXml);
+        }
 
         return $msgXml;
     }
@@ -1653,6 +1713,9 @@ class MercuryE2E extends BasicCCModule
         } elseif ($issuer == 'Cash' && $xml->get_first('Balance')) {
             $issuer = 'EBT';
             CoreLocal::set('EbtFsBalance', $xml->get_first('Balance'));
+            $ebtbalance = $xml->get_first('Balance');
+        } elseif ($xml->get_first('TranType') == 'PrePaid' && $xml->get_first('Balance')) {
+            $issuer = 'NCG';
             $ebtbalance = $xml->get_first('Balance');
         }
 
@@ -1737,7 +1800,15 @@ class MercuryE2E extends BasicCCModule
                 CoreLocal::set("boxMsg","");
                 $texts = $xml->get_first("TEXTRESPONSE");
                 CoreLocal::set("boxMsg","Error: $texts");
-                TransRecord::addcomment("");
+                $dsix = $xml->get_first('DSIXReturnCode');
+                if ($dsix == '001007' || $dsix == '003007' || $dsix == '003010') {
+                    /* These error codes indicate a potential connectivity
+                     * error mid-transaction. Do not add a comment record to
+                     * the transaction to avoid incrementing InvoiceNo
+                     */
+                } else {
+                    TransRecord::addcomment("");
+                }
                 break;
             default:
                 CoreLocal::set("boxMsg","An unknown error occurred<br />at the gateway");
@@ -1976,6 +2047,7 @@ class MercuryE2E extends BasicCCModule
     private function getTermID()
     {
         if (CoreLocal::get("training") == 1) {
+            return '118725340908147';
             return "395347308=E2ETKN";
         } else {
             return CoreLocal::get('MercuryE2ETerminalID');
@@ -1989,6 +2061,7 @@ class MercuryE2E extends BasicCCModule
     private function getPw()
     {
         if (CoreLocal::get("training") == 1) {
+            return 'xyz';
             return "123E2ETKN";
         } else {
             return CoreLocal::get('MercuryE2EPassword');
@@ -2388,6 +2461,30 @@ class MercuryE2E extends BasicCCModule
         }
 
         return $resp;
+    }
+
+    private function giftServerIP()
+    {
+	$host = 'g1.mercurypay.com';
+	if (CoreLocal::get('training') == 1) {
+	    $host = 'g1.mercurydev.net';
+	}
+	$host_cache = CoreLocal::get('DnsCache');
+	if (!is_array($host_cache)) {
+	    $host_cache = array();
+	}
+	if (isset($host_cache[$host])) {
+	    return $host_cache[$host];
+	} else {
+	    $ip = gethostbyname($host);
+	    if ($ip === $host) { // name did not resolve
+	        return $host;
+	    } else { // cache IP for next time
+		$host_cache[$host] = $ip;
+		CoreLocal::set('DnsCache', $host_cache);
+		return $ip;
+	    }
+	}
     }
 }
 

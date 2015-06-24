@@ -39,6 +39,8 @@ public class SPH_Datacap_PDCX : SerialPortHandler
     private string com_port = "0";
     protected string server_list = "x1.mercurydev.net;x2.mercurydev.net";
     protected int LISTEN_PORT = 9000; // acting as a Datacap stand-in
+    protected short CONNECT_TIMEOUT = 60;
+    private bool log_xml = true;
 
     public SPH_Datacap_PDCX(string p) : base(p)
     { 
@@ -60,6 +62,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
         if (ax_control == null) {
             ax_control = new DsiPDCX();
             ax_control.ServerIPConfig(server_list, 0);
+            ax_control.SetResponseTimeout(CONNECT_TIMEOUT);
             InitPDCX();
         }
         ax_control.CancelRequest();
@@ -109,6 +112,12 @@ public class SPH_Datacap_PDCX : SerialPortHandler
 
                         byte[] response = System.Text.Encoding.ASCII.GetBytes(result);
                         stream.Write(response, 0, response.Length);
+                        if (log_xml) {
+                            using (StreamWriter file = new StreamWriter("log.xml", true)) {
+                                file.WriteLine(message);
+                                file.WriteLine(result);
+                            }
+			            }
                     }
                     client.Close();
                 }
