@@ -54,10 +54,10 @@ class PriceRounder
         if ($price % 100 == 5 || $price % 100 == 9) {
             $price += 10;
         }
-		
-		if ($price % 100 <= 19) {
-			$price = $price - ($price % 100) - 1;
-		}
+
+        if ($price % 100 <= 19) {
+            $price = $price - ($price % 100) - 1;
+        }
 
         return round($price/100.00, 2);
     }
