@@ -56,6 +56,10 @@ class PaycardDatacapParser extends Parser
             return true;
         } elseif ($str == 'PVDATACAPEC') {
             return true;
+        } elseif ($str == 'ACDATACAPGD') {
+            return true;
+        } elseif ($str == 'AVDATACAPGD') {
+            return true;
         }
     }
 
@@ -135,6 +139,18 @@ class PaycardDatacapParser extends Parser
                 CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_BALANCE);
                 CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_CREDIT);
                 $ret['main_frame'] = $plugin_info->plugin_url().'/gui/PaycardEmvBalance.php';
+                break;
+            case 'ACDATACAPGD':
+                CoreLocal::set('CacheCardType', 'GIFT');
+                CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_ACTIVATE);
+                CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_GIFT);
+                $ret['main_frame'] = $plugin_info->plugin_url().'/gui/PaycardEmvGift.php?mode=' . CoreLocal::get('paycard_mode');
+                break;
+            case 'AVDATACAPGD':
+                CoreLocal::set('CacheCardType', 'GITFT');
+                CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_ADDVALUE);
+                CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_GIFT);
+                $ret['main_frame'] = $plugin_info->plugin_url().'/gui/PaycardEmvGift.php?mode=' . CoreLocal::get('paycard_mode');
                 break;
         }
         CoreLocal::set('paycard_id', CoreLocal::get('LastID')+1);
