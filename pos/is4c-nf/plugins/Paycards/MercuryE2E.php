@@ -2465,26 +2465,26 @@ class MercuryE2E extends BasicCCModule
 
     private function giftServerIP()
     {
-	$host = 'g1.mercurypay.com';
-	if (CoreLocal::get('training') == 1) {
-	    $host = 'g1.mercurydev.net';
-	}
-	$host_cache = CoreLocal::get('DnsCache');
-	if (!is_array($host_cache)) {
-	    $host_cache = array();
-	}
-	if (isset($host_cache[$host])) {
-	    return $host_cache[$host];
-	} else {
-	    $ip = gethostbyname($host);
-	    if ($ip === $host) { // name did not resolve
-	        return $host;
-	    } else { // cache IP for next time
-		$host_cache[$host] = $ip;
-		CoreLocal::set('DnsCache', $host_cache);
-		return $ip;
-	    }
-	}
+        $host = 'g1.mercurypay.com';
+        if (CoreLocal::get('training') == 1) {
+            $host = 'g1.mercurydev.net';
+        }
+        $host_cache = CoreLocal::get('DnsCache');
+        if (!is_array($host_cache)) {
+            $host_cache = array();
+        }
+        if (isset($host_cache[$host])) {
+            return $host_cache[$host];
+        } else {
+            $ip = gethostbyname($host);
+            if ($ip === $host) { // name did not resolve
+                return $host;
+            } else { // cache IP for next time
+                $host_cache[$host] = $ip;
+                CoreLocal::set('DnsCache', $host_cache);
+                return $ip;
+            }
+        }
     }
 }
 
