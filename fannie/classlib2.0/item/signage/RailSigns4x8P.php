@@ -25,8 +25,8 @@ namespace COREPOS\Fannie\API\item\signage {
 
 class RailSigns4x8P extends \COREPOS\Fannie\API\item\FannieSignage 
 {
-    protected $BIG_FONT = 10;
-    protected $MED_FONT = 8;
+    protected $BIG_FONT = 12;
+    protected $MED_FONT = 9;
     protected $SMALL_FONT = 7;
 
     protected $font = 'Arial';
@@ -88,7 +88,7 @@ class RailSigns4x8P extends \COREPOS\Fannie\API\item\FannieSignage
             $row = floor($sign / 4);
             $column = $sign % 4;
 
-            $pdf->SetFillColor(0x0, 0x0, 0x0);
+            $pdf->SetFillColor(86, 90, 92);
             $pdf->Rect($left + ($width*$column), $top + ($row*$height), $bar_width, 5, 'F');
             $pdf->Rect($left + ($width*$column), $top + ($row*$height) + 25, $bar_width, 2, 'F');
 
