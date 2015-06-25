@@ -80,6 +80,9 @@ class PaycardDatacapParser extends Parser
                 break;
             case 'DATACAPDC':
                 CoreLocal::set('paycard_amount', CoreLocal::get('amtdue'));
+                if (CoreLocal::get('CacheCardCashBack')) {
+                    CoreLocal::set('paycard_amount', CoreLocal::get('amtdue') + CoreLocal::get('CacheCardCashBack'));
+                }
                 CoreLocal::set('CacheCardType', 'DEBIT');
                 CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_AUTH);
                 CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_CREDIT);
@@ -102,6 +105,9 @@ class PaycardDatacapParser extends Parser
                 break;
             case 'DATACAPEC':
                 CoreLocal::set('paycard_amount', CoreLocal::get('amtdue'));
+                if (CoreLocal::get('CacheCardCashBack')) {
+                    CoreLocal::set('paycard_amount', CoreLocal::get('amtdue') + CoreLocal::get('CacheCardCashBack'));
+                }
                 CoreLocal::set('CacheCardType', 'EBTCASH');
                 CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_AUTH);
                 CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_CREDIT);
