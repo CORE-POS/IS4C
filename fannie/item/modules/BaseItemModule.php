@@ -228,24 +228,42 @@ class BaseItemModule extends ItemModule
             */
             $rowItem['department'] = 0;
             $search = substr($upc,0,12);
-            $searchP = $dbc->prepare_statement('SELECT department FROM products WHERE upc LIKE ?');
-            while(strlen($search) >= 8){
-                $searchR = $dbc->exec_statement($searchP,array($search.'%'));
-                if ($dbc->num_rows($searchR) > 0){
-                    $searchW = $dbc->fetch_row($searchR);
+            $searchP = $dbc->prepare('SELECT department FROM products WHERE upc LIKE ?');
+            while (strlen($search) >= 8) {
+                $searchR = $dbc->execute($searchP,array($search.'%'));
+                if ($dbc->numRows($searchR) > 0) {
+                    $searchW = $dbc->fetchRow($searchR);
                     $rowItem['department'] = $searchW['department'];
-                    $settingP = $dbc->prepare_statement('SELECT dept_tax,dept_fs,dept_discount
-                                FROM departments WHERE dept_no=?');
-                    $settingR = $dbc->exec_statement($settingP,array($rowItem['department']));
-                    if ($dbc->num_rows($settingR) > 0){
-                        $d = $dbc->fetch_row($settingR);
-                        $rowItem['tax'] = $d['dept_tax'];
-                        $rowItem['foodstamp'] = $d['dept_fs'];
-                        $rowItem['discount'] = $d['dept_discount'];
-                    }
                     break;
                 }
                 $search = substr($search,0,strlen($search)-1);
+            }
+            /**
+              If no match is found, pick the most
+              commonly used department
+            */
+            if ($rowItem['department'] == 0) {
+                $commonQ = '
+                    SELECT department,
+                        COUNT(*)
+                    FROM products
+                    GROUP BY department
+                    ORDER BY COUNT(*) DESC';
+                $commonR = $dbc->query($commonQ);
+                if ($commonR && $dbc->numRows($commonR)) {
+                    $commonW = $dbc->fetchRow($commonR);
+                    $rowItem['department'] = $commonW['department'];
+                }
+            }
+            /**
+              Get defaults for chosen department
+            */
+            $dmodel = new DepartmentsModel($dbc);
+            $dmodel->dept_no($rowItem['department']);
+            if ($dmodel->load()) {
+                $rowItem['tax'] = $dmodel->dept_tax();
+                $rowItem['foodstamp'] = $dmodel->dept_fs();
+                $rowItem['discount'] = $dmodel->dept_discount();
             }
         }
 
