@@ -106,7 +106,7 @@ class AdTextImportPage extends \COREPOS\Fannie\API\FannieUploadPage
         $skuP = $dbc->prepare('
             SELECT p.upc
             FROM vendorItems AS v
-                INNER JOIN products AS p ON v.upc=p.upc
+                INNER JOIN products AS p ON v.upc=p.upc AND p.default_vendor_id=v.vendorID
             WHERE v.sku = ?
         ');
 
