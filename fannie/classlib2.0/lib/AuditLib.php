@@ -174,6 +174,9 @@ class AuditLib
         $url = $conf->get('URL');
         $message .= "http://{$_SERVER['SERVER_NAME']}{$url}batches/newbatch/EditBatchPage.php?id={$batchID}\n";
         $message .= "\n";
+        $message .= "View this item:\n";
+        $message .= "http://{$_SERVER['SERVER_NAME']}/{$url}item/ItemEditorPage.php?searchupc=$upc\n";
+        $message .= "\n";
         $username = \FannieAuth::checkLogin();
         if (!$username) {
             $username = 'unknown';
