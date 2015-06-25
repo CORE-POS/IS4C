@@ -109,7 +109,7 @@ class PaycardEmvSuccess extends BasicPage
 
                 return false;
             } elseif ($mode == PaycardLib::PAYCARD_MODE_AUTH && $input == "VD" 
-                && (CoreLocal::get('CacheCardType') == 'CREDIT' || CoreLocal::get('CacheCardType') == '')) {
+                && (CoreLocal::get('CacheCardType') == 'CREDIT' || CoreLocal::get('CacheCardType') == 'GIFT' || CoreLocal::get('CacheCardType') == '')) {
                 $plugin_info = new Paycards();
                 $this->change_page($plugin_info->plugin_url()."/gui/PaycardEmvVoid.php");
 
