@@ -135,7 +135,7 @@ class FannieSignage
                         p.description AS posDescription,
                         CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
                         v.units,
-                        v.size,
+                        CASE WHEN v.size IS NULL tHEN p.size ELSE v.size END AS size,
                         v.sku,
                         \'\' AS pricePerUnit,
                         n.vendorName AS vendor,
@@ -167,7 +167,7 @@ class FannieSignage
                         p.description AS posDescription,
                         CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
                         v.units,
-                        v.size,
+                        CASE WHEN v.size IS NULL tHEN p.size ELSE v.size END AS size,
                         v.sku,
                         \'\' AS pricePerUnit,
                         n.vendorName AS vendor,
@@ -191,7 +191,7 @@ class FannieSignage
                             p.description AS posDescription,
                             CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
                             v.units,
-                            v.size,
+                            CASE WHEN v.size IS NULL tHEN p.size ELSE v.size END AS size,
                             v.sku,
                             \'\' AS pricePerUnit,
                             n.vendorName AS vendor,
@@ -219,7 +219,7 @@ class FannieSignage
                             p.description AS posDescription,
                             CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
                             v.units,
-                            v.size,
+                            CASE WHEN v.size IS NULL tHEN p.size ELSE v.size END AS size,
                             v.sku,
                             \'\' AS pricePerUnit,
                             n.vendorName AS vendor,
@@ -243,7 +243,7 @@ class FannieSignage
                             p.description AS posDescription,
                             CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
                             v.units,
-                            v.size,
+                            CASE WHEN v.size IS NULL tHEN p.size ELSE v.size END AS size,
                             v.sku,
                             \'\' AS pricePerUnit,
                             n.vendorName AS vendor,
@@ -515,22 +515,22 @@ class FannieSignage
     {
         if (substr($price, -3) == '.33') {
             $ttl = round(3*$price);
-            return '3 / $' . $ttl;
+            return '3/$' . $ttl;
         } elseif (substr($price, -3) == '.66' || substr($price, -3) == '.67') {
             $ttl = round(3*$price);
-            return '3 / $' . $ttl;
+            return '3/$' . $ttl;
         } elseif (substr($price, -3) == '.50') {
             $ttl = round(2*$price);
-            return '2 / $' . $ttl;
+            return '2/$' . $ttl;
         } elseif (substr($price, -3) == '.25') {
             $ttl = round(4*$price);
-            return '4 / $' . $ttl;
+            return '4/$' . $ttl;
         } elseif (substr($price, -3) == '.00' && $price <= 5.00) {
             $mult = 2;
             while (($mult+1)*$price <= 10) {
                 $mult++;
             }
-            return sprintf('%d / $%d', $mult, round($mult*$price));
+            return sprintf('%d/$%d', $mult, round($mult*$price));
         } elseif (substr($price, 0, 1) == '$') {
             return $price;
         } elseif (strstr($price, '/')) {

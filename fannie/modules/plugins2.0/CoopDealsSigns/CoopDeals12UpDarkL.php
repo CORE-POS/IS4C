@@ -50,11 +50,39 @@ class CoopDeals12UpDarkL extends \COREPOS\Fannie\API\item\FannieSignage
         $width = 68.67;
         $height = 71;
         $top = 21;
-        $left = 8.5;
+        $left = 6.0;
         $effective_width = $width - $left;
         foreach ($data as $item) {
             if ($count % 12 == 0) {
+                if ($count != 0) {
+                    // draw tick marks again
+                    // sometimes other content of the page
+                    // overwrites them
+                    $pdf->Line(2, $height+1.0, 6, $height+1.0);
+                    $pdf->Line(2, (2*$height)+1.0, 6, (2*$height)+1.0);
+                    $pdf->Line(4*$width-3, $height+1.0, 4*$width+1, $height+1.0);
+                    $pdf->Line(4*$width-3, (2*$height)+1.0, 4*$width+1, (2*$height)+1.0);
+
+                    $pdf->Line($width+1.5, 2, $width+1.5, 6);
+                    $pdf->Line(2*$width+1.5, 2, 2*$width+1.5, 6);
+                    $pdf->Line(3*$width+1.5, 2, 3*$width+1.5, 6);
+                    $pdf->Line($width+1.5, (3*$height)-4, $width+1.5, 3*$height);
+                    $pdf->Line(2*$width+1.5, (3*$height)-4, 2*$width+1.5, 3*$height);
+                    $pdf->Line(3*$width+1.5, (3*$height)-4, 3*$width+1.5, 3*$height);
+                }
                 $pdf->AddPage();
+                // draw tick marks for cutting
+                $pdf->Line(2, $height+1.0, 6, $height+1.0);
+                $pdf->Line(2, (2*$height)+1.0, 6, (2*$height)+1.0);
+                $pdf->Line(4*$width-3, $height+1.0, 4*$width+1, $height+1.0);
+                $pdf->Line(4*$width-3, (2*$height)+1.0, 4*$width+1, (2*$height)+1.0);
+
+                $pdf->Line($width+1.5, 2, $width+1.5, 6);
+                $pdf->Line(2*$width+1.5, 2, 2*$width+1.5, 6);
+                $pdf->Line(3*$width+1.5, 2, 3*$width+1.5, 6);
+                $pdf->Line($width+1.5, (3*$height)-4, $width+1.5, 3*$height);
+                $pdf->Line(2*$width+1.5, (3*$height)-4, 2*$width+1.5, 3*$height);
+                $pdf->Line(3*$width+1.5, (3*$height)-4, 3*$width+1.5, 3*$height);
                 $sign = 0;
             }
 
