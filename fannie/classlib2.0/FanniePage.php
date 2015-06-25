@@ -342,7 +342,20 @@ function enableLinea(selector, callback)
         }
     });
     ScannerDevice.registerListener(Device);
+
+    function lineaSilent()
+    {
+        if (typeof cordova.exec != 'function') {
+            setTimeout('lineaSilent()', 500);
+        } else {
+            if (Device) {
+                Device.setScanBeep(false, []);
+            }
+        }
+    }
+    lineaSilent();
 }
+
         <?php
 
         return ob_get_clean();
