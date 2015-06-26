@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2014 Whole Foods Co-op
+    Copyright 2010 Whole Foods Co-op
 
     This file is part of CORE-POS.
 
@@ -20,17 +20,17 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-include('../config.php');
+include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(dirname(__FILE__) . '/../classlib2.0/FannieAPI.php');
 }
 
-class OldSpecialOrdersPage extends FannieRESTfulPage
+class NewSpecialOrdersPage extends FannieRESTfulPage
 {
     protected $must_authenticate = true;
     public $themed = true;
-    protected $header = 'Old Special Orders';
-    protected $title = 'Old Special Orders';
+    protected $header = 'Manage Special Orders';
+    protected $title = 'Manage Special Orders';
 
     private $card_no = false;
 
@@ -49,9 +49,25 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
 
     public function get_view()
     {
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-        $TRANS = $FANNIE_TRANS_DB . $dbc->sep();
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $TRANS = $this->config->get('TRANS_DB') . $dbc->sep();
+
+        $cachepath = sys_get_temp_dir()."/ordercache/";
+
+        if (!is_dir($cachepath)) {
+            mkdir($cachepath);
+        }
+        $key = dechex(str_replace(" ","",str_replace(".","",microtime())));
+        $prints = array();
+        $username = FannieAuth::checkLogin();
+        if (file_exists("{$cachepath}{$username}.prints"))
+            $prints = unserialize(file_get_contents("{$cachepath}{$username}.prints"));
+        else {
+            $fp = fopen("{$cachepath}{$username}.prints",'w');
+            fwrite($fp,serialize($prints));
+            fclose($fp);
+        }
 
         $f1 = FormLib::get('f1');
         $f2 = FormLib::get('f2');
@@ -59,20 +75,17 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
 
         $ret = '';
         if ($this->card_no) {
-            $ret .= sprintf('(<a href="%s?f1=%s&f2=%s&f3=%s">Back to All Owners</a>)<br />',
-                    $_SERVER['PHP_SELF'], $f1, $f2, $f3);
+            $ret .= sprintf('(<a href="%s?f1=%s&f2=%s&f3=%s&order=%s">Back to All Owners</a>)<br />',
+                    $_SERVER['PHP_SELF'], $f1, $f2, $f3, FormLib::get('order'));
         }
 
         $status = array(
-            0 => "New",
+            0 => "New, No Call",
             3 => "New, Call",
             1 => "Called/waiting",
             2 => "Pending",
             4 => "Placed",
-            5 => "Arrived",
-            7 => "Completed",
-            8 => "Canceled",
-            9 => "Inquiry"
+            5 => "Arrived"
         );
 
         /**
@@ -92,6 +105,7 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
         while ($w = $dbc->fetch_row($r)) {
             $assignments[$w['superID']] = $w['super_name'];
         }
+        unset($assignments[0]); 
 
         /**
           Lookup list of vendors for filtering purposes
@@ -102,7 +116,7 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
         $suppliers = array('');
         $q = $dbc->prepare("
             SELECT mixMatch 
-            FROM {$TRANS}CompleteSpecialOrder 
+            FROM {$TRANS}PendingSpecialOrder 
             WHERE trans_type='I'
             GROUP BY mixMatch 
             ORDER BY mixMatch");
@@ -111,13 +125,9 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
             $suppliers[] = $w['mixMatch'];
         }
 
-        /**
-          Filter the inital query by
-          status
-        */
-        $filterstring = '1=1 ';
+        $filterstring = "";
         $filterargs = array();
-        if ($f1 !== '') {
+        if ($f1 !== ''){
             $f1 = (int)$f1;
             $filterstring .= ' AND statusFlag=?';
             $filterargs[] = $f1;
@@ -125,11 +135,15 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
 
         $ret .= '<a href="index.php">Main Menu</a>';
         $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-        $ret .= sprintf('<a href="NewSpecialOrdersPage.php%s">Current Orders</a>',
+        $ret .= "Current Orders";
+        $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+        $ret .= sprintf('<a href="OldSpecialOrdersPage.php%s">Old Orders</a>',
             ($this->card_no ? '?card_no='.$this->card_no :'')
         );
         $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-        $ret .= "Old Orders";
+        $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+        $ret .= '<input type="checkbox" id="acbx" onclick="$(\'tr.arrived\').each(function(){$(this).toggle();});" />';
+        $ret .= '<label for="acbx">Hide Printed</label>';
         $ret .= '<p />';
 
         $ret .= '<div class="form-inline">';
@@ -162,7 +176,6 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
         }
         $ret .= '</select>';
         $ret .= '</div>';
-        $ret .= '<hr />';
 
         /**
           Also filter by member number if applicable
@@ -170,48 +183,28 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
         if ($this->card_no) {
             $filterstring .= " AND p.card_no=?";
             $filterargs[] = $this->card_no;
-            $ret .= sprintf('<input type="hidden" id="cardno" value="%d" />',$_REQUEST['card_no']);
+            $ret .= sprintf('<input type="hidden" id="cardno" value="%d" />',$this->card_no);
         }
 
-        $page = (int)FormLib::get('page', 1);
-
-        /**
-          Get list of completed special orders filtered by
-          status and optionally member number. If no member number
-          specified, use paging with 3 months of orders per page
-        */
-        $lookupQ = "
-            SELECT min(datetime) as orderDate,
-                p.order_id,
-                sum(total) as value,
-                count(*)-1 as items,
-                statusFlag AS status_flag,
-                subStatus AS sub_status,
-                CASE WHEN MAX(p.card_no)=0 THEN MAX(o.lastName) ELSE MAX(c.LastName) END as name,
-                MIN(CASE WHEN trans_type='I' THEN charflag ELSE 'ZZZZ' END) as charflag,
-                MAX(p.card_no) AS card_no
-            FROM {$TRANS}CompleteSpecialOrder as p
+        $q = "SELECT min(datetime) as orderDate,p.order_id,sum(total) as value,
+            count(*)-1 as items,
+            o.statusFlag AS status_flag,
+            o.subStatus AS sub_status,
+            CASE WHEN MAX(p.card_no)=0 THEN MAX(o.lastName) ELSE MAX(c.LastName) END as name,
+            MIN(CASE WHEN trans_type='I' THEN charflag ELSE 'ZZZZ' END) as charflag,
+            MAX(p.card_no) AS card_no
+            FROM {$TRANS}PendingSpecialOrder as p
                 LEFT JOIN custdata AS c ON c.CardNo=p.card_no AND personNum=p.voided
                 LEFT JOIN {$TRANS}SpecialOrders AS o ON p.order_id=o.specialOrderID
-            WHERE $filterstring
+            WHERE 1=1 $filterstring
             GROUP BY p.order_id,statusFlag,subStatus
             HAVING 
-                (count(*) > 1 OR SUM(CASE WHEN o.notes LIKE '' THEN 0 ELSE 1 END) > 0)";
-        if (!$this->card_no) {
-            $lookupQ .= "
-                AND ".$dbc->monthdiff($dbc->now(),'min(datetime)')." >= ((?-1)*2)
-                AND ".$dbc->monthdiff($dbc->now(),'min(datetime)')." < (?*2) ";
-            $filterargs[] = $page;
-            $filterargs[] = $page; // again
-        }
-        $lookupQ .= " ORDER BY MIN(datetime) DESC";
-        $p = $dbc->prepare($lookupQ);
-        $r = $dbc->exec_statement($p,$filterargs);
+                count(*) > 1 OR
+                SUM(CASE WHEN o.notes LIKE '' THEN 0 ELSE 1 END) > 0
+            ORDER BY MIN(datetime)";
+        $p = $dbc->prepare($q);
+        $r = $dbc->execute($p, $filterargs);
 
-        /**
-          Capture all the order records in $orders
-          For now assume they are all valid
-        */
         $orders = array();
         $valid_ids = array();
         while ($w = $dbc->fetch_row($r)) {
@@ -219,12 +212,6 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
             $valid_ids[$w['order_id']] = true;
         }
 
-        /**
-          Apply filters two and three
-          Look up order IDs that match the filters
-          These matching IDs will be compared to the
-          IDs in $orders to get the final list
-        */
         if ($f2 !== '' || $f3 !== '') {
             $filter = "";
             $args = array();
@@ -236,30 +223,13 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
                 $filter .= "AND p.mixMatch=?";
                 $args[] = $f3;
             }
-            /** 
-                while the goal is to filter by super department
-                and/or vendor, reapplying the member number or
-                paging criteria keeps the result set more manageable
-            */
-            $q = "
-                SELECT p.order_id 
-                FROM {$TRANS}CompleteSpecialOrder AS p
-                    LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
-                    LEFT JOIN {$TRANS}SpecialOrders AS o ON p.order_id=o.specialOrderID
-                WHERE 1=1 $filter ";
-            if ($this->card_no) {
-                $q .= ' AND p.card_no=? ';
-                $args[] = $this->card_no;
-            } else {
-                $q .= "
-                    AND ".$dbc->monthdiff($dbc->now(),'datetime')." >= ((?-1)*2)
-                    AND ".$dbc->monthdiff($dbc->now(),'datetime')." < (?*2) ";
-                $args[] = $page;
-                $args[] = $page;
-            }
-            $q .= " GROUP BY p.order_id";
+            $q = "SELECT p.order_id FROM {$TRANS}PendingSpecialOrder AS p
+                LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
+                LEFT JOIN {$TRANS}SpecialOrders AS o ON p.order_id=o.specialOrderID
+                WHERE 1=1 $filter
+                GROUP BY p.order_id";
             $p = $dbc->prepare($q);
-            $r = $dbc->exec_statement($p,$args);
+            $r = $dbc->execute($p, $args);
             $valid_ids = array();
             while ($w = $dbc->fetch_row($r)) {
                 $valid_ids[$w['order_id']] = true;
@@ -307,157 +277,133 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
             SELECT order_id,
                 description,
                 mixMatch 
-            FROM {$TRANS}CompleteSpecialOrder 
+            FROM {$TRANS}PendingSpecialOrder 
             WHERE order_id IN $oids
                 AND trans_id > 0");
         $itemsR = $dbc->exec_statement($itemsQ, $oargs);
+
         $items = array();
         $suppliers = array();
         while ($itemsW = $dbc->fetch_row($itemsR)) {
-            if (!isset($items[$itemsW['order_id']])) {
+            if (!isset($items[$itemsW['order_id']]))
                 $items[$itemsW['order_id']] = $itemsW['description'];
-            } else {
+            else
                 $items[$itemsW['order_id']] .= "; ".$itemsW['description'];
-            }
-            if (!empty($itemsW['mixMatch'])) {
-                if (!isset($suppliers[$itemsW['order_id']])) {
+            if (!empty($itemsW['mixMatch'])){
+                if (!isset($suppliers[$itemsW['order_id']]))
                     $suppliers[$itemsW['order_id']] = $itemsW['mixMatch'];
-                } else {
+                else
                     $suppliers[$itemsW['order_id']] .= "; ".$itemsW['mixMatch'];
-                }
             }
         }
-
-        /**
-          Trim down how much of the item(s) summary is shown
-          by default. With multiple items on one order this
-          could get very, very long. The full item list is 
-          shown on hover or when clicking the expand/+ link
-        */
         $lenLimit = 10;
-        foreach ($items as $id=>$desc) {
-            if (strlen($desc) <= $lenLimit) {
-                $items[$id] = '<td>' . $desc . '</td>';
-                continue;
-            }
+        foreach($items as $id=>$desc){
+            if (strlen($desc) <= $lenLimit) continue;
 
             $min = substr($desc,0,$lenLimit);
             $rest = substr($desc,$lenLimit);
             
-            $desc = sprintf('<td title="%s%s">
-                        %s<span id="exp%d" style="display:none;">%s</span>
-                        <a href="" onclick="$(\'#exp%d\').toggle();return false;">+</a>
-                        </td>',
-                        $min, $rest,
-                        $min, $id, $rest,
-                        $id);
+            $desc = sprintf('%s<span id="exp%d" style="display:none;">%s</span>
+                    <a href="" onclick="$(\'#exp%d\').toggle();return false;">+</a>',
+                    $min,$id,$rest,$id);
             $items[$id] = $desc;
         }
-
-        /**
-          Do the same trimming for suppliers
-        */
         $lenLimit = 10;
-        foreach ($suppliers as $id=>$desc) {
-            if (strlen($desc) <= $lenLimit) {
-                $suppliers[$id] = '<td>' . $desc . '</td>';
-                continue;
-            }
+        foreach($suppliers as $id=>$desc){
+            if (strlen($desc) <= $lenLimit) continue;
 
             $min = substr($desc,0,$lenLimit);
             $rest = substr($desc,$lenLimit);
             
-            $desc = sprintf('<td title="%s%s">
-                    %s<span id="sup%d" style="display:none;">%s</span>
-                    <a href="" onclick="$(\'#sup%d\').toggle();return false;">+</a>
-                    </td>',
-                    $min, $rest,
-                    $min, $id, $rest,
-                    $id);
+            $desc = sprintf('%s<span id="sup%d" style="display:none;">%s</span>
+                    <a href="" onclick="$(\'#sup%d\').toggle();return false;">+</a>',
+                    $min,$id,$rest,$id);
             $suppliers[$id] = $desc;
         }
 
-        $ret .= '<table class="table table-bordered tablesorter">
-            <thead>
-            <tr>
-            <th>Order Date</th>
-            <th>Name</th>
-            <th>Desc</th>
-            <th>Supplier</th>
-            <th>Items</th>
-            <th>$</th>
-            <th>Status</th>
-            </tr>
-            </thead>
-            <tbody>';
-        $key = "";
+        $ret .= '<p />';
+
+        $ret .= '<form id="pdfform" action="tagpdf.php" method="get">';
+        $ret .= sprintf('<table class="table table-bordered table-striped tablesorter tablesorter-core">
+                    <thead>
+                    <tr>
+                    <th>Order Date</th>
+                    <th>Name</th>
+                    <th>Desc</th>
+                    <th>Supplier</th>
+                    <th>Items</th>
+                    <th>$</th>
+                    <th>Status</th>
+                    <th>Printed</th>',
+                    base64_encode("min(datetime)"),
+                    base64_encode("CASE WHEN MAX(p.card_no)=0 THEN MAX(o.lastName) ELSE MAX(c.LastName) END"),
+                    base64_encode("sum(total)"),
+                    base64_encode("count(*)-1"),
+                    base64_encode("statusFlag")
+        );
+        $ret .= sprintf('<td><img src="%s" alt="Print" 
+                onclick="$(\'#pdfform\').submit();" /></td>',
+                $this->config->get('URL').'src/img/buttons/action_print.gif');
+        $ret .= '</tr></thead><tbody>';
+        $fp = fopen($cachepath.$key,"w");
         foreach ($orders as $w) {
-            if (!isset($valid_ids[$w['order_id']])) continue;
+            $id = $w['order_id'];
+            if (!isset($valid_ids[$id])) continue;
 
-            $ret .= sprintf('<tr class="%s"><td><a href="OrderReviewPage.php?orderID=%d&k=%s">%s</a></td>
-                <td><a href="" onclick="applyMemNum(%d);return false;">%s</a></td>
-                %s
-                %s
-                <td align=center>%d</td>
-                <td>%.2f</td>',
-                ($w['charflag']=='P'?'arrived':'notarrived'),
-                $w['order_id'],$key,
-                date('Y-m-d', strtotime($w['orderDate'])),
-                $w['card_no'],$w['name'],
-                (isset($items[$w['order_id']])?$items[$w['order_id']]:'<td>&nbsp;</td>'),
-                (isset($suppliers[$w['order_id']])?$suppliers[$w['order_id']]:'<td>&nbsp;</td>'),
-                $w['items'],$w['value']);
-            $ret .= '<td>';
-            foreach ($status as $k=>$v) {
-                if ($w['status_flag']==$k) $ret .= $v;
+
+            $ret .= '<tr class="' . ($w['charflag'] == 'P' ? 'arrived' : 'notarrived') . '">';
+
+            list($date, $time) = explode(' ', $w['orderDate'], 2);
+            $ret .= sprintf('<td><a href="view.php?orderID=%d&k=%s">%s</a></td>',
+                            $id, $key, $date);
+
+            $ret .= sprintf('<td><a href="" onclick="applyMemNum(%d); return false;">%s</a></td>',
+                            $w['card_no'], $w['name']);
+
+            $ret .= '<td class="small">' . (isset($items[$id]) ? $items[$id] : '&nbsp;') . '</td>';
+            $ret .= '<td class="small">' . (isset($suppliers[$id]) ? $suppliers[$id] : '&nbsp;') . '</td>';
+
+            $ret .= sprintf('<td>%d</td>', $w['items']);
+            $ret .= sprintf('<td>%.2f</td>', $w['value']);
+
+            $ret .= '<td class="form-inline">
+                <select id="s_status" class="form-control input-sm" onchange="updateStatus('.$w['order_id'].',$(this).val());">';
+            foreach($status as $k=>$v){
+                $ret .= sprintf('<option %s value="%d">%s</option>',
+                ($w['status_flag']==$k?'selected':''),
+                $k,$v);
             }
-            $ret .= " <span id=\"statusdate{$w['order_id']}\">".($w['sub_status']==0?'No Date':date('m/d/Y',$w['sub_status']))."</span></td></tr>";
+            $ret .= "</select> <span id=\"statusdate{$id}\">".($w['sub_status']==0?'No Date':date('m/d/Y',$w['sub_status']))."</span></td>";
+            $ret .= "<td align=center>".($w['charflag']=='P'?'Yes':'No')."</td>";
+
+            $ret .= sprintf('<td><input type="checkbox" %s name="oids[]" value="%d" 
+                            onclick="togglePrint(\'%s\',%d);" /></td>',
+                    (isset($prints[$id])?'checked':''),
+                    $id,$username,$id);
+            $ret .= '</tr>';
+
+            fwrite($fp,$w['order_id']."\n");
         }
+        fclose($fp);
         $ret .= "</tbody></table>";
-
-        /**
-          Paging links if not using member number filter
-        */
-        if (!$this->card_no) {
-            $url = $_SERVER['REQUEST_URI'];
-            if (!strstr($url,"page=")) {
-                if (substr($url,-4)==".php") {
-                    $url .= "?page=".$page;
-                } else {
-                    $url .= "&page=".$page;
-                }
-            }
-            if ($page > 1) {
-                $prev = $page-1;
-                $prev_url = preg_replace('/page=\d+/','page='.$prev,$url);
-                $ret .= sprintf('<a href="%s">Previous</a>&nbsp;&nbsp;||&nbsp;&nbsp;',
-                        $prev_url);
-            }
-            $next = $page+1;
-            $next_url = preg_replace('/page=\d+/','page='.$next,$url);
-            $ret .= sprintf('<a href="%s">Next</a>',$next_url);
-        }
 
         $this->add_script('../src/javascript/tablesorter/jquery.tablesorter.js');
         $this->add_onload_command("\$('.tablesorter').tablesorter();");
-
+        
         return $ret;
     }
 
     public function javascriptContent()
     {
-        ob_start();
-        ?>
+        return <<<JAVASCRIPT
 function refilter(){
     var f1 = $('#f_1').val();
     var f2 = $('#f_2').val();
     var f3 = $('#f_3').val();
 
-    var loc = '<?php echo $_SERVER['PHP_SELF']; ?>?f1='+f1+'&f2='+f2+'&f3='+f3;
+    var loc = '?f1='+f1+'&f2='+f2+'&f3='+f3;
     if ($('#cardno').length!=0)
         loc += '&card_no='+$('#cardno').val();
-    if ($('#orderSetting').length!=0)
-        loc += '&order='+$('#orderSetting').val();
     
     location = loc;
 }
@@ -487,20 +433,9 @@ function togglePrint(username,oid){
     success: function(resp){}
     });
 }
-        <?php
-        return ob_get_clean();
-    }
-
-    public function css_content()
-    {
-        return '
-            table.tablesorter thead th {
-                cursor: hand;
-                cursor: pointer;
-            }';
+JAVASCRIPT;
     }
 }
 
 FannieDispatch::conditionalExec();
-    
-?>
+

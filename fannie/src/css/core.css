@@ -11,7 +11,7 @@
     margin-left: 25px;
 }
 
-.tablesorter-core > thead > th {
+.tablesorter-core > thead >tr > th {
     cursor: pointer;
     cursor: hand;
 }
