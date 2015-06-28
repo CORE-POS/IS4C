@@ -121,7 +121,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             var content = "<input type=text class=\"in_desc form-control input-sm\" size=10 value=\""+desc+"\" />";   
             $('tr#'+upc+' .td_desc').html(content);
 
-            var dept = $('tr#'+upc+' .td_dept').html();
+            var dept = $('tr#'+upc+' .td_dept').text();
             var content = '<select class=\"in_dept form-control input-sm\"><optgroup style="font-size: 90%;">';
             for(dept_no in deptObj){
                 content += "<option value=\""+dept_no+"\" "+((dept==deptObj[dept_no])?'selected':'')+">";
@@ -130,7 +130,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             content += '</optgroup></select>';
             $('tr#'+upc+' .td_dept').html(content);
 
-            var supplier = $('tr#'+upc+' .td_supplier').html();
+            var supplier = $('tr#'+upc+' .td_supplier').text();
             var content = '<select class=\"in_supplier form-control input-sm\"><optgroup style="font-size: 90%;">';
             for(var i in vendorObj){
                 content += "<option "+((supplier==vendorObj[i])?'selected':'')+">";
