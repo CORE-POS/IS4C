@@ -30,26 +30,16 @@ class HouseholdSeparateDiscounts extends \COREPOS\Fannie\API\member\MemberModule
 
     function showEditForm($memNum, $country="US")
     {
-        global $FANNIE_URL;
-
-        $dbc = $this->db();
-        
-        $infoQ = $dbc->prepare("
-            SELECT c.FirstName,
-                c.LastName,
-                c.Discount
-            FROM custdata AS c 
-            WHERE c.CardNo=? 
-                AND c.personNum > 1
-            ORDER BY c.personNum");
-        $infoR = $dbc->exec_statement($infoQ,array($memNum));
-
+        $account = self::getAccount();
         $ret = "<div class=\"panel panel-default\">
             <div class=\"panel-heading\">Household Members</div>
             <div class=\"panel-body\">";
         
         $count = 0; 
-        while($infoW = $dbc->fetch_row($infoR)){
+        foreach ($account['customers'] as $infoW) {
+            if ($infoW['accountHolder']) {
+                continue;
+            }
             $ret .= sprintf('
                 <div class="form-inline form-group">
                     <span class="label primaryBackground">Name</span>
@@ -63,7 +53,7 @@ class HouseholdSeparateDiscounts extends \COREPOS\Fannie\API\member\MemberModule
                         <span class="input-group-addon">%%</span>
                     </div>
                 </div>',
-                $infoW['FirstName'],$infoW['LastName'],$infoW['Discount']);
+                $infoW['firstName'],$infoW['lastName'],$infoW['discount']);
             $count++;
         }
 

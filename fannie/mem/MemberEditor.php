@@ -220,6 +220,8 @@ class MemberEditor extends FanniePage {
             $ret .= '<div class="alert alert-danger">' . $this->msgs . '</div>';
         }
         $current_width = 100;
+        $account = \COREPOS\Fannie\API\member\MemberREST::get($this->memNum);
+        \COREPOS\Fannie\API\member\MemberModule::setAccount($account);
         FannieAPI::listModules('MemberModule');
         foreach ($FANNIE_MEMBER_MODULES as $mm) {
             if (!class_exists($mm)) {

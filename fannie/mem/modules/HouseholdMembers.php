@@ -30,22 +30,17 @@ class HouseholdMembers extends \COREPOS\Fannie\API\member\MemberModule {
 
     function showEditForm($memNum, $country="US")
     {
-        global $FANNIE_URL;
-
-        $dbc = $this->db();
-        
-        $infoQ = $dbc->prepare_statement("SELECT c.FirstName,c.LastName
-                FROM custdata AS c 
-                WHERE c.CardNo=? AND c.personNum > 1
-                ORDER BY c.personNum");
-        $infoR = $dbc->exec_statement($infoQ,array($memNum));
+        $account = self::getAccount();
 
         $ret = "<div class=\"panel panel-default\">
             <div class=\"panel-heading\">Household Members</div>
             <div class=\"panel-body\">";
         
         $count = 0; 
-        while($infoW = $dbc->fetch_row($infoR)){
+        foreach ($account['customers'] as $infoW) {
+            if ($infoW['accountHolder']) {
+                continue;
+            }
             $ret .= sprintf('
                 <div class="form-inline form-group">
                 <span class="label primaryBackground">Name</span>
@@ -54,7 +49,7 @@ class HouseholdMembers extends \COREPOS\Fannie\API\member\MemberModule {
                 <input name="HouseholdMembers_ln[]" placeholder="Last"
                     maxlength="30" value="%s" class="form-control" />
                 </div>',
-                $infoW['FirstName'],$infoW['LastName']);
+                $infoW['firstName'],$infoW['lastName']);
             $count++;
         }
 

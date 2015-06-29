@@ -23,16 +23,16 @@
 
 class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
 
-    function showEditForm($memNum, $country="US"){
-        $dbc = $this->db();
-        
-        $infoQ = $dbc->prepare_statement("SELECT CardNo,FirstName,LastName,
-                street,city,state,zip,phone,email_1,
-                email_2,ads_OK FROM custdata AS c
-                LEFT JOIN meminfo AS m ON c.CardNo = m.card_no
-                WHERE c.personNum=1 AND CardNo=?");
-        $infoR = $dbc->exec_statement($infoQ,array($memNum));
-        $infoW = $dbc->fetch_row($infoR);
+    function showEditForm($memNum, $country="US")
+    {
+        $account = self::getAccount();
+        $primary = array();
+        foreach ($account['customers'] as $c) {
+            if ($c['accountHolder']) {
+                $primary = $c;
+                break;
+            }
+        }
 
         $labels = array();
         switch ($country) {
@@ -53,49 +53,48 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
         $ret .= '<div class="form-group form-inline">';
         $ret .= '<span class="label primaryBackground">First Name</span>';
         $ret .= sprintf('<input name="ContactInfo_fn" maxlength="30"
-                value="%s" class="form-control" />',$infoW['FirstName']);
+                value="%s" class="form-control" />',$primary['firstName']);
         $ret .= ' <span class="label primaryBackground">Last Name</span>';
         $ret .= sprintf('<input name="ContactInfo_ln" maxlength="30"
-                value="%s" class="form-control" />',$infoW['LastName']);
+                value="%s" class="form-control" />',$primary['lastName']);
         $ret .= sprintf(' <a href="MemPurchasesPage.php?id=%d">View Receipts</a>',
                     $memNum);
         $ret .= '</div>';
 
         $ret .= '<div class="form-group form-inline">';
-        $addrs = strstr($infoW['street'],"\n")?explode("\n",$infoW['street']):array($infoW['street'],'');
         $ret .= '<span class="label primaryBackground">Address</span>';
         $ret .= sprintf('<input name="ContactInfo_addr1" maxlength="125"
-                value="%s" class="form-control" />',$addrs[0]);
+                value="%s" class="form-control" />',$account['addressFirstLine']);
         $ret .= ' <span class="label primaryBackground">Address (2)</span>';
         $ret .= sprintf('<input name="ContactInfo_addr2" maxlength="125"
-                value="%s" class="form-control" />',$addrs[1]);
+                value="%s" class="form-control" />',$account['addressSecondLine']);
         $ret .= ' <label><span class="label primaryBackground">Gets Mail</span>';
         $ret .= sprintf('<input type="checkbox" name="ContactInfo_mail"
-                %s class="checkbox-inline" /></label>',($infoW['ads_OK']==1?'checked':''));
+                %s class="checkbox-inline" /></label>',($account['contactAllowed']==1?'checked':''));
         $ret .= '</div>';
         
         $ret .= '<div class="form-group form-inline">';
         $ret .= '<span class="label primaryBackground">City</span>';
         $ret .= sprintf('<input name="ContactInfo_city" maxlength="20"
-                value="%s" class="form-control" />',$infoW['city']);
+                value="%s" class="form-control" />',$account['city']);
         $ret .= ' <span class="label primaryBackground">' . $labels['state'] . '</span>';
         $ret .= sprintf('<input name="ContactInfo_state" maxlength="2"
-                value="%s" class="form-control" />',$infoW['state']);
+                value="%s" class="form-control" />',$account['state']);
         $ret .= ' <span class="label primaryBackground">' . $labels['zip'] . '</span>';
         $ret .= sprintf('<input name="ContactInfo_zip" maxlength="10"
-                value="%s" class="form-control" />',$infoW['zip']);
+                value="%s" class="form-control" />',$account['zip']);
         $ret .= '</div>';
 
         $ret .= '<div class="form-group form-inline">';
         $ret .= '<span class="label primaryBackground">Phone</span>';
         $ret .= sprintf('<input name="ContactInfo_ph1" maxlength="30"
-                value="%s" class="form-control" />',$infoW['phone']);
+                value="%s" class="form-control" />',$primary['phone']);
         $ret .= ' <span class="label primaryBackground">Alt. Phone</span>';
         $ret .= sprintf('<input name="ContactInfo_ph2" maxlength="30"
-                value="%s" class="form-control" />',$infoW['email_2']);
+                value="%s" class="form-control" />',$primary['altPhone']);
         $ret .= ' <span class="label primaryBackground">E-mail</span>';
         $ret .= sprintf('<input type="email" name="ContactInfo_email" maxlength="75"
-                value="%s" class="form-control" />',$infoW['email_1']);
+                value="%s" class="form-control" />',$primary['email']);
         $ret .= "</div>";
 
         $ret .= "</div>";

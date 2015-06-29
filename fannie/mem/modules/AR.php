@@ -42,18 +42,7 @@ class AR extends \COREPOS\Fannie\API\member\MemberModule
         $infoR = $dbc->exec_statement($infoQ,array($memNum));
         $infoW = $dbc->fetch_row($infoR);
 
-        if (!class_exists("CustdataModel")) {
-            include($FANNIE_ROOT.'classlib2.0/data/models/CustdataModel.php');
-        }
-        $model = new CustdataModel($dbc);
-        $model->CardNo($memNum);
-        $model->personNum(1);
-        $model->load();
-        $limit = $model->ChargeLimit();
-        if ($limit == 0) {
-            $limit = $model->MemDiscountLimit();
-        }
-
+        $account = self::getAccount();
 
         $ret = "<div class=\"panel panel-default\">
             <div class=\"panel-heading\">A/R</div>
@@ -63,7 +52,7 @@ class AR extends \COREPOS\Fannie\API\member\MemberModule
         $ret .= '<span class="label primaryBackground">Limit</span> ';
         $ret .= '<div class="input-group"><span class="input-group-addon">$</span>';
         $ret .= sprintf('<input name="AR_limit" value="%d" class="form-control" />
-                ',$limit);
+                ',$account['chargeLimit']);
         $ret .= '</div>';
         $ret .= '</div>';
 

@@ -31,19 +31,8 @@ class MemType extends \COREPOS\Fannie\API\member\MemberModule {
     function showEditForm($memNum, $country="US")
     {
         $dbc = $this->db();
+        $account = self::getAccount();
         
-        $infoQ = $dbc->prepare_statement("
-            SELECT c.memType AS custdataType,
-                n.memType,
-                n.memDesc,
-                c.discount AS custdataDiscount,
-                n.discount AS memTypeDiscount
-            FROM custdata AS c
-                CROSS JOIN memtype AS n 
-            WHERE c.CardNo=? AND c.personNum=1
-            ORDER BY n.memType");
-        $infoR = $dbc->exec_statement($infoQ,array($memNum));
-
         /**
           Check parameters setting to decide whether
           the discount value from custdata should be
@@ -71,18 +60,23 @@ class MemType extends \COREPOS\Fannie\API\member\MemberModule {
         $ret .= '<select name="MemType_type" class="form-control">';
         $disc = 0;
         $mDesc = '';
-        while($infoW = $dbc->fetch_row($infoR)){
+        $types = new MemtypeModel($dbc);
+        foreach ($types->find('memtype') as $type) {
             $ret .= sprintf("<option value=%d %s>%s</option>",
-                $infoW['memType'],
-                ($infoW['custdataType'] == $infoW['memType'] ? 'selected' : ''),
-                $infoW['memDesc']);
-            if ($discount_mode == 'custdata.discount') {
-                $disc = $infoW['custdataDiscount'];
-            } elseif ($infoW['custdataType'] == $infoW['memType']) {
-                $disc = $infoW['memTypeDiscount'];
-            }
-            if ($infoW['custdataType'] == $infoW['memType']) {
-                $mDesc = $infoW['memDesc'];
+                $type->memtype(), 
+                ($account['customerTypeID'] == $type->memtype() ? 'selected' : ''),
+                $type->memDesc());
+            if ($account['customerTypeID'] == $type->memtype()) {
+                $mDesc = $type->memDesc();
+                $disc = $type->discount();
+                if ($discount_mode = 'custdata.discount') {
+                    foreach ($account['customers'] as $c) {
+                        if ($c['accountHolder']) {
+                            $disc = $c['discount'];
+                            break;
+                        }
+                    }
+                }
             }
         }
         $ret .= "</select> ";

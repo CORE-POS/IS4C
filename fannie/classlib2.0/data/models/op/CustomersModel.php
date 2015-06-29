@@ -42,6 +42,7 @@ class CustomersModel extends BasicModel
     'accountHolder' => array('type'=>'TINYINT', 'default'=>0),
     'staff' => array('type'=>'TINYINT', 'default'=>0),
     'phone' => array('type'=>'VARCHAR(20)'),
+    'altPhone' => array('type'=>'VARCHAR(20)'),
     'email' => array('type'=>'VARCHAR(50)'),
     'memberPricingAllowed' => array('type'=>'TINYINT', 'default'=>0),
     'memberCouponsAllowed' => array('type'=>'TINYINT', 'default'=>0),
@@ -69,6 +70,7 @@ class CustomersModel extends BasicModel
                 c.staff,
                 m.phone,
                 m.email_1,
+                m.email_2,
                 CASE WHEN s.memtype2 IS NOT NULL THEN s.memtype2 ELSE c.Type END AS memberStatus,
                 c.SSI,
                 CASE WHEN c.LastChange > m.modified THEN c.LastChange ELSE m.modified END AS modified
@@ -116,6 +118,7 @@ class CustomersModel extends BasicModel
             if ($w['personNum'] == 1) {
                 $this->accountHolder(1);
                 $this->phone($w['phone']);
+                $this->altPhone($w['email_2']);
                 $this->email($w['email_1']);
             } else {
                 $this->accountHolder(0);
@@ -166,6 +169,7 @@ class CustomersModel extends BasicModel
 
         foreach ($this->find() as $c) {
             $meminfo->phone($c->phone());
+            $meminfo->email_2($c->altPhone());
             $meminfo->email_1($c->email());
             $meminfo->save();
             $custdata->personNum(1);
@@ -617,6 +621,43 @@ class CustomersModel extends BasicModel
                 }
             }
             $this->instance["phone"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function altPhone()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["altPhone"])) {
+                return $this->instance["altPhone"];
+            } else if (isset($this->columns["altPhone"]["default"])) {
+                return $this->columns["altPhone"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'altPhone',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["altPhone"]) || $this->instance["altPhone"] != func_get_args(0)) {
+                if (!isset($this->columns["altPhone"]["ignore_updates"]) || $this->columns["altPhone"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["altPhone"] = func_get_arg(0);
         }
         return $this;
     }

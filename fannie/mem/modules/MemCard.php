@@ -111,35 +111,23 @@ class MemCard extends \COREPOS\Fannie\API\member\MemberModule {
 
 
     // Return a form segment for display or edit the Member Card#
-    function showEditForm($memNum, $country="US"){
+    function showEditForm($memNum, $country="US")
+    {
         $FANNIE_URL = FannieConfig::config('URL');
         $FANNIE_MEMBER_UPC_PREFIX = FannieConfig::config('FANNIE_MEMBER_UPC_PREFIX');
 
-        $dbc = $this->db();
+        $account = self::getAccount();
 
         $prefix = isset($FANNIE_MEMBER_UPC_PREFIX) ? $FANNIE_MEMBER_UPC_PREFIX : "";
         $plen = strlen($prefix);
 
-        $infoQ = $dbc->prepare_statement("SELECT upc
-                FROM memberCards
-                WHERE card_no=?");
-        $infoR = $dbc->exec_statement($infoQ,array($memNum));
-        if ( $infoR === false ) {
-            return "Error: problem checking for Member Card<br />";
-        }
-
         $ret = "<div class=\"panel panel-default\">
             <div class=\"panel-heading\">Membership Card</div>
             <div class=\"panel-body\">";
-        if ( $dbc->num_rows($infoR) > 0 ) {
-            $infoW = $dbc->fetch_row($infoR);
-            $upc = $infoW['upc'];
-            if ( $prefix && strpos("$upc", "$prefix") === 0 ) {
-                $upc = substr($upc,$plen);
-                $upc = ltrim($upc,"0");
-            }
-        } else {
-            $upc = "";
+        $upc = $account['idCardUPC'];
+        if ( $prefix && strpos("$upc", "$prefix") === 0 ) {
+            $upc = substr($upc,$plen);
+            $upc = ltrim($upc,"0");
         }
 
         $ret .= '<div class="form-group form-inline">

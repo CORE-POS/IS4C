@@ -138,6 +138,18 @@ class MemberModule
     {
         return array();
     }
+
+    public static function getAccount()
+    {
+        return self::$account;
+    }
+
+    private static $account;
+
+    public static function setAccount($a)
+    {
+        self::$account = $a;
+    }
 }
 
 }
