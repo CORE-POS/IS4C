@@ -806,12 +806,12 @@ function duplicateOrder($old_id,$from='CompleteSpecialOrder')
     $itemR = $dbc->execute($itemP, array($old_id));
     while ($itemW = $dbc->fetchRow($itemR)) {
         $prod = $dbc->execute($prodP, array($itemW['upc']));
-        if ($prod && $dbc->numRows($prod)) {
+        if ($itemW['upc'] != '0000000000000' && $prod && $dbc->numRows($prod)) {
             addUPC($new_id, $itemW['card_no'], $itemW['upc'], $itemW['ItemQtty']);
             continue;
         }
         $vend = $dbc->execute($vendP, array($itemW['upc']));
-        if ($vend && $dbc->numRows($vend)) {
+        if ($itemW['upc'] != '0000000000000' && $vend && $dbc->numRows($vend)) {
             addUPC($new_id, $itemW['card_no'], $itemW['upc'], $itemW['ItemQtty']);
             continue;
         }
