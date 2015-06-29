@@ -49,6 +49,7 @@ function editBatchLine(id)
     $('#type'+id).html(typesElem);
 
     var ownerElem = $('<select class="form-control" name="owner"/>');
+    ownerElem.append('<option/>');
     for (o in owners) {
         var opt = $('<option/>').html(owners[o]);
         if (owner == owners[o]) {
