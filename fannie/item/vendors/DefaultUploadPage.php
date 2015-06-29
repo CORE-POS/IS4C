@@ -71,9 +71,9 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         ),
         'qty' => array(
             'name' => 'qty',
-            'display_name' => 'Case Qty *',
+            'display_name' => 'Case Qty +',
             'default' => 5,
-            'required' => true
+            'required' => false,
         ),
         'size' => array(
             'name' => 'size',
@@ -201,9 +201,13 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             $sku = $data[$SKU];
             $brand = ($BRAND === false) ? $vendorName : substr($data[$BRAND], 0, 50);
             $description = substr($data[$DESCRIPTION], 0, 50);
-            $qty = $data[$QTY];
-            if (!is_numeric($qty)) {
+            if ($QTY === false) {
                 $qty = 1.0;
+            } else {
+                $qty = $data[$QTY];
+                if (!is_numeric($qty)) {
+                    $qty = 1.0;
+                }
             }
             $size = ($SIZE1 === false) ? '' : substr($data[$SIZE1], 0, 25);
             $upc = $data[$UPC];
