@@ -32,7 +32,7 @@ class CoopDeals16UpDarkP extends \COREPOS\Fannie\API\item\FannieSignage
         $count = 0;
         $sign = 0;
         $width = 53.975;
-        $height = 66.68;
+        $height = 68.96;
         $top = 20;
         $left = 5.175;
         $effective_width = $width - (2*$left);

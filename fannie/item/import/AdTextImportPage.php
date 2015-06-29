@@ -143,8 +143,9 @@ class AdTextImportPage extends \COREPOS\Fannie\API\FannieUploadPage
 
             $model->reset();
             $model->upc($upc);
+            $model->load();
             $changed = false;
-            if ($brand_index !== false && !empty($line[$brand_index])) {
+            if ($model->brand() != '' && $brand_index !== false && !empty($line[$brand_index])) {
                 $brand = $line[$brand_index];
                 if ($normalize) {
                     $brand = ucwords(strtolower($brand));
@@ -152,7 +153,7 @@ class AdTextImportPage extends \COREPOS\Fannie\API\FannieUploadPage
                 $model->brand($brand);
                 $changed = true;
             }
-            if ($desc_index !== false && !empty($line[$desc_index])) {
+            if ($model->description() != '' && $desc_index !== false && !empty($line[$desc_index])) {
                 $desc = $line[$desc_index];
                 if ($normalize) {
                     $desc = ucwords(strtolower($desc));
@@ -160,7 +161,7 @@ class AdTextImportPage extends \COREPOS\Fannie\API\FannieUploadPage
                 $model->description($desc);
                 $changed = true;
             }
-            if ($size_index !== false && !empty($line[$size_index])) {
+            if ($model->sizing() != '' && $size_index !== false && !empty($line[$size_index])) {
                 $size = $line[$size_index];
                 $model->sizing($size);
                 $changed = true;

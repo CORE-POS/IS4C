@@ -49,7 +49,7 @@ class CoopDeals12UpDarkL extends \COREPOS\Fannie\API\item\FannieSignage
         $sign = 0;
         $width = 68.67;
         $height = 71;
-        $top = 21;
+        $top = 22;
         $left = 6.0;
         $effective_width = $width - $left;
         foreach ($data as $item) {
@@ -58,31 +58,31 @@ class CoopDeals12UpDarkL extends \COREPOS\Fannie\API\item\FannieSignage
                     // draw tick marks again
                     // sometimes other content of the page
                     // overwrites them
-                    $pdf->Line(2, $height+1.0, 6, $height+1.0);
+                    $pdf->Line(2, $height+0.0, 6, $height+0.0);
                     $pdf->Line(2, (2*$height)+1.0, 6, (2*$height)+1.0);
-                    $pdf->Line(4*$width-3, $height+1.0, 4*$width+1, $height+1.0);
+                    $pdf->Line(4*$width-3, $height+0.0, 4*$width+1, $height+0.0);
                     $pdf->Line(4*$width-3, (2*$height)+1.0, 4*$width+1, (2*$height)+1.0);
 
-                    $pdf->Line($width+1.5, 2, $width+1.5, 6);
-                    $pdf->Line(2*$width+1.5, 2, 2*$width+1.5, 6);
-                    $pdf->Line(3*$width+1.5, 2, 3*$width+1.5, 6);
-                    $pdf->Line($width+1.5, (3*$height)-4, $width+1.5, 3*$height);
-                    $pdf->Line(2*$width+1.5, (3*$height)-4, 2*$width+1.5, 3*$height);
-                    $pdf->Line(3*$width+1.5, (3*$height)-4, 3*$width+1.5, 3*$height);
+                    $pdf->Line($width+1.5, 2, $width+1.5, 8);
+                    $pdf->Line(2*$width+1.5, 2, 2*$width+1.5, 8);
+                    $pdf->Line(3*$width+1.5, 2, 3*$width+1.5, 8);
+                    $pdf->Line($width+1.5, (3*$height)-6, $width+1.5, 3*$height);
+                    $pdf->Line(2*$width+1.5, (3*$height)-6, 2*$width+1.5, 3*$height);
+                    $pdf->Line(3*$width+1.5, (3*$height)-6, 3*$width+1.5, 3*$height);
                 }
                 $pdf->AddPage();
                 // draw tick marks for cutting
-                $pdf->Line(2, $height+1.0, 6, $height+1.0);
+                $pdf->Line(2, $height+0.0, 6, $height+0.0);
                 $pdf->Line(2, (2*$height)+1.0, 6, (2*$height)+1.0);
-                $pdf->Line(4*$width-3, $height+1.0, 4*$width+1, $height+1.0);
+                $pdf->Line(4*$width-3, $height+0.0, 4*$width+1, $height+0.0);
                 $pdf->Line(4*$width-3, (2*$height)+1.0, 4*$width+1, (2*$height)+1.0);
 
-                $pdf->Line($width+1.5, 2, $width+1.5, 6);
-                $pdf->Line(2*$width+1.5, 2, 2*$width+1.5, 6);
-                $pdf->Line(3*$width+1.5, 2, 3*$width+1.5, 6);
-                $pdf->Line($width+1.5, (3*$height)-4, $width+1.5, 3*$height);
-                $pdf->Line(2*$width+1.5, (3*$height)-4, 2*$width+1.5, 3*$height);
-                $pdf->Line(3*$width+1.5, (3*$height)-4, 3*$width+1.5, 3*$height);
+                $pdf->Line($width+1.5, 2, $width+1.5, 8);
+                $pdf->Line(2*$width+1.5, 2, 2*$width+1.5, 8);
+                $pdf->Line(3*$width+1.5, 2, 3*$width+1.5, 8);
+                $pdf->Line($width+1.5, (3*$height)-6, $width+1.5, 3*$height);
+                $pdf->Line(2*$width+1.5, (3*$height)-6, 2*$width+1.5, 3*$height);
+                $pdf->Line(3*$width+1.5, (3*$height)-6, 3*$width+1.5, 3*$height);
                 $sign = 0;
             }
 
@@ -101,9 +101,9 @@ class CoopDeals12UpDarkL extends \COREPOS\Fannie\API\item\FannieSignage
 
             $pdf->Image(dirname(__FILE__) . '/cd_head_16.png', ($left-1) + ($width*$column), ($top-19) + ($row*$height), $width-6);
 
-            $pdf->SetXY($left + ($width*$column), $top + ($row*$height));
+            $pdf->SetXY($left + ($width*$column), $top + ($row*$height) + 1);
             $pdf->SetFont('Gill', 'B', $this->SMALL_FONT);
-            $pdf->MultiCell($effective_width, 7, strtoupper($item['brand']), 0, 'C');
+            $pdf->MultiCell($effective_width, 6, strtoupper($item['brand']), 0, 'C');
 
             /**
               This block attempts to write the description then
@@ -164,7 +164,7 @@ class CoopDeals12UpDarkL extends \COREPOS\Fannie\API\item\FannieSignage
             }
             $pdf->Cell($effective_width, 6, $item['size'], 0, 1, 'C');
 
-            $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - 41));
+            $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - 42));
             $pdf->SetFont('Gill', '', $this->BIG_FONT);
             $pdf->Cell($effective_width, 12, $price, 0, 1, 'C');
 
@@ -173,18 +173,18 @@ class CoopDeals12UpDarkL extends \COREPOS\Fannie\API\item\FannieSignage
                 $datestr = date('M d', strtotime($item['startDate']))
                     . chr(0x96) // en dash in cp1252
                     . date('M d', strtotime($item['endDate']));
-                $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - 36));
+                $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - 37));
                 $pdf->SetFont('GillBook', '', $this->SMALLEST_FONT);
                 $pdf->Cell($effective_width, 20, strtoupper($datestr), 0, 1, 'R');
             }
 
             if ($item['upc'] != '') {
-                $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - 36));
+                $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - 37));
                 $pdf->SetFont('GillBook', '', $this->SMALLEST_FONT);
                 $pdf->Cell($effective_width, 20, $item['upc'], 0, 1, 'L');
             }
 
-            $pdf->Image(dirname(__FILE__) . '/' . $this->footer_image, ($left-1)+($width*$column), $top + ($height*$row) + ($height-$top-3), $width-6);
+            $pdf->Image(dirname(__FILE__) . '/' . $this->footer_image, ($left-1)+($width*$column), $top + ($height*$row) + ($height-$top-4), $width-6);
 
             $count++;
             $sign++;
