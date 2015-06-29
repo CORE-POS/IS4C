@@ -81,6 +81,9 @@ class MemberEditor extends FanniePage {
             /* form was submitted. save input. */
             if (FormLib::get_form_value('saveBtn',False) !== False){
                 $whichBtn = FormLib::get_form_value('saveBtn');
+                /** get current account settings for reference **/
+                $account = \COREPOS\Fannie\API\member\MemberREST::get($this->memNum);
+                \COREPOS\Fannie\API\member\MemberModule::setAccount($account);
                 FannieAPI::listModules('MemberModule');
                 foreach($FANNIE_MEMBER_MODULES as $mm){
                     if (class_exists($mm)) {

@@ -113,7 +113,8 @@ class MemberREST
             'idCardUPC' => $row['upc'],
             'startDate' => $row['start_date'],
             'endDate' => $row['end_date'],
-            'city' => $row['state'],
+            'city' => $row['city'],
+            'state' => $row['state'],
             'zip' => $row['zip'],
             'contactAllowed' => $row['ads_OK'],
             'contactMethod' => 'mail',
@@ -129,7 +130,7 @@ class MemberREST
         }
         if ($row['pref'] == 2) {
             $ret['contactMethod'] == 'email';
-        } elseif ($w['pref'] == 3) {
+        } elseif ($row['pref'] == 3) {
             $ret['contactMethod'] == 'both';
         }
 
@@ -156,6 +157,7 @@ class MemberREST
         $res = $dbc->execute($prep, array($id));
         while ($w = $dbc->fetchRow($res)) {
             $customer = array(
+                'customerID' => 0, // placeholder for compatibility
                 'firstName' => $w['FirstName'],
                 'lastName' => $w['LastName'],
                 'chargeAllowed' => $w['chargeOk'],
@@ -258,7 +260,7 @@ class MemberREST
     */
     private static function postCustdata($dbc, $id, $json)
     {
-        $ret = array('errors' => 0);
+        $ret = array('errors' => 0, 'error-msg' => '');
 
         /** save dates if provided **/
         if (isset($json['startDate']) || isset($json['endDate'])) {
@@ -268,6 +270,7 @@ class MemberREST
             $dates->card_no($id);
             if (!$dates->save()) {
                 $ret['errors']++;
+                $ret['error-msg'] .= 'ErrDates ';
             }
         }
 
@@ -296,6 +299,7 @@ class MemberREST
             }
             if (!$contact->save()) {
                 $ret['errors']++;
+                $ret['error-msg'] .= 'ErrUPC ';
             }
         }
 
@@ -305,6 +309,7 @@ class MemberREST
         */
         $custdata = new \CustdataModel($dbc);
         $custdata->CardNo($id);
+        $custdata_changed = false;
         $meminfo = new \MeminfoModel($dbc);
         $meminfo->card_no($id);
         if (isset($json['addressFirstLine'])) {
@@ -328,18 +333,23 @@ class MemberREST
         }
         if (isset($json['activeStatus']) && $json['activeStatus'] != '') {
             $custdata->Type($json['activeStatus']);
+            $custdata_changed = true;
         } elseif (isset($json['memberStatus'])) {
             $custdata->Type($json['memberStatus']);
+            $custdata_changed = true;
         }
         if (isset($json['customerTypeID'])) {
             $custdata->memType($json['customerTypeID']);
+            $custdata_changed = true;
         }
         if (isset($json['chargeLimit'])) {
             $custdata->ChargeLimit($json['chargeLimit']);
             $custdata->MemDiscountLimit($json['chargeLimit']);
+            $custdata_changed = true;
         }
         if (isset($json['chargeBalance'])) {
             $custdata->Balance($json['chargeBalance']);
+            $custdata_changed = true;
         }
 
         /**
@@ -356,6 +366,7 @@ class MemberREST
                 }
                 $loopCD = new \CustdataModel($dbc);
                 $loopCD->CardNo($id);
+                $loopCD_changed = false;
                 if ($c_json['accountHolder']) {
                     $loopCD->personNum(1);
                     if (isset($c_json['phone'])) {
@@ -373,43 +384,54 @@ class MemberREST
                 }
                 if (isset($c_json['firstName'])) {
                     $loopCD->FirstName($c_json['firstName']);
+                    $loopCD_changed = true;
                 }
                 if (isset($c_json['lastName'])) {
                     $loopCD->LastName($c_json['lastName']);
+                    $loopCD_changed = true;
                 }
                 if (isset($c_json['chargeAllowed'])) {
                     $loopCD->chargeOk($c_json['chargeAllowed']);
+                    $loopCD_changed = true;
                 }
                 if (isset($c_json['checksAllowed'])) {
                     $loopCD->writeChecks($c_json['checksAllowed']);
+                    $loopCD_changed = true;
                 }
                 if (isset($c_json['discount'])) {
                     $loopCD->Discount($c_json['discount']);
+                    $loopCD_changed = true;
                 }
                 if (isset($c_json['lowIncomeBenefits'])) {
                     $loopCD->SSI($c_json['lowIncomeBenefits']);
+                    $loopCD_changed = true;
                 }
 
-                if (!$loopCD->save()) {
+                if ($loopCD_changed && !$loopCD->save()) {
                     $ret['errors']++;
+                    $ret['error-msg'] .= 'ErrPerson ';
                 }
             }
         }
 
         if (!$meminfo->save()) {
             $ret['errors']++;
+            $ret['error-msg'] .= 'ErrMeminfo ';
         }
 
         /**
           Finally, apply account-level settings to
           all custdata records for the account.
         */
-        $allCD = new \CustdataModel($dbc);
-        $allCD->CardNo($id);
-        foreach ($allCD as $c) {
-            $custdata->personNum($c->personNum());
-            if (!$custdata->save()) {
-                $ret['errors']++;
+        if ($custdata_changed) {
+            $allCD = new \CustdataModel($dbc);
+            $allCD->CardNo($id);
+            foreach ($allCD->find() as $c) {
+                $custdata->personNum($c->personNum());
+                if (!$custdata->save()) {
+                    $ret['errors']++;
+                    $ret['error-msg'] .= 'ErrGlobal ';
+                }
             }
         }
 

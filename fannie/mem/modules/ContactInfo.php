@@ -103,77 +103,71 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
         return $ret;
     }
 
-    function saveFormData($memNum){
-        global $FANNIE_ROOT;
-        $dbc = $this->db();
-        if (!class_exists("MeminfoModel"))
-            include($FANNIE_ROOT.'classlib2.0/data/models/MeminfoModel.php');
-        if (!class_exists("CustdataModel"))
-            include($FANNIE_ROOT.'classlib2.0/data/models/CustdataModel.php');
-
-        $MI_FIELDS = array(
-            'street' => FormLib::get_form_value('ContactInfo_addr1',''),
+    function saveFormData($memNum)
+    {
+        $json = array(
+            'addressFirstLine' => FormLib::get_form_value('ContactInfo_addr1',''),
+            'addressSecondLine' => FormLib::get_form_value('ContactInfo_addr2',''),
             'city' => FormLib::get_form_value('ContactInfo_city',''),
             'state' => FormLib::get_form_value('ContactInfo_state',''),
             'zip' => FormLib::get_form_value('ContactInfo_zip',''),
-            'phone' => FormLib::get_form_value('ContactInfo_ph1',''),
-            'email_2' => FormLib::get_form_value('ContactInfo_ph2',''),
-            'email_1' => FormLib::get_form_value('ContactInfo_email',''),
-            'ads_OK' => (FormLib::get_form_value('ContactInfo_mail')!=='' ? 1 : 0)
+            'contactAllowed' => (FormLib::get_form_value('ContactInfo_mail')!=='' ? 1 : 0),
+            'customers' => array(),
         );
+        $account = self::getAccount();
+        foreach ($account['customers'] as $c) {
+            if ($c['accountHolder']) {
+                $json['customers'][] = array(
+                    'customerID' => $c['customerID'],
+                    'accountHolder' => 1,
+                    'lastName' => FormLib::get('ContactInfo_ln', ''),
+                    'firstName' => FormLib::get('ContactInfo_fn', ''),
+                    'phone' => FormLib::get_form_value('ContactInfo_ph1',''),
+                    'altPhone' => FormLib::get_form_value('ContactInfo_ph2',''),
+                    'email' => FormLib::get_form_value('ContactInfo_email',''),
+                );
+            }
+        }
+
         /* Canadian Postal Code, and City and Province
          * Phone style: ###-###-####
         */
-        if ( preg_match("/^[A-Z]\d[A-Z]/i", $MI_FIELDS['zip']) ) {
-            $MI_FIELDS['zip'] = strtoupper($MI_FIELDS['zip']);
-            if ( strlen($MI_FIELDS['zip']) == 6 ) {
-                $MI_FIELDS['zip'] = substr($MI_FIELDS['zip'],0,3).' '. substr($MI_FIELDS['zip'],3,3);
+        if (preg_match("/^[A-Z]\d[A-Z]/i", $json['zip']) ) {
+            $json['zip'] = strtoupper($json['zip']);
+            if (strlen($json['zip']) == 6) {
+                $json['zip'] = substr($json['zip'],0,3).' '. substr($json['zip'],3,3);
             }
             // Postal code M* supply City and Province
-            if ( preg_match("/^M/", $MI_FIELDS['zip']) &&
-                    $MI_FIELDS['city'] == '' && $MI_FIELDS['state'] == '') {
-                $MI_FIELDS['city'] = 'Toronto';
-                $MI_FIELDS['state'] = 'ON';
+            if (preg_match("/^M/", $json['zip']) &&
+                    $json['city'] == '' && $json['state'] == '') {
+                $json['city'] = 'Toronto';
+                $json['state'] = 'ON';
             }
             // Phone# style: ###-###-####
-            if ( preg_match("/^[MKLP]/", $MI_FIELDS['zip']) ) {
-                if ( preg_match("/^[-() .0-9]+$/",$MI_FIELDS['phone']) ) {
-                    $phone = preg_replace("/[^0-9]/", '' ,$MI_FIELDS['phone']);
-                    if ( preg_match("/^\d{10}$/",$phone) )
-                        $MI_FIELDS['phone'] = preg_replace("/(\d{3})(\d{3})(\d{4})/",'${1}-${2}-${3}',$phone);
+            if (preg_match("/^[MKLP]/", $json['zip']) ) {
+                if (preg_match("/^[-() .0-9]+$/",$json['customers'][0]['phone']) ) {
+                    $phone = preg_replace("/[^0-9]/", '' ,$json['customers'][0]['phone']);
+                    if (preg_match("/^\d{10}$/",$phone)) {
+                        $json['customers'][0]['phone'] = preg_replace("/(\d{3})(\d{3})(\d{4})/",'${1}-${2}-${3}',$phone);
+                    }
                 }
-                if ( preg_match("/^[-() .0-9]+$/",$MI_FIELDS['email_2']) ) {
-                    $phone = preg_replace("/[^0-9]/", '' ,$MI_FIELDS['email_2']);
-                    if ( preg_match("/^\d{10}$/",$phone) )
-                        $MI_FIELDS['email_2'] = preg_replace("/(\d{3})(\d{3})(\d{4})/",'${1}-${2}-${3}',$phone);
+                if (preg_match("/^[-() .0-9]+$/",$json['customers'][0]['altPhone']) ) {
+                    $phone = preg_replace("/[^0-9]/", '' ,$json['customers'][0]['altPhone']);
+                    if (preg_match("/^\d{10}$/",$phone)) {
+                        $json['customers'][0]['altPhone'] = preg_replace("/(\d{3})(\d{3})(\d{4})/",'${1}-${2}-${3}',$phone);
+                    }
                 }
             }
         }
-        if (FormLib::get_form_value('ContactInfo_addr2','') !== '')
-            $MI_FIELDS['street'] .= "\n".FormLib::get_form_value('ContactInfo_addr2');
 
-        $meminfo = new MeminfoModel($dbc);
-        $meminfo->card_no($memNum);
-        $meminfo->street($MI_FIELDS['street']);
-        $meminfo->city($MI_FIELDS['city']);
-        $meminfo->state($MI_FIELDS['state']);
-        $meminfo->phone($MI_FIELDS['phone']);
-        $meminfo->email_2($MI_FIELDS['email_2']);
-        $meminfo->email_1($MI_FIELDS['email_1']);
-        $meminfo->ads_OK($MI_FIELDS['ads_OK']);
-        $test1 = $meminfo->save();
+        $resp = \COREPOS\Fannie\API\member\MemberREST::post($memNum, $json);
+        var_dump($resp);
 
-        $custdata = new CustdataModel($dbc);
-        $custdata->CardNo($memNum);
-        $custdata->personNum(1);
-        $custdata->FirstName(FormLib::get('ContactInfo_fn'));
-        $custdata->LastName(FormLib::get('ContactInfo_ln'));
-        $test2 = $custdata->save();
-
-        if ($test1 === False || $test2 === False)
+        if ($resp['errors'] > 0) {
             return "Error: problem saving Contact Information<br />";
-        else
+        } else {
             return "";
+        }
     }
 
     function hasSearch(){ return True; }

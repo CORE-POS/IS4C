@@ -77,25 +77,26 @@ class AR extends \COREPOS\Fannie\API\member\MemberModule
 
     function saveFormData($memNum)
     {
-        global $FANNIE_ROOT;
-        $dbc = $this->db();
-        if (!class_exists("CustdataModel")) {
-            include($FANNIE_ROOT.'classlib2.0/data/models/CustdataModel.php');
-        }
-
         $limit = FormLib::get_form_value('AR_limit',0);
-        $model = new CustdataModel($dbc);
-        $model->CardNo($memNum);
-        $test = false;
-        foreach($model->find() as $obj) {
-            $obj->MemDiscountLimit($limit);
-            $obj->ChargeLimit($limit);
-            $obj->ChargeOk( $limit == 0 ? 0 : 1 );
-            $test = $obj->save();
+        $json = array(
+            'cardNo' => $memNum,
+            'chargeLimit' => $limit,
+            'customers' => array(),
+        );
+        $account = self::getAccount();
+        foreach ($account['customers'] as $c) {
+            if ($c['accountHolder']) {
+                $json['customers'][] = array(
+                    'customerID' => $c['customerID'],
+                    'chargeAllowed' => ($limit == 0 ? 0 : 1),
+                    'accountHolder' => 1,
+                );
+            }
         }
+        $resp = \COREPOS\Fannie\API\member\MemberREST::post($memNum, $json);
         
-        if ($test === false) {
-            return 'Error: Problme saving A/R limit<br />';
+        if ($resp['errors'] > 0) {
+            return 'Error: Problem saving A/R limit<br />';
         } else {
             return '';
         }
