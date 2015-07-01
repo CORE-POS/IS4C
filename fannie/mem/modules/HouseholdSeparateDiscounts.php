@@ -52,8 +52,17 @@ class HouseholdSeparateDiscounts extends \COREPOS\Fannie\API\member\MemberModule
                             name="HouseholdSeparateDiscounts_discount[]" value="%d" />
                         <span class="input-group-addon">%%</span>
                     </div>
+                    <label>
+                        <span class="label primaryBackground">Checks</span>
+                        <input type="checkbox" name="HouseholdSeparateDiscounts_writeChecks[] value="%d" />
+                    </label>
+                    <label>
+                        <span class="label primaryBackground">FFA</span>
+                        <input type="checkbox" name="HouseholdSeparateDiscounts_SSI[] value="%d" />
+                    </label>
                 </div>',
-                $infoW['firstName'],$infoW['lastName'],$infoW['discount']);
+                $infoW['firstName'],$infoW['lastName'],$infoW['discount'],
+                $count+2, $count+2); // $count+2 == personNum
             $count++;
         }
 
@@ -70,7 +79,15 @@ class HouseholdSeparateDiscounts extends \COREPOS\Fannie\API\member\MemberModule
                             name="HouseholdSeparateDiscounts_discount[] value="0" />
                         <span class="input-group-addon">%%</span>
                     </div>
-                </div>');
+                    <label>
+                        <span class="label primaryBackground">Checks</span>
+                        <input type="checkbox" name="HouseholdSeparateDiscounts_writeChecks[] value="%d" />
+                    </label>
+                    <label>
+                        <span class="label primaryBackground">FFA</span>
+                        <input type="checkbox" name="HouseholdSeparateDiscounts_SSI[] value="%d" />
+                    </label>
+                </div>', $count+2, $count+2);
             $count++;
         }
 
@@ -100,6 +117,8 @@ class HouseholdSeparateDiscounts extends \COREPOS\Fannie\API\member\MemberModule
         $fns = FormLib::get('HouseholdSeparateDiscounts_fn',array());
         $lns = FormLib::get('HouseholdSeparateDiscounts_ln',array());
         $discs = FormLib::get('HouseholdSeparateDiscounts_discount', array());
+        $checks = FormLib::get('HouseholdSeparateDiscounts_writeChecks', array());
+        $ssi = FormLib::get('HouseholdSeparateDiscounts_SSI', array());
         $pn = 2;
         $errors = false;
         for ($i=0; $i<count($lns); $i++) {
@@ -111,6 +130,8 @@ class HouseholdSeparateDiscounts extends \COREPOS\Fannie\API\member\MemberModule
             $custdata->FirstName($fns[$i]);
             $custdata->LastName($lns[$i]);
             $custdata->Discount($discs[$i]);
+            $custdata->writeChecks(in_array($pn, $checks) ? 1 : 0);
+            $custdata->SSI(in_array($pn, $ssi) ? 1 : 0);
             if (!$custdata->save()) {
                 $errors = true;
             }
