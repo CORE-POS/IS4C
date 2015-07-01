@@ -23,7 +23,7 @@
 
 namespace COREPOS\Fannie\API\item {
 
-class HobartDgwLib 
+class EpScaleLib 
 {
     /* CSV fields for WriteOneItem & ChangeOneItem records
        Required does not mean you *have to* specify a value,
@@ -46,6 +46,8 @@ class HobartDgwLib
         'Graphics' => array('name'=>'Graphics Number', 'required'=>false, 'default'=>'0'),
     );
 
+    static private $NL = "\r\n";
+
     /**
       Generate CSV line for a given item
       @param $item_info [keyed array] of value. Keys correspond to WRITE_ITEM_FIELDS
@@ -53,53 +55,123 @@ class HobartDgwLib
     */
     static public function getItemLine($item_info)
     {
-        $line = '';
-        // first write fields that are present
-        foreach(self::$WRITE_ITEM_FIELDS as $key => $field_info) {
+        if ($item_info['RecordType'] == 'ChangeOneItem') {
+            return self::getAddItemLine($item_info);
+        } else {
+            return self::getUpdateItemLine($item_info);
+        }
+
+        return $line;
+    }
+
+    static private function getAddItemLine($item_info)
+    {
+        $line = 'CCOSPIA' . chr(253);
+        $line .= 'PNO' . $item_info['PLU'] . chr(253);
+        $line .= 'UPC' . '2' . str_pad($item_info['PLU'],4,'0',STR_PAD_LEFT) . '000000' . chr(253);
+        $line .= 'DN1' . (isset($item_info['Description']) ? $item_info['Description'] : '') . chr(253);
+        $line .= 'DS1' . '0' . chr(253);
+        $line .= 'DN2' . chr(253);
+        $line .= 'DS2' . '0' . chr(253);
+        $line .= 'DN3' . chr(253);
+        $line .= 'DS3' . '0' . chr(253);
+        $line .= 'DN4' . chr(253);
+        $line .= 'DS4' . '0' . chr(253);
+        $line .= 'UPR' . (isset($item_info['Price']) ? floor(100*$item_info['Price']) : '0') . chr(253);
+        $line .= 'EPR' . '0' . chr(253);
+        $line .= 'FWT' . (isset($item_info['NetWeight']) ? $item_info['NetWeight'] : '0') . chr(253);
+        if ($item_info[$key] == 'Random Weight') {
+            $line .= 'UMELB' . chr(253);
+        } else {
+            $line .= 'UMEFW' . chr(253);
+        }
+        $line .= 'BCO' . '0' . chr(253);
+        $line .= 'WTA' . '0' . chr(253);
+        $line .= 'UWT' . (isset($item_info['Tare']) ? floor(100*$item_info['Tare']) : '0') . chr(253);
+        $line .= 'SLI' . (isset($item_info['ShelfLife']) ? $item_info['ShelfLife'] : '0') . chr(253);
+        $line .= 'SLT' . '0' . chr(253);
+        $line .= 'EBY' . '0' . chr(253);
+        $line .= 'CCL' . (isset($item_info['ReportingClass']) ? $item_info['ReportingClass'] : '0') . chr(253);
+        $line .= 'LNU' . '0' . chr(253);
+        $line .= 'GNO' . (isset($item_info['Graphics']) ? str_pad($item_info['Graphics'],6,'0',STR_PAD_LEFT) : '0') . chr(253);
+        $line .= 'GNU' . '0' . chr(253);
+        $line .= 'MNO' . '0' . chr(253);
+        $line .= 'INO' . $item_info['PLU'] . chr(253);
+        $line .= 'TNO' . '0' . chr(253);
+        $line .= 'NTN' . '0' . chr(253);
+        $line .= 'NRA' . '95' . chr(253);
+        $line .= 'ANO' . '0' . chr(253);
+        $line .= 'FTA' . 'N' . chr(253);
+        $line .= 'LF1' . (isset($item_info['Label']) ? $item_info['Label'] : '0') . chr(253);
+        $line .= 'LF2' . '0' . chr(253);
+        $line .= 'FR1' . '0' . chr(253);
+        $line .= 'FDT' . '0' . chr(253);
+        $line .= 'PTA' . '0' . chr(253);
+        $line .= 'PC1' . chr(253);
+        $line .= 'EAS' . '0' . chr(253);
+        $line .= 'FSL' . 'N' . chr(253);
+        $line .= 'FUB' . 'N' . chr(253);
+        $line .= 'UF1' . chr(253);
+        $line .= 'UF2' . chr(253);
+        $line .= 'UF3' . chr(253);
+        $line .= 'UF4' . chr(253);
+        $line .= 'UF5' . chr(253);
+        $line .= 'UF6' . chr(253);
+        $line .= 'UF7' . chr(253);
+        $line .= 'UF8' . chr(253);
+        $line .= 'PTN' . '1' . chr(253);
+
+        return $line;
+    }
+
+    static private function getUpdateItemLine($item_info)
+    {
+        $line = 'CCOSPIC' . chr(253); 
+        foreach (self::$WRITE_ITEM_FIELDS as $key => $field_info) {
             if (isset($item_info[$key])) {
-                if (isset($field_info['quoted']) && $field_info['quoted']) {
-                    $line .= '"' . $item_info[$key] . '",';
-                } else {
-                    $line .= $item_info[$key] . ',';
-                }
-                /**
-                  PLU has a few corresponding fields that always follow:
-                  1. Barcode Number System
-                  2. Bar Code
-                  3. Expanded Text Number
-                */
-                if ($key == 'PLU') {
-                    $barcode_type = '2';
-                    $barcode = str_pad($item_info[$key],5,"0",STR_PAD_RIGHT);
-                    $line .= $barcode_type . ',' . $barcode . ',' . $item_info[$key] . ',';;
+                switch ($key) {
+                    case 'PLU':
+                        $line .= 'PNO' . $item_info[$key] . chr(253);
+                        break;
+                    case 'Description':
+                        $line .= 'DN1' . $item_info[$key] . chr(253);
+                        break;
+                    case 'ReportingClass':
+                        $line .= 'CCL' . $item_info[$key] . chr(253);
+                    case 'Label':
+                        $line .= 'FL1' . $item_info[$key] . chr(253);
+                        break;
+                    case 'Tare':
+                        $line .= 'UTA' . floor(100*$item_info[$key]) . chr(253);
+                        break;
+                    case 'ShelfLife':
+                        $line .= 'SLI' . $item_info[$key] . chr(253) . 'SLT0' . chr(253);
+                        break;
+                    case 'Price':
+                        $line .= 'UPR' . floor(100*$item_info[$key]) . chr(253);
+                        break;
+                    case 'Type':
+                        if ($item_info[$key] == 'Random Weight') {
+                            $line .= 'UMELB' . chr(253);
+                        } else {
+                            $line .= 'UMEFW' . chr(253);
+                        }
+                        break;
+                    case 'NetWeight':
+                        $line .= 'FWT' . $item_info[$key] . chr(253);
+                        break;
+                    case 'Graphics':
+                        $line .= 'GNO' . str_pad($item_info[$key],6,'0',STR_PAD_LEFT) . chr(253);
+                        break;
                 }
             }
         }
-        // next write required fields that are not present
-        foreach(self::$WRITE_ITEM_FIELDS as $key => $field_info) {
-            if (!isset($item_info[$key]) && $field_info['required']) {
-                if (isset($field_info['quoted']) && $field_info['quoted']) {
-                    $line .= '"' . $field_info['default'] . '",';
-                } else {
-                    $line .= $field_info['default'] . ',';
-                }
-                // see above; same deal for PLU
-                if ($key == 'PLU') {
-                    $barcode_type = '2';
-                    $barcode = str_pad($field_info['default'],5,"0",STR_PAD_RIGHT);
-                    $line .= $barcode_type . ',' . $barcode . ',' . $field_info['default'] . ',';;
-                }
-            }
-        }
-        // remove last trailing comma & finish
-        $line = substr($line, 0 , strlen($line)-1);
-        $line .= "\r\n";
 
         return $line;
     }
 
     /**
-      Write item update CSVs to Data Gate Weigh
+      Write item update file(s) to ePlum
       @param $items [keyed array] of values. Keys correspond to WRITE_ITEM_FIELDS
         $items may also be an array of keyed arrays to write multiple items
         One additional key, ExpandedText, is used to write Expanded Text. This
@@ -116,81 +188,54 @@ class HobartDgwLib
             $items = array($items);
         }
         $new_item = false;
+        if (isset($items[0]['RecordType']) && $items[0]['RecordType'] == 'WriteOneItem') {
+            $new_item = true;
+        }
         $header_line = '';
-        foreach (self::$WRITE_ITEM_FIELDS as $key => $field_info) {
-            if (isset($items[0][$key])) {
-                $header_line .= $field_info['name'] . ',';
-                if ($key == 'PLU') {
-                    $header_line .= 'Bar Code Number System,Bar Code,Expanded Text Number,';
-                }
-            }
-            if (isset($items[0]['RecordType']) && $items[0]['RecordType'] == 'WriteOneItem') {
-                $new_item = true;
-            }
-        }
-        foreach(self::$WRITE_ITEM_FIELDS as $key => $field_info) {
-            if (!isset($items[0][$key]) && $field_info['required']) {
-                $header_line .= $field_info['name'] . ',';
-                if ($key == 'PLU') {
-                    $header_line .= 'Bar Code Number System,Bar Code,Expanded Text Number,';
-                }
-            }
-        }
-        $header_line = substr($header_line, 0, strlen($header_line)-1);
-        $header_line .= "\r\n";
-
         $file_prefix = self::sessionKey();
-        $output_dir = realpath(dirname(__FILE__) . '/../../item/hobartcsv/csv_output');
+        $output_dir = realpath(dirname(__FILE__) . '/../../item/hobartcsv/csvfiles');
         $selected_scales = $scales;
         if (!is_array($scales) || count($selected_scales) == 0) {
             $selected_scales = $config->get('SCALES');
         }
+        $scale_model = new \ServiceScalesModel(\FannieDB::get($config->get('OP_DB')));
         $i = 0;
         foreach ($selected_scales as $scale) {
-            $file_name = sys_get_temp_dir() . '/' . $file_prefix . '_writeItem_' . $i . '.csv';
+            $scale_model->reset();
+            $scale_model->host($scale['host']);
+
+            $file_name = sys_get_temp_dir() . '/' . $file_prefix . '_writeItem_' . $i . '.dat';
             $fp = fopen($file_name, 'w');
-            fwrite($fp,"Record Type,Task Department,Task Destination,Task Destination Device,Task Destination Type\r\n");
-            fwrite($fp, "ExecuteOneTask,{$scale['dept']},{$scale['host']},{$scale['type']},SCALE\r\n");
-            fwrite($fp, $header_line);
+            fwrite($fp, 'BNA' . $file_prefix . '_' . $i . chr(253) . self::$NL);
             foreach($items as $item) {
                 $item_line = self::getItemLine($item);
+                if ($scale_model->epStoreNo() != 0) {
+                    $item_line .= 'SNO' . $scale_model->epStoreNo() . chr(253);
+                }
+                $item_line .= 'DNO' . $scale_model->epDeptNo() . chr(253);
+                $item_line .= 'SAD' . $scale_model->epScaleAddress() . chr(253);
+                $item_line .= self::$NL;
                 fwrite($fp, $item_line);
+
+                if (isset($item['ExpandedText'])) {
+                    $et_line = ($new_item ? 'CCOSIIA' : 'CCOSIIC') . chr(253);
+                    if ($scale_model->epStoreNo() != 0) {
+                        $et_line .= 'SNO' . $scale_model->epStoreNo() . chr(253);
+                    }
+                    $et_line .= 'DNO' . $scale_model->epDeptNo() . chr(253);
+                    $et_line .= 'SAD' . $scale_model->epScaleAddress() . chr(253);
+                    $et_line .= 'PNO' . $item['PLU'] . chr(253);
+                    $et_line .= 'INO' . $item['PLU'] . chr(253);
+                    $et_line .= 'ITE' . $item['ExpandedText'] . chr(253);
+                    $et_line .= self::$NL;
+                    fwrite($fp, $et_line);
+                }
             }
             fclose($fp);
 
             // move to DGW; cleanup the file in the case of failure
             if (!rename($file_name, $output_dir . '/' . basename($file_name))) {
                 unlink($file_name);
-            }
-
-            $et_file = sys_get_temp_dir() . '/' . $file_prefix . '_exText' . $i . '.csv';
-            $fp = fopen($et_file, 'w');
-            fwrite($fp,"Record Type,Task Department,Task Destination,Task Destination Device,Task Destination Type\r\n");
-            fwrite($fp, "ExecuteOneTask,{$scale['dept']},{$scale['host']},{$scale['type']},SCALE\r\n");
-            $has_et = false;
-            foreach($items as $item) {
-                if (isset($item['ExpandedText']) && isset($item['PLU'])) {
-                    $has_et = true;
-                    $mode = $new_item ? 'WriteOneExpandedText' : 'ChangeOneExpandedText';
-                    fwrite($fp,"Record Type,Expanded Text Number,Expanded Text\r\n");
-                    $text = '';
-                    foreach (explode("\n", $item['ExpandedText']) as $line) {
-                        $text .= wordwrap($line, 50, "\n") . "\n";
-                    }
-                    $text = preg_replace("/\\r/", '', $text);
-                    $text = preg_replace("/\\n/", '<br />', $text);
-                    fwrite($fp, $mode . ',' . $item['PLU'] . ',"' . $text . "\"\r\n");
-                }
-            }
-            fclose($fp);
-            if (!$has_et) {
-                // don't send empty file
-                unlink($et_file);
-            } else {
-                // move to DGW dir
-                if (!rename($et_file, $output_dir . '/' . basename($et_file))) {
-                    unlink($et_file);
-                }
             }
 
             $i++;
@@ -202,7 +247,7 @@ class HobartDgwLib
       @param $items [string] four digit PLU 
         or [array] of [string] 4 digit PLUs
     */
-    static public function deleteItemsFromScales($items, $scales=array())
+    static public function deleteItemsFromScales($items)
     {
         $config = \FannieConfig::factory(); 
 
@@ -210,15 +255,10 @@ class HobartDgwLib
             $items = array($items);
         }
 
-        $selected_scales = $scales;
-        if (!is_array($scales) || count($selected_scales) == 0) {
-            $selected_scales = $config->get('SCALES');
-        }
-
         $file_prefix = self::sessionKey();
         $output_dir = realpath(dirname(__FILE__) . '/../../item/hobartcsv/csv_output');
         $i = 0;
-        foreach ($selected_scales as $scale) {
+        foreach($config->get('SCALES', array()) as $scale) {
             $file_name = sys_get_temp_dir() . '/' . $file_prefix . '_deleteItem_' . $i . '.csv';
             $et_name = sys_get_temp_dir() . '/' . $file_prefix . '_deleteText_' . $i . '.csv';
             $fp = fopen($file_name, 'w');
@@ -505,6 +545,6 @@ class HobartDgwLib
 }
 
 namespace {
-    class HobartDgwLib extends \COREPOS\Fannie\API\item\HobartDgwLib {}
+    class EpScaleLib extends \COREPOS\Fannie\API\item\EpScaleLib {}
 }
 
