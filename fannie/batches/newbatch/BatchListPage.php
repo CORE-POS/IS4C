@@ -366,11 +366,7 @@ class BatchListPage extends FannieRESTfulPage
             $ret .= "All<br />";
         }
 
-        $sort = '
-            <span class="core-sort-none glyphicon glyphicon-sort"></span>
-            <span class="core-sort-down glyphicon glyphicon-arrow-down"></span>
-            <span class="core-sort-up glyphicon glyphicon-arrow-up"></span>
-        ';
+        $sort = \COREPOS\Fannie\API\lib\FannieUI::tableSortIcons();
 
         $ret .= '<table class="table tablesorter tablesorter-core"><thead>';
         $ret .= "<tr><th bgcolor=$colors[$c]>Batch Name$sort</th>";
