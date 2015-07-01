@@ -175,6 +175,7 @@ class CustomersModel extends BasicModel
             $custdata->personNum(1);
             $custdata->FirstName($c->firstName());
             $custdata->LastName($c->lastName());
+            $custdata->blueLine($card_no . ' ' . $c->lastName());
             $custdata->chargeOk($c->chargeAllowed());
             $custdata->writeChecks($c->checksAllowed());
             $custdata->staff($c->staff());
@@ -189,6 +190,7 @@ class CustomersModel extends BasicModel
             $custdata->personNum($person);
             $custdata->FirstName($c->firstName());
             $custdata->LastName($c->lastName());
+            $custdata->blueLine($card_no . ' ' . $c->lastName());
             $custdata->chargeOk($c->chargeAllowed());
             $custdata->writeChecks($c->checksAllowed());
             $custdata->staff($c->staff());

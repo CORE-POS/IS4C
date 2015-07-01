@@ -88,35 +88,35 @@ class HouseholdMembers extends \COREPOS\Fannie\API\member\MemberModule {
             return "Error: Problem saving household members<br />"; 
         }
 
-        $fns = FormLib::get_form_value('HouseholdMembers_fn',array());
-        $lns = FormLib::get_form_value('HouseholdMembers_ln',array());
-        $pn = 2;
-        $errors = false;
-        for ($i=0; $i<count($lns); $i++) {
-            if (empty($fns[$i]) && empty($lns[$i])) {
-                continue;
-            }
-
-            $custdata->personNum($pn);
-            $custdata->FirstName($fns[$i]);
-            $custdata->LastName($lns[$i]);
-            if (!$custdata->save()) {
-                $errors = true;
-            }
-
-            $pn++;
+        $json = array(
+            'cardNo' => $memNum,
+            'customerTypeID' => $custdata->memType(),
+            'customers' => array()
+        );
+        if ($custdata->Type() == 'PC' || $custdata->Type() == 'REG') {
+            $json['memberStatus'] = $custdata->Type();
+        } else {
+            $json['activeStatus'] = $custdata->Type();
         }
 
-        /**
-          Remove any names outside the set that just saved
-        */
-        $clearP = $dbc->prepare('
-            DELETE FROM custdata
-            WHERE CardNo=?
-                AND personNum >= ?');
-        $clearR = $dbc->execute($clearP, array($memNum, $pn));
+        $fns = FormLib::get_form_value('HouseholdMembers_fn',array());
+        $lns = FormLib::get_form_value('HouseholdMembers_ln',array());
+        for ($i=0; $i<count($lns); $i++) {
+            $json['customers'][] = array(
+                'firstName' => $fns[$i],
+                'lastName' => $lns[$i],
+                'accountHolder' => 0,
+                'discount' => $custdata->Discount(),
+                'staff' => $custdata->staff(),
+                'lowIncomeBenefits' => $custdata->SSI(),
+                'chargeAllowed' => $custdata->chargeOk(),
+                'checksAllowed' => $custdata->writeChecks(),
+            );
+        }
 
-        if ($errors) {
+        $resp = \COREPOS\Fannie\API\member\MemberREST::post($memNum, $json);
+
+        if ($resp['errors'] > 0) {
             return "Error: Problem saving household members<br />"; 
         }
 

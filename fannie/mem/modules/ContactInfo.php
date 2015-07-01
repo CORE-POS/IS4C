@@ -161,7 +161,6 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
         }
 
         $resp = \COREPOS\Fannie\API\member\MemberREST::post($memNum, $json);
-        var_dump($resp);
 
         if ($resp['errors'] > 0) {
             return "Error: problem saving Contact Information<br />";

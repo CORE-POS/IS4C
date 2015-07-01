@@ -362,6 +362,7 @@ class MemberREST
             foreach ($json['customers'] as $c_json) {
                 if (!isset($c_json['accountHolder'])) {
                     $ret['errors']++;
+                    $ret['error-msg'] .= 'ErrAcctHolder ';
                     continue;
                 }
                 $loopCD = new \CustdataModel($dbc);
@@ -378,6 +379,10 @@ class MemberREST
                     if (isset($c_json['email'])) {
                         $meminfo->email_1($c_json['email']);
                     }
+                } elseif (isset($c_json['firstName']) && isset($c_json['lastName']) && $c_json['firstName'] == '' && $c_json['lastName'] == '') {
+                    // blank name fields on non-account holder mean
+                    // the customer was removed from the account
+                    continue;
                 } else {
                     $loopCD->personNum($pn);
                     $pn++;
@@ -388,6 +393,7 @@ class MemberREST
                 }
                 if (isset($c_json['lastName'])) {
                     $loopCD->LastName($c_json['lastName']);
+                    $loopCD->blueLine($id . ' ' . $c_json['lastName']);
                     $loopCD_changed = true;
                 }
                 if (isset($c_json['chargeAllowed'])) {
@@ -396,6 +402,10 @@ class MemberREST
                 }
                 if (isset($c_json['checksAllowed'])) {
                     $loopCD->writeChecks($c_json['checksAllowed']);
+                    $loopCD_changed = true;
+                }
+                if (isset($c_json['staff'])) {
+                    $loopCD->staff($c_json['staff']);
                     $loopCD_changed = true;
                 }
                 if (isset($c_json['discount'])) {
@@ -412,6 +422,8 @@ class MemberREST
                     $ret['error-msg'] .= 'ErrPerson ';
                 }
             }
+            $cleanP = $dbc->prepare('DELETE FROM custdata WHERE CardNo=? AND personNum>=?');
+            $cleanR = $dbc->execute($cleanP, array($id, $pn));
         }
 
         if (!$meminfo->save()) {
