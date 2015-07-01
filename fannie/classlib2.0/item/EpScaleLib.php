@@ -247,7 +247,7 @@ class EpScaleLib
       @param $items [string] four digit PLU 
         or [array] of [string] 4 digit PLUs
     */
-    static public function deleteItemsFromScales($items)
+    static public function deleteItemsFromScales($items, $scales=array())
     {
         $config = \FannieConfig::factory(); 
 
@@ -256,20 +256,17 @@ class EpScaleLib
         }
 
         $file_prefix = self::sessionKey();
-        $output_dir = realpath(dirname(__FILE__) . '/../../item/hobartcsv/csv_output');
+        $output_dir = realpath(dirname(__FILE__) . '/../../item/hobartcsv/csvfiles');
+        $selected_scales = $scales;
+        if (!is_array($scales) || count($selected_scales) == 0) {
+            $selected_scales = $config->get('SCALES');
+        }
+        $scale_model = new \ServiceScalesModel(\FannieDB::get($config->get('OP_DB')));
         $i = 0;
-        foreach($config->get('SCALES', array()) as $scale) {
-            $file_name = sys_get_temp_dir() . '/' . $file_prefix . '_deleteItem_' . $i . '.csv';
-            $et_name = sys_get_temp_dir() . '/' . $file_prefix . '_deleteText_' . $i . '.csv';
+        foreach ($selected_scales as $scale) {
+            $file_name = sys_get_temp_dir() . '/' . $file_prefix . '_deleteItem_' . $i . '.dat';
             $fp = fopen($file_name, 'w');
-            $fp2 = fopen($et_name, 'w');
-            fwrite($fp,"Record Type,Task Department,Task Destination,Task Destination Device,Task Destination Type\r\n");
-            fwrite($fp, "ExecuteOneTask,{$scale['dept']},{$scale['host']},{$scale['type']},SCALE\r\n");
-            fwrite($fp,"Record Type,PLU Number\r\n");
-            fwrite($fp2,"Record Type,Task Department,Task Destination,Task Destination Device,Task Destination Type\r\n");
-            fwrite($fp2, "ExecuteOneTask,{$scale['dept']},{$scale['host']},{$scale['type']},SCALE\r\n");
-            fwrite($fp2,"Record Type,Expanded Text Number\r\n");
-            foreach($items as $plu) {
+            foreach ($items as $plu) {
                 if (strlen($plu) !== 4) {
                     // might be a UPC
                     $upc = str_pad($plu, 13, '0', STR_PAD_LEFT);
@@ -280,173 +277,16 @@ class EpScaleLib
                     preg_match("/002(\d\d\d\d)0/",$upc,$matches);
                     $plu = $matches[1];
                 }
-                fwrite($fp,"DeleteOneItem,$plu\r\n");
-                fwrite($fp2,"DeleteOneExpandedText,$plu\r\n");
             }
             fclose($fp);
-            fclose($fp2);
 
             // move to DGW dir
             if (!rename($file_name, $output_dir . '/' . basename($file_name))) {
                 unlink($file_name);
             }
-            if (!rename($et_name, $output_dir . '/' . basename($et_name))) {
-                unlink($et_name);
-            }
 
             $i++;
         }
-    }
-
-    /**
-      Import Hobart Data into scaleItems table
-      This one is for "item" data
-      @param $filename [string] scale-exported data CSV
-      @return [int] number of items imported
-    */
-    static public function readItemsFromFile($filename)
-    {
-        $dbc = \FannieDB::get(\FannieConfig::factory()->get('OP_DB'));
-
-        $product = new \ProductsModel($dbc);
-        $scaleItem = new \ScaleItemsModel($dbc);
-        
-        $fp = fopen($filename, 'r');
-        // detect column indexes via header line
-        $column_index = array(
-            'PLU Number' => -1,
-            'Price' => -1,
-            'Item Description' => -1,
-            'Item Type' => -1,
-            'By Count' => -1,
-            'Tare 01' => -1,
-            'Shelf Life' => -1,
-            'Net Weight' => -1,
-            'Label Type 01' => -1,
-            'Graphics Number' => -1,
-        );
-        $headers = fgetcsv($fp);
-        for ($i=0;$i<count($headers);$i++) {
-            $header = $headers[$i];
-            if (isset($column_index[$header])) {
-                $column_index[$header] = $i;
-            }
-        }
-
-        $item_count = 0;
-        while(!feof($fp)) {
-            $line = fgetcsv($fp);
-            if (!isset($line[$column_index['PLU Number']])) {
-                // can't import item w/o PLU
-                continue;
-            }
-
-            $plu = $line[$column_index['PLU Number']];
-            $upc = $this->scalePluToUpc($plu);
-
-            $product->reset();
-            $product->upc($upc);
-            if (!$product->load()) {
-                // no entry in products table
-                // should one be created?
-                continue;
-            }
-
-            $scaleItem->reset();
-            $scaleItem->plu($upc);
-            if ($column_index['Price'] != -1) {
-                $scaleItem->price($line[$column_index['Price']]);
-            }
-            if ($column_index['Item Description'] != -1) {
-                $scaleItem->itemdesc($line[$column_index['Item Description']]);
-            }
-            if ($column_index['Item Type'] != -1) {
-                $scale_type = $line[$column_index['Item Description']];
-                $scaleItem->weight( $scale_type == 'Fixed Weight' ? 1 : 0 );
-            }
-            if ($column_index['By Count'] != -1) {
-                $scaleItem->bycount($line[$column_index['By Count']]);
-            }
-            if ($column_index['Tare 01'] != -1) {
-                $scaleItem->tare($line[$column_index['Tare 01']]);
-            }
-            if ($column_index['Shelf Life'] != -1) {
-                $scaleItem->shelflife($line[$column_index['Shelf Life']]);
-            }
-            if ($column_index['Net Weight'] != -1) {
-                $scaleItem->netWeight($line[$column_index['Net Weight']]);
-            }
-            if ($column_index['Label Type 01'] != -1) {
-                $scaleItem->weight($line[$column_index['Label Type 01']]);
-            }
-            if ($column_index['Graphics Number'] != -1) {
-                $scaleItem->graphics($line[$column_index['Graphics Number']]);
-            }
-            $scaleItem->save();
-            $item_count++;
-        }
-
-        fclose($fp);
-
-        return $item_count;
-    }
-
-    /**
-      Import Hobart Data into scaleItems table
-      This one is for "expanded text" data
-      @param $filename [string] scale-exported data CSV
-      @return [int] number of items imported
-    */
-    static public function readTextsFromFile($filename)
-    {
-        $dbc = \FannieDB::get(\FannieConfig::factory()->get('OP_DB'));
-
-        $product = new \ProductsModel($dbc);
-        $scaleItem = new \ScaleItems($dbc);
-
-        $number_index = -1;
-        $text_index = -1;
-
-        $fp = fopen($filename, 'r');
-        $headers = fgetcsv($fp);
-        for ($i=0;$i<count($headers);$i++) {
-            $header = $headers[$i];
-            if ($header == 'Expanded Text Number') {
-                $number_index = $i;
-            } else if ($header == 'Expanded Text') {
-                $text_index = $i;
-            }
-        }
-
-        if ($text_index == -1 || $number_index == -1) {
-            // no valid data
-            return 0;
-        }
-
-        $item_count = 0;
-        while(!feof($fp)) {
-            $line = fgetcsv($fp);
-            $plu = $line[$number_index];
-            $upc = $this->scalePluToUpc($plu);
-
-            $product->reset();
-            $product->upc($upc);
-            if (!$product->load()) {
-                // no entry in products table
-                // should one be created?
-                continue;
-            }
-
-            $scaleItem->reset();
-            $scaleItem->plu($upc);
-            $scaleItem->text($line[$text_index]);
-            $scaleItem->save();
-            $item_count++;
-        }
-
-        fclose($fp);
-
-        return $item_count;
     }
 
     /**

@@ -325,6 +325,11 @@ class ScaleItemModule extends ItemModule
             FROM ServiceScaleItemMap
             WHERE upc=?');
         $mapR = $dbc->execute($mapP, array($upc));
+        $delP = $dbc->prepare('
+            DELETE
+            FROM ServiceScaleItemMap
+            WHERE serviceScaleID=?
+                AND upc=?');
         if ($mapR && $dbc->numRows($mapR)) {
             $scales = array();
             while ($mapW = $dbc->fetchRow($mapR)) {
@@ -333,7 +338,7 @@ class ScaleItemModule extends ItemModule
                     continue;
                 }
                 $model->reset();
-                $model->serviceScaleID($scaleID);
+                $model->serviceScaleID($mapW['serviceScaleID']);
                 if (!$model->load()) {
                     // scale doesn't exist
                     continue;
@@ -345,6 +350,8 @@ class ScaleItemModule extends ItemModule
                     'new' => false,
                 );
                 $scales[] = $repr;
+
+                $dbc->execute($delP, array($mapW['serviceScaleID'], $upc));
             }
             if (count($scales) > 0) {
                 HobartDgwLib::deleteItemsFromScales($item_info['PLU'], $scales); 
