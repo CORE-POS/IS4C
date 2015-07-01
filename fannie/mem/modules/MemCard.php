@@ -86,7 +86,7 @@ class MemCard extends \COREPOS\Fannie\API\member\MemberModule {
         }
 
         $json = array(
-            'idCardUPC' => $mcc;
+            'idCardUPC' => $mcc,
         );
         $accounts = \COREPOS\Fannie\API\member\MemberREST::search($json);
 
