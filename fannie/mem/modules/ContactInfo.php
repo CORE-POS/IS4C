@@ -228,8 +228,6 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
 
     function getSearchResults()
     {
-        $dbc = $this->db();
-
         $fn = FormLib::get_form_value('ContactInfo_fn');
         $ln = FormLib::get_form_value('ContactInfo_ln');
         $addr = FormLib::get_form_value('ContactInfo_addr');
@@ -237,51 +235,42 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
         $state = FormLib::get_form_value('ContactInfo_state');
         $zip = FormLib::get_form_value('ContactInfo_zip');
         $email = FormLib::get_form_value('ContactInfo_email');
+        
+        $json = array();
+        $customer = array();
 
-        $where = "";
-        $args = array();
         if (!empty($fn)){
-            $where .= " AND FirstName LIKE ?";
-            $args[] = '%'.$fn.'%';
+            $customer['firstName'] = $fn;
         }
         if (!empty($ln)){
-            $where .= " AND LastName LIKE ?";
-            $args[] = '%'.$ln.'%';
+            $customer['lastName'] = $ln;
         }
         if (!empty($addr)){
-            $where .= " AND street LIKE ?";
-            $args[] = '%'.$addr.'%';
+            $json['addressFirstLine'] = $addr;
         }
         if (!empty($city)){
-            $where .= " AND city LIKE ?";
-            $args[] = '%'.$city.'%';
+            $json['city'] = $city;
         }
         if (!empty($state)){
-            $where .= " AND state LIKE ?";
-            $args[] = '%'.$state.'%';
+            $json['state'] = $state;
         }
         if (!empty($zip)){
-            $where .= " AND zip LIKE ?";
-            $args[] = '%'.$zip.'%';
+            $json['zip'] = $zip;
         }
         if (!empty($email)){
-            $where .= " AND email_1 LIKE ?";
-            $args[] = '%'.$email.'%';
+            $customer['email'] = $email;
         }
+        $json['customers'] = array($customer);
+
+        $accounts = \COREPOS\Fannie\API\member\MemberREST::search($json);
 
         $ret = array();
-        if (!empty($where)){
-            $q = $dbc->prepare_statement("SELECT CardNo,FirstName,LastName FROM
-                custdata as c LEFT JOIN meminfo AS m
-                ON c.CardNo = m.card_no
-                WHERE 1=1 $where ORDER BY m.card_no, c.personNum DESC");
-            $r = $dbc->exec_statement($q,$args);
-            if ($dbc->num_rows($r) > 0){
-                while($w = $dbc->fetch_row($r)){
-                    $ret[$w[0]] = $w[1]." ".$w[2];
-                }
+        foreach ($accounts as $account) {
+            foreach ($account['customers'] as $customer) {
+                $ret[$account['cardNo']] = $customer['firstName'] . ' ' . $customer['lastName'];
             }
         }
+
         return $ret;
     }
 }

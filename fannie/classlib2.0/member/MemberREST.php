@@ -206,11 +206,45 @@ class MemberREST
         $config = \FannieConfig::factory();
         $dbc = \FannieDB::get($config->get('OP_DB'));
 
+        if ($id == 0) {
+            $id = self::createAccount($dbc);
+        }
+
         if ($dbc->tableExists('CustomerAccounts') && $dbc->tableExists('Customers')) {
             return self::postAccount($dbc, $id, $json);
         } else {
             return self::postCustdata($dbc, $id, $json);
         }
+    }
+
+    private static function createAccount($dbc)
+    {
+        $max = 1;
+        if ($dbc->tableExists('CustomerAccounts')) {
+            $query = 'SELECT MAX(cardNo) FROM customerAccounts';
+        } else {
+            $query = 'SELECT MAX(CardNo) FROM custdata';
+        }
+        $result = $dbc->query($query);
+        if ($result && $dbc->numRows($result)) {
+            $row = $dbc->fetchRow($result);
+            $max = $row[0] + 1;
+        }
+
+        if ($dbc->tableExists('CustomerAccounts')) {
+            $ca = new \CustomerAccountsModel($dbc);
+            $ca->cardNo($max);
+            $ca->save();
+        }
+        $custdata = new \CustdataModel($dbc);
+        $custdata->CardNo($max);
+        $custdata->personNum(1);
+        $custdata->save();
+        $meminfo = new \MeminfoModel($dbc);
+        $meminfo->card_no($max);
+        $meminfo->save();
+
+        return $max;
     }
 
     /**
@@ -219,6 +253,7 @@ class MemberREST
     */
     private static function postAccount($dbc, $id, $json)
     {
+        $ret = array('errors' => 0, 'error-msg' => '');
         $config = \FannieConfig::factory();
         $account = new \CustomerAccountsModel($dbc);
         $customers = new \CustomersModel($dbc);
@@ -233,7 +268,6 @@ class MemberREST
                 $account->$col_name($json[$col_name]);
             }
         }
-        $ret = array('errors' => 0);
         if (!$account->save()) {
             $ret['errors']++;
         }
@@ -261,7 +295,9 @@ class MemberREST
         $account->legacySync($id);
         $customers->legacySync($id);
 
-        return $errors;
+        $ret['account'] = self::get($id);
+
+        return $ret;
     }
 
     /**
@@ -457,6 +493,8 @@ class MemberREST
         }
         self::setBlueLines($id);
 
+        $ret['account'] = self::get($id);
+
         return $ret;
     }
 
@@ -492,6 +530,286 @@ class MemberREST
             $custdata->blueLine($bl);
             $custdata->save();
         }
+    }
+
+    /**
+      Search for an account
+      @param $json [array] account attributes. All fields are optional, but
+        if no search fields are provided this returns zero results rather than
+        every single account.
+      @return [array] of account structures
+    */
+    public static function search($json)
+    {
+        $config = \FannieConfig::factory();
+        $dbc = \FannieDB::get($config->get('OP_DB'));
+
+        if ($dbc->tableExists('CustomerAccounts') && $dbc->tableExists('Customers')) {
+            return self::searchAccount($dbc, $json);
+        } else {
+            return self::searchCustdata($dbc, $json);
+        }
+    }
+
+    private static function searchAccount($dbc, $json)
+    {
+        $query = '
+            SELECT a.cardNo
+            FROM CustomerAccounts AS a
+                LEFT JOIN Customers AS c ON a.customerAccountID=c.customerAccountID
+            WHERE 1=1 ';
+        $params = array();
+        if (isset($json['cardNo'])) {
+            $query .= ' AND a.cardNo=? ';
+            $params[] = $json['cardNo'];
+        }
+        if (isset($json['memberStatus'])) {
+            $query .= ' AND a.memberStatus=? ';
+            $params[] = $json['memberStatus'];
+        }
+        if (isset($json['customerTypeID'])) {
+            $query .= ' AND a.customerTypeID=? ';
+            $params[] = $json['customerTypeID'];
+        }
+        if (isset($json['chargeBalance'])) {
+            $query .= ' AND a.chargeBalance=? ';
+            $params[] = $json['chargeBalance'];
+        }
+        if (isset($json['chargeLimit'])) {
+            $query .= ' AND a.chargeLimit=? ';
+            $params[] = $json['chargeBalance'];
+        }
+        if (isset($json['idCardUPC'])) {
+            $query .= ' AND a.idCardUPC=? ';
+            $params[] = \BarcodeLib::padUPC($json['idCardUPC']);
+        }
+        if (isset($json['startDate'])) {
+            $query .= ' AND a.startDate BETWEEN ? AND ? ';
+            $params[] = $json['startDate'] . ' 00:00:00';
+            $params[] = $json['startDate'] . ' 23:59:59';
+        }
+        if (isset($json['endDate'])) {
+            $query .= ' AND a.endDate BETWEEN ? AND ? ';
+            $params[] = $json['endDate'] . ' 00:00:00';
+            $params[] = $json['endDate'] . ' 23:59:59';
+        }
+        if (isset($json['addressFirstLine'])) {
+            $query .= ' AND a.addressFirstLine LIKE ? ';
+            $params[] = '%' . $json['addressFirstLine'] . '%';
+        }
+        if (isset($json['addressSecondLine'])) {
+            $query .= ' AND a.addressSecondLine LIKE ? ';
+            $params[] = '%' . $json['addressSecondLine'] . '%';
+        }
+        if (isset($json['city'])) {
+            $query .= ' AND a.city LIKE ? ';
+            $params[] = '%' . $json['city'] . '%';
+        }
+        if (isset($json['state'])) {
+            $query .= ' AND a.state LIKE ? ';
+            $params[] = '%' . $json['state'] . '%';
+        }
+        if (isset($json['zip'])) {
+            $query .= ' AND a.zip LIKE ? ';
+            $params[] = '%' . $json['zip'] . '%';
+        }
+        if (isset($json['contactAllowed'])) {
+            $query .= ' AND a.contactAllowed = ? ';
+            $params[] = $json['contactAllowed'];
+        }
+        foreach ($json['customers'] as $j) {
+            if (isset($j['lastName'])) {
+                $query .= ' AND c.lastName LIKE ? ';
+                $params[] = '%' . $j['lastName'] . '%';
+            }
+            if (isset($j['firstName'])) {
+                $query .= ' AND c.firstName LIKE ? ';
+                $params[] = '%' . $j['firstName'] . '%';
+            }
+            if (isset($j['chargeAllowed'])) {
+                $query .= ' AND c.chargeAllowed = ? ';
+                $params[] = $j['chargeAllowed'];
+            }
+            if (isset($j['checksAllowed'])) {
+                $query .= ' AND c.checksAllowed = ? ';
+                $params[] = $j['checksAllowed'];
+            }
+            if (isset($j['accountHolder'])) {
+                $query .= ' AND c.accountHolder = ? ';
+                $params[] = $j['accountHolder'];
+            }
+            if (isset($j['discount'])) {
+                $query .= ' AND c.discount = ? ';
+                $params[] = $j['discount'];
+            }
+            if (isset($j['staff'])) {
+                $query .= ' AND c.staff = ? ';
+                $params[] = $j['staff'];
+            }
+            if (isset($j['phone'])) {
+                $query .= ' AND (c.phone LIKE ? OR c.altPhone LIKE ?) ';
+                $params[] = '%' . $j['phone'] . '%';
+                $params[] = '%' . $j['phone'] . '%';
+            }
+            if (isset($j['email'])) {
+                $query .= ' AND c.email LIKE ? ';
+                $params[] = '%' . $j['email'] . '%';
+            }
+            if (isset($j['lowIncomeBenefits'])) {
+                $query .= ' AND c.lowIncomeBenefits = ? ';
+                $params[] = $j['lowIncomeBenefits'];
+            }
+        }
+
+        if (count($params) == 0) {
+            return array();
+        }
+
+        $query .= ' GROUP BY c.CardNo';
+        $prep = $dbc->prepare($query);
+        $res = $dbc->execute($prep, $params);
+        $ret = array();
+        while ($w = $dbc->fetchRow($res)) {
+            // this is not efficient
+            $ret[] = self::get($w['CardNo']);
+        }
+
+        return $ret;
+    }
+
+    private static function searchCustdata($dbc, $json)
+    {
+        $query = '
+            SELECT c.CardNo
+            FROM custdata AS c
+                LEFT JOIN meminfo AS m ON c.CardNo=m.card_no
+                LEFT JOIN memDates AS d ON c.CardNo=d.card_no
+                LEFT JOIN memberCards AS u ON c.CardNo=u.card_no
+                LEFT JOIN memContact AS t ON c.CardNo=t.card_no
+            WHERE 1=1 ';
+        $params = array();
+        if (isset($json['cardNo'])) {
+            $query .= ' AND c.CardNo=? ';
+            $params[] = $json['cardNo'];
+        }
+        if (isset($json['memberStatus'])) {
+            $query .= ' AND c.Type=? ';
+            $params[] = $json['memberStatus'];
+        }
+        if (isset($json['customerTypeID'])) {
+            $query .= ' AND c.memType=? ';
+            $params[] = $json['customerTypeID'];
+        }
+        if (isset($json['chargeBalance'])) {
+            $query .= ' AND c.Balance=? ';
+            $params[] = $json['chargeBalance'];
+        }
+        if (isset($json['chargeLimit'])) {
+            $query .= ' AND (c.ChargeLimit=? OR c.MemDiscountLimit=?) ';
+            $params[] = $json['chargeBalance'];
+            $params[] = $json['chargeBalance'];
+        }
+        if (isset($json['idCardUPC'])) {
+            $query .= ' AND u.upc=? ';
+            $params[] = \BarcodeLib::padUPC($json['idCardUPC']);
+        }
+        if (isset($json['startDate'])) {
+            $query .= ' AND d.start_date BETWEEN ? AND ? ';
+            $params[] = $json['startDate'] . ' 00:00:00';
+            $params[] = $json['startDate'] . ' 23:59:59';
+        }
+        if (isset($json['endDate'])) {
+            $query .= ' AND d.end_date BETWEEN ? AND ? ';
+            $params[] = $json['endDate'] . ' 00:00:00';
+            $params[] = $json['endDate'] . ' 23:59:59';
+        }
+        if (isset($json['addressFirstLine'])) {
+            $query .= ' AND m.street LIKE ? ';
+            $params[] = '%' . $json['addressFirstLine'] . '%';
+        }
+        if (isset($json['addressSecondLine'])) {
+            $query .= ' AND m.street LIKE ? ';
+            $params[] = '%' . $json['addressSecondLine'] . '%';
+        }
+        if (isset($json['city'])) {
+            $query .= ' AND m.city LIKE ? ';
+            $params[] = '%' . $json['city'] . '%';
+        }
+        if (isset($json['state'])) {
+            $query .= ' AND m.state LIKE ? ';
+            $params[] = '%' . $json['state'] . '%';
+        }
+        if (isset($json['zip'])) {
+            $query .= ' AND m.zip LIKE ? ';
+            $params[] = '%' . $json['zip'] . '%';
+        }
+        if (isset($json['contactAllowed'])) {
+            $query .= ' AND m.ads_OK = ? ';
+            $params[] = $json['contactAllowed'];
+        }
+        foreach ($json['customers'] as $j) {
+            if (isset($j['lastName'])) {
+                $query .= ' AND c.LastName LIKE ? ';
+                $params[] = '%' . $j['lastName'] . '%';
+            }
+            if (isset($j['firstName'])) {
+                $query .= ' AND c.FirstName LIKE ? ';
+                $params[] = '%' . $j['firstName'] . '%';
+            }
+            if (isset($j['chargeAllowed'])) {
+                $query .= ' AND c.ChargeOk = ? ';
+                $params[] = $j['chargeAllowed'];
+            }
+            if (isset($j['checksAllowed'])) {
+                $query .= ' AND c.writeChecks = ? ';
+                $params[] = $j['checksAllowed'];
+            }
+            if (isset($j['accountHolder'])) {
+                if ($j['accountHolder']) {
+                    $query .= ' AND c.personNum = ? ';
+                    $params[] = 1;
+                } else {
+                    $query .= ' AND c.personNum <> ? ';
+                    $params[] = 1;
+                }
+            }
+            if (isset($j['discount'])) {
+                $query .= ' AND c.Discount = ? ';
+                $params[] = $j['discount'];
+            }
+            if (isset($j['staff'])) {
+                $query .= ' AND c.staff = ? ';
+                $params[] = $j['staff'];
+            }
+            if (isset($j['phone'])) {
+                $query .= ' AND (m.phone LIKE ? OR m.email_2 LIKE ?) ';
+                $params[] = '%' . $j['phone'] . '%';
+                $params[] = '%' . $j['phone'] . '%';
+            }
+            if (isset($j['email'])) {
+                $query .= ' AND m.email LIKE ? ';
+                $params[] = '%' . $j['email'] . '%';
+            }
+            if (isset($j['lowIncomeBenefits'])) {
+                $query .= ' AND c.SSI = ? ';
+                $params[] = $j['lowIncomeBenefits'];
+            }
+        }
+
+        if (count($params) == 0) {
+            return array();
+        }
+
+        $query .= ' GROUP BY c.CardNo';
+        $prep = $dbc->prepare($query);
+        $res = $dbc->execute($prep, $params);
+        $ret = array();
+        while ($w = $dbc->fetchRow($res)) {
+            // this is not efficient
+            $ret[] = self::get($w['CardNo']);
+        }
+
+        return $ret;
     }
 }
 
