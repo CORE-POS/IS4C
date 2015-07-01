@@ -80,7 +80,7 @@ class EpScaleLib
         $line .= 'UPR' . (isset($item_info['Price']) ? floor(100*$item_info['Price']) : '0') . chr(253);
         $line .= 'EPR' . '0' . chr(253);
         $line .= 'FWT' . (isset($item_info['NetWeight']) ? $item_info['NetWeight'] : '0') . chr(253);
-        if ($item_info[$key] == 'Random Weight') {
+        if ($item_info['Type'] == 'Random Weight') {
             $line .= 'UMELB' . chr(253);
         } else {
             $line .= 'UMEFW' . chr(253);
