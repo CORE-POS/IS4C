@@ -175,6 +175,37 @@ Click or ctrl-Click or shift-Click to select/deselect modules for enablement.
 Member Card UPC Prefix: 
 <?php echo installTextField('FANNIE_MEMBER_UPC_PREFIX', $FANNIE_MEMBER_UPC_PREFIX, ''); ?>
 <hr />
+<h4 class="install">Lane On-Screen Display</h4>
+<div id="blueline-input-div">
+This controls what is displayed on the upper left of the cashier's screen after a member
+is selected.
+<?php echo installTextField('FANNIE_BLUELINE_TEMPLATE', $FANNIE_BLUELINE_TEMPLATE, ''); ?>
+<a href="" class="btn btn-default btn-xs"
+    onclick="$('#blueline-input-div input').focus().val($('#blueline-input-div input').val() + '{{ACCOUNTNO}}'); return false;">
+    Account#
+</a>
+<a href="" class="btn btn-default btn-xs"
+    onclick="$('#blueline-input-div input').focus().val($('#blueline-input-div input').val() + '{{ACCOUNTTYPE}}'); return false;">
+    Account Type
+</a>
+<a href="" class="btn btn-default btn-xs"
+    onclick="$('#blueline-input-div input').focus().val($('#blueline-input-div input').val() + '{{FIRSTNAME}}'); return false;">
+    First Name
+</a>
+<a href="" class="btn btn-default btn-xs"
+    onclick="$('#blueline-input-div input').focus().val($('#blueline-input-div input').val() + '{{LASTNAME}}'); return false;">
+    Last Name
+</a>
+<a href="" class="btn btn-default btn-xs"
+    onclick="$('#blueline-input-div input').focus().val($('#blueline-input-div input').val() + '{{FIRSTINITIAL}}'); return false;">
+    First Initial
+</a>
+<a href="" class="btn btn-default btn-xs"
+    onclick="$('#blueline-input-div input').focus().val($('#blueline-input-div input').val() + '{{LASTINITIAL}}'); return false;">
+    Last Initial
+</a>
+</div>
+<hr />
 <p>
     <button type="submit" class="btn btn-default">Save Configuration</button>
 </p>

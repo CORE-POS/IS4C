@@ -63,6 +63,11 @@ class MemberREST
             $ret['customers'][] = $c->toJSON();
         }
 
+        $type = new \MemtypeModel($dbc);
+        $type->memtype($account->customerTypeID());
+        $type->load();
+        $ret['customerType'] = $type->memDesc();
+
         return $ret;
     }
 
@@ -87,6 +92,7 @@ class MemberREST
                 m.zip,
                 m.ads_OK,
                 z.pref,
+                t.memDesc,
                 CASE WHEN c.LastChange > m.modified THEN c.LastChange ELSE m.modified END AS modified
             FROM custdata AS c
                 LEFT JOIN meminfo AS m ON c.CardNo=m.card_no
@@ -94,6 +100,7 @@ class MemberREST
                 LEFT JOIN memDates AS d ON c.CardNo=d.card_no
                 LEFT JOIN memberCards AS u ON c.CardNo=u.card_no
                 LEFT JOIN suspensions AS s ON c.CardNo=s.cardno
+                LEFT JOIN memtype AS t ON c.memType=t.memtype
             WHERE c.CardNo=?
                 AND c.personNum=1';
         $prep = $dbc->prepare($query);
@@ -108,6 +115,7 @@ class MemberREST
             'memberStatus' => $row['memberStatus'],
             'activeStatus' => $row['activeStatus'],
             'customerTypeID' => $row['customerTypeID'],
+            'customerType' => $row['memDesc'],
             'chargeLimit' => $row['ChargeLimit'],
             'chargeBalance' => $row['Balance'],
             'idCardUPC' => $row['upc'],
@@ -211,6 +219,7 @@ class MemberREST
     */
     private static function postAccount($dbc, $id, $json)
     {
+        $config = \FannieConfig::factory();
         $account = new \CustomerAccountsModel($dbc);
         $customers = new \CustomersModel($dbc);
 
@@ -260,6 +269,7 @@ class MemberREST
     */
     private static function postCustdata($dbc, $id, $json)
     {
+        $config = \FannieConfig::factory();
         $ret = array('errors' => 0, 'error-msg' => '');
 
         /** save dates if provided **/
@@ -393,7 +403,6 @@ class MemberREST
                 }
                 if (isset($c_json['lastName'])) {
                     $loopCD->LastName($c_json['lastName']);
-                    $loopCD->blueLine($id . ' ' . $c_json['lastName']);
                     $loopCD_changed = true;
                 }
                 if (isset($c_json['chargeAllowed'])) {
@@ -446,8 +455,43 @@ class MemberREST
                 }
             }
         }
+        self::setBlueLines($id);
 
         return $ret;
+    }
+
+    public static function setBlueLines($id)
+    {
+        $config = \FannieConfig::factory();
+        $template = $config->get('BLUELINE_TEMPLATE');
+        if ($template == '') {
+            $template = '{{ACCOUNTNO}} {{FIRSTINITIAL}}. {{LASTNAME}}';
+        }
+        $dbc = \FannieDB::get($config->get('OP_DB'));
+        $custdata = new \CustdataModel($dbc);
+        $custdata->CardNo($id);
+        $account = self::get($id); 
+        $pn = 2;
+        foreach ($account['customers'] as $c) {
+            if (!isset($c['accountHolder'])) {
+                continue;
+            }
+            if ($c['accountHolder']) {
+                $custdata->personNum(1);
+            } else {
+                $custdata->personNum($pn);
+                $pn++;
+            }
+            $bl = $template;
+            $bl = str_replace('{{ACCOUNTNO}}', $id, $bl);
+            $bl = str_replace('{{ACCOUNTTYPE}}', $account['customerType'], $bl);
+            $bl = str_replace('{{FIRSTNAME}}', $c['firstName'], $bl);
+            $bl = str_replace('{{LASTNAME}}', $c['lastName'], $bl);
+            $bl = str_replace('{{FIRSTINITIAL}}', substr($c['firstName'],0,1), $bl);
+            $bl = str_replace('{{LASTINITIAL}}', substr($c['lastName'],0,1), $bl);
+            $custdata->blueLine($bl);
+            $custdata->save();
+        }
     }
 }
 
