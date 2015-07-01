@@ -375,14 +375,11 @@ class DTrans
             $model->trans_id($last->trans_id() + 1);
         }
 
-        $custdata = new CustdataModel($connection);
-        $custdata->whichDB($config->get('OP_DB'));
         if (isset($params['card_no'])) {
-            $custdata->CardNo($params['card_no']);
-            $custdata->personNum(1);
-            if ($custdata->load()) {
-                $model->memType($custdata->memType());                
-                $model->staff($custdata->staff());
+            $account = \COREPOS\Fannie\API\member\MemberREST::get($params['card_no']);
+            if ($account) {
+                $model->memType($account['customerTypeID']);
+                $model->staff($account['customers'][0]['staff']);
             }
         }
 

@@ -155,16 +155,19 @@ class MemArEquitySwapTool extends FanniePage {
                 return True;
             }
 
-            $q = $dbc->prepare_statement("SELECT FirstName,LastName FROM custdata WHERE CardNo=? AND personNum=1");
-            $r = $dbc->exec_statement($q,array($this->cn));
-            if ($dbc->num_rows($r) == 0){
+            $account = \COREPOS\Fannie\API\member\MemberREST::get($this->cn);
+            if ($account == false) {
                 $this->errors .= "<div class=\"alert alert-success\">Error: no such member: ".$this->cn."</div>"
                     ."<br /><br />"
                     ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
                 return True;
             }
-            $row = $dbc->fetch_row($r);
-            $this->name1 = $row[0].' '.$row[1];
+            foreach ($account['customers'] as $c) {
+                if ($c['accountHolder']) {
+                    $this->name1 = $c['firstName'] . ' ' . $c['lastName'];
+                    break;
+                }
+            }
         }
 
         return True;
@@ -213,21 +216,30 @@ class MemArEquitySwapTool extends FanniePage {
         if (!empty($this->errors)) return $this->errors;
 
         $ret = '';
-        
-        $dtrans = array();
-        $dtrans['trans_no'] = $this->getTransNo($this->CORRECTION_CASHIER,$this->CORRECTION_LANE);
-        $dtrans['trans_id'] = 1;
-        $this->doInsert($dtrans,-1*$this->amount,$this->dept1,$this->cn);
 
-        $dtrans['trans_id']++;
-        $this->doInsert($dtrans,$this->amount,$this->dept2,$this->cn);
+        $trans_no = DTrans::getTransNo($this->connection, $this->CORRECTION_CASHIER, $this->CORRECTION_LANE);
+        $params = array(
+            'card_no' => $this->cn,
+            'register_no' => $this->CORRECTION_LANE,
+            'emp_no' => $this->CORRECTION_CASHIER,
+        );
+        DTrans::addOpenRing($this->connection, $this->dept1, -1*$this->amount, $trans_no, $params);
+        DTrans::addOpenRing($this->connection, $this->dept2, $this->amount, $trans_no, $params);
+        
         $comment = FormLib::get('correction-comment');
         if (!empty($comment)) {
-            $dtrans['trans_id']++;
-            $this->doComment($dtrans, $comment, $this->cn);
+            $params = array(
+                'description' => $comment,
+                'trans_type' => 'C',
+                'trans_subtype' => 'CM',
+                'card_no' => $this->cn,
+                'register_no' => $this->CORRECTION_LANE,
+                'emp_no' => $this->CORRECTION_CASHIER,
+            );
+            DTrans::addItem($this->connection, $trans_no, $params);
         }
 
-        $ret .= sprintf("Receipt #1: %s",$this->CORRECTION_CASHIER.'-'.$this->CORRECTION_LANE.'-'.$dtrans['trans_no']);
+        $ret .= sprintf("Receipt #1: %s",$this->CORRECTION_CASHIER.'-'.$this->CORRECTION_LANE.'-'.$trans_no);
 
         return $ret;
     }
@@ -276,166 +288,6 @@ class MemArEquitySwapTool extends FanniePage {
         <?php
 
         return ob_get_clean();
-    }
-
-    function getTransNo($emp,$register){
-        global $FANNIE_TRANS_DB;
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
-        $q = $dbc->prepare_statement("SELECT max(trans_no) FROM dtransactions WHERE register_no=? AND emp_no=?");
-        $r = $dbc->exec_statement($q,array($register,$emp));
-        $w = $dbc->fetchRow($r);
-        return is_array($w) ? $w[0]+1 : 1;
-    }
-
-    function doInsert($dtrans,$amount,$department,$cardno){
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
-        $OP = $FANNIE_OP_DB.$dbc->sep();
-
-        $defaults = array(
-            'register_no'=>$this->CORRECTION_LANE,
-            'emp_no'=>$this->CORRECTION_CASHIER,
-            'trans_no'=>$dtrans['trans_no'],
-            'upc'=>'',
-            'description'=>'',
-            'trans_type'=>'D',
-            'trans_subtype'=>'',
-            'trans_status'=>'',
-            'department'=>'',
-            'quantity'=>1,
-            'scale'=>0,
-            'cost'=>0,
-            'unitPrice'=>'',
-            'total'=>'',
-            'regPrice'=>'',
-            'tax'=>0,
-            'foodstamp'=>0,
-            'discount'=>0,
-            'memDiscount'=>0,
-            'discountable'=>0,
-            'discounttype'=>0,
-            'voided'=>0,
-            'percentDiscount'=>0,
-            'ItemQtty'=>1,
-            'volDiscType'=>0,
-            'volume'=>0,
-            'volSpecial'=>0,
-            'mixMatch'=>'',
-            'matched'=>0,
-            'memType'=>'',
-            'staff'=>'',
-            'numflag'=>0,
-            'charflag'=>'',
-            'card_no'=>'',
-            'trans_id'=>$dtrans['trans_id']
-        );
-
-        $defaults['department'] = $department;
-        $defaults['card_no'] = $cardno;
-        $defaults['unitPrice'] = $amount;
-        $defaults['regPrice'] = $amount;
-        $defaults['total'] = $amount;
-        if ($amount < 0){
-            $defaults['trans_status'] = 'R';
-            $defaults['quantity'] = -1;
-        }
-        $defaults['upc'] = abs($amount).'DP'.$department;
-
-        if (isset($this->depts[$department]))
-            $defaults['description'] = $this->depts[$department];
-        else {
-            $nameP = $dbc->prepare_statement("SELECT dept_name FROM {$OP}departments WHERE dept_no=?");
-            $nameR = $dbc->exec_statement($nameP,$department);
-            if ($dbc->num_rows($nameR) == 0) {
-                $defaults['description'] = 'CORRECTIONS';
-            } else {
-                $nameW = $dbc->fetch_row($nameR);
-                $defaults['description'] = $nameW['dept_name'];
-            }
-        }
-
-        $q = $dbc->prepare_statement("SELECT memType,Staff FROM {$OP}custdata WHERE CardNo=?");
-        $r = $dbc->exec_statement($q,array($cardno));
-        $w = $dbc->fetch_row($r);
-        $defaults['memType'] = $w[0];
-        $defaults['staff'] = $w[1];
-
-        $columns = 'datetime,';
-        $values = $dbc->now().',';
-        $args = array();
-        foreach($defaults as $k=>$v){
-            $columns .= $k.',';
-            $values .= '?,';
-            $args[] = $v;
-        }
-        $columns = substr($columns,0,strlen($columns)-1);
-        $values = substr($values,0,strlen($values)-1);
-        $prep = $dbc->prepare_statement("INSERT INTO dtransactions ($columns) VALUES ($values)");
-        $dbc->exec_statement($prep, $args);
-    }
-
-    private function doComment($dtrans, $comment, $cardno)
-    {
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
-        $OP = $FANNIE_OP_DB.$dbc->sep();
-
-        $defaults = array(
-            'register_no'=>$this->CORRECTION_LANE,
-            'emp_no'=>$this->CORRECTION_CASHIER,
-            'trans_no'=>$dtrans['trans_no'],
-            'upc'=>'0',
-            'description'=>$comment,
-            'trans_type'=>'C',
-            'trans_subtype'=>'CM',
-            'trans_status'=>'',
-            'department'=>'',
-            'quantity'=>0,
-            'scale'=>0,
-            'cost'=>0,
-            'unitPrice'=>'',
-            'total'=>'',
-            'regPrice'=>'',
-            'tax'=>0,
-            'foodstamp'=>0,
-            'discount'=>0,
-            'memDiscount'=>0,
-            'discountable'=>0,
-            'discounttype'=>0,
-            'voided'=>0,
-            'percentDiscount'=>0,
-            'ItemQtty'=>0,
-            'volDiscType'=>0,
-            'volume'=>0,
-            'volSpecial'=>0,
-            'mixMatch'=>'',
-            'matched'=>0,
-            'memType'=>'',
-            'staff'=>'',
-            'numflag'=>0,
-            'charflag'=>'',
-            'card_no'=>$cardno,
-            'trans_id'=>$dtrans['trans_id']
-        );
-
-        $q = $dbc->prepare_statement("SELECT memType,Staff FROM {$OP}custdata WHERE CardNo=?");
-        $r = $dbc->exec_statement($q,array($cardno));
-        $w = $dbc->fetch_row($r);
-        $defaults['memType'] = $w[0];
-        $defaults['staff'] = $w[1];
-
-        $columns = 'datetime,';
-        $values = $dbc->now().',';
-        $args = array();
-        foreach($defaults as $k=>$v){
-            $columns .= $k.',';
-            $values .= '?,';
-            $args[] = $v;
-        }
-        $columns = substr($columns,0,strlen($columns)-1);
-        $values = substr($values,0,strlen($values)-1);
-        $prep = $dbc->prepare_statement("INSERT INTO dtransactions ($columns) VALUES ($values)");
-        $dbc->exec_statement($prep, $args);
     }
 
     public function helpContent()
