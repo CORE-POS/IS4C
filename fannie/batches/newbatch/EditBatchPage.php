@@ -775,7 +775,7 @@ class EditBatchPage extends FannieRESTfulPage
         } elseif ($dtype == 0) {
             $saleHeader = "New price";
         }
-        
+
         $fetchQ = "
             SELECT b.upc,
                 CASE 
@@ -814,6 +814,16 @@ class EditBatchPage extends FannieRESTfulPage
                     b.upc=c.upc AND b.batchID=c.batchID
                     where b.batchID = ? $orderby";
         }
+
+        $sections = array();
+        if ($dbc->tableExists('FloorSections')) {
+            $floor = new FloorSectionsModel($dbc);
+            foreach ($floor->find() as $f) {
+                $sections[$f->floorSectionID()] = $f->name();
+            }
+            $fetchQ = str_replace('y.subsection', 'y.floorSectionID', $fetchQ);
+        }
+
         $fetchP = $dbc->prepare_statement($fetchQ);
         $fetchR = $dbc->exec_statement($fetchP,array($id));
 
@@ -998,6 +1008,8 @@ class EditBatchPage extends FannieRESTfulPage
                 $loc .= $fetchW['subsection'].', ';
                 $loc .= 'Unit '.$fetchW['shelf_set'].', ';
                 $loc .= 'Shelf '.$fetchW['shelf'];
+            } elseif (!empty($fetchW['floorSectionID'])) {
+                $loc = $sections[$fetchW['floorSectionID']];
             }
             $ret .= "<td bgcolor=$colors[$c]>".$loc.'</td>';
             $ret .= '<input type="hidden" class="batch-hidden-upc" value="' . $fetchW['upc'] . '" />';

@@ -33,6 +33,7 @@ class ProdPhysicalLocationModel extends BasicModel
     protected $columns = array(
     'upc' => array('type'=>'VARCHAR(13)', 'primary_key'=>true),
     'store_id' => array('type'=>'SMALLINT', 'default'=>0),
+    'floorSectionID' => array('type'=>'INT'),
     'section' => array('type'=>'SMALLINT', 'default'=>0),
     'subsection' => array('type'=>'SMALLINT', 'default'=>0),
     'shelf_set' => array('type'=>'SMALLINT', 'default'=>0),
@@ -48,6 +49,10 @@ Depends on:
 
 Use:
 Storing physical location of products within a store.
+
+Floor Section ID replaces section and subsection to
+areas of the store can be given human-readable names
+rather than using a pure numbering system.
 
 Section and/or subsection represents a set of shelves.
 In a lot of cases this would be one side of an aisle but
@@ -141,6 +146,43 @@ Location is the horizontal location on the shelf.
                 }
             }
             $this->instance["store_id"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function floorSectionID()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["floorSectionID"])) {
+                return $this->instance["floorSectionID"];
+            } else if (isset($this->columns["floorSectionID"]["default"])) {
+                return $this->columns["floorSectionID"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'floorSectionID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["floorSectionID"]) || $this->instance["floorSectionID"] != func_get_args(0)) {
+                if (!isset($this->columns["floorSectionID"]["ignore_updates"]) || $this->columns["floorSectionID"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["floorSectionID"] = func_get_arg(0);
         }
         return $this;
     }
