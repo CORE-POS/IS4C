@@ -45,6 +45,7 @@ class ItemStatusPage extends FannieRESTfulPage
         }
 
         $this->__routes[] = 'get<tagID><upc>';
+        $this->__routes[] = 'get<floorID><upc>';
 
         return parent::preprocess();
     }
@@ -80,6 +81,21 @@ class ItemStatusPage extends FannieRESTfulPage
         $tag->vendor($info['vendor']);
         $tag->pricePerUnit($info['pricePerUnit']);
         $tag->save();
+
+        header('Location: ' . $_SERVER['PHP_SELF'] . '?id=' . $this->upc);
+
+        return false;
+    }
+
+    public function get_floorID_upc_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $loc = new ProdPhysicalLocationModel($dbc);
+        $loc->upc(BarcodeLib::padUPC($this->upc));
+        $loc->floorSectionID($this->floorID);
+        $loc->save();
+        $_SESSION['LastFloorSection'] = $this->floorID;
 
         header('Location: ' . $_SERVER['PHP_SELF'] . '?id=' . $this->upc);
 
@@ -198,6 +214,31 @@ class ItemStatusPage extends FannieRESTfulPage
         $queues->reset();
         $ret .= $queues->toOptions($master);
         $ret .= '</select></form></p>';
+
+        $ret .= '<p><form class="form-inline" method="get">
+            <label>Loc.</label>
+            <select name="floorID" class="form-control">
+                <option value="0">n/a</option>';
+        $loc = new ProdPhysicalLocationModel($dbc);
+        $loc->upc($upc);
+        $loc->load();
+        $selected = 0;
+        if ($loc->floorSectionID()) {
+            $selected = $loc->floorSectionID();
+        } elseif (isset($_SESSION['LastFloorSection'])) {
+            $selected = $_SESSION['LastFloorSection'];
+        }
+        $sections = new FloorSectionsModel($dbc);
+        foreach ($sections->find('name') as $s) {
+            $ret .= sprintf('<option %s value="%d">%s</option>',
+                    ($selected == $s->floorSectionID() ? 'selected' : ''),
+                    $s->floorSectionID(), $s->name()
+            );
+        }
+        $ret .= '</select>';
+        $ret .= '<input type="hidden" name="upc" value="' . $upc . '" />
+            <button class="btn btn-default" type="submit">Update Location</button>
+            </form></p>';
 
         if (FannieAuth::validateUserQuiet('pricechange') || FannieAuth::validateUserQuiet('audited_pricechange')) {
             $ret .= '<p><a href="../ItemEditorPage.php?searchupc=' . $this->id . '"
