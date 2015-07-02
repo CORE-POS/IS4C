@@ -80,7 +80,7 @@ class MemberREST
             SELECT c.CardNo,
                 CASE WHEN s.memtype2 IS NOT NULL THEN s.memtype2 ELSE c.Type END AS memberStatus,
                 CASE WHEN s.memtype2 IS NOT NULL THEN c.Type ELSE \'\' END AS activeStatus,
-                CASE WHEN s.memtype1 IS NOT NULL THEN s.memtype1 ELSE c.memType END AS customerTypeID,
+                c.memType AS customerTypeID,
                 c.Balance,
                 c.ChargeLimit,
                 u.upc,
