@@ -124,7 +124,7 @@ class MemberREST
             'city' => $row['city'],
             'state' => $row['state'],
             'zip' => $row['zip'],
-            'contactAllowed' => $row['ads_OK'] === null ? 1 : 0,
+            'contactAllowed' => $row['ads_OK'] === null ? 1 : $row['ads_OK'],
             'contactMethod' => 'mail',
             'addressFirstLine' => $row['street'],
             'addressSecondLine' => '',

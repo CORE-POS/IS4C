@@ -131,7 +131,7 @@ class PIMemberPage extends PIKillerPage {
         $account_holder['phone'] = FormLib::get('phone');
         $account_holder['altPhone'] = FormLib::get('phone2');
         $account_holder['email'] = FormLib::get('email');
-        $json['contactAllowed'] = FormLib::get('mailFlag', 0);
+        $json['contactAllowed'] = FormLib::get('mailflag', 0);
         $upc = FormLib::get_form_value('upc', false);
         if ($upc !== false) {
             if ($upc != '') {
