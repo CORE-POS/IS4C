@@ -184,6 +184,7 @@ class MemberREST
                 $customer['accountHolder'] = 0;
                 $customer['phone'] = '';
                 $customer['email'] = '';
+                $customer['altPhone'] = '';
             }
             if ($w['memberStatus'] == 'PC') {
                 $customer['memberPricingAllowed'] = 1;
