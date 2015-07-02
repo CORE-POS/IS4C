@@ -237,25 +237,28 @@ table.shelf-audit tr:hover {
     }
 
     function csv_content(){
-        $ret = "UPC,Description,Account#,Dept#,\"Dept Name\",Qty,Cost,Unit Cost Total,Normal Retail,Current Retail,Status,Current Retail Total\r\n";
+        $ret = "UPC,Description,Account#,Dept#,\"Dept Name\",Qty,Cost,Unit Cost Total,Normal Retail,Current Retail,Status,Normal Retail Total,Current Retail Total\r\n";
         $totals = array();
         foreach($this->scans as $row){
-            $ret .= sprintf("%s,\"%s\",%s,%s,%s,%.2f,%.2f,%.2f,%.2f,%.2f,%s,%.2f\r\n",
+            $ret .= sprintf("%s,\"%s\",%s,%s,%s,%.2f,%.2f,%.2f,%.2f,%.2f,%s,%.2f,%.2f\r\n",
                 $row['upc'],$row['description'],$row['salesCode'],$row['dept_no'],
                 $row['dept_name'],$row['quantity'],$row['cost'], ($row['quantity']*$row['cost']),
                 $row['normal_retail'], $row['actual_retail'],
-                $row['retailstatus'],($row['quantity']*$row['actual_retail'])
+                $row['retailstatus'],
+                ($row['quantity']*$row['normal_retail']),
+                ($row['quantity']*$row['actual_retail'])
             );
             if (!isset($totals[$row['salesCode']]))
-                $totals[$row['salesCode']] = array('qty'=>0.0,'ttl'=>0.0,'costTtl'=>0.0);
+                $totals[$row['salesCode']] = array('qty'=>0.0,'ttl'=>0.0,'normalTtl'=>0.0,'costTtl'=>0.0);
             $totals[$row['salesCode']]['qty'] += $row['quantity'];
             $totals[$row['salesCode']]['ttl'] += ($row['quantity']*$row['actual_retail']);
+            $totals[$row['salesCode']]['normalTtl'] += ($row['quantity']*$row['normal_retail']);
             $totals[$row['salesCode']]['costTtl'] += ($row['quantity']*$row['cost']);
         }
         $ret .= ",,,,,,,,\r\n";
         foreach($totals as $code => $info){
-            $ret .= sprintf("TOTAL,,%s,,,%.2f,,%.2f,,,%.2f\r\n",
-                    $code, $info['qty'], $info['costTtl'], $info['ttl']);
+            $ret .= sprintf("TOTAL,,%s,,,%.2f,,%.2f,,,,%.2f,%.2f\r\n",
+                    $code, $info['qty'], $info['costTtl'], $info['normalTtl'], $info['ttl']);
         }
         return $ret;
     }
