@@ -32,6 +32,7 @@ if (!class_exists('PIKillerPage')) {
 class PISearchPage extends PIKillerPage {
 
     protected $title = 'Search';
+    protected $results = array();
 
     function preprocess(){
         $this->__routes[] = 'get<id><first><last>';
@@ -44,42 +45,44 @@ class PISearchPage extends PIKillerPage {
         return $this->get_id_first_last_handler();
     }
 
-    function get_id_first_last_handler(){
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-
-        if (empty($this->id) && empty($this->last)) 
-            return True; // invalid search  
+    public function get_id_first_last_handler()
+    {
+        if (empty($this->id) && empty($this->last)) {
+            return true; // invalid search  
+        }
             
-        if (!empty($this->id)){
-            $custdata = new CustdataModel($dbc);
-            $custdata->CardNo($this->id);
-            if (count($custdata->find()) > 0){
+        if (!empty($this->id)) {
+            $account = \COREPOS\Fannie\API\member\MemberREST::get($this->id);
+            if ($account != false) {
                 header('Location: PIMemberPage.php?id='.$this->id);
-                return False;
+                return false;
             }
-            $cards = new MemberCardsModel($dbc);
-            $cards->upc(str_pad($this->id,13,'0',STR_PAD_LEFT));
-            foreach($cards->find() as $obj){
-                header('Location: PIMemberPage.php?id='.$obj->card_no());
-                return False;
+
+            $json = array('idCardUPC' => BarcodeLib::padUPC($this->id));
+            $accounts = \COREPOS\Fannie\API\member\MemberREST::search($json);
+            foreach ($accounts as $a) {
+                header('Location: PIMemberPage.php?id='.$a['cardNo']);
+                return false;
+            }
+        } else {
+            $json = array(
+                'customers' => array(
+                    array(
+                        'firstName' => $this->first,
+                        'lastName' => $this->last,
+                    ),
+                ),
+            );
+            $accounts = \COREPOS\Fannie\API\member\MemberREST::search($json, 250);
+            if (count($accounts) == 1) {
+                header('Location: PIMemberPage.php?id='.$accounts[0]['cardNo']);
+                return false;
+            } else {
+                $this->results = $accounts;
             }
         }
-        else {
-            $q = $dbc->prepare_statement('SELECT CardNo, LastName, FirstName FROM
-                custdata WHERE LastName LIKE ? AND FirstName LIKE ?
-                ORDER BY LastName,FirstName,CardNo');
-            $r = $dbc->exec_statement($q, array($this->last.'%',$this->first.'%'));
-            $this->__models['custdata'] = array();
-            while($w = $dbc->fetch_row($r)){
-                $this->__models['custdata'][] = $w;
-            }
-            if (count($this->__models['custdata'])==1){
-                header('Location: PIMemberPage.php?id='.$this->__models['custdata'][0]['CardNo']);
-                return False;
-            }
-        }
-        return True;
+
+        return true;
     }
 
     public function get_view()
@@ -114,18 +117,21 @@ class PISearchPage extends PIKillerPage {
         return ob_get_clean();
     }
 
-    function get_id_first_last_view(){
-        if (!isset($this->__models['custdata']) || count($this->__models['custdata']) == 0){
+    function get_id_first_last_view()
+    {
+        if (count($this->results) == 0) {
             return '<tr><td colspan="9"><p>No results from search</p></td></tr>'
                 .$this->get_view();
         }
         $ret = '<tr><td colspan="9"><p>There is more than one result</p>';
         $ret .= '<form action="PISearchPage.php" method="get">';
         $ret .= '<select name="id" id="memNum_s">';
-        foreach($this->__models['custdata'] as $row){
-            $ret .= sprintf('<option value="%d">%d %s %s</option>',
-                $row['CardNo'],$row['CardNo'],
-                $row['FirstName'],$row['LastName']);
+        foreach ($this->results as $account) {
+            foreach ($account['customers'] as $row) {
+                $ret .= sprintf('<option value="%d">%d %s %s</option>',
+                    $account['cardNo'],$account['cardNo'],
+                    $row['firstName'],$row['lastName']);
+            }
         }
         $ret .= '</select> ';
         $ret .= '<input type="submit" value="submit" />';

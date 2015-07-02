@@ -540,19 +540,19 @@ class MemberREST
         every single account.
       @return [array] of account structures
     */
-    public static function search($json)
+    public static function search($json, $limit=0)
     {
         $config = \FannieConfig::factory();
         $dbc = \FannieDB::get($config->get('OP_DB'));
 
         if ($dbc->tableExists('CustomerAccounts') && $dbc->tableExists('Customers')) {
-            return self::searchAccount($dbc, $json);
+            return self::searchAccount($dbc, $json, $limit);
         } else {
-            return self::searchCustdata($dbc, $json);
+            return self::searchCustdata($dbc, $json, $limit);
         }
     }
 
-    private static function searchAccount($dbc, $json)
+    private static function searchAccount($dbc, $json, $limit=0)
     {
         $query = '
             SELECT a.cardNo
@@ -673,12 +673,15 @@ class MemberREST
         while ($w = $dbc->fetchRow($res)) {
             // this is not efficient
             $ret[] = self::get($w['CardNo']);
+            if ($limit > 0 && count($ret) >= $limit) {
+                break;
+            }
         }
 
         return $ret;
     }
 
-    private static function searchCustdata($dbc, $json)
+    private static function searchCustdata($dbc, $json, $limit=0)
     {
         $query = '
             SELECT c.CardNo
@@ -808,6 +811,9 @@ class MemberREST
         while ($w = $dbc->fetchRow($res)) {
             // this is not efficient
             $ret[] = self::get($w['CardNo']);
+            if ($limit > 0 && count($ret) >= $limit) {
+                break;
+            }
         }
 
         return $ret;
