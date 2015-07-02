@@ -265,7 +265,7 @@ class DTrans
       @param $cust_alias [optional] alias for the custdata table (default 'c')
       @return string SQL snippet
     */
-    public static function joinCustdata($dlog_alias='t', $cust_alias='c')
+    public static function joinCustomerAccount($dlog_alias='t', $cust_alias='c')
     {
         $conf = FannieConfig::factory();
         $table = 'custdata';

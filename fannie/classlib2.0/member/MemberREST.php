@@ -118,15 +118,15 @@ class MemberREST
             'customerType' => $row['memDesc'],
             'chargeLimit' => $row['ChargeLimit'],
             'chargeBalance' => $row['Balance'],
-            'idCardUPC' => $row['upc'],
-            'startDate' => $row['start_date'],
-            'endDate' => $row['end_date'],
-            'city' => $row['city'],
-            'state' => $row['state'],
-            'zip' => $row['zip'],
+            'idCardUPC' => $row['upc'] === null ? '' : $row['upc'],
+            'startDate' => $row['start_date'] === null ? '' : $row['start_date'],
+            'endDate' => $row['end_date'] === null ? '' : $row['end_date'],
+            'city' => $row['city'] === null ? '' : $row['city'],
+            'state' => $row['state'] === null ? '' : $row['state'],
+            'zip' => $row['zip'] === null ? '' : $row['zip'],
             'contactAllowed' => $row['ads_OK'] === null ? 1 : $row['ads_OK'],
             'contactMethod' => 'mail',
-            'addressFirstLine' => $row['street'],
+            'addressFirstLine' => $row['street'] === null ? '' : $row['street'],
             'addressSecondLine' => '',
             'customers' => array(),
             'modified' => $row['modified'],
@@ -177,9 +177,9 @@ class MemberREST
             );
             if ($w['personNum'] == 1) {
                 $customer['accountHolder'] = 1;
-                $customer['phone'] = $w['phone'];
-                $customer['email'] = $w['email_1'];
-                $customer['altPhone'] = $w['email_2'];
+                $customer['phone'] = $w['phone'] === null ? '' : $w['phone'];
+                $customer['email'] = $w['email_1'] === null ? '' : $w['email_1'];
+                $customer['altPhone'] = $w['email_2'] === null ? '' : $w['email_2'];
             } else {
                 $customer['accountHolder'] = 0;
                 $customer['phone'] = '';
@@ -325,7 +325,11 @@ class MemberREST
         if (isset($json['idCardUPC'])) {
             $cards = new \MemberCardsModel($dbc);
             $cards->card_no($id);
-            $cards->upc(\BarcodeLib::padUPC($json['idCardUPC']));
+            if ($json['idCardUPC'] != '') {
+                $cards->upc(\BarcodeLib::padUPC($json['idCardUPC']));
+            } else {
+                $cards->upc('');
+            }
             if (!$cards->save()) {
                 $ret['errors']++;
             }
