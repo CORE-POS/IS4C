@@ -74,29 +74,28 @@ class HouseholdMembers extends \COREPOS\Fannie\API\member\MemberModule {
     function saveFormData($memNum)
     {
         $dbc = $this->db();
-        if (!class_exists("CustdataModel")) {
-            include(dirname(__FILE__) . '/../../classlib2.0/data/models/CustdataModel.php');
-        }
 
         /**
           Use primary member for default column values
         */
-        $custdata = new CustdataModel($dbc);
-        $custdata->CardNo($memNum);
-        $custdata->personNum(1);
-        if (!$custdata->load()) {
+        $account = self::getAccount();
+        if (!$account) {
             return "Error: Problem saving household members<br />"; 
         }
 
         $json = array(
             'cardNo' => $memNum,
-            'customerTypeID' => $custdata->memType(),
+            'customerTypeID' => $account['customerTypeID'],
+            'memberStatus' => $account['memberStatus'],
+            'activeStatus' => $account['activeStatus'],
             'customers' => array()
         );
-        if ($custdata->Type() == 'PC' || $custdata->Type() == 'REG') {
-            $json['memberStatus'] = $custdata->Type();
-        } else {
-            $json['activeStatus'] = $custdata->Type();
+        $primary = array('discount'=>0, 'staff'=>0, 'lowIncomeBenefits'=>0, 'chargeAllowed'=>0, 'checksAllowed'=>0);
+        foreach ($account['customers'] as $c) {
+            if ($c['accountHolder']) {
+                $primary = $c;
+                break;
+            }
         }
 
         $fns = FormLib::get_form_value('HouseholdMembers_fn',array());
@@ -106,11 +105,11 @@ class HouseholdMembers extends \COREPOS\Fannie\API\member\MemberModule {
                 'firstName' => $fns[$i],
                 'lastName' => $lns[$i],
                 'accountHolder' => 0,
-                'discount' => $custdata->Discount(),
-                'staff' => $custdata->staff(),
-                'lowIncomeBenefits' => $custdata->SSI(),
-                'chargeAllowed' => $custdata->chargeOk(),
-                'checksAllowed' => $custdata->writeChecks(),
+                'discount' => $primary['discount'],
+                'staff' => $primary['staff'],
+                'lowIncomeBenefits' => $primary['lowIncomeBenefits'],
+                'chargeAllowed' => $primary['chargeAllowed'],
+                'checksAllowed' => $primary['checksAllowed'],
             );
         }
 

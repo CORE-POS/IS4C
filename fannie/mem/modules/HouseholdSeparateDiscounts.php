@@ -99,19 +99,27 @@ class HouseholdSeparateDiscounts extends \COREPOS\Fannie\API\member\MemberModule
 
     function saveFormData($memNum)
     {
-        $dbc = $this->db();
-        if (!class_exists("CustdataModel")) {
-            include(dirname(__FILE__) . '/../../classlib2.0/data/models/CustdataModel.php');
-        }
-
         /**
           Use primary member for default column values
         */
-        $custdata = new CustdataModel($dbc);
-        $custdata->CardNo($memNum);
-        $custdata->personNum(1);
-        if (!$custdata->load()) {
+        $account = self::getAccount();
+        if (!$account) {
             return "Error: Problem saving household members<br />"; 
+        }
+
+        $json = array(
+            'cardNo' => $memNum,
+            'customerTypeID' => $account['customerTypeID'],
+            'memberStatus' => $account['memberStatus'],
+            'activeStatus' => $account['activeStatus'],
+            'customers' => array()
+        );
+        $primary = array('discount'=>0, 'staff'=>0, 'lowIncomeBenefits'=>0, 'chargeAllowed'=>0, 'checksAllowed'=>0);
+        foreach ($account['customers'] as $c) {
+            if ($c['accountHolder']) {
+                $primary = $c;
+                break;
+            }
         }
 
         $fns = FormLib::get('HouseholdSeparateDiscounts_fn',array());
@@ -120,35 +128,23 @@ class HouseholdSeparateDiscounts extends \COREPOS\Fannie\API\member\MemberModule
         $checks = FormLib::get('HouseholdSeparateDiscounts_writeChecks', array());
         $ssi = FormLib::get('HouseholdSeparateDiscounts_SSI', array());
         $pn = 2;
-        $errors = false;
         for ($i=0; $i<count($lns); $i++) {
-            if (empty($fns[$i]) && empty($lns[$i])) {
-                continue;
-            }
-
-            $custdata->personNum($pn);
-            $custdata->FirstName($fns[$i]);
-            $custdata->LastName($lns[$i]);
-            $custdata->Discount($discs[$i]);
-            $custdata->writeChecks(in_array($pn, $checks) ? 1 : 0);
-            $custdata->SSI(in_array($pn, $ssi) ? 1 : 0);
-            if (!$custdata->save()) {
-                $errors = true;
-            }
-
+            $json['customers'][] = array(
+                'firstName' => $fns[$i],
+                'lastName' => $lns[$i],
+                'accountHolder' => 0,
+                'discount' => $discs[$i],
+                'staff' => $primary['staff'],
+                'lowIncomeBenefits' => in_array($pn, $ssi) ? 1 : 0,
+                'chargeAllowed' => $primary['chargeAllowed'],
+                'checksAllowed' => in_array($pn, $checks) ? 1 : 0,
+            );
             $pn++;
         }
 
-        /**
-          Remove any names outside the set that just saved
-        */
-        $clearP = $dbc->prepare('
-            DELETE FROM custdata
-            WHERE CardNo=?
-                AND personNum >= ?');
-        $clearR = $dbc->execute($clearP, array($memNum, $pn));
+        $resp = \COREPOS\Fannie\API\member\MemberREST::post($memNum, $json);
 
-        if ($errors) {
+        if ($resp['errors'] > 0) {
             return "Error: Problem saving household members<br />"; 
         }
 

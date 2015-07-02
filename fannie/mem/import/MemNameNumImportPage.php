@@ -95,12 +95,7 @@ class MemNameNumImportPage extends \COREPOS\Fannie\API\FannieUploadPage
             );
         }
 
-        // prepare statements
-        $perP = $dbc->prepare_statement("SELECT MAX(personNum) FROM custdata WHERE CardNo=?");
-        $dateP = $dbc->prepare_statement('INSERT INTO memDates (card_no) VALUES (?)');
-        $model = new CustdataModel($dbc);
-        $meminfo = new MeminfoModel($dbc);
-        foreach($linedata as $line) {
+        foreach ($linedata as $line) {
             // get info from file and member-type default settings
             // if applicable
             $cardno = $line[$mn_index];
@@ -108,13 +103,19 @@ class MemNameNumImportPage extends \COREPOS\Fannie\API\FannieUploadPage
                 continue; // skip bad record
             }
 
-            $model->reset();
-            $model->CardNo($cardno);
+            $json = array(
+                'cardNo' => $cardno,
+                'customerTypeID' => ($t_index !== false ? $line[$t_index] : 0),
+                'contactAllowed' => 1,
+                'chargeBalance' => 0,
+                'chargeLimit' => 0,
+                'customers' => array(),
+            );
+            $customer = array();
 
-            $model->LastName($line[$ln_index]);
-            $model->FirstName($line[$fn_index]);    
-            $model->blueLine($cardno.' '.$line[$ln_index]);
-            $model->memType(($t_index !== false) ? $line[$t_index] : 0);
+            $customer['firstName'] = $line[$fn_index];
+            $customer['lastName'] = $line[$ln_index];
+
             $type = "PC";
             $discount = 0;
             $staff = 0;
@@ -134,39 +135,30 @@ class MemNameNumImportPage extends \COREPOS\Fannie\API\FannieUploadPage
                 }
             }
 
-            $model->Type($type);
-            $model->Discount($discount);
-            $model->staff($staff);
-            $model->SSI($SSI);
+            $json['memberStatus'] = $type;
+            $customer['discount'] = $discount;
+            $customer['staff'] = $staff;
+            $customer['lowIncomeBenefits'] = $SSI;
 
             // determine person number
             if ($FANNIE_NAMES_PER_MEM == 1) {
-                $model->personNum(1);
+                $customer['accountHolder'] = 1;
             } else {
-                $perR = $dbc->exec_statement($perP,array($cardno));
-                $pn = 1;
-                if ($dbc->num_rows($perR) > 0) {
-                    $row = $dbc->fetch_row($perR);
-                    $pn = $row[0] + 1;
+                $account = \COREPOS\Fannie\API\member\MemberREST::get($cardno);
+                if ($account) {
+                    $customer['accountHolder'] = 0;
+                } else {
+                    $customer['accountHolder'] = 1;
                 }
-                $model->personNum($pn);
             }
 
-            $model->CashBack(0);
-            $model->Balance(0);
-            $model->memCoupons(0);
+            $json['customers'][] = $customer;
         
-            $insR = $model->save();
-            if ($insR === false) {
-                $this->stats['errors'][] = "Error importing member $cardno ($fn $ln)";
+            $resp = \COREPOS\Fannie\API\member\MemberREST::post($cardno, $json);
+            if ($resp['errors'] > 0) {
+                $this->stats['errors'][] = "Error importing member $cardno ({$line[$fn_index]} {$line[$ln_index]})";
             } else {
                 $this->stats['imported']++;
-            }
-
-            if ($pn == 1) {
-                $meminfo->card_no($cardno);
-                $meminfo->save();
-                $dbc->exec_statement($dateP,array($cardno));
             }
         }
 

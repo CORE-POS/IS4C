@@ -818,6 +818,44 @@ class MemberREST
 
         return $ret;
     }
+
+    public static function nextAccount($id)
+    {
+        $config = \FannieConfig::factory();
+        $dbc = \FannieDB::get($config->get('OP_DB'));
+        if ($dbc->tableExists('CustomerAccounts') && $dbc->tableExists('Customers')) {
+            $query = 'SELECT MIN(cardNo) FROM customerAccounts WHERE cardNo > ?';
+        } else {
+            $query = 'SELECT MIN(CardNo) FROM custdata WHERE CardNo > ?';
+        }
+        $prep = $dbc->prepare($query);
+        $res = $dbc->execute($prep, array($id));
+        if (!$res || $dbc->numRows($res) == 0) {
+            return false;
+        }
+        $row = $dbc->fetchRow($res);
+
+        return self::get($row[0]);
+    }
+
+    public static function prevAccount($id)
+    {
+        $config = \FannieConfig::factory();
+        $dbc = \FannieDB::get($config->get('OP_DB'));
+        if ($dbc->tableExists('CustomerAccounts') && $dbc->tableExists('Customers')) {
+            $query = 'SELECT MAX(cardNo) FROM customerAccounts WHERE cardNo < ?';
+        } else {
+            $query = 'SELECT MAX(CardNo) FROM custdata WHERE CardNo < ?';
+        }
+        $prep = $dbc->prepare($query);
+        $res = $dbc->execute($prep, array($id));
+        if (!$res || $dbc->numRows($res) == 0) {
+            return false;
+        }
+        $row = $dbc->fetchRow($res);
+
+        return self::get($row[0]);
+    }
 }
 
 }
