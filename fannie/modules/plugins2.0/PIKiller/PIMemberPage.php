@@ -118,9 +118,9 @@ class PIMemberPage extends PIKillerPage {
         $json['city'] = FormLib::get('city');
         $json['state'] = FormLib::get('state');
         $json['zip'] = FormLib::get('zip');
-        $json['phone'] = FormLib::get('phone');
-        $json['altPhone'] = FormLib::get('phone2');
-        $json['email'] = FormLib::get('email');
+        $account_holder['phone'] = FormLib::get('phone');
+        $account_holder['altPhone'] = FormLib::get('phone2');
+        $account_holder['email'] = FormLib::get('email');
         $json['contactAllowed'] = FormLib::get('mailFlag', 0);
         $upc = FormLib::get_form_value('upc', false);
         if ($upc !== false) {
