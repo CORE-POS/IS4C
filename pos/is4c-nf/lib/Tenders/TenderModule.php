@@ -92,6 +92,14 @@ class TenderModule
                 false,
                 $clearButton
             );
+        } elseif (CoreLocal::get('refund') == 1) {
+            CoreLocal::set('refund', 0);
+            return DisplayLib::boxMsg(
+                _("refund cannot apply to tender"),
+                '',
+                false,
+                $clearButton
+            );
         } else if ($this->amount > 99999.99) {
             return DisplayLib::boxMsg(
                 _("tender amount of") . " " . $this->amount . "<br />" . _("exceeds allowable limit"),
