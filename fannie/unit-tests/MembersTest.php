@@ -109,7 +109,7 @@ class MembersTest extends PHPUnit_Framework_TestCase
                     continue;
                 }
                 $this->assertArrayHasKey($field, $resp['account']);
-                $this->assertEquals($a[$field], $resp['account'][$field]);
+                $this->assertEquals($a[$field], $resp['account'][$field], "Mismatch for field: $field");
             }
 
             for ($i=0; $i<count($resp['account']['customers']); $i++) {
@@ -118,7 +118,11 @@ class MembersTest extends PHPUnit_Framework_TestCase
                     if ($field == 'modified') {
                         $this->assertNotEquals($resp['account']['customers'][$i][$field], $a['customers'][$i][$field]);
                     } else {
-                        $this->assertEquals($resp['account']['customers'][$i][$field], $a['customers'][$i][$field]);
+                        $this->assertEquals(
+                            $resp['account']['customers'][$i][$field], 
+                            $a['customers'][$i][$field],
+                            "Mismatch for field: $field"
+                        );
                     }
                 }
             }
