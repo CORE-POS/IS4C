@@ -140,7 +140,10 @@ class HobartDgwLib
         $header_line .= "\r\n";
 
         $file_prefix = self::sessionKey();
-        $output_dir = realpath(dirname(__FILE__) . '/../../item/hobartcsv/csv_output');
+        $output_dir = $config->get('DGW_DIRECTORY');
+        if ($output_dir == '') {
+            return false;
+        }
         $selected_scales = $scales;
         if (!is_array($scales) || count($selected_scales) == 0) {
             $selected_scales = $config->get('SCALES');
@@ -160,7 +163,7 @@ class HobartDgwLib
 
             // move to DGW; cleanup the file in the case of failure
             if (!rename($file_name, $output_dir . '/' . basename($file_name))) {
-                unlink($file_name);
+                //unlink($file_name);
             }
 
             $et_file = sys_get_temp_dir() . '/' . $file_prefix . '_exText' . $i . '.csv';
@@ -189,7 +192,7 @@ class HobartDgwLib
             } else {
                 // move to DGW dir
                 if (!rename($et_file, $output_dir . '/' . basename($et_file))) {
-                    unlink($et_file);
+                    //unlink($et_file);
                 }
             }
 
@@ -216,7 +219,10 @@ class HobartDgwLib
         }
 
         $file_prefix = self::sessionKey();
-        $output_dir = realpath(dirname(__FILE__) . '/../../item/hobartcsv/csv_output');
+        $output_dir = $config->get('DGW_DIRECTORY');
+        if ($output_dir == '') {
+            return false;
+        }
         $i = 0;
         foreach ($selected_scales as $scale) {
             $file_name = sys_get_temp_dir() . '/' . $file_prefix . '_deleteItem_' . $i . '.csv';

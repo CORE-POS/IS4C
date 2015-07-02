@@ -193,7 +193,10 @@ class EpScaleLib
         }
         $header_line = '';
         $file_prefix = self::sessionKey();
-        $output_dir = realpath(dirname(__FILE__) . '/../../item/hobartcsv/csvfiles');
+        $output_dir = $config->get('EPLUM_DIRECTORY');
+        if ($output_dir == '') {
+            return false;
+        }
         $selected_scales = $scales;
         if (!is_array($scales) || count($selected_scales) == 0) {
             $selected_scales = $config->get('SCALES');
@@ -256,7 +259,10 @@ class EpScaleLib
         }
 
         $file_prefix = self::sessionKey();
-        $output_dir = realpath(dirname(__FILE__) . '/../../item/hobartcsv/csvfiles');
+        $output_dir = $config->get('EPLUM_DIRECTORY');
+        if ($output_dir == '') {
+            return false;
+        }
         $selected_scales = $scales;
         if (!is_array($scales) || count($selected_scales) == 0) {
             $selected_scales = $config->get('SCALES');
