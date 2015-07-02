@@ -105,6 +105,16 @@ class PIMemberPage extends PIKillerPage {
             return $this->unknown_request_handler();
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
+        $note = FormLib::get_form_value('notetext');
+        $hash = FormLib::get_form_value('_notetext');
+        if (base64_decode($hash) != $note){
+            $noteP = $dbc->prepare_statement('INSERT INTO memberNotes
+                    (cardno, note, stamp, username) VALUES
+                    (?, ?, '.$dbc->now().', ?)');   
+            $noteR = $dbc->exec_statement($noteP,array($this->card_no,
+                    str_replace("\n",'<br />',$note),
+                    $this->current_user));
+        }
         
         $json = array(
             'cardNo' => $this->id,
@@ -298,17 +308,6 @@ class PIMemberPage extends PIKillerPage {
             $custdata->delete();
         }
 
-        $note = FormLib::get_form_value('notetext');
-        $hash = FormLib::get_form_value('_notetext');
-        if (base64_decode($hash) != $note){
-            $noteP = $dbc->prepare_statement('INSERT INTO memberNotes
-                    (cardno, note, stamp, username) VALUES
-                    (?, ?, '.$dbc->now().', ?)');   
-            $noteR = $dbc->exec_statement($noteP,array($this->card_no,
-                    str_replace("\n",'<br />',$note),
-                    $this->current_user));
-        }
-    
         header('Location: PIMemberPage.php?id='.$this->card_no);
         return False;
     }
