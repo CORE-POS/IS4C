@@ -134,7 +134,11 @@ class SaReportPage extends FanniePage {
             ELSE p.normal_price END AS actual_retail,
 
             CASE WHEN p.discounttype = 2 THEN \'M\'
-            ELSE \'\' END AS retailstatus
+            ELSE \'\' END AS retailstatus,
+
+            COALESCE(z.vendorName,b.vendorName,\'n/a\') AS vendor,
+
+            COALESCE(c.margin, d.margin, 0) AS margin
 
             FROM sa_inventory AS s LEFT JOIN '.
             $FANNIE_OP_DB.$dbc->sep().'products AS p
@@ -142,7 +146,15 @@ class SaReportPage extends FanniePage {
             $FANNIE_OP_DB.$dbc->sep().'departments AS d
             ON p.department=d.dept_no LEFT JOIN '.
             $FANNIE_OP_DB.$dbc->sep().'vendorItems AS v
-            ON s.upc=v.upc AND v.vendorID=1
+            ON s.upc=v.upc AND v.vendorID=1 LEFT JOIN '.
+            $FANNIE_OP_DB.$dbc->sep().'vendorItems AS a
+            ON p.upc=a.upc AND p.default_vendor_id=a.vendorID LEFT JOIN '.
+            $FANNIE_OP_DB.$dbc->sep().'vendors AS b
+            ON a.vendorID=b.vendorID LEFT JOIN '.
+            $FANNIE_OP_DB.$dbc->sep().'vendorDepartments AS c
+            ON a.vendorID=c.vendorID AND a.vendorDept=c.deptID LEFT JOIN '.
+            $FANNIE_OP_DB.$dbc->sep().'vendors AS z
+            ON p.default_vendor_id=z.vendorID
             WHERE clear!=1
             ORDER BY '.$order);
         $r=$dbc->exec_statement($q);
@@ -237,11 +249,15 @@ table.shelf-audit tr:hover {
     }
 
     function csv_content(){
-        $ret = "UPC,Description,Account#,Dept#,\"Dept Name\",Qty,Cost,Unit Cost Total,Normal Retail,Current Retail,Status,Normal Retail Total,Current Retail Total\r\n";
+        $ret = "UPC,Description,Vendor,Account#,Dept#,\"Dept Name\",Qty,Cost,Unit Cost Total,Normal Retail,Current Retail,Status,Normal Retail Total,Current Retail Total\r\n";
         $totals = array();
-        foreach($this->scans as $row){
-            $ret .= sprintf("%s,\"%s\",%s,%s,%s,%.2f,%.2f,%.2f,%.2f,%.2f,%s,%.2f,%.2f\r\n",
-                $row['upc'],$row['description'],$row['salesCode'],$row['dept_no'],
+        foreach($this->scans as $row) {
+            if ($row['cost'] == 0 && $row['margin'] != 0) {
+                $row['cost'] = $row['normal_retail'] / ($row['margin'] * $row['normal_retail']);
+                $row['retailstatus'] .= '*';
+            }
+            $ret .= sprintf("%s,\"%s\",\"%s\",%s,%s,%s,%.2f,%.2f,%.2f,%.2f,%.2f,%s,%.2f,%.2f\r\n",
+                $row['upc'],$row['description'],$row['vendor'],$row['salesCode'],$row['dept_no'],
                 $row['dept_name'],$row['quantity'],$row['cost'], ($row['quantity']*$row['cost']),
                 $row['normal_retail'], $row['actual_retail'],
                 $row['retailstatus'],
@@ -257,7 +273,7 @@ table.shelf-audit tr:hover {
         }
         $ret .= ",,,,,,,,\r\n";
         foreach($totals as $code => $info){
-            $ret .= sprintf("TOTAL,,%s,,,%.2f,,%.2f,,,,%.2f,%.2f\r\n",
+            $ret .= sprintf("TOTAL,,,%s,,,%.2f,,%.2f,,,,%.2f,%.2f\r\n",
                     $code, $info['qty'], $info['costTtl'], $info['normalTtl'], $info['ttl']);
         }
         return $ret;
