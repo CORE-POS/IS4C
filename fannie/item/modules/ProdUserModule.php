@@ -69,7 +69,9 @@ class ProdUserModule extends ItemModule
         $ret .= '<div class="row form-group">'
                 . '<label class="col-sm-1">Desc.</label> '
                 . '<div class="col-sm-8">'
-                . '<input type="text" class="form-control" id="lf_desc" name="lf_desc" value="' . str_replace('"', '&quot;', $model->description()) . '" />'
+                . '<textarea class="form-control" rows="2" id="lf_desc" name="lf_desc">'
+                . $model->description()
+                . '</textarea>'
                 . '</div>'
                 . '</div>';
 
