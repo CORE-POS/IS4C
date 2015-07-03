@@ -311,6 +311,15 @@ class AdvancedItemSearch extends FannieRESTfulPage
             $args[] = $discount;
         }
 
+        $location = FormLib::get('location');
+        if ($location !== '') {
+            if ($location == '1') {
+                $from .= ' INNER JOIN prodPhysicalLocation AS y ON p.upc=y.upc ';
+            } else {
+                $where .= ' AND p.upc NOT IN (SELECT upc FROM prodPhysicalLocation) ';
+            }
+        }
+
         $signinfo = FormLib::get('signinfo');
         if ($signinfo !== '') {
             if (!strstr($from, 'productUser')) {
@@ -948,13 +957,17 @@ function chainSuper(superID)
             <label class="control-label small">%Disc</label>
             <select name="discountable" class="form-control input-sm">
             <option value="">Any</option><option value="1">Yes</option><option value="0">No</option></select>
-            </td>';
-
-        $ret .= '<td colspan="2" class="form-inline">
             <label class="small" for="serviceScale">
             Service Scale
             <input type="checkbox" id="serviceScale" name="serviceScale" class="checkbox-inline" />
-            </label>';
+            </label>
+            </td>';
+
+        $ret .= '<td colspan="2" class="form-inline">
+            <label class="control-label small">Location</label>
+            <select name="location" class="form-control input-sm">
+            <option value="">Any</option><option value="1">Yes</option><option value="0">No</option>
+            </select>';
 
         $ret .= '&nbsp;&nbsp;
             <label class="control-label small">Sign Info</label>
