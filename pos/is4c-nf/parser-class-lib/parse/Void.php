@@ -381,7 +381,7 @@ class Void extends Parser
         $result = $db->query($query);
         $num_rows = $db->num_rows($result);
         if ($num_rows == 0 ) {
-            $json['outpt'] = DisplayLib::boxMsg(
+            $json['output'] = DisplayLib::boxMsg(
                 _("Item not found: ") . $upc,
                 '',
                 false,
