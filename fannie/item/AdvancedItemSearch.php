@@ -930,33 +930,39 @@ function chainSuper(superID)
         $ret .= '</tr><tr>';
 
         $ret .= '<td colspan="2" class="form-inline">
+            <div class="form-group">
             <label class="control-label small">Tax</label>
             <select name="tax" class="form-control input-sm"><option value="">Any</option><option value="0">NoTax</option>';
         $taxes = $dbc->query('SELECT id, description FROM taxrates');
         while($row = $dbc->fetch_row($taxes)) {
             $ret .= sprintf('<option value="%d">%s</option>', $row['id'], $row['description']);
         }
-        $ret .= '</select>';
+        $ret .= '</select></div>';
 
         $ret .= '&nbsp;&nbsp;
+            <div class="form-group">
             <label class="control-label small">FS</label>
             <select name="fs" class="form-control input-sm">
             <option value="">Any</option><option value="1">Yes</option><option value="0">No</option></select>
+            </div>
             </td>';
 
         $ret .= '<td colspan="2" class="form-inline">
+            <div class="form-group">
             <label class="control-label small">Local</label>
             <select name="local" class="form-control input-sm"><option value="">Any</option><option value="0">No</option>';
         $origins = new OriginsModel($dbc);
         foreach ($origins->getLocalOrigins() as $originID => $shortName) {
             $ret .= sprintf('<option value="%d">%s</option>', $originID, $shortName);
         }
-        $ret .= '</select> ';
+        $ret .= '</select></div> ';
 
         $ret .= '&nbsp;&nbsp;
+            <div class="form-group">
             <label class="control-label small">%Disc</label>
             <select name="discountable" class="form-control input-sm">
             <option value="">Any</option><option value="1">Yes</option><option value="0">No</option></select>
+            </div>
             <label class="small" for="serviceScale">
             Service Scale
             <input type="checkbox" id="serviceScale" name="serviceScale" class="checkbox-inline" />
@@ -964,16 +970,20 @@ function chainSuper(superID)
             </td>';
 
         $ret .= '<td colspan="2" class="form-inline">
+            <div class="form-group">
             <label class="control-label small">Location</label>
             <select name="location" class="form-control input-sm">
             <option value="">Any</option><option value="1">Yes</option><option value="0">No</option>
-            </select>';
+            </select>
+            </div>';
 
         $ret .= '&nbsp;&nbsp;
+            <div class="form-group">
             <label class="control-label small">Sign Info</label>
             <select name="signinfo" class="form-control input-sm">
             <option value="">Any</option><option value="1">Yes</option><option value="0">No</option>
-            </select>';
+            </select>
+            </div>';
 
         $ret .= '</td>'; // end row
 
