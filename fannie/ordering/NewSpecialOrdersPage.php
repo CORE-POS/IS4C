@@ -354,7 +354,7 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
             $ret .= '<tr class="' . ($w['charflag'] == 'P' ? 'arrived' : 'notarrived') . '">';
 
             list($date, $time) = explode(' ', $w['orderDate'], 2);
-            $ret .= sprintf('<td><a href="view.php?orderID=%d&k=%s">%s</a></td>',
+            $ret .= sprintf('<td><a href="OrderViewPage.php?orderID=%d&k=%s">%s</a></td>',
                             $id, $key, $date);
 
             $ret .= sprintf('<td><a href="" onclick="applyMemNum(%d); return false;">%s</a></td>',

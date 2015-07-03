@@ -107,15 +107,15 @@ function searchWindow(){
 		'width=350,height=400,status=0,toolbar=0,scrollbars=1');
 }
 
-function addUPC(){
+function addUPC()
+{
 	var oid = $('#orderID').val();
 	var cardno = $('#memNum').val();
 	var upc = $('#newupc').val();
 	var qty = $('#newcases').val();
 	$.ajax({
-	url: 'ajax-calls.php',
 	type: 'post',
-	data: 'action=newUPC&orderID='+oid+'&memNum='+cardno+'&upc='+upc+'&cases='+qty,
+	data: 'orderID='+oid+'&memNum='+cardno+'&upc='+upc+'&cases='+qty,
 	cache: false,
 	success: function(resp){
 		$('#itemDiv').html(resp);
@@ -125,11 +125,10 @@ function addUPC(){
 	}
 	});
 }
-function deleteID(orderID,transID){
+function deleteID(orderID,transID)
+{
 	$.ajax({
-	url: 'ajax-calls.php',
-	type: 'post',
-	data: 'action=deleteID&orderID='+orderID+'&transID='+transID,
+	data: '_method=delete&orderID='+orderID+'&transID='+transID,
 	cache: false,
 	success: function(resp){
 		$('#itemDiv').html(resp);
@@ -230,9 +229,8 @@ function saveUnit(new_unit,tid){
 function newQty(oid,tid){
 	var qty = $('#newqty').val();
 	$.ajax({
-	url: 'ajax-calls.php',
 	type: 'post',
-	data: 'action=newQty&orderID='+oid+'&transID='+tid+'&qty='+qty,
+	data: 'orderID='+oid+'&transID='+tid+'&qty='+qty,
 	cache: false,
 	success: function(resp){
 		$('#itemDiv').html(resp);
@@ -243,9 +241,8 @@ function newQty(oid,tid){
 function newDept(oid,tid){
 	var d = $('#newdept').val();
 	$.ajax({
-	url: 'ajax-calls.php',
 	type: 'post',
-	data: 'action=newDept&orderID='+oid+'&transID='+tid+'&dept='+d,
+	data: 'orderID='+oid+'&transID='+tid+'&dept='+d,
 	cache: false,
 	success: function(resp){
 		$('#itemDiv').html(resp);
@@ -308,29 +305,29 @@ function saveConfirmDate(val,oid){
 		});
 	}
 }
-function togglePrint(username,oid){
+function togglePrint(username,oid)
+{
 	$.ajax({
-	url: 'ajax-calls.php',
 	dataType: 'post',
-	data: 'action=UpdatePrint&orderID='+oid+'&user='+username,
+	data: 'togglePrint=1&orderID='+oid+'&user='+username,
 	cache: false,
 	success: function(resp){}
 	});
 }
-function toggleO(oid,tid){
+function toggleO(oid,tid)
+{
 	$.ajax({
-	url: 'ajax-calls.php',
 	dataType: 'post',
-	data: 'action=UpdateItemO&orderID='+oid+'&transID='+tid,
+	data: 'toggleMemType=1&orderID='+oid+'&transID='+tid,
 	cache: false,
 	success: function(resp){}
 	});
 }
-function toggleA(oid,tid){
+function toggleA(oid,tid)
+{
 	$.ajax({
-	url: 'ajax-calls.php',
 	dataType: 'post',
-	data: 'action=UpdateItemA&orderID='+oid+'&transID='+tid,
+	data: 'toggleStaff=1&orderID='+oid+'&transID='+tid,
 	cache: false,
 	success: function(resp){}
 	});

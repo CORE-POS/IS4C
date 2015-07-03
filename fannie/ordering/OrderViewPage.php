@@ -40,10 +40,126 @@ class OrderViewPage extends FannieRESTfulPage
         $this->__routes[] = 'get<orderID>';
         $this->__routes[] = 'get<orderID><items>';
         $this->__routes[] = 'get<orderID><customer>';
+        $this->__routes[] = 'post<orderID><memNum><upc><cases>';
+        $this->__routes[] = 'post<orderID><transID><dept>';
+        $this->__routes[] = 'post<orderID><transID><qty>';
+        $this->__routes[] = 'post<orderID><transID><toggleStaff>';
+        $this->__routes[] = 'post<orderID><transID><toggleMemType>';
+        $this->__routes[] = 'post<orderID><user><togglePrint>';
         $this->__routes[] = 'post<orderID><noteDept><noteText><addr><addr2><city><state><zip><ph1><ph2><email>';
         $this->__routes[] = 'post<orderID><transID><description><srp><actual><qty><dept><unitPrice><vendor>';
+        $this->__routes[] = 'delete<orderID><transID>';
 
         return parent::preprocess();
+    }
+
+    public function post_orderID_user_togglePrint_handler()
+    {
+        $user = $this->user;
+        $cachepath = sys_get_temp_dir()."/ordercache/";
+        $prints = unserialize(file_get_contents("{$cachepath}{$user}.prints"));
+        if (isset($prints[$this->orderID])) {
+            unset($prints[$this->orderID]);
+        } else {
+            $prints[$this->orderID] = array();
+        }
+        $fp = fopen("{$cachepath}{$user}.prints",'w');
+        fwrite($fp,serialize($prints));
+        fclose($fp);
+
+        return false;
+    }
+
+    public function post_orderID_transID_toggleStaff_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('TRANS_DB'));
+
+        $upP = $dbc->prepare('
+            UPDATE PendingSpecialOrder 
+            SET memType = (staff+1)%2
+            WHERE order_id=? 
+                AND trans_id=?');
+        $dbc->execute($upP, array($this->orderID, $this->transID));
+
+        return false;
+    }
+
+    public function post_orderID_transID_toggleMemType_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('TRANS_DB'));
+
+        $upP = $dbc->prepare('
+            UPDATE PendingSpecialOrder 
+            SET memType = (memType+1)%2
+            WHERE order_id=? 
+                AND trans_id=?');
+        $dbc->execute($upP, array($this->orderID, $this->transID));
+
+        return false;
+    }
+
+    public function post_orderID_transID_qty_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('TRANS_DB'));
+
+        $upP = $dbc->prepare('
+            UPDATE PendingSpecialOrder 
+            SET quantity=? 
+            WHERE order_id=? 
+                AND trans_id=?');
+        $dbc->execute($upP, array($this->qty, $this->orderID, $this->transID));
+        $info = $this->reprice($this->orderID, $this->transID);
+
+        return $this->get_orderID_items_handler();
+    }
+
+    public function post_orderID_transID_dept_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('TRANS_DB'));
+        $deptP = $dbc->prepare('
+            UPDATE PendingSpecialOrder
+            SET department=?
+            WHERE order_id=?
+                AND trans_id=?');
+        $deptR = $dbc->execute($deptP, array($this->dept, $this->orderID, $this->transID));
+
+        return $this->get_orderID_items_handler();
+    }
+
+    public function delete_orderID_transID_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('TRANS_DB'));
+        $delP = $dbc->prepare('
+            DELETE FROM PendingSpecialOrder
+            WHERE order_id=?
+                AND trans_id=?');
+        $delR = $dbc->execute($delP, array($this->orderID, $this->transID));
+
+        return $this->get_orderID_items_handler();
+    }
+
+    public function post_orderID_memNum_upc_cases_handler()
+    {
+        if (is_numeric($this->cases)) {
+            $this->cases = (int)$this->cases;
+        } else {
+            $this->cases = 1;
+        }
+        $result = $this->addUPC($this->orderID, $this->memNum, $this->upc, $this->cases);
+        if (!is_numeric($this->upc)) {
+            echo $this->getDeptForm($this->orderID, $result[1], $result[2]);
+        } elseif ($result[0] === false) {
+            return $this->get_orderID_items_handler();
+        } else {
+            echo $this->getQtyForm($this->orderID, $result[0], $result[1], $result[2]);
+        }
+
+        return false;
     }
 
     public function post_orderID_transID_description_srp_actual_qty_dept_unitPrice_vendor_handler()
@@ -386,7 +502,7 @@ class OrderViewPage extends FannieRESTfulPage
                 </td>
                 <td rowspan="2" colspan="4">
                     <textarea id="nText" rows="5" cols="25" 
-                        class="form-control contact-field" name="noteText"
+                        class="form-control input-sm contact-field" name="noteText"
                         >%s</textarea>
                 </td>
             </tr>
@@ -445,6 +561,214 @@ class OrderViewPage extends FannieRESTfulPage
         echo json_encode(array('customer'=>$ret, 'footer'=>$extra));
 
         return false;
+    }
+
+    private function addUPC($orderID,$memNum,$upc,$num_cases=1)
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $TRANS = $this->config->get('TRANS_DB') . $dbc->sep();
+
+        $sku = str_pad($upc,6,'0',STR_PAD_LEFT);
+        if (is_numeric($upc)) {
+            $upc = BarcodeLib::padUPC($upc);
+        }
+
+        $manualSKU = false;
+        if (isset($upc[0]) && $upc[0] == "+") {
+            $sku = substr($upc,1);
+            $upc = "zimbabwe"; // string that will not match
+            $manualSKU = true;
+        }
+        
+        $ins_array = $this->genericRow($orderID);
+        $ins_array['upc'] = "$upc";
+        if ($manualSKU) {
+            $ins_array['upc'] = BarcodeLib::padUPC($sku);
+        }
+        $ins_array['card_no'] = "$memNum";
+        $ins_array['trans_type'] = "I";
+
+        $caseSize = 1;
+        $vendor = "";
+        $vendor_desc = (!is_numeric($upc)?$upc:"");
+        $srp = 0.00;
+        $vendor_upc = (!is_numeric($upc)?'0000000000000':"");
+        $skuMatch=0;
+        $caseP = $dbc->prepare_statement("
+            SELECT units,
+                vendorName,
+                description,
+                i.srp,
+                i.upc,
+                CASE WHEN i.upc=? THEN 0 ELSE 1 END as skuMatch 
+            FROM vendorItems as i
+                LEFT JOIN vendors AS v ON i.vendorID=v.vendorID 
+            WHERE i.upc=? 
+                OR i.sku=? 
+                OR i.sku=?
+            ORDER BY i.vendorID");
+        $caseR = $dbc->exec_statement($caseP, array($upc,$upc,$sku,'0'.$sku));
+        if ($dbc->num_rows($caseR) > 0) {
+            $row = $dbc->fetch_row($caseR);
+            $caseSize = $row['units'];
+            $vendor = $row['vendorName'];
+            $vendor_desc = $row['description'];
+            $srp = $row['srp'];
+            $vendor_upc = $row['upc'];
+            $skuMatch = $row['skuMatch'];
+        }
+        if (!empty($vendor_upc)) $ins_array['upc'] = "$vendor_upc";
+        if ($skuMatch == 1) {
+            $ins_array['upc'] = "$vendor_upc";
+            $upc = $vendor_upc;
+        }
+        $ins_array['quantity'] = $caseSize;
+        $ins_array['ItemQtty'] = $num_cases;
+        $ins_array['mixMatch'] = substr($vendor,0,26);
+        $ins_array['description'] = substr($vendor_desc,0,32)." SO";
+
+        $mempricing = false;
+        if ($memNum != 0 && !empty($memNum)) {
+            $p = $dbc->prepare_statement("SELECT Type,memType FROM custdata WHERE CardNo=?");
+            $r = $dbc->exec_statement($p, array($memNum));
+            $w = $dbc->fetch_row($r);
+            if ($w['Type'] == 'PC') {
+                $mempricing = true;
+            } elseif($w['memType'] == 9) {
+                $mempricing = true;
+            }
+        }
+
+        $pdP = $dbc->prepare_statement("
+            SELECT normal_price,
+                special_price,
+                department,
+                discounttype,
+                description,
+                discount,
+                default_vendor_id
+            FROM products WHERE upc=?");
+        $pdR = $dbc->exec_statement($pdP, array($upc));
+        $qtyReq = False;
+        if ($dbc->num_rows($pdR) > 0) {
+            $pdW = $dbc->fetch_row($pdR);
+
+            $ins_array['department'] = $pdW['department'];
+            $ins_array['discountable'] = $pdW['discount'];
+            $mapP = $dbc->prepare_statement("SELECT map_to FROM 
+                    {$TRANS}SpecialOrderDeptMap WHERE dept_ID=?");
+            $mapR = $dbc->exec_statement($mapP, array($pdW['department']));
+            if ($dbc->num_rows($mapR) > 0) {
+                $mapW = $dbc->fetchRow($mapR);
+                $ins_array['department'] = $mapW['map_to'];
+            }
+
+            $superP = $dbc->prepare_statement("SELECT superID 
+                    FROM superdepts WHERE dept_ID=?");
+            $superR = $dbc->exec_statement($superP, array($ins_array['department']));
+            while($superW = $dbc->fetch_row($superR)) {
+                if ($superW[0] == 5) $qtyReq = 3;
+                if ($qtyReq !== false) {
+                    $caseSize = $qtyReq;
+                    $ins_array['quantity'] = $qtyReq;
+                    break;
+                }
+            }
+            
+            // only calculate prices for items that exist in 
+            // vendorItems (i.e., have known case size)
+            $ins_array['discounttype'] = $pdW['discounttype'];
+            if ($dbc->num_rows($caseR) > 0 || true) { // test always do this
+                $ins_array['total'] = $pdW['normal_price']*$caseSize*$num_cases;
+                $ins_array['regPrice'] = $pdW['normal_price']*$caseSize*$num_cases;
+                $ins_array['unitPrice'] = $pdW['normal_price'];
+                if ($pdW['discount'] != 0 && $pdW['discounttype'] == 1) {
+                    /**
+                      Only apply sale pricing from non-closeout batches
+                      At WFC closeout happens to be batch type #11
+                    */
+                    $closeoutP = $dbc->prepare('
+                        SELECT l.upc
+                        FROM batchList AS l
+                            INNER JOIN batches AS b ON l.batchID=b.batchID
+                        WHERE l.upc=?
+                            AND ' . $dbc->curdate() . ' >= b.startDate
+                            AND ' . $dbc->curdate() . ' <= b.endDate
+                            AND b.batchType=11
+                    ');
+                    $closeoutR = $dbc->execute($closeoutP, array($upc));
+                    if ($closeoutR && $dbc->num_rows($closeoutR) == 0) {
+                        $ins_array['total'] = $pdW['special_price']*$caseSize*$num_cases;
+                        $ins_array['unitPrice'] = $pdW['special_price'];
+                    }
+                } elseif ($mempricing){
+                    if ($pdW['discounttype'] == 2) {
+                        $ins_array['total'] = $pdW['special_price']*$caseSize*$num_cases;
+                        $ins_array['unitPrice'] = $pdW['special_price'];
+                    } elseif ($pdW['discounttype'] == 3) {
+                        $ins_array['unitPrice'] = $pdW['normal_price']*(1-$pdW['special_price']);
+                        $ins_array['total'] = $ins_array['unitPrice']*$caseSize*$num_cases;
+                    } elseif ($pdW['discounttype'] == 5) {
+                        $ins_array['unitPrice'] = $pdW['normal_price']-$pdW['special_price'];
+                        $ins_array['total'] = $ins_array['unitPrice']*$caseSize*$num_cases;
+                    }
+
+                    if($pdW['discount'] != 0 && ($pdW['normal_price']*$caseSize*$num_cases*0.85) < $ins_array['total']) {
+                        $ins_array['total'] = $pdW['normal_price']*$caseSize*$num_cases*0.85;
+                        $ins_array['discounttype'] = 0;
+                        $ins_array['unitPrice'] = $pdW['normal_price'];
+                    }
+                }
+            }
+            $ins_array['description'] = substr($pdW['description'],0,32);
+            /**
+              If product has a default vendor, lookup
+              vendor name and add it
+            */
+            if ($pdW['default_vendor_id'] != 0) {
+                $v = new VendorsModel($dbc);
+                $v->vendorID($pdW['default_vendor_id']);
+                if ($v->load()) {
+                    $ins_array['mixMatch'] = substr($v->vendorName(),0,26);
+                }
+            }
+            /**
+              If no vendor name was found, try looking in prodExtra
+            */
+            if (empty($ins_array['mixMatch']) && $dbc->tableExists('prodExtra')) {
+                $distP = $dbc->prepare('
+                    SELECT x.distributor
+                    FROM prodExtra AS x
+                    WHERE x.upc=?
+                ');
+                $distR = $dbc->execute($distP, array($upc));
+                if ($distR && $dbc->num_rows($distR) > 0) {
+                    $distW = $dbc->fetch_row($distR);
+                    $ins_array['mixMatch'] = substr($distW['distributor'],0,26);
+                }
+            }
+        } elseif ($srp != 0) {
+            // use vendor SRP if applicable
+            $ins_array['regPrice'] = $srp*$caseSize*$num_cases;
+            $ins_array['total'] = $srp*$caseSize*$num_cases;
+            $ins_array['unitPrice'] = $srp;
+            if ($mempricing) {
+                $ins_array['total'] *= 0.85;
+            }
+        }
+
+        $tidP = $dbc->prepare_statement("SELECT MAX(trans_id),MAX(voided),MAX(numflag) 
+                FROM {$TRANS}PendingSpecialOrder WHERE order_id=?");
+        $tidR = $dbc->exec_statement($tidP,array($orderID));
+        $tidW = $dbc->fetch_row($tidR);
+        $ins_array['trans_id'] = $tidW[0]+1;
+        $ins_array['voided'] = $tidW[1];
+        $ins_array['numflag'] = $tidW[2];
+
+        $dbc->smart_insert("{$TRANS}PendingSpecialOrder",$ins_array);
+        
+        return array($qtyReq,$ins_array['trans_id'],$ins_array['description']);
     }
 
     private function createEmptyOrder()
@@ -709,8 +1033,8 @@ HTML;
             $ret .= sprintf('<td colspan="2">Printed: %s</td>',
                     ($w['charflag']=='P'?'Yes':'No'));
             if ($num_rows > 1) {
-                $ret .= sprintf('<td colspan="2"><input type="submit" value="Split Item to New Order"
-                    onclick="doSplit(%d,%d);return false;" /><br />
+                $ret .= sprintf('<td colspan="2"><a href="" class="btn btn-default btn-sm"
+                    onclick="doSplit(%d,%d);return false;">Split Item to New Order</a><br />
                     O <input type="checkbox" id="itemChkO" %s onclick="toggleO(%d,%d);" />&nbsp;&nbsp;&nbsp;&nbsp;
                     A <input type="checkbox" id="itemChkA" %s onclick="toggleA(%d,%d);" />
                     </td>',
@@ -729,6 +1053,91 @@ HTML;
         $ret .= '</table>';
 
         return $ret;
+    }
+
+    private function getQtyForm($orderID,$default,$transID,$description)
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $ret = '<i>This item ('.$description.') requires a quantity</i><br />';
+        $ret .= "<form onsubmit=\"newQty($orderID,$transID);return false;\">";
+        $ret .= '<div class="form-inline">';
+        $ret .= '<label>Qty</label>: <input type="text" id="newqty" 
+            class="form-control input-sm" value="'.$default.'" maxlength="3" size="4" />';
+        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+        $ret .= '<button type="submit" class="btn btn-default">Enter Qty</button>';
+        $ret .= '</div>';
+        $ret .= '</form>';
+
+        return $ret;
+    }
+
+    private function getDeptForm($orderID,$transID,$description)
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $TRANS = $this->config->get('TRANS_DB') . $dbc->sep();
+        $ret = '<i>This item ('.$description.') requires a department</i><br />';
+        $ret .= "<form onsubmit=\"newDept($orderID,$transID);return false;\">";
+        $ret .= '<div class="form-inline">';
+        $ret .= '<select id="newdept" class="form-control">';
+        $q = $dbc->prepare_statement("select super_name,
+            CASE WHEN MIN(map_to) IS NULL THEN MIN(m.dept_ID) ELSE MIN(map_to) END
+            from MasterSuperDepts
+            as m left join {$TRANS}SpecialOrderDeptMap as s
+            on m.dept_ID=s.dept_ID
+            where m.superID > 0
+            group by super_name ORDER BY super_name");
+        $r = $dbc->exec_statement($q);
+        while($w = $dbc->fetch_row($r)) {
+            $ret .= sprintf('<option value="%d">%s</option>',$w[1],$w[0]);
+        }
+        $ret .= "</select>";
+        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+        $ret .= '<button type="submit" class="btn btn-default">Enter Dept</button>';
+        $ret .= '</div>';
+        $ret .= '</form>';
+        
+        return $ret;
+    }
+
+    private function reprice($oid,$tid,$reg=false)
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $TRANS = $this->config->get('TRANS_DB') . $dbc->sep();
+
+        $query = $dbc->prepare_statement("SELECT o.unitPrice,o.itemQtty,o.quantity,o.discounttype,
+            c.type,c.memType,o.regPrice,o.total,o.discountable
+            FROM {$TRANS}PendingSpecialOrder AS o LEFT JOIN custdata AS c ON
+            o.card_no=c.CardNo AND c.personNum=1
+            WHERE order_id=? AND trans_id=?");
+        $response = $dbc->exec_statement($query, array($oid,$tid));
+        $row = $dbc->fetch_row($response);
+
+        $regPrice = $row['itemQtty']*$row['quantity']*$row['unitPrice'];
+        if ($reg) {
+            $regPrice = $reg;
+        }
+        $total = $regPrice;
+        if (($row['type'] == 'PC' || $row['memType'] == 9) && $row['discountable'] != 0 && $row['discounttype'] == 0) {
+            $total *= 0.85;
+        }
+
+        if ($row['unitPrice'] == 0 || $row['quantity'] == 0) {
+            $regPrice = $row['regPrice'];
+            $total = $row['total'];
+        }
+
+        $query = $dbc->prepare_statement("UPDATE {$TRANS}PendingSpecialOrder SET
+                total=?,regPrice=?
+                WHERE order_id=? AND trans_id=?");
+        $dbc->exec_statement($query, array($total,$regPrice,$oid,$tid));
+
+        return array(
+            'regPrice'=>sprintf("%.2f",$regPrice),
+            'total'=>sprintf("%.2f",$total)
+        );
     }
 
     public function get_view()
