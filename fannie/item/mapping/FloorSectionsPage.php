@@ -32,6 +32,8 @@ class FloorSectionsPage extends \COREPOS\Fannie\API\FannieCRUDPage
     protected $header = 'Named Sales Floor Sections';
     protected $title = 'Named Sales Floor Sections';
 
+    protected $display_sorting = array('name');
+
     public function helpContent()
     {
         return '<p>
