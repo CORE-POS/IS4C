@@ -243,11 +243,13 @@ class ItemMarginModule extends ItemModule
                 $ret .= sprintf('Discount rate for this vendor (%s) is %.2f%%<br />',
                         $w['vendorName'],
                         ($w['discountRate']*100));
+                $vendor_discount = $w['discountRate'];
             }
             if ($w['shippingMarkup'] > 0) {
                 $ret .= sprintf('Shipping markup for this vendor (%s) is %.2f%%<br />',
                         $w['vendorName'],
                         ($w['shippingMarkup']*100));
+                $shipping_markup = $w['discountRate'];
             }
         }
         $cost = Margin::adjustedCost($cost, $vendor_discount, $shipping_markup);
