@@ -20,7 +20,7 @@ class MembersTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($account, false);
 
         /** get account and verify structure **/
-        $TEST_ACCOUNT = 1;
+        $TEST_ACCOUNT = 10000;
         $account = \COREPOS\Fannie\API\member\MemberREST::get($TEST_ACCOUNT);
         $this->assertInternalType('array', $account);
         $all_fields = array(
@@ -70,6 +70,15 @@ class MembersTest extends PHPUnit_Framework_TestCase
         foreach ($account['customers'] as $customer) {
             foreach ($customer_fields as $field) {
                 $this->assertArrayHasKey($field, $customer);
+            }
+        }
+
+        $all = \COREPOS\Fannie\API\member\MemberREST::get();
+        foreach ($all as $a) {
+            $this->assertArrayHasKey('cardNo', $a);
+            if ($a['cardNo'] == $TEST_ACCOUNT) {
+                $this->assertEquals($a, $account, 'get single and get all must match');
+                break;
             }
         }
 

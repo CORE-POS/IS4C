@@ -30,8 +30,11 @@ class MemberREST
       Get an array representing a customer account
       @param $id [int] account ID (classically card_no / CardNo)
       @return [array] account info or [boolean] false
+
+      Omitting the $id return an array of all accounts
+      as is typical with REST endpoints
     */
-    public static function get($id)
+    public static function get($id=0)
     {
         $config = \FannieConfig::factory();
         $dbc = \FannieDB::get($config->get('OP_DB'));
@@ -48,6 +51,10 @@ class MemberREST
     */
     private static function getAccount($dbc, $id)
     {
+        if ($id == 0) {
+            return self::getAllAccounts($dbc);
+        }
+
         $account = new \CustomerAccountsModel($dbc);
         $customers = new \CustomersModel($dbc);
         $account->cardNo($id);
@@ -71,11 +78,42 @@ class MemberREST
         return $ret;
     }
 
+    private static function getAllAccounts($dbc)
+    {
+        $account = new \CustomerAccountsModel($dbc);
+        $customers = new \CustomersModel($dbc);
+        $accounts = array();
+        foreach ($account->find() as $obj) {
+            $entry = $obj->toJSON();
+            $entry['customers'] = array();
+            $accounts[$obj->cardNo()] = $entry;
+        }
+
+        foreach ($customers->find('accountHolder', true) as $c) {
+            if (!isset($accounts[$c->cardNo()])) {
+                // parent account missing?
+                continue;
+            }
+            $entry[$c->cardNo()]['customers'][] = $c->toJSON();
+        }
+
+        $ret = array();
+        foreach ($entry as $id => $e) {
+            $ret[] = $e;
+        }
+
+        return $ret;
+    }
+
     /**
       Get account using older tables
     */
     private static function getCustdata($dbc, $id)
     {
+        if ($id == 0) {
+            return self::getAllCustdata($dbc);
+        }
+
         $query = '
             SELECT c.CardNo,
                 CASE WHEN s.memtype2 IS NOT NULL THEN s.memtype2 ELSE c.Type END AS memberStatus,
@@ -191,6 +229,114 @@ class MemberREST
                 $customer['memberCouponsAllowed'] = 1;
             }
             $ret['customers'][] = $customer;
+        }
+
+        return $ret;
+    }
+
+    private static function getAllCustdata($dbc)
+    {
+        $query = '
+            SELECT c.CardNo,
+                CASE WHEN s.memtype2 IS NOT NULL THEN s.memtype2 ELSE c.Type END AS memberStatus,
+                CASE WHEN s.memtype2 IS NOT NULL THEN c.Type ELSE \'\' END AS activeStatus,
+                c.memType AS customerTypeID,
+                c.Balance,
+                c.ChargeLimit,
+                u.upc,
+                d.start_date,
+                d.end_date,
+                m.street,
+                m.city,
+                m.state,
+                m.zip,
+                m.ads_OK,
+                z.pref,
+                t.memDesc,
+                c.FirstName,
+                c.LastName, 
+                c.chargeOk,
+                c.writeChecks,
+                c.Discount,
+                c.staff,
+                m.phone,
+                m.email_1,
+                m.email_2,
+                c.SSI,
+                c.personNum,
+                CASE WHEN c.LastChange > m.modified THEN c.LastChange ELSE m.modified END AS modified
+            FROM custdata AS c
+                LEFT JOIN meminfo AS m ON c.CardNo=m.card_no
+                LEFT JOIN memContact AS z ON c.CardNo=z.card_no
+                LEFT JOIN memDates AS d ON c.CardNo=d.card_no
+                LEFT JOIN memberCards AS u ON c.CardNo=u.card_no
+                LEFT JOIN suspensions AS s ON c.CardNo=s.cardno
+                LEFT JOIN memtype AS t ON c.memType=t.memtype
+            ORDER BY c.personNum';
+        $prep = $dbc->prepare($query);
+        $res = $dbc->execute($prep);
+
+        $accounts = array();
+        while ($row = $dbc->fetchRow($res)) {
+            if (!isset($accounts[$row['CardNo']])) {
+                $account = array(
+                    'cardNo' => $row['CardNo'],
+                    'memberStatus' => $row['memberStatus'],
+                    'activeStatus' => $row['activeStatus'],
+                    'customerTypeID' => $row['customerTypeID'],
+                    'customerType' => $row['memDesc'],
+                    'chargeLimit' => $row['ChargeLimit'],
+                    'chargeBalance' => $row['Balance'],
+                    'idCardUPC' => $row['upc'] === null ? '' : $row['upc'],
+                    'startDate' => $row['start_date'] === null ? '0000-00-00 00:00:00' : $row['start_date'],
+                    'endDate' => $row['end_date'] === null ? '0000-00-00 00:00:00' : $row['end_date'],
+                    'city' => $row['city'] === null ? '' : $row['city'],
+                    'state' => $row['state'] === null ? '' : $row['state'],
+                    'zip' => $row['zip'] === null ? '' : $row['zip'],
+                    'contactAllowed' => $row['ads_OK'] === null ? 1 : $row['ads_OK'],
+                    'contactMethod' => 'mail',
+                    'addressFirstLine' => $row['street'] === null ? '' : $row['street'],
+                    'addressSecondLine' => '',
+                    'customers' => array(),
+                    'modified' => $row['modified'],
+                );
+                if (strstr($row['street'], "\n")) {
+                    list($one, $two) = explode("\n", $row['street'], 2);
+                    $account['addressFirstLine'] = $one;
+                    $account['addressSecondLine'] = $two;
+                }
+                if ($row['pref'] == 2) {
+                    $account['contactMethod'] == 'email';
+                } elseif ($row['pref'] == 3) {
+                    $account['contactMethod'] == 'both';
+                }
+
+                $account['customers'] = array();
+                $accounts[$row['CardNo']] = $account;
+            }
+            $customer = array(
+                'customerID' => 0,
+                'accountHolder' => $row['personNum'] == 1 ? 1 : 0,
+                'firstName' => $row['FirstName'],
+                'lastName' => $row['LastName'],
+                'chargeAllowed' => $row['chargeOk'],
+                'checksAllowed' => $row['writeChecks'],
+                'discount' => $row['Discount'],
+                'staff' => $row['staff'],
+                'lowIncomeBenefits' => $row['SSI'],
+                'modified' => $row['modified'],
+                'phone' => $row['phone'] === null || $row['personNum'] != 1 ? '' : $row['phone'],
+                'email' => $row['email_1'] === null || $row['personNum'] != 1 ? '' : $row['email_1'],
+                'altPhone' => $row['email_2'] === null || $row['personNum'] != 1 ? '' : $row['email_2'],
+                'memberPricingAllowed' => $account['memberStatus'] == 'PC' ? 1 : 0,
+                'memberCouponsAllowed' => $account['memberStatus'] == 'PC' ? 1 : 0,
+            );
+            $accounts[$row['CardNo']]['customers'][] = $customer;
+        }
+
+        $ret = array();
+        foreach ($accounts as $id => $e) {
+            $ret[] = $e;
         }
 
         return $ret;
