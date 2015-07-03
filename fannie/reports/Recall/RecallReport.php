@@ -65,37 +65,45 @@ class RecallReport extends FannieReportPage
 
         $dlog = DTransactionsModel::selectDlog($date1,$date2);
 
-        $q = $dbc->prepare_statement("SELECT d.card_no,c.LastName,c.FirstName,m.street,m.city,m.state,
-                m.zip,m.phone,m.email_2,m.email_1,sum(quantity) as qty,
+        $q = $dbc->prepare("
+            SELECT d.card_no,
+                sum(quantity) as qty,
                 sum(total) as amt
-            FROM $dlog AS d LEFT JOIN custdata AS c
-            ON c.CardNo=d.card_no AND c.personNum=1
-            LEFT JOIN meminfo AS m ON m.card_no=c.CardNo
+            FROM $dlog AS d 
             WHERE d.upc=? AND 
-            tdate BETWEEN ? AND ?
-            GROUP BY d.card_no,c.FirstName,c.LastName,m.street,m.city,
-            m.state,m.zip,m.phone,m.email_1,m.email_2
-            ORDER BY c.LastName,c.FirstName");
+                tdate BETWEEN ? AND ?
+            GROUP BY d.card_no
+            ORDER BY d.card_no");
         $r = $dbc->exec_statement($q,array($upc,$date1.' 00:00:00',$date2.' 23:59:59'));
 
         $data = array();
         while($w = $dbc->fetch_row($r)) {
+            $account = \COREPOS\Fannie\API\member\MemberREST::get($w['card_no']);
+            if ($account == false) {
+                continue;
+            }
+            $customer = array();
+            foreach ($account['customers'] as $c) {
+                if ($c['accountHolder']) {
+                    $customer = $c;
+                    break;
+                }
+            }
             $record = array(
                     $w['card_no'],
-                    $w['LastName'].', '.$w['FirstName'],
-                    $w['street'],
-                    $w['city'],
-                    $w['state'],
-                    $w['zip'],
-                    $w['phone'],
-                    $w['email_2'],
-                    $w['email_1'],
+                    $customer['lastName'].', '.$customer['firstName'],
+                    $account['addressFirstLine'] . ' ' . $account['addressSecondLine'],
+                    $account['city'],
+                    $account['state'],
+                    $account['zip'],
+                    $customer['phone'],
+                    $customer['altPhone'],
+                    $customer['email'],
                     sprintf('%.2f', $w['qty']),
                     sprintf('%.2f', $w['amt']),
             );
             $data[] = $record;
         }
-
         return $data;
     }
         

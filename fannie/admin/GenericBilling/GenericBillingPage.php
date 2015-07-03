@@ -77,8 +77,6 @@ function postBilling(){
 
     function get_view()
     {
-        global $FANNIE_OP_DB;
-        $sql = FannieDB::get($FANNIE_OP_DB);
         $value = FormLib::get_form_value('id');
         $this->add_onload_command('$(\'#memnum\').val($(\'#sel\').val());');
         $ret = "<form onsubmit=\"getMemInfo(); return false;\">
@@ -88,16 +86,19 @@ function postBilling(){
                 class=\"form-control\" value=\"$value\" />
             <select id=sel class=\"form-control\"
                 onchange=\"\$('#memnum').val(this.value);\">";
-        $numsQ = "SELECT cardno,lastname FROM custdata WHERE
-            memtype = 2
-            AND personnum=1
-            ORDER BY cardno";
-        $numsR = $sql->query($numsQ);
-        while($numsW = $sql->fetch_row($numsR)){
-            if ($value == trim($numsW[0]))
-                $ret .= sprintf("<option value=%d selected>%d %s</option>",$numsW[0],$numsW[0],$numsW[1]);  
-            else
-                $ret .= sprintf("<option value=%d>%d %s</option>",$numsW[0],$numsW[0],$numsW[1]);   
+        $accounts = \COREPOS\Fannie\API\member\MemberREST::search(
+            array(
+                'customerTypeID' => 2,
+                'customers' => array(
+                    array('accountHolder'=>1),
+                ), 
+            )
+        );
+        foreach ($accounts as $account) {
+            $ret .= sprintf('<option %s value="%d">%d %s</option>',
+                    ($value == $account['cardNo'] ? 'selected' : ''),
+                    $account['cardNo'], $account['cardNo'],
+                    $account['customers'][0]['lastName']);
         }
         $ret .= "</select>
             <button type=submit class=\"btn btn-default\">Submit</button>
@@ -111,11 +112,10 @@ function postBilling(){
         global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
         $sql = FannieDB::get($FANNIE_OP_DB);
 
-        $query = "SELECT c.CardNo,c.LastName,n.balance
-            FROM custdata AS c LEFT JOIN
-            ".$FANNIE_TRANS_DB.$sql->sep()."ar_live_balance AS n 
-            ON c.CardNo=n.card_no
-            WHERE c.CardNo=? AND c.personNum=1";
+        $account = \COREPOS\Fannie\API\member\MemberREST::get($this->id);
+        $query = "SELECT n.balance
+            FROM  " . $FANNIE_TRANS_DB.$sql->sep()."ar_live_balance AS n 
+            WHERE n.card_no=?";
         $prep = $sql->prepare_statement($query);
         $result = $sql->exec_statement($prep, array($this->id));
         $row = $sql->fetch_row($result);
@@ -151,9 +151,12 @@ function postBilling(){
             </p>
             </div>
             </form>",
-            $row[0],$row[0],$row[1],$row[2]);
+            $account['cardNo'], $account['cardNo'],
+            $account['customers'][0]['lastName'],
+            $row['balance']
+        );
 
-        return False;
+        return false;
     }
 
     function post_id_handler(){
