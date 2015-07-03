@@ -351,6 +351,18 @@ static public function setMember($member, $personNumber, $row=array())
     if (CoreLocal::get("SSI") == 1) {
         $memMsg .= " #";
     }
+    if ($conn->tableExists('CustomerNotifications')) {
+        $blQ = '
+            SELECT message
+            FROM CustomerNotifications
+            WHERE cardNo=' . ((int)$member) . '
+                AND type=\'blueline\'
+            ORDER BY message';
+        $blR = $conn->query($blQ);
+        while ($blW = $dbc->fetchRow($blR)) {
+            $memMsg .= ' ' . $blW['message'];
+        }
+    }
     CoreLocal::set("memMsg",$memMsg);
     self::setAltMemMsg(CoreLocal::get("store"), $member, $personNumber, $row, $chargeOk);
 
