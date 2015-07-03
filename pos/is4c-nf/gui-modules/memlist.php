@@ -245,12 +245,42 @@ class memlist extends NoInputPage
                 .' style="min-height: 200px; min-width: 220px; max-width: 390px;" '
                 ."onblur=\"\$('#search').focus();\" ondblclick=\"document.forms['selectform'].submit();\" id=\"search\">";
 
+            $noticeP = false;
+            $notice_cache = array();
+            $dbc = Database::pDataConnect();
+            if ($dbc->tableExists('CustomerNotifications')) {
+                $noticeP = $dbc->prepare('
+                    SELECT message
+                    FROM CustomerNotifications
+                    WHERE cardNo=?
+                        AND type=\'memlist\'
+                    ORDER BY message');
+            }
             $selectFlag = 0;
             foreach ($this->results as $optval => $label) {
                 echo '<option value="'.$optval.'"';
                 if ($selectFlag == 0) {
                     echo ' selected';
                     $selectFlag = 1;
+                }
+                /**
+                  If available, look up notifications designated
+                  for this screen. Cache results in case the
+                  same account appears more than once in the list.
+                */
+                if ($noticeP) {
+                    list($id, $pn) = explode('::', $optval, 2);
+                    if (isset($notice_cache[$id])) {
+                        $label .= $notice_cache[$id];
+                    } else {
+                        $noticeR = $dbc->execute($noticeP, array($id)); 
+                        $notice = '';
+                        while ($w = $dbc->fetchRow($noticeR)) {
+                            $notice .= ' ' . $w['message'];
+                        }
+                        $notice_cache[$id] = $notice;
+                        $label .= $notice;
+                    }
                 }
                 echo '>'.$label.'</option>';
             }
