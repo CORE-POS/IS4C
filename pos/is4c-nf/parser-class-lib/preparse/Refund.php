@@ -32,8 +32,14 @@ class Refund extends PreParser
             return false;
         }
 
+
         if (strstr($str, 'RF')) {
-            return true;
+            // void and refund cannot combine
+            if (strstr($str, 'VD')) {
+                return false;
+            } else {
+                return true;
+            }
         } else {
             return false;
         }
