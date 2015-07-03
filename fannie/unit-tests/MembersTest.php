@@ -20,7 +20,7 @@ class MembersTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($account, false);
 
         /** get account and verify structure **/
-        $TEST_ACCOUNT = 10000;
+        $TEST_ACCOUNT = 1;
         $account = \COREPOS\Fannie\API\member\MemberREST::get($TEST_ACCOUNT);
         $this->assertInternalType('array', $account);
         $all_fields = array(
