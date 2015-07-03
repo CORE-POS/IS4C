@@ -49,6 +49,7 @@ class DepartmentMovementReport extends FannieReportPage
         $date2 = FormLib::getDate('date2',date('Y-m-d'));
         $deptStart = FormLib::get_form_value('deptStart','');
         $deptEnd = FormLib::get_form_value('deptEnd','');
+        $deptMulti = FormLib::get('departments', array());
         $buyer = FormLib::get_form_value('buyer','');
         $groupby = FormLib::get_form_value('sort','PLU');
         $store = FormLib::get('store', 0);
@@ -66,6 +67,15 @@ class DepartmentMovementReport extends FannieReportPage
         */
         $filter_condition = 't.department BETWEEN ? AND ?';
         $args = array($deptStart,$deptEnd);
+        if (count($deptMulti) > 0) {
+            $filter_condition = 't.department IN (';
+            $args = array();
+            foreach ($deptMulti as $d) {
+                $filter_condition .= '?,';
+                $args[] = $d;
+            }
+            $filter_condition = substr($filter_condition, 0, strlen($filter_condition)-1) . ')';
+        }
         if ($buyer !== "" && $buyer > 0) {
             $filter_condition .= ' AND s.superID=? ';
             $args[] = $buyer;
@@ -333,7 +343,7 @@ class DepartmentMovementReport extends FannieReportPage
 <form method = "get" action="DepartmentMovementReport.php" class="form-horizontal">
 <div class="row">
     <div class="col-sm-6">
-        <?php echo FormLib::standardDepartmentFields('buyer', '', 'deptStart', 'deptEnd'); ?>
+        <?php echo FormLib::standardDepartmentFields('buyer', 'departments', 'deptStart', 'deptEnd'); ?>
         <div class="form-group">
             <label class="col-sm-4 control-label">Sum movement by?</label>
             <div class="col-sm-8">

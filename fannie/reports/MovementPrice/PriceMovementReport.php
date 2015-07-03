@@ -28,7 +28,6 @@ if (!class_exists('FannieAPI')) {
 
 class PriceMovementReport extends FannieReportPage 
 {
-
     protected $title = "Fannie : Price Movement Report";
     protected $header = "Price Movement Report";
 
@@ -43,6 +42,7 @@ class PriceMovementReport extends FannieReportPage
     {
         $deptStart = FormLib::get('deptStart');
         $deptEnd = FormLib::get('deptEnd');
+        $deptMulti = FormLib::get('departments', array());
         $buyer = FormLib::get('buyer', '');
     
         $ret = array();
@@ -66,6 +66,7 @@ class PriceMovementReport extends FannieReportPage
         $date2 = FormLib::get('date2', date('Y-m-d'));
         $deptStart = FormLib::get('deptStart');
         $deptEnd = FormLib::get('deptEnd');
+        $deptMulti = FormLib::get('departments', array());
     
         $buyer = FormLib::get('buyer', '');
 
@@ -82,9 +83,18 @@ class PriceMovementReport extends FannieReportPage
             }
         }
         if ($buyer != -1) {
-            $where .= ' AND d.department BETWEEN ? AND ? ';
-            $args[] = $deptStart;
-            $args[] = $deptEnd;
+            if (count($deptMulti) > 0) {
+                $where .= ' AND d.department IN (';
+                foreach ($deptMulti as $d) {
+                    $where .= '?,';
+                    $args[] = $d;
+                }
+                $where = substr($where, 0, strlen($where)-1) . ')';
+            } else {
+                $where .= ' AND d.department BETWEEN ? AND ? ';
+                $args[] = $deptStart;
+                $args[] = $deptEnd;
+            }
         }
 
         $dlog = DTransactionsModel::selectDlog($date1, $date2);

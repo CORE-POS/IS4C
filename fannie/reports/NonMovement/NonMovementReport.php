@@ -85,6 +85,7 @@ class NonMovementReport extends FannieReportPage {
         $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
         $dept1 = FormLib::get_form_value('deptStart',0);
         $dept2 = FormLib::get_form_value('deptEnd',0);
+        $deptMulti = FormLib::get('departments', array());
 
         $tempName = "TempNoMove";
         $dlog = DTransactionsModel::selectDlog($date1,$date2);
@@ -113,9 +114,18 @@ class NonMovementReport extends FannieReportPage {
             }
         }
         if ($buyer != -1) {
-            $where .= ' AND p.department BETWEEN ? AND ? ';
-            $args[] = $dept1;
-            $args[] = $dept2;
+            if (count($deptMulti) > 0) {
+                $where .= ' AND p.department IN (';
+                foreach ($deptMulti as $d) {
+                    $where .= '?,';
+                    $args[] = $d;
+                }
+                $where = substr($where, 0, strlen($where)-1) . ')';
+            } else {
+                $where .= ' AND p.department BETWEEN ? AND ? ';
+                $args[] = $dept1;
+                $args[] = $dept2;
+            }
         }
 
         $query = "

@@ -49,6 +49,7 @@ class DeptTransactionsReport extends FannieReportPage
         $date2 = FormLib::get('date2', date('Y-m-d'));
         $deptStart = FormLib::get('deptStart');
         $deptEnd = FormLib::get('deptEnd');
+        $deptMulti = FormLib::get('departments', array());
     
         $buyer = FormLib::get('buyer', '');
 
@@ -81,9 +82,18 @@ class DeptTransactionsReport extends FannieReportPage
             }
         }
         if ($buyer != -1) {
-            $querySelected .= " AND d.department BETWEEN ? AND ?";
-            $argsSel[] = $deptStart;
-            $argsSel[] = $deptEnd;
+            if (count($deptMulti) > 0) {
+                $querySelected .= ' AND d.department IN (';
+                foreach ($deptMulti as $d) {
+                    $querySelected .= '?,';
+                    $argsSel[] = $d;
+                }
+                $querySelected = substr($querySelected, 0, strlen($querySelected)-1) . ')';
+            } else {
+                $querySelected .= " AND d.department BETWEEN ? AND ?";
+                $argsSel[] = $deptStart;
+                $argsSel[] = $deptEnd;
+            }
         }
         $querySelected .= " GROUP BY YEAR(tdate), MONTH(tdate), DAY(tdate)";
 

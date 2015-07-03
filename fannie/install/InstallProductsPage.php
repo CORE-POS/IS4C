@@ -241,6 +241,15 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         echo installSelectField('FANNIE_BATCH_VIEW', $FANNIE_BATCH_VIEW, $batch_opts, 'all');
         ?>
         <hr />
+        <label>Default Reporting Departments View</label>
+        <?php
+        $report_opts = array(
+            'range' => 'Range of Departments',
+            'multi' => 'Multi Select',
+        ); 
+        echo installSelectField('FANNIE_REPORT_DEPT_MODE', $FANNIE_REPORT_DEPT_MODE, $report_opts, 'range');
+        ?>
+        <hr />
         <label>Default Shelf Tag Layout</label>
         <?php
         $layouts = 'No Layouts Found!';

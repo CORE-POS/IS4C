@@ -461,6 +461,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         $mtype = FormLib::get_form_value('mtype','prefix');
         $deptStart = FormLib::get_form_value('deptStart',0);
         $deptEnd = FormLib::get_form_value('deptEnd',0);
+        $deptMulti = FormLib::get('departments', array());
         $subDepts = FormLib::get('subdepts', array());
         $super = FormLib::get_form_value('deptSub');
         $vendorID = FormLib::get('vendor');
@@ -553,6 +554,13 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 $query .= ' AND i.department BETWEEN ? AND ? ';
                 $args[] = $deptStart;
                 $args[] = $deptEnd;
+            } elseif (count($deptMulti) > 0) {
+                $query .= ' AND i.department IN (';
+                foreach ($deptMulti as $d) {
+                    $query .= '?,';
+                    $args[] = $d;
+                }
+                $query = substr($query, 0, strlen($query)-1) . ')';
             }
             if (is_array($subDepts) && count($subDepts) > 0) {
                 $query .= ' AND i.subdept IN (';
@@ -718,7 +726,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             <div class="tab-pane active" id="dept-tab">
                 <div class="row form-horizontal">
                     <div class="col-sm-8">
-                    <?php echo FormLib::standardDepartmentFields('deptSub', ''); ?>
+                    <?php echo FormLib::standardDepartmentFields('deptSub'); ?>
                     </div>
                 </div>
             </div>
