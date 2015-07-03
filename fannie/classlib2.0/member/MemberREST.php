@@ -218,6 +218,9 @@ class MemberREST
         }
     }
 
+    /**
+      Update customer account using newer tables
+    */
     private static function createAccount($dbc)
     {
         $max = 1;
@@ -503,6 +506,10 @@ class MemberREST
         return $ret;
     }
 
+    /**
+      Assign blueLine values to account based on template configuration
+      @param $id [int] account identifier
+    */
     public static function setBlueLines($id)
     {
         $config = \FannieConfig::factory();
@@ -542,6 +549,7 @@ class MemberREST
       @param $json [array] account attributes. All fields are optional, but
         if no search fields are provided this returns zero results rather than
         every single account.
+      @param $limit [int, default=0] optional result set size limit
       @return [array] of account structures
     */
     public static function search($json, $limit=0)
@@ -556,6 +564,9 @@ class MemberREST
         }
     }
 
+    /**
+      Search using newer tables
+    */
     private static function searchAccount($dbc, $json, $limit=0)
     {
         $query = '
@@ -685,6 +696,9 @@ class MemberREST
         return $ret;
     }
 
+    /**
+      Search using older tables
+    */
     private static function searchCustdata($dbc, $json, $limit=0)
     {
         $query = '
@@ -823,6 +837,11 @@ class MemberREST
         return $ret;
     }
 
+    /**
+      Get the next account number sequentially
+      @param $id [int] account identifier
+      @return [int] next account identifier
+    */
     public static function nextAccount($id)
     {
         $config = \FannieConfig::factory();
@@ -842,6 +861,11 @@ class MemberREST
         return self::get($row[0]);
     }
 
+    /**
+      Get the previous account number sequentially
+      @param $id [int] account identifier
+      @return [int] previous account identifier
+    */
     public static function prevAccount($id)
     {
         $config = \FannieConfig::factory();
@@ -859,6 +883,200 @@ class MemberREST
         $row = $dbc->fetchRow($res);
 
         return self::get($row[0]);
+    }
+
+    /**
+      Provide lookups for the autocomplete service
+      @param $field [string] field name being autocompleted
+      @param $val [string] partial field 
+    */
+    public static function autoComplete($field, $val)
+    {
+        $config = \FannieConfig::factory();
+        $dbc = \FannieDB::get($config->get('OP_DB'));
+        if ($dbc->tableExists('CustomerAccounts') && $dbc->tableExists('Customers')) {
+            return self::autoCompleteAccount($dbc, $field, $val);
+        } else {
+            return self::autoCompleteCustdata($dbc, $field, $val);
+        }
+    }
+
+    private static function autoCompleteAccount($dbc, $field, $val)
+    {
+        switch (strtolower($field)) {
+            case 'mfirstname':
+                $prep = $dbc->prepare('
+                    SELECT firstName
+                    FROM Customers
+                    WHERE firstName LIKE ?
+                    GROUP BY firstName
+                    ORDER BY firstName');
+                $res = $dbc->execute($prep, array('%' . $val . '%'));
+                while ($row = $dbc->fetch_row($res)) {
+                    $ret[] = $row['firstName'];
+                    if (count($ret) > 50) {
+                        break;
+                    }
+                }
+                
+                return $ret;
+
+            case 'mlastname':
+                $prep = $dbc->prepare('SELECT lastName
+                                       FROM Customers
+                                       WHERE lastName LIKE ?
+                                       GROUP BY lastName
+                                       ORDER BY lastName');
+                $res = $dbc->execute($prep, array('%' . $val . '%'));
+                while ($row = $dbc->fetch_row($res)) {
+                    $ret[] = $row['lastName'];
+                    if (count($ret) > 50) {
+                        break;
+                    }
+                }
+
+                return $ret;
+
+            case 'maddress':
+                $prep = $dbc->prepare('SELECT addressLineOne
+                                       FROM CustomerAccounts
+                                       WHERE addressLineOne LIKE ?
+                                       GROUP BY addressLineOne
+                                       ORDER BY addressLineOne');
+                $res = $dbc->execute($prep, array('%' . $val . '%'));
+                while ($row = $dbc->fetch_row($res)) {
+                    $ret[] = $row['addressLineOne'];
+                    if (count($ret) > 50) {
+                        break;
+                    }
+                }
+
+                return $ret;
+
+            case 'mcity':
+                $prep = $dbc->prepare('SELECT city
+                                       FROM CustomerAccounts
+                                       WHERE city LIKE ?
+                                       GROUP BY city
+                                       ORDER BY city');
+                $res = $dbc->execute($prep, array('%' . $val . '%'));
+                while ($row = $dbc->fetch_row($res)) {
+                    $ret[] = $row['city'];
+                    if (count($ret) > 50) {
+                        break;
+                    }
+                }
+
+                return $ret;
+
+            case 'memail':
+                $prep = $dbc->prepare('SELECT email
+                                       FROM Customers
+                                       WHERE email LIKE ?
+                                       GROUP BY email
+                                       ORDER BY email');
+                $res = $dbc->execute($prep, array('%' . $val . '%'));
+                while ($row = $dbc->fetch_row($res)) {
+                    $ret[] = $row['email'];
+                    if (count($ret) > 50) {
+                        break;
+                    }
+                }
+
+                return $ret;
+
+            default:
+                return array();
+        }
+    }
+
+    private static function autoCompleteCustdata($dbc, $field, $val)
+    {
+        switch (strtolower($field)) {
+            case 'mfirstname':
+                $prep = $dbc->prepare('
+                    SELECT FirstName
+                    FROM custdata
+                    WHERE FirstName LIKE ?
+                    GROUP BY FirstName
+                    ORDER BY FirstName');
+                $res = $dbc->execute($prep, array('%' . $val . '%'));
+                while ($row = $dbc->fetch_row($res)) {
+                    $ret[] = $row['FirstName'];
+                    if (count($ret) > 50) {
+                        break;
+                    }
+                }
+                
+                return $ret;
+
+            case 'mlastname':
+                $prep = $dbc->prepare('SELECT LastName
+                                       FROM custdata
+                                       WHERE LastName LIKE ?
+                                       GROUP BY LastName
+                                       ORDER BY LastName');
+                $res = $dbc->execute($prep, array('%' . $val . '%'));
+                while ($row = $dbc->fetch_row($res)) {
+                    $ret[] = $row['LastName'];
+                    if (count($ret) > 50) {
+                        break;
+                    }
+                }
+
+                return $ret;
+
+            case 'maddress':
+                $prep = $dbc->prepare('SELECT street
+                                       FROM meminfo
+                                       WHERE street LIKE ?
+                                       GROUP BY street
+                                       ORDER BY street');
+                $res = $dbc->execute($prep, array('%' . $val . '%'));
+                while ($row = $dbc->fetch_row($res)) {
+                    $ret[] = $row['street'];
+                    if (count($ret) > 50) {
+                        break;
+                    }
+                }
+
+                return $ret;
+
+            case 'mcity':
+                $prep = $dbc->prepare('SELECT city
+                                       FROM meminfo
+                                       WHERE city LIKE ?
+                                       GROUP BY city
+                                       ORDER BY city');
+                $res = $dbc->execute($prep, array('%' . $val . '%'));
+                while ($row = $dbc->fetch_row($res)) {
+                    $ret[] = $row['city'];
+                    if (count($ret) > 50) {
+                        break;
+                    }
+                }
+
+                return $ret;
+
+            case 'memail':
+                $prep = $dbc->prepare('SELECT email_1
+                                       FROM meminfo
+                                       WHERE email_1 LIKE ?
+                                       GROUP BY email_1
+                                       ORDER BY email_1');
+                $res = $dbc->execute($prep, array('%' . $val . '%'));
+                while ($row = $dbc->fetch_row($res)) {
+                    $ret[] = $row['email_1'];
+                    if (count($ret) > 50) {
+                        break;
+                    }
+                }
+
+                return $ret;
+
+            default:
+                return array();
+        }
     }
 }
 
