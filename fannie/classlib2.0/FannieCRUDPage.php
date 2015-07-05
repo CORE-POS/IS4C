@@ -173,10 +173,21 @@ class FannieCRUDPage extends \FannieRESTfulPage
         }
         // find a character column to plug in
         // a placeholder value
+        $ready = false;
         foreach ($columns as $col_name => $c) {
             if ($col_name != $id_col && strstr(strtoupper($c['type']), 'CHAR')) {
                 $obj->$col_name('NEW');
+                $ready = true;
                 break;
+            }
+        }
+        if (!$ready) {
+            foreach ($columns as $col_name => $c) {
+                if ($col_name != $id_col && strstr(strtoupper($c['type']), 'DATE')) {
+                    $obj->$col_name(date('Y-m-d'));
+                    $ready = true;
+                    break;
+                }
             }
         }
 
@@ -246,9 +257,13 @@ class FannieCRUDPage extends \FannieRESTfulPage
                 if ($col_name == $id_col) {
                     $ret .= '<input type="hidden" name="id[]" value="' . $o->$id_col() . '" />';    
                 } else {
-                    $ret .= sprintf('<td><input type="text" class="form-control" 
+                    $css = 'form-control';
+                    if (strtoupper($c['type'] == 'DATETIME')) {
+                        $css .= ' date-field';
+                    }
+                    $ret .= sprintf('<td><input type="text" class="%s" 
                                             name="%s[]" value="%s" /></td>',
-                                $col_name, $o->$col_name());
+                                $css, $col_name, $o->$col_name());
                 }
             }
             $ret .= sprintf('<td>

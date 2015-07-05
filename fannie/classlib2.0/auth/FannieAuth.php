@@ -310,7 +310,7 @@ class FannieAuth
     */
     static public function createClass($auth_class, $description)
     {
-        $sql = FannieDB::get(FannieConfig::factory()->get('OP_DB'));
+        $dbc = FannieDB::get(FannieConfig::factory()->get('OP_DB'));
         if (!$dbc->tableExists('userKnownPrivs')) {
             return false;
         }
