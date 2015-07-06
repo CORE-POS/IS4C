@@ -41,6 +41,7 @@ class SkuMapPage extends FannieRESTfulPage
     public function preprocess()
     {
         $this->__routes[] = 'get<id><sku><plu>';
+        $this->__routes[] = 'get<id><apply>';
 
         return parent::preprocess();
     }
@@ -57,6 +58,29 @@ class SkuMapPage extends FannieRESTfulPage
                 AND upc=?');
         $delR = $dbc->execute($delP, array($this->id, $sku, $plu));
         $this->addOnloadCommand("showBootstrapAlert('#alert-area', 'success', 'Deleted entry for PLU #{$plu}')\n");
+
+        return true;
+    }
+
+    public function get_id_apply_handler()
+    {
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $map = new VendorSKUtoPLUModel($dbc); 
+        $map->vendorID($this->id);
+        $upP = $dbc->prepare('
+            UPDATE vendorItems
+            SET upc=?
+            WHERE sku=?
+                AND vendorID=?');
+        $costP = $dbc->prepare('
+            UPDATE products
+            SET cost=(SELECT cost FROM vendorItems WHERE vendorID=? AND sku=?)
+            WHERE upc=?');
+        foreach ($map->find() as $obj) {
+            $res = $dbc->execute($upP, array($obj->upc(), $obj->sku(), $this->id));
+            $res = $dbc->execute($costP, array($this->id, $obj->sku(), $obj->upc()));
+        }
+        $this->addOnloadCommand("showBootstrapAlert('#alert-area', 'success', 'Updated vendor catalog')\n");
 
         return true;
     }
@@ -122,6 +146,11 @@ class SkuMapPage extends FannieRESTfulPage
         return '<div id="alert-area"></div>' . $this->get_id_view();
     }
 
+    public function get_id_apply_view()
+    {
+        return '<div id="alert-area"></div>' . $this->get_id_view();
+    }
+
     public function get_id_sku_plu_view()
     {
         return '<div id="alert-area"></div>' . $this->get_id_view();
@@ -152,7 +181,10 @@ class SkuMapPage extends FannieRESTfulPage
             <label>PLU</label>
             <input type="text" class="form-control" name="plu" placeholder="Our PLU" />
             <button type="submit" class="btn btn-default">Add Entry</button>
+            <a href="?id=' . $this->id . '&apply=1" class="btn btn-default">Update Catalog</a>
             <input type="hidden" name="id" value="' . $this->id . '" />
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="VendorIndexPage.php?vid=' . $this->id . '" class="btn btn-default">Home</a>
             </div>
             </form>';
 
@@ -175,7 +207,7 @@ class SkuMapPage extends FannieRESTfulPage
             $ret .= sprintf('
                 <tr>
                     <td>%s</td>
-                    <td>%s</td>
+                    <td><a href="../ItemEditorPage.php?searchupc=%s">%s</a></td>
                     <td>%s</td>
                     <td>%s</td>
                     <td>
@@ -184,7 +216,7 @@ class SkuMapPage extends FannieRESTfulPage
                     </td>
                 </tr>',
                 $row['sku'],
-                $row['upc'],
+                $row['upc'], $row['upc'],
                 $row['vendorDescript'],
                 $row['storeDescript'],
                 $this->id, $row['sku'], $row['upc'],
