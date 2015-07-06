@@ -249,20 +249,20 @@ table.shelf-audit tr:hover {
     }
 
     function csv_content(){
-        $ret = "UPC,Description,Vendor,Account#,Dept#,\"Dept Name\",Qty,Cost,Unit Cost Total,Normal Retail,Current Retail,Status,Normal Retail Total,Current Retail Total\r\n";
+        $ret = "UPC,Description,Vendor,Account#,Dept#,\"Dept Name\",Qty,Cost,Unit Cost Total,Normal Retail,Status,Normal Retail Total\r\n";
         $totals = array();
+        $vendors = array();
         foreach($this->scans as $row) {
             if ($row['cost'] == 0 && $row['margin'] != 0) {
                 $row['cost'] = $row['normal_retail'] / ($row['margin'] * $row['normal_retail']);
                 $row['retailstatus'] .= '*';
             }
-            $ret .= sprintf("%s,\"%s\",\"%s\",%s,%s,%s,%.2f,%.2f,%.2f,%.2f,%.2f,%s,%.2f,%.2f\r\n",
+            $ret .= sprintf("%s,\"%s\",\"%s\",%s,%s,%s,%.2f,%.2f,%.2f,%.2f,%s,%.2f,\r\n",
                 $row['upc'],$row['description'],$row['vendor'],$row['salesCode'],$row['dept_no'],
                 $row['dept_name'],$row['quantity'],$row['cost'], ($row['quantity']*$row['cost']),
-                $row['normal_retail'], $row['actual_retail'],
+                $row['normal_retail'],
                 $row['retailstatus'],
-                ($row['quantity']*$row['normal_retail']),
-                ($row['quantity']*$row['actual_retail'])
+                ($row['quantity']*$row['normal_retail'])
             );
             if (!isset($totals[$row['salesCode']]))
                 $totals[$row['salesCode']] = array('qty'=>0.0,'ttl'=>0.0,'normalTtl'=>0.0,'costTtl'=>0.0);
@@ -270,11 +270,31 @@ table.shelf-audit tr:hover {
             $totals[$row['salesCode']]['ttl'] += ($row['quantity']*$row['actual_retail']);
             $totals[$row['salesCode']]['normalTtl'] += ($row['quantity']*$row['normal_retail']);
             $totals[$row['salesCode']]['costTtl'] += ($row['quantity']*$row['cost']);
+            if ($row['vendor'] != 'UNFI') {
+                $row['vendor'] = 'Non-UNFI';
+            }
+            if (!isset($vendors[$row['vendor']])) {
+                $vendors[$row['vendor']] = array();
+            }
+            if (!isset($vendors[$row['vendor']][$row['salesCode']])) {
+                $vendors[$row['vendor']][$row['salesCode']] = array('qty'=>0.0,'ttl'=>0.0,'normalTtl'=>0.0,'costTtl'=>0.0);
+            }
+            $vendors[$row['vendor']][$row['salesCode']]['qty'] += $row['quantity'];
+            $vendors[$row['vendor']][$row['salesCode']]['ttl'] += ($row['quantity']*$row['actual_retail']);
+            $vendors[$row['vendor']][$row['salesCode']]['normalTtl'] += ($row['quantity']*$row['normal_retail']);
+            $vendors[$row['vendor']][$row['salesCode']]['costTtl'] += ($row['quantity']*$row['cost']);
         }
         $ret .= ",,,,,,,,\r\n";
         foreach($totals as $code => $info){
-            $ret .= sprintf("TOTAL,,,%s,,,%.2f,,%.2f,,,,%.2f,%.2f\r\n",
-                    $code, $info['qty'], $info['costTtl'], $info['normalTtl'], $info['ttl']);
+            $ret .= sprintf(",,TOTAL,%s,,,%.2f,,%.2f,,,%.2f,\r\n",
+                    $code, $info['qty'], $info['costTtl'], $info['normalTtl']);
+        }
+        $ret .= ",,,,,,,,\r\n";
+        foreach($vendors as $vendor => $sales) {
+            foreach ($sales as $code => $info) {
+                $ret .= sprintf(",,%s,%s,,,%.2f,,%.2f,,,%.2f,\r\n",
+                        $vendor,$code, $info['qty'], $info['costTtl'], $info['normalTtl']);
+            }
         }
         return $ret;
     }
