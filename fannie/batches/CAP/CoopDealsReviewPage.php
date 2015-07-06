@@ -28,7 +28,6 @@ if (!class_exists('FannieAPI')) {
 
 class CoopDealsReviewPage extends FanniePage 
 {
-
     protected $title = "Fannie - CAP sales";
     protected $header = "Review Data";
 
@@ -154,6 +153,7 @@ class CoopDealsReviewPage extends FanniePage
         $query = $dbc->prepare_statement("
             SELECT
                 t.upc,
+                p.brand,
                 p.description,
                 t.price,
                 CASE WHEN s.super_name IS NULL THEN 'sale' ELSE s.super_name END as batch,
@@ -167,22 +167,29 @@ class CoopDealsReviewPage extends FanniePage
         $result = $dbc->exec_statement($query);
 
         $ret = "<form action=CoopDealsReviewPage.php method=post>
-        <table class=\"table\">
-        <tr><th>UPC</th><th>Desc</th><th>Sale Price</th><th>Batch</th></tr>\n";
+        <table class=\"table table-bordered table-striped tablesorter tablesorter-core small\">
+        <thead>
+        <tr><th>UPC</th><th>Brand</th><th>Desc</th><th>Sale Price</th>
+        <th>New Batch Name</th></tr>\n
+        </thead><tbody>";
         while ($row = $dbc->fetch_row($result)) {
             $ret .= sprintf('<tr>
+                        <td>%s</td>
                         <td>%s</td>
                         <td>%s</td>
                         <td>%.2f</td>
                         <td><span class="superNameSpan">%s </span>Co-op Deals %s</td>
                         </tr>' . "\n",
                         $row['upc'],
+                        $row['brand'],
                         $row['description'],
                         $row['price'],
                         $row['batch'],
-                        $row['subbatch']);
+                        $row['subbatch']
+                        );
         }
         $ret .= <<<html
+        </tbody>
         </table><p />
         <div class="row form-horizontal form-group">
             <label class="col-sm-2 control-label">A Start</label>
@@ -217,6 +224,7 @@ class CoopDealsReviewPage extends FanniePage
         </div>
         <p>    
             <button type=submit class="btn btn-default">Create Batch(es)</button>
+            <a href="CoopDealsMergePage.php" class="pull-right btn btn-default">Merge New Items into Existing Batch(es)</a>
         </p>
         </form>
 html;
