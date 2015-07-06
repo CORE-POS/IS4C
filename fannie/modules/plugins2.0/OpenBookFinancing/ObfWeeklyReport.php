@@ -592,7 +592,7 @@ class ObfWeeklyReport extends FannieReportPage
                 $quarter['actualSales'] = $w['actualSales'];
                 $quarter['planSales'] = $w['planSales'];
             }
-            $qt_average_wage = $quarter['wages'] / ((float)$quarter['hours']);
+            $qt_average_wage = $quarter['hours'] == 0 ? 0 : $quarter['wages'] / ((float)$quarter['hours']);
             $qt_proj_hours = $quarter['planSales'] / $category->salesPerLaborHourTarget();
             $qt_proj_labor = $qt_proj_hours * $qt_average_wage;
             $total_hours->quarterActual += $quarter['hours'];
@@ -656,7 +656,7 @@ class ObfWeeklyReport extends FannieReportPage
                 'meta_foreground' => 'black',
             );
 
-            $quarter_actual_sph = ($qtd_dept_sales)/($quarter['hours']);
+            $quarter_actual_sph = $quarter['hours'] == 0 ? 0 : ($qtd_dept_sales)/($quarter['hours']);
             $quarter_proj_sph = ($qtd_dept_plan)/($qt_proj_hours);
             $data[] = array(
                 'Sales per Hour',
@@ -723,7 +723,7 @@ class ObfWeeklyReport extends FannieReportPage
             } else {
                 $quarter = $dbc->fetch_row($quarter);
             }
-            $qt_average_wage = $quarter['wages'] / ((float)$quarter['hours']);
+            $qt_average_wage = $quarter['hours'] == 0 ? 0 : $quarter['wages'] / ((float)$quarter['hours']);
             $qt_proj_hours = $total_sales->quarterLaborSales / $c->salesPerLaborHourTarget();
             $qt_proj_labor = $qt_proj_hours * $qt_average_wage;
             $total_hours->quarterActual += $quarter['hours'];
@@ -791,7 +791,7 @@ class ObfWeeklyReport extends FannieReportPage
                 'meta_foreground' => 'black',
             );
 
-            $quarter_actual_sph = ($total_sales->quarterActual)/($quarter['hours']);
+            $quarter_actual_sph = $quarter['hours'] == 0 ? 0 : ($total_sales->quarterActual)/($quarter['hours']);
             $quarter_proj_sph = ($total_sales->quarterProjected)/($qt_proj_hours);
             $data[] = array(
                 'Sales per Hour',
@@ -929,7 +929,7 @@ class ObfWeeklyReport extends FannieReportPage
             'meta_foreground' => 'black',
         );
 
-        $quarter_actual_sph = ($total_sales->quarterActual)/($total_hours->quarterActual);
+        $quarter_actual_sph = $total_hours->quarterActual == 0 ? 0 : ($total_sales->quarterActual)/($total_hours->quarterActual);
         $quarter_proj_sph = ($total_sales->quarterProjected)/($total_hours->quarterProjected);
         $data[] = array(
             'Sales per Hour',
