@@ -63,17 +63,18 @@ class PISuspensionPage extends PIKillerPage {
         return parent::preprocess();
     }
 
-    protected function get_id_edit_handler(){
-        global $FANNIE_OP_DB;
+    protected function get_id_edit_handler()
+    {
         $this->card_no = $this->id;
-        if (!FannieAuth::validateUserQuiet('editmembers'))
+        if (!FannieAuth::validateUserQuiet('editmembers')) {
             return $this->unknown_request_handler();
+        }
 
         $this->title = 'Suspension Status : Member '.$this->card_no;
 
-        $this->__models['custdata'] = $this->get_model(FannieDB::get($FANNIE_OP_DB),'CustdataModel',
-                    array('CardNo'=>$this->id,'personNum'=>1));
-        return True;
+        $this->account = \COREPOS\Fannie\API\member\MemberREST::get($this->id);
+
+        return true;
     }
 
     protected function get_id_fixaddress_handler(){
@@ -139,7 +140,7 @@ class PISuspensionPage extends PIKillerPage {
         $stats = array('INACT'=>'Inactive','TERM'=>'Termed','INACT2'=>'Term pending');
         foreach ($stats as $k=>$v){
             echo "<option value=".$k;
-            if ($k == $this->__models['custdata']->Type()) echo " selected";
+            if ($k == $this->account['activeStatus']) echo " selected";
             echo ">".$v."</option>";
         }
         echo "</select>";
@@ -164,7 +165,8 @@ class PISuspensionPage extends PIKillerPage {
         return ob_get_clean();
     }
 
-    function post_id_handler(){
+    function post_id_handler()
+    {
         global $FANNIE_OP_DB;
         if (!FannieAuth::validateUserQuiet('editmembers') && !FannieAuth::validateUserQuiet('editmembers_csc'))
             return $this->unknown_request_handler();
@@ -180,6 +182,7 @@ class PISuspensionPage extends PIKillerPage {
         $cas_model = new CustomerAccountSuspensionsModel($dbc);
         $cas_model->card_no($this->id);
         $current_id = 0;
+        $account = \COREPOS\Fannie\API\member\MemberREST::get($this->id);
 
         if ($code == 0) {
             // reactivate account
@@ -199,35 +202,32 @@ class PISuspensionPage extends PIKillerPage {
             $cas_model->tdate(date('Y-m-d H:i:s'));
             $cas_model->save();
 
-            if (isset($this->__models['suspended'])){
-                $cdP = $dbc->prepare_statement('UPDATE custdata SET
-                    Type=?, memType=?, ChargeOk=1, memCoupons=1,
-                    Discount=?, MemDiscountLimit=?, ChargeLimit=?
-                    WHERE CardNo=?');
-                $cdR = $dbc->exec_statement($cdP,array(
-                    $this->__models['suspended']->memtype2(),
-                    $this->__models['suspended']->memtype1(),
-                    $this->__models['suspended']->discount(),
-                    $this->__models['suspended']->chargelimit(),
-                    $this->__models['suspended']->chargelimit(),
-                    $this->id));
+            if (isset($this->__models['suspended'])) {
+
+                $json = array(
+                    'cardNo' => $this->id,
+                    'activeStatus' => '',
+                    'memberStatus' => $this->__models['suspended']->memtype2(),
+                    'customerTypeID' => $this->__models['suspended']->memtype1(),
+                    'chargeLimit' => $this->__models['suspended']->chargelimit(),
+                    'contactAllowed' => $this->__models['suspended']->mailflag(),
+                    'customers' => array()
+                );
+                foreach ($account['customers'] as $c) {
+                    $c['discount'] = $this->__models['suspended']->discount();
+                    $c['chargeAllowed'] = 1;
+                    $json['customers'][] = $c;
+                }
+                \COREPOS\Fannie\API\member\MemberREST::post($this->id, $json);
 
                 $cust = new CustdataModel($dbc);
                 $cust->CardNo($this->id);
-                for($i=1;$i<=4;$i++){
-                    $cust->personNum($i);
-                    if($cust->load())
-                        $cust->pushToLanes();
+                foreach ($cust->find() as $obj) {
+                    $obj->pushToLanes();
                 }
-
-                $mi = new MeminfoModel($dbc);
-                $mi->card_no($this->id);
-                $mi->ads_OK($this->__models['suspended']->mailflag());
-                $mi->save();
-
                 $this->__models['suspended']->delete();
             }
-        } else if (isset($this->__models['suspended'])){
+        } elseif (isset($this->__models['suspended'])) {
             // account already suspended
             // add history/log record, update suspended record
             $m_status = 0;
@@ -281,34 +281,41 @@ class PISuspensionPage extends PIKillerPage {
                 $current_id = $cas_model->save();
             }
 
-            $cdP = $dbc->prepare_statement('UPDATE custdata SET Type=?
-                    WHERE CardNo=?');
-            $cdR = $dbc->exec_statement($cdP, array($status, $this->id));
+            $json = array(
+                'cardNo' => $this->id,
+                'activeStatus' => $status,
+            );
+            \COREPOS\Fannie\API\member\MemberREST::post($this->id, $json);
         } else {
             // suspend active account
             // create suspensions and log/history records
             // set custdata & meminfo to inactive
-            $mi = $this->get_model($dbc,'MeminfoModel',array('card_no'=>$this->id));
-            $cd = $this->get_model($dbc,'CustdataModel',array('CardNo'=>$this->id,'personNum'=>1));
+            $discount = 0;
+            foreach ($account['customers'] as $c) {
+                if ($c['accountHolder']) {
+                    $discount = $c['discount'];
+                    break;
+                }
+            }
             
             $susp = new SuspensionsModel($dbc);
             $susp->cardno($this->id);
             $susp->type( $status == 'TERM' ? 'T' : 'I' );           
-            $susp->memtype1($cd->memType());
-            $susp->memtype2($cd->Type());
+            $susp->memtype1($account['customerTypeID']);
+            $susp->memtype2($account['memberStatus']);
             $susp->suspDate(date('Y-m-d H:i:s'));
             $susp->reason('');
-            $susp->mailflag($mi->ads_OK());
-            $susp->discount($cd->Discount());
-            $susp->chargelimit($cd->ChargeLimit());
+            $susp->mailflag($account['contactAllowed']);
+            $susp->discount($discount);
+            $susp->chargelimit($account['chargeLimit']);
             $susp->reasoncode($code);
             $susp->save();
 
-            $cas_model->savedType($cd->Type());
-            $cas_model->savedMemType($cd->memType());
-            $cas_model->savedDiscount($cd->Discount());
-            $cas_model->savedChargeLimit($cd->ChargeLimit());
-            $cas_model->savedMailFlag($mi->ads_OK());
+            $cas_model->savedType($account['memberStatus']);
+            $cas_model->savedMemType($account['customerTypeID']);
+            $cas_model->savedDiscount($discount);
+            $cas_model->savedChargeLimit($account['chargeLimit']);
+            $cas_model->savedMailFlag($account['contactAllowed']);
             $cas_model->suspensionTypeID( $status == 'TERM' ? 2 : 1 );
             $cas_model->tdate(date('Y-m-d H:i:s'));
             $cas_model->username($this->current_user);
@@ -323,12 +330,19 @@ class PISuspensionPage extends PIKillerPage {
             $history->postdate(date('Y-m-d H:i:s'));
             $history->save();
 
-            $mi->ads_OK(0);
-            $cdP = $dbc->prepare_statement('UPDATE custdata SET
-                    memType=0,Type=?,ChargeOk=0,memCoupons=0,
-                    Discount=0,MemDiscountLimit=0,ChargeLimit=0
-                    WHERE CardNo=?');
-            $cdR = $dbc->exec_statement($cdP, array($status, $this->id));
+            $json = array(
+                'cardNo' => $this->id,
+                'chargeLimit' => 0,
+                'activeStatus' => $status,
+                'customerTypeID' => 0,
+                'contactAllowed' => 0,
+                'customers' => array(),
+            );
+            foreach ($account['customers'] as $c) {
+                $c['discount'] = 0;
+                $json['customers'][] = $c;
+            }
+            \COREPOS\Fannie\API\member\MemberREST::post($this->id, $json);
         }
 
         // only one CustomerAccountSuspensions record should be active
