@@ -121,7 +121,7 @@ class AuditLib
             $desc = $infoW['likeCodeDesc'];
             $dept = $infoW['department'];
         } else {
-            $product = new ProductsModel($dbc);
+            $product = new \ProductsModel($dbc);
             $product->upc($upc);
             $product->load();
             $desc = $product->description();
