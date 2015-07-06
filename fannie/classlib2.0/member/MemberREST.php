@@ -915,6 +915,9 @@ class MemberREST
             $query .= ' AND m.ads_OK = ? ';
             $params[] = $json['contactAllowed'];
         }
+        if (!isset($json['customers']) || !is_array($json['customers'])) {
+            $json['customers'] = array();
+        }
         foreach ($json['customers'] as $j) {
             if (isset($j['lastName'])) {
                 $query .= ' AND c.LastName LIKE ? ';
