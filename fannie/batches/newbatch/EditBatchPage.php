@@ -760,7 +760,7 @@ class EditBatchPage extends FannieRESTfulPage
         $start = strtotime($model->startDate());
         $end = strtotime($model->endDate()) + (60*60*24);
 
-        if ($dtype == 3 || $dtype == 4) {
+        if ($this->config->get('COOP_ID') == 'WFC_Duluth' && $type == 10) {
             return $this->showPairedBatchDisplay($id,$name);
         }
 
