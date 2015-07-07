@@ -148,6 +148,7 @@ class ItemMarginModule extends ItemModule
 
         if ($new_rule != $old_rule) {
             $prod = new ProductsModel($db);
+            $prod->upc(BarcodeLib::padUPC($upc));
             $rule = new PriceRulesModel($db);
             switch ($new_rule) {
                 case 0: // no custom rule
