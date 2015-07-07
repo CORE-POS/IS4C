@@ -30,9 +30,9 @@ accounts once the first equity payment is made and/or
 equity reaches final required balance';
 
     public $default_schedule = array(
-        'min' => 5,
-        'hour' => 0,
-        'day' => '1',
+        'min' => 0,
+        'hour' => 2,
+        'day' => '*',
         'month' => '*',
         'weekday' => '*',
     );

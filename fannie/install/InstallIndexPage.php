@@ -609,6 +609,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             'CustPreferencesModel',
             'CustReceiptMessageModel',
             'CustomerAccountSuspensionsModel',
+            'CustomerNotificationsModel',
             'CustomReceiptModel',
             'CustomReportsModel',
             'DateRestrictModel',
