@@ -724,7 +724,7 @@ class ObfWeeklyReport extends FannieReportPage
                 $quarter = $dbc->fetch_row($quarter);
             }
             $qt_average_wage = $quarter['hours'] == 0 ? 0 : $quarter['wages'] / ((float)$quarter['hours']);
-            $qt_proj_hours = $total_sales->quarterLaborSales / $c->salesPerLaborHourTarget();
+            $qt_proj_hours = $total_sales->quarterProjected / $c->salesPerLaborHourTarget();
             $qt_proj_labor = $qt_proj_hours * $qt_average_wage;
             $total_hours->quarterActual += $quarter['hours'];
             $total_hours->quarterProjected += $qt_proj_hours;
