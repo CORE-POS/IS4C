@@ -126,12 +126,28 @@ class PISearchPage extends PIKillerPage {
         $ret = '<tr><td colspan="9"><p>There is more than one result</p>';
         $ret .= '<form action="PISearchPage.php" method="get">';
         $ret .= '<select name="id" id="memNum_s">';
+        $names = array();
         foreach ($this->results as $account) {
             foreach ($account['customers'] as $row) {
+                if ($this->first && !stristr($row['firstName'], $this->first)) {
+                    continue;
+                }
+                if ($this->last && !stristr($row['lastName'], $this->last)) {
+                    continue;
+                }
+                $names[] = $row['firstName'] . ' ' . $row['lastName'] . '::' . $account['cardNo'];
+                /*
                 $ret .= sprintf('<option value="%d">%d %s %s</option>',
                     $account['cardNo'],$account['cardNo'],
                     $row['firstName'],$row['lastName']);
+                */
             }
+        }
+        sort($names);
+        foreach ($names as $name) {
+            list($n, $id) = explode('::', $name, 2);
+            $ret .= sprintf('<option value="%d">%s (%d)</option>',
+                    $id, $n, $id); 
         }
         $ret .= '</select> ';
         $ret .= '<input type="submit" value="submit" />';
