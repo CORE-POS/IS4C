@@ -45,20 +45,61 @@ class PriceRounder
     public function round($price, $extra_parameters=array())
     {
         // operate in cents
-        $price = floor($price * 100);
-
-        while ($price % 10 != 9) {
-            $price++;
+        $price = floor($price * 100);        
+        
+        // if price < $1.00
+        if ($price < 100) {
+            while ($price % 100 != 29 && $price % 100 != 39 && $price % 100 != 49 && $price % 100 != 69 && $price % 100 != 79 && $price % 100 != 89 && $price % 100 != 99){
+                $price++;
+            }
         }
-
-        if ($price % 100 == 5 || $price % 100 == 9) {
-            $price += 10;
+		
+        // if price $1.00 - 2.99
+        if ($price < 300 && $price > 100){
+            if ($price % 100 <= 15){
+                $price = $price - ($price % 100) - 1;
+            } elseif ($price % 100 != 19 && $price % 100 != 39 && $price % 100 != 49 && $price % 100 != 89 && $price % 100 != 99) {
+                while ($price % 100 != 19 && $price % 100 != 39 && $price % 100 != 49 && $price % 100 != 89 && $price % 100 != 99) {
+                    $price++;
+                }
+            }
         }
-
-        if ($price % 100 <= 19) {
-            $price = $price - ($price % 100) - 1;
+        
+        
+        // if price < $6.00 BUT > $2.99 
+        if ($price < 600 && $price >= 300) {
+            if ($price % 100 <= 19){
+                $price = $price - ($price % 100) - 1;
+            } elseif ($price % 100 != 39 && $price % 100 != 69 && $price % 100 != 99){
+                while ($price % 100 != 39 && $price % 100 != 69 && $price % 100 != 99) {
+                    $price++;
+                }
+            }
+            
         }
-
+       
+        // if price >= 6.00 and cents < 30, round down to nearest x.99
+        if ($price >= 600) {
+            if ($price % 100 <= 29){
+                $price = $price - ($price % 100) - 1;
+            } elseif ($price % 100 > 29) {
+                while ($price % 100 != 69 && $price % 100 != 99) {
+                    $price++;
+                }
+            }
+        }
+        
+        // if price is >= $10.00 and the dollar amount is zero (20.99, 30.99, etc.) round down to nearest $xx.99
+        if ($price >= 1000){
+            if ( ($price - ($price % 100) ) % 1000 == 0 ){
+                $price = $price - ($price % 100) - 1;
+            } else {
+                while ($price % 100 != 99){
+                    $price++;
+                }
+            }
+        }
+        
         return round($price/100.00, 2);
     }
 
@@ -82,9 +123,10 @@ class PriceRounder
         } elseif ($price > 300) {
             $acceptable_endings = array(39, 69, 99);
         } elseif ($price > 100) {
-            $acceptable_endings = array(19, 39, 69, 99);
+            $acceptable_endings = array(19, 39, 49, 69, 89, 99);
+        } elseif ($price > 0) {
+            $acceptable_endings = array(29, 39, 49, 69, 79, 89, 99);
         }
-
         // find the next higher price w/ correct ending
         $next = $price;
         while (!in_array($next % 100, $acceptable_endings)) {
