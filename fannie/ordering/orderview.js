@@ -76,7 +76,6 @@ function confirmC(oid,tid){
 		data: 'action=closeOrder&orderID='+oid+'&status='+tid,
 		cache: false,
 		success: function(resp){
-			//location = 'review.php?orderID='+oid;
 			location = $('#redirectURL').val();
 		}
 		});
@@ -129,18 +128,6 @@ function deleteID(orderID,transID)
 {
 	$.ajax({
 	data: '_method=delete&orderID='+orderID+'&transID='+transID,
-	cache: false,
-	success: function(resp){
-		$('#itemDiv').html(resp);
-        $('.item-field').change(saveItem);
-	}
-	});
-}
-function deleteUPC(orderID,upc){
-	$.ajax({
-	url: 'ajax-calls.php',
-	type: 'post',
-	data: 'action=deleteUPC&orderID='+orderID+'&upc='+upc,
 	cache: false,
 	success: function(resp){
 		$('#itemDiv').html(resp);
