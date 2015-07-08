@@ -43,14 +43,14 @@ equity reaches final required balance';
 
         $equityP = $dbc->prepare('
             SELECT e.payments,
-                e.start_date
+                e.startdate
             FROM ' . $this->config->get('TRANS_DB') . $dbc->sep() . 'equity_live_balance AS e
             WHERE e.memnum = ?
         ');
 
         $accounts = \COREPOS\Fannie\API\member\MemberREST::get();
         foreach ($accounts as $account) {
-            if ($account['startDate'] == '' || $account['startDate'] == '0000-00-00 00:00:00') {
+            if ($account['startDate'] != '' && $account['startDate'] != '0000-00-00 00:00:00') {
                 // date has been assigned already
                 continue;
             }
@@ -67,9 +67,11 @@ equity reaches final required balance';
               date one year in the future.
             */
             if ($equity['payments'] > 0) {
-                $account['startDate'] = $equity['start_date'];
+                if ($account['startDate'] == '' || $account['startDate'] == '0000-00-00 00:00:00') {
+                    $account['startDate'] = $equity['startdate'];
+                }
                 if ($equity['payments'] < 100) {
-                    $ts = strtotime($equity['start_date']);
+                    $ts = strtotime($equity['startdate']);
                     $next_year = date('Y-m-d', mktime(0, 0, 0, date('n', $ts), date('j', $ts), date('Y', $ts)+1));
                     $account['endDate'] = $next_year;
                 }
@@ -98,7 +100,7 @@ equity reaches final required balance';
             $dbc->query('DELETE FROM CustomerNotifications WHERE source=\'SetMemDatesTask\'');
             $new_table = true;
         }
-        foreach ($account as $account) {
+        foreach ($accounts as $account) {
             if ($account['endDate'] == '' || $account['endDate'] == '0000-00-00 00:00:00') {
                 // no due date
                 continue;
@@ -120,7 +122,7 @@ equity reaches final required balance';
 
             $msg = 'EQUITY OWED $'
                 . sprintf('%.2f', 100-$equity['payments'])
-                . ' == DUE DATE'
+                . ' == DUE DATE '
                 . date('m/d/Y', strtotime($account['endDate']));
             if ($old_table) {
                 $model = new CustReceiptMessageModel($dbc);
