@@ -52,6 +52,7 @@ class PriceRounder
             $price++;
         }
 
+	// adding a comment
         // mystery
         if ($price % 100 == 5 || $price % 100 == 9) {
             $price += 10;
