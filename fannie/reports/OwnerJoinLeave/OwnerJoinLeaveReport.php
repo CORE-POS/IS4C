@@ -353,7 +353,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
                     LEFT JOIN ' . $FANNIE_TRANS_DB . $dbc->sep() . 'equity_live_balance AS e ON n.cardno=e.memnum
                 WHERE note LIKE \'%FUNDS REQ%\'
                     AND stamp >= ?
-                    AND e.payments < 100
+                    AND e.payments <= 100
                 GROUP BY cardno
                 ORDER BY cardno');
             $detailP = $dbc->prepare('
