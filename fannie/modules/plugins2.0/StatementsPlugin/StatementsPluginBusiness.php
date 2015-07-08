@@ -33,24 +33,6 @@ class StatementsPluginBusiness extends FannieRESTfulPage
         $cardsClause = " AND m.card_no IN $cards ";
         if ($cards == "(") $cardsClause = "";
 
-        $memberP = $dbc->prepare("
-            SELECT m.card_no, 
-                c.LastName,
-                m.street, 
-                m.city, 
-                m.state, 
-                m.zip,
-                n.balance,
-                c.FirstName
-            FROM meminfo AS m 
-                INNER JOIN custdata AS c ON c.CardNo=m.card_no AND c.personNum=1
-                LEFT JOIN " . $FANNIE_TRANS_DB . $dbc->sep() . "ar_live_balance as n ON m.card_no=n.card_no
-            WHERE c.Type NOT IN ('TERM')
-                AND c.memType IN (2,0)
-                AND m.card_no IN " . $cards . "
-            ORDER BY m.card_no");
-        $memberR = $dbc->execute($memberP, $args);
-
         /**
           Look up transactions involving AR over last 90 days
         */
@@ -179,36 +161,46 @@ class StatementsPluginBusiness extends FannieRESTfulPage
         $pdf->SetAutoPageBreak(false);
 
         //Meat of the statement
+        $balP = $dbc->prepare('
+            SELECT balance
+            FROM ' . $this->config->get('TRANS_DB') . $dbc->sep() . 'ar_live_balance
+            WHERE card_no=?');
         $rowNum=0;
-        while ($memberW = $dbc->fetch_row($memberR)) {
+        foreach ($this->id as $card_no) {
+            $account = \COREPOS\Fannie\API\member\MemberREST::get($card_no);
+            $primary = array();
+            foreach ($account['customers'] as $c) {
+                if ($c['accountHolder']) {
+                    $primary = $c;
+                    break;
+                }
+            }
+            $balance = $dbc->getValue($balP, array($card_no));
+
             $pdf->AddPage();
             $pdf->Image('new_letterhead_horizontal.png',5,10, 200);
             $pdf->SetFont('Gill','','12');
             $pdf->Ln(45);
 
-            $pdf->Cell(10,5,sprintf("Invoice #: %s-%s",$memberW['card_no'],date("ymd")),0,1,'L');
+            $pdf->Cell(10,5,sprintf("Invoice #: %s-%s",$card_no,date("ymd")),0,1,'L');
             $pdf->Cell(10,5,$stateDate,0);
             $pdf->Ln(8);
 
             //Member address
-            $name = $memberW['LastName'];
-            if (!empty($memberW['FirstName'])) {
-                $name = $memberW['FirstName'].' '.$name;
+            $name = $primary['lastName'];
+            if (!empty($primary['firstName'])) {
+                $name = $primary['firstName'].' '.$name;
             }
-            $pdf->Cell(50,10,trim($memberW['card_no']).' '.trim($name),0);
+            $pdf->Cell(50,10,trim($card_no).' '.trim($name),0);
             $pdf->Ln(5);
 
-            if (strstr($memberW['street'],"\n") === false){
-                $pdf->Cell(80,10,$memberW['street'],0);
-                $pdf->Ln(5);
-            } else {
-                $pts = explode("\n",$memberW['street'], 2);
-                $pdf->Cell(80,10,$pts[0],0);
-                $pdf->Ln(5);
-                $pdf->Cell(80,10,$pts[1],0);
+            $pdf->Cell(80, 10, $account['addressFirstLine'], 0);
+            $pdf->Ln(5);
+            if ($account['addressSecondLine']) {
+                $pdf->Cell(80, 10, $account['addressSecondLine'], 0);
                 $pdf->Ln(5);
             }
-            $pdf->Cell(90,10,$memberW['city'] . ', ' . $memberW['state'] . '   ' . $memberW['zip'],0);
+            $pdf->Cell(90,10,$account['city'] . ', ' . $account['state'] . '   ' . $account['zip'],0);
             $pdf->Ln(25);
  
             $txt = "If payment has been made or sent, please ignore this invoice. If you have any questions about this invoice or would like to make arrangements to pay your balance, please write or call the Finance Department at the above address or (218) 728-0884.";
@@ -220,7 +212,7 @@ class StatementsPluginBusiness extends FannieRESTfulPage
                 FROM " . $FANNIE_TRANS_DB . $dbc->sep() . "ar_history
                 WHERE ".$dbc->datediff('tdate',$dbc->now())." < -90
                     AND card_no = ?");
-            $priorR = $dbc->execute($priorQ, array($memberW['card_no']));
+            $priorR = $dbc->execute($priorQ, array($card_no));
             $priorW = $dbc->fetch_row($priorR);
             $priorBalance = is_array($priorW) ? $priorW['priorBalance'] : 0;
 
@@ -241,17 +233,17 @@ class StatementsPluginBusiness extends FannieRESTfulPage
             $pdf->Cell($columns[3],8,'Amount',0,1,'L',1);
  
             $gazette = false;
-            if (!isset($arRows[$memberW['card_no']])) {
-                $arRows[$memberW['card_no']] = array();
+            if (!isset($arRows[$card_no])) {
+                $arRows[$card_no] = array();
             }
-            foreach ($arRows[$memberW['card_no']] as $arRow) {
+            foreach ($arRows[$card_no] as $arRow) {
 
                 $date = $arRow['tdate'];
                 $trans = $arRow['trans_num'];
                 $charges = $arRow['charges'];
                 $payment =  $arRow['payments'];
 
-                $detail = $details[$memberW['card_no']][$trans];
+                $detail = $details[$card_no][$trans];
 
                 if (strstr($detail[0],"Gazette Ad")) {
                     $gazette = true;
@@ -293,12 +285,12 @@ class StatementsPluginBusiness extends FannieRESTfulPage
             $pdf->Ln(15);
             $pdf->Cell($indent,8,'');
             $pdf->SetFillColor(200);
-            if ($memberW['balance'] >= 0) {
+            if ($balance >= 0) {
                 $pdf->Cell(35,8,'Amount Due',0,0,'L',1);
             } else {
                 $pdf->Cell(35,8,'Credit Balance',0,0,'L',1);
             }
-            $pdf->Cell(25,8,'$ ' . sprintf("%.2f",$memberW['balance']),0,0,'L');
+            $pdf->Cell(25,8,'$ ' . sprintf("%.2f",$balance),0,0,'L');
 
             if ($gazette) {
                 $pdf->SetLeftMargin(10);
@@ -315,29 +307,24 @@ class StatementsPluginBusiness extends FannieRESTfulPage
                 $pdf->Cell(30,5,'610 East 4th Street');
                 $pdf->Cell(115,5,'');
                 $pdf->Cell(20,5,'Customer Number:',0,0,'R');
-                $pdf->Cell(20,5,$memberW['card_no'],0,1,'L');
+                $pdf->Cell(20,5,$card_no,0,1,'L');
                 $pdf->Cell(30,5,'Duluth, MN 55805');
                 $pdf->Cell(115,5,'');
                 $pdf->Cell(20,5,'Invoice Total:',0,0,'R');
-                $pdf->Cell(20,5,$memberW['balance'],0,1,'L');
+                $pdf->Cell(20,5,$balance,0,1,'L');
 
                 $pdf->Ln(5);
-                $pdf->Cell(10,10,trim($memberW['card_no']),0);
+                $pdf->Cell(10,10,trim($card_no),0);
                 $pdf->Ln(5);
-                $pdf->Cell(50,10,trim($memberW['LastName']),0);
+                $pdf->Cell(50,10,trim($primary['lastName']),0);
                 $pdf->Ln(5);
-                if (strstr($memberW['street'], "\n")) {
-                    list($addr1, $addr2) = explode("\n", $memberW['street'], 2);
-                } else {
-                    $addr2 = false;
-                }
-                $pdf->Cell(80,10,$addr1,0);
-                if ($addr2) {
+                $pdf->Cell(80,10,$account['addressFirstLine'],0);
+                if ($account['addressSecondLine']) {
                     $pdf->Ln(5);
-                    $pdf->Cell(80,10,$addr2,0);
+                    $pdf->Cell(80,10,$account['addressSecondLine'],0);
                 }
                 $pdf->Ln(5);
-                $pdf->Cell(90,10,$memberW['city'] . ', ' . $memberW['state'] . '   ' . $memberW['zip'],0);
+                $pdf->Cell(90,10,$account['city'] . ', ' . $account['state'] . '   ' . $account['zip'],0);
 
                 $pdf->SetXY(80,240);
                 $pdf->SetFontSize(10);

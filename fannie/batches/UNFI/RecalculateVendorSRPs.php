@@ -39,6 +39,9 @@ class RecalculateVendorSRPs extends FannieRESTfulPage
     specific margin goals.';
     public $themed = true;
 
+    protected $auth_classes = array('batches');
+    protected $must_authenticate = true;
+
     public function get_id_view()
     {
         global $FANNIE_OP_DB;
@@ -58,7 +61,8 @@ class RecalculateVendorSRPs extends FannieRESTfulPage
                     WHEN b.margin IS NOT NULL THEN b.margin
                     ELSE 0 
                 END AS margin,
-                n.shippingMarkup
+                COALESCE(n.shippingMarkup, 0) as shipping,
+                COALESCE(n.discountRate, 0) as discount
             FROM vendorItems as v 
                 LEFT JOIN vendorDepartments AS a ON v.vendorID=a.vendorID AND v.vendorDept=a.deptID
                 INNER JOIN vendors AS n ON v.vendorID=n.vendorID
@@ -78,12 +82,13 @@ class RecalculateVendorSRPs extends FannieRESTfulPage
         if ($dbc->tableExists('vendorSRPs')) {
             $insP = $dbc->prepare_statement('INSERT INTO vendorSRPs VALUES (?,?,?)');
         }
+        $rounder = new \COREPOS\Fannie\API\item\PriceRounder();
         while ($fetchW = $dbc->fetch_array($fetchR)) {
             // calculate a SRP from unit cost and desired margin
-            $srp = round($fetchW['cost'] / (1 - $fetchW['margin']),2);
-            $srp *= (1+$fetchW['shippingMarkup']);
+            $adj = \COREPOS\Fannie\API\item\Margin::adjustedCost($fetchW['cost'], $fetchW['discount'], $fetchW['shipping']);
+            $srp = \COREPOS\Fannie\API\item\Margin::toPrice($adj, $fetchW['margin']);
 
-            $srp = $this->normalizePrice($srp);
+            $srp = $rounder->round($srp);
 
             $upR = $dbc->execute($upP, array($srp, $id, $fetchW['sku']));
             if ($insP) {

@@ -82,13 +82,9 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
     }
     */
 
-    function body_content(){
-        global $FANNIE_URL,
-            $FANNIE_ROOT,
-            $FANNIE_PRODUCT_MODULES,
-            $FANNIE_DEFAULT_PDF,
-            $FANNIE_COMPOSE_PRODUCT_DESCRIPTION,
-            $FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION;
+    function body_content()
+    {
+        include(dirname(__FILE__) . '/../config.php');
 
         ob_start();
 
@@ -245,6 +241,15 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         echo installSelectField('FANNIE_BATCH_VIEW', $FANNIE_BATCH_VIEW, $batch_opts, 'all');
         ?>
         <hr />
+        <label>Default Reporting Departments View</label>
+        <?php
+        $report_opts = array(
+            'range' => 'Range of Departments',
+            'multi' => 'Multi Select',
+        ); 
+        echo installSelectField('FANNIE_REPORT_DEPT_MODE', $FANNIE_REPORT_DEPT_MODE, $report_opts, 'range');
+        ?>
+        <hr />
         <label>Default Shelf Tag Layout</label>
         <?php
         $layouts = 'No Layouts Found!';
@@ -262,6 +267,26 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
             $source[$m] = $m;
         }
         echo installSelectField('FANNIE_TAG_DATA_SOURCE', $FANNIE_TAG_DATA_SOURCE, $source);
+        ?>
+
+        <hr />
+        <h4 class="install">Service Scale Integration</h4>
+        <p class='ichunk' style="margin:0.4em 0em 0.4em 0em;"><b>Data Gate Weigh directory</b>
+        <?php
+        echo installTextField('FANNIE_DGW_DIRECTORY', $FANNIE_DGW_DIRECTORY, '');
+        if ($FANNIE_DGW_DIRECTORY !== '') {
+            if (is_writable($FANNIE_DGW_DIRECTORY)) {
+                echo "<div class=\"alert alert-success\">$FANNIE_DGW_DIRECTORY is writable</div>";
+            } elseif (!file_exists($FANNIE_DGW_DIRECTORY)) {
+                echo "<div class=\"alert alert-danger\">$FANNIE_DGW_DIRECTORY does not exist</div>";
+            } else {
+                echo "<div class=\"alert alert-danger\">$FANNIE_DGW_DIRECTORY is not writable</div>";
+            }
+        }
+        ?>
+        <p class='ichunk' style="margin:0.4em 0em 0.4em 0em;"><b>E-Plum directory</b>
+        <?php
+        echo installTextField('FANNIE_EPLUM_DIRECTORY', $FANNIE_EPLUM_DIRECTORY, '');
         ?>
 
         <hr />

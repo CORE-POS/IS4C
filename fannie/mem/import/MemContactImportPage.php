@@ -106,9 +106,8 @@ class MemContactImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
         }
     }
     
-    function process_file($linedata){
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+    function process_file($linedata)
+    {
         $mn_index = $this->get_column_index('memnum');
         $st_index = $this->get_column_index('street');
         $st2_index = $this->get_column_index('street2');
@@ -119,7 +118,7 @@ class MemContactImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $ph2_index = $this->get_column_index('ph2');
         $email_index = $this->get_column_index('email');
 
-        foreach($linedata as $line){
+        foreach ($linedata as $line) {
             // get info from file and member-type default settings
             // if applicable
             $cardno = $line[$mn_index];
@@ -133,26 +132,30 @@ class MemContactImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $ph2 = ($ph2_index !== False) ? $line[$ph2_index] : "";
             $email = ($email_index !== False) ? $line[$email_index] : "";
 
-            // combine multi-line addresses
-            $full_street = !empty($street2) ? $street."\n".$street2 : $street;
+            $json = array(
+                'cardNo' => $cardno,
+                'addressFirstLine' => $street,
+                'addressSecondLine' => $street2,
+                'city' => $city,
+                'state' => $state,
+                'zip' => $zip,
+                'customers' => array(
+                    array(
+                        'phone' => $ph1,
+                        'altPhone' => $ph2,
+                        'email' => $email,
+                        'accountHolder' => 1,
+                    ),
+                ),
+            );
 
-            $model = new MeminfoModel($dbc);
-            $model->card_no($cardno);
-            if (!empty($full_street)) $model->street($full_street);
-            if (!empty($city)) $model->city($city);
-            if (!empty($state)) $model->state($state);
-            if (!empty($zip)) $model->zip($zip);
-            if (!empty($ph1)) $model->phone($ph1);
-            if (!empty($email)) $model->email_1($email);
-            if (!empty($ph2)) $model->email_2($ph2);
-            $try = $model->save();
+            $resp = \COREPOS\Fannie\API\member\MemberREST::post($cardno, $json);
 
-            if ($try === False){
+            if ($resp['errors'] > 0) {
                 $this->stats['errors'][] = "Error importing member $cardno";
             } else {
                 $this->stats['imported']++;
             }
-
         }
 
         return true;

@@ -70,6 +70,9 @@ class ProductsModel extends BasicModel
     'store_id'=>array('type'=>'SMALLINT','default'=>0),
     'default_vendor_id'=>array('type'=>'INT','default'=>0),
     'current_origin_id'=>array('type'=>'INT','default'=>0),
+    'auto_par'=>array('type'=>'DOUBLE','default'=>0),
+    'price_rule_id'=>array('type'=>'INT', 'default'=>0),
+    'last_sold'=>array('type'=>'DATETIME'),
     'id'=>array('type'=>'INT','default'=>0,'primary_key'=>True,'increment'=>True)
     );
 
@@ -381,6 +384,21 @@ it won\'t *do* anything.
             }
         } else {
             $this->instance["specialquantity"] = func_get_arg(0);
+        }
+    }
+
+    public function special_limit()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["special_limit"])) {
+                return $this->instance["special_limit"];
+            } elseif(isset($this->columns["special_limit"]["default"])) {
+                return $this->columns["special_limit"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["special_limit"] = func_get_arg(0);
         }
     }
 
@@ -801,6 +819,51 @@ it won\'t *do* anything.
             }
         } else {
             $this->instance["current_origin_id"] = func_get_arg(0);
+        }
+    }
+
+    public function auto_par()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["auto_par"])) {
+                return $this->instance["auto_par"];
+            } elseif(isset($this->columns["auto_par"]["default"])) {
+                return $this->columns["auto_par"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["auto_par"] = func_get_arg(0);
+        }
+    }
+
+    public function price_rule_id()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["price_rule_id"])) {
+                return $this->instance["price_rule_id"];
+            } elseif(isset($this->columns["price_rule_id"]["default"])) {
+                return $this->columns["price_rule_id"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["price_rule_id"] = func_get_arg(0);
+        }
+    }
+
+    public function last_sold()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["last_sold"])) {
+                return $this->instance["last_sold"];
+            } elseif(isset($this->columns["last_sold"]["default"])) {
+                return $this->columns["last_sold"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["last_sold"] = func_get_arg(0);
         }
     }
 

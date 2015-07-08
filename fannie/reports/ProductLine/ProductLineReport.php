@@ -32,7 +32,7 @@ class ProductLineReport extends FannieReportPage
     public $themed = true;
     public $discoverable = false;
 
-    protected $report_headers = array('UPC', 'Brand', 'Description', 'Alt. Brand', 'Alt. Desc.', 'Price', 'Vendor');
+    protected $report_headers = array('UPC', 'Brand', 'Description', 'Alt. Brand', 'Alt. Desc.', 'Price', 'Vendor', 'Location');
     protected $title = "Fannie : Product Line";
     protected $header = "Fannie : Product Line";
     protected $required_fields = array('prefix');
@@ -44,6 +44,12 @@ class ProductLineReport extends FannieReportPage
 
         $dbc = FannieDB::get($this->config->get('OP_DB'));
 
+        if ($dbc->tableExists('FloorSections')) {
+            $loc_col = 'f.name AS floorSection';
+        } else {
+            $loc_col = "'n/a' AS floorSection";
+        }
+
         $query = "
             SELECT p.upc,
                 p.description,
@@ -51,10 +57,17 @@ class ProductLineReport extends FannieReportPage
                 u.description AS altDescription,
                 u.brand AS altBrand,
                 v.vendorName AS vendor,
-                p.normal_price
+                p.normal_price,
+                {$loc_col}
             FROM products AS p
                 LEFT JOIN productUser AS u ON p.upc=u.upc
                 LEFT JOIN vendors AS v ON p.default_vendor_id=v.vendorID
+                LEFT JOIN prodPhysicalLocation AS y ON p.upc=y.upc
+                ";
+        if ($dbc->tableExists('FloorSections')) {
+            $query .= ' LEFT JOIN FloorSections AS f ON y.floorSectionID=f.floorSectionID ';
+        }
+        $query .= " 
             WHERE SUBSTRING(p.upc, 4, 5) = ?
             ORDER BY p.upc";
         $prep = $dbc->prepare($query);
@@ -69,6 +82,7 @@ class ProductLineReport extends FannieReportPage
                 empty($row['altDescription']) ? 'n/a' : $row['altDescription'],
                 sprintf('%.2f', $row['normal_price']),
                 empty($row['vendor']) ? 'n/a' : $row['vendor'],
+                empty($row['floorSection']) ? 'n/a' : $row['floorSection'],
             );
         }
 

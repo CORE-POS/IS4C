@@ -760,7 +760,7 @@ class EditBatchPage extends FannieRESTfulPage
         $start = strtotime($model->startDate());
         $end = strtotime($model->endDate()) + (60*60*24);
 
-        if ($dtype == 3 || $dtype == 4) {
+        if ($this->config->get('COOP_ID') == 'WFC_Duluth' && $type == 10) {
             return $this->showPairedBatchDisplay($id,$name);
         }
 
@@ -775,7 +775,7 @@ class EditBatchPage extends FannieRESTfulPage
         } elseif ($dtype == 0) {
             $saleHeader = "New price";
         }
-        
+
         $fetchQ = "
             SELECT b.upc,
                 CASE 
@@ -814,6 +814,16 @@ class EditBatchPage extends FannieRESTfulPage
                     b.upc=c.upc AND b.batchID=c.batchID
                     where b.batchID = ? $orderby";
         }
+
+        $sections = array();
+        if ($dbc->tableExists('FloorSections')) {
+            $floor = new FloorSectionsModel($dbc);
+            foreach ($floor->find() as $f) {
+                $sections[$f->floorSectionID()] = $f->name();
+            }
+            $fetchQ = str_replace('y.subsection', 'y.floorSectionID', $fetchQ);
+        }
+
         $fetchP = $dbc->prepare_statement($fetchQ);
         $fetchR = $dbc->exec_statement($fetchP,array($id));
 
@@ -855,7 +865,7 @@ class EditBatchPage extends FannieRESTfulPage
             $future_mode = true;
         }
         $ret .= sprintf('<input type="hidden" id="batch-future-mode" value="%d" />', $future_mode ? 1 : 0);
-        $ret .= "<a href=\"\" onclick=\"printSigns();return false;\">Print Sale Signs</a> | ";
+        $ret .= "<a href=\"../../admin/labels/SignFromSearch.php?batch=$id\">Print Sale Signs</a> | ";
         $ret .= "<a href=\"{$FANNIE_URL}admin/labels/BatchShelfTags.php?batchID%5B%5D=$id\">Print Shelf Tags</a> | ";
         $ret .= "<a href=\"\" onclick=\"generateTags($id); return false;\">Auto-tag</a> | ";
         if ($cp > 0) {
@@ -998,6 +1008,8 @@ class EditBatchPage extends FannieRESTfulPage
                 $loc .= $fetchW['subsection'].', ';
                 $loc .= 'Unit '.$fetchW['shelf_set'].', ';
                 $loc .= 'Shelf '.$fetchW['shelf'];
+            } elseif (!empty($fetchW['floorSectionID'])) {
+                $loc = $sections[$fetchW['floorSectionID']];
             }
             $ret .= "<td bgcolor=$colors[$c]>".$loc.'</td>';
             $ret .= '<input type="hidden" class="batch-hidden-upc" value="' . $fetchW['upc'] . '" />';

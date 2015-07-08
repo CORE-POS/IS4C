@@ -275,23 +275,27 @@ class ViewsheetPage extends FanniePage {
         elseif ($this->display_func == 'ts_show')
             return $this->show_sheet(FormLib::get_form_value('emp_no'),FormLib::get_form_value('period'));
 
-        echo "<body onLoad='putFocus(0,0);'>";
         $query = $ts_db->prepare_statement("SELECT FirstName, LastName, emp_no 
             FROM {$FANNIE_OP_DB}.employees where EmpActive=1 ORDER BY FirstName ASC");
         $result = $ts_db->exec_statement($query);
         echo '<form action="'.$_SERVER['PHP_SELF'].'" method="POST">';
 
+        echo '<div class="form-group">';
         if ($_SESSION['logged_in'] == True) {
-            echo '<p>Name: <select name="emp_no">
+            echo '<label>Name</label><select name="emp_no" class="form-control">
                 <option>Select staff member</option>';
             while ($row = $ts_db->fetch_array($result)) {
                 echo "<option value='".$row[2]."'>" . ucwords($row[0]) . " " . ucwords(substr($row[1],0,1)) . ".</option>\n";
             }
-            echo '</select></p>';
+            echo '</select>';
         } 
         else {
-            echo "<p>Employee Number*: <input type='text' name='emp_no' size=4 autocomplete='off' /></p>";
+            echo "<label>Employee Number*</label>
+                <input type='text' name='emp_no' size=4 
+                class=\"form-control\" autocomplete='off' />";
         }
+        echo '</div>';
+
         $currentQ = $ts_db->prepare_statement("SELECT periodID 
             FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods 
             WHERE ".$ts_db->now()." BETWEEN periodStart AND periodEnd");
@@ -304,7 +308,8 @@ class ViewsheetPage extends FanniePage {
             WHERE periodStart < ".$ts_db->now()." ORDER BY periodID DESC");
         $result = $ts_db->exec_statement($query);
 
-        echo '<p>Pay Period: <select name="period">
+        echo '<div class="form-group">';
+        echo '<label>Pay Period</label><select name="period" class="form-control">
             <option>Please select a payperiod to view.</option>';
 
         while ($row = $ts_db->fetch_array($result)) {
@@ -312,11 +317,12 @@ class ViewsheetPage extends FanniePage {
             if ($row[2] == $ID) { echo ' SELECTED';}
             echo ">($row[0] - $row[1])</option>";
         }
-        echo '</select></p>';
+        echo '</select></div>';
 
-        echo '<button name="submit" type="submit">Submit</button>
+        echo '<div class="form-group">';
+        echo '<button name="submit" type="submit" class="btn btn-default">Submit</button>
         <input type="hidden" name="submitted" value="TRUE" />
-        </form>';
+        </div></form>';
         if ($this->current_user){
             echo "<div class='log_btn'><a href='" . $FANNIE_URL . "auth/ui/loginform.php?logout=1'>logout</a></div>";
         } 

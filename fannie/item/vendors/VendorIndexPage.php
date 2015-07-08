@@ -300,11 +300,15 @@ class VendorIndexPage extends FanniePage {
         $ret .= '<p>';
         if ($num == 0) {
             $ret .= "<a href=\"VendorDepartmentEditor.php?vid=$id\">This vendor's items are not yet arranged into departments</a>";
+            $ret .= '<p />';
+            $ret .= "<a href=\"VendorDepartmentUploadPage.php?vid=$id\">Upload Department List</a>";
         } else {
             $ret .= "This vendor's items are divided into ";
             $ret .= $num." departments";
             $ret .= "<br />";
             $ret .= "<a href=\"VendorDepartmentEditor.php?vid=$id\">View or Edit vendor-specific margin(s)</a>";
+            $ret .= '<p />';
+            $ret .= "<a href=\"VendorDepartmentUploadPage.php?vid=$id\">Upload Department List</a>";
         }
         $ret .= '</p>';
         $ret .= '

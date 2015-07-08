@@ -140,7 +140,10 @@ class HobartDgwLib
         $header_line .= "\r\n";
 
         $file_prefix = self::sessionKey();
-        $output_dir = realpath(dirname(__FILE__) . '/../../item/hobartcsv/csv_output');
+        $output_dir = $config->get('DGW_DIRECTORY');
+        if ($output_dir == '') {
+            return false;
+        }
         $selected_scales = $scales;
         if (!is_array($scales) || count($selected_scales) == 0) {
             $selected_scales = $config->get('SCALES');
@@ -160,7 +163,7 @@ class HobartDgwLib
 
             // move to DGW; cleanup the file in the case of failure
             if (!rename($file_name, $output_dir . '/' . basename($file_name))) {
-                unlink($file_name);
+                //unlink($file_name);
             }
 
             $et_file = sys_get_temp_dir() . '/' . $file_prefix . '_exText' . $i . '.csv';
@@ -189,7 +192,7 @@ class HobartDgwLib
             } else {
                 // move to DGW dir
                 if (!rename($et_file, $output_dir . '/' . basename($et_file))) {
-                    unlink($et_file);
+                    //unlink($et_file);
                 }
             }
 
@@ -202,7 +205,7 @@ class HobartDgwLib
       @param $items [string] four digit PLU 
         or [array] of [string] 4 digit PLUs
     */
-    static public function deleteItemsFromScales($items)
+    static public function deleteItemsFromScales($items, $scales=array())
     {
         $config = \FannieConfig::factory(); 
 
@@ -210,10 +213,18 @@ class HobartDgwLib
             $items = array($items);
         }
 
+        $selected_scales = $scales;
+        if (!is_array($scales) || count($selected_scales) == 0) {
+            $selected_scales = $config->get('SCALES');
+        }
+
         $file_prefix = self::sessionKey();
-        $output_dir = realpath(dirname(__FILE__) . '/../../item/hobartcsv/csv_output');
+        $output_dir = $config->get('DGW_DIRECTORY');
+        if ($output_dir == '') {
+            return false;
+        }
         $i = 0;
-        foreach($config->get('SCALES', array()) as $scale) {
+        foreach ($selected_scales as $scale) {
             $file_name = sys_get_temp_dir() . '/' . $file_prefix . '_deleteItem_' . $i . '.csv';
             $et_name = sys_get_temp_dir() . '/' . $file_prefix . '_deleteText_' . $i . '.csv';
             $fp = fopen($file_name, 'w');
@@ -454,7 +465,7 @@ class HobartDgwLib
         }
 
         if ($align == 'horizontal') {
-            return ($fixed_weight) ? 63 : 113;
+            return ($fixed_weight) ? 63 : 133;
         } else {
             return ($fixed_weight) ? 23 : 103;
         }
@@ -481,6 +492,19 @@ class HobartDgwLib
         }
 
         return $session_key;
+    }
+
+    static public function scaleOnline($host, $port=6000)
+    {
+        $s = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+        socket_set_option($s, SOL_SOCKET, SO_RCVTIMEO, array('sec'=>2, 'usec'=>0));
+        socket_set_option($s, SOL_SOCKET, SO_SNDTIMEO, array('sec'=>2, 'usec'=>0));
+        if (socket_connect($s, $host, $port)) {
+            socket_close($s);
+            return true;
+        } else {
+            return false;
+        }
     }
 }
 

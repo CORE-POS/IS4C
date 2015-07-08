@@ -31,11 +31,11 @@ class DefectorTargetTask extends FannieTask
         $warehouse = $settings['WarehouseDatabase'];
 
         $rules = new DefectorRulesModel($dbc);
-        $all_rules = $rules->find('defcectorRulesID', true);
+        $all_rules = $rules->find('defectorRulesID', true);
         if (count($all_rules) == 0) {
             $rules->couponUPC('');
             $rules->save();
-            $all_rules = $rules->find('defcectorRulesID', true);
+            $all_rules = $rules->find('defectorRulesID', true);
         }
         $rules = $all_rules[0];
 
@@ -56,6 +56,14 @@ class DefectorTargetTask extends FannieTask
             FROM ' . $this->config->OP_DB . $dbc->sep() . 'custdata
             WHERE CardNo=?
                 AND personNum=1
+        ');
+
+        $meminfoP = $dbc->prepare('
+            SELECT card_no
+            FROM ' . $this->config->OP_DB . $dbc->sep() . 'meminfo
+            WHERE ads_OK = 1
+                AND (zip LIKE \'55%\' OR zip LIKE \'56%\')
+                AND card_no=?
         ');
 
         /**
@@ -84,6 +92,7 @@ class DefectorTargetTask extends FannieTask
             $rules->minPurchases(),
         );
         $activityR = $dbc->execute($activityP, $args);
+        $dev_targets = new DeveloperTargetsModel($dbc);
         while ($w = $dbc->fetchRow($activityR)) {
             /**
               Enforce rules about account status
@@ -99,11 +108,16 @@ class DefectorTargetTask extends FannieTask
             if (!$rules->includeStaff() && $status['staff']) {
                 continue;
             }
+            $infoP =  $dbc->execute($meminfoP, array($w['card_no']));
+            if (!$infoP || $dbc->numRows($infoP) == 0) {
+                continue;
+            }
             echo $w['card_no'] . "\n";
 
             $targets->reset();
             $targets->card_no($w['card_no']);
-            if (!$targets->load()) {
+            $dev_targets->card_no($w['card_no']);
+            if (!$targets->load() && !$dev_targets->load()) {
                 echo "Adding " . $w['card_no'] . "\n";
                 $targets->addedDate(date('Y-m-d H:i:s'));
                 $targets->card_no($w['card_no']);

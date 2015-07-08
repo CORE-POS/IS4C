@@ -265,7 +265,7 @@ class DTrans
       @param $cust_alias [optional] alias for the custdata table (default 'c')
       @return string SQL snippet
     */
-    public static function joinCustdata($dlog_alias='t', $cust_alias='c')
+    public static function joinCustomerAccount($dlog_alias='t', $cust_alias='c')
     {
         $conf = FannieConfig::factory();
         $table = 'custdata';
@@ -375,14 +375,11 @@ class DTrans
             $model->trans_id($last->trans_id() + 1);
         }
 
-        $custdata = new CustdataModel($connection);
-        $custdata->whichDB($config->get('OP_DB'));
         if (isset($params['card_no'])) {
-            $custdata->CardNo($params['card_no']);
-            $custdata->personNum(1);
-            if ($custdata->load()) {
-                $model->memType($custdata->memType());                
-                $model->staff($custdata->staff());
+            $account = \COREPOS\Fannie\API\member\MemberREST::get($params['card_no']);
+            if ($account) {
+                $model->memType($account['customerTypeID']);
+                $model->staff($account['customers'][0]['staff']);
             }
         }
 

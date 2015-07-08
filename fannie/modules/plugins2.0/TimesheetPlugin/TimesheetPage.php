@@ -195,47 +195,59 @@ class TimesheetPage extends FanniePage {
         elseif ($this->display_func == 'ts_error')
             return $this->error_content();
 
-        echo "<body onLoad='putFocus(0,0);'>";
         echo '<form action="'.$_SERVER['PHP_SELF'].'" method="POST" name="timesheet" id="timesheet">';
-        echo '<table border=0 cellpadding=4><tr>';
+        echo '<p><div class="form-inline">';
         if ($this->current_user){
-            echo '<td><p>Name: <select name="emp_no">
+            echo '
+                <div class="form-group">
+                Name: <select name="emp_no" class="form-control">
                 <option value="error">Select staff member</option>' . "\n";
         
             $query = $ts_db->prepare_statement("SELECT FirstName, 
                 CASE WHEN LastName='' OR LastName IS NULL THEN ''
-                ELSE ".$ts_db->concat('LEFT(LastName,1)',"'.'")." END,
+                ELSE ".$ts_db->concat('LEFT(LastName,1)',"'.'", '')." END,
                 emp_no FROM ".$FANNIE_OP_DB.".employees where EmpActive=1 ORDER BY FirstName ASC");
             $result = $ts_db->exec_statement($query);
             while ($row = $ts_db->fetch_array($result)) {
                 echo "<option value=\"$row[2]\">$row[0] $row[1]</option>\n";
             }
-            echo '</select>&nbsp;&nbsp;*</p></td>';
+            echo '</select>*</div>';
         } else {
-            echo "<td><p>Employee Number*: <input type='text' name='emp_no' value='".$_COOKIE['timesheet']."' size=4 autocomplete='off' /></p></td>";
+            echo "<div class=\"form-group\">
+                Employee Number*: <input type='text' name='emp_no' class=\"form-control\"
+                    value='".$_COOKIE['timesheet']."' size=4 autocomplete='off' />
+                </div>";
         }
-        echo '<td><p>Date*: <input type="text" name="date" value="'. date('Y-m-d') .'" size=10 class="datepicker" alt="Tip: try cmd + arrow keys" />
-            <!--<font size=1>Tip: try cmd + arrow keys</font>--></p></td></tr>';
-        echo "<tr><td><br /></td></tr>";
+        echo '<div class="form-group">
+            Date*: <input type="text" name="date" value="'. date('Y-m-d') .'" 
+                class="form-control date-field"
+                size=10 class="datepicker" alt="Tip: try cmd + arrow keys" />
+            </div>
+            </div></p>';
+            
+        echo '<table class="table table-bordered">';
         echo "<tr><td align='right'><b>Total Hours</b></td><td align='center'><strong>Labor Category</strong></td>";
         $queryP = $ts_db->prepare_statement("SELECT IF(NiceName='', ShiftName, NiceName), ShiftID 
             FROM " . $FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'] . ".shifts 
             WHERE visible=true ORDER BY ShiftOrder ASC");
+        $max = 5;
         for ($i = 1; $i <= $max; $i++) {
-            echo "<tr><td align='right'><input type='text' name='hours" . $i . "' size=6></input></td>";
+            echo "<tr><td align='right'><input class=\"form-control price-field\" 
+                type='text' name='hours" . $i . "' size=6></input></td>";
 
             $result = $ts_db->exec_statement($queryP);
-            echo '<td><select name="area' . $i . '" id="area' . $i . '"><option>Please select an area of work.</option>';
+            echo '<td><select class="form-control" name="area' . $i . '" id="area' . $i . '">
+                <option>Please select an area of work.</option>';
             while ($row = $ts_db->fetch_row($result)) {
                 echo "<option id =\"$i$row[1]\" value=\"$row[1]\">$row[0]</option>";
             }
             echo '</select></td></tr>' . "\n";
         }
-        echo '<tr><td><br /></td></tr>
-            <tr><td colspan=2 align="center">
-            <button name="submit" type="submit">Submit</button>
-            <input type="hidden" name="submitted" value="TRUE" /></td></tr>
-            </table></form>';   
+        echo '</table>';
+        echo '<p>
+            <button name="submit" class="btn btn-default" type="submit">Submit</button>
+            <input type="hidden" name="submitted" value="TRUE" />
+            </p></form>';   
         if ($this->current_user){
             echo "<div class='log_btn'><a href='" . $FANNIE_URL . "auth/ui/loginform.php?logout=1'>logout</a></div>";
         } else {

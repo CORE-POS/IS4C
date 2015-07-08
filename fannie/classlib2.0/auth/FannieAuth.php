@@ -61,6 +61,9 @@ class FannieAuth
         }
 
         $sql = FannieDB::get(FannieConfig::factory()->get('OP_DB'));
+        if (!$sql->isConnected()) {
+            return false;
+        }
         $checkQ = $sql->prepare_statement("select * from Users AS u LEFT JOIN
                 userSessions AS s ON u.uid=s.uid where u.name=? 
                 and s.session_id=?");
@@ -307,7 +310,7 @@ class FannieAuth
     */
     static public function createClass($auth_class, $description)
     {
-        $sql = FannieDB::get(FannieConfig::factory()->get('OP_DB'));
+        $dbc = FannieDB::get(FannieConfig::factory()->get('OP_DB'));
         if (!$dbc->tableExists('userKnownPrivs')) {
             return false;
         }

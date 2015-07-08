@@ -139,6 +139,8 @@ class BasicModel
     */
     protected $config;
 
+    protected $find_limit = 0;
+
     /**
       Name of preferred database
     */
@@ -419,6 +421,11 @@ class BasicModel
         return $this->fq_name;
     }
 
+    public function setFindLimit($fl)
+    {
+        $this->find_limit = $fl;
+    }
+
     /**
       Find records that match this instance
       @param $sort array of columns to sort by
@@ -488,6 +495,9 @@ class BasicModel
                 $obj->$name($row[$name]);
             }
             $ret[] = $obj;
+            if ($this->find_limit > 0 && count($ret) >= $this->find_limit) {
+                break;
+            }
         }
 
         return $ret;
@@ -1453,6 +1463,26 @@ class $name extends " . ($as_view ? 'ViewModel' : 'BasicModel') . "\n");
     public function toJSON()
     {
         return json_encode($this->instance);
+    }
+
+    public function toOptions($selected=0)
+    {
+        if (count($this->unique) != 1) {
+            return '';
+        }
+        $id_col = $this->unique[0];
+        $label_col = array_keys($this->columns);
+        $label_col = $label_col[1];
+        $ret = '';
+        foreach ($this->find($label_col) as $obj) {
+            $ret .= sprintf('<option %s value="%d">%s</option>',
+                    $selected == $obj->$id_col() ? 'selected' : '',
+                    $obj->$id_col(),
+                    $obj->$label_col()
+            );
+        }
+
+        return $ret;
     }
 }
 

@@ -366,12 +366,15 @@ class BatchListPage extends FannieRESTfulPage
             $ret .= "All<br />";
         }
 
-        $ret .= '<table class="table tablesorter"><thead>';
-        $ret .= "<tr><th bgcolor=$colors[$c]>Batch Name</th>";
-        $ret .= "<th bgcolor=$colors[$c]>Type</th>";
-        $ret .= "<th bgcolor=$colors[$c]>Start date</th>";
-        $ret .= "<th bgcolor=$colors[$c]>End date</th>";
-        $ret .= "<th bgcolor=$colors[$c]>Owner/Super Dept.</th>";
+        $sort = \COREPOS\Fannie\API\lib\FannieUI::tableSortIcons();
+
+        $ret .= '<table class="table tablesorter tablesorter-core"><thead>';
+        $ret .= "<tr><th bgcolor=$colors[$c]>Batch Name$sort</th>";
+        $ret .= "<th bgcolor=$colors[$c]>Type$sort</th>";
+        $ret .= "<th bgcolor=$colors[$c]>Items$sort</th>";
+        $ret .= "<th bgcolor=$colors[$c]>Start date$sort</th>";
+        $ret .= "<th bgcolor=$colors[$c]>End date$sort</th>";
+        $ret .= "<th bgcolor=$colors[$c]>Owner/Super Dept.$sort</th>";
         $ret .= "<th colspan=\"3\">&nbsp;</th></tr></thead><tbody>";
         
         // owner column might be in different places
@@ -396,8 +399,10 @@ class BatchListPage extends FannieRESTfulPage
                         b.endDate,
                         b.batchID,
                         t.typeDesc,
+                        COUNT(l.upc) AS items,
                    $ownerclause
                     LEFT JOIN batchType AS t ON b.batchType = t.batchTypeID
+                    LEFT JOIN batchList AS l ON b.batchID=l.batchID
                    WHERE 1=1 ";
         $args = array();
         switch($mode) {
@@ -418,6 +423,8 @@ class BatchListPage extends FannieRESTfulPage
             $fetchQ .= ' AND ' . $owneralias . '.owner = ? ';
             $args[] = $filter;
         }
+        $fetchQ .= ' GROUP BY b.batchName, b.batchType, b.startDate, b.endDate, b.batchID,
+                        t.typeDesc, ' . $owneralias . '.owner ';
         $fetchQ .= ' ORDER BY b.batchID DESC';
         $fetchQ = $dbc->add_select_limit($fetchQ,50);
         if (is_numeric($maxBatchID)) {
@@ -446,6 +453,7 @@ class BatchListPage extends FannieRESTfulPage
             $ret .= "<td bgcolor=$colors[$c] id=name{$id}><a id=namelink{$id} 
                 href=\"EditBatchPage.php?id={$id}\">{$fetchW['batchName']}</a></td>";
             $ret .= "<td bgcolor=$colors[$c] id=type{$id}>" . $fetchW['typeDesc'] . "</td>";
+            $ret .= "<td bgcolor=$colors[$c]>" . $fetchW['items'] . "</td>";
             $ret .= "<td bgcolor=$colors[$c] id=startdate{$id}>" 
                 . (strtotime($fetchW['startDate']) ? date('Y-m-d', strtotime($fetchW['startDate'])) : '')
                 . "</td>";
@@ -454,14 +462,14 @@ class BatchListPage extends FannieRESTfulPage
                 . "</td>";
             $ret .= "<td bgcolor=$colors[$c] id=owner{$id}>{$fetchW['owner']}</td>";
             $ret .= "<td bgcolor=$colors[$c] id=edit{$id}>
-                <a href=\"\" onclick=\"editBatchLine({$id}); return false;\" class=\"batchEditLink\">
+                <a href=\"\" onclick=\"editBatchLine({$id}); return false;\" class=\"batchEditLink btn btn-default btn-xs\">
                     " . \COREPOS\Fannie\API\lib\FannieUI::editIcon() . "
                 </a>
-                <a href=\"\" onclick=\"saveBatchLine({$id}); return false;\" class=\"batchSaveLink collapse\">
+                <a href=\"\" onclick=\"saveBatchLine({$id}); return false;\" class=\"batchSaveLink btn btn-default btn-xs collapse\">
                     " . \COREPOS\Fannie\API\lib\FannieUI::saveIcon() . "
                 </a>
                 </td>";
-            $ret .= "<td bgcolor=$colors[$c]><a href=\"\" 
+            $ret .= "<td bgcolor=$colors[$c]><a href=\"\" class=\"btn btn-danger btn-xs\"
                 onclick=\"deleteBatch({$id},'{$fetchW['batchName']}'); return false;\">"
                 . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</a></td>';
             $ret .= "<td bgcolor=$colors[$c]><a href=\"batchReport.php?batchID={$id}\">Report</a></td>";

@@ -58,8 +58,7 @@ class PriceRounder
                 $price = $price - ($price % 100) - 1;
             }
         }
-
-        
+       
         // if price >= 6.00 and cents < 30, round down to nearest x.99
         if ($price >= 600) {
             if ($price % 100 <= 29){

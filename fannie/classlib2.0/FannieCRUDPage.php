@@ -21,14 +21,48 @@
 
 *********************************************************************************/
 
+namespace COREPOS\Fannie\API {
+
 /**
-  @class FannieRESTfulPage
+  @class FannieCRUDPage
+  Base class to generate an editor page for a given
+  table supporting Create/Read/Update/Delete.
+
+  Supports tables with a single primary key column
+  with an integer type. Primary key may or may not
+  be identity/increment.
 */
-class FannieCRUDPage extends FannieRESTfulPage
+class FannieCRUDPage extends \FannieRESTfulPage
 {
+    /**
+      @property $model_name
+      The model class for the table this page will
+      be managing
+    */
     protected $model_name = 'BasicModel';
-    protected $model = null;
+
+    /**
+      @property $column_name_map
+      By default, the display will show actual 
+      column names from the underlying table as
+      headers. To put alternate names in the user
+      facing interface (e.g., with spaces, more descriptive,
+      etc) use an associative array with:
+        [database column name] => [displayed name]
+
+      It is not necessary to specify aliases for all
+      (or any) columns.
+    */
     protected $column_name_map = array();
+
+    /**
+      By default, the user facing data is sorted on
+      the primary key column. To use an alternative sorting,
+      specify one or more database column names here.
+    */
+    protected $display_sorting = array();
+
+    protected $model = null;
     public $themed = true;
     protected $flashes = array();
 
@@ -99,7 +133,7 @@ class FannieCRUDPage extends FannieRESTfulPage
                 if ($col_name == $id_col) {
                     continue;
                 }
-                $vals = FormLib::get($col_name);
+                $vals = \FormLib::get($col_name);
                 if (!is_array($vals) || !isset($vals[$i])) {
                     continue;
                 }
@@ -139,18 +173,29 @@ class FannieCRUDPage extends FannieRESTfulPage
         }
         // find a character column to plug in
         // a placeholder value
+        $ready = false;
         foreach ($columns as $col_name => $c) {
             if ($col_name != $id_col && strstr(strtoupper($c['type']), 'CHAR')) {
                 $obj->$col_name('NEW');
+                $ready = true;
                 break;
+            }
+        }
+        if (!$ready) {
+            foreach ($columns as $col_name => $c) {
+                if ($col_name != $id_col && strstr(strtoupper($c['type']), 'DATE')) {
+                    $obj->$col_name(date('Y-m-d'));
+                    $ready = true;
+                    break;
+                }
             }
         }
 
         $saved = $obj->save();
         if ($saved) {
-            header('Location: ' . $_SERVER['PHP_SELF'] . '?flash[]=sAdded+Entry');
+            echo json_encode(array('error'=>0, 'added'=>1));
         } else {
-            header('Location: ' . $_SERVER['PHP_SELF'] . '?flash[]=dError+Adding+Entry');
+            echo json_encode(array('error'=>1, 'added'=>0));
         }
 
         return false;
@@ -175,8 +220,9 @@ class FannieCRUDPage extends FannieRESTfulPage
         $obj = $this->getCRUDModel();
         $id_col = $this->getIdCol();
         $columns = $obj->getColumns();
-        $ret = '<form method="post">';
-        foreach (FormLib::get('flash', array()) as $f) {
+        $ret = '<form class="crud-form" method="post">';
+        $ret .= '<div class="flash-div">';
+        foreach (\FormLib::get('flash', array()) as $f) {
             $css = '';
             switch (substr($f, 0, 1)) {
                 case 's':
@@ -192,29 +238,38 @@ class FannieCRUDPage extends FannieRESTfulPage
                 . '<span>&times;</span></button>'
                 . '</div>';
         }
+        $ret .= '</div>';
         $ret .= '<table class="table table-bordered">';
         $ret .= '<tr>';
         foreach ($columns as $col_name => $c) {
             if ($col_name != $id_col) {
+                if (isset($this->column_name_map[$col_name])) {
+                    $col_name = $this->column_name_map[$col_name];
+                }
                 $ret .= '<th>' . ucwords($col_name) . '</th>';
             }
         }
         $ret .= '</tr>';
-        foreach ($obj->find($id_col) as $o) {
+        $sort = !empty($this->display_sorting) ? $this->display_sorting : $id_col;
+        foreach ($obj->find($sort) as $o) {
             $ret .= '<tr>';
             foreach ($columns as $col_name => $c) {
                 if ($col_name == $id_col) {
                     $ret .= '<input type="hidden" name="id[]" value="' . $o->$id_col() . '" />';    
                 } else {
-                    $ret .= sprintf('<td><input type="text" class="form-control" 
+                    $css = 'form-control';
+                    if (strtoupper($c['type'] == 'DATETIME')) {
+                        $css .= ' date-field';
+                    }
+                    $ret .= sprintf('<td><input type="text" class="%s" 
                                             name="%s[]" value="%s" /></td>',
-                                $col_name, $o->$col_name());
+                                $css, $col_name, $o->$col_name());
                 }
             }
             $ret .= sprintf('<td>
                         <a href="?_method=delete&id=%s" class="btn btn-xs btn-default btn-danger"
                             onclick="return confirm(\'Delete entry?\');">
-                        ' . FannieUI::deleteIcon() . '</a>
+                        ' . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</a>
                         </td>',
                         $o->$id_col());
             $ret .= '</tr>';
@@ -223,11 +278,29 @@ class FannieCRUDPage extends FannieRESTfulPage
         $ret .= '<p>
             <button type="submit" class="btn btn-default">Save Changes</button>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <a href="?_method=put" class="btn btn-default">Add Entry</a>
+            <a href="" onclick="addEntry(); return false;" class="btn btn-default">Add Entry</a>
             </p>';
         $ret .= '</form>';
+        $ret .= '<script type="text/javascript">
+            function addEntry()
+            {
+                $.ajax({
+                    method: "PUT",
+                    dataType: "json",
+                    success: function(resp) {
+                        if (resp.added) {
+                            $("form.crud-form").submit();
+                        } else {
+                            showBootstrapAlert(".flash-div", "danger", "Error adding entry");
+                        }
+                    }
+                });
+            }
+            </script>';
 
         return $ret;
     }
+}
+
 }
 

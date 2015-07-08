@@ -6,6 +6,8 @@ if (!class_exists('FannieAPI')) {
 
 class TsAdminMain extends FanniePage {
     public $page_set = 'Plugin :: TimesheetPlugin';
+    protected $title = 'Timesheet Admin';
+    protected $header = 'Timesheet Admin';
 
     function preprocess(){
         $submit = FormLib::get_form_value('function','');
@@ -27,18 +29,21 @@ class TsAdminMain extends FanniePage {
         global $FANNIE_OP_DB,$FANNIE_PLUGIN_SETTINGS;
         $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
         echo '<form action="TsAdminMain.php" method="get">
-            <div id="box">
-            <p><input type="radio" name="function" value="view" id="view" checked="checked" /><label for="view">View/Edit Sheets</label></p>';
+            <p>
+            <label>
+            <input type="radio" name="function" value="view" id="view" checked="checked" />View/Edit Sheets</label>
+            </p>';
             
         $query = $ts_db->prepare_statement("SELECT FirstName, emp_no FROM ".
                 $FANNIE_OP_DB.$ts_db->sep()."employees where EmpActive=1 ORDER BY FirstName ASC");
         $result = $ts_db->exec_statement($query);
-        echo '<p>Name: <select name="emp_no">
+        echo '<div class="form-group">';
+        echo '<label>Name</label><select class="form-control" name="emp_no">
         <option value="0">Whose sheet?</option>';
         while ($row = $ts_db->fetch_array($result)) {
             echo "<option value=\"$row[1]\">$row[0]</option>\n";
         }
-        echo '</select></p>';
+        echo '</select></div>';
         $currentQ = $ts_db->prepare_statement("SELECT periodID FROM payperiods WHERE "
                 .$ts_db->now()." BETWEEN periodStart AND periodEnd");
         $currentR = $ts_db->exec_statement($currentQ);
@@ -50,7 +55,8 @@ class TsAdminMain extends FanniePage {
                 FROM payperiods WHERE periodStart < ".$ts_db->now()." ORDER BY periodID DESC");
         $result = $ts_db->exec_statement($query);
 
-        echo '<p>Pay Period: <select name="periodID">
+        echo '<div class="form-group">';
+        echo '<label>Pay Period</label><select class="form-control" name="periodID">
             <option>Please select a payperiod to view.</option>';
 
         while ($row = $ts_db->fetch_array($result)) {
@@ -58,10 +64,14 @@ class TsAdminMain extends FanniePage {
             if ($row[2] == $ID) { echo ' SELECTED';}
                 echo ">($row[0] - $row[1])</option>";
         }
-        echo '</select></p>';
-        echo '<p><input type="radio" name="function" value="add" id="add" />
-            <label for="add">Add Hours Posthumously</label></p>
-            <br /><button type="submit">Master the Sheets of Time!</button>
+        echo '</select></div>';
+        echo '<p>
+            <label>
+            <input type="radio" name="function" value="add" id="add" />
+            Add Hours Posthumously</label>
+            </p>
+            <div class="form-group">
+            <button type="submit" class="btn btn-default">Master the Sheets of Time!</button>
             </div>
             </form>';
         return ob_get_clean();

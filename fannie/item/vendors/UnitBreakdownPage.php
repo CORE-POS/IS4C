@@ -69,6 +69,8 @@ class UnitBreakdownPage extends FannieRESTfulPage
                 $unit_size = $matches[2];
             } elseif (preg_match('/(\d+)\s*CT/', $original->size(), $matches)) {
                 $split_factor = $matches[1];
+            } elseif (preg_match('/(\d+)\s*PKT/', $original->size(), $matches)) {
+                $split_factor = $matches[1];
             }
             if (!$split_factor) {
                 $this->addOnloadCommand("showBootstrapAlert('#alert-area', 'danger', 'Vendor SKU #" . $original->size() . " cannot be broken down');\n");
@@ -85,7 +87,6 @@ class UnitBreakdownPage extends FannieRESTfulPage
             $original->cost($original->cost() / $split_factor);
             $original->saleCost($original->saleCost() / $split_factor);
             if ($original->save()) {
-                $this->addOnloadCommand("showBootstrapAlert('#alert-area', 'success', 'Vendor SKU #" . $obj->sku() . " broken down');\n");
                 // update cost in products table, too
                 $product->reset();
                 $product->upc($obj->upc());
@@ -242,7 +243,7 @@ class UnitBreakdownPage extends FannieRESTfulPage
             $ret .= sprintf('
                 <tr>
                     <td>%s</td>
-                    <td>%s</td>
+                    <td><a href="../ItemEditor.php?searchupc=%s">%s</a></td>
                     <td>%s</td>
                     <td>%s</td>
                     <td>
@@ -251,7 +252,7 @@ class UnitBreakdownPage extends FannieRESTfulPage
                     </td>
                 </tr>',
                 $row['sku'],
-                $row['upc'],
+                $row['upc'], $row['upc'],
                 $row['vendorDescript'],
                 $row['storeDescript'],
                 $this->id, $row['sku'], $row['upc'],

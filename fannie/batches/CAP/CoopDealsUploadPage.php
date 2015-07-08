@@ -104,16 +104,13 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             $upc = BarcodeLib::padUPC($upc);
 
             $lookup = $dbc->exec_statement($upcP, array($upc));
-            if ($dbc->num_rows($lookup) == 0){
-                if ($SUB === False) continue;
-                if ($SKU === False) continue;
-                if ($data[$SUB] != "BULK") continue;
-                if ($data[$SKU] == "direct") continue;
+            if ($dbc->num_rows($lookup) == 0) {
                 $sku = $data[$SKU];
                 $look2 = $dbc->exec_statement($skuP, array($sku));
-                if ($dbc->num_rows($look2) == 0) continue;
-                $w = $dbc->fetch_row($look2);
-                $upc = $w['upc'];
+                if ($dbc->num_rows($look2)) {
+                    $w = $dbc->fetch_row($look2);
+                    $upc = $w['upc'];
+                }
             }
 
             $price = trim($data[$PRICE],"\$");

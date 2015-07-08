@@ -2,7 +2,6 @@
 include('../../../config.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-include('audit.php');
 include('../../queries/barcode.php');
 
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
@@ -187,8 +186,12 @@ if (isset($_GET['action'])){
                 $upR = $sql->execute($upQ, array($price, $upc, $id));
             }
             $audited = $_GET['audited'];
-            if ($audited == 1)
-                auditPriceChange($sql,$_GET['uid'],$upc,$price,$id);
+            if ($audited == 1) {
+                \COREPOS\Fannie\API\lib\AuditLib::batchNotification(
+                    $id, 
+                    $upc, 
+                    \COREPOS\Fannie\API\lib\AuditLib::BATCH_ADD);
+            }
         }
         
         $out .= addItemUPCInput();
@@ -213,8 +216,12 @@ if (isset($_GET['action'])){
                 $upR = $sql->execute($upQ, array($price, 'LC'.$lc, $id));
             }
             $audited = $_GET['audited'];
-            if ($audited == 1)
-                auditPriceChangeLC($sql,$_GET['uid'],$upc,$price,$id);
+            if ($audited == 1) {
+                \COREPOS\Fannie\API\lib\AuditLib::batchNotification(
+                    $id, 
+                    $upc, 
+                    \COREPOS\Fannie\API\lib\AuditLib::BATCH_ADD);
+            }
         }
         
         $out .= addItemLCInput();
@@ -278,8 +285,13 @@ if (isset($_GET['action'])){
         $delR = $sql->execute($delQ, array($upc, $id));
 
         $audited = $_GET['audited'];
-        if ($audited == "1")
-            auditDelete($sql,$_GET['uid'],$upc,$id);    
+        if ($audited == "1") {
+            \COREPOS\Fannie\API\lib\AuditLib::batchNotification(
+                $id, 
+                $upc, 
+                \COREPOS\Fannie\API\lib\AuditLib::BATCH_DELETE, 
+                (substr($upc,0,2)=='LC' ? true : false));
+        }
         
         $out .= showBatchDisplay($id);
         break;
@@ -304,8 +316,13 @@ if (isset($_GET['action'])){
         $upR = $sql->execute($upQ, array($saleprice, $upc, $id));
 
         $audited = $_GET["audited"];
-        if ($audited == "1")
-            auditSavePrice($sql,$_GET['uid'],$upc,$saleprice,$id);
+        if ($audited == "1") {
+            \COREPOS\Fannie\API\lib\AuditLib::batchNotification(
+                $this->id, 
+                $this->upc, 
+                \COREPOS\Fannie\API\lib\AuditLib::BATCH_EDIT, 
+                (substr($this->upc,0,2)=='LC' ? true : false));
+        }
             
         break;
     case 'newTag':

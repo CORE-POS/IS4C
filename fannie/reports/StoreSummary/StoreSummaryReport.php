@@ -396,18 +396,19 @@ class StoreSummaryReport extends FannieReportPage {
         // A row for each type of member.
         $dDiscountTotal = 0;
         $dQtyTotal = 0;
-        $discQ = $dbc->prepare_statement("SELECT m.memDesc, SUM(t.total) AS Discount,
+        $discQ = $dbc->prepare("
+                SELECT m.memDesc, 
+                    SUM(t.total) AS Discount,
                     count(*) AS ct
                 FROM $dtrans t
-                INNER JOIN {$FANNIE_OP_DB}.custdata c ON t.card_no = c.CardNo AND c.personNum=1
-                INNER JOIN {$FANNIE_OP_DB}.memtype m ON c.memType = m.memtype
+                    INNER JOIN {$FANNIE_OP_DB}.memtype m ON t.memType = m.memtype
                 WHERE ($datestamp BETWEEN ? AND ?)
                     AND t.upc = 'DISCOUNT'
                     AND t.total <> 0
                     AND t.trans_status not in ('D','X','Z')
                     AND t.emp_no not in (9999){$shrinkageUsers}
                     AND t.register_no != 99
-                    AND t.`trans_subtype` not in ('CP','IC')
+                    AND t.trans_subtype not in ('CP','IC')
                 GROUP BY m.memDesc
                 ORDER BY m.memDesc");
         $discR = $dbc->exec_statement($discQ,$costArgs);

@@ -125,7 +125,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             var content = "<input type=text class=\"in_desc form-control input-sm\" size=10 value=\""+desc+"\" />";   
             $('tr#'+upc+' .td_desc').html(content);
 
-            var dept = $('tr#'+upc+' .td_dept').html();
+            var dept = $('tr#'+upc+' .td_dept').text();
             var content = '<select class=\"in_dept form-control input-sm\"><optgroup style="font-size: 90%;">';
             for(dept_no in deptObj){
                 content += "<option value=\""+dept_no+"\" "+((dept==deptObj[dept_no])?'selected':'')+">";
@@ -134,7 +134,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             content += '</optgroup></select>';
             $('tr#'+upc+' .td_dept').html(content);
 
-            var supplier = $('tr#'+upc+' .td_supplier').html();
+            var supplier = $('tr#'+upc+' .td_supplier').text();
             var content = '<select class=\"in_supplier form-control input-sm\"><optgroup style="font-size: 90%;">';
             for(var i in vendorObj){
                 content += "<option "+((supplier==vendorObj[i])?'selected':'')+">";
@@ -461,6 +461,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         $mtype = FormLib::get_form_value('mtype','prefix');
         $deptStart = FormLib::get_form_value('deptStart',0);
         $deptEnd = FormLib::get_form_value('deptEnd',0);
+        $deptMulti = FormLib::get('departments', array());
         $subDepts = FormLib::get('subdepts', array());
         $super = FormLib::get_form_value('deptSub');
         $vendorID = FormLib::get('vendor');
@@ -553,6 +554,13 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 $query .= ' AND i.department BETWEEN ? AND ? ';
                 $args[] = $deptStart;
                 $args[] = $deptEnd;
+            } elseif (count($deptMulti) > 0) {
+                $query .= ' AND i.department IN (';
+                foreach ($deptMulti as $d) {
+                    $query .= '?,';
+                    $args[] = $d;
+                }
+                $query = substr($query, 0, strlen($query)-1) . ')';
             }
             if (is_array($subDepts) && count($subDepts) > 0) {
                 $query .= ' AND i.subdept IN (';
@@ -718,7 +726,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             <div class="tab-pane active" id="dept-tab">
                 <div class="row form-horizontal">
                     <div class="col-sm-8">
-                    <?php echo FormLib::standardDepartmentFields('deptSub', ''); ?>
+                    <?php echo FormLib::standardDepartmentFields('deptSub'); ?>
                     </div>
                 </div>
             </div>

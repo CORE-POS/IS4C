@@ -37,38 +37,13 @@ class StatementsPluginTerm extends FannieRESTfulPage
 
     public function post_id_handler()
     {
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_ROOT;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-
         $numbers = array("zero","one","two","three","four","five","six","seven",
                 "eight","nine","ten","eleven","twelve","thirteen","fourteen",
                 "fifteen","sixteen","seventeen","eighteen","nineteen","twenty");
 
-        $args = array();
-        $cards = '(';
         if (!is_array($this->id)) {
             $this->id = array($this->id);
         }
-        foreach ($this->id as $c){
-            $cards .= "?,";
-            $args[] = $c;
-        }
-        $cards = rtrim($cards,",");
-        $cards .= ")";
-
-        $memberP = $dbc->prepare("
-            SELECT m.card_no,
-                c.FirstName,
-                c.LastName,
-                m.street,
-                m.city,
-                m.state,
-                m.zip
-            FROM meminfo AS m 
-                INNER JOIN custdata AS c ON m.card_no=c.CardNo AND c.personnum=1
-            WHERE m.card_no IN $cards
-            ORDER BY m.card_no");
-        $memberR = $dbc->execute($memberP, $args);
 
         $today = date("F j, Y");
 
@@ -77,34 +52,35 @@ class StatementsPluginTerm extends FannieRESTfulPage
         $pdf->AddFont('Gill', 'B', 'GillSansMTPro-Medium.php');
 
         //Meat of the statement
-        while ($memberW = $dbc->fetch_row($memberR)){
+        foreach ($this->id as $card_no) {
             $pdf->AddPage();
             $pdf->Image('new_letterhead_horizontal.png',5,10, 200);
             $pdf->SetFont('Gill','','12');
             $pdf->Ln(45);
 
+            $account = \COREPOS\Fannie\API\member\MemberREST::get($card_no);
+
             $pdf->Cell(10,10,$today,0);
             $pdf->Ln(15);
 
-            $firstname = ucwords(strtolower($memberW['FirstName']));
-            $lastname = ucwords(strtolower($memberW['LastName']));
-            $fullname = $firstname." ".$lastname;
+            foreach ($account['customers'] as $c) {
+                if ($c['accountHolder']) {
+                    $firstname = ucwords(strtolower($c['firstName']));
+                    $lastname = ucwords(strtolower($c['lastName']));
+                    $fullname = $firstname." ".$lastname;
+                    break;
+                }
+            }
 
             //Member address
             $pdf->Cell(10,10,trim($fullname),0);
             $pdf->Ln(5);
 
-            if (strstr($memberW['street'],"\n") === false){
-                $pdf->Cell(80,10,$memberW['street'],0);
-                $pdf->Ln(5);
-            } else {
-                $pts = explode("\n",$memberW['street'], 2);
-                $pdf->Cell(80,10,$pts[0],0);
-                $pdf->Ln(5);
-                $pdf->Cell(80,10,$pts[1],0);
-                $pdf->Ln(5);
+            $pdf->Cell(80,10,$account['addressFirstLine'],0);
+            if ($account['addressSecondLine']) {
+                $pdf->Cell(80,10,$account['addressSecondLine'],0);
             }
-            $pdf->Cell(90,10,$memberW['city'] . ', ' . $memberW['state'] . '   ' . $memberW['zip'],0);
+            $pdf->Cell(90,10,$account['city'] . ', ' . $account['state'] . '   ' . $account['zip'],0);
             $pdf->Ln(15);
 
             $pdf->MultiCell(0,5,"Dear ".$firstname.",");

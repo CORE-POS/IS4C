@@ -261,7 +261,7 @@ class FormLib
             <div class="tab-content"><p>
                 <div class="tab-pane active" id="dept-tab">
                     <div class="form-horizontal">
-                        <?php echo self::standardDepartmentFields('super-dept', '', 'dept-start', 'dept-end'); ?>
+                        <?php echo self::standardDepartmentFields('super-dept', 'departments', 'dept-start', 'dept-end'); ?>
                     </div>
                 </div>
                 <div class="tab-pane" id="manu-tab">
@@ -381,10 +381,7 @@ class FormLib
         */
         $url = FannieConfig::config('URL');
         $chainsubs = "chainSubDepartments('{$url}ws/', {super_id:'#super-id', dept_start:'#dept-start-txt', dept_end:'#dept-end-txt', sub_multiple:'#subdepts'})";
-        $onchange = "chainSuperDepartment('{$url}ws/', this.value, {dept_start:'#dept-start',dept_end:'#dept-end',dept_start_id:'#dept-start-txt',dept_end_id:'#dept-end-txt',callback:function(){ $chainsubs; }})";
-        if (FannieConfig::config('REPORT_DEPT_MODE') == 'multi') {
-            $onchange = "chainSuperDepartment('{$url}ws/', this.value, {departments:'#departments'})";
-        }
+        $onchange = "chainSuperDepartment('{$url}ws/', this.value, {dept_multiple:'#departments',dept_start:'#dept-start',dept_end:'#dept-end',dept_start_id:'#dept-start-txt',dept_end_id:'#dept-end-txt',callback:function(){ $chainsubs; }})";
 
         /**
           The rest of this method uses HEREDOC style strings with
@@ -409,25 +406,51 @@ HTML;
         $ret = str_replace('{{SUPER_ONCHANGE}}', $onchange, $ret);
         $ret = str_replace('{{SUPER_OPTS}}', $super_opts, $ret);
 
+        $m_collapse = '';
+        $p_collapse = '';
+        $m_disabled = '';
+        $p_disabled = '';
         if (FannieConfig::config('REPORT_DEPT_MODE') == 'multi') {
-            $ret .= <<<HTML
-<div class="form-group">
-    <label class="col-sm-4 control-label">Department(s)</label>
+            $p_collapse = 'collapse';
+            $p_disabled = 'disabled';
+        } else {
+            $m_collapse = 'collapse';
+            $m_disabled = 'disabled';
+        }
+        $ret .= <<<HTML
+<div class="form-group {{m_collapse}}" id="multi-dept">
+    <label class="col-sm-4 control-label">
+        <a href="" 
+            onclick="$('#multi-dept :input').prop('disabled', true);$('.pair-dept :input').prop('disabled', false);$('#multi-dept').hide();$('.pair-dept').show();return false;">
+            <span class="glyphicon glyphicon-refresh"
+                title="Choose range of departments"></span>
+        </a>
+        Department(s)
+    </label>
     <div class="col-sm-8">
         <select id="departments" name="{{DEPT_MULTI}}[]" class="form-control" 
-            multiple size="10" onchange="{{DEPT_ONCHANGE}};">';
+            multiple size="10" onchange="{{DEPT_ONCHANGE}};" {{m_disabled}}>';
             {{DEPT_OPTS}}
         </select>
     </div>
 </div>
 HTML;
-            $ret = str_replace('{{DEPT_MULTI}}', $multi, $ret);
-        } else {
-            $ret .= <<<HTML
-<div class="form-group">
-    <label class="col-sm-4 control-label">Department Start</label>
+        $ret = str_replace('{{DEPT_MULTI}}', $multi, $ret);
+        $ret = str_replace('{{m_collapse}}', $m_collapse, $ret);
+        $ret = str_replace('{{m_disabled}}', $m_disabled, $ret);
+
+        $ret .= <<<HTML
+<div class="form-group pair-dept {{p_collapse}}">
+    <label class="col-sm-4 control-label">
+        <a href="" 
+            onclick="$('.pair-dept :input').prop('disabled', true);$('#multi-dept :input').prop('disabled', false);$('.pair-dept').hide();$('#multi-dept').show();return false;">
+            <span class="glyphicon glyphicon-refresh"
+                title="Choose individual department(s)"></span>
+        </a>
+        Department Start
+    </label>
     <div class="col-sm-6">
-        <select id="dept-start" class="form-control"
+        <select id="dept-start" class="form-control" {{p_disabled}}
             onchange="$('#dept-start-txt').val(this.value); $('#dept-end').val(this.value); 
             $('#dept-end-txt').val(this.value); {{DEPT_ONCHANGE}};">
             {{DEPT_OPTS}}
@@ -437,13 +460,13 @@ HTML;
         <input type="text" name="{{DEPT_START}}" id="dept-start-txt" 
             onchange="$('#dept-start').val(this.value); $('#dept-end').val(this.value);
             $('#dept-end-txt').val(this.value); {{DEPT_ONCHANGE}};"
-            class="form-control" value="1" />
+            class="form-control" value="1" {{p_disabled}} />
     </div>
 </div>
-<div class="form-group">
+<div class="form-group pair-dept {{p_collapse}}">
     <label class="col-sm-4 control-label">Department End</label>
     <div class="col-sm-6">
-        <select id="dept-end" class="form-control"
+        <select id="dept-end" class="form-control" {{p_disabled}}
             onchange="$('#dept-end-txt').val(this.value); {{DEPT_ONCHANGE}};">
             {{DEPT_OPTS}}
         </select>
@@ -451,15 +474,17 @@ HTML;
     <div class="col-sm-2">
     <input type="text" name="{{DEPT_END}}" id="dept-end-txt" 
         onchange="$('#dept-end').val(this.value); {{DEPT_ONCHANGE}};"
-        class="form-control" value="1" />
+        class="form-control" value="1" {{p_disabled}} />
     </div>
 </div>
 HTML;
-            $ret = str_replace('{{DEPT_START}}', $start, $ret);
-            $ret = str_replace('{{DEPT_END}}', $end, $ret);
-        }
+        $ret = str_replace('{{DEPT_START}}', $start, $ret);
+        $ret = str_replace('{{DEPT_END}}', $end, $ret);
+
         $ret = str_replace('{{DEPT_OPTS}}', $dept_opts, $ret);
         $ret = str_replace('{{DEPT_ONCHANGE}}', $chainsubs, $ret);
+        $ret = str_replace('{{p_collapse}}', $p_collapse, $ret);
+        $ret = str_replace('{{p_disabled}}', $p_disabled, $ret);
 
         $ret .= <<<HTML
 <div class="form-group">
@@ -553,22 +578,45 @@ HTML;
                 if ($super !== '' && $super >= 0) {
                     $query .= ' AND s.superID=? ';
                     $args[] = $super;
-                    if (FormLib::get('dept-start') !== '' && FormLib::get('dept-end') !== '') {
+                    if (is_array(FormLib::get('departments')) && count(FormLib::get('departments')) > 0) {
+                        $query .= ' AND t.department IN (';
+                        foreach (FormLib::get('departments') as $d) {
+                            $query .= '?,';
+                            $args[] = $d;
+                        }
+                        $query = substr($query, 0, strlen($query)-1) . ')';
+                    } elseif (FormLib::get('dept-start') !== '' && FormLib::get('dept-end') !== '') {
                         $query .= ' AND t.department BETWEEN ? AND ? ';
                         $args[] = FormLib::get('dept-start');
                         $args[] = FormLib::get('dept-end');
                     }
                 } elseif ($super !== '' && $super == -2) {
                     $query .= ' AND m.superID <> 0 ';
-                    if (FormLib::get('dept-start') !== '' && FormLib::get('dept-end') !== '') {
+                    if (is_array(FormLib::get('departments')) && count(FormLib::get('departments')) > 0) {
+                        $query .= ' AND t.department IN (';
+                        foreach (FormLib::get('departments') as $d) {
+                            $query .= '?,';
+                            $args[] = $d;
+                        }
+                        $query = substr($query, 0, strlen($query)-1) . ')';
+                    } elseif (FormLib::get('dept-start') !== '' && FormLib::get('dept-end') !== '') {
                         $query .= ' AND t.department BETWEEN ? AND ? ';
                         $args[] = FormLib::get('dept-start');
                         $args[] = FormLib::get('dept-end');
                     }
                 } elseif ($super === '') {
-                    $query .= ' AND t.department BETWEEN ? AND ? ';
-                    $args[] = FormLib::get('dept-start', 1);
-                    $args[] = FormLib::get('dept-end', 1);
+                    if (is_array(FormLib::get('departments')) && count(FormLib::get('departments')) > 0) {
+                        $query .= ' AND t.department IN (';
+                        foreach (FormLib::get('departments') as $d) {
+                            $query .= '?,';
+                            $args[] = $d;
+                        }
+                        $query = substr($query, 0, strlen($query)-1) . ')';
+                    } else {
+                        $query .= ' AND t.department BETWEEN ? AND ? ';
+                        $args[] = FormLib::get('dept-start', 1);
+                        $args[] = FormLib::get('dept-end', 1);
+                    }
                 }
                 if (is_array(FormLib::get('subdepts')) && count(FormLib::get('subdepts')) > 0) {
                     $query .= ' AND p.subdept IN (';

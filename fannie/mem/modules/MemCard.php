@@ -64,7 +64,8 @@ class MemCard extends \COREPOS\Fannie\API\member\MemberModule {
     }
     */
 
-    function GetSearchResults(){
+    function GetSearchResults()
+    {
         $FANNIE_MEMBER_UPC_PREFIX = FannieConfig::config('FANNIE_MEMBER_UPC_PREFIX');
         $dbc = $this->db();
 
@@ -84,25 +85,15 @@ class MemCard extends \COREPOS\Fannie\API\member\MemberModule {
             $mcc = sprintf("%s%05d",$FANNIE_MEMBER_UPC_PREFIX, (int)$mc);
         }
 
-        $where = "";
-        $args = array();
-        if (!empty($mcc)){
-            $where .= " AND upc = ?";
-            $args[] = "$mcc";
-        }
+        $json = array(
+            'idCardUPC' => $mcc,
+        );
+        $accounts = \COREPOS\Fannie\API\member\MemberREST::search($json);
 
-        if (!empty($where)){
-            $q = "SELECT CardNo,FirstName,LastName
-                FROM custdata as c
-                JOIN memberCards AS m ON c.CardNo = m.card_no
-                WHERE 1=1 $where
-                ORDER BY m.card_no";
-            $s = $dbc->prepare_statement($q);
-            $r = $dbc->exec_statement($s,$args);
-            if ($dbc->num_rows($r) > 0){
-                while($w = $dbc->fetch_row($r)){
-                    $ret[$w[0]] = $w[1]." ".$w[2];
-                }
+        $ret = array();
+        foreach ($accounts as $account) {
+            foreach ($account['customers'] as $customer) {
+                $ret[$account['cardNo']] = $customer['firstName'] . ' ' . $customer['lastName'];
             }
         }
 
@@ -111,35 +102,23 @@ class MemCard extends \COREPOS\Fannie\API\member\MemberModule {
 
 
     // Return a form segment for display or edit the Member Card#
-    function showEditForm($memNum, $country="US"){
+    function showEditForm($memNum, $country="US")
+    {
         $FANNIE_URL = FannieConfig::config('URL');
         $FANNIE_MEMBER_UPC_PREFIX = FannieConfig::config('FANNIE_MEMBER_UPC_PREFIX');
 
-        $dbc = $this->db();
+        $account = self::getAccount();
 
         $prefix = isset($FANNIE_MEMBER_UPC_PREFIX) ? $FANNIE_MEMBER_UPC_PREFIX : "";
         $plen = strlen($prefix);
 
-        $infoQ = $dbc->prepare_statement("SELECT upc
-                FROM memberCards
-                WHERE card_no=?");
-        $infoR = $dbc->exec_statement($infoQ,array($memNum));
-        if ( $infoR === false ) {
-            return "Error: problem checking for Member Card<br />";
-        }
-
         $ret = "<div class=\"panel panel-default\">
             <div class=\"panel-heading\">Membership Card</div>
             <div class=\"panel-body\">";
-        if ( $dbc->num_rows($infoR) > 0 ) {
-            $infoW = $dbc->fetch_row($infoR);
-            $upc = $infoW['upc'];
-            if ( $prefix && strpos("$upc", "$prefix") === 0 ) {
-                $upc = substr($upc,$plen);
-                $upc = ltrim($upc,"0");
-            }
-        } else {
-            $upc = "";
+        $upc = $account['idCardUPC'];
+        if ( $prefix && strpos("$upc", "$prefix") === 0 ) {
+            $upc = substr($upc,$plen);
+            $upc = ltrim($upc,"0");
         }
 
         $ret .= '<div class="form-group form-inline">

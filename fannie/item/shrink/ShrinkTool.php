@@ -114,51 +114,85 @@ class ShrinkTool extends FannieRESTfulPage
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $this->add_onload_command("\$('#qty-field').focus();\n");
 
-        $ret = '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">
-            <div class="form-group">
-                <label>UPC</label> ' . $this->upc . ' ' . $this->description . '
-                <input type="hidden" name="upc" value="' . $this->upc . '" />
-                <input type="hidden" name="description" value="' . $this->description . '" />
-                <input type="hidden" name="department" value="' . $this->department . '" />
-            </div>
-            <div class="form-group form-inline">
-                <label>Unit Cost</label>
-                <div class="input-group">
-                    <span class="input-group-addon">$</span>
-                    <input type="text" name="cost" class="form-control" value="' . $this->cost . '" />
-                </div> 
-                <label>Unit Price</label>
-                <div class="input-group">
-                    <span class="input-group-addon">$</span>
-                    <input type="text" name="price" class="form-control" value="' . $this->price . '" />
-                </div> 
-            </div>
-            <div class="form-group form-inline">
-                <label>Quantity</label>
-                <input type="text" name="qty" id="qty-field" class="form-control" required />
-            </div>
-            <div class="form-group form-inline">
-                <label>Reason</label>
-                <select name="reason" class="form-control">';
         $reasons = new ShrinkReasonsModel($dbc);
+        $shrink_opts = '';
         foreach ($reasons->find('description') as $reason) {
-            $ret .= sprintf('<option value="%d">%s</option>',
-                    $reason->shrinkReasonID(), $reason->description());
+            $shrink_opts .= sprintf('<option value="%d">%s</option>',
+                $reason->shrinkReasonID(), $reason->description());
         }
-        $ret .= '</select>
+
+        $ret = <<<HTML
+<form method="post">
+    <div class="form-group">
+        <label>UPC</label> {{upc}} {{description}}
+        <input type="hidden" name="upc" value="{{upc}}" />
+        <input type="hidden" name="description" value="{{description}}" />
+        <input type="hidden" name="department" value="{{department}}" />
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="row form-group">
+                <label class="col-sm-3 text-right">Unit Cost</label>
+                <div class="col-sm-9">
+                    <div class="input-group">
+                        <span class="input-group-addon">$</span>
+                        <input type="text" name="cost" class="form-control" value="{{cost}}" />
+                    </div> 
+                </div> 
+            </div> 
+            <div class="row form-group">
+                <label class="col-sm-3 text-right">Quantity</label>
+                <div class="col-sm-9">
+                    <input type="text" name="qty" id="qty-field" class="form-control" required />
+                </div>
             </div>
-            <div class="form-group form-inline">
-                <label>Type</label>
-                <select name="type" class="form-control">
-                    <option>Loss</option>
-                    <option>Contribute</option>
-                </select>
+            <div class="row form-group">
+                <label class="col-sm-3 text-right">Type</label>
+                <div class="col-sm-9">
+                    <select name="type" class="form-control">
+                        <option>Loss</option>
+                        <option>Contribute</option>
+                    </select>
+                </div> 
+            </div> 
+        </div> <!-- end left column col-sm-6 -->
+        <div class="col-sm-6">
+            <div class="form-group row">
+                <label class="col-sm-3 text-right">Unit Price</label>
+                <div class="col-sm-9">
+                    <div class="input-group">
+                        <span class="input-group-addon">$</span>
+                        <input type="text" name="price" class="form-control" value="{{price}}" />
+                    </div> 
+                </div> 
+            </div> 
+            <div class="row form-group">
+                <label class="col-sm-3 text-right">Reason</label>
+                <div class="col-sm-9">
+                    <select name="reason" class="form-control">';
+                        {{shrink_opts}}
+                    </select>
+                </div>
             </div>
-            <p>
-                <button type="submit" class="btn btn-default">Enter Shrink</button>
-                <a href="' . $_SERVER['PHP_SELF'] . '" class="btn btn-default">Go Back</a>
-            </p>
-            </form>';
+        </div> <!-- end right column col-sm-6 -->
+    </div> <!-- end row containing two col-sm-6 columns -->
+    <div class="row form-group">
+        <div class="col-sm-2">
+            <button type="submit" class="btn btn-default">Enter Shrink</button>
+        </div>
+        <div class="col-sm-2">
+            <a href="{{PHP_SELF}}" class="btn btn-default">Go Back</a>
+        </div>
+    </div>
+</form>
+HTML;
+        $ret = str_replace('{{upc}}', $this->upc, $ret);
+        $ret = str_replace('{{description}}', $this->description, $ret);
+        $ret = str_replace('{{department}}', $this->department, $ret);
+        $ret = str_replace('{{price}}', $this->price, $ret);
+        $ret = str_replace('{{cost}}', $this->cost, $ret);
+        $ret = str_replace('{{shrink_opts}}', $shrink_opts, $ret);
+        $ret = str_replace('{{PHP_SELF}}', $_SERVER['PHP_SELF'], $ret);
 
         return $ret;
     }
@@ -180,7 +214,6 @@ class ShrinkTool extends FannieRESTfulPage
             </div>
             <p>
                 <button type="submit" class="btn btn-default">Continue</button>
-                |
                 <a href="ShrinkEditor.php" class="btn btn-default">Edit Entries From Today</a>
             </p>
             </form>';

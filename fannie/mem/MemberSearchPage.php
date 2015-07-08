@@ -51,10 +51,9 @@ class MemberSearchPage extends FanniePage {
 
             /* if member number is provided and exists, go
                directly to the result */
-            if ($num !== ''){
-                $q = $dbc->prepare_statement("SELECT cardno FROM custdata WHERE cardno=?");
-                $r = $dbc->exec_statement($q,array($num));
-                if ($dbc->num_rows($r) > 0){
+            if ($num !== '') {
+                $account = \COREPOS\Fannie\API\member\MemberREST::get($num);
+                if ($account != false) {
                     header("Location: MemberEditor.php?memNum=".$num);
                     return False;
                 }
@@ -114,13 +113,15 @@ class MemberSearchPage extends FanniePage {
         if ($review !== false) {
             $ret .= '<fieldset><legend>Review</legend>';
             $dbc = FannieDB::get($FANNIE_OP_DB);
-            $prep = $dbc->prepare_statement('SELECT LastName,FirstName FROM custdata
-                    WHERE personNum=1 AND CardNo=?');
-            $res = $dbc->exec_statement($prep,array($review));
+            $account = \COREPOS\Fannie\API\member\MemberREST::get($review);
             $ret .= 'Saved Member #'.$review.' (';
-            if ($dbc->num_rows($res) > 0){
-                $row = $dbc->fetch_row($res);
-                $ret .= $row['FirstName'].' '.$row['LastName'];
+            if ($account) {
+                foreach ($account['customers'] as $row) {
+                    if ($row['accountHolder']) {
+                        $ret .= $row['firstName'].' '.$row['lastName'];
+                        break;
+                    }
+                }
             }
             $ret .= ')';
             $ret .= '<br /><a href="MemberEditor.php?memNum='.$review.'">Edit Again</a>';

@@ -211,9 +211,21 @@ class EditItemsFromSearch extends FannieRESTfulPage
         */
         $ret .= '<td><select class="form-control input-sm" onchange="updateAll(this.value, \'.brandField\');">';
         $ret .= '<option value=""></option>';
-        $brands = $dbc->query('SELECT brand FROM vendorItems 
-                        WHERE brand IS NOT NULL AND brand <> \'\' 
-                        GROUP BY brand ORDER BY brand');
+        $brands = $dbc->query('
+            SELECT brand 
+            FROM vendorItems 
+            WHERE brand IS NOT NULL AND brand <> \'\' 
+            GROUP BY brand 
+            
+            UNION 
+
+            SELECT brand 
+            FROM products 
+            WHERE brand IS NOT NULL AND brand <> \'\' 
+            GROUP BY brand 
+            
+            
+            ORDER BY brand');
         while($row = $dbc->fetch_row($brands)) {
             $ret .= '<option>' . $row['brand'] . '</option>';
         }

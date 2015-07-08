@@ -236,6 +236,51 @@ class AdvancedItemSearch extends FannieRESTfulPage
             }
         }
 
+        $price = FormLib::get('price-val');
+        if ($price !== '') {
+            switch (FormLib::get('price-op')) {
+                case '=':
+                    $where .= ' AND p.normal_price = ? ';
+                    $args[] = $price;
+                    break;
+                case '<':
+                    $where .= ' AND p.normal_price < ? ';
+                    $args[] = $price;
+                    break;
+                case '>':
+                    $where .= ' AND p.normal_price > ? ';
+                    $args[] = $price;
+                    break;
+            }
+        }
+
+        $cost = FormLib::get('cost-val');
+        if ($cost !== '') {
+            switch (FormLib::get('cost-op')) {
+                case '=':
+                    $where .= ' AND p.cost = ? ';
+                    $args[] = $cost;
+                    break;
+                case '<':
+                    $where .= ' AND p.cost < ? ';
+                    $args[] = $cost;
+                    break;
+                case '>':
+                    $where .= ' AND p.cost > ? ';
+                    $args[] = $cost;
+                    break;
+            }
+        }
+
+        $rule = FormLib::get('price-rule');
+        if ($rule !== '') {
+            if ($rule == 1) {
+                $where .= ' AND p.price_rule_id <> 0 ';
+            } elseif ($rule == 0) {
+                $where .= ' AND p.price_rule_id = 0 ';
+            }
+        }
+
         $tax = FormLib::get('tax');
         if ($tax !== '') {
             $where .= ' AND p.tax=? ';
@@ -264,6 +309,15 @@ class AdvancedItemSearch extends FannieRESTfulPage
         if ($discount !== '') {
             $where .= ' AND p.discount=? ';
             $args[] = $discount;
+        }
+
+        $location = FormLib::get('location');
+        if ($location !== '') {
+            if ($location == '1') {
+                $from .= ' INNER JOIN prodPhysicalLocation AS y ON p.upc=y.upc ';
+            } else {
+                $where .= ' AND p.upc NOT IN (SELECT upc FROM prodPhysicalLocation) ';
+            }
         }
 
         $signinfo = FormLib::get('signinfo');
@@ -700,24 +754,24 @@ function chainSuper(superID)
         $ret .= '<table class="table table-bordered">';
         $ret .= '<tr>';
 
-        $ret .= '<td>
-            <label class="control-label">UPC</label>
+        $ret .= '<td class="text-right">
+            <label class="small control-label">UPC</label>
             </td>
             <td>
                 <input type="text" name="upc" class="form-control input-sm" 
                     placeholder="UPC or PLU" />
             </td>';
 
-        $ret .= '<td>
-            <label class="control-label">Descript.</label>
+        $ret .= '<td class="text-right">
+            <label class="control-label small">Descript.</label>
             </td>
             <td>
             <input type="text" name="description" class="form-control input-sm" 
                 placeholder="Item Description" />
             </td>';
 
-        $ret .= '<td>
-            <label class="control-label">Brand</label>
+        $ret .= '<td class="text-right">
+            <label class="control-label small">Brand</label>
             </td>
             <td>
             <input type="text" name="brand" class="form-control input-sm" 
@@ -726,7 +780,7 @@ function chainSuper(superID)
 
         $ret .= '</tr><tr>';
 
-        $ret .= '<td>
+        $ret .= '<td class="text-right">
             <label class="control-label small">Super Dept</label>
             </td>
             <td>
@@ -738,7 +792,7 @@ function chainSuper(superID)
         }
         $ret .= '</select></td>';
 
-        $ret .= '<td>
+        $ret .= '<td class="text-right">
             <label class="control-label small">Dept Start</label>
             </td>
             <td>
@@ -750,7 +804,7 @@ function chainSuper(superID)
         }
         $ret .= '</select></td>';
 
-        $ret .= '<td>
+        $ret .= '<td class="text-right">
             <label class="control-label small">Dept End</label>
             </td>
             <td>
@@ -776,7 +830,7 @@ function chainSuper(superID)
                     placeholder="Modified date" />
            </td>';
 
-        $ret .= '<td>
+        $ret .= '<td class="text-right">
                 <label class="control-label small">Movement</label>
                 </td>
                 <td>
@@ -784,8 +838,8 @@ function chainSuper(superID)
                     <option value="30">Last 30 days</option><option value="90">Last 90 days</option></select>
                 </td>';
 
-        $ret .= '<td>
-                    <label class="control-label">Vendor</label>
+        $ret .= '<td class="text-right">
+                    <label class="control-label small">Vendor</label>
                  </td>
                  <td>
                     <select name="vendor" class="form-control input-sm"
@@ -800,8 +854,45 @@ function chainSuper(superID)
 
         $ret .= '</tr><tr>'; // end row
 
-        $ret .= '<td>
-            <label class="control-label">Origin</label>
+        $ret .= '
+            <td class="text-right">
+                <label class="control-label small">Price</label>
+            </td>
+            <td class="form-inline">
+                <select name="price-op" class="form-control input-sm">
+                    <option>=</option>
+                    <option>&lt;</option>
+                    <option>&gt;</option>
+                </select>
+                <input type="text" class="form-control input-sm price-field"
+                    name="price-val" placeholder="$0.00" />
+            </td>
+            <td class="text-right">
+                <label class="control-label small">Cost</label>
+            </td>
+            <td class="form-inline">
+                <select name="cost-op" class="form-control input-sm">
+                    <option>=</option>
+                    <option>&lt;</option>
+                    <option>&gt;</option>
+                </select>
+                <input type="text" class="form-control input-sm price-field"
+                    name="cost-val" placeholder="$0.00" />
+            </td>
+            <td class="form-inline" colspan="2">
+                <label class="control-label small">Pricing Rule</label>
+                <select name="price-rule" class="form-control input-sm">
+                    <option value="">Any</option>
+                    <option value="0">Standard</option>
+                    <option value="1">Variable</option>
+                </select>
+            </td>
+            </td>';
+
+        $ret .= '</tr><tr>'; // end row
+
+        $ret .= '<td class="text-right">
+            <label class="control-label small">Origin</label>
             </td>';
         $ret .= '<td>
             <select name="originID" class="form-control input-sm"><option value="0">Any Origin</option>';
@@ -811,8 +902,8 @@ function chainSuper(superID)
         }
         $ret .= '</select></td>';
 
-        $ret .= '<td>
-                <label class="control-label">Likecode</label> 
+        $ret .= '<td class="text-right">
+                <label class="control-label small">Likecode</label> 
                 </td>';
         $ret .= '<td>
             <select name="likeCode" class="form-control input-sm"><option value="">Choose Like Code</option>
@@ -839,46 +930,60 @@ function chainSuper(superID)
         $ret .= '</tr><tr>';
 
         $ret .= '<td colspan="2" class="form-inline">
-            <label class="control-label">Tax</label>
+            <div class="form-group">
+            <label class="control-label small">Tax</label>
             <select name="tax" class="form-control input-sm"><option value="">Any</option><option value="0">NoTax</option>';
         $taxes = $dbc->query('SELECT id, description FROM taxrates');
         while($row = $dbc->fetch_row($taxes)) {
             $ret .= sprintf('<option value="%d">%s</option>', $row['id'], $row['description']);
         }
-        $ret .= '</select>';
+        $ret .= '</select></div>';
 
         $ret .= '&nbsp;&nbsp;
-            <label class="control-label">FS</label>
+            <div class="form-group">
+            <label class="control-label small">FS</label>
             <select name="fs" class="form-control input-sm">
             <option value="">Any</option><option value="1">Yes</option><option value="0">No</option></select>
+            </div>
             </td>';
 
         $ret .= '<td colspan="2" class="form-inline">
-            <label class="control-label">Local</label>
+            <div class="form-group">
+            <label class="control-label small">Local</label>
             <select name="local" class="form-control input-sm"><option value="">Any</option><option value="0">No</option>';
         $origins = new OriginsModel($dbc);
         foreach ($origins->getLocalOrigins() as $originID => $shortName) {
             $ret .= sprintf('<option value="%d">%s</option>', $originID, $shortName);
         }
-        $ret .= '</select> ';
+        $ret .= '</select></div> ';
 
         $ret .= '&nbsp;&nbsp;
-            <label class="control-label">%Disc</label>
+            <div class="form-group">
+            <label class="control-label small">%Disc</label>
             <select name="discountable" class="form-control input-sm">
             <option value="">Any</option><option value="1">Yes</option><option value="0">No</option></select>
-            </td>';
-
-        $ret .= '<td colspan="2" class="form-inline">
+            </div>
             <label class="small" for="serviceScale">
             Service Scale
             <input type="checkbox" id="serviceScale" name="serviceScale" class="checkbox-inline" />
-            </label>';
+            </label>
+            </td>';
+
+        $ret .= '<td colspan="2" class="form-inline">
+            <div class="form-group">
+            <label class="control-label small">Location</label>
+            <select name="location" class="form-control input-sm">
+            <option value="">Any</option><option value="1">Yes</option><option value="0">No</option>
+            </select>
+            </div>';
 
         $ret .= '&nbsp;&nbsp;
+            <div class="form-group">
             <label class="control-label small">Sign Info</label>
             <select name="signinfo" class="form-control input-sm">
             <option value="">Any</option><option value="1">Yes</option><option value="0">No</option>
-            </select>';
+            </select>
+            </div>';
 
         $ret .= '</td>'; // end row
 

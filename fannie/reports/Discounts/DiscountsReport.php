@@ -58,12 +58,13 @@ class DiscountsReport extends FannieReportPage {
 
         $dlog = DTransactionsModel::selectDlog($d1,$d2);
 
-        $query = $dbc->prepare_statement("SELECT m.memDesc,sum(total) as total FROM $dlog AS d
-            LEFT JOIN custdata AS c ON d.card_no=c.CardNo
-            AND c.personNum=1 LEFT JOIN memtype AS m ON
-            c.memType=m.memtype
+        $query = $dbc->prepare_statement("
+            SELECT m.memDesc,
+                SUM(total) AS total 
+            FROM $dlog AS d
+                LEFT JOIN memtype AS m ON d.memType=m.memtype
             WHERE d.upc='DISCOUNT'
-            AND tdate BETWEEN ? AND ?
+                AND tdate BETWEEN ? AND ?
             GROUP BY m.memDesc
             ORDER BY m.memDesc");
         $result = $dbc->exec_statement($query, array($d1.' 00:00:00', $d2.' 23:59:59'));

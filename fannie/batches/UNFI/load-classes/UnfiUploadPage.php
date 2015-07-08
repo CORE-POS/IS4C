@@ -145,7 +145,7 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $prodP = $dbc->prepare('
             UPDATE products
             SET cost=?,
-                numflag=?,
+                numflag= numflag | ? | ?,
                 modified=' . $dbc->now() . '
             WHERE upc=?');
         $itemP = $dbc->prepare("
@@ -248,12 +248,14 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             }
 
             // set organic flag on OG1 (100%) or OG2 (95%)
+            $organic_flag = 0;
             if (strstr($prodInfo, 'OG2') || strstr($prodInfo, 'OG1')) {
-                $flag = $flag | 2;
+                $organic_flag = 17;
             }
             // set gluten-free flag on g
+            $gf_flag = 0;
             if (strstr($prodInfo, 'g')) {
-                $flag = $flag | 1;
+                $gf_flag = 18;
             }
 
             // need unit cost, not case cost
@@ -261,7 +263,7 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $net_unit = $net / $qty;
 
             $dbc->exec_statement($extraP, array($reg_unit,$upc));
-            $dbc->exec_statement($prodP, array($reg_unit,$flag,$upc));
+            $dbc->exec_statement($prodP, array($reg_unit,$organic_flag,$gf_flag,$upc));
             $updated_upcs[] = $upc;
 
             $args = array(

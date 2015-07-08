@@ -56,6 +56,8 @@ class SQLManager
     /** cache information about table existence & definition **/
     protected $structure_cache = array();
 
+    protected $last_connect_error = false;
+
     /** Constructor
         @param $server Database server host
         @param $type Database type. Most supported are
@@ -108,19 +110,24 @@ class SQLManager
         }
         $this->connections[$database] = $conn;
 
+        $this->last_connection_error = false;
         if (!$ok) {
+            $this->last_connect_error = $conn->ErrorMsg();
             $conn = ADONewConnection($type);
             $conn->SetFetchMode(ADODB_FETCH_BOTH);
             $ok = $conn->Connect($server,$username,$password);
             if ($ok) {
+                $this->last_connection_error = false;
                 $stillok = $conn->Execute("CREATE DATABASE $database");
                 if (!$stillok) {
+                    $this->last_connect_error = $conn->ErrorMsg();
                     $this->connections[$database] = false;
                     return false;
                 }
                 $conn->Execute("USE $database");
                 $this->connections[$database] = $conn;
             } else {
+                $this->last_connect_error = $conn->ErrorMsg();
                 $this->connections[$database] = false;
                 return false;
             }
@@ -1562,7 +1569,11 @@ class SQLManager
         $con = $this->connections[$which_connection];
 
         if (!is_object($con)) {
-            return 'No database connection';
+            if ($this->last_connect_error) {
+                return $this->last_connect_error;
+            } else {
+                return 'No database connection';
+            }
         }
 
         return $con->ErrorMsg();
@@ -1767,6 +1778,54 @@ class SQLManager
     public function exec_statement($sql, $input_array=array(), $which_connection='')
     {
         return $this->execute($sql, $input_array, $which_connection);
+    }
+
+    /**
+      Get a value directly from a query without verifying
+      rows exist and fetching one
+      @param $sql a value from SQLManager::prepare_statement
+      @param $input_array an array of values
+      @param which_connection see method close
+      @return [mixed] value or [boolean] false
+        - throws an exception if exceptions are enabled
+    */
+    public function getValue($sql, $input_array=array(), $which_connection='')
+    {
+        $res = $this->execute($sql, $input_array, $which_connection);
+        if ($res && $this->numRows($res) > 0) {
+            $row = $this->fetchRow($res);
+            return $row[0];
+        } else {
+            if ($this->throw_on_fail) {
+                throw new \Exception('Record not found');
+            } else {
+                return false;
+            }
+        }
+    }
+
+    /**
+      Get a row directly from a query without verifying
+      rows exist and fetching one
+      @param $sql a value from SQLManager::prepare_statement
+      @param $input_array an array of values
+      @param which_connection see method close
+      @return [mixed] value or [boolean] false
+        - throws an exception if exceptions are enabled
+    */
+    public function getRow($sql, $input_array=array(), $which_connection='')
+    {
+        $res = $this->execute($sql, $input_array, $which_connection);
+        if ($res && $this->numRows($res) > 0) {
+            $row = $this->fetchRow($res);
+            return $row;
+        } else {
+            if ($this->throw_on_fail) {
+                throw new \Exception('Record not found');
+            } else {
+                return false;
+            }
+        }
     }
 
     /** 

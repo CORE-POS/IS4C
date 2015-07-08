@@ -125,15 +125,16 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
 
         $ret .= '<a href="index.php">Main Menu</a>';
         $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-        $ret .= sprintf('<a href="clearinghouse.php%s">Current Orders</a>',
+        $ret .= sprintf('<a href="NewSpecialOrdersPage.php%s">Current Orders</a>',
             ($this->card_no ? '?card_no='.$this->card_no :'')
         );
         $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
         $ret .= "Old Orders";
         $ret .= '<p />';
 
+        $ret .= '<div class="form-inline">';
         $ret .= "<b>Status</b>: ";
-        $ret .= '<select id="f_1" onchange="refilter();">';
+        $ret .= '<select id="f_1" class="form-control input-sm" onchange="refilter();">';
         $ret .= '<option value="">All</option>';
         foreach ($status as $k=>$v) {
             $ret .= sprintf("<option %s value=\"%d\">%s</option>",
@@ -143,7 +144,7 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
 
         $ret .= '&nbsp;';
 
-        $ret .= '<b>Buyer</b>: <select id="f_2" onchange="refilter();">';
+        $ret .= '<b>Buyer</b>: <select id="f_2" class="form-control input-sm" onchange="refilter();">';
         $ret .= '<option value="">All</option>';
         foreach ($assignments as $k=>$v) {
             $ret .= sprintf("<option %s value=\"%d\">%s</option>",
@@ -154,12 +155,13 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
 
         $ret .= '&nbsp;';
 
-        $ret .= '<b>Supplier</b>: <select id="f_3" onchange="refilter();">';
+        $ret .= '<b>Supplier</b>: <select id="f_3" class="form-control input-sm" onchange="refilter();">';
         foreach ($suppliers as $v) {
             $ret .= sprintf("<option %s>%s</option>",
                 ($v===$f3?'selected':''),$v);
         }
         $ret .= '</select>';
+        $ret .= '</div>';
         $ret .= '<hr />';
 
         /**
@@ -197,8 +199,8 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
                 (count(*) > 1 OR SUM(CASE WHEN o.notes LIKE '' THEN 0 ELSE 1 END) > 0)";
         if (!$this->card_no) {
             $lookupQ .= "
-                AND ".$dbc->monthdiff($dbc->now(),'min(datetime)')." >= ((?-1)*3)
-                AND ".$dbc->monthdiff($dbc->now(),'min(datetime)')." < (?*3) ";
+                AND ".$dbc->monthdiff($dbc->now(),'min(datetime)')." >= ((?-1)*2)
+                AND ".$dbc->monthdiff($dbc->now(),'min(datetime)')." < (?*2) ";
             $filterargs[] = $page;
             $filterargs[] = $page; // again
         }
@@ -250,10 +252,10 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
                 $args[] = $this->card_no;
             } else {
                 $q .= "
-                    AND ".$dbc->monthdiff($dbc->now(),'min(datetime)')." >= ((?-1)*3)
-                    AND ".$dbc->monthdiff($dbc->now(),'min(datetime)')." < (?*3) ";
-                $filterargs[] = $page;
-                $filterargs[] = $page;
+                    AND ".$dbc->monthdiff($dbc->now(),'datetime')." >= ((?-1)*2)
+                    AND ".$dbc->monthdiff($dbc->now(),'datetime')." < (?*2) ";
+                $args[] = $page;
+                $args[] = $page;
             }
             $q .= " GROUP BY p.order_id";
             $p = $dbc->prepare($q);
@@ -392,7 +394,7 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
         foreach ($orders as $w) {
             if (!isset($valid_ids[$w['order_id']])) continue;
 
-            $ret .= sprintf('<tr class="%s"><td><a href="review.php?orderID=%d&k=%s">%s</a></td>
+            $ret .= sprintf('<tr class="%s"><td><a href="OrderReviewPage.php?orderID=%d&k=%s">%s</a></td>
                 <td><a href="" onclick="applyMemNum(%d);return false;">%s</a></td>
                 %s
                 %s
