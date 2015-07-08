@@ -53,7 +53,7 @@ class PriceRounder
                 $price++;
             }
         }
-		
+
         // if price $1.00 - 2.99
         if ($price < 300 && $price > 100){
             if ($price % 100 <= 15){
