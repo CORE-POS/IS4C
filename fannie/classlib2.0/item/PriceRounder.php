@@ -51,11 +51,6 @@ class PriceRounder
         while ($price % 10 != 9) {
             $price++;
         }
-
-        // mystery
-        if ($price % 100 == 5 || $price % 100 == 9) {
-            $price += 10;
-        }
 		
         // if price < $6.00 BUT > $1.00 and cents < 20, round down to nearest x.99
         if ($price < 600 && $price > 100) {
