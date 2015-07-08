@@ -49,6 +49,7 @@ class PatronageGrossPurchases extends FannieRESTfulPage
         $dbc->exec_statement($create);
 
         $insQ = sprintf("INSERT INTO patronage_workingcopy
+            (cardno, purchase, discounts, rewards, net_purch, tot_pat, cash_pat, equit_pat, FY)
             SELECT card_no,
             SUM(CASE WHEN trans_type IN ('I','D') THEN total ELSE 0 END),
             SUM(CASE WHEN trans_type IN ('S') then total ELSE 0 END),
