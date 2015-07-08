@@ -1362,7 +1362,7 @@ class MercuryE2E extends BasicCCModule
             <Frequency>OneTime</Frequency>';
         if ($type == 'EMV') { // add EMV specific fields
             $msgXml .= '
-            <HostOrIP>' . $host . '</HostOrIP>
+            <HostOrIP>' . '127.0.0.1' . '</HostOrIP>
             <SequenceNo>{{SequenceNo}}</SequenceNo>
             <CollectData>CardholderName</CollectData>
             <Memo>CORE POS 1.0.0 EMVX</Memo>
@@ -1530,7 +1530,7 @@ class MercuryE2E extends BasicCCModule
             <Frequency>OneTime</Frequency>';
         if ($type == 'EMV') { // add EMV specific fields
             $msgXml .= '
-            <HostOrIP>' . $host . '</HostOrIP>
+            <HostOrIP>' . '127.0.0.1' . '</HostOrIP>
             <SequenceNo>{{SequenceNo}}</SequenceNo>
             <CollectData>CardholderName</CollectData>
             <Memo>CORE POS 1.0.0 EMVX</Memo>
@@ -2145,8 +2145,9 @@ class MercuryE2E extends BasicCCModule
     private function getTermID()
     {
         if (CoreLocal::get("training") == 1) {
-            return '118725340908147';
-            return "395347308=E2ETKN";
+            return '337234005'; // emv
+            return '118725340908147'; // newer
+            return "395347308=E2ETKN"; // old
         } else {
             return CoreLocal::get('MercuryE2ETerminalID');
         }
