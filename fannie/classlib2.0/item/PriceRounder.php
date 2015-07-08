@@ -47,18 +47,38 @@ class PriceRounder
         // operate in cents
         $price = floor($price * 100);
 
+        // last digit will always round up to 9
         while ($price % 10 != 9) {
             $price++;
         }
 
+        // mystery
         if ($price % 100 == 5 || $price % 100 == 9) {
             $price += 10;
         }
 		
-		if ($price % 100 <= 19) {
-			$price = $price - ($price % 100) - 1;
-		}
+        // if price < $6.00 BUT > $1.00 and cents < 20, round down to nearest x.99
+        if ($price < 600 && $price > 100) {
+            if ($price % 100 <= 19){
+                $price = $price - ($price % 100) - 1;
+            }
+        }
 
+        
+        // if price >= 6.00 and cents < 30, round down to nearest x.99
+        if ($price >= 600) {
+            if ($price % 100 <= 29){
+                $price = $price - ($price % 100) - 1;
+            }
+        }
+        
+        // if price is >= $10.00 and the dollar amount is zero (20.99, 30.99, etc.) round down to nearest $xx.99
+        if ($price >= 1000){
+            if ( ($price - ($price % 100) ) % 1000 == 0 ){
+                $price = $price - ($price % 100) - 1;
+            }
+        }
+        
         return round($price/100.00, 2);
     }
 
