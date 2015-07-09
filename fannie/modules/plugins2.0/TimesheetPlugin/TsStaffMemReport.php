@@ -37,10 +37,12 @@ class TsStaffMemReport extends FanniePage {
         include ('./includes/header.html');
         //  FULL TIME: Number of hours per week
         $ft = 40;
-        echo '<form action="'.$_SERVER['PHP_SELF'].'" method=GET>';
+        echo '<form action="'.$_SERVER['PHP_SELF'].'" method=GET class="form-horizontal">';
         $stored = ($_COOKIE['timesheet']) ? $_COOKIE['timesheet'] : '';
+        echo '<div class="row form-group">';
         if ($_SESSION['logged_in'] == True) {
-            echo '<p>Name: <select name="emp_no">
+            echo '<label class="col-sm-2">Name</label>
+                <div class="col-sm-5"><select name="emp_no" class="form-control">
             <option value="error">Select staff member</option>' . "\n";
     
             $query = $ts_db->prepare_statement("SELECT FirstName, 
@@ -50,12 +52,16 @@ class TsStaffMemReport extends FanniePage {
             while ($row = $ts_db->fetch_array($result)) {
                 echo "<option value=\"$row[2]\">$row[0] $row[1]</option>\n";
             }
-            echo '</select>&nbsp;&nbsp;*</p>';
+            echo '</select></div>';
         } 
         else {
-            echo "<p>Employee Number*: <input type='text' name='emp_no' value='$stored' size=4 autocomplete='off' /></p>";
+            echo "<label class=\"col-sm-2\">Employee Number</label>
+                <div class=\"col-sm-5\">
+                <input type='text' class=\"form-control\" name='emp_no' value='$stored' 
+                    size=4 autocomplete='off' />
+                </div>";
         }
-
+        echo '</div>';
 
         $currentQ = $ts_db->prepare_statement("SELECT periodID 
                 FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods 
@@ -69,7 +75,9 @@ class TsStaffMemReport extends FanniePage {
             WHERE periodStart < ".$ts_db->now()." ORDER BY periodID DESC");
         $result = $ts_db->exec_statement($query);
 
-        echo '<p>Starting Pay Period: <select name="period">
+        echo '<div class="row form-group">
+            <label class="col-sm-2">Starting Pay Period</label>
+            <div class="col-sm-5"><select name="period" class="form-control">
             <option>Please select a starting pay period.</option>';
 
         while ($row = $ts_db->fetch_array($result)) {
@@ -78,8 +86,12 @@ class TsStaffMemReport extends FanniePage {
             echo ">(" . $row['periodStart'] . " - " . $row['periodEnd'] . ")</option>";
         }
 
-        echo "</select><br />";
-        echo '<p>Ending Pay Period: <select name="end">
+        echo "</select></div>";
+        echo '</div>';
+        echo '<div class="row form-group">
+                <label class="col-sm-2">Ending Pay Period</label>
+                <div class="col-sm-5">
+                <select name="end" class="form-control">
             <option value=0>Please select an ending pay period.</option>';
         $result = $ts_db->exec_statement($query);
         while ($row = $ts_db->fetch_array($result)) {
@@ -87,19 +99,30 @@ class TsStaffMemReport extends FanniePage {
             if ($row['periodID'] == $ID) { echo ' SELECTED';}
             echo ">(" . $row['periodStart'] . " - " . $row['periodEnd'] . ")</option>";
         }
-        echo '</select><button value="run" name="run">Run</button></p></form>';
+        echo '</select></div>
+            </div>
+            <p>
+                <button value="run" class="btn btn-default" name="run">Run</button>
+            </p>
+            </form>';
         if (FormLib::get_form_value('run','') == 'run') {
     
             $emp_no = FormLib::get_form_value('emp_no',0);
-            $namesq = $ts_db->prepare_statement("SELECT e.emp_no, e.FirstName, e.LastName, e.pay_rate, JobTitle 
-                FROM employees e WHERE e.emp_no = ? AND e.empActive = 1");
+            $namesq = $ts_db->prepare_statement("
+                SELECT e.emp_no, 
+                    e.FirstName, 
+                    e.LastName, 
+                    0 AS pay_rate, 
+                    JobTitle 
+                FROM " . $this->config->get('OP_DB') . $ts_db->sep() . "employees e 
+                WHERE e.emp_no = ? 
+                    AND e.empActive = 1");
             $namesr = $ts_db->exec_statement($namesq,array($_GET['emp_no']));
     
             if (!$namesr) {
                 echo "<div id='alert'><h1>Error!</h1><p>Incorrect, invalid, or inactive employee number entered.</p>
                     <p><a href='".$_SERVER['PHP_SELF']."'>Please try again</a></p></div>";
-            } 
-            else {
+            } else {
                 $name = $ts_db->fetch_row($namesr);
         
                 setcookie("timesheet", $emp_no, time()+60*3);
@@ -119,7 +142,7 @@ class TsStaffMemReport extends FanniePage {
                     periodID as pid 
                     FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods WHERE periodID = ?");
                 $result2 = $ts_db->exec_statement($query2,array($end));
-                $periodEnd = $ts_db->_fetch_row($result2);
+                $periodEnd = $ts_db->fetch_row($result2);
                 $p = array();
                 for ($i = $periodStart[1]; $i < $periodEnd[1]; $i++) {
                     $p[] = $i;
@@ -137,7 +160,10 @@ class TsStaffMemReport extends FanniePage {
 
                 // $sql_incl = "";
                 // $sql_excl = "AND emp_no <> 9999";
-                $staffQ = $ts_db->prepare_statement("SELECT * FROM employees WHERE emp_no = ?");
+                $staffQ = $ts_db->prepare_statement("
+                    SELECT * 
+                    FROM " . $this->config->get('OP_DB') . $ts_db->sep() . "employees 
+                    WHERE emp_no = ?");
                 $staffR = $ts_db->exec_statement($staffQ,array($emp_no));
                 $staff = $ts_db->fetch_row($staffR);
 
@@ -177,7 +203,7 @@ class TsStaffMemReport extends FanniePage {
                 $areasr = $ts_db->exec_statement($areasq);
 
                 $shiftInfo = array();
-                echo "<table border='1' cellpadding='5' cellspacing=0><thead>\n<tr><th>Week</th><th>Name</th><th>Wage</th>";
+                echo "<table class=\"table table-bordered table-striped\"><thead>\n<tr><th>Week</th><th>Name</th><th>Wage</th>";
                 while ($areas = $ts_db->fetch_array($areasr)) {
                     echo "<div id='vth'><th>" . substr($areas[0],0,6) . "</th></div>";  // -- TODO vertical align th, static col width
                     $shiftInfo[$areas['ShiftID']] = $areas['ShiftName'];
@@ -236,7 +262,7 @@ class TsStaffMemReport extends FanniePage {
                     //  LABOR DEPARTMENT TOTALS
                     foreach($shiftInfo as $area => $shiftName){ 
                         // echo $depttotq;
-                        $depttotr = $ts_db->exec_statement($depttotq,array($week_no,$emp_no,$area));
+                        $depttotr = $ts_db->exec_statement($depttotP,array($week_no,$emp_no,$area));
                         $depttot = $ts_db->fetch_row($depttotr);
                         $depttotal = (!$depttot[0]) ? 0 : number_format($depttot[0],2);
                         echo "<td align='right'>" . $depttotal . "</td>";

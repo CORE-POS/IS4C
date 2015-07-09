@@ -21,7 +21,7 @@ class TsEmployeesReport extends FanniePage {
         //  FULL TIME: Number of hours per week
         $ft = 40;
 
-        echo "<form action='".$_SERVER['PHP_SELF']."' method=GET>";
+        echo "<form action='".$_SERVER['PHP_SELF']."' method=GET class=\"form-horizontal\">";
 
         $currentQ = $ts_db->prepare_statement("SELECT periodID 
             FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods 
@@ -35,7 +35,10 @@ class TsEmployeesReport extends FanniePage {
             WHERE periodStart < ".$ts_db->now()." ORDER BY periodID DESC");
         $result = $ts_db->exec_statement($query);
 
-        echo '<p>Starting Pay Period: <select name="period">
+        echo '<div class="row form-group">
+            <label class="col-sm-2">Starting Pay Period</label>
+            <div class="col-sm-5">
+            <select class="form-control" name="period">
             <option>Please select a starting pay period.</option>';
 
         while ($row = $ts_db->fetch_array($result)) {
@@ -44,8 +47,11 @@ class TsEmployeesReport extends FanniePage {
             echo ">(" . $row['periodStart'] . " - " . $row['periodEnd'] . ")</option>";
         }
 
-        echo "</select><br />";
-        echo '<p>Ending Pay Period: <select name="end">
+        echo "</select></div></div>";
+        echo '<div class="row form-group">
+            <label class="col-sm-2">Ending Pay Period</label>
+            <div class="col-sm-5">
+            <select class="form-control" name="end">
             <option value=0>Please select an ending pay period.</option>';
         $result = $ts_db->exec_statement($query);
         while ($row = $ts_db->fetch_array($result)) {
@@ -53,14 +59,21 @@ class TsEmployeesReport extends FanniePage {
             if ($row['periodID'] == $ID) { echo ' SELECTED';}
             echo ">(" . $row['periodStart'] . " - " . $row['periodEnd'] . ")</option>";
         }
-        echo '</select><button value="run" name="run">Run</button></p></form>';
+        echo '</select></div></div>
+            <p>
+                <button class="btn btn-default" value="run" name="run">Run</button>
+            </p>
+            </form>';
         if (FormLib::get_form_value('run') == 'run') {
             $periodID = FormLib::get_form_value('period',0);
             $end = FormLib::get_form_value('end',$periodID);
             if ($end == 0) $end = $periodID;
     
-            $namesq = $ts_db->prepare_statement("SELECT e.emp_no, e.FirstName, e.LastName, e.pay_rate, JobTitle 
-                FROM employees e WHERE e.empActive = 1 ORDER BY e.LastName");
+            $namesq = $ts_db->prepare_statement("
+                SELECT e.emp_no, e.FirstName, e.LastName, 0 AS pay_rate, JobTitle 
+                FROM " . $this->config->get('OP_DB') . $ts_db->sep() . "employees e 
+                WHERE e.empActive = 1 
+                ORDER BY e.LastName");
             $namesr = $ts_db->exec_statement($namesq);
             $areasq = $ts_db->prepare_statement("SELECT ShiftName, ShiftID 
                 FROM ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".shifts 
@@ -101,9 +114,9 @@ class TsEmployeesReport extends FanniePage {
             echo "<br />";
     
 
-            echo "<table border='1' cellpadding='5' cellspacing=0><thead>\n<tr><th>Name</th><th>Wage</th>";
-            while ($areas = $ts_db->fetch_array($areasr)) {
-                echo "<div id='vth'><th>" . substr($areas[0],0,6) . "</th></div>";  // -- TODO vertical align th, static col width
+            echo "<table class=\"table table-bordered table-striped\"><thead>\n<tr><th>Name</th><th>Wage</th>";
+            foreach ($shiftInfo as $sID => $sName) {
+                echo "<div id='vth'><th>" . substr($sName,0,6) . "</th></div>";  // -- TODO vertical align th, static col width
             }
             echo "</th><th>OT</th><th>PTO used</th><th>PTO new</th><th>Total</th></tr></thead>\n<tbody>\n";
             $PTOnew = array();
