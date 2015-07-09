@@ -38,7 +38,9 @@ class PaycardDatacapParser extends Parser
 {
     public function check($str)
     {
-        if ($str == 'DATACAPEMV') {
+        if ($str == 'DATACAP') {
+            return true;
+        } elseif ($str == 'DATACAPEMV') {
             return true;
         } elseif ($str == 'DATACAPCC') {
             return true;
@@ -70,6 +72,9 @@ class PaycardDatacapParser extends Parser
         $ret['main_frame'] = $plugin_info->plugin_url().'/gui/PaycardEmvPage.php';
         Database::getsubtotals();
         switch ($str) {
+            case 'DATACAP':
+                $ret['main_frame'] = $plugin_info->plugin_url().'/gui/PaycardEmvMenu.php';
+                break; 
             case 'DATACAPEMV': 
                 CoreLocal::set('paycard_amount', CoreLocal::get('amtdue'));
                 CoreLocal::set('CacheCardType', 'EMV');
