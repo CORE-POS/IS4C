@@ -52,8 +52,9 @@ public class SPH_Datacap_IPTran : SerialPortHandler
         device_identifier=p;
         if (p.Contains(":")) {
             string[] parts = p.Split(new char[]{':'}, 3);
-            device_identifier = parts[0];
-            com_port = parts[1];
+            iptran_identifier = parts[0];
+            device_identifier = parts[1];
+            com_port = parts[2];
         }
     }
 
