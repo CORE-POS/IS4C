@@ -181,6 +181,7 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $srpP = $dbc->prepare_statement("INSERT INTO vendorSRPs (vendorID, upc, srp) VALUES (?,?,?)");
         }
         $updated_upcs = array();
+        $rounder = new \COREPOS\Fannie\API\item\PriceRounder();
 
         foreach($linedata as $data) {
             if (!is_array($data)) continue;
@@ -246,6 +247,8 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             if (!is_numeric($reg) or !is_numeric($srp)) {
                 continue;
             }
+
+            $srp = $rounder->round($srp);
 
             // set organic flag on OG1 (100%) or OG2 (95%)
             $organic_flag = 0;
