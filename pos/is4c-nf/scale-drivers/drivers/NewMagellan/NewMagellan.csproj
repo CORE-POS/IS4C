@@ -15,7 +15,7 @@
   <!-- Defined constants -->
   <ItemGroup>
     <MonoDefine Include="MONO" Condition=" '$(OS)' == 'Unix' " />
-    <RabbitDefine Include="CORE_RABBIT" Condition=" Exists('rabbitmq\RabbitMQ.Client.dll') " />
+    <RabbitDefine Include="CORE_RABBIT" Condition=" Exists('RabbitMQ.Client.dll') " />
     <JsonDefine Include="NEWTONSOFT_JSON" />
   </ItemGroup>
 
@@ -30,7 +30,7 @@
     <MagellanRef Include="UDPMsgBox.dll" />
     <MagellanRef Include="SPH.dll" />
     <MagellanRef Include="Newtonsoft.Json.dll" />
-    <MagellanRef Include="rabbitmq\RabbitMQ.Client.dll" Condition=" Exists('rabbitmq\RabbitMQ.Client.dll') " />
+    <MagellanRef Include="RabbitMQ.Client.dll" Condition=" Exists('RabbitMQ.Client.dll') " />
     <MagellanRef Include="Discover.dll" />
 
     <MagellanTarget Include="DelegateFormLibrary" />
