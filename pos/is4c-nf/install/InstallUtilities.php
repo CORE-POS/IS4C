@@ -1087,6 +1087,7 @@ class InstallUtilities extends LibraryClass
             'AutoCouponsModel',
             'CouponCodesModel',
             'CustdataModel',
+            'CustomerNotificationsModel',
             'CustPreferencesModel',
             'CustReceiptMessageModel',
             'CustomReceiptModel',

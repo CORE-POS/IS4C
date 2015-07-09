@@ -359,7 +359,7 @@ static public function setMember($member, $personNumber, $row=array())
                 AND type=\'blueline\'
             ORDER BY message';
         $blR = $conn->query($blQ);
-        while ($blW = $dbc->fetchRow($blR)) {
+        while ($blW = $conn->fetchRow($blR)) {
             $memMsg .= ' ' . $blW['message'];
         }
     }
