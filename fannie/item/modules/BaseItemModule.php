@@ -332,7 +332,7 @@ class BaseItemModule extends ItemModule
                 <th class="text-right">Description</th>
                 <td colspan="5">
                     <div class="input-group" style="width:100%;">
-                        <input type="text" maxlength="30" class="form-control"
+                        <input type="text" maxlength="30" class="form-control" required
                             name="descript" id="descript" value="' . $rowItem['description'] . '"
                             onkeyup="$(\'#dcounter\').html(30-(this.value.length));" />
                         <span id="dcounter" class="input-group-addon">' . $limit . '</span>
@@ -355,7 +355,7 @@ class BaseItemModule extends ItemModule
                     <div class="input-group">
                         <span class="input-group-addon">$</span>
                         <input type="text" id="price" name="price" class="form-control price-field"
-                            value="' . sprintf('%.2f', $rowItem['normal_price']) . '" />
+                            required value="' . sprintf('%.2f', $rowItem['normal_price']) . '" />
                     </div>
                 </td>
             </tr>';
